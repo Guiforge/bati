@@ -28,7 +28,7 @@ appId: com.guiforge.bati.dev
 
 # --- 1. hardware back -------------------------------------------------------------
 - tapOn:
-    id: "village-built-card"
+    id: "village-building-row"
     index: 0
 - assertVisible:
     id: "village-detail"
@@ -47,7 +47,7 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "tab-village"
 - tapOn:
-    id: "village-built-card"
+    id: "village-building-row"
     index: 0
 - assertVisible:
     id: "village-detail"
@@ -67,7 +67,7 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "tab-village"
 - tapOn:
-    id: "village-built-card"
+    id: "village-building-row"
     index: 0
 - assertVisible:
     id: "village-detail"

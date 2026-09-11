@@ -203,9 +203,10 @@ Two corrections to that, for anyone following the trail:
   `components/session/bossPhase.ts` — a table of rgba tints laid over one unmodified image by
   `BossArena.tsx`.
 - What shipped is **three paintings per building, not one and not five**: `_rough`, the existing
-  art as `solid`, and `_grand`, chosen by `buildingStage()` in `constants/buildingLevels.ts`. The
-  opacity ramp in `BuiltBuildingCard` still fills the steps between them, so the two approaches
-  are stacked rather than one replacing the other.
+  art as `solid`, and `_grand`, chosen by `buildingStage()` in `constants/buildingLevels.ts`. An
+  opacity ramp in `BuiltBuildingCard` used to fill the steps between them; the tile grid went with
+  the 2026-09-11 village redesign, and the rows now draw the stage painting at full opacity, with
+  "level 2 of 3" and pips on the real ceiling carrying the steps in between.
 
 Sixty emblems instead of twenty, which is the cost this section was trying to avoid. It was
 re-opened deliberately: the tint ramp alone left every level the same shape, and shape is what
@@ -268,6 +269,9 @@ All resolve to real art via `assetMap` (verified basename-key match):
 - **Trophy shelf (2026-07-21).** Needs no new art: boss trophies reuse the adventure cover via
   `getAdventureAsset`, achievement trophies use the `icon` emoji already on
   `achievementDefinitions`. Deliberate — an emoji rack reads as a trophy shelf.
+  *Moved 2026-09-11:* the village no longer has a shelf. Defeated bosses are the Journal's
+  `BossesCard`, drawn from each monster's fallen painting (`getBossAsset(…, "defeated")`), and
+  achievements were already the Journal's `AchievementsCard`. Still no new art.
 
 ---
 

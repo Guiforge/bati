@@ -1,64 +1,57 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import Animated, {
+  Easing,
   useAnimatedRef,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 
-import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { AppButton } from "@/components/common/AppButton";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
-import { BuiltBuildingCard } from "@/components/village/BuiltBuildingCard";
+import { groupFamilies } from "@/components/village/rows";
+import { VillageAnchors } from "@/components/village/VillageAnchors";
 import { VillageDetailSheet, type VillageSelection } from "@/components/village/VillageDetailSheet";
 import { VillageEmbers } from "@/components/village/VillageEmbers";
-import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
 import {
-  getBossAsset,
-  getBuildingIconAsset,
-  getSportSpriteAsset,
-  getVillageTierAsset,
-} from "@/constants/assetMap";
-import { getDateTimeFormat } from "@/constants/dateFormatters";
+  Families,
+  NextToRise,
+  SinceLastQuest,
+  VillageDone,
+} from "@/components/village/VillageLists";
+import { VillageReward } from "@/components/village/VillageReward";
+import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
+import { getSportSpriteAsset, getVillageTierAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import { pickDailyVariant } from "@/constants/restMessages";
+import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
 import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
 import { dayKey } from "@/db/dates";
 import { MUSCLE_LABELS } from "@/db/muscles";
-import { getVillageScene, TIER_NAMES, type VillageScene as VillageSceneData } from "@/db/village";
+import {
+  getVillageScene,
+  isDayOne,
+  isVillageComplete,
+  parseGrown,
+  pickNextToRise,
+  TIER_NAMES,
+  type VillageBuilding,
+  type VillageScene as VillageSceneData,
+} from "@/db/village";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useAnimationProps, useReducedMotion } from "@/hooks/useReducedMotion";
-import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
-
-/** The unbuilt icons read as silhouettes, not greyed-out buttons: same shape, no detail. */
-const SILHOUETTE_TINT = rawColors.borderStrong;
-
-/** The shelf is already newest-first; dating it turns the rack into the road travelled. */
-const TROPHY_DATE_OPTIONS: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
-
-/** A defeated boss is the hardest trophy on the rack, so its medal is the one that shines. */
-const MEDAL_BOSS = {
-  bg: "$surface",
-  borderColor: "$resourceGold",
-  shadowColor: "$resourceGold",
-  shadowRadius: 10,
-  shadowOpacity: 0.55,
-  shadowOffset: { width: 0, height: 0 },
-  elevation: 6,
-} as const;
-
-const MEDAL_PLAIN = { bg: "$surface2", borderColor: "$borderStrong" } as const;
 
 /**
  * How much slower the painting scrolls than the page. Low on purpose: the tier art is the one
@@ -67,11 +60,31 @@ const MEDAL_PLAIN = { bg: "$surface2", borderColor: "$borderStrong" } as const;
  */
 const PARALLAX_FACTOR = 0.35;
 
+/** How far the painting leans in on the building that just rose. */
+const REWARD_ZOOM = 1.85;
+
+/**
+ * The return from a session, in ms from arrival: lean in on the spot, bring the card up, put
+ * everything back. About five seconds, once per session, never on a plain visit.
+ */
+const REWARD_TIMING = { zoom: 250, card: 1300, done: 5200 } as const;
+const LEAN = { duration: 900, easing: Easing.bezier(0.2, 0.7, 0.2, 1) } as const;
+
+/**
+ * Below this window height the square painting takes the whole fold, so it is cut to a band and
+ * "Next to rise" starts above the fold. 700 dp is the line between a 360x640 phone and a 393x852
+ * one. The full painting is still one tap away (VillageSceneViewer).
+ */
+const COMPACT_HEIGHT = 700;
+const COMPACT_BAND = 0.62;
+const COMPACT_CROP_TOP = 0.2;
+
 export function VillageScene() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const language = useSettingsStore((s) => s.language);
+  const lang = language === "fr" ? "fr" : "en";
   const villageName = useUserStore((s) => s.villageName);
   const sectionAnim = useAnimationProps("bouncy", { opacity: 0, y: 12 });
   const haptics = useHaptics();
@@ -80,17 +93,22 @@ export function VillageScene() {
   // The painting lags the page as it scrolls away. Written and read entirely on the UI thread:
   // `scrollY` is never touched from JS (docs/architecture/performance.md).
   const scrollY = useSharedValue(0);
+  const zoom = useSharedValue(1);
   const onScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
   });
-  const parallax = useAnimatedStyle(() => ({
-    transform: [{ translateY: reducedMotion ? 0 : scrollY.value * PARALLAX_FACTOR }],
+  const paintingMotion = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: reducedMotion ? 0 : scrollY.value * PARALLAX_FACTOR },
+      { scale: zoom.value },
+    ],
   }));
 
-  // Set once from the arrival params, never recomputed: a later tab-bar visit shouldn't
-  // replay the "just grew" pulse for a building that grew several sessions ago.
+  // Written by the victory screen's "View Village" (formatGrown). A plain tab visit has none, so
+  // the reward and the "Risen" marks only ever answer a session.
   const { grown } = useLocalSearchParams<{ grown?: string }>();
-  const [highlighted] = useState(() => new Set((grown ?? "").split(",").filter(Boolean)));
+  const growth = parseGrown(grown);
+  const risen = new Set(growth.map((g) => g.code));
 
   const [scene, setScene] = useState<VillageSceneData | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -100,17 +118,17 @@ export function VillageScene() {
   // and has to outlive the selection afterwards or it would vanish instead of sliding shut.
   const [sheetMounted, setSheetMounted] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [rewardOpen, setRewardOpen] = useState(false);
 
   // Stable: the sheet subscribes to hardware back on it, and a fresh identity every render
   // would resubscribe every render.
   const closeDetail = useCallback(() => setSelected(null), []);
 
-  const openDetail = (selection: VillageSelection) => {
-    // Every other tappable surface in the app answers (session, onboarding); the village was the
-    // one screen where taps were silent. `selection` is the lightest tick, not a reward buzz.
+  const openBuilding = (building: VillageBuilding) => {
+    // `selection` is the lightest tick, not a reward buzz.
     haptics.selection();
     setSheetMounted(true);
-    setSelected(selection);
+    setSelected({ kind: "building", building });
   };
 
   // Refetch on focus: the whole point of this screen is "what changed since I trained",
@@ -129,11 +147,9 @@ export function VillageScene() {
       });
   }, []);
 
-  // Tab screens stay mounted, so a revisit inherited whatever offset the last visit left —
-  // the scene opened mid-page, hero painting off-screen, tiles under the status bar (2026-08
-  // audit, §06-D; reproduced: scroll, switch tab, come back). The scene *is* the screen, so a
-  // fresh visit starts at the top. Safe: the detail sheet and viewer are modals, not routes —
-  // focus only changes when actually leaving the tab.
+  // Tab screens stay mounted, so a revisit inherited whatever offset the last visit left. The
+  // scene *is* the screen, so a fresh visit starts at the top. Safe: the detail sheet and viewer
+  // are modals, not routes, so focus only changes when actually leaving the tab.
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
 
   useFocusEffect(
@@ -144,10 +160,51 @@ export function VillageScene() {
     }, [loadScene, scrollRef, scrollY]),
   );
 
+  const ready = scene !== null;
+  const focus = scene ? VILLAGE_ANCHORS[scene.tier].find((a) => risen.has(a.code)) : undefined;
+  const hasFocus = focus !== undefined;
+
+  // Played once per `grown` value. The tab stays mounted and keeps its params, so a revisit
+  // carries the same string and must not replay it; the next session writes a different one,
+  // since a level only ever rises.
+  const playedFor = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!ready || parseGrown(grown).length === 0 || playedFor.current === grown) return;
+    playedFor.current = grown;
+    const lean = (to: number) => {
+      zoom.value = withTiming(to, LEAN);
+    };
+    const timers = [
+      setTimeout(
+        () => {
+          if (hasFocus && !reducedMotion) lean(REWARD_ZOOM);
+        },
+        reducedMotion ? 0 : REWARD_TIMING.zoom,
+      ),
+      setTimeout(() => setRewardOpen(true), reducedMotion ? 0 : REWARD_TIMING.card),
+      setTimeout(() => {
+        setRewardOpen(false);
+        lean(1);
+      }, REWARD_TIMING.done),
+    ];
+    return () => {
+      for (const timer of timers) clearTimeout(timer);
+      zoom.value = 1;
+      setRewardOpen(false);
+    };
+  }, [ready, grown, hasFocus, reducedMotion, zoom]);
+
+  const dismissReward = () => {
+    setRewardOpen(false);
+    zoom.value = withTiming(1, LEAN);
+  };
+
   // The tier art is square (1024x1024), and `cover` silently crops whatever the slot doesn't
-  // match: the 4:3 this used to be threw away a quarter of every illustration — including the
-  // beam crowning tier 5's palace. Matching the source puts the whole painting on screen.
-  const heroHeight = width;
+  // match, so the slot is square too: the whole painting, edge to edge. Only a short screen cuts
+  // it to a band, where a square would push everything else below the fold.
+  const compact = height < COMPACT_HEIGHT;
+  const heroHeight = compact ? Math.round(width * COMPACT_BAND) : width;
+  const paintingTop = compact ? -Math.round(width * COMPACT_CROP_TOP) : 0;
 
   if (!scene) {
     if (loadFailed) {
@@ -181,13 +238,25 @@ export function VillageScene() {
     );
   }
 
-  const tierName = TIER_NAMES[scene.tier][language === "fr" ? "fr" : "en"];
-  const built = scene.buildings.filter((b) => b.level > 0);
-  const unbuilt = scene.buildings.filter((b) => b.level === 0);
-  const flavour = pickDailyVariant(
-    VILLAGE_FLAVOUR[language === "fr" ? "fr" : "en"],
-    `${dayKey(new Date())}:${scene.tier}`,
-  );
+  const tierName = TIER_NAMES[scene.tier][lang];
+  // The tier only needs saying separately once the village has its own name.
+  const tierLine = [
+    villageName ? tierName : null,
+    t("village.level_line", { level: scene.level }),
+    scene.title[lang],
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const dayOne = isDayOne(scene.buildings);
+  const complete = isVillageComplete(scene.tier, scene.buildings);
+  const families = groupFamilies(scene.buildings, complete);
+  const next = pickNextToRise(scene.buildings);
+  const openDeeds = scene.buildings.filter((b) => b.tier === 4 && b.nextTarget !== null).length;
+  // Weather, not a stat. It used to sit under the name, above the fold, in the place "Next to
+  // rise" needed; Home's village band that took it next was removed with the Home redesign, so it
+  // closes the page instead. Seeded by day *and* tier: it turns over at midnight and reads
+  // differently once the village has grown.
+  const weather = pickDailyVariant(VILLAGE_FLAVOUR[lang], `${dayKey(new Date())}:${scene.tier}`);
 
   return (
     <YStack testID="village-screen" flex={1} bg="$background">
@@ -200,7 +269,7 @@ export function VillageScene() {
       >
         {/* The scene is the screen: edge to edge, its own title, nothing framing it.
             `overflow="hidden"` is what keeps the parallaxed painting inside its own band
-            instead of riding down over the tiles. */}
+            instead of riding down over the list. */}
         <YStack
           width="100%"
           height={heroHeight}
@@ -213,20 +282,39 @@ export function VillageScene() {
           accessibilityRole="button"
           accessibilityLabel={t("village.open_scene", "See the whole scene")}
         >
-          {/* Only the painting lags — the scrims and the title stay anchored, so the art
-              drifts behind the name rather than dragging it along. */}
-          <Animated.View style={[{ width: "100%", height: "100%" }, parallax]}>
+          {/* The painting and its spots move as one: they parallax together and lean in together
+              on the building that just rose. The scrims and the title stay anchored. */}
+          <Animated.View
+            style={[
+              {
+                position: "absolute",
+                top: paintingTop,
+                left: 0,
+                width,
+                height: width,
+                transformOrigin: focus ? `${focus.x}% ${focus.y}%` : "50% 50%",
+              },
+              paintingMotion,
+            ]}
+          >
             <Image
               source={getVillageTierAsset(scene.tier)}
               style={{ width: "100%", height: "100%" }}
               contentFit="cover"
               transition={300}
             />
+            <VillageAnchors
+              tier={scene.tier}
+              buildings={scene.buildings}
+              risen={risen}
+              language={language}
+              reducedMotion={reducedMotion}
+            />
           </Animated.View>
 
           {/* Top scrim so the status bar stays readable over bright artwork */}
           <LinearGradient
-            colors={["rgba(11,15,25,0.6)", "transparent"]}
+            colors={[rawColors.bgOverlaySoft, "transparent"]}
             style={{
               position: "absolute",
               top: 0,
@@ -236,93 +324,60 @@ export function VillageScene() {
             }}
           />
 
-          {!!scene.dominantSport && (
-            <YStack
-              position="absolute"
-              t={insets.top + 12}
-              r="$4"
-              width={56}
-              height={56}
-              rounded={28}
-              overflow="hidden"
-              borderWidth={2}
-              borderColor="$primary"
-              shadowColor="$shadowColor"
-              shadowRadius={8}
-              shadowOpacity={0.4}
-            >
-              <Image
-                source={getSportSpriteAsset(scene.dominantSport.muscle)}
-                style={{ width: "100%", height: "100%" }}
-                contentFit="cover"
-              />
-            </YStack>
-          )}
-
           {/* Bottom scrim dissolves the artwork into the page; the title sits inside it */}
           <LinearGradient
-            colors={["transparent", "rgba(11,15,25,0.75)", rawColors.bgDark]}
-            locations={[0, 0.55, 1]}
+            colors={["transparent", rawColors.bgOverlay, rawColors.bgDark]}
+            locations={[0, 0.66, 0.94]}
             style={{
               position: "absolute",
               bottom: 0,
               left: 0,
               right: 0,
-              height: Math.round(heroHeight * 0.6),
+              height: Math.round(heroHeight * 0.62),
               justifyContent: "flex-end",
             }}
           >
-            <YStack px="$4" pb="$3" gap="$1">
-              <Text fontWeight="700" fontSize={28} color="$text" numberOfLines={1}>
+            {/* The bottom 14 is what the panel below overlaps. */}
+            <YStack px="$4" pb={28} gap={6}>
+              {scene.dominantSport ? (
+                <XStack items="center" gap={8}>
+                  <Image
+                    source={getSportSpriteAsset(scene.dominantSport.muscle)}
+                    style={{ width: 20, height: 20 }}
+                    contentFit="contain"
+                  />
+                  <Text fontSize={11.5} color="$textSecondary">
+                    {t("village.focus_line", {
+                      muscle: MUSCLE_LABELS[scene.dominantSport.muscle][lang],
+                    })}
+                  </Text>
+                </XStack>
+              ) : null}
+              <Text fontWeight="700" fontSize={30} lineHeight={32} color="$text" numberOfLines={1}>
                 {villageName || tierName}
               </Text>
-              <XStack items="center" gap="$3" flexWrap="wrap">
-                <Text fontSize={14} color="$textSecondary">
-                  {/* The tier only needs saying separately once the village has its own name */}
-                  {villageName ? `${tierName} • ` : ""}
-                  {t("village.level_line", {
-                    level: scene.level,
-                    defaultValue: `Level ${scene.level}`,
-                  })}
+              <XStack items="center" gap={10} flexWrap="wrap">
+                <Text fontSize={13} fontWeight="500" color="$textSecondary">
+                  {tierLine}
                 </Text>
                 {scene.flame > 0 && (
-                  <XStack items="center" gap="$1">
-                    <FlameFlicker size={18} />
-                    <Text fontSize={14} color="$text" fontWeight="700">
-                      {t(`village.flame_${scene.flame}`, "")}
+                  <XStack
+                    items="center"
+                    gap={5}
+                    px={9}
+                    py={3}
+                    rounded={999}
+                    bg="$glassBg"
+                    borderWidth={1}
+                    borderColor="$glassBorder"
+                  >
+                    <FlameFlicker size={14} />
+                    <Text fontSize={11.5} fontWeight="600" color="$text">
+                      {`${t(`village.flame_${scene.flame}`)} · ${t("village.flame_days", { count: scene.streakDays })}`}
                     </Text>
                   </XStack>
                 )}
               </XStack>
-              {!!scene.dominantSport && (
-                <Text fontSize={13} color="$textSecondary">
-                  {t("village.dominant_sport", {
-                    muscle:
-                      MUSCLE_LABELS[scene.dominantSport.muscle]?.[
-                        language === "fr" ? "fr" : "en"
-                      ] ?? scene.dominantSport.muscle,
-                    defaultValue: `Training focus: ${scene.dominantSport.muscle}`,
-                  })}
-                </Text>
-              )}
-              {/* The counterpart to the focus line above, and the only line here that asks for
-                  something: it names a tile below that has stopped moving, and why. */}
-              {!!scene.neglected && (
-                <Text fontSize={13} color="$textSecondary">
-                  {t("village.neglected_muscle", {
-                    muscle:
-                      MUSCLE_LABELS[scene.neglected]?.[
-                        language === "fr" ? "fr" : "en"
-                      ]?.toLowerCase() ?? scene.neglected,
-                    defaultValue: `Least trained: ${scene.neglected}`,
-                  })}
-                </Text>
-              )}
-              {/* Weather, not a stat. Seeded by day *and* tier so it turns over at midnight and
-                  reads differently once the village has grown. */}
-              <Text fontSize={12} color="$muted" fontStyle="italic">
-                {flavour}
-              </Text>
             </YStack>
           </LinearGradient>
 
@@ -331,174 +386,46 @@ export function VillageScene() {
           <VillageEmbers heroHeight={heroHeight} heroWidth={width} tier={scene.tier} />
         </YStack>
 
-        <YStack gap="$5" px="$4" pt="$4">
-          {/* No empty state: the three starter buildings take their level from the village tier,
-              which is never below 1 ("Starter buildings always stand", db/village.ts), so this
-              list cannot be empty. The branch that used to guard it was unreachable. */}
-          {built.length > 0 && (
-            <YStack testID="village-built" gap="$3" {...sectionAnim}>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("village.built_title", "Built")}
-              </Text>
-              <XStack flexWrap="wrap" gap="$2">
-                {built.map((building) => (
-                  <BuiltBuildingCard
-                    key={building.code}
-                    building={building}
-                    language={language}
-                    justGrew={highlighted.has(building.code)}
-                    onPress={() => openDetail({ kind: "building", building })}
-                  />
-                ))}
-              </XStack>
-            </YStack>
-          )}
-
-          {/* Still to come: silhouettes, so the village reads as unfinished, not as locked content */}
-          {unbuilt.length > 0 && (
-            <YStack testID="village-to-build" gap="$3" {...sectionAnim}>
-              <Text fontWeight="700" fontSize={16} color="$textSecondary">
-                {t("village.to_build_title", "To build")}
-              </Text>
-              {/* The loop, stated once where the empty slots raise the question. "I never
-                  understood the village" is real user feedback; the explanation lived only
-                  inside a sheet behind a tap nothing suggested. */}
-              <Text fontSize={12} color="$textSecondary" opacity={0.8}>
-                {t(
-                  "village.loop_hint",
-                  "Every muscle you train raises a building. Tap one to see what feeds it.",
-                )}
-              </Text>
-              <XStack flexWrap="wrap" gap="$3">
-                {unbuilt.map((building) => (
-                  <YStack
-                    key={building.code}
-                    width="22%"
-                    items="center"
-                    gap="$1"
-                    onPress={() => openDetail({ kind: "building", building })}
-                    pressStyle={{ opacity: 0.85 }}
-                    accessibilityRole="button"
-                    accessibilityLabel={language === "fr" ? building.frName : building.enName}
-                  >
-                    <YStack
-                      width={52}
-                      height={52}
-                      rounded={26}
-                      bg="$surface"
-                      items="center"
-                      justify="center"
-                    >
-                      {/* Level 0, so this is the rough shape — the silhouette promises the
-                          building you will actually get first, not its finished form. */}
-                      <Image
-                        source={getBuildingIconAsset(
-                          building.code,
-                          building.relatedMuscle,
-                          building.level,
-                        )}
-                        style={{ width: 30, height: 30 }}
-                        contentFit="contain"
-                        tintColor={SILHOUETTE_TINT}
-                      />
-                    </YStack>
-                    {/* Two reserved lines: "Bosquet druidique" must not ellipsize, and the
-                        fixed height keeps every row of the grid aligned. */}
-                    <Text
-                      fontSize={11}
-                      lineHeight={14}
-                      minH={28}
-                      color="$muted"
-                      numberOfLines={2}
-                      style={{ textAlign: "center" }}
-                    >
-                      {language === "fr" ? building.frName : building.enName}
-                    </Text>
-                  </YStack>
-                ))}
-              </XStack>
-            </YStack>
-          )}
-
-          {/* Trophy shelf: achievements + defeated bosses on one rack, newest first.
-              An empty shelf still shows — a new player otherwise never learns trophies exist. */}
-          {scene.trophies.length === 0 && (
-            <YStack gap="$2" {...sectionAnim}>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("village.trophies_title", "Trophies")}
-              </Text>
-              <Text fontSize={12} color="$textSecondary" opacity={0.8}>
-                {t(
-                  "village.trophies_empty",
-                  "Achievements and defeated bosses land on this shelf.",
-                )}
-              </Text>
-            </YStack>
-          )}
-          {scene.trophies.length > 0 && (
-            <YStack gap="$3" {...sectionAnim}>
-              <Text fontWeight="700" fontSize={16} color="$text">
-                {t("village.trophies_title", "Trophies")}
-              </Text>
-              {/* A wall, not a rail: the whole rack is visible at once, same wrapping grid
-                  as the buildings above, instead of hiding older medals off-screen. */}
-              <XStack flexWrap="wrap" gap="$3">
-                {scene.trophies.map((trophy) => (
-                  <YStack
-                    key={trophy.key}
-                    width="22%"
-                    items="center"
-                    gap="$2"
-                    onPress={() => openDetail({ kind: "trophy", trophy })}
-                    pressStyle={{ opacity: 0.85 }}
-                    accessibilityRole="button"
-                    accessibilityLabel={localizedTitle(trophy, language)}
-                  >
-                    {/* One medal disc for both kinds; only the rim says which. A defeated
-                        boss is the hardest trophy on the rack, so it alone keeps a glow. */}
-                    <YStack
-                      width={56}
-                      height={56}
-                      rounded={28}
-                      overflow="hidden"
-                      items="center"
-                      justify="center"
-                      borderWidth={2}
-                      {...(trophy.kind === "boss" ? MEDAL_BOSS : MEDAL_PLAIN)}
-                    >
-                      {/* A trophy with an image is a boss; achievements render the game's own
-                          icons. The medal shows the monster you beat, not the poster for its
-                          journey. */}
-                      {trophy.imagePath ? (
-                        <Image
-                          source={getBossAsset(trophy.imagePath, 0, "defeated")}
-                          style={{ width: "100%", height: "100%" }}
-                          contentFit="cover"
-                        />
-                      ) : (
-                        <AchievementIcon icon={trophy.emoji ?? "Award"} size={28} color="$text" />
-                      )}
-                    </YStack>
-                    <Text
-                      fontSize={11}
-                      color="$textSecondary"
-                      numberOfLines={2}
-                      style={{ textAlign: "center" }}
-                    >
-                      {localizedTitle(trophy, language)}
-                    </Text>
-                    {/* The date is the trophy's story — when you did the thing — so it reads as
-                        a value, not a footnote. */}
-                    <Text fontSize={12} fontWeight="600" color="$textSecondary">
-                      {getDateTimeFormat(language, TROPHY_DATE_OPTIONS).format(trophy.earnedAt)}
-                    </Text>
-                  </YStack>
-                ))}
-              </XStack>
-            </YStack>
-          )}
+        {/* The panel rides up over the painting's last 14 dp, so the list reads as the scene's
+            own ground rather than a second screen stacked under it. */}
+        <YStack
+          bg="$bgDark"
+          borderTopWidth={1}
+          borderColor="$glassBorder"
+          borderTopLeftRadius={16}
+          borderTopRightRadius={16}
+          px="$4"
+          pt="$4"
+          gap={18}
+          mt={-14}
+          {...sectionAnim}
+        >
+          {complete ? <VillageDone name={villageName || tierName} openDeeds={openDeeds} /> : null}
+          <NextToRise building={next} dayOne={dayOne} language={language} onOpen={openBuilding} />
+          {growth.length > 0 ? (
+            <SinceLastQuest growth={growth} buildings={scene.buildings} language={language} />
+          ) : null}
+          <Families families={families} risen={risen} language={language} onOpen={openBuilding} />
+          <YStack gap={6}>
+            <Text fontSize={12} lineHeight={17} color="$textSecondary" fontStyle="italic">
+              {weather}
+            </Text>
+            <Text fontSize={11.5} lineHeight={17} color="$textSecondary" opacity={0.75}>
+              {t("village.foot")}
+            </Text>
+          </YStack>
         </YStack>
       </Animated.ScrollView>
+
+      {rewardOpen ? (
+        <VillageReward
+          growth={growth}
+          buildings={scene.buildings}
+          language={language}
+          top={Math.round(heroHeight * 0.5)}
+          onDismiss={dismissReward}
+        />
+      ) : null}
 
       {viewerOpen ? (
         <VillageSceneViewer

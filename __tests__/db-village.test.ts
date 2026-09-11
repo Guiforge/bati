@@ -132,25 +132,6 @@ describe("db/village", () => {
     expect(await getDominantSportOverlay()).toBeNull();
   });
 
-  test("trophies merge achievements and bosses, newest first", async () => {
-    const { getTrophies, getBossBanners } = village();
-    const achievements = require("../db/achievements") as typeof import("../db/achievements");
-
-    defeatBoss(2, new Date("2020-01-01T00:00:00Z"));
-    await achievements.unlockAchievement("first_workout"); // unlocked "now"
-
-    const trophies = await getTrophies(await getBossBanners());
-
-    expect(trophies).toHaveLength(2);
-    // The 2020 boss is the older of the two, so it sorts last.
-    expect(trophies.map((x) => x.kind)).toEqual(["achievement", "boss"]);
-    expect(trophies[0]?.key).toBe("achievement:first_workout");
-    expect(trophies[0]?.emoji).toBeTruthy();
-    expect(trophies[0]?.imagePath).toBeNull();
-    expect(trophies[1]?.emoji).toBeNull();
-    expect(trophies[1]?.imagePath).toBeTruthy();
-  });
-
   /** A finished campaign run, at a fixed instant. */
   function finishRun(adventureId: number, finishedAt: Date) {
     const at = Math.floor(finishedAt.getTime() / 1000);
@@ -240,22 +221,21 @@ describe("db/village", () => {
     expect(scene.tier).toBe(1);
     expect(scene.level).toBe(1);
     expect(scene.flame).toBe(0);
+    expect(scene.streakDays).toBe(0);
+    expect(scene.title.en).toBeTruthy();
     expect(scene.dominantSport).toBeNull();
-    expect(scene.trophies).toEqual([]);
     expect(scene.buildings).toHaveLength(21);
   });
 
-  // Used to assert the boss arrived "as both a banner and a trophy". The banner half was never
-  // rendered anywhere, so the scene stopped carrying it; the trophy is the one that reaches a
-  // screen, and the lair below proves the victory still counts where it is read.
-  test("a defeated boss reaches the scene as a trophy, and raises the lair", async () => {
+  // The trophy wall left the village for the Journal (BossesCard reads getBossBanners, tested
+  // above). What the scene still owes a victory is the lair it raises.
+  test("a defeated boss raises the lair on the scene", async () => {
     const { getVillageScene } = village();
 
     defeatBoss(2, new Date("2026-01-02T00:00:00Z"));
 
     const scene = await getVillageScene();
 
-    expect(scene.trophies.map((x) => x.key)).toEqual(["boss:2"]);
     expect(scene.buildings.find((b) => b.code === "dragon_lair")?.level).toBe(1);
   });
 });

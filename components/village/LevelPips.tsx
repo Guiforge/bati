@@ -2,22 +2,23 @@ import { XStack, YStack } from "tamagui";
 
 import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
 
-// Derived from the cap the levels are clamped to, so the dots and the ceiling cannot drift:
-// adding a sixth level without a sixth dot is what let a tier-8 campfire render as "5/5 and
-// still climbing".
-const PIP_SLOTS = Array.from({ length: MAX_BUILDING_LEVEL }, (_, i) => i + 1);
-
-/** Level 1..5 as filled pips — a number would compete with the scene, five dots don't. */
-export function LevelPips({ level }: { level: number }) {
+/**
+ * Level as filled pips, on the ceiling the building can really reach — a number would compete
+ * with the scene, a row of dots doesn't. `max` is the building's own ceiling (`buildingCeiling()`):
+ * the six upgrades stop at 3, and drawing five dots under them promised two rungs that never come.
+ *
+ * Gold, because gold is what progression wears everywhere else in the app.
+ */
+export function LevelPips({ level, max = MAX_BUILDING_LEVEL }: { level: number; max?: number }) {
   return (
     <XStack gap={3} items="center">
-      {PIP_SLOTS.map((slot) => (
+      {Array.from({ length: max }, (_, i) => i + 1).map((slot) => (
         <YStack
           key={slot}
           width={5}
           height={5}
           rounded={3}
-          bg={slot <= level ? "$primary" : "$borderStrong"}
+          bg={slot <= level ? "$resourceGold" : "$borderStrong"}
         />
       ))}
     </XStack>

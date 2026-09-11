@@ -1,24 +1,35 @@
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BackHandler } from "react-native";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 
-import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { AppButton } from "@/components/common/AppButton";
 import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { LevelPips } from "@/components/village/LevelPips";
+import {
+  barEnds,
+  feedsLine,
+  levelText,
+  nameOf,
+  nextLine,
+  questLink,
+} from "@/components/village/rows";
+import { BarEnds, Kicker, QuestLink } from "@/components/village/VillageLists";
 import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { rawColors } from "@/constants/rawColors";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "@/db/adventures";
 import { type ContributingSession, getRecentContributingSessions } from "@/db/completed";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { buildingDefinitions } from "@/db/schema";
 import {
+  type BossBanner,
   BUILDING_LABELS,
+  buildingCeiling,
   getBuildingProgress,
-  type Trophy,
   type VillageBuilding,
 } from "@/db/village";
 import { SECONDS_PER_REP_EQUIVALENT } from "@/db/workUnits";
@@ -27,9 +38,13 @@ import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import type { AppLanguage } from "@/stores/settings";
 
+/**
+ * A building from the village, or a defeated boss from the Journal's card. One sheet for both:
+ * the back-button handling below was hard-won, and a second sheet would have to win it again.
+ */
 export type VillageSelection =
   | { kind: "building"; building: VillageBuilding }
-  | { kind: "trophy"; trophy: Trophy };
+  | { kind: "boss"; boss: BossBanner };
 
 type Props = {
   selected: VillageSelection | null;
@@ -60,8 +75,7 @@ type Extra =
   | null;
 
 async function loadExtra(selected: VillageSelection): Promise<Extra> {
-  if (selected.kind === "trophy") {
-    if (selected.trophy.kind !== "boss") return null;
+  if (selected.kind === "boss") {
     return { kind: "adventures", adventures: await listFinishedRunSummaries() };
   }
 
@@ -161,11 +175,12 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
               extra={extra}
               language={language}
               formatDate={formatDate}
+              onClose={onClose}
             />
           ) : null}
-          {shown?.kind === "trophy" ? (
-            <TrophyDetail
-              trophy={shown.trophy}
+          {shown?.kind === "boss" ? (
+            <BossDetail
+              boss={shown.boss}
               extra={extra}
               language={language}
               formatDate={formatDate}
@@ -193,10 +208,12 @@ function BuildingDetail({
   extra,
   language,
   formatDate,
-}: DetailProps & { building: VillageBuilding }) {
+  onClose,
+}: DetailProps & { building: VillageBuilding; onClose: () => void }) {
   const { t } = useTranslation();
+  const router = useRouter();
   const fr = language === "fr";
-  const name = fr ? building.frName : building.enName;
+  const built = building.level > 0;
   // Lower-cased mid-sentence, the way getBalanceRecommendation() writes muscles into prose.
   const muscleLabel = building.relatedMuscle
     ? (MUSCLE_LABELS[building.relatedMuscle]?.[fr ? "fr" : "en"].toLowerCase() ??
@@ -217,11 +234,9 @@ function BuildingDetail({
     switch (building.driver) {
       case "tier":
         return t("village.detail_tier_driver", { level: building.metricValue });
-      // Reps, not "work units". The village counted in a currency named nowhere else in the app
-      // and convertible to nothing: a hero reading "1000 work units" had no way to know whether
-      // that was a week or a year of training. A work unit has always *been* a rep — that is the
-      // whole of db/workUnits.ts — so the sheet says rep, and names the one exchange rate that
-      // is not one-to-one the same way the leagues line names its kilometre.
+      // Reps, not "work units". A work unit has always *been* a rep (db/workUnits.ts), so the
+      // sheet says rep, and names the one exchange rate that is not one-to-one the same way the
+      // leagues line names its kilometre.
       case "muscle":
         return building.level === 0
           ? t("village.detail_unlock_muscle", { muscle: muscleLabel })
@@ -249,92 +264,64 @@ function BuildingDetail({
       case "boss_victories":
         return t("village.detail_victories_driver", { count: building.metricValue });
       case "leagues":
-        // The one place the unit gets named. A league is the only measure Bati invents, and until
-        // this line it arrived unexplained: "2,50 km" on the victory screen and "2 leagues" under
-        // it, with nothing in between, and a hero in miles never told what either was worth.
+        // The one place the unit gets named: a league is the only measure Bati invents.
         return `${t("village.detail_leagues_driver", { count: building.metricValue })}. ${t("village.league_unit")}`;
       default:
         return t("village.detail_bosses_driver", { count: building.metricValue });
     }
   })();
 
-  // Which buildings have something honest to count, and how far along: getBuildingProgress().
-  // The village card shows the same bar, from the same call, so they cannot disagree.
+  // The row shows no bar; this is the one place a building's bar is allowed, because it is the
+  // one place it arrives with its unit at both ends. Same call as "Next to rise", so the two
+  // cannot disagree about what "almost there" means.
   const progress = getBuildingProgress(building);
-  const showProgress = progress !== null;
-
-  // Levels are not a quantity you accumulate, so the upgrade tiers name the rung instead.
-  const nextLine = (() => {
-    if (building.nextTarget === null) return t("village.detail_max_level", "Maximum level");
-    if (!showProgress) return null;
-    if (building.driver === "prereq") {
-      return building.level === 0
-        ? null
-        : t("village.detail_prereq_next", { building: prereqName, target: building.nextTarget });
-    }
-    if (building.driver === "tier") {
-      return t("village.detail_tier_next", { target: building.nextTarget });
-    }
-    return t("village.detail_next_level", {
-      remaining: Math.max(0, building.nextTarget - building.metricValue),
-      level: building.level + 1,
-    });
-  })();
+  const ends = barEnds(building, t);
+  const link = building.relatedMuscle || building.driver === "leagues" ? questLink(building) : null;
 
   return (
     <YStack gap="$4">
-      {/* The tile shows this icon at 48px, which is the size of a label rather than a picture.
-          Opening the sheet is the one moment the hero asked to look at the building, so it gets
-          the room. 180 is what the 512px source supports on a 3x screen without going soft. */}
-      <YStack items="center" gap="$2">
+      <XStack gap={13} items="center">
         <Image
           source={getBuildingIconAsset(building.code, building.relatedMuscle, building.level)}
-          style={{ width: 180, height: 180 }}
+          style={{ width: 54, height: 54 }}
           contentFit="contain"
+          tintColor={built ? undefined : rawColors.muted}
         />
-        <YStack items="center" gap="$1">
-          <Text fontWeight="700" fontSize={20} color="$text" style={{ textAlign: "center" }}>
-            {name}
+        <YStack flex={1} minW={0} gap={3}>
+          <Text fontWeight="700" fontSize={20} color="$text">
+            {nameOf(building, language)}
           </Text>
-          {building.level > 0 ? (
-            <LevelPips level={building.level} />
-          ) : (
-            <Text fontSize={12} color="$muted">
-              {t("village.to_build_title", "To build")}
-            </Text>
-          )}
+          <Text fontSize={12.5} color="$textSecondary">
+            {feedsLine(building, t, language)}
+          </Text>
         </YStack>
-      </YStack>
+        <YStack items="flex-end" gap={5}>
+          <Text fontSize={13} fontWeight="600" color={built ? "$resourceGold" : "$textSecondary"}>
+            {levelText(building, t)}
+          </Text>
+          {built ? <LevelPips level={building.level} max={buildingCeiling(building)} /> : null}
+        </YStack>
+      </XStack>
 
       <YStack gap="$2">
-        <Text fontSize={14} color="$textSecondary">
+        <Text fontSize={13.5} lineHeight={20} color="$text">
           {driverLine}
         </Text>
-
-        {progress !== null ? <ProgressBar progress={progress} /> : null}
-
-        {nextLine ? (
-          <XStack justify="space-between" items="center" gap="$2">
-            <Text fontSize={12} color="$muted" flex={1}>
-              {nextLine}
-            </Text>
-            {showProgress && building.nextTarget !== null ? (
-              <Text fontSize={12} color="$muted">
-                {t("village.detail_progress", {
-                  current: building.metricValue,
-                  target: building.nextTarget,
-                })}
-              </Text>
-            ) : null}
-          </XStack>
+        {progress !== null ? (
+          <ProgressBar progress={progress} height={6} color="$resourceGold" />
         ) : null}
+        {ends ? (
+          <BarEnds left={ends.left} right={ends.right} />
+        ) : (
+          <Text fontSize={12} color="$textSecondary">
+            {nextLine(building, t, language)}
+          </Text>
+        )}
       </YStack>
 
       {extra?.kind === "sessions" && extra.sessions.length > 0 && (
         <YStack gap="$2">
-          <Text fontWeight="700" fontSize={13} color="$text">
-            {t("village.detail_recent_title", "Recent work")}
-          </Text>
+          <Kicker label={t("village.detail_recent_title")} />
           {extra.sessions.map((session) => {
             const title =
               session.enTitle && session.frTitle
@@ -348,7 +335,7 @@ function BuildingDetail({
                 <Text fontSize={12} color="$textSecondary" flex={1} numberOfLines={1}>
                   {`${title ? `${title} · ` : ""}${when}`}
                 </Text>
-                <Text fontSize={12} color="$muted">
+                <Text fontSize={12} color="$textSecondary">
                   {t("village.detail_recent_units", { volume: session.volume })}
                 </Text>
               </XStack>
@@ -359,9 +346,7 @@ function BuildingDetail({
 
       {extra?.kind === "adventures" && extra.adventures.length > 0 && (
         <YStack gap="$2">
-          <Text fontWeight="700" fontSize={13} color="$text">
-            {t("village.hall_finished_title", "Adventures completed")}
-          </Text>
+          <Kicker label={t("village.hall_finished_title")} />
           {extra.adventures.map((adventure) => (
             <XStack key={adventure.adventureId} items="center" gap="$3">
               {!!adventure.imagePath && (
@@ -377,12 +362,12 @@ function BuildingDetail({
                 {fr ? adventure.frTitle : adventure.enTitle}
               </Text>
               {adventure.timesFinished > 1 && (
-                <Text fontSize={12} color="$muted">
+                <Text fontSize={12} color="$textSecondary">
                   {t("village.hall_times", { count: adventure.timesFinished })}
                 </Text>
               )}
               {!!adventure.lastFinishedAt && (
-                <Text fontSize={12} color="$muted">
+                <Text fontSize={12} color="$textSecondary">
                   {formatDate(adventure.lastFinishedAt)}
                 </Text>
               )}
@@ -390,77 +375,66 @@ function BuildingDetail({
           ))}
         </YStack>
       )}
+
+      {link ? (
+        <QuestLink
+          label={building.driver === "leagues" ? t("village.cta_outing") : t("village.cta_feeds")}
+          onPress={() => {
+            onClose();
+            router.push(link as never);
+          }}
+        />
+      ) : null}
     </YStack>
   );
 }
 
-function TrophyDetail({ trophy, extra, language, formatDate }: DetailProps & { trophy: Trophy }) {
+function BossDetail({ boss, extra, language, formatDate }: DetailProps & { boss: BossBanner }) {
   const { t } = useTranslation();
-  const fr = language === "fr";
-  const description = fr ? trophy.frDescription : trophy.enDescription;
+  const title = localizedTitle(boss, language);
   const [expanded, setExpanded] = useState(false);
   const victories =
     extra?.kind === "adventures"
-      ? extra.adventures.find((a) => a.adventureId === trophy.adventureId)?.timesFinished
+      ? extra.adventures.find((a) => a.adventureId === boss.adventureId)?.timesFinished
       : undefined;
 
   return (
     <YStack gap="$3">
-      {/* A beaten boss deserves better than a 56px disc: the monster itself — its *fallen*
-          painting, because a trophy is proof of the defeat — wide, and tappable to full screen.
-          A trophy with an image is always a boss; achievements render the game's own icons. */}
-      {trophy.imagePath ? (
-        <YStack gap="$3">
-          <YStack
-            height={140}
-            rounded="$6"
-            overflow="hidden"
-            onPress={() => setExpanded(true)}
-            pressStyle={{ opacity: 0.9 }}
-            accessibilityRole="imagebutton"
-            accessibilityLabel={fr ? trophy.frTitle : trophy.enTitle}
-          >
-            <Image
-              source={getBossAsset(trophy.imagePath, 0, "defeated")}
-              style={{ width: "100%", height: "100%" }}
-              contentFit="cover"
-            />
-          </YStack>
-          <Text fontWeight="700" fontSize={20} color="$text">
-            {fr ? trophy.frTitle : trophy.enTitle}
-          </Text>
-          <ImageViewer
-            source={getBossAsset(trophy.imagePath, 0, "defeated")}
-            name={fr ? trophy.frTitle : trophy.enTitle}
-            visible={expanded}
-            onClose={() => setExpanded(false)}
-          />
-        </YStack>
-      ) : (
-        <XStack items="center" gap="$3">
-          <AchievementIcon icon={trophy.emoji ?? "Award"} size={40} color="$text" />
-          <Text fontWeight="700" fontSize={18} color="$text" flex={1}>
-            {fr ? trophy.frTitle : trophy.enTitle}
-          </Text>
-        </XStack>
-      )}
+      {/* The monster itself, its *fallen* painting, because a trophy is proof of the defeat:
+          wide, and tappable to full screen. */}
+      <YStack
+        height={140}
+        rounded="$6"
+        overflow="hidden"
+        onPress={() => setExpanded(true)}
+        pressStyle={{ opacity: 0.9 }}
+        accessibilityRole="imagebutton"
+        accessibilityLabel={title}
+      >
+        <Image
+          source={getBossAsset(boss.imagePath, 0, "defeated")}
+          style={{ width: "100%", height: "100%" }}
+          contentFit="cover"
+        />
+      </YStack>
+      <Text fontWeight="700" fontSize={20} color="$text">
+        {title}
+      </Text>
+      <ImageViewer
+        source={getBossAsset(boss.imagePath, 0, "defeated")}
+        name={title}
+        visible={expanded}
+        onClose={() => setExpanded(false)}
+      />
 
-      {!!description && (
-        <Text fontSize={14} color="$textSecondary">
-          {description}
-        </Text>
-      )}
-
-      {/* The date is the trophy's story — when you did the thing — so it carries real weight
+      {/* The date is the trophy's story, when you did the thing, so it carries real weight
           instead of trailing off as a muted footnote. */}
       <Text fontSize={16} fontWeight="600" color="$textSecondary">
-        {trophy.kind === "boss"
-          ? t("village.trophy_defeated", { date: formatDate(trophy.earnedAt) })
-          : t("village.trophy_earned", { date: formatDate(trophy.earnedAt) })}
+        {t("village.trophy_defeated", { date: formatDate(boss.defeatedAt) })}
       </Text>
 
       {!!victories && victories > 1 && (
-        <Text fontSize={13} color="$muted">
+        <Text fontSize={13} color="$textSecondary">
           {t("village.trophy_victories", { count: victories })}
         </Text>
       )}

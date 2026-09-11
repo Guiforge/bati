@@ -37,7 +37,12 @@ import {
 } from "@/db/expeditions";
 import { deletePoints } from "@/db/gps";
 import { checkOathFulfilled, OATH_XP_BONUS, type OathProgress } from "@/db/oaths";
-import { checkForNewRecords, type NewRecordResult } from "@/db/personalRecords";
+import {
+  checkForNewRecords,
+  getSessionStanding,
+  type NewRecordResult,
+  type SessionStanding,
+} from "@/db/personalRecords";
 import type { DistanceUnit } from "@/db/preferences";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
@@ -351,6 +356,12 @@ interface SessionState {
      */
     dailyBonusXp: number;
     newRecords: NewRecordResult[];
+    /**
+     * What this session was best at, when it broke nothing. Null whenever `newRecords` is not
+     * empty: a night that set a record has already been paid, and a second-best set printed
+     * beside a record is the clutter, not the reward.
+     */
+    standing: SessionStanding | null;
     newRungs: VariationStep[];
     newAchievements: NewAchievementResult[];
     fulfilledOath: OathProgress | null;
@@ -1745,6 +1756,11 @@ export const useSessionStore = create<SessionState>()(
         );
       }
 
+      // What the session was best at, for the nights that broke nothing. `newRecords` is passed
+      // rather than branched on here: "a record already fell" is one of that function's four
+      // honesty gates, and they are worth reading in one place.
+      const standing = await getSessionStanding(sessionId, newRecords);
+
       // The variations tonight's sets just unlocked. Same question as the records above — what
       // did *this* session change — so it is answered in the same place, from the journal.
       const newRungs = await checkForNewRungs(sessionId);
@@ -1831,6 +1847,7 @@ export const useSessionStore = create<SessionState>()(
         dailyBonusXp,
         outing: priced,
         newRecords,
+        standing,
         newRungs,
         newAchievements,
         fulfilledOath,

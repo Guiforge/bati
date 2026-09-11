@@ -31,6 +31,7 @@ import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { ExerciseHero } from "./ExerciseHero";
 import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { ExpeditionPanel } from "./ExpeditionPanel";
+import { GhostLine } from "./GhostLine";
 import { sessionArtHeight } from "./sessionArt";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
@@ -98,6 +99,16 @@ export function ActiveExerciseView() {
   const isTimeBased = currentEx.target.type === "time";
   const ghost = currentEx.ghost;
 
+  /**
+   * What this set would log if the hero finished it now. The DB constraint is `resultValue > 0`,
+   * which is where the floor comes from.
+   *
+   * One value, read by the button that writes it and by the line that compares it to the record:
+   * two expressions would be two answers to "did that beat your best", and the one the hero sees
+   * is the one that would be wrong.
+   */
+  const liveValue = Math.max(1, isTimeBased ? elapsedSeconds : adjustedReps);
+
   const exerciseName = localizedName(currentEx.exercise, language);
 
   // Progress calculation
@@ -146,14 +157,9 @@ export function ActiveExerciseView() {
       return;
     }
 
-    // For time-based exercises, record actual elapsed time
-    // For rep-based, record the adjusted value
-    if (isTimeBased) {
-      // DB constraints require resultValue > 0.
-      completeExercise(Math.max(1, elapsedSeconds));
-    } else {
-      completeExercise(Math.max(1, adjustedReps));
-    }
+    // Elapsed seconds for a hold, the adjusted value for reps: `liveValue` above, which is the
+    // same number the ghost line has been comparing to the record.
+    completeExercise(liveValue);
   };
 
   const handleSkip = () => {
@@ -714,47 +720,24 @@ export function ActiveExerciseView() {
               </Text>
             ) : null}
 
-            {/* What the hero already did on this movement. Outside the reps/time ternary above so
-                one line serves both units, and read straight off the quest — `getQuestById` put it
-                there, so nothing is queried mid-workout and a recovered session keeps it.
-                Two phrasings: on a first-ever session `last` and `best` are the same number, and
-                "last time 12 · best 12" reads like a bug. */}
-            {/* The word and the number no longer weigh the same. This used to be one flat grey
-                sentence at 12px, so "La dernière fois 12 · record 15" asked the hero to read a
-                line to find two figures — mid-set, which is the one moment reading is expensive.
-                The labels stay quiet; the numbers step up a size and take the full text colour,
-                and the best takes the gold this app already spends on progression everywhere
-                else. Gold is never the only signal: the word "record" is right beside it.
+            {/* What the hero already did on this movement, and the moment they pass it. Outside
+                the reps/time ternary above so one line serves both units, and read straight off
+                the quest — `getQuestById` put it there, so nothing is queried mid-workout and a
+                recovered session keeps it.
 
-                Composed rather than interpolated, which is also why the two phrasings collapsed
-                into one. On a first-ever session `last` and `best` are the same number and
-                "last time 12 · best 12" reads like a bug — so the best half simply does not
-                render, instead of a second sentence existing to say the same thing. */}
-            {/* Not on an outing: `formatTarget` speaks the units of a prescribed set, so a walk
+                `liveValue` is what this set would log on the next tap, which is the whole reason
+                the record can be announced here rather than on the victory screen.
+
+                Not on an outing: `formatTarget` speaks the units of a prescribed set, so a walk
                 got "last time 900s", a duration nobody set out to beat, under a panel that
                 measures ground. */}
             {ghost && !isOuting ? (
-              <XStack items="baseline" justify="center" gap="$2" flexWrap="wrap">
-                <Text fontSize={12} color="$textSecondary">
-                  {t("session.ghost_last_label", "Last time")}
-                </Text>
-                <Text fontSize={15} fontWeight="700" color="$text">
-                  {formatTarget({ type: currentEx.target.type, value: ghost.last })}
-                </Text>
-                {ghost.best > ghost.last ? (
-                  <>
-                    <Text fontSize={12} color="$textSecondary" opacity={0.5}>
-                      ·
-                    </Text>
-                    <Text fontSize={12} color="$textSecondary">
-                      {t("session.ghost_best_label", "best")}
-                    </Text>
-                    <Text fontSize={15} fontWeight="700" color="$resourceGold">
-                      {formatTarget({ type: currentEx.target.type, value: ghost.best })}
-                    </Text>
-                  </>
-                ) : null}
-              </XStack>
+              <GhostLine
+                ghost={ghost}
+                type={currentEx.target.type}
+                live={liveValue}
+                reducedMotion={reducedMotion}
+              />
             ) : null}
           </YStack>
         </YStack>

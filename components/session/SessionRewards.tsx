@@ -6,10 +6,13 @@ import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Clock, TrendingUp } from "@/components/icons";
 import { OathFulfilledCard } from "@/components/oath/OathFulfilledCard";
 import { LevelPips } from "@/components/village/LevelPips";
 import { getBuildingIconAsset, getExerciseThumb, getVillageTierAsset } from "@/constants/assetMap";
 import { pickSessionEmptyVariant } from "@/constants/sessionEmptyMessages";
+import type { SessionStanding } from "@/db/personalRecords";
+import { formatTarget } from "@/db/targets";
 import { getLevelTitle } from "@/db/userLevel";
 import { TIER_NAMES } from "@/db/village";
 import { localizedTitle } from "@/src/i18n/localized";
@@ -25,6 +28,63 @@ const revealProps = {
 } as const;
 
 const VILLAGE_GROWTH_SHOWN = 2;
+
+/**
+ * What the session was best at, on a night it broke nothing.
+ *
+ * Quieter than the record badge by design: `$surface2` rather than the badge's gold card, one
+ * movement rather than a list. It is a placing, not a trophy, and the screen has to keep the
+ * difference visible or the record stops meaning anything. Never both on one screen, which
+ * `getSessionStanding` settles rather than this: `standing` is null whenever a record fell.
+ */
+function BestEffortCard({ standing, isFr }: { standing: SessionStanding | null; isFr: boolean }) {
+  const { t } = useTranslation();
+  if (!standing) return null;
+
+  return (
+    <Card {...revealProps} width="100%" maxW={520} bg="$surface2" gap="$3">
+      <XStack items="center" gap="$2" justify="center">
+        <GameIcon name="trophy" size={20} color="$primaryText" />
+        <Text fontWeight="700" fontSize={16} color="$primaryText">
+          {t("session.standing_title", "Best effort")}
+        </Text>
+        <GameIcon name="trophy" size={20} color="$primaryText" />
+      </XStack>
+      <XStack
+        bg="$background"
+        p="$3"
+        rounded="$4"
+        borderWidth={1}
+        borderColor="$glassBorder"
+        items="center"
+        gap="$3"
+      >
+        {/* The same two icons `NewRecordsBadge` gives the two units, because this names the same
+            kind of thing one place further down. */}
+        {standing.type === "time" ? (
+          <Clock size={20} color="$secondary" />
+        ) : (
+          <TrendingUp size={20} color="$secondary" />
+        )}
+        <YStack flex={1}>
+          <Text fontWeight="700" fontSize={15} color="$text">
+            {isFr ? standing.exerciseName.fr : standing.exerciseName.en}
+          </Text>
+          {/* The count is what makes the placing a claim rather than a compliment: "2nd in 3
+              sessions" and "2nd in 40" are different nights, and the hero can check both. */}
+          <Text fontSize={12} color="$text" opacity={0.7}>
+            {standing.rank === 2
+              ? t("session.standing_second", { count: standing.outOf })
+              : t("session.standing_third", { count: standing.outOf })}
+          </Text>
+        </YStack>
+        <Text fontWeight="700" fontSize={15} color="$primaryText">
+          {formatTarget({ type: standing.type, value: standing.value })}
+        </Text>
+      </XStack>
+    </Card>
+  );
+}
 
 /** The reveal content of the victory screen — rendered once the session is saved. */
 export function SessionRewards({
@@ -42,6 +102,7 @@ export function SessionRewards({
   const hasRewards =
     !!result.levelUp ||
     result.newRecords.length > 0 ||
+    !!result.standing ||
     result.newRungs.length > 0 ||
     result.newAchievements.length > 0 ||
     !!result.fulfilledOath ||
@@ -188,6 +249,8 @@ export function SessionRewards({
 
       {/* New personal records */}
       {result.newRecords.length > 0 && <NewRecordsBadge records={result.newRecords} />}
+
+      <BestEffortCard standing={result.standing} isFr={isFr} />
 
       {/* Variations unlocked — progressive overload without weights is a harder movement, so this
           is the moment that actually moves a bodyweight athlete forward. */}

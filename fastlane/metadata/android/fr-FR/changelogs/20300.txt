@@ -1,0 +1,10 @@
+- L'accueil tient sur un écran : ton niveau, ta série,
+  la quête à lancer et une rangée d'actions rapides.
+- Le village montre ce que tu as bâti et ce qui monte
+  ensuite.
+- Marche, course et vélo affichent une carte en direct.
+- Chaque mouvement d'échauffement se montre avant que
+  son chrono parte, et une série te dit quand tu passes
+  ton record.
+- Le journal s'ouvre sur les records encore à battre.
+- Le boss dit quel muscle est protégé.

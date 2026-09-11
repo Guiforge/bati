@@ -1,0 +1,9 @@
+- Home fits one screen: your level, your streak, the
+  quest to start and a row of quick actions, replay
+  included.
+- The village shows what you built and what rises next.
+- Walks, runs and rides draw a live map as you move.
+- Each warm-up movement shows itself before its clock
+  starts, and a set tells you when you pass your best.
+- The journal opens on the records you can still beat.
+- The boss screen says which muscle is armoured.

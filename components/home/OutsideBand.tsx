@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { Play, SlidersHorizontal } from "@/components/icons";
 import { getQuestThumb } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
+import { outingGoal } from "@/db/expeditions";
 import { listOutings, type Outing } from "@/db/outings";
 import { loadConfiguredQuest } from "@/db/questConfig";
 import { Difficulty } from "@/db/targets";
@@ -210,7 +211,15 @@ export function OutsideBand() {
 
         // Awaited on purpose: `startSession` loads the boss fight and the warm-up preference
         // before it populates the store, and the session screen redirects home on an empty one.
-        await startSession(loaded.quest, loaded.level, { goal: null });
+        //
+        // The goal is the hero's own, when they set one. This used to be a hard-coded `null`,
+        // while the sheet that saved the distance promised "Saved for this quest. It comes back
+        // next time": it did not, and the five taps of the setup flow had to be walked again on
+        // every way out. `outingGoal` falls back to the slot's duration, which is what "no number
+        // on it" has always meant here.
+        await startSession(loaded.quest, loaded.level, {
+          goal: outingGoal(loaded.quest, loaded.config?.distanceM ?? null),
+        });
         router.push("/session" as never);
       } catch (error) {
         setIsStarting(false);

@@ -18,25 +18,23 @@ appId: com.guiforge.bati.dev
 
 - runFlow: subflows/complete-onboarding.yaml
 
-# --- Home -------------------------------------------------------------------
+# --- Home -> session --------------------------------------------------------
 
 - assertVisible:
     id: "home-start-session"
 
-# With no training history the smart action falls through to the quest gallery
-# (useSmartAction step 3). Deterministic on a cleared state.
+# Home's one tap: on a cleared state the stage offers a workout (a lagging muscle, or the
+# onboarding's own first session) and Start opens its session directly.
 - tapOn:
     id: "home-start-session"
 
-# --- Quest -> session -------------------------------------------------------
-
-- assertVisible:
-    id: "quests-quest-card"
+# Unless the offered quest reads the position: then Start only opens the quest screen, where
+# the location notice is, and the session starts from there.
 - tapOn:
-    id: "quests-quest-card"
-    index: 0
+    id: "quest-start"
+    optional: true
 
-- runFlow: subflows/complete-a-session.yaml
+- runFlow: subflows/run-a-session.yaml
 
 # --- Full circle ------------------------------------------------------------
 

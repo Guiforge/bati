@@ -296,6 +296,13 @@ export type SessionStanding = {
   rank: number;
   /** Sessions that have trained this movement in this unit, this one included. */
   outOf: number;
+  /**
+   * Which claim this is. `lifetime` is second or third ever, and rare on purpose. `recent` is the
+   * same placing over the last ten sessions on the movement, which is what an ordinary session
+   * can actually reach: a hero a year in ranks second of forty about never, and the first run of
+   * this on a device showed nothing at all.
+   */
+  scope: "lifetime" | "recent";
 };
 
 /** Below this a standing is arithmetic rather than news. Second and third place, nothing else. */
@@ -307,7 +314,23 @@ type SessionBestRow = {
   type: QuestTargetType;
   sessionId: number;
   best: number | null;
+  /** When that session trained it. Aggregates skip the column's mapper on some drivers. */
+  at?: Date | number | null;
 };
+
+/**
+ * How many recent sessions a "your best lately" claim is measured over.
+ *
+ * The lifetime placing is the rarer, better thing to say, and after a year of training a hero
+ * ranks second of forty about never: the first run of this on a device showed nothing at all on
+ * an ordinary session, which is the exact failure it was built to fix. Strava's own version of
+ * this labels against a *window*, "2nd fastest this year", and that is what makes an ordinary
+ * outing produce something.
+ *
+ * Ten, because it is a month or so of a movement for someone training three times a week: long
+ * enough that beating it means something, short enough that it moves.
+ */
+const RECENT_WINDOW = 10;
 
 /**
  * Where `value` places among the per-session bests in `rows`, for one movement and one unit.
@@ -322,18 +345,34 @@ function placeAmongSessions(
   key: string,
   value: number,
   sessionId: number,
-): { rank: number; outOf: number } {
-  let ahead = 0;
-  let outOf = 0;
+): { rank: number; outOf: number; recentRank: number; recentOutOf: number } {
+  const mine = rows.filter((row) => row.best != null && ghostKey(row.exerciseId, row.type) === key);
 
-  for (const row of rows) {
-    if (row.best == null || ghostKey(row.exerciseId, row.type) !== key) continue;
-    outOf += 1;
+  let ahead = 0;
+  for (const row of mine) {
     // Tonight never ranks ahead of itself.
-    if (row.sessionId !== sessionId && row.best >= value) ahead += 1;
+    if (row.sessionId !== sessionId && (row.best ?? 0) >= value) ahead += 1;
   }
 
-  return { rank: ahead + 1, outOf };
+  // The same question over the last `RECENT_WINDOW` sessions on this movement, tonight included.
+  // An aggregate does not go through the column's timestamp mapper on every driver, the caveat
+  // `getExerciseHistory` documents about its own `max(performedAt)`.
+  const at = (row: SessionBestRow) =>
+    row.at instanceof Date ? row.at.getTime() : Number(row.at ?? 0);
+  const recent = [...mine].sort((a, b) => at(b) - at(a) || b.sessionId - a.sessionId);
+  const window = recent.slice(0, RECENT_WINDOW);
+
+  let aheadRecently = 0;
+  for (const row of window) {
+    if (row.sessionId !== sessionId && (row.best ?? 0) >= value) aheadRecently += 1;
+  }
+
+  return {
+    rank: ahead + 1,
+    outOf: mine.length,
+    recentRank: aheadRecently + 1,
+    recentOutOf: window.length,
+  };
 }
 
 /**
@@ -400,6 +439,7 @@ export async function getSessionStanding(
       type: completedExercises.resultType,
       sessionId: completedExercises.sessionId,
       best: max(completedExercises.resultValue),
+      at: max(completedExercises.performedAt),
     })
     .from(completedExercises)
     .where(
@@ -418,13 +458,25 @@ export async function getSessionStanding(
     const value = row.value;
     if (value == null || value <= 0) return [];
 
-    const { rank, outOf } = placeAmongSessions(
+    const place = placeAmongSessions(
       historyRows,
       ghostKey(row.exerciseId, row.type),
       value,
       sessionId,
     );
-    if (rank < 2 || rank > STANDING_FLOOR || outOf <= rank) return [];
+
+    // Lifetime first, because it is the bigger thing to have done. The window is what an ordinary
+    // session can reach, and a placing inside it is only worth saying when it is not already the
+    // lifetime claim.
+    const claim =
+      place.rank >= 2 && place.rank <= STANDING_FLOOR && place.outOf > place.rank
+        ? { rank: place.rank, outOf: place.outOf, scope: "lifetime" as const }
+        : place.recentRank >= 1 &&
+            place.recentRank <= STANDING_FLOOR &&
+            place.recentOutOf > place.recentRank
+          ? { rank: place.recentRank, outOf: place.recentOutOf, scope: "recent" as const }
+          : null;
+    if (!claim) return [];
 
     return [
       {
@@ -432,15 +484,22 @@ export async function getSessionStanding(
         exerciseName: { en: row.enName, fr: row.frName },
         type: row.type,
         value,
-        rank,
-        outOf,
+        ...claim,
       },
     ];
   });
 
   // Best placing first, and behind that the claim with the most history: "2nd in 30 sessions" is
   // a bigger thing to have done than "2nd in 4", and only one of these reaches the screen.
-  standings.sort((a, b) => a.rank - b.rank || b.outOf - a.outOf);
+  // A lifetime claim outranks any window one, then the better placing, then the deeper history:
+  // "2nd in 30 sessions" is a bigger thing to have done than "2nd in 4", and only one of these
+  // reaches the screen.
+  standings.sort(
+    (a, b) =>
+      Number(b.scope === "lifetime") - Number(a.scope === "lifetime") ||
+      a.rank - b.rank ||
+      b.outOf - a.outOf,
+  );
 
   return standings[0] ?? null;
 }

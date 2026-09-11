@@ -483,7 +483,40 @@ describe("db/personalRecords", () => {
       fourSessions(exerciseId, [20, 15, 10, 18]);
 
       const result = await standing()(4, []);
-      expect(result).toMatchObject({ exerciseId, type: "reps", value: 18, rank: 2, outOf: 4 });
+      expect(result).toMatchObject({
+        exerciseId,
+        type: "reps",
+        value: 18,
+        rank: 2,
+        outOf: 4,
+        // Lifetime beats the window whenever it is within reach: it is the bigger claim.
+        scope: "lifetime",
+      });
+    });
+
+    /**
+     * A lifetime placing is rare by construction: a hero a year into a movement ranks second of
+     * forty about never, and the first device run of this showed nothing at all on an ordinary
+     * session, which is the failure it exists to fix. Strava labels against a window for the same
+     * reason, "2nd fastest this year".
+     */
+    test("falls back to the last ten when the lifetime placing is out of reach", async () => {
+      const exerciseId = firstExerciseId(t);
+      const now = Math.floor(Date.now() / 1000);
+      // Four strong sessions long ago, then ten weak ones, then tonight's 20: it cannot place
+      // lifetime behind 40/39/38/37, and it is the best of the ten that follow.
+      const values = [40, 39, 38, 37, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES
+          ${values.map((_, i) => `(${i + 1}, ${now + i * 60})`).join(", ")},
+          (99, ${now + values.length * 60});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+          ${values.map((v, i) => `(${i + 1}, ${exerciseId}, 'reps', ${v}, ${now + i * 60}, 0)`).join(", ")},
+          (99, ${exerciseId}, 'reps', 20, ${now + values.length * 60}, 0);
+      `);
+
+      const result = await standing()(99, []);
+      expect(result).toMatchObject({ scope: "recent", rank: 1, outOf: 10, value: 20 });
     });
 
     test("a tie ranks behind the session that got there first", async () => {

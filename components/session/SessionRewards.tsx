@@ -71,11 +71,11 @@ function BestEffortCard({ standing, isFr }: { standing: SessionStanding | null; 
             {isFr ? standing.exerciseName.fr : standing.exerciseName.en}
           </Text>
           {/* The count is what makes the placing a claim rather than a compliment: "2nd in 3
-              sessions" and "2nd in 40" are different nights, and the hero can check both. */}
+              sessions" and "2nd in 40" are different nights, and the hero can check both. And the
+              scope, because "2nd ever" and "2nd of your last ten" are two different things to
+              have done, and only naming the first would make the second a lie. */}
           <Text fontSize={12} color="$text" opacity={0.7}>
-            {standing.rank === 2
-              ? t("session.standing_second", { count: standing.outOf })
-              : t("session.standing_third", { count: standing.outOf })}
+            {t(`session.standing_${standing.scope}_${standing.rank}`, { count: standing.outOf })}
           </Text>
         </YStack>
         <Text fontWeight="700" fontSize={15} color="$primaryText">

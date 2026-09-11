@@ -18,6 +18,7 @@ import { Figure } from "@/components/common/Figure";
 import { Skeleton } from "@/components/common/Skeleton";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Share2 } from "@/components/icons";
+import { roadLine } from "@/components/session/roadLine";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import {
   formatClock,
@@ -30,10 +31,12 @@ import { rawColors } from "@/constants/rawColors";
 import { outingSession, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
 import { listQuestTemplates } from "@/db/quests";
+import { getVillageBuildings, type VillageBuilding } from "@/db/village";
 import type { LocationFix } from "@/modules/bati-location";
 import { toTrace } from "@/src/gps/trace";
 import { accept, EMPTY } from "@/src/gps/track";
 import { flushTrack, shareTrack, trackFileFor } from "@/src/gps/trackFile";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -270,6 +273,44 @@ function MapFootnote({ enabled, onEnable }: { enabled: boolean; onEnable: () => 
   );
 }
 
+/**
+ * The High Road, as it stands now.
+ *
+ * The same read the victory screen makes, for the same sentence: leagues are the one currency
+ * nothing else in this game earns, and the road is what they raise. A recap that printed
+ * distance, moving time and pace and never named either was paying the hero in another app's
+ * currency. Null is a quieter screen, never a failed one.
+ */
+/**
+ * What the ground moved, above what the ground was.
+ *
+ * Gold, because it is a reward and this app has one colour for those. Its own component so the
+ * screen keeps one branch fewer: a road that has not loaded draws nothing, and that is this
+ * function's business rather than the screen's.
+ */
+function RoadLine({ road, language }: { road: VillageBuilding | null; language: AppLanguage }) {
+  const { t } = useTranslation();
+  if (!road) return null;
+
+  return (
+    <Text fontSize={14} fontWeight="700" color="$resourceGold">
+      {roadLine(road, language, t)}
+    </Text>
+  );
+}
+
+function useHighRoad(): VillageBuilding | null {
+  const [road, setRoad] = useState<VillageBuilding | null>(null);
+
+  useEffect(() => {
+    getVillageBuildings()
+      .then((buildings) => setRoad(buildings.find((b) => b.code === "high_road") ?? null))
+      .catch((error) => reportError("recap.road", error));
+  }, []);
+
+  return road;
+}
+
 export default function ExpeditionRecapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -288,6 +329,7 @@ export default function ExpeditionRecapScreen() {
   // `null` while the read is still on its way. A recap with no fixes is an answer — "this quest
   // never left the walls" — and the two must not render the same thing.
   const [recap, setRecap] = useState<Recap | null>(null);
+  const road = useHighRoad();
 
   const load = useCallback(
     async (uuid: string) => {
@@ -588,6 +630,14 @@ export default function ExpeditionRecapScreen() {
         {/* No guard for "this quest never left the walls": a run with no fixes has no ramp and
             no best league, and the legend already draws nothing when it has nothing to say. */}
         <SpeedLegend range={trace.speedRange} best={trace.bestLeague} unit={distanceUnit} />
+
+        {/* What the ground moved, above what the ground was.
+            This screen used to open on distance, moving time and pace, which is what every other
+            running app pays in. Leagues are the one currency nothing else in this game earns, and
+            they raise the road out of the village: the word appeared once here, as a unit on a
+            pace figure, and the village was not mentioned at all. Same sentence the victory
+            screen prints, from the same query, so the two agree on what a walk bought. */}
+        <RoadLine road={road} language={language} />
 
         {recap?.leaguesM ? (
           <Figures

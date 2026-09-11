@@ -42,7 +42,8 @@ et c'est le parcours qui manque totalement.
 - Rien ne sort du téléphone. Pas de synthèse vocale dans ce plan : le son est `src/sounds.ts`,
   ses deux cues et son réglage `soundEnabled`, rien de plus.
 - Pas de carte pendant la sortie (batterie). La carte du récap, ses couleurs d'allure et ses
-  pastilles de lieue ne bougent pas.
+  pastilles de lieue ne bougent pas. *Levée le 11/09 : une carte suit maintenant le héros pendant
+  la sortie (`components/session/LiveMap.tsx`), l'écran n'est toujours pas maintenu allumé.*
 - Les lieues, le Grand Chemin et le serment en lieues restent la récompense.
 - Copie : pas de tiret cadratin, `tu` partout, `__tests__/locale-style.test.ts` fait foi.
 - Le service Kotlin (`BatiLocationService.kt`) est hors de portée des tests jest : tout ce qui y

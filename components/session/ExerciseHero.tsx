@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import type { ImageSourcePropType } from "react-native";
 import { H1, YStack } from "tamagui";
 import { rawColors } from "@/constants/rawColors";
+import { HUD_HEIGHT } from "./sessionArt";
 
 type ExerciseHeroProps = {
   source: ImageSourcePropType;
@@ -31,9 +32,6 @@ type ExerciseHeroProps = {
  * already proved that a painting carries a session screen better than a card does. The
  * difference is that this one has no card around it at all.
  */
-/** The floating HUD row in ActiveExerciseView: 8 top + ~36 row + 8 gap + 3 hairline. */
-const HUD_HEIGHT = 56;
-
 export function ExerciseHero({
   source,
   name,

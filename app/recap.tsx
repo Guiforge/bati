@@ -13,11 +13,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
-import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { AppIconButton } from "@/components/common/AppButton";
 import { Figure } from "@/components/common/Figure";
 import { Skeleton } from "@/components/common/Skeleton";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Share2 } from "@/components/icons";
+import { MapFootnote } from "@/components/session/MapFootnote";
 import { roadLine } from "@/components/session/roadLine";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import {
@@ -26,7 +27,12 @@ import {
   formatPace,
   formatSpeedAsPace,
 } from "@/constants/distanceFormat";
-import { MAP_ATTRIBUTION, mapStyle, mapStyleNoTiles } from "@/constants/mapStyle";
+import {
+  LEAGUE_PIP_PAINT,
+  mapStyle,
+  mapStyleNoTiles,
+  TRACE_GLOW_PAINT,
+} from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
 import { outingSession, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
@@ -243,41 +249,6 @@ function Figures({
 }
 
 /**
- * The line under the map, and which of the two lines it is says what actually happened.
- *
- * Allowed, it is the credit: ODbL requires the OSM one and OpenFreeMap requires its own to be
- * displayed once MapLibre's attribution button is off, which it is here. Refused, that credit
- * would be a claim rather than a courtesy, because nothing of theirs was ever fetched, so its
- * place is taken by the offer.
- *
- * The offer's sentence is the confirmation. It names the host and says what leaves before a
- * single byte does, which is the whole of what a dialog would have asked twice; the tap is the
- * answer, and the basemap arrives under the trace that is already on screen.
- */
-function MapFootnote({ enabled, onEnable }: { enabled: boolean; onEnable: () => void }) {
-  const { t } = useTranslation();
-
-  if (enabled) {
-    return (
-      <Text testID="recap-attribution" fontSize={11} color="$muted" style={{ textAlign: "center" }}>
-        {MAP_ATTRIBUTION} {t("recap.privacy")}
-      </Text>
-    );
-  }
-
-  return (
-    <YStack testID="recap-map-offer" gap="$3">
-      <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-        {t("recap.map_offer")}
-      </Text>
-      <AppButton testID="recap-map-enable" variant="outline" fontSize={16} onPress={onEnable}>
-        {t("recap.map_enable")}
-      </AppButton>
-    </YStack>
-  );
-}
-
-/**
  * The High Road, as it stands now.
  *
  * The same read the victory screen makes, for the same sentence: leagues are the one currency
@@ -325,7 +296,6 @@ export default function ExpeditionRecapScreen() {
   // Off unless the hero has said yes. The whole map branch below reads this, and the style it
   // picks is what decides whether this screen touches a network at all.
   const mapTilesEnabled = useSettingsStore((s) => s.mapTilesEnabled);
-  const setMapTilesEnabled = useSettingsStore((s) => s.setMapTilesEnabled);
   const { showError } = useToast();
 
   const sessionUuid = Array.isArray(params.session) ? params.session[0] : params.session;
@@ -409,17 +379,7 @@ export default function ExpeditionRecapScreen() {
 
   // Neither line belongs under a screen that never drew a map: there is no credit to give and
   // nothing to switch on.
-  const footnote =
-    trace.bounds === null ? null : (
-      <MapFootnote
-        enabled={mapTilesEnabled}
-        onEnable={() => {
-          setMapTilesEnabled(true).catch((error) => {
-            reportError("recap.mapTilesWrite", error);
-          });
-        }}
-      />
-    );
+  const footnote = trace.bounds === null ? null : <MapFootnote />;
 
   const header = (
     <XStack items="center" gap="$3" px="$5" pt={insets.top + 12} pb="$3">
@@ -530,12 +490,7 @@ export default function ExpeditionRecapScreen() {
                   id="trace-glow"
                   type="line"
                   layout={{ "line-cap": "round", "line-join": "round" }}
-                  paint={{
-                    "line-color": rawColors.resourceGold,
-                    "line-width": 14,
-                    "line-opacity": 0.18,
-                    "line-blur": 12,
-                  }}
+                  paint={TRACE_GLOW_PAINT}
                 />
               </GeoJSONSource>
 
@@ -575,17 +530,7 @@ export default function ExpeditionRecapScreen() {
               {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
               <GeoJSONSource id="trace-leagues" data={trace.leagues}>
                 {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
-                <Layer
-                  id="trace-league-pips"
-                  type="circle"
-                  paint={{
-                    "circle-radius": 3,
-                    "circle-color": rawColors.bgDark,
-                    "circle-stroke-width": 2,
-                    "circle-stroke-color": rawColors.resourceGold,
-                    "circle-opacity": 0.9,
-                  }}
-                />
+                <Layer id="trace-league-pips" type="circle" paint={LEAGUE_PIP_PAINT} />
               </GeoJSONSource>
 
               {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}

@@ -149,6 +149,9 @@ describe("stores/expedition", () => {
     expect(track.distanceM).toBeGreaterThan(0);
     expect(track.paused).toBe(false);
     expect(lastFix?.t).toBe(T0 + 19 * 1000);
+    // The live map draws from these. Every fix, the rejected ones too: the trace decides what
+    // breaks the line, the same way it does on the recap.
+    expect(store.getState().fixes).toHaveLength(20);
   });
 
   test("a distance goal buzzes once when the ground is covered, and says so in the notification", async () => {
@@ -267,11 +270,14 @@ describe("stores/expedition", () => {
     expect(track.startedAt).not.toBeNull();
     expect(track.distanceM).toBeGreaterThan(20);
     expect(lastFix?.t).toBe(T0 + 19 * 1000);
+    // The map comes back with the line already walked, not a dot where the hero resumed.
+    expect(store.getState().fixes).toEqual(walked);
 
     // And it keeps going from there rather than from zero.
     const before = store.getState().track.distanceM;
     emit({ ...walking(20), t: T0 + 20_000 });
     expect(store.getState().track.distanceM).toBeGreaterThan(before);
+    expect(store.getState().fixes).toHaveLength(21);
   });
 
   test("a resumed outing that already met its goal knows it", async () => {
@@ -312,6 +318,7 @@ describe("stores/expedition", () => {
     expect(store.getState().track.distanceM).toBe(0);
     expect(store.getState().track.startedAt).toBeNull();
     expect(store.getState().lastFix).toBeNull();
+    expect(store.getState().fixes).toEqual([]);
   });
 
   test("and neither does one refused for having no native half", async () => {

@@ -3,10 +3,10 @@ layout: default
 prose: true
 title: Privacy Policy
 head_title: "Privacy policy for Bati"
-description: "Bati collects nothing about you. No account, no server, no analytics. Offline first, with one exception, off by default: the map, which tells a tile host roughly where an outing happened."
+description: "Bati collects nothing about you. No account, no server, no analytics. Offline first, with one exception, off by default: the map, which tells a tile host roughly where you go, during an outing and after it."
 type: legal
 status: active
-updated: 2026-09-02
+updated: 2026-09-11
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -15,7 +15,7 @@ related: [../planning/roadmap.md]
 
 # Privacy Policy for Bati
 
-**Last updated: 2 September 2026**
+**Last updated: 11 September 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -23,7 +23,8 @@ version deserves to be said plainly:
 
 > **Bati collects nothing about you. Nothing you record in the app leaves your phone unless you
 > send it yourself, deliberately, by email. One exception, off by default: the map behind an
-> expedition. Switched on, it tells a map host roughly where the outing happened.**
+> expedition. Switched on, it tells a map host roughly where you go, during the outing and after
+> it.**
 
 One sentence of that used to be shorter. Until expeditions landed, the app made no network request
 of any kind, and that was enforced by refusing itself the `INTERNET` permission. Drawing a map
@@ -91,21 +92,23 @@ is made of, and that is the only network destination in the app.
 [OpenFreeMap](https://openfreemap.org) serves OpenStreetMap data, free, with no key and no
 registration.
 
-- **What that request reveals:** the tiles asked for are the ones covering the place where the
-  outing happened, so the request tells that host roughly where you were, along with your device's
-  IP address and the time of day. That is approximate location information leaving your phone, and
-  it is why the app names the host here rather than leaving you to find it in a packet capture.
+- **What that request reveals:** the map is drawn twice, under you while an outing is running and
+  under the whole route on its recap. The tiles asked for are the ones around you as you move, then
+  the ones covering the outing, so the requests tell that host roughly where you are as you go,
+  along with your device's IP address and the time of day. That is approximate location
+  information leaving your phone, during the outing and not only after it, and it is why the app
+  names the host here rather than leaving you to find it in a packet capture.
 - **What it does not reveal:** the route to the metre, your pace, your training, or anything else
-  in the database. The host learns the area, never the line you drew through it, and nothing in the
-  database is ever sent up.
+  in the database. The host learns the area and roughly when you crossed it, never the line you
+  drew through it, and nothing in the database is ever sent up.
 - **What keeps it to one host:** a lint rule in the repository
   ([`.biome/plugins/noJsNetwork.grit`](https://github.com/Guiforge/bati/blob/main/.biome/plugins/noJsNetwork.grit))
   rejects every network call written in the app's own code (`fetch`, `XMLHttpRequest`,
   `WebSocket`, `EventSource`, `sendBeacon`), so the build fails before a second destination can be
   added quietly. The map library does its fetching natively, below that line.
 - **Until you switch the map on,** no tile is ever requested and the app touches the network not
-  at all, expedition or no expedition. Switch it off again and the next recap goes back to the
-  plain background; the switch is one tap either way.
+  at all, expedition or no expedition. Switch it off again and both maps go back to the plain
+  background; the switch is one tap either way.
 
 ## Permissions, and why
 
@@ -180,7 +183,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 2 septembre 2026**
+**Dernière mise à jour : 11 septembre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -189,7 +192,7 @@ confidentialité, et parce que la version courte mérite d'être dite simplement
 > **Bati ne collecte rien sur vous. Rien de ce que vous enregistrez dans l'application ne quitte
 > votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail. Une exception,
 > désactivée par défaut : la carte derrière une expédition. Activée, elle dit à un hôte de cartes
-> à peu près où la sortie a eu lieu.**
+> à peu près où vous allez, pendant la sortie et après.**
 
 Une phrase de tout cela était plus courte avant. Jusqu'aux expéditions, l'application ne faisait
 aucune requête réseau, et c'était garanti par le refus de la permission `INTERNET` elle-même.
@@ -263,14 +266,16 @@ demande rien. Les réglages ont un interrupteur pour la carte ; activez-le et Ba
 seule destination réseau de l'application. [OpenFreeMap](https://openfreemap.org) sert des données
 OpenStreetMap, gratuitement, sans clé et sans inscription.
 
-- **Ce que cette demande révèle :** les tuiles demandées sont celles qui couvrent l'endroit où la
-  sortie a eu lieu, donc la demande dit à cet hôte à peu près où vous étiez, avec l'adresse IP de
-  votre appareil et l'heure. C'est une information de localisation approximative qui sort de votre
-  téléphone, et c'est pourquoi l'application nomme l'hôte ici plutôt que de vous laisser le
-  découvrir dans une capture réseau.
+- **Ce que cette demande révèle :** la carte est dessinée deux fois, sous vous pendant qu'une
+  sortie est en cours et sous le trajet entier sur son récap. Les tuiles demandées sont celles
+  autour de vous au fil du trajet, puis celles qui couvrent la sortie, donc les demandes disent à
+  cet hôte à peu près où vous êtes pendant que vous avancez, avec l'adresse IP de votre appareil et
+  l'heure. C'est une information de localisation approximative qui sort de votre téléphone,
+  pendant la sortie et pas seulement après, et c'est pourquoi l'application nomme l'hôte ici plutôt
+  que de vous laisser le découvrir dans une capture réseau.
 - **Ce qu'elle ne révèle pas :** le tracé au mètre près, votre allure, votre entraînement, ni quoi
-  que ce soit d'autre dans la base. L'hôte apprend la zone, jamais la ligne que vous y avez tracée,
-  et rien de la base n'est jamais envoyé.
+  que ce soit d'autre dans la base. L'hôte apprend la zone et à peu près quand vous l'avez
+  traversée, jamais la ligne que vous y avez tracée, et rien de la base n'est jamais envoyé.
 - **Ce qui garantit l'hôte unique :** une règle de lint dans le dépôt
   ([`.biome/plugins/noJsNetwork.grit`](https://github.com/Guiforge/bati/blob/main/.biome/plugins/noJsNetwork.grit))
   rejette tout appel réseau écrit dans le code de l'application (`fetch`, `XMLHttpRequest`,
@@ -278,7 +283,7 @@ OpenStreetMap, gratuitement, sans clé et sans inscription.
   seconde destination puisse être ajoutée discrètement. La bibliothèque de carte fait ses requêtes
   nativement, sous cette ligne.
 - **Tant que vous n'activez pas la carte,** aucune tuile n'est demandée et l'application ne
-  touche pas du tout au réseau, expédition ou non. Désactivez-la et le récap suivant revient au
+  touche pas du tout au réseau, expédition ou non. Désactivez-la et les deux cartes reviennent au
   fond uni ; dans les deux sens, c'est une pression.
 
 ## Permissions, et pourquoi

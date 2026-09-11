@@ -20,6 +20,14 @@ const ART_FACTOR = {
 
 export type SessionArtKind = keyof typeof ART_FACTOR;
 
+/**
+ * The floating HUD row in ActiveExerciseView: 8 top + ~36 row + 8 gap + 3 hairline.
+ *
+ * Here rather than in `ExerciseHero` because `LiveMap` takes the same slot on an outing and has to
+ * reserve the same room, and a component module that exports a constant loses Fast Refresh.
+ */
+export const HUD_HEIGHT = 56;
+
 export function sessionArtHeight(
   width: number,
   height: number,

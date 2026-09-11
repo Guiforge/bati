@@ -797,6 +797,7 @@
     "expedition_pace": "Allure",
     "expedition_road": "{{building}} · {{value}}/{{target}} lieues",
     "expedition_finish": "Terminer la sortie",
+    "expedition_hold_to_finish": "Maintiens pour terminer",
     "expedition_hold_to_finish_a11y": "Maintiens pour terminer la sortie",
     "expedition_cancel_start": "Annuler le départ",
     "expedition_cancel_start_hint": "Tu viens de partir. Tu peux revenir en arrière.",
@@ -843,7 +844,7 @@
     "distance_metric": "Kilomètres",
     "distance_imperial": "Miles",
     "map_tiles": "Carte du récap",
-    "map_tiles_note": "Éteinte, Bati ne télécharge rien. Allumée, le récap demande à OpenFreeMap, sur tiles.openfreemap.org, la carte de l'endroit où tu es allé, ce qui lui dit à peu près où tu étais. C'est le seul appel réseau de l'application."
+    "map_tiles_note": "Éteinte, Bati ne télécharge rien. Allumée, la sortie et son récap demandent à OpenFreeMap, sur tiles.openfreemap.org, la carte autour de toi, ce qui lui dit à peu près où tu vas, pendant et après. C'est le seul appel réseau de l'application."
   },
   "splash": {
     "loading": "Construction du village…"
@@ -985,10 +986,10 @@
     "title": "Le terrain parcouru",
     "open": "Voir le terrain parcouru",
     "no_trace": "Cette quête n'a jamais quitté les murs.",
-    "privacy": "Le tracé reste sur ce téléphone. La carte vient d'OpenFreeMap, qui apprend à peu près où tu étais.",
+    "privacy": "Le tracé reste sur ce téléphone. La carte vient d'OpenFreeMap, qui apprend à peu près où tu vas.",
     "export": "Exporter la trace",
     "export_failed": "Le fichier n'a pas pu être écrit. Réessaie.",
-    "map_offer": "La carte sous ton trajet est éteinte. Allume-la et cet écran demande à OpenFreeMap, sur tiles.openfreemap.org, les images de carte de cet endroit, ce qui lui dit à peu près où tu étais. Le tracé lui-même reste sur ce téléphone.",
+    "map_offer": "La carte sous ton trajet est éteinte. Allume-la et Bati demande à OpenFreeMap, sur tiles.openfreemap.org, la carte autour de toi, pendant tes sorties et sur leur récap, ce qui lui dit à peu près où tu vas. Le tracé lui-même reste sur ce téléphone.",
     "map_enable": "Afficher la carte",
     "best_league": "Lieue la plus rapide de cette sortie, {{pace}}"
   },
@@ -1011,7 +1012,7 @@
     "backups_title": "Les sauvegardes que vous faites",
     "backups_body": "Deux lignes écrivent votre base dans un fichier : « Partager ma sauvegarde » la remet au partage de votre système, « Enregistrer un fichier » l'écrit dans un dossier que vous choisissez sur l'appareil. Dans les deux cas l'application ne l'envoie nulle part. Ce fichier n'est pas chiffré : quiconque l'ouvre lit votre historique d'entraînement, alors rangez-le comme une photo personnelle. Restaurer remplace tout ; la base que vous aviez est conservée sur l'appareil comme copie de secours.",
     "never_title": "Ce que Bati ne fait jamais",
-    "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. Rien de la base de données n'est jamais envoyé nulle part. L'application ne touche au réseau qu'à un seul endroit, et seulement si vous l'y autorisez : la carte derrière le tracé d'une expédition est désactivée tant que vous ne l'activez pas dans les réglages. Une fois activée, le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, couvrant l'endroit où la sortie a eu lieu. Cette demande dit donc à cet hôte à peu près où vous étiez, avec votre adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas l'entraînement, pas qui vous êtes, mais la zone, oui. Laissée désactivée, ou coupée d'une pression, l'application ne fait aucune requête réseau et le tracé se dessine sur un fond uni. Une règle de lint refuse tout autre appel réseau dans l'application.",
+    "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. Rien de la base de données n'est jamais envoyé nulle part. L'application ne touche au réseau qu'à un seul endroit, et seulement si vous l'y autorisez : la carte derrière le tracé d'une expédition est désactivée tant que vous ne l'activez pas dans les réglages. Une fois activée, le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, couvrant l'endroit de la sortie, pendant qu'elle a lieu et sur son récap. Ces demandes disent donc à cet hôte à peu près où vous êtes au fil du trajet, avec votre adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas l'entraînement, pas qui vous êtes, mais la zone et à peu près quand vous l'avez traversée, oui. Laissée désactivée, ou coupée d'une pression, l'application ne fait aucune requête réseau et le tracé se dessine sur un fond uni. Une règle de lint refuse tout autre appel réseau dans l'application.",
     "permissions_title": "Permissions",
     "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar, et elle reste sur votre appareil. Le widget Android lit votre flamme dans cette même base locale. Position : uniquement pendant une expédition, et uniquement la position exacte, parce qu'une marche ne se mesure pas à l'approximatif. Votre trajet est écrit sur ce téléphone et n'est envoyé nulle part. Une sortie affiche aussi une notification permanente : c'est elle qui tient le suivi en vie, et c'est pour ça que votre écran peut s'éteindre pendant la marche sans rien interrompre. Internet : uniquement pour la carte, et uniquement tant qu'elle est activée dans les réglages ; elle démarre désactivée, et ce que la demande révèle est écrit plus haut.",
     "crashes_title": "Rapports de crash",

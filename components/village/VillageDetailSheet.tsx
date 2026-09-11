@@ -21,6 +21,7 @@ import {
   type Trophy,
   type VillageBuilding,
 } from "@/db/village";
+import { SECONDS_PER_REP_EQUIVALENT } from "@/db/workUnits";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -206,22 +207,29 @@ function BuildingDetail({
   const prereqCode = buildingDefinitions[building.code].prerequisiteBuilding;
   const prereqName = prereqCode ? BUILDING_LABELS[prereqCode][fr ? "fr" : "en"] : "";
 
+  const repUnitNote = t("village.rep_unit", { seconds: SECONDS_PER_REP_EQUIVALENT });
+
   // One sentence naming the deed that raises this building, in its own unit.
   const driverLine = (() => {
     switch (building.driver) {
       case "tier":
         return t("village.detail_tier_driver", { level: building.metricValue });
+      // Reps, not "work units". The village counted in a currency named nowhere else in the app
+      // and convertible to nothing: a hero reading "1000 work units" had no way to know whether
+      // that was a week or a year of training. A work unit has always *been* a rep — that is the
+      // whole of db/workUnits.ts — so the sheet says rep, and names the one exchange rate that
+      // is not one-to-one the same way the leagues line names its kilometre.
       case "muscle":
         return building.level === 0
           ? t("village.detail_unlock_muscle", { muscle: muscleLabel })
-          : t("village.detail_muscle_driver", {
+          : `${t("village.detail_muscle_driver", {
               volume: building.metricValue,
               muscle: muscleLabel,
-            });
+            })} ${repUnitNote}`;
       case "style":
         return building.level === 0
           ? t("village.detail_unlock_style", { style: styleLabel })
-          : t("village.detail_style_driver", { volume: building.metricValue, style: styleLabel });
+          : `${t("village.detail_style_driver", { volume: building.metricValue, style: styleLabel })} ${repUnitNote}`;
       case "prereq":
         return building.level === 0
           ? t("village.detail_prereq_locked", {

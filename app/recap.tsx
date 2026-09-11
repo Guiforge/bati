@@ -180,6 +180,10 @@ function SpeedLegend({
           </Text>
         </XStack>
       )}
+      {/* Whose best, said out loud. "Best league, 4:35 /km" left the reader to guess between
+          this outing, this route and a lifetime, and the three answers are different numbers.
+          It is the quickest thousand metres inside the run just finished, and nothing on this
+          screen compares it to the last time the same ground was covered. */}
       {best === null ? null : (
         <Text testID="recap-best-league" fontSize={11} color="$textSecondary">
           {t("recap.best_league", { pace: formatPace(best.metres, best.ms, unit) })}

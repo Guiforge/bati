@@ -111,8 +111,12 @@ describe("VillageScene", () => {
     await waitFor(() => expect(getByTestId("village-built")).toBeTruthy());
     await fireEvent.press(getByLabelText("forge-en"));
 
-    // The driver, where it stands, and what the next level costs.
-    expect(await findByText("350 work units of chest training")).toBeTruthy();
+    // The driver, where it stands, and what the next level costs. In reps, with the one exchange
+    // rate that is not one-to-one named on the same line: "work units" was a currency the hero
+    // met here and nowhere else.
+    expect(
+      await findByText("350 reps of chest training A hold counts one rep every 3 seconds."),
+    ).toBeTruthy();
     expect(await findByText("250 more for level 4")).toBeTruthy();
   });
 

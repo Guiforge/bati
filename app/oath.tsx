@@ -25,6 +25,8 @@ import {
   type OathProgress,
   oathNeedsExercise,
   oathNeedsWeeklyTarget,
+  type PresetStanding,
+  standingForPreset,
   swearOath,
 } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
@@ -109,23 +111,45 @@ function ExerciseChip({
   );
 }
 
-/** A ready-made oath: tap to swear it, no target to guess. */
+/**
+ * A ready-made oath: tap to swear it, no target to guess.
+ *
+ * With the ground the hero has already covered under it, when there is any. A row that says
+ * "1000 push-ups" and nothing else is the same row for someone at 40 and someone at 960, and
+ * only one of them is being asked for a promise.
+ */
 function PresetRow({
   preset,
   label,
+  standing,
   onSwear,
 }: {
   preset: OathPreset;
   label: string;
+  standing: PresetStanding | undefined;
   onSwear: (preset: OathPreset) => void;
 }) {
+  const { t } = useTranslation();
+  const current = standing?.current ?? null;
+
   return (
     <Card testID="oath-preset" bg="$surface" onPress={() => onSwear(preset)}>
       <XStack items="center" gap="$3">
         <GameIcon name="star" size={20} color="$primaryText" />
-        <Text flex={1} fontWeight="700" fontSize={15} color="$text">
-          {label}
-        </Text>
+        <YStack flex={1} gap="$1">
+          <Text fontWeight="700" fontSize={15} color="$text">
+            {label}
+          </Text>
+          {/* Nothing done yet is not worth a "0 / 50": the target above already says it. */}
+          {current !== null && current > 0 && standing !== undefined ? (
+            <>
+              <Text fontSize={12} color="$textSecondary">
+                {t("oath.preset_standing", { current, target: standing.target })}
+              </Text>
+              <ProgressBar progress={Math.min(100, (current / standing.target) * 100)} />
+            </>
+          ) : null}
+        </YStack>
         <ChevronRight size={20} color="$text" opacity={0.5} />
       </XStack>
     </Card>
@@ -236,6 +260,7 @@ export default function OathScreen() {
   const [filter, setFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showCustom, setShowCustom] = useState(false);
+  const [standings, setStandings] = useState<Map<string, PresetStanding>>(new Map());
   const { showError, showSuccess } = useToast();
   const { success } = useHaptics();
 
@@ -291,39 +316,68 @@ export default function OathScreen() {
   }, [exercises, filter, exerciseLabel, metric]);
 
   // Exercise presets need a real id; drop any whose seed exercise isn't loaded yet/present.
-  const presetRows = useMemo(() => {
+  const eligiblePresets = useMemo(() => {
     const owned = ownedEquipment === null ? null : new Set(ownedEquipment);
-    const rows: { preset: OathPreset; label: string }[] = [];
+    const rows: { preset: OathPreset; exercise: Exercise | null }[] = [];
     for (const p of OATH_PRESETS) {
       if (!oathNeedsExercise(p.metric)) {
-        rows.push({
-          preset: p,
-          label: t(`oath.metric_${p.metric}`, {
-            count: p.target,
-            exercise: "",
-            weekly: p.weeklyTarget ?? DEFAULT_WEEKLY_TARGET,
-          }),
-        });
+        rows.push({ preset: p, exercise: null });
         continue;
       }
       const ex = presetExercise(p, exercises);
       // Drop presets whose exercise is absent, and any that need kit the hero does not own —
       // an oath you cannot move is worse than no oath at all.
       if (!ex || !canDo(ex.equipment, owned)) continue;
-      // ponytail: `metric_exercise_pr` reads as "N reps in a row", true for every exercise_pr
-      // preset except this one hold — L-Sit's PR is seconds. One special case rather than a
-      // unit field on OathPreset, since it's the only hold-type preset today; give the field a
-      // real home if a second one shows up.
-      rows.push({
-        preset: p,
-        label:
-          p.id === "lsit_30"
-            ? t("oath.preset_lsit_30", { count: p.target })
-            : t(`oath.metric_${p.metric}`, { count: p.target, exercise: exerciseLabel(ex) }),
-      });
+      rows.push({ preset: p, exercise: ex });
     }
     return rows;
-  }, [exercises, exerciseLabel, ownedEquipment, t]);
+  }, [exercises, ownedEquipment]);
+
+  // One read of the journal per offered preset, on open. Until it lands the deck shows its own
+  // written targets, which is what it showed before, rather than an empty list.
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all(
+      eligiblePresets.map(async (row) => {
+        const standing = await standingForPreset(row.preset, row.exercise?.id ?? null);
+        return [row.preset.id, standing] as const;
+      }),
+    )
+      .then((entries) => {
+        if (!cancelled) setStandings(new Map(entries));
+      })
+      .catch((e) => reportError("oath.standing", e));
+    return () => {
+      cancelled = true;
+    };
+  }, [eligiblePresets]);
+
+  const presetRows = useMemo(
+    () =>
+      eligiblePresets.map(({ preset, exercise }) => {
+        // The size of the promise comes from the journal, the shape of it from the preset.
+        const target = standings.get(preset.id)?.target ?? preset.target;
+        // ponytail: `metric_exercise_pr` reads as "N reps in a row", true for every exercise_pr
+        // preset except this one hold — L-Sit's PR is seconds. One special case rather than a
+        // unit field on OathPreset, since it's the only hold-type preset today; give the field a
+        // real home if a second one shows up.
+        const label =
+          exercise === null
+            ? t(`oath.metric_${preset.metric}`, {
+                count: target,
+                exercise: "",
+                weekly: preset.weeklyTarget ?? DEFAULT_WEEKLY_TARGET,
+              })
+            : preset.id === "lsit_30"
+              ? t("oath.preset_lsit_30", { count: target })
+              : t(`oath.metric_${preset.metric}`, {
+                  count: target,
+                  exercise: exerciseLabel(exercise),
+                });
+        return { preset, label };
+      }),
+    [eligiblePresets, exerciseLabel, standings, t],
+  );
 
   const performSwear = useCallback(
     async (input: Parameters<typeof swearOath>[0]) => {
@@ -387,12 +441,14 @@ export default function OathScreen() {
       }
       confirmThenSwear({
         metric: preset.metric,
-        target: preset.target,
+        // The number the row is showing, which is the preset's own until the journal says the
+        // hero is past it. Swearing the written one would be an oath fulfilled by the tap.
+        target: standings.get(preset.id)?.target ?? preset.target,
         exerciseId: id,
         weeklyTarget: preset.weeklyTarget,
       });
     },
-    [exercises, confirmThenSwear],
+    [exercises, confirmThenSwear, standings],
   );
 
   const submit = useCallback(() => {
@@ -492,6 +548,7 @@ export default function OathScreen() {
                   key={row.preset.id}
                   preset={row.preset}
                   label={row.label}
+                  standing={standings.get(row.preset.id)}
                   onSwear={swearPreset}
                 />
               ))}

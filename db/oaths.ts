@@ -99,6 +99,49 @@ export const OATH_PRESETS: OathPreset[] = [
   { id: "lsit_30", metric: "exercise_pr", target: 30, exerciseName: "L-Sit" },
 ];
 
+/**
+ * Where the hero already stands on a ready-made oath, and the target still ahead of them.
+ *
+ * The deck was eight fixed numbers, and on a journal three years deep every one of them was a
+ * promise already kept: "50 sessions" offered to a hero at 547, fulfilled by the tap that swore
+ * it. The preset now names the shape of the promise and the journal names its size. A target
+ * already passed climbs to the next multiple of the preset's own step, so a deck written in
+ * fifties stays written in fifties and never offers a finish line behind the hero.
+ */
+export type PresetStanding = {
+  /** Current value of the metric. Null for `weekly_sessions`, whose weeks start at the swear. */
+  current: number | null;
+  /** What to swear: the preset's own target, or the next step above where the hero is. */
+  target: number;
+};
+
+export async function standingForPreset(
+  preset: OathPreset,
+  exerciseId: number | null,
+): Promise<PresetStanding> {
+  // Nothing to stand on: `countQualifyingWeeks` counts weeks since the oath was sworn, so every
+  // hero is at zero of eight until they swear it. A "0 / 8" on the row would say the opposite.
+  if (preset.metric === "weekly_sessions") {
+    return { current: null, target: preset.target };
+  }
+
+  const current = await measure({
+    metric: preset.metric,
+    exerciseId,
+    target: preset.target,
+    swornAt: new Date().toISOString(),
+    fulfilledAt: null,
+  });
+
+  return {
+    current,
+    target:
+      current < preset.target
+        ? preset.target
+        : Math.ceil((current + 1) / preset.target) * preset.target,
+  };
+}
+
 // ponytail: flat bonus, tune if oaths ever get tiers. A mini-boss-sized reward for the
 // user's biggest commitment — worth a few sessions so fulfilling it visibly moves the level.
 export const OATH_XP_BONUS = 250;

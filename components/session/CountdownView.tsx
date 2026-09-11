@@ -5,10 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { Pause } from "@/components/icons";
 import { getBossAsset, getExerciseAsset, getQuestAsset } from "@/constants/assetMap";
-import {
-  getExerciseBgForSessionStep,
-  getExerciseBgRawForSessionStep,
-} from "@/constants/exerciseColors";
+import { rawColors } from "@/constants/rawColors";
 import { formatTarget } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -95,9 +92,11 @@ export function CountdownView() {
   const phaseLook = bossFight
     ? getPhaseLook(getPhaseFromHp(getHpPercent(bossFight.currentHp, bossFight.totalHp)))
     : null;
-  const firstStep = { exercise: first.exercise, targetType: first.target.type };
-  const screenBg = phaseLook?.bgToken ?? getExerciseBgForSessionStep(firstStep);
-  const screenBgRaw = phaseLook?.bgRaw ?? getExerciseBgRawForSessionStep(firstStep);
+  const _firstStep = { exercise: first.exercise, targetType: first.target.type };
+  // The same dark ground the set screen it counts into uses. A countdown in the muscle's pastel
+  // and a session in the dark would change the room's colour the moment the number hits zero.
+  const screenBg = phaseLook?.bgToken ?? "$bgDark";
+  const screenBgRaw = phaseLook?.bgRaw ?? rawColors.bgDark;
 
   // What the hero is setting out against: the monster, else the quest's own cover. A quest a hero
   // wrote may have no cover, and then the first movement is the picture.

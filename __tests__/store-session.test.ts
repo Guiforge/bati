@@ -114,6 +114,7 @@ jest.mock("@/db/bossFights", () => ({
 }));
 jest.mock("@/db/personalRecords", () => ({
   checkForNewRecords: jest.fn().mockResolvedValue([]),
+  getSessionStanding: jest.fn().mockResolvedValue(null),
 }));
 // Every half of the outing path reads this module: the store deletes an abandoned trace, the
 // expedition store appends and replays points, the recovery hook sweeps orphans.

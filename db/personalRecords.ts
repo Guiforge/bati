@@ -285,6 +285,166 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
   });
 }
 
+/** Where one movement of one session stands against every session that trained it before. */
+export type SessionStanding = {
+  exerciseId: number;
+  exerciseName: { en: string; fr: string };
+  /** Reps and seconds are separate records on one movement, so they are separate standings. */
+  type: QuestTargetType;
+  value: number;
+  /** 2 or 3. Rank 1 is a record, and `checkForNewRecords` already owns that moment. */
+  rank: number;
+  /** Sessions that have trained this movement in this unit, this one included. */
+  outOf: number;
+};
+
+/** Below this a standing is arithmetic rather than news. Second and third place, nothing else. */
+const STANDING_FLOOR = 3;
+
+/** One session's best on one movement, in one unit. The shape the rank is counted over. */
+type SessionBestRow = {
+  exerciseId: number;
+  type: QuestTargetType;
+  sessionId: number;
+  best: number | null;
+};
+
+/**
+ * Where `value` places among the per-session bests in `rows`, for one movement and one unit.
+ *
+ * A tie counts against you: `>=` rather than `>`, so equalling a past session ranks behind it
+ * rather than sharing its place. It is the reading that survives a hero checking the arithmetic,
+ * and it is also what keeps rank 1 meaning "a record", which `checkForNewRecords` decides with
+ * the same strict comparison.
+ */
+function placeAmongSessions(
+  rows: readonly SessionBestRow[],
+  key: string,
+  value: number,
+  sessionId: number,
+): { rank: number; outOf: number } {
+  let ahead = 0;
+  let outOf = 0;
+
+  for (const row of rows) {
+    if (row.best == null || ghostKey(row.exerciseId, row.type) !== key) continue;
+    outOf += 1;
+    // Tonight never ranks ahead of itself.
+    if (row.sessionId !== sessionId && row.best >= value) ahead += 1;
+  }
+
+  return { rank: ahead + 1, outOf };
+}
+
+/**
+ * What this session was best at, when it broke nothing.
+ *
+ * A record is rare by construction: the hero beats a movement's best a handful of times and then
+ * the curve flattens, and every session after that pays nothing. So the question this answers is
+ * the weaker one Strava's Best Efforts asks of an ordinary run — not "did you win" but "where
+ * does this sit" — and a second-best set is a true, dated, beatable result on a night that had
+ * none.
+ *
+ * The rule it has to obey is the same one that makes the six lifetime counters useless: a standing
+ * the hero cannot move next week is not worth printing. This one moves every session, in both
+ * directions, and names a movement rather than a career.
+ *
+ * Honesty gates, in order, and `newRecords` is the first of them rather than a caller's business:
+ * every one of these is the same judgement about when a placing is worth printing.
+ * - a night that set a record has already been paid. A second-best set beside a record is the
+ *   clutter, not the reward, and asking the question costs two grouped reads.
+ * - rank 1 is not here either. It is a record, or a tie with one, and both belong to
+ *   `checkForNewRecords` and the badge that lists it.
+ * - `outOf > rank`, so the hero actually beat a past session. Second of two is second of nothing,
+ *   and the second session a hero ever logs would otherwise always pay.
+ *
+ * ponytail: ranks whole sessions, not sets, because that is the granularity `getExerciseHistory`
+ * already established for "last time" and the two must agree. Per-set ranking would need the
+ * set index the journal does not store.
+ */
+export async function getSessionStanding(
+  sessionId: number,
+  newRecords: readonly NewRecordResult[],
+): Promise<SessionStanding | null> {
+  if (newRecords.length > 0) return null;
+
+  // The session's own best per movement and unit. Multi-round quests write one row per round, so
+  // this is the same fold `checkForNewRecords` runs for the same reason.
+  const sessionRows = await db
+    .select({
+      exerciseId: completedExercises.exerciseId,
+      type: completedExercises.resultType,
+      value: max(completedExercises.resultValue),
+      enName: exercises.enName,
+      frName: exercises.frName,
+    })
+    .from(completedExercises)
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    // Never an outing, the rule `getMovementRecords` documents above: a walk's seconds are not a
+    // number anyone set out to beat.
+    .where(and(eq(completedExercises.sessionId, sessionId), ne(exercises.style, NON_REP_STYLE)))
+    .groupBy(completedExercises.exerciseId, completedExercises.resultType);
+
+  if (sessionRows.length === 0) return null;
+
+  // Every session's best on those same movements, one grouped read. The fold is in JS because the
+  // rank is a count over the rows this already returns, and a correlated subquery per movement
+  // would be one synchronous SQLite call each on the JS thread.
+  //
+  // ponytail: this reads one row per (movement, unit, session), so a hero three years in pays a
+  // few thousand rows on the victory screen, after the save and off the set. Move the count into
+  // SQL if that ever shows up in a frame.
+  const historyRows = await db
+    .select({
+      exerciseId: completedExercises.exerciseId,
+      type: completedExercises.resultType,
+      sessionId: completedExercises.sessionId,
+      best: max(completedExercises.resultValue),
+    })
+    .from(completedExercises)
+    .where(
+      inArray(
+        completedExercises.exerciseId,
+        sessionRows.map((r) => r.exerciseId),
+      ),
+    )
+    .groupBy(
+      completedExercises.exerciseId,
+      completedExercises.resultType,
+      completedExercises.sessionId,
+    );
+
+  const standings = sessionRows.flatMap((row) => {
+    const value = row.value;
+    if (value == null || value <= 0) return [];
+
+    const { rank, outOf } = placeAmongSessions(
+      historyRows,
+      ghostKey(row.exerciseId, row.type),
+      value,
+      sessionId,
+    );
+    if (rank < 2 || rank > STANDING_FLOOR || outOf <= rank) return [];
+
+    return [
+      {
+        exerciseId: row.exerciseId,
+        exerciseName: { en: row.enName, fr: row.frName },
+        type: row.type,
+        value,
+        rank,
+        outOf,
+      },
+    ];
+  });
+
+  // Best placing first, and behind that the claim with the most history: "2nd in 30 sessions" is
+  // a bigger thing to have done than "2nd in 4", and only one of these reaches the screen.
+  standings.sort((a, b) => a.rank - b.rank || b.outOf - a.outOf);
+
+  return standings[0] ?? null;
+}
+
 /**
  * Get all personal records summary
  */

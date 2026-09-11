@@ -6,17 +6,32 @@ import { Avatar, Text, XStack, YStack } from "tamagui";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
-import { Settings } from "@/components/icons";
+import { Castle } from "@/components/icons";
 import { getAvatarSource } from "@/constants/avatars";
 import { getFlameLevel } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
+import { getVillageTier, TIER_NAMES } from "@/db/village";
 import { useStreakInfo } from "@/hooks/useStreakInfo";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
-// The flame grows with the streak (db/village.ts thresholds) so the header reads at a glance.
-const FLAME_SIZES: Record<number, number> = { 0: 18, 1: 18, 2: 22, 3: 26, 4: 30, 5: 34 };
+/** The strip under the status bar. Everything Home no longer spends on chrome goes to the scene. */
+const HUD_HEIGHT = 52;
 
+/** Every tap target in the strip: the 44 dp floor, and the cell the flame and the crest sit in. */
+const CELL = 44;
+
+// The flame still grows with the streak (db/village.ts thresholds), inside a cell that also holds
+// the count: 24 is the most that leaves the number room under it.
+const FLAME_SIZES: Record<number, number> = { 0: 16, 1: 16, 2: 18, 3: 20, 4: 22, 5: 24 };
+
+/**
+ * The whole of Home's chrome: who the hero is, how far to the next level, the streak, the village.
+ *
+ * One strip instead of a header and a village band. The band spent 53 dp saying what the Village
+ * tab right under it already said, so the village keeps a crest here, its tier and a tap, and the
+ * height went to the scene.
+ */
 export function HomeHeader() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -41,59 +56,41 @@ export function HomeHeader() {
   const levelTitle = levelInfo ? (language === "fr" ? levelInfo.title.fr : levelInfo.title.en) : "";
   const currentStreak = streak?.current ?? 0;
   const flameLevel = getFlameLevel(currentStreak);
+  const tier = levelInfo ? getVillageTier(levelInfo.level) : null;
 
   return (
-    /* Same hairline as the village band, one shade under its surface: the two strips read as
-       one frame around the stage, which is what makes the screen a HUD and not a list, and the
-       step between them keeps the bottom one from reading as a second header.
-       Owns the top inset so the notch area is chrome-colored too, with no seam. */
+    /* Owns the top inset so the notch area is chrome-colored too, with no seam. */
     <XStack
-      px="$4"
-      pt={insets.top + 8}
-      pb="$3"
+      pt={insets.top}
+      height={insets.top + HUD_HEIGHT}
+      px="$3"
       items="center"
-      gap="$3"
+      gap="$2"
       bg="$surface"
       borderBottomWidth={1}
       borderColor="$borderStrong"
     >
-      {/* Avatar - Tap to edit profile */}
-      <YStack position="relative">
-        <Avatar
-          testID="home-settings"
-          circular
-          size="$6"
-          borderWidth={1}
-          borderColor="$borderStrong"
-          pressStyle={{ scale: 0.95 }}
-          onPress={() => router.push("/settings")}
-          accessibilityRole="button"
-          accessibilityLabel={t("home.open_settings_a11y", "Open settings")}
-        >
-          <Avatar.Image source={avatarSource} />
-          <Avatar.Fallback background="$primary" />
-        </Avatar>
-        {/* Visible affordance for what the avatar already does — tap target stays the avatar itself. */}
-        <XStack
-          position="absolute"
-          b={-2}
-          r={-2}
-          bg="$surface2"
-          rounded={999}
-          p={3}
-          borderWidth={1}
-          borderColor="$borderStrong"
-          pointerEvents="none"
-        >
-          <Settings size={12} color="$textSecondary" />
-        </XStack>
-      </YStack>
+      {/* The avatar is the way to settings, and the only one: a gear badge on it made two gears
+          on one strip once the flame's disc was read as the second. */}
+      <Avatar
+        testID="home-settings"
+        circular
+        size={40}
+        borderWidth={1}
+        borderColor="$borderStrong"
+        pressStyle={{ scale: 0.95 }}
+        onPress={() => router.push("/settings")}
+        accessibilityRole="button"
+        accessibilityLabel={t("home.open_settings_a11y", "Open settings")}
+      >
+        <Avatar.Image source={avatarSource} />
+        <Avatar.Fallback background="$primary" />
+      </Avatar>
 
-      {/* Identity & XP */}
-      <YStack flex={1} gap="$1">
-        {/* Identity here is progression, not the village name — the village owns its name */}
+      {/* Identity here is progression, not the village name: the village owns its name */}
+      <YStack flex={1} gap={4}>
         {levelInfo ? (
-          <Text fontWeight="700" fontSize="$4" color="$text" numberOfLines={1}>
+          <Text fontWeight="700" fontSize={13} color="$text" numberOfLines={1}>
             {t("home.level_line", {
               level: levelInfo.level,
               title: levelTitle,
@@ -101,27 +98,23 @@ export function HomeHeader() {
             })}
           </Text>
         ) : (
-          <Skeleton height={22} width={150} bg="$surface2" />
+          <Skeleton height={16} width={130} bg="$surface2" />
         )}
-        <XStack items="center" gap="$2" mt="$1">
-          {/* ProgressBar is width:100% and doesn't shrink — without this flex wrapper it
-              takes the whole row and pushes the % out under the flame. */}
+        <XStack items="center" gap="$1.5">
+          {/* ProgressBar is width:100% and doesn't shrink: without this flex wrapper it takes the
+              whole row and pushes the numbers out under the flame. */}
           <XStack flex={1}>
             <ProgressBar
               progress={levelInfo?.xpProgress ?? 0}
-              height={5}
+              height={3}
               color="$resourceGold"
               trackColor="$surface2"
             />
           </XStack>
-          {/* The numbers, not the percentage.
-              "18%" is eighteen percent of something this header never named: no XP figure, no
-              level being climbed towards, and the lifetime total sits elsewhere on the same
-              screen in a different unit of account. The victory screen already prints the
-              fraction with `journal.xp_progress`, so the two places a hero meets their level now
-              say it the same way. */}
+          {/* The numbers, not a percentage of something this strip never named. The victory
+              screen prints the same fraction with the same key. */}
           {levelInfo ? (
-            <Text fontSize={11} fontWeight="700" color="$resourceGold">
+            <Text fontSize={10} fontWeight="700" color="$resourceGold">
               {t("journal.xp_progress", {
                 current: levelInfo.currentLevelXp,
                 next: levelInfo.currentLevelXp + levelInfo.xpToNextLevel,
@@ -131,18 +124,18 @@ export function HomeHeader() {
         </XStack>
       </YStack>
 
-      {/* Streak flame — the most motivating number on the screen, out of the stats row.
-          Always rendered: an unlit flame is the thing to relight, and hiding it made the
-          header jump and left FLAME_SIZES[0] unreachable. Blank but space-holding until
-          the first read lands, so it neither flashes a zero nor resizes the XP bar. */}
+      {/* The streak, in gold with its count and unit: gold is for what progresses, and a grey
+          flame with no number was the least legible thing on the old header. Always rendered,
+          blank but space-holding until the first read lands, so it neither flashes a zero nor
+          resizes the XP bar. An unlit flame is dimmed, never hidden: it is the thing to relight. */}
       {!streak ? (
-        <YStack minW={44} minH={44} />
+        <YStack width={CELL} height={CELL} />
       ) : (
         <YStack
+          width={CELL}
+          height={CELL}
           items="center"
           justify="center"
-          minW={44}
-          minH={44}
           opacity={currentStreak > 0 ? 1 : 0.4}
           pressStyle={{ scale: 0.95 }}
           onPress={() => router.push("/(tabs)/journal")}
@@ -153,8 +146,35 @@ export function HomeHeader() {
           })}
         >
           <FlameFlicker size={FLAME_SIZES[flameLevel]} animate={currentStreak > 0} />
-          <Text fontSize={15} fontWeight="700" color="$resourceFire">
-            {currentStreak}
+          <Text fontSize={11} fontWeight="700" color="$resourceGold">
+            {t("home.streak_short", { count: currentStreak })}
+          </Text>
+        </YStack>
+      )}
+
+      {/* The village as a crest and its tier. Reads level only, like the band it replaces:
+          getVillageScene() is five queries for a number. */}
+      {tier === null ? (
+        <YStack width={CELL} height={CELL} />
+      ) : (
+        <YStack
+          testID="home-village"
+          width={CELL}
+          height={CELL}
+          items="center"
+          justify="center"
+          borderLeftWidth={1}
+          borderColor="$borderStrong"
+          pressStyle={{ opacity: 0.7 }}
+          onPress={() => router.push("/(tabs)/village")}
+          accessibilityRole="button"
+          accessibilityLabel={t("home.village_a11y", {
+            name: TIER_NAMES[tier][language === "fr" ? "fr" : "en"],
+          })}
+        >
+          <Castle size={16} color="$textSecondary" />
+          <Text fontSize={11} fontWeight="700" color="$textSecondary">
+            {tier}
           </Text>
         </YStack>
       )}

@@ -69,7 +69,6 @@ export {
   updateQuestMeta,
 } from "./quests";
 export {
-  DISTANCE_GOAL_RANGE,
   REST_RANGE,
   ROUNDS_RANGE,
   TARGET_RANGE,

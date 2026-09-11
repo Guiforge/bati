@@ -10,7 +10,6 @@ import { OutingGoalSheet } from "@/components/quests/OutingGoalSheet";
 import { restsBetweenExercises, restsBetweenRounds } from "@/components/quests/questShape";
 import { formatDistance } from "@/constants/distanceFormat";
 import {
-  DISTANCE_GOAL_RANGE,
   hasQuestOverrides,
   type QuestConfig,
   REST_RANGE,
@@ -18,10 +17,9 @@ import {
   targetRangeFor,
 } from "@/db";
 import { formatDuration } from "@/db/estimate";
-import { isOutdoors, isOutingSession, outingGoal } from "@/db/expeditions";
+import { isOutingSession, outingGoal, withOutingGoal } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
-import { NON_REP_STYLE } from "@/db/workUnits";
 import type { OutingGoal } from "@/src/gps/track";
 import { localizedName } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -206,46 +204,8 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
   const unit = useSettingsStore((s) => s.distanceUnit);
   const [goalOpen, setGoalOpen] = useState(false);
 
-  /**
-   * One goal at a time, written the way `outingGoal` reads it: a distance is `config.distanceM`,
-   * a duration is the outdoor slots' targets *and* the removal of any distance, because a
-   * distance left behind would keep winning.
-   *
-   * The seconds are spread over the outdoor timed slots in proportion to what they hold now, so
-   * a two-leg outing whose goal is the sum still sums to the number the hero just picked. On the
-   * one-slot shape every outing ships with, that is simply "write it".
-   */
-  const setGoal = (next: OutingGoal) => {
-    // The sheet only opens on an outing, so this is the twelve-hour ceiling rather than a hold's
-    // hour: the goal it writes is the walk the hero is about to take.
-    const range = targetRangeFor("time", NON_REP_STYLE);
-    if (next.type === "distance") {
-      const metres = Math.min(
-        Math.max(next.metres, DISTANCE_GOAL_RANGE.min),
-        DISTANCE_GOAL_RANGE.max,
-      );
-      onChange({ ...config, distanceM: metres });
-      return;
-    }
-
-    const timed = quest.exercises.filter(
-      (qex) => isOutdoors(qex.exercise.style) && qex.target.type === "time",
-    );
-    const current = timed.reduce((sum, qex) => sum + qex.target.value, 0) || 1;
-    const targets = { ...config.targets };
-    let left = Math.round(next.seconds);
-    timed.forEach((qex, index) => {
-      const share =
-        index === timed.length - 1 ? left : Math.round((next.seconds * qex.target.value) / current);
-      const value = Math.min(Math.max(share, range.min), range.max);
-      targets[String(qex.id)] = value;
-      left -= value;
-    });
-
-    const written = { ...config, targets };
-    delete written.distanceM;
-    onChange(written);
-  };
+  /** One goal at a time; `withOutingGoal` is the writer Home's goal chip shares. */
+  const setGoal = (next: OutingGoal) => onChange(withOutingGoal(quest, config, next));
 
   const unitWord = (type: "time" | "reps") =>
     type === "time" ? t("quests.config_duration", "Duration") : t("quests.config_reps", "Reps");

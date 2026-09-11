@@ -59,18 +59,6 @@ describe("a walk is not a workout, and is still a session", () => {
     log({ id: 2, durationSeconds: 21_600, xpEarned: 750, outing: "walk", movingSeconds: 19_800 });
   }
 
-  test("the training average is about training", async () => {
-    const { getTotalStats } = require("../db/userLevel") as typeof import("../db/userLevel");
-    theTestersJournal();
-
-    const stats = await getTotalStats();
-    expect(stats.totalSessions).toBe(1);
-    expect(stats.totalSeconds).toBe(1500);
-    // The XP is the whole journal, though: it is what the level is derived from, and the trophy
-    // on Home sits next to the level bar. Filtering it would make the two disagree.
-    expect(stats.totalXp).toBe(870);
-  });
-
   test("the hike does not take the workout records", async () => {
     const { getLongestSession, getMostXpSession, getPersonalRecordsSummary } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");

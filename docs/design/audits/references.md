@@ -33,6 +33,18 @@ moment. Bati has no per-movement best today, only six session-level records
 `pr_total_sessions`), all of which stop being beatable after month one.
 [cost] new system (a per-movement best table derived from the journal), then trivial to surface
 
+> **Out of date since 2026-09-11, kept as written.** The two sentences above were true when this
+> was researched and were wrong a day later. `getExerciseHistory` returns `{last, best, at}` per
+> movement *and per unit*, `checkForNewRecords` detects `exercise_max_reps` and
+> `exercise_max_time`, `0051` stores which record a session broke, and the number to beat was
+> already under the counter as the ghost line. The cost was not a new system: it was one
+> comparison. Finding 7 below, "pre-fill the set row with last time's number", is the ghost line
+> and shipped before this report was written.
+>
+> The correction lives here rather than in the text because a research note is a record of what
+> someone believed on a day, and the useful thing to preserve is that a cost estimate aged out in
+> twenty-four hours.
+
 ## 2
 
 [app] Strava

@@ -1,29 +1,15 @@
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useWindowDimensions } from "react-native";
-import { BarChart } from "react-native-gifted-charts";
-import { type ColorTokens, Paragraph, Text, XStack, YStack } from "tamagui";
+import { type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import {
-  Flame,
-  Footprints,
-  Map as MapIcon,
-  Target,
-  Timer,
-  TrendingUp,
-  Trophy,
-  Zap,
-} from "@/components/icons";
+import { Flame, Footprints, Map as MapIcon, Timer, Trophy, Zap } from "@/components/icons";
 import { TrendsCard } from "@/components/journal/TrendsCard";
 import { formatDistance } from "@/constants/distanceFormat";
-import { DIFFICULTY_COLOR_TOKENS, rawColors } from "@/constants/rawColors";
 import { formatDurationEstimate } from "@/db";
 import type { JournalStatsSummary } from "@/db/completed";
 import { useStreakInfo } from "@/hooks/useStreakInfo";
 import { useSettingsStore } from "@/stores/settings";
-import { buildWeekdayBars, type JournalSession } from "./journalGrids";
+import type { JournalSession } from "./journalGrids";
 
 interface JournalStatsProps {
   /**
@@ -90,40 +76,13 @@ function StatCard({
 
 export function JournalStats({ sessions, stats }: JournalStatsProps) {
   const { t } = useTranslation();
-  const language = useSettingsStore((s) => s.language);
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
-  const { width } = useWindowDimensions();
 
   const streak = useStreakInfo();
-
-  // "When you usually train", so training only — the card says so under its own title.
-  const weekdayData = useMemo(
-    () =>
-      buildWeekdayBars(
-        sessions.filter((s) => s.outing === null).map((s) => s.performedAt),
-        language,
-      ),
-    [sessions, language],
-  );
-
-  // Memoized like weekdayData above: gifted-charts rebuilds (and re-animates)
-  // its whole SVG tree whenever the data array identity changes.
-  const weekdayChartData = useMemo(
-    () =>
-      weekdayData.map((d) => ({
-        value: d.count,
-        label: d.day,
-        frontColor: d.count > 0 ? rawColors.primary : rawColors.borderStrong,
-      })),
-    [weekdayData],
-  );
 
   if (!stats || sessions.length === 0) {
     return null;
   }
-
-  const chartWidth = Math.min(width - 80, 300);
-  const maxWeekdayCount = Math.max(...weekdayData.map((d) => d.count), 1);
 
   return (
     <YStack gap="$4">
@@ -176,6 +135,11 @@ export function JournalStats({ sessions, stats }: JournalStatsProps) {
         </SkeletonCard>
       )}
 
+      {/* What the effort was worth, before how much of it there has been. The tiles below are
+          lifetime totals, which move by a fraction of a percent on any given day; this is the one
+          block on the card that can look different next week. */}
+      <TrendsCard />
+
       {/* Quick Stats Grid */}
       <XStack gap="$3">
         <StatCard
@@ -224,140 +188,6 @@ export function JournalStats({ sessions, stats }: JournalStatsProps) {
           />
         </XStack>
       ) : null}
-
-      {/* This Week/Month Stats */}
-      <Card>
-        <YStack gap="$3">
-          <Text fontWeight="700" fontSize={16} color="$text">
-            {t("journal.recent_activity", "Recent Activity")}
-          </Text>
-          <XStack gap="$4" justify="space-around">
-            <YStack items="center" gap="$1">
-              <XStack items="center" gap="$2">
-                <Target size={16} color="$primaryText" />
-                <Text fontWeight="700" fontSize={24} color="$primaryText">
-                  {stats.thisWeekCount}
-                </Text>
-              </XStack>
-              <Text fontSize={12} color="$text" opacity={0.6}>
-                {t("journal.this_week", "This Week")}
-              </Text>
-            </YStack>
-            <YStack width={1} height={40} bg="$text" opacity={0.1} />
-            <YStack items="center" gap="$1">
-              <XStack items="center" gap="$2">
-                <Timer size={16} color="$success" />
-                <Text fontWeight="700" fontSize={24} color="$success">
-                  {stats.thisWeekMinutes}
-                </Text>
-              </XStack>
-              <Text fontSize={12} color="$text" opacity={0.6}>
-                {t("journal.minutes_this_week", "Mins This Week")}
-              </Text>
-            </YStack>
-            <YStack width={1} height={40} bg="$text" opacity={0.1} />
-            <YStack items="center" gap="$1">
-              <XStack items="center" gap="$2">
-                <TrendingUp size={16} color="$secondary" />
-                <Text fontWeight="700" fontSize={24} color="$secondary">
-                  {stats.thisMonthCount}
-                </Text>
-              </XStack>
-              <Text fontSize={12} color="$text" opacity={0.6}>
-                {t("journal.this_month", "This Month")}
-              </Text>
-            </YStack>
-          </XStack>
-        </YStack>
-      </Card>
-
-      {/* Favorite Workout Days */}
-      <Card>
-        <YStack gap="$3">
-          <YStack gap="$1">
-            <Text fontWeight="700" fontSize={16} color="$text">
-              {t("journal.workout_days", "Workout Days")}
-            </Text>
-            <Paragraph color="$text" opacity={0.6} size="$2">
-              {t("journal.when_you_train", "When you usually train")}
-            </Paragraph>
-          </YStack>
-          <YStack
-            items="center"
-            py="$2"
-            accessible
-            accessibilityLabel={`${t("journal.when_you_train", "When you usually train")}: ${weekdayData
-              .map((d) => `${d.day} ${d.count}`)
-              .join(", ")}`}
-          >
-            {/* 2 sections, not 3: maxValue is always even, so halves stay integers —
-                thirds gave the session-count axis labels like 2.7 */}
-            <BarChart
-              data={weekdayChartData}
-              width={chartWidth}
-              height={100}
-              barWidth={28}
-              spacing={12}
-              barBorderRadius={6}
-              noOfSections={2}
-              maxValue={Math.ceil(maxWeekdayCount / 2) * 2 + 2}
-              formatYLabel={(label) => String(Number.parseFloat(label))}
-              yAxisThickness={0}
-              xAxisThickness={1}
-              xAxisColor={rawColors.borderStrong}
-              yAxisTextStyle={{ color: rawColors.textSecondary, fontSize: 10 }}
-              xAxisLabelTextStyle={{
-                color: rawColors.textSecondary,
-                fontSize: 10,
-                fontWeight: "600",
-              }}
-              hideRules
-            />
-          </YStack>
-        </YStack>
-      </Card>
-
-      {/* Difficulty Distribution */}
-      <Card>
-        <YStack gap="$3">
-          <Text fontWeight="700" fontSize={16} color="$text">
-            {t("journal.difficulty_split", "Difficulty Split")}
-          </Text>
-          <XStack gap="$2" flexWrap="wrap">
-            <Chip
-              label={`${t("quests.level_easy", "Easy")}: ${stats.levels.easy}`}
-              tone="success"
-            />
-            <Chip
-              label={`${t("quests.level_medium", "Medium")}: ${stats.levels.medium}`}
-              tone="primary"
-            />
-            <Chip
-              label={`${t("quests.level_hard", "Hard")}: ${stats.levels.hard}`}
-              tone="secondary"
-            />
-          </XStack>
-          {/* Visual bar */}
-          <XStack height={12} rounded={6} overflow="hidden" bg="$bgLight">
-            {stats.levels.easy > 0 && (
-              <YStack flex={stats.levels.easy} bg={DIFFICULTY_COLOR_TOKENS.easy} height="100%" />
-            )}
-            {stats.levels.medium > 0 && (
-              <YStack
-                flex={stats.levels.medium}
-                bg={DIFFICULTY_COLOR_TOKENS.medium}
-                height="100%"
-              />
-            )}
-            {stats.levels.hard > 0 && (
-              <YStack flex={stats.levels.hard} bg={DIFFICULTY_COLOR_TOKENS.hard} height="100%" />
-            )}
-          </XStack>
-        </YStack>
-      </Card>
-
-      {/* Historical Trends */}
-      <TrendsCard />
     </YStack>
   );
 }

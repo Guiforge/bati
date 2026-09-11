@@ -5,7 +5,6 @@ import { AchievementsCard } from "@/components/journal/AchievementsCard";
 import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
 import { ProgressionCard } from "@/components/journal/ProgressionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
-import { UserLevelCard } from "@/components/journal/UserLevelCard";
 import "@/i18n";
 import config from "@/tamagui.config";
 
@@ -105,24 +104,6 @@ beforeEach(() => {
   mockGetPatternBalance.mockResolvedValue([]);
   mockGetRecentSessionHistory.mockResolvedValue([]);
   mockGetReadyStep.mockResolvedValue(null);
-});
-
-describe("UserLevelCard", () => {
-  it("shows the hero's level once the query lands", async () => {
-    await mount(<UserLevelCard />);
-
-    expect(await screen.findByText(/Apprentice/)).toBeTruthy();
-  });
-
-  it("disappears rather than sitting as an eternal skeleton when the query fails", async () => {
-    mockGetUserLevelInfo.mockRejectedValue(new Error("db is gone"));
-
-    await mount(<UserLevelCard />);
-
-    // Asserting on the card's own content, not on a null tree: the mount helper wraps everything
-    // in providers, so the rendered tree is never empty even when the card returns null.
-    await waitFor(() => expect(screen.queryByText(/Apprentice/)).toBeNull());
-  });
 });
 
 describe("PersonalRecordsCard", () => {

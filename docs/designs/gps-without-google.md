@@ -218,7 +218,10 @@ permission ratchet would vouch for a dependency Bati does not control.
   have been persisting aggregates mid-session, a second writer for earned state.
 
 ### Screens
-- During the session: numbers only (distance, moving time, pace, GPS status pill). No map.
+- During the session: the numbers (distance, moving time, pace, GPS status pill) under a live map
+  that follows the hero, `components/session/LiveMap.tsx`. It was "numbers only, no map" until
+  2026-09-11, reversed at the owner's request. The screen is still never held awake on an outing,
+  and MapLibre draws nothing while it is off; the tiles follow the same opt-in as the recap's.
 - Recap and history: MapLibre (`@maplibre/maplibre-react-native`) with one vector style URL,
   trace simplified by Douglas-Peucker at ~5 m. Under the map, one line: "map tiles from
   <host>; your route is never uploaded".
@@ -413,7 +416,8 @@ artifact under `~/.gstack/projects/Guiforge-bati/`. The spine:
 - Offline map packs and bundled maps (rejected in office hours, D3).
 - TCX / FIT export (licence and maintenance — GPX only).
 - Per-OEM battery-killer deep links (generic screen ships; OEM links on first field report).
-- Live map during the session (numbers only — battery decision).
+- ~~Live map during the session (numbers only, battery decision).~~ Reversed 2026-09-11, see
+  § Screens.
 - A separate demo repo as the open-source proof vehicle (outside voice #11, rejected: the
   quest mode is half the value and cannot live there).
 - Approach B native writes (upgrade path, gated on T5 hole frequency).

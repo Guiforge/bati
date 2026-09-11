@@ -45,9 +45,10 @@ function statusKey(error: string | null, track: TrackState, goalReached: boolean
 /**
  * What a hero sees while they are out.
  *
- * Numbers and nothing else, which is a battery decision before it is a design one: the screen
- * dominates the power draw of a session far more than the GPS chip does, so the map waits for
- * the recap where it can be looked at once. See docs/designs/gps-without-google.md.
+ * Numbers, under the map `LiveMap` draws in the slot the movement's picture takes on every other
+ * set. The screen is still never held awake on an outing: it dominates the power draw of a
+ * session far more than the GPS chip does, so the map only costs while the hero is looking. See
+ * docs/designs/map-immersion.md § The live map.
  *
  * Everything here reads the live store rather than the fixes: `stores/expedition` folds each
  * fix through the reducer as it lands, and a second derivation on this screen would be a second

@@ -352,7 +352,7 @@ describe("a session that left the walls", () => {
 
   test("credits OpenStreetMap and the tile host, which MapLibre's own widget is not doing", async () => {
     await mount();
-    const line = await screen.findByTestId("recap-attribution");
+    const line = await screen.findByTestId("map-attribution");
     expect(line).toHaveTextContent(/OpenStreetMap contributors/);
     expect(line).toHaveTextContent(/OpenMapTiles/);
     expect(line).toHaveTextContent(/OpenFreeMap/);
@@ -531,17 +531,17 @@ describe("a hero who has not allowed the basemap", () => {
   test("offers the map, naming the host, and one tap is the whole answer", async () => {
     await mount();
 
-    const offer = await screen.findByTestId("recap-map-offer");
+    const offer = await screen.findByTestId("map-offer");
     expect(offer).toHaveTextContent(/tiles\.openfreemap\.org/);
-    expect(screen.queryByTestId("recap-attribution")).toBeNull();
+    expect(screen.queryByTestId("map-attribution")).toBeNull();
 
     await act(async () => {
-      await fireEvent.press(screen.getByTestId("recap-map-enable"));
+      await fireEvent.press(screen.getByTestId("map-enable"));
     });
 
     expect(useSettingsStore.getState().mapTilesEnabled).toBe(true);
-    expect(screen.queryByTestId("recap-map-offer")).toBeNull();
-    expect(screen.getByTestId("recap-attribution")).toBeTruthy();
+    expect(screen.queryByTestId("map-offer")).toBeNull();
+    expect(screen.getByTestId("map-attribution")).toBeTruthy();
     expect(JSON.stringify(mockMapStyle.mock.calls.at(-1)?.[0])).toContain("openfreemap");
   });
 
@@ -556,6 +556,6 @@ describe("a hero who has not allowed the basemap", () => {
     await mount();
 
     expect(await screen.findByTestId("recap-no-trace")).toBeTruthy();
-    expect(screen.queryByTestId("recap-map-offer")).toBeNull();
+    expect(screen.queryByTestId("map-offer")).toBeNull();
   });
 });

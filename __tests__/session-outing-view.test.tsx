@@ -4,6 +4,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
 import type { Quest } from "@/db/quests";
+import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
@@ -130,6 +131,7 @@ async function mountRunning(quest: Quest) {
   // Animated keeps updating an Animated(View) after the test that mounted it, and the suite spent
   // most of its wall clock waiting on transitions no assertion looks at.
   useSettingsStore.setState({ soundEnabled: true, language: "en", reducedMotion: true });
+  useExpeditionStore.setState({ fixes: [] });
   useSessionStore.setState({
     quest,
     status: "running",
@@ -197,6 +199,15 @@ describe("a walk, on the screen a hero stares at while walking", () => {
 
     // The panel is the readout, and it is there.
     expect(screen.getByText("Finding the sky")).toBeTruthy();
+    // The movement's picture holds the slot until the sky gives a position, and the map takes it
+    // over with the first fix. An empty dark slot in between read as a map that failed to load.
+    expect(screen.queryByTestId("live-map")).toBeNull();
+    await act(() => {
+      useExpeditionStore.setState({
+        fixes: [{ t: NOW, lat: 43.6, lon: 1.44, ele: 100, acc: 4, speed: 1.4, distFromPrev: 0 }],
+      });
+    });
+    expect(screen.getByTestId("live-map")).toBeTruthy();
 
     // The 72px numeral, its unit label, the hint under it, and the ghost line are all gone.
     expect(screen.queryByText("0:03")).toBeNull();
@@ -227,6 +238,7 @@ describe("a plain hold, which still has a duration to count", () => {
     await mountRunning(questWith(mockPlank));
 
     expect(screen.queryByText("Finding the sky")).toBeNull();
+    expect(screen.queryByTestId("live-map")).toBeNull();
     expect(screen.getByText("0:03")).toBeTruthy();
     // The caption names the target rather than the unit: the number counts down to it, and
     // "Seconds" left "0:03" as readable as an elapsed count. See docs/design/audits/2026-09-10.md.
@@ -254,9 +266,10 @@ describe("finishing an outing", () => {
   test("ends on a hold, never on a tap, with nothing to swap or skip beside it", async () => {
     await mountRunning(questWith(mockWalk));
 
-    // One verb on screen, the other reserved for the screen reader.
-    expect(screen.getByText("Finish the outing")).toBeTruthy();
-    expect(screen.queryByText("Hold to finish the outing")).toBeNull();
+    // The gesture is the label. "Finish the outing" read as a tap, and a tap is the one thing this
+    // button refuses, so heroes pressed it, felt a buzz and decided it was broken.
+    expect(screen.getByText("Hold to finish")).toBeTruthy();
+    expect(screen.queryByText("Finish the outing")).toBeNull();
 
     // Neither offer means anything outside: there is no other movement to walk with, and a walk
     // that did not happen is one the hero does not start.

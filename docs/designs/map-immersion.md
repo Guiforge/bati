@@ -559,6 +559,33 @@ to MapLibre in the refused state is stringified and matched against `/https?:\/\
 the host name. Rebranching a source by mistake means writing a URL back in, whichever host it
 points at.
 
+## The live map
+
+Added 2026-09-11, at the owner's request: *"je veux voir la carte en live"*. The outing screen
+had numbers only, on the battery argument in `gps-without-google.md`; that argument is about
+the screen being lit, and the screen is still never held awake on an outing, so MapLibre only
+draws while the hero is actually looking.
+
+- `components/session/LiveMap.tsx` takes the slot the movement's picture takes on every other
+  set, with `ExerciseHero`'s size rules, so the panel and the finish button below it do not move.
+- Same style, same opt-in, same `MapFootnote` as the recap. One preference covers both maps, and
+  every sentence naming the host (settings note, offer, credit line, privacy policy) says the tiles
+  are fetched while the hero moves as well as afterwards. The host now learns roughly where the
+  hero is, in order, as they go; that is the difference the copy had to carry.
+- The camera follows the last fix at zoom 16 and every gesture is off, which is decision 2 above
+  for a different reason: a pocket pans a map as surely as a curious thumb does.
+- Glow, gold stroke, league rings and a `resourceFire` pip where the hero is, the recap's end pip
+  since that is what it becomes. No pace ramp: its ends are the run's own percentiles and they
+  move with every fix, so the colours would shift under the hero's eyes. The glow and ring paints
+  live in `constants/mapStyle.ts` so the two maps cannot drift.
+- Nothing is framed before the first fix: the movement's picture holds the slot until then (the
+  `placeholder` prop). A camera with no centre looks at 0,0, the Gulf of Guinea, and the empty dark
+  slot tried first read on a phone as a map that had failed to load.
+- `Trace.path` drops any part of fewer than two points. MapLibre refuses a one-point line in a red
+  box, and the first fix of every live walk was one; the recap had the same hole after a break.
+- The fixes are held whole in `stores/expedition.ts` and `toTrace` is re-run on each one. A
+  `ponytail:` comment in `LiveMap.tsx` names that ceiling.
+
 ## Next steps
 
 1. Answer open question 1 in `gps-without-google.md` (OpenFreeMap or VersaTiles). The style

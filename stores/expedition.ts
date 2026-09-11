@@ -65,6 +65,16 @@ type ExpeditionState = {
   /** The most recent accepted fix, for an accuracy readout. */
   lastFix: LocationFix | null;
   /**
+   * Every fix of this outing, in order, for the live map.
+   *
+   * The same list `pointsOf` reads back for the recap, raw and unfiltered, so both screens hand it
+   * to `toTrace` and the line breaks in the same places while the hero walks and afterwards.
+   *
+   * ponytail: held whole in memory, about ten thousand objects on a three-hour ride. Thin it, or
+   * keep only what `toTrace` needs, if a long ride ever shows up in a heap profile.
+   */
+  fixes: LocationFix[];
+  /**
    * How fast the hero is going *now*, in metres per second, meaned over the last twenty seconds.
    * Null until the window has something in it.
    *
@@ -240,6 +250,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   sessionUuid: null,
   track: EMPTY,
   lastFix: null,
+  fixes: [],
   recentSpeedMps: null,
   error: null,
   goalReached: false,
@@ -256,7 +267,14 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
     leaguesCrossed = 0;
     speedWindow = [];
     acquiringWord = notification.acquiring;
-    set({ track: EMPTY, lastFix: null, recentSpeedMps: null, error: null, goalReached: false });
+    set({
+      track: EMPTY,
+      lastFix: null,
+      fixes: [],
+      recentSpeedMps: null,
+      error: null,
+      goalReached: false,
+    });
 
     if (!isAvailable()) {
       // No native half: iOS today, and jest. The quest still runs, it just measures nothing.
@@ -308,6 +326,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       sessionUuid,
       track: resumed,
       lastFix: priorFixes[priorFixes.length - 1] ?? null,
+      fixes: priorFixes,
       error: null,
       goalReached: goalReached(goal, resumed),
     });
@@ -322,6 +341,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         set({
           track,
           lastFix: fix,
+          fixes: [...get().fixes, fix],
           recentSpeedMps: meanSpeed(fix.t),
           goalReached: reached,
           error: clearedTransient(get().error),

@@ -151,6 +151,25 @@ describe("toTrace", () => {
     expect(broken.path.geometry.coordinates).toHaveLength(2);
   });
 
+  // MapLibre refuses a line of one point, in a red box: "A line string must have two or more
+  // coordinate points". The first fix of every live walk is exactly that, and the recap met it too
+  // wherever a break left a single fix on its own.
+  test("the path never hands MapLibre a line of one point", () => {
+    const first = toTrace([fix({ lat: 43.6045, lon: 1.4437, distFromPrev: 0 })]);
+    expect(first.path.geometry.coordinates).toEqual([]);
+    // The hero is still somewhere: the pip reads `end`, which a lone fix does have.
+    expect(first.end).toEqual([1.4437, 43.6045]);
+
+    const stranded = toTrace([
+      fix({ lat: 43.6045, lon: 1.4437, t: 0, distFromPrev: 0 }),
+      fix({ lat: 43.6039, lon: 1.4451, t: 1000 }),
+      // A jump the reducer refuses, then nothing yet: one fix alone on the far side.
+      fix({ lat: 43.61, lon: 1.46, t: 2000, distFromPrev: RULES.teleportM + 1 }),
+    ]);
+    expect(stranded.path.geometry.coordinates).toHaveLength(1);
+    expect(stranded.path.geometry.coordinates[0]).toHaveLength(2);
+  });
+
   test("the best league's cuff is one line, and it is empty when there is no best league", () => {
     expect(toTrace(walkEast(300, 2)).bestLine.features).toEqual([]);
 

@@ -237,3 +237,27 @@ export const mapStyleNoTiles: MapStyle = {
  * lives in the locales.
  */
 export const MAP_ATTRIBUTION = "© OpenMapTiles, © OpenStreetMap contributors.";
+
+type LinePaint = NonNullable<Extract<MapStyle["layers"][number], { type: "line" }>["paint"]>;
+type CirclePaint = NonNullable<Extract<MapStyle["layers"][number], { type: "circle" }>["paint"]>;
+
+/**
+ * The glow behind a trace: the same gold at low opacity behind a wide blur, so it needs no colour
+ * of its own. Shared by the recap and the live map, so a walk looks the same while it happens and
+ * after it. It reads `Trace.path`, never the banded line; see `app/recap.tsx` for why.
+ */
+export const TRACE_GLOW_PAINT: LinePaint = {
+  "line-color": rawColors.resourceGold,
+  "line-width": 14,
+  "line-opacity": 0.18,
+  "line-blur": 12,
+};
+
+/** One hollow gold ring per completed league, on both maps. */
+export const LEAGUE_PIP_PAINT: CirclePaint = {
+  "circle-radius": 3,
+  "circle-color": rawColors.bgDark,
+  "circle-stroke-width": 2,
+  "circle-stroke-color": rawColors.resourceGold,
+  "circle-opacity": 0.9,
+};

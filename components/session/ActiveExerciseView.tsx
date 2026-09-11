@@ -32,6 +32,7 @@ import { ExerciseHero } from "./ExerciseHero";
 import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { ExpeditionPanel } from "./ExpeditionPanel";
 import { GhostLine } from "./GhostLine";
+import { LiveMap } from "./LiveMap";
 import { sessionArtHeight } from "./sessionArt";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
@@ -223,6 +224,17 @@ export function ActiveExerciseView() {
   // and the picture gets everything left over, so nothing below it is ever clipped and a tall
   // screen shows more movement rather than more empty tint. This is only its floor.
   const heroMinHeight = Math.round(sessionArtHeight(width, height) * 0.6);
+  const hero = (
+    <ExerciseHero
+      source={getExerciseAsset(currentEx.exercise.imagePath)}
+      name={exerciseName}
+      minHeight={heroMinHeight}
+      fadeTo={screenBgRaw}
+      topInset={insets.top}
+      onPress={handleShowHowTo}
+      accessibilityLabel={t("session.how_to_do_it")}
+    />
+  );
   const targetMuscle = currentEx.exercise.muscles[0];
 
   /**
@@ -303,16 +315,11 @@ export function ActiveExerciseView() {
             )}
           </XStack>
         </BossArena>
+      ) : isOuting ? (
+        // The movement's picture until the sky gives a position, then the map in its place.
+        <LiveMap minHeight={heroMinHeight} topInset={insets.top} placeholder={hero} />
       ) : (
-        <ExerciseHero
-          source={getExerciseAsset(currentEx.exercise.imagePath)}
-          name={exerciseName}
-          minHeight={heroMinHeight}
-          fadeTo={screenBgRaw}
-          topInset={insets.top}
-          onPress={handleShowHowTo}
-          accessibilityLabel={t("session.how_to_do_it")}
-        />
+        hero
       )}
 
       {/* The HUD: where you are, how far in, and the way out — one row floating over the art
@@ -821,8 +828,10 @@ const FINISH_ACTION = "finishOuting";
  * costs three props and no extra state, which the alternative - a tap plus a confirmation, gated
  * on `AccessibilityInfo.isScreenReaderEnabled()` - does not.
  *
- * One visible verb: the button says "Finish the outing", and "Hold to finish" is what the screen
- * reader says. Both on screen at once would be two labels for one control.
+ * The label is the gesture. It said "Finish the outing", which reads as a tap, and a tap is the
+ * one thing this button refuses: heroes pressed it, felt a buzz and decided it was broken. Now it
+ * says "Hold to finish", and the name TalkBack offers in its actions menu keeps the plain verb,
+ * because there the action is chosen rather than held.
  */
 function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
   const { t } = useTranslation();
@@ -879,8 +888,10 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
         >
           <YStack flex={1} bg="$success" />
         </Animated.View>
-        <Text color="$text" fontSize={24} fontWeight="700">
-          {label}
+        {/* 20 and not 24: "Maintiens pour terminer" is the long form, and it has to hold one
+            line on a 320dp screen. */}
+        <Text color="$text" fontSize={20} fontWeight="700" numberOfLines={1}>
+          {t("session.expedition_hold_to_finish")}
         </Text>
       </YStack>
     </Pressable>

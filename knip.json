@@ -5,6 +5,7 @@
     "tamagui.config.ts",
     "i18n.ts",
     "__tests__/**/*.{test,spec}.{ts,tsx}",
+    "__mocks__/**/*.{ts,tsx}",
     "plugins/*.js"
   ],
   "project": ["**/*.{ts,tsx}"],

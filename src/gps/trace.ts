@@ -384,7 +384,13 @@ function path(steps: readonly Step[]): GeoJSON.Feature<GeoJSON.MultiLineString> 
   return {
     type: "Feature",
     properties: {},
-    geometry: { type: "MultiLineString", coordinates: parts },
+    // Two coordinates or it is not a line, the same floor `stretches` and `bestLine` keep. MapLibre
+    // refuses a one-point part outright, and that is what the first fix of a live walk is, and
+    // what a break leaves when a single fix lands on its far side. `end` still carries the point.
+    geometry: {
+      type: "MultiLineString",
+      coordinates: parts.filter((part) => part.length >= 2),
+    },
   };
 }
 

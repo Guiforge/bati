@@ -529,6 +529,9 @@
     "difficulty_title": "Ajuste la difficulté"
   },
   "quests": {
+    "written_for_beginner": "Débutant",
+    "written_for_regular": "Régulier",
+    "written_for_advanced": "Confirmé",
     "count": "{{count}} quêtes",
     "config_hint": "Enregistré pour cette quête. Tu le retrouveras la prochaine fois.",
     "config_modified": "Personnalisée",

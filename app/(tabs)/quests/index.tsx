@@ -45,7 +45,7 @@ import { hasOutdoorMovement, isOutingQuest } from "@/db/expeditions";
 import { getFavouriteQuestIds, toggleFavouriteQuest } from "@/db/favourites";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
-import type { QuestTemplate } from "@/db/quests";
+import { type QuestTemplate, questTrainingLevel } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -109,6 +109,8 @@ type QuestMeta = {
   focusLabel: string;
   /** "≈ 12 min" — worn as a chip over the cover banner. */
   durationLabel: string;
+  /** Which level the quest is written for: the word onboarding asked the hero for. */
+  levelLabel: string;
   /** "4 exercises" — one Text instead of bordered Chips. Empty when there is only one. */
   metaLabel: string;
   /** "+45 XP" — the reward, in gold. */
@@ -151,6 +153,16 @@ function buildQuestMeta(
     userLevel: level,
     config,
   };
+  // The level this quest is *written for*, which is not the level the hero will run it at.
+  //
+  // Onboarding asks "what's your level?" and says it is so the app can suggest the right
+  // workouts. It does: `getEligibleQuestIds` keeps advanced work away from someone who answered
+  // beginner. But the gallery shows the catalogue, and nothing on a card said which of the
+  // thirty-seven were written for whom, so the one question the hero answered bought them
+  // nothing where they were choosing (audit 2026-09-10, blocker 9).
+  const writtenFor = questTrainingLevel(
+    q.exercises.map((qex) => exercisesById[qex.exerciseId]?.difficulty ?? "medium"),
+  );
   const durationSeconds = estimateQuestTemplateSeconds(previewInput);
   const xp = estimateQuestTemplateXp(previewInput);
   const estimate = formatDurationEstimate(durationSeconds);
@@ -191,6 +203,7 @@ function buildQuestMeta(
             .filter(Boolean)
             .join(" · "),
     durationLabel: t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
+    levelLabel: t(`quests.written_for_${writtenFor}`),
     // Empty on a one-movement quest, the same silence the detail screen keeps: "1 exercice"
     // under a card whose focus line has just named that one movement is a count doing no work.
     // The `flex={1}` on its Text keeps the reward on the right when the string is empty.
@@ -259,8 +272,9 @@ function QuestRow({
               <Text fontSize={44}>{questEmoji(q.rounds, q.exercises.length)}</Text>
             </YStack>
           )}
-          <XStack position="absolute" t="$3" l="$3">
+          <XStack position="absolute" t="$3" l="$3" gap="$2">
             <Chip label={meta.durationLabel} />
+            <Chip label={meta.levelLabel} tone="secondary" />
           </XStack>
           {/* Opposite the duration, so a hero's own quest — and a quest that starts by leaving
             the house — is legible from the gallery rather than only once opened. Same words the

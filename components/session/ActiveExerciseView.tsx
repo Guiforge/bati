@@ -224,6 +224,17 @@ export function ActiveExerciseView() {
   // and the picture gets everything left over, so nothing below it is ever clipped and a tall
   // screen shows more movement rather than more empty tint. This is only its floor.
   const heroMinHeight = Math.round(sessionArtHeight(width, height) * 0.6);
+  const hero = (
+    <ExerciseHero
+      source={getExerciseAsset(currentEx.exercise.imagePath)}
+      name={exerciseName}
+      minHeight={heroMinHeight}
+      fadeTo={screenBgRaw}
+      topInset={insets.top}
+      onPress={handleShowHowTo}
+      accessibilityLabel={t("session.how_to_do_it")}
+    />
+  );
   const targetMuscle = currentEx.exercise.muscles[0];
 
   /**
@@ -305,17 +316,10 @@ export function ActiveExerciseView() {
           </XStack>
         </BossArena>
       ) : isOuting ? (
-        <LiveMap minHeight={heroMinHeight} topInset={insets.top} />
+        // The movement's picture until the sky gives a position, then the map in its place.
+        <LiveMap minHeight={heroMinHeight} topInset={insets.top} placeholder={hero} />
       ) : (
-        <ExerciseHero
-          source={getExerciseAsset(currentEx.exercise.imagePath)}
-          name={exerciseName}
-          minHeight={heroMinHeight}
-          fadeTo={screenBgRaw}
-          topInset={insets.top}
-          onPress={handleShowHowTo}
-          accessibilityLabel={t("session.how_to_do_it")}
-        />
+        hero
       )}
 
       {/* The HUD: where you are, how far in, and the way out — one row floating over the art

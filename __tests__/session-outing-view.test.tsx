@@ -4,6 +4,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
 import type { Quest } from "@/db/quests";
+import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
@@ -130,6 +131,7 @@ async function mountRunning(quest: Quest) {
   // Animated keeps updating an Animated(View) after the test that mounted it, and the suite spent
   // most of its wall clock waiting on transitions no assertion looks at.
   useSettingsStore.setState({ soundEnabled: true, language: "en", reducedMotion: true });
+  useExpeditionStore.setState({ fixes: [] });
   useSessionStore.setState({
     quest,
     status: "running",
@@ -197,7 +199,14 @@ describe("a walk, on the screen a hero stares at while walking", () => {
 
     // The panel is the readout, and it is there.
     expect(screen.getByText("Finding the sky")).toBeTruthy();
-    // And the map holds the place the movement's picture takes on every other set.
+    // The movement's picture holds the slot until the sky gives a position, and the map takes it
+    // over with the first fix. An empty dark slot in between read as a map that failed to load.
+    expect(screen.queryByTestId("live-map")).toBeNull();
+    await act(() => {
+      useExpeditionStore.setState({
+        fixes: [{ t: NOW, lat: 43.6, lon: 1.44, ele: 100, acc: 4, speed: 1.4, distFromPrev: 0 }],
+      });
+    });
     expect(screen.getByTestId("live-map")).toBeTruthy();
 
     // The 72px numeral, its unit label, the hint under it, and the ghost line are all gone.

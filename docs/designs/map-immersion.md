@@ -578,8 +578,11 @@ draws while the hero is actually looking.
   since that is what it becomes. No pace ramp: its ends are the run's own percentiles and they
   move with every fix, so the colours would shift under the hero's eyes. The glow and ring paints
   live in `constants/mapStyle.ts` so the two maps cannot drift.
-- Nothing is framed before the first fix. A camera with no centre looks at 0,0, the Gulf of
-  Guinea.
+- Nothing is framed before the first fix: the movement's picture holds the slot until then (the
+  `placeholder` prop). A camera with no centre looks at 0,0, the Gulf of Guinea, and the empty dark
+  slot tried first read on a phone as a map that had failed to load.
+- `Trace.path` drops any part of fewer than two points. MapLibre refuses a one-point line in a red
+  box, and the first fix of every live walk was one; the recap had the same hole after a break.
 - The fixes are held whole in `stores/expedition.ts` and `toTrace` is re-run on each one. A
   `ponytail:` comment in `LiveMap.tsx` names that ceiling.
 

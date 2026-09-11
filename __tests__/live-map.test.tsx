@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
-import { TamaguiProvider } from "tamagui";
+import { TamaguiProvider, Text } from "tamagui";
 import { LiveMap } from "@/components/session/LiveMap";
 import type { LocationFix } from "@/modules/bati-location";
 import { useExpeditionStore } from "@/stores/expedition";
@@ -74,7 +74,7 @@ async function mount(fixes: LocationFix[], tiles: boolean) {
   await act(async () => {
     await render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <LiveMap minHeight={200} topInset={0} />
+        <LiveMap minHeight={200} topInset={0} placeholder={<Text>the movement's picture</Text>} />
       </TamaguiProvider>,
     );
   });
@@ -87,10 +87,13 @@ beforeEach(() => {
   mockCenter.mockClear();
 });
 
-test("before the first fix it holds the place and frames nothing", async () => {
+test("before the first fix it shows what it was handed, and frames nothing", async () => {
   await mount([], true);
 
-  expect(screen.getByTestId("live-map")).toBeTruthy();
+  // The movement's picture, on the session screen. An empty dark slot while the sky is being
+  // found read as a map that failed to load.
+  expect(screen.getByText("the movement's picture")).toBeTruthy();
+  expect(screen.queryByTestId("live-map")).toBeNull();
   expect(screen.queryByTestId("maplibre")).toBeNull();
   // No credit for tiles that were never fetched, and no offer for a map that is not there yet.
   expect(screen.queryByTestId("map-attribution")).toBeNull();

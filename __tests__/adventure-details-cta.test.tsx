@@ -113,8 +113,8 @@ test("the active step's row pushes its quest with the adventure id, and keeps wi
   expect(mockPush).toHaveBeenCalledWith("/quests/100?adventureId=1", { withAnchor: true });
 });
 
-test("a locked step explains why; the active step does not repeat it", async () => {
-  const { getByText } = await render(
+test("a locked step wears its tag, and no row repeats the sentence the road now says", async () => {
+  const { getByText, queryByText } = await render(
     <TamaguiProvider config={config} defaultTheme="dark">
       <AdventureDetailsScreen />
     </TamaguiProvider>,
@@ -123,16 +123,19 @@ test("a locked step explains why; the active step does not repeat it", async () 
   const activeTitle = await waitFor(() => getByText("Step 1: Step 0"));
   const lockedTitle = getByText("Step 2: Step 1");
 
-  // The title and its row's hint are both direct children of the same YStack (see the JSX in
+  // The title and its row's tag are both children of the same XStack (see the JSX in
   // AdventureStepRow) — so scoping to a title's own `.parent` lands exactly on that row, not on
-  // whichever row happens to render the hint. A bare `getByText(hint)` passed even when the
-  // production condition was flipped to `status === "active"` (hint on the wrong row, still
-  // exactly one match on screen) — this scoping is what actually pins the hint to its row.
+  // whichever row happens to render the tag. A bare `getByText` passed even when the production
+  // condition was flipped (the mark on the wrong row, still exactly one match on screen) — this
+  // scoping is what actually pins a status to its step.
   assert(lockedTitle.parent);
   assert(activeTitle.parent);
-  const hint = "Finish the previous step to unlock it";
-  expect(within(lockedTitle.parent).getByText(hint)).toBeTruthy();
-  expect(within(activeTitle.parent).queryByText(hint)).toBeNull();
+  expect(within(lockedTitle.parent).getByText("Locked")).toBeTruthy();
+  expect(within(activeTitle.parent).queryByText("Locked")).toBeNull();
+
+  // "Finish the previous step to unlock it" stood under every locked row, verbatim. Position on
+  // the road says it once, for all of them (UX audit 2026-09-10).
+  expect(queryByText("Finish the previous step to unlock it")).toBeNull();
 });
 
 test("a completed adventure offers a replay and wears its stars", async () => {

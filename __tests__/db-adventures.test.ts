@@ -105,4 +105,46 @@ describe("db/adventures", () => {
 
     t.sqlite.exec(`DELETE FROM adventure_runs`);
   });
+
+  // The gallery card says how dangerous a campaign is *before* the hero starts one, and the
+  // `boss_fights` row only exists once a session has swung at it — so the pool has to travel on
+  // the adventure itself.
+  test("listAdventures carries each boss's pool, and no pool on a route", async () => {
+    const adventures = require("../db/adventures") as typeof import("../db/adventures");
+
+    const all = await adventures.listAdventures();
+    const bosses = all.filter((a) => a.kind === "boss");
+    expect(bosses.length).toBeGreaterThan(0);
+    for (const b of bosses) expect(b.bossTotalHp).toBeGreaterThan(0);
+
+    const golem = all.find((a) => a.enTitle === "The Golem");
+    assert(golem);
+    expect(golem.bossTotalHp).toBe(278);
+  });
+});
+
+describe("adventureOrder", () => {
+  const catalogue = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }];
+  const ids = (rows: { id: number }[]) => rows.map((r) => r.id);
+  // Required inside the tests, not at collection time: `db/adventures` pulls in `db/client`,
+  // which opens a real connection unless the mock above is already installed.
+  const order = () =>
+    (require("../db/adventures") as typeof import("../db/adventures")).adventureOrder;
+
+  test("a hero who has beaten nothing sees the authored ramp untouched", () => {
+    expect(ids(order()(catalogue, null, new Map()))).toEqual([1, 2, 3, 4]);
+  });
+
+  test("a campaign already beaten sinks, and keeps the authored order among its peers", () => {
+    const beaten = new Map([
+      [1, 3],
+      [3, 1],
+    ]);
+    expect(ids(order()(catalogue, null, beaten))).toEqual([2, 4, 1, 3]);
+  });
+
+  test("the campaign under way outranks everything, beaten or not", () => {
+    const beaten = new Map([[3, 2]]);
+    expect(ids(order()(catalogue, 3, beaten))).toEqual([3, 1, 2, 4]);
+  });
 });

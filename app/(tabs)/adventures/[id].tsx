@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { BossPanel } from "@/components/adventures/BossPanel";
 import { starsFor } from "@/components/adventures/replayStars";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
@@ -90,14 +90,43 @@ function StepStatusTag({ status }: { status: "locked" | "active" | "completed" }
   return <Tag label={label} tone={tone} />;
 }
 
+/** The step's own painting, at a size that reads as art rather than as a favicon. */
+const STEP_ART = 88;
+/** The road's node, and the width of the column that draws it. */
+const NODE = 12;
+const RAIL = 20;
+
+const STEP_ART_STYLE = { width: STEP_ART, height: STEP_ART, borderRadius: 12 } as const;
+/** A step still to come is a place the hero has not been: the art reads, dimmed rather than hidden. */
+const LOCKED_ART_STYLE = { ...STEP_ART_STYLE, opacity: 0.55 } as const;
+
+const STATUS_COLOR: Record<"locked" | "active" | "completed", ColorTokens> = {
+  completed: "$primary",
+  active: "$secondary",
+  locked: "$borderStrong",
+};
+
+/**
+ * One station on the campaign's road.
+ *
+ * It was a settings row: a 44 px thumbnail, a truncated line of story, and the sentence "Finish
+ * the previous step to unlock it" repeated verbatim under every locked step, while the cover above
+ * took 450 px of the same screen (UX audit 2026-09-10). The sentence is gone because the road says
+ * it: a step sits below the ones that unlock it, on a line the eye follows, and its node is hollow
+ * until it is walked. The word in the tag keeps the meaning off colour alone.
+ */
 const AdventureStepRow = memo(function AdventureStepRow({
   step,
   status,
   adventureId,
+  isFirst,
+  isLast,
 }: {
   step: AdventureStepTemplate;
   status: "locked" | "active" | "completed";
   adventureId: number;
+  isFirst: boolean;
+  isLast: boolean;
 }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -120,49 +149,59 @@ const AdventureStepRow = memo(function AdventureStepRow({
     langKey === "fr" ? step.frNarrative || step.enNarrative : step.enNarrative || step.frNarrative;
 
   const stepImage = resolveImage(step.imagePath, getQuestAsset);
+  const color = STATUS_COLOR[status];
 
   return (
-    <XStack
-      items="center"
-      justify="space-between"
-      gap="$3"
-      borderBottomWidth={1}
-      borderColor="$borderStrong"
-      pb="$3"
-      onPress={openQuest}
-      pressStyle={openQuest ? { opacity: 0.6 } : undefined}
-      accessibilityRole={openQuest ? "button" : undefined}
-    >
-      <XStack flex={1} items="center" gap="$3">
+    <XStack gap="$3">
+      {/* The road. Drawn as three pieces rather than one line behind the rows, because a
+          background line has to know the row heights and these vary with the narrative. */}
+      <YStack width={RAIL} items="center" accessible={false} pointerEvents="none">
+        <YStack width={2} height={10} bg={isFirst ? "transparent" : "$borderStrong"} />
+        <YStack
+          width={NODE}
+          height={NODE}
+          rounded={NODE / 2}
+          borderWidth={2}
+          borderColor={color}
+          bg={status === "locked" ? "transparent" : color}
+        />
+        <YStack flex={1} width={2} bg={isLast ? "transparent" : "$borderStrong"} />
+      </YStack>
+
+      <XStack
+        flex={1}
+        items="flex-start"
+        gap="$3"
+        pb="$4"
+        onPress={openQuest}
+        pressStyle={openQuest ? { opacity: 0.6 } : undefined}
+        accessibilityRole={openQuest ? "button" : undefined}
+      >
         {stepImage ? (
           <Image
             source={stepImage}
-            style={{ width: 44, height: 44, borderRadius: 10 }}
+            style={status === "locked" ? LOCKED_ART_STYLE : STEP_ART_STYLE}
             contentFit="cover"
             accessible={false}
           />
         ) : null}
 
-        <YStack flex={1}>
-          <Text fontWeight="700" color="$text">
-            {t("adventures.step_label", { count: step.stepIndex + 1 })}
-            {": "}
-            {stepTitle}
-          </Text>
+        <YStack flex={1} gap="$1">
+          <XStack items="flex-start" justify="space-between" gap="$2">
+            <Text flex={1} fontWeight="700" color="$text">
+              {t("adventures.step_label", { count: step.stepIndex + 1 })}
+              {": "}
+              {stepTitle}
+            </Text>
+            <StepStatusTag status={status} />
+          </XStack>
           {narrative ? (
-            <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
+            <Paragraph color="$textSecondary" size="$3" numberOfLines={3}>
               {narrative}
             </Paragraph>
           ) : null}
-          {status === "locked" ? (
-            <Text fontSize={12} color="$muted">
-              {t("adventures.step_locked_hint", "Finish the previous step to unlock it")}
-            </Text>
-          ) : null}
         </YStack>
       </XStack>
-
-      <StepStatusTag status={status} />
     </XStack>
   );
 });
@@ -571,8 +610,8 @@ export default function AdventureDetailsScreen() {
                   {t("adventures.steps_title")}
                 </Text>
 
-                <YStack gap="$2">
-                  {effectiveSteps.map((s) => (
+                <YStack>
+                  {effectiveSteps.map((s, i) => (
                     <AdventureStepRow
                       key={s.stepIndex}
                       step={s}
@@ -581,6 +620,8 @@ export default function AdventureDetailsScreen() {
                         (s.stepIndex === 0 ? "active" : "locked")
                       }
                       adventureId={adventureId}
+                      isFirst={i === 0}
+                      isLast={i === effectiveSteps.length - 1}
                     />
                   ))}
                 </YStack>

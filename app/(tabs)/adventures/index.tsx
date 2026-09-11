@@ -15,7 +15,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { Sparkles } from "@/components/icons";
+import { Skull, Sparkles } from "@/components/icons";
 import { getAdventureAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
@@ -23,6 +23,7 @@ import {
 } from "@/constants/exerciseColors";
 import {
   type Adventure,
+  adventureOrder,
   adventureWeeks,
   estimateQuestTemplateSeconds,
   estimateQuestTemplateXp,
@@ -31,6 +32,7 @@ import {
   listAdventures,
   listExercises,
 } from "@/db";
+import { threatRank } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
@@ -73,6 +75,8 @@ type AdventureRow = {
   finishedCount: number;
   /** "★", "★★", "★★★", then "★ ×n" — how many times this campaign was completed. */
   starsLabel: string | null;
+  /** 1-4 skulls, null on a route: which of these has a monster worth the trip. */
+  threat: 1 | 2 | 3 | 4 | null;
 };
 
 /** How the hero is doing in the one campaign that can be active at a time. */
@@ -136,10 +140,17 @@ function buildAdventureRow(
     }),
     finishedCount,
     starsLabel: starsFor(finishedCount),
+    // The pool the content tunes, not the hero's scaled one: a browsing card compares campaigns
+    // to each other, and threading a difficulty in would make the same monster read differently
+    // on two heroes' screens for a reason neither of them chose.
+    threat: a.bossTotalHp == null ? null : threatRank(a.bossTotalHp),
   };
 }
 
 const COVER_IMAGE_STYLE = { width: "100%", height: "100%" } as const;
+
+/** threatRank is 1-4; identical glyphs still need stable keys. Same list as BossPanel's. */
+const SKULL_KEYS = ["skull-1", "skull-2", "skull-3", "skull-4"] as const;
 
 /**
  * A campaign poster: taller banner than a quest ticket, world-tinted card, and the step
@@ -192,7 +203,7 @@ function AdventureCard({
               <Text fontSize={44}>🗺️</Text>
             </YStack>
           )}
-          <XStack position="absolute" t="$3" l="$3">
+          <XStack position="absolute" t="$3" l="$3" items="center" gap="$2">
             <Chip
               label={row.kindLabel}
               tone={item.kind === "boss" ? "primary" : undefined}
@@ -202,6 +213,26 @@ function AdventureCard({
                 ) : undefined
               }
             />
+            {/* The same skulls the boss panel draws inside the campaign, read the same way. The
+                `BOSS` tag says a monster exists; this says whether it is the Golem's 278 or the
+                Ranger's 1115, which is the question a browsing screen was not answering. */}
+            {row.threat ? (
+              <XStack
+                items="center"
+                gap={2}
+                bg="$bgLight"
+                rounded="$4"
+                px="$2"
+                py="$1"
+                borderWidth={1}
+                borderColor="$borderStrong"
+                accessibilityLabel={t("boss.threat", { rank: row.threat })}
+              >
+                {SKULL_KEYS.slice(0, row.threat).map((k) => (
+                  <Skull key={k} size={14} color="$error" />
+                ))}
+              </XStack>
+            ) : null}
           </XStack>
           {row.starsLabel ? (
             <XStack
@@ -414,7 +445,9 @@ export default function AdventuresGallery() {
 
   const rows = useMemo(
     () =>
-      adventures.map((a) =>
+      // Ordered before the rows are built, so the sort reads the adventures themselves rather
+      // than the display strings derived from them.
+      adventureOrder(adventures, activeProgress?.adventureId ?? null, finishedCounts).map((a) =>
         buildAdventureRow(
           a,
           exercisesById,
@@ -424,7 +457,7 @@ export default function AdventuresGallery() {
           configs.get(a.coverQuestId) ?? null,
         ),
       ),
-    [adventures, exercisesById, finishedCounts, language, t, configs],
+    [adventures, exercisesById, finishedCounts, language, t, configs, activeProgress],
   );
 
   const title = t("adventures.gallery_title", "Adventures");

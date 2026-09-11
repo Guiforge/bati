@@ -308,6 +308,13 @@ pretend otherwise.
   motivation without harming gains). Rotation only changes *which* movement fills a phase — never
   the length, the order, or the wrist step.
 
+  **Every movement is shown before its clock runs.** Thirty seconds of movement, then a wait of
+  `PREP_SECONDS` (10 s) or until GO, which the hero chooses in Settings. Ten seconds is the
+  transition of the 7-minute workout (Klika & Jordan 2013), a protocol built for speed that still
+  kept it; Bati ran zero, and four players described a clock running on a movement they were still
+  reading about. It costs 40 s on the shortest warm-up and under two minutes on the longest. See
+  [`../designs/warmup-prep.md`](../designs/warmup-prep.md).
+
   **Only dynamic movements, ever.** §11 puts static stretching after training or in standalone
   sessions, so `Pigeon Pose`, `Standing Forward Fold`, `Warrior Pose` and `Cobra Stretch` are
   excluded from every warm-up pool. They are the *content* of the mobility quests, which is

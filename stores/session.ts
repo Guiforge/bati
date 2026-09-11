@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { buildWarmup, type WarmupStep } from "@/constants/warmup";
+import { buildWarmup, PREP_SECONDS, type WarmupQuest, type WarmupStep } from "@/constants/warmup";
 import { completeAdventureRunStep, getAdventureIdForRunStep } from "@/db";
 import { checkForNewAchievements, type NewAchievementResult } from "@/db/achievements";
 import {
@@ -79,6 +79,7 @@ import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
 import { isExpedition, useExpeditionStore } from "@/stores/expedition";
+import { useSettingsStore } from "@/stores/settings";
 
 export type SessionStatus =
   | "idle"
@@ -89,7 +90,20 @@ export type SessionStatus =
   | "paused"
   | "finished";
 
-const PRE_START_COUNTDOWN_SECONDS = 3;
+/**
+ * The clock of a wait before a movement: `PREP_SECONDS` running on their own, or no clock at all
+ * until the hero taps GO. The one writer of it, for the warm-up's transitions and for the screen
+ * before the first exercise, which are the same wait under the same setting.
+ *
+ * A null start is what "waiting for GO" is to the rest of the session: `useSessionTimer` reads it
+ * as idle, `resumeSession` carries it through a pause untouched, and the views advance on a clock
+ * reaching zero only when there is a clock.
+ */
+function prepTimer(): { timerStartTimestamp: number | null; timerDuration: number } {
+  return useSettingsStore.getState().prepMode === "tap"
+    ? { timerStartTimestamp: null, timerDuration: 0 }
+    : { timerStartTimestamp: Date.now(), timerDuration: PREP_SECONDS };
+}
 
 /**
  * How much standing still an outing may still count as being out for.
@@ -205,6 +219,15 @@ interface SessionState {
   warmupSequence: WarmupStep[];
   /** Index into `warmupSequence` while `status === "warmup"`. */
   warmupIndex: number;
+  /**
+   * Whether the warm-up is showing `warmupIndex` before its clock runs, rather than running it.
+   *
+   * Every movement is a wait, then the movement: the name, the picture and the whole description
+   * come first, and the thirty seconds only start once they have been on screen. A sub-state of
+   * `warmup` rather than a status of its own, because nothing outside the warm-up screen needs to
+   * tell the two apart: the timer, the pause and the recovery all treat them the same way.
+   */
+  warmupPrep: boolean;
   currentRoundIndex: number; // 0-based
   currentExerciseIndex: number; // 0-based
 
@@ -297,6 +320,8 @@ interface SessionState {
       goal?: OutingGoal | null;
     },
   ) => Promise<void>;
+  /** From a movement's wait to the movement: GO, or the wait's clock running out. */
+  startWarmupMove: () => void;
   nextWarmupStep: () => void;
   previousWarmupStep: () => void;
   skipWarmup: () => void;
@@ -376,6 +401,7 @@ export type SavedSessionState = Pick<
   | "prePauseStatus"
   | "warmupSequence"
   | "warmupIndex"
+  | "warmupPrep"
   | "currentRoundIndex"
   | "currentExerciseIndex"
   | "startTime"
@@ -866,22 +892,45 @@ function runningFrom(quest: Quest, currentExerciseIndex: number) {
  * How a session opens: what it is doing, and what its timer is counting.
  *
  * A walk starts by walking. `buildWarmup` already returns nothing for an outing, so the only
- * ceremony left to remove was the full-screen 3..2..1, and it goes for both doors: the hero who
- * set a distance on the quest screen is no more in need of getting into position than the one
- * who tapped a tile. Written first as a flag on `startSession`, which repeated something the
- * quest already knows, and a flag that repeats a fact is a flag that can contradict it.
+ * ceremony left to remove was the start screen, and it goes for both doors: the hero who set a
+ * distance on the quest screen is no more in need of getting into position than the one who
+ * tapped a tile. Written first as a flag on `startSession`, which repeated something the quest
+ * already knows, and a flag that repeats a fact is a flag that can contradict it.
+ *
+ * Everything else opens on a wait. It used to open on the first warm-up movement's thirty
+ * seconds, running from the tap on Start, so a hero who did not know the movement spent its
+ * clock finding out what it was.
  */
-function openingState(quest: Quest, warmupFirst: boolean, warmupSequence: WarmupStep[]) {
+function openingState(quest: Quest, warmupFirst: boolean) {
   if (isOutingSession(quest)) return runningFrom(quest, 0);
 
   return {
     status: warmupFirst ? ("warmup" as const) : ("countdown" as const),
-    // Warm-up step, or the full-screen 3..2..1. Exercise timers start after the countdown.
-    timerStartTimestamp: Date.now(),
-    timerDuration: warmupFirst
-      ? (warmupSequence[0]?.seconds ?? PRE_START_COUNTDOWN_SECONDS)
-      : PRE_START_COUNTDOWN_SECONDS,
+    ...prepTimer(),
   };
+}
+
+/**
+ * The warm-up a quest gets if it starts now, or nothing if the hero switched warm-ups off.
+ *
+ * `startSession` and the quest screen's preview both call this, so the list a hero reads before
+ * starting is the list that plays: same preference, same session count, same kit. The quest
+ * screen passes the quest as configured, swaps and all, because that is what `startSession`
+ * receives from it.
+ */
+export async function loadWarmup(quest: WarmupQuest): Promise<WarmupStep[]> {
+  // The warm-up runs first unless the hero switched it off; skipping it is always one tap away,
+  // so the preference only exists to save that tap for people who never want it.
+  const warmupEnabled = await preferences.getWarmupEnabled().catch(() => true);
+  if (!warmupEnabled) return [];
+  // Rotates which movement fills each phase, so the warm-up is not the same four every
+  // session. A failed read costs variety, never the warm-up itself.
+  const { totalSessions } = await getSessionAggregates().catch(() => ({ totalSessions: 0 }));
+  // What the hero said they do not own. A failed read costs the filter, never the warm-up: an
+  // unfiltered warm-up is the old behaviour, and no warm-up is a worse answer than a scapular
+  // pull-up someone skips.
+  const unavailable = await unavailableMovements().catch(() => new Set<string>());
+  return buildWarmup(quest, totalSessions, unavailable);
 }
 
 /**
@@ -1006,6 +1055,7 @@ export const useSessionStore = create<SessionState>()(
     prePauseStatus: null,
     warmupSequence: [],
     warmupIndex: 0,
+    warmupPrep: false,
     currentRoundIndex: 0,
     currentExerciseIndex: 0,
     startTime: null,
@@ -1052,20 +1102,10 @@ export const useSessionStore = create<SessionState>()(
 
       const bossFight = await loadLiveBossFight(adventureId, userLevel);
 
-      // The warm-up runs first unless the hero switched it off; skipping it is always one tap
-      // away, so the preference only exists to save that tap for people who never want it.
-      const warmupEnabled = await preferences.getWarmupEnabled().catch(() => true);
-      // Rotates which movement fills each phase, so the warm-up is not the same four every
-      // session. A failed read costs variety, never the warm-up itself.
-      const { totalSessions } = await getSessionAggregates().catch(() => ({ totalSessions: 0 }));
-      // What the hero said they do not own. A failed read costs the filter, never the warm-up:
-      // an unfiltered warm-up is the old behaviour, and no warm-up is a worse answer than a
-      // scapular pull-up someone skips.
-      const unavailable = await unavailableMovements().catch(() => new Set<string>());
-      const warmupSequence = buildWarmup(quest, totalSessions, unavailable);
-      const warmupFirst = warmupEnabled && warmupSequence.length > 0;
+      const warmupSequence = await loadWarmup(quest);
+      const warmupFirst = warmupSequence.length > 0;
 
-      const opening = openingState(quest, warmupFirst, warmupSequence);
+      const opening = openingState(quest, warmupFirst);
 
       set({
         quest,
@@ -1080,6 +1120,7 @@ export const useSessionStore = create<SessionState>()(
         prePauseStatus: null,
         warmupSequence,
         warmupIndex: 0,
+        warmupPrep: warmupFirst,
         currentRoundIndex: 0,
         currentExerciseIndex: 0,
         startTime: Date.now(),
@@ -1101,6 +1142,22 @@ export const useSessionStore = create<SessionState>()(
       beginTrackingIfOuting(quest, get().sessionUuid, options?.goal ?? null);
     },
 
+    startWarmupMove: () => {
+      const { status, warmupPrep, warmupIndex, warmupSequence } = get();
+      if (status !== "warmup" || !warmupPrep) return;
+
+      set({
+        warmupPrep: false,
+        timerStartTimestamp: Date.now(),
+        timerDuration: warmupSequence[warmupIndex]?.seconds ?? 0,
+      });
+    },
+
+    /**
+     * To the wait before the next movement, from its wait or from the movement itself: the end
+     * of a movement's clock, or Next. Never straight into the next movement's thirty seconds,
+     * which is the zero-second transition this replaced. Past the last one, the start screen.
+     */
     nextWarmupStep: () => {
       const { status, warmupIndex, warmupSequence } = get();
       if (status !== "warmup") return;
@@ -1111,35 +1168,22 @@ export const useSessionStore = create<SessionState>()(
         return;
       }
 
-      set({
-        warmupIndex: next,
-        timerStartTimestamp: Date.now(),
-        timerDuration: warmupSequence[next]?.seconds ?? 0,
-      });
+      set({ warmupIndex: next, warmupPrep: true, ...prepTimer() });
     },
 
-    /** Step back one movement, timer full again. Stops at the first: there is nothing before it. */
+    /** To the wait before the movement behind this one. Stops at the first: nothing is before it. */
     previousWarmupStep: () => {
-      const { status, warmupIndex, warmupSequence } = get();
+      const { status, warmupIndex } = get();
       if (status !== "warmup" || warmupIndex === 0) return;
 
-      const prev = warmupIndex - 1;
-      set({
-        warmupIndex: prev,
-        timerStartTimestamp: Date.now(),
-        timerDuration: warmupSequence[prev]?.seconds ?? 0,
-      });
+      set({ warmupIndex: warmupIndex - 1, warmupPrep: true, ...prepTimer() });
     },
 
-    /** Leave the warm-up for the countdown. Nothing is journaled: a warm-up is not work. */
+    /** Leave the warm-up for the start screen. Nothing is journaled: a warm-up is not work. */
     skipWarmup: () => {
       if (get().status !== "warmup") return;
 
-      set({
-        status: "countdown",
-        timerStartTimestamp: Date.now(),
-        timerDuration: PRE_START_COUNTDOWN_SECONDS,
-      });
+      set({ status: "countdown", warmupPrep: false, ...prepTimer() });
     },
 
     finishCountdown: () => {
@@ -1249,6 +1293,7 @@ export const useSessionStore = create<SessionState>()(
         prePauseStatus: null,
         warmupSequence: [],
         warmupIndex: 0,
+        warmupPrep: false,
         currentRoundIndex: 0,
         currentExerciseIndex: 0,
         startTime: null,
@@ -1881,6 +1926,7 @@ useSessionStore.subscribe(
           prePauseStatus: state.prePauseStatus,
           warmupSequence: state.warmupSequence,
           warmupIndex: state.warmupIndex,
+          warmupPrep: state.warmupPrep,
           currentRoundIndex: state.currentRoundIndex,
           currentExerciseIndex: state.currentExerciseIndex,
           startTime: state.startTime,

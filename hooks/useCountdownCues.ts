@@ -44,11 +44,11 @@ export function useCountdownCues(remainingSeconds: number): void {
     previousRef.current = remainingSeconds;
     if (!soundEnabled || remainingSeconds === previous) return;
 
-    // A mount inside the last three seconds still counts, because one view starts there:
-    // `CountdownView` opens on exactly 3 (PRE_START_COUNTDOWN_SECONDS), so a blanket "the mount
-    // is silent" rule would show a 3 on screen and beep only twice. Zero is the exception, and
-    // the only one that matters — a rep-based exercise parks there forever and must never sound
-    // like a set that just ended. Rest and timed sets mount far above 3 and are unaffected.
+    // A mount inside the last three seconds still counts: `CountdownView` used to open on exactly
+    // 3, and a session resumed from a pause late in a wait still does, so a blanket "the mount is
+    // silent" rule would show a 3 on screen and beep only twice. Zero is the exception, and the
+    // only one that matters: a rep-based exercise parks there forever, and so does a wait for GO
+    // (no clock), and neither must ever sound like a set that just ended.
     if (previous === null && remainingSeconds === 0) return;
 
     if (remainingSeconds >= 1 && remainingSeconds <= 3) playCue("tick");

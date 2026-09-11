@@ -1,62 +1,58 @@
 import { Image } from "expo-image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { Pause, SkipBack, SkipForward } from "@/components/icons";
-import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
+import { getExerciseAsset } from "@/constants/assetMap";
+import { PREP_SECONDS, switchesSides } from "@/constants/warmup";
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { describeExercise } from "@/hooks/useSessionInstructions";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
-import { localizedName } from "@/src/i18n/localized";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
-import { ExerciseInstructionsModal } from "./ExerciseInstructions";
+import { MovementDescription, PrepView } from "./PrepView";
 
 /**
- * The dynamic warm-up, before the countdown (roadmap §14 H2).
+ * The dynamic warm-up, before the start screen (roadmap §14 H2).
+ *
+ * Every movement is two screens: the wait, which shows what the movement is before its clock
+ * runs, then the movement itself. The wait is ten seconds or a tap on GO, whichever the hero chose
+ * in Settings, and nothing advances by touch otherwise: a phone on the floor gets the whole
+ * warm-up hands-free.
  *
  * Movements come from the seeded catalogue, so their names and art are already bilingual and on
  * disk — nothing here is a second kind of content. Nothing is journaled either: the hero's
  * volume, records and boss damage all start at the first real exercise.
  */
-/**
- * The how-to box: caps at ~6 lines and scrolls past that, and refuses to be squeezed.
- *
- * `flexShrink` is 1 by default on an RN ScrollView, so the overflowing column above shrank this
- * to three lines and cut the sentence mid-word — the same defect `FilterRail`'s `RAIL_STYLE`
- * exists to prevent, and the exact complaint that started this: a hero who does not know the
- * movement, reading half a sentence while the clock runs.
- */
-const DESCRIPTION_STYLE = { maxHeight: 120, flexGrow: 0, flexShrink: 0 } as const;
-
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one screen, two states read top-to-bottom
 export function WarmupView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
-  const { selection } = useHaptics();
+  const prepMode = useSettingsStore((s) => s.prepMode);
+  const { selection, mediumImpact } = useHaptics();
 
   const warmupIndex = useSessionStore((s) => s.warmupIndex);
   // Built per quest at startSession — a squat day and a handstand day do not warm up the same.
   const warmupSequence = useSessionStore((s) => s.warmupSequence);
+  const warmupPrep = useSessionStore((s) => s.warmupPrep);
+  const timerStartTimestamp = useSessionStore((s) => s.timerStartTimestamp);
+  const startWarmupMove = useSessionStore((s) => s.startWarmupMove);
   const nextWarmupStep = useSessionStore((s) => s.nextWarmupStep);
   const previousWarmupStep = useSessionStore((s) => s.previousWarmupStep);
   const skipWarmup = useSessionStore((s) => s.skipWarmup);
   const pauseSession = useSessionStore((s) => s.pauseSession);
-  const resumeSession = useSessionStore((s) => s.resumeSession);
   const { remainingSeconds, progress } = useSessionTimer();
   // Declared above the auto-advance effect below, the same way `RestView` does it: on the render
-  // where a movement hits zero, this one runs first, so the "go" starts before `nextWarmupStep()`
-  // resets the timer under it. Without it this screen was the one timed view that never counted,
-  // so all four of its countdowns ran silent and the first sound of a session was the pre-start
-  // countdown that follows the warm-up, which reads as "only the last movement beeps".
+  // where a clock hits zero, this one runs first, so the "go" starts before the store resets the
+  // timer under it. The same cue as a rest or a timed set, for the wait and the movement alike.
   useCountdownCues(remainingSeconds);
 
   const [catalogue, setCatalogue] = useState<Exercise[]>([]);
-  const [showNextHowTo, setShowNextHowTo] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,67 +68,77 @@ export function WarmupView() {
     };
   }, []);
 
-  // The timer runs out on its own — advancing here keeps the sequence moving hands-free.
+  // The clock runs out on its own, which keeps the sequence moving hands-free: a wait that ends
+  // starts its movement, a movement that ends opens the next wait.
+  //
+  // `remainingSeconds` is the only dependency, and the store is read here rather than through the
+  // selectors above, on purpose. The render where a movement becomes a wait still shows the
+  // movement's zero, because `useSessionTimer` only reads the new timer in its own effect: with
+  // `warmupPrep` in this list, that flip re-ran the effect on the stale zero and the wait was
+  // skipped before it was ever shown. A clock reaching zero is the event; the rest is state.
+  //
+  // No clock means the wait is for GO, and a zero that is not a clock must never move anything.
   useEffect(() => {
     if (remainingSeconds > 0) return;
-    nextWarmupStep();
-  }, [remainingSeconds, nextWarmupStep]);
+    const session = useSessionStore.getState();
+    if (session.status !== "warmup" || session.timerStartTimestamp === null) return;
+    if (session.warmupPrep) session.startWarmupMove();
+    else session.nextWarmupStep();
+  }, [remainingSeconds]);
 
   const step = warmupSequence[warmupIndex];
 
   // A warm-up with no step to show is a dead end: the screen renders nothing and no timer ever
   // fires to move it along, so the hero is stranded on black with their session still open.
   // It happened to every recovered warm-up, back when the sequence was not part of the snapshot.
-  // Leaving for the countdown is the honest recovery — a warm-up is not journaled anyway.
+  // Leaving for the start screen is the honest recovery: a warm-up is not journaled anyway.
   useEffect(() => {
     if (!step) skipWarmup();
   }, [step, skipWarmup]);
 
+  // One-sided movements are fifteen seconds a side, and the swap is felt as well as read: the
+  // phone is on the floor, and a line of text changing colour is not something anyone sees from
+  // a lunge. No sound, deliberately: the beeps mean the same thing everywhere in a session.
+  const sided = !warmupPrep && step !== undefined && switchesSides(step.exerciseName);
+  const half = step ? Math.floor(step.seconds / 2) : 0;
+  const previousRemaining = useRef(remainingSeconds);
+  useEffect(() => {
+    const previous = previousRemaining.current;
+    previousRemaining.current = remainingSeconds;
+    if (sided && previous > half && remainingSeconds <= half && remainingSeconds > 0) {
+      mediumImpact();
+    }
+  }, [remainingSeconds, sided, half, mediumImpact]);
+
   if (!step) return null;
 
-  const nameOf = (enName: string) => {
-    // Seed rows only: since `0035` a hero can own a name too, and the warm-up prescribes the
-    // seeded movement — teaching someone their own half-written note would be worse than the
-    // English fallback.
-    const found = officialByName(catalogue, enName);
-    if (!found) return enName;
-    return localizedName(found, language);
-  };
-
+  // Seed rows only: since `0035` a hero can own a name too, and the warm-up prescribes the
+  // seeded movement, and teaching someone their own half-written note would be worse than the
+  // English fallback.
   const exercise = officialByName(catalogue, step.exerciseName);
-  const label = nameOf(step.exerciseName);
-  const description = exercise
-    ? language === "fr"
-      ? exercise.frDescription
-      : exercise.enDescription
-    : undefined;
+  const instruction = exercise ? describeExercise(exercise, language) : null;
+  const label = instruction?.name ?? step.exerciseName;
+  const eachSide = switchesSides(step.exerciseName)
+    ? t("session.each_side", { seconds: half })
+    : null;
+  const switched = sided && remainingSeconds <= half;
 
-  const nextStep = warmupSequence[warmupIndex + 1];
-  const nextExercise = nextStep ? officialByName(catalogue, nextStep.exerciseName) : undefined;
-  const nextInstruction = nextExercise ? describeExercise(nextExercise, language) : null;
-
-  // Same trade as the rest screen: reading what a movement is stops the clock, closing starts it
-  // again. A warm-up step is thirty seconds, so letting it run through the description would
-  // spend the whole step on reading it.
-  const handleShowNextHowTo = () => {
-    // The catalogue arrives asynchronously, so early in a warm-up the card has a name and
-    // nothing to open yet. Pausing for an empty modal would strand the hero on the overlay.
-    if (!nextInstruction) return;
-    selection();
-    pauseSession();
-    setShowNextHowTo(true);
-  };
-
-  const handleCloseNextHowTo = () => {
-    resumeSession();
-    setShowNextHowTo(false);
-  };
+  // The whole warm-up still ahead, so "2 of 6" says how long it is rather than how many. The
+  // waits count only when they run on a clock: a wait for GO lasts as long as the hero wants.
+  const perWait = prepMode === "timer" ? PREP_SECONDS : 0;
+  const later = warmupSequence
+    .slice(warmupIndex + 1)
+    .reduce((sum, next) => sum + next.seconds + perWait, 0);
+  const left = Math.max(0, remainingSeconds) + (warmupPrep ? step.seconds : 0) + later;
 
   const isFirst = warmupIndex === 0;
 
   return (
     <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16} px="$5" gap="$4">
-      <XStack justify="flex-end">
+      <XStack justify="space-between" items="center">
+        <Text fontSize={13} fontWeight="700" color="$textSecondary" letterSpacing={1}>
+          {t("session.warmup_title", "WARM-UP")}
+        </Text>
         <Button
           testID="session-pause"
           size="$3"
@@ -147,68 +153,85 @@ export function WarmupView() {
         />
       </XStack>
 
-      <YStack flex={1} items="center" justify="center" gap="$4">
-        <Text fontSize={13} fontWeight="700" color="$textSecondary" letterSpacing={1}>
-          {t("session.warmup_title", "WARM-UP")}
-        </Text>
-
-        {exercise ? (
-          <Image
-            source={getExerciseAsset(exercise.imagePath)}
-            style={{ width: 180, height: 180, borderRadius: 16 }}
-            contentFit="cover"
-          />
-        ) : null}
-
-        <H3 color="$text" fontWeight="700" style={{ textAlign: "center" }}>
-          {label}
-        </H3>
-
-        {/* Not truncated, and scrolling rather than growing: this column's siblings are
-          fixed-height and RN's flexShrink is 0, so a long movement would otherwise push the
-          timer off the bottom edge. Three lines was the old cap, and it cut the one screen
-          whose job is teaching a movement off mid-sentence. */}
-        {description ? (
-          <ScrollView style={DESCRIPTION_STYLE} showsVerticalScrollIndicator={false}>
-            <Text
-              fontSize={14}
-              color="$textSecondary"
-              lineHeight={20}
-              style={{ textAlign: "center" }}
-            >
-              {description}
-            </Text>
-          </ScrollView>
-        ) : null}
-
-        <H1 color="$primaryText" fontSize={64} fontWeight="700">
-          {formatTime(Math.max(0, remainingSeconds))}
-        </H1>
-
-        <Progress value={Math.min(100, progress * 100)} width="100%" bg="$surface">
-          <Progress.Indicator bg="$primary" />
-        </Progress>
-
-        <XStack items="center" gap="$5">
-          <Button
-            testID="session-warmup-prev"
-            size="$4"
-            circular
-            icon={<SkipBack size={20} color="$text" />}
-            disabled={isFirst}
-            opacity={isFirst ? 0.35 : 1}
-            bg="$surface"
-            borderWidth={1}
-            borderColor="$borderStrong"
-            pressStyle={{ opacity: 0.7 }}
-            onPress={() => {
+      {warmupPrep ? (
+        <YStack flex={1} justify="center">
+          <PrepView
+            kicker={t("session.prep_title", {
+              current: warmupIndex + 1,
+              total: warmupSequence.length,
+            })}
+            instruction={instruction}
+            fallbackName={label}
+            target={eachSide ?? `${step.seconds}s`}
+            remainingSeconds={timerStartTimestamp === null ? null : remainingSeconds}
+            onGo={() => {
               selection();
-              previousWarmupStep();
+              startWarmupMove();
             }}
-            accessibilityLabel={t("session.warmup_prev_accessibility")}
-            accessibilityRole="button"
+            goTestID="session-prep-go"
           />
+        </YStack>
+      ) : (
+        <YStack flex={1} items="center" justify="center" gap="$4">
+          {exercise ? (
+            <Image
+              source={getExerciseAsset(exercise.imagePath)}
+              style={{ width: 180, height: 180, borderRadius: 16 }}
+              contentFit="cover"
+            />
+          ) : null}
 
+          <YStack items="center" gap="$1">
+            <H3 color="$text" fontWeight="700" style={{ textAlign: "center" }}>
+              {label}
+            </H3>
+            {eachSide ? (
+              <Text
+                testID="warmup-sides"
+                fontSize={15}
+                fontWeight="700"
+                color={switched ? "$warning" : "$textSecondary"}
+              >
+                {switched ? t("session.switch_sides") : t("session.each_side", { seconds: half })}
+              </Text>
+            ) : null}
+          </YStack>
+
+          {/* Still here during the movement: the wait showed it, and a glance mid-movement is
+              cheaper than a pause. */}
+          {instruction?.description ? <MovementDescription text={instruction.description} /> : null}
+
+          <H1 color="$primaryText" fontSize={64} fontWeight="700">
+            {formatTime(Math.max(0, remainingSeconds))}
+          </H1>
+
+          <Progress value={Math.min(100, progress * 100)} width="100%" bg="$surface">
+            <Progress.Indicator bg="$primary" />
+          </Progress>
+        </YStack>
+      )}
+
+      <XStack items="center" justify="center" gap="$5">
+        <Button
+          testID="session-warmup-prev"
+          size="$4"
+          circular
+          icon={<SkipBack size={20} color="$text" />}
+          disabled={isFirst}
+          opacity={isFirst ? 0.35 : 1}
+          bg="$surface"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          pressStyle={{ opacity: 0.7 }}
+          onPress={() => {
+            selection();
+            previousWarmupStep();
+          }}
+          accessibilityLabel={t("session.warmup_prev_accessibility")}
+          accessibilityRole="button"
+        />
+
+        <YStack items="center" minW={96}>
           <Text fontSize={13} color="$textSecondary">
             {t("session.warmup_step", {
               current: warmupIndex + 1,
@@ -216,94 +239,42 @@ export function WarmupView() {
               defaultValue: `${warmupIndex + 1} of ${warmupSequence.length}`,
             })}
           </Text>
+          <Text testID="warmup-left" fontSize={13} color="$textSecondary">
+            {t("session.warmup_left", { time: formatTime(left) })}
+          </Text>
+        </YStack>
 
-          <Button
-            testID="session-warmup-next"
-            size="$4"
-            circular
-            icon={<SkipForward size={20} color="$text" />}
-            bg="$surface"
-            borderWidth={1}
-            borderColor="$borderStrong"
-            pressStyle={{ opacity: 0.7 }}
-            onPress={() => {
-              selection();
-              nextWarmupStep();
-            }}
-            accessibilityLabel={t("session.warmup_next_accessibility")}
-            accessibilityRole="button"
-          />
-        </XStack>
-      </YStack>
-
-      {nextStep ? (
-        <XStack
-          testID="warmup-up-next"
+        <Button
+          testID="session-warmup-next"
+          size="$4"
+          circular
+          icon={<SkipForward size={20} color="$text" />}
           bg="$surface"
-          p="$3"
-          rounded="$6"
           borderWidth={1}
           borderColor="$borderStrong"
-          gap="$3"
-          items="center"
-          onPress={handleShowNextHowTo}
-          pressStyle={{ opacity: 0.9 }}
+          pressStyle={{ opacity: 0.7 }}
+          onPress={() => {
+            selection();
+            nextWarmupStep();
+          }}
+          accessibilityLabel={t("session.warmup_next_accessibility")}
           accessibilityRole="button"
-          accessibilityLabel={t("session.how_to_do_it")}
-        >
-          <YStack
-            width={50}
-            height={50}
-            bg="$surface2"
-            rounded="$3"
-            overflow="hidden"
-            borderWidth={1}
-            borderColor="$borderStrong"
-          >
-            {nextExercise ? (
-              <Image
-                source={getExerciseThumb(nextExercise.imagePath)}
-                style={{ width: "100%", height: "100%" }}
-                contentFit="cover"
-                transition={150}
-              />
-            ) : null}
-          </YStack>
-          <YStack flex={1}>
-            <Text color="$textSecondary" fontSize={12} fontWeight="700">
-              {t("session.up_next")}
-            </Text>
-            <Text fontWeight="700" fontSize={16} numberOfLines={1} color="$text">
-              {nameOf(nextStep.exerciseName)}
-            </Text>
-          </YStack>
-          <Text color="$textSecondary" fontSize={13}>
-            {nextStep.seconds}s
-          </Text>
-        </XStack>
-      ) : null}
+        />
+      </XStack>
 
-      <Button
+      {/* A control, and shaped like one: it used to be the smallest, dimmest text on the screen,
+          which is how the hurried-lifter audit found it (2026-09-10). */}
+      <AppButton
         testID="session-skip-warmup"
-        chromeless
-        size="$3"
-        hitSlop={8}
+        variant="outline"
         onPress={() => {
           selection();
           skipWarmup();
         }}
         accessibilityRole="button"
       >
-        <Text color="$textSecondary" fontSize={15}>
-          {t("session.warmup_skip", "Skip warm-up")}
-        </Text>
-      </Button>
-
-      <ExerciseInstructionsModal
-        instruction={nextInstruction}
-        visible={showNextHowTo}
-        onClose={handleCloseNextHowTo}
-      />
+        {t("session.warmup_skip", "Skip warm-up")}
+      </AppButton>
     </YStack>
   );
 }

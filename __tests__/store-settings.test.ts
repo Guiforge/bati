@@ -25,6 +25,7 @@ const prefs = {
   getSoundEnabled: jest.fn<Promise<boolean>, []>(),
   getDistanceUnit: jest.fn<Promise<"metric" | "imperial">, []>(),
   getMapTilesEnabled: jest.fn<Promise<boolean>, []>(),
+  getPrepMode: jest.fn<Promise<"timer" | "tap">, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
@@ -33,6 +34,7 @@ const prefs = {
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
   setDistanceUnit: jest.fn().mockResolvedValue(undefined),
   setMapTilesEnabled: jest.fn().mockResolvedValue(undefined),
+  setPrepMode: jest.fn().mockResolvedValue(undefined),
 };
 
 beforeAll(() => {
@@ -73,6 +75,7 @@ function storedSettings() {
   prefs.getSoundEnabled.mockResolvedValue(false);
   prefs.getDistanceUnit.mockResolvedValue("imperial");
   prefs.getMapTilesEnabled.mockResolvedValue(true);
+  prefs.getPrepMode.mockResolvedValue("tap");
 }
 
 const DEFAULTS = {
@@ -86,6 +89,7 @@ const DEFAULTS = {
   // Off, and it is the only boolean here whose default is a refusal: it is what decides whether
   // the app makes a network request at all.
   mapTilesEnabled: false,
+  prepMode: "timer" as const,
   isLoaded: false,
 };
 
@@ -110,6 +114,7 @@ describe("useSettingsStore", () => {
       soundEnabled: false,
       distanceUnit: "imperial",
       mapTilesEnabled: true,
+      prepMode: "tap",
       isLoaded: true,
     });
   });

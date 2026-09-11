@@ -2,7 +2,7 @@ import { AccessibilityInfo } from "react-native";
 import { create } from "zustand";
 import { type AvatarId, avatarIds, isAvatarId } from "@/constants/avatars";
 import { preferences } from "@/db";
-import type { DistanceUnit } from "@/db/preferences";
+import type { DistanceUnit, PrepMode } from "@/db/preferences";
 import { i18n } from "@/i18n";
 import {
   type AppLanguage,
@@ -30,6 +30,12 @@ interface SettingsState {
   distanceUnit: DistanceUnit;
   /** Whether the recap may fetch its basemap. The app's only network call, and it starts off. */
   mapTilesEnabled: boolean;
+  /**
+   * How a session waits before a movement. Held here rather than read once by `startSession`, so
+   * the session store asks it at every transition: changed mid-session, it applies to the next
+   * wait, and a recovered session needs no copy of it in its snapshot.
+   */
+  prepMode: PrepMode;
   isLoaded: boolean;
 
   setLanguage: (language: AppLanguage) => Promise<void>;
@@ -40,6 +46,7 @@ interface SettingsState {
   setVillagersEnabled: (enabled: boolean) => Promise<void>;
   setDistanceUnit: (unit: DistanceUnit) => Promise<void>;
   setMapTilesEnabled: (enabled: boolean) => Promise<void>;
+  setPrepMode: (mode: PrepMode) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
 }
@@ -78,6 +85,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   // Off, and the same default the DB read returns for a key nobody has written: the map is the
   // one thing here that reaches a third party, so an unanswered question is a no.
   mapTilesEnabled: false,
+  prepMode: "timer",
   isLoaded: false,
 
   setLanguage: async (language) => {
@@ -130,6 +138,11 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setMapTilesEnabled(enabled);
   },
 
+  setPrepMode: async (mode) => {
+    set({ prepMode: mode });
+    await preferences.setPrepMode(mode);
+  },
+
   loadFromDatabase: async () => {
     try {
       const [
@@ -142,6 +155,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         soundEnabled,
         distanceUnit,
         mapTilesEnabled,
+        prepMode,
       ] = await Promise.all([
         preferences.getLanguage(),
         preferences.getAvatarId(),
@@ -152,6 +166,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getSoundEnabled(),
         preferences.getDistanceUnit(),
         preferences.getMapTilesEnabled(),
+        preferences.getPrepMode(),
       ]);
 
       const normalizedLanguage = resolveAppLanguage(language);
@@ -173,6 +188,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         soundEnabled,
         distanceUnit,
         mapTilesEnabled,
+        prepMode,
         isLoaded: true,
       });
 

@@ -17,6 +17,7 @@ import { ChevronLeft, Dumbbell, Footprints, Pencil, Repeat, Sparkles } from "@/c
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
 import { restsBetweenExercises } from "@/components/quests/questShape";
+import { WarmupPreview } from "@/components/quests/WarmupPreview";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
@@ -805,6 +806,10 @@ export default function QuestDetails() {
               onSwap={setSwapFor}
             />
           ) : null}
+
+          {/* The configured quest, swaps included: it is what Start hands `startSession`, so
+              the warm-up listed here is the one that plays. */}
+          {quest ? <WarmupPreview quest={quest} catalogue={catalogue} language={language} /> : null}
 
           {quest ? (
             <YStack gap="$3">

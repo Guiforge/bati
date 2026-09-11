@@ -100,8 +100,8 @@ describe("useCountdownCues", () => {
     ]);
   });
 
-  // CountdownView opens on exactly PRE_START_COUNTDOWN_SECONDS = 3. A blanket "the mount is
-  // silent" rule showed a 3 on screen and beeped twice.
+  // CountdownView used to open on exactly 3, and a wait resumed late from a pause still can. A
+  // blanket "the mount is silent" rule showed a 3 on screen and beeped twice.
   test("a view that opens inside the last three seconds counts all of them", async () => {
     expect(await countDown([3, 2, 1, 0], { from: 3 })).toEqual(["tick", "tick", "tick", "go"]);
   });

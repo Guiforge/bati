@@ -1,9 +1,9 @@
-import { act, render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { WarmupView } from "@/components/session/WarmupView";
-import { WARMUP_SEQUENCE } from "@/constants/warmup";
+import { PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
 import { listExercises } from "@/db/exercises";
 import { playCue } from "@/src/sounds";
 import { useSessionStore } from "@/stores/session";
@@ -57,15 +57,30 @@ async function mountWarmup() {
   return result;
 }
 
+/** One second per act(): a jump renders once with the final value, and the seconds between are lost. */
+async function tickSeconds(seconds: number) {
+  for (let second = 0; second < seconds; second++) {
+    await act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+  }
+}
+
+const cues = () => (playCue as jest.MockedFunction<typeof playCue>).mock.calls.map(([cue]) => cue);
+
 describe("WarmupView", () => {
   beforeEach(() => {
     jest.useFakeTimers();
+    (playCue as jest.Mock).mockClear();
+    // Mid-movement by default: most of what is pinned here is the movement's own clock. The
+    // cases about the wait before it set it up themselves.
     useSessionStore.setState({
       status: "warmup",
       // The sequence lives in state now (built per quest by `buildWarmup`), so a test that
       // drives the store directly has to seed it — the view renders nothing without one.
       warmupSequence: WARMUP_SEQUENCE,
       warmupIndex: 0,
+      warmupPrep: false,
       timerStartTimestamp: Date.now(),
       timerDuration: WARMUP_SEQUENCE[0].seconds,
     });
@@ -79,9 +94,12 @@ describe("WarmupView", () => {
     await mountWarmup();
 
     expect(useSessionStore.getState().warmupIndex).toBe(0);
+    expect(useSessionStore.getState().warmupPrep).toBe(false);
   });
 
-  it("still advances on its own once the step's timer runs out", async () => {
+  // Zero seconds between two movements is what four players described: the next one's clock
+  // started the instant the last one ended, before anyone had read what it was.
+  it("a movement that runs out opens the wait before the next one, not its clock", async () => {
     await mountWarmup();
 
     await act(() => {
@@ -89,48 +107,93 @@ describe("WarmupView", () => {
     });
 
     expect(useSessionStore.getState().warmupIndex).toBe(1);
+    expect(useSessionStore.getState().warmupPrep).toBe(true);
+    expect(useSessionStore.getState().timerDuration).toBe(PREP_SECONDS);
   });
 
   /**
-   * The report: no beep on any warm-up movement, only on the last one. The beep heard at the end
-   * is the pre-start countdown that follows the warm-up, not the last movement announcing itself:
-   * this screen was the one timed view that never called `useCountdownCues`, so all four of its
-   * countdowns ran silent and the first sound of a session came after the warm-up was over.
-   *
-   * Driven across two movements rather than one, because "only the last one" is a claim about the
-   * ones before it.
+   * The trap in the auto-advance: on the render where a movement becomes a wait, the timer still
+   * reads the movement's zero. An effect that re-ran on that render took the zero for the end of
+   * the wait and started the movement before the wait was ever shown. Walked through the whole
+   * wait and five seconds into the movement, because "the wait was skipped" and "the movement was
+   * skipped" are both claims about what happens after the transition.
    */
-  it("counts the last three seconds of every movement, not just the one before the session", async () => {
-    const mockedPlayCue = playCue as jest.MockedFunction<typeof playCue>;
-    mockedPlayCue.mockClear();
-
+  it("the wait ends on its own and the movement then runs its whole clock", async () => {
+    useSessionStore.setState({
+      warmupPrep: true,
+      timerStartTimestamp: Date.now(),
+      timerDuration: PREP_SECONDS,
+    });
     await mountWarmup();
 
-    // One second per act(): React batches inside a single act, so a jump would render once with
-    // the final value and only the zero would ever be observable. See the same note in
-    // __tests__/rest-view.test.tsx.
-    const stepSeconds = WARMUP_SEQUENCE[0].seconds;
-    for (let second = 0; second < stepSeconds; second++) {
-      await act(() => {
-        jest.advanceTimersByTime(1000);
-      });
-    }
+    await tickSeconds(PREP_SECONDS);
+    expect(useSessionStore.getState().warmupIndex).toBe(0);
+    expect(useSessionStore.getState().warmupPrep).toBe(false);
+    expect(useSessionStore.getState().timerDuration).toBe(WARMUP_SEQUENCE[0].seconds);
 
-    expect(mockedPlayCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "go"]);
-    // The second movement is a countdown too, and it was the silent case.
-    expect(useSessionStore.getState().warmupIndex).toBe(1);
-
-    mockedPlayCue.mockClear();
-    for (let second = 0; second < stepSeconds; second++) {
-      await act(() => {
-        jest.advanceTimersByTime(1000);
-      });
-    }
-
-    expect(mockedPlayCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "go"]);
+    await tickSeconds(5);
+    expect(useSessionStore.getState().warmupIndex).toBe(0);
+    expect(useSessionStore.getState().warmupPrep).toBe(false);
   });
 
-  it("shows the movement's description, so the hero knows what to do", async () => {
+  it("a wait for GO waits, and GO starts the movement", async () => {
+    // No clock is what "wait for GO" is (prepTimer in stores/session.ts).
+    useSessionStore.setState({ warmupPrep: true, timerStartTimestamp: null, timerDuration: 0 });
+    const { getByTestId } = await mountWarmup();
+
+    await tickSeconds(60);
+    expect(useSessionStore.getState().warmupIndex).toBe(0);
+    expect(useSessionStore.getState().warmupPrep).toBe(true);
+    expect(cues()).toEqual([]);
+
+    await fireEvent.press(getByTestId("session-prep-go"));
+
+    expect(useSessionStore.getState().warmupPrep).toBe(false);
+    expect(useSessionStore.getState().timerDuration).toBe(WARMUP_SEQUENCE[0].seconds);
+  });
+
+  /**
+   * The report: no beep on any warm-up movement, only on the last one. This screen was the one
+   * timed view that never called `useCountdownCues`. The wait counts down the same way, so the
+   * sounds of a warm-up are the sounds of the rest of a session: 3-2-1, then go, at every end.
+   */
+  it("counts down the end of every movement and every wait, the same way", async () => {
+    await mountWarmup();
+
+    await tickSeconds(WARMUP_SEQUENCE[0].seconds);
+    expect(cues()).toEqual(["tick", "tick", "tick", "go"]);
+    expect(useSessionStore.getState().warmupIndex).toBe(1);
+    expect(useSessionStore.getState().warmupPrep).toBe(true);
+
+    (playCue as jest.Mock).mockClear();
+    await tickSeconds(PREP_SECONDS);
+
+    expect(cues()).toEqual(["tick", "tick", "tick", "go"]);
+    expect(useSessionStore.getState().warmupPrep).toBe(false);
+  });
+
+  // "Slide one arm under the other", and nothing about the other arm: thirty seconds of one side.
+  it("tells a one-sided movement when to switch sides", async () => {
+    useSessionStore.setState({
+      warmupSequence: [{ exerciseName: "Thread the Needle", seconds: 30 }, ...WARMUP_SEQUENCE],
+      timerDuration: 30,
+    });
+    const { getByTestId } = await mountWarmup();
+
+    // i18n is not initialised in tests, so `t()` echoes the key.
+    expect(getByTestId("warmup-sides").props.children).toBe("session.each_side");
+
+    await tickSeconds(15);
+
+    expect(getByTestId("warmup-sides").props.children).toBe("session.switch_sides");
+  });
+
+  it("shows the movement's description on the wait, before its clock runs", async () => {
+    useSessionStore.setState({
+      warmupPrep: true,
+      timerStartTimestamp: Date.now(),
+      timerDuration: PREP_SECONDS,
+    });
     (listExercises as jest.Mock).mockResolvedValueOnce([
       {
         enName: WARMUP_SEQUENCE[0].exerciseName,

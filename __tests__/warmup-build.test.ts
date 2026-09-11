@@ -1,4 +1,10 @@
-import { buildWarmup, WARMUP_SEQUENCE, type WarmupQuest } from "@/constants/warmup";
+import {
+  buildWarmup,
+  switchesSides,
+  WARMUP_MOVEMENTS,
+  WARMUP_SEQUENCE,
+  type WarmupQuest,
+} from "@/constants/warmup";
 import type { ExerciseStyle, MovementPattern, QuestArchetype } from "@/db/schema";
 
 /**
@@ -293,4 +299,15 @@ describe("buildWarmup", () => {
  */
 test("an outing has no warm-up", () => {
   expect(buildWarmup(quest(["locomotion"], "metabolic", { style: "expedition" }))).toEqual([]);
+});
+
+/**
+ * The side swap is keyed on names, so a rename in the catalogue or in a pool would drop it without
+ * a sound: the movement would play thirty seconds of one side again, which is the bug it fixes.
+ */
+test("the one-sided movements are movements the warm-up can actually play", () => {
+  expect(WARMUP_MOVEMENTS.filter(switchesSides)).toEqual([
+    "Thread the Needle",
+    "World's Greatest Stretch",
+  ]);
 });

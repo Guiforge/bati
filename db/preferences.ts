@@ -20,6 +20,19 @@ function isDistanceUnit(value: string | null): value is DistanceUnit {
 }
 
 /**
+ * How a session waits before a movement: ten seconds that run on their own, or until GO.
+ *
+ * One answer for every wait, the warm-up's transitions and the screen before the first exercise
+ * alike: a hero who wants to be asked wants it everywhere, and a hero whose phone is on the floor
+ * wants nothing to touch anywhere.
+ */
+export type PrepMode = "timer" | "tap";
+
+function isPrepMode(value: string | null): value is PrepMode {
+  return value === "timer" || value === "tap";
+}
+
+/**
  * Get a preference value by key.
  *
  * Projected down to `value` rather than `select()`-ing the row: `src/autoBackup.ts` calls this
@@ -187,6 +200,17 @@ export const preferences = {
 
   async setWarmupEnabled(enabled: boolean): Promise<void> {
     await setPreference("warmupEnabled", String(enabled));
+  },
+
+  // The timer by default: a warm-up is done with the phone on the floor, and a wait that needs
+  // a tap is a wait that needs the hero to walk back to it.
+  async getPrepMode(): Promise<PrepMode> {
+    const value = await getPreference("prepMode");
+    return isPrepMode(value) ? value : "timer";
+  },
+
+  async setPrepMode(mode: PrepMode): Promise<void> {
+    await setPreference("prepMode", mode);
   },
 
   /**

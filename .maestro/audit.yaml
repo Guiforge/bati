@@ -305,6 +305,15 @@ tags:
     optional: true
 - extendedWaitUntil:
     visible:
+      id: "session-start-go"
+    timeout: 15000
+    optional: true
+- takeScreenshot: 28b-session-start
+- tapOn:
+    id: "session-start-go"
+    optional: true
+- extendedWaitUntil:
+    visible:
       id: "session-complete-exercise"
     timeout: 20000
     optional: true
@@ -395,6 +404,14 @@ tags:
 - takeScreenshot: 35-boss-narrative
 - tapOn:
     id: "session-skip-warmup"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-start-go"
+    timeout: 15000
+    optional: true
+- tapOn:
+    id: "session-start-go"
     optional: true
 - extendedWaitUntil:
     visible:

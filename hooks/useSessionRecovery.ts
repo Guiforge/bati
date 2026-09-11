@@ -138,6 +138,8 @@ function restoreSnapshot(saved: SavedSessionState): void {
     // ?? 0 covers snapshots written before warmupIndex was part of the payload.
     warmupIndex: saved.warmupIndex ?? 0,
     warmupSequence: saved.warmupSequence ?? [],
+    // ?? false for snapshots from before the warm-up waited: those were always mid-movement.
+    warmupPrep: saved.warmupPrep ?? false,
     pendingDamage: saved.pendingDamage ?? [],
     totalPausedTime: saved.totalPausedTime + pauseDuration,
     lastPauseTimestamp: now,

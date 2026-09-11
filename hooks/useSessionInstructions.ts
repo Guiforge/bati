@@ -26,8 +26,9 @@ export type SessionInstruction = {
 /**
  * A catalogue row in the shape a screen renders it.
  *
- * Exported because the warm-up's "up next" card describes a step this hook does not point at:
- * the hook answers "which movement is the session on", and that card is about the one after.
+ * Exported because two screens describe a movement this hook does not point at: the warm-up's
+ * wait resolves its step by name against a catalogue it already holds, and the start screen
+ * describes the first exercise before the session has one running.
  */
 export function describeExercise(ex: Exercise, language: AppLanguage): SessionInstruction {
   return {

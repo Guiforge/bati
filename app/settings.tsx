@@ -30,6 +30,7 @@ import {
   ScrollText,
   ShieldCheck,
   Swords,
+  Timer,
   Vibrate,
   Volume2,
   Wrench,
@@ -199,6 +200,36 @@ function DevFooter() {
       label="Dev tools"
       // `as never`: same typed-route caveat as the pushes above.
       onPress={() => router.push("/dev" as never)}
+    />
+  );
+}
+
+/**
+ * Every wait before a movement: the warm-up's transitions and the screen before the first
+ * exercise. One answer for both, read by the session store at each one (`prepTimer`).
+ */
+function PrepModeRow() {
+  const { t } = useTranslation();
+  const haptics = useHaptics();
+  const prepMode = useSettingsStore((s) => s.prepMode);
+  const setPrepMode = useSettingsStore((s) => s.setPrepMode);
+
+  return (
+    <SettingRow
+      testID="settings-prep-mode"
+      icon={<Timer size={22} color="$text" />}
+      label={t("settings.prep_mode", "Before each movement")}
+      value={
+        prepMode === "timer"
+          ? t("settings.prep_timer", "10 s")
+          : t("settings.prep_tap", "Wait for GO")
+      }
+      onPress={() => {
+        haptics.selection();
+        setPrepMode(prepMode === "timer" ? "tap" : "timer").catch((error) => {
+          reportError("settings.prepModeWrite", error);
+        });
+      }}
     />
   );
 }
@@ -490,6 +521,8 @@ export default function SettingsScreen() {
               });
             }}
           />
+
+          <PrepModeRow />
 
           {/* Draws distances, stores nothing new: every metre stays a metre in the database and
               in every GPX, and constants/distanceFormat.ts is the only place that converts. */}

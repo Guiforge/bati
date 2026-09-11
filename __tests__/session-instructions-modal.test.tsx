@@ -135,15 +135,16 @@ async function mountWarmup() {
     currentRoundIndex: 0,
     currentExerciseIndex: 0,
     bossFight: null,
-    // The step being performed is deliberately one the catalogue does not hold, so the only
-    // place HOW_TO can come from is the card that names what comes next.
+    // The step just finished is one the catalogue does not hold, so the only place HOW_TO can
+    // come from is the wait before the movement that follows it.
     warmupSequence: [
       { exerciseName: "Jumping Jack", seconds: 30 },
       { exerciseName: mockDeadBug.enName, seconds: 30 },
     ],
-    warmupIndex: 0,
+    warmupIndex: 1,
+    warmupPrep: true,
     timerStartTimestamp: Date.now(),
-    timerDuration: 30,
+    timerDuration: 10,
   });
 
   await mount(<WarmupView />);
@@ -222,27 +223,16 @@ describe("the movement's instructions, mid-set", () => {
     expect(useSessionStore.getState().status).toBe("resting");
   });
 
-  // The warm-up's card names a movement the hero has never done and is about to, which is the
-  // strongest case in the flow for reading about it. It said the name and nothing else.
-  it("opens the same block from the up-next card during the warm-up", async () => {
+  // A movement the hero has never done and is about to is the strongest case in the flow for
+  // reading about it. The warm-up used to answer it with an up-next card that paused the session
+  // to be read; the wait before every movement answers it now, with nothing to tap and no clock
+  // running on the movement yet.
+  it("shows the warm-up's next movement on its wait, without stopping anything", async () => {
     await mountWarmup();
 
-    expect(screen.queryByText(HOW_TO)).toBeNull();
-
-    await act(async () => {
-      await fireEvent.press(screen.getByTestId("warmup-up-next"));
-    });
-
-    expect(screen.getByTestId("session-instructions")).toBeTruthy();
     expect(screen.getByText(HOW_TO)).toBeTruthy();
-    expect(useSessionStore.getState().status).toBe("paused");
-    expect(useSessionStore.getState().prePauseStatus).toBe("warmup");
-
-    await act(async () => {
-      await fireEvent.press(screen.getByTestId("session-instructions-close"));
-    });
-
     expect(useSessionStore.getState().status).toBe("warmup");
+    expect(useSessionStore.getState().warmupPrep).toBe(true);
   });
 
   it("starts the clock again on the way out, so nothing has to be tapped twice", async () => {

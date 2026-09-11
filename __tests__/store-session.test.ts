@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
-import { WARMUP_SEQUENCE } from "@/constants/warmup";
+import { PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
 import { hasSessionForQuestToday, outingSecondsToday } from "@/db/completed";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
@@ -12,7 +12,8 @@ import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { i18n } from "@/i18n";
 import { EMPTY } from "@/src/gps/track";
 import { useExpeditionStore } from "@/stores/expedition";
-import { useSessionStore } from "../stores/session";
+import { useSettingsStore } from "@/stores/settings";
+import { loadWarmup, useSessionStore } from "../stores/session";
 
 // Mock DB client to prevent actual SQLite initialization
 jest.mock("@/db/client", () => ({
@@ -183,7 +184,7 @@ describe("useSessionStore", () => {
     expect(state.quest).toEqual(mockQuest);
     expect(state.currentRoundIndex).toBe(0);
     expect(state.currentExerciseIndex).toBe(0);
-    expect(state.timerDuration).toBe(3); // Pre-start countdown
+    expect(state.timerDuration).toBe(PREP_SECONDS); // The start screen's wait
   });
 
   test("finishCountdown transitions to running", async () => {
@@ -457,53 +458,143 @@ describe("useSessionStore", () => {
 
     afterEach(() => {
       prefs.getWarmupEnabled.mockResolvedValue(false);
+      useSettingsStore.setState({ prepMode: "timer" });
     });
 
-    test("a session opens on the warm-up when it is enabled", async () => {
+    // The report, four times over: the first movement's thirty seconds started on the tap on
+    // Start, before the hero had seen what the movement was.
+    test("a session opens on the wait before the first movement, not on its clock", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
 
       await store.getState().startSession(mockQuest, "medium");
 
       expect(store.getState().status).toBe("warmup");
       expect(store.getState().warmupIndex).toBe(0);
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerDuration).toBe(PREP_SECONDS);
+    });
+
+    test("the wait hands over to the movement with its whole clock", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+
+      store.getState().startWarmupMove();
+
+      expect(store.getState().warmupIndex).toBe(0);
+      expect(store.getState().warmupPrep).toBe(false);
       expect(store.getState().timerDuration).toBe(WARMUP_SEQUENCE[0].seconds);
     });
 
-    test("it walks the sequence, then hands over to the countdown", async () => {
+    // Zero seconds between two movements was the other half of the report.
+    test("it walks the sequence with a wait before every movement, then opens the start screen", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
 
       for (let i = 1; i < WARMUP_SEQUENCE.length; i++) {
+        store.getState().startWarmupMove();
         store.getState().nextWarmupStep();
         expect(store.getState().status).toBe("warmup");
         expect(store.getState().warmupIndex).toBe(i);
+        expect(store.getState().warmupPrep).toBe(true);
+        expect(store.getState().timerDuration).toBe(PREP_SECONDS);
       }
 
+      store.getState().startWarmupMove();
       store.getState().nextWarmupStep();
       expect(store.getState().status).toBe("countdown");
+      expect(store.getState().timerDuration).toBe(PREP_SECONDS);
     });
 
-    test("skipping goes straight to the countdown and journals nothing", async () => {
+    test("Next on a wait passes that movement for the wait before the one after", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+
+      store.getState().nextWarmupStep();
+
+      expect(store.getState().warmupIndex).toBe(1);
+      expect(store.getState().warmupPrep).toBe(true);
+    });
+
+    test("GO does nothing once the movement is running", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      store.getState().startWarmupMove();
+      const running = store.getState().timerStartTimestamp;
+
+      store.getState().startWarmupMove();
+
+      expect(store.getState().timerStartTimestamp).toBe(running);
+    });
+
+    test("a wait for GO has no clock, in the warm-up and on the start screen", async () => {
+      useSettingsStore.setState({ prepMode: "tap" });
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+
+      await store.getState().startSession(mockQuest, "medium");
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerStartTimestamp).toBeNull();
+
+      store.getState().skipWarmup();
+      expect(store.getState().status).toBe("countdown");
+      expect(store.getState().timerStartTimestamp).toBeNull();
+    });
+
+    // Paused and resumed on a wait for GO, the wait must still be waiting: a clock conjured out
+    // of the pause would start the movement on its own.
+    test("a wait for GO survives a pause without growing a clock", async () => {
+      useSettingsStore.setState({ prepMode: "tap" });
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+
+      store.getState().pauseSession();
+      store.getState().resumeSession();
+
+      expect(store.getState().status).toBe("warmup");
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerStartTimestamp).toBeNull();
+    });
+
+    test("the warm-up the quest screen shows is the one that plays", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+
+      const shown = await loadWarmup(mockQuest);
+      await store.getState().startSession(mockQuest, "medium");
+
+      expect(shown.length).toBeGreaterThan(0);
+      expect(store.getState().warmupSequence).toEqual(shown);
+    });
+
+    test("the quest screen shows no warm-up when it is switched off", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(false);
+
+      expect(await loadWarmup(mockQuest)).toEqual([]);
+    });
+
+    test("skipping goes straight to the start screen and journals nothing", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
 
       store.getState().skipWarmup();
 
       expect(store.getState().status).toBe("countdown");
+      expect(store.getState().warmupPrep).toBe(false);
       // A warm-up is preparation, not work: no result may reach the journal from it.
       expect(store.getState().results).toEqual([]);
     });
 
-    test("stepping back returns to the previous movement with its timer full", async () => {
+    test("stepping back returns to the wait before the previous movement", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
 
+      store.getState().startWarmupMove();
       store.getState().nextWarmupStep();
+      store.getState().startWarmupMove();
       store.getState().previousWarmupStep();
 
       expect(store.getState().status).toBe("warmup");
       expect(store.getState().warmupIndex).toBe(0);
-      expect(store.getState().timerDuration).toBe(WARMUP_SEQUENCE[0].seconds);
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerDuration).toBe(PREP_SECONDS);
     });
 
     test("stepping back on the first movement does nothing", async () => {
@@ -524,6 +615,7 @@ describe("useSessionStore", () => {
       store.getState().quitSession();
 
       expect(store.getState().warmupIndex).toBe(0);
+      expect(store.getState().warmupPrep).toBe(false);
     });
 
     test("turning it off starts on the countdown, as before", async () => {

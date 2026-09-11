@@ -36,7 +36,33 @@ export type WarmupStep = {
 
 const STEP_SECONDS = 30;
 
+/**
+ * The wait before every movement, the warm-up's and the first exercise's alike, when it runs on
+ * its own (the other mode waits for GO, `PrepMode` in `db/preferences.ts`).
+ *
+ * Ten seconds is the 7-minute workout's transition (Klika & Jordan 2013, a protocol built to be
+ * fast: "30 seconds, with 10 seconds of transition time between bouts"). Bati ran thirty and
+ * zero, and four players in two months described what zero feels like: a clock running on a
+ * movement they had not read yet, and a pause they learned to press by hand to make up for it.
+ */
+export const PREP_SECONDS = 10;
+
 const step = (exerciseName: string): WarmupStep => ({ exerciseName, seconds: STEP_SECONDS });
+
+/**
+ * Movements done one side at a time, so their thirty seconds are fifteen a side. Their
+ * descriptions say "slide one arm under the other" and never say to swap, so they were played as
+ * thirty seconds of one side.
+ *
+ * ponytail: names in a list until exercises carry a laterality column. Only the warm-up needs it
+ * today, and a warm-up is not journaled, so there is no result to split in two. A second reader
+ * (a timed quest slot, the journal) is the moment for the column.
+ */
+const ONE_SIDED = new Set<string>(["Thread the Needle", "World's Greatest Stretch"]);
+
+export function switchesSides(exerciseName: string): boolean {
+  return ONE_SIDED.has(exerciseName);
+}
 
 /**
  * The four RAMP phases, in the order they are always played: raise the temperature, take the

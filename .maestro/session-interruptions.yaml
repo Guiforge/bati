@@ -42,7 +42,17 @@ appId: com.guiforge.bati.dev
     id: "session-skip-warmup"
     optional: true
 
-# 3s pre-start countdown before the first exercise renders.
+# The start screen waits ten seconds, or for GO. Tapped either way, see complete-a-session.yaml.
+- extendedWaitUntil:
+    visible:
+      id: "session-start-go"
+    timeout: 15000
+    optional: true
+- tapOn:
+    id: "session-start-go"
+    optional: true
+
+# The start screen hands over to the first exercise.
 - extendedWaitUntil:
     visible:
       id: "session-complete-exercise"

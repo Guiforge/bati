@@ -341,6 +341,28 @@ describe("useSessionRecovery", () => {
     expect(state.prePauseStatus).toBe("warmup");
   });
 
+  // Recovered on the wait, a warm-up must come back on the wait: restored as the movement, it
+  // would start a clock on a movement the hero had not been shown yet.
+  it("brings a warm-up back on the wait it was showing", async () => {
+    await bankLiveSession({
+      status: "warmup",
+      warmupSequence: [
+        { exerciseName: "Arm Circles", seconds: 30 },
+        { exerciseName: "Leg Swings", seconds: 30 },
+      ],
+      warmupIndex: 1,
+      warmupPrep: true,
+    });
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+    await act(async () => {
+      await result.current.recoverSession();
+    });
+
+    expect(useSessionStore.getState().warmupPrep).toBe(true);
+  });
+
   it("brings back the boss fight, its opening HP and the hits not yet banked", async () => {
     await bankLiveSession({
       bossFight: { id: 3, totalHp: 900, currentHp: 700 } as never,

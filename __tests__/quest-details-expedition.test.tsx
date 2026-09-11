@@ -46,6 +46,8 @@ jest.mock("@/stores/settings", () => ({
 
 jest.mock("@/stores/session", () => ({
   useSessionStore: () => ({ startSession: mockStartSession }),
+  // An outing has no warm-up, which is what `loadWarmup` answers for one.
+  loadWarmup: () => Promise.resolve([]),
 }));
 
 const mockParams: { id: string; level?: string } = { id: "5" };

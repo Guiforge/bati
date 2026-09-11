@@ -206,6 +206,9 @@
     "new_rung_from": "You have mastered {{name}}"
   },
   "quests": {
+    "written_for_beginner": "Beginner",
+    "written_for_regular": "Regular",
+    "written_for_advanced": "Advanced",
     "gallery_title": "Quests",
     "gallery_subtitle": "Single workouts. Pick one and go",
     "details_title": "Quest",

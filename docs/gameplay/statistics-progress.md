@@ -2,7 +2,7 @@
 title: Statistics & Progress
 type: system
 status: active
-updated: 2026-09-10
+updated: 2026-09-11
 related: [progression.md, coach-planning.md, expeditions.md, ../planning/roadmap.md]
 sources: [db/xp.ts, db/streaks.ts, db/completed.ts, components/journal/journalGrids.ts]
 ---
@@ -36,6 +36,24 @@ Legs     ████░░░░░░░░░░░░░░░░   8%
 
 Best reps/hold per exercise, longest session, best streak — computed by scanning the
 journal, not stored as a separate table.
+
+**Where a record is announced.** Three places, and the earliest one is the one that matters. The
+session screen's ghost line already names what there is to beat (`ExerciseGhost`, keyed per
+movement *and* per unit by `ghostKey`), and the moment the value about to be logged passes that
+best, the line becomes a gold stamp reading "Past your best" — mid-set, in the space the number it
+beat was occupying, with a haptic on the crossing. Not "new record": the number is what the set
+*would* log, a hero who taps the reps back down has set nothing, and the word is worth more if the
+victory screen is the only place that spends it. `NewRecordsBadge` then lists the records that
+really fell, and the journal's history badge names the movement afterwards.
+
+**When nothing falls.** A record is rare by construction — the curve flattens and every session
+after that pays nothing — so a session that broke none of its bests is asked the weaker question
+instead: *where does this sit*. `getSessionStanding()` ranks each movement's best set of the night
+against every past session's best on the same movement and unit, and the victory screen prints the
+strongest placing it found ("2nd best in 12 sessions"). It is derived, like everything else here,
+and it obeys four gates: nothing at all on a night that set a record, never rank 1 (that is a
+record), never a placing the hero did not earn by beating at least one past session, and a tie
+ranks behind the session that got there first.
 
 ### 3. Sessions per week
 

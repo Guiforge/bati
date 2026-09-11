@@ -451,4 +451,124 @@ describe("db/personalRecords", () => {
     expect(durationPr).toBeUndefined();
     expect(xpPr).toBeUndefined();
   });
+
+  /**
+   * The answer for a session that broke nothing, which is nearly every session after the first
+   * month. Each of these is one of the gates in `getSessionStanding`'s doc comment: without them
+   * the card either lies (second of two sessions) or repeats the record badge it sits under.
+   */
+  describe("getSessionStanding", () => {
+    function standing() {
+      return (require("../db/personalRecords") as typeof import("../db/personalRecords"))
+        .getSessionStanding;
+    }
+
+    /** Four sessions on one movement, the last of which is the one being judged. */
+    function fourSessions(exerciseId: number, values: [number, number, number, number]): void {
+      const now = Math.floor(Date.now() / 1000);
+      const rows = values
+        .map((v, i) => `(${i + 1}, ${exerciseId}, 'reps', ${v}, ${now + i * 60}, 0)`)
+        .join(",\n        ");
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES
+          (1, ${now}), (2, ${now + 60}), (3, ${now + 120}), (4, ${now + 180});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+          ${rows};
+      `);
+    }
+
+    test("names the movement this session placed best on, and how deep the history is", async () => {
+      const exerciseId = firstExerciseId(t);
+      // 20 stands above tonight's 18; 15 and 10 are below it.
+      fourSessions(exerciseId, [20, 15, 10, 18]);
+
+      const result = await standing()(4, []);
+      expect(result).toMatchObject({ exerciseId, type: "reps", value: 18, rank: 2, outOf: 4 });
+    });
+
+    test("a tie ranks behind the session that got there first", async () => {
+      const exerciseId = firstExerciseId(t);
+      // Tonight's 18 equals session 2's. `>=` puts it third rather than joint second, which is
+      // the reading that survives a hero checking the arithmetic.
+      fourSessions(exerciseId, [20, 18, 10, 18]);
+
+      expect(await standing()(4, [])).toMatchObject({ rank: 3, outOf: 4 });
+    });
+
+    test("says nothing when the hero beat nobody", async () => {
+      const { getSessionStanding } =
+        require("../db/personalRecords") as typeof import("../db/personalRecords");
+      const now = Math.floor(Date.now() / 1000);
+      const exerciseId = firstExerciseId(t);
+
+      // Second session ever, and worse than the first. "2nd best in 2 sessions" is second of
+      // nothing, and it would fire on the second session every hero ever logs.
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now}), (2, ${now + 60});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+          (1, ${exerciseId}, 'reps', 20, ${now}, 0),
+          (2, ${exerciseId}, 'reps', 12, ${now + 60}, 0);
+      `);
+
+      expect(await getSessionStanding(2, [])).toBeNull();
+    });
+
+    test("says nothing on a night a record fell", async () => {
+      const exerciseId = firstExerciseId(t);
+      fourSessions(exerciseId, [20, 15, 10, 18]);
+
+      // The same data as the first test, with a record in hand. The badge above already paid
+      // this session, and a placing printed beside a record is what makes the record ordinary.
+      const result = await standing()(4, [
+        { isNewRecord: true, recordType: "longest_session", newValue: 1, previousValue: null },
+      ]);
+      expect(result).toBeNull();
+    });
+
+    test("ranks a hold against holds, never against reps", async () => {
+      const { getSessionStanding } =
+        require("../db/personalRecords") as typeof import("../db/personalRecords");
+      const now = Math.floor(Date.now() / 1000);
+      const exerciseId = firstExerciseId(t);
+
+      // Four sessions of reps around 20, then tonight's 45 second hold, which is the first hold
+      // this movement has ever seen. Pooled with the reps it would read as a runaway record; kept
+      // apart it is a first attempt with nothing to place against, so the card stays silent.
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES
+          (1, ${now}), (2, ${now + 60}), (3, ${now + 120}), (4, ${now + 180});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+          (1, ${exerciseId}, 'reps', 20, ${now}, 0),
+          (2, ${exerciseId}, 'reps', 22, ${now + 60}, 0),
+          (3, ${exerciseId}, 'reps', 18, ${now + 120}, 0),
+          (4, ${exerciseId}, 'time', 45, ${now + 180}, 0);
+      `);
+
+      expect(await getSessionStanding(4, [])).toBeNull();
+    });
+
+    test("leaves outings out, the same rule getMovementRecords follows", async () => {
+      const { getSessionStanding } =
+        require("../db/personalRecords") as typeof import("../db/personalRecords");
+      const now = Math.floor(Date.now() / 1000);
+      const walk = t.sqlite
+        .prepare("SELECT id FROM exercises WHERE style = 'expedition' ORDER BY id LIMIT 1")
+        .get() as { id: number } | undefined;
+      assert(walk);
+
+      // Four walks, tonight's second longest. Seconds spent walking are not a number anyone set
+      // out to beat, so "2nd best in 4 sessions" on a walk is a placing in a race nobody entered.
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES
+          (1, ${now}), (2, ${now + 60}), (3, ${now + 120}), (4, ${now + 180});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+          (1, ${walk.id}, 'time', 2400, ${now}, 0),
+          (2, ${walk.id}, 'time', 900, ${now + 60}, 0),
+          (3, ${walk.id}, 'time', 600, ${now + 120}, 0),
+          (4, ${walk.id}, 'time', 1800, ${now + 180}, 0);
+      `);
+
+      expect(await getSessionStanding(4, [])).toBeNull();
+    });
+  });
 });

@@ -17,7 +17,6 @@ import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
 import { ProgressionCard } from "@/components/journal/ProgressionCard";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
-import { UserLevelCard } from "@/components/journal/UserLevelCard";
 import { getQuestThumb } from "@/constants/assetMap";
 import { getWeekStart } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
@@ -283,15 +282,26 @@ export default function JournalScreen() {
           ) : !statsReady ? (
             <StatsSkeleton />
           ) : (
-            // Ordered by the journal's three questions: am I consistent (streak, calendar),
-            // am I progressing (level, records, achievements), what next (balance, quests).
+            /**
+             * Ordered so that something about getting *better* is inside the first screen.
+             *
+             * It used to open with six blocks that all answered "did I show up": the streak, the
+             * lifetime tiles, Recent Activity, Workout Days, the level bar, the difficulty split.
+             * The only one that said whether the hero had improved was the next rung, eleventh of
+             * thirteen and five screens down. The design audit of 2026-09-10 counted them.
+             *
+             * Four are gone rather than moved. Recent Activity restated the calendar and the
+             * trend badges, and disagreed with the calendar about the week. Workout Days is flat
+             * by construction for anyone consistent. UserLevelCard was Home's own header drawn a
+             * second time. The difficulty split was three years in one bar with no time axis, so
+             * the one thing it could prove, that the hero moved up, was the one it could not show.
+             */
             <Fragment key={refreshKey}>
               <JournalStats sessions={history} stats={stats} />
-              <MonthlyCalendarCard />
-              <UserLevelCard />
               <PersonalRecordsCard />
-              <AchievementsCard />
+              <MonthlyCalendarCard />
               <ProgressionCard />
+              <AchievementsCard />
               <MuscleBalanceCard />
               <SuggestedQuestsCard />
             </Fragment>

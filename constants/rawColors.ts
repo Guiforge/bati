@@ -1,4 +1,3 @@
-import type { ColorTokens } from "tamagui";
 import type { DifficultyCode } from "@/db/schema";
 
 /**
@@ -122,15 +121,4 @@ export const DIFFICULTY_COLORS: Record<DifficultyCode, string> = {
   easy: rawColors.success,
   medium: rawColors.primary,
   hard: rawColors.error,
-};
-
-/**
- * The same three levels for Tamagui components, which take tokens and should keep taking them —
- * raw strings are only for the libraries that cannot. Kept beside `DIFFICULTY_COLORS` so the
- * pair cannot drift; `tamagui.config.ts` resolves these tokens to those exact values.
- */
-export const DIFFICULTY_COLOR_TOKENS: Record<DifficultyCode, ColorTokens> = {
-  easy: "$success",
-  medium: "$primary",
-  hard: "$error",
 };

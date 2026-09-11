@@ -94,7 +94,7 @@ breaks the day someone runs the emulator in French — a `testID` never does.
 | Example | Where |
 |---------|-------|
 | `onboarding-hero-continue` | onboarding hero-setup screen |
-| `home-start-session` | home screen CTA |
+| `home-start-session` | home screen CTA, opens the offered session directly |
 | `session-complete-exercise` | active exercise footer |
 | `session-victory-continue` | victory screen |
 | `tab-adventures` | bottom tab bar |

@@ -18,18 +18,17 @@ appId: com.guiforge.bati.dev
 
 # --- Earn something worth logging -------------------------------------------
 
+# Home's Start opens the offered session directly; `quest-start` only shows when the quest
+# reads the position and Start went to its screen instead.
 - assertVisible:
     id: "home-start-session"
 - tapOn:
     id: "home-start-session"
-
-- assertVisible:
-    id: "quests-quest-card"
 - tapOn:
-    id: "quests-quest-card"
-    index: 0
+    id: "quest-start"
+    optional: true
 
-- runFlow: subflows/complete-a-session.yaml
+- runFlow: subflows/run-a-session.yaml
 
 # --- History ----------------------------------------------------------------
 

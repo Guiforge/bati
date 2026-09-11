@@ -23,11 +23,11 @@ import { formatDuration, getCompletedSessionById } from "@/db";
 import type { CompletedSession } from "@/db/completed";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { hasGround } from "@/db/expeditions";
-import { previewPathsFor } from "@/db/gps";
+import { pointsOf } from "@/db/gps";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getCached, setCached } from "@/db/queryCache";
 import { listQuestTemplates } from "@/db/quests";
-import type { LngLat } from "@/src/gps/trace";
+import { type LngLat, toTrace } from "@/src/gps/trace";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -48,13 +48,18 @@ const parseId = (raw?: string | string[]): number | null => {
  * the hero had been outside. Never allowed to fail the screen either: a missing trace is not
  * worth losing the session over, and a swallowed failure is not allowed.
  */
-async function traceFor(uuid: string | null): Promise<readonly LngLat[]> {
+async function traceFor(uuid: string | null): Promise<readonly (readonly LngLat[])[]> {
   if (!uuid) return [];
-  const paths = await previewPathsFor([uuid]).catch((error) => {
+  const fixes = await pointsOf(uuid).catch((error) => {
     reportError("journal.trace", error);
-    return null;
+    return [];
   });
-  return paths?.get(uuid) ?? [];
+  if (fixes.length < 2) return [];
+  // `toTrace` is what the recap draws from, and its `path` is already one part per unbroken run.
+  // Going through it rather than through `previewPathsFor` is what puts the gaps in: the preview
+  // query downsamples and drops the clock, so it cannot know where the reducer stopped counting,
+  // and a thumbnail built from it runs a straight gold line through the tunnel.
+  return toTrace(fixes).path.geometry.coordinates as LngLat[][];
 }
 
 export default function SessionDetailScreen() {
@@ -75,7 +80,7 @@ export default function SessionDetailScreen() {
   );
   // Whether this session left a trace. Every strength quest has none, and a door onto an empty
   // map is worse than no door — see app/recap.tsx.
-  const [trace, setTrace] = useState<readonly LngLat[]>([]);
+  const [trace, setTrace] = useState<readonly (readonly LngLat[])[]>([]);
   const [questTitle, setQuestTitle] = useState<string>(() =>
     sessionId != null ? (getCached<string>(`sessionTitle:${sessionId}:${language}`) ?? "") : "",
   );
@@ -291,7 +296,7 @@ export default function SessionDetailScreen() {
                     {/* The run's own shape, not a map pin: the trace is already loaded and the
                         door might as well show what is behind it. Same drawing and same gold as
                         the history row this screen was tapped from. */}
-                    <TraceThumb points={trace} size={56} />
+                    <TraceThumb segments={trace} size={56} />
                     <YStack flex={1} gap="$1">
                       <Text fontWeight="700" fontSize={16} color="$text">
                         {t("recap.open", "See the ground covered")}

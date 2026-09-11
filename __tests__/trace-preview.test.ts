@@ -20,13 +20,15 @@ function coords(d: string): [number, number][] {
 describe("traceToPath", () => {
   test("a run with nothing to draw draws nothing", () => {
     expect(traceToPath([], 50)).toBeNull();
-    expect(traceToPath([[2.35, 48.85]], 50)).toBeNull();
+    expect(traceToPath([[[2.35, 48.85]]], 50)).toBeNull();
     // Every fix inside the receiver's noise, all on one spot: a real row with no shape.
     expect(
       traceToPath(
         [
-          [2.35, 48.85],
-          [2.35, 48.85],
+          [
+            [2.35, 48.85],
+            [2.35, 48.85],
+          ],
         ],
         50,
       ),
@@ -41,7 +43,7 @@ describe("traceToPath", () => {
       [2.355, 48.845],
     ];
 
-    for (const [x, y] of coords(traceToPath(points, 50) ?? "")) {
+    for (const [x, y] of coords(traceToPath([points], 50) ?? "")) {
       expect(x).toBeGreaterThanOrEqual(4);
       expect(x).toBeLessThanOrEqual(46);
       expect(y).toBeGreaterThanOrEqual(4);
@@ -49,11 +51,40 @@ describe("traceToPath", () => {
     }
   });
 
+  /**
+   * The gap is the point. `src/gps/trace.ts` breaks its line wherever `breaksRun` says the run
+   * broke, and a thumbnail that drew one unbroken chain across the same hole told the hero they
+   * went through the tunnel. One `M` per stretch, and the bounds still span all of them so the
+   * two halves of a run stay in scale with each other.
+   */
+  test("lifts the pen between two stretches instead of drawing through the hole", () => {
+    const d =
+      traceToPath(
+        [
+          [
+            [2.35, 48.85],
+            [2.351, 48.851],
+          ],
+          [
+            [2.36, 48.86],
+            [2.361, 48.861],
+          ],
+        ],
+        100,
+      ) ?? "";
+
+    // Two moves, two lines: the second stretch starts a new subpath rather than continuing.
+    expect(d.match(/M/g)?.length).toBe(2);
+    expect(d.match(/L/g)?.length).toBe(2);
+  });
+
   test("north is up, because SVG's y is not latitude's", () => {
     const d = traceToPath(
       [
-        [2.35, 48.85],
-        [2.35001, 48.86],
+        [
+          [2.35, 48.85],
+          [2.35001, 48.86],
+        ],
       ],
       50,
     );
@@ -79,7 +110,7 @@ describe("traceToPath", () => {
       [2, lat],
     ];
 
-    const drawn = coords(traceToPath(square, 100) ?? "");
+    const drawn = coords(traceToPath([square], 100) ?? "");
     const width = Math.max(...drawn.map(([x]) => x)) - Math.min(...drawn.map(([x]) => x));
     const height = Math.max(...drawn.map(([, y]) => y)) - Math.min(...drawn.map(([, y]) => y));
 
@@ -93,8 +124,10 @@ describe("traceToPath", () => {
     const drawn = coords(
       traceToPath(
         [
-          [2, lat],
-          [2 + dLon, lat + 0.002],
+          [
+            [2, lat],
+            [2 + dLon, lat + 0.002],
+          ],
         ],
         100,
       ) ?? "",

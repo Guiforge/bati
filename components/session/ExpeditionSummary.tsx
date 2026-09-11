@@ -1,5 +1,4 @@
 import { useRouter } from "expo-router";
-import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack } from "tamagui";
@@ -8,10 +7,10 @@ import { Figure } from "@/components/common/Figure";
 import { ChevronRight, Map as MapIcon } from "@/components/icons";
 import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
-import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useExpeditionStore } from "@/stores/expedition";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
+import { roadLine } from "./roadLine";
 
 /**
  * What the walk was worth, said on the screen that celebrates it.
@@ -25,26 +24,6 @@ import { type AppLanguage, useSettingsStore } from "@/stores/settings";
  * `track` — so this is the same distance and the same moving time `saveSession` paid the road
  * and the XP from. Summing `gps_points` here would be a third answer to "how far did I go".
  */
-
-/**
- * The one line about the High Road, in the two shapes the road can be in.
- *
- * A road still climbing reads as a fraction of its next floor. A maxed one has no floor left,
- * and `nextTarget` is null there — printing "42/null leagues" is the bug this exists to avoid,
- * so the maxed road borrows the village sheet's own sentence for the same driver rather than
- * inventing a fifteenth way to say "leagues covered".
- */
-function roadLine(road: VillageBuilding, language: AppLanguage, t: TFunction): string {
-  const building = localizedName(road, language);
-  if (road.nextTarget === null) {
-    return `${building} · ${t("village.detail_leagues_driver", { count: road.metricValue })}`;
-  }
-  return t("session.expedition_road", {
-    building,
-    value: road.metricValue,
-    target: road.nextTarget,
-  });
-}
 
 export function ExpeditionSummary({
   sessionUuid,

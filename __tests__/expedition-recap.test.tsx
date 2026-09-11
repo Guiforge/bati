@@ -32,6 +32,9 @@ jest.mock("@/db/gps", () => ({
 }));
 jest.mock("@/db/quests", () => ({ listQuestTemplates: () => mockQuestTemplates() }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
+// The recap names what the leagues moved now, which is one read of the village. These tests are
+// about the map and its numbers, so the road is simply absent and the line draws nothing.
+jest.mock("@/db/village", () => ({ getVillageBuildings: jest.fn().mockResolvedValue([]) }));
 jest.mock("@/db", () => ({ preferences: { setMapTilesEnabled: jest.fn() } }));
 
 // The real i18n, not a stub: this screen's strings live in `locales/*.json` and the inline
@@ -216,6 +219,28 @@ beforeEach(() => {
 describe("a session that left the walls", () => {
   beforeEach(() => {
     mockPointsOf.mockResolvedValue(walkThenStand());
+  });
+
+  /**
+   * Leagues are the one currency nothing else in this game earns, and the road is what they
+   * raise. The screen used to print distance, moving time and pace, which is what every other
+   * running app pays in, and name neither.
+   */
+  test("says what the ground moved, above what the ground was", async () => {
+    const village = require("@/db/village") as { getVillageBuildings: jest.Mock };
+    village.getVillageBuildings.mockResolvedValueOnce([
+      {
+        code: "high_road",
+        enName: "High Road",
+        frName: "Grand-Route",
+        metricValue: 12,
+        nextTarget: 20,
+      },
+    ]);
+
+    await mount();
+
+    expect(await screen.findByText(/High Road/)).toBeTruthy();
   });
 
   test("draws the map and the three numbers", async () => {

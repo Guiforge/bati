@@ -164,6 +164,12 @@ export function VillageScene() {
   // building were taken off the painting, and the anchors only say which part of it to zoom on.
   const focus = scene ? VILLAGE_ANCHORS[scene.tier].find((a) => risen.has(a.code)) : undefined;
   const hasFocus = focus !== undefined;
+  // Read when the lean fires, not a dependency: the tab can still hold yesterday's scene when
+  // `grown` arrives, and the fresh one flipping this used to cancel the reward mid-play.
+  const hasFocusRef = useRef(hasFocus);
+  useEffect(() => {
+    hasFocusRef.current = hasFocus;
+  });
 
   // Played once per `grown` value. The tab stays mounted and keeps its params, so a revisit
   // carries the same string and must not replay it; the next session writes a different one,
@@ -178,7 +184,7 @@ export function VillageScene() {
     const timers = [
       setTimeout(
         () => {
-          if (hasFocus && !reducedMotion) lean(REWARD_ZOOM);
+          if (hasFocusRef.current && !reducedMotion) lean(REWARD_ZOOM);
         },
         reducedMotion ? 0 : REWARD_TIMING.zoom,
       ),
@@ -193,7 +199,7 @@ export function VillageScene() {
       zoom.value = 1;
       setRewardOpen(false);
     };
-  }, [ready, grown, hasFocus, reducedMotion, zoom]);
+  }, [ready, grown, reducedMotion, zoom]);
 
   const dismissReward = () => {
     setRewardOpen(false);

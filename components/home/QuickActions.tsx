@@ -150,7 +150,6 @@ export function QuickActions() {
     // Both reads underneath are cached and invalidated on write, so coming back from the editor
     // picks up a hero-authored outing without costing a query on every focus.
     const list = await listOutings();
-    setOutings(list);
 
     // Loaded at `medium`, the level every tile leaves at, so the chip says what the tap will run.
     const entries = await Promise.all(
@@ -160,7 +159,9 @@ export function QuickActions() {
         return [quest.id, goal] as const;
       }),
     );
+    // Together: tiles drawn before their goals said "Free" on every chip, a goal nobody set.
     setGoals(Object.fromEntries(entries));
+    setOutings(list);
 
     const last = (await getRecentSessionHistory(1))[0];
     const lastQuest = last?.questId == null ? null : await loadConfiguredQuest(last.questId);

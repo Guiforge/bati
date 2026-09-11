@@ -178,6 +178,31 @@ describe("db/personalRecords", () => {
     expect(records.map((r) => r.exerciseId)).toEqual([lift.id]);
   });
 
+  test("checkForNewRecords never names a walk's seconds as a record, the same rule", async () => {
+    const { checkForNewRecords } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+    const walk = t.sqlite
+      .prepare("SELECT id FROM exercises WHERE style = 'expedition' ORDER BY id LIMIT 1")
+      .get() as { id: number } | undefined;
+    const lift = t.sqlite
+      .prepare("SELECT id FROM exercises WHERE style != 'expedition' ORDER BY id LIMIT 1")
+      .get() as { id: number };
+    assert(walk);
+
+    // Tonight's walk outlasts the last one. The badge would have printed its name as a PR.
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now - 86400}), (2, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${walk.id}, 'time', 900, ${now - 86400}, 0),
+        (2, ${walk.id}, 'time', 1982, ${now}, 0),
+        (2, ${lift.id}, 'reps', 10, ${now}, 1);
+    `);
+
+    const records = await checkForNewRecords(2);
+    expect(records.map((r) => r.exerciseId).filter((id) => id !== undefined)).toEqual([lift.id]);
+  });
+
   test("getMovementRecords keeps a movement's reps and its holds apart", async () => {
     const { getMovementRecords } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");

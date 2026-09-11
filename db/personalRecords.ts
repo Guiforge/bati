@@ -636,7 +636,9 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
-    .where(eq(completedExercises.sessionId, sessionId));
+    // Never an outing, the rule `getMovementRecords` documents: the journal's badge names what
+    // fell, and "Warden's Walk" is not a record anyone set out to break.
+    .where(and(eq(completedExercises.sessionId, sessionId), ne(exercises.style, NON_REP_STYLE)));
 
   const bestByExercise = new Map<string, (typeof exerciseResultRows)[number]>();
   for (const row of exerciseResultRows) {

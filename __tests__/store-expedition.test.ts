@@ -489,12 +489,16 @@ describe("stores/expedition", () => {
 
     test("leaves one when no fix has arrived for a while", async () => {
       await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      emit({ ...walking(0), speed: 3 });
+      expect(store.getState().recentSpeedMps).toBe(3);
 
       (mockListeners.get("onNoFixTimeout") as (e: { sinceLastFixMs: number }) => void)({
         sinceLastFixMs: 30_000,
       });
       expect(mockReportError).toHaveBeenCalledWith("expedition.noFix", expect.any(Error));
       expect(store.getState().error).toBe("no-fix");
+      // The last window's pace is not how fast the hero is going thirty seconds later.
+      expect(store.getState().recentSpeedMps).toBeNull();
 
       // A fix landing ends it: silence is the only thing either of these two errors is about.
       emit(walking(0));

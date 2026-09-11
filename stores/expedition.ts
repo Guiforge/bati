@@ -370,11 +370,13 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
           set({ error: clearedTransient(get().error) });
           return;
         }
-        set({ error: "gps-off" });
+        // The window's pace is only refreshed by a fix, so it would stay on screen under "GPS off"
+        // for as long as the silence lasts. Null falls back to the average, which is still true.
+        set({ error: "gps-off", recentSpeedMps: null });
         reportError("expedition.providerOff", new Error("provider disabled"));
       }),
       addListener("onNoFixTimeout", (event) => {
-        set({ error: "no-fix" });
+        set({ error: "no-fix", recentSpeedMps: null });
         reportError("expedition.noFix", new Error(`no fix for ${event.sinceLastFixMs} ms`));
       }),
       // The way out that only a locked screen takes. The service asks, the session store

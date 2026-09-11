@@ -125,6 +125,55 @@ describe("db/completed", () => {
     expect(session?.outing).toBe("walk");
   });
 
+  /**
+   * The badge in the journal could only ever say that *a* record fell. Which one is known at save
+   * time, by the function that found it, and was thrown away one line later.
+   */
+  test("a session keeps which records it set, not only that it set some", async () => {
+    const completed = require("../db/completed") as typeof import("../db/completed");
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const squat = (await exercises.listExercises()).find((e) => e.enName === "Squat");
+    if (!squat) throw new Error("Seeded exercise 'Squat' not found");
+
+    const id = await completed.createCompletedSession({
+      userLevel: "medium",
+      xpEarned: 10,
+      exercises: [{ exerciseId: squat.id, sortOrder: 0, result: { type: "reps", value: 10 } }],
+    });
+
+    await completed.markSessionWithNewRecords(id, [
+      { t: "exercise_max_reps", e: squat.id },
+      { t: "longest_session" },
+    ]);
+
+    const [row] = await completed.listCompletedSessions(1);
+    expect(row?.hasNewRecords).toBe(true);
+    expect(row?.records).toEqual([
+      { t: "exercise_max_reps", e: squat.id },
+      { t: "longest_session" },
+    ]);
+  });
+
+  test("a row that kept no detail still carries its badge", async () => {
+    const completed = require("../db/completed") as typeof import("../db/completed");
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const squat = (await exercises.listExercises()).find((e) => e.enName === "Squat");
+    if (!squat) throw new Error("Seeded exercise 'Squat' not found");
+
+    const id = await completed.createCompletedSession({
+      userLevel: "medium",
+      xpEarned: 10,
+      exercises: [{ exerciseId: squat.id, sortOrder: 0, result: { type: "reps", value: 10 } }],
+    });
+
+    // Every session saved before 0051 looks like this: flagged, with nothing to name.
+    await completed.markSessionWithNewRecords(id);
+
+    const [row] = await completed.listCompletedSessions(1);
+    expect(row?.hasNewRecords).toBe(true);
+    expect(row?.records).toEqual([]);
+  });
+
   test("a workout writes neither, rather than a zero that means nothing", async () => {
     const completed = require("../db/completed") as typeof import("../db/completed");
     const exercises = require("../db/exercises") as typeof import("../db/exercises");

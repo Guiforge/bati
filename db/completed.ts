@@ -244,8 +244,54 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
   });
 }
 
-export async function markSessionWithNewRecords(sessionId: number): Promise<void> {
-  await db.update(completedQuest).set({ hasNewRecords: 1 }).where(eq(completedQuest.id, sessionId));
+/**
+ * What the column holds, or nothing at all.
+ *
+ * A row written before `0051` has null here, and a hand-edited backup could hold anything: this
+ * is a text column, so the parse is the trust boundary. A badge that cannot name its record is
+ * the old behaviour and a fine one; a journal that throws on a malformed row is not.
+ */
+function parseRecords(json: string | null): StoredRecord[] {
+  if (!json) return [];
+  try {
+    const parsed: unknown = JSON.parse(json);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (entry): entry is StoredRecord =>
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof (entry as StoredRecord).t === "string",
+    );
+  } catch {
+    // Not reported: a row that predates the column or came from a mangled backup is not an
+    // incident, and the screen has an honest answer for it.
+    return [];
+  }
+}
+
+/** One record a session set, in the shape the row stores (`0051`). */
+export type StoredRecord = { t: string; e?: number };
+
+/**
+ * The flag, and what it stands for.
+ *
+ * `hasNewRecords` is what the list filters on and what an old row has. `recordsJson` is what lets
+ * the badge say which record it broke instead of only that one was: the detail is known at save
+ * time, by the function that found it, and was thrown away one line later.
+ */
+export async function markSessionWithNewRecords(
+  sessionId: number,
+  records: readonly StoredRecord[] = [],
+): Promise<void> {
+  await db
+    .update(completedQuest)
+    .set({
+      hasNewRecords: 1,
+      // Empty stays null rather than "[]": a caller that knows nothing and a session that set
+      // nothing are the same absence, and the row reads the same either way.
+      recordsJson: records.length > 0 ? JSON.stringify(records) : null,
+    })
+    .where(eq(completedQuest.id, sessionId));
 }
 
 /**
@@ -276,6 +322,8 @@ export async function updateSessionFeedback(
 // to carry the name the line was written under.
 export type CompletedSessionListItem = Omit<CompletedSession, "exercises"> & {
   hasNewRecords: boolean;
+  /** Which records it set, when the row was written after `0051`. Empty otherwise. */
+  records: StoredRecord[];
   /** Ground covered, in metres, on an outing; null on a workout. */
   leaguesM: number | null;
   /** Moving seconds credited, on an outing; null on a workout and on one saved before 0046. */
@@ -297,6 +345,7 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
       feedback: completedQuest.feedback,
       performedAt: completedQuest.performedAt,
       hasNewRecords: completedQuest.hasNewRecords,
+      recordsJson: completedQuest.recordsJson,
       leaguesM: completedQuest.leaguesM,
       movingSeconds: completedQuest.movingSeconds,
       outing: completedQuest.outing,
@@ -316,6 +365,7 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
     feedback: (r.feedback as FeedbackCode | null) ?? null,
     performedAt: r.performedAt,
     hasNewRecords: r.hasNewRecords === 1,
+    records: parseRecords(r.recordsJson),
     leaguesM: r.leaguesM ?? null,
     movingSeconds: r.movingSeconds ?? null,
     outing: r.outing ?? null,

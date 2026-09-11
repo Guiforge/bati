@@ -42,6 +42,14 @@ export interface JournalEntry {
   tracePoints: readonly LngLat[];
   userLevel: DifficultyCode;
   hasNewRecords?: boolean;
+  /**
+   * What the badge broke, when the row knows: the movement's name, or the record's own word.
+   *
+   * Null on every session saved before `0051`, which is when the row started keeping it. The
+   * badge falls back to "PR" there rather than guessing: recomputing which record fell against
+   * today's history would answer a different question than the one the day asked.
+   */
+  recordLabel?: string | null;
 }
 
 interface SessionCardProps {
@@ -81,9 +89,19 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
     <Card flat testID="journal-session-card" onPress={onPress}>
       <XStack gap="$3" items="center">
         {/* Icon */}
+        {/* 64, not 50.
+            The journal's covers are dark-fantasy paintings, and a dark painting cropped to a 50 px
+            square on a dark card is a smudge: four rows of it read as four identical smudges with
+            the title as the only thing telling them apart, on the one screen whose job is finding
+            a session again. Fourteen more pixels is the whole fix, and the axe, the shield and the
+            tower are legible at it.
+
+            A ring in the quest's own colour was tried and dropped: `accent` is the same token for
+            every key, and `bg`'s pastels resolve to near-identical plums against `$surface2`, so
+            it was an ornament that looked like information. */}
         <YStack
-          width={50}
-          height={50}
+          width={64}
+          height={64}
           bg="$surface2"
           rounded="$4"
           borderWidth={1}
@@ -98,7 +116,7 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
           {/* One segment: `previewPathsFor` downsamples and drops the clock, so a row cannot know
               where the run broke. The detail screen behind it draws the real stretches. */}
           {entry.tracePoints.length > 1 ? (
-            <TraceThumb segments={[entry.tracePoints]} size={50} />
+            <TraceThumb segments={[entry.tracePoints]} size={64} />
           ) : entry.cover ? (
             <Image
               source={entry.cover}
@@ -131,8 +149,8 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
                 items="center"
               >
                 <Star size={12} color="$text" fill="$text" />
-                <Text fontSize={10} fontWeight="bold" color="$text">
-                  {t("journal.pr_badge")}
+                <Text fontSize={10} fontWeight="bold" color="$text" numberOfLines={1}>
+                  {entry.recordLabel ?? t("journal.pr_badge")}
                 </Text>
               </XStack>
             )}

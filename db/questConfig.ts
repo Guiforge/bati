@@ -306,7 +306,7 @@ export function applyConfigToSlots(
 export async function loadConfiguredQuest(
   questId: number,
   level?: UserLevel,
-): Promise<{ quest: Quest; level: UserLevel } | null> {
+): Promise<{ quest: Quest; level: UserLevel; config: QuestConfig | null } | null> {
   // `listExercises()` is promise-cached, so the catalogue is free after the first read anywhere
   // in the app — and it is what lets a swap resolve without this function knowing about screens.
   const [saved, exercises] = await Promise.all([getQuestConfig(questId), listExercises()]);
@@ -318,5 +318,11 @@ export async function loadConfiguredQuest(
   return {
     quest: applyQuestConfig(quest, config, indexExercises(exercises)),
     level: effective,
+    // The config itself, not only the quest it shaped. `applyQuestConfig` folds the hero's
+    // choices into the slots, and a distance goal is the one choice that is *not* a slot: it
+    // lives beside them, and it was read here and dropped on the floor. So the tile on Home
+    // started every walk with `goal: null` while the screen that saved the distance said, in its
+    // own hint, "Saved for this quest. It comes back next time."
+    config,
   };
 }

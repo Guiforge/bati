@@ -292,6 +292,32 @@ describe("db/questConfig", () => {
    * This exercises Home's path (`loadConfiguredQuest`) against the real seeded database, which is
    * the only way to catch the catalogue never being threaded in.
    */
+  /**
+   * A distance goal is the one choice that is not a slot: `applyQuestConfig` folds every other
+   * one into the quest it returns, and this one lives beside them. It was read and dropped, so
+   * the tile on Home started every walk with no number on it while the sheet that saved the
+   * distance promised it would come back.
+   */
+  test("Home's path carries the distance the hero saved, not only the shaped quest", async () => {
+    const outings = require("../db/outings") as typeof import("../db/outings");
+    const expeditions = require("../db/expeditions") as typeof import("../db/expeditions");
+
+    // A real door out, from the same list Home's band reads.
+    const [door] = await outings.listOutings();
+    assert(door);
+
+    await saveQuestConfig(door.quest.id, { level: Difficulty.Medium, distanceM: 10_000 });
+
+    const loaded = await loadConfiguredQuest(door.quest.id, Difficulty.Medium);
+    assert(loaded);
+    expect(loaded.config?.distanceM).toBe(10_000);
+    // And what Home does with it: the goal the hero set, not the slot's duration.
+    expect(expeditions.outingGoal(loaded.quest, loaded.config?.distanceM ?? null)).toEqual({
+      type: "distance",
+      metres: 10_000,
+    });
+  });
+
   test("Home's path starts the movement the hero swapped in", async () => {
     const quests = require("../db/quests") as typeof import("../db/quests");
     const exercisesDb = require("../db/exercises") as typeof import("../db/exercises");

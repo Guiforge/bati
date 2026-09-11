@@ -1,0 +1,20 @@
+-- The badge says which record it broke.
+--
+-- A finished session carries `hasNewRecords`, a 0 or a 1. The journal draws a "PR" chip from it,
+-- and the chip has never been able to say *what*: a hero scrolling three years of history sees a
+-- badge and cannot tell whether it was their push-ups, their longest hold or their longest
+-- session. `checkForNewRecords` knows all of it at save time, down to which movement, and threw
+-- everything but the boolean away.
+--
+-- One column, written once, read by the list. JSON rather than six flags because the set is
+-- open: `RecordType` has six members today and the exercise ones carry an id, and a column per
+-- kind would be a migration every time the game learns a new thing to be proud of.
+--
+--   [{"t":"exercise_max_reps","e":12},{"t":"longest_session"}]
+--
+-- Null on every row saved before this, and on a session that set nothing. A null is not "no
+-- records": `hasNewRecords` stays the flag, and an old row keeps its unlabelled badge rather
+-- than pretending the detail was lost. Nothing re-derives it, because a record is a fact about
+-- the day it happened and recomputing one against today's history would answer a different
+-- question.
+ALTER TABLE `completed_sessions` ADD `records_json` text;

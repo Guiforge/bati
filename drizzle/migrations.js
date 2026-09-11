@@ -51,6 +51,7 @@ import m0047 from "./0047_the_catalogue_says_tu.sql";
 import m0048 from "./0048_word_must_travel.sql";
 import m0049 from "./0049_a_walk_is_not_a_workout.sql";
 import m0050 from "./0050_thirty_minutes_is_a_walk.sql";
+import m0051 from "./0051_which_record_it_broke.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -107,5 +108,6 @@ export default {
     m0048,
     m0049,
     m0050,
+    m0051,
   },
 };

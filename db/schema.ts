@@ -421,6 +421,16 @@ export const completedQuest = sqliteTable(
     // Whether this session achieved new personal records.
     hasNewRecords: int().notNull().default(0),
 
+    /**
+     * Which ones, as JSON: `[{"t":"exercise_max_reps","e":12}]` (`0051`).
+     *
+     * `hasNewRecords` is the flag the list filters on and stays the flag. This is what the badge
+     * needs to say *what* it broke, which `checkForNewRecords` has always known at save time and
+     * always threw away. Null on every row written before 0051, and on a session that set
+     * nothing: an old row keeps its unlabelled badge rather than pretending the detail survived.
+     */
+    recordsJson: text("records_json"),
+
     // When the session was performed.
     performedAt: int({ mode: "timestamp" })
       .notNull()

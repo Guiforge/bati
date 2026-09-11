@@ -1,5 +1,6 @@
 import { LegendList } from "@legendapp/list/react-native";
 import { useFocusEffect, useRouter } from "expo-router";
+import type { TFunction } from "i18next";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshControl, ScrollView } from "react-native";
@@ -20,10 +21,12 @@ import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import { getQuestThumb } from "@/constants/assetMap";
 import { getWeekStart } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
+import type { StoredRecord } from "@/db/completed";
 import { getJournalStats, type JournalStatsSummary, listCompletedSessions } from "@/db/completed";
+import { listExercises } from "@/db/exercises";
 import { previewPathsFor } from "@/db/gps";
 import { listQuestTemplates } from "@/db/quests";
-import { localizedTitle } from "@/src/i18n/localized";
+import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -86,6 +89,27 @@ function TabButton({
   );
 }
 
+/**
+ * What the badge says it broke, or nothing.
+ *
+ * A movement's record is named by the movement, because "Wall Push-Up" is what the hero wants to
+ * beat next time; a session record is named by its own word. Only the first is shown: the chip
+ * shares a row with the quest's title, and a session that set three records is a session whose
+ * title would disappear to say so.
+ *
+ * Null when the row predates `0051` and kept no detail, which is what the plain "PR" is for.
+ */
+function recordLabel(
+  records: readonly StoredRecord[],
+  names: ReadonlyMap<number, string>,
+  t: TFunction,
+): string | null {
+  const first = records[0];
+  if (!first) return null;
+  if (first.e != null) return names.get(first.e) ?? null;
+  return t(`journal.record_${first.t}`, { defaultValue: "" }) || null;
+}
+
 export default function JournalScreen() {
   useScreenGuide("guide_journal");
   useAmbientVisit("menu_visit");
@@ -121,11 +145,16 @@ export default function JournalScreen() {
     try {
       setLoading(true);
       // Fetch sessions and quest templates to resolve titles
-      const [sessions, quests, totals] = await Promise.all([
+      // `listExercises` is promise-cached, so the catalogue is free after the first read anywhere
+      // in the app. It is here to name the movement a record belongs to, which is the difference
+      // between a badge that says "PR" and one that says "Wall Push-Up".
+      const [sessions, quests, totals, exercises] = await Promise.all([
         listCompletedSessions(100),
         listQuestTemplates(),
         getJournalStats(getWeekStart(language)),
+        listExercises(),
       ]);
+      const exerciseNames = new Map(exercises.map((e) => [e.id, localizedName(e, language)]));
       setStats(totals);
 
       // One read for the whole page's runs, not one per card. Only the outings are asked for:
@@ -154,6 +183,7 @@ export default function JournalScreen() {
           tracePoints: (s.uuid && traces.get(s.uuid)) || [],
           userLevel: s.userLevel,
           hasNewRecords: s.hasNewRecords,
+          recordLabel: recordLabel(s.records, exerciseNames, t),
         };
       });
 

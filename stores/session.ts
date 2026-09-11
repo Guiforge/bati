@@ -1731,9 +1731,18 @@ export const useSessionStore = create<SessionState>()(
       // Check for personal records
       const newRecords = await checkForNewRecords(sessionId);
 
-      // Mark session as having new records if any were set
+      // Mark session as having new records if any were set, and say which ones: the badge in
+      // the journal could only ever show that *a* record fell, never which, and this is the one
+      // moment the answer exists.
       if (newRecords.length > 0) {
-        await markSessionWithNewRecords(sessionId);
+        await markSessionWithNewRecords(
+          sessionId,
+          newRecords.map((record) =>
+            record.exerciseId == null
+              ? { t: record.recordType }
+              : { t: record.recordType, e: record.exerciseId },
+          ),
+        );
       }
 
       // The variations tonight's sets just unlocked. Same question as the records above — what

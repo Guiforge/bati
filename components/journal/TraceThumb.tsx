@@ -16,13 +16,14 @@ import { traceToPath } from "./tracePreview";
  * shape of a run needs no tiles under it.
  */
 export const TraceThumb = memo(function TraceThumb({
-  points,
+  segments,
   size,
 }: {
-  points: readonly LngLat[];
+  /** One entry per unbroken stretch. A list row that has only the line passes `[points]`. */
+  segments: readonly (readonly LngLat[])[];
   size: number;
 }) {
-  const d = traceToPath(points, size);
+  const d = traceToPath(segments, size);
   if (d === null) return null;
 
   return (

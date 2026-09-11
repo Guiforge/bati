@@ -18,7 +18,12 @@ import type { LngLat } from "@/src/gps/trace";
  * Pure, and given `size` rather than reading a layout: the caller draws it into a `viewBox`, so
  * this never needs to know the density it lands on.
  */
-export function traceToPath(points: readonly LngLat[], size: number, padding = 4): string | null {
+export function traceToPath(
+  segments: readonly (readonly LngLat[])[],
+  size: number,
+  padding = 4,
+): string | null {
+  const points = segments.flat();
   if (points.length < 2) return null;
 
   const lats = points.map(([, lat]) => lat);
@@ -44,13 +49,25 @@ export function traceToPath(points: readonly LngLat[], size: number, padding = 4
   const offsetX = padding + (box - spanX * scale) / 2;
   const offsetY = padding + (box - spanY * scale) / 2;
 
-  return points
-    .map(([lon, lat], i) => {
-      const x = offsetX + (lon * kx - minX) * scale;
-      // SVG's y grows downwards and latitude grows north, so the axis is flipped here rather
-      // than by a transform on the element: a path nobody has to read a matrix to understand.
-      const y = offsetY + (spanY - (lat - minY)) * scale;
-      return `${i === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
-    })
+  // One `M` per segment, never a single chain.
+  //
+  // A segment is a stretch the reducer was willing to credit, and the space between two of them
+  // is a tunnel, a dead battery or a phone that lost the sky. Drawing straight through it is the
+  // exact failure `src/gps/trace.ts` documents at the top of its own file: the picture then tells
+  // the hero they went through the hill. The caller does the breaking, because `breaksRun` is the
+  // one rule that decides it and this file is a renderer.
+  return segments
+    .filter((segment) => segment.length > 0)
+    .map((segment) =>
+      segment
+        .map(([lon, lat], i) => {
+          const x = offsetX + (lon * kx - minX) * scale;
+          // SVG's y grows downwards and latitude grows north, so the axis is flipped here rather
+          // than by a transform on the element: a path nobody has to read a matrix to understand.
+          const y = offsetY + (spanY - (lat - minY)) * scale;
+          return `${i === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
+        })
+        .join(" "),
+    )
     .join(" ");
 }

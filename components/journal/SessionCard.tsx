@@ -95,8 +95,10 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
           {/* The run itself, when there is one. The three seeded outings share three pictures, so
               a page of walks was a column of identical thumbnails - the same complaint the
               trophy below records, one row further in. A line is never the same twice. */}
+          {/* One segment: `previewPathsFor` downsamples and drops the clock, so a row cannot know
+              where the run broke. The detail screen behind it draws the real stretches. */}
           {entry.tracePoints.length > 1 ? (
-            <TraceThumb points={entry.tracePoints} size={50} />
+            <TraceThumb segments={[entry.tracePoints]} size={50} />
           ) : entry.cover ? (
             <Image
               source={entry.cover}

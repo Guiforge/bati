@@ -46,11 +46,10 @@ export type StreakInfo = {
    *
    * The number that decides whether the flame is lit tomorrow, which the journal's card could
    * not say: it printed "1092, best 1092", a number compared to itself, and never the bar. Both
-   * are already in hand wherever the streak is computed, and `null` only on a cache written
-   * before this existed, where the card falls back to saying nothing.
+   * are already in hand wherever the streak is computed.
    */
-  inWindow: number | null;
-  quota: number | null;
+  inWindow: number;
+  quota: number;
 };
 
 export type FlameLevel = 0 | 1 | 2 | 3 | 4 | 5;
@@ -183,7 +182,15 @@ export async function getCachedStreak(): Promise<StreakInfo | null> {
     cache[row.key] = row.value;
   }
 
-  if (!cache[STREAK_CURRENT_KEY] || !cache[STREAK_BEST_KEY] || !cache[STREAK_CACHED_ON_KEY]) {
+  if (
+    !cache[STREAK_CURRENT_KEY] ||
+    !cache[STREAK_BEST_KEY] ||
+    !cache[STREAK_CACHED_ON_KEY] ||
+    // A cache written before the window key existed is a miss, not a partial hit. Serving it
+    // with a missing figure meant the card stayed silent about the week until the hero logged
+    // a session, which on a device with a same-day cache is the one thing they have not done.
+    cache[STREAK_WINDOW_KEY] === undefined
+  ) {
     return null;
   }
   if (cache[STREAK_CACHED_ON_KEY] !== dayKey(new Date())) return null;
@@ -191,17 +198,14 @@ export async function getCachedStreak(): Promise<StreakInfo | null> {
 
   const current = Number.parseInt(cache[STREAK_CURRENT_KEY], 10) || 0;
 
-  const window = cache[STREAK_WINDOW_KEY];
-
   return {
     current,
     best: Number.parseInt(cache[STREAK_BEST_KEY], 10) || 0,
     isActive: current > 0,
     lastWorkoutDate: cache[STREAK_LAST_DATE_KEY] || null,
-    // Absent on a cache written before the key existed: the card says nothing rather than a
-    // zero, which would read as "you have trained nothing this week".
-    inWindow: window === undefined ? null : Number.parseInt(window, 10),
-    quota: Number.parseInt(cache[STREAK_QUOTA_KEY] ?? "", 10) || null,
+    inWindow: Number.parseInt(cache[STREAK_WINDOW_KEY], 10) || 0,
+    // Guarded above: the cache is a miss unless this matches the quota in force right now.
+    quota: Number.parseInt(cache[STREAK_QUOTA_KEY] ?? "", 10) || 0,
   };
 }
 

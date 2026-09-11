@@ -295,23 +295,6 @@ describe("db/village buildings", () => {
     ]);
   });
 
-  test("trophies merge achievements and defeated bosses, newest first", async () => {
-    const { getTrophies } = require("../db/village") as typeof import("../db/village");
-
-    const trophies = await getTrophies([
-      {
-        adventureId: 1,
-        enTitle: "Fire Dragon",
-        frTitle: "Dragon de feu",
-        imagePath: "assets/x.jpg",
-        defeatedAt: new Date("2026-01-02"),
-      },
-    ]);
-
-    expect(trophies.map((x) => x.kind)).toEqual(["boss"]);
-    expect(trophies[0]?.imagePath).toBe("assets/x.jpg");
-  });
-
   // The village card and the detail sheet both draw their bar from this one call. The rule it
   // encodes — a locked building only counts when its condition is a tally, never when it is
   // "train your back" — is the part that would silently drift if either side recomputed it.

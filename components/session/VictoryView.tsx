@@ -33,6 +33,7 @@ import { isOutingSession } from "@/db/expeditions";
 import { createQuestFromOuting } from "@/db/quests";
 import type { FeedbackCode } from "@/db/schema";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
+import { formatGrown } from "@/db/village";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
@@ -340,8 +341,8 @@ export function VictoryView() {
 
   const handleViewVillage = () => {
     if (!result) return;
-    const codes = result.villageGrowth.map((g) => g.code).join(",");
-    router.push(`/(tabs)/village?grown=${codes}` as never);
+    // Levels travel with the codes: the village plays the rise from one rung to the next.
+    router.push(`/(tabs)/village?grown=${formatGrown(result.villageGrowth)}` as never);
   };
 
   const handleContinue = () => {

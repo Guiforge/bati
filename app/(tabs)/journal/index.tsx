@@ -11,6 +11,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { BarChart2, List } from "@/components/icons";
 import { AchievementsCard } from "@/components/journal/AchievementsCard";
+import { BossesCard } from "@/components/journal/BossesCard";
 import { JournalStats } from "@/components/journal/JournalStats";
 import { MonthlyCalendarCard } from "@/components/journal/MonthlyCalendarCard";
 import { MuscleBalanceCard } from "@/components/journal/MuscleBalanceCard";
@@ -333,6 +334,8 @@ export default function JournalScreen() {
               <MonthlyCalendarCard />
               <ProgressionCard />
               <AchievementsCard />
+              {/* Moved from the village's trophy wall: a dated rack is history. */}
+              <BossesCard />
               <MuscleBalanceCard />
               <SuggestedQuestsCard />
             </Fragment>

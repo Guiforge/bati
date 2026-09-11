@@ -442,7 +442,8 @@ would be Chin-Up, which someone who cannot do a pull-up cannot do either.
 underneath moved every three sessions. The strip replaces the gold bar — one card, one gauge — and
 hands back to the counter the day the first rep lands.
 
-**Climbing a whole path reaches the village trophy shelf**, beside the defeated bosses, for no XP
+**Climbing a whole path reaches the village trophy shelf** (since 2026-09-11 the Journal's
+achievements card: the village redesign moved the shelf out), beside the defeated bosses, for no XP
 and no points: §5 warns that extrinsic rewards erode the intrinsic kind unless the reward *is* the
 progress. It uses a monotonic measure — *did this ever happen* — so the current rung can fall
 while the trophy cannot, which is the rule the research demands about never punishing an absence.

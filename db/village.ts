@@ -1,6 +1,5 @@
 import { eq, isNotNull, sql } from "drizzle-orm";
 import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
-import { achievementDefinitions, getUnlockedAchievements } from "./achievements";
 import { listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
@@ -319,6 +318,14 @@ const TIER_4_DRIVERS: Partial<
 // A tier-3 upgrade trails two rungs behind the building it extends, which tops out at 5.
 const T3_MAX_LEVEL = 3;
 
+/**
+ * The level a building can actually reach. The six upgrades stop at 3, and the village used to
+ * draw five pips under them anyway: "3 of 5" for life, a road the screen promised and never had.
+ */
+export function buildingCeiling(building: Pick<VillageBuilding, "tier">): number {
+  return building.tier === 3 ? T3_MAX_LEVEL : MAX_BUILDING_LEVEL;
+}
+
 /** Level 1..5 from a floor table indexed by level - 1; below the first floor, 0 = not earned. */
 function levelFromFloors(value: number, floors: readonly number[]): number {
   let level = 0;
@@ -534,6 +541,76 @@ export type VillageGrowth = {
   newLevel: number;
 };
 
+/**
+ * Nothing earned yet: the three starters stand on their own, and they are all there is. A walk
+ * counts as much as a set here, which is why this is not "no reps logged".
+ */
+export function isDayOne(buildings: VillageBuilding[]): boolean {
+  return !buildings.some((b) => b.tier !== 1 && b.level > 0);
+}
+
+/**
+ * The last painting, and every building that can top out has. Deeds are left out: they are the
+ * part of the village that keeps answering once the rest is finished.
+ */
+export function isVillageComplete(tier: VillageTier, buildings: VillageBuilding[]): boolean {
+  return tier === 12 && buildings.every((b) => b.tier === 4 || b.nextTarget === null);
+}
+
+/** Reps left to the next rung, for the buildings that count reps. */
+function repsLeft(building: VillageBuilding): number {
+  return (building.nextTarget ?? Number.POSITIVE_INFINITY) - building.metricValue;
+}
+
+/**
+ * The one building the screen puts first: the thing a single session is most likely to raise.
+ *
+ * Reps first, and the fewest of them wins: "40 reps of chest" is closer than "350 reps of legs"
+ * whatever the percentages say, because the hero trains in reps, not in fractions. Level 0 is left
+ * out on purpose, since one rep builds any of those and they would win every time. Past the rep
+ * buildings (a finished village) the deed with the most of its bar filled takes over, because a
+ * league and a boss cannot be compared to each other. Null when nothing has a rung left, and on day
+ * one: the screen says the rule instead.
+ */
+export function pickNextToRise(buildings: VillageBuilding[]): VillageBuilding | null {
+  if (isDayOne(buildings)) return null;
+  const reps = buildings
+    .filter((b) => (b.driver === "muscle" || b.driver === "style") && b.level > 0)
+    .filter((b) => b.nextTarget !== null);
+  if (reps.length > 0) {
+    return reps.reduce((best, b) => (repsLeft(b) < repsLeft(best) ? b : best));
+  }
+  const deeds = buildings.filter((b) => b.tier === 4 && b.nextTarget !== null);
+  const progress = (b: VillageBuilding) => getBuildingProgress(b) ?? 0;
+  return deeds.reduce<VillageBuilding | null>(
+    (best, b) => (best === null || progress(b) > progress(best) ? b : best),
+    null,
+  );
+}
+
+/** What the victory screen hands the village: each building that rose, from which level to which. */
+export type GrownBuilding = Pick<VillageGrowth, "code" | "oldLevel" | "newLevel">;
+
+/**
+ * The `grown` route param, written by the victory screen and read by the village. Both sides live
+ * here so the format has one owner: `farm:3:4,barn:1:2`.
+ */
+export function formatGrown(growth: readonly GrownBuilding[]): string {
+  return growth.map((g) => `${g.code}:${g.oldLevel}:${g.newLevel}`).join(",");
+}
+
+/** Anything malformed is dropped rather than trusted: a route param is user-reachable text. */
+export function parseGrown(param: string | undefined): GrownBuilding[] {
+  return (param ?? "").split(",").flatMap((part) => {
+    const [code, oldLevel, newLevel] = part.split(":");
+    const from = Number(oldLevel);
+    const to = Number(newLevel);
+    if (!(buildingCodes as readonly string[]).includes(code ?? "")) return [];
+    if (!(Number.isInteger(from) && Number.isInteger(to) && to > from)) return [];
+    return [{ code: code as BuildingCode, oldLevel: from, newLevel: to }];
+  });
+}
+
 /** Which buildings rose since the last snapshot — the "village grows" moment on save. */
 export function diffVillageGrowth(
   before: VillageBuilding[],
@@ -561,104 +638,23 @@ export function diffVillageTier(oldLevel: number, newLevel: number): VillageTier
   return newTier > oldTier ? { oldTier, newTier } : null;
 }
 
-// ------------------------------------------------------------
-// Trophies
-// ------------------------------------------------------------
-
-export type Trophy = {
-  key: string;
-  kind: "achievement" | "boss";
-  /** Set for achievements: the code its definition is filed under. */
-  code: string | null;
-  /** Set for bosses: the adventure whose campaign the victory belongs to. */
-  adventureId: number | null;
-  emoji: string | null;
-  imagePath: string | null;
-  enTitle: string;
-  frTitle: string;
-  /** What the trophy was earned for; bosses tell that story in the adventure itself. */
-  enDescription: string | null;
-  frDescription: string | null;
-  earnedAt: Date;
-};
-
-/** Achievements and defeated bosses on one shelf, newest first. */
-export async function getTrophies(banners: BossBanner[]): Promise<Trophy[]> {
-  const unlocked = await getUnlockedAchievements();
-
-  const achievementTrophies: Trophy[] = unlocked.flatMap((a) => {
-    const def = achievementDefinitions.find((d) => d.code === a.code);
-    if (!def) return [];
-    return [
-      {
-        key: `achievement:${a.code}`,
-        kind: "achievement" as const,
-        code: a.code,
-        adventureId: null,
-        emoji: def.icon,
-        imagePath: null,
-        enTitle: def.enTitle,
-        frTitle: def.frTitle,
-        enDescription: def.enDescription,
-        frDescription: def.frDescription,
-        earnedAt: new Date(a.unlockedAt),
-      },
-    ];
-  });
-
-  const bossTrophies: Trophy[] = banners.map((b) => ({
-    key: `boss:${b.adventureId}`,
-    kind: "boss" as const,
-    code: null,
-    adventureId: b.adventureId,
-    emoji: null,
-    imagePath: b.imagePath,
-    enTitle: b.enTitle,
-    frTitle: b.frTitle,
-    enDescription: null,
-    frDescription: null,
-    earnedAt: b.defeatedAt,
-  }));
-
-  return [...achievementTrophies, ...bossTrophies].sort(
-    (a, b) => b.earnedAt.getTime() - a.earnedAt.getTime(),
-  );
-}
-
+/**
+ * The village no longer carries a trophy wall. Achievements were already listed in the Journal,
+ * and a dated rack is history, not a place: the defeated bosses moved to the Journal as their own
+ * card (components/journal/BossesCard.tsx, reading `getBossBanners()`), and the "Least trained"
+ * line went with the grid it annotated. "Next to rise" says the same thing with a number in it.
+ */
 export type VillageScene = {
   tier: VillageTier;
   level: number;
+  /** The hero's level title, shown beside the tier on the scene. */
+  title: { en: string; fr: string };
   flame: FlameLevel;
+  /** Days the flame has stayed lit, which the flame's name alone does not say. */
+  streakDays: number;
   dominantSport: DominantSportOverlay;
-  /** The muscle the village has always under-built, or null while nothing stands out. */
-  neglected: MuscleCode | null;
   buildings: VillageBuilding[];
-  /**
-   * Achievements and defeated bosses on one rack. Bosses arrive here and nowhere else: the
-   * scene used to carry a `bossBanners` array as well, which no screen ever read — the same
-   * victories, reachable twice, one of them dead. `getBossBanners()` still runs, because the
-   * trophies and the dragon lair's level both need it.
-   */
-  trophies: Trophy[];
 };
-
-/**
- * The muscle the hero has trained least over their whole history, if any is far enough behind
- * to be worth naming (`weakAreas` is "under half an even share", see db/muscleBalance.ts).
- *
- * Lifetime rather than the last seven days on purpose. It is the same window the muscle
- * buildings level on, so the line names the reason a tile below has stopped rising instead of
- * reporting an unrelated statistic — and one leg day inside a quiet week would otherwise mark
- * every other muscle as neglected.
- *
- * Free: `getMuscleBalance` is memoised per period by `shortLivedQuery`, and
- * `getVillageBuildings()` has already asked for this exact window in the same tick.
- */
-async function getNeglectedMuscle(): Promise<MuscleCode | null> {
-  const balance = await getMuscleBalance("all");
-  if (balance.totalVolume === 0) return null;
-  return balance.weakAreas[0] ?? null;
-}
 
 /**
  * Everything the village scene needs, in one call. Pure aggregation over
@@ -666,22 +662,20 @@ async function getNeglectedMuscle(): Promise<MuscleCode | null> {
  * no village-specific table.
  */
 export async function getVillageScene(): Promise<VillageScene> {
-  const [levelInfo, streak, dominantSport, bossBanners, buildings, neglected] = await Promise.all([
+  const [levelInfo, streak, dominantSport, buildings] = await Promise.all([
     getUserLevelInfo(),
     getStreakInfo(),
     getDominantSportOverlay(),
-    getBossBanners(),
     getVillageBuildings(),
-    getNeglectedMuscle(),
   ]);
 
   return {
     tier: getVillageTier(levelInfo.level),
     level: levelInfo.level,
+    title: levelInfo.title,
     flame: getFlameLevel(streak.current),
+    streakDays: streak.current,
     dominantSport,
-    neglected,
     buildings,
-    trophies: await getTrophies(bossBanners),
   };
 }

@@ -12,9 +12,10 @@ import { LevelPips } from "@/components/village/LevelPips";
 import { getBuildingIconAsset, getExerciseThumb, getVillageTierAsset } from "@/constants/assetMap";
 import { pickSessionEmptyVariant } from "@/constants/sessionEmptyMessages";
 import type { SessionStanding } from "@/db/personalRecords";
+import { buildingDefinitions } from "@/db/schema";
 import { formatTarget } from "@/db/targets";
 import { getLevelTitle } from "@/db/userLevel";
-import { TIER_NAMES } from "@/db/village";
+import { buildingCeiling, TIER_NAMES } from "@/db/village";
 import { localizedTitle } from "@/src/i18n/localized";
 import type { useSessionStore } from "@/stores/session";
 import { NewRecordsBadge } from "./NewRecordsBadge";
@@ -226,7 +227,10 @@ export function SessionRewards({
                   <Text fontWeight="700" fontSize={14} color="$text">
                     {isFr ? g.frName : g.enName}
                   </Text>
-                  <LevelPips level={g.newLevel} />
+                  <LevelPips
+                    level={g.newLevel}
+                    max={buildingCeiling(buildingDefinitions[g.code])}
+                  />
                 </YStack>
               </XStack>
             ))}

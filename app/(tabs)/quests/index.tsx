@@ -1,8 +1,8 @@
 import { LegendList } from "@legendapp/list/react-native";
 import { Image } from "expo-image";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { Platform, Pressable } from "react-native";
@@ -43,7 +43,7 @@ import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
 import { hasOutdoorMovement, isOutingQuest } from "@/db/expeditions";
 import { getFavouriteQuestIds, toggleFavouriteQuest } from "@/db/favourites";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { isMuscleCode, MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import { type QuestTemplate, questTrainingLevel } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
@@ -489,6 +489,20 @@ export default function QuestsGallery() {
     applyFilters((f) => ({ ...f, duration: f.duration === d ? null : d }));
 
   const clearFilters = () => applyFilters(() => NO_FILTERS);
+
+  // The village's "find a quest" links arrive with the filter already chosen: the muscle of the
+  // building one session away, or the outings for the High Road. The tab stays mounted, so this
+  // follows the params instead of seeding the state once.
+  const { muscle, outside } = useLocalSearchParams<{ muscle?: string; outside?: string }>();
+  useEffect(() => {
+    if (!(isMuscleCode(muscle) || outside === "1")) return;
+    setFilters({
+      ...NO_FILTERS,
+      muscles: isMuscleCode(muscle) ? new Set([muscle]) : new Set(),
+      outside: outside === "1",
+    });
+    setVisibleCount(PAGE_SIZE);
+  }, [muscle, outside]);
 
   const load = useCallback(async () => {
     // Only show the loading state on first load — on focus refetches we already have data

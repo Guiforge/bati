@@ -115,7 +115,7 @@ describe("VillageScene", () => {
     // rate that is not one-to-one named on the same line: "work units" was a currency the hero
     // met here and nowhere else.
     expect(
-      await findByText("350 reps of chest training A hold counts one rep every 3 seconds."),
+      await findByText("350 reps of chest training. A hold counts one rep every 3 seconds."),
     ).toBeTruthy();
     expect(await findByText("250 more for level 4")).toBeTruthy();
   });

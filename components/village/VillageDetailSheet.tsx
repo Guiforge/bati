@@ -207,6 +207,9 @@ function BuildingDetail({
   const prereqCode = buildingDefinitions[building.code].prerequisiteBuilding;
   const prereqName = prereqCode ? BUILDING_LABELS[prereqCode][fr ? "fr" : "en"] : "";
 
+  // The unit note is a second sentence, so the join carries the full stop. The driver strings
+  // themselves stay clause-shaped: the leagues one is reused on the victory screen after a
+  // middot, where a period would be wrong.
   const repUnitNote = t("village.rep_unit", { seconds: SECONDS_PER_REP_EQUIVALENT });
 
   // One sentence naming the deed that raises this building, in its own unit.
@@ -225,11 +228,11 @@ function BuildingDetail({
           : `${t("village.detail_muscle_driver", {
               volume: building.metricValue,
               muscle: muscleLabel,
-            })} ${repUnitNote}`;
+            })}. ${repUnitNote}`;
       case "style":
         return building.level === 0
           ? t("village.detail_unlock_style", { style: styleLabel })
-          : `${t("village.detail_style_driver", { volume: building.metricValue, style: styleLabel })} ${repUnitNote}`;
+          : `${t("village.detail_style_driver", { volume: building.metricValue, style: styleLabel })}. ${repUnitNote}`;
       case "prereq":
         return building.level === 0
           ? t("village.detail_prereq_locked", {
@@ -249,7 +252,7 @@ function BuildingDetail({
         // The one place the unit gets named. A league is the only measure Bati invents, and until
         // this line it arrived unexplained: "2,50 km" on the victory screen and "2 leagues" under
         // it, with nothing in between, and a hero in miles never told what either was worth.
-        return `${t("village.detail_leagues_driver", { count: building.metricValue })} ${t("village.league_unit")}`;
+        return `${t("village.detail_leagues_driver", { count: building.metricValue })}. ${t("village.league_unit")}`;
       default:
         return t("village.detail_bosses_driver", { count: building.metricValue });
     }

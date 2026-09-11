@@ -12,6 +12,8 @@ const STREAK_BEST_KEY = "streak_best";
 const STREAK_LAST_DATE_KEY = "streak_last_date";
 const STREAK_CACHED_ON_KEY = "streak_cached_on";
 const STREAK_QUOTA_KEY = "streak_quota";
+/** Sessions in the trailing week, cached beside the flame it explains (added 2026-09-11). */
+const STREAK_WINDOW_KEY = "streak_window";
 
 /**
  * The flame is a consistency streak, not an attendance streak.
@@ -39,6 +41,16 @@ export type StreakInfo = {
   best: number;
   isActive: boolean;
   lastWorkoutDate: string | null;
+  /**
+   * Sessions in the trailing seven days, and the quota they are measured against.
+   *
+   * The number that decides whether the flame is lit tomorrow, which the journal's card could
+   * not say: it printed "1092, best 1092", a number compared to itself, and never the bar. Both
+   * are already in hand wherever the streak is computed, and `null` only on a cache written
+   * before this existed, where the card falls back to saying nothing.
+   */
+  inWindow: number | null;
+  quota: number | null;
 };
 
 export type FlameLevel = 0 | 1 | 2 | 3 | 4 | 5;
@@ -126,9 +138,9 @@ export function calculateStreakFromSessions(
   performedAt: Date[],
   quota: number,
   now: Date = new Date(),
-): { current: number; best: number; isActive: boolean } {
+): { current: number; best: number; isActive: boolean; inWindow: number } {
   if (performedAt.length === 0) {
-    return { current: 0, best: 0, isActive: false };
+    return { current: 0, best: 0, isActive: false, inWindow: 0 };
   }
 
   const byDay = groupByDay(performedAt);
@@ -151,7 +163,11 @@ export function calculateStreakFromSessions(
     best = Math.max(best, run);
   }
 
-  return { current, best, isActive: current > 0 };
+  // What today's flame is standing on, and what tomorrow's will be judged by. `isLit` reads the
+  // same window, so this is the count behind the answer rather than a second opinion about it.
+  const inWindow = countInWindow(byDay, today, WINDOW_DAYS);
+
+  return { current, best, isActive: current > 0, inWindow };
 }
 
 /**
@@ -175,11 +191,17 @@ export async function getCachedStreak(): Promise<StreakInfo | null> {
 
   const current = Number.parseInt(cache[STREAK_CURRENT_KEY], 10) || 0;
 
+  const window = cache[STREAK_WINDOW_KEY];
+
   return {
     current,
     best: Number.parseInt(cache[STREAK_BEST_KEY], 10) || 0,
     isActive: current > 0,
     lastWorkoutDate: cache[STREAK_LAST_DATE_KEY] || null,
+    // Absent on a cache written before the key existed: the card says nothing rather than a
+    // zero, which would read as "you have trained nothing this week".
+    inWindow: window === undefined ? null : Number.parseInt(window, 10),
+    quota: Number.parseInt(cache[STREAK_QUOTA_KEY] ?? "", 10) || null,
   };
 }
 
@@ -188,6 +210,7 @@ async function saveStreakCache(
   best: number,
   lastDate: string | null,
   quota: number,
+  inWindow: number,
 ): Promise<void> {
   await db
     .insert(userPreferences)
@@ -197,6 +220,7 @@ async function saveStreakCache(
       { key: STREAK_LAST_DATE_KEY, value: lastDate ?? "" },
       { key: STREAK_CACHED_ON_KEY, value: dayKey(new Date()) },
       { key: STREAK_QUOTA_KEY, value: String(quota) },
+      { key: STREAK_WINDOW_KEY, value: String(inWindow) },
     ])
     .onConflictDoUpdate({
       target: userPreferences.key,
@@ -220,16 +244,16 @@ export async function calculateAndCacheStreak(): Promise<StreakInfo> {
   ]);
 
   if (rows.length === 0) {
-    return { current: 0, best: 0, isActive: false, lastWorkoutDate: null };
+    return { current: 0, best: 0, isActive: false, lastWorkoutDate: null, inWindow: 0, quota };
   }
 
   const performedAt = rows.map((r) => r.performedAt);
   const result = calculateStreakFromSessions(performedAt, quota);
   const lastDate = dayKey(new Date(Math.max(...performedAt.map((d) => d.getTime()))));
 
-  await saveStreakCache(result.current, result.best, lastDate, quota);
+  await saveStreakCache(result.current, result.best, lastDate, quota, result.inWindow);
 
-  return { ...result, lastWorkoutDate: lastDate };
+  return { ...result, lastWorkoutDate: lastDate, quota };
 }
 
 // In-process memo: one journal open used to run this pipeline (prefs full scan + quota

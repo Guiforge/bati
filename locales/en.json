@@ -683,6 +683,8 @@
     "streak_days_other": "Flame days",
     "legend_workout": "Workout",
     "legend_today": "Today",
+    "streak_week": "This week",
+    "streak_quota": "{{done}} / {{quota}}",
     "best_streak": "Best",
     "total_workouts": "Total Workouts",
     "total_minutes": "Total Minutes",

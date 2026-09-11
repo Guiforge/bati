@@ -31,6 +31,8 @@ export interface JournalEntry {
   performedAt: Date;
   durationSeconds: number | null;
   leaguesM: number | null;
+  /** What the session paid. Zero on a row that somehow earned nothing, which draws no tag. */
+  xpEarned: number;
   /** Moving seconds, on an outing. Null on a workout and on an outing saved before 0046. */
   movingSeconds: number | null;
   /** Which kind of session this was (`0049`). Null is a workout. */
@@ -165,6 +167,15 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
 
           <XStack gap="$2" mt="$1" flexWrap="wrap">
             <Tag label={metaLabel} tone="secondary" />
+            {/* What the session was worth, not only how long it took.
+                A row gave a duration and a difficulty and never what was done inside it, so two
+                runs of the same quest a month apart were indistinguishable unless one happened to
+                last longer, which is the one thing nobody is trying to maximise. XP is priced off
+                reps, tempo and difficulty, so it is the effort, in the unit this game already
+                counts in. */}
+            {entry.xpEarned > 0 ? (
+              <Tag label={t("quests.reward_xp", { count: entry.xpEarned })} tone="primary" />
+            ) : null}
             <Tag label={t(`quests.level_${entry.userLevel}`, entry.userLevel)} tone="primary" />
           </XStack>
         </YStack>

@@ -114,9 +114,20 @@ export function HomeHeader() {
               trackColor="$surface2"
             />
           </XStack>
-          <Text fontSize={11} fontWeight="700" color="$resourceGold">
-            {levelInfo?.xpProgress.toFixed(0) ?? 0}%
-          </Text>
+          {/* The numbers, not the percentage.
+              "18%" is eighteen percent of something this header never named: no XP figure, no
+              level being climbed towards, and the lifetime total sits elsewhere on the same
+              screen in a different unit of account. The victory screen already prints the
+              fraction with `journal.xp_progress`, so the two places a hero meets their level now
+              say it the same way. */}
+          {levelInfo ? (
+            <Text fontSize={11} fontWeight="700" color="$resourceGold">
+              {t("journal.xp_progress", {
+                current: levelInfo.currentLevelXp,
+                next: levelInfo.currentLevelXp + levelInfo.xpToNextLevel,
+              })}
+            </Text>
+          ) : null}
         </XStack>
       </YStack>
 

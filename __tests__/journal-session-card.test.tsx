@@ -55,6 +55,7 @@ describe("SessionCard", () => {
     questTitle: "Test Quest",
     performedAt: new Date("2026-01-01T10:00:00.000Z"),
     durationSeconds: 300, // 5 minutes
+    xpEarned: 42,
     userLevel: "medium",
     leaguesM: null,
     movingSeconds: null,

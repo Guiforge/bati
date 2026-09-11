@@ -417,6 +417,8 @@
     "balance_needs_work": "À travailler",
     "pull_deficit_title": "Ton tirage est en retard",
     "pull_deficit_body": "{{pull}} de tirage contre {{push}} de poussée sur 30 jours. Sans barre, c'est le tirage qui disparaît en premier : tirage à la serviette ou une barre de porte.",
+    "streak_week": "Cette semaine",
+    "streak_quota": "{{done}} / {{quota}}",
     "best_streak": "Record",
     "days": "jours",
     "duration": "Durée",

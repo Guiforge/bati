@@ -98,7 +98,14 @@ describe("useStreakInfo", () => {
 
     await unmount();
     await act(async () => {
-      resolveRead?.({ current: 9, best: 9, isActive: true, lastWorkoutDate: "2026-08-23" });
+      resolveRead?.({
+        current: 9,
+        best: 9,
+        isActive: true,
+        lastWorkoutDate: "2026-08-23",
+        inWindow: 3,
+        quota: 2,
+      });
       await Promise.resolve();
     });
 

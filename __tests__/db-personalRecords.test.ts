@@ -153,6 +153,31 @@ describe("db/personalRecords", () => {
     expect(records[1]).toMatchObject({ type: "time", best: 40, last: 40 });
   });
 
+  test("getMovementRecords leaves outings out, they have no record to beat", async () => {
+    const { getMovementRecords } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+    const walk = t.sqlite
+      .prepare("SELECT id FROM exercises WHERE style = 'expedition' ORDER BY id LIMIT 1")
+      .get() as { id: number } | undefined;
+    const lift = t.sqlite
+      .prepare("SELECT id FROM exercises WHERE style != 'expedition' ORDER BY id LIMIT 1")
+      .get() as { id: number };
+    assert(walk);
+
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${walk.id}, 'time', 1982, ${now}, 0),
+        (1, ${lift.id}, 'reps', 10, ${now}, 1);
+    `);
+
+    // "Warden's Walk, 1982s" is the seconds a walk happened to last, not a number anyone set out
+    // to beat. The session screen keeps its ghost line off an outing for the same reason.
+    const records = await getMovementRecords();
+    expect(records.map((r) => r.exerciseId)).toEqual([lift.id]);
+  });
+
   test("getMovementRecords keeps a movement's reps and its holds apart", async () => {
     const { getMovementRecords } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");

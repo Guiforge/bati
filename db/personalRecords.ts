@@ -1,9 +1,10 @@
-import { and, desc, eq, inArray, max, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, max, ne, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { isWorkout } from "./completed";
 import { hasGround } from "./expeditions";
 import { totalLeaguesM } from "./gps";
 import type { QuestTargetType } from "./schema";
+import { NON_REP_STYLE } from "./workUnits";
 
 const { completedQuest, completedExercises, exercises } = schema;
 
@@ -253,6 +254,10 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    // Never an outing. A walk's "record" is the seconds it happened to last, which is not a
+    // number anyone set out to beat: it is the same reason the session screen keeps its ghost
+    // line off an outing rather than printing "last time 900s" under a panel measuring ground.
+    .where(ne(exercises.style, NON_REP_STYLE))
     .groupBy(completedExercises.exerciseId, completedExercises.resultType)
     .orderBy(desc(max(completedExercises.performedAt)))
     .limit(limit);

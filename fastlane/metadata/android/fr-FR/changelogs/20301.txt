@@ -1,0 +1,8 @@
+- Marche, course et vélo affichent le dénivelé gravi.
+- La carte en direct dit ce qu'elle attend et cesse de
+  se dessiner quand ton téléphone est dans ta poche.
+- Un tap sur un villageois atteint le bouton derrière
+  lui et le fait partir.
+- Après une séance courte, le gros bouton la garde.
+- Le rowing sous la table se fait genoux fléchis, et
+  quelques difficultés des voies sont corrigées.

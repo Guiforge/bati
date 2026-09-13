@@ -1,0 +1,8 @@
+- Walks, runs and rides show how high you climbed.
+- The live map says what it is waiting for, and stops
+  drawing while your phone is in your pocket.
+- A tap on a villager reaches the button behind it and
+  sends the villager on their way.
+- After a short session, the big button keeps it.
+- Table Row is now done with bent knees, and a few
+  difficulties along the paths are fixed.

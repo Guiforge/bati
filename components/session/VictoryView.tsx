@@ -635,11 +635,6 @@ export function VictoryView() {
                 { duration: formatDuration(durationSeconds) },
               )}
             </Text>
-            <AppButton testID="session-victory-keep-short" onPress={() => setKeepShort(true)}>
-              <Text color="$text" fontSize={16} fontWeight="700">
-                {t("session.summary_too_short_keep")}
-              </Text>
-            </AppButton>
             <AppButton
               backgroundColor="$surface2"
               onPress={() => {
@@ -712,19 +707,38 @@ export function VictoryView() {
         >
           <Share2 size={22} color="$text" />
         </Button>
-        <AppButton
-          testID="session-victory-continue"
-          onPress={handleContinue}
-          disabled={!result}
-          height={60}
-          rounded="$6"
-          fullWidth={false}
-          flex={1}
-        >
-          <Text color="$text" fontSize={20} fontWeight="700">
-            {result ? t("session.continue") : t("common.saving")}
-          </Text>
-        </AppButton>
+        {/* While the hero has not said whether a short session counts, the bar's big button is the
+            keep, not a disabled "Saving…": nothing is being saved, and a phone trace on 2026-09-13
+            showed twenty taps landing on it before the hero found Keep higher up. Discard stays
+            with the question. */}
+        {tooShort ? (
+          <AppButton
+            testID="session-victory-keep-short"
+            onPress={() => setKeepShort(true)}
+            height={60}
+            rounded="$6"
+            fullWidth={false}
+            flex={1}
+          >
+            <Text color="$text" fontSize={20} fontWeight="700">
+              {t("session.summary_too_short_keep")}
+            </Text>
+          </AppButton>
+        ) : (
+          <AppButton
+            testID="session-victory-continue"
+            onPress={handleContinue}
+            disabled={!result}
+            height={60}
+            rounded="$6"
+            fullWidth={false}
+            flex={1}
+          >
+            <Text color="$text" fontSize={20} fontWeight="700">
+              {result ? t("session.continue") : t("common.saving")}
+            </Text>
+          </AppButton>
+        )}
       </XStack>
 
       {/* Confetti: fewer pieces (JS-thread animated), and held until the save finishes so the

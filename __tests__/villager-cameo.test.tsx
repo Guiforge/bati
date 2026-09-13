@@ -1,8 +1,12 @@
-import { act, fireEvent, render } from "@testing-library/react-native";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { act, render } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { cameoBottomOffset, cameoMaxHeight, cameoTopEdge } from "@/components/chorus/cameoAnchor";
+import { dismissVillagerOnTouch } from "@/components/chorus/cameoTouch";
 import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { CAMEO_LINGER_MS, TYPE_MS_PER_CHAR } from "@/constants/villagers";
 import en from "@/locales/en.json";
@@ -125,10 +129,9 @@ describe("VillagerCameo", () => {
     });
 
     expect(getByText(en.villagers.farmer.rest[0] as string)).toBeTruthy();
-    // `box-none`, not `none`: the container itself never receives a touch, only the figure and
-    // the bubble do. The safe-zone promise from PRODUCT.md ("never obstruct logging or reading
-    // the next set") is `cameoAnchor`'s job — the anchor test below pins it down.
-    expect(getByTestId("villager-cameo").props.pointerEvents).toBe("box-none");
+    // `none`, not `box-none`: the figure and the bubble used to take a tap, and on the Village the
+    // villager stands over the building list, so a tap on a building never reached it.
+    expect(getByTestId("villager-cameo").props.pointerEvents).toBe("none");
   });
 
   it("leaves on its own, without anyone dismissing it", async () => {
@@ -157,31 +160,7 @@ describe("VillagerCameo", () => {
     expect(getByText(en.villagers.farmer.rest[0] as string)).toBeTruthy();
   });
 
-  // Both halves of the cameo, because "click on the villager" means the drawing as often as
-  // the words.
-  it.each(["villager-figure", "villager-bubble"])(
-    "sends an ambient villager away on the first tap on %s",
-    async (target) => {
-      const { getByTestId } = await renderCameo();
-
-      await act(() => {
-        speak();
-      });
-      await act(async () => {
-        // `includeHiddenElements`: the figure is deliberately out of the accessibility tree —
-        // the bubble beside it offers the same dismiss with the sentence attached — and that is
-        // exactly what this query hides by default. A finger still lands on it.
-        // Awaited: this testing-library's fireEvent is thenable, and an unhandled one swallows
-        // whatever the press handler threw.
-        await fireEvent.press(getByTestId(target, { includeHiddenElements: true }));
-      });
-
-      // An ambient line is whole from the first frame, so there is nothing to finish first.
-      expect(useChorusStore.getState().current).toBeNull();
-    },
-  );
-
-  it("types a guide out, and a tap finishes it early", async () => {
+  it("types a guide out", async () => {
     const guide = en.villagers.farmer.guide_village[0] as string;
     const { getByTestId } = await renderCameo();
 
@@ -196,51 +175,6 @@ describe("VillagerCameo", () => {
     // transparent so the bubble never grows mid-sentence, which means the whole string is in the
     // tree from the first frame and `getByText` would find it regardless.
     expect(getByTestId("villager-line").props.children).not.toBe(guide);
-
-    await act(async () => {
-      // Awaited: this testing-library's fireEvent is thenable, and an unhandled one swallows
-      // whatever the press handler threw.
-      await fireEvent.press(getByTestId("villager-bubble"));
-    });
-
-    expect(getByTestId("villager-line").props.children).toBe(guide);
-  });
-
-  it("finishes a typing guide from a tap on the figure too", async () => {
-    const guide = en.villagers.farmer.guide_village[0] as string;
-    const { getByTestId } = await renderCameo();
-
-    await act(() => {
-      speakGuide(guide);
-    });
-    await act(() => {
-      jest.advanceTimersByTime(TYPE_MS_PER_CHAR * 5);
-    });
-    await act(async () => {
-      await fireEvent.press(getByTestId("villager-figure", { includeHiddenElements: true }));
-    });
-
-    expect(getByTestId("villager-line").props.children).toBe(guide);
-    expect(useChorusStore.getState().current).not.toBeNull();
-  });
-
-  it("sends the guide away on the tap after it has finished", async () => {
-    const guide = en.villagers.farmer.guide_village[0] as string;
-    const { getByTestId } = await renderCameo();
-
-    await act(() => {
-      speakGuide(guide);
-    });
-    await act(() => {
-      jest.advanceTimersByTime(TYPE_MS_PER_CHAR * guide.length + 1);
-    });
-    await act(async () => {
-      // Awaited: this testing-library's fireEvent is thenable, and an unhandled one swallows
-      // whatever the press handler threw.
-      await fireEvent.press(getByTestId("villager-bubble"));
-    });
-
-    expect(useChorusStore.getState().current).toBeNull();
   });
 
   it("does not type at all under reduced motion", async () => {
@@ -268,6 +202,65 @@ describe("VillagerCameo", () => {
     });
 
     expect(getByTestId("villager-bubble").props.accessibilityLabel).toBe(guide);
+  });
+});
+
+/**
+ * The villager leaves on any touch, and the touch still reaches what was tapped. The root view
+ * calls this on the capture phase of every touch; returning `true` would steal every tap in the
+ * app, which is why the return value is asserted as much as the dismissal.
+ */
+describe("dismissVillagerOnTouch", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    useSettingsStore.setState({ reducedMotion: false });
+    useChorusStore.setState({ current: null });
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("sends an ambient villager away, and lets the touch through", async () => {
+    const { queryByTestId } = await renderCameo();
+    await act(() => {
+      speak();
+    });
+
+    let claimed = true;
+    await act(() => {
+      claimed = dismissVillagerOnTouch();
+    });
+
+    expect(claimed).toBe(false);
+    expect(useChorusStore.getState().current).toBeNull();
+    expect(queryByTestId("villager-cameo")).toBeNull();
+  });
+
+  it("sends a guide away mid-sentence too", async () => {
+    await renderCameo();
+    await act(() => {
+      speakGuide(en.villagers.farmer.guide_village[0] as string);
+    });
+    await act(() => {
+      jest.advanceTimersByTime(TYPE_MS_PER_CHAR * 5);
+    });
+
+    await act(() => {
+      dismissVillagerOnTouch();
+    });
+
+    expect(useChorusStore.getState().current).toBeNull();
+  });
+
+  it("never claims a touch when nobody is speaking", () => {
+    expect(dismissVillagerOnTouch()).toBe(false);
+    expect(useChorusStore.getState().current).toBeNull();
+  });
+
+  // A handler nobody calls is covered by the tests above and does nothing in the app.
+  it("is what the root view watches every touch with", () => {
+    const layout = readFileSync(join(__dirname, "..", "app", "_layout.tsx"), "utf8");
+    expect(layout).toMatch(/onStartShouldSetResponderCapture=\{dismissVillagerOnTouch\}/);
   });
 });
 

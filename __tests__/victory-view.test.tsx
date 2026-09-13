@@ -301,6 +301,20 @@ describe("VictoryView, a session too short to be one", () => {
     expect(saveSession).toHaveBeenCalledTimes(1);
   });
 
+  // The bar's big button used to stay a disabled "Saving…" while nothing was being saved, and a
+  // phone trace showed twenty taps on it before the hero found Keep higher up the screen.
+  it("puts the keep in the bar, where the thumb already is, instead of a dead Continue", async () => {
+    const { view, saveSession } = await mountWithPendingSave(null, 5);
+
+    expect(view.queryByTestId("session-victory-continue")).toBeNull();
+    await fireEvent.press(view.getByTestId("session-victory-keep-short"));
+
+    expect(saveSession).toHaveBeenCalledTimes(1);
+    // Kept: the question is gone and the bar is Continue again, waiting on the save.
+    expect(view.queryByTestId("session-victory-keep-short")).toBeNull();
+    expect(view.getByTestId("session-victory-continue")).toBeTruthy();
+  });
+
   it("a real session is never questioned", async () => {
     const { view } = await mountWithPendingSave();
 

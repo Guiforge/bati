@@ -170,7 +170,7 @@
     "distance_unit": "Distance unit",
     "distance_metric": "Kilometres",
     "distance_imperial": "Miles",
-    "map_tiles": "Recap map",
+    "map_tiles": "Map",
     "map_tiles_note": "Off, Bati downloads nothing. On, the outing and its recap ask OpenFreeMap, at tiles.openfreemap.org, for the map around you, which tells it roughly where you go, while you move and afterwards. It is the app's only network call."
   },
   "credits": {
@@ -581,6 +581,7 @@
     "expedition_ground": "Ground",
     "expedition_moving": "Moving",
     "expedition_pace": "Pace",
+    "expedition_climb": "Climb",
     "expedition_road": "{{building}} · {{value}}/{{target}} leagues",
     "expedition_finish": "Finish the outing",
     "expedition_hold_to_finish": "Hold to finish",

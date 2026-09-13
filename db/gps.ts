@@ -161,6 +161,8 @@ export type OutingSession = {
    * their pace rather than replaying a trace it cannot prove is whole.
    */
   movingSeconds: number | null;
+  /** The reducer's metres of climb, written at save beside them (0052). Null when unmeasured. */
+  ascentM: number | null;
 };
 
 /**
@@ -178,6 +180,7 @@ export async function outingSession(sessionId: string): Promise<OutingSession | 
       performedAt: completedQuest.performedAt,
       leaguesM: completedQuest.leaguesM,
       movingSeconds: completedQuest.movingSeconds,
+      ascentM: completedQuest.ascentM,
     })
     .from(completedQuest)
     .where(eq(completedQuest.uuid, sessionId))
@@ -190,6 +193,7 @@ export async function outingSession(sessionId: string): Promise<OutingSession | 
     performedAt: row.performedAt,
     leaguesM: row.leaguesM ?? null,
     movingSeconds: row.movingSeconds ?? null,
+    ascentM: row.ascentM ?? null,
   };
 }
 

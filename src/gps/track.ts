@@ -81,6 +81,21 @@ export const RULES = {
    * own monotonic guard, and this is the caller: it is the one that holds the state.
    */
   maxGapMs: 30_000,
+  /**
+   * How far altitude has to move before it counts, up or down.
+   *
+   * GPS altitude is the worst of the three coordinates: vertical error runs about one and a half
+   * times the horizontal, so a receiver good to 5 m on the map wanders by several metres of
+   * height between two fixes on flat ground, and a raw sum of the rises turns a flat walk into a
+   * hill. Nothing is credited until the height has moved this far from the last reference, which
+   * costs at most this much at the top of each real climb. Under-counting is the direction this
+   * file is allowed to be wrong in.
+   *
+   * ponytail: picked from the receiver's known error, not from a walk. Tune it against a measured
+   * route with a known climb, or use the barometer on phones that have one, if the recap's figure
+   * is visibly off.
+   */
+  climbThresholdM: 10,
 } as const;
 
 /**
@@ -116,6 +131,8 @@ export type TrackState = {
   distanceM: number;
   /** Milliseconds of moving time; a pause does not advance it. */
   movingMs: number;
+  /** Metres of climb credited, descents not subtracted. See `RULES.climbThresholdM`. */
+  ascentM: number;
   paused: boolean;
   /** Fix count that survived into the trace, teleports excluded. */
   points: number;
@@ -139,11 +156,14 @@ export type TrackState = {
   advancedM: number;
   advancedMs: number;
   firstGoodAt: number | null;
+  /** The altitude the next climb is measured from, null until a fix has reported one. */
+  climbFrom: number | null;
 };
 
 export const EMPTY: TrackState = {
   distanceM: 0,
   movingMs: 0,
+  ascentM: 0,
   paused: false,
   points: 0,
   segments: 1,
@@ -154,6 +174,7 @@ export const EMPTY: TrackState = {
   advancedM: 0,
   advancedMs: 0,
   firstGoodAt: null,
+  climbFrom: null,
 };
 
 /**
@@ -175,6 +196,7 @@ function openGate(state: TrackState, fix: LocationFix): TrackState {
     points: 1,
     anchor: { lat: fix.lat, lon: fix.lon, t: fix.t },
     fromAnchorM: 0,
+    climbFrom: fix.ele,
   };
 }
 
@@ -194,7 +216,29 @@ function teleport(state: TrackState, fix: LocationFix): TrackState {
     // this side of the break, since the fix that would have proven it is the one that never came.
     advancedM: 0,
     advancedMs: 0,
+    // Nothing witnessed the height in between either: a tunnel under a hill is not a climb.
+    climbFrom: fix.ele ?? state.climbFrom,
   };
+}
+
+/**
+ * The climb one fix proves, against the reference it is measured from.
+ *
+ * Only ever called on a fix that cleared the anchor, so every metre credited was walked: the
+ * reducer has already decided the hero went somewhere. A rise past the threshold is credited and
+ * becomes the new reference; a fall past it only moves the reference down, so the way back up is
+ * measured from the bottom rather than from the top the hero came down from.
+ */
+function climb(state: TrackState, ele: number | null): Pick<TrackState, "ascentM" | "climbFrom"> {
+  const from = state.climbFrom;
+  if (ele === null) return { ascentM: state.ascentM, climbFrom: from };
+  if (from === null || from - ele >= RULES.climbThresholdM) {
+    return { ascentM: state.ascentM, climbFrom: ele };
+  }
+  if (ele - from >= RULES.climbThresholdM) {
+    return { ascentM: state.ascentM + (ele - from), climbFrom: ele };
+  }
+  return { ascentM: state.ascentM, climbFrom: from };
 }
 
 /**
@@ -237,6 +281,7 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
       // A pause that ends pays for the fix that ended it, not for the stillness before it.
       movingMs: state.movingMs + (state.paused ? 0 : elapsed),
       paused: false,
+      ...climb(state, fix.ele),
       points: state.points + 1,
       lastAt: fix.t,
       anchor: { lat: fix.lat, lon: fix.lon, t: fix.t },
@@ -257,6 +302,9 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
       advancedM: 0,
       advancedMs: 0,
       paused: true,
+      // The reference follows the receiver while the hero stands, so a height that drifted during
+      // the stop is where the next climb starts from rather than a climb of its own.
+      climbFrom: fix.ele ?? state.climbFrom,
       points: state.points + 1,
       lastAt: fix.t,
       fromAnchorM,
@@ -287,7 +335,13 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
  * then said "Total 10:00" above "Moving 45:xx" for the same walk. The trace is the half that
  * survived the kill, so the trace is what both halves read now.
  */
-export type Credit = { leaguesM: number; movingSeconds: number; elapsedSeconds: number };
+export type Credit = {
+  leaguesM: number;
+  movingSeconds: number;
+  elapsedSeconds: number;
+  /** Whole metres climbed, null when the receiver never reported an altitude. */
+  ascentM: number | null;
+};
 
 /**
  * What this run is worth, or null when the run has no witness.
@@ -309,6 +363,8 @@ export function credited(track: TrackState): Credit | null {
   return {
     leaguesM: Math.round(track.distanceM),
     movingSeconds: Math.floor(track.movingMs / 1000),
+    // A phone that never gave a height has no opinion about the hill, and zero would be one.
+    ascentM: track.climbFrom === null ? null : Math.round(track.ascentM),
     // The minutes spent finding the sky are not in here: the gate opens on the first fix good
     // enough to trust, and nothing before it was witnessed. Under-counting the wait is the same
     // choice as under-counting the ramp out of a stop.

@@ -252,6 +252,25 @@ describe("a session that left the walls", () => {
     expect(screen.getByTestId("recap-pace")).toHaveTextContent(KM_PACE);
   });
 
+  test("prints the climb the save wrote, and nothing for a row that has none", async () => {
+    await mount();
+    await screen.findByTestId("recap-map");
+    // The default row predates 0052, or its receiver gave no height: no figure, not a zero.
+    expect(screen.queryByTestId("recap-climb")).toBeNull();
+  });
+
+  test("prints the climb in the hero's unit when the row carries one", async () => {
+    mockOutingSession.mockResolvedValue({
+      questId: 7,
+      performedAt: new Date(T0),
+      leaguesM: CREDITED_M,
+      movingSeconds: MOVING_S,
+      ascentM: 245,
+    });
+    await mount();
+    expect(await screen.findByTestId("recap-climb")).toHaveTextContent("245 m");
+  });
+
   // The ramp is only readable if the two paces it is stretched between are printed, and a walk
   // that has neither a ramp nor a completed league must say nothing rather than print a dash.
   test("says nothing about pace colours on a walk held at one pace", async () => {

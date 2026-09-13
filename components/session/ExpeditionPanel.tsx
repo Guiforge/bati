@@ -4,12 +4,15 @@ import { Linking } from "react-native";
 import { Paragraph, Text, XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Mountain } from "@/components/icons";
 import {
   formatClock,
   formatDistance,
+  formatElevation,
   formatPace,
   formatSpeedAsPace,
 } from "@/constants/distanceFormat";
+import type { DistanceUnit } from "@/db/preferences";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
 import type { TrackState } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
@@ -54,6 +57,38 @@ function statusKey(error: string | null, track: TrackState, goalReached: boolean
  * fix through the reducer as it lands, and a second derivation on this screen would be a second
  * answer to "how far have I gone".
  */
+/**
+ * The metres climbed so far, between the second figure and the pace.
+ *
+ * Only once the receiver has given a height: a phone that reports none would otherwise show a
+ * flat "0 m" for a walk up a hill.
+ */
+function Climb({
+  track,
+  unit,
+  color,
+}: {
+  track: TrackState;
+  unit: DistanceUnit;
+  color: "$text" | "$textSecondary";
+}) {
+  if (track.climbFrom === null) return null;
+  return (
+    <XStack items="center" gap="$1">
+      <Mountain size={16} color={color} />
+      <Text
+        testID="expedition-climb"
+        fontSize={20}
+        fontWeight="700"
+        color={color}
+        style={{ fontVariant: ["tabular-nums"] }}
+      >
+        {formatElevation(track.ascentM, unit)}
+      </Text>
+    </XStack>
+  );
+}
+
 /** How long the "you can put the phone away" line stays, in seconds of recorded walking. */
 const POCKET_HINT_SECONDS = 30;
 
@@ -154,6 +189,7 @@ export function ExpeditionPanel() {
           >
             {secondFigure}
           </Text>
+          <Climb track={track} unit={unit} color={figureColor} />
           <Text fontSize={20} fontWeight="700" color={figureColor}>
             {pace}
           </Text>

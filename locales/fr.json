@@ -795,6 +795,7 @@
     "expedition_ground": "Terrain",
     "expedition_moving": "En mouvement",
     "expedition_pace": "Allure",
+    "expedition_climb": "Dénivelé",
     "expedition_road": "{{building}} · {{value}}/{{target}} lieues",
     "expedition_finish": "Terminer la sortie",
     "expedition_hold_to_finish": "Maintiens pour terminer",
@@ -843,7 +844,7 @@
     "distance_unit": "Unité de distance",
     "distance_metric": "Kilomètres",
     "distance_imperial": "Miles",
-    "map_tiles": "Carte du récap",
+    "map_tiles": "Carte",
     "map_tiles_note": "Éteinte, Bati ne télécharge rien. Allumée, la sortie et son récap demandent à OpenFreeMap, sur tiles.openfreemap.org, la carte autour de toi, ce qui lui dit à peu près où tu vas, pendant et après. C'est le seul appel réseau de l'application."
   },
   "splash": {

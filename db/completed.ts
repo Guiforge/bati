@@ -72,6 +72,8 @@ export type CompletedSessionInput = {
    * caller that is not an outing.
    */
   movingSeconds?: number | null;
+  /** Metres climbed, from the same reading as `leaguesM` (`0052`). Omitted by a workout. */
+  ascentM?: number | null;
   /**
    * Which kind of session this was (`0049`). Undefined and null both mean a workout, which is
    * what the column says and what every caller that is not an outing leaves it at.
@@ -126,6 +128,7 @@ export type CompletedSession = {
    */
   leaguesM: number | null;
   movingSeconds: number | null;
+  ascentM: number | null;
   outing: Locomotion | null;
   exercises: CompletedExercise[];
 };
@@ -172,6 +175,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         uuid: input.uuid ?? uuidv7(performedAt.getTime()),
         leaguesM: input.leaguesM ?? null,
         movingSeconds: input.movingSeconds ?? null,
+        ascentM: input.ascentM ?? null,
         outing: input.outing ?? null,
         tzOffsetMin: 0 - performedAt.getTimezoneOffset(),
         originDevice,
@@ -328,6 +332,8 @@ export type CompletedSessionListItem = Omit<CompletedSession, "exercises"> & {
   leaguesM: number | null;
   /** Moving seconds credited, on an outing; null on a workout and on one saved before 0046. */
   movingSeconds: number | null;
+  /** Metres climbed, on an outing saved after 0052 whose receiver reported altitude; else null. */
+  ascentM: number | null;
   /** Which kind of session this was (`0049`); null on a workout. */
   outing: Locomotion | null;
 };
@@ -348,6 +354,7 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
       recordsJson: completedQuest.recordsJson,
       leaguesM: completedQuest.leaguesM,
       movingSeconds: completedQuest.movingSeconds,
+      ascentM: completedQuest.ascentM,
       outing: completedQuest.outing,
     })
     .from(completedQuest)
@@ -368,6 +375,7 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
     records: parseRecords(r.recordsJson),
     leaguesM: r.leaguesM ?? null,
     movingSeconds: r.movingSeconds ?? null,
+    ascentM: r.ascentM ?? null,
     outing: r.outing ?? null,
   }));
 }
@@ -652,6 +660,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       sessionPerformedAt: completedQuest.performedAt,
       leaguesM: completedQuest.leaguesM,
       movingSeconds: completedQuest.movingSeconds,
+      ascentM: completedQuest.ascentM,
       outing: completedQuest.outing,
     })
     .from(completedQuest)
@@ -672,6 +681,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
     performedAt: head.sessionPerformedAt,
     leaguesM: head.leaguesM,
     movingSeconds: head.movingSeconds,
+    ascentM: head.ascentM,
     outing: head.outing,
     exercises: [],
   };

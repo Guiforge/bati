@@ -450,3 +450,84 @@ describe("what a run credits", () => {
     expect(credit?.movingSeconds).toBe(Math.floor(state.movingMs / 1000));
   });
 });
+
+describe("elevation gain", () => {
+  /** A walk north at 1.4 m/s whose altitude is whatever `eleAt(second)` says. */
+  function hiked(seconds: number, eleAt: (i: number) => number | null, from = started()) {
+    let state = from;
+    for (let i = 1; i <= seconds; i++) {
+      state = accept(
+        state,
+        fix({
+          t: walkEnd(i),
+          distFromPrev: 1.4,
+          lat: 48.4728 + northOf(i * 1.4),
+          ele: eleAt(i),
+        }),
+      );
+    }
+    return state;
+  }
+
+  test("a steady climb is credited", () => {
+    // 60 m over 300 s, starting from the 110 m the gate opened at. Credited in threshold steps,
+    // so the last few metres of a climb that stops between two steps are the most it can lose.
+    const state = hiked(300, (i) => 110 + i * 0.2);
+    expect(credited(state)?.ascentM).toBeGreaterThan(60 - RULES.climbThresholdM);
+    expect(credited(state)?.ascentM).toBeLessThanOrEqual(60);
+  });
+
+  test("a flat walk under a noisy receiver climbs nothing", () => {
+    // GPS altitude wanders by several metres from one fix to the next. Summed raw, a flat
+    // five-minute walk is a hill.
+    const state = hiked(300, (i) => 110 + (i % 2 === 0 ? 4 : -4));
+    expect(credited(state)?.ascentM).toBe(0);
+  });
+
+  test("going down is not climbing, and coming back up is", () => {
+    const down = hiked(150, (i) => 110 - i * 0.2);
+    const state = hiked(150, (i) => 80 + i * 0.2, down);
+    expect(credited(state)?.ascentM).toBeGreaterThanOrEqual(30 - RULES.climbThresholdM);
+    expect(credited(state)?.ascentM).toBeLessThanOrEqual(30);
+  });
+
+  test("altitude drifting under a hero who stands still is not a climb", () => {
+    let state = started();
+    // A minute at a crossing while the receiver's altitude creeps up 20 m.
+    for (let i = 1; i <= 60; i++) {
+      state = accept(
+        state,
+        fix({
+          t: T0 + 3000 + i * 1000,
+          distFromPrev: 0.2,
+          lat: 48.4728 + (i % 2 === 0 ? 0.00001 : -0.00001),
+          ele: 110 + i / 3,
+        }),
+      );
+    }
+    expect(state.paused).toBe(true);
+    // Then a flat walk away from it, at the altitude the drift ended on.
+    let walking = state;
+    for (let i = 1; i <= 60; i++) {
+      walking = accept(
+        walking,
+        fix({
+          t: T0 + 63_000 + i * 1000,
+          distFromPrev: 1.4,
+          lat: 48.4728 + northOf(i * 1.4),
+          ele: 130,
+        }),
+      );
+    }
+    expect(credited(walking)?.ascentM).toBe(0);
+  });
+
+  test("a receiver that reports no altitude has no opinion, rather than a flat zero", () => {
+    const blind = run([
+      fix({ t: T0, acc: 5, ele: null }),
+      fix({ t: T0 + 1000, acc: 5, ele: null }),
+      fix({ t: T0 + 3000, acc: 5, ele: null }),
+    ]);
+    expect(credited(hiked(120, () => null, blind))?.ascentM).toBeNull();
+  });
+});

@@ -37,6 +37,15 @@ export function formatDistance(metres: number, unit: DistanceUnit): string {
 }
 
 /**
+ * A height climbed, in whole metres or feet and never in the road's larger unit: a 1200 m day in
+ * the hills printed "1.20 km" reads as how far it was.
+ */
+export function formatElevation(metres: number, unit: DistanceUnit): string {
+  if (!Number.isFinite(metres) || metres < 0) return "...";
+  return unit === "imperial" ? `${Math.round(metres / M_PER_FOOT)} ft` : `${Math.round(metres)} m`;
+}
+
+/**
  * Pace, from the same two numbers a session already keeps: metres covered and moving time.
  *
  * Minutes are not clamped to 59 — an hour per kilometre is a real thing a stopped phone can

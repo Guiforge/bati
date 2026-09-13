@@ -24,6 +24,7 @@ import { getDateTimeFormat } from "@/constants/dateFormatters";
 import {
   formatClock,
   formatDistance,
+  formatElevation,
   formatPace,
   formatSpeedAsPace,
 } from "@/constants/distanceFormat";
@@ -75,6 +76,8 @@ type Recap = {
    * wrote one, and this screen would rather say nothing than replay a trace to invent it.
    */
   movingSeconds: number | null;
+  /** The reducer's metres of climb, `null` before 0052 or when the receiver gave no height. */
+  ascentM: number | null;
 };
 
 const NOTHING: Recap = {
@@ -83,6 +86,7 @@ const NOTHING: Recap = {
   performedAt: null,
   leaguesM: null,
   movingSeconds: null,
+  ascentM: null,
 };
 
 /** Where the outing began and where it ended, as the map's only two other lit points. */
@@ -210,41 +214,56 @@ function SpeedLegend({
 function Figures({
   leaguesM,
   movingSeconds,
+  ascentM,
   unit,
 }: {
   leaguesM: number;
   movingSeconds: number | null;
+  ascentM: number | null;
   unit: DistanceUnit;
 }) {
   const { t } = useTranslation();
   return (
-    <XStack>
-      {/* The same three keys the victory screen reads. They were `recap.*` here and
+    <YStack gap="$3">
+      <XStack>
+        {/* The same three keys the victory screen reads. They were `recap.*` here and
           `session.expedition_*` there, so one value wore "Distance" on one screen and
           "Terrain parcouru" on the next, for the same walk, two taps apart. */}
-      <Figure
-        testID="recap-distance"
-        label={t("session.expedition_ground")}
-        value={formatDistance(leaguesM, unit)}
-      />
-      {/* An outing saved before 0046 has metres and no seconds. Two thirds of a row is the honest
+        <Figure
+          testID="recap-distance"
+          label={t("session.expedition_ground")}
+          value={formatDistance(leaguesM, unit)}
+        />
+        {/* An outing saved before 0046 has metres and no seconds. Two thirds of a row is the honest
           answer there: a clock replayed from the fixes, and a pace divided by it, would be
           printed with the same confidence as the ones that were measured. */}
-      {movingSeconds === null ? null : (
-        <>
+        {movingSeconds === null ? null : (
+          <>
+            <Figure
+              testID="recap-moving"
+              label={t("session.expedition_moving")}
+              value={formatClock(movingSeconds * 1000)}
+            />
+            <Figure
+              testID="recap-pace"
+              label={t("session.expedition_pace")}
+              value={formatPace(leaguesM, movingSeconds * 1000, unit)}
+            />
+          </>
+        )}
+      </XStack>
+      {/* Its own row: a fourth figure in a third of a row each does not fit a 320dp screen once
+          the clock passes the hour. Absent rather than "0 m" on a row that never measured one. */}
+      {ascentM === null ? null : (
+        <XStack>
           <Figure
-            testID="recap-moving"
-            label={t("session.expedition_moving")}
-            value={formatClock(movingSeconds * 1000)}
+            testID="recap-climb"
+            label={t("session.expedition_climb")}
+            value={formatElevation(ascentM, unit)}
           />
-          <Figure
-            testID="recap-pace"
-            label={t("session.expedition_pace")}
-            value={formatPace(leaguesM, movingSeconds * 1000, unit)}
-          />
-        </>
+        </XStack>
       )}
-    </XStack>
+    </YStack>
   );
 }
 
@@ -320,6 +339,7 @@ export default function ExpeditionRecapScreen() {
         performedAt: session?.performedAt ?? null,
         leaguesM: session?.leaguesM ?? null,
         movingSeconds: session?.movingSeconds ?? null,
+        ascentM: session?.ascentM ?? null,
       });
     },
     [language],
@@ -592,6 +612,7 @@ export default function ExpeditionRecapScreen() {
           <Figures
             leaguesM={recap.leaguesM}
             movingSeconds={recap.movingSeconds}
+            ascentM={recap.ascentM}
             unit={distanceUnit}
           />
         ) : null}

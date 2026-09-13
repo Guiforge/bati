@@ -13,12 +13,13 @@ import {
   Clock,
   Dumbbell,
   Footprints,
+  Mountain,
   Repeat,
   Target,
 } from "@/components/icons";
 import { TraceThumb } from "@/components/journal/TraceThumb";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
-import { formatDistance } from "@/constants/distanceFormat";
+import { formatDistance, formatElevation } from "@/constants/distanceFormat";
 import { formatDuration, getCompletedSessionById } from "@/db";
 import type { CompletedSession } from "@/db/completed";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
@@ -261,6 +262,15 @@ export default function SessionDetailScreen() {
                       <Tag
                         icon={<Footprints size={12} color="$text" />}
                         label={formatDistance(session.leaguesM, distanceUnit)}
+                        tone="secondary"
+                      />
+                    )}
+                    {/* Beside the ground, from the same row. Absent, never "0 m", on an outing
+                        saved before 0052 or whose receiver gave no height. */}
+                    {session.ascentM !== null && (
+                      <Tag
+                        icon={<Mountain size={12} color="$text" />}
+                        label={`${t("session.expedition_climb")} ${formatElevation(session.ascentM, distanceUnit)}`}
                         tone="secondary"
                       />
                     )}

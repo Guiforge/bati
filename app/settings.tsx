@@ -549,7 +549,7 @@ export default function SettingsScreen() {
           <SettingRow
             testID="settings-map-tiles"
             icon={<MapIcon size={22} color="$text" />}
-            label={t("settings.map_tiles", "Recap map")}
+            label={t("settings.map_tiles", "Map")}
             value={mapTilesEnabled ? t("common.on", "On") : t("common.off", "Off")}
             onPress={() => {
               haptics.selection();

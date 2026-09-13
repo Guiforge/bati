@@ -40,6 +40,13 @@ Both columns are decided once by the reducer at save, and the recap prints them 
 folding the fixes again: a failed flush drops up to thirty of them, which the distance already
 contains and a replay never would. An outing saved before that column says nothing about its pace.
 
+The climb follows the same rule on `completed_sessions.ascentM` (0052), and the live panel shows
+it as it grows. GPS altitude is noisy, so the reducer credits a rise only once it passes
+`RULES.climbThresholdM` (10 m), only on a fix that proved movement, and lets the reference follow
+the receiver while the hero stands. Descents are not subtracted. A receiver that never reported an
+altitude leaves the column null, and every screen then shows no climb rather than "0 m". The
+threshold was chosen from the receiver's known error, not tuned against a real walk yet.
+
 ## How long an outing lasted
 
 **What its trace can prove**: first fix to last, capped by moving seconds plus twenty minutes of

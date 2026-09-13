@@ -206,6 +206,18 @@ describe("ExpeditionPanel", () => {
     expect(screen.getByText("within 26 ft")).toBeTruthy();
   });
 
+  test("says how much the hero has climbed, once the receiver has given a height", async () => {
+    setTrack({ ...walked(900, 900, 2500), ascentM: 84.6, climbFrom: 190 });
+    await mount();
+    expect(screen.getByTestId("expedition-climb")).toHaveTextContent("85 m");
+  });
+
+  test("and says nothing about a climb on a receiver that reports no altitude", async () => {
+    setTrack({ ...walked(900, 900, 2500), climbFrom: null });
+    await mount();
+    expect(screen.queryByTestId("expedition-climb")).toBeNull();
+  });
+
   test("and in metres for a hero who walks in kilometres", async () => {
     setTrack(walked(900, 900, 2500), { accuracyM: 8 });
     await mount();

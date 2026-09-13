@@ -365,6 +365,13 @@
       "when": 1788163200000,
       "tag": "0051_which_record_it_broke",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "6",
+      "when": 1788249600000,
+      "tag": "0052_the_height_it_climbed",
+      "breakpoints": true
     }
   ]
 }

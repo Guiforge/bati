@@ -516,13 +516,19 @@ function measureGround(quest: Quest | null): Ground {
   return credited(useExpeditionStore.getState().track) ?? NO_GROUND;
 }
 
-const NO_GROUND: Ground = { leaguesM: null, movingSeconds: null, elapsedSeconds: null };
+const NO_GROUND: Ground = {
+  leaguesM: null,
+  movingSeconds: null,
+  elapsedSeconds: null,
+  ascentM: null,
+};
 
 /** Null in every field when the quest never left the walls, or when no fix ever locked. */
 type Ground = {
   leaguesM: number | null;
   movingSeconds: number | null;
   elapsedSeconds: number | null;
+  ascentM: number | null;
 };
 
 /**
@@ -1712,6 +1718,8 @@ export const useSessionStore = create<SessionState>()(
         // distance still holds them, the replayed clock does not, and the pace between the two
         // is wrong with nothing on screen saying so. One writer, at save, like `leaguesM`.
         movingSeconds: ground.movingSeconds,
+        // Beside them, from the same reading: what the recap and the journal print for the climb.
+        ascentM: ground.ascentM,
         // Which kind of session this was, decided here because here is the last place the quest
         // exists. `leaguesM` was the nearest thing to this before 0049 and it answered a
         // different question: a walk whose service never started has no ground and is still a

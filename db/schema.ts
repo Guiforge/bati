@@ -474,6 +474,13 @@ export const completedQuest = sqliteTable(
     movingSeconds: int(),
 
     /**
+     * Metres climbed on this outing (0052), from the same reading as `leaguesM` and written by the
+     * same single writer at save. Null on a workout, on every outing saved before 0052, and on one
+     * whose receiver never reported an altitude.
+     */
+    ascentM: int(),
+
+    /**
      * Which kind of session this was, and how it covered its ground (0049). **Null means a
      * workout**, which is what every row written before that migration was.
      *

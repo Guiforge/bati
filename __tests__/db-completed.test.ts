@@ -99,6 +99,34 @@ describe("db/completed", () => {
   });
 
   /**
+   * The climb rides the same row, the same writer and the same read as the ground: the recap and
+   * the journal print it, and neither may fold the trace again to get it.
+   */
+  test("an outing's climb is written at save and read back by the detail and the recap", async () => {
+    const completed = require("../db/completed") as typeof import("../db/completed");
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const gps = require("../db/gps") as typeof import("../db/gps");
+    const squat = (await exercises.listExercises()).find((e) => e.enName === "Squat");
+    if (!squat) throw new Error("Seeded exercise 'Squat' not found");
+
+    const id = await completed.createCompletedSession({
+      userLevel: "medium",
+      uuid: "0192-walk-climb",
+      leaguesM: 6200,
+      movingSeconds: 3_100,
+      ascentM: 245,
+      outing: "walk",
+      xpEarned: 30,
+      exercises: [{ exerciseId: squat.id, sortOrder: 0, result: { type: "time", value: 3_100 } }],
+    });
+
+    expect((await completed.getCompletedSessionById(id))?.ascentM).toBe(245);
+    expect((await gps.outingSession("0192-walk-climb"))?.ascentM).toBe(245);
+    const listed = (await completed.listCompletedSessions(50)).find((row) => row.id === id);
+    expect(listed?.ascentM).toBe(245);
+  });
+
+  /**
    * The columns are on the row the detail screen already reads. Leaving them out of its query is
    * how that screen came to describe a walk as a dumbbell exercise that lasted 45 minutes, with
    * no ground on it and no route: it never knew it was looking at an outing.

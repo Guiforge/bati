@@ -1581,6 +1581,8 @@ describe("useSessionStore", () => {
           lastAt: setOff + 55 * 60_000,
           distanceM: 5000,
           movingMs: 50 * 60_000,
+          ascentM: 212.4,
+          climbFrom: 180,
         },
       });
       completed.createCompletedSession.mockClear();
@@ -1593,6 +1595,8 @@ describe("useSessionStore", () => {
       // And the two numbers the recap will print, both written here rather than replayed there.
       expect(row.leaguesM).toBe(5000);
       expect(row.movingSeconds).toBe(50 * 60);
+      // The climb rides with them, in whole metres.
+      expect(row.ascentM).toBe(212);
 
       useExpeditionStore.setState({ begin: realBegin });
     });

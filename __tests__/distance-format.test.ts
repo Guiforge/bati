@@ -1,4 +1,9 @@
-import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
+import {
+  formatClock,
+  formatDistance,
+  formatElevation,
+  formatPace,
+} from "@/constants/distanceFormat";
 import { RULES } from "@/src/gps/track";
 
 // The helper is the only converter in the app, so the numbers below are the contract: a mile is
@@ -102,5 +107,21 @@ describe("formatClock", () => {
   test("a clock that is not a number says so instead of printing NaN", () => {
     expect(formatClock(Number.NaN)).toBe("...");
     expect(formatClock(-1)).toBe("...");
+  });
+});
+
+describe("formatElevation", () => {
+  // A height is never a distance on the road: 1200 m of climb is a mountain day, and "1.20 km"
+  // reads as how far it was.
+  test("stays in metres, or feet, however high", () => {
+    expect(formatElevation(0, "metric")).toBe("0 m");
+    expect(formatElevation(245.4, "metric")).toBe("245 m");
+    expect(formatElevation(1200, "metric")).toBe("1200 m");
+    expect(formatElevation(1200, "imperial")).toBe("3937 ft");
+  });
+
+  test("refuses what is not a height", () => {
+    expect(formatElevation(Number.NaN, "metric")).toBe("...");
+    expect(formatElevation(-3, "metric")).toBe("...");
   });
 });

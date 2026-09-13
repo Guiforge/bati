@@ -372,6 +372,13 @@
       "when": 1788249600000,
       "tag": "0052_the_height_it_climbed",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "6",
+      "when": 1788336000000,
+      "tag": "0053_the_table_row_bends_its_knees",
+      "breakpoints": true
     }
   ]
 }

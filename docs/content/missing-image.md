@@ -2,7 +2,7 @@
 title: Missing Images — inventory
 type: content
 status: active
-updated: 2026-08-31
+updated: 2026-09-13
 related: [missing-covers.md, ../planning/roadmap.md]
 sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, db/village.ts, components/village/VillageScene.tsx, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
 ---
@@ -31,6 +31,10 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 
 ## TL;DR
 
+- **§10 OPEN (2026-09-13)**: `table_row` still shows a straight-legged row flat under the table.
+  Since `0053` (issue #94) Table Row is the *bent-knee* row, the easy rung below Inverted Row, so
+  the pose now draws the harder version of the movement it names. Repaint it: knees bent, feet
+  flat, torso inclined under the table edge.
 - **§8 OPEN (2026-08-17)**: the calisthenics batch (`0032`/`0033`) added 13 movements and got
   11 of them drawn; `bulgarian_split_squat` and `muscle_up` ship on the placeholder because no
   attempt produced a usable pose. The same pass repaired **17 of the original 49**, whose art had
@@ -673,3 +677,16 @@ registered in the `BUILDING_ICON_ASSETS` map at `constants/assetMap.ts:401-404` 
 than ~80 KB per building emblem — three of those is 1 MB against the release workflow's 55 MiB ceiling.
 
 Buildings with dedicated art: **21 of 21**.
+
+## 10. OPEN — `table_row` draws the old movement (2026-09-13)
+
+Issue #94 found Table Row and Inverted Row were one straight-body row on two anchors. `0053` made
+them two rungs of difficulty by the lever: Table Row is now knees bent with the feet flat (`easy`),
+Inverted Row keeps the legs straight (`medium`). The `table_row` pose was generated for the old
+description and shows legs straight and the body flat, which reads as the *harder* row.
+
+- **Asset**: `assets/images/exercises/table_row.webp`, key `table_row`.
+- **Pose to draw**: lying under a sturdy table, both hands on its edge, knees bent at roughly 90°,
+  feet flat on the floor, torso inclined, chest pulled toward the edge.
+- **Check by looking** (see §8): the knees must read as bent. A model that falls back to the
+  classic flat row reproduces exactly the drawing this replaces.

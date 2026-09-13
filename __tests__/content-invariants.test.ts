@@ -683,6 +683,36 @@ describe("content invariants", () => {
     expect(summits.filter((s) => !PATH_NAMES[s.enName]).map((s) => s.enName)).toEqual([]);
   });
 
+  // Issue #94. The ladder put Table Row one rung below Inverted Row while both were `medium` and
+  // both descriptions described the same straight-body row, so the rung promised an easier
+  // movement the content never gave. What makes a row easier is the lever, so the easier rung has
+  // to be easier in the data and different in the words (`0053`).
+  test("the table row is the easier row it sits below, and says why", () => {
+    const rows = t.sqlite
+      .prepare(
+        "SELECT id, enName, difficulty, prerequisiteExerciseId AS prereq, enDescription, frDescription FROM exercises WHERE enName IN ('Table Row', 'Inverted Row') AND creator = 'Admin'",
+      )
+      .all() as {
+      id: number;
+      enName: string;
+      difficulty: DifficultyCode;
+      prereq: number | null;
+      enDescription: string;
+      frDescription: string;
+    }[];
+    const table = rows.find((r) => r.enName === "Table Row");
+    const bar = rows.find((r) => r.enName === "Inverted Row");
+    assert(table && bar);
+
+    expect(bar.prereq).toBe(table.id);
+    // This file ranks hardest first (`hard: 0`), so the easier row has the higher rank.
+    expect(DIFFICULTY_RANK[table.difficulty]).toBeGreaterThan(DIFFICULTY_RANK[bar.difficulty]);
+    expect(table.enDescription).toMatch(/bend your knees/);
+    expect(table.frDescription).toMatch(/plie les genoux/);
+    expect(bar.enDescription).toMatch(/legs straight/);
+    expect(bar.frDescription).toMatch(/jambes tendues/);
+  });
+
   // Rotation must not be able to change what the warm-up *is* — only which movements fill it.
   test("the session count never changes a warm-up's length or its wrist step", async () => {
     const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");

@@ -19,6 +19,8 @@ import config from "@/tamagui.config";
 const mockMapStyle = jest.fn<void, [unknown]>();
 /** Every centre handed to the camera, in order. */
 const mockCenter = jest.fn<void, [unknown]>();
+/** The last `onDidFinishLoadingStyle` MapLibre was handed, so a test can say the style is drawn. */
+let mockStyleLoaded: (() => void) | undefined;
 /** Every initial view handed to the camera, in order. */
 const mockInitialView = jest.fn<void, [unknown]>();
 
@@ -42,8 +44,17 @@ jest.mock("@maplibre/maplibre-react-native", () => {
     (testID: string) =>
     ({ children }: { children?: React.ReactNode }) => <View testID={testID}>{children}</View>;
   return {
-    Map: ({ children, mapStyle }: { children?: React.ReactNode; mapStyle?: unknown }) => {
+    Map: ({
+      children,
+      mapStyle,
+      onDidFinishLoadingStyle,
+    }: {
+      children?: React.ReactNode;
+      mapStyle?: unknown;
+      onDidFinishLoadingStyle?: () => void;
+    }) => {
       mockMapStyle(mapStyle);
+      mockStyleLoaded = onDidFinishLoadingStyle;
       return <View testID="maplibre">{children}</View>;
     },
     Camera: ({ center, initialViewState }: { center?: unknown; initialViewState?: unknown }) => {
@@ -97,7 +108,6 @@ test("before the first fix it shows what it was handed, and frames nothing", asy
   // The movement's picture, on the session screen. An empty dark slot while the sky is being
   // found read as a map that failed to load.
   expect(screen.getByText("the movement's picture")).toBeTruthy();
-  expect(screen.queryByTestId("live-map")).toBeNull();
   expect(screen.queryByTestId("maplibre")).toBeNull();
   // No credit for tiles that were never fetched, and no offer for a map that is not there yet.
   expect(screen.queryByTestId("map-attribution")).toBeNull();
@@ -150,4 +160,20 @@ test("stops drawing while the app is in the background, and draws the whole walk
   const here = [walking(59).lon, walking(59).lat];
   expect(mockCenter.mock.calls.at(-1)?.[0]).toEqual(here);
   expect(mockInitialView.mock.calls.at(-1)?.[0]).toEqual({ center: here, zoom: 16 });
+});
+
+test("says what it is waiting for, the sky and then the map, and goes quiet once drawn", async () => {
+  await mount([], true);
+  // Over the picture, while no position has come: the one wait a hero can see.
+  expect(screen.getByTestId("live-map-loading")).toHaveTextContent("Finding your position");
+
+  await act(() => {
+    useExpeditionStore.setState({ fixes: [walking(0), walking(1)] });
+  });
+  // A position, and a map still blank while MapLibre builds its style.
+  expect(screen.getByTestId("maplibre")).toBeTruthy();
+  expect(screen.getByTestId("live-map-loading")).toHaveTextContent("Loading the map");
+
+  await act(async () => mockStyleLoaded?.());
+  expect(screen.queryByTestId("live-map-loading")).toBeNull();
 });

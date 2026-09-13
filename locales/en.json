@@ -582,6 +582,8 @@
     "expedition_moving": "Moving",
     "expedition_pace": "Pace",
     "expedition_climb": "Climb",
+    "live_map_finding": "Finding your position",
+    "live_map_loading": "Loading the map",
     "expedition_road": "{{building}} · {{value}}/{{target}} leagues",
     "expedition_finish": "Finish the outing",
     "expedition_hold_to_finish": "Hold to finish",

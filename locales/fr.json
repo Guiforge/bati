@@ -796,6 +796,8 @@
     "expedition_moving": "En mouvement",
     "expedition_pace": "Allure",
     "expedition_climb": "Dénivelé",
+    "live_map_finding": "Recherche de ta position",
+    "live_map_loading": "Chargement de la carte",
     "expedition_road": "{{building}} · {{value}}/{{target}} lieues",
     "expedition_finish": "Terminer la sortie",
     "expedition_hold_to_finish": "Maintiens pour terminer",

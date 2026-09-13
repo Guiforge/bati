@@ -3,8 +3,9 @@
 import { Camera, GeoJSONSource, Layer, Map as MapLibreMap } from "@maplibre/maplibre-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { type ReactNode, useEffect, useState } from "react";
-import { AppState } from "react-native";
-import { YStack } from "tamagui";
+import { useTranslation } from "react-i18next";
+import { ActivityIndicator, AppState } from "react-native";
+import { Text, XStack, YStack } from "tamagui";
 import { MapFootnote } from "@/components/session/MapFootnote";
 import { HUD_HEIGHT } from "@/components/session/sessionArt";
 import {
@@ -15,6 +16,7 @@ import {
 } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
 import { toTrace } from "@/src/gps/trace";
+import { reportError } from "@/src/reportError";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -23,6 +25,43 @@ const FOLLOW_ZOOM = 16;
 
 /** One fix a second, so the camera glides for as long as the next one takes to arrive. */
 const FOLLOW_MS = 1000;
+
+/**
+ * What the slot is waiting for, over whatever fills it meanwhile.
+ *
+ * Before the first fix the picture of the movement sat there with nothing saying a map was on its
+ * way, and after it the map was a dark rectangle for as long as MapLibre took to build its style.
+ * Both are waits, and a wait that says nothing reads as a screen that failed.
+ */
+function Waiting({ label }: { label: string }) {
+  return (
+    <YStack
+      position="absolute"
+      t={0}
+      b={0}
+      l={0}
+      r={0}
+      items="center"
+      justify="center"
+      pointerEvents="none"
+    >
+      <XStack
+        testID="live-map-loading"
+        items="center"
+        gap="$2"
+        px="$3"
+        py="$2"
+        rounded="$10"
+        bg="$surface"
+      >
+        <ActivityIndicator size="small" color={rawColors.resourceGold} />
+        <Text fontSize={13} color="$text">
+          {label}
+        </Text>
+      </XStack>
+    </YStack>
+  );
+}
 
 /**
  * The walk so far, on the map, while it is happening.
@@ -62,13 +101,18 @@ export function LiveMap({
    * constant, so a fix wakes nothing here, and the map is unmounted, so it holds no GL surface.
    * On return it is folded once, from every fix the store kept meanwhile.
    */
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(true);
+  /** Whether MapLibre has drawn its style since the map last mounted. */
+  const [styleLoaded, setStyleLoaded] = useState(false);
   useEffect(() => {
-    const subscription = AppState.addEventListener("change", (state) =>
+    const subscription = AppState.addEventListener("change", (state) => {
       // Not `=== "active"`: iOS reports `inactive` for the app switcher and a call banner, with
       // the map still on screen.
-      setVisible(state !== "background"),
-    );
+      setVisible(state !== "background");
+      // The map unmounts in the background, so it builds its style again on the way back.
+      if (state === "background") setStyleLoaded(false);
+    });
     return () => subscription.remove();
   }, []);
   const fixes = useExpeditionStore((s) => (visible ? s.fixes : null));
@@ -80,7 +124,15 @@ export function LiveMap({
   // `toTrace` without the colour bands it never draws, if a measured walk shows the cost.
   const trace = toTrace(fixes);
   const here = trace.end;
-  if (here === null) return placeholder;
+  if (here === null) {
+    return (
+      // Sized like the map below, so the picture inside it lays out as it does on its own.
+      <YStack style={{ flex: 1 }} minH={topInset + HUD_HEIGHT + minHeight} width="100%">
+        {placeholder}
+        <Waiting label={t("session.live_map_finding")} />
+      </YStack>
+    );
+  }
 
   return (
     <YStack
@@ -103,6 +155,12 @@ export function LiveMap({
         touchRotate={false}
         touchPitch={false}
         doubleTapZoom={false}
+        onDidFinishLoadingStyle={() => setStyleLoaded(true)}
+        // Never a spinner for ever: a map that failed says so in the log and the trace still draws.
+        onDidFailLoadingMap={() => {
+          setStyleLoaded(true);
+          reportError("liveMap.load", new Error("MapLibre failed to load the live map"));
+        }}
       >
         {/* Framed where the hero is before the first glide. The map remounts on every unlock, and
             without it the one-second follow starts from MapLibre's default camera at 0,0. */}
@@ -178,6 +236,8 @@ export function LiveMap({
       <YStack position="absolute" b="$3" l="$4" r="$4">
         <MapFootnote />
       </YStack>
+
+      {styleLoaded ? null : <Waiting label={t("session.live_map_loading")} />}
     </YStack>
   );
 }

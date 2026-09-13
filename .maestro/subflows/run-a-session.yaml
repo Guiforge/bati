@@ -4,6 +4,12 @@
 # and Home's Start, which opens the session directly. Quests vary in rounds and exercises, so the
 # session is walked generically rather than step-counted: complete an exercise, skip the rest that
 # follows, until victory shows up. Selects by testID only, so it is locale-agnostic (en/fr).
+#
+# Every tap on a session screen caps `waitToSettleTimeoutMs`. Maestro waits for the view tree to
+# stop changing around each tap, and a session screen never stops: its timer ticks every second.
+# Uncapped, each tap sat through Maestro's own ceiling, 10 to 18 s, which was 54% of the whole
+# suite (measured 2026-09-13). `retryTapIfNoChange: false` keeps a tap that lands during a tick
+# from being fired twice, which would skip a set.
 appId: com.guiforge.bati.dev
 ---
 # An adventure step opens with its story before the session does. Nothing on the quest gallery
@@ -29,6 +35,8 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "session-skip-warmup"
     optional: true
+    waitToSettleTimeoutMs: 500
+    retryTapIfNoChange: false
 
 # The start screen waits ten seconds, or for GO when Settings says so. Tapped either way, so a
 # flow neither sits through the wait nor hangs on it.
@@ -40,12 +48,16 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "session-start-go"
     optional: true
+    waitToSettleTimeoutMs: 500
+    retryTapIfNoChange: false
 
-# The start screen hands over to the first exercise.
+# The start screen hands over to the first exercise. Optional, because a timed first exercise
+# can already have run out and handed over to its rest: the loop below handles either screen.
 - extendedWaitUntil:
     visible:
       id: "session-complete-exercise"
     timeout: 15000
+    optional: true
 
 # `times` is a guard against an infinite loop if a screen ever gets stuck.
 - repeat:
@@ -57,15 +69,32 @@ appId: com.guiforge.bati.dev
       - tapOn:
           id: "session-complete-exercise"
           optional: true
+          waitToSettleTimeoutMs: 500
+          retryTapIfNoChange: false
       - tapOn:
           id: "session-skip-rest"
           optional: true
+          waitToSettleTimeoutMs: 500
+          retryTapIfNoChange: false
 
-# Generous, because the session save writes before the button becomes usable — a slow
-# write must not fail the run.
 - extendedWaitUntil:
     visible:
       id: "session-victory-continue"
+    timeout: 20000
+
+# A session under two minutes is not saved until the hero keeps it (TRIVIAL_SESSION_SECONDS in
+# VictoryView). A flow walks a session far faster than a hero trains, so it lands here whenever
+# the taps above are quick. It used to pass only because each tap wasted eleven seconds.
+- tapOn:
+    id: "session-victory-keep-short"
+    optional: true
+
+# Continue is on screen and disabled for the whole save, and a tap on it then does nothing.
+# `enabled: true` does not see it change, so wait for the XP earned instead: its testID only
+# exists once the session is banked. Generous, because a slow write must not fail the run.
+- extendedWaitUntil:
+    visible:
+      id: "session-victory-xp"
     timeout: 20000
 - tapOn:
     id: "session-victory-continue"

@@ -519,7 +519,15 @@ export function VictoryView() {
             <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
               {t("session.xp_earned")}
             </Text>
-            <Text fontWeight="700" fontSize={26} color="$primaryText" fontFamily="$body">
+            {/* The testID only exists once the session is banked: Continue is on screen, and
+                disabled, for the whole save, so it cannot tell an E2E flow when to tap it. */}
+            <Text
+              testID={result ? "session-victory-xp" : undefined}
+              fontWeight="700"
+              fontSize={26}
+              color="$primaryText"
+              fontFamily="$body"
+            >
               {result ? t("quests.reward_xp", { count: result.xpEarned }) : "…"}
             </Text>
             {!!result?.dailyBonusXp && (
@@ -627,7 +635,7 @@ export function VictoryView() {
                 { duration: formatDuration(durationSeconds) },
               )}
             </Text>
-            <AppButton onPress={() => setKeepShort(true)}>
+            <AppButton testID="session-victory-keep-short" onPress={() => setKeepShort(true)}>
               <Text color="$text" fontSize={16} fontWeight="700">
                 {t("session.summary_too_short_keep")}
               </Text>

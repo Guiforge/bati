@@ -1,11 +1,10 @@
-# Maestro E2E Test - Swearing an oath and its reminder
+# Maestro E2E Test - Swearing an oath
 #
-# The oath is the app's single chosen objective, and the only thing that schedules a
-# notification. Covers: swear a preset from Home, then toggle the reminder in Settings.
+# The oath is the app's single chosen objective. Covers: swear a preset from Home, then reopen
+# it and find the sworn oath in place of the empty state.
 #
-# The reminder itself is not asserted — a scheduled local notification is invisible to
-# Maestro, and it is unit-tested in __tests__/notifications.test.ts. What this flow buys
-# is that the two screens which drive it are reachable and wired.
+# It also toggled the oath's reminder in Settings, until notifications were removed from the app
+# (c7246643). The flow kept tapping `settings-notifications`, a row that no longer exists.
 #
 # testID only, so an emulator in fr_FR passes too.
 
@@ -47,15 +46,6 @@ appId: com.guiforge.bati.dev
     id: "oath-current"
 - back
 
-# --- The reminder toggle ----------------------------------------------------
-
-- tapOn:
-    id: "home-settings"
+# Back on Home, the card now carries the sworn oath.
 - assertVisible:
-    id: "settings-screen"
-
-# Tapping asks for permission on first use; the row must survive either answer.
-- tapOn:
-    id: "settings-notifications"
-- assertVisible:
-    id: "settings-screen"
+    id: "home-oath-card"

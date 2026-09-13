@@ -9,6 +9,9 @@
 # that the campaign entry point actually produces a playable session.
 #
 # testID only, so an emulator in fr_FR passes too.
+#
+# Taps on tabs cap `waitToSettleTimeoutMs`: the village's embers and the Home flame never stop
+# moving, and an uncapped tap waits Maestro's full ceiling (see subflows/run-a-session.yaml).
 
 appId: com.guiforge.bati.dev
 ---
@@ -21,6 +24,7 @@ appId: com.guiforge.bati.dev
 
 - tapOn:
     id: "tab-adventures"
+    waitToSettleTimeoutMs: 500
 - assertVisible:
     id: "adventures-screen"
 - assertVisible:
@@ -45,5 +49,6 @@ appId: com.guiforge.bati.dev
 
 - tapOn:
     id: "tab-adventures"
+    waitToSettleTimeoutMs: 500
 - assertVisible:
     id: "adventures-adventure-card"

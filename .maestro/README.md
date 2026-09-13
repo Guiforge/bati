@@ -84,6 +84,47 @@ adb shell am start -a android.intent.action.VIEW \
 #    or build a release APK for the full clearState flows.
 ```
 
+## Fast local runs
+
+Measured on 2026-09-13 on a Ryzen 7 7840U laptop: the suite takes 13 to 17 minutes on one
+emulator, and the machine is idle through almost all of it. The time goes to Maestro waiting.
+
+**Why it is slow.** Around every tap, Maestro waits for the view tree to stop changing. The
+session screen's timer ticks every second and the village's embers loop forever, so on those
+screens no tap ever settles: each one sits through Maestro's own ceiling, 10 to 18 s. Two taps
+in the session loop were 54% of the suite. Taps on those screens therefore cap
+`waitToSettleTimeoutMs: 500` (see `subflows/run-a-session.yaml`). Cap any new tap on a screen
+that animates on its own, or it will cost ten seconds.
+
+**Faster taps have a consequence.** A session under two minutes is not saved until the hero taps
+"Keep it" (`TRIVIAL_SESSION_SECONDS` in `VictoryView`), and a flow walks one in well under two (1:36 measured).
+`run-a-session.yaml` taps `session-victory-keep-short` for that reason. The flows used to pass
+only because the wasted seconds pushed every session past two minutes.
+
+**The setup that runs fast:**
+
+```bash
+# 1. A release APK under the dev id, for the emulator's ABI. Self-contained JS, so `clearState`
+#    works and Metro is not needed. Rebuild after any app change.
+cd android && ./gradlew assembleRelease -PbatiLocalId=.dev -PreactNativeArchitectures=x86_64 && cd ..
+
+# 2. An x86_64 emulator on the host GPU. Software rendering (`swangle_indirect`) takes 8 to 12
+#    CPU cores and makes animated screens several times slower; `swiftshader_indirect` and
+#    `guest` crash outright on emulator 37.1.
+emulator -avd <avd> -gpu host -no-snapshot -no-boot-anim &
+adb install -r android/app/build/outputs/apk/release/app-release.apk
+
+# 3. Run it, naming the device.
+ANDROID_SERIAL=emulator-5554 npm run maestro
+```
+
+Keep the device's animations **on**: with the system animation scales at 0 the village detail
+sheet never opens and `village-sheet-check` fails.
+
+**Two emulators halve it.** Start a second AVD on another port (`-port 5556`) and split the
+suite: `maestro test .maestro/ --shard-split 2 --device emulator-5554,emulator-5556`. Measured
+at 432 s against 801 s on one, with the CPU at 20%.
+
 ## `testID` convention
 
 Flows target `testID`, never translated text. A flow that taps `text: "Continue"`
@@ -131,7 +172,7 @@ locale drift can't fail a flow.
 | `explore-tabs.yaml` | Smoke: each of the 5 main tabs renders its screen |
 | `journal-after-session.yaml` | A finished session reaches the journal, its report, and the Stats tab |
 | `adventure-journey.yaml` | The campaign route into a workout: adventure → step → session |
-| `oath-flow.yaml` | Swear a preset oath from Home, then toggle its reminder in Settings |
+| `oath-flow.yaml` | Swear a preset oath from Home, then find it sworn |
 | `session-interruptions.yaml` | Pause, resume, restart the round, and abandon mid-session |
 | `subflows/complete-onboarding.yaml` | Reusable onboarding walk, pulled in via `runFlow:` |
 | `subflows/complete-a-session.yaml` | Reusable: quest details → whole session → dismiss victory |
@@ -139,7 +180,6 @@ locale drift can't fail a flow.
 Two journeys are deliberately **not** end-to-end tested, because a device flow cannot
 observe them and unit tests can:
 
-- the scheduled oath **notification** (`__tests__/notifications.test.ts`)
 - **crash recovery** mid-session, which needs the process killed (`__tests__/useSessionRecovery.test.ts`)
 
 ## Screenshots

@@ -683,6 +683,63 @@ describe("content invariants", () => {
     expect(summits.filter((s) => !PATH_NAMES[s.enName]).map((s) => s.enName)).toEqual([]);
   });
 
+  // Issue #94. The ladder put Table Row one rung below Inverted Row while both were `medium` and
+  // both descriptions described the same straight-body row, so the rung promised an easier
+  // movement the content never gave. What makes a row easier is the lever, so the easier rung has
+  // to be easier in the data and different in the words (`0053`).
+  test("the table row is the easier row it sits below, and says why", () => {
+    const rows = t.sqlite
+      .prepare(
+        "SELECT id, enName, difficulty, prerequisiteExerciseId AS prereq, enDescription, frDescription FROM exercises WHERE enName IN ('Table Row', 'Inverted Row') AND creator = 'Admin'",
+      )
+      .all() as {
+      id: number;
+      enName: string;
+      difficulty: DifficultyCode;
+      prereq: number | null;
+      enDescription: string;
+      frDescription: string;
+    }[];
+    const table = rows.find((r) => r.enName === "Table Row");
+    const bar = rows.find((r) => r.enName === "Inverted Row");
+    assert(table && bar);
+
+    expect(bar.prereq).toBe(table.id);
+    // This file ranks hardest first (`hard: 0`), so the easier row has the higher rank.
+    expect(DIFFICULTY_RANK[table.difficulty]).toBeGreaterThan(DIFFICULTY_RANK[bar.difficulty]);
+    expect(table.enDescription).toMatch(/bend your knees/);
+    expect(table.frDescription).toMatch(/plie les genoux/);
+    expect(bar.enDescription).toMatch(/legs straight/);
+    expect(bar.frDescription).toMatch(/jambes tendues/);
+  });
+
+  // A ladder reads one way: the next rung is at least as hard. Within one movement pattern, a
+  // rung labelled harder than the one it unlocks tells the hero to go down in order to go up.
+  // Auditing #94 found two (Pike Push-Up and Hollow Body Hold, both `hard` below a `medium`),
+  // whose labels were wrong rather than their ladders (`0054`). Across patterns the labels are
+  // not comparable, so an edge that changes pattern is left alone.
+  test("no rung is harder than the rung it unlocks, within a movement pattern", () => {
+    const edges = t.sqlite
+      .prepare(
+        `SELECT c.enName AS rung, c.difficulty AS rungDifficulty, p.enName AS below, p.difficulty AS belowDifficulty
+         FROM exercises c JOIN exercises p ON p.id = c.prerequisiteExerciseId
+         WHERE c.creator = 'Admin' AND c.retiredAt IS NULL AND c.pattern = p.pattern`,
+      )
+      .all() as {
+      rung: string;
+      rungDifficulty: DifficultyCode;
+      below: string;
+      belowDifficulty: DifficultyCode;
+    }[];
+
+    expect(edges.length).toBeGreaterThan(0);
+    // This file ranks hardest first (`hard: 0`): the rung below must not have the lower rank.
+    const inverted = edges
+      .filter((e) => DIFFICULTY_RANK[e.belowDifficulty] < DIFFICULTY_RANK[e.rungDifficulty])
+      .map((e) => `${e.below} (${e.belowDifficulty}) -> ${e.rung} (${e.rungDifficulty})`);
+    expect(inverted).toEqual([]);
+  });
+
   // Rotation must not be able to change what the warm-up *is* — only which movements fill it.
   test("the session count never changes a warm-up's length or its wrist step", async () => {
     const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");

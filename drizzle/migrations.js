@@ -53,6 +53,8 @@ import m0049 from "./0049_a_walk_is_not_a_workout.sql";
 import m0050 from "./0050_thirty_minutes_is_a_walk.sql";
 import m0051 from "./0051_which_record_it_broke.sql";
 import m0052 from "./0052_the_height_it_climbed.sql";
+import m0053 from "./0053_the_table_row_bends_its_knees.sql";
+import m0054 from "./0054_a_pike_is_not_a_handstand.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -111,5 +113,7 @@ export default {
     m0050,
     m0051,
     m0052,
+    m0053,
+    m0054,
   },
 };

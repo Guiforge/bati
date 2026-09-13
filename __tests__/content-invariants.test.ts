@@ -713,6 +713,33 @@ describe("content invariants", () => {
     expect(bar.frDescription).toMatch(/jambes tendues/);
   });
 
+  // A ladder reads one way: the next rung is at least as hard. Within one movement pattern, a
+  // rung labelled harder than the one it unlocks tells the hero to go down in order to go up.
+  // Auditing #94 found two (Pike Push-Up and Hollow Body Hold, both `hard` below a `medium`),
+  // whose labels were wrong rather than their ladders (`0054`). Across patterns the labels are
+  // not comparable, so an edge that changes pattern is left alone.
+  test("no rung is harder than the rung it unlocks, within a movement pattern", () => {
+    const edges = t.sqlite
+      .prepare(
+        `SELECT c.enName AS rung, c.difficulty AS rungDifficulty, p.enName AS below, p.difficulty AS belowDifficulty
+         FROM exercises c JOIN exercises p ON p.id = c.prerequisiteExerciseId
+         WHERE c.creator = 'Admin' AND c.retiredAt IS NULL AND c.pattern = p.pattern`,
+      )
+      .all() as {
+      rung: string;
+      rungDifficulty: DifficultyCode;
+      below: string;
+      belowDifficulty: DifficultyCode;
+    }[];
+
+    expect(edges.length).toBeGreaterThan(0);
+    // This file ranks hardest first (`hard: 0`): the rung below must not have the lower rank.
+    const inverted = edges
+      .filter((e) => DIFFICULTY_RANK[e.belowDifficulty] < DIFFICULTY_RANK[e.rungDifficulty])
+      .map((e) => `${e.below} (${e.belowDifficulty}) -> ${e.rung} (${e.rungDifficulty})`);
+    expect(inverted).toEqual([]);
+  });
+
   // Rotation must not be able to change what the warm-up *is* — only which movements fill it.
   test("the session count never changes a warm-up's length or its wrist step", async () => {
     const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");

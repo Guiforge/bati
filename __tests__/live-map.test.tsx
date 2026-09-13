@@ -19,6 +19,8 @@ import config from "@/tamagui.config";
 const mockMapStyle = jest.fn<void, [unknown]>();
 /** Every centre handed to the camera, in order. */
 const mockCenter = jest.fn<void, [unknown]>();
+/** Every initial view handed to the camera, in order. */
+const mockInitialView = jest.fn<void, [unknown]>();
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db", () => ({
@@ -44,8 +46,9 @@ jest.mock("@maplibre/maplibre-react-native", () => {
       mockMapStyle(mapStyle);
       return <View testID="maplibre">{children}</View>;
     },
-    Camera: ({ center }: { center?: unknown }) => {
+    Camera: ({ center, initialViewState }: { center?: unknown; initialViewState?: unknown }) => {
       mockCenter(center);
+      mockInitialView(initialViewState);
       return null;
     },
     GeoJSONSource: passthrough("maplibre-source"),
@@ -85,6 +88,7 @@ const lastStyle = () => JSON.stringify(mockMapStyle.mock.calls.at(-1)?.[0]);
 beforeEach(() => {
   mockMapStyle.mockClear();
   mockCenter.mockClear();
+  mockInitialView.mockClear();
 });
 
 test("before the first fix it shows what it was handed, and frames nothing", async () => {
@@ -122,4 +126,28 @@ test("follows the hero, and fetches nothing until the hero says yes", async () =
   expect(lastStyle()).toMatch(/tiles\.openfreemap\.org/);
   expect(screen.queryByTestId("map-offer")).toBeNull();
   expect(screen.getByTestId("map-attribution")).toBeTruthy();
+});
+
+test("stops drawing while the app is in the background, and draws the whole walk on return", async () => {
+  const { AppState } = require("react-native");
+  const addListener = jest.spyOn(AppState, "addEventListener");
+  await mount([walking(0), walking(1)], true);
+  const onChange = addListener.mock.calls.at(-1)?.[1] as (state: string) => void;
+
+  // Screen locked: fixes keep landing in the store, and the map neither re-renders nor moves.
+  await act(async () => onChange("background"));
+  mockCenter.mockClear();
+  await act(() => {
+    useExpeditionStore.setState({ fixes: Array.from({ length: 60 }, (_, i) => walking(i)) });
+  });
+  expect(screen.queryByTestId("maplibre")).toBeNull();
+  expect(mockCenter).not.toHaveBeenCalled();
+
+  // Back: one render, on the last fix, and framed there from the start. The map remounts, and a
+  // camera with no initial view glides in from 0,0.
+  await act(async () => onChange("active"));
+  expect(screen.getByTestId("maplibre")).toBeTruthy();
+  const here = [walking(59).lon, walking(59).lat];
+  expect(mockCenter.mock.calls.at(-1)?.[0]).toEqual(here);
+  expect(mockInitialView.mock.calls.at(-1)?.[0]).toEqual({ center: here, zoom: 16 });
 });

@@ -2,7 +2,8 @@
 // reason as in `app/recap.tsx`.
 import { Camera, GeoJSONSource, Layer, Map as MapLibreMap } from "@maplibre/maplibre-react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
+import { AppState } from "react-native";
 import { YStack } from "tamagui";
 import { MapFootnote } from "@/components/session/MapFootnote";
 import { HUD_HEIGHT } from "@/components/session/sessionArt";
@@ -51,12 +52,32 @@ export function LiveMap({
   topInset: number;
   placeholder: ReactNode;
 }) {
-  const fixes = useExpeditionStore((s) => s.fixes);
+  /**
+   * Whether anyone can see the map. Starts true: this screen mounts in front of the hero.
+   *
+   * The service keeps sending a fix a second with the screen off, and every one of them re-folded
+   * the whole walk and handed MapLibre the whole path and a camera move. With the phone in a
+   * pocket the JS thread fell behind, and unlocking after an hour meant draining that backlog
+   * first: a frozen screen for seconds or minutes. In the background the selector returns a
+   * constant, so a fix wakes nothing here, and the map is unmounted, so it holds no GL surface.
+   * On return it is folded once, from every fix the store kept meanwhile.
+   */
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) =>
+      // Not `=== "active"`: iOS reports `inactive` for the app switcher and a call banner, with
+      // the map still on screen.
+      setVisible(state !== "background"),
+    );
+    return () => subscription.remove();
+  }, []);
+  const fixes = useExpeditionStore((s) => (visible ? s.fixes : null));
   const tilesEnabled = useSettingsStore((s) => s.mapTilesEnabled);
+  if (fixes === null) return placeholder;
 
-  // ponytail: the whole trace is folded again on every fix, a few milliseconds for an hour's
-  // 3,600 points, and it runs with the screen off too because the store still notifies. Fold
-  // incrementally, or skip while the app is in the background, if a measured walk shows the cost.
+  // ponytail: the whole trace is folded again on every fix while the map is on screen, a few
+  // milliseconds for an hour's 3,600 points. Fold incrementally, or give the live map a lighter
+  // `toTrace` without the colour bands it never draws, if a measured walk shows the cost.
   const trace = toTrace(fixes);
   const here = trace.end;
   if (here === null) return placeholder;
@@ -83,7 +104,15 @@ export function LiveMap({
         touchPitch={false}
         doubleTapZoom={false}
       >
-        <Camera center={here} zoom={FOLLOW_ZOOM} duration={FOLLOW_MS} easing="linear" />
+        {/* Framed where the hero is before the first glide. The map remounts on every unlock, and
+            without it the one-second follow starts from MapLibre's default camera at 0,0. */}
+        <Camera
+          initialViewState={{ center: here, zoom: FOLLOW_ZOOM }}
+          center={here}
+          zoom={FOLLOW_ZOOM}
+          duration={FOLLOW_MS}
+          easing="linear"
+        />
 
         {/* biome-ignore lint/correctness/useUniqueElementIds: MapLibre source and layer ids
             are its own style namespace, not DOM ids. */}

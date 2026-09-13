@@ -15,9 +15,12 @@
 # The taps on the Village tab cap `waitToSettleTimeoutMs`: the village's embers loop forever, so an
 # uncapped tap waits Maestro's full ceiling, 10 s (see subflows/run-a-session.yaml). Two kinds of
 # tap are left uncapped on purpose. The ones that follow a close: tapping while the sheet is still
-# animating away is the bug this flow exists to catch. And the building rows: a row tapped within
-# a second of the village appearing does not open its sheet (measured 2026-09-13, capped and with
-# animations off alike), so they keep Maestro's slow, settled aim.
+# animating away is the bug this flow exists to catch. And the building rows: after a cold start,
+# the first tap on one is lost about one time in six, whatever the delay since the village
+# appeared (9 of 52 trials, 300 ms to 3 s, on 2026-09-13), while a warm village opened 40 of 40
+# and a second tap always worked. Capped, the flow failed on it; uncapped, it has passed every run
+# so far, without it being established why the wait helps. They stay uncapped until the app is
+# fixed.
 #
 # testID only, so an emulator in fr_FR passes too.
 

@@ -2,7 +2,7 @@
 title: Roadmap
 type: planning
 status: active
-updated: 2026-08-24
+updated: 2026-09-13
 related:
   [
     README.md,
@@ -155,20 +155,26 @@ Severity order P0 → P1 → P2 → P3; never polish before P0/P1 are gone.
 
 Not tidiness. Each line is a gate that does not close, or a risk with a date on it.
 
-- **P1 — The suite tests `db/` and leaves the screens bare.** 64 test files
-  (`ls __tests__/*.test.*`) against 137 sources (`find app components src db hooks -name "*.ts*"`)
-  reads healthy; the distribution does not. **9** of them render anything
-  (`ls __tests__/*.tsx`), against 29 files under `app/` and 57 components
-  (`find components src -name "*.tsx"`). So the pure functions — streaks, boss
-  damage, muscle balance, oaths — are covered several times over, and the screens the hero actually
+- **P1 — The suite tests `db/` and leaves the screens bare.** 145 test files
+  (`ls __tests__/*.test.*`) against 189 sources (`find app components src db hooks -name "*.ts*"`)
+  reads healthy; the distribution does not. **41** of them render anything
+  (`ls __tests__/*.tsx`, up from 9 on 2026-08-24), against 33 files under `app/` and 77 components
+  (`find components src -name "*.tsx"`), and `app/` is held to 15% of lines. So the pure
+  functions — streaks, boss damage, muscle balance, oaths — are covered several times over, and
+  the screens the hero actually
   touches are covered by a global percentage that AGENTS.md already warns cannot be trusted: dead
   code counts as covered, and a flow test that checks the next screen appeared passes while the
   data underneath is wrong. The deliverable is the shape `audit.md` used and then earned its own
   deletion: a dated page listing where a regression would ship green today, the missing tests
   written against *state*, and the page removed once its findings are gone.
-- **P2 — The 7 Maestro flows never run in CI, and they do not assert state.**
+- **P2 — The 8 Maestro flows never run in CI, and they do not assert state.**
   `session-interruptions.yaml` performed two boss-damage bugs and passed, because it only checked
-  that the UI came back. They are worth "the app does not crash on this path", nothing more.
+  that the UI came back. They are worth "the app does not crash on this path", nothing more. Since
+  2026-09-13 they pass 8/8 locally, in about six minutes on two emulators
+  ([../../.maestro/README.md](../../.maestro/README.md), "Fast local runs"), and are run by hand
+  before a release. Deliberately not a CI job: the behaviours they used to be the only check on
+  (the two-minute session guard, the quit and restart confirmations, swearing an oath) are now
+  component tests.
 - **P2 — The APK is 64 MB** (`gh release view --json assets`, v1.7.4: 64 016 729 bytes) for an
   arm64-only, R8-minified build. Nobody has looked at where it goes. First greps:
   `assets/icon.png` is **2.6 MB** and is bundled; `assets/images` is 14 MB across 232 webp files

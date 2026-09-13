@@ -105,6 +105,8 @@ async function mountWithPendingSave(campaign: Campaign = null, sessionSeconds = 
   const pending = new Promise((resolve) => {
     release = () => resolve({ ...saveResult, campaign });
   });
+  // Counted, because "nothing was saved" is a claim about the store, not about a spinner.
+  const saveSession = jest.fn(() => pending);
 
   type SessionState = ReturnType<typeof useSessionStore.getState>;
   useSessionStore.setState({
@@ -121,7 +123,7 @@ async function mountWithPendingSave(campaign: Campaign = null, sessionSeconds = 
     results: [],
     // The point of the test is a save that has not resolved yet, so the real one is replaced
     // by a promise this test opens and closes by hand.
-    saveSession: (() => pending) as unknown as SessionState["saveSession"],
+    saveSession: saveSession as unknown as SessionState["saveSession"],
     quitSession: mockQuitSession as unknown as SessionState["quitSession"],
   } as unknown as Partial<SessionState>);
 
@@ -138,7 +140,7 @@ async function mountWithPendingSave(campaign: Campaign = null, sessionSeconds = 
     </SafeAreaProvider>,
   );
 
-  return { view, release: async () => await act(async () => release()) };
+  return { view, saveSession, release: async () => await act(async () => release()) };
 }
 
 describe("VictoryView feedback", () => {
@@ -263,6 +265,7 @@ describe("VictoryView continue navigation", () => {
 describe("VictoryView, a session too short to be one", () => {
   beforeEach(() => {
     mockQuitSession.mockClear();
+    mockReplace.mockClear();
   });
 
   // A time set records whatever the clock said when the hero tapped done, so five seconds
@@ -270,27 +273,32 @@ describe("VictoryView, a session too short to be one", () => {
   // save is held back and the hero is asked, because they are the only one who knows whether
   // that was the outing or a false start.
   it("asks instead of saving, and saves nothing until the hero says to", async () => {
-    const { view } = await mountWithPendingSave(null, 5);
+    const { view, saveSession } = await mountWithPendingSave(null, 5);
 
     expect(view.getByText("session.summary_too_short_title")).toBeTruthy();
     // The spinner belongs to a save that is happening; nothing is happening yet.
     expect(view.queryByText("session.summary_saving")).toBeNull();
+    expect(saveSession).not.toHaveBeenCalled();
   });
 
   it("discarding takes the quit path, which writes nothing at all", async () => {
-    const { view } = await mountWithPendingSave(null, 5);
+    const { view, saveSession } = await mountWithPendingSave(null, 5);
 
     await fireEvent.press(view.getByText("session.summary_too_short_discard"));
 
     expect(mockQuitSession).toHaveBeenCalled();
+    expect(saveSession).not.toHaveBeenCalled();
+    // Home, not back: back from here is the session that just ended.
+    expect(mockReplace).toHaveBeenCalledWith("/");
   });
 
   it("keeping it lets the save through", async () => {
-    const { view } = await mountWithPendingSave(null, 5);
+    const { view, saveSession } = await mountWithPendingSave(null, 5);
 
     await fireEvent.press(view.getByText("session.summary_too_short_keep"));
 
     expect(view.getByText("session.summary_saving")).toBeTruthy();
+    expect(saveSession).toHaveBeenCalledTimes(1);
   });
 
   it("a real session is never questioned", async () => {

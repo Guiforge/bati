@@ -118,8 +118,10 @@ adb install -r android/app/build/outputs/apk/release/app-release.apk
 ANDROID_SERIAL=emulator-5554 npm run maestro
 ```
 
-Keep the device's animations **on**: with the system animation scales at 0 the village detail
-sheet never opens and `village-sheet-check` fails.
+Keep the device's animations **on**: with the system animation scales at 0,
+`village-sheet-check` failed on both runs tried, on a building sheet that did not open. Whether
+that was the animations or the app losing the first building tap after a cold start (about one
+time in six, see the comment in that flow) is not established.
 
 **Two emulators halve it.** Start a second AVD on another port (`-port 5556`) and split the
 suite: `maestro test .maestro/ --shard-split 2 --device emulator-5554,emulator-5556`. Measured

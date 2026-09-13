@@ -28,8 +28,13 @@ jest.mock("@/db/preferences", () => ({
 jest.mock("@/db", () => ({ preferences: {} }));
 jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn(), t: (key: string) => key } }));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
+const mockBack = jest.fn();
+const mockReplace = jest.fn();
+const mockCanGoBack = jest.fn(() => true);
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
+  // Stable functions, so a test can ask where quitting went. Fresh `jest.fn()`s built inside the
+  // hook were unobservable, which is how the quit path stayed untested.
+  useRouter: () => ({ back: mockBack, replace: mockReplace, canGoBack: mockCanGoBack }),
 }));
 
 /**
@@ -292,6 +297,81 @@ describe("restarting a round", () => {
     });
 
     expect(useSessionStore.getState().results).toHaveLength(0);
+    alert.mockRestore();
+  });
+});
+
+/**
+ * The other button that destroys work: quitting wipes the session and its recovery slot. Asserted
+ * on the store and on the router, not on "an alert appeared", for the same reason as above.
+ */
+describe("quitting the session", () => {
+  function pauseMidSession() {
+    useSessionStore.setState({
+      quest: mockQuest,
+      status: "paused",
+      prePauseStatus: "running",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+      warmupSequence: [],
+      warmupIndex: 0,
+      results: [],
+      pendingDamage: [],
+      bossFight: null,
+      sessionUuid: null,
+    });
+  }
+
+  /** Taps Quit, keeps the dialog's destructive handler, and returns it. */
+  async function tapQuit() {
+    let destructive: (() => void) | undefined;
+    const alert = jest.spyOn(Alert, "alert").mockImplementation((_title, _body, buttons) => {
+      destructive = buttons?.find((b) => b.style === "destructive")?.onPress as () => void;
+    });
+    pauseMidSession();
+    const paused = await mountPaused();
+    await act(async () => {
+      await fireEvent.press(paused.getByTestId("session-quit"));
+    });
+    return { alert, confirm: () => act(() => destructive?.()) };
+  }
+
+  beforeEach(() => {
+    mockBack.mockClear();
+    mockReplace.mockClear();
+    mockCanGoBack.mockReturnValue(true);
+  });
+
+  it("keeps the session until the hero confirms", async () => {
+    const { alert } = await tapQuit();
+
+    expect(alert).toHaveBeenCalledTimes(1);
+    expect(useSessionStore.getState().status).toBe("paused");
+    expect(useSessionStore.getState().quest).not.toBeNull();
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+    alert.mockRestore();
+  });
+
+  it("ends it and goes back once they do", async () => {
+    const { alert, confirm } = await tapQuit();
+    await confirm();
+
+    expect(useSessionStore.getState().status).toBe("idle");
+    expect(useSessionStore.getState().quest).toBeNull();
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockReplace).not.toHaveBeenCalled();
+    alert.mockRestore();
+  });
+
+  it("goes home when there is nothing to go back to", async () => {
+    mockCanGoBack.mockReturnValue(false);
+    const { alert, confirm } = await tapQuit();
+    await confirm();
+
+    expect(useSessionStore.getState().status).toBe("idle");
+    expect(mockReplace).toHaveBeenCalledWith("/");
+    expect(mockBack).not.toHaveBeenCalled();
     alert.mockRestore();
   });
 });

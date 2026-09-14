@@ -319,6 +319,38 @@ describe("db/migrate", () => {
   });
 });
 
+/**
+ * `when` is the only thing that decides whether a migration still has to run: `ensureMigrations`
+ * compares each entry against `MAX(created_at)` in `__drizzle_migrations` and skips anything not
+ * strictly greater. The tag is stored as the hash and never compared, so a duplicate or
+ * out-of-order `when` is not a warning, it is a migration that never runs again on any device
+ * that already applied its neighbour, and the app ships with a row it thinks it wrote.
+ *
+ * Nothing generates these numbers: they are typed by hand, one fictional day apart, by whoever
+ * writes the migration (`db:generate` is not trusted in this repo). The first day two land at
+ * once is the day this bites, and it bites silently and only in the field.
+ */
+describe("drizzle/meta/_journal.json", () => {
+  const journal = require("../drizzle/meta/_journal.json") as {
+    entries: { idx: number; tag: string; when: number }[];
+  };
+
+  it("orders every migration by a strictly increasing `when`", () => {
+    const outOfOrder = journal.entries
+      .slice(1)
+      .filter((entry, i) => entry.when <= (journal.entries[i]?.when ?? Number.POSITIVE_INFINITY))
+      .map((entry) => `${entry.tag} (when ${entry.when})`);
+
+    expect(outOfOrder).toEqual([]);
+  });
+
+  it("numbers entries in file order, with no gap", () => {
+    expect(journal.entries.map((entry) => entry.idx)).toEqual(
+      journal.entries.map((_entry, i) => i),
+    );
+  });
+});
+
 describe("sqlString", () => {
   it("doubles quotes so a hero's own text cannot end the literal", () => {
     const { sqlString } = require("../db/sql") as typeof import("../db/sql");

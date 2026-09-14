@@ -57,6 +57,7 @@ import m0053 from "./0053_the_table_row_bends_its_knees.sql";
 import m0054 from "./0054_a_pike_is_not_a_handstand.sql";
 import m0055 from "./0055_a_step_is_not_a_stair.sql";
 import m0056 from "./0056_a_gauntlet_is_not_a_glove.sql";
+import m0057 from "./0057_the_translated_half.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -119,5 +120,6 @@ export default {
     m0054,
     m0055,
     m0056,
+    m0057,
   },
 };

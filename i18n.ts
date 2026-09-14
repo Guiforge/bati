@@ -1,11 +1,12 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import { getDevicePreferredAppLanguage } from "@/src/i18n/deviceLanguage";
+import { getDevicePreferredAppLanguage, type Localized } from "@/src/i18n/deviceLanguage";
 
 import en from "./locales/en.json";
 import fr from "./locales/fr.json";
 
-const resources = {
+// Typed on every app language: a language added to `APP_LANGUAGES` without its file fails here.
+const resources: Localized<{ translation: typeof en }> = {
   en: { translation: en },
   fr: { translation: fr },
 };

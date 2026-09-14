@@ -1,11 +1,15 @@
+import type { AppLanguage, Localized } from "@/src/i18n/deviceLanguage";
+
 // Intl.DateTimeFormat construction is one of the most expensive calls on Hermes (locale
 // data resolution). Constructing one inside a render body — worse, inside a recycled list
 // row — costs scroll frames. Formatters are immutable, so cache them per language+options.
 const formatters = new Map<string, Intl.DateTimeFormat>();
 
-/** First day of the week for the locale's calendars: Monday in French, Sunday in English. */
-export function getWeekStart(language: string): 0 | 1 {
-  return language === "fr" ? 1 : 0;
+/** First day of the week for each language's calendars: Sunday in English, Monday elsewhere. */
+const WEEK_START: Localized<0 | 1> = { en: 0, fr: 1 };
+
+export function getWeekStart(language: AppLanguage): 0 | 1 {
+  return WEEK_START[language];
 }
 
 export function getDateTimeFormat(

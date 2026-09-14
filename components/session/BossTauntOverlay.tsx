@@ -47,7 +47,7 @@ export function BossTauntOverlay() {
             ? voice.resist
             : voice.idle;
 
-    const lines = language === "fr" ? pool.fr : pool.en;
+    const lines = pool[language];
     // Modulo a non-empty pool, so always in range; the type does not know that.
     setTaunt(lines[Math.floor(Math.random() * lines.length)] ?? null);
 

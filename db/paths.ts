@@ -1,3 +1,4 @@
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import { localizedName } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
 import type { Chain } from "./exercises";
@@ -20,7 +21,7 @@ import type { Chain } from "./exercises";
  * Unnamed summits fall back to the movement's own localized name (`pathName` returns null), so
  * content never blocks code and a ladder edge added later leaves no hole on screen.
  */
-export const PATH_NAMES: Record<string, { en: string; fr: string }> = {
+export const PATH_NAMES: Record<string, Localized> = {
   // Pull — the deepest route in the catalogue, and the canonical "get me a first pull-up". The
   // pull-up is no longer its top (`0033` put the muscle-up above it), but it is the same route and
   // it keeps the same name: what moved is the key, not the identity.

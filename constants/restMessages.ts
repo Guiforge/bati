@@ -1,6 +1,7 @@
 import type { RestSuggestion } from "@/db/restSuggestions";
+import type { Localized } from "@/src/i18n/deviceLanguage";
 
-type MessagePool = { en: string[]; fr: string[] };
+type MessagePool = Localized<string[]>;
 
 /**
  * Typed on `Exclude<..., "none">` so a fifth rest-suggestion reason added to

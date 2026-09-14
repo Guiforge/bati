@@ -12,7 +12,7 @@ import { getOathProgress, oathNeedsExercise } from "@/db/oaths";
 import { listOutings } from "@/db/outings";
 import { loadConfiguredQuest } from "@/db/questConfig";
 import { findQuestWithExercise, listQuestTemplates } from "@/db/quests";
-import { localizedTitle } from "@/src/i18n/localized";
+import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -114,9 +114,7 @@ export function useSmartAction() {
           const stepsDone = steps.filter((s) => s.status === "completed").length;
           const currentStep = Math.min(stepsDone + 1, steps.length);
           const title = details
-            ? language === "fr"
-              ? details.adventure.frTitle
-              : details.adventure.enTitle
+            ? localizedTitle(details.adventure, language)
             : t("home.resume_journey", "Resume your journey");
 
           setConfig({
@@ -163,11 +161,7 @@ export function useSmartAction() {
             // elsewhere: on the exercise screen the ladder is drawn right there to explain
             // itself, and here it is not. Home is where the hero meets it cold.
             const goal = oath?.exerciseName?.[language] ?? "";
-            const rungName = rung
-              ? language === "fr"
-                ? rung.exercise.frName
-                : rung.exercise.enName
-              : goal;
+            const rungName = rung ? localizedName(rung.exercise, language) : goal;
             const subtext =
               chain && rung
                 ? t("home.oath_focus_chain", {

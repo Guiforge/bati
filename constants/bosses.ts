@@ -1,4 +1,6 @@
 import { type BossAssetKey, getBossKey } from "@/constants/assetMap";
+import type { AppLanguage, Localized } from "@/src/i18n/deviceLanguage";
+import { localizedName } from "@/src/i18n/localized";
 
 /**
  * Who each monster is, and what it says.
@@ -30,9 +32,8 @@ export type BossVoice = {
   enrage: LocalizedPool;
 };
 
-type Localized = { en: string; fr: string };
 /** Non-empty by type: a boss with nothing to say would return `undefined` from every pick. */
-type LocalizedPool = { en: [string, ...string[]]; fr: [string, ...string[]] };
+type LocalizedPool = Localized<[string, ...string[]]>;
 
 /**
  * What to call the thing on screen.
@@ -44,15 +45,15 @@ type LocalizedPool = { en: [string, ...string[]]; fr: [string, ...string[]] };
  */
 export function bossDisplayName(
   fight: { imagePath: string; enName: string; frName: string; tier?: number; shiny?: boolean },
-  language: string,
+  language: AppLanguage,
 ): string {
   const key = getBossKey(fight.imagePath);
   const prefix = fight.shiny ? "✨ " : "";
   if (key) {
     const entry = (fight.tier ?? 0) >= 1 ? BOSSES[key].legendaryName : BOSSES[key].name;
-    return prefix + (language === "fr" ? entry.fr : entry.en);
+    return prefix + entry[language];
   }
-  return prefix + (language === "fr" ? fight.frName : fight.enName);
+  return prefix + localizedName(fight, language);
 }
 
 /** The boss's own voice, or the golem's as a stand-in for unpainted content. */

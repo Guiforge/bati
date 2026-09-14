@@ -1,3 +1,5 @@
+import type { AppLanguage, Localized } from "@/src/i18n/deviceLanguage";
+
 /**
  * Shown when a finished session unlocked nothing notable (no record, no achievement, no level
  * up). Title and subtitle are paired by index, not drawn independently, so the tone never
@@ -6,7 +8,7 @@
 type EmptyVariant = { title: string; subtitle: string };
 
 /** Non-empty by contract: `pickSessionEmptyVariant` promises a variant, never `undefined`. */
-export const SESSION_EMPTY_VARIANTS = {
+export const SESSION_EMPTY_VARIANTS: Localized<[EmptyVariant, ...EmptyVariant[]]> = {
   en: [
     { title: "Nice work!", subtitle: "Session logged. Keep the flame lit." },
     { title: "Solid session.", subtitle: "Every rep still counts toward the next one." },
@@ -25,7 +27,7 @@ export const SESSION_EMPTY_VARIANTS = {
   ],
 };
 
-export function pickSessionEmptyVariant(language: "en" | "fr"): EmptyVariant {
+export function pickSessionEmptyVariant(language: AppLanguage): EmptyVariant {
   const pool = SESSION_EMPTY_VARIANTS[language];
   // The pools are non-empty by the tuple type below, and the index is modulo their own length,
   // so the assertion the return type makes is one the compiler could not derive on its own.

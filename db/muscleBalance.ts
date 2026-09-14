@@ -1,4 +1,5 @@
 import { and, count, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
 import { isWorkout } from "./completed";
 import { MUSCLE_LABELS } from "./muscles";
@@ -27,7 +28,7 @@ function periodStart(period: BalancePeriod, now = new Date()): Date {
 
 export type MuscleVolume = {
   muscle: MuscleCode;
-  label: { en: string; fr: string };
+  label: Localized;
   volume: number; // Total work units — seconds converted to rep-equivalents (./workUnits)
   percentage: number; // Percentage of total training
   sessionCount: number; // Number of sessions that included this muscle
@@ -194,7 +195,7 @@ export async function getSuggestedFocusAreas(limit = 2): Promise<MuscleCode[]> {
  */
 export function getBalanceRecommendation(balance: MuscleBalance): {
   status: "balanced" | "needs_attention" | "no_data";
-  message: { en: string; fr: string };
+  message: Localized;
   focusAreas: MuscleCode[];
 } {
   if (balance.totalVolume === 0) {
@@ -239,7 +240,7 @@ export function getBalanceRecommendation(balance: MuscleBalance): {
 
 export type PatternVolume = {
   pattern: MovementPattern;
-  label: { en: string; fr: string };
+  label: Localized;
   volume: number; // Same work units as MuscleVolume
   percentage: number;
 };

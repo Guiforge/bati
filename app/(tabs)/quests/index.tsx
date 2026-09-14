@@ -47,7 +47,7 @@ import { isMuscleCode, MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import { type QuestTemplate, questTrainingLevel } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
-import { localizedName, localizedTitle } from "@/src/i18n/localized";
+import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
@@ -185,7 +185,7 @@ function buildQuestMeta(
     xp,
     cover: resolveCoverImage(q.imagePath),
     title: localizedTitle(q, language),
-    description: language === "fr" ? q.frDescription : q.enDescription,
+    description: localizedText(q, "description", language),
     // The archetype leads it — what kind of session this is, then what it works. Absent on
     // user-authored quests, which declare no archetype, so their line starts on the muscles.
     // An outing's archetype is `metabolic`, which this line printed as "Cardio" - the one word

@@ -1,5 +1,6 @@
 import { eq, isNotNull, sql } from "drizzle-orm";
 import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import { listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
@@ -55,7 +56,7 @@ const TIER_LEVEL_FLOORS: Record<VillageTier, number> = {
 };
 
 // Shared by the village scene and the home teaser, so the two can never disagree.
-export const TIER_NAMES: Record<VillageTier, { en: string; fr: string }> = {
+export const TIER_NAMES: Record<VillageTier, Localized> = {
   1: { en: "Hamlet", fr: "Hameau" },
   2: { en: "Clearing", fr: "Clairière" },
   3: { en: "Village", fr: "Village" },
@@ -185,7 +186,7 @@ export async function getDominantSportOverlay(): Promise<DominantSportOverlay> {
 
 // Same convention as MUSCLE_LABELS in db/muscles.ts: labels live next to the data,
 // not in locales/*.json, so a new building code is one edit instead of three.
-export const BUILDING_LABELS: Record<BuildingCode, { en: string; fr: string }> = {
+export const BUILDING_LABELS: Record<BuildingCode, Localized> = {
   campfire: { en: "Campfire", fr: "Feu de camp" },
   tent: { en: "Tent", fr: "Tente" },
   // fr deliberately not "Mannequin d'entraînement": « d'entraînement » is wider than a
@@ -648,7 +649,7 @@ export type VillageScene = {
   tier: VillageTier;
   level: number;
   /** The hero's level title, shown beside the tier on the scene. */
-  title: { en: string; fr: string };
+  title: Localized;
   flame: FlameLevel;
   /** Days the flame has stayed lit, which the flame's name alone does not say. */
   streakDays: number;

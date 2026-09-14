@@ -1,3 +1,5 @@
+import type { Localized } from "@/src/i18n/deviceLanguage";
+
 /**
  * One line of weather under the village name, redrawn once a day.
  *
@@ -18,7 +20,7 @@
  *
  * Same shape as REST_SUGGESTION_MESSAGES, and drawn with the same `pickDailyVariant()`.
  */
-export const VILLAGE_FLAVOUR: { en: string[]; fr: string[] } = {
+export const VILLAGE_FLAVOUR: Localized<string[]> = {
   en: [
     "Smoke curls from the chimneys. Someone kept the fires lit.",
     "A traveller passed through before dawn and left no name.",

@@ -29,7 +29,7 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import { getCached, setCached } from "@/db/queryCache";
 import { listQuestTemplates } from "@/db/quests";
 import { type LngLat, toTrace } from "@/src/gps/trace";
-import { localizedTitle } from "@/src/i18n/localized";
+import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -350,7 +350,7 @@ export default function SessionDetailScreen() {
                       component when the record badge grows a second variant. */}
                   {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above */}
                   {(exercisesByRound[roundIndex] ?? []).map((cex) => {
-                    const exName = language === "fr" ? cex.exercise.frName : cex.exercise.enName;
+                    const exName = localizedName(cex.exercise, language);
                     const equipmentLabel =
                       EQUIPMENT_LABELS[cex.exercise.equipment]?.[language] ??
                       cex.exercise.equipment;

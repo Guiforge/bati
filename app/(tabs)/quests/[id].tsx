@@ -50,7 +50,7 @@ import { getCached } from "@/db/queryCache";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
 import { outingXpPerMinute } from "@/db/xp";
-import { localizedTitle } from "@/src/i18n/localized";
+import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -445,7 +445,7 @@ export default function QuestDetails() {
     return {
       quest,
       questTitle: localizedTitle(quest, language),
-      questDesc: language === "fr" ? quest.frDescription : quest.enDescription,
+      questDesc: localizedText(quest, "description", language),
       questTokens: getQuestColorTokensFromQuest(quest),
       estimatedSeconds,
       estimate: formatDurationEstimate(estimatedSeconds),

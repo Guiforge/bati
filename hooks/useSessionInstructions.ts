@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
-import { localizedName } from "@/src/i18n/localized";
+import { localizedName, localizedText } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -34,7 +34,7 @@ export function describeExercise(ex: Exercise, language: AppLanguage): SessionIn
   return {
     imagePath: ex.imagePath,
     name: localizedName(ex, language),
-    description: language === "fr" ? ex.frDescription : ex.enDescription,
+    description: localizedText(ex, "description", language),
   };
 }
 

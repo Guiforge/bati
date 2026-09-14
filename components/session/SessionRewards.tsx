@@ -16,7 +16,8 @@ import { buildingDefinitions } from "@/db/schema";
 import { formatTarget } from "@/db/targets";
 import { getLevelTitle } from "@/db/userLevel";
 import { buildingCeiling, TIER_NAMES } from "@/db/village";
-import { localizedTitle } from "@/src/i18n/localized";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
+import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import type { useSessionStore } from "@/stores/session";
 import { NewRecordsBadge } from "./NewRecordsBadge";
 
@@ -38,7 +39,13 @@ const VILLAGE_GROWTH_SHOWN = 2;
  * difference visible or the record stops meaning anything. Never both on one screen, which
  * `getSessionStanding` settles rather than this: `standing` is null whenever a record fell.
  */
-function BestEffortCard({ standing, isFr }: { standing: SessionStanding | null; isFr: boolean }) {
+function BestEffortCard({
+  standing,
+  language,
+}: {
+  standing: SessionStanding | null;
+  language: AppLanguage;
+}) {
   const { t } = useTranslation();
   if (!standing) return null;
 
@@ -69,7 +76,7 @@ function BestEffortCard({ standing, isFr }: { standing: SessionStanding | null; 
         )}
         <YStack flex={1}>
           <Text fontWeight="700" fontSize={15} color="$text">
-            {isFr ? standing.exerciseName.fr : standing.exerciseName.en}
+            {standing.exerciseName[language]}
           </Text>
           {/* The count is what makes the placing a claim rather than a compliment: "2nd in 3
               sessions" and "2nd in 40" are different nights, and the hero can check both. And the
@@ -94,11 +101,10 @@ export function SessionRewards({
   onViewVillage,
 }: {
   result: SaveResult;
-  language: string;
+  language: AppLanguage;
   onViewVillage: () => void;
 }) {
   const { t } = useTranslation();
-  const isFr = language === "fr";
 
   const hasRewards =
     !!result.levelUp ||
@@ -110,7 +116,7 @@ export function SessionRewards({
     result.villageGrowth.length > 0;
 
   // Picked once for this mount of the reveal screen, not re-rolled on every re-render.
-  const emptyVariant = useMemo(() => pickSessionEmptyVariant(isFr ? "fr" : "en"), [isFr]);
+  const emptyVariant = useMemo(() => pickSessionEmptyVariant(language), [language]);
 
   return (
     <>
@@ -147,9 +153,7 @@ export function SessionRewards({
               </Text>
               <Text fontWeight="700" fontSize={20} color="$text">
                 {t("session.level_label", "Level")} {result.levelUp.newLevel} ·{" "}
-                {isFr
-                  ? getLevelTitle(result.levelUp.newLevel).fr
-                  : getLevelTitle(result.levelUp.newLevel).en}
+                {getLevelTitle(result.levelUp.newLevel)[language]}
               </Text>
             </YStack>
           </XStack>
@@ -181,7 +185,7 @@ export function SessionRewards({
               {t("session.village_tier_up_title", "Your village grew!")}
             </Text>
             <Text fontWeight="700" fontSize={20} color="$text" style={{ textAlign: "center" }}>
-              {isFr ? TIER_NAMES[result.tierUp.newTier].fr : TIER_NAMES[result.tierUp.newTier].en}
+              {TIER_NAMES[result.tierUp.newTier][language]}
             </Text>
           </YStack>
         </Card>
@@ -225,7 +229,7 @@ export function SessionRewards({
                 />
                 <YStack flex={1} gap="$1">
                   <Text fontWeight="700" fontSize={14} color="$text">
-                    {isFr ? g.frName : g.enName}
+                    {localizedName(g, language)}
                   </Text>
                   <LevelPips
                     level={g.newLevel}
@@ -254,7 +258,7 @@ export function SessionRewards({
       {/* New personal records */}
       {result.newRecords.length > 0 && <NewRecordsBadge records={result.newRecords} />}
 
-      <BestEffortCard standing={result.standing} isFr={isFr} />
+      <BestEffortCard standing={result.standing} language={language} />
 
       {/* Variations unlocked — progressive overload without weights is a harder movement, so this
           is the moment that actually moves a bodyweight athlete forward. */}
@@ -298,12 +302,12 @@ export function SessionRewards({
                 </YStack>
                 <YStack flex={1}>
                   <Text fontWeight="700" fontSize={15} color="$text">
-                    {isFr ? step.next.frName : step.next.enName}
+                    {localizedName(step.next, language)}
                   </Text>
                   <Text fontSize={12} color="$text" opacity={0.7}>
                     {t("progression.new_rung_from", {
-                      name: isFr ? step.from.frName : step.from.enName,
-                      defaultValue: `You have mastered ${isFr ? step.from.frName : step.from.enName}`,
+                      name: localizedName(step.from, language),
+                      defaultValue: `You have mastered ${localizedName(step.from, language)}`,
                     })}
                   </Text>
                 </YStack>
@@ -363,10 +367,10 @@ export function SessionRewards({
                 </YStack>
                 <YStack flex={1}>
                   <Text fontWeight="700" fontSize={15} color="$text">
-                    {localizedTitle(a.definition, isFr ? "fr" : "en")}
+                    {localizedTitle(a.definition, language)}
                   </Text>
                   <Text fontSize={12} color="$text" opacity={0.7}>
-                    {isFr ? a.definition.frDescription : a.definition.enDescription}
+                    {localizedText(a.definition, "description", language)}
                   </Text>
                 </YStack>
               </XStack>

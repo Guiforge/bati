@@ -31,7 +31,7 @@ import { type ExerciseGhost, getExerciseHistory, ghostKey } from "@/db/personalR
 import type { QuestTargetType } from "@/db/schema";
 import { formatTarget } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
-import { localizedName } from "@/src/i18n/localized";
+import { localizedName, localizedText } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -381,7 +381,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
   const { t } = useTranslation();
 
   const title = localizedName(exercise, language);
-  const desc = language === "fr" ? exercise.frDescription : exercise.enDescription;
+  const desc = localizedText(exercise, "description", language);
   const equipmentLabel = EQUIPMENT_LABELS[exercise.equipment]?.[language] ?? exercise.equipment;
   // `getExerciseAsset` understands a bundled path, a picked illustration and a photo's
   // data URI alike, so this screen no longer needs its own `startsWith("http")` branch.

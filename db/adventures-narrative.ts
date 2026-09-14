@@ -1,4 +1,6 @@
 import { and, eq } from "drizzle-orm";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
+import { localizedText } from "@/src/i18n/localized";
 import { db, schema } from "./client";
 
 const { adventureRunSteps, adventureRuns, adventureSteps } = schema;
@@ -8,7 +10,7 @@ const { adventureRunSteps, adventureRuns, adventureSteps } = schema;
  */
 export async function getAdventureStepNarrative(
   runStepId: number,
-  language: "en" | "fr" = "en",
+  language: AppLanguage = "en",
 ): Promise<string | null> {
   const result = await db
     .select({
@@ -30,7 +32,7 @@ export async function getAdventureStepNarrative(
   const row = result[0];
   if (!row) return null;
 
-  const text = language === "fr" ? row.frNarrative : row.enNarrative;
+  const text = localizedText(row, "narrative", language);
   return text || null;
 }
 
@@ -39,7 +41,7 @@ export async function getAdventureStepNarrative(
  */
 export async function getAdventureStepOutroNarrative(
   runStepId: number,
-  language: "en" | "fr" = "en",
+  language: AppLanguage = "en",
 ): Promise<string | null> {
   const result = await db
     .select({
@@ -61,6 +63,6 @@ export async function getAdventureStepOutroNarrative(
   const row = result[0];
   if (!row) return null;
 
-  const text = language === "fr" ? row.frOutroNarrative : row.enOutroNarrative;
+  const text = localizedText(row, "outroNarrative", language);
   return text || null;
 }

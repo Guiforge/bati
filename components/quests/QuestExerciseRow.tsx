@@ -15,7 +15,7 @@ import type { QuestExercise } from "@/db/quests";
 import { formatTarget, type Target } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
-import { localizedName } from "@/src/i18n/localized";
+import { localizedName, localizedText } from "@/src/i18n/localized";
 
 /** A row of tiles reads fine; past four it was a nested horizontal ScrollView. */
 const MAX_THUMBS = 4;
@@ -87,7 +87,7 @@ function ExerciseDetail({
       ) : null}
 
       <Paragraph color="$textSecondary" size="$3">
-        {language === "fr" ? qex.exercise.frDescription : qex.exercise.enDescription}
+        {localizedText(qex.exercise, "description", language)}
       </Paragraph>
 
       <XStack gap="$2" flexWrap="wrap">
@@ -157,7 +157,7 @@ export function QuestExerciseRow({
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
-  const name = language === "fr" ? qex.exercise.frName : qex.exercise.enName;
+  const name = localizedName(qex.exercise, language);
   const thumb = resolveExerciseImage(qex.exercise.imagePath);
   const Chevron = expanded ? ChevronUp : ChevronDown;
 

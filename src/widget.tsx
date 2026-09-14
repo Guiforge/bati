@@ -11,7 +11,12 @@ import { rawColors } from "@/constants/rawColors";
 import { ensureMigrations } from "@/db/migrate";
 import { preferences } from "@/db/preferences";
 import { type FlameLevel, getFlameLevel, getStreakInfo, getWeeklyProgress } from "@/db/streaks";
-import { getDevicePreferredAppLanguage, resolveAppLanguage } from "@/src/i18n/deviceLanguage";
+import {
+  type AppLanguage,
+  getDevicePreferredAppLanguage,
+  type Localized,
+  resolveAppLanguage,
+} from "@/src/i18n/deviceLanguage";
 import { reportError } from "./reportError";
 
 // These used to be literals, because importing tamagui.config into a headless task drags in
@@ -60,12 +65,14 @@ const numberStyle = (k: number) =>
 
 // ponytail: two labels per widget, hardcoded next to their one consumer instead of wired
 // through i18next (whose init drags the whole app's locale files into the headless task).
-// Ceiling: a third language, or these strings appearing anywhere else — move them to locales/.
-const STRINGS = {
+// Typed on every app language, so a new one is a compile error here rather than a blank widget.
+// Ceiling: these strings appearing anywhere else — then move them to locales/.
+type WidgetStrings = { flame: string; days: string; week: string; sessions: string };
+const STRINGS: Localized<WidgetStrings> = {
   fr: { flame: "FLAMME", days: "jours", week: "SEMAINE", sessions: "séances" },
   en: { flame: "FLAME", days: "days", week: "WEEK", sessions: "sessions" },
-} as const;
-type Lang = keyof typeof STRINGS;
+};
+type Lang = AppLanguage;
 
 /** The app's own stored language, resolved by the same rule the app itself uses. */
 async function getLang(): Promise<Lang> {

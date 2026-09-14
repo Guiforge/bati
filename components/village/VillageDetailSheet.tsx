@@ -212,17 +212,15 @@ function BuildingDetail({
 }: DetailProps & { building: VillageBuilding; onClose: () => void }) {
   const { t } = useTranslation();
   const router = useRouter();
-  const fr = language === "fr";
   const built = building.level > 0;
   // Lower-cased mid-sentence, the way getBalanceRecommendation() writes muscles into prose.
   const muscleLabel = building.relatedMuscle
-    ? (MUSCLE_LABELS[building.relatedMuscle]?.[fr ? "fr" : "en"].toLowerCase() ??
-      building.relatedMuscle)
+    ? (MUSCLE_LABELS[building.relatedMuscle]?.[language].toLowerCase() ?? building.relatedMuscle)
     : "";
   const style = buildingDefinitions[building.code].relatedStyle;
   const styleLabel = style ? t(`village.style_${style}`, style) : "";
   const prereqCode = buildingDefinitions[building.code].prerequisiteBuilding;
-  const prereqName = prereqCode ? BUILDING_LABELS[prereqCode][fr ? "fr" : "en"] : "";
+  const prereqName = prereqCode ? BUILDING_LABELS[prereqCode][language] : "";
 
   // The unit note is a second sentence, so the join carries the full stop. The driver strings
   // themselves stay clause-shaped: the leagues one is reused on the victory screen after a
@@ -359,7 +357,7 @@ function BuildingDetail({
                 </YStack>
               )}
               <Text fontSize={12} color="$textSecondary" flex={1} numberOfLines={1}>
-                {fr ? adventure.frTitle : adventure.enTitle}
+                {localizedTitle(adventure, language)}
               </Text>
               {adventure.timesFinished > 1 && (
                 <Text fontSize={12} color="$textSecondary">

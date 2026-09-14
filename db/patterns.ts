@@ -1,3 +1,4 @@
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type MovementPattern, movementPatterns } from "./schema";
 
 /**
@@ -6,7 +7,7 @@ import { type MovementPattern, movementPatterns } from "./schema";
  * village's resources, patterns describe what the body is *doing*, and only the second one can
  * express "your pulling is behind your pushing".
  */
-export const PATTERN_LABELS: Record<MovementPattern, { en: string; fr: string }> = {
+export const PATTERN_LABELS: Record<MovementPattern, Localized> = {
   push_horizontal: { en: "Horizontal push", fr: "Poussée horizontale" },
   push_vertical: { en: "Vertical push", fr: "Poussée verticale" },
   pull_horizontal: { en: "Horizontal pull", fr: "Tirage horizontal" },

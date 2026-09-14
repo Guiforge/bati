@@ -1,4 +1,5 @@
 import { sum } from "drizzle-orm";
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
 import { shortLivedQuery } from "./queryCache";
 
@@ -31,7 +32,7 @@ const LEVEL_THRESHOLDS = [
 ];
 
 // Level titles (RPG themed)
-const LEVEL_TITLES: Record<number, { en: string; fr: string }> = {
+const LEVEL_TITLES: Record<number, Localized> = {
   1: { en: "Apprentice", fr: "Apprenti" },
   2: { en: "Novice", fr: "Novice" },
   3: { en: "Trainee", fr: "Recrue" },
@@ -60,7 +61,7 @@ export type UserLevelInfo = {
   currentLevelXp: number; // XP progress within current level
   xpToNextLevel: number; // XP needed for next level
   xpProgress: number; // 0-100 percentage progress to next level
-  title: { en: string; fr: string };
+  title: Localized;
 };
 
 /**
@@ -106,7 +107,7 @@ export function getXpForLevel(level: number): number {
 /**
  * Get title for a given level
  */
-export function getLevelTitle(level: number): { en: string; fr: string } {
+export function getLevelTitle(level: number): Localized {
   // LEVEL_TITLES is keyed 1..20 and both branches stay inside it; the index signature does not
   // know that, so both fall back to the same level-1 title the guard above returns.
   const first = LEVEL_TITLES[1] ?? { en: "Novice", fr: "Novice" };

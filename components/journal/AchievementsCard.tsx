@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { Award, Lock } from "@/components/icons";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { localizedTitle } from "@/src/i18n/localized";
+import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
@@ -203,7 +203,7 @@ function AchievementRow({
   const reducedMotion = useReducedMotion();
 
   const title = localizedTitle(definition, language);
-  const description = language === "fr" ? definition.frDescription : definition.enDescription;
+  const description = localizedText(definition, "description", language);
 
   return (
     <XStack

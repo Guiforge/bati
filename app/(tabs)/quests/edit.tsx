@@ -36,7 +36,7 @@ import type { Exercise } from "@/db/exercises";
 import type { QuestTargetType } from "@/db/schema";
 import { DEFAULT_TARGET_VALUE } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
-import { localizedName, localizedTitle } from "@/src/i18n/localized";
+import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -175,7 +175,7 @@ export default function QuestEditor() {
       if (!template) return;
 
       const nextTitle = localizedTitle(template, language);
-      const nextDescription = language === "fr" ? template.frDescription : template.enDescription;
+      const nextDescription = localizedText(template, "description", language);
       const nextPicked = template.exercises.map((qex, index) => ({
         uid: index,
         exerciseId: qex.exerciseId,

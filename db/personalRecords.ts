@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray, max, ne, sql } from "drizzle-orm";
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
 import { isWorkout } from "./completed";
 import { hasGround } from "./expeditions";
@@ -24,7 +25,7 @@ export type PersonalRecord = {
   value: number;
   achievedAt: Date;
   exerciseId?: number; // For exercise-specific records
-  exerciseName?: { en: string; fr: string }; // For display
+  exerciseName?: Localized; // For display
   sessionId?: number; // Reference to the session
 };
 
@@ -34,7 +35,7 @@ export type NewRecordResult = {
   newValue: number;
   previousValue: number | null;
   exerciseId?: number;
-  exerciseName?: { en: string; fr: string };
+  exerciseName?: Localized;
 };
 
 /**
@@ -288,7 +289,7 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
 /** Where one movement of one session stands against every session that trained it before. */
 export type SessionStanding = {
   exerciseId: number;
-  exerciseName: { en: string; fr: string };
+  exerciseName: Localized;
   /** Reps and seconds are separate records on one movement, so they are separate standings. */
   type: QuestTargetType;
   value: number;

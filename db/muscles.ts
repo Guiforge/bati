@@ -1,6 +1,7 @@
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type MuscleCode, muscleCodes } from "./schema";
 
-export const MUSCLE_LABELS: Record<MuscleCode, { en: string; fr: string }> = {
+export const MUSCLE_LABELS: Record<MuscleCode, Localized> = {
   arms: { en: "Arms", fr: "Bras" },
   back: { en: "Back", fr: "Dos" },
   shoulder: { en: "Shoulders", fr: "Épaules" },

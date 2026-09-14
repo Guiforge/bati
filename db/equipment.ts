@@ -1,6 +1,7 @@
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type EquipmentCode, equipmentCodes } from "./schema";
 
-export const EQUIPMENT_LABELS: Record<EquipmentCode, { en: string; fr: string }> = {
+export const EQUIPMENT_LABELS: Record<EquipmentCode, Localized> = {
   none: { en: "No equipment", fr: "Sans matériel" },
   pullup_bar: { en: "Pull-up bar", fr: "Barre de traction" },
   dip_bar: { en: "Dip bar", fr: "Barre à dips" },

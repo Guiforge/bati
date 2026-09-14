@@ -43,6 +43,7 @@ import type { EquipmentCode } from "@/db/schema";
 import { useBackup } from "@/hooks/useBackup";
 import { useBugReport, versionLabel } from "@/hooks/useBugReport";
 import { useHaptics } from "@/hooks/useHaptics";
+import { LANGUAGE_NAMES, nextAppLanguage } from "@/src/i18n/deviceLanguage";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -392,8 +393,9 @@ export default function SettingsScreen() {
 
   // One writer: the store already swaps i18n and pokes the widgets. Calling
   // `i18n.changeLanguage` here too was a second one, silently racing the first.
-  const toggleLanguage = () => {
-    setLanguage(language === "en" ? "fr" : "en").catch((e) => reportError("settings.language", e));
+  // One tap, the next language, the way the equipment row cycles its four states.
+  const cycleLanguage = () => {
+    setLanguage(nextAppLanguage(language)).catch((e) => reportError("settings.language", e));
   };
 
   return (
@@ -442,8 +444,8 @@ export default function SettingsScreen() {
           <SettingRow
             icon={<Languages size={22} color="$text" />}
             label={t("settings.language", "Language")}
-            value={language === "en" ? "English" : "Français"}
-            onPress={toggleLanguage}
+            value={LANGUAGE_NAMES[language]}
+            onPress={cycleLanguage}
           />
 
           <SettingRow

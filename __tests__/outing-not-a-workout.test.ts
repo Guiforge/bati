@@ -89,8 +89,10 @@ describe("a walk is not a workout, and is still a session", () => {
     expect((await listWorkoutDayKeys()).size).toBe(1);
     expect((await getRecentSessionHistory()).length).toBe(1);
     expect((await getSessionAggregates()).totalSessions).toBe(1);
-    const thisWeek = (await getWeeklyTrends(1))[0];
-    expect(thisWeek?.sessionCount).toBe(1);
+    // Two weeks, summed: the workout is logged yesterday, and on a Monday yesterday is last week.
+    // A one-week window read 0 every Monday, which said nothing about the walk.
+    const trends = await getWeeklyTrends(2);
+    expect(trends.reduce((sum, week) => sum + week.sessionCount, 0)).toBe(1);
   });
 
   test("a daily walk does not read as overtraining", async () => {

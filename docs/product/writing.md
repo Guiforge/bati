@@ -97,6 +97,35 @@ lives in [`constants/villagers.ts`](../../constants/villagers.ts) beside the cas
 The full account is in [gameplay/villagers.md](../gameplay/villagers.md) § The one that was found
 by counting.
 
+#### The half of this rule nothing holds
+
+The ratchet in `villagers.test.ts` enforces the negative half: no pool may be more than three
+quarters one shape. The positive half — *does the smith actually sound like the smith* — is not
+held by anything, and on 10 September 2026 the two came apart. Every pool was legally varied, and
+six of the seven villagers still leaned on the same two-beat mould, sitting just under the line.
+Scored against their own rows: **smith 37 %, sage 39 %, champion 42 %, farmer 32 %, minstrel 34 %**.
+The table was describing an intention, not the lines.
+
+A machine check for it was written, and then thrown away. It is worth knowing why, because the
+next person to try will reach for the same design:
+
+- **It rewarded generated copy.** The champion's twenty-four lines replaced by six distinct
+  strings, each repeated, scored **100 %** and the suite stayed green. Repetition is what a
+  generator produces, and a shape predicate cannot see it.
+- **Two predicates of five ranked another villager above their owner.** "Blunt and short" fitted
+  the farmer and the sage better than the smith.
+- **One measured the opposite of its row.** The champion's row says "no commentary", and ten of
+  the ten French lines that passed carried commentary.
+- **It contradicted the ratchet beside it.** Write the champion's eight record lines as eight
+  nominal verdicts, exactly as the row asks, and the 75 % cap goes red. Any predicate that passes
+  both is a compromise between the two rules rather than a reading of either.
+
+So the shape table stays prose, and the two halves of the rule are held by different things: a
+machine refuses a pool that is all one shape, and a person is the only one who can say whether
+that shape is *this villager's*. What the machine gained instead is
+[the duplicate check](../../__tests__/villagers.test.ts), which is what the mutation above was
+really exposing: nothing anywhere refused a villager saying the same line twice.
+
 The rule generalises past the villagers: **when a screen's strings all have the same shape, fix
 the shape before rewriting the words.**
 
@@ -114,6 +143,30 @@ it is a decision about which surface a screen belongs to.
 Title Case is correct English and wrong French. Twelve French strings carried it, mostly on
 buttons and headers where the English original had been capitalised word by word.
 
+Quest and adventure **titles** are the hard case, and 0057 settled how far the rule reaches into
+them. Thirty-one carried more than one capital. Two rules, both without exceptions, take twelve
+of them and leave the rest alone.
+
+**A title with no leading article never capitalises past its first word.** *Défi du Gantelet de
+Fer*, *Sprint à Travers les Terres d'Ombre*, *Fuite de la Mine Effondrée*: nothing licenses those
+capitals, and they are the English original showing through. Eight of those.
+
+**No convention capitalises a verb, or an adjective that follows its noun** — article or not.
+*La Parole Doit Passer*, *Le Gant Arcanique*, *L'Ascension Patiente*, *La Veille des Bras Tendus*.
+Four more. (A preposed adjective is a different case and keeps its capital: *La Longue Portée* is
+correct.) *Titan* keeps its capital everywhere, being a name.
+
+**What stays is the one shape French genuinely argues about**: article, first noun, then a second
+noun behind a preposition. *Le Chemin du Druide*, *L'Épreuve du Colosse*, *La Conquête du Seigneur
+de Fer*. Nineteen titles are built that way, they agree with each other, and the *Les Trois
+Mousquetaires* convention is a real defence for them. Correcting some and not others is the only
+outcome worse than leaving all of them.
+
+**No test holds any of this, deliberately.** Judging a French title by machine needs a
+proper-noun list (*Titan* keeps its capital, *Gantelet* does not), and a list like that is widened
+to land a build, which is the failure mode the permissions ratchet exists to name. This one stays
+a thing a person reads for.
+
 ---
 
 ## Where each rule is checked
@@ -127,12 +180,15 @@ the permissions test: the fix is always to write the string correctly, never to 
 | No em dash, either language | `locale-style.test.ts` | `locales/*.json`, the README, both legal pages, the whole store listing and its changelogs, and `app.json`, whose two widget entries are the labels the Android widget picker shows. Not `docs/`, and not code comments |
 | One apostrophe, one ellipsis | `locale-style.test.ts` | anything outside `locales/*.json` |
 | `tu` outside the legal pages | `locale-style.test.ts` | English, which has no such distinction |
-| No sentence shape over three quarters of a pool | [`__tests__/villagers.test.ts`](../../__tests__/villagers.test.ts) | every string that is not a villager line |
+| No sentence shape over three quarters of a pool | [`__tests__/villagers.test.ts`](../../__tests__/villagers.test.ts) for the villagers, [`__tests__/seed-copy-shape.test.ts`](../../__tests__/seed-copy-shape.test.ts) for quest descriptions, adventure descriptions and step narratives, both languages | any pool of reader-facing prose that is neither of those. A new one is a blind spot until it is added to `seed-copy-shape.test.ts` |
+| No villager repeats a line, across all their pools | `villagers.test.ts` | every other pool of copy. The seeded catalogue is unchecked for repetition |
+| Each villager sounds like **themselves** | **nothing, and one attempt was thrown away for being worse than nothing** | see § 4, *The half of this rule nothing holds* |
 | No participle agreed with the hero | `villagers.test.ts` | same |
 | Ambient lines cite no data | `villagers.test.ts` | same |
 | Contrastive negation | **nothing, and nothing ever will** | |
-| Every rule above, applied to the **seeded catalogue** | **nothing** | measured 2026-09-01: 29 of 65 movement descriptions say `vous`, and 13 rows carry an em dash. `locale-style.test.ts` reads `locales/*.json` and has never been able to open a database row, so the largest body of prose a hero reads is the one body nothing checks |
-| Sentence case | **nothing** | |
+| Em dash in a **migration** | `locale-style.test.ts`, minus the seven files in its `SEED_DEBT` list | the rows those seven already wrote into installed databases. Only a new migration reaches those, which is why 0057 rewrites four quest descriptions the list still exempts |
+| Every other rule, applied to the **seeded content** | **nothing** | `locale-style.test.ts` reads `locales/*.json` and has never been able to open a database row, so the largest body of prose a hero reads is the one body nothing checks. 0047 and 0057 emptied it by hand; nothing stops it refilling |
+| Sentence case | **nothing, on purpose** | a machine needs a proper-noun list to judge a French title, and a list like that gets widened to land a build. See § 6 |
 | Dash *density* once the dash is gone | **nothing** | a page of nothing but short sentences reads as generated too |
 
 ### The blind spots are the point

@@ -6,7 +6,13 @@
 > `drizzle/0006_content_expansion.sql` and were renamed to the movements' official names by
 > `drizzle/0023_official_exercise_names.sql` — Goblin Squat became Squat (merged into the `0001`
 > row it duplicated), Thunder Jumping Jack became Jumping Jack, and so on. The migrations are
-> the source of truth for the catalogue; the quest and adventure content here is unaffected.
+> the source of truth for the catalogue.
+> **Historical, as of 2026-09-10**: so is the quest and adventure content below, which used to be
+> the exception to that line. `drizzle/0057_the_translated_half.sql` rewrote seventeen of these
+> descriptions in both languages and twelve French titles, because the French here is translated
+> from the English word for word and reads that way (*"forge des légendes des résilients"*,
+> *"ou tombe en essayant"*). Regenerating from this page reintroduces exactly what that migration
+> removed. Read it for what was generated in January 2026, never as a source to seed from.
 
 ---
 

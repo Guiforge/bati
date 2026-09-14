@@ -81,11 +81,24 @@ describe("villager pools", () => {
    * The hero's avatar has no fixed gender, so a French line may never agree a participle with
    * them. `tu t'es …` is the trap: it forces "arrêté" or "arrêtée" and there is no third option.
    * Explicit inclusive spellings are the other way the same mistake arrives.
+   *
+   * `tu es …é` is the third, and it is the one that got through: `Tu n'es pas obligé de tout
+   * comprendre` shipped and was found by a person reading, on 10 September 2026, because the two
+   * patterns above are the only ones that were ever checked. `être` plus a participle in -é always
+   * agrees, so this needs no word list to be exact.
+   *
+   * Still blind to a plain adjective — `tu es prêt`, `tu es sûr`, `tu es seul` — which would need
+   * one, and a list of gendered adjectives is a thing that gets widened to land a batch. That half
+   * stays with whoever reads the copy.
    */
   test.each(PAIRS)("%s does not gender the hero at %s, in French", (villager, moment) => {
     for (const line of FR[villager]?.[moment] ?? []) {
       expect(line).not.toMatch(/tu t'es /i);
       expect(line).not.toMatch(/\(e\)|·e\b|é\(e\)/);
+      // No `\b` after the `é`: JavaScript's `\w` is ASCII-only, so a word boundary never falls
+      // after an accent and `/\w+és?\b/` silently matches nothing. A negative lookahead for a
+      // letter is what actually ends the word here.
+      expect(line).not.toMatch(/\btu (?:n')?es (?:pas )?[a-zà-ÿ]+é(?:es?|s)?(?![a-zà-ÿ])/i);
     }
   });
 
@@ -134,6 +147,36 @@ describe("villager pools", () => {
     }
 
     expect(tooUniform).toEqual([]);
+  });
+
+  /**
+   * No villager says the same thing twice.
+   *
+   * The metronome test above measures the *shape* of a pool, so it is satisfied by a pool of
+   * identical lines as long as their sentence counts are spread: six copies of one line and two
+   * of another is a legal 75%. That was found by mutation on 10 September 2026 — the whole cast
+   * of the champion replaced by six distinct strings, the suite still green — and it is the one
+   * hole through which generated copy walks in, because repetition is what a generator produces
+   * and what every other check here happens to tolerate.
+   *
+   * Across a villager rather than inside a pool: the rotation ring keys on `villager:moment:index`
+   * and never crosses moments, so the same sentence in two of a villager's pools is two chances to
+   * hear it in one session.
+   */
+  test.each(VILLAGER_IDS)("%s never says the same line twice", (villager) => {
+    const repeated: string[] = [];
+    for (const [language, pools] of [
+      ["en", EN],
+      ["fr", FR],
+    ] as const) {
+      const seen = new Set<string>();
+      for (const line of Object.values(pools[villager] ?? {}).flat()) {
+        if (seen.has(line)) repeated.push(`${language}: ${line.slice(0, 70)}`);
+        seen.add(line);
+      }
+    }
+
+    expect(repeated).toEqual([]);
   });
 
   /** A pool nobody is cast to speak is content that can never appear. */

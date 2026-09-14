@@ -9,6 +9,7 @@ import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import type { CompletedExerciseInput } from "@/db/completed";
 import { targetRangeFor } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -32,7 +33,6 @@ const REST_ART = [
   require("../../assets/images/rest/rest_campfire_shadow.webp"),
 ];
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one screen component, boss/rest branches read top-to-bottom
 export function RestView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -45,7 +45,6 @@ export function RestView() {
   const skipRest = useSessionStore((s) => s.skipRest);
   const addRestTime = useSessionStore((s) => s.addRestTime);
   const results = useSessionStore((s) => s.results);
-  const updateLastResult = useSessionStore((s) => s.updateLastResult);
   const lastSetSkipped = useSessionStore((s) => s.lastSetSkipped);
   const status = useSessionStore((s) => s.status);
   const pauseSession = useSessionStore((s) => s.pauseSession);
@@ -93,10 +92,6 @@ export function RestView() {
   const nextExName = nextEx ? localizedName(nextEx.exercise, language) : "";
 
   const lastResult = results[results.length - 1];
-  // Time-based sets record whatever the timer read when you tapped "done" — often a few seconds
-  // off from what you actually held. Same ± control as reps, stepped by 5s.
-  const isLastTimeBased = lastResult?.result.type === "time";
-  const adjustStep = isLastTimeBased ? 5 : 1;
 
   // Same rule as the running screen: during a fight the room's colour is the boss's, and it
   // darkens as the fight turns.
@@ -125,11 +120,6 @@ export function RestView() {
   const handleAddRestTime = (seconds: number) => {
     selection();
     addRestTime(seconds);
-  };
-
-  const handleUpdateResult = (value: number) => {
-    selection();
-    updateLastResult(value);
   };
 
   return (
@@ -258,73 +248,7 @@ export function RestView() {
             {/* Last Set Review, hidden after a skip. A skipped set writes no result, so
                   `results.at(-1)` is a set from an earlier round: the stepper would silently
                   correct something the hero is not looking at. */}
-            {!!lastResult && !lastSetSkipped && (
-              <YStack
-                bg="$surface"
-                p="$4"
-                rounded="$6"
-                borderWidth={1}
-                borderColor="$borderStrong"
-                gap="$2"
-              >
-                <XStack justify="space-between" items="center">
-                  <YStack>
-                    <Text color="$textSecondary" fontSize={12} fontWeight="700">
-                      {isLastTimeBased
-                        ? t("session.adjust_seconds_label")
-                        : t("session.adjust_reps_label")}
-                    </Text>
-                    <Text fontSize={12} color="$textSecondary">
-                      {isLastTimeBased
-                        ? t("session.adjust_seconds_hint")
-                        : t("session.adjust_reps_hint")}
-                    </Text>
-                  </YStack>
-
-                  <XStack items="center" gap="$3">
-                    <Button
-                      size="$3"
-                      hitSlop={8}
-                      circular
-                      icon={<Minus size={16} />}
-                      accessibilityLabel={t(
-                        "session.decrease_result_accessibility",
-                        "Decrease result",
-                      )}
-                      onPress={() =>
-                        handleUpdateResult(Math.max(1, lastResult.result.value - adjustStep))
-                      }
-                    />
-                    <XStack minW={42} items="baseline" justify="center">
-                      <CountInput
-                        testID="rest-result-input"
-                        value={lastResult.result.value}
-                        onChange={updateLastResult}
-                        max={targetRangeFor(lastResult.result.type, lastResult.pricing?.style).max}
-                        fontSize={20}
-                        accessibilityLabel={t("session.result_count_accessibility")}
-                      />
-                      {isLastTimeBased ? (
-                        <Text fontWeight="700" fontSize={20} color="$text">
-                          s
-                        </Text>
-                      ) : null}
-                    </XStack>
-                    <Button
-                      size="$3"
-                      hitSlop={8}
-                      circular
-                      icon={<Plus size={16} />}
-                      accessibilityLabel={t(
-                        "session.increase_result_accessibility",
-                        "Increase result",
-                      )}
-                      onPress={() => handleUpdateResult(lastResult.result.value + adjustStep)}
-                    />
-                  </XStack>
-                </XStack>
-              </YStack>
-            )}
+            {!!lastResult && !lastSetSkipped && <LastSetCard result={lastResult} />}
 
             {/* Up Next Card. Tappable: the rest is the one moment reading is free, and the movement
               the hero is about to do is the one worth reading about. Same modal the running
@@ -404,6 +328,74 @@ export function RestView() {
         visible={showHowTo}
         onClose={handleCloseHowTo}
       />
+    </YStack>
+  );
+}
+
+/**
+ * The set just logged, correctable while the clock runs: stepped by ± or typed.
+ *
+ * Time-based sets record whatever the timer read when you tapped "done", often a few seconds off
+ * from what you actually held. Same ± control as reps, stepped by 5s.
+ */
+function LastSetCard({ result }: { result: CompletedExerciseInput }) {
+  const { t } = useTranslation();
+  const { selection } = useHaptics();
+  const updateLastResult = useSessionStore((s) => s.updateLastResult);
+  // A haptic per step, none per keystroke.
+  const step = (value: number) => {
+    selection();
+    updateLastResult(value);
+  };
+  const isLastTimeBased = result.result.type === "time";
+  const adjustStep = isLastTimeBased ? 5 : 1;
+
+  return (
+    <YStack bg="$surface" p="$4" rounded="$6" borderWidth={1} borderColor="$borderStrong" gap="$2">
+      <XStack justify="space-between" items="center">
+        <YStack>
+          <Text color="$textSecondary" fontSize={12} fontWeight="700">
+            {isLastTimeBased ? t("session.adjust_seconds_label") : t("session.adjust_reps_label")}
+          </Text>
+          <Text fontSize={12} color="$textSecondary">
+            {isLastTimeBased ? t("session.adjust_seconds_hint") : t("session.adjust_reps_hint")}
+          </Text>
+        </YStack>
+
+        <XStack items="center" gap="$3">
+          <Button
+            size="$3"
+            hitSlop={8}
+            circular
+            icon={<Minus size={16} />}
+            accessibilityLabel={t("session.decrease_result_accessibility", "Decrease result")}
+            onPress={() => step(Math.max(1, result.result.value - adjustStep))}
+          />
+          <XStack minW={42} items="baseline" justify="center">
+            <CountInput
+              testID="rest-result-input"
+              value={result.result.value}
+              onChange={updateLastResult}
+              max={targetRangeFor(result.result.type, result.pricing?.style).max}
+              fontSize={20}
+              accessibilityLabel={t("session.result_count_accessibility")}
+            />
+            {isLastTimeBased ? (
+              <Text fontWeight="700" fontSize={20} color="$text">
+                s
+              </Text>
+            ) : null}
+          </XStack>
+          <Button
+            size="$3"
+            hitSlop={8}
+            circular
+            icon={<Plus size={16} />}
+            accessibilityLabel={t("session.increase_result_accessibility", "Increase result")}
+            onPress={() => step(result.result.value + adjustStep)}
+          />
+        </XStack>
+      </XStack>
     </YStack>
   );
 }

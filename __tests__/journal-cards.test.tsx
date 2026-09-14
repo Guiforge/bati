@@ -246,7 +246,7 @@ describe("ProgressionCard priority", () => {
     await mount(<ProgressionCard />);
 
     expect(await screen.findByText(/Recovery|Récupération/i)).toBeTruthy();
-    expect(screen.queryByText(/next rung|prochaine marche/i)).toBeNull();
+    expect(screen.queryByText(/next rung|prochaine étape/i)).toBeNull();
   });
 
   it("keeps the ladder ahead of 'too easy' — a harder variation beats a bigger multiplier", async () => {
@@ -255,7 +255,7 @@ describe("ProgressionCard priority", () => {
 
     await mount(<ProgressionCard />);
 
-    expect(await screen.findByText(/next rung|prochaine marche/i)).toBeTruthy();
+    expect(await screen.findByText(/next rung|prochaine étape/i)).toBeTruthy();
   });
 });
 

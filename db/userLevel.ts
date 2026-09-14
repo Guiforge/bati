@@ -34,7 +34,7 @@ const LEVEL_THRESHOLDS = [
 const LEVEL_TITLES: Record<number, { en: string; fr: string }> = {
   1: { en: "Apprentice", fr: "Apprenti" },
   2: { en: "Novice", fr: "Novice" },
-  3: { en: "Trainee", fr: "Entraîné" },
+  3: { en: "Trainee", fr: "Recrue" },
   4: { en: "Squire", fr: "Écuyer" },
   5: { en: "Warrior", fr: "Guerrier" },
   6: { en: "Fighter", fr: "Combattant" },

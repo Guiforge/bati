@@ -159,7 +159,7 @@ export function useSmartAction() {
           const questId = await findQuestWithExercise(targetId);
 
           if (questId !== null && !isCancelled()) {
-            // A full sentence, not the compact "Marche 2/5 · Rowing inversé" the ladder uses
+            // A full sentence, not the compact "Étape 2/5 · Rowing inversé" the ladder uses
             // elsewhere: on the exercise screen the ladder is drawn right there to explain
             // itself, and here it is not. Home is where the hero meets it cold.
             const goal = oath?.exerciseName?.[language] ?? "";

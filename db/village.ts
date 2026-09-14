@@ -57,18 +57,28 @@ const TIER_LEVEL_FLOORS: Record<VillageTier, number> = {
 
 // Shared by the village scene and the home teaser, so the two can never disagree.
 export const TIER_NAMES: Record<VillageTier, Localized> = {
-  1: { en: "Hamlet", fr: "Hameau" },
-  2: { en: "Clearing", fr: "Clairière" },
-  3: { en: "Village", fr: "Village" },
-  4: { en: "Crossroads", fr: "Carrefour" },
-  5: { en: "Town", fr: "Bourg" },
-  6: { en: "Free Town", fr: "Ville franche" },
-  7: { en: "City", fr: "Cité" },
-  8: { en: "Merchant City", fr: "Cité marchande" },
-  9: { en: "Flourishing City", fr: "Cité florissante" },
-  10: { en: "Citadel", fr: "Citadelle" },
-  11: { en: "Metropolis", fr: "Métropole" },
-  12: { en: "Eternal Capital", fr: "Capitale éternelle" },
+  1: { en: "Hamlet", fr: "Hameau", de: "Weiler", es: "Caserío" },
+  2: { en: "Clearing", fr: "Clairière", de: "Lichtung", es: "Claro" },
+  3: { en: "Village", fr: "Village", de: "Dorf", es: "Aldea" },
+  4: { en: "Crossroads", fr: "Carrefour", de: "Wegkreuz", es: "Encrucijada" },
+  5: { en: "Town", fr: "Bourg", de: "Marktflecken", es: "Villa" },
+  6: { en: "Free Town", fr: "Ville franche", de: "Freistadt", es: "Villa libre" },
+  7: { en: "City", fr: "Cité", de: "Stadt", es: "Ciudad" },
+  8: { en: "Merchant City", fr: "Cité marchande", de: "Handelsstadt", es: "Ciudad mercante" },
+  9: {
+    en: "Flourishing City",
+    fr: "Cité florissante",
+    de: "Blühende Stadt",
+    es: "Ciudad próspera",
+  },
+  10: { en: "Citadel", fr: "Citadelle", de: "Zitadelle", es: "Ciudadela" },
+  11: { en: "Metropolis", fr: "Métropole", de: "Metropole", es: "Metrópolis" },
+  12: {
+    en: "Eternal Capital",
+    fr: "Capitale éternelle",
+    de: "Ewige Hauptstadt",
+    es: "Capital eterna",
+  },
 };
 
 export function getVillageTier(level: number): VillageTier {
@@ -83,6 +93,8 @@ export type BossBanner = {
   adventureId: number;
   enTitle: string;
   frTitle: string;
+  deTitle: string;
+  esTitle: string;
   /**
    * The *monster's* painting when the campaign has one, else the campaign cover. A trophy shows
    * the thing you beat, not the poster for the journey — resolve with getBossAsset(), whose
@@ -107,6 +119,8 @@ export async function getBossBanners(): Promise<BossBanner[]> {
         adventureId: bossFights.adventureId,
         enTitle: adventures.enTitle,
         frTitle: adventures.frTitle,
+        deTitle: adventures.deTitle,
+        esTitle: adventures.esTitle,
         imagePath: adventures.imagePath,
         bossImagePath: adventures.bossImagePath,
         defeatedAt: bossFights.defeatedAt,
@@ -125,6 +139,8 @@ export async function getBossBanners(): Promise<BossBanner[]> {
       adventureId: s.adventureId,
       enTitle: s.enTitle,
       frTitle: s.frTitle,
+      deTitle: s.deTitle,
+      esTitle: s.esTitle,
       imagePath: s.bossImagePath ?? s.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       defeatedAt: s.lastFinishedAt,
     });
@@ -137,6 +153,8 @@ export async function getBossBanners(): Promise<BossBanner[]> {
       adventureId: row.adventureId,
       enTitle: row.enTitle,
       frTitle: row.frTitle,
+      deTitle: row.deTitle,
+      esTitle: row.esTitle,
       imagePath: row.bossImagePath ?? row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       defeatedAt: row.defeatedAt,
     });
@@ -187,29 +205,59 @@ export async function getDominantSportOverlay(): Promise<DominantSportOverlay> {
 // Same convention as MUSCLE_LABELS in db/muscles.ts: labels live next to the data,
 // not in locales/*.json, so a new building code is one edit instead of three.
 export const BUILDING_LABELS: Record<BuildingCode, Localized> = {
-  campfire: { en: "Campfire", fr: "Feu de camp" },
-  tent: { en: "Tent", fr: "Tente" },
+  campfire: { en: "Campfire", fr: "Feu de camp", de: "Lagerfeuer", es: "Fogata" },
+  tent: { en: "Tent", fr: "Tente", de: "Zelt", es: "Tienda" },
   // fr deliberately not "Mannequin d'entraînement": « d'entraînement » is wider than a
   // building card, and an unbreakable word that long wraps mid-word at large font scales.
-  training_dummy: { en: "Training Dummy", fr: "Mannequin de bois" },
-  archery_range: { en: "Archery Range", fr: "Champ de tir" },
-  quarry: { en: "Quarry", fr: "Carrière" },
-  forge: { en: "Forge", fr: "Forge" },
-  well: { en: "Well", fr: "Puits" },
-  windmill: { en: "Windmill", fr: "Moulin" },
-  farm: { en: "Farm", fr: "Ferme" },
-  wizard_tower: { en: "Wizard Tower", fr: "Tour du mage" },
-  druid_grove: { en: "Druid Grove", fr: "Bosquet druidique" },
-  watchtower: { en: "Watchtower", fr: "Tour de guet" },
-  castle_wall: { en: "Castle Wall", fr: "Remparts" },
-  armory: { en: "Armory", fr: "Armurerie" },
-  fountain: { en: "Fountain", fr: "Fontaine" },
-  observatory: { en: "Observatory", fr: "Observatoire" },
-  barn: { en: "Barn", fr: "Grange" },
-  dragon_lair: { en: "Dragon Lair", fr: "Antre du dragon" },
-  heroes_hall: { en: "Hall of Heroes", fr: "Salle des héros" },
-  champion_arena: { en: "Champion Arena", fr: "Arène des champions" },
-  high_road: { en: "High Road", fr: "Grand Chemin" },
+  training_dummy: {
+    en: "Training Dummy",
+    fr: "Mannequin de bois",
+    de: "Übungspuppe",
+    es: "Muñeco de madera",
+  },
+  archery_range: {
+    en: "Archery Range",
+    fr: "Champ de tir",
+    de: "Schießstand",
+    es: "Campo de tiro",
+  },
+  quarry: { en: "Quarry", fr: "Carrière", de: "Steinbruch", es: "Cantera" },
+  forge: { en: "Forge", fr: "Forge", de: "Schmiede", es: "Forja" },
+  well: { en: "Well", fr: "Puits", de: "Ziehbrunnen", es: "Pozo" },
+  windmill: { en: "Windmill", fr: "Moulin", de: "Windmühle", es: "Molino" },
+  farm: { en: "Farm", fr: "Ferme", de: "Bauernhof", es: "Granja" },
+  wizard_tower: { en: "Wizard Tower", fr: "Tour du mage", de: "Magierturm", es: "Torre del mago" },
+  druid_grove: {
+    en: "Druid Grove",
+    fr: "Bosquet druidique",
+    de: "Druidenhain",
+    es: "Arboleda druídica",
+  },
+  watchtower: { en: "Watchtower", fr: "Tour de guet", de: "Wachturm", es: "Atalaya" },
+  castle_wall: { en: "Castle Wall", fr: "Remparts", de: "Burgmauer", es: "Murallas" },
+  armory: { en: "Armory", fr: "Armurerie", de: "Waffenkammer", es: "Armería" },
+  fountain: { en: "Fountain", fr: "Fontaine", de: "Springbrunnen", es: "Fuente" },
+  observatory: { en: "Observatory", fr: "Observatoire", de: "Sternwarte", es: "Observatorio" },
+  barn: { en: "Barn", fr: "Grange", de: "Scheune", es: "Granero" },
+  dragon_lair: {
+    en: "Dragon Lair",
+    fr: "Antre du dragon",
+    de: "Drachenhort",
+    es: "Guarida del dragón",
+  },
+  heroes_hall: {
+    en: "Hall of Heroes",
+    fr: "Salle des héros",
+    de: "Heldenhalle",
+    es: "Salón de los héroes",
+  },
+  champion_arena: {
+    en: "Champion Arena",
+    fr: "Arène des champions",
+    de: "Arena der Champions",
+    es: "Arena de campeones",
+  },
+  high_road: { en: "High Road", fr: "Grand Chemin", de: "Hohe Straße", es: "Camino Real" },
 };
 
 /** What raises a building, so the detail sheet can answer "why is it at this level". */
@@ -230,6 +278,8 @@ export type VillageBuilding = {
   level: number; // 0 = locked, otherwise 1..5
   enName: string;
   frName: string;
+  deName: string;
+  esName: string;
   unlockCondition: string;
   /** The 6 muscle buildings have no icon of their own; they borrow that muscle's sport sprite. */
   relatedMuscle: MuscleCode | null;
@@ -497,6 +547,8 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
       level: derived?.level ?? 0,
       enName: BUILDING_LABELS[code].en,
       frName: BUILDING_LABELS[code].fr,
+      deName: BUILDING_LABELS[code].de,
+      esName: BUILDING_LABELS[code].es,
       unlockCondition: buildingDefinitions[code].unlockCondition,
       relatedMuscle: buildingDefinitions[code].relatedMuscle,
       driver: derived?.driver ?? "tier",
@@ -537,6 +589,8 @@ export type VillageGrowth = {
   code: BuildingCode;
   enName: string;
   frName: string;
+  deName: string;
+  esName: string;
   relatedMuscle: MuscleCode | null;
   oldLevel: number;
   newLevel: number;
@@ -624,6 +678,8 @@ export function diffVillageGrowth(
       code: b.code,
       enName: b.enName,
       frName: b.frName,
+      deName: b.deName,
+      esName: b.esName,
       relatedMuscle: b.relatedMuscle,
       oldLevel: beforeLevel.get(b.code) ?? 0,
       newLevel: b.level,

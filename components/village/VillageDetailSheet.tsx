@@ -34,7 +34,7 @@ import {
 } from "@/db/village";
 import { SECONDS_PER_REP_EQUIVALENT } from "@/db/workUnits";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { localizedTitle } from "@/src/i18n/localized";
+import { inSentence, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -215,7 +215,8 @@ function BuildingDetail({
   const built = building.level > 0;
   // Lower-cased mid-sentence, the way getBalanceRecommendation() writes muscles into prose.
   const muscleLabel = building.relatedMuscle
-    ? (MUSCLE_LABELS[building.relatedMuscle]?.[language].toLowerCase() ?? building.relatedMuscle)
+    ? inSentence(MUSCLE_LABELS[building.relatedMuscle]?.[language] ?? "", language) ||
+      building.relatedMuscle
     : "";
   const style = buildingDefinitions[building.code].relatedStyle;
   const styleLabel = style ? t(`village.style_${style}`, style) : "";
@@ -321,10 +322,17 @@ function BuildingDetail({
         <YStack gap="$2">
           <Kicker label={t("village.detail_recent_title")} />
           {extra.sessions.map((session) => {
-            const title =
-              session.enTitle && session.frTitle
-                ? localizedTitle({ enTitle: session.enTitle, frTitle: session.frTitle }, language)
-                : null;
+            const title = session.enTitle
+              ? localizedTitle(
+                  {
+                    enTitle: session.enTitle,
+                    frTitle: session.frTitle ?? "",
+                    deTitle: session.deTitle ?? "",
+                    esTitle: session.esTitle ?? "",
+                  },
+                  language,
+                )
+              : null;
             const when = getDateTimeFormat(language, RECENT_WORK_DATE_OPTIONS).format(
               session.performedAt,
             );

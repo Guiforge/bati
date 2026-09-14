@@ -1,3 +1,4 @@
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import type { AppLanguage } from "@/stores/settings";
 
 /** Any seeded row that carries every locale side by side: `enTitle`, `frTitle`, … */
@@ -34,4 +35,16 @@ export function localizedTitle(row: Multilingual<"title">, language: AppLanguage
  */
 export function localizedName(row: Multilingual<"name">, language: AppLanguage): string {
   return localizedText(row, "name", language);
+}
+
+/**
+ * Whether a language capitalises its nouns. German does, so a muscle or a style dropped into the
+ * middle of a sentence keeps its capital there ("für Brust"); lower-casing it, which English, French
+ * and Spanish want, is a spelling mistake in German.
+ */
+const CAPITALISED_NOUNS: Localized<boolean> = { en: false, fr: false, de: true, es: false };
+
+/** A label written into the middle of a sentence, cased the way that language writes nouns. */
+export function inSentence(label: string, language: AppLanguage): string {
+  return CAPITALISED_NOUNS[language] ? label : label.toLowerCase();
 }

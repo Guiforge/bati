@@ -221,6 +221,8 @@ export type MovementRecord = {
   exerciseId: number;
   enName: string;
   frName: string;
+  deName: string;
+  esName: string;
   /** Reps and seconds are different records on the same movement, so the unit is part of one. */
   type: QuestTargetType;
   best: number;
@@ -252,6 +254,8 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
       at: max(completedExercises.performedAt),
       enName: exercises.enName,
       frName: exercises.frName,
+      deName: exercises.deName,
+      esName: exercises.esName,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
@@ -277,6 +281,8 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
         exerciseId: row.exerciseId,
         enName: row.enName,
         frName: row.frName,
+        deName: row.deName,
+        esName: row.esName,
         type: row.type,
         best,
         last: ghost?.last ?? best,
@@ -417,6 +423,8 @@ export async function getSessionStanding(
       value: max(completedExercises.resultValue),
       enName: exercises.enName,
       frName: exercises.frName,
+      deName: exercises.deName,
+      esName: exercises.esName,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
@@ -482,7 +490,7 @@ export async function getSessionStanding(
     return [
       {
         exerciseId: row.exerciseId,
-        exerciseName: { en: row.enName, fr: row.frName },
+        exerciseName: { en: row.enName, fr: row.frName, de: row.deName, es: row.esName },
         type: row.type,
         value,
         ...claim,
@@ -634,6 +642,8 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
       resultValue: completedExercises.resultValue,
       enName: exercises.enName,
       frName: exercises.frName,
+      deName: exercises.deName,
+      esName: exercises.esName,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
@@ -669,7 +679,12 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
         newValue: result.resultValue,
         previousValue: prevMax > 0 ? prevMax : null,
         exerciseId: result.exerciseId,
-        exerciseName: { en: result.enName, fr: result.frName },
+        exerciseName: {
+          en: result.enName,
+          fr: result.frName,
+          de: result.deName,
+          es: result.esName,
+        },
       });
     }
   }

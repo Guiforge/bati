@@ -407,6 +407,13 @@
       "when": 1788681600000,
       "tag": "0057_the_translated_half",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "6",
+      "when": 1788768000000,
+      "tag": "0058_german_and_spanish_columns",
+      "breakpoints": true
     }
   ]
 }

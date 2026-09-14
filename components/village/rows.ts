@@ -9,6 +9,7 @@ import {
   isDayOne,
   type VillageBuilding,
 } from "@/db/village";
+import { inSentence } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
 
 /**
@@ -66,9 +67,9 @@ export function feedsLine(b: VillageBuilding, t: TFunction, language: AppLanguag
   const lang = language;
   switch (b.driver) {
     case "muscle":
-      return t("village.feeds_muscle", { what: repSubject(b, t, lang).toLowerCase() });
+      return t("village.feeds_muscle", { what: inSentence(repSubject(b, t, lang), lang) });
     case "style":
-      return t("village.feeds_style", { what: repSubject(b, t, lang).toLowerCase() });
+      return t("village.feeds_style", { what: inSentence(repSubject(b, t, lang), lang) });
     case "prereq":
       return t("village.feeds_prereq", { building: prereqName(b, lang) });
     default:

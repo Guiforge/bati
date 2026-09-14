@@ -62,7 +62,12 @@ describe("nextAppLanguage", () => {
 });
 
 describe("localizedText", () => {
-  const row = { enDescription: "Hold the line.", frDescription: "Tiens bon." };
+  const row = {
+    enDescription: "Hold the line.",
+    frDescription: "Tiens bon.",
+    deDescription: "Tiens bon.",
+    esDescription: "Tiens bon.",
+  };
 
   it("reads the language's own column", () => {
     expect(localizedText(row, "description", "fr")).toBe("Tiens bon.");
@@ -70,8 +75,12 @@ describe("localizedText", () => {
 
   // A seeded row whose new language has not been written yet: English, never a blank card.
   it("falls back to English when the language's column is empty", () => {
-    expect(localizedText({ ...row, frDescription: "" }, "description", "fr")).toBe(
-      "Hold the line.",
-    );
+    expect(
+      localizedText(
+        { ...row, frDescription: "", deDescription: "", esDescription: "" },
+        "description",
+        "fr",
+      ),
+    ).toBe("Hold the line.");
   });
 });

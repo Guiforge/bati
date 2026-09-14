@@ -25,6 +25,22 @@ export const SESSION_EMPTY_VARIANTS: Localized<[EmptyVariant, ...EmptyVariant[]]
       subtitle: "Pas de feu d'artifice aujourd'hui. La flamme s'en fiche, elle grandit quand même.",
     },
   ],
+  de: [
+    { title: "Gute Arbeit!", subtitle: "Einheit gespeichert. Halte die Flamme am Brennen." },
+    { title: "Solide Einheit.", subtitle: "Jede Wiederholung zählt für die nächste." },
+    {
+      title: "Abgehakt!",
+      subtitle: "Heute kein Feuerwerk. Der Flamme ist das egal, sie wächst trotzdem.",
+    },
+  ],
+  es: [
+    { title: "¡Buen trabajo!", subtitle: "Sesión guardada. Mantén la llama encendida." },
+    { title: "Sesión sólida.", subtitle: "Cada repetición cuenta para la siguiente." },
+    {
+      title: "¡Apuntado!",
+      subtitle: "Hoy no hay fuegos artificiales. A la llama le da igual, crece igualmente.",
+    },
+  ],
 };
 
 export function pickSessionEmptyVariant(language: AppLanguage): EmptyVariant {

@@ -7,7 +7,7 @@ import { getLocales } from "expo-localization";
  * names a language code: adding one here is what makes `tsc` point at every table, row and
  * branch that does not have it yet.
  */
-export const APP_LANGUAGES = ["en", "fr"] as const;
+export const APP_LANGUAGES = ["en", "fr", "de", "es"] as const;
 
 export type AppLanguage = (typeof APP_LANGUAGES)[number];
 
@@ -15,7 +15,12 @@ export type AppLanguage = (typeof APP_LANGUAGES)[number];
  * Each language in its own words, the way a picker has to show it: a hero who landed in the wrong
  * language cannot read a label translated into it.
  */
-export const LANGUAGE_NAMES: Record<AppLanguage, string> = { en: "English", fr: "Français" };
+export const LANGUAGE_NAMES: Record<AppLanguage, string> = {
+  en: "English",
+  fr: "Français",
+  de: "Deutsch",
+  es: "Español",
+};
 
 /** The language after this one, wrapping: what one tap on the settings row moves to. */
 export function nextAppLanguage(language: AppLanguage): AppLanguage {

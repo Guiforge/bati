@@ -361,7 +361,12 @@ async function exerciseName(oath: Oath): Promise<Localized | null> {
     return null;
   }
   const rows = await db
-    .select({ en: exercises.enName, fr: exercises.frName })
+    .select({
+      en: exercises.enName,
+      fr: exercises.frName,
+      de: exercises.deName,
+      es: exercises.esName,
+    })
     .from(exercises)
     .where(eq(exercises.id, oath.exerciseId))
     .limit(1);

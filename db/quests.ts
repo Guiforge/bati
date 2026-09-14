@@ -111,8 +111,12 @@ export type QuestHead = {
   id: number;
   enTitle: string;
   frTitle: string;
+  deTitle: string;
+  esTitle: string;
   enDescription: string;
   frDescription: string;
+  deDescription: string;
+  esDescription: string;
   author: ContentOwner;
   rounds: number;
   restSeconds: number;
@@ -230,8 +234,12 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
     .values({
       enTitle: input.enTitle,
       frTitle: input.frTitle,
+      deTitle: input.deTitle,
+      esTitle: input.esTitle,
       enDescription: input.enDescription,
       frDescription: input.frDescription,
+      deDescription: input.deDescription,
+      esDescription: input.esDescription,
       author: input.author ?? ADMIN_CREATOR,
       imagePath: input.imagePath ?? null,
       rounds: clampToRange(input.rounds, ROUNDS_RANGE),
@@ -301,7 +309,17 @@ const TIME_TARGET_GRID = 5;
  * never actually ran.
  */
 export async function createQuestFromOuting(
-  quest: Pick<Quest, "enTitle" | "frTitle" | "enDescription" | "frDescription"> & {
+  quest: Pick<
+    Quest,
+    | "enTitle"
+    | "frTitle"
+    | "deTitle"
+    | "esTitle"
+    | "enDescription"
+    | "frDescription"
+    | "deDescription"
+    | "esDescription"
+  > & {
     /** Widened from `Quest`, where readers have already defaulted it: null is "no cover". */
     imagePath: string | null;
     exercises: { exercise: { id: number } }[];
@@ -323,8 +341,12 @@ export async function createQuestFromOuting(
   return await createQuestTemplate({
     enTitle: quest.enTitle,
     frTitle: quest.frTitle,
+    deTitle: quest.deTitle,
+    esTitle: quest.esTitle,
     enDescription: quest.enDescription,
     frDescription: quest.frDescription,
+    deDescription: quest.deDescription,
+    esDescription: quest.esDescription,
     author: USER_QUEST_AUTHOR,
     archetype: null,
     imagePath: quest.imagePath,
@@ -356,8 +378,12 @@ const questColumns = () => ({
   questId: quests.id,
   enTitle: quests.enTitle,
   frTitle: quests.frTitle,
+  deTitle: quests.deTitle,
+  esTitle: quests.esTitle,
   enDescription: quests.enDescription,
   frDescription: quests.frDescription,
+  deDescription: quests.deDescription,
+  esDescription: quests.esDescription,
   author: quests.author,
   rounds: quests.rounds,
   restSeconds: quests.restSeconds,
@@ -370,8 +396,12 @@ type QuestHeadRow = {
   questId: number;
   enTitle: string;
   frTitle: string;
+  deTitle: string;
+  esTitle: string;
   enDescription: string;
   frDescription: string;
+  deDescription: string;
+  esDescription: string;
   author: ContentOwner;
   rounds: number;
   restSeconds: number;
@@ -428,8 +458,12 @@ function questHead(r: QuestHeadRow): QuestHead {
     id: r.questId,
     enTitle: r.enTitle,
     frTitle: r.frTitle,
+    deTitle: r.deTitle,
+    esTitle: r.esTitle,
     enDescription: r.enDescription,
     frDescription: r.frDescription,
+    deDescription: r.deDescription,
+    esDescription: r.esDescription,
     author: r.author,
     rounds: r.rounds,
     restSeconds: r.restSeconds,
@@ -520,8 +554,12 @@ type SlotRow = {
   exId: number;
   exEnName: string;
   exFrName: string;
+  exDeName: string;
+  exEsName: string;
   exEnDescription: string;
   exFrDescription: string;
+  exDeDescription: string;
+  exEsDescription: string;
   exImagePath: string;
   exCreator: ContentOwner;
   exDifficulty: DifficultyCode;
@@ -586,8 +624,12 @@ function buildSlot(
       id: r.exId,
       enName: r.exEnName,
       frName: r.exFrName,
+      deName: r.exDeName,
+      esName: r.exEsName,
       enDescription: r.exEnDescription,
       frDescription: r.exFrDescription,
+      deDescription: r.exDeDescription,
+      esDescription: r.exEsDescription,
       imagePath: r.exImagePath,
       creator: r.exCreator,
       difficulty: r.exDifficulty,
@@ -611,7 +653,14 @@ function buildSlot(
     // What the template asked for, when that is not what runs — the screens owe the hero an
     // explanation and a way back, and nothing else in the object can tell them.
     substitutedFor: isSubstituted
-      ? { id: r.exId, enName: r.exEnName, frName: r.exFrName, imagePath: r.exImagePath }
+      ? {
+          id: r.exId,
+          enName: r.exEnName,
+          frName: r.exFrName,
+          deName: r.exDeName,
+          esName: r.exEsName,
+          imagePath: r.exImagePath,
+        }
       : undefined,
   };
 }
@@ -632,8 +681,12 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exId: exercises.id,
       exEnName: exercises.enName,
       exFrName: exercises.frName,
+      exDeName: exercises.deName,
+      exEsName: exercises.esName,
       exEnDescription: exercises.enDescription,
       exFrDescription: exercises.frDescription,
+      exDeDescription: exercises.deDescription,
+      exEsDescription: exercises.esDescription,
       exImagePath: exercises.imagePath,
       exCreator: exercises.creator,
       exDifficulty: exercises.difficulty,
@@ -727,8 +780,12 @@ export async function updateQuestMeta(
       QuestTemplate,
       | "enTitle"
       | "frTitle"
+      | "deTitle"
+      | "esTitle"
       | "enDescription"
       | "frDescription"
+      | "deDescription"
+      | "esDescription"
       | "rounds"
       | "restSeconds"
       | "roundRestSeconds"

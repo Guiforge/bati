@@ -22,6 +22,16 @@ export const REST_SUGGESTION_MESSAGES: Record<
       "Déjà {{count}} entraînements cette semaine. Le repos se gagne autant que les gains.",
       "{{count}} entraînements au compteur cette semaine. Une journée de récup, et la prochaine sera meilleure.",
     ],
+    de: [
+      "Du hast diese Woche hart trainiert: {{count}} Trainings. Denk an einen Erholungstag.",
+      "Schon {{count}} Trainings diese Woche. Ruhe verdient man sich genauso wie Fortschritt.",
+      "{{count}} Trainings diese Woche geschafft. Ein Erholungstag schärft das nächste.",
+    ],
+    es: [
+      "Has entrenado duro esta semana: {{count}} entrenamientos. Piensa en un día de recuperación.",
+      "Ya van {{count}} entrenamientos esta semana. El descanso se gana igual que el progreso.",
+      "{{count}} entrenamientos esta semana. Un día de recuperación afina el siguiente.",
+    ],
   },
   consecutive_days: {
     en: [
@@ -33,6 +43,16 @@ export const REST_SUGGESTION_MESSAGES: Record<
       "Tu t'es entraîné {{count}} jours d'affilée ! Prends un jour de repos pour éviter le surentraînement.",
       "{{count}} jours d'affilée sans pause. Même les héros en ont besoin.",
       "{{count}} jours de suite à t'entraîner. Le repos fait partie du plan, il ne l'interrompt pas.",
+    ],
+    de: [
+      "Du hast {{count}} Tage am Stück trainiert! Gönn dir einen Ruhetag, bevor du dich übertrainierst.",
+      "{{count}} Tage am Stück ohne Pause. Auch Helden brauchen eine.",
+      "{{count}} Tage Training in Folge. Ruhe gehört zum Plan, sie unterbricht ihn nicht.",
+    ],
+    es: [
+      "¡Has entrenado {{count}} días seguidos! Tómate un día de descanso para no sobreentrenarte.",
+      "{{count}} días seguidos sin parar. Hasta los héroes necesitan un respiro.",
+      "{{count}} días seguidos entrenando. El descanso forma parte del plan, no lo interrumpe.",
     ],
   },
   high_volume: {
@@ -46,6 +66,16 @@ export const REST_SUGGESTION_MESSAGES: Record<
       "{{count}} entraînements cette semaine, un sacré volume. C'est pendant la récup que la force se construit.",
       "{{count}} entraînements en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition.",
     ],
+    de: [
+      "{{count}} Trainings diese Woche! Dein Körper braucht Zeit, um sich zu erholen und stärker zu werden.",
+      "{{count}} Trainings diese Woche, das ist ordentlich Volumen. Kraft entsteht in der Erholung.",
+      "{{count}} Trainings in sieben Tagen. Gib deinem Körper einen Tag, um deinen Ehrgeiz einzuholen.",
+    ],
+    es: [
+      "¡{{count}} entrenamientos esta semana! Tu cuerpo necesita tiempo para recuperarse y hacerse más fuerte.",
+      "{{count}} entrenamientos esta semana, es mucho volumen. La fuerza se construye durante la recuperación.",
+      "{{count}} entrenamientos en siete días. Dale un día a tu cuerpo para que alcance a tu ambición.",
+    ],
   },
   deload: {
     en: [
@@ -57,6 +87,16 @@ export const REST_SUGGESTION_MESSAGES: Record<
       "Quatre semaines chargées d'affilée. Prends-en une plus légère : moins de volume, la même régularité. Ton prochain mois commence là.",
       "Un mois de semaines chargées derrière toi. Lève le pied quelques jours : les progrès se font pendant que tu récupères.",
       "Quatre semaines chargées d'affilée. Cette semaine, on allège, on ne s'arrête pas.",
+    ],
+    de: [
+      "Vier harte Wochen am Stück. Nimm dir eine leichtere: weniger Volumen, dieselbe Gewohnheit. Dein nächster Monat beginnt hier.",
+      "Ein Monat voller harter Wochen liegt hinter dir. Schalt ein paar Tage zurück, der Fortschritt kommt, während du dich erholst.",
+      "Vier harte Wochen in Folge. Diese Woche wird leichter trainiert, nicht aufgehört.",
+    ],
+    es: [
+      "Cuatro semanas duras seguidas. Toma una más ligera: menos volumen, el mismo hábito. Tu próximo mes empieza aquí.",
+      "Un mes de semanas intensas a tus espaldas. Afloja unos días: el progreso llega mientras descansas.",
+      "Cuatro semanas intensas seguidas. Esta semana toca aligerar, no parar.",
     ],
   },
 };

@@ -2,14 +2,19 @@ import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type EquipmentCode, equipmentCodes } from "./schema";
 
 export const EQUIPMENT_LABELS: Record<EquipmentCode, Localized> = {
-  none: { en: "No equipment", fr: "Sans matériel" },
-  pullup_bar: { en: "Pull-up bar", fr: "Barre de traction" },
-  dip_bar: { en: "Dip bar", fr: "Barre à dips" },
-  dumbbell: { en: "Dumbbells", fr: "Haltères" },
-  barbell: { en: "Barbell", fr: "Barre" },
-  kettlebell: { en: "Kettlebell", fr: "Kettlebell" },
-  band: { en: "Band", fr: "Élastique" },
-  bench: { en: "Bench", fr: "Banc" },
+  none: { en: "No equipment", fr: "Sans matériel", de: "Ohne Geräte", es: "Sin material" },
+  pullup_bar: {
+    en: "Pull-up bar",
+    fr: "Barre de traction",
+    de: "Klimmzugstange",
+    es: "Barra de dominadas",
+  },
+  dip_bar: { en: "Dip bar", fr: "Barre à dips", de: "Dip-Barren", es: "Paralelas" },
+  dumbbell: { en: "Dumbbells", fr: "Haltères", de: "Kurzhanteln", es: "Mancuernas" },
+  barbell: { en: "Barbell", fr: "Barre", de: "Langhantel", es: "Barra" },
+  kettlebell: { en: "Kettlebell", fr: "Kettlebell", de: "Kettlebell", es: "Pesa rusa" },
+  band: { en: "Band", fr: "Élastique", de: "Widerstandsband", es: "Banda elástica" },
+  bench: { en: "Bench", fr: "Banc", de: "Bank", es: "Banco" },
 };
 
 export function isEquipmentCode(value: unknown): value is EquipmentCode {

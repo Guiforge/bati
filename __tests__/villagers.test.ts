@@ -7,7 +7,9 @@ import {
   VILLAGER_IDS,
   VILLAGER_POSES,
 } from "@/constants/villagers";
+import de from "@/locales/de.json";
 import en from "@/locales/en.json";
+import es from "@/locales/es.json";
 import fr from "@/locales/fr.json";
 
 /**
@@ -26,6 +28,16 @@ import fr from "@/locales/fr.json";
 type Pools = Record<string, Record<string, string[]>>;
 const EN = en.villagers as unknown as Pools;
 const FR = fr.villagers as unknown as Pools;
+const DE = de.villagers as unknown as Pools;
+const ES = es.villagers as unknown as Pools;
+
+/** Every language the lines ship in. The checks below that are not about French run on all of them. */
+const ALL = [
+  ["en", EN],
+  ["fr", FR],
+  ["de", DE],
+  ["es", ES],
+] as const;
 
 /** Every (villager, moment) pair the cast table says should exist. */
 const PAIRS = CUE_MOMENTS.flatMap((moment) =>
@@ -40,7 +52,9 @@ describe("villager pools", () => {
     // The anti-repetition ring keys on `villager:moment:index` so it survives a language switch,
     // which only holds while `en[i]` and `fr[i]` are the same line. Different lengths means they
     // are not, and one index pair is quietly saying two different things.
-    expect(FR[villager]?.[moment]).toHaveLength(EN[villager]?.[moment]?.length ?? -1);
+    for (const [, pools] of ALL) {
+      expect(pools[villager]?.[moment]).toHaveLength(EN[villager]?.[moment]?.length ?? -1);
+    }
   });
 
   test.each(PAIRS)("%s has enough lines for %s that the rotation does not show", (v, moment) => {
@@ -51,7 +65,7 @@ describe("villager pools", () => {
 
   test.each(PAIRS)("%s stays inside the bubble's cap for %s", (villager, moment) => {
     const cap = LINE_LENGTH_CAP[MOMENT_CAST[moment].priority];
-    for (const line of [...(EN[villager]?.[moment] ?? []), ...(FR[villager]?.[moment] ?? [])]) {
+    for (const line of ALL.flatMap(([, pools]) => pools[villager]?.[moment] ?? [])) {
       expect(line.length).toBeLessThanOrEqual(cap);
     }
   });
@@ -63,7 +77,7 @@ describe("villager pools", () => {
    */
   const AMBIENT = PAIRS.filter(([, m]) => MOMENT_CAST[m].priority === "ambient");
   test.each(AMBIENT)("%s cites no data at %s", (villager, moment) => {
-    for (const line of [...(EN[villager]?.[moment] ?? []), ...(FR[villager]?.[moment] ?? [])]) {
+    for (const line of ALL.flatMap(([, pools]) => pools[villager]?.[moment] ?? [])) {
       expect(line).not.toMatch(/\d/);
       expect(line).not.toContain("{{");
     }
@@ -72,7 +86,7 @@ describe("villager pools", () => {
   /** The inverse: a `_beat` line that forgot its delta is a comparison to nothing. */
   const BEAT = PAIRS.filter(([, m]) => m === "personal_record_beat");
   test.each(BEAT)("%s names the number at %s", (villager, moment) => {
-    for (const line of [...(EN[villager]?.[moment] ?? []), ...(FR[villager]?.[moment] ?? [])]) {
+    for (const line of ALL.flatMap(([, pools]) => pools[villager]?.[moment] ?? [])) {
       expect(line).toContain("{{delta}}");
     }
   });
@@ -127,10 +141,7 @@ describe("villager pools", () => {
   test.each(PAIRS)("%s does not write every %s line the same shape", (villager, moment) => {
     const tooUniform: string[] = [];
 
-    for (const [language, pools] of [
-      ["en", EN],
-      ["fr", FR],
-    ] as const) {
+    for (const [language, pools] of ALL) {
       const lines = pools[villager]?.[moment] ?? [];
       if (lines.length < MINIMUM_POOL.event) continue;
 
@@ -165,10 +176,7 @@ describe("villager pools", () => {
    */
   test.each(VILLAGER_IDS)("%s never says the same line twice", (villager) => {
     const repeated: string[] = [];
-    for (const [language, pools] of [
-      ["en", EN],
-      ["fr", FR],
-    ] as const) {
+    for (const [language, pools] of ALL) {
       const seen = new Set<string>();
       for (const line of Object.values(pools[villager] ?? {}).flat()) {
         if (seen.has(line)) repeated.push(`${language}: ${line.slice(0, 70)}`);

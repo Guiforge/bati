@@ -71,6 +71,8 @@ type WidgetStrings = { flame: string; days: string; week: string; sessions: stri
 const STRINGS: Localized<WidgetStrings> = {
   fr: { flame: "FLAMME", days: "jours", week: "SEMAINE", sessions: "séances" },
   en: { flame: "FLAME", days: "days", week: "WEEK", sessions: "sessions" },
+  de: { flame: "FLAMME", days: "Tage", week: "WOCHE", sessions: "Einheiten" },
+  es: { flame: "LLAMA", days: "días", week: "SEMANA", sessions: "sesiones" },
 };
 type Lang = AppLanguage;
 

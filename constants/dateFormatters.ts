@@ -6,7 +6,7 @@ import type { AppLanguage, Localized } from "@/src/i18n/deviceLanguage";
 const formatters = new Map<string, Intl.DateTimeFormat>();
 
 /** First day of the week for each language's calendars: Sunday in English, Monday elsewhere. */
-const WEEK_START: Localized<0 | 1> = { en: 0, fr: 1 };
+const WEEK_START: Localized<0 | 1> = { en: 0, fr: 1, de: 1, es: 1 };
 
 export function getWeekStart(language: AppLanguage): 0 | 1 {
   return WEEK_START[language];

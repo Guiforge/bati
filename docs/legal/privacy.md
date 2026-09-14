@@ -23,10 +23,10 @@ version deserves to be said plainly:
 
 > **Bati collects nothing about you. Nothing you record in the app leaves your phone unless you
 > send it yourself, deliberately, by email. One exception, off by default: the map behind an
-> expedition. Switched on, it tells a map host roughly where you go, during the outing and after
+> outing. Switched on, it tells a map host roughly where you go, during the outing and after
 > it.**
 
-One sentence of that used to be shorter. Until expeditions landed, the app made no network request
+One sentence of that used to be shorter. Until outings landed, the app made no network request
 of any kind, and that was enforced by refusing itself the `INTERNET` permission. Drawing a map
 behind a walk needs the map, so the permission is now in the build, and the honest version of the
 promise is one line longer rather than gone: the map is a setting, off until you switch it on, and
@@ -36,7 +36,7 @@ below.
 ## What is stored, and where
 
 Everything Bati records (your workouts, sets, reps, hold times, quests, adventures, village,
-achievements, streak, oath, avatar, settings, and the GPS points of an expedition) is written to a
+achievements, flame, oath, avatar, settings, and the GPS points of an outing) is written to a
 **SQLite database inside the app's private storage on your device**.
 
 - It is never uploaded, synced, backed up to us, or shared with anyone.
@@ -82,7 +82,7 @@ it nowhere and has no way to.
 
 ## The map, and the one host
 
-An expedition (a walk, a run, a ride) records where you went, so it can tell you how far you
+An outing (a walk, a run, a ride) records where you went, so it can tell you how far you
 travelled. Those points stay in the database on your phone, like everything else.
 
 Drawing them on a map needs a map, and **the map is off by default**. A fresh install draws the
@@ -107,24 +107,24 @@ registration.
   `WebSocket`, `EventSource`, `sendBeacon`), so the build fails before a second destination can be
   added quietly. The map library does its fetching natively, below that line.
 - **Until you switch the map on,** no tile is ever requested and the app touches the network not
-  at all, expedition or no expedition. Switch it off again and both maps go back to the plain
+  at all, outing or no outing. Switch it off again and both maps go back to the plain
   background; the switch is one tap either way.
 
 ## Permissions, and why
 
 **Location, precise and approximate (optional).** Used by one thing: measuring the ground an
-expedition covers. The app reads your position while an outing is running and stops the moment the
+outing covers. The app reads your position while an outing is running and stops the moment the
 session ends. The points are written to the local database and never sent anywhere. Decline it, or
-never start an expedition, and the rest of the app is unaffected. Android requires the approximate
+never start an outing, and the rest of the app is unaffected. Android requires the approximate
 permission to be requested alongside the precise one; only the precise one is actually read,
 because approximate location cannot measure a run.
 
-**Running with the screen off (Android).** An expedition keeps a foreground service and a wake
+**Running with the screen off (Android).** An outing keeps a foreground service and a wake
 lock alive so the trace does not stop when your phone sleeps in a pocket. That is what the
 permanent notification during an outing is for: an app watching your position should say so, on
 screen, the whole time.
 
-**Notifications (optional).** Asked for when you turn a reminder on, and used for the expedition
+**Notifications (optional).** Asked for when you turn a reminder on, and used for the outing
 notification above. Reminders are scheduled locally by your device's operating system: there are
 no push notifications, so there is no server that knows your device.
 
@@ -141,7 +141,7 @@ around you, and a network name is a location by another route.
 from your library. It is stored on your device like the rest of your data, and never uploaded.
 Decline the permission and the app works normally with the built-in avatars.
 
-**Home-screen widget (Android, optional).** The training-streak widget reads your streak from
+**Home-screen widget (Android, optional).** The flame widget reads your flame from
 the same on-device database.
 
 ## Crash reports
@@ -191,10 +191,10 @@ confidentialité, et parce que la version courte mérite d'être dite simplement
 
 > **Bati ne collecte rien sur vous. Rien de ce que vous enregistrez dans l'application ne quitte
 > votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail. Une exception,
-> désactivée par défaut : la carte derrière une expédition. Activée, elle dit à un hôte de cartes
+> désactivée par défaut : la carte derrière une sortie. Activée, elle dit à un hôte de cartes
 > à peu près où vous allez, pendant la sortie et après.**
 
-Une phrase de tout cela était plus courte avant. Jusqu'aux expéditions, l'application ne faisait
+Une phrase de tout cela était plus courte avant. Jusqu'aux sorties, l'application ne faisait
 aucune requête réseau, et c'était garanti par le refus de la permission `INTERNET` elle-même.
 Dessiner une carte derrière une marche demande la carte : la permission est donc désormais dans la
 compilation, et la version honnête de la promesse est une ligne plus longue plutôt que disparue :
@@ -205,7 +205,7 @@ fait toujours aucune requête. Voir « La carte, et l'hôte unique » plus bas.
 
 Tout ce que Bati enregistre (séances, séries, répétitions, temps de gainage, quêtes,
 aventures, village, hauts faits, flamme, serment, avatar, réglages et les points GPS d'une
-expédition) est écrit dans une **base SQLite située dans le stockage privé de l'application, sur
+sortie) est écrit dans une **base SQLite située dans le stockage privé de l'application, sur
 votre appareil**.
 
 - Rien n'est envoyé, synchronisé, sauvegardé chez nous ni partagé avec qui que ce soit.
@@ -256,7 +256,7 @@ n'en a aucun moyen.
 
 ## La carte, et l'hôte unique
 
-Une expédition (marche, course, vélo) enregistre le terrain parcouru pour pouvoir vous dire la
+Une sortie (marche, course, vélo) enregistre le terrain parcouru pour pouvoir vous dire la
 distance. Ces points restent dans la base de données de votre téléphone, comme le reste.
 
 Les dessiner sur une carte demande une carte, et **la carte est désactivée par défaut**. Une
@@ -283,25 +283,25 @@ OpenStreetMap, gratuitement, sans clé et sans inscription.
   seconde destination puisse être ajoutée discrètement. La bibliothèque de carte fait ses requêtes
   nativement, sous cette ligne.
 - **Tant que vous n'activez pas la carte,** aucune tuile n'est demandée et l'application ne
-  touche pas du tout au réseau, expédition ou non. Désactivez-la et les deux cartes reviennent au
+  touche pas du tout au réseau, sortie ou non. Désactivez-la et les deux cartes reviennent au
   fond uni ; dans les deux sens, c'est une pression.
 
 ## Permissions, et pourquoi
 
 **Position, précise et approximative (facultatif).** Utilisée pour une seule chose : mesurer le
-terrain parcouru pendant une expédition. L'application lit votre position tant que la sortie dure
+terrain parcouru pendant une sortie. L'application lit votre position tant que la sortie dure
 et s'arrête à la fin de la séance. Les points sont écrits dans la base locale et ne sont envoyés
-nulle part. Refusez-la, ou ne partez jamais en expédition, et le reste de l'application ne change
+nulle part. Refusez-la, ou ne partez jamais en sortie, et le reste de l'application ne change
 pas. Android exige que la permission approximative soit demandée avec la précise ; seule la précise
 est réellement lue, parce qu'une position approximative ne mesure pas une course.
 
-**Fonctionner écran éteint (Android).** Une expédition maintient un service de premier plan et un
+**Fonctionner écran éteint (Android).** Une sortie maintient un service de premier plan et un
 wake lock pour que la trace ne s'arrête pas quand le téléphone s'endort dans une poche. C'est à
 cela que sert la notification permanente pendant une sortie : une application qui suit votre
 position doit le dire, à l'écran, du début à la fin.
 
 **Notifications (facultatif).** Demandées quand vous activez un rappel, et utilisées pour la
-notification d'expédition ci-dessus. Les rappels sont programmés localement par le système de votre
+notification de sortie ci-dessus. Les rappels sont programmés localement par le système de votre
 appareil : il n'y a aucune notification push, donc aucun serveur ne connaît votre appareil.
 
 **Internet.** Pour la carte, et rien d'autre, et uniquement tant que la carte est activée dans les

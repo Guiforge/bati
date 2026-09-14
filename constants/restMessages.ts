@@ -12,9 +12,9 @@ export const REST_SUGGESTION_MESSAGES: Record<
 > = {
   overtraining: {
     en: [
-      "You've been training hard with {{count}} sessions this week. Consider a recovery day.",
-      "That's {{count}} sessions this week. Your body earns its rest the same as its gains.",
-      "{{count}} sessions down this week. A recovery day sharpens the next one.",
+      "You've been training hard with {{count}} workouts this week. Consider a recovery day.",
+      "That's {{count}} workouts this week. Your body earns its rest the same as its gains.",
+      "{{count}} workouts down this week. A recovery day sharpens the next one.",
     ],
     fr: [
       "Tu t'es beaucoup entraîné cette semaine : {{count}} entraînements. Pense à une journée de récupération.",
@@ -38,7 +38,7 @@ export const REST_SUGGESTION_MESSAGES: Record<
     en: [
       "You've completed {{count}} workouts this week! Your body needs time to recover and grow stronger.",
       "{{count}} workouts this week, which is serious volume. Recovery is where the strength actually builds.",
-      "{{count}} sessions in seven days. Give your body a day to catch up to your ambition.",
+      "{{count}} workouts in seven days. Give your body a day to catch up to your ambition.",
     ],
     fr: [
       "Tu as fait {{count}} entraînements cette semaine ! Ton corps a besoin de temps pour récupérer et devenir plus fort.",

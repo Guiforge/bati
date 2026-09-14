@@ -218,7 +218,7 @@ function PrepModeRow() {
     <SettingRow
       testID="settings-prep-mode"
       icon={<Timer size={22} color="$text" />}
-      label={t("settings.prep_mode", "Before each movement")}
+      label={t("settings.prep_mode", "Before each exercise")}
       value={
         prepMode === "timer"
           ? t("settings.prep_timer", "10 s")

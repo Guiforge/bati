@@ -72,7 +72,7 @@ test("shut, the row is the name, the target and the last result, and nothing els
 
   expect(screen.queryByText(exercise.enDescription)).toBeNull();
   expect(screen.queryByText("Legs")).toBeNull();
-  expect(screen.queryByText("See the movement")).toBeNull();
+  expect(screen.queryByText("See the exercise")).toBeNull();
 });
 
 test("a tap opens the how-to, and the movement's own screen keeps a door", async () => {
@@ -81,7 +81,7 @@ test("a tap opens the how-to, and the movement's own screen keeps a door", async
   await fireEvent.press(screen.getByText("1. Wall Sit"));
 
   expect(screen.getByText(exercise.enDescription)).toBeTruthy();
-  await fireEvent.press(screen.getByText("See the movement"));
+  await fireEvent.press(screen.getByText("See the exercise"));
   expect(onOpenExercise).toHaveBeenCalledTimes(1);
 
   // Shut again: the row is a disclosure, not a one-way door.

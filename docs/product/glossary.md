@@ -18,8 +18,8 @@ reps). A translation, by a person or a model, starts from this page and not from
 the tempting word that already means something else in that language. An empty cell in `de` or
 `es` is a term not chosen yet, not a term that does not need choosing.
 
-**Status: draft.** English and French are what ships today. Rows marked **open** are a decision
-nobody has taken, listed at the end.
+**Status: draft.** English and French are what ships today. Two naming questions are still open,
+listed at the end.
 
 ## Register
 
@@ -37,14 +37,14 @@ nobody has taken, listed at the end.
 | quest | A workout template in the gallery, and the moment one is won | quest | quête | séance (a quest is picked, a séance is logged) | | |
 | session | One logged thing, a workout or an outing | session | séance | session, entraînement | | |
 | workout | A logged session that is not an outing. Only where the count runs through `isWorkout()` | workout | entraînement | séance | | |
-| movement | One entry in the catalogue (**open**, see below) | movement / exercise | mouvement / exercice | | | |
+| exercise | One entry in the catalogue | exercise | exercice | mouvement (kept for a movement family: push, pull, hinge) | | |
 | rep | One repetition | rep | rép, répétition | | | |
 | set | The reps done in one go on one movement | set | série | flamme | | |
 | round | One pass through every movement of a quest | round | tour | manche (a round of a match) | | |
 | rest | The pause between movements or rounds | rest | repos | | | |
 | warm-up | The optional block before the first movement | warm-up | échauffement | | | |
 | hold | A movement measured in seconds, not reps | hold | tenue | | | |
-| target | The number a movement asks for (**open**, see below) | target | objectif / cible | | | |
+| target | The number to reach: a set's, an outing's, an oath's | target (goal for an outing) | objectif | cible | | |
 | difficulty | Easy, Medium, Hard, chosen per quest | Easy / Medium / Hard | Facile / Moyen / Difficile | | | |
 | training level | What the hero said at onboarding | Beginner / Regular / Advanced | Débutant / Régulier / Confirmé | | | |
 
@@ -67,7 +67,7 @@ nobody has taken, listed at the end.
 
 | Term | Means | en | fr | fr never | de | es |
 |---|---|---|---|---|---|---|
-| flame | The streak: days of consistency against a weekly quota | flame / streak (**open**) | flamme | série | | |
+| flame | The streak: days of consistency against a weekly quota | flame | flamme | série | | |
 | flame tiers | Five stages of a long flame | Spark / Ember / Blaze / Inferno / Eternal | Étincelle / Braise / Brasier / Fournaise / Éternelle | Enfer (Hell) | | |
 | weekly quota | Sessions a week that keep the flame lit | sessions a week | séances par semaine | | | |
 | oath | The one goal a hero swears, fulfilled or abandoned | oath | serment | | | |
@@ -107,7 +107,7 @@ nobody has taken, listed at the end.
 
 | Term | Means | en | fr | fr never | de | es |
 |---|---|---|---|---|---|---|
-| outing | A session recorded by GPS, a walk, a run or a ride (**open**, see below) | outing / expedition | sortie / expédition | | | |
+| outing | A session recorded by GPS, a walk, a run or a ride | outing | sortie | expédition (the code's word, `expedition`, never a reader's) | | |
 | league | Bati's distance unit, one kilometre | league | lieue | | | |
 | ground covered | The distance of an outing, as a label | distance | distance | terrain (a field) | | |
 | moving time | Seconds the GPS saw the hero move | moving | en mouvement | | | |
@@ -120,29 +120,23 @@ nobody has taken, listed at the end.
 
 ## Open
 
-Decisions nobody has taken. Each blocks the German and Spanish rows it touches.
+Decisions nobody has taken yet.
 
-1. **Movement or exercise.** Both appear about thirty times in each language, for the same thing.
-   The French audit proposed *exercice* everywhere. A translation will pick one per string at
-   random unless this is settled.
-2. **Target: objectif or cible.** French uses *objectif* ten times and *cible* seven, for the same
-   number. *Objectif* is also what an outing's goal is called, which argues for *cible* on a
-   movement.
-3. **Outing or expedition.** The screens say *outing* / *sortie*. The privacy policy and the
-   permissions text say *expedition* / *expédition*, the English exercise style says *Expedition*
-   where the French one says *Sortie*, and the code says `expedition`.
-4. **Flame or streak, in English.** French settled on *flamme*. English still says "Current streak"
-   and "Streak paused" on the Journal, while the oath screen says "The flame tracks consistency". English is the
-   source German and Spanish are translated from, so its own mix travels with it.
-5. **Workout or session, in English.** English mixes them in both directions: "Saving your
-   workout" and "Resume workout?" also cover an outing, and the rest advice says *sessions* for a
-   count that leaves outings out. French now follows the query (`writing.md` rule 7);
-   English does not yet.
-6. **Title case in achievement titles.** French achievement titles are in Title Case
+1. **Title case in achievement titles.** French achievement titles are in Title Case
    ("Premiers Pas"), which `writing.md` rule 6 calls wrong French. Changing some and not the
    others would be worse than both.
-7. **Rank titles.** *Ascendant* reads as "ancestor" in French, *Dévoué* as devoted to someone.
+2. **Rank titles.** *Ascendant* reads as "ancestor" in French, *Dévoué* as devoted to someone.
    Names, so the owner's call.
+
+## Settled on 2026-09-14
+
+- **Exercise**, not movement, in both languages. *Movement* survives only as a movement family.
+- **Objectif** for every number to reach, in French. English keeps *target* for a set and an oath
+  and *goal* for an outing: both are plain English and neither collides with another term.
+- **Outing** / **sortie** wherever a reader looks, the privacy policy and the legal page included.
+  `expedition` stays the code's word.
+- **English follows French**: *flame* for the streak, *workout* only for a count that leaves
+  outings out, *session* otherwise, *record* for an exercise and *best* for a session.
 
 ## Related
 

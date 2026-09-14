@@ -333,7 +333,7 @@ export function ActiveExerciseView() {
           simply stopped being printed twice. */}
       <YStack position="absolute" t={insets.top + 8} l={0} r={0} px="$4" gap="$2" z={10}>
         <XStack items="center" justify="space-between" gap="$2">
-          {/* 12px, not 13: "MANCHE 1 / 3 · EXERCICE 2 / 5" is the long form and it has to survive
+          {/* 12px, not 13: "TOUR 1 / 3 · EXERCICE 2 / 5" is the long form and it has to survive
               a 320dp screen without ellipsing away the exercise counter.
 
               An outing has one round and one movement, so that long form collapses to two counts

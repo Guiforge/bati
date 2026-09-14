@@ -107,7 +107,7 @@ function FlameSecond({ streak }: { streak: StreakInfo }) {
       </Text>
       {streak.best > streak.current ? (
         <Text fontSize={12} color="$textSecondary">
-          {t("journal.best_streak", "Best")} {streak.best}
+          {t("journal.best_streak", "Best flame")} {streak.best}
         </Text>
       ) : null}
     </YStack>
@@ -151,8 +151,8 @@ export function JournalStats({ sessions, stats }: JournalStatsProps) {
                   fontWeight="700"
                 >
                   {streak.isActive
-                    ? t("journal.streak_active", "Current streak 🔥")
-                    : t("journal.streak_inactive", "Streak paused")}
+                    ? t("journal.streak_active", "Flame lit 🔥")
+                    : t("journal.streak_inactive", "Flame paused")}
                 </Text>
               </YStack>
             </XStack>

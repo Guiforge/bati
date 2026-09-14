@@ -292,7 +292,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                   )}
                 </YStack>
                 <AppIconButton
-                  accessibilityLabel={t("quests.swap_exercise", "Replace this movement")}
+                  accessibilityLabel={t("quests.swap_exercise", "Replace this exercise")}
                   onPress={() => onSwap(qex.id)}
                 >
                   <Repeat size={18} color="$text" strokeWidth={2.5} />

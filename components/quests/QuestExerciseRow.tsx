@@ -118,7 +118,7 @@ function ExerciseDetail({
         fontSize={14}
         onPress={onOpenExercise}
       >
-        {t("quests.open_exercise", "See the movement")}
+        {t("quests.open_exercise", "See the exercise")}
       </AppButton>
     </YStack>
   );

@@ -399,7 +399,7 @@ export default function ExerciseCatalogue() {
             flex={1}
             value={filters.search}
             onChangeText={setSearch}
-            placeholder={t("exercises.search", "Search a movement")}
+            placeholder={t("exercises.search", "Search an exercise")}
             bg="$background"
             borderColor="$borderStrong"
             color="$text"

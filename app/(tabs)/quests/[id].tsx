@@ -861,7 +861,7 @@ export default function QuestDetails() {
           onOpenChange={(next) => {
             if (!next) setSwapFor(null);
           }}
-          title={t("quests.swap_exercise", "Replace this movement")}
+          title={t("quests.swap_exercise", "Replace this exercise")}
           onPick={(exercise) => applySwap(swapSlot.id, exercise)}
           closeOnPick
           pickAction={<Repeat size={20} color="$primaryText" strokeWidth={2.5} />}

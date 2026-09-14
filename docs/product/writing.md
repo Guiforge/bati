@@ -191,7 +191,8 @@ It was considered for the logged session, for the RPG register, and not taken: t
 already counts 37 quêtes and "Termine 3 quêtes différentes" counts templates, so "552 quêtes" on
 the same tab would count something else under the same word.
 
-No test holds this table yet. The German and Spanish glossary is where it becomes one.
+No test holds this table yet. [glossary.md](glossary.md) extends it to every term of the game, in
+every language, and is where it becomes one.
 
 ---
 

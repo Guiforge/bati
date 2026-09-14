@@ -8,11 +8,11 @@ type EmptyVariant = { title: string; subtitle: string };
 /** Non-empty by contract: `pickSessionEmptyVariant` promises a variant, never `undefined`. */
 export const SESSION_EMPTY_VARIANTS = {
   en: [
-    { title: "Nice work!", subtitle: "Session logged. Keep the streak alive." },
+    { title: "Nice work!", subtitle: "Session logged. Keep the flame lit." },
     { title: "Solid session.", subtitle: "Every rep still counts toward the next one." },
     {
       title: "In the books!",
-      subtitle: "No fireworks today. The streak doesn't care, it just grows.",
+      subtitle: "No fireworks today. The flame doesn't care, it just grows.",
     },
   ],
   fr: [

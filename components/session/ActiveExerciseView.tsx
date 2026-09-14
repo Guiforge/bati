@@ -792,7 +792,7 @@ export function ActiveExerciseView() {
         language={language}
         open={swapOpen}
         onOpenChange={setSwapOpen}
-        title={t("quests.swap_exercise", "Replace this movement")}
+        title={t("quests.swap_exercise", "Replace this exercise")}
         onPick={(exercise) => {
           swapCurrentExercise(exercise);
           setSwapOpen(false);

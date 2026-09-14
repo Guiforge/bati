@@ -282,6 +282,45 @@ describe("useSessionStore", () => {
     expect(state.currentExerciseIndex).toBe(0);
   });
 
+  /**
+   * The report: the last squat of a session went straight to the summary, which had already saved
+   * the count, so the one set with no rest screen after it was the one set nobody could correct.
+   */
+  test("the last set rests like any other, so its count can still be corrected", async () => {
+    await store.getState().startSession(mockQuest, "medium");
+    store.setState({
+      status: "running",
+      currentRoundIndex: 1,
+      currentExerciseIndex: 1,
+      totalPausedTime: 0,
+    });
+
+    store.getState().completeExercise(40);
+    expect(store.getState().status).toBe("resting");
+    expect(store.getState().timerDuration).toBe(30);
+
+    store.getState().updateLastResult(55);
+    // Ten seconds spent correcting it: the session ended at the set, not at the tap.
+    store.setState({ timerStartTimestamp: Date.now() - 10_000 });
+    store.getState().skipRest();
+
+    const state = store.getState();
+    expect(state.status).toBe("finished");
+    expect(state.results.at(-1)?.result.value).toBe(55);
+    expect(state.totalPausedTime).toBeGreaterThanOrEqual(10_000);
+  });
+
+  test("a skipped last set has nothing to correct and ends at once", async () => {
+    await store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
+    store.getState().completeExercise(10);
+    store.setState({ status: "running", currentRoundIndex: 1, currentExerciseIndex: 1 });
+
+    store.getState().skipExercise();
+
+    expect(store.getState().status).toBe("finished");
+  });
+
   test("pauseSession and resumeSession work", async () => {
     await store.getState().startSession(mockQuest, "medium");
     store.getState().finishCountdown();

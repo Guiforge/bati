@@ -182,6 +182,12 @@ was there for it.
 - Preview of next exercise
 - Quick actions: add time or skip
 
+**After the last set**: the same screen, titled "Last Set" / "Dernière série", so the final count
+can be corrected like every other one before the victory screen saves it. No up-next card, no
++time, no countdown beeps; the CTA reads "See the results" and the clock hands over to the victory
+screen on its own. It follows the quest's `restSeconds` like any rest (none when that is 0), is
+skipped after a skipped or outdoor set, and its seconds are taken off the session's duration.
+
 ---
 
 ### 4. Pause Overlay

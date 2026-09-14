@@ -18,8 +18,9 @@ reps). A translation, by a person or a model, starts from this page and not from
 the tempting word that already means something else in that language. An empty cell in `de` or
 `es` is a term not chosen yet, not a term that does not need choosing.
 
-**Status: draft.** English and French are what ships today. Two naming questions are still open,
-listed at the end.
+**Status: draft.** English, French, German and Spanish all ship. German and Spanish were
+translated from this page, with French as a second source, and no native speaker has read them
+yet. Two naming questions are still open, listed at the end.
 
 ## Register
 
@@ -29,6 +30,12 @@ listed at the end.
 | The privacy policy and the safety notice | you | `vous` | `Sie` | `usted` |
 
 `writing.md` rule 5 holds the allowlist of surfaces allowed the document register.
+
+Two rules per language that a machine holds. Spanish never gives the hero a grammatical gender:
+*bienvenido* and *cansado* assume one, so the copy says *¡Te damos la bienvenida!* and builds
+the sentence around the action instead (`locale-style.test.ts` rejects the common adjectives). German nouns keep their capital
+mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
+`src/i18n/localized.ts`).
 
 ## Training
 

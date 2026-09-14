@@ -6,7 +6,7 @@ once and neither store gets a stale copy of the other's.
 
 ```
 fastlane/metadata/android/
-  en-US/ | fr-FR/
+  en-US/ | fr-FR/ | de-DE/ | es-ES/
     title.txt               ≤ 30 characters
     short_description.txt   ≤ 80 characters
     full_description.txt    ≤ 4000 characters
@@ -16,6 +16,11 @@ fastlane/metadata/android/
       featureGraphic.png    1024×500   (Play only, and required there)
       phoneScreenshots/     1080×1920 or thereabouts, 2 to 8 of them
 ```
+
+`de-DE` and `es-ES` have text and no images yet: a translated listing without its own graphics
+shows the default language's, so they ship English screenshots until someone captures the app in
+German and Spanish (`frame-screenshots.py` already has their captions). They have no changelogs
+either, so their "What's new" is empty until a release writes one.
 
 **8 is a hard Play limit, not advice.** A 9th screenshot makes the Play API reject the entire
 listing commit — and unless the caller is account admin, the error reads as a bare

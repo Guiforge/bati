@@ -43,7 +43,7 @@ import type { EquipmentCode } from "@/db/schema";
 import { useBackup } from "@/hooks/useBackup";
 import { useBugReport, versionLabel } from "@/hooks/useBugReport";
 import { useHaptics } from "@/hooks/useHaptics";
-import { LANGUAGE_NAMES, nextAppLanguage } from "@/src/i18n/deviceLanguage";
+import { LANGUAGE_NAMES, MACHINE_TRANSLATED, nextAppLanguage } from "@/src/i18n/deviceLanguage";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -447,6 +447,12 @@ export default function SettingsScreen() {
             value={LANGUAGE_NAMES[language]}
             onPress={cycleLanguage}
           />
+
+          {MACHINE_TRANSLATED[language] ? (
+            <Text testID="settings-language-ai-note" fontSize="$2" color="$textSecondary" px="$3">
+              {t("settings.language_ai_note")}
+            </Text>
+          ) : null}
 
           <SettingRow
             icon={<Vibrate size={22} color="$text" />}

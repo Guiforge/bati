@@ -838,6 +838,7 @@
     "feedback_hint": "Écris-moi",
     "haptics": "Vibrations",
     "language": "Langue",
+    "language_ai_note": "Cette langue a été traduite par une IA, et personne ne l'a encore relue. Un mot sonne faux ? Dis-le-moi via « Un retour, une idée, un bug », en bas de cette page.",
     "no_mail_client": "Aucune app e-mail trouvée sur cet appareil",
     "photos_denied": "L'accès aux photos est refusé. Autorise-le dans les réglages système.",
     "preferences": "PRÉFÉRENCES",

@@ -26,4 +26,7 @@ El mapa es el único interruptor, y empieza desactivado. Todo lo demás es la ar
 PRIMERO EL PESO CORPORAL
 El catálogo de ejercicios se basa en lo que puedes hacer sin material, y se adapta si tienes algo. Los calentamientos son dinámicos y se ajustan a la sesión que tienes delante, porque nadie repite un calentamiento de cinco minutos antes de un entrenamiento de seis.
 
+SOBRE ESTA TRADUCCIÓN
+La versión en español de Bati, esta descripción incluida, la ha traducido una IA y todavía no la ha revisado ningún hablante nativo. ¿Alguna palabra suena rara? En Ajustes, la app tiene una forma de decírmelo.
+
 Código fuente: https://github.com/Guiforge/bati

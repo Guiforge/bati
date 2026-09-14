@@ -26,4 +26,7 @@ Die Karte ist der einzige Schalter, und er ist anfangs aus. Alles andere oben is
 ZUERST MIT KÖRPERGEWICHT
 Der Übungskatalog ist um das herum aufgebaut, was ohne Geräte geht, und passt sich an, wenn du welche hast. Das Aufwärmen ist dynamisch und auf die anstehende Einheit abgestimmt, denn fünf Minuten Aufwärmen vor sechs Minuten Training macht niemand zweimal.
 
+ÜBER DIESE ÜBERSETZUNG
+Die deutsche Fassung von Bati, diese Beschreibung eingeschlossen, wurde von einer KI übersetzt und noch von niemandem mit Deutsch als Muttersprache gelesen. Ein Wort klingt falsch? Die App hat unter Einstellungen einen Weg, es mir zu sagen.
+
 Quellcode: https://github.com/Guiforge/bati

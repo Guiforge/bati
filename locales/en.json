@@ -139,6 +139,7 @@
     "title": "Settings",
     "preferences": "PREFERENCES",
     "language": "Language",
+    "language_ai_note": "This language was translated by AI, and nobody fluent has read it yet. A word that sounds wrong? Tell me through Feedback, at the bottom of this page.",
     "avatar": "AVATAR",
     "village_name": "Village name",
     "avatar_custom": "Custom photo",

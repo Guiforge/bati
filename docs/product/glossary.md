@@ -20,7 +20,10 @@ the tempting word that already means something else in that language. An empty c
 
 **Status: draft.** English, French, German and Spanish all ship. German and Spanish were
 translated from this page, with French as a second source, and no native speaker has read them
-yet. Two naming questions are still open, listed at the end.
+yet. The app and the Play listing say so: `MACHINE_TRANSLATED` in `src/i18n/deviceLanguage.ts`
+shows a note under the language row in Settings, and the `de-DE` and `es-ES` descriptions end on
+the same warning. Set the flag to `false` and delete that paragraph once a fluent speaker has read
+the language. Two naming questions are still open, listed at the end.
 
 ## Register
 

@@ -22,6 +22,9 @@ export const LANGUAGE_NAMES: Record<AppLanguage, string> = {
   es: "Español",
 };
 
+/** Translated by a model and not yet read by a fluent speaker: Settings says so under the language row. */
+export const MACHINE_TRANSLATED: Localized<boolean> = { en: false, fr: false, de: true, es: true };
+
 /** The language after this one, wrapping: what one tap on the settings row moves to. */
 export function nextAppLanguage(language: AppLanguage): AppLanguage {
   const index = APP_LANGUAGES.indexOf(language);

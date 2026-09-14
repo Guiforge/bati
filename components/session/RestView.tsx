@@ -176,7 +176,7 @@ export function RestView() {
         enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
       >
         <GameIcon name="flame" size={40} color="$warning" />
-        <H2 color="$text" fontWeight="700" fontSize={32} lineHeight={38}>
+        <H2 color="$text" fontWeight="700" fontSize={32} lineHeight={38} text="center">
           {isRoundRest ? t("session.round_rest_title") : t("session.rest_title")}
         </H2>
       </YStack>

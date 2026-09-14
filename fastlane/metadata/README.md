@@ -17,10 +17,9 @@ fastlane/metadata/android/
       phoneScreenshots/     1080×1920 or thereabouts, 2 to 8 of them
 ```
 
-`de-DE` and `es-ES` have text and no images yet: a translated listing without its own graphics
-shows the default language's, so they ship English screenshots until someone captures the app in
-German and Spanish (`frame-screenshots.py` already has their captions). They have no changelogs
-either, so their "What's new" is empty until a release writes one.
+`de-DE` and `es-ES` have their own screenshots but no icon or feature graphic, so Play shows the
+default language's there. They have no changelogs either, so their "What's new" is empty until a
+release writes one.
 
 **8 is a hard Play limit, not advice.** A 9th screenshot makes the Play API reject the entire
 listing commit — and unless the caller is account admin, the error reads as a bare

@@ -15,11 +15,14 @@ function shots(locale: string): string[] {
 }
 
 describe("Play store listing", () => {
-  test.each(["en-US", "fr-FR"])("%s ships at most 8 phone screenshots", (locale) => {
-    const files = shots(locale);
-    // Two, not zero: a listing with one screenshot is rejected as well, and an emptied directory
-    // would otherwise pass this silently.
-    expect(files.length).toBeGreaterThanOrEqual(2);
-    expect(files.length).toBeLessThanOrEqual(PLAY_PHONE_SCREENSHOT_LIMIT);
-  });
+  test.each(["en-US", "fr-FR", "de-DE", "es-ES"])(
+    "%s ships at most 8 phone screenshots",
+    (locale) => {
+      const files = shots(locale);
+      // Two, not zero: a listing with one screenshot is rejected as well, and an emptied directory
+      // would otherwise pass this silently.
+      expect(files.length).toBeGreaterThanOrEqual(2);
+      expect(files.length).toBeLessThanOrEqual(PLAY_PHONE_SCREENSHOT_LIMIT);
+    },
+  );
 });

@@ -120,7 +120,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | outing | A session recorded by GPS, a walk, a run or a ride | outing | sortie | expédition (the code's word, `expedition`, never a reader's) | Tour | salida |
 | league | Bati's distance unit, one kilometre | league | lieue |  | Wegstunde | legua |
 | ground covered | The distance of an outing, as a label | distance | distance | terrain (a field) | Strecke | distancia |
-| moving time | Seconds the GPS saw the hero move | moving | en mouvement |  | in Bewegung | en movimiento |
+| moving time | Seconds the GPS saw the hero move | moving | en mouvement |  | in Bewegung | en marcha (en movimiento wraps under its column) |
 | pace | Time per kilometre or mile | pace | allure |  | Tempo | ritmo |
 | climb | Height gained | climb | dénivelé |  | Höhenmeter | desnivel |
 | trace | The drawn line of an outing | trace | tracé | trace (only the exported file) | Spur | trazado |

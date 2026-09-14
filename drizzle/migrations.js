@@ -60,6 +60,7 @@ import m0056 from "./0056_a_gauntlet_is_not_a_glove.sql";
 import m0057 from "./0057_the_translated_half.sql";
 import m0058 from "./0058_german_and_spanish_columns.sql";
 import m0059 from "./0059_the_seeded_content_in_german_and_spanish.sql";
+import m0060 from "./0060_the_day_the_deeds_were_recut.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -125,5 +126,6 @@ export default {
     m0057,
     m0058,
     m0059,
+    m0060,
   },
 };

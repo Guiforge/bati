@@ -211,6 +211,9 @@ run carries the victory.
 stored, so it cannot disagree with the village's own count of the same victories. It is on
 `BossFight.tier`.
 
+In the village a first victory raises the Dragon Lair and every rematch after it raises the
+Champion Arena, never both ([village.md](../screens/village.md) § Deeds).
+
 | Tier | Form | Pool |
 | ---- | ---- | ---- |
 | 0 | The monster, its own painting and name | base × level |

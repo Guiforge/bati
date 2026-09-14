@@ -123,6 +123,14 @@ export function getLevelTitle(level: number): Localized {
 }
 
 /**
+ * The rank alone. Past 20 `getLevelTitle` carries the level in it ("Divine 44"), which a line
+ * already reading "Level 44" then says twice.
+ */
+export function getRankName(level: number): Localized {
+  return getLevelTitle(Math.min(level, 20));
+}
+
+/**
  * Get the user's total XP from all completed sessions
  */
 export async function getTotalXp(): Promise<number> {

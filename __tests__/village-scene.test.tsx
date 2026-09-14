@@ -74,6 +74,8 @@ function mockScene(buildings: village.VillageBuilding[], over: Partial<village.V
     tier: 4,
     level: 8,
     title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
+    totalXp: 3180,
+    xpPerSession: 370,
     flame: 0,
     streakDays: 0,
     dominantSport: null,
@@ -107,7 +109,7 @@ describe("VillageScene", () => {
     expect(next.getByText("Forge")).toBeTruthy();
     expect(next.getByText("Chest: 40 reps to level 2")).toBeTruthy();
     expect(next.getByText("60 reps")).toBeTruthy();
-    expect(next.getByText("level 2 at 100")).toBeTruthy();
+    expect(next.getByText("100 reps for level 2")).toBeTruthy();
   });
 
   it("files every building with what feeds it, unbuilt ones included, on its real ceiling", async () => {
@@ -147,9 +149,79 @@ describe("VillageScene", () => {
 
     const { findByTestId, getByTestId } = await renderScene();
 
-    const done = within(await findByTestId("village-done"));
-    expect(done.getByText(/1 deed still answers to you/)).toBeTruthy();
+    // One block for the end, not a "finished" card stacked on a tier card.
+    const tier = within(await findByTestId("village-tier"));
+    expect(tier.getByTestId("village-done")).toBeTruthy();
+    expect(
+      tier.getByText("Muscles, styles, upgrades and starters: all at their ceiling."),
+    ).toBeTruthy();
+    expect(
+      tier.getByText("Last tier reached at level 40. The village will not change its look again."),
+    ).toBeTruthy();
+    expect(tier.getByText("1 deed still open, just below.")).toBeTruthy();
     expect(getByTestId("village-family-rest")).toBeTruthy();
+  });
+
+  it("says when the painting changes next, in hero levels and XP", async () => {
+    mockScene([campfire, forge, farm]);
+
+    const { findByTestId } = await renderScene();
+    const tier = within(await findByTestId("village-tier"));
+
+    expect(tier.getByText("tier 4 of 12")).toBeTruthy();
+    expect(
+      tier.getByText("The village changes its look at hero level 10, 2 levels away."),
+    ).toBeTruthy();
+    expect(tier.getByText("level 8 · 2,800 XP")).toBeTruthy();
+    expect(tier.getByText("level 10 · 4,500 XP")).toBeTruthy();
+    expect(tier.getByText("1,320 XP to go, about 4 sessions like this week's.")).toBeTruthy();
+  });
+
+  it("names an unbuilt deed by what builds it, and its sheet says it once", async () => {
+    const farmDone = building("farm", 5, { driver: "muscle" });
+    const lair = building("dragon_lair", 5, { driver: "bosses", metricValue: 6 });
+    const arena = building("champion_arena", 0, {
+      driver: "rematches",
+      metricValue: 0,
+      nextTarget: 1,
+    });
+    mockScene([campfire, farmDone, lair, arena]);
+
+    const { findByTestId } = await renderScene();
+    const next = within(await findByTestId("village-next"));
+
+    expect(next.getByText("Next to build")).toBeTruthy();
+    expect(next.getByText("Built when you beat a boss a second time")).toBeTruthy();
+    expect(next.getByText("Pick a boss to beat again")).toBeTruthy();
+    // "0 rematches" and "1 rematch for level 1" would be the same zero, twice more.
+    expect(next.queryByText("0 rematches")).toBeNull();
+    expect(next.queryByText("1 rematch for level 1")).toBeNull();
+
+    // The sheet says the condition once, instead of "0 rematches won" above it.
+    await fireEvent.press(next.getByLabelText("Champion Arena"));
+    const sheet = within(await findByTestId("village-detail"));
+    expect(sheet.getAllByText("Built when you beat a boss a second time")).toHaveLength(1);
+    expect(sheet.queryByText("0 rematches won")).toBeNull();
+  });
+
+  it("a level kept from the old count says where it comes from", async () => {
+    const farmDone = building("farm", 5, { driver: "muscle" });
+    const hall = building("heroes_hall", 3, {
+      driver: "routes",
+      metricValue: 0,
+      nextTarget: 7,
+      kept: true,
+    });
+    mockScene([campfire, farmDone, hall]);
+
+    const { findByTestId, findByText } = await renderScene();
+    const deeds = within(await findByTestId("village-family-deed"));
+    await fireEvent.press(deeds.getByLabelText("Hall of Heroes"));
+
+    expect(await findByText(/carries over from what you had done before/)).toBeTruthy();
+    expect(
+      within(await findByTestId("village-detail")).getByText("7 routes for level 4"),
+    ).toBeTruthy();
   });
 
   it("tapping a row explains what raised it", async () => {
@@ -165,7 +237,9 @@ describe("VillageScene", () => {
       await findByText("350 reps of chest training. A hold counts one rep every 3 seconds."),
     ).toBeTruthy();
     // In the sheet: the Forge is also "Next to rise", whose bar carries the same two ends.
-    expect(within(await findByTestId("village-detail")).getByText("level 4 at 600")).toBeTruthy();
+    expect(
+      within(await findByTestId("village-detail")).getByText("600 reps for level 4"),
+    ).toBeTruthy();
   });
 
   it("tapping an unbuilt row says what would build it", async () => {

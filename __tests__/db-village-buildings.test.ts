@@ -344,8 +344,11 @@ describe("db/village buildings", () => {
       expect(progress({ level: 0, driver: "muscle" })).toBeNull();
     });
 
-    test("a locked deed counter keeps its tally", () => {
-      expect(progress({ level: 0, driver: "bosses", metricValue: 1, nextTarget: 2 })).toBe(50);
+    // Unbuilt is a condition in words. "0 bosses, level 1 at 1" over an empty bar said one zero
+    // three ways.
+    test("an unbuilt deed shows no bar either", () => {
+      expect(progress({ level: 0, driver: "bosses", metricValue: 0, nextTarget: 1 })).toBeNull();
+      expect(progress({ level: 0, driver: "rematches", metricValue: 0, nextTarget: 1 })).toBeNull();
     });
 
     test("overshooting a target clamps instead of exceeding the bar", () => {

@@ -11,6 +11,7 @@ import { ProgressBar } from "@/components/common/ProgressBar";
 import { LevelPips } from "@/components/village/LevelPips";
 import {
   barEnds,
+  ctaLabel,
   feedsLine,
   levelText,
   nameOf,
@@ -81,9 +82,17 @@ async function loadExtra(selected: VillageSelection): Promise<Extra> {
 
   const building = selected.building;
 
-  // The hall is the village's record of finished campaigns, so it lists them.
-  if (building.driver === "adventures") {
-    return { kind: "adventures", adventures: await listFinishedRunSummaries() };
+  // The hall lists the routes that raised it, the arena the bosses fought again: the same
+  // split as the tally, so the list never shows a campaign the level did not count.
+  if (building.driver === "routes" || building.driver === "rematches") {
+    const summaries = await listFinishedRunSummaries();
+    return {
+      kind: "adventures",
+      adventures:
+        building.driver === "routes"
+          ? summaries.filter((s) => s.kind !== "boss")
+          : summaries.filter((s) => s.kind === "boss" && s.timesFinished > 1),
+    };
   }
 
   if (building.driver === "muscle" && building.relatedMuscle) {
@@ -228,8 +237,18 @@ function BuildingDetail({
   // middot, where a period would be wrong.
   const repUnitNote = t("village.rep_unit", { seconds: SECONDS_PER_REP_EQUIVALENT });
 
+  // The row shows no bar; this is the one place a building's bar is allowed, because it is the
+  // one place it arrives with its unit at both ends. Same call as "Next to rise", so the two
+  // cannot disagree about what "almost there" means.
+  const progress = getBuildingProgress(building);
+  const ends = barEnds(building, t);
+  // An unbuilt deed is its condition and nothing else: "0 rematches won" above "Not built yet"
+  // above "Built by your first rematch" said the same zero three times.
+  const unbuiltDeed = building.tier === 4 && progress === null && !built;
+
   // One sentence naming the deed that raises this building, in its own unit.
   const driverLine = (() => {
+    if (unbuiltDeed) return nextLine(building, t, language);
     switch (building.driver) {
       case "tier":
         return t("village.detail_tier_driver", { level: building.metricValue });
@@ -258,10 +277,10 @@ function BuildingDetail({
               building: prereqName,
               level: building.metricValue,
             });
-      case "adventures":
-        return t("village.detail_adventures_driver", { count: building.metricValue });
-      case "boss_victories":
-        return t("village.detail_victories_driver", { count: building.metricValue });
+      case "routes":
+        return t("village.detail_routes_driver", { count: building.metricValue });
+      case "rematches":
+        return t("village.detail_rematches_driver", { count: building.metricValue });
       case "leagues":
         // The one place the unit gets named: a league is the only measure Bati invents.
         return `${t("village.detail_leagues_driver", { count: building.metricValue })}. ${t("village.league_unit")}`;
@@ -270,12 +289,15 @@ function BuildingDetail({
     }
   })();
 
-  // The row shows no bar; this is the one place a building's bar is allowed, because it is the
-  // one place it arrives with its unit at both ends. Same call as "Next to rise", so the two
-  // cannot disagree about what "almost there" means.
-  const progress = getBuildingProgress(building);
-  const ends = barEnds(building, t);
-  const link = building.relatedMuscle || building.driver === "leagues" ? questLink(building) : null;
+  const link = building.relatedMuscle || building.tier === 4 ? questLink(building) : null;
+  // The arena counts rematches, not finishes: a boss beaten three times is two rematches.
+  const listed =
+    extra?.kind === "adventures"
+      ? extra.adventures.map((a) => ({
+          ...a,
+          times: building.driver === "rematches" ? a.timesFinished - 1 : a.timesFinished,
+        }))
+      : [];
 
   return (
     <YStack gap="$4">
@@ -306,12 +328,19 @@ function BuildingDetail({
         <Text fontSize={13.5} lineHeight={20} color="$text">
           {driverLine}
         </Text>
-        {progress !== null ? (
-          <ProgressBar progress={progress} height={6} color="$resourceGold" />
+        {building.kept ? (
+          <Text fontSize={12.5} lineHeight={18} color="$textSecondary">
+            {t("village.kept_level")}
+          </Text>
         ) : null}
-        {ends ? (
-          <BarEnds left={ends.left} right={ends.right} />
-        ) : (
+        {/* Only with both ends: starters and upgrades count a level, and a bar from zero to it
+            without a unit said nothing about the rung. */}
+        {ends && progress !== null ? (
+          <>
+            <ProgressBar progress={progress} height={6} color="$resourceGold" />
+            <BarEnds left={ends.left} right={ends.right} />
+          </>
+        ) : unbuiltDeed ? null : (
           <Text fontSize={12} color="$textSecondary">
             {nextLine(building, t, language)}
           </Text>
@@ -350,10 +379,16 @@ function BuildingDetail({
         </YStack>
       )}
 
-      {extra?.kind === "adventures" && extra.adventures.length > 0 && (
+      {listed.length > 0 && (
         <YStack gap="$2">
-          <Kicker label={t("village.hall_finished_title")} />
-          {extra.adventures.map((adventure) => (
+          <Kicker
+            label={t(
+              building.driver === "rematches"
+                ? "village.rematches_title"
+                : "village.hall_finished_title",
+            )}
+          />
+          {listed.map((adventure) => (
             <XStack key={adventure.adventureId} items="center" gap="$3">
               {!!adventure.imagePath && (
                 <YStack width={32} height={32} rounded={16} overflow="hidden">
@@ -367,9 +402,9 @@ function BuildingDetail({
               <Text fontSize={12} color="$textSecondary" flex={1} numberOfLines={1}>
                 {localizedTitle(adventure, language)}
               </Text>
-              {adventure.timesFinished > 1 && (
+              {adventure.times > 1 && (
                 <Text fontSize={12} color="$textSecondary">
-                  {t("village.hall_times", { count: adventure.timesFinished })}
+                  {t("village.hall_times", { count: adventure.times })}
                 </Text>
               )}
               {!!adventure.lastFinishedAt && (
@@ -384,7 +419,7 @@ function BuildingDetail({
 
       {link ? (
         <QuestLink
-          label={building.driver === "leagues" ? t("village.cta_outing") : t("village.cta_feeds")}
+          label={ctaLabel(building, t)}
           onPress={() => {
             onClose();
             router.push(link as never);

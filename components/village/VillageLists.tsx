@@ -1,5 +1,6 @@
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 
@@ -8,11 +9,13 @@ import { ChevronRight } from "@/components/icons";
 import { LevelPips } from "@/components/village/LevelPips";
 import {
   barEnds,
+  ctaLabel,
   type Family,
   feedsLine,
   levelText,
   nameOf,
   nextLine,
+  nextTitle,
   questLink,
 } from "@/components/village/rows";
 import { getBuildingIconAsset } from "@/constants/assetMap";
@@ -22,6 +25,8 @@ import {
   buildingCeiling,
   type GrownBuilding,
   getBuildingProgress,
+  MAX_TIER,
+  type TierProgress,
   type VillageBuilding,
 } from "@/db/village";
 import type { AppLanguage } from "@/stores/settings";
@@ -54,7 +59,7 @@ function Kicker({
   );
 }
 
-export function BuildingThumb({ building, size }: { building: VillageBuilding; size: number }) {
+function BuildingThumb({ building, size }: { building: VillageBuilding; size: number }) {
   const built = building.level > 0;
   return (
     <YStack
@@ -131,13 +136,6 @@ export function NextToRise({ building, dayOne, language, onOpen }: NextProps) {
 
   const progress = building ? getBuildingProgress(building) : null;
   const ends = building ? barEnds(building, t) : null;
-  const cta = dayOne
-    ? t("village.cta_first")
-    : building?.driver === "leagues"
-      ? t("village.cta_outing")
-      : building?.relatedMuscle
-        ? t("village.cta_feeds")
-        : t("village.cta_quest");
 
   return (
     <YStack
@@ -149,7 +147,7 @@ export function NextToRise({ building, dayOne, language, onOpen }: NextProps) {
       borderColor="$borderStrong"
       bg="$surface"
     >
-      <Kicker label={t("village.next_title")} />
+      <Kicker label={nextTitle(building, t)} />
       {building ? (
         <XStack
           gap={12}
@@ -184,7 +182,10 @@ export function NextToRise({ building, dayOne, language, onOpen }: NextProps) {
           </Text>
         </YStack>
       )}
-      <QuestLink label={cta} onPress={() => router.push(questLink(building) as never)} />
+      <QuestLink
+        label={ctaLabel(building, t)}
+        onPress={() => router.push(questLink(building) as never)}
+      />
     </YStack>
   );
 }
@@ -237,11 +238,13 @@ export function SinceLastQuest({ growth, buildings, language }: ChangesProps) {
 type FamiliesProps = {
   families: Family[];
   risen: ReadonlySet<BuildingCode>;
+  /** The building "Next to rise" already names, marked in its family instead of read twice. */
+  next: BuildingCode | null;
   language: AppLanguage;
   onOpen: (building: VillageBuilding) => void;
 };
 
-export function Families({ families, risen, language, onOpen }: FamiliesProps) {
+export function Families({ families, risen, next, language, onOpen }: FamiliesProps) {
   const { t } = useTranslation();
   return (
     <YStack testID="village-families" gap={18}>
@@ -258,6 +261,7 @@ export function Families({ families, risen, language, onOpen }: FamiliesProps) {
               key={building.code}
               building={building}
               risen={risen.has(building.code)}
+              isNext={building.code === next}
               language={language}
               onPress={() => onOpen(building)}
             />
@@ -271,12 +275,13 @@ export function Families({ families, risen, language, onOpen }: FamiliesProps) {
 type RowProps = {
   building: VillageBuilding;
   risen: boolean;
+  isNext: boolean;
   language: AppLanguage;
   onPress: () => void;
 };
 
 /** Readable without a tap: the name, the next rung in words, and the level on its real ceiling. */
-function BuildingRow({ building, risen, language, onPress }: RowProps) {
+function BuildingRow({ building, risen, isNext, language, onPress }: RowProps) {
   const { t } = useTranslation();
   const name = nameOf(building, language);
   const built = building.level > 0;
@@ -287,6 +292,7 @@ function BuildingRow({ building, risen, language, onPress }: RowProps) {
       gap={12}
       minH={56}
       py={9}
+      position="relative"
       borderBottomWidth={1}
       borderColor="$surface2"
       onPress={onPress}
@@ -294,6 +300,11 @@ function BuildingRow({ building, risen, language, onPress }: RowProps) {
       accessibilityRole="button"
       accessibilityLabel={name}
     >
+      {/* In the page's gutter, not in the row: a left border pushed this one icon out of line
+          with every other row, and read as a glitch. */}
+      {isNext ? (
+        <YStack position="absolute" l={-10} t={9} b={9} width={2} rounded={1} bg="$resourceGold" />
+      ) : null}
       <BuildingThumb building={building} size={34} />
       <YStack flex={1} minW={0} gap={2}>
         <XStack items="center" gap={7} flexWrap="wrap">
@@ -315,7 +326,8 @@ function BuildingRow({ building, risen, language, onPress }: RowProps) {
           ) : null}
         </XStack>
         <Text fontSize={11.5} lineHeight={16} color="$textSecondary">
-          {nextLine(building, t, language)}
+          {/* "Next to rise" already reads the next rung aloud; its row says what feeds it. */}
+          {isNext ? feedsLine(building, t, language) : nextLine(building, t, language)}
         </Text>
       </YStack>
       <YStack items="flex-end" gap={5}>
@@ -333,31 +345,113 @@ function BuildingRow({ building, risen, language, onPress }: RowProps) {
   );
 }
 
-/** The last painting says it first: the village is finished, and what is left to answer. */
-export function VillageDone({ name, openDeeds }: { name: string; openDeeds: number }) {
+type TierProps = {
+  progress: TierProgress;
+  /** The village's name, for the finished state. */
+  name: string;
+  complete: boolean;
+  openDeeds: number;
+  language: AppLanguage;
+};
+
+/**
+ * When the painting changes next, first on the panel in every state. The village follows the
+ * hero's level alone, so the answer is a hero level and the XP to it. The bar is indigo on
+ * purpose: gold belongs to the buildings, and two systems in one colour read as one.
+ *
+ * On the last tier the bar goes and the sentence becomes final, since a gauge at 100 % for life
+ * promises a next step that never comes. A finished village says so here too, in the same block:
+ * two cards announcing the end, one above the other, was one too many.
+ */
+export function VillageTier({ progress, name, complete, openDeeds, language }: TierProps) {
   const { t } = useTranslation();
-  const body =
-    openDeeds > 0
-      ? `${t("village.done_body")} ${t("village.done_deeds", { count: openDeeds })}`
-      : t("village.done_body");
+  const xp = (n: number) => n.toLocaleString(language);
+  const foot = tierFoot(progress, complete, openDeeds, t, xp);
+
   return (
     <YStack
-      testID="village-done"
+      testID="village-tier"
       p={14}
-      gap={5}
+      gap={8}
       rounded={12}
       borderWidth={1}
-      borderColor="$resourceGold"
+      borderColor={complete ? "$resourceGold" : "$borderStrong"}
       bg="$surface"
     >
-      <Text fontWeight="600" fontSize={14} color="$resourceGold">
-        {t("village.done_title", { name })}
-      </Text>
-      <Text fontSize={12.5} lineHeight={18} color="$textSecondary">
-        {body}
-      </Text>
+      <XStack justify="space-between" items="baseline" gap={10}>
+        <Kicker
+          label={t(progress.final ? "village.tier_final_kicker" : "village.tier_next_kicker")}
+        />
+        <Text
+          fontSize={11.5}
+          fontWeight="600"
+          color={progress.final ? "$resourceGold" : "$textSecondary"}
+          numberOfLines={1}
+        >
+          {t("village.tier_badge", { tier: progress.tier, max: MAX_TIER })}
+        </Text>
+      </XStack>
+
+      {complete ? (
+        <YStack testID="village-done" gap={4}>
+          <Text fontWeight="600" fontSize={14} color="$resourceGold">
+            {t("village.done_title", { name })}
+          </Text>
+          <Text fontSize={12.5} lineHeight={18} color="$text">
+            {t("village.done_body")}
+          </Text>
+        </YStack>
+      ) : null}
+
+      {progress.final ? (
+        <Text fontSize={13} lineHeight={19} color={complete ? "$textSecondary" : "$text"}>
+          {t("village.tier_final_line", { level: progress.reachedAt })}
+        </Text>
+      ) : (
+        <>
+          <Text fontSize={13} lineHeight={19} color="$text">
+            {t("village.tier_next_line", { level: progress.nextLevel, count: progress.levelsAway })}
+          </Text>
+          <YStack gap={6} pt={2}>
+            <ProgressBar progress={progress.progress} height={5} color="$primaryText" />
+            <BarEnds
+              left={t("village.tier_bar_end", {
+                level: progress.fromLevel,
+                xp: xp(progress.fromXp),
+              })}
+              right={t("village.tier_bar_end", {
+                level: progress.nextLevel,
+                xp: xp(progress.targetXp),
+              })}
+            />
+          </YStack>
+        </>
+      )}
+
+      {foot ? (
+        <Text fontSize={12} lineHeight={17} color="$textSecondary">
+          {foot}
+        </Text>
+      ) : null}
     </YStack>
   );
+}
+
+/** What is left once the sentence above has said when: the XP gap, or what still moves. */
+function tierFoot(
+  progress: TierProgress,
+  complete: boolean,
+  openDeeds: number,
+  t: TFunction,
+  xp: (n: number) => string,
+): string | null {
+  if (!progress.final) {
+    return progress.sessionsAtPace === null
+      ? t("village.tier_short", { xp: xp(progress.xpShort) })
+      : t("village.tier_short_pace", { xp: xp(progress.xpShort), count: progress.sessionsAtPace });
+  }
+  if (!complete) return t("village.tier_final_rest");
+  return openDeeds > 0 ? t("village.done_deeds", { count: openDeeds }) : null;
 }
 
 export { Kicker };

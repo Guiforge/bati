@@ -3,7 +3,7 @@ title: Village
 type: screen
 route: /village
 status: active
-updated: 2026-09-11
+updated: 2026-09-14
 related: [../gameplay/progression.md, ../gameplay/boss-fights.md, ../gameplay/villagers.md]
 sources: [app/(tabs)/village.tsx, components/village/, constants/villageAnchors.ts, db/village.ts]
 ---
@@ -26,16 +26,26 @@ row can be read without a tap.
 
 1. **The painting**, square, edge to edge, with nothing drawn on it but the embers. Tap anywhere
    on it for the full painting (`VillageSceneViewer`), uncropped.
-2. **Over the painting's foot**: the 7-day focus line (sport emblem at 20 px plus "7-day focus ·
-   Legs"), the village's name, "Tier · Level N · Title", and the flame chip with its day count.
+2. **Over the painting's foot**: the village's name with the flame chip on the same line, "Tier ·
+   Level N · Rank", then the 7-day focus line (sport emblem at 20 px plus "7-day focus · Legs").
+   The focus line is last because above the name it sat on the bright top of the painting, and the
+   rank is `getRankName`: past level 20 the title carries the level ("Divine 44"), which the line
+   already says.
 3. **The panel**, riding up over the painting's last 14 dp:
-   - *Finished* card, only when the village is complete (`isVillageComplete`: tier 12 and every
-     building that can top out has). It says so first, then how many deeds are still open.
+   - **The village tier** (`VillageTier`, `getTierProgress`), first in every state. The village
+     follows the hero's level alone, so it answers "when does the painting change" in those terms:
+     the hero level of the next tier and how many levels away, an indigo bar from the current
+     tier's floor to that level with XP at both ends, and the XP still missing, with "about N
+     sessions at this week's pace" when the last seven days had any (`getWeekXpPerSession`). On
+     tier 12 the bar goes and the sentence is final. A finished village (`isVillageComplete`: tier
+     12 and every building that can top out has) says so inside the same block, then how many
+     deeds are still open.
    - **Next to rise** (`pickNextToRise`): the rep building fewest reps from its next rung, level 0
      excluded (one rep builds any of them, so they would always win). Past the rep buildings, the
-     deed with the most of its bar filled. It carries the only bar on the screen outside the detail
-     sheet, with its unit at both ends ("60 reps", "level 2 at 100"), and a link to quests already
-     filtered on that muscle (or the outings, for the High Road). On **day one** (`isDayOne`:
+     deed with the most of its bar filled. It carries its bar with its unit at both ends ("60
+     reps", "level 2 at 100"), and a link named after what raises it: quests filtered on that
+     muscle, the outings for the High Road, the adventures for the other deeds. When that building
+     is unbuilt the title reads **Next to build** and there is no bar. On **day one** (`isDayOne`:
      nothing earned beyond the three starters; a walk counts) it states the rule instead, and links
      to the first quest.
    - **Since your last quest**, only on arrival from a session: each building that rose, and
@@ -44,12 +54,59 @@ row can be read without a tap.
      Deeds, Starter, each labelled with what feeds it. Unbuilt buildings sit in their family, not
      in a locked drawer. A row is the name, the next rung in words, and "level 2 of 3" with pips
      on the building's **real ceiling** (`buildingCeiling`: 3 for the six upgrades, 5 elsewhere).
-     Day one shows the starters and one "Not built yet" list; a finished village leads with the
-     deeds and folds the rest into one family.
+     The building "Next to rise" already names keeps its row, marked by a gold edge, so it is found
+     where it belongs without being read twice. Day one shows the starters and one "Not built yet"
+     list; a finished village leads with the deeds and folds the rest into one family.
    - The foot: "Nothing is managed here."
 
+A building has **three states**: unbuilt (the condition in words, no bar, no "level 1 at 1"),
+rising (a bar with its unit), at its ceiling (no bar). `getBuildingProgress` returns null for the
+first and the last. The one exception is the High Road inside its first league, whose whole-league
+tally cannot show a first walk and whose bar can.
+
 Below 700 dp of window height the painting is cut to a band 62% of the width tall (starting 20% in),
-so "Next to rise" stays above the fold.
+so the tier block stays above the fold.
+
+## Deeds
+
+The four tier-4 buildings answer to deeds, and **no finished campaign feeds two of them**:
+
+| Building | Counts | Floors |
+|---|---|---|
+| Dragon Lair | bosses beaten at least once (`getBossBanners`) | 1, 2, 3, 4, 6 |
+| Champion Arena | rematches: boss campaigns finished again after the first victory | 1, 3, 6, 10, 15 |
+| Hall of Heroes | finished campaigns that are not a boss (routes), replays included | 1, 2, 4, 7, 10 |
+| High Road | leagues covered outside | 1, 15, 40, 90, 200 |
+
+Until 2026-09 one boss run raised the lair, the arena (every boss victory) and the hall (every
+finished campaign) at once, and the detail sheets said nearly the same sentence three times. The
+lair also stopped at five bosses while six exist, so the sixth raised nothing.
+
+The content behind the hall is thin: two routes, no events. Its floors are low for that reason, and
+its top still means replaying them.
+
+**Levels already earned are kept.** Levels are derived, so the recut would have lowered some
+buildings with nothing on screen to explain it, and the return sequence can only ever show a rise.
+[`drizzle/0060`](../../drizzle/0060_the_day_the_deeds_were_recut.sql) writes `deedsRecutAt` to
+`user_preferences` at the first launch of the version that ships the recut. Runs finished before
+it are also counted under the old rules, and each deed building shows the higher of the two
+levels; its next rung and its bar follow the new rules, and the detail sheet says the level was
+kept (`kept`), since "level 2" over "0 rematches" reads as a bug otherwise. A run finished after it
+feeds only the new count, so the old one is frozen. A fresh install writes the marker before any
+run exists and keeps nothing.
+
+The first version pinned a date in the code, set after the release so no run could drop a level.
+The adversarial review caught what that cost: every run between the release and that date was
+counted both ways for good, and a boss beaten in that window raised the hall and the arena too.
+A date fixed in advance cannot be right on both sides of an unknown release day; the migration runs
+on the only day that matters on each phone.
+
+One consequence is deliberate: a hero who had beaten five bosses keeps the old lair at 5 of 5, and
+the sixth boss raises nothing for them. Everyone else needs all six.
+
+"Next to rise", once the rep buildings are spent, first offers a style never trained, then the deed
+with the most of its bar filled, and between deeds equally far along the fewest units left: a kept
+hall at 0 of 7 routes loses to a road one walk away.
 
 ## The return from a session
 
@@ -77,6 +134,8 @@ No villager in the card: VictoryView already picked the one villager a victory g
 | Trophy wall | Defeated bosses: the Journal's `BossesCard`. Achievements were already in `AchievementsCard`. |
 | A tile that pulsed once | The return sequence above |
 | Gold dots on the painting, one per building (shipped in #92) | Removed the same day at the hero's request: the painting stays clean, and the anchors only aim the lean-in |
+| A "finished" card above the panel | Inside the tier block, which already announces the last tier |
+| "Divine 44" after "Level 44" | The rank alone |
 
 ## Implementation notes
 

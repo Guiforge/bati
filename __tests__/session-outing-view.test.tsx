@@ -311,3 +311,27 @@ describe("finishing an outing", () => {
     expect(useSessionStore.getState().currentExerciseIndex).toBe(1);
   });
 });
+
+/**
+ * A typed count, on the set it was typed for.
+ *
+ * Here and not in a file of its own because a mount of this screen costs about 45 s per file
+ * (see the timeout above). What is asserted is the result the store banked, not the numeral: a
+ * field that showed 150 and logged the target would pass a screen assertion.
+ */
+describe("a rep count typed past the target", () => {
+  test("is the count the set logs", async () => {
+    const pushups = { ...mockWalk, id: 3, enName: "Pushups", frName: "Pompes", style: "strength" };
+    await mountRunning({
+      ...questWith(pushups),
+      exercises: [{ exercise: pushups, target: { type: "reps", value: 10 } }],
+    } as unknown as Quest);
+
+    const count = screen.getByTestId("session-reps-input");
+    await act(() => fireEvent(count, "focus"));
+    await act(() => fireEvent.changeText(count, "150"));
+    await fireEvent.press(screen.getByTestId("session-complete-exercise"));
+
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(150);
+  });
+});

@@ -40,9 +40,6 @@ const TEXT_FIELD = /<TextInput|<Input\b/;
  * view, and the sheet sets the prop on its own list.
  */
 const EXEMPT: Record<string, string> = {
-  "components/session/ActiveExerciseView.tsx":
-    "the only text field it reaches is ExercisePickerSheet's search, which lives in a modal " +
-    "sheet over this screen and persists taps itself.",
   "app/(tabs)/quests/[id].tsx":
     "same picker sheet, opened over the quest detail. Nothing on this screen is typed into.",
 };

@@ -1,4 +1,4 @@
-import { act, render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -144,6 +144,26 @@ describe("RestView", () => {
     }
 
     expect(mockedPlayCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "go"]);
+  });
+
+  it("logs a count typed over the last set", async () => {
+    // The set the hero just finished, logged at its target of 10. They did 40.
+    useSessionStore.setState({
+      results: [
+        {
+          exerciseId: 1,
+          result: { type: "reps", value: 10 },
+          target: { type: "reps", value: 10 },
+        },
+      ] as never,
+    });
+    const view = await mountRest();
+
+    const count = view.getByTestId("rest-result-input");
+    await act(() => fireEvent(count, "focus"));
+    await act(() => fireEvent.changeText(count, "40"));
+
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(40);
   });
 
   it("stays resting while the timer still has time on it", async () => {

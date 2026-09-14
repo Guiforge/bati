@@ -9,6 +9,7 @@ import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { targetRangeFor } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -18,6 +19,7 @@ import { localizedName } from "@/src/i18n/localized";
 import { useChorusStore } from "@/stores/chorus";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { CountInput } from "./CountInput";
 import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 
 // One campfire per avatar archetype (scripts/generate-rest.py); a rest draws one at random.
@@ -199,6 +201,9 @@ export function RestView() {
             single 24 everywhere said all three were peers, which is the one thing they are not,
             and it spent twelve points of a column that had none to spare. */}
         <ScrollView
+          // The last set's count is a text field: without this, the first tap after typing it
+          // only puts the keyboard away. See __tests__/keyboard-taps-guard.test.ts.
+          keyboardShouldPersistTaps="handled"
           style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1, justifyContent: "center", gap: 28 }}
         >
@@ -290,14 +295,21 @@ export function RestView() {
                         handleUpdateResult(Math.max(1, lastResult.result.value - adjustStep))
                       }
                     />
-                    <Text
-                      fontWeight="700"
-                      fontSize={20}
-                      color="$text"
-                      style={{ minWidth: 42, textAlign: "center" }}
-                    >
-                      {isLastTimeBased ? `${lastResult.result.value}s` : lastResult.result.value}
-                    </Text>
+                    <XStack minW={42} items="baseline" justify="center">
+                      <CountInput
+                        testID="rest-result-input"
+                        value={lastResult.result.value}
+                        onChange={updateLastResult}
+                        max={targetRangeFor(lastResult.result.type, lastResult.pricing?.style).max}
+                        fontSize={20}
+                        accessibilityLabel={t("session.result_count_accessibility")}
+                      />
+                      {isLastTimeBased ? (
+                        <Text fontWeight="700" fontSize={20} color="$text">
+                          s
+                        </Text>
+                      ) : null}
+                    </XStack>
                     <Button
                       size="$3"
                       hitSlop={8}

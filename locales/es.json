@@ -165,7 +165,7 @@
     "report_bug_empty": "Nada registrado",
     "no_mail_client": "No se ha encontrado ninguna app de correo en este dispositivo",
     "photos_denied": "El acceso a las fotos está desactivado. Permítelo en los ajustes del sistema.",
-    "sound": "Pitidos de la cuenta atrás",
+    "sound": "Pitidos de conteo",
     "villagers": "Aldeanos",
     "replay_guides": "Volver a ver las guías",
     "replay_guides_done": "Las guías volverán a aparecer",
@@ -341,7 +341,7 @@
   },
   "adventures": {
     "gallery_title": "Aventuras",
-    "gallery_subtitle": "Varias sesiones seguidas, una historia y un jefe al final",
+    "gallery_subtitle": "Programas de varias sesiones, con historia y combate contra un jefe",
     "details_title": "Aventura",
     "not_found": "Aventura no encontrada",
     "invalid_id": "Aventura no válida",

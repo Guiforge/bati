@@ -137,7 +137,7 @@
   },
   "settings": {
     "title": "Einstellungen",
-    "preferences": "EINSTELLUNGEN",
+    "preferences": "VORLIEBEN",
     "language": "Sprache",
     "language_ai_note": "Diese Sprache wurde von einer KI übersetzt, und noch hat sie niemand mit Deutsch als Muttersprache gelesen. Klingt ein Wort falsch? Sag es mir über „Feedback, eine Idee, ein Bug“ unten auf dieser Seite.",
     "avatar": "AVATAR",
@@ -262,7 +262,7 @@
     "swap_reason_harder": "Eine schwerere Stufe",
     "swap_reason_pattern": "Gleiche Bewegung",
     "swap_reason_family": "Gleiche Familie",
-    "level": "Schwierigkeit",
+    "level": "Level",
     "level_easy": "Leicht",
     "level_effect_easy": "Ziele −25 % · XP ×0,9",
     "level_effect_hard": "Ziele +25 % · XP ×1,2",

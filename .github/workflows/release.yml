@@ -48,7 +48,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      # `packages` without its default `tools`, which cmdline-tools 20.0 no longer has (see
+      # pages.yml).
       - uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
 
       # Without this the runner compiles React Native, every Expo module and the NDK output from
       # nothing, every single run — which is most of the 29 minutes a release used to take. What

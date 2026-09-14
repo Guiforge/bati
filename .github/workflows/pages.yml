@@ -73,8 +73,12 @@ jobs:
         if: steps.fdroid.outputs.ready == 'true'
         with:
           python-version: "3.12"
+      # `packages` without its default `tools`: the runner's cmdline-tools 20.0 has no such
+      # package any more, sdkmanager exits 1 on it, and the whole deploy failed on 2026-09-14.
       - uses: android-actions/setup-android@v4
         if: steps.fdroid.outputs.ready == 'true'
+        with:
+          packages: platform-tools
       - name: Install fdroidserver
         if: steps.fdroid.outputs.ready == 'true'
         run: pip install "setuptools<81" fdroidserver

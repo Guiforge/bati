@@ -4,9 +4,10 @@
 # run that step's session to victory. Distinct from main-journey.yaml, which reaches a
 # session through the quest gallery; this one goes through the campaign runner.
 #
-# Stops at "the step's session completed". Asserting exact campaign progress copy would
-# pin translated text, and the step count differs per adventure — what matters here is
-# that the campaign entry point actually produces a playable session.
+# Then asserts the campaign moved: step 1 completed, step 2 current. Through testIDs that carry
+# each step's status, so no translated copy is pinned. The flow used to stop at "a session
+# opened", and passed while a session started from the step row advanced nothing: the hero
+# finished "Couper du bois" again and again with step 2 still locked.
 #
 # testID only, so an emulator in fr_FR passes too.
 #
@@ -36,11 +37,12 @@ appId: com.guiforge.bati.dev
 
 # --- Start the next step ----------------------------------------------------
 
-# One CTA drives both "start" and "continue" — on a cleared state it is step 1.
+# The step row, not the CTA: it is the door that lost the run step, and it now goes through the
+# CTA's own handler, so this walks both. On a cleared state step 1 is current, with no run yet.
 - assertVisible:
     id: "adventure-start"
 - tapOn:
-    id: "adventure-start"
+    id: "adventure-step-0-active"
 
 # Starting a run hands off to the step's quest details screen.
 - runFlow: subflows/complete-a-session.yaml
@@ -52,3 +54,16 @@ appId: com.guiforge.bati.dev
     waitToSettleTimeoutMs: 500
 - assertVisible:
     id: "adventures-adventure-card"
+
+# --- The campaign moved -----------------------------------------------------
+
+# The campaign under way sorts first (`adventureOrder`).
+- tapOn:
+    id: "adventures-adventure-card"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "adventure-step-0-completed"
+    timeout: 10000
+- assertVisible:
+    id: "adventure-step-1-active"

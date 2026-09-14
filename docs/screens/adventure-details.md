@@ -42,6 +42,10 @@ Adventure Details is the campaign hub. It shows:
 
 Continuing an adventure sends you to the next **[Quest Details](quest-details.md)** page for that step, then into the **[Session](session.md)**.
 
+Tapping the current step in the list does exactly what the Continue button does. A session only
+advances the campaign when it carries the run step's id, and the row used to open the quest
+without it: the quest could be finished forever while the step stayed current.
+
 ## Boss adventures
 
 Boss adventures are still made of steps like any other adventure, but the last steps are framed as a bigger climax.

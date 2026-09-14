@@ -25,7 +25,7 @@ import {
   Families,
   NextToRise,
   SinceLastQuest,
-  VillageDone,
+  VillageTier,
 } from "@/components/village/VillageLists";
 import { VillageReward } from "@/components/village/VillageReward";
 import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
@@ -37,6 +37,7 @@ import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
 import { dayKey } from "@/db/dates";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import {
+  getTierProgress,
   getVillageScene,
   isDayOne,
   isVillageComplete,
@@ -71,7 +72,7 @@ const LEAN = { duration: 900, easing: Easing.bezier(0.2, 0.7, 0.2, 1) } as const
 
 /**
  * Below this window height the square painting takes the whole fold, so it is cut to a band and
- * "Next to rise" starts above the fold. 700 dp is the line between a 360x640 phone and a 393x852
+ * the tier block starts above the fold. 700 dp is the line between a 360x640 phone and a 393x852
  * one. The full painting is still one tap away (VillageSceneViewer).
  */
 const COMPACT_HEIGHT = 700;
@@ -337,8 +338,44 @@ export function VillageScene() {
               justifyContent: "flex-end",
             }}
           >
-            {/* The bottom 14 is what the panel below overlaps. */}
+            {/* The bottom 14 is what the panel below overlaps. The focus line comes last, where
+                the scrim is darkest: above the name it sat on the bright top of the painting
+                (an aurora on tier 12), secondary text on pale turquoise. The flame shares the
+                name's line, which gives the panel back a whole row. */}
             <YStack px="$4" pb={28} gap={6}>
+              <XStack items="center" gap={10}>
+                <Text
+                  flex={1}
+                  minW={0}
+                  fontWeight="700"
+                  fontSize={30}
+                  lineHeight={32}
+                  color="$text"
+                  numberOfLines={1}
+                >
+                  {villageName || tierName}
+                </Text>
+                {scene.flame > 0 && (
+                  <XStack
+                    items="center"
+                    gap={5}
+                    px={9}
+                    py={3}
+                    rounded={999}
+                    bg="$glassBg"
+                    borderWidth={1}
+                    borderColor="$glassBorder"
+                  >
+                    <FlameFlicker size={14} />
+                    <Text fontSize={11.5} fontWeight="600" color="$text" numberOfLines={1}>
+                      {`${t(`village.flame_${scene.flame}`)} · ${t("village.flame_days", { count: scene.streakDays })}`}
+                    </Text>
+                  </XStack>
+                )}
+              </XStack>
+              <Text fontSize={13} fontWeight="500" color="$textSecondary">
+                {tierLine}
+              </Text>
               {scene.dominantSport ? (
                 <XStack items="center" gap={8}>
                   <Image
@@ -353,31 +390,6 @@ export function VillageScene() {
                   </Text>
                 </XStack>
               ) : null}
-              <Text fontWeight="700" fontSize={30} lineHeight={32} color="$text" numberOfLines={1}>
-                {villageName || tierName}
-              </Text>
-              <XStack items="center" gap={10} flexWrap="wrap">
-                <Text fontSize={13} fontWeight="500" color="$textSecondary">
-                  {tierLine}
-                </Text>
-                {scene.flame > 0 && (
-                  <XStack
-                    items="center"
-                    gap={5}
-                    px={9}
-                    py={3}
-                    rounded={999}
-                    bg="$glassBg"
-                    borderWidth={1}
-                    borderColor="$glassBorder"
-                  >
-                    <FlameFlicker size={14} />
-                    <Text fontSize={11.5} fontWeight="600" color="$text">
-                      {`${t(`village.flame_${scene.flame}`)} · ${t("village.flame_days", { count: scene.streakDays })}`}
-                    </Text>
-                  </XStack>
-                )}
-              </XStack>
             </YStack>
           </LinearGradient>
 
@@ -400,12 +412,24 @@ export function VillageScene() {
           mt={-14}
           {...sectionAnim}
         >
-          {complete ? <VillageDone name={villageName || tierName} openDeeds={openDeeds} /> : null}
+          <VillageTier
+            progress={getTierProgress(scene.level, scene.totalXp, scene.xpPerSession)}
+            name={villageName || tierName}
+            complete={complete}
+            openDeeds={openDeeds}
+            language={language}
+          />
           <NextToRise building={next} dayOne={dayOne} language={language} onOpen={openBuilding} />
           {growth.length > 0 ? (
             <SinceLastQuest growth={growth} buildings={scene.buildings} language={language} />
           ) : null}
-          <Families families={families} risen={risen} language={language} onOpen={openBuilding} />
+          <Families
+            families={families}
+            risen={risen}
+            next={next?.code ?? null}
+            language={language}
+            onOpen={openBuilding}
+          />
           <YStack gap={6}>
             <Text fontSize={12} lineHeight={17} color="$textSecondary" fontStyle="italic">
               {weather}

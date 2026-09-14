@@ -1,4 +1,4 @@
-import { groupFamilies } from "@/components/village/rows";
+import { groupFamilies, questLink } from "@/components/village/rows";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import {
   buildingCeiling,
@@ -63,6 +63,22 @@ describe("pickNextToRise", () => {
     expect(pickNextToRise([...starters, farm, lair, road])?.code).toBe("high_road");
   });
 
+  it("breaks a tie between deeds at 0 % on what is left, not on list order", () => {
+    const farm = b("farm", 5);
+    // Kept at 3 from the old count, seven routes from the next rung: first in the list.
+    const hall = b("heroes_hall", 3, { driver: "routes", metricValue: 0, nextTarget: 7 });
+    const arena = b("champion_arena", 2, { driver: "rematches", metricValue: 0, nextTarget: 6 });
+    const road = b("high_road", 0, { driver: "leagues", metricValue: 0, nextTarget: 1 });
+    expect(pickNextToRise([...starters, farm, hall, arena, road])?.code).toBe("high_road");
+  });
+
+  it("offers a style never trained once every started building is at its ceiling", () => {
+    const farm = b("farm", 5);
+    const grove = b("druid_grove", 0, { driver: "style", metricValue: 0, nextTarget: 1 });
+    const road = b("high_road", 2, { driver: "leagues", metricValue: 30, nextTarget: 40 });
+    expect(pickNextToRise([...starters, farm, grove, road])?.code).toBe("druid_grove");
+  });
+
   it("has nothing to say on day one, and a walk is enough to leave it", () => {
     const quarry = b("quarry", 0, { nextTarget: 1 });
     expect(isDayOne([...starters, quarry])).toBe(true);
@@ -113,6 +129,19 @@ describe("families", () => {
     expect(isVillageComplete(11, all)).toBe(false);
     expect(groupFamilies(all, true).map((f) => f.key)).toEqual(["deed", "rest"]);
   });
+});
+
+it("sends a deed a campaign raises to the adventures, and the road to the outings", () => {
+  expect(questLink(b("dragon_lair", 1, { driver: "bosses" })).pathname).toBe("/(tabs)/adventures");
+  expect(questLink(b("champion_arena", 0, { driver: "rematches" })).pathname).toBe(
+    "/(tabs)/adventures",
+  );
+  expect(questLink(b("heroes_hall", 0, { driver: "routes" })).pathname).toBe("/(tabs)/adventures");
+  expect(questLink(b("high_road", 0, { driver: "leagues" }))).toEqual({
+    pathname: "/(tabs)/quests",
+    params: { outside: "1" },
+  });
+  expect(questLink(b("forge", 1)).params).toEqual({ muscle: "chest" });
 });
 
 it("an upgrade tops out at 3, everything else at 5", () => {

@@ -1,10 +1,11 @@
-import { eq, isNotNull, sql } from "drizzle-orm";
+import { and, count, eq, gte, isNotNull, lt, sql, sum } from "drizzle-orm";
 import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
 import type { Localized } from "@/src/i18n/deviceLanguage";
-import { listFinishedRunSummaries } from "./adventures";
+import { type FinishedAdventureSummary, listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
 import { getMuscleBalance } from "./muscleBalance";
+import { getPreference } from "./preferences";
 import {
   type BuildingCode,
   type BuildingTier,
@@ -15,10 +16,11 @@ import {
   type MuscleCode,
 } from "./schema";
 import { type FlameLevel, getFlameLevel, getStreakInfo } from "./streaks";
-import { getUserLevelInfo } from "./userLevel";
+import { getRankName, getUserLevelInfo, getXpForLevel } from "./userLevel";
 import { repEquivalentSql } from "./workUnits";
 
-const { bossFights, adventures, exercises, completedExercises } = schema;
+const { bossFights, adventures, adventureRuns, exercises, completedExercises, completedQuest } =
+  schema;
 
 // Same fallback used by every getXAsset() helper in constants/assetMap.ts — never expose
 // `| null` for imagePath, resolve to the placeholder here so callers have one code path.
@@ -164,23 +166,25 @@ export async function getBossBanners(): Promise<BossBanner[]> {
 }
 
 type RunTally = {
-  /** Finished campaigns of every kind — the Hall of Heroes counts these. */
-  finishedRuns: number;
-  /** Finished boss campaigns, replays included — the arena counts these. */
-  bossVictories: number;
+  /** Boss campaigns finished again after the first victory: the arena counts these. */
+  rematches: number;
+  /** Finished campaigns that are not a boss, replays included: the Hall of Heroes counts these. */
+  routes: number;
 };
 
-async function tallyFinishedRuns(): Promise<RunTally> {
-  const summaries = await listFinishedRunSummaries();
-
-  let finishedRuns = 0;
-  let bossVictories = 0;
+/**
+ * One finished campaign feeds one building. The first victory over a boss is the lair's (read from
+ * the banners), every later one is the arena's, and everything that is not a boss is the hall's.
+ * Until 2026-09 a single boss run raised all three, and no sentence could tell them apart.
+ */
+function tallyFinishedRuns(summaries: readonly FinishedAdventureSummary[]): RunTally {
+  let rematches = 0;
+  let routes = 0;
   for (const s of summaries) {
-    finishedRuns += s.timesFinished;
-    if (s.kind === "boss") bossVictories += s.timesFinished;
+    if (s.kind === "boss") rematches += Math.max(0, s.timesFinished - 1);
+    else routes += s.timesFinished;
   }
-
-  return { finishedRuns, bossVictories };
+  return { rematches, routes };
 }
 
 export type DominantSportOverlay = {
@@ -267,8 +271,8 @@ export type BuildingDriver =
   | "style"
   | "prereq"
   | "bosses"
-  | "adventures"
-  | "boss_victories"
+  | "rematches"
+  | "routes"
   | "leagues";
 
 export type VillageBuilding = {
@@ -300,6 +304,12 @@ export type VillageBuilding = {
    * other branch of `deriveLevel` would otherwise carry a `null` that says nothing.
    */
   exactValue?: number;
+  /**
+   * The level comes from the old deed count, which gave more than the new one does. The tally and
+   * the next rung are the new count's, so "level 2" can sit on "0 rematches"; the detail sheet
+   * says why instead of leaving it to read as a bug.
+   */
+  kept?: boolean;
 };
 
 // The shared ladder from schema.ts, with level 1 at "any work at all" — a building appears
@@ -308,13 +318,66 @@ const VOLUME_FLOORS: readonly number[] = [1, 2, 3, 4, 5].map((lvl) =>
   lvl === 1 ? 1 : (buildingLevelThresholds[lvl] ?? 0),
 );
 
-// The legendary three answer to deeds, not to volume, and each names a different deed so its
-// detail sheet has one sentence to say. Five bosses exist in the content, so the lair maxes on
-// the full set instead of the old unreachable ten; the arena counts victories with replays
-// included; the hall counts finished campaigns, which is what its unlock text always claimed.
-const BOSS_FLOORS: readonly number[] = [1, 2, 3, 4, 5];
-const ADVENTURE_FLOORS: readonly number[] = [1, 3, 6, 10, 15];
-const VICTORY_FLOORS: readonly number[] = [3, 5, 8, 12, 20];
+// The legendary three answer to deeds, and no finished campaign feeds two of them
+// (tallyFinishedRuns). Six bosses exist in the content since the Golem (drizzle/0027), so the
+// lair tops out on the full set; the floors used to stop at five, and the sixth boss raised
+// nothing. The hall's floors are low because two routes exist, and reaching its top already
+// means replaying them.
+const BOSS_FLOORS: readonly number[] = [1, 2, 3, 4, 6];
+const REMATCH_FLOORS: readonly number[] = [1, 3, 6, 10, 15];
+const ROUTE_FLOORS: readonly number[] = [1, 2, 4, 7, 10];
+
+/**
+ * When this install started counting deeds the new way: unix seconds, written once by
+ * drizzle/0060 at the first launch of the version that ships the recut. Runs finished before it
+ * are also counted the old way, and a deed building shows whichever level is higher, so a level
+ * the hero already saw is never taken back. A run finished after it only ever feeds the new count.
+ *
+ * ponytail: the old floors and tally stay in the code for as long as anyone's history predates
+ * the recut, which may be forever. Drop them when that stops mattering.
+ */
+const DEEDS_RECUT_AT_KEY = "deedsRecutAt";
+const LEGACY_BOSS_FLOORS: readonly number[] = [1, 2, 3, 4, 5];
+const LEGACY_ADVENTURE_FLOORS: readonly number[] = [1, 3, 6, 10, 15];
+const LEGACY_VICTORY_FLOORS: readonly number[] = [3, 5, 8, 12, 20];
+
+type LegacyDeedLevels = Partial<Record<BuildingCode, number>>;
+
+/** The three deed levels as the old rules gave them, over what was finished before the recut. */
+async function getLegacyDeedLevels(banners: readonly BossBanner[]): Promise<LegacyDeedLevels> {
+  const marker = await getPreference(DEEDS_RECUT_AT_KEY);
+  // Only a database that never ran 0060 has none, and it has no history from before the recut.
+  if (marker === null) return {};
+  const recutAt = new Date(Number(marker) * 1000);
+
+  const rows = await db
+    .select({
+      adventureId: adventureRuns.adventureId,
+      kind: adventures.kind,
+      times: count(),
+    })
+    .from(adventureRuns)
+    .innerJoin(adventures, eq(adventures.id, adventureRuns.adventureId))
+    .where(and(eq(adventureRuns.status, "finished"), lt(adventureRuns.finishedAt, recutAt)))
+    .groupBy(adventureRuns.adventureId);
+
+  // A standing defeat without a finished campaign counted for the lair too.
+  const bosses = new Set(banners.filter((b) => b.defeatedAt < recutAt).map((b) => b.adventureId));
+  let finishedRuns = 0;
+  let bossVictories = 0;
+  for (const row of rows) {
+    finishedRuns += row.times;
+    if (row.kind !== "boss") continue;
+    bossVictories += row.times;
+    bosses.add(row.adventureId);
+  }
+
+  return {
+    dragon_lair: levelFromFloors(bosses.size, LEGACY_BOSS_FLOORS),
+    heroes_hall: levelFromFloors(finishedRuns, LEGACY_ADVENTURE_FLOORS),
+    champion_arena: levelFromFloors(bossVictories, LEGACY_VICTORY_FLOORS),
+  };
+}
 
 /**
  * Bati's league is a kilometre.
@@ -349,8 +412,8 @@ const ROAD_FLOORS: readonly number[] = [1, 15, 40, 90, 200];
  */
 const TIER_4_VALUES = {
   bosses: (i: LevelInputs) => i.bossesDefeated,
-  adventures: (i: LevelInputs) => i.finishedRuns,
-  boss_victories: (i: LevelInputs) => i.bossVictories,
+  rematches: (i: LevelInputs) => i.rematches,
+  routes: (i: LevelInputs) => i.routes,
   leagues: (i: LevelInputs) => i.leagues,
 } satisfies Partial<Record<BuildingDriver, (inputs: LevelInputs) => number>>;
 
@@ -361,8 +424,8 @@ const TIER_4_DRIVERS: Partial<
   Record<BuildingCode, { driver: DeedDriver; floors: readonly number[] }>
 > = {
   dragon_lair: { driver: "bosses", floors: BOSS_FLOORS },
-  heroes_hall: { driver: "adventures", floors: ADVENTURE_FLOORS },
-  champion_arena: { driver: "boss_victories", floors: VICTORY_FLOORS },
+  heroes_hall: { driver: "routes", floors: ROUTE_FLOORS },
+  champion_arena: { driver: "rematches", floors: REMATCH_FLOORS },
   high_road: { driver: "leagues", floors: ROAD_FLOORS },
 };
 
@@ -409,8 +472,10 @@ type LevelInputs = {
   villageTier: VillageTier;
   heroLevel: number;
   bossesDefeated: number;
-  finishedRuns: number;
-  bossVictories: number;
+  rematches: number;
+  routes: number;
+  /** Deed levels the old rules had already given, which a deed building never drops below. */
+  legacy: LegacyDeedLevels;
   /** Ground covered outside the walls, in leagues. Never a work unit, never a rep. */
   leagues: number;
   /** Leagues before the floor, so the road's bar can move inside its first one. */
@@ -421,8 +486,27 @@ type LevelInputs = {
 
 type DerivedLevel = Pick<
   VillageBuilding,
-  "level" | "driver" | "metricValue" | "nextTarget" | "exactValue"
+  "level" | "driver" | "metricValue" | "nextTarget" | "exactValue" | "kept"
 >;
+
+/** A tier-4 building: its deed tally on its floors, never below the level the old count gave. */
+function deriveDeedLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
+  const spec = TIER_4_DRIVERS[code];
+  // Loud rather than a default: a fallback here once dressed any unlisted deed up as the lair.
+  if (!spec) throw new Error(`Tier-4 building ${code} has no deed driver`);
+  const value = TIER_4_VALUES[spec.driver](inputs);
+  const counted = levelFromFloors(value, spec.floors);
+  const level = Math.max(counted, inputs.legacy[code] ?? 0);
+  return {
+    level,
+    driver: spec.driver,
+    metricValue: value,
+    nextTarget: nextFloor(level, spec.floors),
+    // Deeds are counted, not measured: only the road arrives already rounded down.
+    ...(spec.driver === "leagues" ? { exactValue: inputs.leaguesExact } : {}),
+    ...(level > counted ? { kept: true } : {}),
+  };
+}
 
 /** Level for everything except tier 3, which needs its prerequisite resolved first. */
 function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
@@ -448,19 +532,7 @@ function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
     };
   }
 
-  if (def.tier === 4) {
-    const spec = TIER_4_DRIVERS[code] ?? { driver: "bosses" as const, floors: BOSS_FLOORS };
-    const value = TIER_4_VALUES[spec.driver](inputs);
-    const level = levelFromFloors(value, spec.floors);
-    return {
-      level,
-      driver: spec.driver,
-      metricValue: value,
-      nextTarget: nextFloor(level, spec.floors),
-      // Deeds are counted, not measured: only the road arrives already rounded down.
-      ...(spec.driver === "leagues" ? { exactValue: inputs.leaguesExact } : {}),
-    };
-  }
+  if (def.tier === 4) return deriveDeedLevel(code, inputs);
 
   // Tier 3 is resolved in a second pass; this placeholder is overwritten there.
   if (def.tier !== 2) {
@@ -487,14 +559,16 @@ function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
  * still showing a village that grows building by building.
  */
 export async function getVillageBuildings(): Promise<VillageBuilding[]> {
-  const [balance, styleVolumes, banners, levelInfo, tally, leaguesM] = await Promise.all([
+  const [balance, styleVolumes, banners, levelInfo, summaries, leaguesM] = await Promise.all([
     getMuscleBalance("all"),
     getStyleVolumes(),
     getBossBanners(),
     getUserLevelInfo(),
-    tallyFinishedRuns(),
+    listFinishedRunSummaries(),
     totalLeaguesM(),
   ]);
+  const legacy = await getLegacyDeedLevels(banners);
+  const tally = tallyFinishedRuns(summaries);
 
   const volumeByMuscle = new Map(balance.muscles.map((m) => [m.muscle, m.volume]));
   const villageTier = getVillageTier(levelInfo.level);
@@ -508,8 +582,9 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
         villageTier,
         heroLevel: levelInfo.level,
         bossesDefeated: banners.length,
-        finishedRuns: tally.finishedRuns,
-        bossVictories: tally.bossVictories,
+        rematches: tally.rematches,
+        routes: tally.routes,
+        legacy,
         leagues: Math.floor(leaguesM / METRES_PER_LEAGUE),
         leaguesExact: leaguesM / METRES_PER_LEAGUE,
         volumeByMuscle,
@@ -555,33 +630,28 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
       metricValue: derived?.metricValue ?? 0,
       nextTarget: derived?.nextTarget ?? null,
       ...(derived?.exactValue === undefined ? {} : { exactValue: derived.exactValue }),
+      ...(derived?.kept ? { kept: true } : {}),
     };
   });
 }
 
 /**
- * Progress toward the next level, 0-100, or null when there is nothing honest to count:
- * a maxed building, or a locked one whose condition is qualitative ("train your back")
- * rather than a deed tally — "0/1" under those is noise, not information.
+ * Progress toward the next level, 0-100, or null when there is nothing honest to count: a maxed
+ * building, or one not built yet. A building has three states, not two. Unbuilt is a condition in
+ * words; treating it as "in progress at 0 %" drew "0 bosses, level 1 at 1" over an empty bar,
+ * three ways of writing the same zero.
+ *
+ * One exception, the road inside its first league: its tally is whole leagues, so a first walk of
+ * 900 m is real ground the words cannot show, and the bar is the only thing that can.
  *
  * Shared by the scene card and the detail sheet so the two can never disagree about what
- * "almost there" means. The sheet used to compute it inline; the card needed the same
- * answer, and two copies of a threshold rule is how they drift.
+ * "almost there" means.
  */
 export function getBuildingProgress(building: VillageBuilding): number | null {
   if (building.nextTarget === null) return null;
-
-  const countsWhileLocked =
-    building.driver === "bosses" ||
-    building.driver === "adventures" ||
-    building.driver === "boss_victories" ||
-    // The road counts from the first metre: "0/1 leagues" is a tally the hero can act on, not
-    // the "train your back" of a qualitative unlock.
-    building.driver === "leagues";
-  if (building.level === 0 && !countsWhileLocked) return null;
-
-  if (building.nextTarget <= 0) return 0;
   const value = building.exactValue ?? building.metricValue;
+  if (building.level === 0 && !(building.driver === "leagues" && value > 0)) return null;
+  if (building.nextTarget <= 0) return 0;
   return Math.max(0, Math.min(100, (value / building.nextTarget) * 100));
 }
 
@@ -621,26 +691,34 @@ function repsLeft(building: VillageBuilding): number {
  * The one building the screen puts first: the thing a single session is most likely to raise.
  *
  * Reps first, and the fewest of them wins: "40 reps of chest" is closer than "350 reps of legs"
- * whatever the percentages say, because the hero trains in reps, not in fractions. Level 0 is left
- * out on purpose, since one rep builds any of those and they would win every time. Past the rep
- * buildings (a finished village) the deed with the most of its bar filled takes over, because a
- * league and a boss cannot be compared to each other. Null when nothing has a rung left, and on day
- * one: the screen says the rule instead.
+ * whatever the percentages say, because the hero trains in reps, not in fractions. Level 0 waits
+ * while any rep building is still rising, since one rep builds any of those and they would win
+ * every time; once every started one is at its ceiling, a style never trained is the closest thing
+ * left. Past the rep buildings the deed with the most of its bar filled takes over, because a
+ * league and a boss cannot be compared to each other, and between deeds that are equally far
+ * along, the fewest units left. Null when nothing has a rung left, and on day one: the screen says
+ * the rule instead.
  */
 export function pickNextToRise(buildings: VillageBuilding[]): VillageBuilding | null {
   if (isDayOne(buildings)) return null;
-  const reps = buildings
-    .filter((b) => (b.driver === "muscle" || b.driver === "style") && b.level > 0)
-    .filter((b) => b.nextTarget !== null);
-  if (reps.length > 0) {
-    return reps.reduce((best, b) => (repsLeft(b) < repsLeft(best) ? b : best));
-  }
-  const deeds = buildings.filter((b) => b.tier === 4 && b.nextTarget !== null);
-  const progress = (b: VillageBuilding) => getBuildingProgress(b) ?? 0;
-  return deeds.reduce<VillageBuilding | null>(
-    (best, b) => (best === null || progress(b) > progress(best) ? b : best),
-    null,
+  const reps = buildings.filter(
+    (b) => (b.driver === "muscle" || b.driver === "style") && b.nextTarget !== null,
   );
+  const rising = reps.filter((b) => b.level > 0);
+  if (rising.length > 0) {
+    return rising.reduce((best, b) => (repsLeft(b) < repsLeft(best) ? b : best));
+  }
+  const unbuilt = reps.find((b) => b.level === 0);
+  if (unbuilt) return unbuilt;
+
+  // A kept hall at 0 of 7 routes and an unbuilt road one walk away are both at 0 %: the walk wins.
+  const progress = (b: VillageBuilding) => getBuildingProgress(b) ?? 0;
+  const left = (b: VillageBuilding) =>
+    (b.nextTarget ?? Number.POSITIVE_INFINITY) - (b.exactValue ?? b.metricValue);
+  const deeds = buildings
+    .filter((b) => b.tier === 4 && b.nextTarget !== null)
+    .sort((a, b) => progress(b) - progress(a) || left(a) - left(b));
+  return deeds[0] ?? null;
 }
 
 /** What the victory screen hands the village: each building that rose, from which level to which. */
@@ -695,6 +773,72 @@ export function diffVillageTier(oldLevel: number, newLevel: number): VillageTier
   return newTier > oldTier ? { oldTier, newTier } : null;
 }
 
+export const MAX_TIER: VillageTier = 12;
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Average XP of a session over the last seven days, or null when there was none to average. */
+export async function getWeekXpPerSession(now = new Date()): Promise<number | null> {
+  const rows = await db
+    .select({ xp: sum(completedQuest.xpEarned), sessions: count() })
+    .from(completedQuest)
+    .where(gte(completedQuest.performedAt, new Date(now.getTime() - WEEK_MS)));
+  const sessions = rows[0]?.sessions ?? 0;
+  return sessions > 0 ? Number(rows[0]?.xp ?? 0) / sessions : null;
+}
+
+/**
+ * When the painting changes next. The village follows the hero's level and nothing else, so the
+ * answer is a hero level, how many levels away, and the XP in between.
+ */
+export type TierProgress =
+  | {
+      final: false;
+      tier: VillageTier;
+      /** The hero level that brings the next tier. */
+      nextLevel: number;
+      levelsAway: number;
+      totalXp: number;
+      /** The hero level this tier began at, and its XP: the bar's left end. */
+      fromLevel: number;
+      fromXp: number;
+      /** XP at `nextLevel`, the bar's right end. */
+      targetXp: number;
+      xpShort: number;
+      /** 0-100, from where this tier began to where the next one does. */
+      progress: number;
+      /** Sessions like this week's that would cover the gap, or null with nothing to go by. */
+      sessionsAtPace: number | null;
+    }
+  | { final: true; tier: VillageTier; reachedAt: number };
+
+export function getTierProgress(
+  level: number,
+  totalXp: number,
+  xpPerSession: number | null,
+): TierProgress {
+  const tier = getVillageTier(level);
+  if (tier === MAX_TIER) return { final: true, tier, reachedAt: TIER_LEVEL_FLOORS[MAX_TIER] };
+
+  const nextLevel = TIER_LEVEL_FLOORS[(tier + 1) as VillageTier];
+  const fromLevel = TIER_LEVEL_FLOORS[tier];
+  const fromXp = getXpForLevel(fromLevel);
+  const targetXp = getXpForLevel(nextLevel);
+  const xpShort = Math.max(0, targetXp - totalXp);
+  return {
+    final: false,
+    tier,
+    nextLevel,
+    levelsAway: nextLevel - level,
+    totalXp,
+    fromLevel,
+    fromXp,
+    targetXp,
+    xpShort,
+    progress: Math.max(0, Math.min(100, ((totalXp - fromXp) / (targetXp - fromXp)) * 100)),
+    sessionsAtPace: xpPerSession && xpPerSession > 0 ? Math.ceil(xpShort / xpPerSession) : null,
+  };
+}
+
 /**
  * The village no longer carries a trophy wall. Achievements were already listed in the Journal,
  * and a dated rack is history, not a place: the defeated bosses moved to the Journal as their own
@@ -704,8 +848,11 @@ export function diffVillageTier(oldLevel: number, newLevel: number): VillageTier
 export type VillageScene = {
   tier: VillageTier;
   level: number;
-  /** The hero's level title, shown beside the tier on the scene. */
+  /** The hero's rank, shown beside the level on the scene, without the level repeated in it. */
   title: Localized;
+  totalXp: number;
+  /** Average XP of a session over the last seven days, or null when there was none. */
+  xpPerSession: number | null;
   flame: FlameLevel;
   /** Days the flame has stayed lit, which the flame's name alone does not say. */
   streakDays: number;
@@ -719,17 +866,20 @@ export type VillageScene = {
  * no village-specific table.
  */
 export async function getVillageScene(): Promise<VillageScene> {
-  const [levelInfo, streak, dominantSport, buildings] = await Promise.all([
+  const [levelInfo, streak, dominantSport, buildings, xpPerSession] = await Promise.all([
     getUserLevelInfo(),
     getStreakInfo(),
     getDominantSportOverlay(),
     getVillageBuildings(),
+    getWeekXpPerSession(),
   ]);
 
   return {
     tier: getVillageTier(levelInfo.level),
     level: levelInfo.level,
-    title: levelInfo.title,
+    title: getRankName(levelInfo.level),
+    totalXp: levelInfo.totalXp,
+    xpPerSession,
     flame: getFlameLevel(streak.current),
     streakDays: streak.current,
     dominantSport,

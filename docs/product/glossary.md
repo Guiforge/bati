@@ -105,12 +105,16 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 |---|---|---|---|---|---|---|
 | village | What training builds | village | village |  | Dorf | aldea |
 | building | One structure, raised by a muscle, a style or a deed | building | bâtiment |  | Gebäude | edificio |
-| rises | A building gaining a level | rises | monte |  | wächst | sube |
+| rises | A building gaining a level | rises | monte (not nourrit: a building is raised, not fed) |  | wächst | sube |
 | ceiling | A building's last level | ceiling | plafond |  | Höchststufe | tope |
 | starter | The buildings the village begins with | starter | fondations | départ (a departure) | Fundament | cimientos |
 | upgrade | A building that follows its base building | upgrade | amélioration |  | Ausbau | mejora |
-| deed | Bosses, adventures and leagues, as a building family | deed | haut fait |  | Heldentat | hazaña |
+| deed | First wins, rematches, routes and leagues, as a building family | deed | haut fait |  | Heldentat | hazaña |
+| first win | A boss beaten for the first time, what raises the Dragon Lair | first win | première victoire |  | erster Sieg | primera victoria |
+| rematch | A beaten boss campaign finished again, what raises the Champion Arena | rematch | revanche |  | Revanche | revancha |
+| route | A finished adventure that is not a boss, what raises the Hall of Heroes | route | route | chemin (taken by quest titles) | Route | ruta |
 | achievement | An unlockable trophy | achievement | succès |  | Erfolg | logro |
+| tier | One of the village's twelve stages, one painting each, raised by the hero's level | tier | palier | niveau (the hero's and a building's) | Ausbaustufe (not Stufe, a rung) | rango (not etapa, a rung) |
 | village tiers | The village's size names | Hamlet … Eternal Capital | Hameau … Capitale éternelle |  | Weiler … Ewige Hauptstadt | Caserío … Capital eterna |
 
 ## Outside the walls
@@ -147,6 +151,8 @@ Decisions nobody has taken yet.
   `expedition` stays the code's word.
 - **English follows French**: *flame* for the streak, *workout* only for a count that leaves
   outings out, *session* otherwise, *record* for an exercise and *best* for a session.
+- **Palier** for the village's tier, in French. It was *niveau*, the same word as the hero's level
+  and a building's, so the Village's own header put two numbers called *niveau* side by side.
 
 ## Related
 

@@ -56,9 +56,37 @@ export function nextLine(b: VillageBuilding, t: TFunction, language: AppLanguage
     }
     case "leagues":
     case "bosses":
-    case "adventures":
-    case "boss_victories":
-      return t(`village.next_${b.driver}`, { count, level });
+    case "rematches":
+    case "routes":
+      // Unbuilt says what builds it: "1 more boss to level 1" was the count pretending to be a rung.
+      return b.level === 0
+        ? t(`village.build_${b.driver}`)
+        : t(`village.next_${b.driver}`, { count, level });
+  }
+}
+
+/** "Next to rise" cannot head a building nothing has built yet. */
+export function nextTitle(b: VillageBuilding | null, t: TFunction): string {
+  return b?.level === 0 ? t("village.build_title") : t("village.next_title");
+}
+
+/** The link under a building, named after what actually raises it. */
+export function ctaLabel(b: VillageBuilding | null, t: TFunction): string {
+  switch (b?.driver) {
+    case undefined:
+      return t("village.cta_first");
+    case "leagues":
+      return t("village.cta_outing");
+    case "bosses":
+      return t("village.cta_boss");
+    case "rematches":
+      return t("village.cta_rematch");
+    case "routes":
+      return t("village.cta_route");
+    case "muscle":
+      return t("village.cta_feeds");
+    default:
+      return t("village.cta_quest");
   }
 }
 
@@ -85,7 +113,8 @@ export function levelText(b: VillageBuilding, t: TFunction): string {
 }
 
 /**
- * The two ends of a bar, so a bar never arrives without its unit: "60 reps" and "level 2 at 100".
+ * The two ends of a bar, each with its unit: "60 reps" and "100 reps for level 2". The right end
+ * used to be "level 2 at 100", which French read as a range ("niveau 4 à 7": levels four to seven).
  * Null for the buildings whose driver is a level rather than a tally (starters, upgrades): their
  * next line already names the rung, and "8" at one end of a bar says nothing.
  */
@@ -96,7 +125,10 @@ export function barEnds(b: VillageBuilding, t: TFunction): { left: string; right
   const unit = b.driver === "muscle" || b.driver === "style" ? "reps" : b.driver;
   return {
     left: t(`village.unit_${unit}`, { count: b.metricValue }),
-    right: t("village.bar_target", { level: b.level + 1, target: b.nextTarget }),
+    right: t("village.bar_target", {
+      level: b.level + 1,
+      target: t(`village.unit_${unit}`, { count: b.nextTarget }),
+    }),
   };
 }
 
@@ -142,13 +174,19 @@ export function groupFamilies(buildings: VillageBuilding[], complete: boolean): 
     .filter((f) => f.items.length > 0);
 }
 
-/** Where the "find a quest" links go: the muscle's own filter, the outings, or the whole list. */
+/**
+ * Where the link goes: the muscle's own quest filter, the outings, the adventures for a deed a
+ * campaign raises, or the whole quest list.
+ */
 export function questLink(b: VillageBuilding | null): {
-  pathname: "/(tabs)/quests";
+  pathname: "/(tabs)/quests" | "/(tabs)/adventures";
   params: Record<string, string>;
 } {
   if (b?.relatedMuscle) return { pathname: "/(tabs)/quests", params: { muscle: b.relatedMuscle } };
   if (b?.driver === "leagues") return { pathname: "/(tabs)/quests", params: { outside: "1" } };
+  if (b?.driver === "bosses" || b?.driver === "rematches" || b?.driver === "routes") {
+    return { pathname: "/(tabs)/adventures", params: {} };
+  }
   return { pathname: "/(tabs)/quests", params: {} };
 }
 

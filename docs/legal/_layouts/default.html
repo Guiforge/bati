@@ -27,11 +27,13 @@
       </style>
     </noscript>
 
-    <!-- Before first paint, so a French visitor never sees the English flash first. -->
+    <!-- Before first paint, so a visitor never sees the English flash first. -->
     <script>
       (function () {
         var l = localStorage.getItem("bati-lang");
-        if (l !== "fr" && l !== "en") l = navigator.language.slice(0, 2) === "fr" ? "fr" : "en";
+        var supported = ["en", "fr", "de", "es"];
+        if (supported.indexOf(l) < 0) l = navigator.language.slice(0, 2);
+        if (supported.indexOf(l) < 0) l = "en";
         document.documentElement.dataset.lang = l;
         document.documentElement.lang = l;
       })();
@@ -46,15 +48,17 @@
           Bati
         </a>
         <nav class="site-nav">
-          <a href="/bati/#screens"><span lang="en">Screens</span><span lang="fr">Écrans</span></a>
-          <a href="/bati/#systems"><span lang="en">Systems</span><span lang="fr">Systèmes</span></a>
-          <a href="/bati/#privacy"><span lang="en">Privacy</span><span lang="fr">Vie privée</span></a>
-          <a href="/bati/#install"><span lang="en">Install</span><span lang="fr">Installer</span></a>
+          <a href="/bati/#screens"><span lang="en">Screens</span><span lang="fr">Écrans</span><span lang="de">Bildschirme</span><span lang="es">Pantallas</span></a>
+          <a href="/bati/#systems"><span lang="en">Systems</span><span lang="fr">Systèmes</span><span lang="de">Systeme</span><span lang="es">Sistemas</span></a>
+          <a href="/bati/#privacy"><span lang="en">Privacy</span><span lang="fr">Vie privée</span><span lang="de">Datenschutz</span><span lang="es">Privacidad</span></a>
+          <a href="/bati/#install"><span lang="en">Install</span><span lang="fr">Installer</span><span lang="de">Installieren</span><span lang="es">Instalar</span></a>
         </nav>
         <a class="head-link" href="https://github.com/Guiforge/bati">GitHub</a>
-        <div class="langs" role="group" aria-label="Language / Langue">
+        <div class="langs" role="group" aria-label="Language">
           <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
           <button type="button" data-set-lang="fr" aria-pressed="false">FR</button>
+          <button type="button" data-set-lang="de" aria-pressed="false">DE</button>
+          <button type="button" data-set-lang="es" aria-pressed="false">ES</button>
         </div>
       </div>
     </header>
@@ -70,13 +74,13 @@
         <nav>
           <a href="/bati/privacy/"
             ><span lang="en">Privacy policy</span
-            ><span lang="fr">Politique de confidentialité</span></a
+            ><span lang="fr">Politique de confidentialité</span><span lang="de">Datenschutzerklärung</span><span lang="es">Política de privacidad</span></a
           >
           <a href="https://github.com/Guiforge/bati"
-            ><span lang="en">Source code</span><span lang="fr">Code source</span></a
+            ><span lang="en">Source code</span><span lang="fr">Code source</span><span lang="de">Quellcode</span><span lang="es">Código fuente</span></a
           >
           <a href="https://github.com/Guiforge/bati/releases"
-            ><span lang="en">Releases</span><span lang="fr">Versions</span></a
+            ><span lang="en">Releases</span><span lang="fr">Versions</span><span lang="de">Versionen</span><span lang="es">Versiones</span></a
           >
           <a href="mailto:feedback.bati@proton.me">feedback.bati@proton.me</a>
         </nav>
@@ -90,7 +94,7 @@
             >Bati est un logiciel libre : MIT pour le code, CC BY-SA 4.0 pour les illustrations.
             Icônes <a href="https://lucide.dev">Lucide</a> (ISC). Ce site fait partie du dépôt : il
             ne charge ni script, ni police, ni traqueur tiers.</span
-          >
+          ><span lang="de">Bati ist freie Software: MIT für den Code, CC BY-SA 4.0 für die Illustrationen. Icons von <a href="https://lucide.dev">Lucide</a> (ISC). Diese Website ist Teil des Repositorys: Sie lädt keine Skripte, Schriften oder Tracker von Dritten.</span><span lang="es">Bati es software libre: MIT para el código, CC BY-SA 4.0 para las ilustraciones. Iconos de <a href="https://lucide.dev">Lucide</a> (ISC). Este sitio forma parte del repositorio: no carga scripts, fuentes ni rastreadores de terceros.</span>
         </p>
       </div>
     </footer>

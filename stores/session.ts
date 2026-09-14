@@ -31,6 +31,7 @@ import {
 } from "@/db/exercises";
 import {
   isMountedOuting,
+  isOutdoors,
   isOutingSession,
   outingLocomotion,
   pricedLocomotion,
@@ -440,11 +441,26 @@ function advanceAfterSet(
   currentRoundIndex: number,
   currentExerciseIndex: number,
   results: CompletedExerciseInput[],
+  correctable = false,
 ): Partial<SessionState> {
   const isLastExerciseInRound = currentExerciseIndex === quest.exercises.length - 1;
   const isLastRound = currentRoundIndex === quest.rounds - 1;
 
   if (isLastExerciseInRound && isLastRound) {
+    // The last set gets the rest screen every other set gets, because that screen is where a
+    // count gets corrected: a hero who tapped Done on the last squat went straight to a summary
+    // that had already saved the number. The index points past the last movement, which is what
+    // tells `RestView` and `skipRest` that nothing comes next. Same `restSeconds > 0` rule as
+    // any rest, so a quest built without rests still ends on its last tap.
+    if (correctable && quest.restSeconds > 0) {
+      return {
+        status: "resting",
+        results,
+        currentExerciseIndex: quest.exercises.length,
+        timerStartTimestamp: Date.now(),
+        timerDuration: quest.restSeconds,
+      };
+    }
     return { status: "finished", results, timerStartTimestamp: null, timerDuration: 0 };
   }
 
@@ -1395,7 +1411,14 @@ export const useSessionStore = create<SessionState>()(
       };
 
       set({
-        ...advanceAfterSet(quest, currentRoundIndex, currentExerciseIndex, [...results, newResult]),
+        // An outdoor slot is timed by its trace, not by a number anyone could correct.
+        ...advanceAfterSet(
+          quest,
+          currentRoundIndex,
+          currentExerciseIndex,
+          [...results, newResult],
+          !isOutdoors(currentEx.exercise.style),
+        ),
         lastSetSkipped: false,
       });
     },
@@ -1527,6 +1550,19 @@ export const useSessionStore = create<SessionState>()(
       const restTaken = timerStartTimestamp
         ? Math.max(0, (Date.now() - timerStartTimestamp) / 1000)
         : 0;
+
+      // Nothing after it: the rest behind the last set, or a snapshot restored against a quest
+      // edited shorter since. The session ends here, and the seconds spent correcting the last
+      // count are not part of it, so they leave the clock the way a pause does.
+      if (!nextExDef) {
+        set({
+          status: "finished",
+          totalPausedTime: get().totalPausedTime + restTaken * 1000,
+          timerStartTimestamp: null,
+          timerDuration: 0,
+        });
+        return;
+      }
 
       set({
         status: "running",

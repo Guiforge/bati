@@ -199,7 +199,8 @@ export function useSessionRecovery() {
         sessionUuid: uuid,
         round: saved.currentRoundIndex + 1,
         roundTotal: saved.quest.rounds,
-        exercise: saved.currentExerciseIndex + 1,
+        // Past the last movement during the rest behind the final set, which would read "4/3".
+        exercise: Math.min(saved.currentExerciseIndex + 1, saved.quest.exercises.length),
         exerciseTotal: saved.quest.exercises.length,
         savedAt: new Date(saved.savedAt),
         leaguesM,

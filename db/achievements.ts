@@ -284,7 +284,7 @@ export const achievementDefinitions: AchievementDefinition[] = [
     enTitle: "Path Climbed",
     frTitle: "Voie gravie",
     enDescription: "Own every rung of one path",
-    frDescription: "Maîtrise chaque marche d'une voie",
+    frDescription: "Maîtrise chaque étape d'une voie",
     category: "special",
   },
   {

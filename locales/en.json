@@ -488,6 +488,8 @@
     "countdown_letsgo": "Let's go!",
     "decrease_reps_accessibility": "Decrease reps by one",
     "decrease_result_accessibility": "Decrease result",
+    "reps_count_accessibility": "Reps, tap to type the number",
+    "result_count_accessibility": "Result, tap to type the number",
     "exercise_label": "EXERCISE {{count}} / {{total}}",
     "feedback_easy": "Too Easy",
     "feedback_good": "Just Right",

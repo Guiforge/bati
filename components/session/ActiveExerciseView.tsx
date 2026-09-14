@@ -16,7 +16,7 @@ import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
-import { formatTarget } from "@/db/targets";
+import { formatTarget, TARGET_RANGE } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -28,6 +28,7 @@ import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
+import { CountInput } from "./CountInput";
 import { ExerciseHero } from "./ExerciseHero";
 import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { ExpeditionPanel } from "./ExpeditionPanel";
@@ -90,6 +91,9 @@ export function ActiveExerciseView() {
   useCountdownCues(isOuting ? 0 : remainingSeconds);
   const targetValue = currentEx?.target.value ?? 0;
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
+  // Counts ± taps, and keys the numeral's bounce. Keyed on the count itself, a typed "150"
+  // remounted the field on its first digit and put the keyboard away.
+  const [stepCount, setStepCount] = useState(0);
   const [showHowTo, setShowHowTo] = useState(false);
   // The same reader the paused screen uses, rather than a second derivation of "which movement
   // is this, drawn and described" built out of `currentEx` right here.
@@ -186,6 +190,7 @@ export function ActiveExerciseView() {
 
   const handleAdjustReps = (delta: number) => {
     selection();
+    setStepCount((n) => n + 1);
     setAdjustedReps((prev) => Math.max(1, prev + delta));
   };
 
@@ -561,7 +566,8 @@ export function ActiveExerciseView() {
               Overtime loses nothing by it: the flame pair, the "overtime" label and the green
               numeral all still say so, so the state was never carried by the border alone. The
               only surfaces left in here are the two ± buttons, which is right — they are objects
-              you press, and the count is not.
+              you press, and the count is not. It is typed into, for the set that went forty past
+              the target: an underline says so, not a surface.
 
               An outing has no counter at all. It is time-based underneath, so this used to show
               a 72px countdown that did not pause while the panel's own moving clock did, then
@@ -639,20 +645,19 @@ export function ActiveExerciseView() {
                       </Button>
                       <YStack
                         items="center"
-                        key={reducedMotion ? undefined : adjustedReps}
+                        key={reducedMotion ? undefined : stepCount}
                         transition={reducedMotion ? undefined : "bouncy"}
                         enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
                         scale={1}
                       >
-                        <H1
+                        <CountInput
+                          testID="session-reps-input"
+                          value={adjustedReps}
+                          onChange={setAdjustedReps}
+                          max={TARGET_RANGE.max}
                           fontSize={80}
-                          lineHeight={88}
-                          fontWeight="700"
-                          fontFamily="$body"
-                          color="$text"
-                        >
-                          {adjustedReps}
-                        </H1>
+                          accessibilityLabel={t("session.reps_count_accessibility")}
+                        />
                         <Paragraph fontWeight="700" color="$textSecondary">
                           {t("session.reps")}
                         </Paragraph>

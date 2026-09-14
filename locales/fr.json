@@ -702,6 +702,8 @@
     "countdown_letsgo": "C'est parti !",
     "decrease_reps_accessibility": "Diminuer les répétitions",
     "decrease_result_accessibility": "Diminuer le résultat",
+    "reps_count_accessibility": "Répétitions, touche pour taper le nombre",
+    "result_count_accessibility": "Résultat, touche pour taper le nombre",
     "exercise_label": "EXERCICE {{count}} / {{total}}",
     "feedback_easy": "Trop facile",
     "feedback_good": "Parfait",

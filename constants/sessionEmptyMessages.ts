@@ -16,11 +16,11 @@ export const SESSION_EMPTY_VARIANTS = {
     },
   ],
   fr: [
-    { title: "Beau boulot !", subtitle: "Séance enregistrée. Garde ta série en vie." },
+    { title: "Beau boulot !", subtitle: "Séance enregistrée. Garde ta flamme allumée." },
     { title: "Séance solide.", subtitle: "Chaque répétition compte pour la suivante." },
     {
       title: "C'est noté !",
-      subtitle: "Pas de feu d'artifice aujourd'hui. La série s'en fiche, elle grandit quand même.",
+      subtitle: "Pas de feu d'artifice aujourd'hui. La flamme s'en fiche, elle grandit quand même.",
     },
   ],
 };

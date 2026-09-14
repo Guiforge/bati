@@ -17,9 +17,9 @@ export const REST_SUGGESTION_MESSAGES: Record<
       "{{count}} sessions down this week. A recovery day sharpens the next one.",
     ],
     fr: [
-      "Tu t'es beaucoup entraîné cette semaine : {{count}} séances. Pense à une journée de récupération.",
-      "Déjà {{count}} séances cette semaine. Le repos se gagne autant que les gains.",
-      "{{count}} séances au compteur cette semaine. Une journée de récup, et la prochaine sera meilleure.",
+      "Tu t'es beaucoup entraîné cette semaine : {{count}} entraînements. Pense à une journée de récupération.",
+      "Déjà {{count}} entraînements cette semaine. Le repos se gagne autant que les gains.",
+      "{{count}} entraînements au compteur cette semaine. Une journée de récup, et la prochaine sera meilleure.",
     ],
   },
   consecutive_days: {
@@ -43,7 +43,7 @@ export const REST_SUGGESTION_MESSAGES: Record<
     fr: [
       "Tu as fait {{count}} entraînements cette semaine ! Ton corps a besoin de temps pour récupérer et devenir plus fort.",
       "{{count}} entraînements cette semaine, un sacré volume. C'est pendant la récup que la force se construit.",
-      "{{count}} séances en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition.",
+      "{{count}} entraînements en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition.",
     ],
   },
   deload: {

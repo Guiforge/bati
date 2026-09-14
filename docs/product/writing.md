@@ -152,7 +152,7 @@ Fer*, *Sprint à Travers les Terres d'Ombre*, *Fuite de la Mine Effondrée*: not
 capitals, and they are the English original showing through. Eight of those.
 
 **No convention capitalises a verb, or an adjective that follows its noun** — article or not.
-*La Parole Doit Passer*, *Le Gant Arcanique*, *L'Ascension Patiente*, *La Veille des Bras Tendus*.
+*La Parole Doit Passer*, *Le Gant Arcanique* (a gantelet since 0056), *L'Ascension Patiente*, *La Veille des Bras Tendus*.
 Four more. (A preposed adjective is a different case and keeps its capital: *La Longue Portée* is
 correct.) *Titan* keeps its capital everywhere, being a name.
 
@@ -166,6 +166,32 @@ outcome worse than leaving all of them.
 proper-noun list (*Titan* keeps its capital, *Gantelet* does not), and a list like that is widened
 to land a build, which is the failure mode the permissions ratchet exists to name. This one stays
 a thing a person reads for.
+
+### 7. One word, one meaning, in French
+
+Three French words each named two things, and the collisions put two numbers side by side that
+meant different things under the same word. Settled on 2026-09-14:
+
+| Word | Means | Never means |
+|---|---|---|
+| **flamme** | the streak: "Flamme allumée", "Meilleure flamme", what a kept session counts toward | a set of reps |
+| **série** | a set of reps inside a session | the streak |
+| **record** | a result beaten on one movement, in that movement's unit | a session's longest, most XP or longest outing |
+| **marque** | a session's best: longest, most XP, longest outing, the records card and the victory list that mix both | |
+| **séance** | anything logged, outings included: the journal row, the recovery card, what keeps the flame lit | a count that leaves outings out |
+| **entraînement** | a count that leaves outings out, because the query does (`isWorkout()`): the total tile beside "Sorties totales", the calendar, the chart, the session-count achievements, the rest advice | |
+| **session** | nothing, it is English | |
+
+The séance / entraînement line follows the code, not taste. Merging them would print "552 séances"
+beside "40 sorties" that are not in the 552. When a query changes which sessions it counts, the
+word on the screen changes with it.
+
+`quête` stays the thing a hero picks in the gallery and the moment it is won ("Quête accomplie").
+It was considered for the logged session, for the RPG register, and not taken: the gallery
+already counts 37 quêtes and "Termine 3 quêtes différentes" counts templates, so "552 quêtes" on
+the same tab would count something else under the same word.
+
+No test holds this table yet. The German and Spanish glossary is where it becomes one.
 
 ---
 

@@ -198,7 +198,15 @@ outlived it.
   a lint plugin rejects raw hex everywhere but that file. The home screen widget had its own
   copy of "which language does this speak", defaulting a never-chosen language to `fr` while the
   app asked the device — so a fresh install spoke French on an English phone until Settings was
-  opened once. Both now call `resolveAppLanguage()`.
+  opened once. Both now call `resolveAppLanguage()`. The warm-up did the same with "what can this
+  hero do": quest slots asked `currentRungFor`, the warm-up asked only about equipment, and a hero
+  still on Squat was warmed up with Jump Squats. It reads the rungs through
+  `unavailableMovements()` now, and `content-invariants` sweeps every quest against the ladder.
+- **A second door to an action goes through the first door's handler.** The adventure's step row
+  opened the quest screen with its own URL, missing the run step id the CTA passed. The quest
+  screen starts a session either way, so a hero finished the same step on repeat with the next one
+  locked. `.maestro/adventure-journey.yaml` now enters by the row and asserts the step statuses
+  afterwards, the state the old flow never read.
 - **A test that stubs the rule cannot see the rule drift.** `__tests__/store-settings.test.ts`
   mocked `@/src/i18n/deviceLanguage` wholesale, so the store's language resolution was verified
   against a fake and the widget's real disagreement was invisible. Mock the *device*

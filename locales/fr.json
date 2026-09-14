@@ -1110,7 +1110,7 @@
       ],
       "personal_record_beat": [
         "{{exercise}} : {{delta}} de plus que la dernière fois. Je compte, moi.",
-        "Tu as ajouté {{delta}}. Personne n'ajoute ça par accident.",
+        "Tu as ajouté {{delta}}. Ça ne tombe pas du ciel.",
         "{{delta}} de mieux. C'est du travail, au gramme près.",
         "La dernière fois, tu as lâché {{delta}} plus tôt. Aujourd'hui, non.",
         "{{delta}} de plus. Dit comme ça, ce n'est rien. Dans les bras, c'est autre chose.",
@@ -1187,7 +1187,7 @@
         "La douleur qui crie ment souvent. Celle qui chuchote, écoute-la.",
         "J'ai vu des gens bien plus costauds tomber de ne pas savoir s'arrêter.",
         "Le sommeil fait plus pour tes muscles que tout ce que j'ai dans mes fioles.",
-        "Tu transpires. Mécanique normale.",
+        "Tu transpires. Le corps fait son travail.",
         "Respire par le nez. C'est de la plomberie.",
         "Personne ne m'a jamais remerciée pour un conseil de repos. Tout le monde revient.",
         "Ce que tu ressens là a un nom, et je le connais."
@@ -1339,12 +1339,12 @@
         "Le terrain change. Ce qui était impossible ne l'est pas resté.",
         "On voit mieux d'ici que d'en bas.",
         "Une bonne reconnaissance vaut deux heures de marche économisées.",
-        "Tu prépares. Ça ne se voit pas tout de suite, mais ça se voit après.",
+        "Tu te prépares. Ça ne se voit pas tout de suite, mais ça se voit après.",
         "Je note ce qui passe. Toi ce qui te tente. Même métier, au fond.",
         "Rien à craindre dans une liste. Je vérifie, c'est mon travail."
       ],
       "first_outing": [
-        "Première fois que la porte s'ouvre pour autre chose qu'un marchand. Noté, et pas discrètement.",
+        "Première fois que la porte s'ouvre pour autre chose qu'un marchand. Noté, et pas en silence.",
         "Vu de la tour : une silhouette qui sort, la même qui rentre. La route compte à partir d'aujourd'hui.",
         "Tout ce qui s'est fait avant tenait entre les murs, et aujourd'hui non.",
         "Nouvelle ligne au registre. Une route, là où la carte ne disait rien.",
@@ -1354,9 +1354,9 @@
         "Je surveille la route pour ce qui entre. Ce soir je l'ai surveillée pour quelqu'un qui sortait. Autre métier."
       ],
       "high_road": [
-        "La route a été poussée d'un tronçon de plus, avec les mêmes bottes à chaque fois, et j'ai vérifié.",
+        "La route a été prolongée d'un tronçon, avec les mêmes bottes à chaque fois, et j'ai vérifié.",
         "Borne posée. Les maçons ne font pas ça pour un sentier que personne n'emprunte.",
-        "D'ici, la route se lit plus longue que le mois dernier, et rien ne l'a allongée sauf des lieues.",
+        "D'ici, la route paraît plus longue que le mois dernier, et rien ne l'a allongée sauf des lieues.",
         "Les marchands prennent déjà le nouveau tronçon. Ils croient qu'il a toujours été là. Laissons-les croire.",
         "Mise à jour de la carte : le Grand Chemin va plus loin. Classé sous lieues parcourues, pas sous miracles.",
         "Route plus longue, vue plus large. La tour n'a pas bougé ; ce qu'elle voit, si.",
@@ -1367,10 +1367,10 @@
         "La plus longue jusqu'ici. Après la crête, plus rien à voir, et j'ai dû faire confiance à la route.",
         "La sortie la plus longue du registre. L'ancienne marque a tenu un moment ; plus maintenant.",
         "Hors de vue de la tour pendant un bon moment, une première. Je n'aime pas ça. Je l'ai noté quand même.",
-        "Plus loin que toutes les sorties d'avant, et retour à ton allure, sans que personne soit envoyé derrière.",
+        "Plus loin que toutes les sorties d'avant, et retour à ton allure, sans qu'on ait dû envoyer quelqu'un te chercher.",
         "Nouvelle marque pour la plus longue route. L'ancienne est encore au registre, barrée proprement.",
         "C'est au-delà de la dernière borne que je sais nommer. À partir de là, la carte est à toi.",
-        "Record de distance, consigné, et ce qu'il y avait après l'ancien point de demi-tour a été vu maintenant.",
+        "Record de distance, consigné, et ce qui se cachait après l'ancien point de demi-tour, tu l'as vu.",
         "La plus longue que tu aies faite, à mon compte et à celui de la route. Deux registres, une ligne."
       ]
     }

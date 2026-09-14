@@ -17,7 +17,7 @@ export const REST_SUGGESTION_MESSAGES: Record<
       "{{count}} sessions down this week. A recovery day sharpens the next one.",
     ],
     fr: [
-      "Tu t'es beaucoup entraîné avec {{count}} séances cette semaine. Pense à une journée de récupération.",
+      "Tu t'es beaucoup entraîné cette semaine : {{count}} séances. Pense à une journée de récupération.",
       "Déjà {{count}} séances cette semaine. Le repos se gagne autant que les gains.",
       "{{count}} séances au compteur cette semaine. Une journée de récup, et la prochaine sera meilleure.",
     ],
@@ -31,7 +31,7 @@ export const REST_SUGGESTION_MESSAGES: Record<
     fr: [
       "Tu t'es entraîné {{count}} jours d'affilée ! Prends un jour de repos pour éviter le surentraînement.",
       "{{count}} jours d'affilée sans pause. Même les héros en ont besoin.",
-      "{{count}} jours de suite à t'entraîner. Le repos fait partie du plan, ce n'est pas une pause dedans.",
+      "{{count}} jours de suite à t'entraîner. Le repos fait partie du plan, il ne l'interrompt pas.",
     ],
   },
   high_volume: {
@@ -43,7 +43,7 @@ export const REST_SUGGESTION_MESSAGES: Record<
     fr: [
       "Tu as fait {{count}} entraînements cette semaine ! Ton corps a besoin de temps pour récupérer et devenir plus fort.",
       "{{count}} entraînements cette semaine, un sacré volume. C'est pendant la récup que la force se construit.",
-      "{{count}} séances en sept jours. Laisse ton corps rattraper ton ambition, une journée.",
+      "{{count}} séances en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition.",
     ],
   },
   deload: {
@@ -54,7 +54,7 @@ export const REST_SUGGESTION_MESSAGES: Record<
     ],
     fr: [
       "Quatre semaines chargées d'affilée. Prends-en une plus légère : moins de volume, la même régularité. Ton prochain mois commence là.",
-      "Un mois de semaines chargées derrière toi. Lève le pied quelques jours, les gains rattrapent pendant que tu récupères.",
+      "Un mois de semaines chargées derrière toi. Lève le pied quelques jours : les progrès se font pendant que tu récupères.",
       "Quatre semaines chargées d'affilée. Cette semaine, on allège, on ne s'arrête pas.",
     ],
   },

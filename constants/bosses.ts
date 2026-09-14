@@ -76,7 +76,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
         "La forge a mis plus de temps à me briser.",
         "Tu brûles lentement, héros.",
         "Cendres. Tout n'est que cendres.",
-        "Ton petit village ferait un beau petit bois.",
+        "Ton petit village ferait d'excellentes brindilles.",
         "J'ai dévoré des chevaliers mieux entraînés.",
       ],
     },
@@ -87,7 +87,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
         "Careful, hero. You are starting to impress me.",
       ],
       fr: [
-        "Celui-là avait de la chaleur.",
+        "Celui-là chauffait.",
         "Ainsi la braise mord en retour.",
         "Prudence, héros. Tu commences à m'impressionner.",
       ],
@@ -125,7 +125,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
         "J'étais là avant ton village.",
         "Les montagnes ne se pressent pas.",
         "Use-moi, si tu peux.",
-        "Tes ancêtres m'écaillaient déjà.",
+        "Tes ancêtres me taillaient déjà.",
         "Compte tes séries. Moi, je compte les siècles.",
       ],
     },
@@ -184,7 +184,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
     },
     resist: {
       en: ["You struck where I was not.", "Coils do not break, hero."],
-      fr: ["Tu as frappé où je n'étais pas.", "Les anneaux ne se brisent pas, héros."],
+      fr: ["Tu as frappé là où je n'étais pas.", "Les anneaux ne se brisent pas, héros."],
     },
     enrage: {
       en: [
@@ -257,7 +257,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
         "Blow harder, little bellows.",
       ],
       fr: [
-        "Tu frappes le temps qu'il fait.",
+        "Tu frappes dans le vide.",
         "Attrape-moi, alors.",
         "Je suis l'air que tu respires.",
         "Tes poumons sont à moi.",
@@ -287,7 +287,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
         "Breathe while you still can!",
       ],
       fr: [
-        "Alors que la tempête touche terre !",
+        "Alors, que la tempête s'abatte !",
         "Je disperserai ton village !",
         "Respire tant que tu le peux encore !",
       ],

@@ -206,7 +206,7 @@ export const BUILDING_LABELS: Record<BuildingCode, { en: string; fr: string }> =
   observatory: { en: "Observatory", fr: "Observatoire" },
   barn: { en: "Barn", fr: "Grange" },
   dragon_lair: { en: "Dragon Lair", fr: "Antre du dragon" },
-  heroes_hall: { en: "Hall of Heroes", fr: "Hall des héros" },
+  heroes_hall: { en: "Hall of Heroes", fr: "Salle des héros" },
   champion_arena: { en: "Champion Arena", fr: "Arène des champions" },
   high_road: { en: "High Road", fr: "Grand Chemin" },
 };

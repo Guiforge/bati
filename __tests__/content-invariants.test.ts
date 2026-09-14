@@ -619,6 +619,52 @@ describe("content invariants", () => {
     t.sqlite.exec("DELETE FROM user_preferences");
   });
 
+  /**
+   * The report: "squats sautés" in the warm-up of a hero still on Squat. The quest slots of that
+   * session had been walked down to the hero's rung by `currentRungFor` since issue #33; the
+   * warm-up asked only about equipment, so it was a second answer to "what can this hero do".
+   *
+   * Asked of `currentRungFor` itself rather than of a list of names, on the hero with the most to
+   * be kept from (an empty journal, the bottom of every chain), across every quest and rotation:
+   * any movement added to a pool above the bottom of a path fails here, whoever adds it.
+   */
+  test("a hero on day one is never warmed up with a rung above their own", async () => {
+    const { buildWarmup, WARMUP_MOVEMENTS } =
+      require("../constants/warmup") as typeof import("../constants/warmup");
+    const { currentRungFor, listExercises, unavailableMovements } =
+      require("../db/exercises") as typeof import("../db/exercises");
+
+    const quests = await loadQuests();
+    t.sqlite.exec("DELETE FROM completed_exercises");
+    t.sqlite.exec("DELETE FROM completed_sessions");
+
+    const catalogue = await listExercises();
+    const byName = new Map(catalogue.map((e) => [e.enName, e]));
+    const unavailable = await unavailableMovements();
+
+    const prescribed = new Set<number>();
+    for (const quest of quests) {
+      for (let sessionCount = 0; sessionCount < 12; sessionCount++) {
+        for (const step of buildWarmup(quest, sessionCount, unavailable)) {
+          const ex = byName.get(step.exerciseName);
+          if (ex) prescribed.add(ex.id);
+        }
+      }
+    }
+
+    const pool = WARMUP_MOVEMENTS.flatMap((name) => byName.get(name) ?? []);
+    const rungs = await currentRungFor([...prescribed, ...pool.map((ex) => ex.id)]);
+    const isAboveTheHero = (ex: { id: number }) => rungs.get(ex.id) !== ex.id;
+
+    expect(
+      catalogue.filter((ex) => prescribed.has(ex.id) && isAboveTheHero(ex)).map((ex) => ex.enName),
+    ).toEqual([]);
+    // The guard is worth nothing if no pool ever reached above the bottom of a path.
+    expect(pool.filter(isAboveTheHero).length).toBeGreaterThan(0);
+
+    ownEveryRung(t);
+  });
+
   // A warm-up prepares; it does not train. Anything hard enough to cost the session is not a
   // warm-up movement, however well it fits the pattern the quest is about to load.
   test("no warm-up movement is a hard exercise", async () => {

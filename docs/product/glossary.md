@@ -62,12 +62,12 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 
 | Term | Means | en | fr | fr never | de | es |
 |---|---|---|---|---|---|---|
-| path | A ladder of movements from easiest to hardest | path | voie | chemin (taken by quest titles) | Pfad | senda |
+| path | A ladder of movements from easiest to hardest | path | voie | chemin (taken by quest titles) | Pfad (not in quest titles: Weg) | senda |
 | rung | One movement on a path | rung | étape | marche (a stair), échelon, cran | Stufe (not Schritt) | etapa (not escalón, a stair) |
 | climbed | Every rung of a path owned | climbed | gravie |  | erklommen | coronada |
 | record | A result beaten on one movement, in its own unit | record | record | a session's best | Rekord | récord |
 | mark | A session's best: longest, most XP, longest outing | best | marque | record | Bestwert | mejor marca |
-| badge on an old row | A best whose kind the row did not keep | PR | exploit |  | Bestwert | Hazaña |
+| badge on an old row | A best whose kind the row did not keep | PR | exploit |  | Bestwert | Marca (not Hazaña, the deed family) |
 | ghost | What the hero did on this movement last time, shown during the set | last time / best | la dernière fois / record |  | letztes Mal / Rekord | la última vez / récord |
 | XP | Experience, one rep is one | XP | XP |  | XP | XP |
 | level | The hero's level, from XP | level | niveau |  | Level | nivel |

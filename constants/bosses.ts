@@ -129,7 +129,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
     resist: {
       en: ["Scale does not care how hard you swing.", "You are polishing my armour."],
       fr: ["L'écaille se moque de ta force.", "Tu astiques mon armure."],
-      de: ["Schuppen kümmert nicht, wie fest du zuschlägst.", "Du polierst meine Rüstung."],
+      de: ["Schuppen ist es egal, wie fest du zuschlägst.", "Du polierst meine Rüstung."],
       es: ["A las escamas no les importa tu fuerza.", "Me estás puliendo la armadura."],
     },
     enrage: {
@@ -145,7 +145,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
       ],
       de: [
         "Dann brennen wir beide!",
-        "Ich reiße den Himmel mit mir!",
+        "Ich reiße den Himmel mit in die Tiefe!",
         "Na komm! Das Feuer erinnert sich an dich!",
       ],
       es: [
@@ -450,7 +450,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
         "Golpeas al aire.",
         "Atrápame, pues.",
         "Soy el aire que respiras.",
-        "Tus pulmones son míos para vaciarlos.",
+        "Tus pulmones me pertenecen. Los vaciaré.",
         "Sopla más fuerte, pequeño fuelle.",
       ],
     },
@@ -537,7 +537,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
         "Die Gießerei schläft nie. Ich auch nicht.",
         "Man hat mich gebaut, um mehr zu schuften als du.",
         "Rost ist geduldig, Held.",
-        "Quoten, Held. Meine ist deine Niederlage.",
+        "Mein Soll, Held: deine Niederlage.",
         "Ich habe mehr gestemmt, als du je heben wirst.",
       ],
       es: [

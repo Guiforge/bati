@@ -34,8 +34,8 @@
     "streak_a11y": "{{count}} Tage Flamme",
     "open_settings_a11y": "Einstellungen öffnen",
     "outside_start_a11y": "Starten: {{quest}}",
-    "outside_setup": "Einstellen",
-    "outside_setup_a11y": "Eine Tour einstellen, bevor es losgeht"
+    "outside_setup": "Einrichten",
+    "outside_setup_a11y": "Eine Tour einrichten, bevor es losgeht"
   },
   "language": "Sprache",
   "light": "Hell",
@@ -72,7 +72,7 @@
     "village_name_subtitle": "Jede Legende braucht einen Namen. Wie soll deine heißen?",
     "village_name_hint": "Jeder Muskel, den du trainierst, lässt hier ein Gebäude wachsen.",
     "village_name_title": "Benenne dein Dorf",
-    "first_session_title": "Deine erste Etappe",
+    "first_session_title": "Dein erster Ausmarsch",
     "first_session_subtitle": "Acht Minuten, vier Übungen, keine Geräte. Irgendwo muss ein Knappe ja anfangen.",
     "first_session_start": "Jetzt starten",
     "first_session_later": "Später"
@@ -133,7 +133,7 @@
     "weekly_chip": "{{count}}× / Woche",
     "streak_hint": "Ruhetage zählen mit. Die Flamme misst deine Beständigkeit.",
     "sworn_toast": "Schwur geleistet",
-    "error_target_unreachable": "Ein einzelner Satz kann nicht über {{max}} liegen. Schwör etwas weniger, oder schwör auf die Gesamtwiederholungen."
+    "error_target_unreachable": "Ein einzelner Satz kann nicht über {{max}} liegen. Wähl ein niedrigeres Ziel oder schwör auf die Gesamtzahl der Wiederholungen."
   },
   "settings": {
     "title": "Einstellungen",
@@ -192,7 +192,7 @@
     "open_source_title": "Open-Source-Software",
     "open_source_body": "Gebaut mit Expo + React Native, Tamagui, Zustand, Drizzle ORM, i18next und mehr.",
     "illustrations_title": "Übungsillustrationen",
-    "illustrations_note": "Viele der Übungsillustrationen stammen von den anatomischen Studien von Everkinetic, neu zugeschnitten vom Projekt workout-guide, unter CC BY-SA 4.0. Bati hat sie verändert und verbreitet sie unter derselben Lizenz weiter.",
+    "illustrations_note": "Viele der Übungsillustrationen gehen auf die anatomischen Studien von Everkinetic zurück, neu zugeschnitten vom Projekt workout-guide, unter CC BY-SA 4.0. Bati hat sie verändert und verbreitet sie unter derselben Lizenz weiter.",
     "everkinetic": "Everkinetic",
     "everkinetic_subtitle": "Ursprüngliche anatomische Zeichnungen",
     "workout_guide": "workout-guide",
@@ -328,15 +328,15 @@
     "exercises_other": "{{count}} Übungen",
     "filter_outside": "Draußen",
     "favourite_add": "Oben anheften",
-    "favourite_remove": "Lösen",
-    "goal_sheet_title": "Wie lange, oder wie weit",
+    "favourite_remove": "Nicht mehr anheften",
+    "goal_sheet_title": "Wie lange oder wie weit",
     "goal_sheet_custom": "Andere",
     "goal_sheet_custom_hint": "Gib deinen eigenen Wert ein",
-    "goal_sheet_open": "Tour einstellen"
+    "goal_sheet_open": "Tour einrichten"
   },
   "adventures": {
     "gallery_title": "Abenteuer",
-    "gallery_subtitle": "Mehrere Einheiten am Stück, eine Geschichte und ein Boss am Ende",
+    "gallery_subtitle": "Programme über mehrere Einheiten, mit Geschichte und Bosskampf",
     "details_title": "Abenteuer",
     "not_found": "Abenteuer nicht gefunden",
     "invalid_id": "Ungültiges Abenteuer",
@@ -391,7 +391,7 @@
     "description_label": "So geht's",
     "description_placeholder": "Breiter Stand, Gewicht auf ein Bein verlagern, das andere gestreckt lassen.",
     "details": "Details",
-    "details_hint": "Alles optional. Ohne Muskeln lässt diese Übung dein Dorf nicht wachsen und taucht nicht in deinem Gleichgewicht auf.",
+    "details_hint": "Alles optional. Ohne Muskeln lässt diese Übung dein Dorf nicht wachsen und taucht nicht in deinem Muskelgleichgewicht auf.",
     "image": "Bild",
     "image_from_photos": "Foto verwenden",
     "image_failed": "Das Bild konnte nicht gelesen werden.",
@@ -448,8 +448,8 @@
     "count_one": "{{count}} Übung",
     "count_other": "{{count}} Übungen",
     "search": "Übung suchen",
-    "filter_group_ladder": "Progression",
-    "filter_ladder": "Progression",
+    "filter_group_ladder": "Pfad",
+    "filter_ladder": "Pfad",
     "filter_group_pattern": "Bewegung",
     "leads_to": "führt zu {{name}}",
     "empty_filters_title": "Keine Treffer",
@@ -469,7 +469,7 @@
     "path_you_are_here": "Du bist hier."
   },
   "session": {
-    "expedition_status_acquiring": "Auf der Suche nach dem Himmel",
+    "expedition_status_acquiring": "Suche den Himmel ab",
     "expedition_status_moving": "Unterwegs",
     "expedition_status_paused": "Stillstand",
     "expedition_status_error": "Kein Signal",
@@ -510,7 +510,7 @@
     "paused_subtitle": "Durchatmen. Weiter geht's, wann du willst.",
     "paused_expedition_note": "Die Spur läuft auch in der Pause weiter.",
     "paused_title": "Spiel pausiert",
-    "pr_exercise": "Rekord {{exercise}}",
+    "pr_exercise": "Rekord bei {{exercise}}",
     "pr_longest_session": "Längstes Training",
     "pr_more": "+{{count}} weitere Bestwerte",
     "pr_most_xp": "Meiste XP",
@@ -571,7 +571,7 @@
     "start_boss": "Der Kampf beginnt",
     "start_first": "Erste Prüfung",
     "reserve_hint": "Hör mit 1 bis 2 Wiederholungen Reserve auf, nicht beim Muskelversagen.",
-    "boss_weak_point": "{{muscle}}, Schwachstelle. Halb so viel Schaden extra.",
+    "boss_weak_point": "{{muscle}}, Schwäche. Anderthalbfacher Schaden.",
     "boss_resisted": "{{muscle}}, gepanzert. Nur halber Schaden.",
     "crit_hint": "Jede Wiederholung über dem Ziel ist eine Chance auf einen kritischen Treffer: gerade {{percent}} %.",
     "crit_hint_time": "Jede Sekunde über dem Ziel ist eine Chance auf einen kritischen Treffer: gerade {{percent}} %.",
@@ -589,7 +589,7 @@
     "live_map_loading": "Karte wird geladen",
     "expedition_road": "{{building}} · {{value}}/{{target}} Wegstunden",
     "expedition_finish": "Tour beenden",
-    "expedition_hold_to_finish": "Halten zum Beenden",
+    "expedition_hold_to_finish": "Zum Beenden halten",
     "expedition_hold_to_finish_a11y": "Halten, um die Tour zu beenden",
     "expedition_cancel_start": "Start abbrechen",
     "expedition_cancel_start_hint": "Du bist gerade erst los. Du kannst noch umkehren.",
@@ -597,7 +597,7 @@
     "summary_too_short_body_outing": "Du warst {{duration}} unterwegs. Behalte diese Tour, und sie zählt für deine Flamme und deinen Schwur, oder verwirf sie, und es ist nichts passiert.",
     "expedition_notification_finish": "Beenden",
     "expedition_make_quest": "Eine Quest daraus machen",
-    "expedition_made_quest": "Bei deinen Quests abgelegt. Sie wartet genau so, wie du sie verlassen hast.",
+    "expedition_made_quest": "Bei deinen Quests abgelegt. Sie ist genau so gespeichert, wie sie war.",
     "expedition_permission_why": "Bati liest während einer Tour deinen Standort, und er bleibt auf diesem Handy. Android fragt gleich nach."
   },
   "muscles": {
@@ -659,20 +659,20 @@
   "xp": {
     "title": "So werden XP gezählt",
     "summary": "XP misst die Anstrengung, die dein Körper erbracht hat. Sieben Regeln, und sonst bewegt nichts die Zahl.",
-    "unit_title": "Eine Einheit: die Minute Anstrengung",
-    "unit_body": "Eine Wiederholung ist 1 XP wert, und drei Sekunden Anstrengung sind eine Wiederholung. Eine Minute Anstrengung ist also 20 XP wert. Alles Folgende ist ein Bruchteil dieser Minute, und Wegstunden werden nie darin umgerechnet: Sie zählen Strecke, nicht Anstrengung.",
+    "unit_title": "Ein Maß: die Minute Anstrengung",
+    "unit_body": "Eine Wiederholung ist 1 XP wert, und drei Sekunden Anstrengung sind eine Wiederholung. Eine Minute Anstrengung ist also 20 XP wert. Alles Folgende ist ein Bruchteil dieser Minute, und Wegstunden werden nie in sie umgerechnet: Sie zählen Strecke, nicht Anstrengung.",
     "rest_title": "Pausen und Stillstand bringen nie etwas",
     "rest_body": "Drinnen wird die Pause abgezogen. Draußen zählen nur die Sekunden, in denen das GPS dich in Bewegung gesehen hat, eine rote Ampel bringt also nichts. Ohne Signal springt die Uhr ein, begrenzt auf vier Stunden.",
     "movement_title": "Jede Übung hat ihren eigenen Preis",
     "movement_body": "Eine schwere Wiederholung ist etwa drei leichte wert, und eine Einheit ist die Summe ihrer Übungen. Eine Quest, bei der du erst gehst und dann Liegestütze machst, bewertet also jede Hälfte auf ihre Weise.",
-    "outside_title": "Draußen gibt es einen Satz, keine Schwierigkeit",
+    "outside_title": "Draußen zählt ein fester Faktor, keine Schwierigkeit",
     "outside_body": "Eine Minute in Bewegung ist ein Bruchteil einer Minute Anstrengung wert: ein Viertel zu Fuß, ein Viertel auf dem Rad, die Hälfte beim Laufen. Ein Spaziergang ist weder leicht noch schwer, dein Level ändert daran also nichts. Radfahren steht nicht über dem Gehen, weil ein Handy ein Fahrrad nicht von einem Auto unterscheiden kann.",
     "decay_title": "Draußen bringt jede Stunde weniger als die davor",
     "decay_body": "Die erste Stunde des Tages zählt voll, die zweite halb, der Rest zu einem Viertel. Nie null. Drei Spaziergänge von vierzig Minuten sind mehr wert als einer von zwei Stunden, und einen Spaziergang zu teilen ändert nichts: Gezählt wird dein Tag, nicht deine Einheiten.",
     "ceiling_title": "Eine Einheit, höchstens 2000 XP",
     "ceiling_body": "Eine Obergrenze, die keine eingetippte Zahl anheben kann. Sie ist für unmögliche Fälle da, nicht um dich zu bremsen: Keine Einheit kommt ihr auch nur nahe.",
     "kept_title": "Was du verdient hast, bleibt verdient",
-    "kept_body": "Keine XP wird je zurückgenommen, und kein Level sinkt je. Ändert sich eine Regel, gilt sie ab diesem Tag."
+    "kept_body": "Keine XP werden je zurückgenommen, und kein Level sinkt je. Ändert sich eine Regel, gilt sie ab diesem Tag."
   },
   "journal": {
     "title": "Quest-Tagebuch",
@@ -815,7 +815,7 @@
     "home_card_subtitle": "Jeder Muskel, den du trainierst, lässt es wachsen",
     "view_village": "Dorf ansehen",
     "building_details": "Gebäudedetails",
-    "tier": "Rang {{tier}}",
+    "tier": "Ausbaustufe {{tier}}",
     "close": "Schließen",
     "next_level": "Nächstes Level",
     "level_line": "Level {{level}}",
@@ -834,9 +834,9 @@
     "detail_max_level": "Höchstes Level erreicht",
     "detail_recent_title": "Einheiten, die es genährt haben",
     "detail_recent_units": "{{volume}} Wdh.",
-    "detail_prereq_driver": "Wächst mit {{building}}, derzeit Level {{level}}",
+    "detail_prereq_driver": "Wächst mit dem Gebäude {{building}}, derzeit Level {{level}}",
     "detail_prereq_next": "Wächst weiter, wenn {{building}} Level {{target}} erreicht",
-    "detail_prereq_locked": "Erscheint bei Level {{target}} von {{building}}, derzeit Level {{level}}",
+    "detail_prereq_locked": "Erscheint, wenn das Gebäude {{building}} Level {{target}} erreicht. Derzeit Level {{level}}",
     "detail_bosses_driver": "{{count}} besiegte Bosse",
     "detail_adventures_driver": "{{count}} abgeschlossene Abenteuer",
     "detail_victories_driver": "{{count}} Siege gegen Bosse",
@@ -845,7 +845,7 @@
     "league_unit": "Eine Wegstunde in Bati ist ein Kilometer.",
     "rep_unit": "Beim Halten zählt alle {{seconds}} Sekunden eine Wiederholung.",
     "detail_unlock_muscle": "Trainiere {{muscle}}, um dieses Gebäude zu errichten",
-    "detail_unlock_style": "Mach eine Übung in {{style}}, um dieses Gebäude zu errichten",
+    "detail_unlock_style": "Mach eine {{style}}-Übung, um dieses Gebäude zu errichten",
     "detail_progress": "{{current}}/{{target}}",
     "hall_finished_title": "Abgeschlossene Abenteuer",
     "hall_times": "×{{count}}",
@@ -872,8 +872,8 @@
     "foot": "Hier wird nichts verwaltet. Jedes Level kommt aus einer erfassten Einheit.",
     "done_title": "{{name}} ist vollendet",
     "done_body": "Das Dorf ist bis zur Obergrenze gebaut.",
-    "done_deeds_one": "{{count}} Heldentat antwortet dir noch.",
-    "done_deeds_other": "{{count}} Heldentaten antworten dir noch.",
+    "done_deeds_one": "{{count}} Heldentat wartet noch auf dich.",
+    "done_deeds_other": "{{count}} Heldentaten warten noch auf dich.",
     "reward_kicker": "Das hat deine Quest gebaut",
     "reward_title": "{{building}}, Level {{level}}",
     "reward_also": "Auch gewachsen: {{names}}.",
@@ -895,7 +895,7 @@
     "next_boss_victories_one": "Noch {{count}} Bosssieg bis Level {{level}}",
     "next_boss_victories_other": "Noch {{count}} Bosssiege bis Level {{level}}",
     "feeds_muscle": "Wächst mit jeder Wiederholung für {{what}}",
-    "feeds_style": "Wächst mit jeder Wiederholung in {{what}}",
+    "feeds_style": "Wächst mit jeder {{what}}-Wiederholung",
     "feeds_prereq": "Folgt dem Gebäude {{building}}",
     "feeds_tier": "Wächst mit dem Dorf",
     "feeds_bosses": "Wächst mit jedem gefällten Boss",
@@ -1004,7 +1004,7 @@
     "before_title": "Bevor Sie beginnen",
     "before_body": "Wenn Sie schwanger sind, sich von einer Verletzung oder Operation erholen, mit einer Herz-, Gelenk- oder Blutdruckerkrankung leben oder lange inaktiv waren, sprechen Sie mit einer Ärztin oder einem Arzt, bevor Sie mit diesem oder einem anderen Trainingsprogramm beginnen.",
     "during_title": "Während des Trainings",
-    "during_body": "Ein stechender Schmerz ist keine Anstrengung: Hören Sie auf. Schwindel, Brustschmerzen oder Atemnot bedeuten Abbruch und ärztlichen Rat. Jedes Ziel hier ist ein Vorschlag: Beenden Sie einen Satz lieber mit ein oder zwei Wiederholungen Reserve, als mit schlechter Technik einer Zahl hinterherzujagen.",
+    "during_body": "Ein stechender Schmerz ist keine Anstrengung: Hören Sie auf. Schwindel, Brustschmerzen oder Atemnot bedeuten: aufhören und ärztlichen Rat einholen. Jedes Ziel hier ist ein Vorschlag: Beenden Sie einen Satz lieber mit ein oder zwei Wiederholungen Reserve, als mit schlechter Technik einer Zahl hinterherzujagen.",
     "not_a_coach_title": "Bati ist kein Coach",
     "not_a_coach_body": "Diese App zählt, was Sie tun, und erzählt eine Geschichte darüber. Sie sieht Ihre Technik nicht und ersetzt keinen medizinischen Rat. Für eine Diagnose, eine Verletzung oder einen auf Ihren Körper abgestimmten Plan wenden Sie sich an eine qualifizierte Fachkraft.",
     "onboarding_line": "Trainieren Sie innerhalb Ihrer Grenzen. Bei gesundheitlichen Problemen, einer Verletzung oder einer Schwangerschaft sprechen Sie zuerst mit einer Ärztin oder einem Arzt.",
@@ -1088,7 +1088,7 @@
       "rest": [
         "Auch Eisen kühlt zwischen zwei Schlägen ab. Darüber hat sich noch nie jemand beschwert.",
         "Du atmest schwer. Gutes Zeichen.",
-        "Ich habe Ambosse früher aufgeben sehen als dich.",
+        "Ich habe schon Ambosse gesehen, die eher schlappgemacht haben als du.",
         "Nichts wird mit einem Schlag geschmiedet.",
         "Lass dir Zeit. Die Arbeit läuft dir nicht davon.",
         "Ein Arm, der zittert, ist ein Arm, der gearbeitet hat.",
@@ -1105,8 +1105,8 @@
         "Sieh an. Diesmal hat das Metall vor dir nachgegeben.",
         "Das ist saubere Arbeit. Ich sag's nur einmal.",
         "Du hast noch eine Kerbe gefunden, und sie war die ganze Zeit da.",
-        "Ich schreib's auf. Der Nächste, der sagt, das geht nicht, hat eine Zeile zu lesen.",
-        "Die Haltung hat bis zum Ende gehalten. Das hat es ausgemacht.",
+        "Ich schreib's auf. Der Nächste, der sagt, das geht nicht, kann es dann nachlesen.",
+        "Die Technik saß bis zum Schluss. Das hat es ausgemacht.",
         "Da. Nichts Magisches, nichts Spektakuläres. Arbeit, und erledigt."
       ],
       "personal_record_beat": [
@@ -1117,7 +1117,7 @@
         "{{delta}} mehr. Klingt nach nichts. In den Armen ist es was anderes.",
         "{{exercise}}: {{delta}} besser. Das kommt mit dem Rest an den Pfosten.",
         "{{delta}} über deiner Marke, und dein Körper wird es sich vor dir merken.",
-        "Du hast {{delta}} weiter geschafft als vorher."
+        "Du hast {{delta}} mehr geschafft als vorher."
       ],
       "guide_quests": [
         "Quests sind deine Einheiten. Such dir eine aus, um den Rest kümmere ich mich."
@@ -1142,20 +1142,20 @@
         "Ruhe ist die halbe Arbeit. Die Hälfte, die keiner sieht.",
         "Niemand hat je einen Hügel erklommen, ohne auf halber Höhe Luft zu holen.",
         "Ich habe viel über Geduld gelesen. Geduldig hat mich nichts davon gemacht.",
-        "Was schnell gebaut ist, zerfällt schnell, was lästig ist und schon immer galt.",
+        "Was schnell gebaut ist, zerfällt schnell, was lästig ist und schon immer so war.",
         "Du bist zwischen zwei Dingen, und das ist ein durchaus ehrenwerter Ort.",
         "Sternenlicht braucht Jahrhunderte, um anzukommen. Es scheint keine Eile zu haben.",
         "Man fragt mich nach dem Geheimnis. Das Geheimnis ist wiederzukommen.",
         "Ein ruhiger Moment hat noch niemandem etwas genommen.",
         "In den Pausen gibt es nichts zu beweisen, nur zu atmen.",
-        "Vierzig Jahre Notizen. Fortschritt liest man in Monaten, nie in Tagen.",
-        "Die Welt kann warten.",
-        "Ungeduld ist ein ausgezeichneter Antrieb und ein sehr schlechter Führer."
+        "Vierzig Jahre Notizen. Fortschritt misst man in Monaten, nie in Tagen.",
+        "Die Welt versteht sich aufs Warten.",
+        "Ungeduld ist ein ausgezeichneter Antrieb und ein sehr schlechter Wegweiser."
       ],
       "comeback": [
         "Da bist du ja. Das Dorf hat sich nicht bewegt, und es musste auch nicht.",
         "Die Tür war nicht verschlossen. Das ist sie nie, darum geht es ja.",
-        "Wir machen da weiter, wo wir aufgehört haben, und es gibt keine Tafel zu löschen.",
+        "Wir machen da weiter, wo wir aufgehört haben, und nichts muss ausradiert werden.",
         "Die Zeit vergeht für alle, auch für die, die trainieren.",
         "Nichts, was du gebaut hast, ist zerfallen; solche Dinge sind geduldig.",
         "Willkommen. Mehr habe ich nicht zu sagen, und das ist schon viel.",
@@ -1166,7 +1166,7 @@
         "Hier schlägt dir die App das Nächste vor. Du kannst immer etwas anderes wählen, denn es ist ein Rat, kein Befehl."
       ],
       "menu_visit": [
-        "Schauen, bevor man wählt, ist schon ein bisschen wählen.",
+        "Schauen, bevor man wählt, ist schon ein bisschen Wählen.",
         "Die richtige Reihenfolge ist die, der du wirklich folgst.",
         "Listen beruhigen, und das ist ihre eigentliche Aufgabe.",
         "Was du heute nicht tust, gibt es morgen immer noch.",
@@ -1189,7 +1189,7 @@
         "Setz dich, wenn du willst. Die Leute halten das für Schummeln. Sie irren sich.",
         "Schmerz, der schreit, lügt meistens. Hör auf den, der flüstert.",
         "Ich habe viel Stärkere fallen sehen, weil sie nicht wussten, wann Schluss ist.",
-        "Schlaf tut deinen Muskeln mehr gut als alles, was ich in Fläschchen habe.",
+        "Schlaf tut deinen Muskeln besser als alles, was ich in Fläschchen habe.",
         "Du schwitzt. Der Körper tut seine Arbeit.",
         "Atme durch die Nase. Reine Rohrleitung, sonst nichts.",
         "Noch nie hat mir jemand für einen Rat zur Ruhe gedankt. Wiederkommen tun sie alle.",
@@ -1220,7 +1220,7 @@
         "Ich füge eine Strophe hinzu. Zwei, na gut. Darin klingst du viel ruhiger als jetzt.",
         "In den Liedern halten Helden nie an. Weißt du, wie das endet?",
         "Den Titel hab ich schon!",
-        "Willst du die Version, in der du keuchst, oder die, in der nicht?",
+        "Willst du die Version, in der du keuchst, oder die, in der du nicht keuchst?",
         "Niemand besingt die Pausen. Niemand! Pass auf, was ich daraus mache.",
         "Ich schreibe alles auf. Eines Tages singt man das in Tavernen, die du nie sehen wirst.",
         "Die Menge in meinem Kopf rastet völlig aus. Du kannst sie nicht hören.",
@@ -1263,7 +1263,7 @@
         "Das Schwere sind all die Tage vor der Ernte, und über die redet nie jemand.",
         "Hol Luft. Meine Tiere atmen auch, und die wissen, was sie tun.",
         "Das ist saubere Arbeit, und das sieht man schon von Weitem.",
-        "Ich sah ganze Jahreszeiten vergehen, und keine ließ etwas schneller wachsen.",
+        "Ich habe ganze Jahreszeiten vergehen sehen, und keine ließ etwas schneller wachsen.",
         "Niemand sieht dir zu. Genau dann zählt es.",
         "Es wird schlechtere Tage geben, und sie zählen genauso.",
         "Ein Körper ist dumm und fleißig, also gewöhnt er sich an alles, was du wiederholst."
@@ -1288,12 +1288,12 @@
     },
     "champion": {
       "personal_record": [
-        "Decke angehoben. Die nächste hängt höher.",
+        "Grenze verschoben. Die nächste liegt höher.",
         "Die Arbeit zahlt sich aus.",
         "Für diese Kerbe habe ich drei Winter gebraucht.",
         "Rekord gebrochen. Merk dir, wie es sich angefühlt hat.",
         "So fühlt sich das also an.",
-        "Der Raum war da. Du hast ihn genommen.",
+        "Da war noch Luft nach oben. Du hast sie genutzt.",
         "Das erste Mal. Das gibt es nur einmal.",
         "Nächstes Mal darüber."
       ],
@@ -1303,7 +1303,7 @@
         "{{delta}} gewonnen gegenüber deinem früheren Ich.",
         "{{delta}} besser. Die nächste Latte liegt höher.",
         "Letztes Mal {{delta}} weniger. Heute das hier.",
-        "{{delta}} mehr, und die Haltung hat bis zum Schluss gehalten.",
+        "{{delta}} mehr, und die Technik saß bis zum Schluss.",
         "{{exercise}}, {{delta}} über deiner Marke. Heb dir das für die zähen Tage auf.",
         "{{delta}} gewonnen. Geh schlafen."
       ],
@@ -1347,14 +1347,14 @@
         "In einer Liste gibt es nichts zu fürchten. Ich prüfe das. Das ist mein Job."
       ],
       "first_outing": [
-        "Zum ersten Mal hat sich das Tor für etwas anderes als Handel geöffnet. Notiert, und nicht leise.",
+        "Zum ersten Mal hat sich das Tor für etwas anderes als Handel geöffnet. Notiert, und zwar gut sichtbar.",
         "Vom Turm aus gesehen: eine Gestalt geht hinaus, dieselbe kommt zurück. Die Straße zählt ab heute.",
         "Alles vor heute geschah innerhalb der Mauern, und heute nicht.",
         "Neuer Eintrag im Wachbuch. Eine Straße, wo die Karte früher nichts zeigte.",
         "Die Torwache hat gefragt, wer das war. Ich hab's ihr gesagt. Sie wird sich dran gewöhnen.",
         "Hinaus aus den Mauern, auf eigenen Beinen, und zurück. So wird die erste Wegstunde jeder Straße gezeichnet.",
         "Bericht: Das Land hinter dem Tor ist jetzt ein Ort, an dem du gestanden hast. Heute Morgen war es ein Gerücht.",
-        "Ich beobachte die Straße auf das, was hereinkommt. Heute Nacht habe ich sie für jemanden beobachtet, der hinausging. Andere Arbeit."
+        "Ich halte auf der Straße Ausschau nach dem, was hereinkommt. Heute Nacht nach jemandem, der hinausging. Andere Arbeit."
       ],
       "high_road": [
         "Die Straße wurde um ein Stück verlängert, jedes Mal in denselben Stiefeln, und ich habe nachgesehen.",
@@ -1363,7 +1363,7 @@
         "Die Händler nutzen das neue Stück schon. Sie denken, es war immer da. Lass sie.",
         "Nachtrag zur Karte: Die Hohe Straße reicht weiter. Abgelegt unter gegangenen Wegstunden, nicht unter Wundern.",
         "Längere Straße, weitere Sicht. Der Turm hat sich nicht bewegt; was er sehen kann, schon.",
-        "Eine Straße wächst, indem man sie geht, und diese wurde gegangen. Frag den Schlamm an deinen Stiefeln.",
+        "Eine Straße wächst mit jedem Schritt darauf, und auf dieser gab es viele. Frag den Schlamm an deinen Stiefeln.",
         "Ein weiteres Stück der Hohen Straße liegt, und ich weiß genau, wessen Wegstunden es bezahlt haben."
       ],
       "longest_outing": [

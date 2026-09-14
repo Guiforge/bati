@@ -91,7 +91,7 @@ export const REST_SUGGESTION_MESSAGES: Record<
     de: [
       "Vier harte Wochen am Stück. Nimm dir eine leichtere: weniger Volumen, dieselbe Gewohnheit. Dein nächster Monat beginnt hier.",
       "Ein Monat voller harter Wochen liegt hinter dir. Schalt ein paar Tage zurück, der Fortschritt kommt, während du dich erholst.",
-      "Vier harte Wochen in Folge. Diese Woche wird leichter trainiert, nicht aufgehört.",
+      "Vier harte Wochen in Folge. Diese Woche heißt es: leichter trainieren, nicht aufhören.",
     ],
     es: [
       "Cuatro semanas duras seguidas. Toma una más ligera: menos volumen, el mismo hábito. Tu próximo mes empieza aquí.",

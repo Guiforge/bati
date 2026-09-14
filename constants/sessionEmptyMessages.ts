@@ -26,7 +26,7 @@ export const SESSION_EMPTY_VARIANTS: Localized<[EmptyVariant, ...EmptyVariant[]]
     },
   ],
   de: [
-    { title: "Gute Arbeit!", subtitle: "Einheit gespeichert. Halte die Flamme am Brennen." },
+    { title: "Gute Arbeit!", subtitle: "Einheit gespeichert. Lass die Flamme weiterbrennen." },
     { title: "Solide Einheit.", subtitle: "Jede Wiederholung zählt für die nächste." },
     {
       title: "Abgehakt!",

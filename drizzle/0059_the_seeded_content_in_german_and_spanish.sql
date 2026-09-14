@@ -45,7 +45,7 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Wall Sit' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `deName` = 'Unterarmstütz',
+    `deName` = 'Plank',
     `esName` = 'Plancha',
     `deDescription` = 'Halte die Liegestützposition mit dem Körper in einer geraden Linie.',
     `esDescription` = 'Mantén la posición de flexión con el cuerpo en línea recta.',
@@ -72,7 +72,7 @@ UPDATE `exercises` SET
     `deName` = 'Burpee',
     `esName` = 'Burpee',
     `deDescription` = 'Aus dem Stand in die Hocke, die Beine nach hinten in die Liegestützposition schieben, wieder unter den Körper holen und mit einem Sprung abschließen, die Arme über dem Kopf.',
-    `esDescription` = 'Desde de pie, baja a sentadilla, lanza las piernas atrás hasta la posición de flexión, recógelas bajo el cuerpo y termina con un salto, brazos arriba.',
+    `esDescription` = 'De pie, baja a sentadilla, lanza las piernas atrás hasta la posición de flexión, recógelas bajo el cuerpo y termina con un salto, brazos arriba.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Burpee' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -165,7 +165,7 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Skater Hop' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `deName` = 'Hohlkörperhalte',
+    `deName` = 'Hohlkörperhaltung',
     `esName` = 'Hollow body',
     `deDescription` = 'Leg dich auf den Rücken, drück den unteren Rücken in den Boden und heb Schultern und Beine ein paar Zentimeter an, Arme über dem Kopf, und halte diese Bananenform.',
     `esDescription` = 'Túmbate boca arriba, pega la zona lumbar al suelo y levanta hombros y piernas unos centímetros, brazos por encima de la cabeza, sosteniendo esa forma de plátano.',
@@ -224,7 +224,7 @@ UPDATE `exercises` SET
     `deName` = 'Wadenheben im Stand',
     `esName` = 'Elevación de talones de pie',
     `deDescription` = 'Stell dich aufrecht hin und steig langsam auf die Fußballen, halte oben kurz inne und senk dann die Fersen wieder ab.',
-    `esDescription` = 'Ponte recto y sube despacio sobre la punta de los pies, haz una pausa arriba y vuelve a bajar los talones.',
+    `esDescription` = 'Ponte de pie con la espalda recta y sube despacio sobre la punta de los pies, haz una pausa arriba y vuelve a bajar los talones.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Standing Calf Raise' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -270,7 +270,7 @@ WHERE `enName` = 'Dead Bug' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `deName` = 'Beinheben im Hang',
-    `esName` = 'Elevación de piernas colgado',
+    `esName` = 'Elevación de piernas en barra',
     `deDescription` = 'Häng dich mit gestreckten Armen an eine Stange und heb die gestreckten Beine vor dir, bis sie parallel zum Boden sind, dann senk sie kontrolliert ab.',
     `esDescription` = 'Cuélgate de una barra con los brazos estirados y sube las piernas rectas por delante hasta que queden paralelas al suelo, y luego bájalas con control.',
     `updatedAt` = strftime('%s', 'now') * 1000
@@ -374,7 +374,7 @@ WHERE `enName` = 'Thread the Needle' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `deName` = 'Vorbeuge im Stand',
-    `esName` = 'Flexión hacia delante de pie',
+    `esName` = 'Pinza de pie',
     `deDescription` = 'Klapp aus der Hüfte nach vorn und lass den Oberkörper hängen, die Knie locker gebeugt. Lass die Schwerkraft an der Rückseite der Beine arbeiten, und wipp niemals.',
     `esDescription` = 'Flexiona desde la cadera y deja colgar el tronco, con las rodillas un poco dobladas. Deja que la gravedad trabaje la parte de atrás de las piernas, y nunca rebotes.',
     `updatedAt` = strftime('%s', 'now') * 1000
@@ -383,7 +383,7 @@ WHERE `enName` = 'Standing Forward Fold' AND `creator` = 'Admin';
 UPDATE `exercises` SET
     `deName` = 'Herabschauender Hund',
     `esName` = 'Perro boca abajo',
-    `deDescription` = 'Aus dem Stütz auf Händen und Füßen schiebst du die Hüfte hoch und die Fersen nach unten, Arme gestreckt, Ohren zwischen den Oberarmen. Tritt abwechselnd mit den Füßen, um Waden und hintere Oberschenkel zu erreichen.',
+    `deDescription` = 'Aus dem Stütz auf Händen und Füßen schiebst du die Hüfte hoch und die Fersen nach unten, Arme gestreckt, Ohren zwischen den Oberarmen. Beug abwechselnd die Knie, um Waden und hintere Oberschenkel zu erreichen.',
     `esDescription` = 'Apoyando manos y pies, sube la cadera y lleva los talones hacia el suelo, brazos estirados y orejas entre los bíceps. Pedalea con los pies para llegar a gemelos e isquiotibiales por turnos.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Downward Dog' AND `creator` = 'Admin';
@@ -406,8 +406,8 @@ WHERE `enName` = 'World''s Greatest Stretch' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `deName` = 'Knie-Liegestütz',
-    `esName` = 'Flexión de rodillas',
-    `deDescription` = 'Geh in die Liegestützposition mit den Knien am Boden und dem Körper gerade vom Kopf bis zum Knie, dann senk die Brust bis eine Faust über dem Boden und drück dich wieder hoch.',
+    `esName` = 'Flexiones con rodillas apoyadas',
+    `deDescription` = 'Geh in die Liegestützposition mit den Knien am Boden und dem Körper gerade vom Kopf bis zum Knie, dann senk die Brust bis eine Faustbreite über den Boden und drück dich wieder hoch.',
     `esDescription` = 'Colócate en posición de flexión con las rodillas en el suelo y el cuerpo recto de la cabeza a las rodillas. Baja el pecho hasta un puño del suelo y vuelve a subir.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Knee Push-Up' AND `creator` = 'Admin';
@@ -502,7 +502,7 @@ WHERE `enName` = 'Dragon Flag' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `deName` = 'Gehockte Planche',
-    `esName` = 'Plancha agrupada',
+    `esName` = 'Planche agrupada',
     `deDescription` = 'Mit den Händen flach am Boden lehnst du die Schultern weit vor die Handgelenke, Ellbogen durchgestreckt, und ziehst beide Knie zur Brust, bis die Füße ganz vom Boden abheben.',
     `esDescription` = 'Con las manos planas en el suelo, adelanta bien los hombros respecto a las muñecas con los codos bloqueados y lleva las dos rodillas al pecho hasta que los pies se despeguen por completo del suelo.',
     `updatedAt` = strftime('%s', 'now') * 1000
@@ -511,8 +511,8 @@ WHERE `enName` = 'Tuck Planche' AND `creator` = 'Admin';
 UPDATE `exercises` SET
     `deName` = 'Rundgang des Wächters',
     `esName` = 'Paseo del Vigía',
-    `deDescription` = 'Geh in einem Tempo, bei dem du dich noch unterhalten könntest, und bleib dabei. Was zählt, ist die Strecke und die Zeit auf den Beinen.',
-    `esDescription` = 'Camina a un ritmo en el que podrías mantener una conversación, y quédate en él. Lo que cuenta es la distancia recorrida y el tiempo de pie.',
+    `deDescription` = 'Geh in einem Tempo, bei dem du dich noch unterhalten könntest, und bleib dabei. Was zählt, sind die Strecke und die Zeit auf den Beinen.',
+    `esDescription` = 'Camina a un ritmo en el que podrías mantener una conversación, y quédate en él. Lo que cuenta es la distancia recorrida y el tiempo que pasas caminando.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Warden''s Walk' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -661,7 +661,7 @@ UPDATE `quests` SET
 WHERE `enTitle` = 'The Arcane Gauntlet' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
-    `deTitle` = 'Der Pfad des Druiden',
+    `deTitle` = 'Der Weg des Druiden',
     `esTitle` = 'La senda del druida',
     `deDescription` = 'Der Weg führt unter den Bäumen entlang, und niemand rennt darauf. Dehnen, atmen, die Hüfte öffnen lassen, auch das heilt einen Krieger.',
     `esDescription` = 'El sendero pasa bajo los árboles y nadie corre por él. Estira, respira, deja que se abra la cadera: eso también repara a un guerrero.',
@@ -688,7 +688,7 @@ UPDATE `quests` SET
     `deTitle` = 'Das Erwachen des Knappen',
     `esTitle` = 'El despertar del escudero',
     `deDescription` = 'Du bist noch kein Held. Du bist, wer den Schild trägt, und heute reicht das.',
-    `esDescription` = 'Todavía no eres un héroe. Eres quien lleva el escudo, y hoy eso basta.',
+    `esDescription` = 'Todavía no eres leyenda. Llevas el escudo, y hoy eso basta.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Squire''s Awakening' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -758,7 +758,7 @@ WHERE `enTitle` = 'The Dawn Ritual' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `deTitle` = 'Das Lösen am Herdfeuer',
-    `esTitle` = 'El desanudo junto al hogar',
+    `esTitle` = 'Soltar nudos junto al hogar',
     `deDescription` = 'Der Marsch ist vorbei, das Feuer brennt. Löse, was die Straße verknotet hat, zuerst die Hüfte, sie trägt dich am weitesten.',
     `esDescription` = 'La marcha ha terminado, el fuego está encendido. Deshaz lo que el camino anudó, primero la cadera, que es la que más lejos te lleva.',
     `updatedAt` = strftime('%s', 'now') * 1000
@@ -807,7 +807,7 @@ WHERE `enTitle` = 'The Straight-Arm Vigil' AND `author` = 'Admin';
 UPDATE `quests` SET
     `deTitle` = 'Die Runde des Wächters',
     `esTitle` = 'La ronda del vigía',
-    `deDescription` = 'Die Mauern halten, weil jemand sie abgeht. Jede Nacht fällt die Runde einem weiteren Paar Stiefel zu, und so wird das Land gesehen.',
+    `deDescription` = 'Die Mauern halten, weil jemand sie abgeht. Jede Nacht fällt die Runde einem weiteren Paar Stiefel zu, und so bleibt das Land im Blick.',
     `esDescription` = 'Las murallas aguantan porque alguien las recorre. Cada noche la ronda le toca a un par de botas más, y así se vigila el terreno.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Warden''s Round' AND `author` = 'Admin';
@@ -853,10 +853,10 @@ UPDATE `adventures` SET
 WHERE `enTitle` = 'The Iron Lord''s Conquest' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `adventures` SET
-    `deTitle` = 'Der Pfad des Knappen',
+    `deTitle` = 'Der Weg des Knappen',
     `esTitle` = 'La senda del escudero',
     `deDescription` = 'Jeder Held beginnt als der, der den Schild trägt. Fünf Etappen, um sich das Recht auf eine Klinge zu verdienen: keine Stange, keine Gewichte, keine Ausreden.',
-    `esDescription` = 'Todo héroe empieza llevando el escudo. Cinco etapas para ganarse el derecho a empuñar una espada: sin barra, sin pesas, sin excusas.',
+    `esDescription` = 'Toda leyenda empieza llevando el escudo. Cinco etapas para ganarse el derecho a empuñar una espada: sin barra, sin pesas, sin excusas.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Squire''s Path' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -1049,7 +1049,7 @@ UPDATE `adventure_steps` SET
     `deNarrative` = 'Der Schild sitzt jetzt richtig am Arm. Vor der Klinge gilt es noch, eine Nachricht ins nächste Dorf zu bringen, fällig bis zum Einbruch der Nacht.',
     `esNarrative` = 'El escudo ya encaja en el brazo. Antes de la espada queda llevar un mensaje a la aldea vecina, que debe llegar antes del anochecer.',
     `deOutroNarrative` = 'Die Nachricht kam an, solange noch Licht zum Lesen war. Ein Knappe, der eine Botschaft so weit trägt, kann auch eine Klinge tragen.',
-    `esOutroNarrative` = 'El mensaje llegó cuando aún había luz para leerlo. Un escudero capaz de llevar un mensaje tan lejos puede llevar una espada.',
+    `esOutroNarrative` = 'El mensaje llegó cuando aún había luz para leerlo. Quien lleva un mensaje tan lejos puede llevar una espada.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 4
     AND `adventureId` = (
@@ -1121,7 +1121,7 @@ WHERE `stepIndex` = 2
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
     `deNarrative` = 'Der Stollen bricht hinter dir ein. Es gibt nur ein Tempo: schnell.',
-    `esNarrative` = 'El túnel se derrumba detrás de ti. No hay más ritmo que rápido.',
+    `esNarrative` = 'El túnel se derrumba detrás de ti. Aquí solo vale correr.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 3
     AND `adventureId` = (
@@ -1184,7 +1184,7 @@ WHERE `stepIndex` = 4
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
     `deNarrative` = 'Die Beine sind am Ende. Kriech durch den letzten Rest Kiefernwald, wenn nur das bleibt.',
-    `esNarrative` = 'Las piernas ya no responden. Termina los pinos a rastras si es lo que queda.',
+    `esNarrative` = 'Las piernas ya no responden. Cruza a rastras lo que queda del pinar, si no queda otra.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 5
     AND `adventureId` = (
@@ -1229,7 +1229,7 @@ WHERE `stepIndex` = 2
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
     `deNarrative` = 'Eine Rüstung nützt nichts, wenn der Körper darin einknickt. Spann an.',
-    `esNarrative` = 'La armadura no sirve si el cuerpo que va dentro se dobla. Tensa.',
+    `esNarrative` = 'La armadura no sirve si el cuerpo que va dentro se dobla. Aprieta el abdomen.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 3
     AND `adventureId` = (

@@ -62,7 +62,7 @@ export const PATH_NAMES: Record<string, Localized> = {
     en: "Path of the Planche",
     fr: "Voie de la Planche",
     de: "Pfad der Planche",
-    es: "Senda de la plancha",
+    es: "Senda de la planche",
   },
 
   // Legs

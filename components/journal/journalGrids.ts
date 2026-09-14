@@ -1,5 +1,6 @@
 import { getDateTimeFormat, getWeekStart } from "@/constants/dateFormatters";
 import type { Locomotion } from "@/db/schema";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 
 /**
  * The two grids the journal draws, lifted out of their components.
@@ -117,7 +118,7 @@ export type WeekdayBar = {
  */
 export function buildWeekdayBars(
   performedAts: readonly (Date | string | number)[],
-  language: string,
+  language: AppLanguage,
 ): WeekdayBar[] {
   const counts = [0, 0, 0, 0, 0, 0, 0];
   for (const at of performedAts) {

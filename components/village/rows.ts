@@ -9,6 +9,7 @@ import {
   isDayOne,
   type VillageBuilding,
 } from "@/db/village";
+import { inSentence } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
 
 /**
@@ -19,26 +20,22 @@ import type { AppLanguage } from "@/stores/settings";
  * one edit, and the four places cannot disagree about what a rung costs.
  */
 
-type Lang = "en" | "fr";
-
-const langOf = (language: AppLanguage): Lang => (language === "fr" ? "fr" : "en");
-
 /** What a rep building counts, as a label that can open a line: "Chest", "Yoga". */
-function repSubject(b: VillageBuilding, t: TFunction, lang: Lang): string {
+function repSubject(b: VillageBuilding, t: TFunction, lang: AppLanguage): string {
   if (b.relatedMuscle) return MUSCLE_LABELS[b.relatedMuscle][lang];
   const style = buildingDefinitions[b.code].relatedStyle ?? "strength";
   const label = t(`village.style_${style}`);
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-function prereqName(b: VillageBuilding, lang: Lang): string {
+function prereqName(b: VillageBuilding, lang: AppLanguage): string {
   const code = buildingDefinitions[b.code].prerequisiteBuilding;
   return code ? BUILDING_LABELS[code][lang] : "";
 }
 
 /** The cost of the next rung, in the unit the building counts. "At its ceiling" once there is none. */
 export function nextLine(b: VillageBuilding, t: TFunction, language: AppLanguage): string {
-  const lang = langOf(language);
+  const lang = language;
   if (b.nextTarget === null) return t("village.at_ceiling");
   const count = Math.max(0, b.nextTarget - b.metricValue);
   const level = b.level + 1;
@@ -67,12 +64,12 @@ export function nextLine(b: VillageBuilding, t: TFunction, language: AppLanguage
 
 /** What raises the building, with no number in it: the family label says it for a group. */
 export function feedsLine(b: VillageBuilding, t: TFunction, language: AppLanguage): string {
-  const lang = langOf(language);
+  const lang = language;
   switch (b.driver) {
     case "muscle":
-      return t("village.feeds_muscle", { what: repSubject(b, t, lang).toLowerCase() });
+      return t("village.feeds_muscle", { what: inSentence(repSubject(b, t, lang), lang) });
     case "style":
-      return t("village.feeds_style", { what: repSubject(b, t, lang).toLowerCase() });
+      return t("village.feeds_style", { what: inSentence(repSubject(b, t, lang), lang) });
     case "prereq":
       return t("village.feeds_prereq", { building: prereqName(b, lang) });
     default:
@@ -157,5 +154,5 @@ export function questLink(b: VillageBuilding | null): {
 
 /** The building's name in the app's language. */
 export function nameOf(b: { code: BuildingCode }, language: AppLanguage): string {
-  return BUILDING_LABELS[b.code][langOf(language)];
+  return BUILDING_LABELS[b.code][language];
 }

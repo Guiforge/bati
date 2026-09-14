@@ -40,6 +40,8 @@ export type BossFight = {
   // without a second query — the session store holds the fight, not the adventure.
   enName: string;
   frName: string;
+  deName: string;
+  esName: string;
   /**
    * How many times this boss has already been beaten — 0 on the first encounter. Derived from
    * finished runs of the adventure rather than stored: a finished boss campaign IS the victory
@@ -301,6 +303,8 @@ export async function getOrCreateBossFight(
       bossImagePath: adventures.bossImagePath,
       enTitle: adventures.enTitle,
       frTitle: adventures.frTitle,
+      deTitle: adventures.deTitle,
+      esTitle: adventures.esTitle,
     })
     .from(adventures)
     .where(eq(adventures.id, adventureId))
@@ -339,6 +343,8 @@ export async function getOrCreateBossFight(
       imagePath: adventure.bossImagePath ?? adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       enName: adventure.enTitle,
       frName: adventure.frTitle,
+      deName: adventure.deTitle,
+      esName: adventure.esTitle,
       tier,
       shiny,
     };
@@ -378,6 +384,8 @@ export async function getOrCreateBossFight(
     imagePath: adventure.bossImagePath ?? adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
     enName: adventure.enTitle,
     frName: adventure.frTitle,
+    deName: adventure.deTitle,
+    esName: adventure.esTitle,
     tier,
     shiny,
   };
@@ -406,6 +414,8 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
       bossImagePath: adventures.bossImagePath,
       enTitle: adventures.enTitle,
       frTitle: adventures.frTitle,
+      deTitle: adventures.deTitle,
+      esTitle: adventures.esTitle,
     })
     .from(bossFights)
     .innerJoin(adventures, eq(bossFights.adventureId, adventures.id))
@@ -427,6 +437,8 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     imagePath: row.bossImagePath ?? row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
     enName: row.enTitle,
     frName: row.frTitle,
+    deName: row.deTitle,
+    esName: row.esTitle,
     tier: await finishedRunCount(adventureId),
     // Browsing must not roll the dice: the gleam belongs to the encounter, not the gallery.
     shiny: false,

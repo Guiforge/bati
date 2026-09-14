@@ -11,6 +11,24 @@ permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
 
+<div lang="de" markdown="1">
+
+**Diese Datenschutzerklärung gibt es nur auf Englisch und Französisch.** Unten steht die englische
+Fassung, sie ist maßgeblich. Die App selbst ist auf Deutsch verfügbar, von einer KI übersetzt und
+noch nicht von Muttersprachlern geprüft. Fragen beantworte ich gern auf Englisch oder Französisch:
+**feedback.bati@proton.me**
+
+</div>
+
+<div lang="es" markdown="1">
+
+**Esta política de privacidad solo existe en inglés y en francés.** Debajo figura la versión en
+inglés, que es la que hace fe. La app está disponible en español, traducida por una IA y todavía
+sin revisar por hablantes nativos. Puede escribirme con cualquier pregunta, en inglés o en
+francés: **feedback.bati@proton.me**
+
+</div>
+
 <div lang="en" markdown="1">
 
 # Privacy Policy for Bati

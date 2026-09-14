@@ -37,6 +37,7 @@ import { formatGrown } from "@/db/village";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useChorusStore } from "@/stores/chorus";
@@ -83,7 +84,7 @@ function HeroLevelBar({
 }: {
   before: number;
   after: number;
-  language: string;
+  language: AppLanguage;
   reducedMotion: boolean;
 }) {
   const { t } = useTranslation();
@@ -94,7 +95,7 @@ function HeroLevelBar({
   // Where the bar starts filling from: the hero's progress before the session, or the bottom
   // of the level when the session crossed it — the sweep from zero *is* the level-up.
   const from = before >= base ? Math.min(target, ((before - base) / span) * 100) : 0;
-  const title = getLevelTitle(level)[language === "fr" ? "fr" : "en"];
+  const title = getLevelTitle(level)[language];
 
   const width = useSharedValue(reducedMotion ? target : from);
   useEffect(() => {

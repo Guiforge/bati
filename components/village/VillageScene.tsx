@@ -83,7 +83,7 @@ export function VillageScene() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const language = useSettingsStore((s) => s.language);
-  const lang = language === "fr" ? "fr" : "en";
+  const lang = language;
   const villageName = useUserStore((s) => s.villageName);
   const sectionAnim = useAnimationProps("bouncy", { opacity: 0, y: 12 });
   const haptics = useHaptics();

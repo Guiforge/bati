@@ -1,0 +1,32 @@
+Trainiere wie ein Held, baue wie ein König.
+
+Bati macht aus Krafttraining ein Dark-Fantasy-RPG. Ein Training ist eine Quest. Wiederholungen werden zu Schaden an einem Boss. Die Muskeln, die du wirklich trainierst, lassen die Gebäude eines Dorfs wachsen, das aus dem entsteht, was du gestemmt hast, nicht aus dem, was du gekauft hast.
+
+ERST DER SPORT, DANN DAS RPG
+Die Trainingslogik führt, das Spiel verstärkt sie. Nichts Dekoratives steht zwischen dir und deinem nächsten Satz: große Tippflächen, kontrastreicher Text und ein Bildschirm, der für eine Hand in einem lauten Studio gemacht ist.
+
+WAS DICH ERWARTET
+• Quests: angeleitete Einheiten mit Zielen, die sich deinem Level anpassen
+• Abenteuer: Kampagnen über mehrere Einheiten, mit einer Geschichte zwischen den Etappen
+• Bosskämpfe: Wiederholungen werden zu Schaden, Schwächen und kritische Treffer geben den Zahlen Bedeutung
+• Touren: gehen, laufen oder radeln, die zurückgelegte Strecke lässt die Straße aus dem Dorf wachsen
+• Ein Dorf: Gebäude steigen im Level mit dem Volumen, das du wirklich erfasst hast
+• Schwüre: Wähl ein Ziel und lass dich von der App daran halten
+• Ein Tagebuch: Verlauf, Rekorde, deine Flamme, Muskelgleichgewicht
+
+DEIN TRAINING BLEIBT AUF DEINEM HANDY
+Kein Konto. Keine Registrierung. Kein Server von uns. Keine Analyse, keine Werbung, kein Tracking jeglicher Art. Deine Einheiten, deine Rekorde und die GPS-Spur einer Tour liegen in einer Datenbank auf deinem Gerät und nirgendwo sonst. Wer die App deinstalliert, löscht jeden Eintrag, den sie je angelegt hat.
+
+Eine Ausnahme, standardmäßig aus: die Karte hinter der Route einer Tour. In den Einstellungen eingeschaltet, fragt das Handy OpenFreeMap (OpenStreetMap-Daten, ausgeliefert von tiles.openfreemap.org) nach Kacheln, den quadratischen Bildern, aus denen eine Karte besteht, für die Gegend, in der du warst. Diese Anfrage verrät dem Dienst ungefähr, wo du warst, mit deiner IP-Adresse und der Uhrzeit. Nicht die Route auf den Meter, nicht das Tempo, nicht das Training, nicht wer du bist, aber die Gegend, ja. Ausgeschaltet, oder mit einem Tippen wieder aus, wird die Route auf einem schlichten Hintergrund gezeichnet, und die App stellt keinerlei Netzwerkanfrage. Kein anderer Teil der App darf eine Verbindung öffnen: Eine Lint-Regel lässt den Build scheitern, sobald irgendwo im Code ein Netzwerkaufruf auftaucht.
+
+Der Standort wird nur während einer Tour gelesen, von einem GPS-Modul, das für diese App auf Androids eigenem Standortdienst geschrieben wurde. Keine Google-Play-Dienste, kein Drittanbieter-SDK, nichts, das nach Hause telefoniert.
+
+Die Karte ist der einzige Schalter, und er ist anfangs aus. Alles andere oben ist die Architektur, beim Build geprüft.
+
+ZUERST MIT KÖRPERGEWICHT
+Der Übungskatalog ist um das herum aufgebaut, was ohne Geräte geht, und passt sich an, wenn du welche hast. Das Aufwärmen ist dynamisch und auf die anstehende Einheit abgestimmt, denn fünf Minuten Aufwärmen vor sechs Minuten Training macht niemand zweimal.
+
+ÜBER DIESE ÜBERSETZUNG
+Die deutsche Fassung von Bati, diese Beschreibung eingeschlossen, wurde von einer KI übersetzt und noch von niemandem mit Deutsch als Muttersprache gelesen. Ein Wort klingt falsch? Die App hat unter Einstellungen einen Weg, es mir zu sagen.
+
+Quellcode: https://github.com/Guiforge/bati

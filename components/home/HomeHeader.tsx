@@ -53,7 +53,7 @@ export function HomeHeader() {
     }, []),
   );
 
-  const levelTitle = levelInfo ? (language === "fr" ? levelInfo.title.fr : levelInfo.title.en) : "";
+  const levelTitle = levelInfo ? levelInfo.title[language] : "";
   const currentStreak = streak?.current ?? 0;
   const flameLevel = getFlameLevel(currentStreak);
   const tier = levelInfo ? getVillageTier(levelInfo.level) : null;
@@ -169,7 +169,7 @@ export function HomeHeader() {
           onPress={() => router.push("/(tabs)/village")}
           accessibilityRole="button"
           accessibilityLabel={t("home.village_a11y", {
-            name: TIER_NAMES[tier][language === "fr" ? "fr" : "en"],
+            name: TIER_NAMES[tier][language],
           })}
         >
           <Castle size={16} color="$textSecondary" />

@@ -25,12 +25,11 @@ describe("getExerciseColorKey", () => {
 });
 
 describe("getWeekStart", () => {
-  it("starts the week on Monday in French and Sunday everywhere else", () => {
+  it("starts the week on Monday in French and Sunday in English", () => {
     // A wrong answer here shifts every cell of the journal's calendar by one day, which reads
     // as "my sessions moved" rather than as a bug.
     expect(getWeekStart("fr")).toBe(1);
     expect(getWeekStart("en")).toBe(0);
-    expect(getWeekStart("de")).toBe(0);
   });
 });
 

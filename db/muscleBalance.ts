@@ -1,4 +1,5 @@
 import { and, count, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
 import { isWorkout } from "./completed";
 import { MUSCLE_LABELS } from "./muscles";
@@ -27,7 +28,7 @@ function periodStart(period: BalancePeriod, now = new Date()): Date {
 
 export type MuscleVolume = {
   muscle: MuscleCode;
-  label: { en: string; fr: string };
+  label: Localized;
   volume: number; // Total work units — seconds converted to rep-equivalents (./workUnits)
   percentage: number; // Percentage of total training
   sessionCount: number; // Number of sessions that included this muscle
@@ -194,7 +195,7 @@ export async function getSuggestedFocusAreas(limit = 2): Promise<MuscleCode[]> {
  */
 export function getBalanceRecommendation(balance: MuscleBalance): {
   status: "balanced" | "needs_attention" | "no_data";
-  message: { en: string; fr: string };
+  message: Localized;
   focusAreas: MuscleCode[];
 } {
   if (balance.totalVolume === 0) {
@@ -203,6 +204,8 @@ export function getBalanceRecommendation(balance: MuscleBalance): {
       message: {
         en: "Complete workouts to see your muscle balance.",
         fr: "Termine des entraînements pour voir ton équilibre musculaire.",
+        de: "Schließ Trainings ab, um dein Muskelgleichgewicht zu sehen.",
+        es: "Completa entrenamientos para ver tu equilibrio muscular.",
       },
       focusAreas: [],
     };
@@ -214,6 +217,8 @@ export function getBalanceRecommendation(balance: MuscleBalance): {
       message: {
         en: "Great balance! Keep up the varied training.",
         fr: "Bon équilibre ! Continue l'entraînement varié.",
+        de: "Gutes Gleichgewicht! Bleib beim abwechslungsreichen Training.",
+        es: "¡Buen equilibrio! Sigue con un entrenamiento variado.",
       },
       focusAreas: [],
     };
@@ -222,12 +227,17 @@ export function getBalanceRecommendation(balance: MuscleBalance): {
   const weakLabels = balance.weakAreas.slice(0, 2).map((m) => MUSCLE_LABELS[m]);
   const enNames = weakLabels.map((l) => l.en.toLowerCase()).join(" and ");
   const frNames = weakLabels.map((l) => l.fr.toLowerCase()).join(" et ");
+  // German keeps its capitals: a noun lower-cased mid-sentence is a spelling mistake there.
+  const deNames = weakLabels.map((l) => l.de).join(" und ");
+  const esNames = weakLabels.map((l) => l.es.toLowerCase()).join(" y ");
 
   return {
     status: "needs_attention",
     message: {
       en: `Consider adding more ${enNames} exercises.`,
       fr: `Pense à ajouter plus d'exercices pour ${frNames}.`,
+      de: `Nimm mehr Übungen für ${deNames} dazu.`,
+      es: `Prueba a añadir más ejercicios de ${esNames}.`,
     },
     focusAreas: balance.weakAreas.slice(0, 2),
   };
@@ -239,7 +249,7 @@ export function getBalanceRecommendation(balance: MuscleBalance): {
 
 export type PatternVolume = {
   pattern: MovementPattern;
-  label: { en: string; fr: string };
+  label: Localized;
   volume: number; // Same work units as MuscleVolume
   percentage: number;
 };
@@ -348,6 +358,8 @@ export type SuggestedQuest = {
   id: number;
   enTitle: string;
   frTitle: string;
+  deTitle: string;
+  esTitle: string;
   matchingMuscles: MuscleCode[];
   matchScore: number; // Higher = better match for weak areas
 };
@@ -386,6 +398,8 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
       questId: quests.id,
       enTitle: quests.enTitle,
       frTitle: quests.frTitle,
+      deTitle: quests.deTitle,
+      esTitle: quests.esTitle,
       muscle: exerciseMuscles.muscle,
     })
     .from(quests)
@@ -397,7 +411,7 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
   // Group by quest and count matching muscles
   const questMap = new Map<
     number,
-    { enTitle: string; frTitle: string; muscles: Set<MuscleCode> }
+    { enTitle: string; frTitle: string; deTitle: string; esTitle: string; muscles: Set<MuscleCode> }
   >();
 
   for (const row of rows) {
@@ -405,6 +419,8 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
       questMap.set(row.questId, {
         enTitle: row.enTitle,
         frTitle: row.frTitle,
+        deTitle: row.deTitle,
+        esTitle: row.esTitle,
         muscles: new Set(),
       });
     }
@@ -421,6 +437,8 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
       id,
       enTitle: data.enTitle,
       frTitle: data.frTitle,
+      deTitle: data.deTitle,
+      esTitle: data.esTitle,
       matchingMuscles: [...data.muscles],
       matchScore: data.muscles.size,
     });

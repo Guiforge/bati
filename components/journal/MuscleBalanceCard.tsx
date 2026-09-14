@@ -111,7 +111,7 @@ export function MuscleBalanceCard() {
           {balance.muscles.map((m) => {
             const percentage = maxVolume > 0 ? (m.volume / maxVolume) * 100 : 0;
             const isWeak = balance.weakAreas.includes(m.muscle);
-            const label = language === "fr" ? m.label.fr : m.label.en;
+            const label = m.label[language];
 
             return (
               <XStack key={m.muscle} items="center" gap="$2">
@@ -141,7 +141,7 @@ export function MuscleBalanceCard() {
 
         {recommendation.status === "needs_attention" && (
           <Text fontSize={12} color="$text" opacity={0.7}>
-            {language === "fr" ? recommendation.message.fr : recommendation.message.en}
+            {recommendation.message[language]}
           </Text>
         )}
 

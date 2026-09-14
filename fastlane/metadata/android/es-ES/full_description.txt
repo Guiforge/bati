@@ -1,0 +1,32 @@
+Entrena como un héroe, construye como un rey.
+
+Bati convierte el entrenamiento de fuerza en un RPG de fantasía oscura. Un entrenamiento es una misión. Las repeticiones se convierten en daño contra un jefe. Los músculos que de verdad trabajas levantan los edificios de una aldea que crece a partir de lo que has levantado, no de lo que has comprado.
+
+PRIMERO EL DEPORTE, DESPUÉS EL RPG
+Manda la lógica del entrenamiento y el juego la amplifica. Nada decorativo se interpone entre tú y tu siguiente serie: zonas táctiles grandes, texto de alto contraste y una pantalla pensada para una mano en un gimnasio ruidoso.
+
+LO QUE ENCONTRARÁS
+• Misiones: sesiones guiadas con objetivos que se adaptan a tu nivel
+• Aventuras: campañas de varias sesiones, con una historia entre etapas
+• Combates contra jefes: las repeticiones son daño, y las debilidades y los golpes críticos dan sentido a los números
+• Salidas: camina, corre o pedalea, y la distancia recorrida hace crecer el camino que sale de la aldea
+• Una aldea: los edificios suben con el volumen que de verdad has registrado
+• Juramentos: elige un objetivo y deja que la app te ayude a cumplirlo
+• Un diario: historial, récords, tu llama, equilibrio muscular
+
+TU ENTRENAMIENTO SE QUEDA EN TU MÓVIL
+Sin cuenta. Sin registro. Sin servidor nuestro. Sin analíticas, sin anuncios, sin ningún tipo de rastreo. Tus sesiones, tus récords y el trazado GPS de una salida viven en una base de datos en tu dispositivo y en ningún otro sitio. Desinstalar la app borra cada registro que haya creado.
+
+Una excepción, desactivada por defecto: el mapa bajo la ruta de una salida. Si lo activas en Ajustes, el móvil pide a OpenFreeMap (datos de OpenStreetMap, servidos desde tiles.openfreemap.org) teselas, las imágenes cuadradas de las que se compone un mapa, de la zona por la que pasaste. Esa petición le indica al servidor más o menos dónde estuviste, junto con tu dirección IP y la hora. No la ruta al metro, ni el ritmo, ni el entrenamiento, ni quién eres, pero sí la zona. Desactivado, o desactivado de nuevo con un toque, la ruta se dibuja sobre un fondo liso y la app no hace ninguna petición de red. Ninguna otra parte de la app puede abrir una conexión: una regla de lint hace fallar la compilación si aparece una llamada de red en cualquier parte del código.
+
+La ubicación solo se lee durante una salida, mediante un módulo GPS escrito para esta app sobre el propio servicio de ubicación de Android. Sin servicios de Google Play, sin SDK de terceros, nada que llame a casa.
+
+El mapa es el único interruptor, y empieza desactivado. Todo lo demás es la arquitectura, comprobada al compilar.
+
+PRIMERO EL PESO CORPORAL
+El catálogo de ejercicios se basa en lo que puedes hacer sin material, y se adapta si tienes algo. Los calentamientos son dinámicos y se ajustan a la sesión que tienes delante, porque nadie repite un calentamiento de cinco minutos antes de un entrenamiento de seis.
+
+SOBRE ESTA TRADUCCIÓN
+La versión en español de Bati, esta descripción incluida, la ha traducido una IA y todavía no la ha revisado ningún hablante nativo. ¿Alguna palabra suena rara? En Ajustes, la app tiene una forma de decírmelo.
+
+Código fuente: https://github.com/Guiforge/bati

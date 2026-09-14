@@ -14,7 +14,7 @@ and the village you build is made of what you actually lifted.
 
 <br />
 
-**[guiforge.github.io/bati](https://guiforge.github.io/bati/)**, the site, in English and French
+**[guiforge.github.io/bati](https://guiforge.github.io/bati/)**, the site, in English, French, German and Spanish
 
 [![CI](https://github.com/Guiforge/bati/actions/workflows/ci.yml/badge.svg)](https://github.com/Guiforge/bati/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Guiforge/bati?label=release&color=0D33F2)](https://github.com/Guiforge/bati/releases/latest)
@@ -103,7 +103,7 @@ The trace itself stays in the database on your phone. [Privacy policy](https://g
 
 ## Install it
 
-All of this is also on [the site](https://guiforge.github.io/bati/#install), in English and French.
+All of this is also on [the site](https://guiforge.github.io/bati/#install), in English, French, German and Spanish.
 
 ### F-Droid, the one that updates itself
 

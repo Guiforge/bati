@@ -10,6 +10,7 @@ import { getBossAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { rawColors } from "@/constants/rawColors";
 import { type BossFight, threatRank } from "@/db/bossFights";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 
 const ART_HEIGHT = 140;
 /** threatRank is 1-4; identical glyphs still need stable keys. */
@@ -27,7 +28,7 @@ const SKULL_KEYS = ["skull-1", "skull-2", "skull-3", "skull-4"] as const;
  * session where the monster owns the screen. The portrait, the drain and the weakness are the same
  * facts read the same way, at a size that fits a browsing screen.
  */
-export function BossPanel({ fight, language }: { fight: BossFight; language: string }) {
+export function BossPanel({ fight, language }: { fight: BossFight; language: AppLanguage }) {
   const { t } = useTranslation();
 
   const hpPercent = getHpPercent(fight.currentHp, fight.totalHp);

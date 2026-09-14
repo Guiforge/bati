@@ -701,8 +701,12 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       exId: exercises.id,
       exEnName: exercises.enName,
       exFrName: exercises.frName,
+      exDeName: exercises.deName,
+      exEsName: exercises.esName,
       exEnDescription: exercises.enDescription,
       exFrDescription: exercises.frDescription,
+      exDeDescription: exercises.deDescription,
+      exEsDescription: exercises.esDescription,
       exImagePath: exercises.imagePath,
       exCreator: exercises.creator,
       exDifficulty: exercises.difficulty,
@@ -744,8 +748,12 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
           id: r.exId,
           enName: r.exEnName,
           frName: r.exFrName,
+          deName: r.exDeName,
+          esName: r.exEsName,
           enDescription: r.exEnDescription,
           frDescription: r.exFrDescription,
+          deDescription: r.exDeDescription,
+          esDescription: r.exEsDescription,
           imagePath: r.exImagePath,
           creator: r.exCreator,
           difficulty: r.exDifficulty,
@@ -855,6 +863,8 @@ export type ContributingSession = {
   /** Null for a session whose quest was deleted, or that was never linked to one. */
   enTitle: string | null;
   frTitle: string | null;
+  deTitle: string | null;
+  esTitle: string | null;
 };
 
 /**
@@ -875,6 +885,8 @@ export async function getRecentContributingSessions(
       volume,
       enTitle: quests.enTitle,
       frTitle: quests.frTitle,
+      deTitle: quests.deTitle,
+      esTitle: quests.esTitle,
     })
     .from(completedQuest)
     .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
@@ -901,6 +913,8 @@ export async function getRecentContributingSessions(
     volume: Number(r.volume),
     enTitle: r.enTitle,
     frTitle: r.frTitle,
+    deTitle: r.deTitle,
+    esTitle: r.esTitle,
   }));
 }
 

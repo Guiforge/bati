@@ -128,9 +128,9 @@ describe("useSettingsStore", () => {
     expect(settingsStore().getState().language).toBe("fr");
   });
 
-  test("a stored language other than fr reads as en", async () => {
+  test("a stored language the app does not ship reads as en", async () => {
     storedSettings();
-    prefs.getLanguage.mockResolvedValue("de");
+    prefs.getLanguage.mockResolvedValue("ja");
 
     await settingsStore().getState().loadFromDatabase();
 

@@ -34,7 +34,7 @@ import {
 } from "@/db/village";
 import { SECONDS_PER_REP_EQUIVALENT } from "@/db/workUnits";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { localizedTitle } from "@/src/i18n/localized";
+import { inSentence, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -212,17 +212,16 @@ function BuildingDetail({
 }: DetailProps & { building: VillageBuilding; onClose: () => void }) {
   const { t } = useTranslation();
   const router = useRouter();
-  const fr = language === "fr";
   const built = building.level > 0;
   // Lower-cased mid-sentence, the way getBalanceRecommendation() writes muscles into prose.
   const muscleLabel = building.relatedMuscle
-    ? (MUSCLE_LABELS[building.relatedMuscle]?.[fr ? "fr" : "en"].toLowerCase() ??
-      building.relatedMuscle)
+    ? inSentence(MUSCLE_LABELS[building.relatedMuscle]?.[language] ?? "", language) ||
+      building.relatedMuscle
     : "";
   const style = buildingDefinitions[building.code].relatedStyle;
   const styleLabel = style ? t(`village.style_${style}`, style) : "";
   const prereqCode = buildingDefinitions[building.code].prerequisiteBuilding;
-  const prereqName = prereqCode ? BUILDING_LABELS[prereqCode][fr ? "fr" : "en"] : "";
+  const prereqName = prereqCode ? BUILDING_LABELS[prereqCode][language] : "";
 
   // The unit note is a second sentence, so the join carries the full stop. The driver strings
   // themselves stay clause-shaped: the leagues one is reused on the victory screen after a
@@ -323,10 +322,17 @@ function BuildingDetail({
         <YStack gap="$2">
           <Kicker label={t("village.detail_recent_title")} />
           {extra.sessions.map((session) => {
-            const title =
-              session.enTitle && session.frTitle
-                ? localizedTitle({ enTitle: session.enTitle, frTitle: session.frTitle }, language)
-                : null;
+            const title = session.enTitle
+              ? localizedTitle(
+                  {
+                    enTitle: session.enTitle,
+                    frTitle: session.frTitle ?? "",
+                    deTitle: session.deTitle ?? "",
+                    esTitle: session.esTitle ?? "",
+                  },
+                  language,
+                )
+              : null;
             const when = getDateTimeFormat(language, RECENT_WORK_DATE_OPTIONS).format(
               session.performedAt,
             );
@@ -359,7 +365,7 @@ function BuildingDetail({
                 </YStack>
               )}
               <Text fontSize={12} color="$textSecondary" flex={1} numberOfLines={1}>
-                {fr ? adventure.frTitle : adventure.enTitle}
+                {localizedTitle(adventure, language)}
               </Text>
               {adventure.timesFinished > 1 && (
                 <Text fontSize={12} color="$textSecondary">

@@ -51,6 +51,8 @@ function building(
     level,
     enName: code,
     frName: code,
+    deName: code,
+    esName: code,
     unlockCondition: "",
     relatedMuscle: def.relatedMuscle,
     driver: "tier",
@@ -71,7 +73,7 @@ function mockScene(buildings: village.VillageBuilding[], over: Partial<village.V
   jest.spyOn(village, "getVillageScene").mockResolvedValue({
     tier: 4,
     level: 8,
-    title: { en: "Champion", fr: "Champion" },
+    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
     flame: 0,
     streakDays: 0,
     dominantSport: null,

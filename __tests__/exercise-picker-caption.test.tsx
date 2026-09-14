@@ -29,8 +29,12 @@ jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => true }));
 function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id" | "enName">): Exercise {
   return {
     frName: over.enName,
+    deName: over.enName,
+    esName: over.enName,
     enDescription: "",
     frDescription: "",
+    deDescription: "",
+    esDescription: "",
     imagePath: "assets/placeholder.webp",
     creator: "Admin",
     difficulty: "medium",

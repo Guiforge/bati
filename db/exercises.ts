@@ -38,8 +38,12 @@ export type Exercise = {
   id: number;
   enName: string;
   frName: string;
+  deName: string;
+  esName: string;
   enDescription: string;
   frDescription: string;
+  deDescription: string;
+  esDescription: string;
   imagePath: string;
   creator: string;
   difficulty: DifficultyCode;
@@ -122,8 +126,12 @@ const exerciseColumns = () => ({
   id: exercises.id,
   enName: exercises.enName,
   frName: exercises.frName,
+  deName: exercises.deName,
+  esName: exercises.esName,
   enDescription: exercises.enDescription,
   frDescription: exercises.frDescription,
+  deDescription: exercises.deDescription,
+  esDescription: exercises.esDescription,
   imagePath: exercises.imagePath,
   creator: exercises.creator,
   difficulty: exercises.difficulty,
@@ -142,8 +150,12 @@ type ExerciseRow = {
   id: number;
   enName: string;
   frName: string;
+  deName: string;
+  esName: string;
   enDescription: string;
   frDescription: string;
+  deDescription: string;
+  esDescription: string;
   imagePath: string;
   creator: string;
   difficulty: DifficultyCode;
@@ -163,8 +175,12 @@ function exerciseFromRow(r: ExerciseRow): Exercise {
     id: r.id,
     enName: r.enName,
     frName: r.frName,
+    deName: r.deName,
+    esName: r.esName,
     enDescription: r.enDescription,
     frDescription: r.frDescription,
+    deDescription: r.deDescription,
+    esDescription: r.esDescription,
     imagePath: r.imagePath,
     creator: r.creator,
     difficulty: r.difficulty,
@@ -277,7 +293,14 @@ export const PROGRESSION_SESSIONS_REQUIRED = 3;
 /** How many recent rows to scan when looking for the most recently trained movements. */
 const RECENT_RESULT_ROWS = 60;
 
-export type MovementRef = { id: number; enName: string; frName: string; imagePath: string };
+export type MovementRef = {
+  id: number;
+  enName: string;
+  frName: string;
+  deName: string;
+  esName: string;
+  imagePath: string;
+};
 
 /** One rung of the ladder, seen from below: the movement, and how close its next step is. */
 export type VariationStep = {
@@ -303,6 +326,8 @@ async function fetchLadderRows(): Promise<LadderRow[]> {
       id: exercises.id,
       enName: exercises.enName,
       frName: exercises.frName,
+      deName: exercises.deName,
+      esName: exercises.esName,
       imagePath: exercises.imagePath,
       prerequisiteExerciseId: exercises.prerequisiteExerciseId,
     })
@@ -363,10 +388,19 @@ async function recentMetFlags(exerciseId: number, limit: number): Promise<boolea
   return rows.map((r) => r.met === 1);
 }
 
-const stripPrerequisite = ({ id, enName, frName, imagePath }: LadderRow): MovementRef => ({
+const stripPrerequisite = ({
   id,
   enName,
   frName,
+  deName,
+  esName,
+  imagePath,
+}: LadderRow): MovementRef => ({
+  id,
+  enName,
+  frName,
+  deName,
+  esName,
   imagePath,
 });
 
@@ -875,10 +909,15 @@ export async function createUserExercise(draft: UserExerciseDraft): Promise<numb
   const inserted = await db
     .insert(exercises)
     .values({
+      // A hero writes in one language, so every column carries the same words.
       enName: draft.name,
       frName: draft.name,
+      deName: draft.name,
+      esName: draft.name,
       enDescription: draft.description,
       frDescription: draft.description,
+      deDescription: draft.description,
+      esDescription: draft.description,
       imagePath: draft.imagePath,
       creator: USER_EXERCISE_CREATOR,
       difficulty: draft.difficulty,
@@ -907,10 +946,15 @@ export async function updateUserExercise(id: number, draft: UserExerciseDraft): 
   await db
     .update(exercises)
     .set({
+      // A hero writes in one language, so every column carries the same words.
       enName: draft.name,
       frName: draft.name,
+      deName: draft.name,
+      esName: draft.name,
       enDescription: draft.description,
       frDescription: draft.description,
+      deDescription: draft.description,
+      esDescription: draft.description,
       imagePath: draft.imagePath,
       difficulty: draft.difficulty,
       equipment: draft.equipment,

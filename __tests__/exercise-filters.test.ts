@@ -12,8 +12,12 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise 
   return {
     enName: "Exercise",
     frName: "Exercice",
+    deName: "Exercice",
+    esName: "Exercice",
     enDescription: "",
     frDescription: "",
+    deDescription: "",
+    esDescription: "",
     imagePath: "assets/placeholder.webp",
     creator: "Admin",
     difficulty: "medium",
@@ -35,6 +39,8 @@ const tableRow = makeExercise({
   id: 1,
   enName: "Table Row",
   frName: "Tirage sous table",
+  deName: "Tirage sous table",
+  esName: "Tirage sous table",
   muscles: ["back"],
   pattern: "pull_horizontal",
 });
@@ -42,6 +48,8 @@ const invertedRow = makeExercise({
   id: 2,
   enName: "Inverted Row",
   frName: "Tirage australien",
+  deName: "Tirage australien",
+  esName: "Tirage australien",
   muscles: ["back", "arms"],
   pattern: "pull_horizontal",
   prerequisiteExerciseId: 1,
@@ -50,6 +58,8 @@ const pullUp = makeExercise({
   id: 3,
   enName: "Pull-up",
   frName: "Traction",
+  deName: "Traction",
+  esName: "Traction",
   muscles: ["back"],
   equipment: "pullup_bar",
   pattern: "pull_vertical",
@@ -60,6 +70,8 @@ const pushUp = makeExercise({
   id: 4,
   enName: "Push-up",
   frName: "Pompe",
+  deName: "Pompe",
+  esName: "Pompe",
   muscles: ["chest"],
   pattern: "push_horizontal",
 });
@@ -278,17 +290,27 @@ describe("rankSwapCandidates", () => {
 });
 
 describe("hero-authored facets", () => {
-  const seed = makeExercise({ id: 1, enName: "Squat", frName: "Squat" });
+  const seed = makeExercise({
+    id: 1,
+    enName: "Squat",
+    frName: "Squat",
+    deName: "Squat",
+    esName: "Squat",
+  });
   const mine = makeExercise({
     id: 2,
     enName: "Archer Squat",
     frName: "Archer Squat",
+    deName: "Archer Squat",
+    esName: "Archer Squat",
     creator: "hero",
   });
   const retired = makeExercise({
     id: 3,
     enName: "Old Note",
     frName: "Old Note",
+    deName: "Old Note",
+    esName: "Old Note",
     creator: "hero",
     retiredAt: new Date(),
   });

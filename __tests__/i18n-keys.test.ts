@@ -1,5 +1,10 @@
+import de from "@/locales/de.json";
 import en from "@/locales/en.json";
+import es from "@/locales/es.json";
 import fr from "@/locales/fr.json";
+import { APP_LANGUAGES } from "@/src/i18n/deviceLanguage";
+
+const LOCALE_FILES = { en, fr, de, es };
 
 type JsonValue = string | number | boolean | null | JsonObject | JsonValue[];
 interface JsonObject {
@@ -50,47 +55,100 @@ function collectLeafKeys(
 }
 
 describe("i18n locale parity", () => {
-  test("en.json and fr.json have identical keys", () => {
-    const enKeys = collectLeafKeys(en as unknown as JsonObject);
-    const frKeys = collectLeafKeys(fr as unknown as JsonObject);
-
-    const missingInFr = [...enKeys.keys()].filter((k) => !frKeys.has(k)).sort();
-    const missingInEn = [...frKeys.keys()].filter((k) => !enKeys.has(k)).sort();
-
-    expect(missingInFr).toEqual([]);
-    expect(missingInEn).toEqual([]);
+  test("every shipped language has a locale file, and no file ships without its language", () => {
+    expect(Object.keys(LOCALE_FILES).sort()).toEqual([...APP_LANGUAGES].sort());
   });
+
+  /**
+   * `_many` is the one key a locale may have that English does not. Spanish and French ask
+   * `Intl.PluralRules` for a "many" form on round millions, English never does, and i18next prints
+   * the raw key when the form it asked for is missing (see the plural test below).
+   */
+  const withoutMany = (keys: Iterable<string>) => [...keys].filter((k) => !k.endsWith("_many"));
+
+  test.each(APP_LANGUAGES.filter((l) => l !== "en"))(
+    "%s.json has the same keys as en.json",
+    (language) => {
+      const enKeys = collectLeafKeys(en as unknown as JsonObject);
+      const keys = collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject);
+
+      expect(
+        withoutMany(enKeys.keys())
+          .filter((k) => !keys.has(k))
+          .sort(),
+      ).toEqual([]);
+      expect(
+        withoutMany(keys.keys())
+          .filter((k) => !enKeys.has(k))
+          .sort(),
+      ).toEqual([]);
+    },
+  );
+
+  /**
+   * Every `{{placeholder}}` a string is given has to be in its translation. A translation that
+   * drops `{{count}}` still renders, and reads "Complete workouts" where English says "Complete 10".
+   */
+  test.each(APP_LANGUAGES.filter((l) => l !== "en"))(
+    "%s.json keeps every placeholder",
+    (language) => {
+      const placeholders = (text: string) =>
+        [...text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)].map((m) => m[1]).sort();
+      const enKeys = collectLeafKeys(en as unknown as JsonObject);
+      const keys = collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject);
+
+      const drifted = [...enKeys.entries()]
+        .filter(
+          ([k, v]) =>
+            keys.has(k) && placeholders(v).join() !== placeholders(keys.get(k) ?? "").join(),
+        )
+        .map(([k]) => k);
+
+      expect(drifted).toEqual([]);
+    },
+  );
 
   test("no key uses the i18next v3 plural suffix", () => {
     // `_plural` is JSON v3; this repo runs i18next v4 semantics, which wants `_one`/`_other`.
     // A `_plural` key is simply never resolved, so the singular renders for every count and the
     // English reads "2 more time". Both offenders shipped green — nothing else can see this.
-    const stale = [
-      ...collectLeafKeys(en as unknown as JsonObject).keys(),
-      ...collectLeafKeys(fr as unknown as JsonObject).keys(),
-    ]
+    const stale = Object.values(LOCALE_FILES)
+      .flatMap((file) => [...collectLeafKeys(file as unknown as JsonObject).keys()])
       .filter((k) => k.endsWith("_plural"))
       .sort();
 
     expect(stale).toEqual([]);
   });
 
-  test("no empty strings in translations", () => {
-    const enKeys = collectLeafKeys(en as unknown as JsonObject);
-    const frKeys = collectLeafKeys(fr as unknown as JsonObject);
+  /**
+   * A language whose plural rules have a "many" form needs a `_many` beside every `_other`.
+   * Found adding Spanish: `Intl.PluralRules("es").select(1000000)` is "many", i18next looks for
+   * `key_many`, and without it the screen prints the key's name. French had the same hole, never
+   * reached because nothing counts to a million yet.
+   */
+  test.each(APP_LANGUAGES)(
+    "%s.json has a many form wherever its plural rules ask for one",
+    (language) => {
+      const categories = new Intl.PluralRules(language).resolvedOptions().pluralCategories;
+      const keys = collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject);
+      const missing = categories.includes("many")
+        ? [...keys.keys()]
+            .filter((k) => k.endsWith("_other"))
+            .map((k) => k.replace(/_other$/, "_many"))
+            .filter((k) => !keys.has(k))
+        : [];
 
-    const emptyEn = [...enKeys.entries()]
-      .filter(([, v]) => typeof v === "string" && v.trim() === "")
+      expect(missing).toEqual([]);
+    },
+  );
+
+  test.each(APP_LANGUAGES)("%s.json has no empty strings", (language) => {
+    const empty = [...collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject).entries()]
+      .filter(([, v]) => v.trim() === "")
       .map(([k]) => k)
       .sort();
 
-    const emptyFr = [...frKeys.entries()]
-      .filter(([, v]) => typeof v === "string" && v.trim() === "")
-      .map(([k]) => k)
-      .sort();
-
-    expect(emptyEn).toEqual([]);
-    expect(emptyFr).toEqual([]);
+    expect(empty).toEqual([]);
   });
 });
 
@@ -121,6 +179,12 @@ describe("plural forms", () => {
     ["en", 2, "journal.rounds_completed", "2 rounds"],
     ["fr", 1, "journal.rounds_completed", "1 tour"],
     ["fr", 2, "journal.rounds_completed", "2 tours"],
+    ["de", 1, "quests.rounds", "1 Runde"],
+    ["de", 3, "quests.rounds", "3 Runden"],
+    ["es", 1, "quests.exercises", "1 ejercicio"],
+    ["es", 3, "quests.exercises", "3 ejercicios"],
+    // The form English never has: a round million, in Spanish.
+    ["es", 1000000, "quests.exercises", "1000000 ejercicios"],
   ])("%s renders %d as %s", async (language, count, key, expected) => {
     await i18n.changeLanguage(language);
     expect(i18n.t(key, { count })).toBe(expected);

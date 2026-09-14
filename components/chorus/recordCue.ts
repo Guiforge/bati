@@ -37,7 +37,7 @@ export function recordCue(records: NewRecordResult[], language: AppLanguage): Re
     // A first-ever record has no previous value, and a delta of zero is not a beat — both fall
     // through to the plain pool rather than announcing "0 more than last time".
     const previous = record.previousValue;
-    const exercise = language === "fr" ? record.exerciseName?.fr : record.exerciseName?.en;
+    const exercise = record.exerciseName?.[language];
     if (previous == null || !exercise) continue;
 
     const delta = Math.round(record.newValue - previous);

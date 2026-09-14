@@ -124,6 +124,13 @@ function offenders(file: string, predicate: (value: string) => boolean): string[
 }
 
 describe("locale typography", () => {
+  it.each(["fr.json", "en.json", "de.json", "es.json"])(
+    "%s never uses the curly apostrophe",
+    (file) => {
+      expect(offenders(file, (v) => v.includes(BANNED_APOSTROPHE))).toEqual([]);
+    },
+  );
+
   it.each(["fr.json", "en.json"])("%s uses one apostrophe, not two", (file) => {
     expect(offenders(file, (v) => v.includes(BANNED_APOSTROPHE))).toEqual([]);
     // and the chosen one is actually in use, so a future sed cannot silently invert
@@ -131,12 +138,37 @@ describe("locale typography", () => {
     expect(fs.readFileSync(path.join(LOCALES, file), "utf8")).toContain(APOSTROPHE);
   });
 
-  it.each(["fr.json", "en.json"])("%s spells an ellipsis with one character", (file) => {
-    expect(offenders(file, (v) => v.includes("..."))).toEqual([]);
+  it.each(["fr.json", "en.json", "de.json", "es.json"])(
+    "%s spells an ellipsis with one character",
+    (file) => {
+      expect(offenders(file, (v) => v.includes("..."))).toEqual([]);
+    },
+  );
+
+  it.each(["fr.json", "en.json", "de.json", "es.json"])("%s uses no em dash at all", (file) => {
+    expect(offenders(file, (v) => v.includes(EM_DASH))).toEqual([]);
   });
 
-  it.each(["fr.json", "en.json"])("%s uses no em dash at all", (file) => {
-    expect(offenders(file, (v) => v.includes(EM_DASH))).toEqual([]);
+  /**
+   * The hero has no fixed gender, and Spanish agrees its adjectives. "¡Bienvenido!", "Estoy listo",
+   * "Tranquilo" and "¡Quieto!" all shipped in the first Spanish draft, each deciding the hero was a
+   * man. These are the words that only ever describe the person being spoken to; a list of every
+   * gendered adjective would be widened to land a batch, so the rest stays with whoever reads it.
+   * The policy and the safety notices are exempt, the way they are for `vous`: they may say
+   * "embarazada" because they are about a body, not about the hero.
+   */
+  it("es.json never gives the hero a gender", () => {
+    // "la bienvenida" is the noun: "dar la bienvenida" welcomes without an adjective.
+    const GENDERED =
+      /\b((?<!la )bienvenid[oa]s?|quiet[oa]|tranquil[oa]|cansad[oa]|preparad[oa]|agotad[oa])\b/i;
+    const drifted = entriesOf("es.json")
+      .filter((e) => !e.key.startsWith("privacy.") && !e.key.startsWith("safety."))
+      // The watcher reports on a road, which may well be quiet.
+      .filter((e) => !e.key.startsWith("villagers.watcher.boss_defeated"))
+      .filter((e) => GENDERED.test(e.value))
+      .map((e) => `${e.key}: ${e.value}`);
+
+    expect(drifted).toEqual([]);
   });
 
   /**

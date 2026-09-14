@@ -96,7 +96,7 @@ export function SuggestedQuestsCard() {
                         borderColor="$borderStrong"
                       >
                         <Text fontSize={10} fontWeight="700" color="$text">
-                          {language === "fr" ? MUSCLE_LABELS[muscle].fr : MUSCLE_LABELS[muscle].en}
+                          {MUSCLE_LABELS[muscle][language]}
                         </Text>
                       </XStack>
                     ))}

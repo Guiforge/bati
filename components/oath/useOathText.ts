@@ -1,6 +1,7 @@
 import type { i18n as I18n } from "i18next";
 import { useTranslation } from "react-i18next";
 import { DEFAULT_WEEKLY_TARGET, type OathProgress } from "@/db/oaths";
+import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 
 /**
  * One label for every surface that shows an oath (home card, victory screen, swear screen,
@@ -10,11 +11,7 @@ import { DEFAULT_WEEKLY_TARGET, type OathProgress } from "@/db/oaths";
  * scheduler has no hooks to call.
  */
 export function oathText(progress: OathProgress, i18n: I18n): string {
-  const exercise = progress.exerciseName
-    ? i18n.language === "fr"
-      ? progress.exerciseName.fr
-      : progress.exerciseName.en
-    : "";
+  const exercise = progress.exerciseName?.[resolveAppLanguage(i18n.language)] ?? "";
 
   return i18n.t(`oath.metric_${progress.oath.metric}`, {
     count: progress.target,

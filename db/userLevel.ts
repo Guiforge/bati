@@ -1,4 +1,5 @@
 import { sum } from "drizzle-orm";
+import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
 import { shortLivedQuery } from "./queryCache";
 
@@ -31,27 +32,27 @@ const LEVEL_THRESHOLDS = [
 ];
 
 // Level titles (RPG themed)
-const LEVEL_TITLES: Record<number, { en: string; fr: string }> = {
-  1: { en: "Apprentice", fr: "Apprenti" },
-  2: { en: "Novice", fr: "Novice" },
-  3: { en: "Trainee", fr: "Recrue" },
-  4: { en: "Squire", fr: "Écuyer" },
-  5: { en: "Warrior", fr: "Guerrier" },
-  6: { en: "Fighter", fr: "Combattant" },
-  7: { en: "Veteran", fr: "Vétéran" },
-  8: { en: "Champion", fr: "Champion" },
-  9: { en: "Elite", fr: "Élite" },
-  10: { en: "Master", fr: "Maître" },
-  11: { en: "Grandmaster", fr: "Grand Maître" },
-  12: { en: "Legend", fr: "Légende" },
-  13: { en: "Mythic", fr: "Mythique" },
-  14: { en: "Titan", fr: "Titan" },
-  15: { en: "Demigod", fr: "Demi-dieu" },
-  16: { en: "Hero", fr: "Héros" },
-  17: { en: "Paragon", fr: "Parangon" },
-  18: { en: "Ascended", fr: "Ascendant" },
-  19: { en: "Immortal", fr: "Immortel" },
-  20: { en: "Divine", fr: "Divin" },
+const LEVEL_TITLES: Record<number, Localized> = {
+  1: { en: "Apprentice", fr: "Apprenti", de: "Lehrling", es: "Aprendiz" },
+  2: { en: "Novice", fr: "Novice", de: "Novize", es: "Novato" },
+  3: { en: "Trainee", fr: "Recrue", de: "Rekrut", es: "Recluta" },
+  4: { en: "Squire", fr: "Écuyer", de: "Knappe", es: "Escudero" },
+  5: { en: "Warrior", fr: "Guerrier", de: "Krieger", es: "Guerrero" },
+  6: { en: "Fighter", fr: "Combattant", de: "Kämpfer", es: "Luchador" },
+  7: { en: "Veteran", fr: "Vétéran", de: "Veteran", es: "Veterano" },
+  8: { en: "Champion", fr: "Champion", de: "Champion", es: "Campeón" },
+  9: { en: "Elite", fr: "Élite", de: "Elite", es: "Élite" },
+  10: { en: "Master", fr: "Maître", de: "Meister", es: "Maestro" },
+  11: { en: "Grandmaster", fr: "Grand Maître", de: "Großmeister", es: "Gran maestro" },
+  12: { en: "Legend", fr: "Légende", de: "Legende", es: "Leyenda" },
+  13: { en: "Mythic", fr: "Mythique", de: "Mythisch", es: "Mítico" },
+  14: { en: "Titan", fr: "Titan", de: "Titan", es: "Titán" },
+  15: { en: "Demigod", fr: "Demi-dieu", de: "Halbgott", es: "Semidiós" },
+  16: { en: "Hero", fr: "Héros", de: "Held", es: "Héroe" },
+  17: { en: "Paragon", fr: "Parangon", de: "Vollendeter", es: "Parangón" },
+  18: { en: "Ascended", fr: "Ascendant", de: "Aufgestiegener", es: "Ascendido" },
+  19: { en: "Immortal", fr: "Immortel", de: "Unsterblicher", es: "Inmortal" },
+  20: { en: "Divine", fr: "Divin", de: "Göttlich", es: "Divino" },
 };
 
 export type UserLevelInfo = {
@@ -60,7 +61,7 @@ export type UserLevelInfo = {
   currentLevelXp: number; // XP progress within current level
   xpToNextLevel: number; // XP needed for next level
   xpProgress: number; // 0-100 percentage progress to next level
-  title: { en: string; fr: string };
+  title: Localized;
 };
 
 /**
@@ -106,14 +107,19 @@ export function getXpForLevel(level: number): number {
 /**
  * Get title for a given level
  */
-export function getLevelTitle(level: number): { en: string; fr: string } {
+export function getLevelTitle(level: number): Localized {
   // LEVEL_TITLES is keyed 1..20 and both branches stay inside it; the index signature does not
   // know that, so both fall back to the same level-1 title the guard above returns.
-  const first = LEVEL_TITLES[1] ?? { en: "Novice", fr: "Novice" };
+  const first = LEVEL_TITLES[1] ?? { en: "Novice", fr: "Novice", de: "Novize", es: "Novato" };
   if (level <= 0) return first;
   if (level <= 20) return LEVEL_TITLES[level] ?? first;
   // Beyond 20, use "Divine" with level number
-  return { en: `Divine ${level}`, fr: `Divin ${level}` };
+  return {
+    en: `Divine ${level}`,
+    fr: `Divin ${level}`,
+    de: `Göttlich ${level}`,
+    es: `Divino ${level}`,
+  };
 }
 
 /**

@@ -12,6 +12,7 @@ import {
   type ProgressionRecommendation,
 } from "@/db/difficultySuggestion";
 import { getReadyStep, type VariationStep } from "@/db/exercises";
+import { localizedName } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
 
 /** The next movement on the ladder, illustrated — tap to open the one being mastered. */
@@ -26,7 +27,7 @@ function LadderStep({ step }: { step: VariationStep }) {
   );
 
   const remaining = Math.max(0, step.required - step.metTarget);
-  const fromName = language === "fr" ? step.from.frName : step.from.enName;
+  const fromName = localizedName(step.from, language);
 
   return (
     <Card
@@ -56,7 +57,7 @@ function LadderStep({ step }: { step: VariationStep }) {
 
           <YStack flex={1} gap="$1">
             <Text fontWeight="700" fontSize={16} color="$text">
-              {language === "fr" ? step.next.frName : step.next.enName}
+              {localizedName(step.next, language)}
             </Text>
             <Paragraph fontSize={14} opacity={0.8} color="$text">
               {step.isEarned

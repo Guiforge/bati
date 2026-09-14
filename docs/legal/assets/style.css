@@ -102,12 +102,21 @@ section[id] {
 }
 
 /* --- Language switch -------------------------------------------------------------------
-   Both languages ship in the markup; one is hidden. No build step, no second URL to keep
-   in sync, and a visitor with JS off still reads a complete page. */
+   Every language ships in the markup; all but one are hidden. No build step, no second URL to
+   keep in sync, and a visitor with JS off still reads a complete page. */
 
-html[data-lang="en"] [lang="fr"],
-html[data-lang="fr"] [lang="en"] {
+html:not([data-lang="en"]) [lang="en"],
+html:not([data-lang="fr"]) [lang="fr"],
+html:not([data-lang="de"]) [lang="de"],
+html:not([data-lang="es"]) [lang="es"] {
   display: none;
+}
+
+/* The privacy policy exists in English and French only: German and Spanish read the English
+   one, under a note in their own language that says so. */
+html[data-lang="de"] .prose > [lang="en"],
+html[data-lang="es"] .prose > [lang="en"] {
+  display: revert;
 }
 
 .wrap {

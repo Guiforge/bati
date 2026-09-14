@@ -36,6 +36,7 @@ import { threatRank } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
+import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
@@ -114,9 +115,9 @@ function buildAdventureRow(
     durationSeconds,
     xp,
     cover: resolveCoverImage(a.imagePath),
-    title: language === "fr" ? a.frTitle || q.frTitle : a.enTitle || q.enTitle,
+    title: localizedTitle(a, language) || localizedTitle(q, language),
     description:
-      language === "fr" ? a.frDescription || q.frDescription : a.enDescription || q.enDescription,
+      localizedText(a, "description", language) || localizedText(q, "description", language),
     kindLabel:
       a.kind === "boss"
         ? t("adventures.kind_boss", "BOSS")

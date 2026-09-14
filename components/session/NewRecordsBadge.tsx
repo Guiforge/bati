@@ -15,6 +15,7 @@ import { formatDuration } from "@/db/estimate";
 import type { NewRecordResult } from "@/db/personalRecords";
 import type { DistanceUnit } from "@/db/preferences";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { useSettingsStore } from "@/stores/settings";
 
 type Props = {
@@ -38,7 +39,7 @@ function RecordIcon({ type }: { type: NewRecordResult["recordType"] }) {
   }
 }
 
-function RecordLabel({ record, language }: { record: NewRecordResult; language: string }) {
+function RecordLabel({ record, language }: { record: NewRecordResult; language: AppLanguage }) {
   const { t } = useTranslation();
 
   switch (record.recordType) {
@@ -52,7 +53,7 @@ function RecordLabel({ record, language }: { record: NewRecordResult; language: 
       return t("journal.pr_longest_outing");
     case "exercise_max_reps":
     case "exercise_max_time": {
-      const name = language === "fr" ? record.exerciseName?.fr : record.exerciseName?.en;
+      const name = record.exerciseName?.[language];
       return t("session.pr_exercise", { exercise: name });
     }
     default:

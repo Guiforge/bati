@@ -1,7 +1,7 @@
 import { differenceInCalendarWeeks, startOfWeek } from "date-fns";
 import { and, eq, gte, sql } from "drizzle-orm";
 import { getWeekStart } from "@/constants/dateFormatters";
-import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
+import { type Localized, resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { countsAsSession } from "./completed";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
@@ -55,7 +55,7 @@ export type OathProgress = {
   progress: number; // 0-100, clamped
   isFulfilled: boolean;
   // Only set for the exercise_* metrics — the UI needs it to label the oath.
-  exerciseName: { en: string; fr: string } | null;
+  exerciseName: Localized | null;
 };
 
 export function oathNeedsExercise(metric: OathMetric): boolean {
@@ -356,12 +356,17 @@ async function countQualifyingWeeks(oath: Oath): Promise<number> {
   return qualifying;
 }
 
-async function exerciseName(oath: Oath): Promise<{ en: string; fr: string } | null> {
+async function exerciseName(oath: Oath): Promise<Localized | null> {
   if (oath.exerciseId === null) {
     return null;
   }
   const rows = await db
-    .select({ en: exercises.enName, fr: exercises.frName })
+    .select({
+      en: exercises.enName,
+      fr: exercises.frName,
+      de: exercises.deName,
+      es: exercises.esName,
+    })
     .from(exercises)
     .where(eq(exercises.id, oath.exerciseId))
     .limit(1);

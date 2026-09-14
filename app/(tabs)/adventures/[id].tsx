@@ -41,6 +41,7 @@ import { type BossFight, getBossFightByAdventure } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -134,7 +135,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
   const router = useRouter();
   const langKey = useSettingsStore((s) => s.language);
 
-  const stepTitle = langKey === "fr" ? step.quest.frTitle : step.quest.enTitle;
+  const stepTitle = localizedTitle(step.quest, langKey);
 
   // Locked steps stay inert. The active one is the CTA by another door: the quest screen has a
   // Start button whatever opened it, and a session started without the run step's id is a plain
@@ -151,8 +152,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
       }),
   }[status];
 
-  const narrative =
-    langKey === "fr" ? step.frNarrative || step.enNarrative : step.enNarrative || step.frNarrative;
+  const narrative = localizedText(step, "narrative", langKey);
 
   const stepImage = resolveImage(step.imagePath, getQuestAsset);
   const color = STATUS_COLOR[status];
@@ -336,16 +336,10 @@ export default function AdventureDetailsScreen() {
   const langKey = language;
 
   const title = details
-    ? langKey === "fr"
-      ? details.adventure.frTitle || t("adventures.details_title")
-      : details.adventure.enTitle || t("adventures.details_title")
+    ? localizedTitle(details.adventure, langKey) || t("adventures.details_title")
     : "";
 
-  const description = details
-    ? langKey === "fr"
-      ? details.adventure.frDescription
-      : details.adventure.enDescription
-    : "";
+  const description = details ? localizedText(details.adventure, "description", langKey) : "";
 
   const effectiveSteps = details?.steps ?? [];
   const activeStep = run?.activeStep ?? null;

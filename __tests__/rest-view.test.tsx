@@ -189,4 +189,30 @@ describe("RestView", () => {
     // exercise on top of it.
     expect(state.currentExerciseIndex).toBe(1);
   });
+
+  // The rest behind the last set: the count is still correctable, nothing is up next, the clock
+  // says nothing out loud, and the way out is the summary.
+  it("after the last set, offers the correction and hands over to the summary", async () => {
+    const mockedPlayCue = playCue as jest.MockedFunction<typeof playCue>;
+    mockedPlayCue.mockClear();
+    useSessionStore.setState({
+      currentRoundIndex: 1,
+      currentExerciseIndex: mockQuest.exercises.length,
+      results: [
+        { exerciseId: 2, result: { type: "reps", value: 12 }, target: { type: "reps", value: 12 } },
+      ] as never,
+    });
+    const view = await mountRest();
+
+    expect(view.getByText("session.final_rest_title")).toBeTruthy();
+    expect(view.getByTestId("rest-result-input")).toBeTruthy();
+    expect(view.queryByTestId("rest-up-next")).toBeNull();
+
+    await act(() => {
+      jest.advanceTimersByTime((REST_SECONDS + 1) * 1000);
+    });
+
+    expect(useSessionStore.getState().status).toBe("finished");
+    expect(mockedPlayCue).not.toHaveBeenCalled();
+  });
 });

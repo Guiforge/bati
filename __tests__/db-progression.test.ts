@@ -259,6 +259,22 @@ describe("db/exercises — variation ladder", () => {
     });
   });
 
+  // The report: "squats sautés" in the warm-up of a hero still earning Squat. Quest slots were
+  // already served at the hero's rung (issue #33); the warm-up read nothing but equipment.
+  test("the warm-up never asks for a rung the hero has not reached", async () => {
+    expect(await exercisesApi().unavailableMovements()).toContain("Jump Squat");
+
+    for (const name of ["Wall Sit", "Squat"]) {
+      for (let i = 0; i < 3; i++) logSet(idOf(name), 12, 12, i);
+    }
+
+    const unavailable = await exercisesApi().unavailableMovements();
+    expect(unavailable).not.toContain("Jump Squat");
+    // Off the ladder, or at its bottom, is never withheld.
+    expect(unavailable).not.toContain("Wall Sit");
+    expect(unavailable).not.toContain("Jumping Jack");
+  });
+
   describe("the step worth naming right now", () => {
     test("an earned step beats one still in progress", async () => {
       // Trained more recently, but not earned — the earned one still wins.

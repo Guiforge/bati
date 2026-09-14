@@ -96,8 +96,19 @@ test("boss adventure CTA reads Start Adventure on step 1, not Fight Boss", async
 
 // With no active run, step 0 resolves to "active" (pressable) and step 1 to "locked" (inert) —
 // see the fallback in the steps map: `stepStatusByIndex.get(...) ?? (stepIndex === 0 ? "active" : "locked")`.
-test("the active step's row pushes its quest with the adventure id, and keeps withAnchor (regression guard for 0b41d31)", async () => {
+// The report: "Couper du bois" finished on hard from this row, again and again, and step 2 stayed
+// locked. The row pushed the quest without `runStepId`, so every session it started was a plain
+// quest the campaign never heard about. It has to be the CTA's door, run step and all.
+test("the active step's row starts the run and pushes its run step, like the CTA", async () => {
   mockPush.mockClear();
+  const db = require("@/db") as { startAdventureRun: jest.Mock };
+  const activeStep = { id: 42, stepIndex: 0, questId: 100, status: "active" };
+  db.startAdventureRun.mockResolvedValue({
+    run: { id: 7, adventureId: 1, status: "active", difficultyOverride: null },
+    steps: [activeStep],
+    activeStep,
+  });
+
   const { getByText } = await render(
     <TamaguiProvider config={config} defaultTheme="dark">
       <AdventureDetailsScreen />
@@ -110,7 +121,11 @@ test("the active step's row pushes its quest with the adventure id, and keeps wi
   // adventureId rides along so the quest screen's chevron can return to this adventure;
   // withAnchor keeps the quests-tab gallery mounted under it so hardware back has somewhere
   // to pop, per 0b41d31 — losing either one silently breaks a screen this test never visits.
-  expect(mockPush).toHaveBeenCalledWith("/quests/100?adventureId=1", { withAnchor: true });
+  await waitFor(() =>
+    expect(mockPush).toHaveBeenCalledWith("/quests/100?level=medium&runStepId=42&adventureId=1", {
+      withAnchor: true,
+    }),
+  );
 });
 
 test("a locked step wears its tag, and no row repeats the sentence the road now says", async () => {

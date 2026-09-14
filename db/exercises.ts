@@ -240,6 +240,11 @@ export function listExercises(): Promise<Exercise[]> {
  *
  * Hero-authored movements are in scope too. Someone who writes down a movement, tags it with a
  * barbell and then says they own none has answered the question twice; the second answer wins.
+ *
+ * So are the rungs the hero has not reached. A hero still earning Squat was warmed up with Jump
+ * Squats, the rung above it, while every quest slot of that same session had already been walked
+ * back down to Squat by `currentRungFor`. Same rule here, so the warm-up never asks for a movement
+ * the ladder is telling the hero to work up to.
  */
 export async function unavailableMovements(): Promise<Set<string>> {
   const [catalogue, ownedEquipment] = await Promise.all([
@@ -247,8 +252,15 @@ export async function unavailableMovements(): Promise<Set<string>> {
     preferences.getOwnedEquipment(),
   ]);
   const owned = ownedEquipment === null ? null : new Set(ownedEquipment);
+  const rungs = await currentRungFor(
+    catalogue.filter((ex) => ex.prerequisiteExerciseId !== null).map((ex) => ex.id),
+  );
 
-  return new Set(catalogue.filter((ex) => !canDo(ex.equipment, owned)).map((ex) => ex.enName));
+  return new Set(
+    catalogue
+      .filter((ex) => !canDo(ex.equipment, owned) || (rungs.get(ex.id) ?? ex.id) !== ex.id)
+      .map((ex) => ex.enName),
+  );
 }
 
 export async function getExerciseById(id: number): Promise<Exercise | null> {

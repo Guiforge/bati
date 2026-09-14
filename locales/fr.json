@@ -754,6 +754,8 @@
     "reps": "Reps",
     "rest_title": "Repos et récup",
     "round_rest_title": "Tour terminé",
+    "final_rest_title": "Dernière série",
+    "see_summary": "Voir le bilan",
     "restart_round_button": "Refaire le tour",
     "resume_button": "Reprendre",
     "round_label": "TOUR {{count}} / {{total}}",

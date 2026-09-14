@@ -538,6 +538,8 @@
     "reps": "Reps",
     "rest_title": "Toma aire",
     "round_rest_title": "Ronda completada",
+    "final_rest_title": "Última serie",
+    "see_summary": "Ver los resultados",
     "restart_round_button": "Reiniciar la ronda",
     "resume_button": "Reanudar",
     "round_label": "RONDA {{count}} / {{total}}",

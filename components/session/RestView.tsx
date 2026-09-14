@@ -50,9 +50,14 @@ export function RestView() {
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const resumeSession = useSessionStore((s) => s.resumeSession);
   const { remainingSeconds, progress } = useSessionTimer();
+  // The rest behind the last set: the index points past the last movement, and nothing starts
+  // when the clock runs out, only the summary. Also what a snapshot restored against a quest
+  // edited shorter looks like, and ending there is right too.
+  const isFinal = !quest?.exercises[currentExerciseIndex];
   // Declared above the auto-advance effect below on purpose: on the render where the rest hits
-  // zero, this one runs first, so the "go" starts before skipRest() unmounts the screen.
-  useCountdownCues(remainingSeconds);
+  // zero, this one runs first, so the "go" starts before skipRest() unmounts the screen. No "go"
+  // before a summary.
+  useCountdownCues(isFinal ? 0 : remainingSeconds);
   const cue = useChorusStore((s) => s.cue);
   // During a rest this is the movement *about to start* — `completeExercise` advances the index
   // before handing over — which is exactly the one the "up next" card names.
@@ -81,10 +86,8 @@ export function RestView() {
 
   if (!quest) return null;
 
-  // In 'resting' state, currentExerciseIndex points to the UPCOMING exercise
-  // Rest is shown *before* an exercise, so the index always points at one — unless a saved
-  // session is restored against a quest that has since been edited, in which case there is
-  // nothing to rest before and the screen has nothing to say.
+  // In 'resting' state, currentExerciseIndex points to the UPCOMING exercise, or past the last
+  // one on the final rest (`isFinal`), which has no up-next card.
   // Same reason: an exercise index back at zero on any round past the first means the round just
   // ended, so this is the longer rest and the screen says so.
   const isRoundRest = currentExerciseIndex === 0 && currentRoundIndex > 0;
@@ -92,6 +95,8 @@ export function RestView() {
   const nextExName = nextEx ? localizedName(nextEx.exercise, language) : "";
 
   const lastResult = results[results.length - 1];
+  const copy = restCopy(isFinal, isRoundRest);
+  const onlyBeforeAMovement = isFinal ? "none" : "flex";
 
   // Same rule as the running screen: during a fight the room's colour is the boss's, and it
   // darkens as the fight turns.
@@ -177,7 +182,7 @@ export function RestView() {
       >
         <GameIcon name="flame" size={40} color="$warning" />
         <H2 color="$text" fontWeight="700" fontSize={32} lineHeight={38} text="center">
-          {isRoundRest ? t("session.round_rest_title") : t("session.rest_title")}
+          {t(copy.title)}
         </H2>
       </YStack>
 
@@ -214,7 +219,8 @@ export function RestView() {
             >
               <Progress.Indicator transition="quick" bg="$primary" />
             </Progress>
-            <XStack gap="$3">
+            {/* Nothing is coming to be ready for. The clock only says when the summary opens. */}
+            <XStack gap="$3" display={onlyBeforeAMovement}>
               <Button
                 size="$3"
                 hitSlop={8}
@@ -255,6 +261,7 @@ export function RestView() {
               screen opens from its artwork. */}
             <YStack
               testID="rest-up-next"
+              display={onlyBeforeAMovement}
               bg="$surface"
               p="$4"
               rounded="$6"
@@ -314,11 +321,11 @@ export function RestView() {
           onPress={handleSkipRest}
           borderWidth={0}
           rounded="$6"
-          accessibilityLabel={t("session.skip_rest_accessibility")}
+          accessibilityLabel={t(copy.ctaLabel)}
           accessibilityRole="button"
         >
           <Text color="$text" fontSize={20} fontWeight="700">
-            {t("session.skip_rest")}
+            {t(copy.cta)}
           </Text>
         </Button>
       </YStack>
@@ -330,6 +337,22 @@ export function RestView() {
       />
     </YStack>
   );
+}
+
+/** What the rest says: before a movement, before a new round, or before the summary. */
+function restCopy(isFinal: boolean, isRoundRest: boolean) {
+  if (isFinal) {
+    return {
+      title: "session.final_rest_title",
+      cta: "session.see_summary",
+      ctaLabel: "session.see_summary",
+    } as const;
+  }
+  return {
+    title: isRoundRest ? "session.round_rest_title" : "session.rest_title",
+    cta: "session.skip_rest",
+    ctaLabel: "session.skip_rest_accessibility",
+  } as const;
 }
 
 /**

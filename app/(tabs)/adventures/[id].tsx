@@ -122,12 +122,14 @@ const AdventureStepRow = memo(function AdventureStepRow({
   adventureId,
   isFirst,
   isLast,
+  onContinue,
 }: {
   step: AdventureStepTemplate;
   status: "locked" | "active" | "completed";
   adventureId: number;
   isFirst: boolean;
   isLast: boolean;
+  onContinue: () => void;
 }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -135,16 +137,20 @@ const AdventureStepRow = memo(function AdventureStepRow({
 
   const stepTitle = localizedTitle(step.quest, langKey);
 
-  // Locked steps stay inert; active/completed ones open the quest sheet read-only.
-  // withAnchor mounts the gallery under the sheet so the hardware back has somewhere to pop.
-  // adventureId rides along so the quest screen's chevron can return here instead of the gallery.
-  const openQuest =
-    status === "locked"
-      ? undefined
-      : () =>
-          router.push(`/quests/${step.questId}?adventureId=${adventureId}` as never, {
-            withAnchor: true,
-          });
+  // Locked steps stay inert. The active one is the CTA by another door: the quest screen has a
+  // Start button whatever opened it, and a session started without the run step's id is a plain
+  // quest that never advances the campaign. A hero replayed "Couper du bois" on hard from this row
+  // and stayed on it, step 2 locked, however many times they finished it.
+  // A completed step opens its quest sheet, withAnchor so the hardware back has somewhere to pop,
+  // adventureId so the quest screen's chevron can return here instead of the gallery.
+  const openQuest = {
+    locked: undefined,
+    active: onContinue,
+    completed: () =>
+      router.push(`/quests/${step.questId}?adventureId=${adventureId}` as never, {
+        withAnchor: true,
+      }),
+  }[status];
 
   const narrative = localizedText(step, "narrative", langKey);
 
@@ -169,6 +175,9 @@ const AdventureStepRow = memo(function AdventureStepRow({
       </YStack>
 
       <XStack
+        // The status in the id, so an end-to-end flow can assert where the campaign stands
+        // rather than only that a session opened (`.maestro/adventure-journey.yaml`).
+        testID={`adventure-step-${step.stepIndex}-${status}`}
         flex={1}
         items="flex-start"
         gap="$3"
@@ -616,6 +625,11 @@ export default function AdventureDetailsScreen() {
                       adventureId={adventureId}
                       isFirst={i === 0}
                       isLast={i === effectiveSteps.length - 1}
+                      onContinue={() => {
+                        handleStartOrContinue().catch(() => {
+                          // Error already handled via showError in handleStartOrContinue
+                        });
+                      }}
                     />
                   ))}
                 </YStack>

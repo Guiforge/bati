@@ -529,6 +529,8 @@
     "reps": "Reps",
     "rest_title": "Rest & Recover",
     "round_rest_title": "Round Complete",
+    "final_rest_title": "Last Set",
+    "see_summary": "See the results",
     "restart_round_button": "Restart Round",
     "resume_button": "Resume",
     "round_label": "ROUND {{count}} / {{total}}",

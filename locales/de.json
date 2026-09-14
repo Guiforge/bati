@@ -529,6 +529,8 @@
     "reps": "Wdh.",
     "rest_title": "Durchatmen",
     "round_rest_title": "Runde geschafft",
+    "final_rest_title": "Letzter Satz",
+    "see_summary": "Ergebnisse ansehen",
     "restart_round_button": "Runde neu starten",
     "resume_button": "Fortsetzen",
     "round_label": "RUNDE {{count}} / {{total}}",

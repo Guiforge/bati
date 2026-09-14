@@ -1,0 +1,3 @@
+- Tap the rep count to type it with the keyboard,
+  handy when you go well past the target. The last
+  set's result on the rest screen can be typed too.

@@ -1,0 +1,9 @@
+- Bati now speaks German and Spanish.
+- A finished adventure raises one building, and the
+  village shows the hero level that changes it next.
+- The last set gets a rest screen too, so its count
+  can be fixed before the results are saved.
+- Tapping the current adventure step moves the
+  adventure forward.
+- The warm-up stays at your rung on each path.
+- Past level 20, the title no longer repeats the level.

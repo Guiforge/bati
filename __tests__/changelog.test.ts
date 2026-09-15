@@ -14,7 +14,7 @@ import appJson from "../app.json";
 const ROOT = path.resolve(__dirname, "..");
 const METADATA = path.join(ROOT, "fastlane", "metadata", "android");
 
-/** Google Play truncates past this; the repo's own convention is to stay under it in both locales. */
+/** Google Play truncates past this; the repo's own convention is to stay under it in every locale. */
 const PLAY_CHANGELOG_LIMIT = 500;
 
 function localeDirs(): string[] {
@@ -30,7 +30,7 @@ describe("release changelogs", () => {
 
   test("the metadata tree still has the locales this asserts against", () => {
     // Without this, a renamed or emptied metadata tree would make every test below pass vacuously.
-    expect(locales.sort()).toEqual(["en-US", "fr-FR"]);
+    expect(locales.sort()).toEqual(["de-DE", "en-US", "es-ES", "fr-FR"]);
   });
 
   test.each(localeDirs())("%s has release notes for the versionCode being shipped", (locale) => {

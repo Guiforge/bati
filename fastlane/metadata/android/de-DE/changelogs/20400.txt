@@ -1,0 +1,10 @@
+- Bati gibt es jetzt auf Deutsch und Spanisch.
+- Ein abgeschlossenes Abenteuer lässt genau ein Gebäude
+  wachsen, und das Dorf zeigt das Level, ab dem es sich
+  als Nächstes verändert.
+- Auch der letzte Satz bekommt eine Pause, damit du
+  sein Ergebnis vor dem Speichern korrigieren kannst.
+- Ein Tipp auf die aktuelle Etappe bringt das
+  Abenteuer voran.
+- Das Aufwärmen bleibt auf deiner Stufe jedes Pfads.
+- Ab Level 20 wiederholt der Titel das Level nicht mehr.

@@ -1,0 +1,8 @@
+- Bati ya habla alemán y español.
+- Una aventura terminada hace crecer un solo edificio, y
+  la aldea muestra el nivel que la cambia después.
+- La última serie también tiene su pantalla de descanso,
+  para corregir su resultado antes de guardarlo.
+- Tocar la etapa actual de una aventura la hace avanzar.
+- El calentamiento se queda en tu etapa de cada senda.
+- A partir del nivel 20, el título ya no repite el nivel.

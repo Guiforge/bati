@@ -1,0 +1,10 @@
+- Bati parle maintenant allemand et espagnol.
+- Une aventure finie fait monter un seul bâtiment, et le
+  village montre le niveau qui le change ensuite.
+- La dernière série a aussi son écran de repos, pour
+  corriger son résultat avant l'enregistrement.
+- Toucher l'étape en cours d'une aventure la fait
+  avancer.
+- L'échauffement reste à ton étape sur chaque voie.
+- Après le niveau 20, le titre ne répète plus le niveau.
+- Des mots français plus justes un peu partout.

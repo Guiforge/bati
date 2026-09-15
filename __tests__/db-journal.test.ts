@@ -167,6 +167,51 @@ describe("db/journal", () => {
     assert(entry);
     expect(entry).toMatchObject({ best: 24, last: 24, seasonBest: 24 });
     expect(entry.recordAt?.getTime()).toBe(seconds(daysAgo(10)) * 1000);
+    // The session the wall links to is the one that set the record, not the later equal one.
+    expect(entry.recordSessionId).toBe(2);
+  });
+
+  test("the stats page's lighter reads agree with the full period figures", async () => {
+    const pushups = exerciseId("Push-ups");
+    session(1, daysAgo(40), "hasNewRecords=1");
+    set(1, pushups, 12, daysAgo(40));
+    session(2, daysAgo(3));
+    set(2, pushups, 9, daysAgo(3));
+    const now = new Date();
+    const all = await journal().getPeriodFigures(null, now);
+    expect(await journal().periodReps(null, now)).toBe(all.reps);
+    expect(await journal().periodReps(daysAgo(30), now)).toBe(9);
+    expect(await journal().getLatestRecord(now)).toEqual(all.latestRecord);
+  });
+
+  test("a session's rung is the step getNextProgression builds, closest to earned first", async () => {
+    const climbable = t.sqlite
+      .prepare(
+        `SELECT e.id FROM exercises e WHERE e.creator = 'Admin'
+         AND EXISTS (SELECT 1 FROM exercises n WHERE n.prerequisiteExerciseId = e.id)
+         ORDER BY e.id LIMIT 2`,
+      )
+      .all() as { id: number }[];
+    const [low, high] = climbable.map((r) => r.id);
+    assert(low && high);
+    // `high` is met in two sessions, `low` in one: the rung shown is `high`'s.
+    for (const [id, day, value] of [
+      [1, 5, 12],
+      [2, 3, 12],
+      [3, 1, 12],
+    ] as const) {
+      session(id, daysAgo(day));
+      set(id, high, id === 3 ? 4 : value, daysAgo(day));
+      if (id === 3) set(id, low, value, daysAgo(day), 1);
+    }
+    const { getCompletedSessionById } =
+      require("../db/completed") as typeof import("../db/completed");
+    const { getNextProgression } = require("../db/exercises") as typeof import("../db/exercises");
+    const last = await getCompletedSessionById(3);
+    assert(last);
+    const rung = await journal().getSessionRung(last);
+    expect(rung).toEqual(await getNextProgression(high));
+    expect(rung?.metTarget).toBe(2);
   });
 
   test("the wall keeps the season's best beside an old record", async () => {

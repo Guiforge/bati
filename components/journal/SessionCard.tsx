@@ -2,9 +2,10 @@ import { Image } from "expo-image";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Trophy } from "@/components/icons";
+import { NKicker, NMuted, NText } from "@/components/journal/nocturne";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
@@ -158,24 +159,15 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
 
         <YStack flex={1} gap="$1">
           <XStack gap="$2" items="center">
-            <Text fontWeight="700" fontSize={16} numberOfLines={1} color="$text" flex={1}>
+            <NText fontWeight="500" fontSize={16} lineHeight={22} numberOfLines={1} flex={1}>
               {entry.questTitle}
-            </Text>
+            </NText>
+            {/* A gold word, the wall's own kicker, where a filled badge was: no plate, no border,
+                nothing more for the GPU to draw per row than the text it already draws. */}
             {!!entry.hasNewRecords && (
-              <XStack
-                bg="$primary"
-                px="$2"
-                py="$1"
-                rounded="$3"
-                borderWidth={1}
-                borderColor="$borderStrong"
-                gap="$1"
-                items="center"
-              >
-                <Text fontSize={10} fontWeight="bold" color="$onPrimary" numberOfLines={1}>
-                  {entry.recordLabel ?? t("journal.pr_badge")}
-                </Text>
-              </XStack>
+              <NKicker numberOfLines={1} style={{ flexShrink: 1, maxWidth: "40%" }}>
+                {entry.recordLabel ?? t("journal.pr_badge")}
+              </NKicker>
             )}
           </XStack>
 
@@ -186,12 +178,10 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
               to about half.
               ponytail: measured on the emulator only, whose GPU is the host's through a
               translation layer. A release build on a phone decides whether the row needs more. */}
-          <Text fontSize={12} color="$muted" numberOfLines={1}>
-            {dateLabel}
-          </Text>
-          <Text fontSize={12} color="$text" numberOfLines={1}>
+          <NMuted numberOfLines={1}>{dateLabel}</NMuted>
+          <NText fontSize={12} lineHeight={17} numberOfLines={1}>
             {details}
-          </Text>
+          </NText>
         </YStack>
       </XStack>
     </Card>

@@ -181,6 +181,16 @@ describe("db/journal", () => {
     expect(entry).toMatchObject({ best: 40, last: 15, seasonBest: 18 });
   });
 
+  test("the history reads a page at a time, newest first", async () => {
+    for (let i = 1; i <= 5; i++) session(i, daysAgo(i));
+    const { listCompletedSessions } =
+      require("../db/completed") as typeof import("../db/completed");
+    const first = await listCompletedSessions(2, 0);
+    const second = await listCompletedSessions(2, 2);
+    expect(first.map((r) => r.id)).toEqual([1, 2]);
+    expect(second.map((r) => r.id)).toEqual([3, 4]);
+  });
+
   test("the starter wall is the first quest's own movements, never logged", async () => {
     const expected = t.sqlite
       .prepare(

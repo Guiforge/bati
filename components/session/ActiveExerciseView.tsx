@@ -618,7 +618,7 @@ export function ActiveExerciseView() {
                             equally available. The audit of 2026-09-10 read it as counting up. */}
                         <Paragraph fontWeight="700" color="$textSecondary">
                           {t("session.seconds_left_of", {
-                            target: formatTarget(currentEx.target),
+                            target: formatTarget(currentEx.target, language),
                           })}
                         </Paragraph>
                       </>

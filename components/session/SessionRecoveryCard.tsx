@@ -46,6 +46,7 @@ export function SessionRecoveryCard({
   const haptics = useHaptics();
   const reducedMotion = useReducedMotion();
   const unit = useSettingsStore((s) => s.distanceUnit);
+  const language = useSettingsStore((s) => s.language);
 
   const handleResume = async () => {
     haptics.mediumImpact();
@@ -120,7 +121,7 @@ export function SessionRecoveryCard({
             </>
           ) : (
             <Text fontSize="$3" color="$text" opacity={0.7}>
-              {t("recovery.ground", { distance: formatDistance(session.leaguesM, unit) })}
+              {t("recovery.ground", { distance: formatDistance(session.leaguesM, unit, language) })}
             </Text>
           )}
         </YStack>

@@ -74,10 +74,12 @@ function SlotTargetStepper({ qex, singleControl, label, hint, onChangeTarget }: 
 function OutingGoalRow({
   goal,
   unit,
+  language,
   onOpen,
 }: {
   goal: OutingGoal;
   unit: DistanceUnit;
+  language: AppLanguage;
   onOpen: () => void;
 }) {
   const { t } = useTranslation();
@@ -92,7 +94,7 @@ function OutingGoalRow({
             : t("quests.config_duration", "Duration")}
         </Text>
         <Text fontWeight="700" fontSize={17} color="$primaryText">
-          {byDistance ? formatDistance(goal.metres, unit) : formatDuration(goal.seconds)}
+          {byDistance ? formatDistance(goal.metres, unit, language) : formatDuration(goal.seconds)}
         </Text>
       </XStack>
       <AppButton variant="outline" fontSize={16} onPress={onOpen}>
@@ -252,7 +254,12 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
 
             {goal ? (
               <>
-                <OutingGoalRow goal={goal} unit={unit} onOpen={() => setGoalOpen(true)} />
+                <OutingGoalRow
+                  goal={goal}
+                  unit={unit}
+                  language={language}
+                  onOpen={() => setGoalOpen(true)}
+                />
                 {/* Mounted only while it is open, unlike the picker sheet beside it: a closed
                     Sheet still renders its frame into the tree, so its chips and its input stay
                     reachable by a screen reader and by anything else that walks the page. The

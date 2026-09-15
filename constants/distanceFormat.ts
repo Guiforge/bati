@@ -13,12 +13,8 @@ import { RULES } from "@/src/gps/track";
  *
  * The unit words are the same in every language Bati speaks (m, km, ft, mi, and a pace written
  * `/km`). The decimal separator is not: French, German and Spanish write "13,20 km", and a walker
- * reading "13.20" on her own distance read the whole screen as translated. `language` is optional
- * so a caller that has none keeps the English form.
- *
- * ponytail: only the Journal passes a language so far. The recap, the session panel and the
- * expedition notification still print "13.20 km" in French; thread the setting through them when
- * someone touches those screens.
+ * reading "13.20" on her own distance read the whole screen as translated. `language` is required
+ * so no screen can forget it.
  */
 const M_PER_MILE = 1609.344;
 const M_PER_FOOT = 0.3048;
@@ -29,16 +25,14 @@ const FEET_PER_MILE = 5280;
  * The imperial cut-over is `5280 ft`, which is exactly one mile — the same comparison, done in
  * the unit that is about to be printed.
  */
-export function formatDistance(metres: number, unit: DistanceUnit, language?: string): string {
+export function formatDistance(metres: number, unit: DistanceUnit, language: string): string {
   if (!Number.isFinite(metres) || metres < 0) return "...";
 
   const twoPlaces = (value: number) =>
-    language
-      ? new Intl.NumberFormat(language, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(value)
-      : value.toFixed(2);
+    new Intl.NumberFormat(language, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
 
   if (unit === "imperial") {
     const feet = Math.round(metres / M_PER_FOOT);

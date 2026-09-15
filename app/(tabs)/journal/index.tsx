@@ -1,7 +1,7 @@
 import { LegendList } from "@legendapp/list/react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshControl, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -27,6 +27,8 @@ type TabType = "history" | "stats";
 
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
 const journalKey = (entry: JournalEntry) => String(entry.id);
+/** Sessions read per page of history. */
+const HISTORY_PAGE = 100;
 const ListGap = () => <YStack height={8} />;
 
 /** Reserves the wall's first screen, so the swap to real content does not shuffle. */
@@ -82,56 +84,84 @@ export default function JournalScreen() {
 
   const [history, setHistory] = useState<JournalEntry[]>([]);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const loadingMore = useRef(false);
   const [activeTab, setActiveTab] = useState<TabType>("stats");
   const { stats, reload: reloadStats } = useJournalStats();
 
-  const loadHistory = useCallback(async () => {
-    try {
+  /** One page of history, ready to draw. */
+  const readPage = useCallback(
+    async (offset: number): Promise<JournalEntry[]> => {
       // `listExercises` is promise-cached, so the catalogue is free after the first read anywhere
       // in the app. It is here to name the movement a record belongs to, which is the difference
       // between a badge that says "PR" and one that says "Wall Push-Up".
       const [sessions, quests, exercises] = await Promise.all([
-        listCompletedSessions(100),
+        listCompletedSessions(HISTORY_PAGE, offset),
         listQuestTemplates(),
         listExercises(),
       ]);
       const exerciseNames = new Map(exercises.map((e) => [e.id, localizedName(e, language)]));
 
-      // One read for the whole page's runs, not one per card. Only the outings are asked for:
-      // every workout in the journal has no points, and `previewPathsFor` would scan for them.
+      // One read for the page's runs, not one per row. Only the outings are asked for: every
+      // workout in the journal has no points, and `previewPathsFor` would scan for them.
       const traces = await previewPathsFor(
         sessions.flatMap((s) => (s.outing !== null && s.uuid ? [s.uuid] : [])),
       );
 
       const questMap = new Map(quests.map((q) => [q.id, q]));
 
-      setHistory(
-        sessions.map((s) => {
-          const quest = s.questId ? questMap.get(s.questId) : null;
-          return {
-            id: s.id,
-            // A deleted quest is not the hero's mistake, so it is never "not found" here.
-            questTitle: quest ? localizedTitle(quest, language) : t("journal.own_quest"),
-            cover: getQuestThumb(quest?.imagePath),
-            performedAt: s.performedAt,
-            durationSeconds: s.durationSeconds,
-            xpEarned: s.xpEarned,
-            leaguesM: s.leaguesM,
-            movingSeconds: s.movingSeconds,
-            outing: s.outing,
-            tracePoints: (s.uuid && traces.get(s.uuid)) || [],
-            userLevel: s.userLevel,
-            hasNewRecords: s.hasNewRecords,
-            recordLabel: recordLabel(s.records, exerciseNames, t),
-          };
-        }),
-      );
+      return sessions.map((s) => {
+        const quest = s.questId ? questMap.get(s.questId) : null;
+        return {
+          id: s.id,
+          // A deleted quest is not the hero's mistake, so it is never "not found" here.
+          questTitle: quest ? localizedTitle(quest, language) : t("journal.own_quest"),
+          cover: getQuestThumb(quest?.imagePath),
+          performedAt: s.performedAt,
+          durationSeconds: s.durationSeconds,
+          xpEarned: s.xpEarned,
+          leaguesM: s.leaguesM,
+          movingSeconds: s.movingSeconds,
+          outing: s.outing,
+          tracePoints: (s.uuid && traces.get(s.uuid)) || [],
+          userLevel: s.userLevel,
+          hasNewRecords: s.hasNewRecords,
+          recordLabel: recordLabel(s.records, exerciseNames, t),
+        };
+      });
+    },
+    [language, t],
+  );
+
+  const loadHistory = useCallback(async () => {
+    try {
+      const page = await readPage(0);
+      setHistory(page);
+      setHasMore(page.length === HISTORY_PAGE);
     } catch (error) {
       reportError("journal.loadHistory", error);
     } finally {
       setHistoryLoaded(true);
     }
-  }, [language, t]);
+  }, [readPage]);
+
+  /**
+   * The next page, when the list reaches its end. The history used to stop at the hundredth session,
+   * and a veteran could not reach the session a two-year-old record fell in.
+   */
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loadingMore.current) return;
+    loadingMore.current = true;
+    try {
+      const page = await readPage(history.length);
+      setHistory((previous) => [...previous, ...page]);
+      setHasMore(page.length === HISTORY_PAGE);
+    } catch (error) {
+      reportError("journal.loadMoreHistory", error);
+    } finally {
+      loadingMore.current = false;
+    }
+  }, [hasMore, history.length, readPage]);
 
   useFocusEffect(
     useCallback(() => {
@@ -187,6 +217,10 @@ export default function JournalScreen() {
             recycleItems
             estimatedItemSize={100}
             refreshControl={refreshControl}
+            onEndReached={() => {
+              loadMore().catch((e) => reportError("journal.loadMoreHistory", e));
+            }}
+            onEndReachedThreshold={0.5}
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingHorizontal: 11, paddingBottom: insets.bottom + 20 }}
             showsVerticalScrollIndicator={false}

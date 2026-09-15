@@ -63,7 +63,7 @@ export function ExpeditionSummary({
         <Figure
           testID="victory-expedition-distance"
           label={t("session.expedition_ground")}
-          value={formatDistance(track.distanceM, unit)}
+          value={formatDistance(track.distanceM, unit, language)}
         />
         <Figure
           testID="victory-expedition-moving"

@@ -43,8 +43,8 @@ jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: (
 
 let mockUnit: "metric" | "imperial" = "metric";
 jest.mock("@/stores/settings", () => ({
-  useSettingsStore: (selector: (state: { distanceUnit: string }) => unknown) =>
-    selector({ distanceUnit: mockUnit }),
+  useSettingsStore: (selector: (state: { distanceUnit: string; language: string }) => unknown) =>
+    selector({ distanceUnit: mockUnit, language: "en" }),
 }));
 
 import { rawColors } from "@/constants/rawColors";

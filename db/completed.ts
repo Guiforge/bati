@@ -327,7 +327,11 @@ export type CompletedSessionListItem = Omit<CompletedSession, "exercises"> & {
   outing: Locomotion | null;
 };
 
-export async function listCompletedSessions(limit = 20): Promise<CompletedSessionListItem[]> {
+/** Newest first, `limit` rows after the first `offset`: the Journal's history reads it a page at a time. */
+export async function listCompletedSessions(
+  limit = 20,
+  offset = 0,
+): Promise<CompletedSessionListItem[]> {
   const rows = await db
     .select({
       id: completedQuest.id,
@@ -348,7 +352,8 @@ export async function listCompletedSessions(limit = 20): Promise<CompletedSessio
     })
     .from(completedQuest)
     .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
-    .limit(limit);
+    .limit(limit)
+    .offset(offset);
 
   return rows.map((r) => ({
     id: r.id,

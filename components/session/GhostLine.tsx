@@ -6,6 +6,7 @@ import type { ExerciseGhost } from "@/db/personalRecords";
 import type { QuestTargetType } from "@/db/schema";
 import { formatTarget } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
+import { useSettingsStore } from "@/stores/settings";
 
 /**
  * What the hero already did on this movement, and the moment they pass it.
@@ -40,6 +41,7 @@ export function GhostLine({
   reducedMotion: boolean;
 }) {
   const { t } = useTranslation();
+  const language = useSettingsStore((s) => s.language);
   const { success } = useHaptics();
 
   const beatsBest = live > ghost.best;
@@ -97,7 +99,7 @@ export function GhostLine({
             {t("session.ghost_record_label", "Past your best")}
           </Text>
           <Text fontSize={15} fontWeight="700" color="$text">
-            {formatTarget({ type, value: live })}
+            {formatTarget({ type, value: live }, language)}
           </Text>
         </XStack>
       ) : (
@@ -117,7 +119,7 @@ export function GhostLine({
             {t("session.ghost_last_label", "Last time")}
           </Text>
           <Text fontSize={15} fontWeight="700" color="$text">
-            {formatTarget({ type, value: ghost.last })}
+            {formatTarget({ type, value: ghost.last }, language)}
           </Text>
           {ghost.best > ghost.last ? (
             <>
@@ -128,7 +130,7 @@ export function GhostLine({
                 {t("session.ghost_best_label", "best")}
               </Text>
               <Text fontSize={15} fontWeight="700" color="$resourceGold">
-                {formatTarget({ type, value: ghost.best })}
+                {formatTarget({ type, value: ghost.best }, language)}
               </Text>
             </>
           ) : null}

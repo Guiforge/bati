@@ -40,15 +40,18 @@ Journal's own pieces are in `components/journal/nocturne.tsx`, one per Nocturne 
 | Block | Says | Source |
 | --- | --- | --- |
 | The sentence | "9 days trained in September, and 2 outings." plus the latest record in gold. A rest day, a first day and a veteran whose records have aged each get their own sentence. | `StatsView`, with `getLatestRecord` and `getOldestSessionAt` (a first day is a hero with no oldest session) |
-| To beat tonight | The four movements trained last, each with its record, the day it fell, the last result, and the number that beats it (record + 1 in the movement's own unit). A first day shows four seed movements with a target of 1. | `getRecordWall`, `getStarterWall` |
-| Flame | Days lit, the last seven days as dots, sessions in seven days against the quota, the rule, and the best run with the day it ended. | `getFlameDetail` |
+| To beat tonight | The four movements trained last, each with its record, the day it fell, the last result, and the number that beats it (record + 1 in the movement's own unit). The row opens the movement; the record's date opens the session that set it. A first day shows the first quest's movements with no number to beat, under "your first try is the record". | `getRecordWall` (`recordSessionId`), `getStarterWall` |
+| Flame | Days lit, the last seven days as dots, sessions in seven days against the quota, the rule, and the best run with the day it ended. Before the flame is lit, the count is left out and the note says how many more light it: "0 days lit" beside today's gold dot read as nothing counting. | `getFlameDetail` |
 | This month so far | Quests, reps, time in quests, ground, XP, records, each against the same number of days of last month; then the month as a frieze. | `getPeriodFigures`, `monthWindows`, `getActivityDays` |
 | Where the work went | The thirty days' muscle shares as one stacked bar, a verdict, a link to the balance page. | `getMuscleBalance`, `periodReps` |
 | Level and shelf | The level bar, the XP to the next level at this week's pace, the shelf count and the next achievement with how far it is. | `getUserLevelInfo`, `getWeekXpPerSession`, `nextOnShelf` |
 | Buttons | Lifetime, Achievements n/27, Bosses n. | routes below |
 
 The record's date is not stored: it is the first row that reached the standing best, which is
-exactly when `checkForNewRecords` (a strict `>`) wrote it.
+exactly when `checkForNewRecords` (a strict `>`) wrote it. That row's session is the one the date
+links to. The date is a link inside the line rather than a second gesture on the row, because the
+row already opens the movement and a long press would be found by nobody. A record older than a
+year is written as its date with the year: "2 years ago" floored two years and eleven months.
 
 The page is read in one pass (`useJournalStats`) and, on focus, only when `getJournalVersion` says
 something changed: sessions (count, last id, XP, record flags), the oath, the unlocks, or the day.

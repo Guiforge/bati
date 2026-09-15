@@ -61,6 +61,12 @@ Plank: You have earned it".
   screen was dropped for ([exercises.md](exercises.md)).
 - The path is **named, not numbered**. "Rung 3 of 6" is a coordinate; "Path of the Pull" is a
   thing a hero can want. Names live in [`db/paths.ts`](../../db/paths.ts), keyed by the summit.
+  The chain ends on the page's own movement, so most pages are not a named summit: there the
+  caption says where it goes, "Working up to Plank · rung 1 of 2" / "En route vers Gainage
+  ventral · étape 1 sur 2", with the words a substituted quest slot uses. "Plank · Rung 1/2" read
+  as "the plank is rung 1". A climbed page reads "Plank · Climbed" / "Gainage ventral · sommet
+  atteint" (not "Gravie", which only agreed with *voie*). `pathCaption` in `db/paths.ts` writes
+  the line for this card and the Home oath strip.
 - State is never colour-only: the segment bar repeats what the caption already says in words.
 - Small slots read the 128 px thumbnail, never the 1280 px session-hero art
   ([performance.md](../architecture/performance.md)).

@@ -473,7 +473,8 @@
     "pattern_locomotion": "Desplazamiento",
     "pattern_mobility": "Movilidad",
     "path_rung": "{{path}} · Etapa {{position}}/{{total}}",
-    "path_climbed": "{{path}} · Coronada",
+    "path_working_up": "Camino de {{name}} · etapa {{position}} de {{total}}",
+    "path_climbed": "{{path}} · cima alcanzada",
     "path_you_are_on": "Vas por {{name}}.",
     "path_you_are_here": "Estás aquí.",
     "muscles": "Músculos"

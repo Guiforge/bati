@@ -325,7 +325,8 @@
     "pattern_locomotion": "Déplacement",
     "pattern_mobility": "Mobilité",
     "path_rung": "{{path}} · Étape {{position}}/{{total}}",
-    "path_climbed": "{{path}} · Gravie",
+    "path_working_up": "En route vers {{name}} · étape {{position}} sur {{total}}",
+    "path_climbed": "{{path}} · sommet atteint",
     "path_you_are_on": "Tu en es à {{name}}.",
     "path_you_are_here": "Tu y es.",
     "muscles": "Muscles"

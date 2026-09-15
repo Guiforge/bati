@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { localizedName } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
@@ -127,6 +128,7 @@ export function readPath(chain: Chain, language: AppLanguage) {
   const total = chain.rungs.length;
   const summit = chain.rungs[total - 1]?.exercise;
   const here = chain.rungs[chain.position - 1]?.exercise;
+  const named = summit ? pathName(summit.enName, language) : null;
 
   return {
     total,
@@ -134,6 +136,27 @@ export function readPath(chain: Chain, language: AppLanguage) {
     // Behind the hero, not the summit's `isEarned`: that one is windowed, and "climbed" would
     // blink out eight weeks after the hero stopped repeating a summit they own (`rungsBehind`).
     isClimbed: chain.climbed,
-    name: summit ? (pathName(summit.enName, language) ?? localizedName(summit, language)) : null,
+    /**
+     * Whether `name` is a path's own name. When it is not, it is the movement's, and "Plank · Rung
+     * 1/2" read as "the plank is rung 1": the caption has to say the hero is working up to it.
+     */
+    named: named !== null,
+    name: summit ? (named ?? localizedName(summit, language)) : null,
   };
+}
+
+/**
+ * The one line a path is told in, on the exercise screen and on the Home oath strip alike.
+ *
+ * A named path says its name ("Path of the Flank · Rung 1/3"). An unnamed one falls back to the
+ * movement the chain ends on, so it says where it is going instead, with the words a substituted
+ * quest slot already uses ("Working up to"). Null when the chain has no rungs to name.
+ */
+export function pathCaption(chain: Chain, language: AppLanguage, t: TFunction): string | null {
+  const { total, isClimbed, named, name } = readPath(chain, language);
+  if (name === null) return null;
+  if (isClimbed) return t("exercises.path_climbed", { path: name });
+  return named
+    ? t("exercises.path_rung", { path: name, position: chain.position, total })
+    : t("exercises.path_working_up", { name, position: chain.position, total });
 }

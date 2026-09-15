@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 
 import type { Chain } from "@/db/exercises";
-import { readPath } from "@/db/paths";
+import { pathCaption } from "@/db/paths";
 import { useSettingsStore } from "@/stores/settings";
 
 /**
@@ -19,17 +19,9 @@ export function PathStrip({ chain }: { chain: Chain }) {
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
 
-  const { total, isClimbed, name } = readPath(chain, language);
-  if (name === null) return null;
-
-  const caption = isClimbed
-    ? t("exercises.path_climbed", { path: name, defaultValue: `${name} · Climbed` })
-    : t("exercises.path_rung", {
-        path: name,
-        position: chain.position,
-        total,
-        defaultValue: `${name} · Rung ${chain.position}/${total}`,
-      });
+  const caption = pathCaption(chain, language, t);
+  if (caption === null) return null;
+  const isClimbed = chain.climbed;
 
   return (
     <YStack gap="$2">

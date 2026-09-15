@@ -155,6 +155,27 @@ describe("the path on the exercise screen", () => {
     expect(screen.getByText(/PATH OF THE DRAGON · CLIMBED/i)).toBeTruthy();
   });
 
+  it("says where an unnamed path is going instead of calling its movement a rung", async () => {
+    // "PLANK · RUNG 1/2" read as "the plank is rung 1". The chain ends on a movement with no path
+    // name, so the caption says the hero is working up to it.
+    mockGetChainTo.mockResolvedValue({
+      rungs: [rung(10, "Dead Bug", false), rung(20, "Plank", false)],
+      position: 1,
+      climbed: false,
+    });
+    await act(async () => {
+      const _tree = render(
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <ExerciseDetails />
+        </TamaguiProvider>,
+      );
+      await Promise.resolve();
+      return _tree;
+    });
+
+    expect(screen.getByText("WORKING UP TO PLANK · RUNG 1 OF 2")).toBeTruthy();
+  });
+
   it("reads the climb from the hero's standing, never from one rung's recent sessions", async () => {
     // A top rung earned lately is not, on its own, a climbed path: `getChainTo` says whether it is.
     await mountSummit(1, [false, false, true]);

@@ -464,6 +464,7 @@
     "pattern_locomotion": "Fortbewegung",
     "pattern_mobility": "Mobilität",
     "path_rung": "{{path}} · Stufe {{position}}/{{total}}",
+    "path_working_up": "Auf dem Weg zu {{name}} · Stufe {{position}} von {{total}}",
     "path_climbed": "{{path}} · Erklommen",
     "path_you_are_on": "Du bist bei {{name}}.",
     "path_you_are_here": "Du bist hier.",

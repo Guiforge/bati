@@ -18,6 +18,7 @@ import type { StoredRecord } from "@/db/completed";
 import { listCompletedSessions } from "@/db/completed";
 import { listExercises } from "@/db/exercises";
 import { previewPathsFor } from "@/db/gps";
+import { getJournalVersion } from "@/db/journal";
 import { listQuestTemplates } from "@/db/quests";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -86,17 +87,19 @@ export default function JournalScreen() {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const loadingMore = useRef(false);
+  /** The Journal version and language the list was last read under. */
+  const shownVersion = useRef<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("stats");
   const { stats, reload: reloadStats } = useJournalStats();
 
   /** One page of history, ready to draw. */
   const readPage = useCallback(
-    async (offset: number): Promise<JournalEntry[]> => {
+    async (offset: number, limit = HISTORY_PAGE): Promise<JournalEntry[]> => {
       // `listExercises` is promise-cached, so the catalogue is free after the first read anywhere
       // in the app. It is here to name the movement a record belongs to, which is the difference
       // between a badge that says "PR" and one that says "Wall Push-Up".
       const [sessions, quests, exercises] = await Promise.all([
-        listCompletedSessions(HISTORY_PAGE, offset),
+        listCompletedSessions(limit, offset),
         listQuestTemplates(),
         listExercises(),
       ]);
@@ -133,17 +136,28 @@ export default function JournalScreen() {
     [language, t],
   );
 
-  const loadHistory = useCallback(async () => {
-    try {
-      const page = await readPage(0);
-      setHistory(page);
-      setHasMore(page.length === HISTORY_PAGE);
-    } catch (error) {
-      reportError("journal.loadHistory", error);
-    } finally {
-      setHistoryLoaded(true);
-    }
-  }, [readPage]);
+  /**
+   * The list, re-read only when the Journal changed or `force` says so. Everything already scrolled
+   * through is read back in one go, so a return from a session keeps the hero's place.
+   */
+  const loadHistory = useCallback(
+    async (force = false) => {
+      try {
+        const version = `${await getJournalVersion()}|${language}`;
+        if (!force && version === shownVersion.current) return;
+        const limit = Math.max(history.length, HISTORY_PAGE);
+        const page = await readPage(0, limit);
+        shownVersion.current = version;
+        setHistory(page);
+        setHasMore(page.length === limit);
+      } catch (error) {
+        reportError("journal.loadHistory", error);
+      } finally {
+        setHistoryLoaded(true);
+      }
+    },
+    [history.length, language, readPage],
+  );
 
   /**
    * The next page, when the list reaches its end. The history used to stop at the hundredth session,
@@ -172,7 +186,7 @@ export default function JournalScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([loadHistory(), reloadStats()]);
+    await Promise.all([loadHistory(true), reloadStats()]);
     setRefreshing(false);
   }, [loadHistory, reloadStats]);
 

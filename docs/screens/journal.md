@@ -50,6 +50,11 @@ Journal's own pieces are in `components/journal/nocturne.tsx`, one per Nocturne 
 The record's date is not stored: it is the first row that reached the standing best, which is
 exactly when `checkForNewRecords` (a strict `>`) wrote it.
 
+The page is read in one pass (`useJournalStats`) and, on focus, only when `getJournalVersion` says
+something changed: sessions (count, last id, XP, record flags), the oath, the unlocks, or the day.
+Pull-to-refresh always reads. Returning from a session used to re-run the whole read, 42 queries
+on the JS thread during the back animation.
+
 ## Pages pushed from it
 
 - **Lifetime** (`/journal/lifetime`): every figure over all time and over thirty days, side by side,
@@ -62,8 +67,10 @@ exactly when `checkForNewRecords` (a strict `>`) wrote it.
 
 ## History
 
-The segmented control's second half: the hundred latest sessions, each opening the quest log. An
-empty history is "An empty page", never a button that sends the hero elsewhere.
+The segmented control's second half: the sessions a hundred at a time, newest first, each opening
+the quest log. It follows the same version check as the stats page, and when it does re-read, it
+reads back everything already scrolled through, so a return from a session keeps the hero's place.
+An empty history is "An empty page", never a button that sends the hero elsewhere.
 
 ## What left the page
 

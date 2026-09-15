@@ -435,6 +435,13 @@
       "when": 1789027200000,
       "tag": "0061_the_round_that_landed_it",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "6",
+      "when": 1789113600000,
+      "tag": "0062_the_record_found_by_its_movement",
+      "breakpoints": true
     }
   ]
 }

@@ -191,6 +191,17 @@ describe("db/journal", () => {
     expect(second.map((r) => r.id)).toEqual([3, 4]);
   });
 
+  test("the Journal version moves with a new session and with bonus XP, and holds otherwise", async () => {
+    session(1, daysAgo(3));
+    const before = await journal().getJournalVersion();
+    expect(await journal().getJournalVersion()).toBe(before);
+    session(2, daysAgo(1));
+    const added = await journal().getJournalVersion();
+    expect(added).not.toBe(before);
+    t.sqlite.exec("UPDATE completed_sessions SET xpEarned = xpEarned + 5 WHERE id = 1");
+    expect(await journal().getJournalVersion()).not.toBe(added);
+  });
+
   test("the starter wall is the first quest's own movements, never logged", async () => {
     const expected = t.sqlite
       .prepare(

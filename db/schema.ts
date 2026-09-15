@@ -569,7 +569,12 @@ export const completedExercises = sqliteTable(
   },
   (table) => ({
     sessionIdx: index("completed_exercises_session_idx").on(table.sessionId),
-    exerciseIdx: index("completed_exercises_exercise_idx").on(table.exerciseId),
+    exerciseResultIdx: index("completed_exercises_exercise_result_idx").on(
+      table.exerciseId,
+      table.resultType,
+      table.performedAt,
+      table.resultValue,
+    ),
     orderUnique: uniqueIndex("completed_exercises_session_round_sort_unique").on(
       table.sessionId,
       table.roundIndex,

@@ -1,11 +1,12 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
 import { dayKey } from "@/db/dates";
 import {
   type DayActivity,
   getActivityDays,
   getBossKills,
+  getJournalVersion,
   getOldestSessionAt,
   getPeriodFigures,
   getRecordWall,
@@ -136,27 +137,35 @@ async function loadJournalStats(): Promise<JournalStats> {
 }
 
 /**
- * Everything the stats page shows, read in one pass on focus.
+ * Everything the stats page shows, read in one pass, and again only when something changed.
  *
  * One reader for the whole page rather than a fetch per card: the old tab mounted eight cards that
  * each fired their own query a frame apart, and a pull-to-refresh had to remount them all to be
- * sure. Null until the first read lands; a failed read keeps what was already on screen.
+ * sure. A focus reads `getJournalVersion` first and stops there when nothing moved since the last
+ * read; `reload` (pull-to-refresh) always reads. Null until the first read lands; a failed read
+ * keeps what was already on screen.
  */
 export function useJournalStats(): { stats: JournalStats | null; reload: () => Promise<void> } {
   const [stats, setStats] = useState<JournalStats | null>(null);
+  const shownVersion = useRef<string | null>(null);
 
-  const reload = useCallback(async () => {
+  const load = useCallback(async (force: boolean) => {
     try {
+      const version = await getJournalVersion();
+      if (!force && version === shownVersion.current) return;
       setStats(await loadJournalStats());
+      shownVersion.current = version;
     } catch (error) {
       reportError("journal.stats", error);
     }
   }, []);
 
+  const reload = useCallback(() => load(true), [load]);
+
   useFocusEffect(
     useCallback(() => {
-      reload().catch((error) => reportError("journal.stats", error));
-    }, [reload]),
+      load(false).catch((error) => reportError("journal.stats", error));
+    }, [load]),
   );
 
   return { stats, reload };

@@ -354,7 +354,7 @@ const PROGRESSION_WINDOW_DAYS = 56;
  * ponytail: strict on purpose — one short round sinks the whole session. Loosen it to a majority
  * of rounds if real logs show good sessions being refused.
  *
- * ponytail: one indexed seek per movement (`completed_exercises_exercise_idx`), called with a
+ * ponytail: one indexed seek per movement (`completed_exercises_exercise_result_idx`), called with a
  * handful of ids at a time. If a caller ever needs the whole ladder at once, replace it with a
  * single ROW_NUMBER() window query.
  */
@@ -494,7 +494,7 @@ export async function getChainTo(exerciseId: number): Promise<Chain | null> {
 }
 
 /**
- * Every ladder movement's sessions, oldest first, in one pass over the journal.
+ * Every movement that ever had its run of on-target sessions, in one pass over the journal.
  *
  * The per-movement read above is deliberately windowed — `isEarned` is a *current* state, and a
  * conversation about what to train tonight should forget last spring. A trophy cannot work that
@@ -505,36 +505,37 @@ export async function getChainTo(exerciseId: number): Promise<Chain | null> {
  * *ever* happen?" — which is monotonic, and therefore irreversible. The current state may fall;
  * the shelf never gives anything back.
  *
- * One grouped query rather than a seek per movement: this is the caller `recentMetFlags` predicted.
+ * The runs are found in SQL: a running count of misses numbers each unbroken stretch of hits, and
+ * a stretch long enough is a movement earned. It used to return a flag per movement per session
+ * and fold them in JS, 3 200 rows at five years of journal, on every Journal open (perf audit,
+ * 2026-09-15).
  */
-async function allSessionMetFlags(): Promise<Map<number, boolean[]>> {
-  const met = sql<number>`min(case when ${schema.completedExercises.targetValue} is not null
-      and ${schema.completedExercises.resultValue} >= ${schema.completedExercises.targetValue}
-    then 1 else 0 end)`;
-
-  const rows = await db
-    .select({ exerciseId: schema.completedExercises.exerciseId, met })
-    .from(schema.completedExercises)
-    .groupBy(schema.completedExercises.exerciseId, schema.completedExercises.sessionId)
-    .orderBy(
-      schema.completedExercises.exerciseId,
-      sql`min(${schema.completedExercises.performedAt})`,
-      schema.completedExercises.sessionId,
-    );
-
-  const byExercise = new Map<number, boolean[]>();
-  for (const row of rows) {
-    const flags = byExercise.get(row.exerciseId) ?? [];
-    flags.push(row.met === 1);
-    byExercise.set(row.exerciseId, flags);
-  }
-  return byExercise;
+async function everEarnedMovements(): Promise<Set<number>> {
+  const rows = await db.all<{ exerciseId: number }>(sql`
+    SELECT DISTINCT exerciseId FROM (
+      SELECT exerciseId, met,
+             SUM(1 - met) OVER (
+               PARTITION BY exerciseId ORDER BY at, sessionId ROWS UNBOUNDED PRECEDING
+             ) AS misses
+      FROM (
+        SELECT exerciseId, sessionId, MIN(performedAt) AS at,
+               MIN(CASE WHEN targetValue IS NOT NULL AND resultValue >= targetValue
+                   THEN 1 ELSE 0 END) AS met
+        FROM completed_exercises
+        GROUP BY exerciseId, sessionId
+      )
+    )
+    WHERE met = 1
+    GROUP BY exerciseId, misses
+    HAVING COUNT(*) >= ${PROGRESSION_SESSIONS_REQUIRED}
+  `);
+  return new Set(rows.map((row) => row.exerciseId));
 }
 
 /**
  * `recentMetFlags` for many movements at once — the *current* state, windowed, most recent first.
  *
- * `allSessionMetFlags` above answers a different question (did it *ever* happen, unwindowed, for
+ * `everEarnedMovements` above answers a different question (did it *ever* happen, unwindowed, for
  * the trophy shelf) and cannot stand in: a hero who owned a rung last spring is not standing on it
  * tonight. This is the same seek `recentMetFlags` does, hoisted out of the per-movement loop
  * because `currentRungFor` needs it for every rung of every slot of a quest.
@@ -633,16 +634,6 @@ export async function currentRungFor(exerciseIds: number[]): Promise<Map<number,
   return result;
 }
 
-/** Whether a run of `PROGRESSION_SESSIONS_REQUIRED` on-target sessions ever happened. */
-function everEarned(flags: boolean[] | undefined): boolean {
-  let run = 0;
-  for (const met of flags ?? []) {
-    run = met ? run + 1 : 0;
-    if (run >= PROGRESSION_SESSIONS_REQUIRED) return true;
-  }
-  return false;
-}
-
 /**
  * How many complete paths the hero has ever climbed — every rung of a route, summit included.
  *
@@ -651,7 +642,7 @@ function everEarned(flags: boolean[] | undefined): boolean {
  * one route. Derived from the journal on read, like everything else here; nothing is stored.
  */
 export async function countClimbedPaths(): Promise<number> {
-  const [rows, flags] = await Promise.all([fetchLadderRows(), allSessionMetFlags()]);
+  const [rows, earned] = await Promise.all([fetchLadderRows(), everEarnedMovements()]);
 
   const byId = new Map(rows.map((r) => [r.id, r]));
   const isPrerequisite = new Set(rows.map((r) => r.prerequisiteExerciseId).filter(Boolean));
@@ -669,7 +660,7 @@ export async function countClimbedPaths(): Promise<number> {
     // `seen` guards a cycle in the seed data, which would otherwise hang rather than fail.
     while (cursor && !seen.has(cursor.id)) {
       seen.add(cursor.id);
-      if (!everEarned(flags.get(cursor.id))) {
+      if (!earned.has(cursor.id)) {
         whole = false;
         break;
       }

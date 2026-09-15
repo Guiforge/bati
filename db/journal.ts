@@ -1,4 +1,18 @@
-import { and, count, desc, eq, gt, gte, inArray, isNotNull, lt, lte, ne, sql } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNotNull,
+  lt,
+  lte,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import type { AchievementProgress } from "./achievements";
@@ -100,45 +114,61 @@ export const SEASON_DAYS = 90;
  */
 export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
   const records = await getMovementRecords(limit);
+  if (records.length === 0) return [];
+  const ids = records.map((record) => record.exerciseId);
+  const key = (exerciseId: number, type: string) => `${exerciseId}:${type}`;
 
-  return await Promise.all(
-    records.map(async (record) => {
-      const [first] = await db
-        .select({ performedAt: completedExercises.performedAt })
-        .from(completedExercises)
-        .where(
-          and(
-            eq(completedExercises.exerciseId, record.exerciseId),
-            eq(completedExercises.resultType, record.type),
-            gte(completedExercises.resultValue, record.best),
+  // Two grouped reads for the whole wall rather than two per movement.
+  const [firsts, seasons] = await Promise.all([
+    db
+      .select({
+        exerciseId: completedExercises.exerciseId,
+        type: completedExercises.resultType,
+        at: sql<Date>`MIN(${completedExercises.performedAt})`.mapWith(
+          completedExercises.performedAt,
+        ),
+      })
+      .from(completedExercises)
+      .where(
+        or(
+          ...records.map((record) =>
+            and(
+              eq(completedExercises.exerciseId, record.exerciseId),
+              eq(completedExercises.resultType, record.type),
+              gte(completedExercises.resultValue, record.best),
+            ),
           ),
-        )
-        .orderBy(completedExercises.performedAt, completedExercises.id)
-        .limit(1);
+        ),
+      )
+      .groupBy(completedExercises.exerciseId, completedExercises.resultType),
+    db
+      .select({
+        exerciseId: completedExercises.exerciseId,
+        type: completedExercises.resultType,
+        best: sql<number | null>`MAX(${completedExercises.resultValue})`,
+      })
+      .from(completedExercises)
+      .where(
+        and(
+          inArray(completedExercises.exerciseId, ids),
+          gte(completedExercises.performedAt, new Date(Date.now() - SEASON_DAYS * DAY_MS)),
+        ),
+      )
+      .groupBy(completedExercises.exerciseId, completedExercises.resultType),
+  ]);
+  const firstAt = new Map(firsts.map((row) => [key(row.exerciseId, row.type), row.at]));
+  const seasonBest = new Map(seasons.map((row) => [key(row.exerciseId, row.type), row.best]));
 
-      const [season] = await db
-        .select({ best: sql<number | null>`MAX(${completedExercises.resultValue})` })
-        .from(completedExercises)
-        .where(
-          and(
-            eq(completedExercises.exerciseId, record.exerciseId),
-            eq(completedExercises.resultType, record.type),
-            gte(completedExercises.performedAt, new Date(Date.now() - SEASON_DAYS * DAY_MS)),
-          ),
-        );
-
-      return {
-        exerciseId: record.exerciseId,
-        name: nameOf(record),
-        imagePath: record.imagePath,
-        type: record.type,
-        best: record.best,
-        last: record.last,
-        recordAt: first?.performedAt ?? record.at,
-        seasonBest: season?.best ?? null,
-      };
-    }),
-  );
+  return records.map((record) => ({
+    exerciseId: record.exerciseId,
+    name: nameOf(record),
+    imagePath: record.imagePath,
+    type: record.type,
+    best: record.best,
+    last: record.last,
+    recordAt: firstAt.get(key(record.exerciseId, record.type)) ?? record.at,
+    seasonBest: seasonBest.get(key(record.exerciseId, record.type)) ?? null,
+  }));
 }
 
 /**
@@ -1062,4 +1092,39 @@ export function nextOnShelf(progress: readonly AchievementProgress[]): Achieveme
     if (!best || entry.progress > best.progress) best = entry;
   }
   return best;
+}
+
+/**
+ * A fingerprint of everything the Journal shows, cheap enough to read on every focus.
+ *
+ * Coming back from a session, Lifetime or the shelf used to re-read the whole Journal: 42 queries
+ * and a full re-render during the back animation, and the history dropped every page the hero had
+ * scrolled to (perf audit, 2026-09-15). The sessions carry nearly all of it (a new one, a deleted
+ * one, bonus XP, a record flag); the oath moves the flame's bar, the unlocks move the shelf, and the
+ * day moves every window.
+ */
+export async function getJournalVersion(): Promise<string> {
+  const [[sessions], preferences] = await Promise.all([
+    db
+      .select({
+        count: count(),
+        last: sql<number | null>`MAX(${completedQuest.id})`,
+        xp: sql<number | null>`SUM(${completedQuest.xpEarned})`,
+        records: sql<number | null>`SUM(${completedQuest.hasNewRecords})`,
+      })
+      .from(completedQuest),
+    db
+      .select({ value: schema.userPreferences.value })
+      .from(schema.userPreferences)
+      .where(inArray(schema.userPreferences.key, ["oath", "unlocked_achievements"]))
+      .orderBy(schema.userPreferences.key),
+  ]);
+  return [
+    sessions?.count,
+    sessions?.last,
+    sessions?.xp,
+    sessions?.records,
+    ...preferences.map((row) => row.value),
+    dayKey(new Date()),
+  ].join("|");
 }

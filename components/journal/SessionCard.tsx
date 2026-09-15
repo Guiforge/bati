@@ -4,8 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { Tag } from "@/components/common/Tag";
-import { Calendar, Star, Trophy } from "@/components/icons";
+import { Trophy } from "@/components/icons";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
@@ -92,6 +91,18 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
   const metaLabel = hasGround(entry)
     ? `${formatDistance(entry.leaguesM, unit, language)} · ${durationLabel}`
     : durationLabel;
+  // What the session was worth, not only how long it took. A row gave a duration and a difficulty
+  // and never what was done inside it, so two runs of the same quest a month apart were
+  // indistinguishable unless one happened to last longer. XP is priced off reps, tempo and
+  // difficulty, so it is the effort, in the unit this game already counts in. A difficulty means
+  // nothing on a walk.
+  const details = [
+    metaLabel,
+    entry.xpEarned > 0 ? t("quests.reward_xp", { count: entry.xpEarned }) : null,
+    entry.outing ? null : t(`quests.level_${entry.userLevel}`, entry.userLevel),
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <Card flat testID="journal-session-card" onPress={onPress}>
@@ -156,7 +167,6 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
                 gap="$1"
                 items="center"
               >
-                <Star size={12} color="$onPrimary" fill="$onPrimary" />
                 <Text fontSize={10} fontWeight="bold" color="$onPrimary" numberOfLines={1}>
                   {entry.recordLabel ?? t("journal.pr_badge")}
                 </Text>
@@ -164,29 +174,19 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
             )}
           </XStack>
 
-          <XStack gap="$2" items="center">
-            <Calendar size={12} color="$text" opacity={0.5} />
-            <Text fontSize={12} opacity={0.6} color="$text">
-              {dateLabel}
-            </Text>
-          </XStack>
-
-          <XStack gap="$2" mt="$1" flexWrap="wrap">
-            <Tag label={metaLabel} tone="secondary" />
-            {/* What the session was worth, not only how long it took.
-                A row gave a duration and a difficulty and never what was done inside it, so two
-                runs of the same quest a month apart were indistinguishable unless one happened to
-                last longer, which is the one thing nobody is trying to maximise. XP is priced off
-                reps, tempo and difficulty, so it is the effort, in the unit this game already
-                counts in. */}
-            {entry.xpEarned > 0 ? (
-              <Tag label={t("quests.reward_xp", { count: entry.xpEarned })} tone="primary" />
-            ) : null}
-            {/* A difficulty means nothing on a walk. */}
-            {entry.outing ? null : (
-              <Tag label={t(`quests.level_${entry.userLevel}`, entry.userLevel)} tone="primary" />
-            )}
-          </XStack>
+          {/* One line of text where there were a calendar icon and three tags: the row cost the
+              emulator's GPU 18 ms a frame against 10 for every other list, and History scrolled at
+              26 ms (perf audit, 2026-09-15). No single element was the cause, each icon, tag and
+              translucent text added to it; the line took the list from 0 smooth passes out of 9
+              to about half.
+              ponytail: measured on the emulator only, whose GPU is the host's through a
+              translation layer. A release build on a phone decides whether the row needs more. */}
+          <Text fontSize={12} color="$muted" numberOfLines={1}>
+            {dateLabel}
+          </Text>
+          <Text fontSize={12} color="$text" numberOfLines={1}>
+            {details}
+          </Text>
         </YStack>
       </XStack>
     </Card>

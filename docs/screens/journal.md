@@ -70,6 +70,9 @@ on the JS thread during the back animation.
 The segmented control's second half: the sessions a hundred at a time, newest first, each opening
 the quest log. It follows the same version check as the stats page, and when it does re-read, it
 reads back everything already scrolled through, so a return from a session keeps the hero's place.
+Nothing is read before the tab is first shown. A row is the cover, the title with its record badge,
+the date, and one line of details (duration or ground, XP, difficulty): the icon and three tags it
+had cost the emulator's GPU enough to scroll History at 26 ms a frame.
 An empty history is "An empty page", never a button that sends the hero elsewhere.
 
 ## What left the page

@@ -177,10 +177,13 @@ export default function JournalScreen() {
     }
   }, [hasMore, history.length, readPage]);
 
+  // Only once History is shown: the tab opens on Stats, and reading a page of sessions it does not
+  // draw doubled the JS work of the Journal's first paint (perf audit, 2026-09-15).
   useFocusEffect(
     useCallback(() => {
+      if (activeTab !== "history") return;
       loadHistory().catch((e) => reportError("journal.history", e));
-    }, [loadHistory]),
+    }, [activeTab, loadHistory]),
   );
 
   const [refreshing, setRefreshing] = useState(false);

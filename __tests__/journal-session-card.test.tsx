@@ -94,7 +94,7 @@ describe("SessionCard", () => {
 
     await mount({ ...baseEntry, leaguesM: 4580 });
 
-    await expect(screen.findByText(expectedLabel)).resolves.toBeTruthy();
+    await expect(screen.findByText(expectedLabel, { exact: false })).resolves.toBeTruthy();
   });
 
   it("formats distance in imperial when distanceUnit is imperial", async () => {
@@ -104,7 +104,7 @@ describe("SessionCard", () => {
 
     await mount({ ...baseEntry, leaguesM: 4580 });
 
-    await expect(screen.findByText(expectedLabel)).resolves.toBeTruthy();
+    await expect(screen.findByText(expectedLabel, { exact: false })).resolves.toBeTruthy();
   });
 
   it("shows the quest title", async () => {

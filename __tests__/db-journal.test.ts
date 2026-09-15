@@ -202,7 +202,7 @@ describe("db/journal", () => {
     ] as const) {
       session(id, daysAgo(day));
       set(id, high, id === 3 ? 4 : value, daysAgo(day));
-      if (id === 3) set(id, low, value, daysAgo(day));
+      if (id === 3) set(id, low, value, daysAgo(day), 1);
     }
     const { getCompletedSessionById } =
       require("../db/completed") as typeof import("../db/completed");

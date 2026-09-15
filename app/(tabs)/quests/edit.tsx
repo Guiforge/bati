@@ -131,15 +131,14 @@ export default function QuestEditor() {
   );
   const skipGuardRef = useRef(false);
   const isDirty =
-    !skipGuardRef.current &&
     JSON.stringify({ title, description, rounds, rest, roundRest, imagePath, picked }) !== baseline;
-  const isDirtyRef = useRef(isDirty);
-  isDirtyRef.current = isDirty;
 
+  // The ref is read when the hero leaves, never during render: a ref read in the render body is
+  // one of the things that makes the React Compiler skip the whole editor.
   const navigation = useNavigation();
   useEffect(() => {
     return navigation.addListener("beforeRemove", (e) => {
-      if (!isDirtyRef.current) return;
+      if (skipGuardRef.current || !isDirty) return;
       e.preventDefault();
       Alert.alert(
         t("quests.editor_discard_title", "Discard changes?"),
@@ -154,7 +153,7 @@ export default function QuestEditor() {
         ],
       );
     });
-  }, [navigation, t]);
+  }, [navigation, t, isDirty]);
 
   const exerciseName = useCallback(
     (exercise: Exercise) => localizedName(exercise, language),
@@ -276,9 +275,10 @@ export default function QuestEditor() {
       baseTarget: { type: p.type, min: p.value, max: p.value },
     }));
 
-    setBusy(true);
-    try {
-      skipGuardRef.current = true;
+    // No `try ... finally` here: the React Compiler cannot lower one and gives up on the whole
+    // editor. The write is its own function, and the catch below never rethrows, so the line after
+    // it runs on both paths.
+    const persist = async () => {
       if (questId == null) {
         const id = await createQuestTemplate({
           enTitle: trimmed,
@@ -330,14 +330,17 @@ export default function QuestEditor() {
       success();
       showSuccess(t("quests.editor_saved", "Quest saved"));
       router.back();
-    } catch (e) {
+    };
+
+    setBusy(true);
+    skipGuardRef.current = true;
+    await persist().catch((e: unknown) => {
       skipGuardRef.current = false;
       reportError("quest.editorSave", e);
       const message = e instanceof Error ? e.message : "Unknown error";
       Alert.alert(t("common.error", "Oops!"), message);
-    } finally {
-      setBusy(false);
-    }
+    });
+    setBusy(false);
   };
 
   const confirmDelete = () => {

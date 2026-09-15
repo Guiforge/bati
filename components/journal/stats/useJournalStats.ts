@@ -7,6 +7,7 @@ import {
   getActivityDays,
   getBossKills,
   getJournalVersion,
+  getLatestRecord,
   getOldestSessionAt,
   getPeriodFigures,
   getRecordWall,
@@ -14,6 +15,8 @@ import {
   monthWindows,
   nextOnShelf,
   type PeriodFigures,
+  periodReps,
+  type RecordMention,
   type WallEntry,
 } from "@/db/journal";
 import { getMuscleBalance, type MuscleBalance } from "@/db/muscleBalance";
@@ -43,8 +46,8 @@ export type JournalStats = {
     /** Days with a quest this month. */
     questDays: number;
   };
-  /** Every period at once, for the veteran's sentence. */
-  allTime: PeriodFigures;
+  /** The latest movement record ever, for the veteran's sentence. */
+  latestRecord: RecordMention | null;
   firstSessionAt: Date | null;
   balance: MuscleBalance;
   reps30: number;
@@ -67,10 +70,11 @@ async function loadJournalStats(): Promise<JournalStats> {
     flame,
     current,
     previous,
-    allTime,
+    latestRecord,
+    firstSessionAt,
     activity,
     balance,
-    last30,
+    reps30,
     level,
     xpPerSession,
     achievements,
@@ -80,17 +84,19 @@ async function loadJournalStats(): Promise<JournalStats> {
     getFlameDetail(now),
     getPeriodFigures(windows.current.from, now),
     getPeriodFigures(windows.previous.from, windows.previous.to),
-    getPeriodFigures(null, now),
+    getLatestRecord(now),
+    getOldestSessionAt(),
     getActivityDays(from, now),
     getMuscleBalance("30d"),
-    getPeriodFigures(new Date(now.getTime() - 30 * DAY_MS), now),
+    // The thirty days' reps alone: a whole `getPeriodFigures` here read five figures to show one.
+    periodReps(new Date(now.getTime() - 30 * DAY_MS), now),
     getUserLevelInfo(),
     getWeekXpPerSession(now),
     getAllAchievementsWithProgress(),
     getBossKills(),
   ]);
 
-  const isFirstDay = allTime.quests + allTime.outings === 0;
+  const isFirstDay = firstSessionAt == null;
 
   const week: (DayActivity | null)[] = [];
   for (let i = 6; i >= 0; i--) {
@@ -123,10 +129,10 @@ async function loadJournalStats(): Promise<JournalStats> {
       activity,
       questDays,
     },
-    allTime,
-    firstSessionAt: isFirstDay ? null : await getOldestSessionAt(),
+    latestRecord,
+    firstSessionAt,
     balance,
-    reps30: last30.reps,
+    reps30,
     level,
     xpPerSession,
     shelf: {
@@ -152,14 +158,15 @@ export function useJournalStats(): { stats: JournalStats | null; reload: () => P
   const shownVersion = useRef<string | null>(null);
 
   const load = useCallback(async (force: boolean) => {
-    try {
+    // The read and its error path apart: the React Compiler cannot lower the `&&` inside a `try`,
+    // and skipped this hook over it.
+    const read = async () => {
       const version = await getJournalVersion();
       if (!force && version === shownVersion.current) return;
       setStats(await loadJournalStats());
       shownVersion.current = version;
-    } catch (error) {
-      reportError("journal.stats", error);
-    }
+    };
+    await read().catch((error: unknown) => reportError("journal.stats", error));
   }, []);
 
   const reload = useCallback(() => load(true), [load]);

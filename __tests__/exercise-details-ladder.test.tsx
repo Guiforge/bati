@@ -83,13 +83,20 @@ const DRAGON_FLAG = {
 
 const CORE_PATH = ["Dead Bug", "Hollow Body Hold", "Dragon Flag"];
 
-/** Mount the Dragon Flag page with the hero standing on `position`, and `earned` rungs marked. */
-async function mountSummit(position: number, earned: boolean[]) {
+/**
+ * Mount the Dragon Flag page with the hero standing on `position`, `earned` rungs marked as earned
+ * lately, and `climbed` saying whether the summit is behind them.
+ */
+async function mountSummit(position: number, earned: boolean[], climbed = false) {
   mockGetChainTo.mockResolvedValue({
     rungs: CORE_PATH.map((name, i) => rung((i + 1) * 10, name, earned[i] === true)),
     position,
+    climbed,
   });
+  await mountScreen();
+}
 
+async function mountScreen() {
   await act(async () => {
     // Assigned rather than left as a bare statement: `render` returns a thenable-shaped result,
     // which the floating-promise rule reads as an unhandled promise.
@@ -136,19 +143,74 @@ describe("the path on the exercise screen", () => {
   });
 
   it("declares the path climbed only once the hero has reached its top", async () => {
-    await mountSummit(3, [true, true, true]);
+    await mountSummit(3, [true, true, true], true);
 
     expect(screen.getByText(/PATH OF THE DRAGON · CLIMBED/i)).toBeTruthy();
     // Nothing left to point at: a climbed path is not a to-do list.
     expect(screen.queryByText(/You are on/i)).toBeNull();
   });
 
-  it("does not congratulate a beginner who mastered a high rung out of order", async () => {
-    // The top rung is earned, but both rungs under it are still owed — `getChainTo` counts
-    // contiguously from the bottom, so `position` stays 1.
+  it("stays climbed after the summit's last clean sessions leave the window", async () => {
+    // `isEarned` is windowed; where the hero stands is not. "Climbed" must not blink out after a
+    // quiet summer (rule C, `rungsBehind`).
+    await mountSummit(3, [false, false, false], true);
+
+    expect(screen.getByText(/PATH OF THE DRAGON · CLIMBED/i)).toBeTruthy();
+  });
+
+  it("says where an unnamed path is going instead of calling its movement a rung", async () => {
+    // "PLANK · RUNG 1/2" read as "the plank is rung 1". The chain ends on a movement with no path
+    // name, so the caption says the hero is working up to it.
+    mockGetChainTo.mockResolvedValue({
+      rungs: [rung(10, "Dead Bug", false), rung(20, "Plank", false)],
+      position: 1,
+      climbed: false,
+    });
+    await mountScreen();
+
+    expect(screen.getByText("WORKING UP TO PLANK · RUNG 1 OF 2")).toBeTruthy();
+  });
+
+  it("reads the climb from the hero's standing, never from one rung's recent sessions", async () => {
+    // A top rung earned lately is not, on its own, a climbed path: `getChainTo` says whether it is.
     await mountSummit(1, [false, false, true]);
 
     expect(screen.getByText(/PATH OF THE DRAGON · RUNG 1\/3/i)).toBeTruthy();
     expect(screen.queryByText(/CLIMBED/i)).toBeNull();
+  });
+
+  it("counts what is left as a run of sessions, which is what earns the rung", async () => {
+    // One clean session at the head: two more *in a row*, not "1 more time" out of three.
+    mockGetChainTo.mockResolvedValue(null);
+    mockGetNextProgression.mockResolvedValue({
+      from: movement(30, "Dragon Flag"),
+      next: movement(40, "Human Flag"),
+      metTarget: 1,
+      required: 3,
+      isEarned: false,
+    });
+    await mountScreen();
+
+    expect(screen.getByText("Hit your target 2 more sessions in a row to earn it.")).toBeTruthy();
+  });
+});
+
+describe("the tempo chip", () => {
+  beforeEach(() => mockGetChainTo.mockResolvedValue(null));
+
+  it("is not offered for a hold, which has no repetitions to pace", async () => {
+    // Plank, Wall Sit and Side Plank all carry `secondsPerRep = 1` for the estimator, and the
+    // page read "tempo 1s/rep" under a 45 s hold.
+    mockGetExerciseById.mockResolvedValue({ ...DRAGON_FLAG, measure: "time", secondsPerRep: 1 });
+    await mountScreen();
+
+    expect(screen.queryByText(/tempo/i)).toBeNull();
+  });
+
+  it("stays on a counted movement", async () => {
+    mockGetExerciseById.mockResolvedValue({ ...DRAGON_FLAG, measure: "reps" });
+    await mountScreen();
+
+    expect(screen.getByText("tempo 3s/rep")).toBeTruthy();
   });
 });

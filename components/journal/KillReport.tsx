@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
 import { Skull } from "@/components/icons";
-import { formatCount, formatHold, formatShare } from "@/components/journal/journalFormat";
+import { formatShare } from "@/components/journal/journalFormat";
 import {
   NBar,
   NBlock,
@@ -21,6 +21,7 @@ import { getBossAsset, getExerciseThumb } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import type { CompletedSession } from "@/db/completed";
 import type { KillReport as KillReportData } from "@/db/journal";
+import { formatCount, formatTargetValue } from "@/db/targets";
 import { BUILDING_LABELS } from "@/db/village";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -40,7 +41,10 @@ function LastBlow({ blow }: { blow: NonNullable<KillReportData["lastBlow"]> }) {
     const movement = pick(blow.name, language);
     what =
       blow.type === "time"
-        ? t("journal.last_blow_hold", { movement, value: formatHold(blow.value) })
+        ? t("journal.last_blow_hold", {
+            movement,
+            value: formatTargetValue({ type: "time", value: blow.value }, language),
+          })
         : t("journal.last_blow_reps", { movement, count: blow.value });
   }
 
@@ -191,7 +195,7 @@ export function KillReport({
           </NFact>
           <NFact>
             <NText fontSize={13.5} lineHeight={19}>
-              {t("journal.moved_xp", { xp: report.xpSession })}
+              {t("journal.moved_xp", { xp: number(language, report.xpSession) })}
               <NMuted fontSize={13.5}>
                 {" · "}
                 {t("journal.left_xp_run", { total: number(language, report.xpRun) })}

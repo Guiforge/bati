@@ -21,6 +21,7 @@ import {
 import { getBuildingIconAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import type { BuildingCode } from "@/db/schema";
+import { formatCount } from "@/db/targets";
 import {
   buildingCeiling,
   type GrownBuilding,
@@ -365,7 +366,7 @@ type TierProps = {
  */
 export function VillageTier({ progress, name, complete, openDeeds, language }: TierProps) {
   const { t } = useTranslation();
-  const xp = (n: number) => n.toLocaleString(language);
+  const xp = (n: number) => formatCount(language, n);
   const foot = tierFoot(progress, complete, openDeeds, t, xp);
 
   return (

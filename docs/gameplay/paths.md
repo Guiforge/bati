@@ -2,7 +2,7 @@
 title: Paths (the variation ladder)
 type: system
 status: active
-updated: 2026-08-17
+updated: 2026-09-15
 related:
   [
     progression.md,
@@ -58,15 +58,32 @@ Three rules make that measure honest:
 - **Sessions, not rows.** A three-round quest writes three rows in one evening. Counting rows
   handed the next variation over after a single workout, which is the *program hopping before
   progressing* the research names as beginner mistake number one.
-- **Recent, not historical.** Sessions must fall inside an eight-week window. Ability is current;
-  three clean sets from last spring say nothing about today. The window is wide enough that a rest
-  week or a deload costs nothing.
-- **Contiguous from the bottom.** Mastering a hard variation out of order does not skip the ones
-  below it.
+- **Recent opens the next rung.** The three sessions must fall inside an eight-week window, and
+  in a row: "Hit your target 2 more sessions in a row" counts the run at the head of the journal,
+  not the clean sessions out of the last three. Ability to take the *next* step is current; three
+  clean sets from last spring say nothing about today. The window is wide enough that a rest week
+  or a deload costs nothing. This is what "Next rung", the victory screen and the quest log read.
+  One exception keeps the two cards on a page honest: when the hero already stands on the next
+  rung or above it, "Next rung" says it is earned (`getNextProgression`). The Wall Sit page used
+  to ask a hero who trains Squat for three more Wall Sit sessions while the Squat page said "You
+  are here".
+- **What is behind the hero stays there.** Where the hero *stands* is not windowed. A rung is
+  behind them once it has been owned ever, or once any rung above it has been owned ever, or has
+  one on-target session inside the window. The hero stands on the rung just above the highest one
+  behind them (`rungsBehind` in `db/exercises.ts`, the one function the path card and the quest
+  slot both read).
 
-Known ceiling, marked in the code: the bar is the target the hero was *handed*, and `QuestConfig`
-lets them lower it, so a self-lowered target earns rungs faster. Reading the quest template's own
-value means joining `quest_exercises` into every path read; deferred until someone reports it.
+The second rule replaced two older ones, "recent, not historical" and "contiguous from the
+bottom", on 2026-09-15. Together they sent every hero who progresses back to the bottom: someone
+who climbed from wall push-ups to push-ups stops doing wall push-ups, eight weeks later those
+sessions left the window, and the exercise page, every quest and the warm-up served wall push-ups
+to a hero doing fifteen real ones. And a hero holding a clean 45 s plank was told to do dead bugs.
+The floor now only ever rises; the next rung still has to be earned lately.
+
+Known ceilings, marked in the code: the bar is the target the hero was *handed*, and `QuestConfig`
+lets them lower it, so a self-lowered target earns rungs faster, and one clean session at a
+lowered target puts the rungs below it behind the hero. Reading the quest template's own value
+means joining `quest_exercises` into every path read; deferred until someone reports it.
 
 ## A hint, never a gate
 
@@ -81,7 +98,8 @@ The path also answers the *downward* question. The rung the hero stands on is th
 Pull-ups page would be Chin-Up.
 
 Since [issue #33](https://github.com/Guiforge/bati/issues/33) a quest *answers that question by
-itself*: a slot naming a movement whose lower rungs are unearned runs at the rung the hero is on.
+itself*: a slot naming a movement whose lower rungs are not behind the hero runs at the rung the
+hero is on.
 That is still not a gate, and the distinction is the whole point — the written movement is named
 on the card ("Working up to Push-ups") and is one tap away in the swap sheet. What changed is the
 default, not the permission. A hero who wants the summit tonight still gets it by asking; before,
@@ -109,7 +127,8 @@ One card, one gauge — two would be two notions of progress fighting for the sa
 
 ## Climbing one, for keeps
 
-Owning every rung of a path unlocks the **Path Climbed** trophy, which lands on the village shelf
+Owning a path's summit, which puts every rung of it behind the hero, unlocks the **Path Climbed**
+trophy, which lands on the village shelf
 beside defeated bosses ([progression.md](progression.md)). The boss is a victory of story; the
 path is a victory of competence — until now the village recorded volume and never skill.
 
@@ -117,11 +136,18 @@ path is a victory of competence — until now the village recorded volume and ne
 intrinsic kind and must stay secondary to real progress, while endorsing badges that *materialize*
 mastery. The trophy has to **be** the progress, never a currency laid on top.
 
-It therefore uses a different measure from the rung above: *did three consecutive on-target
-sessions ever happen*, anywhere in the journal — monotonic, and so irreversible.
+It therefore uses the measure the floor uses: *did three consecutive on-target sessions ever
+happen*, anywhere in the journal — monotonic, and so irreversible. Since 2026-09-15 it is the same
+reading as "climbed" on the path card: the summit owned once is enough, whatever was logged below
+it. A hero who owned a summit without logging the rungs below will see the trophy unlock
+retroactively after their next session.
 
-> **The current state may fall; the shelf never gives anything back.** The path tells the hero
-> honestly where they stand today, including after a quiet summer. What they did once is theirs.
+> **The next rung may close again; the floor and the shelf never give anything back.** This used
+> to say the path told the hero where they stand "including after a quiet summer", and in
+> practice that meant the bottom rung. Research dossier §5, which roadmap §4.4 already cites for
+> the trophy, is blunt that punishing an absence pushes people to abandon rather than restart: a
+> hero back from a summer off stands where they left, and the recency window only decides whether
+> the rung above is open yet.
 
 ## Related
 

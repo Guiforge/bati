@@ -35,6 +35,18 @@ jest.mock("@/stores/session", () => ({
   useSessionStore: { getState: () => ({}) },
 }));
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
+/** The real fold, counted: the live map must not run it once per fix. */
+const mockToTrace = jest.fn();
+jest.mock("@/src/gps/trace", () => {
+  const actual = jest.requireActual("@/src/gps/trace");
+  return {
+    ...actual,
+    toTrace: (...args: unknown[]) => {
+      mockToTrace();
+      return actual.toTrace(...args);
+    },
+  };
+});
 jest.mock("expo-localization", () => ({
   getLocales: () => [{ languageCode: "en", languageTag: "en-US" }],
 }));
@@ -100,6 +112,7 @@ beforeEach(() => {
   mockMapStyle.mockClear();
   mockCenter.mockClear();
   mockInitialView.mockClear();
+  mockToTrace.mockClear();
 });
 
 test("before the first fix it shows what it was handed, and frames nothing", async () => {
@@ -176,4 +189,36 @@ test("says what it is waiting for, the sky and then the map, and goes quiet once
 
   await act(async () => mockStyleLoaded?.());
   expect(screen.queryByTestId("live-map-loading")).toBeNull();
+});
+
+test("follows every fix with the camera, and folds the walk at most every five seconds", async () => {
+  jest.useFakeTimers();
+  try {
+    const fixes = Array.from({ length: 10 }, (_, i) => walking(i));
+    await mount(fixes, true);
+    const foldsAtMount = mockToTrace.mock.calls.length;
+
+    // Twelve seconds of walking, one fix a second.
+    for (let i = 10; i < 22; i++) {
+      await act(() => {
+        useExpeditionStore.setState({
+          fixes: [...useExpeditionStore.getState().fixes, walking(i)],
+        });
+        jest.advanceTimersByTime(1000);
+      });
+      // The camera is never behind: it is on the fix that just landed.
+      expect(mockCenter.mock.calls.at(-1)?.[0]).toEqual([walking(i).lon, walking(i).lat]);
+    }
+
+    // Two five-second ticks in twelve seconds, not twelve folds.
+    expect(mockToTrace.mock.calls.length - foldsAtMount).toBe(2);
+
+    // The next tick picks up the last two fixes; the one after it has nothing new and is free.
+    await act(() => {
+      jest.advanceTimersByTime(10_000);
+    });
+    expect(mockToTrace.mock.calls.length - foldsAtMount).toBe(3);
+  } finally {
+    jest.useRealTimers();
+  }
 });

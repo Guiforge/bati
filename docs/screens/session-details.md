@@ -23,11 +23,14 @@ the adventure, and the hero starts it there.
 1. **The painting** of the quest, fading into the ground, with the title and "Yesterday at 11:58 ·
    Hard · 3 rounds · 10 min".
 2. **A record fell**, when one did: the one raised panel of the page, with the value, what it
-   beat, and the number that beats it next time (`getFallenRecords`).
+   beat, and the number that beats it next time (`getFallenRecords`). On a first attempt it says
+   "A first record", since nothing fell.
 3. **Where it sits**: this run's place among every run of the quest, by reps, or among every
-   outing, by ground, with all the runs drawn as bars (`getQuestStanding`). Absent on a first run.
+   outing, by ground, with all the runs drawn as bars (`getQuestStanding`), the best with its date,
+   and, below the best, how far under it this run is. Absent on a first run.
 4. **What it moved**: the XP (with the level bar, on the latest session only, since the level is
-   today's), the reps sent to the village, the muscle whose thirty-day share moved most
+   today's), the reps sent to the village (with the hold rule, "holds at 1 per 3 s", when the
+   session had a hold), the muscle whose thirty-day share moved most
    (`getMuscleShift`), and the rung its movements are climbing (`getSessionRung`). An outing says
    what ground pays for instead.
 5. **The rounds**, one line per movement: the sets in order, the target, gold when every set cleared

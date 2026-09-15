@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,10 +9,11 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { Castle } from "@/components/icons";
 import { getAvatarSource } from "@/constants/avatars";
 import { getFlameLevel } from "@/db/streaks";
+import { formatCount } from "@/db/targets";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { getVillageTier, TIER_NAMES } from "@/db/village";
+import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 import { useStreakInfo } from "@/hooks/useStreakInfo";
-import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 /** The strip under the status bar. Everything Home no longer spends on chrome goes to the scene. */
@@ -45,12 +46,9 @@ export function HomeHeader() {
   const avatarSource = getAvatarSource(avatarId, customAvatarUri);
 
   // Refetch on focus: a session just logged must show up here, not on the next cold start.
-  useFocusEffect(
-    useCallback(() => {
-      getUserLevelInfo()
-        .then(setLevelInfo)
-        .catch((e) => reportError("home.levelInfo", e));
-    }, []),
+  useReloadOnChange(
+    "home.levelInfo",
+    useCallback(() => getUserLevelInfo().then(setLevelInfo), []),
   );
 
   const levelTitle = levelInfo ? levelInfo.title[language] : "";
@@ -116,8 +114,8 @@ export function HomeHeader() {
           {levelInfo ? (
             <Text fontSize={10} fontWeight="700" color="$resourceGold">
               {t("journal.xp_progress", {
-                current: levelInfo.currentLevelXp,
-                next: levelInfo.currentLevelXp + levelInfo.xpToNextLevel,
+                current: formatCount(language, levelInfo.currentLevelXp),
+                next: formatCount(language, levelInfo.currentLevelXp + levelInfo.xpToNextLevel),
               })}
             </Text>
           ) : null}
@@ -146,8 +144,10 @@ export function HomeHeader() {
           })}
         >
           <FlameFlicker size={FLAME_SIZES[flameLevel]} animate={currentStreak > 0} />
+          {/* No "0d" under an unlit flame: the dimmed flame already says it, and a zero reads as a
+              verdict on a first day (the Journal hides it too). */}
           <Text fontSize={11} fontWeight="700" color="$resourceGold">
-            {t("home.streak_short", { count: currentStreak })}
+            {currentStreak > 0 ? t("home.streak_short", { count: currentStreak }) : " "}
           </Text>
         </YStack>
       )}

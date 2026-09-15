@@ -36,8 +36,10 @@ import { threatRank } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
+import { formatCount } from "@/db/targets";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
+import { keepIfSame } from "@/src/sameContent";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
@@ -136,8 +138,7 @@ function buildAdventureRow(
       defaultValue: `${a.stepsCount} steps`,
     }),
     xpLabel: t("adventures.reward_xp_per_step", {
-      count: xp,
-      defaultValue: `up to +${xp} XP per step`,
+      count: formatCount(language, xp),
     }),
     finishedCount,
     starsLabel: starsFor(finishedCount),
@@ -397,38 +398,41 @@ export default function AdventuresGallery() {
         : { status: "loading", adventures: s.adventures, exercisesById: s.exercisesById },
     );
 
-    try {
-      const [adventures, exercises, activeRun, finished, questConfigs] = await Promise.all([
-        listAdventures(),
-        listExercises(),
-        getAnyActiveAdventureRun(),
-        getFinishedRunCountsByAdventure(),
-        getAllQuestConfigs(),
-      ]);
-      setActiveProgress(
-        activeRun
+    // A promise chain rather than `try`: the React Compiler cannot lower a `?.` or a ternary
+    // inside one, and skipped this whole screen over it.
+    await Promise.all([
+      listAdventures(),
+      listExercises(),
+      getAnyActiveAdventureRun(),
+      getFinishedRunCountsByAdventure(),
+      getAllQuestConfigs(),
+    ])
+      .then(([adventures, exercises, activeRun, finished, questConfigs]) => {
+        const progress: AdventureProgress | null = activeRun
           ? {
               adventureId: activeRun.adventureId,
               completedCount: activeRun.activeRun.steps.filter((s) => s.status === "completed")
                 .length,
               currentIndex: activeRun.activeRun.activeStep?.stepIndex ?? 0,
             }
-          : null,
-      );
-      setFinishedCounts(finished);
-      setConfigs(questConfigs);
-      const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
-      setState({ status: "ready", adventures, exercisesById });
-    } catch (e) {
-      reportError("adventures.gallery", e);
-      const message = e instanceof Error ? e.message : "Unknown error";
-      setState((s) => ({
-        status: "error",
-        adventures: s.adventures,
-        exercisesById: s.exercisesById,
-        message,
-      }));
-    }
+          : null;
+        // Same content, same identity: a focus with nothing new re-renders no poster.
+        setActiveProgress((previous) => keepIfSame(previous, progress));
+        setFinishedCounts((previous) => keepIfSame(previous, finished));
+        setConfigs((previous) => keepIfSame(previous, questConfigs));
+        const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
+        setState({ status: "ready", adventures, exercisesById });
+      })
+      .catch((e: unknown) => {
+        reportError("adventures.gallery", e);
+        const message = e instanceof Error ? e.message : "Unknown error";
+        setState((s) => ({
+          status: "error",
+          adventures: s.adventures,
+          exercisesById: s.exercisesById,
+          message,
+        }));
+      });
   }, []);
 
   // On focus, not on mount: progression and replay stars must be fresh when the hero

@@ -166,7 +166,10 @@ function PathCard({ chain }: { chain: Chain }) {
   return (
     <Card
       onPress={target === null ? undefined : () => router.push(`/exercises/${target}` as never)}
-      accessibilityLabel={target === null ? undefined : hereName}
+      // The sentence, not the bare name: TalkBack read "Dead bug" with nothing to say what it was.
+      accessibilityLabel={
+        target === null ? undefined : t("exercises.path_you_are_on", { name: hereName })
+      }
     >
       <YStack gap="$2">
         <XStack items="flex-start" gap="$2">
@@ -193,7 +196,8 @@ function PathCard({ chain }: { chain: Chain }) {
 
 /**
  * What comes after this movement. A hint, never a gate — nothing in the app is locked behind it,
- * and a hero who wants to try the next step tonight can (roadmap §15, the progression ladder).
+ * and a hero who wants to try the next step tonight can (roadmap §4.4, and §5 on gating a skill
+ * branch).
  */
 function NextStepCard({ progression }: { progression: NextProgression }) {
   const language = useSettingsStore((s) => s.language);
@@ -206,7 +210,7 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
   return (
     <Card
       onPress={() => router.push(`/exercises/${progression.next.id}` as never)}
-      accessibilityLabel={`${t("exercises.next_step", "Next rung")} — ${name}`}
+      accessibilityLabel={`${t("exercises.next_step", "Next rung")} · ${name}`}
     >
       {/* The pose was always in the payload and never rendered — a named step you cannot see is
           a to-do list item, an illustrated one is a movement you want to try. */}
@@ -240,7 +244,7 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
               ? t("exercises.next_step_earned", "You have earned it. Give it a try.")
               : t("exercises.next_step_progress", {
                   count: remaining,
-                  defaultValue: `Hit your target ${remaining} more times to earn it.`,
+                  defaultValue: `Hit your target ${remaining} more sessions in a row to earn it.`,
                 })}
           </Paragraph>
         </YStack>
@@ -453,11 +457,12 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
               label={equipmentLabel}
               tone={exercise.equipment === "none" ? "default" : "secondary"}
             />
-            {/* A tempo is seconds per repetition, and an expedition has none — it is measured
-                in ground covered (db/workUnits.ts). The column still holds a 1 so the duration
-                estimator has something to multiply; that number is not a fact about the
-                movement, so it does not get a chip. */}
-            {exercise.style === NON_REP_STYLE ? null : (
+            {/* A tempo is seconds per repetition, and neither a hold nor an expedition has
+                repetitions: one is measured in seconds held, the other in ground covered
+                (db/workUnits.ts). The column still holds a 1 so the duration estimator has
+                something to multiply; that number is not a fact about the movement, so it does
+                not get a chip. `QuestExerciseRow` already drew the line at a hold. */}
+            {exercise.measure === "time" || exercise.style === NON_REP_STYLE ? null : (
               <Tag
                 icon={<Timer size={12} color="$text" opacity={0.7} />}
                 label={t("exercises.seconds_per_rep", {
@@ -618,6 +623,19 @@ export default function ExerciseDetails() {
           )}
         </YStack>
       </ScrollView>
+
+      {/* Content scrolls edge-to-edge; this keeps the status bar readable over it, as on the
+          quest screen. Without it the back button slid under the clock. */}
+      <YStack
+        position="absolute"
+        t={0}
+        l={0}
+        r={0}
+        height={insets.top}
+        bg="$bgDark"
+        opacity={0.88}
+        pointerEvents="none"
+      />
     </YStack>
   );
 }

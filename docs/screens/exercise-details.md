@@ -3,7 +3,7 @@ title: Exercise Details
 type: screen
 route: /exercises/[id]
 status: active
-updated: 2026-08-17
+updated: 2026-09-15
 related: [exercises.md, quests.md, quest-details.md, session.md, ../gameplay/paths.md]
 sources: ["app/exercises/[id].tsx", "db/exercises.ts", "db/paths.ts", "components/common/PathStrip.tsx"]
 ---
@@ -20,12 +20,15 @@ Exercise Details explains a single movement — and, when the movement sits on o
 - **Exercise media**: large image area for visual recognition.
 - **Localized name and description**: English/French content follows the active language.
 - **Equipment tag**: clarifies whether equipment is required.
-- **Timing hint**: seconds-per-rep guidance when available.
+- **Timing hint**: seconds-per-rep guidance on a counted movement. A hold (`measure = time`) and
+  an expedition get no chip: their `secondsPerRep` of 1 only feeds the duration estimator, and
+  "tempo 1s/rep" under a 45 s plank was not a fact about the plank.
 - **Muscle tags**: the muscles the movement trains.
 - **The path** — its name, a segment bar, and the rung the hero stands on. Tapping opens that
   rung.
-- **The next rung** — the harder variation, illustrated, with how many on-target sessions are
-  left. Tapping opens it.
+- **The next rung** — the harder variation, illustrated, with how many on-target sessions in a
+  row are left (the run at the head of the recency window, not the clean ones out of three).
+  Tapping opens it.
 - **Loading/error states**: invalid IDs and database failures.
 
 ## The four states of the path block
@@ -44,9 +47,13 @@ The summit case is why the two are separate cards. They used to be one, with the
 inside the next-rung card — so on the twelve summits (L-Sit, Handstand Push-Up, Pull-ups…), the
 movements a hero opens out of ambition, the whole block was absent.
 
-A path is declared **climbed** only when `position === total` *and* the top rung is earned. The
-second condition alone is not enough: mastery counts contiguously from the bottom, so a hero can
-own a high rung while still standing on the first one.
+A path is declared **climbed** when every rung of it, this page's included, is behind the hero
+(`chain.climbed`). Behind is not the windowed `isEarned`: a rung stays behind once it was owned
+ever, or once a rung above it was owned ever or has one on-target session in the window
+([paths.md](../gameplay/paths.md) § Owning a rung). Reading the top rung's `isEarned` instead made
+"climbed" blink out eight weeks after the hero stopped repeating a summit they own, and the old
+contiguous count made a hero holding a clean plank read "You are on Dead Bug" right above "Side
+Plank: You have earned it".
 
 ## Visual rules
 
@@ -56,6 +63,12 @@ own a high rung while still standing on the first one.
   screen was dropped for ([exercises.md](exercises.md)).
 - The path is **named, not numbered**. "Rung 3 of 6" is a coordinate; "Path of the Pull" is a
   thing a hero can want. Names live in [`db/paths.ts`](../../db/paths.ts), keyed by the summit.
+  The chain ends on the page's own movement, so most pages are not a named summit: there the
+  caption says where it goes, "Working up to Plank · rung 1 of 2" / "En route vers Gainage
+  ventral · étape 1 sur 2", with the words a substituted quest slot uses. "Plank · Rung 1/2" read
+  as "the plank is rung 1". A climbed page reads "Plank · Climbed" / "Gainage ventral · sommet
+  atteint" (not "Gravie", which only agreed with *voie*). `pathCaption` in `db/paths.ts` writes
+  the line for this card and the Home oath strip.
 - State is never colour-only: the segment bar repeats what the caption already says in words.
 - Small slots read the 128 px thumbnail, never the 1280 px session-hero art
   ([performance.md](../architecture/performance.md)).

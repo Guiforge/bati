@@ -14,6 +14,13 @@ import { useSmartAction } from "@/components/home/useSmartAction";
  * is how the oath, the ladder and the sessions ended up feeling unrelated.
  */
 
+// Every focus reads as a fresh write, so these tests load on each one as they always did. The
+// gate itself is `__tests__/use-reload-on-change.test.ts`'s.
+let mockChanges = 0;
+jest.mock("@/db/changeVersion", () => ({
+  getChangeVersion: async () => String(mockChanges++),
+}));
+
 const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -53,7 +60,9 @@ jest.mock("react-i18next", () => {
         // i18next resolves a flat dotted key before splitting on "."; mirror that order.
         const found = walk([key]) ?? walk(key.split("."));
         if (typeof found !== "string") return key;
-        return found.replace(/{{(\w+)}}/g, (_: string, name: string) => String(opts?.[name] ?? ""));
+        return found.replace(/{{(\w+)(?:, *\w+)?}}/g, (_: string, name: string) =>
+          String(opts?.[name] ?? ""),
+        );
       },
     }),
   };

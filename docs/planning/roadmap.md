@@ -453,6 +453,10 @@ achievements card: the village redesign moved the shelf out), beside the defeate
 and no points: §5 warns that extrinsic rewards erode the intrinsic kind unless the reward *is* the
 progress. It uses a monotonic measure — *did this ever happen* — so the current rung can fall
 while the trophy cannot, which is the rule the research demands about never punishing an absence.
+Since 2026-09-15 the same rule holds for the floor: what is behind the hero stays behind, and the
+recency window only decides whether the next rung is open, because the windowed floor sent every
+hero who progresses back to the bottom rung eight weeks after they outgrew it
+([`paths.md`](../gameplay/paths.md) § Owning a rung).
 
 **What was refused.** A "Your paths" card on the Journal: Home carries the one being climbed and
 the shelf keeps the ones finished, so a passive report adds a fourth telling of the same thing and

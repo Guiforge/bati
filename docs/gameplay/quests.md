@@ -75,13 +75,17 @@ own, an answer to "this is beyond me". That is the section below.
 
 A quest names a movement; `getQuestById` serves the one the hero is actually working. If the
 ladder (`prerequisiteExerciseId`) puts Wall Push-Up under Knee Push-Up under Push-ups, and the
-hero has not yet earned the rungs below, the push-up slot runs as Wall Push-Up. The slot carries
+rungs below are not yet behind the hero, the push-up slot runs as Wall Push-Up. The slot carries
 `substitutedFor` so both the quest card and the session screen can say "Working up to Push-ups",
 and the swap sheet is one tap away for anyone who wants the written movement anyway.
 
-Ownership is the same `isEarned` rule the exercise screen shows — three on-target sessions inside
-the 56-day window — so the app never prescribes something it is simultaneously telling the hero to
-work up to.
+Where the hero stands is the same reading the exercise screen shows, one function for both
+(`rungsBehind`, [paths.md](paths.md) § Owning a rung): a rung is behind the hero once it was owned
+ever, or once a rung above it was owned ever or has one on-target session in the 56-day window. So
+the app never prescribes something it is simultaneously telling the hero to work up to, and a hero
+who climbed to push-ups is not served wall push-ups again once those old sessions age out of the
+window (rule changed 2026-09-15; before, a level-52 hero was handed Wall Sit, Wall Push-Up and
+Dead Bug by Chop Wood).
 
 Four things it never does: override an explicit swap, touch a quest the hero authored themselves,
 substitute upward, or carry the quest's own artwork onto a movement it does not depict.

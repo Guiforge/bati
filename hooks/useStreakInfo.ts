@@ -1,7 +1,6 @@
-import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { getStreakInfo, type StreakInfo } from "@/db/streaks";
-import { reportError } from "@/src/reportError";
+import { useReloadOnChange } from "./useReloadOnChange";
 
 /**
  * The one way UI reads the flame. Refetches on focus so a transient failure (or a session
@@ -12,18 +11,15 @@ import { reportError } from "@/src/reportError";
 export function useStreakInfo(): StreakInfo | null {
   const [streak, setStreak] = useState<StreakInfo | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      let cancelled = false;
-      getStreakInfo()
-        .then((info) => {
-          if (!cancelled) setStreak(info);
-        })
-        .catch((e) => reportError("streak.read", e));
-      return () => {
-        cancelled = true;
-      };
-    }, []),
+  useReloadOnChange(
+    "streak.read",
+    useCallback(
+      (isCancelled: () => boolean) =>
+        getStreakInfo().then((info) => {
+          if (!isCancelled()) setStreak(info);
+        }),
+      [],
+    ),
   );
 
   return streak;

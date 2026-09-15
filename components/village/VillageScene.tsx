@@ -156,7 +156,7 @@ export function VillageScene() {
     useCallback(() => {
       loadScene();
       scrollRef.current?.scrollTo({ y: 0, animated: false });
-      scrollY.value = 0;
+      scrollY.set(0);
     }, [loadScene, scrollRef, scrollY]),
   );
 
@@ -180,7 +180,7 @@ export function VillageScene() {
     if (!ready || parseGrown(grown).length === 0 || playedFor.current === grown) return;
     playedFor.current = grown;
     const lean = (to: number) => {
-      zoom.value = withTiming(to, LEAN);
+      zoom.set(withTiming(to, LEAN));
     };
     const timers = [
       setTimeout(
@@ -197,14 +197,14 @@ export function VillageScene() {
     ];
     return () => {
       for (const timer of timers) clearTimeout(timer);
-      zoom.value = 1;
+      zoom.set(1);
       setRewardOpen(false);
     };
   }, [ready, grown, reducedMotion, zoom]);
 
   const dismissReward = () => {
     setRewardOpen(false);
-    zoom.value = withTiming(1, LEAN);
+    zoom.set(withTiming(1, LEAN));
   };
 
   // The tier art is square (1024x1024), and `cover` silently crops whatever the slot doesn't

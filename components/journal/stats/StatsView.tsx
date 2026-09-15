@@ -7,13 +7,9 @@ import {
   ageOf,
   dayAfter,
   daysUntil,
-  formatCount,
-  formatHold,
   formatHoursMinutes,
   formatShare,
-  formatWallValue,
   shortDate,
-  targetToBeat,
 } from "@/components/journal/journalFormat";
 import {
   NBar,
@@ -33,13 +29,14 @@ import { formatDistance } from "@/constants/distanceFormat";
 import { dayKey } from "@/db/dates";
 import type { DayActivity, WallEntry } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { formatCount, formatTargetValue } from "@/db/targets";
 import { inSentence, localizedName, localizedTitle } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 import type { JournalStats } from "./useJournalStats";
+import { STALE_RECORD_DAYS, wallSub, wallTarget } from "./wall";
+import { workVerdict } from "./workVerdict";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-/** A record older than this is an old debt, and the wall says so. */
-const STALE_RECORD_DAYS = 60;
 
 const fmt = (language: AppLanguage, options: Intl.DateTimeFormatOptions, date: Date) =>
   getDateTimeFormat(language, options).format(date);
@@ -55,7 +52,7 @@ type Mode = "firstDay" | "veteran" | "rest" | "regular";
  */
 function modeOf(stats: JournalStats): Mode {
   if (stats.isFirstDay) return "firstDay";
-  const latest = stats.allTime.latestRecord?.at ?? null;
+  const latest = stats.latestRecord?.at ?? null;
   const yearIn =
     stats.firstSessionAt != null &&
     stats.now.getTime() - stats.firstSessionAt.getTime() >= 365 * DAY_MS;
@@ -84,7 +81,7 @@ type LeadText = { plain: string; accent: string; tail?: string };
  * in place of the nine days this hero had trained that month.
  */
 function veteranLead(t: TFunction, language: AppLanguage, stats: JournalStats): LeadText {
-  const latest = stats.allTime.latestRecord?.at;
+  const latest = stats.latestRecord?.at;
   return {
     plain: regularLead(t, language, stats).plain,
     accent: "",
@@ -183,65 +180,92 @@ function dayLabel(t: TFunction, language: AppLanguage, day: Date, now: Date): st
   return null;
 }
 
-/**
- * Whether a record has aged past being tonight's target: set long ago, and not matched this
- * season. A record first reached ten months ago and equalled last week is still within reach.
- */
-function isOldRecord(entry: WallEntry, now: Date): boolean {
+function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const language = useSettingsStore((s) => s.language);
+  const age = entry.recordAt ? ageOf(entry.recordAt, now).kind : null;
+  // A record that fell today or yesterday is still news: ringed, and tagged.
+  const fresh = age === "today" || age === "yesterday";
+  const target = wallTarget(entry, now);
+  const sub = wallSub(t, language, entry, now);
+  const recordSession = entry.recordSessionId;
   return (
-    entry.recordAt != null &&
-    now.getTime() - entry.recordAt.getTime() > STALE_RECORD_DAYS * DAY_MS &&
-    (entry.seasonBest == null || entry.best == null || entry.seasonBest < entry.best)
+    <XStack
+      testID="journal-wall-row"
+      onPress={() => router.push(`/exercises/${entry.exerciseId}` as never)}
+      accessibilityRole="button"
+      items="center"
+      gap={11}
+      p={8}
+      minH={48}
+      rounded={8}
+      bg="$surface2"
+      borderWidth={fresh ? 1 : 0}
+      borderColor="$gold700"
+      opacity={entry.best == null ? 0.8 : 1}
+      pressStyle={{ opacity: 0.85 }}
+    >
+      <NImage source={getExerciseThumb(entry.imagePath)} size={44} />
+      <YStack flex={1} minW={0}>
+        <XStack items="center" gap={6}>
+          <NText fontWeight="500" fontSize={16} numberOfLines={1} style={{ flexShrink: 1 }}>
+            {localizedName(
+              {
+                enName: entry.name.en,
+                frName: entry.name.fr,
+                deName: entry.name.de,
+                esName: entry.name.es,
+              },
+              language,
+            )}
+          </NText>
+          {fresh ? (
+            <YStack bg="$gold800" rounded={6} px={7} py={1}>
+              <NText fontSize={9.5} lineHeight={14} letterSpacing={0.8} color="$gold100">
+                {t("journal.wall_new")}
+              </NText>
+            </YStack>
+          ) : null}
+        </XStack>
+        <NMuted numberOfLines={1}>
+          {sub.before}
+          {/* The row opens the movement; the record's date opens the day it fell. A veteran's
+              question about a record is "what did I do that day", and History is hundreds of rows
+              away from it. A link inside the line, because the row's own tap is taken. */}
+          {sub.when && recordSession != null ? (
+            <NMuted
+              testID="journal-wall-record-day"
+              color="$resourceGold"
+              accessibilityRole="link"
+              onPress={() => router.push(`/journal/${recordSession}` as never)}
+            >
+              {sub.when}
+            </NMuted>
+          ) : (
+            sub.when
+          )}
+          {sub.after}
+        </NMuted>
+      </YStack>
+      {/* A movement never logged has nothing to beat: "1 reps" under "Never logged" read as a dare
+          to do one rep. The first try sets the record, which the kicker says. */}
+      {entry.best == null ? null : (
+        <YStack items="flex-end">
+          <NNum fontSize={24} lineHeight={26} color="$resourceGold">
+            {formatTargetValue({ type: entry.type, value: target }, language)}
+          </NNum>
+          <NKickerQuiet fontSize={9.5}>
+            {entry.type === "time" ? t("journal.unit_hold") : t("journal.unit_reps")}
+          </NKickerQuiet>
+        </YStack>
+      )}
+    </XStack>
   );
-}
-
-/**
- * The number that beats the row tonight. A recent record is beaten by one more. An old one is not a
- * target for tonight: its season's best is, or the last result when the season has none.
- */
-function wallTarget(entry: WallEntry, now: Date): number {
-  if (entry.best == null) return targetToBeat(null);
-  if (!isOldRecord(entry, now)) return targetToBeat(entry.best);
-  return targetToBeat(entry.seasonBest ?? entry.last ?? entry.best);
-}
-
-/** When a record fell, said the way its age calls for: "set yesterday", "Sep 2", "7 months ago". */
-function recordWhen(t: TFunction, language: AppLanguage, at: Date, now: Date): string {
-  const age = ageOf(at, now);
-  switch (age.kind) {
-    case "today":
-      return t("journal.when_set_today");
-    case "yesterday":
-      return t("journal.when_set_yesterday");
-    case "months":
-      return t("journal.months_ago", { count: age.count });
-    case "years":
-      return t("journal.years_ago", { count: age.count });
-    default:
-      return shortDate(language, at, now);
-  }
-}
-
-function wallSub(t: TFunction, language: AppLanguage, entry: WallEntry, now: Date): string {
-  if (entry.best == null || entry.recordAt == null) return t("journal.wall_never");
-  const value = (v: number) => formatWallValue(v, entry.type, language);
-  const best = value(entry.best);
-  const when = recordWhen(t, language, entry.recordAt, now);
-  if (isOldRecord(entry, now) && entry.seasonBest != null) {
-    return t("journal.wall_sub_season", { season: value(entry.seasonBest), best, when });
-  }
-  // The last result is always there when it is under the record: it is the number a hero
-  // compares the target against, and an audit found it hidden on the one row it mattered most.
-  if (entry.last != null && entry.last < entry.best) {
-    return t("journal.wall_sub_last", { best, when, last: value(entry.last) });
-  }
-  return t("journal.wall_sub", { best, when });
 }
 
 function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
   const { t } = useTranslation();
-  const router = useRouter();
-  const language = useSettingsStore((s) => s.language);
   const title =
     mode === "firstDay"
       ? t("journal.wall_empty")
@@ -256,67 +280,13 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
       <XStack px={11} items="baseline" justify="space-between" gap={11}>
         <NKicker>{title}</NKicker>
         <NMuted fontSize={11} style={{ textAlign: "right", flexShrink: 1 }}>
-          {t("journal.wall_meta")}
+          {mode === "firstDay" ? t("journal.wall_meta_first") : t("journal.wall_meta")}
         </NMuted>
       </XStack>
       <YStack px={11} pt={8} gap={6}>
-        {stats.wall.map((entry) => {
-          const age = entry.recordAt ? ageOf(entry.recordAt, stats.now).kind : null;
-          // A record that fell today or yesterday is still news: ringed, and tagged.
-          const fresh = age === "today" || age === "yesterday";
-          const target = wallTarget(entry, stats.now);
-          return (
-            <XStack
-              key={`${entry.exerciseId}:${entry.type}`}
-              testID="journal-wall-row"
-              onPress={() => router.push(`/exercises/${entry.exerciseId}` as never)}
-              accessibilityRole="button"
-              items="center"
-              gap={11}
-              p={8}
-              minH={48}
-              rounded={8}
-              bg="$surface2"
-              borderWidth={fresh ? 1 : 0}
-              borderColor="$gold700"
-              opacity={entry.best == null ? 0.8 : 1}
-              pressStyle={{ opacity: 0.85 }}
-            >
-              <NImage source={getExerciseThumb(entry.imagePath)} size={44} />
-              <YStack flex={1} minW={0}>
-                <XStack items="center" gap={6}>
-                  <NText fontWeight="500" fontSize={16} numberOfLines={1} style={{ flexShrink: 1 }}>
-                    {localizedName(
-                      {
-                        enName: entry.name.en,
-                        frName: entry.name.fr,
-                        deName: entry.name.de,
-                        esName: entry.name.es,
-                      },
-                      language,
-                    )}
-                  </NText>
-                  {fresh ? (
-                    <YStack bg="$gold800" rounded={6} px={7} py={1}>
-                      <NText fontSize={9.5} lineHeight={14} letterSpacing={0.8} color="$gold100">
-                        {t("journal.wall_new")}
-                      </NText>
-                    </YStack>
-                  ) : null}
-                </XStack>
-                <NMuted numberOfLines={1}>{wallSub(t, language, entry, stats.now)}</NMuted>
-              </YStack>
-              <YStack items="flex-end">
-                <NNum fontSize={24} lineHeight={26} color="$resourceGold">
-                  {entry.type === "time" ? formatHold(target) : number(language, target)}
-                </NNum>
-                <NKickerQuiet fontSize={9.5}>
-                  {entry.type === "time" ? t("journal.unit_hold") : t("journal.unit_reps")}
-                </NKickerQuiet>
-              </YStack>
-            </XStack>
-          );
-        })}
+        {stats.wall.map((entry) => (
+          <WallRow key={`${entry.exerciseId}:${entry.type}`} entry={entry} now={stats.now} />
+        ))}
       </YStack>
     </YStack>
   );
@@ -353,10 +323,14 @@ function FlameBlock({ stats }: { stats: JournalStats }) {
     <NBlock testID="journal-flame" mx={11} mt={17}>
       <XStack items="center" gap={8}>
         <Flame size={18} color={flame.litUntil ? "$resourceGold" : "$muted"} strokeWidth={2.5} />
-        <NNum fontSize={19} lineHeight={24}>
-          {flame.current}
-          <NMuted fontSize={12}> {t("journal.flame_lit", { count: flame.current })}</NMuted>
-        </NNum>
+        {/* "0 days lit" beside today's gold dot told a hero with one session that nothing counted.
+            Until the flame is lit, the dots and the note below say where she stands. */}
+        {flame.current === 0 && flame.inWindow > 0 ? null : (
+          <NNum fontSize={19} lineHeight={24}>
+            {flame.current}
+            <NMuted fontSize={12}> {t("journal.flame_lit", { count: flame.current })}</NMuted>
+          </NNum>
+        )}
         <XStack flex={1} gap={4} justify="flex-end" accessibilityElementsHidden>
           {stats.week.map((day, index) => (
             <DayMark
@@ -491,7 +465,8 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
         <Figure value={formatHoursMinutes(t, current.questSeconds)}>
           <NMuted fontSize={11}>
             {/* Over the quests that kept a duration: a row with none would pull the average down. */}
-            {current.timedQuests > 0
+            {/* An average of one quest is that quest: "4 min each" beside a single run. */}
+            {current.timedQuests > 1
               ? t("journal.fig_time_each", {
                   avg: formatHoursMinutes(t, current.questSeconds / current.timedQuests),
                 })
@@ -585,9 +560,6 @@ function DayMark({
   );
 }
 
-/** Sessions in thirty days before the balance is worth a verdict. */
-const MIN_BALANCE_SESSIONS = 3;
-
 const WORK_FILLS = ["$resourceGold", "$gold600", "$gold700", "$gold800"] as const;
 
 function WorkBlock({ stats }: { stats: JournalStats }) {
@@ -596,26 +568,9 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
   const language = useSettingsStore((s) => s.language);
   const { balance } = stats;
   if (balance.totalVolume === 0) return null;
-  // Below three sessions a share is one quest's shape, and "Shoulders (0%) is behind" on a first
-  // day is a verdict on nothing.
-  const early = balance.totalSessions < MIN_BALANCE_SESSIONS;
-
+  const verdict = workVerdict(t, language, balance);
   const shown = balance.muscles.filter((m) => m.percentage > 0);
   const label = (code: keyof typeof MUSCLE_LABELS) => MUSCLE_LABELS[code][language];
-  // Every muscle behind, each with its share: a verdict that named one muscle under a gold "8%"
-  // that belonged to another sent two auditors to the wrong number.
-  const behind = balance.muscles
-    .filter((m) => balance.weakAreas.includes(m.muscle))
-    .map((m, index) =>
-      t("journal.muscle_share", {
-        muscle: index === 0 ? label(m.muscle) : inSentence(label(m.muscle), language),
-        share: formatShare(language, m.percentage),
-      }),
-    );
-  const behindList =
-    behind.length <= 1
-      ? (behind[0] ?? "")
-      : t("journal.list_and", { a: behind.slice(0, -1).join(", "), b: behind.at(-1) });
 
   return (
     <NBlock testID="journal-work" mx={11} mt={6}>
@@ -659,11 +614,7 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
       </XStack>
       <XStack mt={11} flexWrap="wrap" items="baseline" gap={6}>
         <NText fontSize={12.5} lineHeight={18}>
-          {early
-            ? t("journal.work_early", { count: MIN_BALANCE_SESSIONS })
-            : behind.length > 0
-              ? t("journal.work_behind", { count: behind.length, muscles: behindList })
-              : t("journal.work_balanced")}
+          {verdict.text}
         </NText>
         <NText
           testID="journal-work-link"
@@ -673,7 +624,7 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
           onPress={() => router.push("/journal/balance" as never)}
           accessibilityRole="link"
         >
-          {!early && behind.length > 0 ? t("journal.work_fix") : t("journal.work_see")} →
+          {verdict.behind ? t("journal.work_fix") : t("journal.work_see")} →
         </NText>
       </XStack>
     </NBlock>

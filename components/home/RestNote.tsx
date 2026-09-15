@@ -1,11 +1,10 @@
-import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { Moon } from "@/components/icons";
 import { pickDailyVariant, REST_SUGGESTION_MESSAGES } from "@/constants/restMessages";
 import { dayKey } from "@/db/dates";
 import { getRestSuggestion, type RestSuggestion } from "@/db/restSuggestions";
-import { reportError } from "@/src/reportError";
+import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 import { useSettingsStore } from "@/stores/settings";
 
 /**
@@ -19,23 +18,16 @@ export function RestNote() {
   const language = useSettingsStore((s) => s.language);
   const [suggestion, setSuggestion] = useState<RestSuggestion | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      let cancelled = false;
-
-      getRestSuggestion()
-        .then((result) => {
-          if (!cancelled) setSuggestion(result.shouldRest ? result : null);
-        })
-        .catch((error) => {
-          // The line simply does not appear; nothing else on Home depends on it.
-          reportError("home.restNote", error);
-        });
-
-      return () => {
-        cancelled = true;
-      };
-    }, []),
+  // A failed read leaves the line out; nothing else on Home depends on it.
+  useReloadOnChange(
+    "home.restNote",
+    useCallback(
+      (isCancelled: () => boolean) =>
+        getRestSuggestion().then((result) => {
+          if (!isCancelled()) setSuggestion(result.shouldRest ? result : null);
+        }),
+      [],
+    ),
   );
 
   // `reason` is never "none" here — getRestSuggestion() only sets suggestion when shouldRest is

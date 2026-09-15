@@ -20,6 +20,7 @@ import { formatDuration } from "@/db/estimate";
 import { isOutingSession, outingGoal, withOutingGoal } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
+import { formatTarget } from "@/db/targets";
 import type { OutingGoal } from "@/src/gps/track";
 import { localizedName } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -32,6 +33,7 @@ type SlotStepperProps = {
   singleControl: boolean;
   label: string;
   hint?: string;
+  language: AppLanguage;
   onChangeTarget: (value: number) => void;
 };
 
@@ -42,7 +44,14 @@ type SlotStepperProps = {
  * the distance control is rendered once in `QuestConfigCard` itself, never inside this loop — a
  * quest with two outdoor movements otherwise showed the same distance stepper twice.
  */
-function SlotTargetStepper({ qex, singleControl, label, hint, onChangeTarget }: SlotStepperProps) {
+function SlotTargetStepper({
+  qex,
+  singleControl,
+  label,
+  hint,
+  language,
+  onChangeTarget,
+}: SlotStepperProps) {
   return (
     <Stepper
       // The movement's name, unless it is the only one: on a one-movement quest
@@ -55,10 +64,11 @@ function SlotTargetStepper({ qex, singleControl, label, hint, onChangeTarget }: 
       min={targetRangeFor(qex.target.type, qex.exercise.style).min}
       max={targetRangeFor(qex.target.type, qex.exercise.style).max}
       step={qex.target.type === "time" ? REST_STEP : 1}
-      // The panel opens by itself on a one-movement quest, so this control is now
-      // the first thing an outing shows. It said "900s", which is the unit the
-      // stepper moves in and not the one a walk is measured in.
-      {...(qex.target.type === "time" ? { display: formatDuration } : {})}
+      // A hold reads as it does on the row above and in the session: "45s", then "1:00".
+      // An outing never reaches this stepper, its goal row is its control.
+      {...(qex.target.type === "time"
+        ? { display: (value: number) => formatTarget({ type: "time", value }, language) }
+        : {})}
       onChange={onChangeTarget}
     />
   );
@@ -94,7 +104,9 @@ function OutingGoalRow({
             : t("quests.config_duration", "Duration")}
         </Text>
         <Text fontWeight="700" fontSize={17} color="$primaryText">
-          {byDistance ? formatDistance(goal.metres, unit, language) : formatDuration(goal.seconds)}
+          {byDistance
+            ? formatDistance(goal.metres, unit, language)
+            : formatDuration(goal.seconds, language)}
         </Text>
       </XStack>
       <AppButton variant="outline" fontSize={16} onPress={onOpen}>
@@ -294,6 +306,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                       singleControl={singleControl}
                       label={slotLabel(qex)}
                       hint={unitWord(qex.target.type)}
+                      language={language}
                       onChangeTarget={(value) => setTarget(qex.id, value)}
                     />
                   )}

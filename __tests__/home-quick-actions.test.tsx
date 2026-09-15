@@ -30,6 +30,13 @@ const mockPermissionStatus = jest.fn();
 const WHY =
   "Bati reads your location during an outing, and it stays on this phone. Android is about to ask.";
 
+// Every focus reads as a fresh write, so these tests load on each one as they always did. The
+// gate itself is `__tests__/use-reload-on-change.test.ts`'s.
+let mockChanges = 0;
+jest.mock("@/db/changeVersion", () => ({
+  getChangeVersion: async () => String(mockChanges++),
+}));
+
 const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -49,7 +56,9 @@ jest.mock("@/stores/settings", () => ({
 
 // Read at call time, so a test may put a live session in the store before mounting.
 jest.mock("@/stores/session", () => ({
-  useSessionStore: (selector: (s: unknown) => unknown) => selector(mockSession),
+  useSessionStore: Object.assign((selector: (s: unknown) => unknown) => selector(mockSession), {
+    getState: () => mockSession,
+  }),
 }));
 
 jest.mock("@/modules/bati-location", () => ({
@@ -75,7 +84,17 @@ jest.mock("react-native-safe-area-context", () => ({
 jest.mock("@/db/questConfig", () => ({
   loadConfiguredQuest: (questId: number, level?: string) => mockLoadConfiguredQuest(questId, level),
   getQuestConfig: () => Promise.resolve(null),
+  getAllQuestConfigs: () => Promise.resolve(new Map()),
+  indexExercises: () => ({}),
   saveQuestConfig: (...args: unknown[]) => mockSaveQuestConfig(...args),
+}));
+
+jest.mock("@/db/exercises", () => ({ listExercises: () => Promise.resolve([]) }));
+
+// The chip's goal comes off the template. That it is the goal the tap runs is held against the
+// real schema in `__tests__/db-change-version.test.ts`; here it is what the row does with it.
+jest.mock("@/db/preview", () => ({
+  previewOutingGoal: (quest: { id: number }) => mockPreviewGoal(quest.id),
 }));
 
 const mockListOutings = jest.fn();
@@ -96,6 +115,7 @@ const mockRequestPermission = jest.fn();
 const mockRequestNotificationPermission = jest.fn();
 const mockLoadConfiguredQuest = jest.fn();
 const mockSaveQuestConfig = jest.fn().mockResolvedValue(undefined);
+const mockPreviewGoal = jest.fn();
 
 /** The Warden's Round as the row holds it: a template and the movement it is made of. */
 function outing(id: number, frName: string, frTitle: string) {
@@ -148,6 +168,7 @@ beforeEach(() => {
   mockStartSession.mockClear();
   mockSaveQuestConfig.mockClear();
   mockSession.status = "idle";
+  mockPreviewGoal.mockReset().mockReturnValue(null);
   mockRequestPermission.mockReset().mockResolvedValue({ granted: true });
   mockRequestNotificationPermission.mockReset().mockResolvedValue({ granted: true });
   mockLoadConfiguredQuest
@@ -242,6 +263,7 @@ it("starts nothing when the position is refused, and says where the grant lives"
 
 it("writes the goal on the tile, and changes it from the tile without leaving", async () => {
   mockLoadConfiguredQuest.mockResolvedValue({ quest: WALK, level: "medium", config: null });
+  mockPreviewGoal.mockReturnValue({ type: "time", seconds: 900 });
 
   await renderRow();
 

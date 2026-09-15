@@ -1,5 +1,6 @@
 import { count, eq, sql } from "drizzle-orm";
 import { db, schema, transactionOrFallback } from "./client";
+import { updateStreakAfterSession } from "./streaks";
 
 /**
  * Dev-only history generator, driven from app/dev.tsx.
@@ -36,6 +37,7 @@ export async function countSeededSessions(): Promise<number> {
 /** Removes only the seeded rows; `completed_exercises` follows via ON DELETE CASCADE. */
 export async function clearSeededHistory(): Promise<void> {
   await db.delete(completedQuest).where(eq(completedQuest.notes, DEV_HISTORY_NOTE));
+  await updateStreakAfterSession();
 }
 
 export async function seedHistory(years: number): Promise<{
@@ -115,6 +117,11 @@ export async function seedHistory(years: number): Promise<{
     .from(completedExercises)
     .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
     .where(eq(completedQuest.notes, DEV_HISTORY_NOTE));
+
+  // The flame's cache is trusted for the day it was written, so history written under it would
+  // leave Home on the old flame while the Journal, which reads fresh, showed the new one: three
+  // auditors reported "4 days" on Home against "362 days lit" in the Journal on one database.
+  await updateStreakAfterSession();
 
   return { sessions: await countSeededSessions(), exercises: row?.c ?? 0 };
 }

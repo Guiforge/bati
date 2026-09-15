@@ -60,39 +60,40 @@ describe("a walk is not a workout, and is still a session", () => {
   }
 
   test("the hike does not take the workout records", async () => {
-    const { getLongestSession, getMostXpSession, getPersonalRecordsSummary } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const { getSessionBests } = require("../db/journal") as typeof import("../db/journal");
     theTestersJournal();
 
-    expect((await getLongestSession())?.value).toBe(1500);
-    expect((await getMostXpSession())?.value).toBe(120);
-    expect((await getPersonalRecordsSummary()).totalSessions).toBe(1);
+    // Lifetime's session records: the six-hour hike is neither the longest quest nor the richest.
+    const bests = await getSessionBests();
+    expect(bests.longest?.value).toBe(1500);
+    expect(bests.mostXp?.value).toBe(120);
   });
 
-  test("a hero who only walks still has a records card to look at", async () => {
-    const { getPersonalRecordsSummary } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
+  test("a hero who only walks still has figures to look at", async () => {
+    const { getPeriodFigures } = require("../db/journal") as typeof import("../db/journal");
     log({ id: 1, durationSeconds: 3600, outing: "walk", movingSeconds: 3400 });
     t.sqlite.exec("UPDATE completed_sessions SET leaguesM = 4500 WHERE id = 1");
 
-    const summary = await getPersonalRecordsSummary();
-    expect(summary.totalSessions).toBe(0);
-    // The card's guard reads this, not the count: zero workouts and a walk is something to show.
-    expect(summary.longestOuting?.value).toBe(4500);
+    const figures = await getPeriodFigures(null, new Date());
+    expect(figures.quests).toBe(0);
+    // Time in quests is training time: the hour outside is ground, not a quest's length.
+    expect(figures.questSeconds).toBe(0);
+    expect(figures.outings).toBe(1);
+    expect(figures.leaguesM).toBe(4500);
   });
 
-  test("the calendar, the trends and the recent history are all about training", async () => {
-    const { listWorkoutDayKeys, getWeeklyTrends, getRecentSessionHistory, getSessionAggregates } =
+  test("the month frieze and the recent history tell a walk from a workout", async () => {
+    const { getRecentSessionHistory, getSessionAggregates } =
       require("../db/completed") as typeof import("../db/completed");
+    const { getActivityDays } = require("../db/journal") as typeof import("../db/journal");
     theTestersJournal();
 
-    expect((await listWorkoutDayKeys()).size).toBe(1);
+    const days = [
+      ...(await getActivityDays(new Date(Date.now() - 3 * 86_400_000), new Date())).values(),
+    ];
+    expect(days.sort()).toEqual(["outing", "quest"]);
     expect((await getRecentSessionHistory()).length).toBe(1);
     expect((await getSessionAggregates()).totalSessions).toBe(1);
-    // Two weeks, summed: the workout is logged yesterday, and on a Monday yesterday is last week.
-    // A one-week window read 0 every Monday, which said nothing about the walk.
-    const trends = await getWeeklyTrends(2);
-    expect(trends.reduce((sum, week) => sum + week.sessionCount, 0)).toBe(1);
   });
 
   test("a daily walk does not read as overtraining", async () => {

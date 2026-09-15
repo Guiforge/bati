@@ -11,6 +11,7 @@ import { formatDuration } from "@/db/estimate";
 import type { DistanceUnit } from "@/db/preferences";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { OutingGoal } from "@/src/gps/track";
+import { useSettingsStore } from "@/stores/settings";
 
 /**
  * What a hero actually says out loud before going out: twenty minutes, half an hour, ten
@@ -58,6 +59,7 @@ type Props = {
 export function OutingGoalSheet({ open, onOpenChange, goal, unit, onPick }: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
+  const language = useSettingsStore((s) => s.language);
   const insets = useSafeAreaInsets();
   // The caller mounts this on open, so the initialiser is the reset: a hero who saved a distance
   // and came back lands on Distance rather than editing minutes `outingGoal` has already decided
@@ -98,7 +100,7 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, onPick }: Prop
       }))
     : DISTANCE_PRESETS_M[unit].map((metres) => ({
         key: metres,
-        label: formatDistance(metres, unit),
+        label: formatDistance(metres, unit, language),
         goal: { type: "distance", metres },
       }));
 

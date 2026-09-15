@@ -28,8 +28,8 @@ jest.mock("@/hooks/useHaptics", () => ({
 
 let mockUnit: "metric" | "imperial" = "metric";
 jest.mock("@/stores/settings", () => ({
-  useSettingsStore: (selector: (state: { distanceUnit: string }) => unknown) =>
-    selector({ distanceUnit: mockUnit }),
+  useSettingsStore: (selector: (state: { distanceUnit: string; language: string }) => unknown) =>
+    selector({ distanceUnit: mockUnit, language: "en" }),
 }));
 
 const session = (over: Partial<RecoverableSession> = {}): RecoverableSession => ({

@@ -537,7 +537,9 @@ export async function getAllAchievementsWithProgress(): Promise<AchievementProgr
   const streakInfo = await getStreakInfo();
   const bestStreak = streakInfo.best;
 
-  const climbedPaths = await countClimbedPaths();
+  // Mastery never falls back (see `countClimbedPaths`), so an unlocked path needs no second look at
+  // the whole journal.
+  const climbedPaths = unlockedMap.has("path_climbed") ? 1 : await countClimbedPaths();
 
   // Calculate progress for each achievement
   return achievementDefinitions.map((def) => {

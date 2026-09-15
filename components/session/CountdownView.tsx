@@ -158,7 +158,7 @@ export function CountdownView() {
           kicker={t("session.start_first")}
           instruction={describeExercise(first.exercise, language)}
           fallbackName={localizedName(first.exercise, language)}
-          target={formatTarget(first.target)}
+          target={formatTarget(first.target, language)}
           remainingSeconds={timed ? remainingSeconds : null}
           onGo={() => {
             selection();

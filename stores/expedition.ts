@@ -5,6 +5,7 @@ import { hasOutdoorSlot } from "@/db/expeditions";
 import { appendPoints, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
+import { i18n } from "@/i18n";
 import {
   addListener,
   ensureNotificationPermission,
@@ -200,7 +201,9 @@ function progressLine(track: TrackState, unit: DistanceUnit): string {
   const elapsed = formatClock(recordedDurationSeconds() * 1000);
   // `startedAt` is set by the first fix the gate accepts, so null is exactly "no sky yet" - the
   // same test the panel's status line makes.
-  const ground = track.startedAt === null ? acquiringWord : formatDistance(track.distanceM, unit);
+  // The notification's words come from i18n at `begin`, so its number follows the same language.
+  const ground =
+    track.startedAt === null ? acquiringWord : formatDistance(track.distanceM, unit, i18n.language);
   return `${elapsed} · ${ground}`;
 }
 

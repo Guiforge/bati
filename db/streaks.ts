@@ -127,10 +127,76 @@ function countInWindow(byDay: Map<number, number>, endDay: Date, lengthDays: num
   return total;
 }
 
-/** Is the flame lit on this day? Either this week is over quota, or the week before it was. */
-function isLit(byDay: Map<number, number>, day: Date, quota: number): boolean {
-  if (countInWindow(byDay, day, WINDOW_DAYS) >= quota) return true;
-  return countInWindow(byDay, shiftDays(day, -WINDOW_DAYS), WINDOW_DAYS) >= quota;
+const DAY_MS = 24 * 60 * 60 * 1000;
+/** How far past today the flame is read, for "lit until". */
+const LIT_FORECAST_DAYS = WINDOW_DAYS * 2;
+
+/**
+ * Every day from the first session to a fortnight past today, as a day index and a running total
+ * of sessions, so any window is one subtraction.
+ *
+ * The flame used to walk a `Date` per day and count each window by stepping back seven more: at
+ * five years of journal that was some fifty thousand `Date`s on the JS thread every time the
+ * Journal opened (perf audit, 2026-09-15). Day indices are rounded, not floored, because a day
+ * that crosses a clock change is 23 or 25 hours long.
+ */
+function flameTimeline(performedAt: Date[], quota: number, now: Date) {
+  let first = Number.POSITIVE_INFINITY;
+  for (const date of performedAt) first = Math.min(first, date.getTime());
+  const firstDay = startOfDay(new Date(first)).getTime();
+  const indexOf = (date: Date) => Math.round((startOfDay(date).getTime() - firstDay) / DAY_MS);
+
+  const today = indexOf(now);
+  const length = Math.max(today, 0) + LIT_FORECAST_DAYS + 1;
+  const totals = new Int32Array(length + 1);
+  for (const date of performedAt) {
+    const day = indexOf(date);
+    if (day < length) totals[day + 1] = (totals[day + 1] ?? 0) + 1;
+  }
+  for (let i = 1; i <= length; i++) totals[i] = (totals[i] ?? 0) + (totals[i - 1] ?? 0);
+
+  /** Sessions in the seven days ending on `day`. */
+  const inWindow = (day: number): number =>
+    day < 0
+      ? 0
+      : (totals[Math.min(day, length - 1) + 1] ?? 0) -
+        (totals[Math.max(0, day - WINDOW_DAYS + 1)] ?? 0);
+
+  return {
+    today,
+    inWindow,
+    /** Is the flame lit on this day? Either this week is over quota, or the week before it was. */
+    isLit: (day: number) => inWindow(day) >= quota || inWindow(day - WINDOW_DAYS) >= quota,
+    dateOf: (day: number) => shiftDays(new Date(firstDay), day),
+  };
+}
+
+type FlameTimeline = ReturnType<typeof flameTimeline>;
+
+/** One pass from the first session to today: the runs, and where the best one ended. */
+function walkFlame(flame: FlameTimeline) {
+  let run = 0;
+  let best = 0;
+  let bestEnd = -1;
+  let litDays = 0;
+  let litDaysLast30 = 0;
+  for (let day = 0; day <= flame.today; day++) {
+    if (!flame.isLit(day)) {
+      run = 0;
+      continue;
+    }
+    run++;
+    litDays++;
+    if (day > flame.today - 30) litDaysLast30++;
+    // `>=` so a tie keeps the latest run: it is the one the hero remembers.
+    if (run >= best) {
+      best = run;
+      bestEnd = day;
+    }
+  }
+  // Nothing before the first session is lit, so the run still going today is the current one.
+  const current = flame.isLit(flame.today) ? run : 0;
+  return { current, best, bestEnd, litDays, litDaysLast30 };
 }
 
 export function calculateStreakFromSessions(
@@ -142,31 +208,12 @@ export function calculateStreakFromSessions(
     return { current: 0, best: 0, isActive: false, inWindow: 0 };
   }
 
-  const byDay = groupByDay(performedAt);
-  const today = startOfDay(now);
-  const firstDay = startOfDay(new Date(Math.min(...performedAt.map((d) => d.getTime()))));
-
-  // Current: walk back from today for as long as the flame stayed lit.
-  let current = 0;
-  for (let day = today; isLit(byDay, day, quota); day = shiftDays(day, -1)) {
-    current++;
-    // Nothing before the first session can be lit, so the walk always terminates.
-    if (day.getTime() <= firstDay.getTime()) break;
-  }
-
-  // Best: one pass over every day since the hero's first session.
-  let best = 0;
-  let run = 0;
-  for (let day = firstDay; day.getTime() <= today.getTime(); day = shiftDays(day, 1)) {
-    run = isLit(byDay, day, quota) ? run + 1 : 0;
-    best = Math.max(best, run);
-  }
+  const flame = flameTimeline(performedAt, quota, now);
+  const { current, best } = walkFlame(flame);
 
   // What today's flame is standing on, and what tomorrow's will be judged by. `isLit` reads the
   // same window, so this is the count behind the answer rather than a second opinion about it.
-  const inWindow = countInWindow(byDay, today, WINDOW_DAYS);
-
-  return { current, best, isActive: current > 0, inWindow };
+  return { current, best, isActive: current > 0, inWindow: flame.inWindow(flame.today) };
 }
 
 /**
@@ -315,4 +362,90 @@ export function updateStreakAfterSession(): Promise<StreakInfo> {
     if (streakMemo?.promise === promise) streakMemo = null;
   });
   return promise;
+}
+
+/** What the Journal says about the flame, beyond the three numbers the cache holds. */
+export type FlameDetail = {
+  current: number;
+  best: number;
+  /** The last lit day of the best run. Null with no run at all. */
+  bestEndedOn: Date | null;
+  /** True when the best run is the one still burning: "ended" would be a lie about it. */
+  bestIsCurrent: boolean;
+  inWindow: number;
+  quota: number;
+  /**
+   * The last day the flame stays lit if nothing more is logged. Null when it is out today.
+   * It is what a rest day is allowed to say: "the flame holds until Thursday".
+   */
+  litUntil: Date | null;
+  /** Every lit day since the first session. */
+  litDays: number;
+  /** Lit days among the last thirty, today included. */
+  litDaysLast30: number;
+};
+
+/**
+ * The whole flame, walked once from the first session to today.
+ *
+ * Built on the same timeline and walk as `calculateStreakFromSessions`, so the two cannot disagree
+ * about which day burned: this only reads further (when the best run ended, when the current one
+ * will) where that one stops at three numbers.
+ */
+export function describeFlame(performedAt: Date[], quota: number, now = new Date()): FlameDetail {
+  if (performedAt.length === 0) {
+    return {
+      current: 0,
+      best: 0,
+      inWindow: 0,
+      quota,
+      bestEndedOn: null,
+      bestIsCurrent: false,
+      litUntil: null,
+      litDays: 0,
+      litDaysLast30: 0,
+    };
+  }
+
+  const flame = flameTimeline(performedAt, quota, now);
+  const { current, best, bestEnd, litDays, litDaysLast30 } = walkFlame(flame);
+
+  let litUntil: Date | null = null;
+  if (current > 0) {
+    // Future days hold no sessions, so this is the flame running on what is already banked.
+    let last = flame.today;
+    while (last < flame.today + LIT_FORECAST_DAYS && flame.isLit(last + 1)) last++;
+    litUntil = flame.dateOf(last);
+  }
+
+  return {
+    current,
+    best,
+    inWindow: flame.inWindow(flame.today),
+    quota,
+    bestEndedOn: bestEnd >= 0 ? flame.dateOf(bestEnd) : null,
+    bestIsCurrent: current > 0 && bestEnd === flame.today,
+    litUntil,
+    litDays,
+    litDaysLast30,
+  };
+}
+
+/**
+ * The Journal's flame, read fresh rather than from the day's cache: it is one screen, opened on
+ * purpose, and the cache only knows three of the numbers it needs.
+ */
+export async function getFlameDetail(now = new Date()): Promise<FlameDetail> {
+  const [quota, rows] = await Promise.all([
+    getWeeklyQuota(),
+    db
+      .select({ performedAt: completedQuest.performedAt })
+      .from(completedQuest)
+      .where(countsAsSession()),
+  ]);
+  return describeFlame(
+    rows.map((r) => r.performedAt),
+    quota,
+    now,
+  );
 }

@@ -235,7 +235,7 @@ export function getBalanceRecommendation(balance: MuscleBalance): {
     status: "needs_attention",
     message: {
       en: `Consider adding more ${enNames} exercises.`,
-      fr: `Pense à ajouter plus d'exercices pour ${frNames}.`,
+      fr: `Pense à travailler davantage : ${frNames}.`,
       de: `Nimm mehr Übungen für ${deNames} dazu.`,
       es: `Prueba a añadir más ejercicios de ${esNames}.`,
     },

@@ -11,37 +11,37 @@ import { RULES } from "@/src/gps/track";
 
 describe("formatDistance", () => {
   test("metric reads metres below a kilometre and kilometres above", () => {
-    expect(formatDistance(0, "metric")).toBe("0 m");
-    expect(formatDistance(100, "metric")).toBe("100 m");
-    expect(formatDistance(999, "metric")).toBe("999 m");
-    expect(formatDistance(1000, "metric")).toBe("1.00 km");
-    expect(formatDistance(42_195, "metric")).toBe("42.20 km");
+    expect(formatDistance(0, "metric", "en")).toBe("0 m");
+    expect(formatDistance(100, "metric", "en")).toBe("100 m");
+    expect(formatDistance(999, "metric", "en")).toBe("999 m");
+    expect(formatDistance(1000, "metric", "en")).toBe("1.00 km");
+    expect(formatDistance(42_195, "metric", "en")).toBe("42.20 km");
   });
 
   /** Rounding happens before the threshold: 999.6 m must not print as "1000 m". */
   test("the metric cut-over is on the rounded metre, not the raw one", () => {
-    expect(formatDistance(999.4, "metric")).toBe("999 m");
-    expect(formatDistance(999.6, "metric")).toBe("1.00 km");
+    expect(formatDistance(999.4, "metric", "en")).toBe("999 m");
+    expect(formatDistance(999.6, "metric", "en")).toBe("1.00 km");
   });
 
   test("imperial reads feet below a mile and miles above", () => {
-    expect(formatDistance(0, "imperial")).toBe("0 ft");
-    expect(formatDistance(100, "imperial")).toBe("328 ft");
-    expect(formatDistance(999, "imperial")).toBe("3278 ft");
+    expect(formatDistance(0, "imperial", "en")).toBe("0 ft");
+    expect(formatDistance(100, "imperial", "en")).toBe("328 ft");
+    expect(formatDistance(999, "imperial", "en")).toBe("3278 ft");
     // 1000 m is well under a mile, so it is still feet — the unit switches at the mile, not at
     // the kilometre. Getting this wrong is how "1.00 mi" ends up meaning a kilometre.
-    expect(formatDistance(1000, "imperial")).toBe("3281 ft");
+    expect(formatDistance(1000, "imperial", "en")).toBe("3281 ft");
   });
 
   test("one mile is 1609.344 m, exactly, and the boundary sits on it", () => {
-    expect(formatDistance(1609.344, "imperial")).toBe("1.00 mi");
-    expect(formatDistance(1609.0, "imperial")).toBe("5279 ft");
-    expect(formatDistance(42_195, "imperial")).toBe("26.22 mi");
+    expect(formatDistance(1609.344, "imperial", "en")).toBe("1.00 mi");
+    expect(formatDistance(1609.0, "imperial", "en")).toBe("5279 ft");
+    expect(formatDistance(42_195, "imperial", "en")).toBe("26.22 mi");
   });
 
   test("a distance that is not a number says so instead of printing NaN", () => {
-    expect(formatDistance(Number.NaN, "metric")).toBe("...");
-    expect(formatDistance(-1, "imperial")).toBe("...");
+    expect(formatDistance(Number.NaN, "metric", "en")).toBe("...");
+    expect(formatDistance(-1, "imperial", "en")).toBe("...");
   });
 });
 
@@ -123,5 +123,16 @@ describe("formatElevation", () => {
   test("refuses what is not a height", () => {
     expect(formatElevation(Number.NaN, "metric")).toBe("...");
     expect(formatElevation(-3, "metric")).toBe("...");
+  });
+});
+
+describe("formatDistance in a language", () => {
+  const { formatDistance: format } =
+    require("../constants/distanceFormat") as typeof import("../constants/distanceFormat");
+
+  it("writes the language's decimal separator", () => {
+    expect(format(13_200, "metric", "fr")).toMatch(/^13,20\skm$/);
+    expect(format(13_200, "metric", "de")).toBe("13,20 km");
+    expect(format(13_200, "metric", "en")).toBe("13.20 km");
   });
 });

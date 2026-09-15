@@ -1,31 +1,24 @@
 import { LegendList } from "@legendapp/list/react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshControl, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
-import { AppButton } from "@/components/common/AppButton";
-import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { BarChart2, List } from "@/components/icons";
-import { AchievementsCard } from "@/components/journal/AchievementsCard";
-import { BossesCard } from "@/components/journal/BossesCard";
-import { JournalStats } from "@/components/journal/JournalStats";
-import { MonthlyCalendarCard } from "@/components/journal/MonthlyCalendarCard";
-import { MuscleBalanceCard } from "@/components/journal/MuscleBalanceCard";
-import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
-import { ProgressionCard } from "@/components/journal/ProgressionCard";
+import { Skeleton } from "@/components/common/Skeleton";
+import { NMuted, NSeg, NText, NTitle } from "@/components/journal/nocturne";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
-import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
+import { StatsView } from "@/components/journal/stats/StatsView";
+import { useJournalStats } from "@/components/journal/stats/useJournalStats";
 import { getQuestThumb } from "@/constants/assetMap";
-import { getWeekStart } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
 import type { StoredRecord } from "@/db/completed";
-import { getJournalStats, type JournalStatsSummary, listCompletedSessions } from "@/db/completed";
+import { listCompletedSessions } from "@/db/completed";
 import { listExercises } from "@/db/exercises";
 import { previewPathsFor } from "@/db/gps";
+import { getJournalVersion } from "@/db/journal";
 import { listQuestTemplates } from "@/db/quests";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -35,60 +28,20 @@ type TabType = "history" | "stats";
 
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
 const journalKey = (entry: JournalEntry) => String(entry.id);
-const ListGap = () => <YStack height={12} />;
+/** Sessions read per page of history. */
+const HISTORY_PAGE = 100;
+const ListGap = () => <YStack height={8} />;
 
-// Mirrors the first cards' reserved heights so the swap to real content doesn't shuffle.
+/** Reserves the wall's first screen, so the swap to real content does not shuffle. */
 const StatsSkeleton = () => (
-  <>
-    <SkeletonCard>
-      <Skeleton height={104} />
-    </SkeletonCard>
-    <SkeletonCard>
-      <Skeleton height={104} />
-    </SkeletonCard>
-    <SkeletonCard>
-      <Skeleton height={296} />
-    </SkeletonCard>
-  </>
+  <YStack px={11} gap={6}>
+    <Skeleton height={44} bg="$surface2" />
+    {[0, 1, 2, 3].map((i) => (
+      <Skeleton key={i} height={60} bg="$surface2" />
+    ))}
+    <Skeleton height={70} bg="$surface2" />
+  </YStack>
 );
-
-function TabButton({
-  tab,
-  icon,
-  label,
-  activeTab,
-  onSelect,
-}: {
-  tab: TabType;
-  icon: React.ReactNode;
-  label: string;
-  activeTab: TabType;
-  onSelect: (tab: TabType) => void;
-}) {
-  const isActive = activeTab === tab;
-  return (
-    <AppButton
-      testID={`journal-tab-${tab}`}
-      fullWidth={false}
-      flex={1}
-      height={48}
-      bg={isActive ? "$surface2" : "$surface"}
-      borderColor={isActive ? "$primary" : "$borderStrong"}
-      borderWidth={1}
-      rounded="$5"
-      onPress={() => onSelect(tab)}
-      accessibilityState={{ selected: isActive }}
-      pressStyle={{ opacity: 0.9 }}
-    >
-      <XStack items="center" gap="$2">
-        {icon}
-        <Text color="$text" fontWeight="700" fontSize={14}>
-          {label}
-        </Text>
-      </XStack>
-    </AppButton>
-  );
-}
 
 /**
  * What the badge says it broke, or nothing.
@@ -105,12 +58,22 @@ function recordLabel(
   names: ReadonlyMap<number, string>,
   t: TFunction,
 ): string | null {
-  const first = records[0];
+  // A movement first: a first session also sets "longest", and the badge said so instead of naming
+  // the push-ups it had just beaten.
+  const first = records.find((record) => record.e != null) ?? records[0];
   if (!first) return null;
   if (first.e != null) return names.get(first.e) ?? null;
   return t(`journal.record_${first.t}`, { defaultValue: "" }) || null;
 }
 
+/**
+ * The Journal: a two-segment switch and the page under it.
+ *
+ * Redrawn on 2026-09-15 (design project "Journal Bati", option 3c: Nocturne's structure, Bati's
+ * colours). The header is a word
+ * and a pill, where it used to be a 32 px title, a subtitle and two framed buttons before the first
+ * number. The stats page is `StatsView`; History keeps its list.
+ */
 export default function JournalScreen() {
   useScreenGuide("guide_journal");
   useAmbientVisit("menu_visit");
@@ -121,60 +84,41 @@ export default function JournalScreen() {
   const language = useSettingsStore((s) => s.language);
 
   const [history, setHistory] = useState<JournalEntry[]>([]);
-  // Read apart from the list, and over the whole table: every tile on the stats tab says
-  // "Total", and the list is one page of a history that can be years long.
-  const [stats, setStats] = useState<JournalStatsSummary | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const loadingMore = useRef(false);
+  /** The Journal version and language the list was last read under. */
+  const shownVersion = useRef<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("stats");
-  // The stats tab mounts 8 cards that each fire their own DB query. Defer that burst until after
-  // the tab-switch/navigation interaction settles so it doesn't jank the tap frame.
-  const [statsReady, setStatsReady] = useState(false);
+  const { stats, reload: reloadStats } = useJournalStats();
 
-  useEffect(() => {
-    if (activeTab !== "stats" || history.length === 0) {
-      setStatsReady(false);
-      return;
-    }
-    // ponytail: defers one frame, not until every animation settles like the
-    // deprecated InteractionManager did. If the stats tab janks on switch,
-    // upgrade to requestIdleCallback (untyped in RN 0.86, needs a cast).
-    const frame = requestAnimationFrame(() => setStatsReady(true));
-    return () => cancelAnimationFrame(frame);
-  }, [activeTab, history.length]);
-
-  const loadHistory = useCallback(async () => {
-    try {
-      setLoading(true);
-      // Fetch sessions and quest templates to resolve titles
+  /** One page of history, ready to draw. */
+  const readPage = useCallback(
+    async (offset: number, limit = HISTORY_PAGE): Promise<JournalEntry[]> => {
       // `listExercises` is promise-cached, so the catalogue is free after the first read anywhere
       // in the app. It is here to name the movement a record belongs to, which is the difference
       // between a badge that says "PR" and one that says "Wall Push-Up".
-      const [sessions, quests, totals, exercises] = await Promise.all([
-        listCompletedSessions(100),
+      const [sessions, quests, exercises] = await Promise.all([
+        listCompletedSessions(limit, offset),
         listQuestTemplates(),
-        getJournalStats(getWeekStart(language)),
         listExercises(),
       ]);
       const exerciseNames = new Map(exercises.map((e) => [e.id, localizedName(e, language)]));
-      setStats(totals);
 
-      // One read for the whole page's runs, not one per card. Only the outings are asked for:
-      // every workout in the journal has no points, and `previewPathsFor` would scan for them.
+      // One read for the page's runs, not one per row. Only the outings are asked for: every
+      // workout in the journal has no points, and `previewPathsFor` would scan for them.
       const traces = await previewPathsFor(
         sessions.flatMap((s) => (s.outing !== null && s.uuid ? [s.uuid] : [])),
       );
 
       const questMap = new Map(quests.map((q) => [q.id, q]));
 
-      const entries: JournalEntry[] = sessions.map((s) => {
+      return sessions.map((s) => {
         const quest = s.questId ? questMap.get(s.questId) : null;
-        const title = quest
-          ? localizedTitle(quest, language)
-          : t("quests.not_found", "Unknown Quest");
-
         return {
           id: s.id,
-          questTitle: title,
+          // A deleted quest is not the hero's mistake, so it is never "not found" here.
+          questTitle: quest ? localizedTitle(quest, language) : t("journal.own_quest"),
           cover: getQuestThumb(quest?.imagePath),
           performedAt: s.performedAt,
           durationSeconds: s.durationSeconds,
@@ -188,40 +132,73 @@ export default function JournalScreen() {
           recordLabel: recordLabel(s.records, exerciseNames, t),
         };
       });
+    },
+    [language, t],
+  );
 
-      setHistory(entries);
+  /**
+   * The list, re-read only when the Journal changed or `force` says so. Everything already scrolled
+   * through is read back in one go, so a return from a session keeps the hero's place.
+   */
+  const loadHistory = useCallback(
+    async (force = false) => {
+      try {
+        const version = `${await getJournalVersion()}|${language}`;
+        if (!force && version === shownVersion.current) return;
+        const limit = Math.max(history.length, HISTORY_PAGE);
+        const page = await readPage(0, limit);
+        shownVersion.current = version;
+        setHistory(page);
+        setHasMore(page.length === limit);
+      } catch (error) {
+        reportError("journal.loadHistory", error);
+      } finally {
+        setHistoryLoaded(true);
+      }
+    },
+    [history.length, language, readPage],
+  );
+
+  /**
+   * The next page, when the list reaches its end. The history used to stop at the hundredth session,
+   * and a veteran could not reach the session a two-year-old record fell in.
+   */
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loadingMore.current) return;
+    loadingMore.current = true;
+    try {
+      const page = await readPage(history.length);
+      setHistory((previous) => [...previous, ...page]);
+      setHasMore(page.length === HISTORY_PAGE);
     } catch (error) {
-      // The journal renders its empty state either way; without this, a read that keeps
-      // failing is indistinguishable from a hero who has not trained yet.
-      reportError("journal.loadHistory", error);
+      reportError("journal.loadMoreHistory", error);
     } finally {
-      setLoading(false);
+      loadingMore.current = false;
     }
-  }, [language, t]);
+  }, [hasMore, history.length, readPage]);
 
+  // Only once History is shown: the tab opens on Stats, and reading a page of sessions it does not
+  // draw doubled the JS work of the Journal's first paint (perf audit, 2026-09-15).
   useFocusEffect(
     useCallback(() => {
+      if (activeTab !== "history") return;
       loadHistory().catch((e) => reportError("journal.history", e));
-    }, [loadHistory]),
+    }, [activeTab, loadHistory]),
   );
 
   const [refreshing, setRefreshing] = useState(false);
-  // The stats cards each own their fetch; bumping this key remounts them so a pull refreshes
-  // everything, not just the session list.
-  const [refreshKey, setRefreshKey] = useState(0);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    setRefreshKey((k) => k + 1);
-    await loadHistory();
+    await Promise.all([loadHistory(true), reloadStats()]);
     setRefreshing(false);
-  }, [loadHistory]);
+  }, [loadHistory, reloadStats]);
 
   const refreshControl = (
     <RefreshControl
       refreshing={refreshing}
       onRefresh={onRefresh}
       tintColor={rawColors.textSecondary}
-      colors={[rawColors.primary]}
+      colors={[rawColors.resourceGold]}
       progressBackgroundColor={rawColors.surface2}
     />
   );
@@ -234,112 +211,65 @@ export default function JournalScreen() {
   );
 
   return (
-    <YStack testID="journal-screen" flex={1} bg="$background">
-      <YStack pt={insets.top + 12} px="$4" pb="$3" gap="$4">
-        <YStack>
-          <H2 fontWeight="700" fontSize={32} color="$text">
-            {t("journal.title", "Quest Journal")}
-          </H2>
-          <Paragraph color="$textSecondary" fontWeight="700">
-            {t("journal.subtitle", "Your heroic history")}
-          </Paragraph>
-        </YStack>
-
-        {/* Tab Navigation */}
-        {history.length > 0 && (
-          <XStack gap="$2">
-            <TabButton
-              tab="stats"
-              icon={<BarChart2 size={16} color="$text" opacity={activeTab === "stats" ? 1 : 0.7} />}
-              label={t("journal.tab_stats", "Stats")}
-              activeTab={activeTab}
-              onSelect={setActiveTab}
-            />
-            <TabButton
-              tab="history"
-              icon={<List size={16} color="$text" opacity={activeTab === "history" ? 1 : 0.7} />}
-              label={t("journal.tab_history", "History")}
-              activeTab={activeTab}
-              onSelect={setActiveTab}
-            />
-          </XStack>
-        )}
-      </YStack>
-
-      {activeTab === "history" && history.length > 0 ? (
-        <LegendList
-          data={history}
-          renderItem={renderHistoryItem}
-          keyExtractor={journalKey}
-          ItemSeparatorComponent={ListGap}
-          recycleItems
-          estimatedItemSize={100}
-          refreshControl={refreshControl}
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingBottom: insets.bottom + 20,
-          }}
-          showsVerticalScrollIndicator={false}
+    <YStack testID="journal-screen" flex={1} bg="$bgDark">
+      <XStack pt={insets.top + 11} px={11} pb={11} items="center" justify="space-between">
+        <NTitle>{t("journal.title")}</NTitle>
+        <NSeg
+          value={activeTab}
+          onChange={setActiveTab}
+          options={[
+            { value: "stats", label: t("journal.tab_stats"), testID: "journal-tab-stats" },
+            { value: "history", label: t("journal.tab_history"), testID: "journal-tab-history" },
+          ]}
         />
+      </XStack>
+
+      {activeTab === "history" ? (
+        history.length > 0 ? (
+          <LegendList
+            data={history}
+            renderItem={renderHistoryItem}
+            keyExtractor={journalKey}
+            ItemSeparatorComponent={ListGap}
+            recycleItems
+            estimatedItemSize={100}
+            refreshControl={refreshControl}
+            onEndReached={() => {
+              loadMore().catch((e) => reportError("journal.loadMoreHistory", e));
+            }}
+            onEndReachedThreshold={0.5}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingHorizontal: 11, paddingBottom: insets.bottom + 20 }}
+            showsVerticalScrollIndicator={false}
+          />
+        ) : historyLoaded ? (
+          <YStack
+            testID="journal-history-empty"
+            mx={11}
+            mt={17}
+            p={17}
+            rounded={8}
+            borderWidth={1}
+            borderStyle="dashed"
+            borderColor="$glassBorder"
+            items="center"
+            gap={8}
+          >
+            <NText fontWeight="500" fontSize={16}>
+              {t("journal.history_empty_title")}
+            </NText>
+            <NMuted fontSize={13} lineHeight={20} style={{ textAlign: "center" }}>
+              {t("journal.history_empty_body")}
+            </NMuted>
+          </YStack>
+        ) : null
       ) : (
         <ScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingBottom: insets.bottom + 20,
-            gap: 12,
-          }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
           showsVerticalScrollIndicator={false}
           refreshControl={refreshControl}
         >
-          {loading && history.length === 0 ? (
-            <StatsSkeleton />
-          ) : history.length === 0 ? (
-            <YStack items="center" justify="center" mt="$10" gap="$4">
-              <Text fontSize={40}>📜</Text>
-              <H2 fontSize={20} style={{ textAlign: "center" }} color="$text">
-                {t("journal.empty_title", "No tales yet")}
-              </H2>
-              <Paragraph style={{ textAlign: "center" }} color="$textSecondary">
-                {t("journal.empty_subtitle", "Complete quests to fill your journal.")}
-              </Paragraph>
-              <AppButton
-                testID="journal-empty-cta"
-                fullWidth={false}
-                onPress={() => router.push("/(tabs)/quests" as never)}
-              >
-                {t("journal.empty_cta", "Browse quests")}
-              </AppButton>
-            </YStack>
-          ) : !statsReady ? (
-            <StatsSkeleton />
-          ) : (
-            /**
-             * Ordered so that something about getting *better* is inside the first screen.
-             *
-             * It used to open with six blocks that all answered "did I show up": the streak, the
-             * lifetime tiles, Recent Activity, Workout Days, the level bar, the difficulty split.
-             * The only one that said whether the hero had improved was the next rung, eleventh of
-             * thirteen and five screens down. The design audit of 2026-09-10 counted them.
-             *
-             * Four are gone rather than moved. Recent Activity restated the calendar and the
-             * trend badges, and disagreed with the calendar about the week. Workout Days is flat
-             * by construction for anyone consistent. UserLevelCard was Home's own header drawn a
-             * second time. The difficulty split was three years in one bar with no time axis, so
-             * the one thing it could prove, that the hero moved up, was the one it could not show.
-             */
-            <Fragment key={refreshKey}>
-              <JournalStats sessions={history} stats={stats} />
-              <PersonalRecordsCard />
-              <MonthlyCalendarCard />
-              <ProgressionCard />
-              <AchievementsCard />
-              {/* Moved from the village's trophy wall: a dated rack is history. */}
-              <BossesCard />
-              <MuscleBalanceCard />
-              <SuggestedQuestsCard />
-            </Fragment>
-          )}
+          {stats ? <StatsView stats={stats} /> : <StatsSkeleton />}
         </ScrollView>
       )}
     </YStack>

@@ -35,8 +35,8 @@ function resolveExerciseImage(path?: string | null): ImageSourcePropType | null 
  * through `formatDuration`, the app's own exact form — "15 min" above the minute, still "30s"
  * below it, so nothing shorter than a round changes. Reps stay `formatTarget`'s job.
  */
-function targetLabel(target: Target): string {
-  return target.type === "time" ? formatDuration(target.value) : formatTarget(target);
+function targetLabel(target: Target, language: AppLanguage): string {
+  return target.type === "time" ? formatDuration(target.value) : formatTarget(target, language);
 }
 
 /** Everything the shut row leaves out: the art, the how-to, and the way to the movement's screen. */
@@ -229,7 +229,7 @@ export function QuestExerciseRow({
           <XStack items="center" gap="$2" flexWrap="wrap">
             {showTarget ? (
               <Tag
-                label={targetLabel(qex.target)}
+                label={targetLabel(qex.target, language)}
                 tone={qex.target.type === "time" ? "secondary" : "primary"}
               />
             ) : null}
@@ -239,7 +239,7 @@ export function QuestExerciseRow({
             {qex.ghost ? (
               <Tag
                 label={t("quests.ghost_last", {
-                  value: targetLabel({ type: qex.target.type, value: qex.ghost.last }),
+                  value: targetLabel({ type: qex.target.type, value: qex.ghost.last }, language),
                   defaultValue: `Last: ${qex.ghost.last}`,
                 })}
                 tone="secondary"

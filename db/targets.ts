@@ -1,3 +1,4 @@
+import type { AppLanguage, Localized } from "@/src/i18n/deviceLanguage";
 import type { DifficultyCode, ExerciseStyle, QuestTargetType } from "./schema";
 import { NON_REP_STYLE } from "./workUnits";
 
@@ -141,12 +142,16 @@ export function retargetForMovement(
  * shows the same numbers — a ghost line saying "18" has to use the same words as the target above
  * it, and two copies of this drift (see `localizedTitle()` in AGENTS.md, "one source per value").
  *
- * "reps" reads fine in French too — see the `reps`/`config_reps` locale keys, which are the same
- * word in both languages — so there is no per-language branch here.
+ * The unit follows the language: "reps" in English, French and Spanish (the `session.reps` key says
+ * the same), "Wdh." in German, and a space before "s" everywhere but English. It was English only
+ * until a German audit read "12 reps" under "Letztes Mal" (2026-09-15).
  */
-export function formatTarget(target: Target): string {
-  if (target.type === "time") return `${target.value}s`;
-  return `${target.value} reps`;
+const REPS_WORD: Localized = { en: "reps", fr: "reps", de: "Wdh.", es: "reps" };
+const SECONDS_SUFFIX: Localized = { en: "s", fr: " s", de: " s", es: " s" };
+
+export function formatTarget(target: Target, language: AppLanguage): string {
+  if (target.type === "time") return `${target.value}${SECONDS_SUFFIX[language]}`;
+  return `${target.value} ${REPS_WORD[language]}`;
 }
 
 /**

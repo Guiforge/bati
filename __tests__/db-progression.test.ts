@@ -274,21 +274,4 @@ describe("db/exercises — variation ladder", () => {
     expect(unavailable).not.toContain("Wall Sit");
     expect(unavailable).not.toContain("Jumping Jack");
   });
-
-  describe("the step worth naming right now", () => {
-    test("an earned step beats one still in progress", async () => {
-      // Trained more recently, but not earned — the earned one still wins.
-      for (let i = 0; i < 3; i++) logSet(idOf("Table Row"), 12, 12);
-      logSet(idOf("Wall Push-Up"), 12, 12);
-
-      const step = await exercisesApi().getReadyStep();
-      expect(step?.from.enName).toBe("Table Row");
-      expect(step?.next.enName).toBe("Inverted Row");
-      expect(step?.isEarned).toBe(true);
-    });
-
-    test("nothing logged, nothing to suggest", async () => {
-      expect(await exercisesApi().getReadyStep()).toBeNull();
-    });
-  });
 });

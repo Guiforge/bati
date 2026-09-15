@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { type ColorTokens, Progress, Text, XStack, YStack } from "tamagui";
+import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Target } from "@/components/icons";
+import { formatCount, formatShare } from "@/components/journal/journalFormat";
 import {
   getBalanceRecommendation,
   getMuscleBalance,
@@ -14,15 +15,6 @@ import {
 } from "@/db/muscleBalance";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
-
-const MUSCLE_COLORS: Record<string, ColorTokens> = {
-  arms: "$pastelPink",
-  back: "$pastelBlue",
-  chest: "$pastelYellow",
-  abs: "$pastelGreen",
-  shoulder: "$pastelPurple",
-  legs: "$pastelOrange",
-};
 
 export function MuscleBalanceCard() {
   const { t } = useTranslation();
@@ -64,7 +56,9 @@ export function MuscleBalanceCard() {
     );
   }
 
-  if (!balance || balance.totalVolume === 0) {
+  // Three sessions before a verdict, the rule the stats page applies: "Needs Work" after one quest
+  // judges a single quest's shape.
+  if (!balance || balance.totalVolume === 0 || balance.totalSessions < 3) {
     return (
       <Card bg="$bgLight">
         <YStack gap="$2">
@@ -127,12 +121,14 @@ export function MuscleBalanceCard() {
                 <YStack flex={1}>
                   <Progress size="$2" value={percentage} bg="$background" rounded="$2">
                     <Progress.Indicator
-                      bg={isWeak ? "$primary" : (MUSCLE_COLORS[m.muscle] ?? "$secondary")}
+                      // One accent on the Journal: the muscles behind take it, the rest stay
+                      // quiet. Six pastels on a dark card read as six states.
+                      bg={isWeak ? "$primary" : "$muted"}
                     />
                   </Progress>
                 </YStack>
                 <Text fontSize={11} color="$text" opacity={0.6} width={35}>
-                  {Math.round(m.percentage)}%
+                  {formatShare(language, m.percentage)}
                 </Text>
               </XStack>
             );
@@ -163,8 +159,8 @@ export function MuscleBalanceCard() {
             </Text>
             <Text fontSize={12} color="$text" opacity={0.7}>
               {t("journal.pull_deficit_body", {
-                pull: Math.round(pullDeficit.pullVolume),
-                push: Math.round(pullDeficit.pushVolume),
+                pull: formatCount(language, pullDeficit.pullVolume),
+                push: formatCount(language, pullDeficit.pushVolume),
               })}
             </Text>
           </YStack>

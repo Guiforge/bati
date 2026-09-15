@@ -119,6 +119,13 @@
               "H6",
               "Heading",
               "Label",
+              "NButton",
+              "NKicker",
+              "NKickerQuiet",
+              "NMuted",
+              "NNum",
+              "NText",
+              "NTitle",
               "Paragraph",
               "SizableText",
               "Trait"

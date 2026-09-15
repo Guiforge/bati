@@ -66,7 +66,11 @@ function RecordLabel({ record, language }: { record: NewRecordResult; language: 
  * bare number, which for `longest_outing` said the same 603 whether the hero reads metres or
  * feet, and for `longest_session` printed raw seconds (283 for 4 min 43 s).
  */
-function formatRecordValue(record: NewRecordResult, unit: DistanceUnit): string {
+function formatRecordValue(
+  record: NewRecordResult,
+  unit: DistanceUnit,
+  language: AppLanguage,
+): string {
   switch (record.recordType) {
     // Unchanged: this is how a hold's target already reads everywhere else (`formatTarget` in
     // db/targets.ts), so it stays raw seconds with an "s" rather than switching to
@@ -76,7 +80,7 @@ function formatRecordValue(record: NewRecordResult, unit: DistanceUnit): string 
     case "longest_session":
       return formatDuration(record.newValue);
     case "longest_outing":
-      return formatDistance(record.newValue, unit);
+      return formatDistance(record.newValue, unit, language);
     default:
       return `${record.newValue}`;
   }
@@ -142,7 +146,7 @@ export function NewRecordsBadge({ records }: Props) {
                   <RecordLabel record={record} language={language} />
                 </Text>
                 <Text fontWeight="700" fontSize={14} color="$primaryText">
-                  {formatRecordValue(record, distanceUnit)}
+                  {formatRecordValue(record, distanceUnit, language)}
                 </Text>
               </XStack>
             ))}

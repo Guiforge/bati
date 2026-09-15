@@ -222,6 +222,7 @@ function Figures({
   ascentM: number | null;
   unit: DistanceUnit;
 }) {
+  const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
   return (
     <YStack gap="$3">
@@ -232,7 +233,7 @@ function Figures({
         <Figure
           testID="recap-distance"
           label={t("session.expedition_ground")}
-          value={formatDistance(leaguesM, unit)}
+          value={formatDistance(leaguesM, unit, language)}
         />
         {/* An outing saved before 0046 has metres and no seconds. Two thirds of a row is the honest
           answer there: a clock replayed from the fixes, and a pace divided by it, would be

@@ -44,7 +44,7 @@ don't re-add it.
 | 3 | **Strip `console.*` in production** via `babel-plugin-transform-remove-console`. Each call has bridge/JS overhead. | low | medium | **done** — [babel.config.js](../../babel.config.js) applies it when `NODE_ENV=production`, keeping `console.error` because that is what `reportError()` writes to. |
 | 4 | **Set `expo-image` `cachePolicy="memory-disk"`** (and a stable `recyclingKey` for images inside `@legendapp/list`) to kill flicker + redundant decodes. | low | medium | default policy today; none set explicitly |
 | 5 | **Debounce rapid inputs** (search/filter fields) so keystrokes don't fan out into renders/queries. | low | medium | no debounce in repo yet |
-| 6 | **`InteractionManager.runAfterInteractions()`** for heavy work triggered by navigation, so transitions land at 60fps first. | medium | med-high | used in [journal](../../app/(tabs)/journal/index.tsx); extend to other heavy screens |
+| 6 | **`InteractionManager.runAfterInteractions()`** for heavy work triggered by navigation, so transitions land at 60fps first. | medium | med-high | no longer used anywhere; the [journal](../../app/(tabs)/journal/index.tsx) skips the work instead, re-reading on focus only when `getJournalVersion` changed |
 | 7 | **Paginate / window growing SQLite reads** (history, completed sets) — load a page, not the whole table, as user data grows. | medium | high (scales with data) | fine at today's data size; watch history views |
 | 8 | **Lazy-load rare/heavy screens** so they parse on first visit, not at startup (improves TTI). | medium | medium | not applied |
 

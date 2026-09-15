@@ -290,7 +290,8 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-08-04",
-    "reencoded": "cwebp -q 85, from iron_golem_defeated.jpg"
+    "reencoded": "cwebp -q 85, from iron_golem_defeated.jpg",
+    "edited": "2026-09-15: a 48 px white frame the model painted around the scene cropped off (54 px a side, resized back to 1024 with Lanczos); it read as a halo wherever the painting is blended with lighten"
   },
   "assets/images/bosses/iron_golem_legendary.webp": {
     "model": "flux-2-pro-preview",

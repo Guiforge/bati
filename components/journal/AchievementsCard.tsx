@@ -7,7 +7,6 @@ import { Chip } from "@/components/common/Chip";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Award, Lock } from "@/components/icons";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -17,13 +16,14 @@ type CategoryFilter = "all" | "sessions" | "streaks" | "xp" | "special";
 /** Enough to show the shelf without the card swallowing the stats tab. */
 const COLLAPSED_ROWS = 8;
 
-export function AchievementsCard() {
+/** `showAll` is for the shelf's own page, where a "+19 more" fold only hides what it came for. */
+export function AchievementsCard({ showAll = false }: { showAll?: boolean }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const [achievements, setAchievements] = useState<AchievementProgress[]>([]);
   const [stats, setStats] = useState({ total: 0, unlocked: 0, percentage: 0 });
   const [filter, setFilter] = useState<CategoryFilter>("all");
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(showAll);
   const [loading, setLoading] = useState(true);
 
   const loadAchievements = useCallback(async () => {
@@ -200,8 +200,6 @@ function AchievementRow({
   language: AppLanguage;
 }) {
   const { definition, isUnlocked, progress, currentValue, targetValue } = achievement;
-  const reducedMotion = useReducedMotion();
-
   const title = localizedTitle(definition, language);
   const description = localizedText(definition, "description", language);
 
@@ -213,10 +211,8 @@ function AchievementRow({
       p="$3"
       rounded="$4"
       borderWidth={1}
-      borderColor={isUnlocked ? "$success" : "$text"}
+      borderColor={isUnlocked ? "$success" : "$borderStrong"}
       opacity={isUnlocked ? 1 : 0.7}
-      transition={reducedMotion ? undefined : "quick"}
-      enterStyle={reducedMotion ? undefined : { opacity: 0, x: 20 }}
     >
       {/* Icon */}
       <YStack

@@ -4,7 +4,7 @@ type: system
 status: active
 updated: 2026-09-11
 related: [progression.md, coach-planning.md, expeditions.md, ../planning/roadmap.md]
-sources: [db/xp.ts, db/streaks.ts, db/completed.ts, components/journal/journalGrids.ts]
+sources: [db/xp.ts, db/streaks.ts, db/completed.ts, db/journal.ts]
 ---
 
 # Statistics & Progress
@@ -67,7 +67,10 @@ Total: 5 sessions this week
 
 ### 4. Training calendar
 
-A month grid, one dot per day trained — the "did I show up" view.
+The month as a frieze of squares on the Journal's stats page: filled for a quest, hollow for an
+outing, ringed for today, dark for the days still to come (`getActivityDays`, `db/journal.ts`).
+Outings are marked since 2026-09-15: an outing of ten minutes keeps the flame lit, and a calendar
+that left it out disagreed with the flame line right above it.
 
 ## Outings are counted apart
 
@@ -75,11 +78,9 @@ A walk and a set of push-ups are both sessions, and averaging them together make
 numbers say something nobody did: three 20 min workouts and one hour-long Sunday walk read as a
 usual workout of 77 min, which is how a tester found this. So the training tiles (sessions,
 minutes, average duration) and the difficulty split count workouts alone, and the outings get
-their own three: how many, the ground covered, how long one lasts. They appear only once the hero
-has been out, like the walk tiles on the records card.
-
-Recent activity is deliberately **not** split. That block asks what the hero did this week, and a
-walk is something they did — the same answer the flame gives.
+their own figures: how many, and the ground covered (`getPeriodFigures`, `db/journal.ts`, which
+every period on the stats page and in Lifetime reads, so no two tiles can count differently).
+Ground is counted from any session, walked or run, and says so under its label.
 
 An outing's own minutes are its **moving** ones, which is what its trace can prove and what its XP
 was paid on. Standing at a crossing is not time on the road.
@@ -88,8 +89,8 @@ was paid on. Standing at a crossing is not time on the road.
 
 `completed_sessions.outing` (`0049`), never `leaguesM`. The column is written once at save from
 `isOutingQuest` — every slot outdoors — and read as a plain `WHERE` by everything that means
-*training*: this screen, the calendar dots, the weekly trends, the longest-session and most-XP
-records, the two "60+ minute workout" badges, the overtraining warning.
+*training*: quests and time in quests, the longest-quest and most-XP records, the two "60+ minute
+workout" badges, the overtraining warning.
 
 `leaguesM` was the nearest thing before that column and it is wrong twice. A walk whose service
 never started covered no ground and is still a walk. A "walk five minutes then do push-ups in the

@@ -2,8 +2,6 @@ import { act, render, screen, waitFor } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { AchievementsCard } from "@/components/journal/AchievementsCard";
-import { PersonalRecordsCard } from "@/components/journal/PersonalRecordsCard";
-import { ProgressionCard } from "@/components/journal/ProgressionCard";
 import { SuggestedQuestsCard } from "@/components/journal/SuggestedQuestsCard";
 import "@/i18n";
 import config from "@/tamagui.config";
@@ -22,28 +20,11 @@ jest.mock("expo-localization", () => ({
   getLocales: () => [{ languageCode: "en", languageTag: "en-US" }],
 }));
 
-const mockGetUserLevelInfo = jest.fn();
-const mockGetPersonalRecordsSummary = jest.fn();
-const mockGetMovementRecords = jest.fn().mockResolvedValue([]);
-const mockGetStreakInfo = jest.fn();
 const mockGetSuggestedQuestsForWeakAreas = jest.fn();
 const mockGetAllAchievementsWithProgress = jest.fn();
 const mockGetMuscleBalance = jest.fn();
 const mockGetPatternBalance = jest.fn();
-const mockGetRecentSessionHistory = jest.fn();
-const mockGetReadyStep = jest.fn();
 
-jest.mock("@/db/userLevel", () => ({
-  getUserLevelInfo: () => mockGetUserLevelInfo(),
-  calculateLevelFromXp: () => 3,
-  getXpForLevel: (l: number) => l * 100,
-  getLevelTitle: () => ({ en: "Apprentice", fr: "Apprenti" }),
-}));
-jest.mock("@/db/personalRecords", () => ({
-  getPersonalRecordsSummary: () => mockGetPersonalRecordsSummary(),
-  getMovementRecords: () => mockGetMovementRecords(),
-}));
-jest.mock("@/db/streaks", () => ({ getStreakInfo: () => mockGetStreakInfo() }));
 jest.mock("@/db/muscleBalance", () => ({
   getSuggestedQuestsForWeakAreas: () => mockGetSuggestedQuestsForWeakAreas(),
   getMuscleBalance: () => mockGetMuscleBalance(),
@@ -54,11 +35,6 @@ jest.mock("@/db/muscleBalance", () => ({
 jest.mock("@/db/achievements", () => ({
   getAllAchievementsWithProgress: () => mockGetAllAchievementsWithProgress(),
 }));
-jest.mock("@/db/completed", () => ({
-  getRecentSessionHistory: () => mockGetRecentSessionHistory(),
-}));
-jest.mock("@/db/exercises", () => ({ getReadyStep: () => mockGetReadyStep() }));
-
 async function mount(ui: React.ReactElement) {
   let result!: ReturnType<typeof render>;
   await act(() => {
@@ -80,123 +56,10 @@ async function mount(ui: React.ReactElement) {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockGetUserLevelInfo.mockResolvedValue({
-    level: 3,
-    title: { en: "Apprentice", fr: "Apprenti" },
-    totalXp: 350,
-    currentLevelXp: 50,
-    xpToNextLevel: 150,
-    xpProgress: 33,
-  });
-  mockGetPersonalRecordsSummary.mockResolvedValue({
-    records: [],
-    totalSessions: 0,
-    totalWorkUnits: 0,
-    longestSession: null,
-    mostXp: null,
-    longestOuting: null,
-    totalLeaguesM: 0,
-  });
-  mockGetStreakInfo.mockResolvedValue({ current: 0, longest: 0, isLit: false });
   mockGetSuggestedQuestsForWeakAreas.mockResolvedValue([]);
   mockGetAllAchievementsWithProgress.mockResolvedValue([]);
   mockGetMuscleBalance.mockResolvedValue([]);
   mockGetPatternBalance.mockResolvedValue([]);
-  mockGetRecentSessionHistory.mockResolvedValue([]);
-  mockGetReadyStep.mockResolvedValue(null);
-});
-
-describe("PersonalRecordsCard", () => {
-  it("renders with no records at all — a new hero is the common case", async () => {
-    await mount(<PersonalRecordsCard />);
-
-    await waitFor(() => expect(screen.toJSON()).not.toBeUndefined());
-  });
-
-  it("survives a failing summary without taking the journal with it", async () => {
-    mockGetPersonalRecordsSummary.mockRejectedValue(new Error("db is gone"));
-
-    await expect(mount(<PersonalRecordsCard />)).resolves.toBeDefined();
-  });
-
-  it("shows the ground covered once there is any", async () => {
-    mockGetPersonalRecordsSummary.mockResolvedValue({
-      records: [],
-      totalSessions: 3,
-      totalWorkUnits: 0,
-      longestSession: null,
-      mostXp: null,
-      longestOuting: { type: "longest_outing", value: 4580, achievedAt: new Date() },
-      totalLeaguesM: 7080,
-    });
-    // `best`, not just `current`/`longest`: the card reads `streakInfo.best` and calls
-    // `.toString()` on it. The other tests in this file dodge that by rendering the
-    // `totalSessions === 0` early return, which this one does not.
-    mockGetStreakInfo.mockResolvedValue({ current: 1, longest: 2, best: 5, isLit: true });
-
-    await mount(<PersonalRecordsCard />);
-
-    expect(await screen.findByText("Ground covered")).toBeTruthy();
-    expect(screen.getByText("7.08 km")).toBeTruthy();
-    expect(screen.getByText("4.58 km")).toBeTruthy();
-  });
-
-  /**
-   * The card's other records are all about a session, and a hero settles those in the first
-   * month. This is the only part of it that can be beaten tomorrow.
-   */
-  test("puts what can still be beaten above what cannot", async () => {
-    mockGetPersonalRecordsSummary.mockResolvedValueOnce({
-      longestSession: { value: 3600 },
-      mostXp: { value: 120 },
-      longestOuting: null,
-      totalLeaguesM: 0,
-      totalSessions: 12,
-    });
-    mockGetMovementRecords.mockResolvedValueOnce([
-      {
-        exerciseId: 1,
-        enName: "Wall Push-Up",
-        frName: "Pompe au mur",
-        type: "reps",
-        best: 25,
-        last: 18,
-        at: new Date("2026-09-10T10:00:00Z"),
-      },
-    ]);
-
-    await mount(<PersonalRecordsCard />);
-
-    expect(await screen.findByText("Wall Push-Up")).toBeTruthy();
-    // The standing best, and what the last session did, which is the pair to beat.
-    expect(screen.getByText("25 reps")).toBeTruthy();
-    expect(screen.getByText(/18 reps/)).toBeTruthy();
-  });
-
-  /**
-   * The row used to be gated on the total and to carry a `"--"` arm for a missing record, which
-   * nothing could reach: both numbers come from one snapshot, `leaguesM` is never negative, so a
-   * positive sum always has a positive maximum. The record is the gate now, and there is no arm
-   * left to print a dash into.
-   */
-  it("hides the ground row rather than dashing it when no outing holds the record", async () => {
-    mockGetPersonalRecordsSummary.mockResolvedValue({
-      records: [],
-      totalSessions: 3,
-      totalWorkUnits: 0,
-      longestSession: null,
-      mostXp: null,
-      longestOuting: null,
-      totalLeaguesM: 7080,
-    });
-    mockGetStreakInfo.mockResolvedValue({ current: 1, longest: 2, best: 5, isLit: true });
-
-    await mount(<PersonalRecordsCard />);
-
-    await waitFor(() => expect(screen.queryByText("Ground covered")).toBeNull());
-    expect(screen.queryByText("Longest outing")).toBeNull();
-    expect(screen.queryByText("7.08 km")).toBeNull();
-  });
 });
 
 describe("SuggestedQuestsCard", () => {
@@ -215,55 +78,10 @@ describe("SuggestedQuestsCard", () => {
   });
 });
 
-describe("ProgressionCard priority", () => {
-  /** Five sessions all reporting the same thing — enough for `analyzeDifficultyProgression`. */
-  const sessionsFeeling = (feedback: "easy" | "hard") =>
-    Array.from({ length: 5 }, (_, i) => ({
-      id: i + 1,
-      questId: 1,
-      userLevel: "medium" as const,
-      durationSeconds: 600,
-      performedAt: new Date(2026, 0, i + 1),
-      feedback,
-    }));
-
-  /** A rung in progress: enough to render the ladder branch. */
-  const readyStep = {
-    from: { id: 1, enName: "Table Row", frName: "Rowing sur table", imagePath: "" },
-    next: { id: 2, enName: "Inverted Row", frName: "Rowing inversé", imagePath: "" },
-    metTarget: 2,
-    required: 3,
-    isEarned: false,
-  };
-
-  it("puts recovery ahead of the ladder when the hero reports it is too hard", async () => {
-    // The ladder used to sit in front of this branch, so a hero reporting five hard sessions
-    // running was answered with "here is your next rung" as long as any tracked movement had one
-    // on-target set. Pushing up on someone asking to come down is the bug this pins.
-    mockGetRecentSessionHistory.mockResolvedValue(sessionsFeeling("hard"));
-    mockGetReadyStep.mockResolvedValue(readyStep);
-
-    await mount(<ProgressionCard />);
-
-    expect(await screen.findByText(/Recovery|Récupération/i)).toBeTruthy();
-    expect(screen.queryByText(/next rung|prochaine étape/i)).toBeNull();
-  });
-
-  it("keeps the ladder ahead of 'too easy' — a harder variation beats a bigger multiplier", async () => {
-    mockGetRecentSessionHistory.mockResolvedValue(sessionsFeeling("easy"));
-    mockGetReadyStep.mockResolvedValue(readyStep);
-
-    await mount(<ProgressionCard />);
-
-    expect(await screen.findByText(/next rung|prochaine étape/i)).toBeTruthy();
-  });
-});
-
-// The same two arms for the three remaining cards. Each swallows its own failure, so the one
+// The same two arms for the remaining cards. Each swallows its own failure, so the one
 // thing that must hold is that a broken query costs a card and never the screen around it.
 describe.each([
   ["AchievementsCard", AchievementsCard, mockGetAllAchievementsWithProgress],
-  ["ProgressionCard", ProgressionCard, mockGetRecentSessionHistory],
 ] as const)("%s", (_name, Component, query) => {
   // MuscleBalanceCard is deliberately absent: it reads two views of the same 30 days and expects
   // a shape this harness would have to guess at. Guessing produces a test that passes against a

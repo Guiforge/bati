@@ -64,8 +64,10 @@ describe("formatTarget", () => {
   // One source for these words: the session's ghost line has to read the same as the target
   // above it, and it used to live privately on the quest screen.
   test("names the unit the slot is measured in", () => {
-    expect(formatTarget({ type: "reps", value: 12 })).toBe("12 reps");
-    expect(formatTarget({ type: "time", value: 30 })).toBe("30s");
+    expect(formatTarget({ type: "reps", value: 12 }, "en")).toBe("12 reps");
+    expect(formatTarget({ type: "reps", value: 12 }, "de")).toBe("12 Wdh.");
+    expect(formatTarget({ type: "time", value: 30 }, "en")).toBe("30s");
+    expect(formatTarget({ type: "time", value: 30 }, "fr")).toBe("30 s");
   });
 });
 

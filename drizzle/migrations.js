@@ -61,6 +61,8 @@ import m0057 from "./0057_the_translated_half.sql";
 import m0058 from "./0058_german_and_spanish_columns.sql";
 import m0059 from "./0059_the_seeded_content_in_german_and_spanish.sql";
 import m0060 from "./0060_the_day_the_deeds_were_recut.sql";
+import m0061 from "./0061_the_round_that_landed_it.sql";
+import m0062 from "./0062_the_record_found_by_its_movement.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -127,5 +129,7 @@ export default {
     m0058,
     m0059,
     m0060,
+    m0061,
+    m0062,
   },
 };

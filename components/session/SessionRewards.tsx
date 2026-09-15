@@ -87,7 +87,7 @@ function BestEffortCard({
           </Text>
         </YStack>
         <Text fontWeight="700" fontSize={15} color="$primaryText">
-          {formatTarget({ type: standing.type, value: standing.value })}
+          {formatTarget({ type: standing.type, value: standing.value }, language)}
         </Text>
       </XStack>
     </Card>

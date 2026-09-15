@@ -279,7 +279,7 @@ export function QuickActions() {
     goal === null
       ? t("home.goal_free", "Free")
       : goal.type === "distance"
-        ? formatDistance(goal.metres, unit)
+        ? formatDistance(goal.metres, unit, language)
         : formatDurationEstimate(goal.seconds);
 
   return (

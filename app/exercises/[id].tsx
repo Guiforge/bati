@@ -483,7 +483,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                     {t("session.ghost_last_label", "Last time")}
                   </Text>
                   <Text fontSize={15} fontWeight="700" color="$text">
-                    {formatTarget({ type, value: ghost.last })}
+                    {formatTarget({ type, value: ghost.last }, language)}
                   </Text>
                   <Text fontSize={12} color="$textSecondary">
                     {getDateTimeFormat(language, { day: "numeric", month: "short" }).format(
@@ -499,7 +499,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                         {t("session.ghost_best_label", "best")}
                       </Text>
                       <Text fontSize={15} fontWeight="700" color="$resourceGold">
-                        {formatTarget({ type, value: ghost.best })}
+                        {formatTarget({ type, value: ghost.best }, language)}
                       </Text>
                     </>
                   ) : null}

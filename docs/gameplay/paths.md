@@ -93,7 +93,7 @@ the only way to decline was to type a number they had not performed.
 | --- | --- |
 | [Exercise details](../screens/exercise-details.md) | The whole path: name, bar, the rung you stand on, the next rung. Both are tappable. |
 | **Home — the oath card** | When the sworn movement sits on a path, the strip *replaces* the gold bar. |
-| Journal — `ProgressionCard` | The one step worth naming right now, across everything trained lately. |
+| Journal — quest log, "What it moved" | The rung the session's movements are climbing, and how many clean sessions are left. |
 | Victory — `SessionRewards` | Rungs this session just crossed. |
 | [Catalogue](../screens/exercises.md) | "Leads to X" per row, plus a ladder filter. |
 

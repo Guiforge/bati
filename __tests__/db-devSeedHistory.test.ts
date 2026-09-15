@@ -86,10 +86,13 @@ describe("db/devSeedHistory", () => {
     const { seedHistory } = seed();
     await seedHistory(1);
 
-    const completed = require("../db/completed") as typeof import("../db/completed");
-    const weeks = await completed.getWeeklyTrends(8);
-    expect(weeks.length).toBeGreaterThan(0);
-    expect(weeks.some((w) => w.sessionCount > 0)).toBe(true);
+    const journal = require("../db/journal") as typeof import("../db/journal");
+    const month = await journal.getPeriodFigures(
+      new Date(Date.now() - 60 * 86_400_000),
+      new Date(),
+    );
+    expect(month.quests).toBeGreaterThan(0);
+    expect(month.reps).toBeGreaterThan(0);
 
     const streaks = require("../db/streaks") as typeof import("../db/streaks");
     const info = await streaks.getStreakInfo();

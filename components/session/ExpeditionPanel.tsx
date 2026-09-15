@@ -100,6 +100,7 @@ export function ExpeditionPanel() {
   const recentSpeedMps = useExpeditionStore((state) => state.recentSpeedMps);
   const goalReached = useExpeditionStore((state) => state.goalReached);
   const unit = useSettingsStore((state) => state.distanceUnit);
+  const language = useSettingsStore((state) => state.language);
   const goal = useSessionStore((state) => state.goal);
 
   /**
@@ -140,7 +141,7 @@ export function ExpeditionPanel() {
   }, [elapsedSeconds, track.paused]);
 
   const clock = formatClock(recorded * 1000);
-  const distance = formatDistance(track.distanceM, unit);
+  const distance = formatDistance(track.distanceM, unit, language);
   /**
    * The pace of the last twenty seconds, not of the whole outing.
    *
@@ -207,7 +208,9 @@ export function ExpeditionPanel() {
             {/* Through the same formatter as the distance above, and for the same reason: a hero
                 walking in feet was reading "1.2 mi" over "within 8 m", two units on one line,
                 from the one file that is allowed to convert. */}
-            {t("session.expedition_accuracy", { distance: formatDistance(lastFix.acc, unit) })}
+            {t("session.expedition_accuracy", {
+              distance: formatDistance(lastFix.acc, unit, language),
+            })}
           </Paragraph>
         ) : null}
       </XStack>

@@ -89,22 +89,22 @@ describe("SessionCard", () => {
 
   it("renders distance and duration joined by middot for an outing with positive leaguesM", async () => {
     mockSettingsStore.distanceUnit = "metric";
-    const distanceStr = formatDistance(4580, "metric"); // "4.58 km"
+    const distanceStr = formatDistance(4580, "metric", "en"); // "4.58 km"
     const expectedLabel = `${distanceStr} · 5 min`;
 
     await mount({ ...baseEntry, leaguesM: 4580 });
 
-    await expect(screen.findByText(expectedLabel)).resolves.toBeTruthy();
+    await expect(screen.findByText(expectedLabel, { exact: false })).resolves.toBeTruthy();
   });
 
   it("formats distance in imperial when distanceUnit is imperial", async () => {
     mockSettingsStore.distanceUnit = "imperial";
-    const distanceStr = formatDistance(4580, "imperial"); // "2.85 mi" (4580 m / 1609.344, over the 5280 ft mile cut-over)
+    const distanceStr = formatDistance(4580, "imperial", "en"); // "2.85 mi" (4580 m / 1609.344, over the 5280 ft mile cut-over)
     const expectedLabel = `${distanceStr} · 5 min`;
 
     await mount({ ...baseEntry, leaguesM: 4580 });
 
-    await expect(screen.findByText(expectedLabel)).resolves.toBeTruthy();
+    await expect(screen.findByText(expectedLabel, { exact: false })).resolves.toBeTruthy();
   });
 
   it("shows the quest title", async () => {

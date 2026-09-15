@@ -175,7 +175,9 @@ export default function QuestDetails() {
   }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
-  const { startSession } = useSessionStore();
+  // The action alone: this screen stays mounted under the session it starts, and a whole-store
+  // subscription re-rendered it, unseen, on every set and every rest.
+  const startSession = useSessionStore((s) => s.startSession);
 
   const questId = useMemo(() => {
     const raw = params.id;
@@ -249,31 +251,40 @@ export default function QuestDetails() {
   );
 
   const load = useCallback(
-    async (id: number, nextLevel: Difficulty) => {
-      setState((s) => ({ status: "loading", quest: s.quest }));
-      try {
-        const [quest, exercises, ownedList] = await Promise.all([
-          getQuestById(id, nextLevel),
-          listExercises(),
-          preferences.getOwnedEquipment(),
-        ]);
-        if (!quest) {
-          setState({
-            status: "error",
-            quest: null,
-            message: t("quests.not_found", "Quest not found"),
-          });
-          return;
-        }
-        setCatalogue(exercises);
-        // null means the question was never answered — "allow everything", as everywhere else.
-        setOwned(ownedList === null ? null : new Set(ownedList));
-        setState({ status: "ready", quest });
-      } catch (e) {
-        reportError("quest.load", e);
-        const message = e instanceof Error ? e.message : "Unknown error";
-        setState((s) => ({ status: "error", quest: s.quest, message }));
-      }
+    (id: number, nextLevel: Difficulty) => {
+      // What this screen last served at that level paints at once, and the read below only
+      // revalidates it. A level chip used to blank the screen to a loading state and back, two
+      // renders of the whole quest before the chip even lit.
+      const cached = getCached<Quest>(`quest:${id}:${nextLevel}`);
+      setState((s) =>
+        cached ? { status: "ready", quest: cached } : { status: "loading", quest: s.quest },
+      );
+      // A promise chain rather than `try`: the React Compiler cannot lower a conditional inside
+      // one, and skipped this whole screen over it.
+      return Promise.all([
+        getQuestById(id, nextLevel),
+        listExercises(),
+        preferences.getOwnedEquipment(),
+      ])
+        .then(([quest, exercises, ownedList]) => {
+          if (!quest) {
+            setState({
+              status: "error",
+              quest: null,
+              message: t("quests.not_found", "Quest not found"),
+            });
+            return;
+          }
+          setCatalogue(exercises);
+          // null means the question was never answered — "allow everything", as everywhere else.
+          setOwned(ownedList === null ? null : new Set(ownedList));
+          setState({ status: "ready", quest });
+        })
+        .catch((e: unknown) => {
+          reportError("quest.load", e);
+          const message = e instanceof Error ? e.message : "Unknown error";
+          setState((s) => ({ status: "error", quest: s.quest, message }));
+        });
     },
     [t],
   );
@@ -408,12 +419,17 @@ export default function QuestDetails() {
       // onto a one-arm push-up is a bad prescription, and a swap is the hero saying this movement
       // is not right for them. Dropped here rather than in `applyQuestConfig`, which stays a pure
       // projection — `targets[id]` must never mean "a value for a movement no longer in this slot".
-      const { [String(questExerciseId)]: _replaced, ...targets } = config.targets ?? {};
+      // A filter rather than `{ [key]: _, ...rest }`: the React Compiler cannot lower a computed
+      // key in a destructuring, and skipped this whole screen over it.
+      const key = String(questExerciseId);
+      const targets = Object.fromEntries(
+        Object.entries(config.targets ?? {}).filter(([id]) => id !== key),
+      );
 
       updateConfig({
         ...config,
         targets,
-        swaps: { ...config.swaps, [String(questExerciseId)]: exercise.id },
+        swaps: { ...config.swaps, [key]: exercise.id },
       });
       setSwapFor(null);
     },
@@ -505,7 +521,8 @@ export default function QuestDetails() {
     if (!quest || isStarting) return;
     setIsStarting(true);
 
-    try {
+    // The body and its error path apart, for the React Compiler: see `load`.
+    const begin = async () => {
       // Awaited on purpose: startSession loads the boss fight and the warm-up preference before it
       // populates the store, and the session screen redirects home if it mounts on an empty one.
       await startSession(quest, effectiveLevel, {
@@ -516,27 +533,27 @@ export default function QuestDetails() {
         goal: outingGoal(quest, config.distanceM ?? null),
       });
       router.push("/session" as never);
-    } catch (error) {
+    };
+    await begin().catch((error: unknown) => {
       setIsStarting(false);
       reportError("quest.startSession", error);
       showError(t("quests.start_error", "Could not start the quest"));
-    }
+    });
   };
 
   const handleStart = async () => {
     if (!quest) return;
 
     if (runStepId) {
-      try {
-        const text = await getAdventureStepNarrative(runStepId, language);
-        if (text) {
-          setNarrative(text);
-          setShowNarrative(true);
-          return;
-        }
-      } catch (error) {
+      const text = await getAdventureStepNarrative(runStepId, language).catch((error: unknown) => {
         // Deliberate fall-through: no narrative is a fine session, so the hero still trains.
         reportError("quest.introNarrative", error);
+        return null;
+      });
+      if (text) {
+        setNarrative(text);
+        setShowNarrative(true);
+        return;
       }
     }
 

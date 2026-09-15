@@ -3,7 +3,7 @@ title: Quest Details
 type: screen
 route: /quests/[id]
 status: active
-updated: 2026-07-14
+updated: 2026-09-15
 related: [quests.md, session.md, adventure-details.md, ../gameplay/quests.md]
 sources: ["app/(tabs)/quests/[id].tsx"]
 ---
@@ -43,5 +43,10 @@ Starting the quest launches the **[Session](session.md)** where the workout is e
 If you arrived here from an **Adventure step**, the page may show a short story beat before starting.
 
 ## Implementation note
+
+A level chip paints the quest this screen last served at that level (`getCached("quest:<id>:<level>")`)
+before `getQuestById` revalidates it, instead of dropping back to a loading state first. The screen
+subscribes to the session store's `startSession` alone: it stays mounted under the session it
+starts, and a whole-store subscription re-rendered it on every set.
 
 The current implementation uses the shared card language and tokenized dark surfaces so the quest details screen reads as one coherent step before the session starts.

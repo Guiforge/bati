@@ -26,6 +26,9 @@ const FOLLOW_ZOOM = 16;
 /** One fix a second, so the camera glides for as long as the next one takes to arrive. */
 const FOLLOW_MS = 1000;
 
+/** How often the drawn path catches up with the hero. A path five seconds behind reads as live. */
+const TRACE_EVERY_MS = 5000;
+
 /**
  * What the slot is waiting for, over whatever fills it meanwhile.
  *
@@ -115,15 +118,39 @@ export function LiveMap({
     });
     return () => subscription.remove();
   }, []);
-  const fixes = useExpeditionStore((s) => (visible ? s.fixes : null));
+  // The camera and the pip follow every fix; only the drawn path waits for the next fold.
+  const last = useExpeditionStore((s) => (visible ? (s.fixes.at(-1) ?? null) : null));
+  const hasFix = last !== null;
   const tilesEnabled = useSettingsStore((s) => s.mapTilesEnabled);
-  if (fixes === null) return placeholder;
 
-  // ponytail: the whole trace is folded again on every fix while the map is on screen, a few
-  // milliseconds for an hour's 3,600 points. Fold incrementally, or give the live map a lighter
-  // `toTrace` without the colour bands it never draws, if a measured walk shows the cost.
-  const trace = toTrace(fixes);
-  const here = trace.end;
+  /**
+   * The walk, folded at most every `TRACE_EVERY_MS`. It was folded on every fix, 11 ms at one hour
+   * and 34 ms at three on a desktop, a second at a time for as long as the screen is on (perf
+   * audit, 2026-09-15). Remembers which array it folded, so a tick with no new fix costs nothing.
+   *
+   * ponytail: the whole walk is still folded each time, so a very long outing pays the three-hour
+   * figure every five seconds. Fold incrementally if a measured walk shows that cost.
+   */
+  const [folded, setFolded] = useState(() => {
+    const fixes = useExpeditionStore.getState().fixes;
+    return { fixes, trace: toTrace(fixes) };
+  });
+  useEffect(() => {
+    if (!visible) return;
+    const fold = () => {
+      const fixes = useExpeditionStore.getState().fixes;
+      setFolded((prev) => (prev.fixes === fixes ? prev : { fixes, trace: toTrace(fixes) }));
+    };
+    // At once on return from the background and on the first fix, then on the cadence.
+    if (hasFix) fold();
+    const timer = setInterval(fold, TRACE_EVERY_MS);
+    return () => clearInterval(timer);
+  }, [visible, hasFix]);
+
+  if (!visible) return placeholder;
+
+  const { trace } = folded;
+  const here: [number, number] | null = last === null ? null : [last.lon, last.lat];
   if (here === null) {
     return (
       // Sized like the map below, so the picture inside it lays out as it does on its own.

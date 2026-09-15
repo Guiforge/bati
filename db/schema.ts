@@ -624,6 +624,9 @@ export const bossDamageLog = sqliteTable(
     isCritical: int().notNull().default(0),
     // Muscle group that dealt the damage
     muscle: text().$type<MuscleCode>(),
+    // The round the hit came from (0061), so a report can find the set behind it. Null before
+    // 0061 and on the campaign's closing blow, which has no set.
+    roundIndex: int(),
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
   },
   (table) => ({

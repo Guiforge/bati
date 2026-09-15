@@ -1,0 +1,13 @@
+-- Which round each hit came from.
+--
+-- `boss_damage_log` has written one row per landed result since sessions started committing
+-- their hits at save time: the fight, the session, the movement, the damage. What it dropped is
+-- the round. The session holds it (`PendingHit.roundIndex`) and uses it to refund a restarted
+-- round, then throws it away at the insert, so a report that wants to say "Push-ups, 21 reps,
+-- round 3" can name the movement and not find the set: a three-round quest writes three rows of
+-- push-ups into `completed_exercises` and the log cannot say which one it was.
+--
+-- Null on every hit logged before this, on the legacy one-hit path, and on the campaign's own
+-- closing blow (`finishBossFight`), which has no set behind it. A null round is read as "the
+-- movement, without its number", never guessed from row order.
+ALTER TABLE `boss_damage_log` ADD `roundIndex` integer;

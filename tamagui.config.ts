@@ -66,6 +66,21 @@ const bodyFont = createFont({
   },
 });
 
+// Inter, the Nocturne design system's one family, for the Journal. Components opt in with `fontFamily="$nocturne"`: a
+// sub-theme recolours, but a font is not a theme value.
+const nocturneFont = createFont({
+  family: "Inter",
+  size: { 1: 11, 2: 13, 3: 15, 4: 18, 5: 22, 6: 28, true: 15 },
+  lineHeight: { 1: 16, 2: 19, 3: 22, 4: 24, 5: 28, 6: 34 },
+  weight: { 4: "400", 5: "500", 6: "600" },
+  letterSpacing: { 4: 0 },
+  face: {
+    400: { normal: "Inter_400Regular" },
+    500: { normal: "Inter_500Medium" },
+    600: { normal: "Inter_600SemiBold" },
+  },
+});
+
 // -------------------------------------------------------------------------
 // 2. ANIMATIONS (Game Feel)
 // -------------------------------------------------------------------------
@@ -109,6 +124,7 @@ const config = createTamagui({
   fonts: {
     heading: headingFont,
     body: bodyFont,
+    nocturne: nocturneFont,
   },
   themes: {
     // We force a unified DARK theme structure even for 'light' key
@@ -128,6 +144,30 @@ const config = createTamagui({
       color: tokens.color.text,
       danger: tokens.color.error,
       muted: tokens.color.textSecondary,
+    },
+    // The Journal (`<Theme name="journal">` in app/(tabs)/journal/_layout.tsx). The app's own keys
+    // are remapped rather than left alone, so a shared component the Journal still mounts (the
+    // achievements list, the balance card, a history row) takes its ground and its one accent
+    // without knowing it is on another tab. Indigo, green and red fold into the gold ramp.
+    dark_journal: {
+      ...tokens.color,
+      background: tokens.color.bgDark,
+      color: tokens.color.text,
+      danger: tokens.color.ink800,
+      bgLight: tokens.color.surface2,
+      bgOverlay: tokens.color.bgDark,
+      surface: tokens.color.surface2,
+      primary: tokens.color.resourceGold,
+      primaryText: tokens.color.resourceGold,
+      primaryHover: tokens.color.gold300,
+      primaryPress: tokens.color.gold600,
+      secondary: tokens.color.gold600,
+      success: tokens.color.resourceGold,
+      warning: tokens.color.gold300,
+      error: tokens.color.borderStrong,
+      // Surfaces carry no border here: a shared card's outline takes the surface's own colour.
+      borderStrong: tokens.color.surface2,
+      pastelGreen: tokens.color.gold900,
     },
   },
 });

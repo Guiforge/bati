@@ -290,9 +290,6 @@ export async function getExerciseById(id: number): Promise<Exercise | null> {
 /** Sessions meeting the target before the next variation is considered earned. */
 export const PROGRESSION_SESSIONS_REQUIRED = 3;
 
-/** How many recent rows to scan when looking for the most recently trained movements. */
-const RECENT_RESULT_ROWS = 60;
-
 export type MovementRef = {
   id: number;
   enName: string;
@@ -728,42 +725,6 @@ export async function checkForNewRungs(sessionId: number): Promise<VariationStep
   }
 
   return unlocked;
-}
-
-/**
- * The step worth naming right now, across everything the hero has trained lately: one that is
- * already earned if there is one, otherwise the closest to being earned.
- *
- * This is what "progressive overload" means without weights, and it is the answer the journal owes
- * a bodyweight athlete — a harder variation, not a bigger multiplier.
- */
-export async function getReadyStep(): Promise<VariationStep | null> {
-  const recentRows = await db
-    .select({ exerciseId: schema.completedExercises.exerciseId })
-    .from(schema.completedExercises)
-    .orderBy(desc(schema.completedExercises.performedAt), desc(schema.completedExercises.id))
-    .limit(RECENT_RESULT_ROWS);
-
-  // Most recently trained first: it doubles as the tie-break between two equally advanced steps.
-  const recentIds = [...new Set(recentRows.map((r) => r.exerciseId))];
-  if (recentIds.length === 0) return null;
-
-  const rows = await fetchLadderRows();
-  const byId = new Map(rows.map((r) => [r.id, r]));
-
-  let best: VariationStep | null = null;
-
-  for (const id of recentIds) {
-    const from = byId.get(id);
-    const next = rows.find((r) => r.prerequisiteExerciseId === id);
-    if (!from || !next) continue;
-
-    const step = await buildStep(from, next);
-    if (!best || step.metTarget > best.metTarget) best = step;
-    if (best.isEarned) break;
-  }
-
-  return best;
 }
 
 // ------------------------------------------------------------

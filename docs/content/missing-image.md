@@ -274,8 +274,9 @@ All resolve to real art via `assetMap` (verified basename-key match):
   `getAdventureAsset`, achievement trophies use the `icon` emoji already on
   `achievementDefinitions`. Deliberate — an emoji rack reads as a trophy shelf.
   *Moved 2026-09-11:* the village no longer has a shelf. Defeated bosses are the Journal's
-  `BossesCard`, drawn from each monster's fallen painting (`getBossAsset(…, "defeated")`), and
-  achievements were already the Journal's `AchievementsCard`. Still no new art.
+  "Bosses felled" page and each kill's report (2026-09-15), drawn from each monster's fallen
+  painting (`getBossAsset(…, "defeated")`), and achievements are the Journal's own page. Still no
+  new art.
 
 ---
 

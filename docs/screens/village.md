@@ -131,7 +131,7 @@ No villager in the card: VictoryView already picked the one villager a victory g
 | "Built" / "To build" grids | Families |
 | Bars without units on every tile | Only on "Next to rise" and in the detail sheet |
 | Five pips on upgrades that stop at 3 | Pips on the real ceiling, here and on the victory screen |
-| Trophy wall | Defeated bosses: the Journal's `BossesCard`. Achievements were already in `AchievementsCard`. |
+| Trophy wall | Defeated bosses: the Journal's "Bosses felled" page, each opening its kill report. Achievements: the Journal's own page. |
 | A tile that pulsed once | The return sequence above |
 | Gold dots on the painting, one per building (shipped in #92) | Removed the same day at the hero's request: the painting stays clean, and the anchors only aim the lean-in |
 | A "finished" card above the panel | Inside the tier block, which already announces the last tier |

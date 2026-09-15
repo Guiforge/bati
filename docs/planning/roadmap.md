@@ -520,8 +520,8 @@ one Ring Fit idea genuinely missing is *cooldowns forcing variety* — and the m
 installed, so the effort is design, not integration — and *Spix*'s weekly progress rings are the
 cheap shape worth copying, because they answer "am I on track this week" without a chart. The
 second shape, and the only thing both offline apps of the fifth scan agree on, is the **GitHub-style
-year grid**: Streak and GymMane each lead with one, and Bati already renders the month
-(`components/journal/MonthlyCalendarCard.tsx`). Widening that component to a year is the cheapest
+year grid**: Streak and GymMane each lead with one, and Bati already renders the month (the frieze
+in `components/journal/stats/StatsView.tsx`). Widening that component to a year is the cheapest
 thing in this refonte and the one that makes a rest day look like part of a pattern rather than a
 hole.
 

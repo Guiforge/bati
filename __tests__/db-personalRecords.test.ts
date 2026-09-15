@@ -32,52 +32,6 @@ describe("db/personalRecords", () => {
     t.sqlite.exec(`DELETE FROM completed_sessions`);
   });
 
-  test("getLongestSession returns null when no sessions exist", async () => {
-    const { getLongestSession } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
-    const result = await getLongestSession();
-    expect(result).toBeNull();
-  });
-
-  test("getLongestSession returns the session with longest duration", async () => {
-    const { getLongestSession } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
-    const now = Math.floor(Date.now() / 1000);
-
-    // Add sessions with different durations
-    t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt, durationSeconds) VALUES
-        (1, ${now - 3600}, 600),
-        (2, ${now - 1800}, 1200),
-        (3, ${now}, 800);
-    `);
-
-    const result = await getLongestSession();
-    expect(result).not.toBeNull();
-    expect(result?.type).toBe("longest_session");
-    expect(result?.value).toBe(1200);
-    expect(result?.sessionId).toBe(2);
-  });
-
-  test("getMostXpSession returns the session with most XP", async () => {
-    const { getMostXpSession } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
-    const now = Math.floor(Date.now() / 1000);
-
-    t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt, xpEarned) VALUES
-        (1, ${now - 3600}, 100),
-        (2, ${now - 1800}, 250),
-        (3, ${now}, 150);
-    `);
-
-    const result = await getMostXpSession();
-    expect(result).not.toBeNull();
-    expect(result?.type).toBe("most_xp");
-    expect(result?.value).toBe(250);
-    expect(result?.sessionId).toBe(2);
-  });
-
   test("getExerciseHistory returns an empty map for no ids", async () => {
     const { getExerciseHistory } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");
@@ -284,23 +238,6 @@ describe("db/personalRecords", () => {
     expect(history.get(ghostKey(exerciseId, "reps"))).toMatchObject({ last: 14, best: 20 });
   });
 
-  test("getPersonalRecordsSummary returns all records and session count", async () => {
-    const { getPersonalRecordsSummary } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
-    const now = Math.floor(Date.now() / 1000);
-
-    t.sqlite.exec(`
-      INSERT INTO completed_sessions (id, performedAt, durationSeconds, xpEarned) VALUES
-        (1, ${now - 3600}, 600, 100),
-        (2, ${now}, 900, 200);
-    `);
-
-    const summary = await getPersonalRecordsSummary();
-    expect(summary.totalSessions).toBe(2);
-    expect(summary.longestSession?.value).toBe(900);
-    expect(summary.mostXp?.value).toBe(200);
-  });
-
   function logOuting(leaguesM: number, secondsAgo: number): number {
     const at = Math.floor(Date.now() / 1000) - secondsAgo;
     const info = t.sqlite
@@ -310,18 +247,6 @@ describe("db/personalRecords", () => {
       .run(at, leaguesM);
     return Number(info.lastInsertRowid);
   }
-
-  test("the longest outing is the most ground in one session, and a workout is not one", async () => {
-    const { getLongestOuting, getPersonalRecordsSummary } =
-      require("../db/personalRecords") as typeof import("../db/personalRecords");
-    expect(await getLongestOuting()).toBeNull();
-    logOuting(2500, 120);
-    logOuting(4580, 60);
-    expect((await getLongestOuting())?.value).toBe(4580);
-    const summary = await getPersonalRecordsSummary();
-    expect(summary.longestOuting?.value).toBe(4580);
-    expect(summary.totalLeaguesM).toBe(7080);
-  });
 
   test("a longer outing is a new record, with the previous one to beat", async () => {
     const { checkForNewRecords } =

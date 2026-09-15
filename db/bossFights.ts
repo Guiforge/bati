@@ -638,6 +638,7 @@ export async function persistSessionDamage(
         damageDealt: hit.damage,
         isCritical: hit.isCritical ? 1 : 0,
         muscle: hit.muscle,
+        roundIndex: hit.roundIndex,
       })),
     );
 

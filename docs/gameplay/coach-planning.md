@@ -28,7 +28,9 @@ state, no generated plans, no scheduling, no notifications — those are explici
 
 The word "Coach" was dropped because it named a feature that does not exist while hiding the one
 that does. It only ever appeared on the journal's `ProgressionCard`, whose content is usually the
-variation ladder; that card now says what it shows ("Your next rung" / "Adjust the difficulty").
+variation ladder. That card left the stats page in the 2026-09-15 redesign: the rung is a line of
+the quest log, and the difficulty nudge still acts where it matters, in the difficulty an adventure
+suggests (`suggestDifficultyFromSessions`).
 `app/safety.tsx` states plainly that Bati is not a coach, and the UI no longer contradicts it.
 
 ## What actually runs

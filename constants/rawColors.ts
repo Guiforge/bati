@@ -112,6 +112,26 @@ export const rawColors = {
 
   white: "#FFFFFF",
   black: "#000000",
+
+  // --- The Journal's ramps ---
+  // The Journal is drawn with Nocturne's structure (Inter, 0.7x density, borderless surfaces,
+  // outlined buttons, fading rules, one accent) on Bati's own colours: design project "Journal
+  // Bati", option 3c. Its ground, surface, text and accent are the tokens above (`bgDark`,
+  // `surface2`, `text`, `resourceGold`); what a mono system needs and Bati never had is a *ramp*
+  // of its one accent, because "done", "new" and "still coming" are steps of it rather than a
+  // green and a red. Five steps of gold, and two inks below `borderStrong` for empty marks.
+  gold100: "#FFF8D9",
+  gold300: "#FFE066",
+  gold600: "#C4A600",
+  gold700: "#6B5A12",
+  gold800: "#3A3110",
+  gold900: "#241F08",
+  ink800: "#232A44",
+  ink900: "#0E1220",
+  /** `glassBorder` at nothing: the ends of a fading rule. Transparent black would grey it. */
+  glassBorderClear: "rgba(232, 236, 255, 0)",
+  /** `bgDark` at nothing: where a painting's fade starts. */
+  bgDarkClear: "rgba(11, 15, 25, 0)",
 } as const;
 
 /**

@@ -316,3 +316,111 @@ export function updateStreakAfterSession(): Promise<StreakInfo> {
   });
   return promise;
 }
+
+/** What the Journal says about the flame, beyond the three numbers the cache holds. */
+export type FlameDetail = {
+  current: number;
+  best: number;
+  /** The last lit day of the best run. Null with no run at all. */
+  bestEndedOn: Date | null;
+  /** True when the best run is the one still burning: "ended" would be a lie about it. */
+  bestIsCurrent: boolean;
+  inWindow: number;
+  quota: number;
+  /**
+   * The last day the flame stays lit if nothing more is logged. Null when it is out today.
+   * It is what a rest day is allowed to say: "the flame holds until Thursday".
+   */
+  litUntil: Date | null;
+  /** Every lit day since the first session. */
+  litDays: number;
+  /** Lit days among the last thirty, today included. */
+  litDaysLast30: number;
+};
+
+const LIT_FORECAST_DAYS = WINDOW_DAYS * 2;
+
+/**
+ * The whole flame, walked once from the first session to today.
+ *
+ * Kept beside `calculateStreakFromSessions` and built on the same `isLit`, so the two cannot
+ * disagree about which day burned: this only reads further (when the best run ended, when the
+ * current one will) where that one stops at three numbers.
+ */
+export function describeFlame(performedAt: Date[], quota: number, now = new Date()): FlameDetail {
+  const base = calculateStreakFromSessions(performedAt, quota, now);
+  const empty: FlameDetail = {
+    ...base,
+    quota,
+    bestEndedOn: null,
+    bestIsCurrent: false,
+    litUntil: null,
+    litDays: 0,
+    litDaysLast30: 0,
+  };
+  if (performedAt.length === 0) return empty;
+
+  const byDay = groupByDay(performedAt);
+  const today = startOfDay(now);
+  const firstDay = startOfDay(new Date(Math.min(...performedAt.map((d) => d.getTime()))));
+  const last30 = shiftDays(today, -29).getTime();
+
+  let run = 0;
+  let best = 0;
+  let bestEndedOn: Date | null = null;
+  let litDays = 0;
+  let litDaysLast30 = 0;
+  for (let day = firstDay; day.getTime() <= today.getTime(); day = shiftDays(day, 1)) {
+    if (!isLit(byDay, day, quota)) {
+      run = 0;
+      continue;
+    }
+    run++;
+    litDays++;
+    if (day.getTime() >= last30) litDaysLast30++;
+    // `>=` so a tie keeps the latest run: it is the one the hero remembers.
+    if (run >= best) {
+      best = run;
+      bestEndedOn = day;
+    }
+  }
+
+  let litUntil: Date | null = null;
+  if (base.isActive) {
+    litUntil = today;
+    // Future days hold no sessions, so this is the flame running on what is already banked.
+    for (let i = 1; i <= LIT_FORECAST_DAYS; i++) {
+      const day = shiftDays(today, i);
+      if (!isLit(byDay, day, quota)) break;
+      litUntil = day;
+    }
+  }
+
+  return {
+    ...empty,
+    bestEndedOn,
+    bestIsCurrent: base.isActive && bestEndedOn?.getTime() === today.getTime(),
+    litUntil,
+    litDays,
+    litDaysLast30,
+  };
+}
+
+/**
+ * The Journal's flame, read fresh rather than from the day's cache: it is one screen, opened on
+ * purpose, and the cache only knows three of the numbers it needs.
+ */
+export async function getFlameDetail(now = new Date()): Promise<FlameDetail> {
+  const [quota, rows] = await Promise.all([
+    getWeeklyQuota(),
+    db
+      .select({ performedAt: completedQuest.performedAt })
+      .from(completedQuest)
+      .where(countsAsSession()),
+  ]);
+  return describeFlame(
+    rows.map((r) => r.performedAt),
+    quota,
+    now,
+  );
+}

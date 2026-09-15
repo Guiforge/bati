@@ -1,6 +1,9 @@
 // Per-weight subpaths, never the package root: the barrel index requires every weight it ships,
 // so `from "@expo-google-fonts/noto-sans"` put all 18 Noto files in the APK for the 2 used here
 // (24 .ttf, 5.9 MB compressed, measured on the v1.13.0 APK).
+import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
+import { Inter_500Medium } from "@expo-google-fonts/inter/500Medium";
+import { Inter_600SemiBold } from "@expo-google-fonts/inter/600SemiBold";
 import { NotoSans_400Regular } from "@expo-google-fonts/noto-sans/400Regular";
 import { NotoSans_700Bold } from "@expo-google-fonts/noto-sans/700Bold";
 import { SpaceGrotesk_300Light } from "@expo-google-fonts/space-grotesk/300Light";
@@ -86,6 +89,12 @@ export default function RootLayout() {
     NotoSans: NotoSans_400Regular,
     NotoSans_400Regular,
     NotoSans_700Bold,
+    // Inter, the Journal's type (the `nocturne` font in tamagui.config.ts). Three weights:
+    // body, the heading/number weight, and the one emphasis inside a sentence.
+    Inter: Inter_400Regular,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
   });
   const fontsReady = fontsLoaded || fontError != null;
 

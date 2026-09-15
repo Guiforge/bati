@@ -3,7 +3,6 @@ import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
 import { isWorkout } from "./completed";
 import { hasGround } from "./expeditions";
-import { totalLeaguesM } from "./gps";
 import type { QuestTargetType } from "./schema";
 import { NON_REP_STYLE } from "./workUnits";
 
@@ -20,15 +19,6 @@ export type RecordType =
   | "exercise_max_time" // Longest hold/time for a specific exercise
   | "longest_outing"; // Most ground covered in one outing, metres
 
-export type PersonalRecord = {
-  type: RecordType;
-  value: number;
-  achievedAt: Date;
-  exerciseId?: number; // For exercise-specific records
-  exerciseName?: Localized; // For display
-  sessionId?: number; // Reference to the session
-};
-
 export type NewRecordResult = {
   isNewRecord: boolean;
   recordType: RecordType;
@@ -37,89 +27,6 @@ export type NewRecordResult = {
   exerciseId?: number;
   exerciseName?: Localized;
 };
-
-/**
- * Get the longest session ever completed
- */
-export async function getLongestSession(): Promise<PersonalRecord | null> {
-  const rows = await db
-    .select({
-      id: completedQuest.id,
-      durationSeconds: completedQuest.durationSeconds,
-      performedAt: completedQuest.performedAt,
-    })
-    .from(completedQuest)
-    .where(isWorkout())
-    .orderBy(desc(completedQuest.durationSeconds))
-    .limit(1);
-
-  const best = rows[0];
-  if (best?.durationSeconds == null) {
-    return null;
-  }
-
-  return {
-    type: "longest_session",
-    value: best.durationSeconds,
-    achievedAt: best.performedAt,
-    sessionId: best.id,
-  };
-}
-
-/**
- * The most ground in one outing. `leaguesM` is what the reducer credited at save (never a sum
- * over `gps_points`), so this record and the road agree on every metre.
- */
-export async function getLongestOuting(): Promise<PersonalRecord | null> {
-  const rows = await db
-    .select({
-      id: completedQuest.id,
-      leaguesM: completedQuest.leaguesM,
-      performedAt: completedQuest.performedAt,
-    })
-    .from(completedQuest)
-    .where(sql`${completedQuest.leaguesM} IS NOT NULL`)
-    .orderBy(desc(completedQuest.leaguesM))
-    .limit(1);
-
-  const best = rows[0];
-  if (!best || !hasGround(best)) return null;
-
-  return {
-    type: "longest_outing",
-    value: best.leaguesM,
-    achievedAt: best.performedAt,
-    sessionId: best.id,
-  };
-}
-
-/**
- * Get the session with most XP earned
- */
-export async function getMostXpSession(): Promise<PersonalRecord | null> {
-  const rows = await db
-    .select({
-      id: completedQuest.id,
-      xpEarned: completedQuest.xpEarned,
-      performedAt: completedQuest.performedAt,
-    })
-    .from(completedQuest)
-    .where(isWorkout())
-    .orderBy(desc(completedQuest.xpEarned))
-    .limit(1);
-
-  const best = rows[0];
-  if (best?.xpEarned == null) {
-    return null;
-  }
-
-  return {
-    type: "most_xp",
-    value: best.xpEarned,
-    achievedAt: best.performedAt,
-    sessionId: best.id,
-  };
-}
 
 /**
  * What the hero has already done on a movement, in that movement's own unit.
@@ -223,6 +130,7 @@ export type MovementRecord = {
   frName: string;
   deName: string;
   esName: string;
+  imagePath: string;
   /** Reps and seconds are different records on the same movement, so the unit is part of one. */
   type: QuestTargetType;
   best: number;
@@ -256,6 +164,7 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
       frName: exercises.frName,
       deName: exercises.deName,
       esName: exercises.esName,
+      imagePath: exercises.imagePath,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
@@ -283,6 +192,7 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
         frName: row.frName,
         deName: row.deName,
         esName: row.esName,
+        imagePath: row.imagePath,
         type: row.type,
         best,
         last: ghost?.last ?? best,
@@ -511,34 +421,6 @@ export async function getSessionStanding(
   );
 
   return standings[0] ?? null;
-}
-
-/**
- * Get all personal records summary
- */
-export async function getPersonalRecordsSummary(): Promise<{
-  longestSession: PersonalRecord | null;
-  mostXp: PersonalRecord | null;
-  longestOuting: PersonalRecord | null;
-  /** Lifetime ground covered, metres. Zero until the first outing. */
-  totalLeaguesM: number;
-  totalSessions: number;
-}> {
-  const [longestSession, mostXp, longestOuting, totalLeagues, countResult] = await Promise.all([
-    getLongestSession(),
-    getMostXpSession(),
-    getLongestOuting(),
-    totalLeaguesM(),
-    db.select({ count: sql<number>`COUNT(*)` }).from(completedQuest).where(isWorkout()),
-  ]);
-
-  return {
-    longestSession,
-    mostXp,
-    longestOuting,
-    totalLeaguesM: totalLeagues,
-    totalSessions: countResult[0]?.count ?? 0,
-  };
 }
 
 /**

@@ -256,10 +256,6 @@ interface TrendAnalysis {
 | `getCompletedSessionById(id)` | Get session with exercises |
 | `getRecentSessionHistory(limit?)` | Most recent sessions, all quests, oldest-first |
 | `getQuestSessionHistory(questId, limit?)` | Most recent sessions for one quest, oldest-first |
-| `getWeeklyTrends(weeks?)` | Get weekly trend data |
-| `getMonthlyTrends(months?)` | Get monthly trend data |
-| `analyzeTrend(current, previous)` | Compare two values |
-| `getTrendSummary()` | Get complete trend summary |
 | `markSessionWithNewRecords(id)` | Mark session has PRs |
 
 ---
@@ -611,15 +607,17 @@ const weak = await getWeakMuscles("30d");
 ### Personal Records
 
 ```typescript
-import { checkForNewRecords, getPersonalRecordsSummary } from "@/db/personalRecords";
+import { checkForNewRecords, getMovementRecords } from "@/db/personalRecords";
+import { getRecordWall, getSessionBests } from "@/db/journal";
 
 // Check for new PRs after session
 const records = await checkForNewRecords(completedSessionId);
-// Returns: { exerciseId, recordType: "max_reps" | "longest_hold", value }[]
 
-// Get PR summary
-const summary = await getPersonalRecordsSummary();
-// Returns: { longestSession, mostXp, highestStreak, exercisePRs }
+// The Journal's wall: recent movements, each with its record, the day it fell and the last result
+const wall = await getRecordWall(4);
+
+// Longest quest, most XP and most reps in one session (the Lifetime page)
+const bests = await getSessionBests();
 ```
 
 ### Duration Estimation

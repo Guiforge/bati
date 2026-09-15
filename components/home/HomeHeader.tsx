@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { Castle } from "@/components/icons";
 import { getAvatarSource } from "@/constants/avatars";
 import { getFlameLevel } from "@/db/streaks";
+import { formatCount } from "@/db/targets";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { getVillageTier, TIER_NAMES } from "@/db/village";
 import { useStreakInfo } from "@/hooks/useStreakInfo";
@@ -116,8 +117,8 @@ export function HomeHeader() {
           {levelInfo ? (
             <Text fontSize={10} fontWeight="700" color="$resourceGold">
               {t("journal.xp_progress", {
-                current: levelInfo.currentLevelXp,
-                next: levelInfo.currentLevelXp + levelInfo.xpToNextLevel,
+                current: formatCount(language, levelInfo.currentLevelXp),
+                next: formatCount(language, levelInfo.currentLevelXp + levelInfo.xpToNextLevel),
               })}
             </Text>
           ) : null}

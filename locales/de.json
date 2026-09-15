@@ -893,7 +893,6 @@
     "muscle_share": "{{muscle}} ({{share}})",
     "duration_hm": "{{h}} Std. {{m}} Min.",
     "duration_m": "{{m}} Min.",
-    "set_seconds": "{{value}} s",
     "sr_longest_outing": "Längste Tour",
     "row_outside": "Zeit draußen",
     "row_outside_note": "in Bewegung, auf Touren",

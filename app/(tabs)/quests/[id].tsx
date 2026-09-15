@@ -49,6 +49,7 @@ import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
+import { formatCount } from "@/db/targets";
 import { outingXpPerMinute } from "@/db/xp";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -712,8 +713,7 @@ export default function QuestDetails() {
                       // "Up to" is a ceiling, and an outing has none: it is paid for the ground
                       // it covers, with no target over it. See `outingEffortSeconds` in db/xp.ts.
                       label={t(isOuting ? "quests.reward_xp_open" : "quests.reward_xp_estimate", {
-                        count: xpReward,
-                        defaultValue: `+${xpReward} XP`,
+                        count: formatCount(language, xpReward),
                       })}
                       tone="secondary"
                     />

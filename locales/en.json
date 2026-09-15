@@ -893,7 +893,6 @@
     "muscle_share": "{{muscle}} ({{share}})",
     "duration_hm": "{{h}}h {{m}}m",
     "duration_m": "{{m}} min",
-    "set_seconds": "{{value}}s",
     "sr_longest_outing": "Longest outing",
     "row_outside": "Time outside",
     "row_outside_note": "moving time on outings",

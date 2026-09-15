@@ -12,6 +12,7 @@ import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { formatDuration } from "@/db/estimate";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestExercise } from "@/db/quests";
+import type { ExerciseStyle } from "@/db/schema";
 import { formatTarget, type Target } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
@@ -30,13 +31,14 @@ function resolveExerciseImage(path?: string | null): ImageSourcePropType | null 
 /**
  * A target in the words the hero reads it in.
  *
- * `formatTarget` prints seconds raw, which is fine at plank length and unreadable past a minute:
- * an expedition asks for 900, and "900s" is not a number anybody converts. Time targets go
- * through `formatDuration`, the app's own exact form — "15 min" above the minute, still "30s"
- * below it, so nothing shorter than a round changes. Reps stay `formatTarget`'s job.
+ * A hold and a count are `formatTarget`'s, the same "1:00" the session and the Journal print. An
+ * outing is not a hold: it asks for 900 s, and "15:00" reads as a stopwatch where "15 min" reads
+ * as a walk, so its time goes through `formatDuration`.
  */
-function targetLabel(target: Target, language: AppLanguage): string {
-  return target.type === "time" ? formatDuration(target.value) : formatTarget(target, language);
+function targetLabel(target: Target, style: ExerciseStyle, language: AppLanguage): string {
+  return style === NON_REP_STYLE && target.type === "time"
+    ? formatDuration(target.value, language)
+    : formatTarget(target, language);
 }
 
 /** Everything the shut row leaves out: the art, the how-to, and the way to the movement's screen. */
@@ -229,7 +231,7 @@ export function QuestExerciseRow({
           <XStack items="center" gap="$2" flexWrap="wrap">
             {showTarget ? (
               <Tag
-                label={targetLabel(qex.target, language)}
+                label={targetLabel(qex.target, qex.exercise.style, language)}
                 tone={qex.target.type === "time" ? "secondary" : "primary"}
               />
             ) : null}
@@ -239,7 +241,11 @@ export function QuestExerciseRow({
             {qex.ghost ? (
               <Tag
                 label={t("quests.ghost_last", {
-                  value: targetLabel({ type: qex.target.type, value: qex.ghost.last }, language),
+                  value: targetLabel(
+                    { type: qex.target.type, value: qex.ghost.last },
+                    qex.exercise.style,
+                    language,
+                  ),
                   defaultValue: `Last: ${qex.ghost.last}`,
                 })}
                 tone="secondary"

@@ -95,7 +95,7 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, onPick }: Prop
   const presets: { key: number; label: string; goal: OutingGoal }[] = durationTab
     ? DURATION_PRESETS_SECONDS.map((seconds) => ({
         key: seconds,
-        label: formatDuration(seconds),
+        label: formatDuration(seconds, language),
         goal: { type: "time", seconds },
       }))
     : DISTANCE_PRESETS_M[unit].map((metres) => ({

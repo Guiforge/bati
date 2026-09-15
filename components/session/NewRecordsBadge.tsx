@@ -14,6 +14,7 @@ import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db/estimate";
 import type { NewRecordResult } from "@/db/personalRecords";
 import type { DistanceUnit } from "@/db/preferences";
+import { formatCount, formatTarget } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { useSettingsStore } from "@/stores/settings";
@@ -72,17 +73,16 @@ function formatRecordValue(
   language: AppLanguage,
 ): string {
   switch (record.recordType) {
-    // Unchanged: this is how a hold's target already reads everywhere else (`formatTarget` in
-    // db/targets.ts), so it stays raw seconds with an "s" rather than switching to
-    // `formatDuration`'s "4 min 43s" shape.
+    // A hold reads the way every hold does (`formatTarget`), not in `formatDuration`'s
+    // "4 min 43s" shape, which is a session's.
     case "exercise_max_time":
-      return `${record.newValue}s`;
+      return formatTarget({ type: "time", value: record.newValue }, language);
     case "longest_session":
-      return formatDuration(record.newValue);
+      return formatDuration(record.newValue, language);
     case "longest_outing":
       return formatDistance(record.newValue, unit, language);
     default:
-      return `${record.newValue}`;
+      return formatCount(language, record.newValue);
   }
 }
 

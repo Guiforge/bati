@@ -7,11 +7,8 @@ import {
   ageOf,
   dayAfter,
   daysUntil,
-  formatCount,
-  formatHold,
   formatHoursMinutes,
   formatShare,
-  formatWallValue,
   shortDate,
   targetToBeat,
 } from "@/components/journal/journalFormat";
@@ -33,6 +30,7 @@ import { formatDistance } from "@/constants/distanceFormat";
 import { dayKey } from "@/db/dates";
 import type { DayActivity, WallEntry } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { formatCount, formatTargetValue } from "@/db/targets";
 import { inSentence, localizedName, localizedTitle } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 import type { JournalStats } from "./useJournalStats";
@@ -224,7 +222,7 @@ function recordWhen(t: TFunction, language: AppLanguage, at: Date, now: Date): s
 
 function wallSub(t: TFunction, language: AppLanguage, entry: WallEntry, now: Date): string {
   if (entry.best == null || entry.recordAt == null) return t("journal.wall_never");
-  const value = (v: number) => formatWallValue(v, entry.type, language);
+  const value = (v: number) => formatTargetValue({ type: entry.type, value: v }, language);
   const best = value(entry.best);
   const when = recordWhen(t, language, entry.recordAt, now);
   if (isOldRecord(entry, now) && entry.seasonBest != null) {
@@ -308,7 +306,7 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
               </YStack>
               <YStack items="flex-end">
                 <NNum fontSize={24} lineHeight={26} color="$resourceGold">
-                  {entry.type === "time" ? formatHold(target) : number(language, target)}
+                  {formatTargetValue({ type: entry.type, value: target }, language)}
                 </NNum>
                 <NKickerQuiet fontSize={9.5}>
                   {entry.type === "time" ? t("journal.unit_hold") : t("journal.unit_reps")}

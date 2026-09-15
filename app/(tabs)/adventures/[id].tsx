@@ -40,6 +40,7 @@ import {
 import { type BossFight, getBossFightByAdventure } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -596,7 +597,7 @@ export default function AdventureDetailsScreen() {
                   {preview ? (
                     <Chip
                       label={t("adventures.reward_xp_per_step", {
-                        count: preview.xp,
+                        count: formatCount(language, preview.xp),
                       })}
                       tone="secondary"
                     />

@@ -36,6 +36,7 @@ import { threatRank } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
+import { formatCount } from "@/db/targets";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -136,8 +137,7 @@ function buildAdventureRow(
       defaultValue: `${a.stepsCount} steps`,
     }),
     xpLabel: t("adventures.reward_xp_per_step", {
-      count: xp,
-      defaultValue: `up to +${xp} XP per step`,
+      count: formatCount(language, xp),
     }),
     finishedCount,
     starsLabel: starsFor(finishedCount),

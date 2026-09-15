@@ -671,7 +671,6 @@
     "muscle_share": "{{muscle}} ({{share}})",
     "duration_hm": "{{h}} h {{m}}",
     "duration_m": "{{m}} min",
-    "set_seconds": "{{value}} s",
     "sr_longest_outing": "Plus longue sortie",
     "row_outside": "Temps dehors",
     "row_outside_note": "en mouvement, pendant les sorties",

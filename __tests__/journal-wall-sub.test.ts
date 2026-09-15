@@ -42,11 +42,11 @@ describe("the wall's line under a movement", () => {
     expect(wallSub(t, language, entry({}), now).after).toContain("11");
   });
 
-  test("a count of reps carries its unit, a hold reads as a clock", () => {
+  test("a count of reps carries its unit, a hold under a minute reads in seconds", () => {
     const t = i18n.getFixedT("en");
     expect(wallSub(t, "en", entry({}), now).after).toBe(" · last time 11 reps");
     expect(wallSub(t, "en", entry({ type: "time", best: 70, last: 56 }), now).after).toBe(
-      " · last time 0:56",
+      " · last time 56s",
     );
   });
 

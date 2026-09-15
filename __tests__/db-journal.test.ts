@@ -194,14 +194,14 @@ describe("db/journal", () => {
       .all() as { id: number }[];
     const [low, high] = climbable.map((r) => r.id);
     assert(low && high);
-    // `high` is met in two sessions, `low` in one: the rung shown is `high`'s.
+    // `high` is met in the last two sessions in a row, `low` in one: the rung shown is `high`'s.
     for (const [id, day, value] of [
       [1, 5, 12],
       [2, 3, 12],
       [3, 1, 12],
     ] as const) {
       session(id, daysAgo(day));
-      set(id, high, id === 3 ? 4 : value, daysAgo(day));
+      set(id, high, id === 1 ? 4 : value, daysAgo(day));
       if (id === 3) set(id, low, value, daysAgo(day), 1);
     }
     const { getCompletedSessionById } =

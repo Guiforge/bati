@@ -23,6 +23,7 @@ import {
   fetchLadderRows,
   PROGRESSION_SESSIONS_REQUIRED,
   recentMetFlagsBatch,
+  streakOf,
   type VariationStep,
 } from "./exercises";
 import { getMovementRecords } from "./personalRecords";
@@ -881,7 +882,8 @@ export async function getSessionRung(session: CompletedSession): Promise<Variati
     const from = rows.find((r) => r.id === id);
     const next = rows.find((r) => r.prerequisiteExerciseId === id);
     if (!from || !next) continue;
-    const metTarget = (flags.get(id) ?? []).filter(Boolean).length;
+    // The run at the head, the way `getNextProgression` counts it: the two must not disagree.
+    const metTarget = streakOf(flags.get(id) ?? []);
     if (best && metTarget <= best.metTarget) continue;
     best = {
       from: ref(from),

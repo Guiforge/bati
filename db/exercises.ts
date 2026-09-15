@@ -408,7 +408,7 @@ const stripPrerequisite = ({
  * The run at the head, not a count: `[hit, miss, hit]` used to read as 2, and "1 more time" was
  * then a lie, because one more clean session makes `[hit, hit, miss]`, still not earned.
  */
-function streakOf(flags: readonly boolean[]): number {
+export function streakOf(flags: readonly boolean[]): number {
   const miss = flags.indexOf(false);
   return Math.min(miss === -1 ? flags.length : miss, PROGRESSION_SESSIONS_REQUIRED);
 }

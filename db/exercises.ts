@@ -332,8 +332,9 @@ async function fetchLadderRows(): Promise<LadderRow[]> {
 }
 
 /**
- * How recent a session has to be to still count towards a rung. Ability is current, not
- * historical — three clean sets from last spring say nothing about today. Eight weeks is wide
+ * How recent a session has to be to still count towards opening the next rung. That ability is
+ * current, not historical: three clean sets from last spring say nothing about today. The floor is
+ * another matter, and the window does not govern it (`rungsBehind`). Eight weeks is wide
  * enough that a rest week or a deload costs nothing (the research asks for >=2 sessions a week
  * per movement, so three of them span about a fortnight of normal training).
  */
@@ -401,9 +402,20 @@ const stripPrerequisite = ({
   imagePath,
 });
 
+/**
+ * How many of the most recent sessions in a row met their target, capped at what a rung asks for.
+ *
+ * The run at the head, not a count: `[hit, miss, hit]` used to read as 2, and "1 more time" was
+ * then a lie, because one more clean session makes `[hit, hit, miss]`, still not earned.
+ */
+function streakOf(flags: readonly boolean[]): number {
+  const miss = flags.indexOf(false);
+  return Math.min(miss === -1 ? flags.length : miss, PROGRESSION_SESSIONS_REQUIRED);
+}
+
 async function buildStep(from: LadderRow, next: LadderRow): Promise<VariationStep> {
   const flags = await recentMetFlags(from.id, PROGRESSION_SESSIONS_REQUIRED);
-  const metTarget = flags.filter(Boolean).length;
+  const metTarget = streakOf(flags);
 
   return {
     from: stripPrerequisite(from),
@@ -432,20 +444,54 @@ export async function getNextProgression(exerciseId: number): Promise<VariationS
   return await buildStep(from, next);
 }
 
-/** A rung on the chain leading to a movement, and whether the hero has mastered it. */
+/** A rung on the chain leading to a movement, and whether the hero has mastered it *lately*. */
 export type ChainRung = {
   exercise: MovementRef;
+  /** The run of on-target sessions at the head of the recency window (`streakOf`). */
   metTarget: number;
   required: number;
+  /** Current, windowed: what opens the next rung today. Where the hero stands is `Chain`'s. */
   isEarned: boolean;
 };
 
 export type Chain = {
   /** Easiest first, ending on the movement asked for. */
   rungs: ChainRung[];
-  /** 1-based rung the hero is standing on: the first one not yet mastered. */
+  /** 1-based rung the hero is standing on: the one just above the highest rung behind them. */
   position: number;
+  /** Every rung, the last one included, is behind the hero (`rungsBehind`). */
+  climbed: boolean;
 };
+
+/**
+ * How many rungs of a chain (ids, easiest first) are behind the hero. What is behind you stays
+ * there: a rung is behind once it has been earned *ever*, or once any rung above it has been
+ * earned ever, or has a single on-target session inside the recency window.
+ *
+ * Recency still decides what opens *upwards* (`getNextProgression`, the victory screen). It no
+ * longer decides the floor: under the old rule, a hero who climbed to push-ups and stopped doing
+ * wall push-ups was sent back to the wall eight weeks later, on the exercise page and in every
+ * quest (exercise sheet audit, 2026-09-15).
+ *
+ * The one reader of "where does the hero stand", shared by `getChainTo` and `currentRungFor` so
+ * the path card and the quest slot can never disagree.
+ *
+ * ponytail: one clean session on a rung puts everything below it behind the hero, and a target the
+ * hero lowered to 1 counts as clean (see `recentMetFlags`). Read the template's own target if
+ * heroes start skipping rungs that way.
+ */
+function rungsBehind(
+  chain: readonly number[],
+  everEarned: ReadonlySet<number>,
+  recentFlags: ReadonlyMap<number, boolean[]>,
+): number {
+  let behind = 0;
+  chain.forEach((id, index) => {
+    if (everEarned.has(id)) behind = index + 1;
+    else if (recentFlags.get(id)?.some(Boolean)) behind = Math.max(behind, index);
+  });
+  return behind;
+}
 
 /**
  * The whole path up to a movement — what the hero has to own before it, and where they stand.
@@ -472,25 +518,21 @@ export async function getChainTo(exerciseId: number): Promise<Chain | null> {
 
   if (chain.length < 2) return null;
 
-  const rungs = await Promise.all(
-    chain.map(async (row): Promise<ChainRung> => {
-      const flags = await recentMetFlags(row.id, PROGRESSION_SESSIONS_REQUIRED);
-      const metTarget = flags.filter(Boolean).length;
-      return {
-        exercise: stripPrerequisite(row),
-        metTarget,
-        required: PROGRESSION_SESSIONS_REQUIRED,
-        isEarned: metTarget >= PROGRESSION_SESSIONS_REQUIRED,
-      };
-    }),
-  );
+  const ids = chain.map((row) => row.id);
+  const [flags, everEarned] = await Promise.all([recentMetFlagsBatch(ids), everEarnedMovements()]);
 
-  // Contiguous from the bottom: mastering a hard variation out of order does not skip the ones
-  // below it, and the count would otherwise read as progress the hero has not made.
-  let climbed = 0;
-  while (rungs[climbed]?.isEarned) climbed++;
+  const rungs = chain.map((row): ChainRung => {
+    const metTarget = streakOf(flags.get(row.id) ?? []);
+    return {
+      exercise: stripPrerequisite(row),
+      metTarget,
+      required: PROGRESSION_SESSIONS_REQUIRED,
+      isEarned: metTarget >= PROGRESSION_SESSIONS_REQUIRED,
+    };
+  });
 
-  return { rungs, position: Math.min(climbed + 1, rungs.length) };
+  const behind = rungsBehind(ids, everEarned, flags);
+  return { rungs, position: Math.min(behind + 1, rungs.length), climbed: behind === rungs.length };
 }
 
 /**
@@ -509,8 +551,35 @@ export async function getChainTo(exerciseId: number): Promise<Chain | null> {
  * a stretch long enough is a movement earned. It used to return a flag per movement per session
  * and fold them in JS, 3 200 rows at five years of journal, on every Journal open (perf audit,
  * 2026-09-15).
+ *
+ * It also decides where the hero stands (`rungsBehind`), so it runs for every quest Home resolves.
+ * The answer is kept for as long as the journal is the same journal: the row count and the last
+ * row id change on every session saved or deleted (`completed_exercises.id` is AUTOINCREMENT, so an
+ * id is never handed out twice), and reading both is an index walk instead of a window over the
+ * whole table. No writer has to remember to invalidate it.
+ *
+ * ponytail: an in-place UPDATE of a result would go unseen. Nothing writes one today; the day a
+ * set becomes editable, clear `everEarnedCache` in that writer.
  */
+let everEarnedCache: { stamp: string; earned: Promise<Set<number>> } | null = null;
+
 async function everEarnedMovements(): Promise<Set<number>> {
+  const [journal] = await db.all<{ rows: number; lastId: number | null }>(
+    sql`SELECT COUNT(*) AS rows, MAX(id) AS lastId FROM completed_exercises`,
+  );
+  const stamp = `${journal?.rows}:${journal?.lastId}`;
+  if (everEarnedCache?.stamp !== stamp) {
+    const entry = { stamp, earned: readEverEarnedMovements() };
+    everEarnedCache = entry;
+    entry.earned.catch(() => {
+      // Don't cache a failure: this caller still gets the rejection, the next one retries.
+      if (everEarnedCache === entry) everEarnedCache = null;
+    });
+  }
+  return everEarnedCache.earned;
+}
+
+async function readEverEarnedMovements(): Promise<Set<number>> {
   const rows = await db.all<{ exerciseId: number }>(sql`
     SELECT DISTINCT exerciseId FROM (
       SELECT exerciseId, met,
@@ -535,10 +604,11 @@ async function everEarnedMovements(): Promise<Set<number>> {
 /**
  * `recentMetFlags` for many movements at once — the *current* state, windowed, most recent first.
  *
- * `everEarnedMovements` above answers a different question (did it *ever* happen, unwindowed, for
- * the trophy shelf) and cannot stand in: a hero who owned a rung last spring is not standing on it
- * tonight. This is the same seek `recentMetFlags` does, hoisted out of the per-movement loop
- * because `currentRungFor` needs it for every rung of every slot of a quest.
+ * Every session inside the window, not only the last three: `rungsBehind` asks whether *any* of
+ * them was clean, `streakOf` stops at the first miss anyway, and the window bounds the length.
+ * `everEarnedMovements` above answers the other question (did a run *ever* happen, unwindowed).
+ * This is the same seek `recentMetFlags` does, hoisted out of the per-movement loop because
+ * `currentRungFor` needs it for every rung of every slot of a quest.
  */
 async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<number, boolean[]>> {
   if (exerciseIds.length === 0) return new Map();
@@ -568,23 +638,19 @@ async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<number, b
   const byExercise = new Map<number, boolean[]>();
   for (const row of rows) {
     const flags = byExercise.get(row.exerciseId) ?? [];
-    // Most recent first, and only as many as a rung is judged on — the `limit` of the
-    // per-movement query, applied here because one query serves every movement.
-    if (flags.length < PROGRESSION_SESSIONS_REQUIRED) {
-      flags.push(row.met === 1);
-      byExercise.set(row.exerciseId, flags);
-    }
+    flags.push(row.met === 1);
+    byExercise.set(row.exerciseId, flags);
   }
   return byExercise;
 }
 
 /**
- * For each movement asked about, the one the hero is actually working: the lowest rung of its
- * chain they have not yet earned, or the movement itself once everything below it is owned.
+ * For each movement asked about, the one the hero is actually working: the rung just above the
+ * highest one behind them (`rungsBehind`), or the movement itself once everything below it is.
  *
  * This is what stops a quest handing classical push-ups to someone whose last session was wall
- * push-ups (issue #33). It reads the same `isEarned` rule the exercise screen shows, so the app
- * never prescribes something it is simultaneously telling the hero to work up to.
+ * push-ups (issue #33). It reads the same standing the exercise screen shows, so the app never
+ * prescribes something it is simultaneously telling the hero to work up to.
  *
  * Batched rather than `getChainTo` per slot: that walks the whole `exercises` table and seeks the
  * journal once per rung, and this runs for every slot of every quest Home resolves.
@@ -615,62 +681,37 @@ export async function currentRungFor(exerciseIds: number[]): Promise<Map<number,
     chains.set(id, chain);
   }
 
-  const flags = await recentMetFlagsBatch([...new Set([...chains.values()].flat())]);
-  const earned = (exerciseId: number): boolean =>
-    (flags.get(exerciseId) ?? []).filter(Boolean).length >= PROGRESSION_SESSIONS_REQUIRED;
+  const [flags, everEarned] = await Promise.all([
+    recentMetFlagsBatch([...new Set([...chains.values()].flat())]),
+    everEarnedMovements(),
+  ]);
 
   const result = new Map<number, number>();
   for (const id of wanted) {
     const chain = chains.get(id) ?? [];
-    // Contiguous from the bottom, exactly as `getChainTo` counts: owning a hard variation out of
-    // order does not skip the ones below it.
-    let climbed = 0;
-    while (climbed < chain.length && earned(chain[climbed] as number)) climbed++;
-
-    // `chain[climbed]` is the first unearned rung; past the top it is undefined, which means
-    // everything is owned and the movement as written is the right one.
-    result.set(id, chain[climbed] ?? id);
+    // `chain[behind]` is the rung the hero stands on; past the top it is undefined, which means
+    // everything is behind them and the movement as written is the right one.
+    result.set(id, chain[rungsBehind(chain, everEarned, flags)] ?? id);
   }
   return result;
 }
 
 /**
- * How many complete paths the hero has ever climbed — every rung of a route, summit included.
+ * How many paths the hero has ever climbed: routes whose summit is behind them.
  *
  * A path is identified by its summit: walking a chain *down* is unambiguous (one prerequisite per
  * movement) and branching only happens going up, so a movement nobody else builds on ends exactly
- * one route. Derived from the journal on read, like everything else here; nothing is stored.
+ * one route. A summit earned once puts every rung under it behind the hero (`rungsBehind`), which
+ * is what the path card reads as climbed, so the trophy asks nothing more. Derived from the
+ * journal on read, like everything else here; nothing is stored.
  */
 export async function countClimbedPaths(): Promise<number> {
   const [rows, earned] = await Promise.all([fetchLadderRows(), everEarnedMovements()]);
 
-  const byId = new Map(rows.map((r) => [r.id, r]));
-  const isPrerequisite = new Set(rows.map((r) => r.prerequisiteExerciseId).filter(Boolean));
-  const summits = rows.filter(
-    (r) => r.prerequisiteExerciseId !== null && !isPrerequisite.has(r.id),
-  );
-
-  let climbed = 0;
-
-  for (const summit of summits) {
-    const seen = new Set<number>();
-    let cursor: LadderRow | undefined = summit;
-    let whole = true;
-
-    // `seen` guards a cycle in the seed data, which would otherwise hang rather than fail.
-    while (cursor && !seen.has(cursor.id)) {
-      seen.add(cursor.id);
-      if (!earned.has(cursor.id)) {
-        whole = false;
-        break;
-      }
-      cursor = cursor.prerequisiteExerciseId ? byId.get(cursor.prerequisiteExerciseId) : undefined;
-    }
-
-    if (whole) climbed++;
-  }
-
-  return climbed;
+  const isPrerequisite = new Set(rows.map((r) => r.prerequisiteExerciseId));
+  return rows.filter(
+    (r) => r.prerequisiteExerciseId !== null && !isPrerequisite.has(r.id) && earned.has(r.id),
+  ).length;
 }
 
 /**

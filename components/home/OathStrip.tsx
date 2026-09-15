@@ -9,7 +9,7 @@ import { Award, ChevronRight } from "@/components/icons";
 import { useOathText } from "@/components/oath/useOathText";
 import { type Chain, getChainTo } from "@/db/exercises";
 import { getOathProgress, type OathProgress, oathNeedsExercise } from "@/db/oaths";
-import { readPath } from "@/db/paths";
+import { pathCaption, readPath } from "@/db/paths";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -86,14 +86,11 @@ function SwornStrip({ oath }: { oath: OathProgress }) {
 
   const climbing = chain !== null && !oath.isFulfilled;
   const path = climbing && chain ? readPath(chain, language) : null;
+  const caption = climbing && chain ? pathCaption(chain, language, t) : null;
 
   const detail = oath.isFulfilled
     ? t("oath.card_fulfilled")
-    : chain && path?.name
-      ? path.isClimbed
-        ? t("exercises.path_climbed", { path: path.name })
-        : t("exercises.path_rung", { path: path.name, position: chain.position, total: path.total })
-      : t("oath.card_progress", { current: oath.current, target: oath.target });
+    : (caption ?? t("oath.card_progress", { current: oath.current, target: oath.target }));
 
   return (
     <>

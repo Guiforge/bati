@@ -9,23 +9,6 @@ import type { QuestTargetType } from "@/db/schema";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** A hold as a clock: 70 → "1:10", 56 → "0:56". The wall's column, where holds line up. */
-export function formatHold(seconds: number): string {
-  const s = Math.max(0, Math.round(seconds));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
-
-/** A set as it reads in a row of sets: "12", "39s" ("39 s" in French), "1:04". */
-export function formatSet(t: TFunction, value: number, type: QuestTargetType | null): string {
-  if (type !== "time") return String(value);
-  return value < 60 ? t("journal.set_seconds", { value }) : formatHold(value);
-}
-
-/** A movement's value in the wall's column: reps as a count, holds as a clock. */
-export function formatWallValue(value: number, type: QuestTargetType, language: string): string {
-  return type === "time" ? formatHold(value) : formatCount(language, value);
-}
-
 /**
  * What beats a record: one more in the movement's own unit. A rep for reps, a second for a hold.
  * A movement never logged is beaten by anything at all, so its target is one.
@@ -145,11 +128,6 @@ export function shortDate(language: string, date: Date, now = new Date()): strin
       ? { day: "numeric", month: "short" }
       : { day: "numeric", month: "short", year: "numeric" };
   return getDateTimeFormat(language, options).format(date);
-}
-
-/** A count with the language's own thousands separator: "2,936", "2 936", "2.936". */
-export function formatCount(language: string, value: number): string {
-  return new Intl.NumberFormat(language).format(Math.round(value));
 }
 
 /** A share, 0 to 100, the way the language writes a percentage: "45%", "45 %". */

@@ -629,7 +629,7 @@ import { estimateQuestSeconds, formatDuration } from "@/db";
 const seconds = estimateQuestSeconds(quest);
 
 // Format for display
-const display = formatDuration(seconds); // "15 min" or "1h 30min"
+const display = formatDuration(seconds, language); // "15 min", "12 min 17s" ("12 min 17 s" in French)
 ```
 
 ---

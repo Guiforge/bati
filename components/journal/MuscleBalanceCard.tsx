@@ -4,7 +4,7 @@ import { Progress, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Target } from "@/components/icons";
-import { formatCount, formatShare } from "@/components/journal/journalFormat";
+import { formatShare } from "@/components/journal/journalFormat";
 import {
   getBalanceRecommendation,
   getMuscleBalance,
@@ -13,6 +13,7 @@ import {
   type MuscleBalance,
   type PatternBalance,
 } from "@/db/muscleBalance";
+import { formatCount } from "@/db/targets";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 

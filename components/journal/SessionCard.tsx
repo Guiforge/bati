@@ -10,6 +10,7 @@ import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
 import { hasGround } from "@/db/expeditions";
 import type { DifficultyCode, Locomotion } from "@/db/schema";
+import { formatCount } from "@/db/targets";
 import type { LngLat } from "@/src/gps/trace";
 import { useSettingsStore } from "@/stores/settings";
 import { TraceThumb } from "./TraceThumb";
@@ -86,7 +87,9 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
       : { ...SESSION_DATE_OPTIONS, year: "numeric" },
   ).format(performed);
 
-  const durationLabel = entry.durationSeconds ? formatDuration(entry.durationSeconds) : "--";
+  const durationLabel = entry.durationSeconds
+    ? formatDuration(entry.durationSeconds, language)
+    : "--";
   // An outing's row leads with the ground, which is the one number a walk is remembered by.
   const metaLabel = hasGround(entry)
     ? `${formatDistance(entry.leaguesM, unit, language)} · ${durationLabel}`
@@ -98,7 +101,9 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
   // nothing on a walk.
   const details = [
     metaLabel,
-    entry.xpEarned > 0 ? t("quests.reward_xp", { count: entry.xpEarned }) : null,
+    entry.xpEarned > 0
+      ? t("quests.reward_xp", { count: formatCount(language, entry.xpEarned) })
+      : null,
     entry.outing ? null : t(`quests.level_${entry.userLevel}`, entry.userLevel),
   ]
     .filter(Boolean)

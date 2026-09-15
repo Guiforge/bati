@@ -47,6 +47,7 @@ import { isMuscleCode, MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
 import { type QuestTemplate, questTrainingLevel } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
+import { formatCount } from "@/db/targets";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -217,8 +218,8 @@ function buildQuestMeta(
     // "Up to" is a claim about a maximum, and an outing has none: its XP follows the ground
     // covered with no target overhead it. See the outing branch in `setEffortSeconds`.
     xpLabel: isOutingQuest(q, exercisesById)
-      ? t("quests.reward_xp_open", { count: xp, defaultValue: `+${xp} XP` })
-      : t("quests.reward_xp_estimate", { count: xp, defaultValue: `up to +${xp} XP` }),
+      ? t("quests.reward_xp_open", { count: formatCount(language, xp) })
+      : t("quests.reward_xp_estimate", { count: formatCount(language, xp) }),
     heroLabel: isUserQuest(q) ? t("common.hero_badge") : null,
     // The archetype line above reads "Metabolic" on all three outings, which is true of their
     // shape and says nothing about where they happen. This is the word that does.

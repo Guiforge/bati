@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
-import { formatCount, formatHoursMinutes, shortDate } from "@/components/journal/journalFormat";
+import { formatHoursMinutes, shortDate } from "@/components/journal/journalFormat";
 import { NKicker, NMuted, NNum, NPage, NRule, NText } from "@/components/journal/nocturne";
 import { formatDistance } from "@/constants/distanceFormat";
 import {
@@ -13,6 +13,7 @@ import {
   type SessionBest,
 } from "@/db/journal";
 import { type FlameDetail, getFlameDetail } from "@/db/streaks";
+import { formatCount } from "@/db/targets";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";

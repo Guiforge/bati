@@ -50,6 +50,12 @@ Journal's own pieces are in `components/journal/nocturne.tsx`, one per Nocturne 
 The record's date is not stored: it is the first row that reached the standing best, which is
 exactly when `checkForNewRecords` (a strict `>`) wrote it.
 
+Every hold and count on the Journal goes through `formatTargetValue` / `formatTarget` in
+`db/targets.ts`, the same rule as the session, the quest screen and the exercise sheet: a hold under
+a minute in seconds ("45s", "45 s" outside English), a clock from 60 s ("1:00"), and counts, reps
+and XP alike, with the language's thousands separator (`formatCount`: "1,000", "1 000", "1.000").
+A session's or an outing's length is `formatDuration` ("12 min 17s", "12 min 17 s").
+
 The page is read in one pass (`useJournalStats`) and, on focus, only when `getJournalVersion` says
 something changed: sessions (count, last id, XP, record flags), the oath, the unlocks, or the day.
 Pull-to-refresh always reads. Returning from a session used to re-run the whole read, 42 queries

@@ -8,9 +8,6 @@ import { XStack, YStack } from "tamagui";
 import { Trophy } from "@/components/icons";
 import {
   foldRounds,
-  formatCount,
-  formatHold,
-  formatSet,
   formatShare,
   shortDate,
   targetToBeat,
@@ -40,6 +37,7 @@ import { type CompletedSession, OUTING_COUNTS_AFTER_SECONDS } from "@/db/complet
 import type { VariationStep } from "@/db/exercises";
 import { type FallenRecord, type MuscleShift, type QuestStanding, sessionReps } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { formatCount, formatTargetValue } from "@/db/targets";
 import type { UserLevelInfo } from "@/db/userLevel";
 import type { LngLat } from "@/src/gps/trace";
 import { localizedName } from "@/src/i18n/localized";
@@ -103,12 +101,11 @@ function recordName(t: TFunction, language: AppLanguage, record: FallenRecord): 
 function recordValue(
   record: FallenRecord,
   distanceUnit: "metric" | "imperial",
-  language: string,
+  language: AppLanguage,
 ): string {
   if (record.kind === "longest_outing") return formatDistance(record.value, distanceUnit, language);
-  if (record.kind === "longest_session") return formatDuration(record.value);
-  if (record.type === "time") return formatHold(record.value);
-  return String(record.value);
+  if (record.kind === "longest_session") return formatDuration(record.value, language);
+  return formatTargetValue(record, language);
 }
 
 function RecordPanel({ records }: { records: FallenRecord[] }) {
@@ -124,9 +121,7 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
 
   const next =
     record.exerciseId != null
-      ? record.type === "time"
-        ? formatHold(targetToBeat(record.value))
-        : String(targetToBeat(record.value))
+      ? formatTargetValue({ type: record.type, value: targetToBeat(record.value) }, language)
       : null;
   const context =
     record.previous == null
@@ -135,8 +130,7 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
         : t("journal.record_first")
       : next
         ? t("journal.record_up", {
-            previous:
-              record.type === "time" ? formatHold(record.previous) : String(record.previous),
+            previous: formatTargetValue({ type: record.type, value: record.previous }, language),
             target: next,
           })
         : t("journal.record_beat", {
@@ -257,7 +251,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
         <YStack gap={6}>
           <NFact>
             <NText fontSize={13.5} lineHeight={19}>
-              {t("journal.moved_xp", { xp: session.xpEarned })}
+              {t("journal.moved_xp", { xp: formatCount(language, session.xpEarned) })}
               {latest ? (
                 <NMuted fontSize={13.5}>
                   {" · "}
@@ -378,14 +372,14 @@ function Rounds({ session }: { session: CompletedSession }) {
                     }
                   >
                     {i > 0 ? " · " : ""}
-                    {formatSet(t, set.value, set.type)}
+                    {formatTargetValue(set, language)}
                   </NNum>
                 ))}
               </NNum>
               <NMuted width={44} fontSize={11} style={{ textAlign: "right" }}>
                 {row.target
                   ? t("journal.target_of", {
-                      target: formatSet(t, row.target.value, row.target.type),
+                      target: formatTargetValue(row.target, language),
                     })
                   : ""}
               </NMuted>
@@ -401,6 +395,7 @@ function Rounds({ session }: { session: CompletedSession }) {
 function Ground({ data }: { data: QuestLogData }) {
   const { t } = useTranslation();
   const router = useRouter();
+  const language = useSettingsStore((s) => s.language);
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
   const { session, trace } = data;
   const moving = session.movingSeconds ?? session.durationSeconds ?? 0;
@@ -423,7 +418,7 @@ function Ground({ data }: { data: QuestLogData }) {
       )}
       <XStack gap={17} mt={11}>
         <YStack>
-          <NNum fontSize={17}>{formatDuration(moving)}</NNum>
+          <NNum fontSize={17}>{formatDuration(moving, language)}</NNum>
           <NMuted fontSize={10.5}>{t("journal.ground_moving")}</NMuted>
         </YStack>
         {session.ascentM != null && (
@@ -462,7 +457,7 @@ export function QuestLog({ data }: { data: QuestLogData }) {
     // A difficulty means nothing on a walk.
     outing ? null : t(`quests.level_${session.userLevel}`),
     rounds > 0 && !outing ? t("journal.rounds_completed", { count: rounds }) : null,
-    session.durationSeconds ? formatDuration(session.durationSeconds) : null,
+    session.durationSeconds ? formatDuration(session.durationSeconds, language) : null,
   ]
     .filter(Boolean)
     .join(" · ");

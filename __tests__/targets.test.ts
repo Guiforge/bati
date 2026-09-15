@@ -1,4 +1,11 @@
-import { Difficulty, formatTarget, generateTarget, retargetForMovement } from "@/db/targets";
+import {
+  Difficulty,
+  formatCount,
+  formatTarget,
+  formatTargetValue,
+  generateTarget,
+  retargetForMovement,
+} from "@/db/targets";
 
 describe("generateTarget", () => {
   it("scales reps by user level (easy < medium < hard)", () => {
@@ -68,6 +75,41 @@ describe("formatTarget", () => {
     expect(formatTarget({ type: "reps", value: 12 }, "de")).toBe("12 Wdh.");
     expect(formatTarget({ type: "time", value: 30 }, "en")).toBe("30s");
     expect(formatTarget({ type: "time", value: 30 }, "fr")).toBe("30 s");
+  });
+
+  // One rule for every screen. A 60 s hold read "60s" in the session, "1:00" in the Journal and
+  // "1 min" on the quest row, and 1000 reps read "1000 reps" beside the Journal's "1,000".
+  test("a hold is seconds under a minute and a clock from 60 s", () => {
+    const hold = (value: number, language: "en" | "fr" | "de" | "es") =>
+      formatTarget({ type: "time", value }, language);
+    expect(hold(59, "en")).toBe("59s");
+    expect(hold(59, "fr")).toBe("59 s");
+    expect(hold(59, "de")).toBe("59 s");
+    expect(hold(59, "es")).toBe("59 s");
+    for (const language of ["en", "fr", "de", "es"] as const) {
+      expect(hold(60, language)).toBe("1:00");
+      expect(hold(61, language)).toBe("1:01");
+      expect(hold(3600, language)).toBe("60:00");
+    }
+  });
+
+  test("a count takes the language's thousands separator", () => {
+    const reps = (value: number, language: "en" | "fr" | "de" | "es") =>
+      formatTarget({ type: "reps", value }, language);
+    expect(reps(999, "en")).toBe("999 reps");
+    expect(reps(1000, "en")).toBe("1,000 reps");
+    // CLDR: French groups with a narrow no-break space, Spanish only from five digits.
+    expect(reps(1000, "fr")).toBe("1 000 reps");
+    expect(reps(1000, "de")).toBe("1.000 Wdh.");
+    expect(reps(1000, "es")).toBe("1000 reps");
+    expect(formatCount("es", 10_000)).toBe("10.000");
+  });
+
+  test("a column of sets drops the rep word and keeps the hold's shape", () => {
+    expect(formatTargetValue({ type: "reps", value: 1000 }, "en")).toBe("1,000");
+    expect(formatTargetValue({ type: null, value: 12 }, "en")).toBe("12");
+    expect(formatTargetValue({ type: "time", value: 45 }, "fr")).toBe("45 s");
+    expect(formatTargetValue({ type: "time", value: 64 }, "fr")).toBe("1:04");
   });
 });
 

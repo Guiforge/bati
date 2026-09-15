@@ -70,12 +70,21 @@ describe("db/estimate", () => {
   // Measured durations, unlike estimates, keep their seconds. Untested until now, and the
   // function it sits next to had a dead `lang` parameter for exactly as long.
   it("keeps seconds on measured durations and drops empty halves", () => {
-    expect(formatDuration(45)).toBe("45s");
-    expect(formatDuration(600)).toBe("10 min");
-    expect(formatDuration(666)).toBe("11 min 6s");
-    expect(formatDuration(0)).toBe("0s");
-    expect(formatDuration(-5)).toBe("0s");
-    expect(formatDuration(59.6)).toBe("1 min");
+    expect(formatDuration(45, "en")).toBe("45s");
+    expect(formatDuration(600, "en")).toBe("10 min");
+    expect(formatDuration(666, "en")).toBe("11 min 6s");
+    expect(formatDuration(0, "en")).toBe("0s");
+    expect(formatDuration(-5, "en")).toBe("0s");
+    expect(formatDuration(59.6, "en")).toBe("1 min");
+  });
+
+  // "12 min 17s" was written the English way in every language; the seconds now wear the same
+  // suffix as a hold (`formatTarget`), and the minutes/seconds split is unchanged.
+  it("spaces the seconds the way the language spaces a hold", () => {
+    expect(formatDuration(737, "fr")).toBe("12 min 17 s");
+    expect(formatDuration(737, "de")).toBe("12 min 17 s");
+    expect(formatDuration(45, "es")).toBe("45 s");
+    expect(formatDuration(720, "fr")).toBe("12 min");
   });
 
   it("rounds adventure steps up to whole weeks, never below one", () => {

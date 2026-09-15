@@ -138,20 +138,58 @@ export function retargetForMovement(
 }
 
 /**
- * A target as the hero reads it. Lives here rather than on the quest screen because the session
- * shows the same numbers — a ghost line saying "18" has to use the same words as the target above
- * it, and two copies of this drift (see `localizedTitle()` in AGENTS.md, "one source per value").
+ * A target as the hero reads it, and the one rule for a hold or a count anywhere in the app. It
+ * lives here rather than on a screen because the session, the quest screen, the exercise sheet
+ * and the Journal all show the same numbers, and copies drift (see `localizedTitle()` in
+ * AGENTS.md, "one source per value"). There were four until 2026-09-15, and one 60 s hold read
+ * "60s", "1:00" or "1 min" depending on the screen.
  *
- * The unit follows the language: "reps" in English, French and Spanish (the `session.reps` key says
- * the same), "Wdh." in German, and a space before "s" everywhere but English. It was English only
- * until a German audit read "12 reps" under "Letztes Mal" (2026-09-15).
+ * - A hold under a minute is seconds: "45s" in English, "45 s" in the other languages.
+ * - From 60 s it is a clock: "1:00", "1:01", "60:00" at the hour a hold may not pass
+ *   (`TIME_TARGET_MAX`). "90s" has to be converted, "1:30" does not.
+ * - A count takes the language's thousands separator: "1,000", "1 000", "1.000".
+ *
+ * The rep word follows the language: "reps" in English, French and Spanish (the `session.reps` key
+ * says the same), "Wdh." in German. It was English only until a German audit read "12 reps" under
+ * "Letztes Mal" (2026-09-15).
+ *
+ * A session's or an outing's length is not a hold and keeps `formatDuration` ("15 min", in
+ * `db/estimate.ts`), which borrows `SECONDS_SUFFIX` so the two agree on the space.
  */
 const REPS_WORD: Localized = { en: "reps", fr: "reps", de: "Wdh.", es: "reps" };
-const SECONDS_SUFFIX: Localized = { en: "s", fr: " s", de: " s", es: " s" };
+export const SECONDS_SUFFIX: Localized = { en: "s", fr: " s", de: " s", es: " s" };
+
+// Built once per language: Intl constructors are among the costliest calls on Hermes (see
+// constants/dateFormatters.ts), and a ghost line formats on every render.
+const countFormats = new Map<string, Intl.NumberFormat>();
+
+/** A count with the language's own thousands separator: "2,936", "2 936", "2.936". Reps and XP. */
+export function formatCount(language: string, value: number): string {
+  let format = countFormats.get(language);
+  if (!format) {
+    format = new Intl.NumberFormat(language);
+    countFormats.set(language, format);
+  }
+  return format.format(Math.round(value));
+}
+
+/**
+ * A target's figure without the rep word, for a column of sets: "12", "1,000", "45s", "1:00".
+ * A null type is a count, as it was on every row that predates the unit.
+ */
+export function formatTargetValue(
+  target: { type: QuestTargetType | null; value: number },
+  language: AppLanguage,
+): string {
+  if (target.type !== "time") return formatCount(language, target.value);
+  const s = Math.max(0, Math.round(target.value));
+  if (s < 60) return `${s}${SECONDS_SUFFIX[language]}`;
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
 
 export function formatTarget(target: Target, language: AppLanguage): string {
-  if (target.type === "time") return `${target.value}${SECONDS_SUFFIX[language]}`;
-  return `${target.value} ${REPS_WORD[language]}`;
+  const value = formatTargetValue(target, language);
+  return target.type === "time" ? value : `${value} ${REPS_WORD[language]}`;
 }
 
 /**

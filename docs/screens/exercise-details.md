@@ -20,7 +20,9 @@ Exercise Details explains a single movement — and, when the movement sits on o
 - **Exercise media**: large image area for visual recognition.
 - **Localized name and description**: English/French content follows the active language.
 - **Equipment tag**: clarifies whether equipment is required.
-- **Timing hint**: seconds-per-rep guidance when available.
+- **Timing hint**: seconds-per-rep guidance on a counted movement. A hold (`measure = time`) and
+  an expedition get no chip: their `secondsPerRep` of 1 only feeds the duration estimator, and
+  "tempo 1s/rep" under a 45 s plank was not a fact about the plank.
 - **Muscle tags**: the muscles the movement trains.
 - **The path** — its name, a segment bar, and the rung the hero stands on. Tapping opens that
   rung.

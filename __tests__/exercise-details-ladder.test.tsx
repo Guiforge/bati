@@ -93,7 +93,10 @@ async function mountSummit(position: number, earned: boolean[], climbed = false)
     position,
     climbed,
   });
+  await mountScreen();
+}
 
+async function mountScreen() {
   await act(async () => {
     // Assigned rather than left as a bare statement: `render` returns a thenable-shaped result,
     // which the floating-promise rule reads as an unhandled promise.
@@ -163,15 +166,7 @@ describe("the path on the exercise screen", () => {
       position: 1,
       climbed: false,
     });
-    await act(async () => {
-      const _tree = render(
-        <TamaguiProvider config={config} defaultTheme="dark">
-          <ExerciseDetails />
-        </TamaguiProvider>,
-      );
-      await Promise.resolve();
-      return _tree;
-    });
+    await mountScreen();
 
     expect(screen.getByText("WORKING UP TO PLANK · RUNG 1 OF 2")).toBeTruthy();
   });
@@ -182,5 +177,40 @@ describe("the path on the exercise screen", () => {
 
     expect(screen.getByText(/PATH OF THE DRAGON · RUNG 1\/3/i)).toBeTruthy();
     expect(screen.queryByText(/CLIMBED/i)).toBeNull();
+  });
+
+  it("counts what is left as a run of sessions, which is what earns the rung", async () => {
+    // One clean session at the head: two more *in a row*, not "1 more time" out of three.
+    mockGetChainTo.mockResolvedValue(null);
+    mockGetNextProgression.mockResolvedValue({
+      from: movement(30, "Dragon Flag"),
+      next: movement(40, "Human Flag"),
+      metTarget: 1,
+      required: 3,
+      isEarned: false,
+    });
+    await mountScreen();
+
+    expect(screen.getByText("Hit your target 2 more sessions in a row to earn it.")).toBeTruthy();
+  });
+});
+
+describe("the tempo chip", () => {
+  beforeEach(() => mockGetChainTo.mockResolvedValue(null));
+
+  it("is not offered for a hold, which has no repetitions to pace", async () => {
+    // Plank, Wall Sit and Side Plank all carry `secondsPerRep = 1` for the estimator, and the
+    // page read "tempo 1s/rep" under a 45 s hold.
+    mockGetExerciseById.mockResolvedValue({ ...DRAGON_FLAG, measure: "time", secondsPerRep: 1 });
+    await mountScreen();
+
+    expect(screen.queryByText(/tempo/i)).toBeNull();
+  });
+
+  it("stays on a counted movement", async () => {
+    mockGetExerciseById.mockResolvedValue({ ...DRAGON_FLAG, measure: "reps" });
+    await mountScreen();
+
+    expect(screen.getByText("tempo 3s/rep")).toBeTruthy();
   });
 });

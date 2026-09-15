@@ -218,6 +218,17 @@ describe("db/exercises — variation ladder", () => {
       expect(chain?.climbed).toBe(false);
     });
 
+    test("the rung below says it is earned once the hero stands above it", async () => {
+      const plank = idOf("Plank");
+      logSet(plank, 45, 45);
+
+      // Dead Bug was never trained, but it is behind the hero: its next step must not ask for three
+      // more Dead Bug sessions while the Plank screen says "You are here".
+      const step = await exercisesApi().getNextProgression(idOf("Dead Bug"));
+      expect(step?.next.enName).toBe("Plank");
+      expect(step?.isEarned).toBe(true);
+    });
+
     test("a short session on a higher rung puts nothing behind the hero", async () => {
       const plank = idOf("Plank");
       logSet(plank, 20, 45);

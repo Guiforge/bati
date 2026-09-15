@@ -63,6 +63,10 @@ Three rules make that measure honest:
   not the clean sessions out of the last three. Ability to take the *next* step is current; three
   clean sets from last spring say nothing about today. The window is wide enough that a rest week
   or a deload costs nothing. This is what "Next rung", the victory screen and the quest log read.
+  One exception keeps the two cards on a page honest: when the hero already stands on the next
+  rung or above it, "Next rung" says it is earned (`getNextProgression`). The Wall Sit page used
+  to ask a hero who trains Squat for three more Wall Sit sessions while the Squat page said "You
+  are here".
 - **What is behind the hero stays there.** Where the hero *stands* is not windowed. A rung is
   behind them once it has been owned ever, or once any rung above it has been owned ever, or has
   one on-target session inside the window. The hero stands on the rung just above the highest one

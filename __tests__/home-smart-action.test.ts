@@ -60,7 +60,9 @@ jest.mock("react-i18next", () => {
         // i18next resolves a flat dotted key before splitting on "."; mirror that order.
         const found = walk([key]) ?? walk(key.split("."));
         if (typeof found !== "string") return key;
-        return found.replace(/{{(\w+)}}/g, (_: string, name: string) => String(opts?.[name] ?? ""));
+        return found.replace(/{{(\w+)(?:, *\w+)?}}/g, (_: string, name: string) =>
+          String(opts?.[name] ?? ""),
+        );
       },
     }),
   };

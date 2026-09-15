@@ -144,8 +144,10 @@ export function HomeHeader() {
           })}
         >
           <FlameFlicker size={FLAME_SIZES[flameLevel]} animate={currentStreak > 0} />
+          {/* No "0d" under an unlit flame: the dimmed flame already says it, and a zero reads as a
+              verdict on a first day (the Journal hides it too). */}
           <Text fontSize={11} fontWeight="700" color="$resourceGold">
-            {t("home.streak_short", { count: currentStreak })}
+            {currentStreak > 0 ? t("home.streak_short", { count: currentStreak }) : " "}
           </Text>
         </YStack>
       )}

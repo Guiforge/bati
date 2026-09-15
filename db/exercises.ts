@@ -441,7 +441,26 @@ export async function getNextProgression(exerciseId: number): Promise<VariationS
   const next = rows.find((r) => r.prerequisiteExerciseId === exerciseId);
   if (!from || !next) return null;
 
-  return await buildStep(from, next);
+  const step = await buildStep(from, next);
+  if (step.isEarned) return step;
+
+  // The hero already stands on `next` or above it: the Wall Sit screen told a hero who trains Squat
+  // that Squat still needed three more Wall Sit sessions, while the Squat screen said "You are
+  // here". Only what is *above* counts, the way `rungsBehind` reads it: a Wall Sit streak from last
+  // spring still does not open Squat, the window decides that.
+  const above = [next.id];
+  for (let i = 0; i < above.length; i++) {
+    for (const row of rows) {
+      // `includes` guards a cycle in the seed data, as `getChainTo`'s `seen` does.
+      if (row.prerequisiteExerciseId === above[i] && !above.includes(row.id)) above.push(row.id);
+    }
+  }
+  const [flags, everEarned] = await Promise.all([
+    recentMetFlagsBatch(above),
+    everEarnedMovements(),
+  ]);
+  const standsAbove = above.some((id) => everEarned.has(id) || flags.get(id)?.some(Boolean));
+  return standsAbove ? { ...step, metTarget: PROGRESSION_SESSIONS_REQUIRED, isEarned: true } : step;
 }
 
 /** A rung on the chain leading to a movement, and whether the hero has mastered it *lately*. */

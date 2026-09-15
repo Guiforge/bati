@@ -83,11 +83,15 @@ const DRAGON_FLAG = {
 
 const CORE_PATH = ["Dead Bug", "Hollow Body Hold", "Dragon Flag"];
 
-/** Mount the Dragon Flag page with the hero standing on `position`, and `earned` rungs marked. */
-async function mountSummit(position: number, earned: boolean[]) {
+/**
+ * Mount the Dragon Flag page with the hero standing on `position`, `earned` rungs marked as earned
+ * lately, and `climbed` saying whether the summit is behind them.
+ */
+async function mountSummit(position: number, earned: boolean[], climbed = false) {
   mockGetChainTo.mockResolvedValue({
     rungs: CORE_PATH.map((name, i) => rung((i + 1) * 10, name, earned[i] === true)),
     position,
+    climbed,
   });
 
   await act(async () => {
@@ -136,16 +140,23 @@ describe("the path on the exercise screen", () => {
   });
 
   it("declares the path climbed only once the hero has reached its top", async () => {
-    await mountSummit(3, [true, true, true]);
+    await mountSummit(3, [true, true, true], true);
 
     expect(screen.getByText(/PATH OF THE DRAGON · CLIMBED/i)).toBeTruthy();
     // Nothing left to point at: a climbed path is not a to-do list.
     expect(screen.queryByText(/You are on/i)).toBeNull();
   });
 
-  it("does not congratulate a beginner who mastered a high rung out of order", async () => {
-    // The top rung is earned, but both rungs under it are still owed — `getChainTo` counts
-    // contiguously from the bottom, so `position` stays 1.
+  it("stays climbed after the summit's last clean sessions leave the window", async () => {
+    // `isEarned` is windowed; where the hero stands is not. "Climbed" must not blink out after a
+    // quiet summer (rule C, `rungsBehind`).
+    await mountSummit(3, [false, false, false], true);
+
+    expect(screen.getByText(/PATH OF THE DRAGON · CLIMBED/i)).toBeTruthy();
+  });
+
+  it("reads the climb from the hero's standing, never from one rung's recent sessions", async () => {
+    // A top rung earned lately is not, on its own, a climbed path: `getChainTo` says whether it is.
     await mountSummit(1, [false, false, true]);
 
     expect(screen.getByText(/PATH OF THE DRAGON · RUNG 1\/3/i)).toBeTruthy();

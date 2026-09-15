@@ -128,14 +128,12 @@ export function readPath(chain: Chain, language: AppLanguage) {
   const summit = chain.rungs[total - 1]?.exercise;
   const here = chain.rungs[chain.position - 1]?.exercise;
 
-  // Both halves are required. `isEarned` alone is not the summit: a hero can master a high rung
-  // out of order while still standing on the first one, and "climbed" would then be a lie.
-  const isClimbed = chain.position === total && chain.rungs[total - 1]?.isEarned === true;
-
   return {
     total,
     here,
-    isClimbed,
+    // Behind the hero, not the summit's `isEarned`: that one is windowed, and "climbed" would
+    // blink out eight weeks after the hero stopped repeating a summit they own (`rungsBehind`).
+    isClimbed: chain.climbed,
     name: summit ? (pathName(summit.enName, language) ?? localizedName(summit, language)) : null,
   };
 }

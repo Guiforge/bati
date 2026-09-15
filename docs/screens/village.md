@@ -29,7 +29,7 @@ row can be read without a tap.
 2. **Over the painting's foot**: the village's name with the flame chip on the same line, "Tier ·
    Level N · Rank", then the 7-day focus line (sport emblem at 20 px plus "7-day focus · Legs").
    The focus line is last because above the name it sat on the bright top of the painting, and the
-   rank is `getRankName`: past level 20 the title carries the level ("Divine 44"), which the line
+   rank stops at "Divine" past level 20 (`getLevelTitle`): it used to carry the level ("Divine 44"), which the line
    already says.
 3. **The panel**, riding up over the painting's last 14 dp:
    - **The village tier** (`VillageTier`, `getTierProgress`), first in every state. The village
@@ -41,9 +41,9 @@ row can be read without a tap.
      12 and every building that can top out has) says so inside the same block, then how many
      deeds are still open.
    - **Next to rise** (`pickNextToRise`): the rep building fewest reps from its next rung, level 0
-     excluded (one rep builds any of them, so they would always win). Past the rep buildings, the
+     waiting while any is still rising (one rep builds those). Past the rep buildings, the
      deed with the most of its bar filled. It carries its bar with its unit at both ends ("60
-     reps", "level 2 at 100"), and a link named after what raises it: quests filtered on that
+     reps", "100 reps for level 2"), and a link named after what raises it: quests filtered on that
      muscle, the outings for the High Road, the adventures for the other deeds. When that building
      is unbuilt the title reads **Next to build** and there is no bar. On **day one** (`isDayOne`:
      nothing earned beyond the three starters; a walk counts) it states the rule instead, and links

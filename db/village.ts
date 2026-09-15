@@ -16,7 +16,7 @@ import {
   type MuscleCode,
 } from "./schema";
 import { type FlameLevel, getFlameLevel, getStreakInfo } from "./streaks";
-import { getRankName, getUserLevelInfo, getXpForLevel } from "./userLevel";
+import { getLevelTitle, getUserLevelInfo, getXpForLevel } from "./userLevel";
 import { repEquivalentSql } from "./workUnits";
 
 const { bossFights, adventures, adventureRuns, exercises, completedExercises, completedQuest } =
@@ -32,7 +32,7 @@ export type VillageTier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 // separate threshold table.
 //
 // Tiers 10-12 exist because the level curve does not end at 20: past it every rung costs a flat
-// 2000 XP and the title becomes "Divine N", so the hero kept climbing while the largest thing on
+// 2000 XP and the title stays "Divine", so the hero kept climbing while the largest thing on
 // this screen stopped forever. At roughly 360 XP a session that ceiling arrived in two or three
 // months. Their gaps widen (5, 7, 8 levels) because the XP per level is flat up there — equal
 // level gaps would make each tier arrive *sooner* in felt effort than the last, undoing what the
@@ -877,7 +877,7 @@ export async function getVillageScene(): Promise<VillageScene> {
   return {
     tier: getVillageTier(levelInfo.level),
     level: levelInfo.level,
-    title: getRankName(levelInfo.level),
+    title: getLevelTitle(levelInfo.level),
     totalXp: levelInfo.totalXp,
     xpPerSession,
     flame: getFlameLevel(streak.current),

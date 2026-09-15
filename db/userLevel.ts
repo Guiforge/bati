@@ -105,29 +105,16 @@ export function getXpForLevel(level: number): number {
 }
 
 /**
- * Get title for a given level
+ * The title a level carries. Past 20 it stays "Divine": it used to carry the level ("Divine 44"),
+ * and every place that shows a title shows the level beside it, so Home, the victory screen and
+ * the level-up card all read "Level 44 · Divine 44".
  */
 export function getLevelTitle(level: number): Localized {
-  // LEVEL_TITLES is keyed 1..20 and both branches stay inside it; the index signature does not
-  // know that, so both fall back to the same level-1 title the guard above returns.
+  // LEVEL_TITLES is keyed 1..20 and the clamp stays inside it; the index signature does not know
+  // that, so a miss falls back to the level-1 title.
   const first = LEVEL_TITLES[1] ?? { en: "Novice", fr: "Novice", de: "Novize", es: "Novato" };
   if (level <= 0) return first;
-  if (level <= 20) return LEVEL_TITLES[level] ?? first;
-  // Beyond 20, use "Divine" with level number
-  return {
-    en: `Divine ${level}`,
-    fr: `Divin ${level}`,
-    de: `Göttlich ${level}`,
-    es: `Divino ${level}`,
-  };
-}
-
-/**
- * The rank alone. Past 20 `getLevelTitle` carries the level in it ("Divine 44"), which a line
- * already reading "Level 44" then says twice.
- */
-export function getRankName(level: number): Localized {
-  return getLevelTitle(Math.min(level, 20));
+  return LEVEL_TITLES[Math.min(level, 20)] ?? first;
 }
 
 /**

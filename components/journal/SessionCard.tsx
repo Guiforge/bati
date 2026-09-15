@@ -77,14 +77,20 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
   const unit = useSettingsStore((s) => s.distanceUnit);
   const onPress = onPressEntry ? () => onPressEntry(entry.id) : undefined;
 
-  const dateLabel = getDateTimeFormat(language, SESSION_DATE_OPTIONS).format(
-    new Date(entry.performedAt),
-  );
+  // The year only when it is not this one: a veteran's history runs back two years, and "Sun, Sep
+  // 15" from 2024 read as last Sunday.
+  const performed = new Date(entry.performedAt);
+  const dateLabel = getDateTimeFormat(
+    language,
+    performed.getFullYear() === new Date().getFullYear()
+      ? SESSION_DATE_OPTIONS
+      : { ...SESSION_DATE_OPTIONS, year: "numeric" },
+  ).format(performed);
 
   const durationLabel = entry.durationSeconds ? formatDuration(entry.durationSeconds) : "--";
   // An outing's row leads with the ground, which is the one number a walk is remembered by.
   const metaLabel = hasGround(entry)
-    ? `${formatDistance(entry.leaguesM, unit)} · ${durationLabel}`
+    ? `${formatDistance(entry.leaguesM, unit, language)} · ${durationLabel}`
     : durationLabel;
 
   return (
@@ -150,8 +156,8 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
                 gap="$1"
                 items="center"
               >
-                <Star size={12} color="$text" fill="$text" />
-                <Text fontSize={10} fontWeight="bold" color="$text" numberOfLines={1}>
+                <Star size={12} color="$onPrimary" fill="$onPrimary" />
+                <Text fontSize={10} fontWeight="bold" color="$onPrimary" numberOfLines={1}>
                   {entry.recordLabel ?? t("journal.pr_badge")}
                 </Text>
               </XStack>
@@ -176,7 +182,10 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
             {entry.xpEarned > 0 ? (
               <Tag label={t("quests.reward_xp", { count: entry.xpEarned })} tone="primary" />
             ) : null}
-            <Tag label={t(`quests.level_${entry.userLevel}`, entry.userLevel)} tone="primary" />
+            {/* A difficulty means nothing on a walk. */}
+            {entry.outing ? null : (
+              <Tag label={t(`quests.level_${entry.userLevel}`, entry.userLevel)} tone="primary" />
+            )}
           </XStack>
         </YStack>
       </XStack>

@@ -135,6 +135,7 @@ const config = createTamagui({
       ...tokens.color,
       background: tokens.color.bgOverlay,
       color: tokens.color.text,
+      onPrimary: tokens.color.text,
       danger: tokens.color.error, // alias, no matching token
       muted: tokens.color.textSecondary, // deliberately not tokens.color.muted
     },
@@ -142,6 +143,8 @@ const config = createTamagui({
       ...tokens.color,
       background: tokens.color.bgOverlay,
       color: tokens.color.text,
+      // What is written on a `$primary` fill: light on the app's indigo, dark on the Journal's gold.
+      onPrimary: tokens.color.text,
       danger: tokens.color.error,
       muted: tokens.color.textSecondary,
     },
@@ -167,7 +170,12 @@ const config = createTamagui({
       error: tokens.color.borderStrong,
       // Surfaces carry no border here: a shared card's outline takes the surface's own colour.
       borderStrong: tokens.color.surface2,
+      onPrimary: tokens.color.bgDark,
+      // The shared Tag's tones: flat inks here, where the history rows used to carry a red and a
+      // brown that meant nothing on a one-accent page.
       pastelGreen: tokens.color.gold900,
+      pastelPink: tokens.color.ink800,
+      pastelBlue: tokens.color.ink800,
     },
   },
 });

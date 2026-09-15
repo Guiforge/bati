@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
 import { Skull } from "@/components/icons";
-import { formatHold } from "@/components/journal/journalFormat";
+import { formatCount, formatHold, formatShare } from "@/components/journal/journalFormat";
 import {
   NBar,
   NBlock,
@@ -29,8 +29,7 @@ const HURT_FILLS = ["$resourceGold", "$gold600", "$gold700", "$gold800"] as cons
 const HURT_SHOWN = 4;
 
 const pick = (text: Localized, language: AppLanguage) => text[language] || text.en;
-const number = (language: AppLanguage, value: number) =>
-  new Intl.NumberFormat(language).format(Math.round(value));
+const number = formatCount;
 
 function LastBlow({ blow }: { blow: NonNullable<KillReportData["lastBlow"]> }) {
   const { t } = useTranslation();
@@ -94,7 +93,7 @@ function WhatHurtIt({ report }: { report: KillReportData }) {
                 <NNum fontSize={12.5}>{number(language, entry.damage)}</NNum>
                 <NMuted fontSize={11}>
                   {" "}
-                  {Math.round((entry.damage / (report.pool || 1)) * 100)} %
+                  {formatShare(language, (entry.damage / (report.pool || 1)) * 100)}
                 </NMuted>
               </NText>
             </XStack>
@@ -123,9 +122,12 @@ function WhatHurtIt({ report }: { report: KillReportData }) {
 export function KillReport({
   report,
   session,
+  onOpenLog,
 }: {
   report: KillReportData;
   session: CompletedSession;
+  /** The session's own quest log: its sets and its record stay one tap away from its report. */
+  onOpenLog: () => void;
 }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -219,6 +221,9 @@ export function KillReport({
           <NMuted fontSize={11} style={{ textAlign: "center" }}>
             {t("journal.cta_boss_note")}
           </NMuted>
+          <NButton testID="journal-open-log" block onPress={onOpenLog}>
+            {t("journal.cta_log")}
+          </NButton>
         </YStack>
         {session.notes ? (
           <NBlock mb={17}>

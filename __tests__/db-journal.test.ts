@@ -82,9 +82,10 @@ describe("db/journal pure helpers", () => {
   });
 
   test("monthWindows compares the same number of days, and never past a short month", () => {
-    const mid = journal().monthWindows(new Date(2026, 8, 15, 18));
+    const mid = journal().monthWindows(new Date(2026, 8, 15, 9));
     expect(mid.previous.from).toEqual(new Date(2026, 7, 1));
-    expect(mid.previous.to.getDate()).toBe(15);
+    // The whole of August 15th, not August 15th at nine: the label says "same 15 days".
+    expect(mid.previous.to).toEqual(new Date(new Date(2026, 7, 16).getTime() - 1));
 
     const end = journal().monthWindows(new Date(2026, 2, 31, 12));
     expect(end.previous.to.getMonth()).toBe(1);
@@ -157,16 +158,20 @@ describe("db/journal", () => {
 
     const [entry] = await journal().getRecordWall(4);
     assert(entry);
-    expect(entry).toMatchObject({ best: 24, last: 24, firstEver: false });
+    expect(entry).toMatchObject({ best: 24, last: 24, seasonBest: 24 });
     expect(entry.recordAt?.getTime()).toBe(seconds(daysAgo(10)) * 1000);
   });
 
-  test("a movement's first set is a record set first ever", async () => {
+  test("the wall keeps the season's best beside an old record", async () => {
     const squat = exerciseId("Squat");
-    session(1, daysAgo(1));
-    set(1, squat, 15, daysAgo(1));
+    session(1, daysAgo(400));
+    set(1, squat, 40, daysAgo(400));
+    session(2, daysAgo(20));
+    set(2, squat, 18, daysAgo(20));
+    session(3, daysAgo(2));
+    set(3, squat, 15, daysAgo(2));
     const [entry] = await journal().getRecordWall(4);
-    expect(entry?.firstEver).toBe(true);
+    expect(entry).toMatchObject({ best: 40, last: 15, seasonBest: 18 });
   });
 
   test("the starter wall is four seed movements, in order", async () => {
@@ -191,9 +196,17 @@ describe("db/journal", () => {
       outings: 1,
       reps: 20,
       questSeconds: 600,
+      timedQuests: 1,
+      outingSeconds: 600,
       leaguesM: 5200,
       xp: 100,
     });
+
+    const days = await journal().getActivityDays(daysAgo(5), new Date());
+    expect([...days.values()].sort()).toEqual(["outing", "quest"]);
+    session(3, daysAgo(1, 8));
+    const mixed = await journal().getActivityDays(daysAgo(5), new Date());
+    expect([...mixed.values()].sort()).toEqual(["both", "quest"]);
   });
 
   test("a boss report names the last blow, its round and the health it took", async () => {

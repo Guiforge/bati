@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
-import { Skull } from "@/components/icons";
+import { ChevronRight, Skull } from "@/components/icons";
 import { NBlock, NImage, NMuted, NPage, NText } from "@/components/journal/nocturne";
 import { getBossAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
@@ -55,6 +55,8 @@ export default function BossesScreen() {
                   <NMuted>{t("journal.felled_on", { date: date(kill.felledAt) })}</NMuted>
                 </XStack>
               </YStack>
+              {/* A kill logged before its session was linked has no report to open. */}
+              {kill.sessionId == null ? null : <ChevronRight size={18} color="$textSecondary" />}
             </XStack>
           </NBlock>
         ))}

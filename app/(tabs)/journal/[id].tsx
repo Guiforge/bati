@@ -61,7 +61,7 @@ async function traceFor(uuid: string | null): Promise<readonly (readonly LngLat[
 export default function SessionDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const params = useLocalSearchParams<{ id?: string | string[]; view?: string }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const sessionId = parseId(params.id);
@@ -155,8 +155,12 @@ export default function SessionDetailScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
         showsVerticalScrollIndicator={false}
       >
-        {loaded.kill ? (
-          <KillReport report={loaded.kill} session={loaded.log.session} />
+        {loaded.kill && params.view !== "log" ? (
+          <KillReport
+            report={loaded.kill}
+            session={loaded.log.session}
+            onOpenLog={() => router.push(`/journal/${sessionId}?view=log` as never)}
+          />
         ) : (
           <QuestLog data={loaded.log} />
         )}

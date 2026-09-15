@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
+import { formatCount, formatHoursMinutes, shortDate } from "@/components/journal/journalFormat";
 import { NKicker, NMuted, NNum, NPage, NRule, NText } from "@/components/journal/nocturne";
-import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
 import {
   getBossKills,
@@ -51,13 +51,7 @@ async function loadLifetime(): Promise<Lifetime> {
   };
 }
 
-const number = (language: AppLanguage, value: number) =>
-  new Intl.NumberFormat(language).format(Math.round(value));
-
-function hoursAndMinutes(seconds: number): string {
-  const minutes = Math.round(seconds / 60);
-  return `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")}`;
-}
+const number = formatCount;
 
 function Row({
   label,
@@ -112,8 +106,8 @@ export default function LifetimeScreen() {
       .catch((error) => reportError("journal.lifetime", error));
   }, []);
 
-  const date = (at: Date) =>
-    getDateTimeFormat(language, { day: "numeric", month: "short" }).format(at);
+  const date = (at: Date) => shortDate(language, at);
+  const hoursAndMinutes = (seconds: number) => formatHoursMinutes(t, seconds);
   const title = (best: SessionBest) =>
     best.questTitle ? pick(best.questTitle, language) : t("journal.own_quest");
 
@@ -170,14 +164,23 @@ export default function LifetimeScreen() {
           <Row
             label={t("journal.row_ground")}
             note={t("journal.row_ground_note")}
-            all={formatDistance(data.all.leaguesM, distanceUnit)}
-            recent={formatDistance(data.last30.leaguesM, distanceUnit)}
+            all={formatDistance(data.all.leaguesM, distanceUnit, language)}
+            recent={formatDistance(data.last30.leaguesM, distanceUnit, language)}
           />
           <Row
             label={t("journal.row_time")}
             all={hoursAndMinutes(data.all.questSeconds)}
             recent={hoursAndMinutes(data.last30.questSeconds)}
           />
+          {/* An outing's time is its own row: a walker could not find her hours outside anywhere. */}
+          {data.all.outings > 0 ? (
+            <Row
+              label={t("journal.row_outside")}
+              note={t("journal.row_outside_note")}
+              all={hoursAndMinutes(data.all.outingSeconds)}
+              recent={hoursAndMinutes(data.last30.outingSeconds)}
+            />
+          ) : null}
           <Row
             label={t("journal.row_xp")}
             all={number(language, data.all.xp)}
@@ -211,29 +214,37 @@ export default function LifetimeScreen() {
                 ["sr_longest", data.bests.longest, (v: number) => `${Math.round(v / 60)} min`],
                 ["sr_most_xp", data.bests.mostXp, (v: number) => number(language, v)],
                 ["sr_most_reps", data.bests.mostReps, (v: number) => number(language, v)],
+                [
+                  "sr_longest_outing",
+                  data.bests.longestOuting,
+                  (v: number) => formatDistance(v, distanceUnit, language),
+                ],
               ] as const
-            ).map(([key, best, format]) => (
-              <XStack key={key} justify="space-between" items="baseline" gap={8}>
-                <NText fontSize={13.5} lineHeight={19}>
-                  {t(`journal.${key}`)}
-                </NText>
-                {best ? (
-                  <NText
-                    fontSize={13.5}
-                    lineHeight={19}
-                    style={{ flexShrink: 1, textAlign: "right" }}
-                  >
-                    <NNum fontSize={13.5}>{format(best.value)}</NNum>
-                    <NMuted fontSize={12}>
-                      {" · "}
-                      {t("journal.sr_detail", { title: title(best), date: date(best.at) })}
-                    </NMuted>
+            )
+              // The outing record only for a hero who has been out: "none yet" is noise otherwise.
+              .filter(([key]) => key !== "sr_longest_outing" || data.all.outings > 0)
+              .map(([key, best, format]) => (
+                <XStack key={key} justify="space-between" items="baseline" gap={8}>
+                  <NText fontSize={13.5} lineHeight={19}>
+                    {t(`journal.${key}`)}
                   </NText>
-                ) : (
-                  <NMuted fontSize={12}>{t("journal.fig_no_record")}</NMuted>
-                )}
-              </XStack>
-            ))}
+                  {best ? (
+                    <NText
+                      fontSize={13.5}
+                      lineHeight={19}
+                      style={{ flexShrink: 1, textAlign: "right" }}
+                    >
+                      <NNum fontSize={13.5}>{format(best.value)}</NNum>
+                      <NMuted fontSize={12}>
+                        {" · "}
+                        {t("journal.sr_detail", { title: title(best), date: date(best.at) })}
+                      </NMuted>
+                    </NText>
+                  ) : (
+                    <NMuted fontSize={12}>{t("journal.fig_no_record")}</NMuted>
+                  )}
+                </XStack>
+              ))}
           </YStack>
         </>
       ) : null}

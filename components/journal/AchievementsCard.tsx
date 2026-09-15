@@ -17,13 +17,14 @@ type CategoryFilter = "all" | "sessions" | "streaks" | "xp" | "special";
 /** Enough to show the shelf without the card swallowing the stats tab. */
 const COLLAPSED_ROWS = 8;
 
-export function AchievementsCard() {
+/** `showAll` is for the shelf's own page, where a "+19 more" fold only hides what it came for. */
+export function AchievementsCard({ showAll = false }: { showAll?: boolean }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const [achievements, setAchievements] = useState<AchievementProgress[]>([]);
   const [stats, setStats] = useState({ total: 0, unlocked: 0, percentage: 0 });
   const [filter, setFilter] = useState<CategoryFilter>("all");
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(showAll);
   const [loading, setLoading] = useState(true);
 
   const loadAchievements = useCallback(async () => {

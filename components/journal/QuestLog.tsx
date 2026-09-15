@@ -8,8 +8,11 @@ import { XStack, YStack } from "tamagui";
 import { Trophy } from "@/components/icons";
 import {
   foldRounds,
+  formatCount,
   formatHold,
   formatSet,
+  formatShare,
+  shortDate,
   targetToBeat,
   whenLabel,
 } from "@/components/journal/journalFormat";
@@ -30,11 +33,10 @@ import {
 } from "@/components/journal/nocturne";
 import { TraceThumb } from "@/components/journal/TraceThumb";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
-import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance, formatElevation, formatPace } from "@/constants/distanceFormat";
 import { rawColors } from "@/constants/rawColors";
 import { formatDuration } from "@/db";
-import type { CompletedSession } from "@/db/completed";
+import { type CompletedSession, OUTING_COUNTS_AFTER_SECONDS } from "@/db/completed";
 import type { VariationStep } from "@/db/exercises";
 import { type FallenRecord, type MuscleShift, type QuestStanding, sessionReps } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/muscles";
@@ -98,8 +100,12 @@ function recordName(t: TFunction, language: AppLanguage, record: FallenRecord): 
   return t(`journal.record_${record.kind}`, { defaultValue: "" });
 }
 
-function recordValue(record: FallenRecord, distanceUnit: "metric" | "imperial"): string {
-  if (record.kind === "longest_outing") return formatDistance(record.value, distanceUnit);
+function recordValue(
+  record: FallenRecord,
+  distanceUnit: "metric" | "imperial",
+  language: string,
+): string {
+  if (record.kind === "longest_outing") return formatDistance(record.value, distanceUnit, language);
   if (record.kind === "longest_session") return formatDuration(record.value);
   if (record.type === "time") return formatHold(record.value);
   return String(record.value);
@@ -131,7 +137,7 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
             target: next,
           })
         : t("journal.record_beat", {
-            previous: recordValue({ ...record, value: record.previous }, distanceUnit),
+            previous: recordValue({ ...record, value: record.previous }, distanceUnit, language),
           });
 
   return (
@@ -145,7 +151,7 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
         mt={6}
         style={{ textAlign: "center" }}
       >
-        {recordName(t, language, record)}, {recordValue(record, distanceUnit)}
+        {recordName(t, language, record)}, {recordValue(record, distanceUnit, language)}
       </NNum>
       <NMuted fontSize={12.5} lineHeight={19} mt={6} style={{ textAlign: "center" }}>
         {context}
@@ -163,12 +169,15 @@ function WhereItSits({ standing }: { standing: QuestStanding }) {
   // Past the window, the last bar is this run, so it is always on the chart.
   if (index >= MAX_BARS) shown[MAX_BARS - 1] = standing.mine;
   const highlight = Math.min(index, MAX_BARS - 1);
-  const max = standing.values[0] || 1;
+  const max = standing.values[0] ?? 0;
+  const min = Math.min(...shown);
   const outing = standing.unit === "metres";
-  const value = outing ? formatDistance(standing.mine, distanceUnit) : String(standing.mine);
-  const bestDate = getDateTimeFormat(language, { day: "numeric", month: "short" }).format(
-    standing.bestAt,
-  );
+  const show = (v: number) =>
+    outing ? formatDistance(v, distanceUnit, language) : formatCount(language, v);
+  // From the lowest run shown to the best, not from zero: runs of 94 to 102 reps drawn from zero
+  // were five bars of one height, and the two reps between this run and the best were invisible.
+  const height = (v: number) =>
+    max > min ? `${Math.round(20 + ((v - min) / (max - min)) * 80)}%` : "100%";
 
   return (
     <NBlock testID="journal-sits" mt={6}>
@@ -191,16 +200,23 @@ function WhereItSits({ standing }: { standing: QuestStanding }) {
             // biome-ignore lint/suspicious/noArrayIndexKey: bars in rank order, no identity of their own
             key={i}
             flex={1}
-            height={`${Math.max(12, (v / max) * 100)}%`}
-            bg={i === highlight ? "$resourceGold" : i === 0 ? "$muted" : "$ink800"}
+            height={height(v) as `${number}%`}
+            bg={i === highlight ? "$resourceGold" : i === 0 ? "$textSecondary" : "$muted"}
             borderTopLeftRadius={2}
             borderTopRightRadius={2}
           />
         ))}
       </XStack>
       <XStack justify="space-between" mt={6}>
-        <NMuted fontSize={10.5}>{t("journal.sits_best_on", { date: bestDate })}</NMuted>
-        <NMuted fontSize={10.5}>{t("journal.sits_this_run", { value })}</NMuted>
+        <NMuted fontSize={10.5}>
+          {t("journal.sits_best_on", {
+            value: show(max),
+            date: shortDate(language, standing.bestAt),
+          })}
+        </NMuted>
+        <NMuted fontSize={10.5}>
+          {t("journal.sits_this_run", { value: show(standing.mine) })}
+        </NMuted>
       </XStack>
     </NBlock>
   );
@@ -213,10 +229,22 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
   const { session, level, latest, shift, rung } = data;
   const reps = sessionReps(session);
   const outing = session.outing != null;
+  // The same rule the flame reads (`countsAsSession`). Said first on an outing: a walker who read
+  // only what an outing does not pay concluded that her walks did not count at all.
+  const keepsFlame =
+    outing &&
+    (session.movingSeconds ?? session.durationSeconds ?? 0) >= OUTING_COUNTS_AFTER_SECONDS;
 
   return (
     <NBlock testID="journal-moved" mt={6} gap={11}>
       <NKickerQuiet>{t("journal.moved_title")}</NKickerQuiet>
+      {keepsFlame ? (
+        <NFact>
+          <NText fontSize={13.5} lineHeight={19}>
+            {t("journal.moved_flame")}
+          </NText>
+        </NFact>
+      ) : null}
       {session.xpEarned > 0 && (
         <YStack gap={6}>
           <NFact>
@@ -226,8 +254,8 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
                 <NMuted fontSize={13.5}>
                   {" · "}
                   {t("journal.moved_xp_level", {
-                    current: level.currentLevelXp,
-                    total: level.currentLevelXp + level.xpToNextLevel,
+                    current: formatCount(language, level.currentLevelXp),
+                    total: formatCount(language, level.currentLevelXp + level.xpToNextLevel),
                     level: level.level + 1,
                   })}
                 </NMuted>
@@ -247,7 +275,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
             <NFact>
               <NText fontSize={13.5} lineHeight={19}>
                 {t("journal.moved_ground", {
-                  distance: formatDistance(session.leaguesM, distanceUnit),
+                  distance: formatDistance(session.leaguesM, distanceUnit, language),
                 })}
               </NText>
             </NFact>
@@ -262,7 +290,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
         reps > 0 && (
           <NFact>
             <NText fontSize={13.5} lineHeight={19}>
-              {t("journal.moved_reps", { count: reps })}
+              {t("journal.moved_reps", { count: reps, formatted: formatCount(language, reps) })}
             </NText>
           </NFact>
         )
@@ -272,8 +300,8 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
           <NText fontSize={13.5} lineHeight={19}>
             {t("journal.moved_muscle", {
               muscle: MUSCLE_LABELS[shift.muscle][language],
-              before: shift.before,
-              after: shift.after,
+              before: formatShare(language, shift.before),
+              after: formatShare(language, shift.after),
             })}
           </NText>
         </NFact>
@@ -329,22 +357,28 @@ function Rounds({ session }: { session: CompletedSession }) {
               <NText flex={1} fontSize={13.5} lineHeight={19} numberOfLines={1}>
                 {localizedName(row.exercise, language)}
               </NText>
-              <NNum fontSize={13} lineHeight={18} color={row.cleared ? "$gold300" : "$text"}>
+              <NNum fontSize={13} lineHeight={18}>
                 {row.sets.map((set, i) => (
                   <NNum
                     // biome-ignore lint/suspicious/noArrayIndexKey: sets in round order
                     key={i}
                     fontSize={13}
-                    color={set.met === false ? "$textSecondary" : undefined}
+                    // Each set carries its own colour: a nested text re-applies its own, so a
+                    // colour on the line alone never reached the numbers.
+                    color={
+                      set.met === false ? "$textSecondary" : row.cleared ? "$gold300" : "$text"
+                    }
                   >
                     {i > 0 ? " · " : ""}
-                    {formatSet(set.value, set.type)}
+                    {formatSet(t, set.value, set.type)}
                   </NNum>
                 ))}
               </NNum>
               <NMuted width={44} fontSize={11} style={{ textAlign: "right" }}>
                 {row.target
-                  ? t("journal.target_of", { target: formatSet(row.target.value, row.target.type) })
+                  ? t("journal.target_of", {
+                      target: formatSet(t, row.target.value, row.target.type),
+                    })
                   : ""}
               </NMuted>
             </XStack>
@@ -417,7 +451,8 @@ export function QuestLog({ data }: { data: QuestLogData }) {
 
   const meta = [
     whenLabel(t, language, session.performedAt),
-    t(`quests.level_${session.userLevel}`),
+    // A difficulty means nothing on a walk.
+    outing ? null : t(`quests.level_${session.userLevel}`),
     rounds > 0 && !outing ? t("journal.rounds_completed", { count: rounds }) : null,
     session.durationSeconds ? formatDuration(session.durationSeconds) : null,
   ]
@@ -460,7 +495,7 @@ export function QuestLog({ data }: { data: QuestLogData }) {
               {t(outing ? "journal.cta_outing" : "journal.cta_quest")}
             </NButton>
             <NMuted fontSize={11} style={{ textAlign: "center" }}>
-              {t("journal.cta_quest_note")}
+              {t(outing ? "journal.cta_outing_note" : "journal.cta_quest_note")}
             </NMuted>
           </YStack>
         )}

@@ -10,7 +10,7 @@ export default function AchievementsScreen() {
   const { t } = useTranslation();
   return (
     <NPage title={t("journal.achievements_title")} testID="journal-achievements">
-      <AchievementsCard />
+      <AchievementsCard showAll />
     </NPage>
   );
 }

@@ -15,15 +15,15 @@ export function formatHold(seconds: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-/** A set as it reads in a row of sets: "12", "39s", "1:04". */
-export function formatSet(value: number, type: QuestTargetType | null): string {
+/** A set as it reads in a row of sets: "12", "39s" ("39 s" in French), "1:04". */
+export function formatSet(t: TFunction, value: number, type: QuestTargetType | null): string {
   if (type !== "time") return String(value);
-  return value < 60 ? `${value}s` : formatHold(value);
+  return value < 60 ? t("journal.set_seconds", { value }) : formatHold(value);
 }
 
 /** A movement's value in the wall's column: reps as a count, holds as a clock. */
-export function formatWallValue(value: number, type: QuestTargetType): string {
-  return type === "time" ? formatHold(value) : String(value);
+export function formatWallValue(value: number, type: QuestTargetType, language: string): string {
+  return type === "time" ? formatHold(value) : formatCount(language, value);
 }
 
 /**
@@ -130,6 +130,41 @@ export function whenLabel(t: TFunction, language: string, at: Date, now = new Da
     weekday: "short",
     day: "numeric",
     month: "short",
+    ...(at.getFullYear() === now.getFullYear() ? null : { year: "numeric" }),
   }).format(at);
   return t("journal.at_date", { date, time });
+}
+
+/**
+ * A short date, with its year when it is not this year's. A veteran's records are two years old,
+ * and "Feb 3" on a record from 2024 reads as this February.
+ */
+export function shortDate(language: string, date: Date, now = new Date()): string {
+  const options: Intl.DateTimeFormatOptions =
+    date.getFullYear() === now.getFullYear()
+      ? { day: "numeric", month: "short" }
+      : { day: "numeric", month: "short", year: "numeric" };
+  return getDateTimeFormat(language, options).format(date);
+}
+
+/** A count with the language's own thousands separator: "2,936", "2 936", "2.936". */
+export function formatCount(language: string, value: number): string {
+  return new Intl.NumberFormat(language).format(Math.round(value));
+}
+
+/** A share, 0 to 100, the way the language writes a percentage: "45%", "45 %". */
+export function formatShare(language: string, percentage: number): string {
+  return new Intl.NumberFormat(language, { style: "percent", maximumFractionDigits: 0 }).format(
+    percentage / 100,
+  );
+}
+
+/** A length of time in quests: "2h 24m" in English, "2 h 24" in French. */
+export function formatHoursMinutes(t: TFunction, seconds: number): string {
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return t("journal.duration_m", { m: minutes });
+  return t("journal.duration_hm", {
+    h: Math.floor(minutes / 60),
+    m: String(minutes % 60).padStart(2, "0"),
+  });
 }

@@ -7,8 +7,12 @@ import {
   ageOf,
   dayAfter,
   daysUntil,
+  formatCount,
   formatHold,
+  formatHoursMinutes,
+  formatShare,
   formatWallValue,
+  shortDate,
   targetToBeat,
 } from "@/components/journal/journalFormat";
 import {
@@ -39,11 +43,8 @@ const STALE_RECORD_DAYS = 60;
 
 const fmt = (language: AppLanguage, options: Intl.DateTimeFormatOptions, date: Date) =>
   getDateTimeFormat(language, options).format(date);
-const shortDate = (language: AppLanguage, date: Date) =>
-  fmt(language, { day: "numeric", month: "short" }, date);
 const monthName = (language: AppLanguage, date: Date) => fmt(language, { month: "long" }, date);
-const number = (language: AppLanguage, value: number) =>
-  new Intl.NumberFormat(language).format(Math.round(value));
+const number = formatCount;
 
 type Mode = "firstDay" | "veteran" | "rest" | "regular";
 
@@ -74,25 +75,24 @@ function whenWord(t: TFunction, language: AppLanguage, at: Date, now: Date): str
   return t("journal.when_on", { date: shortDate(language, at) });
 }
 
-type LeadText = { plain: string; accent: string };
+/** What the sentence says, what it says in gold, and what it says after, in plain text again. */
+type LeadText = { plain: string; accent: string; tail?: string };
 
+/**
+ * A veteran's month first, then the fact about the records, in plain text. Gold is for what went
+ * right: the veteran audit found the only gold on the page spent on "nothing has fallen since 2024",
+ * in place of the nine days this hero had trained that month.
+ */
 function veteranLead(t: TFunction, language: AppLanguage, stats: JournalStats): LeadText {
-  const { now, firstSessionAt, allTime } = stats;
-  const years = firstSessionAt
-    ? Math.floor((now.getTime() - firstSessionAt.getTime()) / (365 * DAY_MS))
-    : 1;
-  const latest = allTime.latestRecord?.at;
+  const latest = stats.allTime.latestRecord?.at;
   return {
-    plain: t("journal.lead_veteran", {
-      count: years,
-      quests: number(language, allTime.quests),
-      reps: number(language, allTime.reps),
-    }),
-    accent: latest
+    plain: regularLead(t, language, stats).plain,
+    accent: "",
+    tail: latest
       ? t("journal.lead_veteran_since", {
           month: `${monthName(language, latest)} ${latest.getFullYear()}`,
         })
-      : "",
+      : undefined,
   };
 }
 
@@ -101,11 +101,12 @@ function restLead(t: TFunction, language: AppLanguage, stats: JournalStats): Lea
   if (flame.litUntil == null) {
     return { plain: t("journal.lead_rest_out", { count: flame.quota }), accent: "" };
   }
+  // Past a week a weekday names the wrong one, so the date says it, with the day it holds to.
   const day = dayLabel(t, language, dayAfter(flame.litUntil), now);
   return {
     plain: day
       ? t("journal.lead_rest_lit", { day })
-      : t("journal.lead_rest_lit_days", { count: daysUntil(flame.litUntil, now) + 1 }),
+      : t("journal.lead_rest_lit_date", { date: shortDate(language, flame.litUntil, now) }),
     accent: "",
   };
 }
@@ -147,7 +148,7 @@ function regularLead(t: TFunction, language: AppLanguage, stats: JournalStats): 
 function Lead({ stats, mode }: { stats: JournalStats; mode: Mode }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
-  const { plain, accent } =
+  const { plain, accent, tail } =
     mode === "firstDay"
       ? { plain: t("journal.lead_empty"), accent: "" }
       : mode === "veteran"
@@ -165,13 +166,14 @@ function Lead({ stats, mode }: { stats: JournalStats; mode: Mode }) {
           {accent}
         </NText>
       ) : null}
+      {tail ? ` ${tail}` : ""}
     </NText>
   );
 }
 
 /**
  * "tomorrow" or "Thursday" inside a week, null past it: a weekday a fortnight away names the wrong
- * one, and a date would need its own preposition in every language. The caller counts days then.
+ * one. The caller writes the date then.
  */
 function dayLabel(t: TFunction, language: AppLanguage, day: Date, now: Date): string | null {
   const inDays = daysUntil(day, now);
@@ -181,27 +183,57 @@ function dayLabel(t: TFunction, language: AppLanguage, day: Date, now: Date): st
   return null;
 }
 
+/**
+ * Whether a record has aged past being tonight's target: set long ago, and not matched this
+ * season. A record first reached ten months ago and equalled last week is still within reach.
+ */
+function isOldRecord(entry: WallEntry, now: Date): boolean {
+  return (
+    entry.recordAt != null &&
+    now.getTime() - entry.recordAt.getTime() > STALE_RECORD_DAYS * DAY_MS &&
+    (entry.seasonBest == null || entry.best == null || entry.seasonBest < entry.best)
+  );
+}
+
+/**
+ * The number that beats the row tonight. A recent record is beaten by one more. An old one is not a
+ * target for tonight: its season's best is, or the last result when the season has none.
+ */
+function wallTarget(entry: WallEntry, now: Date): number {
+  if (entry.best == null) return targetToBeat(null);
+  if (!isOldRecord(entry, now)) return targetToBeat(entry.best);
+  return targetToBeat(entry.seasonBest ?? entry.last ?? entry.best);
+}
+
+/** When a record fell, said the way its age calls for: "set yesterday", "Sep 2", "7 months ago". */
+function recordWhen(t: TFunction, language: AppLanguage, at: Date, now: Date): string {
+  const age = ageOf(at, now);
+  switch (age.kind) {
+    case "today":
+      return t("journal.when_set_today");
+    case "yesterday":
+      return t("journal.when_set_yesterday");
+    case "months":
+      return t("journal.months_ago", { count: age.count });
+    case "years":
+      return t("journal.years_ago", { count: age.count });
+    default:
+      return shortDate(language, at, now);
+  }
+}
+
 function wallSub(t: TFunction, language: AppLanguage, entry: WallEntry, now: Date): string {
   if (entry.best == null || entry.recordAt == null) return t("journal.wall_never");
-  const best = formatWallValue(entry.best, entry.type);
-  const age = ageOf(entry.recordAt, now);
-  const when =
-    age.kind === "today"
-      ? t("journal.when_set_today")
-      : age.kind === "yesterday"
-        ? t("journal.when_set_yesterday")
-        : age.kind === "months"
-          ? t("journal.months_ago", { count: age.count })
-          : age.kind === "years"
-            ? t("journal.years_ago", { count: age.count })
-            : shortDate(language, entry.recordAt);
-  if (entry.firstEver) return t("journal.wall_sub_first", { best, when });
+  const value = (v: number) => formatWallValue(v, entry.type, language);
+  const best = value(entry.best);
+  const when = recordWhen(t, language, entry.recordAt, now);
+  if (isOldRecord(entry, now) && entry.seasonBest != null) {
+    return t("journal.wall_sub_season", { season: value(entry.seasonBest), best, when });
+  }
+  // The last result is always there when it is under the record: it is the number a hero
+  // compares the target against, and an audit found it hidden on the one row it mattered most.
   if (entry.last != null && entry.last < entry.best) {
-    return t("journal.wall_sub_last", {
-      best,
-      when,
-      last: formatWallValue(entry.last, entry.type),
-    });
+    return t("journal.wall_sub_last", { best, when, last: value(entry.last) });
   }
   return t("journal.wall_sub", { best, when });
 }
@@ -232,7 +264,7 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
           const age = entry.recordAt ? ageOf(entry.recordAt, stats.now).kind : null;
           // A record that fell today or yesterday is still news: ringed, and tagged.
           const fresh = age === "today" || age === "yesterday";
-          const target = targetToBeat(entry.best);
+          const target = wallTarget(entry, stats.now);
           return (
             <XStack
               key={`${entry.exerciseId}:${entry.type}`}
@@ -276,7 +308,7 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
               </YStack>
               <YStack items="flex-end">
                 <NNum fontSize={24} lineHeight={26} color="$resourceGold">
-                  {entry.type === "time" ? formatHold(target) : String(target)}
+                  {entry.type === "time" ? formatHold(target) : number(language, target)}
                 </NNum>
                 <NKickerQuiet fontSize={9.5}>
                   {entry.type === "time" ? t("journal.unit_hold") : t("journal.unit_reps")}
@@ -293,21 +325,25 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
 function FlameBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
-  const { flame } = stats;
+  const { flame, now } = stats;
 
-  // On a rest day the sentence above already says how long the flame holds; this says the rule.
-  const note = !flame.litUntil
-    ? t("journal.flame_out", { count: flame.quota })
-    : `${t("journal.flame_keeps", { count: flame.quota })} ${
-        flame.bestIsCurrent
-          ? t("journal.flame_best_now")
-          : flame.bestEndedOn && flame.best > 0
-            ? t("journal.flame_best_ended", {
-                count: flame.best,
-                date: shortDate(language, flame.bestEndedOn),
-              })
-            : ""
-      }`.trim();
+  // Written out rather than "6/2": sessions and outings both keep the flame, and a walker who read
+  // the fraction concluded that her walks did not count.
+  const best = flame.bestIsCurrent
+    ? t("journal.flame_best_now")
+    : flame.bestEndedOn && flame.best > 0
+      ? t("journal.flame_best_ended", {
+          count: flame.best,
+          date: shortDate(language, flame.bestEndedOn, now),
+        })
+      : "";
+  const note = [
+    t("journal.flame_window", { count: flame.inWindow }),
+    t("journal.flame_quota", { count: flame.quota }),
+    best,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <NBlock testID="journal-flame" mx={11} mt={17}>
@@ -318,26 +354,17 @@ function FlameBlock({ stats }: { stats: JournalStats }) {
           <NMuted fontSize={12}> {t("journal.flame_lit", { count: flame.current })}</NMuted>
         </NNum>
         <XStack flex={1} gap={4} justify="flex-end" accessibilityElementsHidden>
-          {stats.week.map((day, index) => {
-            const today = index === stats.week.length - 1;
-            return (
-              <YStack
-                // biome-ignore lint/suspicious/noArrayIndexKey: seven fixed days, oldest first
-                key={index}
-                width={9}
-                height={9}
-                rounded={5}
-                bg={day ? "$resourceGold" : today ? undefined : "$ink800"}
-                borderWidth={today ? 1.5 : 0}
-                borderColor="$resourceGold"
-              />
-            );
-          })}
+          {stats.week.map((day, index) => (
+            <DayMark
+              // biome-ignore lint/suspicious/noArrayIndexKey: seven fixed days, oldest first
+              key={index}
+              kind={day ?? undefined}
+              today={index === stats.week.length - 1}
+              future={false}
+              round
+            />
+          ))}
         </XStack>
-        <NNum fontSize={13} lineHeight={18}>
-          {flame.inWindow}
-          <NMuted fontSize={13}>/{flame.quota}</NMuted>
-        </NNum>
       </XStack>
       <NMuted mt={8} lineHeight={17}>
         {note}
@@ -346,16 +373,20 @@ function FlameBlock({ stats }: { stats: JournalStats }) {
   );
 }
 
-/** Against the same days of last month, which the block's header already names. */
-function Delta({ now, was }: { now: number; was: number }) {
+/**
+ * Against the same days of last month, in words: "2 more than in August". A bare "-5" under a
+ * count of reps was read as a percentage, and a drop is never painted as an alarm.
+ */
+function Delta({ now, was, month }: { now: number; was: number; month: string }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const diff = Math.round(now - was);
-  if (diff === 0) return <NMuted fontSize={11}>{t("journal.delta_same")}</NMuted>;
+  if (diff === 0) return <NMuted fontSize={11}>{t("journal.delta_same", { month })}</NMuted>;
   return (
     <NText fontSize={11} lineHeight={15} color={diff > 0 ? "$gold300" : "$textSecondary"}>
       {t(diff > 0 ? "journal.delta_up" : "journal.delta_down", {
         value: number(language, Math.abs(diff)),
+        month,
       })}
     </NText>
   );
@@ -397,12 +428,6 @@ function recordLine(
   return name ? t("journal.fig_record_latest", { name, date }) : date;
 }
 
-function hoursAndMinutes(seconds: number): string {
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes} min`;
-  return `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")}`;
-}
-
 function MonthBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
@@ -430,21 +455,30 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
           value={number(language, current.quests)}
           unit={t("journal.fig_quests", { count: current.quests })}
         >
-          <Delta now={current.quests} was={previous.quests} />
+          <Delta now={current.quests} was={previous.quests} month={previousName} />
         </Figure>
         <Figure value={number(language, current.reps)} unit={t("journal.fig_reps")}>
-          <Delta now={current.reps} was={previous.reps} />
+          <Delta now={current.reps} was={previous.reps} month={previousName} />
         </Figure>
-        <Figure value={hoursAndMinutes(current.questSeconds)}>
+        <Figure value={formatHoursMinutes(t, current.questSeconds)}>
           <NMuted fontSize={11}>
-            {current.quests > 0
+            {/* Over the quests that kept a duration: a row with none would pull the average down. */}
+            {current.timedQuests > 0
               ? t("journal.fig_time_each", {
-                  avg: hoursAndMinutes(current.questSeconds / current.quests),
+                  avg: formatHoursMinutes(t, current.questSeconds / current.timedQuests),
                 })
               : t("journal.fig_time")}
           </NMuted>
         </Figure>
-        <Figure value={formatDistance(current.leaguesM, distanceUnit)}>
+        <Figure
+          value={
+            current.leaguesM > 0
+              ? formatDistance(current.leaguesM, distanceUnit, language)
+              : distanceUnit === "imperial"
+                ? "0 mi"
+                : "0 km"
+          }
+        >
           <NMuted fontSize={11}>
             {current.outings > 0
               ? t("journal.fig_outings", { count: current.outings })
@@ -452,7 +486,7 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
           </NMuted>
         </Figure>
         <Figure value={number(language, current.xp)} unit={t("journal.fig_xp")}>
-          <Delta now={current.xp} was={previous.xp} />
+          <Delta now={current.xp} was={previous.xp} month={previousName} />
         </Figure>
         <Figure
           value={number(language, current.records)}
@@ -471,7 +505,7 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
           const day = new Date(now.getFullYear(), now.getMonth(), index + 1);
           const key = dayKey(day);
           return (
-            <FriezeDay
+            <DayMark
               key={key}
               kind={month.activity.get(key)}
               today={key === todayKey}
@@ -488,33 +522,38 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
 }
 
 /**
- * One square of the month: filled for a quest, hollow for an outing, ringed for today, dark for
- * what is still to come. Three shapes and one colour, so it reads without telling colours apart.
+ * One day's mark: filled for a quest, hollow for an outing, pierced for both, dark for what is still
+ * to come. Today wears a light frame, a colour no other mark uses: a gold ring read as an outing.
  */
-function FriezeDay({
+function DayMark({
   kind,
   today,
   future,
+  round,
 }: {
   kind: DayActivity | undefined;
   today: boolean;
   future: boolean;
+  round?: boolean;
 }) {
-  // Today is ringed whatever it holds, so the ring is never lost inside a filled square.
-  let bg: "$resourceGold" | "$gold900" | "$ink900" | "$ink800" | undefined = "$ink800";
-  if (today) bg = "$gold900";
-  else if (kind === "quest") bg = "$resourceGold";
+  const filled = kind === "quest" || kind === "both";
+  let bg: "$resourceGold" | "$ink900" | "$ink800" | undefined = "$ink800";
+  if (filled) bg = "$resourceGold";
   else if (kind === "outing") bg = undefined;
   else if (future) bg = "$ink900";
   return (
     <YStack
       width={9}
       height={9}
-      rounded={2}
+      rounded={round ? 5 : 2}
       bg={bg}
-      borderWidth={kind === "outing" || today ? 1.5 : 0}
-      borderColor={today ? "$resourceGold" : "$gold600"}
-    />
+      borderWidth={today || kind === "outing" ? 1.5 : 0}
+      borderColor={today ? "$text" : "$gold600"}
+      items="center"
+      justify="center"
+    >
+      {kind === "both" ? <YStack width={3} height={3} rounded={1} bg="$surface2" /> : null}
+    </YStack>
   );
 }
 
@@ -528,8 +567,21 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
   if (balance.totalVolume === 0) return null;
 
   const shown = balance.muscles.filter((m) => m.percentage > 0);
-  const behind = balance.weakAreas.length > 0 ? balance.muscles.at(-1) : null;
   const label = (code: keyof typeof MUSCLE_LABELS) => MUSCLE_LABELS[code][language];
+  // Every muscle behind, each with its share: a verdict that named one muscle under a gold "8%"
+  // that belonged to another sent two auditors to the wrong number.
+  const behind = balance.muscles
+    .filter((m) => balance.weakAreas.includes(m.muscle))
+    .map((m, index) =>
+      t("journal.muscle_share", {
+        muscle: index === 0 ? label(m.muscle) : inSentence(label(m.muscle), language),
+        share: formatShare(language, m.percentage),
+      }),
+    );
+  const behindList =
+    behind.length <= 1
+      ? (behind[0] ?? "")
+      : t("journal.list_and", { a: behind.slice(0, -1).join(", "), b: behind.at(-1) });
 
   return (
     <NBlock testID="journal-work" mx={11} mt={6}>
@@ -564,21 +616,17 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
             fontSize={10}
             lineHeight={13}
             numberOfLines={1}
-            color={balance.weakAreas.includes(m.muscle) ? "$gold300" : "$textSecondary"}
           >
-            {/* A sliver has no room for a label; the verdict below names the one that matters. */}
-            {m.percentage >= 12
-              ? `${label(m.muscle)} ${Math.round(m.percentage)}%`
-              : m.percentage >= 6
-                ? `${Math.round(m.percentage)}%`
-                : ""}
+            {/* Only a segment wide enough for its name is labelled; the verdict below names the
+                ones that are behind, with their share. */}
+            {m.percentage >= 12 ? `${label(m.muscle)} ${formatShare(language, m.percentage)}` : ""}
           </NMuted>
         ))}
       </XStack>
       <XStack mt={11} flexWrap="wrap" items="baseline" gap={6}>
         <NText fontSize={12.5} lineHeight={18}>
-          {behind
-            ? t("journal.work_behind", { muscle: label(behind.muscle) })
+          {behind.length > 0
+            ? t("journal.work_behind", { count: behind.length, muscles: behindList })
             : t("journal.work_balanced")}
         </NText>
         <NText
@@ -589,7 +637,7 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
           onPress={() => router.push("/journal/balance" as never)}
           accessibilityRole="link"
         >
-          {behind ? t("journal.work_fix") : t("journal.work_see")} →
+          {behind.length > 0 ? t("journal.work_fix") : t("journal.work_see")} →
         </NText>
       </XStack>
     </NBlock>
@@ -681,7 +729,7 @@ export function StatsView({ stats }: { stats: JournalStats }) {
       <Lead stats={stats} mode={mode} />
       <Wall stats={stats} mode={mode} />
       <FlameBlock stats={stats} />
-      {!stats.isFirstDay && <MonthBlock stats={stats} />}
+      {stats.isFirstDay ? null : <MonthBlock stats={stats} />}
       <WorkBlock stats={stats} />
       <LevelBlock stats={stats} />
       <XStack mx={11} mt={17} flexWrap="wrap" gap={6}>
@@ -700,14 +748,14 @@ export function StatsView({ stats }: { stats: JournalStats }) {
             total: stats.shelf.total,
           })}
         </NButton>
-        {stats.bosses > 0 && (
+        {stats.bosses > 0 ? (
           <NButton
             testID="journal-chip-bosses"
             onPress={() => router.push("/journal/bosses" as never)}
           >
             {t("journal.chip_bosses", { count: stats.bosses })}
           </NButton>
-        )}
+        ) : null}
       </XStack>
     </YStack>
   );

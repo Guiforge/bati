@@ -75,9 +75,15 @@ export type WallEntry = {
   last: number | null;
   /** When the standing best was first reached. Null when never logged. */
   recordAt: Date | null;
-  /** The record is also the first time the movement was logged: nothing was beaten to set it. */
-  firstEver: boolean;
+  /**
+   * The best of the last `SEASON_DAYS`, null when the movement was not trained in them. An old
+   * record is beaten from here: a peak from two years ago is not a target for tonight.
+   */
+  seasonBest: number | null;
 };
+
+/** How far back "this season" reaches, for a movement whose record has aged. */
+export const SEASON_DAYS = 90;
 
 /**
  * The movements trained most recently, each with its record, the day it was set, and what the hero
@@ -86,6 +92,9 @@ export type WallEntry = {
  * The record's date is not stored anywhere, and it does not need to be: it is the first row that
  * reached the standing best. `checkForNewRecords` decides a record with a strict `>`, so a later
  * equal value never took it, and the earliest equal row is exactly the day it fell.
+ *
+ * `seasonBest` is there for the hero whose records have aged: a veteran audit (2026-09-15) found a
+ * wall of peaks from two years ago, none of them reachable tonight, and a hero who closed the tab.
  */
 export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
   const records = await getMovementRecords(limit);
@@ -93,10 +102,7 @@ export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
   return await Promise.all(
     records.map(async (record) => {
       const [first] = await db
-        .select({
-          sessionId: completedExercises.sessionId,
-          performedAt: completedExercises.performedAt,
-        })
+        .select({ performedAt: completedExercises.performedAt })
         .from(completedExercises)
         .where(
           and(
@@ -108,20 +114,16 @@ export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
         .orderBy(completedExercises.performedAt, completedExercises.id)
         .limit(1);
 
-      const recordAt = first?.performedAt ?? record.at;
-      const [earlier] = first
-        ? await db
-            .select({ n: count() })
-            .from(completedExercises)
-            .where(
-              and(
-                eq(completedExercises.exerciseId, record.exerciseId),
-                eq(completedExercises.resultType, record.type),
-                ne(completedExercises.sessionId, first.sessionId),
-                lt(completedExercises.performedAt, recordAt),
-              ),
-            )
-        : [];
+      const [season] = await db
+        .select({ best: sql<number | null>`MAX(${completedExercises.resultValue})` })
+        .from(completedExercises)
+        .where(
+          and(
+            eq(completedExercises.exerciseId, record.exerciseId),
+            eq(completedExercises.resultType, record.type),
+            gte(completedExercises.performedAt, new Date(Date.now() - SEASON_DAYS * DAY_MS)),
+          ),
+        );
 
       return {
         exerciseId: record.exerciseId,
@@ -130,8 +132,8 @@ export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
         type: record.type,
         best: record.best,
         last: record.last,
-        recordAt,
-        firstEver: Number(earlier?.n ?? 0) === 0,
+        recordAt: first?.performedAt ?? record.at,
+        seasonBest: season?.best ?? null,
       };
     }),
   );
@@ -182,7 +184,7 @@ export async function getStarterWall(): Promise<WallEntry[]> {
         best: null,
         last: null,
         recordAt: null,
-        firstEver: false,
+        seasonBest: null,
       },
     ];
   });
@@ -206,6 +208,10 @@ export type PeriodFigures = {
   reps: number;
   /** Seconds in quests. An outing's time is its own figure and not counted here. */
   questSeconds: number;
+  /** Quests that kept a duration: the divisor of an average, which a row with none would drag down. */
+  timedQuests: number;
+  /** Moving time on outings, or the clock where no fix gave a moving time. */
+  outingSeconds: number;
   /** Ground from any session: a mixed quest that walked a stretch counts it too. */
   leaguesM: number;
   xp: number;
@@ -213,52 +219,13 @@ export type PeriodFigures = {
   latestRecord: RecordMention | null;
 };
 
-/**
- * One period's figures, every one of them over the same `[from, to]`. `from` null is all time.
- *
- * One call per period rather than one screen's worth of scattered totals, so "September so far"
- * and "vs. August, same 15 days" are the same function over two windows and cannot count
- * differently. Two tiles on the old stats tab were both called "Ground covered" and summed
- * different rows, which is the thing this shape exists to make impossible.
- */
-export async function getPeriodFigures(from: Date | null, to: Date): Promise<PeriodFigures> {
-  const window = and(
-    from ? gte(completedQuest.performedAt, from) : undefined,
-    lte(completedQuest.performedAt, to),
-  );
-
-  const [head] = await db
-    .select({
-      quests: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL THEN 1 ELSE 0 END), 0)`,
-      outings: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NOT NULL THEN 1 ELSE 0 END), 0)`,
-      questSeconds: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL THEN COALESCE(${completedQuest.durationSeconds}, 0) ELSE 0 END), 0)`,
-      leaguesM: sql<number>`COALESCE(SUM(${completedQuest.leaguesM}), 0)`,
-      xp: sql<number>`COALESCE(SUM(${completedQuest.xpEarned}), 0)`,
-    })
-    .from(completedQuest)
-    .where(window);
-
-  const [work] = await db
-    .select({
-      reps: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
-    })
-    .from(completedExercises)
-    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
-    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
-    .where(window);
-
-  const recordRows = await db
-    .select({
-      performedAt: completedQuest.performedAt,
-      recordsJson: completedQuest.recordsJson,
-    })
-    .from(completedQuest)
-    .where(and(window, eq(completedQuest.hasNewRecords, 1)))
-    .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id));
-
+/** How many records a period's sessions set, and the latest one, with its movement's name. */
+async function readRecordRows(
+  rows: readonly { performedAt: Date; recordsJson: string | null }[],
+): Promise<{ records: number; latestRecord: RecordMention | null }> {
   let records = 0;
   let latest: { at: Date; record: StoredRecord | null } | null = null;
-  for (const row of recordRows) {
+  for (const row of rows) {
     const parsed = parseRecords(row.recordsJson);
     // A row from before `0051` has its flag and no detail: one record, unnamed.
     records += Math.max(1, parsed.length);
@@ -287,11 +254,63 @@ export async function getPeriodFigures(from: Date | null, to: Date): Promise<Per
     };
   }
 
+  return { records, latestRecord };
+}
+
+/**
+ * One period's figures, every one of them over the same `[from, to]`. `from` null is all time.
+ *
+ * One call per period rather than one screen's worth of scattered totals, so "September so far"
+ * and "vs. August, same 15 days" are the same function over two windows and cannot count
+ * differently. Two tiles on the old stats tab were both called "Ground covered" and summed
+ * different rows, which is the thing this shape exists to make impossible.
+ */
+export async function getPeriodFigures(from: Date | null, to: Date): Promise<PeriodFigures> {
+  const window = and(
+    from ? gte(completedQuest.performedAt, from) : undefined,
+    lte(completedQuest.performedAt, to),
+  );
+
+  const [head] = await db
+    .select({
+      quests: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL THEN 1 ELSE 0 END), 0)`,
+      outings: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NOT NULL THEN 1 ELSE 0 END), 0)`,
+      questSeconds: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL THEN COALESCE(${completedQuest.durationSeconds}, 0) ELSE 0 END), 0)`,
+      timedQuests: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL AND ${completedQuest.durationSeconds} > 0 THEN 1 ELSE 0 END), 0)`,
+      outingSeconds: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NOT NULL THEN COALESCE(${completedQuest.movingSeconds}, ${completedQuest.durationSeconds}, 0) ELSE 0 END), 0)`,
+      leaguesM: sql<number>`COALESCE(SUM(${completedQuest.leaguesM}), 0)`,
+      xp: sql<number>`COALESCE(SUM(${completedQuest.xpEarned}), 0)`,
+    })
+    .from(completedQuest)
+    .where(window);
+
+  const [work] = await db
+    .select({
+      reps: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
+    })
+    .from(completedExercises)
+    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    .where(window);
+
+  const recordRows = await db
+    .select({
+      performedAt: completedQuest.performedAt,
+      recordsJson: completedQuest.recordsJson,
+    })
+    .from(completedQuest)
+    .where(and(window, eq(completedQuest.hasNewRecords, 1)))
+    .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id));
+
+  const { records, latestRecord } = await readRecordRows(recordRows);
+
   return {
     quests: Number(head?.quests ?? 0),
     outings: Number(head?.outings ?? 0),
     reps: Number(work?.reps ?? 0),
     questSeconds: Number(head?.questSeconds ?? 0),
+    timedQuests: Number(head?.timedQuests ?? 0),
+    outingSeconds: Number(head?.outingSeconds ?? 0),
     leaguesM: Number(head?.leaguesM ?? 0),
     xp: Number(head?.xp ?? 0),
     records,
@@ -303,8 +322,10 @@ export async function getPeriodFigures(from: Date | null, to: Date): Promise<Per
  * This month from its first day to now, and the previous month over the same number of days.
  *
  * "Same 15 days" rather than the whole previous month, because the whole month always wins on
- * the fifteenth. The previous window stops at that month's last day when it is shorter: the
- * thirty-first of March compares against all of February, not against the third of March.
+ * the fifteenth. Whole days, to the end of the same date, because that is what the label says: a
+ * window cut at the current hour dropped an evening session a hero could count. The previous
+ * window stops at that month's last day when it is shorter: the thirty-first of March compares
+ * against all of February, not against the third of March.
  */
 export function monthWindows(now: Date): {
   current: { from: Date; to: Date };
@@ -314,8 +335,9 @@ export function monthWindows(now: Date): {
   const from = new Date(now.getFullYear(), now.getMonth(), 1);
   const previousFrom = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const previousEnd = new Date(from.getTime() - 1);
-  const elapsed = now.getTime() - from.getTime();
-  const previousTo = new Date(Math.min(previousFrom.getTime() + elapsed, previousEnd.getTime()));
+  const sameDayEnd =
+    new Date(now.getFullYear(), now.getMonth() - 1, now.getDate() + 1).getTime() - 1;
+  const previousTo = new Date(Math.min(sameDayEnd, previousEnd.getTime()));
   return {
     current: { from, to: now },
     previous: { from: previousFrom, to: previousTo },
@@ -323,9 +345,12 @@ export function monthWindows(now: Date): {
   };
 }
 
-export type DayActivity = "quest" | "outing";
+export type DayActivity = "quest" | "outing" | "both";
 
-/** Which days held a quest, and which only an outing, keyed by the local day. A quest wins. */
+/**
+ * What each day held, keyed by the local day. A quest and an outing on the same day is its own
+ * mark: a walker's longest outing of the month shared a day with a quest and vanished under it.
+ */
 export async function getActivityDays(from: Date, to: Date): Promise<Map<string, DayActivity>> {
   const rows = await db
     .select({ performedAt: completedQuest.performedAt, outing: completedQuest.outing })
@@ -335,8 +360,9 @@ export async function getActivityDays(from: Date, to: Date): Promise<Map<string,
   const days = new Map<string, DayActivity>();
   for (const row of rows) {
     const key = dayKey(row.performedAt);
-    if (row.outing == null) days.set(key, "quest");
-    else if (!days.has(key)) days.set(key, "outing");
+    const kind: DayActivity = row.outing == null ? "quest" : "outing";
+    const had = days.get(key);
+    days.set(key, had === undefined || had === kind ? kind : "both");
   }
   return days;
 }
@@ -373,8 +399,13 @@ export type SessionBest = {
   questTitle: Localized | null;
 };
 
-async function bestSessionBy(metric: "duration" | "xp"): Promise<SessionBest | null> {
-  const column = metric === "duration" ? completedQuest.durationSeconds : completedQuest.xpEarned;
+async function bestSessionBy(metric: "duration" | "xp" | "ground"): Promise<SessionBest | null> {
+  const column =
+    metric === "duration"
+      ? completedQuest.durationSeconds
+      : metric === "xp"
+        ? completedQuest.xpEarned
+        : completedQuest.leaguesM;
   const [row] = await db
     .select({
       sessionId: completedQuest.id,
@@ -387,7 +418,8 @@ async function bestSessionBy(metric: "duration" | "xp"): Promise<SessionBest | n
     })
     .from(completedQuest)
     .leftJoin(quests, eq(quests.id, completedQuest.questId))
-    .where(and(isWorkout(), gt(column, 0)))
+    // A quest's records are about quests; the longest outing is the one record about outings.
+    .where(and(metric === "ground" ? isNotNull(completedQuest.outing) : isWorkout(), gt(column, 0)))
     .orderBy(desc(column), desc(completedQuest.performedAt))
     .limit(1);
   if (!row || row.value == null) return null;
@@ -423,18 +455,20 @@ async function mostRepsSession(): Promise<SessionBest | null> {
   };
 }
 
-/** The three records that belong to a session rather than a movement. They live in Lifetime. */
+/** The records that belong to a session rather than a movement. They live in Lifetime. */
 export async function getSessionBests(): Promise<{
   longest: SessionBest | null;
   mostXp: SessionBest | null;
   mostReps: SessionBest | null;
+  longestOuting: SessionBest | null;
 }> {
-  const [longest, mostXp, mostReps] = await Promise.all([
+  const [longest, mostXp, mostReps, longestOuting] = await Promise.all([
     bestSessionBy("duration"),
     bestSessionBy("xp"),
     mostRepsSession(),
+    bestSessionBy("ground"),
   ]);
-  return { longest, mostXp, mostReps };
+  return { longest, mostXp, mostReps, longestOuting };
 }
 
 export type BossKill = {

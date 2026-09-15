@@ -125,3 +125,16 @@ describe("formatElevation", () => {
     expect(formatElevation(-3, "metric")).toBe("...");
   });
 });
+
+describe("formatDistance in a language", () => {
+  const { formatDistance: format } =
+    require("../constants/distanceFormat") as typeof import("../constants/distanceFormat");
+
+  it("writes the language's decimal separator when it is given one", () => {
+    expect(format(13_200, "metric", "fr")).toMatch(/^13,20\skm$/);
+    expect(format(13_200, "metric", "de")).toBe("13,20 km");
+    expect(format(13_200, "metric", "en")).toBe("13.20 km");
+    // No language keeps the form every other screen still prints.
+    expect(format(13_200, "metric")).toBe("13.20 km");
+  });
+});

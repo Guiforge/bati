@@ -428,7 +428,7 @@ export const isWorkout = () => sql`(${completedQuest.outing} IS NULL)`;
  * `components/session/VictoryView.tsx`), which is the right floor for a workout and far too low
  * for a walk: two minutes on the road is walking to the car. Ten is a walk.
  */
-const OUTING_COUNTS_AFTER_SECONDS = 10 * 60;
+export const OUTING_COUNTS_AFTER_SECONDS = 10 * 60;
 
 /** Ten minutes on the road, or any workout at all. See `isWorkout` above. */
 export const countsAsSession = () =>

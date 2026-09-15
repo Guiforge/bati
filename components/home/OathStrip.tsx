@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
@@ -10,6 +10,7 @@ import { useOathText } from "@/components/oath/useOathText";
 import { type Chain, getChainTo } from "@/db/exercises";
 import { getOathProgress, type OathProgress, oathNeedsExercise } from "@/db/oaths";
 import { readPath } from "@/db/paths";
+import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -20,9 +21,11 @@ const STRIP_MIN_HEIGHT = 40;
 function useOathChain(oath: OathProgress): Chain | null {
   const [chain, setChain] = useState<Chain | null>(null);
 
-  const exerciseId = oathNeedsExercise(oath.oath.metric) ? oath.oath.exerciseId : null;
-
+  // Keyed on the oath read, not on its exercise: the rung under the hero's feet moves with a
+  // session while the sworn movement stays the same, and Home only hands down a new read when
+  // something was written.
   useEffect(() => {
+    const exerciseId = oathNeedsExercise(oath.oath.metric) ? oath.oath.exerciseId : null;
     if (exerciseId === null) {
       setChain(null);
       return;
@@ -41,7 +44,7 @@ function useOathChain(oath: OathProgress): Chain | null {
     return () => {
       cancelled = true;
     };
-  }, [exerciseId]);
+  }, [oath]);
 
   return chain;
 }
@@ -134,18 +137,20 @@ export function OathStrip() {
   const [oath, setOath] = useState<OathProgress | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      getOathProgress()
-        .then(setOath)
-        .catch((error) => {
-          // Falls back to the swear line, which is wrong for a hero who has one, so the failure
-          // must at least be reported.
-          reportError("home.oath", error);
-          setOath(null);
-        })
-        .finally(() => setIsLoading(false));
-    }, []),
+  useReloadOnChange(
+    "home.oath",
+    useCallback(
+      () =>
+        getOathProgress()
+          .then(setOath, (error: unknown) => {
+            // Falls back to the swear line, which is wrong for a hero who has one, so the failure
+            // is rethrown for `useReloadOnChange` to report, and read again on the next focus.
+            setOath(null);
+            throw error;
+          })
+          .finally(() => setIsLoading(false)),
+      [],
+    ),
   );
 
   if (isLoading) return <YStack minH={STRIP_MIN_HEIGHT} />;

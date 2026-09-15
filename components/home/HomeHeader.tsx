@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,8 +11,8 @@ import { getAvatarSource } from "@/constants/avatars";
 import { getFlameLevel } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { getVillageTier, TIER_NAMES } from "@/db/village";
+import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 import { useStreakInfo } from "@/hooks/useStreakInfo";
-import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 /** The strip under the status bar. Everything Home no longer spends on chrome goes to the scene. */
@@ -45,12 +45,9 @@ export function HomeHeader() {
   const avatarSource = getAvatarSource(avatarId, customAvatarUri);
 
   // Refetch on focus: a session just logged must show up here, not on the next cold start.
-  useFocusEffect(
-    useCallback(() => {
-      getUserLevelInfo()
-        .then(setLevelInfo)
-        .catch((e) => reportError("home.levelInfo", e));
-    }, []),
+  useReloadOnChange(
+    "home.levelInfo",
+    useCallback(() => getUserLevelInfo().then(setLevelInfo), []),
   );
 
   const levelTitle = levelInfo ? levelInfo.title[language] : "";

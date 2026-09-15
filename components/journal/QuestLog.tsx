@@ -146,7 +146,10 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
   return (
     <NPanel center>
       <Trophy size={28} color="$resourceGold" strokeWidth={2.5} />
-      <NKicker mt={8}>{t("journal.record_fell")}</NKicker>
+      {/* "A record fell" over a first attempt promised a fall there was nothing to fall from. */}
+      <NKicker mt={8}>
+        {record.previous == null ? t("journal.record_set_first") : t("journal.record_fell")}
+      </NKicker>
       <NNum
         testID="journal-record-fell"
         fontSize={32}
@@ -215,15 +218,22 @@ function WhereItSits({ standing }: { standing: QuestStanding }) {
           />
         ))}
       </XStack>
-      <XStack justify="space-between" mt={6}>
+      <XStack justify="space-between" flexWrap="wrap" columnGap={11} mt={6}>
         <NMuted fontSize={10.5}>
           {t("journal.sits_best_on", {
             value: show(max),
             date: shortDate(language, standing.bestAt),
           })}
         </NMuted>
+        {/* Below the best, the gap: "#6 of 6" with two numbers to subtract said where the run
+            sat and never by how much. */}
         <NMuted fontSize={10.5}>
-          {t("journal.sits_this_run", { value: show(standing.mine) })}
+          {standing.rank > 1 && max > standing.mine
+            ? t("journal.sits_this_run_gap", {
+                value: show(standing.mine),
+                gap: show(max - standing.mine),
+              })
+            : t("journal.sits_this_run", { value: show(standing.mine) })}
         </NMuted>
       </XStack>
     </NBlock>
@@ -236,6 +246,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
   const { session, level, latest, shift, rung } = data;
   const reps = sessionReps(session);
+  const holds = session.exercises.some((ex) => ex.result.type === "time");
   const outing = session.outing != null;
   // The same rule the flame reads (`countsAsSession`). Said first on an outing: a walker who read
   // only what an outing does not pay concluded that her walks did not count at all.
@@ -299,6 +310,9 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
           <NFact>
             <NText fontSize={13.5} lineHeight={19}>
               {t("journal.moved_reps", { count: reps, formatted: formatCount(language, reps) })}
+              {/* A plank's minute is 20 of these reps, a rule Lifetime wrote and this line used
+                  without saying. */}
+              {holds ? <NMuted fontSize={13.5}> ({t("journal.row_reps_note")})</NMuted> : null}
             </NText>
           </NFact>
         )

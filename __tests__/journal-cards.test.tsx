@@ -30,7 +30,6 @@ jest.mock("@/db/muscleBalance", () => ({
   getMuscleBalance: () => mockGetMuscleBalance(),
   getPatternBalance: () => mockGetPatternBalance(),
   getPullDeficit: () => null,
-  getBalanceRecommendation: () => null,
 }));
 jest.mock("@/db/achievements", () => ({
   getAllAchievementsWithProgress: () => mockGetAllAchievementsWithProgress(),

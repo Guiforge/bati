@@ -35,6 +35,7 @@ import { inSentence, localizedName, localizedTitle } from "@/src/i18n/localized"
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 import type { JournalStats } from "./useJournalStats";
 import { STALE_RECORD_DAYS, wallSub, wallTarget } from "./wall";
+import { workVerdict } from "./workVerdict";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -560,9 +561,6 @@ function DayMark({
   );
 }
 
-/** Sessions in thirty days before the balance is worth a verdict. */
-const MIN_BALANCE_SESSIONS = 3;
-
 const WORK_FILLS = ["$resourceGold", "$gold600", "$gold700", "$gold800"] as const;
 
 function WorkBlock({ stats }: { stats: JournalStats }) {
@@ -571,26 +569,9 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
   const language = useSettingsStore((s) => s.language);
   const { balance } = stats;
   if (balance.totalVolume === 0) return null;
-  // Below three sessions a share is one quest's shape, and "Shoulders (0%) is behind" on a first
-  // day is a verdict on nothing.
-  const early = balance.totalSessions < MIN_BALANCE_SESSIONS;
-
+  const verdict = workVerdict(t, language, balance);
   const shown = balance.muscles.filter((m) => m.percentage > 0);
   const label = (code: keyof typeof MUSCLE_LABELS) => MUSCLE_LABELS[code][language];
-  // Every muscle behind, each with its share: a verdict that named one muscle under a gold "8%"
-  // that belonged to another sent two auditors to the wrong number.
-  const behind = balance.muscles
-    .filter((m) => balance.weakAreas.includes(m.muscle))
-    .map((m, index) =>
-      t("journal.muscle_share", {
-        muscle: index === 0 ? label(m.muscle) : inSentence(label(m.muscle), language),
-        share: formatShare(language, m.percentage),
-      }),
-    );
-  const behindList =
-    behind.length <= 1
-      ? (behind[0] ?? "")
-      : t("journal.list_and", { a: behind.slice(0, -1).join(", "), b: behind.at(-1) });
 
   return (
     <NBlock testID="journal-work" mx={11} mt={6}>
@@ -634,11 +615,7 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
       </XStack>
       <XStack mt={11} flexWrap="wrap" items="baseline" gap={6}>
         <NText fontSize={12.5} lineHeight={18}>
-          {early
-            ? t("journal.work_early", { count: MIN_BALANCE_SESSIONS })
-            : behind.length > 0
-              ? t("journal.work_behind", { count: behind.length, muscles: behindList })
-              : t("journal.work_balanced")}
+          {verdict.text}
         </NText>
         <NText
           testID="journal-work-link"
@@ -648,7 +625,7 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
           onPress={() => router.push("/journal/balance" as never)}
           accessibilityRole="link"
         >
-          {!early && behind.length > 0 ? t("journal.work_fix") : t("journal.work_see")} →
+          {verdict.behind ? t("journal.work_fix") : t("journal.work_see")} →
         </NText>
       </XStack>
     </NBlock>

@@ -190,59 +190,6 @@ export async function getSuggestedFocusAreas(limit = 2): Promise<MuscleCode[]> {
   return sorted.slice(0, limit).map((m) => m.muscle);
 }
 
-/**
- * Get a text recommendation based on muscle balance.
- */
-export function getBalanceRecommendation(balance: MuscleBalance): {
-  status: "balanced" | "needs_attention" | "no_data";
-  message: Localized;
-  focusAreas: MuscleCode[];
-} {
-  if (balance.totalVolume === 0) {
-    return {
-      status: "no_data",
-      message: {
-        en: "Complete workouts to see your muscle balance.",
-        fr: "Termine des entraînements pour voir ton équilibre musculaire.",
-        de: "Schließ Trainings ab, um dein Muskelgleichgewicht zu sehen.",
-        es: "Completa entrenamientos para ver tu equilibrio muscular.",
-      },
-      focusAreas: [],
-    };
-  }
-
-  if (balance.weakAreas.length === 0) {
-    return {
-      status: "balanced",
-      message: {
-        en: "Great balance! Keep up the varied training.",
-        fr: "Bon équilibre ! Continue l'entraînement varié.",
-        de: "Gutes Gleichgewicht! Bleib beim abwechslungsreichen Training.",
-        es: "¡Buen equilibrio! Sigue con un entrenamiento variado.",
-      },
-      focusAreas: [],
-    };
-  }
-
-  const weakLabels = balance.weakAreas.slice(0, 2).map((m) => MUSCLE_LABELS[m]);
-  const enNames = weakLabels.map((l) => l.en.toLowerCase()).join(" and ");
-  const frNames = weakLabels.map((l) => l.fr.toLowerCase()).join(" et ");
-  // German keeps its capitals: a noun lower-cased mid-sentence is a spelling mistake there.
-  const deNames = weakLabels.map((l) => l.de).join(" und ");
-  const esNames = weakLabels.map((l) => l.es.toLowerCase()).join(" y ");
-
-  return {
-    status: "needs_attention",
-    message: {
-      en: `Consider adding more ${enNames} exercises.`,
-      fr: `Pense à travailler davantage : ${frNames}.`,
-      de: `Nimm mehr Übungen für ${deNames} dazu.`,
-      es: `Prueba a añadir más ejercicios de ${esNames}.`,
-    },
-    focusAreas: balance.weakAreas.slice(0, 2),
-  };
-}
-
 // ------------------------------------------------------------
 // Movement-pattern balance
 // ------------------------------------------------------------

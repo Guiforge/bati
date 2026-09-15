@@ -62,8 +62,13 @@ on the JS thread during the back animation.
 
 - **Lifetime** (`/journal/lifetime`): every figure over all time and over thirty days, side by side,
   with how it is counted, then the three session records (longest quest, most XP, most reps).
-- **Achievements** (`/journal/achievements`): the full shelf with its filters.
-- **Balance** (`/journal/balance`): the muscle balance card and the quests for what is behind.
+- **Achievements** (`/journal/achievements`): the full shelf with its filters, one Nocturne block
+  per achievement, the earned ones in the accent and the rest with how far they are.
+- **Balance** (`/journal/balance`): the stats page's own verdict sentence (`workVerdict`, one source
+  for both pages), every muscle's share as a bar against the biggest, the pull deficit, and the
+  quests for what is behind as plain lines. No badge and no second message: the old card said the
+  same thing three ways, and with its drop shadow the page measured 24 ms a frame against
+  Lifetime's 16 (re-measure after this change, on the same bench).
 - **Bosses felled** (`/journal/bosses`): every boss campaign won, each opening its kill report.
 - **A session** (`/journal/[id]`): the quest log, or the kill report. See
   [session-details.md](session-details.md).
@@ -73,8 +78,8 @@ on the JS thread during the back animation.
 The segmented control's second half: the sessions a hundred at a time, newest first, each opening
 the quest log. It follows the same version check as the stats page, and when it does re-read, it
 reads back everything already scrolled through, so a return from a session keeps the hero's place.
-Nothing is read before the tab is first shown. A row is the cover, the title with its record badge,
-the date, and one line of details (duration or ground, XP, difficulty): the icon and three tags it
+Nothing is read before the tab is first shown. A row is the cover, the title with its record in a gold kicker (no filled
+plate), the date, and one line of details (duration or ground, XP, difficulty): the icon and three tags it
 had cost the emulator's GPU enough to scroll History at 26 ms a frame.
 An empty history is "An empty page", never a button that sends the hero elsewhere.
 

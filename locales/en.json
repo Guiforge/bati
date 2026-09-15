@@ -683,13 +683,9 @@
     "notes": "Notes",
     "tab_stats": "Stats",
     "tab_history": "History",
-    "muscle_balance": "Muscle Balance",
-    "balance_good": "Balanced!",
-    "balance_needs_work": "Needs Work",
     "pull_deficit_title": "Your pulling is behind",
-    "pull_deficit_body": "Pulling {{pull}} against {{push}} pushing over 30 days. Without a bar the pull is what disappears first: towel rows or a doorway bar.",
+    "pull_deficit_body": "{{pull}} reps of pulling against {{push}} of pushing in the last 30 days. Towel rows or a doorway bar bring the pull back up.",
     "suggested_quests": "Your weak spots",
-    "suggested_quests_desc": "Picked for what is behind",
     "pr_longest_outing": "Longest outing",
     "record_longest_session": "Longest",
     "record_most_xp": "Most XP",
@@ -909,7 +905,6 @@
     "work_early_other": "Too early to tell: {{count}} sessions in thirty days give a balance."
   },
   "achievements": {
-    "title": "Achievements",
     "progress": "{{unlocked}} / {{total}} unlocked",
     "filter_all": "All",
     "filter_sessions": "Workouts",

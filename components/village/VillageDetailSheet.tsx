@@ -222,7 +222,7 @@ function BuildingDetail({
   const { t } = useTranslation();
   const router = useRouter();
   const built = building.level > 0;
-  // Lower-cased mid-sentence, the way getBalanceRecommendation() writes muscles into prose.
+  // Lower-cased mid-sentence, the way the Journal's balance verdict (`workVerdict`) writes muscles.
   const muscleLabel = building.relatedMuscle
     ? inSentence(MUSCLE_LABELS[building.relatedMuscle]?.[language] ?? "", language) ||
       building.relatedMuscle

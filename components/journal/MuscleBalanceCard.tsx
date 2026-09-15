@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Progress, Text, XStack, YStack } from "tamagui";
-import { Card } from "@/components/common/Card";
-import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { Target } from "@/components/icons";
+import { XStack, YStack } from "tamagui";
 import { formatCount, formatShare } from "@/components/journal/journalFormat";
 import {
-  getBalanceRecommendation,
+  NBar,
+  NBlock,
+  NKickerQuiet,
+  NMuted,
+  NNum,
+  NRule,
+  NText,
+} from "@/components/journal/nocturne";
+import { MIN_BALANCE_SESSIONS, workVerdict } from "@/components/journal/stats/workVerdict";
+import {
   getMuscleBalance,
   getPatternBalance,
   getPullDeficit,
@@ -16,6 +22,12 @@ import {
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
+/**
+ * The thirty days' balance in full: one verdict, the stats page's own sentence, then every muscle's
+ * share, then the pull deficit that only movement patterns can see. Nocturne blocks, like the rest
+ * of the Journal. The old card said "Needs Work" three ways, under a drop shadow, on a page that
+ * measured 24 ms a frame beside Lifetime's 16.
+ */
 export function MuscleBalanceCard() {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
@@ -24,148 +36,123 @@ export function MuscleBalanceCard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
-      try {
-        // Two views of the same 30 days: muscles say *what* was worked, patterns say what the
-        // body was *doing*, and only the second can see a pull deficit.
-        const [muscles, byPattern] = await Promise.all([
-          getMuscleBalance("30d"),
-          getPatternBalance("30d"),
-        ]);
+    // Two views of the same 30 days: muscles say *what* was worked, patterns say what the body
+    // was *doing*, and only the second can see a pull deficit.
+    Promise.all([getMuscleBalance("30d"), getPatternBalance("30d")])
+      .then(([muscles, byPattern]) => {
         setBalance(muscles);
         setPatterns(byPattern);
-      } catch (error) {
-        // Same trap as the journal's history: a card that fails to load looks exactly like a
-        // card with nothing to show.
-        reportError("journal.muscleBalance", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    load().catch(() => {
-      // Error already handled
-    });
+      })
+      // A card that fails to load looks exactly like a card with nothing to show.
+      .catch((error) => reportError("journal.muscleBalance", error))
+      .finally(() => setIsLoading(false));
   }, []);
 
-  if (isLoading) {
-    // Six muscle rows plus header: reserve roughly that height, like the sibling cards do.
+  // The place the block will take, and nothing in it: a loading card says nothing about the hero.
+  if (isLoading) return <NBlock minH={220}>{null}</NBlock>;
+
+  const header = (
+    <XStack items="baseline" justify="space-between" gap={8}>
+      <NKickerQuiet>{t("journal.work_title")}</NKickerQuiet>
+      <NMuted fontSize={11}>{t("journal.lifetime_30")}</NMuted>
+    </XStack>
+  );
+
+  if (!balance || balance.totalVolume === 0) {
     return (
-      <SkeletonCard>
-        <Skeleton height={180} />
-      </SkeletonCard>
+      <NBlock gap={8}>
+        {header}
+        <NText fontSize={13.5} lineHeight={19}>
+          {t("chart.complete_more")}
+        </NText>
+      </NBlock>
     );
   }
 
-  // Three sessions before a verdict, the rule the stats page applies: "Needs Work" after one quest
-  // judges a single quest's shape.
-  if (!balance || balance.totalVolume === 0 || balance.totalSessions < 3) {
+  const verdict = workVerdict(t, language, balance);
+  // Three sessions before the bars too: one quest's shape drawn as six shares is a verdict in
+  // pictures, and the sentence has just said it is too early for one.
+  if (balance.totalSessions < MIN_BALANCE_SESSIONS) {
     return (
-      <Card bg="$bgLight">
-        <YStack gap="$2">
-          <XStack items="center" gap="$2">
-            <Target size={18} color="$text" />
-            <Text fontWeight="700" fontSize={16} color="$text">
-              {t("journal.muscle_balance")}
-            </Text>
-          </XStack>
-          <Text color="$text" opacity={0.6} fontSize={13}>
-            {t("chart.complete_more")}
-          </Text>
-        </YStack>
-      </Card>
+      <NBlock gap={8}>
+        {header}
+        <NText fontSize={13.5} lineHeight={19}>
+          {verdict.text}
+        </NText>
+      </NBlock>
     );
   }
 
-  const recommendation = getBalanceRecommendation(balance);
   const maxVolume = Math.max(...balance.muscles.map((m) => m.volume));
   const pullDeficit = patterns ? getPullDeficit(patterns) : null;
 
   return (
-    <Card bg="$bgLight">
-      <YStack gap="$3">
-        <XStack items="center" justify="space-between">
-          <XStack items="center" gap="$2">
-            <Target size={18} color="$text" />
-            <Text fontWeight="700" fontSize={16} color="$text">
-              {t("journal.muscle_balance")}
-            </Text>
-          </XStack>
-          <Text
-            fontSize={12}
-            fontWeight="700"
-            color={recommendation.status === "balanced" ? "$success" : "$primary"}
-          >
-            {recommendation.status === "balanced"
-              ? t("journal.balance_good")
-              : t("journal.balance_needs_work")}
-          </Text>
-        </XStack>
+    <NBlock gap={11}>
+      {header}
+      <NText fontSize={13.5} lineHeight={19}>
+        {verdict.text}
+      </NText>
 
-        <YStack gap="$2">
-          {balance.muscles.map((m) => {
-            const percentage = maxVolume > 0 ? (m.volume / maxVolume) * 100 : 0;
-            const isWeak = balance.weakAreas.includes(m.muscle);
-            const label = m.label[language];
-
-            return (
-              <XStack key={m.muscle} items="center" gap="$2">
-                <Text
-                  fontSize={12}
-                  color={isWeak ? "$primary" : "$text"}
-                  fontWeight={isWeak ? "700" : "400"}
-                  width={70}
-                  numberOfLines={1}
-                >
-                  {label}
-                </Text>
-                <YStack flex={1}>
-                  <Progress size="$2" value={percentage} bg="$background" rounded="$2">
-                    <Progress.Indicator
-                      // One accent on the Journal: the muscles behind take it, the rest stay
-                      // quiet. Six pastels on a dark card read as six states.
-                      bg={isWeak ? "$primary" : "$muted"}
-                    />
-                  </Progress>
-                </YStack>
-                <Text fontSize={11} color="$text" opacity={0.6} width={35}>
-                  {formatShare(language, m.percentage)}
-                </Text>
-              </XStack>
-            );
-          })}
-        </YStack>
-
-        {recommendation.status === "needs_attention" && (
-          <Text fontSize={12} color="$text" opacity={0.7}>
-            {recommendation.message[language]}
-          </Text>
-        )}
-
-        {/* The bars cannot show these either, for a blunter reason: an exercise with no muscle
-            tags joins to nothing. Reporting the smaller total in silence is the same lie a
-            loading state tells when it renders a zero. */}
-        {balance.unclassifiedResults > 0 ? (
-          <Text fontSize={12} color="$text" opacity={0.7}>
-            {t("journal.unclassified_volume", { count: balance.unclassifiedResults })}
-          </Text>
-        ) : null}
-
-        {/* The muscle bars above cannot show this: a row and a push-up both count as "arms".
-            Pulling is the first thing to vanish when you train without a bar. */}
-        {pullDeficit ? (
-          <YStack gap="$1" borderTopWidth={1} borderColor="$borderStrong" pt="$2">
-            <Text fontSize={12} fontWeight="700" color="$primaryText">
-              {t("journal.pull_deficit_title")}
-            </Text>
-            <Text fontSize={12} color="$text" opacity={0.7}>
-              {t("journal.pull_deficit_body", {
-                pull: formatCount(language, pullDeficit.pullVolume),
-                push: formatCount(language, pullDeficit.pushVolume),
-              })}
-            </Text>
-          </YStack>
-        ) : null}
+      <YStack gap={8}>
+        {balance.muscles.map((m) => {
+          const weak = balance.weakAreas.includes(m.muscle);
+          const share = formatShare(language, m.percentage);
+          return (
+            // One label for the row: the bar is drawn against the biggest muscle, and read on its
+            // own it announced "100%" beside a share of 36.
+            <XStack
+              key={m.muscle}
+              items="center"
+              gap={8}
+              accessible
+              accessibilityLabel={`${m.label[language]} ${share}`}
+            >
+              <NText
+                width={84}
+                fontSize={12.5}
+                lineHeight={17}
+                numberOfLines={1}
+                color={weak ? "$resourceGold" : "$text"}
+              >
+                {m.label[language]}
+              </NText>
+              <YStack flex={1}>
+                <NBar
+                  progress={maxVolume > 0 ? (m.volume / maxVolume) * 100 : 0}
+                  height={6}
+                  fill={weak ? "$resourceGold" : "$gold700"}
+                />
+              </YStack>
+              <NNum width={44} fontSize={12.5} lineHeight={17} style={{ textAlign: "right" }}>
+                {share}
+              </NNum>
+            </XStack>
+          );
+        })}
       </YStack>
-    </Card>
+
+      {/* The bars cannot show these either, for a blunter reason: an exercise with no muscle
+          tags joins to nothing. Reporting the smaller total in silence is the same lie a
+          loading state tells when it renders a zero. */}
+      {balance.unclassifiedResults > 0 ? (
+        <NMuted>{t("journal.unclassified_volume", { count: balance.unclassifiedResults })}</NMuted>
+      ) : null}
+
+      {/* The muscle bars above cannot show this: a row and a push-up both count as "arms". */}
+      {pullDeficit ? (
+        <YStack>
+          <NRule my={0} />
+          <NText mt={11} fontWeight="500" fontSize={13.5} lineHeight={19}>
+            {t("journal.pull_deficit_title")}
+          </NText>
+          <NMuted mt={2}>
+            {t("journal.pull_deficit_body", {
+              pull: formatCount(language, pullDeficit.pullVolume),
+              push: formatCount(language, pullDeficit.pushVolume),
+            })}
+          </NMuted>
+        </YStack>
+      ) : null}
+    </NBlock>
   );
 }

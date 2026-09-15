@@ -692,13 +692,9 @@
     "notes": "Notas",
     "tab_stats": "Estadísticas",
     "tab_history": "Historial",
-    "muscle_balance": "Equilibrio muscular",
-    "balance_good": "¡Equilibrado!",
-    "balance_needs_work": "A mejorar",
     "pull_deficit_title": "Tu tirón se queda atrás",
-    "pull_deficit_body": "{{pull}} de tirón frente a {{push}} de empuje en 30 días. Sin barra, lo primero que desaparece es el tirón: remo con toalla o una barra de puerta.",
+    "pull_deficit_body": "{{pull}} reps de tirón frente a {{push}} de empuje en los últimos 30 días. El remo con toalla o una barra de puerta hacen subir el tirón.",
     "suggested_quests": "Tus puntos débiles",
-    "suggested_quests_desc": "Elegidas para lo que va por detrás",
     "pr_longest_outing": "Salida más larga",
     "record_longest_session": "La más larga",
     "record_most_xp": "Más XP",
@@ -952,7 +948,6 @@
     "work_early_other": "Aún es pronto: hacen falta {{count}} sesiones en treinta días."
   },
   "achievements": {
-    "title": "Logros",
     "progress": "{{unlocked}} / {{total}} desbloqueados",
     "filter_all": "Todos",
     "filter_sessions": "Entrenamientos",

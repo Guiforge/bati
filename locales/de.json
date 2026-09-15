@@ -683,13 +683,9 @@
     "notes": "Notizen",
     "tab_stats": "Statistik",
     "tab_history": "Verlauf",
-    "muscle_balance": "Muskelgleichgewicht",
-    "balance_good": "Ausgewogen!",
-    "balance_needs_work": "Ausbaufähig",
     "pull_deficit_title": "Dein Ziehen hinkt hinterher",
-    "pull_deficit_body": "{{pull}} Ziehen gegen {{push}} Drücken in 30 Tagen. Ohne Stange verschwindet das Ziehen zuerst: Rudern mit Handtuch oder eine Türreckstange.",
+    "pull_deficit_body": "{{pull}} Wdh. Ziehen gegen {{push}} Drücken in den letzten 30 Tagen. Rudern mit Handtuch oder eine Türreckstange holt das Ziehen auf.",
     "suggested_quests": "Deine Schwachstellen",
-    "suggested_quests_desc": "Ausgewählt für das, was hinterherhinkt",
     "pr_longest_outing": "Längste Tour",
     "record_longest_session": "Am längsten",
     "record_most_xp": "Meiste XP",
@@ -909,7 +905,6 @@
     "work_early_other": "Noch zu früh: Dafür braucht es {{count}} Einheiten in dreißig Tagen."
   },
   "achievements": {
-    "title": "Erfolge",
     "progress": "{{unlocked}} / {{total}} freigeschaltet",
     "filter_all": "Alle",
     "filter_sessions": "Trainings",

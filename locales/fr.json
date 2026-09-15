@@ -9,8 +9,7 @@
     "show_less": "Afficher moins",
     "new_unlock": "Succès débloqué !",
     "new_unlocks": "{{count}} succès débloqués !",
-    "progress": "{{unlocked}} / {{total}} débloqués",
-    "title": "Succès"
+    "progress": "{{unlocked}} / {{total}} débloqués"
   },
   "adventures": {
     "completed_times_one": "Terminée une fois",
@@ -424,11 +423,8 @@
     "kept_body": "Aucun XP n'est jamais repris, aucun niveau ne redescend. Quand une règle change, elle s'applique à partir de ce jour-là."
   },
   "journal": {
-    "balance_good": "Équilibré !",
-    "balance_needs_work": "À travailler",
     "pull_deficit_title": "Ton tirage est en retard",
-    "pull_deficit_body": "{{pull}} de tirage contre {{push}} de poussée sur 30 jours. Sans barre, c'est le tirage qui disparaît en premier : tirage à la serviette ou une barre de porte.",
-    "muscle_balance": "Équilibre musculaire",
+    "pull_deficit_body": "{{pull}} reps de tirage contre {{push}} de poussée sur les 30 derniers jours. Le tirage à la serviette ou une barre de porte le fait remonter.",
     "notes": "Notes",
     "unclassified_volume_one": "{{count}} résultat vient d'un exercice sans muscles renseignés : il n'est pas compté ici.",
     "unclassified_volume_other": "{{count}} résultats viennent d'exercices sans muscles renseignés : ils ne sont pas comptés ici.",
@@ -441,7 +437,6 @@
     "pr_longest_outing": "Plus longue sortie",
     "session_not_found": "Séance introuvable",
     "suggested_quests": "Tes points faibles",
-    "suggested_quests_desc": "Choisies pour ce qui est en retard",
     "tab_history": "Historique",
     "tab_stats": "Stats",
     "title": "Journal",

@@ -102,7 +102,9 @@ async function loadJournalStats(): Promise<JournalStats> {
   const monthPrefix = dayKey(windows.current.from).slice(0, 8);
   let questDays = 0;
   for (const [key, kind] of activity) {
-    if (key.startsWith(monthPrefix) && kind === "quest") questDays++;
+    // A day with a quest and an outing is still a day trained: `"both"` counts, only a walk alone
+    // does not.
+    if (key.startsWith(monthPrefix) && kind !== "outing") questDays++;
   }
 
   return {

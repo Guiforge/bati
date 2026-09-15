@@ -29,15 +29,14 @@ export function SuggestedQuestsCard() {
 
   useEffect(() => {
     async function load() {
-      try {
-        const data = await getSuggestedQuestsForWeakAreas(3);
-        setQuests(data);
-      } catch (error) {
-        // A card that failed to load looks exactly like a card with nothing to show.
-        reportError("journal.suggestedQuests", error);
-      } finally {
-        setIsLoading(false);
-      }
+      // No `try ... finally`: the React Compiler cannot lower one and skipped the whole card over it.
+      await getSuggestedQuestsForWeakAreas(3)
+        .then(setQuests)
+        .catch((error: unknown) => {
+          // A card that failed to load looks exactly like a card with nothing to show.
+          reportError("journal.suggestedQuests", error);
+        });
+      setIsLoading(false);
     }
     load().catch(() => {
       // Error already handled

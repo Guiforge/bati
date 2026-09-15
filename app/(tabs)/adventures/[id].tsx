@@ -250,57 +250,58 @@ export default function AdventureDetailsScreen() {
     async (id: number, isStale: () => boolean = () => false) => {
       setState((s) => ({ ...s, status: "loading" }));
 
-      try {
-        const [details, activeRun, exercises, history, finishedCounts, bossFight] =
-          await Promise.all([
-            getAdventureDetails(id),
-            getActiveAdventureRun(id),
-            listExercises(),
-            getRecentSessionHistory(10),
-            getFinishedRunCountsByAdventure(),
-            // Read-only: the fight is created by the session that first swings at it, so a
-            // campaign never browsed and never started has nothing here and shows no panel.
-            getBossFightByAdventure(id),
-          ]);
+      // A promise chain rather than `try`: the React Compiler cannot lower a `??` inside one, and
+      // skipped this whole screen over it.
+      await Promise.all([
+        getAdventureDetails(id),
+        getActiveAdventureRun(id),
+        listExercises(),
+        getRecentSessionHistory(10),
+        getFinishedRunCountsByAdventure(),
+        // Read-only: the fight is created by the session that first swings at it, so a
+        // campaign never browsed and never started has nothing here and shows no panel.
+        getBossFightByAdventure(id),
+      ])
+        .then(([details, activeRun, exercises, history, finishedCounts, bossFight]) => {
+          if (isStale()) return;
+          setFinishedCount(finishedCounts.get(id) ?? 0);
 
-        if (isStale()) return;
-        setFinishedCount(finishedCounts.get(id) ?? 0);
+          if (!details) {
+            setState({
+              status: "error",
+              details: null,
+              activeRun: null,
+              exercisesById: {},
+              suggestedDifficulty: "medium",
+              feedbackAdjusted: false,
+              bossFight: null,
+              message: t("adventures.not_found"),
+            });
+            return;
+          }
 
-        if (!details) {
-          setState({
-            status: "error",
-            details: null,
-            activeRun: null,
-            exercisesById: {},
-            suggestedDifficulty: "medium",
-            feedbackAdjusted: false,
-            bossFight: null,
-            message: t("adventures.not_found"),
+          const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
+          const suggestion = suggestDifficultyFromSessions(history, {
+            maxSessions: 10,
+            defaultDifficulty: "medium",
           });
-          return;
-        }
 
-        const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
-        const suggestion = suggestDifficultyFromSessions(history, {
-          maxSessions: 10,
-          defaultDifficulty: "medium",
+          setState({
+            status: "ready",
+            details,
+            activeRun,
+            exercisesById,
+            suggestedDifficulty: suggestion.level,
+            feedbackAdjusted: suggestion.adjusted,
+            bossFight,
+          });
+        })
+        .catch((e: unknown) => {
+          if (isStale()) return;
+          reportError("adventure.load", e);
+          const message = e instanceof Error ? e.message : "Unknown error";
+          setState((s) => ({ ...s, status: "error", message }));
         });
-
-        setState({
-          status: "ready",
-          details,
-          activeRun,
-          exercisesById,
-          suggestedDifficulty: suggestion.level,
-          feedbackAdjusted: suggestion.adjusted,
-          bossFight,
-        });
-      } catch (e) {
-        if (isStale()) return;
-        reportError("adventure.load", e);
-        const message = e instanceof Error ? e.message : "Unknown error";
-        setState((s) => ({ ...s, status: "error", message }));
-      }
     },
     [t],
   );
@@ -398,29 +399,31 @@ export default function AdventureDetailsScreen() {
     if (!details || adventureId == null || isStarting) return;
 
     setIsStarting(true);
-    try {
-      const nextRun = run ?? (await startAdventureRun({ adventureId }));
-      const step =
-        nextRun.activeStep ??
-        nextRun.steps.find((s) => s.status === "active") ??
-        nextRun.steps[0] ??
-        null;
+    // `run` or a new one, then its step: a promise chain rather than `try`, see `load`.
+    await (run ? Promise.resolve(run) : startAdventureRun({ adventureId }))
+      .then((nextRun) => {
+        const step =
+          nextRun.activeStep ??
+          nextRun.steps.find((s) => s.status === "active") ??
+          nextRun.steps[0] ??
+          null;
 
-      if (!step) {
+        if (!step) {
+          setIsStarting(false);
+          return;
+        }
+
+        const level = nextRun.run.difficultyOverride ?? suggestedDifficulty;
+        router.push(
+          `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}&adventureId=${adventureId}` as never,
+          { withAnchor: true },
+        );
+      })
+      .catch((e: unknown) => {
         setIsStarting(false);
-        return;
-      }
-
-      const level = nextRun.run.difficultyOverride ?? suggestedDifficulty;
-      router.push(
-        `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}&adventureId=${adventureId}` as never,
-        { withAnchor: true },
-      );
-    } catch (e) {
-      setIsStarting(false);
-      reportError("adventure.start", e);
-      showError(t("adventures.start_error", "Could not start the adventure"));
-    }
+        reportError("adventure.start", e);
+        showError(t("adventures.start_error", "Could not start the adventure"));
+      });
   }, [adventureId, details, isStarting, router, run, showError, suggestedDifficulty, t]);
 
   if (!adventureId) {

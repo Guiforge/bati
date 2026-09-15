@@ -2,9 +2,9 @@
 title: React Native Performance — Best Practices & Antipatterns
 type: technical
 status: active
-updated: 2026-07-22
+updated: 2026-09-15
 related: [technical-architecture.md, ../meta/wiki-protocol.md, ../design/design-system.md]
-sources: [app.json, babel.config.js, stores/session.ts, components/session/PausedOverlay.tsx, app/(tabs)/quests/index.tsx, app/(tabs)/journal/index.tsx, package.json]
+sources: [app.json, babel.config.js, __tests__/react-compiler-coverage.test.ts, hooks/useReloadOnChange.ts, stores/session.ts, components/session/PausedOverlay.tsx, app/(tabs)/quests/index.tsx, app/(tabs)/journal/index.tsx, package.json]
 ---
 
 # React Native Performance — Best Practices & Antipatterns
@@ -22,13 +22,35 @@ several of those defaults are already in place; this page tracks what's real for
 | --- | --- |
 | New Architecture (Fabric/TurboModules/JSI) | On — `newArchEnabled=true` in [android/gradle.properties](../../android/gradle.properties), which Expo generates by default from SDK 53 on. There is no key in `app.json`, and adding one would only restate the default. |
 | Hermes engine | On (`jsEngine: "hermes"`) |
-| React Compiler (auto-memoization) | On (`experiments.reactCompiler: true`) |
+| React Compiler (auto-memoization) | On (`experiments.reactCompiler: true`), and held file by file by a ratchet: see [below](#the-compiler-gives-up-in-silence) |
 | Virtualized lists | `@legendapp/list` used for quest/adventure galleries — do not regress to `FlatList`/`ScrollView.map` |
 | Images | `expo-image` used everywhere images appear — keep it that way, never reach for RN's `Image` |
 
 Because the React Compiler is on, manual `useMemo`/`useCallback` for render-time
 memoization is mostly redundant inside components — the compiler already does it. It does
 **not** help with the Zustand and Reanimated issues below; those are outside its scope.
+
+### The compiler gives up in silence
+
+A release build runs the compiler with `panicThreshold: "NONE"` (babel-preset-expo). When it meets
+a construct it cannot lower, it leaves the **whole** component or hook unmemoized and says nothing:
+no warning, no failed build. On 2026-09-15 that was fifteen screens and hooks at once, Home's quick
+actions, the quest details, the Village, the victory screen and the Journal among them, while their
+comments still said "no manual memo, the compiler does it".
+
+[`__tests__/react-compiler-coverage.test.ts`](../../__tests__/react-compiler-coverage.test.ts)
+passes every file under `app/`, `components/` and `hooks/` through the plugin the preset resolves,
+and fails on any compile error. A deliberate bail-out goes in its `ALLOWED` list with the reason,
+and a stale entry fails too, so the list only shrinks. What made them bail, and the smallest
+rewrite that keeps the behaviour:
+
+| The compiler cannot lower | Write instead |
+| --- | --- |
+| `try ... finally` | `await work().catch(onError); cleanup();` (the catch never rethrows) |
+| `?.`, `??`, `&&`, a ternary inside a `try` | the body in a function of its own, or a `.then().catch()` chain |
+| `const { [key]: _, ...rest } = obj` | `Object.fromEntries(Object.entries(obj).filter(([k]) => k !== key))` |
+| `sharedValue.value = x` in a component body or a plain callback | `sharedValue.set(x)` (a worklet may keep `.value`) |
+| a ref read or written during render | read it in the effect or the handler that needs it |
 
 ## Quick-win rules (ranked by effort × impact)
 
@@ -88,8 +110,18 @@ Generic guides push these; the stack already gives them, so skip:
 - **Whole-store Zustand subscriptions.** `useSessionStore()` with no selector re-renders on
   *any* session state change — timer ticks, damage events, the lot. This section used to name
   `PausedOverlay`, `CountdownView` and `BossTauntOverlay` as the offenders; all three select
-  individual fields now, and nothing in the session screens subscribes to a whole store. Kept as
+  individual fields now, and nothing in the session screens subscribes to a whole store. The
+  screens *under* a session count too: the quest details and Home stay mounted beneath it, and the
+  first subscribed to the whole store while Home subscribed to `status`, which flips twice a set.
+  Both select the action alone now and read `useSessionStore.getState().status` at the tap. Kept as
   the pattern to avoid in new code, not as a debt to go and pay.
+- **Re-reading a whole screen on every focus.** A tab stays mounted, so `useFocusEffect` runs on
+  every return. Home ran 51 queries each time whether anything had changed or not. Its blocks go
+  through [`useReloadOnChange`](../../hooks/useReloadOnChange.ts) now, which re-reads only when
+  `getChangeVersion()` moved: SQLite's `total_changes()` for this connection, and the day. It
+  covers every write without a list of tables to keep in step, and relies on reads never writing,
+  which `__tests__/db-change-version.test.ts` holds for Home. The Journal does the same with its
+  own narrower `getJournalVersion`.
 - **`ScrollView` + `.map()` for unbounded lists.** Fine for a handful of fixed items (e.g.
   a settings screen); wrong for anything that grows with user data (history, exercises) —
   use `@legendapp/list` instead, as the quest/adventure galleries already do.

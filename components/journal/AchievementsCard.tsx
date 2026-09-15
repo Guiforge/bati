@@ -27,25 +27,26 @@ export function AchievementsCard({ showAll = false }: { showAll?: boolean }) {
   const [loading, setLoading] = useState(true);
 
   const loadAchievements = useCallback(async () => {
-    try {
-      setLoading(true);
-      // One pipeline: the stats are derivable from the progress list, no second round
-      // of queries needed.
-      const allAchievements = await getAllAchievementsWithProgress();
-      const total = allAchievements.length;
-      const unlocked = allAchievements.filter((a) => a.isUnlocked).length;
-      setAchievements(allAchievements);
-      setStats({
-        total,
-        unlocked,
-        percentage: total > 0 ? Math.round((unlocked / total) * 100) : 0,
+    setLoading(true);
+    // No `try ... finally`: the React Compiler cannot lower one and skipped the whole card over it.
+    // One pipeline: the stats are derivable from the progress list, no second round
+    // of queries needed.
+    await getAllAchievementsWithProgress()
+      .then((allAchievements) => {
+        const total = allAchievements.length;
+        const unlocked = allAchievements.filter((a) => a.isUnlocked).length;
+        setAchievements(allAchievements);
+        setStats({
+          total,
+          unlocked,
+          percentage: total > 0 ? Math.round((unlocked / total) * 100) : 0,
+        });
+      })
+      .catch((error: unknown) => {
+        // A card that failed to load looks exactly like a card with nothing to show.
+        reportError("journal.achievements", error);
       });
-    } catch (error) {
-      // A card that failed to load looks exactly like a card with nothing to show.
-      reportError("journal.achievements", error);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
   }, []);
 
   useEffect(() => {

@@ -148,18 +148,18 @@ export function VictoryView() {
   // over the bottom of every screen it appears on, victory included, and this one's summary must
   // never be permanently stuck behind it.
   const cameoActive = useChorusStore((s) => s.current !== null);
-  const {
-    quest,
-    startTime,
-    saveSession,
-    quitSession,
-    adventureRunStepId,
-    bossFight,
-    bossStartHp,
-    felledByFinalBlow,
-    sessionUuid,
-    goal,
-  } = useSessionStore();
+  // Field by field: the whole store re-rendered this screen on every write, and `saveSession`
+  // writes several while it holds the thread.
+  const quest = useSessionStore((s) => s.quest);
+  const startTime = useSessionStore((s) => s.startTime);
+  const saveSession = useSessionStore((s) => s.saveSession);
+  const quitSession = useSessionStore((s) => s.quitSession);
+  const adventureRunStepId = useSessionStore((s) => s.adventureRunStepId);
+  const bossFight = useSessionStore((s) => s.bossFight);
+  const bossStartHp = useSessionStore((s) => s.bossStartHp);
+  const felledByFinalBlow = useSessionStore((s) => s.felledByFinalBlow);
+  const sessionUuid = useSessionStore((s) => s.sessionUuid);
+  const goal = useSessionStore((s) => s.goal);
   const [bossExpanded, setBossExpanded] = useState(false);
   const cue = useChorusStore((s) => s.cue);
 
@@ -300,18 +300,19 @@ export function VictoryView() {
   const heroTitle = felledBoss != null ? bossDisplayName(felledBoss, language) : questTitle;
   const { bg: questBg } = getQuestColorTokensFromQuest(quest);
 
+  // The message is built outside any `try`: a `??` inside one is what made the React Compiler
+  // skip this whole screen.
   const handleShare = async () => {
-    try {
-      const message = t("session.share_message", {
-        quest: questTitle,
-        xp: result?.xpEarned ?? 0,
-        defaultValue: `I just completed the '${questTitle}' quest and earned ${result?.xpEarned ?? 0} XP in Bati! ⚔️ #BatiApp`,
-      });
-      await Share.share({ message });
-    } catch {
+    const xp = result?.xpEarned ?? 0;
+    const message = t("session.share_message", {
+      quest: questTitle,
+      xp,
+      defaultValue: `I just completed the '${questTitle}' quest and earned ${xp} XP in Bati! ⚔️ #BatiApp`,
+    });
+    await Share.share({ message }).catch(() => {
       // Dismissing the share sheet rejects. That is the hero changing their mind, not a
       // failure — there is nothing to report and nothing to tell them.
-    }
+    });
   };
 
   /**

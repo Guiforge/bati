@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import type { TFunction } from "i18next";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
@@ -22,6 +23,7 @@ import {
 import { listQuestTemplates } from "@/db/quests";
 import { getUserLevelInfo } from "@/db/userLevel";
 import { type LngLat, toTrace } from "@/src/gps/trace";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -55,6 +57,45 @@ async function traceFor(uuid: string | null): Promise<readonly (readonly LngLat[
 }
 
 /**
+ * The session as this screen shows it. Outside the component because the React Compiler cannot
+ * lower a `try` holding `?.` or `??`, and skipped the whole screen over the one this used to sit in.
+ */
+async function readSession(id: number, language: AppLanguage, t: TFunction): Promise<Loaded> {
+  const session = await getCompletedSessionById(id);
+  if (!session) {
+    return { status: "error", message: t("journal.session_not_found") };
+  }
+  const [quests, trace, standing, records, shift, rung, latest, level, kill] = await Promise.all([
+    listQuestTemplates(),
+    traceFor(session.uuid),
+    getQuestStanding(session),
+    getFallenRecords(session),
+    getMuscleShift(session),
+    getSessionRung(session),
+    isLatestSession(session),
+    getUserLevelInfo(),
+    getKillReport(session),
+  ]);
+  const quest = session.questId ? quests.find((q) => q.id === session.questId) : null;
+  return {
+    status: "ready",
+    kill,
+    log: {
+      session,
+      questTitle: quest ? localizedTitle(quest, language) : t("journal.own_quest"),
+      questImage: quest?.imagePath ?? null,
+      trace,
+      standing,
+      records,
+      shift,
+      rung,
+      latest,
+      level,
+    },
+  };
+}
+
+/**
  * One session: the quest log, or the kill report when this is the session that felled a boss.
  * Same route for both, so the history row and the boss list open the same page for the same kill.
  */
@@ -69,48 +110,15 @@ export default function SessionDetailScreen() {
 
   const load = useCallback(
     async (id: number) => {
-      try {
-        const session = await getCompletedSessionById(id);
-        if (!session) {
-          setLoaded({ status: "error", message: t("journal.session_not_found") });
-          return;
-        }
-        const [quests, trace, standing, records, shift, rung, latest, level, kill] =
-          await Promise.all([
-            listQuestTemplates(),
-            traceFor(session.uuid),
-            getQuestStanding(session),
-            getFallenRecords(session),
-            getMuscleShift(session),
-            getSessionRung(session),
-            isLatestSession(session),
-            getUserLevelInfo(),
-            getKillReport(session),
-          ]);
-        const quest = session.questId ? quests.find((q) => q.id === session.questId) : null;
-        setLoaded({
-          status: "ready",
-          kill,
-          log: {
-            session,
-            questTitle: quest ? localizedTitle(quest, language) : t("journal.own_quest"),
-            questImage: quest?.imagePath ?? null,
-            trace,
-            standing,
-            records,
-            shift,
-            rung,
-            latest,
-            level,
-          },
-        });
-      } catch (error) {
-        reportError("journal.detail", error);
-        setLoaded({
-          status: "error",
-          message: error instanceof Error ? error.message : t("common.error"),
-        });
-      }
+      setLoaded(
+        await readSession(id, language, t).catch((error: unknown) => {
+          reportError("journal.detail", error);
+          return {
+            status: "error" as const,
+            message: error instanceof Error ? error.message : t("common.error"),
+          };
+        }),
+      );
     },
     [t, language],
   );

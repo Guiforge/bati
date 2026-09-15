@@ -115,25 +115,24 @@ export default function ExerciseEditor() {
       return;
     }
 
+    const draft: UserExerciseDraft = {
+      ...details,
+      name: trimmedName,
+      description: description.trim(),
+    };
+    // A promise chain rather than `try ... finally`, which the React Compiler cannot lower: the
+    // catch never rethrows, so `setSaving(false)` runs on both paths.
     setSaving(true);
-    try {
-      const draft: UserExerciseDraft = {
-        ...details,
-        name: trimmedName,
-        description: description.trim(),
-      };
-      if (editingId === null) await createUserExercise(draft);
-      else await updateUserExercise(editingId, draft);
-      router.back();
-    } catch (error) {
-      reportError("exercises.editor.save", error);
-      // No name-collision branch: `0036` dropped the hero-side unique index, so there is no
-      // failure here a hero could act on. A branch nothing can reach is a control wired to
-      // nothing, waiting to be believed.
-      showError(t("exercise_editor.save_failed"));
-    } finally {
-      setSaving(false);
-    }
+    await (editingId === null ? createUserExercise(draft) : updateUserExercise(editingId, draft))
+      .then(() => router.back())
+      .catch((error: unknown) => {
+        reportError("exercises.editor.save", error);
+        // No name-collision branch: `0036` dropped the hero-side unique index, so there is no
+        // failure here a hero could act on. A branch nothing can reach is a control wired to
+        // nothing, waiting to be believed.
+        showError(t("exercise_editor.save_failed"));
+      });
+    setSaving(false);
   }, [details, description, editingId, name, router, showError, t]);
 
   return (

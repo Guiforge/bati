@@ -152,14 +152,15 @@ export function useJournalStats(): { stats: JournalStats | null; reload: () => P
   const shownVersion = useRef<string | null>(null);
 
   const load = useCallback(async (force: boolean) => {
-    try {
+    // The read and its error path apart: the React Compiler cannot lower the `&&` inside a `try`,
+    // and skipped this hook over it.
+    const read = async () => {
       const version = await getJournalVersion();
       if (!force && version === shownVersion.current) return;
       setStats(await loadJournalStats());
       shownVersion.current = version;
-    } catch (error) {
-      reportError("journal.stats", error);
-    }
+    };
+    await read().catch((error: unknown) => reportError("journal.stats", error));
   }, []);
 
   const reload = useCallback(() => load(true), [load]);

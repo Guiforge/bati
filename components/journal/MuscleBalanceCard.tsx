@@ -25,22 +25,20 @@ export function MuscleBalanceCard() {
 
   useEffect(() => {
     async function load() {
-      try {
-        // Two views of the same 30 days: muscles say *what* was worked, patterns say what the
-        // body was *doing*, and only the second can see a pull deficit.
-        const [muscles, byPattern] = await Promise.all([
-          getMuscleBalance("30d"),
-          getPatternBalance("30d"),
-        ]);
-        setBalance(muscles);
-        setPatterns(byPattern);
-      } catch (error) {
-        // Same trap as the journal's history: a card that fails to load looks exactly like a
-        // card with nothing to show.
-        reportError("journal.muscleBalance", error);
-      } finally {
-        setIsLoading(false);
-      }
+      // No `try ... finally`: the React Compiler cannot lower one and skipped the whole card over it.
+      // Two views of the same 30 days: muscles say *what* was worked, patterns say what the
+      // body was *doing*, and only the second can see a pull deficit.
+      await Promise.all([getMuscleBalance("30d"), getPatternBalance("30d")])
+        .then(([muscles, byPattern]) => {
+          setBalance(muscles);
+          setPatterns(byPattern);
+        })
+        .catch((error: unknown) => {
+          // Same trap as the journal's history: a card that fails to load looks exactly like a
+          // card with nothing to show.
+          reportError("journal.muscleBalance", error);
+        });
+      setIsLoading(false);
     }
     load().catch(() => {
       // Error already handled

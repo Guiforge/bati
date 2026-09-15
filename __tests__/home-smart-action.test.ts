@@ -14,6 +14,13 @@ import { useSmartAction } from "@/components/home/useSmartAction";
  * is how the oath, the ladder and the sessions ended up feeling unrelated.
  */
 
+// Every focus reads as a fresh write, so these tests load on each one as they always did. The
+// gate itself is `__tests__/use-reload-on-change.test.ts`'s.
+let mockChanges = 0;
+jest.mock("@/db/changeVersion", () => ({
+  getChangeVersion: async () => String(mockChanges++),
+}));
+
 const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({

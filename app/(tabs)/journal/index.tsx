@@ -142,7 +142,9 @@ export default function JournalScreen() {
    */
   const loadHistory = useCallback(
     async (force = false) => {
-      try {
+      // No `try ... finally`, which the React Compiler cannot lower: it skipped the whole Journal
+      // over it. The catch never rethrows, so the flag comes down on both paths.
+      const read = async () => {
         const version = `${await getJournalVersion()}|${language}`;
         if (!force && version === shownVersion.current) return;
         const limit = Math.max(history.length, HISTORY_PAGE);
@@ -150,11 +152,9 @@ export default function JournalScreen() {
         shownVersion.current = version;
         setHistory(page);
         setHasMore(page.length === limit);
-      } catch (error) {
-        reportError("journal.loadHistory", error);
-      } finally {
-        setHistoryLoaded(true);
-      }
+      };
+      await read().catch((error: unknown) => reportError("journal.loadHistory", error));
+      setHistoryLoaded(true);
     },
     [history.length, language, readPage],
   );
@@ -166,15 +166,13 @@ export default function JournalScreen() {
   const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore.current) return;
     loadingMore.current = true;
-    try {
-      const page = await readPage(history.length);
-      setHistory((previous) => [...previous, ...page]);
-      setHasMore(page.length === HISTORY_PAGE);
-    } catch (error) {
-      reportError("journal.loadMoreHistory", error);
-    } finally {
-      loadingMore.current = false;
-    }
+    await readPage(history.length)
+      .then((page) => {
+        setHistory((previous) => [...previous, ...page]);
+        setHasMore(page.length === HISTORY_PAGE);
+      })
+      .catch((error: unknown) => reportError("journal.loadMoreHistory", error));
+    loadingMore.current = false;
   }, [hasMore, history.length, readPage]);
 
   // Only once History is shown: the tab opens on Stats, and reading a page of sessions it does not

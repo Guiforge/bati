@@ -45,7 +45,8 @@ jest.mock("@/stores/settings", () => ({
 }));
 
 jest.mock("@/stores/session", () => ({
-  useSessionStore: () => ({ startSession: jest.fn() }),
+  useSessionStore: (select: (s: { startSession: unknown }) => unknown) =>
+    select({ startSession: jest.fn() }),
   // The warm-up preview asks what will play; nothing, here, so it stays out of the way.
   loadWarmup: () => Promise.resolve([]),
 }));

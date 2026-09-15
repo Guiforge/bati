@@ -4,6 +4,7 @@ import { deletePoints, pointsOf, sweepOrphanedPoints } from "@/db/gps";
 import { preferences } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import { accept, credited, EMPTY, type TrackState } from "@/src/gps/track";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { isExpedition, useExpeditionStore } from "@/stores/expedition";
@@ -153,6 +154,132 @@ function restoreSnapshot(saved: SavedSessionState): void {
 }
 
 /**
+ * The snapshot on disk as the card would offer it, or nothing. A stale or quest-less snapshot is
+ * cleared on the way. Outside the hook because the React Compiler cannot lower a `try` holding
+ * `??` or a `finally`, and skips the whole hook when it meets one.
+ */
+async function findRecoverableSession(language: AppLanguage): Promise<RecoverableSession | null> {
+  try {
+    const savedJson = await preferences.getSavedSession();
+    if (!savedJson) {
+      return null;
+    }
+
+    const saved: SavedSessionState = JSON.parse(savedJson);
+
+    // A snapshot without its quest is not resumable — it can only ever restore into a blank
+    // session screen, so drop it rather than offer it. Asked before the clock, because the
+    // quest is what says which clock applies.
+    if (!saved.quest) {
+      await preferences.clearSavedSession();
+      return null;
+    }
+
+    const isOuting = isOutingSession(saved.quest);
+
+    // Check if session is too old
+    if (Date.now() - saved.savedAt > (isOuting ? OUTING_EXPIRY_MS : SESSION_EXPIRY_MS)) {
+      await preferences.clearSavedSession();
+      return null;
+    }
+
+    const uuid = saved.sessionUuid ?? null;
+    const leaguesM = await groundCovered(saved.quest, uuid);
+
+    // Session is valid and recoverable
+    return {
+      questTitle: localizedTitle(saved.quest, language),
+      questId: saved.quest.id,
+      sessionUuid: uuid,
+      round: saved.currentRoundIndex + 1,
+      roundTotal: saved.quest.rounds,
+      // Past the last movement during the rest behind the final set, which would read "4/3".
+      exercise: Math.min(saved.currentExerciseIndex + 1, saved.quest.exercises.length),
+      exerciseTotal: saved.quest.exercises.length,
+      savedAt: new Date(saved.savedAt),
+      leaguesM,
+      isOuting,
+      elapsedTime: Math.floor(
+        (saved.savedAt - (saved.startTime ?? saved.savedAt) - saved.totalPausedTime) / 1000,
+      ),
+    };
+  } catch (error) {
+    // A corrupt snapshot means no recovery offer; the corruption itself must be visible.
+    reportError("session.recoveryCheck", error);
+    return null;
+  }
+}
+
+/** The saved session, back in the store and measuring again. Outside the hook, as above. */
+async function resumeSavedSession(): Promise<boolean> {
+  try {
+    const savedJson = await preferences.getSavedSession();
+    if (!savedJson) return false;
+
+    const saved: SavedSessionState = JSON.parse(savedJson);
+
+    restoreSnapshot(saved);
+
+    // An outing that was interrupted is still an outing.
+    //
+    // Only `startSession` ever started the tracking, so a resumed walk measured nothing from
+    // here on: the panel said "Finding the sky" for the rest of the way, and at DONE the
+    // reducer had no witness at all — `leaguesM: null` on a session whose recap draws the
+    // kilometres already in `gps_points`. Same uuid, so the points land on the same session,
+    // and the store folds those points back into the reading rather than restarting at zero.
+    if (saved.quest) {
+      beginTrackingIfOuting(saved.quest, saved.sessionUuid ?? null, saved.goal ?? null);
+    }
+
+    // Clear saved session after recovery
+    await preferences.clearSavedSession();
+
+    return true;
+  } catch (error) {
+    // "Resume did nothing" is this failing silently — report it so it stops being invisible.
+    reportError("session.recover", error);
+    return false;
+  }
+}
+
+/** The saved outing, restored and concluded from its trace. Outside the hook, as above. */
+async function finishSavedOuting(): Promise<boolean> {
+  try {
+    const savedJson = await preferences.getSavedSession();
+    if (!savedJson) return false;
+
+    const saved: SavedSessionState = JSON.parse(savedJson);
+    // Never for a workout: the hero's absence is the whole of what happened, and no witness of
+    // it exists. The card does not offer this, and the guard says so twice on purpose.
+    if (!saved.quest || !isOutingSession(saved.quest)) return false;
+
+    restoreSnapshot(saved);
+
+    const uuid = saved.sessionUuid ?? null;
+    if (uuid !== null) {
+      const trace = await foldedTrace(uuid);
+      // Only the reading, never `sessionUuid`: nothing is being tracked, and a uuid here would
+      // send `saveSession`'s `end()` looking for a buffer to flush that no one filled.
+      if (trace) useExpeditionStore.setState({ track: trace });
+    }
+
+    // The same ending as the button on screen and the Finish action on the notification, and
+    // deliberately not a third one: `completeOuting` is the store's one entry point for a walk
+    // that no view is watching, and it reads the duration off the trace exactly as the journal
+    // will. Handing `completeExercise` a floor of 1 here worked, and left two callers who both
+    // had to remember that the number they pass is thrown away.
+    useSessionStore.getState().completeOuting();
+
+    await preferences.clearSavedSession();
+
+    return true;
+  } catch (error) {
+    reportError("session.finishOuting", error);
+    return false;
+  }
+}
+
+/**
  * Check if there's a recoverable session and provide recovery actions
  */
 export function useSessionRecovery() {
@@ -162,60 +289,8 @@ export function useSessionRecovery() {
 
   const checkForRecoverableSession = useCallback(async () => {
     setIsChecking(true);
-    try {
-      const savedJson = await preferences.getSavedSession();
-      if (!savedJson) {
-        setRecoverableSession(null);
-        return;
-      }
-
-      const saved: SavedSessionState = JSON.parse(savedJson);
-
-      // A snapshot without its quest is not resumable — it can only ever restore into a blank
-      // session screen, so drop it rather than offer it. Asked before the clock, because the
-      // quest is what says which clock applies.
-      if (!saved.quest) {
-        await preferences.clearSavedSession();
-        setRecoverableSession(null);
-        return;
-      }
-
-      const isOuting = isOutingSession(saved.quest);
-
-      // Check if session is too old
-      if (Date.now() - saved.savedAt > (isOuting ? OUTING_EXPIRY_MS : SESSION_EXPIRY_MS)) {
-        await preferences.clearSavedSession();
-        setRecoverableSession(null);
-        return;
-      }
-
-      const uuid = saved.sessionUuid ?? null;
-      const leaguesM = await groundCovered(saved.quest, uuid);
-
-      // Session is valid and recoverable
-      setRecoverableSession({
-        questTitle: localizedTitle(saved.quest, language),
-        questId: saved.quest.id,
-        sessionUuid: uuid,
-        round: saved.currentRoundIndex + 1,
-        roundTotal: saved.quest.rounds,
-        // Past the last movement during the rest behind the final set, which would read "4/3".
-        exercise: Math.min(saved.currentExerciseIndex + 1, saved.quest.exercises.length),
-        exerciseTotal: saved.quest.exercises.length,
-        savedAt: new Date(saved.savedAt),
-        leaguesM,
-        isOuting,
-        elapsedTime: Math.floor(
-          (saved.savedAt - (saved.startTime ?? saved.savedAt) - saved.totalPausedTime) / 1000,
-        ),
-      });
-    } catch (error) {
-      // A corrupt snapshot means no recovery offer; the corruption itself must be visible.
-      reportError("session.recoveryCheck", error);
-      setRecoverableSession(null);
-    } finally {
-      setIsChecking(false);
-    }
+    setRecoverableSession(await findRecoverableSession(language));
+    setIsChecking(false);
   }, [language]);
 
   /**
@@ -243,35 +318,9 @@ export function useSessionRecovery() {
   }, [checkForRecoverableSession]);
 
   const recoverSession = useCallback(async (): Promise<boolean> => {
-    try {
-      const savedJson = await preferences.getSavedSession();
-      if (!savedJson) return false;
-
-      const saved: SavedSessionState = JSON.parse(savedJson);
-
-      restoreSnapshot(saved);
-
-      // An outing that was interrupted is still an outing.
-      //
-      // Only `startSession` ever started the tracking, so a resumed walk measured nothing from
-      // here on: the panel said "Finding the sky" for the rest of the way, and at DONE the
-      // reducer had no witness at all — `leaguesM: null` on a session whose recap draws the
-      // kilometres already in `gps_points`. Same uuid, so the points land on the same session,
-      // and the store folds those points back into the reading rather than restarting at zero.
-      if (saved.quest) {
-        beginTrackingIfOuting(saved.quest, saved.sessionUuid ?? null, saved.goal ?? null);
-      }
-
-      // Clear saved session after recovery
-      await preferences.clearSavedSession();
-      setRecoverableSession(null);
-
-      return true;
-    } catch (error) {
-      // "Resume did nothing" is this failing silently — report it so it stops being invisible.
-      reportError("session.recover", error);
-      return false;
-    }
+    const done = await resumeSavedSession();
+    if (done) setRecoverableSession(null);
+    return done;
   }, []);
 
   /**
@@ -293,40 +342,9 @@ export function useSessionRecovery() {
    * hero had pressed DONE on the road, and the recap draws the kilometres.
    */
   const finishSession = useCallback(async (): Promise<boolean> => {
-    try {
-      const savedJson = await preferences.getSavedSession();
-      if (!savedJson) return false;
-
-      const saved: SavedSessionState = JSON.parse(savedJson);
-      // Never for a workout: the hero's absence is the whole of what happened, and no witness of
-      // it exists. The card does not offer this, and the guard says so twice on purpose.
-      if (!saved.quest || !isOutingSession(saved.quest)) return false;
-
-      restoreSnapshot(saved);
-
-      const uuid = saved.sessionUuid ?? null;
-      if (uuid !== null) {
-        const trace = await foldedTrace(uuid);
-        // Only the reading, never `sessionUuid`: nothing is being tracked, and a uuid here would
-        // send `saveSession`'s `end()` looking for a buffer to flush that no one filled.
-        if (trace) useExpeditionStore.setState({ track: trace });
-      }
-
-      // The same ending as the button on screen and the Finish action on the notification, and
-      // deliberately not a third one: `completeOuting` is the store's one entry point for a walk
-      // that no view is watching, and it reads the duration off the trace exactly as the journal
-      // will. Handing `completeExercise` a floor of 1 here worked, and left two callers who both
-      // had to remember that the number they pass is thrown away.
-      useSessionStore.getState().completeOuting();
-
-      await preferences.clearSavedSession();
-      setRecoverableSession(null);
-
-      return true;
-    } catch (error) {
-      reportError("session.finishOuting", error);
-      return false;
-    }
+    const done = await finishSavedOuting();
+    if (done) setRecoverableSession(null);
+    return done;
   }, []);
 
   const discardSession = useCallback(async () => {

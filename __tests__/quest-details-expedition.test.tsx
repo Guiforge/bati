@@ -45,7 +45,8 @@ jest.mock("@/stores/settings", () => ({
 }));
 
 jest.mock("@/stores/session", () => ({
-  useSessionStore: () => ({ startSession: mockStartSession }),
+  useSessionStore: (select: (s: { startSession: unknown }) => unknown) =>
+    select({ startSession: mockStartSession }),
   // An outing has no warm-up, which is what `loadWarmup` answers for one.
   loadWarmup: () => Promise.resolve([]),
 }));

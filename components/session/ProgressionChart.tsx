@@ -46,27 +46,22 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
 
     // ponytail: load + transform + error state in one effect. Ceiling: fine at one data
     //           source; split the transform out if a second chart mode appears.
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: see the ponytail note above
-    const loadData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const data = questId
-          ? await getQuestSessionHistory(questId, limit)
-          : await getRecentSessionHistory(limit);
-
-        if (!mounted) return;
-        setSessions(data);
-      } catch (e) {
-        if (!mounted) return;
-        setError(e instanceof Error ? e.message : "Failed to load data");
-      } finally {
+    // A promise chain rather than `try ... finally`, which the React Compiler cannot lower.
+    setLoading(true);
+    setError(null);
+    (questId ? getQuestSessionHistory(questId, limit) : getRecentSessionHistory(limit))
+      .then(
+        (data) => {
+          if (mounted) setSessions(data);
+        },
+        (e: unknown) => {
+          if (mounted) setError(e instanceof Error ? e.message : "Failed to load data");
+        },
+      )
+      .then(() => {
         if (mounted) setLoading(false);
-      }
-    };
-
-    loadData().catch((e) => reportError("session.progressionChart", e));
+      })
+      .catch((e) => reportError("session.progressionChart", e));
 
     return () => {
       mounted = false;

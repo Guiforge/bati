@@ -104,9 +104,10 @@ describe("db/userLevel", () => {
       expect(getLevelTitle(20).en).toBe("Divine");
     });
 
-    test("returns Divine 25 for level 25", () => {
+    test("stays Divine past 20, since the level is always shown beside it", () => {
       const { getLevelTitle } = require("../db/userLevel") as typeof import("../db/userLevel");
-      expect(getLevelTitle(25).en).toBe("Divine 25");
+      expect(getLevelTitle(25).en).toBe("Divine");
+      expect(getLevelTitle(44).fr).toBe("Divin");
     });
   });
 

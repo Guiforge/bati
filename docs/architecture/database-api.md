@@ -568,8 +568,9 @@ interface UserLevelInfo {
 
 **One title per level, not a band.** `db/userLevel.ts` keys 1→20 individually — Apprentice,
 Novice, Trainee, Squire, Warrior, Fighter, Veteran, Champion, Elite, Master, Grandmaster, Legend,
-Mythic, Titan, Demigod, Hero, Paragon, Ascended, Immortal, Divine — and everything past 20 is
-`Divine N`. This page previously showed bands ("1-4 Novice", "30+ Immortal") that never matched
+Mythic, Titan, Demigod, Hero, Paragon, Ascended, Immortal, Divine — and everything past 20 stays
+`Divine`, without the number: every surface shows the level beside the title, and "Level 44 · Divine
+44" said it twice. This page previously showed bands ("1-4 Novice", "30+ Immortal") that never matched
 the code.
 
 ### The curve

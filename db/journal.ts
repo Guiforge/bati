@@ -1,4 +1,5 @@
 import { and, count, desc, eq, gt, gte, inArray, isNotNull, lt, lte, ne, sql } from "drizzle-orm";
+import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import type { AchievementProgress } from "./achievements";
 import { db, schema } from "./client";
@@ -24,6 +25,7 @@ const {
   exercises,
   exerciseMuscles,
   quests,
+  questExercises,
   adventures,
   adventureRuns,
   adventureRunSteps,
@@ -140,18 +142,13 @@ export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
 }
 
 /**
- * The four a first day shows, with a target of one: the first rep of a movement is always a
- * record, so an empty wall is a promise rather than a blank. Seed movements every catalogue has,
- * scoped to `Admin` so a hero's own "Squat" is never picked for them.
+ * What a first day's wall shows: the movements of the on-ramp quest, the one onboarding and Home
+ * both offer, each with a target of one. The first rep of a movement is always a record, so an
+ * empty wall is a promise rather than a blank. It used to be a fixed four (push-ups, squat, plank,
+ * wall sit) that the first quest does not contain, and a new hero finished her first session
+ * without beating a single thing on it. Seed rows only: a hero's own quest can share the title.
  */
-const STARTERS: readonly { enName: string; type: QuestTargetType }[] = [
-  { enName: "Push-ups", type: "reps" },
-  { enName: "Squat", type: "reps" },
-  { enName: "Plank", type: "time" },
-  { enName: "Wall Sit", type: "time" },
-];
-
-export async function getStarterWall(): Promise<WallEntry[]> {
+export async function getStarterWall(limit = 4): Promise<WallEntry[]> {
   const rows = await db
     .select({
       id: exercises.id,
@@ -160,34 +157,28 @@ export async function getStarterWall(): Promise<WallEntry[]> {
       deName: exercises.deName,
       esName: exercises.esName,
       imagePath: exercises.imagePath,
+      type: questExercises.targetType,
     })
-    .from(exercises)
-    .where(
-      and(
-        eq(exercises.creator, ADMIN_CREATOR),
-        inArray(
-          exercises.enName,
-          STARTERS.map((s) => s.enName),
-        ),
-      ),
-    );
+    .from(questExercises)
+    .innerJoin(quests, eq(quests.id, questExercises.questId))
+    .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId))
+    .where(and(eq(quests.enTitle, FIRST_QUEST_TITLE), eq(quests.author, ADMIN_CREATOR)))
+    .orderBy(questExercises.sortOrder);
 
-  return STARTERS.flatMap((starter) => {
-    const row = rows.find((r) => r.enName === starter.enName);
-    if (!row) return [];
-    return [
-      {
-        exerciseId: row.id,
-        name: nameOf(row),
-        imagePath: row.imagePath,
-        type: starter.type,
-        best: null,
-        last: null,
-        recordAt: null,
-        seasonBest: null,
-      },
-    ];
-  });
+  const seen = new Set<number>();
+  return rows
+    .filter((row) => !seen.has(row.id) && seen.add(row.id))
+    .slice(0, limit)
+    .map((row) => ({
+      exerciseId: row.id,
+      name: nameOf(row),
+      imagePath: row.imagePath,
+      type: row.type,
+      best: null,
+      last: null,
+      recordAt: null,
+      seasonBest: null,
+    }));
 }
 
 // ------------------------------------------------------------
@@ -227,9 +218,14 @@ async function readRecordRows(
   let latest: { at: Date; record: StoredRecord | null } | null = null;
   for (const row of rows) {
     const parsed = parseRecords(row.recordsJson);
-    // A row from before `0051` has its flag and no detail: one record, unnamed.
-    records += Math.max(1, parsed.length);
-    latest ??= { at: row.performedAt, record: parsed[0] ?? null };
+    // Movement records only, the ones the wall and Lifetime's "records standing" count. A first
+    // session also sets "longest" and "most XP", and counting those put "6 records" beside a
+    // wall showing four. A row from before `0051` has its flag and no detail: one record, unnamed.
+    const movements = parsed.filter((record) => record.e != null);
+    records += parsed.length === 0 ? 1 : movements.length;
+    if (!latest && (parsed.length === 0 || movements.length > 0)) {
+      latest = { at: row.performedAt, record: movements[0] ?? null };
+    }
   }
 
   let latestRecord: RecordMention | null = null;
@@ -750,6 +746,9 @@ export function pickMuscleShift(rows: readonly MuscleRow[], sessionId: number): 
   };
   const before = totals(false);
   const after = totals(true);
+  // With nothing before this session, every muscle it touched "moved" from 0 %: that is a first
+  // session, not a shift.
+  if (before.all === 0) return null;
   const share = (t: typeof before, m: MuscleCode) =>
     t.all > 0 ? Math.round(((t.byMuscle.get(m) ?? 0) / t.all) * 100) : 0;
 

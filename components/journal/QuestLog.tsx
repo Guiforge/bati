@@ -118,6 +118,9 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
   // A movement first: it names something to beat next time, a session record does not.
   const record = records.find((r) => r.exerciseId != null) ?? records[0];
   if (!record) return null;
+  // The panel names one record; the others this session broke are counted, so the page agrees
+  // with the victory screen that announced them.
+  const others = records.filter((r) => r !== record && r.exerciseId != null).length;
 
   const next =
     record.exerciseId != null
@@ -156,6 +159,11 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
       <NMuted fontSize={12.5} lineHeight={19} mt={6} style={{ textAlign: "center" }}>
         {context}
       </NMuted>
+      {others > 0 ? (
+        <NText fontSize={12.5} lineHeight={19} mt={6} color="$gold300">
+          {t("journal.record_more", { count: others })}
+        </NText>
+      ) : null}
     </NPanel>
   );
 }

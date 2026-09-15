@@ -36,6 +36,7 @@ export type JournalStats = {
     current: PeriodFigures;
     previous: PeriodFigures;
     previousFrom: Date;
+    previousTo: Date;
     days: number;
     activity: Map<string, DayActivity>;
     /** Days with a quest this month. */
@@ -114,6 +115,7 @@ async function loadJournalStats(): Promise<JournalStats> {
       current,
       previous,
       previousFrom: windows.previous.from,
+      previousTo: windows.previous.to,
       days: windows.days,
       activity,
       questDays,

@@ -56,7 +56,9 @@ export function MuscleBalanceCard() {
     );
   }
 
-  if (!balance || balance.totalVolume === 0) {
+  // Three sessions before a verdict, the rule the stats page applies: "Needs Work" after one quest
+  // judges a single quest's shape.
+  if (!balance || balance.totalVolume === 0 || balance.totalSessions < 3) {
     return (
       <Card bg="$bgLight">
         <YStack gap="$2">

@@ -55,7 +55,9 @@ function recordLabel(
   names: ReadonlyMap<number, string>,
   t: TFunction,
 ): string | null {
-  const first = records[0];
+  // A movement first: a first session also sets "longest", and the badge said so instead of naming
+  // the push-ups it had just beaten.
+  const first = records.find((record) => record.e != null) ?? records[0];
   if (!first) return null;
   if (first.e != null) return names.get(first.e) ?? null;
   return t(`journal.record_${first.t}`, { defaultValue: "" }) || null;

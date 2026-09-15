@@ -79,6 +79,13 @@ describe("db/journal pure helpers", () => {
     ];
     expect(journal().pickMuscleShift(rows, 2)).toEqual({ muscle: "chest", before: 10, after: 24 });
     expect(journal().pickMuscleShift(rows, 99)).toBeNull();
+    // A first session has nothing before it to shift from.
+    expect(
+      journal().pickMuscleShift(
+        rows.filter((r) => r.sessionId === 2),
+        2,
+      ),
+    ).toBeNull();
   });
 
   test("monthWindows compares the same number of days, and never past a short month", () => {
@@ -174,9 +181,17 @@ describe("db/journal", () => {
     expect(entry).toMatchObject({ best: 40, last: 15, seasonBest: 18 });
   });
 
-  test("the starter wall is four seed movements, in order", async () => {
+  test("the starter wall is the first quest's own movements, never logged", async () => {
+    const expected = t.sqlite
+      .prepare(
+        `SELECT DISTINCT e.enName FROM quest_exercises qe
+         JOIN quests q ON q.id = qe.questId JOIN exercises e ON e.id = qe.exerciseId
+         WHERE q.enTitle = 'The Squire''s Awakening' AND q.author = 'Admin' ORDER BY qe.sortOrder`,
+      )
+      .all() as { enName: string }[];
     const wall = await journal().getStarterWall();
-    expect(wall.map((w) => w.name.en)).toEqual(["Push-ups", "Squat", "Plank", "Wall Sit"]);
+    expect(wall.length).toBeGreaterThan(0);
+    expect(wall.map((w) => w.name.en)).toEqual(expected.slice(0, 4).map((r) => r.enName));
     expect(wall.every((w) => w.best === null)).toBe(true);
   });
 

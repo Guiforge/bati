@@ -337,9 +337,13 @@ function FlameBlock({ stats }: { stats: JournalStats }) {
           date: shortDate(language, flame.bestEndedOn, now),
         })
       : "";
+  // Short of the quota, the note says how many are missing: "2 keep it lit" beside "0 days lit"
+  // after a first session told a new hero she had failed, not that one more would do it.
   const note = [
     t("journal.flame_window", { count: flame.inWindow }),
-    t("journal.flame_quota", { count: flame.quota }),
+    flame.inWindow < flame.quota
+      ? t("journal.flame_more", { count: flame.quota - flame.inWindow })
+      : t("journal.flame_quota", { count: flame.quota }),
     best,
   ]
     .filter(Boolean)
@@ -377,9 +381,21 @@ function FlameBlock({ stats }: { stats: JournalStats }) {
  * Against the same days of last month, in words: "2 more than in August". A bare "-5" under a
  * count of reps was read as a percentage, and a drop is never painted as an alarm.
  */
-function Delta({ now, was, month }: { now: number; was: number; month: string }) {
+function Delta({
+  now,
+  was,
+  month,
+  hidden,
+}: {
+  now: number;
+  was: number;
+  month: string;
+  /** A hero who started after last month's window has nothing to be compared against. */
+  hidden: boolean;
+}) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
+  if (hidden) return null;
   const diff = Math.round(now - was);
   if (diff === 0) return <NMuted fontSize={11}>{t("journal.delta_same", { month })}</NMuted>;
   return (
@@ -435,6 +451,8 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
   const { month, now } = stats;
   const { current, previous } = month;
   const previousName = monthName(language, month.previousFrom);
+  const newThisMonth =
+    stats.firstSessionAt != null && stats.firstSessionAt.getTime() > month.previousTo.getTime();
 
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const todayKey = dayKey(now);
@@ -455,10 +473,20 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
           value={number(language, current.quests)}
           unit={t("journal.fig_quests", { count: current.quests })}
         >
-          <Delta now={current.quests} was={previous.quests} month={previousName} />
+          <Delta
+            now={current.quests}
+            was={previous.quests}
+            month={previousName}
+            hidden={newThisMonth}
+          />
         </Figure>
         <Figure value={number(language, current.reps)} unit={t("journal.fig_reps")}>
-          <Delta now={current.reps} was={previous.reps} month={previousName} />
+          <Delta
+            now={current.reps}
+            was={previous.reps}
+            month={previousName}
+            hidden={newThisMonth}
+          />
         </Figure>
         <Figure value={formatHoursMinutes(t, current.questSeconds)}>
           <NMuted fontSize={11}>
@@ -486,7 +514,7 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
           </NMuted>
         </Figure>
         <Figure value={number(language, current.xp)} unit={t("journal.fig_xp")}>
-          <Delta now={current.xp} was={previous.xp} month={previousName} />
+          <Delta now={current.xp} was={previous.xp} month={previousName} hidden={newThisMonth} />
         </Figure>
         <Figure
           value={number(language, current.records)}
@@ -557,6 +585,9 @@ function DayMark({
   );
 }
 
+/** Sessions in thirty days before the balance is worth a verdict. */
+const MIN_BALANCE_SESSIONS = 3;
+
 const WORK_FILLS = ["$resourceGold", "$gold600", "$gold700", "$gold800"] as const;
 
 function WorkBlock({ stats }: { stats: JournalStats }) {
@@ -565,6 +596,9 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
   const language = useSettingsStore((s) => s.language);
   const { balance } = stats;
   if (balance.totalVolume === 0) return null;
+  // Below three sessions a share is one quest's shape, and "Shoulders (0%) is behind" on a first
+  // day is a verdict on nothing.
+  const early = balance.totalSessions < MIN_BALANCE_SESSIONS;
 
   const shown = balance.muscles.filter((m) => m.percentage > 0);
   const label = (code: keyof typeof MUSCLE_LABELS) => MUSCLE_LABELS[code][language];
@@ -625,9 +659,11 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
       </XStack>
       <XStack mt={11} flexWrap="wrap" items="baseline" gap={6}>
         <NText fontSize={12.5} lineHeight={18}>
-          {behind.length > 0
-            ? t("journal.work_behind", { count: behind.length, muscles: behindList })
-            : t("journal.work_balanced")}
+          {early
+            ? t("journal.work_early", { count: MIN_BALANCE_SESSIONS })
+            : behind.length > 0
+              ? t("journal.work_behind", { count: behind.length, muscles: behindList })
+              : t("journal.work_balanced")}
         </NText>
         <NText
           testID="journal-work-link"
@@ -637,7 +673,7 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
           onPress={() => router.push("/journal/balance" as never)}
           accessibilityRole="link"
         >
-          {behind.length > 0 ? t("journal.work_fix") : t("journal.work_see")} →
+          {!early && behind.length > 0 ? t("journal.work_fix") : t("journal.work_see")} →
         </NText>
       </XStack>
     </NBlock>

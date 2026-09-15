@@ -52,18 +52,8 @@ export function ghostKey(exerciseId: number, type: QuestTargetType): string {
   return `${exerciseId}:${type}`;
 }
 
-type SessionBest = ExerciseGhost & { at: number; sessionId: number };
-
 /**
- * Two sessions finished in the same second share a timestamp, so the timestamp alone would leave
- * "last time" up to row order. The id breaks the tie.
- */
-function isNewerSession(a: SessionBest, b: SessionBest): boolean {
-  return a.at > b.at || (a.at === b.at && a.sessionId > b.sessionId);
-}
-
-/**
- * The journal's answer for a batch of movements, in one query.
+ * The journal's answer for a batch of movements, in one query and one row per (movement, unit).
  *
  * Opening a quest needs this for every exercise in it, and each read is a synchronous SQLite call
  * on the JS thread — duplicates are paid in dropped frames (same reasoning as `shortLivedQuery`).
@@ -71,56 +61,55 @@ function isNewerSession(a: SessionBest, b: SessionBest): boolean {
  *
  * Grouping by session first is what makes `last` mean "the best set of that evening": the two
  * aggregates are independent on purpose, `best` being the session's best value and `at` its last
- * set's time.
+ * set's time. A session whose best is 0 did not happen, for this purpose. The newest session wins
+ * `last`, and two sessions finished in the same second share a timestamp, so the id breaks the tie
+ * rather than row order.
+ *
+ * The fold runs in SQLite: it used to return one row per session per movement (835 for one quest
+ * at five years of journal) and keep two numbers in JS (perf audit, 2026-09-15).
  */
 export async function getExerciseHistory(
   exerciseIds: number[],
 ): Promise<Map<string, ExerciseGhost>> {
   if (exerciseIds.length === 0) return new Map();
 
-  const rows = await db
-    .select({
-      exerciseId: completedExercises.exerciseId,
-      resultType: completedExercises.resultType,
-      sessionId: completedExercises.sessionId,
-      best: max(completedExercises.resultValue),
-      at: max(completedExercises.performedAt),
-    })
-    .from(completedExercises)
-    .where(inArray(completedExercises.exerciseId, exerciseIds))
-    .groupBy(
-      completedExercises.exerciseId,
-      completedExercises.resultType,
-      completedExercises.sessionId,
-    );
+  const ids = sql.join(
+    exerciseIds.map((id) => sql`${id}`),
+    sql`, `,
+  );
 
-  const byKey = new Map<string, SessionBest>();
+  // `performedAt` is stored in seconds, and a raw read does not go through the column's mapper.
+  const rows = await db.all<{
+    exerciseId: number;
+    resultType: QuestTargetType;
+    last: number;
+    best: number;
+    at: number;
+  }>(sql`
+    SELECT exerciseId, resultType, last, best, at FROM (
+      SELECT exerciseId, resultType, best AS last, at,
+             MAX(best) OVER (PARTITION BY exerciseId, resultType) AS best,
+             ROW_NUMBER() OVER (
+               PARTITION BY exerciseId, resultType ORDER BY at DESC, sessionId DESC
+             ) AS rn
+      FROM (
+        SELECT exerciseId, resultType, sessionId,
+               MAX(resultValue) AS best, MAX(performedAt) AS at
+        FROM completed_exercises
+        WHERE exerciseId IN (${ids})
+        GROUP BY exerciseId, resultType, sessionId
+        HAVING MAX(resultValue) > 0
+      )
+    )
+    WHERE rn = 1
+  `);
 
-  for (const r of rows) {
-    if (r.best == null || r.best <= 0) continue;
-
-    // An aggregate does not go through the column's timestamp mapper on every driver, so accept
-    // both shapes rather than trusting one.
-    const at = r.at instanceof Date ? r.at.getTime() : Number(r.at ?? 0);
-    const row: SessionBest = { last: r.best, best: r.best, at, sessionId: r.sessionId };
-    const key = ghostKey(r.exerciseId, r.resultType);
-    const entry = byKey.get(key);
-
-    if (!entry) {
-      byKey.set(key, row);
-      continue;
-    }
-
-    entry.best = Math.max(entry.best, row.best);
-
-    if (isNewerSession(row, entry)) {
-      entry.last = row.last;
-      entry.at = row.at;
-      entry.sessionId = row.sessionId;
-    }
-  }
-
-  return new Map([...byKey].map(([key, v]) => [key, { last: v.last, best: v.best, at: v.at }]));
+  return new Map(
+    rows.map((r) => [
+      ghostKey(r.exerciseId, r.resultType),
+      { last: r.last, best: r.best, at: r.at * 1000 },
+    ]),
+  );
 }
 
 /** One movement's standing best, and what the hero last did on it. */
@@ -182,8 +171,8 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
     const best = row.best;
     if (best == null || best <= 0) return [];
     const ghost = history.get(ghostKey(row.exerciseId, row.type));
-    // An aggregate does not go through the column's timestamp mapper on every driver, the same
-    // caveat `getExerciseHistory` documents about its own `max(performedAt)`.
+    // An aggregate does not go through the column's timestamp mapper on every driver, so accept
+    // both shapes rather than trusting one.
     const at = row.at instanceof Date ? row.at : new Date(Number(row.at ?? 0));
     return [
       {
@@ -272,8 +261,8 @@ function placeAmongSessions(
   }
 
   // The same question over the last `RECENT_WINDOW` sessions on this movement, tonight included.
-  // An aggregate does not go through the column's timestamp mapper on every driver, the caveat
-  // `getExerciseHistory` documents about its own `max(performedAt)`.
+  // An aggregate does not go through the column's timestamp mapper on every driver, so accept
+  // both shapes rather than trusting one.
   const at = (row: SessionBestRow) =>
     row.at instanceof Date ? row.at.getTime() : Number(row.at ?? 0);
   const recent = [...mine].sort((a, b) => at(b) - at(a) || b.sessionId - a.sessionId);

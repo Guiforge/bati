@@ -19,7 +19,12 @@ import type { AchievementProgress } from "./achievements";
 import { db, schema } from "./client";
 import { type CompletedSession, isWorkout, parseRecords, type StoredRecord } from "./completed";
 import { dayKey } from "./dates";
-import { getNextProgression, type VariationStep } from "./exercises";
+import {
+  fetchLadderRows,
+  PROGRESSION_SESSIONS_REQUIRED,
+  recentMetFlagsBatch,
+  type VariationStep,
+} from "./exercises";
 import { getMovementRecords } from "./personalRecords";
 import { ADMIN_CREATOR, type MuscleCode, type QuestTargetType } from "./schema";
 import { NON_REP_STYLE, repEquivalentSql, toRepEquivalent } from "./workUnits";
@@ -91,6 +96,8 @@ export type WallEntry = {
   last: number | null;
   /** When the standing best was first reached. Null when never logged. */
   recordAt: Date | null;
+  /** The session that first reached it, so the wall can open the day the record fell. */
+  recordSessionId: number | null;
   /**
    * The best of the last `SEASON_DAYS`, null when the movement was not trained in them. An old
    * record is beaten from here: a peak from two years ago is not a target for tonight.
@@ -127,6 +134,9 @@ export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
         at: sql<Date>`MIN(${completedExercises.performedAt})`.mapWith(
           completedExercises.performedAt,
         ),
+        // A bare column beside a lone MIN() is read from the row that holds the minimum: SQLite
+        // documents this, and it is what names the session without a second, per-movement read.
+        sessionId: completedExercises.sessionId,
       })
       .from(completedExercises)
       .where(
@@ -156,7 +166,7 @@ export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
       )
       .groupBy(completedExercises.exerciseId, completedExercises.resultType),
   ]);
-  const firstAt = new Map(firsts.map((row) => [key(row.exerciseId, row.type), row.at]));
+  const first = new Map(firsts.map((row) => [key(row.exerciseId, row.type), row]));
   const seasonBest = new Map(seasons.map((row) => [key(row.exerciseId, row.type), row.best]));
 
   return records.map((record) => ({
@@ -166,7 +176,8 @@ export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
     type: record.type,
     best: record.best,
     last: record.last,
-    recordAt: firstAt.get(key(record.exerciseId, record.type)) ?? record.at,
+    recordAt: first.get(key(record.exerciseId, record.type))?.at ?? record.at,
+    recordSessionId: first.get(key(record.exerciseId, record.type))?.sessionId ?? null,
     seasonBest: seasonBest.get(key(record.exerciseId, record.type)) ?? null,
   }));
 }
@@ -207,6 +218,7 @@ export async function getStarterWall(limit = 4): Promise<WallEntry[]> {
       best: null,
       last: null,
       recordAt: null,
+      recordSessionId: null,
       seasonBest: null,
     }));
 }
@@ -292,10 +304,7 @@ async function readRecordRows(
  * different rows, which is the thing this shape exists to make impossible.
  */
 export async function getPeriodFigures(from: Date | null, to: Date): Promise<PeriodFigures> {
-  const window = and(
-    from ? gte(completedQuest.performedAt, from) : undefined,
-    lte(completedQuest.performedAt, to),
-  );
+  const window = periodWindow(from, to);
 
   const [head] = await db
     .select({
@@ -310,30 +319,13 @@ export async function getPeriodFigures(from: Date | null, to: Date): Promise<Per
     .from(completedQuest)
     .where(window);
 
-  const [work] = await db
-    .select({
-      reps: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
-    })
-    .from(completedExercises)
-    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
-    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
-    .where(window);
-
-  const recordRows = await db
-    .select({
-      performedAt: completedQuest.performedAt,
-      recordsJson: completedQuest.recordsJson,
-    })
-    .from(completedQuest)
-    .where(and(window, eq(completedQuest.hasNewRecords, 1)))
-    .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id));
-
-  const { records, latestRecord } = await readRecordRows(recordRows);
+  const reps = await periodReps(from, to);
+  const { records, latestRecord } = await readRecordRows(await recordRowsIn(from, to));
 
   return {
     quests: Number(head?.quests ?? 0),
     outings: Number(head?.outings ?? 0),
-    reps: Number(work?.reps ?? 0),
+    reps,
     questSeconds: Number(head?.questSeconds ?? 0),
     timedQuests: Number(head?.timedQuests ?? 0),
     outingSeconds: Number(head?.outingSeconds ?? 0),
@@ -342,6 +334,43 @@ export async function getPeriodFigures(from: Date | null, to: Date): Promise<Per
     records,
     latestRecord,
   };
+}
+
+const periodWindow = (from: Date | null, to: Date) =>
+  and(
+    from ? gte(completedQuest.performedAt, from) : undefined,
+    lte(completedQuest.performedAt, to),
+  );
+
+/**
+ * Reps over `[from, to]`, a held second at a third of one. `getPeriodFigures` reads its own through
+ * here, so the stats page's thirty days can ask for this one number without the other five reads.
+ */
+export async function periodReps(from: Date | null, to: Date): Promise<number> {
+  const [work] = await db
+    .select({
+      reps: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
+    })
+    .from(completedExercises)
+    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    .where(periodWindow(from, to));
+  return Number(work?.reps ?? 0);
+}
+
+const recordRowsIn = (from: Date | null, to: Date) =>
+  db
+    .select({ performedAt: completedQuest.performedAt, recordsJson: completedQuest.recordsJson })
+    .from(completedQuest)
+    .where(and(periodWindow(from, to), eq(completedQuest.hasNewRecords, 1)))
+    .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id));
+
+/**
+ * The latest movement record up to `to`, with its name: the only all-time figure the stats page
+ * reads, which used to cost a whole `getPeriodFigures(null)` over every row ever logged.
+ */
+export async function getLatestRecord(to: Date): Promise<RecordMention | null> {
+  return (await readRecordRows(await recordRowsIn(null, to))).latestRecord;
 }
 
 /**
@@ -835,13 +864,32 @@ export async function isLatestSession(session: CompletedSession): Promise<boolea
   return Number(row?.n ?? 0) === 0;
 }
 
-/** The rung this session's movements are climbing toward, the one closest to earned. */
+/**
+ * The rung this session's movements are climbing toward, the one closest to earned.
+ *
+ * The ladder once and the flags of every movement in one query, where a `getNextProgression` per
+ * movement re-read both for each. Same step as `getNextProgression` builds: the first successor,
+ * and the last `PROGRESSION_SESSIONS_REQUIRED` sessions in the window.
+ */
 export async function getSessionRung(session: CompletedSession): Promise<VariationStep | null> {
   const ids = [...new Set(session.exercises.map((ex) => ex.exercise.id))];
+  if (ids.length === 0) return null;
+  const [rows, flags] = await Promise.all([fetchLadderRows(), recentMetFlagsBatch(ids)]);
+  const ref = ({ prerequisiteExerciseId: _, ...movement }: (typeof rows)[number]) => movement;
   let best: VariationStep | null = null;
   for (const id of ids) {
-    const step = await getNextProgression(id);
-    if (step && (!best || step.metTarget > best.metTarget)) best = step;
+    const from = rows.find((r) => r.id === id);
+    const next = rows.find((r) => r.prerequisiteExerciseId === id);
+    if (!from || !next) continue;
+    const metTarget = (flags.get(id) ?? []).filter(Boolean).length;
+    if (best && metTarget <= best.metTarget) continue;
+    best = {
+      from: ref(from),
+      next: ref(next),
+      metTarget,
+      required: PROGRESSION_SESSIONS_REQUIRED,
+      isEarned: metTarget >= PROGRESSION_SESSIONS_REQUIRED,
+    };
   }
   return best;
 }

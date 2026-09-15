@@ -317,7 +317,7 @@ export type NextProgression = VariationStep;
 type LadderRow = MovementRef & { prerequisiteExerciseId: number | null };
 
 /** The whole ladder in one query — `exercises` is static seed content and ~50 rows deep. */
-async function fetchLadderRows(): Promise<LadderRow[]> {
+export async function fetchLadderRows(): Promise<LadderRow[]> {
   return await db
     .select({
       id: exercises.id,
@@ -540,7 +540,7 @@ async function everEarnedMovements(): Promise<Set<number>> {
  * tonight. This is the same seek `recentMetFlags` does, hoisted out of the per-movement loop
  * because `currentRungFor` needs it for every rung of every slot of a quest.
  */
-async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<number, boolean[]>> {
+export async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<number, boolean[]>> {
   if (exerciseIds.length === 0) return new Map();
 
   const since = new Date(Date.now() - PROGRESSION_WINDOW_DAYS * 24 * 60 * 60 * 1000);

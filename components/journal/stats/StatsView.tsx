@@ -55,7 +55,7 @@ type Mode = "firstDay" | "veteran" | "rest" | "regular";
  */
 function modeOf(stats: JournalStats): Mode {
   if (stats.isFirstDay) return "firstDay";
-  const latest = stats.allTime.latestRecord?.at ?? null;
+  const latest = stats.latestRecord?.at ?? null;
   const yearIn =
     stats.firstSessionAt != null &&
     stats.now.getTime() - stats.firstSessionAt.getTime() >= 365 * DAY_MS;
@@ -84,7 +84,7 @@ type LeadText = { plain: string; accent: string; tail?: string };
  * in place of the nine days this hero had trained that month.
  */
 function veteranLead(t: TFunction, language: AppLanguage, stats: JournalStats): LeadText {
-  const latest = stats.allTime.latestRecord?.at;
+  const latest = stats.latestRecord?.at;
   return {
     plain: regularLead(t, language, stats).plain,
     accent: "",

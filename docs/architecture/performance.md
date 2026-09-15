@@ -112,6 +112,12 @@ Generic guides push these; the stack already gives them, so skip:
   with 22%/200dp: the exclusion outlived the number it was reasoning about. At 480x640 they cost
   a third of that and 2.6 MB less APK. **When art is excluded from a downscale, the exclusion
   cites a number — go and check that number is still the one the code uses.**
+- **An infinite animation that ignores focus.** Tabs stay mounted, so a `withRepeat(..., -1)`
+  started on one tab keeps running under every other screen. The village embers did: after one
+  visit to the Village, the Quests list scrolled at 30 ms a frame instead of 16, with the UI
+  thread at 70 % on a screen drawing nothing. A looping ambient animation reads `useIsFocused()`
+  and stops when it is false: `FlameFlicker` cancels its loop, `VillageEmbers` unmounts (which
+  cancels too). `__tests__/ambient-animations-focus.test.tsx` holds both.
 - **Reanimated worklets closing over large objects.** Capture the one property you need,
   not the whole record — shipping a big closure to the UI thread costs a serialization pass.
 - **Context for fast-changing state.** Not used for app state here (Zustand owns it) — if

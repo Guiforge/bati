@@ -22,6 +22,7 @@ jest.mock("@/db/completed", () => ({
 let mockParams: { grown?: string } = {};
 jest.mock("expo-router", () => ({
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
+  useIsFocused: () => true,
   useLocalSearchParams: () => mockParams,
   useRouter: () => ({ push: jest.fn() }),
 }));

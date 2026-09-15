@@ -1,5 +1,7 @@
+import { useIsFocused } from "expo-router";
 import { useEffect } from "react";
 import Animated, {
+  cancelAnimation,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
@@ -28,13 +30,18 @@ interface FlameFlickerProps {
  * Driven by a Reanimated worklet on the UI thread — the previous setInterval + setState
  * version re-rendered (and re-sprung through the JS thread) 2.5×/s for as long as the
  * home or village screen was mounted.
+ *
+ * Tabs stay mounted, so it also stops when its screen loses focus: the loop kept running under
+ * every other screen and held the UI thread awake (perf audit C7). It starts again on return.
  */
 export function FlameFlicker({ size = 48, animate = true }: FlameFlickerProps) {
   const reducedMotion = useReducedMotion();
+  const focused = useIsFocused();
   const flicker = useSharedValue(0);
 
   useEffect(() => {
-    if (!animate || reducedMotion) {
+    if (!animate || reducedMotion || !focused) {
+      cancelAnimation(flicker);
       flicker.value = 0;
       return;
     }
@@ -46,7 +53,7 @@ export function FlameFlicker({ size = 48, animate = true }: FlameFlickerProps) {
       ),
       -1,
     );
-  }, [animate, reducedMotion, flicker]);
+  }, [animate, reducedMotion, focused, flicker]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [

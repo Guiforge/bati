@@ -49,6 +49,7 @@ import { type QuestTemplate, questTrainingLevel } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
+import { keepIfSame } from "@/src/sameContent";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 type LoadState =
@@ -519,8 +520,8 @@ export default function QuestsGallery() {
         getAllQuestConfigs(),
         getFavouriteQuestIds(),
       ]);
-      setConfigs(questConfigs);
-      setFavourites(pinned);
+      setConfigs((previous) => keepIfSame(previous, questConfigs));
+      setFavourites((previous) => keepIfSame(previous, pinned));
       setState((s) => {
         // listQuestTemplates/listExercises are promise-cached: a warm cache returns the same
         // array identity. Bail so a tab refocus doesn't invalidate questMeta → filtered → list.

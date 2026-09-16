@@ -295,7 +295,7 @@ export function QuickActions() {
       ? t("home.goal_free", "Free")
       : goal.type === "distance"
         ? formatDistance(goal.metres, unit, language)
-        : formatDurationEstimate(goal.seconds);
+        : formatDurationEstimate(goal.seconds, language);
 
   return (
     <YStack pt="$2.5" pb="$2" gap="$2">

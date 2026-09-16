@@ -75,7 +75,7 @@ export function WarmupPreview({
         <Text flex={1} fontWeight="700" fontSize={16} color="$text">
           {t("quests.warmup_section", {
             count: steps.length,
-            duration: formatDurationEstimate(seconds),
+            duration: formatDurationEstimate(seconds, language),
           })}
         </Text>
         {open ? (

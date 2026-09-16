@@ -6,6 +6,7 @@ import {
   formatDuration,
   formatDurationEstimate,
 } from "@/db/estimate";
+import { APP_LANGUAGES } from "@/src/i18n/deviceLanguage";
 
 describe("db/estimate", () => {
   it("estimates rep-based exercises using secondsPerRep", () => {
@@ -62,9 +63,9 @@ describe("db/estimate", () => {
   });
 
   it("rounds estimates to the minute, never below one", () => {
-    expect(formatDurationEstimate(666)).toBe("11 min"); // 11 min 6s
-    expect(formatDurationEstimate(690)).toBe("12 min"); // rounds half up
-    expect(formatDurationEstimate(20)).toBe("1 min");
+    expect(formatDurationEstimate(666, "en")).toBe("11 min"); // 11 min 6s
+    expect(formatDurationEstimate(690, "en")).toBe("12 min"); // rounds half up
+    expect(formatDurationEstimate(20, "en")).toBe("1 min");
   });
 
   // Measured durations, unlike estimates, keep their seconds. Untested until now, and the
@@ -82,9 +83,19 @@ describe("db/estimate", () => {
   // suffix as a hold (`formatTarget`), and the minutes/seconds split is unchanged.
   it("spaces the seconds the way the language spaces a hold", () => {
     expect(formatDuration(737, "fr")).toBe("12 min 17 s");
-    expect(formatDuration(737, "de")).toBe("12 min 17 s");
+    expect(formatDuration(737, "de")).toBe("12 Min. 17 s");
     expect(formatDuration(45, "es")).toBe("45 s");
     expect(formatDuration(720, "fr")).toBe("12 min");
+  });
+
+  // German abbreviates the minute with a full stop. The Journal said so through
+  // `journal.duration_m` while both functions here wrote "min" on every other surface, so a
+  // German reader met two spellings of the same unit on one screen.
+  it.each(APP_LANGUAGES)("writes the minute in %s", (language) => {
+    const word = { en: "min", fr: "min", de: "Min.", es: "min" }[language];
+    expect(formatDurationEstimate(690, language)).toBe(`12 ${word}`);
+    expect(formatDuration(720, language)).toBe(`12 ${word}`);
+    expect(formatDuration(737, language)).toContain(`12 ${word} `);
   });
 
   it("rounds adventure steps up to whole weeks, never below one", () => {

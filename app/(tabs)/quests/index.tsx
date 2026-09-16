@@ -167,7 +167,7 @@ function buildQuestMeta(
   );
   const durationSeconds = estimateQuestTemplateSeconds(previewInput);
   const xp = estimateQuestTemplateXp(previewInput);
-  const estimate = formatDurationEstimate(durationSeconds);
+  const estimate = formatDurationEstimate(durationSeconds, language);
   // Ranked, not every muscle any exercise brushes: a five-exercise quest touches five groups,
   // and the two it touches once say nothing — "back" matched 28 of 34 seed quests that way,
   // and the filter looked broken. The card's focus line and the filter read the same list.

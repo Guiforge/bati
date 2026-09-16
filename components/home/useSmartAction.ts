@@ -99,8 +99,8 @@ async function decideAction(
           }),
           quest.archetype ? t(`quests.archetype_${quest.archetype}`) : null,
           t("quests.estimate", {
-            duration: formatDurationEstimate(seconds),
-            defaultValue: `≈ ${formatDurationEstimate(seconds)}`,
+            duration: formatDurationEstimate(seconds, language),
+            defaultValue: `≈ ${formatDurationEstimate(seconds, language)}`,
           }),
         ]
           .filter(Boolean)

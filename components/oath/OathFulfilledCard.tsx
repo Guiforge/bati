@@ -3,7 +3,9 @@ import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import type { OathProgress } from "@/db/oaths";
+import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useSettingsStore } from "@/stores/settings";
 import { useOathText } from "./useOathText";
 
 /**
@@ -12,6 +14,7 @@ import { useOathText } from "./useOathText";
  */
 export function OathFulfilledCard({ oath, bonusXp }: { oath: OathProgress; bonusXp: number }) {
   const { t } = useTranslation();
+  const language = useSettingsStore((s) => s.language);
   const label = useOathText(oath);
   const reducedMotion = useReducedMotion();
 
@@ -52,7 +55,7 @@ export function OathFulfilledCard({ oath, bonusXp }: { oath: OathProgress; bonus
         </Text>
         {bonusXp > 0 && (
           <Text fontWeight="700" fontSize={15} color="$primaryText" style={{ textAlign: "center" }}>
-            {t("oath.fulfilled_xp_bonus", { count: bonusXp })}
+            {t("oath.fulfilled_xp_bonus", { count: formatCount(language, bonusXp) })}
           </Text>
         )}
       </YStack>

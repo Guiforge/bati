@@ -465,7 +465,7 @@ export default function QuestDetails() {
       questDesc: localizedText(quest, "description", language),
       questTokens: getQuestColorTokensFromQuest(quest),
       estimatedSeconds,
-      estimate: formatDurationEstimate(estimatedSeconds),
+      estimate: formatDurationEstimate(estimatedSeconds, language),
       xpReward: isOuting
         ? estimateOutingXp(quest, effectiveLevel, estimatedSeconds)
         : estimateQuestXp(quest, effectiveLevel),

@@ -28,6 +28,9 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
+// Every focus reads as a fresh write, so the retry below is about the failure, not the gate.
+let mockChanges = 0;
+jest.mock("@/db/changeVersion", () => ({ getChangeVersion: async () => String(mockChanges++) }));
 
 import { useStreakInfo } from "@/hooks/useStreakInfo";
 

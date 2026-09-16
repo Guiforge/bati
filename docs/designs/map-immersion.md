@@ -583,8 +583,10 @@ draws while the hero is actually looking.
   slot tried first read on a phone as a map that had failed to load.
 - `Trace.path` drops any part of fewer than two points. MapLibre refuses a one-point line in a red
   box, and the first fix of every live walk was one; the recap had the same hole after a break.
-- The fixes are held whole in `stores/expedition.ts` and `toTrace` is re-run on each one. A
-  `ponytail:` comment in `LiveMap.tsx` names that ceiling.
+- The fixes are held whole in `stores/expedition.ts`. The camera and the position pip follow every
+  fix, but `toTrace` re-folds the whole walk at most every five seconds: once per fix it cost 11 ms
+  at one hour and 34 ms at three on a desktop, every second the screen was on (perf audit,
+  2026-09-15). A `ponytail:` comment in `LiveMap.tsx` names the remaining ceiling, the full fold.
 
 ## Next steps
 

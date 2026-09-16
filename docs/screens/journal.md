@@ -39,16 +39,25 @@ Journal's own pieces are in `components/journal/nocturne.tsx`, one per Nocturne 
 
 | Block | Says | Source |
 | --- | --- | --- |
-| The sentence | "9 days trained in September, and 2 outings." plus the latest record in gold. A rest day, a first day and a veteran whose records have aged each get their own sentence. | `StatsView`, from figures already read |
-| To beat tonight | The four movements trained last, each with its record, the day it fell, the last result, and the number that beats it (record + 1 in the movement's own unit). A first day shows four seed movements with a target of 1. | `getRecordWall`, `getStarterWall` |
-| Flame | Days lit, the last seven days as dots, sessions in seven days against the quota, the rule, and the best run with the day it ended. | `getFlameDetail` |
+| The sentence | "9 days trained in September, and 2 outings." plus the latest record in gold. A rest day, a first day and a veteran whose records have aged each get their own sentence. | `StatsView`, with `getLatestRecord` and `getOldestSessionAt` (a first day is a hero with no oldest session) |
+| To beat tonight | The four movements trained last, each with its record, the day it fell, the last result, and the number that beats it (record + 1 in the movement's own unit). The row opens the movement; the record's date opens the session that set it. A first day shows the first quest's movements with no number to beat, under "your first try is the record". | `getRecordWall` (`recordSessionId`), `getStarterWall` |
+| Flame | Days lit, the last seven days as dots, sessions in seven days against the quota, the rule, and the best run with the day it ended. Before the flame is lit, the count is left out and the note says how many more light it: "0 days lit" beside today's gold dot read as nothing counting. | `getFlameDetail` |
 | This month so far | Quests, reps, time in quests, ground, XP, records, each against the same number of days of last month; then the month as a frieze. | `getPeriodFigures`, `monthWindows`, `getActivityDays` |
-| Where the work went | The thirty days' muscle shares as one stacked bar, a verdict, a link to the balance page. | `getMuscleBalance` |
+| Where the work went | The thirty days' muscle shares as one stacked bar, a verdict, a link to the balance page. | `getMuscleBalance`, `periodReps` |
 | Level and shelf | The level bar, the XP to the next level at this week's pace, the shelf count and the next achievement with how far it is. | `getUserLevelInfo`, `getWeekXpPerSession`, `nextOnShelf` |
 | Buttons | Lifetime, Achievements n/27, Bosses n. | routes below |
 
 The record's date is not stored: it is the first row that reached the standing best, which is
-exactly when `checkForNewRecords` (a strict `>`) wrote it.
+exactly when `checkForNewRecords` (a strict `>`) wrote it. That row's session is the one the date
+links to. The date is a link inside the line rather than a second gesture on the row, because the
+row already opens the movement and a long press would be found by nobody. A record older than a
+year is written as its date with the year: "2 years ago" floored two years and eleven months.
+
+Every hold and count on the Journal goes through `formatTargetValue` / `formatTarget` in
+`db/targets.ts`, the same rule as the session, the quest screen and the exercise sheet: a hold under
+a minute in seconds ("45s", "45 s" outside English), a clock from 60 s ("1:00"), and counts, reps
+and XP alike, with the language's thousands separator (`formatCount`: "1,000", "1 000", "1.000").
+A session's or an outing's length is `formatDuration` ("12 min 17s", "12 min 17 s").
 
 The page is read in one pass (`useJournalStats`) and, on focus, only when `getJournalVersion` says
 something changed: sessions (count, last id, XP, record flags), the oath, the unlocks, or the day.
@@ -59,8 +68,13 @@ on the JS thread during the back animation.
 
 - **Lifetime** (`/journal/lifetime`): every figure over all time and over thirty days, side by side,
   with how it is counted, then the three session records (longest quest, most XP, most reps).
-- **Achievements** (`/journal/achievements`): the full shelf with its filters.
-- **Balance** (`/journal/balance`): the muscle balance card and the quests for what is behind.
+- **Achievements** (`/journal/achievements`): the full shelf with its filters, one Nocturne block
+  per achievement, the earned ones in the accent and the rest with how far they are.
+- **Balance** (`/journal/balance`): the stats page's own verdict sentence (`workVerdict`, one source
+  for both pages), every muscle's share as a bar against the biggest, the pull deficit, and the
+  quests for what is behind as plain lines. No badge and no second message: the old card said the
+  same thing three ways, and with its drop shadow the page measured 24 ms a frame against
+  Lifetime's 16 (re-measure after this change, on the same bench).
 - **Bosses felled** (`/journal/bosses`): every boss campaign won, each opening its kill report.
 - **A session** (`/journal/[id]`): the quest log, or the kill report. See
   [session-details.md](session-details.md).
@@ -70,8 +84,8 @@ on the JS thread during the back animation.
 The segmented control's second half: the sessions a hundred at a time, newest first, each opening
 the quest log. It follows the same version check as the stats page, and when it does re-read, it
 reads back everything already scrolled through, so a return from a session keeps the hero's place.
-Nothing is read before the tab is first shown. A row is the cover, the title with its record badge,
-the date, and one line of details (duration or ground, XP, difficulty): the icon and three tags it
+Nothing is read before the tab is first shown. A row is the cover, the title with its record in a gold kicker (no filled
+plate), the date, and one line of details (duration or ground, XP, difficulty): the icon and three tags it
 had cost the emulator's GPU enough to scroll History at 26 ms a frame.
 An empty history is "An empty page", never a button that sends the hero elsewhere.
 

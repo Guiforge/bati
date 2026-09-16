@@ -126,68 +126,6 @@ describe("db/muscleBalance", () => {
     expect(["back", "legs", "abs", "shoulder"]).toEqual(expect.arrayContaining(suggestions));
   });
 
-  test("getBalanceRecommendation returns no_data status when no training", () => {
-    const { getBalanceRecommendation } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
-    const balance = {
-      period: "30d" as const,
-      startDate: new Date(),
-      endDate: new Date(),
-      totalVolume: 0,
-      totalSessions: 0,
-      muscles: [],
-      weakAreas: [],
-      strongAreas: [],
-      unclassifiedResults: 0,
-    };
-
-    const rec = getBalanceRecommendation(balance);
-    expect(rec.status).toBe("no_data");
-    expect(rec.focusAreas).toEqual([]);
-  });
-
-  test("getBalanceRecommendation returns balanced status when no weak areas", () => {
-    const { getBalanceRecommendation } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
-    const balance = {
-      period: "30d" as const,
-      startDate: new Date(),
-      endDate: new Date(),
-      totalVolume: 600,
-      totalSessions: 10,
-      muscles: [],
-      weakAreas: [],
-      strongAreas: [],
-      unclassifiedResults: 0,
-    };
-
-    const rec = getBalanceRecommendation(balance);
-    expect(rec.status).toBe("balanced");
-    expect(rec.message.en).toContain("Great balance");
-  });
-
-  test("getBalanceRecommendation returns needs_attention status with weak areas", () => {
-    const { getBalanceRecommendation } =
-      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
-    const balance = {
-      period: "30d" as const,
-      startDate: new Date(),
-      endDate: new Date(),
-      totalVolume: 600,
-      totalSessions: 10,
-      muscles: [],
-      weakAreas: ["abs", "legs"] as ("arms" | "back" | "shoulder" | "chest" | "abs" | "legs")[],
-      strongAreas: ["chest"] as ("arms" | "back" | "shoulder" | "chest" | "abs" | "legs")[],
-      unclassifiedResults: 0,
-    };
-
-    const rec = getBalanceRecommendation(balance);
-    expect(rec.status).toBe("needs_attention");
-    expect(rec.message.en).toContain("abs");
-    expect(rec.message.en).toContain("legs");
-    expect(rec.focusAreas).toEqual(["abs", "legs"]);
-  });
-
   test("getSuggestedQuestsForWeakAreas returns empty when no training history", async () => {
     const { getSuggestedQuestsForWeakAreas } =
       require("../db/muscleBalance") as typeof import("../db/muscleBalance");

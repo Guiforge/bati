@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useToast } from "@/components/common/Toast";
@@ -13,6 +13,25 @@ import {
 } from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
+
+/**
+ * One backup action at a time, with `busy` up while it runs. A promise chain rather than
+ * `try ... finally`, which the React Compiler cannot lower: it skipped the whole hook over it.
+ * `onError` never rethrows, so the flags come down on both paths.
+ */
+async function exclusive(
+  running: RefObject<boolean>,
+  setBusy: (busy: boolean) => void,
+  work: () => Promise<void>,
+  onError: (error: unknown) => void,
+): Promise<void> {
+  if (running.current) return;
+  running.current = true;
+  setBusy(true);
+  await work().catch(onError);
+  running.current = false;
+  setBusy(false);
+}
 
 /**
  * The backup rows' worth of orchestration — share, save, restore — shared by Settings and
@@ -49,103 +68,108 @@ export function useBackup() {
       .catch((error) => reportError("backup.auto.read", error));
   }, []);
 
-  const runExport = useCallback(async () => {
-    if (running.current) return;
-    running.current = true;
-    setBusy(true);
-    try {
-      await exportBackup();
-      showSuccess(t("backup.exportDone"));
-    } catch (error) {
-      reportError("backup.export", error);
-      alertWithReport(t("backup.exportFailed"));
-    } finally {
-      running.current = false;
-      setBusy(false);
-    }
-  }, [alertWithReport, showSuccess, t]);
+  const runExport = useCallback(
+    () =>
+      exclusive(
+        running,
+        setBusy,
+        async () => {
+          await exportBackup();
+          showSuccess(t("backup.exportDone"));
+        },
+        (error) => {
+          reportError("backup.export", error);
+          alertWithReport(t("backup.exportFailed"));
+        },
+      ),
+    [alertWithReport, showSuccess, t],
+  );
 
-  const runSaveToFolder = useCallback(async () => {
-    if (running.current) return;
-    running.current = true;
-    setBusy(true);
-    try {
-      // Silence on `false` is deliberate: the hero closed the folder picker themselves, and
-      // telling them so is one toast for something they already know.
-      if (await saveBackupToFolder()) showSuccess(t("backup.saveDone"));
-    } catch (error) {
-      reportError("backup.save", error);
-      alertWithReport(t("backup.exportFailed"));
-    } finally {
-      running.current = false;
-      setBusy(false);
-    }
-  }, [alertWithReport, showSuccess, t]);
+  const runSaveToFolder = useCallback(
+    () =>
+      exclusive(
+        running,
+        setBusy,
+        async () => {
+          // Silence on `false` is deliberate: the hero closed the folder picker themselves, and
+          // telling them so is one toast for something they already know.
+          if (await saveBackupToFolder()) showSuccess(t("backup.saveDone"));
+        },
+        (error) => {
+          reportError("backup.save", error);
+          alertWithReport(t("backup.exportFailed"));
+        },
+      ),
+    [alertWithReport, showSuccess, t],
+  );
 
-  const runEnableAuto = useCallback(async () => {
-    if (running.current) return;
-    running.current = true;
-    setBusy(true);
-    try {
-      const folder = await enableAutoBackup();
-      // `null` is the hero closing the picker. Same silence as `runSaveToFolder`, same reason.
-      if (folder !== null) {
-        setAutoFolder(folder);
-        showSuccess(t("backup.autoOnDone", { folder }));
-      }
-    } catch (error) {
-      reportError("backup.auto.enable", error);
-      // The folder is only remembered after the first write succeeds, so a failure here leaves
-      // the feature exactly as off as the row still says it is.
-      alertWithReport(t("backup.exportFailed"));
-    } finally {
-      running.current = false;
-      setBusy(false);
-    }
-  }, [alertWithReport, showSuccess, t]);
+  const runEnableAuto = useCallback(
+    () =>
+      exclusive(
+        running,
+        setBusy,
+        async () => {
+          const folder = await enableAutoBackup();
+          // `null` is the hero closing the picker. Same silence as `runSaveToFolder`, same reason.
+          if (folder !== null) {
+            setAutoFolder(folder);
+            showSuccess(t("backup.autoOnDone", { folder }));
+          }
+        },
+        (error) => {
+          reportError("backup.auto.enable", error);
+          // The folder is only remembered after the first write succeeds, so a failure here leaves
+          // the feature exactly as off as the row still says it is.
+          alertWithReport(t("backup.exportFailed"));
+        },
+      ),
+    [alertWithReport, showSuccess, t],
+  );
 
-  const runDisableAuto = useCallback(async () => {
-    if (running.current) return;
-    running.current = true;
-    setBusy(true);
-    try {
-      await disableAutoBackup();
-      setAutoFolder(null);
-      showSuccess(t("backup.autoOffDone"));
-    } catch (error) {
-      reportError("backup.auto.disable", error);
-      alertWithReport(t("backup.exportFailed"));
-    } finally {
-      running.current = false;
-      setBusy(false);
-    }
-  }, [alertWithReport, showSuccess, t]);
+  const runDisableAuto = useCallback(
+    () =>
+      exclusive(
+        running,
+        setBusy,
+        async () => {
+          await disableAutoBackup();
+          setAutoFolder(null);
+          showSuccess(t("backup.autoOffDone"));
+        },
+        (error) => {
+          reportError("backup.auto.disable", error);
+          alertWithReport(t("backup.exportFailed"));
+        },
+      ),
+    [alertWithReport, showSuccess, t],
+  );
 
-  const runImport = useCallback(async () => {
-    if (running.current) return;
-    running.current = true;
-    setBusy(true);
-    try {
-      const staged = await stageBackupForImport();
-      if (!staged) return;
+  const runImport = useCallback(
+    () =>
+      exclusive(
+        running,
+        setBusy,
+        async () => {
+          const staged = await stageBackupForImport();
+          if (!staged) return;
 
-      const check = await validateBackup(staged);
-      if (!check.ok) {
-        discardStagedImport();
-        showError(t(`backup.rejected.${check.reason}`));
-        return;
-      }
+          const check = await validateBackup(staged);
+          if (!check.ok) {
+            discardStagedImport();
+            showError(t(`backup.rejected.${check.reason}`));
+            return;
+          }
 
-      beginRestore();
-    } catch (error) {
-      reportError("backup.import", error);
-      discardStagedImport();
-      alertWithReport(t("backup.importFailed"));
-    } finally {
-      running.current = false;
-      setBusy(false);
-    }
-  }, [alertWithReport, beginRestore, showError, t]);
+          beginRestore();
+        },
+        (error) => {
+          reportError("backup.import", error);
+          discardStagedImport();
+          alertWithReport(t("backup.importFailed"));
+        },
+      ),
+    [alertWithReport, beginRestore, showError, t],
+  );
 
   // Returned as fire-and-forget handlers: both swallow their own failures into a toast, so a
   // caller has nothing to await and nothing to catch. It keeps the press handlers one-liners.

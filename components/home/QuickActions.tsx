@@ -12,10 +12,19 @@ import { getQuestThumb } from "@/constants/assetMap";
 import { formatDistance } from "@/constants/distanceFormat";
 import { getRecentSessionHistory } from "@/db/completed";
 import { formatDurationEstimate } from "@/db/estimate";
+import { listExercises } from "@/db/exercises";
 import { hasOutdoorSlot, outingGoal, withOutingGoal } from "@/db/expeditions";
 import { listOutings, type Outing } from "@/db/outings";
-import { getQuestConfig, loadConfiguredQuest, saveQuestConfig } from "@/db/questConfig";
+import { previewOutingGoal } from "@/db/preview";
+import {
+  getAllQuestConfigs,
+  getQuestConfig,
+  indexExercises,
+  loadConfiguredQuest,
+  saveQuestConfig,
+} from "@/db/questConfig";
 import { Difficulty } from "@/db/targets";
+import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 import {
   ensureNotificationPermission,
   getPermissionStatus,
@@ -125,7 +134,8 @@ export function QuickActions() {
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
   const unit = useSettingsStore((s) => s.distanceUnit);
-  const status = useSessionStore((s) => s.status);
+  // No `status` subscription: it flips twice per set during a session, and this row sits mounted
+  // under it. The tap reads it when it happens.
   const startSession = useSessionStore((s) => s.startSession);
   const startQuest = useStartQuest();
   const [outings, setOutings] = useState<Outing[] | null>(null);
@@ -149,15 +159,18 @@ export function QuickActions() {
   const load = useCallback(async () => {
     // Both reads underneath are cached and invalidated on write, so coming back from the editor
     // picks up a hero-authored outing without costing a query on every focus.
-    const list = await listOutings();
+    const [list, configs, exercises] = await Promise.all([
+      listOutings(),
+      getAllQuestConfigs(),
+      listExercises(),
+    ]);
+    const exercisesById = indexExercises(exercises);
 
-    // Loaded at `medium`, the level every tile leaves at, so the chip says what the tap will run.
-    const entries = await Promise.all(
-      list.map(async ({ quest }) => {
-        const loaded = await loadConfiguredQuest(quest.id, Difficulty.Medium);
-        const goal = loaded ? outingGoal(loaded.quest, loaded.config?.distanceM ?? null) : null;
-        return [quest.id, goal] as const;
-      }),
+    // At `medium`, the level every tile leaves at, so the chip says what the tap will run. Off the
+    // template rather than the loaded quest: see `previewOutingGoal`.
+    const entries = list.map(
+      ({ quest }) =>
+        [quest.id, previewOutingGoal(quest, exercisesById, configs.get(quest.id) ?? null)] as const,
     );
     // Together: tiles drawn before their goals said "Free" on every chip, a goal nobody set.
     setGoals(Object.fromEntries(entries));
@@ -179,9 +192,9 @@ export function QuickActions() {
       setIsStarting(false);
       setWhyFor(null);
       setGoalFor(null);
-      load().catch((error) => reportError("home.quickActions", error));
-    }, [load]),
+    }, []),
   );
+  useReloadOnChange("home.quickActions", load);
 
   const saveGoal = async (questId: number, goal: OutingGoal) => {
     // The hero's saved config as the base, never the one loaded at medium for the chip: that one
@@ -198,74 +211,76 @@ export function QuickActions() {
     await load();
   };
 
-  const startOuting = useCallback(
-    async (questId: number) => {
-      if (isStarting) return;
-      // A session that is neither idle nor finished is a live one — an outing paused by the
-      // hardware back button still holds its uuid and its points. `startSession` would overwrite
-      // it and orphan every fix it had written, so the tap rejoins it instead.
-      if (status !== "idle" && status !== "finished") {
-        router.push("/session" as never);
+  const startOuting = async (questId: number) => {
+    if (isStarting) return;
+    // A session that is neither idle nor finished is a live one — an outing paused by the
+    // hardware back button still holds its uuid and its points. `startSession` would overwrite
+    // it and orphan every fix it had written, so the tap rejoins it instead.
+    const { status } = useSessionStore.getState();
+    if (status !== "idle" && status !== "finished") {
+      router.push("/session" as never);
+      return;
+    }
+
+    // The body and its error path apart: the React Compiler cannot lower a `try` holding `??`,
+    // and it used to skip this whole row over one.
+    const begin = async () => {
+      // Why, before Android's own dialog, and only when there is something to explain.
+      // `quests.location_notice` says it on the quest screen, which this door skips: an unprimed
+      // system dialog is refused more often, and a final refusal cannot be undone from inside
+      // the app. The module answers without prompting, so a hero who granted months ago is
+      // never told about a dialog that will not appear, and one who granted from the settings
+      // is seen on the very next tap: the same reason a refusal is never persisted.
+      const already = await getPermissionStatus();
+      if (!whySaid && !already.granted) {
+        whySaid = true;
+        setDenied(false);
+        setWhyFor(questId);
+        setIsStarting(false);
+        return;
+      }
+      setWhyFor(null);
+
+      // Position first, then the notification: from API 33 the ongoing notification is the only
+      // surface an outing has in a pocket, and bundling the two would let one refusal veto the
+      // other. `begin()` asks again and both are idempotent once granted.
+      const permission = await requestPermission();
+      if (!permission.granted) {
+        // No fix means no ground, and a session that measures nothing is not the session this
+        // tile promises. Nothing starts, and the row says where the grant lives.
+        setDenied(true);
+        setIsStarting(false);
+        return;
+      }
+      setDenied(false);
+      // Once per process, and `begin()` calls the same helper: a hero who refused here used to
+      // get the system dialog again, over a chronometer already counting their walk.
+      await ensureNotificationPermission();
+
+      // Loaded at `medium` whatever the quest screen was left on: a level stretches an outing's
+      // duration and multiplies its XP, and the hero who taps here has chosen neither.
+      const loaded = await loadConfiguredQuest(questId, Difficulty.Medium);
+      if (!loaded) {
+        setIsStarting(false);
         return;
       }
 
-      setIsStarting(true);
-      try {
-        // Why, before Android's own dialog, and only when there is something to explain.
-        // `quests.location_notice` says it on the quest screen, which this door skips: an unprimed
-        // system dialog is refused more often, and a final refusal cannot be undone from inside
-        // the app. The module answers without prompting, so a hero who granted months ago is
-        // never told about a dialog that will not appear, and one who granted from the settings
-        // is seen on the very next tap: the same reason a refusal is never persisted.
-        const already = await getPermissionStatus();
-        if (!whySaid && !already.granted) {
-          whySaid = true;
-          setDenied(false);
-          setWhyFor(questId);
-          setIsStarting(false);
-          return;
-        }
-        setWhyFor(null);
+      // Awaited on purpose: `startSession` loads the boss fight and the warm-up preference
+      // before it populates the store, and the session screen redirects home on an empty one.
+      // The goal is the one on the chip: the hero's own when they set one, otherwise the slot's
+      // duration, which is what "no number on it" has always meant here.
+      await startSession(loaded.quest, loaded.level, {
+        goal: outingGoal(loaded.quest, loaded.config?.distanceM ?? null),
+      });
+      router.push("/session" as never);
+    };
 
-        // Position first, then the notification: from API 33 the ongoing notification is the only
-        // surface an outing has in a pocket, and bundling the two would let one refusal veto the
-        // other. `begin()` asks again and both are idempotent once granted.
-        const permission = await requestPermission();
-        if (!permission.granted) {
-          // No fix means no ground, and a session that measures nothing is not the session this
-          // tile promises. Nothing starts, and the row says where the grant lives.
-          setDenied(true);
-          setIsStarting(false);
-          return;
-        }
-        setDenied(false);
-        // Once per process, and `begin()` calls the same helper: a hero who refused here used to
-        // get the system dialog again, over a chronometer already counting their walk.
-        await ensureNotificationPermission();
-
-        // Loaded at `medium` whatever the quest screen was left on: a level stretches an outing's
-        // duration and multiplies its XP, and the hero who taps here has chosen neither.
-        const loaded = await loadConfiguredQuest(questId, Difficulty.Medium);
-        if (!loaded) {
-          setIsStarting(false);
-          return;
-        }
-
-        // Awaited on purpose: `startSession` loads the boss fight and the warm-up preference
-        // before it populates the store, and the session screen redirects home on an empty one.
-        // The goal is the one on the chip: the hero's own when they set one, otherwise the slot's
-        // duration, which is what "no number on it" has always meant here.
-        await startSession(loaded.quest, loaded.level, {
-          goal: outingGoal(loaded.quest, loaded.config?.distanceM ?? null),
-        });
-        router.push("/session" as never);
-      } catch (error) {
-        setIsStarting(false);
-        reportError("home.startOuting", error);
-      }
-    },
-    [isStarting, status, router, startSession],
-  );
+    setIsStarting(true);
+    await begin().catch((error: unknown) => {
+      setIsStarting(false);
+      reportError("home.startOuting", error);
+    });
+  };
 
   if (outings === null) {
     // Reserve the row rather than guess at its contents: a placeholder tile would claim there is

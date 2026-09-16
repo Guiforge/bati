@@ -16,7 +16,8 @@ import { useSessionStore } from "@/stores/session";
  */
 export function useStartQuest() {
   const router = useRouter();
-  const status = useSessionStore((s) => s.status);
+  // `status` is read at the tap, not subscribed to: it flips twice a set during a session, and
+  // Home stays mounted under it.
   const startSession = useSessionStore((s) => s.startSession);
   /** Double-tap guard, the same one the quest screen and the outing tiles keep. */
   const [isStarting, setIsStarting] = useState(false);
@@ -32,6 +33,7 @@ export function useStartQuest() {
     if (isStarting) return;
     // A live session is rejoined, never overwritten: `startSession` would orphan everything it
     // had banked. Same rule as the outing tiles.
+    const { status } = useSessionStore.getState();
     if (status !== "idle" && status !== "finished") {
       router.push("/session" as never);
       return;

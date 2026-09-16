@@ -119,13 +119,32 @@ describe("db/exercises — variation ladder", () => {
 
   test("falling short of the target does not count towards it", async () => {
     const wallPushUp = idOf("Wall Push-Up");
-    logSet(wallPushUp, 12, 12);
+    logSet(wallPushUp, 12, 12, 2);
+    logSet(wallPushUp, 12, 12, 1);
     logSet(wallPushUp, 8, 12);
-    logSet(wallPushUp, 12, 12);
 
     const progression = await exercisesApi().getNextProgression(wallPushUp);
-    expect(progression?.metTarget).toBe(2);
+    expect(progression?.metTarget).toBe(0);
     expect(progression?.isEarned).toBe(false);
+  });
+
+  // The squat report: `[hit, miss, hit]`, most recent first, read "Hit your target 1 more time",
+  // and one more clean session made `[hit, hit, miss]`, still not earned. The count is the run.
+  test("what is left to hit counts the run of clean sessions, not the clean ones out of three", async () => {
+    const wallPushUp = idOf("Wall Push-Up");
+    logSet(wallPushUp, 12, 12, 2);
+    logSet(wallPushUp, 8, 12, 1);
+    logSet(wallPushUp, 12, 12);
+
+    const api = exercisesApi();
+    expect((await api.getNextProgression(wallPushUp))?.metTarget).toBe(1);
+    expect((await api.getChainTo(idOf("Push-ups")))?.rungs[0]?.metTarget).toBe(1);
+
+    logSet(wallPushUp, 12, 12);
+    logSet(wallPushUp, 12, 12);
+    const earned = await api.getNextProgression(wallPushUp);
+    expect(earned?.metTarget).toBe(3);
+    expect(earned?.isEarned).toBe(true);
   });
 
   describe("the chain up to a movement", () => {
@@ -159,13 +178,63 @@ describe("db/exercises — variation ladder", () => {
       expect(chain?.rungs[2]?.exercise.enName).toBe("Inverted Row");
     });
 
-    test("mastering a rung out of order does not count as the ones below it", async () => {
+    // Rule C, 2026-09-15: this used to read "does not count as the ones below it", and a hero
+    // who could do chin-ups was told to do towel rows. What is behind the hero stays there.
+    test("mastering a rung out of order puts every rung below it behind the hero", async () => {
       for (let i = 0; i < 3; i++) logSet(idOf("Chin-Up"), 12, 12);
 
-      // Contiguous from the bottom: the hero still owes every rung under the one they skipped to.
       const chain = await exercisesApi().getChainTo(idOf("Pull-ups"));
-      expect(chain?.position).toBe(1);
+      expect(chain?.position).toBe(8);
+      expect(chain?.climbed).toBe(false);
+      // The rungs skipped are behind, not earned: `isEarned` is still the windowed reading.
+      expect(chain?.rungs[0]?.isEarned).toBe(false);
       expect(chain?.rungs[6]?.isEarned).toBe(true);
+    });
+
+    test("a hero who owned Wall Push-Up in June and trains Push-ups in September is served Push-ups", async () => {
+      // June: Wall Push-Up owned, then never repeated. Knee Push-Up was never logged at all.
+      for (let i = 0; i < 3; i++) logSet(idOf("Wall Push-Up"), 12, 12, 95 + i);
+      // September: push-ups, one clean session and one short one.
+      logSet(idOf("Push-ups"), 12, 12, 3);
+      logSet(idOf("Push-ups"), 8, 12, 1);
+
+      const pushUps = idOf("Push-ups");
+      // Under the old rule the June sessions had left the window, and the hero was back at the wall.
+      expect((await exercisesApi().currentRungFor([pushUps])).get(pushUps)).toBe(pushUps);
+      const chain = await exercisesApi().getChainTo(pushUps);
+      expect(chain?.position).toBe(3);
+      expect(chain?.climbed).toBe(false);
+    });
+
+    test("one clean Plank session puts Dead Bug behind the hero", async () => {
+      const plank = idOf("Plank");
+      logSet(plank, 45, 45);
+
+      const chain = await exercisesApi().getChainTo(plank);
+      expect(chain?.rungs.map((r) => r.exercise.enName)).toEqual(["Dead Bug", "Plank"]);
+      expect(chain?.position).toBe(2);
+      expect((await exercisesApi().currentRungFor([plank])).get(plank)).toBe(plank);
+      // The session is on Plank, so Plank itself is not behind yet: one session is not a run.
+      expect(chain?.climbed).toBe(false);
+    });
+
+    test("the rung below says it is earned once the hero stands above it", async () => {
+      const plank = idOf("Plank");
+      logSet(plank, 45, 45);
+
+      // Dead Bug was never trained, but it is behind the hero: its next step must not ask for three
+      // more Dead Bug sessions while the Plank screen says "You are here".
+      const step = await exercisesApi().getNextProgression(idOf("Dead Bug"));
+      expect(step?.next.enName).toBe("Plank");
+      expect(step?.isEarned).toBe(true);
+    });
+
+    test("a short session on a higher rung puts nothing behind the hero", async () => {
+      const plank = idOf("Plank");
+      logSet(plank, 20, 45);
+
+      expect((await exercisesApi().getChainTo(plank))?.position).toBe(1);
+      expect((await exercisesApi().currentRungFor([plank])).get(plank)).toBe(idOf("Dead Bug"));
     });
   });
 
@@ -207,24 +276,30 @@ describe("db/exercises — variation ladder", () => {
       }
     }
 
-    test("a path counts only once every rung of it has been owned", async () => {
+    // Rule C, 2026-09-15: this used to read "only once every rung of it has been owned". A summit
+    // owned puts every rung under it behind the hero, and the path card already says "climbed".
+    test("a path counts once its summit has been owned, whatever was logged below it", async () => {
       expect(await exercisesApi().countClimbedPaths()).toBe(0);
 
       for (let i = 0; i < 3; i++) logSet(idOf("Dead Bug"), 12, 12);
       expect(await exercisesApi().countClimbedPaths()).toBe(0);
 
-      climbCorePath();
+      for (let i = 0; i < 3; i++) logSet(idOf("Dragon Flag"), 12, 12);
       expect(await exercisesApi().countClimbedPaths()).toBe(1);
+      expect((await exercisesApi().getChainTo(idOf("Dragon Flag")))?.climbed).toBe(true);
     });
 
     test("a climbed path is never taken back", async () => {
       climbCorePath();
 
-      // Detraining, and then a bad session. The *current* rung falls — a trophy must not.
+      // Detraining, and then bad sessions. The summit is no longer earned today, but it stays
+      // behind the hero, and so does the trophy.
       for (let i = 0; i < 3; i++) logSet(idOf("Dragon Flag"), 4, 12);
 
       const chain = await exercisesApi().getChainTo(idOf("Dragon Flag"));
       expect(chain?.position).toBe(3);
+      expect(chain?.rungs[2]?.isEarned).toBe(false);
+      expect(chain?.climbed).toBe(true);
       expect(await exercisesApi().countClimbedPaths()).toBe(1);
     });
 
@@ -253,8 +328,11 @@ describe("db/exercises — variation ladder", () => {
 
       // Every session is far outside the recency window, so nothing reads as earned today...
       const chain = await exercisesApi().getChainTo(idOf("Dragon Flag"));
-      expect(chain?.position).toBe(1);
-      // ...and the shelf still holds it.
+      expect(chain?.rungs.some((r) => r.isEarned)).toBe(false);
+      // ...but a quiet year does not send the hero back to the bottom (rule C, 2026-09-15: this
+      // used to expect position 1), and the shelf still holds it.
+      expect(chain?.position).toBe(3);
+      expect(chain?.climbed).toBe(true);
       expect(await exercisesApi().countClimbedPaths()).toBe(1);
     });
   });

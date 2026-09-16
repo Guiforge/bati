@@ -1,5 +1,6 @@
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import type { Exercise } from "./exercises";
-import type { Target } from "./targets";
+import { SECONDS_SUFFIX, type Target } from "./targets";
 
 export function estimateExerciseSeconds(exercise: Pick<Exercise, "secondsPerRep">, target: Target) {
   if (target.type === "time") return Math.max(1, target.value);
@@ -51,22 +52,30 @@ export function adventureWeeks(stepsCount: number, sessionsPerWeek = 3) {
  * (the real duration depends on actual rest taken). Journal durations are measured, so they
  * keep formatDuration's exact form.
  *
- * Neither takes a language. "min" and "s" are the same abbreviations in both locales, and both
- * functions used to branch on `lang` with two identical arms — six call sites threading the live
- * language into a ternary that could not change anything. If a third locale ever abbreviates
- * differently, that is the moment to give these an argument again, not before.
+ * This one takes no language: it writes "min" in every locale. It once branched on `lang`
+ * with two identical arms, six call sites threading the live language into a ternary that could
+ * not change anything. `formatDuration` does take one, for the space before its "s".
  */
 export function formatDurationEstimate(seconds: number) {
   const m = Math.max(1, Math.round(Math.max(0, seconds) / 60));
   return `${m} min`;
 }
 
-export function formatDuration(seconds: number) {
+/**
+ * A measured length of time: "45s", "12 min", "12 min 17s". The seconds wear `formatTarget`'s
+ * suffix, so French reads "12 min 17 s" like its holds do. A hold itself is `formatTarget`'s job,
+ * this is for sessions and outings, where minutes are the unit people think in.
+ *
+ * ponytail: "min" stays unlocalised although German writes "Min." (`journal.duration_m`); give
+ * minutes a `Localized` word like `REPS_WORD` if a German reader flags it.
+ */
+export function formatDuration(seconds: number, language: AppLanguage) {
   const s = Math.max(0, Math.round(seconds));
   const m = Math.floor(s / 60);
   const r = s % 60;
+  const sec = `${r}${SECONDS_SUFFIX[language]}`;
 
-  if (m <= 0) return `${r}s`;
+  if (m <= 0) return sec;
   if (r === 0) return `${m} min`;
-  return `${m} min ${r}s`;
+  return `${m} min ${sec}`;
 }

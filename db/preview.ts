@@ -1,5 +1,7 @@
+import type { OutingGoal } from "@/src/gps/track";
 import { estimateQuestSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
+import { outingGoal } from "./expeditions";
 import { applyConfigToSlots, type QuestConfig } from "./questConfig";
 import type { QuestExercise, QuestTemplate } from "./quests";
 import type { DifficultyCode } from "./schema";
@@ -86,4 +88,28 @@ export function estimateQuestTemplateXp(input: PreviewInput): number {
     { rounds: input.template.rounds, exercises: resolveTemplateExercises(input) },
     input.userLevel,
   );
+}
+
+/**
+ * The goal a way out leaves with from Home's tile, which always starts it at medium: what its chip
+ * says.
+ *
+ * Off the cached template and the saved config rather than `loadConfiguredQuest`, which reads the
+ * hero's whole history of the movement to serve a slot, three times on every Home focus for a
+ * number the history cannot move: an outing's duration is authored, or set by hand.
+ * `__tests__/db-change-version.test.ts` holds it to the goal the tap actually runs.
+ */
+export function previewOutingGoal(
+  template: Pick<QuestTemplate, "rounds" | "restSeconds" | "roundRestSeconds" | "exercises">,
+  exercisesById: Record<number, Exercise>,
+  saved: QuestConfig | null,
+): OutingGoal | null {
+  const config = saved === null ? null : { ...saved, level: Difficulty.Medium };
+  const exercises = resolveTemplateExercises({
+    template,
+    exercisesById,
+    userLevel: Difficulty.Medium,
+    config,
+  });
+  return outingGoal({ exercises }, config?.distanceM ?? null);
 }

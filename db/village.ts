@@ -19,8 +19,15 @@ import { type FlameLevel, getFlameLevel, getStreakInfo } from "./streaks";
 import { getLevelTitle, getUserLevelInfo, getXpForLevel } from "./userLevel";
 import { repEquivalentSql } from "./workUnits";
 
-const { bossFights, adventures, adventureRuns, exercises, completedExercises, completedQuest } =
-  schema;
+const {
+  bossFights,
+  adventures,
+  adventureRuns,
+  exercises,
+  exerciseMuscles,
+  completedExercises,
+  completedQuest,
+} = schema;
 
 // Same fallback used by every getXAsset() helper in constants/assetMap.ts — never expose
 // `| null` for imagePath, resolve to the placeholder here so callers have one code path.
@@ -455,6 +462,27 @@ function nextFloor(level: number, floors: readonly number[]): number | null {
 }
 
 /** Lifetime work units per exercise style, for the two style-gated buildings. */
+/**
+ * Lifetime work units per muscle, summed in SQLite. The village used to read
+ * `getMuscleBalance("all")` for this, which returns one row per set per muscle tag across the
+ * whole history (15 811 rows at five years) to keep six numbers, and the Village focus and both
+ * calls in `saveSession` paid for it. Same joins, same `repEquivalentSql`, so the numbers cannot
+ * drift from the balance card's (`__tests__/db-village-buildings.test.ts` compares them).
+ */
+async function getLifetimeVolumeByMuscle(): Promise<Map<MuscleCode, number>> {
+  const rows = await db
+    .select({
+      muscle: exerciseMuscles.muscle,
+      volume: sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
+    })
+    .from(completedExercises)
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    .innerJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id))
+    .groupBy(exerciseMuscles.muscle);
+
+  return new Map(rows.map((r) => [r.muscle, r.volume]));
+}
+
 async function getStyleVolumes(): Promise<Partial<Record<ExerciseStyle, number>>> {
   const rows = await db
     .select({
@@ -559,18 +587,19 @@ function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
  * still showing a village that grows building by building.
  */
 export async function getVillageBuildings(): Promise<VillageBuilding[]> {
-  const [balance, styleVolumes, banners, levelInfo, summaries, leaguesM] = await Promise.all([
-    getMuscleBalance("all"),
-    getStyleVolumes(),
-    getBossBanners(),
-    getUserLevelInfo(),
-    listFinishedRunSummaries(),
-    totalLeaguesM(),
-  ]);
+  const [volumeByMuscle, styleVolumes, banners, levelInfo, summaries, leaguesM] = await Promise.all(
+    [
+      getLifetimeVolumeByMuscle(),
+      getStyleVolumes(),
+      getBossBanners(),
+      getUserLevelInfo(),
+      listFinishedRunSummaries(),
+      totalLeaguesM(),
+    ],
+  );
   const legacy = await getLegacyDeedLevels(banners);
   const tally = tallyFinishedRuns(summaries);
 
-  const volumeByMuscle = new Map(balance.muscles.map((m) => [m.muscle, m.volume]));
   const villageTier = getVillageTier(levelInfo.level);
 
   const derivedOf = new Map<BuildingCode, DerivedLevel>();

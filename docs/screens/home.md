@@ -3,7 +3,7 @@ title: Home
 type: screen
 route: /
 status: active
-updated: 2026-09-11
+updated: 2026-09-15
 related: [onboarding.md, adventure-details.md, village.md, journal.md, ../gameplay/coach-planning.md]
 sources:
   [
@@ -15,6 +15,8 @@ sources:
     components/home/RestNote.tsx,
     components/home/useSmartAction.ts,
     components/home/useStartQuest.ts,
+    hooks/useReloadOnChange.ts,
+    db/changeVersion.ts,
   ]
 ---
 
@@ -73,6 +75,20 @@ A kicker chip names the unusual cases: "Day one", "Adventure". Which branch fire
 - **Replay** starts the last workout (`getRecentSessionHistory`) through the same `useStartQuest`
   as the stage. A quest that reads the position is never offered there.
 
+## Coming back to Home
+
+Every block reads on focus, and only when something changed: each one goes through
+`useReloadOnChange`, which compares `getChangeVersion()` (SQLite's `total_changes()` and the day)
+with the version its last successful read saw. A return from Quests with nothing written costs one
+query instead of 51 (perf audit, 2026-09-15). A session saved, an oath sworn, a quest configured, a
+goal set, an adventure step, the language, or midnight each move it, so no block can stay stale
+after an action taken on another screen. A failed read is retried on the next focus.
+
+The way-out tiles price their goal off the cached template and the saved config
+(`previewOutingGoal`), not off `loadConfiguredQuest`, which reads the movement's whole history.
+`__tests__/db-change-version.test.ts` holds both: Home's reads do not move the version, and the
+chip says the goal the tap runs.
+
 ## Visual rules
 
 - One filled button on the screen. The ways out are image tiles, the recovery banner is a tint.
@@ -90,6 +106,9 @@ are on, and starts it in one tap.
 
 ## History
 
+- **2026-09-15**: Home re-reads only when the database or the day changed (`useReloadOnChange`),
+  and the way-out tiles no longer load their quest to show a goal. `status` is read at the tap,
+  not subscribed to, so Home no longer re-renders twice a set under a running session.
 - **2026-09-11**: redesign from the "Bati Home Redesign" design, direction 2d. One 52 dp strip
   absorbs the header and the village (a crest and its tier); the village band and the lifetime
   stats line are gone, the stats being the Journal's. The scene is full bleed. Start starts the

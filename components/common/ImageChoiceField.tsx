@@ -69,34 +69,37 @@ export function ImageChoiceField({
   /** A photo lives in the row as a data URI, so "is this a photo?" is a prefix test. */
   const isPhoto = value.startsWith("data:");
 
+  // The body and its error path are split rather than wrapped in `try ... finally`, which the
+  // React Compiler cannot lower. The catch never rethrows, so `setBusy(false)` runs on both paths.
+  const choosePhoto = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      // A silently-declined permission used to make the avatar row do nothing, forever.
+      showError(t("settings.photos_denied"));
+      return;
+    }
+
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [aspect[0], aspect[1]],
+      quality: 1,
+    });
+    if (picked.canceled) return;
+
+    const asset = picked.assets[0];
+    if (!asset) return;
+    onChange(await encodePhoto(asset.uri));
+    setOpen(false);
+  };
+
   const pickPhoto = async () => {
     setBusy(true);
-    try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        // A silently-declined permission used to make the avatar row do nothing, forever.
-        showError(t("settings.photos_denied"));
-        return;
-      }
-
-      const picked = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [aspect[0], aspect[1]],
-        quality: 1,
-      });
-      if (picked.canceled) return;
-
-      const asset = picked.assets[0];
-      if (!asset) return;
-      onChange(await encodePhoto(asset.uri));
-      setOpen(false);
-    } catch (error) {
+    await choosePhoto().catch((error: unknown) => {
       reportError("exercises.image", error);
       showError(t("exercise_editor.image_failed"));
-    } finally {
-      setBusy(false);
-    }
+    });
+    setBusy(false);
   };
 
   return (

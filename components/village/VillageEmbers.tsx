@@ -1,3 +1,4 @@
+import { useIsFocused } from "expo-router";
 import { useEffect } from "react";
 import Animated, {
   Easing,
@@ -107,7 +108,10 @@ function Ember({ left, start, size, duration, delay, heroHeight, heroWidth, peak
  * (docs/architecture/performance.md).
  *
  * Returns nothing under reduced motion, so the views are never mounted rather than mounted and
- * held still.
+ * held still. Nothing either while the tab is out of focus: tabs stay mounted, and the loops left
+ * running under other screens took their frames from 16 to 30 ms (perf audit C1). Unmounting is
+ * the pause, since `useSharedValue` cancels its animation on unmount; the embers start their
+ * climb again when the hero comes back.
  */
 export function VillageEmbers({
   heroHeight,
@@ -119,7 +123,8 @@ export function VillageEmbers({
   tier: number;
 }) {
   const reducedMotion = useReducedMotion();
-  if (reducedMotion) return null;
+  const focused = useIsFocused();
+  if (reducedMotion || !focused) return null;
 
   return (
     <>

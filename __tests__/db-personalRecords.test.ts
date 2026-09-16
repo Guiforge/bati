@@ -238,6 +238,41 @@ describe("db/personalRecords", () => {
     expect(history.get(ghostKey(exerciseId, "reps"))).toMatchObject({ last: 14, best: 20 });
   });
 
+  test("getExerciseHistory takes the later of two sessions on one day, and skips a zero", async () => {
+    const { getExerciseHistory, ghostKey } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const morning = Math.floor(new Date(2026, 8, 14, 8, 0).getTime() / 1000);
+    const evening = morning + 11 * 3600;
+    const exerciseId = firstExerciseId(t);
+    const other = exerciseId + 1;
+
+    // Morning 16, evening 11 (the later session is the one to beat, not the day's best), then a
+    // set logged at 0 the same night: it did not happen and must neither become `last` nor move
+    // `at`. A movement that only ever logged 0 has no ghost at all. The table's CHECK refuses a 0
+    // today, so the row is forced in: the read must not lean on the constraint.
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES
+        (1, ${morning}), (2, ${evening}), (3, ${evening + 600});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${exerciseId}, 'reps', 16, ${morning}, 0),
+        (2, ${exerciseId}, 'reps', 11, ${evening}, 0);
+      PRAGMA ignore_check_constraints = ON;
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (3, ${exerciseId}, 'reps', 0, ${evening + 600}, 0),
+        (3, ${other}, 'reps', 0, ${evening + 600}, 1);
+      PRAGMA ignore_check_constraints = OFF;
+    `);
+
+    const history = await getExerciseHistory([exerciseId, other]);
+    expect(history.get(ghostKey(exerciseId, "reps"))).toEqual({
+      last: 11,
+      best: 16,
+      at: evening * 1000,
+    });
+    expect(history.has(ghostKey(other, "reps"))).toBe(false);
+    expect(history.size).toBe(1);
+  });
+
   function logOuting(leaguesM: number, secondsAgo: number): number {
     const at = Math.floor(Date.now() / 1000) - secondsAgo;
     const info = t.sqlite

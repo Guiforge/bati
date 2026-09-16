@@ -17,6 +17,13 @@ import config from "@/tamagui.config";
 
 const mockPush = jest.fn();
 
+// Every focus reads as a fresh write, so these tests load on each one as they always did. The
+// gate itself is `__tests__/use-reload-on-change.test.ts`'s.
+let mockChanges = 0;
+jest.mock("@/db/changeVersion", () => ({
+  getChangeVersion: async () => String(mockChanges++),
+}));
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useFocusEffect: (cb: () => void) => {

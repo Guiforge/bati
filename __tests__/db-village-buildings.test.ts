@@ -198,10 +198,8 @@ describe("db/village buildings", () => {
     });
   });
 
-  test("a building's growth is only visible once the short-lived memos are dropped", async () => {
+  test("a muscle building sees a new set on the very next read", async () => {
     const { getVillageBuildings } = require("../db/village") as typeof import("../db/village");
-    const { clearShortLivedQueries } =
-      require("../db/queryCache") as typeof import("../db/queryCache");
     const now = Math.floor(Date.now() / 1000);
 
     const pushupId = (
@@ -221,13 +219,52 @@ describe("db/village buildings", () => {
         VALUES (1, ${pushupId}, 'reps', 350, ${now}, 0);
     `);
 
-    // The muscle balance is memoized for 5 s, and a whole session lands inside that window.
-    // This is why saveSession() clears the memos before its "after" snapshot: without it the
-    // victory screen re-reads the pre-session volumes and reports no growth at all.
-    expect(await forgeLevel()).toBe(0);
-
-    clearShortLivedQueries();
+    // The volumes used to come from the 5 s muscle-balance memo, so saveSession()'s "after"
+    // snapshot replayed the pre-session numbers unless the memos were dropped first. The
+    // lifetime sum is its own unmemoized query now: nothing may stand between a set and its forge.
     expect(await forgeLevel()).toBe(3);
+  });
+
+  test("lifetime volume per muscle matches the balance card's, reps and seconds alike", async () => {
+    const { getVillageBuildings } = require("../db/village") as typeof import("../db/village");
+    const { getMuscleBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+    const now = Math.floor(Date.now() / 1000);
+    const idOf = (name: string) =>
+      (t.sqlite.prepare("SELECT id FROM exercises WHERE enName = ?").get(name) as { id: number })
+        .id;
+    // A multi-muscle rep movement, a timed hold, a leg movement, and a walk that must count zero.
+    const sets: [string, "reps" | "time", number][] = [
+      ["Push-ups", "reps", 42],
+      ["Plank", "time", 61],
+      ["Plank", "time", 1],
+      ["Squat", "reps", 77],
+      ["Warden's Walk", "time", 1800],
+    ];
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now - 86400 * 400});
+      INSERT INTO completed_sessions (id, performedAt) VALUES (2, ${now});
+    `);
+    sets.forEach(([name, type, value], i) => {
+      t.sqlite
+        .prepare(
+          `INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+        )
+        .run((i % 2) + 1, idOf(name), type, value, now, i);
+    });
+
+    const balance = await getMuscleBalance("all");
+    const buildings = await getVillageBuildings();
+    const muscleBuildings = buildings.filter((b) => b.driver === "muscle");
+
+    // Enough muscles to mean something: the sets above reach at least four of them.
+    expect(balance.muscles.filter((m) => m.volume > 0).length).toBeGreaterThanOrEqual(4);
+    expect(muscleBuildings.length).toBeGreaterThanOrEqual(4);
+    for (const b of muscleBuildings) {
+      const expected = balance.muscles.find((m) => m.muscle === b.relatedMuscle)?.volume;
+      expect({ code: b.code, volume: b.metricValue }).toEqual({ code: b.code, volume: expected });
+    }
   });
 
   test("diffVillageGrowth only returns buildings whose level rose", () => {

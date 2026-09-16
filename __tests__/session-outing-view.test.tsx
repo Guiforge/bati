@@ -242,7 +242,8 @@ describe("a plain hold, which still has a duration to count", () => {
     expect(screen.getByText("0:03")).toBeTruthy();
     // The caption names the target rather than the unit: the number counts down to it, and
     // "Seconds" left "0:03" as readable as an elapsed count. See docs/design/audits/2026-09-10.md.
-    expect(screen.getByText(/^left of \d+s$/)).toBeTruthy();
+    // Seconds under a minute, a clock from 60 s (`formatTarget`).
+    expect(screen.getByText(/^left of (\d+s|\d+:\d{2})$/)).toBeTruthy();
     expect(screen.getByText("Keep going! Timer continues after target.")).toBeTruthy();
     expect(screen.getByText("Last time")).toBeTruthy();
 

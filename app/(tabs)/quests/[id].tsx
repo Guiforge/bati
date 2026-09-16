@@ -53,13 +53,22 @@ import { formatCount } from "@/db/targets";
 import { outingXpPerMinute } from "@/db/xp";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
+import { keepIfSame } from "@/src/sameContent";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
+/**
+ * The quest on screen, and the level it was built at.
+ *
+ * The level rides with it because the two must be read together: `config.level` flips the instant
+ * a chip is tapped, the quest at that level arrives later, and pricing one against the other
+ * showed a number that belonged to no session. A hero tapping Hard on Chop Wood watched "+126 XP"
+ * for about 270 ms before "+104" (device audit 2026-09-15, §2.5).
+ */
 type LoadState =
-  | { status: "loading"; quest: Quest | null }
-  | { status: "ready"; quest: Quest }
-  | { status: "error"; quest: Quest | null; message: string };
+  | { status: "loading"; quest: Quest | null; questLevel: Difficulty }
+  | { status: "ready"; quest: Quest; questLevel: Difficulty }
+  | { status: "error"; quest: Quest | null; questLevel: Difficulty; message: string };
 
 /** No path means no cover — the header simply does not render. Every other form, bundled key or
  *  a hero's `data:` photo, `getQuestAsset` resolves. */
@@ -204,8 +213,19 @@ export default function QuestDetails() {
   const level = config.level;
   const [state, setState] = useState<LoadState>(() => {
     const cached = questId != null ? getCached<Quest>(`quest:${questId}:${initialLevel}`) : null;
-    return cached ? { status: "ready", quest: cached } : { status: "loading", quest: null };
+    return cached
+      ? { status: "ready", quest: cached, questLevel: initialLevel }
+      : { status: "loading", quest: null, questLevel: initialLevel };
   });
+  /**
+   * Whether the hero's saved config has been read once.
+   *
+   * The quest load waits for it. Without the wait the two focus effects raced: the quest was
+   * fetched at medium, the whole screen rendered, the saved level arrived, and everything was
+   * fetched and rendered again. On a quest saved at hard that was two `getQuestById` and two full
+   * renders of a 900-line screen for one open.
+   */
+  const [configRead, setConfigRead] = useState(false);
   /**
    * Every slot is an outing, so the screen is presenting a way out rather than a workout.
    *
@@ -258,7 +278,9 @@ export default function QuestDetails() {
       // renders of the whole quest before the chip even lit.
       const cached = getCached<Quest>(`quest:${id}:${nextLevel}`);
       setState((s) =>
-        cached ? { status: "ready", quest: cached } : { status: "loading", quest: s.quest },
+        cached
+          ? { status: "ready", quest: cached, questLevel: nextLevel }
+          : { status: "loading", quest: s.quest, questLevel: s.questLevel },
       );
       // A promise chain rather than `try`: the React Compiler cannot lower a conditional inside
       // one, and skipped this whole screen over it.
@@ -272,6 +294,7 @@ export default function QuestDetails() {
             setState({
               status: "error",
               quest: null,
+              questLevel: nextLevel,
               message: t("quests.not_found", "Quest not found"),
             });
             return;
@@ -279,28 +302,32 @@ export default function QuestDetails() {
           setCatalogue(exercises);
           // null means the question was never answered — "allow everything", as everywhere else.
           setOwned(ownedList === null ? null : new Set(ownedList));
-          setState({ status: "ready", quest });
+          setState({ status: "ready", quest, questLevel: nextLevel });
         })
         .catch((e: unknown) => {
           reportError("quest.load", e);
           const message = e instanceof Error ? e.message : "Unknown error";
-          setState((s) => ({ status: "error", quest: s.quest, message }));
+          setState((s) => ({ ...s, status: "error", message }));
         });
     },
     [t],
   );
 
   // On focus, not on mount: coming back from the editor must show the edited quest.
+  //
+  // After the saved config, not beside it: the level decides which template is fetched, so
+  // fetching before the answer is fetching the wrong one and doing it all again. It costs the
+  // 0.3 ms of one preference read before the first paint.
   useFocusEffect(
     useCallback(() => {
-      if (!questId) return;
+      if (!questId || !configRead) return;
       // `effectiveLevel`, so an outing saved at hard is fetched at medium. On a cold cache that
       // costs a second read: the first load is what says this is an outing at all, and the effect
       // re-runs once on the answer. A flash of hard targets, then the level a walk actually runs.
       load(questId, effectiveLevel).catch(() => {
         // Error already handled
       });
-    }, [questId, effectiveLevel, load]),
+    }, [questId, configRead, effectiveLevel, load]),
   );
 
   // What the hero last set on this quest. Re-read on focus, not just on mount: editing a quest
@@ -319,12 +346,19 @@ export default function QuestDetails() {
           const next = saved ?? { level: initialLevel };
           const applyRouteLevel = Boolean(params.level) && !routeLevelConsumed.current;
           if (params.level) routeLevelConsumed.current = true;
-          setConfig(applyRouteLevel ? { ...next, level: initialLevel } : next);
+          // Same content, same identity: a refocus with nothing saved handed a fresh
+          // `{ level }` every time, and the whole `derived` pipeline ran again behind it.
+          setConfig((previous) =>
+            keepIfSame(previous, applyRouteLevel ? { ...next, level: initialLevel } : next),
+          );
+          setConfigRead(true);
         })
         .catch((error) => {
           // A missing or corrupt config just means "run the quest as written" — but a corrupt
-          // one silently discards the hero's saved rounds/rest/targets, so report it.
+          // one silently discards the hero's saved rounds/rest/targets, so report it. The quest
+          // still loads: the level it loads at is the route's, or medium.
           reportError("quest.config", error);
+          setConfigRead(true);
         });
 
       return () => {
@@ -443,12 +477,14 @@ export default function QuestDetails() {
   // and re-ran the color/duration/XP pipeline.
   const derived = useMemo(() => {
     if (!state.quest) return null;
-    // The effective level, not the saved one: `applyQuestConfig` reads `config.level` of its own
-    // to retarget a swapped movement, so a level that outranks the config here has to outrank it
-    // in there too — otherwise an outing generated at medium retargets a swap at hard.
+    // The level the loaded quest was *built at*, not the one the chip just flipped to.
+    // `applyQuestConfig` reads `config.level` of its own to retarget a swapped movement, so
+    // anything that outranks the config here has to outrank it in there too — otherwise an outing
+    // generated at medium retargets a swap at hard. Reading `effectiveLevel` here instead priced
+    // medium targets with hard's multiplier for the frame between the tap and the new quest.
     const quest = applyQuestConfig(
       state.quest,
-      { ...config, level: effectiveLevel },
+      { ...config, level: state.questLevel },
       indexExercises(catalogue),
     );
     // A distance goal is estimated from a nominal pace; a duration is its own estimate. Either
@@ -467,10 +503,10 @@ export default function QuestDetails() {
       estimatedSeconds,
       estimate: formatDurationEstimate(estimatedSeconds, language),
       xpReward: isOuting
-        ? estimateOutingXp(quest, effectiveLevel, estimatedSeconds)
-        : estimateQuestXp(quest, effectiveLevel),
+        ? estimateOutingXp(quest, state.questLevel, estimatedSeconds)
+        : estimateQuestXp(quest, state.questLevel),
     };
-  }, [state.quest, config, language, effectiveLevel, isOuting, catalogue]);
+  }, [state.quest, state.questLevel, config, language, isOuting, catalogue]);
 
   // The slot being replaced, and what can go in it. Ranked here rather than inside the sheet:
   // the sheet renders the order it is given, which is what lets the editor and this screen share
@@ -524,9 +560,13 @@ export default function QuestDetails() {
 
     // The body and its error path apart, for the React Compiler: see `load`.
     const begin = async () => {
+      // `state.questLevel`, not `effectiveLevel`: the quest object is at that level, and a
+      // session started with the other one is priced at a level its targets were never generated
+      // for. They differ only while a level change is still in flight.
+      //
       // Awaited on purpose: startSession loads the boss fight and the warm-up preference before it
       // populates the store, and the session screen redirects home if it mounts on an empty one.
-      await startSession(quest, effectiveLevel, {
+      await startSession(quest, state.questLevel, {
         adventureRunStepId: runStepId,
         // Derived here rather than in the store: this screen is the one that just let the hero
         // edit the config, so it is the one that knows what they set out to do. The quick door

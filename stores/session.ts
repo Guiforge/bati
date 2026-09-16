@@ -944,18 +944,22 @@ function openingState(quest: Quest, warmupFirst: boolean) {
 }
 
 /**
- * The warm-up a quest gets if it starts now, or nothing if the hero switched warm-ups off.
+ * Everything a warm-up needs that is about the hero rather than about the quest.
  *
- * `startSession` and the quest screen's preview both call this, so the list a hero reads before
- * starting is the list that plays: same preference, same session count, same kit. The quest
- * screen passes the quest as configured, swaps and all, because that is what `startSession`
- * receives from it.
+ * Read apart from `buildWarmup` because it is the expensive half and the quest cannot move it:
+ * three reads, 16 ms on the five-year audit journal. The quest screen rebuilds its preview
+ * whenever the hero taps a level, and each tap was paying for all three again.
  */
-export async function loadWarmup(quest: WarmupQuest): Promise<WarmupStep[]> {
+export async function loadWarmupContext(): Promise<{
+  /** False when the hero switched warm-ups off: `buildWarmup` is not called at all. */
+  enabled: boolean;
+  totalSessions: number;
+  unavailable: ReadonlySet<string>;
+}> {
   // The warm-up runs first unless the hero switched it off; skipping it is always one tap away,
   // so the preference only exists to save that tap for people who never want it.
-  const warmupEnabled = await preferences.getWarmupEnabled().catch(() => true);
-  if (!warmupEnabled) return [];
+  const enabled = await preferences.getWarmupEnabled().catch(() => true);
+  if (!enabled) return { enabled, totalSessions: 0, unavailable: new Set() };
   // Rotates which movement fills each phase, so the warm-up is not the same four every
   // session. A failed read costs variety, never the warm-up itself.
   const { totalSessions } = await getSessionAggregates().catch(() => ({ totalSessions: 0 }));
@@ -963,6 +967,20 @@ export async function loadWarmup(quest: WarmupQuest): Promise<WarmupStep[]> {
   // unfiltered warm-up is the old behaviour, and no warm-up is a worse answer than a scapular
   // pull-up someone skips.
   const unavailable = await unavailableMovements().catch(() => new Set<string>());
+  return { enabled, totalSessions, unavailable };
+}
+
+/**
+ * The warm-up a quest gets if it starts now, or nothing if the hero switched warm-ups off.
+ *
+ * `startSession` and the quest screen's preview both end up here, so the list a hero reads before
+ * starting is the list that plays: same preference, same session count, same kit. The quest
+ * screen passes the quest as configured, swaps and all, because that is what `startSession`
+ * receives from it, and holds `loadWarmupContext` apart so a level tap costs no read.
+ */
+export async function loadWarmup(quest: WarmupQuest): Promise<WarmupStep[]> {
+  const { enabled, totalSessions, unavailable } = await loadWarmupContext();
+  if (!enabled) return [];
   return buildWarmup(quest, totalSessions, unavailable);
 }
 

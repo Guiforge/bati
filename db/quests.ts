@@ -574,6 +574,87 @@ type SlotRow = {
 };
 
 /**
+ * What the hero's own journal changes about a slot: the rung they are actually working, and what
+ * they have already done on the movement standing in it.
+ *
+ * `getQuestById` reads one for the quest it loads. A gallery reads one for every movement on
+ * screen (`loadSlotJournal`), which is the whole reason this is a value rather than two awaits
+ * inside the resolver: pricing 37 cards the honest way is two queries, not 37 joins and 74
+ * journal reads. Empty is a valid value and means "the quest as written".
+ */
+export type SlotJournal = {
+  /** Written movement id -> the rung the hero stands on (`currentRungFor`). */
+  served: ReadonlyMap<number, number>;
+  /** `ghostKey` -> what they did last time, which is also where a hold is prescribed from. */
+  history: ReadonlyMap<string, ExerciseGhost>;
+};
+
+/** No ladder and no records: what a slot resolves to before anything is known about the hero. */
+export const QUEST_AS_WRITTEN: SlotJournal = { served: new Map(), history: new Map() };
+
+/** Both reads at once, for every movement a set of quests can put on screen. */
+export async function loadSlotJournal(exerciseIds: number[]): Promise<SlotJournal> {
+  const served = await currentRungFor(exerciseIds);
+  const history = await getExerciseHistory([...new Set([...exerciseIds, ...served.values()])]);
+  return { served, history };
+}
+
+/**
+ * The movement a slot actually runs, and the target it asks this hero for.
+ *
+ * The one answer for both readers: `getQuestById`, which builds the session, and `db/preview.ts`,
+ * which prices the card that advertises it. It was two, and the two disagreed on 27 of the 37
+ * seeded quests — a card saying "up to +207 XP" over a screen saying "+200", and "+63 per step"
+ * over "+94" on an adventure poster (verification 2026-09-15, B4). The card read the template at
+ * the hero's level and stopped there; the screen also served an easier rung and prescribed a hold
+ * off the hero's own record.
+ */
+export function resolveSlot(input: {
+  base: { type: QuestTargetType; min: number; max: number };
+  /** The movement the template names. Returned as-is unless a rung below it is served instead. */
+  written: Exercise;
+  userLevel: UserLevel;
+  journal: SlotJournal;
+  /** Where a served rung is looked up. Only ever read for an id `journal.served` produced. */
+  catalogue: Readonly<Record<number, Exercise>>;
+  /**
+   * Hero-authored quests run exactly as written: substituting there would be correcting
+   * someone's own authoring, which is not this function's business.
+   */
+  substitute: boolean;
+}): { exercise: Exercise; target: Target; ghost: ExerciseGhost | undefined } {
+  const { base, written, userLevel, journal, catalogue, substitute } = input;
+
+  // The movement this slot will actually run. Identical to the written one unless the hero is
+  // still working a rung below it.
+  const servedId = substitute ? (journal.served.get(written.id) ?? written.id) : written.id;
+  const exercise = (servedId === written.id ? written : catalogue[servedId]) ?? written;
+
+  // A served rung runs in *its* unit, not the slot's: Squat's easier rung is Wall Sit, a hold.
+  // Never for an outing, though: `generateTarget` treats a supplied best as a hold to work at a
+  // fraction of, and a walk is not one — twenty minutes on foot does not consume the way a
+  // maximal isometric does, so a hero's longest previous outing must not prescribe a fraction of
+  // itself for the next one.
+  const outing = exercise.style === NON_REP_STYLE;
+  const bestHold = outing ? undefined : journal.history.get(ghostKey(exercise.id, "time"))?.best;
+  // A walk is neither easy nor hard, it is a walk, so the hero's level does not scale it. The
+  // level scales a *prescription* — how much of a band you are asked for — and an outing's band
+  // is a suggested duration whose XP is paid on the ground actually covered, at a rate the level
+  // does not touch either (`LOCOMOTION_RATE`, `db/xp.ts`). Scaling it made the same walk read as
+  // 34, 45 or 56 minutes for three heroes, and paid all three the same for the same hour.
+  const level = outing ? Difficulty.Medium : userLevel;
+  const target = retargetForMovement(generateTarget(base, level, bestHold), exercise, level);
+
+  return {
+    exercise,
+    target,
+    // In the target's own unit: a movement trained both ways has two records, and showing the
+    // hold next to a rep target would be a number the hero cannot act on.
+    ghost: journal.history.get(ghostKey(exercise.id, target.type)),
+  };
+}
+
+/**
  * One slot of a quest, resolved for this hero.
  *
  * Split out of `getQuestById` so the substitution (issue #33) does not push one function past
@@ -584,72 +665,53 @@ function buildSlot(
   r: SlotRow,
   ctx: {
     userLevel: UserLevel;
-    servedId: (exerciseId: number) => number;
-    catalogue: Map<number, Exercise>;
-    history: Map<string, ExerciseGhost>;
+    journal: SlotJournal;
+    catalogue: Readonly<Record<number, Exercise>>;
+    substitute: boolean;
   },
 ): QuestExercise {
-  const base = { type: r.targetType, min: r.targetMin, max: r.targetMax };
+  const written: Exercise = {
+    id: r.exId,
+    enName: r.exEnName,
+    frName: r.exFrName,
+    deName: r.exDeName,
+    esName: r.exEsName,
+    enDescription: r.exEnDescription,
+    frDescription: r.exFrDescription,
+    deDescription: r.exDeDescription,
+    esDescription: r.exEsDescription,
+    imagePath: r.exImagePath,
+    creator: r.exCreator,
+    difficulty: r.exDifficulty,
+    equipment: r.exEquipment,
+    style: r.exStyle ?? "strength",
+    secondsPerRep: r.exSecondsPerRep,
+    pattern: r.exPattern ?? null,
+    measure: r.exMeasure,
+    locomotion: r.exLocomotion,
+    prerequisiteExerciseId: r.exPrerequisiteId,
+    retiredAt: r.exRetiredAt,
+    muscles: [],
+  };
 
-  // The movement this slot will actually run. Identical to the written one unless the hero is
-  // still working a rung below it — and never for a quest they authored themselves.
-  const served = ctx.catalogue.get(ctx.servedId(r.exId));
-  const isSubstituted = served !== undefined && served.id !== r.exId;
-  const effectiveId = ctx.servedId(r.exId);
-
-  // A served rung runs in *its* unit, not the slot's: Squat's easier rung is Wall Sit, a hold.
-  // Never for an outing, though: `generateTarget` treats a supplied best as a hold to work at a
-  // fraction of, and a walk is not one — twenty minutes on foot does not consume the way a
-  // maximal isometric does, so a hero's longest previous outing must not prescribe a fraction of
-  // itself for the next one.
-  const bestHold =
-    served?.style === NON_REP_STYLE
-      ? undefined
-      : ctx.history.get(ghostKey(effectiveId, "time"))?.best;
-  // A walk is neither easy nor hard, it is a walk, so the hero's level does not scale it. The
-  // level scales a *prescription* — how much of a band you are asked for — and an outing's band
-  // is a suggested duration whose XP is paid on the ground actually covered, at a rate the level
-  // does not touch either (`LOCOMOTION_RATE`, `db/xp.ts`). Scaling it made the same walk read as
-  // 34, 45 or 56 minutes for three heroes, and paid all three the same for the same hour.
-  const level = served?.style === NON_REP_STYLE ? Difficulty.Medium : ctx.userLevel;
-  const target = retargetForMovement(
-    generateTarget(base, level, bestHold),
-    served ?? { measure: null },
-    level,
-  );
+  const { exercise, target, ghost } = resolveSlot({
+    base: { type: r.targetType, min: r.targetMin, max: r.targetMax },
+    written,
+    userLevel: ctx.userLevel,
+    journal: ctx.journal,
+    catalogue: ctx.catalogue,
+    substitute: ctx.substitute,
+  });
+  const isSubstituted = exercise.id !== r.exId;
 
   return {
     id: r.qexId,
-    exercise: served ?? {
-      id: r.exId,
-      enName: r.exEnName,
-      frName: r.exFrName,
-      deName: r.exDeName,
-      esName: r.exEsName,
-      enDescription: r.exEnDescription,
-      frDescription: r.exFrDescription,
-      deDescription: r.exDeDescription,
-      esDescription: r.exEsDescription,
-      imagePath: r.exImagePath,
-      creator: r.exCreator,
-      difficulty: r.exDifficulty,
-      equipment: r.exEquipment,
-      style: r.exStyle ?? "strength",
-      secondsPerRep: r.exSecondsPerRep,
-      pattern: r.exPattern ?? null,
-      measure: r.exMeasure,
-      locomotion: r.exLocomotion,
-      prerequisiteExerciseId: r.exPrerequisiteId,
-      retiredAt: r.exRetiredAt,
-      muscles: [],
-    },
+    exercise,
     // The quest's own art is *of the movement the template wrote*; on a substituted slot it
     // would illustrate the wrong exercise. Same call `applyQuestConfig` makes on a swap.
     images: isSubstituted ? [] : safeParseImages(r.imagesJson),
     target,
-    // In the target's own unit: a movement trained both ways has two records, and showing the
-    // hold next to a rep target would be a number the hero cannot act on.
-    ghost: ctx.history.get(ghostKey(effectiveId, target.type)),
+    ghost,
     // What the template asked for, when that is not what runs — the screens owe the hero an
     // explanation and a way back, and nothing else in the object can tell them.
     substitutedFor: isSubstituted
@@ -712,31 +774,25 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   if (!first) return null;
 
   // What the hero is actually working, per slot — a quest that names classical push-ups serves
-  // wall push-ups to someone who has not earned the rungs below (issue #33). Resolved before the
-  // journal read below, because a substituted slot must be priced and ghosted against the movement
-  // it will actually run, not the one the template wrote.
+  // wall push-ups to someone who has not earned the rungs below (issue #33) — and what they did
+  // last time on it, which is also where a hold is prescribed from (60-75% of their maximum).
+  // One journal read answers both, and nothing is fetched again mid-session.
   //
-  // Hero-authored quests are left exactly as written: substituting there would be correcting
-  // someone's own authoring, which is not this function's business.
-  const substitutes = isUserQuest(first)
-    ? new Map<number, number>()
-    : await currentRungFor(rows.map((r) => r.exId));
-  const servedId = (exerciseId: number): number => substitutes.get(exerciseId) ?? exerciseId;
-
-  // Two things come out of the journal here, in one grouped query: the longest hold, because a
-  // hold is prescribed from the hero's own maximum (60-75% of it), and the ghost every slot shows
-  // — what they did last time on this movement. Both are per (movement, unit), so one read
-  // answers both and nothing is fetched again mid-session.
-  const history = await getExerciseHistory([
-    ...new Set(rows.flatMap((r) => [r.exId, servedId(r.exId)])),
-  ]);
+  // A hero-authored quest skips the ladder read: nothing may be substituted there, so the only
+  // thing left to ask the journal for is the ghost.
+  const substitute = !isUserQuest(first);
+  const ids = rows.map((r) => r.exId);
+  const journal = substitute
+    ? await loadSlotJournal(ids)
+    : { served: QUEST_AS_WRITTEN.served, history: await getExerciseHistory([...new Set(ids)]) };
 
   // A substituted slot needs the whole movement, not the four fields the ladder carries: the
   // session prices it by `difficulty` and `secondsPerRep`, and the village counts its muscles.
   // `listExercises()` is promise-cached, so this is free after the first read anywhere.
-  const catalogue = new Map<number, Exercise>(
-    substitutes.size > 0 ? (await listExercises()).map((e) => [e.id, e]) : [],
-  );
+  const substituted = ids.some((id) => (journal.served.get(id) ?? id) !== id);
+  const catalogue: Record<number, Exercise> = substituted
+    ? Object.fromEntries((await listExercises()).map((e) => [e.id, e] as const))
+    : {};
 
   const quest: Quest = {
     ...questHead(first),
@@ -748,7 +804,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   for (const r of rows) {
     let qex = byQuestExercise.get(r.qexId);
     if (!qex) {
-      qex = buildSlot(r, { userLevel, servedId, catalogue, history });
+      qex = buildSlot(r, { userLevel, journal, catalogue, substitute });
       byQuestExercise.set(r.qexId, qex);
       quest.exercises.push(qex);
     }

@@ -25,17 +25,17 @@ import {
   type Adventure,
   adventureOrder,
   adventureWeeks,
-  estimateQuestTemplateSeconds,
-  estimateQuestTemplateXp,
   getAnyActiveAdventureRun,
   getFinishedRunCountsByAdventure,
   listAdventures,
   listExercises,
+  previewQuests,
+  type QuestPreview,
 } from "@/db";
 import { threatRank } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
-import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
+import { getAllQuestConfigs } from "@/db/questConfig";
 import { formatCount } from "@/db/targets";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -47,15 +47,20 @@ function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
   return path.startsWith("http") ? { uri: path } : getAdventureAsset(path);
 }
 
+/** The posters' data. The cover quests' chips are priced in one read: see `previewQuests`. */
+type GalleryData = {
+  adventures: Adventure[];
+  exercisesById: Record<number, Exercise>;
+  previews: ReadonlyMap<number, QuestPreview>;
+};
+
 type LoadState =
-  | { status: "loading"; adventures: Adventure[]; exercisesById: Record<number, Exercise> }
-  | { status: "ready"; adventures: Adventure[]; exercisesById: Record<number, Exercise> }
-  | {
-      status: "error";
-      adventures: Adventure[];
-      exercisesById: Record<number, Exercise>;
-      message: string;
-    };
+  | ({ status: "loading" } & GalleryData)
+  | ({ status: "ready" } & GalleryData)
+  | ({ status: "error"; message: string } & GalleryData);
+
+/** A poster whose cover quest was not in the last pricing draws its chips off zero, not a guess. */
+const EMPTY_PREVIEW: QuestPreview = { seconds: 0, xp: 0 };
 
 const ANDROID_MIN_BOTTOM_INSET = 24;
 
@@ -95,20 +100,12 @@ function buildAdventureRow(
   finishedCount: number,
   language: AppLanguage,
   t: TFunction,
-  config: QuestConfig | null,
+  preview: QuestPreview,
 ): AdventureRow {
   const q = a.coverQuest;
-  // Same numbers as the quest detail/gallery: the saved level and structure overrides feed
-  // the estimate, priced off the cover quest — the one step the poster's XP chip advertises.
-  const level = config?.level ?? "medium";
-  const previewInput = {
-    template: { ...q, ...resolveTemplateOverrides(q, config) },
-    exercisesById,
-    userLevel: level,
-    config,
-  };
-  const durationSeconds = estimateQuestTemplateSeconds(previewInput);
-  const xp = estimateQuestTemplateXp(previewInput);
+  // Same numbers as the quest detail and the quest gallery, off the same saved config, served
+  // rung and records — priced off the cover quest, the one step the poster's XP chip advertises.
+  const { seconds: durationSeconds, xp } = preview;
   const weeks = adventureWeeks(a.stepsCount);
 
   return {
@@ -384,19 +381,14 @@ export default function AdventuresGallery() {
     status: "loading",
     adventures: [],
     exercisesById: {},
+    previews: new Map(),
   });
   const [activeProgress, setActiveProgress] = useState<AdventureProgress | null>(null);
   const [finishedCounts, setFinishedCounts] = useState<Map<number, number>>(new Map());
-  // One bulk read alongside the templates — never per card.
-  const [configs, setConfigs] = useState<Map<number, QuestConfig>>(new Map());
 
   const load = useCallback(async () => {
     // Only show the loading state on first load — on focus refetches we already have data.
-    setState((s) =>
-      s.adventures.length > 0
-        ? s
-        : { status: "loading", adventures: s.adventures, exercisesById: s.exercisesById },
-    );
+    setState((s) => (s.adventures.length > 0 ? s : { ...s, status: "loading" }));
 
     // A promise chain rather than `try`: the React Compiler cannot lower a `?.` or a ternary
     // inside one, and skipped this whole screen over it.
@@ -419,19 +411,26 @@ export default function AdventuresGallery() {
         // Same content, same identity: a focus with nothing new re-renders no poster.
         setActiveProgress((previous) => keepIfSame(previous, progress));
         setFinishedCounts((previous) => keepIfSame(previous, finished));
-        setConfigs((previous) => keepIfSame(previous, questConfigs));
         const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
-        setState({ status: "ready", adventures, exercisesById });
+        // The cover quests, priced the way each one's own detail screen will price it, in one
+        // read for the whole gallery: see `previewQuests`.
+        return previewQuests(
+          adventures.map((a) => a.coverQuest),
+          exercisesById,
+          questConfigs,
+        ).then((previews) => {
+          setState((s) => ({
+            status: "ready",
+            adventures,
+            exercisesById,
+            previews: keepIfSame(s.previews, previews),
+          }));
+        });
       })
       .catch((e: unknown) => {
         reportError("adventures.gallery", e);
         const message = e instanceof Error ? e.message : "Unknown error";
-        setState((s) => ({
-          status: "error",
-          adventures: s.adventures,
-          exercisesById: s.exercisesById,
-          message,
-        }));
+        setState((s) => ({ ...s, status: "error", message }));
       });
   }, []);
 
@@ -447,6 +446,7 @@ export default function AdventuresGallery() {
 
   const adventures = state.adventures;
   const exercisesById = state.exercisesById;
+  const previews = state.previews;
 
   const rows = useMemo(
     () =>
@@ -459,10 +459,10 @@ export default function AdventuresGallery() {
           finishedCounts.get(a.id) ?? 0,
           language,
           t,
-          configs.get(a.coverQuestId) ?? null,
+          previews.get(a.coverQuestId) ?? EMPTY_PREVIEW,
         ),
       ),
-    [adventures, exercisesById, finishedCounts, language, t, configs, activeProgress],
+    [adventures, exercisesById, finishedCounts, language, t, previews, activeProgress],
   );
 
   const title = t("adventures.gallery_title", "Adventures");

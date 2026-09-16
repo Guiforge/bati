@@ -31,12 +31,12 @@ import {
 } from "@/constants/questFilters";
 import { rawColors } from "@/constants/rawColors";
 import {
-  estimateQuestTemplateSeconds,
-  estimateQuestTemplateXp,
   formatDurationEstimate,
   isUserQuest,
   listExercises,
   listQuestTemplates,
+  previewQuests,
+  type QuestPreview,
   trainingFocus,
 } from "@/db";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
@@ -44,7 +44,7 @@ import type { Exercise } from "@/db/exercises";
 import { hasOutdoorMovement, isOutingQuest } from "@/db/expeditions";
 import { getFavouriteQuestIds, toggleFavouriteQuest } from "@/db/favourites";
 import { isMuscleCode, MUSCLE_LABELS } from "@/db/muscles";
-import { getAllQuestConfigs, type QuestConfig, resolveTemplateOverrides } from "@/db/questConfig";
+import { getAllQuestConfigs } from "@/db/questConfig";
 import { type QuestTemplate, questTrainingLevel } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 import { formatCount } from "@/db/targets";
@@ -53,15 +53,24 @@ import { reportError } from "@/src/reportError";
 import { keepIfSame } from "@/src/sameContent";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
+/**
+ * Everything a card is drawn from. `previews` rides with the quests rather than in its own state
+ * because a card priced off one load and a list built from another is exactly the disagreement
+ * `previewQuests` exists to close.
+ */
+type GalleryData = {
+  quests: QuestTemplate[];
+  exercisesById: Record<number, Exercise>;
+  previews: ReadonlyMap<number, QuestPreview>;
+};
+
+/** A card whose quest was not in the last pricing: it draws its chips off zero rather than lying. */
+const EMPTY_PREVIEW: QuestPreview = { seconds: 0, xp: 0 };
+
 type LoadState =
-  | { status: "loading"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
-  | { status: "ready"; quests: QuestTemplate[]; exercisesById: Record<number, Exercise> }
-  | {
-      status: "error";
-      quests: QuestTemplate[];
-      exercisesById: Record<number, Exercise>;
-      message: string;
-    };
+  | ({ status: "loading" } & GalleryData)
+  | ({ status: "ready" } & GalleryData)
+  | ({ status: "error"; message: string } & GalleryData);
 
 function questEmoji(rounds: number, exerciseCount: number) {
   if (rounds >= 4) return "🧨";
@@ -133,7 +142,7 @@ function buildQuestMeta(
   exercisesById: Record<number, Exercise>,
   language: AppLanguage,
   t: TFunction,
-  config: QuestConfig | null,
+  preview: QuestPreview,
   favourite: boolean,
 ): QuestMeta {
   const equipment = new Set<EquipmentCode>();
@@ -145,16 +154,6 @@ function buildQuestMeta(
   // there, where Home's band asks for quests that are nothing else.
   const outside = hasOutdoorMovement(q, exercisesById);
 
-  // The same numbers as the detail screen, off the same saved config: the level and the
-  // structure here, the per-slot targets and swaps inside `resolveTemplateExercises`. Left out,
-  // the card advertised one duration and one reward and the screen behind it another.
-  const level = config?.level ?? "medium";
-  const previewInput = {
-    template: { ...q, ...resolveTemplateOverrides(q, config) },
-    exercisesById,
-    userLevel: level,
-    config,
-  };
   // The level this quest is *written for*, which is not the level the hero will run it at.
   //
   // Onboarding asks "what's your level?" and says it is so the app can suggest the right
@@ -165,8 +164,9 @@ function buildQuestMeta(
   const writtenFor = questTrainingLevel(
     q.exercises.map((qex) => exercisesById[qex.exerciseId]?.difficulty ?? "medium"),
   );
-  const durationSeconds = estimateQuestTemplateSeconds(previewInput);
-  const xp = estimateQuestTemplateXp(previewInput);
+  // The same two numbers the detail screen will show, off the same saved config, the same
+  // served rung and the same records: `previewQuests` priced every card in one read.
+  const { seconds: durationSeconds, xp } = preview;
   const estimate = formatDurationEstimate(durationSeconds, language);
   // Ranked, not every muscle any exercise brushes: a five-exercise quest touches five groups,
   // and the two it touches once say nothing — "back" matched 28 of 34 seed quests that way,
@@ -459,12 +459,11 @@ export default function QuestsGallery() {
     status: "loading",
     quests: [],
     exercisesById: {},
+    previews: new Map(),
   });
 
   const [filters, setFilters] = useState<QuestFilters>(NO_FILTERS);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  // One bulk read alongside the templates — never per card, the list renders ~34 of them.
-  const [configs, setConfigs] = useState<Map<number, QuestConfig>>(new Map());
   const [favourites, setFavourites] = useState<ReadonlySet<number>>(new Set<number>());
 
   // Handlers below are plain closures on purpose: the React Compiler
@@ -509,11 +508,7 @@ export default function QuestsGallery() {
   const load = useCallback(async () => {
     // Only show the loading state on first load — on focus refetches we already have data
     // and flipping status would re-render the whole gallery for nothing.
-    setState((s) =>
-      s.quests.length > 0
-        ? s
-        : { status: "loading", quests: s.quests, exercisesById: s.exercisesById },
-    );
+    setState((s) => (s.quests.length > 0 ? s : { ...s, status: "loading" }));
     try {
       const [quests, exercises, questConfigs, pinned] = await Promise.all([
         listQuestTemplates(),
@@ -521,24 +516,26 @@ export default function QuestsGallery() {
         getAllQuestConfigs(),
         getFavouriteQuestIds(),
       ]);
-      setConfigs((previous) => keepIfSame(previous, questConfigs));
+      const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
+      // Two queries for all 37 cards rather than one quest load each: see `previewQuests`. It is
+      // read here rather than inside `buildQuestMeta` because the saved configs decide the level,
+      // and a card priced at a level the screen behind it will not use is the bug this replaced.
+      const previews = await previewQuests(quests, exercisesById, questConfigs);
       setFavourites((previous) => keepIfSame(previous, pinned));
       setState((s) => {
         // listQuestTemplates/listExercises are promise-cached: a warm cache returns the same
-        // array identity. Bail so a tab refocus doesn't invalidate questMeta → filtered → list.
-        if (s.status === "ready" && s.quests === quests) return s;
-        const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
-        return { status: "ready", quests, exercisesById };
+        // array identity. The previews are built fresh every time, so they are compared by
+        // content — a tab refocus with nothing new must not invalidate questMeta → filtered → list.
+        if (s.status === "ready" && s.quests === quests) {
+          const kept = keepIfSame(s.previews, previews);
+          return kept === s.previews ? s : { ...s, previews: kept };
+        }
+        return { status: "ready", quests, exercisesById, previews };
       });
     } catch (e) {
       reportError("quests.gallery", e);
       const message = e instanceof Error ? e.message : "Unknown error";
-      setState((s) => ({
-        status: "error",
-        quests: s.quests,
-        exercisesById: s.exercisesById,
-        message,
-      }));
+      setState((s) => ({ ...s, status: "error", message }));
     }
   }, []);
 
@@ -553,6 +550,7 @@ export default function QuestsGallery() {
 
   const quests = state.quests;
   const exercisesById = state.exercisesById;
+  const previews = state.previews;
 
   // Pinned quests lead, then the hero's own, then seed order. The rule itself lives in
   // `constants/questFilters` beside `matchesFilters`, where it is pure and tested.
@@ -564,11 +562,11 @@ export default function QuestsGallery() {
           exercisesById,
           language,
           t,
-          configs.get(q.id) ?? null,
+          previews.get(q.id) ?? EMPTY_PREVIEW,
           favourites.has(q.id),
         ),
       ),
-    [exercisesById, quests, language, t, configs, favourites],
+    [exercisesById, quests, language, t, previews, favourites],
   );
 
   const availableMuscles = useMemo(() => {

@@ -204,7 +204,7 @@
     "jest-environment-node": "30.4.1",
     "jest-environment-jsdom": "30.4.1"
   },
-  "version": "2.5.0",
+  "version": "2.5.1",
   "license": "MIT",
   "reanimated": {
     "staticFeatureFlags": {

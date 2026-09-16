@@ -444,6 +444,8 @@
     "next_step_earned": "Du hast sie dir verdient. Probier sie aus.",
     "next_step_progress_one": "Erreiche dein Ziel noch {{count}} Einheit in Folge, um sie freizuschalten.",
     "next_step_progress_other": "Erreiche dein Ziel noch {{count}} Einheiten in Folge, um sie freizuschalten.",
+    "next_step_also": "{{name}} führt auch zu {{names}}.",
+    "record_label": "Rekord",
     "catalogue_title": "Übungen",
     "count_one": "{{count}} Übung",
     "count_other": "{{count}} Übungen",

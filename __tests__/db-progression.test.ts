@@ -79,6 +79,26 @@ describe("db/exercises — variation ladder", () => {
     expect(await exercisesApi().getNextProgression(idOf("Handstand Push-Up"))).toBeNull();
   });
 
+  test("a rung that forks reports every movement it opens, not just the first", async () => {
+    // Push-ups opens Dip, Pike Push-Up and Diamond Push-Up. The page announced Dip alone.
+    const step = await exercisesApi().getNextProgression(idOf("Push-ups"));
+
+    expect([step?.next.enName, ...(step?.alsoNext ?? []).map((m) => m.enName)].sort()).toEqual([
+      "Diamond Push-Up",
+      "Dip",
+      "Pike Push-Up",
+    ]);
+  });
+
+  test("standing on any branch of a fork earns the rung, not only on the first", async () => {
+    // A hero doing Diamond Push-Ups was still told to earn Dip: `above` seeded itself with the
+    // first successor alone, so the other branches were invisible to it.
+    const pushUps = idOf("Push-ups");
+    for (let i = 0; i < 3; i++) logSet(idOf("Diamond Push-Up"), 12, 12, i);
+
+    expect((await exercisesApi().getNextProgression(pushUps))?.isEarned).toBe(true);
+  });
+
   test("meeting the target three sessions running earns the next step", async () => {
     const wallPushUp = idOf("Wall Push-Up");
     for (let i = 0; i < 3; i++) logSet(wallPushUp, 12, 12);

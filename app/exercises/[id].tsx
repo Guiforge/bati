@@ -247,6 +247,18 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
                   defaultValue: `Hit your target ${remaining} more sessions in a row to earn it.`,
                 })}
           </Paragraph>
+
+          {/* A fork gets named, not illustrated: Push-ups opens three movements and the card
+              announced Dip alone. Names on one line say the whole truth for the price of a line;
+              three more 80 px poses would make the page a list of what the hero is not doing. */}
+          {progression.alsoNext.length === 0 ? null : (
+            <Paragraph color="$textSecondary" size="$2">
+              {t("exercises.next_step_also", {
+                name: localizedName(progression.from, language),
+                names: progression.alsoNext.map((m) => localizedName(m, language)).join(", "),
+              })}
+            </Paragraph>
+          )}
         </YStack>
 
         <ChevronRight size={20} color="$textSecondary" />

@@ -188,10 +188,46 @@ describe("the path on the exercise screen", () => {
       metTarget: 1,
       required: 3,
       isEarned: false,
+      alsoNext: [],
     });
     await mountScreen();
 
     expect(screen.getByText("Hit your target 2 more sessions in a row to earn it.")).toBeTruthy();
+  });
+});
+
+describe("a rung that forks", () => {
+  beforeEach(() => mockGetChainTo.mockResolvedValue(null));
+
+  it("names the movements the card has no room to illustrate", async () => {
+    // Push-ups opens Dip, Pike Push-Up and Diamond Push-Up; the card announced Dip and stopped.
+    mockGetNextProgression.mockResolvedValue({
+      from: movement(30, "Push-ups"),
+      next: movement(40, "Dip"),
+      metTarget: 0,
+      required: 3,
+      isEarned: false,
+      alsoNext: [movement(50, "Pike Push-Up"), movement(60, "Diamond Push-Up")],
+    });
+    await mountScreen();
+
+    // The page's own movement is the subject, not the card's headline: "Dip also leads to…" would
+    // be a different, and false, sentence.
+    expect(screen.getByText("Push-ups also leads to Pike Push-Up, Diamond Push-Up.")).toBeTruthy();
+  });
+
+  it("says nothing extra when the rung leads to one movement", async () => {
+    mockGetNextProgression.mockResolvedValue({
+      from: movement(30, "Wall Push-Up"),
+      next: movement(40, "Knee Push-Up"),
+      metTarget: 0,
+      required: 3,
+      isEarned: false,
+      alsoNext: [],
+    });
+    await mountScreen();
+
+    expect(screen.queryByText(/also leads to/i)).toBeNull();
   });
 });
 

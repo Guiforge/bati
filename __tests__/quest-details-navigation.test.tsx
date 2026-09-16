@@ -48,7 +48,8 @@ jest.mock("@/stores/session", () => ({
   useSessionStore: (select: (s: { startSession: unknown }) => unknown) =>
     select({ startSession: jest.fn() }),
   // The warm-up preview asks what will play; nothing, here, so it stays out of the way.
-  loadWarmup: () => Promise.resolve([]),
+  loadWarmupContext: () =>
+    Promise.resolve({ enabled: false, totalSessions: 0, unavailable: new Set<string>() }),
 }));
 
 jest.mock("@/components/common/Toast", () => ({

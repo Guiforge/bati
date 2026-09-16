@@ -47,8 +47,10 @@ jest.mock("@/stores/settings", () => ({
 jest.mock("@/stores/session", () => ({
   useSessionStore: (select: (s: { startSession: unknown }) => unknown) =>
     select({ startSession: mockStartSession }),
-  // An outing has no warm-up, which is what `loadWarmup` answers for one.
-  loadWarmup: () => Promise.resolve([]),
+  // An outing has no warm-up. The preview reads the hero's half of one and builds the list
+  // itself, so switching warm-ups off here is what answers for the whole component.
+  loadWarmupContext: () =>
+    Promise.resolve({ enabled: false, totalSessions: 0, unavailable: new Set<string>() }),
 }));
 
 const mockParams: { id: string; level?: string } = { id: "5" };

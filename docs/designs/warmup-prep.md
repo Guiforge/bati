@@ -51,8 +51,11 @@ L'app te dit tout **avant** que le chrono tourne, jamais pendant.
 
 ## Le parcours
 
-1. **Page de quête** : section repliable « Échauffement · 6 mouvements · 4 min ». `loadWarmup` est
-   la fonction qu'appelle `startSession`, sur la quête configurée : c'est la liste qui jouera.
+1. **Page de quête** : section repliable « Échauffement · 6 mouvements · 4 min ». La liste affichée
+   est celle qui jouera : `startSession` passe par `loadWarmup`, l'aperçu lit `loadWarmupContext`
+   une fois au montage puis appelle le même `buildWarmup` à chaque rendu, sur la quête configurée.
+   Les deux moitiés sont séparées parce que la moitié coûteuse (préférence, compteur de séances,
+   matériel manquant) ne dépend pas de la quête : l'aperçu la relisait à chaque tap de niveau.
 2. **Démarrer** : attente du mouvement 1/6 (illustration, nom, description complète, 10 s ou GO).
 3. **Mouvement**, 30 s. Pour les mouvements d'un côté, « Change de côté » à mi-temps.
 4. **Attente du suivant**, et ainsi de suite. Suivant et Précédent mènent à une attente, jamais

@@ -44,7 +44,9 @@ export {
   unretireUserExercise,
 } from "./exercises";
 export { preferences, type TrainingLevel } from "./preferences";
-export { estimateQuestTemplateSeconds, estimateQuestTemplateXp } from "./preview";
+// One entry point for a gallery, deliberately: it reads the hero's ladder and records once for
+// every card, which is what the per-card estimates behind it cannot do on their own.
+export { previewQuest, previewQuests, type QuestPreview } from "./preview";
 export type { QuestConfig } from "./questConfig";
 export {
   applyQuestConfig,

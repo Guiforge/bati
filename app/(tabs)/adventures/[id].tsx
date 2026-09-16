@@ -27,19 +27,19 @@ import type {
 import {
   adventureWeeks,
   Difficulty,
-  estimateQuestTemplateSeconds,
-  estimateQuestTemplateXp,
   getActiveAdventureRun,
   getAdventureDetails,
   getFinishedRunCountsByAdventure,
   getRecentSessionHistory,
   listExercises,
+  previewQuest,
   startAdventureRun,
   suggestDifficultyFromSessions,
 } from "@/db";
 import { type BossFight, getBossFightByAdventure } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { loadSlotJournal, QUEST_AS_WRITTEN, type SlotJournal } from "@/db/quests";
 import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
@@ -63,6 +63,14 @@ type LoadedData = {
   feedbackAdjusted: boolean;
   /** Null until the campaign's first session creates the fight, and for every non-boss adventure. */
   bossFight: BossFight | null;
+  /**
+   * The hero's ladder and records for every movement of every step, read with the rest.
+   *
+   * It is what lets the head card price a step the way the quest screen behind the CTA will. It
+   * rides in the load rather than beside the estimate because the estimate also re-runs when the
+   * hero moves the difficulty, which no journal read answers.
+   */
+  journal: SlotJournal;
 };
 
 type LoadState =
@@ -245,6 +253,7 @@ export default function AdventureDetailsScreen() {
     suggestedDifficulty: "medium",
     feedbackAdjusted: false,
     bossFight: null,
+    journal: QUEST_AS_WRITTEN,
   });
 
   const load = useCallback(
@@ -276,6 +285,7 @@ export default function AdventureDetailsScreen() {
               suggestedDifficulty: "medium",
               feedbackAdjusted: false,
               bossFight: null,
+              journal: QUEST_AS_WRITTEN,
               message: t("adventures.not_found"),
             });
             return;
@@ -287,14 +297,22 @@ export default function AdventureDetailsScreen() {
             defaultDifficulty: "medium",
           });
 
-          setState({
-            status: "ready",
-            details,
-            activeRun,
-            exercisesById,
-            suggestedDifficulty: suggestion.level,
-            feedbackAdjusted: suggestion.adjusted,
-            bossFight,
+          // One read for every movement of every step, so the head card can price the step at the
+          // rung the hero actually works. A promise chain, like the load above it.
+          return loadSlotJournal(
+            details.steps.flatMap((s) => s.quest.exercises.map((qex) => qex.exerciseId)),
+          ).then((journal) => {
+            if (isStale()) return;
+            setState({
+              status: "ready",
+              details,
+              activeRun,
+              exercisesById,
+              suggestedDifficulty: suggestion.level,
+              feedbackAdjusted: suggestion.adjusted,
+              bossFight,
+              journal,
+            });
           });
         })
         .catch((e: unknown) => {
@@ -380,21 +398,17 @@ export default function AdventureDetailsScreen() {
 
   const preview = useMemo(() => {
     if (!activeTemplateStep) return null;
-
-    const previewInput = {
-      template: activeTemplateStep.quest,
-      exercisesById: state.exercisesById,
-      userLevel: effectiveDifficulty,
-    };
-
-    const durationSeconds = estimateQuestTemplateSeconds(previewInput);
-    const xp = estimateQuestTemplateXp(previewInput);
-
-    return {
-      durationSeconds,
-      xp,
-    };
-  }, [activeTemplateStep, state.exercisesById, effectiveDifficulty]);
+    // At the run's difficulty, not at whatever the hero last saved on that quest: the CTA passes
+    // this level in its own URL. The journal is what the quest screen also reads, so the step
+    // card and the screen it opens no longer quote two rewards for one session.
+    return previewQuest(
+      activeTemplateStep.quest,
+      state.exercisesById,
+      null,
+      state.journal,
+      effectiveDifficulty,
+    );
+  }, [activeTemplateStep, state.exercisesById, state.journal, effectiveDifficulty]);
 
   const handleStartOrContinue = useCallback(async () => {
     if (!details || adventureId == null || isStarting) return;

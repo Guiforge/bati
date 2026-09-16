@@ -78,9 +78,15 @@ jest.mock("@/db", () => ({
   getRecentSessionHistory: jest.fn().mockResolvedValue([]),
   startAdventureRun: jest.fn(),
   suggestDifficultyFromSessions: jest.fn().mockReturnValue({ level: "medium", adjusted: false }),
-  estimateQuestTemplateSeconds: jest.fn().mockReturnValue(300),
-  estimateQuestTemplateXp: jest.fn().mockReturnValue(60),
+  previewQuest: jest.fn().mockReturnValue({ seconds: 300, xp: 60 }),
   adventureWeeks: jest.fn().mockReturnValue(1),
+}));
+
+// The screen reads the hero's ladder and records once for every step, so the head card prices a
+// step the way the quest screen behind the CTA will. Neither is what these tests are about.
+jest.mock("@/db/quests", () => ({
+  QUEST_AS_WRITTEN: { served: new Map(), history: new Map() },
+  loadSlotJournal: jest.fn().mockResolvedValue({ served: new Map(), history: new Map() }),
 }));
 
 test("boss adventure CTA reads Start Adventure on step 1, not Fight Boss", async () => {

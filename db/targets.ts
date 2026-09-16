@@ -158,6 +158,12 @@ export function retargetForMovement(
  */
 const REPS_WORD: Localized = { en: "reps", fr: "reps", de: "Wdh.", es: "reps" };
 export const SECONDS_SUFFIX: Localized = { en: "s", fr: " s", de: " s", es: " s" };
+/**
+ * The minute word, for the two functions in `db/estimate.ts` that write one. German abbreviates
+ * with a full stop, which `journal.duration_m` has said since the locales were written while the
+ * code beside it wrote "min" on every surface outside the Journal.
+ */
+export const MINUTES_WORD: Localized = { en: "min", fr: "min", de: "Min.", es: "min" };
 
 // Built once per language: Intl constructors are among the costliest calls on Hermes (see
 // constants/dateFormatters.ts), and a ghost line formats on every render.

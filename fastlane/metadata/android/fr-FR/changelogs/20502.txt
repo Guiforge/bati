@@ -1,0 +1,5 @@
+- La carte se déplace au doigt, pendant une sortie et
+  sur son récap. Un bouton la recentre sur toi.
+- Si ton téléphone bloque l'accès réseau de Bati, la
+  carte le dit et ouvre les bons réglages, au lieu de
+  rester vide.

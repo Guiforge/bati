@@ -1,0 +1,5 @@
+- Die Karte folgt deinem Finger, unterwegs und im
+  Rückblick. Ein Knopf zentriert sie wieder auf dich.
+- Sperrt dein Handy Batis Netzwerkzugriff, sagt die
+  Karte es und öffnet die richtigen Einstellungen,
+  statt leer zu bleiben.

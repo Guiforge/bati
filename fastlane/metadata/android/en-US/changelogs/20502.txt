@@ -1,0 +1,5 @@
+- The map moves under your finger, on an outing and on
+  its recap. A button brings it back to you.
+- If your phone blocks Bati's network access, the map
+  says so and opens the right settings, instead of
+  staying blank.

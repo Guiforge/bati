@@ -1,0 +1,5 @@
+- El mapa se mueve con el dedo, durante una salida y en
+  su resumen. Un botón lo vuelve a centrar en ti.
+- Si tu móvil bloquea el acceso a la red de Bati, el
+  mapa lo dice y abre los ajustes adecuados, en lugar
+  de quedarse vacío.

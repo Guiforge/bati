@@ -118,6 +118,7 @@ export async function previewQuests(
   templates: readonly QuestTemplate[],
   exercisesById: Record<number, Exercise>,
   configs: ReadonlyMap<number, QuestConfig>,
+  level?: DifficultyCode,
 ): Promise<Map<number, QuestPreview>> {
   const journal = await loadSlotJournal(
     templates.flatMap((q) => q.exercises.map((qex) => qex.exerciseId)),
@@ -125,7 +126,8 @@ export async function previewQuests(
 
   return new Map(
     templates.map(
-      (q) => [q.id, previewQuest(q, exercisesById, configs.get(q.id) ?? null, journal)] as const,
+      (q) =>
+        [q.id, previewQuest(q, exercisesById, configs.get(q.id) ?? null, journal, level)] as const,
     ),
   );
 }

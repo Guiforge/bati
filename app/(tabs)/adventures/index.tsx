@@ -27,10 +27,12 @@ import {
   adventureWeeks,
   getAnyActiveAdventureRun,
   getFinishedRunCountsByAdventure,
+  getRecentSessionHistory,
   listAdventures,
   listExercises,
   previewQuests,
   type QuestPreview,
+  suggestDifficultyFromSessions,
 } from "@/db";
 import { threatRank } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
@@ -398,8 +400,9 @@ export default function AdventuresGallery() {
       getAnyActiveAdventureRun(),
       getFinishedRunCountsByAdventure(),
       getAllQuestConfigs(),
+      getRecentSessionHistory(10),
     ])
-      .then(([adventures, exercises, activeRun, finished, questConfigs]) => {
+      .then(([adventures, exercises, activeRun, finished, questConfigs, history]) => {
         const progress: AdventureProgress | null = activeRun
           ? {
               adventureId: activeRun.adventureId,
@@ -413,11 +416,18 @@ export default function AdventuresGallery() {
         setFinishedCounts((previous) => keepIfSame(previous, finished));
         const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
         // The cover quests, priced the way each one's own detail screen will price it, in one
-        // read for the whole gallery: see `previewQuests`.
+        // read for the whole gallery: see `previewQuests`. At the level a campaign would run at,
+        // which is the suggestion and not the hero's saved config: the poster said "up to +60 XP
+        // per step" over a detail screen quoting +90 for the same step.
+        const suggestion = suggestDifficultyFromSessions(history, {
+          maxSessions: 10,
+          defaultDifficulty: "medium",
+        });
         return previewQuests(
           adventures.map((a) => a.coverQuest),
           exercisesById,
           questConfigs,
+          suggestion.level,
         ).then((previews) => {
           setState((s) => ({
             status: "ready",

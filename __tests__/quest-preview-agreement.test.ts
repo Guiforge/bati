@@ -103,6 +103,30 @@ describe("a quest card and its screen quote the same numbers", () => {
     expect(await disagreements(new Map())).toEqual([]);
   });
 
+  // An adventure poster prices its cover quest at the level the campaign would run at, where the
+  // gallery prices it at the hero's saved config. Both go through `previewQuests`, so the level it
+  // is handed has to reach the card: the poster said "up to +60 XP per step" over a detail screen
+  // quoting +90 for the same step.
+  test("a level handed to previewQuests is the one every card is priced at", async () => {
+    const { quests, preview, config, exercises, xp } = api();
+    const templates = await quests.listQuestTemplates();
+    const catalogue = config.indexExercises(await exercises.listExercises());
+    const saved = new Map([[templates[0]?.id ?? 0, { level: quests.Difficulty.Easy }]]);
+
+    const cards = await preview.previewQuests(
+      templates,
+      catalogue,
+      saved as Parameters<typeof preview.previewQuests>[2],
+      quests.Difficulty.Hard,
+    );
+
+    for (const template of templates) {
+      const raw = await quests.getQuestById(template.id, quests.Difficulty.Hard);
+      if (!raw) throw new Error(`quest ${template.id} vanished`);
+      expect(cards.get(template.id)?.xp).toBe(xp.estimateQuestXp(raw, quests.Difficulty.Hard));
+    }
+  });
+
   test("a hero whose records move the holds and whose rungs move the movements", async () => {
     // A long plank pulls every plank slot up off `HOLD_FRACTION_OF_MAX`, and three clean wall
     // push-up sessions move the push-up slots one rung up the chain.

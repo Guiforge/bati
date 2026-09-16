@@ -11,6 +11,7 @@ import { rawColors } from "@/constants/rawColors";
 import { ensureMigrations } from "@/db/migrate";
 import { preferences } from "@/db/preferences";
 import { type FlameLevel, getFlameLevel, getStreakInfo, getWeeklyProgress } from "@/db/streaks";
+import { formatCount } from "@/db/targets";
 import {
   type AppLanguage,
   getDevicePreferredAppLanguage,
@@ -104,7 +105,13 @@ function FlameWidget({
   return (
     <FlexWidget clickAction="OPEN_APP" style={ROOT_STYLE}>
       <TextWidget text={s.flame} style={titleStyle(k)} />
-      <TextWidget text={`🔥 ${streak === null ? "–" : streak}`} style={numberStyle(k)} />
+      {/* The same separator the app writes: a widget saying "1822" beside a Journal saying
+          "1,822 days lit" is the widget having its own idea of how a number is written, which is
+          how it came to have its own idea of which language it spoke (F-Droid MR !45076). */}
+      <TextWidget
+        text={`🔥 ${streak === null ? "–" : formatCount(lang, streak)}`}
+        style={numberStyle(k)}
+      />
       <TextWidget text={s.days} style={unitStyle(k)} />
       <FlexWidget style={{ flexDirection: "row", flexGap: 4 * k, marginTop: 8 * k }}>
         {([0, 1, 2, 3, 4] as const).map((i) => (

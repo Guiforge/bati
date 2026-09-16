@@ -303,7 +303,11 @@ function FlameBlock({ stats }: { stats: JournalStats }) {
     ? t("journal.flame_best_now")
     : flame.bestEndedOn && flame.best > 0
       ? t("journal.flame_best_ended", {
+          // Two readings of the same number, and neither does the other's job: `count` picks the
+          // plural form, `days` is what the line prints. i18next resolves a plural from a number
+          // and a formatted "1,822" is not one, so the figure has to arrive beside it.
           count: flame.best,
+          days: number(language, flame.best),
           date: shortDate(language, flame.bestEndedOn, now),
         })
       : "";
@@ -327,7 +331,7 @@ function FlameBlock({ stats }: { stats: JournalStats }) {
             Until the flame is lit, the dots and the note below say where she stands. */}
         {flame.current === 0 && flame.inWindow > 0 ? null : (
           <NNum fontSize={19} lineHeight={24}>
-            {flame.current}
+            {number(language, flame.current)}
             <NMuted fontSize={12}> {t("journal.flame_lit", { count: flame.current })}</NMuted>
           </NNum>
         )}

@@ -153,6 +153,46 @@ describe("i18n locale parity", () => {
 });
 
 /**
+ * Every key a `t("…")` call names in the source exists in English, and so, by the parity test
+ * above, in every language.
+ *
+ * Parity compares the files with each other, so a key missing from all four passes it. When the
+ * call carries a `defaultValue` the screen still reads fine in English, and every other language
+ * gets the English: `session.share` was the victory screen's share label in English under French,
+ * German and Spanish, read out by TalkBack, with `session.level_up`, `session.level_label` and the
+ * share message itself in the same state. Only literal keys can be checked; a key built from a
+ * template is `screen-keys.test.ts`'s job.
+ */
+describe("keys named in the source", () => {
+  const { readdirSync, readFileSync } = require("node:fs") as typeof import("node:fs");
+  const { join } = require("node:path") as typeof import("node:path");
+
+  const sources = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) return sources(path);
+      return /\.tsx?$/.test(entry.name) ? [path] : [];
+    });
+
+  test("every literal t() key has an English string", () => {
+    const enKeys = collectLeafKeys(en as unknown as JsonObject);
+    const exists = (key: string) =>
+      ["", "_one", "_other"].some((suffix) => enKeys.has(`${key}${suffix}`));
+
+    const missing = ["app", "components", "constants", "db", "hooks", "src", "stores"]
+      .flatMap(sources)
+      .flatMap((file) =>
+        [...readFileSync(file, "utf8").matchAll(/\bt\(\s*"(\w+(?:\.\w+)+)"/g)]
+          .map((m) => m[1] ?? "")
+          .filter((key) => !exists(key))
+          .map((key) => `${file}: ${key}`),
+      );
+
+    expect(missing).toEqual([]);
+  });
+});
+
+/**
  * The count-aware keys, resolved through the real i18next rather than by reading the JSON.
  *
  * "1 exercices" shipped on every expedition card in both languages: `quests.exercises` was a
@@ -188,5 +228,33 @@ describe("plural forms", () => {
   ])("%s renders %d as %s", async (language, count, key, expected) => {
     await i18n.changeLanguage(language);
     expect(i18n.t(key, { count })).toBe(expected);
+  });
+});
+
+/**
+ * A duration a translation was writing the unit for, now handed to it already written.
+ *
+ * `quests.rest` was `Rest {{count}}s` in English and `Repos {{count}}s` in French, where German
+ * and Spanish had the space their language wants and `SECONDS_SUFFIX` agrees with. So the quest
+ * screen was the one place in the app writing "45s" to a French reader, and a 120 s rest read
+ * "120s" where a hold of the same length reads "2:00" everywhere else. The unit belongs to
+ * `formatTargetValue`, which is what these expectations are: the chip in four languages, at a
+ * rest under a minute and at one over it.
+ */
+describe("a rest takes its unit from the formatter", () => {
+  const { i18n } = require("@/i18n") as typeof import("@/i18n");
+  const { formatTargetValue } = require("@/db/targets") as typeof import("@/db/targets");
+
+  test.each([
+    ["en", 45, "Rest 45s"],
+    ["fr", 45, "Repos 45 s"],
+    ["de", 45, "Pause 45 s"],
+    ["es", 45, "Descanso 45 s"],
+    ["en", 120, "Rest 2:00"],
+    ["fr", 120, "Repos 2:00"],
+  ] as const)("%s writes a %d s rest as %s", async (language, seconds, expected) => {
+    await i18n.changeLanguage(language);
+    const duration = formatTargetValue({ type: "time", value: seconds }, language);
+    expect(i18n.t("quests.rest", { duration })).toBe(expected);
   });
 });

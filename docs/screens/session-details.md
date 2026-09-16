@@ -3,7 +3,7 @@ title: Session Details
 type: screen
 route: /journal/[id]
 status: active
-updated: 2026-09-15
+updated: 2026-09-16
 related: [journal.md, session.md, ../gameplay/statistics-progress.md, ../gameplay/boss-fights.md]
 sources: ["app/(tabs)/journal/[id].tsx", components/journal/QuestLog.tsx, components/journal/KillReport.tsx, db/journal.ts]
 ---
@@ -31,7 +31,9 @@ the adventure, and the hero starts it there.
 4. **What it moved**: the XP (with the level bar, on the latest session only, since the level is
    today's), the reps sent to the village (with the hold rule, "holds at 1 per 3 s", when the
    session had a hold), the muscle whose thirty-day share moved most
-   (`getMuscleShift`), and the rung its movements are climbing (`getSessionRung`). An outing says
+   (`getMuscleShift`), and the rung its movements are climbing (`getSessionRung`). Once that rung is earned and it
+   forks, the line names the other movements it opens too, in the exercise page's words ("The same
+   rung also leads to Pike Push-Up, Diamond Push-Up."). An outing says
    what ground pays for instead.
 5. **The rounds**, one line per movement: the sets in order, the target, gold when every set cleared
    it and a quiet number for the set that missed. Each line opens the movement. An outing shows its

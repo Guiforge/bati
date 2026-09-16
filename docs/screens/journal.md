@@ -57,6 +57,8 @@ Every hold and count on the Journal goes through `formatTargetValue` / `formatTa
 `db/targets.ts`, the same rule as the session, the quest screen and the exercise sheet: a hold under
 a minute in seconds ("45s", "45 s" outside English), a clock from 60 s ("1:00"), and counts, reps
 and XP alike, with the language's thousands separator (`formatCount`: "1,000", "1 000", "1.000").
+The flame's day count is one of those counts, here, on Home, in the village and on the widget. A
+key that pluralises on it gets the number twice, `count` to pick the form and `days` to print.
 A session's or an outing's length is `formatDuration` ("12 min 17s", "12 min 17 s").
 
 The page is read in one pass (`useJournalStats`) and, on focus, only when `getJournalVersion` says

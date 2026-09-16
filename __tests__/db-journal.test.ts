@@ -212,11 +212,22 @@ describe("db/journal", () => {
     const rung = await journal().getSessionRung(last);
     const step = await getNextProgression(high);
     assert(step);
-    // The exercise page's step also carries the fork it opens (`alsoNext`); the quest log names
-    // one rung and has no room for it. Every other field has to agree, which is the point here.
-    const { alsoNext: _, ...common } = step;
-    expect(rung).toEqual(common);
+    // Every field agrees, the fork it opens (`alsoNext`) included: the quest log used to drop it.
+    expect(rung).toEqual(step);
     expect(rung?.metTarget).toBe(2);
+  });
+
+  test("a session's rung carries the fork it opens", async () => {
+    const pushups = exerciseId("Push-ups");
+    session(1, daysAgo(1));
+    set(1, pushups, 12, daysAgo(1));
+    const { getCompletedSessionById } =
+      require("../db/completed") as typeof import("../db/completed");
+    const last = await getCompletedSessionById(1);
+    assert(last);
+    const rung = await journal().getSessionRung(last);
+    const opened = [rung?.next.enName, ...(rung?.alsoNext ?? []).map((m) => m.enName)];
+    expect(opened.sort()).toEqual(["Diamond Push-Up", "Dip", "Pike Push-Up"]);
   });
 
   test("the wall keeps the season's best beside an old record", async () => {

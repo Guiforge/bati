@@ -201,7 +201,12 @@ export default function LifetimeScreen() {
             label={t("journal.row_days_lit")}
             note={
               data.flame.best > 0
-                ? t("journal.row_days_lit_note", { count: data.flame.best })
+                ? // `count` picks the plural, `days` is the figure: i18next reads a plural out of
+                  // a number, and a formatted "1,822" is not one. Same pair on the stats page.
+                  t("journal.row_days_lit_note", {
+                    count: data.flame.best,
+                    days: number(language, data.flame.best),
+                  })
                 : undefined
             }
             all={number(language, data.flame.litDays)}

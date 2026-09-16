@@ -49,7 +49,7 @@ import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
-import { formatCount } from "@/db/targets";
+import { formatCount, formatTargetValue } from "@/db/targets";
 import { outingXpPerMinute } from "@/db/xp";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -751,7 +751,13 @@ export default function QuestDetails() {
                   {restsBetweenExercises(quest) ? (
                     <Tag
                       label={t("quests.rest", {
-                        count: quest.restSeconds,
+                        // The unit belongs to `formatTargetValue`, not to four translations: the
+                        // French one wrote "45s" with no space while every other second in the
+                        // app read "45 s", and a 120 s rest read "120s" where a hold reads "2:00".
+                        duration: formatTargetValue(
+                          { type: "time", value: quest.restSeconds },
+                          language,
+                        ),
                         defaultValue: `Rest ${quest.restSeconds}s`,
                       })}
                     />

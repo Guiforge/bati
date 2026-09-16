@@ -259,11 +259,12 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
 
           {/* A fork gets named, not illustrated: Push-ups opens three movements and the card
               announced Dip alone. Names on one line say the whole truth for the price of a line;
-              three more 80 px poses would make the page a list of what the hero is not doing. */}
+              three more 80 px poses would make the page a list of what the hero is not doing.
+              The sentence is `progression.*` because the quest log and the victory screen say it
+              too, about the same fork. */}
           {progression.alsoNext.length === 0 ? null : (
             <Paragraph color="$textSecondary" size="$2">
-              {t("exercises.next_step_also", {
-                name: localizedName(progression.from, language),
+              {t("progression.rung_also_leads_to", {
                 names: progression.alsoNext.map((m) => localizedName(m, language)).join(", "),
               })}
             </Paragraph>
@@ -507,18 +508,22 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                 {t("exercises.your_numbers", "Your numbers").toUpperCase()}
               </Text>
               {loggedHere.map(({ type, ghost }) => (
+                // Two halves that wrap as wholes. One flat wrapping row broke wherever the width
+                // ran out, and "Record 1,000 reps" left its "Aug 15" alone on the next line.
                 <XStack key={type} items="baseline" gap="$2" flexWrap="wrap">
-                  <Text fontSize={12} color="$textSecondary">
-                    {t("session.ghost_last_label", "Last time")}
-                  </Text>
-                  <Text fontSize={15} fontWeight="700" color="$text">
-                    {formatTarget({ type, value: ghost.last }, language)}
-                  </Text>
-                  <Text fontSize={12} color="$textSecondary">
-                    {shortDate(language, new Date(ghost.at), now)}
-                  </Text>
+                  <XStack items="baseline" gap="$2">
+                    <Text fontSize={12} color="$textSecondary">
+                      {t("session.ghost_last_label", "Last time")}
+                    </Text>
+                    <Text fontSize={15} fontWeight="700" color="$text">
+                      {formatTarget({ type, value: ghost.last }, language)}
+                    </Text>
+                    <Text fontSize={12} color="$textSecondary">
+                      {shortDate(language, new Date(ghost.at), now)}
+                    </Text>
+                  </XStack>
                   {ghost.best > ghost.last ? (
-                    <>
+                    <XStack testID="exercise-record" items="baseline" gap="$2">
                       <Text fontSize={12} color="$textSecondary" opacity={0.5}>
                         ·
                       </Text>
@@ -534,7 +539,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                       <Text fontSize={12} color="$textSecondary">
                         {recordWhen(t, language, new Date(ghost.bestAt), now)}
                       </Text>
-                    </>
+                    </XStack>
                   ) : null}
                 </XStack>
               ))}

@@ -269,6 +269,20 @@ describe("VillageScene", () => {
     await waitFor(() => expect(queryByTestId("village-reward")).toBeNull());
   });
 
+  /**
+   * The flame's day count is a number like any other on this screen, and it was the one that did
+   * not go through `formatCount`: a five-year flame read "1822 d" beside a village whose XP reads
+   * "3,180". The chip is the only rendered flame count a test can reach cheaply, so it stands for
+   * the pair on Home and in the Journal that were fixed with it.
+   */
+  it("writes the flame's days with the language's thousands separator", async () => {
+    mockScene([campfire, forge, farm], { flame: 3, streakDays: 1822 });
+
+    const { findByText } = await renderScene();
+
+    expect(await findByText(/1,822 d$/)).toBeTruthy();
+  });
+
   it("a plain visit plays nothing", async () => {
     mockScene([campfire, forge, farm]);
 

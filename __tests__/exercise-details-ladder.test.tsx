@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
 import ExerciseDetails from "@/app/exercises/[id]";
@@ -215,9 +215,11 @@ describe("a rung that forks", () => {
     });
     await mountScreen();
 
-    // The page's own movement is the subject, not the card's headline: "Dip also leads to…" would
-    // be a different, and false, sentence.
-    expect(screen.getByText("Push-ups also leads to Pike Push-Up, Diamond Push-Up.")).toBeTruthy();
+    // The rung is the subject, not the card's headline: "Dip also leads to…" would be a different,
+    // and false, sentence. The same words close the quest log and the victory card.
+    expect(
+      screen.getByText("The same rung also leads to Pike Push-Up, Diamond Push-Up."),
+    ).toBeTruthy();
   });
 
   it("says nothing extra when the rung leads to one movement", async () => {
@@ -256,9 +258,12 @@ describe("the hero's own numbers", () => {
     withGhost(25, 300);
     await mountScreen();
 
-    expect(screen.getByText("Record")).toBeTruthy();
-    expect(screen.getByText("25 reps")).toBeTruthy();
-    expect(screen.getByText("9 months ago")).toBeTruthy();
+    // One node, so the line wraps as a whole: flat siblings let "Aug 15" break off from
+    // "Record 1,000 reps" and sit alone under it.
+    const record = within(screen.getByTestId("exercise-record"));
+    expect(record.getByText("Record")).toBeTruthy();
+    expect(record.getByText("25 reps")).toBeTruthy();
+    expect(record.getByText("9 months ago")).toBeTruthy();
   });
 
   it("says a fresh record the way the wall says it", async () => {

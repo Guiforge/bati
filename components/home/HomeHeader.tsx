@@ -123,7 +123,10 @@ export function HomeHeader() {
       </YStack>
 
       {/* The streak, in gold with its count and unit: gold is for what progresses, and a grey
-          flame with no number was the least legible thing on the old header. Always rendered,
+          flame with no number was the least legible thing on the old header. The count is the
+          `formatCount` every other number in this strip goes through: a five-year flame read
+          "1823d" beside "2,000 XP". The spoken label keeps the bare digits on purpose, because a
+          separator is what makes a screen reader say "one, comma, eight hundred". Always rendered,
           blank but space-holding until the first read lands, so it neither flashes a zero nor
           resizes the XP bar. An unlit flame is dimmed, never hidden: it is the thing to relight. */}
       {!streak ? (
@@ -147,7 +150,9 @@ export function HomeHeader() {
           {/* No "0d" under an unlit flame: the dimmed flame already says it, and a zero reads as a
               verdict on a first day (the Journal hides it too). */}
           <Text fontSize={11} fontWeight="700" color="$resourceGold">
-            {currentStreak > 0 ? t("home.streak_short", { count: currentStreak }) : " "}
+            {currentStreak > 0
+              ? t("home.streak_short", { days: formatCount(language, currentStreak) })
+              : " "}
           </Text>
         </YStack>
       )}

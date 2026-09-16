@@ -36,6 +36,7 @@ import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
 import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
 import { dayKey } from "@/db/dates";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { formatCount } from "@/db/targets";
 import {
   getTierProgress,
   getVillageScene,
@@ -368,7 +369,7 @@ export function VillageScene() {
                   >
                     <FlameFlicker size={14} />
                     <Text fontSize={11.5} fontWeight="600" color="$text" numberOfLines={1}>
-                      {`${t(`village.flame_${scene.flame}`)} · ${t("village.flame_days", { count: scene.streakDays })}`}
+                      {`${t(`village.flame_${scene.flame}`)} · ${t("village.flame_days", { days: formatCount(language, scene.streakDays) })}`}
                     </Text>
                   </XStack>
                 )}

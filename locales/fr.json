@@ -813,7 +813,7 @@
     "load_error": "Échec du chargement",
     "loading": "Chargement…",
     "not_found": "Quête introuvable",
-    "rest": "Repos {{count}}s",
+    "rest": "Repos {{duration}}",
     "retry": "Réessayer",
     "reward_xp": "+{{count}} XP",
     "reward_xp_estimate": "jusqu'à +{{count}} XP",

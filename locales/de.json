@@ -248,7 +248,7 @@
     "filter_duration_short": "≤ 15 Min.",
     "filter_duration_medium": "≤ 30 Min.",
     "filter_duration_long": "30 Min.+",
-    "rest": "Pause {{count}} s",
+    "rest": "Pause {{duration}}",
     "estimate": "≈ {{duration}}",
     "reward_xp": "+{{count}} XP",
     "reward_xp_estimate": "bis zu +{{count}} XP",

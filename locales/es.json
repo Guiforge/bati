@@ -251,7 +251,7 @@
     "filter_duration_short": "≤ 15 min",
     "filter_duration_medium": "≤ 30 min",
     "filter_duration_long": "30 min+",
-    "rest": "Descanso {{count}} s",
+    "rest": "Descanso {{duration}}",
     "estimate": "≈ {{duration}}",
     "reward_xp": "+{{count}} XP",
     "reward_xp_estimate": "hasta +{{count}} XP",

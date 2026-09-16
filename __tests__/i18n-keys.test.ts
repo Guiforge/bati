@@ -190,3 +190,31 @@ describe("plural forms", () => {
     expect(i18n.t(key, { count })).toBe(expected);
   });
 });
+
+/**
+ * A duration a translation was writing the unit for, now handed to it already written.
+ *
+ * `quests.rest` was `Rest {{count}}s` in English and `Repos {{count}}s` in French, where German
+ * and Spanish had the space their language wants and `SECONDS_SUFFIX` agrees with. So the quest
+ * screen was the one place in the app writing "45s" to a French reader, and a 120 s rest read
+ * "120s" where a hold of the same length reads "2:00" everywhere else. The unit belongs to
+ * `formatTargetValue`, which is what these expectations are: the chip in four languages, at a
+ * rest under a minute and at one over it.
+ */
+describe("a rest takes its unit from the formatter", () => {
+  const { i18n } = require("@/i18n") as typeof import("@/i18n");
+  const { formatTargetValue } = require("@/db/targets") as typeof import("@/db/targets");
+
+  test.each([
+    ["en", 45, "Rest 45s"],
+    ["fr", 45, "Repos 45 s"],
+    ["de", 45, "Pause 45 s"],
+    ["es", 45, "Descanso 45 s"],
+    ["en", 120, "Rest 2:00"],
+    ["fr", 120, "Repos 2:00"],
+  ] as const)("%s writes a %d s rest as %s", async (language, seconds, expected) => {
+    await i18n.changeLanguage(language);
+    const duration = formatTargetValue({ type: "time", value: seconds }, language);
+    expect(i18n.t("quests.rest", { duration })).toBe(expected);
+  });
+});

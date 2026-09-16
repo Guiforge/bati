@@ -29,7 +29,9 @@ Exercise Details explains a single movement — and, when the movement sits on o
   45s 15 Sept · Record 1:00 10 months ago". The label is **Record**, not "best" — the wall two
   taps away says Record about the same number, and the page used to print an undated "best 60s",
   which reads as something set tonight. `bestAt` comes from `getExerciseHistory`, dated the way
-  the wall dates one: the earliest session that reached the standing best.
+  the wall dates one: the earliest session that reached the standing best. The two halves wrap
+  as wholes, so a long record ("Record 1,000 reps") takes its date down with it instead of
+  leaving the date alone on the next line.
 - **Muscle tags**: the muscles the movement trains.
 - **The path** — its name, a segment bar, and the rung the hero stands on. Tapping opens that
   rung.

@@ -507,18 +507,22 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                 {t("exercises.your_numbers", "Your numbers").toUpperCase()}
               </Text>
               {loggedHere.map(({ type, ghost }) => (
+                // Two halves that wrap as wholes. One flat wrapping row broke wherever the width
+                // ran out, and "Record 1,000 reps" left its "Aug 15" alone on the next line.
                 <XStack key={type} items="baseline" gap="$2" flexWrap="wrap">
-                  <Text fontSize={12} color="$textSecondary">
-                    {t("session.ghost_last_label", "Last time")}
-                  </Text>
-                  <Text fontSize={15} fontWeight="700" color="$text">
-                    {formatTarget({ type, value: ghost.last }, language)}
-                  </Text>
-                  <Text fontSize={12} color="$textSecondary">
-                    {shortDate(language, new Date(ghost.at), now)}
-                  </Text>
+                  <XStack items="baseline" gap="$2">
+                    <Text fontSize={12} color="$textSecondary">
+                      {t("session.ghost_last_label", "Last time")}
+                    </Text>
+                    <Text fontSize={15} fontWeight="700" color="$text">
+                      {formatTarget({ type, value: ghost.last }, language)}
+                    </Text>
+                    <Text fontSize={12} color="$textSecondary">
+                      {shortDate(language, new Date(ghost.at), now)}
+                    </Text>
+                  </XStack>
                   {ghost.best > ghost.last ? (
-                    <>
+                    <XStack testID="exercise-record" items="baseline" gap="$2">
                       <Text fontSize={12} color="$textSecondary" opacity={0.5}>
                         ·
                       </Text>
@@ -534,7 +538,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                       <Text fontSize={12} color="$textSecondary">
                         {recordWhen(t, language, new Date(ghost.bestAt), now)}
                       </Text>
-                    </>
+                    </XStack>
                   ) : null}
                 </XStack>
               ))}

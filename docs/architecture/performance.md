@@ -2,7 +2,7 @@
 title: React Native Performance — Best Practices & Antipatterns
 type: technical
 status: active
-updated: 2026-09-15
+updated: 2026-09-16
 related: [technical-architecture.md, ../meta/wiki-protocol.md, ../design/design-system.md]
 sources: [app.json, babel.config.js, __tests__/react-compiler-coverage.test.ts, hooks/useReloadOnChange.ts, stores/session.ts, components/session/PausedOverlay.tsx, app/(tabs)/quests/index.tsx, app/(tabs)/journal/index.tsx, package.json]
 ---
@@ -195,6 +195,25 @@ Generic guides push these; the stack already gives them, so skip:
   whole rest, measured the same 6 %: what is left is the tick's own frame (a 112px numeral
   relaid out once a second), not the view around it. `__tests__/timer-bar.test.tsx` fails if
   `Progress` is imported anywhere again, or if the bar grows an animation.
+- **Measuring a scroll on a screen that does not scroll.** On a Fairphone 6 (release build, empty
+  hero) "Home scrolls at 29 ms a frame, Quests at 19". Home fits its viewport, so the swipe scrolled
+  nothing: the up swipe started on the scene, Tamagui fired its `onPress` on release, and the
+  number was the quest screen opening (JS at 66 then 94 % in the two seconds after it, three passes
+  out of three). Tamagui 2's Android press handler has no distance check and relies on a scroll view
+  terminating the press; where none scrolls, **a drag is a press**. Home claims any touch past a
+  10 dp slop (`dragCancelsPress` in [`app/(tabs)/index.tsx`](../../app/(tabs)/index.tsx), held by
+  `__tests__/home-drag-cancels-press.test.tsx`); another non-scrolling screen with big pressables
+  needs the same, or the handler moves to the root layout. Before trusting a scroll number, check
+  the screen moved.
+- **Reading `Janky frames (legacy)` and the p50 as what the hero sees.** Both count any frame over
+  16 ms from its intended vsync, which on a phone with buffer stuffing includes waiting behind the
+  previous frame. The same Adventures swipes read p50 30, 17 and 28 ms over three passes, with
+  `Janky frames` (the deadline-based count) at 1.4, 0.8 and 1.4 %, under the Quests witness's
+  2.0-2.1 %. Compare `Janky frames` and `Number Frame deadline missed` first; a legacy p50 that
+  moves without them is pipeline state, not content.
+- **`flat` on a `Card` is an iOS saving.** Tamagui passes `shadowRadius`/`shadowOpacity` through to
+  React Native, which draws them on iOS only; Android draws a shadow from `elevation`, which `Card`
+  never sets. Keep list cards `flat`, but a slow Android scroll is not a shadow.
 - **Reanimated worklets closing over large objects.** Capture the one property you need,
   not the whole record — shipping a big closure to the UI thread costs a serialization pass.
 - **Context for fast-changing state.** Not used for app state here (Zustand owns it) — if

@@ -1,0 +1,10 @@
+- The Journal is redrawn: what to beat tonight, every
+  record dated, this month against the last.
+- Paths remember: a rung you own stays behind you, and
+  quests serve the rung you really train.
+- Saving a session, the Village and Home are much
+  faster, and a timed set uses far less battery.
+- A quest's card and its screen now agree on XP.
+- Exercise pages date your record and name every next
+  rung.
+- A swipe on Home no longer opens a quest.

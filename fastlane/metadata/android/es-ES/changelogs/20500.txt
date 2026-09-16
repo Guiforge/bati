@@ -1,0 +1,10 @@
+- El Diario se ha rediseñado: qué batir esta noche, cada
+  récord con fecha, este mes frente al anterior.
+- Las sendas recuerdan: una etapa ya dominada se queda
+  atrás, y las misiones sirven tu etapa real.
+- Guardar una sesión, la Aldea y el Inicio son mucho más
+  rápidos, y el temporizador gasta menos batería.
+- La tarjeta de una misión y su pantalla dan la misma XP.
+- Las fichas de ejercicio fechan tu récord y nombran cada
+  etapa siguiente.
+- Deslizar en Inicio ya no abre una misión.

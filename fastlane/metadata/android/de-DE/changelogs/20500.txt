@@ -1,0 +1,11 @@
+- Das Tagebuch ist neu gestaltet: was du heute schlagen
+  kannst, jeder Rekord mit Datum, dieser Monat gegen den
+  letzten.
+- Pfade vergessen nicht: eine erreichte Stufe bleibt
+  hinter dir, und Quests nehmen deine echte Stufe.
+- Speichern, Dorf und Start sind viel schneller, und der
+  Timer braucht weniger Akku.
+- Quest-Karte und Quest-Seite nennen dieselben XP.
+- Übungsseiten datieren deinen Rekord und nennen jede
+  nächste Stufe.
+- Wischen auf Start öffnet keine Quest mehr.

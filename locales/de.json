@@ -604,7 +604,11 @@
     "expedition_notification_finish": "Beenden",
     "expedition_make_quest": "Eine Quest daraus machen",
     "expedition_made_quest": "Bei deinen Quests abgelegt. Sie ist genau so gespeichert, wie sie war.",
-    "expedition_permission_why": "Bati liest während einer Tour deinen Standort, und er bleibt auf diesem Handy. Android fragt gleich nach."
+    "expedition_permission_why": "Bati liest während einer Tour deinen Standort, und er bleibt auf diesem Handy. Android fragt gleich nach.",
+    "level_up": "Stufe aufgestiegen",
+    "level_label": "Level",
+    "share": "Diese Einheit teilen",
+    "share_message": "Ich habe die Quest „{{quest}}“ in Bati abgeschlossen und {{xp}} XP verdient. ⚔️ #BatiApp"
   },
   "muscles": {
     "arms": "Arme",

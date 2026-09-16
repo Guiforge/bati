@@ -613,7 +613,11 @@
     "expedition_notification_finish": "Terminar",
     "expedition_make_quest": "Convertirla en misión",
     "expedition_made_quest": "Guardada con tus misiones. Te espera tal como la dejaste.",
-    "expedition_permission_why": "Bati lee tu ubicación durante una salida, y se queda en este móvil. Android te lo va a pedir."
+    "expedition_permission_why": "Bati lee tu ubicación durante una salida, y se queda en este móvil. Android te lo va a pedir.",
+    "level_up": "Subes de nivel",
+    "level_label": "Nivel",
+    "share": "Compartir esta sesión",
+    "share_message": "Terminé la misión «{{quest}}» en Bati y gané {{xp}} XP. ⚔️ #BatiApp"
   },
   "muscles": {
     "arms": "Brazos",

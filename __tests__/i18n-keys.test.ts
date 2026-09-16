@@ -153,6 +153,46 @@ describe("i18n locale parity", () => {
 });
 
 /**
+ * Every key a `t("…")` call names in the source exists in English, and so, by the parity test
+ * above, in every language.
+ *
+ * Parity compares the files with each other, so a key missing from all four passes it. When the
+ * call carries a `defaultValue` the screen still reads fine in English, and every other language
+ * gets the English: `session.share` was the victory screen's share label in English under French,
+ * German and Spanish, read out by TalkBack, with `session.level_up`, `session.level_label` and the
+ * share message itself in the same state. Only literal keys can be checked; a key built from a
+ * template is `screen-keys.test.ts`'s job.
+ */
+describe("keys named in the source", () => {
+  const { readdirSync, readFileSync } = require("node:fs") as typeof import("node:fs");
+  const { join } = require("node:path") as typeof import("node:path");
+
+  const sources = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) return sources(path);
+      return /\.tsx?$/.test(entry.name) ? [path] : [];
+    });
+
+  test("every literal t() key has an English string", () => {
+    const enKeys = collectLeafKeys(en as unknown as JsonObject);
+    const exists = (key: string) =>
+      ["", "_one", "_other"].some((suffix) => enKeys.has(`${key}${suffix}`));
+
+    const missing = ["app", "components", "constants", "db", "hooks", "src", "stores"]
+      .flatMap(sources)
+      .flatMap((file) =>
+        [...readFileSync(file, "utf8").matchAll(/\bt\(\s*"(\w+(?:\.\w+)+)"/g)]
+          .map((m) => m[1] ?? "")
+          .filter((key) => !exists(key))
+          .map((key) => `${file}: ${key}`),
+      );
+
+    expect(missing).toEqual([]);
+  });
+});
+
+/**
  * The count-aware keys, resolved through the real i18next rather than by reading the JSON.
  *
  * "1 exercices" shipped on every expedition card in both languages: `quests.exercises` was a

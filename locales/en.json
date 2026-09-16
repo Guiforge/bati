@@ -604,7 +604,11 @@
     "expedition_notification_finish": "Finish",
     "expedition_make_quest": "Make this a quest",
     "expedition_made_quest": "Filed with your quests. It is waiting exactly as you left it.",
-    "expedition_permission_why": "Bati reads your location during an outing, and it stays on this phone. Android is about to ask."
+    "expedition_permission_why": "Bati reads your location during an outing, and it stays on this phone. Android is about to ask.",
+    "level_up": "Level up",
+    "level_label": "Level",
+    "share": "Share this session",
+    "share_message": "I finished the quest '{{quest}}' in Bati and earned {{xp}} XP. ⚔️ #BatiApp"
   },
   "muscles": {
     "arms": "Arms",

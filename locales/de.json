@@ -216,7 +216,8 @@
     "step_progress_other": "Erreiche dein Ziel bei {{name}} noch {{count}} Mal, um sie freizuschalten.",
     "new_rung": "Neue Stufe freigeschaltet",
     "new_rungs": "{{count}} neue Stufen freigeschaltet",
-    "new_rung_from": "Du beherrschst {{name}}"
+    "new_rung_from": "Du beherrschst {{name}}",
+    "rung_also_leads_to": "Dieselbe Stufe führt auch zu {{names}}."
   },
   "quests": {
     "written_for_beginner": "Einsteiger",
@@ -444,7 +445,6 @@
     "next_step_earned": "Du hast sie dir verdient. Probier sie aus.",
     "next_step_progress_one": "Erreiche dein Ziel noch {{count}} Einheit in Folge, um sie freizuschalten.",
     "next_step_progress_other": "Erreiche dein Ziel noch {{count}} Einheiten in Folge, um sie freizuschalten.",
-    "next_step_also": "{{name}} führt auch zu {{names}}.",
     "record_label": "Rekord",
     "catalogue_title": "Übungen",
     "count_one": "{{count}} Übung",

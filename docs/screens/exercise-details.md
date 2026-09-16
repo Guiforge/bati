@@ -3,7 +3,7 @@ title: Exercise Details
 type: screen
 route: /exercises/[id]
 status: active
-updated: 2026-09-15
+updated: 2026-09-16
 related: [exercises.md, quests.md, quest-details.md, session.md, ../gameplay/paths.md]
 sources: ["app/exercises/[id].tsx", "db/exercises.ts", "db/paths.ts", "components/common/PathStrip.tsx"]
 ---
@@ -39,8 +39,10 @@ Exercise Details explains a single movement — and, when the movement sits on o
   row are left (the run at the head of the recency window, not the clean ones out of three).
   Tapping opens it. A rung is allowed to fork: Push-ups opens Dip, Pike Push-Up and Diamond
   Push-Up, and Dead Bug opens three. One of them is illustrated and the rest are **named on one
-  line** ("Push-ups also leads to Pike Push-Up, Diamond Push-Up"), subject being the page's own
-  movement rather than the card's headline. Three more poses would turn the card into a list of
+  line** ("The same rung also leads to Pike Push-Up, Diamond Push-Up."), subject being the rung
+  rather than the card's headline, which would make "Dip also leads to" a false sentence. The line
+  is `progression.rung_also_leads_to` and the quest log and the victory card say it too, about the
+  same fork: all three read `successorsOf`, so they illustrate the same movement. Three more poses would turn the card into a list of
   what the hero is not doing, which is the wall the skill-tree screen was dropped for. Standing
   on *any* branch earns the rung (`alsoNext` is part of what `getNextProgression` looks above at),
   so a hero doing Diamond Push-Ups is no longer told to go and earn Dip.

@@ -24,6 +24,7 @@ import {
   PROGRESSION_SESSIONS_REQUIRED,
   recentMetFlagsBatch,
   streakOf,
+  successorsOf,
   type VariationStep,
 } from "./exercises";
 import { getMovementRecords } from "./personalRecords";
@@ -869,8 +870,8 @@ export async function isLatestSession(session: CompletedSession): Promise<boolea
  * The rung this session's movements are climbing toward, the one closest to earned.
  *
  * The ladder once and the flags of every movement in one query, where a `getNextProgression` per
- * movement re-read both for each. Same step as `getNextProgression` builds: the first successor,
- * and the last `PROGRESSION_SESSIONS_REQUIRED` sessions in the window.
+ * movement re-read both for each. Same step as `getNextProgression` builds, down to the fork a
+ * rung opens (`successorsOf`), and the last `PROGRESSION_SESSIONS_REQUIRED` sessions in the window.
  */
 export async function getSessionRung(session: CompletedSession): Promise<VariationStep | null> {
   const ids = [...new Set(session.exercises.map((ex) => ex.exercise.id))];
@@ -880,14 +881,15 @@ export async function getSessionRung(session: CompletedSession): Promise<Variati
   let best: VariationStep | null = null;
   for (const id of ids) {
     const from = rows.find((r) => r.id === id);
-    const next = rows.find((r) => r.prerequisiteExerciseId === id);
-    if (!from || !next) continue;
+    const fork = successorsOf(rows, id);
+    if (!from || !fork) continue;
     // The run at the head, the way `getNextProgression` counts it: the two must not disagree.
     const metTarget = streakOf(flags.get(id) ?? []);
     if (best && metTarget <= best.metTarget) continue;
     best = {
       from: ref(from),
-      next: ref(next),
+      next: ref(fork.next),
+      alsoNext: fork.alsoNext,
       metTarget,
       required: PROGRESSION_SESSIONS_REQUIRED,
       isEarned: metTarget >= PROGRESSION_SESSIONS_REQUIRED,

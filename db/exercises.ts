@@ -303,8 +303,16 @@ export type MovementRef = {
 export type VariationStep = {
   /** The movement being mastered. */
   from: MovementRef;
-  /** The harder variation it leads to. */
+  /** The harder variation it leads to, and the one every screen illustrates. */
   next: MovementRef;
+  /**
+   * The rest of what this movement leads to, beyond `next`. A rung is allowed to fork: Push-ups
+   * opens Dip, Pike Push-Up *and* Diamond Push-Up, Dead Bug opens three, and Hollow Body Hold,
+   * Crunch and Squat two. The field sits on the step itself rather than on one screen's type
+   * because three readers build a step, and the two that did not carry the fork each named
+   * whichever successor the table returned first (exercise sheet audit, 2026-09-15).
+   */
+  alsoNext: MovementRef[];
   /** How many of the last sessions on `from` met or beat their target. */
   metTarget: number;
   required: number;
@@ -312,16 +320,9 @@ export type VariationStep = {
 };
 
 /** Kept for the exercise screen, which imported this name before the ladder had other readers. */
-export type NextProgression = VariationStep & {
-  /**
-   * The rest of what this movement leads to, beyond `next`. A rung is allowed to fork — Push-ups
-   * opens Dip, Pike Push-Up *and* Diamond Push-Up, Dead Bug opens three — and the card named the
-   * first of them and said nothing about the others (exercise sheet audit, 2026-09-15).
-   */
-  alsoNext: MovementRef[];
-};
+export type NextProgression = VariationStep;
 
-type LadderRow = MovementRef & { prerequisiteExerciseId: number | null };
+export type LadderRow = MovementRef & { prerequisiteExerciseId: number | null };
 
 /** The whole ladder in one query — `exercises` is static seed content and ~50 rows deep. */
 export async function fetchLadderRows(): Promise<LadderRow[]> {
@@ -420,13 +421,32 @@ export function streakOf(flags: readonly boolean[]): number {
   return Math.min(miss === -1 ? flags.length : miss, PROGRESSION_SESSIONS_REQUIRED);
 }
 
-async function buildStep(from: LadderRow, next: LadderRow): Promise<VariationStep> {
+/**
+ * Where a rung leads: the successor a card illustrates, and the rest of the fork beside it.
+ *
+ * The one place that answers "what comes after this movement". `rows.find` answered it in three
+ * places, and on the five forking rungs each of them named a single successor and stayed silent
+ * about the others. Order is the table's, so every screen illustrates the same one.
+ */
+export function successorsOf(
+  rows: readonly LadderRow[],
+  exerciseId: number,
+): { next: LadderRow; alsoNext: MovementRef[] } | null {
+  const [next, ...also] = rows.filter((r) => r.prerequisiteExerciseId === exerciseId);
+  return next ? { next, alsoNext: also.map(stripPrerequisite) } : null;
+}
+
+async function buildStep(
+  from: LadderRow,
+  fork: { next: LadderRow; alsoNext: MovementRef[] },
+): Promise<VariationStep> {
   const flags = await recentMetFlags(from.id, PROGRESSION_SESSIONS_REQUIRED);
   const metTarget = streakOf(flags);
 
   return {
     from: stripPrerequisite(from),
-    next: stripPrerequisite(next),
+    next: stripPrerequisite(fork.next),
+    alsoNext: fork.alsoNext,
     metTarget,
     required: PROGRESSION_SESSIONS_REQUIRED,
     isEarned: metTarget >= PROGRESSION_SESSIONS_REQUIRED,
@@ -447,11 +467,10 @@ export async function getNextProgression(exerciseId: number): Promise<NextProgre
   const from = rows.find((r) => r.id === exerciseId);
   // A fork is content, not an anomaly: five rungs have more than one successor. The first is the
   // one the card illustrates, the rest are named beside it, and both count as "above".
-  const [next, ...also] = rows.filter((r) => r.prerequisiteExerciseId === exerciseId);
-  if (!from || !next) return null;
+  const fork = successorsOf(rows, exerciseId);
+  if (!from || !fork) return null;
 
-  const alsoNext = also.map(stripPrerequisite);
-  const step = { ...(await buildStep(from, next)), alsoNext };
+  const step = await buildStep(from, fork);
   if (step.isEarned) return step;
 
   // The hero already stands on `next` or above it: the Wall Sit screen told a hero who trains Squat
@@ -459,7 +478,7 @@ export async function getNextProgression(exerciseId: number): Promise<NextProgre
   // here". Only what is *above* counts, the way `rungsBehind` reads it: a Wall Sit streak from last
   // spring still does not open Squat, the window decides that. Every branch of the fork is above,
   // or a hero doing Diamond Push-Ups would still be told to earn Dip.
-  const above = [next.id, ...alsoNext.map((m) => m.id)];
+  const above = [fork.next.id, ...step.alsoNext.map((m) => m.id)];
   for (let i = 0; i < above.length; i++) {
     for (const row of rows) {
       // `includes` guards a cycle in the seed data, as `getChainTo`'s `seen` does.
@@ -765,8 +784,8 @@ export async function checkForNewRungs(sessionId: number): Promise<VariationStep
 
   for (const { exerciseId } of sessionRows) {
     const from = byId.get(exerciseId);
-    const next = rows.find((r) => r.prerequisiteExerciseId === exerciseId);
-    if (!from || !next) continue;
+    const fork = successorsOf(rows, exerciseId);
+    if (!from || !fork) continue;
 
     // One row deeper than the threshold: the extra row is what the streak looked like *before*
     // tonight's set joined it.
@@ -778,7 +797,8 @@ export async function checkForNewRungs(sessionId: number): Promise<VariationStep
     if (met(0) && !met(1)) {
       unlocked.push({
         from: stripPrerequisite(from),
-        next: stripPrerequisite(next),
+        next: stripPrerequisite(fork.next),
+        alsoNext: fork.alsoNext,
         metTarget: PROGRESSION_SESSIONS_REQUIRED,
         required: PROGRESSION_SESSIONS_REQUIRED,
         isEarned: true,

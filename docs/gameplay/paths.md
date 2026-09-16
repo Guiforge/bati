@@ -2,7 +2,7 @@
 title: Paths (the variation ladder)
 type: system
 status: active
-updated: 2026-09-15
+updated: 2026-09-16
 related:
   [
     progression.md,
@@ -112,8 +112,8 @@ the only way to decline was to type a number they had not performed.
 | --- | --- |
 | [Exercise details](../screens/exercise-details.md) | The whole path: name, bar, the rung you stand on, the next rung. Both are tappable. |
 | **Home — the oath card** | When the sworn movement sits on a path, the strip *replaces* the gold bar. |
-| Journal — quest log, "What it moved" | The rung the session's movements are climbing, and how many clean sessions are left. |
-| Victory — `SessionRewards` | Rungs this session just crossed. |
+| Journal — quest log, "What it moved" | The rung the session's movements are climbing, and how many clean sessions are left. Once earned, a fork names every movement it opens. |
+| Victory — `SessionRewards` | Rungs this session just crossed: one row per rung, the first successor illustrated, the rest of a fork named on a line. |
 | [Catalogue](../screens/exercises.md) | "Leads to X" per row, plus a ladder filter. |
 
 ### The oath is a path

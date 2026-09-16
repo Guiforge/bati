@@ -5,6 +5,7 @@ jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }
 
 import type { Exercise } from "@/db/exercises";
 import { estimateQuestTemplateSeconds, estimateQuestTemplateXp } from "@/db/preview";
+import { QUEST_AS_WRITTEN } from "@/db/quests";
 
 const exercise = (id: number, over: Partial<Exercise> = {}): Exercise => ({
   id,
@@ -34,6 +35,7 @@ const exercise = (id: number, over: Partial<Exercise> = {}): Exercise => ({
 describe("db/preview", () => {
   test("estimateQuestTemplateSeconds accounts for rounds + rest + generated targets", () => {
     const template = {
+      author: "Admin" as const,
       rounds: 2,
       restSeconds: 30,
       roundRestSeconds: null,
@@ -53,6 +55,7 @@ describe("db/preview", () => {
       template,
       exercisesById,
       userLevel: "medium",
+      journal: QUEST_AS_WRITTEN,
     });
 
     // reps: 10 * 2s = 20s per round; rounds=2 => 40s work.
@@ -63,6 +66,7 @@ describe("db/preview", () => {
       template,
       exercisesById,
       userLevel: "hard",
+      journal: QUEST_AS_WRITTEN,
     });
 
     // hard multiplier 1.25 => 10 -> 13, reps: 13*2=26 per round; rounds=2 => 52; +30 rest
@@ -79,6 +83,7 @@ describe("db/preview", () => {
   test("the XP estimate does not move when the rest slider does", () => {
     const exercisesById = { 1: exercise(1, { secondsPerRep: 3 }) };
     const base = {
+      author: "Admin" as const,
       rounds: 10,
       exercises: [
         {
@@ -94,11 +99,13 @@ describe("db/preview", () => {
       template: { ...base, restSeconds: 30, roundRestSeconds: null },
       exercisesById,
       userLevel: "medium",
+      journal: QUEST_AS_WRITTEN,
     });
     const glacial = estimateQuestTemplateXp({
       template: { ...base, restSeconds: 300, roundRestSeconds: 300 },
       exercisesById,
       userLevel: "medium",
+      journal: QUEST_AS_WRITTEN,
     });
 
     expect(glacial).toBe(brisk);
@@ -108,11 +115,13 @@ describe("db/preview", () => {
       template: { ...base, restSeconds: 30, roundRestSeconds: null },
       exercisesById,
       userLevel: "medium",
+      journal: QUEST_AS_WRITTEN,
     });
     const glacialSeconds = estimateQuestTemplateSeconds({
       template: { ...base, restSeconds: 300, roundRestSeconds: 300 },
       exercisesById,
       userLevel: "medium",
+      journal: QUEST_AS_WRITTEN,
     });
     expect(glacialSeconds).toBeGreaterThan(briskSeconds);
   });
@@ -127,6 +136,7 @@ describe("db/preview", () => {
    */
   describe("the saved config reaches the card, not just the screen behind it", () => {
     const template = {
+      author: "Admin" as const,
       rounds: 2,
       restSeconds: 30,
       roundRestSeconds: null,
@@ -146,6 +156,7 @@ describe("db/preview", () => {
         template,
         exercisesById,
         userLevel: "medium" as const,
+        journal: QUEST_AS_WRITTEN,
         config: { level: "medium" as const },
       };
       const halved = { ...written, config: { level: "medium" as const, targets: { 7: 10 } } };
@@ -161,6 +172,7 @@ describe("db/preview", () => {
         template,
         exercisesById,
         userLevel: "medium" as const,
+        journal: QUEST_AS_WRITTEN,
         config: { level: "medium" as const, swaps: { 7: 2 } },
       };
 
@@ -173,11 +185,17 @@ describe("db/preview", () => {
         template,
         exercisesById,
         userLevel: "medium" as const,
+        journal: QUEST_AS_WRITTEN,
         config: { level: "medium" as const },
       };
 
       expect(estimateQuestTemplateSeconds(bare)).toBe(
-        estimateQuestTemplateSeconds({ template, exercisesById, userLevel: "medium" }),
+        estimateQuestTemplateSeconds({
+          template,
+          exercisesById,
+          userLevel: "medium",
+          journal: QUEST_AS_WRITTEN,
+        }),
       );
     });
   });

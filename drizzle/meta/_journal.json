@@ -442,6 +442,13 @@
       "when": 1789113600000,
       "tag": "0062_the_record_found_by_its_movement",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "6",
+      "when": 1789200000000,
+      "tag": "0063_what_a_hero_with_nothing_can_use",
+      "breakpoints": true
     }
   ]
 }

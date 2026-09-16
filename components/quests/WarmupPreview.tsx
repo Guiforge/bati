@@ -6,12 +6,12 @@ import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { ChevronDown, ChevronUp, Flame } from "@/components/icons";
 import { getExerciseThumb } from "@/constants/assetMap";
-import { PREP_SECONDS, type WarmupQuest, type WarmupStep } from "@/constants/warmup";
+import { buildWarmup, PREP_SECONDS, type WarmupQuest } from "@/constants/warmup";
 import { formatDurationEstimate } from "@/db/estimate";
 import { type Exercise, officialByName } from "@/db/exercises";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
-import { loadWarmup } from "@/stores/session";
+import { loadWarmupContext } from "@/stores/session";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 /**
@@ -36,14 +36,20 @@ export function WarmupPreview({
   const { t } = useTranslation();
   const router = useRouter();
   const prepMode = useSettingsStore((s) => s.prepMode);
-  const [steps, setSteps] = useState<WarmupStep[]>([]);
+  const [context, setContext] = useState<Awaited<ReturnType<typeof loadWarmupContext>> | null>(
+    null,
+  );
   const [open, setOpen] = useState(false);
 
+  // Once, on mount, and not once per `quest` object: the quest screen hands a freshly built one
+  // on every level tap, every language change and the frame its catalogue lands, and each of
+  // those was paying for three journal reads to redraw a list of four names. What the quest
+  // decides is `buildWarmup`, which is pure and runs in the render below.
   useEffect(() => {
     let cancelled = false;
-    loadWarmup(quest)
+    loadWarmupContext()
       .then((next) => {
-        if (!cancelled) setSteps(next);
+        if (!cancelled) setContext(next);
       })
       .catch((error) => {
         // The warm-up still plays; only the look ahead is lost.
@@ -52,7 +58,12 @@ export function WarmupPreview({
     return () => {
       cancelled = true;
     };
-  }, [quest]);
+  }, []);
+
+  const steps =
+    context === null || !context.enabled
+      ? []
+      : buildWarmup(quest, context.totalSessions, context.unavailable);
 
   // Off in Settings, or an outing: nothing will play, so nothing is announced.
   if (steps.length === 0) return null;
@@ -75,7 +86,7 @@ export function WarmupPreview({
         <Text flex={1} fontWeight="700" fontSize={16} color="$text">
           {t("quests.warmup_section", {
             count: steps.length,
-            duration: formatDurationEstimate(seconds),
+            duration: formatDurationEstimate(seconds, language),
           })}
         </Text>
         {open ? (

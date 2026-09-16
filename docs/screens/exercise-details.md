@@ -23,12 +23,25 @@ Exercise Details explains a single movement — and, when the movement sits on o
 - **Timing hint**: seconds-per-rep guidance on a counted movement. A hold (`measure = time`) and
   an expedition get no chip: their `secondsPerRep` of 1 only feeds the duration estimator, and
   "tempo 1s/rep" under a 45 s plank was not a fact about the plank.
+- **Your numbers**: what the hero last did here and the record they are chasing, one line per
+  unit, because a hold and a count on the same movement are two different records. Both numbers
+  carry their day, in the Journal's words and through the Journal's own `recordWhen`: "Last time
+  45s 15 Sept · Record 1:00 10 months ago". The label is **Record**, not "best" — the wall two
+  taps away says Record about the same number, and the page used to print an undated "best 60s",
+  which reads as something set tonight. `bestAt` comes from `getExerciseHistory`, dated the way
+  the wall dates one: the earliest session that reached the standing best.
 - **Muscle tags**: the muscles the movement trains.
 - **The path** — its name, a segment bar, and the rung the hero stands on. Tapping opens that
   rung.
 - **The next rung** — the harder variation, illustrated, with how many on-target sessions in a
   row are left (the run at the head of the recency window, not the clean ones out of three).
-  Tapping opens it.
+  Tapping opens it. A rung is allowed to fork: Push-ups opens Dip, Pike Push-Up and Diamond
+  Push-Up, and Dead Bug opens three. One of them is illustrated and the rest are **named on one
+  line** ("Push-ups also leads to Pike Push-Up, Diamond Push-Up"), subject being the page's own
+  movement rather than the card's headline. Three more poses would turn the card into a list of
+  what the hero is not doing, which is the wall the skill-tree screen was dropped for. Standing
+  on *any* branch earns the rung (`alsoNext` is part of what `getNextProgression` looks above at),
+  so a hero doing Diamond Push-Ups is no longer told to go and earn Dip.
 - **Loading/error states**: invalid IDs and database failures.
 
 ## The four states of the path block
@@ -57,7 +70,11 @@ Plank: You have earned it".
 
 ## Visual rules
 
-- The media helps recognition without overpowering the name.
+- The media helps recognition without overpowering the name. The frame is **square**, because the
+  art is: all 64 movement illustrations are 1280×1280, as is the placeholder. The 16:9 frame it
+  used to sit in spent 44 % of its width letterboxing them, and `contentFit` stays `contain` for
+  the one case that is not square, a hero's own photo. The loading state renders that same frame
+  empty rather than a skeleton of a guessed height, so nothing shifts when the image lands.
 - **Do not turn this page into a stats dashboard.** One bar for the path, no per-rung bars, no
   difficulty badge, no percentages — a wall of unlit movements is what the dedicated skill-tree
   screen was dropped for ([exercises.md](exercises.md)).

@@ -150,6 +150,29 @@ Generic guides push these; the stack already gives them, so skip:
   thread at 70 % on a screen drawing nothing. A looping ambient animation reads `useIsFocused()`
   and stops when it is false: `FlameFlicker` cancels its loop, `VillageEmbers` unmounts (which
   cancels too). `__tests__/ambient-animations-focus.test.tsx` holds both.
+- **An ambient animation with no end, even on the screen you are looking at.** Focus was only
+  half of it. While the screen *is* up, an endless loop never lets the window go idle, and idle
+  is not a performance nicety: `uiautomator dump` waits for it, so Maestro, TalkBack and every
+  accessibility reader wait for it. Home, untouched, with its streak flame lit: 578 frames in
+  10 s, 16 % of a core on the UI thread, 13 % on the render thread, and four dumps out of four
+  failing with `could not get idle state` after 11 s. The Village, untouched: 602 frames, 31 %,
+  same failure. Both now run a bounded burst and stop, which took each screen to **0 frames,
+  under 2 % of a core, and a dump that answers in 2 s**, and the Village's own scroll off a flat
+  p50 of 31 ms with every frame janky, down to 16 to 25 ms over three passes. The flame gusts
+  four times (4.8 s) on focus; each ember climbs once (the field is out after about 10 s). Coming
+  back to the tab plays it again, which is the only time anyone is looking.
+
+  Three measurements are worth keeping, because they decide the shape of any ambient effect
+  added later. First, **writing a shared value the value it already holds costs nothing**:
+  Reanimated's `useAnimatedStyle` diffs before it commits, so a hold inside a sequence draws no
+  frames at all.
+  A gust-then-rest loop that ran for ever was measured at 57 to 70 frames in 10 s with 1.6 s
+  rests, and its dumps passed. Second, **a rest only buys idle if every loop on the screen rests
+  at the same moment**: nine embers on nine schedules always leave one of them moving, so there
+  the only reachable quiet is the one after the last climb. One clock for a whole field, or no
+  loop at all. Third, **a loop that ticks is not free even when it draws nothing**: the resting
+  version still held about 10 % of a core against 1.9 % once the animation had actually finished.
+  The tick is the reason these effects end rather than idle politely.
 - **Reanimated worklets closing over large objects.** Capture the one property you need,
   not the whole record — shipping a big closure to the UI thread costs a serialization pass.
 - **Context for fast-changing state.** Not used for app state here (Zustand owns it) — if

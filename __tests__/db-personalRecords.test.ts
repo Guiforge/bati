@@ -197,6 +197,29 @@ describe("db/personalRecords", () => {
     // The date rides along with `last`, not with `best`: it is when the hero last did this, which
     // is what the exercise page prints beside the number.
     expect(history.get(ghostKey(exerciseId, "reps"))?.at).toBe(now * 1000);
+    // And the record carries its own day, or "best 25 reps" reads as something done tonight.
+    expect(history.get(ghostKey(exerciseId, "reps"))?.bestAt).toBe((now - 3600) * 1000);
+  });
+
+  test("getExerciseHistory dates a record from the evening it first fell", async () => {
+    const { getExerciseHistory, ghostKey } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+    const exerciseId = firstExerciseId(t);
+
+    // The same rule the record wall applies: a later equal value never took the record, because
+    // `checkForNewRecords` decides one with a strict `>`. So the *earliest* 25 is the day.
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES
+        (1, ${now - 7200}), (2, ${now - 3600}), (3, ${now});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+        (1, ${exerciseId}, 'reps', 25, ${now - 7200}, 0),
+        (2, ${exerciseId}, 'reps', 25, ${now - 3600}, 0),
+        (3, ${exerciseId}, 'reps', 18, ${now}, 0);
+    `);
+
+    const history = await getExerciseHistory([exerciseId]);
+    expect(history.get(ghostKey(exerciseId, "reps"))?.bestAt).toBe((now - 7200) * 1000);
   });
 
   test("getExerciseHistory reports the best round of the last session, not its last row", async () => {
@@ -268,6 +291,7 @@ describe("db/personalRecords", () => {
       last: 11,
       best: 16,
       at: evening * 1000,
+      bestAt: morning * 1000,
     });
     expect(history.has(ghostKey(other, "reps"))).toBe(false);
     expect(history.size).toBe(1);

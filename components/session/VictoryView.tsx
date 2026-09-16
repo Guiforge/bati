@@ -453,7 +453,9 @@ export function VictoryView() {
                       final blow is the guarantee that finishing the campaign always kills. */}
                   {felledByFinalBlow
                     ? t("boss.final_blow")
-                    : t("boss.triumph_subtitle", { xp: TRIUMPH_XP_BONUS })}
+                    : t("boss.triumph_subtitle", {
+                        xp: formatCount(language, TRIUMPH_XP_BONUS),
+                      })}
                 </Text>
               )}
             </YStack>
@@ -536,7 +538,7 @@ export function VictoryView() {
             </Text>
             {!!result?.dailyBonusXp && (
               <Text fontWeight="700" fontSize={11} color="$success">
-                {t("common.daily_xp_bonus", { count: result.dailyBonusXp })}
+                {t("common.daily_xp_bonus", { count: formatCount(language, result.dailyBonusXp) })}
               </Text>
             )}
             {/* The rate, said out loud. A hero who walks an hour and reads "+300" has no way to
@@ -545,8 +547,8 @@ export function VictoryView() {
             {result?.outing ? (
               <Text fontWeight="700" fontSize={11} color="$textSecondary">
                 {t("session.xp_outing_rate", {
-                  moving: formatDurationEstimate(result.outing.seconds),
-                  effort: formatDurationEstimate(result.outing.effortSeconds),
+                  moving: formatDurationEstimate(result.outing.seconds, language),
+                  effort: formatDurationEstimate(result.outing.effortSeconds, language),
                 })}
               </Text>
             ) : null}

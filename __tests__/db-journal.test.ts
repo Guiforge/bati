@@ -210,7 +210,12 @@ describe("db/journal", () => {
     const last = await getCompletedSessionById(3);
     assert(last);
     const rung = await journal().getSessionRung(last);
-    expect(rung).toEqual(await getNextProgression(high));
+    const step = await getNextProgression(high);
+    assert(step);
+    // The exercise page's step also carries the fork it opens (`alsoNext`); the quest log names
+    // one rung and has no room for it. Every other field has to agree, which is the point here.
+    const { alsoNext: _, ...common } = step;
+    expect(rung).toEqual(common);
     expect(rung?.metTarget).toBe(2);
   });
 

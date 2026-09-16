@@ -40,8 +40,11 @@ export type NewRecordResult = {
  * round 3 against last time's round 3, which is truer and doubles the fold; do it if anyone
  * reports the round-1 number feeling unreachable.
  */
-/** `at` is when the *last* set was logged, in ms — the best's own date is not tracked. */
-export type ExerciseGhost = { last: number; best: number; at: number };
+/**
+ * `at` is when the *last* set was logged, in ms; `bestAt` is the evening the standing best was
+ * first reached, the same question the record wall answers ("Record 1:00 · 10 months ago").
+ */
+export type ExerciseGhost = { last: number; best: number; at: number; bestAt: number };
 
 /**
  * Reps and seconds share `resultValue` and nothing in the column says which one it holds, so a
@@ -67,6 +70,13 @@ export function ghostKey(exerciseId: number, type: QuestTargetType): string {
  *
  * The fold runs in SQLite: it used to return one row per session per movement (835 for one quest
  * at five years of journal) and keep two numbers in JS (perf audit, 2026-09-15).
+ *
+ * `bestAt` is the *earliest* session that reached the standing best, which is the rule
+ * `getRecordWall` already applies: a later equal value never took the record, because
+ * `checkForNewRecords` decides one with a strict `>`. One more window function over the partition
+ * that was already being built, rather than a second query per movement. It is a second sort, so
+ * it is not free: on the five-year bench (`y5n.db`, 8 740 rows) it costs 0.25 ms on the one
+ * movement the exercise page asks for and 0.8 ms on a six-movement quest, 2.0 ms to 2.8 ms.
  */
 export async function getExerciseHistory(
   exerciseIds: number[],
@@ -85,10 +95,14 @@ export async function getExerciseHistory(
     last: number;
     best: number;
     at: number;
+    bestAt: number;
   }>(sql`
-    SELECT exerciseId, resultType, last, best, at FROM (
+    SELECT exerciseId, resultType, last, best, at, bestAt FROM (
       SELECT exerciseId, resultType, best AS last, at,
              MAX(best) OVER (PARTITION BY exerciseId, resultType) AS best,
+             FIRST_VALUE(at) OVER (
+               PARTITION BY exerciseId, resultType ORDER BY best DESC, at ASC
+             ) AS bestAt,
              ROW_NUMBER() OVER (
                PARTITION BY exerciseId, resultType ORDER BY at DESC, sessionId DESC
              ) AS rn
@@ -107,7 +121,7 @@ export async function getExerciseHistory(
   return new Map(
     rows.map((r) => [
       ghostKey(r.exerciseId, r.resultType),
-      { last: r.last, best: r.best, at: r.at * 1000 },
+      { last: r.last, best: r.best, at: r.at * 1000, bestAt: r.bestAt * 1000 },
     ]),
   );
 }

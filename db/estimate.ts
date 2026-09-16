@@ -1,6 +1,6 @@
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import type { Exercise } from "./exercises";
-import { SECONDS_SUFFIX, type Target } from "./targets";
+import { MINUTES_WORD, SECONDS_SUFFIX, type Target } from "./targets";
 
 export function estimateExerciseSeconds(exercise: Pick<Exercise, "secondsPerRep">, target: Target) {
   if (target.type === "time") return Math.max(1, target.value);
@@ -52,13 +52,14 @@ export function adventureWeeks(stepsCount: number, sessionsPerWeek = 3) {
  * (the real duration depends on actual rest taken). Journal durations are measured, so they
  * keep formatDuration's exact form.
  *
- * This one takes no language: it writes "min" in every locale. It once branched on `lang`
- * with two identical arms, six call sites threading the live language into a ternary that could
- * not change anything. `formatDuration` does take one, for the space before its "s".
+ * The language is back, and this time it changes the string: German writes "Min.". It once
+ * branched on `lang` with two identical arms, six call sites threading the live language into a
+ * ternary that could not change anything, so the parameter was dropped. One word in one table
+ * (`MINUTES_WORD`) is what the arms should have been.
  */
-export function formatDurationEstimate(seconds: number) {
+export function formatDurationEstimate(seconds: number, language: AppLanguage) {
   const m = Math.max(1, Math.round(Math.max(0, seconds) / 60));
-  return `${m} min`;
+  return `${m} ${MINUTES_WORD[language]}`;
 }
 
 /**
@@ -66,16 +67,17 @@ export function formatDurationEstimate(seconds: number) {
  * suffix, so French reads "12 min 17 s" like its holds do. A hold itself is `formatTarget`'s job,
  * this is for sessions and outings, where minutes are the unit people think in.
  *
- * ponytail: "min" stays unlocalised although German writes "Min." (`journal.duration_m`); give
- * minutes a `Localized` word like `REPS_WORD` if a German reader flags it.
+ * The minute wears `MINUTES_WORD` like the second wears `SECONDS_SUFFIX`, so German reads
+ * "12 Min. 17 s" here and in the Journal, which has said `duration_m` since the locales existed.
  */
 export function formatDuration(seconds: number, language: AppLanguage) {
   const s = Math.max(0, Math.round(seconds));
   const m = Math.floor(s / 60);
   const r = s % 60;
   const sec = `${r}${SECONDS_SUFFIX[language]}`;
+  const min = `${m} ${MINUTES_WORD[language]}`;
 
   if (m <= 0) return sec;
-  if (r === 0) return `${m} min`;
-  return `${m} min ${sec}`;
+  if (r === 0) return min;
+  return `${min} ${sec}`;
 }

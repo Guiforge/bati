@@ -13,8 +13,9 @@ import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@/components/icons";
+import { shortDate } from "@/components/journal/journalFormat";
+import { recordWhen } from "@/components/journal/stats/wall";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
-import { getDateTimeFormat } from "@/constants/dateFormatters";
 import {
   deleteUserExercise,
   getExerciseById,
@@ -39,7 +40,7 @@ type Exercise = NonNullable<Awaited<ReturnType<typeof getExerciseById>>>;
 type Status = "loading" | "ready" | "error";
 
 /**
- * The 1280 px art belongs to the 16:9 hero and nowhere else — an image costs its *source*
+ * The 1280 px art belongs to the hero frame and nowhere else — an image costs its *source*
  * resolution in memory, not its slot (docs/architecture/performance.md). Every small slot reads
  * the 128 px thumbnail, which is what `ProgressionCard` and `SessionRewards` already do.
  */
@@ -96,11 +97,12 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
 }
 
 function LoadingCard() {
-  // Reserve the 16:9 hero and the title card so the screen doesn't jump by the full
-  // image height when data lands.
+  // The empty hero frame itself, not a skeleton of the same nominal height: a reserved slot that
+  // is a guess drifts from what lands in it, and a fixed 200 under a square frame let the screen
+  // jump by a third of the image.
   return (
     <YStack gap="$4">
-      <Skeleton height={200} radius={16} />
+      <ExerciseImage />
       <SkeletonCard>
         <Skeleton height={24} width="60%" />
         <Skeleton height={16} width="80%" />
@@ -110,11 +112,16 @@ function LoadingCard() {
   );
 }
 
-function ExerciseImage({ source }: { source: ImageSourcePropType }) {
+/** Also the loading state, with nothing in it. */
+function ExerciseImage({ source }: { source?: ImageSourcePropType }) {
   return (
     <YStack
       width="100%"
-      aspectRatio={16 / 9}
+      // Square, because the art is: all 64 movement illustrations are 1280×1280, and so is the
+      // placeholder every unknown path falls back to. A 16:9 frame around them spent 44 % of its
+      // width on empty background, which `contentFit="contain"` had to letterbox (exercise sheet
+      // audit, 2026-09-15). `SessionRewards` already frames the same art square.
+      aspectRatio={1}
       bg="$bgLight"
       borderWidth={1}
       borderColor="$borderStrong"
@@ -124,14 +131,16 @@ function ExerciseImage({ source }: { source: ImageSourcePropType }) {
       shadowOffset={{ width: 0, height: 5 }}
       overflow="hidden"
     >
-      <Image
-        source={source}
-        style={{ width: "100%", height: "100%" }}
-        // contain, not cover: the movement art is a full figure on a dark ground, and the 16:9
-        // crop was taking the head and feet with it. The card's own bg letterboxes invisibly.
-        contentFit="contain"
-        transition={200}
-      />
+      {source === undefined ? null : (
+        <Image
+          source={source}
+          style={{ width: "100%", height: "100%" }}
+          // contain, not cover: a hero's own photo is whatever shape their camera gave it, and a
+          // crop of that takes the movement out of frame. The card's bg letterboxes invisibly.
+          contentFit="contain"
+          transition={200}
+        />
+      )}
     </YStack>
   );
 }
@@ -247,6 +256,18 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
                   defaultValue: `Hit your target ${remaining} more sessions in a row to earn it.`,
                 })}
           </Paragraph>
+
+          {/* A fork gets named, not illustrated: Push-ups opens three movements and the card
+              announced Dip alone. Names on one line say the whole truth for the price of a line;
+              three more 80 px poses would make the page a list of what the hero is not doing. */}
+          {progression.alsoNext.length === 0 ? null : (
+            <Paragraph color="$textSecondary" size="$2">
+              {t("exercises.next_step_also", {
+                name: localizedName(progression.from, language),
+                names: progression.alsoNext.map((m) => localizedName(m, language)).join(", "),
+              })}
+            </Paragraph>
+          )}
         </YStack>
 
         <ChevronRight size={20} color="$textSecondary" />
@@ -383,6 +404,9 @@ function HeroActions({ exercise, onGone }: { exercise: Exercise; onGone: () => v
 function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () => void }) {
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
+  // Read once per render and passed down, the way the Journal's wall takes it: two dates on the
+  // same line must not straddle midnight.
+  const now = new Date();
 
   const title = localizedName(exercise, language);
   const desc = localizedText(exercise, "description", language);
@@ -491,20 +515,24 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                     {formatTarget({ type, value: ghost.last }, language)}
                   </Text>
                   <Text fontSize={12} color="$textSecondary">
-                    {getDateTimeFormat(language, { day: "numeric", month: "short" }).format(
-                      new Date(ghost.at),
-                    )}
+                    {shortDate(language, new Date(ghost.at), now)}
                   </Text>
                   {ghost.best > ghost.last ? (
                     <>
                       <Text fontSize={12} color="$textSecondary" opacity={0.5}>
                         ·
                       </Text>
+                      {/* The Journal's word and the Journal's date. This line said "best 60s"
+                          with no date while the wall two taps away said "Record 1:00 · 10 months
+                          ago" about the same hold, and an undated number reads as tonight's. */}
                       <Text fontSize={12} color="$textSecondary">
-                        {t("session.ghost_best_label", "best")}
+                        {t("exercises.record_label", "Record")}
                       </Text>
                       <Text fontSize={15} fontWeight="700" color="$resourceGold">
                         {formatTarget({ type, value: ghost.best }, language)}
+                      </Text>
+                      <Text fontSize={12} color="$textSecondary">
+                        {recordWhen(t, language, new Date(ghost.bestAt), now)}
                       </Text>
                     </>
                   ) : null}

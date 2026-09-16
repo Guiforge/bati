@@ -312,7 +312,14 @@ export type VariationStep = {
 };
 
 /** Kept for the exercise screen, which imported this name before the ladder had other readers. */
-export type NextProgression = VariationStep;
+export type NextProgression = VariationStep & {
+  /**
+   * The rest of what this movement leads to, beyond `next`. A rung is allowed to fork — Push-ups
+   * opens Dip, Pike Push-Up *and* Diamond Push-Up, Dead Bug opens three — and the card named the
+   * first of them and said nothing about the others (exercise sheet audit, 2026-09-15).
+   */
+  alsoNext: MovementRef[];
+};
 
 type LadderRow = MovementRef & { prerequisiteExerciseId: number | null };
 
@@ -435,20 +442,24 @@ async function buildStep(from: LadderRow, next: LadderRow): Promise<VariationSte
  * three logged sets met their target — rather than "3×12 clean reps", which would require seeing
  * technique the app cannot see.
  */
-export async function getNextProgression(exerciseId: number): Promise<VariationStep | null> {
+export async function getNextProgression(exerciseId: number): Promise<NextProgression | null> {
   const rows = await fetchLadderRows();
   const from = rows.find((r) => r.id === exerciseId);
-  const next = rows.find((r) => r.prerequisiteExerciseId === exerciseId);
+  // A fork is content, not an anomaly: five rungs have more than one successor. The first is the
+  // one the card illustrates, the rest are named beside it, and both count as "above".
+  const [next, ...also] = rows.filter((r) => r.prerequisiteExerciseId === exerciseId);
   if (!from || !next) return null;
 
-  const step = await buildStep(from, next);
+  const alsoNext = also.map(stripPrerequisite);
+  const step = { ...(await buildStep(from, next)), alsoNext };
   if (step.isEarned) return step;
 
   // The hero already stands on `next` or above it: the Wall Sit screen told a hero who trains Squat
   // that Squat still needed three more Wall Sit sessions, while the Squat screen said "You are
   // here". Only what is *above* counts, the way `rungsBehind` reads it: a Wall Sit streak from last
-  // spring still does not open Squat, the window decides that.
-  const above = [next.id];
+  // spring still does not open Squat, the window decides that. Every branch of the fork is above,
+  // or a hero doing Diamond Push-Ups would still be told to earn Dip.
+  const above = [next.id, ...alsoNext.map((m) => m.id)];
   for (let i = 0; i < above.length; i++) {
     for (const row of rows) {
       // `includes` guards a cycle in the seed data, as `getChainTo`'s `seen` does.

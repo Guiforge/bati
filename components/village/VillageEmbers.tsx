@@ -6,7 +6,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withDelay,
-  withRepeat,
   withTiming,
 } from "react-native-reanimated";
 import { YStack } from "tamagui";
@@ -69,9 +68,9 @@ function Ember({ left, start, size, duration, delay, heroHeight, heroWidth, peak
   const t = useSharedValue(0);
 
   useEffect(() => {
-    // One linear climb, looped. The fade lives in the interpolation, so a single value drives
-    // both and they can never fall out of step.
-    t.value = withDelay(delay, withRepeat(withTiming(1, { duration, easing: Easing.linear }), -1));
+    // One linear climb, once. The fade lives in the interpolation, so a single value drives both
+    // and they can never fall out of step.
+    t.value = withDelay(delay, withTiming(1, { duration, easing: Easing.linear }));
   }, [t, delay, duration]);
 
   const style = useAnimatedStyle(() => ({
@@ -112,6 +111,16 @@ function Ember({ left, start, size, duration, delay, heroHeight, heroWidth, peak
  * running under other screens took their frames from 16 to 30 ms (perf audit C1). Unmounting is
  * the pause, since `useSharedValue` cancels its animation on unmount; the embers start their
  * climb again when the hero comes back.
+ *
+ * They climb once per visit rather than for ever. Nine staggered loops that never ended drew 602
+ * frames in 10 s of an untouched village, held 31 % of a core on the UI thread, and kept
+ * `uiautomator dump` from ever finding the window idle, which takes Maestro and the accessibility
+ * readers with it (perf audit C7). A rest cannot be shared here the way the flame rests between
+ * gusts: nine motes on nine schedules always leave one of them moving, so the only quiet the
+ * window ever gets is the one after the last climb. The field burns for about ten seconds, longer
+ * than anyone looks at a painting, and lights again on the next visit. Measured on 16/09: once
+ * the last mote is out, 0 frames and 1.5 % of a core, a dump in 2 s, and the village's own scroll
+ * off a flat p50 of 31 ms with every frame janky, down to 16 to 25 ms over three passes.
  */
 export function VillageEmbers({
   heroHeight,

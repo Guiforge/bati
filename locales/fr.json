@@ -303,6 +303,8 @@
     "next_step_progress_one": "Atteins ton objectif encore {{count}} séance d'affilée pour la débloquer.",
     "next_step_progress_other": "Atteins ton objectif encore {{count}} séances d'affilée pour la débloquer.",
     "next_step_progress_many": "Atteins ton objectif encore {{count}} séances d'affilée pour la débloquer.",
+    "next_step_also": "{{name}} mène aussi à {{names}}.",
+    "record_label": "Record",
     "catalogue_title": "Exercices",
     "count_one": "{{count}} exercice",
     "count_other": "{{count}} exercices",

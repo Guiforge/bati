@@ -234,6 +234,38 @@ function WhereItSits({ standing }: { standing: QuestStanding }) {
   );
 }
 
+/** The rung the session is climbing, and once it is earned, every movement that rung opens. */
+function RungFact({ rung }: { rung: VariationStep }) {
+  const { t } = useTranslation();
+  const language = useSettingsStore((s) => s.language);
+  return (
+    <NFact tone="quiet">
+      <NMuted fontSize={13.5} lineHeight={19}>
+        {rung.isEarned
+          ? t("journal.moved_rung_earned", {
+              movement: localizedName(rung.from, language),
+              next: localizedName(rung.next, language),
+            })
+          : t("journal.moved_rung_left", {
+              movement: localizedName(rung.from, language),
+              met: rung.metTarget,
+              required: rung.required,
+              count: rung.required - rung.metTarget,
+            })}
+      </NMuted>
+      {/* The fork, only once it is earned: below the bar the line counts sessions and names
+          no movement at all, so there is nothing yet for the other branches to hang off. */}
+      {rung.isEarned && rung.alsoNext.length > 0 ? (
+        <NMuted fontSize={12.5} lineHeight={18} mt={2}>
+          {t("progression.rung_also_leads_to", {
+            names: rung.alsoNext.map((m) => localizedName(m, language)).join(", "),
+          })}
+        </NMuted>
+      ) : null}
+    </NFact>
+  );
+}
+
 function WhatItMoved({ data }: { data: QuestLogData }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
@@ -322,23 +354,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
           </NText>
         </NFact>
       ) : null}
-      {rung ? (
-        <NFact tone="quiet">
-          <NMuted fontSize={13.5} lineHeight={19}>
-            {rung.isEarned
-              ? t("journal.moved_rung_earned", {
-                  movement: localizedName(rung.from, language),
-                  next: localizedName(rung.next, language),
-                })
-              : t("journal.moved_rung_left", {
-                  movement: localizedName(rung.from, language),
-                  met: rung.metTarget,
-                  required: rung.required,
-                  count: rung.required - rung.metTarget,
-                })}
-          </NMuted>
-        </NFact>
-      ) : null}
+      {rung ? <RungFact rung={rung} /> : null}
     </NBlock>
   );
 }

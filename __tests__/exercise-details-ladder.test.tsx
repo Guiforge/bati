@@ -215,9 +215,11 @@ describe("a rung that forks", () => {
     });
     await mountScreen();
 
-    // The page's own movement is the subject, not the card's headline: "Dip also leads to…" would
-    // be a different, and false, sentence.
-    expect(screen.getByText("Push-ups also leads to Pike Push-Up, Diamond Push-Up.")).toBeTruthy();
+    // The rung is the subject, not the card's headline: "Dip also leads to…" would be a different,
+    // and false, sentence. The same words close the quest log and the victory card.
+    expect(
+      screen.getByText("The same rung also leads to Pike Push-Up, Diamond Push-Up."),
+    ).toBeTruthy();
   });
 
   it("says nothing extra when the rung leads to one movement", async () => {

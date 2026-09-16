@@ -310,6 +310,17 @@ export function SessionRewards({
                       defaultValue: `You have mastered ${localizedName(step.from, language)}`,
                     })}
                   </Text>
+                  {/* One rung, several doors: what the row illustrates is the one to try, and it
+                      is the one the exercise page illustrates too. The others are named on a
+                      line rather than given a pose each, which would turn a reward into a
+                      homework list on the screen that exists to close the session. */}
+                  {step.alsoNext.length > 0 ? (
+                    <Text fontSize={12} color="$text" opacity={0.55} mt="$1">
+                      {t("progression.rung_also_leads_to", {
+                        names: step.alsoNext.map((m) => localizedName(m, language)).join(", "),
+                      })}
+                    </Text>
+                  ) : null}
                 </YStack>
               </XStack>
             ))}

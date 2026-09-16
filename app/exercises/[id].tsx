@@ -259,11 +259,12 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
 
           {/* A fork gets named, not illustrated: Push-ups opens three movements and the card
               announced Dip alone. Names on one line say the whole truth for the price of a line;
-              three more 80 px poses would make the page a list of what the hero is not doing. */}
+              three more 80 px poses would make the page a list of what the hero is not doing.
+              The sentence is `progression.*` because the quest log and the victory screen say it
+              too, about the same fork. */}
           {progression.alsoNext.length === 0 ? null : (
             <Paragraph color="$textSecondary" size="$2">
-              {t("exercises.next_step_also", {
-                name: localizedName(progression.from, language),
+              {t("progression.rung_also_leads_to", {
                 names: progression.alsoNext.map((m) => localizedName(m, language)).join(", "),
               })}
             </Paragraph>

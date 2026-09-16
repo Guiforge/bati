@@ -216,7 +216,8 @@
     "step_progress_other": "Hit your target {{count}} more times on {{name}} to earn it.",
     "new_rung": "New rung unlocked",
     "new_rungs": "{{count}} new rungs unlocked",
-    "new_rung_from": "You have mastered {{name}}"
+    "new_rung_from": "You have mastered {{name}}",
+    "rung_also_leads_to": "The same rung also leads to {{names}}."
   },
   "quests": {
     "written_for_beginner": "Beginner",
@@ -444,7 +445,6 @@
     "next_step_earned": "You have earned it. Give it a try.",
     "next_step_progress_one": "Hit your target {{count}} more session in a row to earn it.",
     "next_step_progress_other": "Hit your target {{count}} more sessions in a row to earn it.",
-    "next_step_also": "{{name}} also leads to {{names}}.",
     "record_label": "Record",
     "catalogue_title": "Exercises",
     "count_one": "{{count}} exercise",

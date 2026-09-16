@@ -270,6 +270,20 @@ describe("db/exercises — variation ladder", () => {
       expect(unlocked[0]?.from.enName).toBe("Wall Push-Up");
     });
 
+    test("a rung that forks announces every movement it opens, on the seeded ladder", async () => {
+      // Push-ups opens three; the victory screen used to hear about the first one alone.
+      const pushUps = idOf("Push-ups");
+      logSet(pushUps, 12, 12);
+      logSet(pushUps, 12, 12);
+      const sessionId = logSet(pushUps, 12, 12);
+
+      const [step] = await exercisesApi().checkForNewRungs(sessionId);
+      const opened = [step?.next.enName, ...(step?.alsoNext ?? []).map((m) => m.enName)];
+      expect(opened.sort()).toEqual(["Diamond Push-Up", "Dip", "Pike Push-Up"]);
+      // And the same one illustrated as on the exercise page.
+      expect(step?.next.id).toBe((await exercisesApi().getNextProgression(pushUps))?.next.id);
+    });
+
     test("a rung already earned before tonight is not announced again", async () => {
       const wallPushUp = idOf("Wall Push-Up");
       for (let i = 0; i < 3; i++) logSet(wallPushUp, 12, 12);

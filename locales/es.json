@@ -218,7 +218,8 @@
     "step_progress_many": "Alcanza tu objetivo en {{name}} {{count}} veces más para desbloquearla.",
     "new_rung": "Nueva etapa desbloqueada",
     "new_rungs": "{{count}} nuevas etapas desbloqueadas",
-    "new_rung_from": "Dominas {{name}}"
+    "new_rung_from": "Dominas {{name}}",
+    "rung_also_leads_to": "La misma etapa también lleva a {{names}}."
   },
   "quests": {
     "written_for_beginner": "Principiante",
@@ -452,7 +453,6 @@
     "next_step_progress_one": "Te falta {{count}} sesión seguida en el objetivo para desbloquearla.",
     "next_step_progress_other": "Te faltan {{count}} sesiones seguidas en el objetivo para desbloquearla.",
     "next_step_progress_many": "Te faltan {{count}} sesiones seguidas en el objetivo para desbloquearla.",
-    "next_step_also": "{{name}} también lleva a {{names}}.",
     "record_label": "Récord",
     "catalogue_title": "Ejercicios",
     "count_one": "{{count}} ejercicio",

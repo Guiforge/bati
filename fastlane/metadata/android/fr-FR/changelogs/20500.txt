@@ -3,7 +3,7 @@
 - Les voies se souviennent : une étape acquise reste
   derrière toi, et les quêtes servent ta vraie étape.
 - Enregistrer une séance, le Village et l'Accueil sont
-  bien plus rapides, et le minuteur use moins la batterie.
+  plus rapides, et le minuteur use moins la batterie.
 - La carte d'une quête et son écran annoncent la même XP.
 - La fiche d'un exercice date ton record et nomme chaque
   étape suivante.

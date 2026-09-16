@@ -45,8 +45,10 @@ describe("release changelogs", () => {
       );
     }
 
-    const body = fs.readFileSync(file, "utf8").trim();
-    expect(body.length).toBeGreaterThan(0);
-    expect(body.length).toBeLessThanOrEqual(PLAY_CHANGELOG_LIMIT);
+    // Untrimmed: fastlane supply uploads the file as is, and Play counts the trailing newline.
+    // 2.5.0's fr-FR notes were 500 trimmed and rejected at 501.
+    const raw = fs.readFileSync(file, "utf8");
+    expect(raw.trim().length).toBeGreaterThan(0);
+    expect(raw.length).toBeLessThanOrEqual(PLAY_CHANGELOG_LIMIT);
   });
 });

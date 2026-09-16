@@ -91,7 +91,15 @@ Generic guides push these; the stack already gives them, so skip:
    new prop identity every render.
 3. **Reanimated: only animate `transform` and `opacity`.** These run entirely on the UI
    thread. `width`, `height`, `backgroundColor`, and other layout-affecting properties force
-   a layout pass and are slow.
+   a layout pass and are slow. Running on the UI thread is not the same as being cheap there:
+   on the New Architecture Reanimated applies *any* animated style by cloning the shadow tree
+   and committing it, layout included, every frame. `package.json` turns on
+   `reanimated.staticFeatureFlags.ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS`, which sends a style
+   made only of `transform`, `opacity` and a few colour and radius props straight to the native
+   view instead (the full list is `synchronousPropNames` in Reanimated's
+   `ReanimatedModuleProxy.cpp`). One layout prop in the same worklet sends the whole style back
+   through the commit. Only a native build reads the flag, so a JS reload proves nothing about
+   it. See the arrival cost under "An ambient animation with no end" below.
 4. **Never read a shared value on the JS thread** (`sharedValue.value` outside a worklet)
    — it blocks the JS thread waiting on the UI thread. Read it inside `useAnimatedStyle` or
    another worklet instead.
@@ -173,6 +181,22 @@ Generic guides push these; the stack already gives them, so skip:
   loop at all. Third, **a loop that ticks is not free even when it draws nothing**: the resting
   version still held about 10 % of a core against 1.9 % once the animation had actually finished.
   The tick is the reason these effects end rather than idle politely.
+
+  Ending fixed the rest, not the arrival. On a Fairphone 6, release build, empty database (tier 1,
+  so **two** embers, not nine), the ten seconds after opening the Village drew 480 frames at a p50
+  of 32 to 34 ms, every one over budget, with the UI thread at 48 % and the RenderThread at 40 %;
+  a scroll started then ran at 32 ms against 21 ms once the motes were out. Two 3 dp dots cannot
+  cost that by what they paint, and the count was not the lever either. What they did cost is one
+  shadow tree commit per frame (point 3 above): clone every ancestor from the ember up to the
+  root, dirty that path for Yoga, diff, and mount through JNI, on a Village tree that holds the
+  whole building list. `ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS` is Reanimated's documented answer
+  to exactly that, and it is on since 16/09. Not measured yet on the phone, so it is a suspect with
+  a fix, not a proven cause: if the arrival still misses frames with the flag, look at the
+  RenderThread next (a full redraw of the painting and its two gradients under the motes), and
+  isolating the motes in a hardware layer will not help, since the layer is what changes.
+  `__tests__/ambient-animations-focus.test.tsx` holds the flag and the prop list of both ambient
+  worklets. The flag's documented cost is touch detection on a *pressable* that sits inside an
+  animated transform; nothing here does (the painting's press is on its unmoving parent).
 - **Reanimated worklets closing over large objects.** Capture the one property you need,
   not the whole record — shipping a big closure to the UI thread costs a serialization pass.
 - **Context for fast-changing state.** Not used for app state here (Zustand owns it) — if

@@ -1,5 +1,7 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { act, render } from "@testing-library/react-native";
-import { cancelAnimation, withRepeat, withTiming } from "react-native-reanimated";
+import { cancelAnimation, useAnimatedStyle, withRepeat, withTiming } from "react-native-reanimated";
 import { TamaguiProvider } from "tamagui";
 
 import { FlameFlicker } from "@/components/common/FlameFlicker";
@@ -29,7 +31,7 @@ jest.mock("react-native-reanimated", () => {
     Easing: { linear: (t: number) => t },
     cancelAnimation: jest.fn(),
     interpolate: () => 0,
-    useAnimatedStyle: () => ({}),
+    useAnimatedStyle: jest.fn((worklet: () => object) => worklet()),
     useSharedValue: (v: unknown) => require("react").useState(() => ({ value: v }))[0],
     withDelay: (_ms: number, animation: unknown) => animation,
     withRepeat: jest.fn(() => "loop"),
@@ -108,5 +110,42 @@ describe("ambient animations end on their own", () => {
     await render(wrap(<VillageEmbers heroHeight={400} heroWidth={400} tier={3} />));
     expect(withTiming).toHaveBeenCalledTimes(4);
     expect(withRepeat).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * What the climb costs per frame. On the New Architecture Reanimated applies an animated style by
+ * cloning the shadow tree and committing it, a layout pass on the UI thread every frame, unless
+ * `ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS` is on and every animated prop is one the synchronous path
+ * takes. Without it, two embers on an empty village held 48 % of the UI thread and missed every
+ * frame for ten seconds on a Fairphone 6. Either half can go without a sound: the flag lives in
+ * `package.json` and only a native build reads it, and a `width` slipped into a worklet sends that
+ * one view back through the commit.
+ */
+describe("ambient animations stay off the shadow tree", () => {
+  // Reanimated's list (ReanimatedModuleProxy.cpp, `synchronousPropNames`) is longer; these two are
+  // the ones an ambient effect needs.
+  const SYNCHRONOUS = new Set(["opacity", "transform"]);
+
+  beforeEach(() => {
+    mockFocused = true;
+    jest.clearAllMocks();
+  });
+
+  it("builds Android with the synchronous props path on", () => {
+    const pkg = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf8"));
+    expect(pkg.reanimated?.staticFeatureFlags?.ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS).toBe(true);
+  });
+
+  it.each([
+    ["the flame", () => <FlameFlicker />],
+    ["the embers", () => <VillageEmbers heroHeight={400} heroWidth={400} tier={3} />],
+  ])("animates only transform and opacity in %s", async (_name, element) => {
+    await render(wrap(element()));
+    const styles = jest.mocked(useAnimatedStyle).mock.results.map((r) => r.value as object);
+    expect(styles.length).toBeGreaterThan(0);
+    for (const style of styles) {
+      expect(Object.keys(style).filter((key) => !SYNCHRONOUS.has(key))).toEqual([]);
+    }
   });
 });

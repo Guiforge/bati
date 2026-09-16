@@ -173,6 +173,28 @@ Generic guides push these; the stack already gives them, so skip:
   loop at all. Third, **a loop that ticks is not free even when it draws nothing**: the resting
   version still held about 10 % of a core against 1.9 % once the animation had actually finished.
   The tick is the reason these effects end rather than idle politely.
+- **Tamagui's `Progress` under a clock.** The bar under the rest, the timed set and the warm-up
+  movement was a `Progress`, and on the Fairphone it held the JS thread at 33 to 42 % of a core
+  and drew ~40 frames a second for as long as any of those screens was up, against 0 % on a set
+  counted in reps. The spring was not the whole story: the warm-up's `Progress` had no
+  `transition` and cost the same 41 %. All three draw a
+  [`TimerBar`](../../components/session/TimerBar.tsx) now, a plain width that steps with the
+  numeral. Same flow, three passes each (16/09):
+
+  | Screen | Before: frames / 10 s, JS | After: frames / 10 s, JS |
+  | --- | --- | --- |
+  | Rest | ~400, 33-42 % | 20, 6 % |
+  | Timed set (Plank) | ~350, 42 % | 20, 8-10 % |
+  | Warm-up movement | 563, 41 % | 19-21, 6-7 % |
+  | Set in reps (control) | 0, 0 % | 0, 0 % |
+
+  Two things were tried and left out, because the numbers said so. Easing the step on the UI
+  thread with a Reanimated `withTiming` (250 ms) kept JS at 6 % but drew ~170 frames at a 29 ms
+  p50 with the UI thread at 30 %: an ease across 1/45th of a track is not worth a thread. And
+  moving the numeral and the bar into their own component, so a tick stopped re-rendering the
+  whole rest, measured the same 6 %: what is left is the tick's own frame (a 112px numeral
+  relaid out once a second), not the view around it. `__tests__/timer-bar.test.tsx` fails if
+  `Progress` is imported anywhere again, or if the bar grows an animation.
 - **Reanimated worklets closing over large objects.** Capture the one property you need,
   not the whole record — shipping a big closure to the UI thread costs a serialization pass.
 - **Context for fast-changing state.** Not used for app state here (Zustand owns it) — if

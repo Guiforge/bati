@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Progress, Text, XStack, YStack } from "tamagui";
+import { Button, H1, H3, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Pause, SkipBack, SkipForward } from "@/components/icons";
 import { getExerciseAsset } from "@/constants/assetMap";
@@ -15,6 +15,7 @@ import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { MovementDescription, PrepView } from "./PrepView";
+import { TimerBar } from "./TimerBar";
 
 /**
  * The dynamic warm-up, before the start screen (roadmap §14 H2).
@@ -205,9 +206,7 @@ export function WarmupView() {
             {formatTime(Math.max(0, remainingSeconds))}
           </H1>
 
-          <Progress value={Math.min(100, progress * 100)} width="100%" bg="$surface">
-            <Progress.Indicator bg="$primary" />
-          </Progress>
+          <TimerBar value={progress} fill="$primary" bg="$surface" />
         </YStack>
       )}
 

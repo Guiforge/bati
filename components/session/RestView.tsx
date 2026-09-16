@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H2, Progress, Text, XStack, YStack } from "tamagui";
+import { Button, H1, H2, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
@@ -22,6 +22,7 @@ import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { CountInput } from "./CountInput";
 import { ExerciseInstructionsModal } from "./ExerciseInstructions";
+import { TimerBar } from "./TimerBar";
 
 // One campfire per avatar archetype (scripts/generate-rest.py); a rest draws one at random.
 const REST_ART = [
@@ -207,18 +208,14 @@ export function RestView() {
             <H1 fontSize={112} fontWeight="700" fontFamily="$body" color="$text">
               {formatTime(remainingSeconds)}
             </H1>
-            <Progress
-              value={Math.min(1, Math.max(0, progress)) * 100}
-              size="$4"
+            <TimerBar
+              value={progress}
+              fill="$primary"
               bg="$surface2"
               borderWidth={1}
               borderColor="$borderStrong"
-              rounded="$6"
-              width="100%"
               style={{ maxWidth: 360 }}
-            >
-              <Progress.Indicator transition="quick" bg="$primary" />
-            </Progress>
+            />
             {/* Nothing is coming to be ready for. The clock only says when the summary opens. */}
             <XStack gap="$3" display={onlyBeforeAMovement}>
               <Button

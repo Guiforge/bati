@@ -45,7 +45,10 @@ It guides you exercise-by-exercise, tracks your results, and ends with a clear c
 - **The HUD floats over the art, on one line**: where you are (round, exercise), how far in
   (percentage plus a hairline bar), and the way out (pause). It carries no value the screen
   didn't already show — it just stopped printing the round twice.
-- The timer / reps counter is still the loudest element on the screen.
+- The timer / reps counter is still the loudest element on the screen. The bar under a running
+  clock (rest, timed set, warm-up) steps once a second with the numeral and never eases: an
+  animated bar held the JS thread at 40 % of a core for the whole clock
+  ([performance](../architecture/performance.md), `TimerBar`).
 - **Borders only where they mean something.** The counter is outlined in `$success` in overtime
   and bare otherwise; text on artwork is held by a gradient scrim, never by a box.
 - Pause and victory states must feel like the same session system, not separate mini-apps.

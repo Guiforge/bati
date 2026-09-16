@@ -70,7 +70,11 @@ Plank: You have earned it".
 
 ## Visual rules
 
-- The media helps recognition without overpowering the name.
+- The media helps recognition without overpowering the name. The frame is **square**, because the
+  art is: all 64 movement illustrations are 1280×1280, as is the placeholder. The 16:9 frame it
+  used to sit in spent 44 % of its width letterboxing them, and `contentFit` stays `contain` for
+  the one case that is not square, a hero's own photo. The loading state renders that same frame
+  empty rather than a skeleton of a guessed height, so nothing shifts when the image lands.
 - **Do not turn this page into a stats dashboard.** One bar for the path, no per-rung bars, no
   difficulty badge, no percentages — a wall of unlit movements is what the dedicated skill-tree
   screen was dropped for ([exercises.md](exercises.md)).

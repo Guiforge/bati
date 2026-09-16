@@ -40,7 +40,7 @@ type Exercise = NonNullable<Awaited<ReturnType<typeof getExerciseById>>>;
 type Status = "loading" | "ready" | "error";
 
 /**
- * The 1280 px art belongs to the 16:9 hero and nowhere else — an image costs its *source*
+ * The 1280 px art belongs to the hero frame and nowhere else — an image costs its *source*
  * resolution in memory, not its slot (docs/architecture/performance.md). Every small slot reads
  * the 128 px thumbnail, which is what `ProgressionCard` and `SessionRewards` already do.
  */
@@ -97,11 +97,12 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
 }
 
 function LoadingCard() {
-  // Reserve the 16:9 hero and the title card so the screen doesn't jump by the full
-  // image height when data lands.
+  // The empty hero frame itself, not a skeleton of the same nominal height: a reserved slot that
+  // is a guess drifts from what lands in it, and a fixed 200 under a square frame let the screen
+  // jump by a third of the image.
   return (
     <YStack gap="$4">
-      <Skeleton height={200} radius={16} />
+      <ExerciseImage />
       <SkeletonCard>
         <Skeleton height={24} width="60%" />
         <Skeleton height={16} width="80%" />
@@ -111,11 +112,16 @@ function LoadingCard() {
   );
 }
 
-function ExerciseImage({ source }: { source: ImageSourcePropType }) {
+/** Also the loading state, with nothing in it. */
+function ExerciseImage({ source }: { source?: ImageSourcePropType }) {
   return (
     <YStack
       width="100%"
-      aspectRatio={16 / 9}
+      // Square, because the art is: all 64 movement illustrations are 1280×1280, and so is the
+      // placeholder every unknown path falls back to. A 16:9 frame around them spent 44 % of its
+      // width on empty background, which `contentFit="contain"` had to letterbox (exercise sheet
+      // audit, 2026-09-15). `SessionRewards` already frames the same art square.
+      aspectRatio={1}
       bg="$bgLight"
       borderWidth={1}
       borderColor="$borderStrong"
@@ -125,14 +131,16 @@ function ExerciseImage({ source }: { source: ImageSourcePropType }) {
       shadowOffset={{ width: 0, height: 5 }}
       overflow="hidden"
     >
-      <Image
-        source={source}
-        style={{ width: "100%", height: "100%" }}
-        // contain, not cover: the movement art is a full figure on a dark ground, and the 16:9
-        // crop was taking the head and feet with it. The card's own bg letterboxes invisibly.
-        contentFit="contain"
-        transition={200}
-      />
+      {source === undefined ? null : (
+        <Image
+          source={source}
+          style={{ width: "100%", height: "100%" }}
+          // contain, not cover: a hero's own photo is whatever shape their camera gave it, and a
+          // crop of that takes the movement out of frame. The card's bg letterboxes invisibly.
+          contentFit="contain"
+          transition={200}
+        />
+      )}
     </YStack>
   );
 }

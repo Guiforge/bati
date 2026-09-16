@@ -159,5 +159,12 @@ The painting parallaxes and leans in inside one `Animated.View`; the scrims and 
 move. Ambient motes are still `VillageEmbers.tsx`. Everything is
 transform and opacity on the UI thread, and all of it stops under reduced motion.
 
+The motes climb **once per visit**, not for ever: the last one is out about ten seconds after the
+tab opens, and they light again the next time it does. Nine loops that never ended kept the window
+from ever being idle, which cost 602 frames in 10 s of a village nobody was touching, 31 % of a
+core, and every `uiautomator dump` on this screen (so Maestro and the accessibility readers too).
+The reasoning, and why a rest between climbs could not buy the same thing here, is in
+[`performance.md`](../architecture/performance.md).
+
 The emblems carry an alpha channel, cut by [`scripts/cutout.py`](../../scripts/cutout.py); an
 unbuilt row draws the same emblem as a silhouette through `tintColor`, which needs that alpha.

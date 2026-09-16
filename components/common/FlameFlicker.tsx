@@ -24,6 +24,17 @@ interface FlameFlickerProps {
 }
 
 /**
+ * How many times the flame gusts when its screen takes focus. It is a greeting, not a metronome:
+ * an endless loop drew 578 frames in 10 s of an untouched Home, held 16 % of a core on the UI
+ * thread and 13 % on the render thread, and, because a Reanimated frame rewrites the window's
+ * content, kept `uiautomator dump` from ever finding the window idle, on Home and on the village
+ * (perf audit C7, measured again on 16/09). Four gusts are 4.8 s, which outlasts the look anyone
+ * gives a streak counter, and leaving the tab and coming back plays them again. After them the
+ * screen is still: 0 frames, 1.9 % of a core, and a dump that answers in 2 s.
+ */
+const GUSTS = 4;
+
+/**
  * A flickering flame for the streak. Shared by the village scene and the home header.
  * Respects reduced motion preferences.
  *
@@ -51,7 +62,7 @@ export function FlameFlicker({ size = 48, animate = true }: FlameFlickerProps) {
         withTiming(2, { duration: 400 }),
         withTiming(0, { duration: 400 }),
       ),
-      -1,
+      GUSTS,
     );
   }, [animate, reducedMotion, focused, flicker]);
 

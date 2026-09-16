@@ -66,7 +66,8 @@ Three rules make that measure honest:
   One exception keeps the two cards on a page honest: when the hero already stands on the next
   rung or above it, "Next rung" says it is earned (`getNextProgression`). The Wall Sit page used
   to ask a hero who trains Squat for three more Wall Sit sessions while the Squat page said "You
-  are here".
+  are here". "Above" means every branch: a rung may open several movements at once (Push-ups
+  opens three), the page names them all, and standing on any of them earns the rung.
 - **What is behind the hero stays there.** Where the hero *stands* is not windowed. A rung is
   behind them once it has been owned ever, or once any rung above it has been owned ever, or has
   one on-target session inside the window. The hero stands on the rung just above the highest one

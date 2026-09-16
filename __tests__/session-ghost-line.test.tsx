@@ -36,7 +36,7 @@ type Case = { type: QuestTargetType; last: number; best: number; live: number };
 function line({ type, last, best, live }: Case) {
   return (
     <TamaguiProvider config={config} defaultTheme="dark">
-      <GhostLine ghost={{ last, best, at: 0 }} type={type} live={live} reducedMotion />
+      <GhostLine ghost={{ last, best, at: 0, bestAt: 0 }} type={type} live={live} reducedMotion />
     </TamaguiProvider>
   );
 }

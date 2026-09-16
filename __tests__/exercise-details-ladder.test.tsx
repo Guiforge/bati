@@ -43,9 +43,12 @@ jest.mock("@/db", () => ({
   deleteUserExercise: jest.fn(),
 }));
 // The screen reads the hero's own numbers for this movement now, and `db/personalRecords` opens
-// the database at import time. The ladder is what this file is about, so the journal is empty.
+// the database at import time. The ladder is what most of this file is about, so the journal is
+// empty unless a test fills it. The arrow is what makes the `const` above legal: a factory body
+// runs on first require, not at hoist time.
+const mockGetExerciseHistory = jest.fn();
 jest.mock("@/db/personalRecords", () => ({
-  getExerciseHistory: jest.fn().mockResolvedValue(new Map()),
+  getExerciseHistory: (ids: number[]) => mockGetExerciseHistory(ids),
   ghostKey: (id: number, type: string) => `${id}:${type}`,
 }));
 
@@ -115,6 +118,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockGetExerciseById.mockResolvedValue(DRAGON_FLAG);
   mockGetNextProgression.mockResolvedValue(null);
+  mockGetExerciseHistory.mockResolvedValue(new Map());
 });
 
 describe("the path on the exercise screen", () => {
@@ -228,6 +232,47 @@ describe("a rung that forks", () => {
     await mountScreen();
 
     expect(screen.queryByText(/also leads to/i)).toBeNull();
+  });
+});
+
+describe("the hero's own numbers", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+
+  beforeEach(() => mockGetChainTo.mockResolvedValue(null));
+
+  const withGhost = (best: number, bestAgoDays: number) =>
+    mockGetExerciseHistory.mockResolvedValue(
+      new Map([
+        [
+          "30:reps",
+          { last: 18, best, at: Date.now() - DAY, bestAt: Date.now() - bestAgoDays * DAY },
+        ],
+      ]),
+    );
+
+  it("dates the record, in the Journal's words", async () => {
+    // "best 25 reps" with no date reads as something done tonight, while the wall two taps away
+    // said "Record 1:00 · 10 months ago" about the same movement.
+    withGhost(25, 300);
+    await mountScreen();
+
+    expect(screen.getByText("Record")).toBeTruthy();
+    expect(screen.getByText("25 reps")).toBeTruthy();
+    expect(screen.getByText("9 months ago")).toBeTruthy();
+  });
+
+  it("says a fresh record the way the wall says it", async () => {
+    withGhost(25, 0);
+    await mountScreen();
+
+    expect(screen.getByText("set today")).toBeTruthy();
+  });
+
+  it("stays quiet about a record the last session equalled", async () => {
+    withGhost(18, 1);
+    await mountScreen();
+
+    expect(screen.queryByText("Record")).toBeNull();
   });
 });
 

@@ -13,8 +13,9 @@ import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@/components/icons";
+import { shortDate } from "@/components/journal/journalFormat";
+import { recordWhen } from "@/components/journal/stats/wall";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
-import { getDateTimeFormat } from "@/constants/dateFormatters";
 import {
   deleteUserExercise,
   getExerciseById,
@@ -395,6 +396,9 @@ function HeroActions({ exercise, onGone }: { exercise: Exercise; onGone: () => v
 function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () => void }) {
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
+  // Read once per render and passed down, the way the Journal's wall takes it: two dates on the
+  // same line must not straddle midnight.
+  const now = new Date();
 
   const title = localizedName(exercise, language);
   const desc = localizedText(exercise, "description", language);
@@ -503,20 +507,24 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                     {formatTarget({ type, value: ghost.last }, language)}
                   </Text>
                   <Text fontSize={12} color="$textSecondary">
-                    {getDateTimeFormat(language, { day: "numeric", month: "short" }).format(
-                      new Date(ghost.at),
-                    )}
+                    {shortDate(language, new Date(ghost.at), now)}
                   </Text>
                   {ghost.best > ghost.last ? (
                     <>
                       <Text fontSize={12} color="$textSecondary" opacity={0.5}>
                         ·
                       </Text>
+                      {/* The Journal's word and the Journal's date. This line said "best 60s"
+                          with no date while the wall two taps away said "Record 1:00 · 10 months
+                          ago" about the same hold, and an undated number reads as tonight's. */}
                       <Text fontSize={12} color="$textSecondary">
-                        {t("session.ghost_best_label", "best")}
+                        {t("exercises.record_label", "Record")}
                       </Text>
                       <Text fontSize={15} fontWeight="700" color="$resourceGold">
                         {formatTarget({ type, value: ghost.best }, language)}
+                      </Text>
+                      <Text fontSize={12} color="$textSecondary">
+                        {recordWhen(t, language, new Date(ghost.bestAt), now)}
                       </Text>
                     </>
                   ) : null}

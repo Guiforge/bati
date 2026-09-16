@@ -35,8 +35,12 @@ export function wallTarget(entry: WallEntry, now: Date): number {
 /**
  * When a record fell, said the way its age calls for: "set yesterday", "7 months ago", or the date.
  * Past a year it is the date with its year: "2 years ago" floored two years and eleven months.
+ *
+ * Exported for the exercise page, which wrote "best 60s" with no date at all while the wall two
+ * taps away wrote "Record 1:00 · 10 months ago" about the same hold (exercise sheet audit,
+ * 2026-09-15). One reader of "how old is a record", or the two surfaces will drift.
  */
-function recordWhen(t: TFunction, language: AppLanguage, at: Date, now: Date): string {
+export function recordWhen(t: TFunction, language: AppLanguage, at: Date, now: Date): string {
   const age = ageOf(at, now);
   switch (age.kind) {
     case "today":

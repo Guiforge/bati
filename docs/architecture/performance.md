@@ -2,7 +2,7 @@
 title: React Native Performance — Best Practices & Antipatterns
 type: technical
 status: active
-updated: 2026-09-15
+updated: 2026-09-16
 related: [technical-architecture.md, ../meta/wiki-protocol.md, ../design/design-system.md]
 sources: [app.json, babel.config.js, __tests__/react-compiler-coverage.test.ts, hooks/useReloadOnChange.ts, stores/session.ts, components/session/PausedOverlay.tsx, app/(tabs)/quests/index.tsx, app/(tabs)/journal/index.tsx, package.json]
 ---
@@ -91,7 +91,15 @@ Generic guides push these; the stack already gives them, so skip:
    new prop identity every render.
 3. **Reanimated: only animate `transform` and `opacity`.** These run entirely on the UI
    thread. `width`, `height`, `backgroundColor`, and other layout-affecting properties force
-   a layout pass and are slow.
+   a layout pass and are slow. Running on the UI thread is not the same as being cheap there:
+   on the New Architecture Reanimated applies *any* animated style by cloning the shadow tree
+   and committing it, layout included, every frame. `package.json` turns on
+   `reanimated.staticFeatureFlags.ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS`, which sends a style
+   made only of `transform`, `opacity` and a few colour and radius props straight to the native
+   view instead (the full list is `synchronousPropNames` in Reanimated's
+   `ReanimatedModuleProxy.cpp`). One layout prop in the same worklet sends the whole style back
+   through the commit. Only a native build reads the flag, so a JS reload proves nothing about
+   it. See the arrival cost under "An ambient animation with no end" below.
 4. **Never read a shared value on the JS thread** (`sharedValue.value` outside a worklet)
    — it blocks the JS thread waiting on the UI thread. Read it inside `useAnimatedStyle` or
    another worklet instead.
@@ -173,6 +181,63 @@ Generic guides push these; the stack already gives them, so skip:
   loop at all. Third, **a loop that ticks is not free even when it draws nothing**: the resting
   version still held about 10 % of a core against 1.9 % once the animation had actually finished.
   The tick is the reason these effects end rather than idle politely.
+
+  Ending fixed the rest, not the arrival. On a Fairphone 6, release build, empty database (tier 1,
+  so **two** embers, not nine), the ten seconds after opening the Village drew 480 frames at a p50
+  of 32 to 34 ms, every one over budget, with the UI thread at 48 % and the RenderThread at 40 %;
+  a scroll started then ran at 32 ms against 21 ms once the motes were out. Two 3 dp dots cannot
+  cost that by what they paint, and the count was not the lever either. What they did cost is one
+  shadow tree commit per frame (point 3 above): clone every ancestor from the ember up to the
+  root, dirty that path for Yoga, diff, and mount through JNI, on a Village tree that holds the
+  whole building list. `ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS` is Reanimated's documented answer
+  to exactly that, and it is on since 16/09. Not measured yet on the phone, so it is a suspect with
+  a fix, not a proven cause: if the arrival still misses frames with the flag, look at the
+  RenderThread next (a full redraw of the painting and its two gradients under the motes), and
+  isolating the motes in a hardware layer will not help, since the layer is what changes.
+  `__tests__/ambient-animations-focus.test.tsx` holds the flag and the prop list of both ambient
+  worklets. The flag's documented cost is touch detection on a *pressable* that sits inside an
+  animated transform; nothing here does (the painting's press is on its unmoving parent).
+- **Tamagui's `Progress` under a clock.** The bar under the rest, the timed set and the warm-up
+  movement was a `Progress`, and on the Fairphone it held the JS thread at 33 to 42 % of a core
+  and drew ~40 frames a second for as long as any of those screens was up, against 0 % on a set
+  counted in reps. The spring was not the whole story: the warm-up's `Progress` had no
+  `transition` and cost the same 41 %. All three draw a
+  [`TimerBar`](../../components/session/TimerBar.tsx) now, a plain width that steps with the
+  numeral. Same flow, three passes each (16/09):
+
+  | Screen | Before: frames / 10 s, JS | After: frames / 10 s, JS |
+  | --- | --- | --- |
+  | Rest | ~400, 33-42 % | 20, 6 % |
+  | Timed set (Plank) | ~350, 42 % | 20, 8-10 % |
+  | Warm-up movement | 563, 41 % | 19-21, 6-7 % |
+  | Set in reps (control) | 0, 0 % | 0, 0 % |
+
+  Two things were tried and left out, because the numbers said so. Easing the step on the UI
+  thread with a Reanimated `withTiming` (250 ms) kept JS at 6 % but drew ~170 frames at a 29 ms
+  p50 with the UI thread at 30 %: an ease across 1/45th of a track is not worth a thread. And
+  moving the numeral and the bar into their own component, so a tick stopped re-rendering the
+  whole rest, measured the same 6 %: what is left is the tick's own frame (a 112px numeral
+  relaid out once a second), not the view around it. `__tests__/timer-bar.test.tsx` fails if
+  `Progress` is imported anywhere again, or if the bar grows an animation.
+- **Measuring a scroll on a screen that does not scroll.** On a Fairphone 6 (release build, empty
+  hero) "Home scrolls at 29 ms a frame, Quests at 19". Home fits its viewport, so the swipe scrolled
+  nothing: the up swipe started on the scene, Tamagui fired its `onPress` on release, and the
+  number was the quest screen opening (JS at 66 then 94 % in the two seconds after it, three passes
+  out of three). Tamagui 2's Android press handler has no distance check and relies on a scroll view
+  terminating the press; where none scrolls, **a drag is a press**. Home claims any touch past a
+  10 dp slop (`dragCancelsPress` in [`app/(tabs)/index.tsx`](../../app/(tabs)/index.tsx), held by
+  `__tests__/home-drag-cancels-press.test.tsx`); another non-scrolling screen with big pressables
+  needs the same, or the handler moves to the root layout. Before trusting a scroll number, check
+  the screen moved.
+- **Reading `Janky frames (legacy)` and the p50 as what the hero sees.** Both count any frame over
+  16 ms from its intended vsync, which on a phone with buffer stuffing includes waiting behind the
+  previous frame. The same Adventures swipes read p50 30, 17 and 28 ms over three passes, with
+  `Janky frames` (the deadline-based count) at 1.4, 0.8 and 1.4 %, under the Quests witness's
+  2.0-2.1 %. Compare `Janky frames` and `Number Frame deadline missed` first; a legacy p50 that
+  moves without them is pipeline state, not content.
+- **`flat` on a `Card` is an iOS saving.** Tamagui passes `shadowRadius`/`shadowOpacity` through to
+  React Native, which draws them on iOS only; Android draws a shadow from `elevation`, which `Card`
+  never sets. Keep list cards `flat`, but a slow Android scroll is not a shadow.
 - **Reanimated worklets closing over large objects.** Capture the one property you need,
   not the whole record — shipping a big closure to the UI thread costs a serialization pass.
 - **Context for fast-changing state.** Not used for app state here (Zustand owns it) — if

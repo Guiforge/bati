@@ -1,4 +1,4 @@
-import { ScrollView } from "react-native";
+import { PanResponder, ScrollView } from "react-native";
 import { YStack } from "tamagui";
 import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
 import { HomeHeader } from "@/components/home/HomeHeader";
@@ -16,13 +16,39 @@ import { SessionRecoveryBanner } from "@/components/session/SessionRecoveryCard"
  * GONE, on purpose: the village band (the tab under it said the same; the strip keeps a crest) and
  * the lifetime stats line (a journal fact, neither an action nor a direction).
  */
+/** How far a finger travels, in dp, before the touch stops being a tap. Android's own slop is 8. */
+const DRAG_SLOP = 10;
+
+/**
+ * A drag is never a press, on a Home that has nothing to scroll.
+ *
+ * Tamagui's Android press handler (`mainThreadPressEvents`) fires `onPress` on release with no
+ * distance check: it counts on a scroll view taking the touch away first. In a list one does.
+ * Home fits its viewport on most phones, so its `ScrollView` never scrolls and never takes the
+ * touch: a thumb swiping up the scene opened the quest screen, and the same swipe started on an
+ * outing tile started the outing. The Fairphone audit's "Home scrolls at 29 ms" was that quest
+ * screen opening under the swipe.
+ *
+ * So the screen claims any touch that has moved past the slop, which terminates the press under it
+ * (Tamagui's pressables accept termination), and blocks nothing: the native scroll views keep
+ * scrolling, and either one takes the touch back when it asks.
+ *
+ * ponytail: Home only. Any Tamagui pressable on a screen that does not scroll has the same bug;
+ * move this to the root layout (minding sheets that drag) when another screen shows it.
+ */
+const dragCancelsPress = PanResponder.create({
+  onMoveShouldSetPanResponderCapture: (_, { dx, dy }) =>
+    Math.abs(dx) > DRAG_SLOP || Math.abs(dy) > DRAG_SLOP,
+  onShouldBlockNativeResponder: () => false,
+}).panHandlers;
+
 export default function HomeScreen() {
   useScreenGuide("guide_home");
   // Only fires after a real absence, and never mentions it. See components/chorus/screenCues.ts.
   useComebackCue();
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack testID="home-screen" flex={1} bg="$background" {...dragCancelsPress}>
       {/* The whole top chrome: identity, level, XP, streak, village. Owns the top inset. */}
       <HomeHeader />
 

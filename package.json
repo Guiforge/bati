@@ -206,6 +206,11 @@
   },
   "version": "2.4.0",
   "license": "MIT",
+  "reanimated": {
+    "staticFeatureFlags": {
+      "ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS": true
+    }
+  },
   "expo": {
     "autolinking": {
       "buildFromSource": [

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Paragraph, Progress, Text, XStack, YStack } from "tamagui";
+import { Button, H1, Paragraph, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Crosshair, Pause } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
@@ -35,6 +35,7 @@ import { ExpeditionPanel } from "./ExpeditionPanel";
 import { GhostLine } from "./GhostLine";
 import { LiveMap } from "./LiveMap";
 import { sessionArtHeight } from "./sessionArt";
+import { TimerBar } from "./TimerBar";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
 export function ActiveExerciseView() {
@@ -434,19 +435,12 @@ export function ActiveExerciseView() {
         {isTimeBased && !isOuting && (
           <YStack gap="$2">
             {/* No label row: the numeral below is the same figure at 72px. */}
-            <Progress
-              value={Math.min(1, Math.max(0, progress)) * 100}
-              size="$4"
+            <TimerBar
+              value={progress}
+              fill={isOvertime ? "$success" : "$primary"}
+              fillOpacity={isOvertime ? 0.9 : 1}
               bg="$surface2"
-              borderWidth={0}
-              rounded="$6"
-            >
-              <Progress.Indicator
-                transition="quick"
-                bg={isOvertime ? "$success" : "$primary"}
-                opacity={isOvertime ? 0.9 : 1}
-              />
-            </Progress>
+            />
           </YStack>
         )}
 

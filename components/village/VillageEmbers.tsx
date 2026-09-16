@@ -102,9 +102,13 @@ function Ember({ left, start, size, duration, delay, heroHeight, heroWidth, peak
 }
 
 /**
- * Ambient embers drifting up off the village. No asset, no layout cost, transform and opacity
- * only — the two properties Reanimated can drive without touching the JS thread
- * (docs/architecture/performance.md).
+ * Ambient embers drifting up off the village. No asset, transform and opacity only: with
+ * `ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS` on (package.json), those two go straight to the native
+ * view each frame. Anything else in the worklet, or the flag gone, and every frame of the climb
+ * clones and commits the shadow tree, a layout pass on the UI thread. Before the flag, a
+ * Fairphone 6 spent 48 % of its UI thread and missed every frame for the ten seconds the field
+ * burns, with only two motes lit; the commit is the suspect the flag removes, see
+ * docs/architecture/performance.md for what was measured and what was not.
  *
  * Returns nothing under reduced motion, so the views are never mounted rather than mounted and
  * held still. Nothing either while the tab is out of focus: tabs stay mounted, and the loops left

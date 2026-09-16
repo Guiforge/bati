@@ -157,7 +157,11 @@ boat), tier 10 (`dragon_lair` on the rock face), tier 12 (the starters on unname
 
 The painting parallaxes and leans in inside one `Animated.View`; the scrims and the title do not
 move. Ambient motes are still `VillageEmbers.tsx`. Everything is
-transform and opacity on the UI thread, and all of it stops under reduced motion.
+transform and opacity on the UI thread, and all of it stops under reduced motion. Transform and
+opacity only is what lets Reanimated's `ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS` path (on in
+`package.json`) skip the shadow tree commit each frame. Without it, the arrival cost the Fairphone
+6 every frame for ten seconds with just two motes lit (performance.md, "An ambient animation with
+no end").
 
 The motes climb **once per visit**, not for ever: the last one is out about ten seconds after the
 tab opens, and they light again the next time it does. Nine loops that never ended kept the window

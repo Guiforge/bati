@@ -283,6 +283,28 @@ describe("content invariants", () => {
     expect(stranded).toEqual([]);
   });
 
+  /**
+   * A movement tagged "No equipment" must not open its description by asking for some. Dips read
+   * "Sans matériel" above "En appui sur deux barres parallèles ou un rebord stable" for a year,
+   * and Dragon Flag led with a bench; both offered the free option, second, where a hero with
+   * nothing has already stopped reading (`0063`).
+   *
+   * The rule is not machine-readable in general — a wall, a table and a door handle are all fine
+   * to name — so this checks the two the audit found, and the point of it is that the migration
+   * matched its rows: an `UPDATE … WHERE enName` that finds nothing changes nothing, silently.
+   */
+  test("the two movements that led with kit lead with what anyone has", async () => {
+    const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
+    const byName = new Map((await listExercises()).map((ex) => [ex.enName, ex]));
+
+    expect(byName.get("Dip")?.enDescription).toMatch(/^Support yourself on a sturdy edge/);
+    expect(byName.get("Dip")?.frDescription).toMatch(/^En appui sur un rebord stable/);
+    expect(byName.get("Dragon Flag")?.enDescription).toMatch(/^Lying on the floor/);
+    expect(byName.get("Dragon Flag")?.frDescription).toMatch(/^Allongé au sol/);
+    // And the tag itself stays where it is: `canDo` reads it, and a sturdy edge is furniture.
+    expect(byName.get("Dip")?.equipment).toBe("none");
+  });
+
   test("a quest is either equipment-free or a declared equipment quest", async () => {
     const all = await loadQuests();
 

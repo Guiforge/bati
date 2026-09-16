@@ -63,6 +63,7 @@ import m0059 from "./0059_the_seeded_content_in_german_and_spanish.sql";
 import m0060 from "./0060_the_day_the_deeds_were_recut.sql";
 import m0061 from "./0061_the_round_that_landed_it.sql";
 import m0062 from "./0062_the_record_found_by_its_movement.sql";
+import m0063 from "./0063_what_a_hero_with_nothing_can_use.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -131,5 +132,6 @@ export default {
     m0060,
     m0061,
     m0062,
+    m0063,
   },
 };

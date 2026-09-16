@@ -38,6 +38,7 @@ export { Info } from "@tamagui/lucide-icons/icons/Info";
 export { Languages } from "@tamagui/lucide-icons/icons/Languages";
 export { Leaf } from "@tamagui/lucide-icons/icons/Leaf";
 export { Link2 } from "@tamagui/lucide-icons/icons/Link2";
+export { LocateFixed } from "@tamagui/lucide-icons/icons/LocateFixed";
 export { Lock } from "@tamagui/lucide-icons/icons/Lock";
 export { Map } from "@tamagui/lucide-icons/icons/Map";
 export { Medal } from "@tamagui/lucide-icons/icons/Medal";

@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, AppState } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { MapFootnote } from "@/components/session/MapFootnote";
+import { MapRecenterButton } from "@/components/session/MapRecenterButton";
 import { HUD_HEIGHT } from "@/components/session/sessionArt";
 import {
   LEAGUE_PIP_PAINT,
@@ -75,8 +76,10 @@ function Waiting({ label }: { label: string }) {
  *
  * The recap's style and the recap's gold, with less on it. No pace ramp: its ends are this run's
  * own percentiles, which move with every fix, so the colours would shift under the hero's eyes.
- * The camera follows the last fix and every gesture is off, since a map that can be panned is a
- * map that gets panned by a pocket.
+ * The camera follows the last fix, as a GPS does, until a finger moves or zooms the map; a button
+ * then brings it back to the hero, at whatever zoom the fingers chose. Rotation and pitch stay
+ * off: north up is the one orientation that needs no compass. A pocket can still pan it, which
+ * costs one tap on the way back, and coming back from the background recentres anyway.
  *
  * This reverses "numbers only, battery decision" from docs/designs/gps-without-google.md. The
  * screen is still never held awake on an outing, and MapLibre draws nothing while it is off.
@@ -108,13 +111,21 @@ export function LiveMap({
   const [visible, setVisible] = useState(true);
   /** Whether MapLibre has drawn its style since the map last mounted. */
   const [styleLoaded, setStyleLoaded] = useState(false);
+  /** Whether the camera tracks the hero. A gesture stops it, the recentre button restarts it. */
+  const [following, setFollowing] = useState(true);
+  /** The zoom the camera follows at: `FOLLOW_ZOOM` until a pinch picks another. */
+  const [zoom, setZoom] = useState(FOLLOW_ZOOM);
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (state) => {
       // Not `=== "active"`: iOS reports `inactive` for the app switcher and a call banner, with
       // the map still on screen.
       setVisible(state !== "background");
       // The map unmounts in the background, so it builds its style again on the way back.
-      if (state === "background") setStyleLoaded(false);
+      if (state === "background") {
+        setStyleLoaded(false);
+        // Out of the pocket, the hero wants to see where they are, not where a thumb left the map.
+        setFollowing(true);
+      }
     });
     return () => subscription.remove();
   }, []);
@@ -177,11 +188,15 @@ export function LiveMap({
         attribution={false}
         logo={false}
         compass={false}
-        dragPan={false}
-        touchZoom={false}
         touchRotate={false}
         touchPitch={false}
-        doubleTapZoom={false}
+        // Only a finger stops the follow: the camera's own one-second glides report no interaction.
+        onRegionWillChange={(event) => {
+          if (event.nativeEvent.userInteraction) setFollowing(false);
+        }}
+        onRegionDidChange={(event) => {
+          if (event.nativeEvent.userInteraction) setZoom(event.nativeEvent.zoom);
+        }}
         onDidFinishLoadingStyle={() => setStyleLoaded(true)}
         // Never a spinner for ever: a map that failed says so in the log and the trace still draws.
         onDidFailLoadingMap={() => {
@@ -191,12 +206,10 @@ export function LiveMap({
       >
         {/* Framed where the hero is before the first glide. The map remounts on every unlock, and
             without it the one-second follow starts from MapLibre's default camera at 0,0. */}
+        {/* Not following, the camera gets no stop at all and stays wherever the fingers left it. */}
         <Camera
-          initialViewState={{ center: here, zoom: FOLLOW_ZOOM }}
-          center={here}
-          zoom={FOLLOW_ZOOM}
-          duration={FOLLOW_MS}
-          easing="linear"
+          initialViewState={{ center: here, zoom }}
+          {...(following ? { center: here, zoom, duration: FOLLOW_MS, easing: "linear" } : {})}
         />
 
         {/* biome-ignore lint/correctness/useUniqueElementIds: MapLibre source and layer ids
@@ -258,6 +271,13 @@ export function LiveMap({
         colors={["transparent", rawColors.bgDark]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 56 }}
         pointerEvents="none"
+      />
+
+      <MapRecenterButton
+        visible={!following}
+        top={topInset + HUD_HEIGHT + 8}
+        testID="live-map-recenter"
+        onPress={() => setFollowing(true)}
       />
 
       <YStack position="absolute" b="$3" l="$4" r="$4">

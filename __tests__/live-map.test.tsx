@@ -21,6 +21,12 @@ const mockMapStyle = jest.fn<void, [unknown]>();
 const mockCenter = jest.fn<void, [unknown]>();
 /** The last `onDidFinishLoadingStyle` MapLibre was handed, so a test can say the style is drawn. */
 let mockStyleLoaded: (() => void) | undefined;
+/** The last `onRegionWillChange` MapLibre was handed, so a test can put a finger on the map. */
+let mockRegionWillChange:
+  | ((event: { nativeEvent: { userInteraction: boolean } }) => void)
+  | undefined;
+/** What the phone answers when asked whether it refuses Bati the network. */
+const mockNetworkBlocked = jest.fn(() => false);
 /** Every initial view handed to the camera, in order. */
 const mockInitialView = jest.fn<void, [unknown]>();
 
@@ -29,7 +35,10 @@ jest.mock("@/db", () => ({
   preferences: { setMapTilesEnabled: jest.fn().mockResolvedValue(undefined) },
 }));
 jest.mock("@/db/gps", () => ({ appendPoints: jest.fn(), pointsOf: jest.fn() }));
-jest.mock("@/modules/bati-location", () => ({ isAvailable: () => false }));
+jest.mock("@/modules/bati-location", () => ({
+  isAvailable: () => false,
+  isNetworkBlocked: () => mockNetworkBlocked(),
+}));
 jest.mock("@/stores/session", () => ({
   recordedDurationSeconds: () => 0,
   useSessionStore: { getState: () => ({}) },
@@ -60,13 +69,16 @@ jest.mock("@maplibre/maplibre-react-native", () => {
       children,
       mapStyle,
       onDidFinishLoadingStyle,
+      onRegionWillChange,
     }: {
       children?: React.ReactNode;
       mapStyle?: unknown;
       onDidFinishLoadingStyle?: () => void;
+      onRegionWillChange?: typeof mockRegionWillChange;
     }) => {
       mockMapStyle(mapStyle);
       mockStyleLoaded = onDidFinishLoadingStyle;
+      mockRegionWillChange = onRegionWillChange;
       return <View testID="maplibre">{children}</View>;
     },
     Camera: ({ center, initialViewState }: { center?: unknown; initialViewState?: unknown }) => {
@@ -113,6 +125,39 @@ beforeEach(() => {
   mockCenter.mockClear();
   mockInitialView.mockClear();
   mockToTrace.mockClear();
+  mockNetworkBlocked.mockReturnValue(false);
+});
+
+test("a finger on the map stops the follow, and the button brings it back to the hero", async () => {
+  await mount([walking(0), walking(1)], true);
+  const regionWillChange = (userInteraction: boolean) =>
+    act(async () => mockRegionWillChange?.({ nativeEvent: { userInteraction } }));
+
+  // The camera's own glide is not a finger.
+  await regionWillChange(false);
+  expect(screen.queryByTestId("live-map-recenter")).toBeNull();
+
+  await regionWillChange(true);
+  await act(async () =>
+    useExpeditionStore.setState({ fixes: [walking(0), walking(1), walking(2)] }),
+  );
+  // No centre at all: a centre, even the old one, would drag the map out from under the finger.
+  expect(mockCenter.mock.calls.at(-1)?.[0]).toBeUndefined();
+
+  await act(async () => {
+    await fireEvent.press(screen.getByTestId("live-map-recenter"));
+  });
+  expect(mockCenter.mock.calls.at(-1)?.[0]).toEqual([walking(2).lon, walking(2).lat]);
+  expect(screen.queryByTestId("live-map-recenter")).toBeNull();
+});
+
+test("says the phone blocks the network instead of crediting tiles that never arrive", async () => {
+  mockNetworkBlocked.mockReturnValue(true);
+  await mount([walking(0), walking(1)], true);
+
+  expect(screen.getByTestId("map-blocked")).toBeTruthy();
+  expect(screen.getByTestId("map-open-settings")).toBeTruthy();
+  expect(screen.queryByTestId("map-attribution")).toBeNull();
 });
 
 test("before the first fix it shows what it was handed, and frames nothing", async () => {

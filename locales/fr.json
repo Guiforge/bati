@@ -1240,7 +1240,10 @@
     "export_failed": "Le fichier n'a pas pu être écrit. Réessaie.",
     "map_offer": "La carte sous ton trajet est éteinte. Allume-la et Bati demande à OpenFreeMap, sur tiles.openfreemap.org, la carte autour de toi, pendant tes sorties et sur leur récap, ce qui lui dit à peu près où tu vas. Le tracé lui-même reste sur ce téléphone.",
     "map_enable": "Afficher la carte",
-    "best_league": "Lieue la plus rapide de cette sortie, {{pace}}"
+    "best_league": "Lieue la plus rapide de cette sortie, {{pace}}",
+    "map_blocked": "La carte ne peut pas se charger : ton téléphone bloque l'accès réseau de Bati. Autorise-le dans les réglages de l'application, rubrique données mobiles et Wi-Fi.",
+    "map_open_settings": "Ouvrir les réglages",
+    "map_recenter": "Recentrer la carte"
   },
   "safety": {
     "title": "S'entraîner en sécurité",

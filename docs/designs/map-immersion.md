@@ -67,11 +67,14 @@ no corner radius, no card. It bleeds off both sides and fades at the top and bot
 `expo-linear-gradient` from `bgDark` to transparent. This is the single largest anti-"bolted on"
 move available and it costs nothing: the map stops being an inset panel and becomes the screen.
 
-**2. The map does not move.** `dragPan`, `touchZoom`, `touchRotate`, `touchPitch`,
-`doubleTapZoom` all false; the camera fits the trace bounds once and stays. A recap map you can
-pan out of is a map you can pan into the next town, which is where a road map lives. Locked, it
-is a picture of this run. Free, and it also removes every "did the tile load" edge case from a
-screen that has no network guarantee.
+**2. The map moves under a finger, and a button puts it back.** Reversed on 2026-09-16: a
+locked map was the first thing a hero tried to pan, and a recap they cannot zoom into is a
+picture of a run they cannot read. Pan, pinch and double tap are on; `touchRotate` and
+`touchPitch` stay off, since north up is the one orientation that needs no compass. The camera
+fits the trace bounds until a gesture (`onRegionWillChange` with `userInteraction`), then gets no
+stop at all, so a re-render cannot snap it back, and a `LocateFixed` button reframes the trace.
+The original argument, that a locked map is a picture of this run and never reaches the next
+town, still holds for the first frame, which is all the reframe button restores.
 
 **3. `attribution`, `logo` and `compass` are false.** The credit is our own Tamagui line under
 the map, in the app's type, which OpenFreeMap explicitly permits for non-standard clients as
@@ -572,8 +575,16 @@ draws while the hero is actually looking.
   every sentence naming the host (settings note, offer, credit line, privacy policy) says the tiles
   are fetched while the hero moves as well as afterwards. The host now learns roughly where the
   hero is, in order, as they go; that is the difference the copy had to carry.
-- The camera follows the last fix at zoom 16 and every gesture is off, which is decision 2 above
-  for a different reason: a pocket pans a map as surely as a curious thumb does.
+- The camera follows the last fix at zoom 16, as a GPS does, until a finger pans or pinches;
+  the recentre button then follows again at the zoom the pinch chose. A pocket can pan it too,
+  which is why coming back from the background recentres without asking.
+- With the map on, `MapFootnote` asks Android whether it refuses Bati the network
+  (`isNetworkBlocked` in `modules/bati-location`, `NetworkInfo.DetailedState.BLOCKED`), again on
+  every return to the foreground. A per-app "Network access" switch on LineageOS or /e/OS, or a
+  firewall app, leaves MapLibre with tiles that fail without an event, and the map was a trace on
+  black under a credit for data that never arrived. That case names the switch and opens the app's
+  settings. Found on the author's own phone, where the Play install carried REJECT_ALL and the
+  dev and perf builds did not.
 - Glow, gold stroke, league rings and a `resourceFire` pip where the hero is, the recap's end pip
   since that is what it becomes. No pace ramp: its ends are the run's own percentiles and they
   move with every fix, so the colours would shift under the hero's eyes. The glow and ring paints

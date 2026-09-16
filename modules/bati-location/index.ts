@@ -74,6 +74,7 @@ type Subscription = { remove(): void };
  */
 type BatiLocationNativeModule = {
   hasGpsProvider(): boolean;
+  isNetworkBlocked(): boolean;
   start(options: StartOptions): boolean;
   stop(): void;
   requestPermission(): Promise<PermissionResponse>;
@@ -110,6 +111,15 @@ export function isAvailable(): boolean {
  */
 export function hasGpsProvider(): boolean {
   return native?.hasGpsProvider() ?? false;
+}
+
+/**
+ * Whether Android refuses this app the network (a per-app "Network access" switch, a firewall).
+ * False on a build with no native half, and false with no network at all: that is not a setting
+ * the hero can change for Bati.
+ */
+export function isNetworkBlocked(): boolean {
+  return native?.isNetworkBlocked() ?? false;
 }
 
 /**

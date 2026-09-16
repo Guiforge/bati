@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -74,6 +76,22 @@ class BatiLocationModule : Module() {
         val context = appContext.reactContext ?: return@Function false
         val manager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
         manager?.allProviders?.contains(LocationManager.GPS_PROVIDER) == true
+      }
+
+      /**
+       * Whether the system refuses this app the network while a network exists: LineageOS and /e/OS
+       * "Network access" off, a firewall app, a REJECT_ALL netpolicy. Tiles then fail with no event
+       * MapLibre reports, and the map is a trace on black with a credit under it.
+       *
+       * `NetworkInfo` is deprecated, but its BLOCKED state is the one public answer to "blocked for
+       * this uid" rather than "no network": `activeNetwork` is null in both cases. Here rather than
+       * in a module of its own because this is the only native module the app owns.
+       */
+      Function("isNetworkBlocked") {
+        val context = appContext.reactContext ?: return@Function false
+        val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        @Suppress("DEPRECATION")
+        manager?.activeNetworkInfo?.detailedState == NetworkInfo.DetailedState.BLOCKED
       }
 
       /**

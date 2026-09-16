@@ -1180,7 +1180,10 @@
     "export_failed": "Could not write the file. Try again.",
     "map_offer": "The map under your route is off. Turn it on and Bati asks OpenFreeMap, at tiles.openfreemap.org, for the map around you, during your outings and on their recap, which tells it roughly where you go. The trace itself stays on this phone.",
     "map_enable": "Show the map",
-    "best_league": "Quickest league of this outing, {{pace}}"
+    "best_league": "Quickest league of this outing, {{pace}}",
+    "map_blocked": "The map can't load: your phone blocks Bati's network access. Allow it in Bati's app settings, under mobile data and Wi-Fi.",
+    "map_open_settings": "Open the settings",
+    "map_recenter": "Recenter the map"
   },
   "safety": {
     "title": "Train safely",

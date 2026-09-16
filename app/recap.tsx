@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Share2 } from "@/components/icons";
 import { MapFootnote } from "@/components/session/MapFootnote";
+import { MapRecenterButton } from "@/components/session/MapRecenterButton";
 import { roadLine } from "@/components/session/roadLine";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import {
@@ -294,6 +295,15 @@ function RoadLine({ road, language }: { road: VillageBuilding | null; language: 
   );
 }
 
+/**
+ * The camera's stop: the whole trace while framed, nothing once a finger has moved the map, so a
+ * re-render cannot snap it back.
+ */
+function frameStop(framed: boolean, bounds: [number, number, number, number] | null) {
+  if (!framed || bounds === null) return {};
+  return { bounds, padding: { top: 48, right: 24, bottom: 48, left: 24 }, duration: 500 };
+}
+
 function useHighRoad(): VillageBuilding | null {
   const [road, setRoad] = useState<VillageBuilding | null>(null);
 
@@ -367,6 +377,8 @@ export default function ExpeditionRecapScreen() {
   const drawn = fixes ?? [];
   const track = drawn.reduce(accept, EMPTY);
   const trace = toTrace(drawn);
+  /** Whether the camera frames the whole trace. A finger on the map lets go, the button reframes. */
+  const [framed, setFramed] = useState(true);
 
   /**
    * The trace, as a file the hero owns.
@@ -484,16 +496,13 @@ export default function ExpeditionRecapScreen() {
               attribution={false}
               logo={false}
               compass={false}
-              dragPan={false}
-              touchZoom={false}
               touchRotate={false}
               touchPitch={false}
-              doubleTapZoom={false}
+              onRegionWillChange={(event) =>
+                setFramed((was) => was && !event.nativeEvent.userInteraction)
+              }
             >
-              <Camera
-                bounds={trace.bounds}
-                padding={{ top: 48, right: 24, bottom: 48, left: 24 }}
-              />
+              <Camera {...frameStop(framed, trace.bounds)} />
 
               {/* The glow reads the unbroken geometry, and the stroke reads the banded one. A
                   wide layer drawn from the bands beads at every join with round caps and notches
@@ -588,6 +597,13 @@ export default function ExpeditionRecapScreen() {
               colors={["transparent", rawColors.bgDark]}
               style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 56 }}
               pointerEvents="none"
+            />
+
+            <MapRecenterButton
+              visible={!framed}
+              top={12}
+              testID="recap-recenter"
+              onPress={() => setFramed(true)}
             />
           </YStack>
         )}

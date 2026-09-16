@@ -1180,7 +1180,10 @@
     "export_failed": "Die Datei konnte nicht geschrieben werden. Versuch es nochmal.",
     "map_offer": "Die Karte unter deiner Route ist aus. Schalt sie ein, und Bati fragt OpenFreeMap unter tiles.openfreemap.org nach der Karte um dich herum, während deiner Touren und in ihrem Rückblick, was dem Dienst ungefähr verrät, wo du unterwegs bist. Die Spur selbst bleibt auf diesem Handy.",
     "map_enable": "Karte anzeigen",
-    "best_league": "Schnellste Wegstunde dieser Tour, {{pace}}"
+    "best_league": "Schnellste Wegstunde dieser Tour, {{pace}}",
+    "map_blocked": "Die Karte kann nicht laden: Dein Handy sperrt Batis Netzwerkzugriff. Erlaube ihn in den App-Einstellungen von Bati, unter Mobile Daten und WLAN.",
+    "map_open_settings": "Einstellungen öffnen",
+    "map_recenter": "Karte zentrieren"
   },
   "safety": {
     "title": "Sicher trainieren",

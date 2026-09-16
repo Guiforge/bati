@@ -1240,7 +1240,10 @@
     "export_failed": "No se ha podido escribir el archivo. Inténtalo de nuevo.",
     "map_offer": "El mapa bajo tu ruta está desactivado. Actívalo y Bati pedirá a OpenFreeMap, en tiles.openfreemap.org, el mapa a tu alrededor durante tus salidas y en su resumen, lo que le indica más o menos por dónde vas. El trazado se queda en este móvil.",
     "map_enable": "Mostrar el mapa",
-    "best_league": "Legua más rápida de esta salida, {{pace}}"
+    "best_league": "Legua más rápida de esta salida, {{pace}}",
+    "map_blocked": "El mapa no puede cargar: tu móvil bloquea el acceso a la red de Bati. Permítelo en los ajustes de la aplicación, en datos móviles y Wi-Fi.",
+    "map_open_settings": "Abrir los ajustes",
+    "map_recenter": "Centrar el mapa"
   },
   "safety": {
     "title": "Entrenar con seguridad",

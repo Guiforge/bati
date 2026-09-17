@@ -53,8 +53,8 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.12",
-    "@j178/prek": "^0.5.0",
+    "@biomejs/biome": "^2.5.13",
+    "@j178/prek": "^0.5.3",
     "@tamagui/babel-plugin": "^2.7.7",
     "@testing-library/react-native": "^14.0.1",
     "@types/better-sqlite3": "^9.6.0",
@@ -68,7 +68,7 @@
     "expo-dev-client": "~57.0.19",
     "jest": "30.5.1",
     "jest-expo": "~57.0.5",
-    "knip": "^6.32.2",
+    "knip": "^6.35.1",
     "typescript": "~7.0.2"
   },
   "jest": {

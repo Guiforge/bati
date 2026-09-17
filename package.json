@@ -37,7 +37,7 @@
     "i18next": "^26.4.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-i18next": "^17.0.12",
+    "react-i18next": "^17.0.14",
     "react-native": "0.86.3",
     "react-native-android-widget": "^0.22.1",
     "react-native-confetti-cannon": "^1.5.2",

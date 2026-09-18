@@ -21,6 +21,29 @@ updates:
           - "@expo/*"
       dev-tooling:
         dependency-type: development
+    # The Expo SDK pins React, React Native and every native module it bundles
+    # (expo/bundledNativeModules.json): a jump past the pin fails expo-doctor and
+    # breaks the F-Droid source build. Those move with the SDK, through
+    # `npx expo install expo@^<next> --fix`, never one package at a time.
+    # ponytail: the react-native-* wildcard also mutes minors of libraries the SDK
+    # does not pin; list the pinned ones by name if a missed update ever matters.
+    ignore:
+      - dependency-name: "expo"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "expo-*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@expo/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native-*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   - package-ecosystem: github-actions
     directory: /

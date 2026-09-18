@@ -97,7 +97,7 @@ export function ownEveryRung(t: { sqlite: Database.Database }): void {
     `INSERT INTO completed_exercises
        (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, targetType,
         targetValue, performedAt)
-     VALUES (?, ?, 0, ?, 'reps', 10, 'reps', 10, ?)`,
+     VALUES (?, ?, 0, ?, 'duration', 30, 'duration', 30, ?)`,
   );
 
   // `isEarned` wants PROGRESSION_SESSIONS_REQUIRED distinct on-target sessions.

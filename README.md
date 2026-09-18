@@ -184,7 +184,7 @@ the location service this repo owns. Expo Go loads none of them.
 
 ## Quality gates
 
-All of these run in CI; the first three also run on commit or push.
+All of these run in CI; the first four also run on commit or push.
 
 - **Biome**: formatting and lint, including four GritQL plugins written for this repo. One
   rejects raw hex colours outside [`constants/rawColors.ts`](constants/rawColors.ts); another

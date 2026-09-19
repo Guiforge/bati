@@ -157,6 +157,7 @@ import {
   commitRestore,
   discardStagedImport,
   exportBackup,
+  preRestoreFileName,
   saveBackupToFolder,
   stageBackupForImport,
 } from "@/src/backupFiles";
@@ -454,6 +455,25 @@ describe("saveBackupToFolder", () => {
 
     expect(fs.__disk.get("/sdcard/Documents/taxes-2025.pdf")).toBe("not ours");
     expect(fs.__disk.get("/sdcard/Documents/bati-export-notes.txt")).toBe("not ours either");
+  });
+
+  /**
+   * The copy a restore takes of what it is about to replace. Pruning keeps five *daily* files,
+   * and a hero who trains every day would roll the pre-restore copy out within a week; it is the
+   * only copy of that data anywhere they can reach, so the prune must never see it.
+   */
+  test("a pre-restore copy is kept under its own name, and the prune never takes it", async () => {
+    const folder = new fs.Directory("file:///sdcard/Documents");
+    const before = preRestoreFileName(new Date(2026, 8, 19, 9, 5, 2));
+    expect(before).toBe("bati-export-before-restore-v3-2026-09-19-090502.db");
+
+    await saveBackupToFolder(folder, before);
+    for (const day of ["2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24"]) {
+      fs.__disk.set(`/sdcard/Documents/bati-export-v3-${day}.db`, day);
+    }
+    await saveBackupToFolder(folder);
+
+    expect(fs.__disk.has(`/sdcard/Documents/${before}`)).toBe(true);
   });
 
   test("saving twice into the same folder replaces the day's file", async () => {

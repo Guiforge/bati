@@ -52,6 +52,7 @@ jest.mock("@/src/backupFiles", () => ({
 let mockAutoFolderOutcome: () => string | null = () => null;
 let mockEnableOutcome: () => string | null = () => "Documents/Bati";
 let mockDisableOutcome: () => void = () => {};
+let mockBeforeRestoreOutcome: () => void = () => {};
 
 jest.mock("@/src/autoBackup", () => ({
   autoBackupFolder: jest.fn(async () => {
@@ -67,6 +68,11 @@ jest.mock("@/src/autoBackup", () => ({
     await Promise.resolve();
     mockCalls.push("disable");
     mockDisableOutcome();
+  }),
+  backupBeforeRestore: jest.fn(async () => {
+    await Promise.resolve();
+    mockCalls.push("beforeRestore");
+    mockBeforeRestoreOutcome();
   }),
 }));
 
@@ -114,17 +120,33 @@ beforeEach(() => {
   mockAutoFolderOutcome = () => null;
   mockEnableOutcome = () => "Documents/Bati";
   mockDisableOutcome = () => {};
+  mockBeforeRestoreOutcome = () => {};
   useRestoreStore.setState({ phase: "idle" });
 });
 
 describe("useBackup — import", () => {
-  test("validates before handing over to the swap", async () => {
+  test("validates, then copies the current data aside, before handing over to the swap", async () => {
     const { result } = await renderHook(() => useBackup());
 
     await act(async () => result.current.runImport());
 
-    expect(mockCalls).toEqual(["stage", "validate"]);
+    expect(mockCalls).toEqual(["stage", "validate", "beforeRestore"]);
     expect(useRestoreStore.getState().phase).toBe("restoring");
+  });
+
+  test("a copy that fails abandons the restore: the hero's data is never replaced without it", async () => {
+    mockBeforeRestoreOutcome = () => {
+      throw new Error("no space left on device");
+    };
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runImport());
+
+    expect(mockCalls).toEqual(["stage", "validate", "beforeRestore", "discard"]);
+    expect(useRestoreStore.getState().phase).toBe("idle");
+    // Its own message: "that file could not be read" would blame a backup that was fine.
+    expect(mockAlerts).toEqual(["backup.beforeRestoreFailed"]);
+    expect(mockReportedErrors).toEqual(["backup.beforeRestore"]);
   });
 
   test("a rejected backup is discarded, and the app is never handed over", async () => {
@@ -158,7 +180,7 @@ describe("useBackup — import", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(mockCalls).toEqual(["stage", "validate"]);
+    expect(mockCalls).toEqual(["stage", "validate", "beforeRestore"]);
   });
 
   test("the rejection reason reaches the user rather than a generic failure", async () => {

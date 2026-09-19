@@ -4,7 +4,12 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/common/Toast";
 import { validateBackup } from "@/db/backup";
 import { useBugReport } from "@/hooks/useBugReport";
-import { autoBackupFolder, disableAutoBackup, enableAutoBackup } from "@/src/autoBackup";
+import {
+  autoBackupFolder,
+  backupBeforeRestore,
+  disableAutoBackup,
+  enableAutoBackup,
+} from "@/src/autoBackup";
 import {
   discardStagedImport,
   exportBackup,
@@ -157,6 +162,21 @@ export function useBackup() {
           if (!check.ok) {
             discardStagedImport();
             showError(t(`backup.rejected.${check.reason}`));
+            return;
+          }
+
+          // Last, so a file that will be refused never costs a snapshot; before `beginRestore`,
+          // because after it the tree is gone and the database closes.
+          const saved = await backupBeforeRestore().then(
+            () => true,
+            (error: unknown) => {
+              reportError("backup.beforeRestore", error);
+              return false;
+            },
+          );
+          if (!saved) {
+            discardStagedImport();
+            alertWithReport(t("backup.beforeRestoreFailed"));
             return;
           }
 

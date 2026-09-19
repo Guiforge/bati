@@ -1,0 +1,6 @@
+- Restaurer une sauvegarde remarche après un premier
+  essai. Chaque fichier choisi ensuite était illisible
+  jusqu'au redémarrage de Bati.
+- Une restauration réussie ne dit plus qu'elle s'est
+  arrêtée, et tes anciennes données restent de côté
+  comme prévu.

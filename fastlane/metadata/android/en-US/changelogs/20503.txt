@@ -1,0 +1,5 @@
+- Restoring a backup works again after a first try.
+  Every file you picked next used to say it could not
+  be opened until Bati was restarted.
+- A restore that worked no longer says it stopped,
+  and your previous data is kept aside as it should be.

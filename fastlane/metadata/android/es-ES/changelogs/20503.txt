@@ -1,0 +1,6 @@
+- Restaurar una copia de seguridad vuelve a funcionar
+  tras un primer intento. Antes, cada archivo que
+  elegías después no se abría hasta reiniciar Bati.
+- Una restauración que funcionó ya no dice que se
+  detuvo, y tus datos anteriores se guardan aparte
+  como debe ser.

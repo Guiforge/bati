@@ -12,8 +12,6 @@ const mockCommitRestore = jest.fn();
 const mockHideAsync = jest.fn(() => Promise.resolve());
 const mockReportError = jest.fn();
 const mockBackupIfStaleToday = jest.fn();
-let mockPhase = "idle";
-const mockFinishRestore = jest.fn();
 
 jest.mock("@/db/migrate", () => ({ ensureMigrations: () => mockEnsureMigrations() }));
 jest.mock("@/db/backup", () => ({ stampDatabaseIdentity: () => mockStampDatabaseIdentity() }));
@@ -24,18 +22,15 @@ jest.mock("@/src/reportError", () => ({
 }));
 jest.mock("expo-splash-screen", () => ({ hideAsync: () => mockHideAsync() }));
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (k: string) => k }) }));
-jest.mock("@/stores/restore", () => ({
-  useRestoreStore: (selector: (s: unknown) => unknown) =>
-    selector({ phase: mockPhase, finishRestore: mockFinishRestore }),
-}));
 
 import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { useRestoreStore } from "@/stores/restore";
 
 const child = <Text>the app</Text>;
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockPhase = "idle";
+  useRestoreStore.setState({ phase: "idle", commitClaimed: false });
   mockEnsureMigrations.mockResolvedValue(undefined);
   mockStampDatabaseIdentity.mockResolvedValue(undefined);
   mockCommitRestore.mockResolvedValue(undefined);
@@ -111,7 +106,7 @@ describe("DatabaseProvider", () => {
   });
 
   it("replaces the app with a notice while a restore is in flight", async () => {
-    mockPhase = "restoring";
+    useRestoreStore.setState({ phase: "restoring" });
 
     await mount();
 
@@ -119,11 +114,11 @@ describe("DatabaseProvider", () => {
     // the restore is about to close.
     expect(screen.queryByText("the app")).toBeNull();
     await waitFor(() => expect(mockCommitRestore).toHaveBeenCalled());
-    await waitFor(() => expect(mockFinishRestore).toHaveBeenCalledWith("restartRequired"));
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restartRequired"));
   });
 
   it("commits a restore once, never twice", async () => {
-    mockPhase = "restoring";
+    useRestoreStore.setState({ phase: "restoring" });
     const { rerender } = await mount();
     await waitFor(() => expect(mockCommitRestore).toHaveBeenCalled());
 
@@ -134,13 +129,36 @@ describe("DatabaseProvider", () => {
     expect(mockCommitRestore).toHaveBeenCalledTimes(1);
   });
 
+  // What a device does, and a rerender does not: rendering the notice unmounts the root `<Stack>`,
+  // expo-router remounts the whole root layout, and a second provider arrives with fresh refs
+  // while the store still says `restoring`. Every restore that worked reported that it had not.
+  it("commits once even when the provider is remounted mid-restore", async () => {
+    // Still in flight when the remount lands, as on the device: 30 ms into the swap.
+    let finishSwap = () => {};
+    mockCommitRestore.mockReturnValue(
+      new Promise<void>((resolve) => {
+        finishSwap = resolve;
+      }),
+    );
+    useRestoreStore.setState({ phase: "restoring" });
+    const { rerender } = await mount();
+    await waitFor(() => expect(mockCommitRestore).toHaveBeenCalled());
+
+    // A new key is a new instance: unmounted, then mounted again with fresh refs.
+    await act(() => rerender(<DatabaseProvider key="remounted">{child}</DatabaseProvider>));
+    await act(async () => finishSwap());
+
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restartRequired"));
+    expect(mockCommitRestore).toHaveBeenCalledTimes(1);
+  });
+
   it("reports a failed restore and says so, rather than pretending it worked", async () => {
-    mockPhase = "restoring";
+    useRestoreStore.setState({ phase: "restoring" });
     mockCommitRestore.mockRejectedValue(new Error("staged file is gone"));
 
     await mount();
 
-    await waitFor(() => expect(mockFinishRestore).toHaveBeenCalledWith("failed"));
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("failed"));
     expect(mockReportError).toHaveBeenCalledWith("backup.commitRestore", expect.any(Error));
   });
 });

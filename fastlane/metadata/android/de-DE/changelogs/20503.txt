@@ -1,0 +1,6 @@
+- Eine Sicherung wiederherzustellen klappt wieder nach
+  einem ersten Versuch. Vorher ließ sich jede weitere
+  Datei bis zum Neustart von Bati nicht öffnen.
+- Eine gelungene Wiederherstellung meldet keinen
+  Abbruch mehr, und deine alten Daten werden wie
+  vorgesehen beiseitegelegt.

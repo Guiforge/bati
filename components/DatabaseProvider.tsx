@@ -52,6 +52,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   const { t } = useTranslation();
   const restorePhase = useRestoreStore((state) => state.phase);
   const finishRestore = useRestoreStore((state) => state.finishRestore);
+  const claimCommit = useRestoreStore((state) => state.claimCommit);
 
   const [migrationState, setMigrationState] = useState<MigrationState>({
     success: false,
@@ -60,7 +61,6 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   const error = migrationState.error;
   const hasInitialized = useRef(false);
   const hasStartedMigrations = useRef(false);
-  const hasStartedRestore = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,12 +112,10 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   // below unmounts `children` first: by the time this effect fires there is nothing left that
   // could query the database the swap is about to close. Ordering by construction, not by luck.
   //
-  // At most once per process, like the migrations above: a second run would find the restored
-  // database in place, park *it* as `.bak` over the hero's original, and fail looking for a
-  // staged file that was already consumed. StrictMode's double effects are the way that happens.
+  // At most once per process, and the claim lives in the store rather than a ref because this
+  // provider does not survive the notice: see `claimCommit`.
   useEffect(() => {
-    if (restorePhase !== "restoring" || hasStartedRestore.current) return;
-    hasStartedRestore.current = true;
+    if (restorePhase !== "restoring" || !claimCommit()) return;
 
     commitRestore()
       .then(() => finishRestore("restartRequired"))
@@ -125,7 +123,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
         reportError("backup.commitRestore", e);
         finishRestore("failed");
       });
-  }, [restorePhase, finishRestore]);
+  }, [restorePhase, finishRestore, claimCommit]);
 
   if (restorePhase !== "idle") {
     return (

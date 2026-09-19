@@ -20,12 +20,28 @@ export type RestorePhase = "idle" | "restoring" | "restartRequired" | "failed";
 
 interface RestoreState {
   phase: RestorePhase;
+  commitClaimed: boolean;
   beginRestore: () => void;
   finishRestore: (outcome: "restartRequired" | "failed") => void;
+  /**
+   * True for the first caller only. The swap must run once per process, and a `useRef` in
+   * DatabaseProvider cannot promise that: unmounting the root `<Stack>` for the notice makes
+   * expo-router remount the whole root layout, provider included, with fresh refs. The second
+   * commit found the restored database in place, parked it over the hero's `.bak`, and failed on
+   * the consumed import, so every restore that worked said "nothing was replaced". This store
+   * outlives the remount.
+   */
+  claimCommit: () => boolean;
 }
 
-export const useRestoreStore = create<RestoreState>((set) => ({
+export const useRestoreStore = create<RestoreState>((set, get) => ({
   phase: "idle",
+  commitClaimed: false,
   beginRestore: () => set({ phase: "restoring" }),
   finishRestore: (outcome) => set({ phase: outcome }),
+  claimCommit: () => {
+    if (get().commitClaimed) return false;
+    set({ commitClaimed: true });
+    return true;
+  },
 }));

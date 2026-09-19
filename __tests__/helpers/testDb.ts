@@ -75,6 +75,24 @@ export function clientMock(t: { db: unknown; sqlite: Database.Database }) {
       await Promise.resolve();
       t.sqlite.exec(`VACUUM INTO ${sqlString(destinationPath)}`);
     },
+    // A copy of the live database on a connection of its own, closed afterwards like the real
+    // one: an `ATTACH` that leaked out of it would have nowhere to leak to.
+    withIsolatedConnection: async <T>(fn: (isolated: unknown) => Promise<T>) => {
+      const isolated = new Database(t.sqlite.serialize());
+      try {
+        return await fn({
+          execAsync: (source: string) => {
+            isolated.exec(source);
+            return Promise.resolve();
+          },
+          getFirstAsync: (source: string) =>
+            Promise.resolve(isolated.prepare(source).get() ?? null),
+          getAllAsync: (source: string) => Promise.resolve(isolated.prepare(source).all()),
+        });
+      } finally {
+        isolated.close();
+      }
+    },
   };
 }
 

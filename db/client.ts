@@ -1,5 +1,10 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import { deleteDatabaseSync, openDatabaseAsync, openDatabaseSync } from "expo-sqlite";
+import {
+  deleteDatabaseSync,
+  openDatabaseAsync,
+  openDatabaseSync,
+  type SQLiteDatabase,
+} from "expo-sqlite";
 import * as schema from "./schema";
 import { SCHEMA_VERSION } from "./schemaVersion";
 import { sqlString } from "./sql";
@@ -106,13 +111,39 @@ export function getRawDb() {
  * free of per-platform file openers so it can run on better-sqlite3 — this is the one line of it
  * that cannot be, so it is behind the same door as every other handle in this app.
  */
-export async function vacuumIntoFile(destinationPath: string): Promise<void> {
-  const isolated = await openDatabaseAsync(DB_NAME);
+export function vacuumIntoFile(destinationPath: string): Promise<void> {
+  return withIsolatedConnection((isolated) =>
+    isolated.execAsync(`VACUUM INTO ${sqlString(destinationPath)}`),
+  );
+}
+
+/** What a caller of `withIsolatedConnection` may do with it. Its async reads finalise. */
+export type IsolatedConnection = Pick<
+  SQLiteDatabase,
+  "execAsync" | "getFirstAsync" | "getAllAsync"
+>;
+
+/**
+ * Runs `fn` on a fresh connection to the live database, closed when `fn` settles.
+ *
+ * For the statements the shared connection cannot host behind Drizzle's live ones: `VACUUM INTO`
+ * above, and the backup check's `ATTACH`. The second failed quietly: `DETACH` refuses an alias a
+ * statement still reads, Drizzle never finalises, so the first check left the candidate bound and
+ * every later one failed its own `ATTACH` as "that file could not be opened", until a relaunch.
+ * Closing the connection takes the alias with it, whatever is still open on it.
+ *
+ * `useNewConnection`, because expo-sqlite hands back the cached shared handle otherwise, and
+ * closing that would close the app's database.
+ */
+export async function withIsolatedConnection<T>(
+  fn: (isolated: IsolatedConnection) => Promise<T>,
+): Promise<T> {
+  const isolated = await openDatabaseAsync(DB_NAME, { useNewConnection: true });
   try {
     // Its own wait, for the same reason the shared connection has one: this handle is new and
     // inherits no pragma.
     await isolated.execAsync("PRAGMA busy_timeout = 5000;");
-    await isolated.execAsync(`VACUUM INTO ${sqlString(destinationPath)}`);
+    return await fn(isolated);
   } finally {
     await isolated.closeAsync();
   }

@@ -329,6 +329,37 @@ describe("db/backup — validation rejects", () => {
   });
 
   /**
+   * On a device every check after the first one of a session came back `unreadable`: Drizzle's
+   * expo driver never finalises, so `DETACH` refused the alias and the next `ATTACH` collided with
+   * it. better-sqlite3 finalises, so no test here can reproduce that; what it can hold is the
+   * reason it cannot happen any more, that validation never touches the shared connection.
+   */
+  test("never runs on the shared connection, where an alias cannot be dropped", async () => {
+    const target = await makeValidBackup("isolated.db");
+    jest.resetModules();
+    jest.doMock("../db/client", () => ({
+      ...clientMock(t),
+      db: new Proxy(
+        {},
+        {
+          get: () => {
+            throw new Error("validation reached the shared connection");
+          },
+        },
+      ),
+    }));
+
+    try {
+      const { validateBackup } = backupModule();
+      expect(await validateBackup(target)).toEqual({ ok: true });
+      expect(await validateBackup(target)).toEqual({ ok: true });
+    } finally {
+      jest.resetModules();
+      jest.doMock("../db/client", () => clientMock(t));
+    }
+  });
+
+  /**
    * The four cases above passed here and came back `unreadable` on CI, on the same driver and
    * the same SQLite: the classifier reached the driver's message through `instanceof Error`, and
    * jest gives the test realm its own `Error` constructor, so `cause` was silently dropped.
@@ -341,17 +372,18 @@ describe("db/backup — validation rejects", () => {
     jest.resetModules();
     jest.doMock("../db/client", () => ({
       ...clientMock(t),
-      db: {
-        run: () => {
-          throw Object.assign(Object.create(null), {
-            message: "Failed to run the query 'ATTACH DATABASE ...'",
-            cause: Object.assign(Object.create(null), {
-              message: "file is not a database",
-              code: "SQLITE_NOTADB",
-            }),
-          });
-        },
-      },
+      withIsolatedConnection: <T>(fn: (isolated: unknown) => Promise<T>) =>
+        fn({
+          execAsync: () => {
+            throw Object.assign(Object.create(null), {
+              message: "Failed to run the query 'ATTACH DATABASE ...'",
+              cause: Object.assign(Object.create(null), {
+                message: "file is not a database",
+                code: "SQLITE_NOTADB",
+              }),
+            });
+          },
+        }),
     }));
 
     try {

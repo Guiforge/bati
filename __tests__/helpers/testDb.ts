@@ -118,6 +118,11 @@ export function ownEveryRung(t: { sqlite: Database.Database }): void {
      VALUES (?, ?, 0, ?, 'reps', 10, 'reps', 10, ?)`,
   );
 
+  // Every row is `reps`, holds included, on purpose. The ladder only compares a result with its
+  // target, whatever the unit, but a `time` row is a personal best, and `generateTarget` scales a
+  // hold's target from it: logging the Plank for 10 s drops its prescription from 30 to 25.
+  // Logging in reps unlocks the rungs without giving the hero any record.
+  //
   // `isEarned` wants PROGRESSION_SESSIONS_REQUIRED distinct on-target sessions.
   for (let n = 0; n < 3; n++) {
     const sessionId = Number(session.run(at - n * 86400).lastInsertRowid);

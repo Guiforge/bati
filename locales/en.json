@@ -1242,7 +1242,7 @@
     "exportDone": "Backup ready. Choose where to keep it",
     "exportFailed": "The backup could not be created",
     "importFailed": "That file could not be read",
-    "beforeRestoreFailed": "Your current progress could not be copied to your backup folder, so nothing was restored.",
+    "beforeRestoreFailed": "Your current progress could not be copied to your backup folder, so nothing was restored. Choose the folder again under Automatic backup, or turn it off.",
     "confirmTitle": "Restore this backup?",
     "confirmMessage": "Everything on this device (history, village, oaths) is replaced by the backup. To keep a copy of your current data, save a file first.",
     "confirmMessageAuto": "Everything on this device (history, village, oaths) is replaced by the backup. A copy of your current data goes to {{folder}} first.",

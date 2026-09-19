@@ -49,6 +49,7 @@ jest.mock("@/db/preferences", () => ({
 }));
 
 const mockSavedInto: (string | undefined)[] = [];
+const mockSavedNames: (string | undefined)[] = [];
 const mockPicked: { next: string | null; saveThrows: Error | null } = {
   next: null,
   saveThrows: null,
@@ -62,12 +63,14 @@ jest.mock("@/src/backupFiles", () => ({
     // back would be testing expo-file-system.
     return mockPicked.next === null ? null : { uri: mockPicked.next };
   },
-  saveBackupToFolder: async (folder?: { uri: string }) => {
+  saveBackupToFolder: async (folder?: { uri: string }, name?: string) => {
     await Promise.resolve();
     if (mockPicked.saveThrows) throw mockPicked.saveThrows;
     mockSavedInto.push(folder?.uri);
+    mockSavedNames.push(name);
     return true;
   },
+  preRestoreFileName: () => "bati-export-before-restore-v3-2026-09-19-091502.db",
 }));
 
 const mockReported: string[] = [];
@@ -77,6 +80,7 @@ jest.mock("@/src/reportError", () => ({
 
 import {
   backupBeforeMigrations,
+  backupBeforeRestore,
   backupFolderLabel,
   backupIfStaleToday,
   disableAutoBackup,
@@ -89,6 +93,7 @@ const TREE = "content://com.android.externalstorage.documents/tree/primary%3ADoc
 beforeEach(() => {
   mockStored.clear();
   mockSavedInto.length = 0;
+  mockSavedNames.length = 0;
   mockReported.length = 0;
   mockControl.readThrows = null;
   mockPicked.next = null;
@@ -161,6 +166,35 @@ describe("backupBeforeMigrations", () => {
 
     await expect(backupBeforeMigrations()).resolves.toBeUndefined();
     expect(mockReported).toContain("backup.auto.read");
+  });
+});
+
+describe("backupBeforeRestore", () => {
+  test("writes nothing when the hero never chose a folder, and lets the restore go ahead", async () => {
+    await backupBeforeRestore();
+
+    expect(mockSavedInto).toEqual([]);
+  });
+
+  test("copies the database about to be replaced into the remembered tree, under its own name", async () => {
+    mockStored.set("backupFolderUri", TREE);
+
+    await backupBeforeRestore();
+
+    expect(mockSavedInto).toEqual([TREE]);
+    // Not the daily name: a second restore the same day would overwrite the first one's copy of
+    // the hero's own data with the backup the first one installed.
+    expect(mockSavedNames).toEqual(["bati-export-before-restore-v3-2026-09-19-091502.db"]);
+  });
+
+  test("a failed copy throws, so the caller can refuse the restore, and keeps the folder", async () => {
+    mockStored.set("backupFolderUri", TREE);
+    mockPicked.saveThrows = new Error("no space left on device");
+
+    await expect(backupBeforeRestore()).rejects.toThrow("no space left on device");
+    // Forgetting the folder is `backupBeforeMigrations`' policy for an unattended write. Here the
+    // hero is watching and gets told; switching the feature off behind their back is not asked.
+    expect(mockStored.get("backupFolderUri")).toBe(TREE);
   });
 });
 

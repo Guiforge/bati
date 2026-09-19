@@ -275,12 +275,20 @@ export default function SettingsScreen() {
 
   // The confirmation lives here rather than in the hook: onboarding calls the same import with
   // no dialog, because at that point there is no history to lose. One writer, two entrances.
+  //
+  // It names the folder the pre-restore copy goes to, or asks for a file when there is none: the
+  // swap's own `.bak` sits in app-private storage, so promising it as "a recovery copy" promised
+  // something no hero could ever open.
   const confirmImport = useCallback(() => {
-    Alert.alert(t("backup.confirmTitle"), t("backup.confirmMessage"), [
+    const message =
+      autoFolder === null
+        ? t("backup.confirmMessage")
+        : t("backup.confirmMessageAuto", { folder: autoFolder });
+    Alert.alert(t("backup.confirmTitle"), message, [
       { text: t("common.cancel"), style: "cancel" },
       { text: t("backup.confirmCta"), style: "destructive", onPress: runImport },
     ]);
-  }, [runImport, t]);
+  }, [autoFolder, runImport, t]);
 
   // Turning it on is one tap into the folder picker — there is nothing to warn about, and the
   // first snapshot is written before the folder is remembered, so the confirmation is the toast.

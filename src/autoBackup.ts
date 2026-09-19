@@ -2,7 +2,7 @@ import { Directory } from "expo-file-system";
 import { dayKey } from "@/db/dates";
 import { preferences } from "@/db/preferences";
 import { errorTrail } from "@/db/sql";
-import { pickBackupFolder, saveBackupToFolder } from "@/src/backupFiles";
+import { pickBackupFolder, preRestoreFileName, saveBackupToFolder } from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -94,6 +94,22 @@ export async function enableAutoBackup(): Promise<string | null> {
 /** Forgets the folder. The snapshots already written are the hero's, and stay where they are. */
 export async function disableAutoBackup(): Promise<void> {
   await preferences.clearBackupFolderUri();
+}
+
+/**
+ * Writes the database a restore is about to replace into the remembered folder.
+ *
+ * The swap keeps its own `.bak`, but that lives in app-private storage: it is a rollback for the
+ * swap, and no hero can reach it. This copy is the one they can. Without a folder there is
+ * nowhere they could reach, so it returns and the restore goes ahead as before.
+ *
+ * Throws, unlike the two triggers below: the caller abandons the restore, because replacing the
+ * hero's data without the copy they turned the feature on to get is the one outcome worse than
+ * not restoring.
+ */
+export async function backupBeforeRestore(): Promise<void> {
+  const folder = await rememberedFolder();
+  if (folder) await saveBackupToFolder(folder, preRestoreFileName(new Date()));
 }
 
 /**

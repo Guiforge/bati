@@ -75,6 +75,20 @@ function exportFileName(now: Date) {
 }
 
 /**
+ * `bati-export-before-restore-v3-2026-09-19-091502.db`: the database a restore is about to
+ * replace. To the second, because two restores on one day must not overwrite each other: the
+ * second one's "before" is the first one's backup, and the hero's own data is the file under
+ * the first name. `SNAPSHOT_URI` does not match it, so pruning never takes one; they are rare
+ * and they are the only copy of what a restore threw away.
+ */
+export function preRestoreFileName(now: Date) {
+  const time = [now.getHours(), now.getMinutes(), now.getSeconds()]
+    .map((part) => String(part).padStart(2, "0"))
+    .join("");
+  return `${EXPORT_PREFIX}before-restore-v${SCHEMA_VERSION}-${dayKey(now)}-${time}.db`;
+}
+
+/**
  * Writes a fresh dated snapshot in the app's own directory and returns it.
  *
  * Stale snapshots are cleared before writing rather than after the file has been handed on: when
@@ -82,12 +96,11 @@ function exportFileName(now: Date) {
  * under a lazy reader would hand the user a truncated backup. This way at most one stale
  * snapshot exists, and it costs one database's worth of disk.
  */
-async function writeSnapshot(): Promise<File> {
+async function writeSnapshot(name = exportFileName(new Date())): Promise<File> {
   for (const entry of new Directory(`file://${DB_DIR}`).list()) {
     if (entry.name.startsWith(EXPORT_PREFIX)) entry.delete();
   }
 
-  const name = exportFileName(new Date());
   await snapshotDatabaseTo(pathIn(name));
   return fileIn(name);
 }
@@ -139,11 +152,11 @@ export async function pickBackupFolder(): Promise<Directory | null> {
  * Pass a `folder` to write into a tree already granted; without one it asks. The snapshot is
  * written *after* the picker resolves, so backing out leaves nothing behind.
  */
-export async function saveBackupToFolder(folder?: Directory): Promise<boolean> {
+export async function saveBackupToFolder(folder?: Directory, name?: string): Promise<boolean> {
   const target = folder ?? (await pickBackupFolder());
   if (!target) return false;
 
-  const snapshot = await writeSnapshot();
+  const snapshot = await writeSnapshot(name);
   // Snapshots are named by the day, so a second save into the same folder aims at a name that is
   // already taken and the copy refuses. Replacing is what the hero means by saving again: the
   // file under that name is this app's own backup, from the same day, under a name only this app

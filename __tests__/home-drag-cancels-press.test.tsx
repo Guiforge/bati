@@ -22,6 +22,7 @@ jest.mock("@/components/chorus/screenCues", () => ({
 jest.mock("@/components/home/HomeHeader", () => ({ HomeHeader: () => null }));
 jest.mock("@/components/home/HomeStage", () => ({ HomeStage: () => null }));
 jest.mock("@/components/home/QuickActions", () => ({ QuickActions: () => null }));
+jest.mock("@/components/home/UpdateCard", () => ({ UpdateCard: () => null }));
 jest.mock("@/components/session/SessionRecoveryCard", () => ({
   SessionRecoveryBanner: () => null,
 }));

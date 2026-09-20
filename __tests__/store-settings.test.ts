@@ -25,6 +25,7 @@ const prefs = {
   getSoundEnabled: jest.fn<Promise<boolean>, []>(),
   getDistanceUnit: jest.fn<Promise<"metric" | "imperial">, []>(),
   getMapTilesEnabled: jest.fn<Promise<boolean>, []>(),
+  getUpdateCheckEnabled: jest.fn<Promise<boolean>, []>(),
   getPrepMode: jest.fn<Promise<"timer" | "tap">, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
@@ -34,6 +35,7 @@ const prefs = {
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
   setDistanceUnit: jest.fn().mockResolvedValue(undefined),
   setMapTilesEnabled: jest.fn().mockResolvedValue(undefined),
+  setUpdateCheckEnabled: jest.fn().mockResolvedValue(undefined),
   setPrepMode: jest.fn().mockResolvedValue(undefined),
 };
 
@@ -75,6 +77,7 @@ function storedSettings() {
   prefs.getSoundEnabled.mockResolvedValue(false);
   prefs.getDistanceUnit.mockResolvedValue("imperial");
   prefs.getMapTilesEnabled.mockResolvedValue(true);
+  prefs.getUpdateCheckEnabled.mockResolvedValue(true);
   prefs.getPrepMode.mockResolvedValue("tap");
 }
 
@@ -86,9 +89,10 @@ const DEFAULTS = {
   villagersEnabled: true,
   soundEnabled: true,
   distanceUnit: "metric" as const,
-  // Off, and it is the only boolean here whose default is a refusal: it is what decides whether
-  // the app makes a network request at all.
+  // The two booleans here whose default is a refusal: between them they decide whether the app
+  // makes a network request at all.
   mapTilesEnabled: false,
+  updateCheckEnabled: false,
   prepMode: "timer" as const,
   isLoaded: false,
 };
@@ -114,6 +118,7 @@ describe("useSettingsStore", () => {
       soundEnabled: false,
       distanceUnit: "imperial",
       mapTilesEnabled: true,
+      updateCheckEnabled: true,
       prepMode: "tap",
       isLoaded: true,
     });
@@ -197,6 +202,7 @@ describe("useSettingsStore", () => {
     await s().setSoundEnabled(false);
     await s().setDistanceUnit("imperial");
     await s().setMapTilesEnabled(true);
+    await s().setUpdateCheckEnabled(true);
 
     expect(s()).toMatchObject({
       language: "fr",
@@ -207,6 +213,7 @@ describe("useSettingsStore", () => {
       soundEnabled: false,
       distanceUnit: "imperial",
       mapTilesEnabled: true,
+      updateCheckEnabled: true,
     });
 
     expect(prefs.setLanguage).toHaveBeenCalledWith("fr");
@@ -217,6 +224,7 @@ describe("useSettingsStore", () => {
     expect(prefs.setSoundEnabled).toHaveBeenCalledWith(false);
     expect(prefs.setDistanceUnit).toHaveBeenCalledWith("imperial");
     expect(prefs.setMapTilesEnabled).toHaveBeenCalledWith(true);
+    expect(prefs.setUpdateCheckEnabled).toHaveBeenCalledWith(true);
   });
 
   /**
@@ -231,17 +239,19 @@ describe("useSettingsStore", () => {
    * saying "off" the day the store said "on". This is the one field where that difference is a
    * network request nobody asked for, so it is read from the module.
    */
-  test("the map starts refused in the store the app actually creates", () => {
+  test("both network switches start refused in the store the app actually creates", () => {
     expect(settingsStore().getInitialState().mapTilesEnabled).toBe(false);
+    expect(settingsStore().getInitialState().updateCheckEnabled).toBe(false);
   });
 
-  test("a failed load leaves the map refused", async () => {
+  test("a failed load leaves both network switches refused", async () => {
     storedSettings();
     prefs.getMapTilesEnabled.mockRejectedValue(new Error("db is gone"));
 
     await settingsStore().getState().loadFromDatabase();
 
     expect(settingsStore().getState().mapTilesEnabled).toBe(false);
+    expect(settingsStore().getState().updateCheckEnabled).toBe(false);
     expect(settingsStore().getState().isLoaded).toBe(true);
   });
 

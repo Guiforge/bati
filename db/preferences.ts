@@ -296,6 +296,48 @@ export const preferences = {
     await setPreference("mapTiles", String(enabled));
   },
 
+  /**
+   * Whether the app may ask GitHub, once a day, whether a newer version has been published.
+   *
+   * `=== "true"` for the same reason the map above uses it rather than the `!== "false"` every
+   * other boolean here has: a database that has never seen this key belongs to a hero who has
+   * never been asked, and an unanswered question about a second host is a no.
+   */
+  async getUpdateCheckEnabled(): Promise<boolean> {
+    return (await getPreference("updateCheck")) === "true";
+  },
+
+  async setUpdateCheckEnabled(enabled: boolean): Promise<void> {
+    await setPreference("updateCheck", String(enabled));
+  },
+
+  /** When the last ask happened, epoch ms, `0` for never. Holds the check to one a day. */
+  async getUpdateCheckedAt(): Promise<number> {
+    return Number(await getPreference("updateCheckedAt")) || 0;
+  },
+
+  async setUpdateCheckedAt(at: number): Promise<void> {
+    await setPreference("updateCheckedAt", String(at));
+  },
+
+  /** The newest version GitHub has named, kept so a cold start knows without asking again. */
+  async getUpdateLatest(): Promise<string | null> {
+    return await getPreference("updateLatest");
+  },
+
+  async setUpdateLatest(version: string): Promise<void> {
+    await setPreference("updateLatest", version);
+  },
+
+  /** The version whose card was closed. Stored per version, so the next release asks again. */
+  async getUpdateDismissed(): Promise<string | null> {
+    return await getPreference("updateDismissed");
+  },
+
+  async setUpdateDismissed(version: string): Promise<void> {
+    await setPreference("updateDismissed", version);
+  },
+
   async getHapticsEnabled(): Promise<boolean> {
     const value = await getPreference("hapticsEnabled");
     // Default to true if not set

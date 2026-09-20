@@ -3,10 +3,10 @@ layout: default
 prose: true
 title: Privacy Policy
 head_title: "Privacy policy for Bati"
-description: "Bati collects nothing about you. No account, no server, no analytics. Offline first, with one exception, off by default: the map, which tells a tile host roughly where you go, during an outing and after it."
+description: "Bati collects nothing about you. No account, no server, no analytics. Offline first, with two exceptions, both off by default: the map, which tells a tile host roughly where you go, and a daily question to GitHub about a newer version."
 type: legal
 status: active
-updated: 2026-09-11
+updated: 2026-09-20
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -33,23 +33,24 @@ francés: **feedback.bati@proton.me**
 
 # Privacy Policy for Bati
 
-**Last updated: 11 September 2026**
+**Last updated: 20 September 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
 version deserves to be said plainly:
 
 > **Bati collects nothing about you. Nothing you record in the app leaves your phone unless you
-> send it yourself, deliberately, by email. One exception, off by default: the map behind an
-> outing. Switched on, it tells a map host roughly where you go, during the outing and after
-> it.**
+> send it yourself, deliberately, by email. Two exceptions, both off by default: the map behind
+> an outing, which tells a map host roughly where you go, and a daily question to GitHub about a
+> newer version of the app.**
 
 One sentence of that used to be shorter. Until outings landed, the app made no network request
 of any kind, and that was enforced by refusing itself the `INTERNET` permission. Drawing a map
 behind a walk needs the map, so the permission is now in the build, and the honest version of the
 promise is one line longer rather than gone: the map is a setting, off until you switch it on, and
-until then the app still makes no request of any kind. See [the map](#the-map-and-the-one-host)
-below.
+until then the app still makes no request of any kind. A second switch joined it on 20 September
+2026, for the copies that no store updates: see [the map](#the-map-and-the-one-host) and
+[the version check](#the-version-check-and-the-second-host) below.
 
 ## What is stored, and where
 
@@ -95,8 +96,8 @@ it nowhere and has no way to.
 - No analytics, no telemetry, no crash-reporting SDK, no advertising, no tracking identifiers.
 - No third-party SDK that collects data.
 - No upload of your data, ever. Nothing you record (a session, a personal record, a GPS trace) is
-  sent anywhere. The single network request the app can make is described below, with what it
-  reveals, and it happens only once you have switched the map on.
+  sent anywhere. The two network requests the app can make are described below, with what each
+  one reveals, and each waits for its own switch in Settings.
 
 ## The map, and the one host
 
@@ -106,7 +107,7 @@ travelled. Those points stay in the database on your phone, like everything else
 Drawing them on a map needs a map, and **the map is off by default**. A fresh install draws the
 route as a line on the app's own dark background, and requests nothing. Settings has one switch for
 the map; turn it on and Bati asks **`tiles.openfreemap.org`** for tiles, the square images a map
-is made of, and that is the only network destination in the app.
+is made of, and that is the first of the app's two network destinations.
 [OpenFreeMap](https://openfreemap.org) serves OpenStreetMap data, free, with no key and no
 registration.
 
@@ -119,14 +120,31 @@ registration.
 - **What it does not reveal:** the route to the metre, your pace, your training, or anything else
   in the database. The host learns the area and roughly when you crossed it, never the line you
   drew through it, and nothing in the database is ever sent up.
-- **What keeps it to one host:** a lint rule in the repository
+- **What keeps the list this short:** a lint rule in the repository
   ([`.biome/plugins/noJsNetwork.grit`](https://github.com/Guiforge/bati/blob/main/.biome/plugins/noJsNetwork.grit))
   rejects every network call written in the app's own code (`fetch`, `XMLHttpRequest`,
-  `WebSocket`, `EventSource`, `sendBeacon`), so the build fails before a second destination can be
-  added quietly. The map library does its fetching natively, below that line.
+  `WebSocket`, `EventSource`, `sendBeacon`) outside the one module that runs the version check
+  below, so the build fails before a third destination can be added quietly. The map library does
+  its fetching natively, below that line.
 - **Until you switch the map on,** no tile is ever requested and the app touches the network not
   at all, outing or no outing. Switch it off again and both maps go back to the plain
   background; the switch is one tap either way.
+
+## The version check, and the second host
+
+F-Droid and the Play Store both notice a new version of an app and tell you about it. A copy
+installed by hand from an APK has nobody to tell it anything, and can sit a year behind without
+knowing. So Settings has a second switch, **Check for updates**, and it is **off by default** too.
+
+Switched on, Bati asks **`api.github.com`** once a day whether a newer version has been published,
+and puts a card on the home screen when the answer is yes.
+
+- **What that request reveals:** your device's IP address and the time, which is what GitHub
+  learns from anyone who opens the release page in a browser. It carries no account, no
+  identifier, no device name, and nothing from the database.
+- **What it does not do:** download anything, install anything, or run anything. The card opens
+  the release page in your own browser, and everything after that is yours.
+- **Turning it off** stops it at once. Left off, the request is never made.
 
 ## Permissions, and why
 
@@ -187,8 +205,9 @@ file, and uninstalling the app erases every record it ever made.
 ## Changes
 
 If this policy changes, the updated version will be published at this URL with a new date. The
-one change that would matter is a second network destination, and it would be written here in
-plain words rather than folded into a list.
+one change that would matter is a new network destination. The second one arrived on 20 September
+2026 and got its own section above, in plain words rather than folded into a list, which is how a
+third would arrive too.
 
 ## Contact
 
@@ -201,23 +220,26 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 11 septembre 2026**
+**Dernière mise à jour : 20 septembre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
 confidentialité, et parce que la version courte mérite d'être dite simplement :
 
 > **Bati ne collecte rien sur vous. Rien de ce que vous enregistrez dans l'application ne quitte
-> votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail. Une exception,
-> désactivée par défaut : la carte derrière une sortie. Activée, elle dit à un hôte de cartes
-> à peu près où vous allez, pendant la sortie et après.**
+> votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail. Deux exceptions,
+> désactivées par défaut toutes les deux : la carte derrière une sortie, qui dit à un hôte de
+> cartes à peu près où vous allez, et une question quotidienne à GitHub sur une version plus
+> récente.**
 
 Une phrase de tout cela était plus courte avant. Jusqu'aux sorties, l'application ne faisait
 aucune requête réseau, et c'était garanti par le refus de la permission `INTERNET` elle-même.
 Dessiner une carte derrière une marche demande la carte : la permission est donc désormais dans la
 compilation, et la version honnête de la promesse est une ligne plus longue plutôt que disparue :
 la carte est un réglage, désactivé tant que vous ne l'activez pas, et jusque-là l'application ne
-fait toujours aucune requête. Voir « La carte, et l'hôte unique » plus bas.
+fait toujours aucune requête. Un second interrupteur l'a rejointe le 20 septembre 2026, pour les
+copies qu'aucun store ne met à jour. Voir « La carte, et l'hôte unique » et « La vérification de
+version, et le second hôte » plus bas.
 
 ## Ce qui est stocké, et où
 
@@ -269,8 +291,9 @@ n'en a aucun moyen.
   identifiant de suivi.
 - Aucun SDK tiers collectant des données.
 - Aucun envoi de vos données, jamais. Rien de ce que vous enregistrez (une séance, un record, une
-  trace GPS) n'est transmis. L'unique requête réseau que l'application peut faire est décrite
-  ci-dessous, avec ce qu'elle révèle, et elle n'a lieu qu'une fois la carte activée.
+  trace GPS) n'est transmis. Les deux requêtes réseau que l'application peut faire sont décrites
+  ci-dessous, avec ce que chacune révèle, et chacune attend son propre interrupteur dans les
+  réglages.
 
 ## La carte, et l'hôte unique
 
@@ -281,8 +304,9 @@ Les dessiner sur une carte demande une carte, et **la carte est désactivée par
 installation neuve dessine le trajet comme un trait sur le fond sombre de l'application, et ne
 demande rien. Les réglages ont un interrupteur pour la carte ; activez-le et Bati demande à
 **`tiles.openfreemap.org`** des tuiles, les carrés d'image qui composent une carte, et c'est la
-seule destination réseau de l'application. [OpenFreeMap](https://openfreemap.org) sert des données
-OpenStreetMap, gratuitement, sans clé et sans inscription.
+première des deux destinations réseau de l'application.
+[OpenFreeMap](https://openfreemap.org) sert des données OpenStreetMap, gratuitement, sans clé et
+sans inscription.
 
 - **Ce que cette demande révèle :** la carte est dessinée deux fois, sous vous pendant qu'une
   sortie est en cours et sous le trajet entier sur son récap. Les tuiles demandées sont celles
@@ -294,15 +318,34 @@ OpenStreetMap, gratuitement, sans clé et sans inscription.
 - **Ce qu'elle ne révèle pas :** le tracé au mètre près, votre allure, votre entraînement, ni quoi
   que ce soit d'autre dans la base. L'hôte apprend la zone et à peu près quand vous l'avez
   traversée, jamais la ligne que vous y avez tracée, et rien de la base n'est jamais envoyé.
-- **Ce qui garantit l'hôte unique :** une règle de lint dans le dépôt
+- **Ce qui garde la liste aussi courte :** une règle de lint dans le dépôt
   ([`.biome/plugins/noJsNetwork.grit`](https://github.com/Guiforge/bati/blob/main/.biome/plugins/noJsNetwork.grit))
   rejette tout appel réseau écrit dans le code de l'application (`fetch`, `XMLHttpRequest`,
-  `WebSocket`, `EventSource`, `sendBeacon`), de sorte que la compilation échoue avant qu'une
-  seconde destination puisse être ajoutée discrètement. La bibliothèque de carte fait ses requêtes
-  nativement, sous cette ligne.
+  `WebSocket`, `EventSource`, `sendBeacon`) en dehors du seul module qui fait la vérification de
+  version décrite plus bas, de sorte que la compilation échoue avant qu'une troisième destination
+  puisse être ajoutée discrètement. La bibliothèque de carte fait ses requêtes nativement, sous
+  cette ligne.
 - **Tant que vous n'activez pas la carte,** aucune tuile n'est demandée et l'application ne
   touche pas du tout au réseau, sortie ou non. Désactivez-la et les deux cartes reviennent au
   fond uni ; dans les deux sens, c'est une pression.
+
+## La vérification de version, et le second hôte
+
+F-Droid et le Play Store remarquent tous les deux la sortie d'une nouvelle version et vous le
+disent. Une copie installée à la main depuis un APK n'a personne pour l'en informer, et peut
+rester un an en arrière sans le savoir. Les réglages ont donc un second interrupteur,
+**Chercher les mises à jour**, lui aussi **désactivé par défaut**.
+
+Activé, Bati demande une fois par jour à **`api.github.com`** si une version plus récente est
+parue, et pose une carte sur l'accueil quand la réponse est oui.
+
+- **Ce que cette demande révèle :** l'adresse IP de votre appareil et l'heure, soit ce que GitHub
+  apprend de quiconque ouvre la page des versions dans un navigateur. Elle ne porte aucun compte,
+  aucun identifiant, aucun nom d'appareil, et rien de la base de données.
+- **Ce qu'elle ne fait pas :** télécharger quoi que ce soit, installer quoi que ce soit, exécuter
+  quoi que ce soit. La carte ouvre la page des versions dans votre propre navigateur, et la suite
+  vous appartient.
+- **La désactiver** l'arrête aussitôt. Laissée désactivée, aucune requête n'est jamais faite.
 
 ## Permissions, et pourquoi
 

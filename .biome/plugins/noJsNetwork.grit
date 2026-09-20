@@ -7,13 +7,22 @@
 //
 // What replaces it is narrower than the manifest and says the same thing. MapLibre fetches its
 // tiles natively, from one host named in the privacy policy; **no JavaScript in this app has any
-// business opening a socket**, and none ever has — this plugin was written against a codebase
+// business opening a socket**, and none ever had — this plugin was written against a codebase
 // where the grep found zero calls. The first `fetch` in a future PR is the one that turns one
 // host into two without anyone deciding to.
 //
-// If a feature ever genuinely needs a request from JS, delete this file in the same commit that
-// adds it and say in the message which host and why. Do not add an exemption: an exemption list
-// is how a rule stops being read.
+// One has since been decided on, deliberately, and it is the single name in the filter below.
+// `src/updateCheck.ts` asks api.github.com once a day whether a newer version has been
+// published, for the hero who installed the APK by hand and has no store to tell them. It is off
+// until switched on, it is named in the privacy policy and under its own Settings row, and it
+// downloads nothing.
+//
+// The header this file used to carry said to delete it rather than exempt anything, on the
+// grounds that an exemption list is how a rule stops being read. Deleting it would have left the
+// next `fetch` with nothing in its way at all, which is the outcome the rule exists to prevent,
+// so the instruction is overruled and replaced by a stricter one: this filter holds **one
+// module**, whose name is the host it talks to. A second entry is not a lint change. It is a
+// change to what the front page and the policy promise, and it does not land without both.
 //
 // `language js` like the other three plugins here, which is also why the tile URL lives in a
 // `.ts` style module rather than a `.json` one — see docs/designs/map-immersion.md.
@@ -28,5 +37,6 @@ language js
     `navigator.sendBeacon`
   },
   $filename <: not r".*__tests__.*",
-  register_diagnostic(span=$fn, message="No network from JavaScript. Map tiles are fetched natively by MapLibre from the one host in the privacy policy; anything else breaks the promise the manifest used to enforce. See .biome/plugins/noJsNetwork.grit.")
+  $filename <: not r".*src/updateCheck\.ts",
+  register_diagnostic(span=$fn, message="No network from JavaScript outside src/updateCheck.ts. Map tiles are fetched natively by MapLibre, and the version check is the one JS request this app makes; both are named in the privacy policy and both are off by default. Anything else breaks the promise the manifest used to enforce. See .biome/plugins/noJsNetwork.grit.")
 }

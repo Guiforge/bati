@@ -37,17 +37,21 @@ mini-game. If a reward surface competes with starting or continuing a workout, d
   is loaded — anything above it renders wrong, silently).
 - i18n for every user-facing string. A raw English literal in a component is a bug, not a TODO.
 - The dark-fantasy voice stays. Best practice changes the numbers, never the fiction.
-- **One network destination, and nothing uploaded.** This guardrail was "no network requests at
+- **Two network destinations, both off by default, and nothing uploaded.** This guardrail was "no network requests at
   all" until expeditions landed, and it was enforced by `blockedPermissions`: `INTERNET` was not in
   the manifest, so a stray `fetch` failed at runtime rather than at review. A route drawn on a map
-  needs the map, so `INTERNET` is now in the build and `tiles.openfreemap.org` is the one host the
-  app talks to. What replaces the manifest is narrower and says the same thing:
+  needs the map, so `INTERNET` is now in the build and `tiles.openfreemap.org` is the first of the
+  two hosts the app talks to. The second is `api.github.com`, asked once a day about a newer
+  version by [`src/updateCheck.ts`](../../src/updateCheck.ts) and off until a hero switches it on,
+  because a copy installed from an APK has no store to tell it. What replaces the manifest is
+  narrower and says the same thing:
   [`.biome/plugins/noJsNetwork.grit`](../../.biome/plugins/noJsNetwork.grit) rejects `fetch`,
-  `XMLHttpRequest`, `WebSocket`, `EventSource` and `sendBeacon` anywhere in the app; MapLibre
-  fetches natively, and no JavaScript here opens a socket at all. `ACCESS_NETWORK_STATE` stays
-  blocked. **Nothing is ever sent up**: no session, no trace, no identifier. A *second* host, or
-  any request from our own code, is still the guardrail, and it now costs deleting that plugin in
-  the same commit, which is why every network item in §4 and §5 is ranked where it is.
+  `XMLHttpRequest`, `WebSocket`, `EventSource` and `sendBeacon` anywhere in the app but that one
+  module; MapLibre fetches natively, and no other JavaScript here opens a socket at all.
+  `ACCESS_NETWORK_STATE` stays blocked. **Nothing is ever sent up**: no session, no trace, no
+  identifier. A *third* host is still the guardrail, and it now costs a second name in that
+  plugin's filter, a rewrite of the front page and a new section in the policy, in the same
+  commit, which is why every network item in §4 and §5 is ranked where it is.
 - [../design/ui-checklist.md](../design/ui-checklist.md) is the merge gate for UI work.
 
 ---

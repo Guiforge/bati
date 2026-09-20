@@ -68,12 +68,60 @@ interface SettingsState {
  */
 const ACCESSIBILITY_PROBE_MS = 1000;
 
-/** The OS reduce-motion preference, or `false` if the service does not answer in time. */
-function deviceReducedMotionWithin(ms: number): Promise<boolean> {
-  return Promise.race([
-    AccessibilityInfo.isReduceMotionEnabled().catch(() => false),
-    new Promise<boolean>((resolve) => setTimeout(() => resolve(false), ms)),
-  ]);
+/**
+ * The OS reduce-motion preference, as two answers from one system call.
+ *
+ * `first` is what the opening frame gets, and it gives up after `ms`. `settled` is the truth,
+ * whenever it arrives.
+ *
+ * The timeout used to *replace* a late answer with `false` rather than outrun it, which made the
+ * preference a coin toss on exactly the devices the comment above describes: a hero who had asked
+ * Android for fewer animations got them anyway whenever the accessibility service was slow to
+ * come up, silently, with nothing on any screen to say so and nothing to do about it but relaunch
+ * until a cold start happened to be quick. The splash still must not wait, so the race stays and
+ * only the discarding goes.
+ */
+function probeDeviceReducedMotion(ms: number): {
+  first: Promise<boolean>;
+  settled: Promise<boolean>;
+} {
+  const settled = AccessibilityInfo.isReduceMotionEnabled().catch(() => false);
+  return {
+    first: Promise.race([
+      settled,
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), ms)),
+    ]),
+    settled,
+  };
+}
+
+/**
+ * Attached once per process, never removed: the OS setting outlives any screen, and the root
+ * layout remounts, so a subscription owned by a component would stack copies of itself.
+ *
+ * Without it the preference was read at cold start and never again, so a hero who turned
+ * "Remove animations" on in Android's settings and came back to Bati found it still animating,
+ * with a relaunch the only way to be heard. Reading the OS once is not following the OS.
+ */
+let motionWatch: { remove: () => void } | null = null;
+
+/**
+ * What the OS last said, or `null` while it has never said anything.
+ *
+ * The probe and the watch are two writers for one value, and two writers diverge: a cold start
+ * whose service is slow can finish reading *after* the hero has already changed the setting, and
+ * hand back what it saw before they touched it. So the watch is the authority the moment it has
+ * spoken, and the probe only bootstraps the value until then. Narrow, and the kind of thing that
+ * shows up once as "it forgot what I asked for" and is never reproduced.
+ */
+let osReducedMotion: boolean | null = null;
+
+function watchDeviceReducedMotion(apply: (reducedMotion: boolean) => void): void {
+  if (motionWatch !== null) return;
+  motionWatch = AccessibilityInfo.addEventListener("reduceMotionChanged", (reducedMotion) => {
+    osReducedMotion = reducedMotion;
+    apply(reducedMotion);
+  });
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
@@ -156,6 +204,11 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   },
 
   loadFromDatabase: async () => {
+    // Before the reads, not after: a database that fails still leaves the OS watched, and the
+    // catch below only sets `isLoaded`.
+    watchDeviceReducedMotion((reducedMotion) => set({ reducedMotion }));
+    const motion = probeDeviceReducedMotion(ACCESSIBILITY_PROBE_MS);
+
     try {
       const [
         language,
@@ -174,7 +227,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getAvatarId(),
         preferences.getCustomAvatarUri(),
         preferences.getHapticsEnabled(),
-        deviceReducedMotionWithin(ACCESSIBILITY_PROBE_MS),
+        motion.first,
         preferences.getVillagersEnabled(),
         preferences.getSoundEnabled(),
         preferences.getDistanceUnit(),
@@ -197,7 +250,9 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         avatarId: normalizeAvatarId(avatarId),
         customAvatarUri,
         hapticsEnabled,
-        reducedMotion,
+        // The watch outranks the probe, always: this load may be a remount long after the hero
+        // last changed the setting, and its own read can still time out.
+        reducedMotion: osReducedMotion ?? reducedMotion,
         villagersEnabled,
         soundEnabled,
         distanceUnit,
@@ -206,6 +261,15 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         prepMode,
         isLoaded: true,
       });
+
+      // The answer that arrived after the splash gave up still counts, unless the OS has said
+      // something newer in the meantime, in which case this one is a photograph of the past.
+      motion.settled
+        .then((settled) => {
+          if (osReducedMotion !== null) return;
+          if (settled !== reducedMotion) set({ reducedMotion: settled });
+        })
+        .catch((error: unknown) => reportError("settings.reducedMotionSettled", error));
 
       i18n.changeLanguage(normalizedLanguage).catch(() => {
         // Ignore i18n errors

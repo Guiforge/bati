@@ -13,6 +13,21 @@
 /** What the OS says about reduce-motion. Swapped per test. */
 let deviceReduceMotion: () => Promise<boolean> = () => Promise.resolve(false);
 
+/**
+ * The listeners Android's accessibility service would hold, and the handle it hands back.
+ *
+ * `reduceMotionChanged` is the whole reason the store watches at all, so the mock keeps the
+ * handlers rather than swallowing them: a test can then be the OS changing its mind, which is
+ * the thing no screenshot can show.
+ */
+const motionListeners: Array<(reducedMotion: boolean) => void> = [];
+const removeMotionListener = jest.fn();
+
+/** Android telling the app the hero just changed the setting. */
+function osChangesReduceMotionTo(value: boolean) {
+  for (const listener of motionListeners) listener(value);
+}
+
 const requestWidgetsUpdate = jest.fn<Promise<void>, []>();
 const reportError = jest.fn();
 
@@ -55,7 +70,13 @@ beforeAll(() => {
     getLocales: () => [{ languageCode: "fr", languageTag: "fr-FR" }],
   }));
   jest.doMock("react-native", () => ({
-    AccessibilityInfo: { isReduceMotionEnabled: () => deviceReduceMotion() },
+    AccessibilityInfo: {
+      isReduceMotionEnabled: () => deviceReduceMotion(),
+      addEventListener: (event: string, handler: (value: boolean) => void) => {
+        if (event === "reduceMotionChanged") motionListeners.push(handler);
+        return { remove: removeMotionListener };
+      },
+    },
   }));
 });
 
@@ -189,6 +210,122 @@ describe("useSettingsStore", () => {
 
     expect(settingsStore().getState().reducedMotion).toBe(false);
     expect(settingsStore().getState().isLoaded).toBe(true);
+  });
+
+  /**
+   * A device that answers *late* is not a device that says no.
+   *
+   * The probe gives the accessibility service a second before the splash stops waiting for it,
+   * and that second used to be the whole answer: a slow service meant `false`, so a hero who had
+   * asked Android for fewer animations got them anyway, with nothing to do about it but relaunch
+   * until a cold start happened to be quick. Takes a real second, because the timeout it is about
+   * is a real one.
+   */
+  test("an answer that arrives after the splash gave up still counts", async () => {
+    storedSettings();
+    let answer: (value: boolean) => void = () => {};
+    deviceReduceMotion = () =>
+      new Promise<boolean>((resolve) => {
+        answer = resolve;
+      });
+
+    await settingsStore().getState().loadFromDatabase();
+
+    // The first frame was not held hostage: the app opened on the default.
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+    expect(settingsStore().getState().isLoaded).toBe(true);
+
+    answer(true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(settingsStore().getState().reducedMotion).toBe(true);
+  });
+
+  /**
+   * Reading the OS once is not following the OS. The preference was read at cold start and never
+   * again, so turning "Remove animations" on in Android's settings and coming back to Bati found
+   * it still animating.
+   */
+  test("the OS changing its mind reaches the store without a relaunch", async () => {
+    storedSettings();
+    deviceReduceMotion = () => Promise.resolve(false);
+
+    await settingsStore().getState().loadFromDatabase();
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+
+    osChangesReduceMotionTo(true);
+    expect(settingsStore().getState().reducedMotion).toBe(true);
+
+    // And back, because a hero who turns it off is also asking for something.
+    osChangesReduceMotionTo(false);
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+  });
+
+  /**
+   * Two writers for one value, so one of them has to outrank the other.
+   *
+   * A cold start whose accessibility service is slow can finish its read *after* the hero has
+   * already changed the setting, and hand back what it saw before they touched it. Written the
+   * obvious way, that stale photograph lands last and wins, and the app forgets what it was just
+   * told. The watch is the authority the moment it has spoken.
+   */
+  test("a stale probe answer never overwrites what the OS has since said", async () => {
+    storedSettings();
+    let answer: (value: boolean) => void = () => {};
+    deviceReduceMotion = () =>
+      new Promise<boolean>((resolve) => {
+        answer = resolve;
+      });
+
+    // Reduce motion is on at the OS, but the service is too slow to say so before the splash
+    // gives up, so the app opens on the default.
+    await settingsStore().getState().loadFromDatabase();
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+
+    // The hero turns it back off while that read is still in flight. Nothing visible changes,
+    // but the OS has now spoken, and what it said is current.
+    osChangesReduceMotionTo(false);
+
+    // The read finally lands, carrying `true`: what the setting was before they touched it.
+    answer(true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+  });
+
+  /**
+   * The same rule on the other path. `loadFromDatabase` runs again on a root remount, and its own
+   * read can time out again, so the value it carries is a default rather than an answer. Writing
+   * that over a live one turns the setting off under a hero who never touched it.
+   */
+  test("a later load never overwrites what the OS has said either", async () => {
+    storedSettings();
+    deviceReduceMotion = () => Promise.resolve(false);
+    await settingsStore().getState().loadFromDatabase();
+
+    osChangesReduceMotionTo(true);
+    expect(settingsStore().getState().reducedMotion).toBe(true);
+
+    // The root layout remounts; this time the service never answers at all.
+    deviceReduceMotion = () => new Promise<boolean>(() => {});
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState().reducedMotion).toBe(true);
+  });
+
+  /**
+   * One subscription for the process. `loadFromDatabase` runs again whenever the root layout
+   * remounts, and a watch attached per call would stack copies of itself that nothing removes.
+   */
+  test("the watch is attached once, however often the load runs", async () => {
+    storedSettings();
+
+    await settingsStore().getState().loadFromDatabase();
+    await settingsStore().getState().loadFromDatabase();
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(motionListeners).toHaveLength(1);
+    expect(removeMotionListener).not.toHaveBeenCalled();
   });
 
   test("every setter updates the store and writes through to the database", async () => {

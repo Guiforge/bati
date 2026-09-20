@@ -19,6 +19,7 @@ import {
 import { getOrCreateBossFight } from "@/db/bossFights";
 import { clearSeededExpeditions, seedExpedition } from "@/db/devSeedExpedition";
 import { clearSeededHistory, countSeededSessions, seedHistory } from "@/db/devSeedHistory";
+import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 
 // Dev-only screen: no i18n, no polish. Reachable from Settings, and only under __DEV__.
@@ -48,6 +49,8 @@ export default function DevScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const setHasFinishedOnboarding = useUserStore((s) => s.setHasFinishedOnboarding);
+  // Selector, not the whole store: this screen must not re-render on every settings write.
+  const reducedMotion = useSettingsStore((s) => s.reducedMotion);
 
   const [xp, setXp] = useState(0);
   const [seeded, setSeeded] = useState(0);
@@ -278,6 +281,22 @@ export default function DevScreen() {
           <AppButton variant="secondary" onPress={clearExpedition}>
             Clear seeded outings
           </AppButton>
+        </Card>
+
+        {/* The one preference with no Settings row, because Android owns it. Here because
+            "reduced motion is respected" was on the roadmap for months as something nobody had
+            ever observed, and every animation in this app is finite by design, so a screenshot
+            taken a second late shows a still frame either way. A number you can read is the
+            only instrument that works. Toggle "Remove animations" in Android's accessibility
+            settings and come back: this flips without a relaunch, or the watch is broken. */}
+        <Card p="$4" gap="$3">
+          <Text fontSize="$4" fontWeight="700" color="$text">
+            Reduced motion · {reducedMotion ? "on" : "off"}
+          </Text>
+          <Paragraph fontSize="$2" color="$textSecondary">
+            Read from Android, never from a stored value. `adb shell settings put global
+            transition_animation_scale 0` is the same switch.
+          </Paragraph>
         </Card>
 
         <Card p="$4" gap="$3">

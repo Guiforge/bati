@@ -262,6 +262,58 @@ describe("useSettingsStore", () => {
   });
 
   /**
+   * Two writers for one value, so one of them has to outrank the other.
+   *
+   * A cold start whose accessibility service is slow can finish its read *after* the hero has
+   * already changed the setting, and hand back what it saw before they touched it. Written the
+   * obvious way, that stale photograph lands last and wins, and the app forgets what it was just
+   * told. The watch is the authority the moment it has spoken.
+   */
+  test("a stale probe answer never overwrites what the OS has since said", async () => {
+    storedSettings();
+    let answer: (value: boolean) => void = () => {};
+    deviceReduceMotion = () =>
+      new Promise<boolean>((resolve) => {
+        answer = resolve;
+      });
+
+    // Reduce motion is on at the OS, but the service is too slow to say so before the splash
+    // gives up, so the app opens on the default.
+    await settingsStore().getState().loadFromDatabase();
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+
+    // The hero turns it back off while that read is still in flight. Nothing visible changes,
+    // but the OS has now spoken, and what it said is current.
+    osChangesReduceMotionTo(false);
+
+    // The read finally lands, carrying `true`: what the setting was before they touched it.
+    answer(true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+  });
+
+  /**
+   * The same rule on the other path. `loadFromDatabase` runs again on a root remount, and its own
+   * read can time out again, so the value it carries is a default rather than an answer. Writing
+   * that over a live one turns the setting off under a hero who never touched it.
+   */
+  test("a later load never overwrites what the OS has said either", async () => {
+    storedSettings();
+    deviceReduceMotion = () => Promise.resolve(false);
+    await settingsStore().getState().loadFromDatabase();
+
+    osChangesReduceMotionTo(true);
+    expect(settingsStore().getState().reducedMotion).toBe(true);
+
+    // The root layout remounts; this time the service never answers at all.
+    deviceReduceMotion = () => new Promise<boolean>(() => {});
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState().reducedMotion).toBe(true);
+  });
+
+  /**
    * One subscription for the process. `loadFromDatabase` runs again whenever the root layout
    * remounts, and a watch attached per call would stack copies of itself that nothing removes.
    */

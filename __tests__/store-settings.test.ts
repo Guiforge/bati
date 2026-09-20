@@ -13,6 +13,21 @@
 /** What the OS says about reduce-motion. Swapped per test. */
 let deviceReduceMotion: () => Promise<boolean> = () => Promise.resolve(false);
 
+/**
+ * The listeners Android's accessibility service would hold, and the handle it hands back.
+ *
+ * `reduceMotionChanged` is the whole reason the store watches at all, so the mock keeps the
+ * handlers rather than swallowing them: a test can then be the OS changing its mind, which is
+ * the thing no screenshot can show.
+ */
+const motionListeners: Array<(reducedMotion: boolean) => void> = [];
+const removeMotionListener = jest.fn();
+
+/** Android telling the app the hero just changed the setting. */
+function osChangesReduceMotionTo(value: boolean) {
+  for (const listener of motionListeners) listener(value);
+}
+
 const requestWidgetsUpdate = jest.fn<Promise<void>, []>();
 const reportError = jest.fn();
 
@@ -55,7 +70,13 @@ beforeAll(() => {
     getLocales: () => [{ languageCode: "fr", languageTag: "fr-FR" }],
   }));
   jest.doMock("react-native", () => ({
-    AccessibilityInfo: { isReduceMotionEnabled: () => deviceReduceMotion() },
+    AccessibilityInfo: {
+      isReduceMotionEnabled: () => deviceReduceMotion(),
+      addEventListener: (event: string, handler: (value: boolean) => void) => {
+        if (event === "reduceMotionChanged") motionListeners.push(handler);
+        return { remove: removeMotionListener };
+      },
+    },
   }));
 });
 
@@ -189,6 +210,70 @@ describe("useSettingsStore", () => {
 
     expect(settingsStore().getState().reducedMotion).toBe(false);
     expect(settingsStore().getState().isLoaded).toBe(true);
+  });
+
+  /**
+   * A device that answers *late* is not a device that says no.
+   *
+   * The probe gives the accessibility service a second before the splash stops waiting for it,
+   * and that second used to be the whole answer: a slow service meant `false`, so a hero who had
+   * asked Android for fewer animations got them anyway, with nothing to do about it but relaunch
+   * until a cold start happened to be quick. Takes a real second, because the timeout it is about
+   * is a real one.
+   */
+  test("an answer that arrives after the splash gave up still counts", async () => {
+    storedSettings();
+    let answer: (value: boolean) => void = () => {};
+    deviceReduceMotion = () =>
+      new Promise<boolean>((resolve) => {
+        answer = resolve;
+      });
+
+    await settingsStore().getState().loadFromDatabase();
+
+    // The first frame was not held hostage: the app opened on the default.
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+    expect(settingsStore().getState().isLoaded).toBe(true);
+
+    answer(true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(settingsStore().getState().reducedMotion).toBe(true);
+  });
+
+  /**
+   * Reading the OS once is not following the OS. The preference was read at cold start and never
+   * again, so turning "Remove animations" on in Android's settings and coming back to Bati found
+   * it still animating.
+   */
+  test("the OS changing its mind reaches the store without a relaunch", async () => {
+    storedSettings();
+    deviceReduceMotion = () => Promise.resolve(false);
+
+    await settingsStore().getState().loadFromDatabase();
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+
+    osChangesReduceMotionTo(true);
+    expect(settingsStore().getState().reducedMotion).toBe(true);
+
+    // And back, because a hero who turns it off is also asking for something.
+    osChangesReduceMotionTo(false);
+    expect(settingsStore().getState().reducedMotion).toBe(false);
+  });
+
+  /**
+   * One subscription for the process. `loadFromDatabase` runs again whenever the root layout
+   * remounts, and a watch attached per call would stack copies of itself that nothing removes.
+   */
+  test("the watch is attached once, however often the load runs", async () => {
+    storedSettings();
+
+    await settingsStore().getState().loadFromDatabase();
+    await settingsStore().getState().loadFromDatabase();
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(motionListeners).toHaveLength(1);
+    expect(removeMotionListener).not.toHaveBeenCalled();
   });
 
   test("every setter updates the store and writes through to the database", async () => {

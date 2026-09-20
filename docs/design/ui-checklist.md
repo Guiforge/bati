@@ -41,7 +41,12 @@ related: [design-system.md]
       before the slop does, so that one had to grow instead. Prove it with a tap outside the
       bounds (`adb shell input tap`), do not assume the prop did anything.
 - [ ] State meaning is never color-only (icon, text, or shape reinforces status).
-- [ ] Reduced motion is respected for non-essential animation.
+- [ ] Reduced motion is respected for non-essential animation. It comes from Android and
+      nowhere else, and it follows the OS while the app is open, so a new animation reads
+      `useReducedMotion()` rather than a prop passed down from a screen. Check it on the Dev
+      tools screen (`bati://dev`), which prints the live value: toggling
+      `transition_animation_scale` must flip it without a relaunch. A screenshot cannot see
+      this, because every animation here is finite by design.
 
 ## 4) Interaction quality (sport-first ergonomics)
 

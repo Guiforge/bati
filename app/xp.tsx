@@ -1,10 +1,10 @@
-import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Paragraph, Text, XStack, YStack } from "tamagui";
+import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { ChevronLeft, Zap } from "@/components/icons";
+import { ScreenBackButton } from "@/components/common/ScreenBackButton";
+import { Zap } from "@/components/icons";
 
 /**
  * How XP is counted, written where the hero can read it.
@@ -25,22 +25,13 @@ import { ChevronLeft, Zap } from "@/components/icons";
 const RULES = ["unit", "rest", "movement", "outside", "decay", "ceiling", "kept"] as const;
 
 export default function XpScreen() {
-  const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   return (
     <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
       <XStack px="$4" py="$3" items="center" gap="$3">
-        <Button
-          size="$3"
-          circular
-          chromeless
-          onPress={() => router.back()}
-          icon={<ChevronLeft size={24} color="$text" />}
-          accessibilityRole="button"
-          accessibilityLabel={t("quests.go_back", "Go back")}
-        />
+        <ScreenBackButton />
         <XStack flex={1} items="center" gap="$2">
           <Zap size={20} color="$primaryText" />
           <Text fontSize={22} fontWeight="700" color="$text">

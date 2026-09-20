@@ -3,14 +3,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Input, Text, XStack, YStack } from "tamagui";
+import { Input, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ProgressBar } from "@/components/common/ProgressBar";
+import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { useToast } from "@/components/common/Toast";
-import { ChevronLeft, ChevronRight, PenLine } from "@/components/icons";
+import { ChevronRight, PenLine } from "@/components/icons";
 import { useOathText } from "@/components/oath/useOathText";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { canDo } from "@/db/equipment";
@@ -509,16 +510,7 @@ export default function OathScreen() {
   return (
     <YStack testID="oath-screen" flex={1} bg="$background" pt={insets.top}>
       <XStack px="$4" py="$3" items="center" gap="$3">
-        <Button
-          size="$3"
-          hitSlop={8}
-          circular
-          chromeless
-          onPress={router.back}
-          icon={<ChevronLeft size={24} color="$text" />}
-          accessibilityRole="button"
-          accessibilityLabel={t("quests.go_back", "Go back")}
-        />
+        <ScreenBackButton />
         <Text fontSize={20} fontWeight="700" color="$text">
           {t("oath.screen_title")}
         </Text>

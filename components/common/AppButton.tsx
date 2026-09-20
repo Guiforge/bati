@@ -43,6 +43,12 @@ export function AppButton({
       bg={getBackgroundColor()}
       color={getColor()}
       size="$4"
+      // The floor, not the size. `$4` clears it on its own, but a caller passing `size="$3"`
+      // for compact type used to take the hit area down with it: the oath screen's "Custom
+      // oath" measured 36 dp tall. Yoga clamps a height to the larger minimum, so the type
+      // stays compact and the target does not shrink. Before the spread, so a caller that
+      // really wants something shorter still can.
+      minH={44}
       width={fullWidth ? "100%" : undefined}
       borderWidth={1}
       rounded="$8"

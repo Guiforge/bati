@@ -688,6 +688,10 @@ function LevelBlock({ stats }: { stats: JournalStats }) {
       <XStack
         items="center"
         gap={11}
+        // Two lines of Nocturne type come to 37 dp, under the tap floor. Height rather than
+        // `hitSlop`: this row sits inside a block with siblings above and below, and slop that
+        // falls under a sibling is slop the sibling takes.
+        minH={44}
         onPress={() => router.push("/journal/achievements" as never)}
         accessibilityRole="button"
         pressStyle={{ opacity: 0.85 }}

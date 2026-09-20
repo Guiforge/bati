@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "tamagui";
 import { Castle, Home, Map as MapIcon, Scroll, Sparkles } from "@/components/icons";
-import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 
 export default function TabsLayout() {
   const { t } = useTranslation();
@@ -14,13 +13,6 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        // One content column, whatever the window: see constants/layout.ts for why. The gutters
-        // take the navigator's own background, `$bgOverlay`, from the theme in app/_layout.tsx.
-        sceneStyle: {
-          width: "100%",
-          maxWidth: CONTENT_MAX_WIDTH,
-          alignSelf: "center",
-        },
         tabBarActiveTintColor: theme.primaryText?.val,
         tabBarInactiveTintColor: theme.color?.val,
         tabBarLabelStyle: {

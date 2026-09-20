@@ -36,7 +36,10 @@ related: [design-system.md]
 - [ ] Secondary text remains readable under bright ambient light.
 - [ ] Touch targets are at least 44×44 dp. `hitSlop` counts and is the usual answer when the
       design wants a smaller control; `uiautomator` bounds do not show it, so read the source
-      before filing a 36×36 as a bug.
+      before filing a 36×36 as a bug. **It only counts where the slop lands on nothing**: the
+      Home oath strip ends exactly where `QuickActions` begins, and a sibling takes the touch
+      before the slop does, so that one had to grow instead. Prove it with a tap outside the
+      bounds (`adb shell input tap`), do not assume the prop did anything.
 - [ ] State meaning is never color-only (icon, text, or shape reinforces status).
 - [ ] Reduced motion is respected for non-essential animation.
 

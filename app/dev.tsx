@@ -3,10 +3,10 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Paragraph, Text, XStack, YStack } from "tamagui";
+import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { ChevronLeft } from "@/components/icons";
+import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import {
   calculateUserLevelFromXp,
   db,
@@ -187,15 +187,7 @@ export default function DevScreen() {
   return (
     <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
       <XStack px="$4" py="$3" items="center" gap="$3">
-        <Button
-          size="$3"
-          circular
-          chromeless
-          onPress={() => router.back()}
-          icon={<ChevronLeft size={24} color="$text" />}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        />
+        <ScreenBackButton />
         <Text fontSize={20} fontWeight="700" color="$text">
           Dev tools
         </Text>

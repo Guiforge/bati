@@ -1,13 +1,13 @@
 import * as Linking from "expo-linking";
-import { useRouter } from "expo-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Paragraph, Separator, Text, XStack, YStack } from "tamagui";
+import { Paragraph, Separator, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { ChevronLeft, ExternalLink, ScrollText } from "@/components/icons";
+import { ScreenBackButton } from "@/components/common/ScreenBackButton";
+import { ExternalLink, ScrollText } from "@/components/icons";
 
 type CreditLinkProps = {
   title: string;
@@ -37,7 +37,6 @@ function CreditLink({ title, subtitle, url, onPress }: CreditLinkProps) {
 }
 
 export default function CreditsScreen() {
-  const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
@@ -54,15 +53,7 @@ export default function CreditsScreen() {
   return (
     <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
       <XStack px="$4" py="$3" items="center" gap="$3">
-        <Button
-          size="$3"
-          circular
-          chromeless
-          onPress={() => router.back()}
-          icon={<ChevronLeft size={24} color="$text" />}
-          accessibilityRole="button"
-          accessibilityLabel={t("quests.go_back", "Go back")}
-        />
+        <ScreenBackButton />
         <XStack flex={1} items="center" gap="$2">
           <ScrollText size={20} color="$primaryText" />
           <Text fontSize={22} fontWeight="700" color="$text">

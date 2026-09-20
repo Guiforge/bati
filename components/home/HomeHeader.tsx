@@ -74,6 +74,9 @@ export function HomeHeader() {
         testID="home-settings"
         circular
         size={40}
+        // 40 is the design; 44×44 is the floor, and this is the only door to Settings. Same
+        // answer `AppIconButton` gives: hitSlop restores the hit area without moving a pixel.
+        hitSlop={2}
         borderWidth={1}
         borderColor="$borderStrong"
         pressStyle={{ scale: 0.95 }}

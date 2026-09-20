@@ -14,8 +14,16 @@ import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
-/** One line of 13 px and its padding, held while the read is in flight so the CTA does not move. */
-const STRIP_MIN_HEIGHT = 40;
+/**
+ * One line of 13 px and its padding, held while the read is in flight so the CTA does not move.
+ *
+ * 44 rather than the 40 it read for a long time, because 40 is under the tap floor and `hitSlop`
+ * cannot save this one: `QuickActions` starts where this strip ends, so the extra hit area falls
+ * under a sibling that takes the touch first. Measured: a tap 4 dp below the strip opens nothing,
+ * with or without the slop. Four more dp on a screen whose `ScrollView` already grows past the
+ * viewport is the cheaper half of that trade.
+ */
+const STRIP_MIN_HEIGHT = 44;
 
 /** The path leading to the sworn movement, or null when the oath does not name one. */
 function useOathChain(oath: OathProgress): Chain | null {

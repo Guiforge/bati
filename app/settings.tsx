@@ -8,12 +8,12 @@ import { Alert, ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { useToast } from "@/components/common/Toast";
 import {
   Archive,
   ArchiveRestore,
   Bug,
-  ChevronLeft,
   Download,
   Dumbbell,
   Flame,
@@ -422,15 +422,7 @@ export default function SettingsScreen() {
     <YStack testID="settings-screen" flex={1} bg="$background" pt={insets.top}>
       {/* Header */}
       <XStack px="$4" py="$3" items="center" gap="$3">
-        <Button
-          size="$3"
-          circular
-          chromeless
-          onPress={() => router.back()}
-          icon={<ChevronLeft size={24} color="$text" />}
-          accessibilityRole="button"
-          accessibilityLabel={t("quests.go_back", "Go back")}
-        />
+        <ScreenBackButton />
         <Text fontSize={20} fontWeight="700" color="$text">
           {t("settings.title", "Settings")}
         </Text>

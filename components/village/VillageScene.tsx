@@ -29,7 +29,9 @@ import {
 } from "@/components/village/VillageLists";
 import { VillageReward } from "@/components/village/VillageReward";
 import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
+import { villageHeroSlot } from "@/components/village/villageArt";
 import { getSportSpriteAsset, getVillageTierAsset } from "@/constants/assetMap";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
 import { pickDailyVariant } from "@/constants/restMessages";
 import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
@@ -70,15 +72,6 @@ const REWARD_ZOOM = 1.85;
  */
 const REWARD_TIMING = { zoom: 250, card: 1300, done: 5200 } as const;
 const LEAN = { duration: 900, easing: Easing.bezier(0.2, 0.7, 0.2, 1) } as const;
-
-/**
- * Below this window height the square painting takes the whole fold, so it is cut to a band and
- * the tier block starts above the fold. 700 dp is the line between a 360x640 phone and a 393x852
- * one. The full painting is still one tap away (VillageSceneViewer).
- */
-const COMPACT_HEIGHT = 700;
-const COMPACT_BAND = 0.62;
-const COMPACT_CROP_TOP = 0.2;
 
 export function VillageScene() {
   const { t } = useTranslation();
@@ -208,12 +201,12 @@ export function VillageScene() {
     zoom.set(withTiming(1, LEAN));
   };
 
-  // The tier art is square (1024x1024), and `cover` silently crops whatever the slot doesn't
-  // match, so the slot is square too: the whole painting, edge to edge. Only a short screen cuts
-  // it to a band, where a square would push everything else below the fold.
-  const compact = height < COMPACT_HEIGHT;
-  const heroHeight = compact ? Math.round(width * COMPACT_BAND) : width;
-  const paintingTop = compact ? -Math.round(width * COMPACT_CROP_TOP) : 0;
+  // The column, not the window. The tab scene is capped at CONTENT_MAX_WIDTH and
+  // `useWindowDimensions` cannot see that: on a tablet it reports 800 where the painting has 520
+  // to fill, which both cuts the square off at the column edge and trips the compact band for a
+  // window that does not need it.
+  const columnWidth = Math.min(width, CONTENT_MAX_WIDTH);
+  const { heroHeight, paintingTop } = villageHeroSlot(columnWidth, height);
 
   if (!scene) {
     if (loadFailed) {
@@ -299,8 +292,8 @@ export function VillageScene() {
                 position: "absolute",
                 top: paintingTop,
                 left: 0,
-                width,
-                height: width,
+                width: columnWidth,
+                height: columnWidth,
                 transformOrigin: focus ? `${focus.x}% ${focus.y}%` : "50% 50%",
               },
               paintingMotion,
@@ -396,7 +389,7 @@ export function VillageScene() {
 
           {/* Last child on purpose: the bottom scrim is near-opaque over the lower half of the
               hero, so embers drawn before it would simply not be there. */}
-          <VillageEmbers heroHeight={heroHeight} heroWidth={width} tier={scene.tier} />
+          <VillageEmbers heroHeight={heroHeight} heroWidth={columnWidth} tier={scene.tier} />
         </YStack>
 
         {/* The panel rides up over the painting's last 14 dp, so the list reads as the scene's

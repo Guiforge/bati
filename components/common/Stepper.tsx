@@ -53,6 +53,9 @@ export function Stepper({
       <XStack items="center" gap="$3">
         <Button
           size="$3"
+          // A rep count adjusted between two sets, with the hands that just did them: `$3` is
+          // 36 dp, and this is the control least able to afford a miss.
+          hitSlop={8}
           circular
           icon={<Minus size={16} />}
           disabled={value <= min}
@@ -70,6 +73,7 @@ export function Stepper({
         </Text>
         <Button
           size="$3"
+          hitSlop={8}
           circular
           icon={<Plus size={16} />}
           disabled={value >= max}

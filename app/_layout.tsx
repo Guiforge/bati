@@ -24,6 +24,7 @@ import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { installCrashHandler, recordCrash } from "@/src/crashLog";
 import { reportError } from "@/src/reportError";
 import { AppBackground } from "@/src/ui/AppBackground";
@@ -180,7 +181,22 @@ export default function RootLayout() {
                       `headerShown: false` because every screen here draws its own header, with
                       its own chevron; a native header would sit on top of them.
                     */}
-                    <Stack screenOptions={{ headerShown: false }} />
+                    <Stack
+                      screenOptions={{
+                        headerShown: false,
+                        // One content column, whatever the window: see constants/layout.ts.
+                        // Here rather than on the tab navigator because Settings, the oath, the
+                        // session and the recap are routes of *this* stack, and capping only the
+                        // tabs left a 520 dp Quests screen next to an 800 dp Settings on the
+                        // same tablet. The gutters take `AppBackground`, which is mounted
+                        // outside this stack and still fills the window.
+                        contentStyle: {
+                          width: "100%",
+                          maxWidth: CONTENT_MAX_WIDTH,
+                          alignSelf: "center",
+                        },
+                      }}
+                    />
                     {/* Above every route, mounted once. See components/chorus/VillagerCameo.tsx. */}
                     <VillagerCameo />
                   </ErrorBoundary>

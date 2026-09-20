@@ -35,7 +35,11 @@
     "open_settings_a11y": "Abrir ajustes",
     "outside_start_a11y": "Empezar: {{quest}}",
     "outside_setup": "Ajustar",
-    "outside_setup_a11y": "Preparar una salida antes de ponerte en marcha"
+    "outside_setup_a11y": "Preparar una salida antes de ponerte en marcha",
+    "update_title": "La versión {{version}} ya está aquí",
+    "update_body": "Tú tienes la {{current}}. La página de la versión dice qué ha cambiado, y la descarga está ahí también.",
+    "update_open": "Ver la versión",
+    "update_later": "Más tarde"
   },
   "language": "Idioma",
   "light": "Claro",
@@ -173,7 +177,9 @@
     "distance_metric": "Kilómetros",
     "distance_imperial": "Millas",
     "map_tiles": "Mapa",
-    "map_tiles_note": "Mientras está desactivado, Bati no descarga nada. Si lo activas, la salida y su resumen piden a OpenFreeMap, en tiles.openfreemap.org, el mapa a tu alrededor, lo que le indica más o menos por dónde vas, durante y después. Es la única conexión de red de la app."
+    "map_tiles_note": "Mientras está desactivado, Bati no descarga nada. Si lo activas, la salida y su resumen piden a OpenFreeMap, en tiles.openfreemap.org, el mapa a tu alrededor, lo que le indica más o menos por dónde vas, durante y después. Es una de las dos conexiones de red de la app: la otra es Buscar actualizaciones, al final de esta pantalla.",
+    "update_check": "Buscar actualizaciones",
+    "update_check_note": "Mientras está desactivado, Bati no pregunta nada. Si lo activas, la app pregunta una vez al día a api.github.com si ha salido una versión más reciente, lo que le indica a GitHub tu dirección IP y la hora, nada más. F-Droid y Play Store ya lo vigilan por ti: esta fila es para una copia instalada a mano desde un APK."
   },
   "credits": {
     "title": "Créditos",
@@ -1258,13 +1264,13 @@
   },
   "privacy": {
     "title": "Privacidad",
-    "summary": "Bati no recoge nada. La app funciona sin conexión, con una excepción, desactivada por defecto: el mapa bajo una salida. Si lo activa, el teléfono pide a un servidor de mapas la zona por la que ha pasado, lo que le indica más o menos dónde estuvo. Todo lo demás que hace aquí se queda en su teléfono, salvo que decida enviarlo, a propósito, por correo.",
+    "summary": "Bati no recoge nada. La app funciona sin conexión, con dos excepciones, desactivadas por defecto las dos: el mapa bajo una salida y una consulta diaria sobre nuevas versiones de la app. Con el mapa activado, el teléfono pide a un servidor de mapas la zona por la que ha pasado, lo que le indica más o menos dónde estuvo. La comprobación de versión pregunta a GitHub si ha salido un Bati más reciente, y solo le indica su dirección IP y la hora. Todo lo demás que hace aquí se queda en su teléfono, salvo que decida enviarlo, a propósito, por correo.",
     "storage_title": "Dónde viven sus sesiones",
     "storage_body": "Cada sesión, serie, misión, aventura, logro y ajuste se escribe en una base de datos dentro del almacenamiento privado de esta app, en su dispositivo. Nunca se sube ni se sincroniza. No hay ningún servidor al que subirlo ni ninguna cuenta a la que vincularlo. Desinstalar la app lo borra todo.",
     "backups_title": "Las copias de seguridad que usted hace",
     "backups_body": "Dos filas escriben su base de datos en un archivo: «Compartir mi copia» la entrega al menú de compartir del sistema, «Guardar un archivo» la escribe en una carpeta que usted elige en el dispositivo. En ambos casos la app no la envía a ningún sitio. Ese archivo no está cifrado: cualquiera que lo abra puede leer su historial de entrenamiento, así que guárdelo como guardaría una foto personal. Restaurar lo sustituye todo; la base de datos que tenía se conserva en el dispositivo como copia de rescate.",
     "never_title": "Lo que Bati nunca hace",
-    "never_body": "Sin cuenta, sin registro, sin analíticas, sin telemetría, sin publicidad, sin identificadores de seguimiento y sin ningún SDK de terceros que recoja nada. Nada de la base de datos se envía nunca a ningún sitio. La app usa la red en un único punto, y solo si usted lo permite: el mapa bajo la ruta de una salida está desactivado hasta que lo active en Ajustes. Activado, el teléfono pide a OpenFreeMap (datos de OpenStreetMap servidos desde tiles.openfreemap.org) teselas, las imágenes cuadradas de las que se compone un mapa, de la zona de la salida, mientras ocurre y en su resumen. Esas peticiones le indican al servidor más o menos dónde está usted mientras se mueve, junto con su dirección IP y la hora. No la ruta al metro, ni el ritmo, ni el entrenamiento, ni quién es usted, pero sí la zona y más o menos cuándo la cruzó. Desactivado, o desactivado de nuevo con un toque, la app no hace ninguna petición de red y la ruta se dibuja sobre un fondo liso. Una regla de lint impide cualquier otra conexión de red en la app.",
+    "never_body": "Sin cuenta, sin registro, sin analíticas, sin telemetría, sin publicidad, sin identificadores de seguimiento y sin ningún SDK de terceros que recoja nada. Nada de la base de datos se envía nunca a ningún sitio. La app usa la red en dos puntos únicamente, y solo donde usted lo permite. Primero, el mapa bajo la ruta de una salida está desactivado hasta que lo active en Ajustes. Activado, el teléfono pide a OpenFreeMap (datos de OpenStreetMap servidos desde tiles.openfreemap.org) teselas, las imágenes cuadradas de las que se compone un mapa, de la zona de la salida, mientras ocurre y en su resumen. Esas peticiones le indican al servidor más o menos dónde está usted mientras se mueve, junto con su dirección IP y la hora. No la ruta al metro, ni el ritmo, ni el entrenamiento, ni quién es usted, pero sí la zona y más o menos cuándo la cruzó. Desactivado, o desactivado de nuevo con un toque, la app no hace ninguna petición de red y la ruta se dibuja sobre un fondo liso. Segundo, Buscar actualizaciones, al final de Ajustes, también desactivado hasta que usted lo active. Activado, la app pregunta una vez al día a api.github.com si ha salido una versión más reciente. Esa petición no lleva ningún identificador ni nada de la base de datos; GitHub solo obtiene una dirección IP y una hora, igual que de cualquiera que abra la página de versiones en un navegador. No se descarga ni se instala nada: la tarjeta que aparece en la pantalla de inicio abre esa página en su propio navegador, y lo que pase después lo decide usted. Una regla de lint impide cualquier conexión de red fuera de esas dos.",
     "permissions_title": "Permisos",
     "permissions_body": "Fotos: solo si elige una como avatar, y se queda en su dispositivo. El widget de Android lee su llama en la misma base de datos local. Ubicación: solo durante una salida, y solo la ubicación precisa, porque un recorrido no se puede medir con una aproximada. Su ruta se escribe en este teléfono y no se envía a ningún sitio. Una salida muestra además una notificación permanente: es lo que mantiene vivo el seguimiento, y por eso la pantalla puede apagarse a mitad de camino sin que nada se detenga. Internet: solo para el mapa, y solo mientras esté activado en Ajustes; empieza desactivado, y lo que revela la petición está explicado más arriba.",
     "crashes_title": "Informes de cierres inesperados",

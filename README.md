@@ -38,15 +38,21 @@ town. No coach, no feed, no leaderboard, nobody to compare yourself to. The only
 score is a village that can only be built by showing up.
 
 **Your training stays on your phone.** No account, no servers, no analytics, no ads. Your history
-lives in a database on the device and is never uploaded. One exception, off by default: the map
-behind an expedition's route. Switched on in Settings, the phone asks OpenFreeMap (OpenStreetMap
-data, served from `tiles.openfreemap.org`) for tiles, the square images a map is made of, covering
-the place where you went. That request tells the host roughly where you were, with your IP address
-and the time. Not the route to the metre, not the pace, not the training, not who you are, but the
-area, yes. Off, the route is drawn on a plain background and the app makes no network request at
-all. No other part of the app is allowed to open a connection: a lint rule rejects every network
-call written in JavaScript, so a second destination cannot arrive by accident. The map is the one
-switch; everything else is the architecture.
+lives in a database on the device and is never uploaded. Two exceptions, both off by default.
+First, the map behind an expedition's route. Switched on in Settings, the phone asks OpenFreeMap
+(OpenStreetMap data, served from `tiles.openfreemap.org`) for tiles, the square images a map is
+made of, covering the place where you went. That request tells the host roughly where you were,
+with your IP address and the time. Not the route to the metre, not the pace, not the training, not
+who you are, but the area, yes. Off, the route is drawn on a plain background and nothing is
+requested.
+
+Second, Check for updates, at the bottom of Settings and off the same way: switched on, the app
+asks `api.github.com` once a day whether a newer version has been published, which is how a copy
+installed from an APK by hand finds out at all. That request carries no identifier, downloads
+nothing, and the card it raises opens the release page in your own browser. Nothing else may open
+a connection: a lint rule rejects every network call written in JavaScript outside that one
+module, so a third destination cannot arrive by accident. Two switches; everything else is the
+architecture.
 
 > **Early days.** The app works end to end and is published through F-Droid, which is where its
 > first users came from. It is not on Google Play: that account exists and has never left its
@@ -95,11 +101,12 @@ level.
 **Years of history, on one screen.** Streaks, records, muscle balance and every session you ever
 finished, read from a database on your phone, with nothing to log in to.
 
-**No account, and one network destination.** There is no server to leak, no analytics to opt out
-of, and no cloud copy of your training. The only thing Bati ever fetches is the map behind an
-expedition, from `tiles.openfreemap.org`, and only once you have switched the map on in Settings;
-that request tells the host roughly where the outing happened, and nothing else leaves the phone.
-The trace itself stays in the database on your phone. [Privacy policy](https://guiforge.github.io/bati/privacy/).
+**No account, and two network destinations, both off.** There is no server to leak, no analytics
+to opt out of, and no cloud copy of your training. Bati fetches two things and only if you ask it
+to: the map behind an expedition, from `tiles.openfreemap.org`, which tells that host roughly
+where the outing happened, and a daily question to `api.github.com` about a newer version, which
+tells it an IP address and a time. Nothing else leaves the phone, and the trace itself stays in
+the database on it. [Privacy policy](https://guiforge.github.io/bati/privacy/).
 
 ## Install it
 
@@ -189,8 +196,9 @@ All of these run in CI; the first four also run on commit or push.
 - **Biome**: formatting and lint, including four GritQL plugins written for this repo. One
   rejects raw hex colours outside [`constants/rawColors.ts`](constants/rawColors.ts); another
   ([`noJsNetwork.grit`](.biome/plugins/noJsNetwork.grit)) rejects `fetch`, `XMLHttpRequest`,
-  `WebSocket`, `EventSource` and `sendBeacon` anywhere in the app, which is what keeps "one host"
-  a fact rather than a sentence in this file.
+  `WebSocket`, `EventSource` and `sendBeacon` anywhere in the app but the one module that asks
+  GitHub about new versions, which is what keeps "two hosts, both off" a fact rather than a
+  sentence in this file.
 - **TypeScript**, strict.
 - **Jest**: ~1200 tests, with coverage thresholds set just under actual so they catch deletion
   rather than reward padding.

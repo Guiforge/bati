@@ -35,7 +35,11 @@
     "open_settings_a11y": "Open settings",
     "outside_start_a11y": "Start: {{quest}}",
     "outside_setup": "Set up",
-    "outside_setup_a11y": "Set up an outing before heading out"
+    "outside_setup_a11y": "Set up an outing before heading out",
+    "update_title": "Version {{version}} is out",
+    "update_body": "You are on {{current}}. The release page says what changed, and the download is there too.",
+    "update_open": "See the release",
+    "update_later": "Later"
   },
   "language": "Language",
   "light": "Light",
@@ -172,7 +176,9 @@
     "distance_metric": "Kilometres",
     "distance_imperial": "Miles",
     "map_tiles": "Map",
-    "map_tiles_note": "Off, Bati downloads nothing. On, the outing and its recap ask OpenFreeMap, at tiles.openfreemap.org, for the map around you, which tells it roughly where you go, while you move and afterwards. It is the app's only network call."
+    "map_tiles_note": "Off, Bati downloads nothing. On, the outing and its recap ask OpenFreeMap, at tiles.openfreemap.org, for the map around you, which tells it roughly where you go, while you move and afterwards. It is one of the app's two network calls; the other is Check for updates, at the bottom of this screen.",
+    "update_check": "Check for updates",
+    "update_check_note": "Off, Bati asks nothing. On, it asks api.github.com once a day whether a newer version has been published, which tells GitHub your IP address and the time and nothing else. F-Droid and the Play Store already watch for you: this row is for a copy installed by hand from an APK."
   },
   "credits": {
     "title": "Credits",
@@ -1198,13 +1204,13 @@
   },
   "privacy": {
     "title": "Privacy",
-    "summary": "Bati collects nothing. It works offline, with one exception, off by default: the map behind an outing. Switched on, the phone asks a map host for the area where you went, which tells that host roughly where you were. Everything else you do here stays on your phone unless you send it yourself, deliberately, by email.",
+    "summary": "Bati collects nothing. It works offline, with two exceptions, both off by default: the map behind an outing, and a daily look for a new version of the app. With the map on, the phone asks a map host for the area where you went, which tells that host roughly where you were. The version check asks GitHub whether a newer Bati has been published, and tells it your IP address and the time, nothing more. Everything else you do here stays on your phone unless you send it yourself, deliberately, by email.",
     "storage_title": "Where your training lives",
     "storage_body": "Every session, set, quest, adventure, achievement and setting is written to a database inside this app's private storage on your device. It is never uploaded and never synced. There is no server to upload it to, and no account to attach it to. Deleting the app deletes all of it.",
     "backups_title": "Backups you make",
     "backups_body": "Two rows write your database to a file: Share my backup hands it to your system's share sheet, Save a file writes it into a folder you choose on the device. Either way the app sends it nowhere. That file is not encrypted: anyone who opens it can read your training history, so keep it the way you would keep a personal photo. Restoring replaces everything; the database you had is kept on the device as a recovery copy.",
     "never_title": "What Bati never does",
-    "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. Nothing in the database is ever sent anywhere. The app reaches the network in one place only, and only if you allow it: the map behind an outing's route is off until you switch it on in Settings. Switched on, the phone asks OpenFreeMap (OpenStreetMap data, served from tiles.openfreemap.org) for tiles, the square images a map is made of, covering the place of the outing, while it happens and on its recap. Those requests tell the host roughly where you are as you move, with your IP address and the time. Not the route to the metre, not the pace, not the training, not who you are, but the area and roughly when you crossed it, yes. Left off, or switched off again with one tap, the app makes no network request at all and the route is drawn on a plain background. A lint rule refuses any other network call in the app.",
+    "never_body": "No account, no sign-up, no analytics, no telemetry, no advertising, no tracking identifiers, and no third-party SDK that collects anything. Nothing in the database is ever sent anywhere. The app reaches the network in two places only, and only where you allow it. First, the map behind an outing's route is off until you switch it on in Settings. Switched on, the phone asks OpenFreeMap (OpenStreetMap data, served from tiles.openfreemap.org) for tiles, the square images a map is made of, covering the place of the outing, while it happens and on its recap. Those requests tell the host roughly where you are as you move, with your IP address and the time. Not the route to the metre, not the pace, not the training, not who you are, but the area and roughly when you crossed it, yes. Left off, or switched off again with one tap, the app makes no network request at all and the route is drawn on a plain background. Second, Check for updates, at the bottom of Settings, off until you switch that on too. Switched on, the app asks api.github.com once a day whether a newer version has been published. The request carries no identifier and nothing from the database; GitHub learns an IP address and a time, the same as it learns from anyone opening the release page in a browser. Nothing is downloaded and nothing is installed: the card that appears on the home screen opens that page in your own browser, and what happens next is yours to decide. A lint rule refuses every network call outside those two.",
     "permissions_title": "Permissions",
     "permissions_body": "Photos: only if you pick one as your avatar, and it stays on your device. The Android widget reads your flame from the same local database. Location: only while an outing is running, and only precise location, because a walk cannot be measured by an approximate one. Your route is written to this phone and sent nowhere. An outing also posts an ongoing notification: that is what keeps the tracking alive, and it is why your screen can go dark mid-walk without anything stopping. Internet: only for the map, and only while it is switched on in Settings; it starts off, and what the request reveals is written above.",
     "crashes_title": "Crash reports",

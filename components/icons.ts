@@ -23,6 +23,7 @@ export { ChevronRight } from "@tamagui/lucide-icons/icons/ChevronRight";
 export { ChevronUp } from "@tamagui/lucide-icons/icons/ChevronUp";
 export { Clock } from "@tamagui/lucide-icons/icons/Clock";
 export { Crosshair } from "@tamagui/lucide-icons/icons/Crosshair";
+export { Download } from "@tamagui/lucide-icons/icons/Download";
 export { Drama } from "@tamagui/lucide-icons/icons/Drama";
 export { Dumbbell } from "@tamagui/lucide-icons/icons/Dumbbell";
 export { ExternalLink } from "@tamagui/lucide-icons/icons/ExternalLink";

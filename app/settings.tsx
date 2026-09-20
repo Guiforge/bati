@@ -14,6 +14,7 @@ import {
   Archive,
   ArchiveRestore,
   Bug,
+  Download,
   Dumbbell,
   Flame,
   FolderDown,
@@ -235,6 +236,15 @@ function PrepModeRow() {
   );
 }
 
+/**
+ * The two network switches read the same way, and their ternaries live out here rather than in
+ * the screen: `SettingsScreen` sits one point under Biome's complexity ceiling, and one more row
+ * is not what should be allowed to push it over.
+ */
+function onOffLabel(enabled: boolean, t: ReturnType<typeof useTranslation>["t"]): string {
+  return enabled ? t("common.on", "On") : t("common.off", "Off");
+}
+
 export default function SettingsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -249,6 +259,7 @@ export default function SettingsScreen() {
     villagersEnabled,
     distanceUnit,
     mapTilesEnabled,
+    updateCheckEnabled,
     setLanguage,
     setAvatarId,
     setCustomAvatarUri,
@@ -257,6 +268,7 @@ export default function SettingsScreen() {
     setVillagersEnabled,
     setDistanceUnit,
     setMapTilesEnabled,
+    setUpdateCheckEnabled,
   } = useSettingsStore();
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -558,7 +570,7 @@ export default function SettingsScreen() {
             testID="settings-map-tiles"
             icon={<MapIcon size={22} color="$text" />}
             label={t("settings.map_tiles", "Map")}
-            value={mapTilesEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            value={onOffLabel(mapTilesEnabled, t)}
             onPress={() => {
               haptics.selection();
               setMapTilesEnabled(!mapTilesEnabled).catch((error) => {
@@ -676,6 +688,26 @@ export default function SettingsScreen() {
             value={t("credits.open", "Open")}
             onPress={() => router.push("/credits")}
           />
+
+          {/* Next to the version rather than beside the map row, because the question it answers
+              is the one the line below raises. The second host this app talks to, off like the
+              first, and named on the line under it rather than inside the policy. */}
+          <SettingRow
+            testID="settings-update-check"
+            icon={<Download size={22} color="$text" />}
+            label={t("settings.update_check", "Check for updates")}
+            value={onOffLabel(updateCheckEnabled, t)}
+            onPress={() => {
+              haptics.selection();
+              setUpdateCheckEnabled(!updateCheckEnabled).catch((error) => {
+                reportError("settings.updateCheckWrite", error);
+              });
+            }}
+          />
+
+          <Text testID="settings-update-check-note" fontSize="$2" color="$textSecondary" px="$3">
+            {t("settings.update_check_note")}
+          </Text>
 
           <DevFooter />
           <Text testID="settings-version" fontSize="$2" color="$textSecondary" text="center">

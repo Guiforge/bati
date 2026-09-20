@@ -41,12 +41,21 @@ related: [design-system.md]
       before the slop does, so that one had to grow instead. Prove it with a tap outside the
       bounds (`adb shell input tap`), do not assume the prop did anything.
 - [ ] State meaning is never color-only (icon, text, or shape reinforces status).
-- [ ] Reduced motion is respected for non-essential animation. It comes from Android and
-      nowhere else, and it follows the OS while the app is open, so a new animation reads
-      `useReducedMotion()` rather than a prop passed down from a screen. Check it on the Dev
-      tools screen (`bati://dev`), which prints the live value: toggling
-      `transition_animation_scale` must flip it without a relaunch. A screenshot cannot see
-      this, because every animation here is finite by design.
+- [ ] Reduced motion is respected for non-essential animation. It comes from Android and nowhere
+      else, and it follows the OS while the app is open, so a new animation reads
+      `useReducedMotion()` or `useAnimationProps()` **where it renders**, never from a module
+      constant: `SessionRewards` held its reveal in one, spread it over eight cards, and a
+      constant cannot read a preference. `__tests__/reduced-motion.test.ts` fails on a file that
+      animates without asking.
+- [ ] Switching it off removes the **motion**, not the information. A bar that fills over a
+      second appears already full; the boss's HP jumps to its value; the flame stops flickering
+      and stays lit. Only pure decoration may disappear outright, as the village embers do.
+- [ ] Check it on the Dev tools screen (`bati://dev`), which prints the live value: toggling
+      `transition_animation_scale` must flip it without a relaunch. A screenshot cannot see this,
+      because every animation here is finite by design, so a capture taken a second late shows a
+      still frame either way. Note the same OS value is written by Android's accessibility
+      setting, by developer options, and by battery saver on many devices: all three mean "no
+      transitions on this device", and all three deserve the same answer.
 
 ## 4) Interaction quality (sport-first ergonomics)
 

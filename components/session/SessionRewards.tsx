@@ -16,6 +16,7 @@ import { buildingDefinitions } from "@/db/schema";
 import { formatTarget } from "@/db/targets";
 import { getLevelTitle } from "@/db/userLevel";
 import { buildingCeiling, TIER_NAMES } from "@/db/village";
+import { useAnimationProps } from "@/hooks/useReducedMotion";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import type { useSessionStore } from "@/stores/session";
@@ -23,11 +24,20 @@ import { NewRecordsBadge } from "./NewRecordsBadge";
 
 type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>["saveSession"]>>;
 
-// Shared bouncy reveal for each reward card.
-const revealProps = {
-  transition: "bouncy",
-  enterStyle: { opacity: 0, scale: 0.92, y: 14 },
-} as const;
+/**
+ * The shared bouncy reveal for each reward card, and nothing at all when the hero asked for it.
+ *
+ * A hook rather than the module constant it was, which is the whole fix: a constant cannot read a
+ * preference, so these eight cards bounced, scaled and slid in whatever Android had been told.
+ * This is the worst screen in the app to get that wrong: it opens straight after the effort, on
+ * someone who has just exerted themselves and may well be lightheaded, which is the state the
+ * setting exists for. Nothing else here ignored it; a shared constant is how it slipped past.
+ *
+ * Still declared once, so the two components that reveal cards cannot drift apart.
+ */
+function useCardReveal() {
+  return useAnimationProps("bouncy", { opacity: 0, scale: 0.92, y: 14 });
+}
 
 const VILLAGE_GROWTH_SHOWN = 2;
 
@@ -47,10 +57,11 @@ function BestEffortCard({
   language: AppLanguage;
 }) {
   const { t } = useTranslation();
+  const reveal = useCardReveal();
   if (!standing) return null;
 
   return (
-    <Card {...revealProps} width="100%" maxW={520} bg="$surface2" gap="$3">
+    <Card {...reveal} width="100%" maxW={520} bg="$surface2" gap="$3">
       <XStack items="center" gap="$2" justify="center">
         <GameIcon name="trophy" size={20} color="$primaryText" />
         <Text fontWeight="700" fontSize={16} color="$primaryText">
@@ -105,6 +116,7 @@ export function SessionRewards({
   onViewVillage: () => void;
 }) {
   const { t } = useTranslation();
+  const reveal = useCardReveal();
 
   const hasRewards =
     !!result.levelUp ||
@@ -127,13 +139,7 @@ export function SessionRewards({
 
       {/* Level up */}
       {!!result.levelUp && (
-        <Card
-          {...revealProps}
-          width="100%"
-          maxW={520}
-          bg="$pastelPurple"
-          borderColor="$glassBorder"
-        >
+        <Card {...reveal} width="100%" maxW={520} bg="$pastelPurple" borderColor="$glassBorder">
           <XStack items="center" gap="$3">
             <YStack
               width={52}
@@ -163,7 +169,7 @@ export function SessionRewards({
       {/* Village tier crossed — the biggest village moment there is, bigger than any one
           building leveling up, so it gets the real tier art instead of an icon. */}
       {!!result.tierUp && (
-        <Card {...revealProps} width="100%" maxW={520} bg="$pastelPurple" p="$0" overflow="hidden">
+        <Card {...reveal} width="100%" maxW={520} bg="$pastelPurple" p="$0" overflow="hidden">
           {/* Square, not `height: 140`. Ten of the twelve tier paintings are 1024x1024 and the
               composition is vertical — tier 10 is a spire that touches the top edge and a base
               that touches the bottom. 140dp at ~340dp wide is a 2.34:1 slot, so `cover` took a
@@ -193,7 +199,7 @@ export function SessionRewards({
 
       {/* Village grows — a building rose because of this session, nothing to manage */}
       {result.villageGrowth.length > 0 && (
-        <Card {...revealProps} width="100%" maxW={520} bg="$surface2" gap="$3">
+        <Card {...reveal} width="100%" maxW={520} bg="$surface2" gap="$3">
           <XStack items="center" gap="$2" justify="center">
             <GameIcon name="castle" size={22} color="$primaryText" />
             <Text
@@ -263,7 +269,7 @@ export function SessionRewards({
       {/* Variations unlocked — progressive overload without weights is a harder movement, so this
           is the moment that actually moves a bodyweight athlete forward. */}
       {result.newRungs.length > 0 && (
-        <Card {...revealProps} width="100%" maxW={520} bg="$surface2" gap="$3">
+        <Card {...reveal} width="100%" maxW={520} bg="$surface2" gap="$3">
           <XStack items="center" gap="$2" justify="center">
             <GameIcon name="muscle" size={20} color="$primaryText" />
             <Text
@@ -331,7 +337,7 @@ export function SessionRewards({
       {/* Achievements unlocked — the centerpiece of this screen */}
       {result.newAchievements.length > 0 && (
         <Card
-          {...revealProps}
+          {...reveal}
           width="100%"
           maxW={520}
           bg="$pastelYellow"
@@ -392,15 +398,7 @@ export function SessionRewards({
 
       {/* Nothing special this session — keep the reveal warm instead of blank */}
       {!hasRewards && (
-        <Card
-          {...revealProps}
-          width="100%"
-          maxW={520}
-          bg="$surface"
-          items="center"
-          gap="$1"
-          py="$4"
-        >
+        <Card {...reveal} width="100%" maxW={520} bg="$surface" items="center" gap="$1" py="$4">
           <Text fontSize={32}>🎉</Text>
           <Text fontWeight="700" fontSize={16} color="$text" style={{ textAlign: "center" }}>
             {emptyVariant.title}

@@ -210,7 +210,10 @@ function AdventureCard({
               tone={item.kind === "boss" ? "primary" : undefined}
               icon={
                 item.kind === "boss" ? (
-                  <GameIcon name="sword" size={14} color="$bgDark" accessible={false} />
+                  // The same `$white` the chip writes its own label in. `$bgDark` here was
+                  // 2.71:1 on the `$primary` fill, under the 3:1 a meaningful icon needs, next
+                  // to a label sitting at 7.06:1.
+                  <GameIcon name="sword" size={14} color="$white" accessible={false} />
                 ) : undefined
               }
             />

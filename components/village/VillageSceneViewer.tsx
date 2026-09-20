@@ -6,6 +6,7 @@ import { Text, YStack } from "tamagui";
 
 import { VillageEmbers } from "@/components/village/VillageEmbers";
 import { getVillageTierAsset } from "@/constants/assetMap";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
 import type { VillageTier } from "@/db/village";
 import { useAnimationProps } from "@/hooks/useReducedMotion";
@@ -31,7 +32,10 @@ export function VillageSceneViewer({
 }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { width: windowWidth, height } = useWindowDimensions();
+  // This fills its parent, and its parent is the capped content column rather than the window
+  // (constants/layout.ts). The full height is still the column's, only the width is clamped.
+  const width = Math.min(windowWidth, CONTENT_MAX_WIDTH);
   // Scales up as it fades in, so the picture reads as *opening* out of the tapped scene rather
   // than a new screen appearing over it. "bouncy" is the app's reveal spring (SessionRewards,
   // the village sections); a plain fade made the tap feel like it had missed.

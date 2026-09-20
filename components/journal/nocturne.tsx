@@ -200,6 +200,10 @@ export function NButton({
       onPress={onPress}
       accessibilityRole="button"
       minH={minH}
+      // The Journal runs at 0.7x density, so its buttons are 40 tall by design and every one of
+      // them was 4 dp under the floor. Taken back in hit area rather than in height, and derived
+      // from `minH` so a caller passing a shorter one still lands on 44.
+      hitSlop={Math.max(0, (44 - minH) / 2)}
       px={10}
       rounded={8}
       borderWidth={1}

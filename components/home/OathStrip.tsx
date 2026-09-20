@@ -156,6 +156,9 @@ export function OathStrip() {
     <XStack
       testID="home-oath-card"
       minH={STRIP_MIN_HEIGHT}
+      // Home fits its viewport on most phones, so the missing 4 dp is taken in hit area rather
+      // than in height: growing the strip is 4 dp the scene above it would have to give up.
+      hitSlop={{ top: 2, bottom: 2 }}
       px="$4"
       py="$2"
       gap="$2.5"

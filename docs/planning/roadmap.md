@@ -134,12 +134,12 @@ that a screen is done — including the ones below.
   Journal + Session Details · Village · Goals + Schedule · Onboarding · Settings + Credits.
   Simulator screenshots are not enough: the two bugs that triggered the whole pass (English
   strings in a French UI, a "Treasur/y" wrap) were only ever visible on a real screen.
-- **P1 — Contrast has never been measured.** The primary button passes (6.45:1). First pair to
-  test: `$textSecondary #909ACB` on `$surface #101322`.
-- **P1 — Touch targets ≥ 44×44.** 155 pressables in the repo
-  (`grep -rEo "onPress=" app components src | wc -l`), none verified on a screen.
-- **P2 — Reduced motion**: the plumbing follows the OS correctly; the behaviour has never been
-  observed with the system setting on.
+- **P2, reduced motion**: the plumbing follows the OS correctly and reaches the components. Two
+  gaps left, both in `stores/settings.ts`: it is read once at cold start with no
+  `AccessibilityInfo` listener, so toggling the OS setting changes nothing until relaunch; and
+  `ACCESSIBILITY_PROBE_MS` falls back to `false` when the accessibility service is slow, which
+  that file's own comment says has happened. Not observable by screenshot: every animation here
+  is finite by design, so nothing is moving by the time a capture loop can sample.
 - **P2 — Legibility in bright ambient light.** `PRODUCT.md` requires it explicitly ("variable gym
   lighting"), and a dark-only app tests badly for it indoors.
 - **P2 — Cross-screen backlog**: unify card/control primitives across the legacy screens and

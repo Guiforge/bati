@@ -28,7 +28,11 @@ function RecordIcon({ type }: { type: NewRecordResult["recordType"] }) {
     case "longest_session":
       return <Clock size={20} color="$primaryText" />;
     case "most_xp":
-      return <Star size={20} color="$pastelYellow" />;
+      // Gold, the colour XP is written in everywhere else. `$pastelYellow` is not a pale yellow
+      // but #33301A, a legacy safety-net tone: on the `$background` row right below, near black
+      // on near black. The star was invisible, on the card whose own comment three lines up
+      // works out a contrast ratio by hand.
+      return <Star size={20} color="$resourceGold" />;
     case "exercise_max_reps":
       return <TrendingUp size={20} color="$secondary" />;
     case "exercise_max_time":

@@ -29,9 +29,14 @@ related: [design-system.md]
 
 ## 3) Accessibility (WCAG AA + gym lighting)
 
-- [ ] Body text contrast ≥ 4.5:1; large text ≥ 3:1.
+- [ ] Body text contrast ≥ 4.5:1; large text and meaningful icons ≥ 3:1.
+      `__tests__/color-contrast.test.ts` holds this for every token written as `color="$x"`, and
+      a token nobody has weighed fails there rather than on a screen. Resolve through the theme,
+      not `rawColors`: `$muted` renders `#909ACB`.
 - [ ] Secondary text remains readable under bright ambient light.
-- [ ] Touch targets are at least 44×44 dp.
+- [ ] Touch targets are at least 44×44 dp. `hitSlop` counts and is the usual answer when the
+      design wants a smaller control; `uiautomator` bounds do not show it, so read the source
+      before filing a 36×36 as a bug.
 - [ ] State meaning is never color-only (icon, text, or shape reinforces status).
 - [ ] Reduced motion is respected for non-essential animation.
 
@@ -55,7 +60,13 @@ related: [design-system.md]
 
 ## 7) Final PR gate
 
-- [ ] Visual diff checked on small + large phone screens.
+- [ ] Visual diff checked on small + large phone screens, **and on one window a phone cannot
+      make**. Android 16 ignores the portrait lock on large screens, so a tablet and an unfolded
+      foldable resize the app today. `adb shell wm size 1840x2208` (a foldable's inner panel) is
+      the cheapest one and the one that broke the Village: its "short screen" rule tested height,
+      which only means what it says while width is the short side. Content is capped at
+      `CONTENT_MAX_WIDTH`, so a screen that reads its own width from `useWindowDimensions` is
+      reading the window rather than the column.
 - [ ] `npm run check` passes.
 - [ ] `npm test` passes.
 

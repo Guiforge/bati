@@ -314,7 +314,7 @@ visible to anyone who reads that page before installing. [`fdroid/expected-permi
 is the list the release workflow diffs against `aapt2 dump permissions` on the real APK, so the
 listing can never quietly gain one. The `MaintainerNotes` in
 [`fdroid/fdroiddata-recipe.yml`](../fdroid/fdroiddata-recipe.yml) say what each is for, and the
-privacy policy names the one host the app talks to.
+privacy policy names both hosts the app talks to, each under its own switch.
 
 **Merged on 2026-08-19, live at <https://f-droid.org/packages/com.guiforge.bati/>.** The README
 and site badges point there now; the `fdroid.link/#…` repository link stays beside them because of

@@ -402,7 +402,11 @@
     "open_settings_a11y": "Ouvrir les réglages",
     "outside_start_a11y": "Démarrer : {{quest}}",
     "outside_setup": "Régler",
-    "outside_setup_a11y": "Régler une sortie avant de partir"
+    "outside_setup_a11y": "Régler une sortie avant de partir",
+    "update_title": "La version {{version}} est sortie",
+    "update_body": "Tu es en {{current}}. La page de la version dit ce qui a changé, et le téléchargement y est aussi.",
+    "update_open": "Voir la version",
+    "update_later": "Plus tard"
   },
   "home_continue_adventure_subtitle": "Reprends là où tu t'es arrêté.",
   "home_continue_adventure_title": "Continuer ton aventure",
@@ -1052,7 +1056,9 @@
     "distance_metric": "Kilomètres",
     "distance_imperial": "Miles",
     "map_tiles": "Carte",
-    "map_tiles_note": "Tant qu'elle est désactivée, Bati ne télécharge rien. Une fois activée, la sortie et son récap demandent à OpenFreeMap, sur tiles.openfreemap.org, la carte autour de toi, ce qui lui dit à peu près où tu vas, pendant et après. C'est le seul appel réseau de l'application."
+    "map_tiles_note": "Tant qu'elle est désactivée, Bati ne télécharge rien. Une fois activée, la sortie et son récap demandent à OpenFreeMap, sur tiles.openfreemap.org, la carte autour de toi, ce qui lui dit à peu près où tu vas, pendant et après. C'est l'un des deux appels réseau de l'application : l'autre est Chercher les mises à jour, en bas de cet écran.",
+    "update_check": "Chercher les mises à jour",
+    "update_check_note": "Tant que c'est désactivé, Bati ne demande rien. Une fois activé, l'app demande une fois par jour à api.github.com si une version plus récente est parue, ce qui apprend à GitHub ton adresse IP et l'heure, rien d'autre. F-Droid et le Play Store guettent déjà pour toi : cette ligne sert à une copie installée à la main depuis un APK."
   },
   "splash": {
     "loading": "Construction du village…"
@@ -1258,13 +1264,13 @@
   },
   "privacy": {
     "title": "Confidentialité",
-    "summary": "Bati ne collecte rien. L'application fonctionne hors ligne, avec une exception, désactivée par défaut : la carte derrière une sortie. Activée, le téléphone demande à un hôte de cartes la zone où vous êtes allé, ce qui lui dit à peu près où vous étiez. Tout le reste de ce que vous faites ici reste sur votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail.",
+    "summary": "Bati ne collecte rien. L'application fonctionne hors ligne, avec deux exceptions, désactivées par défaut toutes les deux : la carte derrière une sortie, et un coup d'oeil quotidien aux nouvelles versions de l'application. Carte activée, le téléphone demande à un hôte de cartes la zone où vous êtes allé, ce qui lui dit à peu près où vous étiez. La vérification de version demande à GitHub si un Bati plus récent est paru, et ne lui apprend que votre adresse IP et l'heure. Tout le reste de ce que vous faites ici reste sur votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail.",
     "storage_title": "Où vivent vos séances",
     "storage_body": "Chaque séance, série, quête, aventure, haut fait et réglage est écrit dans une base de données située dans le stockage privé de l'application, sur votre appareil. Rien n'est envoyé, rien n'est synchronisé. Il n'existe aucun serveur où l'envoyer, ni aucun compte auquel le rattacher. Désinstaller l'application supprime l'ensemble.",
     "backups_title": "Les sauvegardes que vous faites",
     "backups_body": "Deux lignes écrivent votre base dans un fichier : « Partager ma sauvegarde » la remet au partage de votre système, « Enregistrer un fichier » l'écrit dans un dossier que vous choisissez sur l'appareil. Dans les deux cas l'application ne l'envoie nulle part. Ce fichier n'est pas chiffré : quiconque l'ouvre lit votre historique d'entraînement, alors rangez-le comme une photo personnelle. Restaurer remplace tout ; la base que vous aviez est conservée sur l'appareil comme copie de secours.",
     "never_title": "Ce que Bati ne fait jamais",
-    "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. Rien de la base de données n'est jamais envoyé nulle part. L'application ne touche au réseau qu'à un seul endroit, et seulement si vous l'y autorisez : la carte derrière le tracé d'une sortie est désactivée tant que vous ne l'activez pas dans les réglages. Une fois activée, le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, couvrant l'endroit de la sortie, pendant qu'elle a lieu et sur son récap. Ces demandes disent donc à cet hôte à peu près où vous êtes au fil du trajet, avec votre adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas l'entraînement, pas qui vous êtes, mais la zone et à peu près quand vous l'avez traversée, oui. Laissée désactivée, ou coupée d'une pression, l'application ne fait aucune requête réseau et le tracé se dessine sur un fond uni. Une règle de lint refuse tout autre appel réseau dans l'application.",
+    "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. Rien de la base de données n'est jamais envoyé nulle part. L'application ne touche au réseau qu'à deux endroits, et seulement là où vous l'y autorisez. D'abord, la carte derrière le tracé d'une sortie est désactivée tant que vous ne l'activez pas dans les réglages. Une fois activée, le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, couvrant l'endroit de la sortie, pendant qu'elle a lieu et sur son récap. Ces demandes disent donc à cet hôte à peu près où vous êtes au fil du trajet, avec votre adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas l'entraînement, pas qui vous êtes, mais la zone et à peu près quand vous l'avez traversée, oui. Laissée désactivée, ou coupée d'une pression, l'application ne fait aucune requête réseau et le tracé se dessine sur un fond uni. Ensuite, Chercher les mises à jour, en bas des réglages, désactivé tant que vous ne l'activez pas non plus. Une fois activé, l'application demande une fois par jour à api.github.com si une version plus récente est parue. Cette requête ne porte aucun identifiant et rien de la base de données ; GitHub y apprend une adresse IP et une heure, comme de quiconque ouvre la page des versions dans un navigateur. Rien n'est téléchargé et rien n'est installé : la carte posée sur l'accueil ouvre cette page dans votre propre navigateur, et la suite vous appartient. Une règle de lint refuse tout appel réseau en dehors de ces deux-là.",
     "permissions_title": "Permissions",
     "permissions_body": "Photos : uniquement si vous en choisissez une comme avatar, et elle reste sur votre appareil. Le widget Android lit votre flamme dans cette même base locale. Position : uniquement pendant une sortie, et uniquement la position exacte, parce qu'une marche ne se mesure pas à l'approximatif. Votre trajet est écrit sur ce téléphone et n'est envoyé nulle part. Une sortie affiche aussi une notification permanente : c'est elle qui tient le suivi en vie, et c'est pour ça que votre écran peut s'éteindre pendant la marche sans rien interrompre. Internet : uniquement pour la carte, et uniquement tant qu'elle est activée dans les réglages ; elle démarre désactivée, et ce que la demande révèle est écrit plus haut.",
     "crashes_title": "Rapports de crash",

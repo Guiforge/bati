@@ -35,7 +35,11 @@
     "open_settings_a11y": "Einstellungen öffnen",
     "outside_start_a11y": "Starten: {{quest}}",
     "outside_setup": "Einrichten",
-    "outside_setup_a11y": "Eine Tour einrichten, bevor es losgeht"
+    "outside_setup_a11y": "Eine Tour einrichten, bevor es losgeht",
+    "update_title": "Version {{version}} ist da",
+    "update_body": "Du bist auf {{current}}. Die Release-Seite sagt, was sich geändert hat, und der Download liegt dort auch.",
+    "update_open": "Release ansehen",
+    "update_later": "Später"
   },
   "language": "Sprache",
   "light": "Hell",
@@ -172,7 +176,9 @@
     "distance_metric": "Kilometer",
     "distance_imperial": "Meilen",
     "map_tiles": "Karte",
-    "map_tiles_note": "Solange sie ausgeschaltet ist, lädt Bati nichts herunter. Eingeschaltet fragen die Tour und ihr Rückblick OpenFreeMap unter tiles.openfreemap.org nach der Karte um dich herum, was dem Dienst ungefähr verrät, wo du bist, unterwegs und danach. Das ist die einzige Netzwerkverbindung der App."
+    "map_tiles_note": "Solange sie ausgeschaltet ist, lädt Bati nichts herunter. Eingeschaltet fragen die Tour und ihr Rückblick OpenFreeMap unter tiles.openfreemap.org nach der Karte um dich herum, was dem Dienst ungefähr verrät, wo du bist, unterwegs und danach. Das ist eine der beiden Netzwerkverbindungen der App: die andere ist Nach Updates suchen, unten auf diesem Bildschirm.",
+    "update_check": "Nach Updates suchen",
+    "update_check_note": "Solange es ausgeschaltet ist, fragt Bati nichts. Eingeschaltet fragt die App einmal am Tag bei api.github.com nach, ob eine neuere Version erschienen ist, was GitHub deine IP-Adresse und die Uhrzeit verrät, sonst nichts. F-Droid und der Play Store achten schon für dich darauf: diese Zeile ist für eine von Hand aus einer APK installierte Kopie."
   },
   "credits": {
     "title": "Credits",
@@ -1198,13 +1204,13 @@
   },
   "privacy": {
     "title": "Datenschutz",
-    "summary": "Bati sammelt nichts. Die App funktioniert offline, mit einer standardmäßig deaktivierten Ausnahme: der Karte hinter einer Tour. Eingeschaltet fragt das Telefon einen Kartendienst nach dem Gebiet, in dem Sie waren, was diesem Dienst ungefähr verrät, wo Sie sich aufhielten. Alles andere, was Sie hier tun, bleibt auf Ihrem Telefon, außer Sie senden es selbst und bewusst per E-Mail.",
+    "summary": "Bati sammelt nichts. Die App funktioniert offline, mit zwei standardmäßig deaktivierten Ausnahmen: der Karte hinter einer Tour und einem täglichen Blick auf neue Versionen der App. Ist die Karte eingeschaltet, fragt das Telefon einen Kartendienst nach dem Gebiet, in dem Sie waren, was diesem Dienst ungefähr verrät, wo Sie sich aufhielten. Die Versionsprüfung fragt GitHub, ob ein neueres Bati erschienen ist, und verrät dabei nur Ihre IP-Adresse und die Uhrzeit. Alles andere, was Sie hier tun, bleibt auf Ihrem Telefon, außer Sie senden es selbst und bewusst per E-Mail.",
     "storage_title": "Wo Ihr Training gespeichert ist",
     "storage_body": "Jede Einheit, jeder Satz, jede Quest, jedes Abenteuer, jeder Erfolg und jede Einstellung wird in eine Datenbank im privaten Speicher dieser App auf Ihrem Gerät geschrieben. Nichts wird hochgeladen, nichts synchronisiert. Es gibt keinen Server, auf den man es hochladen könnte, und kein Konto, an das es gebunden wäre. Wer die App löscht, löscht alles.",
     "backups_title": "Sicherungen, die Sie selbst anlegen",
     "backups_body": "Zwei Zeilen schreiben Ihre Datenbank in eine Datei: „Sicherung teilen“ übergibt sie an das Teilen-Menü Ihres Systems, „Datei speichern“ legt sie in einem Ordner Ihrer Wahl auf dem Gerät ab. In beiden Fällen sendet die App sie nirgendwohin. Diese Datei ist nicht verschlüsselt: Wer sie öffnet, kann Ihren Trainingsverlauf lesen, bewahren Sie sie also auf wie ein persönliches Foto. Eine Wiederherstellung ersetzt alles; Ihre bisherige Datenbank bleibt als Notfallkopie auf dem Gerät.",
     "never_title": "Was Bati nie tut",
-    "never_body": "Kein Konto, keine Registrierung, keine Analyse, keine Telemetrie, keine Werbung, keine Tracking-Kennungen und kein Drittanbieter-SDK, das irgendetwas sammelt. Nichts aus der Datenbank wird je irgendwohin gesendet. Die App nutzt das Netzwerk an genau einer Stelle, und nur wenn Sie es erlauben: Die Karte hinter der Route einer Tour ist aus, bis Sie sie in den Einstellungen einschalten. Eingeschaltet fragt das Telefon OpenFreeMap (OpenStreetMap-Daten, ausgeliefert von tiles.openfreemap.org) nach Kacheln, den quadratischen Bildern, aus denen eine Karte besteht, für die Umgebung der Tour, während sie läuft und in ihrem Rückblick. Diese Anfragen verraten dem Dienst ungefähr, wo Sie unterwegs sind, zusammen mit Ihrer IP-Adresse und der Uhrzeit. Nicht die Route auf den Meter, nicht das Tempo, nicht das Training, nicht wer Sie sind, aber das Gebiet und ungefähr, wann Sie es durchquert haben, ja. Ausgeschaltet, oder mit einem Tippen wieder ausgeschaltet, stellt die App keinerlei Netzwerkanfrage, und die Route wird auf einem schlichten Hintergrund gezeichnet. Eine Lint-Regel verbietet jede andere Netzwerkverbindung in der App.",
+    "never_body": "Kein Konto, keine Registrierung, keine Analyse, keine Telemetrie, keine Werbung, keine Tracking-Kennungen und kein Drittanbieter-SDK, das irgendetwas sammelt. Nichts aus der Datenbank wird je irgendwohin gesendet. Die App nutzt das Netzwerk an genau zwei Stellen, und nur dort, wo Sie es erlauben. Erstens: Die Karte hinter der Route einer Tour ist aus, bis Sie sie in den Einstellungen einschalten. Eingeschaltet fragt das Telefon OpenFreeMap (OpenStreetMap-Daten, ausgeliefert von tiles.openfreemap.org) nach Kacheln, den quadratischen Bildern, aus denen eine Karte besteht, für die Umgebung der Tour, während sie läuft und in ihrem Rückblick. Diese Anfragen verraten dem Dienst ungefähr, wo Sie unterwegs sind, zusammen mit Ihrer IP-Adresse und der Uhrzeit. Nicht die Route auf den Meter, nicht das Tempo, nicht das Training, nicht wer Sie sind, aber das Gebiet und ungefähr, wann Sie es durchquert haben, ja. Ausgeschaltet, oder mit einem Tippen wieder ausgeschaltet, stellt die App keinerlei Netzwerkanfrage, und die Route wird auf einem schlichten Hintergrund gezeichnet. Zweitens: Nach Updates suchen, unten in den Einstellungen, ebenfalls aus, bis Sie auch das einschalten. Eingeschaltet fragt die App einmal am Tag bei api.github.com nach, ob eine neuere Version erschienen ist. Die Anfrage trägt keine Kennung und nichts aus der Datenbank; GitHub erfährt eine IP-Adresse und eine Uhrzeit, genau wie von jedem, der die Release-Seite im Browser öffnet. Es wird nichts heruntergeladen und nichts installiert: die Karte auf dem Startbildschirm öffnet diese Seite in Ihrem eigenen Browser, und alles Weitere entscheiden Sie. Eine Lint-Regel verbietet jede Netzwerkverbindung außerhalb dieser beiden.",
     "permissions_title": "Berechtigungen",
     "permissions_body": "Fotos: nur wenn Sie eines als Avatar wählen, und es bleibt auf Ihrem Gerät. Das Android-Widget liest Ihre Flamme aus derselben lokalen Datenbank. Standort: nur während einer Tour, und nur der genaue Standort, weil sich ein Weg nicht ungefähr messen lässt. Ihre Route wird auf dieses Telefon geschrieben und nirgendwohin gesendet. Eine Tour zeigt außerdem eine dauerhafte Benachrichtigung an: Sie hält die Aufzeichnung am Leben, und deshalb kann Ihr Bildschirm unterwegs ausgehen, ohne dass etwas stoppt. Internet: nur für die Karte, und nur solange sie in den Einstellungen eingeschaltet ist; sie ist anfangs aus, und was die Anfrage verrät, steht weiter oben.",
     "crashes_title": "Absturzberichte",

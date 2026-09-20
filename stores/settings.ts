@@ -28,8 +28,13 @@ interface SettingsState {
   villagersEnabled: boolean;
   /** How distances are drawn. Storage is metres either way — constants/distanceFormat.ts. */
   distanceUnit: DistanceUnit;
-  /** Whether the recap may fetch its basemap. The app's only network call, and it starts off. */
+  /** Whether the recap may fetch its basemap. One of two network calls, and it starts off. */
   mapTilesEnabled: boolean;
+  /**
+   * Whether the app may ask GitHub, once a day, whether a newer version has been published. The
+   * other network call, off until asked for the same reason. See `src/updateCheck.ts`.
+   */
+  updateCheckEnabled: boolean;
   /**
    * How a session waits before a movement. Held here rather than read once by `startSession`, so
    * the session store asks it at every transition: changed mid-session, it applies to the next
@@ -46,6 +51,7 @@ interface SettingsState {
   setVillagersEnabled: (enabled: boolean) => Promise<void>;
   setDistanceUnit: (unit: DistanceUnit) => Promise<void>;
   setMapTilesEnabled: (enabled: boolean) => Promise<void>;
+  setUpdateCheckEnabled: (enabled: boolean) => Promise<void>;
   setPrepMode: (mode: PrepMode) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
@@ -82,9 +88,10 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   soundEnabled: true,
   villagersEnabled: true,
   distanceUnit: "metric",
-  // Off, and the same default the DB read returns for a key nobody has written: the map is the
-  // one thing here that reaches a third party, so an unanswered question is a no.
+  // Off, and the same default the DB read returns for a key nobody has written: these two are
+  // what reaches a third party, so an unanswered question is a no. Both of them.
   mapTilesEnabled: false,
+  updateCheckEnabled: false,
   prepMode: "timer",
   isLoaded: false,
 
@@ -138,6 +145,11 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     await preferences.setMapTilesEnabled(enabled);
   },
 
+  setUpdateCheckEnabled: async (enabled) => {
+    set({ updateCheckEnabled: enabled });
+    await preferences.setUpdateCheckEnabled(enabled);
+  },
+
   setPrepMode: async (mode) => {
     set({ prepMode: mode });
     await preferences.setPrepMode(mode);
@@ -155,6 +167,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         soundEnabled,
         distanceUnit,
         mapTilesEnabled,
+        updateCheckEnabled,
         prepMode,
       ] = await Promise.all([
         preferences.getLanguage(),
@@ -166,6 +179,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getSoundEnabled(),
         preferences.getDistanceUnit(),
         preferences.getMapTilesEnabled(),
+        preferences.getUpdateCheckEnabled(),
         preferences.getPrepMode(),
       ]);
 
@@ -188,6 +202,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         soundEnabled,
         distanceUnit,
         mapTilesEnabled,
+        updateCheckEnabled,
         prepMode,
         isLoaded: true,
       });

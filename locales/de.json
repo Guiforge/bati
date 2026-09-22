@@ -698,6 +698,7 @@
     "forget_title": "Diese Einheit entfernen?",
     "forget_body": "Die XP, die sie dir gebracht hat, gehen mit ihr, und sie zählt nicht mehr für deine Flamme und deine Rekorde. Das lässt sich nicht rückgängig machen.",
     "forget_confirm": "Entfernen",
+    "forget_locked_title": "Diese Einheit bleibt",
     "forget_locked": "Diese Einheit hat die nächsten Schritte ihres Abenteuers geöffnet, und du hast sie schon gespielt. Sie bleibt im Tagebuch.",
     "notes": "Notizen",
     "tab_stats": "Statistik",

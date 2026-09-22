@@ -707,6 +707,7 @@
     "forget_title": "¿Quitar esta sesión?",
     "forget_body": "La XP que te dio se va con ella, y deja de contar para tu llama y tus récords. No se puede deshacer.",
     "forget_confirm": "Quitar",
+    "forget_locked_title": "Esta sesión se queda",
     "forget_locked": "Esta sesión abrió los siguientes pasos de su aventura, y ya los has jugado. Se queda en el diario.",
     "notes": "Notas",
     "tab_stats": "Estadísticas",

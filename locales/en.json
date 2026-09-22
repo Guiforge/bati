@@ -698,6 +698,7 @@
     "forget_title": "Remove this session?",
     "forget_body": "The XP it earned leaves with it, and it stops counting toward your flame and your records. This cannot be undone.",
     "forget_confirm": "Remove",
+    "forget_locked_title": "This session stays",
     "forget_locked": "This session opened the next steps of its adventure, and you have already played them. It stays in the journal.",
     "notes": "Notes",
     "tab_stats": "Stats",

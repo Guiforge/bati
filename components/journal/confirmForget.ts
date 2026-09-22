@@ -20,8 +20,9 @@ export function confirmForget(sessionId: number, t: TFunction, onForgotten: () =
       onPress: () => {
         forgetSession(sessionId)
           .then((outcome) => {
-            if (outcome === "locked") Alert.alert(t("journal.forget_locked"));
-            else onForgotten();
+            if (outcome === "locked") {
+              Alert.alert(t("journal.forget_locked_title"), t("journal.forget_locked"));
+            } else onForgotten();
           })
           .catch((e) => {
             reportError("journal.forget", e);

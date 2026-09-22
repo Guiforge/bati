@@ -1,4 +1,4 @@
-import { and, count, countDistinct, desc, eq, gte, ne, sql, sum } from "drizzle-orm";
+import { and, count, countDistinct, desc, eq, gt, gte, ne, sql, sum } from "drizzle-orm";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { Exercise } from "./exercises";
@@ -307,6 +307,127 @@ export async function updateSessionFeedback(
   feedback: FeedbackCode | null,
 ): Promise<void> {
   await db.update(completedQuest).set({ feedback }).where(eq(completedQuest.id, sessionId));
+}
+
+/**
+ * Take a session out of the journal, as if it had never been logged.
+ *
+ * XP, level, streak, village, records and leagues are all read back from these rows, so they
+ * follow the delete with nothing to write. Three things are *stored* and are put back here: the
+ * boss's HP (every hit carries its session), the campaign step the session completed, and the
+ * child rows — sets and trace — that a device keeps because its foreign keys are off.
+ *
+ * `"locked"` when the campaign has moved on since: a later step of the same run is completed, or
+ * a newer run of that adventure exists (a rematch resets the boss, so this session's hits no
+ * longer belong to the fight on the page). Reopening a step under either would leave a run with a
+ * hole in it. A session the victory screen discards can never be locked: nothing came after it.
+ *
+ * Achievements and a fulfilled oath stay: neither is ever taken back, by design.
+ * ponytail: another session's XP priced against this one (the day's first-session bonus, the
+ * outing decay) is not re-priced; do it if a hero ever notices a bonus that never comes back.
+ */
+export async function deleteSession(sessionId: number): Promise<"deleted" | "locked"> {
+  const { bossDamageLog, gpsPoints } = schema;
+
+  const outcome = await transactionOrFallback(async (tx) => {
+    const row = (
+      await tx
+        .select({ uuid: completedQuest.uuid })
+        .from(completedQuest)
+        .where(eq(completedQuest.id, sessionId))
+        .limit(1)
+    )[0];
+    if (!row) return "deleted" as const;
+    if (!(await reopenCampaignStep(tx, sessionId))) return "locked" as const;
+
+    await refundBossDamage(tx, sessionId);
+    await tx.delete(bossDamageLog).where(eq(bossDamageLog.completedSessionId, sessionId));
+    await tx.delete(completedExercises).where(eq(completedExercises.sessionId, sessionId));
+    await tx.delete(completedQuest).where(eq(completedQuest.id, sessionId));
+    if (row.uuid) await tx.delete(gpsPoints).where(eq(gpsPoints.sessionId, row.uuid));
+    return "deleted" as const;
+  });
+
+  if (outcome === "deleted") clearCached("quest:");
+  return outcome;
+}
+
+/**
+ * Put back the campaign step a session completed: it is active again and the step it opened is
+ * locked. `false`, touching nothing, when the campaign has moved past it (see `deleteSession`).
+ * `true` for a session that completed no step.
+ */
+async function reopenCampaignStep(tx: TransactionTx, sessionId: number): Promise<boolean> {
+  const { adventureRuns, adventureRunSteps } = schema;
+  const step = (
+    await tx
+      .select({
+        id: adventureRunSteps.id,
+        runId: adventureRunSteps.runId,
+        stepIndex: adventureRunSteps.stepIndex,
+        adventureId: adventureRuns.adventureId,
+      })
+      .from(adventureRunSteps)
+      .innerJoin(adventureRuns, eq(adventureRuns.id, adventureRunSteps.runId))
+      .where(eq(adventureRunSteps.completedSessionId, sessionId))
+      .limit(1)
+  )[0];
+  if (!step) return true;
+
+  const [later] = await tx
+    .select({ n: count() })
+    .from(adventureRunSteps)
+    .where(
+      and(
+        eq(adventureRunSteps.runId, step.runId),
+        gt(adventureRunSteps.stepIndex, step.stepIndex),
+        eq(adventureRunSteps.status, "completed"),
+      ),
+    );
+  const [newer] = await tx
+    .select({ n: count() })
+    .from(adventureRuns)
+    .where(and(eq(adventureRuns.adventureId, step.adventureId), gt(adventureRuns.id, step.runId)));
+  if ((later?.n ?? 0) > 0 || (newer?.n ?? 0) > 0) return false;
+
+  await tx
+    .update(adventureRunSteps)
+    .set({ status: "active", completedSessionId: null, completedAt: null })
+    .where(eq(adventureRunSteps.id, step.id));
+  await tx
+    .update(adventureRunSteps)
+    .set({ status: "locked", startedAt: null })
+    .where(
+      and(
+        eq(adventureRunSteps.runId, step.runId),
+        eq(adventureRunSteps.stepIndex, step.stepIndex + 1),
+      ),
+    );
+  await tx
+    .update(adventureRuns)
+    .set({ status: "active", finishedAt: null })
+    .where(eq(adventureRuns.id, step.runId));
+  return true;
+}
+
+/** Give each boss back what this session's hits took, never past its pool; a felled boss rises. */
+async function refundBossDamage(tx: TransactionTx, sessionId: number): Promise<void> {
+  const { bossDamageLog, bossFights } = schema;
+  const hits = await tx
+    .select({ bossFightId: bossDamageLog.bossFightId, total: sum(bossDamageLog.damageDealt) })
+    .from(bossDamageLog)
+    .where(eq(bossDamageLog.completedSessionId, sessionId))
+    .groupBy(bossDamageLog.bossFightId);
+  for (const hit of hits) {
+    await tx
+      .update(bossFights)
+      .set({
+        currentHp: sql`min(${bossFights.totalHp}, ${bossFights.currentHp} + ${Number(hit.total ?? 0)})`,
+        defeatedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(bossFights.id, hit.bossFightId));
+  }
 }
 
 // `exercises` is dropped: the list is a scroll of cards and none of them lists a set. `uuid` is

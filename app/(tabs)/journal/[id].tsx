@@ -6,6 +6,7 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
 import { Skeleton } from "@/components/common/Skeleton";
+import { confirmForget } from "@/components/journal/confirmForget";
 import { KillReport } from "@/components/journal/KillReport";
 import { NButton, NMuted, NPageHeader, NStatusScrim } from "@/components/journal/nocturne";
 import { QuestLog, type QuestLogData } from "@/components/journal/QuestLog";
@@ -172,6 +173,14 @@ export default function SessionDetailScreen() {
         ) : (
           <QuestLog data={loaded.log} />
         )}
+        <YStack px={11} mt={24}>
+          <NButton
+            testID="journal-forget-session"
+            onPress={() => confirmForget(sessionId, t, () => router.back())}
+          >
+            {t("journal.forget")}
+          </NButton>
+        </YStack>
       </ScrollView>
       <NStatusScrim />
     </YStack>

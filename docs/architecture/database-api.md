@@ -257,6 +257,7 @@ interface TrendAnalysis {
 | `getRecentSessionHistory(limit?)` | Most recent sessions, all quests, oldest-first |
 | `getQuestSessionHistory(questId, limit?)` | Most recent sessions for one quest, oldest-first |
 | `markSessionWithNewRecords(id)` | Mark session has PRs |
+| `deleteSession(id)` | Remove a session and undo what it stored (sets, trace, boss HP, campaign step); `"locked"` when its campaign has moved past it. XP and everything derived follow on their own. The app calls it through `forgetSession` (`stores/session.ts`), which also refreshes streak, quests and widgets |
 
 ---
 

@@ -22,6 +22,7 @@ import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
 import { useToast } from "@/components/common/Toast";
 import { Share2 } from "@/components/icons";
+import { confirmForget } from "@/components/journal/confirmForget";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
@@ -345,6 +346,14 @@ export function VictoryView() {
     if (!result) return;
     // Levels travel with the codes: the village plays the rise from one rung to the next.
     router.push(`/(tabs)/village?grown=${formatGrown(result.villageGrowth)}` as never);
+  };
+
+  const handleForget = () => {
+    if (!result) return;
+    confirmForget(result.sessionId, t, () => {
+      quitSession();
+      router.replace("/");
+    });
   };
 
   const handleContinue = () => {
@@ -689,6 +698,23 @@ export function VictoryView() {
         <YStack width="100%" maxW={520}>
           <ProgressionChart questId={quest.id} limit={10} title={t("chart.your_progress")} />
         </YStack>
+
+        {/* Last thing on the page and far from the sticky Continue, so it is found by looking for
+            it and never by reaching for the next button. */}
+        {!!result && (
+          <Text
+            testID="session-victory-forget"
+            accessibilityRole="button"
+            onPress={handleForget}
+            color="$textSecondary"
+            fontSize={14}
+            py="$3"
+            px="$4"
+            textDecorationLine="underline"
+          >
+            {t("session.summary_forget")}
+          </Text>
+        )}
       </ScrollView>
 
       {/* Sticky actions: single Continue + Share */}

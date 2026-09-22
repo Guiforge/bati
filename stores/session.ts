@@ -17,6 +17,7 @@ import {
   addBonusXpToSession,
   type CompletedExerciseInput,
   createCompletedSession,
+  deleteSession,
   getSessionAggregates,
   hasSessionForQuestToday,
   markSessionWithNewRecords,
@@ -1924,6 +1925,23 @@ export const useSessionStore = create<SessionState>()(
     },
   })),
 );
+
+/**
+ * Take a logged session back out of the journal, from any screen that offers it.
+ *
+ * The one door for both: the history's delete and the victory screen's "don't keep it". The row
+ * and what it stored are undone by `deleteSession`; this is the rest of what `saveSession` touched
+ * on the way out, so the streak, the quest resolutions and the widgets stop counting it too.
+ */
+export async function forgetSession(sessionId: number): Promise<"deleted" | "locked"> {
+  const outcome = await deleteSession(sessionId);
+  if (outcome === "locked") return outcome;
+  clearShortLivedQueries();
+  invalidateQuestTemplates();
+  await updateStreakAfterSession();
+  requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
+  return outcome;
+}
 
 /**
  * The first second of a session, which counts as progress.

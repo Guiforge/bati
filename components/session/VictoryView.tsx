@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert, ScrollView, Share, useWindowDimensions } from "react-native";
+import { ActivityIndicator, ScrollView, Share, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import Animated, {
   useAnimatedStyle,
@@ -22,6 +22,7 @@ import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
 import { useToast } from "@/components/common/Toast";
 import { Share2 } from "@/components/icons";
+import { confirmForget } from "@/components/journal/confirmForget";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
@@ -43,7 +44,7 @@ import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useChorusStore } from "@/stores/chorus";
 import { isExpedition } from "@/stores/expedition";
-import { forgetSession, recordedDurationSeconds, useSessionStore } from "@/stores/session";
+import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { ExpeditionSummary } from "./ExpeditionSummary";
 import { ProgressionChart } from "./ProgressionChart";
@@ -347,30 +348,12 @@ export function VictoryView() {
     router.push(`/(tabs)/village?grown=${formatGrown(result.villageGrowth)}` as never);
   };
 
-  // The session is already in the journal by the time this screen can offer anything: the save
-  // runs on mount. So not keeping it is the journal's own delete, through the same door, and the
-  // confirmation is what keeps a stray tap from costing a real workout.
-  const confirmForget = () => {
+  const handleForget = () => {
     if (!result) return;
-    const { sessionId } = result;
-    Alert.alert(t("journal.forget_title"), t("journal.forget_body"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("journal.forget_confirm"),
-        style: "destructive",
-        onPress: () => {
-          forgetSession(sessionId)
-            .then(() => {
-              quitSession();
-              router.replace("/");
-            })
-            .catch((e) => {
-              reportError("session.forget", e);
-              showError(t("errors.generic"));
-            });
-        },
-      },
-    ]);
+    confirmForget(result.sessionId, t, () => {
+      quitSession();
+      router.replace("/");
+    });
   };
 
   const handleContinue = () => {
@@ -722,7 +705,7 @@ export function VictoryView() {
           <Text
             testID="session-victory-forget"
             accessibilityRole="button"
-            onPress={confirmForget}
+            onPress={handleForget}
             color="$textSecondary"
             fontSize={14}
             py="$3"

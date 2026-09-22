@@ -2,10 +2,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
 import { Skeleton } from "@/components/common/Skeleton";
+import { confirmForget } from "@/components/journal/confirmForget";
 import { KillReport } from "@/components/journal/KillReport";
 import { NButton, NMuted, NPageHeader, NStatusScrim } from "@/components/journal/nocturne";
 import { QuestLog, type QuestLogData } from "@/components/journal/QuestLog";
@@ -26,7 +27,6 @@ import { type LngLat, toTrace } from "@/src/gps/trace";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
-import { forgetSession } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
 type Loaded =
@@ -128,29 +128,6 @@ export default function SessionDetailScreen() {
     if (sessionId) load(sessionId).catch((e) => reportError("journal.detail", e));
   }, [sessionId, load]);
 
-  // A wrong session, a run with the GPS forgotten: the hero is the only one who knows it lies.
-  // Behind a confirmation because the XP leaves with it and nothing brings it back.
-  const confirmForget = (id: number) => {
-    Alert.alert(t("journal.forget_title"), t("journal.forget_body"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("journal.forget_confirm"),
-        style: "destructive",
-        onPress: () => {
-          forgetSession(id)
-            .then((outcome) => {
-              if (outcome === "locked") Alert.alert(t("journal.forget_locked"));
-              else router.back();
-            })
-            .catch((e) => {
-              reportError("journal.forget", e);
-              Alert.alert(t("common.error"));
-            });
-        },
-      },
-    ]);
-  };
-
   if (!sessionId || loaded.status === "error") {
     return (
       <YStack flex={1} bg="$bgDark" pt={insets.top} px={11}>
@@ -197,7 +174,10 @@ export default function SessionDetailScreen() {
           <QuestLog data={loaded.log} />
         )}
         <YStack px={11} mt={24}>
-          <NButton testID="journal-forget-session" onPress={() => confirmForget(sessionId)}>
+          <NButton
+            testID="journal-forget-session"
+            onPress={() => confirmForget(sessionId, t, () => router.back())}
+          >
             {t("journal.forget")}
           </NButton>
         </YStack>

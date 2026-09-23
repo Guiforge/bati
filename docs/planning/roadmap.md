@@ -2,7 +2,7 @@
 title: Roadmap
 type: planning
 status: active
-updated: 2026-09-13
+updated: 2026-09-23
 related:
   [
     README.md,
@@ -74,14 +74,16 @@ first cost is not the code.
 
 ## 1. Release & distribution
 
-**Play is live on the internal track** (v1.12.0, versionCode 11200 — `grep '"version"'
-package.json` and `grep versionCode app.json`; this line sat at 1.7.4/10704 for five releases),
-uploaded by the `play` job of `release.yml` behind the `play-internal` GitHub Environment. The
-listing, both locales, the feature graphic, the privacy policy and the signing story are all done.
-What is left is a calendar, not a keyboard — the 14-day closed test is running.
+**Play is live on the internal track** (v2.5.3, versionCode 20503, `grep '"version"'
+package.json` and `grep versionCode app.json`; this line sat at 1.12.0/11200 while the app
+reached 2.5), uploaded by the `play` job of `release.yml` behind the `play-internal` GitHub
+Environment. The v2.5.3 run passed both jobs, `apk` and `play` (`gh run view` on the tag's
+`release.yml` run). The listing in four locales (`ls fastlane/metadata/android`: de-DE, en-US,
+es-ES, fr-FR), the feature graphic, the privacy policy and the signing story are all done. What is
+left is a person in the Play Console, not a keyboard.
 
 - **P1 — Promotion out of `internal` is manual, and nothing in the repo does it.**
-  `release.yml:230` pins `fastlane supply --track internal`; no closed, open or production track
+  `release.yml:282` pins `fastlane supply --track internal`; no closed, open or production track
   appears anywhere in the workflow. Reaching testers beyond the internal list means opening the
   Play Console and promoting by hand. Automating it is one more `supply` call with a `--track` and
   a rollout fraction — cheap, and deliberately not done: a gate nobody can forget to open is a
@@ -96,7 +98,7 @@ What is left is a calendar, not a keyboard — the 14-day closed test is running
   and none of it is code. It is the second incompressible wait after the Play closed test, so the
   only cheap move now is opening the account; everything else can follow the Android product.
 - **P3 — Desktop.** Closer than it looks and worth less than it looks, in that order.
-  `react-native-web` ships, `npm run web` exists, and `metro.config.js:13` already resolves
+  `react-native-web` ships, `npm run web` exists, and `metro.config.js:14` already resolves
   wa-sqlite's WASM binary — the web SQLite backend was made to bundle on purpose, so the database
   story on desktop is not a blank page. The first thing to break is `index.ts:12`, which calls
   `registerWidgetTaskHandler` unconditionally for an Android-only module.
@@ -138,8 +140,19 @@ that a screen is done — including the ones below.
   Journal + Session Details · Village · Goals + Schedule · Onboarding · Settings + Credits.
   Simulator screenshots are not enough: the two bugs that triggered the whole pass (English
   strings in a French UI, a "Treasur/y" wrap) were only ever visible on a real screen.
+
+  Two passes have been on a device since, and neither was this one. #109 (2026-09-16) profiled
+  Home, the Village and the session's timed screens on a Fairphone 6 and fixed what it measured:
+  a clock holding the JS thread, a swipe that pressed, embers committing the shadow tree every
+  frame. That was frame time. `a700f75e` (2026-09-20) walked twelve routes at five window sizes
+  for layout, contrast and tap targets, and put floors under the last two. Neither read the
+  screens for the class of bug that opened this pass, a wrong-language string or a word wrapped
+  mid-syllable, and with four locales since #100 there are twice as many languages to read them
+  in.
 - **P2 — Legibility in bright ambient light.** `PRODUCT.md` requires it explicitly ("variable gym
-  lighting"), and a dark-only app tests badly for it indoors.
+  lighting"), and a dark-only app tests badly for it indoors. The contrast floor
+  (`__tests__/color-contrast.test.ts`) is the half a machine can hold; the other half is a real
+  screen outdoors, which `a700f75e` left open in writing.
 - **P2 — Cross-screen backlog**: unify card/control primitives across the legacy screens and
   `src/ui`; re-establish one-primary-action hierarchy on Home and the Quest/Adventure detail
   screens; then small-label readability in Journal/Session/Quest cards, onboarding/settings
@@ -153,11 +166,12 @@ Severity order P0 → P1 → P2 → P3; never polish before P0/P1 are gone.
 
 Not tidiness. Each line is a gate that does not close, or a risk with a date on it.
 
-- **P1 — The suite tests `db/` and leaves the screens bare.** 145 test files
-  (`ls __tests__/*.test.*`) against 189 sources (`find app components src db hooks -name "*.ts*"`)
-  reads healthy; the distribution does not. **41** of them render anything
-  (`ls __tests__/*.tsx`, up from 9 on 2026-08-24), against 33 files under `app/` and 77 components
-  (`find components src -name "*.tsx"`), and `app/` is held to 15% of lines. So the pure
+- **P1 — The suite tests `db/` and leaves the screens bare.** 163 test files
+  (`ls __tests__/*.test.*`) against 206 sources (`find app components src db hooks -name "*.ts*"`)
+  reads healthy; the distribution does not. **48** of them render anything
+  (`ls __tests__/*.tsx`, up from 9 on 2026-08-24), against 37 screens under `app/`
+  (`find app -name "*.tsx"`) and 80 components (`find components src -name "*.tsx"`), and `app/`
+  is held to 15% of lines (`coverageThreshold` in `package.json`). So the pure
   functions — streaks, boss damage, muscle balance, oaths — are covered several times over, and
   the screens the hero actually
   touches are covered by a global percentage that AGENTS.md already warns cannot be trusted: dead
@@ -173,12 +187,11 @@ Not tidiness. Each line is a gate that does not close, or a risk with a date on 
   before a release. Deliberately not a CI job: the behaviours they used to be the only check on
   (the two-minute session guard, the quit and restart confirmations, swearing an oath) are now
   component tests.
-- **P2 — The APK is 64 MB** (`gh release view --json assets`, v1.7.4: 64 016 729 bytes) for an
-  arm64-only, R8-minified build. Nobody has looked at where it goes. First greps:
-  `assets/icon.png` is **2.6 MB** and is bundled; `assets/images` is 14 MB across 232 webp files
-  whose resolutions have never been checked against the sizes actually rendered. The 4170 SVGs in
-  `assets/game-icons.net.svg-foreground-white` are repo weight, not APK weight — Metro only
-  bundles the ones `hooks/useGameIcon.ts` statically requires. Measure before optimising.
+- **P3 — The APK is 53.2 MiB** (`gh release view v2.5.3 --json assets`: 55 792 525 bytes), under
+  the 55 MiB budget that `release.yml` fails a release on. It was measured and cut since this line
+  said nobody had looked; where the megabytes go is
+  [../architecture/performance.md](../architecture/performance.md) § Binary size. What is left is
+  the ratchet's own rule: lower `MAX_MB` after a release that measures under it, never raise it.
 - **P3 — Bundle-size and performance profiling on a release build**, never in dev
   ([../architecture/performance.md](../architecture/performance.md), rule 1). Startup, memory,
   frame rate under animation.
@@ -220,167 +233,97 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 
 | # | Item | Impact | Effort | Prio | From |
 | --- | --- | --- | --- | --- | --- |
-| 4.1 | ~~Export / import of the history~~ — **shipped** | High | M | ✅ | |
 | 4.2 | Local training reminders, no Firebase | High | M | **P1** | |
-| 4.21 | ~~Backups that write themselves to a chosen folder~~ — **shipped** | High | S | ✅ | Streak |
+| 4.26 | One-sided holds are timed as one side, and journaled wrong | Med-high | S–M | **P1** | |
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
-| 4.4 | ~~The variation ladder becomes visible~~ — **shipped as *paths*** | High | S | ✅ | calisthenics review |
-| 4.22 | ~~An exercise catalogue — the screen 4.4 needs~~ — **shipped** | High | S–M | ✅ | GymMane |
-| 4.5 | ~~The feeling feeds the prescription~~ — **shipped** | Med-high | S | ✅ | Freeletics |
 | 4.6 | Boss battle refonte | High | M–L | **P1** | |
-| 4.7 | FR review of the exercise content | Med-high | S | **P1** | |
+| 4.24 | Translations open to contributors, now that four locales ship | Med-high | S | **P1** | Streak |
 | 4.8 | Stats refonte | Med-high | M | **P1** | |
 | 4.9 | Animated exercise demonstrations | High | L | P2 | Madbarz |
 | 4.10 | A skill as an oath — "my first pull-up" | High | M | P2 | calisthenics review |
+| 4.12 | Wearables: a BLE heart-rate strap, then Health Connect both ways | Med-high | L | P2 | Spix |
+| 4.30 | Village refonte: a reason to open it | Medium | L | P2 | |
 | 4.11 | Widget refonte | Medium | M | P2 | |
-| 4.12 | Health Connect, read and write — *incl. Withings & Garmin* | Med-high | M | P2 | Spix |
 | 4.13 | Building tiers, and tiers per building | Medium | M | P2 | |
-| 4.23 | Rename the village from Settings | Medium | S | P2 | |
-| 4.14 | Exercise art review | Medium | M | P2 | |
-| 4.24 | Translations open to contributors | Medium | S | P2 | Streak |
 | 4.15 | Villagers arrive from the journal (collection) | Medium | M | P2 | Pokémon Sleep |
-| 4.16 | Swapping one exercise inside a quest | Med-high | S–M | P2 | Madbarz |
+| 4.27 | Stretching, yoga and meditation sessions | Medium | M | P2 | |
+| 4.14 | Two exercise poses left to paint | Low | S | P2 | |
 | 4.17 | Micro-animations, incl. resource gain | Low | S each | P3 | |
 | 4.25 | A result card that can be shared as an image | Low | S–M | P3 | Streak |
+| 4.28 | Today's step count | Low | S after 4.12 | P3 | |
+| 4.29 | Sleep, read from Health Connect | Low | S after 4.12 | P3 | |
 | 4.18 | Multi-device sync — reconciliation only | Medium | XL | P3 | |
-| 4.19 | GPS / outdoor quests | Low | L | done | **Shipped** as expeditions, 2026-08-31 |
 | 4.20 | `fallow` in the toolchain | Dev-only | S | P3 | |
 
 Desktop is a distribution question, not a feature — it lives in §1.
 
 The rows are sorted by rank, not by number: **the number is an identifier, the Prio column is the
-rank.** 4.21–4.25 arrived after the first twenty and sit where they belong, because renumbering
-twenty rows would break every reference to them in §1, §5 and §6 and buy nothing.
-
-### 4.1 Export / import — shipped
-
-The lazy version was indeed the whole feature, and the estimate above held: the database is one
-SQLite file, so `VACUUM INTO` writes a snapshot, the share sheet moves it, and `ATTACH` validates
-it on the way back in — the migration chain is the format's version, exactly as predicted. Two
-dependencies rather than the one guessed here (`expo-file-system` turned out to carry the file
-picker too, so `expo-document-picker` was installed and removed).
-
-Four things this page did not anticipate, all worth remembering:
-
-- **A zero-byte file is a valid SQLite database.** It attaches, and `integrity_check` returns
-  "ok". Identity had to move to `PRAGMA application_id`, which also settled the `SCHEMA_VERSION`
-  question that "no format to version" had quietly left open.
-- **`ATTACH` creates the file it cannot find**, so a staged copy that vanished is indistinguishable
-  from one that was empty — both attach as a database SQLite invented on the spot. `page_count`
-  catches both, read after `integrity_check` so that 0 can only mean "empty".
-- **The migration chain says a migration *ran*, not that it *worked*.** A half-applied migration
-  leaves the bookkeeping row without the change, so a backup can claim this build's history and
-  still be missing a column. When the newest migration matches ours the tables are compared
-  against the live database (`schemaMismatch`); when it is older they are exempt, because the
-  runner is about to catch them up — that exemption is what the format-version choice buys.
-- **`instanceof Error` is not a safe way to read an error.** Drizzle wraps the driver error and
-  puts the only useful text on `cause`, and the classifier reached it through `instanceof` — which
-  is false whenever the object was built in another realm. Four rejection tests were green locally
-  and red on CI, on the same driver, the same SQLite and the same Node modules, because jest gives
-  the test realm its own `Error`. Duck-type the shape and walk the `cause` chain; match the driver
-  code (`SQLITE_NOTADB`) as well as the prose, which has changed before.
-- **`File.move(…, { overwrite: true })` is not atomic**, and the first implementation shipped
-  believing it was. `expo-file-system` deletes the destination *before* attempting the rename, so
-  overwriting the live database removes it first and leaves nothing if the rename fails. The swap
-  renames the old file aside instead, which makes that rename the safety copy and the rollback
-  source at once.
-- **The share sheet alone is not a backup.** On a device with nothing installed that accepts a
-  `.db`, it is a dead end, so Settings also offers a folder picker
-  (`Directory.pickDirectoryAsync`) writing the same snapshot to storage. That picker reports "the
-  user backed out" by *throwing*, which is the one thing the file layer has to translate.
-- **Restore is offered in onboarding**, not just Settings — a new phone is the case that matters
-  — and it cost nothing, because `hasFinishedOnboarding` lives inside the database being restored.
-
-**No "close the app" button on the restart screen, and the reason is measured.** React Native's
-`BackHandler.exitApp()` is a `finish()` on the activity, not a process kill — verified on a
-Fairphone 6, the pid is unchanged after the activity ends. Reopening would therefore resume the
-same JS context with the SQLite handle already closed, which is worse than a force-quit. A button
-that works needs either `expo-updates` (`reloadAsync()` rebuilds the module graph in-process, and
-would remove the restart entirely) or a native `System.exit(0)`. Neither is worth a dependency or
-a native module for an operation performed twice in an app's life, so the screen keeps its
-instruction. Revisit if a user ever reports being stuck on it.
-
-What is deliberately not solved: a process killed *between* the two renames leaves the database
-absent and the data in a `.bak` no code reads. Closing that means reconciling at module load in
-`db/client.ts`, before `openDatabaseSync` recreates an empty file — cheap, and worth doing only if
-a real report ever needs it.
-
-It remains the prerequisite for 4.18 *and* for desktop (§1): a file the user can move is 80% of
-sync, without a server. 4.21 takes the last of the transport — the same snapshot, written without
-being asked — so what is still missing for those two is reconciliation, and only that.
+rank.** 4.21 onward arrived after the first twenty and sit where they belong, because renumbering
+would break every reference in §1, §5 and §6 and buy nothing. For the same reason a shipped row's
+number is never reused: 4.1, 4.4, 4.5, 4.7, 4.16, 4.19, 4.21, 4.22 and 4.23 are gone from the table,
+and what they decided is under [Decisions the shipped rows left behind](#decisions-the-shipped-rows-left-behind).
 
 ### 4.2 Local reminders — the highest-return feature on this page
 
-`expo-notifications` is no longer in `package.json`. Re-adding it is the work, and the Firebase
-question is smaller than it looks: **local scheduled notifications need no FCM on Android**. FCM
-is only for push from a server, which the guardrails forbid anyway. The F-Droid concern is the
-transitive Firebase artefacts in the AAR, which a script already stripped once — that script
-comes back with the dependency, and `fdroid/fdroiddata-recipe.yml` must stay in sync.
+It is the only item here that acts on a hero who has *stopped* opening the app.
 
-The schedule data already exists (Goals + Schedule). This is plumbing an existing intent to an OS
-API, and it is the only item here that acts on a user who has *stopped* opening the app.
+**Not through `expo-notifications`.** It was removed in `c7246643` (2026-08-03) because it arrived
+carrying Firebase Cloud Messaging and twenty-odd permissions the app never exercised: 33
+permissions went to 11 in a release APK. Local notifications need no FCM at all, so coming back
+through that package would buy back the F-Droid stripping script for nothing. The route is a local
+Expo module in Kotlin, on the model of `modules/bati-location`:
 
-**Update notifications ride along, per channel — and mostly cost documentation, not code.**
+- **`AlarmManager.setWindow`, never an exact alarm.** A reminder that lands inside a quarter of an
+  hour is on time, and `SCHEDULE_EXACT_ALARM` is a permission plus a Play declaration for a
+  precision nobody asked for.
+- **A `BOOT_COMPLETED` receiver**, because a reboot clears every alarm. `RECEIVE_BOOT_COMPLETED` is
+  in `app.json`'s `blockedPermissions` today; it leaves that list and gets its justification in
+  `__tests__/android-permissions.test.ts` in the same commit.
+- **`POST_NOTIFICATIONS` is already declared**, by
+  `modules/bati-location/android/src/main/AndroidManifest.xml` for the expedition's foreground
+  notification. The runtime prompt exists; the permission list does not grow.
+- **The logic is a pure function in `db/reminders.ts`** that answers "does this day ring, and
+  when". The module schedules what it is told and decides nothing, so every rule below is a unit
+  test rather than a device check.
 
-- **Play**: the store updates the app itself. Nothing to build.
-- **Self-hosted F-Droid repo (§1)**: any F-Droid client already checks the index and notifies.
-  That repo *is* the update-notification feature for sideloaders — one more reason §1's P2 item
-  matters.
-- **GitHub Releases**: [Obtainium](https://github.com/ImranR98/Obtainium) watches a repo's
-  releases and notifies on its own schedule. One paragraph in the README and the release notes
-  covers this channel for free.
-- **An in-app check** (the app polling the GitHub API itself) is the only version that costs a
-  guardrail: it is a network request, the first one in the app. If the free channels above prove
-  insufficient, it must be **opt-in, off by default, and amend the guardrail wording on this
-  page** before it ships — a version check leaks an IP and a version string, which is exactly the
-  kind of "nothing" that still has to be written down in a privacy policy.
+**There is no schedule to plumb yet.** This page used to say the schedule data already existed
+(Goals + Schedule). It does not: no training day is stored anywhere. What exists is a weekly
+quota, `weeklyTarget` and `weekStartsOn` on an oath (`db/oaths.ts`), with `DEFAULT_WEEKLY_QUOTA`
+(`db/streaks.ts`, 2) when no oath sets one. The feature adds one small piece of state: the days,
+and an hour.
 
-### 4.21 Backups that write themselves — and the whole answer to "sync with Drive / Dropbox / …"
+**Decided: the days say when, the quota says whether.** The hero picks days and an hour; the
+week's quota decides whether a given day still needs to ring. No reminder fires:
 
-Shipped, and the estimate held: no new dependency, no manifest change, no migration. Four things
-worth keeping, because no commit message says them.
+- on a day a session is already logged;
+- once the week's quota is met;
+- when `getRestSuggestion()` (`db/restSuggestions.ts`) advises rest. An app that prescribes a rest
+  day and then nags the hero to train through it is fighting its own coaching, the same argument
+  that refused Habitica's lost HP below.
 
-**The blocking unknown had already been answered upstream.** This page asked whether `Directory`
-takes a *persistable* URI permission, and planned a `StorageAccessFramework` fallback in case it
-does not. It does, and it takes it for us: expo-file-system 57's `FilePickerContract.kt:48` calls
-`contentResolver.takePersistableUriPermission()` on the result of `ACTION_OPEN_DOCUMENT_TREE`. The
-whole fallback branch was deleted before it was written. Reading the dependency's own source cost
-ten minutes and removed a day.
+**Update notifications are no longer part of this item.** The in-app check shipped in #125 as
+`src/updateCheck.ts`, opt-in and off by default, with the guardrail at the top of this page
+rewritten to name its host. Play updates itself and any F-Droid client watches its index, which
+leaves one free channel undocumented: nothing in the README tells a sideloader that
+[Obtainium](https://github.com/ImranR98/Obtainium) can watch the GitHub releases (`grep -ri
+obtainium README.md docs` finds only this page). One paragraph, whenever the README is next
+touched.
 
-**The trigger forced an import edge the wrong way round.** `ensureMigrations()` is the one writer
-both entry points share, so the snapshot belongs inside it — but `db/backup.ts` imported
-`sqlString` *from* `db/migrate.ts`, which made `migrate → backup` a cycle. `sqlString` now lives in
-`db/sql.ts`, a module that imports nothing and therefore cannot take part in a cycle at all. The
-same predicate answers "has this migration run yet?" for the runner and for the backup gate
-(`isPending`), so the two cannot drift into backing up on every launch, or on none.
+### 4.26 One-sided holds are timed as one side, and the journal records a wrong time
 
-**A failed unattended write turns the feature off.** `reportError` goes to a dev console this app
-does not ship, so it is not a report a hero can see; the Settings row falling back to "Off" is.
-The cost is that a transient failure — a full card, a folder unmounted — buys a trip to Settings.
-That is a `ponytail:` note in `src/autoBackup.ts` with the retry counter as its upgrade path.
+Side Plank, Pigeon Pose, Thread the Needle and World's Greatest Stretch are done one side, then the
+other. In a quest's timed slot `components/session/ActiveExerciseView.tsx` runs one countdown, so a
+hero who does both sides properly runs into overtime, and the journal keeps a hold time that is
+neither side's. The journal is the source of truth the whole app derives from, which is why a
+wrong number there outranks every refonte below it.
 
-**A Storage Access Framework tree does not hand back filenames.** Its children arrive as
-*document* URIs whose entire document id is one percent-encoded segment —
-`…/document/primary%3ADocuments%2Fbati-export-v3-2026-08-15.db`. `File.name` is `Paths.basename`,
-which only recovers a filename from that when `new URL()` parses the `content://` scheme, and
-React Native's `URL` is a partial polyfill that need not. Anything matching on `name` therefore
-matches nothing on a device while staying green against a fake filesystem built from plain paths.
-Match on the decoded `uri`. This is the "a mock counts as a hit" trap in AGENTS.md wearing a new
-hat, and the test that caught it is the only one in the file built from the shape a device
-actually produces.
-
-**The privacy policy was load-bearing and said the wrong thing.** `docs/legal/privacy.md` promised
-"nothing is exported automatically and nothing is scheduled" in both languages — true until this
-shipped. It is a published legal document behind a store listing, so the feature is not done until
-that sentence is. Worth a grep before any feature that writes a file, opens a socket, or reads a
-sensor.
-
-**It is also the complete answer to "sync via Google Drive, Dropbox, GitHub or WebDAV".** Drive,
-Dropbox, Nextcloud, OneDrive and Syncthing all publish an Android `DocumentsProvider`, so they
-appear *inside the folder picker the app already opens*. One SAF integration covers every one of
-them: no OAuth, no SDK per vendor, no credentials at rest, no network request, no guardrail spent —
-and the app never learns which provider was chosen, which is the point. This is Obsidian's model,
-and it is why the backends that do not work this way are refused rather than ranked (see 4.18).
+The warm-up already solved it: `WarmupView` splits a movement's seconds in two when
+`switchesSides()` (`constants/warmup.ts`) says so. But that is a name list, and it holds only Thread
+the Needle and World's Greatest Stretch, not Side Plank or Pigeon Pose. Its own `ponytail:` note
+names the trigger for the real fix: *"A second reader (a timed quest slot, the journal) is the
+moment for the column."* This is the second reader. The fix is that column (a laterality flag on
+`exercises`, set by a content migration scoped to `creator`), then two countdowns with a short
+switch between them in the session, with the warm-up reading the same flag so the name list goes.
 
 ### 4.3 The session becomes a mission — art, and the narrative out loud
 
@@ -400,109 +343,12 @@ drove a foreground media service for silence (F-Droid MR !45076, finding 5).
 
 **The lazy version costs no assets:** `expo-speech` is on-device TTS, both locales for free, zero
 bytes in the APK, and it reads the narrative that is already written. Recorded voice-over is the
-upgrade, and it is a content project with a 64 MB APK (§3) already under watch — do the free
+upgrade, and it is a content project with a 53 MiB APK (§3) already under watch — do the free
 version first and find out whether narration during a set is welcome or annoying before paying
 for it. Same for ambience between sets. What must not be copied is the chase mechanic: it exists
 to make you run faster, and telling a hero to rush a push-up is an injury.
 
-### 4.4 The ladder becomes visible — shipped, as *paths*
-
-`drizzle/0022_progression_ladder.sql` wired the variation ladder as data, and it is genuinely
-good content: Towel Door Row → Table Row → Inverted Row → Scapular Pull-Up → Chin-Up → **Pull-ups**
-is the canonical route to a first pull-up with no rung missing. Push runs Wall Push-Up → Push-ups
-→ {Diamond, Dip, Pike Push-Up → **Handstand Push-Up**}; core runs Dead Bug → Hollow Body Hold →
-**L-Sit**. (This entry used to name *Iron Grip Pull-up* and *Dragon Push-up*, which `0023` deleted.)
-
-**Shipped**, and the diagnosis moved twice on the way. The full account is
-[`docs/gameplay/paths.md`](../gameplay/paths.md); what the roadmap needs to remember:
-
-**The defect was not visibility.** The ladder was already on four surfaces — the exercise screen,
-the oath card, the journal nudge, the victory screen. What it lacked was a **name**. Every other
-system here carries one (a quest title, *hameau → capitale éternelle*, *Spark → Eternal*); the
-ladder alone spoke in coordinates, and "rung 3 of 6" is not something a hero can want or tell
-anyone about. It is now a **path**, named after the movement it ends on — twelve of them, in
-`db/paths.ts`, keyed by summit. That is content, not machinery: no new system, which matters
-because §5 of the dossier warns that *more* gamification stops helping past a point.
-
-**Three defects made it worse than silent, and they went in first.** The threshold counted *rows*,
-and a three-round quest writes three in one evening — so a single workout handed over the next
-variation, which is the "program hopping before progressing" the research calls beginner mistake
-number one. There was no recency window at all, so three clean sets from last spring still read as
-owned. And `ProgressionCard` tested the ladder branch ahead of the difficulty nudge, so a hero
-self-reporting "too hard" five sessions running was answered with "here is your next rung" —
-**the app pushed up on someone asking to come down.** Amplifying that signal on Home before fixing
-it would have been worse than leaving it quiet.
-
-**What the twelve summits showed was nothing.** The path strip was nested inside the next-rung
-card, which only renders when a harder variation exists — so L-Sit, Pull-ups, Handstand Push-Up
-and nine others, the movements a hero opens out of *ambition*, displayed no ladder at all.
-
-**"What it came from" ships as a tap, not a row.** The rung named is the one the journal says the
-hero stands on, which is a better answer than the direct prerequisite: on the Pull-ups page that
-would be Chin-Up, which someone who cannot do a pull-up cannot do either.
-
-**Home leads with the climb.** `exercise_pr` measures a rep record, so a beginner swearing
-"Pull-ups × 15" read **0/15 for months** on the most visible card in the app while the climb
-underneath moved every three sessions. The strip replaces the gold bar — one card, one gauge — and
-hands back to the counter the day the first rep lands.
-
-**Climbing a whole path reaches the village trophy shelf** (since 2026-09-11 the Journal's
-achievements card: the village redesign moved the shelf out), beside the defeated bosses, for no XP
-and no points: §5 warns that extrinsic rewards erode the intrinsic kind unless the reward *is* the
-progress. It uses a monotonic measure — *did this ever happen* — so the current rung can fall
-while the trophy cannot, which is the rule the research demands about never punishing an absence.
-Since 2026-09-15 the same rule holds for the floor: what is behind the hero stays behind, and the
-recency window only decides whether the next rung is open, because the windowed floor sent every
-hero who progresses back to the bottom rung eight weeks after they outgrew it
-([`paths.md`](../gameplay/paths.md) § Owning a rung).
-
-**What was refused.** A "Your paths" card on the Journal: Home carries the one being climbed and
-the shelf keeps the ones finished, so a passive report adds a fourth telling of the same thing and
-walks straight back into the wall of unlit movements this roadmap has now declined twice.
-
-**What the re-audit turned up and this work did *not* fix** — worth their own entries: rep targets
-take no history at all (template midpoint × {0.75, 1, 1.25}); hold targets use an all-time max
-clamped back inside the template's window, so the 60–75 % rule stops applying to exactly the
-strong heroes it is for; there is no per-movement frequency notion anywhere, so nothing notices a
-movement going untrained; and regression-on-form-breakdown has no input channel, since the only
-self-report is the three-value session feedback. Above all, §5 is blunt that the first predictor
-of D30 retention is **a completed first action on day one**, and a day-one hero here still lands
-on an undifferentiated quest gallery — `trainingLevel` from onboarding has exactly one effect,
-hiding `advanced` quests from a `beginner`. That is the next large piece, not another ladder
-surface.
-
-### 4.22 An exercise catalogue — 4.4 has nowhere to land
-
-4.4 says "one line on the exercise screen". There is an exercise screen — `app/exercises/[id].tsx`
-— and **nothing in front of it**: no `app/exercises/index.tsx`, so the only route to a movement is
-through a quest that happens to contain it. A hero who wants to know what Bati knows about rows
-cannot ask.
-
-*GymMane* answers this with a tappable body map over 360 exercises. The map is the expensive half
-and it goes to §6; the list is the cheap half and it is what 4.4 and 4.10 both need. Every field
-the screen would filter on already exists: `exercises.pattern` (`0020`), `muscleToResource`,
-`prerequisiteExerciseId` (`0022`), and the personal records that say how close a rung is. It is one
-route, one query and the filter chips that `app/(tabs)/quests/index.tsx` already demonstrates.
-
-Ranked immediately after 4.4 because the two are one piece of work seen twice: the ladder is
-invisible partly because the screen that would show it is only reachable by accident.
-
-**Shipped** as `app/exercises/index.tsx`, reached from the Dumbbell icon in the Quests header —
-no sixth tab. Search on the localized name, and a filter rail grouped by ladder / pattern /
-muscle / equipment, lifted verbatim out of `app/(tabs)/quests/index.tsx` into
-`components/common/FilterRail.tsx` so both galleries hoist active chips the same way. Rows on a
-ladder carry a "leads to X" caption, which is 4.4 seen from the list: `prerequisiteExerciseId`
-now rides on `listExercises()`, so the whole ladder is one pass over a promise-cached list and
-the screen costs zero queries on a warm cache. The row itself is
-`components/exercises/ExerciseRow.tsx`, shared with the quest editor's picker sheet, and the
-facets are `constants/exerciseFilters.ts` — a pure function both screens filter through, which
-is what finally killed the picker's private `language === "fr"` ternary.
-
-What was refused: a difficulty badge and a per-row progress bar. The row's job is *find the
-movement*; where the hero stands on it belongs to the detail screen, and a wall of unlit bars is
-exactly what the dedicated skill-tree screen was dropped for.
-
-### 4.6–4.8 The other refontes
+### 4.6 and 4.8 The other refontes
 
 **Boss battle** (4.6) is the payoff the whole RPG layer is promising — and the scan changed what
 this refonte is. *Ring Fit Adventure* is the reference implementation of "an exercise is an
@@ -527,22 +373,19 @@ in `components/journal/stats/StatsView.tsx`). Widening that component to a year 
 thing in this refonte and the one that makes a rest day look like part of a pattern rather than a
 hole.
 
-**The FR review (4.7) is the cheapest P1 on the page.** 726 keys per locale
-(`wc -l locales/*.json`) plus the exercise strings that live in the database and are corrected by
-migration — `0029_fr_tutoiement` and `0030_fr_exercise_casing` are the precedent, and the pattern
-means a correction pass ships as one migration. Wrong French on an exercise instruction is a
-credibility bug in a fitness app, and it is a read-through, not a build.
-
 ### 4.9 Animated demonstrations — the one feature every rival has and Bati doesn't
 
 *Madbarz* is video-backed on every movement; Freeletics too. Bati shows one still image. For a
 bodyweight app that is not decoration: the hero is alone, with nobody to say the hips are sagging,
 and a still cannot show a tempo the app itself prescribes.
 
-Effort L because it is **232 assets** (`find assets/images -name "*.webp" | wc -l`), not code —
-and the APK is already 64 MB (§3), so the format decision comes first: an animated webp of 4–6
-frames per movement, or a 2-frame start/end toggle, both far cheaper than video. Sequence it with
-4.14's art review; regenerating the same 232 files twice is the waste to avoid.
+Effort L because it is assets, not code: 64 exercise illustrations
+(`ls assets/images/exercises/*.webp | wc -l`) out of 350 webp files in `assets/images`
+(`find assets/images -name "*.webp" | wc -l`). The APK is already 53 MiB (§3), so the format
+decision comes first: an animated webp of 4–6 frames per movement, or a 2-frame start/end toggle,
+both far cheaper than video. The still images were redrawn in 2.0.0 (`b4d2c9e1`, #47), with a
+`provenance.json` giving each one's model, reference, prompt and seed, so an animation starts from
+a known frame rather than from a second redraw.
 
 ### 4.10 A skill as an oath — what turns a bag of workouts into a programme
 
@@ -563,17 +406,26 @@ screen does not show would be a promise with no map.
 
 ### 4.11–4.15 Depth, once the loop is right
 
-**Health Connect** (4.12) is the one interop feature that costs no guardrail: it is an OS API, no
-account, no network, no data leaving the device. It puts Bati's sessions where the user's other
-apps can see them, which is the polite version of "export".
+**Wearables** (4.12) now means two things, in this order.
 
-**It is also the entire wearable story, and that is why it moved up.** Withings and Garmin both
-export into Health Connect on Android — Withings documents the per-category toggles, Garmin
-Connect feeds it too. So "support my watch and my scale" resolves to *read from Health Connect*:
-no OAuth, no vendor SDK, no cloud account, no per-brand integration to maintain, and the
-guardrail survives intact. Every route that goes through a vendor's cloud API buys the same data
-for a network dependency and a privacy policy rewrite. Read is the interesting half here — weight,
-heart rate, an outdoor session logged by the watch — and write is the courtesy half.
+**A BLE heart-rate strap first**, because it is the only version that shows the heart rate
+*during* the set, which is what a hero asking for a wearable usually means. Every chest strap
+speaks the standard Bluetooth Heart Rate profile (service `0x180D`), so there is no vendor SDK and
+no account, just a GATT subscription. It costs a native BLE dependency (or a Kotlin module next to
+`modules/bati-location`) and **two new runtime permissions**, `BLUETOOTH_SCAN` and
+`BLUETOOTH_CONNECT`, the first declared `neverForLocation`. That is a guardrail cost the
+permissions ratchet will ask about, and a new line in the privacy policy, even though nothing
+leaves the device.
+
+**Then Health Connect, both ways.** It is an OS API: no account, no network, no data leaving the
+device. *Write* puts Bati's sessions where the hero's other apps can see them, the polite version
+of "export". *Read* is where the wearable story lives: weight, heart rate and outdoor sessions that
+a Withings or a Garmin already recorded, because both export into Health Connect on Android. So
+"support my watch and my scale" resolves to reading from Health Connect: no OAuth, no vendor SDK,
+no per-brand integration to maintain. Every route through a vendor's cloud API buys the same data
+for a network dependency and a policy rewrite. Each record type is its own Health Connect
+permission and its own Play declaration, so read only what a screen consumes. 4.28 and 4.29 are
+two more record types on the same plumbing, which is why they are cheap after this and not before.
 
 Two caveats: below Android 14, Health Connect is a Play-distributed app, so the whole feature
 degrades to absent and must be built to do so silently; and the F-Droid build has to survive the
@@ -581,8 +433,8 @@ dependency.
 
 The **widget** (4.11) already ships two providers (`weekly`, `flame`, `src/widget.tsx`) and is the
 app's only surface on a home screen — worth a refonte, worth it *after* the app it advertises got
-its own. Tiers per building (4.13) and villagers (4.15) both deepen the village, which the north
-star keeps honest: **a village that animates better does not make anyone train more.** Villagers
+its own. Tiers per building (4.13) and villagers (4.15) both deepen the village, and 4.30 is where they
+belong as one piece of work. The north star keeps them honest: **a village that animates better does not make anyone train more.** Villagers
 are cheap if they are derived from history like everything else in the village, and a sprite
 project if they are not.
 
@@ -594,36 +446,33 @@ a weighted roll, and the roster is a collection screen. Same derived-from-histor
 everything in the village, plus the one thing the village lacks: a reason to look at it the
 morning after training. That version is worth building; villagers as static scenery are not.
 
-### 4.23 Rename the village — the shortest item on this page
+**Art** (4.14) is two poses, not a review. The 2.0.0 redraw (`b4d2c9e1`, #47) repainted all 61
+illustrations and added `muscle_up`. Two gaps remain, both listed in
+[../content/missing-image.md](../content/missing-image.md): `bulgarian_split_squat` still renders
+the placeholder after five attempts (`constants/assetMap.ts` says why), and `table_row` kept its old
+art, a straight-legged row that since `0053` draws the *harder* version of the bent-knee rung it
+names. A wrong illustration in a training app is worse than a placeholder, which is what keeps this
+at P2 despite its size.
 
-`grep -rn setVillageName app components src hooks` returns exactly one caller:
-`app/onboarding/village-setup.tsx:45`. The name is typed in the first two minutes of the app's life
-and is then permanent for the life of the install, while the avatar chosen on the same screen *is*
-editable in Settings — the asymmetry is an oversight, not a decision.
+### 4.24 Translations: the trigger this page named has been reached
 
-Everything needed exists and is reused as-is: the store action, the persistence
-(`db/preferences.ts:55-59`, which already reads *and* writes), the length bounds, and the i18n keys
-under `onboarding.village_name_*`. What is missing is a field in `app/settings.tsx` next to the
-avatar picker. It buys no training, which is why it is P2 and not higher; it costs an afternoon,
-which is why it should not sit here for a year.
+Four locales ship since #100 (`ls locales`: de, en, es, fr). `en` and `de` carry 1433 keys, `fr` and
+`es` 1495; the 62 extra are the `_many` plural forms those two languages need, not drift. The
+gate already exists: `__tests__/i18n-keys.test.ts` fails on a missing key and on an empty string,
+across all four. German and Spanish are machine translations, reviewed adversarially and flagged as
+such in Settings and on the listings, and that is what moves this item up: a wrong German exercise
+instruction is the same credibility bug in a fitness app that made the French review a P1, and
+this time nobody on the project reads the language.
 
-### 4.24 Translations — the door is closed and the lock is already fitted
+**Weblate is due.** This page named it as the upgrade and set its trigger at "a second
+contributor or a third locale". The third locale arrived, and a fourth with it. Hosted Weblate is
+free for libre projects, which is how Streak runs its ten languages. The work is a project on it,
+pointed at `locales/`, and a page saying where the strings live and that `npm test` is the review.
 
-Two locales ship. A third costs one file, and the gate for it already exists:
-`__tests__/i18n-keys.test.ts` fails on a missing key and on an empty string, in both directions.
-What is missing is a page saying so — where the strings live, that `npm test` is the review, and the
-one thing a translator cannot discover on their own:
-
-**Exercise labels are not in `locales/`.** They sit in the database and are corrected by migration
-(`0029_fr_tutoiement`, `0030_fr_exercise_casing` are the precedent), so a new locale ships with a
-fully translated interface wrapped around English exercise content until a migration follows. That
-is a real ceiling on what a contributor can deliver alone, and pretending otherwise wastes their
-evening — 4.7's FR pass runs into the same wall from the other side.
-
-**No translation platform yet.** [Weblate](https://weblate.org/) is the named upgrade — hosted free
-for libre projects, which is how Streak runs its ten languages — and its trigger is a second
-contributor or a third locale. Standing up a translation service for two locales and one translator
-is infrastructure looking for a user.
+**Exercise labels are still not in `locales/`.** They sit in the database, in `frName`, `deName`
+and `esName` since `0058`, and are corrected by migration (`0059` seeded German and Spanish). A
+translator on Weblate can fix the interface alone and cannot fix an exercise name alone: that
+takes a migration, scoped to `creator`. Say so on the contributor page, or it wastes their evening.
 
 ### 4.25 A shareable result card
 
@@ -634,27 +483,6 @@ with no feed, no account and no server.
 It stays P3 because the north star demotes it honestly: **a share card makes nobody train more.** It
 also costs a dependency (`react-native-view-shot`, nothing installed captures a view today), which
 is the difference between this and everything else in the P3 band.
-
-### 4.16 Swapping an exercise — most of "custom workout" already ships
-
-The scan's obvious gap was "every rival lets you build a workout, Bati doesn't". Half wrong:
-`QuestConfig` (`db/questConfig.ts`) already persists the level, the rounds, the rest and **the
-per-exercise targets**, per hero, in `user_preferences` so an override survives a content update.
-Volume is editable today. What is not editable is *which movement* — `app/(tabs)/quests/[id].tsx`
-renders `quest.exercises` and offers no substitution.
-
-That remaining delta is worth more than the rest of the feature and costs less. It is the reason
-a session gets abandoned rather than adapted: a rings-only movement with no rings, a wrist that
-hurts today. And the pieces are in place — `exercises.pattern` (migration `0020`) gives
-"same job, different movement", `prerequisiteExerciseId` gives the easier and harder rungs, and
-`QuestConfig` already carries a `Record` keyed by `quest_exercises` row id whose stale keys
-`applyQuestConfig` is documented to ignore. A `swaps` field alongside `targets` and one picker
-sheet is the whole thing.
-
-**A full quest editor stays out.** Bati's quests carry a title, art, a narrative and an XP
-balance, so a hero-authored one is either a bare list that looks broken next to the others, or a
-level editor. Substitution gives the person who wants dips instead of push-ups what they actually
-wanted.
 
 ### 4.17 Micro-animations
 
@@ -683,21 +511,135 @@ one of them buys the same file 4.21 already writes, for a cost 4.21 does not pay
 | WebDAV, or the GitHub API as a store | The app's **first network request**, plus credentials at rest, plus `INTERNET` back in the manifest, plus a Data Safety form and a privacy policy that stop saying "no". A self-hosted Nextcloud reached through its Android client costs none of that — same server, through the picker. |
 | Wifi / Bluetooth device-to-device, "like Joplin or Obsidian" | Worth naming precisely, because the comparison points the other way: Obsidian's default is a synced *folder*, and Syncthing — the LAN tool people actually mean — is a separate app that syncs the folder 4.21 writes to, for free. A discovery protocol inside Bati is a native RN module, the same bill §5 prices for "live session", to reimplement something already installed on the devices that want it. |
 
-### 4.19–4.20 The rest
+### 4.20 `fallow`
 
-GPS (4.19) **shipped on 2026-08-31** as expeditions, and it cost exactly what this line said it
-would: a runtime location permission, five other permissions beside it, `INTERNET` in the manifest
-and a Data Safety answer that stops being "no". What made it worth the bill was not demand but the
-proof: an Expo app tracking a run on a de-Googled ROM, with no Google library in the tree and
-F-Droid still able to build it. See [`../designs/gps-without-google.md`](../designs/gps-without-google.md)
-and [`../designs/expeditions.md`](../designs/expeditions.md). `fallow`
-(<https://github.com/fallow-rs/fallow>, 4.20) is already leaving caches in `.fallow/`; the open
+`fallow` (<https://github.com/fallow-rs/fallow>) is already leaving caches in `.fallow/`; the open
 question is whether it replaces `npm run deadcode` in CI or merely runs beside it, and a second dead
 code gate that nothing gates on is worth less than the one in §3 being made to fail.
 
+### 4.27 Stretching, yoga and meditation
+
+Half of it exists already. A quest slot can target time instead of reps (`questTargetTypes` in
+`db/schema.ts`), XP is paid on duration alone (`db/xp.ts`), and the mobility branch from `0024`
+has Pigeon Pose, Downward Dog and World's Greatest Stretch with their art. What is missing is a
+session made *only* of holds that runs itself: one countdown flowing into the next without a tap
+between poses, because a hero in Pigeon Pose is not reaching for the phone. It depends on 4.26:
+yoga is full of one-sided poses, and a flow timed as one side would ship the bug twice.
+
+**Meditation is the hard half**, and it is where the ranking comes from. It has no movement and no
+muscle, so it feeds no village resource and no boss damage, and a session that moves nothing on
+the screens that reward training reads as broken. Decide what it earns before building it; if the
+answer is "only the streak", that is a fine answer, but it has to be the answer on purpose.
+
+### 4.28 Today's step count
+
+A daily number beside the flame. Two routes, and the cheap one comes after 4.12: Health Connect's
+step records need one more read permission on plumbing that already exists. The direct route, the
+phone's step-counter sensor, needs the `ACTIVITY_RECOGNITION` runtime permission, a new line for
+the permissions ratchet and the policy, and a background listener to count while the app is
+closed. Low impact by the north star: walking is not the training this app prescribes, and the
+expeditions already cover the walk the hero chose to do.
+
+### 4.29 Sleep, read from Health Connect
+
+It is a read, and only a read: a phone does not measure sleep, a watch does and writes a sleep
+session into Health Connect, so this is one more record type after 4.12 (`READ_SLEEP`, and its own
+Play declaration). A sleep chart on its own makes nobody train more. The version worth building
+feeds `getRestSuggestion()`: a short night makes the rest day it already proposes more likely, or
+lowers the level it proposes, which is the app coaching with data it did not have to ask for.
+Health data is also the most sensitive category the privacy policy would ever have to name; see
+the privacy note under 4.21 below.
+
+### 4.30 Village refonte: a reason to open it
+
+The 2026-09-11 pass (#92) made the painting show what the hero built and say what rises next. It
+reads well now; what it still lacks is a reason to open it on a day with no session. 4.13 (tiers)
+and 4.15 (villagers arriving from the journal) are both answers to that, and they are one design
+pass seen twice: do them together, under this row, rather than as two features bolted onto a scene
+nobody revisits. The north star sets the ceiling: **a village that animates better does not make
+anyone train more**, so every change here has to be derived from the journal, and the test is
+whether it gives the hero something to look at the morning *after* training.
+
+### Decisions the shipped rows left behind
+
+These rows left the table when they shipped. What stays is only what no commit message says, under
+the old numbers because the rest of this page still points at them.
+
+**4.1 Export / import.**
+
+**No "close the app" button on the restart screen, and the reason is measured.** React Native's
+`BackHandler.exitApp()` is a `finish()` on the activity, not a process kill — verified on a
+Fairphone 6, the pid is unchanged after the activity ends. Reopening would therefore resume the
+same JS context with the SQLite handle already closed, which is worse than a force-quit. A button
+that works needs either `expo-updates` (`reloadAsync()` rebuilds the module graph in-process, and
+would remove the restart entirely) or a native `System.exit(0)`. Neither is worth a dependency or
+a native module for an operation performed twice in an app's life, so the screen keeps its
+instruction. Revisit if a user ever reports being stuck on it.
+
+What is deliberately not solved: a process killed *between* the two renames leaves the database
+absent and the data in a `.bak` no code reads. Closing that means reconciling at module load in
+`db/client.ts`, before `openDatabaseSync` recreates an empty file — cheap, and worth doing only if
+a real report ever needs it.
+
+It is the transport half of 4.18 and of desktop (§1). With 4.21 writing the same snapshot
+unattended, what is still missing for those two is reconciliation, and only that.
+
+**4.21 Backups that write themselves.**
+
+**A failed unattended write turns the feature off.** `reportError` goes to a dev console this app
+does not ship, so it is not a report a hero can see; the Settings row falling back to "Off" is.
+The cost is that a transient failure — a full card, a folder unmounted — buys a trip to Settings.
+That is a `ponytail:` note in `src/autoBackup.ts` with the retry counter as its upgrade path.
+
+**The privacy policy was load-bearing and said the wrong thing.** `docs/legal/privacy.md` promised
+"nothing is exported automatically and nothing is scheduled" in both languages — true until this
+shipped. It is a published legal document behind a store listing, so the feature is not done until
+that sentence is. Worth a grep before any feature that writes a file, opens a socket, or reads a
+sensor.
+
+**It is also the complete answer to "sync via Google Drive, Dropbox, GitHub or WebDAV".** Drive,
+Dropbox, Nextcloud, OneDrive and Syncthing all publish an Android `DocumentsProvider`, so they
+appear *inside the folder picker the app already opens*. One SAF integration covers every one of
+them: no OAuth, no SDK per vendor, no credentials at rest, no network request, no guardrail spent —
+and the app never learns which provider was chosen, which is the point. This is Obsidian's model,
+and it is why the backends that do not work this way are refused rather than ranked (see 4.18).
+
+**4.4 Paths.** The full account is [`docs/gameplay/paths.md`](../gameplay/paths.md).
+
+**What was refused.** A "Your paths" card on the Journal: Home carries the one being climbed and
+the shelf keeps the ones finished, so a passive report adds a fourth telling of the same thing and
+walks straight back into the wall of unlit movements this roadmap has now declined twice.
+
+**What the re-audit turned up and this work did *not* fix** — worth their own entries: rep targets
+take no history at all (template midpoint × {0.75, 1, 1.25}); hold targets use an all-time max
+clamped back inside the template's window, so the 60–75 % rule stops applying to exactly the
+strong heroes it is for; there is no per-movement frequency notion anywhere, so nothing notices a
+movement going untrained; and regression-on-form-breakdown has no input channel, since the only
+self-report is the three-value session feedback. Above all, the research dossier's §5 is blunt that the first predictor
+of D30 retention is **a completed first action on day one**, and a day-one hero here still lands
+on an undifferentiated quest gallery — `trainingLevel` from onboarding has exactly one effect,
+hiding `advanced` quests from a `beginner`. That is the next large piece, not another ladder
+surface.
+
+**4.22 The exercise catalogue.** What was refused: a difficulty badge and a per-row progress bar.
+The row's job is *find the movement*; where the hero stands on it belongs to the detail screen.
+
+**4.16 Swapping an exercise** shipped in #25 (`swaps` in `db/questConfig.ts`, the picker in
+`app/(tabs)/quests/[id].tsx`).
+
+**A full quest editor stays out.** Bati's quests carry a title, art, a narrative and an XP
+balance, so a hero-authored one is either a bare list that looks broken next to the others, or a
+level editor. Substitution gives the person who wants dips instead of push-ups what they actually
+wanted.
+
+**4.19 GPS** shipped on 2026-08-31 as expeditions, at exactly the price this page had put on it: a
+runtime location permission, five others beside it, `INTERNET` in the manifest and a Data Safety
+answer that stops being "no". See [`../designs/gps-without-google.md`](../designs/gps-without-google.md)
+and [`../designs/expeditions.md`](../designs/expeditions.md).
+
 ### Scanned and refused
 
-The comparison that produced 4.3, 4.5, 4.9, 4.12 and 4.16 also produced a shorter list of things
+The comparison that produced 4.3, 4.5, 4.9, 4.12 and the exercise swap also produced a shorter list of things
 these apps do that Bati should not — and two it already does, which is the more useful half of a
 scan. Written down so this does not have to happen twice.
 
@@ -706,7 +648,8 @@ equipment, get a session" flow every rival leads with: `app/(tabs)/quests/index.
 duration buckets *and* equipment chips, over quests that already print an estimate from
 `estimateQuestTemplateSeconds`. And per-quest customisation: `db/questConfig.ts` persists the
 level, the rounds, the rest and the per-exercise targets. What was genuinely missing in both
-cases was one narrow thing — swapping a movement — which is 4.16. **Generating** a session from
+cases was one narrow thing, swapping a movement, and it shipped in #25 (`swaps` in
+`db/questConfig.ts`, a picker on the quest screen). **Generating** a session from
 scratch stays refused: Bati's quests carry art, a narrative and an XP balance, so an assembled
 one arrives naked, and 27 authored quests behind two filters answer the same need.
 
@@ -725,7 +668,7 @@ doesn't.
 | Meals & calorie tracking (Spix, Freeletics) | §6 already says it: the mechanic most likely to harm users with disordered-eating tendencies. No calorie surface is the correct default. |
 | Follows, global ranking, workout points (Madbarz) | §7, and every variant needs a server plus an account. |
 | Weather-adapted sessions (Freeletics) | Needs a network request. The guardrail is worth more than the feature. |
-| Camera rep counting via pose detection (Spix) | A camera permission, a model in the APK already at 64 MB, and a Data Safety answer that stops being "no" — for a count the hero can do out loud. Accelerometer-only counting keeps the permission story but not the accuracy; parked, not refused. |
+| Camera rep counting via pose detection (Spix) | A camera permission, a model in the APK already at 53 MiB, and a Data Safety answer that stops being "no" — for a count the hero can do out loud. Accelerometer-only counting keeps the permission story but not the accuracy; parked, not refused. |
 | Before/after transformation photos (Freeletics) | Body-image mechanic, and it makes the app a store of the most personal file a user owns. |
 | Losing HP for a missed day (Habitica) | Its strongest retention mechanic and the one most hostile to this product. Bati *prescribes* rest (`db/restSuggestions.ts` nudges one after five days) and its streak deliberately survives it. Punishing a rest day would have the app fight its own coaching. |
 | Party quests where a slacker damages the team (Habitica) | Needs a server and an account, §7 — and the mechanic is peer pressure, which is the failure mode of fitness apps, not a feature. |
@@ -737,7 +680,7 @@ doesn't.
 | BMI, body-fat and macro calculators (GymMane) | The §6 body-image guardrail, unchanged, and §4's calorie row already argues it. 1RM and plate-loading are simply not bodyweight questions. |
 | Icon packs, light and custom themes (Streak) | Dark-only is a guardrail, not an unset default — the whole art direction assumes it. |
 | PIN / fingerprint app lock (Streak) | **Parked, not refused.** `expo-local-authentication` is cheap and the pattern is standard, but the app holds no secret and no identity: a training journal is not a vault, and a lock in front of it mostly costs the hero four seconds before every session. Reopen if someone asks — a habit tracker with day notes and photos has a better case for it than Bati does. |
-| Hero-authored exercises (GymMane, 360+ built in, plus custom with photo and video) | **Shipped 2026-08**, after a user asked for it by name. The refusal read: *no art, no muscle mapping, no pattern and no XP weight, so it breaks the village, the boss and the estimate at once*. Three of the four were wrong against the code — XP is duration-only (`db/xp.ts`), the estimate reads a `secondsPerRep` with a `NOT NULL DEFAULT 3`, and `exercises.pattern` was already nullable with the comment *"Null only for user-authored content"*. The fourth was right, and is why the editor offers the bundled art or a photo. What the refusal missed entirely is what made it urgent: the unique index on `enName` was global, so a hero-authored name a later migration also seeded would have bricked the app on that device. See [`../architecture/exercise-ownership.md`](../architecture/exercise-ownership.md). Substitution (4.16) is still the smaller answer for "dips instead of push-ups". |
+| Hero-authored exercises (GymMane, 360+ built in, plus custom with photo and video) | **Shipped 2026-08**, after a user asked for it by name. The refusal read: *no art, no muscle mapping, no pattern and no XP weight, so it breaks the village, the boss and the estimate at once*. Three of the four were wrong against the code — XP is duration-only (`db/xp.ts`), the estimate reads a `secondsPerRep` with a `NOT NULL DEFAULT 3`, and `exercises.pattern` was already nullable with the comment *"Null only for user-authored content"*. The fourth was right, and is why the editor offers the bundled art or a photo. What the refusal missed entirely is what made it urgent: the unique index on `enName` was global, so a hero-authored name a later migration also seeded would have bricked the app on that device. See [`../architecture/exercise-ownership.md`](../architecture/exercise-ownership.md). Substitution (shipped in #25) is still the smaller answer for "dips instead of push-ups". |
 
 **Confirmations, which are also findings.** *Zombies, Run!* collects supplies on a run and spends
 them upgrading a base, which is Bati's village with the serial numbers filed off — the design
@@ -835,8 +778,9 @@ section until it does.
   system, which is why §7 closed live multiplayer. **The four candidates raised on 2026-08-14 —
   coaching, guilds, battles, live sessions — are being examined in §5**, where the question is
   asked once instead of four times.
-- **A watch app** — session controls on the wrist, live heart rate during a set. This is what
-  remains of "wearables" once §4.12 takes the data half: reading what a Withings scale or a
+- **A watch app**: session controls on the wrist. Live heart rate during a set is §4.12's
+  BLE strap, on the phone, and needs no watch app. This is what remains of "wearables" once
+  §4.12 takes the strap and the data half: reading what a Withings scale or a
   Garmin watch already recorded goes through Health Connect and needs no vendor anything.
   A Wear OS or Connect IQ app is a second product, in a second language, with its own store —
   parked until the phone app is finished.
@@ -850,7 +794,7 @@ section until it does.
 - **A tappable body map** — GymMane's front/back silhouette, where touching a muscle lists the
   movements that train it. Bati has the data half (`muscleToResource`, and every exercise carries
   its muscle); what it lacks is the artwork and the hit regions, which is an illustration project
-  with the same 64 MB APK watching (§3). Depends on 4.22 shipping first: a map with no catalogue
+  with the same 53 MiB APK watching (§3). Depends on 4.22 shipping first: a map with no catalogue
   behind it navigates to nothing.
 - **Progression depth** — cosmetic customisation, seasonal events, extended RPG meta systems.
 - **Coaching intelligence** — adaptive planning, recovery/load guidance, personalisation from

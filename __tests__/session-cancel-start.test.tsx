@@ -216,7 +216,7 @@ describe("the session screen, on an outing", () => {
     expect(banner.props.accessibilityRole).toBeUndefined();
   });
 
-  /** DESIGN.md:150. A 24 px glyph is a 24 px target unless something says otherwise. */
+  /** DESIGN.md:229. A 24 px glyph is a 24 px target unless something says otherwise. */
   test("gives the close cross a thumb-sized target", async () => {
     await mount();
     expect(screen.getByLabelText("common.close")).toHaveStyle({ width: 44, height: 44 });

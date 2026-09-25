@@ -1,95 +1,139 @@
 ---
 name: Bati
 description: A minimal, ludic fitness RPG that turns strength training into a dark-fantasy quest.
+source: constants/rawColors.ts, tamagui.config.ts, @tamagui/config/v4 defaults, components/common/
 colors:
-  primary: "#0D33F2"
-  primary-hover: "#2E5CFF"
-  primary-press: "#0A25B0"
-  primary-glow: "rgba(13, 51, 242, 0.45)"
+  primary: "#4A3FD6"
+  primary-text: "#8177F7"
+  primary-hover: "#5D53E8"
+  primary-press: "#372FA6"
+  primary-glow: "rgba(74, 63, 214, 0.45)"
   secondary: "#DB2777"
   success: "#16A34A"
+  warning: "#F59E0B"
   error: "#FF1744"
-  bg-void: "#0B0F19"
+  bg-dark: "#0B0F19"
   bg-overlay: "rgba(11, 15, 25, 0.92)"
+  bg-overlay-soft: "rgba(11, 15, 25, 0.72)"
   surface: "#101322"
-  surface-raised: "#151A2E"
+  surface-2: "#151A2E"
   glass-bg: "rgba(16, 19, 34, 0.65)"
   glass-border: "rgba(232, 236, 255, 0.14)"
+  gold-hairline: "rgba(255, 215, 0, 0.22)"
   border-strong: "#2A3360"
   text: "#E8ECFF"
   text-secondary: "#909ACB"
-  muted: "#64748B"
   shadow: "#060812"
+  boss-phase-2: "#170F1D"
+  boss-phase-3: "#1F0E18"
+  boss-phase-4: "#280B12"
+  map-water: "#0E1730"
+  map-wood: "#101E1B"
+  resource-gold: "#FFD700"
+  resource-wood: "#8B4513"
+  resource-stone: "#808080"
+  resource-fire: "#FF6B35"
+  resource-water: "#4ECDC4"
+  resource-wind: "#C9B1FF"
+  resource-grain: "#DAA520"
+  gold-100: "#FFF8D9"
+  gold-300: "#FFE066"
+  gold-600: "#C4A600"
+  gold-700: "#6B5A12"
+  gold-800: "#3A3110"
+  gold-900: "#241F08"
+  ink-800: "#232A44"
+  ink-900: "#0E1220"
 typography:
   display:
     fontFamily: "SpaceGrotesk, system-ui, sans-serif"
     fontSize: "48px"
     fontWeight: 700
     lineHeight: "50px"
-    letterSpacing: "0"
   headline:
     fontFamily: "SpaceGrotesk, system-ui, sans-serif"
     fontSize: "32px"
     fontWeight: 700
     lineHeight: "40px"
-    letterSpacing: "0"
   title:
     fontFamily: "SpaceGrotesk, system-ui, sans-serif"
     fontSize: "24px"
     fontWeight: 700
     lineHeight: "32px"
-    letterSpacing: "0"
-  body:
-    fontFamily: "NotoSans, system-ui, sans-serif"
-    fontSize: "16px"
-    fontWeight: 400
-    lineHeight: "24px"
-    letterSpacing: "0"
   label:
     fontFamily: "SpaceGrotesk, system-ui, sans-serif"
     fontSize: "14px"
     fontWeight: 700
     lineHeight: "20px"
     letterSpacing: "4px"
+  body:
+    fontFamily: "NotoSans, system-ui, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: "24px"
+  button:
+    fontFamily: "NotoSans, system-ui, sans-serif"
+    fontSize: "20px"
+    fontWeight: 700
+  caption:
+    fontFamily: "NotoSans, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 400
+  journal-body:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: "22px"
 rounded:
-  sm: "$4"
-  md: "$8"
-  pill: "$10"
+  tag: "7px"      # $3
+  chip: "9px"     # $4, static chip
+  md: "22px"      # $8, cards and buttons
+  pill: "34px"    # $10, pressable chip
   full: "9999px"
 spacing:
-  xs: "$1"
-  sm: "$2"
-  md: "$3"
-  lg: "$4"
+  xs: "2px"       # $1
+  sm: "7px"       # $2
+  md: "13px"      # $3
+  lg: "18px"      # $4, card padding
+  xl: "24px"      # $5
+sizes:
+  hit-target: "44px"
+  content-max-width: "520px"
 components:
   button-primary:
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.bg-void}"
+    textColor: "{colors.text}"
+    borderColor: "{colors.border-strong}"
     rounded: "{rounded.md}"
-    padding: "0 16px"
-    height: "48px"
+    height: "44px"
   button-secondary:
     backgroundColor: "{colors.secondary}"
     textColor: "#FFFFFF"
+    borderColor: "{colors.border-strong}"
     rounded: "{rounded.md}"
-    padding: "0 16px"
-    height: "48px"
+    height: "44px"
   button-outline:
     backgroundColor: "{colors.bg-overlay}"
     textColor: "{colors.text}"
+    borderColor: "{colors.border-strong}"
     rounded: "{rounded.md}"
-    padding: "0 16px"
-    height: "48px"
+    height: "44px"
   card:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
+    borderColor: "{colors.border-strong}"
     rounded: "{rounded.md}"
-    padding: "16px"
+    padding: "18px"
   chip:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
     rounded: "{rounded.pill}"
-    padding: "8px 12px"
+    padding: "7px 13px"
+  tag:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.tag}"
+    padding: "2px 7px"
 ---
 
 # Design System: Bati

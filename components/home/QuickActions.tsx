@@ -91,7 +91,7 @@ function BandNotice({
         variant="outline"
         backgroundColor="$surface2"
         size="$3"
-        // Size $3 lands under the 44×44 floor of DESIGN.md:150, and Yoga clamps a height to the
+        // Size $3 lands under the 44×44 floor of DESIGN.md:229, and Yoga clamps a height to the
         // larger minimum, so the button keeps its compact type and gains the hit area.
         minH={44}
         fontSize={15}

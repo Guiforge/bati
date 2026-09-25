@@ -73,6 +73,9 @@ export function EncryptionSheet({
       onOpenChange={(next: boolean) => (next ? undefined : close())}
       snapPointsMode="fit"
       disableDrag
+      // The fields sit at the bottom of the screen, exactly where the keyboard lands: without this
+      // the second one is typed into blind, and a tap meant for it lands in the first.
+      moveOnKeyboardChange
       transition={reducedMotion ? undefined : "quick"}
       zIndex={100_000}
     >

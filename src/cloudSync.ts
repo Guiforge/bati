@@ -21,13 +21,26 @@ import { Linking } from "react-native";
  * streams file to socket and never passes through JavaScript.
  */
 
-export type NextcloudAccount = { server: string; loginName: string; appPassword: string };
+/**
+ * `userId` is the name Nextcloud files the account under, which is what its WebDAV path wants: it
+ * differs from `loginName` for a hero who signs in with an email or through LDAP. Absent on an
+ * account whose id could not be read; the login name is the right guess for everyone else.
+ */
+export type NextcloudAccount = {
+  server: string;
+  loginName: string;
+  appPassword: string;
+  userId?: string;
+};
 
 /** Where sync reads and writes: one folder on a WebDAV server, and how to sign in to it. */
 export type DavTarget = { folderUrl: string; user: string; password: string };
 
-/** A file in the sync folder, with the server's version of it. A changed etag is a new write. */
-export type RemoteFile = { name: string; etag: string };
+/**
+ * A file in the sync folder, with the server's version of it: a changed etag is a new write.
+ * `modified` is epoch ms from `getlastmodified`, 0 when a server leaves it out.
+ */
+export type RemoteFile = { name: string; etag: string; modified: number };
 
 /** Where on the account this app keeps its files. One folder, created on first use. */
 const FOLDER = "Bati";
@@ -92,6 +105,8 @@ export async function loginToNextcloud(
   const deadline = Date.now() + LOGIN_TIMEOUT_MS;
   while (Date.now() < deadline && !isCancelled()) {
     await new Promise((resolve) => setTimeout(resolve, LOGIN_POLL_MS));
+    // Cancelled during the wait: an approval arriving now must not connect a screen the hero left.
+    if (isCancelled()) return null;
     const poll = await request(flow.poll.endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -101,10 +116,26 @@ export async function loginToNextcloud(
     if (poll?.ok) {
       const done = (await poll.json()) as NextcloudAccount;
       // The address the hero typed, not the one the server reports: sync goes where they chose.
-      return { ...done, server };
+      const account = { ...done, server };
+      const userId = await nextcloudUserId(account);
+      return userId === null ? account : { ...account, userId };
     }
   }
   return null;
+}
+
+/** The account's user id, from the OCS API, or `null` when the server does not say. */
+async function nextcloudUserId(account: NextcloudAccount): Promise<string | null> {
+  const answer = await request(`${account.server}/ocs/v2.php/cloud/user?format=json`, {
+    headers: {
+      ...authHeader({ folderUrl: "", user: account.loginName, password: account.appPassword }),
+      "OCS-APIRequest": "true",
+    },
+  })
+    .then((r) => (r.ok ? (r.json() as Promise<{ ocs?: { data?: { id?: unknown } } }>) : null))
+    .catch(() => null);
+  const id = answer?.ocs?.data?.id;
+  return typeof id === "string" && id !== "" ? id : null;
 }
 
 function sameOriginOrHttps(url: string, server: string): boolean {
@@ -114,7 +145,8 @@ function sameOriginOrHttps(url: string, server: string): boolean {
 
 /** A Nextcloud account's sync folder, under its user's WebDAV root. */
 export function nextcloudTarget(account: NextcloudAccount): DavTarget {
-  const root = `${account.server}/remote.php/dav/files/${encodeURIComponent(account.loginName)}`;
+  const user = account.userId ?? account.loginName;
+  const root = `${account.server}/remote.php/dav/files/${encodeURIComponent(user)}`;
   return { folderUrl: `${root}/${FOLDER}`, user: account.loginName, password: account.appPassword };
 }
 
@@ -200,12 +232,25 @@ export function parseListing(xml: string): RemoteFile[] {
     const href = field(response, "href");
     if (!href || href.endsWith("/") || /<(?:[\w-]+:)?collection\s*\/?>/i.test(response)) continue;
     const etag = field(response, "getetag")?.replace(/&quot;|"/g, "");
-    const version =
-      etag || [field(response, "getlastmodified"), field(response, "getcontentlength")].join("|");
-    const name = decodeURIComponent(href.split("/").pop() ?? "");
-    if (name && version !== "|") files.push({ name, etag: version });
+    const lastModified = field(response, "getlastmodified");
+    const version = etag || [lastModified, field(response, "getcontentlength")].join("|");
+    const name = decodedName(href);
+    const modified = Date.parse(lastModified ?? "");
+    if (name && version !== "|") {
+      files.push({ name, etag: version, modified: Number.isNaN(modified) ? 0 : modified });
+    }
   }
   return files;
+}
+
+/** The last path segment, or "" for one no browser would have sent: skipped, not fatal. */
+function decodedName(href: string): string {
+  try {
+    return decodeURIComponent(href.split("/").pop() ?? "");
+  } catch {
+    // A malformed escape is a file some other client named; it is not one of ours either way.
+    return "";
+  }
 }
 
 /** Streams `name` from the folder into `destination`, replacing whatever is there. */

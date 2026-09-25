@@ -3,7 +3,7 @@ import * as Sharing from "expo-sharing";
 import { defaultDatabaseDirectory } from "expo-sqlite";
 
 import { snapshotDatabaseTo } from "@/db/backup";
-import { closeDatabase, DB_NAME, serializeOnDatabase } from "@/db/client";
+import { closeDatabase, DB_NAME, SAFETY_NAME, serializeOnDatabase } from "@/db/client";
 import { dayKey } from "@/db/dates";
 import { SCHEMA_VERSION } from "@/db/schemaVersion";
 import {
@@ -35,7 +35,6 @@ const IMPORT_PLAIN = "bati-import-plain.tmp.db";
  * The database as it was just before the last restore, and the rollback source if the swap
  * fails. It *is* the previous file, renamed rather than copied — see `commitRestore`.
  */
-const SAFETY_NAME = `${DB_NAME}.bak`;
 
 /** The snapshot handed to the share sheet. One at a time, replaced on the next export. */
 const EXPORT_PREFIX = "bati-export-";
@@ -146,6 +145,9 @@ async function writeSnapshot(stem = exportFileStem(new Date())): Promise<File> {
  */
 async function sealedSnapshotTo(name: string): Promise<void> {
   deleteIfPresent(name);
+  // Left behind by a kill or a failed `VACUUM INTO`, which refuses an existing file: without this
+  // every sync snapshot after it failed, and the plaintext stayed on disk.
+  deleteIfPresent(PLAIN_SNAPSHOT);
   await snapshotDatabaseTo(pathIn(PLAIN_SNAPSHOT));
   await sealBackup(pathIn(PLAIN_SNAPSHOT), pathIn(name)).finally(() =>
     deleteIfPresent(PLAIN_SNAPSHOT),

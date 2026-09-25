@@ -1660,6 +1660,8 @@
     "presetRoundSync": "For Proton Drive, Google Drive and every other rclone remote: serve it over WebDAV in Round Sync, and keep it running while Bati opens.",
     "roundSyncPasswordPlaceholder": "Password set in Round Sync",
     "aheadBody_one": "It has {{count}} change this one does not, and nothing here would be lost. Take its version to carry on from there.",
-    "aheadBody_other": "It has {{count}} changes this one does not, and nothing here would be lost. Take its version to carry on from there."
+    "aheadBody_other": "It has {{count}} changes this one does not, and nothing here would be lost. Take its version to carry on from there.",
+    "unreadableTitle": "A device Bati cannot read",
+    "unreadableBody": "Another device's history on your server does not open here. If that device runs a newer Bati, update this one."
   }
 }

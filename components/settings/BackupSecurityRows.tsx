@@ -88,6 +88,16 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
     return next.next !== "failed";
   };
 
+  /**
+   * A connection the hero walked away from halfway: no password for the vault already there, or
+   * no encryption for a server waiting on it. Left connected, the next launch sync failed every
+   * time (encryption off) or sealed a second vault beside the first (join cancelled).
+   */
+  const abandonConnect = () => {
+    setSyncAfterEncrypt(false);
+    deviceSync.disconnect().catch((e) => reportError("sync.abandon", e));
+  };
+
   const submitJoin = (secret: string) => {
     if (joining === null) return;
     const { peer } = joining;
@@ -174,13 +184,19 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
         title={t("sync.joinTitle")}
         body={t("sync.joinBody")}
         onSubmit={submitJoin}
-        onCancel={() => setJoining(null)}
+        onCancel={() => {
+          setJoining(null);
+          abandonConnect();
+        }}
       />
       <EncryptionSheet
         key={encryptionSheetId}
         mode={encryptionSheet}
         canShowRecoveryAgain={encryption.canShowRecoveryAgain}
-        onClose={() => setEncryptionSheet(null)}
+        onClose={() => {
+          setEncryptionSheet(null);
+          if (syncAfterEncrypt) abandonConnect();
+        }}
         onEnable={enable}
         onChange={encryption.change}
         onShowRecovery={showRecoveryKey}

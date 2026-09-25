@@ -1723,6 +1723,8 @@
     "roundSyncPasswordPlaceholder": "Contraseña elegida en Round Sync",
     "aheadBody_one": "Tiene {{count}} cambio que este no tiene, y aquí no se perdería nada. Toma su versión para seguir desde ahí.",
     "aheadBody_other": "Tiene {{count}} cambios que este no tiene, y aquí no se perdería nada. Toma su versión para seguir desde ahí.",
-    "aheadBody_many": "Tiene {{count}} cambios que este no tiene, y aquí no se perdería nada. Toma su versión para seguir desde ahí."
+    "aheadBody_many": "Tiene {{count}} cambios que este no tiene, y aquí no se perdería nada. Toma su versión para seguir desde ahí.",
+    "unreadableTitle": "Un dispositivo que Bati no puede leer",
+    "unreadableBody": "El historial de otro dispositivo en tu servidor no se abre aquí. Si ese dispositivo tiene una versión más reciente de Bati, actualiza esta."
   }
 }

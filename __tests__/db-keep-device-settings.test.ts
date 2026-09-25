@@ -56,6 +56,7 @@ test("the backup brings the hero, and this phone keeps its own folder, id and cr
   setPref(old, "backupFolderUri", "content://old/tree/primary%3ADocuments");
   setPref(old, "customAvatarUri", "file:///data/old/avatar.jpg");
   setPref(old, "updateLatest", "9.9.9");
+  setPref(old, "backupEncryption", "on");
   setPref(old, "savedSession", '{"questId":3}');
   old.close();
 
@@ -74,6 +75,8 @@ test("the backup brings the hero, and this phone keeps its own folder, id and cr
   expect(after).not.toHaveProperty("customAvatarUri");
   // The other phone's update check says nothing about this copy of the app.
   expect(after).not.toHaveProperty("updateLatest");
+  // Sealing is this phone's choice: an import it declined to join must not lock it.
+  expect(after).not.toHaveProperty("backupEncryption");
 });
 
 test("a session interrupted on either device does not survive the swap", async () => {

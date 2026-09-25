@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
+import { Alert, type AlertButton } from "react-native";
 
 import { useToast } from "@/components/common/Toast";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
@@ -19,6 +19,8 @@ import { useSyncStore } from "@/stores/sync";
  *   version first sends this device's to the sync folder (`keepThisDeviceOnServer`).
  * - **locked**: another device seals with a password this one does not know. Until it is typed
  *   here, the two never see each other, so that is asked instead of staying silent.
+ * - **unreadable**: said once. Most often that device runs a newer Bati, and silence would leave
+ *   the hero wondering why the tablet's sessions never arrive.
  *
  * Streaks asks the same question with a conflict picker; Joplin's answer, a "Conflicts" notebook,
  * is the one a game should not copy. Never during a session: taking a version unmounts the app,
@@ -36,19 +38,42 @@ export function SyncPrompt() {
   const run = useSyncStore((s) => s.run);
   const inSession = useSessionStore((s) => s.status !== "idle" && s.status !== "finished");
   const [joining, setJoining] = useState<{ peer: string; wrong: boolean } | null>(null);
+  // An alert on screen. `markOffered` re-runs the effect, and without this the next device's
+  // question opened on top of the one still being read.
+  const [showing, setShowing] = useState(false);
 
   useEffect(() => {
-    if (inSession || joining !== null) return;
+    if (inSession || joining !== null || showing) return;
     const peer = result?.peers.find(
-      (p) =>
-        (p.state === "ahead" || p.state === "diverged" || p.state === "locked") &&
-        !offered.includes(offerKey(p)),
+      (p) => p.state !== "level" && p.state !== "behind" && !offered.includes(offerKey(p)),
     );
     if (!peer) return;
     markOffered(offerKey(peer));
 
+    /** Every answer, and a dismissal, frees the screen for the next question. */
+    const ask = (title: string, body: string, buttons: AlertButton[]) => {
+      setShowing(true);
+      const done = () => setShowing(false);
+      Alert.alert(
+        title,
+        body,
+        buttons.map((b) => ({
+          ...b,
+          onPress: () => {
+            done();
+            b.onPress?.();
+          },
+        })),
+        { onDismiss: done },
+      );
+    };
+
+    if (peer.state === "unreadable") {
+      ask(t("sync.unreadableTitle"), t("sync.unreadableBody"), [{ text: t("common.close") }]);
+      return;
+    }
     if (peer.state === "locked") {
-      Alert.alert(t("sync.lockedTitle"), t("sync.lockedBody"), [
+      ask(t("sync.lockedTitle"), t("sync.lockedBody"), [
         { text: t("sync.later"), style: "cancel" },
         { text: t("sync.lockedCta"), onPress: () => setJoining({ peer: peer.name, wrong: false }) },
       ]);
@@ -61,13 +86,13 @@ export function SyncPrompt() {
     if (peer.state === "ahead") {
       // Nothing here would be lost, so there is nothing to keep first and no "keep" to remember:
       // "later" only means "not now".
-      Alert.alert(t("sync.aheadTitle"), t("sync.aheadBody", { count: peerChanges }), [
+      ask(t("sync.aheadTitle"), t("sync.aheadBody", { count: peerChanges }), [
         { text: t("sync.later"), style: "cancel" },
         { text: t("sync.take"), onPress: () => runAdopt(plain, () => Promise.resolve()) },
       ]);
       return;
     }
-    Alert.alert(
+    ask(
       t("sync.divergedTitle"),
       t("sync.divergedBody", { peer: peerChanges, local: localChanges }),
       [
@@ -81,7 +106,7 @@ export function SyncPrompt() {
         { text: t("sync.take"), onPress: () => runAdopt(plain, keepThisDeviceOnServer) },
       ],
     );
-  }, [inSession, joining, markOffered, offered, result, runAdopt, t]);
+  }, [inSession, joining, showing, markOffered, offered, result, runAdopt, t]);
 
   const submit = (secret: string) => {
     if (joining === null) return;
@@ -94,8 +119,9 @@ export function SyncPrompt() {
         }
         setJoining(null);
         showSuccess(t("sync.joined"));
-        // Same key on both sides now: this sync reads the other device for what it is.
-        return run({ snapshotFirst: false });
+        // Same key on both sides now: this sync reads the other device for what it is. A fresh
+        // snapshot, because the one sealed at launch is under the key this phone just left.
+        return run({ snapshotFirst: true });
       })
       .catch((e) => {
         reportError("sync.join", e);

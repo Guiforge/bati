@@ -12,6 +12,8 @@ test("a real Nextcloud listing yields the files, not the folder, with bare etags
     {
       name: "bati-0190a000-0000-7000-8000-000000000001.batb",
       etag: "d3551e403d2c690971ab11794e4961e4",
+      // This capture carries no `getlastmodified`: 0, which sorts it last and breaks nothing.
+      modified: 0,
     },
   ]);
 });
@@ -71,7 +73,11 @@ const APACHE = `<?xml version="1.0" encoding="utf-8"?>
 
 test("an Apache listing is read whatever its namespace prefixes", () => {
   expect(parseListing(APACHE)).toEqual([
-    { name: "bati-0190a000-0000-7000-8000-000000000001.batb", etag: "1-65c54d08e4063" },
+    {
+      name: "bati-0190a000-0000-7000-8000-000000000001.batb",
+      etag: "1-65c54d08e4063",
+      modified: Date.parse("Fri, 25 Sep 2026 20:46:46 GMT"),
+    },
   ]);
 });
 
@@ -81,6 +87,7 @@ test("a server with no etag is versioned by modification time and size", () => {
     {
       name: "bati-0190a000-0000-7000-8000-000000000001.batb",
       etag: "Fri, 25 Sep 2026 20:46:46 GMT|1",
+      modified: Date.parse("Fri, 25 Sep 2026 20:46:46 GMT"),
     },
   ]);
 });

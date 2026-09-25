@@ -60,10 +60,26 @@ const SLOT_PASSWORD = 1;
 const SLOT_RECOVERY = 2;
 
 /** SecureStore keys. Device-local by construction; see the header comment. */
-const STORE_KEY = "bati.backup.key";
-const STORE_HEADER = "bati.backup.header";
+/**
+ * The master key and the header that wraps it, as one item: written in two, a crash or a backup
+ * between the writes sealed files with the new key under the old key's header, which nothing then
+ * opens.
+ */
+const STORE_VAULT = "bati.backup.vault";
 const STORE_KEYRING = "bati.backup.keyring";
 const STORE_RECOVERY = "bati.backup.recovery";
+/**
+ * "1" once the recovery key really sits behind the fingerprint. Not secret; it exists because
+ * asking the guarded item itself would show the fingerprint prompt just to render a hint.
+ */
+const STORE_RECOVERY_KEPT = "bati.backup.recovery-kept";
+
+function forgetRecoveryKey(): Promise<void> {
+  return Promise.all([
+    SecureStore.deleteItemAsync(STORE_RECOVERY),
+    SecureStore.deleteItemAsync(STORE_RECOVERY_KEPT),
+  ]).then(() => undefined);
+}
 
 /** Database preference: the hero asked for encryption. See the header comment. */
 const WANTED_PREFERENCE = "backupEncryption";
@@ -230,9 +246,15 @@ export function normaliseRecoveryKey(input: string): string | null {
 
 // --- device state ------------------------------------------------------------------------------
 
-async function storedHeader(): Promise<Header | null> {
-  const value = await SecureStore.getItemAsync(STORE_HEADER);
-  return value === null ? null : parseHeader(fromB64(value));
+type StoredVault = { key: string; header: string };
+
+async function storedVault(): Promise<StoredVault | null> {
+  const value = await SecureStore.getItemAsync(STORE_VAULT);
+  return value === null ? null : (JSON.parse(value) as StoredVault);
+}
+
+function storeVault(key: string, header: Uint8Array): Promise<void> {
+  return SecureStore.setItemAsync(STORE_VAULT, JSON.stringify({ key, header: toB64(header) }));
 }
 
 /**
@@ -240,8 +262,8 @@ async function storedHeader(): Promise<Header | null> {
  * the key (a new password, a vault joined), which is how sync knows its file on the server is
  * sealed with a key the other devices may no longer share. Not secret: every file carries it.
  */
-export function sealingHeader(): Promise<string | null> {
-  return SecureStore.getItemAsync(STORE_HEADER);
+export async function sealingHeader(): Promise<string | null> {
+  return (await storedVault())?.header ?? null;
 }
 
 async function keyring(): Promise<string[]> {
@@ -258,8 +280,9 @@ async function keyring(): Promise<string[]> {
 export type EncryptionStatus = "off" | "on" | "locked";
 
 async function ownKey(): Promise<{ header: Header; key: string } | null> {
-  const [header, key] = await Promise.all([storedHeader(), SecureStore.getItemAsync(STORE_KEY)]);
-  return header !== null && key !== null ? { header, key } : null;
+  const vault = await storedVault();
+  const header = vault === null ? null : parseHeader(fromB64(vault.header));
+  return vault !== null && header !== null ? { header, key: vault.key } : null;
 }
 
 export async function encryptionStatus(): Promise<EncryptionStatus> {
@@ -288,9 +311,7 @@ async function newVault(password: string): Promise<string> {
 
   const previous = await ownKey();
   if (previous !== null) await rememberInKeyring(previous.key);
-  // Key before header: `ownKey` needs both, so a crash between the two leaves the old state.
-  await SecureStore.setItemAsync(STORE_KEY, key);
-  await SecureStore.setItemAsync(STORE_HEADER, toB64(header));
+  await storeVault(key, header);
   await setPreference(WANTED_PREFERENCE, "on");
   await rememberRecoveryKey(recovery);
   return formatRecoveryKey(recovery);
@@ -317,9 +338,8 @@ export function changePassword(password: string): Promise<string> {
 
 /** Future backups are plain again. Files already encrypted stay encrypted, and openable elsewhere. */
 export async function disableEncryption(): Promise<void> {
-  await SecureStore.deleteItemAsync(STORE_HEADER);
-  await SecureStore.deleteItemAsync(STORE_KEY);
-  await SecureStore.deleteItemAsync(STORE_RECOVERY);
+  await SecureStore.deleteItemAsync(STORE_VAULT);
+  await forgetRecoveryKey();
   await SecureStore.deleteItemAsync(STORE_KEYRING);
   await deletePreference(WANTED_PREFERENCE);
 }
@@ -337,12 +357,18 @@ async function rememberInKeyring(key: string): Promise<void> {
  * A new fingerprint invalidates it (Android's rule, not ours), which costs a view, never a key.
  */
 async function rememberRecoveryKey(recovery: string): Promise<void> {
+  // The previous vault's key opens nothing this phone writes from now: never show it as current.
+  await forgetRecoveryKey();
   if (!SecureStore.canUseBiometricAuthentication()) return;
-  await SecureStore.setItemAsync(STORE_RECOVERY, recovery, { requireAuthentication: true }).catch(
-    // The key was shown and the hero was asked to write it down; a phone that refuses to guard
-    // it only loses the "show it again" convenience.
-    () => SecureStore.deleteItemAsync(STORE_RECOVERY),
+  // Storing it asks for the fingerprint too. The key was shown and the hero was asked to write it
+  // down; a cancelled prompt only loses "show it again", which `canShowRecoveryKeyAgain` then says.
+  const kept = await SecureStore.setItemAsync(STORE_RECOVERY, recovery, {
+    requireAuthentication: true,
+  }).then(
+    () => true,
+    () => false,
   );
+  if (kept) await SecureStore.setItemAsync(STORE_RECOVERY_KEPT, "1");
 }
 
 /** The recovery key, after a fingerprint, or `null` when this phone never kept it. */
@@ -351,8 +377,9 @@ export async function readRecoveryKey(): Promise<string | null> {
   return hex === null ? null : formatRecoveryKey(hex);
 }
 
-export function canShowRecoveryKeyAgain(): boolean {
-  return SecureStore.canUseBiometricAuthentication();
+/** Whether `readRecoveryKey` has something to show: the key was really stored, not just could be. */
+export async function canShowRecoveryKeyAgain(): Promise<boolean> {
+  return (await SecureStore.getItemAsync(STORE_RECOVERY_KEPT)) === "1";
 }
 
 // --- files -------------------------------------------------------------------------------------
@@ -400,8 +427,8 @@ export async function openBackup(
   const header = await readHeader(path);
   if (header === null) return { result: "notEncrypted" };
 
-  const own = await SecureStore.getItemAsync(STORE_KEY);
-  for (const key of [...(own === null ? [] : [own]), ...(await keyring())]) {
+  const own = (await storedVault())?.key;
+  for (const key of [...(own === undefined ? [] : [own]), ...(await keyring())]) {
     if (await keyOpens(key, header)) {
       await batiCrypto().openFile(key, path, outPath, header.bytes.length);
       return { result: "opened" };
@@ -433,9 +460,8 @@ async function joinKey(
   }
   const previous = await ownKey();
   if (previous !== null && previous.key !== key) await rememberInKeyring(previous.key);
-  await SecureStore.setItemAsync(STORE_KEY, key);
-  await SecureStore.setItemAsync(STORE_HEADER, toB64(header.bytes));
+  await storeVault(key, header.bytes);
   await setPreference(WANTED_PREFERENCE, "on");
   // The recovery key is the other device's; this phone never saw it, so it cannot show it again.
-  await SecureStore.deleteItemAsync(STORE_RECOVERY);
+  await forgetRecoveryKey();
 }

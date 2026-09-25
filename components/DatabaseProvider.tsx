@@ -6,7 +6,7 @@ import { rawColors } from "@/constants/rawColors";
 import { stampDatabaseIdentity } from "@/db/backup";
 import { ensureMigrations } from "@/db/migrate";
 import { backupIfStaleToday } from "@/src/autoBackup";
-import { commitRestore } from "@/src/backupFiles";
+import { clearPeerScratch, commitRestore, discardStagedImport } from "@/src/backupFiles";
 import { prepareSyncAtLaunch } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
@@ -50,6 +50,24 @@ function FullScreenNotice({ title, message }: { title: string; message: string }
   );
 }
 
+/**
+ * Plaintext a killed app leaves in the database directory: an import decrypted before its swap,
+ * another device's history opened for comparison. Nothing can be staged yet at launch, and it is
+ * once per process, not per mount: the root layout remounts (see `useSyncStore.claimLaunch`),
+ * and a restore staged by then must survive it.
+ */
+let leftoversSwept = false;
+function sweepLeftovers(): void {
+  if (leftoversSwept) return;
+  leftoversSwept = true;
+  try {
+    discardStagedImport();
+    clearPeerScratch();
+  } catch (e) {
+    reportError("backup.sweep", e);
+  }
+}
+
 export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   const { t } = useTranslation();
   const restorePhase = useRestoreStore((state) => state.phase);
@@ -69,6 +87,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
 
     if (hasStartedMigrations.current) return;
     hasStartedMigrations.current = true;
+    sweepLeftovers();
 
     (async () => {
       try {

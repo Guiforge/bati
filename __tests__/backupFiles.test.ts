@@ -132,6 +132,7 @@ jest.mock("expo-sqlite", () => ({ defaultDatabaseDirectory: "/data/SQLite" }));
 
 jest.mock("@/db/client", () => ({
   DB_NAME: "bati.v3.db",
+  SAFETY_NAME: "bati.v3.db.bak",
   closeDatabase: () => {
     (require("expo-file-system") as FakeFs).__ops.push("close");
     return Promise.resolve();
@@ -143,6 +144,8 @@ jest.mock("@/db/client", () => ({
 jest.mock("@/db/backup", () => ({
   snapshotDatabaseTo: (destination: string) => {
     const fs = require("expo-file-system") as FakeFs;
+    // Like `VACUUM INTO`, which refuses a file that is already there.
+    if (fs.__disk.has(destination)) return Promise.reject(new Error("output file already exists"));
     fs.__ops.push(`snapshot ${destination.split("/").pop()}`);
     fs.__disk.set(destination, "snapshot");
     return Promise.resolve();
@@ -188,6 +191,7 @@ import {
   preRestoreFileStem,
   saveBackupToFolder,
   stageBackupForImport,
+  writeSyncSnapshot,
 } from "@/src/backupFiles";
 
 type FakeFs = {
@@ -588,6 +592,15 @@ describe("encrypted backups", () => {
     const kept = [...fs.__disk.keys()].filter((key) => key.startsWith("/sdcard/Documents/"));
     expect(kept).toHaveLength(5);
     expect(kept).not.toContain("/sdcard/Documents/bati-export-v3-2026-09-20.db");
+  });
+
+  test("plaintext a killed snapshot left behind does not block the next one", async () => {
+    write("bati-export-plain.tmp.db", "half a vacuum");
+
+    const sealed = await writeSyncSnapshot();
+
+    expect(fs.__disk.get(sealed.uri.replace(/^file:\/\//, ""))).toBe("sealed:snapshot");
+    expect(fs.__disk.has(at("bati-export-plain.tmp.db"))).toBe(false);
   });
 
   test("an opened import replaces the staged file with its plaintext", async () => {

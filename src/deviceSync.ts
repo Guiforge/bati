@@ -1,6 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 
 import {
+  BUILD_MIGRATIONS,
   compareWithPeer,
   type PeerComparison,
   stateFingerprint,
@@ -61,6 +62,14 @@ const STORE_INSTALL = "bati.sync.install";
 const STORE_ANSWERED = "bati.sync.answered";
 /** The state last uploaded, so an unchanged history is not sealed and sent again. */
 const STORE_UPLOADED = "bati.sync.uploaded";
+/**
+ * name → the verdict on another device's file, stamped with its etag and this device's state.
+ * Only verdicts that ask nothing of the hero are kept (`level`, `behind`, `unreadable`): with the
+ * same file on both sides they cannot change, and downloading every device's whole history at
+ * every launch, on mobile data too, is how a sync gets switched off.
+ */
+const STORE_VERDICTS = "bati.sync.verdicts";
+type Verdict = { stamp: string; state: "level" | "behind" | "unreadable" };
 
 /** More devices than any hero owns; a server listing more is not ours to download. */
 const MAX_PEERS = 16;
@@ -159,6 +168,7 @@ export async function disconnectSync(): Promise<void> {
   await SecureStore.deleteItemAsync(STORE_ACCOUNT);
   await SecureStore.deleteItemAsync(STORE_ANSWERED);
   await SecureStore.deleteItemAsync(STORE_UPLOADED);
+  await SecureStore.deleteItemAsync(STORE_VERDICTS);
   clearPeerScratch();
   pendingSyncSnapshot()?.delete();
 }
@@ -169,9 +179,21 @@ export async function disconnectSync(): Promise<void> {
  * without the header in here the file on the server would stay sealed with a key the other devices
  * cannot open (or with the old password the hero just retired) until the next session.
  */
-async function changedSinceUpload(target: DavTarget): Promise<{ changed: boolean; now: string }> {
-  const now = `${target.folderUrl}#${await stateFingerprint()}#${await sealingHeader()}`;
-  return { changed: (await SecureStore.getItemAsync(STORE_UPLOADED)) !== now, now };
+async function changedSinceUpload(
+  target: DavTarget,
+): Promise<{ changed: boolean; now: string; firstContact: boolean }> {
+  const now = `${target.folderUrl}#${await localState()}`;
+  const last = await SecureStore.getItemAsync(STORE_UPLOADED);
+  return { changed: last !== now, now, firstContact: !last?.startsWith(`${target.folderUrl}#`) };
+}
+
+/**
+ * What every verdict about a peer assumes: this device's history, the key it is sealed with, and
+ * the build reading it (a peer refused as too new may open after an app update). It is also the
+ * upload marker, so an update sends this device's file once more, for peers that were waiting on it.
+ */
+async function localState(): Promise<string> {
+  return `${await stateFingerprint()}#${await sealingHeader()}#${BUILD_MIGRATIONS}`;
 }
 
 /**
@@ -225,13 +247,23 @@ export async function syncNow(options: { snapshotFirst: boolean }): Promise<Sync
 
   const own = fileFor(await installId());
   const listing = await listRemote(target);
-  const uploaded = await uploadIfNeeded(target, own, listing, options.snapshotFirst);
 
   clearPeerScratch();
   const answered = await answeredPeers();
+  const known = await knownVerdicts();
+  const here = await localState();
+  const verdicts: Record<string, Verdict> = {};
   const peers: Peer[] = [];
   for (const file of othersIn(listing, own)) {
-    let peer = await fetchAndJudge(target, file);
+    const stamp = `${file.etag}#${here}`;
+    const cached = known[file.name];
+    let peer: Peer =
+      cached?.stamp === stamp
+        ? { name: file.name, etag: file.etag, state: cached.state }
+        : await fetchAndJudge(target, file);
+    if (peer.state === "level" || peer.state === "behind" || peer.state === "unreadable") {
+      verdicts[file.name] = { stamp, state: peer.state };
+    }
     // An answer the hero already gave for this exact state is not asked again. Only news from
     // that device (new sessions, new content) changes the fingerprint; sealing the same history
     // anew does not.
@@ -243,7 +275,31 @@ export async function syncNow(options: { snapshotFirst: boolean }): Promise<Sync
     if (!("comparison" in peer) && plain.exists) plain.delete();
     peers.push(peer);
   }
+  await SecureStore.setItemAsync(STORE_VERDICTS, JSON.stringify(verdicts));
+
+  const uploaded = (await holdBack(target, peers))
+    ? false
+    : await uploadIfNeeded(target, own, listing, options.snapshotFirst);
   return { uploaded, peers };
+}
+
+async function knownVerdicts(): Promise<Record<string, Verdict>> {
+  const value = await SecureStore.getItemAsync(STORE_VERDICTS);
+  return value === null ? {} : (JSON.parse(value) as Record<string, Verdict>);
+}
+
+/**
+ * Whether this device keeps its file to itself this time:
+ * - another device is `ahead`: it already holds everything this one has, so sending adds nothing;
+ * - this device never sent anything here and another has news for it: a tablet just through
+ *   onboarding has a village name and an avatar newer than the phone's, and uploading them first
+ *   made a near-empty device look like news to every other one. It listens before it speaks, and
+ *   sends once the hero took that device's version or chose to keep this one.
+ */
+async function holdBack(target: DavTarget, peers: Peer[]): Promise<boolean> {
+  if (peers.some((p) => p.state === "ahead")) return true;
+  const hasNews = peers.some((p) => p.state === "diverged");
+  return hasNews && (await changedSinceUpload(target)).firstContact;
 }
 
 async function uploadIfNeeded(
@@ -337,7 +393,11 @@ export async function serverState(): Promise<ServerState> {
   const account = await syncAccount();
   if (account === null) throw new Error("Sync is not connected");
   const target = targetFor(account);
-  const others = othersIn(await listRemote(target), fileFor(await installId()));
+  // The most recently written file: a phone reset months ago can leave a file sealed with a vault
+  // nobody uses any more, and joining that one would lock out every live device.
+  const others = othersIn(await listRemote(target), fileFor(await installId())).sort(
+    (a, b) => b.modified - a.modified,
+  );
   const first = others[0];
   if (first === undefined) return { kind: "empty" };
 

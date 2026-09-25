@@ -150,6 +150,7 @@ test("never during a session, and once per state", async () => {
 
   await act(async () => useSessionStore.setState({ status: "idle" }));
   await waitFor(() => expect(mockAlerts).toHaveLength(1));
+  await act(async () => press("sync.later"));
 
   // The same state from a later sync is not offered again in this process.
   await syncFound({ ...peer, etag: "e2" });
@@ -173,5 +174,28 @@ test("locked: the other device's password is asked for, retried, and joined", as
   await act(async () => mockSheet?.submit("tablet password"));
   await waitFor(() => expect(mockSheet?.open).toBe(false));
   expect(mockToasts).toEqual(["sync.joined"]);
-  expect(run).toHaveBeenCalledWith({ snapshotFirst: false });
+  // A fresh snapshot: the one sealed at launch is under the key this phone just left.
+  expect(run).toHaveBeenCalledWith({ snapshotFirst: true });
+});
+
+test("one question at a time: the next device waits for an answer to the first", async () => {
+  await render(<SyncPrompt />);
+  await act(async () =>
+    useSyncStore.setState({
+      result: {
+        uploaded: false,
+        peers: [
+          { name: "bati-a.batb", etag: "a", state: "ahead", comparison: comparison(1, 0, "fa") },
+          { name: "bati-b.batb", etag: "b", state: "unreadable" },
+        ],
+      },
+    }),
+  );
+  await waitFor(() => expect(mockAlerts).toHaveLength(1));
+  expect(mockAlerts[0]?.title).toBe("sync.aheadTitle");
+
+  await act(async () => press("sync.later"));
+  // Said once, most often a newer Bati on that device.
+  await waitFor(() => expect(mockAlerts.map((a) => a.title)).toContain("sync.unreadableTitle"));
+  expect(mockAlerts).toHaveLength(2);
 });

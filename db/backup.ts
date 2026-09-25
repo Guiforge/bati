@@ -100,6 +100,9 @@ function knownMigrationTimes(): Set<number> {
   return new Set(journal.entries.map((entry) => entry.when));
 }
 
+/** How many migrations this build knows: a backup it refused may open after an app update. */
+export const BUILD_MIGRATIONS = knownMigrationTimes().size;
+
 /**
  * Turns whatever SQLite threw into one of the five answers.
  *
@@ -376,6 +379,11 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "guidesSeen",
   "recentCameoLines",
   "comebackGreetedAfter",
+  // Whether this phone seals its backups is this phone's choice (src/backupCipher.ts): imported,
+  // declining a join left the phone locked, and a plaintext import quietly unset the wish that
+  // keeps an Android-restored phone from writing plaintext. Android's own restore does not come
+  // through here, so that phone still reads as locked.
+  "backupEncryption",
 ] as const;
 
 /**

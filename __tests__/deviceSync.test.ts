@@ -12,10 +12,15 @@
  * from each, what it uploads and when, what it refuses, and what it never asks twice.
  */
 
+import assert from "node:assert/strict";
+
 const mockSecure = new Map<string, string>();
 const mockServer = new Map<string, string>();
 const mockUploads: string[] = [];
 const mockListings: string[] = [];
+const mockDownloads: string[] = [];
+/** name → modification time the server reports; 0 when absent. */
+const mockModified = new Map<string, number>();
 const mockCipher = { status: "on", header: "vault-1" };
 let mockFingerprint = "local-1";
 let mockListingFails = false;
@@ -58,14 +63,21 @@ jest.mock("@/src/cloudSync", () => ({
     Promise.resolve().then(() => {
       mockListings.push(target.folderUrl);
       if (mockListingFails) throw new Error("HTTP 401");
-      return [...mockServer].map(([name, etag]) => ({ name, etag }));
+      return [...mockServer].map(([name, etag]) => ({
+        name,
+        etag,
+        modified: mockModified.get(name) ?? 0,
+      }));
     }),
   uploadRemote: (_target: unknown, _file: unknown, name: string) =>
     Promise.resolve().then(() => {
       mockUploads.push(name);
       mockServer.set(name, `etag-${mockUploads.length}`);
     }),
-  downloadRemote: () => Promise.resolve(),
+  downloadRemote: (_target: unknown, name: string) =>
+    Promise.resolve().then(() => {
+      mockDownloads.push(name);
+    }),
 }));
 
 // Scratch files carry the remote name they were made for, which is how the cipher double knows
@@ -107,6 +119,7 @@ jest.mock("@/src/backupCipher", () => ({
 }));
 
 jest.mock("@/db/backup", () => ({
+  BUILD_MIGRATIONS: 64,
   stateFingerprint: () => Promise.resolve(mockFingerprint),
   validateBackup: (path: string) =>
     Promise.resolve(
@@ -155,6 +168,8 @@ beforeEach(async () => {
   mockUploads.length = 0;
   mockListings.length = 0;
   mockJoins.length = 0;
+  mockDownloads.length = 0;
+  mockModified.clear();
   mockCipher.status = "on";
   mockCipher.header = "vault-1";
   mockFingerprint = "local-1";
@@ -194,6 +209,59 @@ test("sends the same history again once it is sealed with another key", async ()
   mockCipher.header = "vault-2";
   await syncNow({ snapshotFirst: true });
   expect(mockUploads).toHaveLength(2);
+});
+
+test("a file that did not change is not downloaded again while nothing changed here", async () => {
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = { open: "opened", localChanges: 1 };
+  expect(states((await syncNow({ snapshotFirst: true })).peers)).toEqual({ [TABLET]: "behind" });
+  expect(states((await syncNow({ snapshotFirst: true })).peers)).toEqual({ [TABLET]: "behind" });
+  expect(mockDownloads).toEqual([TABLET]);
+
+  // Either side moving is a new question.
+  mockFingerprint = "local-2";
+  await syncNow({ snapshotFirst: true });
+  mockServer.set(TABLET, "t2");
+  await syncNow({ snapshotFirst: true });
+  expect(mockDownloads).toEqual([TABLET, TABLET, TABLET]);
+});
+
+test("a device that never sent anything here listens before it speaks", async () => {
+  // A tablet fresh from onboarding: its village name reads as news to the phone.
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = { open: "opened", peerChanges: 5, localChanges: 3, fingerprint: "phone-1" };
+  const first = await syncNow({ snapshotFirst: true });
+  expect(states(first.peers)).toEqual({ [TABLET]: "diverged" });
+  expect(first.uploaded).toBe(false);
+  expect(mockUploads).toEqual([]);
+
+  // The hero kept this one: from now on it speaks.
+  const [peer] = first.peers;
+  assert(peer && "comparison" in peer);
+  await rememberAnswer(peer);
+  expect((await syncNow({ snapshotFirst: true })).uploaded).toBe(true);
+});
+
+test("a device ahead holds everything this one has, so this one sends nothing", async () => {
+  await syncNow({ snapshotFirst: true });
+  expect(mockUploads).toHaveLength(1);
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = { open: "opened", peerChanges: 2 };
+  mockFingerprint = "local-2";
+  const result = await syncNow({ snapshotFirst: true });
+  expect(states(result.peers)).toEqual({ [TABLET]: "ahead" });
+  expect(result.uploaded).toBe(false);
+  expect(mockUploads).toHaveLength(1);
+});
+
+test("a new device joins the vault of the most recently written file", async () => {
+  mockServer.set(OLD_PHONE, "o1");
+  mockModified.set(OLD_PHONE, Date.parse("2026-01-01"));
+  mockPeers[OLD_PHONE] = { open: "needsSecret" };
+  mockServer.set(TABLET, "t1");
+  mockModified.set(TABLET, Date.parse("2026-09-20"));
+  mockPeers[TABLET] = { open: "needsSecret" };
+  expect(await serverState()).toEqual({ kind: "needsSecret", peer: TABLET });
 });
 
 test("says how each other device stands, and ignores files that are not a device's", async () => {

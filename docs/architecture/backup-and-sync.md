@@ -80,9 +80,11 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
 - **One file per device**, `bati-<random install id>.batb`, written only by that device. No lock,
   no shared file, nothing deletes another device's file. At most 16 peers are read, and a file
   over 256 MB is not.
-- **One vault.** A device connecting to a server that already holds sealed files asks for their
-  password and joins as primary, instead of inventing a key of its own; a device later seen under
-  another password (`locked`) prompts the same question.
+- **One vault.** A device connecting to a server that already holds sealed files asks for the
+  password of the most recently written one and joins it as primary, instead of inventing a key of
+  its own (a file left by a phone reset long ago must not win); a device later seen under another
+  password (`locked`) prompts the same question. Walking away from that question, or from turning
+  encryption on for a server waiting on it, disconnects.
 - **What each side lacks** (`compareWithPeer`, on real SQLite): sessions by uuid, deletions by the
   `deleted_sessions` tombstones (0064), and the hero's own content (hero exercises and quests,
   village name, avatar, level, equipment, oath, favourites, quest configs). Derived caches are
@@ -91,6 +93,15 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
   device reads as a peer. A refusal is remembered by the other device's content fingerprint, not by
   its etag, and an unchanged history is not re-uploaded unless the key changed (a vault joined, a
   new password), or the other devices would be left with a file they cannot open.
+- **Listen before speaking.** Peers are judged before this device uploads. It sends nothing while
+  one is `ahead` (that device already holds everything this one has), nor, on its first contact
+  with a server, while one has news for it: a tablet fresh from onboarding has a village name
+  newer than the phone's, and uploading first made a near-empty device look like news to all.
+- **Downloads only what can change an answer.** A `level`, `behind` or `unreadable` verdict is
+  remembered against the file's etag and this device's state (history, key, and the migrations
+  this build knows, so an app update reads a too-new peer again). An idle launch downloads nothing.
+- **Said, not swallowed.** One question at a time; an `unreadable` device is announced once, as
+  "update Bati", since a newer version on it is the usual reason.
 - **When**: the snapshot is sealed at launch, next to the automatic backup, because `VACUUM INTO`
   cannot run behind the statements a finished session leaves in flight, and only if the history
   moved. The network half runs once the app is up (`stores/sync.ts`, once per process) and from
@@ -98,10 +109,20 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
 - **Onboarding** offers "Find my hero on my cloud": connect, give the password, and the prompt
   offers the hand-off to the empty new device.
 
+## Interrupted work
+
+A launch puts back a database a restore parked as `.bak` and never replaced (`db/client.ts`, before
+SQLite opens), and deletes the plaintext a killed import or comparison left in the database
+directory, once per process (`DatabaseProvider`). A plaintext snapshot left by a killed
+`VACUUM INTO` is deleted before the next one, which would otherwise refuse to run. The master key
+and its header are one SecureStore item: written in two, a crash between them sealed files that
+nothing could open.
+
 ## Device-local preferences
 
 A restore keeps this device's `DEVICE_LOCAL_PREFERENCES` (db/backup.ts: id, backup folder, crash
-log, custom avatar path, update check, the one-per-device greetings) and drops `savedSession`
+log, custom avatar path, update check, the one-per-device greetings, and whether this phone seals
+its backups) and drops `savedSession`
 entirely, an interrupted session on either side. Add a key there when it names something that
 exists only on one phone: a file path, a granted permission, an identifier.
 

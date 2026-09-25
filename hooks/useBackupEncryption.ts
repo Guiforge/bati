@@ -25,10 +25,14 @@ export function useBackupEncryption() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const [status, setStatus] = useState<EncryptionStatus>("off");
+  const [canShowRecoveryAgain, setCanShowRecoveryAgain] = useState(false);
 
   const refresh = () => {
-    encryptionStatus()
-      .then(setStatus)
+    Promise.all([encryptionStatus(), canShowRecoveryKeyAgain()])
+      .then(([next, canShow]) => {
+        setStatus(next);
+        setCanShowRecoveryAgain(canShow);
+      })
       .catch((error) => reportError("backup.encryption.read", error));
   };
 
@@ -37,8 +41,9 @@ export function useBackupEncryption() {
   /** Runs a key-making call; the recovery key to show, or `null` after saying it failed. */
   const makeKey = (make: Promise<string>, context: string) =>
     make.then(
-      (recovery) => {
+      async (recovery) => {
         setStatus("on");
+        setCanShowRecoveryAgain(await canShowRecoveryKeyAgain());
         return recovery;
       },
       (error: unknown) => {
@@ -57,6 +62,7 @@ export function useBackupEncryption() {
       disableEncryption().then(
         () => {
           setStatus("off");
+          setCanShowRecoveryAgain(false);
           showSuccess(t("backup.encryptionOffDone"));
         },
         (error: unknown) => reportError("backup.encryption.disable", error),
@@ -70,6 +76,6 @@ export function useBackupEncryption() {
         reportError("backup.encryption.recovery", error);
         return null;
       }),
-    canShowRecoveryAgain: canShowRecoveryKeyAgain(),
+    canShowRecoveryAgain,
   };
 }

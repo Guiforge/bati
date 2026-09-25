@@ -18,15 +18,34 @@ const { withAndroidManifest, withDangerousMod } = require("expo/config-plugins")
  *   throws on first read — so it is excluded, and the new phone asks for the password once.
  *
  * The database is included with its `-wal` and `-shm`: a full-data backup stops the app first, so
- * the three files are consistent with each other. The import staging file is left out: it is
- * transient, and it would count against the 25 MB quota past which Android backs up nothing.
+ * the three files are consistent with each other.
  *
  * `__tests__/android-backup-rules.test.ts` reads the committed output.
  */
+/**
+ * The live database and its journal, by name, and nothing else in `SQLite/`. That directory also
+ * holds what backup and sync leave while they work: an import decrypted before the swap, another
+ * device's history opened for comparison, the pre-restore `.bak`, snapshots waiting for the share
+ * sheet. Some are plaintext the hero asked to have sealed, all count against the 25 MB quota past
+ * which Android backs up nothing at all. Naming the three files keeps every one of those out
+ * without a list of exclusions to forget the next one from.
+ *
+ * The name follows `SCHEMA_VERSION`, read from db/schemaVersion.ts so the two cannot drift.
+ */
+const schemaVersion = /SCHEMA_VERSION\s*=\s*(\d+)/.exec(
+  fs.readFileSync(path.join(__dirname, "..", "db", "schemaVersion.ts"), "utf8"),
+)?.[1];
+if (!schemaVersion)
+  throw new Error("withAndroidBackupRules: no SCHEMA_VERSION in db/schemaVersion.ts");
+const DB = `SQLite/bati.v${schemaVersion}.db`;
+
 const RULES = [
-  '<include domain="file" path="SQLite/"/>',
-  '<exclude domain="file" path="SQLite/bati-import.tmp.db"/>',
-  '<exclude domain="sharedpref" path="SecureStore"/>',
+  `<include domain="file" path="${DB}"/>`,
+  `<include domain="file" path="${DB}-wal"/>`,
+  `<include domain="file" path="${DB}-shm"/>`,
+  // SecureStore's file, named for what it is: the includes above already leave it out, and this
+  // says so where the next reader looks.
+  '<exclude domain="sharedpref" path="SecureStore.xml"/>',
 ];
 
 const indent = (spaces) => RULES.map((rule) => " ".repeat(spaces) + rule).join("\n");

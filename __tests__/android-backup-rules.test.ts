@@ -21,12 +21,23 @@ test("the manifest points Android's backup at our rules and nobody else's", () =
 test.each([
   ["res/xml/bati_backup_rules.xml", 1],
   ["res/xml/bati_data_extraction_rules.xml", 2],
-])("%s carries the database and never the backup key", (file, sections) => {
-  const rules = read(file);
-  const count = (needle: string) => rules.split(needle).length - 1;
+])(
+  "%s carries the live database and nothing else sync or backup leave beside it",
+  (file, sections) => {
+    const rules = read(file);
+    const count = (needle: string) => rules.split(needle).length - 1;
+    const { SCHEMA_VERSION } =
+      require("../db/schemaVersion") as typeof import("../db/schemaVersion");
+    const db = `SQLite/bati.v${SCHEMA_VERSION}.db`;
 
-  // Once per section: cloud backup and device transfer must agree, or a phone-to-phone move
-  // and a restore from the cloud would bring back different heroes.
-  expect(count('<include domain="file" path="SQLite/"/>')).toBe(sections);
-  expect(count('<exclude domain="sharedpref" path="SecureStore"/>')).toBe(sections);
-});
+    // Once per section: cloud backup and device transfer must agree, or a phone-to-phone move
+    // and a restore from the cloud would bring back different heroes.
+    for (const file of [db, `${db}-wal`, `${db}-shm`]) {
+      expect(count(`<include domain="file" path="${file}"/>`)).toBe(sections);
+    }
+    // No directory-wide include: that is how decrypted imports and other devices' histories, in
+    // plaintext, went to Google.
+    expect(rules).not.toContain('path="SQLite/"');
+    expect(count('<exclude domain="sharedpref" path="SecureStore.xml"/>')).toBe(sections);
+  },
+);

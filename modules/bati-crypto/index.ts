@@ -7,6 +7,7 @@ import { requireOptionalNativeModule } from "expo";
  */
 export type BatiCrypto = {
   randomBytes(length: number): Promise<string>;
+  /** `password` is base64 of its UTF-8 bytes; see BatiCryptoModule.kt. */
   pbkdf2(password: string, salt: string, iterations: number): Promise<string>;
   seal(key: string, plaintext: string, aad: string): Promise<string>;
   /** Rejects on a wrong key or any altered byte. */

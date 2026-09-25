@@ -3,10 +3,10 @@ layout: default
 prose: true
 title: Privacy Policy
 head_title: "Privacy policy for Bati"
-description: "Bati collects nothing about you. No account, no server, no analytics. Offline first, with two exceptions, both off by default: the map, which tells a tile host roughly where you go, and a daily question to GitHub about a newer version."
+description: "Bati collects nothing about you. No account, no server of ours, no analytics. Offline first, with three exceptions, all off by default: the map, which tells a tile host roughly where you go, a daily question to GitHub about a newer version, and device sync, which sends your history encrypted to a server you choose."
 type: legal
 status: active
-updated: 2026-09-20
+updated: 2026-09-25
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -101,9 +101,9 @@ it nowhere and has no way to.
   while claiming to work.
 - **This is still local.** A folder you pick may belong to a cloud app (Nextcloud appears in
   Android's folder picker, and a folder that Syncthing keeps in sync is an ordinary folder), and if
-  you pick one, that app syncs the file under its own privacy policy. Bati never learns which folder you chose beyond writing to it, and
-  never sends a backup anywhere: the only thing it fetches over the network is the map described
-  below, and nothing in the app can upload a file.
+  you pick one, that app syncs the file under its own privacy policy. Bati never learns which
+  folder you chose beyond writing to it, and never sends these files anywhere itself. Its only
+  upload is device sync, described below, and only of files sealed on the phone.
 
 ## What Bati never does
 
@@ -123,7 +123,7 @@ travelled. Those points stay in the database on your phone, like everything else
 Drawing them on a map needs a map, and **the map is off by default**. A fresh install draws the
 route as a line on the app's own dark background, and requests nothing. Settings has one switch for
 the map; turn it on and Bati asks **`tiles.openfreemap.org`** for tiles, the square images a map
-is made of, and that is the first of the app's two network destinations.
+is made of, and that is the first of the app's three network destinations.
 [OpenFreeMap](https://openfreemap.org) serves OpenStreetMap data, free, with no key and no
 registration.
 
@@ -139,9 +139,9 @@ registration.
 - **What keeps the list this short:** a lint rule in the repository
   ([`.biome/plugins/noJsNetwork.grit`](https://github.com/Guiforge/bati/blob/main/.biome/plugins/noJsNetwork.grit))
   rejects every network call written in the app's own code (`fetch`, `XMLHttpRequest`,
-  `WebSocket`, `EventSource`, `sendBeacon`) outside the one module that runs the version check
-  below, so the build fails before a third destination can be added quietly. The map library does
-  its fetching natively, below that line.
+  `WebSocket`, `EventSource`, `sendBeacon`, and the native file transfers) outside the two modules
+  that run the version check and device sync below, so the build fails before another destination
+  can be added quietly. The map library does its fetching natively, below that line.
 - **Until you switch the map on,** no tile is ever requested and the app touches the network not
   at all, outing or no outing. Switch it off again and both maps go back to the plain
   background; the switch is one tap either way.
@@ -172,16 +172,20 @@ Switched on, you choose **a server of your own that speaks WebDAV**. With **Next
 its address and sign in on that server's own page, in your browser: Bati never sees your Nextcloud
 password, the server hands it a separate app password you can revoke there at any time (Nextcloud,
 Settings, Security). With **any other WebDAV server** (kDrive, Koofr, a NAS, or Round Sync serving
-another cloud from your phone), you type its address, a user and an app password, which Bati keeps
-in Android's protected storage on that device only. Then, each time the app
+another cloud from your phone), you type its address, a user and an app password. Then, each time
+the app
 opens and whenever you ask, each of your devices sends its whole history to a `Bati` folder on
 that server, and reads the others' to tell you if one of them is ahead.
 
 - **What leaves the phone:** one file per device, encrypted on the phone with your backup key
   (AES-256-GCM) before it is sent. The server stores bytes it cannot read. Its name says only
   that it is a Bati file and which install wrote it, with a random identifier.
-- **What the server learns:** your IP address, when you open the app, and the size of that file,
-  like any file you would put there yourself. It learns nothing from inside it.
+- **What the server learns:** your IP address; when each device opens the app and reads the
+  others' files; how many devices you sync and the size of each file; and, on Nextcloud, a
+  connected app named "Bati (Android)". Like any file you would put there yourself. It learns
+  nothing from inside the files.
+- **Where the sign-in lives:** the app password, Nextcloud's or another server's, is kept in
+  Android's protected storage on that device only, never in the database and never in a backup.
 - **Who the server is:** yours, or the provider you chose. We run none, and the file goes nowhere
   else.
 - **Plain HTTP only to your phone itself.** Every server is reached over HTTPS, except one on the
@@ -207,8 +211,8 @@ screen, the whole time.
 notification above. Reminders are scheduled locally by your device's operating system: there are
 no push notifications, so there is no server that knows your device.
 
-**Internet.** For the map, and nothing else, and only while the map is switched on in Settings.
-What the request reveals is in [the map](#the-map-and-the-one-host) above.
+**Internet.** For the map, the version check and device sync, each only while its own switch is on
+in Settings. What each request reveals is in its section above.
 
 **Network state.** Whether you are online, and over what kind of connection. The map library asks so
 it can stop requesting tiles when there is nothing to request them over. It reports no identity, no
@@ -223,11 +227,16 @@ Decline the permission and the app works normally with the built-in avatars.
 **Home-screen widget (Android, optional).** The flame widget reads your flame from
 the same on-device database.
 
+**Biometrics (optional).** Used for one thing: showing your backup recovery key again, behind your
+fingerprint. Android runs the check; Bati never sees your fingerprint, only whether it matched.
+Nothing else in the app asks for it, and every backup opens with its password without it.
+
 ## Crash reports
 
 If Bati crashes, it writes the error and its stack trace **to your device only**. When a
 feature fails without crashing (a backup that could not be written, say), the error message is
-kept the same way; that message may include the name of a folder or file you chose.
+kept the same way; that message may include the name of a folder or file you chose, or the
+address of your sync server.
 
 Nothing is transmitted automatically. If you want to help fix a crash, Settings has a
 "Report a bug" action that opens **your own email app** with the report filled in. You can read
@@ -251,8 +260,8 @@ your server, each of which you delete there.
 
 If this policy changes, the updated version will be published at this URL with a new date. The
 one change that would matter is a new network destination. The second one arrived on 20 September
-2026 and got its own section above, in plain words rather than folded into a list, which is how a
-third would arrive too.
+2026 and the third on 25 September 2026, each with its own section above, in plain words rather
+than folded into a list, which is how any other would arrive too.
 
 ## Contact
 
@@ -344,9 +353,9 @@ n'en a aucun moyen.
   (Nextcloud apparaît dans le sélecteur de dossier d'Android, et un dossier que Syncthing garde
   synchronisé est un dossier ordinaire) ;
   si vous en choisissez un, cette application synchronise le fichier sous sa propre politique de
-  confidentialité. Bati n'apprend rien du dossier choisi au-delà d'y écrire, et n'envoie jamais une
-  sauvegarde où que ce soit : la seule chose qu'elle récupère sur le réseau est la carte décrite
-  plus bas, et rien dans l'application ne sait téléverser un fichier.
+  confidentialité. Bati n'apprend rien du dossier choisi au-delà d'y écrire, et n'envoie jamais
+  ces fichiers elle-même. Son seul envoi est la synchronisation des appareils, décrite plus bas, et
+  seulement de fichiers scellés sur le téléphone.
 
 ## Ce que Bati ne fait jamais
 
@@ -369,7 +378,7 @@ Les dessiner sur une carte demande une carte, et **la carte est désactivée par
 installation neuve dessine le trajet comme un trait sur le fond sombre de l'application, et ne
 demande rien. Les réglages ont un interrupteur pour la carte ; activez-le et Bati demande à
 **`tiles.openfreemap.org`** des tuiles, les carrés d'image qui composent une carte, et c'est la
-première des deux destinations réseau de l'application.
+première des trois destinations réseau de l'application.
 [OpenFreeMap](https://openfreemap.org) sert des données OpenStreetMap, gratuitement, sans clé et
 sans inscription.
 
@@ -386,9 +395,9 @@ sans inscription.
 - **Ce qui garde la liste aussi courte :** une règle de lint dans le dépôt
   ([`.biome/plugins/noJsNetwork.grit`](https://github.com/Guiforge/bati/blob/main/.biome/plugins/noJsNetwork.grit))
   rejette tout appel réseau écrit dans le code de l'application (`fetch`, `XMLHttpRequest`,
-  `WebSocket`, `EventSource`, `sendBeacon`) en dehors du seul module qui fait la vérification de
-  version décrite plus bas, de sorte que la compilation échoue avant qu'une troisième destination
-  puisse être ajoutée discrètement. La bibliothèque de carte fait ses requêtes nativement, sous
+  `WebSocket`, `EventSource`, `sendBeacon`, et les transferts de fichiers natifs) en dehors des
+  deux modules qui font la vérification de version et la synchronisation décrites plus bas, de
+  sorte que la compilation échoue avant qu'une autre destination puisse être ajoutée discrètement. La bibliothèque de carte fait ses requêtes nativement, sous
   cette ligne.
 - **Tant que vous n'activez pas la carte,** aucune tuile n'est demandée et l'application ne
   touche pas du tout au réseau, sortie ou non. Désactivez-la et les deux cartes reviennent au
@@ -424,8 +433,7 @@ son adresse et vous vous connectez sur la page de ce serveur, dans votre navigat
 jamais votre mot de passe Nextcloud, le serveur lui remet un mot de passe d'application distinct,
 révocable à tout moment (Nextcloud, Paramètres, Sécurité). Avec **tout autre serveur WebDAV**
 (kDrive, Koofr, un NAS, ou Round Sync qui sert un autre cloud depuis votre téléphone), vous
-saisissez son adresse, un identifiant et un mot de passe d'application, que Bati garde dans le
-stockage protégé d'Android, sur cet appareil seulement. Ensuite, à chaque ouverture de l'application et quand vous le demandez,
+saisissez son adresse, un identifiant et un mot de passe d'application. Ensuite, à chaque ouverture de l'application et quand vous le demandez,
 chacun de vos appareils envoie son historique complet dans un dossier `Bati` de ce serveur, et lit
 celui des autres pour vous dire si l'un d'eux est en avance.
 
@@ -433,9 +441,13 @@ celui des autres pour vous dire si l'un d'eux est en avance.
   de sauvegarde (AES-256-GCM) avant l'envoi. Le serveur stocke des octets qu'il ne peut pas lire.
   Son nom dit seulement que c'est un fichier Bati et quelle installation l'a écrit, par un
   identifiant aléatoire.
-- **Ce que le serveur apprend :** votre adresse IP, le moment où vous ouvrez l'application, et la
-  taille de ce fichier, comme pour tout fichier que vous y déposeriez vous-même. Rien de son
-  contenu.
+- **Ce que le serveur apprend :** votre adresse IP ; le moment où chaque appareil ouvre
+  l'application et lit les fichiers des autres ; combien d'appareils vous synchronisez et la taille
+  de chaque fichier ; et, sur Nextcloud, une application connectée nommée « Bati (Android) ». Comme
+  pour tout fichier que vous y déposeriez vous-même. Rien du contenu des fichiers.
+- **Où vit la connexion :** le mot de passe d'application, de Nextcloud ou d'un autre serveur, est
+  gardé dans le stockage protégé d'Android sur cet appareil seulement, jamais dans la base ni dans
+  une sauvegarde.
 - **Qui est ce serveur :** le vôtre, ou celui du prestataire que vous avez choisi. Nous n'en
   exploitons aucun, et le fichier ne va nulle part ailleurs.
 - **Du HTTP non chiffré uniquement vers le téléphone lui-même.** Tout serveur est joint en HTTPS,
@@ -463,8 +475,9 @@ position doit le dire, à l'écran, du début à la fin.
 notification de sortie ci-dessus. Les rappels sont programmés localement par le système de votre
 appareil : il n'y a aucune notification push, donc aucun serveur ne connaît votre appareil.
 
-**Internet.** Pour la carte, et rien d'autre, et uniquement tant que la carte est activée dans les
-réglages. Ce que la demande révèle est dans « La carte, et l'hôte unique » plus haut.
+**Internet.** Pour la carte, la vérification de version et la synchronisation des appareils,
+chacune seulement tant que son interrupteur est activé dans les réglages. Ce que chaque demande
+révèle est dans sa section plus haut.
 
 **État du réseau.** Si vous êtes connecté, et par quel type de lien. La bibliothèque de carte le
 demande pour cesser de réclamer des tuiles quand il n'y a rien pour les transporter. Elle n'en tire
@@ -479,12 +492,17 @@ envoyée. Vous pouvez refuser : l'application fonctionne normalement avec les av
 **Widget d'écran d'accueil (Android, facultatif).** Le widget de flamme lit votre régularité
 dans la même base locale.
 
+**Biométrie (facultatif).** Pour une seule chose : réafficher votre clé de récupération de
+sauvegarde, derrière votre empreinte. Android fait la vérification ; Bati ne voit jamais votre
+empreinte, seulement si elle correspond. Rien d'autre dans l'application ne la demande, et chaque
+sauvegarde s'ouvre avec son mot de passe sans elle.
+
 ## Rapports de crash
 
 En cas de plantage, Bati écrit l'erreur et sa trace **uniquement sur votre appareil**. Quand
 une fonction échoue sans plantage (une sauvegarde impossible à écrire, par exemple), le message
 d'erreur est conservé de la même façon ; ce message peut contenir le nom d'un dossier ou d'un
-fichier que vous avez choisi.
+fichier que vous avez choisi, ou l'adresse de votre serveur de synchronisation.
 
 Rien n'est transmis automatiquement. Si vous souhaitez aider à corriger un bug, les Réglages
 proposent « Signaler un bug », qui ouvre **votre propre application e-mail** avec le rapport
@@ -509,8 +527,9 @@ de synchronisation sur votre serveur, que vous supprimez chacun à sa place.
 ## Modifications
 
 Si cette politique change, la version à jour sera publiée à cette URL avec une nouvelle date. Le
-seul changement qui compterait serait une deuxième destination réseau, et il serait écrit ici en
-toutes lettres plutôt que glissé dans une liste.
+seul changement qui compterait serait une nouvelle destination réseau. La deuxième est arrivée le
+20 septembre 2026 et la troisième le 25 septembre 2026, chacune avec sa propre section plus haut,
+en toutes lettres plutôt que glissée dans une liste, et toute autre arriverait de la même façon.
 
 ## Contact
 

@@ -1,5 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 
+import { deletePreference, getPreference, setPreference } from "@/db/preferences";
 import { batiCrypto } from "@/modules/bati-crypto";
 
 /**
@@ -11,13 +12,18 @@ import { batiCrypto } from "@/modules/bati-crypto";
  * recovery key drawn by the app and shown once. Changing the password re-wraps the master key and
  * touches no data. Losing both loses the data, and the setup screen says so in as many words.
  *
- * **Everything lives on the device, in SecureStore, and nothing in the database.** That is what
- * keeps this coherent with restore: swapping the database for a backup can never turn encryption
- * off, change the key, or leave a slot pointing at a key this phone does not hold. It is also
- * what Android's own backup cannot carry (plugins/withAndroidBackupRules.js excludes it — a
- * Keystore-wrapped value would not decrypt on another phone anyway). A new phone therefore starts
- * with encryption off, and joins by opening any encrypted file with the password: the file's
- * header has everything, and `adoptKey` makes its key this phone's.
+ * **The keys live on the device, in SecureStore, never in the database.** That is what keeps this
+ * coherent with restore: swapping the database for a backup can never change the key, or leave a
+ * slot pointing at a key this phone does not hold. It is also what Android's own backup cannot
+ * carry (plugins/withAndroidBackupRules.js leaves it out; a Keystore-wrapped value would not
+ * decrypt on another phone anyway). A new phone joins by opening an encrypted file with the
+ * password, and only when the caller asks it to (`OpenOutcome.join`): adopting someone's key is
+ * what makes every later backup open with *their* secret, so it is never silent.
+ *
+ * **The wish lives in the database.** `backupEncryption` says the hero asked for encryption, and
+ * it does travel: a database restored by Android onto a new phone, where the key did not follow,
+ * reads as `locked`, and nothing is written in plaintext until the password is given again. That
+ * gap is the one where backups used to go back to plaintext without a word.
  *
  * **The fingerprint guards a view, not a key.** On this phone the master key is already in
  * SecureStore, so backups never prompt. On a new phone a fingerprint does not follow, so it cannot
@@ -40,6 +46,16 @@ const CHECK_BYTES = 28;
 /** OWASP's floor for PBKDF2-HMAC-SHA256 (2023 and still in 2026). Written into each slot. */
 export const PASSWORD_ITERATIONS = 600_000;
 
+/**
+ * What a header may ask for. A file is untrusted input: a slot demanding 2^31 iterations would
+ * hold an import for hours the moment the hero typed their password.
+ */
+const MIN_ITERATIONS = 100_000;
+const MAX_ITERATIONS = 10_000_000;
+
+/** Larger than any real hero by two orders of magnitude; the decryptor holds the file in memory. */
+export const MAX_SEALED_BYTES = 256 * 1024 * 1024;
+
 const SLOT_PASSWORD = 1;
 const SLOT_RECOVERY = 2;
 
@@ -48,6 +64,9 @@ const STORE_KEY = "bati.backup.key";
 const STORE_HEADER = "bati.backup.header";
 const STORE_KEYRING = "bati.backup.keyring";
 const STORE_RECOVERY = "bati.backup.recovery";
+
+/** Database preference: the hero asked for encryption. See the header comment. */
+const WANTED_PREFERENCE = "backupEncryption";
 
 type Slot = { kind: number; iterations: number; salt: Uint8Array; wrapped: Uint8Array };
 type Header = { slots: Slot[]; bytes: Uint8Array };
@@ -103,14 +122,26 @@ function parseHeader(bytes: Uint8Array): Header | null {
   const slots: Slot[] = [];
   for (let i = 0; i < count; i++) {
     const at = 6 + i * SLOT_BYTES;
-    slots.push({
+    const slot = {
       kind: bytes[at] ?? 0,
       iterations: view.getUint32(at + 1),
       salt: bytes.slice(at + 5, at + 21),
       wrapped: bytes.slice(at + 21, at + SLOT_BYTES),
-    });
+    };
+    if (!slotIsSane(slot)) return null;
+    slots.push(slot);
   }
   return { slots, bytes: bytes.slice(0, length) };
+}
+
+/** A slot this version wrote, within the bounds it would write. Anything else is not our file. */
+function slotIsSane(slot: Slot): boolean {
+  if (slot.kind === SLOT_RECOVERY) return slot.iterations === 0;
+  return (
+    slot.kind === SLOT_PASSWORD &&
+    slot.iterations >= MIN_ITERATIONS &&
+    slot.iterations <= MAX_ITERATIONS
+  );
 }
 
 /** Whether `key` is the master key behind `header`. Never throws: a wrong key is an answer. */
@@ -143,7 +174,16 @@ function wrappingKey(
     const bytes = Uint8Array.from(hex.match(/../g) ?? [], (pair) => Number.parseInt(pair, 16));
     return Promise.resolve(toB64(bytes));
   }
-  return batiCrypto().pbkdf2(secret, toB64(salt), iterations);
+  return batiCrypto().pbkdf2(passwordBytes(secret), toB64(salt), iterations);
+}
+
+/**
+ * The password as bytes: UTF-8 of its NFC form. Stretched as bytes, not as a Java `char[]`,
+ * because how a platform turns chars into bytes is its own business, and "é" typed as one code
+ * point on the phone and as two on the tablet must still be the same password.
+ */
+function passwordBytes(password: string): string {
+  return toB64(utf8(password.normalize("NFC")));
 }
 
 async function makeSlot(key: string, secret: string, kind: number): Promise<Slot> {
@@ -200,55 +240,86 @@ async function keyring(): Promise<string[]> {
   return value === null ? [] : (JSON.parse(value) as string[]);
 }
 
-export type EncryptionStatus = "off" | "on";
+/**
+ * - `on`: this phone holds the key, backups are sealed.
+ * - `locked`: the hero asked for encryption, but this phone has no key (a database restored by
+ *   Android onto a new phone, a Keystore wiped). Backups are *not* written until it is unlocked.
+ * - `off`: never asked for, or turned off.
+ */
+export type EncryptionStatus = "off" | "on" | "locked";
+
+async function ownKey(): Promise<{ header: Header; key: string } | null> {
+  const [header, key] = await Promise.all([storedHeader(), SecureStore.getItemAsync(STORE_KEY)]);
+  return header !== null && key !== null ? { header, key } : null;
+}
 
 export async function encryptionStatus(): Promise<EncryptionStatus> {
-  const [header, key] = await Promise.all([storedHeader(), SecureStore.getItemAsync(STORE_KEY)]);
-  return header !== null && key !== null ? "on" : "off";
+  if ((await ownKey()) !== null) return "on";
+  return (await getPreference(WANTED_PREFERENCE)) === "on" ? "locked" : "off";
+}
+
+function randomRecoveryHex(): Promise<string> {
+  return batiCrypto()
+    .randomBytes(32)
+    .then((b64) => Array.from(fromB64(b64), (b) => b.toString(16).padStart(2, "0")).join(""));
 }
 
 /**
- * Turns encryption on with a fresh master key and returns the recovery key, formatted, for the
- * one screen that will ever show it — unless the device can guard it with a fingerprint, in
- * which case `readRecoveryKey` can show it again.
+ * A fresh master key under `password` and a fresh recovery key, made this phone's. The key it
+ * replaces, if any, goes to the keyring: files it sealed must keep opening here.
  */
-export async function enableEncryption(password: string): Promise<string> {
-  const crypto = batiCrypto();
-  const key = await crypto.randomBytes(32);
-  const recoveryBytes = fromB64(await crypto.randomBytes(32));
-  const recovery = Array.from(recoveryBytes, (b) => b.toString(16).padStart(2, "0")).join("");
-
+async function newVault(password: string): Promise<string> {
+  const key = await batiCrypto().randomBytes(32);
+  const recovery = await randomRecoveryHex();
   const slots = [
     await makeSlot(key, password, SLOT_PASSWORD),
     await makeSlot(key, recovery, SLOT_RECOVERY),
   ];
   const header = await buildHeader(key, slots);
 
-  // Key before header: `encryptionStatus` needs both, so a crash between the two leaves "off".
+  const previous = await ownKey();
+  if (previous !== null) await rememberInKeyring(previous.key);
+  // Key before header: `ownKey` needs both, so a crash between the two leaves the old state.
   await SecureStore.setItemAsync(STORE_KEY, key);
   await SecureStore.setItemAsync(STORE_HEADER, toB64(header));
+  await setPreference(WANTED_PREFERENCE, "on");
   await rememberRecoveryKey(recovery);
   return formatRecoveryKey(recovery);
 }
 
 /**
- * Re-wraps the master key under a new password. The recovery slot is carried over untouched, so
- * the recovery key the hero wrote down keeps working. Files already written keep the header they
- * were written with, and so keep opening with the *old* password; the screen says so.
+ * Turns encryption on with a fresh master key and returns the recovery key, formatted, for the
+ * one screen that will ever show it, unless the device can guard it with a fingerprint, in
+ * which case `readRecoveryKey` can show it again.
  */
-export async function changePassword(password: string): Promise<void> {
-  const [header, key] = await Promise.all([storedHeader(), SecureStore.getItemAsync(STORE_KEY)]);
-  if (header === null || key === null) throw new Error("Encryption is off");
-  const kept = header.slots.filter((slot) => slot.kind !== SLOT_PASSWORD);
-  const slots = [await makeSlot(key, password, SLOT_PASSWORD), ...kept];
-  await SecureStore.setItemAsync(STORE_HEADER, toB64(await buildHeader(key, slots)));
+export function enableEncryption(password: string): Promise<string> {
+  return newVault(password);
 }
 
-/** Future backups are plain again. Files already encrypted stay encrypted, and stay openable. */
+/**
+ * A new password is a new key, not a re-wrapped one: re-wrapping would leave every future file
+ * open to whoever learned the old password and kept one old file. The old key stays in the
+ * keyring so this phone still opens what it sealed before; other devices ask for the new password
+ * once. Returns the new recovery key, which replaces the old one for everything written from now.
+ */
+export function changePassword(password: string): Promise<string> {
+  return newVault(password);
+}
+
+/** Future backups are plain again. Files already encrypted stay encrypted, and openable elsewhere. */
 export async function disableEncryption(): Promise<void> {
   await SecureStore.deleteItemAsync(STORE_HEADER);
   await SecureStore.deleteItemAsync(STORE_KEY);
   await SecureStore.deleteItemAsync(STORE_RECOVERY);
+  await SecureStore.deleteItemAsync(STORE_KEYRING);
+  await deletePreference(WANTED_PREFERENCE);
+}
+
+async function rememberInKeyring(key: string): Promise<void> {
+  const known = await keyring();
+  if (!known.includes(key)) {
+    await SecureStore.setItemAsync(STORE_KEYRING, JSON.stringify([...known, key]));
+  }
 }
 
 /**
@@ -290,57 +361,72 @@ export async function isEncryptedBackup(path: string): Promise<boolean> {
 
 /** Encrypts a plaintext snapshot at `plainPath` into `outPath` with this device's key. */
 export async function sealBackup(plainPath: string, outPath: string): Promise<void> {
-  const [header, key] = await Promise.all([storedHeader(), SecureStore.getItemAsync(STORE_KEY)]);
-  if (header === null || key === null) throw new Error("Encryption is off");
-  await batiCrypto().sealFile(key, plainPath, outPath, toB64(header.bytes));
+  const own = await ownKey();
+  if (own === null) throw new Error("Encryption is off");
+  await batiCrypto().sealFile(own.key, plainPath, outPath, toB64(own.header.bytes));
 }
 
 export type OpenResult = "opened" | "needsSecret" | "wrongSecret" | "notEncrypted";
 
 /**
+ * What opening a file did. `join` is only there when the file opened with a secret, under a key
+ * this phone did not hold: calling it makes that key this phone's (`asPrimary`, what a device
+ * joining another does, and what an import may offer), or only remembers it for reading.
+ */
+export type OpenOutcome = {
+  result: OpenResult;
+  join?: (options: { asPrimary: boolean }) => Promise<void>;
+};
+
+/**
  * Decrypts `path` into `outPath`. Tries every key this phone already holds first, so a file it
  * wrote itself, or one from a device it has joined, never asks for anything. With a `secret`,
- * tries the file's own slots, and on success keeps the key (`adoptKey`) so it never asks again.
+ * tries the file's own slots. Rejects on a body that does not authenticate.
  */
 export async function openBackup(
   path: string,
   outPath: string,
   secret?: string,
-): Promise<OpenResult> {
+): Promise<OpenOutcome> {
   const header = await readHeader(path);
-  if (header === null) return "notEncrypted";
+  if (header === null) return { result: "notEncrypted" };
 
   const own = await SecureStore.getItemAsync(STORE_KEY);
   for (const key of [...(own === null ? [] : [own]), ...(await keyring())]) {
     if (await keyOpens(key, header)) {
       await batiCrypto().openFile(key, path, outPath, header.bytes.length);
-      return "opened";
+      return { result: "opened" };
     }
   }
 
-  if (secret === undefined) return "needsSecret";
+  if (secret === undefined) return { result: "needsSecret" };
   const key = await unwrap(header, secret);
-  if (key === null) return "wrongSecret";
+  if (key === null) return { result: "wrongSecret" };
 
   await batiCrypto().openFile(key, path, outPath, header.bytes.length);
-  await adoptKey(key, header);
-  return "opened";
+  return { result: "opened", join: (options) => joinKey(key, header, options) };
 }
 
 /**
- * A key just unlocked from someone else's file. With encryption off here, this phone joins it:
- * that file's header becomes ours, so what this phone writes from now on opens with the same
- * password everywhere — which is what makes phone and tablet one hero rather than two vaults.
- * With encryption already on under another key, ours stays, and the other is remembered so its
- * files open without asking again.
+ * Makes a key unlocked from another device's file this phone's. As primary, its header becomes
+ * ours, so what this phone writes opens with the same password everywhere, which is what makes
+ * phone and tablet one hero rather than two vaults; the key it replaces goes to the keyring. Not
+ * as primary, it is only remembered, so that device's files open here without asking again.
  */
-async function adoptKey(key: string, header: Header): Promise<void> {
-  if ((await encryptionStatus()) === "off") {
-    await SecureStore.setItemAsync(STORE_KEY, key);
-    await SecureStore.setItemAsync(STORE_HEADER, toB64(header.bytes));
+async function joinKey(
+  key: string,
+  header: Header,
+  { asPrimary }: { asPrimary: boolean },
+): Promise<void> {
+  if (!asPrimary) {
+    await rememberInKeyring(key);
     return;
   }
-  const known = await keyring();
-  if (!known.includes(key))
-    await SecureStore.setItemAsync(STORE_KEYRING, JSON.stringify([...known, key]));
+  const previous = await ownKey();
+  if (previous !== null && previous.key !== key) await rememberInKeyring(previous.key);
+  await SecureStore.setItemAsync(STORE_KEY, key);
+  await SecureStore.setItemAsync(STORE_HEADER, toB64(header.bytes));
+  await setPreference(WANTED_PREFERENCE, "on");
+  // The recovery key is the other device's; this phone never saw it, so it cannot show it again.
+  await SecureStore.deleteItemAsync(STORE_RECOVERY);
 }

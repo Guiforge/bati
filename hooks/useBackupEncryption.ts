@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useToast } from "@/components/common/Toast";
@@ -17,53 +17,43 @@ import { reportError } from "@/src/reportError";
 export const MIN_PASSWORD_LENGTH = 8;
 
 /**
- * Settings' half of encrypted backups: the status the row shows, and the four things the hero
- * can do to it. Every call reports its own failure and never throws, like `useBackup`.
+ * Settings' half of encrypted backups: the status the row shows, and what the hero can do to it.
+ * Every call reports its own failure and never throws, like `useBackup`. No `useCallback`: the
+ * React Compiler memoises what this returns (docs/architecture/performance.md).
  */
 export function useBackupEncryption() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const [status, setStatus] = useState<EncryptionStatus>("off");
 
-  const refresh = useCallback(() => {
+  const refresh = () => {
     encryptionStatus()
       .then(setStatus)
       .catch((error) => reportError("backup.encryption.read", error));
-  }, []);
+  };
 
-  useEffect(refresh, [refresh]);
+  useEffect(refresh, []);
 
-  /** The formatted recovery key to show once, or `null` when setting up failed. */
-  const enable = useCallback(
-    (password: string) =>
-      enableEncryption(password).then(
-        (recovery) => {
-          setStatus("on");
-          return recovery;
-        },
-        (error: unknown) => {
-          reportError("backup.encryption.enable", error);
-          showError(t("backup.encryptionFailed"));
-          return null;
-        },
-      ),
-    [showError, t],
-  );
+  /** Runs a key-making call; the recovery key to show, or `null` after saying it failed. */
+  const makeKey = (make: Promise<string>, context: string) =>
+    make.then(
+      (recovery) => {
+        setStatus("on");
+        return recovery;
+      },
+      (error: unknown) => {
+        reportError(context, error);
+        showError(t("backup.encryptionFailed"));
+        return null;
+      },
+    );
 
-  const change = useCallback(
-    (password: string) =>
-      changePassword(password).then(
-        () => showSuccess(t("backup.passwordChanged")),
-        (error: unknown) => {
-          reportError("backup.encryption.change", error);
-          showError(t("backup.encryptionFailed"));
-        },
-      ),
-    [showError, showSuccess, t],
-  );
-
-  const disable = useCallback(
-    () =>
+  return {
+    status,
+    refresh,
+    enable: (password: string) => makeKey(enableEncryption(password), "backup.encryption.enable"),
+    change: (password: string) => makeKey(changePassword(password), "backup.encryption.change"),
+    disable: () =>
       disableEncryption().then(
         () => {
           setStatus("off");
@@ -71,29 +61,15 @@ export function useBackupEncryption() {
         },
         (error: unknown) => reportError("backup.encryption.disable", error),
       ),
-    [showSuccess, t],
-  );
-
-  /**
-   * Behind the fingerprint. A dismissed prompt rejects, and that is the hero changing their mind,
-   * not a failure: it is reported for the trail and says nothing.
-   */
-  const recovery = useCallback(
-    () =>
+    /**
+     * Behind the fingerprint. A dismissed prompt rejects, and that is the hero changing their
+     * mind, not a failure: it is reported for the trail and says nothing.
+     */
+    recovery: () =>
       readRecoveryKey().catch((error: unknown) => {
         reportError("backup.encryption.recovery", error);
         return null;
       }),
-    [],
-  );
-
-  return {
-    status,
-    refresh,
-    enable,
-    change,
-    disable,
-    recovery,
     canShowRecoveryAgain: canShowRecoveryKeyAgain(),
   };
 }

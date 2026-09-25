@@ -2,8 +2,9 @@ import { act, renderHook, waitFor } from "@testing-library/react-native";
 
 /**
  * The two Settings hooks over encrypted backups and device sync. Their job is the part a hero
- * sees: the status a row shows, and the one toast each action ends with, success or failure.
- * The cipher and the sync engine are tested on their own, so here they only answer.
+ * sees: the status a row shows, the next step after a server accepted them, and the one toast
+ * each action ends with. The cipher and the sync engine are tested on their own; here the engine's
+ * outward calls answer from a table, and everything pure in it (labels, errors) is the real code.
  */
 
 const mockToasts: string[] = [];
@@ -25,44 +26,56 @@ const mockCipher = { status: "off", fail: false, recovery: null as string | null
 const failOr = <T>(value: T) =>
   mockCipher.fail ? Promise.reject(new Error("keystore")) : Promise.resolve(value);
 jest.mock("@/src/backupCipher", () => ({
+  MAX_SEALED_BYTES: 1000,
   encryptionStatus: () => Promise.resolve(mockCipher.status),
   enableEncryption: () => failOr("abcd efgh"),
-  changePassword: () => failOr(undefined),
+  changePassword: () => failOr("ijkl mnop"),
   disableEncryption: () => failOr(undefined),
   readRecoveryKey: () =>
     mockCipher.recovery === null
       ? Promise.reject(new Error("dismissed"))
       : Promise.resolve(mockCipher.recovery),
   canShowRecoveryKeyAgain: () => true,
+  openBackup: () => Promise.resolve({ result: "notEncrypted" }),
 }));
+jest.mock("@/db/backup", () => ({}));
+jest.mock("@/src/backupFiles", () => ({}));
+jest.mock("@/modules/bati-crypto", () => ({ batiCrypto: () => ({}) }));
 
 const ACCOUNT = { server: "https://cloud.test", loginName: "hero", appPassword: "app" };
 const mockSync = {
   account: null as ({ kind: "nextcloud" } & typeof ACCOUNT) | null,
   connect: true,
   runFails: false,
-  davRefuses: null as "auth" | "down" | null,
+  davRefuses: null as "auth" | "down" | "insecure" | null,
+  server: { kind: "empty" } as { kind: string; peer?: string },
+  joins: true,
 };
-jest.mock("@/src/deviceSync", () => ({
-  syncAccount: () => Promise.resolve(mockSync.account),
-  accountLabel: (a: { server?: string; url?: string }) =>
-    (a.server ?? a.url ?? "").replace(/^https?:\/\//, "").replace(/\/+$/, ""),
-  connectNextcloud: () =>
-    mockSync.connect
-      ? Promise.resolve({ kind: "nextcloud", ...ACCOUNT })
-      : Promise.reject(new Error("unreachable")),
-  connectWebDav: (url: string, user: string, password: string) => {
-    const { DavAuthError } = jest.requireActual("@/src/cloudSync");
-    if (mockSync.davRefuses === "auth") return Promise.reject(new DavAuthError("HTTP 401"));
-    if (mockSync.davRefuses === "down") return Promise.reject(new Error("HTTP 502"));
-    return Promise.resolve({ kind: "webdav", url, user, password });
-  },
-  disconnectSync: () => Promise.resolve(),
-  syncNow: () =>
-    mockSync.runFails
-      ? Promise.reject(new Error("offline"))
-      : Promise.resolve({ uploaded: true, peers: [] }),
-}));
+jest.mock("@/src/deviceSync", () => {
+  const actual = jest.requireActual("@/src/deviceSync");
+  const { DavAuthError, InsecureAddressError } = jest.requireActual("@/src/cloudSync");
+  return {
+    accountLabel: actual.accountLabel,
+    syncAccount: () => Promise.resolve(mockSync.account),
+    connectNextcloud: () =>
+      mockSync.connect
+        ? Promise.resolve({ kind: "nextcloud", ...ACCOUNT })
+        : Promise.reject(new Error("unreachable")),
+    connectWebDav: (url: string, user: string, password: string, label?: string) => {
+      if (mockSync.davRefuses === "auth") return Promise.reject(new DavAuthError("HTTP 401"));
+      if (mockSync.davRefuses === "insecure") return Promise.reject(new InsecureAddressError());
+      if (mockSync.davRefuses === "down") return Promise.reject(new Error("HTTP 502"));
+      return Promise.resolve({ kind: "webdav", url, user, password, label });
+    },
+    serverState: () => Promise.resolve(mockSync.server),
+    joinPeer: () => Promise.resolve(mockSync.joins),
+    disconnectSync: () => Promise.resolve(),
+    syncNow: () =>
+      mockSync.runFails
+        ? Promise.reject(new Error("offline"))
+        : Promise.resolve({ uploaded: true, peers: [] }),
+  };
+});
 
 import { useBackupEncryption } from "@/hooks/useBackupEncryption";
 import { useDeviceSync } from "@/hooks/useDeviceSync";
@@ -72,8 +85,15 @@ beforeEach(() => {
   mockToasts.length = 0;
   mockReported.length = 0;
   Object.assign(mockCipher, { status: "off", fail: false, recovery: null });
-  Object.assign(mockSync, { account: null, connect: true, runFails: false, davRefuses: null });
-  useSyncStore.setState({ running: false, result: null, failed: false });
+  Object.assign(mockSync, {
+    account: null,
+    connect: true,
+    runFails: false,
+    davRefuses: null,
+    server: { kind: "empty" },
+    joins: true,
+  });
+  useSyncStore.setState({ running: false, result: null, failed: false, lastSyncAt: null });
 });
 
 describe("useBackupEncryption", () => {
@@ -103,19 +123,25 @@ describe("useBackupEncryption", () => {
     expect(result.current.status).toBe("off");
   });
 
-  test("changing the password and turning it off each end on their own toast", async () => {
+  test("a new password comes back with its new recovery key", async () => {
     mockCipher.status = "on";
     const { result } = await renderHook(() => useBackupEncryption());
-    await waitFor(() => expect(result.current.status).toBe("on"));
 
-    await act(() => result.current.change("new password"));
+    let shown: string | null = null;
+    await act(async () => {
+      shown = await result.current.change("new password");
+    });
     await act(() => result.current.disable());
 
-    expect(mockToasts).toEqual([
-      "success:backup.passwordChanged",
-      "success:backup.encryptionOffDone",
-    ]);
+    expect(shown).toBe("ijkl mnop");
+    expect(mockToasts).toEqual(["success:backup.encryptionOffDone"]);
     expect(result.current.status).toBe("off");
+  });
+
+  test("a phone whose key did not follow reads as locked", async () => {
+    mockCipher.status = "locked";
+    const { result } = await renderHook(() => useBackupEncryption());
+    await waitFor(() => expect(result.current.status).toBe("locked"));
   });
 
   test("a dismissed fingerprint shows nothing and is not an error toast", async () => {
@@ -133,18 +159,54 @@ describe("useBackupEncryption", () => {
 });
 
 describe("useDeviceSync", () => {
-  test("off until connected, then the server's name, then its first sync", async () => {
+  test("an empty server with encryption on: connected, synced, named on the row", async () => {
+    mockCipher.status = "on";
     const { result } = await renderHook(() => useDeviceSync());
-    expect(result.current.rowValue).toBe("backup.encryptionOff");
+    expect(result.current.rowValue).toBe("sync.off");
 
-    let connected = false;
+    let next: unknown;
     await act(async () => {
-      connected = await result.current.connect("cloud.test");
+      next = await result.current.connect("cloud.test");
     });
 
-    expect(connected).toBe(true);
+    expect(next).toEqual({ next: "done" });
     expect(result.current.rowValue).toBe("cloud.test");
     expect(mockToasts).toEqual(["success:sync.connected"]);
+  });
+
+  test("an empty server with encryption off waits for encryption before any sync", async () => {
+    const { result } = await renderHook(() => useDeviceSync());
+    let next: unknown;
+    await act(async () => {
+      next = await result.current.connect("cloud.test");
+    });
+    expect(next).toEqual({ next: "encrypt" });
+    expect(mockToasts).toEqual([]);
+  });
+
+  test("a server that already holds another device's vault asks to join it", async () => {
+    mockSync.server = { kind: "needsSecret", peer: "bati-tablet.batb" };
+    const { result } = await renderHook(() => useDeviceSync());
+
+    let next: unknown;
+    await act(async () => {
+      next = await result.current.connect("cloud.test");
+    });
+    expect(next).toEqual({ next: "join", peer: "bati-tablet.batb" });
+
+    mockSync.joins = false;
+    let joined: boolean | undefined;
+    await act(async () => {
+      joined = await result.current.join("bati-tablet.batb", "typo");
+    });
+    expect(joined).toBe(false);
+
+    mockSync.joins = true;
+    await act(async () => {
+      joined = await result.current.join("bati-tablet.batb", "tablet password");
+    });
+    expect(joined).toBe(true);
+    expect(mockToasts).toEqual(["success:sync.joined"]);
   });
 
   test("a server that cannot be reached says so and stays off", async () => {
@@ -159,6 +221,26 @@ describe("useDeviceSync", () => {
     expect(mockToasts).toEqual(["error:sync.connectFailed"]);
   });
 
+  test("WebDAV: refused credentials, plain http and a dead server each say their own thing", async () => {
+    mockCipher.status = "on";
+    const { result } = await renderHook(() => useDeviceSync());
+
+    for (const refusal of ["auth", "insecure", "down", null] as const) {
+      mockSync.davRefuses = refusal;
+      await act(async () => {
+        await result.current.connectDav("https://dav.test/", "hero", "p", "Koofr");
+      });
+    }
+
+    expect(mockToasts).toEqual([
+      "error:sync.webdavAuthFailed",
+      "error:sync.webdavInsecure",
+      "error:sync.webdavFailed",
+      "success:sync.connected",
+    ]);
+    expect(result.current.rowValue).toBe("Koofr");
+  });
+
   test("a manual sync that cannot reach the server says so; one that can says done", async () => {
     mockSync.account = { kind: "nextcloud", ...ACCOUNT };
     const { result } = await renderHook(() => useDeviceSync());
@@ -169,6 +251,7 @@ describe("useDeviceSync", () => {
     await act(() => result.current.syncNow());
 
     expect(mockToasts).toEqual(["error:sync.failed", "success:sync.done"]);
+    expect(result.current.lastSyncAt).not.toBeNull();
   });
 
   test("stopping forgets the account on this device", async () => {
@@ -180,30 +263,6 @@ describe("useDeviceSync", () => {
 
     expect(result.current.account).toBeNull();
     expect(mockToasts).toEqual(["success:sync.disconnected"]);
-  });
-
-  test("any WebDAV server: working credentials connect, refused ones say so", async () => {
-    const { result } = await renderHook(() => useDeviceSync());
-
-    mockSync.davRefuses = "auth";
-    await act(async () => {
-      await result.current.connectDav("https://dav.test", "hero", "wrong");
-    });
-    mockSync.davRefuses = "down";
-    await act(async () => {
-      await result.current.connectDav("https://dav.test", "hero", "p");
-    });
-    mockSync.davRefuses = null;
-    await act(async () => {
-      await result.current.connectDav("https://dav.test/", "hero", "p");
-    });
-
-    expect(mockToasts).toEqual([
-      "error:sync.webdavAuthFailed",
-      "error:sync.webdavFailed",
-      "success:sync.connected",
-    ]);
-    expect(result.current.rowValue).toBe("dav.test");
   });
 });
 

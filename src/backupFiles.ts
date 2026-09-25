@@ -6,7 +6,13 @@ import { snapshotDatabaseTo } from "@/db/backup";
 import { closeDatabase, DB_NAME, serializeOnDatabase } from "@/db/client";
 import { dayKey } from "@/db/dates";
 import { SCHEMA_VERSION } from "@/db/schemaVersion";
-import { encryptionStatus, type OpenResult, openBackup, sealBackup } from "@/src/backupCipher";
+import {
+  encryptionStatus,
+  MAX_SEALED_BYTES,
+  type OpenOutcome,
+  openBackup,
+  sealBackup,
+} from "@/src/backupCipher";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -119,7 +125,11 @@ async function writeSnapshot(stem = exportFileStem(new Date())): Promise<File> {
 
   // Asked on every write rather than once: the hero can switch it on between two backups, and a
   // plaintext copy written after they asked for encryption is the one outcome that must not be.
-  const encrypted = (await encryptionStatus()) === "on";
+  // `locked` (asked for, key not on this phone) refuses outright: that is the gap where backups
+  // used to go back to plaintext without a word, on the new phone Android had just restored.
+  const status = await encryptionStatus();
+  if (status === "locked") throw new Error("Encryption is locked on this device");
+  const encrypted = status === "on";
   const name = stem + extension(encrypted);
   if (!encrypted) {
     await snapshotDatabaseTo(pathIn(name));
@@ -165,8 +175,13 @@ export function pendingSyncSnapshot(): File | null {
 /** Scratch files for other devices' snapshots: sealed as downloaded, then opened. */
 const PEER_PREFIX = "bati-peer-";
 
-export function peerScratch(index: number, kind: "sealed" | "plain"): File {
-  return fileIn(`${PEER_PREFIX}${index}.tmp${kind === "sealed" ? ".batb" : ".db"}`);
+/**
+ * Named after the other device's file, not after its place in a listing: a second sync between
+ * the prompt and the tap reorders the listing, and "take its version" must take *that* device's.
+ */
+export function peerScratch(remoteName: string, kind: "sealed" | "plain"): File {
+  const stem = remoteName.replace(/\.batb$/, "");
+  return fileIn(`${PEER_PREFIX}${stem}.tmp${kind === "sealed" ? ".batb" : ".db"}`);
 }
 
 /** Deletes every peer scratch file. Run before a sync, and after one for whatever it did not keep. */
@@ -327,13 +342,15 @@ export async function stageBackupForImport(): Promise<string | null> {
  * the caller for the hero's password or recovery key. Rejects on a file whose body does not
  * authenticate, which is a damaged backup and is reported as one.
  */
-export async function decryptStagedImport(secret?: string): Promise<OpenResult> {
+export async function decryptStagedImport(secret?: string): Promise<OpenOutcome> {
   deleteIfPresent(IMPORT_PLAIN);
-  const result = await openBackup(pathIn(IMPORT_NAME), pathIn(IMPORT_PLAIN), secret);
-  if (result === "opened") {
+  // The decryptor holds a file in memory; a picked file that size is not a backup.
+  if (fileIn(IMPORT_NAME).size > MAX_SEALED_BYTES) throw new Error("Backup file is too large");
+  const outcome = await openBackup(pathIn(IMPORT_NAME), pathIn(IMPORT_PLAIN), secret);
+  if (outcome.result === "opened") {
     await fileIn(IMPORT_PLAIN).move(fileIn(IMPORT_NAME), { overwrite: true });
   }
-  return result;
+  return outcome;
 }
 
 /** Throws away a staged import. The app is untouched, so there is nothing else to undo. */

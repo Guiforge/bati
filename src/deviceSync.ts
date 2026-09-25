@@ -1,8 +1,13 @@
 import * as SecureStore from "expo-secure-store";
 
-import { compareWithPeer, type PeerComparison, validateBackup } from "@/db/backup";
-import { uuidv7 } from "@/db/uuid";
-import { encryptionStatus, openBackup } from "@/src/backupCipher";
+import {
+  compareWithPeer,
+  type PeerComparison,
+  stateFingerprint,
+  validateBackup,
+} from "@/db/backup";
+import { batiCrypto } from "@/modules/bati-crypto";
+import { encryptionStatus, MAX_SEALED_BYTES, openBackup } from "@/src/backupCipher";
 import {
   clearPeerScratch,
   peerScratch,
@@ -10,13 +15,15 @@ import {
   writeSyncSnapshot,
 } from "@/src/backupFiles";
 import {
-  checkTarget,
   type DavTarget,
   downloadRemote,
+  InsecureAddressError,
+  isOnThisDevice,
   listRemote,
   loginToNextcloud,
   type NextcloudAccount,
   nextcloudTarget,
+  type RemoteFile,
   uploadRemote,
   webdavTarget,
 } from "@/src/cloudSync";
@@ -32,34 +39,50 @@ import { reportError } from "@/src/reportError";
  * Joplin's one-file-per-row design: a fresh device there never finished 13,000 items against
  * OneDrive's throttling.
  *
- * **Sessions are the version vector** (`compareWithPeer`): a device whose sessions are a superset
- * of ours is ahead and is offered as a hand-off; two that each have sessions the other lacks have
- * diverged, and the hero chooses. No device clock takes part. Merging row by row is phase 4.
+ * **What each side has that the other lacks** (`compareWithPeer`: sessions, deletions, the hero's
+ * own content) decides the offer. A device with news and nothing to lose is offered as a
+ * hand-off; two with news each have diverged, and the hero chooses. No device clock takes part.
+ * Merging row by row is phase 4.
  *
- * **Encrypted or nothing.** Sync refuses to start with encryption off, and the uploader refuses
- * again (`writeSyncSnapshot`); the server only ever holds `.batb` files.
+ * **Encrypted or nothing, and one vault.** Sync refuses to start with encryption off, and the
+ * uploader refuses again (`writeSyncSnapshot`). A device joining a server that already holds
+ * sealed files asks for *their* password (`serverState`, `joinPeer`) rather than inventing a key
+ * of its own, which would make two vaults that never open each other.
  *
  * **When it runs**: the snapshot is taken at launch, at the quiet moment `VACUUM INTO` needs (see
- * src/autoBackup.ts for why never at the end of a session); the network half runs after the app
- * is up, and again on demand from Settings. Nothing runs in the background: Android kills that,
- * and Joplin's users paid for counting on it.
+ * src/autoBackup.ts for why never at the end of a session), and only when the history moved; the
+ * network half runs after the app is up, and again on demand from Settings. Nothing runs in the
+ * background: Android kills that, and Joplin's users paid for counting on it.
  */
 
-const STORE_ACCOUNT = "bati.sync.nextcloud";
+const STORE_ACCOUNT = "bati.sync.account";
 const STORE_INSTALL = "bati.sync.install";
-/** name → etag of every other device's file the hero has already answered for. */
+/** name → fingerprint of every other device's state the hero has already answered for. */
 const STORE_ANSWERED = "bati.sync.answered";
+/** The state last uploaded, so an unchanged history is not sealed and sent again. */
+const STORE_UPLOADED = "bati.sync.uploaded";
+
+/** More devices than any hero owns; a server listing more is not ours to download. */
+const MAX_PEERS = 16;
 
 /**
- * This install's name in the sync folder. SecureStore, not the database: a restore or Android's
- * own backup copies the database to a second phone, and two devices under one name would take
- * turns overwriting each other's history. Not `getDeviceId()` for the same reason, see its
- * ponytail note in db/preferences.ts.
+ * This install's name in the sync folder: random, so it says nothing about when it was made.
+ * SecureStore, not the database: a restore or Android's own backup copies the database to a
+ * second phone, and two devices under one name would take turns overwriting each other's history.
  */
 async function installId(): Promise<string> {
   const existing = await SecureStore.getItemAsync(STORE_INSTALL);
   if (existing !== null) return existing;
-  const fresh = uuidv7();
+  const hex = Array.from(atob(await batiCrypto().randomBytes(16)), (c) =>
+    c.charCodeAt(0).toString(16).padStart(2, "0"),
+  ).join("");
+  const fresh = [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20),
+  ].join("-");
   await SecureStore.setItemAsync(STORE_INSTALL, fresh);
   return fresh;
 }
@@ -67,17 +90,17 @@ async function installId(): Promise<string> {
 const fileFor = (id: string) => `bati-${id}.batb`;
 const PEER_FILE = /^bati-[0-9a-f-]{36}\.batb$/;
 
-/** Where this device syncs: a Nextcloud signed in through the browser, or any WebDAV server. */
+/**
+ * Where this device syncs: a Nextcloud signed in through the browser, or any WebDAV server, with
+ * the name of the preset the hero picked (kDrive, Koofr…) so the Settings row can say it.
+ */
 export type SyncAccount =
   | ({ kind: "nextcloud" } & NextcloudAccount)
-  | { kind: "webdav"; url: string; user: string; password: string };
+  | { kind: "webdav"; url: string; user: string; password: string; label?: string };
 
 export async function syncAccount(): Promise<SyncAccount | null> {
   const value = await SecureStore.getItemAsync(STORE_ACCOUNT);
-  if (value === null) return null;
-  const stored = JSON.parse(value) as SyncAccount | NextcloudAccount;
-  // Accounts saved before generic WebDAV existed were all Nextcloud, and say nothing of it.
-  return "kind" in stored ? stored : { kind: "nextcloud", ...stored };
+  return value === null ? null : (JSON.parse(value) as SyncAccount);
 }
 
 function targetFor(account: SyncAccount): DavTarget {
@@ -86,8 +109,9 @@ function targetFor(account: SyncAccount): DavTarget {
     : webdavTarget(account.url, account.user, account.password);
 }
 
-/** What the Settings row shows: the server's host, or the address typed, without its scheme. */
+/** What the Settings row shows: the preset's name, or the server's host without its scheme. */
 export function accountLabel(account: SyncAccount): string {
+  if (account.kind === "webdav" && account.label) return account.label;
   const address = account.kind === "nextcloud" ? account.server : account.url;
   return address.replace(/^https?:\/\//, "").replace(/\/+$/, "");
 }
@@ -107,37 +131,53 @@ export async function connectNextcloud(
 }
 
 /**
- * Any WebDAV server: kDrive, Koofr, a NAS, or rclone served on this phone by Round Sync. The
- * server is asked to create and list the folder first, so an account is only remembered once it
- * is known to work. Throws `DavAuthError` for refused credentials.
+ * Any WebDAV server: kDrive, Koofr, a NAS, or rclone served on this phone by Round Sync. Plain
+ * `http://` is refused unless it is this phone itself, the one place Android lets it through
+ * (plugins/withAndroidNetworkSecurity.js), so the hero reads why instead of "did not answer".
+ * The server is asked to create and list the folder first, so an account is only remembered once
+ * it is known to work. Throws `DavAuthError` for refused credentials.
  */
 export async function connectWebDav(
   url: string,
   user: string,
   password: string,
+  label?: string,
 ): Promise<SyncAccount> {
-  const account: SyncAccount = { kind: "webdav", url: url.trim(), user: user.trim(), password };
-  await checkTarget(targetFor(account));
+  const address = url.trim();
+  if (/^http:\/\//i.test(address) && !isOnThisDevice(address)) throw new InsecureAddressError();
+  const account: SyncAccount = { kind: "webdav", url: address, user: user.trim(), password, label };
+  await listRemote(targetFor(account));
   return remember(account);
 }
 
 /**
- * Forgets the account on this phone. The app password stays valid on the server until the hero
- * revokes it there (Settings > Security in Nextcloud, the app passwords page elsewhere), and the
- * files there stay theirs.
+ * Forgets the account on this phone, and every file sync left on it: another device's history in
+ * plaintext has no business outliving the sync that fetched it. The app password stays valid on
+ * the server until the hero revokes it there, and the files there stay theirs.
  */
 export async function disconnectSync(): Promise<void> {
   await SecureStore.deleteItemAsync(STORE_ACCOUNT);
   await SecureStore.deleteItemAsync(STORE_ANSWERED);
+  await SecureStore.deleteItemAsync(STORE_UPLOADED);
+  clearPeerScratch();
+  pendingSyncSnapshot()?.delete();
+}
+
+/** Whether this device's history moved since it was last sent to `target`. */
+async function changedSinceUpload(target: DavTarget): Promise<{ changed: boolean; now: string }> {
+  const now = `${target.folderUrl}#${await stateFingerprint()}`;
+  return { changed: (await SecureStore.getItemAsync(STORE_UPLOADED)) !== now, now };
 }
 
 /**
- * The launch half: seal a snapshot while the database is quiet, if sync is on. Never throws; it
- * sits on the launch path next to `backupIfStaleToday`.
+ * The launch half: seal a snapshot while the database is quiet, if sync is on and the history
+ * moved. Never throws; it sits on the launch path next to `backupIfStaleToday`.
  */
 export async function prepareSyncAtLaunch(): Promise<void> {
   try {
-    if ((await syncAccount()) === null || (await encryptionStatus()) !== "on") return;
+    const account = await syncAccount();
+    if (account === null || (await encryptionStatus()) !== "on") return;
+    if (!(await changedSinceUpload(targetFor(account))).changed) return;
     await writeSyncSnapshot();
   } catch (error) {
     reportError("sync.prepare", error);
@@ -149,21 +189,27 @@ export type Peer = {
   name: string;
   etag: string;
 } & (
-  | { state: "ahead" | "diverged"; comparison: PeerComparison; index: number }
+  | { state: "ahead" | "diverged"; comparison: PeerComparison }
   | { state: "level" | "behind" }
   /** Sealed with a key this phone does not hold: the other device's password will open it. */
   | { state: "locked" }
-  /** Opened, but not a backup this build can adopt, typically a newer app version. */
+  /** Opened, but not a backup this build can adopt: a newer app version, or not a backup at all. */
   | { state: "unreadable" }
 );
 
 export type SyncResult = { uploaded: boolean; peers: Peer[] };
 
+/** Every other device's file in the folder, at most `MAX_PEERS` of them. */
+function othersIn(remote: RemoteFile[], own: string): RemoteFile[] {
+  return remote.filter((f) => f.name !== own && PEER_FILE.test(f.name)).slice(0, MAX_PEERS);
+}
+
 /**
- * The network half: send this device's snapshot, then read every other device's and say how it
- * stands. Throws on a network or server failure: the caller decides whether that is worth saying.
+ * The network half: send this device's snapshot when the server lacks it or it moved, then read
+ * every other device's and say how it stands. Throws on a network or server failure: the caller
+ * decides whether that is worth saying.
  *
- * The opened snapshot of an `ahead` or `diverged` peer is kept at `peerScratch(index, "plain")`,
+ * The opened snapshot of an `ahead` or `diverged` peer is kept at `peerScratch(name, "plain")`,
  * ready for `stagePeerForImport` if the hero takes it; every other scratch file is deleted.
  */
 export async function syncNow(options: { snapshotFirst: boolean }): Promise<SyncResult> {
@@ -173,64 +219,73 @@ export async function syncNow(options: { snapshotFirst: boolean }): Promise<Sync
   if ((await encryptionStatus()) !== "on") throw new Error("Sync needs encryption on");
 
   const own = fileFor(await installId());
-  const snapshot = options.snapshotFirst ? await writeSyncSnapshot() : pendingSyncSnapshot();
-  if (snapshot !== null) {
-    await uploadRemote(target, snapshot, own);
-    snapshot.delete();
-  }
+  const listing = await listRemote(target);
+  const uploaded = await uploadIfNeeded(target, own, listing, options.snapshotFirst);
 
   clearPeerScratch();
   const answered = await answeredPeers();
   const peers: Peer[] = [];
-  const remote = (await listRemote(target)).filter((f) => f.name !== own && PEER_FILE.test(f.name));
-
-  for (const [index, file] of remote.entries()) {
-    const sealed = peerScratch(index, "sealed");
-    const plain = peerScratch(index, "plain");
-    await downloadRemote(target, file.name, sealed);
-    let peer = await judgePeer(file, index, sealed.uri, plain.uri);
-    sealed.delete();
-    // An answer the hero already gave for this exact file is not asked again. A new write from
-    // that device changes the etag, and then it is.
-    if ("index" in peer && answered[file.name] === file.etag) {
+  for (const file of othersIn(listing, own)) {
+    let peer = await fetchAndJudge(target, file);
+    // An answer the hero already gave for this exact state is not asked again. Only news from
+    // that device (new sessions, new content) changes the fingerprint; sealing the same history
+    // anew does not.
+    if ("comparison" in peer && answered[file.name] === peer.comparison.fingerprint) {
       peer = { name: file.name, etag: file.etag, state: "level" };
     }
     // Only a snapshot the hero may take is kept; plaintext history does not linger otherwise.
-    if (!("index" in peer) && plain.exists) plain.delete();
+    const plain = peerScratch(file.name, "plain");
+    if (!("comparison" in peer) && plain.exists) plain.delete();
     peers.push(peer);
   }
-
-  return { uploaded: snapshot !== null, peers };
+  return { uploaded, peers };
 }
 
-async function judgePeer(
-  file: { name: string; etag: string },
-  index: number,
-  sealedUri: string,
-  plainUri: string,
-): Promise<Peer> {
-  const base = { name: file.name, etag: file.etag };
-  const opened = await openBackup(sealedUri, plainUri).catch((error: unknown) => {
-    reportError("sync.open", error);
-    return "corrupt" as const;
-  });
-  if (opened === "needsSecret" || opened === "wrongSecret") return { ...base, state: "locked" };
-  if (opened !== "opened") return { ...base, state: "unreadable" };
-
-  const path = plainUri.replace(/^file:\/\//, "");
-  const check = await validateBackup(path);
-  if (!check.ok) return { ...base, state: "unreadable" };
-
-  const comparison = await compareWithPeer(path);
-  if (comparison.peerOnly === 0) {
-    return { ...base, state: comparison.localOnly === 0 ? "level" : "behind" };
+async function uploadIfNeeded(
+  target: DavTarget,
+  own: string,
+  listing: RemoteFile[],
+  snapshotFirst: boolean,
+): Promise<boolean> {
+  const { changed, now } = await changedSinceUpload(target);
+  const onServer = listing.some((f) => f.name === own);
+  if (!changed && onServer) {
+    pendingSyncSnapshot()?.delete();
+    return false;
   }
-  return {
-    ...base,
-    state: comparison.localOnly === 0 ? "ahead" : "diverged",
-    comparison,
-    index,
-  };
+  const snapshot = (!snapshotFirst && pendingSyncSnapshot()) || (await writeSyncSnapshot());
+  await uploadRemote(target, snapshot, own);
+  snapshot.delete();
+  await SecureStore.setItemAsync(STORE_UPLOADED, now);
+  return true;
+}
+
+async function fetchAndJudge(target: DavTarget, file: RemoteFile): Promise<Peer> {
+  const base = { name: file.name, etag: file.etag };
+  const sealed = peerScratch(file.name, "sealed");
+  const plain = peerScratch(file.name, "plain");
+  await downloadRemote(target, file.name, sealed);
+  try {
+    if (sealed.size > MAX_SEALED_BYTES) return { ...base, state: "unreadable" };
+    const opened = await openBackup(sealed.uri, plain.uri).catch((error: unknown) => {
+      reportError("sync.open", error);
+      return null;
+    });
+    if (opened === null) return { ...base, state: "unreadable" };
+    if (opened.result === "needsSecret") return { ...base, state: "locked" };
+    if (opened.result !== "opened") return { ...base, state: "unreadable" };
+
+    const path = plain.uri.replace(/^file:\/\//, "");
+    if (!(await validateBackup(path)).ok) return { ...base, state: "unreadable" };
+
+    const comparison = await compareWithPeer(path);
+    const peerNews = comparison.peerChanges > 0;
+    const localNews = comparison.localChanges > 0;
+    if (!peerNews) return { ...base, state: localNews ? "behind" : "level" };
+    return { ...base, state: localNews ? "diverged" : "ahead", comparison };
+  } finally {
+    sealed.delete();
+  }
 }
 
 async function answeredPeers(): Promise<Record<string, string>> {
@@ -238,11 +293,80 @@ async function answeredPeers(): Promise<Record<string, string>> {
   return value === null ? {} : (JSON.parse(value) as Record<string, string>);
 }
 
-/** "Keep this device's version": not asked again until that device writes something new. */
-export async function rememberAnswer(peer: { name: string; etag: string }): Promise<void> {
+/** "Keep this device's version": not asked again until that device has news. */
+export async function rememberAnswer(peer: {
+  name: string;
+  comparison: { fingerprint: string };
+}): Promise<void> {
   const answered = await answeredPeers();
   await SecureStore.setItemAsync(
     STORE_ANSWERED,
-    JSON.stringify({ ...answered, [peer.name]: peer.etag }),
+    JSON.stringify({ ...answered, [peer.name]: peer.comparison.fingerprint }),
   );
+}
+
+/**
+ * Before this device's history is replaced by another's, a sealed copy of it goes to the sync
+ * folder under a name no device reads as a peer (`bati-<id>-kept-<time>.batb`). It is the copy the
+ * hero can still reach from any device, and download and restore by hand, when the automatic
+ * backup folder is off and the swap's own `.bak` is private to this phone.
+ */
+export async function keepThisDeviceOnServer(): Promise<void> {
+  const account = await syncAccount();
+  if (account === null) throw new Error("Sync is not connected");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 13);
+  const snapshot = await writeSyncSnapshot();
+  await uploadRemote(targetFor(account), snapshot, `bati-${await installId()}-kept-${stamp}.batb`);
+  snapshot.delete();
+}
+
+/**
+ * What a freshly connected server holds, for the one decision the hero must take before the first
+ * sync: `empty` (this device starts the vault), `ready` (a key this phone holds opens what is
+ * there, or encryption is on and nothing else is), or `needsSecret` naming a device whose
+ * password this phone must learn to join rather than invent a second vault.
+ */
+export type ServerState = { kind: "empty" | "ready" } | { kind: "needsSecret"; peer: string };
+
+export async function serverState(): Promise<ServerState> {
+  const account = await syncAccount();
+  if (account === null) throw new Error("Sync is not connected");
+  const target = targetFor(account);
+  const others = othersIn(await listRemote(target), fileFor(await installId()));
+  const first = others[0];
+  if (first === undefined) return { kind: "empty" };
+
+  const sealed = peerScratch(first.name, "sealed");
+  const plain = peerScratch(first.name, "plain");
+  await downloadRemote(target, first.name, sealed);
+  try {
+    const opened = await openBackup(sealed.uri, plain.uri);
+    return opened.result === "needsSecret"
+      ? { kind: "needsSecret", peer: first.name }
+      : { kind: "ready" };
+  } finally {
+    sealed.delete();
+    if (plain.exists) plain.delete();
+  }
+}
+
+/**
+ * Opens another device's file with its password or recovery key and makes its key this phone's,
+ * so both write into one vault from now on. `false` when the secret does not open it.
+ */
+export async function joinPeer(peer: string, secret: string): Promise<boolean> {
+  const account = await syncAccount();
+  if (account === null) throw new Error("Sync is not connected");
+  const sealed = peerScratch(peer, "sealed");
+  const plain = peerScratch(peer, "plain");
+  await downloadRemote(targetFor(account), peer, sealed);
+  try {
+    const opened = await openBackup(sealed.uri, plain.uri, secret);
+    if (opened.result !== "opened") return false;
+    await opened.join?.({ asPrimary: true });
+    return true;
+  } finally {
+    sealed.delete();
+    if (plain.exists) plain.delete();
+  }
 }

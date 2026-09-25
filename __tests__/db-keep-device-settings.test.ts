@@ -55,6 +55,8 @@ test("the backup brings the hero, and this phone keeps its own folder, id and cr
   setPref(old, "deviceId", "old-phone");
   setPref(old, "backupFolderUri", "content://old/tree/primary%3ADocuments");
   setPref(old, "customAvatarUri", "file:///data/old/avatar.jpg");
+  setPref(old, "updateLatest", "9.9.9");
+  setPref(old, "savedSession", '{"questId":3}');
   old.close();
 
   // This phone: a folder of its own, and no custom avatar at all.
@@ -70,4 +72,20 @@ test("the backup brings the hero, and this phone keeps its own folder, id and cr
   expect(after.backupFolderUri).toBe("content://this/tree/primary%3ABati");
   expect(after.crashLog).toBe("[]");
   expect(after).not.toHaveProperty("customAvatarUri");
+  // The other phone's update check says nothing about this copy of the app.
+  expect(after).not.toHaveProperty("updateLatest");
+});
+
+test("a session interrupted on either device does not survive the swap", async () => {
+  const staged = path.join(dir, "interrupted.db");
+  await backup().snapshotDatabaseTo(staged);
+  const old = new Database(staged);
+  setPref(old, "savedSession", '{"questId":3}');
+  old.close();
+  setPref(t.sqlite, "savedSession", '{"questId":7}');
+
+  await backup().keepDeviceSettings(staged);
+
+  // Resumed here while the other device finishes it too, it would count, and hit the boss, twice.
+  expect(prefs(staged)).not.toHaveProperty("savedSession");
 });

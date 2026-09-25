@@ -344,7 +344,14 @@ export async function deleteSession(sessionId: number): Promise<"deleted" | "loc
     await tx.delete(bossDamageLog).where(eq(bossDamageLog.completedSessionId, sessionId));
     await tx.delete(completedExercises).where(eq(completedExercises.sessionId, sessionId));
     await tx.delete(completedQuest).where(eq(completedQuest.id, sessionId));
-    if (row.uuid) await tx.delete(gpsPoints).where(eq(gpsPoints.sessionId, row.uuid));
+    if (row.uuid) {
+      await tx.delete(gpsPoints).where(eq(gpsPoints.sessionId, row.uuid));
+      // Remembered, so device sync does not read another device's copy as newer (0064).
+      await tx
+        .insert(schema.deletedSessions)
+        .values({ uuid: row.uuid, deletedAt: new Date() })
+        .onConflictDoNothing();
+    }
     return "deleted" as const;
   });
 

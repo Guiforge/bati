@@ -17,6 +17,14 @@ jest.mock("@/db/migrate", () => ({ ensureMigrations: () => mockEnsureMigrations(
 jest.mock("@/db/backup", () => ({ stampDatabaseIdentity: () => mockStampDatabaseIdentity() }));
 jest.mock("@/src/backupFiles", () => ({ commitRestore: () => mockCommitRestore() }));
 jest.mock("@/src/autoBackup", () => ({ backupIfStaleToday: () => mockBackupIfStaleToday() }));
+const mockPrepareSync = jest.fn(() => Promise.resolve());
+const mockSyncNow = jest.fn(() => Promise.resolve({ uploaded: false, peers: [] }));
+jest.mock("@/src/deviceSync", () => ({
+  prepareSyncAtLaunch: () => mockPrepareSync(),
+  syncAccount: () =>
+    Promise.resolve({ kind: "webdav", url: "https://dav.test", user: "h", password: "p" }),
+  syncNow: () => mockSyncNow(),
+}));
 jest.mock("@/src/reportError", () => ({
   reportError: (...args: unknown[]) => mockReportError(...args),
 }));
@@ -25,6 +33,7 @@ jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (k: string) => k
 
 import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { useRestoreStore } from "@/stores/restore";
+import { useSyncStore } from "@/stores/sync";
 
 const child = <Text>the app</Text>;
 
@@ -70,6 +79,22 @@ describe("DatabaseProvider", () => {
     await waitFor(() => expect(onReady).toHaveBeenCalled());
     expect(mockBackupIfStaleToday.mock.invocationCallOrder[0]).toBeLessThan(
       onReady.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+    );
+  });
+
+  it("seals the sync snapshot at the same quiet moment, and syncs only once the app is up", async () => {
+    // Earlier tests already claimed this process's one launch sync.
+    useSyncStore.setState({ launchClaimed: false, running: false });
+    const onReady = jest.fn();
+    await mount(onReady);
+    await screen.findByText("the app");
+    await waitFor(() => expect(mockSyncNow).toHaveBeenCalled());
+
+    const sealed = mockPrepareSync.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY;
+    expect(mockBackupIfStaleToday.mock.invocationCallOrder[0]).toBeLessThan(sealed);
+    expect(sealed).toBeLessThan(onReady.mock.invocationCallOrder[0] ?? 0);
+    expect(onReady.mock.invocationCallOrder[0]).toBeLessThan(
+      mockSyncNow.mock.invocationCallOrder[0] ?? 0,
     );
   });
 

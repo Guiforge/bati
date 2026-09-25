@@ -1,20 +1,42 @@
 /**
- * The orchestration of device sync, with its three neighbours doubled at their edges: the server
- * is a Map of name → etag (src/cloudSync.ts is tested on a real Nextcloud answer in its own file),
- * the cipher and the comparison answer per file from a table, and SecureStore is a Map. What is
- * under test is what only this module decides: which files it reads, what it concludes from each,
- * what it refuses, and what it never asks twice.
+ * The orchestration of device sync, with its neighbours doubled at their edges only:
+ *
+ * - the network: a Map of name → etag stands for the server, and what the transfers did is
+ *   recorded. The rest of src/cloudSync.ts (targets, the plain-HTTP rule, its errors) is the real
+ *   code, through `requireActual`, so a test here cannot pass against a copy of it;
+ * - the cipher and the database comparison answer per file from a table (both are tested on real
+ *   bytes and real SQLite in their own files);
+ * - SecureStore is a Map, and randomness is Node's.
+ *
+ * What is under test is what only this module decides: which files it reads, what it concludes
+ * from each, what it uploads and when, what it refuses, and what it never asks twice.
  */
 
 const mockSecure = new Map<string, string>();
 const mockServer = new Map<string, string>();
 const mockUploads: string[] = [];
+const mockListings: string[] = [];
 const mockCipher = { status: "on" };
-/** Per remote file: what opening it says, and how it compares once open. */
+let mockFingerprint = "local-1";
+let mockListingFails = false;
+/** Per remote file: size, what opening it says, the secret that opens it, how it compares. */
 const mockPeers: Record<
   string,
-  { open: string; valid?: boolean; peerOnly?: number; localOnly?: number }
+  {
+    size?: number;
+    open?: "opened" | "needsSecret";
+    secret?: string;
+    valid?: boolean;
+    peerChanges?: number;
+    localChanges?: number;
+    fingerprint?: string;
+  }
 > = {};
+const mockJoins: boolean[] = [];
+
+jest.mock("@/modules/bati-crypto", () => ({
+  batiCrypto: () => require("./helpers/nodeBatiCrypto").nodeBatiCrypto,
+}));
 
 jest.mock("expo-secure-store", () => ({
   getItemAsync: (key: string) => Promise.resolve(mockSecure.get(key) ?? null),
@@ -28,82 +50,94 @@ jest.mock("expo-secure-store", () => ({
     }),
 }));
 
-/** Which folder each server call went to, so a test can tell which account was used. */
-const mockTargets: string[] = [];
-let mockDavCheck: "ok" | "refused" = "ok";
-
 jest.mock("@/src/cloudSync", () => ({
+  ...jest.requireActual("@/src/cloudSync"),
   loginToNextcloud: () =>
     Promise.resolve({ server: "https://cloud.test", loginName: "hero", appPassword: "app" }),
-  nextcloudTarget: () => ({ folderUrl: "nextcloud", user: "hero", password: "app" }),
-  webdavTarget: (url: string, user: string, password: string) => ({
-    folderUrl: `${url}/Bati`,
-    user,
-    password,
-  }),
-  checkTarget: () =>
-    mockDavCheck === "ok" ? Promise.resolve() : Promise.reject(new Error("HTTP 401")),
-  listRemote: (target: { folderUrl: string }) => {
-    mockTargets.push(target.folderUrl);
-    return Promise.resolve([...mockServer].map(([name, etag]) => ({ name, etag })));
-  },
-  uploadRemote: (_account: unknown, _file: unknown, name: string) =>
+  listRemote: (target: { folderUrl: string }) =>
+    Promise.resolve().then(() => {
+      mockListings.push(target.folderUrl);
+      if (mockListingFails) throw new Error("HTTP 401");
+      return [...mockServer].map(([name, etag]) => ({ name, etag }));
+    }),
+  uploadRemote: (_target: unknown, _file: unknown, name: string) =>
     Promise.resolve().then(() => {
       mockUploads.push(name);
       mockServer.set(name, `etag-${mockUploads.length}`);
     }),
-  // The downloaded file carries its remote name, so the cipher double knows which one it opens.
-  downloadRemote: (_account: unknown, name: string, destination: { uri: string }) =>
-    Promise.resolve().then(() => {
-      mockDownloads.set(destination.uri, name);
-    }),
+  downloadRemote: () => Promise.resolve(),
 }));
-const mockDownloads = new Map<string, string>();
 
+// Scratch files carry the remote name they were made for, which is how the cipher double knows
+// which peer it is opening; `size` is that peer's.
 jest.mock("@/src/backupFiles", () => {
-  const file = (uri: string) => ({ uri, exists: true, delete: () => {} });
+  const scratch = (name: string, kind: string) => ({
+    uri: `file:///db/${name}.${kind}`,
+    exists: true,
+    size: mockPeers[name]?.size ?? 1000,
+    delete: () => {},
+  });
   return {
-    writeSyncSnapshot: () => Promise.resolve(file("file:///db/bati-sync-out.batb")),
+    writeSyncSnapshot: () => Promise.resolve(scratch("own", "out")),
     pendingSyncSnapshot: () => null,
-    peerScratch: (index: number, kind: string) => file(`file:///db/peer-${index}.${kind}`),
-    clearPeerScratch: () => {},
+    peerScratch: scratch,
+    clearPeerScratch: jest.fn(),
   };
 });
 
+const peerOf = (uri: string) => /\/db\/(.+)\.(?:sealed|plain)$/.exec(uri)?.[1] ?? "";
+
 jest.mock("@/src/backupCipher", () => ({
+  MAX_SEALED_BYTES: 5000,
   encryptionStatus: () => Promise.resolve(mockCipher.status),
-  openBackup: (sealedUri: string, plainUri: string) => {
-    const name = mockDownloads.get(sealedUri) ?? "";
-    mockOpened.set(plainUri.replace("file://", ""), name);
-    return Promise.resolve(mockPeers[name]?.open ?? "notEncrypted");
+  openBackup: (sealedUri: string, _plain: string, secret?: string) => {
+    const peer = mockPeers[peerOf(sealedUri)];
+    if (peer?.open === "opened") return Promise.resolve({ result: "opened" });
+    if (secret === undefined) return Promise.resolve({ result: "needsSecret" });
+    if (secret !== peer?.secret) return Promise.resolve({ result: "wrongSecret" });
+    return Promise.resolve({
+      result: "opened",
+      join: ({ asPrimary }: { asPrimary: boolean }) =>
+        Promise.resolve().then(() => {
+          mockJoins.push(asPrimary);
+        }),
+    });
   },
 }));
-const mockOpened = new Map<string, string>();
 
 jest.mock("@/db/backup", () => ({
+  stateFingerprint: () => Promise.resolve(mockFingerprint),
   validateBackup: (path: string) =>
     Promise.resolve(
-      mockPeers[mockOpened.get(path) ?? ""]?.valid === false
+      mockPeers[peerOf(path)]?.valid === false
         ? { ok: false, reason: "incompatibleVersion" }
         : { ok: true },
     ),
   compareWithPeer: (path: string) => {
-    const peer = mockPeers[mockOpened.get(path) ?? ""];
+    const peer = mockPeers[peerOf(path)];
     return Promise.resolve({
-      peerOnly: peer?.peerOnly ?? 0,
-      localOnly: peer?.localOnly ?? 0,
+      peerOnly: peer?.peerChanges ?? 0,
+      localOnly: peer?.localChanges ?? 0,
+      peerChanges: peer?.peerChanges ?? 0,
+      localChanges: peer?.localChanges ?? 0,
       peerLatest: null,
+      fingerprint: peer?.fingerprint ?? "peer-1",
     });
   },
 }));
 
 jest.mock("@/src/reportError", () => ({ reportError: () => {} }));
 
+import { InsecureAddressError } from "@/src/cloudSync";
 import {
   accountLabel,
   connectNextcloud,
   connectWebDav,
+  disconnectSync,
+  joinPeer,
+  keepThisDeviceOnServer,
   rememberAnswer,
+  serverState,
   syncAccount,
   syncNow,
 } from "@/src/deviceSync";
@@ -111,14 +145,18 @@ import {
 const TABLET = "bati-0190a000-0000-7000-8000-00000000000a.batb";
 const OLD_PHONE = "bati-0190a000-0000-7000-8000-00000000000b.batb";
 const WORK_PHONE = "bati-0190a000-0000-7000-8000-00000000000c.batb";
+const states = (peers: { name: string; state: string }[]) =>
+  Object.fromEntries(peers.map((p) => [p.name, p.state]));
 
 beforeEach(async () => {
   mockSecure.clear();
   mockServer.clear();
   mockUploads.length = 0;
+  mockListings.length = 0;
+  mockJoins.length = 0;
   mockCipher.status = "on";
-  mockTargets.length = 0;
-  mockDavCheck = "ok";
+  mockFingerprint = "local-1";
+  mockListingFails = false;
   for (const key of Object.keys(mockPeers)) delete mockPeers[key];
   await connectNextcloud("cloud.test", () => false);
 });
@@ -129,13 +167,22 @@ test("refuses to run with encryption off, so nothing plain ever reaches the serv
   expect(mockUploads).toEqual([]);
 });
 
-test("uploads under one stable name per install, and never reads its own file back", async () => {
+test("uploads under one random name per install, and only when the history moved", async () => {
   await syncNow({ snapshotFirst: true });
   await syncNow({ snapshotFirst: true });
+  expect(mockUploads).toHaveLength(1);
+  expect(mockUploads[0]).toMatch(
+    /^bati-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.batb$/,
+  );
 
-  expect(mockUploads).toHaveLength(2);
-  expect(new Set(mockUploads).size).toBe(1);
-  expect(mockUploads[0]).toMatch(/^bati-[0-9a-f-]{36}\.batb$/);
+  mockFingerprint = "local-2";
+  await syncNow({ snapshotFirst: false });
+  expect(mockUploads).toEqual([mockUploads[0], mockUploads[0]]);
+
+  // Gone from the server (a new server, a folder emptied by hand): sent again, moved or not.
+  mockServer.clear();
+  await syncNow({ snapshotFirst: false });
+  expect(mockUploads).toHaveLength(3);
   expect((await syncNow({ snapshotFirst: false })).peers).toEqual([]);
 });
 
@@ -144,60 +191,96 @@ test("says how each other device stands, and ignores files that are not a device
   mockServer.set(OLD_PHONE, "o1");
   mockServer.set(WORK_PHONE, "w1");
   mockServer.set("notes.txt", "n1");
-  mockServer.set("bati-export-v3-2026-09-25.batb", "e1");
-  mockPeers[TABLET] = { open: "opened", peerOnly: 2, localOnly: 0 };
-  mockPeers[OLD_PHONE] = { open: "opened", peerOnly: 0, localOnly: 5 };
-  mockPeers[WORK_PHONE] = { open: "opened", peerOnly: 1, localOnly: 1 };
+  mockServer.set(`${TABLET.replace(".batb", "")}-kept-20260925T1200.batb`, "k1");
+  mockPeers[TABLET] = { open: "opened", peerChanges: 2 };
+  mockPeers[OLD_PHONE] = { open: "opened", localChanges: 5 };
+  mockPeers[WORK_PHONE] = { open: "opened", peerChanges: 1, localChanges: 1 };
 
   const { peers } = await syncNow({ snapshotFirst: false });
-  const states = Object.fromEntries(peers.map((p) => [p.name, p.state]));
 
-  expect(states).toEqual({ [TABLET]: "ahead", [OLD_PHONE]: "behind", [WORK_PHONE]: "diverged" });
+  expect(states(peers)).toEqual({
+    [TABLET]: "ahead",
+    [OLD_PHONE]: "behind",
+    [WORK_PHONE]: "diverged",
+  });
 });
 
-test("a device sealed with another key is locked, one from a newer app is unreadable", async () => {
+test("another password is locked; a newer build, or a file too large, is unreadable", async () => {
   mockServer.set(TABLET, "t1");
   mockServer.set(OLD_PHONE, "o1");
+  mockServer.set(WORK_PHONE, "w1");
   mockPeers[TABLET] = { open: "needsSecret" };
   mockPeers[OLD_PHONE] = { open: "opened", valid: false };
+  mockPeers[WORK_PHONE] = { open: "opened", size: 999_999 };
 
   const { peers } = await syncNow({ snapshotFirst: false });
-  const states = Object.fromEntries(peers.map((p) => [p.name, p.state]));
 
-  expect(states).toEqual({ [TABLET]: "locked", [OLD_PHONE]: "unreadable" });
+  expect(states(peers)).toEqual({
+    [TABLET]: "locked",
+    [OLD_PHONE]: "unreadable",
+    [WORK_PHONE]: "unreadable",
+  });
 });
 
-test("an answer is not asked again until that device writes something new", async () => {
+test("an answer holds until that device has news, whatever its file's etag does", async () => {
   mockServer.set(TABLET, "t1");
-  mockPeers[TABLET] = { open: "opened", peerOnly: 1, localOnly: 1 };
+  mockPeers[TABLET] = { open: "opened", peerChanges: 1, localChanges: 1, fingerprint: "tablet-1" };
+  await rememberAnswer({ name: TABLET, comparison: { fingerprint: "tablet-1" } });
 
-  await rememberAnswer({ name: TABLET, etag: "t1" });
+  // Sealed anew with nothing new in it: a new etag, the same state.
+  mockServer.set(TABLET, "t2");
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("level");
 
-  mockServer.set(TABLET, "t2");
+  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "tablet-2" };
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("diverged");
 });
 
-test("a WebDAV server is only remembered once it answered, and sync then goes there", async () => {
+test("plain http is refused unless it is this phone; an account is kept only once it answered", async () => {
   mockSecure.clear();
-  mockDavCheck = "refused";
+  await expect(connectWebDav("http://nas.local/dav", "hero", "p")).rejects.toBeInstanceOf(
+    InsecureAddressError,
+  );
+  mockListingFails = true;
   await expect(connectWebDav("https://dav.test", "hero", "wrong")).rejects.toThrow("HTTP 401");
   expect(await syncAccount()).toBeNull();
 
-  mockDavCheck = "ok";
-  const account = await connectWebDav(" https://dav.test ", " hero ", "p");
-  expect(accountLabel(account)).toBe("dav.test");
-
+  mockListingFails = false;
+  const local = await connectWebDav(" http://127.0.0.1:8080 ", " hero ", "p", "Round Sync");
+  expect(accountLabel(local)).toBe("Round Sync");
+  mockListings.length = 0;
   await syncNow({ snapshotFirst: false });
-  expect(mockTargets).toEqual(["https://dav.test/Bati"]);
+  expect(mockListings).toEqual(["http://127.0.0.1:8080/Bati"]);
 });
 
-test("an account saved before generic WebDAV is read as the Nextcloud it was", async () => {
-  mockSecure.set(
-    "bati.sync.nextcloud",
-    JSON.stringify({ server: "https://cloud.test", loginName: "hero", appPassword: "app" }),
-  );
-  expect((await syncAccount())?.kind).toBe("nextcloud");
-  await syncNow({ snapshotFirst: false });
-  expect(mockTargets).toEqual(["nextcloud"]);
+test("a fresh server is empty; one holding a device under another password asks for it", async () => {
+  expect(await serverState()).toEqual({ kind: "empty" });
+
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = { open: "needsSecret", secret: "tablet password" };
+  expect(await serverState()).toEqual({ kind: "needsSecret", peer: TABLET });
+
+  expect(await joinPeer(TABLET, "typo")).toBe(false);
+  expect(await joinPeer(TABLET, "tablet password")).toBe(true);
+  // Joined as primary: this phone writes into the tablet's vault from now on.
+  expect(mockJoins).toEqual([true]);
+
+  mockPeers[TABLET] = { open: "opened" };
+  expect(await serverState()).toEqual({ kind: "ready" });
+});
+
+test("before a take, this device's history goes to the folder under a name no device reads", async () => {
+  await keepThisDeviceOnServer();
+  expect(mockUploads).toHaveLength(1);
+  expect(mockUploads[0]).toMatch(/^bati-[0-9a-f-]{36}-kept-\d{8}T\d{4}\.batb$/);
+  expect((await syncNow({ snapshotFirst: false })).peers).toEqual([]);
+});
+
+test("stopping forgets the account and the scratch files it left", async () => {
+  const { clearPeerScratch } = jest.requireMock("@/src/backupFiles") as {
+    clearPeerScratch: jest.Mock;
+  };
+  clearPeerScratch.mockClear();
+  await disconnectSync();
+  expect(await syncAccount()).toBeNull();
+  expect(clearPeerScratch).toHaveBeenCalled();
 });

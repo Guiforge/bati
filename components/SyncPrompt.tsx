@@ -1,46 +1,75 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 
+import { useToast } from "@/components/common/Toast";
+import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { useBackup } from "@/hooks/useBackup";
 import { peerScratch } from "@/src/backupFiles";
-import { rememberAnswer } from "@/src/deviceSync";
+import { joinPeer, keepThisDeviceOnServer, type Peer, rememberAnswer } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
+import { useSessionStore } from "@/stores/session";
 import { useSyncStore } from "@/stores/sync";
 
 /**
- * After a sync, offers the one decision it cannot take alone: another device has sessions this
- * one does not. Ahead (it has everything we have, and more) is a hand-off; diverged (each has
- * sessions the other lacks) is a choice, and the copy says what is lost either way. Streaks asks
- * the same question with a conflict picker; Joplin's answer, a "Conflicts" notebook, is the one
- * a game should not copy.
+ * After a sync, the decisions it cannot take alone, one at a time:
  *
- * An Alert, because it is one question with two answers and it has to reach the hero wherever the
- * launch left them. Asked once per file version: "keep this one" is remembered until that device
- * writes again (`rememberAnswer`), and within a process the store remembers what was offered.
+ * - **ahead**: another device has news and this one has nothing it would lose. A hand-off.
+ * - **diverged**: each has news. The copy says what each answer loses, and taking the other
+ *   version first sends this device's to the sync folder (`keepThisDeviceOnServer`).
+ * - **locked**: another device seals with a password this one does not know. Until it is typed
+ *   here, the two never see each other, so that is asked instead of staying silent.
+ *
+ * Streaks asks the same question with a conflict picker; Joplin's answer, a "Conflicts" notebook,
+ * is the one a game should not copy. Never during a session: taking a version unmounts the app,
+ * and a set in progress would go with it. Asked once per state: "keep this one" is remembered
+ * until that device has news (`rememberAnswer`), and within a process the store remembers what
+ * was offered.
  */
 export function SyncPrompt() {
   const { t } = useTranslation();
+  const { showSuccess } = useToast();
   const { runAdopt } = useBackup();
   const result = useSyncStore((s) => s.result);
   const offered = useSyncStore((s) => s.offered);
   const markOffered = useSyncStore((s) => s.markOffered);
+  const run = useSyncStore((s) => s.run);
+  const inSession = useSessionStore((s) => s.status !== "idle" && s.status !== "finished");
+  const [joining, setJoining] = useState<{ peer: string; wrong: boolean } | null>(null);
 
   useEffect(() => {
+    if (inSession || joining !== null) return;
     const peer = result?.peers.find(
       (p) =>
-        (p.state === "ahead" || p.state === "diverged") && !offered.includes(`${p.name}@${p.etag}`),
+        (p.state === "ahead" || p.state === "diverged" || p.state === "locked") &&
+        !offered.includes(offerKey(p)),
     );
-    if (!peer || !("comparison" in peer)) return;
-    markOffered(`${peer.name}@${peer.etag}`);
+    if (!peer) return;
+    markOffered(offerKey(peer));
 
-    const { peerOnly, localOnly } = peer.comparison;
-    const ahead = peer.state === "ahead";
+    if (peer.state === "locked") {
+      Alert.alert(t("sync.lockedTitle"), t("sync.lockedBody"), [
+        { text: t("sync.later"), style: "cancel" },
+        { text: t("sync.lockedCta"), onPress: () => setJoining({ peer: peer.name, wrong: false }) },
+      ]);
+      return;
+    }
+    if (!("comparison" in peer)) return;
+
+    const plain = peerScratch(peer.name, "plain");
+    const { peerChanges, localChanges } = peer.comparison;
+    if (peer.state === "ahead") {
+      // Nothing here would be lost, so there is nothing to keep first and no "keep" to remember:
+      // "later" only means "not now".
+      Alert.alert(t("sync.aheadTitle"), t("sync.aheadBody", { count: peerChanges }), [
+        { text: t("sync.later"), style: "cancel" },
+        { text: t("sync.take"), onPress: () => runAdopt(plain, () => Promise.resolve()) },
+      ]);
+      return;
+    }
     Alert.alert(
-      ahead ? t("sync.aheadTitle") : t("sync.divergedTitle"),
-      ahead
-        ? t("sync.aheadBody", { count: peerOnly })
-        : t("sync.divergedBody", { peerOnly, localOnly }),
+      t("sync.divergedTitle"),
+      t("sync.divergedBody", { peer: peerChanges, local: localChanges }),
       [
         {
           text: t("sync.keep"),
@@ -49,10 +78,45 @@ export function SyncPrompt() {
             rememberAnswer(peer).catch((e) => reportError("sync.remember", e));
           },
         },
-        { text: t("sync.take"), onPress: () => runAdopt(peerScratch(peer.index, "plain")) },
+        { text: t("sync.take"), onPress: () => runAdopt(plain, keepThisDeviceOnServer) },
       ],
     );
-  }, [markOffered, offered, result, runAdopt, t]);
+  }, [inSession, joining, markOffered, offered, result, runAdopt, t]);
 
-  return null;
+  const submit = (secret: string) => {
+    if (joining === null) return;
+    const { peer } = joining;
+    joinPeer(peer, secret)
+      .then((joined) => {
+        if (!joined) {
+          setJoining({ peer, wrong: true });
+          return;
+        }
+        setJoining(null);
+        showSuccess(t("sync.joined"));
+        // Same key on both sides now: this sync reads the other device for what it is.
+        return run({ snapshotFirst: false });
+      })
+      .catch((e) => {
+        reportError("sync.join", e);
+        setJoining(null);
+      });
+  };
+
+  return (
+    <BackupSecretSheet
+      request={{ open: joining !== null, wrong: joining?.wrong ?? false }}
+      title={t("sync.lockedTitle")}
+      body={t("sync.lockedSecretBody")}
+      onSubmit={submit}
+      onCancel={() => setJoining(null)}
+    />
+  );
+}
+
+/** One offer per device and state: news from that device is a new offer, a re-seal is not. */
+function offerKey(peer: Peer): string {
+  return "comparison" in peer
+    ? `${peer.name}@${peer.comparison.fingerprint}`
+    : `${peer.name}@${peer.state}`;
 }

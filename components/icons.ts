@@ -28,6 +28,8 @@ export { Download } from "@tamagui/lucide-icons/icons/Download";
 export { Drama } from "@tamagui/lucide-icons/icons/Drama";
 export { Dumbbell } from "@tamagui/lucide-icons/icons/Dumbbell";
 export { ExternalLink } from "@tamagui/lucide-icons/icons/ExternalLink";
+export { Eye } from "@tamagui/lucide-icons/icons/Eye";
+export { EyeOff } from "@tamagui/lucide-icons/icons/EyeOff";
 export { Flame } from "@tamagui/lucide-icons/icons/Flame";
 export { FolderDown } from "@tamagui/lucide-icons/icons/FolderDown";
 export { FolderSync } from "@tamagui/lucide-icons/icons/FolderSync";

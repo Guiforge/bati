@@ -1,6 +1,7 @@
 import type { File } from "expo-file-system";
-import { type RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Alert } from "react-native";
 
 import { useToast } from "@/components/common/Toast";
 import { type BackupRejection, keepDeviceSettings, validateBackup } from "@/db/backup";
@@ -11,6 +12,7 @@ import {
   disableAutoBackup,
   enableAutoBackup,
 } from "@/src/autoBackup";
+import { encryptionStatus } from "@/src/backupCipher";
 import {
   decryptStagedImport,
   discardStagedImport,
@@ -28,7 +30,7 @@ import { useRestoreStore } from "@/stores/restore";
  * `onError` never rethrows, so the flags come down on both paths.
  */
 async function exclusive(
-  running: RefObject<boolean>,
+  running: { current: boolean },
   setBusy: (busy: boolean) => void,
   work: () => Promise<void>,
   onError: (error: unknown) => void,
@@ -40,6 +42,35 @@ async function exclusive(
   running.current = false;
   setBusy(false);
 }
+
+/**
+ * One import at a time *in the app*, not per screen. Settings, onboarding and the sync prompt each
+ * mount this hook, and all of them stage into the same file: two runs racing there let the swap
+ * commit a file nobody validated. A ref per instance guarded only the instance.
+ */
+const running = { current: false };
+
+/** A copy step's outcome as a yes or no, its failure reported under `context`. */
+const succeeded = (step: Promise<void>, context: string) =>
+  step.then(
+    () => true,
+    (error: unknown) => {
+      reportError(context, error);
+      return false;
+    },
+  );
+
+/**
+ * The copies a swap may not go ahead without: the automatic backup folder's, and, for a door that
+ * has one, its own (taking another device's version first sends this device's to the sync
+ * folder). No copy, no swap.
+ */
+async function copiesKept(beforeSwap?: () => Promise<void>): Promise<boolean> {
+  if (!(await succeeded(backupBeforeRestore(), "backup.beforeRestore"))) return false;
+  return beforeSwap === undefined || succeeded(beforeSwap(), "backup.beforeSwap");
+}
+
+const isWaiting = (result: string) => result === "needsSecret" || result === "wrongSecret";
 
 /** What the password sheet shows while an encrypted import waits for the hero. */
 export type SecretRequest = { open: boolean; wrong: boolean };
@@ -66,9 +97,7 @@ export function useBackup() {
   // so a folder `backupBeforeMigrations` had to forget shows as off the next time Settings opens.
   const [autoFolder, setAutoFolder] = useState<string | null>(null);
   // `busy` cannot guard re-entry: two presses in the same frame both read the state as it was
-  // before either render. Two imports racing share one staged filename, so the second overwrites
-  // the file the first has already validated — and the swap commits something nobody checked.
-  const running = useRef(false);
+  // before either render. The guard is `running`, at module level, above.
   // An encrypted import pauses on the hero's password. The sheet's answer resolves this; `null`
   // is "cancel". A ref, because the import that is waiting holds the resolver across renders.
   const [secretRequest, setSecretRequest] = useState<SecretRequest>({ open: false, wrong: false });
@@ -90,6 +119,30 @@ export function useBackup() {
   }, []);
 
   /**
+   * A backup just opened with its password, under a key this phone did not hold. With encryption
+   * on here, the key is only remembered, so that file opens again without asking. Otherwise the
+   * hero is asked whether their own backups should use that password from now on: yes on a new
+   * phone restoring their own history, and never silently, since a file someone else handed over
+   * would otherwise make every later backup open with the giver's secret.
+   */
+  const offerJoin = useCallback(
+    async (join: (options: { asPrimary: boolean }) => Promise<void>) => {
+      if ((await encryptionStatus()) === "on") {
+        await join({ asPrimary: false });
+        return;
+      }
+      const accepted = await new Promise<boolean>((resolve) =>
+        Alert.alert(t("backup.joinTitle"), t("backup.joinBody"), [
+          { text: t("backup.joinNo"), style: "cancel", onPress: () => resolve(false) },
+          { text: t("backup.joinYes"), onPress: () => resolve(true) },
+        ]),
+      );
+      if (accepted) await join({ asPrimary: true });
+    },
+    [t],
+  );
+
+  /**
    * Decrypts the staged file when it is sealed, then validates it: `"ok"`, `"cancelled"` when the
    * hero gave up on the password, or the reason it was refused. A plain backup, or one this phone
    * already holds the key to, never shows the sheet. A sealed body that fails its tag rejects in
@@ -104,17 +157,19 @@ export function useBackup() {
         });
 
       let opened = await attempt();
-      while (opened === "needsSecret" || opened === "wrongSecret") {
-        const secret = await askSecret(opened === "wrongSecret");
+      while (opened !== "corrupt" && isWaiting(opened.result)) {
+        const secret = await askSecret(opened.result === "wrongSecret");
         if (secret === null) return "cancelled";
         opened = await attempt(secret);
       }
       if (opened === "corrupt") return "corrupt";
 
       const check = await validateBackup(staged);
-      return check.ok ? "ok" : check.reason;
+      if (!check.ok) return check.reason;
+      if (opened.join) await offerJoin(opened.join);
+      return "ok";
     },
-    [askSecret],
+    [askSecret, offerJoin],
   );
 
   useEffect(() => {
@@ -208,7 +263,7 @@ export function useBackup() {
    * `beginRestore`, and the failure paths all discard the staged file.
    */
   const restoreStaged = useCallback(
-    (stage: () => Promise<string | null>) =>
+    (stage: () => Promise<string | null>, beforeSwap?: () => Promise<void>) =>
       exclusive(
         running,
         setBusy,
@@ -229,14 +284,7 @@ export function useBackup() {
 
           // Last, so a file that will be refused never costs a snapshot; before `beginRestore`,
           // because after it the tree is gone and the database closes.
-          const saved = await backupBeforeRestore().then(
-            () => true,
-            (error: unknown) => {
-              reportError("backup.beforeRestore", error);
-              return false;
-            },
-          );
-          if (!saved) {
+          if (!(await copiesKept(beforeSwap))) {
             discardStagedImport();
             alertWithReport(t("backup.beforeRestoreFailed"));
             return;
@@ -278,10 +326,15 @@ export function useBackup() {
     runImport: useCallback(() => {
       runImport().catch((e) => reportError("backup.import", e));
     }, [runImport]),
-    /** Takes another device's opened snapshot (src/deviceSync.ts) through the same restore. */
+    /**
+     * Takes another device's opened snapshot (src/deviceSync.ts) through the same restore, after
+     * `beforeSwap` kept a copy of this device's history where the hero can reach it.
+     */
     runAdopt: useCallback(
-      (plain: File) => {
-        restoreStaged(() => stagePeerForImport(plain)).catch((e) => reportError("backup.adopt", e));
+      (plain: File, beforeSwap: () => Promise<void>) => {
+        restoreStaged(() => stagePeerForImport(plain), beforeSwap).catch((e) =>
+          reportError("backup.adopt", e),
+        );
       },
       [restoreStaged],
     ),

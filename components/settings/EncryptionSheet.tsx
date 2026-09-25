@@ -1,36 +1,39 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, Pressable } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Input, Sheet, Text, XStack, YStack } from "tamagui";
+import { Keyboard } from "react-native";
+import { Input, Text } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
-import { X } from "@/components/icons";
+import { FormSheet } from "@/components/common/FormSheet";
 import { MIN_PASSWORD_LENGTH } from "@/hooks/useBackupEncryption";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 /**
  * - `enable`: choose a password, then read the recovery key once.
- * - `change`: choose a new password; the recovery key does not change.
+ * - `change`: a new password is a new key (src/backupCipher.ts `changePassword`), so a new
+ *   recovery key is shown after it, exactly as on enabling.
+ * - `manage`: encryption is on; what can be done with it.
  * - `recovery`: show a recovery key the fingerprint just unlocked.
  */
 export type EncryptionSheetMode =
   | { kind: "enable" }
   | { kind: "change" }
+  | { kind: "manage" }
   | { kind: "recovery"; recovery: string };
 
 type Props = {
   mode: EncryptionSheetMode | null;
   canShowRecoveryAgain: boolean;
   onClose: () => void;
-  /** Resolves to the recovery key to show, or `null` when setting up failed. */
+  /** Both resolve to the recovery key to show, or `null` when it failed. */
   onEnable: (password: string) => Promise<string | null>;
-  onChange: (password: string) => Promise<void>;
+  onChange: (password: string) => Promise<string | null>;
+  onShowRecovery: () => void;
+  onDisable: () => void;
 };
 
 /**
  * Setting up encrypted backups, in the one place that has to be blunt: without the password or
  * the recovery key, nobody can open them. The recovery key is shown in the same sheet, straight
- * after, so there is no path that turns encryption on without the hero having seen it.
+ * after, so there is no path that makes a key without the hero having seen what recovers it.
  *
  * The caller mounts it with a `key` per opening, so each one starts with empty fields.
  */
@@ -40,79 +43,74 @@ export function EncryptionSheet({
   onClose,
   onEnable,
   onChange,
+  onShowRecovery,
+  onDisable,
 }: Props) {
   const { t } = useTranslation();
-  const reducedMotion = useReducedMotion();
-  const insets = useSafeAreaInsets();
   const [recovery, setRecovery] = useState<string | null>(
     mode?.kind === "recovery" ? mode.recovery : null,
   );
-  const changing = mode?.kind === "change";
-
-  const close = () => {
-    Keyboard.dismiss();
-    onClose();
-  };
+  const [changing, setChanging] = useState(mode?.kind === "change");
 
   const choose = (password: string) =>
-    changing
-      ? onChange(password).then(close)
-      : onEnable(password).then((shown) => (shown === null ? close() : setRecovery(shown)));
+    (changing ? onChange(password) : onEnable(password)).then((shown) =>
+      shown === null ? onClose() : setRecovery(shown),
+    );
 
   const title =
     recovery !== null
       ? t("backup.recoveryTitle")
       : changing
         ? t("backup.changePassword")
-        : t("backup.encryptionTitle");
+        : mode?.kind === "manage"
+          ? t("backup.encryption")
+          : t("backup.encryptionTitle");
 
   return (
-    <Sheet
-      modal
-      open={mode !== null}
-      onOpenChange={(next: boolean) => (next ? undefined : close())}
-      snapPointsMode="fit"
-      disableDrag
-      // The fields sit at the bottom of the screen, exactly where the keyboard lands: without this
-      // the second one is typed into blind, and a tap meant for it lands in the first.
-      moveOnKeyboardChange
-      transition={reducedMotion ? undefined : "quick"}
-      zIndex={100_000}
-    >
-      <Sheet.Overlay
-        bg="rgba(0,0,0,0.5)"
-        transition={reducedMotion ? undefined : "quick"}
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
-      />
-      <Sheet.Frame bg="$surface">
-        <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$3">
-          <XStack items="center" justify="space-between" gap="$3">
-            <Text flex={1} fontWeight="700" fontSize={18} color="$text">
-              {title}
-            </Text>
-            <Pressable
-              hitSlop={12}
-              accessibilityRole="button"
-              accessibilityLabel={t("common.close", "Close")}
-              onPress={close}
-            >
-              <X size={20} color="$textSecondary" />
-            </Pressable>
-          </XStack>
+    <FormSheet open={mode !== null} title={title} onClose={onClose}>
+      {recovery !== null ? (
+        <RecoveryKeyView recovery={recovery} canShowAgain={canShowRecoveryAgain} onDone={onClose} />
+      ) : mode?.kind === "manage" && !changing ? (
+        <ManageView
+          canShowRecoveryAgain={canShowRecoveryAgain}
+          onShowRecovery={onShowRecovery}
+          onChange={() => setChanging(true)}
+          onDisable={onDisable}
+        />
+      ) : (
+        <PasswordForm changing={changing} onChoose={choose} />
+      )}
+    </FormSheet>
+  );
+}
 
-          {recovery !== null ? (
-            <RecoveryKeyView
-              recovery={recovery}
-              canShowAgain={canShowRecoveryAgain}
-              onDone={close}
-            />
-          ) : (
-            <PasswordForm changing={changing} onChoose={choose} />
-          )}
-        </YStack>
-      </Sheet.Frame>
-    </Sheet>
+function ManageView({
+  canShowRecoveryAgain,
+  onShowRecovery,
+  onChange,
+  onDisable,
+}: {
+  canShowRecoveryAgain: boolean;
+  onShowRecovery: () => void;
+  onChange: () => void;
+  onDisable: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <Text color="$textSecondary">{t("backup.encryptionOnMessage")}</Text>
+      {canShowRecoveryAgain ? (
+        <AppButton variant="outline" testID="backup-show-recovery" onPress={onShowRecovery}>
+          {t("backup.showRecovery")}
+        </AppButton>
+      ) : null}
+      <AppButton variant="outline" testID="backup-change-password" onPress={onChange}>
+        {t("backup.changePassword")}
+      </AppButton>
+      <AppButton variant="secondary" testID="backup-disable-encryption" onPress={onDisable}>
+        {t("backup.encryptionOffCta")}
+      </AppButton>
+    </>
   );
 }
 

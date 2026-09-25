@@ -25,10 +25,14 @@
 // change to what the front page and the policy promise, and it does not land without both.
 //
 // A second one landed on 25 September 2026, with both of those: `src/cloudSync.ts`, device sync
-// to the hero's own Nextcloud or WebDAV server (roadmap 4.18). Its host is the one the hero types in, it is off
-// until they sign in there, and it only ever sends files sealed on the device, so the server
-// holds bytes it cannot read. The policy's "Syncing your devices" section and the front page's
-// privacy band say so.
+// to the hero's own Nextcloud or WebDAV server (roadmap 4.18). Its host is the one the hero types
+// in, it is off until they sign in there, and it only ever sends files sealed on the device, so
+// the server holds bytes it cannot read. The policy's "Syncing your devices" section and the front
+// page's privacy band say so.
+//
+// expo-file-system transfers natively, and those calls are a socket all the same: the front page
+// says a lint rule refuses every connection outside these modules, and without the last two
+// entries below that sentence was not true.
 //
 // `language js` like the other three plugins here, which is also why the tile URL lives in a
 // `.ts` style module rather than a `.json` one — see docs/designs/map-immersion.md.
@@ -40,7 +44,11 @@ language js
     `XMLHttpRequest`,
     `WebSocket`,
     `EventSource`,
-    `navigator.sendBeacon`
+    `navigator.sendBeacon`,
+    `File.downloadFileAsync`,
+    `$_.upload`,
+    `$_.createUploadTask`,
+    `File.createDownloadTask`
   },
   $filename <: not r".*__tests__.*",
   $filename <: not r".*src/updateCheck\.ts",

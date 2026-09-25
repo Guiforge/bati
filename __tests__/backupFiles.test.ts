@@ -156,7 +156,10 @@ jest.mock("@/db/schemaVersion", () => ({ SCHEMA_VERSION: 3 }));
  * on the fake disk: a sealed file is "sealed:" plus what it sealed, and opening one writes the
  * plaintext back. `mockCipher.status` is what the hero chose in Settings.
  */
-const mockCipher: { status: "off" | "on"; open: string } = { status: "off", open: "opened" };
+const mockCipher: { status: "off" | "on" | "locked"; open: string } = {
+  status: "off",
+  open: "opened",
+};
 jest.mock("@/src/backupCipher", () => {
   const disk = () => (require("expo-file-system") as FakeFs).__disk;
   return {
@@ -170,7 +173,7 @@ jest.mock("@/src/backupCipher", () => {
         if (mockCipher.open === "opened") {
           disk().set(out, String(disk().get(sealed)).replace(/^sealed:/, ""));
         }
-        return mockCipher.open;
+        return { result: mockCipher.open };
       }),
   };
 });
@@ -590,7 +593,7 @@ describe("encrypted backups", () => {
   test("an opened import replaces the staged file with its plaintext", async () => {
     write(IMPORT_NAME, "sealed:the tablet's year");
 
-    expect(await decryptStagedImport("password")).toBe("opened");
+    expect((await decryptStagedImport("password")).result).toBe("opened");
     expect(fs.__disk.get(at(IMPORT_NAME))).toBe("the tablet's year");
     expect(fs.__disk.size).toBe(1);
   });
@@ -599,10 +602,17 @@ describe("encrypted backups", () => {
     mockCipher.open = "needsSecret";
     write(IMPORT_NAME, "sealed:the tablet's year");
 
-    expect(await decryptStagedImport()).toBe("needsSecret");
+    expect((await decryptStagedImport()).result).toBe("needsSecret");
     expect(fs.__disk.get(at(IMPORT_NAME))).toBe("sealed:the tablet's year");
 
     discardStagedImport();
     expect(fs.__disk.size).toBe(0);
   });
+});
+
+test("a phone locked out of its key writes no backup at all, rather than a plain one", async () => {
+  mockCipher.status = "locked";
+  await expect(exportBackup()).rejects.toThrow("Encryption is locked");
+  expect(fs.__disk.size).toBe(0);
+  mockCipher.status = "off";
 });

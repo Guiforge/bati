@@ -46,6 +46,17 @@ function request(url: string, init: RequestInit = {}): Promise<Response> {
   return fetch(url, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
+/**
+ * The one place plain HTTP may go: this phone itself, where Round Sync serves rclone. Mirrors
+ * plugins/withAndroidNetworkSecurity.js, which is what actually enforces it in a release build.
+ */
+export function isOnThisDevice(url: string): boolean {
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(url.trim());
+}
+
+/** A plain `http://` address that is not this phone: Android would refuse it anyway. */
+export class InsecureAddressError extends Error {}
+
 /** `https://cloud.example.org/` or `cloud.example.org` → `https://cloud.example.org`. */
 export function normaliseServer(input: string): string {
   const trimmed = input.trim().replace(/\/+$/, "");
@@ -70,6 +81,11 @@ export async function loginToNextcloud(
   });
   if (!start.ok) throw new Error(`Login flow refused: HTTP ${start.status}`);
   const flow = (await start.json()) as { login: string; poll: { token: string; endpoint: string } };
+  // The server names the page to open and the endpoint to poll. Both must be web addresses on it
+  // (or on https): an `intent:` or foreign URL here would be the server steering the phone.
+  if (!sameOriginOrHttps(flow.login, server) || !sameOriginOrHttps(flow.poll.endpoint, server)) {
+    throw new Error("Login flow pointed outside the server");
+  }
 
   await Linking.openURL(flow.login);
 
@@ -84,10 +100,16 @@ export async function loginToNextcloud(
     // 404 is "not yet"; a dropped connection is retried on the next beat.
     if (poll?.ok) {
       const done = (await poll.json()) as NextcloudAccount;
-      return { ...done, server: normaliseServer(done.server) };
+      // The address the hero typed, not the one the server reports: sync goes where they chose.
+      return { ...done, server };
     }
   }
   return null;
+}
+
+function sameOriginOrHttps(url: string, server: string): boolean {
+  const origin = (u: string) => /^(https?:\/\/[^/]+)/i.exec(u)?.[1]?.toLowerCase();
+  return origin(url) === origin(server) || /^https:\/\//i.test(url);
 }
 
 /** A Nextcloud account's sync folder, under its user's WebDAV root. */
@@ -160,7 +182,11 @@ function field(xml: string, tag: string): string | undefined {
 
 /**
  * The files in a PROPFIND answer, by name and version. A regex rather than an XML parser: only
- * four fields are read, and it is tested on what real servers send. Namespace prefixes vary
+ * four fields are read, and it is tested on what real servers send.
+ *
+ * ponytail: regex over XML. Ceiling: a server that puts CDATA, comments or a `<` inside a field;
+ *           none of Nextcloud, Apache mod_dav or rclone does. Upgrade: a small SAX pass, the day a
+ *           real server's answer fails the tests in __tests__/cloudSync.test.ts. Namespace prefixes vary
  * (`d:` from Nextcloud, `D:` and `lp1:` from Apache), so none is assumed.
  *
  * - The folder itself, and any sub-folder, is skipped by its `<collection/>` resource type, or by
@@ -180,14 +206,6 @@ export function parseListing(xml: string): RemoteFile[] {
     if (name && version !== "|") files.push({ name, etag: version });
   }
   return files;
-}
-
-/**
- * Proves a server and its credentials work before they are remembered: creates the folder and
- * lists it. Throws `DavAuthError` for refused credentials, another error for anything else.
- */
-export async function checkTarget(target: DavTarget): Promise<void> {
-  await listRemote(target);
 }
 
 /** Streams `name` from the folder into `destination`, replacing whatever is there. */

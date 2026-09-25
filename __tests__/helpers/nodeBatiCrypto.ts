@@ -43,7 +43,7 @@ export const nodeBatiCrypto: BatiCrypto = {
   pbkdf2: (password, salt, iterations) =>
     later(() => {
       pbkdf2Calls.push(iterations);
-      return b64(crypto.pbkdf2Sync(password, bytes(salt), iterations, 32, "sha256"));
+      return b64(crypto.pbkdf2Sync(bytes(password), bytes(salt), iterations, 32, "sha256"));
     }),
   seal: (key, plaintext, aad) => later(() => b64(seal(key, bytes(plaintext), bytes(aad)))),
   open: (key, sealed, aad) => later(() => b64(open(key, bytes(sealed), bytes(aad)))),

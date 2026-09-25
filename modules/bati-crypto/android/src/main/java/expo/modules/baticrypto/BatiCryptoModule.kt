@@ -11,9 +11,8 @@ import java.io.FileOutputStream
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.CipherOutputStream
-import javax.crypto.SecretKeyFactory
+import javax.crypto.Mac
 import javax.crypto.spec.GCMParameterSpec
-import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 /**
@@ -45,13 +44,21 @@ class BatiCryptoModule : Module() {
       encode(bytes)
     }
 
+    /**
+     * PBKDF2-HMAC-SHA256 over the password's *bytes* (UTF-8 of its NFC form, made in JS). Not
+     * `SecretKeyFactory`: that takes a `char[]` and leaves the char-to-byte conversion to the
+     * provider, and a password with an accent has to stretch to the same key on every phone.
+     * One output block, since the key is exactly one SHA-256 wide.
+     */
     AsyncFunction("pbkdf2") { password: String, salt: String, iterations: Int ->
-      val spec = PBEKeySpec(password.toCharArray(), decode(salt), iterations, KEY_BITS)
-      try {
-        encode(SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).encoded)
-      } finally {
-        spec.clearPassword()
+      val mac = Mac.getInstance("HmacSHA256").apply { init(SecretKeySpec(decode(password), "HmacSHA256")) }
+      var u = mac.doFinal(decode(salt) + byteArrayOf(0, 0, 0, 1))
+      val out = u.copyOf()
+      repeat(iterations - 1) {
+        u = mac.doFinal(u)
+        for (i in out.indices) out[i] = (out[i].toInt() xor u[i].toInt()).toByte()
       }
+      encode(out)
     }
 
     /** Up to `length` bytes from the start of a file: enough to read a header before any key. */
@@ -100,15 +107,18 @@ class BatiCryptoModule : Module() {
     }
 
     /**
-     * The reverse of `sealFile`, given the header's length. Nothing is left at `outPath` unless the
-     * tag verified: a plaintext cut short by a wrong key is exactly what must never be restored.
+     * The reverse of `sealFile`, given the header's length. The plaintext is written beside the
+     * target and only takes its name once the tag verified: whether a provider releases plaintext
+     * before `doFinal` is its business, and a file cut short by a wrong key must never be found at
+     * `outPath`.
      */
     AsyncFunction("openFile") { key: String, inPath: String, outPath: String, headerLength: Int ->
+      val part = "${path(outPath).path}.part"
       BufferedInputStream(FileInputStream(path(inPath))).use { input ->
         val headerBytes = input.readExactly(headerLength)
         val nonce = input.readExactly(NONCE_BYTES)
         val cipher = cipher(Cipher.DECRYPT_MODE, key, nonce, headerBytes)
-        writeOrDelete(outPath) { out ->
+        writeOrDelete(part) { out ->
           val buffer = ByteArray(BUFFER_BYTES)
           while (true) {
             val read = input.read(buffer)
@@ -117,6 +127,12 @@ class BatiCryptoModule : Module() {
           }
           out.write(cipher.doFinal())
         }
+      }
+      val target = path(outPath)
+      target.delete()
+      if (!File(part).renameTo(target)) {
+        File(part).delete()
+        throw IllegalStateException("Could not move the decrypted file into place")
       }
     }
   }
@@ -160,7 +176,6 @@ class BatiCryptoModule : Module() {
   private fun decode(value: String) = Base64.decode(value, Base64.NO_WRAP)
 
   private companion object {
-    const val KEY_BITS = 256
     const val NONCE_BYTES = 12
     const val TAG_BITS = 128
     const val BUFFER_BYTES = 64 * 1024

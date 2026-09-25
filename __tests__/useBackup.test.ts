@@ -20,6 +20,27 @@ let mockValidateBehaviour: () => void = () => {};
 let mockStageGate: Promise<void> | null = null;
 let mockSaveOutcome: () => boolean = () => true;
 let mockDecryptOutcomes: string[] = [];
+let mockEncryption = "off";
+let mockAlertAnswer = "backup.joinNo";
+const mockSystemAlerts: string[] = [];
+
+jest.mock("@/src/backupCipher", () => ({
+  encryptionStatus: () => Promise.resolve(mockEncryption),
+}));
+
+// The join question is a system alert: answered here by the button whose text is `mockAlertAnswer`.
+jest.mock("react-native", () => {
+  const rn = jest.requireActual("react-native");
+  rn.Alert.alert = (
+    title: string,
+    _message: string,
+    buttons: { text: string; onPress?: () => void }[],
+  ) => {
+    mockSystemAlerts.push(title);
+    buttons.find((b) => b.text === mockAlertAnswer)?.onPress?.();
+  };
+  return rn;
+});
 
 jest.mock("@/db/backup", () => ({
   validateBackup: jest.fn(async () => {
@@ -58,7 +79,16 @@ jest.mock("@/src/backupFiles", () => ({
     await Promise.resolve();
     const outcome = mockDecryptOutcomes.shift() ?? "notEncrypted";
     if (outcome === "throw") throw new Error("Unsupported state or unable to authenticate data");
-    return outcome;
+    if (outcome === "openedWithSecret") {
+      return {
+        result: "opened",
+        join: ({ asPrimary }: { asPrimary: boolean }) =>
+          Promise.resolve().then(() => {
+            mockCalls.push(`join:${asPrimary ? "primary" : "keyring"}`);
+          }),
+      };
+    }
+    return { result: outcome };
   }),
   // biome-ignore lint/suspicious/useAwait: mirrors the real Promise-returning signature
   saveBackupToFolder: jest.fn(async () => {
@@ -136,6 +166,9 @@ beforeEach(() => {
   mockStageGate = null;
   mockSaveOutcome = () => true;
   mockDecryptOutcomes = [];
+  mockEncryption = "off";
+  mockAlertAnswer = "backup.joinNo";
+  mockSystemAlerts.length = 0;
   mockAutoFolderOutcome = () => null;
   mockEnableOutcome = () => "Documents/Bati";
   mockDisableOutcome = () => {};
@@ -197,10 +230,98 @@ test("an encrypted file that fails to authenticate is reported as damaged", asyn
 test("taking another device's snapshot walks the same road as a restore", async () => {
   const { result } = await renderHook(() => useBackup());
 
-  await act(() => result.current.runAdopt({ uri: "file:///db/peer-0.plain" } as never));
+  const keepCopy = () =>
+    Promise.resolve().then(() => {
+      mockCalls.push("keepCopy");
+    });
+  await act(() => result.current.runAdopt({ uri: "file:///db/peer.plain" } as never, keepCopy));
 
   await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
-  expect(mockCalls).toEqual(["stagePeer", "decrypt", "validate", "keepDevice", "beforeRestore"]);
+  expect(mockCalls).toEqual([
+    "stagePeer",
+    "decrypt",
+    "validate",
+    "keepDevice",
+    "beforeRestore",
+    "keepCopy",
+  ]);
+});
+
+test("no copy of this device's history on the server, no take", async () => {
+  const { result } = await renderHook(() => useBackup());
+
+  await act(() =>
+    result.current.runAdopt({ uri: "file:///db/peer.plain" } as never, () =>
+      Promise.reject(new Error("offline")),
+    ),
+  );
+
+  await waitFor(() => expect(mockCalls).toContain("discard"));
+  expect(useRestoreStore.getState().phase).toBe("idle");
+  expect(mockAlerts).toEqual(["backup.beforeRestoreFailed"]);
+});
+
+test("two screens cannot run two imports into the one staging file", async () => {
+  let openPicker: () => void = () => {};
+  mockStageGate = new Promise<void>((resolve) => {
+    openPicker = resolve;
+  });
+  const settings = await renderHook(() => useBackup());
+  const prompt = await renderHook(() => useBackup());
+
+  await act(async () => {
+    settings.result.current.runImport();
+    prompt.result.current.runAdopt({ uri: "file:///db/peer.plain" } as never, () =>
+      Promise.resolve(),
+    );
+    openPicker();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+
+  expect(mockCalls.filter((c) => c === "stage" || c === "stagePeer")).toEqual(["stage"]);
+});
+
+describe("an encrypted backup opened with its password", () => {
+  test("with encryption off here, the hero is asked before the key becomes this phone's", async () => {
+    mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
+    mockAlertAnswer = "backup.joinYes";
+    const { result } = await renderHook(() => useBackup());
+
+    await act(() => result.current.runImport());
+    await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
+    await act(async () => result.current.submitSecret("correct horse"));
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+
+    expect(mockSystemAlerts).toEqual(["backup.joinTitle"]);
+    expect(mockCalls).toContain("join:primary");
+  });
+
+  test("declined, nothing is adopted and the restore still goes ahead", async () => {
+    mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
+    mockAlertAnswer = "backup.joinNo";
+    const { result } = await renderHook(() => useBackup());
+
+    await act(() => result.current.runImport());
+    await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
+    await act(async () => result.current.submitSecret("correct horse"));
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+
+    expect(mockCalls.some((c) => c.startsWith("join:"))).toBe(false);
+  });
+
+  test("with encryption on here, the key is only remembered, without a question", async () => {
+    mockEncryption = "on";
+    mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
+    const { result } = await renderHook(() => useBackup());
+
+    await act(() => result.current.runImport());
+    await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
+    await act(async () => result.current.submitSecret("correct horse"));
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+
+    expect(mockSystemAlerts).toEqual([]);
+    expect(mockCalls).toContain("join:keyring");
+  });
 });
 
 describe("useBackup — import", () => {

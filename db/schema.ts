@@ -1038,6 +1038,16 @@ export const villageStats = sqliteTable("village_stats", {
  * business: 1e-7 degrees is about a centimetre, which is far finer than any consumer receiver,
  * and an integer cannot quietly lose the last digit on the way through a JSON bridge.
  */
+/**
+ * Sessions the hero deleted on this device, by uuid (0064). Device sync reads it so that another
+ * device still holding one is not mistaken for being ahead, and the deletion is not undone by
+ * taking its version. See `compareWithPeer` in db/backup.ts.
+ */
+export const deletedSessions = sqliteTable("deleted_sessions", {
+  uuid: text().primaryKey(),
+  deletedAt: int({ mode: "timestamp" }).notNull(),
+});
+
 export const gpsPoints = sqliteTable(
   "gps_points",
   {

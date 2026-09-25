@@ -1,0 +1,11 @@
+- Eine Einheit lässt sich aus dem Tagebuch entfernen,
+  samt XP.
+- Halte + oder - gedrückt, und der Wert läuft immer
+  schneller.
+- Animationen in Android abschalten wirkt sofort.
+- Tablets und Faltgeräte behalten eine lesbare Spalte.
+- Größere Tippflächen und stärkere Kontraste.
+- Von Hand installiert? Bati kann dir eine neue Version
+  melden. Standardmäßig aus.
+- Eine Wiederherstellung sichert zuerst eine Kopie
+  deiner aktuellen Daten.

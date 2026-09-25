@@ -1,0 +1,10 @@
+- Une séance peut être retirée du journal, XP compris.
+- Garde le doigt sur + ou - et la valeur défile, de plus
+  en plus vite.
+- Couper les animations dans Android s'applique aussitôt.
+- Tablettes et pliables gardent une colonne lisible.
+- Zones de toucher plus grandes, contrastes renforcés.
+- Installé à la main ? Bati peut te signaler une nouvelle
+  version. Désactivé par défaut.
+- Une restauration garde d'abord une copie de tes
+  données actuelles.

@@ -1,0 +1,10 @@
+- Una sesión se puede quitar del diario, XP incluida.
+- Mantén pulsado + o - y el valor avanza cada vez más
+  rápido.
+- Quitar las animaciones en Android se aplica al momento.
+- Tabletas y plegables mantienen una columna legible.
+- Zonas táctiles más grandes y más contraste.
+- ¿Instalada a mano? Bati puede avisarte de una nueva
+  versión. Desactivado por defecto.
+- Una restauración guarda antes una copia de tus
+  datos actuales.

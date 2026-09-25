@@ -1,0 +1,8 @@
+- A session can be removed from the journal, XP included.
+- Hold a + or - button and it repeats, faster over time.
+- Turning off animations in Android now applies at once.
+- Tablets and foldables keep one readable column.
+- Bigger tap targets and stronger contrast.
+- Installed by hand? Bati can tell you when a new
+  version is out. Off by default.
+- A restore first saves a copy of your current data.

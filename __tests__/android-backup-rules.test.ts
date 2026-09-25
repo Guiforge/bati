@@ -38,6 +38,8 @@ test.each([
     // No directory-wide include: that is how decrypted imports and other devices' histories, in
     // plaintext, went to Google.
     expect(rules).not.toContain('path="SQLite/"');
-    expect(count('<exclude domain="sharedpref" path="SecureStore.xml"/>')).toBe(sections);
+    // SecureStore (the backup key) stays home because no shared preference is included at all.
+    expect(rules).not.toMatch(/domain="sharedpref"/);
+    expect(count("<include ")).toBe(3 * sections);
   },
 );

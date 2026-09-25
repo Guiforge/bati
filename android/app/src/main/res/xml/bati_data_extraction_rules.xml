@@ -5,12 +5,10 @@
     <include domain="file" path="SQLite/bati.v3.db"/>
     <include domain="file" path="SQLite/bati.v3.db-wal"/>
     <include domain="file" path="SQLite/bati.v3.db-shm"/>
-    <exclude domain="sharedpref" path="SecureStore.xml"/>
   </cloud-backup>
   <device-transfer>
     <include domain="file" path="SQLite/bati.v3.db"/>
     <include domain="file" path="SQLite/bati.v3.db-wal"/>
     <include domain="file" path="SQLite/bati.v3.db-shm"/>
-    <exclude domain="sharedpref" path="SecureStore.xml"/>
   </device-transfer>
 </data-extraction-rules>

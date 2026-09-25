@@ -13,9 +13,12 @@ const { withAndroidManifest, withDangerousMod } = require("expo/config-plugins")
  *   adopted as-is they would have backed up nothing but preferences and silently dropped the
  *   database. It is configured with `configureAndroidBackup: false` in app.json, and this file is
  *   the only one that writes backup rules.
- * - SecureStore now holds the key that encrypts backups (src/backupVault.ts). A Keystore-wrapped
+ * - SecureStore now holds the key that encrypts backups (src/backupCipher.ts). A Keystore-wrapped
  *   value cannot be decrypted on another device anyway, and restoring it would leave a key that
- *   throws on first read — so it is excluded, and the new phone asks for the password once.
+ *   throws on first read, so it must never travel: the new phone asks for the password once. It
+ *   stays out because nothing below includes a shared preference. An explicit
+ *   `<exclude domain="sharedpref">` would say the same, and lint rejects it as an error
+ *   (FullBackupContent: an exclude outside every include).
  *
  * The database is included with its `-wal` and `-shm`: a full-data backup stops the app first, so
  * the three files are consistent with each other.
@@ -43,9 +46,6 @@ const RULES = [
   `<include domain="file" path="${DB}"/>`,
   `<include domain="file" path="${DB}-wal"/>`,
   `<include domain="file" path="${DB}-shm"/>`,
-  // SecureStore's file, named for what it is: the includes above already leave it out, and this
-  // says so where the next reader looks.
-  '<exclude domain="sharedpref" path="SecureStore.xml"/>',
 ];
 
 const indent = (spaces) => RULES.map((rule) => " ".repeat(spaces) + rule).join("\n");

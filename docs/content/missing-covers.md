@@ -45,7 +45,7 @@ Both models were run for all 11 and compared. Per-image winner (Nano Banana 2 = 
 ## 🎯 Art Direction (recap — see `image-style-prompt.md`)
 
 - **Style**: Dark-fantasy Franco-Belgian comic / graphic-novel, thick black outlines, cel-shaded.
-- **Palette**: deep obsidian blue base `#0B0F19`, electric-blue accents `#0D33F2`; warm
+- **Palette**: deep obsidian blue base `#0B0F19`, edges falling off into darkness; warm
   amber/orange for fire & lantern light, red-orange for the golem's magma.
 - **Light**: high-contrast, volumetric, rim light, **fade to dark edges (vignette)** so the
   art blends into the app's dark UI.

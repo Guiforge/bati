@@ -252,7 +252,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | 4.25 | A result card that can be shared as an image | Low | S–M | P3 | Streak |
 | 4.28 | Today's step count | Low | S after 4.12 | P3 | |
 | 4.29 | Sleep, read from Health Connect | Low | S after 4.12 | P3 | |
-| 4.18 | Multi-device sync — reconciliation only | Medium | XL | P3 | |
+| 4.18 | Multi-device sync, encrypted, phases 0 to 3 | High | L | P1 | |
 | 4.20 | `fallow` in the toolchain | Dev-only | S | P3 | |
 
 Desktop is a distribution question, not a feature — it lives in §1.
@@ -490,26 +490,29 @@ Two of the village's three missing animations shipped — `FlameFlicker`
 (`components/village/VillageScene.tsx:184`) and `GrowthPulse` (`:232`). The **resource-gain
 animation** is what is left, and it stays low by design.
 
-### 4.18 Multi-device sync — what is left once 4.21 takes the transport
+### 4.18 Multi-device sync, end-to-end encrypted, over the hero's own cloud
 
-4.1 moved the file by hand and 4.21 moves it unattended, into a folder that may well be a cloud
-provider's. What neither does is **reconcile**: two devices trained on in the same week produce two
-snapshots, and the newer one silently wins. That — a conflict rule, not a transport — is all 4.18
-has ever been, and it is XL because "merge two SQLite histories" is a real problem: sessions can
-be unioned by id, but the village, the streak, the boss's remaining HP and the oath's progress are
-all *derived*, so the honest merge is "union the history, recompute everything downstream".
+**In progress on `feat/encrypted-sync` (2026-09-25).** The earlier version of this section refused
+every cloud API on the belief that 4.21's folder picker already reached them. It does not: Google
+Drive, OneDrive and Proton never appear in `ACTION_OPEN_DOCUMENT_TREE`, Dropbox's provider is
+partial, and Nextcloud's serves a stale copy of what another device wrote (Aegis #848 and #1237,
+KeePassDX's sync wiki, nextcloud/android #6883). Syncthing is the only folder transport that is
+really two-way, and it costs another app and a pairing. The research behind the phases below also
+read Joplin (the closest prior art: E2EE sync over the user's own cloud, no server) and
+InlitX/streak (a shared-folder JSON with a naive merge and no encryption).
 
-Stays P3 until someone reports the divergence. The ceiling remains **last write wins on a file the
-hero chose**, which is what desktop (§1) and 4.21 both already assume.
+| Phase | What | Effort |
+| --- | --- | --- |
+| 0 | **Phone change at no cost.** Android's own backup (Google, Seedvault, device transfer) already carried the database because `allowBackup` was on with no rules. `plugins/withAndroidBackupRules.js` makes that explicit, keeps the SecureStore key out of it, and the privacy policy now says so. | S |
+| 1 | **Encrypted backups.** A random master key encrypts every snapshot (AES-256-GCM); the key is wrapped by a password and by a recovery key, the Aegis/Signal model. The key lives in SecureStore, so unattended backups never prompt. Fingerprint unlocks nothing a new phone could use, so it guards only sensitive screens. | M |
+| 2 | **Cloud connectors into an app folder.** Nextcloud/WebDAV (Login Flow v2, no registration) and Dropbox (PKCE, no secret in the APK). Google Drive last or never: brand verification, a second signing certificate for the F-Droid build, and a push towards Play Services. | L |
+| 3 | **Hand-off between devices.** One file per device, only ever written by that device, so there is no lock and nobody deletes anyone else's file. The session uuids in each file are the version vector: a file whose sessions are a superset of ours is adopted, two files that each have sessions the other lacks ask the hero which to keep. An empty or missing folder is an error, never "delete everything" (Joplin #6864). | M |
+| 4 | **Row-level merge.** Union the facts by uuid, recompute everything derived. Needs uuids on hero exercises, quests, adventure runs and boss damage, tombstones for deletes, and an answer for `boss_fights` being one row per adventure. Only if phase 3's choice screen actually costs someone a session. | XL |
 
-**The backends that are refused, and why they are refusals rather than low-priority rows** — every
-one of them buys the same file 4.21 already writes, for a cost 4.21 does not pay:
-
-| Asked for | What it actually costs |
-| --- | --- |
-| Google Drive, Dropbox, OneDrive, Nextcloud | Nothing to build. They publish an Android `DocumentsProvider` and appear inside 4.21's folder picker. A per-vendor SDK would buy an OAuth flow, a client secret in the APK, and a Firebase-shaped F-Droid problem, in exchange for a file the picker already hands over. |
-| WebDAV, or the GitHub API as a store | The app's **first network request**, plus credentials at rest, plus `INTERNET` back in the manifest, plus a Data Safety form and a privacy policy that stop saying "no". A self-hosted Nextcloud reached through its Android client costs none of that — same server, through the picker. |
-| Wifi / Bluetooth device-to-device, "like Joplin or Obsidian" | Worth naming precisely, because the comparison points the other way: Obsidian's default is a synced *folder*, and Syncthing — the LAN tool people actually mean — is a separate app that syncs the folder 4.21 writes to, for free. A discovery protocol inside Bati is a native RN module, the same bill §5 prices for "live session", to reimplement something already installed on the devices that want it. |
+**Joplin's lessons, kept because they are cheap to forget:** one encrypted blob per device rather
+than one file per row (a fresh device never finished 13,000 items against OneDrive's throttling);
+never infer a deletion from an absence; never order by device clocks (3,000 duplicates from one
+skewed clock, #5738); do not count on Android background sync, sync at launch and on demand.
 
 ### 4.20 `fallow`
 
@@ -597,12 +600,9 @@ shipped. It is a published legal document behind a store listing, so the feature
 that sentence is. Worth a grep before any feature that writes a file, opens a socket, or reads a
 sensor.
 
-**It is also the complete answer to "sync via Google Drive, Dropbox, GitHub or WebDAV".** Drive,
-Dropbox, Nextcloud, OneDrive and Syncthing all publish an Android `DocumentsProvider`, so they
-appear *inside the folder picker the app already opens*. One SAF integration covers every one of
-them: no OAuth, no SDK per vendor, no credentials at rest, no network request, no guardrail spent —
-and the app never learns which provider was chosen, which is the point. This is Obsidian's model,
-and it is why the backends that do not work this way are refused rather than ranked (see 4.18).
+**It was believed to be the answer to "sync via Google Drive, Dropbox or WebDAV", and is not.**
+Most cloud clients never publish a folder to the picker (see 4.18 for the evidence). What 4.21 is
+good at is an unattended copy on the device, or in a folder Syncthing or Nextcloud keeps in sync.
 
 **4.4 Paths.** The full account is [`docs/gameplay/paths.md`](../gameplay/paths.md).
 

@@ -33,7 +33,7 @@ francés: **feedback.bati@proton.me**
 
 # Privacy Policy for Bati
 
-**Last updated: 20 September 2026**
+**Last updated: 25 September 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -60,15 +60,21 @@ achievements, flame, oath, avatar, settings, and the GPS points of an outing) is
 
 - It is never uploaded, synced, backed up to us, or shared with anyone.
 - We cannot read it. There is no server to read it from.
-- Deleting the app deletes all of it, and there is no copy anywhere else unless you exported one
-  yourself, as described below.
+- **Your phone's own backup carries it.** Android backs up app data by itself (Google's backup on
+  most phones, Seedvault on LineageOS, /e/OS and GrapheneOS, or a cable or wireless transfer to a
+  new phone), and Bati lets it take this database, so a new phone gets your hero back without you
+  doing anything. That copy is made and kept by your phone's system under its own terms, not by
+  Bati: Google's is end-to-end encrypted with your screen lock on Android 9 and later. You can turn
+  it off in your phone's settings, under Backup.
+- Deleting the app deletes all of it from the phone. What remains is that system backup, if it is
+  on, and any file you exported yourself, as described below.
 
 ## Backups you make
 
 Settings offers three ways to write that database to a file. **Share my backup** hands it to your
 system's share sheet. **Save a file** writes it into a folder you choose on the device.
-**Automatic backup** writes it into a folder you choose once, and then again on its own before
-each app update. Where any of those files goes from there is entirely your choice: the app sends
+**Automatic backup** writes it into a folder you choose once, and then again on its own once a
+day and before each app update. Where any of those files goes from there is entirely your choice: the app sends
 it nowhere and has no way to.
 
 - **The file is not encrypted.** Anyone who opens it can read your training history. Keep it the
@@ -77,16 +83,16 @@ it nowhere and has no way to.
   supply. The database you had is kept on the device as a recovery copy, in the same private
   storage, until the next restore overwrites it.
 - **Automatic backup is off until you turn it on**, and turning it on means picking the folder
-  yourself: the app cannot write anywhere you have not pointed it at. It writes only before an
-  update, only into that folder, and keeps the five most recent files there, deleting older ones
+  yourself: the app cannot write anywhere you have not pointed it at. It writes at most once a day
+  when the app opens and before an update, only into that folder, and keeps the five most recent files there, deleting older ones
   it wrote itself and nothing else. Settings shows which folder it is using, and switching it off
   is one tap; the files already written stay where they are, because they are yours.
 - If the folder you chose becomes unavailable (a card removed, a folder deleted, a permission
   withdrawn), Bati stops and the Settings row goes back to **Off**, rather than quietly failing
   while claiming to work.
-- **This is still local.** A folder you pick may belong to a cloud app (Drive, Dropbox, Nextcloud,
-  and others appear in Android's folder picker), and if you pick one, that app syncs the file
-  under its own privacy policy. Bati never learns which folder you chose beyond writing to it, and
+- **This is still local.** A folder you pick may belong to a cloud app (Nextcloud appears in
+  Android's folder picker, and a folder that Syncthing keeps in sync is an ordinary folder), and if
+  you pick one, that app syncs the file under its own privacy policy. Bati never learns which folder you chose beyond writing to it, and
   never sends a backup anywhere: the only thing it fetches over the network is the map described
   below, and nothing in the app can upload a file.
 
@@ -220,7 +226,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 20 septembre 2026**
+**Dernière mise à jour : 25 septembre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -250,15 +256,24 @@ votre appareil**.
 
 - Rien n'est envoyé, synchronisé, sauvegardé chez nous ni partagé avec qui que ce soit.
 - Nous ne pouvons pas le lire. Il n'existe aucun serveur pour le lire.
-- Désinstaller l'application supprime l'ensemble, et il n'en existe aucune copie ailleurs, sauf
-  si vous en avez exporté une vous-même, voir ci-dessous.
+- **La sauvegarde de votre téléphone l'emporte.** Android sauvegarde de lui-même les données des
+  applications (la sauvegarde Google sur la plupart des téléphones, Seedvault sur LineageOS, /e/OS
+  et GrapheneOS, ou un transfert par câble ou sans fil vers un nouveau téléphone), et Bati le
+  laisse prendre cette base : un nouveau téléphone retrouve votre héros sans que vous ayez rien à
+  faire. Cette copie est faite et gardée par le système de votre téléphone, selon ses propres
+  conditions, pas par Bati : celle de Google est chiffrée de bout en bout avec votre verrouillage
+  d'écran depuis Android 9. Vous pouvez la désactiver dans les réglages du téléphone, rubrique
+  Sauvegarde.
+- Désinstaller l'application supprime l'ensemble du téléphone. Il reste cette sauvegarde du
+  système, si elle est activée, et les fichiers que vous avez exportés vous-même, voir ci-dessous.
 
 ## Les sauvegardes que vous faites
 
 Les réglages proposent trois façons d'écrire cette base dans un fichier. **Partager ma sauvegarde**
 la remet au partage de votre système. **Enregistrer un fichier** l'écrit dans un dossier que vous
 choisissez sur l'appareil. **Sauvegarde automatique** l'écrit dans un dossier que vous choisissez
-une fois, puis de nouveau toute seule avant chaque mise à jour de l'application. Ce que ces
+une fois, puis de nouveau toute seule une fois par jour et avant chaque mise à jour de
+l'application. Ce que ces
 fichiers deviennent ensuite ne dépend que de vous : l'application ne les envoie nulle part, et
 n'en a aucun moyen.
 
@@ -270,7 +285,8 @@ n'en a aucun moyen.
   de secours, dans le même stockage privé, jusqu'à la restauration suivante.
 - **La sauvegarde automatique est désactivée tant que vous ne l'activez pas**, et l'activer, c'est
   choisir le dossier vous-même : l'application ne peut écrire nulle part où vous ne l'avez pas
-  envoyée. Elle n'écrit qu'avant une mise à jour, uniquement dans ce dossier, et n'y conserve que
+  envoyée. Elle écrit au plus une fois par jour à l'ouverture et avant une mise à jour, uniquement
+  dans ce dossier, et n'y conserve que
   les cinq fichiers les plus récents, en supprimant les plus anciens qu'elle a elle-même écrits et
   rien d'autre. Les réglages affichent le dossier utilisé, et l'arrêter tient en une pression ;
   les fichiers déjà écrits restent où ils sont, ils sont à vous.
@@ -278,7 +294,8 @@ n'en a aucun moyen.
   révoquée), Bati s'arrête et la ligne des réglages repasse sur **Désactivée**, plutôt que
   d'échouer en silence en prétendant fonctionner.
 - **Cela reste local.** Le dossier que vous choisissez peut appartenir à une application de cloud
-  (Drive, Dropbox, Nextcloud et d'autres apparaissent dans le sélecteur de dossier d'Android) ;
+  (Nextcloud apparaît dans le sélecteur de dossier d'Android, et un dossier que Syncthing garde
+  synchronisé est un dossier ordinaire) ;
   si vous en choisissez un, cette application synchronise le fichier sous sa propre politique de
   confidentialité. Bati n'apprend rien du dossier choisi au-delà d'y écrire, et n'envoie jamais une
   sauvegarde où que ce soit : la seule chose qu'elle récupère sur le réseau est la carte décrite

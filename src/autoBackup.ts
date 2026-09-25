@@ -6,13 +6,17 @@ import { pickBackupFolder, preRestoreFileName, saveBackupToFolder } from "@/src/
 import { reportError } from "@/src/reportError";
 
 /**
- * Backups that write themselves, and the whole of the "sync with Drive / Dropbox / …" answer.
+ * Backups that write themselves, into a folder the hero picks once.
  *
- * A folder the hero picks once is a Storage Access Framework tree, and every cloud client worth
- * naming — Drive, Dropbox, Nextcloud, OneDrive, Syncthing — publishes one as a
- * `DocumentsProvider`. So they all appear *inside the picker the app already opens*: one
- * integration covers every backend, with no OAuth, no SDK per vendor, no credential at rest and
- * no network request. The app never learns which provider was chosen, which is the point.
+ * The folder is a Storage Access Framework tree. It was once meant to be the whole answer to
+ * "sync with Drive / Dropbox / …", on the belief that every cloud client publishes a
+ * `DocumentsProvider` that can hand over a folder. Most do not: Google Drive, OneDrive and Proton
+ * only open or create single files and never appear in the folder picker, and Dropbox's provider
+ * is partial (Aegis #848 and #1237, KeePassDX's sync wiki). Nextcloud does, and serves a stale
+ * local copy of what another device wrote; a folder Syncthing keeps in sync is an ordinary local
+ * folder and works best of all. So this stays what it is good at, an unattended copy on this
+ * device or in such a folder, and the classic clouds are reached another way (docs/planning/
+ * roadmap.md §4.18).
  *
  * Two triggers, for the two moments there is something to save:
  *

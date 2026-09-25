@@ -100,6 +100,12 @@
           ]
         }
       ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": false
+        }
+      ],
       "./plugins/withAndroidLint",
       "./plugins/withAndroidEdgeToEdgeTheme",
       "./plugins/withAndroidReleaseSigning",
@@ -110,7 +116,8 @@
       "./plugins/withAndroidReproducibleNative",
       "./plugins/withAndroidLocalAppId",
       "./plugins/withAndroidDebugIcon",
-      "./plugins/withAndroidDebugNetworkPermissions"
+      "./plugins/withAndroidDebugNetworkPermissions",
+      "./plugins/withAndroidBackupRules"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

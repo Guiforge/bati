@@ -185,6 +185,8 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
         body={t("sync.joinBody")}
         onSubmit={submitJoin}
         onCancel={() => {
+          // Only a question actually on screen can be walked away from.
+          if (joining === null) return;
           setJoining(null);
           abandonConnect();
         }}
@@ -194,6 +196,7 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
         mode={encryptionSheet}
         canShowRecoveryAgain={encryption.canShowRecoveryAgain}
         onClose={() => {
+          if (encryptionSheet === null) return;
           setEncryptionSheet(null);
           if (syncAfterEncrypt) abandonConnect();
         }}

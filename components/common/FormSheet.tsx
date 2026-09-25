@@ -52,7 +52,10 @@ export function FormSheet({ open, title, onClose, children }: Props) {
     <Sheet
       modal
       open={open}
-      onOpenChange={(next: boolean) => (next ? undefined : close())}
+      // Tamagui reports a change of the `open` prop through here too: a sheet the caller closed
+      // (a join that succeeded) came back as a dismissal, and the settings rows disconnected sync
+      // on it. Only a sheet still open can be dismissed by the hero.
+      onOpenChange={(next: boolean) => (next || !open ? undefined : close())}
       snapPointsMode="fit"
       disableDrag
       moveOnKeyboardChange

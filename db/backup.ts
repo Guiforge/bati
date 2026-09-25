@@ -222,3 +222,55 @@ export function validateBackup(path: string): Promise<BackupCheck> {
     }
   });
 }
+
+/**
+ * How another device's snapshot stands against this database, counted in sessions.
+ *
+ * The session `uuid` (0038) is the one name a session keeps across devices, so the two sets of
+ * uuids are a version vector with no clock in it: a device whose sessions are a superset of ours
+ * is ahead, one that has sessions we lack while lacking some of ours has diverged. Device clocks
+ * never enter it, which is the lesson Joplin paid for (#5738: one skewed clock, 3,000 conflicts).
+ *
+ * ponytail: sessions only. A hero exercise created, a quest edited or a preference changed on one
+ *           device does not make it "ahead" by itself. The ceiling is a phone that only edited
+ *           settings looking level with the tablet; the upgrade is roadmap 4.18 phase 4, uuids on
+ *           every hero-authored table.
+ *
+ * `path` must already have passed `validateBackup`: this reads a table, it does not judge a file.
+ */
+export type PeerComparison = {
+  /** Sessions the other device has and this one does not. */
+  peerOnly: number;
+  /** Sessions this device has and the other does not. */
+  localOnly: number;
+  /** When the other device's newest session was performed, epoch seconds, or `null` if none. */
+  peerLatest: number | null;
+};
+
+export function compareWithPeer(path: string): Promise<PeerComparison> {
+  return withIsolatedConnection(async (conn) => {
+    await conn.execAsync(`ATTACH DATABASE ${sqlString(path)} AS ${CANDIDATE}`);
+    const row = await conn.getFirstAsync<{
+      peerOnly: number;
+      localOnly: number;
+      peerLatest: number | null;
+    }>(
+      `SELECT
+         (SELECT count(*) FROM ${CANDIDATE}.completed_sessions p
+            WHERE p.uuid IS NOT NULL
+              AND p.uuid NOT IN (SELECT uuid FROM main.completed_sessions WHERE uuid IS NOT NULL))
+           AS peerOnly,
+         (SELECT count(*) FROM main.completed_sessions l
+            WHERE l.uuid IS NOT NULL
+              AND l.uuid NOT IN (SELECT uuid FROM ${CANDIDATE}.completed_sessions WHERE uuid IS NOT NULL))
+           AS localOnly,
+         (SELECT max(performedAt) FROM ${CANDIDATE}.completed_sessions) AS peerLatest`,
+    );
+    return {
+      peerOnly: Number(row?.peerOnly ?? 0),
+      localOnly: Number(row?.localOnly ?? 0),
+      peerLatest:
+        row?.peerLatest === null || row?.peerLatest === undefined ? null : Number(row.peerLatest),
+    };
+  });
+}

@@ -6,6 +6,7 @@ import { snapshotDatabaseTo } from "@/db/backup";
 import { closeDatabase, DB_NAME, serializeOnDatabase } from "@/db/client";
 import { dayKey } from "@/db/dates";
 import { SCHEMA_VERSION } from "@/db/schemaVersion";
+import { encryptionStatus, type OpenResult, openBackup, sealBackup } from "@/src/backupCipher";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -21,6 +22,9 @@ const DB_DIR = defaultDatabaseDirectory as string;
 /** The picked file, copied next to the database so it lands on the same filesystem. */
 const IMPORT_NAME = "bati-import.tmp.db";
 
+/** An encrypted import, decrypted. It replaces `IMPORT_NAME` only once it has authenticated. */
+const IMPORT_PLAIN = "bati-import-plain.tmp.db";
+
 /**
  * The database as it was just before the last restore, and the rollback source if the swap
  * fails. It *is* the previous file, renamed rather than copied — see `commitRestore`.
@@ -29,6 +33,15 @@ const SAFETY_NAME = `${DB_NAME}.bak`;
 
 /** The snapshot handed to the share sheet. One at a time, replaced on the next export. */
 const EXPORT_PREFIX = "bati-export-";
+
+/**
+ * The plaintext `VACUUM INTO` writes before it is sealed. It carries the export prefix so the
+ * sweep at the top of `writeSnapshot` takes it too, should a crash ever leave one behind.
+ */
+const PLAIN_SNAPSHOT = `${EXPORT_PREFIX}plain.tmp.db`;
+
+/** `.batb` for a sealed snapshot (src/backupCipher.ts), `.db` for a plain one. */
+const extension = (encrypted: boolean) => (encrypted ? ".batb" : ".db");
 
 /**
  * How many snapshots survive in a chosen folder. More than one because the reason to keep a
@@ -50,7 +63,9 @@ const KEEP_SNAPSHOTS = 5;
  * nothing, so the prune would silently never run on a device while every test stayed green.
  * Decoding the URI turns `%2F` back into a separator and makes both shapes match.
  */
-const SNAPSHOT_URI = new RegExp(`(?:^|/)${EXPORT_PREFIX}v\\d+-(\\d{4}-\\d{2}-\\d{2})\\.db$`);
+const SNAPSHOT_URI = new RegExp(
+  `(?:^|/)${EXPORT_PREFIX}v\\d+-(\\d{4}-\\d{2}-\\d{2})\\.(?:db|batb)$`,
+);
 
 function pathIn(name: string) {
   return `${DB_DIR}/${name}`;
@@ -67,25 +82,26 @@ function deleteIfPresent(name: string) {
 }
 
 /**
- * `bati-export-v3-2026-08-15.db` — dated, for the human scrolling their files app. The hero's
- * own day, not UTC's: a backup taken at half past midnight in Paris is today's, not yesterday's.
+ * `bati-export-v3-2026-08-15` — dated, for the human scrolling their files app. The hero's own
+ * day, not UTC's: a backup taken at half past midnight in Paris is today's, not yesterday's.
+ * A stem: `writeSnapshot` adds the extension once it knows whether the file is sealed.
  */
-function exportFileName(now: Date) {
-  return `${EXPORT_PREFIX}v${SCHEMA_VERSION}-${dayKey(now)}.db`;
+function exportFileStem(now: Date) {
+  return `${EXPORT_PREFIX}v${SCHEMA_VERSION}-${dayKey(now)}`;
 }
 
 /**
- * `bati-export-before-restore-v3-2026-09-19-091502.db`: the database a restore is about to
+ * `bati-export-before-restore-v3-2026-09-19-091502`: the database a restore is about to
  * replace. To the second, because two restores on one day must not overwrite each other: the
  * second one's "before" is the first one's backup, and the hero's own data is the file under
  * the first name. `SNAPSHOT_URI` does not match it, so pruning never takes one; they are rare
  * and they are the only copy of what a restore threw away.
  */
-export function preRestoreFileName(now: Date) {
+export function preRestoreFileStem(now: Date) {
   const time = [now.getHours(), now.getMinutes(), now.getSeconds()]
     .map((part) => String(part).padStart(2, "0"))
     .join("");
-  return `${EXPORT_PREFIX}before-restore-v${SCHEMA_VERSION}-${dayKey(now)}-${time}.db`;
+  return `${EXPORT_PREFIX}before-restore-v${SCHEMA_VERSION}-${dayKey(now)}-${time}`;
 }
 
 /**
@@ -96,12 +112,26 @@ export function preRestoreFileName(now: Date) {
  * under a lazy reader would hand the user a truncated backup. This way at most one stale
  * snapshot exists, and it costs one database's worth of disk.
  */
-async function writeSnapshot(name = exportFileName(new Date())): Promise<File> {
+async function writeSnapshot(stem = exportFileStem(new Date())): Promise<File> {
   for (const entry of new Directory(`file://${DB_DIR}`).list()) {
     if (entry.name.startsWith(EXPORT_PREFIX)) entry.delete();
   }
 
-  await snapshotDatabaseTo(pathIn(name));
+  // Asked on every write rather than once: the hero can switch it on between two backups, and a
+  // plaintext copy written after they asked for encryption is the one outcome that must not be.
+  const encrypted = (await encryptionStatus()) === "on";
+  const name = stem + extension(encrypted);
+  if (!encrypted) {
+    await snapshotDatabaseTo(pathIn(name));
+    return fileIn(name);
+  }
+
+  // `VACUUM INTO` needs a real path and writes plaintext; the seal reads it and it goes. On a
+  // failure too: the plaintext is swept by the next write anyway, but not leaving it is free.
+  await snapshotDatabaseTo(pathIn(PLAIN_SNAPSHOT));
+  await sealBackup(pathIn(PLAIN_SNAPSHOT), pathIn(name)).finally(() =>
+    deleteIfPresent(PLAIN_SNAPSHOT),
+  );
   return fileIn(name);
 }
 
@@ -152,11 +182,11 @@ export async function pickBackupFolder(): Promise<Directory | null> {
  * Pass a `folder` to write into a tree already granted; without one it asks. The snapshot is
  * written *after* the picker resolves, so backing out leaves nothing behind.
  */
-export async function saveBackupToFolder(folder?: Directory, name?: string): Promise<boolean> {
+export async function saveBackupToFolder(folder?: Directory, stem?: string): Promise<boolean> {
   const target = folder ?? (await pickBackupFolder());
   if (!target) return false;
 
-  const snapshot = await writeSnapshot(name);
+  const snapshot = await writeSnapshot(stem);
   // Snapshots are named by the day, so a second save into the same folder aims at a name that is
   // already taken and the copy refuses. Replacing is what the hero means by saving again: the
   // file under that name is this app's own backup, from the same day, under a name only this app
@@ -237,9 +267,27 @@ export async function stageBackupForImport(): Promise<string | null> {
   return pathIn(IMPORT_NAME);
 }
 
+/**
+ * Decrypts the staged import in place, when it is sealed. `"notEncrypted"` leaves a plain backup
+ * exactly as it was, so every import goes through here and validation stays the one gate after.
+ *
+ * Without a `secret` it tries the keys this phone holds; `"needsSecret"` and `"wrongSecret"` ask
+ * the caller for the hero's password or recovery key. Rejects on a file whose body does not
+ * authenticate, which is a damaged backup and is reported as one.
+ */
+export async function decryptStagedImport(secret?: string): Promise<OpenResult> {
+  deleteIfPresent(IMPORT_PLAIN);
+  const result = await openBackup(pathIn(IMPORT_NAME), pathIn(IMPORT_PLAIN), secret);
+  if (result === "opened") {
+    await fileIn(IMPORT_PLAIN).move(fileIn(IMPORT_NAME), { overwrite: true });
+  }
+  return result;
+}
+
 /** Throws away a staged import. The app is untouched, so there is nothing else to undo. */
 export function discardStagedImport(): void {
   deleteIfPresent(IMPORT_NAME);
+  deleteIfPresent(IMPORT_PLAIN);
 }
 
 /**

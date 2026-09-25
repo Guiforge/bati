@@ -2,7 +2,7 @@ import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next";
 
 import { useToast } from "@/components/common/Toast";
-import { validateBackup } from "@/db/backup";
+import { type BackupRejection, validateBackup } from "@/db/backup";
 import { useBugReport } from "@/hooks/useBugReport";
 import {
   autoBackupFolder,
@@ -11,6 +11,7 @@ import {
   enableAutoBackup,
 } from "@/src/autoBackup";
 import {
+  decryptStagedImport,
   discardStagedImport,
   exportBackup,
   saveBackupToFolder,
@@ -38,6 +39,9 @@ async function exclusive(
   setBusy(false);
 }
 
+/** What the password sheet shows while an encrypted import waits for the hero. */
+export type SecretRequest = { open: boolean; wrong: boolean };
+
 /**
  * The backup rows' worth of orchestration — share, save, restore — shared by Settings and
  * onboarding.
@@ -63,6 +67,53 @@ export function useBackup() {
   // before either render. Two imports racing share one staged filename, so the second overwrites
   // the file the first has already validated — and the swap commits something nobody checked.
   const running = useRef(false);
+  // An encrypted import pauses on the hero's password. The sheet's answer resolves this; `null`
+  // is "cancel". A ref, because the import that is waiting holds the resolver across renders.
+  const [secretRequest, setSecretRequest] = useState<SecretRequest>({ open: false, wrong: false });
+  const answerSecret = useRef<((secret: string | null) => void) | null>(null);
+
+  const askSecret = useCallback(
+    (wrong: boolean) =>
+      new Promise<string | null>((resolve) => {
+        answerSecret.current = resolve;
+        setSecretRequest({ open: true, wrong });
+      }),
+    [],
+  );
+
+  const settleSecret = useCallback((secret: string | null) => {
+    setSecretRequest({ open: false, wrong: false });
+    answerSecret.current?.(secret);
+    answerSecret.current = null;
+  }, []);
+
+  /**
+   * Decrypts the staged file when it is sealed, then validates it: `"ok"`, `"cancelled"` when the
+   * hero gave up on the password, or the reason it was refused. A plain backup, or one this phone
+   * already holds the key to, never shows the sheet. A sealed body that fails its tag rejects in
+   * the cipher, and is the answer validation gives a damaged plain file: `"corrupt"`.
+   */
+  const checkStaged = useCallback(
+    async (staged: string): Promise<"ok" | "cancelled" | BackupRejection> => {
+      const attempt = (secret?: string) =>
+        decryptStagedImport(secret).catch((error: unknown) => {
+          reportError("backup.decrypt", error);
+          return "corrupt" as const;
+        });
+
+      let opened = await attempt();
+      while (opened === "needsSecret" || opened === "wrongSecret") {
+        const secret = await askSecret(opened === "wrongSecret");
+        if (secret === null) return "cancelled";
+        opened = await attempt(secret);
+      }
+      if (opened === "corrupt") return "corrupt";
+
+      const check = await validateBackup(staged);
+      return check.ok ? "ok" : check.reason;
+    },
+    [askSecret],
+  );
 
   useEffect(() => {
     // No unmount guard: React stopped warning about a state update on an unmounted component in
@@ -158,10 +209,11 @@ export function useBackup() {
           const staged = await stageBackupForImport();
           if (!staged) return;
 
-          const check = await validateBackup(staged);
-          if (!check.ok) {
+          const verdict = await checkStaged(staged);
+          if (verdict !== "ok") {
             discardStagedImport();
-            showError(t(`backup.rejected.${check.reason}`));
+            // Silence on a cancel, same reason as the picker: the hero closed it themselves.
+            if (verdict !== "cancelled") showError(t(`backup.rejected.${verdict}`));
             return;
           }
 
@@ -188,7 +240,7 @@ export function useBackup() {
           alertWithReport(t("backup.importFailed"));
         },
       ),
-    [alertWithReport, beginRestore, showError, t],
+    [alertWithReport, beginRestore, checkStaged, showError, t],
   );
 
   // Returned as fire-and-forget handlers: both swallow their own failures into a toast, so a
@@ -196,6 +248,9 @@ export function useBackup() {
   return {
     busy,
     autoFolder,
+    secretRequest,
+    submitSecret: settleSecret,
+    cancelSecret: useCallback(() => settleSecret(null), [settleSecret]),
     runExport: useCallback(() => {
       runExport().catch((e) => reportError("backup.export", e));
     }, [runExport]),

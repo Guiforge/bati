@@ -2,7 +2,7 @@ import { Directory } from "expo-file-system";
 import { dayKey } from "@/db/dates";
 import { preferences } from "@/db/preferences";
 import { errorTrail } from "@/db/sql";
-import { pickBackupFolder, preRestoreFileName, saveBackupToFolder } from "@/src/backupFiles";
+import { pickBackupFolder, preRestoreFileStem, saveBackupToFolder } from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -113,7 +113,7 @@ export async function disableAutoBackup(): Promise<void> {
  */
 export async function backupBeforeRestore(): Promise<void> {
   const folder = await rememberedFolder();
-  if (folder) await saveBackupToFolder(folder, preRestoreFileName(new Date()));
+  if (folder) await saveBackupToFolder(folder, preRestoreFileStem(new Date()));
 }
 
 /**

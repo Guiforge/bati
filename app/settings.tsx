@@ -22,6 +22,7 @@ import {
   HeartPulse,
   ImagePlus,
   Languages,
+  Lock,
   // Aliased: an unqualified `Map` shadows the global of the same name, which is a trap for
   // whoever edits this file next. Same reason `app/recap.tsx` renames MapLibre's component.
   Map as MapIcon,
@@ -37,11 +38,14 @@ import {
   Wrench,
   Zap,
 } from "@/components/icons";
+import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
+import { EncryptionSheet, type EncryptionSheetMode } from "@/components/settings/EncryptionSheet";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
 import type { EquipmentCode } from "@/db/schema";
 import { useBackup } from "@/hooks/useBackup";
+import { useBackupEncryption } from "@/hooks/useBackupEncryption";
 import { useBugReport, versionLabel } from "@/hooks/useBugReport";
 import { useHaptics } from "@/hooks/useHaptics";
 import { LANGUAGE_NAMES, MACHINE_TRANSLATED, nextAppLanguage } from "@/src/i18n/deviceLanguage";
@@ -283,7 +287,62 @@ export default function SettingsScreen() {
     runSaveToFolder,
     runEnableAuto,
     runDisableAuto,
+    secretRequest,
+    submitSecret,
+    cancelSecret,
   } = useBackup();
+  const encryption = useBackupEncryption();
+  const [encryptionSheet, setEncryptionSheet] = useState<EncryptionSheetMode | null>(null);
+  // Bumped per opening and used as the sheet's `key`, so every opening starts with empty fields.
+  const [encryptionSheetId, setEncryptionSheetId] = useState(0);
+  const openEncryptionSheet = useCallback((mode: EncryptionSheetMode) => {
+    setEncryptionSheetId((id) => id + 1);
+    setEncryptionSheet(mode);
+  }, []);
+
+  const showRecoveryKey = useCallback(() => {
+    encryption
+      .recovery()
+      .then((recovery) => {
+        if (recovery !== null) openEncryptionSheet({ kind: "recovery", recovery });
+      })
+      .catch((e) => reportError("backup.encryption.recovery", e));
+  }, [encryption, openEncryptionSheet]);
+
+  // Off: one tap into setup. On: the same three-button order as `confirmAuto`, destructive in the
+  // middle, for the reason written there. "Show the recovery key" only exists where a fingerprint
+  // could have kept it.
+  const confirmEncryption = useCallback(() => {
+    if (encryption.status === "off") {
+      openEncryptionSheet({ kind: "enable" });
+      return;
+    }
+    const buttons: Parameters<typeof Alert.alert>[2] = [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("backup.encryptionOffCta"),
+        style: "destructive",
+        onPress: () =>
+          Alert.alert(t("backup.encryption"), t("backup.encryptionOffConfirm"), [
+            { text: t("common.cancel"), style: "cancel" },
+            {
+              text: t("backup.encryptionOffCta"),
+              style: "destructive",
+              onPress: () => {
+                encryption.disable().catch((e) => reportError("backup.encryption.disable", e));
+              },
+            },
+          ]),
+      },
+      encryption.canShowRecoveryAgain
+        ? { text: t("backup.showRecovery"), onPress: showRecoveryKey }
+        : {
+            text: t("backup.changePassword"),
+            onPress: () => openEncryptionSheet({ kind: "change" }),
+          },
+    ];
+    Alert.alert(t("backup.encryption"), t("backup.encryptionOnMessage"), buttons);
+  }, [encryption, openEncryptionSheet, showRecoveryKey, t]);
 
   // The confirmation lives here rather than in the hook: onboarding calls the same import with
   // no dialog, because at that point there is no history to lose. One writer, two entrances.
@@ -639,6 +698,19 @@ export default function SettingsScreen() {
             onPress={confirmAuto}
           />
 
+          {/* Next to automatic backup because it changes what every backup row writes: on, a
+              share, a saved file and the daily copy are all sealed with the same key. */}
+          <SettingRow
+            testID="settings-encrypt-backup"
+            icon={<Lock size={22} color="$text" />}
+            label={t("backup.encryption")}
+            value={
+              encryption.status === "on" ? t("backup.encryptionOn") : t("backup.encryptionOff")
+            }
+            disabled={backupBusy}
+            onPress={confirmEncryption}
+          />
+
           <SettingRow
             testID="settings-import-backup"
             icon={<ArchiveRestore size={22} color="$text" />}
@@ -715,6 +787,16 @@ export default function SettingsScreen() {
           </Text>
         </YStack>
       </RNScrollView>
+
+      <BackupSecretSheet request={secretRequest} onSubmit={submitSecret} onCancel={cancelSecret} />
+      <EncryptionSheet
+        key={encryptionSheetId}
+        mode={encryptionSheet}
+        canShowRecoveryAgain={encryption.canShowRecoveryAgain}
+        onClose={() => setEncryptionSheet(null)}
+        onEnable={encryption.enable}
+        onChange={encryption.change}
+      />
     </YStack>
   );
 }

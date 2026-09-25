@@ -77,8 +77,14 @@ system's share sheet. **Save a file** writes it into a folder you choose on the 
 day and before each app update. Where any of those files goes from there is entirely your choice: the app sends
 it nowhere and has no way to.
 
-- **The file is not encrypted.** Anyone who opens it can read your training history. Keep it the
-  way you would keep a personal photo, and think about it before putting it somewhere shared.
+- **The file is not encrypted unless you ask.** Without encryption, anyone who opens it can read
+  your training history: keep it the way you would keep a personal photo. **Encrypt my backups**
+  seals every backup the app writes from then on (AES-256-GCM) with a key that opens only with a
+  password you choose or with a recovery key the app shows you once. The key stays on your phone,
+  inside Android's protected storage, and is left out of your phone's own backup. Without the
+  password or the recovery key nobody can open those files, and nobody can recover them for you:
+  there is no copy of either anywhere but with you. On a phone with a fingerprint set up, the
+  recovery key is also kept behind it, so it can be shown again.
 - **Restoring replaces everything.** Importing a backup swaps the app's contents for the file you
   supply. The database you had is kept on the device as a recovery copy, in the same private
   storage, until the next restore overwrites it.
@@ -277,9 +283,15 @@ l'application. Ce que ces
 fichiers deviennent ensuite ne dépend que de vous : l'application ne les envoie nulle part, et
 n'en a aucun moyen.
 
-- **Ce fichier n'est pas chiffré.** Quiconque l'ouvre lit votre historique d'entraînement.
-  Rangez-le comme vous rangeriez une photo personnelle, et réfléchissez-y à deux fois avant de
-  le déposer dans un espace partagé.
+- **Ce fichier n'est pas chiffré, sauf si vous le demandez.** Sans chiffrement, quiconque l'ouvre
+  lit votre historique d'entraînement : rangez-le comme une photo personnelle. **Chiffrer mes
+  sauvegardes** scelle chaque sauvegarde écrite ensuite par l'application (AES-256-GCM) avec une
+  clé qui ne s'ouvre qu'avec un mot de passe que vous choisissez ou avec une clé de récupération
+  que l'application vous montre une fois. La clé reste sur votre téléphone, dans le stockage
+  protégé d'Android, et n'entre pas dans la sauvegarde du téléphone. Sans le mot de passe ni la
+  clé de récupération, personne ne peut ouvrir ces fichiers ni les récupérer pour vous : il n'en
+  existe aucune copie ailleurs que chez vous. Sur un téléphone où une empreinte est configurée,
+  la clé de récupération est aussi gardée derrière elle, pour pouvoir la revoir.
 - **Restaurer remplace tout.** Importer une sauvegarde échange le contenu de l'application contre
   le fichier que vous fournissez. La base que vous aviez est conservée sur l'appareil comme copie
   de secours, dans le même stockage privé, jusqu'à la restauration suivante.

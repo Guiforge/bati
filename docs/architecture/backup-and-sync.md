@@ -89,7 +89,8 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
   ignored. News only on the other side is a hand-off (`ahead`); news on both is `diverged`, and
   taking the other version first uploads this device's as `bati-<id>-kept-<time>.batb`, which no
   device reads as a peer. A refusal is remembered by the other device's content fingerprint, not by
-  its etag, and an unchanged history is not re-uploaded.
+  its etag, and an unchanged history is not re-uploaded unless the key changed (a vault joined, a
+  new password), or the other devices would be left with a file they cannot open.
 - **When**: the snapshot is sealed at launch, next to the automatic backup, because `VACUUM INTO`
   cannot run behind the statements a finished session leaves in flight, and only if the history
   moved. The network half runs once the app is up (`stores/sync.ts`, once per process) and from

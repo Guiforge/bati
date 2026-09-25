@@ -7,7 +7,7 @@ import {
   validateBackup,
 } from "@/db/backup";
 import { batiCrypto } from "@/modules/bati-crypto";
-import { encryptionStatus, MAX_SEALED_BYTES, openBackup } from "@/src/backupCipher";
+import { encryptionStatus, MAX_SEALED_BYTES, openBackup, sealingHeader } from "@/src/backupCipher";
 import {
   clearPeerScratch,
   peerScratch,
@@ -163,9 +163,14 @@ export async function disconnectSync(): Promise<void> {
   pendingSyncSnapshot()?.delete();
 }
 
-/** Whether this device's history moved since it was last sent to `target`. */
+/**
+ * Whether this device's file on `target` is out of date: the history moved, or the key it was
+ * sealed with did. Joining a vault or changing the password leaves the history as it was, and
+ * without the header in here the file on the server would stay sealed with a key the other devices
+ * cannot open (or with the old password the hero just retired) until the next session.
+ */
 async function changedSinceUpload(target: DavTarget): Promise<{ changed: boolean; now: string }> {
-  const now = `${target.folderUrl}#${await stateFingerprint()}`;
+  const now = `${target.folderUrl}#${await stateFingerprint()}#${await sealingHeader()}`;
   return { changed: (await SecureStore.getItemAsync(STORE_UPLOADED)) !== now, now };
 }
 

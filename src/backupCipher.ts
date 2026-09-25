@@ -235,6 +235,15 @@ async function storedHeader(): Promise<Header | null> {
   return value === null ? null : parseHeader(fromB64(value));
 }
 
+/**
+ * The header every file sealed on this phone starts with, or `null` without a key. It changes with
+ * the key (a new password, a vault joined), which is how sync knows its file on the server is
+ * sealed with a key the other devices may no longer share. Not secret: every file carries it.
+ */
+export function sealingHeader(): Promise<string | null> {
+  return SecureStore.getItemAsync(STORE_HEADER);
+}
+
 async function keyring(): Promise<string[]> {
   const value = await SecureStore.getItemAsync(STORE_KEYRING);
   return value === null ? [] : (JSON.parse(value) as string[]);

@@ -16,7 +16,7 @@ const mockSecure = new Map<string, string>();
 const mockServer = new Map<string, string>();
 const mockUploads: string[] = [];
 const mockListings: string[] = [];
-const mockCipher = { status: "on" };
+const mockCipher = { status: "on", header: "vault-1" };
 let mockFingerprint = "local-1";
 let mockListingFails = false;
 /** Per remote file: size, what opening it says, the secret that opens it, how it compares. */
@@ -90,6 +90,7 @@ const peerOf = (uri: string) => /\/db\/(.+)\.(?:sealed|plain)$/.exec(uri)?.[1] ?
 jest.mock("@/src/backupCipher", () => ({
   MAX_SEALED_BYTES: 5000,
   encryptionStatus: () => Promise.resolve(mockCipher.status),
+  sealingHeader: () => Promise.resolve(mockCipher.header),
   openBackup: (sealedUri: string, _plain: string, secret?: string) => {
     const peer = mockPeers[peerOf(sealedUri)];
     if (peer?.open === "opened") return Promise.resolve({ result: "opened" });
@@ -155,6 +156,7 @@ beforeEach(async () => {
   mockListings.length = 0;
   mockJoins.length = 0;
   mockCipher.status = "on";
+  mockCipher.header = "vault-1";
   mockFingerprint = "local-1";
   mockListingFails = false;
   for (const key of Object.keys(mockPeers)) delete mockPeers[key];
@@ -184,6 +186,14 @@ test("uploads under one random name per install, and only when the history moved
   await syncNow({ snapshotFirst: false });
   expect(mockUploads).toHaveLength(3);
   expect((await syncNow({ snapshotFirst: false })).peers).toEqual([]);
+});
+
+test("sends the same history again once it is sealed with another key", async () => {
+  await syncNow({ snapshotFirst: true });
+  // A vault joined, or a new password: the history did not move, the key did.
+  mockCipher.header = "vault-2";
+  await syncNow({ snapshotFirst: true });
+  expect(mockUploads).toHaveLength(2);
 });
 
 test("says how each other device stands, and ignores files that are not a device's", async () => {

@@ -492,7 +492,9 @@ animation** is what is left, and it stays low by design.
 
 ### 4.18 Multi-device sync, end-to-end encrypted, over the hero's own cloud
 
-**In progress on `feat/encrypted-sync` (2026-09-25).** The earlier version of this section refused
+**Phases 0 to 3 built on `feat/encrypted-sync` (2026-09-25)**, with Nextcloud as the first
+transport; how it works is [`docs/architecture/backup-and-sync.md`](../architecture/backup-and-sync.md).
+Left: the Dropbox connector (needs an app registered to this project), then OneDrive, then phase 4. The earlier version of this section refused
 every cloud API on the belief that 4.21's folder picker already reached them. It does not: Google
 Drive, OneDrive and Proton never appear in `ACTION_OPEN_DOCUMENT_TREE`, Dropbox's provider is
 partial, and Nextcloud's serves a stale copy of what another device wrote (Aegis #848 and #1237,

@@ -28,10 +28,25 @@ jest.mock("expo-secure-store", () => ({
     }),
 }));
 
+/** Which folder each server call went to, so a test can tell which account was used. */
+const mockTargets: string[] = [];
+let mockDavCheck: "ok" | "refused" = "ok";
+
 jest.mock("@/src/cloudSync", () => ({
   loginToNextcloud: () =>
     Promise.resolve({ server: "https://cloud.test", loginName: "hero", appPassword: "app" }),
-  listRemote: () => Promise.resolve([...mockServer].map(([name, etag]) => ({ name, etag }))),
+  nextcloudTarget: () => ({ folderUrl: "nextcloud", user: "hero", password: "app" }),
+  webdavTarget: (url: string, user: string, password: string) => ({
+    folderUrl: `${url}/Bati`,
+    user,
+    password,
+  }),
+  checkTarget: () =>
+    mockDavCheck === "ok" ? Promise.resolve() : Promise.reject(new Error("HTTP 401")),
+  listRemote: (target: { folderUrl: string }) => {
+    mockTargets.push(target.folderUrl);
+    return Promise.resolve([...mockServer].map(([name, etag]) => ({ name, etag })));
+  },
   uploadRemote: (_account: unknown, _file: unknown, name: string) =>
     Promise.resolve().then(() => {
       mockUploads.push(name);
@@ -84,7 +99,14 @@ jest.mock("@/db/backup", () => ({
 
 jest.mock("@/src/reportError", () => ({ reportError: () => {} }));
 
-import { connectNextcloud, rememberAnswer, syncNow } from "@/src/deviceSync";
+import {
+  accountLabel,
+  connectNextcloud,
+  connectWebDav,
+  rememberAnswer,
+  syncAccount,
+  syncNow,
+} from "@/src/deviceSync";
 
 const TABLET = "bati-0190a000-0000-7000-8000-00000000000a.batb";
 const OLD_PHONE = "bati-0190a000-0000-7000-8000-00000000000b.batb";
@@ -95,6 +117,8 @@ beforeEach(async () => {
   mockServer.clear();
   mockUploads.length = 0;
   mockCipher.status = "on";
+  mockTargets.length = 0;
+  mockDavCheck = "ok";
   for (const key of Object.keys(mockPeers)) delete mockPeers[key];
   await connectNextcloud("cloud.test", () => false);
 });
@@ -152,4 +176,28 @@ test("an answer is not asked again until that device writes something new", asyn
 
   mockServer.set(TABLET, "t2");
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("diverged");
+});
+
+test("a WebDAV server is only remembered once it answered, and sync then goes there", async () => {
+  mockSecure.clear();
+  mockDavCheck = "refused";
+  await expect(connectWebDav("https://dav.test", "hero", "wrong")).rejects.toThrow("HTTP 401");
+  expect(await syncAccount()).toBeNull();
+
+  mockDavCheck = "ok";
+  const account = await connectWebDav(" https://dav.test ", " hero ", "p");
+  expect(accountLabel(account)).toBe("dav.test");
+
+  await syncNow({ snapshotFirst: false });
+  expect(mockTargets).toEqual(["https://dav.test/Bati"]);
+});
+
+test("an account saved before generic WebDAV is read as the Nextcloud it was", async () => {
+  mockSecure.set(
+    "bati.sync.nextcloud",
+    JSON.stringify({ server: "https://cloud.test", loginName: "hero", appPassword: "app" }),
+  );
+  expect((await syncAccount())?.kind).toBe("nextcloud");
+  await syncNow({ snapshotFirst: false });
+  expect(mockTargets).toEqual(["nextcloud"]);
 });

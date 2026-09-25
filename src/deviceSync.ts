@@ -10,11 +10,15 @@ import {
   writeSyncSnapshot,
 } from "@/src/backupFiles";
 import {
+  checkTarget,
+  type DavTarget,
   downloadRemote,
   listRemote,
   loginToNextcloud,
   type NextcloudAccount,
+  nextcloudTarget,
   uploadRemote,
+  webdavTarget,
 } from "@/src/cloudSync";
 import { reportError } from "@/src/reportError";
 
@@ -63,24 +67,64 @@ async function installId(): Promise<string> {
 const fileFor = (id: string) => `bati-${id}.batb`;
 const PEER_FILE = /^bati-[0-9a-f-]{36}\.batb$/;
 
-export async function syncAccount(): Promise<NextcloudAccount | null> {
+/** Where this device syncs: a Nextcloud signed in through the browser, or any WebDAV server. */
+export type SyncAccount =
+  | ({ kind: "nextcloud" } & NextcloudAccount)
+  | { kind: "webdav"; url: string; user: string; password: string };
+
+export async function syncAccount(): Promise<SyncAccount | null> {
   const value = await SecureStore.getItemAsync(STORE_ACCOUNT);
-  return value === null ? null : (JSON.parse(value) as NextcloudAccount);
+  if (value === null) return null;
+  const stored = JSON.parse(value) as SyncAccount | NextcloudAccount;
+  // Accounts saved before generic WebDAV existed were all Nextcloud, and say nothing of it.
+  return "kind" in stored ? stored : { kind: "nextcloud", ...stored };
+}
+
+function targetFor(account: SyncAccount): DavTarget {
+  return account.kind === "nextcloud"
+    ? nextcloudTarget(account)
+    : webdavTarget(account.url, account.user, account.password);
+}
+
+/** What the Settings row shows: the server's host, or the address typed, without its scheme. */
+export function accountLabel(account: SyncAccount): string {
+  const address = account.kind === "nextcloud" ? account.server : account.url;
+  return address.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+}
+
+async function remember(account: SyncAccount): Promise<SyncAccount> {
+  await SecureStore.setItemAsync(STORE_ACCOUNT, JSON.stringify(account));
+  return account;
 }
 
 /** Signs in through the browser and remembers the account. `null` if the hero never approved. */
 export async function connectNextcloud(
   server: string,
   isCancelled: () => boolean,
-): Promise<NextcloudAccount | null> {
+): Promise<SyncAccount | null> {
   const account = await loginToNextcloud(server, isCancelled);
-  if (account !== null) await SecureStore.setItemAsync(STORE_ACCOUNT, JSON.stringify(account));
-  return account;
+  return account === null ? null : remember({ kind: "nextcloud", ...account });
+}
+
+/**
+ * Any WebDAV server: kDrive, Koofr, a NAS, or rclone served on this phone by Round Sync. The
+ * server is asked to create and list the folder first, so an account is only remembered once it
+ * is known to work. Throws `DavAuthError` for refused credentials.
+ */
+export async function connectWebDav(
+  url: string,
+  user: string,
+  password: string,
+): Promise<SyncAccount> {
+  const account: SyncAccount = { kind: "webdav", url: url.trim(), user: user.trim(), password };
+  await checkTarget(targetFor(account));
+  return remember(account);
 }
 
 /**
  * Forgets the account on this phone. The app password stays valid on the server until the hero
- * revokes it there (Settings > Security in Nextcloud), and the files there stay theirs.
+ * revokes it there (Settings > Security in Nextcloud, the app passwords page elsewhere), and the
+ * files there stay theirs.
  */
 export async function disconnectSync(): Promise<void> {
   await SecureStore.deleteItemAsync(STORE_ACCOUNT);
@@ -125,26 +169,25 @@ export type SyncResult = { uploaded: boolean; peers: Peer[] };
 export async function syncNow(options: { snapshotFirst: boolean }): Promise<SyncResult> {
   const account = await syncAccount();
   if (account === null) throw new Error("Sync is not connected");
+  const target = targetFor(account);
   if ((await encryptionStatus()) !== "on") throw new Error("Sync needs encryption on");
 
   const own = fileFor(await installId());
   const snapshot = options.snapshotFirst ? await writeSyncSnapshot() : pendingSyncSnapshot();
   if (snapshot !== null) {
-    await uploadRemote(account, snapshot, own);
+    await uploadRemote(target, snapshot, own);
     snapshot.delete();
   }
 
   clearPeerScratch();
   const answered = await answeredPeers();
   const peers: Peer[] = [];
-  const remote = (await listRemote(account)).filter(
-    (f) => f.name !== own && PEER_FILE.test(f.name),
-  );
+  const remote = (await listRemote(target)).filter((f) => f.name !== own && PEER_FILE.test(f.name));
 
   for (const [index, file] of remote.entries()) {
     const sealed = peerScratch(index, "sealed");
     const plain = peerScratch(index, "plain");
-    await downloadRemote(account, file.name, sealed);
+    await downloadRemote(target, file.name, sealed);
     let peer = await judgePeer(file, index, sealed.uri, plain.uri);
     sealed.delete();
     // An answer the hero already gave for this exact file is not asked again. A new write from

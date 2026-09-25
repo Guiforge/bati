@@ -117,7 +117,8 @@
       "./plugins/withAndroidLocalAppId",
       "./plugins/withAndroidDebugIcon",
       "./plugins/withAndroidDebugNetworkPermissions",
-      "./plugins/withAndroidBackupRules"
+      "./plugins/withAndroidBackupRules",
+      "./plugins/withAndroidNetworkSecurity"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

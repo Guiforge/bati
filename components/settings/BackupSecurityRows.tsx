@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { CloudUpload, Lock } from "@/components/icons";
 import { EncryptionSheet, type EncryptionSheetMode } from "@/components/settings/EncryptionSheet";
-import { NextcloudSheet } from "@/components/settings/NextcloudSheet";
 import { SettingRow } from "@/components/settings/SettingRow";
+import { SyncSetupSheet } from "@/components/settings/SyncSetupSheet";
 import { useBackupEncryption } from "@/hooks/useBackupEncryption";
-import { syncHostLabel, useDeviceSync } from "@/hooks/useDeviceSync";
+import { useDeviceSync } from "@/hooks/useDeviceSync";
+import { accountLabel } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -18,7 +19,7 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
   const { t } = useTranslation();
   const encryption = useBackupEncryption();
   const deviceSync = useDeviceSync();
-  const [nextcloudOpen, setNextcloudOpen] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
   const [encryptionSheet, setEncryptionSheet] = useState<EncryptionSheetMode | null>(null);
   // Bumped per opening and used as the sheet's `key`, so every opening starts with empty fields.
   const [encryptionSheetId, setEncryptionSheetId] = useState(0);
@@ -77,7 +78,7 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
     const account = deviceSync.account;
     if (account === null) {
       if (encryption.status === "on") {
-        setNextcloudOpen(true);
+        setSetupOpen(true);
         return;
       }
       Alert.alert(t("sync.row"), t("sync.needsEncryption"), [
@@ -86,7 +87,7 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
       ]);
       return;
     }
-    Alert.alert(t("sync.row"), t("sync.onMessage", { host: syncHostLabel(account) }), [
+    Alert.alert(t("sync.row"), t("sync.onMessage", { host: accountLabel(account) }), [
       { text: t("common.cancel"), style: "cancel" },
       {
         text: t("sync.disconnect"),
@@ -126,11 +127,12 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
         disabled={disabled || deviceSync.running}
         onPress={confirmSync}
       />
-      <NextcloudSheet
-        open={nextcloudOpen}
-        onClose={() => setNextcloudOpen(false)}
-        onConnect={deviceSync.connect}
-        onCancel={deviceSync.cancelConnect}
+      <SyncSetupSheet
+        open={setupOpen}
+        onClose={() => setSetupOpen(false)}
+        onConnectNextcloud={deviceSync.connect}
+        onCancelNextcloud={deviceSync.cancelConnect}
+        onConnectDav={deviceSync.connectDav}
       />
       <EncryptionSheet
         key={encryptionSheetId}

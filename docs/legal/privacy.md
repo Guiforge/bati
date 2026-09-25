@@ -168,9 +168,12 @@ A phone and a tablet, or an old phone and a new one, can share one hero. Setting
 switch, **Sync my devices**, and it is **off by default**. It only works with **Encrypt my
 backups** on, and refuses to start otherwise.
 
-Switched on, you type the address of **your own Nextcloud server** and sign in on that server's own
-page, in your browser. Bati never sees your Nextcloud password: the server hands it a separate app
-password you can revoke there at any time (Nextcloud, Settings, Security). Then, each time the app
+Switched on, you choose **a server of your own that speaks WebDAV**. With **Nextcloud**, you type
+its address and sign in on that server's own page, in your browser: Bati never sees your Nextcloud
+password, the server hands it a separate app password you can revoke there at any time (Nextcloud,
+Settings, Security). With **any other WebDAV server** (kDrive, Koofr, a NAS, or Round Sync serving
+another cloud from your phone), you type its address, a user and an app password, which Bati keeps
+in Android's protected storage on that device only. Then, each time the app
 opens and whenever you ask, each of your devices sends its whole history to a `Bati` folder on
 that server, and reads the others' to tell you if one of them is ahead.
 
@@ -181,6 +184,8 @@ that server, and reads the others' to tell you if one of them is ahead.
   like any file you would put there yourself. It learns nothing from inside it.
 - **Who the server is:** yours, or the provider you chose. We run none, and the file goes nowhere
   else.
+- **Plain HTTP only to your phone itself.** Every server is reached over HTTPS, except one on the
+  phone (`localhost`), such as Round Sync, where the traffic never leaves the device.
 - **Turning it off** on a device stops it at once and forgets the app password on that device.
   The files already on your server are yours, and stay there until you delete them.
 
@@ -414,10 +419,13 @@ héros. Les réglages ont un troisième interrupteur, **Synchroniser mes apparei
 défaut**. Il ne fonctionne qu'avec **Chiffrer mes sauvegardes** activé, et refuse de démarrer
 sinon.
 
-Activé, vous saisissez l'adresse de **votre propre serveur Nextcloud** et vous vous connectez sur
-la page de ce serveur, dans votre navigateur. Bati ne voit jamais votre mot de passe Nextcloud : le
-serveur lui remet un mot de passe d'application distinct, révocable à tout moment (Nextcloud,
-Paramètres, Sécurité). Ensuite, à chaque ouverture de l'application et quand vous le demandez,
+Activé, vous choisissez **un serveur à vous qui parle WebDAV**. Avec **Nextcloud**, vous saisissez
+son adresse et vous vous connectez sur la page de ce serveur, dans votre navigateur : Bati ne voit
+jamais votre mot de passe Nextcloud, le serveur lui remet un mot de passe d'application distinct,
+révocable à tout moment (Nextcloud, Paramètres, Sécurité). Avec **tout autre serveur WebDAV**
+(kDrive, Koofr, un NAS, ou Round Sync qui sert un autre cloud depuis votre téléphone), vous
+saisissez son adresse, un identifiant et un mot de passe d'application, que Bati garde dans le
+stockage protégé d'Android, sur cet appareil seulement. Ensuite, à chaque ouverture de l'application et quand vous le demandez,
 chacun de vos appareils envoie son historique complet dans un dossier `Bati` de ce serveur, et lit
 celui des autres pour vous dire si l'un d'eux est en avance.
 
@@ -430,6 +438,9 @@ celui des autres pour vous dire si l'un d'eux est en avance.
   contenu.
 - **Qui est ce serveur :** le vôtre, ou celui du prestataire que vous avez choisi. Nous n'en
   exploitons aucun, et le fichier ne va nulle part ailleurs.
+- **Du HTTP non chiffré uniquement vers le téléphone lui-même.** Tout serveur est joint en HTTPS,
+  sauf un serveur sur le téléphone (`localhost`), comme Round Sync, dont le trafic ne quitte
+  jamais l'appareil.
 - **Le désactiver** sur un appareil l'arrête aussitôt et oublie le mot de passe d'application sur
   cet appareil. Les fichiers déjà sur votre serveur sont à vous, et y restent jusqu'à ce que vous
   les supprimiez.

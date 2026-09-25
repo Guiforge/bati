@@ -37,11 +37,26 @@ jest.mock("@/src/backupCipher", () => ({
 }));
 
 const ACCOUNT = { server: "https://cloud.test", loginName: "hero", appPassword: "app" };
-const mockSync = { account: null as typeof ACCOUNT | null, connect: true, runFails: false };
+const mockSync = {
+  account: null as ({ kind: "nextcloud" } & typeof ACCOUNT) | null,
+  connect: true,
+  runFails: false,
+  davRefuses: null as "auth" | "down" | null,
+};
 jest.mock("@/src/deviceSync", () => ({
   syncAccount: () => Promise.resolve(mockSync.account),
+  accountLabel: (a: { server?: string; url?: string }) =>
+    (a.server ?? a.url ?? "").replace(/^https?:\/\//, "").replace(/\/+$/, ""),
   connectNextcloud: () =>
-    mockSync.connect ? Promise.resolve(ACCOUNT) : Promise.reject(new Error("unreachable")),
+    mockSync.connect
+      ? Promise.resolve({ kind: "nextcloud", ...ACCOUNT })
+      : Promise.reject(new Error("unreachable")),
+  connectWebDav: (url: string, user: string, password: string) => {
+    const { DavAuthError } = jest.requireActual("@/src/cloudSync");
+    if (mockSync.davRefuses === "auth") return Promise.reject(new DavAuthError("HTTP 401"));
+    if (mockSync.davRefuses === "down") return Promise.reject(new Error("HTTP 502"));
+    return Promise.resolve({ kind: "webdav", url, user, password });
+  },
   disconnectSync: () => Promise.resolve(),
   syncNow: () =>
     mockSync.runFails
@@ -50,14 +65,14 @@ jest.mock("@/src/deviceSync", () => ({
 }));
 
 import { useBackupEncryption } from "@/hooks/useBackupEncryption";
-import { syncHostLabel, useDeviceSync } from "@/hooks/useDeviceSync";
+import { useDeviceSync } from "@/hooks/useDeviceSync";
 import { useSyncStore } from "@/stores/sync";
 
 beforeEach(() => {
   mockToasts.length = 0;
   mockReported.length = 0;
   Object.assign(mockCipher, { status: "off", fail: false, recovery: null });
-  Object.assign(mockSync, { account: null, connect: true, runFails: false });
+  Object.assign(mockSync, { account: null, connect: true, runFails: false, davRefuses: null });
   useSyncStore.setState({ running: false, result: null, failed: false });
 });
 
@@ -145,7 +160,7 @@ describe("useDeviceSync", () => {
   });
 
   test("a manual sync that cannot reach the server says so; one that can says done", async () => {
-    mockSync.account = ACCOUNT;
+    mockSync.account = { kind: "nextcloud", ...ACCOUNT };
     const { result } = await renderHook(() => useDeviceSync());
 
     mockSync.runFails = true;
@@ -157,7 +172,7 @@ describe("useDeviceSync", () => {
   });
 
   test("stopping forgets the account on this device", async () => {
-    mockSync.account = ACCOUNT;
+    mockSync.account = { kind: "nextcloud", ...ACCOUNT };
     const { result } = await renderHook(() => useDeviceSync());
     await waitFor(() => expect(result.current.account).not.toBeNull());
 
@@ -167,8 +182,28 @@ describe("useDeviceSync", () => {
     expect(mockToasts).toEqual(["success:sync.disconnected"]);
   });
 
-  test("the row names the host, not the scheme", () => {
-    expect(syncHostLabel(ACCOUNT)).toBe("cloud.test");
+  test("any WebDAV server: working credentials connect, refused ones say so", async () => {
+    const { result } = await renderHook(() => useDeviceSync());
+
+    mockSync.davRefuses = "auth";
+    await act(async () => {
+      await result.current.connectDav("https://dav.test", "hero", "wrong");
+    });
+    mockSync.davRefuses = "down";
+    await act(async () => {
+      await result.current.connectDav("https://dav.test", "hero", "p");
+    });
+    mockSync.davRefuses = null;
+    await act(async () => {
+      await result.current.connectDav("https://dav.test/", "hero", "p");
+    });
+
+    expect(mockToasts).toEqual([
+      "error:sync.webdavAuthFailed",
+      "error:sync.webdavFailed",
+      "success:sync.connected",
+    ]);
+    expect(result.current.rowValue).toBe("dav.test");
   });
 });
 
@@ -186,7 +221,7 @@ describe("the sync store", () => {
   });
 
   test("a run already in flight is not started twice, and a failure keeps the last result", async () => {
-    mockSync.account = ACCOUNT;
+    mockSync.account = { kind: "nextcloud", ...ACCOUNT };
     const previous = { uploaded: true, peers: [] };
     useSyncStore.setState({ result: previous });
     mockSync.runFails = true;

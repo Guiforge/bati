@@ -7,8 +7,10 @@ import { stampDatabaseIdentity } from "@/db/backup";
 import { ensureMigrations } from "@/db/migrate";
 import { backupIfStaleToday } from "@/src/autoBackup";
 import { commitRestore } from "@/src/backupFiles";
+import { prepareSyncAtLaunch } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
+import { useSyncStore } from "@/stores/sync";
 
 type MigrationState = { success: false; error?: Error } | { success: true; error?: undefined };
 
@@ -83,6 +85,9 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
         // see src/autoBackup.ts. It never throws, so it cannot turn a backup into the
         // database-error screen, and it returns immediately on every launch but the day's first.
         await backupIfStaleToday();
+        // Same quiet moment, same reason: device sync seals this device's snapshot here, and only
+        // sends it once the app is up (below). Never throws, and returns at once without sync on.
+        await prepareSyncAtLaunch();
         if (!cancelled) setMigrationState({ success: true });
       } catch (e) {
         if (cancelled) return;
@@ -100,6 +105,12 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
     if (!success || hasInitialized.current) return;
     hasInitialized.current = true;
     onReady?.();
+    // The network half of device sync, once per process (the store holds the claim, a ref here
+    // does not survive the root layout remounting). Off the launch path: nothing waits on it.
+    const sync = useSyncStore.getState();
+    if (sync.claimLaunch()) {
+      sync.run({ snapshotFirst: false }).catch((e) => reportError("sync.launch", e));
+    }
   }, [success, onReady]);
 
   useEffect(() => {

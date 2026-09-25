@@ -126,13 +126,65 @@ async function writeSnapshot(stem = exportFileStem(new Date())): Promise<File> {
     return fileIn(name);
   }
 
-  // `VACUUM INTO` needs a real path and writes plaintext; the seal reads it and it goes. On a
-  // failure too: the plaintext is swept by the next write anyway, but not leaving it is free.
+  await sealedSnapshotTo(name);
+  return fileIn(name);
+}
+
+/**
+ * `VACUUM INTO` needs a real path and writes plaintext; the seal reads it and it goes. On a
+ * failure too: the plaintext is swept by the next export anyway, but not leaving it is free.
+ */
+async function sealedSnapshotTo(name: string): Promise<void> {
+  deleteIfPresent(name);
   await snapshotDatabaseTo(pathIn(PLAIN_SNAPSHOT));
   await sealBackup(pathIn(PLAIN_SNAPSHOT), pathIn(name)).finally(() =>
     deleteIfPresent(PLAIN_SNAPSHOT),
   );
-  return fileIn(name);
+}
+
+/**
+ * What device sync uploads: this device's whole history, sealed, under a name the export sweep
+ * leaves alone, because it is written at launch and sent once the app is up (src/deviceSync.ts).
+ * Always sealed: sync refuses to run with encryption off, and this refuses too, so a plaintext
+ * history can never reach a server even if a caller forgets to ask.
+ */
+const SYNC_OUT = "bati-sync-out.batb";
+
+export async function writeSyncSnapshot(): Promise<File> {
+  if ((await encryptionStatus()) !== "on") throw new Error("Sync needs encryption on");
+  await sealedSnapshotTo(SYNC_OUT);
+  return fileIn(SYNC_OUT);
+}
+
+/** The snapshot written by `writeSyncSnapshot` and not sent yet, or `null`. */
+export function pendingSyncSnapshot(): File | null {
+  const file = fileIn(SYNC_OUT);
+  return file.exists ? file : null;
+}
+
+/** Scratch files for other devices' snapshots: sealed as downloaded, then opened. */
+const PEER_PREFIX = "bati-peer-";
+
+export function peerScratch(index: number, kind: "sealed" | "plain"): File {
+  return fileIn(`${PEER_PREFIX}${index}.tmp${kind === "sealed" ? ".batb" : ".db"}`);
+}
+
+/** Deletes every peer scratch file. Run before a sync, and after one for whatever it did not keep. */
+export function clearPeerScratch(keep?: File): void {
+  for (const entry of new Directory(`file://${DB_DIR}`).list()) {
+    if (entry.name.startsWith(PEER_PREFIX) && entry.uri !== keep?.uri) entry.delete();
+  }
+}
+
+/**
+ * Moves an already-opened peer snapshot into the import slot, where the ordinary restore takes
+ * over: the same validation, the same pre-restore copy, the same swap. A second door to restore
+ * goes through the first door's handler.
+ */
+export async function stagePeerForImport(plain: File): Promise<string> {
+  deleteIfPresent(IMPORT_NAME);
+  await plain.move(fileIn(IMPORT_NAME));
+  return pathIn(IMPORT_NAME);
 }
 
 /** Writes a snapshot and hands it to the OS share sheet. */

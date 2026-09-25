@@ -40,17 +40,20 @@ This page exists because both app stores require a privacy policy URL, and becau
 version deserves to be said plainly:
 
 > **Bati collects nothing about you. Nothing you record in the app leaves your phone unless you
-> send it yourself, deliberately, by email. Two exceptions, both off by default: the map behind
-> an outing, which tells a map host roughly where you go, and a daily question to GitHub about a
-> newer version of the app.**
+> send it yourself. Three exceptions, all off by default: the map behind an outing, which tells a
+> map host roughly where you go; a daily question to GitHub about a newer version of the app; and
+> device sync, which sends your history encrypted on the phone to a server you name, where it
+> cannot be read.**
 
 One sentence of that used to be shorter. Until outings landed, the app made no network request
 of any kind, and that was enforced by refusing itself the `INTERNET` permission. Drawing a map
 behind a walk needs the map, so the permission is now in the build, and the honest version of the
 promise is one line longer rather than gone: the map is a setting, off until you switch it on, and
 until then the app still makes no request of any kind. A second switch joined it on 20 September
-2026, for the copies that no store updates: see [the map](#the-map-and-the-one-host) and
-[the version check](#the-version-check-and-the-second-host) below.
+2026, for the copies that no store updates, and a third on 25 September 2026, for heroes with more
+than one device: see [the map](#the-map-and-the-one-host),
+[the version check](#the-version-check-and-the-second-host) and
+[device sync](#syncing-your-devices-and-the-host-you-choose) below.
 
 ## What is stored, and where
 
@@ -107,9 +110,10 @@ it nowhere and has no way to.
 - No user account, no sign-up, no email address required to use the app.
 - No analytics, no telemetry, no crash-reporting SDK, no advertising, no tracking identifiers.
 - No third-party SDK that collects data.
-- No upload of your data, ever. Nothing you record (a session, a personal record, a GPS trace) is
-  sent anywhere. The two network requests the app can make are described below, with what each
-  one reveals, and each waits for its own switch in Settings.
+- No upload of your data to us, ever, and no upload anyone else can read. The one upload the app
+  can make is device sync, sealed on your phone before it leaves, to a server you choose. The
+  network requests the app can make are described below, with what each one reveals, and each
+  waits for its own switch in Settings.
 
 ## The map, and the one host
 
@@ -157,6 +161,28 @@ and puts a card on the home screen when the answer is yes.
 - **What it does not do:** download anything, install anything, or run anything. The card opens
   the release page in your own browser, and everything after that is yours.
 - **Turning it off** stops it at once. Left off, the request is never made.
+
+## Syncing your devices, and the host you choose
+
+A phone and a tablet, or an old phone and a new one, can share one hero. Settings has a third
+switch, **Sync my devices**, and it is **off by default**. It only works with **Encrypt my
+backups** on, and refuses to start otherwise.
+
+Switched on, you type the address of **your own Nextcloud server** and sign in on that server's own
+page, in your browser. Bati never sees your Nextcloud password: the server hands it a separate app
+password you can revoke there at any time (Nextcloud, Settings, Security). Then, each time the app
+opens and whenever you ask, each of your devices sends its whole history to a `Bati` folder on
+that server, and reads the others' to tell you if one of them is ahead.
+
+- **What leaves the phone:** one file per device, encrypted on the phone with your backup key
+  (AES-256-GCM) before it is sent. The server stores bytes it cannot read. Its name says only
+  that it is a Bati file and which install wrote it, with a random identifier.
+- **What the server learns:** your IP address, when you open the app, and the size of that file,
+  like any file you would put there yourself. It learns nothing from inside it.
+- **Who the server is:** yours, or the provider you chose. We run none, and the file goes nowhere
+  else.
+- **Turning it off** on a device stops it at once and forgets the app password on that device.
+  The files already on your server are yours, and stay there until you delete them.
 
 ## Permissions, and why
 
@@ -212,7 +238,9 @@ personal data from anyone, of any age.
 
 Because Bati holds no data about you, there is nothing for us to export, correct or delete on
 your behalf. You hold all of it: either backup row in Settings hands you the whole database as a
-file, and uninstalling the app erases every record it ever made.
+file, and uninstalling the app erases every record it made on the phone. Copies you asked for
+stay where you put them: your phone's own backup, files you saved, and the sync folder on
+your server, each of which you delete there.
 
 ## Changes
 
@@ -239,10 +267,11 @@ pas d'analytics. Cette page existe parce que les deux stores exigent une URL de 
 confidentialité, et parce que la version courte mérite d'être dite simplement :
 
 > **Bati ne collecte rien sur vous. Rien de ce que vous enregistrez dans l'application ne quitte
-> votre téléphone, sauf si vous l'envoyez vous-même, délibérément, par e-mail. Deux exceptions,
-> désactivées par défaut toutes les deux : la carte derrière une sortie, qui dit à un hôte de
-> cartes à peu près où vous allez, et une question quotidienne à GitHub sur une version plus
-> récente.**
+> votre téléphone, sauf si vous l'envoyez vous-même. Trois exceptions, toutes désactivées par
+> défaut : la carte derrière une sortie, qui dit à un hôte de cartes à peu près où vous allez ; une
+> question quotidienne à GitHub sur une version plus récente ; et la synchronisation des
+> appareils, qui envoie votre historique chiffré sur le téléphone vers un serveur que vous
+> désignez, où il ne peut pas être lu.**
 
 Une phrase de tout cela était plus courte avant. Jusqu'aux sorties, l'application ne faisait
 aucune requête réseau, et c'était garanti par le refus de la permission `INTERNET` elle-même.
@@ -250,8 +279,9 @@ Dessiner une carte derrière une marche demande la carte : la permission est don
 compilation, et la version honnête de la promesse est une ligne plus longue plutôt que disparue :
 la carte est un réglage, désactivé tant que vous ne l'activez pas, et jusque-là l'application ne
 fait toujours aucune requête. Un second interrupteur l'a rejointe le 20 septembre 2026, pour les
-copies qu'aucun store ne met à jour. Voir « La carte, et l'hôte unique » et « La vérification de
-version, et le second hôte » plus bas.
+copies qu'aucun store ne met à jour, et un troisième le 25 septembre 2026, pour qui a plus d'un
+appareil. Voir « La carte, et l'hôte unique », « La vérification de version, et le second hôte » et
+« Synchroniser vos appareils, et l'hôte que vous choisissez » plus bas.
 
 ## Ce qui est stocké, et où
 
@@ -319,10 +349,11 @@ n'en a aucun moyen.
 - Aucune analytics, aucune télémétrie, aucun SDK de rapport de crash, aucune publicité, aucun
   identifiant de suivi.
 - Aucun SDK tiers collectant des données.
-- Aucun envoi de vos données, jamais. Rien de ce que vous enregistrez (une séance, un record, une
-  trace GPS) n'est transmis. Les deux requêtes réseau que l'application peut faire sont décrites
-  ci-dessous, avec ce que chacune révèle, et chacune attend son propre interrupteur dans les
-  réglages.
+- Aucun envoi de vos données chez nous, jamais, et aucun envoi que quelqu'un d'autre puisse lire.
+  Le seul envoi possible est la synchronisation des appareils, scellée sur votre téléphone avant
+  de partir, vers un serveur que vous choisissez. Les requêtes réseau que l'application peut faire
+  sont décrites ci-dessous, avec ce que chacune révèle, et chacune attend son propre interrupteur
+  dans les réglages.
 
 ## La carte, et l'hôte unique
 
@@ -375,6 +406,33 @@ parue, et pose une carte sur l'accueil quand la réponse est oui.
   quoi que ce soit. La carte ouvre la page des versions dans votre propre navigateur, et la suite
   vous appartient.
 - **La désactiver** l'arrête aussitôt. Laissée désactivée, aucune requête n'est jamais faite.
+
+## Synchroniser vos appareils, et l'hôte que vous choisissez
+
+Un téléphone et une tablette, ou un ancien téléphone et un nouveau, peuvent partager un même
+héros. Les réglages ont un troisième interrupteur, **Synchroniser mes appareils**, **désactivé par
+défaut**. Il ne fonctionne qu'avec **Chiffrer mes sauvegardes** activé, et refuse de démarrer
+sinon.
+
+Activé, vous saisissez l'adresse de **votre propre serveur Nextcloud** et vous vous connectez sur
+la page de ce serveur, dans votre navigateur. Bati ne voit jamais votre mot de passe Nextcloud : le
+serveur lui remet un mot de passe d'application distinct, révocable à tout moment (Nextcloud,
+Paramètres, Sécurité). Ensuite, à chaque ouverture de l'application et quand vous le demandez,
+chacun de vos appareils envoie son historique complet dans un dossier `Bati` de ce serveur, et lit
+celui des autres pour vous dire si l'un d'eux est en avance.
+
+- **Ce qui quitte le téléphone :** un fichier par appareil, chiffré sur le téléphone avec votre clé
+  de sauvegarde (AES-256-GCM) avant l'envoi. Le serveur stocke des octets qu'il ne peut pas lire.
+  Son nom dit seulement que c'est un fichier Bati et quelle installation l'a écrit, par un
+  identifiant aléatoire.
+- **Ce que le serveur apprend :** votre adresse IP, le moment où vous ouvrez l'application, et la
+  taille de ce fichier, comme pour tout fichier que vous y déposeriez vous-même. Rien de son
+  contenu.
+- **Qui est ce serveur :** le vôtre, ou celui du prestataire que vous avez choisi. Nous n'en
+  exploitons aucun, et le fichier ne va nulle part ailleurs.
+- **Le désactiver** sur un appareil l'arrête aussitôt et oublie le mot de passe d'application sur
+  cet appareil. Les fichiers déjà sur votre serveur sont à vous, et y restent jusqu'à ce que vous
+  les supprimiez.
 
 ## Permissions, et pourquoi
 
@@ -433,7 +491,9 @@ Elle ne collecte aucune donnée personnelle, quel que soit l'âge.
 Comme Bati ne détient aucune donnée vous concernant, nous n'avons rien à exporter, corriger ou
 supprimer pour vous. Vous détenez l'intégralité : l'une ou l'autre ligne de sauvegarde, dans les
 réglages, vous remet la base entière sous forme de fichier, et désinstaller l'application efface
-chaque enregistrement qu'elle a produit.
+du téléphone chaque enregistrement qu'elle a produit. Les copies que vous avez demandées restent
+où vous les avez mises : la sauvegarde de votre téléphone, les fichiers enregistrés, et le dossier
+de synchronisation sur votre serveur, que vous supprimez chacun à sa place.
 
 ## Modifications
 

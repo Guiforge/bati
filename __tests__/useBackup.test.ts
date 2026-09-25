@@ -28,6 +28,10 @@ jest.mock("@/db/backup", () => ({
     mockValidateBehaviour();
     return mockValidation;
   }),
+  keepDeviceSettings: jest.fn(async () => {
+    mockCalls.push("keepDevice");
+    await Promise.resolve();
+  }),
 }));
 
 jest.mock("@/src/backupFiles", () => ({
@@ -43,6 +47,11 @@ jest.mock("@/src/backupFiles", () => ({
     return mockStagedPath;
   }),
   discardStagedImport: jest.fn(() => mockCalls.push("discard")),
+  stagePeerForImport: jest.fn(async () => {
+    mockCalls.push("stagePeer");
+    await Promise.resolve();
+    return "/tmp/staged.db";
+  }),
   // One outcome per call, in order; a plain backup when the list runs out.
   decryptStagedImport: jest.fn(async (secret?: string) => {
     mockCalls.push(secret === undefined ? "decrypt" : `decrypt:${secret}`);
@@ -154,6 +163,7 @@ describe("useBackup — encrypted import", () => {
       "decrypt:typo",
       "decrypt:correct horse",
       "validate",
+      "keepDevice",
       "beforeRestore",
     ]);
     expect(result.current.secretRequest.open).toBe(false);
@@ -184,13 +194,22 @@ test("an encrypted file that fails to authenticate is reported as damaged", asyn
   expect(mockReportedErrors).toEqual(["backup.decrypt"]);
 });
 
+test("taking another device's snapshot walks the same road as a restore", async () => {
+  const { result } = await renderHook(() => useBackup());
+
+  await act(() => result.current.runAdopt({ uri: "file:///db/peer-0.plain" } as never));
+
+  await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+  expect(mockCalls).toEqual(["stagePeer", "decrypt", "validate", "keepDevice", "beforeRestore"]);
+});
+
 describe("useBackup — import", () => {
   test("validates, then copies the current data aside, before handing over to the swap", async () => {
     const { result } = await renderHook(() => useBackup());
 
     await act(async () => result.current.runImport());
 
-    expect(mockCalls).toEqual(["stage", "decrypt", "validate", "beforeRestore"]);
+    expect(mockCalls).toEqual(["stage", "decrypt", "validate", "keepDevice", "beforeRestore"]);
     expect(useRestoreStore.getState().phase).toBe("restoring");
   });
 
@@ -202,7 +221,14 @@ describe("useBackup — import", () => {
 
     await act(async () => result.current.runImport());
 
-    expect(mockCalls).toEqual(["stage", "decrypt", "validate", "beforeRestore", "discard"]);
+    expect(mockCalls).toEqual([
+      "stage",
+      "decrypt",
+      "validate",
+      "keepDevice",
+      "beforeRestore",
+      "discard",
+    ]);
     expect(useRestoreStore.getState().phase).toBe("idle");
     // Its own message: "that file could not be read" would blame a backup that was fine.
     expect(mockAlerts).toEqual(["backup.beforeRestoreFailed"]);
@@ -240,7 +266,7 @@ describe("useBackup — import", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(mockCalls).toEqual(["stage", "decrypt", "validate", "beforeRestore"]);
+    expect(mockCalls).toEqual(["stage", "decrypt", "validate", "keepDevice", "beforeRestore"]);
   });
 
   test("the rejection reason reaches the user rather than a generic failure", async () => {

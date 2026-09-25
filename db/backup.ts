@@ -274,3 +274,37 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
     };
   });
 }
+
+/**
+ * Preferences that describe this device rather than the hero, and so must survive a restore
+ * unchanged. A backup carries the database of the device that wrote it; without this, restoring
+ * onto a new phone inherited the old phone's backup folder, whose Android permission does not
+ * travel, and every later restore stopped on "the destination path does not exist" while Settings
+ * still showed the folder. The same held for `deviceId` (two phones claiming one origin, see its
+ * note in db/preferences.ts), a custom avatar that is a file path on the old phone, and the crash
+ * log a bug report sends from *this* device.
+ */
+export const DEVICE_LOCAL_PREFERENCES = [
+  "deviceId",
+  "backupFolderUri",
+  "lastAutoBackupDay",
+  "customAvatarUri",
+  "crashLog",
+  "errorLog",
+] as const;
+
+/**
+ * Rewrites a staged backup so its device-local preferences are this device's: theirs removed,
+ * ours copied in. Runs on the staged file only, after validation and before the swap.
+ */
+export function keepDeviceSettings(stagedPath: string): Promise<void> {
+  const keys = DEVICE_LOCAL_PREFERENCES.map(sqlString).join(", ");
+  return withIsolatedConnection(async (conn) => {
+    await conn.execAsync(`ATTACH DATABASE ${sqlString(stagedPath)} AS ${CANDIDATE}`);
+    await conn.execAsync(`DELETE FROM ${CANDIDATE}.user_preferences WHERE key IN (${keys})`);
+    await conn.execAsync(
+      `INSERT INTO ${CANDIDATE}.user_preferences (key, value, updatedAt)
+         SELECT key, value, updatedAt FROM main.user_preferences WHERE key IN (${keys})`,
+    );
+  });
+}

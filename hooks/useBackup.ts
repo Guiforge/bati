@@ -1,8 +1,9 @@
+import type { File } from "expo-file-system";
 import { type RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useToast } from "@/components/common/Toast";
-import { type BackupRejection, validateBackup } from "@/db/backup";
+import { type BackupRejection, keepDeviceSettings, validateBackup } from "@/db/backup";
 import { useBugReport } from "@/hooks/useBugReport";
 import {
   autoBackupFolder,
@@ -16,6 +17,7 @@ import {
   exportBackup,
   saveBackupToFolder,
   stageBackupForImport,
+  stagePeerForImport,
 } from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
@@ -200,13 +202,18 @@ export function useBackup() {
     [alertWithReport, showSuccess, t],
   );
 
-  const runImport = useCallback(
-    () =>
+  /**
+   * The one road from a staged file to the swap, whichever door staged it: the picker here, or
+   * another device's snapshot from sync (`runAdopt`). Nothing destructive happens before
+   * `beginRestore`, and the failure paths all discard the staged file.
+   */
+  const restoreStaged = useCallback(
+    (stage: () => Promise<string | null>) =>
       exclusive(
         running,
         setBusy,
         async () => {
-          const staged = await stageBackupForImport();
+          const staged = await stage();
           if (!staged) return;
 
           const verdict = await checkStaged(staged);
@@ -216,6 +223,9 @@ export function useBackup() {
             if (verdict !== "cancelled") showError(t(`backup.rejected.${verdict}`));
             return;
           }
+
+          // The backup brings the hero; this device keeps its own folder, id and crash log.
+          await keepDeviceSettings(staged);
 
           // Last, so a file that will be refused never costs a snapshot; before `beginRestore`,
           // because after it the tree is gone and the database closes.
@@ -243,6 +253,8 @@ export function useBackup() {
     [alertWithReport, beginRestore, checkStaged, showError, t],
   );
 
+  const runImport = useCallback(() => restoreStaged(stageBackupForImport), [restoreStaged]);
+
   // Returned as fire-and-forget handlers: both swallow their own failures into a toast, so a
   // caller has nothing to await and nothing to catch. It keeps the press handlers one-liners.
   return {
@@ -266,5 +278,12 @@ export function useBackup() {
     runImport: useCallback(() => {
       runImport().catch((e) => reportError("backup.import", e));
     }, [runImport]),
+    /** Takes another device's opened snapshot (src/deviceSync.ts) through the same restore. */
+    runAdopt: useCallback(
+      (plain: File) => {
+        restoreStaged(() => stagePeerForImport(plain)).catch((e) => reportError("backup.adopt", e));
+      },
+      [restoreStaged],
+    ),
   };
 }

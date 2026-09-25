@@ -24,6 +24,12 @@
 // module**, whose name is the host it talks to. A second entry is not a lint change. It is a
 // change to what the front page and the policy promise, and it does not land without both.
 //
+// A second one landed on 25 September 2026, with both of those: `src/cloudSync.ts`, device sync
+// to the hero's own Nextcloud (roadmap 4.18). Its host is the one the hero types in, it is off
+// until they sign in there, and it only ever sends files sealed on the device, so the server
+// holds bytes it cannot read. The policy's "Syncing your devices" section and the front page's
+// privacy band say so.
+//
 // `language js` like the other three plugins here, which is also why the tile URL lives in a
 // `.ts` style module rather than a `.json` one — see docs/designs/map-immersion.md.
 language js
@@ -38,5 +44,6 @@ language js
   },
   $filename <: not r".*__tests__.*",
   $filename <: not r".*src/updateCheck\.ts",
-  register_diagnostic(span=$fn, message="No network from JavaScript outside src/updateCheck.ts. Map tiles are fetched natively by MapLibre, and the version check is the one JS request this app makes; both are named in the privacy policy and both are off by default. Anything else breaks the promise the manifest used to enforce. See .biome/plugins/noJsNetwork.grit.")
+  $filename <: not r".*src/cloudSync\.ts",
+  register_diagnostic(span=$fn, message="No network from JavaScript outside src/updateCheck.ts and src/cloudSync.ts. Map tiles are fetched natively by MapLibre; the version check and device sync are the JS requests this app makes; all three are named in the privacy policy and all three are off by default. Anything else breaks the promise the manifest used to enforce. See .biome/plugins/noJsNetwork.grit.")
 }

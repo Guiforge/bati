@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useToast } from "@/components/common/Toast";
+import { preferences } from "@/db/preferences";
+import { backupFolderLabel } from "@/src/autoBackup";
 import { encryptionStatus } from "@/src/backupCipher";
 import { DavAuthError, failureOf, InsecureAddressError, type SyncFailure } from "@/src/cloudSync";
 import {
@@ -45,6 +47,8 @@ export function useDeviceSync() {
   const [account, setAccount] = useState<SyncAccount | null>(null);
   // The server sync was on with, when it stopped without the hero asking (see `lostSync`).
   const [lost, setLost] = useState<string | null>(null);
+  // The automatic backup's folder, offered as the synced folder too.
+  const [backupFolder, setBackupFolder] = useState<{ uri: string; label: string } | null>(null);
   const running = useSyncStore((s) => s.running);
   const failure = useSyncStore((s) => s.failure);
   const waitingWifi = useSyncStore((s) => s.waitingWifi);
@@ -63,6 +67,10 @@ export function useDeviceSync() {
     lostSync()
       .then(setLost)
       .catch((error) => reportError("sync.lost", error));
+    preferences
+      .getBackupFolderUri()
+      .then((uri) => setBackupFolder(uri === null ? null : { uri, label: backupFolderLabel(uri) }))
+      .catch((error) => reportError("sync.backupFolder", error));
   }, []);
 
   /** What the Settings row says: what sync is doing or waiting for, else the server. */
@@ -105,6 +113,7 @@ export function useDeviceSync() {
   return {
     account,
     lost,
+    backupFolder,
     running,
     lastSyncAt,
     rowValue: rowValue(),
@@ -145,8 +154,8 @@ export function useDeviceSync() {
     },
 
     /** A folder Syncthing replicates. The picker backed out of is not a failure: nothing is said. */
-    connectFolder: async (): Promise<ConnectNext> => {
-      const connected = await connectFolder().catch((error: unknown) => {
+    connectFolder: async (uri?: string): Promise<ConnectNext> => {
+      const connected = await connectFolder(uri).catch((error: unknown) => {
         reportError("sync.connectFolder", error);
         showError(t("sync.folder.failed"));
         return null;

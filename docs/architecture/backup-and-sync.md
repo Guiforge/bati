@@ -170,31 +170,14 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
 - **Onboarding** offers "Find my hero on my cloud": connect, give the password, and a device with
   no session of its own is shown whose hero it found ("Hautecombe, 16 sessions, last trained 2
   days ago") before anything is merged; "Not mine" takes nothing and is remembered.
-- **The first question names services, not protocols.** The setup sheet opens on "Where does Bati
-  keep your hero?" with Nextcloud, kDrive, Koofr, Google Drive, Proton Drive, OneDrive, Dropbox,
-  iCloud, something else, and "I don't know". Clouds Bati cannot reach lead to the two ways that
-  work, written out: moving once through the backup file (Share my backup, then "I already have a
-  backup" or Restore a backup), and staying in step through Round Sync.
-
-## Interrupted work
-
-A launch puts back a database a restore parked as `.bak` and never replaced (`db/client.ts`, before
-SQLite opens), and deletes the plaintext a killed import or comparison left in the database
-directory, once per process (`DatabaseProvider`). A plaintext snapshot left by a killed
-`VACUUM INTO` is deleted before the next one, which would otherwise refuse to run. The master key
-and its header are one SecureStore item: written in two, a crash between them sealed files that
-nothing could open.
-
-## Device-local preferences
-
-A restore keeps this device's `DEVICE_LOCAL_PREFERENCES` (db/backup.ts: id, backup folder, crash
-log, custom avatar path, update check, the one-per-device greetings, and whether this phone seals
-its backups) and drops `savedSession`
-entirely, an interrupted session on either side. Add a key there when it names something that
-exists only on one phone: a file path, a granted permission, an identifier.
-
-## What is not there yet
-
+- **Three doors, and one line for the rest.** The setup sheet offers the three ways that really
+  differ: Nextcloud (browser sign-in), a WebDAV server (address, user, app password, with the
+  usual addresses of kDrive, Koofr and Round Sync written under it; the Settings row names the
+  provider from the address), and a synced folder (Syncthing or any folder-syncing app; the
+  automatic backup's folder is offered first when there is one). Under them, "My cloud is not
+  here (Google Drive, Proton, iCloud…)" leads to the two ways that work for those clouds, written
+  out: moving once through the backup file, and staying in step through Round Sync. An earlier
+  version listed ten services as chips, half of them leading to "not yet".
 - Dropbox, OneDrive and Google Drive by their own APIs. Dropbox needs an app registered to this
   project (PKCE, no secret, app folder); Drive needs brand verification and a second signing
   certificate for the F-Droid build. Round Sync covers them through WebDAV meanwhile.

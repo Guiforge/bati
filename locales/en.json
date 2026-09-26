@@ -1634,8 +1634,6 @@
     "divergedBody": "Changes only on the other device: {{peer}}. Only on this one: {{local}}. Taking its version replaces this one's, after a copy of it goes to your Bati folder on the server. Keeping this one leaves its changes on the other device only.",
     "keep": "Keep this one",
     "take": "Take its version",
-    "modeNextcloud": "Nextcloud",
-    "modeWebdav": "Other WebDAV",
     "webdavIntro": "kDrive, Koofr, a NAS, or any server that speaks WebDAV. Make an app password for Bati in its settings.",
     "webdavUrlPlaceholder": "https://example.org/dav",
     "userPlaceholder": "User",
@@ -1656,9 +1654,6 @@
     "serverEmpty": "Nothing of yours on that server yet. Set up this device, and sync from Settings later.",
     "onboardingCta": "Find my hero on my cloud",
     "webdavInsecure": "Bati only accepts https addresses, or http to this phone itself (127.0.0.1 or localhost). Use the https address your provider or your box gives you.",
-    "presetKdrive": "Your kDrive's WebDAV address is in kDrive, under Settings. Use an app password made for Bati.",
-    "presetKoofr": "Koofr's address is filled in. Make an app password for Bati in Koofr's settings.",
-    "presetRoundSync": "For Proton Drive, Google Drive and every other rclone remote: serve it over WebDAV in Round Sync, and keep it running while Bati opens.",
     "roundSyncPasswordPlaceholder": "Password set in Round Sync",
     "aheadBody_one": "It has {{count}} change this one does not, and nothing here would be lost. Take its version to carry on from there.",
     "aheadBody_other": "It has {{count}} changes this one does not, and nothing here would be lost. Take its version to carry on from there.",
@@ -1738,14 +1733,19 @@
     "pick": {
       "whereIsIt": "Where does Bati keep your hero on your other device?",
       "whereToKeep": "Where do you want to keep your hero?",
-      "other": "Something else (WebDAV)",
-      "unknown": "I don't know",
       "yourCloud": "your cloud",
-      "back": "Another service"
+      "back": "Another service",
+      "doorNextcloud": "Nextcloud",
+      "doorNextcloudNote": "You sign in on your server's page, in your browser. The simplest.",
+      "doorWebdav": "A WebDAV server",
+      "doorWebdavNote": "kDrive, Koofr, a NAS, or any server that speaks WebDAV: an address, a user and an app password.",
+      "doorFolder": "A synced folder",
+      "doorFolderNote": "A folder Syncthing, or another app, keeps the same on each of your devices. No server.",
+      "doorFolderBackupNote": "A folder Syncthing, or another app, keeps the same on each of your devices. Your backup folder, {{folder}}, can be it.",
+      "notListed": "My cloud is not here (Google Drive, Proton, iCloud, OneDrive, Dropbox…)"
     },
     "handoff": {
-      "intro": "Bati cannot reach {{service}} directly yet. Two ways work today.",
-      "unknown": "No problem. If your other device never had sync set up, moving your hero once with a file is the simple way.",
+      "intro": "Bati cannot reach these clouds directly yet. Two ways work today.",
       "onceTitle": "Move your hero once",
       "onceOnboarding": "On your other device: Settings, Share my backup, and send the file to this one (Quick Share, email, {{service}}). Then, here, tap I already have a backup and enter your Bati password.",
       "onceSettings": "On your other device: Settings, Share my backup, and send the file to this one (Quick Share, email, {{service}}). Then, here: Settings, Restore a backup.",
@@ -1765,7 +1765,10 @@
       "intro": "Install Syncthing-Fork (F-Droid or Play) on each device, share one folder between them, for example Syncthing/Bati, then choose it here. Bati writes one sealed file per device into it; Syncthing carries them.",
       "versioning": "Tip: turn on Simple versioning for that folder in Syncthing, and every device keeps old copies too.",
       "pick": "Choose the folder",
-      "failed": "Bati could not read that folder. Choose it again."
-    }
+      "failed": "Bati could not read that folder. Choose it again.",
+      "useBackup": "Use my backup folder ({{folder}})",
+      "pickOther": "Choose another folder"
+    },
+    "webdavAddresses": "Usual addresses:\nkDrive: https://<your kDrive id>.connect.kdrive.infomaniak.com\nKoofr: https://app.koofr.net/dav/Koofr\nRound Sync, on this phone: http://127.0.0.1:8080"
   }
 }

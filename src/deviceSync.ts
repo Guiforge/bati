@@ -275,13 +275,14 @@ export async function connectWebDav(
 }
 
 /**
- * A folder another app keeps in step with the other devices (Syncthing): picked once with the
- * system folder picker, whose permission persists. `null` if the hero backed out of the picker.
+ * A folder another app keeps in step with the other devices (Syncthing): `uri` for one this app
+ * already holds a permission to (the automatic backup's), otherwise picked with the system folder
+ * picker, whose permission persists. `null` if the hero backed out of the picker.
  */
-export async function connectFolder(): Promise<SyncAccount | null> {
-  const folder = await pickBackupFolder();
-  if (folder === null) return null;
-  const account: SyncAccount = { kind: "folder", uri: folder.uri };
+export async function connectFolder(uri?: string): Promise<SyncAccount | null> {
+  const chosen = uri ?? (await pickBackupFolder())?.uri;
+  if (chosen === undefined) return null;
+  const account: SyncAccount = { kind: "folder", uri: chosen };
   await remoteFor(account).list();
   return remember(account);
 }

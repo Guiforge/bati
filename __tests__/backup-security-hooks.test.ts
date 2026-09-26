@@ -41,6 +41,7 @@ jest.mock("@/src/backupCipher", () => ({
 jest.mock("@/db/backup", () => ({}));
 jest.mock("@/db/merge", () => ({}));
 jest.mock("@/db/preferences", () => ({
+  preferences: { getBackupFolderUri: () => Promise.resolve(null) },
   getPreference: () => Promise.resolve(null),
   setPreference: () => Promise.resolve(),
   deletePreference: () => Promise.resolve(),

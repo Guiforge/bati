@@ -1696,8 +1696,6 @@
     "divergedBody": "Cambios solo en el otro dispositivo: {{peer}}. Solo en este: {{local}}. Tomar su versión sustituye la de aquí, después de que una copia de esta vaya a tu carpeta Bati en el servidor. Quedarte con esta deja sus cambios solo en el otro dispositivo.",
     "keep": "Quedarme con esta",
     "take": "Tomar su versión",
-    "modeNextcloud": "Nextcloud",
-    "modeWebdav": "Otro WebDAV",
     "webdavIntro": "kDrive, Koofr, un NAS o cualquier servidor que hable WebDAV. Crea en sus ajustes una contraseña de aplicación para Bati.",
     "webdavUrlPlaceholder": "https://ejemplo.org/dav",
     "userPlaceholder": "Usuario",
@@ -1718,9 +1716,6 @@
     "serverEmpty": "Todavía no hay nada tuyo en ese servidor. Prepara este dispositivo y sincroniza más tarde desde Ajustes.",
     "onboardingCta": "Recuperar mi héroe de mi nube",
     "webdavInsecure": "Bati solo acepta direcciones https, o http a este mismo teléfono (127.0.0.1 o localhost). Usa la dirección https que te da tu proveedor o tu router.",
-    "presetKdrive": "La dirección WebDAV de tu kDrive está en los ajustes de kDrive. Usa una contraseña de aplicación creada para Bati.",
-    "presetKoofr": "La dirección de Koofr ya está rellenada. Crea una contraseña de aplicación para Bati en los ajustes de Koofr.",
-    "presetRoundSync": "Para Proton Drive, Google Drive y cualquier otro servicio de rclone: sírvelo por WebDAV en Round Sync, y déjalo funcionando al abrir Bati.",
     "roundSyncPasswordPlaceholder": "Contraseña elegida en Round Sync",
     "aheadBody_one": "Tiene {{count}} cambio que este no tiene, y aquí no se perdería nada. Toma su versión para seguir desde ahí.",
     "aheadBody_other": "Tiene {{count}} cambios que este no tiene, y aquí no se perdería nada. Toma su versión para seguir desde ahí.",
@@ -1807,14 +1802,19 @@
     "pick": {
       "whereIsIt": "¿Dónde guarda Bati tu héroe en tu otro dispositivo?",
       "whereToKeep": "¿Dónde quieres guardar tu héroe?",
-      "other": "Otra cosa (WebDAV)",
-      "unknown": "No lo sé",
       "yourCloud": "tu nube",
-      "back": "Otro servicio"
+      "back": "Otro servicio",
+      "doorNextcloud": "Nextcloud",
+      "doorNextcloudNote": "Inicias sesión en la página de tu servidor, en tu navegador. Lo más sencillo.",
+      "doorWebdav": "Un servidor WebDAV",
+      "doorWebdavNote": "kDrive, Koofr, un NAS o cualquier servidor que hable WebDAV: una dirección, un usuario y una contraseña de aplicación.",
+      "doorFolder": "Una carpeta sincronizada",
+      "doorFolderNote": "Una carpeta que Syncthing, u otra app, mantiene igual en cada uno de tus dispositivos. Sin servidor.",
+      "doorFolderBackupNote": "Una carpeta que Syncthing, u otra app, mantiene igual en cada uno de tus dispositivos. Tu carpeta de copias, {{folder}}, puede servir.",
+      "notListed": "Mi nube no está aquí (Google Drive, Proton, iCloud, OneDrive, Dropbox…)"
     },
     "handoff": {
-      "intro": "Bati aún no puede llegar a {{service}} directamente. Hoy funcionan dos maneras.",
-      "unknown": "No pasa nada. Si tu otro dispositivo nunca tuvo la sincronización activada, mover tu héroe una vez con un archivo es lo más sencillo.",
+      "intro": "Bati aún no puede llegar a estas nubes directamente. Hoy funcionan dos maneras.",
       "onceTitle": "Mover tu héroe una vez",
       "onceOnboarding": "En tu otro dispositivo: Ajustes, Compartir mi copia, y envía el archivo a este (Quick Share, correo, {{service}}). Luego aquí, toca Ya tengo una copia y escribe tu contraseña de Bati.",
       "onceSettings": "En tu otro dispositivo: Ajustes, Compartir mi copia, y envía el archivo a este (Quick Share, correo, {{service}}). Luego aquí: Ajustes, Restaurar una copia.",
@@ -1835,7 +1835,10 @@
       "intro": "Instala Syncthing-Fork (F-Droid o Play) en cada dispositivo, comparte una carpeta entre ellos, por ejemplo Syncthing/Bati, y elígela aquí. Bati escribe en ella un archivo sellado por dispositivo; Syncthing los lleva.",
       "versioning": "Consejo: activa el versionado simple para esa carpeta en Syncthing, y cada dispositivo guarda también copias antiguas.",
       "pick": "Elegir la carpeta",
-      "failed": "Bati no pudo leer esa carpeta. Vuelve a elegirla."
-    }
+      "failed": "Bati no pudo leer esa carpeta. Vuelve a elegirla.",
+      "useBackup": "Usar mi carpeta de copias ({{folder}})",
+      "pickOther": "Elegir otra carpeta"
+    },
+    "webdavAddresses": "Direcciones habituales:\nkDrive: https://<tu id de kDrive>.connect.kdrive.infomaniak.com\nKoofr: https://app.koofr.net/dav/Koofr\nRound Sync, en este teléfono: http://127.0.0.1:8080"
   }
 }

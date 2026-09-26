@@ -166,7 +166,8 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
         onClose={() => setSetupOpen(false)}
         onConnectNextcloud={(server) => deviceSync.connect(server).then(follow)}
         onCancelNextcloud={deviceSync.cancelConnect}
-        onConnectFolder={() => deviceSync.connectFolder().then(follow)}
+        onConnectFolder={(uri) => deviceSync.connectFolder(uri).then(follow)}
+        backupFolder={deviceSync.backupFolder}
         onConnectDav={(url, user, password, label) =>
           deviceSync.connectDav(url, user, password, label).then(follow)
         }

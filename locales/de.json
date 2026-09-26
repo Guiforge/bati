@@ -1638,8 +1638,6 @@
     "divergedBody": "Änderungen nur auf dem anderen Gerät: {{peer}}. Nur auf diesem: {{local}}. Seine Version zu übernehmen ersetzt die hiesige, nachdem eine Kopie davon in deinen Bati-Ordner auf dem Server gegangen ist. Diese zu behalten lässt seine Änderungen nur auf dem anderen Gerät.",
     "keep": "Diese behalten",
     "take": "Seine Version übernehmen",
-    "modeNextcloud": "Nextcloud",
-    "modeWebdav": "Anderes WebDAV",
     "webdavIntro": "kDrive, Koofr, ein NAS oder jeder Server, der WebDAV spricht. Erstelle in seinen Einstellungen ein App-Passwort für Bati.",
     "webdavUrlPlaceholder": "https://beispiel.de/dav",
     "userPlaceholder": "Benutzer",
@@ -1660,9 +1658,6 @@
     "serverEmpty": "Noch nichts von dir auf diesem Server. Richte dieses Gerät ein und synchronisiere später in den Einstellungen.",
     "onboardingCta": "Meinen Helden aus meiner Cloud holen",
     "webdavInsecure": "Bati akzeptiert nur https-Adressen, oder http zu diesem Telefon selbst (127.0.0.1 oder localhost). Nutze die https-Adresse, die dir dein Anbieter oder deine Box gibt.",
-    "presetKdrive": "Die WebDAV-Adresse deines kDrive steht in den kDrive-Einstellungen. Nutze ein App-Passwort, das du für Bati erstellst.",
-    "presetKoofr": "Die Adresse von Koofr ist eingetragen. Erstelle in den Koofr-Einstellungen ein App-Passwort für Bati.",
-    "presetRoundSync": "Für Proton Drive, Google Drive und alle anderen rclone-Dienste: stelle sie in Round Sync per WebDAV bereit und lass es laufen, wenn du Bati öffnest.",
     "roundSyncPasswordPlaceholder": "In Round Sync gewähltes Passwort",
     "aheadBody_one": "Es hat {{count}} Änderung, die dieses nicht hat, und hier ginge nichts verloren. Übernimm seine Version, um dort weiterzumachen.",
     "aheadBody_other": "Es hat {{count}} Änderungen, die dieses nicht hat, und hier ginge nichts verloren. Übernimm seine Version, um dort weiterzumachen.",
@@ -1742,14 +1737,19 @@
     "pick": {
       "whereIsIt": "Wo bewahrt Bati deinen Helden auf deinem anderen Gerät auf?",
       "whereToKeep": "Wo willst du deinen Helden aufbewahren?",
-      "other": "Etwas anderes (WebDAV)",
-      "unknown": "Ich weiß es nicht",
       "yourCloud": "deine Cloud",
-      "back": "Ein anderer Dienst"
+      "back": "Ein anderer Dienst",
+      "doorNextcloud": "Nextcloud",
+      "doorNextcloudNote": "Du meldest dich auf der Seite deines Servers an, in deinem Browser. Am einfachsten.",
+      "doorWebdav": "Ein WebDAV-Server",
+      "doorWebdavNote": "kDrive, Koofr, ein NAS oder jeder Server mit WebDAV: eine Adresse, ein Benutzer und ein App-Passwort.",
+      "doorFolder": "Ein synchronisierter Ordner",
+      "doorFolderNote": "Ein Ordner, den Syncthing oder eine andere App auf allen deinen Geräten gleich hält. Kein Server.",
+      "doorFolderBackupNote": "Ein Ordner, den Syncthing oder eine andere App auf allen deinen Geräten gleich hält. Dein Sicherungsordner, {{folder}}, kann es sein.",
+      "notListed": "Meine Cloud ist nicht dabei (Google Drive, Proton, iCloud, OneDrive, Dropbox…)"
     },
     "handoff": {
-      "intro": "Bati kann {{service}} noch nicht direkt erreichen. Zwei Wege funktionieren heute.",
-      "unknown": "Kein Problem. War die Synchronisierung auf deinem anderen Gerät nie eingerichtet, ist ein einmaliger Umzug per Datei am einfachsten.",
+      "intro": "Bati kann diese Clouds noch nicht direkt erreichen. Zwei Wege funktionieren heute.",
       "onceTitle": "Deinen Helden einmal umziehen",
       "onceOnboarding": "Auf deinem anderen Gerät: Einstellungen, Sicherung teilen, und schick die Datei an dieses (Quick Share, E-Mail, {{service}}). Dann hier: Ich habe schon eine Sicherung antippen und dein Bati-Passwort eingeben.",
       "onceSettings": "Auf deinem anderen Gerät: Einstellungen, Sicherung teilen, und schick die Datei an dieses (Quick Share, E-Mail, {{service}}). Dann hier: Einstellungen, Sicherung wiederherstellen.",
@@ -1769,7 +1769,10 @@
       "intro": "Installiere Syncthing-Fork (F-Droid oder Play) auf jedem Gerät, teile einen Ordner zwischen ihnen, zum Beispiel Syncthing/Bati, und wähle ihn hier. Bati schreibt pro Gerät eine versiegelte Datei hinein; Syncthing trägt sie weiter.",
       "versioning": "Tipp: Schalte in Syncthing die einfache Versionierung für diesen Ordner ein, dann behält jedes Gerät auch alte Kopien.",
       "pick": "Ordner wählen",
-      "failed": "Bati konnte diesen Ordner nicht lesen. Wähle ihn noch einmal."
-    }
+      "failed": "Bati konnte diesen Ordner nicht lesen. Wähle ihn noch einmal.",
+      "useBackup": "Meinen Sicherungsordner nutzen ({{folder}})",
+      "pickOther": "Anderen Ordner wählen"
+    },
+    "webdavAddresses": "Übliche Adressen:\nkDrive: https://<deine kDrive-ID>.connect.kdrive.infomaniak.com\nKoofr: https://app.koofr.net/dav/Koofr\nRound Sync, auf diesem Telefon: http://127.0.0.1:8080"
   }
 }

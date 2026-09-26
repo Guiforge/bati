@@ -30,7 +30,7 @@ box on http or with his own CA is refused or misreported, and Syncthing is not a
 | B1 onboarding after a merge | Fixed (`302d2e03`) |
 | B2 silent stop | Fixed: a lost sync is detected whatever removed it and said on Home; walking away from a join pauses; the unexplained stop's cause is still unknown, and the next one leaves a `sync.lost` trail (`83c670be`) |
 | B3 which password | Fixed: copy, "Use this password", forgot hint (`5910cd48`) |
-| B4 entry by service name | Fixed: first question by service, hand-off written out (`8ab81d5a`) |
+| B4 entry by service name | Fixed, then simplified: three doors (Nextcloud, WebDAV, synced folder) and one "my cloud is not here" line naming Google Drive, Proton and iCloud, instead of ten chips half of which said "not yet"; the backup folder is offered as the synced folder |
 | B5 network calls count | Fixed (`302d2e03`) |
 | B6 home server | Partly: certificate errors named, copy names 127.0.0.1 and localhost; a user CA stays a deliberate decision, not a default |
 | F1 busy state | Fixed (`5910cd48`) |

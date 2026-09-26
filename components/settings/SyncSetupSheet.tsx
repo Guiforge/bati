@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard } from "react-native";
-import { Input, Text, XStack } from "tamagui";
+import { Keyboard, Pressable } from "react-native";
+import { Input, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
-import { Chip } from "@/components/common/Chip";
 import { FormSheet } from "@/components/common/FormSheet";
 
 type Props = {
@@ -19,59 +18,41 @@ type Props = {
   onConnectNextcloud: (server: string) => Promise<boolean>;
   onCancelNextcloud: () => void;
   onConnectDav: (url: string, user: string, password: string, label?: string) => Promise<boolean>;
-  /** Opens the system folder picker for a folder Syncthing replicates. */
-  onConnectFolder: () => Promise<boolean>;
+  /** A folder another app keeps in step: `uri` for one already granted, else the system picker. */
+  onConnectFolder: (uri?: string) => Promise<boolean>;
+  /** The automatic backup's folder, when there is one: it can carry sync too, in one tap. */
+  backupFolder?: { uri: string; label: string } | null;
 };
 
+/** Where Round Sync serves rclone to Bati, on the phone itself. */
+const ROUND_SYNC_URL = "http://127.0.0.1:8080";
+
 /**
- * WebDAV servers a hero is likely to have, so the address is not theirs to find. The label is
- * what the Settings row says afterwards. `roundSync` is rclone served on this phone, which is how
- * Proton Drive and Google Drive get in; its password is the one set in Round Sync, not an app
- * password, hence its own hint.
+ * The name the Settings row shows for a WebDAV address, when it is one a hero would recognise.
+ * These were buttons once, one per provider; they only ever filled in an address, so they are an
+ * address the form recognises instead.
  */
-const PRESETS = [
-  { id: "kdrive", label: "kDrive", url: "https://", hint: "sync.presetKdrive" },
-  { id: "koofr", label: "Koofr", url: "https://app.koofr.net/dav/Koofr", hint: "sync.presetKoofr" },
-  {
-    id: "roundSync",
-    label: "Round Sync",
-    url: "http://127.0.0.1:8080",
-    hint: "sync.presetRoundSync",
-  },
-  { id: "other", label: undefined, url: "", hint: "sync.webdavIntro" },
-] as const;
+function webdavLabelFor(url: string): string | undefined {
+  if (/koofr\.net/i.test(url)) return "Koofr";
+  if (/kdrive|infomaniak/i.test(url)) return "kDrive";
+  if (/^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/i.test(url)) return "Round Sync";
+  return undefined;
+}
 
-type Mode = "nextcloud" | "folder" | (typeof PRESETS)[number]["id"];
+type Mode = "nextcloud" | "webdav" | "folder";
+type Step = { kind: "pick" } | { kind: "form"; mode: Mode } | { kind: "notListed" };
 
 /**
- * The first question, in the names a hero knows: a non-technical hero stopped at a row of chips
- * that said Nextcloud, kDrive, Koofr, Round Sync and WebDAV, none of them the cloud she had
- * (docs/design/audits/2026-09-26-sync-journeys.md, B4). Services Bati cannot reach directly lead
- * to the two ways that do work, written out.
- */
-const SERVICES = [
-  { id: "nextcloud", label: "Nextcloud", mode: "nextcloud" },
-  { id: "kdrive", label: "kDrive", mode: "kdrive" },
-  { id: "koofr", label: "Koofr", mode: "koofr" },
-  { id: "gdrive", label: "Google Drive", mode: null },
-  { id: "proton", label: "Proton Drive", mode: null },
-  { id: "onedrive", label: "OneDrive", mode: null },
-  { id: "dropbox", label: "Dropbox", mode: null },
-  { id: "icloud", label: "iCloud", mode: null },
-  { id: "syncthing", label: "Syncthing", mode: "folder" },
-  { id: "other", label: null, mode: "other" },
-  { id: "unknown", label: null, mode: null },
-] as const satisfies readonly { id: string; label: string | null; mode: Mode | null }[];
-
-type Service = (typeof SERVICES)[number];
-type Step = { kind: "pick" } | { kind: "form" } | { kind: "handoff"; service: Service };
-
-/**
- * Where device sync goes. Two doors to the same WebDAV transport (src/cloudSync.ts):
+ * Where device sync goes: three ways to connect, because there are three, and one line for every
+ * cloud Bati cannot reach. Ten chips named for services, half of which led to "not yet", were a
+ * promise followed by a no; kDrive and Koofr were WebDAV with the address filled in, and Round
+ * Sync was an app, not a place (docs/design/audits/2026-09-26-sync-journeys.md, B4).
  *
- * - **Nextcloud**: one field. The hero signs in on their server's own page in their browser
- *   (Login Flow v2), so Bati never sees their password and there is no second field to get wrong.
- * - **Other WebDAV**, behind presets: address, user, password.
+ * - **Nextcloud**: one field; the hero signs in on their server's own page in their browser
+ *   (Login Flow v2), so Bati never sees their password.
+ * - **WebDAV server**: address, user, app password; the usual addresses are written under it.
+ * - **A synced folder**: a folder Syncthing (or any folder-syncing app) keeps the same on every
+ *   device; the automatic backup's folder can be it.
  */
 export function SyncSetupSheet({
   open,
@@ -81,38 +62,22 @@ export function SyncSetupSheet({
   onCancelNextcloud,
   onConnectDav,
   onConnectFolder,
+  backupFolder,
 }: Props) {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<Mode>("nextcloud");
   const [step, setStep] = useState<Step>({ kind: "pick" });
   const [waiting, setWaiting] = useState(false);
-  // Lifted here so that switching presets keeps what was typed.
+  // Kept across steps, so going back does not lose what was typed.
   const [server, setServer] = useState("");
   const [url, setUrl] = useState("");
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-  const preset = PRESETS.find((p) => p.id === mode);
 
   const close = () => {
-    if (waiting && mode === "nextcloud") onCancelNextcloud();
+    if (waiting && step.kind === "form" && step.mode === "nextcloud") onCancelNextcloud();
     setWaiting(false);
     setStep({ kind: "pick" });
     onClose();
-  };
-
-  const choose = (service: Service) => {
-    if (service.mode === null) {
-      setStep({ kind: "handoff", service });
-      return;
-    }
-    pick(service.mode);
-    setStep({ kind: "form" });
-  };
-
-  const pick = (next: Mode) => {
-    setMode(next);
-    const chosen = PRESETS.find((p) => p.id === next);
-    if (chosen && (url === "" || PRESETS.some((p) => p.url === url))) setUrl(chosen.url);
   };
 
   /** One connection attempt with the sheet in its waiting state; closes it on success. */
@@ -131,10 +96,16 @@ export function SyncSetupSheet({
     );
   };
 
-  /** The form of the chosen service: a folder, a Nextcloud sign-in, or a WebDAV address. */
-  const form = () =>
+  const back = () => setStep({ kind: "pick" });
+
+  /** The form of the chosen way: a folder, a Nextcloud sign-in, or a WebDAV address. */
+  const form = (mode: Mode) =>
     mode === "folder" ? (
-      <FolderForm waiting={waiting} onPick={() => attempt(onConnectFolder)} />
+      <FolderForm
+        waiting={waiting}
+        backupFolder={backupFolder ?? null}
+        onPick={(uri) => attempt(() => onConnectFolder(uri))}
+      />
     ) : mode === "nextcloud" ? (
       <NextcloudForm
         waiting={waiting}
@@ -145,39 +116,36 @@ export function SyncSetupSheet({
       />
     ) : (
       <WebDavForm
-        hint={t(preset?.hint ?? "sync.webdavIntro")}
-        roundSync={mode === "roundSync"}
         waiting={waiting}
         fields={{ url, user, password }}
         setters={{ url: setUrl, user: setUser, password: setPassword }}
-        onSubmit={() => attempt(() => onConnectDav(url, user, password, preset?.label))}
+        onSubmit={() => attempt(() => onConnectDav(url, user, password, webdavLabelFor(url)))}
       />
     );
 
   return (
     <FormSheet open={open} title={t("sync.connectTitle")} onClose={close}>
       {step.kind === "pick" ? (
-        <ServicePicker context={context} onChoose={choose} />
-      ) : step.kind === "handoff" ? (
-        <Handoff
+        <Doors
           context={context}
-          service={step.service}
+          backupFolder={backupFolder ?? null}
+          onDoor={(mode) => setStep({ kind: "form", mode })}
+          onNotListed={() => setStep({ kind: "notListed" })}
+        />
+      ) : step.kind === "notListed" ? (
+        <NotListed
+          context={context}
           onRoundSync={() => {
-            pick("roundSync");
-            setStep({ kind: "form" });
+            if (url === "") setUrl(ROUND_SYNC_URL);
+            setStep({ kind: "form", mode: "webdav" });
           }}
-          onBack={() => setStep({ kind: "pick" })}
+          onBack={back}
         />
       ) : (
         <>
-          {waiting || mode === "folder" ? null : <ModeChips mode={mode} onPick={pick} />}
-          {form()}
+          {form(step.mode)}
           {waiting ? null : (
-            <AppButton
-              testID="sync-other-service"
-              variant="outline"
-              onPress={() => setStep({ kind: "pick" })}
-            >
+            <AppButton testID="sync-other-service" variant="outline" onPress={back}>
               {t("sync.pick.back")}
             </AppButton>
           )}
@@ -196,29 +164,57 @@ const FIELD = {
   autoCorrect: false,
 } as const;
 
-function ServicePicker({
+function Doors({
   context,
-  onChoose,
+  backupFolder,
+  onDoor,
+  onNotListed,
 }: {
   context: "onboarding" | "settings";
-  onChoose: (service: Service) => void;
+  backupFolder: { label: string } | null;
+  onDoor: (mode: Mode) => void;
+  onNotListed: () => void;
 }) {
   const { t } = useTranslation();
+  const doors: { mode: Mode; title: string; note: string }[] = [
+    {
+      mode: "nextcloud",
+      title: t("sync.pick.doorNextcloud"),
+      note: t("sync.pick.doorNextcloudNote"),
+    },
+    { mode: "webdav", title: t("sync.pick.doorWebdav"), note: t("sync.pick.doorWebdavNote") },
+    {
+      mode: "folder",
+      title: t("sync.pick.doorFolder"),
+      note: backupFolder
+        ? t("sync.pick.doorFolderBackupNote", { folder: backupFolder.label })
+        : t("sync.pick.doorFolderNote"),
+    },
+  ];
   return (
     <>
       <Text color="$textSecondary">
         {context === "onboarding" ? t("sync.pick.whereIsIt") : t("sync.pick.whereToKeep")}
       </Text>
-      <XStack gap="$2" flexWrap="wrap">
-        {SERVICES.map((service) => (
-          <Chip
-            key={service.id}
-            testID={`sync-service-${service.id}`}
-            label={service.label ?? t(`sync.pick.${service.id}`)}
-            onPress={() => onChoose(service)}
-          />
-        ))}
-      </XStack>
+      {doors.map((door) => (
+        <YStack key={door.mode} gap="$1">
+          <AppButton
+            testID={`sync-door-${door.mode}`}
+            variant="outline"
+            onPress={() => onDoor(door.mode)}
+          >
+            {door.title}
+          </AppButton>
+          <Text color="$textSecondary" fontSize="$2" px="$2">
+            {door.note}
+          </Text>
+        </YStack>
+      ))}
+      <Pressable testID="sync-not-listed" accessibilityRole="button" onPress={onNotListed}>
+        <Text color="$textSecondary" fontSize="$3" textDecorationLine="underline" py="$2">
+          {t("sync.pick.notListed")}
+        </Text>
+      </Pressable>
     </>
   );
 }
@@ -228,45 +224,37 @@ function ServicePicker({
  * the backup file, which every cloud and every share sheet carries; staying in step goes through
  * Round Sync, which serves the cloud to Bati over WebDAV on the phone itself.
  */
-function Handoff({
+function NotListed({
   context,
-  service,
   onRoundSync,
   onBack,
 }: {
   context: "onboarding" | "settings";
-  service: Service;
   onRoundSync: () => void;
   onBack: () => void;
 }) {
   const { t } = useTranslation();
-  const name = service.label ?? t("sync.pick.yourCloud");
+  const service = t("sync.pick.yourCloud");
   return (
     <>
       <Text testID="sync-handoff" color="$text">
-        {service.id === "unknown"
-          ? t("sync.handoff.unknown")
-          : t("sync.handoff.intro", { service: name })}
+        {t("sync.handoff.intro")}
       </Text>
       <Text color="$text" fontWeight="700">
         {t("sync.handoff.onceTitle")}
       </Text>
       <Text color="$textSecondary">
         {context === "onboarding"
-          ? t("sync.handoff.onceOnboarding", { service: name })
-          : t("sync.handoff.onceSettings", { service: name })}
+          ? t("sync.handoff.onceOnboarding", { service })
+          : t("sync.handoff.onceSettings", { service })}
       </Text>
-      {service.id === "unknown" ? null : (
-        <>
-          <Text color="$text" fontWeight="700">
-            {t("sync.handoff.stepTitle")}
-          </Text>
-          <Text color="$textSecondary">{t("sync.handoff.step", { service: name })}</Text>
-          <AppButton testID="sync-handoff-roundsync" variant="outline" onPress={onRoundSync}>
-            {t("sync.handoff.roundSyncCta")}
-          </AppButton>
-        </>
-      )}
+      <Text color="$text" fontWeight="700">
+        {t("sync.handoff.stepTitle")}
+      </Text>
+      <Text color="$textSecondary">{t("sync.handoff.step", { service })}</Text>
+      <AppButton testID="sync-handoff-roundsync" variant="outline" onPress={onRoundSync}>
+        {t("sync.handoff.roundSyncCta")}
+      </AppButton>
       <AppButton testID="sync-handoff-back" variant="secondary" onPress={onBack}>
         {t("sync.pick.back")}
       </AppButton>
@@ -274,8 +262,20 @@ function Handoff({
   );
 }
 
-/** A folder Syncthing keeps in step: no server, no password, one system picker. */
-function FolderForm({ waiting, onPick }: { waiting: boolean; onPick: () => void }) {
+/**
+ * A folder another app keeps in step: no server, no password. The automatic backup's folder is
+ * offered first when there is one, because a hero who already put it in a Syncthing folder should
+ * not have to find it a second time in a picker.
+ */
+function FolderForm({
+  waiting,
+  backupFolder,
+  onPick,
+}: {
+  waiting: boolean;
+  backupFolder: { uri: string; label: string } | null;
+  onPick: (uri?: string) => void;
+}) {
   const { t } = useTranslation();
   return (
     <>
@@ -283,33 +283,30 @@ function FolderForm({ waiting, onPick }: { waiting: boolean; onPick: () => void 
       <Text color="$textSecondary" fontSize="$3">
         {t("sync.folder.versioning")}
       </Text>
-      <AppButton testID="sync-folder-pick" disabled={waiting} onPress={onPick}>
-        {waiting ? t("sync.checking") : t("sync.folder.pick")}
+      {backupFolder ? (
+        <AppButton
+          testID="sync-folder-use-backup"
+          disabled={waiting}
+          onPress={() => onPick(backupFolder.uri)}
+        >
+          {waiting
+            ? t("sync.checking")
+            : t("sync.folder.useBackup", { folder: backupFolder.label })}
+        </AppButton>
+      ) : null}
+      <AppButton
+        testID="sync-folder-pick"
+        variant={backupFolder ? "outline" : "primary"}
+        disabled={waiting}
+        onPress={() => onPick()}
+      >
+        {waiting && !backupFolder
+          ? t("sync.checking")
+          : backupFolder
+            ? t("sync.folder.pickOther")
+            : t("sync.folder.pick")}
       </AppButton>
     </>
-  );
-}
-
-function ModeChips({ mode, onPick }: { mode: Mode; onPick: (next: Mode) => void }) {
-  const { t } = useTranslation();
-  return (
-    <XStack gap="$2" flexWrap="wrap">
-      <Chip
-        label={t("sync.modeNextcloud")}
-        tone={mode === "nextcloud" ? "primary" : "default"}
-        accessibilityState={{ selected: mode === "nextcloud" }}
-        onPress={() => onPick("nextcloud")}
-      />
-      {PRESETS.map((p) => (
-        <Chip
-          key={p.id}
-          label={p.label ?? t("sync.modeWebdav")}
-          tone={mode === p.id ? "primary" : "default"}
-          accessibilityState={{ selected: mode === p.id }}
-          onPress={() => onPick(p.id)}
-        />
-      ))}
-    </XStack>
   );
 }
 
@@ -361,15 +358,11 @@ function NextcloudForm({
 type DavFields = { url: string; user: string; password: string };
 
 function WebDavForm({
-  hint,
-  roundSync,
   waiting,
   fields,
   setters,
   onSubmit,
 }: {
-  hint: string;
-  roundSync: boolean;
   waiting: boolean;
   fields: DavFields;
   setters: { [K in keyof DavFields]: (value: string) => void };
@@ -378,9 +371,11 @@ function WebDavForm({
   const { t } = useTranslation();
   const ready =
     fields.url.trim() !== "" && fields.user.trim() !== "" && fields.password !== "" && !waiting;
+  // Round Sync's password is the one set in Round Sync, not an app password.
+  const roundSync = webdavLabelFor(fields.url) === "Round Sync";
   return (
     <>
-      <Text color="$textSecondary">{hint}</Text>
+      <Text color="$textSecondary">{t("sync.webdavIntro")}</Text>
       <Input
         testID="sync-dav-url"
         {...FIELD}
@@ -408,6 +403,9 @@ function WebDavForm({
           roundSync ? t("sync.roundSyncPasswordPlaceholder") : t("sync.appPasswordPlaceholder")
         }
       />
+      <Text testID="sync-dav-addresses" color="$textSecondary" fontSize="$2" selectable>
+        {t("sync.webdavAddresses")}
+      </Text>
       <AppButton testID="sync-dav-connect" disabled={!ready} onPress={onSubmit}>
         {waiting ? t("sync.checking") : t("sync.webdavCta")}
       </AppButton>

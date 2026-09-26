@@ -1,6 +1,8 @@
 import Constants from "expo-constants";
 
 import { preferences } from "@/db/preferences";
+// The module, not the `@/db` barrel, for the reason `src/updateCheck.ts` gives: this is reached from Home.
+import { getTotalXp } from "@/db/userLevel";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { appVersion } from "@/src/updateCheck";
 
@@ -25,20 +27,22 @@ export function releaseNotes(language: AppLanguage): string[] {
 /**
  * Whether Home should offer this version's notes: once per version, after an update.
  *
- * A database that has never recorded a version is a fresh install, and a hero who just met the
- * app has nothing to compare it with, so the first launch records the version and says nothing.
- * ponytail: that also silences the one release that ships this, for heroes already installed.
- * Telling them apart would need a second signal (a finished session, say) for one release.
+ * A database that has never recorded a version is either a fresh install, whose hero has nothing
+ * to compare the app with, or a hero updating to the release that shipped this screen. XP tells
+ * them apart: it only comes from a finished session, and a fresh install reaches Home without one.
  */
 export async function hasUnseenNotes(): Promise<boolean> {
   const seen = await preferences.getNotesSeenVersion();
   if (seen === appVersion) return false;
-  if (seen === null) {
+  if (seen === null && (await getTotalXp()) === 0) {
     await preferences.setNotesSeenVersion(appVersion);
     return false;
   }
   return true;
 }
+
+/** Every version's notes, for a hero who skipped a few. The page, in their own browser. */
+export const ALL_RELEASES_URL = "https://github.com/Guiforge/bati/releases";
 
 /** Closing the card or reading the notes answers for this version; the next one asks again. */
 export function markNotesSeen(): Promise<void> {

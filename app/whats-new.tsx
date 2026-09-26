@@ -1,14 +1,16 @@
+import * as Linking from "expo-linking";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
-import { ScrollText } from "@/components/icons";
+import { ExternalLink, ScrollText } from "@/components/icons";
 import { reportError } from "@/src/reportError";
 import { appVersion } from "@/src/updateCheck";
-import { markNotesSeen, releaseNotes } from "@/src/whatsNew";
+import { ALL_RELEASES_URL, markNotesSeen, releaseNotes } from "@/src/whatsNew";
 import { useSettingsStore } from "@/stores/settings";
 
 /** This version's release notes. Home's card and the version line in Settings both open it. */
@@ -38,8 +40,9 @@ export default function WhatsNewScreen() {
       <RNScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
         <Card testID="whats-new-notes" gap="$3">
           {notes.length > 0 ? (
-            notes.map((line) => (
-              <XStack key={line} gap="$2">
+            notes.map((line, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list, and two notes may read the same
+              <XStack key={index} gap="$2">
                 <Text color="$primaryText">•</Text>
                 <Paragraph flex={1} color="$text">
                   {line}
@@ -52,6 +55,21 @@ export default function WhatsNewScreen() {
             </Paragraph>
           )}
         </Card>
+
+        {/* A hero who skipped versions sees only this one's notes; the rest are one page away. */}
+        <AppButton
+          testID="whats-new-all-releases"
+          variant="outline"
+          mt="$3"
+          iconAfter={<ExternalLink size={16} color="$textSecondary" />}
+          onPress={() => {
+            Linking.openURL(ALL_RELEASES_URL).catch((error: unknown) => {
+              reportError("whatsNew.openReleases", error);
+            });
+          }}
+        >
+          {t("whats_new.all_releases", "Every version's notes")}
+        </AppButton>
       </RNScrollView>
     </YStack>
   );

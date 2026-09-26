@@ -1641,7 +1641,8 @@
     "title": "Novedades de la {{version}}",
     "empty": "No hay notas para esta versión.",
     "card_title": "Bati ya está en la {{version}}",
-    "card_open": "Ver las novedades",
-    "open_hint": "Abre las notas de esta versión"
+    "card_open": "Novedades",
+    "version_label": "Versión {{version}}, novedades",
+    "all_releases": "Las notas de todas las versiones"
   }
 }

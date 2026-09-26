@@ -1583,7 +1583,8 @@
     "title": "Neu in {{version}}",
     "empty": "Keine Notizen zu dieser Version.",
     "card_title": "Bati ist jetzt {{version}}",
-    "card_open": "Neuerungen ansehen",
-    "open_hint": "Öffnet die Notizen zu dieser Version"
+    "card_open": "Neuerungen",
+    "version_label": "Version {{version}}, Neuerungen",
+    "all_releases": "Notizen aller Versionen"
   }
 }

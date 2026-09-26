@@ -528,17 +528,15 @@ skewed clock, #5738); do not count on Android background sync, sync at launch an
    `components/DatabaseProvider.tsx` after `commitRestore` resolves, keep the current notice as the
    fallback if it does nothing. Not done: refusing a Settings import during a session, as
    `SyncPrompt` already does; the restart it replaces lost that session too, so nothing regressed.
-2. **The sealed-file cap is memory, not 256 MB.** `sealFile`/`openFile` stream in 64 KiB, but
-   Conscrypt's AES-GCM most likely buffers everything until `doFinal`, so the peak Java heap is
-   2 to 3 times the file, against a 192 to 256 MB `heapgrowthlimit`. GPS dominates size: 1 Hz raw
-   `gps_points` at about 140 B each is about 0.5 MB an hour outdoors, so a heavy walker passes
-   64 MB within a year (sessions alone are about 5 MB after five years). Measure first on a 2 GB
-   AVD with databases inflated to 32 to 256 MB (`dumpsys meminfo` peak, `VACUUM INTO`, seal, open,
-   upload), then set the cap to what passes (likely 64 MB) and say "too large" rather than
-   "update Bati". Before heavy GPS users reach it: format v2 in 1 MiB segments, each sealed with
-   its own counter nonce (Tink's streaming AEAD), v1 still read; about 2 days. Android's own
-   backup already stops at 25 MB, so a regular walker loses it in the first year: worth a line in
-   the policy, or a decision about keeping raw 1 Hz points forever.
+2. **The sealed-file cap: done (2026-09-26), and it was worse than a cap.** Measured on a 2 GB
+   AVD (192 MB heap): a 64 MB database sealed with a 130 MB Java peak, a 128 MB one failed with
+   `OutOfMemoryError` asking for 134 MB at once, which stopped encrypted backups and sync of the
+   hero's *own* history, not only reading peers. Conscrypt buffers a whole GCM message. The body
+   is now sealed in 1 MiB segments (format 2; format 1 never left the branch): 128 and 192 MB
+   databases seal and a 172 MB peer opens under 80 MB of heap. Raw GPS measured at 78 B a point,
+   0.28 MB an outdoor hour. Still open: Android's own backup stops at 25 MB, which a regular
+   walker passes within a couple of years; worth a line in the policy, or a decision about
+   keeping raw 1 Hz points forever.
 3. **Dropbox (3 to 4 days plus Dropbox's review).** PKCE with no secret, app folder, redirect
    `bati://dropbox-auth` caught by `Linking` and swallowed in `app/+native-intent.tsx`; refresh
    token in SecureStore, access token in memory, refreshed on a 401. `list_folder`, `download`,

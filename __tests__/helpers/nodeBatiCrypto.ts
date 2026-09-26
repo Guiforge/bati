@@ -11,6 +11,8 @@ import type { BatiCrypto } from "../../modules/bati-crypto";
  */
 const NONCE = 12;
 const TAG = 16;
+/** BatiCryptoModule.kt's SEGMENT_BYTES; a test may lower it to cross segments with small files. */
+export const segment = { bytes: 1024 * 1024 };
 const b64 = (bytes: Uint8Array) => Buffer.from(bytes).toString("base64");
 const bytes = (value: string) => Buffer.from(value, "base64");
 const path = (value: string) => value.replace(/^file:\/\//, "");
@@ -30,6 +32,13 @@ function open(key: string, sealed: Buffer, aad: Buffer): Buffer {
     decipher.update(sealed.subarray(NONCE, sealed.length - TAG)),
     decipher.final(),
   ]);
+}
+
+function segmentAad(header: Buffer, index: number, last: boolean): Buffer {
+  const tail = Buffer.alloc(5);
+  tail.writeUInt32BE(index);
+  tail[4] = last ? 1 : 0;
+  return Buffer.concat([header, tail]);
 }
 
 /** Sync work, delivered the way a native AsyncFunction delivers it: a throw is a rejection. */
@@ -52,13 +61,33 @@ export const nodeBatiCrypto: BatiCrypto = {
   sealFile: (key, inPath, outPath, header) =>
     later(() => {
       const headerBytes = bytes(header);
-      const sealed = seal(key, fs.readFileSync(path(inPath)), headerBytes);
-      fs.writeFileSync(path(outPath), Buffer.concat([headerBytes, sealed]));
+      const plain = fs.readFileSync(path(inPath));
+      const parts: Buffer[] = [headerBytes];
+      // An empty file, or one that ends on a boundary, still ends with a (possibly empty) last one.
+      const count = Math.max(1, Math.ceil(plain.length / segment.bytes));
+      const exact = plain.length > 0 && plain.length % segment.bytes === 0;
+      for (let i = 0; i < count + (exact ? 1 : 0); i++) {
+        const chunk = plain.subarray(i * segment.bytes, (i + 1) * segment.bytes);
+        const last = i === count + (exact ? 1 : 0) - 1;
+        parts.push(seal(key, chunk, segmentAad(headerBytes, i, last)));
+      }
+      fs.writeFileSync(path(outPath), Buffer.concat(parts));
     }),
   openFile: (key, inPath, outPath, headerLength) =>
     later(() => {
       const all = fs.readFileSync(path(inPath));
-      const plain = open(key, all.subarray(headerLength), all.subarray(0, headerLength));
-      fs.writeFileSync(path(outPath), plain);
+      const header = all.subarray(0, headerLength);
+      const size = NONCE + segment.bytes + TAG;
+      const out: Buffer[] = [];
+      let at = headerLength;
+      for (let i = 0; ; i++) {
+        const chunk = all.subarray(at, at + size);
+        if (chunk.length < NONCE + TAG) throw new Error("Truncated encrypted file");
+        at += chunk.length;
+        const last = at >= all.length;
+        out.push(open(key, chunk, segmentAad(header, i, last)));
+        if (last) break;
+      }
+      fs.writeFileSync(path(outPath), Buffer.concat(out));
     }),
 };

@@ -9,8 +9,8 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.security.SecureRandom
+import java.nio.ByteBuffer
 import javax.crypto.Cipher
-import javax.crypto.CipherOutputStream
 import javax.crypto.Mac
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -91,18 +91,35 @@ class BatiCryptoModule : Module() {
     }
 
     /**
-     * Writes `header ‖ nonce ‖ ciphertext ‖ tag` to `outPath`. The header is authenticated but not
-     * encrypted, which is what lets a reader find the key slots before it has a key, and what makes
-     * any edit to those slots fail decryption rather than go unnoticed.
+     * Writes `header ‖ segment ‖ segment ‖ …` to `outPath`, each segment `nonce ‖ ciphertext ‖ tag`
+     * over at most `SEGMENT_BYTES` of plaintext. The header is authenticated but not encrypted,
+     * which is what lets a reader find the key slots before it has a key.
+     *
+     * Segments, because one GCM over the whole file is not streaming on Android: Conscrypt buffers
+     * every `update()` until `doFinal`, and a 128 MB database asked the heap for 134 MB at once and
+     * failed on a 192 MB phone (measured on the emulator, 2026-09-26). Each segment's AAD is the
+     * header, its index and whether it is the last, so segments cannot be reordered, dropped, or
+     * cut off at a boundary without failing like any other altered byte.
      */
     AsyncFunction("sealFile") { key: String, inPath: String, outPath: String, header: String ->
       val headerBytes = decode(header)
-      val nonce = ByteArray(NONCE_BYTES).also(random::nextBytes)
-      val cipher = cipher(Cipher.ENCRYPT_MODE, key, nonce, headerBytes)
       writeOrDelete(outPath) { out ->
         out.write(headerBytes)
-        out.write(nonce)
-        CipherOutputStream(out, cipher).use { sealed -> copy(inPath, sealed) }
+        BufferedInputStream(FileInputStream(path(inPath))).use { input ->
+          var current = input.readUpTo(SEGMENT_BYTES)
+          var index = 0
+          while (true) {
+            val next = input.readUpTo(SEGMENT_BYTES)
+            val last = next.isEmpty()
+            val nonce = ByteArray(NONCE_BYTES).also(random::nextBytes)
+            val cipher = cipher(Cipher.ENCRYPT_MODE, key, nonce, segmentAad(headerBytes, index, last))
+            out.write(nonce)
+            out.write(cipher.doFinal(current))
+            if (last) break
+            current = next
+            index++
+          }
+        }
       }
     }
 
@@ -116,16 +133,22 @@ class BatiCryptoModule : Module() {
       val part = "${path(outPath).path}.part"
       BufferedInputStream(FileInputStream(path(inPath))).use { input ->
         val headerBytes = input.readExactly(headerLength)
-        val nonce = input.readExactly(NONCE_BYTES)
-        val cipher = cipher(Cipher.DECRYPT_MODE, key, nonce, headerBytes)
         writeOrDelete(part) { out ->
-          val buffer = ByteArray(BUFFER_BYTES)
+          var index = 0
           while (true) {
-            val read = input.read(buffer)
-            if (read < 0) break
-            cipher.update(buffer, 0, read)?.let(out::write)
+            val segment = input.readUpTo(NONCE_BYTES + SEGMENT_BYTES + TAG_BYTES)
+            if (segment.size < NONCE_BYTES + TAG_BYTES) {
+              throw IllegalArgumentException("Truncated encrypted file")
+            }
+            input.mark(1)
+            val last = input.read() < 0
+            input.reset()
+            val nonce = segment.copyOfRange(0, NONCE_BYTES)
+            val cipher = cipher(Cipher.DECRYPT_MODE, key, nonce, segmentAad(headerBytes, index, last))
+            out.write(cipher.doFinal(segment, NONCE_BYTES, segment.size - NONCE_BYTES))
+            if (last) break
+            index++
           }
-          out.write(cipher.doFinal())
         }
       }
       val target = path(outPath)
@@ -153,20 +176,26 @@ class BatiCryptoModule : Module() {
     }
   }
 
-  private fun copy(inPath: String, out: java.io.OutputStream) {
-    BufferedInputStream(FileInputStream(path(inPath))).use { it.copyTo(out, BUFFER_BYTES) }
-  }
+  /** `header ‖ index (u32 BE) ‖ last (0 or 1)`: what binds a segment to its place in its file. */
+  private fun segmentAad(header: ByteArray, index: Int, last: Boolean): ByteArray =
+    ByteBuffer.allocate(header.size + 5).put(header).putInt(index).put(if (last) 1 else 0).array()
 
-  private fun BufferedInputStream.readExactly(length: Int): ByteArray {
+  /** Up to `length` bytes, fewer only at the end of the stream; empty there. */
+  private fun BufferedInputStream.readUpTo(length: Int): ByteArray {
     val bytes = ByteArray(length)
     var offset = 0
     while (offset < length) {
       val read = read(bytes, offset, length - offset)
-      if (read < 0) throw IllegalArgumentException("Truncated encrypted file")
+      if (read < 0) break
       offset += read
     }
-    return bytes
+    return if (offset == length) bytes else bytes.copyOf(offset)
   }
+
+  private fun BufferedInputStream.readExactly(length: Int): ByteArray =
+    readUpTo(length).also {
+      if (it.size < length) throw IllegalArgumentException("Truncated encrypted file")
+    }
 
   /** SQLite speaks paths and expo-file-system speaks `file://` URIs; accept both. */
   private fun path(value: String) = File(value.removePrefix("file://"))
@@ -178,6 +207,8 @@ class BatiCryptoModule : Module() {
   private companion object {
     const val NONCE_BYTES = 12
     const val TAG_BITS = 128
-    const val BUFFER_BYTES = 64 * 1024
+    const val TAG_BYTES = TAG_BITS / 8
+    /** Plaintext per segment; the Node double in __tests__/helpers/nodeBatiCrypto.ts says the same. */
+    const val SEGMENT_BYTES = 1024 * 1024
   }
 }

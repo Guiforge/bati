@@ -30,17 +30,22 @@ import { batiCrypto } from "@/modules/bati-crypto";
  * be what opens anything. What it *can* do is let the hero look at their recovery key again
  * later, which is the one thing they will want and could otherwise never get back.
  *
- * Header, all integers big-endian, authenticated as the file's AAD:
+ * Header, all integers big-endian, authenticated as part of every segment's AAD:
  *
  *     "BATB" | version u8 | slot count u8 | slot × n | check (nonce 12 ‖ tag 16)
  *     slot:  kind u8 | iterations u32 | salt 16 | wrapped master key (nonce 12 ‖ key 32 ‖ tag 16)
+ *
+ * Body, written by BatiCryptoModule.kt: segments of at most 1 MiB of plaintext, each
+ * `nonce 12 ‖ ciphertext ‖ tag 16` under the AAD `header ‖ index u32 ‖ last u8`. Version 1 was one
+ * GCM over the whole file, which Android buffers whole: a 128 MB database failed to seal on a
+ * 192 MB heap. It never left the branch that introduced it, so nothing reads it.
  *
  * `check` is the master key sealing nothing, over everything before it: it tells in one cheap
  * call whether a key this phone holds opens a file, without decrypting megabytes to find out.
  */
 
 const MAGIC = "BATB";
-const VERSION = 1;
+const VERSION = 2;
 const SLOT_BYTES = 1 + 4 + 16 + 60;
 const CHECK_BYTES = 28;
 /** OWASP's floor for PBKDF2-HMAC-SHA256 (2023 and still in 2026). Written into each slot. */
@@ -53,7 +58,11 @@ export const PASSWORD_ITERATIONS = 600_000;
 const MIN_ITERATIONS = 100_000;
 const MAX_ITERATIONS = 10_000_000;
 
-/** Larger than any real hero by two orders of magnitude; the decryptor holds the file in memory. */
+/**
+ * The largest file taken from another device. Memory no longer sets it (segments keep it flat);
+ * disk and download time do. Raw GPS is what grows: 78 bytes a point at 1 Hz, about 0.28 MB an
+ * hour outdoors (measured 2026-09-26), so this is some 900 hours of outings.
+ */
 export const MAX_SEALED_BYTES = 256 * 1024 * 1024;
 
 const SLOT_PASSWORD = 1;

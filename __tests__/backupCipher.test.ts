@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { pbkdf2Calls } from "./helpers/nodeBatiCrypto";
+import { pbkdf2Calls, segment } from "./helpers/nodeBatiCrypto";
 
 /**
  * The device is doubled, never the code under test: the crypto module by Node's own AES-GCM and
@@ -155,6 +155,50 @@ test("one changed byte anywhere refuses the file and leaves nothing behind", asy
     expect(outcome).not.toBe("opened");
     expect(fs.existsSync(at("out.db"))).toBe(false);
   }
+});
+
+describe("a file larger than one segment", () => {
+  // 1 MiB on a phone; small here so a test crosses boundaries with a few kB.
+  const SEGMENT = 1000;
+  const HEADER = 6 + 2 * 81 + 28;
+  const STRIDE = 12 + SEGMENT + 16;
+  beforeEach(() => {
+    segment.bytes = SEGMENT;
+  });
+  afterEach(() => {
+    segment.bytes = 1024 * 1024;
+  });
+
+  test.each([2500, 3000, 0])("%i bytes come back whole", async (size) => {
+    const plain = Buffer.alloc(size, 7);
+    fs.writeFileSync(at("plain.db"), plain);
+    await sealedWith("correct horse");
+    expect(await open("backup.batb", "out.db")).toBe("opened");
+    expect(fs.readFileSync(at("out.db")).equals(plain)).toBe(true);
+  });
+
+  test("segments swapped, or the file cut between two, are refused", async () => {
+    fs.writeFileSync(at("plain.db"), Buffer.alloc(2500, 7));
+    await sealedWith("correct horse");
+    const good = fs.readFileSync(at("backup.batb"));
+    const first = good.subarray(HEADER, HEADER + STRIDE);
+    const second = good.subarray(HEADER + STRIDE, HEADER + 2 * STRIDE);
+
+    const swapped = Buffer.concat([
+      good.subarray(0, HEADER),
+      second,
+      first,
+      good.subarray(HEADER + 2 * STRIDE),
+    ]);
+    // Two whole segments: without the last flag in the AAD, this would open as a shorter hero.
+    const cut = good.subarray(0, HEADER + 2 * STRIDE);
+    for (const bad of [swapped, cut]) {
+      fs.writeFileSync(at("bad.batb"), bad);
+      const outcome = await open("bad.batb", "out.db").catch(() => "rejected");
+      expect(outcome).toBe("rejected");
+      expect(fs.existsSync(at("out.db"))).toBe(false);
+    }
+  });
 });
 
 test("a header asking for absurd work, or a slot kind nobody wrote, is not a backup", async () => {

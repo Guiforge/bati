@@ -51,7 +51,16 @@ unknown slot, iterations outside 100,000 to 10,000,000) is not a backup at all.
 
 The primitives are the platform's own `javax.crypto`, behind a local Expo module
 (`modules/bati-crypto`), PBKDF2 included, computed over bytes rather than through a `char[]`.
-Decryption writes beside the target and renames only once the tag verified. Tests run the real
+Decryption writes beside the target and renames only once every tag verified.
+
+**The body is sealed in 1 MiB segments (format 2).** Android's AES-GCM (Conscrypt) buffers a
+whole message until `doFinal`, so the first format, one GCM over the file, asked the heap for the
+file's size at once: on a 2 GB emulator with a 192 MB heap, a 128 MB database failed to seal and
+every encrypted backup and sync of it stopped. Segmented, a 192 MB database seals and a 172 MB
+peer opens with the Java heap under 80 MB (measured 2026-09-26). Each segment's AAD is the header,
+its index and a last flag, so reordering, dropping or cutting at a boundary fails like any
+altered byte. Raw GPS is what grows a database: 78 bytes a point at 1 Hz, about 0.28 MB an hour
+outdoors; five hours a week is some 73 MB a year. Tests run the real
 format against a Node double of the module (`__tests__/helpers/nodeBatiCrypto.ts`).
 
 **The key lives in SecureStore; the wish lives in the database.** SecureStore is excluded from

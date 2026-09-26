@@ -80,8 +80,10 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       set({ running: false });
       return;
     }
+    // A folder another app replicates costs no data here: only a server does.
     const waitForWifi =
       !options.force &&
+      account.kind !== "folder" &&
       (await syncWifiOnly().catch(() => false)) &&
       (await onMeteredNetwork().catch(() => false));
     if (waitForWifi) {

@@ -1,3 +1,4 @@
+import type { File } from "expo-file-system";
 import * as SecureStore from "expo-secure-store";
 
 import {
@@ -15,6 +16,7 @@ import {
   clearPeerScratch,
   peerScratch,
   pendingSyncSnapshot,
+  pickBackupFolder,
   writeSyncSnapshot,
 } from "@/src/backupFiles";
 import {
@@ -32,6 +34,7 @@ import {
   uploadRemote,
   webdavTarget,
 } from "@/src/cloudSync";
+import { folderLabel, folderRemote } from "@/src/folderSync";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -104,26 +107,61 @@ const fileFor = (id: string) => `bati-${id}.batb`;
 const PEER_FILE = /^bati-[0-9a-f-]{36}\.batb$/;
 
 /**
- * Where this device syncs: a Nextcloud signed in through the browser, or any WebDAV server, with
- * the name of the preset the hero picked (kDrive, Koofr…) so the Settings row can say it.
+ * Where this device syncs: a Nextcloud signed in through the browser, any WebDAV server with the
+ * name of the preset the hero picked (kDrive, Koofr…) so the Settings row can say it, or a folder
+ * on this phone that Syncthing keeps in step (src/folderSync.ts).
  */
 export type SyncAccount =
   | ({ kind: "nextcloud" } & NextcloudAccount)
-  | { kind: "webdav"; url: string; user: string; password: string; label?: string };
+  | { kind: "webdav"; url: string; user: string; password: string; label?: string }
+  | { kind: "folder"; uri: string };
 
 export async function syncAccount(): Promise<SyncAccount | null> {
   const value = await SecureStore.getItemAsync(STORE_ACCOUNT);
   return value === null ? null : (JSON.parse(value) as SyncAccount);
 }
 
-function targetFor(account: SyncAccount): DavTarget {
-  return account.kind === "nextcloud"
-    ? nextcloudTarget(account)
-    : webdavTarget(account.url, account.user, account.password);
+/**
+ * Where sync's files live, whatever carries them: a WebDAV folder on a server, or a folder on this
+ * phone that Syncthing replicates. Everything above this seam (vaults, verdicts, the merge) is the
+ * same for both.
+ */
+type Remote = {
+  /** The place, stably named, for the upload marker. */
+  id: string;
+  /** What the sync sheet shows as the folder and the account. */
+  folder: string;
+  user: string;
+  list(): Promise<RemoteFile[]>;
+  read(name: string, destination: File): Promise<void>;
+  write(source: File, name: string): Promise<void>;
+};
+
+function davRemote(target: DavTarget): Remote {
+  return {
+    id: target.folderUrl,
+    folder: `${target.folderUrl}/`,
+    user: target.user,
+    list: () => listRemote(target),
+    read: (name, destination) => downloadRemote(target, name, destination),
+    write: (source, name) => uploadRemote(target, source, name),
+  };
 }
 
-/** What the Settings row shows: the preset's name, or the server's host without its scheme. */
+function remoteFor(account: SyncAccount): Remote {
+  if (account.kind === "folder") {
+    return { id: account.uri, folder: account.uri, user: "", ...folderRemote(account.uri) };
+  }
+  return davRemote(
+    account.kind === "nextcloud"
+      ? nextcloudTarget(account)
+      : webdavTarget(account.url, account.user, account.password),
+  );
+}
+
+/** What the Settings row shows: the preset's name, the folder's, or the server's host. */
 export function accountLabel(account: SyncAccount): string {
+  if (account.kind === "folder") return folderLabel(account.uri);
   if (account.kind === "webdav" && account.label) return account.label;
   const address = account.kind === "nextcloud" ? account.server : account.url;
   return address.replace(/^https?:\/\//, "").replace(/\/+$/, "");
@@ -154,8 +192,8 @@ export async function lostSync(): Promise<string | null> {
 
 /** Where this account's files are, for the hero who wants to see them: folder and user. */
 export function syncFolderOf(account: SyncAccount): { folder: string; user: string } {
-  const target = targetFor(account);
-  return { folder: `${target.folderUrl}/`, user: target.user };
+  const { folder, user } = remoteFor(account);
+  return { folder, user };
 }
 
 /** "Forget it": the hero saw that sync stopped and does not want it back. */
@@ -227,7 +265,19 @@ export async function connectWebDav(
     throw new InsecureAddressError("Plain HTTP is only allowed to this phone");
   }
   const account: SyncAccount = { kind: "webdav", url: address, user: user.trim(), password, label };
-  await listRemote(targetFor(account));
+  await remoteFor(account).list();
+  return remember(account);
+}
+
+/**
+ * A folder another app keeps in step with the other devices (Syncthing): picked once with the
+ * system folder picker, whose permission persists. `null` if the hero backed out of the picker.
+ */
+export async function connectFolder(): Promise<SyncAccount | null> {
+  const folder = await pickBackupFolder();
+  if (folder === null) return null;
+  const account: SyncAccount = { kind: "folder", uri: folder.uri };
+  await remoteFor(account).list();
   return remember(account);
 }
 
@@ -261,11 +311,11 @@ export async function disconnectSync(): Promise<void> {
  * cannot open (or with the old password the hero just retired) until the next session.
  */
 async function changedSinceUpload(
-  target: DavTarget,
+  target: Remote,
 ): Promise<{ changed: boolean; now: string; firstContact: boolean }> {
-  const now = `${target.folderUrl}#${await localState()}`;
+  const now = `${target.id}#${await localState()}`;
   const last = await SecureStore.getItemAsync(STORE_UPLOADED);
-  return { changed: last !== now, now, firstContact: !last?.startsWith(`${target.folderUrl}#`) };
+  return { changed: last !== now, now, firstContact: !last?.startsWith(`${target.id}#`) };
 }
 
 /**
@@ -285,7 +335,7 @@ export async function prepareSyncAtLaunch(): Promise<void> {
   try {
     const account = await syncAccount();
     if (account === null || (await encryptionStatus()) !== "on") return;
-    if (!(await changedSinceUpload(targetFor(account))).changed) return;
+    if (!(await changedSinceUpload(remoteFor(account))).changed) return;
     await writeSyncSnapshot();
   } catch (error) {
     reportError("sync.prepare", error);
@@ -331,11 +381,11 @@ function othersIn(remote: RemoteFile[], own: string): RemoteFile[] {
 export async function syncNow(options: { snapshotFirst: boolean }): Promise<SyncResult> {
   const account = await syncAccount();
   if (account === null) throw new Error("Sync is not connected");
-  const target = targetFor(account);
+  const target = remoteFor(account);
   if ((await encryptionStatus()) !== "on") throw new Error("Sync needs encryption on");
 
   const own = fileFor(await installId());
-  const listing = await listRemote(target);
+  const listing = await target.list();
 
   clearPeerScratch();
   const context: JudgeContext = {
@@ -365,7 +415,7 @@ type JudgeContext = {
 };
 
 /** What this sync concludes about one other device, from a kept verdict when one still holds. */
-async function judge(target: DavTarget, file: RemoteFile, context: JudgeContext): Promise<Peer> {
+async function judge(target: Remote, file: RemoteFile, context: JudgeContext): Promise<Peer> {
   const stamp = `${file.etag}#${context.here}`;
   const cached = context.known[file.name];
   let peer: Peer =
@@ -420,7 +470,7 @@ async function knownVerdicts(): Promise<Record<string, Verdict>> {
  *   made a near-empty device look like news to every other one. It listens before it speaks, and
  *   sends once the hero took that device's version or chose to keep this one.
  */
-async function holdBack(target: DavTarget, peers: Peer[]): Promise<boolean> {
+async function holdBack(target: Remote, peers: Peer[]): Promise<boolean> {
   // Sealed under a vault this device is about to leave: sent now, it would be a newer file under
   // the old key, and the other device would be asked to join it in turn.
   if (peers.some((p) => p.state === "ahead" || p.state === "locked")) return true;
@@ -429,7 +479,7 @@ async function holdBack(target: DavTarget, peers: Peer[]): Promise<boolean> {
 }
 
 async function uploadIfNeeded(
-  target: DavTarget,
+  target: Remote,
   own: string,
   listing: RemoteFile[],
   snapshotFirst: boolean,
@@ -441,17 +491,17 @@ async function uploadIfNeeded(
     return false;
   }
   const snapshot = (!snapshotFirst && pendingSyncSnapshot()) || (await writeSyncSnapshot());
-  await uploadRemote(target, snapshot, own);
+  await target.write(snapshot, own);
   snapshot.delete();
   await SecureStore.setItemAsync(STORE_UPLOADED, now);
   return true;
 }
 
-async function fetchAndJudge(target: DavTarget, file: RemoteFile): Promise<Peer> {
+async function fetchAndJudge(target: Remote, file: RemoteFile): Promise<Peer> {
   const base = { name: file.name, etag: file.etag };
   const sealed = peerScratch(file.name, "sealed");
   const plain = peerScratch(file.name, "plain");
-  await downloadRemote(target, file.name, sealed);
+  await target.read(file.name, sealed);
   try {
     if (sealed.size > MAX_SEALED_BYTES) return { ...base, state: "unreadable" };
     const opened = await openBackup(sealed.uri, plain.uri).catch((error: unknown) => {
@@ -517,7 +567,7 @@ export async function keepThisDeviceOnServer(): Promise<string> {
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 13);
   const name = `bati-${await installId()}-kept-${stamp}.batb`;
   const snapshot = await writeSyncSnapshot();
-  await uploadRemote(targetFor(account), snapshot, name);
+  await remoteFor(account).write(snapshot, name);
   snapshot.delete();
   return name;
 }
@@ -622,10 +672,10 @@ export type ServerState = { kind: "empty" | "ready" } | { kind: "needsSecret"; p
 export async function serverState(): Promise<ServerState> {
   const account = await syncAccount();
   if (account === null) throw new Error("Sync is not connected");
-  const target = targetFor(account);
+  const target = remoteFor(account);
   // The most recently written file: a phone reset months ago can leave a file sealed with a vault
   // nobody uses any more, and joining that one would lock out every live device.
-  const others = othersIn(await listRemote(target), fileFor(await installId())).sort(
+  const others = othersIn(await target.list(), fileFor(await installId())).sort(
     (a, b) => b.modified - a.modified,
   );
   const first = others[0];
@@ -633,7 +683,7 @@ export async function serverState(): Promise<ServerState> {
 
   const sealed = peerScratch(first.name, "sealed");
   const plain = peerScratch(first.name, "plain");
-  await downloadRemote(target, first.name, sealed);
+  await target.read(first.name, sealed);
   try {
     const opened = await openBackup(sealed.uri, plain.uri);
     return opened.result === "needsSecret"
@@ -654,7 +704,7 @@ export async function joinPeer(peer: string, secret: string): Promise<boolean> {
   if (account === null) throw new Error("Sync is not connected");
   const sealed = peerScratch(peer, "sealed");
   const plain = peerScratch(peer, "plain");
-  await downloadRemote(targetFor(account), peer, sealed);
+  await remoteFor(account).read(peer, sealed);
   try {
     const opened = await openBackup(sealed.uri, plain.uri, secret);
     if (opened.result !== "opened") return false;

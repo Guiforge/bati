@@ -6,7 +6,7 @@ head_title: "Privacy policy for Bati"
 description: "Bati collects nothing about you. No account, no server of ours, no analytics. Offline first, with three exceptions, all off by default: the map, which tells a tile host roughly where you go, a daily question to GitHub about a newer version, and device sync, which sends your history encrypted to a server you choose."
 type: legal
 status: active
-updated: 2026-09-25
+updated: 2026-09-26
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -190,8 +190,16 @@ that server, and reads the others' to tell you if one of them is ahead.
   else.
 - **Plain HTTP only to your phone itself.** Every server is reached over HTTPS, except one on the
   phone (`localhost`), such as Round Sync, where the traffic never leaves the device.
-- **Turning it off** on a device stops it at once and forgets the app password on that device.
-  The files already on your server are yours, and stay there until you delete them.
+- **Or no server at all: a folder.** You can instead pick a folder on your phone that Syncthing
+  (or another folder-syncing app you chose) keeps in step with your other devices. Bati then
+  makes no network request for sync: it writes its encrypted file into that folder and reads the
+  others' from it, and whatever carries them between devices is that app, under its own terms.
+- **Only on Wi-Fi**, if you switch it on in the sync sheet: the launch sync waits for Wi-Fi
+  instead of sending your history over mobile data. "Sync now" always runs.
+- **Turning it off** on a device stops it at once and forgets the app password on that device;
+  on Nextcloud, Bati also asks the server to revoke it. On any other server it keeps working
+  until you remove it there, and the app says so. The files already on your server are yours,
+  and stay there until you delete them.
 
 ## Permissions, and why
 
@@ -453,9 +461,18 @@ celui des autres pour vous dire si l'un d'eux est en avance.
 - **Du HTTP non chiffré uniquement vers le téléphone lui-même.** Tout serveur est joint en HTTPS,
   sauf un serveur sur le téléphone (`localhost`), comme Round Sync, dont le trafic ne quitte
   jamais l'appareil.
+- **Ou aucun serveur : un dossier.** Vous pouvez aussi choisir un dossier de votre téléphone que
+  Syncthing (ou une autre application de synchronisation de dossiers de votre choix) garde
+  d'accord avec vos autres appareils. Bati ne fait alors aucune requête réseau pour la
+  synchronisation : il écrit son fichier chiffré dans ce dossier et lit ceux des autres, et ce qui
+  les transporte entre vos appareils est cette application, selon ses propres conditions.
+- **Seulement en Wi-Fi**, si vous l'activez dans la fiche de synchronisation : la synchronisation
+  au lancement attend le Wi-Fi au lieu d'envoyer votre historique par les données mobiles.
+  « Synchroniser maintenant » passe toujours.
 - **Le désactiver** sur un appareil l'arrête aussitôt et oublie le mot de passe d'application sur
-  cet appareil. Les fichiers déjà sur votre serveur sont à vous, et y restent jusqu'à ce que vous
-  les supprimiez.
+  cet appareil ; sur Nextcloud, Bati demande aussi au serveur de le révoquer. Sur tout autre
+  serveur, il reste valable jusqu'à ce que vous le supprimiez là-bas, et l'application le dit. Les
+  fichiers déjà sur votre serveur sont à vous, et y restent jusqu'à ce que vous les supprimiez.
 
 ## Permissions, et pourquoi
 

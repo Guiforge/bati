@@ -6,6 +6,7 @@ import { encryptionStatus } from "@/src/backupCipher";
 import { DavAuthError, failureOf, InsecureAddressError, type SyncFailure } from "@/src/cloudSync";
 import {
   accountLabel,
+  connectFolder,
   connectNextcloud,
   connectWebDav,
   disconnectSync,
@@ -138,6 +139,16 @@ export function useDeviceSync() {
                 ? t("sync.failure.certificate")
                 : t("sync.webdavFailed"),
         );
+        return null;
+      });
+      return connected === null ? { next: "failed" } : afterConnect(connected);
+    },
+
+    /** A folder Syncthing replicates. The picker backed out of is not a failure: nothing is said. */
+    connectFolder: async (): Promise<ConnectNext> => {
+      const connected = await connectFolder().catch((error: unknown) => {
+        reportError("sync.connectFolder", error);
+        showError(t("sync.folder.failed"));
         return null;
       });
       return connected === null ? { next: "failed" } : afterConnect(connected);

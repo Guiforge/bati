@@ -33,6 +33,7 @@ const sheet = () =>
           onConnectNextcloud={() => Promise.resolve(false)}
           onCancelNextcloud={() => {}}
           onConnectDav={() => Promise.resolve(false)}
+          onConnectFolder={() => Promise.resolve(false)}
         />
       </TamaguiProvider>
     </SafeAreaProvider>,

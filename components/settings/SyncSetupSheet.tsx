@@ -19,6 +19,8 @@ type Props = {
   onConnectNextcloud: (server: string) => Promise<boolean>;
   onCancelNextcloud: () => void;
   onConnectDav: (url: string, user: string, password: string, label?: string) => Promise<boolean>;
+  /** Opens the system folder picker for a folder Syncthing replicates. */
+  onConnectFolder: () => Promise<boolean>;
 };
 
 /**
@@ -39,7 +41,7 @@ const PRESETS = [
   { id: "other", label: undefined, url: "", hint: "sync.webdavIntro" },
 ] as const;
 
-type Mode = "nextcloud" | (typeof PRESETS)[number]["id"];
+type Mode = "nextcloud" | "folder" | (typeof PRESETS)[number]["id"];
 
 /**
  * The first question, in the names a hero knows: a non-technical hero stopped at a row of chips
@@ -56,6 +58,7 @@ const SERVICES = [
   { id: "onedrive", label: "OneDrive", mode: null },
   { id: "dropbox", label: "Dropbox", mode: null },
   { id: "icloud", label: "iCloud", mode: null },
+  { id: "syncthing", label: "Syncthing", mode: "folder" },
   { id: "other", label: null, mode: "other" },
   { id: "unknown", label: null, mode: null },
 ] as const satisfies readonly { id: string; label: string | null; mode: Mode | null }[];
@@ -77,6 +80,7 @@ export function SyncSetupSheet({
   onConnectNextcloud,
   onCancelNextcloud,
   onConnectDav,
+  onConnectFolder,
 }: Props) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>("nextcloud");
@@ -127,6 +131,29 @@ export function SyncSetupSheet({
     );
   };
 
+  /** The form of the chosen service: a folder, a Nextcloud sign-in, or a WebDAV address. */
+  const form = () =>
+    mode === "folder" ? (
+      <FolderForm waiting={waiting} onPick={() => attempt(onConnectFolder)} />
+    ) : mode === "nextcloud" ? (
+      <NextcloudForm
+        waiting={waiting}
+        server={server}
+        onServer={setServer}
+        onSubmit={() => attempt(() => onConnectNextcloud(server))}
+        onCancel={close}
+      />
+    ) : (
+      <WebDavForm
+        hint={t(preset?.hint ?? "sync.webdavIntro")}
+        roundSync={mode === "roundSync"}
+        waiting={waiting}
+        fields={{ url, user, password }}
+        setters={{ url: setUrl, user: setUser, password: setPassword }}
+        onSubmit={() => attempt(() => onConnectDav(url, user, password, preset?.label))}
+      />
+    );
+
   return (
     <FormSheet open={open} title={t("sync.connectTitle")} onClose={close}>
       {step.kind === "pick" ? (
@@ -143,25 +170,8 @@ export function SyncSetupSheet({
         />
       ) : (
         <>
-          {waiting ? null : <ModeChips mode={mode} onPick={pick} />}
-          {mode === "nextcloud" ? (
-            <NextcloudForm
-              waiting={waiting}
-              server={server}
-              onServer={setServer}
-              onSubmit={() => attempt(() => onConnectNextcloud(server))}
-              onCancel={close}
-            />
-          ) : (
-            <WebDavForm
-              hint={t(preset?.hint ?? "sync.webdavIntro")}
-              roundSync={mode === "roundSync"}
-              waiting={waiting}
-              fields={{ url, user, password }}
-              setters={{ url: setUrl, user: setUser, password: setPassword }}
-              onSubmit={() => attempt(() => onConnectDav(url, user, password, preset?.label))}
-            />
-          )}
+          {waiting || mode === "folder" ? null : <ModeChips mode={mode} onPick={pick} />}
+          {form()}
           {waiting ? null : (
             <AppButton
               testID="sync-other-service"
@@ -259,6 +269,22 @@ function Handoff({
       )}
       <AppButton testID="sync-handoff-back" variant="secondary" onPress={onBack}>
         {t("sync.pick.back")}
+      </AppButton>
+    </>
+  );
+}
+
+/** A folder Syncthing keeps in step: no server, no password, one system picker. */
+function FolderForm({ waiting, onPick }: { waiting: boolean; onPick: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <Text color="$textSecondary">{t("sync.folder.intro")}</Text>
+      <Text color="$textSecondary" fontSize="$3">
+        {t("sync.folder.versioning")}
+      </Text>
+      <AppButton testID="sync-folder-pick" disabled={waiting} onPress={onPick}>
+        {waiting ? t("sync.checking") : t("sync.folder.pick")}
       </AppButton>
     </>
   );

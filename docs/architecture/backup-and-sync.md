@@ -90,6 +90,14 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
   takes an address, a user and an app password, and is remembered only once it created and listed
   the folder. Plain HTTP is refused except to this phone, which is also all that
   `plugins/withAndroidNetworkSecurity.js` lets through in a release build.
+- **Or a folder** (`src/folderSync.ts`): a Storage Access Framework tree picked once, which
+  Syncthing (Syncthing-Fork on Android) or any folder-syncing app keeps in step with the other
+  devices. Bati makes no network request for it. Both transports sit behind one `Remote` (list,
+  read, write) in `src/deviceSync.ts`, so vaults, verdicts and the merge are the same. The folder
+  has no etag (time and size stand in) and no server clock: the vault tie-break reads the
+  writer's modification time there. A write goes in as `.syncthing.<name>.tmp`, which Syncthing
+  does not send, and is renamed into place; Syncthing's own `.tmp` and `.sync-conflict-` files do
+  not match the peer pattern.
 - **One file per device**, `bati-<random install id>.batb`, written only by that device. No lock,
   no shared file, nothing deletes another device's file. At most 16 peers are read, and a file
   over 256 MB is not. A file goes up as `….batb.part` and a `MOVE` puts it in place, so a cut-off
@@ -190,3 +198,9 @@ exists only on one phone: a file path, a granted permission, an identifier.
   certificate for the F-Droid build. Round Sync covers them through WebDAV meanwhile.
 - Merging campaigns, boss fights, quest configs and favourites, and hero content deleted on one
   device coming back from the other (roadmap 4.18, item 4).
+- Joining by scanning a QR code from the other device (the audit's scout: four typed fields
+  become one gesture). expo-camera's scanner is Play Services' code scanner and ML Kit, both
+  proprietary, which F-Droid refuses; it needs a ZXing-based scanner module of our own.
+- Certificates from the hero's own authority. The release build trusts system authorities only;
+  a user CA is a security decision to take on purpose, per host, not a default. Such a server gets
+  "Android does not trust this server's certificate", and Round Sync is the way around.

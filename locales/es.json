@@ -1802,6 +1802,33 @@
       "days_other": "hace {{count}} días"
     },
     "secretForgot": "¿La olvidaste? En tu otro dispositivo: Ajustes, Cifrar mis copias. Con una huella configurada allí, la clave de recuperación se puede volver a mostrar.",
-    "useThisPassword": "Usar esta contraseña"
+    "useThisPassword": "Usar esta contraseña",
+    "pick": {
+      "whereIsIt": "¿Dónde guarda Bati tu héroe en tu otro dispositivo?",
+      "whereToKeep": "¿Dónde quieres guardar tu héroe?",
+      "other": "Otra cosa (WebDAV)",
+      "unknown": "No lo sé",
+      "yourCloud": "tu nube",
+      "back": "Otro servicio"
+    },
+    "handoff": {
+      "intro": "Bati aún no puede llegar a {{service}} directamente. Hoy funcionan dos maneras.",
+      "unknown": "No pasa nada. Si tu otro dispositivo nunca tuvo la sincronización activada, mover tu héroe una vez con un archivo es lo más sencillo.",
+      "onceTitle": "Mover tu héroe una vez",
+      "onceOnboarding": "En tu otro dispositivo: Ajustes, Compartir mi copia, y envía el archivo a este (Quick Share, correo, {{service}}). Luego aquí, toca Ya tengo una copia y escribe tu contraseña de Bati.",
+      "onceSettings": "En tu otro dispositivo: Ajustes, Compartir mi copia, y envía el archivo a este (Quick Share, correo, {{service}}). Luego aquí: Ajustes, Restaurar una copia.",
+      "stepTitle": "Mantener tus dispositivos iguales",
+      "step": "Instala Round Sync (F-Droid o Play), añade tu {{service}} y sírvelo por WebDAV. Bati se sincroniza entonces a través de él, en este teléfono.",
+      "roundSyncCta": "Configurar con Round Sync"
+    },
+    "found": {
+      "title": "Tu héroe, encontrado",
+      "body_one": "{{village}}: {{count}} sesión, último entrenamiento {{when}}. ¿Traerlo a este dispositivo?",
+      "body_many": "{{village}}: {{count}} sesiones, último entrenamiento {{when}}. ¿Traerlo a este dispositivo?",
+      "body_other": "{{village}}: {{count}} sesiones, último entrenamiento {{when}}. ¿Traerlo a este dispositivo?",
+      "unnamed": "Un héroe",
+      "mine": "Es mi héroe",
+      "notMine": "No es el mío"
+    }
   }
 }

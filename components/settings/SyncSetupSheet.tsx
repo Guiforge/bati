@@ -9,6 +9,12 @@ import { FormSheet } from "@/components/common/FormSheet";
 type Props = {
   open: boolean;
   onClose: () => void;
+  /**
+   * Onboarding asks where Bati already is on the other device; Settings asks where to keep it.
+   * The file hand-off also points at a different door in each: "I already have a backup" there,
+   * "Restore a backup" here.
+   */
+  context: "onboarding" | "settings";
   /** Resolve to `true` once the server accepted the hero; the sheet then closes. */
   onConnectNextcloud: (server: string) => Promise<boolean>;
   onCancelNextcloud: () => void;
@@ -36,6 +42,28 @@ const PRESETS = [
 type Mode = "nextcloud" | (typeof PRESETS)[number]["id"];
 
 /**
+ * The first question, in the names a hero knows: a non-technical hero stopped at a row of chips
+ * that said Nextcloud, kDrive, Koofr, Round Sync and WebDAV, none of them the cloud she had
+ * (docs/design/audits/2026-09-26-sync-journeys.md, B4). Services Bati cannot reach directly lead
+ * to the two ways that do work, written out.
+ */
+const SERVICES = [
+  { id: "nextcloud", label: "Nextcloud", mode: "nextcloud" },
+  { id: "kdrive", label: "kDrive", mode: "kdrive" },
+  { id: "koofr", label: "Koofr", mode: "koofr" },
+  { id: "gdrive", label: "Google Drive", mode: null },
+  { id: "proton", label: "Proton Drive", mode: null },
+  { id: "onedrive", label: "OneDrive", mode: null },
+  { id: "dropbox", label: "Dropbox", mode: null },
+  { id: "icloud", label: "iCloud", mode: null },
+  { id: "other", label: null, mode: "other" },
+  { id: "unknown", label: null, mode: null },
+] as const satisfies readonly { id: string; label: string | null; mode: Mode | null }[];
+
+type Service = (typeof SERVICES)[number];
+type Step = { kind: "pick" } | { kind: "form" } | { kind: "handoff"; service: Service };
+
+/**
  * Where device sync goes. Two doors to the same WebDAV transport (src/cloudSync.ts):
  *
  * - **Nextcloud**: one field. The hero signs in on their server's own page in their browser
@@ -45,12 +73,14 @@ type Mode = "nextcloud" | (typeof PRESETS)[number]["id"];
 export function SyncSetupSheet({
   open,
   onClose,
+  context,
   onConnectNextcloud,
   onCancelNextcloud,
   onConnectDav,
 }: Props) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>("nextcloud");
+  const [step, setStep] = useState<Step>({ kind: "pick" });
   const [waiting, setWaiting] = useState(false);
   // Lifted here so that switching presets keeps what was typed.
   const [server, setServer] = useState("");
@@ -62,7 +92,17 @@ export function SyncSetupSheet({
   const close = () => {
     if (waiting && mode === "nextcloud") onCancelNextcloud();
     setWaiting(false);
+    setStep({ kind: "pick" });
     onClose();
+  };
+
+  const choose = (service: Service) => {
+    if (service.mode === null) {
+      setStep({ kind: "handoff", service });
+      return;
+    }
+    pick(service.mode);
+    setStep({ kind: "form" });
   };
 
   const pick = (next: Mode) => {
@@ -78,7 +118,10 @@ export function SyncSetupSheet({
     connect().then(
       (connected) => {
         setWaiting(false);
-        if (connected) onClose();
+        if (connected) {
+          setStep({ kind: "pick" });
+          onClose();
+        }
       },
       () => setWaiting(false),
     );
@@ -86,24 +129,49 @@ export function SyncSetupSheet({
 
   return (
     <FormSheet open={open} title={t("sync.connectTitle")} onClose={close}>
-      {waiting ? null : <ModeChips mode={mode} onPick={pick} />}
-      {mode === "nextcloud" ? (
-        <NextcloudForm
-          waiting={waiting}
-          server={server}
-          onServer={setServer}
-          onSubmit={() => attempt(() => onConnectNextcloud(server))}
-          onCancel={close}
+      {step.kind === "pick" ? (
+        <ServicePicker context={context} onChoose={choose} />
+      ) : step.kind === "handoff" ? (
+        <Handoff
+          context={context}
+          service={step.service}
+          onRoundSync={() => {
+            pick("roundSync");
+            setStep({ kind: "form" });
+          }}
+          onBack={() => setStep({ kind: "pick" })}
         />
       ) : (
-        <WebDavForm
-          hint={t(preset?.hint ?? "sync.webdavIntro")}
-          roundSync={mode === "roundSync"}
-          waiting={waiting}
-          fields={{ url, user, password }}
-          setters={{ url: setUrl, user: setUser, password: setPassword }}
-          onSubmit={() => attempt(() => onConnectDav(url, user, password, preset?.label))}
-        />
+        <>
+          {waiting ? null : <ModeChips mode={mode} onPick={pick} />}
+          {mode === "nextcloud" ? (
+            <NextcloudForm
+              waiting={waiting}
+              server={server}
+              onServer={setServer}
+              onSubmit={() => attempt(() => onConnectNextcloud(server))}
+              onCancel={close}
+            />
+          ) : (
+            <WebDavForm
+              hint={t(preset?.hint ?? "sync.webdavIntro")}
+              roundSync={mode === "roundSync"}
+              waiting={waiting}
+              fields={{ url, user, password }}
+              setters={{ url: setUrl, user: setUser, password: setPassword }}
+              onSubmit={() => attempt(() => onConnectDav(url, user, password, preset?.label))}
+            />
+          )}
+          {waiting ? null : (
+            <AppButton
+              testID="sync-other-service"
+              variant="outline"
+              onPress={() => setStep({ kind: "pick" })}
+            >
+              {t("sync.pick.back")}
+            </AppButton>
+          )}
+        </>
       )}
     </FormSheet>
   );
@@ -117,6 +185,84 @@ const FIELD = {
   autoCapitalize: "none",
   autoCorrect: false,
 } as const;
+
+function ServicePicker({
+  context,
+  onChoose,
+}: {
+  context: "onboarding" | "settings";
+  onChoose: (service: Service) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <Text color="$textSecondary">
+        {context === "onboarding" ? t("sync.pick.whereIsIt") : t("sync.pick.whereToKeep")}
+      </Text>
+      <XStack gap="$2" flexWrap="wrap">
+        {SERVICES.map((service) => (
+          <Chip
+            key={service.id}
+            testID={`sync-service-${service.id}`}
+            label={service.label ?? t(`sync.pick.${service.id}`)}
+            onPress={() => onChoose(service)}
+          />
+        ))}
+      </XStack>
+    </>
+  );
+}
+
+/**
+ * For a cloud Bati cannot reach: the two ways that work today, in steps. Moving once goes through
+ * the backup file, which every cloud and every share sheet carries; staying in step goes through
+ * Round Sync, which serves the cloud to Bati over WebDAV on the phone itself.
+ */
+function Handoff({
+  context,
+  service,
+  onRoundSync,
+  onBack,
+}: {
+  context: "onboarding" | "settings";
+  service: Service;
+  onRoundSync: () => void;
+  onBack: () => void;
+}) {
+  const { t } = useTranslation();
+  const name = service.label ?? t("sync.pick.yourCloud");
+  return (
+    <>
+      <Text testID="sync-handoff" color="$text">
+        {service.id === "unknown"
+          ? t("sync.handoff.unknown")
+          : t("sync.handoff.intro", { service: name })}
+      </Text>
+      <Text color="$text" fontWeight="700">
+        {t("sync.handoff.onceTitle")}
+      </Text>
+      <Text color="$textSecondary">
+        {context === "onboarding"
+          ? t("sync.handoff.onceOnboarding", { service: name })
+          : t("sync.handoff.onceSettings", { service: name })}
+      </Text>
+      {service.id === "unknown" ? null : (
+        <>
+          <Text color="$text" fontWeight="700">
+            {t("sync.handoff.stepTitle")}
+          </Text>
+          <Text color="$textSecondary">{t("sync.handoff.step", { service: name })}</Text>
+          <AppButton testID="sync-handoff-roundsync" variant="outline" onPress={onRoundSync}>
+            {t("sync.handoff.roundSyncCta")}
+          </AppButton>
+        </>
+      )}
+      <AppButton testID="sync-handoff-back" variant="secondary" onPress={onBack}>
+        {t("sync.pick.back")}
+      </AppButton>
+    </>
+  );
+}
 
 function ModeChips({ mode, onPick }: { mode: Mode; onPick: (next: Mode) => void }) {
   const { t } = useTranslation();

@@ -1737,6 +1737,32 @@
       "days_other": "vor {{count}} Tagen"
     },
     "secretForgot": "Vergessen? Auf deinem anderen Gerät: Einstellungen, Sicherungen verschlüsseln. Ist dort ein Fingerabdruck eingerichtet, lässt sich der Wiederherstellungsschlüssel erneut anzeigen.",
-    "useThisPassword": "Dieses Passwort verwenden"
+    "useThisPassword": "Dieses Passwort verwenden",
+    "pick": {
+      "whereIsIt": "Wo bewahrt Bati deinen Helden auf deinem anderen Gerät auf?",
+      "whereToKeep": "Wo willst du deinen Helden aufbewahren?",
+      "other": "Etwas anderes (WebDAV)",
+      "unknown": "Ich weiß es nicht",
+      "yourCloud": "deine Cloud",
+      "back": "Ein anderer Dienst"
+    },
+    "handoff": {
+      "intro": "Bati kann {{service}} noch nicht direkt erreichen. Zwei Wege funktionieren heute.",
+      "unknown": "Kein Problem. War die Synchronisierung auf deinem anderen Gerät nie eingerichtet, ist ein einmaliger Umzug per Datei am einfachsten.",
+      "onceTitle": "Deinen Helden einmal umziehen",
+      "onceOnboarding": "Auf deinem anderen Gerät: Einstellungen, Sicherung teilen, und schick die Datei an dieses (Quick Share, E-Mail, {{service}}). Dann hier: Ich habe schon eine Sicherung antippen und dein Bati-Passwort eingeben.",
+      "onceSettings": "Auf deinem anderen Gerät: Einstellungen, Sicherung teilen, und schick die Datei an dieses (Quick Share, E-Mail, {{service}}). Dann hier: Einstellungen, Sicherung wiederherstellen.",
+      "stepTitle": "Deine Geräte gleich halten",
+      "step": "Installiere Round Sync (F-Droid oder Play), füge dort {{service}} hinzu und stelle es per WebDAV bereit. Bati synchronisiert dann darüber, auf diesem Telefon.",
+      "roundSyncCta": "Mit Round Sync einrichten"
+    },
+    "found": {
+      "title": "Dein Held, gefunden",
+      "body_one": "{{village}}: {{count}} Einheit, zuletzt trainiert {{when}}. Auf dieses Gerät holen?",
+      "body_other": "{{village}}: {{count}} Einheiten, zuletzt trainiert {{when}}. Auf dieses Gerät holen?",
+      "unnamed": "Ein Held",
+      "mine": "Das ist mein Held",
+      "notMine": "Nicht meiner"
+    }
   }
 }

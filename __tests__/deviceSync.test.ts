@@ -157,6 +157,8 @@ jest.mock("@/db/backup", () => ({
       peerChanges: peer?.peerChanges ?? 0,
       localChanges: peer?.localChanges ?? 0,
       peerLatest: null,
+      peerVillage: null,
+      localSessions: 1,
       fingerprint: peer?.fingerprint ?? "peer-1",
     });
   },

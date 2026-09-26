@@ -1733,6 +1733,32 @@
       "days_other": "{{count}} days ago"
     },
     "secretForgot": "Forgot it? On your other device: Settings, Encrypt my backups. With a fingerprint set up there, the recovery key can be shown again.",
-    "useThisPassword": "Use this password"
+    "useThisPassword": "Use this password",
+    "pick": {
+      "whereIsIt": "Where does Bati keep your hero on your other device?",
+      "whereToKeep": "Where do you want to keep your hero?",
+      "other": "Something else (WebDAV)",
+      "unknown": "I don't know",
+      "yourCloud": "your cloud",
+      "back": "Another service"
+    },
+    "handoff": {
+      "intro": "Bati cannot reach {{service}} directly yet. Two ways work today.",
+      "unknown": "No problem. If your other device never had sync set up, moving your hero once with a file is the simple way.",
+      "onceTitle": "Move your hero once",
+      "onceOnboarding": "On your other device: Settings, Share my backup, and send the file to this one (Quick Share, email, {{service}}). Then, here, tap I already have a backup and enter your Bati password.",
+      "onceSettings": "On your other device: Settings, Share my backup, and send the file to this one (Quick Share, email, {{service}}). Then, here: Settings, Restore a backup.",
+      "stepTitle": "Keep your devices in step",
+      "step": "Install Round Sync (F-Droid or Play), add your {{service}} to it, and serve it over WebDAV. Bati then syncs through it, on this phone.",
+      "roundSyncCta": "Set up with Round Sync"
+    },
+    "found": {
+      "title": "Your hero, found",
+      "body_one": "{{village}}: {{count}} session, last trained {{when}}. Bring it to this device?",
+      "body_other": "{{village}}: {{count}} sessions, last trained {{when}}. Bring it to this device?",
+      "unnamed": "A hero",
+      "mine": "This is my hero",
+      "notMine": "Not mine"
+    }
   }
 }

@@ -1804,6 +1804,33 @@
       "days_other": "il y a {{count}} jours"
     },
     "secretForgot": "Oublié ? Sur ton autre appareil : Réglages, Chiffrer mes sauvegardes. Si une empreinte y est configurée, la clé de secours peut s'afficher à nouveau.",
-    "useThisPassword": "Utiliser ce mot de passe"
+    "useThisPassword": "Utiliser ce mot de passe",
+    "pick": {
+      "whereIsIt": "Où Bati garde-t-il ton héros sur ton autre appareil ?",
+      "whereToKeep": "Où veux-tu garder ton héros ?",
+      "other": "Autre chose (WebDAV)",
+      "unknown": "Je ne sais pas",
+      "yourCloud": "ton cloud",
+      "back": "Un autre service"
+    },
+    "handoff": {
+      "intro": "Bati ne sait pas encore joindre {{service}} directement. Deux façons marchent aujourd'hui.",
+      "unknown": "Pas de souci. Si la synchro n'a jamais été activée sur ton autre appareil, déplacer ton héros une fois avec un fichier est le plus simple.",
+      "onceTitle": "Déplacer ton héros une fois",
+      "onceOnboarding": "Sur ton autre appareil : Réglages, Partager ma sauvegarde, et envoie le fichier à celui-ci (Quick Share, e-mail, {{service}}). Puis ici, touche J'ai déjà une sauvegarde et saisis ton mot de passe Bati.",
+      "onceSettings": "Sur ton autre appareil : Réglages, Partager ma sauvegarde, et envoie le fichier à celui-ci (Quick Share, e-mail, {{service}}). Puis ici : Réglages, Restaurer une sauvegarde.",
+      "stepTitle": "Garder tes appareils d'accord",
+      "step": "Installe Round Sync (F-Droid ou Play), ajoute-y ton {{service}}, et sers-le en WebDAV. Bati se synchronise alors à travers lui, sur ce téléphone.",
+      "roundSyncCta": "Configurer avec Round Sync"
+    },
+    "found": {
+      "title": "Ton héros, retrouvé",
+      "body_one": "{{village}} : {{count}} séance, dernier entraînement {{when}}. Le ramener sur cet appareil ?",
+      "body_many": "{{village}} : {{count}} séances, dernier entraînement {{when}}. Le ramener sur cet appareil ?",
+      "body_other": "{{village}} : {{count}} séances, dernier entraînement {{when}}. Le ramener sur cet appareil ?",
+      "unnamed": "Un héros",
+      "mine": "C'est mon héros",
+      "notMine": "Pas le mien"
+    }
   }
 }

@@ -157,8 +157,14 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
   cannot run behind the statements a finished session leaves in flight, and only if the history
   moved. The network half runs once the app is up (`stores/sync.ts`, once per process) and from
   Settings. The prompt waits while a session is running: taking a version unmounts the app.
-- **Onboarding** offers "Find my hero on my cloud": connect, give the password, and the prompt
-  offers the hand-off to the empty new device.
+- **Onboarding** offers "Find my hero on my cloud": connect, give the password, and a device with
+  no session of its own is shown whose hero it found ("Hautecombe, 16 sessions, last trained 2
+  days ago") before anything is merged; "Not mine" takes nothing and is remembered.
+- **The first question names services, not protocols.** The setup sheet opens on "Where does Bati
+  keep your hero?" with Nextcloud, kDrive, Koofr, Google Drive, Proton Drive, OneDrive, Dropbox,
+  iCloud, something else, and "I don't know". Clouds Bati cannot reach lead to the two ways that
+  work, written out: moving once through the backup file (Share my backup, then "I already have a
+  backup" or Restore a backup), and staying in step through Round Sync.
 
 ## Interrupted work
 

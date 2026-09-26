@@ -56,6 +56,7 @@ export function CloudRestoreLink({ disabled }: { disabled: boolean }) {
         {t("sync.onboardingCta")}
       </Text>
       <SyncSetupSheet
+        context="onboarding"
         open={open}
         onClose={() => setOpen(false)}
         onConnectNextcloud={(server) => deviceSync.connect(server).then(follow)}

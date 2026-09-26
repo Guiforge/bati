@@ -55,7 +55,6 @@ export function SyncPrompt() {
   // An alert on screen. `markOffered` re-runs the effect, and without this the next device's
   // question opened on top of the one still being read.
   const [showing, setShowing] = useState(false);
-
   const pathname = usePathname();
 
   // Said after the reload a merge ends with: the app vanished for a second, and this is why. And
@@ -72,91 +71,81 @@ export function SyncPrompt() {
       .catch((e) => reportError("sync.mergeNotice", e));
   }, [showSuccess, t]);
 
-  useEffect(() => {
-    if (inSession || joining !== null || showing) return;
-    const peer = result?.peers.find(
-      (p) =>
-        p.state !== "level" &&
-        p.state !== "behind" &&
-        p.state !== "waiting" &&
-        !offered.includes(offerKey(p)),
+  /** Every answer, and a dismissal, frees the screen for the next question. */
+  const ask = (title: string, body: string, buttons: AlertButton[]) => {
+    setShowing(true);
+    const done = () => setShowing(false);
+    Alert.alert(
+      title,
+      body,
+      buttons.map((b) => ({
+        ...b,
+        onPress: () => {
+          done();
+          b.onPress?.();
+        },
+      })),
+      { onDismiss: done },
     );
-    if (!peer) return;
-    markOffered(offerKey(peer));
+  };
 
-    /** Every answer, and a dismissal, frees the screen for the next question. */
-    const ask = (title: string, body: string, buttons: AlertButton[]) => {
-      setShowing(true);
-      const done = () => setShowing(false);
-      Alert.alert(
-        title,
-        body,
-        buttons.map((b) => ({
-          ...b,
-          onPress: () => {
-            done();
-            b.onPress?.();
-          },
-        })),
-        { onDismiss: done },
-      );
-    };
+  /** Said once per file: most often that device runs a newer Bati. */
+  const announceUnreadable = (peer: Peer) =>
+    ask(t("sync.unreadableTitle"), t("sync.unreadableBody"), [
+      {
+        text: t("common.close"),
+        onPress: () => {
+          rememberUnreadable(peer).catch((e) => reportError("sync.remember", e));
+        },
+      },
+    ]);
 
-    /** The hero's choice, as before the merge existed, for the one case it cannot handle. */
-    const offerChoice = (peer: Extract<Peer, { comparison: unknown }>) => {
-      const plain = peerScratch(peer.name, "plain");
-      const { peerChanges, localChanges } = peer.comparison;
-      if (peer.state === "ahead") {
-        // Nothing here would be lost, so there is nothing to keep first and no "keep" to remember:
-        // "later" only means "not now".
-        ask(t("sync.aheadTitle"), t("sync.aheadBody", { count: peerChanges }), [
-          { text: t("sync.later"), style: "cancel" },
-          { text: t("sync.take"), onPress: () => runAdopt(plain, () => Promise.resolve()) },
-        ]);
-        return;
-      }
-      ask(
-        t("sync.divergedTitle"),
-        t("sync.divergedBody", { peer: peerChanges, local: localChanges }),
-        [
-          {
-            text: t("sync.keep"),
-            style: "cancel",
-            onPress: () => {
-              rememberAnswer(peer).catch((e) => reportError("sync.remember", e));
-            },
-          },
-          {
-            text: t("sync.take"),
-            onPress: () => runAdopt(plain, () => keepThisDeviceOnServer().then(() => undefined)),
-          },
-        ],
-      );
-    };
+  /** Another device's vault: its password, or nothing is exchanged with it. */
+  const offerJoin = (peer: Peer) => {
+    const when = peer.modified ? syncAgo(t, peer.modified) : t("sync.status.unknownWhen");
+    ask(t("sync.lockedTitle"), t("sync.lockedBody", { when }), [
+      { text: t("sync.later"), style: "cancel" },
+      { text: t("sync.lockedCta"), onPress: () => setJoining({ peer: peer.name, wrong: false }) },
+    ]);
+  };
 
-    if (peer.state === "unreadable") {
-      ask(t("sync.unreadableTitle"), t("sync.unreadableBody"), [
+  /** The hero's choice, as before the merge existed, for the one case it cannot handle. */
+  const offerChoice = (peer: ComparedPeer) => {
+    const plain = peerScratch(peer.name, "plain");
+    const { peerChanges, localChanges } = peer.comparison;
+    if (peer.state === "ahead") {
+      // Nothing here would be lost, so there is nothing to keep first and no "keep" to remember:
+      // "later" only means "not now".
+      ask(t("sync.aheadTitle"), t("sync.aheadBody", { count: peerChanges }), [
+        { text: t("sync.later"), style: "cancel" },
+        { text: t("sync.take"), onPress: () => runAdopt(plain, () => Promise.resolve()) },
+      ]);
+      return;
+    }
+    ask(
+      t("sync.divergedTitle"),
+      t("sync.divergedBody", { peer: peerChanges, local: localChanges }),
+      [
         {
-          text: t("common.close"),
+          text: t("sync.keep"),
+          style: "cancel",
           onPress: () => {
-            rememberUnreadable(peer).catch((e) => reportError("sync.remember", e));
+            rememberAnswer(peer).catch((e) => reportError("sync.remember", e));
           },
         },
-      ]);
-      return;
-    }
-    if (peer.state === "locked") {
-      const when = peer.modified ? syncAgo(t, peer.modified) : t("sync.status.unknownWhen");
-      ask(t("sync.lockedTitle"), t("sync.lockedBody", { when }), [
-        { text: t("sync.later"), style: "cancel" },
-        { text: t("sync.lockedCta"), onPress: () => setJoining({ peer: peer.name, wrong: false }) },
-      ]);
-      return;
-    }
-    if (!("comparison" in peer)) return;
+        {
+          text: t("sync.take"),
+          onPress: () => runAdopt(plain, () => keepThisDeviceOnServer().then(() => undefined)),
+        },
+      ],
+    );
+  };
 
-    // Merged, not asked: what either device recorded ends up on both. The question below is only
-    // for a device whose build differs, which the merge refuses.
+  /**
+   * Merged, not asked: what either device recorded ends up on both. The question above is only
+   * for a device whose build differs, which the merge refuses.
+   */
+  const merge = (peer: ComparedPeer) => {
     setShowing(true);
     mergeWithPeer(peer)
       .then(async (outcome) => {
@@ -178,7 +167,55 @@ export function SyncPrompt() {
         setShowing(false);
         offerChoice(peer);
       });
-  }, [inSession, joining, showing, markOffered, offered, result, runAdopt, t, pathname]);
+  };
+
+  /**
+   * A device with nothing of its own yet (a new tablet) is shown whose hero it found before it
+   * takes it: recognising "Hautecombe, 16 sessions" is what tells the hero it worked, and a file
+   * left on the server by someone else's phone is not taken on faith.
+   */
+  const offerFound = (peer: ComparedPeer) => {
+    const { peerVillage, peerOnly, peerLatest } = peer.comparison;
+    const when = peerLatest === null ? t("sync.status.unknownWhen") : syncAgo(t, peerLatest * 1000);
+    ask(
+      t("sync.found.title"),
+      t("sync.found.body", {
+        village: peerVillage ?? t("sync.found.unnamed"),
+        count: peerOnly,
+        when,
+      }),
+      [
+        {
+          text: t("sync.found.notMine"),
+          style: "cancel",
+          onPress: () => {
+            rememberAnswer(peer).catch((e) => reportError("sync.remember", e));
+          },
+        },
+        { text: t("sync.found.mine"), onPress: () => merge(peer) },
+      ],
+    );
+  };
+
+  // No dependency list: the helpers above are new on every render, and the guards (a question
+  // on screen, a session running, an offer already made) are what keep this from asking twice.
+  useEffect(() => {
+    if (inSession || joining !== null || showing) return;
+    const peer = result?.peers.find(
+      (p) =>
+        p.state !== "level" &&
+        p.state !== "behind" &&
+        p.state !== "waiting" &&
+        !offered.includes(offerKey(p)),
+    );
+    if (!peer) return;
+    markOffered(offerKey(peer));
+    if (peer.state === "unreadable") announceUnreadable(peer);
+    else if (peer.state === "locked") offerJoin(peer);
+    else if (!("comparison" in peer)) return;
+    else if (peer.comparison.localSessions === 0 && peer.comparison.peerOnly > 0) offerFound(peer);
+    else merge(peer);
+  });
 
   const submit = (secret: string) => {
     if (joining === null) return;
@@ -215,6 +252,8 @@ export function SyncPrompt() {
     />
   );
 }
+
+type ComparedPeer = Extract<Peer, { comparison: unknown }>;
 
 /** One offer per device and state: news from that device is a new offer, a re-seal is not. */
 function offerKey(peer: Peer): string {

@@ -299,6 +299,10 @@ export type PeerComparison = {
   localChanges: number;
   /** When the other device's newest session was performed, epoch seconds, or `null` if none. */
   peerLatest: number | null;
+  /** The other device's village name, so a new device can say whose hero it found. */
+  peerVillage: string | null;
+  /** How many sessions this device has: none is a device that has nothing to recognise yet. */
+  localSessions: number;
   fingerprint: string;
 };
 
@@ -322,6 +326,8 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
          (${newerIn(CANDIDATE, "main")}) AS peerContent,
          (${newerIn("main", CANDIDATE)}) AS localContent,
          (SELECT max(performedAt) FROM ${CANDIDATE}.completed_sessions) AS peerLatest,
+         (SELECT value FROM ${CANDIDATE}.user_preferences WHERE key = 'villageName') AS peerVillage,
+         (SELECT count(*) FROM main.completed_sessions) AS localSessions,
          (SELECT count(*) || ':' || ifnull(max(uuid), '') FROM ${CANDIDATE}.completed_sessions) AS s,
          (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE)})) AS c,
          (SELECT count(*) FROM (${peerGone})) AS g`,
@@ -334,6 +340,8 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
       localChanges: n("localOnly") + n("localDeleted") + n("localContent"),
       peerLatest:
         row?.peerLatest === null || row?.peerLatest === undefined ? null : n("peerLatest"),
+      peerVillage: typeof row?.peerVillage === "string" ? row.peerVillage : null,
+      localSessions: n("localSessions"),
       fingerprint: `${row?.s}|${row?.c}|${row?.g}`,
     };
   });

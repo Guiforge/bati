@@ -161,6 +161,7 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
         />
       ) : null}
       <SyncSetupSheet
+        context="settings"
         open={setupOpen}
         onClose={() => setSetupOpen(false)}
         onConnectNextcloud={(server) => deviceSync.connect(server).then(follow)}

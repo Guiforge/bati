@@ -98,12 +98,15 @@ import type { Peer } from "@/src/deviceSync";
 import { useSessionStore } from "@/stores/session";
 import { useSyncStore } from "@/stores/sync";
 
-const comparison = (peer: number, local: number, fingerprint: string) => ({
+/** A device with sessions of its own (5), unless `localSessions` says it is a new one. */
+const comparison = (peer: number, local: number, fingerprint: string, localSessions = 5) => ({
   peerOnly: peer,
   localOnly: local,
   peerChanges: peer,
   localChanges: local,
   peerLatest: null,
+  peerVillage: "Hautecombe",
+  localSessions,
   fingerprint,
 });
 const syncFound = (...peers: Peer[]) =>
@@ -185,6 +188,37 @@ test("a device that can be merged is merged, not asked, and the app reloads to r
   expect(mockAdopted).toEqual([]);
   // Said after the reload, which then takes the hero back to where they were.
   expect(mockNotice).toEqual({ sessions: 3, returnTo: "/settings" });
+});
+
+test("a new device is shown whose hero it found before taking it", async () => {
+  mockMerge = { result: "merged", sessions: 16, changes: 16 };
+  mockSessions = 16;
+  await render(<SyncPrompt />);
+  await syncFound({
+    name: "bati-phone.batb",
+    etag: "e",
+    state: "ahead",
+    comparison: comparison(16, 0, "f1", 0),
+  });
+
+  await waitFor(() => expect(mockAlerts.map((a) => a.title)).toEqual(["sync.found.title"]));
+  expect(mockReload).not.toHaveBeenCalled();
+  await act(async () => press("sync.found.mine"));
+  await waitFor(() => expect(mockReload).toHaveBeenCalledWith("merge"));
+});
+
+test("'not mine' on a new device takes nothing and asks no more about that state", async () => {
+  await render(<SyncPrompt />);
+  await syncFound({
+    name: "bati-stranger.batb",
+    etag: "e",
+    state: "ahead",
+    comparison: comparison(3, 0, "f9", 0),
+  });
+  await waitFor(() => expect(mockAlerts).toHaveLength(1));
+  await act(async () => press("sync.found.notMine"));
+  await waitFor(() => expect(mockRemembered).toEqual(["bati-stranger.batb@f9"]));
+  expect(mockReload).not.toHaveBeenCalled();
 });
 
 test("a merge that changed nothing does not reload", async () => {

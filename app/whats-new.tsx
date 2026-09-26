@@ -43,7 +43,8 @@ export default function WhatsNewScreen() {
             notes.map((line, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list, and two notes may read the same
               <XStack key={index} gap="$2">
-                <Text color="$primaryText">•</Text>
+                {/* A Paragraph like the note, so the bullet shares its size and first line. */}
+                <Paragraph color="$primaryText">•</Paragraph>
                 <Paragraph flex={1} color="$text">
                   {line}
                 </Paragraph>

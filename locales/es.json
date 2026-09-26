@@ -1325,7 +1325,7 @@
     "restoreFailedTitle": "Restauración interrumpida",
     "phase": {
       "restoring": "Colocando tus datos. No cierres Bati.",
-      "restartRequired": "Hecho. Cierra Bati y vuelve a abrirla para continuar.",
+      "restartRequired": "Hecho, tu héroe llega… Si Bati no vuelve por sí sola, ciérrala y vuelve a abrirla.",
       "failed": "No se ha sustituido nada, tus datos siguen intactos. Cierra Bati, vuelve a abrirla y prueba otro archivo."
     },
     "rejected": {

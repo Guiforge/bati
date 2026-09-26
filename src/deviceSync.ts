@@ -301,6 +301,10 @@ async function judge(target: DavTarget, file: RemoteFile, context: JudgeContext)
   if ("comparison" in peer && context.answered[file.name] === peer.comparison.fingerprint) {
     peer = { name: file.name, etag: file.etag, state: "level" };
   }
+  // Said once for this file, not once per launch: the same unreadable file is no news.
+  if (peer.state === "unreadable" && context.answered[file.name] === unreadableKey(file)) {
+    peer = { name: file.name, etag: file.etag, state: "level" };
+  }
   // Only a snapshot the hero may take is kept; plaintext history does not linger otherwise.
   const plain = peerScratch(file.name, "plain");
   if (!("comparison" in peer) && plain.exists) plain.delete();
@@ -393,6 +397,19 @@ async function answeredPeers(): Promise<Record<string, string>> {
 }
 
 /** "Keep this device's version": not asked again until that device has news. */
+/** "Seen": this unreadable file is not announced again until that device writes a new one. */
+export async function rememberUnreadable(peer: { name: string; etag: string }): Promise<void> {
+  const answered = await answeredPeers();
+  await SecureStore.setItemAsync(
+    STORE_ANSWERED,
+    JSON.stringify({ ...answered, [peer.name]: unreadableKey(peer) }),
+  );
+}
+
+function unreadableKey(file: { etag: string }): string {
+  return `unreadable@${file.etag}`;
+}
+
 export async function rememberAnswer(peer: {
   name: string;
   comparison: { fingerprint: string };

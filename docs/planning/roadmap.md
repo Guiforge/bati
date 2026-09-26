@@ -519,14 +519,15 @@ skewed clock, #5738); do not count on Android background sync, sync at launch an
 
 **What is left, planned on 2026-09-26** (read-only plans, verified against the code at `5f347a64`):
 
-1. **Take a version without a restart (about 2 h).** Not a remount: about twenty module caches and
+1. **Take a version without a restart: done (2026-09-26),** verified on the emulator (same pid,
+   13 sessions after taking a device two ahead). Not a remount: about twenty module caches and
    stores hold database state (`db/client.ts` binds `db` as a `const`, `db/migrate.ts` remembers
    `migrated`, the adventure, exercise, quest, streak and query caches, every zustand store), and
    each new cache would be a new reset to forget. `reloadAppAsync()`, exported by `expo` itself,
    reloads the JS runtime in release builds with no new dependency and no permission: call it in
    `components/DatabaseProvider.tsx` after `commitRestore` resolves, keep the current notice as the
-   fallback if it does nothing. Check the pid is unchanged and Home shows the adopted hero. Also
-   refuse a Settings import during a session, as `SyncPrompt` already does.
+   fallback if it does nothing. Not done: refusing a Settings import during a session, as
+   `SyncPrompt` already does; the restart it replaces lost that session too, so nothing regressed.
 2. **The sealed-file cap is memory, not 256 MB.** `sealFile`/`openFile` stream in 64 KiB, but
    Conscrypt's AES-GCM most likely buffers everything until `doFinal`, so the peak Java heap is
    2 to 3 times the file, against a 192 to 256 MB `heapgrowthlimit`. GPS dominates size: 1 Hz raw

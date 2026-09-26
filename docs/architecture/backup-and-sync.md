@@ -24,7 +24,10 @@ Every one of them is a `VACUUM INTO` snapshot of the whole database, so a restor
 goes through one road (`restoreStaged` in `hooks/useBackup.ts`): decrypt if sealed, `validateBackup`,
 `keepDeviceSettings`, the copies no swap may go ahead without, then `commitRestore`. The picker,
 onboarding and taking another device's version are three doors to that road, and one import runs
-at a time in the whole app, not per screen: they all stage into the same file.
+at a time in the whole app, not per screen: they all stage into the same file. Once the swap is
+done the provider reloads the JS runtime (`reloadAppAsync` from `expo`): every cache, store and the
+database singleton go with the old runtime, as on a cold start, and the hero never has to close
+the app. The old "close and reopen" notice stays as the way out if the host cannot reload.
 
 **Android's backup carries three files and nothing else**: `bati.v<N>.db` and its journal. The
 same directory holds decrypted imports, another device's history opened for comparison, the
@@ -108,8 +111,9 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
 - **Downloads only what can change an answer.** A `level`, `behind` or `unreadable` verdict is
   remembered against the file's etag and this device's state (history, key, and the migrations
   this build knows, so an app update reads a too-new peer again). An idle launch downloads nothing.
-- **Said, not swallowed.** One question at a time; an `unreadable` device is announced once, as
-  "update Bati", since a newer version on it is the usual reason.
+- **Said, not swallowed.** One question at a time; an `unreadable` device is announced once per
+  file it writes, not once per launch, as "update Bati", since a newer version on it is the usual
+  reason.
 - **When**: the snapshot is sealed at launch, next to the automatic backup, because `VACUUM INTO`
   cannot run behind the statements a finished session leaves in flight, and only if the history
   moved. The network half runs once the app is up (`stores/sync.ts`, once per process) and from
@@ -140,4 +144,3 @@ exists only on one phone: a file path, a granted permission, an identifier.
   project (PKCE, no secret, app folder); Drive needs brand verification and a second signing
   certificate for the F-Droid build. Round Sync covers them through WebDAV meanwhile.
 - Row-level merge (roadmap 4.18 phase 4). A divergence is a choice today, with a copy kept.
-- A hand-off without a restart: taking a version still goes through the restore screen.

@@ -151,6 +151,7 @@ import {
   joinPeer,
   keepThisDeviceOnServer,
   rememberAnswer,
+  rememberUnreadable,
   serverState,
   syncAccount,
   syncNow,
@@ -277,6 +278,22 @@ test("two devices that both changed their password: the older file joins the new
   const asked = await syncNow({ snapshotFirst: true });
   expect(states(asked.peers)).toEqual({ [TABLET]: "locked" });
   expect(asked.uploaded).toBe(false);
+});
+
+test("an unreadable device is announced once per file, not once per launch", async () => {
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = { open: "opened", valid: false };
+  const first = await syncNow({ snapshotFirst: true });
+  expect(states(first.peers)).toEqual({ [TABLET]: "unreadable" });
+
+  await rememberUnreadable({ name: TABLET, etag: "t1" });
+  expect(states((await syncNow({ snapshotFirst: true })).peers)).toEqual({ [TABLET]: "level" });
+
+  // That device wrote again: still unreadable, and worth saying again.
+  mockServer.set(TABLET, "t2");
+  expect(states((await syncNow({ snapshotFirst: true })).peers)).toEqual({
+    [TABLET]: "unreadable",
+  });
 });
 
 test("a new device joins the vault of the most recently written file", async () => {

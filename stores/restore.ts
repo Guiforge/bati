@@ -9,7 +9,9 @@ import { create } from "zustand";
  *
  * - `idle`: nothing happening, the app renders normally.
  * - `restoring`: validated, tree unmounted; the swap runs now.
- * - `restartRequired`: the database on disk is the restored one. Only a relaunch can open it.
+ * - `restartRequired`: the database on disk is the restored one. The provider reloads the JS
+ *   runtime to open it (`reloadAppAsync`); the notice for this phase is what stays on screen if
+ *   the host cannot, and then only a relaunch opens it.
  * - `failed`: the swap did not complete and rolled back, so the original database is on disk
  *   untouched — but the connection to it was closed to make room for the swap and nothing
  *   reopens it. A relaunch is the only way out, which is what the copy for this phase says.

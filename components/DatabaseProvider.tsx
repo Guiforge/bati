@@ -1,3 +1,4 @@
+import { reloadAppAsync } from "expo";
 import * as SplashScreen from "expo-splash-screen";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -148,7 +149,14 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
     if (restorePhase !== "restoring" || !claimCommit()) return;
 
     commitRestore()
-      .then(() => finishRestore("restartRequired"))
+      .then(() => {
+        finishRestore("restartRequired");
+        // A fresh JS runtime is a cold start without leaving the app: every module cache, every
+        // store and the database singleton go with the old one, and `db/client.ts` opens the
+        // swapped file. A remount would have to reset each of those by hand, and forget the next
+        // one. The notice stays as the way out if the host cannot reload.
+        reloadAppAsync("restore").catch((e) => reportError("backup.reload", e));
+      })
       .catch((e) => {
         reportError("backup.commitRestore", e);
         finishRestore("failed");

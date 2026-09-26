@@ -1265,7 +1265,7 @@
     "restoreFailedTitle": "Wiederherstellung abgebrochen",
     "phase": {
       "restoring": "Deine Daten werden eingespielt. Schließ Bati nicht.",
-      "restartRequired": "Fertig. Schließ Bati und öffne es erneut, um weiterzumachen.",
+      "restartRequired": "Fertig, dein Held kommt… Falls Bati nicht von selbst zurückkommt, schließ es und öffne es erneut.",
       "failed": "Nichts wurde ersetzt, deine Daten sind unberührt. Schließ Bati, öffne es erneut und probier dann eine andere Datei."
     },
     "rejected": {

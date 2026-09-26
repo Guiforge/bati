@@ -6,7 +6,13 @@ import { useToast } from "@/components/common/Toast";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { useBackup } from "@/hooks/useBackup";
 import { peerScratch } from "@/src/backupFiles";
-import { joinPeer, keepThisDeviceOnServer, type Peer, rememberAnswer } from "@/src/deviceSync";
+import {
+  joinPeer,
+  keepThisDeviceOnServer,
+  type Peer,
+  rememberAnswer,
+  rememberUnreadable,
+} from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSyncStore } from "@/stores/sync";
@@ -73,7 +79,14 @@ export function SyncPrompt() {
     };
 
     if (peer.state === "unreadable") {
-      ask(t("sync.unreadableTitle"), t("sync.unreadableBody"), [{ text: t("common.close") }]);
+      ask(t("sync.unreadableTitle"), t("sync.unreadableBody"), [
+        {
+          text: t("common.close"),
+          onPress: () => {
+            rememberUnreadable(peer).catch((e) => reportError("sync.remember", e));
+          },
+        },
+      ]);
       return;
     }
     if (peer.state === "locked") {

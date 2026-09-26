@@ -38,6 +38,7 @@ const mockRemembered: string[] = [];
 let mockJoinOpens = false;
 const mockKeepCopy = jest.fn(() => Promise.resolve());
 jest.mock("@/src/deviceSync", () => ({
+  rememberUnreadable: () => Promise.resolve(),
   rememberAnswer: (peer: { name: string; comparison: { fingerprint: string } }) =>
     Promise.resolve().then(() => {
       mockRemembered.push(`${peer.name}@${peer.comparison.fingerprint}`);

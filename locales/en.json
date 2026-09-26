@@ -1265,7 +1265,7 @@
     "restoreFailedTitle": "Restore stopped",
     "phase": {
       "restoring": "Putting your data in place. Do not close Bati.",
-      "restartRequired": "Done. Close Bati and open it again to continue.",
+      "restartRequired": "Done. Opening your hero… If Bati does not come back by itself, close it and open it again.",
       "failed": "Nothing was replaced. Your data is untouched. Close Bati and open it again, then try another file."
     },
     "rejected": {

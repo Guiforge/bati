@@ -177,7 +177,7 @@
     "distance_metric": "Kilómetros",
     "distance_imperial": "Millas",
     "map_tiles": "Mapa",
-    "map_tiles_note": "Mientras está desactivado, Bati no descarga nada. Si lo activas, la salida y su resumen piden a OpenFreeMap, en tiles.openfreemap.org, el mapa a tu alrededor, lo que le indica más o menos por dónde vas, durante y después. Es una de las dos conexiones de red de la app: la otra es Buscar actualizaciones, al final de esta pantalla.",
+    "map_tiles_note": "Mientras está desactivado, Bati no descarga nada. Si lo activas, la salida y su resumen piden a OpenFreeMap, en tiles.openfreemap.org, el mapa a tu alrededor, lo que le indica más o menos por dónde vas, durante y después. Es una de las tres conexiones de red de la app: las otras son Sincronizar mis dispositivos, más arriba, y Buscar actualizaciones, al final de esta pantalla.",
     "update_check": "Buscar actualizaciones",
     "update_check_note": "Mientras está desactivado, Bati no pregunta nada. Si lo activas, la app pregunta una vez al día a api.github.com si ha salido una versión más reciente, lo que le indica a GitHub tu dirección IP y la hora, nada más. F-Droid y Play Store ya lo vigilan por ti: esta fila es para una copia instalada a mano desde un APK."
   },

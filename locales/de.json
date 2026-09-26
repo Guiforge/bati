@@ -176,7 +176,7 @@
     "distance_metric": "Kilometer",
     "distance_imperial": "Meilen",
     "map_tiles": "Karte",
-    "map_tiles_note": "Solange sie ausgeschaltet ist, lädt Bati nichts herunter. Eingeschaltet fragen die Tour und ihr Rückblick OpenFreeMap unter tiles.openfreemap.org nach der Karte um dich herum, was dem Dienst ungefähr verrät, wo du bist, unterwegs und danach. Das ist eine der beiden Netzwerkverbindungen der App: die andere ist Nach Updates suchen, unten auf diesem Bildschirm.",
+    "map_tiles_note": "Solange sie ausgeschaltet ist, lädt Bati nichts herunter. Eingeschaltet fragen die Tour und ihr Rückblick OpenFreeMap unter tiles.openfreemap.org nach der Karte um dich herum, was dem Dienst ungefähr verrät, wo du bist, unterwegs und danach. Das ist eine der drei Netzwerkverbindungen der App: die anderen sind Geräte synchronisieren, weiter oben, und Nach Updates suchen, unten auf diesem Bildschirm.",
     "update_check": "Nach Updates suchen",
     "update_check_note": "Solange es ausgeschaltet ist, fragt Bati nichts. Eingeschaltet fragt die App einmal am Tag bei api.github.com nach, ob eine neuere Version erschienen ist, was GitHub deine IP-Adresse und die Uhrzeit verrät, sonst nichts. F-Droid und der Play Store achten schon für dich darauf: diese Zeile ist für eine von Hand aus einer APK installierte Kopie."
   },

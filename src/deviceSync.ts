@@ -154,7 +154,9 @@ export async function connectWebDav(
   label?: string,
 ): Promise<SyncAccount> {
   const address = url.trim();
-  if (/^http:\/\//i.test(address) && !isOnThisDevice(address)) throw new InsecureAddressError();
+  if (/^http:\/\//i.test(address) && !isOnThisDevice(address)) {
+    throw new InsecureAddressError("Plain HTTP is only allowed to this phone");
+  }
   const account: SyncAccount = { kind: "webdav", url: address, user: user.trim(), password, label };
   await listRemote(targetFor(account));
   return remember(account);

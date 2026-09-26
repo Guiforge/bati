@@ -176,7 +176,7 @@
     "distance_metric": "Kilometres",
     "distance_imperial": "Miles",
     "map_tiles": "Map",
-    "map_tiles_note": "Off, Bati downloads nothing. On, the outing and its recap ask OpenFreeMap, at tiles.openfreemap.org, for the map around you, which tells it roughly where you go, while you move and afterwards. It is one of the app's two network calls; the other is Check for updates, at the bottom of this screen.",
+    "map_tiles_note": "Off, Bati downloads nothing. On, the outing and its recap ask OpenFreeMap, at tiles.openfreemap.org, for the map around you, which tells it roughly where you go, while you move and afterwards. It is one of the app's three network calls; the others are Sync my devices, above, and Check for updates, at the bottom of this screen.",
     "update_check": "Check for updates",
     "update_check_note": "Off, Bati asks nothing. On, it asks api.github.com once a day whether a newer version has been published, which tells GitHub your IP address and the time and nothing else. F-Droid and the Play Store already watch for you: this row is for a copy installed by hand from an APK."
   },

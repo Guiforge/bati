@@ -187,6 +187,18 @@ async function mergeInto(conn: IsolatedConnection): Promise<{ sessions: number; 
   await conn.execAsync(`INSERT OR REPLACE INTO main.user_preferences (key, value, updatedAt)
     SELECT key, value, updatedAt FROM ${PEER}.user_preferences WHERE key IN (${newer})`);
 
+  // Only ever goes one way. A tablet that found its hero from onboarding had the whole history and
+  // still showed the first onboarding screen, because this flag stayed behind: to a new user, the
+  // hero they came for was gone.
+  const onboarded = `SELECT 1 FROM ${PEER}.user_preferences
+    WHERE key = 'hasFinishedOnboarding' AND value = 'true'
+      AND NOT EXISTS (SELECT 1 FROM main.user_preferences WHERE key = 'hasFinishedOnboarding' AND value = 'true')`;
+  if ((await count(conn, onboarded)) > 0) {
+    changes++;
+    await conn.execAsync(`INSERT OR REPLACE INTO main.user_preferences (key, value, updatedAt)
+      SELECT key, value, updatedAt FROM ${PEER}.user_preferences WHERE key = 'hasFinishedOnboarding'`);
+  }
+
   return { sessions, changes };
 }
 

@@ -212,6 +212,22 @@ test("a device fresh from onboarding takes the other's preferences, whatever the
   });
 });
 
+test("a tablet that found its hero from onboarding leaves onboarding, whatever it said", async () => {
+  const file = await peer("phone.db", (sqlite) => {
+    addSession(sqlite, 1_000);
+    setPref(sqlite, "hasFinishedOnboarding", "true", 100);
+  });
+  setPref(t.sqlite, "hasFinishedOnboarding", "false", 900);
+
+  await merge().mergePeer(file);
+
+  expect(
+    t.sqlite
+      .prepare("SELECT value FROM user_preferences WHERE key = 'hasFinishedOnboarding'")
+      .get(),
+  ).toEqual({ value: "true" });
+});
+
 test("hero movements: the newer edit wins, a new one arrives, and its prerequisite follows", async () => {
   const shared = heroExercise(t.sqlite, "Wall walk", 100);
   addSession(t.sqlite, 1_000);

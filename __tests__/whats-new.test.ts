@@ -23,18 +23,28 @@ jest.mock("@/db/preferences", () => {
   };
 });
 
+jest.mock("@/db/userLevel", () => ({ getTotalXp: jest.fn() }));
+
 const { preferences } = jest.requireMock("@/db/preferences") as {
   preferences: { store: Record<string, string | undefined> };
 };
+const { getTotalXp } = jest.requireMock("@/db/userLevel") as { getTotalXp: jest.Mock };
 
 describe("hasUnseenNotes", () => {
   beforeEach(() => {
     for (const key of Object.keys(preferences.store)) delete preferences.store[key];
+    getTotalXp.mockResolvedValue(0);
   });
 
   test("a fresh install says nothing, and remembers the version it met", async () => {
     expect(await hasUnseenNotes()).toBe(false);
     expect(preferences.store.notesSeenVersion).toBe("2.0.0");
+  });
+
+  test("a hero updating to the release that shipped this screen is told", async () => {
+    getTotalXp.mockResolvedValue(120);
+    expect(await hasUnseenNotes()).toBe(true);
+    expect(preferences.store.notesSeenVersion).toBeUndefined();
   });
 
   test("an update offers the notes until they are seen, then never again for that version", async () => {

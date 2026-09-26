@@ -57,6 +57,7 @@ const path = require("node:path");
 function changelogFor(versionCode) {
   const root = path.join(__dirname, "fastlane", "metadata", "android");
   const notes = {};
+  if (!fs.existsSync(root)) return notes;
   for (const locale of fs.readdirSync(root)) {
     const file = path.join(root, locale, "changelogs", `${versionCode}.txt`);
     // The files are hard-wrapped for the store's text box; an indented line continues the one

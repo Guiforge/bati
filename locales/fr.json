@@ -1643,7 +1643,8 @@
     "title": "Nouveautés de la {{version}}",
     "empty": "Pas de notes pour cette version.",
     "card_title": "Bati passe en {{version}}",
-    "card_open": "Voir les nouveautés",
-    "open_hint": "Ouvre les notes de cette version"
+    "card_open": "Nouveautés",
+    "version_label": "Version {{version}}, nouveautés",
+    "all_releases": "Les notes de toutes les versions"
   }
 }

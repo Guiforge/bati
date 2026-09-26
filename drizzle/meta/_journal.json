@@ -449,6 +449,13 @@
       "when": 1789200000000,
       "tag": "0063_what_a_hero_with_nothing_can_use",
       "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "6",
+      "when": 1789286400000,
+      "tag": "0064_the_sessions_let_go",
+      "breakpoints": true
     }
   ]
 }

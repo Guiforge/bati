@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ArrowRight } from "@/components/icons";
+import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
+import { CloudRestoreLink } from "@/components/settings/CloudRestoreLink";
 import { rawColors } from "@/constants/rawColors";
 import { useBackup } from "@/hooks/useBackup";
 
@@ -13,7 +15,7 @@ export default function Presentation() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { busy, runImport } = useBackup();
+  const { busy, runImport, secretRequest, submitSecret, cancelSecret } = useBackup();
 
   return (
     <YStack flex={1} bg="$background">
@@ -114,8 +116,12 @@ export default function Presentation() {
           >
             {t("backup.onboardingCta")}
           </Text>
+          <CloudRestoreLink disabled={busy} />
         </YStack>
       </YStack>
+      {/* A new phone restoring an encrypted backup lands here: the password is asked once, and
+          the hero is asked whether their next backups should use it (useBackup `offerJoin`). */}
+      <BackupSecretSheet request={secretRequest} onSubmit={submitSecret} onCancel={cancelSecret} />
     </YStack>
   );
 }

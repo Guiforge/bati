@@ -37,6 +37,9 @@ import {
   Wrench,
   Zap,
 } from "@/components/icons";
+import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
+import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
+import { SettingRow } from "@/components/settings/SettingRow";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
@@ -48,48 +51,6 @@ import { LANGUAGE_NAMES, MACHINE_TRANSLATED, nextAppLanguage } from "@/src/i18n/
 import { reportError } from "@/src/reportError";
 import { releaseNotes } from "@/src/whatsNew";
 import { useSettingsStore } from "@/stores/settings";
-
-type SettingRowProps = {
-  testID?: string;
-  icon: React.ReactNode;
-  label: string;
-  value?: string;
-  onPress: () => void;
-  disabled?: boolean;
-};
-
-function SettingRow({ testID, icon, label, value, onPress, disabled }: SettingRowProps) {
-  return (
-    <Button
-      testID={testID}
-      bg="$surface"
-      borderColor="$borderStrong"
-      borderWidth={1}
-      rounded="$4"
-      p="$3"
-      height="auto"
-      pressStyle={{ scale: 0.98, opacity: 0.9 }}
-      disabled={disabled}
-      onPress={onPress}
-    >
-      <XStack flex={1} items="center" gap="$3">
-        {icon}
-        <Text flex={1} fontSize="$4" fontWeight="bold" color="$text">
-          {label}
-        </Text>
-        {value ? (
-          // Capped at just over half the row, and truncated rather than wrapped. `label` holds
-          // the `flex={1}`, so it is the half that gives way: an unbounded value — a folder
-          // path, a long count — takes the space the label needed and squeezes it off the
-          // screen. `flexShrink` is not a prop Tamagui's `Text` accepts; `maxW` is.
-          <Text fontSize="$3" color="$textSecondary" numberOfLines={1} maxW="55%">
-            {value}
-          </Text>
-        ) : null}
-      </XStack>
-    </Button>
-  );
-}
 
 type AvatarSectionProps = {
   avatarId: AvatarId;
@@ -285,8 +246,10 @@ export default function SettingsScreen() {
     runSaveToFolder,
     runEnableAuto,
     runDisableAuto,
+    secretRequest,
+    submitSecret,
+    cancelSecret,
   } = useBackup();
-
   // The confirmation lives here rather than in the hook: onboarding calls the same import with
   // no dialog, because at that point there is no history to lose. One writer, two entrances.
   //
@@ -641,6 +604,8 @@ export default function SettingsScreen() {
             onPress={confirmAuto}
           />
 
+          <BackupSecurityRows disabled={backupBusy} />
+
           <SettingRow
             testID="settings-import-backup"
             icon={<ArchiveRestore size={22} color="$text" />}
@@ -743,6 +708,8 @@ export default function SettingsScreen() {
           )}
         </YStack>
       </RNScrollView>
+
+      <BackupSecretSheet request={secretRequest} onSubmit={submitSecret} onCancel={cancelSecret} />
     </YStack>
   );
 }

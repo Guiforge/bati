@@ -24,6 +24,7 @@ import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { SyncPrompt } from "@/components/SyncPrompt";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { installCrashHandler, recordCrash } from "@/src/crashLog";
 import { reportError } from "@/src/reportError";
@@ -199,6 +200,8 @@ export default function RootLayout() {
                     />
                     {/* Above every route, mounted once. See components/chorus/VillagerCameo.tsx. */}
                     <VillagerCameo />
+                    {/* Offers another device's newer version after a sync. Renders nothing. */}
+                    <SyncPrompt />
                   </ErrorBoundary>
                 </ToastProvider>
               </DatabaseProvider>

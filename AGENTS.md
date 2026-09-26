@@ -166,10 +166,12 @@ Biome runs `react`, `reactNative` and `types` domains, but their React Native an
 rules are all still `nursery`, and a domain does not switch nursery rules on: each one is named
 in `biome.json` (`noFloatingPromises`, `noReactNativeRawText`, …). `noReactNativeRawText` only
 trusts `<Text>`; every project component that renders its children inside one is on its `skip`
-list — add a new wrapper there, do not turn the rule off. Three GritQL plugins under
-`.biome/plugins/` cover what no rule does: raw hex colours, identical ternary arms, and dynamic
+list — add a new wrapper there, do not turn the rule off. Four GritQL plugins under
+`.biome/plugins/` cover what no rule does: raw hex colours, identical ternary arms, dynamic
 `process.env` access (Babel inlines literal `EXPO_PUBLIC_*` reads at build time; `process.env[k]`
-or a destructuring is `undefined` in a production build and fine in dev).
+or a destructuring is `undefined` in a production build and fine in dev), and any network call
+(`fetch`, sockets, expo-file-system transfers) outside `src/updateCheck.ts` and `src/cloudSync.ts`.
+A third module there is a change to the privacy policy first; see the plugin's header.
 
 `types/expo.d.ts` is versioned so a fresh checkout type-checks with the same ambient types as a
 machine that has run the dev server. Typed routes (`.expo/types/router.d.ts`) are still only

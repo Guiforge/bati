@@ -2,7 +2,7 @@
 title: Roadmap
 type: planning
 status: active
-updated: 2026-09-23
+updated: 2026-09-26
 related:
   [
     README.md,
@@ -252,7 +252,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | 4.25 | A result card that can be shared as an image | Low | S–M | P3 | Streak |
 | 4.28 | Today's step count | Low | S after 4.12 | P3 | |
 | 4.29 | Sleep, read from Health Connect | Low | S after 4.12 | P3 | |
-| 4.18 | Multi-device sync — reconciliation only | Medium | XL | P3 | |
+| 4.18 | Multi-device sync, encrypted, phases 0 to 3 | High | L | P1 | |
 | 4.20 | `fallow` in the toolchain | Dev-only | S | P3 | |
 
 Desktop is a distribution question, not a feature — it lives in §1.
@@ -490,26 +490,91 @@ Two of the village's three missing animations shipped — `FlameFlicker`
 (`components/village/VillageScene.tsx:184`) and `GrowthPulse` (`:232`). The **resource-gain
 animation** is what is left, and it stays low by design.
 
-### 4.18 Multi-device sync — what is left once 4.21 takes the transport
+### 4.18 Multi-device sync, end-to-end encrypted, over the hero's own cloud
 
-4.1 moved the file by hand and 4.21 moves it unattended, into a folder that may well be a cloud
-provider's. What neither does is **reconcile**: two devices trained on in the same week produce two
-snapshots, and the newer one silently wins. That — a conflict rule, not a transport — is all 4.18
-has ever been, and it is XL because "merge two SQLite histories" is a real problem: sessions can
-be unioned by id, but the village, the streak, the boss's remaining HP and the oath's progress are
-all *derived*, so the honest merge is "union the history, recompute everything downstream".
+**Phases 0 to 3 built on `feat/encrypted-sync` (2026-09-25)**, over Nextcloud and any WebDAV
+server (kDrive, Koofr, rclone through Round Sync), audited twice and checked against Joplin's
+history; how it works is [`docs/architecture/backup-and-sync.md`](../architecture/backup-and-sync.md).
+Left: the four items below, then OneDrive. The earlier version of this section refused
+every cloud API on the belief that 4.21's folder picker already reached them. It does not: Google
+Drive, OneDrive and Proton never appear in `ACTION_OPEN_DOCUMENT_TREE`, Dropbox's provider is
+partial, and Nextcloud's serves a stale copy of what another device wrote (Aegis #848 and #1237,
+KeePassDX's sync wiki, nextcloud/android #6883). Syncthing is the only folder transport that is
+really two-way, and it costs another app and a pairing. The research behind the phases below also
+read Joplin (the closest prior art: E2EE sync over the user's own cloud, no server) and
+InlitX/streak (a shared-folder JSON with a naive merge and no encryption).
 
-Stays P3 until someone reports the divergence. The ceiling remains **last write wins on a file the
-hero chose**, which is what desktop (§1) and 4.21 both already assume.
+| Phase | What | Effort |
+| --- | --- | --- |
+| 0 | **Phone change at no cost.** Android's own backup (Google, Seedvault, device transfer) already carried the database because `allowBackup` was on with no rules. `plugins/withAndroidBackupRules.js` makes that explicit, keeps the SecureStore key out of it, and the privacy policy now says so. | S |
+| 1 | **Encrypted backups.** A random master key encrypts every snapshot (AES-256-GCM); the key is wrapped by a password and by a recovery key, the Aegis/Signal model. The key lives in SecureStore, so unattended backups never prompt. Fingerprint unlocks nothing a new phone could use, so it guards only sensitive screens. | M |
+| 2 | **Cloud connectors into an app folder.** Nextcloud/WebDAV (Login Flow v2, no registration) and Dropbox (PKCE, no secret in the APK). Google Drive last or never: brand verification, a second signing certificate for the F-Droid build, and a push towards Play Services. | L |
+| 3 | **Hand-off between devices.** One file per device, only ever written by that device, so there is no lock and nobody deletes anyone else's file. The session uuids in each file are the version vector: a file whose sessions are a superset of ours is adopted, two files that each have sessions the other lacks ask the hero which to keep. An empty or missing folder is an error, never "delete everything" (Joplin #6864). | M |
+| 4 | **Row-level merge.** Union the facts by uuid, recompute everything derived. Needs uuids on hero exercises, quests, adventure runs and boss damage, tombstones for deletes, and an answer for `boss_fights` being one row per adventure. Only if phase 3's choice screen actually costs someone a session. | XL |
 
-**The backends that are refused, and why they are refusals rather than low-priority rows** — every
-one of them buys the same file 4.21 already writes, for a cost 4.21 does not pay:
+**Joplin's lessons, kept because they are cheap to forget:** one encrypted blob per device rather
+than one file per row (a fresh device never finished 13,000 items against OneDrive's throttling);
+never infer a deletion from an absence; never order by device clocks (3,000 duplicates from one
+skewed clock, #5738); do not count on Android background sync, sync at launch and on demand.
 
-| Asked for | What it actually costs |
-| --- | --- |
-| Google Drive, Dropbox, OneDrive, Nextcloud | Nothing to build. They publish an Android `DocumentsProvider` and appear inside 4.21's folder picker. A per-vendor SDK would buy an OAuth flow, a client secret in the APK, and a Firebase-shaped F-Droid problem, in exchange for a file the picker already hands over. |
-| WebDAV, or the GitHub API as a store | The app's **first network request**, plus credentials at rest, plus `INTERNET` back in the manifest, plus a Data Safety form and a privacy policy that stop saying "no". A self-hosted Nextcloud reached through its Android client costs none of that — same server, through the picker. |
-| Wifi / Bluetooth device-to-device, "like Joplin or Obsidian" | Worth naming precisely, because the comparison points the other way: Obsidian's default is a synced *folder*, and Syncthing — the LAN tool people actually mean — is a separate app that syncs the folder 4.21 writes to, for free. A discovery protocol inside Bati is a native RN module, the same bill §5 prices for "live session", to reimplement something already installed on the devices that want it. |
+**What is left, planned on 2026-09-26** (read-only plans, verified against the code at `5f347a64`):
+
+1. **Take a version without a restart: done (2026-09-26),** verified on the emulator (same pid,
+   13 sessions after taking a device two ahead). Not a remount: about twenty module caches and
+   stores hold database state (`db/client.ts` binds `db` as a `const`, `db/migrate.ts` remembers
+   `migrated`, the adventure, exercise, quest, streak and query caches, every zustand store), and
+   each new cache would be a new reset to forget. `reloadAppAsync()`, exported by `expo` itself,
+   reloads the JS runtime in release builds with no new dependency and no permission: call it in
+   `components/DatabaseProvider.tsx` after `commitRestore` resolves, keep the current notice as the
+   fallback if it does nothing. Not done: refusing a Settings import during a session, as
+   `SyncPrompt` already does; the restart it replaces lost that session too, so nothing regressed.
+2. **The sealed-file cap: done (2026-09-26), and it was worse than a cap.** Measured on a 2 GB
+   AVD (192 MB heap): a 64 MB database sealed with a 130 MB Java peak, a 128 MB one failed with
+   `OutOfMemoryError` asking for 134 MB at once, which stopped encrypted backups and sync of the
+   hero's *own* history, not only reading peers. Conscrypt buffers a whole GCM message. The body
+   is now sealed in 1 MiB segments (format 2; format 1 never left the branch): 128 and 192 MB
+   databases seal and a 172 MB peer opens under 80 MB of heap. Raw GPS measured at 78 B a point,
+   0.28 MB an outdoor hour. Still open: Android's own backup stops at 25 MB, which a regular
+   walker passes within a couple of years; worth a line in the policy, or a decision about
+   keeping raw 1 Hz points forever.
+3. **Dropbox (3 to 4 days plus Dropbox's review).** PKCE with no secret, app folder, redirect
+   `bati://dropbox-auth` caught by `Linking` and swallowed in `app/+native-intent.tsx`; refresh
+   token in SecureStore, access token in memory, refreshed on a 401. `list_folder`, `download`,
+   `upload` with `mode: overwrite`, which commits atomically, so no `.part` dance. A small
+   `Remote { list, download, upload }` returned by `targetFor` keeps WebDAV and Dropbox behind one
+   door. Needs a `sha256` in `modules/bati-crypto` for the PKCE challenge, a third door in
+   `SyncSetupSheet`, the policy naming Dropbox, Inc., and the NonFreeNet anti-feature declared for
+   F-Droid. On dropbox.com/developers: scoped access, App folder, `files.metadata.read`,
+   `files.content.read`, `files.content.write`, redirect `bati://dropbox-auth`, public clients
+   allowed; the app key goes in `src/cloudSync.ts`; apply for production before 500 users.
+4. **Phase 4, the merge: first version done (2026-09-26)**, with the cuts listed at the end of
+   this item, in `db/merge.ts`; verified on the emulator (one unique session on each side merged
+   into 15 on both, the newer village name kept, one reload, no second merge). Two details the
+   plan missed: a hero exercise's prerequisite must be written after every row has its local id
+   (the foreign key fails otherwise), and favourites and quest configs left the comparison with
+   the merge, or merged devices would read as diverged forever. Still open: campaigns, quest
+   configs, favourites, deletions of hero content, the `''`-for-deleted preference fix, the
+   missing `updatedAt` bumps. Sources are copied, never
+   recomputed: `completed_sessions` (its `xpEarned` already carries the day's, Triumph's and the
+   oath's bonuses), `completed_exercises`, `gps_points`, `deleted_sessions`, hero exercises and
+   quests, `HERO_PREFERENCES`, quest configs, `unlocked_achievements` (a union). XP, level and the
+   village are pure queries over them; the streak has `calculateAndCacheStreak`. **Local ids never
+   change; only the peer's rows get new ids**, through temporary maps: sessions, exercises (Admin
+   ones by `enName`, since seeds after 0035 got different ids on different devices), quests,
+   `quest_exercises`, and the ids inside `recordsJson` and quest configs. One `BEGIN IMMEDIATE`
+   transaction on an isolated writable connection with the peer `ATTACH`ed, aborted whole on any
+   unmapped row; then, on the shared connection, tombstones honoured (`deleteSession` needs a
+   `force`), caches invalidated, stores reloaded. Timestamps are copied verbatim, or two devices
+   ping-pong. Convergence: A merges B and uploads, B sees A ahead and merges, A sees B level; two
+   syncs, no third. **Not replayable**, so ruled: `boss_fights` and `adventure_runs` are state
+   machines with random crits, so per adventure the campaign that got further wins and the
+   loser's campaign sessions count as plain training; a bonus earned on both devices counts twice
+   (rare, and taking XP back is worse); record badges stay as set. **Gaps to close first**:
+   deleted preferences leave no tombstone (write `''` instead of deleting), and retire, unretire
+   and `setQuestExercises` do not bump `updatedAt`. A device with no session and no hero row takes
+   the peer's preferences wholesale, so a fresh tablet cannot impose its onboarding. Cut for a
+   first version: campaigns (keep local), quest configs and favourites (keep local), deleted hero
+   content (comes back). The kept copy stays, once per peer, as the net.
 
 ### 4.20 `fallow`
 
@@ -570,16 +635,12 @@ the old numbers because the rest of this page still points at them.
 **No "close the app" button on the restart screen, and the reason is measured.** React Native's
 `BackHandler.exitApp()` is a `finish()` on the activity, not a process kill — verified on a
 Fairphone 6, the pid is unchanged after the activity ends. Reopening would therefore resume the
-same JS context with the SQLite handle already closed, which is worse than a force-quit. A button
-that works needs either `expo-updates` (`reloadAsync()` rebuilds the module graph in-process, and
-would remove the restart entirely) or a native `System.exit(0)`. Neither is worth a dependency or
-a native module for an operation performed twice in an app's life, so the screen keeps its
-instruction. Revisit if a user ever reports being stuck on it.
+same JS context with the SQLite handle already closed, which is worse than a force-quit. This page once said
+a working button needed `expo-updates`; `reloadAppAsync()` from `expo` itself does it without a
+dependency, and device sync makes taking a version frequent enough to use it (4.18, item 1).
 
-What is deliberately not solved: a process killed *between* the two renames leaves the database
-absent and the data in a `.bak` no code reads. Closing that means reconciling at module load in
-`db/client.ts`, before `openDatabaseSync` recreates an empty file — cheap, and worth doing only if
-a real report ever needs it.
+A process killed *between* the two renames is handled since `feat/encrypted-sync`: `db/client.ts`
+puts the `.bak` back before `openDatabaseSync` could recreate an empty file.
 
 It is the transport half of 4.18 and of desktop (§1). With 4.21 writing the same snapshot
 unattended, what is still missing for those two is reconciliation, and only that.
@@ -597,12 +658,9 @@ shipped. It is a published legal document behind a store listing, so the feature
 that sentence is. Worth a grep before any feature that writes a file, opens a socket, or reads a
 sensor.
 
-**It is also the complete answer to "sync via Google Drive, Dropbox, GitHub or WebDAV".** Drive,
-Dropbox, Nextcloud, OneDrive and Syncthing all publish an Android `DocumentsProvider`, so they
-appear *inside the folder picker the app already opens*. One SAF integration covers every one of
-them: no OAuth, no SDK per vendor, no credentials at rest, no network request, no guardrail spent —
-and the app never learns which provider was chosen, which is the point. This is Obsidian's model,
-and it is why the backends that do not work this way are refused rather than ranked (see 4.18).
+**It was believed to be the answer to "sync via Google Drive, Dropbox or WebDAV", and is not.**
+Most cloud clients never publish a folder to the picker (see 4.18 for the evidence). What 4.21 is
+good at is an unattended copy on the device, or in a folder Syncthing or Nextcloud keeps in sync.
 
 **4.4 Paths.** The full account is [`docs/gameplay/paths.md`](../gameplay/paths.md).
 

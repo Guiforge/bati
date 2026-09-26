@@ -100,6 +100,9 @@ function knownMigrationTimes(): Set<number> {
   return new Set(journal.entries.map((entry) => entry.when));
 }
 
+/** How many migrations this build knows: a backup it refused may open after an app update. */
+export const BUILD_MIGRATIONS = knownMigrationTimes().size;
+
 /**
  * Turns whatever SQLite threw into one of the five answers.
  *
@@ -220,5 +223,206 @@ export function validateBackup(path: string): Promise<BackupCheck> {
     } catch (error) {
       return { ok: false, reason: rejectionForError(error) };
     }
+  });
+}
+
+/**
+ * Preferences that are the hero's own work and travel with them: what makes a device "have
+ * something the other lacks" besides its sessions, and what `mergePeer` carries over, the newer
+ * winning. Derived caches (`streak_*`, achievements) are left out on purpose: both devices rewrite
+ * them every day, and a comparison that read them would call every pair of devices diverged.
+ * Favourites and quest configs name quest ids, which differ between devices, so they are not
+ * merged and not compared either: what the merge leaves out, the comparison must not count, or
+ * two merged devices would still read as diverged forever.
+ */
+export const MERGED_PREFERENCES = [
+  "villageName",
+  "avatarId",
+  "trainingLevel",
+  "ownedEquipment",
+  "oath",
+] as const;
+
+/**
+ * A device's hero-authored content as `(identity, updatedAt)` rows, over `schema`. Hero rows have
+ * no cross-device id yet (roadmap 4.18 phase 4), so an exercise is named by its English name, a
+ * quest by its titles, a preference by its key. Good enough to tell "something was written here".
+ */
+function heroContent(schema: string): string {
+  const keys = MERGED_PREFERENCES.map(sqlString).join(", ");
+  return `SELECT 'e:' || enName AS id, updatedAt AS at FROM ${schema}.exercises WHERE creator = 'hero'
+    UNION ALL SELECT 'q:' || enTitle || '/' || frTitle, updatedAt FROM ${schema}.quests WHERE author = 'hero'
+    UNION ALL SELECT 'p:' || key, updatedAt FROM ${schema}.user_preferences WHERE key IN (${keys})`;
+}
+
+/** Rows of `a` that `b` lacks, or that `a` wrote later. */
+function newerIn(a: string, b: string): string {
+  return `SELECT count(*) FROM (${heroContent(a)}) x
+    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b)}) y WHERE y.id = x.id AND y.at >= x.at)`;
+}
+
+/** A schema's tombstones, or none on a database written before 0064. */
+async function tombstones(conn: IsolatedConnection, schema: string): Promise<string> {
+  const table = await conn.getFirstAsync<{ n: number }>(
+    `SELECT count(*) AS n FROM ${schema}.sqlite_master WHERE name = 'deleted_sessions'`,
+  );
+  return Number(table?.n ?? 0) > 0
+    ? `SELECT uuid FROM ${schema}.deleted_sessions`
+    : "SELECT NULL WHERE 0";
+}
+
+/**
+ * How another device's snapshot stands against this database: what each side has that the other
+ * does not, with no device clock in it (Joplin #5738: one skewed clock, 3,000 conflicts).
+ *
+ * - **Sessions**, by `uuid` (0038), the one name a session keeps across devices. A session the
+ *   other device has and this one *deleted* (0064) is not the other's news, it is this one's.
+ * - **Hero content**: exercises and quests the hero made, the preferences that are theirs.
+ *   Taking another device's version replaces all of it, so a device that changed any of it has
+ *   something to lose, and is never offered a silent hand-off.
+ *
+ * `peerChanges` and `localChanges` sum both; `peerOnly` and `localOnly` are sessions alone, for
+ * the words the hero reads. `fingerprint` names the other device's state by content, so an answer
+ * the hero gave is not asked again merely because that device sealed the same history anew.
+ *
+ * ponytail: two databases migrated separately from one pre-0038 backup gave the same sessions
+ *           different uuids (0038 drew them at random), and read as diverged by that many. Nobody
+ *           loses a session choosing either; the phase 4 merge will have to match them on time
+ *           and quest.
+ *
+ * `path` must already have passed `validateBackup`: this reads tables, it does not judge a file.
+ */
+export type PeerComparison = {
+  peerOnly: number;
+  localOnly: number;
+  peerChanges: number;
+  localChanges: number;
+  /** When the other device's newest session was performed, epoch seconds, or `null` if none. */
+  peerLatest: number | null;
+  /** The other device's village name, so a new device can say whose hero it found. */
+  peerVillage: string | null;
+  /** How many sessions this device has: none is a device that has nothing to recognise yet. */
+  localSessions: number;
+  fingerprint: string;
+};
+
+export function compareWithPeer(path: string): Promise<PeerComparison> {
+  return withIsolatedConnection(async (conn) => {
+    await conn.execAsync(`ATTACH DATABASE ${sqlString(path)} AS ${CANDIDATE}`);
+    const [localGone, peerGone] = [
+      await tombstones(conn, "main"),
+      await tombstones(conn, CANDIDATE),
+    ];
+    const sessions = (schema: string) =>
+      `SELECT uuid FROM ${schema}.completed_sessions WHERE uuid IS NOT NULL`;
+    const row = await conn.getFirstAsync<Record<string, number | string | null>>(
+      `SELECT
+         (SELECT count(*) FROM (${sessions(CANDIDATE)}) p
+            WHERE p.uuid NOT IN (${sessions("main")}) AND p.uuid NOT IN (${localGone})) AS peerOnly,
+         (SELECT count(*) FROM (${sessions("main")}) l
+            WHERE l.uuid NOT IN (${sessions(CANDIDATE)}) AND l.uuid NOT IN (${peerGone})) AS localOnly,
+         (SELECT count(*) FROM (${sessions(CANDIDATE)}) p WHERE p.uuid IN (${localGone})) AS localDeleted,
+         (SELECT count(*) FROM (${sessions("main")}) l WHERE l.uuid IN (${peerGone})) AS peerDeleted,
+         (${newerIn(CANDIDATE, "main")}) AS peerContent,
+         (${newerIn("main", CANDIDATE)}) AS localContent,
+         (SELECT max(performedAt) FROM ${CANDIDATE}.completed_sessions) AS peerLatest,
+         (SELECT value FROM ${CANDIDATE}.user_preferences WHERE key = 'villageName') AS peerVillage,
+         (SELECT count(*) FROM main.completed_sessions) AS localSessions,
+         (SELECT count(*) || ':' || ifnull(max(uuid), '') FROM ${CANDIDATE}.completed_sessions) AS s,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE)})) AS c,
+         (SELECT count(*) FROM (${peerGone})) AS g`,
+    );
+    const n = (key: string) => Number(row?.[key] ?? 0);
+    return {
+      peerOnly: n("peerOnly"),
+      localOnly: n("localOnly"),
+      peerChanges: n("peerOnly") + n("peerDeleted") + n("peerContent"),
+      localChanges: n("localOnly") + n("localDeleted") + n("localContent"),
+      peerLatest:
+        row?.peerLatest === null || row?.peerLatest === undefined ? null : n("peerLatest"),
+      peerVillage: typeof row?.peerVillage === "string" ? row.peerVillage : null,
+      localSessions: n("localSessions"),
+      fingerprint: `${row?.s}|${row?.c}|${row?.g}`,
+    };
+  });
+}
+
+/**
+ * This database's own state, named the way `compareWithPeer` names the other's. Sync skips the
+ * upload when it has not moved: sealing the same history again would change the file's etag for
+ * nothing, and on the other device that looked like new news.
+ */
+export function stateFingerprint(): Promise<string> {
+  return withIsolatedConnection(async (conn) => {
+    const gone = await tombstones(conn, "main");
+    const row = await conn.getFirstAsync<Record<string, string | number | null>>(
+      `SELECT
+         (SELECT count(*) || ':' || ifnull(max(uuid), '') FROM main.completed_sessions) AS s,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main")})) AS c,
+         (SELECT count(*) FROM (${gone})) AS g`,
+    );
+    return `${row?.s}|${row?.c}|${row?.g}`;
+  });
+}
+
+/**
+ * Preferences that describe this device rather than the hero, and so survive a restore unchanged.
+ * A backup carries the database of the device that wrote it; without this, restoring onto a new
+ * phone inherited the old phone's backup folder, whose Android permission does not travel, and
+ * every later restore stopped on "the destination path does not exist" while Settings still
+ * showed the folder. The same held for `deviceId` (two phones claiming one origin, see its note in
+ * db/preferences.ts), a custom avatar that is a file path on the old phone, the crash log a bug
+ * report sends from *this* device, this copy's update check, and the one-per-device greetings.
+ */
+export const DEVICE_LOCAL_PREFERENCES = [
+  "deviceId",
+  "backupFolderUri",
+  "lastAutoBackupDay",
+  "customAvatarUri",
+  "crashLog",
+  "errorLog",
+  "updateCheck",
+  "updateCheckedAt",
+  "updateDismissed",
+  "updateLatest",
+  // Which release notes this copy of the app already showed: another phone's answer is not ours.
+  "notesSeenVersion",
+  "guidesSeen",
+  "recentCameoLines",
+  "comebackGreetedAfter",
+  // Whether this phone seals its backups is this phone's choice (src/backupCipher.ts): imported,
+  // declining a join left the phone locked, and a plaintext import quietly unset the wish that
+  // keeps an Android-restored phone from writing plaintext. Android's own restore does not come
+  // through here, so that phone still reads as locked.
+  "backupEncryption",
+  // The server this device syncs with and whether it waits for Wi-Fi (src/deviceSync.ts): the
+  // account itself lives in this device's SecureStore, so these describe this device too.
+  "syncServer",
+  "syncWifiOnly",
+] as const;
+
+/**
+ * Preferences a restore drops from the backup without keeping this device's either. A session
+ * interrupted on the other device lives there: resumed here while that device finishes it too,
+ * it would count, and damage the boss, twice. And one interrupted here names this database's
+ * row ids, which the restored database does not share.
+ */
+const DROPPED_ON_RESTORE = ["savedSession"] as const;
+
+/**
+ * Rewrites a staged backup so its device-local preferences are this device's (theirs removed,
+ * ours copied in) and an interrupted session is dropped. Runs on the staged file only, after
+ * validation and before the swap.
+ */
+export function keepDeviceSettings(stagedPath: string): Promise<void> {
+  const kept = DEVICE_LOCAL_PREFERENCES.map(sqlString).join(", ");
+  const dropped = [...DEVICE_LOCAL_PREFERENCES, ...DROPPED_ON_RESTORE].map(sqlString).join(", ");
+  return withIsolatedConnection(async (conn) => {
+    await conn.execAsync(`ATTACH DATABASE ${sqlString(stagedPath)} AS ${CANDIDATE}`);
+    await conn.execAsync(`DELETE FROM ${CANDIDATE}.user_preferences WHERE key IN (${dropped})`);
+    await conn.execAsync(
+      `INSERT INTO ${CANDIDATE}.user_preferences (key, value, updatedAt)
+         SELECT key, value, updatedAt FROM main.user_preferences WHERE key IN (${kept})`,
+    );
   });
 }

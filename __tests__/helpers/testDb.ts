@@ -75,6 +75,26 @@ export function clientMock(t: { db: unknown; sqlite: Database.Database }) {
       await Promise.resolve();
       t.sqlite.exec(`VACUUM INTO ${sqlString(destinationPath)}`);
     },
+    // The live database itself, since a write on a copy would be lost; whatever the call attached
+    // is detached afterwards, as closing the real connection does.
+    withWritableConnection: async <T>(fn: (isolated: unknown) => Promise<T>) => {
+      try {
+        return await fn({
+          execAsync: (source: string) => {
+            t.sqlite.exec(source);
+            return Promise.resolve();
+          },
+          getFirstAsync: (source: string) =>
+            Promise.resolve(t.sqlite.prepare(source).get() ?? null),
+          getAllAsync: (source: string) => Promise.resolve(t.sqlite.prepare(source).all()),
+        });
+      } finally {
+        const attached = t.sqlite
+          .prepare("SELECT name FROM pragma_database_list WHERE name NOT IN ('main', 'temp')")
+          .all() as { name: string }[];
+        for (const { name } of attached) t.sqlite.exec(`DETACH DATABASE ${name}`);
+      }
+    },
     // A copy of the live database on a connection of its own, closed afterwards like the real
     // one: an `ATTACH` that leaked out of it would have nowhere to leak to.
     withIsolatedConnection: async <T>(fn: (isolated: unknown) => Promise<T>) => {

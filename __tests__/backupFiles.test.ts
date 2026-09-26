@@ -132,6 +132,7 @@ jest.mock("expo-sqlite", () => ({ defaultDatabaseDirectory: "/data/SQLite" }));
 
 jest.mock("@/db/client", () => ({
   DB_NAME: "bati.v3.db",
+  SAFETY_NAME: "bati.v3.db.bak",
   closeDatabase: () => {
     (require("expo-file-system") as FakeFs).__ops.push("close");
     return Promise.resolve();
@@ -143,6 +144,8 @@ jest.mock("@/db/client", () => ({
 jest.mock("@/db/backup", () => ({
   snapshotDatabaseTo: (destination: string) => {
     const fs = require("expo-file-system") as FakeFs;
+    // Like `VACUUM INTO`, which refuses a file that is already there.
+    if (fs.__disk.has(destination)) return Promise.reject(new Error("output file already exists"));
     fs.__ops.push(`snapshot ${destination.split("/").pop()}`);
     fs.__disk.set(destination, "snapshot");
     return Promise.resolve();
@@ -151,15 +154,44 @@ jest.mock("@/db/backup", () => ({
 
 jest.mock("@/db/schemaVersion", () => ({ SCHEMA_VERSION: 3 }));
 
+/**
+ * The cipher is tested for real in backupCipher.test.ts; here it only has to leave the same marks
+ * on the fake disk: a sealed file is "sealed:" plus what it sealed, and opening one writes the
+ * plaintext back. `mockCipher.status` is what the hero chose in Settings.
+ */
+const mockCipher: { status: "off" | "on" | "locked"; open: string } = {
+  status: "off",
+  open: "opened",
+};
+jest.mock("@/src/backupCipher", () => {
+  const disk = () => (require("expo-file-system") as FakeFs).__disk;
+  return {
+    encryptionStatus: () => Promise.resolve(mockCipher.status),
+    sealBackup: (plain: string, out: string) =>
+      Promise.resolve().then(() => {
+        disk().set(out, `sealed:${disk().get(plain)}`);
+      }),
+    openBackup: (sealed: string, out: string) =>
+      Promise.resolve().then(() => {
+        if (mockCipher.open === "opened") {
+          disk().set(out, String(disk().get(sealed)).replace(/^sealed:/, ""));
+        }
+        return { result: mockCipher.open };
+      }),
+  };
+});
+
 import type { Directory } from "expo-file-system";
 
 import {
   commitRestore,
+  decryptStagedImport,
   discardStagedImport,
   exportBackup,
-  preRestoreFileName,
+  preRestoreFileStem,
   saveBackupToFolder,
   stageBackupForImport,
+  writeSyncSnapshot,
 } from "@/src/backupFiles";
 
 type FakeFs = {
@@ -464,8 +496,8 @@ describe("saveBackupToFolder", () => {
    */
   test("a pre-restore copy is kept under its own name, and the prune never takes it", async () => {
     const folder = new fs.Directory("file:///sdcard/Documents");
-    const before = preRestoreFileName(new Date(2026, 8, 19, 9, 5, 2));
-    expect(before).toBe("bati-export-before-restore-v3-2026-09-19-090502.db");
+    const before = preRestoreFileStem(new Date(2026, 8, 19, 9, 5, 2));
+    expect(before).toBe("bati-export-before-restore-v3-2026-09-19-090502");
 
     await saveBackupToFolder(folder, before);
     for (const day of ["2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24"]) {
@@ -473,7 +505,7 @@ describe("saveBackupToFolder", () => {
     }
     await saveBackupToFolder(folder);
 
-    expect(fs.__disk.has(`/sdcard/Documents/${before}`)).toBe(true);
+    expect(fs.__disk.has(`/sdcard/Documents/${before}.db`)).toBe(true);
   });
 
   test("saving twice into the same folder replaces the day's file", async () => {
@@ -526,4 +558,74 @@ describe("stageBackupForImport", () => {
     expect(fs.__disk.has(at(IMPORT_NAME))).toBe(false);
     expect(fs.__disk.get(at(mockDbName))).toBe("the hero's year");
   });
+});
+
+describe("encrypted backups", () => {
+  beforeEach(() => {
+    mockCipher.status = "on";
+    mockCipher.open = "opened";
+  });
+
+  afterEach(() => {
+    mockCipher.status = "off";
+  });
+
+  test("a snapshot is sealed as .batb, and no plaintext copy is left beside the database", async () => {
+    await exportBackup();
+
+    const local = [...fs.__disk.keys()].map((key) => key.split("/").pop());
+    expect(local).toEqual([expect.stringMatching(/^bati-export-v3-\d{4}-\d{2}-\d{2}\.batb$/)]);
+    expect([...fs.__disk.values()]).toEqual(["sealed:snapshot"]);
+  });
+
+  test("sealed and plain snapshots are pruned as one series", async () => {
+    const folder = new fs.Directory("file:///sdcard/Documents");
+    for (const day of ["2026-09-20", "2026-09-21", "2026-09-22"]) {
+      fs.__disk.set(`/sdcard/Documents/bati-export-v3-${day}.db`, day);
+    }
+    for (const day of ["2026-09-23", "2026-09-24"]) {
+      fs.__disk.set(`/sdcard/Documents/bati-export-v3-${day}.batb`, day);
+    }
+
+    await saveBackupToFolder(folder);
+
+    const kept = [...fs.__disk.keys()].filter((key) => key.startsWith("/sdcard/Documents/"));
+    expect(kept).toHaveLength(5);
+    expect(kept).not.toContain("/sdcard/Documents/bati-export-v3-2026-09-20.db");
+  });
+
+  test("plaintext a killed snapshot left behind does not block the next one", async () => {
+    write("bati-export-plain.tmp.db", "half a vacuum");
+
+    const sealed = await writeSyncSnapshot();
+
+    expect(fs.__disk.get(sealed.uri.replace(/^file:\/\//, ""))).toBe("sealed:snapshot");
+    expect(fs.__disk.has(at("bati-export-plain.tmp.db"))).toBe(false);
+  });
+
+  test("an opened import replaces the staged file with its plaintext", async () => {
+    write(IMPORT_NAME, "sealed:the tablet's year");
+
+    expect((await decryptStagedImport("password")).result).toBe("opened");
+    expect(fs.__disk.get(at(IMPORT_NAME))).toBe("the tablet's year");
+    expect(fs.__disk.size).toBe(1);
+  });
+
+  test("an import still waiting for its password is left exactly as it was", async () => {
+    mockCipher.open = "needsSecret";
+    write(IMPORT_NAME, "sealed:the tablet's year");
+
+    expect((await decryptStagedImport()).result).toBe("needsSecret");
+    expect(fs.__disk.get(at(IMPORT_NAME))).toBe("sealed:the tablet's year");
+
+    discardStagedImport();
+    expect(fs.__disk.size).toBe(0);
+  });
+});
+
+test("a phone locked out of its key writes no backup at all, rather than a plain one", async () => {
+  mockCipher.status = "locked";
+  await expect(exportBackup()).rejects.toThrow("Encryption is locked");
+  expect(fs.__disk.size).toBe(0);
+  mockCipher.status = "off";
 });

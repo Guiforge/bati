@@ -55,6 +55,8 @@ describe("deleteSession", () => {
     expect(count("SELECT count(*) n FROM completed_exercises WHERE sessionId = ?", id)).toBe(0);
     expect(count("SELECT count(*) n FROM gps_points WHERE sessionId = ?", uuid)).toBe(0);
     expect(count("SELECT count(*) n FROM completed_sessions WHERE id = ?", keep)).toBe(1);
+    // Remembered by uuid, so another device still holding it is not read as newer (0064).
+    expect(count("SELECT count(*) n FROM deleted_sessions WHERE uuid = ?", uuid)).toBe(1);
     expect(
       count(
         "SELECT coalesce(sum(xpEarned), 0) n FROM completed_sessions WHERE id IN (?, ?)",
@@ -124,5 +126,11 @@ describe("deleteSession", () => {
 
     expect(await completed().deleteSession(first)).toBe("locked");
     expect(count("SELECT count(*) n FROM completed_sessions WHERE id = ?", first)).toBe(1);
+    expect(
+      count(
+        "SELECT count(*) n FROM deleted_sessions WHERE uuid = (SELECT uuid FROM completed_sessions WHERE id = ?)",
+        first,
+      ),
+    ).toBe(0);
   });
 });

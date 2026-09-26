@@ -70,7 +70,7 @@ jest.mock("@/src/backupFiles", () => ({
     mockSavedNames.push(name);
     return true;
   },
-  preRestoreFileName: () => "bati-export-before-restore-v3-2026-09-19-091502.db",
+  preRestoreFileStem: () => "bati-export-before-restore-v3-2026-09-19-091502",
 }));
 
 const mockReported: string[] = [];
@@ -184,7 +184,7 @@ describe("backupBeforeRestore", () => {
     expect(mockSavedInto).toEqual([TREE]);
     // Not the daily name: a second restore the same day would overwrite the first one's copy of
     // the hero's own data with the backup the first one installed.
-    expect(mockSavedNames).toEqual(["bati-export-before-restore-v3-2026-09-19-091502.db"]);
+    expect(mockSavedNames).toEqual(["bati-export-before-restore-v3-2026-09-19-091502"]);
   });
 
   test("a failed copy throws, so the caller can refuse the restore, and keeps the folder", async () => {

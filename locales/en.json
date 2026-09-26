@@ -1284,7 +1284,7 @@
     "encryptionIntro": "Every backup you share, save or let Bati write will only open with this password or with your recovery key. Without one of the two, nobody can open them, and nobody can recover them for you.",
     "encryptionCta": "Encrypt",
     "encryptionFailed": "Encryption could not be set up",
-    "encryptionOnMessage": "Your backups are encrypted. This phone opens them without asking; a new phone asks for the password once.",
+    "encryptionOnMessage": "Your backups are encrypted. This device opens them without asking; a new device asks for the password once.",
     "encryptionOffCta": "Turn off",
     "encryptionOffConfirm": "Backups written from now on will be readable by anyone who opens them. Those already encrypted stay encrypted.",
     "encryptionOffDone": "Backups are no longer encrypted",
@@ -1293,11 +1293,11 @@
     "passwordTooShort": "At least {{count}} characters",
     "passwordMismatch": "The two passwords differ",
     "changePassword": "Change the password",
-    "changeIntro": "Choosing a new password makes a new key and a new recovery key. Backups written before keep opening with the old password or the old recovery key. Your other devices ask for the new password once.",
+    "changeIntro": "Your backups use this new password from now on, with a new recovery key to write down. Your other devices ask for it once. Files written before still open with the old password.",
     "recoveryTitle": "Your recovery key",
-    "recoveryBody": "Write it down, or keep it in a password manager. It opens your backups if the password is forgotten.",
+    "recoveryBody": "Without this key or your password, nobody can bring your hero to a new phone or tablet, not even us. Write it down, or keep it in a password manager.",
     "recoveryAgainHint": "You can show it again later from Settings, with your fingerprint.",
-    "recoveryOnceHint": "This phone has no fingerprint set up, so this key will not be shown again.",
+    "recoveryOnceHint": "This device has no fingerprint set up, so this key will not be shown again.",
     "recoveryDone": "I have kept it",
     "showRecovery": "Show the recovery key",
     "secretTitle": "This backup is encrypted",
@@ -1315,7 +1315,9 @@
     "joinNo": "Not now",
     "copyRecovery": "Copy the key",
     "recoveryCopied": "Copied. It is cleared from the clipboard in a minute.",
-    "recoveryNotHere": "Your recovery key is not kept on this device. It was shown once when encryption was turned on here, or it belongs to the device where encryption was first turned on."
+    "recoveryNotHere": "Your recovery key is not kept on this device. It was shown once when encryption was turned on here, or it belongs to the device where encryption was first turned on.",
+    "opening": "Opening…",
+    "encryptionOffStopSyncCta": "Turn off and stop sync"
   },
   "villagers": {
     "units": {
@@ -1646,14 +1648,14 @@
     "later": "Later",
     "joined": "This device now shares your other devices' password",
     "joinTitle": "Your devices already sync here",
-    "joinBody": "Enter the password of the backups your other device sends, or its recovery key. This device then uses the same one, and they see each other.",
+    "joinBody": "Enter the password you chose in Bati on your other device, under Encrypt my backups. It is not your cloud's password. Its recovery key works too. This device then uses the same one, and they see each other.",
     "lockedTitle": "Another device uses another password",
-    "lockedBody": "Until this device learns it, the two cannot see each other's history.",
+    "lockedBody": "A device that wrote {{when}} seals its history with another Bati password. Until this device learns it, the two cannot see each other's history, and this one sends nothing.",
     "lockedCta": "Enter it",
-    "lockedSecretBody": "Enter the password of the other device's backups, or its recovery key.",
+    "lockedSecretBody": "Enter the Bati password of your other device (Settings, Encrypt my backups), not your cloud's. Its recovery key works too. This device then uses it for its own backups.",
     "serverEmpty": "Nothing of yours on that server yet. Set up this device, and sync from Settings later.",
     "onboardingCta": "Find my hero on my cloud",
-    "webdavInsecure": "Bati only accepts https addresses, except for a server on this phone",
+    "webdavInsecure": "Bati only accepts https addresses, or http to this phone itself (127.0.0.1 or localhost). Use the https address your provider or your box gives you.",
     "presetKdrive": "Your kDrive's WebDAV address is in kDrive, under Settings. Use an app password made for Bati.",
     "presetKoofr": "Koofr's address is filled in. Make an app password for Bati in Koofr's settings.",
     "presetRoundSync": "For Proton Drive, Google Drive and every other rclone remote: serve it over WebDAV in Round Sync, and keep it running while Bati opens.",
@@ -1729,6 +1731,8 @@
       "hours_other": "{{count}} h ago",
       "days_one": "{{count}} day ago",
       "days_other": "{{count}} days ago"
-    }
+    },
+    "secretForgot": "Forgot it? On your other device: Settings, Encrypt my backups. With a fingerprint set up there, the recovery key can be shown again.",
+    "useThisPassword": "Use this password"
   }
 }

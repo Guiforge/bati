@@ -5,7 +5,6 @@ import { Button, Paragraph, Text, XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { X } from "@/components/icons";
-import { failureMessage } from "@/hooks/useDeviceSync";
 import {
   dismissMergeCard,
   forgetLostSync,
@@ -16,6 +15,7 @@ import {
   syncHealth,
 } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
+import { failureMessage } from "@/src/syncWords";
 import { useSyncStore } from "@/stores/sync";
 
 /** Failing for this long, sync stops being a detail of Settings and says so on Home. */

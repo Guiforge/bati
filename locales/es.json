@@ -1344,7 +1344,7 @@
     "encryptionIntro": "Cada copia que compartas, guardes o dejes que Bati escriba solo se abrirá con esta contraseña o con tu clave de recuperación. Sin una de las dos, nadie puede abrirlas, y nadie puede recuperarlas por ti.",
     "encryptionCta": "Cifrar",
     "encryptionFailed": "No se pudo activar el cifrado",
-    "encryptionOnMessage": "Tus copias están cifradas. Este teléfono las abre sin preguntar; un teléfono nuevo pide la contraseña una vez.",
+    "encryptionOnMessage": "Tus copias están cifradas. Este dispositivo las abre sin preguntar; un dispositivo nuevo pide la contraseña una vez.",
     "encryptionOffCta": "Desactivar",
     "encryptionOffConfirm": "Las copias escritas a partir de ahora podrá leerlas cualquiera que las abra. Las ya cifradas siguen cifradas.",
     "encryptionOffDone": "Las copias ya no se cifran",
@@ -1353,11 +1353,11 @@
     "passwordTooShort": "Al menos {{count}} caracteres",
     "passwordMismatch": "Las dos contraseñas son distintas",
     "changePassword": "Cambiar la contraseña",
-    "changeIntro": "Una contraseña nueva crea una clave nueva y una clave de recuperación nueva. Las copias ya escritas se siguen abriendo con la contraseña antigua o la clave de recuperación antigua. Tus otros dispositivos pedirán la contraseña nueva una vez.",
+    "changeIntro": "Tus copias usan esta nueva contraseña desde ahora, con una nueva clave de recuperación que anotar. Tus otros dispositivos la pedirán una vez. Los archivos escritos antes se siguen abriendo con la contraseña anterior.",
     "recoveryTitle": "Tu clave de recuperación",
-    "recoveryBody": "Anótala, o guárdala en un gestor de contraseñas. Abre tus copias si olvidas la contraseña.",
+    "recoveryBody": "Sin esta clave ni tu contraseña, nadie puede llevar tu héroe a un teléfono o tableta nuevos, ni siquiera nosotros. Anótala, o guárdala en un gestor de contraseñas.",
     "recoveryAgainHint": "Podrás volver a verla desde Ajustes, con tu huella.",
-    "recoveryOnceHint": "Este teléfono no tiene huella configurada, así que esta clave no se volverá a mostrar.",
+    "recoveryOnceHint": "Este dispositivo no tiene huella configurada, así que esta clave no se volverá a mostrar.",
     "recoveryDone": "La he guardado",
     "showRecovery": "Ver la clave de recuperación",
     "secretTitle": "Esta copia está cifrada",
@@ -1375,7 +1375,9 @@
     "joinNo": "Ahora no",
     "copyRecovery": "Copiar la clave",
     "recoveryCopied": "Copiada. Se borra del portapapeles en un minuto.",
-    "recoveryNotHere": "Tu clave de recuperación no se guarda en este dispositivo. Se mostró una vez al activar el cifrado aquí, o pertenece al dispositivo donde se activó el cifrado primero."
+    "recoveryNotHere": "Tu clave de recuperación no se guarda en este dispositivo. Se mostró una vez al activar el cifrado aquí, o pertenece al dispositivo donde se activó el cifrado primero.",
+    "opening": "Abriendo…",
+    "encryptionOffStopSyncCta": "Desactivar y detener la sincronización"
   },
   "villagers": {
     "units": {
@@ -1708,14 +1710,14 @@
     "later": "Más tarde",
     "joined": "Este dispositivo comparte ahora la contraseña de tus otros dispositivos",
     "joinTitle": "Tus dispositivos ya se sincronizan aquí",
-    "joinBody": "Escribe la contraseña de las copias que envía tu otro dispositivo, o su clave de recuperación. Este dispositivo usará la misma, y se verán entre sí.",
+    "joinBody": "Escribe la contraseña que elegiste en Bati en tu otro dispositivo, en Cifrar mis copias. No es la contraseña de tu nube. Su clave de recuperación también sirve. Este dispositivo usa luego la misma, y se ven.",
     "lockedTitle": "Otro dispositivo usa otra contraseña",
-    "lockedBody": "Mientras este dispositivo no la conozca, ninguno verá el historial del otro.",
+    "lockedBody": "Un dispositivo que escribió {{when}} sella su historial con otra contraseña de Bati. Hasta que este dispositivo la conozca, ninguno ve el historial del otro, y este no envía nada.",
     "lockedCta": "Escribirla",
-    "lockedSecretBody": "Escribe la contraseña de las copias del otro dispositivo, o su clave de recuperación.",
+    "lockedSecretBody": "Escribe la contraseña de Bati de tu otro dispositivo (Ajustes, Cifrar mis copias), no la de tu nube. Su clave de recuperación también sirve. Este dispositivo la usa luego para sus propias copias.",
     "serverEmpty": "Todavía no hay nada tuyo en ese servidor. Prepara este dispositivo y sincroniza más tarde desde Ajustes.",
     "onboardingCta": "Recuperar mi héroe de mi nube",
-    "webdavInsecure": "Bati solo acepta direcciones https, salvo para un servidor en este teléfono",
+    "webdavInsecure": "Bati solo acepta direcciones https, o http a este mismo teléfono (127.0.0.1 o localhost). Usa la dirección https que te da tu proveedor o tu router.",
     "presetKdrive": "La dirección WebDAV de tu kDrive está en los ajustes de kDrive. Usa una contraseña de aplicación creada para Bati.",
     "presetKoofr": "La dirección de Koofr ya está rellenada. Crea una contraseña de aplicación para Bati en los ajustes de Koofr.",
     "presetRoundSync": "Para Proton Drive, Google Drive y cualquier otro servicio de rclone: sírvelo por WebDAV en Round Sync, y déjalo funcionando al abrir Bati.",
@@ -1798,6 +1800,8 @@
       "days_one": "hace {{count}} día",
       "days_many": "hace {{count}} días",
       "days_other": "hace {{count}} días"
-    }
+    },
+    "secretForgot": "¿La olvidaste? En tu otro dispositivo: Ajustes, Cifrar mis copias. Con una huella configurada allí, la clave de recuperación se puede volver a mostrar.",
+    "useThisPassword": "Usar esta contraseña"
   }
 }

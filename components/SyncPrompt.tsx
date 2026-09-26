@@ -8,6 +8,7 @@ import { useToast } from "@/components/common/Toast";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { useBackup } from "@/hooks/useBackup";
 import { peerScratch } from "@/src/backupFiles";
+import { failureOf } from "@/src/cloudSync";
 import {
   joinPeer,
   keepThisDeviceOnServer,
@@ -19,6 +20,7 @@ import {
   takeMergeNotice,
 } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
+import { failureMessage, syncAgo } from "@/src/syncWords";
 import { useSessionStore } from "@/stores/session";
 import { useSyncStore } from "@/stores/sync";
 
@@ -42,7 +44,7 @@ import { useSyncStore } from "@/stores/sync";
  */
 export function SyncPrompt() {
   const { t } = useTranslation();
-  const { showSuccess } = useToast();
+  const { showSuccess, showError } = useToast();
   const { runAdopt } = useBackup();
   const result = useSyncStore((s) => s.result);
   const offered = useSyncStore((s) => s.offered);
@@ -144,7 +146,8 @@ export function SyncPrompt() {
       return;
     }
     if (peer.state === "locked") {
-      ask(t("sync.lockedTitle"), t("sync.lockedBody"), [
+      const when = peer.modified ? syncAgo(t, peer.modified) : t("sync.status.unknownWhen");
+      ask(t("sync.lockedTitle"), t("sync.lockedBody", { when }), [
         { text: t("sync.later"), style: "cancel" },
         { text: t("sync.lockedCta"), onPress: () => setJoining({ peer: peer.name, wrong: false }) },
       ]);
@@ -180,7 +183,7 @@ export function SyncPrompt() {
   const submit = (secret: string) => {
     if (joining === null) return;
     const { peer } = joining;
-    joinPeer(peer, secret)
+    return joinPeer(peer, secret)
       .then((joined) => {
         if (!joined) {
           setJoining({ peer, wrong: true });
@@ -195,6 +198,8 @@ export function SyncPrompt() {
       .catch((e) => {
         reportError("sync.join", e);
         setJoining(null);
+        // It closed on nothing before: a sheet that vanishes reads as success.
+        showError(failureMessage(t, failureOf(e)));
       });
   };
 
@@ -203,6 +208,8 @@ export function SyncPrompt() {
       request={{ open: joining !== null, wrong: joining?.wrong ?? false }}
       title={t("sync.lockedTitle")}
       body={t("sync.lockedSecretBody")}
+      submitLabel={t("sync.useThisPassword")}
+      forgotHint={t("sync.secretForgot")}
       onSubmit={submit}
       onCancel={() => setJoining(null)}
     />

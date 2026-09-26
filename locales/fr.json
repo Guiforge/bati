@@ -1344,7 +1344,7 @@
     "encryptionIntro": "Chaque sauvegarde que tu partages, enregistres ou laisses Bati écrire ne s'ouvrira qu'avec ce mot de passe ou avec ta clé de récupération. Sans l'un des deux, personne ne peut les ouvrir, et personne ne peut les récupérer pour toi.",
     "encryptionCta": "Chiffrer",
     "encryptionFailed": "Le chiffrement n'a pas pu être mis en place",
-    "encryptionOnMessage": "Tes sauvegardes sont chiffrées. Ce téléphone les ouvre sans rien demander ; un nouveau téléphone demande le mot de passe une fois.",
+    "encryptionOnMessage": "Tes sauvegardes sont chiffrées. Cet appareil les ouvre sans rien demander ; un nouvel appareil demande le mot de passe une fois.",
     "encryptionOffCta": "Désactiver",
     "encryptionOffConfirm": "Les sauvegardes écrites à partir de maintenant seront lisibles par quiconque les ouvre. Celles déjà chiffrées le restent.",
     "encryptionOffDone": "Les sauvegardes ne sont plus chiffrées",
@@ -1353,11 +1353,11 @@
     "passwordTooShort": "Au moins {{count}} caractères",
     "passwordMismatch": "Les deux mots de passe diffèrent",
     "changePassword": "Changer le mot de passe",
-    "changeIntro": "Un nouveau mot de passe crée une nouvelle clé et une nouvelle clé de récupération. Les sauvegardes déjà écrites s'ouvrent toujours avec l'ancien mot de passe ou l'ancienne clé de récupération. Tes autres appareils demanderont le nouveau mot de passe une fois.",
+    "changeIntro": "Tes sauvegardes utilisent ce nouveau mot de passe dès maintenant, avec une nouvelle clé de secours à noter. Tes autres appareils te le demanderont une fois. Les fichiers écrits avant s'ouvrent toujours avec l'ancien mot de passe.",
     "recoveryTitle": "Ta clé de récupération",
-    "recoveryBody": "Note-la, ou range-la dans un gestionnaire de mots de passe. Elle ouvre tes sauvegardes si le mot de passe est oublié.",
+    "recoveryBody": "Sans cette clé ni ton mot de passe, personne ne peut ramener ton héros sur un nouveau téléphone ou une tablette, pas même nous. Note-la, ou garde-la dans un gestionnaire de mots de passe.",
     "recoveryAgainHint": "Tu pourras la revoir plus tard depuis les réglages, avec ton empreinte.",
-    "recoveryOnceHint": "Ce téléphone n'a pas d'empreinte configurée : cette clé ne sera plus affichée.",
+    "recoveryOnceHint": "Cet appareil n'a pas d'empreinte configurée, donc cette clé ne sera plus affichée.",
     "recoveryDone": "Je l'ai gardée",
     "showRecovery": "Voir la clé de récupération",
     "secretTitle": "Cette sauvegarde est chiffrée",
@@ -1375,7 +1375,9 @@
     "joinNo": "Plus tard",
     "copyRecovery": "Copier la clé",
     "recoveryCopied": "Copiée. Elle est effacée du presse-papiers dans une minute.",
-    "recoveryNotHere": "Ta clé de secours n'est pas gardée sur cet appareil. Elle a été montrée une fois quand tu as activé le chiffrement ici, ou elle appartient à l'appareil où le chiffrement a été activé en premier."
+    "recoveryNotHere": "Ta clé de secours n'est pas gardée sur cet appareil. Elle a été montrée une fois quand tu as activé le chiffrement ici, ou elle appartient à l'appareil où le chiffrement a été activé en premier.",
+    "opening": "Ouverture…",
+    "encryptionOffStopSyncCta": "Désactiver et arrêter la synchro"
   },
   "villagers": {
     "units": {
@@ -1710,14 +1712,14 @@
     "later": "Plus tard",
     "joined": "Cet appareil partage maintenant le mot de passe de tes autres appareils",
     "joinTitle": "Tes appareils se synchronisent déjà ici",
-    "joinBody": "Entre le mot de passe des sauvegardes que ton autre appareil envoie, ou sa clé de récupération. Cet appareil utilise alors le même, et ils se voient.",
+    "joinBody": "Saisis le mot de passe que tu as choisi dans Bati sur ton autre appareil, dans Chiffrer mes sauvegardes. Ce n'est pas le mot de passe de ton cloud. Sa clé de secours marche aussi. Cet appareil utilise ensuite le même, et ils se voient.",
     "lockedTitle": "Un autre appareil a un autre mot de passe",
-    "lockedBody": "Tant que cet appareil ne le connaît pas, les deux ne voient pas l'historique de l'autre.",
+    "lockedBody": "Un appareil qui a écrit {{when}} scelle son historique avec un autre mot de passe Bati. Tant que cet appareil ne le connaît pas, les deux ne voient pas l'historique de l'autre, et celui-ci n'envoie rien.",
     "lockedCta": "Le saisir",
-    "lockedSecretBody": "Entre le mot de passe des sauvegardes de l'autre appareil, ou sa clé de récupération.",
+    "lockedSecretBody": "Saisis le mot de passe Bati de ton autre appareil (Réglages, Chiffrer mes sauvegardes), pas celui de ton cloud. Sa clé de secours marche aussi. Cet appareil l'utilise ensuite pour ses propres sauvegardes.",
     "serverEmpty": "Rien à toi sur ce serveur pour l'instant. Prépare cet appareil, puis synchronise depuis les réglages.",
     "onboardingCta": "Retrouver mon héros sur mon cloud",
-    "webdavInsecure": "Bati n'accepte que les adresses https, sauf pour un serveur sur ce téléphone",
+    "webdavInsecure": "Bati n'accepte que les adresses https, ou http vers ce téléphone lui-même (127.0.0.1 ou localhost). Utilise l'adresse https que ton fournisseur ou ta box te donne.",
     "presetKdrive": "L'adresse WebDAV de ton kDrive est dans les paramètres de kDrive. Utilise un mot de passe d'application créé pour Bati.",
     "presetKoofr": "L'adresse de Koofr est remplie. Crée un mot de passe d'application pour Bati dans les réglages de Koofr.",
     "presetRoundSync": "Pour Proton Drive, Google Drive et tous les services de rclone : sers-le en WebDAV dans Round Sync, et laisse-le tourner à l'ouverture de Bati.",
@@ -1800,6 +1802,8 @@
       "days_one": "il y a {{count}} jour",
       "days_many": "il y a {{count}} jours",
       "days_other": "il y a {{count}} jours"
-    }
+    },
+    "secretForgot": "Oublié ? Sur ton autre appareil : Réglages, Chiffrer mes sauvegardes. Si une empreinte y est configurée, la clé de secours peut s'afficher à nouveau.",
+    "useThisPassword": "Utiliser ce mot de passe"
   }
 }

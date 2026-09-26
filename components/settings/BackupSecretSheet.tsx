@@ -6,14 +6,20 @@ import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
 import { Eye, EyeOff } from "@/components/icons";
 import type { SecretRequest } from "@/hooks/useBackup";
+import { reportError } from "@/src/reportError";
 
 type Props = {
   request: SecretRequest;
-  onSubmit: (secret: string) => void;
+  /** May return the work it starts: the sheet shows it busy until it settles. */
+  onSubmit: (secret: string) => unknown;
   onCancel: () => void;
   /** Defaults to an encrypted backup's; the sync prompt asks the same thing about a device. */
   title?: string;
   body?: string;
+  /** The button's words; "Open" fits a backup, "Use this password" fits joining a device. */
+  submitLabel?: string;
+  /** Under a wrong entry: where the hero finds what is being asked for. */
+  forgotHint?: string;
 };
 
 /**
@@ -24,10 +30,21 @@ type Props = {
  *
  * Mounted by every screen that calls `useBackup().runImport`, since the import pauses on it.
  */
-export function BackupSecretSheet({ request, onSubmit, onCancel, title, body }: Props) {
+export function BackupSecretSheet({
+  request,
+  onSubmit,
+  onCancel,
+  title,
+  body,
+  submitLabel,
+  forgotHint,
+}: Props) {
   const { t } = useTranslation();
   const [secret, setSecret] = useState("");
   const [shown, setShown] = useState(false);
+  // Opening a vault stretches the password 600,000 times: seconds on a slow phone, during which
+  // the sheet used to sit unchanged with the last error still on it.
+  const [busy, setBusy] = useState(false);
 
   const cancel = () => {
     setSecret("");
@@ -35,9 +52,16 @@ export function BackupSecretSheet({ request, onSubmit, onCancel, title, body }: 
   };
 
   const submit = () => {
-    if (secret === "") return;
+    if (secret === "" || busy) return;
     Keyboard.dismiss();
-    onSubmit(secret);
+    setBusy(true);
+    Promise.resolve(onSubmit(secret)).then(
+      () => setBusy(false),
+      (error: unknown) => {
+        setBusy(false);
+        reportError("backup.secret", error);
+      },
+    );
     // Cleared on the way out: a wrong password reopens the sheet, and retyping into the rejected
     // attempt is how the same typo is submitted twice.
     setSecret("");
@@ -78,10 +102,15 @@ export function BackupSecretSheet({ request, onSubmit, onCancel, title, body }: 
           )}
         </Pressable>
       </XStack>
-      {request.wrong ? <Text color="$error">{t("backup.secretWrong")}</Text> : null}
+      {request.wrong && !busy ? <Text color="$error">{t("backup.secretWrong")}</Text> : null}
+      {request.wrong && !busy && forgotHint ? (
+        <Text color="$textSecondary" fontSize="$3">
+          {forgotHint}
+        </Text>
+      ) : null}
 
-      <AppButton testID="backup-secret-submit" disabled={secret === ""} onPress={submit}>
-        {t("backup.secretCta")}
+      <AppButton testID="backup-secret-submit" disabled={secret === "" || busy} onPress={submit}>
+        {busy ? t("backup.opening") : (submitLabel ?? t("backup.secretCta"))}
       </AppButton>
     </FormSheet>
   );

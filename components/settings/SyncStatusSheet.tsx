@@ -1,4 +1,3 @@
-import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
@@ -8,7 +7,6 @@ import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
 import { Wifi } from "@/components/icons";
 import { SettingRow } from "@/components/settings/SettingRow";
-import { failureMessage } from "@/hooks/useDeviceSync";
 import {
   accountLabel,
   type LastMerge,
@@ -19,6 +17,7 @@ import {
   syncWifiOnly,
 } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
+import { failureMessage, syncAgo } from "@/src/syncWords";
 import { useSyncStore } from "@/stores/sync";
 
 type Props = {
@@ -65,7 +64,7 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
         ? failureMessage(t, failure)
         : lastSyncAt === null
           ? t("sync.status.never")
-          : t("sync.status.upToDate", { when: ago(t, lastSyncAt) });
+          : t("sync.status.upToDate", { when: syncAgo(t, lastSyncAt) });
 
   const confirmStop = () => {
     Alert.alert(
@@ -110,7 +109,7 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
               {t("sync.status.device", {
                 id: shortId(peer.name),
                 state: t(`sync.peerState.${peer.state}`),
-                when: peer.modified ? ago(t, peer.modified) : t("sync.status.unknownWhen"),
+                when: peer.modified ? syncAgo(t, peer.modified) : t("sync.status.unknownWhen"),
               })}
             </Text>
           ))
@@ -121,7 +120,7 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
         <Text testID="sync-last-merge" color="$textSecondary" fontSize="$3">
           {t("sync.status.lastMerge", {
             count: merge.sessions,
-            when: ago(t, merge.at),
+            when: syncAgo(t, merge.at),
             id: shortId(merge.peer),
           })}
           {merge.kept ? ` ${t("sync.status.kept", { file: merge.kept })}` : ""}
@@ -156,14 +155,4 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
 /** `bati-50255d3e-….batb` → `50255d3e`: enough to tell devices apart, short enough to read. */
 function shortId(file: string): string {
   return /^bati-([0-9a-f]{8})/.exec(file)?.[1] ?? file;
-}
-
-/** "just now", "5 min ago", "3 h ago", "2 days ago". */
-function ago(t: TFunction, at: number): string {
-  const minutes = Math.round((Date.now() - at) / 60_000);
-  if (minutes < 1) return t("sync.ago.now");
-  if (minutes < 60) return t("sync.ago.minutes", { count: minutes });
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return t("sync.ago.hours", { count: hours });
-  return t("sync.ago.days", { count: Math.round(hours / 24) });
 }

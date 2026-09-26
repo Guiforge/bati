@@ -35,7 +35,7 @@ export function CloudRestoreLink({ disabled }: { disabled: boolean }) {
   const submitJoin = (secret: string) => {
     if (joining === null) return;
     const { peer } = joining;
-    deviceSync
+    return deviceSync
       .join(peer, secret)
       .then((joined) => setJoining(joined ? null : { peer, wrong: true }))
       .catch((e) => reportError("sync.join", e));
@@ -68,6 +68,8 @@ export function CloudRestoreLink({ disabled }: { disabled: boolean }) {
         request={{ open: joining !== null, wrong: joining?.wrong ?? false }}
         title={t("sync.joinTitle")}
         body={t("sync.joinBody")}
+        submitLabel={t("sync.useThisPassword")}
+        forgotHint={t("sync.secretForgot")}
         onSubmit={submitJoin}
         onCancel={() => setJoining(null)}
       />

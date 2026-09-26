@@ -47,14 +47,15 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
   // leaving it connected would fail at every launch under "could not reach your server".
   const confirmDisable = () => {
     setEncryptionSheet(null);
-    const message =
-      deviceSync.account === null
-        ? t("backup.encryptionOffConfirm")
-        : `${t("backup.encryptionOffConfirm")} ${t("backup.encryptionOffStopsSync")}`;
+    // With sync on, what stops first is what the hero would miss first.
+    const syncing = deviceSync.account !== null;
+    const message = syncing
+      ? `${t("backup.encryptionOffStopsSync")} ${t("backup.encryptionOffConfirm")}`
+      : t("backup.encryptionOffConfirm");
     Alert.alert(t("backup.encryption"), message, [
       { text: t("common.cancel"), style: "cancel" },
       {
-        text: t("backup.encryptionOffCta"),
+        text: syncing ? t("backup.encryptionOffStopSyncCta") : t("backup.encryptionOffCta"),
         style: "destructive",
         onPress: () => {
           const stopSync =
@@ -98,7 +99,7 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
   const submitJoin = (secret: string) => {
     if (joining === null) return;
     const { peer } = joining;
-    deviceSync
+    return deviceSync
       .join(peer, secret)
       .then((joined) => {
         setJoining(joined ? null : { peer, wrong: true });
@@ -172,6 +173,8 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
         request={{ open: joining !== null, wrong: joining?.wrong ?? false }}
         title={t("sync.joinTitle")}
         body={t("sync.joinBody")}
+        submitLabel={t("sync.useThisPassword")}
+        forgotHint={t("sync.secretForgot")}
         onSubmit={submitJoin}
         // Walking away pauses, it does not disconnect: sync keeps the account, sends nothing
         // while that device's vault is unknown here (`holdBack`), asks again next launch, and the

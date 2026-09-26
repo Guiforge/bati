@@ -1,4 +1,3 @@
-import type { TFunction } from "i18next";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -17,6 +16,7 @@ import {
   syncAccount,
 } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
+import { failureMessage } from "@/src/syncWords";
 import { useSyncStore } from "@/stores/sync";
 
 /**
@@ -32,11 +32,6 @@ export type ConnectNext =
   | { next: "encrypt" }
   | { next: "done" }
   | { next: "failed" };
-
-/** What the hero reads about a failure: the layer it failed at, and what to do about it. */
-export function failureMessage(t: TFunction, failure: SyncFailure): string {
-  return t(`sync.failure.${failure.kind}`, { status: failure.status ?? "" });
-}
 
 /**
  * Settings' half of device sync: which account, and the things to do with it. Like the other

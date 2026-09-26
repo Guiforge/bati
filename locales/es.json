@@ -1725,6 +1725,10 @@
     "aheadBody_other": "Tiene {{count}} cambios que este no tiene, y aquí no se perdería nada. Toma su versión para seguir desde ahí.",
     "aheadBody_many": "Tiene {{count}} cambios que este no tiene, y aquí no se perdería nada. Toma su versión para seguir desde ahí.",
     "unreadableTitle": "Un dispositivo que Bati no puede leer",
-    "unreadableBody": "El historial de otro dispositivo en tu servidor no se abre aquí. Si ese dispositivo tiene una versión más reciente de Bati, actualiza esta."
+    "unreadableBody": "El historial de otro dispositivo en tu servidor no se abre aquí. Si ese dispositivo tiene una versión más reciente de Bati, actualiza esta.",
+    "merged_one": "{{count}} sesión de tu otro dispositivo ya está aquí.",
+    "merged_many": "{{count}} sesiones de tu otro dispositivo ya están aquí.",
+    "merged_other": "{{count}} sesiones de tu otro dispositivo ya están aquí.",
+    "mergedOther": "Los cambios de tu otro dispositivo ya están aquí."
   }
 }

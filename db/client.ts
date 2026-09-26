@@ -167,6 +167,17 @@ export async function withIsolatedConnection<T>(
 }
 
 /**
+ * `withIsolatedConnection` for a write the shared connection cannot host (an `ATTACH`, for the
+ * device sync merge), queued behind the app's own writes. WAL lets the shared connection see the
+ * result as soon as it commits.
+ */
+export function withWritableConnection<T>(
+  fn: (isolated: IsolatedConnection) => Promise<T>,
+): Promise<T> {
+  return serializeOnDatabase(() => withIsolatedConnection(fn));
+}
+
+/**
  * Closes the native handle, best effort.
  *
  * Every query after this throws, so the only callers are the ones about to replace the file

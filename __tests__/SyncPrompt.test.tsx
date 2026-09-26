@@ -36,9 +36,27 @@ jest.mock("@/src/backupFiles", () => ({
 
 const mockRemembered: string[] = [];
 let mockJoinOpens = false;
+/** What merging answers; "cannot" (another build) keeps the old question in play. */
+let mockMerge: { result: "cannot" } | { result: "merged"; sessions: number; changes: number } = {
+  result: "cannot",
+};
+let mockNotice: number | null = null;
+const mockReload = jest.fn((_reason: string) => Promise.resolve());
+jest.mock("expo", () => ({ reloadAppAsync: (reason: string) => mockReload(reason) }));
 const mockKeepCopy = jest.fn(() => Promise.resolve());
 jest.mock("@/src/deviceSync", () => ({
   rememberUnreadable: () => Promise.resolve(),
+  mergeWithPeer: () => Promise.resolve(mockMerge),
+  rememberMergeNotice: (n: number) =>
+    Promise.resolve().then(() => {
+      mockNotice = n;
+    }),
+  takeMergeNotice: () =>
+    Promise.resolve().then(() => {
+      const n = mockNotice;
+      mockNotice = null;
+      return n;
+    }),
   rememberAnswer: (peer: { name: string; comparison: { fingerprint: string } }) =>
     Promise.resolve().then(() => {
       mockRemembered.push(`${peer.name}@${peer.comparison.fingerprint}`);
@@ -94,6 +112,9 @@ beforeEach(() => {
   mockRemembered.length = 0;
   mockToasts.length = 0;
   mockKeepCopy.mockClear();
+  mockReload.mockClear();
+  mockMerge = { result: "cannot" };
+  mockNotice = null;
   run.mockClear();
   mockJoinOpens = false;
   mockSheet = null;
@@ -110,7 +131,7 @@ test("ahead: taking its version adopts that device's file, with nothing to keep 
     comparison: comparison(2, 0, "f1"),
   });
 
-  expect(mockAlerts.map((a) => a.title)).toEqual(["sync.aheadTitle"]);
+  await waitFor(() => expect(mockAlerts.map((a) => a.title)).toEqual(["sync.aheadTitle"]));
   press("sync.take");
   expect(mockAdopted.map((a) => a.uri)).toEqual(["file:///db/bati-tab.batb.plain"]);
   await mockAdopted[0]?.before();
@@ -129,12 +150,51 @@ test("diverged: keep remembers this state; take first sends this device's copy a
   };
   await syncFound(peer);
 
+  await waitFor(() => expect(mockAlerts).toHaveLength(1));
   press("sync.keep");
   await waitFor(() => expect(mockRemembered).toEqual(["bati-tab.batb@f1"]));
 
   press("sync.take");
   await mockAdopted[0]?.before();
   expect(mockKeepCopy).toHaveBeenCalledTimes(1);
+});
+
+test("a device that can be merged is merged, not asked, and the app reloads to read it", async () => {
+  mockMerge = { result: "merged", sessions: 3, changes: 4 };
+  await render(<SyncPrompt />);
+  await syncFound({
+    name: "bati-tab.batb",
+    etag: "e",
+    state: "diverged",
+    comparison: comparison(3, 2, "f1"),
+  });
+
+  await waitFor(() => expect(mockReload).toHaveBeenCalledWith("merge"));
+  expect(mockAlerts).toEqual([]);
+  expect(mockAdopted).toEqual([]);
+  // Said after the reload, by the prompt of the fresh runtime.
+  expect(mockNotice).toBe(3);
+});
+
+test("a merge that changed nothing does not reload", async () => {
+  mockMerge = { result: "merged", sessions: 0, changes: 0 };
+  await render(<SyncPrompt />);
+  await syncFound({
+    name: "bati-tab.batb",
+    etag: "e",
+    state: "ahead",
+    comparison: comparison(1, 0, "f1"),
+  });
+  await act(async () => {});
+  expect(mockReload).not.toHaveBeenCalled();
+  expect(mockAlerts).toEqual([]);
+});
+
+test("after a merge's reload, the hero is told what arrived, once", async () => {
+  mockNotice = 2;
+  await render(<SyncPrompt />);
+  await waitFor(() => expect(mockToasts).toEqual(["sync.merged"]));
+  expect(mockNotice).toBeNull();
 });
 
 test("never during a session, and once per state", async () => {

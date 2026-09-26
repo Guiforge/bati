@@ -39,6 +39,7 @@ jest.mock("@/src/backupCipher", () => ({
   openBackup: () => Promise.resolve({ result: "notEncrypted" }),
 }));
 jest.mock("@/db/backup", () => ({}));
+jest.mock("@/db/merge", () => ({}));
 jest.mock("@/src/backupFiles", () => ({}));
 jest.mock("@/modules/bati-crypto", () => ({ batiCrypto: () => ({}) }));
 

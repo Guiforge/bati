@@ -547,7 +547,14 @@ skewed clock, #5738); do not count on Android background sync, sync at launch an
    F-Droid. On dropbox.com/developers: scoped access, App folder, `files.metadata.read`,
    `files.content.read`, `files.content.write`, redirect `bati://dropbox-auth`, public clients
    allowed; the app key goes in `src/cloudSync.ts`; apply for production before 500 users.
-4. **Phase 4, the merge (about 9 days, 6 with the cuts below).** Sources are copied, never
+4. **Phase 4, the merge: first version done (2026-09-26)**, with the cuts listed at the end of
+   this item, in `db/merge.ts`; verified on the emulator (one unique session on each side merged
+   into 15 on both, the newer village name kept, one reload, no second merge). Two details the
+   plan missed: a hero exercise's prerequisite must be written after every row has its local id
+   (the foreign key fails otherwise), and favourites and quest configs left the comparison with
+   the merge, or merged devices would read as diverged forever. Still open: campaigns, quest
+   configs, favourites, deletions of hero content, the `''`-for-deleted preference fix, the
+   missing `updatedAt` bumps. Sources are copied, never
    recomputed: `completed_sessions` (its `xpEarned` already carries the day's, Triumph's and the
    oath's bonuses), `completed_exercises`, `gps_points`, `deleted_sessions`, hero exercises and
    quests, `HERO_PREFERENCES`, quest configs, `unlocked_achievements` (a union). XP, level and the

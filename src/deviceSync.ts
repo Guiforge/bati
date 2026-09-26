@@ -7,6 +7,7 @@ import {
   stateFingerprint,
   validateBackup,
 } from "@/db/backup";
+import { honourTombstones, mergePeer } from "@/db/merge";
 import { batiCrypto } from "@/modules/bati-crypto";
 import { encryptionStatus, MAX_SEALED_BYTES, openBackup, sealingHeader } from "@/src/backupCipher";
 import {
@@ -169,6 +170,7 @@ export async function disconnectSync(): Promise<void> {
   await SecureStore.deleteItemAsync(STORE_ANSWERED);
   await SecureStore.deleteItemAsync(STORE_UPLOADED);
   await SecureStore.deleteItemAsync(STORE_VERDICTS);
+  await SecureStore.deleteItemAsync(STORE_MERGED);
   clearPeerScratch();
   pendingSyncSnapshot()?.delete();
 }
@@ -434,6 +436,48 @@ export async function keepThisDeviceOnServer(): Promise<void> {
   const snapshot = await writeSyncSnapshot();
   await uploadRemote(targetFor(account), snapshot, `bati-${await installId()}-kept-${stamp}.batb`);
   snapshot.delete();
+}
+
+/** Names of the devices whose first merge already left a kept copy of this one on the server. */
+const STORE_MERGED = "bati.sync.merged";
+/** What the last merge brought, said once the app is back from the reload it needed. */
+const STORE_MERGE_NOTICE = "bati.sync.mergeNotice";
+
+export type MergeWithPeer =
+  /** Another build's database: nothing merged, and the hero chooses as before. */
+  { result: "cannot" } | { result: "merged"; sessions: number; changes: number };
+
+/**
+ * Merges an `ahead` or `diverged` device's history into this one (`mergePeer`), then applies its
+ * deletions here. The first merge with a given device first sends this one's whole history to the
+ * server as a kept copy: a merge cannot lose a session, but it is new, and the copy is what the
+ * hero restores by hand if it ever does.
+ */
+export async function mergeWithPeer(peer: { name: string }): Promise<MergeWithPeer> {
+  const plain = peerScratch(peer.name, "plain");
+  if (!plain.exists) throw new Error("That device's history was not kept for merging");
+  const merged: string[] = JSON.parse((await SecureStore.getItemAsync(STORE_MERGED)) ?? "[]");
+  if (!merged.includes(peer.name)) {
+    await keepThisDeviceOnServer();
+    await SecureStore.setItemAsync(STORE_MERGED, JSON.stringify([...merged, peer.name]));
+  }
+  const outcome = await mergePeer(plain.uri.replace(/^file:\/\//, ""));
+  if (!outcome.merged) return { result: "cannot" };
+  plain.delete();
+  const removed = await honourTombstones();
+  return { result: "merged", sessions: outcome.sessions, changes: outcome.changes + removed };
+}
+
+/** Kept across the reload a merge ends with, and read once by whoever says it. */
+export function rememberMergeNotice(sessions: number): Promise<void> {
+  return SecureStore.setItemAsync(STORE_MERGE_NOTICE, String(sessions));
+}
+
+export async function takeMergeNotice(): Promise<number | null> {
+  const value = await SecureStore.getItemAsync(STORE_MERGE_NOTICE);
+  if (value === null) return null;
+  await SecureStore.deleteItemAsync(STORE_MERGE_NOTICE);
+  return Number(value);
 }
 
 /**

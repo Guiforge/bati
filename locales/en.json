@@ -1662,6 +1662,9 @@
     "aheadBody_one": "It has {{count}} change this one does not, and nothing here would be lost. Take its version to carry on from there.",
     "aheadBody_other": "It has {{count}} changes this one does not, and nothing here would be lost. Take its version to carry on from there.",
     "unreadableTitle": "A device Bati cannot read",
-    "unreadableBody": "Another device's history on your server does not open here. If that device runs a newer Bati, update this one."
+    "unreadableBody": "Another device's history on your server does not open here. If that device runs a newer Bati, update this one.",
+    "merged_one": "{{count}} session from your other device is here now.",
+    "merged_other": "{{count}} sessions from your other device are here now.",
+    "mergedOther": "Your other device's changes are here now."
   }
 }

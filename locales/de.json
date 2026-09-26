@@ -1666,6 +1666,9 @@
     "aheadBody_one": "Es hat {{count}} Änderung, die dieses nicht hat, und hier ginge nichts verloren. Übernimm seine Version, um dort weiterzumachen.",
     "aheadBody_other": "Es hat {{count}} Änderungen, die dieses nicht hat, und hier ginge nichts verloren. Übernimm seine Version, um dort weiterzumachen.",
     "unreadableTitle": "Ein Gerät, das Bati nicht lesen kann",
-    "unreadableBody": "Der Verlauf eines anderen Geräts auf deinem Server lässt sich hier nicht öffnen. Läuft dort ein neueres Bati, aktualisiere dieses."
+    "unreadableBody": "Der Verlauf eines anderen Geräts auf deinem Server lässt sich hier nicht öffnen. Läuft dort ein neueres Bati, aktualisiere dieses.",
+    "merged_one": "{{count}} Einheit von deinem anderen Gerät ist jetzt hier.",
+    "merged_other": "{{count}} Einheiten von deinem anderen Gerät sind jetzt hier.",
+    "mergedOther": "Die Änderungen von deinem anderen Gerät sind jetzt hier."
   }
 }

@@ -1,3 +1,4 @@
+import { reloadAppAsync } from "expo";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, type AlertButton } from "react-native";
@@ -9,20 +10,24 @@ import { peerScratch } from "@/src/backupFiles";
 import {
   joinPeer,
   keepThisDeviceOnServer,
+  mergeWithPeer,
   type Peer,
   rememberAnswer,
+  rememberMergeNotice,
   rememberUnreadable,
+  takeMergeNotice,
 } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSyncStore } from "@/stores/sync";
 
 /**
- * After a sync, the decisions it cannot take alone, one at a time:
+ * After a sync, what it could not settle alone, one at a time:
  *
- * - **ahead**: another device has news and this one has nothing it would lose. A hand-off.
- * - **diverged**: each has news. The copy says what each answer loses, and taking the other
- *   version first sends this device's to the sync folder (`keepThisDeviceOnServer`).
+ * - **ahead** or **diverged**: merged (`mergeWithPeer`), not asked. What either device recorded
+ *   ends up on both, the app reloads so every screen reads the merged database, and a toast says
+ *   what arrived. Only a device on another build, which the merge refuses, gets the old question:
+ *   take its version (a hand-off when this one has nothing to lose) or keep this one.
  * - **locked**: another device seals with a password this one does not know. Until it is typed
  *   here, the two never see each other, so that is asked instead of staying silent.
  * - **unreadable**: said once. Most often that device runs a newer Bati, and silence would leave
@@ -47,6 +52,16 @@ export function SyncPrompt() {
   // An alert on screen. `markOffered` re-runs the effect, and without this the next device's
   // question opened on top of the one still being read.
   const [showing, setShowing] = useState(false);
+
+  // Said after the reload a merge ends with: the app vanished for a second, and this is why.
+  useEffect(() => {
+    takeMergeNotice()
+      .then((sessions) => {
+        if (sessions === null) return;
+        showSuccess(sessions > 0 ? t("sync.merged", { count: sessions }) : t("sync.mergedOther"));
+      })
+      .catch((e) => reportError("sync.mergeNotice", e));
+  }, [showSuccess, t]);
 
   useEffect(() => {
     if (inSession || joining !== null || showing) return;
@@ -78,6 +93,35 @@ export function SyncPrompt() {
       );
     };
 
+    /** The hero's choice, as before the merge existed, for the one case it cannot handle. */
+    const offerChoice = (peer: Extract<Peer, { comparison: unknown }>) => {
+      const plain = peerScratch(peer.name, "plain");
+      const { peerChanges, localChanges } = peer.comparison;
+      if (peer.state === "ahead") {
+        // Nothing here would be lost, so there is nothing to keep first and no "keep" to remember:
+        // "later" only means "not now".
+        ask(t("sync.aheadTitle"), t("sync.aheadBody", { count: peerChanges }), [
+          { text: t("sync.later"), style: "cancel" },
+          { text: t("sync.take"), onPress: () => runAdopt(plain, () => Promise.resolve()) },
+        ]);
+        return;
+      }
+      ask(
+        t("sync.divergedTitle"),
+        t("sync.divergedBody", { peer: peerChanges, local: localChanges }),
+        [
+          {
+            text: t("sync.keep"),
+            style: "cancel",
+            onPress: () => {
+              rememberAnswer(peer).catch((e) => reportError("sync.remember", e));
+            },
+          },
+          { text: t("sync.take"), onPress: () => runAdopt(plain, keepThisDeviceOnServer) },
+        ],
+      );
+    };
+
     if (peer.state === "unreadable") {
       ask(t("sync.unreadableTitle"), t("sync.unreadableBody"), [
         {
@@ -98,31 +142,29 @@ export function SyncPrompt() {
     }
     if (!("comparison" in peer)) return;
 
-    const plain = peerScratch(peer.name, "plain");
-    const { peerChanges, localChanges } = peer.comparison;
-    if (peer.state === "ahead") {
-      // Nothing here would be lost, so there is nothing to keep first and no "keep" to remember:
-      // "later" only means "not now".
-      ask(t("sync.aheadTitle"), t("sync.aheadBody", { count: peerChanges }), [
-        { text: t("sync.later"), style: "cancel" },
-        { text: t("sync.take"), onPress: () => runAdopt(plain, () => Promise.resolve()) },
-      ]);
-      return;
-    }
-    ask(
-      t("sync.divergedTitle"),
-      t("sync.divergedBody", { peer: peerChanges, local: localChanges }),
-      [
-        {
-          text: t("sync.keep"),
-          style: "cancel",
-          onPress: () => {
-            rememberAnswer(peer).catch((e) => reportError("sync.remember", e));
-          },
-        },
-        { text: t("sync.take"), onPress: () => runAdopt(plain, keepThisDeviceOnServer) },
-      ],
-    );
+    // Merged, not asked: what either device recorded ends up on both. The question below is only
+    // for a device whose build differs, which the merge refuses.
+    setShowing(true);
+    mergeWithPeer(peer)
+      .then(async (outcome) => {
+        if (outcome.result === "cannot") {
+          setShowing(false);
+          offerChoice(peer);
+          return;
+        }
+        if (outcome.changes === 0) {
+          setShowing(false);
+          return;
+        }
+        // Every cache and store read the database before the merge: a fresh runtime reads it again.
+        await rememberMergeNotice(outcome.sessions);
+        await reloadAppAsync("merge");
+      })
+      .catch((e) => {
+        reportError("sync.merge", e);
+        setShowing(false);
+        offerChoice(peer);
+      });
   }, [inSession, joining, showing, markOffered, offered, result, runAdopt, t]);
 
   const submit = (secret: string) => {

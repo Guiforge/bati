@@ -228,17 +228,19 @@ export function validateBackup(path: string): Promise<BackupCheck> {
 
 /**
  * Preferences that are the hero's own work and travel with them: what makes a device "have
- * something the other lacks" besides its sessions. Derived caches (`streak_*`, achievements) are
- * left out on purpose: both devices rewrite them every day, and a comparison that read them would
- * call every pair of devices diverged.
+ * something the other lacks" besides its sessions, and what `mergePeer` carries over, the newer
+ * winning. Derived caches (`streak_*`, achievements) are left out on purpose: both devices rewrite
+ * them every day, and a comparison that read them would call every pair of devices diverged.
+ * Favourites and quest configs name quest ids, which differ between devices, so they are not
+ * merged and not compared either: what the merge leaves out, the comparison must not count, or
+ * two merged devices would still read as diverged forever.
  */
-const HERO_PREFERENCES = [
+export const MERGED_PREFERENCES = [
   "villageName",
   "avatarId",
   "trainingLevel",
   "ownedEquipment",
   "oath",
-  "favourite_quests",
 ] as const;
 
 /**
@@ -247,11 +249,10 @@ const HERO_PREFERENCES = [
  * quest by its titles, a preference by its key. Good enough to tell "something was written here".
  */
 function heroContent(schema: string): string {
-  const keys = HERO_PREFERENCES.map(sqlString).join(", ");
+  const keys = MERGED_PREFERENCES.map(sqlString).join(", ");
   return `SELECT 'e:' || enName AS id, updatedAt AS at FROM ${schema}.exercises WHERE creator = 'hero'
     UNION ALL SELECT 'q:' || enTitle || '/' || frTitle, updatedAt FROM ${schema}.quests WHERE author = 'hero'
-    UNION ALL SELECT 'p:' || key, updatedAt FROM ${schema}.user_preferences
-      WHERE key IN (${keys}) OR key LIKE 'quest:%:config'`;
+    UNION ALL SELECT 'p:' || key, updatedAt FROM ${schema}.user_preferences WHERE key IN (${keys})`;
 }
 
 /** Rows of `a` that `b` lacks, or that `a` wrote later. */

@@ -118,6 +118,15 @@ jest.mock("@/src/backupCipher", () => ({
   },
 }));
 
+const mockMerges: string[] = [];
+jest.mock("@/db/merge", () => ({
+  mergePeer: (path: string) =>
+    Promise.resolve().then(() => {
+      mockMerges.push(path);
+      return { merged: true, sessions: 2, changes: 2 };
+    }),
+  honourTombstones: () => Promise.resolve(1),
+}));
 jest.mock("@/db/backup", () => ({
   BUILD_MIGRATIONS: 64,
   stateFingerprint: () => Promise.resolve(mockFingerprint),
@@ -150,6 +159,7 @@ import {
   disconnectSync,
   joinPeer,
   keepThisDeviceOnServer,
+  mergeWithPeer,
   rememberAnswer,
   rememberUnreadable,
   serverState,
@@ -170,6 +180,7 @@ beforeEach(async () => {
   mockListings.length = 0;
   mockJoins.length = 0;
   mockDownloads.length = 0;
+  mockMerges.length = 0;
   mockModified.clear();
   mockCipher.status = "on";
   mockCipher.header = "vault-1";
@@ -294,6 +305,18 @@ test("an unreadable device is announced once per file, not once per launch", asy
   expect(states((await syncNow({ snapshotFirst: true })).peers)).toEqual({
     [TABLET]: "unreadable",
   });
+});
+
+test("merging keeps a copy of this device on the server once per device, then merges", async () => {
+  const first = await mergeWithPeer({ name: TABLET });
+  expect(first).toEqual({ result: "merged", sessions: 2, changes: 3 });
+  expect(mockUploads).toEqual([expect.stringMatching(/-kept-\d{8}T\d{4}\.batb$/)]);
+  expect(mockMerges).toEqual([`/db/${TABLET}.plain`]);
+
+  await mergeWithPeer({ name: TABLET });
+  // The net is laid once: every later merge with the same device goes straight in.
+  expect(mockUploads).toHaveLength(1);
+  expect(mockMerges).toHaveLength(2);
 });
 
 test("a new device joins the vault of the most recently written file", async () => {

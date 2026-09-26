@@ -107,11 +107,23 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
   `waiting` and says nothing.
 - **What each side lacks** (`compareWithPeer`, on real SQLite): sessions by uuid, deletions by the
   `deleted_sessions` tombstones (0064), and the hero's own content (hero exercises and quests,
-  village name, avatar, level, equipment, oath, favourites, quest configs). Derived caches are
-  ignored. News only on the other side is a hand-off (`ahead`); news on both is `diverged`, and
-  taking the other version first uploads this device's as `bati-<id>-kept-<time>.batb`, which no
-  device reads as a peer. A refusal is remembered by the other device's content fingerprint, not by
-  its etag, and an unchanged history is not re-uploaded unless the key changed (a vault joined, a
+  village name, avatar, level, equipment, oath). Derived caches are ignored, and so are favourites
+  and quest configs, which name quest ids and are not merged: what the merge leaves out, the
+  comparison must not count, or two merged devices would read as diverged forever.
+- **Merged, not asked** (`db/merge.ts`). An `ahead` or `diverged` device is merged into this one:
+  its sessions with their sets and GPS points, its deletions, its hero exercises and quests (the
+  newer edit wins), its preferences (the newer wins; a device with nothing of its own yet takes
+  them all). This device's rows keep their ids, the other's get new ones through temporary maps,
+  Admin content is matched by seed name, timestamps are copied verbatim so a second comparison
+  finds nothing, and one transaction rolls back whole on anything unmapped. The app then reloads
+  (every cache read the old database) and says what arrived. The first merge with a device uploads
+  this one's history as `bati-<id>-kept-<time>.batb`, which no device reads as a peer. Left local
+  in this version: campaigns and boss fights (random crits cannot be replayed; the other device's
+  campaign sessions count as training), quest configs, favourites, achievements. A device on
+  another build is not merged; the hero chooses as before, and a refusal is remembered by that
+  device's content fingerprint. Verified on the emulator: 14 sessions each, one unique on each
+  side, became 15 on both, with the newer village name, one reload, and no second merge after.
+- **Uploads**: an unchanged history is not re-uploaded unless the key changed (a vault joined, a
   new password), or the other devices would be left with a file they cannot open.
 - **Listen before speaking.** Peers are judged before this device uploads. It sends nothing while
   one is `ahead` (that device already holds everything this one has), nor, on its first contact
@@ -152,4 +164,5 @@ exists only on one phone: a file path, a granted permission, an identifier.
 - Dropbox, OneDrive and Google Drive by their own APIs. Dropbox needs an app registered to this
   project (PKCE, no secret, app folder); Drive needs brand verification and a second signing
   certificate for the F-Droid build. Round Sync covers them through WebDAV meanwhile.
-- Row-level merge (roadmap 4.18 phase 4). A divergence is a choice today, with a copy kept.
+- Merging campaigns, boss fights, quest configs and favourites, and hero content deleted on one
+  device coming back from the other (roadmap 4.18, item 4).

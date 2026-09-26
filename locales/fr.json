@@ -1727,6 +1727,10 @@
     "aheadBody_other": "Il a {{count}} changements que celui-ci n'a pas, et rien d'ici ne serait perdu. Reprends sa version pour continuer à partir de là.",
     "aheadBody_many": "Il a {{count}} changements que celui-ci n'a pas, et rien d'ici ne serait perdu. Reprends sa version pour continuer à partir de là.",
     "unreadableTitle": "Un appareil illisible",
-    "unreadableBody": "L'historique d'un autre appareil sur ton serveur ne s'ouvre pas ici. Si cet appareil a une version plus récente de Bati, mets celle-ci à jour."
+    "unreadableBody": "L'historique d'un autre appareil sur ton serveur ne s'ouvre pas ici. Si cet appareil a une version plus récente de Bati, mets celle-ci à jour.",
+    "merged_one": "{{count}} séance de ton autre appareil est arrivée ici.",
+    "merged_many": "{{count}} séances de ton autre appareil sont arrivées ici.",
+    "merged_other": "{{count}} séances de ton autre appareil sont arrivées ici.",
+    "mergedOther": "Les changements de ton autre appareil sont arrivés ici."
   }
 }

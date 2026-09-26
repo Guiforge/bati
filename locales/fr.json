@@ -1638,5 +1638,12 @@
         "La plus longue que tu aies faite, à mon compte et à celui de la route. Deux registres, une ligne."
       ]
     }
+  },
+  "whats_new": {
+    "title": "Nouveautés de la {{version}}",
+    "empty": "Pas de notes pour cette version.",
+    "card_title": "Bati passe en {{version}}",
+    "card_open": "Voir les nouveautés",
+    "open_hint": "Ouvre les notes de cette version"
   }
 }

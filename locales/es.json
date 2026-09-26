@@ -1636,5 +1636,12 @@
         "Lo más lejos que has llegado, según mi cuenta y la del camino. Dos registros, una línea."
       ]
     }
+  },
+  "whats_new": {
+    "title": "Novedades de la {{version}}",
+    "empty": "No hay notas para esta versión.",
+    "card_title": "Bati ya está en la {{version}}",
+    "card_open": "Ver las novedades",
+    "open_hint": "Abre las notas de esta versión"
   }
 }

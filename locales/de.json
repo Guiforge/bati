@@ -1578,5 +1578,12 @@
         "So weit warst du noch nie, nach meiner Zählung und nach der der Straße. Zwei Bücher, eine Zeile."
       ]
     }
+  },
+  "whats_new": {
+    "title": "Neu in {{version}}",
+    "empty": "Keine Notizen zu dieser Version.",
+    "card_title": "Bati ist jetzt {{version}}",
+    "card_open": "Neuerungen ansehen",
+    "open_hint": "Öffnet die Notizen zu dieser Version"
   }
 }

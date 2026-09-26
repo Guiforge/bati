@@ -338,6 +338,15 @@ export const preferences = {
     await setPreference("updateDismissed", version);
   },
 
+  /** The last version whose release notes were offered, `null` on a fresh install. */
+  async getNotesSeenVersion(): Promise<string | null> {
+    return await getPreference("notesSeenVersion");
+  },
+
+  async setNotesSeenVersion(version: string): Promise<void> {
+    await setPreference("notesSeenVersion", version);
+  },
+
   async getHapticsEnabled(): Promise<boolean> {
     const value = await getPreference("hapticsEnabled");
     // Default to true if not set

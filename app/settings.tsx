@@ -710,7 +710,18 @@ export default function SettingsScreen() {
           </Text>
 
           <DevFooter />
-          <Text testID="settings-version" fontSize="$2" color="$textSecondary" text="center">
+          {/* The version line is also the door to its release notes, any time after the card. */}
+          <Text
+            testID="settings-version"
+            fontSize="$2"
+            color="$textSecondary"
+            text="center"
+            textDecorationLine="underline"
+            py="$2"
+            onPress={() => router.push("/whats-new" as never)}
+            accessibilityRole="link"
+            accessibilityHint={t("whats_new.open_hint", "Opens this version's release notes")}
+          >
             {versionLabel}
           </Text>
         </YStack>

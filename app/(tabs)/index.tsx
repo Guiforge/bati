@@ -5,6 +5,7 @@ import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
 import { QuickActions } from "@/components/home/QuickActions";
 import { UpdateCard } from "@/components/home/UpdateCard";
+import { WhatsNewCard } from "@/components/home/WhatsNewCard";
 import { SessionRecoveryBanner } from "@/components/session/SessionRecoveryCard";
 
 /**
@@ -69,6 +70,9 @@ export default function HomeScreen() {
             on in Settings. It pushes the column like the recovery card above it, and it is the
             only thing on this screen that a hero can make go away for good. */}
         <UpdateCard />
+
+        {/* The notes of the version just installed, once, and never on a fresh install. */}
+        <WhatsNewCard />
 
         {/* Tonight's scene, one action that starts it, the rest advice and the oath under it */}
         <HomeStage />

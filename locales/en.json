@@ -1574,5 +1574,12 @@
         "Furthest you've gone, by my count and by the road's. Two ledgers, one line."
       ]
     }
+  },
+  "whats_new": {
+    "title": "What's new in {{version}}",
+    "empty": "No notes for this build.",
+    "card_title": "Bati is now {{version}}",
+    "card_open": "See what's new",
+    "open_hint": "Opens this version's release notes"
   }
 }

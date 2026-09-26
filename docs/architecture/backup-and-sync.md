@@ -95,9 +95,11 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
   devices. Bati makes no network request for it. Both transports sit behind one `Remote` (list,
   read, write) in `src/deviceSync.ts`, so vaults, verdicts and the merge are the same. The folder
   has no etag (time and size stand in) and no server clock: the vault tie-break reads the
-  writer's modification time there. A write goes in as `.syncthing.<name>.tmp`, which Syncthing
-  does not send, and is renamed into place; Syncthing's own `.tmp` and `.sync-conflict-` files do
-  not match the peer pattern.
+  writer's modification time there. A write is a plain copy over the device's previous file:
+  expo-file-system refuses `rename` on a content URI, Syncthing waits about ten seconds of quiet
+  before it reads a file, and a truncated one would fail its segments and read as unreadable
+  until the next write. Syncthing's own `.tmp` and `.sync-conflict-` files do not match the peer
+  pattern.
 - **One file per device**, `bati-<random install id>.batb`, written only by that device. No lock,
   no shared file, nothing deletes another device's file. At most 16 peers are read, and a file
   over 256 MB is not. A file goes up as `….batb.part` and a `MOVE` puts it in place, so a cut-off

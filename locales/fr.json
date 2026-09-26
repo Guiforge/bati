@@ -1760,7 +1760,7 @@
       "mergedTitle_many": "{{count}} séances sont arrivées de ton autre appareil",
       "mergedTitle_other": "{{count}} séances sont arrivées de ton autre appareil",
       "mergedBody": "Tes deux appareils ont maintenant le même historique.",
-      "mergedKept": "Tes deux appareils ont maintenant le même historique. Une copie de cet appareil d'avant est gardée sur ton serveur."
+      "mergedKept": "Tes deux appareils ont maintenant le même historique. Une copie de cet appareil d'avant est gardée avec tes fichiers synchronisés."
     },
     "status": {
       "never": "Pas encore synchronisé.",
@@ -1774,7 +1774,8 @@
       "lastMerge_one": "Dernière fusion {{when}} : {{count}} séance de l'appareil {{id}}.",
       "lastMerge_many": "Dernière fusion {{when}} : {{count}} séances de l'appareil {{id}}.",
       "lastMerge_other": "Dernière fusion {{when}} : {{count}} séances de l'appareil {{id}}.",
-      "kept": "L'historique d'avant de cet appareil est gardé sur le serveur sous le nom {{file}}."
+      "kept": "L'historique d'avant de cet appareil est gardé avec tes fichiers synchronisés, sous le nom {{file}}.",
+      "whereFolder": "Dans ce dossier, gardé d'accord par Syncthing :"
     },
     "peerState": {
       "ahead": "a du nouveau pour celui-ci",

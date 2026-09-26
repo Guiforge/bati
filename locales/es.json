@@ -1758,7 +1758,7 @@
       "mergedTitle_many": "{{count}} sesiones llegaron de tu otro dispositivo",
       "mergedTitle_other": "{{count}} sesiones llegaron de tu otro dispositivo",
       "mergedBody": "Tus dos dispositivos tienen ahora el mismo historial.",
-      "mergedKept": "Tus dos dispositivos tienen ahora el mismo historial. Una copia de este dispositivo de antes se guarda en tu servidor."
+      "mergedKept": "Tus dos dispositivos tienen ahora el mismo historial. Una copia de este dispositivo de antes se guarda con tus archivos sincronizados."
     },
     "status": {
       "never": "Aún sin sincronizar.",
@@ -1772,7 +1772,8 @@
       "lastMerge_one": "Última fusión {{when}}: {{count}} sesión del dispositivo {{id}}.",
       "lastMerge_many": "Última fusión {{when}}: {{count}} sesiones del dispositivo {{id}}.",
       "lastMerge_other": "Última fusión {{when}}: {{count}} sesiones del dispositivo {{id}}.",
-      "kept": "El historial anterior de este dispositivo se guarda en el servidor como {{file}}."
+      "kept": "El historial anterior de este dispositivo se guarda con tus archivos sincronizados como {{file}}.",
+      "whereFolder": "En esta carpeta, que Syncthing mantiene al día:"
     },
     "peerState": {
       "ahead": "tiene novedades para este",

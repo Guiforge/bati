@@ -1697,7 +1697,7 @@
       "mergedTitle_one": "{{count}} Einheit kam von deinem anderen Gerät",
       "mergedTitle_other": "{{count}} Einheiten kamen von deinem anderen Gerät",
       "mergedBody": "Beide Geräte haben jetzt denselben Verlauf.",
-      "mergedKept": "Beide Geräte haben jetzt denselben Verlauf. Eine Kopie dieses Geräts von vorher liegt auf deinem Server."
+      "mergedKept": "Beide Geräte haben jetzt denselben Verlauf. Eine Kopie dieses Geräts von vorher liegt bei deinen synchronisierten Dateien."
     },
     "status": {
       "never": "Noch nicht synchronisiert.",
@@ -1710,7 +1710,8 @@
       "unknownWhen": "zu unbekannter Zeit",
       "lastMerge_one": "Letzte Zusammenführung {{when}}: {{count}} Einheit von Gerät {{id}}.",
       "lastMerge_other": "Letzte Zusammenführung {{when}}: {{count}} Einheiten von Gerät {{id}}.",
-      "kept": "Der frühere Verlauf dieses Geräts liegt auf dem Server als {{file}}."
+      "kept": "Der frühere Verlauf dieses Geräts liegt bei deinen synchronisierten Dateien als {{file}}.",
+      "whereFolder": "In diesem Ordner, den Syncthing abgleicht:"
     },
     "peerState": {
       "ahead": "hat Neues für dieses",

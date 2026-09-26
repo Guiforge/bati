@@ -23,6 +23,31 @@ sheet (which password?), and even the right one landed her back on the first onb
 **Would Karim use it with his setup? Only through Nextcloud with a public certificate.** His LAN
 box on http or with his own CA is refused or misreported, and Syncthing is not a transport.
 
+## Where each finding stands (same day)
+
+| Finding | Status |
+|---|---|
+| B1 onboarding after a merge | Fixed (`302d2e03`) |
+| B2 silent stop | Fixed: a lost sync is detected whatever removed it and said on Home; walking away from a join pauses; the unexplained stop's cause is still unknown, and the next one leaves a `sync.lost` trail (`83c670be`) |
+| B3 which password | Fixed: copy, "Use this password", forgot hint (`5910cd48`) |
+| B4 entry by service name | Fixed: first question by service, hand-off written out (`8ab81d5a`) |
+| B5 network calls count | Fixed (`302d2e03`) |
+| B6 home server | Partly: certificate errors named, copy names 127.0.0.1 and localhost; a user CA stays a deliberate decision, not a default |
+| F1 busy state | Fixed (`5910cd48`) |
+| F2 reload lands elsewhere | Fixed: back to the route, Home card until closed, merge log in the sheet (`83c670be`) |
+| F3 locked alert | Fixed: when that device wrote, the join words (`5910cd48`) |
+| F4 recovery key | Fixed: says where it is, copy with a one-minute clipboard (`83c670be`) |
+| F5, F8 copy | Fixed (`5910cd48`) |
+| F6 sync state | Fixed: sync sheet (`83c670be`) |
+| F7 failures by layer | Fixed (`83c670be`) |
+| F9 app password on Stop | Fixed: said, and revoked on Nextcloud (`83c670be`) |
+| Polish: Wi-Fi only, "this device", folder shown, off-and-stop label, recovery stakes | Fixed (`83c670be`, `5910cd48`) |
+| Scout 2 "found your hero" | Fixed (`8ab81d5a`) |
+| Scout 1 scan to join | Not done: needs a ZXing scanner module, expo-camera's is ML Kit, which F-Droid refuses |
+| Scout 3, 4, 7 | Done through the sheet, the Home card and pause-not-disconnect |
+| Scout 5, 6, 8 | Not done: password check-ins, recovery kit PDF, vault words |
+| Syncthing | Done: folder transport (`c5c641b7`) |
+
 ## Blockers
 
 | # | Who | Finding | Outcome |

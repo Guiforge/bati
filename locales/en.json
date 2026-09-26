@@ -1693,7 +1693,7 @@
       "mergedTitle_one": "{{count}} session arrived from your other device",
       "mergedTitle_other": "{{count}} sessions arrived from your other device",
       "mergedBody": "Both devices now hold the same history.",
-      "mergedKept": "Both devices now hold the same history. A copy of this device from before is kept on your server."
+      "mergedKept": "Both devices now hold the same history. A copy of this device from before is kept with your synced files."
     },
     "status": {
       "never": "Not synced yet.",
@@ -1706,7 +1706,8 @@
       "unknownWhen": "at an unknown time",
       "lastMerge_one": "Last merge {{when}}: {{count}} session from device {{id}}.",
       "lastMerge_other": "Last merge {{when}}: {{count}} sessions from device {{id}}.",
-      "kept": "This device's history from before is kept on the server as {{file}}."
+      "kept": "This device's history from before is kept with your synced files as {{file}}.",
+      "whereFolder": "In this folder, kept in step by Syncthing:"
     },
     "peerState": {
       "ahead": "has news for this one",

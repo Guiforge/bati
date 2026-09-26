@@ -34,7 +34,7 @@ import {
   uploadRemote,
   webdavTarget,
 } from "@/src/cloudSync";
-import { folderLabel, folderRemote } from "@/src/folderSync";
+import { folderLabel, folderPath, folderRemote } from "@/src/folderSync";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -150,7 +150,12 @@ function davRemote(target: DavTarget): Remote {
 
 function remoteFor(account: SyncAccount): Remote {
   if (account.kind === "folder") {
-    return { id: account.uri, folder: account.uri, user: "", ...folderRemote(account.uri) };
+    return {
+      id: account.uri,
+      folder: folderPath(account.uri),
+      user: "",
+      ...folderRemote(account.uri),
+    };
   }
   return davRemote(
     account.kind === "nextcloud"

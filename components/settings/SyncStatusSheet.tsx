@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
@@ -7,6 +8,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
 import { Wifi } from "@/components/icons";
 import { SettingRow } from "@/components/settings/SettingRow";
+import type { SyncFailure } from "@/src/cloudSync";
 import {
   accountLabel,
   type LastMerge,
@@ -56,15 +58,7 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
       .catch((error: unknown) => reportError("sync.sheet", error));
   }, [open]);
 
-  const status = running
-    ? t("sync.running")
-    : waitingWifi
-      ? t("sync.waitingWifi")
-      : failure
-        ? failureMessage(t, failure)
-        : lastSyncAt === null
-          ? t("sync.status.never")
-          : t("sync.status.upToDate", { when: syncAgo(t, lastSyncAt) });
+  const status = statusLine(t, { running, waitingWifi, failure, lastSyncAt });
 
   const confirmStop = () => {
     Alert.alert(
@@ -85,14 +79,18 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
 
       <YStack gap="$1">
         <Text color="$textSecondary" fontSize="$3">
-          {t("sync.status.where", { server: accountLabel(account) })}
+          {account.kind === "folder"
+            ? t("sync.status.whereFolder")
+            : t("sync.status.where", { server: accountLabel(account) })}
         </Text>
         <Text testID="sync-folder" color="$textSecondary" fontSize="$2" selectable>
           {folder}
         </Text>
-        <Text color="$textSecondary" fontSize="$2">
-          {t("sync.status.user", { user })}
-        </Text>
+        {user ? (
+          <Text color="$textSecondary" fontSize="$2">
+            {t("sync.status.user", { user })}
+          </Text>
+        ) : null}
       </YStack>
 
       <YStack gap="$1">
@@ -150,6 +148,23 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
       </AppButton>
     </FormSheet>
   );
+}
+
+/** What sync is doing, or waiting for, or how it went, in one sentence. */
+function statusLine(
+  t: TFunction,
+  state: {
+    running: boolean;
+    waitingWifi: boolean;
+    failure: SyncFailure | null;
+    lastSyncAt: number | null;
+  },
+): string {
+  if (state.running) return t("sync.running");
+  if (state.waitingWifi) return t("sync.waitingWifi");
+  if (state.failure) return failureMessage(t, state.failure);
+  if (state.lastSyncAt === null) return t("sync.status.never");
+  return t("sync.status.upToDate", { when: syncAgo(t, state.lastSyncAt) });
 }
 
 /** `bati-50255d3e-….batb` → `50255d3e`: enough to tell devices apart, short enough to read. */

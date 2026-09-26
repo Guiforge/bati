@@ -60,7 +60,7 @@ jest.mock("expo-file-system", () => {
 
 import { File } from "expo-file-system";
 
-import { folderLabel, folderRemote } from "@/src/folderSync";
+import { folderLabel, folderPath, folderRemote } from "@/src/folderSync";
 
 beforeEach(() => {
   mockOps.length = 0;
@@ -78,19 +78,19 @@ test("files are listed by the name at the end of their document id, versioned by
   ]);
 });
 
-test("a write goes in under Syncthing's staging name, then replaces the old file by rename", async () => {
+test("a write lands under the device's own name, over its previous file, and leaves nothing else", async () => {
   mockTree.set("bati-a.batb", { size: 100, modificationTime: 1_000 });
   await folderRemote(TREE).write(new File("file:///db/bati-sync-out.batb"), "bati-a.batb");
   expect(mockOps).toEqual([
     "copy bati-sync-out.batb -> local",
-    "copy .syncthing.bati-a.batb.tmp -> tree",
-    "delete .syncthing.bati-a.batb.tmp",
+    "copy bati-a.batb -> tree",
     "delete bati-a.batb",
-    "rename .syncthing.bati-a.batb.tmp -> bati-a.batb",
   ]);
   expect([...mockTree.keys()]).toEqual(["bati-a.batb"]);
 });
 
-test("the folder's own name is what the Settings row says", () => {
+test("the folder is shown as a path the hero knows, trailing slash or not", () => {
   expect(folderLabel(TREE)).toBe("Bati");
+  expect(folderPath(`${TREE}/`)).toBe("Syncthing/Bati");
+  expect(folderLabel(`${TREE}/`)).toBe("Bati");
 });

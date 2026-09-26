@@ -11,7 +11,7 @@ import type { RemoteFile } from "@/src/cloudSync";
  * The contract is the WebDAV one: one sealed file per device, `bati-<id>.batb`, written only by its
  * device, nothing deleted. Syncthing then never sees two writers on one name, so it never makes a
  * `.sync-conflict-` copy (which would not match `PEER_FILE` anyway), and its own temporary files
- * (`.syncthing.*.tmp`) do not match either.
+ * (`.syncthing.*.tmp`) do not match either: the receiving side renames only complete files.
  *
  * ponytail: the modification time is the writer's device clock (Syncthing preserves it), where
  *           WebDAV gives the server's. The vault tie-break (`mustJoin`) reads it, so two devices
@@ -19,9 +19,6 @@ import type { RemoteFile } from "@/src/cloudSync";
  *           winner, and the loser asks for a password once more. A date inside the sealed header
  *           is the fix if that is ever seen.
  */
-
-/** Syncthing skips any name with this prefix while it is being written, and cleans up stale ones. */
-const STAGING_PREFIX = ".syncthing.";
 
 /** The file name at the end of a content URI, whose document id carries the whole path. */
 function nameOf(entry: File): string {
@@ -61,35 +58,46 @@ export function folderRemote(uri: string) {
     },
 
     /**
-     * Written under a staging name Syncthing does not send, then renamed into place: a copy it
-     * picked up halfway would otherwise reach the other devices truncated, and read as unreadable
-     * until the next write. Between the delete and the rename the file is briefly absent, which
-     * every reader takes as "no news", never as a truncated history.
+     * Copied straight over the device's previous file, under its final name.
+     *
+     * ponytail: not atomic. Writing under Syncthing's `.syncthing.*.tmp` name and renaming was the
+     *           plan, but expo-file-system refuses `rename` on a content URI (measured on the
+     *           emulator, 2026-09-26). Syncthing waits about ten seconds after a change before it
+     *           reads a file, and a few MB take well under a second to copy, so a half-written file
+     *           is unlikely to leave; if one does, the segmented format refuses it and that device
+     *           reads as unreadable until its next write. The fix, if that is ever seen, is a
+     *           `DocumentsContract.renameDocument` in a local module.
      */
     write: async (source: File, name: string): Promise<void> => {
-      const staged = `${STAGING_PREFIX}${name}.tmp`;
-      const local = new File(Paths.cache, staged);
+      // The snapshot has its own name; the folder must get the device's.
+      const local = new File(Paths.cache, name);
       await source.copy(local, { overwrite: true });
       try {
         await local.copy(folder, { overwrite: true });
       } finally {
         local.delete();
       }
-      const written = find(staged);
-      if (!written) throw new Error("The staged file did not reach the sync folder");
-      find(name)?.delete();
-      written.rename(name);
     },
   };
 }
 
-/** The folder's own name, for the Settings row: "Bati" in `Syncthing/Bati`. */
-export function folderLabel(uri: string): string {
+/**
+ * The folder as the hero knows it, from a tree URI: `Documents/SyncBati` for
+ * `content://…/tree/primary%3ADocuments%2FSyncBati/`. The picker's URI ends with a slash, which
+ * left the Settings row showing the whole URI.
+ */
+export function folderPath(uri: string): string {
   let decoded = uri;
   try {
     decoded = decodeURIComponent(uri);
   } catch {
     // Shown as is.
   }
-  return decoded.split("/").pop()?.split(":").pop() || decoded;
+  const tree = decoded.split("/tree/").pop() ?? decoded;
+  return tree.replace(/\/+$/, "").replace(/^[^:/]*:/, "") || decoded;
+}
+
+/** The folder's own name, for the Settings row: "SyncBati" in `Documents/SyncBati`. */
+export function folderLabel(uri: string): string {
+  return folderPath(uri).split("/").pop() || folderPath(uri);
 }

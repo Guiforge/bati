@@ -1,11 +1,19 @@
+import * as Network from "expo-network";
 import { create } from "zustand";
 
-import { type SyncResult, syncAccount, syncNow } from "@/src/deviceSync";
+import { failureOf, type SyncFailure } from "@/src/cloudSync";
+import {
+  recordSyncOutcome,
+  type SyncResult,
+  syncAccount,
+  syncNow,
+  syncWifiOnly,
+} from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
 
 /**
- * Device sync's last answer, for the places that read it: the prompt that offers another device's
- * version (components/SyncPrompt.tsx) and the Settings row.
+ * Device sync's last answer, for the places that read it: the prompt that merges or asks
+ * (components/SyncPrompt.tsx), the Home card and the Settings sheet.
  *
  * A store rather than component state for the reason `stores/restore.ts` gives: the root layout
  * remounts (a restore unmounts the root `<Stack>`), and a `useRef` guard there runs the launch sync
@@ -14,23 +22,42 @@ import { reportError } from "@/src/reportError";
 interface SyncState {
   running: boolean;
   result: SyncResult | null;
-  /** The last run failed: no network, a server that said no. Shown only when asked for. */
-  failed: boolean;
+  /** Why the last run failed, by layer; `null` after a success or before any run. */
+  failure: SyncFailure | null;
+  /** The last run did not start: sync is set to Wi-Fi only and this is not Wi-Fi. */
+  waitingWifi: boolean;
   /** Epoch ms of the last run that reached the server, for "last synced" in Settings. */
   lastSyncAt: number | null;
   launchClaimed: boolean;
   /** Offers already put to the hero in this process (see `offerKey` in SyncPrompt). */
   offered: string[];
   claimLaunch: () => boolean;
-  /** Never throws. `snapshotFirst` for a manual run; launch already sealed its snapshot. */
-  run: (options: { snapshotFirst: boolean }) => Promise<void>;
+  /**
+   * Never throws. `snapshotFirst` for a manual run; launch already sealed its snapshot. `force`
+   * runs over mobile data even when sync waits for Wi-Fi: the hero pressed "Sync now".
+   */
+  run: (options: { snapshotFirst: boolean; force?: boolean }) => Promise<void>;
   markOffered: (key: string) => void;
+}
+
+async function onMeteredNetwork(): Promise<boolean> {
+  const state = await Network.getNetworkStateAsync();
+  return (
+    state.type !== Network.NetworkStateType.WIFI && state.type !== Network.NetworkStateType.ETHERNET
+  );
+}
+
+function failureFrom(error: unknown): SyncFailure {
+  return error instanceof Error && error.message === "Sync needs encryption on"
+    ? { kind: "encryption" }
+    : failureOf(error);
 }
 
 export const useSyncStore = create<SyncState>((set, get) => ({
   running: false,
   result: null,
-  failed: false,
+  failure: null,
+  waitingWifi: false,
   lastSyncAt: null,
   launchClaimed: false,
   offered: [],
@@ -53,14 +80,31 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       set({ running: false });
       return;
     }
+    const waitForWifi =
+      !options.force &&
+      (await syncWifiOnly().catch(() => false)) &&
+      (await onMeteredNetwork().catch(() => false));
+    if (waitForWifi) {
+      set({ running: false, waitingWifi: true });
+      return;
+    }
     const outcome = await syncNow(options).then(
-      (result) => ({ result, failed: false, lastSyncAt: Date.now() }),
+      (result) => ({ result, failure: null }),
       (error: unknown) => {
         reportError("sync.run", error);
-        return { result: get().result, failed: true, lastSyncAt: get().lastSyncAt };
+        return { result: get().result, failure: failureFrom(error) };
       },
     );
-    set({ running: false, ...outcome });
+    const health = await recordSyncOutcome(outcome.failure).catch((error: unknown) => {
+      reportError("sync.health", error);
+      return null;
+    });
+    set({
+      running: false,
+      waitingWifi: false,
+      ...outcome,
+      lastSyncAt: health?.lastSuccessAt ?? get().lastSyncAt,
+    });
   },
   markOffered: (key) => set({ offered: [...get().offered, key] }),
 }));

@@ -385,6 +385,10 @@ export const DEVICE_LOCAL_PREFERENCES = [
   // keeps an Android-restored phone from writing plaintext. Android's own restore does not come
   // through here, so that phone still reads as locked.
   "backupEncryption",
+  // The server this device syncs with and whether it waits for Wi-Fi (src/deviceSync.ts): the
+  // account itself lives in this device's SecureStore, so these describe this device too.
+  "syncServer",
+  "syncWifiOnly",
 ] as const;
 
 /**

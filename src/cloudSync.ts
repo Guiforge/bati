@@ -138,6 +138,22 @@ async function nextcloudUserId(account: NextcloudAccount): Promise<string | null
   return typeof id === "string" && id !== "" ? id : null;
 }
 
+/**
+ * Revokes the app password Nextcloud gave Bati, so "Stop" leaves no working credential behind.
+ * Best effort: a server that cannot be reached keeps it until the hero removes it there, which
+ * the stop message says.
+ */
+export async function revokeNextcloudAppPassword(account: NextcloudAccount): Promise<boolean> {
+  const answer = await request(`${account.server}/ocs/v2.php/core/apppassword`, {
+    method: "DELETE",
+    headers: {
+      ...authHeader({ folderUrl: "", user: account.loginName, password: account.appPassword }),
+      "OCS-APIRequest": "true",
+    },
+  }).catch(() => null);
+  return answer?.ok ?? false;
+}
+
 function sameOriginOrHttps(url: string, server: string): boolean {
   const origin = (u: string) => /^(https?:\/\/[^/]+)/i.exec(u)?.[1]?.toLowerCase();
   return origin(url) === origin(server) || /^https:\/\//i.test(url);
@@ -166,10 +182,50 @@ function authHeader(target: DavTarget): Record<string, string> {
 /** Thrown when the server refuses the credentials, so the screen can say that and not "offline". */
 export class DavAuthError extends Error {}
 
+/** Any other answer the server gave, with its status: 507 is a full account, 5xx is the server. */
+export class DavHttpError extends Error {
+  readonly status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 function refused(what: string, status: number): Error {
   return status === 401 || status === 403
     ? new DavAuthError(`${what}: HTTP ${status}`)
-    : new Error(`${what}: HTTP ${status}`);
+    : new DavHttpError(`${what}: HTTP ${status}`, status);
+}
+
+/**
+ * Which layer a sync failed at, so the hero reads "the server refused your app password" or
+ * "your storage is full" rather than "could not reach your server" for everything, at every launch.
+ */
+export type SyncFailure = {
+  kind: "offline" | "credentials" | "storage" | "certificate" | "server" | "encryption" | "unknown";
+  status?: number;
+};
+
+export function failureOf(error: unknown): SyncFailure {
+  if (error instanceof DavAuthError) return { kind: "credentials" };
+  if (error instanceof DavHttpError) {
+    return error.status === 507
+      ? { kind: "storage", status: 507 }
+      : { kind: "server", status: error.status };
+  }
+  const message = error instanceof Error ? error.message : String(error);
+  // OkHttp and fetch say these in their own words; the words are all that crosses the bridge.
+  if (/certif|CertPath|SSLHandshake|SSLPeerUnverified|trust anchor/i.test(message)) {
+    return { kind: "certificate" };
+  }
+  if (
+    /network request failed|unable to resolve host|unknownhost|timeout|timed out|failed to connect|connection refused|econnrefused|aborted/i.test(
+      message,
+    )
+  ) {
+    return { kind: "offline" };
+  }
+  return { kind: "unknown" };
 }
 
 /**

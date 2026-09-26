@@ -114,3 +114,21 @@ test("Nextcloud keeps its files under the user's root; any other server under it
     "http://127.0.0.1:8080/Bati",
   );
 });
+
+test("a failure says which layer failed, not 'could not reach' for everything", () => {
+  const { DavAuthError, DavHttpError, failureOf } =
+    require("@/src/cloudSync") as typeof import("@/src/cloudSync");
+  expect(failureOf(new DavAuthError("HTTP 401"))).toEqual({ kind: "credentials" });
+  expect(failureOf(new DavHttpError("HTTP 507", 507))).toEqual({ kind: "storage", status: 507 });
+  expect(failureOf(new DavHttpError("HTTP 502", 502))).toEqual({ kind: "server", status: 502 });
+  expect(
+    failureOf(
+      new Error(
+        "java.security.cert.CertPathValidatorException: Trust anchor for certification path not found.",
+      ),
+    ),
+  ).toEqual({ kind: "certificate" });
+  expect(failureOf(new TypeError("Network request failed"))).toEqual({ kind: "offline" });
+  expect(failureOf(new Error('Unable to resolve host "cloud.test"'))).toEqual({ kind: "offline" });
+  expect(failureOf(new Error("something else"))).toEqual({ kind: "unknown" });
+});

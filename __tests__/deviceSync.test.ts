@@ -119,6 +119,19 @@ jest.mock("@/src/backupCipher", () => ({
 }));
 
 const mockMerges: string[] = [];
+/** The preferences table, as a Map: the lost-sync marker lives there, not in SecureStore. */
+const mockPrefs = new Map<string, string>();
+jest.mock("@/db/preferences", () => ({
+  getPreference: (key: string) => Promise.resolve(mockPrefs.get(key) ?? null),
+  setPreference: (key: string, value: string) =>
+    Promise.resolve().then(() => {
+      mockPrefs.set(key, value);
+    }),
+  deletePreference: (key: string) =>
+    Promise.resolve().then(() => {
+      mockPrefs.delete(key);
+    }),
+}));
 jest.mock("@/db/merge", () => ({
   mergePeer: (path: string) =>
     Promise.resolve().then(() => {
@@ -159,12 +172,16 @@ import {
   disconnectSync,
   joinPeer,
   keepThisDeviceOnServer,
+  lastMerge,
+  lostSync,
   mergeWithPeer,
   rememberAnswer,
+  rememberMergeNotice,
   rememberUnreadable,
   serverState,
   syncAccount,
   syncNow,
+  takeMergeNotice,
 } from "@/src/deviceSync";
 
 const TABLET = "bati-0190a000-0000-7000-8000-00000000000a.batb";
@@ -175,6 +192,7 @@ const states = (peers: { name: string; state: string }[]) =>
 
 beforeEach(async () => {
   mockSecure.clear();
+  mockPrefs.clear();
   mockServer.clear();
   mockUploads.length = 0;
   mockListings.length = 0;
@@ -305,6 +323,28 @@ test("an unreadable device is announced once per file, not once per launch", asy
   expect(states((await syncNow({ snapshotFirst: true })).peers)).toEqual({
     [TABLET]: "unreadable",
   });
+});
+
+test("a sync whose account vanished is found; one the hero stopped is not", async () => {
+  // Connected in beforeEach.
+  expect(await lostSync()).toBeNull();
+
+  // Whatever took the account (a wiped Keystore, a bug), the marker in the database stayed.
+  mockSecure.delete("bati.sync.account");
+  expect(await lostSync()).toBe("cloud.test");
+
+  await connectNextcloud("cloud.test", () => false);
+  await disconnectSync();
+  expect(await lostSync()).toBeNull();
+});
+
+test("after a merge's reload, what arrived and where the hero was are said once", async () => {
+  await mergeWithPeer({ name: TABLET });
+  expect(await lastMerge()).toMatchObject({ sessions: 2, seen: false });
+  await rememberMergeNotice("/settings");
+
+  expect(await takeMergeNotice()).toEqual({ sessions: 2, returnTo: "/settings" });
+  expect(await takeMergeNotice()).toBeNull();
 });
 
 test("merging keeps a copy of this device on the server once per device, then merges", async () => {

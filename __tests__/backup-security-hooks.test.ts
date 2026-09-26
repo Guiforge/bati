@@ -40,6 +40,11 @@ jest.mock("@/src/backupCipher", () => ({
 }));
 jest.mock("@/db/backup", () => ({}));
 jest.mock("@/db/merge", () => ({}));
+jest.mock("@/db/preferences", () => ({
+  getPreference: () => Promise.resolve(null),
+  setPreference: () => Promise.resolve(),
+  deletePreference: () => Promise.resolve(),
+}));
 jest.mock("@/src/backupFiles", () => ({}));
 jest.mock("@/modules/bati-crypto", () => ({ batiCrypto: () => ({}) }));
 
@@ -51,7 +56,15 @@ const mockSync = {
   davRefuses: null as "auth" | "down" | "insecure" | null,
   server: { kind: "empty" } as { kind: string; peer?: string },
   joins: true,
+  /** The server sync was on with before it vanished, or `null` (see `lostSync`). */
+  lost: null as string | null,
+  wifiOnly: false,
 };
+const mockNetwork = { type: "CELLULAR" };
+jest.mock("expo-network", () => ({
+  NetworkStateType: { WIFI: "WIFI", ETHERNET: "ETHERNET", CELLULAR: "CELLULAR" },
+  getNetworkStateAsync: () => Promise.resolve({ type: mockNetwork.type }),
+}));
 jest.mock("@/src/deviceSync", () => {
   const actual = jest.requireActual("@/src/deviceSync");
   const { DavAuthError, InsecureAddressError } = jest.requireActual("@/src/cloudSync");
@@ -71,9 +84,17 @@ jest.mock("@/src/deviceSync", () => {
     serverState: () => Promise.resolve(mockSync.server),
     joinPeer: () => Promise.resolve(mockSync.joins),
     disconnectSync: () => Promise.resolve(),
+    lostSync: () => Promise.resolve(mockSync.lost),
+    syncWifiOnly: () => Promise.resolve(mockSync.wifiOnly),
+    recordSyncOutcome: (failure: unknown) =>
+      Promise.resolve({
+        lastSuccessAt: failure === null ? Date.now() : null,
+        failure,
+        failingSince: null,
+      }),
     syncNow: () =>
       mockSync.runFails
-        ? Promise.reject(new Error("offline"))
+        ? Promise.reject(new Error("Network request failed"))
         : Promise.resolve({ uploaded: true, peers: [] }),
   };
 });
@@ -88,13 +109,21 @@ beforeEach(() => {
   Object.assign(mockCipher, { status: "off", fail: false, recovery: null });
   Object.assign(mockSync, {
     account: null,
+    lost: null,
+    wifiOnly: false,
     connect: true,
     runFails: false,
     davRefuses: null,
     server: { kind: "empty" },
     joins: true,
   });
-  useSyncStore.setState({ running: false, result: null, failed: false, lastSyncAt: null });
+  useSyncStore.setState({
+    running: false,
+    result: null,
+    failure: null,
+    waitingWifi: false,
+    lastSyncAt: null,
+  });
 });
 
 describe("useBackupEncryption", () => {
@@ -251,7 +280,8 @@ describe("useDeviceSync", () => {
     mockSync.runFails = false;
     await act(() => result.current.syncNow());
 
-    expect(mockToasts).toEqual(["error:sync.failed", "success:sync.done"]);
+    // By layer: "offline" says the network, not a vague "could not reach".
+    expect(mockToasts).toEqual(["error:sync.failure.offline", "success:sync.done"]);
     expect(result.current.lastSyncAt).not.toBeNull();
   });
 
@@ -276,8 +306,29 @@ describe("the sync store", () => {
 
   test("a device that never connected runs nothing and reports nothing", async () => {
     await useSyncStore.getState().run({ snapshotFirst: false });
-    expect(useSyncStore.getState()).toMatchObject({ failed: false, result: null });
+    expect(useSyncStore.getState()).toMatchObject({ failure: null, result: null });
     expect(mockReported).toEqual([]);
+  });
+
+  test("set to Wi-Fi only, a launch on mobile data waits, and the hero's own tap does not", async () => {
+    mockSync.account = { kind: "nextcloud", ...ACCOUNT };
+    mockSync.wifiOnly = true;
+    mockNetwork.type = "CELLULAR";
+
+    await useSyncStore.getState().run({ snapshotFirst: false });
+    expect(useSyncStore.getState()).toMatchObject({ waitingWifi: true, result: null });
+
+    await useSyncStore.getState().run({ snapshotFirst: true, force: true });
+    expect(useSyncStore.getState()).toMatchObject({
+      waitingWifi: false,
+      result: { uploaded: true, peers: [] },
+    });
+  });
+
+  test("a sync that stopped without the hero asking says so on its row", async () => {
+    mockSync.lost = "cloud.test";
+    const { result } = await renderHook(() => useDeviceSync());
+    await waitFor(() => expect(result.current.rowValue).toBe("sync.rowStopped"));
   });
 
   test("a run already in flight is not started twice, and a failure keeps the last result", async () => {
@@ -292,7 +343,7 @@ describe("the sync store", () => {
 
     expect(mockReported).toEqual(["sync.run"]);
     expect(useSyncStore.getState()).toMatchObject({
-      failed: true,
+      failure: { kind: "offline" },
       running: false,
       result: previous,
     });

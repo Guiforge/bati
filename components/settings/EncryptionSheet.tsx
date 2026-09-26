@@ -1,10 +1,13 @@
+import * as Clipboard from "expo-clipboard";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard } from "react-native";
 import { Input, Text } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
+import { useToast } from "@/components/common/Toast";
 import { MIN_PASSWORD_LENGTH } from "@/hooks/useBackupEncryption";
+import { reportError } from "@/src/reportError";
 
 /**
  * - `enable`: choose a password, then read the recovery key once.
@@ -103,7 +106,12 @@ function ManageView({
         <AppButton variant="outline" testID="backup-show-recovery" onPress={onShowRecovery}>
           {t("backup.showRecovery")}
         </AppButton>
-      ) : null}
+      ) : (
+        // A missing button reads as a lost key: say where it is instead.
+        <Text testID="backup-recovery-not-here" color="$textSecondary" fontSize="$3">
+          {t("backup.recoveryNotHere")}
+        </Text>
+      )}
       <AppButton variant="outline" testID="backup-change-password" onPress={onChange}>
         {t("backup.changePassword")}
       </AppButton>
@@ -186,6 +194,19 @@ function PasswordForm({
   );
 }
 
+/**
+ * The key on the clipboard, and off it a minute later unless something else was copied since:
+ * a recovery key left there is one any app reading the clipboard can take.
+ */
+async function copyForAMinute(value: string): Promise<void> {
+  await Clipboard.setStringAsync(value);
+  setTimeout(() => {
+    Clipboard.getStringAsync()
+      .then((current) => (current === value ? Clipboard.setStringAsync("") : undefined))
+      .catch((error: unknown) => reportError("backup.recoveryClear", error));
+  }, 60_000);
+}
+
 function RecoveryKeyView({
   recovery,
   canShowAgain,
@@ -196,11 +217,12 @@ function RecoveryKeyView({
   onDone: () => void;
 }) {
   const { t } = useTranslation();
+  const { showSuccess } = useToast();
   return (
     <>
       <Text color="$textSecondary">{t("backup.recoveryBody")}</Text>
-      {/* Selectable, so it can go into a password manager without a clipboard dependency;
-          groups of four, so it can be copied by hand without losing the place. */}
+      {/* Groups of four, so it can be copied by hand without losing the place; selectable and
+          copyable, so it can go into a password manager. */}
       <Text
         testID="backup-recovery-key"
         selectable
@@ -212,6 +234,18 @@ function RecoveryKeyView({
       >
         {recovery}
       </Text>
+      <AppButton
+        testID="backup-recovery-copy"
+        variant="outline"
+        onPress={() => {
+          copyForAMinute(recovery).then(
+            () => showSuccess(t("backup.recoveryCopied")),
+            (error: unknown) => reportError("backup.recoveryCopy", error),
+          );
+        }}
+      >
+        {t("backup.copyRecovery")}
+      </AppButton>
       <Text color="$textSecondary">
         {canShowAgain ? t("backup.recoveryAgainHint") : t("backup.recoveryOnceHint")}
       </Text>

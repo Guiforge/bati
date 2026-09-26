@@ -6,11 +6,10 @@ import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { EncryptionSheet, type EncryptionSheetMode } from "@/components/settings/EncryptionSheet";
 import { SettingRow } from "@/components/settings/SettingRow";
 import { SyncSetupSheet } from "@/components/settings/SyncSetupSheet";
+import { SyncStatusSheet } from "@/components/settings/SyncStatusSheet";
 import { useBackupEncryption } from "@/hooks/useBackupEncryption";
 import { type ConnectNext, useDeviceSync } from "@/hooks/useDeviceSync";
-import { accountLabel } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
-import { useSettingsStore } from "@/stores/settings";
 
 /**
  * "Encrypt my backups" and "Sync my devices", with the sheets they open. One component because
@@ -20,7 +19,6 @@ import { useSettingsStore } from "@/stores/settings";
  */
 export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
   const { t } = useTranslation();
-  const language = useSettingsStore((s) => s.language);
   const encryption = useBackupEncryption();
   const deviceSync = useDeviceSync();
   const [setupOpen, setSetupOpen] = useState(false);
@@ -89,9 +87,8 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
   };
 
   /**
-   * A connection the hero walked away from halfway: no password for the vault already there, or
-   * no encryption for a server waiting on it. Left connected, the next launch sync failed every
-   * time (encryption off) or sealed a second vault beside the first (join cancelled).
+   * A connection the hero walked away from halfway: no encryption for a server waiting on it.
+   * Left connected, every launch sync would fail on it.
    */
   const abandonConnect = () => {
     setSyncAfterEncrypt(false);
@@ -110,32 +107,10 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
       .catch((e) => reportError("sync.join", e));
   };
 
-  const confirmSync = () => {
-    const account = deviceSync.account;
-    if (account === null) {
-      setSetupOpen(true);
-      return;
-    }
-    const last =
-      deviceSync.lastSyncAt === null
-        ? ""
-        : ` ${t("sync.lastSync", { time: new Date(deviceSync.lastSyncAt).toLocaleString(language) })}`;
-    Alert.alert(t("sync.row"), `${t("sync.onMessage", { host: accountLabel(account) })}${last}`, [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("sync.disconnect"),
-        style: "destructive",
-        onPress: () => {
-          deviceSync.disconnect().catch((e) => reportError("sync.disconnect", e));
-        },
-      },
-      {
-        text: t("sync.now"),
-        onPress: () => {
-          deviceSync.syncNow().catch((e) => reportError("sync.now", e));
-        },
-      },
-    ]);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const openSync = () => {
+    if (deviceSync.account === null) setSetupOpen(true);
+    else setStatusOpen(true);
   };
 
   const encryptionValue =
@@ -167,9 +142,23 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
         label={t("sync.row")}
         value={deviceSync.rowValue}
         disabled={disabled || deviceSync.running}
-        onPress={confirmSync}
+        onPress={openSync}
       />
 
+      {deviceSync.account ? (
+        <SyncStatusSheet
+          open={statusOpen}
+          account={deviceSync.account}
+          onClose={() => setStatusOpen(false)}
+          onSyncNow={() => {
+            deviceSync.syncNow().catch((e) => reportError("sync.now", e));
+          }}
+          onStop={() => {
+            setStatusOpen(false);
+            deviceSync.disconnect().catch((e) => reportError("sync.disconnect", e));
+          }}
+        />
+      ) : null}
       <SyncSetupSheet
         open={setupOpen}
         onClose={() => setSetupOpen(false)}
@@ -184,12 +173,10 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
         title={t("sync.joinTitle")}
         body={t("sync.joinBody")}
         onSubmit={submitJoin}
-        onCancel={() => {
-          // Only a question actually on screen can be walked away from.
-          if (joining === null) return;
-          setJoining(null);
-          abandonConnect();
-        }}
+        // Walking away pauses, it does not disconnect: sync keeps the account, sends nothing
+        // while that device's vault is unknown here (`holdBack`), asks again next launch, and the
+        // row says it is waiting. Disconnecting here was a sync that vanished for no visible reason.
+        onCancel={() => setJoining(null)}
       />
       <EncryptionSheet
         key={encryptionSheetId}

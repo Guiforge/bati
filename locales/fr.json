@@ -1372,7 +1372,10 @@
     "joinTitle": "Garder ce mot de passe ?",
     "joinBody": "Cette sauvegarde s'est ouverte avec son mot de passe. Tes prochaines sauvegardes peuvent utiliser le même : un seul mot de passe les ouvrira toutes, sur n'importe quel téléphone.",
     "joinYes": "L'utiliser",
-    "joinNo": "Plus tard"
+    "joinNo": "Plus tard",
+    "copyRecovery": "Copier la clé",
+    "recoveryCopied": "Copiée. Elle est effacée du presse-papiers dans une minute.",
+    "recoveryNotHere": "Ta clé de secours n'est pas gardée sur cet appareil. Elle a été montrée une fois quand tu as activé le chiffrement ici, ou elle appartient à l'appareil où le chiffrement a été activé en premier."
   },
   "villagers": {
     "units": {
@@ -1678,8 +1681,6 @@
   "sync": {
     "row": "Synchroniser mes appareils",
     "running": "Synchronisation",
-    "onMessage": "Cet appareil et les autres se retrouvent sur {{host}}. Chacun y envoie son historique chiffré et lit celui des autres à l'ouverture de Bati.",
-    "disconnect": "Arrêter",
     "now": "Synchroniser",
     "connectTitle": "Où synchroniser",
     "connectIntro": "L'adresse de ton serveur. Tu te connecteras sur sa propre page, dans ton navigateur : Bati ne voit jamais ton mot de passe.",
@@ -1687,7 +1688,6 @@
     "serverPlaceholder": "cloud.exemple.org",
     "connectCta": "Se connecter",
     "connectFailed": "Ce serveur est injoignable, ou ce n'est pas un Nextcloud",
-    "failed": "La synchronisation n'a pas pu joindre ton serveur. Elle réessaiera à la prochaine ouverture de Bati.",
     "connected": "Synchronisé avec {{host}}",
     "done": "Synchronisé",
     "disconnected": "Synchronisation arrêtée sur cet appareil. Tes fichiers restent sur ton serveur.",
@@ -1707,7 +1707,6 @@
     "webdavFailed": "Cette adresse n'a pas répondu comme un serveur WebDAV",
     "off": "Désactivée",
     "checking": "Vérification du serveur",
-    "lastSync": "Dernière synchronisation : {{time}}.",
     "later": "Plus tard",
     "joined": "Cet appareil partage maintenant le mot de passe de tes autres appareils",
     "joinTitle": "Tes appareils se synchronisent déjà ici",
@@ -1731,6 +1730,76 @@
     "merged_one": "{{count}} séance de ton autre appareil est arrivée ici.",
     "merged_many": "{{count}} séances de ton autre appareil sont arrivées ici.",
     "merged_other": "{{count}} séances de ton autre appareil sont arrivées ici.",
-    "mergedOther": "Les changements de ton autre appareil sont arrivés ici."
+    "mergedOther": "Les changements de ton autre appareil sont arrivés ici.",
+    "failure": {
+      "offline": "Pas de connexion à ton serveur. La synchro réessaie à la prochaine ouverture de Bati.",
+      "credentials": "Ton serveur a refusé le mot de passe d'application. Crées-en un nouveau là-bas, puis reconnecte-toi.",
+      "storage": "Ton serveur indique que ton espace est plein. Libère de la place là-bas.",
+      "certificate": "Android ne fait pas confiance au certificat de ce serveur. Utilise un certificat d'une autorité publique comme Let's Encrypt, ou rclone via Round Sync.",
+      "server": "Ton serveur a répondu par une erreur (HTTP {{status}}). Il est peut-être indisponible un moment.",
+      "encryption": "La synchro a besoin du chiffrement. Active Chiffrer mes sauvegardes.",
+      "unknown": "La synchro n'a pas abouti. Elle réessaie à la prochaine ouverture de Bati."
+    },
+    "waitingPassword": "Attend ton mot de passe",
+    "waitingWifi": "Attend le Wi-Fi",
+    "rowFailing": "Ne fonctionne pas",
+    "rowStopped": "Arrêtée",
+    "card": {
+      "lostTitle": "La synchro s'est arrêtée",
+      "lostBody": "Cet appareil ne se synchronise plus avec {{server}}, et ce n'est pas toi qui l'as coupée. Ton héros est toujours là ; reconnecte-toi pour garder tes appareils d'accord.",
+      "reconnect": "Me reconnecter",
+      "forget": "Laisser tomber",
+      "waitingTitle": "Ton autre appareil attend son mot de passe",
+      "waitingBody": "Il scelle son historique avec un autre mot de passe Bati. Tant que tu ne l'as pas saisi ici, cet appareil ne lui envoie rien et ne voit rien de lui.",
+      "enterPassword": "Saisir le mot de passe",
+      "failingTitle": "La synchro ne marche plus depuis des jours",
+      "open": "Ouvrir les réglages",
+      "mergedTitle_one": "{{count}} séance est arrivée de ton autre appareil",
+      "mergedTitle_many": "{{count}} séances sont arrivées de ton autre appareil",
+      "mergedTitle_other": "{{count}} séances sont arrivées de ton autre appareil",
+      "mergedBody": "Tes deux appareils ont maintenant le même historique.",
+      "mergedKept": "Tes deux appareils ont maintenant le même historique. Une copie de cet appareil d'avant est gardée sur ton serveur."
+    },
+    "status": {
+      "never": "Pas encore synchronisé.",
+      "upToDate": "À jour, dernière synchro {{when}}.",
+      "where": "Sur {{server}}, dans ce dossier :",
+      "user": "Connecté en tant que {{user}}.",
+      "devices": "Tes autres appareils",
+      "noDevices": "Aucun sur le serveur pour l'instant.",
+      "device": "Appareil {{id}} : {{state}}, écrit {{when}}.",
+      "unknownWhen": "à une date inconnue",
+      "lastMerge_one": "Dernière fusion {{when}} : {{count}} séance de l'appareil {{id}}.",
+      "lastMerge_many": "Dernière fusion {{when}} : {{count}} séances de l'appareil {{id}}.",
+      "lastMerge_other": "Dernière fusion {{when}} : {{count}} séances de l'appareil {{id}}.",
+      "kept": "L'historique d'avant de cet appareil est gardé sur le serveur sous le nom {{file}}."
+    },
+    "peerState": {
+      "ahead": "a du nouveau pour celui-ci",
+      "diverged": "a du nouveau, celui-ci aussi",
+      "level": "à égalité",
+      "behind": "en retard sur celui-ci",
+      "locked": "utilise un autre mot de passe",
+      "waiting": "va apprendre le mot de passe de cet appareil",
+      "unreadable": "illisible ici"
+    },
+    "wifiOnly": "Seulement en Wi-Fi",
+    "wifiOnlyNote": "Activé, la synchro attend le Wi-Fi à l'ouverture de Bati : tout l'historique part quand il a changé. Synchroniser maintenant passe toujours.",
+    "stopTitle": "Arrêter la synchro sur cet appareil ?",
+    "stopBodyNextcloud": "Tes fichiers restent sur ton serveur. L'accès de Bati à ton Nextcloud est aussi révoqué.",
+    "stopBodyWebdav": "Tes fichiers restent sur ton serveur. Le mot de passe d'application utilisé par Bati marche encore tant que tu ne le supprimes pas dans les réglages de ton serveur.",
+    "stopCta": "Arrêter sur cet appareil",
+    "ago": {
+      "now": "à l'instant",
+      "minutes_one": "il y a {{count}} min",
+      "minutes_many": "il y a {{count}} min",
+      "minutes_other": "il y a {{count}} min",
+      "hours_one": "il y a {{count}} h",
+      "hours_many": "il y a {{count}} h",
+      "hours_other": "il y a {{count}} h",
+      "days_one": "il y a {{count}} jour",
+      "days_many": "il y a {{count}} jours",
+      "days_other": "il y a {{count}} jours"
+    }
   }
 }

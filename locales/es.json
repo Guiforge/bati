@@ -1372,7 +1372,10 @@
     "joinTitle": "¿Usar esta contraseña a partir de ahora?",
     "joinBody": "Esta copia se ha abierto con su contraseña. Tus próximas copias pueden usar la misma, y así una sola contraseña las abre todas en cualquier teléfono.",
     "joinYes": "Usarla",
-    "joinNo": "Ahora no"
+    "joinNo": "Ahora no",
+    "copyRecovery": "Copiar la clave",
+    "recoveryCopied": "Copiada. Se borra del portapapeles en un minuto.",
+    "recoveryNotHere": "Tu clave de recuperación no se guarda en este dispositivo. Se mostró una vez al activar el cifrado aquí, o pertenece al dispositivo donde se activó el cifrado primero."
   },
   "villagers": {
     "units": {
@@ -1676,8 +1679,6 @@
   "sync": {
     "row": "Sincronizar mis dispositivos",
     "running": "Sincronizando",
-    "onMessage": "Este dispositivo y los demás se encuentran en {{host}}. Cada uno deja allí su historial cifrado y lee el de los otros al abrir Bati.",
-    "disconnect": "Detener",
     "now": "Sincronizar ahora",
     "connectTitle": "Dónde sincronizar",
     "connectIntro": "La dirección de tu servidor. Iniciarás sesión en su propia página, en tu navegador: Bati nunca ve tu contraseña.",
@@ -1685,7 +1686,6 @@
     "serverPlaceholder": "cloud.ejemplo.org",
     "connectCta": "Iniciar sesión",
     "connectFailed": "No se pudo contactar con ese servidor, o no es un Nextcloud",
-    "failed": "La sincronización no pudo contactar con tu servidor. Lo intentará de nuevo al abrir Bati.",
     "connected": "Sincronizado con {{host}}",
     "done": "Sincronizado",
     "disconnected": "Sincronización detenida en este dispositivo. Tus archivos siguen en tu servidor.",
@@ -1705,7 +1705,6 @@
     "webdavFailed": "Esa dirección no ha respondido como un servidor WebDAV",
     "off": "Desactivada",
     "checking": "Comprobando el servidor",
-    "lastSync": "Última sincronización: {{time}}.",
     "later": "Más tarde",
     "joined": "Este dispositivo comparte ahora la contraseña de tus otros dispositivos",
     "joinTitle": "Tus dispositivos ya se sincronizan aquí",
@@ -1729,6 +1728,76 @@
     "merged_one": "{{count}} sesión de tu otro dispositivo ya está aquí.",
     "merged_many": "{{count}} sesiones de tu otro dispositivo ya están aquí.",
     "merged_other": "{{count}} sesiones de tu otro dispositivo ya están aquí.",
-    "mergedOther": "Los cambios de tu otro dispositivo ya están aquí."
+    "mergedOther": "Los cambios de tu otro dispositivo ya están aquí.",
+    "failure": {
+      "offline": "Sin conexión con tu servidor. La sincronización lo reintenta la próxima vez que abras Bati.",
+      "credentials": "Tu servidor rechazó la contraseña de aplicación. Crea una nueva allí y vuelve a conectarte.",
+      "storage": "Tu servidor dice que tu espacio está lleno. Libera espacio allí.",
+      "certificate": "Android no confía en el certificado de este servidor. Usa uno de una autoridad pública como Let's Encrypt, o rclone con Round Sync.",
+      "server": "Tu servidor respondió con un error (HTTP {{status}}). Puede que no esté disponible un momento.",
+      "encryption": "La sincronización necesita el cifrado. Activa Cifrar mis copias.",
+      "unknown": "La sincronización no terminó. Lo reintenta la próxima vez que abras Bati."
+    },
+    "waitingPassword": "Espera tu contraseña",
+    "waitingWifi": "Espera el wifi",
+    "rowFailing": "No funciona",
+    "rowStopped": "Detenida",
+    "card": {
+      "lostTitle": "La sincronización se ha detenido",
+      "lostBody": "Este dispositivo ya no se sincroniza con {{server}}, y no la apagaste tú. Tu héroe sigue aquí; vuelve a conectarte para mantener tus dispositivos iguales.",
+      "reconnect": "Volver a conectar",
+      "forget": "Olvidarlo",
+      "waitingTitle": "Tu otro dispositivo necesita su contraseña",
+      "waitingBody": "Sella su historial con otra contraseña de Bati. Hasta que la escribas aquí, este dispositivo no le envía nada ni ve nada de él.",
+      "enterPassword": "Escribir la contraseña",
+      "failingTitle": "La sincronización no funciona desde hace días",
+      "open": "Abrir ajustes",
+      "mergedTitle_one": "{{count}} sesión llegó de tu otro dispositivo",
+      "mergedTitle_many": "{{count}} sesiones llegaron de tu otro dispositivo",
+      "mergedTitle_other": "{{count}} sesiones llegaron de tu otro dispositivo",
+      "mergedBody": "Tus dos dispositivos tienen ahora el mismo historial.",
+      "mergedKept": "Tus dos dispositivos tienen ahora el mismo historial. Una copia de este dispositivo de antes se guarda en tu servidor."
+    },
+    "status": {
+      "never": "Aún sin sincronizar.",
+      "upToDate": "Al día, última sincronización {{when}}.",
+      "where": "En {{server}}, en esta carpeta:",
+      "user": "Conectado como {{user}}.",
+      "devices": "Tus otros dispositivos",
+      "noDevices": "Ninguno en el servidor todavía.",
+      "device": "Dispositivo {{id}}: {{state}}, escribió {{when}}.",
+      "unknownWhen": "en un momento desconocido",
+      "lastMerge_one": "Última fusión {{when}}: {{count}} sesión del dispositivo {{id}}.",
+      "lastMerge_many": "Última fusión {{when}}: {{count}} sesiones del dispositivo {{id}}.",
+      "lastMerge_other": "Última fusión {{when}}: {{count}} sesiones del dispositivo {{id}}.",
+      "kept": "El historial anterior de este dispositivo se guarda en el servidor como {{file}}."
+    },
+    "peerState": {
+      "ahead": "tiene novedades para este",
+      "diverged": "tiene novedades, y este también",
+      "level": "al día",
+      "behind": "por detrás de este",
+      "locked": "usa otra contraseña",
+      "waiting": "aprenderá la contraseña de este dispositivo",
+      "unreadable": "no se puede leer aquí"
+    },
+    "wifiOnly": "Solo con wifi",
+    "wifiOnlyNote": "Activado, la sincronización espera el wifi al abrir Bati: todo el historial se sube cuando cambió. Sincronizar ahora siempre funciona.",
+    "stopTitle": "¿Detener la sincronización en este dispositivo?",
+    "stopBodyNextcloud": "Tus archivos se quedan en tu servidor. También se revoca el acceso de Bati a tu Nextcloud.",
+    "stopBodyWebdav": "Tus archivos se quedan en tu servidor. La contraseña de aplicación que usó Bati sigue funcionando hasta que la borres en los ajustes de tu servidor.",
+    "stopCta": "Detener en este dispositivo",
+    "ago": {
+      "now": "ahora mismo",
+      "minutes_one": "hace {{count}} min",
+      "minutes_many": "hace {{count}} min",
+      "minutes_other": "hace {{count}} min",
+      "hours_one": "hace {{count}} h",
+      "hours_many": "hace {{count}} h",
+      "hours_other": "hace {{count}} h",
+      "days_one": "hace {{count}} día",
+      "days_many": "hace {{count}} días",
+      "days_other": "hace {{count}} días"
+    }
   }
 }

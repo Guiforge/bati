@@ -21,7 +21,10 @@ jest.mock("@/src/backupFiles", () => ({
   discardStagedImport: jest.fn(),
 }));
 const mockReload = jest.fn((_reason: string) => Promise.resolve());
-jest.mock("expo", () => ({ reloadAppAsync: (reason: string) => mockReload(reason) }));
+jest.mock("expo", () => ({
+  ...jest.requireActual("expo"),
+  reloadAppAsync: (reason: string) => mockReload(reason),
+}));
 jest.mock("@/src/autoBackup", () => ({ backupIfStaleToday: () => mockBackupIfStaleToday() }));
 const mockPrepareSync = jest.fn(() => Promise.resolve());
 const mockSyncNow = jest.fn(() => Promise.resolve({ uploaded: false, peers: [] }));
@@ -30,6 +33,8 @@ jest.mock("@/src/deviceSync", () => ({
   syncAccount: () =>
     Promise.resolve({ kind: "webdav", url: "https://dav.test", user: "h", password: "p" }),
   syncNow: () => mockSyncNow(),
+  syncWifiOnly: () => Promise.resolve(false),
+  recordSyncOutcome: () => Promise.resolve({ lastSuccessAt: 1, failure: null, failingSince: null }),
 }));
 jest.mock("@/src/reportError", () => ({
   reportError: (...args: unknown[]) => mockReportError(...args),

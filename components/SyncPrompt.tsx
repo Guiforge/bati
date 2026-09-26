@@ -1,4 +1,5 @@
 import { reloadAppAsync } from "expo";
+import { type Href, router, usePathname } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, type AlertButton } from "react-native";
@@ -53,12 +54,18 @@ export function SyncPrompt() {
   // question opened on top of the one still being read.
   const [showing, setShowing] = useState(false);
 
-  // Said after the reload a merge ends with: the app vanished for a second, and this is why.
+  const pathname = usePathname();
+
+  // Said after the reload a merge ends with: the app vanished for a second, and this is why. And
+  // the hero goes back where they were: a reload lands on Home, and from Settings that read as
+  // being thrown out.
   useEffect(() => {
     takeMergeNotice()
-      .then((sessions) => {
-        if (sessions === null) return;
+      .then((notice) => {
+        if (notice === null) return;
+        const { sessions, returnTo } = notice;
         showSuccess(sessions > 0 ? t("sync.merged", { count: sessions }) : t("sync.mergedOther"));
+        if (returnTo !== "/") router.push(returnTo as Href);
       })
       .catch((e) => reportError("sync.mergeNotice", e));
   }, [showSuccess, t]);
@@ -117,7 +124,10 @@ export function SyncPrompt() {
               rememberAnswer(peer).catch((e) => reportError("sync.remember", e));
             },
           },
-          { text: t("sync.take"), onPress: () => runAdopt(plain, keepThisDeviceOnServer) },
+          {
+            text: t("sync.take"),
+            onPress: () => runAdopt(plain, () => keepThisDeviceOnServer().then(() => undefined)),
+          },
         ],
       );
     };
@@ -157,7 +167,7 @@ export function SyncPrompt() {
           return;
         }
         // Every cache and store read the database before the merge: a fresh runtime reads it again.
-        await rememberMergeNotice(outcome.sessions);
+        await rememberMergeNotice(pathname);
         await reloadAppAsync("merge");
       })
       .catch((e) => {
@@ -165,7 +175,7 @@ export function SyncPrompt() {
         setShowing(false);
         offerChoice(peer);
       });
-  }, [inSession, joining, showing, markOffered, offered, result, runAdopt, t]);
+  }, [inSession, joining, showing, markOffered, offered, result, runAdopt, t, pathname]);
 
   const submit = (secret: string) => {
     if (joining === null) return;

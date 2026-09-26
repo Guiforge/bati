@@ -8,6 +8,7 @@ import {
   validateBackup,
 } from "@/db/backup";
 import { honourTombstones, mergePeer } from "@/db/merge";
+import { deletePreference, getPreference, setPreference } from "@/db/preferences";
 import { batiCrypto } from "@/modules/bati-crypto";
 import { encryptionStatus, MAX_SEALED_BYTES, openBackup, sealingHeader } from "@/src/backupCipher";
 import {
@@ -26,6 +27,8 @@ import {
   type NextcloudAccount,
   nextcloudTarget,
   type RemoteFile,
+  revokeNextcloudAppPassword,
+  type SyncFailure,
   uploadRemote,
   webdavTarget,
 } from "@/src/cloudSync";
@@ -128,7 +131,73 @@ export function accountLabel(account: SyncAccount): string {
 
 async function remember(account: SyncAccount): Promise<SyncAccount> {
   await SecureStore.setItemAsync(STORE_ACCOUNT, JSON.stringify(account));
+  await setPreference(SYNC_SERVER_PREFERENCE, accountLabel(account));
   return account;
+}
+
+/**
+ * The server this device syncs with, in the database, beside the account in SecureStore. It is
+ * how a sync that stopped without the hero asking is noticed at all: whatever removed the
+ * account (a bug, a wiped Keystore, a database Android restored onto a new phone), this stays,
+ * and `lostSync` finds one without the other. Device-local: a restore keeps this device's.
+ */
+export const SYNC_SERVER_PREFERENCE = "syncServer";
+/** "true" when sync waits for Wi-Fi rather than sending the whole history over mobile data. */
+export const SYNC_WIFI_ONLY_PREFERENCE = "syncWifiOnly";
+
+/** The server sync was on with, when the account is gone and the hero never said stop. */
+export async function lostSync(): Promise<string | null> {
+  const server = await getPreference(SYNC_SERVER_PREFERENCE);
+  if (server === null) return null;
+  return (await syncAccount()) === null ? server : null;
+}
+
+/** Where this account's files are, for the hero who wants to see them: folder and user. */
+export function syncFolderOf(account: SyncAccount): { folder: string; user: string } {
+  const target = targetFor(account);
+  return { folder: `${target.folderUrl}/`, user: target.user };
+}
+
+/** "Forget it": the hero saw that sync stopped and does not want it back. */
+export function forgetLostSync(): Promise<void> {
+  return deletePreference(SYNC_SERVER_PREFERENCE);
+}
+
+export async function syncWifiOnly(): Promise<boolean> {
+  return (await getPreference(SYNC_WIFI_ONLY_PREFERENCE)) === "true";
+}
+
+export function setSyncWifiOnly(on: boolean): Promise<void> {
+  return on
+    ? setPreference(SYNC_WIFI_ONLY_PREFERENCE, "true")
+    : deletePreference(SYNC_WIFI_ONLY_PREFERENCE);
+}
+
+/** How the last runs went, kept across launches so "failing for days" can be said at all. */
+const STORE_HEALTH = "bati.sync.health";
+export type SyncHealth = {
+  lastSuccessAt: number | null;
+  failure: SyncFailure | null;
+  /** When the current run of failures began, epoch ms. */
+  failingSince: number | null;
+};
+
+export async function syncHealth(): Promise<SyncHealth> {
+  const value = await SecureStore.getItemAsync(STORE_HEALTH);
+  return value === null
+    ? { lastSuccessAt: null, failure: null, failingSince: null }
+    : (JSON.parse(value) as SyncHealth);
+}
+
+export async function recordSyncOutcome(failure: SyncFailure | null): Promise<SyncHealth> {
+  const previous = await syncHealth();
+  const now = Date.now();
+  const next: SyncHealth =
+    failure === null
+      ? { lastSuccessAt: now, failure: null, failingSince: null }
+      : { ...previous, failure, failingSince: previous.failingSince ?? now };
+  await SecureStore.setItemAsync(STORE_HEALTH, JSON.stringify(next));
+  return next;
 }
 
 /** Signs in through the browser and remembers the account. `null` if the hero never approved. */
@@ -168,6 +237,14 @@ export async function connectWebDav(
  * the server until the hero revokes it there, and the files there stay theirs.
  */
 export async function disconnectSync(): Promise<void> {
+  const account = await syncAccount();
+  // Nextcloud can take back the app password it gave; any other server keeps it until the hero
+  // removes it there, and the stop message says so.
+  if (account?.kind === "nextcloud") await revokeNextcloudAppPassword(account);
+  // First: the hero asked for this, so it must not read as a sync that was lost.
+  await deletePreference(SYNC_SERVER_PREFERENCE);
+  await SecureStore.deleteItemAsync(STORE_HEALTH);
+  await SecureStore.deleteItemAsync(STORE_LAST_MERGE);
   await SecureStore.deleteItemAsync(STORE_ACCOUNT);
   await SecureStore.deleteItemAsync(STORE_ANSWERED);
   await SecureStore.deleteItemAsync(STORE_UPLOADED);
@@ -219,6 +296,8 @@ export async function prepareSyncAtLaunch(): Promise<void> {
 export type Peer = {
   name: string;
   etag: string;
+  /** When the server last saw that device's file, epoch ms; absent when it did not say. */
+  modified?: number;
 } & (
   | { state: "ahead" | "diverged"; comparison: PeerComparison }
   | { state: "level" | "behind" }
@@ -293,21 +372,22 @@ async function judge(target: DavTarget, file: RemoteFile, context: JudgeContext)
     cached?.stamp === stamp
       ? { name: file.name, etag: file.etag, state: cached.state }
       : await fetchAndJudge(target, file);
+  if (file.modified > 0) peer = { ...peer, modified: file.modified };
   if (peer.state === "level" || peer.state === "behind" || peer.state === "unreadable") {
     context.verdicts[file.name] = { stamp, state: peer.state };
   }
   if (peer.state === "locked" && !mustJoin(file, context.ownFile)) {
-    peer = { name: file.name, etag: file.etag, state: "waiting" };
+    peer = { name: file.name, etag: file.etag, modified: peer.modified, state: "waiting" };
   }
   // An answer the hero already gave for this exact state is not asked again. Only news from that
   // device (new sessions, new content) changes the fingerprint; sealing the same history anew
   // does not.
   if ("comparison" in peer && context.answered[file.name] === peer.comparison.fingerprint) {
-    peer = { name: file.name, etag: file.etag, state: "level" };
+    peer = { name: file.name, etag: file.etag, modified: peer.modified, state: "level" };
   }
   // Said once for this file, not once per launch: the same unreadable file is no news.
   if (peer.state === "unreadable" && context.answered[file.name] === unreadableKey(file)) {
-    peer = { name: file.name, etag: file.etag, state: "level" };
+    peer = { name: file.name, etag: file.etag, modified: peer.modified, state: "level" };
   }
   // Only a snapshot the hero may take is kept; plaintext history does not linger otherwise.
   const plain = peerScratch(file.name, "plain");
@@ -431,19 +511,47 @@ export async function rememberAnswer(peer: {
  * hero can still reach from any device, and download and restore by hand, when the automatic
  * backup folder is off and the swap's own `.bak` is private to this phone.
  */
-export async function keepThisDeviceOnServer(): Promise<void> {
+export async function keepThisDeviceOnServer(): Promise<string> {
   const account = await syncAccount();
   if (account === null) throw new Error("Sync is not connected");
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 13);
+  const name = `bati-${await installId()}-kept-${stamp}.batb`;
   const snapshot = await writeSyncSnapshot();
-  await uploadRemote(targetFor(account), snapshot, `bati-${await installId()}-kept-${stamp}.batb`);
+  await uploadRemote(targetFor(account), snapshot, name);
   snapshot.delete();
+  return name;
 }
 
 /** Names of the devices whose first merge already left a kept copy of this one on the server. */
 const STORE_MERGED = "bati.sync.merged";
-/** What the last merge brought, said once the app is back from the reload it needed. */
-const STORE_MERGE_NOTICE = "bati.sync.mergeNotice";
+/** The last merge: said once after its reload, shown on Home until seen, listed in Settings. */
+const STORE_LAST_MERGE = "bati.sync.lastMerge";
+export type LastMerge = {
+  at: number;
+  /** The other device's file. */
+  peer: string;
+  sessions: number;
+  changes: number;
+  /** This device's copy on the server from before the first merge with that device, if made now. */
+  kept: string | null;
+  /** Where the hero was when the merge reloaded the app, to go back there. */
+  returnTo: string | null;
+  /** The toast after the reload was shown. */
+  told: boolean;
+  /** The Home card was closed. */
+  seen: boolean;
+};
+
+export async function lastMerge(): Promise<LastMerge | null> {
+  const value = await SecureStore.getItemAsync(STORE_LAST_MERGE);
+  return value === null ? null : (JSON.parse(value) as LastMerge);
+}
+
+async function updateLastMerge(patch: Partial<LastMerge>): Promise<void> {
+  const current = await lastMerge();
+  if (current === null) return;
+  await SecureStore.setItemAsync(STORE_LAST_MERGE, JSON.stringify({ ...current, ...patch }));
+}
 
 export type MergeWithPeer =
   /** Another build's database: nothing merged, and the hero chooses as before. */
@@ -459,27 +567,48 @@ export async function mergeWithPeer(peer: { name: string }): Promise<MergeWithPe
   const plain = peerScratch(peer.name, "plain");
   if (!plain.exists) throw new Error("That device's history was not kept for merging");
   const merged: string[] = JSON.parse((await SecureStore.getItemAsync(STORE_MERGED)) ?? "[]");
+  let kept: string | null = null;
   if (!merged.includes(peer.name)) {
-    await keepThisDeviceOnServer();
+    kept = await keepThisDeviceOnServer();
     await SecureStore.setItemAsync(STORE_MERGED, JSON.stringify([...merged, peer.name]));
   }
   const outcome = await mergePeer(plain.uri.replace(/^file:\/\//, ""));
   if (!outcome.merged) return { result: "cannot" };
   plain.delete();
   const removed = await honourTombstones();
-  return { result: "merged", sessions: outcome.sessions, changes: outcome.changes + removed };
+  const changes = outcome.changes + removed;
+  if (changes > 0) {
+    const record: LastMerge = {
+      at: Date.now(),
+      peer: peer.name,
+      sessions: outcome.sessions,
+      changes,
+      kept,
+      returnTo: null,
+      told: true,
+      seen: false,
+    };
+    await SecureStore.setItemAsync(STORE_LAST_MERGE, JSON.stringify(record));
+  }
+  return { result: "merged", sessions: outcome.sessions, changes };
 }
 
-/** Kept across the reload a merge ends with, and read once by whoever says it. */
-export function rememberMergeNotice(sessions: number): Promise<void> {
-  return SecureStore.setItemAsync(STORE_MERGE_NOTICE, String(sessions));
+/** Before the reload a merge ends with: say it afterwards, and go back to `returnTo`. */
+export function rememberMergeNotice(returnTo: string): Promise<void> {
+  return updateLastMerge({ told: false, returnTo });
 }
 
-export async function takeMergeNotice(): Promise<number | null> {
-  const value = await SecureStore.getItemAsync(STORE_MERGE_NOTICE);
-  if (value === null) return null;
-  await SecureStore.deleteItemAsync(STORE_MERGE_NOTICE);
-  return Number(value);
+/** Once, after that reload: what arrived and where the hero was. */
+export async function takeMergeNotice(): Promise<{ sessions: number; returnTo: string } | null> {
+  const merge = await lastMerge();
+  if (merge === null || merge.told) return null;
+  await updateLastMerge({ told: true });
+  return { sessions: merge.sessions, returnTo: merge.returnTo ?? "/" };
+}
+
+/** The Home card about the last merge was closed. */
+export function dismissMergeCard(): Promise<void> {
+  return updateLastMerge({ seen: true });
 }
 
 /**

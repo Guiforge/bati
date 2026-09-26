@@ -135,6 +135,24 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
 - **Said, not swallowed.** One question at a time; an `unreadable` device is announced once per
   file it writes, not once per launch, as "update Bati", since a newer version on it is the usual
   reason.
+- **Never lost in silence.** The server's label is also kept as the device-local preference
+  `syncServer`, beside the account in SecureStore. Whatever removes the account (a bug, a wiped
+  Keystore, a database Android restored onto a new phone), the preference stays, `lostSync` finds
+  one without the other, and Home says "Sync has stopped" until the hero reconnects or forgets it.
+  Only the hero's own Stop clears both. Walking away from another device's password question
+  pauses sync instead of disconnecting it: nothing is sent while that vault is unknown here, the
+  row says "Waiting for your password", and Home offers to ask again.
+- **Failures by layer.** `failureOf` (src/cloudSync.ts) sorts a failure into offline, refused
+  credentials, full storage, an untrusted certificate, a server error with its status, encryption
+  off, or unknown; the toast, the Settings sheet and the Home card say that, not "could not reach".
+  How the last runs went is kept (`syncHealth`), so a sync failing for three days shows on Home.
+- **The sync sheet** replaced a native alert: status in plain words ("up to date, 5 min ago"), the
+  folder and user, every other device with its state and when it last wrote, the last merge and
+  its kept copy, and a Wi-Fi-only switch (`syncWifiOnly`, device-local; "Sync now" always runs).
+  Stop says what it leaves: the files, and for any server but Nextcloud the app password, which
+  keeps working; for Nextcloud, Stop revokes the app password it was given.
+- **After a merge's reload** the hero is taken back to the screen they were on, told what arrived,
+  and Home keeps a card about it until closed.
 - **When**: the snapshot is sealed at launch, next to the automatic backup, because `VACUUM INTO`
   cannot run behind the statements a finished session leaves in flight, and only if the history
   moved. The network half runs once the app is up (`stores/sync.ts`, once per process) and from

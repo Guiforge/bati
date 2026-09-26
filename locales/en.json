@@ -1312,7 +1312,10 @@
     "joinTitle": "Use this password from now on?",
     "joinBody": "This backup opened with its password. Your next backups can use the same one, so a single password opens all of them on any phone.",
     "joinYes": "Use it",
-    "joinNo": "Not now"
+    "joinNo": "Not now",
+    "copyRecovery": "Copy the key",
+    "recoveryCopied": "Copied. It is cleared from the clipboard in a minute.",
+    "recoveryNotHere": "Your recovery key is not kept on this device. It was shown once when encryption was turned on here, or it belongs to the device where encryption was first turned on."
   },
   "villagers": {
     "units": {
@@ -1614,8 +1617,6 @@
   "sync": {
     "row": "Sync my devices",
     "running": "Syncing",
-    "onMessage": "This device and your others meet on {{host}}. Each sends its encrypted history there and reads the others' when Bati opens.",
-    "disconnect": "Stop",
     "now": "Sync now",
     "connectTitle": "Where to sync",
     "connectIntro": "Your server's address. You will sign in on its own page, in your browser: Bati never sees your password.",
@@ -1623,7 +1624,6 @@
     "serverPlaceholder": "cloud.example.org",
     "connectCta": "Sign in",
     "connectFailed": "That server could not be reached, or is not a Nextcloud",
-    "failed": "Sync could not reach your server. It will try again next time Bati opens.",
     "connected": "Synced with {{host}}",
     "done": "Synced",
     "disconnected": "Sync stopped on this device. Your files stay on your server.",
@@ -1643,7 +1643,6 @@
     "webdavFailed": "That address did not answer as a WebDAV server",
     "off": "Off",
     "checking": "Checking the server",
-    "lastSync": "Last synced {{time}}.",
     "later": "Later",
     "joined": "This device now shares your other devices' password",
     "joinTitle": "Your devices already sync here",
@@ -1665,6 +1664,71 @@
     "unreadableBody": "Another device's history on your server does not open here. If that device runs a newer Bati, update this one.",
     "merged_one": "{{count}} session from your other device is here now.",
     "merged_other": "{{count}} sessions from your other device are here now.",
-    "mergedOther": "Your other device's changes are here now."
+    "mergedOther": "Your other device's changes are here now.",
+    "failure": {
+      "offline": "No connection to your server. Sync tries again next time Bati opens.",
+      "credentials": "Your server refused the app password. Make a new one there, then connect again.",
+      "storage": "Your server says your storage is full. Free some space there.",
+      "certificate": "Android does not trust this server's certificate. Use one from a public authority such as Let's Encrypt, or rclone through Round Sync.",
+      "server": "Your server answered with an error (HTTP {{status}}). It may be down for a moment.",
+      "encryption": "Sync needs encryption on. Turn on Encrypt my backups.",
+      "unknown": "Sync did not finish. It tries again next time Bati opens."
+    },
+    "waitingPassword": "Waiting for your password",
+    "waitingWifi": "Waiting for Wi-Fi",
+    "rowFailing": "Not working",
+    "rowStopped": "Stopped",
+    "card": {
+      "lostTitle": "Sync has stopped",
+      "lostBody": "This device no longer syncs with {{server}}, and you did not turn it off. Your hero is still here; reconnect to keep your devices in step.",
+      "reconnect": "Reconnect",
+      "forget": "Forget it",
+      "waitingTitle": "Your other device needs its password",
+      "waitingBody": "It seals its history with another Bati password. Until you enter it here, this device sends nothing and sees nothing from it.",
+      "enterPassword": "Enter the password",
+      "failingTitle": "Sync has not worked for days",
+      "open": "Open Settings",
+      "mergedTitle_one": "{{count}} session arrived from your other device",
+      "mergedTitle_other": "{{count}} sessions arrived from your other device",
+      "mergedBody": "Both devices now hold the same history.",
+      "mergedKept": "Both devices now hold the same history. A copy of this device from before is kept on your server."
+    },
+    "status": {
+      "never": "Not synced yet.",
+      "upToDate": "Up to date, last synced {{when}}.",
+      "where": "On {{server}}, in this folder:",
+      "user": "Signed in as {{user}}.",
+      "devices": "Your other devices",
+      "noDevices": "None on the server yet.",
+      "device": "Device {{id}}: {{state}}, wrote {{when}}.",
+      "unknownWhen": "at an unknown time",
+      "lastMerge_one": "Last merge {{when}}: {{count}} session from device {{id}}.",
+      "lastMerge_other": "Last merge {{when}}: {{count}} sessions from device {{id}}.",
+      "kept": "This device's history from before is kept on the server as {{file}}."
+    },
+    "peerState": {
+      "ahead": "has news for this one",
+      "diverged": "has news, and so does this one",
+      "level": "in step",
+      "behind": "behind this one",
+      "locked": "uses another password",
+      "waiting": "will learn this device's password",
+      "unreadable": "cannot be read here"
+    },
+    "wifiOnly": "Only on Wi-Fi",
+    "wifiOnlyNote": "On, sync waits for Wi-Fi when Bati opens: the whole history goes up when it changed. Sync now always runs.",
+    "stopTitle": "Stop sync on this device?",
+    "stopBodyNextcloud": "Your files stay on your server. Bati's access to your Nextcloud is revoked too.",
+    "stopBodyWebdav": "Your files stay on your server. The app password Bati used keeps working until you remove it in your server's settings.",
+    "stopCta": "Stop on this device",
+    "ago": {
+      "now": "just now",
+      "minutes_one": "{{count}} min ago",
+      "minutes_other": "{{count}} min ago",
+      "hours_one": "{{count}} h ago",
+      "hours_other": "{{count}} h ago",
+      "days_one": "{{count}} day ago",
+      "days_other": "{{count}} days ago"
+    }
   }
 }

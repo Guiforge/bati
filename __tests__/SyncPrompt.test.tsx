@@ -40,16 +40,26 @@ let mockJoinOpens = false;
 let mockMerge: { result: "cannot" } | { result: "merged"; sessions: number; changes: number } = {
   result: "cannot",
 };
-let mockNotice: number | null = null;
+/** What the last merge left for after its reload: sessions, and where the hero was. */
+let mockNotice: { sessions: number; returnTo: string } | null = null;
+let mockSessions = 0;
+const mockPush = jest.fn();
+jest.mock("expo-router", () => ({
+  router: { push: (href: string) => mockPush(href) },
+  usePathname: () => "/settings",
+}));
 const mockReload = jest.fn((_reason: string) => Promise.resolve());
-jest.mock("expo", () => ({ reloadAppAsync: (reason: string) => mockReload(reason) }));
+jest.mock("expo", () => ({
+  ...jest.requireActual("expo"),
+  reloadAppAsync: (reason: string) => mockReload(reason),
+}));
 const mockKeepCopy = jest.fn(() => Promise.resolve());
 jest.mock("@/src/deviceSync", () => ({
   rememberUnreadable: () => Promise.resolve(),
   mergeWithPeer: () => Promise.resolve(mockMerge),
-  rememberMergeNotice: (n: number) =>
+  rememberMergeNotice: (returnTo: string) =>
     Promise.resolve().then(() => {
-      mockNotice = n;
+      mockNotice = { sessions: mockSessions, returnTo };
     }),
   takeMergeNotice: () =>
     Promise.resolve().then(() => {
@@ -161,6 +171,7 @@ test("diverged: keep remembers this state; take first sends this device's copy a
 
 test("a device that can be merged is merged, not asked, and the app reloads to read it", async () => {
   mockMerge = { result: "merged", sessions: 3, changes: 4 };
+  mockSessions = 3;
   await render(<SyncPrompt />);
   await syncFound({
     name: "bati-tab.batb",
@@ -172,8 +183,8 @@ test("a device that can be merged is merged, not asked, and the app reloads to r
   await waitFor(() => expect(mockReload).toHaveBeenCalledWith("merge"));
   expect(mockAlerts).toEqual([]);
   expect(mockAdopted).toEqual([]);
-  // Said after the reload, by the prompt of the fresh runtime.
-  expect(mockNotice).toBe(3);
+  // Said after the reload, which then takes the hero back to where they were.
+  expect(mockNotice).toEqual({ sessions: 3, returnTo: "/settings" });
 });
 
 test("a merge that changed nothing does not reload", async () => {
@@ -191,10 +202,11 @@ test("a merge that changed nothing does not reload", async () => {
 });
 
 test("after a merge's reload, the hero is told what arrived, once", async () => {
-  mockNotice = 2;
+  mockNotice = { sessions: 2, returnTo: "/settings" };
   await render(<SyncPrompt />);
   await waitFor(() => expect(mockToasts).toEqual(["sync.merged"]));
   expect(mockNotice).toBeNull();
+  expect(mockPush).toHaveBeenCalledWith("/settings");
 });
 
 test("never during a session, and once per state", async () => {

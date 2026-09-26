@@ -4,6 +4,7 @@ import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
 import { QuickActions } from "@/components/home/QuickActions";
+import { SyncCard } from "@/components/home/SyncCard";
 import { UpdateCard } from "@/components/home/UpdateCard";
 import { SessionRecoveryBanner } from "@/components/session/SessionRecoveryCard";
 
@@ -69,6 +70,10 @@ export default function HomeScreen() {
             on in Settings. It pushes the column like the recovery card above it, and it is the
             only thing on this screen that a hero can make go away for good. */}
         <UpdateCard />
+
+        {/* Device sync, only when the hero must know: stopped, waiting on them, failing for
+            days, or another device's sessions just arrived. Nothing while it works. */}
+        <SyncCard />
 
         {/* Tonight's scene, one action that starts it, the rest advice and the oath under it */}
         <HomeStage />

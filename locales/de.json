@@ -1312,7 +1312,10 @@
     "joinTitle": "Dieses Passwort weiter nutzen?",
     "joinBody": "Diese Sicherung hat sich mit ihrem Passwort geöffnet. Deine nächsten Sicherungen können dasselbe nutzen, dann öffnet ein einziges Passwort alle auf jedem Telefon.",
     "joinYes": "Nutzen",
-    "joinNo": "Später"
+    "joinNo": "Später",
+    "copyRecovery": "Schlüssel kopieren",
+    "recoveryCopied": "Kopiert. In einer Minute wird er aus der Zwischenablage gelöscht.",
+    "recoveryNotHere": "Dein Wiederherstellungsschlüssel ist nicht auf diesem Gerät gespeichert. Er wurde einmal angezeigt, als du die Verschlüsselung hier eingeschaltet hast, oder er gehört zu dem Gerät, auf dem sie zuerst eingeschaltet wurde."
   },
   "villagers": {
     "units": {
@@ -1618,8 +1621,6 @@
   "sync": {
     "row": "Geräte synchronisieren",
     "running": "Wird synchronisiert",
-    "onMessage": "Dieses Gerät und deine anderen treffen sich auf {{host}}. Jedes legt dort seinen verschlüsselten Verlauf ab und liest die der anderen, wenn Bati startet.",
-    "disconnect": "Beenden",
     "now": "Jetzt synchronisieren",
     "connectTitle": "Wohin synchronisieren",
     "connectIntro": "Die Adresse deines Servers. Du meldest dich auf seiner eigenen Seite in deinem Browser an: Bati sieht dein Passwort nie.",
@@ -1627,7 +1628,6 @@
     "serverPlaceholder": "cloud.beispiel.de",
     "connectCta": "Anmelden",
     "connectFailed": "Dieser Server ist nicht erreichbar oder keine Nextcloud",
-    "failed": "Die Synchronisierung hat deinen Server nicht erreicht. Sie versucht es beim nächsten Start von Bati erneut.",
     "connected": "Synchronisiert mit {{host}}",
     "done": "Synchronisiert",
     "disconnected": "Synchronisierung auf diesem Gerät beendet. Deine Dateien bleiben auf deinem Server.",
@@ -1647,7 +1647,6 @@
     "webdavFailed": "Diese Adresse hat nicht wie ein WebDAV-Server geantwortet",
     "off": "Aus",
     "checking": "Server wird geprüft",
-    "lastSync": "Zuletzt synchronisiert: {{time}}.",
     "later": "Später",
     "joined": "Dieses Gerät nutzt jetzt das Passwort deiner anderen Geräte",
     "joinTitle": "Deine Geräte synchronisieren schon hier",
@@ -1669,6 +1668,71 @@
     "unreadableBody": "Der Verlauf eines anderen Geräts auf deinem Server lässt sich hier nicht öffnen. Läuft dort ein neueres Bati, aktualisiere dieses.",
     "merged_one": "{{count}} Einheit von deinem anderen Gerät ist jetzt hier.",
     "merged_other": "{{count}} Einheiten von deinem anderen Gerät sind jetzt hier.",
-    "mergedOther": "Die Änderungen von deinem anderen Gerät sind jetzt hier."
+    "mergedOther": "Die Änderungen von deinem anderen Gerät sind jetzt hier.",
+    "failure": {
+      "offline": "Keine Verbindung zu deinem Server. Die Synchronisierung versucht es beim nächsten Öffnen von Bati erneut.",
+      "credentials": "Dein Server hat das App-Passwort abgelehnt. Erstelle dort ein neues und verbinde dich erneut.",
+      "storage": "Dein Server meldet, dass dein Speicher voll ist. Mach dort Platz frei.",
+      "certificate": "Android vertraut dem Zertifikat dieses Servers nicht. Nutze eines von einer öffentlichen Stelle wie Let's Encrypt, oder rclone über Round Sync.",
+      "server": "Dein Server hat mit einem Fehler geantwortet (HTTP {{status}}). Vielleicht ist er kurz nicht erreichbar.",
+      "encryption": "Die Synchronisierung braucht Verschlüsselung. Schalte Sicherungen verschlüsseln ein.",
+      "unknown": "Die Synchronisierung wurde nicht abgeschlossen. Sie versucht es beim nächsten Öffnen von Bati erneut."
+    },
+    "waitingPassword": "Wartet auf dein Passwort",
+    "waitingWifi": "Wartet auf WLAN",
+    "rowFailing": "Funktioniert nicht",
+    "rowStopped": "Gestoppt",
+    "card": {
+      "lostTitle": "Die Synchronisierung hat aufgehört",
+      "lostBody": "Dieses Gerät synchronisiert nicht mehr mit {{server}}, und du hast sie nicht ausgeschaltet. Dein Held ist noch da; verbinde dich neu, damit deine Geräte gleich bleiben.",
+      "reconnect": "Neu verbinden",
+      "forget": "Vergessen",
+      "waitingTitle": "Dein anderes Gerät braucht sein Passwort",
+      "waitingBody": "Es versiegelt seinen Verlauf mit einem anderen Bati-Passwort. Bis du es hier eingibst, sendet dieses Gerät nichts und sieht nichts davon.",
+      "enterPassword": "Passwort eingeben",
+      "failingTitle": "Die Synchronisierung klappt seit Tagen nicht",
+      "open": "Einstellungen öffnen",
+      "mergedTitle_one": "{{count}} Einheit kam von deinem anderen Gerät",
+      "mergedTitle_other": "{{count}} Einheiten kamen von deinem anderen Gerät",
+      "mergedBody": "Beide Geräte haben jetzt denselben Verlauf.",
+      "mergedKept": "Beide Geräte haben jetzt denselben Verlauf. Eine Kopie dieses Geräts von vorher liegt auf deinem Server."
+    },
+    "status": {
+      "never": "Noch nicht synchronisiert.",
+      "upToDate": "Aktuell, zuletzt synchronisiert {{when}}.",
+      "where": "Auf {{server}}, in diesem Ordner:",
+      "user": "Angemeldet als {{user}}.",
+      "devices": "Deine anderen Geräte",
+      "noDevices": "Noch keines auf dem Server.",
+      "device": "Gerät {{id}}: {{state}}, geschrieben {{when}}.",
+      "unknownWhen": "zu unbekannter Zeit",
+      "lastMerge_one": "Letzte Zusammenführung {{when}}: {{count}} Einheit von Gerät {{id}}.",
+      "lastMerge_other": "Letzte Zusammenführung {{when}}: {{count}} Einheiten von Gerät {{id}}.",
+      "kept": "Der frühere Verlauf dieses Geräts liegt auf dem Server als {{file}}."
+    },
+    "peerState": {
+      "ahead": "hat Neues für dieses",
+      "diverged": "hat Neues, dieses auch",
+      "level": "gleichauf",
+      "behind": "hinter diesem",
+      "locked": "nutzt ein anderes Passwort",
+      "waiting": "lernt das Passwort dieses Geräts",
+      "unreadable": "hier nicht lesbar"
+    },
+    "wifiOnly": "Nur im WLAN",
+    "wifiOnlyNote": "Eingeschaltet wartet die Synchronisierung beim Öffnen von Bati auf WLAN: der ganze Verlauf wird hochgeladen, wenn er sich geändert hat. Jetzt synchronisieren läuft immer.",
+    "stopTitle": "Synchronisierung auf diesem Gerät beenden?",
+    "stopBodyNextcloud": "Deine Dateien bleiben auf deinem Server. Batis Zugriff auf deine Nextcloud wird auch entzogen.",
+    "stopBodyWebdav": "Deine Dateien bleiben auf deinem Server. Das von Bati genutzte App-Passwort funktioniert weiter, bis du es in den Einstellungen deines Servers löschst.",
+    "stopCta": "Auf diesem Gerät beenden",
+    "ago": {
+      "now": "gerade eben",
+      "minutes_one": "vor {{count}} Min.",
+      "minutes_other": "vor {{count}} Min.",
+      "hours_one": "vor {{count}} Std.",
+      "hours_other": "vor {{count}} Std.",
+      "days_one": "vor {{count}} Tag",
+      "days_other": "vor {{count}} Tagen"
+    }
   }
 }

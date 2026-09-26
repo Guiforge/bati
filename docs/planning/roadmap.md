@@ -2,7 +2,7 @@
 title: Roadmap
 type: planning
 status: active
-updated: 2026-09-23
+updated: 2026-09-26
 related:
   [
     README.md,
@@ -492,9 +492,10 @@ animation** is what is left, and it stays low by design.
 
 ### 4.18 Multi-device sync, end-to-end encrypted, over the hero's own cloud
 
-**Phases 0 to 3 built on `feat/encrypted-sync` (2026-09-25)**, with Nextcloud as the first
-transport; how it works is [`docs/architecture/backup-and-sync.md`](../architecture/backup-and-sync.md).
-Left: the Dropbox connector (needs an app registered to this project), then OneDrive, then phase 4. The earlier version of this section refused
+**Phases 0 to 3 built on `feat/encrypted-sync` (2026-09-25)**, over Nextcloud and any WebDAV
+server (kDrive, Koofr, rclone through Round Sync), audited twice and checked against Joplin's
+history; how it works is [`docs/architecture/backup-and-sync.md`](../architecture/backup-and-sync.md).
+Left: the four items below, then OneDrive. The earlier version of this section refused
 every cloud API on the belief that 4.21's folder picker already reached them. It does not: Google
 Drive, OneDrive and Proton never appear in `ACTION_OPEN_DOCUMENT_TREE`, Dropbox's provider is
 partial, and Nextcloud's serves a stale copy of what another device wrote (Aegis #848 and #1237,
@@ -515,6 +516,59 @@ InlitX/streak (a shared-folder JSON with a naive merge and no encryption).
 than one file per row (a fresh device never finished 13,000 items against OneDrive's throttling);
 never infer a deletion from an absence; never order by device clocks (3,000 duplicates from one
 skewed clock, #5738); do not count on Android background sync, sync at launch and on demand.
+
+**What is left, planned on 2026-09-26** (read-only plans, verified against the code at `5f347a64`):
+
+1. **Take a version without a restart (about 2 h).** Not a remount: about twenty module caches and
+   stores hold database state (`db/client.ts` binds `db` as a `const`, `db/migrate.ts` remembers
+   `migrated`, the adventure, exercise, quest, streak and query caches, every zustand store), and
+   each new cache would be a new reset to forget. `reloadAppAsync()`, exported by `expo` itself,
+   reloads the JS runtime in release builds with no new dependency and no permission: call it in
+   `components/DatabaseProvider.tsx` after `commitRestore` resolves, keep the current notice as the
+   fallback if it does nothing. Check the pid is unchanged and Home shows the adopted hero. Also
+   refuse a Settings import during a session, as `SyncPrompt` already does.
+2. **The sealed-file cap is memory, not 256 MB.** `sealFile`/`openFile` stream in 64 KiB, but
+   Conscrypt's AES-GCM most likely buffers everything until `doFinal`, so the peak Java heap is
+   2 to 3 times the file, against a 192 to 256 MB `heapgrowthlimit`. GPS dominates size: 1 Hz raw
+   `gps_points` at about 140 B each is about 0.5 MB an hour outdoors, so a heavy walker passes
+   64 MB within a year (sessions alone are about 5 MB after five years). Measure first on a 2 GB
+   AVD with databases inflated to 32 to 256 MB (`dumpsys meminfo` peak, `VACUUM INTO`, seal, open,
+   upload), then set the cap to what passes (likely 64 MB) and say "too large" rather than
+   "update Bati". Before heavy GPS users reach it: format v2 in 1 MiB segments, each sealed with
+   its own counter nonce (Tink's streaming AEAD), v1 still read; about 2 days. Android's own
+   backup already stops at 25 MB, so a regular walker loses it in the first year: worth a line in
+   the policy, or a decision about keeping raw 1 Hz points forever.
+3. **Dropbox (3 to 4 days plus Dropbox's review).** PKCE with no secret, app folder, redirect
+   `bati://dropbox-auth` caught by `Linking` and swallowed in `app/+native-intent.tsx`; refresh
+   token in SecureStore, access token in memory, refreshed on a 401. `list_folder`, `download`,
+   `upload` with `mode: overwrite`, which commits atomically, so no `.part` dance. A small
+   `Remote { list, download, upload }` returned by `targetFor` keeps WebDAV and Dropbox behind one
+   door. Needs a `sha256` in `modules/bati-crypto` for the PKCE challenge, a third door in
+   `SyncSetupSheet`, the policy naming Dropbox, Inc., and the NonFreeNet anti-feature declared for
+   F-Droid. On dropbox.com/developers: scoped access, App folder, `files.metadata.read`,
+   `files.content.read`, `files.content.write`, redirect `bati://dropbox-auth`, public clients
+   allowed; the app key goes in `src/cloudSync.ts`; apply for production before 500 users.
+4. **Phase 4, the merge (about 9 days, 6 with the cuts below).** Sources are copied, never
+   recomputed: `completed_sessions` (its `xpEarned` already carries the day's, Triumph's and the
+   oath's bonuses), `completed_exercises`, `gps_points`, `deleted_sessions`, hero exercises and
+   quests, `HERO_PREFERENCES`, quest configs, `unlocked_achievements` (a union). XP, level and the
+   village are pure queries over them; the streak has `calculateAndCacheStreak`. **Local ids never
+   change; only the peer's rows get new ids**, through temporary maps: sessions, exercises (Admin
+   ones by `enName`, since seeds after 0035 got different ids on different devices), quests,
+   `quest_exercises`, and the ids inside `recordsJson` and quest configs. One `BEGIN IMMEDIATE`
+   transaction on an isolated writable connection with the peer `ATTACH`ed, aborted whole on any
+   unmapped row; then, on the shared connection, tombstones honoured (`deleteSession` needs a
+   `force`), caches invalidated, stores reloaded. Timestamps are copied verbatim, or two devices
+   ping-pong. Convergence: A merges B and uploads, B sees A ahead and merges, A sees B level; two
+   syncs, no third. **Not replayable**, so ruled: `boss_fights` and `adventure_runs` are state
+   machines with random crits, so per adventure the campaign that got further wins and the
+   loser's campaign sessions count as plain training; a bonus earned on both devices counts twice
+   (rare, and taking XP back is worse); record badges stay as set. **Gaps to close first**:
+   deleted preferences leave no tombstone (write `''` instead of deleting), and retire, unretire
+   and `setQuestExercises` do not bump `updatedAt`. A device with no session and no hero row takes
+   the peer's preferences wholesale, so a fresh tablet cannot impose its onboarding. Cut for a
+   first version: campaigns (keep local), quest configs and favourites (keep local), deleted hero
+   content (comes back). The kept copy stays, once per peer, as the net.
 
 ### 4.20 `fallow`
 
@@ -575,16 +629,12 @@ the old numbers because the rest of this page still points at them.
 **No "close the app" button on the restart screen, and the reason is measured.** React Native's
 `BackHandler.exitApp()` is a `finish()` on the activity, not a process kill — verified on a
 Fairphone 6, the pid is unchanged after the activity ends. Reopening would therefore resume the
-same JS context with the SQLite handle already closed, which is worse than a force-quit. A button
-that works needs either `expo-updates` (`reloadAsync()` rebuilds the module graph in-process, and
-would remove the restart entirely) or a native `System.exit(0)`. Neither is worth a dependency or
-a native module for an operation performed twice in an app's life, so the screen keeps its
-instruction. Revisit if a user ever reports being stuck on it.
+same JS context with the SQLite handle already closed, which is worse than a force-quit. This page once said
+a working button needed `expo-updates`; `reloadAppAsync()` from `expo` itself does it without a
+dependency, and device sync makes taking a version frequent enough to use it (4.18, item 1).
 
-What is deliberately not solved: a process killed *between* the two renames leaves the database
-absent and the data in a `.bak` no code reads. Closing that means reconciling at module load in
-`db/client.ts`, before `openDatabaseSync` recreates an empty file — cheap, and worth doing only if
-a real report ever needs it.
+A process killed *between* the two renames is handled since `feat/encrypted-sync`: `db/client.ts`
+puts the `.bak` back before `openDatabaseSync` could recreate an empty file.
 
 It is the transport half of 4.18 and of desktop (§1). With 4.21 writing the same snapshot
 unattended, what is still missing for those two is reconciliation, and only that.

@@ -1,3 +1,4 @@
+import { reloadAppAsync } from "expo";
 import * as SplashScreen from "expo-splash-screen";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,9 +7,11 @@ import { rawColors } from "@/constants/rawColors";
 import { stampDatabaseIdentity } from "@/db/backup";
 import { ensureMigrations } from "@/db/migrate";
 import { backupIfStaleToday } from "@/src/autoBackup";
-import { commitRestore } from "@/src/backupFiles";
+import { clearPeerScratch, commitRestore, discardStagedImport } from "@/src/backupFiles";
+import { prepareSyncAtLaunch } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
+import { useSyncStore } from "@/stores/sync";
 
 type MigrationState = { success: false; error?: Error } | { success: true; error?: undefined };
 
@@ -48,6 +51,24 @@ function FullScreenNotice({ title, message }: { title: string; message: string }
   );
 }
 
+/**
+ * Plaintext a killed app leaves in the database directory: an import decrypted before its swap,
+ * another device's history opened for comparison. Nothing can be staged yet at launch, and it is
+ * once per process, not per mount: the root layout remounts (see `useSyncStore.claimLaunch`),
+ * and a restore staged by then must survive it.
+ */
+let leftoversSwept = false;
+function sweepLeftovers(): void {
+  if (leftoversSwept) return;
+  leftoversSwept = true;
+  try {
+    discardStagedImport();
+    clearPeerScratch();
+  } catch (e) {
+    reportError("backup.sweep", e);
+  }
+}
+
 export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
   const { t } = useTranslation();
   const restorePhase = useRestoreStore((state) => state.phase);
@@ -67,6 +88,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
 
     if (hasStartedMigrations.current) return;
     hasStartedMigrations.current = true;
+    sweepLeftovers();
 
     (async () => {
       try {
@@ -83,6 +105,9 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
         // see src/autoBackup.ts. It never throws, so it cannot turn a backup into the
         // database-error screen, and it returns immediately on every launch but the day's first.
         await backupIfStaleToday();
+        // Same quiet moment, same reason: device sync seals this device's snapshot here, and only
+        // sends it once the app is up (below). Never throws, and returns at once without sync on.
+        await prepareSyncAtLaunch();
         if (!cancelled) setMigrationState({ success: true });
       } catch (e) {
         if (cancelled) return;
@@ -100,6 +125,12 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
     if (!success || hasInitialized.current) return;
     hasInitialized.current = true;
     onReady?.();
+    // The network half of device sync, once per process (the store holds the claim, a ref here
+    // does not survive the root layout remounting). Off the launch path: nothing waits on it.
+    const sync = useSyncStore.getState();
+    if (sync.claimLaunch()) {
+      sync.run({ snapshotFirst: false }).catch((e) => reportError("sync.launch", e));
+    }
   }, [success, onReady]);
 
   useEffect(() => {
@@ -118,7 +149,14 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
     if (restorePhase !== "restoring" || !claimCommit()) return;
 
     commitRestore()
-      .then(() => finishRestore("restartRequired"))
+      .then(() => {
+        finishRestore("restartRequired");
+        // A fresh JS runtime is a cold start without leaving the app: every module cache, every
+        // store and the database singleton go with the old one, and `db/client.ts` opens the
+        // swapped file. A remount would have to reset each of those by hand, and forget the next
+        // one. The notice stays as the way out if the host cannot reload.
+        reloadAppAsync("restore").catch((e) => reportError("backup.reload", e));
+      })
       .catch((e) => {
         reportError("backup.commitRestore", e);
         finishRestore("failed");

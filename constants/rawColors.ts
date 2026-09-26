@@ -44,6 +44,9 @@ export const rawColors = {
   // tile it was first made for (#90), back for this. Here rather than inline because the lint
   // plugin only catches hex, so an rgba typed at a call site is a colour nobody can find again.
   bgOverlaySoft: "rgba(11, 15, 25, 0.72)",
+  // Behind a bottom sheet that asks something (components/common/FormSheet.tsx). The older sheets
+  // still type the same rgba inline; they move here as they are touched.
+  sheetScrim: "rgba(0, 0, 0, 0.5)",
 
   // --- Surfaces (glass & tech) ---
   surface: "#101322",

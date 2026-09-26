@@ -15,8 +15,27 @@ const mockBackupIfStaleToday = jest.fn();
 
 jest.mock("@/db/migrate", () => ({ ensureMigrations: () => mockEnsureMigrations() }));
 jest.mock("@/db/backup", () => ({ stampDatabaseIdentity: () => mockStampDatabaseIdentity() }));
-jest.mock("@/src/backupFiles", () => ({ commitRestore: () => mockCommitRestore() }));
+jest.mock("@/src/backupFiles", () => ({
+  commitRestore: () => mockCommitRestore(),
+  clearPeerScratch: jest.fn(),
+  discardStagedImport: jest.fn(),
+}));
+const mockReload = jest.fn((_reason: string) => Promise.resolve());
+jest.mock("expo", () => ({
+  ...jest.requireActual("expo"),
+  reloadAppAsync: (reason: string) => mockReload(reason),
+}));
 jest.mock("@/src/autoBackup", () => ({ backupIfStaleToday: () => mockBackupIfStaleToday() }));
+const mockPrepareSync = jest.fn(() => Promise.resolve());
+const mockSyncNow = jest.fn(() => Promise.resolve({ uploaded: false, peers: [] }));
+jest.mock("@/src/deviceSync", () => ({
+  prepareSyncAtLaunch: () => mockPrepareSync(),
+  syncAccount: () =>
+    Promise.resolve({ kind: "webdav", url: "https://dav.test", user: "h", password: "p" }),
+  syncNow: () => mockSyncNow(),
+  syncWifiOnly: () => Promise.resolve(false),
+  recordSyncOutcome: () => Promise.resolve({ lastSuccessAt: 1, failure: null, failingSince: null }),
+}));
 jest.mock("@/src/reportError", () => ({
   reportError: (...args: unknown[]) => mockReportError(...args),
 }));
@@ -25,6 +44,7 @@ jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (k: string) => k
 
 import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { useRestoreStore } from "@/stores/restore";
+import { useSyncStore } from "@/stores/sync";
 
 const child = <Text>the app</Text>;
 
@@ -73,6 +93,22 @@ describe("DatabaseProvider", () => {
     );
   });
 
+  it("seals the sync snapshot at the same quiet moment, and syncs only once the app is up", async () => {
+    // Earlier tests already claimed this process's one launch sync.
+    useSyncStore.setState({ launchClaimed: false, running: false });
+    const onReady = jest.fn();
+    await mount(onReady);
+    await screen.findByText("the app");
+    await waitFor(() => expect(mockSyncNow).toHaveBeenCalled());
+
+    const sealed = mockPrepareSync.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY;
+    expect(mockBackupIfStaleToday.mock.invocationCallOrder[0]).toBeLessThan(sealed);
+    expect(sealed).toBeLessThan(onReady.mock.invocationCallOrder[0] ?? 0);
+    expect(onReady.mock.invocationCallOrder[0]).toBeLessThan(
+      mockSyncNow.mock.invocationCallOrder[0] ?? 0,
+    );
+  });
+
   it("runs migrations once per process, not once per render", async () => {
     const { rerender } = await mount();
     await screen.findByText("the app");
@@ -115,6 +151,8 @@ describe("DatabaseProvider", () => {
     expect(screen.queryByText("the app")).toBeNull();
     await waitFor(() => expect(mockCommitRestore).toHaveBeenCalled());
     await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restartRequired"));
+    // Opened in a fresh runtime, with no "close and reopen" for the hero to do.
+    await waitFor(() => expect(mockReload).toHaveBeenCalledWith("restore"));
   });
 
   it("commits a restore once, never twice", async () => {
@@ -160,5 +198,7 @@ describe("DatabaseProvider", () => {
 
     await waitFor(() => expect(useRestoreStore.getState().phase).toBe("failed"));
     expect(mockReportError).toHaveBeenCalledWith("backup.commitRestore", expect.any(Error));
+    // The hero has to read that nothing was replaced: no reload over the message.
+    expect(mockReload).not.toHaveBeenCalled();
   });
 });

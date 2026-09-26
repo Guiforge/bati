@@ -113,6 +113,18 @@ const ALLOWED: Record<string, string> = {
     "where - and the app already holds INTERNET for the same tiles, so it widens nothing the " +
     "privacy policy has not already accounted for. ACCESS_WIFI_STATE stays blocked: that one " +
     "can name the network, and a network name is a location by another route.",
+  // Both arrive from androidx.biometric, which expo-secure-store depends on: a Gradle AAR, so the
+  // scan below never saw them (the blind spot at the top of this file), and the audit of the
+  // encrypted-sync branch found them in the merged manifest instead.
+  "android.permission.USE_BIOMETRIC":
+    "expo-secure-store via androidx.biometric - the one place a fingerprint is asked for: showing " +
+    "the backup recovery key again (src/backupCipher.ts `readRecoveryKey`, requireAuthentication). " +
+    "Android runs the check; Bati never sees the fingerprint, only whether it matched. Nothing " +
+    "else is behind it, and every backup opens with the password on any phone without it.",
+  "android.permission.USE_FINGERPRINT":
+    "the same library's path below API 28, where BiometricPrompt did not exist and it falls back " +
+    "to FingerprintManager. Deprecated since, declared together with the one above, and asked " +
+    "for by nothing else.",
   "android.permission.POST_NOTIFICATIONS":
     "modules/bati-location — since API 33 the foreground-service notification is invisible " +
     "without it. The service still runs, but the one thing telling the hero their phone is " +

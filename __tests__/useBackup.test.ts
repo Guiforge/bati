@@ -19,6 +19,28 @@ let mockExportBehaviour: () => void = () => {};
 let mockValidateBehaviour: () => void = () => {};
 let mockStageGate: Promise<void> | null = null;
 let mockSaveOutcome: () => boolean = () => true;
+let mockDecryptOutcomes: string[] = [];
+let mockEncryption = "off";
+let mockAlertAnswer = "backup.joinNo";
+const mockSystemAlerts: string[] = [];
+
+jest.mock("@/src/backupCipher", () => ({
+  encryptionStatus: () => Promise.resolve(mockEncryption),
+}));
+
+// The join question is a system alert: answered here by the button whose text is `mockAlertAnswer`.
+jest.mock("react-native", () => {
+  const rn = jest.requireActual("react-native");
+  rn.Alert.alert = (
+    title: string,
+    _message: string,
+    buttons: { text: string; onPress?: () => void }[],
+  ) => {
+    mockSystemAlerts.push(title);
+    buttons.find((b) => b.text === mockAlertAnswer)?.onPress?.();
+  };
+  return rn;
+});
 
 jest.mock("@/db/backup", () => ({
   validateBackup: jest.fn(async () => {
@@ -26,6 +48,10 @@ jest.mock("@/db/backup", () => ({
     await Promise.resolve();
     mockValidateBehaviour();
     return mockValidation;
+  }),
+  keepDeviceSettings: jest.fn(async () => {
+    mockCalls.push("keepDevice");
+    await Promise.resolve();
   }),
 }));
 
@@ -42,6 +68,28 @@ jest.mock("@/src/backupFiles", () => ({
     return mockStagedPath;
   }),
   discardStagedImport: jest.fn(() => mockCalls.push("discard")),
+  stagePeerForImport: jest.fn(async () => {
+    mockCalls.push("stagePeer");
+    await Promise.resolve();
+    return "/tmp/staged.db";
+  }),
+  // One outcome per call, in order; a plain backup when the list runs out.
+  decryptStagedImport: jest.fn(async (secret?: string) => {
+    mockCalls.push(secret === undefined ? "decrypt" : `decrypt:${secret}`);
+    await Promise.resolve();
+    const outcome = mockDecryptOutcomes.shift() ?? "notEncrypted";
+    if (outcome === "throw") throw new Error("Unsupported state or unable to authenticate data");
+    if (outcome === "openedWithSecret") {
+      return {
+        result: "opened",
+        join: ({ asPrimary }: { asPrimary: boolean }) =>
+          Promise.resolve().then(() => {
+            mockCalls.push(`join:${asPrimary ? "primary" : "keyring"}`);
+          }),
+      };
+    }
+    return { result: outcome };
+  }),
   // biome-ignore lint/suspicious/useAwait: mirrors the real Promise-returning signature
   saveBackupToFolder: jest.fn(async () => {
     mockCalls.push("save");
@@ -117,11 +165,163 @@ beforeEach(() => {
   mockValidateBehaviour = () => {};
   mockStageGate = null;
   mockSaveOutcome = () => true;
+  mockDecryptOutcomes = [];
+  mockEncryption = "off";
+  mockAlertAnswer = "backup.joinNo";
+  mockSystemAlerts.length = 0;
   mockAutoFolderOutcome = () => null;
   mockEnableOutcome = () => "Documents/Bati";
   mockDisableOutcome = () => {};
   mockBeforeRestoreOutcome = () => {};
   useRestoreStore.setState({ phase: "idle" });
+});
+
+describe("useBackup — encrypted import", () => {
+  test("asks for the password, retries on a wrong one, and validates only what it opened", async () => {
+    mockDecryptOutcomes = ["needsSecret", "wrongSecret", "opened"];
+    const { result } = await renderHook(() => useBackup());
+
+    await act(() => result.current.runImport());
+    await waitFor(() => expect(result.current.secretRequest).toEqual({ open: true, wrong: false }));
+
+    await act(async () => result.current.submitSecret("typo"));
+    await waitFor(() => expect(result.current.secretRequest).toEqual({ open: true, wrong: true }));
+
+    await act(async () => result.current.submitSecret("correct horse"));
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+
+    expect(mockCalls).toEqual([
+      "stage",
+      "decrypt",
+      "decrypt:typo",
+      "decrypt:correct horse",
+      "validate",
+      "keepDevice",
+      "beforeRestore",
+    ]);
+    expect(result.current.secretRequest.open).toBe(false);
+  });
+
+  test("cancelling the password discards the file and restores nothing", async () => {
+    mockDecryptOutcomes = ["needsSecret"];
+    const { result } = await renderHook(() => useBackup());
+
+    await act(() => result.current.runImport());
+    await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
+    await act(async () => result.current.cancelSecret());
+
+    await waitFor(() => expect(mockCalls).toEqual(["stage", "decrypt", "discard"]));
+    expect(useRestoreStore.getState().phase).toBe("idle");
+    expect(mockAlerts).toEqual([]);
+  });
+});
+
+test("an encrypted file that fails to authenticate is reported as damaged", async () => {
+  mockDecryptOutcomes = ["throw"];
+  const { result } = await renderHook(() => useBackup());
+
+  await act(async () => result.current.runImport());
+
+  expect(mockCalls).toEqual(["stage", "decrypt", "discard"]);
+  expect(mockShownErrors).toEqual(["backup.rejected.corrupt"]);
+  expect(mockReportedErrors).toEqual(["backup.decrypt"]);
+});
+
+test("taking another device's snapshot walks the same road as a restore", async () => {
+  const { result } = await renderHook(() => useBackup());
+
+  const keepCopy = () =>
+    Promise.resolve().then(() => {
+      mockCalls.push("keepCopy");
+    });
+  await act(() => result.current.runAdopt({ uri: "file:///db/peer.plain" } as never, keepCopy));
+
+  await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+  expect(mockCalls).toEqual([
+    "stagePeer",
+    "decrypt",
+    "validate",
+    "keepDevice",
+    "beforeRestore",
+    "keepCopy",
+  ]);
+});
+
+test("no copy of this device's history on the server, no take", async () => {
+  const { result } = await renderHook(() => useBackup());
+
+  await act(() =>
+    result.current.runAdopt({ uri: "file:///db/peer.plain" } as never, () =>
+      Promise.reject(new Error("offline")),
+    ),
+  );
+
+  await waitFor(() => expect(mockCalls).toContain("discard"));
+  expect(useRestoreStore.getState().phase).toBe("idle");
+  expect(mockAlerts).toEqual(["backup.beforeRestoreFailed"]);
+});
+
+test("two screens cannot run two imports into the one staging file", async () => {
+  let openPicker: () => void = () => {};
+  mockStageGate = new Promise<void>((resolve) => {
+    openPicker = resolve;
+  });
+  const settings = await renderHook(() => useBackup());
+  const prompt = await renderHook(() => useBackup());
+
+  await act(async () => {
+    settings.result.current.runImport();
+    prompt.result.current.runAdopt({ uri: "file:///db/peer.plain" } as never, () =>
+      Promise.resolve(),
+    );
+    openPicker();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+
+  expect(mockCalls.filter((c) => c === "stage" || c === "stagePeer")).toEqual(["stage"]);
+});
+
+describe("an encrypted backup opened with its password", () => {
+  test("with encryption off here, the hero is asked before the key becomes this phone's", async () => {
+    mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
+    mockAlertAnswer = "backup.joinYes";
+    const { result } = await renderHook(() => useBackup());
+
+    await act(() => result.current.runImport());
+    await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
+    await act(async () => result.current.submitSecret("correct horse"));
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+
+    expect(mockSystemAlerts).toEqual(["backup.joinTitle"]);
+    expect(mockCalls).toContain("join:primary");
+  });
+
+  test("declined, nothing is adopted and the restore still goes ahead", async () => {
+    mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
+    mockAlertAnswer = "backup.joinNo";
+    const { result } = await renderHook(() => useBackup());
+
+    await act(() => result.current.runImport());
+    await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
+    await act(async () => result.current.submitSecret("correct horse"));
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+
+    expect(mockCalls.some((c) => c.startsWith("join:"))).toBe(false);
+  });
+
+  test("with encryption on here, the key is only remembered, without a question", async () => {
+    mockEncryption = "on";
+    mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
+    const { result } = await renderHook(() => useBackup());
+
+    await act(() => result.current.runImport());
+    await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
+    await act(async () => result.current.submitSecret("correct horse"));
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+
+    expect(mockSystemAlerts).toEqual([]);
+    expect(mockCalls).toContain("join:keyring");
+  });
 });
 
 describe("useBackup — import", () => {
@@ -130,7 +330,7 @@ describe("useBackup — import", () => {
 
     await act(async () => result.current.runImport());
 
-    expect(mockCalls).toEqual(["stage", "validate", "beforeRestore"]);
+    expect(mockCalls).toEqual(["stage", "decrypt", "validate", "keepDevice", "beforeRestore"]);
     expect(useRestoreStore.getState().phase).toBe("restoring");
   });
 
@@ -142,7 +342,14 @@ describe("useBackup — import", () => {
 
     await act(async () => result.current.runImport());
 
-    expect(mockCalls).toEqual(["stage", "validate", "beforeRestore", "discard"]);
+    expect(mockCalls).toEqual([
+      "stage",
+      "decrypt",
+      "validate",
+      "keepDevice",
+      "beforeRestore",
+      "discard",
+    ]);
     expect(useRestoreStore.getState().phase).toBe("idle");
     // Its own message: "that file could not be read" would blame a backup that was fine.
     expect(mockAlerts).toEqual(["backup.beforeRestoreFailed"]);
@@ -155,7 +362,7 @@ describe("useBackup — import", () => {
 
     await act(async () => result.current.runImport());
 
-    expect(mockCalls).toEqual(["stage", "validate", "discard"]);
+    expect(mockCalls).toEqual(["stage", "decrypt", "validate", "discard"]);
     expect(useRestoreStore.getState().phase).toBe("idle");
     expect(mockShownErrors).toEqual(["backup.rejected.notBati"]);
   });
@@ -180,7 +387,7 @@ describe("useBackup — import", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(mockCalls).toEqual(["stage", "validate", "beforeRestore"]);
+    expect(mockCalls).toEqual(["stage", "decrypt", "validate", "keepDevice", "beforeRestore"]);
   });
 
   test("the rejection reason reaches the user rather than a generic failure", async () => {
@@ -211,7 +418,7 @@ describe("useBackup — import", () => {
 
     await act(async () => result.current.runImport());
 
-    expect(mockCalls).toEqual(["stage", "validate", "discard"]);
+    expect(mockCalls).toEqual(["stage", "decrypt", "validate", "discard"]);
     expect(useRestoreStore.getState().phase).toBe("idle");
     expect(mockAlerts).toEqual(["backup.importFailed"]);
     expect(mockReportedErrors).toEqual(["backup.import"]);

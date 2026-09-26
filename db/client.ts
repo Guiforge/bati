@@ -1,5 +1,7 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
+import { File } from "expo-file-system";
 import {
+  defaultDatabaseDirectory,
   deleteDatabaseSync,
   openDatabaseAsync,
   openDatabaseSync,
@@ -15,6 +17,20 @@ export { SCHEMA_VERSION };
 // dance (native handle deletion is unreliable in Expo Go anyway). __drizzle_migrations
 // then tracks per-file which migrations have run. This is the *only* rebuild mechanism.
 export const DB_NAME = `bati.v${SCHEMA_VERSION}.db`;
+/** Where a restore parks the database it replaces (src/backupFiles.ts, `commitRestore`). */
+export const SAFETY_NAME = `${DB_NAME}.bak`;
+
+/**
+ * A restore killed between its two renames leaves no database and the hero's under `.bak`.
+ * Opened as is, SQLite would create an empty one, onboarding would start from nothing, and the
+ * next restore would delete the `.bak`. Put back before anything opens, which is here.
+ */
+function putBackInterruptedRestore(): void {
+  const dir = `file://${defaultDatabaseDirectory}`;
+  const live = new File(`${dir}/${DB_NAME}`);
+  const parked = new File(`${dir}/${SAFETY_NAME}`);
+  if (!live.exists && parked.exists) parked.moveSync(live);
+}
 
 // Dev-only escape hatch to wipe & re-seed the current version without bumping.
 // EXPO_PUBLIC_* env vars are inlined by Expo at build time.
@@ -42,6 +58,7 @@ function createSingleton(): DbSingleton {
     }
   }
 
+  putBackInterruptedRestore();
   const expoDb = openDatabaseSync(DB_NAME, { enableChangeListener: true });
   // WAL and a wait, set here because they are properties of the connection and this is where
   // connections are made.
@@ -147,6 +164,17 @@ export async function withIsolatedConnection<T>(
   } finally {
     await isolated.closeAsync();
   }
+}
+
+/**
+ * `withIsolatedConnection` for a write the shared connection cannot host (an `ATTACH`, for the
+ * device sync merge), queued behind the app's own writes. WAL lets the shared connection see the
+ * result as soon as it commits.
+ */
+export function withWritableConnection<T>(
+  fn: (isolated: IsolatedConnection) => Promise<T>,
+): Promise<T> {
+  return serializeOnDatabase(() => withIsolatedConnection(fn));
 }
 
 /**

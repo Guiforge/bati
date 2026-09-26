@@ -220,6 +220,12 @@ export type Peer = {
   | { state: "level" | "behind" }
   /** Sealed with a key this phone does not hold: the other device's password will open it. */
   | { state: "locked" }
+  /**
+   * Sealed with a key this phone does not hold, but older on the server than this device's own
+   * file: that device is the one to learn this phone's password, and asking here too is how two
+   * devices that both changed their password offline swapped vaults instead of sharing one.
+   */
+  | { state: "waiting" }
   /** Opened, but not a backup this build can adopt: a newer app version, or not a backup at all. */
   | { state: "unreadable" }
 );
@@ -249,38 +255,67 @@ export async function syncNow(options: { snapshotFirst: boolean }): Promise<Sync
   const listing = await listRemote(target);
 
   clearPeerScratch();
-  const answered = await answeredPeers();
-  const known = await knownVerdicts();
-  const here = await localState();
-  const verdicts: Record<string, Verdict> = {};
+  const context: JudgeContext = {
+    answered: await answeredPeers(),
+    known: await knownVerdicts(),
+    here: await localState(),
+    ownFile: listing.find((f) => f.name === own),
+    verdicts: {},
+  };
   const peers: Peer[] = [];
-  for (const file of othersIn(listing, own)) {
-    const stamp = `${file.etag}#${here}`;
-    const cached = known[file.name];
-    let peer: Peer =
-      cached?.stamp === stamp
-        ? { name: file.name, etag: file.etag, state: cached.state }
-        : await fetchAndJudge(target, file);
-    if (peer.state === "level" || peer.state === "behind" || peer.state === "unreadable") {
-      verdicts[file.name] = { stamp, state: peer.state };
-    }
-    // An answer the hero already gave for this exact state is not asked again. Only news from
-    // that device (new sessions, new content) changes the fingerprint; sealing the same history
-    // anew does not.
-    if ("comparison" in peer && answered[file.name] === peer.comparison.fingerprint) {
-      peer = { name: file.name, etag: file.etag, state: "level" };
-    }
-    // Only a snapshot the hero may take is kept; plaintext history does not linger otherwise.
-    const plain = peerScratch(file.name, "plain");
-    if (!("comparison" in peer) && plain.exists) plain.delete();
-    peers.push(peer);
-  }
-  await SecureStore.setItemAsync(STORE_VERDICTS, JSON.stringify(verdicts));
+  for (const file of othersIn(listing, own)) peers.push(await judge(target, file, context));
+  await SecureStore.setItemAsync(STORE_VERDICTS, JSON.stringify(context.verdicts));
 
   const uploaded = (await holdBack(target, peers))
     ? false
     : await uploadIfNeeded(target, own, listing, options.snapshotFirst);
   return { uploaded, peers };
+}
+
+type JudgeContext = {
+  answered: Record<string, string>;
+  known: Record<string, Verdict>;
+  here: string;
+  ownFile: RemoteFile | undefined;
+  /** Filled in: the verdicts worth keeping for the next sync. */
+  verdicts: Record<string, Verdict>;
+};
+
+/** What this sync concludes about one other device, from a kept verdict when one still holds. */
+async function judge(target: DavTarget, file: RemoteFile, context: JudgeContext): Promise<Peer> {
+  const stamp = `${file.etag}#${context.here}`;
+  const cached = context.known[file.name];
+  let peer: Peer =
+    cached?.stamp === stamp
+      ? { name: file.name, etag: file.etag, state: cached.state }
+      : await fetchAndJudge(target, file);
+  if (peer.state === "level" || peer.state === "behind" || peer.state === "unreadable") {
+    context.verdicts[file.name] = { stamp, state: peer.state };
+  }
+  if (peer.state === "locked" && !mustJoin(file, context.ownFile)) {
+    peer = { name: file.name, etag: file.etag, state: "waiting" };
+  }
+  // An answer the hero already gave for this exact state is not asked again. Only news from that
+  // device (new sessions, new content) changes the fingerprint; sealing the same history anew
+  // does not.
+  if ("comparison" in peer && context.answered[file.name] === peer.comparison.fingerprint) {
+    peer = { name: file.name, etag: file.etag, state: "level" };
+  }
+  // Only a snapshot the hero may take is kept; plaintext history does not linger otherwise.
+  const plain = peerScratch(file.name, "plain");
+  if (!("comparison" in peer) && plain.exists) plain.delete();
+  return peer;
+}
+
+/**
+ * Of two devices sealing under different keys, the one whose file reached the server last has the
+ * newer vault, and the other joins it. A device re-uploads right after its key changes, so its
+ * file's date on the server is when that happened, measured by the server's clock alone: no
+ * phone clock can tip it. Without a date on either side, the question is asked, as before.
+ */
+function mustJoin(peer: RemoteFile, ownFile: RemoteFile | undefined): boolean {
+  if (!ownFile || ownFile.modified === 0 || peer.modified === 0) return true;
+  return peer.modified > ownFile.modified;
 }
 
 async function knownVerdicts(): Promise<Record<string, Verdict>> {
@@ -291,13 +326,16 @@ async function knownVerdicts(): Promise<Record<string, Verdict>> {
 /**
  * Whether this device keeps its file to itself this time:
  * - another device is `ahead`: it already holds everything this one has, so sending adds nothing;
+ * - another is `locked`: this device joins that vault first, then sends;
  * - this device never sent anything here and another has news for it: a tablet just through
  *   onboarding has a village name and an avatar newer than the phone's, and uploading them first
  *   made a near-empty device look like news to every other one. It listens before it speaks, and
  *   sends once the hero took that device's version or chose to keep this one.
  */
 async function holdBack(target: DavTarget, peers: Peer[]): Promise<boolean> {
-  if (peers.some((p) => p.state === "ahead")) return true;
+  // Sealed under a vault this device is about to leave: sent now, it would be a newer file under
+  // the old key, and the other device would be asked to join it in turn.
+  if (peers.some((p) => p.state === "ahead" || p.state === "locked")) return true;
   const hasNews = peers.some((p) => p.state === "diverged");
   return hasNews && (await changedSinceUpload(target)).firstContact;
 }

@@ -29,7 +29,8 @@ at a time in the whole app, not per screen: they all stage into the same file.
 **Android's backup carries three files and nothing else**: `bati.v<N>.db` and its journal. The
 same directory holds decrypted imports, another device's history opened for comparison, the
 pre-restore `.bak`; naming the three keeps all of those out of Google's copy and under the 25 MB
-quota past which Android backs up nothing at all.
+quota past which Android backs up nothing at all. The `.gpx` files in `gps-tracks/` stay out too:
+they are exports, rebuilt from `gps_points` whenever a recap shares one.
 
 **The folder picker does not reach the classic clouds.** Google Drive, OneDrive and Proton never
 appear in `ACTION_OPEN_DOCUMENT_TREE`, Dropbox's provider is partial, and Nextcloud's serves a stale
@@ -79,12 +80,19 @@ androidx.biometric, are justified in `__tests__/android-permissions.test.ts` for
   `plugins/withAndroidNetworkSecurity.js` lets through in a release build.
 - **One file per device**, `bati-<random install id>.batb`, written only by that device. No lock,
   no shared file, nothing deletes another device's file. At most 16 peers are read, and a file
-  over 256 MB is not.
+  over 256 MB is not. A file goes up as `….batb.part` and a `MOVE` puts it in place, so a cut-off
+  upload never leaves a truncated file under a name devices read (a server without `MOVE` gets
+  the direct `PUT`).
 - **One vault.** A device connecting to a server that already holds sealed files asks for the
   password of the most recently written one and joins it as primary, instead of inventing a key of
   its own (a file left by a phone reset long ago must not win); a device later seen under another
   password (`locked`) prompts the same question. Walking away from that question, or from turning
   encryption on for a server waiting on it, disconnects.
+- **Two new vaults at once.** Two devices that both changed their password offline would each
+  ask to join the other's and swap vaults. The file that reached the server last wins, by the
+  server's own dates (a device re-uploads right after its key changes): the other device sees it
+  as `locked`, asks, and sends nothing until it has joined; the winner sees the loser as
+  `waiting` and says nothing.
 - **What each side lacks** (`compareWithPeer`, on real SQLite): sessions by uuid, deletions by the
   `deleted_sessions` tombstones (0064), and the hero's own content (hero exercises and quests,
   village name, avatar, level, equipment, oath, favourites, quest configs). Derived caches are

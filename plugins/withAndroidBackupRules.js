@@ -33,6 +33,11 @@ const { withAndroidManifest, withDangerousMod } = require("expo/config-plugins")
  * which Android backs up nothing at all. Naming the three files keeps every one of those out
  * without a list of exclusions to forget the next one from.
  *
+ * Nothing else under `files/` goes either, and nothing there needs to: the `.gpx` files in
+ * `gps-tracks/` are exports rebuilt from the `gps_points` table each time a recap shares one
+ * (src/gps/trackFile.ts), and the database carries every point. A file the hero makes that the
+ * database cannot rebuild would need its own `<include>` here.
+ *
  * The name follows `SCHEMA_VERSION`, read from db/schemaVersion.ts so the two cannot drift.
  */
 const schemaVersion = /SCHEMA_VERSION\s*=\s*(\d+)/.exec(

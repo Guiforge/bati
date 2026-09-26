@@ -268,7 +268,27 @@ export async function downloadRemote(
 /** Streams a local sealed file into the folder under `name`, replacing this device's last one. */
 export async function uploadRemote(target: DavTarget, source: File, name: string): Promise<void> {
   await ensureFolder(target);
-  const result = await source.upload(`${target.folderUrl}/${encodeURIComponent(name)}`, {
+  const final = `${target.folderUrl}/${encodeURIComponent(name)}`;
+  // Written under a name no device reads, then moved into place: a PUT cut off halfway left a
+  // truncated file that every other device read as unreadable until this one's next upload.
+  const part = `${final}.part`;
+  await put(target, source, part);
+  const moved = await request(part, {
+    method: "MOVE",
+    headers: { ...authHeader(target), Destination: final, Overwrite: "T" },
+  });
+  if (moved.ok) return;
+  if (moved.status !== 405 && moved.status !== 501) throw refused("Upload", moved.status);
+  // A server without MOVE: the direct write, and the stray `.part` goes on a best effort.
+  await put(target, source, final);
+  await request(part, { method: "DELETE", headers: authHeader(target) }).catch(
+    // Harmless if it stays: no device reads a `.part`, and the next upload overwrites it.
+    () => null,
+  );
+}
+
+async function put(target: DavTarget, source: File, url: string): Promise<void> {
+  const result = await source.upload(url, {
     httpMethod: "PUT",
     uploadType: UploadType.BINARY_CONTENT,
     headers: { ...authHeader(target), "Content-Type": "application/octet-stream" },

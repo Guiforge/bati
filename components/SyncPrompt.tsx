@@ -45,7 +45,11 @@ export function SyncPrompt() {
   useEffect(() => {
     if (inSession || joining !== null || showing) return;
     const peer = result?.peers.find(
-      (p) => p.state !== "level" && p.state !== "behind" && !offered.includes(offerKey(p)),
+      (p) =>
+        p.state !== "level" &&
+        p.state !== "behind" &&
+        p.state !== "waiting" &&
+        !offered.includes(offerKey(p)),
     );
     if (!peer) return;
     markOffered(offerKey(peer));

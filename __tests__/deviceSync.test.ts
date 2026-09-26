@@ -254,6 +254,31 @@ test("a device ahead holds everything this one has, so this one sends nothing", 
   expect(mockUploads).toHaveLength(1);
 });
 
+test("two devices that both changed their password: the older file joins the newer one", async () => {
+  // This device sent its file under its new key first...
+  await syncNow({ snapshotFirst: true });
+  const [own] = mockUploads;
+  assert(own);
+  mockModified.set(own, Date.parse("2026-09-25T10:00:00Z"));
+
+  // ...and the tablet's file under its own new key is older: the tablet is the one to join.
+  mockServer.set(TABLET, "t1");
+  mockModified.set(TABLET, Date.parse("2026-09-25T09:00:00Z"));
+  mockPeers[TABLET] = { open: "needsSecret" };
+  mockFingerprint = "local-2";
+  const quiet = await syncNow({ snapshotFirst: true });
+  expect(states(quiet.peers)).toEqual({ [TABLET]: "waiting" });
+  expect(quiet.uploaded).toBe(true);
+
+  // Had the tablet's reached the server last, this one would ask, and send nothing meanwhile:
+  // a newer file under the key it is about to leave would ask the tablet to join it in turn.
+  mockModified.set(TABLET, Date.parse("2026-09-25T11:00:00Z"));
+  mockFingerprint = "local-3";
+  const asked = await syncNow({ snapshotFirst: true });
+  expect(states(asked.peers)).toEqual({ [TABLET]: "locked" });
+  expect(asked.uploaded).toBe(false);
+});
+
 test("a new device joins the vault of the most recently written file", async () => {
   mockServer.set(OLD_PHONE, "o1");
   mockModified.set(OLD_PHONE, Date.parse("2026-01-01"));

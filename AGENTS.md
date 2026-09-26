@@ -321,6 +321,8 @@ Two things to know before tagging:
 - **Write the changelog first.** `fastlane/metadata/android/*/changelogs/<versionCode>.txt` is
   named after the integer, not the version string, and a missing file fails silently — the entry
   just has no notes. `npx expo config --type public | grep versionCode` tells you the number.
+  The same file is what the app shows after an update (`app.config.js` embeds it, see
+  `src/whatsNew.ts`), so write it for a hero, not only for a store page.
 - **Expo modules build from source** (`expo.autolinking.buildFromSource` in `package.json`), which
   is what lets F-Droid reproduce the build and costs a much slower one. `release.yml` also accepts
   `workflow_dispatch`, and its publish step is guarded by `startsWith(github.ref, 'refs/tags/')` —

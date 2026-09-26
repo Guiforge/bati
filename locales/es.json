@@ -1840,5 +1840,13 @@
       "pickOther": "Elegir otra carpeta"
     },
     "webdavAddresses": "Direcciones habituales:\nkDrive: https://<tu id de kDrive>.connect.kdrive.infomaniak.com\nKoofr: https://app.koofr.net/dav/Koofr\nRound Sync, en este teléfono: http://127.0.0.1:8080"
+  },
+  "whats_new": {
+    "title": "Novedades de la {{version}}",
+    "empty": "No hay notas para esta versión.",
+    "card_title": "Bati ya está en la {{version}}",
+    "card_open": "Novedades",
+    "version_label": "Versión {{version}}, novedades",
+    "all_releases": "Las notas de todas las versiones"
   }
 }

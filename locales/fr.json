@@ -1842,5 +1842,13 @@
       "pickOther": "Choisir un autre dossier"
     },
     "webdavAddresses": "Adresses courantes :\nkDrive : https://<ton identifiant kDrive>.connect.kdrive.infomaniak.com\nKoofr : https://app.koofr.net/dav/Koofr\nRound Sync, sur ce téléphone : http://127.0.0.1:8080"
+  },
+  "whats_new": {
+    "title": "Nouveautés de la {{version}}",
+    "empty": "Pas de notes pour cette version.",
+    "card_title": "Bati passe en {{version}}",
+    "card_open": "Nouveautés",
+    "version_label": "Version {{version}}, nouveautés",
+    "all_releases": "Les notes de toutes les versions"
   }
 }

@@ -49,6 +49,7 @@ import { useBugReport, versionLabel } from "@/hooks/useBugReport";
 import { useHaptics } from "@/hooks/useHaptics";
 import { LANGUAGE_NAMES, MACHINE_TRANSLATED, nextAppLanguage } from "@/src/i18n/deviceLanguage";
 import { reportError } from "@/src/reportError";
+import { releaseNotes } from "@/src/whatsNew";
 import { useSettingsStore } from "@/stores/settings";
 
 type AvatarSectionProps = {
@@ -231,6 +232,7 @@ export default function SettingsScreen() {
     setMapTilesEnabled,
     setUpdateCheckEnabled,
   } = useSettingsStore();
+  const hasNotes = releaseNotes(language).length > 0;
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const { openBugReport, crashCount } = useBugReport();
@@ -675,9 +677,35 @@ export default function SettingsScreen() {
           </Text>
 
           <DevFooter />
-          <Text testID="settings-version" fontSize="$2" color="$textSecondary" text="center">
-            {versionLabel}
-          </Text>
+          {/* The version line is also the door to its release notes, any time after the card,
+              and only when this build has some: a door onto "no notes" is a dead end. */}
+          {hasNotes ? (
+            <YStack
+              testID="settings-version-notes"
+              self="center"
+              px="$4"
+              minH={48}
+              justify="center"
+              onPress={() => router.push("/whats-new" as never)}
+              accessibilityRole="button"
+              accessibilityLabel={t("whats_new.version_label", "Version {{version}}, what's new", {
+                version: versionLabel,
+              })}
+            >
+              <Text
+                testID="settings-version"
+                fontSize="$2"
+                color="$textSecondary"
+                textDecorationLine="underline"
+              >
+                {versionLabel}
+              </Text>
+            </YStack>
+          ) : (
+            <Text testID="settings-version" fontSize="$2" color="$textSecondary" text="center">
+              {versionLabel}
+            </Text>
+          )}
         </YStack>
       </RNScrollView>
 

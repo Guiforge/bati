@@ -1774,5 +1774,13 @@
       "pickOther": "Anderen Ordner wählen"
     },
     "webdavAddresses": "Übliche Adressen:\nkDrive: https://<deine kDrive-ID>.connect.kdrive.infomaniak.com\nKoofr: https://app.koofr.net/dav/Koofr\nRound Sync, auf diesem Telefon: http://127.0.0.1:8080"
+  },
+  "whats_new": {
+    "title": "Neu in {{version}}",
+    "empty": "Keine Notizen zu dieser Version.",
+    "card_title": "Bati ist jetzt {{version}}",
+    "card_open": "Neuerungen",
+    "version_label": "Version {{version}}, Neuerungen",
+    "all_releases": "Notizen aller Versionen"
   }
 }

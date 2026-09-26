@@ -1770,5 +1770,13 @@
       "pickOther": "Choose another folder"
     },
     "webdavAddresses": "Usual addresses:\nkDrive: https://<your kDrive id>.connect.kdrive.infomaniak.com\nKoofr: https://app.koofr.net/dav/Koofr\nRound Sync, on this phone: http://127.0.0.1:8080"
+  },
+  "whats_new": {
+    "title": "What's new in {{version}}",
+    "empty": "No notes for this version.",
+    "card_title": "Bati is now {{version}}",
+    "card_open": "What's new",
+    "version_label": "Version {{version}}, what's new",
+    "all_releases": "Every version's notes"
   }
 }

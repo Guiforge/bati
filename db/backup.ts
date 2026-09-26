@@ -385,6 +385,8 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "updateCheckedAt",
   "updateDismissed",
   "updateLatest",
+  // Which release notes this copy of the app already showed: another phone's answer is not ours.
+  "notesSeenVersion",
   "guidesSeen",
   "recentCameoLines",
   "comebackGreetedAfter",

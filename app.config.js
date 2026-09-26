@@ -44,6 +44,33 @@ function versionCodeFrom(version) {
 // undefined version. Merging app.json in makes the function total without inventing a value — in
 // Expo's path the two are the same object, so the spread is a no-op.
 const appJson = require("./app.json");
+const fs = require("node:fs");
+const path = require("node:path");
+
+/**
+ * This version's store notes, `{ en: "...", fr: "..." }`, for the in-app "What's new" screen.
+ *
+ * Read from the fastlane files rather than copied into the locales: those are already written
+ * before every release, and a second copy is one that gets forgotten. A missing file is simply
+ * absent here; `__tests__/changelog.test.ts` is what makes it a failure.
+ */
+function changelogFor(versionCode) {
+  const root = path.join(__dirname, "fastlane", "metadata", "android");
+  const notes = {};
+  if (!fs.existsSync(root)) return notes;
+  for (const locale of fs.readdirSync(root)) {
+    const file = path.join(root, locale, "changelogs", `${versionCode}.txt`);
+    // The files are hard-wrapped for the store's text box; an indented line continues the one
+    // above it, and a phone wraps on its own.
+    if (fs.existsSync(file)) {
+      notes[locale.slice(0, 2)] = fs
+        .readFileSync(file, "utf8")
+        .trim()
+        .replace(/\n[ \t]+/g, " ");
+    }
+  }
+  return notes;
+}
 
 module.exports = ({ config } = {}) => {
   const base = { ...appJson.expo, ...config };
@@ -59,5 +86,6 @@ module.exports = ({ config } = {}) => {
   return {
     ...base,
     android: { ...base.android, versionCode },
+    extra: { ...base.extra, changelog: changelogFor(versionCode) },
   };
 };

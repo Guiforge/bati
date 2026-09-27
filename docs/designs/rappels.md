@@ -469,6 +469,22 @@ depuis). Fichiers et numéros de ligne sont justes. Ce qui suit corrige ou préc
 - **Commentaires morts** : `src/widget.tsx:250` (`rescheduleOathReminder()`) et
   `components/oath/useOathText.ts:7` parlent de l'ancien rappel. On les corrige.
 
+## Limites connues à l'implémentation (27/09)
+
+Relevées par l'audit final des quatre PR, assumées pour la v1 de la fonction :
+
+- **« Bati se tait »** s'ajoute au dernier jour que le téléphone *peut* poster. Si ce jour-là est
+  jeté (téléphone éteint plus d'une heure, notification refusée), la ligne ne paraît jamais : le
+  rappel précédent est déjà parti sans elle.
+- **Même phrase deux fois de suite** dans deux cas rares où une seule variante est possible : un
+  serment d'exercice sans échelle, une aventure dont le titre n'a pas chargé.
+- **Android 7 (API 24-25)** : pas d'effacement à minuit (`setTimeoutAfter` n'existe qu'à partir
+  d'Android 8). La notification reste jusqu'au balayage ou au rappel suivant.
+- **Permission ou canal retirés** : l'interrupteur ne passe à off qu'à l'ouverture des Réglages.
+  Entre-temps rien n'est posté, le natif vérifie avant chaque rappel.
+- **Traductions DE et ES** des textes `reminders.*` et des puces de la fiche store : à relire par
+  un natif avant la release (l'app les signale déjà comme traduites par machine).
+
 ## Historique
 
 | Version | Ce qui a changé |

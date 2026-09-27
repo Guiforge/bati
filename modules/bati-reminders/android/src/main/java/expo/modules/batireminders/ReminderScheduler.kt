@@ -68,10 +68,14 @@ internal object ReminderScheduler {
       }
   }
 
-  /** The next thing to ring, or null. A snooze waits while a session holds today. */
+  /**
+   * The next thing to ring, or null. A snooze waits while a session holds today. Nothing at or before
+   * `handled` is offered again: the alarm that just went off is done with it, posted or refused.
+   */
   private fun next(
     context: Context,
     now: Long,
+    handled: Long = Long.MIN_VALUE,
   ): Due? {
     val store = ReminderStore(context)
     val today = LocalTime.today()
@@ -89,7 +93,7 @@ internal object ReminderScheduler {
       if (at + LATE_MS < now) continue
       candidates.add(Due(date, at, entry))
     }
-    return candidates.minByOrNull { it.at }
+    return candidates.filter { it.at > handled }.minByOrNull { it.at }
   }
 
   /** What the plan said about today, and only if it was made today. */
@@ -105,10 +109,13 @@ internal object ReminderScheduler {
     )
 
   /** One alarm, for the next thing to ring, replacing whatever was armed. */
-  fun arm(context: Context) {
+  fun arm(
+    context: Context,
+    handled: Long = Long.MIN_VALUE,
+  ) {
     val manager = context.getSystemService(AlarmManager::class.java) ?: return
     val now = System.currentTimeMillis()
-    val due = next(context, now)
+    val due = next(context, now, handled)
     if (due == null) {
       manager.cancel(alarmIntent(context))
       return
@@ -116,12 +123,21 @@ internal object ReminderScheduler {
     manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, maxOf(due.at, now), alarmIntent(context))
   }
 
-  /** The alarm went off: post what is due, if anything still is, then arm the next one. */
+  /**
+   * The alarm went off: post what is due, if anything still is, then arm the next one. Whatever was
+   * due is handled either way: a reminder Android refused, or a snooze with nothing left to say, is
+   * not armed again a second later, which would loop for the hour it stays in its window.
+   */
   fun onAlarm(context: Context) {
     val now = System.currentTimeMillis()
     val due = next(context, now)
-    if (due != null && due.at <= now) post(context, due)
-    arm(context)
+    if (due == null || due.at > now) {
+      arm(context)
+      return
+    }
+    if (due.snooze) ReminderStore(context).snooze = null
+    post(context, due)
+    arm(context, due.at)
   }
 
   private fun post(
@@ -138,10 +154,12 @@ internal object ReminderScheduler {
     val title: String
     val body: String
     if (due.snooze) {
+      // The words the day's reminder said, kept in the journal: the plan no longer carries a day
+      // that has rung.
       val posted = store.log().firstOrNull { it.optString("date") == due.date }
       title = posted?.optString("title").orEmpty()
       body = posted?.optString("body").orEmpty()
-      store.snooze = null
+      if (title.isEmpty()) return
     } else {
       val entry = due.entry ?: return
       title = entry.optString("title")

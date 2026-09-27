@@ -49,7 +49,6 @@ import type { DistanceUnit } from "@/db/preferences";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
 import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
-import { isSessionHeld } from "@/db/reminders";
 import type {
   DifficultyCode,
   ExerciseStyle,
@@ -84,7 +83,6 @@ import type { OutingGoal } from "@/src/gps/track";
 import { credited } from "@/src/gps/track";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
-import { replanReminders } from "@/src/reminders";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
 import { isExpedition, useExpeditionStore } from "@/stores/expedition";
@@ -1942,18 +1940,7 @@ export async function forgetSession(sessionId: number): Promise<"deleted" | "loc
   invalidateQuestTemplates();
   await updateStreakAfterSession();
   requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
-  // A session taken out of the journal may give a reminder back.
-  replanRemindersNow().catch((e: unknown) => reportError("reminders.replan", e));
   return outcome;
-}
-
-/**
- * The one door to a new reminder plan. This store is the only one that knows whether a session
- * holds today, so the cold start and the background listener come through here too.
- */
-export function replanRemindersNow(): Promise<void> {
-  const { status, savedSessionId } = useSessionStore.getState();
-  return replanReminders(isSessionHeld(status, savedSessionId));
 }
 
 /**
@@ -1973,24 +1960,6 @@ function justStarted(curr: SessionStatus, prev: SessionStatus): boolean {
   return curr === "running" && (prev === "idle" || prev === "finished" || prev === "countdown");
 }
 
-type HoldState = { status: SessionStatus; savedSessionId: number | null };
-
-/**
- * Entering a session holds today's reminder; quitting gives it back; the row a save writes cancels
- * it. A session is only in the journal once `savedSessionId` is set, long after `finished`
- * (docs/designs/rappels.md): so a session abandoned at 19:55 hands the 20:00 reminder back, and one
- * saved at 20:30 cancels the 21:00 snooze.
- */
-function replanIfHoldMoved(curr: HoldState, prev: HoldState): void {
-  if (
-    isSessionHeld(curr.status, curr.savedSessionId) ===
-    isSessionHeld(prev.status, prev.savedSessionId)
-  ) {
-    return;
-  }
-  replanRemindersNow().catch((e: unknown) => reportError("reminders.replan", e));
-}
-
 // Subscribe to session state changes and auto-save for crash recovery
 useSessionStore.subscribe(
   (state) => ({
@@ -2001,13 +1970,9 @@ useSessionStore.subscribe(
     // A mid-session swap moves none of the above, and a recovery that missed it hands the hero
     // back the movement they just refused.
     exerciseIds: state.quest?.exercises.map((qex) => qex.exercise.id),
-    // The reminders only care whether a session holds today, which a save ends as much as a quit.
-    savedSessionId: state.savedSessionId,
   }),
   async (curr, prev) => {
     const state = useSessionStore.getState();
-
-    replanIfHoldMoved(curr, prev);
 
     // Clear saved session when session ends or is idle
     if (curr.status === "idle" || curr.status === "finished") {

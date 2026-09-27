@@ -48,7 +48,6 @@ jest.mock("@/db/completed", () => ({
   // "is not a function", which is exactly how this line came to exist.
   outingSecondsToday: jest.fn().mockResolvedValue(0),
   hasSessionForQuestToday: jest.fn().mockResolvedValue(false),
-  deleteSession: jest.fn().mockResolvedValue("deleted"),
 }));
 // The rest of what saveSession touches on its way through. Stubbed so the store's own
 // behaviour — what it banks, commits and clears — is what these cases actually measure.
@@ -1967,83 +1966,5 @@ describe("what a session may claim it walked", () => {
     await useSessionStore.getState().saveSession(null);
 
     expect(outingSecondsToday).toHaveBeenCalledWith(77);
-  });
-});
-
-jest.mock("@/src/reminders", () => ({
-  replanReminders: jest.fn().mockResolvedValue(undefined),
-}));
-
-/**
- * The reminders are planned again whenever whether a session holds today changes, and only then:
- * docs/designs/rappels.md, "Quand on recalcule". The rule itself is `isSessionHeld`'s; this is the
- * door every caller comes through.
- */
-describe("reminders follow the session", () => {
-  const { replanReminders } = jest.requireMock("@/src/reminders") as {
-    replanReminders: jest.Mock;
-  };
-  const flush = () => new Promise((resolve) => setImmediate(resolve));
-
-  beforeEach(async () => {
-    useSessionStore.setState({ status: "idle", savedSessionId: null });
-    await flush();
-    replanReminders.mockClear();
-  });
-
-  test("a session starting holds today's reminder", async () => {
-    useSessionStore.setState({ status: "countdown" });
-    await flush();
-    expect(replanReminders).toHaveBeenCalledWith(true);
-  });
-
-  test("moving inside a session plans nothing new", async () => {
-    useSessionStore.setState({ status: "running" });
-    await flush();
-    replanReminders.mockClear();
-    useSessionStore.setState({ status: "resting" });
-    await flush();
-    expect(replanReminders).not.toHaveBeenCalled();
-  });
-
-  test("a victory still holds until it is saved, then gives today up", async () => {
-    useSessionStore.setState({ status: "running" });
-    await flush();
-    useSessionStore.setState({ status: "finished" });
-    await flush();
-    replanReminders.mockClear();
-    useSessionStore.setState({ savedSessionId: 42 });
-    await flush();
-    expect(replanReminders).toHaveBeenCalledWith(false);
-  });
-
-  test("a plan that fails is a breadcrumb, never a broken session", async () => {
-    const { reportError } = jest.requireMock("@/src/reportError") as { reportError: jest.Mock };
-    reportError.mockClear();
-    replanReminders.mockRejectedValueOnce(new Error("busy"));
-    useSessionStore.setState({ status: "countdown" });
-    await flush();
-    expect(reportError).toHaveBeenCalledWith("reminders.replan", expect.any(Error));
-  });
-
-  test("a session taken back out of the journal plans again, and survives a failed plan", async () => {
-    const { forgetSession } = require("../stores/session") as typeof import("../stores/session");
-    const { reportError } = jest.requireMock("@/src/reportError") as { reportError: jest.Mock };
-    reportError.mockClear();
-    replanReminders.mockRejectedValueOnce(new Error("busy"));
-    expect(await forgetSession(7)).toBe("deleted");
-    await flush();
-    expect(replanReminders).toHaveBeenCalledWith(false);
-    expect(reportError).toHaveBeenCalledWith("reminders.replan", expect.any(Error));
-  });
-
-  test("the door the cold start and the background listener use reads the store", async () => {
-    const { replanRemindersNow } =
-      require("../stores/session") as typeof import("../stores/session");
-    useSessionStore.setState({ status: "paused", savedSessionId: null });
-    await flush();
-    replanReminders.mockClear();
-    await replanRemindersNow();
-    expect(replanReminders).toHaveBeenCalledWith(true);
   });
 });

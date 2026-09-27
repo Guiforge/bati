@@ -27,12 +27,11 @@ import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { SyncPrompt } from "@/components/SyncPrompt";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { installCrashHandler, recordCrash } from "@/src/crashLog";
-import { replanWhenBackgrounded } from "@/src/reminders";
+import { keepRemindersInStep, replanRemindersNow } from "@/src/reminders";
 import { reportError } from "@/src/reportError";
 import { AppBackground } from "@/src/ui/AppBackground";
 import { requestWidgetsUpdate } from "@/src/widget";
 import { useChorusStore } from "@/stores/chorus";
-import { replanRemindersNow } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import "../i18n";
@@ -123,9 +122,10 @@ export default function RootLayout() {
     setIsNavigationReady(true);
   }, []);
 
-  // Anything written while the app was open plans the reminders again on the way out.
+  // A session starting or ending, and anything written while the app was open, plans the
+  // reminders again.
   useEffect(() => {
-    const subscription = replanWhenBackgrounded(replanRemindersNow);
+    const subscription = keepRemindersInStep();
     return () => subscription.remove();
   }, []);
 

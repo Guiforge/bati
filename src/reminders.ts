@@ -14,15 +14,13 @@ import {
 import { i18n } from "@/i18n";
 import * as Reminders from "@/modules/bati-reminders";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
+import { useSessionStore } from "@/stores/session";
+import { isSessionHeld } from "@/stores/sessionHold";
 import { reportError } from "./reportError";
 
 /**
  * Hands the native reminders a fresh plan (docs/designs/rappels.md): the days, the journal, the
  * Home's offer and the oath, read now, planned by `planReminders`, armed by the native half.
- *
- * `sessionHeld` comes from the session store (`isSessionHeld`), which is the one caller that knows
- * it: every other door goes through `replanRemindersNow` there, so this module never imports the
- * store that imports it.
  *
  * Nothing is read on a phone whose switch is off: the switch is the native half's, and turning it on
  * calls this again.
@@ -67,23 +65,54 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
   });
 }
 
+/** The one door to a new plan: whether a session holds today is read here, from the store. */
+export function replanRemindersNow(): Promise<void> {
+  const { status, savedSessionId } = useSessionStore.getState();
+  return replanReminders(isSessionHeld(status, savedSessionId));
+}
+
 let plannedAt: string | null = null;
 
 /**
- * Plans again whenever the app goes to the background after anything was written: a session, an
- * oath, the language, the days. `getChangeVersion` also moves with the day, so a new day plans
- * again too. The one listener on `AppState` in the app, returned so the caller can remove it.
+ * Keeps the reminders' plan in step with the app, from the root layout:
+ *
+ * - whenever whether a session holds today changes. Entering a session holds today's reminder;
+ *   quitting gives it back; the row a save writes cancels it. A session is only in the journal once
+ *   `savedSessionId` is set, long after `finished`: so a session abandoned at 19:55 hands the 20:00
+ *   reminder back, and one saved at 20:30 cancels the 21:00 snooze;
+ * - whenever the app goes to the background after anything was written: a session, an oath, the
+ *   language, the days, a session taken back out of the journal. `getChangeVersion` also moves with
+ *   the day, so a new day plans again too. The one listener on `AppState` in the app.
+ *
+ * Here rather than in the session store: the store imports nothing of the reminders, whose planning
+ * reads the Home's whole waterfall. Returned so the caller can remove it.
+ *
+ * ponytail: a session deleted from the journal while the app stays open plans again on the way out,
+ *           not at once. A reminder due in that very window rings from the old plan. Ceiling: one
+ *           reminder, rarely. Call `replanRemindersNow` from the journal's delete if testers hit it.
  */
-export function replanWhenBackgrounded(replan: () => Promise<void>): { remove(): void } {
-  return AppState.addEventListener("change", (status) => {
+export function keepRemindersInStep(): { remove(): void } {
+  const unsubscribe = useSessionStore.subscribe(
+    (s) => isSessionHeld(s.status, s.savedSessionId),
+    () => {
+      replanRemindersNow().catch((e: unknown) => reportError("reminders.replan", e));
+    },
+  );
+  const appState = AppState.addEventListener("change", (status) => {
     if (status !== "background") return;
     getChangeVersion()
       .then(async (version) => {
         if (version === plannedAt) return;
-        await replan();
+        await replanRemindersNow();
         // After, not before: a plan that failed is tried again on the next way out.
         plannedAt = version;
       })
       .catch((e: unknown) => reportError("reminders.replan", e));
   });
+  return {
+    remove() {
+      unsubscribe();
+      appState.remove();
+    },
+  };
 }

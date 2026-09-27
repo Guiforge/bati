@@ -10,7 +10,6 @@ import {
 import { gte } from "drizzle-orm";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
-import type { SessionStatus } from "@/stores/session";
 import { db, schema } from "./client";
 import { OUTING_COUNTS_AFTER_SECONDS } from "./completed";
 import { dayKey } from "./dates";
@@ -61,16 +60,6 @@ export const IGNORED_BEFORE_ASKING = 3;
 export const DAYS_BETWEEN_ASKING = 30;
 /** The hour offered when nothing in the journal says better. */
 export const DEFAULT_REMINDER_TIME = "18:00";
-
-/**
- * Whether a session holds today's reminder: on screen, or won and not saved yet (the victory screen
- * waits for an answer, and the session is only in the journal once it has one). A victory already
- * saved no longer holds anything.
- */
-export function isSessionHeld(status: SessionStatus, savedSessionId: number | null): boolean {
-  if (status === "idle") return false;
-  return status !== "finished" || savedSessionId === null;
-}
 
 /** A session as the plan needs it: when, and whether it was an outing. */
 export type ReminderSession = {

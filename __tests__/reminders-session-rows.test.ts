@@ -64,18 +64,4 @@ describe("reminder session predicates", () => {
       await ids(completed.countsAsSession()),
     );
   });
-
-  test("the days go through the preferences and come back as they went", async () => {
-    const { reminders } = load();
-    expect(await reminders.getReminderDays()).toEqual({});
-
-    await reminders.setReminderDays({ mon: "20:00", sat: "09:30" });
-    expect(await reminders.getReminderDays()).toEqual({ mon: "20:00", sat: "09:30" });
-  });
-
-  test("an impossible hour is dropped on the way in, not stored for later", async () => {
-    const { reminders } = load();
-    await reminders.setReminderDays({ mon: "25:00", tue: "06:00" });
-    expect(await reminders.getReminderDays()).toEqual({ tue: "06:00" });
-  });
 });

@@ -15,8 +15,7 @@ import { dayKey } from "./dates";
 import { formatDurationEstimate } from "./estimate";
 import type { HomeOffer } from "./homeOffer";
 import { DEFAULT_WEEKLY_TARGET, type Oath } from "./oaths";
-import { getPreference, setPreference } from "./preferences";
-import { REST_LOOKBACK_DAYS, restSuggestionAt } from "./restSuggestions";
+import { restSuggestionAt } from "./restSuggestions";
 
 /**
  * The reminders' rule, whole: which days ring, when, and what they say (docs/designs/rappels.md).
@@ -469,16 +468,3 @@ export function parseReminderDays(raw: string | null): ReminderDays {
     return {};
   }
 }
-
-const REMINDER_DAYS_KEY = "reminderDays";
-
-export async function getReminderDays(): Promise<ReminderDays> {
-  return parseReminderDays(await getPreference(REMINDER_DAYS_KEY));
-}
-
-export async function setReminderDays(days: ReminderDays): Promise<void> {
-  await setPreference(REMINDER_DAYS_KEY, JSON.stringify(parseReminderDays(JSON.stringify(days))));
-}
-
-/** How far back the plan reads the journal: the rest advice's window, which covers the oath's week. */
-export const REMINDER_LOOKBACK_DAYS = REST_LOOKBACK_DAYS;

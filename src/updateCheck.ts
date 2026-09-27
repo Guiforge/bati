@@ -116,6 +116,15 @@ export async function checkForUpdate(): Promise<string | null> {
     if (published) await preferences.setUpdateLatest(published);
   }
 
+  return await knownUpdate();
+}
+
+/**
+ * The newer version already known and not yet dismissed, from the cache alone: never a request.
+ * What `UpdateCard` will show, for a card that must not stand beside it (docs/designs/rappels.md).
+ */
+export async function knownUpdate(): Promise<string | null> {
+  if (!(await preferences.getUpdateCheckEnabled())) return null;
   const latest = await preferences.getUpdateLatest();
   if (!latest || !isNewer(latest, appVersion)) return null;
 

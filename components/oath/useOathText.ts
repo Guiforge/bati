@@ -4,11 +4,10 @@ import { DEFAULT_WEEKLY_TARGET, type OathProgress } from "@/db/oaths";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 
 /**
- * One label for every surface that shows an oath (home card, victory screen, swear screen,
- * the reminder notification), so the wording can never drift between them.
+ * One label for every surface that shows an oath (home card, victory screen, swear screen), so the
+ * wording can never drift between them.
  *
- * Takes the i18n instance rather than `t` so it works outside React too — the notification
- * scheduler has no hooks to call.
+ * Takes the i18n instance rather than `t` so it works outside React too.
  */
 export function oathText(progress: OathProgress, i18n: I18n): string {
   const exercise = progress.exerciseName?.[resolveAppLanguage(i18n.language)] ?? "";

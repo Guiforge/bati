@@ -35,6 +35,7 @@ import type { EquipmentCode } from "@/db/schema";
 import { targetRangeFor } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import { useHaptics } from "@/hooks/useHaptics";
+import * as Reminders from "@/modules/bati-reminders";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
@@ -217,10 +218,34 @@ function CurrentOathCard({
         </Text>
       )}
 
+      <OathReminderLine progress={progress} />
+
       <AppButton variant="outline" size="$3" fontSize={15} onPress={onAbandon}>
         {t("oath.abandon")}
       </AppButton>
     </Card>
+  );
+}
+
+/**
+ * A weekly oath is the one that names days, so it is where the reminder is offered: one line, a
+ * link to Settings, gone once the reminders are on (docs/designs/rappels.md).
+ */
+function OathReminderLine({ progress }: { progress: OathProgress }) {
+  const { t } = useTranslation();
+  const router = useRouter();
+  if (progress.oath.metric !== "weekly_sessions" || progress.isFulfilled) return null;
+  if (!Reminders.isAvailable() || Reminders.getState().enabled) return null;
+  return (
+    <Text
+      testID="oath-reminder-offer"
+      fontSize={13}
+      color="$primaryText"
+      accessibilityRole="link"
+      onPress={() => router.push("/settings" as never)}
+    >
+      {t("reminders.offer")}
+    </Text>
   );
 }
 

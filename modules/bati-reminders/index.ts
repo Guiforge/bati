@@ -16,6 +16,9 @@ type BatiRemindersNativeModule = {
   resume(): boolean;
   getState(): string | null;
   areEnabled(): boolean;
+  is24Hour(): boolean;
+  openChannelSettings(): boolean;
+  pickTime(initial: string): Promise<string | null>;
 };
 
 const native = requireOptionalNativeModule<BatiRemindersNativeModule>("BatiReminders");
@@ -76,6 +79,7 @@ export function getState(): NativeReminderState {
       snoozed: e.snoozed === true,
       opened: e.opened === true,
       paused: e.paused === true,
+      postedAt: e.postedAt ?? null,
     })),
   };
 }
@@ -83,4 +87,19 @@ export function getState(): NativeReminderState {
 /** The permission is granted and the reminders' channel is not switched off. */
 export function areEnabled(): boolean {
   return native?.areEnabled() ?? false;
+}
+
+/** Android's "24-hour time" setting. True where there is no native half, as fr, de and es write it. */
+export function is24Hour(): boolean {
+  return native?.is24Hour() ?? true;
+}
+
+/** Android's own time picker. `"HH:mm"`, or null when dismissed or unavailable. */
+export async function pickTime(initial: string): Promise<string | null> {
+  return (await native?.pickTime(initial)) ?? null;
+}
+
+/** The reminders' channel in Android's settings: sound, vibration, importance. */
+export function openChannelSettings(): void {
+  native?.openChannelSettings();
 }

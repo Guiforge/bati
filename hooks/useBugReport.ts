@@ -6,6 +6,7 @@ import { Alert } from "react-native";
 
 import { useToast } from "@/components/common/Toast";
 import { buildBugReportMailto, readCrashLog, readErrorLog } from "@/src/crashLog";
+import { reminderReportLine } from "@/src/reminderReport";
 import { reportError } from "@/src/reportError";
 
 // Version comes from the embedded manifest. The Android build number is derived from the version
@@ -19,6 +20,19 @@ export const versionLabel = [
 ]
   .filter(Boolean)
   .join(" ");
+
+/**
+ * The reminders' line for the mail's technical block, or none. A report that cannot say how the
+ * reminders behaved still goes: it is one line. Outside the hook for the React Compiler, which does
+ * not lower a conditional inside a `try`.
+ */
+async function reminderLines(): Promise<string[]> {
+  const line = await reminderReportLine().catch((error: unknown) => {
+    reportError("settings.bugReportReminders", error);
+    return null;
+  });
+  return line === null ? [] : [line];
+}
 
 /**
  * The one way a report leaves the device: a `mailto:` the hero's own mail client opens,
@@ -46,15 +60,25 @@ export function useBugReport() {
   // is on disk now, and the row only ever needed the count.
   const openBugReport = useCallback(async () => {
     try {
-      const [reports, handled] = await Promise.all([readCrashLog(), readErrorLog()]);
-      const url = buildBugReportMailto(reports, handled, versionLabel, {
-        subject: t("feedback.subject", { version: versionLabel }),
-        prompt: t("feedback.prompt"),
-        technicalHeader: t("feedback.technical_header"),
-        noCrash: t("feedback.no_crash"),
-        errorsHeader: t("feedback.errors_header"),
-        noErrors: t("feedback.no_errors"),
-      });
+      const [reports, handled, reminders] = await Promise.all([
+        readCrashLog(),
+        readErrorLog(),
+        reminderLines(),
+      ]);
+      const url = buildBugReportMailto(
+        reports,
+        handled,
+        versionLabel,
+        {
+          subject: t("feedback.subject", { version: versionLabel }),
+          prompt: t("feedback.prompt"),
+          technicalHeader: t("feedback.technical_header"),
+          noCrash: t("feedback.no_crash"),
+          errorsHeader: t("feedback.errors_header"),
+          noErrors: t("feedback.no_errors"),
+        },
+        reminders,
+      );
       if (!(await Linking.canOpenURL(url))) {
         // Tapping the row and having nothing ever happen reads as broken, not as "no mail app".
         showError(t("settings.no_mail_client", "No email app found on this device"));

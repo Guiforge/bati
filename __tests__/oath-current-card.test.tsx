@@ -57,6 +57,13 @@ jest.mock("@/src/widget", () => ({
   requestWidgetsUpdate: jest.fn().mockResolvedValue(undefined),
 }));
 
+// The reminders' native half: present, and off unless a test turns it on.
+const mockReminders = { enabled: false };
+jest.mock("@/modules/bati-reminders", () => ({
+  isAvailable: () => true,
+  getState: () => ({ enabled: mockReminders.enabled, resumeDate: null, log: [] }),
+}));
+
 /** Noon UTC so the formatted day is the same one in every timezone the suite might run in. */
 const SWORN_AT = "2026-01-15T12:00:00.000Z";
 
@@ -120,4 +127,33 @@ test("an unparseable sworn date drops the line instead of the screen", async () 
   // Intl throws on an invalid date; the guard has to keep the rest of the card alive.
   expect(await screen.findByText("15 × Pull-ups in a row")).toBeVisible();
   expect(screen.queryByText(/^Sworn on/)).toBeNull();
+});
+
+describe("the reminder offered on a weekly oath", () => {
+  const weekly = () =>
+    oathProgress({
+      oath: { ...oathProgress().oath, metric: "weekly_sessions", weeklyTarget: 3, target: 8 },
+      exerciseName: null,
+    });
+
+  test("a weekly oath offers the reminder, one line", async () => {
+    mockReminders.enabled = false;
+    mockGetOathProgress.mockResolvedValue(weekly());
+    await renderScreen();
+    expect(await screen.findByText("Want Bati to remind you on your days?")).toBeVisible();
+  });
+
+  test("gone once the reminders are on, and never on another oath", async () => {
+    mockReminders.enabled = true;
+    mockGetOathProgress.mockResolvedValue(weekly());
+    await renderScreen();
+    await screen.findByText("Sworn on Jan 15, 2026");
+    expect(screen.queryByTestId("oath-reminder-offer")).toBeNull();
+
+    mockReminders.enabled = false;
+    mockGetOathProgress.mockResolvedValue(oathProgress());
+    await renderScreen();
+    await screen.findByText("15 × Pull-ups in a row");
+    expect(screen.queryByTestId("oath-reminder-offer")).toBeNull();
+  });
 });

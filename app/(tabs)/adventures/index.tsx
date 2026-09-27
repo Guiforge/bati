@@ -79,7 +79,8 @@ type AdventureRow = {
   kindLabel: string;
   /** "Force · Bras · Dos" — what the campaign trains, so the poster answers it before the tap. */
   focusLabel: string;
-  weeksLabel: string;
+  /** Null while the hero's days are still being read. */
+  weeksLabel: string | null;
   stepsLabel: string;
   xpLabel: string;
   finishedCount: number;
@@ -103,7 +104,7 @@ function buildAdventureRow(
   language: AppLanguage,
   t: TFunction,
   preview: QuestPreview,
-  pace: number | null,
+  pace: number | null | undefined,
 ): AdventureRow {
   const q = a.coverQuest;
   // Same numbers as the quest detail and the quest gallery, off the same saved config, served
@@ -176,9 +177,13 @@ function AdventureCard({
         defaultValue: `Step ${progress.currentIndex + 1}/${item.stepsCount}`,
       })
     : null;
-  const metaLabel = stepProgressLabel
-    ? `${stepProgressLabel} · ${row.weeksLabel}`
-    : `${row.weeksLabel} · ${row.stepsLabel}`;
+  // The weeks join once the hero's days are read, never a guess in the meantime.
+  const metaLabel = [
+    stepProgressLabel ?? row.weeksLabel,
+    stepProgressLabel ? row.weeksLabel : row.stepsLabel,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <YStack px="$5">

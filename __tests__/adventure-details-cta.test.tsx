@@ -81,7 +81,6 @@ jest.mock("@/db", () => ({
   startAdventureRun: jest.fn(),
   suggestDifficultyFromSessions: jest.fn().mockReturnValue({ level: "medium", adjusted: false }),
   previewQuest: jest.fn().mockReturnValue({ seconds: 300, xp: 60 }),
-  adventureWeeks: jest.fn().mockReturnValue(1),
 }));
 
 // The screen reads the hero's ladder and records once for every step, so the head card prices a

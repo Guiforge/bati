@@ -6,12 +6,13 @@ import { getReminderDays } from "@/db/reminders";
 import { reportError } from "@/src/reportError";
 
 /**
- * The hero's own rhythm: how many days a week they chose for their reminders, or null. Days are
- * only ever written by turning the reminder on (docs/designs/rappels.md), so a count here means
- * the hero said how often they train, not that the app guessed.
+ * The hero's own rhythm: how many days a week they chose for their reminders, null for none, and
+ * undefined until read. Days are written by turning the reminder on, here or on a synced device
+ * (`MERGED_PREFERENCES`), so a count means the hero said how often they train, not that the app
+ * guessed (docs/designs/rappels.md). They outlive the switch being turned off, on purpose.
  */
-export function useReminderPace(): number | null {
-  const [pace, setPace] = useState<number | null>(null);
+export function useReminderPace(): number | null | undefined {
+  const [pace, setPace] = useState<number | null | undefined>(undefined);
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
@@ -29,8 +30,17 @@ export function useReminderPace(): number | null {
   return pace;
 }
 
-/** "≈ 4 weeks", or "≈ 4 weeks at your pace" once the hero's days say what their pace is. */
-export function adventureWeeksLabel(steps: number, pace: number | null, t: TFunction): string {
+/**
+ * "≈ 4 weeks", or "≈ 6 weeks on your days" once the hero's days say what their pace is. Nothing
+ * while the days are still being read: a loading screen must not show a number it is about to
+ * change.
+ */
+export function adventureWeeksLabel(
+  steps: number,
+  pace: number | null | undefined,
+  t: TFunction,
+): string | null {
+  if (pace === undefined) return null;
   const count = adventureWeeks(steps, pace ?? undefined);
   return pace === null
     ? t("adventures.weeks", { count, defaultValue: `≈ ${count} weeks` })

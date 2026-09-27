@@ -8,6 +8,10 @@ jest.mock("@/db/client", () => ({ db: {}, schema: jest.requireActual("@/db/schem
 
 const t = (key: string, options?: Record<string, unknown>) => `${key}:${String(options?.count)}`;
 
+test("nothing while the days are still being read", () => {
+  expect(adventureWeeksLabel(12, undefined, t as never)).toBeNull();
+});
+
 test("no days chosen: three a week, as it always was", () => {
   expect(adventureWeeksLabel(12, null, t as never)).toBe("adventures.weeks:4");
 });

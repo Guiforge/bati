@@ -458,6 +458,10 @@ depuis). Fichiers et numéros de ligne sont justes. Ce qui suit corrige ou préc
   ou de nouveautés est visible.
 - **Kicker « Ton jour » (PR 4)** : seulement si le Home n'a pas déjà un kicker (« Aventure »,
   « Premier jour »).
+- **Jours et interrupteur coupé (PR 4)** : les jours survivent à l'interrupteur coupé et arrivent
+  d'un autre appareil par la synchro. « Ton jour » et « ≈ 6 semaines à ton rythme » continuent donc
+  de les lire : ce sont les jours du héros, pas un réglage du téléphone. En en, de, es, le mot évite
+  « pace », « Tempo », « ritmo », réservés à l'allure de course par le glossaire.
 - **Politique de confidentialité** : `privacy.md` (l. 218 EN, l. 491 FR) parle **déjà** des rappels
   alors qu'ils n'existent pas. On la rend exacte, on met à jour « Last updated » (l. 36) **et** la
   version dans l'app, `privacy.permissions_body` dans les 4 locales.

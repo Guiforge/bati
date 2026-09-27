@@ -73,11 +73,14 @@ jest.mock("@/db/adventures", () => ({
   getAdventureDetails: jest.fn().mockResolvedValue(null),
 }));
 
+// The real WEEKDAYS below reads through a module that opens the database at import.
+jest.mock("@/db/client", () => ({ db: {}, schema: jest.requireActual("@/db/schema") }));
+
 // The hero's reminder days, for the "Your day" kicker. None by default.
 let mockReminderDays: Record<string, string> = {};
 jest.mock("@/db/reminders", () => ({
   getReminderDays: async () => mockReminderDays,
-  WEEKDAYS: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"],
+  WEEKDAYS: jest.requireActual("@/db/reminders").WEEKDAYS,
 }));
 
 jest.mock("@/db/bossFights", () => ({
@@ -308,7 +311,8 @@ describe("useSmartAction", () => {
   });
 
   it('says "Your day" on one of the hero\'s reminder days, and only there', async () => {
-    const today = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][new Date().getDay()] as string;
+    const { WEEKDAYS } = jest.requireActual("@/db/reminders") as typeof import("@/db/reminders");
+    const today = WEEKDAYS[new Date().getDay()] as string;
     mockReminderDays = { [today]: "20:00" };
     const { result } = await renderHook(() => useSmartAction());
     await waitFor(() => expect(result.current.config).not.toBeNull());
@@ -321,7 +325,8 @@ describe("useSmartAction", () => {
   });
 
   it("keeps day one's own kicker on a reminder day", async () => {
-    const today = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][new Date().getDay()] as string;
+    const { WEEKDAYS } = jest.requireActual("@/db/reminders") as typeof import("@/db/reminders");
+    const today = WEEKDAYS[new Date().getDay()] as string;
     mockReminderDays = { [today]: "20:00" };
     const { getSuggestedQuestsForWeakAreas } = require("@/db/muscleBalance");
     getSuggestedQuestsForWeakAreas.mockResolvedValueOnce([]);

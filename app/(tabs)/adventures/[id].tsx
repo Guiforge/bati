@@ -363,6 +363,7 @@ export default function AdventureDetailsScreen() {
   const description = details ? localizedText(details.adventure, "description", langKey) : "";
 
   const effectiveSteps = details?.steps ?? [];
+  const weeksLabel = adventureWeeksLabel(effectiveSteps.length, pace, t);
   const activeStep = run?.activeStep ?? null;
 
   // One Map instead of a run.steps.find() per row (O(n²) over the step list).
@@ -606,7 +607,7 @@ export default function AdventureDetailsScreen() {
                     })}
                   />
 
-                  <Chip label={adventureWeeksLabel(effectiveSteps.length, pace, t)} />
+                  {weeksLabel ? <Chip label={weeksLabel} /> : null}
 
                   {preview ? (
                     <Chip

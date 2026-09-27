@@ -17,6 +17,10 @@ jest.mock("@/modules/bati-reminders", () => ({
   setPlan: (plan: unknown) => mockSetPlan(plan),
 }));
 
+// `replanReminders` is handed whether a session holds; the store behind `replanRemindersNow` is
+// keepRemindersInStep's business (reminders-in-step.test.ts), and its graph is not this test's.
+jest.mock("@/stores/session", () => ({ useSessionStore: { getState: () => ({}) } }));
+
 describe("replanReminders", () => {
   const t = createTestDb();
 

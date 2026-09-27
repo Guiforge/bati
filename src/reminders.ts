@@ -22,7 +22,7 @@ import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { useSessionStore } from "@/stores/session";
 import { isSessionHeld } from "@/stores/sessionHold";
 import { reportError } from "./reportError";
-import { knownUpdate } from "./updateCheck";
+import { checkForUpdate } from "./updateCheck";
 import { hasUnseenNotes } from "./whatsNew";
 
 /**
@@ -135,7 +135,7 @@ export type ReminderCardKind = "check" | "offer" | null;
  */
 export async function reminderCardKind(now = new Date()): Promise<ReminderCardKind> {
   if (!Reminders.isAvailable()) return null;
-  if ((await hasUnseenNotes()) || (await knownUpdate()) !== null) return null;
+  if ((await hasUnseenNotes()) || (await checkForUpdate()) !== null) return null;
 
   const state = Reminders.getState();
   const today = dayKey(now);

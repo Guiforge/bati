@@ -1891,7 +1891,6 @@
     "switch": "Recuérdame entrenar",
     "rule": "Tú eliges tus días y tu hora. Bati te avisa una vez esos días, salvo si tu sesión ya está hecha o si te aconseja descansar. Puedes aplazarlo una hora o ponerlo en pausa.",
     "days": "Tus días",
-    "day_chosen": "{{day}}, elegido",
     "keep_one_day": "Deja un día, o apaga el recordatorio.",
     "hour": "Hora",
     "pause_weeks_one": "1 sem.",

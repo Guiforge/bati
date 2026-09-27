@@ -101,7 +101,18 @@ async function fetchPublishedVersion(): Promise<string | null> {
  * Reads the cached answer first, so a cold start can draw the card without waiting for a
  * request, and asks again only once the day is up.
  */
-export async function checkForUpdate(): Promise<string | null> {
+export function checkForUpdate(): Promise<string | null> {
+  // One question at a time: Home's update card and its reminder line both ask on the same focus,
+  // and two callers reading a stale stamp together would each send the day's request.
+  inflight ??= askForUpdate().finally(() => {
+    inflight = null;
+  });
+  return inflight;
+}
+
+let inflight: Promise<string | null> | null = null;
+
+async function askForUpdate(): Promise<string | null> {
   if (!(await preferences.getUpdateCheckEnabled())) return null;
 
   const checkedAt = await preferences.getUpdateCheckedAt();
@@ -119,11 +130,8 @@ export async function checkForUpdate(): Promise<string | null> {
   return await knownUpdate();
 }
 
-/**
- * The newer version already known and not yet dismissed, from the cache alone: never a request.
- * What `UpdateCard` will show, for a card that must not stand beside it (docs/designs/rappels.md).
- */
-export async function knownUpdate(): Promise<string | null> {
+/** The newer version already known and not yet dismissed, from the cache alone. */
+async function knownUpdate(): Promise<string | null> {
   if (!(await preferences.getUpdateCheckEnabled())) return null;
   const latest = await preferences.getUpdateLatest();
   if (!latest || !isNewer(latest, appVersion)) return null;

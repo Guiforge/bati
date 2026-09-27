@@ -6,10 +6,10 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.net.toUri
 import org.json.JSONObject
 
 /**
@@ -266,6 +266,9 @@ internal object ReminderScheduler {
     context.getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
   }
 
+  /** Takes today's reminder out of the shade. */
+  fun clearToday(context: Context) = cancelNotification(context, LocalDay.today())
+
   private fun cancelNotification(
     context: Context,
     date: String,
@@ -285,7 +288,7 @@ internal object ReminderScheduler {
     val launch = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: return null
     // The root route: with a singleTask activity the launcher intent alone resumes whatever screen
     // was open, and the tap is meant to land on Home and its one button.
-    launch.data = Uri.parse("bati:///")
+    launch.data = "bati:///".toUri()
     launch.putExtra(EXTRA_DATE, date)
     return PendingIntent.getActivity(
       context,

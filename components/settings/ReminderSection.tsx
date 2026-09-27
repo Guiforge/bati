@@ -27,7 +27,7 @@ import {
   WEEKDAYS,
   type Weekday,
 } from "@/db/reminders";
-import { DEFAULT_WEEKLY_QUOTA } from "@/db/streaks";
+import { getWeeklyQuota } from "@/db/streaks";
 import { useHaptics } from "@/hooks/useHaptics";
 import { requestNotificationPermission } from "@/modules/bati-location";
 import * as Reminders from "@/modules/bati-reminders";
@@ -45,8 +45,11 @@ type ReminderView = {
   log: ReminderLogEntry[];
   sessions: ReminderSession[];
   streakFrom: string | null;
-  /** The weekly oath's count, or null without a weekly oath. */
+  /** The weekly oath's count, or null without a weekly oath still being kept. */
   weeklyOath: number | null;
+  /** The flame's weekly count, the one `db/streaks.ts` counts with. */
+  flameQuota: number;
+  plannedOn: string | null;
   synced: boolean;
 };
 
@@ -60,11 +63,12 @@ async function readView(): Promise<{ view: ReminderView; withdrawn: boolean }> {
   // to none. The switch follows Android, and Settings says why.
   const withdrawn = state.enabled && !Reminders.areEnabled();
   if (withdrawn) Reminders.setEnabled(false);
-  const [days, sessions, streakFrom, oath, account] = await Promise.all([
+  const [days, sessions, streakFrom, oath, flameQuota, account] = await Promise.all([
     getReminderDays(),
     getReminderSessions(new Date()),
     reminderPrefs.streakFrom(),
     getOath(),
+    getWeeklyQuota(),
     syncAccount().catch(() => null),
   ]);
   return {
@@ -80,6 +84,8 @@ async function readView(): Promise<{ view: ReminderView; withdrawn: boolean }> {
         oath?.metric === "weekly_sessions" && oath.fulfilledAt === null
           ? (oath.weeklyTarget ?? null)
           : null,
+      flameQuota,
+      plannedOn: state.plannedOn,
       synced: account !== null,
     },
   };
@@ -100,8 +106,18 @@ function hourLabel(time: string, language: AppLanguage): string {
   }).format(new Date(2026, 0, 1, h ?? 0, m ?? 0));
 }
 
+/** French and Spanish write weekdays in lower case; a label starts with a capital. */
+function capitalized(text: string): string {
+  return text.charAt(0).toLocaleUpperCase() + text.slice(1);
+}
+
+/** "Saturday", or "Saturday 17" once it is more than a week out, after a pause. */
 function weekdayLabel(key: string, language: AppLanguage): string {
-  return getDateTimeFormat(language, { weekday: "long" }).format(dayOf(key));
+  const far = dayOf(key).getTime() - Date.now() > 6 * 24 * 60 * 60 * 1000;
+  const options: Intl.DateTimeFormatOptions = far
+    ? { weekday: "long", day: "numeric" }
+    : { weekday: "long" };
+  return capitalized(getDateTimeFormat(language, options).format(dayOf(key)));
 }
 
 /** The seven weekdays in the order the hero's calendar starts them, Sunday first in English. */
@@ -127,6 +143,8 @@ export function ReminderSection() {
   const haptics = useHaptics();
   const [view, setView] = useState<ReminderView | null>(null);
   const [note, setNote] = useState<Note>(null);
+  // One write at a time: a second tap before the first is saved would read the days it replaced.
+  const [busy, setBusy] = useState(false);
 
   const refresh = useCallback(() => {
     readView()
@@ -145,15 +163,25 @@ export function ReminderSection() {
   const time = hourOf(view.days, view.sessions);
   const chosen = orderedWeekdays(language).filter((d) => view.days[d] !== undefined);
 
-  /** Every change to the settings: saved, counted from for ignored days, planned again. */
-  const commit = async (days: ReminderDays) => {
-    await setReminderDays(days);
+  /**
+   * Every change to the settings: shown at once, saved, counted from for ignored days, planned
+   * again. Pausing and resuming count as a change too: days before them were never due.
+   */
+  const commit = async (days?: ReminderDays) => {
+    if (days) {
+      setView({ ...view, days });
+      await setReminderDays(days);
+    }
     await reminderPrefs.setStreakFrom(today);
     await replanRemindersNow();
     refresh();
   };
   const run = (context: string, work: () => Promise<void>) => {
-    work().catch((error: unknown) => reportError(context, error));
+    if (busy) return;
+    setBusy(true);
+    work()
+      .catch((error: unknown) => reportError(context, error))
+      .finally(() => setBusy(false));
   };
 
   const turnOn = async () => {
@@ -182,8 +210,7 @@ export function ReminderSection() {
   const turnOff = async () => {
     Reminders.setEnabled(false);
     setNote(null);
-    await reminderPrefs.setStreakFrom(today);
-    refresh();
+    await commit();
   };
 
   const toggleDay = (day: Weekday) => {
@@ -217,8 +244,7 @@ export function ReminderSection() {
     haptics.selection();
     run("reminders.pause", async () => {
       Reminders.pause(dayKey(addDays(new Date(), weeks * 7)));
-      await replanRemindersNow();
-      refresh();
+      await commit();
     });
   };
 
@@ -226,8 +252,7 @@ export function ReminderSection() {
     haptics.selection();
     run("reminders.resume", async () => {
       Reminders.resume();
-      await replanRemindersNow();
-      refresh();
+      await commit();
     });
   };
 
@@ -291,7 +316,7 @@ export function ReminderSection() {
         color="$primaryText"
         px="$3"
         accessibilityRole="link"
-        onPress={() => Reminders.openChannelSettings()}
+        onPress={() => Reminders.openChannelSettings(t("reminders.channel"))}
       >
         {t("reminders.sound")}
       </Text>
@@ -347,7 +372,7 @@ function DaysRow({
           // 4 January 2026 is a Sunday: the weekday's own name, in the hero's language.
           const date = new Date(2026, 0, 4 + WEEKDAYS.indexOf(day));
           const on = view.days[day] !== undefined;
-          const name = long.format(date);
+          const name = capitalized(long.format(date));
           return (
             <Button
               key={day}
@@ -364,7 +389,8 @@ function DaysRow({
               role="checkbox"
               accessibilityRole="checkbox"
               accessibilityState={{ checked: on, disabled }}
-              accessibilityLabel={on ? t("reminders.day_chosen", { day: name }) : name}
+              // The name alone: TalkBack adds "checked" from the state, "Tuesday, checked".
+              accessibilityLabel={name}
             >
               <Text fontWeight="700" color="$text">
                 {narrow.format(date)}
@@ -391,8 +417,8 @@ function GapLine({ view, chosen }: { view: ReminderView; chosen: number }) {
       count: view.weeklyOath,
       days: t("reminders.days_count", { count: chosen }),
     });
-  } else if (view.weeklyOath === null && chosen < DEFAULT_WEEKLY_QUOTA) {
-    text = t("reminders.flame_gap", { count: DEFAULT_WEEKLY_QUOTA });
+  } else if (view.weeklyOath === null && chosen < view.flameQuota) {
+    text = t("reminders.flame_gap", { count: view.flameQuota });
   }
   if (text === null) return null;
   return (
@@ -494,6 +520,7 @@ function Preview({
     now,
     view.streakFrom,
     view.resumeDate,
+    view.plannedOn,
   );
 
   return (

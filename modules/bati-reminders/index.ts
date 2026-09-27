@@ -17,7 +17,7 @@ type BatiRemindersNativeModule = {
   getState(): string | null;
   areEnabled(): boolean;
   is24Hour(): boolean;
-  openChannelSettings(): boolean;
+  openChannelSettings(channelName: string): boolean;
   pickTime(initial: string): Promise<string | null>;
 };
 
@@ -39,10 +39,12 @@ export type NativePlan = ReminderPlan & {
 export type NativeReminderState = {
   enabled: boolean;
   resumeDate: string | null;
+  /** The day of the last plan, where the fourteen days are counted from. */
+  plannedOn: string | null;
   log: ReminderLogEntry[];
 };
 
-const OFF: NativeReminderState = { enabled: false, resumeDate: null, log: [] };
+const OFF: NativeReminderState = { enabled: false, resumeDate: null, plannedOn: null, log: [] };
 
 export function isAvailable(): boolean {
   return native !== null;
@@ -73,6 +75,7 @@ export function getState(): NativeReminderState {
   return {
     enabled: parsed.enabled === true,
     resumeDate: parsed.resumeDate ?? null,
+    plannedOn: parsed.plannedOn ?? null,
     log: (parsed.log ?? []).map((e) => ({
       date: e.date,
       variant: e.variant ?? null,
@@ -100,6 +103,6 @@ export async function pickTime(initial: string): Promise<string | null> {
 }
 
 /** The reminders' channel in Android's settings: sound, vibration, importance. */
-export function openChannelSettings(): void {
-  native?.openChannelSettings();
+export function openChannelSettings(channelName: string): void {
+  native?.openChannelSettings(channelName);
 }

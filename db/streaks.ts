@@ -78,7 +78,7 @@ function shiftDays(date: Date, days: number): Date {
  * already import this module for the `streak` metric, and a cycle between the two is not worth
  * the tidiness. Any oath shape other than `weekly_sessions` leaves the baseline alone.
  */
-async function getWeeklyQuota(): Promise<number> {
+export async function getWeeklyQuota(): Promise<number> {
   const rows = await db
     .select({ value: userPreferences.value })
     .from(userPreferences)

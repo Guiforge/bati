@@ -33,7 +33,7 @@ jest.mock("@/modules/bati-reminders", () => ({
 let mockNotes = false;
 let mockUpdate: string | null = null;
 jest.mock("@/src/whatsNew", () => ({ hasUnseenNotes: async () => mockNotes }));
-jest.mock("@/src/updateCheck", () => ({ knownUpdate: async () => mockUpdate }));
+jest.mock("@/src/updateCheck", () => ({ checkForUpdate: async () => mockUpdate }));
 let mockSessions = 0;
 jest.mock("@/db/completed", () => ({
   ...jest.requireActual("@/db/completed"),

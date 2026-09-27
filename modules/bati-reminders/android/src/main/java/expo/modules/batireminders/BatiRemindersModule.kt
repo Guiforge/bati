@@ -3,10 +3,10 @@ package expo.modules.batireminders
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.text.format.DateFormat
+import androidx.core.net.toUri
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.functions.Queues
 import expo.modules.kotlin.modules.Module
@@ -44,7 +44,11 @@ class BatiRemindersModule : Module() {
         store.plan = plan
         store.plannedOn = LocalDay.today()
         // "no": today is done or a rest day, so a snooze in waiting goes. "hold" keeps it waiting.
-        if (plan.optString("dueToday") == "no") store.snooze = null
+        val dueToday = plan.optString("dueToday")
+        if (dueToday == "no") store.snooze = null
+        // Either way today's reminder, if it is still in the shade, has said its piece: left there
+        // it would name a quest already done, and a tap on it mid-session would leave the session.
+        if (dueToday != "yes") ReminderScheduler.clearToday(context)
         ReminderScheduler.ensureChannel(context, plan.optString("channelName", "Reminders"))
         ReminderScheduler.arm(context)
         true
@@ -77,7 +81,7 @@ class BatiRemindersModule : Module() {
         true
       }
 
-      /** `{ enabled, resumeDate, log }`, as JSON. */
+      /** `{ enabled, resumeDate, plannedOn, log }`, as JSON. */
       Function("getState") {
         val context = context ?: return@Function null
         appContext.currentActivity?.intent?.let(::markOpened)
@@ -85,6 +89,8 @@ class BatiRemindersModule : Module() {
         JSONObject()
           .put("enabled", store.enabled)
           .put("resumeDate", store.resumeDate ?: JSONObject.NULL)
+          // The horizon is counted from here: a day past it never rang on purpose.
+          .put("plannedOn", store.plannedOn ?: JSONObject.NULL)
           .put("log", JSONArray(store.log()))
           .toString()
       }
@@ -131,7 +137,7 @@ class BatiRemindersModule : Module() {
        * The reminders' own channel in Android's settings, where the hero sets sound and vibration.
        * The app's notification page below API 26, which has no channels.
        */
-      Function("openChannelSettings") {
+      Function("openChannelSettings") { channelName: String ->
         val activity = appContext.currentActivity ?: return@Function false
         val intent =
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -139,7 +145,7 @@ class BatiRemindersModule : Module() {
               .putExtra(Settings.EXTRA_APP_PACKAGE, activity.packageName)
               .putExtra(Settings.EXTRA_CHANNEL_ID, ReminderScheduler.CHANNEL_ID)
           } else {
-            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${activity.packageName}"))
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${activity.packageName}".toUri())
           }
         ReminderScheduler.ensureChannel(
           activity,

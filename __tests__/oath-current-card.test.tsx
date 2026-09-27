@@ -16,6 +16,10 @@ import config from "@/tamagui.config";
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+  useFocusEffect: (cb: () => void) => {
+    const { useEffect } = require("react");
+    useEffect(() => cb(), []);
+  },
 }));
 
 jest.mock(

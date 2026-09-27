@@ -35,7 +35,12 @@ jest.mock("@/stores/settings", () => ({
 }));
 
 const mockNative = {
-  state: { enabled: false, resumeDate: null as string | null, log: [] as unknown[] },
+  state: {
+    enabled: false,
+    resumeDate: null as string | null,
+    plannedOn: null as string | null,
+    log: [] as unknown[],
+  },
   areEnabled: true,
 };
 jest.mock("@/modules/bati-reminders", () => ({
@@ -69,6 +74,8 @@ jest.mock("@/db/reminders", () => ({
   },
 }));
 jest.mock("@/db/oaths", () => ({ getOath: async () => mockOath }));
+let mockQuota = 2;
+jest.mock("@/db/streaks", () => ({ getWeeklyQuota: async () => mockQuota }));
 jest.mock("@/src/deviceSync", () => ({ syncAccount: async () => null }));
 jest.mock("@/src/reminders", () => ({
   replanRemindersNow: jest.fn().mockResolvedValue(undefined),
@@ -107,10 +114,11 @@ async function mount() {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockNative.state = { enabled: false, resumeDate: null, log: [] };
+  mockNative.state = { enabled: false, resumeDate: null, plannedOn: null, log: [] };
   mockNative.areEnabled = true;
   mockDays = {};
   mockOath = null;
+  mockQuota = 2;
 });
 
 test("off by default: the preview says so, and nothing is asked until the switch is touched", async () => {
@@ -144,7 +152,7 @@ test("a refused permission leaves the switch off, and says how to change it", as
 });
 
 test("a permission withdrawn in Android turns the switch off here, and says why", async () => {
-  mockNative.state = { enabled: true, resumeDate: null, log: [] };
+  mockNative.state = { enabled: true, resumeDate: null, plannedOn: null, log: [] };
   mockNative.areEnabled = false;
   mockDays = { mon: "20:00" };
   await mount();
@@ -153,7 +161,7 @@ test("a permission withdrawn in Android turns the switch off here, and says why"
 });
 
 test("the last day never unticks while the switch is on", async () => {
-  mockNative.state = { enabled: true, resumeDate: null, log: [] };
+  mockNative.state = { enabled: true, resumeDate: null, plannedOn: null, log: [] };
   mockDays = { thu: "20:00" };
   await mount();
   await act(async () => {
@@ -164,18 +172,22 @@ test("the last day never unticks while the switch is on", async () => {
 });
 
 test("the days start on the language's first day, and each reads whole to TalkBack", async () => {
-  mockNative.state = { enabled: true, resumeDate: null, log: [] };
+  mockNative.state = { enabled: true, resumeDate: null, plannedOn: null, log: [] };
   mockDays = { tue: "20:00", thu: "20:00" };
   await mount();
   const days = screen.getAllByRole("checkbox");
   expect(days).toHaveLength(7);
   expect(days[0]?.props.testID).toBe("settings-reminder-day-sun");
-  expect(screen.getByLabelText('reminders.day_chosen {"day":"Tuesday"}')).toBeTruthy();
-  expect(screen.getByLabelText("Monday")).toBeTruthy();
+  // The name, and the state beside it: TalkBack reads "Tuesday, checked".
+  const tuesday = screen.getByLabelText("Tuesday");
+  expect(tuesday.props.accessibilityState).toMatchObject({ checked: true });
+  expect(screen.getByLabelText("Monday").props.accessibilityState).toMatchObject({
+    checked: false,
+  });
 });
 
 test("fewer days than the weekly oath asks for: one grey line, not a block", async () => {
-  mockNative.state = { enabled: true, resumeDate: null, log: [] };
+  mockNative.state = { enabled: true, resumeDate: null, plannedOn: null, log: [] };
   mockDays = { mon: "20:00", thu: "20:00" };
   mockOath = { metric: "weekly_sessions", weeklyTarget: 3, fulfilledAt: null };
   await mount();
@@ -186,7 +198,7 @@ test("fewer days than the weekly oath asks for: one grey line, not a block", asy
 });
 
 test("one day and no weekly oath: the flame's count, once", async () => {
-  mockNative.state = { enabled: true, resumeDate: null, log: [] };
+  mockNative.state = { enabled: true, resumeDate: null, plannedOn: null, log: [] };
   mockDays = { mon: "20:00" };
   await mount();
   await waitFor(() => expect(screen.getByTestId("settings-reminder-gap")).toBeTruthy());
@@ -195,8 +207,27 @@ test("one day and no weekly oath: the flame's count, once", async () => {
   );
 });
 
+test("the flame's line reads the flame's own quota", async () => {
+  mockNative.state = { enabled: true, resumeDate: null, plannedOn: null, log: [] };
+  mockDays = { mon: "20:00", thu: "20:00" };
+  mockQuota = 3;
+  await mount();
+  await waitFor(() => expect(screen.getByTestId("settings-reminder-gap")).toBeTruthy());
+  expect(screen.getByTestId("settings-reminder-gap").props.children).toContain('"count":3');
+});
+
+test("a pause, a resume and the switch are settings changes: ignored days count after them", async () => {
+  mockNative.state = { enabled: true, resumeDate: null, plannedOn: null, log: [] };
+  mockDays = { mon: "20:00" };
+  await mount();
+  await act(async () => {
+    await fireEvent.press(screen.getByTestId("settings-reminder-pause-2"));
+  });
+  await waitFor(() => expect(reminderPrefs.setStreakFrom).toHaveBeenCalled());
+});
+
 test("the hour comes from Android's own picker, and every day takes it", async () => {
-  mockNative.state = { enabled: true, resumeDate: null, log: [] };
+  mockNative.state = { enabled: true, resumeDate: null, plannedOn: null, log: [] };
   mockDays = { mon: "20:00", thu: "20:00" };
   await mount();
   await act(async () => {
@@ -206,7 +237,7 @@ test("the hour comes from Android's own picker, and every day takes it", async (
 });
 
 test("a pause of a week, and the way back", async () => {
-  mockNative.state = { enabled: true, resumeDate: null, log: [] };
+  mockNative.state = { enabled: true, resumeDate: null, plannedOn: null, log: [] };
   mockDays = { mon: "20:00" };
   await mount();
   await act(async () => {
@@ -217,6 +248,7 @@ test("a pause of a week, and the way back", async () => {
   mockNative.state = {
     enabled: true,
     resumeDate: format(addDays(new Date(), 3), "yyyy-MM-dd"),
+    plannedOn: null,
     log: [],
   };
   await mount();
@@ -229,5 +261,6 @@ test("a pause of a week, and the way back", async () => {
 test("sound and vibration lead to the channel's own settings", async () => {
   await mount();
   await fireEvent.press(screen.getByTestId("settings-reminder-sound"));
-  expect(Reminders.openChannelSettings).toHaveBeenCalled();
+  // Named in the app's language: the channel may not exist yet, and Android shows its name.
+  expect(Reminders.openChannelSettings).toHaveBeenCalledWith("reminders.channel");
 });

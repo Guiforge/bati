@@ -25,7 +25,7 @@ describe("bati-reminders, without its native half", () => {
   test("reports itself unavailable, and off", () => {
     expect(isAvailable()).toBe(false);
     expect(areEnabled()).toBe(false);
-    expect(getState()).toEqual({ enabled: false, resumeDate: null, log: [] });
+    expect(getState()).toEqual({ enabled: false, resumeDate: null, plannedOn: null, log: [] });
   });
 
   test("the hour answers without a picker, and in 24 hours", async () => {
@@ -33,7 +33,7 @@ describe("bati-reminders, without its native half", () => {
       require("@/modules/bati-reminders") as typeof import("@/modules/bati-reminders");
     expect(is24Hour()).toBe(true);
     expect(await pickTime("20:00")).toBeNull();
-    expect(() => openChannelSettings()).not.toThrow();
+    expect(() => openChannelSettings("Reminders")).not.toThrow();
   });
 
   test("takes a plan, a switch and a pause without throwing", () => {
@@ -149,6 +149,7 @@ describe("bati-reminders, with a native half", () => {
     expect(load().getState()).toEqual({
       enabled: true,
       resumeDate: "2026-01-22",
+      plannedOn: null,
       log: [
         {
           date: "2026-01-14",
@@ -169,13 +170,18 @@ describe("bati-reminders, with a native half", () => {
     expect(native.pickTime).toHaveBeenCalledWith("20:00");
     native.pickTime.mockResolvedValueOnce(null);
     expect(await mod.pickTime("20:00")).toBeNull();
-    mod.openChannelSettings();
-    expect(native.openChannelSettings).toHaveBeenCalled();
+    mod.openChannelSettings("Rappels d'entraînement");
+    expect(native.openChannelSettings).toHaveBeenCalledWith("Rappels d'entraînement");
   });
 
   test("no context on the native side reads as off", () => {
     native.getState.mockReturnValue(null);
-    expect(load().getState()).toEqual({ enabled: false, resumeDate: null, log: [] });
+    expect(load().getState()).toEqual({
+      enabled: false,
+      resumeDate: null,
+      plannedOn: null,
+      log: [],
+    });
   });
 
   test("a journal missing its fields reads as nothing done", () => {
@@ -183,6 +189,7 @@ describe("bati-reminders, with a native half", () => {
     expect(load().getState()).toEqual({
       enabled: false,
       resumeDate: null,
+      plannedOn: null,
       log: [
         {
           date: "2026-01-14",

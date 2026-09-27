@@ -534,7 +534,7 @@ export type DayNote = {
  * The reasons behind the plan, so the preview can always say why: "today skipped, session done",
  * "no reminder tomorrow, Bati advises rest". The same rules `planReminders` applied, read again.
  */
-export function describeDay({ days, now, sessions }: PlanInput): DayNote {
+export function describeDay({ days, now, sessions, state }: PlanInput): DayNote {
   const today = dayKey(now);
   const tomorrow = dayKey(addDays(now, 1));
   const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt);
@@ -542,7 +542,9 @@ export function describeDay({ days, now, sessions }: PlanInput): DayNote {
   const tomorrowTime = timeOn(days, tomorrow);
 
   let todayNote: DayNote["today"] = null;
-  if (todayTime !== null) {
+  // A day that already rang has nothing left to explain: "last reminder" says the rest.
+  const rang = state.log.some((e) => e.date === today);
+  if (todayTime !== null && !rang) {
     if (workouts.some((w) => dayKey(w) === today)) todayNote = "done";
     else if (restsOn(workouts, at(today, todayTime))) todayNote = "rest";
   }
@@ -556,8 +558,8 @@ export function describeDay({ days, now, sessions }: PlanInput): DayNote {
  * The last of the hero's days that should have rung and is not in the journal, or null. A phone
  * that kills alarms (Xiaomi, Huawei, some Samsung, see dontkillmyapp.com) is only visible this way:
  * the plan was there, nothing was posted. Days before `since` (the switch turned on, the settings
- * changed) and during a pause ending `pausedUntil` do not count, nor a day with a workout or acute
- * rest, which never rang on purpose.
+ * changed), during a pause ending `pausedUntil`, past the horizon of the plan made `plannedOn`, and
+ * a day with a workout or acute rest never rang on purpose, so none of them count.
  */
 export function missedReminder(
   days: ReminderDays,
@@ -566,21 +568,26 @@ export function missedReminder(
   now: Date,
   since: string | null,
   pausedUntil: string | null,
+  plannedOn: string | null,
 ): string | null {
-  const today = dayKey(now);
   const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt);
   const posted = new Set(log.map((e) => e.date));
   for (let back = 0; back < 7; back++) {
     const date = dayKey(subDays(now, back));
     const time = timeOn(days, date);
-    if (time === null) continue;
+    if (time === null || pastHorizon(date, plannedOn)) continue;
     const hour = at(date, time);
-    if (date === today && hour.getTime() + REMINDER_LATE_MINUTES * 60_000 > now.getTime()) continue;
+    if (hour.getTime() + REMINDER_LATE_MINUTES * 60_000 > now.getTime()) continue;
     if (since !== null && date <= since) return null;
     if (pausedOn(date, pausedUntil) || silentOnPurpose(workouts, date, hour)) return null;
     return posted.has(date) ? null : date;
   }
   return null;
+}
+
+/** Past the fourteen days of the plan made `plannedOn`: the phone went quiet on purpose. */
+function pastHorizon(date: string, plannedOn: string | null): boolean {
+  return plannedOn !== null && date >= dayKey(addDays(dayOf(plannedOn), REMINDER_HORIZON_DAYS));
 }
 
 /** Inside a pause ending `pausedUntil`, which lasted two weeks at most. */

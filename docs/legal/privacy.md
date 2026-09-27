@@ -219,10 +219,10 @@ screen, the whole time.
 used for the outing notification above. Reminders are scheduled on your phone by Android itself,
 on the days and at the hour you chose: there are no push notifications, so there is no server that
 knows your device. To show a reminder on time and act on its two buttons, the phone keeps a small
-journal of the last ten days a reminder rang (the day, which sentence it said, and whether you
-tapped it, pushed it back or paused it). It stays in the app's own storage on your phone, is never
-sent anywhere and is not in your backups. The one way it leaves the phone is inside a bug report
-mail you read and send yourself, as four counts.
+journal of the last ten days a reminder rang (the day, the time it rang, what it said, and whether
+you tapped it, pushed it back or paused it). It stays in the app's own storage on your phone, is
+never sent anywhere and is not in your backups. The one way anything about it leaves the phone is
+inside a bug report mail you read and send yourself: whether the reminder is on, and four counts.
 
 **Starting with your phone (Android).** A restart clears every scheduled alarm, so Bati asks to be
 told when your phone has started, to schedule the next reminder again. Nothing else runs at that
@@ -502,10 +502,10 @@ réglages, et utilisées pour la notification de sortie ci-dessus. Les rappels s
 votre téléphone par Android lui-même, les jours et à l'heure que vous avez choisis : il n'y a aucune
 notification push, donc aucun serveur ne connaît votre appareil. Pour afficher un rappel à l'heure
 et agir sur ses deux boutons, le téléphone garde un petit journal des dix derniers jours où un
-rappel a sonné (le jour, la phrase affichée, et si vous l'avez touché, repoussé ou mis en pause).
-Il reste dans le stockage propre de l'application, n'est envoyé nulle part et n'entre pas dans vos
-sauvegardes. Il ne quitte le téléphone qu'à l'intérieur d'un mail de rapport de bug que vous lisez
-et envoyez vous-même, sous forme de quatre nombres.
+rappel a sonné (le jour, l'heure, ce qu'il affichait, et si vous l'avez touché, repoussé ou mis en
+pause). Il reste dans le stockage propre de l'application, n'est envoyé nulle part et n'entre pas
+dans vos sauvegardes. Rien n'en quitte le téléphone, sauf à l'intérieur d'un mail de rapport de bug
+que vous lisez et envoyez vous-même : si le rappel est activé, et quatre nombres.
 
 **Démarrage du téléphone (Android).** Un redémarrage efface toutes les alarmes programmées : Bati
 demande donc à être prévenu quand le téléphone a démarré, pour reprogrammer le prochain rappel.

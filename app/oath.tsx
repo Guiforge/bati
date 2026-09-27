@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, ScrollView as RNScrollView } from "react-native";
@@ -234,8 +234,14 @@ function CurrentOathCard({
 function OathReminderLine({ progress }: { progress: OathProgress }) {
   const { t } = useTranslation();
   const router = useRouter();
-  if (progress.oath.metric !== "weekly_sessions" || progress.isFulfilled) return null;
-  if (!Reminders.isAvailable() || Reminders.getState().enabled) return null;
+  // Read on focus, not on render: coming back from Settings with the switch on takes the line down.
+  const [offered, setOffered] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      setOffered(Reminders.isAvailable() && !Reminders.getState().enabled);
+    }, []),
+  );
+  if (progress.oath.metric !== "weekly_sessions" || progress.isFulfilled || !offered) return null;
   return (
     <Text
       testID="oath-reminder-offer"

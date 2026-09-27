@@ -73,6 +73,10 @@ jest.mock("@/db/adventures", () => ({
   getAdventureDetails: jest.fn().mockResolvedValue(null),
 }));
 
+jest.mock("@/db/bossFights", () => ({
+  getBossFightByAdventure: jest.fn().mockResolvedValue(null),
+}));
+
 jest.mock("@/db/muscleBalance", () => ({
   getSuggestedQuestsForWeakAreas: jest
     .fn()
@@ -310,5 +314,63 @@ describe("useSmartAction", () => {
     expect(result.current.config?.label).toBe("Pick a quest");
     result.current.config?.onPress();
     expect(mockPush).toHaveBeenCalledWith("/(tabs)/quests");
+  });
+});
+
+/**
+ * The offer itself, which the reminders read too. The stage above never shows a boss; the
+ * notification does, so the fight belongs to the one function both of them call.
+ */
+describe("decideHomeOffer", () => {
+  const { decideHomeOffer } = require("@/db/homeOffer") as typeof import("@/db/homeOffer");
+  const { getAnyActiveAdventureRun, getAdventureDetails } = require("@/db/adventures");
+  const { getBossFightByAdventure } = require("@/db/bossFights");
+
+  const fight = (currentHp: number, defeatedAt: Date | null = null) => ({
+    totalHp: 1000,
+    currentHp,
+    defeatedAt,
+    enName: "The Iron Warden",
+    frName: "Le Gardien de fer",
+    deName: "Der Eiserne Wächter",
+    esName: "El Guardián de hierro",
+  });
+
+  beforeEach(() => {
+    getAnyActiveAdventureRun.mockResolvedValue({
+      adventureId: 4,
+      activeRun: { steps: [{ status: "completed" }, { status: "active" }, { status: "locked" }] },
+    });
+    getAdventureDetails.mockResolvedValue({
+      adventure: { enTitle: "The North Road", frTitle: "La route du Nord", imagePath: null },
+    });
+  });
+
+  afterEach(() => {
+    getAnyActiveAdventureRun.mockResolvedValue(null);
+    getBossFightByAdventure.mockResolvedValue(null);
+  });
+
+  it("names a boss already swung at, with what it has left", async () => {
+    getBossFightByAdventure.mockResolvedValue(fight(340));
+    expect(await decideHomeOffer("fr")).toMatchObject({
+      kind: "adventure",
+      title: "La route du Nord",
+      step: 2,
+      total: 3,
+      boss: { name: "Le Gardien de fer", hp: 340 },
+    });
+  });
+
+  it("stays quiet about a fight nobody has started, or one already won", async () => {
+    getBossFightByAdventure.mockResolvedValue(fight(1000));
+    expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", boss: null });
+
+    getBossFightByAdventure.mockResolvedValue(fight(0, new Date()));
+    expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", boss: null });
+  });
+
+  it("answers null once the read is abandoned", async () => {
+    expect(await decideHomeOffer("en", () => true)).toBeNull();
   });
 });

@@ -233,7 +233,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 
 | # | Item | Impact | Effort | Prio | From |
 | --- | --- | --- | --- | --- | --- |
-| 4.2 | Local training reminders, no Firebase | High | M | **P1** | |
+| 4.2 | Local training reminders, no Firebase (built: #137 to #140) | High | M | **P1** | |
 | 4.26 | One-sided holds are timed as one side, and journaled wrong | Med-high | S–M | **P1** | |
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
 | 4.6 | Boss battle refonte | High | M–L | **P1** | |

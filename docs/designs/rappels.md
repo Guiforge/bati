@@ -1,12 +1,14 @@
 # Design : les rappels (roadmap 4.2)
 
 Conçu le 27/09/2026 (spec v3), écrit contre le commit `68ce4dd` (v2.6.0).
-Status: DESIGNED
+Status: IMPLEMENTED (PR #137 à #140, en attente de merge et de la checklist appareil)
 Code : PR 1 (logique) : `db/reminders.ts`, `db/homeOffer.ts`, `restSuggestionAt` dans
 `db/restSuggestions.ts`, `oathWeekStart` dans `db/oaths.ts`, `reminders.*` dans `locales/*.json`.
 PR 2 (natif) : `modules/bati-reminders`, `src/reminders.ts` (`replanReminders`,
 `keepRemindersInStep`), `stores/sessionHold.ts`. PR 3 (interface) : `components/settings/ReminderSection.tsx`, `components/home/ReminderCard.tsx`,
-`app/oath.tsx` (`OathReminderLine`), `src/reminderReport.ts`. PR 4 à venir, voir [Découpage](#découpage).
+`app/oath.tsx` (`OathReminderLine`), `src/reminderReport.ts`. PR 4 (ménage) : `hooks/useReminderPace.ts`
+(`adventureWeeksLabel`), kicker « Ton jour » dans `components/home/useSmartAction.ts`, clés `goals.*` et
+`scheduling.*` supprimées.
 
 *27/09/2026. Code lu au commit `68ce4dd` (v2.6.0).*
 *Versions précédentes gardées : v1 `claude/rappels-conception.md` (23/09), v2 `claude/rappels-rythme-v2.md` (27/09).*

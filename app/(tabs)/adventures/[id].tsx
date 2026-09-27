@@ -25,7 +25,6 @@ import type {
   TrainingFocus,
 } from "@/db";
 import {
-  adventureWeeks,
   Difficulty,
   getActiveAdventureRun,
   getAdventureDetails,
@@ -42,6 +41,7 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import { loadSlotJournal, QUEST_AS_WRITTEN, type SlotJournal } from "@/db/quests";
 import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -233,6 +233,7 @@ export default function AdventureDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
+  const pace = useReminderPace();
   const { showError } = useToast();
   const reducedMotion = useReducedMotion();
   const [isStarting, setIsStarting] = useState(false);
@@ -605,11 +606,7 @@ export default function AdventureDetailsScreen() {
                     })}
                   />
 
-                  <Chip
-                    label={t("adventures.weeks", {
-                      count: adventureWeeks(effectiveSteps.length),
-                    })}
-                  />
+                  <Chip label={adventureWeeksLabel(effectiveSteps.length, pace, t)} />
 
                   {preview ? (
                     <Chip

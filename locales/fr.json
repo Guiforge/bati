@@ -1850,5 +1850,41 @@
     "card_open": "Nouveautés",
     "version_label": "Version {{version}}, nouveautés",
     "all_releases": "Les notes de toutes les versions"
+  },
+  "reminders": {
+    "adventure": {
+      "0": "L'étape {{n}} de {{adventure}} t'attend.",
+      "1": "{{adventure}}, étape {{n}}. Tu reprends là où tu en étais.",
+      "2": "Étape {{n}} sur {{total}}. La route continue."
+    },
+    "boss": {
+      "0": "{{boss}} vacille. {{hp}} PV, pas un de plus.",
+      "1": "{{boss}} t'attend. {{hp}} PV à prendre."
+    },
+    "oath_exercise": {
+      "0": "Vers ton serment : étape {{n}} sur {{total}}. {{quest}} t'attend.",
+      "1": "Une étape de plus vers ton serment : {{quest}}."
+    },
+    "oath_leagues": {
+      "0": "{{done}} lieues sur {{total}}. La route t'attend.",
+      "1": "Une sortie de plus vers tes {{total}} lieues."
+    },
+    "weak_muscles": {
+      "0": "{{quest}} t'attend. Au menu : {{muscles}}.",
+      "1": "Ton jour. {{muscles}} ont du retard, {{quest}} s'en charge."
+    },
+    "first_day": {
+      "0": "Ton jour. {{quest}}, ≈ {{duration}}. Le premier bâtiment attend.",
+      "1": "{{quest}} t'attend, ≈ {{duration}}. Le village commence là."
+    },
+    "gallery": {
+      "0": "Ton jour. Choisis ta quête, la porte est ouverte.",
+      "1": "Une quête t'attend dans la galerie. À toi de choisir."
+    },
+    "quiet": "Bati se tait pour l'instant. Le village t'attend, sans compter les jours.",
+    "oath_more_one": "Encore 1 séance et le serment tient cette semaine.",
+    "oath_more_many": "Encore {{count}} séances et le serment tient cette semaine.",
+    "oath_more_other": "Encore {{count}} séances et le serment tient cette semaine.",
+    "oath_won": "Semaine du serment gagnée. Une de plus, pour le plaisir ?"
   }
 }

@@ -1778,5 +1778,40 @@
     "card_open": "What's new",
     "version_label": "Version {{version}}, what's new",
     "all_releases": "Every version's notes"
+  },
+  "reminders": {
+    "adventure": {
+      "0": "Step {{n}} of {{adventure}} awaits.",
+      "1": "{{adventure}}, step {{n}}. Pick up where you left off.",
+      "2": "Step {{n}} of {{total}}. The road goes on."
+    },
+    "boss": {
+      "0": "{{boss}} staggers. {{hp}} HP left.",
+      "1": "{{boss}} is waiting. {{hp}} HP to take."
+    },
+    "oath_exercise": {
+      "0": "Toward your oath: rung {{n}} of {{total}}. {{quest}} awaits.",
+      "1": "One rung closer to your oath: {{quest}}."
+    },
+    "oath_leagues": {
+      "0": "{{done}} of {{total}} leagues. The road awaits.",
+      "1": "One more outing toward your {{total}} leagues."
+    },
+    "weak_muscles": {
+      "0": "{{quest}} awaits. On the menu: {{muscles}}.",
+      "1": "Your day. {{muscles}} have fallen behind, {{quest}} takes care of it."
+    },
+    "first_day": {
+      "0": "Your day. {{quest}}, about {{duration}}. The first building is waiting.",
+      "1": "{{quest}} is waiting, about {{duration}}. The village starts there."
+    },
+    "gallery": {
+      "0": "Your day. Pick your quest, the gate is open.",
+      "1": "A quest is waiting in the gallery. Your pick."
+    },
+    "quiet": "Bati goes quiet for now. The village waits, and counts nothing.",
+    "oath_more_one": "One more and the oath holds this week.",
+    "oath_more_other": "{{count}} more and the oath holds this week.",
+    "oath_won": "The oath's week is won. One more, just for the fun of it?"
   }
 }

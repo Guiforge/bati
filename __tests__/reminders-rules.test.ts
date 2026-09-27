@@ -215,3 +215,56 @@ describe("parseReminderDays", () => {
     expect(parseReminderDays("[]")).toEqual({});
   });
 });
+
+describe("the sentences in every language", () => {
+  // `reminders.<case>.<n>` is built at run time, so the literal-key check in i18n-keys.test.ts
+  // cannot see it: this is what holds the counts above and the four files to one another.
+  const locales = {
+    en: require("@/locales/en.json"),
+    fr: require("@/locales/fr.json"),
+    de: require("@/locales/de.json"),
+    es: require("@/locales/es.json"),
+  } as Record<string, { reminders: Record<string, Record<string, string>> }>;
+
+  test.each(Object.keys(locales))("%s has exactly the sentences the plan can pick", (lang) => {
+    const block = locales[lang]?.reminders ?? {};
+    for (const [sentenceCase, count] of Object.entries(VARIANT_COUNTS)) {
+      expect(Object.keys(block[sentenceCase] ?? {})).toEqual(
+        Array.from({ length: count }, (_, i) => String(i)),
+      );
+    }
+  });
+});
+
+describe("every sentence renders whole", () => {
+  const { i18n } = require("@/i18n") as typeof import("@/i18n");
+  const params = {
+    n: 2,
+    total: 5,
+    adventure: "A",
+    boss: "B",
+    hp: 340,
+    quest: "Q",
+    muscles: "M",
+    done: 3,
+    duration: "8 min",
+    count: 2,
+  };
+
+  test.each(["en", "fr", "de", "es"])("%s: no placeholder left unfilled", async (lang) => {
+    await i18n.changeLanguage(lang);
+    const keys = [
+      ...Object.entries(VARIANT_COUNTS).flatMap(([c, n]) =>
+        Array.from({ length: n }, (_, i) => `reminders.${c}.${i}`),
+      ),
+      "reminders.quiet",
+      "reminders.oath_more",
+      "reminders.oath_won",
+    ];
+    for (const key of keys) {
+      const text = i18n.t(key, params);
+      expect(text).not.toBe(key);
+      expect(text).not.toMatch(/{{|}}/);
+    }
+  });
+});

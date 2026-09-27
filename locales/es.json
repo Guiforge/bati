@@ -1848,5 +1848,41 @@
     "card_open": "Novedades",
     "version_label": "Versión {{version}}, novedades",
     "all_releases": "Las notas de todas las versiones"
+  },
+  "reminders": {
+    "adventure": {
+      "0": "La etapa {{n}} de {{adventure}} te espera.",
+      "1": "{{adventure}}, etapa {{n}}. Sigue donde lo dejaste.",
+      "2": "Etapa {{n}} de {{total}}. El camino sigue."
+    },
+    "boss": {
+      "0": "{{boss}} se tambalea. {{hp}} PV, ni uno más.",
+      "1": "{{boss}} te espera. {{hp}} PV por arrancarle."
+    },
+    "oath_exercise": {
+      "0": "Hacia tu juramento: etapa {{n}} de {{total}}. {{quest}} te espera.",
+      "1": "Una etapa más hacia tu juramento: {{quest}}."
+    },
+    "oath_leagues": {
+      "0": "{{done}} de {{total}} leguas. El camino te espera.",
+      "1": "Una salida más hacia tus {{total}} leguas."
+    },
+    "weak_muscles": {
+      "0": "{{quest}} te espera. En el menú: {{muscles}}.",
+      "1": "Tu día. {{muscles}} van con retraso, {{quest}} se encarga."
+    },
+    "first_day": {
+      "0": "Tu día. {{quest}}, unos {{duration}}. El primer edificio te espera.",
+      "1": "{{quest}} te espera, unos {{duration}}. Ahí empieza la aldea."
+    },
+    "gallery": {
+      "0": "Tu día. Elige tu misión, la puerta está abierta.",
+      "1": "Una misión te espera en la galería. Tú eliges."
+    },
+    "quiet": "Bati se calla por ahora. La aldea te espera, sin contar los días.",
+    "oath_more_one": "Una sesión más y el juramento se mantiene esta semana.",
+    "oath_more_many": "{{count}} sesiones más y el juramento se mantiene esta semana.",
+    "oath_more_other": "{{count}} sesiones más y el juramento se mantiene esta semana.",
+    "oath_won": "Semana del juramento ganada. ¿Una más, por gusto?"
   }
 }

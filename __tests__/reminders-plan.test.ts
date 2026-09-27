@@ -263,6 +263,61 @@ describe("planReminders: the words", () => {
   });
 });
 
+describe("planReminders: every case the Home has", () => {
+  const titleFor = (offer: HomeOffer) => planReminders(input({ offer })).entries[0]?.title;
+
+  test("an oath on a ladder: the rung, and the quest that climbs it", () => {
+    const offer = {
+      kind: "oath_exercise",
+      goal: "Pull-up",
+      rung: { position: 2, total: 5, name: "Inverted Row" },
+      quest,
+      startable: true,
+      seconds: 900,
+    } as unknown as HomeOffer;
+    expect(titleFor(offer)).toBe('reminders.oath_exercise.0 {"n":2,"total":5,"quest":"Chest Day"}');
+  });
+
+  test("an oath with no ladder only says what needs no rung", () => {
+    const offer = {
+      kind: "oath_exercise",
+      goal: "Pull-up",
+      rung: null,
+      quest,
+      startable: true,
+      seconds: 900,
+    } as unknown as HomeOffer;
+    const variants = planReminders(input({ offer })).entries.map((e) => e.variant);
+    expect(new Set(variants)).toEqual(new Set(["oath_exercise.1"]));
+  });
+
+  test("an oath in leagues: how far along", () => {
+    const offer = {
+      kind: "oath_leagues",
+      target: 100,
+      done: 42,
+      quest,
+      startable: false,
+      seconds: 0,
+    } as unknown as HomeOffer;
+    expect(titleFor(offer)).toBe('reminders.oath_leagues.0 {"done":42,"total":100}');
+  });
+
+  test("day one: the on-ramp quest and its minutes", () => {
+    const offer = {
+      kind: "first_day",
+      quest,
+      startable: true,
+      seconds: 480,
+    } as unknown as HomeOffer;
+    expect(titleFor(offer)).toBe('reminders.first_day.0 {"quest":"Chest Day","duration":"8 min"}');
+  });
+
+  test("the gallery, when nothing else would load", () => {
+    expect(titleFor({ kind: "gallery" })).toBe("reminders.gallery.0 {}");
+  });
+});
+
 describe("planReminders: the weekly oath", () => {
   const oath = (weeklyTarget: number, fulfilledAt: string | null = null): Oath => ({
     metric: "weekly_sessions",

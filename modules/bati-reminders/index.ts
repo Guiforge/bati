@@ -20,8 +20,12 @@ type BatiRemindersNativeModule = {
 
 const native = requireOptionalNativeModule<BatiRemindersNativeModule>("BatiReminders");
 
-/** What the native side is handed: the plan, and the words it cannot know itself. */
+/** What the native side is handed: the plan, the numbers it keeps to, and the words it cannot know. */
 export type NativePlan = ReminderPlan & {
+  /** `REMINDER_HORIZON_DAYS`, `REMINDER_PAUSE_DAYS` and `REMINDER_LATE_MINUTES`: one home each. */
+  horizonDays: number;
+  pauseDays: number;
+  lateMinutes: number;
   /** The notification channel's name in Android's settings, in the app's language. */
   channelName: string;
   /** The two buttons: "In 1 hour" and "Pause 7 days". */
@@ -32,12 +36,10 @@ export type NativePlan = ReminderPlan & {
 export type NativeReminderState = {
   enabled: boolean;
   resumeDate: string | null;
-  /** `yyyy-MM-dd HH:mm` of an "In 1 hour" in waiting. */
-  snoozedUntil: string | null;
   log: ReminderLogEntry[];
 };
 
-const OFF: NativeReminderState = { enabled: false, resumeDate: null, snoozedUntil: null, log: [] };
+const OFF: NativeReminderState = { enabled: false, resumeDate: null, log: [] };
 
 export function isAvailable(): boolean {
   return native !== null;
@@ -68,7 +70,6 @@ export function getState(): NativeReminderState {
   return {
     enabled: parsed.enabled === true,
     resumeDate: parsed.resumeDate ?? null,
-    snoozedUntil: parsed.snoozedUntil ?? null,
     log: (parsed.log ?? []).map((e) => ({
       date: e.date,
       variant: e.variant ?? null,

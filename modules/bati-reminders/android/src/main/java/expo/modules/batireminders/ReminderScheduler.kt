@@ -24,11 +24,14 @@ import org.json.JSONObject
  * `USE_EXACT_ALARM` is for alarm clocks. No battery-optimisation exemption either, Play restricts it.
  */
 internal object ReminderScheduler {
-  /** Days armed ahead, counted from the plan's day or the end of a pause, whichever is later. */
-  const val HORIZON_DAYS = 14
+  /**
+   * Days armed ahead, counted from the plan's day or the end of a pause, whichever is later; and how
+   * late a reminder may still ring. Both come with the plan (`db/reminders.ts` owns the numbers), the
+   * fallbacks only cover a plan written before they did.
+   */
+  private fun horizonDays(plan: JSONObject?) = plan?.optInt("horizonDays", 14) ?: 14
 
-  /** A reminder later than this after its hour is dropped (phone off, reboot), never caught up. */
-  private const val LATE_MS = 60 * 60 * 1000L
+  private fun lateMs(plan: JSONObject?) = (plan?.optInt("lateMinutes", 60) ?: 60) * 60 * 1000L
 
   /** "In 1 hour". */
   private const val SNOOZE_MS = 60 * 60 * 1000L
@@ -36,7 +39,6 @@ internal object ReminderScheduler {
   /** "In 1 hour" is not offered on a reminder posted from this hour on: it would cross midnight. */
   private const val LAST_SNOOZE_HOUR = 23
 
-  const val PAUSE_DAYS = 7
   const val CHANNEL_ID = "bati-reminders"
   const val ACTION_ALARM = "expo.modules.batireminders.ALARM"
   const val ACTION_SNOOZE = "expo.modules.batireminders.SNOOZE"
@@ -57,9 +59,9 @@ internal object ReminderScheduler {
   private fun postable(store: ReminderStore): List<JSONObject> {
     if (!store.enabled) return emptyList()
     val entries = store.plan?.optJSONArray("entries") ?: return emptyList()
-    val today = LocalTime.today()
+    val today = LocalDay.today()
     val from = maxOf(store.plannedOn ?: today, store.resumeDate ?: "")
-    val until = LocalTime.addDays(from, HORIZON_DAYS)
+    val until = LocalDay.addDays(from, horizonDays(store.plan))
     return (0 until entries.length())
       .mapNotNull { entries.optJSONObject(it) }
       .filter {
@@ -78,19 +80,23 @@ internal object ReminderScheduler {
     handled: Long = Long.MIN_VALUE,
   ): Due? {
     val store = ReminderStore(context)
-    val today = LocalTime.today()
+    val today = LocalDay.today()
     val candidates = mutableListOf<Due>()
 
+    val late = lateMs(store.plan)
     val snooze = store.snooze
     val paused = (store.resumeDate ?: "") > today
     if (snooze != null && store.enabled && !paused && snooze.first == today && dueToday(store) == "yes") {
-      candidates.add(Due(today, LocalTime.instant(snooze.first, snooze.second), null))
+      val at = LocalDay.instant(snooze.first, snooze.second)
+      // Held by a session past its hour and then given back: dropped like any late reminder, never
+      // posted in the face of a hero who is in the app.
+      if (at + late >= now) candidates.add(Due(today, at, null))
     }
     for (entry in postable(store)) {
       val date = entry.optString("date")
       if (store.logged(date)) continue
-      val at = LocalTime.instant(date, entry.optString("time"))
-      if (at + LATE_MS < now) continue
+      val at = LocalDay.instant(date, entry.optString("time"))
+      if (at + late < now) continue
       candidates.add(Due(date, at, entry))
     }
     return candidates.filter { it.at > handled }.minByOrNull { it.at }
@@ -98,7 +104,7 @@ internal object ReminderScheduler {
 
   /** What the plan said about today, and only if it was made today. */
   private fun dueToday(store: ReminderStore): String =
-    if (store.plannedOn == LocalTime.today()) store.plan?.optString("dueToday", "yes") ?: "yes" else "yes"
+    if (store.plannedOn == LocalDay.today()) store.plan?.optString("dueToday", "yes") ?: "yes" else "yes"
 
   private fun alarmIntent(context: Context): PendingIntent =
     PendingIntent.getBroadcast(
@@ -174,7 +180,7 @@ internal object ReminderScheduler {
     }
 
     val labels = plan.optJSONObject("actionLabels")
-    val hour = LocalTime.timeOf(System.currentTimeMillis()).substringBefore(":").toInt()
+    val hour = LocalDay.timeOf(System.currentTimeMillis()).substringBefore(":").toInt()
     val builder =
       NotificationCompat
         .Builder(context, CHANNEL_ID)
@@ -184,7 +190,7 @@ internal object ReminderScheduler {
         .setContentIntent(tapIntent(context, due.date))
         .setAutoCancel(true)
         .setCategory(NotificationCompat.CATEGORY_REMINDER)
-        .setTimeoutAfter(maxOf(0, LocalTime.endOf(due.date) - System.currentTimeMillis()))
+        .setTimeoutAfter(maxOf(0, LocalDay.endOf(due.date) - System.currentTimeMillis()))
     if (body.isNotEmpty()) builder.setContentText(body)
     // One snooze a day: the second reminder offers only the pause.
     if (!due.snooze && hour < LAST_SNOOZE_HOUR) {
@@ -212,11 +218,11 @@ internal object ReminderScheduler {
     date: String,
   ) {
     cancelNotification(context, date)
-    val today = LocalTime.today()
+    val today = LocalDay.today()
     val later = System.currentTimeMillis() + SNOOZE_MS
-    if (date == today && LocalTime.endOf(today) > later) {
+    if (date == today && LocalDay.endOf(today) > later) {
       val store = ReminderStore(context)
-      store.snooze = today to LocalTime.timeOf(later)
+      store.snooze = today to LocalDay.timeOf(later)
       store.updateLog(today) { it.put("snoozed", true) }
     }
     arm(context)
@@ -229,7 +235,7 @@ internal object ReminderScheduler {
   ) {
     cancelNotification(context, date)
     val store = ReminderStore(context)
-    store.resumeDate = LocalTime.addDays(LocalTime.today(), PAUSE_DAYS)
+    store.resumeDate = LocalDay.addDays(LocalDay.today(), store.plan?.optInt("pauseDays", 7) ?: 7)
     store.snooze = null
     store.updateLog(date) { it.put("paused", true) }
     arm(context)

@@ -2,6 +2,7 @@ package expo.modules.batireminders
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -24,22 +25,22 @@ internal class ReminderStore(
 
   var enabled: Boolean
     get() = prefs.getBoolean(KEY_ENABLED, false)
-    set(value) = prefs.edit().putBoolean(KEY_ENABLED, value).apply()
+    set(value) = prefs.edit { putBoolean(KEY_ENABLED, value) }
 
   /** The plan as JS sent it: entries, dueToday, quietText, channelName, actionLabels. */
   var plan: JSONObject?
     get() = prefs.getString(KEY_PLAN, null)?.let { runCatching { JSONObject(it) }.getOrNull() }
-    set(value) = prefs.edit().putString(KEY_PLAN, value?.toString()).apply()
+    set(value) = prefs.edit { putString(KEY_PLAN, value?.toString()) }
 
   /** The day the plan was made: its `dueToday` speaks for that day and no other. */
   var plannedOn: String?
     get() = prefs.getString(KEY_PLANNED_ON, null)
-    set(value) = prefs.edit().putString(KEY_PLANNED_ON, value).apply()
+    set(value) = prefs.edit { putString(KEY_PLANNED_ON, value) }
 
   /** Local `yyyy-MM-dd` the reminders ring again from, or null when not paused. */
   var resumeDate: String?
     get() = prefs.getString(KEY_RESUME, null)
-    set(value) = prefs.edit().putString(KEY_RESUME, value).apply()
+    set(value) = prefs.edit { putString(KEY_RESUME, value) }
 
   /** "In 1 hour": the day and the hour it rings again, or null. */
   var snooze: Pair<String, String>?
@@ -49,11 +50,10 @@ internal class ReminderStore(
       return date to time
     }
     set(value) =
-      prefs
-        .edit()
-        .putString(KEY_SNOOZE_DATE, value?.first)
-        .putString(KEY_SNOOZE_TIME, value?.second)
-        .apply()
+      prefs.edit {
+        putString(KEY_SNOOZE_DATE, value?.first)
+        putString(KEY_SNOOZE_TIME, value?.second)
+      }
 
   /** The last days that rang, oldest first: `{ date, variant, snoozed, opened, paused }`. */
   fun log(): MutableList<JSONObject> {
@@ -68,7 +68,7 @@ internal class ReminderStore(
   fun updateLog(
     date: String,
     change: (JSONObject) -> Unit,
-  ) {
+  ) = synchronized(LOCK) {
     val log = log()
     val entry =
       log.firstOrNull { it.optString("date") == date }
@@ -82,7 +82,7 @@ internal class ReminderStore(
     change(entry)
     log.sortBy { it.optString("date") }
     val kept = log.takeLast(LOG_SIZE)
-    prefs.edit().putString(KEY_LOG, JSONArray(kept).toString()).apply()
+    prefs.edit { putString(KEY_LOG, JSONArray(kept).toString()) }
   }
 
   companion object {
@@ -95,11 +95,14 @@ internal class ReminderStore(
     private const val KEY_SNOOZE_TIME = "snoozeTime"
     private const val KEY_LOG = "log"
     const val LOG_SIZE = 10
+
+    /** The receiver (main thread) and the module (JS thread) both rewrite the journal. */
+    private val LOCK = Any()
   }
 }
 
 /** Local calendar arithmetic on `yyyy-MM-dd` and `HH:mm`, in the zone the phone is in now. */
-internal object LocalTime {
+internal object LocalDay {
   private fun dayFormat() = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
   fun today(): String = dayFormat().format(Calendar.getInstance().time)
@@ -109,7 +112,7 @@ internal object LocalTime {
     days: Int,
   ): String {
     val cal = Calendar.getInstance()
-    cal.time = dayFormat().parse(date) ?: return date
+    cal.time = runCatching { dayFormat().parse(date) }.getOrNull() ?: return date
     cal.add(Calendar.DAY_OF_MONTH, days)
     return dayFormat().format(cal.time)
   }
@@ -123,8 +126,10 @@ internal object LocalTime {
     date: String,
     time: String,
   ): Long {
-    val (y, m, d) = date.split("-").map { it.toInt() }
-    val (h, min) = time.split(":").map { it.toInt() }
+    // A malformed day or hour from JS must not crash a receiver at boot: it lands at epoch 0,
+    // which is more than an hour late and so is dropped.
+    val (y, m, d) = date.split("-").mapNotNull { it.toIntOrNull() }.takeIf { it.size == 3 } ?: return 0
+    val (h, min) = time.split(":").mapNotNull { it.toIntOrNull() }.takeIf { it.size == 2 } ?: return 0
     val cal = Calendar.getInstance()
     cal.isLenient = true
     cal.clear()

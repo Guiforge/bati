@@ -34,7 +34,7 @@ class BatiRemindersModule : Module() {
         val plan = JSONObject(json)
         val store = ReminderStore(context)
         store.plan = plan
-        store.plannedOn = LocalTime.today()
+        store.plannedOn = LocalDay.today()
         // "no": today is done or a rest day, so a snooze in waiting goes. "hold" keeps it waiting.
         if (plan.optString("dueToday") == "no") store.snooze = null
         ReminderScheduler.ensureChannel(context, plan.optString("channelName", "Reminders"))
@@ -69,7 +69,7 @@ class BatiRemindersModule : Module() {
         true
       }
 
-      /** `{ enabled, resumeDate, snoozedUntil, log }`, as JSON. */
+      /** `{ enabled, resumeDate, log }`, as JSON. */
       Function("getState") {
         val context = context ?: return@Function null
         appContext.currentActivity?.intent?.let(::markOpened)
@@ -77,7 +77,6 @@ class BatiRemindersModule : Module() {
         JSONObject()
           .put("enabled", store.enabled)
           .put("resumeDate", store.resumeDate ?: JSONObject.NULL)
-          .put("snoozedUntil", store.snooze?.let { "${it.first} ${it.second}" } ?: JSONObject.NULL)
           .put("log", JSONArray(store.log()))
           .toString()
       }
@@ -92,7 +91,12 @@ class BatiRemindersModule : Module() {
   private fun markOpened(intent: Intent) {
     val date = intent.getStringExtra(ReminderScheduler.EXTRA_DATE) ?: return
     val context = context ?: return
-    ReminderStore(context).updateLog(date) { it.put("opened", true) }
+    // Relaunched from Recents after the process died, the task hands its first intent back, extra
+    // and all: that is not a tap on today's reminder.
+    if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0) return
+    val store = ReminderStore(context)
+    // Only a day that rang: a tap on a day already trimmed from the journal adds nothing to it.
+    if (store.logged(date)) store.updateLog(date) { it.put("opened", true) }
     // Once: the activity keeps its intent across a rotation or a return from the background.
     intent.removeExtra(ReminderScheduler.EXTRA_DATE)
   }

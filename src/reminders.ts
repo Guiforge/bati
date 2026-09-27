@@ -2,7 +2,15 @@ import { AppState } from "react-native";
 import { getChangeVersion } from "@/db/changeVersion";
 import { decideHomeOffer } from "@/db/homeOffer";
 import { getOath } from "@/db/oaths";
-import { getReminderDays, getReminderSessions, planReminders } from "@/db/reminders";
+import { preferences } from "@/db/preferences";
+import {
+  getReminderDays,
+  getReminderSessions,
+  planReminders,
+  REMINDER_HORIZON_DAYS,
+  REMINDER_LATE_MINUTES,
+  REMINDER_PAUSE_DAYS,
+} from "@/db/reminders";
 import { i18n } from "@/i18n";
 import * as Reminders from "@/modules/bati-reminders";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
@@ -25,8 +33,11 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
   if (!state.enabled) return;
 
   const now = new Date();
-  const language = resolveAppLanguage(i18n.language);
-  const t = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
+  // The stored language, not `i18n.language`: at a cold start the settings are still loading and
+  // i18n still speaks the device's language. Same read as the widget's.
+  const language = resolveAppLanguage(await preferences.getLanguage());
+  const t = (key: string, options?: Record<string, unknown>) =>
+    i18n.t(key, { ...options, lng: language });
   const [days, sessions, offer, oath] = await Promise.all([
     getReminderDays(),
     getReminderSessions(now),
@@ -48,6 +59,9 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
   });
   Reminders.setPlan({
     ...plan,
+    horizonDays: REMINDER_HORIZON_DAYS,
+    pauseDays: REMINDER_PAUSE_DAYS,
+    lateMinutes: REMINDER_LATE_MINUTES,
     channelName: t("reminders.channel"),
     actionLabels: { snooze: t("reminders.snooze"), pause: t("reminders.pause") },
   });
@@ -66,8 +80,9 @@ export function replanWhenBackgrounded(replan: () => Promise<void>): { remove():
     getChangeVersion()
       .then(async (version) => {
         if (version === plannedAt) return;
-        plannedAt = version;
         await replan();
+        // After, not before: a plan that failed is tried again on the next way out.
+        plannedAt = version;
       })
       .catch((e: unknown) => reportError("reminders.replan", e));
   });

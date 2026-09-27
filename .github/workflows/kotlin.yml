@@ -67,7 +67,7 @@ jobs:
           for dir in ../modules/*/android; do
             name=$(basename "$(dirname "$dir")")
             target=$(grep -oE "Project ':[^']*${name}[^']*'" /tmp/projects.txt | head -1 |
-              sed -E "s/Project '(.*)'/\1/")
+              sed -E "s/Project '(.*)'/\1/" || true)
             if [ -z "$target" ]; then
               echo "Could not find the $name Gradle project. It is included by" >&2
               echo "expoAutolinking.useExpoModules(), so its path can change with the SDK." >&2

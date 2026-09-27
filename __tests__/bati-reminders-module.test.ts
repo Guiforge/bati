@@ -24,7 +24,7 @@ describe("bati-reminders, without its native half", () => {
   test("reports itself unavailable, and off", () => {
     expect(isAvailable()).toBe(false);
     expect(areEnabled()).toBe(false);
-    expect(getState()).toEqual({ enabled: false, resumeDate: null, snoozedUntil: null, log: [] });
+    expect(getState()).toEqual({ enabled: false, resumeDate: null, log: [] });
   });
 
   test("takes a plan, a switch and a pause without throwing", () => {
@@ -33,6 +33,9 @@ describe("bati-reminders, without its native half", () => {
         entries: [],
         dueToday: "yes",
         quietText: "",
+        horizonDays: 14,
+        pauseDays: 7,
+        lateMinutes: 60,
         channelName: "Reminders",
         actionLabels: { snooze: "In 1 hour", pause: "Pause 7 days" },
       }),

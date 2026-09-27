@@ -9,7 +9,7 @@ import { clientMock, createTestDb } from "./helpers/testDb";
 const { completedQuest, userPreferences } = schema;
 
 const mockSetPlan = jest.fn();
-let mockState = { enabled: true, resumeDate: null, snoozedUntil: null, log: [] as unknown[] };
+let mockState = { enabled: true, resumeDate: null, log: [] as unknown[] };
 
 jest.mock("@/modules/bati-reminders", () => ({
   isAvailable: () => true,
@@ -29,7 +29,7 @@ describe("replanReminders", () => {
 
   beforeEach(() => {
     mockSetPlan.mockClear();
-    mockState = { enabled: true, resumeDate: null, snoozedUntil: null, log: [] };
+    mockState = { enabled: true, resumeDate: null, log: [] };
     t.db.delete(completedQuest).run();
     t.db
       .insert(userPreferences)
@@ -54,6 +54,8 @@ describe("replanReminders", () => {
     expect(plan.channelName).toBe("Training reminders");
     expect(plan.actionLabels).toEqual({ snooze: "In 1 hour", pause: "Pause 7 days" });
     expect(plan.quietText).not.toBe("");
+    // The numbers the native half keeps to have one home, db/reminders.ts.
+    expect(plan).toMatchObject({ horizonDays: 14, pauseDays: 7, lateMinutes: 60 });
   });
 
   test("a session under way holds today", async () => {
@@ -68,6 +70,19 @@ describe("replanReminders", () => {
       .run();
     await replan()(false);
     expect(mockSetPlan.mock.calls[0]?.[0].dueToday).toBe("no");
+  });
+
+  test("speaks the app's stored language, not the device's", async () => {
+    t.db
+      .insert(userPreferences)
+      .values({ key: "language", value: "fr" })
+      .onConflictDoUpdate({ target: userPreferences.key, set: { value: "fr" } })
+      .run();
+    await replan()(false);
+    const plan = mockSetPlan.mock.calls[0]?.[0];
+    expect(plan.channelName).toBe("Rappels d'entraînement");
+    expect(plan.actionLabels.snooze).toBe("Dans 1 h");
+    t.db.delete(userPreferences).run();
   });
 
   test("a phone whose switch is off reads nothing and arms nothing", async () => {

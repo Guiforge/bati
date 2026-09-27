@@ -22,7 +22,8 @@ import appJson from "../app.json";
 // FOREGROUND_SERVICE below ship in every APK and were justified only after someone read a built
 // manifest by hand. RECEIVE_BOOT_COMPLETED was in `blockedPermissions` for the same reason and
 // from the same library, which no package manifest declares either — evidence this hole had
-// already been patched once, invisibly. It left that list with the reminders, which need it. `fdroid/expected-permissions.txt` and the release
+// already been patched once, invisibly. It left that list with the reminders, which need
+// it. `fdroid/expected-permissions.txt` and the release
 // workflow's gate are what actually assert the shipped list; this file is the fast pre-check.
 
 const ROOT = path.resolve(__dirname, "..");

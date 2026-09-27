@@ -7,15 +7,20 @@ import {
   startOfWeek,
   subDays,
 } from "date-fns";
+import { gte } from "drizzle-orm";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import type { SessionStatus } from "@/stores/session";
+import { db, schema } from "./client";
 import { OUTING_COUNTS_AFTER_SECONDS } from "./completed";
 import { dayKey } from "./dates";
 import { formatDurationEstimate } from "./estimate";
 import type { HomeOffer } from "./homeOffer";
 import { DEFAULT_WEEKLY_TARGET, type Oath, oathWeekStart } from "./oaths";
-import { restSuggestionAt } from "./restSuggestions";
+import { getPreference } from "./preferences";
+import { REST_LOOKBACK_DAYS, restSuggestionAt } from "./restSuggestions";
+
+const { completedQuest } = schema;
 
 /**
  * The reminders' rule, whole: which days ring, when, and what they say (docs/designs/rappels.md).
@@ -502,4 +507,26 @@ export function parseReminderDays(raw: string | null): ReminderDays {
     // A corrupt value reads as no days chosen: the switch shows off-days, and the next save heals it.
     return {};
   }
+}
+
+const REMINDER_DAYS_KEY = "reminderDays";
+
+export async function getReminderDays(): Promise<ReminderDays> {
+  return parseReminderDays(await getPreference(REMINDER_DAYS_KEY));
+}
+
+/**
+ * The sessions the plan reads: the rest advice's window (`REST_LOOKBACK_DAYS`), which also covers
+ * the oath's week and the four weeks `suggestDays` looks at.
+ */
+export async function getReminderSessions(now: Date): Promise<ReminderSession[]> {
+  return await db
+    .select({
+      performedAt: completedQuest.performedAt,
+      outing: completedQuest.outing,
+      movingSeconds: completedQuest.movingSeconds,
+      durationSeconds: completedQuest.durationSeconds,
+    })
+    .from(completedQuest)
+    .where(gte(completedQuest.performedAt, subDays(now, REST_LOOKBACK_DAYS)));
 }

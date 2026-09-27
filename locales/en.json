@@ -1812,6 +1812,9 @@
     "quiet": "Bati goes quiet for now. The village waits, and counts nothing.",
     "oath_more_one": "One more and the oath holds this week.",
     "oath_more_other": "{{count}} more and the oath holds this week.",
-    "oath_won": "The oath's week is won. One more, just for the fun of it?"
+    "oath_won": "The oath's week is won. One more, just for the fun of it?",
+    "channel": "Training reminders",
+    "snooze": "In 1 hour",
+    "pause": "Pause 7 days"
   }
 }

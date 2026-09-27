@@ -1,0 +1,15 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.guiforge.bati'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.batireminders"
+  defaultConfig {
+    // Read by expo-module-gradle-plugin as the maven artifact version, see bati-location.
+    versionName '0.1.0'
+  }
+}

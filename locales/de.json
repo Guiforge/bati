@@ -1816,6 +1816,9 @@
     "quiet": "Bati schweigt vorerst. Das Dorf wartet und zählt keine Tage.",
     "oath_more_one": "Noch eine Einheit, und der Schwur hält diese Woche.",
     "oath_more_other": "Noch {{count}} Einheiten, und der Schwur hält diese Woche.",
-    "oath_won": "Die Schwurwoche ist geschafft. Noch eine, einfach so?"
+    "oath_won": "Die Schwurwoche ist geschafft. Noch eine, einfach so?",
+    "channel": "Trainingserinnerungen",
+    "snooze": "In 1 Std.",
+    "pause": "7 Tage Pause"
   }
 }

@@ -8,10 +8,7 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.guiforge.bati",
       "versionCode": 20600,
-      "blockedPermissions": [
-        "android.permission.ACCESS_WIFI_STATE",
-        "android.permission.RECEIVE_BOOT_COMPLETED"
-      ]
+      "blockedPermissions": ["android.permission.ACCESS_WIFI_STATE"]
     },
     "backgroundColor": "#0B0F19",
     "experiments": {

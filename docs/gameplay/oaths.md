@@ -108,18 +108,27 @@ A "custom oath" toggle reveals the original metric/target/exercise form for exac
 3. **Swear screen** ([app/oath.tsx](../../app/oath.tsx)) — presets deck first, custom form behind
    a toggle. Reached from Settings, or by tapping the home card.
 
-## There is no reminder, and that is deliberate
+## The oath does not chase you; your days remind you
 
-An oath used to fire one local notification after three idle days. It is gone, and so is every
-notification in the app.
+An oath used to fire one local notification after three idle days. It is gone, and it is not what
+came back. That reminder cost one dependency, `expo-notifications`, and that dependency brought
+Firebase Cloud Messaging, ShortcutBadger and the Play install-referrer library with it: twenty-odd
+Android permissions, a Google push stack the app never called, and a patch script re-verified on
+every Expo SDK bump so the F-Droid build could strip it all back out. It was also a reminder of
+*absence*, three days late, which is the one kind the reminders design refuses.
 
-The reminder cost one dependency, `expo-notifications`, and that dependency brought Firebase Cloud
-Messaging, ShortcutBadger and the Play install-referrer library with it — twenty-odd Android
-permissions, a Google push stack the app never called, and a patch script that had to be
-re-verified against every Expo SDK bump so the F-Droid build could strip it all back out. That is a
-great deal of machinery for one line of text three days late.
+The reminder that exists now ([designs/rappels.md](../designs/rappels.md), roadmap 4.2) belongs to
+the hero's days, not to the oath: a local Kotlin module, `modules/bati-reminders`, rings once on
+the days and at the hour the hero chose, and stays quiet when the session is done or the rest
+advice says so. The oath's part is small and optional:
 
-So the oath does not chase you. It waits on the home card, which is where you look anyway.
+- the current-oath card of a **weekly** oath offers it in one line ("Want Bati to remind you on
+  your days?"), gone once the reminders are on;
+- a reminder on a day of the oath's current week can add one line, "Two more and the oath holds
+  this week", only while the week can still be kept, and "the oath's week is won" once it is;
+- Settings says, in grey, when fewer days are chosen than the oath asks for. It blocks nothing.
+
+The quota never silences a chosen day: the oath counts, the days ring.
 
 ## Related
 

@@ -33,7 +33,7 @@ francés: **feedback.bati@proton.me**
 
 # Privacy Policy for Bati
 
-**Last updated: 25 September 2026**
+**Last updated: 27 September 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -215,9 +215,18 @@ lock alive so the trace does not stop when your phone sleeps in a pocket. That i
 permanent notification during an outing is for: an app watching your position should say so, on
 screen, the whole time.
 
-**Notifications (optional).** Asked for when you turn a reminder on, and used for the outing
-notification above. Reminders are scheduled locally by your device's operating system: there are
-no push notifications, so there is no server that knows your device.
+**Notifications (optional).** Asked for when you turn the training reminder on in Settings, and
+used for the outing notification above. Reminders are scheduled on your phone by Android itself,
+on the days and at the hour you chose: there are no push notifications, so there is no server that
+knows your device. To show a reminder on time and act on its two buttons, the phone keeps a small
+journal of the last ten days a reminder rang (the day, which sentence it said, and whether you
+tapped it, pushed it back or paused it). It stays in the app's own storage on your phone, is never
+sent anywhere and is not in your backups. The one way it leaves the phone is inside a bug report
+mail you read and send yourself, as four counts.
+
+**Starting with your phone (Android).** A restart clears every scheduled alarm, so Bati asks to be
+told when your phone has started, to schedule the next reminder again. Nothing else runs at that
+moment, and nothing at all if the reminder is off.
 
 **Internet.** For the map, the version check and device sync, each only while its own switch is on
 in Settings. What each request reveals is in its section above.
@@ -282,7 +291,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 25 septembre 2026**
+**Dernière mise à jour : 27 septembre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -488,9 +497,19 @@ wake lock pour que la trace ne s'arrête pas quand le téléphone s'endort dans 
 cela que sert la notification permanente pendant une sortie : une application qui suit votre
 position doit le dire, à l'écran, du début à la fin.
 
-**Notifications (facultatif).** Demandées quand vous activez un rappel, et utilisées pour la
-notification de sortie ci-dessus. Les rappels sont programmés localement par le système de votre
-appareil : il n'y a aucune notification push, donc aucun serveur ne connaît votre appareil.
+**Notifications (facultatif).** Demandées quand vous activez le rappel d'entraînement dans les
+réglages, et utilisées pour la notification de sortie ci-dessus. Les rappels sont programmés sur
+votre téléphone par Android lui-même, les jours et à l'heure que vous avez choisis : il n'y a aucune
+notification push, donc aucun serveur ne connaît votre appareil. Pour afficher un rappel à l'heure
+et agir sur ses deux boutons, le téléphone garde un petit journal des dix derniers jours où un
+rappel a sonné (le jour, la phrase affichée, et si vous l'avez touché, repoussé ou mis en pause).
+Il reste dans le stockage propre de l'application, n'est envoyé nulle part et n'entre pas dans vos
+sauvegardes. Il ne quitte le téléphone qu'à l'intérieur d'un mail de rapport de bug que vous lisez
+et envoyez vous-même, sous forme de quatre nombres.
+
+**Démarrage du téléphone (Android).** Un redémarrage efface toutes les alarmes programmées : Bati
+demande donc à être prévenu quand le téléphone a démarré, pour reprogrammer le prochain rappel.
+Rien d'autre ne tourne à ce moment-là, et rien du tout si le rappel est coupé.
 
 **Internet.** Pour la carte, la vérification de version et la synchronisation des appareils,
 chacune seulement tant que son interrupteur est activé dans les réglages. Ce que chaque demande

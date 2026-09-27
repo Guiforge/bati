@@ -1816,7 +1816,7 @@
     "channel": "Training reminders",
     "snooze": "In 1 hour",
     "pause": "Pause 7 days",
-    "section": "Reminder",
+    "section": "REMINDER",
     "switch": "Remind me to train",
     "rule": "You choose your days and your hour. Bati reminds you once on those days, unless your session is done or it advises rest. You can push it back an hour or pause it.",
     "days": "Your days",

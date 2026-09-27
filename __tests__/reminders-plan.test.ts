@@ -182,6 +182,32 @@ describe("planReminders: never for nothing", () => {
     expect(planReminders(input({ sessions, sessionActive: true })).dueToday).toBe("no");
   });
 
+  test("a day the journal has never rings again, even ahead of today (a clock moved back)", () => {
+    const log = [
+      {
+        date: "2026-01-16",
+        variant: "weak_muscles.0",
+        snoozed: false,
+        opened: false,
+        paused: false,
+      },
+    ];
+    expect(dates(planReminders(input({ state: { resumeDate: null, log } }))).slice(0, 2)).toEqual([
+      "2026-01-15",
+      "2026-01-17",
+    ]);
+  });
+
+  test("today's rest is judged at today's hour, so the entry and dueToday agree", () => {
+    // Six sessions in seven days, the oldest a week ago at 19:00: at 10:00 that is overtraining,
+    // by 20:00 it has fallen out of the window and today rings.
+    const days = [7, 5, 4, 2, 1, 1];
+    const sessions = days.map((d, i) => workout(new Date(2026, 0, 15 - d, i === 0 ? 19 : 12)));
+    const plan = planReminders(input({ sessions }));
+    expect(dates(plan)[0]).toBe("2026-01-15");
+    expect(plan.dueToday).toBe("yes");
+  });
+
   test("a day already reminded never rings again, whatever the hour says now", () => {
     const log = [
       {
@@ -347,6 +373,31 @@ describe("planReminders: the weekly oath", () => {
     // Thursday, nothing logged, seven asked: Thursday to Sunday is four days.
     const plan = planReminders(input({ oath: oath(7) }));
     expect(plan.entries[0]?.body).toBe("");
+  });
+
+  test("a week that starts on Sunday: Sunday is a new week, Saturday is its last day", () => {
+    const sunday = { ...oath(3), weekStartsOn: 0 as const };
+    // Saturday 17 January: last day of a Sunday week, one day left for two sessions.
+    const saturday = new Date(2026, 0, 17, 10);
+    const late = planReminders(
+      input({ now: saturday, oath: sunday, sessions: [workout(new Date(2026, 0, 12, 18))] }),
+    );
+    expect(late.entries[0]?.body).toBe("");
+    // Sunday 18 January opens the next week: its entry is not this week's, so no number.
+    expect(late.entries[1]).toMatchObject({ date: "2026-01-18", body: "" });
+
+    // Sunday itself, with nothing logged yet: seven days to find three.
+    const plan = planReminders(input({ now: new Date(2026, 0, 18, 10), oath: sunday }));
+    expect(plan.entries[0]?.body).toBe('reminders.oath_more {"count":3}');
+  });
+
+  test("an oath sworn before weekStartsOn existed counts in the language's week", () => {
+    const legacy = { ...oath(3), weekStartsOn: undefined };
+    // English weeks start on Sunday: Sunday the 11th and Monday the 12th both count by Thursday.
+    const sessions = [workout(new Date(2026, 0, 11, 18)), monday];
+    expect(planReminders(input({ oath: legacy, sessions })).entries[0]?.body).toBe(
+      'reminders.oath_more {"count":1}',
+    );
   });
 
   test("next week: no number, the count is not known yet", () => {

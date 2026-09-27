@@ -1803,7 +1803,7 @@
     },
     "weak_muscles": {
       "0": "{{quest}} wartet. Heute dran: {{muscles}}.",
-      "1": "Dein Tag. {{muscles}} hängen hinterher, {{quest}} kümmert sich darum."
+      "1": "Dein Tag. {{quest}} holt nach, was hinterherhängt: {{muscles}}."
     },
     "first_day": {
       "0": "Dein Tag. {{quest}}, etwa {{duration}}. Das erste Gebäude wartet.",

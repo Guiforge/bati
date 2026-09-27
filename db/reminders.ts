@@ -7,14 +7,14 @@ import {
   startOfWeek,
   subDays,
 } from "date-fns";
-import { getWeekStart } from "@/constants/dateFormatters";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
+import type { SessionStatus } from "@/stores/session";
 import { OUTING_COUNTS_AFTER_SECONDS } from "./completed";
 import { dayKey } from "./dates";
 import { formatDurationEstimate } from "./estimate";
 import type { HomeOffer } from "./homeOffer";
-import { DEFAULT_WEEKLY_TARGET, type Oath } from "./oaths";
+import { DEFAULT_WEEKLY_TARGET, type Oath, oathWeekStart } from "./oaths";
 import { restSuggestionAt } from "./restSuggestions";
 
 /**
@@ -44,6 +44,9 @@ export const REMINDER_PAUSE_DAYS = 7;
  * Days of entries handed to the native side: the horizon, plus room for a pause tapped on the
  * notification without the app being opened, after which the native side still has fourteen days.
  */
+// ponytail: the margin fully covers a pause tapped on the plan's own day. Tapped on day 5 without
+//           the app being opened, the native side gets 9 days after it rather than 14, then goes
+//           quiet as it would anyway. Size the plan by the horizon twice if testers hit it.
 export const REMINDER_PLAN_DAYS = REMINDER_HORIZON_DAYS + REMINDER_PAUSE_DAYS;
 /** A reminder that would arrive later than this after its hour is dropped, never caught up. */
 export const REMINDER_LATE_MINUTES = 60;
@@ -53,6 +56,16 @@ export const IGNORED_BEFORE_ASKING = 3;
 export const DAYS_BETWEEN_ASKING = 30;
 /** The hour offered when nothing in the journal says better. */
 export const DEFAULT_REMINDER_TIME = "18:00";
+
+/**
+ * Whether a session holds today's reminder: on screen, or won and not saved yet (the victory screen
+ * waits for an answer, and the session is only in the journal once it has one). A victory already
+ * saved no longer holds anything.
+ */
+export function isSessionHeld(status: SessionStatus, savedSessionId: number | null): boolean {
+  if (status === "idle") return false;
+  return status !== "finished" || savedSessionId === null;
+}
 
 /** A session as the plan needs it: when, and whether it was an outing. */
 export type ReminderSession = {
@@ -154,8 +167,10 @@ function dayOf(key: string): Date {
 /** The moment `time` on day `key`, local. In a spring-forward gap it lands an hour on, harmlessly. */
 function at(key: string, time: string): Date {
   const day = dayOf(key);
-  day.setMinutes(minutesOf(time));
-  return day;
+  const minutes = minutesOf(time);
+  // From parts, not `setMinutes` on the day: where daylight saving starts at midnight (Chile,
+  // Lebanon) that day's "midnight" is 01:00, and 20:00 would land at 21:00.
+  return new Date(day.getFullYear(), day.getMonth(), day.getDate(), minutes / 60, minutes % 60);
 }
 
 /** Rest the reminders stay quiet for: the acute reasons. A deload says go easy, not stay home. */
@@ -244,7 +259,7 @@ export function oathWeekCount(
   now: Date,
   language: AppLanguage,
 ): number {
-  const weekStartsOn = oath.weekStartsOn ?? getWeekStart(language);
+  const weekStartsOn = oathWeekStart(oath, language);
   const start = startOfWeek(now, { weekStartsOn });
   return sessions.filter(
     (s) => countsAsSessionRow(s) && s.performedAt >= start && s.performedAt <= now,
@@ -255,7 +270,7 @@ export function oathWeekCount(
 function oathLine(input: PlanInput, date: string, done: number | null): string {
   const { oath, now, language, t } = input;
   if (!oath || done === null) return "";
-  const weekStartsOn = oath.weekStartsOn ?? getWeekStart(language);
+  const weekStartsOn = oathWeekStart(oath, language);
   const day = dayOf(date);
   if (!isSameWeek(day, now, { weekStartsOn })) return "";
 
@@ -280,8 +295,8 @@ export function planReminders(input: PlanInput): ReminderPlan {
   const today = dayKey(now);
   const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt);
   const trainedToday = workouts.some((w) => dayKey(w) === today);
-  const todayMuted =
-    trainedToday || sessionActive || state.log.some((entry) => entry.date === today);
+  const reminded = new Set(state.log.map((entry) => entry.date));
+  const todayMuted = trainedToday || sessionActive;
   const start = state.resumeDate && state.resumeDate > today ? state.resumeDate : today;
   const weekDone = weeklyOathDone(input);
   const sentence = sentenceFor(offer, input.language);
@@ -292,6 +307,8 @@ export function planReminders(input: PlanInput): ReminderPlan {
     const date = dayKey(addDays(dayOf(start), i));
     const time = timeOn(days, date);
     if (time === null) continue;
+    // Any day the journal has, not only today: a clock moved back must not ring one twice.
+    if (reminded.has(date)) continue;
     if (date === today && (todayMuted || tooLate(now, time))) continue;
     if (restsOn(workouts, at(date, time))) continue;
 
@@ -306,8 +323,19 @@ export function planReminders(input: PlanInput): ReminderPlan {
     });
   }
 
-  const done = trainedToday || restsOn(workouts, now);
+  const done = trainedToday || restsOn(workouts, todayMoment(days, today, now));
   return { entries, dueToday: dueTodayFor(done, sessionActive), quietText: t("reminders.quiet") };
+}
+
+/**
+ * When today's rest is judged: at today's hour while it is still ahead, as today's entry was, or the
+ * two could disagree. Rest only fades with time, so an entry at 20:00 could stand beside a "no"
+ * judged at 10:00.
+ */
+function todayMoment(days: ReminderDays, today: string, now: Date): Date {
+  const time = timeOn(days, today);
+  const hour = time === null ? null : at(today, time);
+  return hour !== null && hour > now ? hour : now;
 }
 
 /** Done or rested wins over a session under way: nothing left to hold today for. */
@@ -340,11 +368,11 @@ function weeklyOathDone({ oath, sessions, now, language }: PlanInput): number | 
 }
 
 /**
- * Days in a row, most recent last, the hero let a reminder pass: posted (a snooze counts once),
- * not tapped, no workout that day, no pause asked. Today never counts, it is not over. A day that
- * was tapped or paused is left out without breaking the run; a workout on a reminder day starts it
- * again, and so does any change to the reminder settings (`streakFrom`, a day key: only the days
- * after it count).
+ * Days in a row, most recent last, the hero let a reminder pass: posted (a snooze counts once), not
+ * tapped, no pause asked. Today never counts, it is not over. The run starts again after any
+ * workout, after a day the hero tapped or paused (they answered it), and after any change to the
+ * reminder settings (`streakFrom`, a day key: only the days after it count). A day that never rang
+ * because the phone killed the alarm is not in the journal, and so does not count either.
  */
 export function ignoredStreak(
   log: readonly ReminderLogEntry[],
@@ -352,12 +380,19 @@ export function ignoredStreak(
   today: string,
   streakFrom: string | null,
 ): number {
-  const trained = new Set(sessions.filter(isWorkoutRow).map((s) => dayKey(s.performedAt)));
+  const lastWorkout = sessions
+    .filter(isWorkoutRow)
+    .map((s) => dayKey(s.performedAt))
+    .filter((day) => day < today)
+    .sort()
+    .at(-1);
+  const since = [streakFrom, lastWorkout].filter((d): d is string => d !== null && d !== undefined);
+  const after = since.sort().at(-1) ?? "";
+
   let streak = 0;
   for (const entry of [...log].sort((a, b) => a.date.localeCompare(b.date))) {
-    if (entry.date >= today || (streakFrom !== null && entry.date <= streakFrom)) continue;
-    if (trained.has(entry.date)) streak = 0;
-    else if (!entry.opened && !entry.paused) streak++;
+    if (entry.date >= today || entry.date <= after) continue;
+    streak = entry.opened || entry.paused ? 0 : streak + 1;
   }
   return streak;
 }

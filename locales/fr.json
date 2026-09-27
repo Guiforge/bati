@@ -1871,7 +1871,7 @@
     },
     "weak_muscles": {
       "0": "{{quest}} t'attend. Au menu : {{muscles}}.",
-      "1": "Ton jour. {{muscles}} ont du retard, {{quest}} s'en charge."
+      "1": "Ton jour. {{quest}} rattrape ce qui traîne : {{muscles}}."
     },
     "first_day": {
       "0": "Ton jour. {{quest}}, ≈ {{duration}}. Le premier bâtiment attend.",

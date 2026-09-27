@@ -396,6 +396,14 @@ depuis). Fichiers et numéros de ligne sont justes. Ce qui suit corrige ou préc
   `countsAsSession` de la semaine calendaire du serment, `weekStartsOn` figé). « Encore atteignable »
   = séances manquantes ≤ jours restants dans la semaine, aujourd'hui compris.
 - **Retrait d'une séance** = `forgetSession` (`stores/session.ts:1936`).
+- **Rappels ignorés, « de suite »** : un tap ou une pause répond au rappel, donc la série repart
+  après ce jour (pas seulement « sort le jour »). Toute séance `isWorkout` la remet aussi à zéro,
+  même un jour choisi où rien n'a sonné parce que la séance était déjà faite.
+- **Marge de 21 jours** : elle couvre entièrement une pause tapée le jour du plan. Tapée 5 jours
+  plus tard sans rouvrir l'app, le natif n'a plus que 9 jours après la reprise. Plafond assumé
+  (`ponytail:` dans `db/reminders.ts`).
+- **`at()` et heure d'été** : l'heure d'un jour est construite depuis ses parties, pas par
+  `setMinutes` sur son minuit (faux là où l'heure d'été commence à minuit).
 
 **Recalcul**
 

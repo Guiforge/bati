@@ -1869,7 +1869,7 @@
     },
     "weak_muscles": {
       "0": "{{quest}} te espera. En el menú: {{muscles}}.",
-      "1": "Tu día. {{muscles}} van con retraso, {{quest}} se encarga."
+      "1": "Tu día. {{quest}} recupera lo que va atrasado: {{muscles}}."
     },
     "first_day": {
       "0": "Tu día. {{quest}}, unos {{duration}}. El primer edificio te espera.",

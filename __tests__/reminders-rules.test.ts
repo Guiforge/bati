@@ -5,6 +5,7 @@
 import {
   DEFAULT_REMINDER_TIME,
   ignoredStreak,
+  isSessionHeld,
   nextVariant,
   parseReminderDays,
   type ReminderLogEntry,
@@ -87,19 +88,24 @@ describe("ignoredStreak", () => {
     expect(ignoredStreak(log, [], today, null)).toBe(2);
   });
 
-  test("a tap takes the day out without breaking the run", () => {
+  test("a tap answers the reminder: the run starts again after it", () => {
     const log = [
       posted("2026-01-16"),
       posted("2026-01-17", { opened: true }),
       posted("2026-01-18"),
     ];
-    expect(ignoredStreak(log, [], today, null)).toBe(2);
+    expect(ignoredStreak(log, [], today, null)).toBe(1);
   });
 
-  test("a workout on a reminder day starts the run again", () => {
+  test("a workout starts the run again, on a reminder day or not", () => {
     const log = ["2026-01-15", "2026-01-16", "2026-01-17", "2026-01-18"].map((d) => posted(d));
-    const sessions = [workout(new Date(2026, 0, 17, 21))];
-    expect(ignoredStreak(log, sessions, today, null)).toBe(1);
+    expect(ignoredStreak(log, [workout(new Date(2026, 0, 17, 21))], today, null)).toBe(1);
+  });
+
+  test("a workout on a chosen day that never rang, because it was done first, counts too", () => {
+    // Monday ignored, Wednesday trained at 18:00 so nothing was posted, Friday and Monday ignored.
+    const log = ["2026-01-12", "2026-01-16", "2026-01-19"].map((d) => posted(d));
+    expect(ignoredStreak(log, [workout(new Date(2026, 0, 14, 18))], today, null)).toBe(2);
   });
 
   test("a walk does not: the reminder asked for a workout", () => {
@@ -108,13 +114,22 @@ describe("ignoredStreak", () => {
     expect(ignoredStreak(log, [walk], today, null)).toBe(3);
   });
 
+  test("a workout today does not reach back: today is not over", () => {
+    const log = ["2026-01-17", "2026-01-18", "2026-01-19"].map((d) => posted(d));
+    expect(ignoredStreak(log, [workout(new Date(2026, 0, 20, 8))], today, null)).toBe(3);
+  });
+
   test("a snoozed day rang twice and counts once", () => {
     const log = [posted("2026-01-18", { snoozed: true }), posted("2026-01-19")];
     expect(ignoredStreak(log, [], today, null)).toBe(2);
   });
 
-  test("a paused day does not count", () => {
-    const log = [posted("2026-01-18", { paused: true }), posted("2026-01-19")];
+  test("a pause answers the reminder too: nothing before it counts", () => {
+    const log = [
+      posted("2026-01-17"),
+      posted("2026-01-18", { paused: true }),
+      posted("2026-01-19"),
+    ];
     expect(ignoredStreak(log, [], today, null)).toBe(1);
   });
 
@@ -266,5 +281,19 @@ describe("every sentence renders whole", () => {
       expect(text).not.toBe(key);
       expect(text).not.toMatch(/{{|}}/);
     }
+  });
+});
+
+describe("isSessionHeld", () => {
+  test("a session on screen holds today, idle does not", () => {
+    for (const status of ["warmup", "countdown", "running", "resting", "paused"] as const) {
+      expect(isSessionHeld(status, null)).toBe(true);
+    }
+    expect(isSessionHeld("idle", null)).toBe(false);
+  });
+
+  test("a victory holds until it is saved, and not after", () => {
+    expect(isSessionHeld("finished", null)).toBe(true);
+    expect(isSessionHeld("finished", 42)).toBe(false);
   });
 });

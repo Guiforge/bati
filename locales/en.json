@@ -1799,7 +1799,7 @@
     },
     "weak_muscles": {
       "0": "{{quest}} awaits. On the menu: {{muscles}}.",
-      "1": "Your day. {{muscles}} have fallen behind, {{quest}} takes care of it."
+      "1": "Your day. {{quest}} catches up on what lags: {{muscles}}."
     },
     "first_day": {
       "0": "Your day. {{quest}}, about {{duration}}. The first building is waiting.",

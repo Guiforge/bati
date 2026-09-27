@@ -2,7 +2,9 @@
 
 Conçu le 27/09/2026 (spec v3), écrit contre le commit `68ce4dd` (v2.6.0).
 Status: DESIGNED
-Code : pas encore écrit. Quatre PR prévues, voir [Découpage](#découpage).
+Code : PR 1 (logique) : `db/reminders.ts`, `db/homeOffer.ts`, `restSuggestionAt` dans
+`db/restSuggestions.ts`, `oathWeekStart` dans `db/oaths.ts`, `reminders.*` dans `locales/*.json`.
+PR 2 à 4 à venir, voir [Découpage](#découpage).
 
 *27/09/2026. Code lu au commit `68ce4dd` (v2.6.0).*
 *Versions précédentes gardées : v1 `claude/rappels-conception.md` (23/09), v2 `claude/rappels-rythme-v2.md` (27/09).*

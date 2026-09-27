@@ -366,13 +366,99 @@ Effort **M+, 5 à 6 jours**, en 4 PR :
 | Alarme exacte | permission refusée par défaut, précision que personne n'a demandée |
 | `expo-notifications` | Firebase et une vingtaine de permissions |
 
+## Corrections après l'audit du code (27/09, v3.1)
+
+Un audit indépendant a confronté chaque référence au code de `HEAD` (= `68ce4dd`, rien n'a bougé
+depuis). Fichiers et numéros de ligne sont justes. Ce qui suit corrige ou précise la spec, et
+**prime sur le texte au-dessus** quand les deux divergent.
+
+**Logique (PR 1)**
+
+- **« Fonction pure » du Home** : impossible telle quelle, `decideAction` (`useSmartAction.ts:59`)
+  lit la base huit fois. On en sort `decideHomeOffer(language)`, **async**, qui rend un descripteur
+  de données (`kind` + paramètres, sans `t` ni `router`). Le hook le traduit en bouton, le plan en
+  texte. Le plan est une photo : les 14 jours reprennent le cas calculé au moment du plan.
+- **Boss** : le cas « aventure » ne lit aucun boss aujourd'hui. Le descripteur ajoute les PV du boss
+  entamé de l'aventure (`getBossFightByAdventure`, `db/bossFights.ts:401`), pour garder une seule
+  source.
+- **`isWorkout` en JS** : c'est un fragment SQL. Le plan utilise le prédicat de ligne
+  `outing === null` (comme `db/achievements.ts:778`), et un test vérifie que les deux disent pareil.
+- **`restSuggestionAt(sessions, now)`** : prend **35 jours** de séances `isWorkout` (7 jours + les 5
+  semaines du deload). Le rappel filtre sur `reason` (`consecutive_days`, `high_volume`,
+  `overtraining`), jamais sur `shouldRest`, qui est vrai aussi pour `deload`. `getRestSuggestion()`
+  devient une lecture + un appel à la version pure, pour qu'il n'y ait qu'une règle.
+- **Bug UTC** : plus étroit qu'annoncé. À l'ouest de UTC, un dernier entraînement **hier** est lu
+  avant-hier, la garde « aujourd'hui ou hier » échoue et `consecutive_days` tombe à 0. Le test à
+  UTC-5 couvre ce cas précis.
+- **Séance en cours** : `dueToday = "hold"` si `status ∉ {idle, finished}`, **ou** `finished` avec
+  `savedSessionId === null`. Une victoire déjà sauvegardée n'est plus « en cours ».
+- **Serment, ligne de la semaine** : nouvelle fonction `oathWeekCount(oath, sessions, now)` (séances
+  `countsAsSession` de la semaine calendaire du serment, `weekStartsOn` figé). « Encore atteignable »
+  = séances manquantes ≤ jours restants dans la semaine, aujourd'hui compris.
+- **Retrait d'une séance** = `forgetSession` (`stores/session.ts:1936`).
+
+**Recalcul**
+
+- **Démarrage à froid** : ancré sur `handleDatabaseReady` (`app/_layout.tsx:104`), là où les widgets
+  sont déjà redessinés. Une fusion réseau qui change quelque chose finit en `reloadAppAsync`, donc
+  repasse par là.
+- **Arrière-plan** : il n'existe **aucun** écouteur `AppState` dans l'app. On en ajoute un, filtré
+  par `getChangeVersion()`.
+
+**Préférences et synchro**
+
+- `reminderStreakFrom` rejoint `reminderAskedAt` et `reminderOfferDismissed` dans
+  `DEVICE_LOCAL_PREFERENCES`. Nuance : la sauvegarde Android copie toute la base, donc ces clés
+  peuvent revenir sur un téléphone neuf restauré par Android. Sans danger : aucune n'allume rien.
+- `reminderDays` dans `MERGED_PREFERENCES` entre aussi dans l'empreinte de synchro : changer ses
+  jours sur un appareil déclenche une fusion sur l'autre. Voulu, c'est une donnée du héros.
+- **Ligne grise de la flamme** : quand un serment hebdo est juré, la flamme **prend son quota**
+  (`getWeeklyQuota`, `db/streaks.ts:85`). La ligne de la flamme ne s'affiche donc que **sans**
+  serment hebdo, sinon les deux lignes répètent le même chiffre.
+
+**Natif (PR 2)**
+
+- **« Ouvert » (tap)** : l'app n'a aucun gestionnaire de deep link. Le natif lit lui-même l'extra
+  de l'intent de `MainActivity` (au démarrage et sur `OnNewIntent`) et marque le jour « ouvert »
+  dans le journal. Aucun paramètre d'URL.
+- **Permission de notification** : on réutilise `requestNotificationPermission` de `bati-location`
+  plutôt qu'un troisième demandeur. Le rappel lit la réponse, l'expédition continue de l'ignorer.
+- **`RECEIVE_BOOT_COMPLETED`** : en plus de `app.json` et du test, régénérer et commiter `android/`
+  (le manifeste commité porte `tools:node="remove"`, le diff de prébuild de la CI échouerait),
+  mettre à jour le commentaire d'en-tête du test, ajouter la ligne à `fdroid/expected-permissions.txt`.
+- **CI** : `android-lint.yml` ne se déclenche pas sur `modules/**`. On l'ajoute, sinon le lint
+  Android (PendingIntent, alarmes) ne voit jamais le module.
+- **Taille** : 400 à 500 lignes de Kotlin, **plus ~200 lignes** d'enveloppe JS (`index.ts`).
+
+**Interface et textes (PR 3)**
+
+- **Variantes dans `locales/*.json`**, pas dans un `.ts` : les contrôles de `locale-style.test.ts`
+  (tiret cadratin, apostrophe, `tu`) les couvrent d'office.
+- **Écran de debug** : `app/dev.tsx` n'existe qu'en `__DEV__`, un testeur ne le voit jamais. Les
+  compteurs (« Rappels postés · séances dans les 2 h · reportés · pauses ») vont dans le corps du
+  mail de rapport de bug (`buildBugReportMailto`, `src/crashLog.ts:235`), que le joueur envoie
+  lui-même.
+- **Une carte à la fois** : le Home empile déjà `SessionRecoveryBanner`, `UpdateCard`, `SyncCard`,
+  `WhatsNewCard` sans arbitre. On n'en crée pas un : les deux cartes du rappel (question des rappels
+  ignorés, puis proposition) s'excluent entre elles et se taisent tant qu'une carte de mise à jour
+  ou de nouveautés est visible.
+- **Kicker « Ton jour » (PR 4)** : seulement si le Home n'a pas déjà un kicker (« Aventure »,
+  « Premier jour »).
+- **Politique de confidentialité** : `privacy.md` (l. 218 EN, l. 491 FR) parle **déjà** des rappels
+  alors qu'ils n'existent pas. On la rend exacte, on met à jour « Last updated » (l. 36) **et** la
+  version dans l'app, `privacy.permissions_body` dans les 4 locales.
+- **`coach-planning.md`** : deux endroits, l. 26 **et** l. 113-114.
+- **Commentaires morts** : `src/widget.tsx:250` (`rescheduleOathReminder()`) et
+  `components/oath/useOathText.ts:7` parlent de l'ancien rappel. On les corrige.
+
 ## Historique
 
 | Version | Ce qui a changé |
 |---|---|
 | v1 (23/09) | module maison, jours + quota qui coupe, mode sans jours |
 | v2 (27/09) | quota qui ne coupe plus, `setAndAllowWhileIdle`, dates locales, synchro par appareil, une seule source pour le texte, 3 audits intégrés |
-| **v3 (27/09)** | contrat anti-agacement · actions « Dans 1 h » et « Pause 7 jours » · question après 3 jours ignorés · variantes de texte pour tous les cas du Home · ligne « un seul appareil » · son réglable · décisions tranchées · 4e relecture : horizon décalé par la pause, jour déjà rappelé jamais repris, report vérifié au tap, `dueToday` à 3 états, recalcul après `saveSession` |
+| v3 (27/09) | contrat anti-agacement · actions « Dans 1 h » et « Pause 7 jours » · question après 3 jours ignorés · variantes de texte pour tous les cas du Home · ligne « un seul appareil » · son réglable · décisions tranchées · 4e relecture : horizon décalé par la pause, jour déjà rappelé jamais repris, report vérifié au tap, `dueToday` à 3 états, recalcul après `saveSession` |
+| **v3.1 (27/09)** | corrections de l'audit du code : descripteur async du Home, boss dans le descripteur, `restSuggestionAt` sur 35 jours filtré par `reason`, `hold` précis, écouteur `AppState` à créer, « ouvert » lu par le natif, variantes dans les locales, compteurs dans le mail de bug, étapes de permission et de CI manquantes |
 
 ## Sources
 

@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
@@ -79,5 +80,79 @@ describe("bati-reminders, both sides of the bridge", () => {
   test("the tap opens the app directly, never through a receiver", () => {
     // A notification trampoline is forbidden from Android 12: the content intent is an activity.
     expect(kotlin()).toMatch(/PendingIntent\s*\.getActivity\(/);
+  });
+});
+
+describe("bati-reminders, with a native half", () => {
+  const native = {
+    setPlan: jest.fn().mockReturnValue(true),
+    setEnabled: jest.fn().mockReturnValue(true),
+    pause: jest.fn().mockReturnValue(true),
+    resume: jest.fn().mockReturnValue(true),
+    areEnabled: jest.fn().mockReturnValue(true),
+    getState: jest.fn(),
+  };
+
+  const load = () => {
+    let mod: typeof import("@/modules/bati-reminders") | undefined;
+    jest.isolateModules(() => {
+      jest.doMock("expo", () => ({ requireOptionalNativeModule: () => native }));
+      mod = require("@/modules/bati-reminders");
+    });
+    assert(mod);
+    return mod;
+  };
+
+  test("hands the plan over as JSON, and the switch and pause as they are", () => {
+    const mod = load();
+    expect(mod.isAvailable()).toBe(true);
+    const plan = {
+      entries: [{ date: "2026-01-15", time: "20:00", title: "T", body: "", variant: "gallery.0" }],
+      dueToday: "yes" as const,
+      quietText: "Q",
+      horizonDays: 14,
+      pauseDays: 7,
+      lateMinutes: 60,
+      channelName: "Reminders",
+      actionLabels: { snooze: "In 1 hour", pause: "Pause 7 days" },
+    };
+    mod.setPlan(plan);
+    expect(JSON.parse(native.setPlan.mock.calls[0]?.[0])).toEqual(plan);
+    mod.setEnabled(true);
+    mod.pause("2026-01-22");
+    mod.resume();
+    expect(native.setEnabled).toHaveBeenCalledWith(true);
+    expect(native.pause).toHaveBeenCalledWith("2026-01-22");
+    expect(native.resume).toHaveBeenCalled();
+    expect(mod.areEnabled()).toBe(true);
+  });
+
+  test("reads the journal back into the shape the plan takes, whatever Kotlin left out", () => {
+    native.getState.mockReturnValue(
+      JSON.stringify({
+        enabled: true,
+        resumeDate: "2026-01-22",
+        log: [{ date: "2026-01-14", variant: "boss.1", opened: true, title: "kept natively" }],
+      }),
+    );
+    expect(load().getState()).toEqual({
+      enabled: true,
+      resumeDate: "2026-01-22",
+      log: [{ date: "2026-01-14", variant: "boss.1", snoozed: false, opened: true, paused: false }],
+    });
+  });
+
+  test("no context on the native side reads as off", () => {
+    native.getState.mockReturnValue(null);
+    expect(load().getState()).toEqual({ enabled: false, resumeDate: null, log: [] });
+  });
+
+  test("a journal missing its fields reads as nothing done", () => {
+    native.getState.mockReturnValue(JSON.stringify({ log: [{ date: "2026-01-14" }] }));
+    expect(load().getState()).toEqual({
+      enabled: false,
+      resumeDate: null,
+      log: [{ date: "2026-01-14", variant: null, snoozed: false, opened: false, paused: false }],
+    });
   });
 });

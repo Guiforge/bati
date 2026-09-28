@@ -192,6 +192,20 @@ describe("useSettingsStore", () => {
     expect(requestWidgetsUpdate).toHaveBeenCalled();
   });
 
+  test("an anchor that fails to save is reported and the language still loads", async () => {
+    storedSettings();
+    prefs.getLanguage.mockResolvedValue("de");
+    prefs.getLanguageChosenOn.mockResolvedValue(null);
+    const failure = new Error("disk full");
+    prefs.setLanguage.mockRejectedValueOnce(failure);
+
+    await settingsStore().getState().loadFromDatabase();
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(settingsStore().getState().language).toBe("de");
+    expect(reportError).toHaveBeenCalledWith("settings.languageAnchor", failure);
+  });
+
   test("the app's own choice holds while the device says what it said then", async () => {
     storedSettings();
     prefs.getLanguage.mockResolvedValue("de");
@@ -389,6 +403,7 @@ describe("useSettingsStore", () => {
     await s().setDistanceUnit("imperial");
     await s().setMapTilesEnabled(true);
     await s().setUpdateCheckEnabled(true);
+    await s().setPrepMode("tap");
 
     expect(s()).toMatchObject({
       language: "fr",
@@ -400,6 +415,7 @@ describe("useSettingsStore", () => {
       distanceUnit: "imperial",
       mapTilesEnabled: true,
       updateCheckEnabled: true,
+      prepMode: "tap",
     });
 
     expect(prefs.setLanguage).toHaveBeenCalledWith("fr", "fr");
@@ -411,6 +427,7 @@ describe("useSettingsStore", () => {
     expect(prefs.setDistanceUnit).toHaveBeenCalledWith("imperial");
     expect(prefs.setMapTilesEnabled).toHaveBeenCalledWith(true);
     expect(prefs.setUpdateCheckEnabled).toHaveBeenCalledWith(true);
+    expect(prefs.setPrepMode).toHaveBeenCalledWith("tap");
   });
 
   /**

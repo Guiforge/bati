@@ -3,9 +3,10 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0B0F19",
-        "foregroundImage": "./assets/adaptive-icon.png"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "monochromeImage": "./assets/monochrome-icon.png"
       },
-      "predictiveBackGestureEnabled": false,
+      "predictiveBackGestureEnabled": true,
       "package": "com.guiforge.bati",
       "versionCode": 20600,
       "blockedPermissions": [
@@ -47,7 +48,7 @@
         {
           "supportedLocales": {
             "ios": ["en", "fr"],
-            "android": ["en", "fr"]
+            "android": ["en", "fr", "de", "es"]
           }
         }
       ],

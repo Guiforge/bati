@@ -1,5 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { APP_LANGUAGES } from "@/src/i18n/deviceLanguage";
+
+const main = (...parts: string[]) =>
+  readFileSync(join(__dirname, "..", "android", "app", "src", "main", ...parts), "utf8");
 
 /**
  * The committed manifest is what prebuild generates, and CI proves the two agree — so asserting
@@ -9,11 +13,32 @@ import { join } from "node:path";
  * installed. `plugins/withAndroidMailtoQuery.js` adds the declaration; this pins it.
  */
 test("the manifest declares the mailto scheme in <queries>, so canOpenURL can see mail apps", () => {
-  const manifest = readFileSync(
-    join(__dirname, "..", "android", "app", "src", "main", "AndroidManifest.xml"),
-    "utf8",
-  );
-
-  const queries = manifest.match(/<queries>([\s\S]*?)<\/queries>/)?.[1] ?? "";
+  const queries = main("AndroidManifest.xml").match(/<queries>([\s\S]*?)<\/queries>/)?.[1] ?? "";
   expect(queries).toContain('android:scheme="mailto"');
+});
+
+/**
+ * Android's per-app language picker lists what `locales_config.xml` declares, and prebuild writes
+ * that file from `expo-localization`'s options in `app.json`, not from the app's own list. German
+ * and Spanish shipped missing from the system settings, and from `resourceConfigurations` too.
+ */
+test("the system language picker offers every app language", () => {
+  const declared = [
+    ...main("res", "xml", "locales_config.xml").matchAll(/android:name="([^"]+)"/g),
+  ];
+  expect(declared.map((m) => m[1]).sort()).toEqual([...APP_LANGUAGES].sort());
+});
+
+/**
+ * Play flags an app that opts out of predictive back. RN 0.86's `ReactActivity` still routes the
+ * gesture through an always-enabled `OnBackPressedCallback`, so every `BackHandler` keeps working.
+ */
+test("the app opts in to predictive back", () => {
+  expect(main("AndroidManifest.xml")).toContain('android:enableOnBackInvokedCallback="true"');
+});
+
+test("the launcher icon has a monochrome layer for themed icons", () => {
+  for (const icon of ["ic_launcher.xml", "ic_launcher_round.xml"]) {
+    expect(main("res", "mipmap-anydpi-v26", icon)).toContain("<monochrome ");
+  }
 });

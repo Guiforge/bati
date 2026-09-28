@@ -24,6 +24,7 @@ import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { LanguageWatch } from "@/components/LanguageWatch";
 import { SyncPrompt } from "@/components/SyncPrompt";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { installCrashHandler, recordCrash } from "@/src/crashLog";
@@ -202,6 +203,8 @@ export default function RootLayout() {
                     <VillagerCameo />
                     {/* Offers another device's newer version after a sync. Renders nothing. */}
                     <SyncPrompt />
+                    {/* Follows a language picked in Android's settings. Renders nothing. */}
+                    <LanguageWatch />
                   </ErrorBoundary>
                 </ToastProvider>
               </DatabaseProvider>

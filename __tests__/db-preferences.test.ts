@@ -39,8 +39,9 @@ describe("db/preferences", () => {
     await preferences.setHasFinishedOnboarding(true);
     expect(await preferences.getHasFinishedOnboarding()).toBe(true);
 
-    await preferences.setLanguage("fr");
+    await preferences.setLanguage("fr", "en");
     expect(await preferences.getLanguage()).toBe("fr");
+    expect(await preferences.getLanguageChosenOn()).toBe("en");
 
     await preferences.setAvatarId("avatar_1");
     expect(await preferences.getAvatarId()).toBe("avatar_1");

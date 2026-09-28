@@ -42,6 +42,7 @@ const prefs = {
   getMapTilesEnabled: jest.fn<Promise<boolean>, []>(),
   getUpdateCheckEnabled: jest.fn<Promise<boolean>, []>(),
   getPrepMode: jest.fn<Promise<"timer" | "tap">, []>(),
+  getLanguageChosenOn: jest.fn<Promise<string | null>, []>(),
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
@@ -100,6 +101,8 @@ function storedSettings() {
   prefs.getMapTilesEnabled.mockResolvedValue(true);
   prefs.getUpdateCheckEnabled.mockResolvedValue(true);
   prefs.getPrepMode.mockResolvedValue("tap");
+  // Chosen on this very device answer: the stored language stands.
+  prefs.getLanguageChosenOn.mockResolvedValue("fr");
 }
 
 const DEFAULTS = {
@@ -162,6 +165,52 @@ describe("useSettingsStore", () => {
 
     // Not the device's "fr": an explicit stored choice is honoured, then narrowed.
     expect(settingsStore().getState().language).toBe("en");
+  });
+
+  // Android 13+ lists every app language in its own settings. A language picked there after one
+  // was picked in the app is the newer choice; before the anchor existed, it did nothing at all.
+  test("a language picked in Android's settings after the app's own choice wins", async () => {
+    storedSettings();
+    prefs.getLanguage.mockResolvedValue("de");
+    prefs.getLanguageChosenOn.mockResolvedValue("en"); // the device said en then, fr now
+
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState().language).toBe("fr");
+    expect(prefs.setLanguage).toHaveBeenCalledWith("fr", "fr");
+  });
+
+  test("a language picked in Android's settings applies while the app is open", async () => {
+    storedSettings();
+    prefs.getLanguage.mockResolvedValue("de");
+    prefs.getLanguageChosenOn.mockResolvedValue("en");
+    settingsStore().setState({ language: "de", isLoaded: true });
+
+    await settingsStore().getState().refreshLanguage();
+
+    expect(settingsStore().getState().language).toBe("fr");
+    expect(requestWidgetsUpdate).toHaveBeenCalled();
+  });
+
+  test("the app's own choice holds while the device says what it said then", async () => {
+    storedSettings();
+    prefs.getLanguage.mockResolvedValue("de");
+
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState().language).toBe("de");
+    expect(prefs.setLanguage).not.toHaveBeenCalled();
+  });
+
+  test("a choice made before the anchor existed is kept, and anchored", async () => {
+    storedSettings();
+    prefs.getLanguage.mockResolvedValue("de");
+    prefs.getLanguageChosenOn.mockResolvedValue(null);
+
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(settingsStore().getState().language).toBe("de");
+    expect(prefs.setLanguage).toHaveBeenCalledWith("de", "fr");
   });
 
   test("junk in the avatar column normalizes instead of leaking through", async () => {
@@ -353,7 +402,7 @@ describe("useSettingsStore", () => {
       updateCheckEnabled: true,
     });
 
-    expect(prefs.setLanguage).toHaveBeenCalledWith("fr");
+    expect(prefs.setLanguage).toHaveBeenCalledWith("fr", "fr");
     expect(prefs.setAvatarId).toHaveBeenCalledWith("scout");
     expect(prefs.setHapticsEnabled).toHaveBeenCalledWith(false);
     expect(prefs.setCustomAvatarUri).toHaveBeenCalledWith("file:///picked.jpg");
@@ -408,7 +457,7 @@ describe("useSettingsStore", () => {
     requestWidgetsUpdate.mockRejectedValue(new Error("no launcher"));
 
     await expect(settingsStore().getState().setLanguage("en")).resolves.toBeUndefined();
-    expect(prefs.setLanguage).toHaveBeenCalledWith("en");
+    expect(prefs.setLanguage).toHaveBeenCalledWith("en", "fr");
     // And it is not swallowed: a widget that stops redrawing has to leave a trace somewhere.
     await Promise.resolve();
     expect(reportError).toHaveBeenCalledWith("widget.update", expect.any(Error));

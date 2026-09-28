@@ -85,7 +85,7 @@ test("every write Home shows moves the version", async () => {
     ["a quest config", () => questConfig.saveQuestConfig(quest.id, { level: "hard" })],
     ["a favourite", () => toggleFavouriteQuest(quest.id)],
     ["an adventure", () => adventures.startAdventureRun({ adventureId: adventure.id })],
-    ["the language", () => preferences.setLanguage("de")],
+    ["the language", () => preferences.setLanguage("de", "en")],
   ];
   for (const [what, write] of writes) {
     const before = await getChangeVersion();

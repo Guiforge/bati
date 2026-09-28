@@ -387,6 +387,9 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "updateLatest",
   // Which release notes this copy of the app already showed: another phone's answer is not ours.
   "notesSeenVersion",
+  // What this phone's language settings said when the hero last chose one (resolveAppLanguage).
+  // Another phone's answer would read as a newer choice and override the restored language.
+  "languageChosenOn",
   "guidesSeen",
   "recentCameoLines",
   "comebackGreetedAfter",

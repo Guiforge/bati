@@ -44,9 +44,21 @@ export function isAppLanguage(value: unknown): value is AppLanguage {
  * surface must resolve it here — while the app read the device and the home screen widget
  * had its own ternary defaulting to `fr`, a fresh install spoke French on an English phone
  * (F-Droid MR !45076, finding 4).
+ *
+ * The most recent choice wins, wherever it was made. `chosenOn` is what the device answered when
+ * the hero picked a language in Settings; once it answers something else, through Android 13+'s
+ * per-app language picker or a new system language, that change is the newer choice. Without it
+ * a language picked once in Settings made the system picker do nothing, forever.
  */
-export function resolveAppLanguage(stored: string | null | undefined): AppLanguage {
+export function resolveAppLanguage(
+  stored: string | null | undefined,
+  chosenOn?: string | null,
+): AppLanguage {
   if (stored == null) return getDevicePreferredAppLanguage();
+  if (chosenOn != null) {
+    const device = getDevicePreferredAppLanguage();
+    if (device !== chosenOn) return device;
+  }
   return isAppLanguage(stored) ? stored : "en";
 }
 

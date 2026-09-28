@@ -3,9 +3,10 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0B0F19",
-        "foregroundImage": "./assets/adaptive-icon.png"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "monochromeImage": "./assets/monochrome-icon.png"
       },
-      "predictiveBackGestureEnabled": false,
+      "predictiveBackGestureEnabled": true,
       "package": "com.guiforge.bati",
       "versionCode": 20600,
       "blockedPermissions": ["android.permission.ACCESS_WIFI_STATE"]
@@ -44,7 +45,7 @@
         {
           "supportedLocales": {
             "ios": ["en", "fr"],
-            "android": ["en", "fr"]
+            "android": ["en", "fr", "de", "es"]
           }
         }
       ],
@@ -115,7 +116,9 @@
       "./plugins/withAndroidDebugIcon",
       "./plugins/withAndroidDebugNetworkPermissions",
       "./plugins/withAndroidBackupRules",
-      "./plugins/withAndroidNetworkSecurity"
+      "./plugins/withAndroidNetworkSecurity",
+      "./plugins/withAndroidPredictiveBack",
+      "./plugins/withAndroidPngIcons"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

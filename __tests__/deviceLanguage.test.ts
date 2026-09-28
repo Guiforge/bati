@@ -44,6 +44,12 @@ describe("resolveAppLanguage", () => {
     for (const language of APP_LANGUAGES) expect(resolveAppLanguage(language)).toBe(language);
     expect(resolveAppLanguage("ja")).toBe("en");
   });
+
+  it("lets a device answer newer than the stored choice win", () => {
+    mockLocales("es-ES", "en");
+    expect(resolveAppLanguage("de", "es")).toBe("de");
+    expect(resolveAppLanguage("de", "en")).toBe("es");
+  });
 });
 
 describe("nextAppLanguage", () => {

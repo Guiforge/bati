@@ -23,8 +23,10 @@ export default function TabsLayout() {
           backgroundColor: theme.bgLight?.val,
           borderTopWidth: 1,
           borderTopColor: theme.borderStrong?.val,
-          height: 56 + insets.bottom,
-          paddingBottom: insets.bottom + 4,
+          // The labels need their own margin above the inset: with 3-button navigation the system
+          // bar below is scrimmed darker than the tab bar, and 4 dp read as text cut off at its edge.
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom + 8,
           paddingTop: 6,
         },
       }}

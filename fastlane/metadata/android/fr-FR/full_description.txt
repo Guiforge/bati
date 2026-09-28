@@ -27,4 +27,7 @@ La carte est le seul interrupteur, et il démarre éteint. Tout le reste ci-dess
 AU POIDS DU CORPS D'ABORD
 Le catalogue d'exercices est construit autour de ce qui se fait sans matériel, et s'adapte si tu en possèdes. Les échauffements sont dynamiques et calibrés sur la séance qui suit : un échauffement de cinq minutes devant un entraînement de six, personne ne le fait deux fois.
 
+PAS UN DISPOSITIF MÉDICAL
+Bati est une app d'entraînement. Elle n'est pas un dispositif médical et ne diagnostique, ne traite ni ne prévient aucune maladie. En cas de blessure, de problème de santé ou de doute sur l'effort, parles-en à un médecin avant de commencer.
+
 Code source : https://github.com/Guiforge/bati

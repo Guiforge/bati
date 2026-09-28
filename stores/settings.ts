@@ -55,6 +55,28 @@ interface SettingsState {
   setPrepMode: (mode: PrepMode) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
+  /** Re-reads the language when the device's changes; see `components/LanguageWatch.tsx`. */
+  refreshLanguage: () => Promise<void>;
+}
+
+/**
+ * The stored language through `resolveAppLanguage`, anchored to what the device says now: a
+ * choice made before the anchor existed, or a newer one made in Android's settings, which becomes
+ * the hero's choice from here on.
+ */
+async function loadLanguage(): Promise<AppLanguage> {
+  const [stored, chosenOn] = await Promise.all([
+    preferences.getLanguage(),
+    preferences.getLanguageChosenOn(),
+  ]);
+  const language = resolveAppLanguage(stored, chosenOn);
+  const device = getDevicePreferredAppLanguage();
+  if (stored != null && chosenOn !== device) {
+    preferences
+      .setLanguage(language, device)
+      .catch((e) => reportError("settings.languageAnchor", e));
+  }
+  return language;
 }
 
 /**
@@ -124,7 +146,7 @@ function watchDeviceReducedMotion(apply: (reducedMotion: boolean) => void): void
   });
 }
 
-export const useSettingsStore = create<SettingsState>((set) => ({
+export const useSettingsStore = create<SettingsState>((set, get) => ({
   language: getDevicePreferredAppLanguage(),
   // Same default the DB read normalises to (normalizeAvatarId). It used to say "guardian"
   // here and fall back to avatarIds[0] there, so a hero who never picked one watched their
@@ -145,7 +167,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
 
   setLanguage: async (language) => {
     set({ language });
-    await preferences.setLanguage(language);
+    await preferences.setLanguage(language, getDevicePreferredAppLanguage());
     i18n.changeLanguage(language).catch(() => {
       // Ignore i18n errors
     });
@@ -211,7 +233,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
 
     try {
       const [
-        language,
+        normalizedLanguage,
         avatarId,
         customAvatarUri,
         hapticsEnabled,
@@ -223,7 +245,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         updateCheckEnabled,
         prepMode,
       ] = await Promise.all([
-        preferences.getLanguage(),
+        loadLanguage(),
         preferences.getAvatarId(),
         preferences.getCustomAvatarUri(),
         preferences.getHapticsEnabled(),
@@ -235,8 +257,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         preferences.getUpdateCheckEnabled(),
         preferences.getPrepMode(),
       ]);
-
-      const normalizedLanguage = resolveAppLanguage(language);
 
       // The OS is the only source. There used to be a stored override read here and preferred
       // over the device — but no screen ever exposed a way to write it, so it was permanently
@@ -278,5 +298,15 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       // Fallback to defaults but mark as loaded so app doesn't hang
       set({ isLoaded: true });
     }
+  },
+
+  refreshLanguage: async () => {
+    const language = await loadLanguage();
+    if (language === get().language) return;
+    set({ language });
+    i18n.changeLanguage(language).catch(() => {
+      // Ignore i18n errors
+    });
+    requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
   },
 }));

@@ -223,6 +223,35 @@ jobs:
           fi
           echo "Permissions: $(wc -l < got.txt), all declared" >> "$GITHUB_STEP_SUMMARY"
 
+      # Play refuses updates whose native code cannot run on 16 KB memory pages from 2027-02-01.
+      # Every .so in v2.6.0 already complies; a single native dependency built with the old 4 KB
+      # linker default would break that silently, and the first report would be a rejected upload.
+      # The ELF segments are the whole check: `expo.useLegacyPackaging=true` stores the libraries
+      # compressed, so the zip-alignment half of the rule (`zipalign -c -P 16`) has nothing to see.
+      # The AAB is what Play receives; the APK is what F-Droid users run.
+      - name: 16 KB page size
+        env:
+          APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
+          AAB_PATH: ${{ steps.artefacts.outputs.aab_path }}
+        run: |
+          mkdir -p so
+          unzip -q "$APK_PATH" 'lib/*' -d so/apk
+          unzip -q "$AAB_PATH" 'base/lib/*' -d so/aab
+          count=0
+          for f in so/apk/lib/*/*.so so/aab/base/lib/*/*.so; do
+            # Outside a command substitution, so a readelf failure fails the step under `bash -e`.
+            aligns=$(readelf -lW "$f" | awk '/LOAD/ { print $NF }')
+            [[ -n "$aligns" ]] || { echo "::error::no LOAD segment read from $f"; exit 1; }
+            for align in $aligns; do
+              if (( align < 0x4000 )); then
+                echo "::error::$f has a LOAD segment aligned to $align, below 16 KB"
+                exit 1
+              fi
+            done
+            count=$((count + 1))
+          done
+          echo "16 KB pages: $count libraries aligned (APK + AAB)" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:

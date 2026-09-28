@@ -79,7 +79,11 @@ type Lang = AppLanguage;
 
 /** The app's own stored language, resolved by the same rule the app itself uses. */
 async function getLang(): Promise<Lang> {
-  return resolveAppLanguage(await preferences.getLanguage());
+  const [stored, chosenOn] = await Promise.all([
+    preferences.getLanguage(),
+    preferences.getLanguageChosenOn(),
+  ]);
+  return resolveAppLanguage(stored, chosenOn);
 }
 
 // A `null` value is the error fallback: the branded surface with an em dash beats the blank

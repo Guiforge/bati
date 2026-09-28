@@ -142,8 +142,17 @@ export const preferences = {
     return await getPreference("language");
   },
 
-  async setLanguage(lang: string): Promise<void> {
+  /**
+   * The hero's language and what the device answered at that moment, always together: the second
+   * is how `resolveAppLanguage` tells a later choice made in Android's own settings from this one.
+   */
+  async setLanguage(lang: string, chosenOn: string): Promise<void> {
     await setPreference("language", lang);
+    await setPreference("languageChosenOn", chosenOn);
+  },
+
+  async getLanguageChosenOn(): Promise<string | null> {
+    return await getPreference("languageChosenOn");
   },
 
   async getAvatarId(): Promise<string | null> {

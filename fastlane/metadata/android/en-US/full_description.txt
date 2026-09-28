@@ -27,4 +27,7 @@ The map is the one switch, and it starts off. Everything else above is the archi
 BODYWEIGHT FIRST
 The exercise catalogue is built around what you can do with no equipment, and adapts if you own some. Warm-ups are dynamic and scaled to the session in front of you, because a five-minute warm-up before a six-minute workout is a warm-up nobody does twice.
 
+NOT A MEDICAL DEVICE
+Bati is a training app. It is not a medical device and does not diagnose, treat or prevent any condition. If you have an injury, a health condition or doubts about exercising, talk to a doctor before you start.
+
 Open source: https://github.com/Guiforge/bati

@@ -223,6 +223,27 @@ jobs:
           fi
           echo "Permissions: $(wc -l < got.txt), all declared" >> "$GITHUB_STEP_SUMMARY"
 
+      # Play refuses updates whose native code cannot run on 16 KB memory pages from 2027-02-01.
+      # Every .so in v2.6.0 already complies; a single native dependency built with the old 4 KB
+      # linker default would break that silently, and the first report would be a rejected upload.
+      - name: 16 KB page size
+        env:
+          APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
+        run: |
+          zipalign=$(find "$ANDROID_HOME/build-tools" -name zipalign | sort | tail -1)
+          "$zipalign" -c -P 16 4 "$APK_PATH"
+          unzip -q "$APK_PATH" 'lib/*' -d so
+          bad=$(for f in so/lib/*/*.so; do
+            for align in $(readelf -lW "$f" | awk '/LOAD/ { print $NF }'); do
+              if (( align < 0x4000 )); then echo "$f"; break; fi
+            done
+          done)
+          if [[ -n "$bad" ]]; then
+            echo "::error::native libraries not aligned to 16 KB: $bad"
+            exit 1
+          fi
+          echo "16 KB pages: $(ls so/lib/*/*.so | wc -l) libraries aligned" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:

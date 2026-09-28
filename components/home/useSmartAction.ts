@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDurationEstimate } from "@/db/estimate";
 import { decideHomeOffer, type HomeOffer } from "@/db/homeOffer";
+import { getReminderDays, WEEKDAYS, type Weekday } from "@/db/reminders";
 import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
@@ -84,6 +85,7 @@ function stageFor(
   t: TFunction,
   language: AppLanguage,
   router: Router,
+  yourDay: boolean,
 ): SmartActionConfig {
   if (offer.kind === "adventure") {
     return {
@@ -130,7 +132,14 @@ function stageFor(
     scene: {
       title: localizedTitle(quest, language),
       imagePath: quest.imagePath,
-      kicker: offer.kind === "first_day" ? t("home.kicker_day_one", "Day one") : undefined,
+      // "Your day" on one of the days the hero chose for their reminder, and only where the scene
+      // has no reason of its own to say: the adventure and day one keep theirs.
+      kicker:
+        offer.kind === "first_day"
+          ? t("home.kicker_day_one", "Day one")
+          : yourDay
+            ? t("home.kicker_your_day")
+            : undefined,
       meta: [
         t("quests.exercises", {
           count: quest.exercises.length,
@@ -161,8 +170,12 @@ async function decideAction(
   router: Router,
   isCancelled: () => boolean,
 ): Promise<SmartActionConfig | null> {
-  const offer = await decideHomeOffer(language, isCancelled);
-  return offer && !isCancelled() ? stageFor(offer, t, language, router) : null;
+  const [offer, days] = await Promise.all([
+    decideHomeOffer(language, isCancelled),
+    getReminderDays(),
+  ]);
+  const yourDay = days[WEEKDAYS[new Date().getDay()] as Weekday] !== undefined;
+  return offer && !isCancelled() ? stageFor(offer, t, language, router, yourDay) : null;
 }
 
 export function useSmartAction() {

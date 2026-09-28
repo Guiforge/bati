@@ -73,6 +73,16 @@ jest.mock("@/db/adventures", () => ({
   getAdventureDetails: jest.fn().mockResolvedValue(null),
 }));
 
+// The real WEEKDAYS below reads through a module that opens the database at import.
+jest.mock("@/db/client", () => ({ db: {}, schema: jest.requireActual("@/db/schema") }));
+
+// The hero's reminder days, for the "Your day" kicker. None by default.
+let mockReminderDays: Record<string, string> = {};
+jest.mock("@/db/reminders", () => ({
+  getReminderDays: async () => mockReminderDays,
+  WEEKDAYS: jest.requireActual("@/db/reminders").WEEKDAYS,
+}));
+
 jest.mock("@/db/bossFights", () => ({
   getBossFightByAdventure: jest.fn().mockResolvedValue(null),
 }));
@@ -298,6 +308,33 @@ describe("useSmartAction", () => {
     expect(loadConfiguredQuest).toHaveBeenCalledWith(9);
     expect(result.current.config?.variant).toBe("quest");
     expect(result.current.config?.scene?.title).toBe("The Squire's Awakening");
+  });
+
+  it('says "Your day" on one of the hero\'s reminder days, and only there', async () => {
+    const { WEEKDAYS } = jest.requireActual("@/db/reminders") as typeof import("@/db/reminders");
+    const today = WEEKDAYS[new Date().getDay()] as string;
+    mockReminderDays = { [today]: "20:00" };
+    const { result } = await renderHook(() => useSmartAction());
+    await waitFor(() => expect(result.current.config).not.toBeNull());
+    expect(result.current.config?.scene?.kicker).toBe("Your day");
+
+    mockReminderDays = {};
+    const other = await renderHook(() => useSmartAction());
+    await waitFor(() => expect(other.result.current.config).not.toBeNull());
+    expect(other.result.current.config?.scene?.kicker).toBeUndefined();
+  });
+
+  it("keeps day one's own kicker on a reminder day", async () => {
+    const { WEEKDAYS } = jest.requireActual("@/db/reminders") as typeof import("@/db/reminders");
+    const today = WEEKDAYS[new Date().getDay()] as string;
+    mockReminderDays = { [today]: "20:00" };
+    const { getSuggestedQuestsForWeakAreas } = require("@/db/muscleBalance");
+    getSuggestedQuestsForWeakAreas.mockResolvedValueOnce([]);
+    listQuestTemplates.mockResolvedValueOnce([{ id: 9, enTitle: FIRST_QUEST_TITLE }]);
+    const { result } = await renderHook(() => useSmartAction());
+    await waitFor(() => expect(result.current.config).not.toBeNull());
+    expect(result.current.config?.scene?.kicker).toBe("Day one");
+    mockReminderDays = {};
   });
 
   it("offers the gallery, honestly labelled, when even the on-ramp quest is gone", async () => {

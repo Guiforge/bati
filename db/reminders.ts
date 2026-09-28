@@ -102,7 +102,9 @@ export type ReminderLogEntry = {
 
 /**
  * `"yes"`: today may still ring, and a snooze in waiting may too.
- * `"hold"`: a session is under way. Nothing rings, and a snooze waits rather than being dropped.
+ * `"hold"`: a session is under way. Nothing of today rings, and a snooze waits rather than being
+ *   dropped. The native half keeps the hold in memory only: an app killed mid-session takes it
+ *   along, and today rings after all rather than never.
  * `"no"`: today is done or a rest day. A snooze in waiting is cancelled.
  */
 export type DueToday = "yes" | "hold" | "no";
@@ -126,8 +128,9 @@ export type PlanInput = {
   /** At least the `REST_LOOKBACK_DAYS` before `now`: the rest advice reads that far. */
   sessions: readonly ReminderSession[];
   /**
-   * A session is on screen, or won and not yet saved. Read from the session store, never kept by
-   * the native side: a flag written there would stay set in an app killed mid-session.
+   * A session is under way, victory screen included. Read from the session store, and only held in
+   * the native half's memory: today's entry stays in the plan, so an app killed mid-session still
+   * rings it, where a flag or a dropped entry would have silenced the day for good.
    */
   sessionActive: boolean;
   state: { resumeDate: string | null; log: readonly ReminderLogEntry[] };
@@ -156,7 +159,7 @@ function timeOf(minutes: number): string {
 }
 
 /** A local day key read back as that day's local midnight. Never `new Date(key)`, which is UTC. */
-function dayOf(key: string): Date {
+export function dayOf(key: string): Date {
   return parse(key, "yyyy-MM-dd", new Date(0));
 }
 
@@ -282,7 +285,6 @@ function oathLine(input: PlanInput, date: string, done: number | null): string {
  * A chosen day gets one entry, unless:
  * - a workout (`isWorkout`, a walk does not count) is already logged on it;
  * - the rest advice for that day, at that hour, is acute;
- * - it is today and a session is under way;
  * - it is today and it already rang (the journal has it), whatever the hour says now;
  * - it is today and its hour is more than `REMINDER_LATE_MINUTES` gone.
  */
@@ -292,7 +294,6 @@ export function planReminders(input: PlanInput): ReminderPlan {
   const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt);
   const trainedToday = workouts.some((w) => dayKey(w) === today);
   const reminded = new Set(state.log.map((entry) => entry.date));
-  const todayMuted = trainedToday || sessionActive;
   const start = state.resumeDate && state.resumeDate > today ? state.resumeDate : today;
   const weekDone = weeklyOathDone(input);
   const sentence = sentenceFor(offer, input.language);
@@ -305,7 +306,7 @@ export function planReminders(input: PlanInput): ReminderPlan {
     if (time === null) continue;
     // Any day the journal has, not only today: a clock moved back must not ring one twice.
     if (reminded.has(date)) continue;
-    if (date === today && (todayMuted || tooLate(now, time))) continue;
+    if (date === today && (trainedToday || tooLate(now, time))) continue;
     if (restsOn(workouts, at(date, time))) continue;
 
     const variant = `${sentence.case}.${nextVariant(sentence.case, previous, sentence.only)}`;

@@ -67,6 +67,13 @@ describe("replanReminders", () => {
     expect(mockSetPlan.mock.calls[0]?.[0].dueToday).toBe("hold");
   });
 
+  test("two plans in flight: only the newer reaches the native half", async () => {
+    // Entering a session and quitting it at once: the hold must not land after the release.
+    await Promise.all([replan()(true), replan()(false)]);
+    expect(mockSetPlan).toHaveBeenCalledTimes(1);
+    expect(mockSetPlan.mock.calls[0]?.[0].dueToday).toBe("yes");
+  });
+
   test("a workout in the journal today cancels it", async () => {
     t.db
       .insert(completedQuest)

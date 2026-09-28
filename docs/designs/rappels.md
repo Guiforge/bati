@@ -1,12 +1,14 @@
 # Design : les rappels (roadmap 4.2)
 
 Conçu le 27/09/2026 (spec v3), écrit contre le commit `68ce4dd` (v2.6.0).
-Status: DESIGNED
+Status: IMPLEMENTED (PR #137 à #140, en attente de merge et de la checklist appareil)
 Code : PR 1 (logique) : `db/reminders.ts`, `db/homeOffer.ts`, `restSuggestionAt` dans
 `db/restSuggestions.ts`, `oathWeekStart` dans `db/oaths.ts`, `reminders.*` dans `locales/*.json`.
 PR 2 (natif) : `modules/bati-reminders`, `src/reminders.ts` (`replanReminders`,
-`keepRemindersInStep`), `stores/sessionHold.ts`. PR 3 (interface) : `components/settings/ReminderSection.tsx`, `components/home/ReminderCard.tsx`,
-`app/oath.tsx` (`OathReminderLine`), `src/reminderReport.ts`. PR 4 à venir, voir [Découpage](#découpage).
+`keepRemindersInStep`). PR 3 (interface) : `components/settings/ReminderSection.tsx`, `components/home/ReminderCard.tsx`,
+`app/oath.tsx` (`OathReminderLine`), `src/reminderReport.ts`. PR 4 (ménage) : `hooks/useReminderPace.ts`
+(`adventureWeeksLabel`), kicker « Ton jour » dans `components/home/useSmartAction.ts`, clés `goals.*` et
+`scheduling.*` supprimées.
 
 *27/09/2026. Code lu au commit `68ce4dd` (v2.6.0).*
 *Versions précédentes gardées : v1 `claude/rappels-conception.md` (23/09), v2 `claude/rappels-rythme-v2.md` (27/09).*
@@ -318,7 +320,7 @@ Il stocke et il poste, il ne réfléchit pas.
 `db/reminders.ts`. Entrée : jours + heure, état natif (pause, dernier posté), séances récentes, état de la séance, ce que propose le Home, serment, maintenant, langue. Sortie : `entries` sur 21 jours (voir API) + `dueToday` + `quietText`. Aujourd'hui n'est jamais inclus si le journal l'a déjà.
 
 - **Repos par jour** : `restSuggestionAt(sessions, now)`, version pure sortie de `getRestSuggestion()`, évaluée pour chaque jour.
-- **Séance en cours** : si `useSessionStore.status` n'est pas `idle`, ou vaut `finished` sans être encore sauvegardée (l'écran de victoire attend une réponse), `dueToday` vaut `"hold"`. Pas de drapeau natif, il resterait bloqué si l'app est tuée.
+- **Séance en cours** : si `useSessionStore.status` n'est pas `idle`, écran de victoire compris jusqu'à ce qu'on le quitte, `dueToday` vaut `"hold"`. Le natif garde ce hold **en mémoire seulement** (`ReminderScheduler.held`) et l'entrée du jour reste dans le plan : l'alarme sonne, `onAlarm` la retient tant que le processus vit. App tuée en pleine séance, le hold part avec le processus et le rappel sonne quand même (audit final du 28/09 : l'entrée retirée du plan faisait taire le jour pour de bon, et les Réglages accusaient le téléphone). Pas jusqu'à `savedSessionId` : il est posé à la première écriture de la sauvegarde, avant l'aventure, le boss et le serment, et un plan fait à ce moment les lisait d'avant la séance.
 - **Variantes de texte** : rotation depuis la dernière variante postée.
 - **Rappels ignorés** : `ignoredStreak(posted, sessions)`, pure aussi, appelée à l'ouverture.
 
@@ -394,8 +396,8 @@ depuis). Fichiers et numéros de ligne sont justes. Ce qui suit corrige ou préc
 - **Bug UTC** : plus étroit qu'annoncé. À l'ouest de UTC, un dernier entraînement **hier** est lu
   avant-hier, la garde « aujourd'hui ou hier » échoue et `consecutive_days` tombe à 0. Le test à
   UTC-5 couvre ce cas précis.
-- **Séance en cours** : `dueToday = "hold"` si `status ∉ {idle, finished}`, **ou** `finished` avec
-  `savedSessionId === null`. Une victoire déjà sauvegardée n'est plus « en cours ».
+- **Séance en cours** : `dueToday = "hold"` tant que `status !== "idle"`, victoire comprise jusqu'à ce
+  qu'on la quitte (audit final du 28/09 : `savedSessionId` libérait le plan avant la fin de la sauvegarde).
 - **Serment, ligne de la semaine** : nouvelle fonction `oathWeekCount(oath, sessions, now)` (séances
   `countsAsSession` de la semaine calendaire du serment, `weekStartsOn` figé). « Encore atteignable »
   = séances manquantes ≤ jours restants dans la semaine, aujourd'hui compris.
@@ -456,12 +458,32 @@ depuis). Fichiers et numéros de ligne sont justes. Ce qui suit corrige ou préc
   ou de nouveautés est visible.
 - **Kicker « Ton jour » (PR 4)** : seulement si le Home n'a pas déjà un kicker (« Aventure »,
   « Premier jour »).
+- **Jours et interrupteur coupé (PR 4)** : les jours survivent à l'interrupteur coupé et arrivent
+  d'un autre appareil par la synchro. « Ton jour » et « ≈ 6 semaines à ton rythme » continuent donc
+  de les lire : ce sont les jours du héros, pas un réglage du téléphone. En en, de, es, le mot évite
+  « pace », « Tempo », « ritmo », réservés à l'allure de course par le glossaire.
 - **Politique de confidentialité** : `privacy.md` (l. 218 EN, l. 491 FR) parle **déjà** des rappels
   alors qu'ils n'existent pas. On la rend exacte, on met à jour « Last updated » (l. 36) **et** la
   version dans l'app, `privacy.permissions_body` dans les 4 locales.
 - **`coach-planning.md`** : deux endroits, l. 26 **et** l. 113-114.
 - **Commentaires morts** : `src/widget.tsx:250` (`rescheduleOathReminder()`) et
   `components/oath/useOathText.ts:7` parlent de l'ancien rappel. On les corrige.
+
+## Limites connues à l'implémentation (27/09)
+
+Relevées par l'audit final des quatre PR, assumées pour la v1 de la fonction :
+
+- **« Bati se tait »** s'ajoute au dernier jour que le téléphone *peut* poster. Si ce jour-là est
+  jeté (téléphone éteint plus d'une heure, notification refusée), la ligne ne paraît jamais : le
+  rappel précédent est déjà parti sans elle.
+- **Même phrase deux fois de suite** dans deux cas rares où une seule variante est possible : un
+  serment d'exercice sans échelle, une aventure dont le titre n'a pas chargé.
+- **Android 7 (API 24-25)** : pas d'effacement à minuit (`setTimeoutAfter` n'existe qu'à partir
+  d'Android 8). La notification reste jusqu'au balayage ou au rappel suivant.
+- **Permission ou canal retirés** : l'interrupteur ne passe à off qu'à l'ouverture des Réglages.
+  Entre-temps rien n'est posté, le natif vérifie avant chaque rappel.
+- **Traductions DE et ES** des textes `reminders.*` et des puces de la fiche store : à relire par
+  un natif avant la release (l'app les signale déjà comme traduites par machine).
 
 ## Historique
 

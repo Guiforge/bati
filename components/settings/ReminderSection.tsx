@@ -9,8 +9,9 @@ import { Bell, Clock, Pause } from "@/components/icons";
 import { SettingRow } from "@/components/settings/SettingRow";
 import { getDateTimeFormat, getWeekStart } from "@/constants/dateFormatters";
 import { dayKey } from "@/db/dates";
-import { getOath } from "@/db/oaths";
+import { DEFAULT_WEEKLY_TARGET, getOath } from "@/db/oaths";
 import {
+  dayOf,
   describeDay,
   getReminderDays,
   getReminderSessions,
@@ -69,7 +70,10 @@ async function readView(): Promise<{ view: ReminderView; withdrawn: boolean }> {
     reminderPrefs.streakFrom(),
     getOath(),
     getWeeklyQuota(),
-    syncAccount().catch(() => null),
+    syncAccount().catch((e: unknown) => {
+      reportError("reminders.syncAccount", e);
+      return null;
+    }),
   ]);
   return {
     withdrawn,
@@ -82,19 +86,13 @@ async function readView(): Promise<{ view: ReminderView; withdrawn: boolean }> {
       streakFrom,
       weeklyOath:
         oath?.metric === "weekly_sessions" && oath.fulfilledAt === null
-          ? (oath.weeklyTarget ?? null)
+          ? (oath.weeklyTarget ?? DEFAULT_WEEKLY_TARGET)
           : null,
       flameQuota,
       plannedOn: state.plannedOn,
       synced: account !== null,
     },
   };
-}
-
-/** Local `yyyy-MM-dd` as a local date. */
-function dayOf(key: string): Date {
-  const [y, m, d] = key.split("-").map(Number);
-  return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1);
 }
 
 function hourLabel(time: string, language: AppLanguage): string {

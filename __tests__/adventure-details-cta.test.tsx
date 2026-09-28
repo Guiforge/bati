@@ -12,6 +12,8 @@ import config from "@/tamagui.config";
 
 const mockPush = jest.fn();
 
+// The hero's reminder days set the weeks chip's pace (adventure-weeks-label.test.ts); none here.
+jest.mock("@/db/reminders", () => ({ getReminderDays: async () => ({}) }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useLocalSearchParams: () => ({ id: "1" }),
@@ -79,7 +81,6 @@ jest.mock("@/db", () => ({
   startAdventureRun: jest.fn(),
   suggestDifficultyFromSessions: jest.fn().mockReturnValue({ level: "medium", adjusted: false }),
   previewQuest: jest.fn().mockReturnValue({ seconds: 300, xp: 60 }),
-  adventureWeeks: jest.fn().mockReturnValue(1),
 }));
 
 // The screen reads the hero's ladder and records once for every step, so the head card prices a

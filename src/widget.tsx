@@ -250,8 +250,8 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<
 /**
  * Poke both widgets to redraw now, instead of waiting for the OS's 30-minute
  * `updatePeriodMillis` tick. Call after anything that can move the streak or the weekly count —
- * a saved session, an oath sworn or broken, a cold start. Android-only and best-effort — same
- * non-blocking contract as `rescheduleOathReminder()`.
+ * a saved session, an oath sworn or broken, a cold start. Android-only and best-effort: callers
+ * fire it and report a failure, they never wait on it.
  */
 export async function requestWidgetsUpdate(): Promise<void> {
   if (Platform.OS !== "android") return;

@@ -233,7 +233,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 
 | # | Item | Impact | Effort | Prio | From |
 | --- | --- | --- | --- | --- | --- |
-| 4.2 | Local training reminders, no Firebase | High | M | **P1** | |
+| 4.2 | Local training reminders, no Firebase (built: #137 to #140) | High | M | **P1** | |
 | 4.26 | One-sided holds are timed as one side, and journaled wrong | Med-high | S–M | **P1** | |
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
 | 4.6 | Boss battle refonte | High | M–L | **P1** | |
@@ -265,41 +265,48 @@ and what they decided is under [Decisions the shipped rows left behind](#decisio
 
 ### 4.2 Local reminders — the highest-return feature on this page
 
-It is the only item here that acts on a hero who has *stopped* opening the app.
+It is the only item here that acts on a hero who has *stopped* opening the app. The design is
+[`docs/designs/rappels.md`](../designs/rappels.md) (v3.1, in French), built in four PRs; this
+section keeps what a roadmap reader needs and the decisions it reverses.
+
+**The rule, in one sentence, shown under the switch:** you choose your days and your hour; Bati
+reminds you once on those days, unless your session is done or it advises rest; you can push it back
+an hour or pause it. A behaviour that does not fit the sentence is a bug in the design.
 
 **Not through `expo-notifications`.** It was removed in `c7246643` (2026-08-03) because it arrived
 carrying Firebase Cloud Messaging and twenty-odd permissions the app never exercised: 33
-permissions went to 11 in a release APK. Local notifications need no FCM at all, so coming back
-through that package would buy back the F-Droid stripping script for nothing. The route is a local
-Expo module in Kotlin, on the model of `modules/bati-location`:
+permissions went to 11 in a release APK. The route is a local Expo module in Kotlin,
+`modules/bati-reminders`, on the model of `modules/bati-location`:
 
-- **`AlarmManager.setWindow`, never an exact alarm.** A reminder that lands inside a quarter of an
-  hour is on time, and `SCHEDULE_EXACT_ALARM` is a permission plus a Play declaration for a
-  precision nobody asked for.
-- **A `BOOT_COMPLETED` receiver**, because a reboot clears every alarm. `RECEIVE_BOOT_COMPLETED` is
-  in `app.json`'s `blockedPermissions` today; it leaves that list and gets its justification in
-  `__tests__/android-permissions.test.ts` in the same commit.
-- **`POST_NOTIFICATIONS` is already declared**, by
-  `modules/bati-location/android/src/main/AndroidManifest.xml` for the expedition's foreground
-  notification. The runtime prompt exists; the permission list does not grow.
-- **The logic is a pure function in `db/reminders.ts`** that answers "does this day ring, and
-  when". The module schedules what it is told and decides nothing, so every rule below is a unit
-  test rather than a device check.
+- **`setAndAllowWhileIdle`, never an exact alarm.** `setWindow`, which this page used to name, does
+  not ring in Doze. `SCHEDULE_EXACT_ALARM` is denied by default since Android 14, and
+  `USE_EXACT_ALARM` is for alarm clocks and calendars.
+- **Local dates and wall-clock hours, never instants.** The native side turns `2026-03-29 20:00`
+  into an instant each time it arms, in the zone the phone is in then.
+- **A boot receiver**, because a reboot clears every alarm. `RECEIVE_BOOT_COMPLETED` leaves
+  `app.json`'s `blockedPermissions` with its justification in `__tests__/android-permissions.test.ts`.
+- **The logic is pure TypeScript in `db/reminders.ts`** (`planReminders`, `ignoredStreak`,
+  `suggestDays`, `suggestTime`). The module stores, arms and posts; it decides nothing, so every rule
+  is a unit test rather than a device check.
 
-**There is no schedule to plumb yet.** This page used to say the schedule data already existed
-(Goals + Schedule). It does not: no training day is stored anywhere. What exists is a weekly
-quota, `weeklyTarget` and `weekStartsOn` on an oath (`db/oaths.ts`), with `DEFAULT_WEEKLY_QUOTA`
-(`db/streaks.ts`, 2) when no oath sets one. The feature adds one small piece of state: the days,
-and an hour.
+**Reversed: the quota no longer decides whether a day rings.** This page said "the days say when,
+the quota says whether". Three reasons it does not survive: a hero who picked Monday, Wednesday and
+Friday with a quota of two reads a silent Friday as a bug; the flame counts a rolling seven days
+(`db/streaks.ts`) and the oath a calendar week (`db/oaths.ts`), so the reminder would end up
+contradicting one screen or the other; and a real planner was already built and removed
+(`79960596`, 2026-07-18). The Home says *what*, the hero's days say *when*, the quota says *how
+many*, and none of the three changes another.
 
-**Decided: the days say when, the quota says whether.** The hero picks days and an hour; the
-week's quota decides whether a given day still needs to ring. No reminder fires:
+**A chosen day stays silent** when a workout is already logged on it (`isWorkout`: a walk does not
+silence a reminder to work out), when the rest advice for that day is acute (`consecutive_days`,
+`high_volume`, `overtraining`, never `deload`), while a session is under way, and during a pause.
+A day already reminded never rings again. Fourteen days are armed ahead; past them, a hero who has
+not opened the app hears nothing more.
 
-- on a day a session is already logged;
-- once the week's quota is met;
-- when `getRestSuggestion()` (`db/restSuggestions.ts`) advises rest. An app that prescribes a rest
-  day and then nags the hero to train through it is fighting its own coaching, the same argument
-  that refused Habitica's lost HP below.
+**Six promises not to nag**: nothing unless asked; once a day, on your days only; never for
+nothing; never guilt; easy to calm ("In 1 hour" and "Pause 7 days" on the notification); and it
+knows when to stop (silence after fourteen days, and a question on Home after three ignored days,
+at most once a month).
 
 **Update notifications are no longer part of this item.** The in-app check shipped in #125 as
 `src/updateCheck.ts`, opt-in and off by default, with the guardrail at the top of this page

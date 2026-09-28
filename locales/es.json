@@ -7,6 +7,7 @@
     "start": "Empezar",
     "details": "Detalles",
     "kicker_day_one": "Primer día",
+    "kicker_your_day": "Tu día",
     "kicker_adventure": "Aventura",
     "quick_actions": "Acciones rápidas",
     "quick_hint": "Mantén pulsado para ajustar",
@@ -80,15 +81,6 @@
     "first_session_subtitle": "Ocho minutos, cuatro ejercicios, sin material. Un escudero tiene que empezar por algún sitio.",
     "first_session_start": "Empezar ya",
     "first_session_later": "Más tarde"
-  },
-  "scheduling": {
-    "title": "Plan semanal",
-    "no_sessions": "No hay entrenamientos programados",
-    "no_sessions_hint": "Añade un entrenamiento para empezar",
-    "add_session": "Programar entrenamiento",
-    "no_quests": "No hay misiones disponibles",
-    "reschedule_tomorrow": "Aplazar un día",
-    "skip": "Omitir"
   },
   "oath": {
     "screen_title": "Hacer un juramento",
@@ -360,6 +352,9 @@
     "weeks_one": "≈ {{count}} semana",
     "weeks_other": "≈ {{count}} semanas",
     "weeks_many": "≈ {{count}} semanas",
+    "weeks_pace_one": "≈ {{count}} semana con tus días",
+    "weeks_pace_other": "≈ {{count}} semanas con tus días",
+    "weeks_pace_many": "≈ {{count}} semanas con tus días",
     "steps_title": "Etapas de la campaña",
     "step_label": "Etapa {{count}}",
     "step_progress": "Etapa {{current}}/{{total}}",
@@ -1184,44 +1179,6 @@
     "family_rest": "Todo lo demás",
     "family_rest_feeds": "{{count}} en el tope"
   },
-  "goals": {
-    "title": "Mi objetivo",
-    "set_goal": "Fijar un objetivo",
-    "edit_goal": "Editar el objetivo",
-    "no_goal": "Sin objetivo",
-    "no_goal_subtitle": "Fíjate un objetivo para seguir tu progreso",
-    "goal_type": "Tipo de entrenamiento",
-    "days_per_week": "Días por semana",
-    "session_duration": "Duración de la sesión",
-    "minutes": "{{count}} min",
-    "days": "{{count}} días/semana",
-    "weekly_progress": "Esta semana",
-    "sessions_completed": "{{completed}}/{{target}} sesiones",
-    "goal_complete": "¡Objetivo cumplido! 🎉",
-    "on_track": "Vas bien",
-    "behind": "Con retraso",
-    "type_strength": "Fuerza",
-    "type_endurance": "Resistencia",
-    "type_flexibility": "Flexibilidad",
-    "type_balanced": "Equilibrado",
-    "desc_strength": "Ganar músculo y potencia",
-    "desc_endurance": "Mejorar la resistencia y el cardio",
-    "desc_flexibility": "Ganar movilidad y flexibilidad",
-    "desc_balanced": "Un poco de todo: fuerza, cardio, flexibilidad",
-    "save": "Guardar",
-    "cancel": "Cancelar",
-    "pause_goal": "Pausar",
-    "resume_goal": "Reanudar",
-    "complete_goal": "Marcar como hecho",
-    "preview_plan": "Ver el plan",
-    "preview_title": "Tu plan de entrenamiento",
-    "preview_subtitle": "Esto es lo que hemos planeado para ti",
-    "preview_week": "Semana {{week}}",
-    "preview_confirm": "Empezar este plan",
-    "preview_regenerate": "Generar un plan nuevo",
-    "preview_empty": "No hay sesiones previstas",
-    "generating_plan": "Creando tu plan…"
-  },
   "errors": {
     "save_session_failed": "No se ha podido guardar la sesión. Inténtalo de nuevo.",
     "load_failed": "No se han podido cargar los datos. Inténtalo de nuevo.",
@@ -1279,14 +1236,14 @@
     "never_title": "Lo que Bati nunca hace",
     "never_body": "Sin cuenta, sin registro, sin analíticas, sin telemetría, sin publicidad, sin identificadores de seguimiento y sin ningún SDK de terceros que recoja nada. Nada de la base de datos se envía nunca a un sitio donde pueda leerse. La app usa la red en tres puntos únicamente, y solo donde usted lo permite. Primero, el mapa bajo la ruta de una salida está desactivado hasta que lo active en Ajustes. Activado, el teléfono pide a OpenFreeMap (datos de OpenStreetMap servidos desde tiles.openfreemap.org) teselas, las imágenes cuadradas de las que se compone un mapa, de la zona de la salida, mientras ocurre y en su resumen. Esas peticiones le indican al servidor más o menos dónde está usted mientras se mueve, junto con su dirección IP y la hora. No la ruta al metro, ni el ritmo, ni el entrenamiento, ni quién es usted, pero sí la zona y más o menos cuándo la cruzó. Desactivado, o desactivado de nuevo con un toque, la app no hace ninguna petición de red y la ruta se dibuja sobre un fondo liso. Segundo, Buscar actualizaciones, al final de Ajustes, también desactivado hasta que usted lo active. Activado, la app pregunta una vez al día a api.github.com si ha salido una versión más reciente. Esa petición no lleva ningún identificador ni nada de la base de datos; GitHub solo obtiene una dirección IP y una hora, igual que de cualquiera que abra la página de versiones en un navegador. No se descarga ni se instala nada: la tarjeta que aparece en la pantalla de inicio abre esa página en su propio navegador, y lo que pase después lo decide usted. Tercero, «Sincronizar mis dispositivos», desactivado hasta que lo active, y solo con el cifrado activado. Activado, cada dispositivo envía su historial, sellado en el teléfono, al servidor Nextcloud o WebDAV al que se conecta, y lee el de los demás al abrir la app. Ese servidor conoce su dirección IP, la hora y el tamaño del archivo, y nada de su contenido. O bien elige una carpeta que Syncthing mantiene al día con sus otros dispositivos, y Bati no hace por sí mismo ninguna petición de red para la sincronización. Una regla de lint impide cualquier conexión de red fuera de esas tres.",
     "permissions_title": "Permisos",
-    "permissions_body": "Fotos: solo si elige una como avatar, y se queda en su dispositivo. El widget de Android lee su llama en la misma base de datos local. Ubicación: solo durante una salida, y solo la ubicación precisa, porque un recorrido no se puede medir con una aproximada. Su ruta se escribe en este teléfono y no se envía a ningún sitio. Una salida muestra además una notificación permanente: es lo que mantiene vivo el seguimiento, y por eso la pantalla puede apagarse a mitad de camino sin que nada se detenga. Internet: para el mapa, la comprobación de versión y la sincronización de dispositivos, cada uno solo mientras su interruptor esté activado en Ajustes; los tres empiezan desactivados, y lo que revela cada petición está explicado más arriba. Biometría: solo para volver a mostrar su clave de recuperación, tras su huella; Android hace la comprobación y Bati nunca la ve.",
+    "permissions_body": "Fotos: solo si elige una como avatar, y se queda en su dispositivo. El widget de Android lee su llama en la misma base de datos local. Ubicación: solo durante una salida, y solo la ubicación precisa, porque un recorrido no se puede medir con una aproximada. Su ruta se escribe en este teléfono y no se envía a ningún sitio. Una salida muestra además una notificación permanente: es lo que mantiene vivo el seguimiento, y por eso la pantalla puede apagarse a mitad de camino sin que nada se detenga. Internet: para el mapa, la comprobación de versión y la sincronización de dispositivos, cada uno solo mientras su interruptor esté activado en Ajustes; los tres empiezan desactivados, y lo que revela cada petición está explicado más arriba. Biometría: solo para volver a mostrar su clave de recuperación, tras su huella; Android hace la comprobación y Bati nunca la ve. Notificaciones e inicio del teléfono: solo si activa el recordatorio de entrenamiento. Android lo programa en este teléfono, sus días a su hora; un reinicio borra las alarmas, así que Bati recibe aviso cuando el teléfono ha arrancado, para volver a programarlo. El teléfono guarda los últimos diez días en que sonó un recordatorio, para actuar sobre sus botones; ese registro no se envía a ningún sitio.",
     "crashes_title": "Informes de cierres inesperados",
     "crashes_body": "Si la app se cierra inesperadamente, el error se escribe solo en su dispositivo. Cuando una función falla sin cerrarse (una copia que no se pudo escribir, por ejemplo), su mensaje de error se guarda igual; ese mensaje puede incluir el nombre de una carpeta o de un archivo que usted eligió, o la dirección de su servidor de sincronización. Nada se envía automáticamente. «Informar de un error» abre su propia app de correo con el informe ya escrito, para que pueda leerlo, editarlo o borrarlo antes de enviarlo. Si nunca lo envía, nunca sale de su teléfono.",
     "children_title": "Menores",
     "children_body": "Bati es una app de deporte para todos los públicos y no está dirigida a menores de 13 años. No recoge datos personales de nadie, de ninguna edad.",
     "contact_title": "Preguntas",
     "contact_body": "Escriba a feedback.bati@proton.me sobre esta política, y sobre un error, una idea o una función que eche en falta. Como la app no guarda ningún dato sobre usted, no tenemos nada que exportar ni borrar en su nombre: desinstalarla borra cada registro de este teléfono. Las copias que usted pidió siguen donde las puso: la copia del teléfono, los archivos guardados y su carpeta de sincronización.",
-    "updated": "Última actualización: 26 de septiembre de 2026"
+    "updated": "Última actualización: 27 de septiembre de 2026"
   },
   "feedback": {
     "subject": "Bati {{version}}: comentarios",
@@ -1848,5 +1805,85 @@
     "card_open": "Novedades",
     "version_label": "Versión {{version}}, novedades",
     "all_releases": "Las notas de todas las versiones"
+  },
+  "reminders": {
+    "adventure": {
+      "0": "La etapa {{n}} de {{adventure}} te espera.",
+      "1": "{{adventure}}, etapa {{n}}. Sigue donde lo dejaste.",
+      "2": "Etapa {{n}} de {{total}}. El camino sigue."
+    },
+    "boss": {
+      "0": "{{boss}} se tambalea. {{hp}} PV, ni uno más.",
+      "1": "{{boss}} te espera. {{hp}} PV por arrancarle."
+    },
+    "oath_exercise": {
+      "0": "Hacia tu juramento: etapa {{n}} de {{total}}. {{quest}} te espera.",
+      "1": "Una etapa más hacia tu juramento: {{quest}}."
+    },
+    "oath_leagues": {
+      "0": "{{done}} de {{total}} leguas. El camino te espera.",
+      "1": "Una salida más hacia tus {{total}} leguas."
+    },
+    "weak_muscles": {
+      "0": "{{quest}} te espera. En el menú: {{muscles}}.",
+      "1": "Tu día. {{quest}} recupera lo que va atrasado: {{muscles}}."
+    },
+    "first_day": {
+      "0": "Tu día. {{quest}}, unos {{duration}}. El primer edificio te espera.",
+      "1": "{{quest}} te espera, unos {{duration}}. Ahí empieza la aldea."
+    },
+    "gallery": {
+      "0": "Tu día. Elige tu misión, la puerta está abierta.",
+      "1": "Una misión te espera en la galería. Tú eliges."
+    },
+    "quiet": "Bati se calla por ahora. La aldea te espera, sin contar los días.",
+    "oath_more_one": "Una sesión más y el juramento se mantiene esta semana.",
+    "oath_more_many": "{{count}} sesiones más y el juramento se mantiene esta semana.",
+    "oath_more_other": "{{count}} sesiones más y el juramento se mantiene esta semana.",
+    "oath_won": "Semana del juramento ganada. ¿Una más, por gusto?",
+    "channel": "Recordatorios de entrenamiento",
+    "snooze": "En 1 h",
+    "pause": "Pausa 7 días",
+    "section": "RECORDATORIO",
+    "switch": "Recuérdame entrenar",
+    "rule": "Tú eliges tus días y tu hora. Bati te avisa una vez esos días, salvo si tu sesión ya está hecha o si te aconseja descansar. Puedes aplazarlo una hora o ponerlo en pausa.",
+    "days": "Tus días",
+    "keep_one_day": "Deja un día, o apaga el recordatorio.",
+    "hour": "Hora",
+    "pause_weeks_one": "1 sem.",
+    "pause_weeks_other": "{{count}} sem.",
+    "pause_weeks_many": "{{count}} sem.",
+    "paused": "En pausa · vuelve el {{date}}",
+    "resume": "Reanudar",
+    "next": "Próximo recordatorio: {{day}} a las {{time}}",
+    "none": "Ningún recordatorio en las próximas dos semanas.",
+    "today_done": "Hoy no, sesión hecha.",
+    "today_rest": "Hoy no hay recordatorio, Bati te aconseja descansar.",
+    "tomorrow_rest": "Mañana no hay recordatorio, Bati te aconseja descansar.",
+    "off": "Apagado en este dispositivo",
+    "last": "Último recordatorio: {{day}} a las {{time}}",
+    "blocked": "Puede que tu teléfono bloqueara el recordatorio del {{day}}.",
+    "battery": "Ajustes de la app",
+    "battery_help": "Por qué pasa esto",
+    "one_device": "Deja el recordatorio en un solo dispositivo.",
+    "sound": "Sonido y vibración: en las notificaciones de Android.",
+    "denied": "Sin el permiso, no hay recordatorio.",
+    "withdrawn": "Las notificaciones están apagadas para Bati, y el recordatorio también.",
+    "open_settings": "Abrir los ajustes de Android",
+    "oath_gap_one": "Tu juramento pide {{count}} por semana, elegiste {{days}}.",
+    "oath_gap_other": "Tu juramento pide {{count}} por semana, elegiste {{days}}.",
+    "oath_gap_many": "Tu juramento pide {{count}} por semana, elegiste {{days}}.",
+    "days_count_one": "{{count}} día",
+    "days_count_other": "{{count}} días",
+    "days_count_many": "{{count}} días",
+    "flame_gap_one": "La llama se alimenta de {{count}} sesión por semana.",
+    "flame_gap_other": "La llama se alimenta de {{count}} sesiones por semana.",
+    "flame_gap_many": "La llama se alimenta de {{count}} sesiones por semana.",
+    "offer": "¿Bati te recuerda tus días?",
+    "check": "¿Tus recordatorios llegan bien?",
+    "check_change": "Cambiar mis días",
+    "check_off": "Apagar",
+    "check_fine": "Me van bien",
+    "pause_row": "Pausar"
   }
 }

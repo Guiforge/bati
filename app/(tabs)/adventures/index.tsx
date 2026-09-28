@@ -24,7 +24,6 @@ import {
 import {
   type Adventure,
   adventureOrder,
-  adventureWeeks,
   getAnyActiveAdventureRun,
   getFinishedRunCountsByAdventure,
   getRecentSessionHistory,
@@ -39,6 +38,7 @@ import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs } from "@/db/questConfig";
 import { formatCount } from "@/db/targets";
+import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { keepIfSame } from "@/src/sameContent";
@@ -79,7 +79,8 @@ type AdventureRow = {
   kindLabel: string;
   /** "Force · Bras · Dos" — what the campaign trains, so the poster answers it before the tap. */
   focusLabel: string;
-  weeksLabel: string;
+  /** Null while the hero's days are still being read. */
+  weeksLabel: string | null;
   stepsLabel: string;
   xpLabel: string;
   finishedCount: number;
@@ -103,12 +104,12 @@ function buildAdventureRow(
   language: AppLanguage,
   t: TFunction,
   preview: QuestPreview,
+  pace: number | null | undefined,
 ): AdventureRow {
   const q = a.coverQuest;
   // Same numbers as the quest detail and the quest gallery, off the same saved config, served
   // rung and records — priced off the cover quest, the one step the poster's XP chip advertises.
   const { seconds: durationSeconds, xp } = preview;
-  const weeks = adventureWeeks(a.stepsCount);
 
   return {
     adventure: a,
@@ -131,7 +132,7 @@ function buildAdventureRow(
     ]
       .filter(Boolean)
       .join(" · "),
-    weeksLabel: t("adventures.weeks", { count: weeks, defaultValue: `≈ ${weeks} weeks` }),
+    weeksLabel: adventureWeeksLabel(a.stepsCount, pace, t),
     stepsLabel: t("adventures.steps", {
       count: a.stepsCount,
       defaultValue: `${a.stepsCount} steps`,
@@ -176,9 +177,13 @@ function AdventureCard({
         defaultValue: `Step ${progress.currentIndex + 1}/${item.stepsCount}`,
       })
     : null;
-  const metaLabel = stepProgressLabel
-    ? `${stepProgressLabel} · ${row.weeksLabel}`
-    : `${row.weeksLabel} · ${row.stepsLabel}`;
+  // The weeks join once the hero's days are read, never a guess in the meantime.
+  const metaLabel = [
+    stepProgressLabel ?? row.weeksLabel,
+    stepProgressLabel ? row.weeksLabel : row.stepsLabel,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <YStack px="$5">
@@ -381,6 +386,7 @@ export default function AdventuresGallery() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
+  const pace = useReminderPace();
 
   const [state, setState] = useState<LoadState>({
     status: "loading",
@@ -473,9 +479,10 @@ export default function AdventuresGallery() {
           language,
           t,
           previews.get(a.coverQuestId) ?? EMPTY_PREVIEW,
+          pace,
         ),
       ),
-    [adventures, exercisesById, finishedCounts, language, t, previews, activeProgress],
+    [adventures, exercisesById, finishedCounts, language, t, previews, activeProgress, pace],
   );
 
   const title = t("adventures.gallery_title", "Adventures");

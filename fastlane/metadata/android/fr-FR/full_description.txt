@@ -12,6 +12,7 @@ CE QUE TU TROUVES DEDANS
 • Des sorties : marche, course ou vélo ; le terrain parcouru fait grandir le chemin hors du village
 • Un village : les bâtiments montent avec le volume réellement enregistré
 • Des serments : fixe un objectif et laisse l'app t'y tenir
+• Des rappels : les jours que tu choisis, programmés sur le téléphone, sans serveur
 • Un journal : historique, records, flamme, équilibre musculaire
 
 TON ENTRAÎNEMENT RESTE SUR TON TÉLÉPHONE

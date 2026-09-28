@@ -1,7 +1,7 @@
 import { differenceInCalendarWeeks, startOfWeek } from "date-fns";
 import { and, eq, gte, sql } from "drizzle-orm";
 import { getWeekStart } from "@/constants/dateFormatters";
-import { type Localized, resolveAppLanguage } from "@/src/i18n/deviceLanguage";
+import { type AppLanguage, type Localized, resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { countsAsSession } from "./completed";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
@@ -327,12 +327,7 @@ async function countQualifyingWeeks(oath: Oath): Promise<number> {
   const sworn = new Date(oath.swornAt);
   if (Number.isNaN(sworn.getTime())) return 0;
 
-  // Frozen at swear time. An oath sworn before the field existed, or carrying a value from a
-  // hand-edited blob, falls back to the week the journal is drawing right now.
-  const weekStartsOn =
-    oath.weekStartsOn === 0 || oath.weekStartsOn === 1
-      ? oath.weekStartsOn
-      : getWeekStart(resolveAppLanguage(await preferences.getLanguage()));
+  const weekStartsOn = oathWeekStart(oath, resolveAppLanguage(await preferences.getLanguage()));
 
   const rows = await db
     .select({ performedAt: completedQuest.performedAt })
@@ -383,6 +378,17 @@ async function toProgress(oath: Oath): Promise<OathProgress> {
     isFulfilled: oath.fulfilledAt !== null || current >= oath.target,
     exerciseName: name,
   };
+}
+
+/**
+ * The weekday an oath's weeks turn over on: frozen at swear time. An oath sworn before the field
+ * existed, or carrying a value from a hand-edited blob, falls back to the week the journal is
+ * drawing right now. One rule for the oath's count and the reminders' weekly line.
+ */
+export function oathWeekStart(oath: Oath, language: AppLanguage): 0 | 1 {
+  return oath.weekStartsOn === 0 || oath.weekStartsOn === 1
+    ? oath.weekStartsOn
+    : getWeekStart(language);
 }
 
 /** Derived progress for the active oath. Nothing is written. */

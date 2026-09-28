@@ -9,6 +9,9 @@ import { useBugReport } from "@/hooks/useBugReport";
  */
 
 const mockShownErrors: string[] = [];
+// The reminders' line has its own test (reminder-report.test.ts); here it is absent, as on a phone
+// that never used them.
+jest.mock("@/src/reminderReport", () => ({ reminderReportLine: async () => null }));
 jest.mock("@/components/common/Toast", () => ({
   useToast: () => ({
     showError: (message: string) => mockShownErrors.push(message),

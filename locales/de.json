@@ -7,6 +7,7 @@
     "start": "Starten",
     "details": "Details",
     "kicker_day_one": "Tag eins",
+    "kicker_your_day": "Dein Tag",
     "kicker_adventure": "Abenteuer",
     "quick_actions": "Schnellaktionen",
     "quick_hint": "Lange drücken zum Einstellen",
@@ -80,15 +81,6 @@
     "first_session_subtitle": "Acht Minuten, vier Übungen, keine Geräte. Irgendwo muss ein Knappe ja anfangen.",
     "first_session_start": "Jetzt starten",
     "first_session_later": "Später"
-  },
-  "scheduling": {
-    "title": "Wochenplan",
-    "no_sessions": "Keine Trainings geplant",
-    "no_sessions_hint": "Füge ein Training hinzu, um loszulegen",
-    "add_session": "Training planen",
-    "no_quests": "Keine Quests verfügbar",
-    "reschedule_tomorrow": "Um einen Tag verschieben",
-    "skip": "Überspringen"
   },
   "oath": {
     "screen_title": "Einen Schwur leisten",
@@ -354,6 +346,8 @@
     "steps": "{{count}} Etappen",
     "weeks_one": "≈ {{count}} Woche",
     "weeks_other": "≈ {{count}} Wochen",
+    "weeks_pace_one": "≈ {{count}} Woche an deinen Tagen",
+    "weeks_pace_other": "≈ {{count}} Wochen an deinen Tagen",
     "steps_title": "Etappen der Kampagne",
     "step_label": "Etappe {{count}}",
     "step_progress": "Etappe {{current}}/{{total}}",
@@ -1124,44 +1118,6 @@
     "family_rest": "Alles andere",
     "family_rest_feeds": "{{count}} am Maximum"
   },
-  "goals": {
-    "title": "Mein Ziel",
-    "set_goal": "Ziel festlegen",
-    "edit_goal": "Ziel bearbeiten",
-    "no_goal": "Kein Ziel festgelegt",
-    "no_goal_subtitle": "Setz dir ein Fitnessziel, um deinen Fortschritt zu verfolgen",
-    "goal_type": "Trainingsschwerpunkt",
-    "days_per_week": "Tage pro Woche",
-    "session_duration": "Dauer der Einheit",
-    "minutes": "{{count}} Min.",
-    "days": "{{count}} Tage/Woche",
-    "weekly_progress": "Diese Woche",
-    "sessions_completed": "{{completed}}/{{target}} Einheiten",
-    "goal_complete": "Ziel erreicht! 🎉",
-    "on_track": "Auf Kurs",
-    "behind": "Im Rückstand",
-    "type_strength": "Kraft",
-    "type_endurance": "Ausdauer",
-    "type_flexibility": "Beweglichkeit",
-    "type_balanced": "Ausgewogen",
-    "desc_strength": "Muskeln und Kraft aufbauen",
-    "desc_endurance": "Ausdauer und Kondition verbessern",
-    "desc_flexibility": "Mobilität und Beweglichkeit steigern",
-    "desc_balanced": "Von allem etwas: Kraft, Cardio, Beweglichkeit",
-    "save": "Speichern",
-    "cancel": "Abbrechen",
-    "pause_goal": "Pausieren",
-    "resume_goal": "Fortsetzen",
-    "complete_goal": "Als erledigt markieren",
-    "preview_plan": "Plan ansehen",
-    "preview_title": "Dein Trainingsplan",
-    "preview_subtitle": "Das haben wir für dich geplant",
-    "preview_week": "Woche {{week}}",
-    "preview_confirm": "Diesen Plan starten",
-    "preview_regenerate": "Neuen Plan erstellen",
-    "preview_empty": "Keine Einheiten geplant",
-    "generating_plan": "Dein Plan wird erstellt…"
-  },
   "errors": {
     "save_session_failed": "Die Einheit konnte nicht gespeichert werden. Versuch es nochmal.",
     "load_failed": "Daten konnten nicht geladen werden. Versuch es nochmal.",
@@ -1219,14 +1175,14 @@
     "never_title": "Was Bati nie tut",
     "never_body": "Kein Konto, keine Registrierung, keine Analyse, keine Telemetrie, keine Werbung, keine Tracking-Kennungen und kein Drittanbieter-SDK, das irgendetwas sammelt. Nichts aus der Datenbank wird je dorthin gesendet, wo es gelesen werden kann. Die App nutzt das Netzwerk an genau drei Stellen, und nur dort, wo Sie es erlauben. Erstens: Die Karte hinter der Route einer Tour ist aus, bis Sie sie in den Einstellungen einschalten. Eingeschaltet fragt das Telefon OpenFreeMap (OpenStreetMap-Daten, ausgeliefert von tiles.openfreemap.org) nach Kacheln, den quadratischen Bildern, aus denen eine Karte besteht, für die Umgebung der Tour, während sie läuft und in ihrem Rückblick. Diese Anfragen verraten dem Dienst ungefähr, wo Sie unterwegs sind, zusammen mit Ihrer IP-Adresse und der Uhrzeit. Nicht die Route auf den Meter, nicht das Tempo, nicht das Training, nicht wer Sie sind, aber das Gebiet und ungefähr, wann Sie es durchquert haben, ja. Ausgeschaltet, oder mit einem Tippen wieder ausgeschaltet, stellt die App keinerlei Netzwerkanfrage, und die Route wird auf einem schlichten Hintergrund gezeichnet. Zweitens: Nach Updates suchen, unten in den Einstellungen, ebenfalls aus, bis Sie auch das einschalten. Eingeschaltet fragt die App einmal am Tag bei api.github.com nach, ob eine neuere Version erschienen ist. Die Anfrage trägt keine Kennung und nichts aus der Datenbank; GitHub erfährt eine IP-Adresse und eine Uhrzeit, genau wie von jedem, der die Release-Seite im Browser öffnet. Es wird nichts heruntergeladen und nichts installiert: die Karte auf dem Startbildschirm öffnet diese Seite in Ihrem eigenen Browser, und alles Weitere entscheiden Sie. Drittens: „Geräte synchronisieren“, aus, bis Sie es einschalten, und nur mit eingeschalteter Verschlüsselung. Eingeschaltet sendet jedes Gerät seinen auf dem Telefon versiegelten Verlauf an den Nextcloud- oder WebDAV-Server, mit dem Sie sich verbinden, und liest beim Start die der anderen. Dieser Server erfährt Ihre IP-Adresse, die Uhrzeit und die Dateigröße, aber nichts aus ihrem Inhalt. Oder Sie wählen einen Ordner, den Syncthing mit Ihren anderen Geräten abgleicht, und Bati stellt für die Synchronisierung selbst keine Netzwerkanfrage. Eine Lint-Regel verbietet jede Netzwerkverbindung außerhalb dieser drei.",
     "permissions_title": "Berechtigungen",
-    "permissions_body": "Fotos: nur wenn Sie eines als Avatar wählen, und es bleibt auf Ihrem Gerät. Das Android-Widget liest Ihre Flamme aus derselben lokalen Datenbank. Standort: nur während einer Tour, und nur der genaue Standort, weil sich ein Weg nicht ungefähr messen lässt. Ihre Route wird auf dieses Telefon geschrieben und nirgendwohin gesendet. Eine Tour zeigt außerdem eine dauerhafte Benachrichtigung an: Sie hält die Aufzeichnung am Leben, und deshalb kann Ihr Bildschirm unterwegs ausgehen, ohne dass etwas stoppt. Internet: für die Karte, die Versionsprüfung und die Gerätesynchronisierung, jeweils nur, solange ihr Schalter in den Einstellungen an ist; alle drei sind anfangs aus, und was jede Anfrage verrät, steht weiter oben. Biometrie: nur um Ihren Wiederherstellungsschlüssel hinter Ihrem Fingerabdruck erneut anzuzeigen; Android prüft, und Bati sieht ihn nie.",
+    "permissions_body": "Fotos: nur wenn Sie eines als Avatar wählen, und es bleibt auf Ihrem Gerät. Das Android-Widget liest Ihre Flamme aus derselben lokalen Datenbank. Standort: nur während einer Tour, und nur der genaue Standort, weil sich ein Weg nicht ungefähr messen lässt. Ihre Route wird auf dieses Telefon geschrieben und nirgendwohin gesendet. Eine Tour zeigt außerdem eine dauerhafte Benachrichtigung an: Sie hält die Aufzeichnung am Leben, und deshalb kann Ihr Bildschirm unterwegs ausgehen, ohne dass etwas stoppt. Internet: für die Karte, die Versionsprüfung und die Gerätesynchronisierung, jeweils nur, solange ihr Schalter in den Einstellungen an ist; alle drei sind anfangs aus, und was jede Anfrage verrät, steht weiter oben. Biometrie: nur um Ihren Wiederherstellungsschlüssel hinter Ihrem Fingerabdruck erneut anzuzeigen; Android prüft, und Bati sieht ihn nie. Benachrichtigungen und Gerätestart: nur wenn Sie die Trainingserinnerung einschalten. Android plant sie auf diesem Telefon, an Ihren Tagen zu Ihrer Uhrzeit; ein Neustart löscht Wecker, deshalb erfährt Bati, wann das Telefon gestartet ist, um sie neu zu planen. Das Telefon behält die letzten zehn Tage, an denen eine Erinnerung kam, um auf ihre Schaltflächen zu reagieren; dieses Protokoll wird nirgendwohin gesendet.",
     "crashes_title": "Absturzberichte",
     "crashes_body": "Stürzt die App ab, wird der Fehler nur auf Ihr Gerät geschrieben. Schlägt eine Funktion ohne Absturz fehl (etwa eine Sicherung, die nicht geschrieben werden konnte), wird ihre Fehlermeldung genauso aufbewahrt; diese Meldung kann den Namen eines von Ihnen gewählten Ordners oder einer Datei enthalten, oder die Adresse Ihres Synchronisierungsservers. Nichts wird automatisch gesendet. „Fehler melden“ unten öffnet Ihre eigene E-Mail-App mit dem ausgefüllten Bericht, sodass Sie ihn vor dem Senden lesen, bearbeiten oder löschen können. Senden Sie ihn nie, verlässt er Ihr Telefon nie.",
     "children_title": "Kinder",
     "children_body": "Bati ist eine Fitness-App für alle und richtet sich nicht an Kinder unter 13 Jahren. Sie sammelt von niemandem personenbezogene Daten, egal welchen Alters.",
     "contact_title": "Fragen",
     "contact_body": "Schreiben Sie an feedback.bati@proton.me zu dieser Richtlinie, zu einem Fehler, einer Idee oder einer Funktion, die Sie sich wünschen. Da die App keine Daten über Sie speichert, gibt es nichts, was wir für Sie exportieren oder löschen könnten: Die Deinstallation löscht jeden Eintrag auf diesem Telefon. Kopien, die Sie angelegt haben, bleiben, wo Sie sie abgelegt haben: die Sicherung des Telefons, gespeicherte Dateien und Ihr Synchronisierungsordner.",
-    "updated": "Zuletzt aktualisiert am 26. September 2026"
+    "updated": "Zuletzt aktualisiert am 27. September 2026"
   },
   "feedback": {
     "subject": "Bati {{version}}: Feedback",
@@ -1782,5 +1738,80 @@
     "card_open": "Neuerungen",
     "version_label": "Version {{version}}, Neuerungen",
     "all_releases": "Notizen aller Versionen"
+  },
+  "reminders": {
+    "adventure": {
+      "0": "Etappe {{n}} von {{adventure}} wartet.",
+      "1": "{{adventure}}, Etappe {{n}}. Mach weiter, wo du aufgehört hast.",
+      "2": "Etappe {{n}} von {{total}}. Der Weg geht weiter."
+    },
+    "boss": {
+      "0": "{{boss}} wankt. Noch {{hp}} LP, keinen mehr.",
+      "1": "{{boss}} wartet. {{hp}} LP zu holen."
+    },
+    "oath_exercise": {
+      "0": "Zu deinem Schwur: Stufe {{n}} von {{total}}. {{quest}} wartet.",
+      "1": "Eine Stufe näher an deinem Schwur: {{quest}}."
+    },
+    "oath_leagues": {
+      "0": "{{done}} von {{total}} Wegstunden. Der Weg wartet.",
+      "1": "Noch eine Tour Richtung deiner {{total}} Wegstunden."
+    },
+    "weak_muscles": {
+      "0": "{{quest}} wartet. Heute dran: {{muscles}}.",
+      "1": "Dein Tag. {{quest}} holt nach, was hinterherhängt: {{muscles}}."
+    },
+    "first_day": {
+      "0": "Dein Tag. {{quest}}, etwa {{duration}}. Das erste Gebäude wartet.",
+      "1": "{{quest}} wartet, etwa {{duration}}. Dort beginnt das Dorf."
+    },
+    "gallery": {
+      "0": "Dein Tag. Wähl deine Quest, das Tor steht offen.",
+      "1": "In der Galerie wartet eine Quest. Du wählst."
+    },
+    "quiet": "Bati schweigt vorerst. Das Dorf wartet und zählt keine Tage.",
+    "oath_more_one": "Noch eine Einheit, und der Schwur hält diese Woche.",
+    "oath_more_other": "Noch {{count}} Einheiten, und der Schwur hält diese Woche.",
+    "oath_won": "Die Schwurwoche ist geschafft. Noch eine, einfach so?",
+    "channel": "Trainingserinnerungen",
+    "snooze": "In 1 Std.",
+    "pause": "7 Tage Pause",
+    "section": "ERINNERUNG",
+    "switch": "Erinnere mich ans Training",
+    "rule": "Du wählst deine Tage und deine Uhrzeit. Bati erinnert dich an diesen Tagen einmal, außer deine Einheit ist erledigt oder Bati rät dir zur Erholung. Du kannst die Erinnerung um eine Stunde verschieben oder pausieren.",
+    "days": "Deine Tage",
+    "keep_one_day": "Behalte einen Tag, oder schalte die Erinnerung aus.",
+    "hour": "Uhrzeit",
+    "pause_weeks_one": "1 Wo.",
+    "pause_weeks_other": "{{count}} Wo.",
+    "paused": "Pausiert · weiter am {{date}}",
+    "resume": "Fortsetzen",
+    "next": "Nächste Erinnerung: {{day}} um {{time}}",
+    "none": "Keine Erinnerung in den nächsten zwei Wochen.",
+    "today_done": "Heute ausgelassen, Einheit erledigt.",
+    "today_rest": "Heute keine Erinnerung, Bati rät dir zur Erholung.",
+    "tomorrow_rest": "Morgen keine Erinnerung, Bati rät dir zur Erholung.",
+    "off": "Auf diesem Gerät aus",
+    "last": "Letzte Erinnerung: {{day}} um {{time}}",
+    "blocked": "Dein Handy hat die Erinnerung von {{day}} vielleicht blockiert.",
+    "battery": "App-Einstellungen",
+    "battery_help": "Warum Handys das tun",
+    "one_device": "Lass die Erinnerung nur auf einem Gerät an.",
+    "sound": "Ton und Vibration: in den Android-Benachrichtigungen einstellbar.",
+    "denied": "Ohne die Berechtigung keine Erinnerung.",
+    "withdrawn": "Benachrichtigungen sind für Bati aus, die Erinnerung also auch.",
+    "open_settings": "Android-Einstellungen öffnen",
+    "oath_gap_one": "Dein Schwur verlangt {{count}} pro Woche, du hast {{days}} gewählt.",
+    "oath_gap_other": "Dein Schwur verlangt {{count}} pro Woche, du hast {{days}} gewählt.",
+    "days_count_one": "{{count}} Tag",
+    "days_count_other": "{{count}} Tage",
+    "flame_gap_one": "Die Flamme nährt sich von {{count}} Einheit pro Woche.",
+    "flame_gap_other": "Die Flamme nährt sich von {{count}} Einheiten pro Woche.",
+    "offer": "Soll Bati dich an deinen Tagen erinnern?",
+    "check": "Passen deine Erinnerungen?",
+    "check_change": "Meine Tage ändern",
+    "check_off": "Ausschalten",
+    "check_fine": "Passt so",
+    "pause_row": "Pausieren"
   }
 }

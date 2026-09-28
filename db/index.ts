@@ -27,7 +27,6 @@ export {
 } from "./completed";
 export { suggestDifficultyFromSessions } from "./difficultySuggestion";
 export {
-  adventureWeeks,
   estimateQuestSeconds,
   formatDuration,
   formatDurationEstimate,

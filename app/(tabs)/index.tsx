@@ -4,6 +4,7 @@ import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
 import { QuickActions } from "@/components/home/QuickActions";
+import { ReminderCard } from "@/components/home/ReminderCard";
 import { SyncCard } from "@/components/home/SyncCard";
 import { UpdateCard } from "@/components/home/UpdateCard";
 import { WhatsNewCard } from "@/components/home/WhatsNewCard";
@@ -81,6 +82,11 @@ export default function HomeScreen() {
 
         {/* Tonight's scene, one action that starts it, the rest advice and the oath under it */}
         <HomeStage />
+
+        {/* A line under the scene about the reminders, never a second filled button: the offer
+            after the first session, or the question after three ignored. Silent while an update
+            or release notes are up. */}
+        <ReminderCard />
 
         {/* The doors out, and the last quest again, in the thumb's reach */}
         <QuickActions />

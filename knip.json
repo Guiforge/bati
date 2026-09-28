@@ -16,8 +16,10 @@
     "@react-navigation/native",
     "expo-updates",
     "@tamagui/babel-plugin",
-    "babel-plugin-transform-remove-console"
+    "babel-plugin-transform-remove-console",
+    "jest-environment-node"
   ],
   "ignoreExportsUsedInFile": true,
+  "ignoreUnresolved": ["./__tests__/helpers/timezoneEnvironment.js"],
   "tags": ["-legacy"]
 }

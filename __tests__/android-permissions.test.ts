@@ -20,9 +20,10 @@ import appJson from "../app.json";
 // Know its blind spot before you trust it. The scan below reads *npm package* manifests. A
 // Gradle AAR declares permissions too, and nothing here can see those: WAKE_LOCK and
 // FOREGROUND_SERVICE below ship in every APK and were justified only after someone read a built
-// manifest by hand. RECEIVE_BOOT_COMPLETED is in `blockedPermissions` for the same reason and
+// manifest by hand. RECEIVE_BOOT_COMPLETED was in `blockedPermissions` for the same reason and
 // from the same library, which no package manifest declares either — evidence this hole had
-// already been patched once, invisibly. `fdroid/expected-permissions.txt` and the release
+// already been patched once, invisibly. It left that list with the reminders, which need
+// it. `fdroid/expected-permissions.txt` and the release
 // workflow's gate are what actually assert the shipped list; this file is the fast pre-check.
 
 const ROOT = path.resolve(__dirname, "..");
@@ -126,10 +127,17 @@ const ALLOWED: Record<string, string> = {
     "to FingerprintManager. Deprecated since, declared together with the one above, and asked " +
     "for by nothing else.",
   "android.permission.POST_NOTIFICATIONS":
-    "modules/bati-location — since API 33 the foreground-service notification is invisible " +
-    "without it. The service still runs, but the one thing telling the hero their phone is " +
-    "tracking them would be silently absent, which is the opposite of what that notification " +
-    "is for.",
+    "two askers. modules/bati-location — since API 33 the foreground-service notification is " +
+    "invisible without it. The service still runs, but the one thing telling the hero their phone " +
+    "is tracking them would be silently absent, which is the opposite of what that notification " +
+    "is for. And modules/bati-reminders, whose whole output is a notification the hero asked " +
+    "for: asked when the reminder switch is turned on, never at launch (docs/designs/rappels.md).",
+  "android.permission.RECEIVE_BOOT_COMPLETED":
+    "modules/bati-reminders — a reboot clears every alarm, and its receiver arms the next " +
+    "reminder again. Nothing else runs at boot: the receiver reads its own SharedPreferences and " +
+    "sets one alarm. It also wakes androidx.work's own boot receiver (react-native-android-widget), " +
+    "which reschedules pending widget work and nothing more. No exact alarm comes with it: the " +
+    "module uses setAndAllowWhileIdle, and SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM stay out.",
 };
 
 const USES_PERMISSION = /<uses-permission[^>]*android:name="([^"]+)"/g;

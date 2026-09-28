@@ -241,6 +241,9 @@ export const MERGED_PREFERENCES = [
   "trainingLevel",
   "ownedEquipment",
   "oath",
+  // The days the reminders ring and their hour: the hero's rhythm, not this phone's. Whether a
+  // phone rings at all lives in the native module and never travels (docs/designs/rappels.md).
+  "reminderDays",
 ] as const;
 
 /**
@@ -399,6 +402,11 @@ export const DEVICE_LOCAL_PREFERENCES = [
   // account itself lives in this device's SecureStore, so these describe this device too.
   "syncServer",
   "syncWifiOnly",
+  // What this phone did with its own reminders: when it last asked whether they land well, the
+  // settings change it counts ignored reminders from, and the Home offer it closed.
+  "reminderAskedAt",
+  "reminderStreakFrom",
+  "reminderOfferDismissed",
 ] as const;
 
 /**

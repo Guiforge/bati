@@ -1782,5 +1782,40 @@
     "card_open": "Neuerungen",
     "version_label": "Version {{version}}, Neuerungen",
     "all_releases": "Notizen aller Versionen"
+  },
+  "reminders": {
+    "adventure": {
+      "0": "Etappe {{n}} von {{adventure}} wartet.",
+      "1": "{{adventure}}, Etappe {{n}}. Mach weiter, wo du aufgehört hast.",
+      "2": "Etappe {{n}} von {{total}}. Der Weg geht weiter."
+    },
+    "boss": {
+      "0": "{{boss}} wankt. Noch {{hp}} LP, keinen mehr.",
+      "1": "{{boss}} wartet. {{hp}} LP zu holen."
+    },
+    "oath_exercise": {
+      "0": "Zu deinem Schwur: Stufe {{n}} von {{total}}. {{quest}} wartet.",
+      "1": "Eine Stufe näher an deinem Schwur: {{quest}}."
+    },
+    "oath_leagues": {
+      "0": "{{done}} von {{total}} Wegstunden. Der Weg wartet.",
+      "1": "Noch eine Tour Richtung deiner {{total}} Wegstunden."
+    },
+    "weak_muscles": {
+      "0": "{{quest}} wartet. Heute dran: {{muscles}}.",
+      "1": "Dein Tag. {{quest}} holt nach, was hinterherhängt: {{muscles}}."
+    },
+    "first_day": {
+      "0": "Dein Tag. {{quest}}, etwa {{duration}}. Das erste Gebäude wartet.",
+      "1": "{{quest}} wartet, etwa {{duration}}. Dort beginnt das Dorf."
+    },
+    "gallery": {
+      "0": "Dein Tag. Wähl deine Quest, das Tor steht offen.",
+      "1": "In der Galerie wartet eine Quest. Du wählst."
+    },
+    "quiet": "Bati schweigt vorerst. Das Dorf wartet und zählt keine Tage.",
+    "oath_more_one": "Noch eine Einheit, und der Schwur hält diese Woche.",
+    "oath_more_other": "Noch {{count}} Einheiten, und der Schwur hält diese Woche.",
+    "oath_won": "Die Schwurwoche ist geschafft. Noch eine, einfach so?"
   }
 }

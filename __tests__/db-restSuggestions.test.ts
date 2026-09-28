@@ -23,7 +23,9 @@ describe("db/restSuggestions", () => {
   async function addSessionOnDate(daysAgo: number): Promise<void> {
     const date = new Date();
     date.setDate(date.getDate() - daysAgo);
-    date.setHours(12, 0, 0, 0);
+    // Midnight, never noon: the rule ignores anything after `now`, and "today at noon" is the
+    // future for a run before 12:00, which failed every test that counts today.
+    date.setHours(0, 0, 0, 0);
 
     await t.db.insert(completedQuest).values({
       questId: 1,

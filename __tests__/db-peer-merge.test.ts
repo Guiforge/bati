@@ -195,6 +195,34 @@ test("the newer preference wins, its date copied as is, and a tie stays here", a
   await converged(file);
 });
 
+test("the reminder days travel with the hero, this phone's reminder answers never do", async () => {
+  // The days are the hero's rhythm (docs/designs/rappels.md); when this phone last asked about
+  // ignored reminders, and since when it counts them, are this phone's.
+  setPref(t.sqlite, "reminderDays", '{"mon":"20:00"}', 100);
+  setPref(t.sqlite, "reminderAskedAt", "2026-01-01", 100);
+  addSession(t.sqlite, 1_000);
+  const file = await peer("tablet.db", (sqlite) => {
+    setPref(sqlite, "reminderDays", '{"mon":"20:00","thu":"07:15"}', 200);
+    setPref(sqlite, "reminderAskedAt", "2026-02-01", 200);
+    setPref(sqlite, "reminderStreakFrom", "2026-02-01", 200);
+    setPref(sqlite, "reminderOfferDismissed", "true", 200);
+  });
+
+  await merge().mergePeer(file);
+
+  const value = (key: string) =>
+    (
+      t.sqlite.prepare("SELECT value FROM user_preferences WHERE key = ?").get(key) as
+        | { value: string }
+        | undefined
+    )?.value;
+  expect(value("reminderDays")).toBe('{"mon":"20:00","thu":"07:15"}');
+  expect(value("reminderAskedAt")).toBe("2026-01-01");
+  expect(value("reminderStreakFrom")).toBeUndefined();
+  expect(value("reminderOfferDismissed")).toBeUndefined();
+  await converged(file);
+});
+
 test("a device fresh from onboarding takes the other's preferences, whatever the dates", async () => {
   const file = await peer("phone.db", (sqlite) => {
     addSession(sqlite, 1_000);

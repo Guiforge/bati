@@ -13,16 +13,22 @@ WAS DICH ERWARTET
 • Ein Dorf: Gebäude steigen im Level mit dem Volumen, das du wirklich erfasst hast
 • Schwüre: Wähl ein Ziel und lass dich von der App daran halten
 • Erinnerungen: an den Tagen, die du wählst, auf dem Handy geplant, ohne Server
+• Sicherungen: als Datei oder automatisch in einen Ordner deiner Wahl, auf Wunsch verschlüsselt
+• Synchronisierung: ein Held auf mehreren Handys
+• Vier Sprachen: Deutsch, Englisch, Französisch, Spanisch
 • Ein Tagebuch: Verlauf, Rekorde, deine Flamme, Muskelgleichgewicht
 
 DEIN TRAINING BLEIBT AUF DEINEM HANDY
-Kein Konto. Keine Registrierung. Kein Server von uns. Keine Analyse, keine Werbung, kein Tracking jeglicher Art. Deine Einheiten, deine Rekorde und die GPS-Spur einer Tour liegen in einer Datenbank auf deinem Gerät und nirgendwo sonst. Wer die App deinstalliert, löscht jeden Eintrag, den sie je angelegt hat.
+Kein Konto. Keine Registrierung. Kein Server von uns. Keine Analyse, keine Werbung, kein Tracking jeglicher Art. Deine Einheiten, deine Rekorde und die GPS-Spur einer Tour liegen in einer Datenbank auf deinem Gerät. Die Systemsicherung deines Handys kann sie mitnehmen, und du kannst das abschalten. Wer die App deinstalliert, löscht sie vom Handy, nicht die Kopien, die du anderswo angelegt hast.
 
-Eine Ausnahme, standardmäßig aus: die Karte hinter der Route einer Tour. In den Einstellungen eingeschaltet, fragt das Handy OpenFreeMap (OpenStreetMap-Daten, ausgeliefert von tiles.openfreemap.org) nach Kacheln, den quadratischen Bildern, aus denen eine Karte besteht, für die Gegend, in der du warst. Diese Anfrage verrät dem Dienst ungefähr, wo du warst, mit deiner IP-Adresse und der Uhrzeit. Nicht die Route auf den Meter, nicht das Tempo, nicht das Training, nicht wer du bist, aber die Gegend, ja. Ausgeschaltet, oder mit einem Tippen wieder aus, wird die Route auf einem schlichten Hintergrund gezeichnet, und die App stellt keinerlei Netzwerkanfrage. Kein anderer Teil der App darf eine Verbindung öffnen: Eine Lint-Regel lässt den Build scheitern, sobald irgendwo im Code ein Netzwerkaufruf auftaucht.
+Drei Funktionen nutzen das Netz, jede hinter einem eigenen Schalter in den Einstellungen, und alle drei sind anfangs aus:
+• Die Karte hinter der Route einer Tour. Das Handy fragt OpenFreeMap (OpenStreetMap-Daten, von tiles.openfreemap.org) nach Kacheln rund um deinen Weg. Das verrät dem Dienst ungefähr, wo du warst, mit deiner IP-Adresse und der Uhrzeit. Ausgeschaltet wird die Route auf einem schlichten Hintergrund gezeichnet.
+• Nach Updates suchen. Einmal am Tag fragt die App api.github.com, ob es eine neuere Version gibt. Keine Kennung wird gesendet, nichts wird heruntergeladen.
+• Geräte-Synchronisierung. Dein Verlauf, auf dem Handy verschlüsselt (AES-256-GCM), geht an einen WebDAV- oder Nextcloud-Server deiner Wahl, der ihn nicht lesen kann. Oder in einen Ordner, den Syncthing abgleicht, und Bati stellt dann gar keine Anfrage.
 
-Der Standort wird nur während einer Tour gelesen, von einem GPS-Modul, das für diese App auf Androids eigenem Standortdienst geschrieben wurde. Keine Google-Play-Dienste, kein Drittanbieter-SDK, nichts, das nach Hause telefoniert.
+Sind alle drei aus, stellt die App keine Netzwerkanfrage. Nur zwei Dateien im Code dürfen aus JavaScript eine stellen, eine Lint-Regel weist jede andere vor der Auslieferung zurück.
 
-Die Karte ist der einzige Schalter, und er ist anfangs aus. Alles andere oben ist die Architektur, beim Build geprüft.
+Der Standort wird nur während einer Tour gelesen, von einem eigenen GPS-Modul auf Androids Standortdienst. Keine Google-Play-Dienste, kein Drittanbieter-SDK.
 
 ZUERST MIT KÖRPERGEWICHT
 Der Übungskatalog ist um das herum aufgebaut, was ohne Geräte geht, und passt sich an, wenn du welche hast. Das Aufwärmen ist dynamisch und auf die anstehende Einheit abgestimmt, denn fünf Minuten Aufwärmen vor sechs Minuten Training macht niemand zweimal.

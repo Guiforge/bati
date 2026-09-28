@@ -71,18 +71,22 @@ MaintainerNotes: |-
   referrer. INTERNET was stripped via blockedPermissions from 1.2.4 until the
   expeditions release, which added outdoor sessions: MapLibre fetches vector
   map tiles natively from tiles.openfreemap.org (OpenStreetMap data served by
-  OpenFreeMap), and that is the app's only network destination. The tiles
+  OpenFreeMap), the first of three network destinations, all off by default. The tiles
   requested cover the area of the outing, so that request discloses an
   approximate location, plus IP address and time, to the tile host; the
   privacy policy and the store listing say so in those words. The map is opt-in: a preference, off by default, picks
   the map style (constants/mapStyle.ts), and the default style has no sources
   and no glyphs URL, so a fresh install makes no network request until the
   user switches the map on in Settings; with it off the recap draws the GPS
-  trace on a plain background. No network code of our own: a Biome GritQL plugin
-  (.biome/plugins/noJsNetwork.grit) rejects fetch, XMLHttpRequest, WebSocket,
-  EventSource and sendBeacon anywhere in the JS, and the build fails on one.
+  trace on a plain background. The other two are JS requests, each behind its own
+  switch: a daily version check to api.github.com (src/updateCheck.ts, no
+  identifier, downloads nothing), and device sync to a WebDAV or Nextcloud server
+  the user names (src/cloudSync.ts), which only ever sends files encrypted on the
+  phone (AES-256-GCM). A Biome GritQL plugin (.biome/plugins/noJsNetwork.grit)
+  rejects fetch, XMLHttpRequest, WebSocket, EventSource, sendBeacon and
+  expo-file-system transfers anywhere else in the JS, and CI fails on one.
   Location comes from modules/bati-location, a local Expo module on Android's
-  LocationManager; nothing is uploaded. ACCESS_NETWORK_STATE ships with the same
+  LocationManager; the trace leaves the phone only inside an encrypted sync. ACCESS_NETWORK_STATE ships with the same
   release: MapLibre's connectivity receiver calls getActiveNetworkInfo() on mount
   and the process dies without it. ACCESS_WIFI_STATE stays blocked, since a
   network name is a location by another route.

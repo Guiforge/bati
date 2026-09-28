@@ -13,16 +13,22 @@ CE QUE TU TROUVES DEDANS
 • Un village : les bâtiments montent avec le volume réellement enregistré
 • Des serments : fixe un objectif et laisse l'app t'y tenir
 • Des rappels : les jours que tu choisis, programmés sur le téléphone, sans serveur
+• Des sauvegardes : en fichier, ou automatiques dans un dossier que tu choisis, chiffrées si tu le demandes
+• Une synchro : un seul héros sur plusieurs téléphones
+• Quatre langues : français, anglais, allemand, espagnol
 • Un journal : historique, records, flamme, équilibre musculaire
 
 TON ENTRAÎNEMENT RESTE SUR TON TÉLÉPHONE
-Aucun compte. Aucune inscription. Aucun serveur à nous. Ni analytics, ni publicité, ni pistage d'aucune sorte. Tes séances, tes records et la trace GPS d'une sortie vivent dans une base de données sur ton appareil et nulle part ailleurs. Désinstaller l'app détruit chaque enregistrement qu'elle a produit.
+Aucun compte. Aucune inscription. Aucun serveur à nous. Ni analytics, ni publicité, ni pistage d'aucune sorte. Tes séances, tes records et la trace GPS d'une sortie vivent dans une base de données sur ton appareil. La sauvegarde système de ton téléphone peut l'emporter, comme les données de n'importe quelle app, et tu peux la couper. Désinstaller l'app l'efface du téléphone, pas les copies que tu as faites ailleurs.
 
-Une exception, désactivée par défaut : la carte derrière le tracé d'une sortie. Activée dans les réglages, le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, couvrant l'endroit où tu es allé. Cette demande dit donc à l'hôte à peu près où tu étais, avec ton adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas l'entraînement, pas qui tu es, mais la zone, oui. Désactivée, ou coupée d'une pression, le tracé se dessine sur un fond uni et l'app ne fait aucune requête réseau. Aucune autre partie de l'app n'a le droit d'ouvrir une connexion : une règle de lint fait échouer la compilation si un appel réseau apparaît quelque part dans le code.
+Trois fonctions utilisent le réseau, chacune derrière son propre interrupteur dans les réglages, et les trois démarrent éteintes :
+• La carte derrière le tracé d'une sortie. Le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, autour de là où tu vas. L'hôte apprend donc à peu près où tu étais, avec ton adresse IP et l'heure. Éteinte, le tracé se dessine sur un fond uni.
+• La recherche de mises à jour. Une fois par jour, l'app demande à api.github.com si une nouvelle version existe. Aucun identifiant n'est envoyé, rien n'est téléchargé.
+• La synchro entre appareils. Ton historique, chiffré sur le téléphone (AES-256-GCM), part vers un serveur WebDAV ou Nextcloud que tu choisis, qui ne peut pas le lire. Ou dans un dossier que Syncthing tient à jour, et Bati ne fait alors aucune requête.
+
+Les trois éteintes, l'app ne fait aucune requête réseau. Seuls deux fichiers du code ont le droit d'en faire une depuis JavaScript, et une règle de lint rejette tout autre avant qu'il parte.
 
 La position n'est lue que pendant une sortie, par un module GPS écrit pour cette app sur le service de localisation d'Android. Pas de services Google Play, pas de SDK tiers, rien qui téléphone ailleurs.
-
-La carte est le seul interrupteur, et il démarre éteint. Tout le reste ci-dessus est l'architecture, vérifiée à la compilation.
 
 AU POIDS DU CORPS D'ABORD
 Le catalogue d'exercices est construit autour de ce qui se fait sans matériel, et s'adapte si tu en possèdes. Les échauffements sont dynamiques et calibrés sur la séance qui suit : un échauffement de cinq minutes devant un entraînement de six, personne ne le fait deux fois.

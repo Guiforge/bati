@@ -13,16 +13,22 @@ WHAT YOU GET
 • A village: buildings level up from the volume you actually logged
 • Oaths: pick one goal and let the app hold you to it
 • Reminders: on the days you choose, scheduled on the phone, no server
+• Backups: as a file, or automatic into a folder you pick, encrypted if you ask
+• Sync: one hero across several phones
+• Four languages: English, French, German, Spanish
 • A journal: history, records, your flame, muscle balance
 
 YOUR TRAINING STAYS ON YOUR PHONE
-No account. No sign-up. No server of ours. No analytics, no ads, no tracking of any kind. Your sessions, your records and the GPS trace of an outing live in a database on your device and nowhere else. Uninstalling the app destroys every record it ever made.
+No account. No sign-up. No server of ours. No analytics, no ads, no tracking of any kind. Your sessions, your records and the GPS trace of an outing live in a database on your device. Your phone's own system backup can carry it, like any app's data, and you can turn that off. Uninstalling the app deletes it from the phone, not the copies you made elsewhere.
 
-One exception, off by default: the map behind an outing's route. Switched on in Settings, the phone asks OpenFreeMap (OpenStreetMap data, served from tiles.openfreemap.org) for tiles, the square images a map is made of, covering the place where you went. That request tells the host roughly where you were, with your IP address and the time. Not the route to the metre, not the pace, not the training, not who you are, but the area, yes. Off, or switched off again with one tap, the route is drawn on a plain background and the app makes no network request at all. No other part of the app is allowed to open a connection: a lint rule fails the build if a network call appears anywhere in the code.
+Three features use the network, each behind its own switch in Settings, and all three start off:
+• The map behind an outing's route. The phone asks OpenFreeMap (OpenStreetMap data, from tiles.openfreemap.org) for tiles, the square images a map is made of, around where you go. That tells the host roughly where you were, with your IP address and the time. Off, the route is drawn on a plain background.
+• Check for updates. Once a day, the app asks api.github.com whether a newer version exists. No identifier is sent, nothing is downloaded.
+• Device sync. Your history, encrypted on the phone (AES-256-GCM), goes to a WebDAV or Nextcloud server you choose, which cannot read it. Or into a folder that Syncthing keeps in step, and Bati makes no request at all.
+
+With all three off, the app makes no network request. Only two files in the code may make one from JavaScript, and a lint rule rejects any other before it ships.
 
 Location is read only while an outing is running, by a GPS module written for this app against Android's own location service. No Google Play Services, no third-party SDK, nothing that phones home.
-
-The map is the one switch, and it starts off. Everything else above is the architecture, checked at build time.
 
 BODYWEIGHT FIRST
 The exercise catalogue is built around what you can do with no equipment, and adapts if you own some. Warm-ups are dynamic and scaled to the session in front of you, because a five-minute warm-up before a six-minute workout is a warm-up nobody does twice.

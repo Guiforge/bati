@@ -64,7 +64,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Used to pick a photo as your hero's avatar. The image stays on your device and is never uploaded."
+          "photosPermission": "Used to pick a photo for your hero's avatar, or for an exercise or quest you made. It stays on your device, and leaves it only inside a backup or an encrypted sync you turn on."
         }
       ],
       [

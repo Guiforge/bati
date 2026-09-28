@@ -8,7 +8,7 @@
         errorLine2="                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/AndroidManifest.xml"
-            line="11"
+            line="10"
             column="34"/>
     </issue>
 
@@ -26,23 +26,23 @@
     <issue
         id="UnusedAttribute"
         message="Attribute `enableOnBackInvokedCallback` is only used in API level 33 and higher (current min is 24)"
-        errorLine1="  &lt;application android:name=&quot;.MainApplication&quot; android:label=&quot;@string/app_name&quot; android:icon=&quot;@mipmap/ic_launcher&quot; android:roundIcon=&quot;@mipmap/ic_launcher_round&quot; android:allowBackup=&quot;true&quot; android:theme=&quot;@style/AppTheme&quot; android:supportsRtl=&quot;true&quot; android:enableOnBackInvokedCallback=&quot;false&quot; android:localeConfig=&quot;@xml/locales_config&quot;>"
-        errorLine2="                                                                                                                                                                                                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        errorLine1="  &lt;application android:name=&quot;.MainApplication&quot; android:label=&quot;@string/app_name&quot; android:icon=&quot;@mipmap/ic_launcher&quot; android:roundIcon=&quot;@mipmap/ic_launcher_round&quot; android:allowBackup=&quot;true&quot; android:theme=&quot;@style/AppTheme&quot; android:supportsRtl=&quot;true&quot; android:enableOnBackInvokedCallback=&quot;true&quot; android:networkSecurityConfig=&quot;@xml/bati_network_security&quot; android:fullBackupContent=&quot;@xml/bati_backup_rules&quot; android:dataExtractionRules=&quot;@xml/bati_data_extraction_rules&quot; android:localeConfig=&quot;@xml/locales_config&quot;>"
+        errorLine2="                                                                                                                                                                                                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/AndroidManifest.xml"
-            line="23"
+            line="22"
             column="248"/>
     </issue>
 
     <issue
         id="UnusedAttribute"
         message="Attribute `localeConfig` is only used in API level 33 and higher (current min is 24)"
-        errorLine1="  &lt;application android:name=&quot;.MainApplication&quot; android:label=&quot;@string/app_name&quot; android:icon=&quot;@mipmap/ic_launcher&quot; android:roundIcon=&quot;@mipmap/ic_launcher_round&quot; android:allowBackup=&quot;true&quot; android:theme=&quot;@style/AppTheme&quot; android:supportsRtl=&quot;true&quot; android:enableOnBackInvokedCallback=&quot;false&quot; android:localeConfig=&quot;@xml/locales_config&quot;>"
-        errorLine2="                                                                                                                                                                                                                                                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        errorLine1="  &lt;application android:name=&quot;.MainApplication&quot; android:label=&quot;@string/app_name&quot; android:icon=&quot;@mipmap/ic_launcher&quot; android:roundIcon=&quot;@mipmap/ic_launcher_round&quot; android:allowBackup=&quot;true&quot; android:theme=&quot;@style/AppTheme&quot; android:supportsRtl=&quot;true&quot; android:enableOnBackInvokedCallback=&quot;true&quot; android:networkSecurityConfig=&quot;@xml/bati_network_security&quot; android:fullBackupContent=&quot;@xml/bati_backup_rules&quot; android:dataExtractionRules=&quot;@xml/bati_data_extraction_rules&quot; android:localeConfig=&quot;@xml/locales_config&quot;>"
+        errorLine2="                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/AndroidManifest.xml"
-            line="23"
-            column="292"/>
+            line="22"
+            column="463"/>
     </issue>
 
     <issue
@@ -162,7 +162,7 @@
         errorLine2="                                                                                                                                                                                                                                                                                                                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/AndroidManifest.xml"
-            line="30"
+            line="29"
             column="334"/>
     </issue>
 
@@ -253,57 +253,35 @@
         id="IconLauncherShape"
         message="Launcher icons should not fill every pixel of their square region; see the design guide for details">
         <location
-            file="src/main/res/mipmap-hdpi/ic_launcher.webp"/>
+            file="src/main/res/mipmap-hdpi/ic_launcher.png"/>
     </issue>
 
     <issue
         id="IconLauncherShape"
         message="Launcher icons should not fill every pixel of their square region; see the design guide for details">
         <location
-            file="src/main/res/mipmap-mdpi/ic_launcher.webp"/>
+            file="src/main/res/mipmap-mdpi/ic_launcher.png"/>
     </issue>
 
     <issue
         id="IconLauncherShape"
         message="Launcher icons should not fill every pixel of their square region; see the design guide for details">
         <location
-            file="src/main/res/mipmap-xhdpi/ic_launcher.webp"/>
+            file="src/main/res/mipmap-xhdpi/ic_launcher.png"/>
     </issue>
 
     <issue
         id="IconLauncherShape"
         message="Launcher icons should not fill every pixel of their square region; see the design guide for details">
         <location
-            file="src/main/res/mipmap-xxhdpi/ic_launcher.webp"/>
+            file="src/main/res/mipmap-xxhdpi/ic_launcher.png"/>
     </issue>
 
     <issue
         id="IconLauncherShape"
         message="Launcher icons should not fill every pixel of their square region; see the design guide for details">
         <location
-            file="src/main/res/mipmap-xxxhdpi/ic_launcher.webp"/>
-    </issue>
-
-    <issue
-        id="MonochromeLauncherIcon"
-        message="The application adaptive icon is missing a monochrome tag"
-        errorLine1="&lt;adaptive-icon xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;>"
-        errorLine2="^">
-        <location
-            file="src/main/res/mipmap-anydpi-v26/ic_launcher.xml"
-            line="2"
-            column="1"/>
-    </issue>
-
-    <issue
-        id="MonochromeLauncherIcon"
-        message="The application adaptive roundIcon is missing a monochrome tag"
-        errorLine1="&lt;adaptive-icon xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;>"
-        errorLine2="^">
-        <location
-            file="src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml"
-            line="2"
-            column="1"/>
+            file="src/main/res/mipmap-xxxhdpi/ic_launcher.png"/>
     </issue>
 
     <issue
@@ -318,111 +296,6 @@
         message="Found bitmap drawable `res/drawable/weekly_preview.png` in densityless folder">
         <location
             file="src/main/res/drawable/weekly_preview.png"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-hdpi/ic_launcher.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-mdpi/ic_launcher.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-xhdpi/ic_launcher.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-xxhdpi/ic_launcher.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-xxxhdpi/ic_launcher.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-hdpi/ic_launcher_foreground.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-mdpi/ic_launcher_foreground.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-xhdpi/ic_launcher_foreground.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-xxhdpi/ic_launcher_foreground.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-hdpi/ic_launcher_round.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-mdpi/ic_launcher_round.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-xhdpi/ic_launcher_round.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-xxhdpi/ic_launcher_round.webp"/>
-    </issue>
-
-    <issue
-        id="IconExtension"
-        message="Misleading file extension; named `.webp` but the file format is `png`">
-        <location
-            file="src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp"/>
     </issue>
 
 </issues>

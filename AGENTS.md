@@ -132,9 +132,10 @@ first one to be slow: `expo.autolinking.buildFromSource` compiles every Expo mod
   configuration, with the reason behind each `disable`, lives in
   [`plugins/withAndroidLint.js`](plugins/withAndroidLint.js) rather than in a hand-edited
   `build.gradle` that prebuild would erase. `android-lint-baseline.xml` sits at the repo root
-  because `prebuild --clean` deletes `android/` outright; regenerate it with
-  `./gradlew :app:updateLintBaseline`, never by hand, and treat it like the coverage thresholds:
-  shrink it, never widen it to make a build pass.
+  because `prebuild --clean` deletes `android/` outright; regenerate it by deleting it and running
+  `./gradlew :app:lintRelease -Dlint.baselines.continue=true` (not `updateLintBaseline`, which
+  lints debug and adds entries CI never reports), never by hand, and treat it like the coverage
+  thresholds: shrink it, never widen it to make a build pass.
 
 Run the relevant checks before finishing a change. If you move files or change imports,
 run the type/style check again.

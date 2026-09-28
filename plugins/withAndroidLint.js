@@ -76,8 +76,11 @@ const { withAppBuildGradle, withGradleProperties } = require("expo/config-plugin
  * ## The baseline lives outside `android/`
  *
  * CI and `.github/workflows/kotlin.yml` both run `npx expo prebuild -p android --clean`, which
- * deletes `android/` outright. `$rootDir` is `android/`, hence the `..`. Regenerate it with
- * `./gradlew :app:updateLintBaseline`, never by hand. It is a ratchet like the coverage
+ * deletes `android/` outright. `$rootDir` is `android/`, hence the `..`. Regenerate it by
+ * deleting it and running `./gradlew :app:lintRelease -Dlint.baselines.continue=true`, never by
+ * hand. Not `:app:updateLintBaseline`: that lints the default variant, debug, and writes in the
+ * debug-only network config and dev-server resources that CI's `lintRelease` never reports
+ * (seen 2026-09-28). It is a ratchet like the coverage
  * thresholds: shrink it, never widen it to make a build pass.
  *
  * Deliberately absent: `checkAllWarnings`, which Google discourages because the checks that are

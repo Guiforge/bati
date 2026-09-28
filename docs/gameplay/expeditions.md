@@ -41,11 +41,13 @@ folding the fixes again: a failed flush drops up to thirty of them, which the di
 contains and a replay never would. An outing saved before that column says nothing about its pace.
 
 The climb follows the same rule on `completed_sessions.ascentM` (0052), and the live panel shows
-it as it grows. GPS altitude is noisy, so the reducer credits a rise only once it passes
-`RULES.climbThresholdM` (10 m), only on a fix that proved movement, and lets the reference follow
-the receiver while the hero stands. Descents are not subtracted. A receiver that never reported an
-altitude leaves the column null, and every screen then shows no climb rather than "0 m". The
-threshold was chosen from the receiver's known error, not tuned against a real walk yet.
+it as it grows. On a phone with a barometer the height is the barometer's, and a rise counts once
+it passes `RULES.baroClimbThresholdM` (3 m); without one it is GPS altitude, which is noisy, at
+`RULES.climbThresholdM` (10 m). Either way only on a fix that proved movement, with the reference
+following the sensor while the hero stands. Descents are not subtracted. A receiver that never
+reported an altitude leaves the column null, and every screen then shows no climb rather than
+"0 m". Neither threshold is tuned against a real walk yet, and weather drift on the barometer
+during a long walk is not corrected.
 
 ## How long an outing lasted
 
@@ -57,10 +59,11 @@ is bounded by all read that one definition (`sessionClock`, `stores/session.ts`)
 
 ## Standing still
 
-Nothing is credited while the hero is stopped, and stopping costs nothing either. A fix is
-credited as it lands so the panel can move every second, but what has been credited under an
-anchor the hero never cleared is taken back when the window closes (`RULES.pauseAfterMs`,
-`src/gps/track.ts`). Two known limits: a stop shorter than the window cannot be told from walking
+Nothing is credited while the hero is stopped, and stopping costs nothing either. Ground is the
+straight line from one anchor to the next, ten metres or more apart, so the receiver's zig-zag is
+not paid as distance. The line so far is credited as each fix lands so the panel can move every
+second, but what has been credited under an anchor the hero never cleared is taken back when the
+window closes (`RULES.pauseAfterMs`, `src/gps/track.ts`). Two known limits: a stop shorter than the window cannot be told from walking
 at the floor pace, and below that floor — 0.25 m/s, 0.9 km/h — nothing is credited at all.
 
 ## It is not a workout, and it is still a session

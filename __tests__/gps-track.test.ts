@@ -7,6 +7,7 @@ const fix = (over: Partial<LocationFix> & { t: number }): LocationFix => ({
   lat: 48.4728,
   lon: -2.4943,
   ele: 110,
+  baro: null,
   acc: 4,
   speed: 1.4,
   distFromPrev: 0,
@@ -149,12 +150,43 @@ describe("auto-pause, which is the rule this file exists for", () => {
       // 1.4 m a second, walking north: path length and displacement agree.
       state = accept(
         state,
-        fix({ t: T0 + 3000 + i * 1000, distFromPrev: 1.4, lat: 48.4728 + i * 0.0000126 }),
+        fix({ t: T0 + 3000 + i * 1000, distFromPrev: 1.4, lat: 48.4728 + northOf(i * 1.4) }),
       );
     }
     expect(state.paused).toBe(false);
     expect(state.distanceM).toBeCloseTo(60 * 1.4, 1);
     expect(state.movingMs).toBe(60_000);
+  });
+
+  /** The panel's figure moves with every fix, not once per chord: pace divides it by live time. */
+  test("the ground inside an unfinished chord is on the panel already", () => {
+    const state = walked(1.4, 5);
+    expect(state.distanceM).toBeCloseTo(5 * 1.4, 1);
+  });
+
+  /**
+   * What decimation is for. The receiver scatters each fix a few metres either side of the true
+   * line, and `distFromPrev` measures every zig: summed, the walk comes out longer than it was.
+   */
+  test("a walk whose fixes zig-zag across its line is paid the line, not the zig-zag", () => {
+    let state = started();
+    for (let i = 1; i <= 60; i++) {
+      const side = i % 2 === 0 ? 1 : -1;
+      state = accept(
+        state,
+        fix({
+          t: T0 + 3000 + i * 1000,
+          // 3 m either side of a line walked north at 1.4 m/s: each hop measures about 6.2 m.
+          distFromPrev: Math.hypot(1.4, 6),
+          lat: 48.4728 + northOf(i * 1.4),
+          lon: -2.4943 + side * 0.00004,
+        }),
+      );
+    }
+    const zigzag = 60 * Math.hypot(1.4, 6);
+    // Not all of it: a chord between two sides of the scatter is still longer than the line.
+    expect(state.distanceM).toBeLessThan(60 * 1.4 * 1.2);
+    expect(state.distanceM).toBeLessThan(zigzag / 3);
   });
 });
 
@@ -439,9 +471,7 @@ describe("what a run credits", () => {
 
   test("is metres and whole seconds once the hero is walking", () => {
     let state = started();
-    for (let i = 1; i <= 10; i += 1) {
-      state = accept(state, fix({ t: T0 + 3000 + i * 1000, distFromPrev: 1.4 }));
-    }
+    state = walked(1.4, 10, state);
     // Whole metres and whole seconds, off the reducer's own reading rather than a second sum:
     // the road and the recap have to be paid the same number the panel showed.
     const credit = credited(state);
@@ -453,7 +483,12 @@ describe("what a run credits", () => {
 
 describe("elevation gain", () => {
   /** A walk north at 1.4 m/s whose altitude is whatever `eleAt(second)` says. */
-  function hiked(seconds: number, eleAt: (i: number) => number | null, from = started()) {
+  function hiked(
+    seconds: number,
+    eleAt: (i: number) => number | null,
+    from = started(),
+    baroAt: (i: number) => number | null = () => null,
+  ) {
     let state = from;
     for (let i = 1; i <= seconds; i++) {
       state = accept(
@@ -463,6 +498,7 @@ describe("elevation gain", () => {
           distFromPrev: 1.4,
           lat: 48.4728 + northOf(i * 1.4),
           ele: eleAt(i),
+          baro: baroAt(i),
         }),
       );
     }
@@ -475,6 +511,32 @@ describe("elevation gain", () => {
     const state = hiked(300, (i) => 110 + i * 0.2);
     expect(credited(state)?.ascentM).toBeGreaterThan(60 - RULES.climbThresholdM);
     expect(credited(state)?.ascentM).toBeLessThanOrEqual(60);
+  });
+
+  test("the barometer is the height a climb is measured on, when the phone has one", () => {
+    // A rolling path, 32 m of rises in three climbs, under a receiver scattering ±4 m that the
+    // barometer ignores. Each climb can lose its threshold plus the rise between two anchors.
+    const rolling = (i: number) => 110 + 8 * Math.sin((i / 150) * 2 * Math.PI);
+    const noisy = (i: number) => rolling(i) + (i % 2 === 0 ? 4 : -4);
+    const baro = credited(hiked(300, noisy, started(), (i) => rolling(i) - 60));
+    expect(baro?.ascentM).toBeGreaterThan(32 - 3 * (RULES.baroClimbThresholdM + 2));
+    expect(baro?.ascentM).toBeLessThanOrEqual(32);
+  });
+
+  /**
+   * The two sensors do not share a zero: the barometer reads the standard atmosphere, off by the
+   * day's weather, and here 60 m under the receiver. The gate opened on a GPS height, so the first
+   * barometric reading must restart the reference rather than be measured against it.
+   */
+  test("the barometer's first reading is not a climb from the receiver's height", () => {
+    const state = hiked(
+      60,
+      () => 110,
+      started(),
+      (i) => (i < 5 ? null : 170),
+    );
+    expect(credited(state)?.ascentM).toBe(0);
+    expect(state.climbOnBaro).toBe(true);
   });
 
   test("a flat walk under a noisy receiver climbs nothing", () => {
@@ -502,6 +564,7 @@ describe("elevation gain", () => {
           distFromPrev: 0.2,
           lat: 48.4728 + (i % 2 === 0 ? 0.00001 : -0.00001),
           ele: 110 + i / 3,
+          baro: null,
         }),
       );
     }
@@ -516,6 +579,7 @@ describe("elevation gain", () => {
           distFromPrev: 1.4,
           lat: 48.4728 + northOf(i * 1.4),
           ele: 130,
+          baro: null,
         }),
       );
     }

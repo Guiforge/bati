@@ -1059,6 +1059,11 @@ export const gpsPoints = sqliteTable(
     lonE7: int().notNull(),
     /** Centimetres. Null when the fix carried no altitude, which is common indoors. */
     eleCm: int(),
+    /**
+     * Centimetres of barometric height, smoothed natively. Relative only, never compared with
+     * `eleCm`. Null on phones without a barometer and on every point before migration 0065.
+     */
+    baroCm: int(),
     /** Decimetres of horizontal accuracy. Never null: a fix without it is dropped natively. */
     accDm: int().notNull(),
     /** Centimetres per second. Null when the fix carried no speed. */

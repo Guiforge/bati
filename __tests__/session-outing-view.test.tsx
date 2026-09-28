@@ -204,7 +204,18 @@ describe("a walk, on the screen a hero stares at while walking", () => {
     expect(screen.queryByTestId("live-map")).toBeNull();
     await act(() => {
       useExpeditionStore.setState({
-        fixes: [{ t: NOW, lat: 43.6, lon: 1.44, ele: 100, acc: 4, speed: 1.4, distFromPrev: 0 }],
+        fixes: [
+          {
+            t: NOW,
+            lat: 43.6,
+            lon: 1.44,
+            ele: 100,
+            baro: null,
+            acc: 4,
+            speed: 1.4,
+            distFromPrev: 0,
+          },
+        ],
       });
     });
     expect(screen.getByTestId("live-map")).toBeTruthy();

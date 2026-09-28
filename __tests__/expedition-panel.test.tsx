@@ -63,6 +63,7 @@ const aFix = (acc: number) => ({
   lat: 48.4728,
   lon: -2.4943,
   ele: 110,
+  baro: null,
   acc,
   speed: 1.4,
   distFromPrev: 1.4,

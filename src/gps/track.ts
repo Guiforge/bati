@@ -92,10 +92,18 @@ export const RULES = {
    * file is allowed to be wrong in.
    *
    * ponytail: picked from the receiver's known error, not from a walk. Tune it against a measured
-   * route with a known climb, or use the barometer on phones that have one, if the recap's figure
-   * is visibly off.
+   * route with a known climb if the recap's figure is visibly off on a phone without a barometer.
    */
   climbThresholdM: 10,
+  /**
+   * The same threshold when the height comes from the barometer, which resolves tens of
+   * centimetres rather than metres. Three is OpenTracks' step, and Strava counts at two.
+   *
+   * ponytail: weather moves the barometer too, a few metres an hour on a front, and nothing here
+   * tells that from a slope. Pauses absorb it (the reference follows the sensor while still), a
+   * steady front on a long walk does not. Anchor it to GPS or a DEM if a recap is seen to drift.
+   */
+  baroClimbThresholdM: 3,
 } as const;
 
 /**
@@ -151,13 +159,19 @@ export type TrackState = {
    *
    * Already inside `distanceM` and `movingMs`: the figures on the panel have to move every
    * second, so a fix is credited as it lands rather than held until it is proven. These two are
-   * what makes that advance reversible — see `pauseAfterMs`.
+   * what makes that advance reversible — see `pauseAfterMs`. The distance advanced is the
+   * displacement from the anchor, not the path walked since it: see `accept`.
    */
   advancedM: number;
   advancedMs: number;
   firstGoodAt: number | null;
   /** The altitude the next climb is measured from, null until a fix has reported one. */
   climbFrom: number | null;
+  /**
+   * Whether `climbFrom` is a barometric height. The two sensors do not share a zero, so a height
+   * from one is never measured against a reference from the other.
+   */
+  climbOnBaro: boolean;
 };
 
 export const EMPTY: TrackState = {
@@ -175,6 +189,7 @@ export const EMPTY: TrackState = {
   advancedMs: 0,
   firstGoodAt: null,
   climbFrom: null,
+  climbOnBaro: false,
 };
 
 /**
@@ -196,7 +211,7 @@ function openGate(state: TrackState, fix: LocationFix): TrackState {
     points: 1,
     anchor: { lat: fix.lat, lon: fix.lon, t: fix.t },
     fromAnchorM: 0,
-    climbFrom: fix.ele,
+    ...reference(state, fix),
   };
 }
 
@@ -217,8 +232,31 @@ function teleport(state: TrackState, fix: LocationFix): TrackState {
     advancedM: 0,
     advancedMs: 0,
     // Nothing witnessed the height in between either: a tunnel under a hill is not a climb.
-    climbFrom: fix.ele ?? state.climbFrom,
+    ...reference(state, fix),
   };
+}
+
+/**
+ * The height a fix reports, and which sensor said so: the barometer when the phone has one.
+ *
+ * Native sends the barometer's height only while its last reading is fresh, so a sensor that
+ * stalls mid-walk hands the climb back to GPS rather than freezing it. Each switch between the two
+ * restarts the reference (see `climb`): it can cost a climb in progress, never invent one.
+ */
+function heightOf(fix: LocationFix): { m: number; baro: boolean } | null {
+  if (fix.baro !== null) return { m: fix.baro, baro: true };
+  if (fix.ele !== null) return { m: fix.ele, baro: false };
+  return null;
+}
+
+/** Start the next climb from this fix's height, or keep the old reference if it reports none. */
+function reference(
+  state: TrackState,
+  fix: LocationFix,
+): Pick<TrackState, "climbFrom" | "climbOnBaro"> {
+  const height = heightOf(fix);
+  if (height === null) return { climbFrom: state.climbFrom, climbOnBaro: state.climbOnBaro };
+  return { climbFrom: height.m, climbOnBaro: height.baro };
 }
 
 /**
@@ -229,16 +267,20 @@ function teleport(state: TrackState, fix: LocationFix): TrackState {
  * becomes the new reference; a fall past it only moves the reference down, so the way back up is
  * measured from the bottom rather than from the top the hero came down from.
  */
-function climb(state: TrackState, ele: number | null): Pick<TrackState, "ascentM" | "climbFrom"> {
+function climb(
+  state: TrackState,
+  fix: LocationFix,
+): Pick<TrackState, "ascentM" | "climbFrom" | "climbOnBaro"> {
   const from = state.climbFrom;
-  if (ele === null) return { ascentM: state.ascentM, climbFrom: from };
-  if (from === null || from - ele >= RULES.climbThresholdM) {
-    return { ascentM: state.ascentM, climbFrom: ele };
-  }
-  if (ele - from >= RULES.climbThresholdM) {
-    return { ascentM: state.ascentM + (ele - from), climbFrom: ele };
-  }
-  return { ascentM: state.ascentM, climbFrom: from };
+  const height = heightOf(fix);
+  const kept = { ascentM: state.ascentM, climbFrom: from, climbOnBaro: state.climbOnBaro };
+  if (height === null) return kept;
+  const threshold = height.baro ? RULES.baroClimbThresholdM : RULES.climbThresholdM;
+  const rise = from === null || height.baro !== state.climbOnBaro ? null : height.m - from;
+  if (rise !== null && Math.abs(rise) < threshold) return kept;
+  // A rise past the threshold is credited; a fall past it, or a reference from the other sensor,
+  // only moves the reference.
+  return { ascentM: state.ascentM + Math.max(0, rise ?? 0), ...reference(state, fix) };
 }
 
 /**
@@ -272,16 +314,27 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
   const fromAnchorM = state.anchor === null ? 0 : metresBetween(state.anchor, fix);
   const stillFor = state.anchor === null ? 0 : fix.t - state.anchor.t;
 
+  // Ground is the chord from the anchor, not the sum of the fixes in between: at 1 Hz the
+  // receiver's noise zig-zags across the true line, and every zig is a metre nobody walked (up to
+  // a fifth on top, Ranacher et al. 2015). The anchor moves every ten metres or more, which is the
+  // decimation OpenTracks and Organic Maps record at, and a bend inside one chord is under-counted,
+  // the direction this file is allowed to be wrong in. Under the anchor the chord is advanced as
+  // it grows, so the panel still moves every second; the advance is the chord so far, replaced
+  // rather than added to.
+  const settledM = state.distanceM - state.advancedM;
+
   // Far enough from the anchor to have gone somewhere: the anchor moves with the hero, and
-  // everything advanced under the old one is now proven — the account closes at zero.
+  // everything advanced under the old one is now proven — the account closes at zero. A pause
+  // that ends keeps its old rule: its anchor is where the stop began, and the chord to it is not a
+  // walk this fix witnessed.
   if (fromAnchorM >= RULES.movingThresholdM) {
     return {
       ...state,
-      distanceM: state.distanceM + fix.distFromPrev,
+      distanceM: settledM + (state.paused ? fix.distFromPrev : fromAnchorM),
       // A pause that ends pays for the fix that ended it, not for the stillness before it.
       movingMs: state.movingMs + (state.paused ? 0 : elapsed),
       paused: false,
-      ...climb(state, fix.ele),
+      ...climb(state, fix),
       points: state.points + 1,
       lastAt: fix.t,
       anchor: { lat: fix.lat, lon: fix.lon, t: fix.t },
@@ -297,14 +350,14 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
   if (state.paused || stillFor >= RULES.pauseAfterMs) {
     return {
       ...state,
-      distanceM: state.distanceM - state.advancedM,
+      distanceM: settledM,
       movingMs: state.movingMs - state.advancedMs,
       advancedM: 0,
       advancedMs: 0,
       paused: true,
       // The reference follows the receiver while the hero stands, so a height that drifted during
       // the stop is where the next climb starts from rather than a climb of its own.
-      climbFrom: fix.ele ?? state.climbFrom,
+      ...reference(state, fix),
       points: state.points + 1,
       lastAt: fix.t,
       fromAnchorM,
@@ -313,9 +366,9 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
 
   return {
     ...state,
-    distanceM: state.distanceM + fix.distFromPrev,
+    distanceM: settledM + fromAnchorM,
     movingMs: state.movingMs + elapsed,
-    advancedM: state.advancedM + fix.distFromPrev,
+    advancedM: fromAnchorM,
     advancedMs: state.advancedMs + elapsed,
     points: state.points + 1,
     lastAt: fix.t,

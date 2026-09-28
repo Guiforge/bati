@@ -1,0 +1,11 @@
+-- The barometer's height, beside the receiver's.
+--
+-- GPS altitude wanders by several metres between two fixes on flat ground, so the climb it credits
+-- needs a 10 m threshold and still invents hills. A phone barometer resolves tens of centimetres,
+-- which is what lets `src/gps/track.ts` count the climb at 3 m instead. Relative only: its absolute
+-- level is off by the day's weather, so it is never compared with `eleCm`, only with itself.
+--
+-- Stored per point, not only folded live, because the orphan resume replays `gps_points` through
+-- the reducer: a replay without it would measure half a walk on one sensor and half on the other.
+-- Null on every point before this, and on every phone without a barometer.
+ALTER TABLE `gps_points` ADD `baroCm` integer;

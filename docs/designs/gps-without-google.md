@@ -158,8 +158,11 @@ permission ratchet would vouch for a dependency Bati does not control.
 - Monotonic guard (review 1A): JS keeps `lastT` per session and skips any fix with
   `t <= lastT` for storage (still counted for distance); `Location.getTime()` is the system
   clock on several ROMs, and an NTP step backwards must never be able to abort a batch.
-- Distance: `Location.distanceTo()` exposed by the module (WGS84, native). Distance sums the
-  gap between every pair of consecutive accepted fixes. Every accepted fix is *stored*, raw and
+- Distance: paid in chords between auto-pause anchors, each at least `movingThresholdM` long,
+  not as the sum of `distanceTo()` between consecutive fixes. At 1 Hz the receiver's scatter
+  zig-zags across the true line and every zig is a metre nobody walked (up to a fifth on top,
+  Ranacher et al. 2015); 10 m is the decimation OpenTracks and Organic Maps record at. Changed
+  2026-09-28, so outings banked before then were paid the sum. Every accepted fix is *stored*, raw and
   undecimated: the reducer is tuned against real traces, and a thinned trace cannot be re-read
   by a rule that changed after it was recorded.
 - Segment break on a jump > 200 m: the jump is excluded from distance and breaks the recap
@@ -179,7 +182,12 @@ permission ratchet would vouch for a dependency Bati does not control.
   quest credit — a time-mode GPS quest counts moving time only.
 - `providerEnabled: false` mid-session: auto-pause engages, the status pill reads "GPS off",
   and the service updates its notification text. Same reaction on `noFixTimeout`.
-- Elevation: none displayed in v1 (tier 0). Store `ele` anyway so tier 1 has history.
+- Elevation: climb only, with hysteresis. On a phone with a barometer the service smooths the
+  pressure (3 s time constant) and attaches the height to every fix as `baro`, stored in
+  `gps_points.baroCm` (migration 0065) so an orphan replay measures on the same sensor; the
+  threshold is then 3 m (OpenTracks' step). Without one, GPS `ele` at 10 m. The two never share
+  a reference: they have different zeros. Weather drift during a long walk is uncorrected (see
+  the `ponytail:` on `baroClimbThresholdM`).
 
 ### Storage
 - `gps_points` table, `WITHOUT ROWID`, PK `(session_id, t)`, scaled integers
@@ -376,7 +384,8 @@ Play internal track needs the Data Safety form updated before the next upload.
 7. Session numbers screen, recap with MapLibre, tile host chosen, privacy line (2 d / 0.5 d).
 8. GPX export, battery-killer screen, Data Safety form (1 d / 0.25 d).
 9. v1.1: barometer elevation (tier 1), OpenTracks recipe (5 s sample, EMA α=0.3, 3 m steps),
-   labelled "measured by barometer" in the UI.
+   labelled "measured by barometer" in the UI. Shipped 2026-09-28 without the label: 1 Hz
+   requested with a 3 s time constant, 3 m threshold.
 
 ## Test Plan
 

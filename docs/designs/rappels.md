@@ -320,7 +320,7 @@ Il stocke et il poste, il ne réfléchit pas.
 `db/reminders.ts`. Entrée : jours + heure, état natif (pause, dernier posté), séances récentes, état de la séance, ce que propose le Home, serment, maintenant, langue. Sortie : `entries` sur 21 jours (voir API) + `dueToday` + `quietText`. Aujourd'hui n'est jamais inclus si le journal l'a déjà.
 
 - **Repos par jour** : `restSuggestionAt(sessions, now)`, version pure sortie de `getRestSuggestion()`, évaluée pour chaque jour.
-- **Séance en cours** : si `useSessionStore.status` n'est pas `idle`, écran de victoire compris jusqu'à ce qu'on le quitte, `dueToday` vaut `"hold"`. Pas jusqu'à `savedSessionId` : il est posé à la première écriture de la sauvegarde, avant l'aventure, le boss et le serment, et un plan fait à ce moment les lisait d'avant la séance. Pas de drapeau natif, il resterait bloqué si l'app est tuée.
+- **Séance en cours** : si `useSessionStore.status` n'est pas `idle`, écran de victoire compris jusqu'à ce qu'on le quitte, `dueToday` vaut `"hold"`. Le natif garde ce hold **en mémoire seulement** (`ReminderScheduler.held`) et l'entrée du jour reste dans le plan : l'alarme sonne, `onAlarm` la retient tant que le processus vit. App tuée en pleine séance, le hold part avec le processus et le rappel sonne quand même (audit final du 28/09 : l'entrée retirée du plan faisait taire le jour pour de bon, et les Réglages accusaient le téléphone). Pas jusqu'à `savedSessionId` : il est posé à la première écriture de la sauvegarde, avant l'aventure, le boss et le serment, et un plan fait à ce moment les lisait d'avant la séance.
 - **Variantes de texte** : rotation depuis la dernière variante postée.
 - **Rappels ignorés** : `ignoredStreak(posted, sessions)`, pure aussi, appelée à l'ouverture.
 

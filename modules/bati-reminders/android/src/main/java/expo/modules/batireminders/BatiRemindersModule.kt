@@ -46,6 +46,7 @@ class BatiRemindersModule : Module() {
         // "no": today is done or a rest day, so a snooze in waiting goes. "hold" keeps it waiting.
         val dueToday = plan.optString("dueToday")
         if (dueToday == "no") store.snooze = null
+        ReminderScheduler.held = dueToday == "hold"
         // Either way today's reminder, if it is still in the shade, has said its piece: left there
         // it would name a quest already done, and a tap on it mid-session would leave the session.
         if (dueToday != "yes") ReminderScheduler.clearToday(context)

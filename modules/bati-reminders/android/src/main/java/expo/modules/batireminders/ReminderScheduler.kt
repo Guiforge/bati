@@ -48,6 +48,14 @@ internal object ReminderScheduler {
   /** The reminder's day, on the tap and on both actions: yesterday's button must not act on today. */
   const val EXTRA_DATE = "batiReminderDate"
 
+  /**
+   * A session is under way: nothing of today is posted, and a snooze waits. In memory and nowhere
+   * else, on purpose: the process dies with the app, the hold with it, and an alarm that wakes a new
+   * process rings today after all. Kept in the plan it would silence a day for an app killed
+   * mid-session. Set by every `setPlan`, from its `dueToday`.
+   */
+  @Volatile var held = false
+
   private class Due(
     val date: String,
     val at: Long,
@@ -72,7 +80,8 @@ internal object ReminderScheduler {
   }
 
   /**
-   * The next thing to ring, or null. A snooze waits while a session holds today. Nothing at or before
+   * The next thing to ring, or null. Today stays armed while a session holds it, `onAlarm` holds it
+   * back: an alarm is what wakes a process the hold died with. Nothing at or before
    * `handled` is offered again: the alarm that just went off is done with it, posted or refused.
    */
   private fun next(
@@ -87,7 +96,7 @@ internal object ReminderScheduler {
     val late = lateMs(store.plan)
     val snooze = store.snooze
     val paused = (store.resumeDate ?: "") > today
-    if (snooze != null && store.enabled && !paused && snooze.first == today && dueToday(store) == "yes") {
+    if (snooze != null && store.enabled && !paused && snooze.first == today && dueToday(store) != "no") {
       val at = LocalDay.instant(snooze.first, snooze.second)
       // Held by a session past its hour and then given back: dropped like any late reminder, never
       // posted in the face of a hero who is in the app.
@@ -140,6 +149,11 @@ internal object ReminderScheduler {
     val due = next(context, now)
     if (due == null || due.at > now) {
       arm(context)
+      return
+    }
+    // Held: not posted, and a snooze kept. The plan that gives today back arms it again.
+    if (held && due.date == LocalDay.today()) {
+      arm(context, due.at)
       return
     }
     if (due.snooze) ReminderStore(context).snooze = null

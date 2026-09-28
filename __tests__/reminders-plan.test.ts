@@ -167,10 +167,12 @@ describe("planReminders: never for nothing", () => {
     expect(dates(plan)[0]).toBe("2026-01-15");
   });
 
-  test("a session under way holds today, and gives it back once it is abandoned", () => {
+  test("a session under way holds today without dropping it, and gives it back once abandoned", () => {
     const during = planReminders(input({ sessionActive: true }));
     expect(during.dueToday).toBe("hold");
-    expect(dates(during)[0]).toBe("2026-01-16");
+    // Still planned: the hold lives in the native half's memory, and an app killed mid-session
+    // must still ring today.
+    expect(dates(during)[0]).toBe("2026-01-15");
 
     const after = planReminders(input({ sessionActive: false }));
     expect(after.dueToday).toBe("yes");

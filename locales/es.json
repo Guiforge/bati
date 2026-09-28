@@ -1883,6 +1883,9 @@
     "oath_more_one": "Una sesión más y el juramento se mantiene esta semana.",
     "oath_more_many": "{{count}} sesiones más y el juramento se mantiene esta semana.",
     "oath_more_other": "{{count}} sesiones más y el juramento se mantiene esta semana.",
-    "oath_won": "Semana del juramento ganada. ¿Una más, por gusto?"
+    "oath_won": "Semana del juramento ganada. ¿Una más, por gusto?",
+    "channel": "Recordatorios de entrenamiento",
+    "snooze": "En 1 h",
+    "pause": "Pausa 7 días"
   }
 }

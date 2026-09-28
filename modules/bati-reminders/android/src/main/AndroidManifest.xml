@@ -1,0 +1,32 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      The permission bill for local reminders, declared here so it travels with the module that
+      needs it (docs/designs/rappels.md). Each one is justified again in
+      __tests__/android-permissions.test.ts.
+
+      POST_NOTIFICATIONS: from API 33 a reminder is invisible without it. bati-location declares it
+      too, for the expedition; declaring it here means deleting either module keeps the other whole.
+      RECEIVE_BOOT_COMPLETED: a reboot clears every alarm, and the receiver below arms them again.
+      No exact alarm, and no battery-optimisation exemption: see ReminderScheduler.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <application>
+        <!--
+          Not exported: the alarm and the two notification actions reach it through explicit
+          PendingIntents, and the four system broadcasts below are protected ones only the system
+          can send.
+        -->
+        <receiver
+            android:name="expo.modules.batireminders.ReminderReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+                <action android:name="android.intent.action.TIME_SET"/>
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

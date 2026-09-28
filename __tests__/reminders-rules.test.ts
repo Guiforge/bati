@@ -5,7 +5,6 @@
 import {
   DEFAULT_REMINDER_TIME,
   ignoredStreak,
-  isSessionHeld,
   nextVariant,
   parseReminderDays,
   type ReminderLogEntry,
@@ -15,6 +14,7 @@ import {
   suggestTime,
   VARIANT_COUNTS,
 } from "@/db/reminders";
+import { isSessionHeld } from "@/stores/sessionHold";
 
 // Pure: nothing here touches the database, but the module that holds it does at import.
 jest.mock("@/db/client", () => ({ db: {}, schema: jest.requireActual("@/db/schema") }));

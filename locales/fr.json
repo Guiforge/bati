@@ -1885,6 +1885,9 @@
     "oath_more_one": "Encore 1 séance et le serment tient cette semaine.",
     "oath_more_many": "Encore {{count}} séances et le serment tient cette semaine.",
     "oath_more_other": "Encore {{count}} séances et le serment tient cette semaine.",
-    "oath_won": "Semaine du serment gagnée. Une de plus, pour le plaisir ?"
+    "oath_won": "Semaine du serment gagnée. Une de plus, pour le plaisir ?",
+    "channel": "Rappels d'entraînement",
+    "snooze": "Dans 1 h",
+    "pause": "Pause 7 jours"
   }
 }

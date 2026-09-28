@@ -2,7 +2,7 @@
 title: How Bati Writes
 type: concept
 status: active
-updated: 2026-09-01
+updated: 2026-09-28
 related: [positioning.md, ../gameplay/villagers.md, ../CONTRIBUTING.md, ../meta/wiki-protocol.md]
 ---
 
@@ -194,6 +194,33 @@ the same tab would count something else under the same word.
 No test holds this table yet. [glossary.md](glossary.md) extends it to every term of the game, in
 every language, and is where it becomes one.
 
+### 8. Release notes are written for the hero
+
+`fastlane/metadata/android/<locale>/changelogs/<versionCode>.txt` is the store's "What's new",
+and since 2.6.0 it is also the card Home shows after an update (`src/whatsNew.ts`). So a hero
+reads it in the app, on their own phone, right after the update, and it gets written for them,
+not as a commit log.
+
+The note that started this rule was about 2.6.0's first line, *"Une séance peut être retirée du
+journal, XP compris."* It was accurate, and a hero could not tell what it meant: whether the XP
+stays or goes, and where the button is. Four rules:
+
+- **Say what the hero can do, and where.** The subject is `tu` (the hero in English), the verb is
+  what they do, the place is a screen they know. *"Tu peux retirer une séance du journal, depuis
+  sa fiche."*
+- **Spell out the consequence a hero would not guess.** No shorthand like *"XP compris"*: say
+  what happens. *"L'XP et les dégâts au boss qu'elle avait comptés repartent avec elle."*
+- **A fix says what works now.** The hero lived the bug and does not need its mechanics.
+  *"Restaurer une sauvegarde marche du premier coup."* beats two lines on which file stayed
+  unreadable until when.
+- **Biggest change first, fixes last, one idea per line.** No internal vocabulary: no *run*, no
+  *step* in the campaign sense, no setting name that is not on screen.
+
+Each language is written, not translated word for word: *"samt XP"* and *"XP compris"* came out of
+the same English line and only one of them was clear. Under 500 characters per file, trailing
+newline included, which `__tests__/changelog.test.ts` holds; everything else on this list is
+read by a person.
+
 ---
 
 ## Where each rule is checked
@@ -208,6 +235,7 @@ the permissions test: the fix is always to write the string correctly, never to 
 | One apostrophe, one ellipsis | `locale-style.test.ts` | anything outside `locales/*.json` |
 | `tu` outside the legal pages | `locale-style.test.ts` | English, which has no such distinction |
 | No sentence shape over three quarters of a pool | [`__tests__/villagers.test.ts`](../../__tests__/villagers.test.ts) for the villagers, [`__tests__/seed-copy-shape.test.ts`](../../__tests__/seed-copy-shape.test.ts) for quest descriptions, adventure descriptions and step narratives, both languages | any pool of reader-facing prose that is neither of those. A new one is a blind spot until it is added to `seed-copy-shape.test.ts` |
+| Release notes under 500 characters | [`__tests__/changelog.test.ts`](../../__tests__/changelog.test.ts) | whether a hero understands them. § 8 is read by a person |
 | No villager repeats a line, across all their pools | `villagers.test.ts` | every other pool of copy. The seeded catalogue is unchecked for repetition |
 | Each villager sounds like **themselves** | **nothing, and one attempt was thrown away for being worse than nothing** | see § 4, *The half of this rule nothing holds* |
 | No participle agreed with the hero | `villagers.test.ts` | same |

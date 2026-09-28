@@ -80,6 +80,7 @@ const walking = (i: number): LocationFix => ({
   lat: 48.4728 + i * 0.0000126,
   lon: -2.4943,
   ele: 110,
+  baro: null,
   acc: 4,
   speed: 1.4,
   distFromPrev: i === 0 ? 0 : 1.4,
@@ -274,10 +275,11 @@ describe("stores/expedition", () => {
     expect(store.getState().fixes).toEqual(walked);
 
     // And it keeps going from there rather than from zero.
+    // Ten more metres, the chord the reducer pays ground in.
     const before = store.getState().track.distanceM;
-    emit({ ...walking(20), t: T0 + 20_000 });
+    for (let i = 20; i < 28; i++) emit(walking(i));
     expect(store.getState().track.distanceM).toBeGreaterThan(before);
-    expect(store.getState().fixes).toHaveLength(21);
+    expect(store.getState().fixes).toHaveLength(28);
   });
 
   test("a resumed outing that already met its goal knows it", async () => {
@@ -571,12 +573,15 @@ describe("stores/expedition", () => {
 
   describe("leagues", () => {
     const BASE_LAT = 48.4728;
+    /** Degrees of latitude in 50 m, on the sphere `metresBetween` measures chords on. */
+    const STRIDE_DEG = (50 / 6_371_000) * (180 / Math.PI);
     /** Fix `i`: 50 m further north than `i - 1`, ten seconds later. The gate opens on fix 1. */
     const striding = (i: number): LocationFix => ({
       t: T0 + i * 10_000,
-      lat: BASE_LAT + i * 0.00045,
+      lat: BASE_LAT + i * STRIDE_DEG,
       lon: -2.4943,
       ele: 110,
+      baro: null,
       acc: 4,
       speed: 5,
       distFromPrev: i === 0 ? 0 : 50,
@@ -622,12 +627,11 @@ describe("stores/expedition", () => {
     });
 
     /**
-     * A league is crossed once. Credited distance is not monotonic: what is advanced under an
-     * anchor is taken back when the pause window closes on a hero who never cleared it
-     * (`RULES.pauseAfterMs`), so the same kilometre is crossed, un-crossed and crossed again by
-     * someone who stopped at a crossing just past a league marker.
+     * Drift at a stop is not ground. The reducer advances the straight line from the anchor, so
+     * the reading moves by a few metres of drift at most and takes them back when the window
+     * closes. It used to advance the sum of every hop, which crept past a league marker.
      */
-    test("ground taken back by a closing pause does not buzz the same league twice", async () => {
+    test("drift at a stop just short of a league neither buzzes nor counts", async () => {
       await store.getState().begin("s1", NOTIFICATION, false, "metric");
       for (let i = 0; i <= 20; i++) emit(striding(i));
       expect(store.getState().track.distanceM).toBeCloseTo(950);
@@ -636,24 +640,20 @@ describe("stores/expedition", () => {
       // reducer advances the credit, so the reading creeps past 1000 m and buzzes.
       const drifting = (j: number): LocationFix => ({
         t: T0 + 20 * 10_000 + j * 1000,
-        lat: BASE_LAT + 20 * 0.00045 + (j % 2) * 0.000027,
+        lat: BASE_LAT + 20 * STRIDE_DEG + (j % 2) * 0.000027,
         lon: -2.4943,
         ele: 110,
+        baro: null,
         acc: 4,
         speed: 0.2,
         distFromPrev: 3,
       });
-      for (let j = 1; j <= 39; j++) emit(drifting(j));
-      expect(store.getState().track.distanceM).toBeGreaterThan(1000);
-      expect(mockHaptic).toHaveBeenCalledTimes(1);
-
-      // The window closes on an anchor that was never cleared: the drift is refunded and the
-      // reading falls back under the league.
-      emit(drifting(40));
+      for (let j = 1; j <= 40; j++) emit(drifting(j));
       expect(store.getState().track.paused).toBe(true);
       expect(store.getState().track.distanceM).toBeCloseTo(950);
+      expect(mockHaptic).not.toHaveBeenCalled();
 
-      // The hero walks off again and crosses 1000 m a second time. That is not a new league.
+      // The hero walks off again, and the league is crossed on foot, once.
       for (let k = 1; k <= 13; k++) {
         emit({ ...striding(20 + k), t: T0 + 240_000 + k * 10_000 });
       }

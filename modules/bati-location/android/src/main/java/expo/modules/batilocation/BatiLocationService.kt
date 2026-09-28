@@ -13,6 +13,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -22,6 +26,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
@@ -54,6 +59,46 @@ class BatiLocationService :
 
   private var wakeLock: PowerManager.WakeLock? = null
   private var previous: Location? = null
+
+  /**
+   * Barometric height in metres, smoothed, or null when the phone has no barometer or it has not
+   * reported yet. Rides along on every fix rather than being its own event: the reducer measures
+   * a climb only on a fix that proved the hero moved, and one stream is one ordering.
+   */
+  private var baro: Double? = null
+  private var pressureAtNs = 0L
+
+  /** When the last reading was accepted, on the clock [freshBaro] reads, whatever the HAL stamps. */
+  private var baroAtMs = 0L
+
+  /**
+   * Pressure, low-passed with a time constant rather than a fixed alpha, because the sampling
+   * period is a hint the sensor HAL is free to ignore. The wake lock above is what keeps a
+   * non-wakeup sensor delivering with the screen off.
+   *
+   * A reading outside what air on Earth weighs is dropped before it reaches the average: one zero
+   * from a waking HAL is 44 km of height, and the reducer would credit every metre of it as a
+   * climb. `event.accuracy` is not read: some pressure drivers report UNRELIABLE on every sample,
+   * having nothing to calibrate, and trusting it would switch the barometer off on those phones.
+   */
+  private val pressureListener =
+    object : SensorEventListener {
+      override fun onSensorChanged(event: SensorEvent) {
+        val hPa = event.values[0]
+        if (hPa !in MIN_PRESSURE_HPA..MAX_PRESSURE_HPA) return
+        val height = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, hPa).toDouble()
+        val last = baro
+        val dt = (event.timestamp - pressureAtNs) / 1e9
+        pressureAtNs = event.timestamp
+        baroAtMs = SystemClock.elapsedRealtime()
+        baro = if (last == null || dt <= 0) height else last + (height - last) * dt / (PRESSURE_SMOOTHING_S + dt)
+      }
+
+      override fun onAccuracyChanged(
+        sensor: Sensor?,
+        accuracy: Int,
+      ) {}
+    }
   private var tracking = false
   private var state = State.ACQUIRING
 
@@ -167,7 +212,24 @@ class BatiLocationService :
       return
     }
     tracking = true
+    listenToPressure()
     emit(EVENT_PROVIDER, mapOf("enabled" to (state != State.GPS_OFF)))
+  }
+
+  /**
+   * The height to send with a fix, or null once the sensor has gone quiet: a stalled barometer
+   * repeating its last value would freeze the climb for the rest of the walk, and null hands it
+   * back to GPS instead.
+   */
+  private fun freshBaro(): Double? = baro?.takeIf { SystemClock.elapsedRealtime() - baroAtMs <= BARO_STALE_MS }
+
+  /** No barometer is the common case on a cheap phone, and not an error: the climb falls back to GPS. */
+  private fun listenToPressure() {
+    val sensors = getSystemService(Context.SENSOR_SERVICE) as? SensorManager ?: return
+    sensors.unregisterListener(pressureListener)
+    baro = null
+    val pressure = sensors.getDefaultSensor(Sensor.TYPE_PRESSURE) ?: return
+    sensors.registerListener(pressureListener, pressure, PRESSURE_PERIOD_US, handler)
   }
 
   /**
@@ -227,6 +289,7 @@ class BatiLocationService :
         "lat" to location.latitude,
         "lon" to location.longitude,
         "ele" to if (location.hasAltitude()) location.altitude else null,
+        "baro" to freshBaro(),
         "acc" to location.accuracy.toDouble(),
         "speed" to if (location.hasSpeed()) location.speed.toDouble() else null,
         "distFromPrev" to distFromPrev.toDouble(),
@@ -425,6 +488,7 @@ class BatiLocationService :
     reached = false
     handler.removeCallbacksAndMessages(null)
     (getSystemService(Context.LOCATION_SERVICE) as? LocationManager)?.removeUpdates(this)
+    (getSystemService(Context.SENSOR_SERVICE) as? SensorManager)?.unregisterListener(pressureListener)
     tracking = false
     wakeLock?.takeIf { it.isHeld }?.release()
     wakeLock = null
@@ -482,6 +546,20 @@ class BatiLocationService :
      */
     private const val MAX_ACCURACY_M = 50f
     private const val NO_FIX_TIMEOUT_MS = 30_000L
+
+    /**
+     * One reading a second asked for, and a few seconds of smoothing: enough to swallow a gust or a
+     * pocket being zipped, short enough that a climb still lands within the step it is walked in.
+     */
+    private const val PRESSURE_PERIOD_US = 1_000_000
+    private const val PRESSURE_SMOOTHING_S = 3.0
+
+    /** Ten requested periods: a HAL that batches is late, one that has stopped is not coming. */
+    private const val BARO_STALE_MS = 10_000L
+
+    /** Hectopascals: the summit of Everest is about 310 and the Dead Sea shore about 1070. */
+    private const val MIN_PRESSURE_HPA = 300f
+    private const val MAX_PRESSURE_HPA = 1100f
 
     /**
      * Move the notification's second half. A no-op when nothing is running, which is what makes

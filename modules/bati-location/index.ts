@@ -12,6 +12,11 @@ export type LocationFix = {
   lon: number;
   /** Metres, null when the fix carries no altitude. */
   ele: number | null;
+  /**
+   * Metres of barometric height, smoothed natively; null when the phone has no barometer or it
+   * has not reported yet. Its zero is the standard atmosphere, so only its changes mean anything.
+   */
+  baro: number | null;
   /** Metres. Never null: a fix without accuracy cannot be filtered and is dropped natively. */
   acc: number;
   speed: number | null;

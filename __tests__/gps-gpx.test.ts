@@ -6,6 +6,7 @@ const fix = (over: Partial<LocationFix> = {}): LocationFix => ({
   lat: 48.472781,
   lon: -2.494307,
   ele: 114.6,
+  baro: null,
   acc: 4,
   speed: 2.5,
   distFromPrev: 0,

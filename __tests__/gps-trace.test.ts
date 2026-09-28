@@ -13,6 +13,7 @@ import { METRES_PER_LEAGUE, RULES } from "@/src/gps/track";
 const fix = (over: Partial<LocationFix> & { lat: number; lon: number }): LocationFix => ({
   t: 0,
   ele: 110,
+  baro: null,
   acc: 4,
   speed: 1.4,
   distFromPrev: 5,

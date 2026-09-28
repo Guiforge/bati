@@ -5,6 +5,7 @@ const fix = (over: Partial<LocationFix> & { t: number }): LocationFix => ({
   lat: 48.472781,
   lon: -2.494307,
   ele: 114.6,
+  baro: null,
   acc: 3.79,
   speed: 1.42,
   distFromPrev: 0,
@@ -74,6 +75,8 @@ describe("db/gps", () => {
     expect(back.lat).toBeCloseTo(original.lat, 6);
     expect(back.lon).toBeCloseTo(original.lon, 6);
     expect(back.ele).toBeCloseTo(114.6, 1);
+    expect(back.baro).toBeNull();
+    expect(decode(encode("s1", fix({ t: 1, baro: 52.37 }))).baro).toBeCloseTo(52.37, 2);
     expect(back.acc).toBeCloseTo(3.8, 1);
     expect(back.speed).toBeCloseTo(1.42, 2);
   });

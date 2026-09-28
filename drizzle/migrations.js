@@ -65,6 +65,7 @@ import m0061 from "./0061_the_round_that_landed_it.sql";
 import m0062 from "./0062_the_record_found_by_its_movement.sql";
 import m0063 from "./0063_what_a_hero_with_nothing_can_use.sql";
 import m0064 from "./0064_the_sessions_let_go.sql";
+import m0065 from "./0065_the_height_the_air_measured.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -135,5 +136,6 @@ export default {
     m0062,
     m0063,
     m0064,
+    m0065,
   },
 };

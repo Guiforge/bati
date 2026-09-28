@@ -101,6 +101,7 @@ const walking = (i: number): LocationFix => ({
   lat: 43.6 + i * 0.0000126,
   lon: 1.44,
   ele: 100,
+  baro: null,
   acc: 4,
   speed: 1.4,
   distFromPrev: i === 0 ? 0 : 1.4,

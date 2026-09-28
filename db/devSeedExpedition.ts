@@ -161,6 +161,7 @@ function syntheticFixes(startedAt: number): LocationFix[] {
       lat: point.lat,
       lon: point.lon,
       ele: 44 + 6 * Math.sin(covered / 600) + jitter(1.5),
+      baro: null,
       acc: 4.5 + random() * 4,
       speed: resting ? random() * 0.3 : pace + jitter(0.5),
       distFromPrev: previous ? metresBetween(previous, point) : 0,

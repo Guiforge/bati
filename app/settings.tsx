@@ -39,6 +39,7 @@ import {
 } from "@/components/icons";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
+import { ReminderSection } from "@/components/settings/ReminderSection";
 import { SettingRow } from "@/components/settings/SettingRow";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
@@ -563,6 +564,10 @@ export default function SettingsScreen() {
             label={t("oath.screen_title", "Swear an Oath")}
             onPress={openOath}
           />
+
+          {/* Above the backup, below the oath it can serve (docs/designs/rappels.md). Renders
+              nothing on a build without the reminders' native half. */}
+          <ReminderSection />
 
           <Text fontSize="$3" fontWeight="bold" color="$textSecondary" px="$1" mt="$2">
             {t("backup.section")}

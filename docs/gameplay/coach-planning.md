@@ -19,12 +19,17 @@ sources:
 ## Summary
 
 This is not a planning system, and as of 2026-07-31 it is **not called "the Coach" anywhere in
-the UI**. It is **one priority waterfall on Home**, implemented in
-[`components/home/useSmartAction.ts`](../../components/home/useSmartAction.ts) and evaluated
-against the session journal, the [Oath](oaths.md) and the
-[muscle balance](statistics-progress.md#1-muscle-balance-last-30-days) view. No persisted
-state, no generated plans, no scheduling, no notifications — those are explicit non-goals
-(see below).
+the UI**. It is **one priority waterfall on Home**, decided in
+[`db/homeOffer.ts`](../../db/homeOffer.ts) (`decideHomeOffer`) and drawn by
+[`components/home/useSmartAction.ts`](../../components/home/useSmartAction.ts), evaluated against
+the session journal, the [Oath](oaths.md) and the
+[muscle balance](statistics-progress.md#1-muscle-balance-last-30-days) view. No persisted state
+and no generated plans: those are explicit non-goals (see below).
+
+The reminders ([designs/rappels.md](../designs/rappels.md)) read the same `decideHomeOffer`, so a
+reminder names exactly what Home offers. They are not a schedule either: the hero's days say
+*when* to be reminded, this waterfall says *what*, the flame and the oath say *how many*, and none
+of the three changes another. Nothing here plans a day in advance.
 
 The word "Coach" was dropped because it named a feature that does not exist while hiding the one
 that does. It only ever appeared on the journal's `ProgressionCard`, whose content is usually the
@@ -110,8 +115,10 @@ these bound what any nudge here is allowed to say:
 
 ## Why not more?
 
-A full plan-generation system (goals with types, auto-built multi-week adventures, scheduling,
-push notifications) was previously designed here but never shipped. It adds three database
+A full plan-generation system (goals with types, auto-built multi-week adventures, a calendar
+of planned sessions, push notifications) was previously designed here but never shipped, and
+`79960596` took out what had been built toward it. Local reminders on the hero's own days came
+back later on different terms, without a schedule and without a server (see above). It adds three database
 tables and an algorithm that needs validation by a sports professional before it can safely
 tell someone what to do. A handful of rules against the existing journal delivers the "tell me
 what to do next" need without that cost. A weekly suggested-quest list is the natural next

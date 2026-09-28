@@ -237,6 +237,8 @@ export function buildBugReportMailto(
   handled: CrashReport[],
   appVersion: string,
   strings: BugReportStrings,
+  /** More technical lines, such as the reminders' counts (`src/reminderReport.ts`). */
+  extra: readonly string[] = [],
 ): string {
   const header = [
     "",
@@ -245,6 +247,7 @@ export function buildBugReportMailto(
     `App: Bati ${appVersion}`,
     // "It lags" is unactionable without knowing what it lagged on.
     `Device: ${deviceLine()}`,
+    ...extra,
   ];
 
   const body = [

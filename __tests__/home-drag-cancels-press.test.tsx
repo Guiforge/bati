@@ -15,6 +15,9 @@ import config from "@/tamagui.config";
  * screen's capture handler is asked on every move, and a yes terminates the pressable's press.
  */
 
+// The reminders' line under the scene reads the database and the native module; it has its own
+// test (reminder-card.test.tsx), and a drag over Home is not about it.
+jest.mock("@/components/home/ReminderCard", () => ({ ReminderCard: () => null }));
 jest.mock("@/components/chorus/screenCues", () => ({
   useScreenGuide: () => {},
   useComebackCue: () => {},

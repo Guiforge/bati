@@ -25,7 +25,15 @@ describe("bati-reminders, without its native half", () => {
   test("reports itself unavailable, and off", () => {
     expect(isAvailable()).toBe(false);
     expect(areEnabled()).toBe(false);
-    expect(getState()).toEqual({ enabled: false, resumeDate: null, log: [] });
+    expect(getState()).toEqual({ enabled: false, resumeDate: null, plannedOn: null, log: [] });
+  });
+
+  test("the hour answers without a picker, and in 24 hours", async () => {
+    const { is24Hour, pickTime, openChannelSettings } =
+      require("@/modules/bati-reminders") as typeof import("@/modules/bati-reminders");
+    expect(is24Hour()).toBe(true);
+    expect(await pickTime("20:00")).toBeNull();
+    expect(() => openChannelSettings("Reminders")).not.toThrow();
   });
 
   test("takes a plan, a switch and a pause without throwing", () => {
@@ -91,6 +99,9 @@ describe("bati-reminders, with a native half", () => {
     resume: jest.fn().mockReturnValue(true),
     areEnabled: jest.fn().mockReturnValue(true),
     getState: jest.fn(),
+    is24Hour: jest.fn().mockReturnValue(false),
+    pickTime: jest.fn().mockResolvedValue("07:15"),
+    openChannelSettings: jest.fn().mockReturnValue(true),
   };
 
   const load = () => {
@@ -138,13 +149,39 @@ describe("bati-reminders, with a native half", () => {
     expect(load().getState()).toEqual({
       enabled: true,
       resumeDate: "2026-01-22",
-      log: [{ date: "2026-01-14", variant: "boss.1", snoozed: false, opened: true, paused: false }],
+      plannedOn: null,
+      log: [
+        {
+          date: "2026-01-14",
+          variant: "boss.1",
+          snoozed: false,
+          opened: true,
+          paused: false,
+          postedAt: null,
+        },
+      ],
     });
+  });
+
+  test("the hour goes through Android's picker and its own 24-hour setting", async () => {
+    const mod = load();
+    expect(mod.is24Hour()).toBe(false);
+    expect(await mod.pickTime("20:00")).toBe("07:15");
+    expect(native.pickTime).toHaveBeenCalledWith("20:00");
+    native.pickTime.mockResolvedValueOnce(null);
+    expect(await mod.pickTime("20:00")).toBeNull();
+    mod.openChannelSettings("Rappels d'entraînement");
+    expect(native.openChannelSettings).toHaveBeenCalledWith("Rappels d'entraînement");
   });
 
   test("no context on the native side reads as off", () => {
     native.getState.mockReturnValue(null);
-    expect(load().getState()).toEqual({ enabled: false, resumeDate: null, log: [] });
+    expect(load().getState()).toEqual({
+      enabled: false,
+      resumeDate: null,
+      plannedOn: null,
+      log: [],
+    });
   });
 
   test("a journal missing its fields reads as nothing done", () => {
@@ -152,7 +189,17 @@ describe("bati-reminders, with a native half", () => {
     expect(load().getState()).toEqual({
       enabled: false,
       resumeDate: null,
-      log: [{ date: "2026-01-14", variant: null, snoozed: false, opened: false, paused: false }],
+      plannedOn: null,
+      log: [
+        {
+          date: "2026-01-14",
+          variant: null,
+          snoozed: false,
+          opened: false,
+          paused: false,
+          postedAt: null,
+        },
+      ],
     });
   });
 });

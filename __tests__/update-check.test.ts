@@ -104,6 +104,17 @@ describe("checkForUpdate", () => {
     expect(preferences.store.updateLatest).toBe("2.6.0");
   });
 
+  test("two asking on the same focus share one request", async () => {
+    // Home's update card and its reminder line both ask as the screen opens.
+    preferences.store.updateCheck = "true";
+    const fetchMock = replyWith("v2.6.0");
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const [a, b] = await Promise.all([checkForUpdate(), checkForUpdate()]);
+    expect([a, b]).toEqual(["2.6.0", "2.6.0"]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   test("it asks once a day, and answers from what it kept in between", async () => {
     preferences.store.updateCheck = "true";
     preferences.store.updateLatest = "2.6.0";

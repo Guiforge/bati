@@ -1,11 +1,19 @@
 package expo.modules.batireminders
 
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import android.text.format.DateFormat
+import androidx.core.net.toUri
+import expo.modules.kotlin.Promise
+import expo.modules.kotlin.functions.Queues
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Locale
 
 /**
  * The JS door to local reminders (docs/designs/rappels.md). It stores what it is handed, arms it
@@ -36,7 +44,11 @@ class BatiRemindersModule : Module() {
         store.plan = plan
         store.plannedOn = LocalDay.today()
         // "no": today is done or a rest day, so a snooze in waiting goes. "hold" keeps it waiting.
-        if (plan.optString("dueToday") == "no") store.snooze = null
+        val dueToday = plan.optString("dueToday")
+        if (dueToday == "no") store.snooze = null
+        // Either way today's reminder, if it is still in the shade, has said its piece: left there
+        // it would name a quest already done, and a tap on it mid-session would leave the session.
+        if (dueToday != "yes") ReminderScheduler.clearToday(context)
         ReminderScheduler.ensureChannel(context, plan.optString("channelName", "Reminders"))
         ReminderScheduler.arm(context)
         true
@@ -69,7 +81,7 @@ class BatiRemindersModule : Module() {
         true
       }
 
-      /** `{ enabled, resumeDate, log }`, as JSON. */
+      /** `{ enabled, resumeDate, plannedOn, log }`, as JSON. */
       Function("getState") {
         val context = context ?: return@Function null
         appContext.currentActivity?.intent?.let(::markOpened)
@@ -77,8 +89,70 @@ class BatiRemindersModule : Module() {
         JSONObject()
           .put("enabled", store.enabled)
           .put("resumeDate", store.resumeDate ?: JSONObject.NULL)
+          // The horizon is counted from here: a day past it never rang on purpose.
+          .put("plannedOn", store.plannedOn ?: JSONObject.NULL)
           .put("log", JSONArray(store.log()))
           .toString()
+      }
+
+      /** Android's own "24-hour time" setting, which the hour is written in everywhere. */
+      Function("is24Hour") {
+        val context = context ?: return@Function true
+        DateFormat.is24HourFormat(context)
+      }
+
+      /**
+       * Android's own time picker, in the phone's 12 or 24 hour format, resolving `"HH:mm"` or null
+       * when dismissed. Here rather than a picker package: this module already exists, and the
+       * dialog is the platform's.
+       */
+      AsyncFunction("pickTime") { initial: String, promise: Promise ->
+        val activity = appContext.currentActivity
+        if (activity == null) {
+          promise.resolve(null)
+          return@AsyncFunction
+        }
+        val (hour, minute) =
+          initial.split(":").mapNotNull { it.toIntOrNull() }.takeIf { it.size == 2 } ?: listOf(18, 0)
+        activity.runOnUiThread {
+          var answered = false
+          val dialog =
+            TimePickerDialog(
+              activity,
+              android.R.style.Theme_Material_Dialog_Alert,
+              { _, h, m ->
+                answered = true
+                promise.resolve(String.format(Locale.US, "%02d:%02d", h, m))
+              },
+              hour,
+              minute,
+              DateFormat.is24HourFormat(activity),
+            )
+          dialog.setOnDismissListener { if (!answered) promise.resolve(null) }
+          dialog.show()
+        }
+      }.runOnQueue(Queues.MAIN)
+
+      /**
+       * The reminders' own channel in Android's settings, where the hero sets sound and vibration.
+       * The app's notification page below API 26, which has no channels.
+       */
+      Function("openChannelSettings") { channelName: String ->
+        val activity = appContext.currentActivity ?: return@Function false
+        val intent =
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+              .putExtra(Settings.EXTRA_APP_PACKAGE, activity.packageName)
+              .putExtra(Settings.EXTRA_CHANNEL_ID, ReminderScheduler.CHANNEL_ID)
+          } else {
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${activity.packageName}".toUri())
+          }
+        ReminderScheduler.ensureChannel(
+          activity,
+          ReminderStore(activity).plan?.optString("channelName", "Reminders") ?: "Reminders",
+        )
+        activity.startActivity(intent)
+        true
       }
 
       /** The permission is granted and the channel is not switched off. */

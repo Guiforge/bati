@@ -1,15 +1,20 @@
 import { AppState } from "react-native";
 import { getChangeVersion } from "@/db/changeVersion";
+import { getSessionAggregates } from "@/db/completed";
+import { dayKey } from "@/db/dates";
 import { decideHomeOffer } from "@/db/homeOffer";
 import { getOath } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
 import {
   getReminderDays,
   getReminderSessions,
+  ignoredStreak,
   planReminders,
   REMINDER_HORIZON_DAYS,
   REMINDER_LATE_MINUTES,
   REMINDER_PAUSE_DAYS,
+  reminderPrefs,
+  shouldAskAboutReminders,
 } from "@/db/reminders";
 import { i18n } from "@/i18n";
 import * as Reminders from "@/modules/bati-reminders";
@@ -17,6 +22,8 @@ import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { useSessionStore } from "@/stores/session";
 import { isSessionHeld } from "@/stores/sessionHold";
 import { reportError } from "./reportError";
+import { checkForUpdate } from "./updateCheck";
+import { hasUnseenNotes } from "./whatsNew";
 
 /**
  * Hands the native reminders a fresh plan (docs/designs/rappels.md): the days, the journal, the
@@ -115,4 +122,37 @@ export function keepRemindersInStep(): { remove(): void } {
       appState.remove();
     },
   };
+}
+
+export type ReminderCardKind = "check" | "offer" | null;
+
+/**
+ * Which reminder card, if any. One card of this family at a time on Home, and never beside the
+ * update or the release notes (docs/designs/rappels.md, "Où on le propose"):
+ *
+ * - `check`: three reminders in a row went by untouched, and Home has not asked this month;
+ * - `offer`: the hero has logged a session, never chose days, and did not close this before.
+ */
+export async function reminderCardKind(now = new Date()): Promise<ReminderCardKind> {
+  if (!Reminders.isAvailable()) return null;
+  if ((await hasUnseenNotes()) || (await checkForUpdate()) !== null) return null;
+
+  const state = Reminders.getState();
+  const today = dayKey(now);
+  if (state.enabled) {
+    const [sessions, streakFrom, askedAt] = await Promise.all([
+      getReminderSessions(now),
+      reminderPrefs.streakFrom(),
+      reminderPrefs.askedAt(),
+    ]);
+    const streak = ignoredStreak(state.log, sessions, today, streakFrom);
+    return shouldAskAboutReminders(streak, askedAt, today) ? "check" : null;
+  }
+
+  const [days, dismissed, { totalSessions }] = await Promise.all([
+    getReminderDays(),
+    reminderPrefs.offerDismissed(),
+    getSessionAggregates(),
+  ]);
+  return !dismissed && Object.keys(days).length === 0 && totalSessions > 0 ? "offer" : null;
 }

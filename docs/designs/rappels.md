@@ -5,7 +5,8 @@ Status: DESIGNED
 Code : PR 1 (logique) : `db/reminders.ts`, `db/homeOffer.ts`, `restSuggestionAt` dans
 `db/restSuggestions.ts`, `oathWeekStart` dans `db/oaths.ts`, `reminders.*` dans `locales/*.json`.
 PR 2 (natif) : `modules/bati-reminders`, `src/reminders.ts` (`replanReminders`,
-`keepRemindersInStep`), `stores/sessionHold.ts`. PR 3 et 4 à venir, voir [Découpage](#découpage).
+`keepRemindersInStep`), `stores/sessionHold.ts`. PR 3 (interface) : `components/settings/ReminderSection.tsx`, `components/home/ReminderCard.tsx`,
+`app/oath.tsx` (`OathReminderLine`), `src/reminderReport.ts`. PR 4 à venir, voir [Découpage](#découpage).
 
 *27/09/2026. Code lu au commit `68ce4dd` (v2.6.0).*
 *Versions précédentes gardées : v1 `claude/rappels-conception.md` (23/09), v2 `claude/rappels-rythme-v2.md` (27/09).*

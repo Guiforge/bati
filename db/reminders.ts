@@ -16,7 +16,7 @@ import { dayKey } from "./dates";
 import { formatDurationEstimate } from "./estimate";
 import type { HomeOffer } from "./homeOffer";
 import { DEFAULT_WEEKLY_TARGET, type Oath, oathWeekStart } from "./oaths";
-import { getPreference } from "./preferences";
+import { getPreference, setPreference } from "./preferences";
 import { REST_LOOKBACK_DAYS, restSuggestionAt } from "./restSuggestions";
 
 const { completedQuest } = schema;
@@ -96,6 +96,8 @@ export type ReminderLogEntry = {
   opened: boolean;
   /** "Pause 7 days" was tapped on it. */
   paused: boolean;
+  /** `HH:mm` it actually rang at, which an inexact alarm decides. Null before the native side kept it. */
+  postedAt?: string | null;
 };
 
 /**
@@ -519,3 +521,123 @@ export async function getReminderSessions(now: Date): Promise<ReminderSession[]>
     .from(completedQuest)
     .where(gte(completedQuest.performedAt, subDays(now, REST_LOOKBACK_DAYS)));
 }
+
+/** What Settings says under the switch about today and tomorrow, beside the next reminder. */
+export type DayNote = {
+  /** Why today, one of the hero's days, does not ring: already trained, or a rest day. */
+  today: "done" | "rest" | null;
+  /** Tomorrow is one of the hero's days and the rest advice for it is acute. */
+  restTomorrow: boolean;
+};
+
+/**
+ * The reasons behind the plan, so the preview can always say why: "today skipped, session done",
+ * "no reminder tomorrow, Bati advises rest". The same rules `planReminders` applied, read again.
+ */
+export function describeDay({ days, now, sessions, state }: PlanInput): DayNote {
+  const today = dayKey(now);
+  const tomorrow = dayKey(addDays(now, 1));
+  const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt);
+  const todayTime = timeOn(days, today);
+  const tomorrowTime = timeOn(days, tomorrow);
+
+  let todayNote: DayNote["today"] = null;
+  // A day that already rang has nothing left to explain: "last reminder" says the rest.
+  const rang = state.log.some((e) => e.date === today);
+  if (todayTime !== null && !rang) {
+    if (workouts.some((w) => dayKey(w) === today)) todayNote = "done";
+    else if (restsOn(workouts, at(today, todayTime))) todayNote = "rest";
+  }
+  return {
+    today: todayNote,
+    restTomorrow: tomorrowTime !== null && restsOn(workouts, at(tomorrow, tomorrowTime)),
+  };
+}
+
+/**
+ * The last of the hero's days that should have rung and is not in the journal, or null. A phone
+ * that kills alarms (Xiaomi, Huawei, some Samsung, see dontkillmyapp.com) is only visible this way:
+ * the plan was there, nothing was posted. Days before `since` (the switch turned on, the settings
+ * changed), during a pause ending `pausedUntil`, past the horizon of the plan made `plannedOn`, and
+ * a day with a workout or acute rest never rang on purpose, so none of them count.
+ */
+export function missedReminder(
+  days: ReminderDays,
+  log: readonly ReminderLogEntry[],
+  sessions: readonly ReminderSession[],
+  now: Date,
+  since: string | null,
+  pausedUntil: string | null,
+  plannedOn: string | null,
+): string | null {
+  const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt);
+  const posted = new Set(log.map((e) => e.date));
+  for (let back = 0; back < 7; back++) {
+    const date = dayKey(subDays(now, back));
+    const time = timeOn(days, date);
+    if (time === null || pastHorizon(date, plannedOn)) continue;
+    const hour = at(date, time);
+    if (hour.getTime() + REMINDER_LATE_MINUTES * 60_000 > now.getTime()) continue;
+    if (since !== null && date <= since) return null;
+    if (pausedOn(date, pausedUntil) || silentOnPurpose(workouts, date, hour)) return null;
+    return posted.has(date) ? null : date;
+  }
+  return null;
+}
+
+/** Past the fourteen days of the plan made `plannedOn`: the phone went quiet on purpose. */
+function pastHorizon(date: string, plannedOn: string | null): boolean {
+  return plannedOn !== null && date >= dayKey(addDays(dayOf(plannedOn), REMINDER_HORIZON_DAYS));
+}
+
+/** Inside a pause ending `pausedUntil`, which lasted two weeks at most. */
+function pausedOn(date: string, pausedUntil: string | null): boolean {
+  if (pausedUntil === null) return false;
+  return date < pausedUntil && date >= dayKey(subDays(dayOf(pausedUntil), 14));
+}
+
+/** A day that never rang on purpose: trained, or acute rest at its hour. */
+function silentOnPurpose(workouts: readonly Date[], date: string, hour: Date): boolean {
+  return workouts.some((w) => dayKey(w) === date) || restsOn(workouts, hour);
+}
+
+/**
+ * The counts a tester can paste into a bug report, and nothing leaves on its own: reminders posted
+ * in the journal, how many were followed by a workout within two hours, snoozed, paused.
+ */
+export function reminderStats(
+  log: readonly ReminderLogEntry[],
+  sessions: readonly ReminderSession[],
+): { posted: number; followed: number; snoozed: number; paused: number } {
+  const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt.getTime());
+  let followed = 0;
+  for (const entry of log) {
+    if (!entry.postedAt) continue;
+    const rang = at(entry.date, entry.postedAt).getTime();
+    if (workouts.some((w) => w >= rang && w - rang <= 2 * 60 * 60_000)) followed++;
+  }
+  return {
+    posted: log.length,
+    followed,
+    snoozed: log.filter((e) => e.snoozed).length,
+    paused: log.filter((e) => e.paused).length,
+  };
+}
+
+export async function setReminderDays(days: ReminderDays): Promise<void> {
+  await setPreference(REMINDER_DAYS_KEY, JSON.stringify(parseReminderDays(JSON.stringify(days))));
+}
+
+/**
+ * What this phone did with its own reminders (`DEVICE_LOCAL_PREFERENCES`): when Home last asked
+ * whether they land well, the day the settings last changed (ignored days count after it), and
+ * whether the Home's offer was closed.
+ */
+export const reminderPrefs = {
+  askedAt: () => getPreference("reminderAskedAt"),
+  setAskedAt: (day: string) => setPreference("reminderAskedAt", day),
+  streakFrom: () => getPreference("reminderStreakFrom"),
+  setStreakFrom: (day: string) => setPreference("reminderStreakFrom", day),
+  offerDismissed: async () => (await getPreference("reminderOfferDismissed")) === "true",
+  dismissOffer: () => setPreference("reminderOfferDismissed", "true"),
+};

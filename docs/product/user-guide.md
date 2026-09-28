@@ -104,6 +104,21 @@ After workouts, Bati rewards you with:
   request until you turn it on, and the route is drawn on a plain background without it. On, the
   map host learns roughly where you went, and the privacy policy spells out exactly what that means.
 
+### 8) Be reminded on your days (Reminder)
+
+- Settings > Reminder: choose your days and one hour. Bati reminds you once on those days, unless
+  your session is done or it advises rest. Off until you turn it on; the notification permission
+  is asked then, never at launch.
+- On the notification: **In 1 hour** (once) and **Pause 7 days**. A tap opens Home.
+- Home offers it once after your first session, and asks after three reminders went by untouched
+  whether they land well. Nothing else, and never a count of days missed.
+- Two known limits:
+  - **Phone and tablet:** a session done on one device reaches the other at the next sync, so the
+    other may still ring. Keep the reminder on one device.
+  - **Force-stop, battery savers** (some Xiaomi, Huawei, Samsung): Android drops the alarms until
+    the app is opened again. Settings says so when a reminder that should have rung is missing, and
+    links to the app's settings and dontkillmyapp.com.
+
 ---
 
 ## Pages & navigation guide (what each page is for)
@@ -236,6 +251,7 @@ Preferences:
 
 - **Settings** (`/settings`)
   - Adjust preferences (for example language).
+  - The reminder: switch, days, hour, pause, and a preview of the next and the last one.
 
 ### Credits
 

@@ -111,7 +111,7 @@ first one to be slow: `expo.autolinking.buildFromSource` compiles every Expo mod
   by `expo/bundledNativeModules.json` on purpose, F-Droid rebuilds them from source against the
   SDK's React Native, and a version the SDK does not expect is their build error, not ours.
 
-- Three gates run only in CI, so run them by hand if a change plausibly moves one:
+- Four gates run only in CI, so run them by hand if a change plausibly moves one:
   **dependency licences** (`npx license-checker-rseidelsohn --production --excludePrivatePackages
   --summary --failOn "…"` in [`ci.yml`](.github/workflows/ci.yml)) blocks GPL/AGPL/LGPL/SSPL/BUSL
   in the shipped tree, because F-Droid rejects what it cannot redistribute and does so a release
@@ -120,6 +120,10 @@ first one to be slow: `expo.autolinking.buildFromSource` compiles every Expo mod
   55 MiB — a ratchet, lower it after a release that measures under, never raise it. The measured
   breakdown of where those megabytes are is in
   [`docs/architecture/performance.md`](docs/architecture/performance.md) § Binary size.
+  **16 KB pages** (same workflow) fails the release if any `.so` in the APK or the AAB has a
+  `LOAD` segment aligned under 0x4000, which Play refuses from 2027-02-01. By hand, after
+  adding a native dependency: `unzip -o <apk> 'lib/*' -d /tmp/so && readelf -lW /tmp/so/lib/*/*.so
+  | grep LOAD`, every last column `0x4000` or more.
 
 - **Android lint** runs in [`android-lint.yml`](.github/workflows/android-lint.yml), on any push
   that touches `app.json`, `plugins/`, `android/` or the lockfile:

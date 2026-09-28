@@ -156,7 +156,7 @@ function timeOf(minutes: number): string {
 }
 
 /** A local day key read back as that day's local midnight. Never `new Date(key)`, which is UTC. */
-function dayOf(key: string): Date {
+export function dayOf(key: string): Date {
   return parse(key, "yyyy-MM-dd", new Date(0));
 }
 

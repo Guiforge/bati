@@ -14,7 +14,6 @@ import {
   suggestTime,
   VARIANT_COUNTS,
 } from "@/db/reminders";
-import { isSessionHeld } from "@/stores/sessionHold";
 
 // Pure: nothing here touches the database, but the module that holds it does at import.
 jest.mock("@/db/client", () => ({ db: {}, schema: jest.requireActual("@/db/schema") }));
@@ -281,19 +280,5 @@ describe("every sentence renders whole", () => {
       expect(text).not.toBe(key);
       expect(text).not.toMatch(/{{|}}/);
     }
-  });
-});
-
-describe("isSessionHeld", () => {
-  test("a session on screen holds today, idle does not", () => {
-    for (const status of ["warmup", "countdown", "running", "resting", "paused"] as const) {
-      expect(isSessionHeld(status, null)).toBe(true);
-    }
-    expect(isSessionHeld("idle", null)).toBe(false);
-  });
-
-  test("a victory holds until it is saved, and not after", () => {
-    expect(isSessionHeld("finished", null)).toBe(true);
-    expect(isSessionHeld("finished", 42)).toBe(false);
   });
 });

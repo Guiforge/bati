@@ -5,7 +5,7 @@ Status: IMPLEMENTED (PR #137 à #140, en attente de merge et de la checklist app
 Code : PR 1 (logique) : `db/reminders.ts`, `db/homeOffer.ts`, `restSuggestionAt` dans
 `db/restSuggestions.ts`, `oathWeekStart` dans `db/oaths.ts`, `reminders.*` dans `locales/*.json`.
 PR 2 (natif) : `modules/bati-reminders`, `src/reminders.ts` (`replanReminders`,
-`keepRemindersInStep`), `stores/sessionHold.ts`. PR 3 (interface) : `components/settings/ReminderSection.tsx`, `components/home/ReminderCard.tsx`,
+`keepRemindersInStep`). PR 3 (interface) : `components/settings/ReminderSection.tsx`, `components/home/ReminderCard.tsx`,
 `app/oath.tsx` (`OathReminderLine`), `src/reminderReport.ts`. PR 4 (ménage) : `hooks/useReminderPace.ts`
 (`adventureWeeksLabel`), kicker « Ton jour » dans `components/home/useSmartAction.ts`, clés `goals.*` et
 `scheduling.*` supprimées.
@@ -320,7 +320,7 @@ Il stocke et il poste, il ne réfléchit pas.
 `db/reminders.ts`. Entrée : jours + heure, état natif (pause, dernier posté), séances récentes, état de la séance, ce que propose le Home, serment, maintenant, langue. Sortie : `entries` sur 21 jours (voir API) + `dueToday` + `quietText`. Aujourd'hui n'est jamais inclus si le journal l'a déjà.
 
 - **Repos par jour** : `restSuggestionAt(sessions, now)`, version pure sortie de `getRestSuggestion()`, évaluée pour chaque jour.
-- **Séance en cours** : si `useSessionStore.status` n'est pas `idle`, ou vaut `finished` sans être encore sauvegardée (l'écran de victoire attend une réponse), `dueToday` vaut `"hold"`. Pas de drapeau natif, il resterait bloqué si l'app est tuée.
+- **Séance en cours** : si `useSessionStore.status` n'est pas `idle`, écran de victoire compris jusqu'à ce qu'on le quitte, `dueToday` vaut `"hold"`. Pas jusqu'à `savedSessionId` : il est posé à la première écriture de la sauvegarde, avant l'aventure, le boss et le serment, et un plan fait à ce moment les lisait d'avant la séance. Pas de drapeau natif, il resterait bloqué si l'app est tuée.
 - **Variantes de texte** : rotation depuis la dernière variante postée.
 - **Rappels ignorés** : `ignoredStreak(posted, sessions)`, pure aussi, appelée à l'ouverture.
 
@@ -396,8 +396,8 @@ depuis). Fichiers et numéros de ligne sont justes. Ce qui suit corrige ou préc
 - **Bug UTC** : plus étroit qu'annoncé. À l'ouest de UTC, un dernier entraînement **hier** est lu
   avant-hier, la garde « aujourd'hui ou hier » échoue et `consecutive_days` tombe à 0. Le test à
   UTC-5 couvre ce cas précis.
-- **Séance en cours** : `dueToday = "hold"` si `status ∉ {idle, finished}`, **ou** `finished` avec
-  `savedSessionId === null`. Une victoire déjà sauvegardée n'est plus « en cours ».
+- **Séance en cours** : `dueToday = "hold"` tant que `status !== "idle"`, victoire comprise jusqu'à ce
+  qu'on la quitte (audit final du 28/09 : `savedSessionId` libérait le plan avant la fin de la sauvegarde).
 - **Serment, ligne de la semaine** : nouvelle fonction `oathWeekCount(oath, sessions, now)` (séances
   `countsAsSession` de la semaine calendaire du serment, `weekStartsOn` figé). « Encore atteignable »
   = séances manquantes ≤ jours restants dans la semaine, aujourd'hui compris.

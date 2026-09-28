@@ -43,17 +43,19 @@ describe("keepRemindersInStep", () => {
 
   afterEach(() => subscription.remove());
 
-  test("a session starting, and its victory being saved, each plan again", async () => {
+  test("a session starting plans again, and its save does not: leaving the victory does", async () => {
     mockStore.setState({ status: "countdown" });
     await flush();
     expect(mockGetState).toHaveBeenCalledTimes(1);
 
     mockStore.setState({ status: "running" });
     mockStore.setState({ status: "finished" });
+    // The save's first write, before the adventure and the boss: a plan here reads them stale.
+    mockStore.setState({ savedSessionId: 42 });
     await flush();
     expect(mockGetState).toHaveBeenCalledTimes(1);
 
-    mockStore.setState({ savedSessionId: 42 });
+    mockStore.setState({ status: "idle" });
     await flush();
     expect(mockGetState).toHaveBeenCalledTimes(2);
   });

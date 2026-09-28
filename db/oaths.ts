@@ -380,7 +380,6 @@ async function toProgress(oath: Oath): Promise<OathProgress> {
   };
 }
 
-/** Derived progress for the active oath. Nothing is written. */
 /**
  * The weekday an oath's weeks turn over on: frozen at swear time. An oath sworn before the field
  * existed, or carrying a value from a hand-edited blob, falls back to the week the journal is
@@ -392,6 +391,7 @@ export function oathWeekStart(oath: Oath, language: AppLanguage): 0 | 1 {
     : getWeekStart(language);
 }
 
+/** Derived progress for the active oath. Nothing is written. */
 export async function getOathProgress(): Promise<OathProgress | null> {
   const oath = await getOath();
   return oath ? await toProgress(oath) : null;

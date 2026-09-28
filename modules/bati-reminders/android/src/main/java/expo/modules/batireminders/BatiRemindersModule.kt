@@ -147,10 +147,9 @@ class BatiRemindersModule : Module() {
           } else {
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${activity.packageName}".toUri())
           }
-        ReminderScheduler.ensureChannel(
-          activity,
-          ReminderStore(activity).plan?.optString("channelName", "Reminders") ?: "Reminders",
-        )
+        // The name JS passes, not the stored plan's: with the switch never turned on there is no
+        // plan, and the channel would be created in English.
+        ReminderScheduler.ensureChannel(activity, channelName)
         activity.startActivity(intent)
         true
       }

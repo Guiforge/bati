@@ -19,8 +19,7 @@ import {
 import { i18n } from "@/i18n";
 import * as Reminders from "@/modules/bati-reminders";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
-import { useSessionStore } from "@/stores/session";
-import { isSessionHeld } from "@/stores/sessionHold";
+import { type SessionStatus, useSessionStore } from "@/stores/session";
 import { reportError } from "./reportError";
 import { checkForUpdate } from "./updateCheck";
 import { hasUnseenNotes } from "./whatsNew";
@@ -32,7 +31,12 @@ import { hasUnseenNotes } from "./whatsNew";
  * Nothing is read on a phone whose switch is off: the switch is the native half's, and turning it on
  * calls this again.
  */
+let replans = 0;
+
 export async function replanReminders(sessionHeld: boolean): Promise<void> {
+  // Plans overlap: one started as a session begins can finish after the one its quit started. Only
+  // the newest may reach the native half, or the older one's hold outlives the session.
+  const mine = ++replans;
   if (!Reminders.isAvailable()) return;
   const state = Reminders.getState();
   if (!state.enabled) return;
@@ -49,7 +53,7 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
     decideHomeOffer(language),
     getOath(),
   ]);
-  if (!offer) return;
+  if (!offer || mine !== replans) return;
 
   const plan = planReminders({
     days,
@@ -72,10 +76,18 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
   });
 }
 
+/**
+ * Whether a session holds today's reminder: from the warm-up until the hero leaves the victory
+ * screen. Not until `savedSessionId`: that is set as the save's first write, before the adventure,
+ * the boss and the oath, and a plan made then read them as they were before the session.
+ */
+function sessionHeld(status: SessionStatus): boolean {
+  return status !== "idle";
+}
+
 /** The one door to a new plan: whether a session holds today is read here, from the store. */
 export function replanRemindersNow(): Promise<void> {
-  const { status, savedSessionId } = useSessionStore.getState();
-  return replanReminders(isSessionHeld(status, savedSessionId));
+  return replanReminders(sessionHeld(useSessionStore.getState().status));
 }
 
 let plannedAt: string | null = null;
@@ -84,9 +96,8 @@ let plannedAt: string | null = null;
  * Keeps the reminders' plan in step with the app, from the root layout:
  *
  * - whenever whether a session holds today changes. Entering a session holds today's reminder;
- *   quitting gives it back; the row a save writes cancels it. A session is only in the journal once
- *   `savedSessionId` is set, long after `finished`: so a session abandoned at 19:55 hands the 20:00
- *   reminder back, and one saved at 20:30 cancels the 21:00 snooze;
+ *   leaving it gives it back, or cancels it once the journal has the session: so a session abandoned
+ *   at 19:55 hands the 20:00 reminder back, and one saved at 20:30 cancels the 21:00 snooze;
  * - whenever the app goes to the background after anything was written: a session, an oath, the
  *   language, the days, a session taken back out of the journal. `getChangeVersion` also moves with
  *   the day, so a new day plans again too. The one listener on `AppState` in the app.
@@ -100,7 +111,7 @@ let plannedAt: string | null = null;
  */
 export function keepRemindersInStep(): { remove(): void } {
   const unsubscribe = useSessionStore.subscribe(
-    (s) => isSessionHeld(s.status, s.savedSessionId),
+    (s) => sessionHeld(s.status),
     () => {
       replanRemindersNow().catch((e: unknown) => reportError("reminders.replan", e));
     },

@@ -119,7 +119,8 @@
       "./plugins/withAndroidDebugIcon",
       "./plugins/withAndroidDebugNetworkPermissions",
       "./plugins/withAndroidBackupRules",
-      "./plugins/withAndroidNetworkSecurity"
+      "./plugins/withAndroidNetworkSecurity",
+      "./plugins/withAndroidPredictiveBack"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

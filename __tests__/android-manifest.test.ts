@@ -37,6 +37,22 @@ test("the app opts in to predictive back", () => {
   expect(main("AndroidManifest.xml")).toContain('android:enableOnBackInvokedCallback="true"');
 });
 
+/**
+ * RN only registers that callback on Android 16, so the opt-in alone sent every back gesture on
+ * 13 to 15 straight out of the app. `plugins/withAndroidPredictiveBack.js` fills the gap, and must
+ * keep the callback off during the default back, or the first back from Home loops until the
+ * system kills the process.
+ */
+test("MainActivity forwards back to JS on Android 13 to 15, without re-entering it", () => {
+  const activity = main("java", "com", "guiforge", "bati", "MainActivity.kt");
+  expect(activity).toContain(
+    "if (Build.VERSION.SDK_INT in 33..35) onBackPressedDispatcher.addCallback(this, backToJs)",
+  );
+  // The default back is only ever reached through the wrapper that switches the callback off.
+  expect(activity.match(/super\.invokeDefaultOnBackPressed\(\)/g)?.length).toBe(1);
+  expect(activity.match(/defaultBackWithoutJs\(\)/g)?.length).toBe(3);
+});
+
 test("the launcher icon has a monochrome layer for themed icons", () => {
   for (const icon of ["ic_launcher.xml", "ic_launcher_round.xml"]) {
     expect(main("res", "mipmap-anydpi-v26", icon)).toContain("<monochrome ");

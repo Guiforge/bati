@@ -3,6 +3,7 @@ import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -12,6 +13,21 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 import expo.modules.ReactActivityDelegateWrapper
 
 class MainActivity : ReactActivity() {
+  // bati-predictive-back: see plugins/withAndroidPredictiveBack.js.
+  private val backToJs = object : OnBackPressedCallback(true) {
+    override fun handleOnBackPressed() {
+      isEnabled = false
+      onBackPressed()
+      isEnabled = true
+    }
+  }
+
+  private fun defaultBackWithoutJs() {
+    backToJs.isEnabled = false
+    super.invokeDefaultOnBackPressed()
+    backToJs.isEnabled = true
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     // Set the theme to AppTheme BEFORE onCreate to support
     // coloring the background, status bar, and navigation bar.
@@ -21,6 +37,7 @@ class MainActivity : ReactActivity() {
     SplashScreenManager.registerOnActivity(this)
     // @generated end expo-splashscreen
     super.onCreate(null)
+    if (Build.VERSION.SDK_INT in 33..35) onBackPressedDispatcher.addCallback(this, backToJs)
   }
 
   /**
@@ -53,13 +70,13 @@ class MainActivity : ReactActivity() {
       if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
           if (!moveTaskToBack(false)) {
               // For non-root activities, use the default implementation to finish them.
-              super.invokeDefaultOnBackPressed()
+              defaultBackWithoutJs()
           }
           return
       }
 
       // Use the default back button implementation on Android S
       // because it's doing more than [Activity.moveTaskToBack] in fact.
-      super.invokeDefaultOnBackPressed()
+      defaultBackWithoutJs()
   }
 }

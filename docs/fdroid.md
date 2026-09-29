@@ -75,7 +75,7 @@ Then edit `fdroid/config.yml` — the name and description are what users see in
 repo_url: https://guiforge.github.io/bati/fdroid/repo
 repo_name: Bati
 repo_description: >-
-  Dark-fantasy fitness RPG. Offline-first, no tracking, no accounts.
+  Dark-fantasy fitness RPG. Offline-first: no account, no servers of ours, no tracking.
 ```
 
 Drop a signed APK into `fdroid/repo/`, run `fdroid update -c`, and the index appears beside it.

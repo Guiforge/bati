@@ -28,7 +28,7 @@ const mockPermissionStatus = jest.fn();
 
 /** `session.expedition_permission_why`, the sentence the system dialog used to arrive without. */
 const WHY =
-  "Bati reads your location during an outing, and it stays on this phone. Android is about to ask.";
+  "Bati reads your location during an outing, and it leaves this phone only in your own backups and sync. Android is about to ask.";
 
 // Every focus reads as a fresh write, so these tests load on each one as they always did. The
 // gate itself is `__tests__/use-reload-on-change.test.ts`'s.

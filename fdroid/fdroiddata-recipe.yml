@@ -86,9 +86,10 @@ MaintainerNotes: |-
   rejects fetch, XMLHttpRequest, WebSocket, EventSource, sendBeacon and
   expo-file-system transfers anywhere else in the JS, and CI fails on one.
   Location comes from modules/bati-location, a local Expo module on Android's
-  LocationManager; the trace leaves the phone only inside an encrypted sync. ACCESS_NETWORK_STATE ships with the same
-  release: MapLibre's connectivity receiver calls getActiveNetworkInfo() on mount
-  and the process dies without it. ACCESS_WIFI_STATE stays blocked, since a
+  LocationManager; the trace leaves the phone only in a backup the user makes or
+  an encrypted sync. ACCESS_NETWORK_STATE ships with the same release: MapLibre's
+  connectivity receiver calls getActiveNetworkInfo() on mount and the process dies
+  without it. ACCESS_WIFI_STATE stays blocked, since a
   network name is a location by another route.
   fdroid/expected-permissions.txt is the full list, and release.yml diffs it
   against aapt2 on the built APK.

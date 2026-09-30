@@ -44,11 +44,13 @@ is a bug that got past a fully green build, and they are short. The three that c
   while the data underneath is wrong.
 - **One source per value.** Colours live in `constants/rawColors.ts`; a lint plugin rejects raw
   hex anywhere else. Titles go through `localizedTitle()`.
-- **No network from JavaScript.** `.biome/plugins/noJsNetwork.grit` rejects `fetch`,
-  `XMLHttpRequest`, `WebSocket`, `EventSource` and `sendBeacon` anywhere in the app. Map tiles are
-  fetched natively by MapLibre from the one host named in the privacy policy; a second destination
-  is a product decision and a policy edit, not a patch. If a feature genuinely needs a request from
-  JS, delete that plugin in the same commit and say in the message which host and why.
+- **No network from JavaScript, outside two modules.** `.biome/plugins/noJsNetwork.grit` rejects
+  `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource`, `sendBeacon` and expo-file-system
+  transfers everywhere except `src/updateCheck.ts` (the version check, `api.github.com`) and
+  `src/cloudSync.ts` (device sync, the hero's own WebDAV server). Map tiles are fetched natively by
+  MapLibre from the host `constants/mapStyle.ts` names. All three are off by default and named in
+  the privacy policy; a fourth destination is a product decision and a policy edit, not a patch. A third module goes
+  into the plugin's filter in the same commit, with the host and the reason in the message.
 
 [`DESIGN.md`](DESIGN.md) holds the visual non-negotiables: dark-only, tokens, one primary action
 per screen. [`PRODUCT.md`](PRODUCT.md) says who the app is for and what it deliberately refuses

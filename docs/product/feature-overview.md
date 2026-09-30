@@ -207,14 +207,18 @@ Every workout works with the phone in flight mode.
 - Local SQLite database
 - All content stored on device
 - No account required
-- One exception, off by default: the map behind an expedition's route, fetched from
+- Three exceptions, each off by default. The map behind an expedition's route, fetched from
   `tiles.openfreemap.org` (OpenStreetMap data served by OpenFreeMap). The tiles requested cover
   the area of the outing, while it happens and on its recap, so switching the map on tells that
   host roughly where the hero goes as they move, with the IP address and the time; not the route
   to the metre, the pace, the training or an identity. Until it is switched on the app makes no
-  network request at all, and both maps draw the route on a plain background. Nothing from the database is ever uploaded, and
+  network request for it, and both maps draw the route on a plain background.
+- The version check, a daily anonymous question to `api.github.com` about a newer release.
+- Device sync, the database encrypted on the phone and sent to a WebDAV or Nextcloud server the
+  hero names (or a Syncthing folder, with no request of Bati's own). Nothing from the database
+  leaves any other way except a backup the hero makes, and
   [`.biome/plugins/noJsNetwork.grit`](../../.biome/plugins/noJsNetwork.grit) fails the build on any
-  network call written in the app's own code.
+  network call outside `src/updateCheck.ts` and `src/cloudSync.ts`.
 
 ### Performance
 

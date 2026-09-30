@@ -37,22 +37,31 @@ It is built for people who train alone and lose the thread, at home, in a gym, o
 town. No coach, no feed, no leaderboard, nobody to compare yourself to. The only thing keeping
 score is a village that can only be built by showing up.
 
-**Your training stays on your phone.** No account, no servers, no analytics, no ads. Your history
-lives in a database on the device and is never uploaded. Two exceptions, both off by default.
-First, the map behind an expedition's route. Switched on in Settings, the phone asks OpenFreeMap
+**Your training stays on your phone.** No account, no servers of ours, no analytics, no ads. Your
+history lives in a database on the device. Three things can reach the network, each behind its own
+switch in Settings, all three off by default.
+
+First, the map behind an expedition's route. Switched on, the phone asks OpenFreeMap
 (OpenStreetMap data, served from `tiles.openfreemap.org`) for tiles, the square images a map is
 made of, covering the place where you went. That request tells the host roughly where you were,
 with your IP address and the time. Not the route to the metre, not the pace, not the training, not
 who you are, but the area, yes. Off, the route is drawn on a plain background and nothing is
 requested.
 
-Second, Check for updates, at the bottom of Settings and off the same way: switched on, the app
-asks `api.github.com` once a day whether a newer version has been published, which is how a copy
-installed from an APK by hand finds out at all. That request carries no identifier, downloads
-nothing, and the card it raises opens the release page in your own browser. Nothing else may open
-a connection: a lint rule rejects every network call written in JavaScript outside that one
-module, so a third destination cannot arrive by accident. Two switches; everything else is the
-architecture.
+Second, Check for updates: switched on, the app asks `api.github.com` once a day whether a newer
+version has been published, which is how a copy installed from an APK by hand finds out at all.
+That request carries no identifier, downloads nothing, and the card it raises opens the release
+page in your own browser.
+
+Third, Sync my devices: switched on, each device encrypts its whole history on the phone
+(AES-256-GCM, with your backup key) and sends it to a WebDAV or Nextcloud server you choose, which
+stores bytes it cannot read. Pointed at a folder that Syncthing keeps in step instead, Bati makes no
+request at all.
+
+Nothing else may open a connection: a lint rule rejects every network call written in JavaScript
+outside `src/updateCheck.ts` and `src/cloudSync.ts`, so a fourth destination cannot arrive by
+accident. The map is fetched natively by MapLibre, from the one host its style names. Three
+switches; everything else is the architecture.
 
 > **Early days.** The app works end to end and is published through F-Droid, which is where its
 > first users came from. It is not on Google Play: that account exists and has never left its
@@ -101,12 +110,13 @@ level.
 **Years of history, on one screen.** Streaks, records, muscle balance and every session you ever
 finished, read from a database on your phone, with nothing to log in to.
 
-**No account, and two network destinations, both off.** There is no server to leak, no analytics
-to opt out of, and no cloud copy of your training. Bati fetches two things and only if you ask it
-to: the map behind an expedition, from `tiles.openfreemap.org`, which tells that host roughly
-where the outing happened, and a daily question to `api.github.com` about a newer version, which
-tells it an IP address and a time. Nothing else leaves the phone, and the trace itself stays in
-the database on it. [Privacy policy](https://guiforge.github.io/bati/privacy/).
+**No account, and three network destinations, all off.** There is no server of ours to leak, no
+analytics to opt out of, and no cloud copy of your training unless you name the server. Bati reaches
+out for three things and only if you ask it to: the map behind an expedition, from
+`tiles.openfreemap.org`, which tells that host roughly where the outing happened; a daily question
+to `api.github.com` about a newer version, which tells it an IP address and a time; and device
+sync, to your own WebDAV or Nextcloud server, which receives your history encrypted on the phone.
+Nothing else leaves the phone. [Privacy policy](https://guiforge.github.io/bati/privacy/).
 
 ## Install it
 

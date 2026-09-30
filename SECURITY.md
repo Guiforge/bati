@@ -9,11 +9,13 @@ answered.
 
 ## What the app does with your data
 
-No personal data leaves the device. Bati has no backend, no analytics and no crash-reporting
-service. Training history, GPS traces, preferences and the crash log all live in a local SQLite
-database, and uninstalling the app destroys them.
+No personal data reaches us. Bati has no backend, no analytics and no crash-reporting service.
+Training history, GPS traces, preferences and the crash log all live in a local SQLite database.
+Uninstalling the app destroys that copy; what the user made elsewhere (a backup file, the phone's
+system backup, a sync folder or server) stays where they put it.
 
-Two paths cross the network boundary, and both are worth knowing before you write a report.
+Four paths cross the network boundary, three of them behind a switch that is off by default, and
+all are worth knowing before you write a report.
 
 - **Map tiles.** The app carries `android.permission.INTERNET` since expeditions landed. The map
   is a setting, off by default; once you switch it on, MapLibre fetches vector tiles (the square
@@ -21,17 +23,25 @@ Two paths cross the network boundary, and both are worth knowing before you writ
   OpenFreeMap. The tiles requested are the ones covering the place where the outing happened, so
   that request tells the host roughly where you were, with your IP address and the time. It does
   not carry the route to the metre, the pace, the training or an identity: the points stay in the
-  database. With the map off, the app makes no request at all. Nothing else in the app may open a connection, and that is enforced
-  rather than promised: [`.biome/plugins/noJsNetwork.grit`](.biome/plugins/noJsNetwork.grit)
-  fails the build on `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource` or `sendBeacon`
-  anywhere in the JavaScript.
+  database. With the map off, the map makes no request at all.
+- **The version check** ([`src/updateCheck.ts`](src/updateCheck.ts)), off by default: once a day,
+  an anonymous request to `api.github.com` for the latest release tag. Nothing is downloaded.
+- **Device sync** ([`src/cloudSync.ts`](src/cloudSync.ts)), off by default and refused unless
+  backups are encrypted: each device's history, sealed on the phone with the backup key, goes to a
+  WebDAV or Nextcloud server the user names, https only (plain http only to the phone itself).
+  The server sees an IP address, times and file sizes, never the contents.
+
+Nothing else in the app may open a connection, and that is enforced rather than promised:
+[`.biome/plugins/noJsNetwork.grit`](.biome/plugins/noJsNetwork.grit) fails the build on any
+network call (`fetch`, sockets, expo-file-system transfers) outside those two modules.
 - **The feedback row in Settings**, which opens a `mailto:` draft in your own mail client,
   pre-filled and fully editable. Nothing is transmitted unless you press send yourself.
 
 That is the property most worth protecting in a report: if you find a way for this app to send
 data off the device without the user deliberately doing it (a second host, a request from
 JavaScript that slipped past the plugin, a route or a database in a tile URL), that is a bug worth
-telling me about.
+telling me about. So is a way to make sync send anything unencrypted, or to a server the user
+did not name.
 
 ## Known and accepted
 

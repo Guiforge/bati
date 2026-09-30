@@ -15,7 +15,7 @@ keydname: CN=bati-repo, OU=F-Droid
 repo_url: https://guiforge.github.io/bati/fdroid/repo
 repo_name: Bati
 repo_description: >-
-  Dark-fantasy fitness RPG. Offline-first: no account, no servers, no tracking.
+  Dark-fantasy fitness RPG. Offline-first: no account, no servers of ours, no tracking.
   Turn workouts into quests, boss fights and a village built by your training.
 repo_icon: icon.png
 archive_older: 0

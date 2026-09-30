@@ -148,7 +148,12 @@ helpers.
 
 - No account is required.
 - Workout history and settings are local-first.
-- Cloud sync, social features, and analytics are not part of the current architecture.
+- Device sync is opt-in and end-to-end encrypted, to a server the hero names; see
+  [backup-and-sync.md](backup-and-sync.md). Social features and analytics are not part of the
+  current architecture.
+- The network is reached from three places only, each off by default: map tiles (MapLibre,
+  natively), `src/updateCheck.ts` and `src/cloudSync.ts`. `.biome/plugins/noJsNetwork.grit`
+  rejects a fourth.
 
 ## Related
 

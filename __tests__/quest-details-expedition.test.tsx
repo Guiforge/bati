@@ -444,7 +444,9 @@ describe("an expedition on the quest screen", () => {
 
     expect(view.getByTestId("quest-location-notice")).toBeTruthy();
     expect(
-      view.getByText("Bati reads your position while you are out. It stays on this phone."),
+      view.getByText(
+        "Bati reads your position while you are out. It leaves this phone only in your own backups and sync.",
+      ),
     ).toBeTruthy();
   });
 

@@ -13,16 +13,22 @@ LO QUE ENCONTRARÁS
 • Una aldea: los edificios suben con el volumen que de verdad has registrado
 • Juramentos: elige un objetivo y deja que la app te ayude a cumplirlo
 • Recordatorios: los días que eliges, programados en el teléfono, sin servidor
+• Copias de seguridad: como archivo, o automáticas en una carpeta que elijas, cifradas si lo pides
+• Sincronización: un solo héroe en varios móviles
+• Cuatro idiomas: español, inglés, francés, alemán
 • Un diario: historial, récords, tu llama, equilibrio muscular
 
 TU ENTRENAMIENTO SE QUEDA EN TU MÓVIL
-Sin cuenta. Sin registro. Sin servidor nuestro. Sin analíticas, sin anuncios, sin ningún tipo de rastreo. Tus sesiones, tus récords y el trazado GPS de una salida viven en una base de datos en tu dispositivo y en ningún otro sitio. Desinstalar la app borra cada registro que haya creado.
+Sin cuenta. Sin registro. Sin servidor nuestro. Sin analíticas, sin anuncios, sin ningún tipo de rastreo. Tus sesiones, tus récords y el trazado GPS de una salida viven en una base de datos en tu dispositivo. La copia de seguridad del sistema de tu móvil puede llevársela, como los datos de cualquier app, y puedes desactivarla. Desinstalar la app la borra del móvil, no las copias que hayas hecho en otro sitio.
 
-Una excepción, desactivada por defecto: el mapa bajo la ruta de una salida. Si lo activas en Ajustes, el móvil pide a OpenFreeMap (datos de OpenStreetMap, servidos desde tiles.openfreemap.org) teselas, las imágenes cuadradas de las que se compone un mapa, de la zona por la que pasaste. Esa petición le indica al servidor más o menos dónde estuviste, junto con tu dirección IP y la hora. No la ruta al metro, ni el ritmo, ni el entrenamiento, ni quién eres, pero sí la zona. Desactivado, o desactivado de nuevo con un toque, la ruta se dibuja sobre un fondo liso y la app no hace ninguna petición de red. Ninguna otra parte de la app puede abrir una conexión: una regla de lint hace fallar la compilación si aparece una llamada de red en cualquier parte del código.
+Tres funciones usan la red, cada una tras su propio interruptor en Ajustes, y las tres empiezan desactivadas:
+• El mapa bajo la ruta de una salida. El móvil pide a OpenFreeMap (datos de OpenStreetMap, servidos desde tiles.openfreemap.org) teselas de la zona por la que vas. Eso le indica al servidor más o menos dónde estuviste, con tu dirección IP y la hora. Desactivado, la ruta se dibuja sobre un fondo liso.
+• Buscar actualizaciones. Una vez al día, la app pregunta a api.github.com si hay una versión más nueva. No se envía ningún identificador ni se descarga nada.
+• Sincronización entre dispositivos. Tu historial, cifrado en el móvil (AES-256-GCM), va a un servidor WebDAV o Nextcloud que tú eliges, que no puede leerlo. O a una carpeta que Syncthing mantiene al día, y entonces Bati no hace ninguna petición.
 
-La ubicación solo se lee durante una salida, mediante un módulo GPS escrito para esta app sobre el propio servicio de ubicación de Android. Sin servicios de Google Play, sin SDK de terceros, nada que llame a casa.
+Con las tres desactivadas, la app no hace ninguna petición de red. Solo dos archivos del código pueden hacer una desde JavaScript, y una regla de lint rechaza cualquier otra antes de publicarse.
 
-El mapa es el único interruptor, y empieza desactivado. Todo lo demás es la arquitectura, comprobada al compilar.
+La ubicación solo se lee durante una salida, mediante un módulo GPS propio sobre el servicio de ubicación de Android. Sin servicios de Google Play, sin SDK de terceros, nada que llame a casa.
 
 PRIMERO EL PESO CORPORAL
 El catálogo de ejercicios se basa en lo que puedes hacer sin material, y se adapta si tienes algo. Los calentamientos son dinámicos y se ajustan a la sesión que tienes delante, porque nadie repite un calentamiento de cinco minutos antes de un entrenamiento de seis.

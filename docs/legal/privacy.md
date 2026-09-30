@@ -6,7 +6,7 @@ head_title: "Privacy policy for Bati"
 description: "Bati collects nothing about you. No account, no server of ours, no analytics. Offline first, with three exceptions, all off by default: the map, which tells a tile host roughly where you go, a daily question to GitHub about a newer version, and device sync, which sends your history encrypted to a server you choose."
 type: legal
 status: active
-updated: 2026-09-26
+updated: 2026-09-28
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -33,7 +33,7 @@ francés: **feedback.bati@proton.me**
 
 # Privacy Policy for Bati
 
-**Last updated: 27 September 2026**
+**Last updated: 28 September 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -58,10 +58,12 @@ than one device: see [the map](#the-map-and-the-one-host),
 ## What is stored, and where
 
 Everything Bati records (your workouts, sets, reps, hold times, quests, adventures, village,
-achievements, flame, oath, avatar, settings, and the GPS points of an outing) is written to a
+achievements, flame, oath, avatar, settings, the photos you give an exercise or a quest, and the GPS points
+and air-pressure readings of an outing) is written to a
 **SQLite database inside the app's private storage on your device**.
 
-- It is never uploaded, synced, backed up to us, or shared with anyone.
+- It is never sent to us or shared with anyone. It leaves the phone only in a backup you make or a
+  sync you switch on, both described below, and a sync is always encrypted on the phone first.
 - We cannot read it. There is no server to read it from.
 - **Your phone's own backup carries it.** Android backs up app data by itself (Google's backup on
   most phones, Seedvault on LineageOS, /e/OS and GrapheneOS, or a cable or wireless transfer to a
@@ -135,7 +137,7 @@ registration.
   names the host here rather than leaving you to find it in a packet capture.
 - **What it does not reveal:** the route to the metre, your pace, your training, or anything else
   in the database. The host learns the area and roughly when you crossed it, never the line you
-  drew through it, and nothing in the database is ever sent up.
+  drew through it, and nothing in the database travels with the request.
 - **What keeps the list this short:** a lint rule in the repository
   ([`.biome/plugins/noJsNetwork.grit`](https://github.com/Guiforge/bati/blob/main/.biome/plugins/noJsNetwork.grit))
   rejects every network call written in the app's own code (`fetch`, `XMLHttpRequest`,
@@ -205,10 +207,16 @@ that server, and reads the others' to tell you if one of them is ahead.
 
 **Location, precise and approximate (optional).** Used by one thing: measuring the ground an
 outing covers. The app reads your position while an outing is running and stops the moment the
-session ends. The points are written to the local database and never sent anywhere. Decline it, or
+session ends. The points are written to the local database, and leave the phone only inside an
+encrypted sync or a backup you make. Decline it, or
 never start an outing, and the rest of the app is unaffected. Android requires the approximate
 permission to be requested alongside the precise one; only the precise one is actually read,
 because approximate location cannot measure a run.
+
+**Air pressure (no permission).** During an outing, on a phone that has a barometer, the app
+reads the air pressure to measure how much you climbed, more finely than GPS altitude can. The
+readings are stored with the outing's points and follow them: into your backups and an encrypted
+sync, nowhere else. Android asks no permission for this sensor, so it is written here instead.
 
 **Running with the screen off (Android).** An outing keeps a foreground service and a wake
 lock alive so the trace does not stop when your phone sleeps in a pocket. That is what the
@@ -238,8 +246,10 @@ Bati deliberately does *not* take the neighbouring Wi-Fi permission, which would
 around you, and a network name is a location by another route.
 
 **Photos (optional).** If you choose a photo as your hero avatar, the app reads that one image
-from your library. It is stored on your device like the rest of your data, and never uploaded.
-Decline the permission and the app works normally with the built-in avatars.
+from your library and keeps a pointer to it on your device; the image itself is never copied or
+sent. If you give a photo to an exercise or a quest you made, the app shrinks it and stores it in
+the database like the rest of your data, so it travels with your backups and an encrypted sync,
+and nowhere else. Decline the permission and the app works normally with the built-in images.
 
 **Home-screen widget (Android, optional).** The flame widget reads your flame from
 the same on-device database.
@@ -291,7 +301,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 27 septembre 2026**
+**Dernière mise à jour : 28 septembre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -317,11 +327,13 @@ appareil. Voir « La carte, et l'hôte unique », « La vérification de version
 ## Ce qui est stocké, et où
 
 Tout ce que Bati enregistre (séances, séries, répétitions, temps de gainage, quêtes,
-aventures, village, hauts faits, flamme, serment, avatar, réglages et les points GPS d'une
-sortie) est écrit dans une **base SQLite située dans le stockage privé de l'application, sur
+aventures, village, hauts faits, flamme, serment, avatar, réglages, les photos que vous donnez à
+un exercice ou une quête, et les points GPS et relevés de pression d'une sortie) est écrit dans une **base SQLite située dans le stockage privé de l'application, sur
 votre appareil**.
 
-- Rien n'est envoyé, synchronisé, sauvegardé chez nous ni partagé avec qui que ce soit.
+- Rien n'est envoyé chez nous ni partagé avec qui que ce soit. Les données ne quittent le téléphone
+  que dans une sauvegarde que vous faites ou une synchronisation que vous activez, décrites plus
+  bas, et une synchronisation est toujours chiffrée sur le téléphone avant de partir.
 - Nous ne pouvons pas le lire. Il n'existe aucun serveur pour le lire.
 - **La sauvegarde de votre téléphone l'emporte.** Android sauvegarde de lui-même les données des
   applications (la sauvegarde Google sur la plupart des téléphones, Seedvault sur LineageOS, /e/OS
@@ -408,7 +420,7 @@ sans inscription.
   que de vous laisser le découvrir dans une capture réseau.
 - **Ce qu'elle ne révèle pas :** le tracé au mètre près, votre allure, votre entraînement, ni quoi
   que ce soit d'autre dans la base. L'hôte apprend la zone et à peu près quand vous l'avez
-  traversée, jamais la ligne que vous y avez tracée, et rien de la base n'est jamais envoyé.
+  traversée, jamais la ligne que vous y avez tracée, et rien de la base ne part avec la demande.
 - **Ce qui garde la liste aussi courte :** une règle de lint dans le dépôt
   ([`.biome/plugins/noJsNetwork.grit`](https://github.com/Guiforge/bati/blob/main/.biome/plugins/noJsNetwork.grit))
   rejette tout appel réseau écrit dans le code de l'application (`fetch`, `XMLHttpRequest`,
@@ -487,10 +499,16 @@ celui des autres pour vous dire si l'un d'eux est en avance.
 
 **Position, précise et approximative (facultatif).** Utilisée pour une seule chose : mesurer le
 terrain parcouru pendant une sortie. L'application lit votre position tant que la sortie dure
-et s'arrête à la fin de la séance. Les points sont écrits dans la base locale et ne sont envoyés
-nulle part. Refusez-la, ou ne partez jamais en sortie, et le reste de l'application ne change
+et s'arrête à la fin de la séance. Les points sont écrits dans la base locale, et ne quittent le
+téléphone que dans une synchronisation chiffrée ou une sauvegarde que vous faites. Refusez-la, ou ne partez jamais en sortie, et le reste de l'application ne change
 pas. Android exige que la permission approximative soit demandée avec la précise ; seule la précise
 est réellement lue, parce qu'une position approximative ne mesure pas une course.
+
+**Pression de l'air (sans permission).** Pendant une sortie, sur un téléphone équipé d'un
+baromètre, l'application lit la pression de l'air pour mesurer le dénivelé gravi, plus finement
+que l'altitude GPS. Les relevés sont stockés avec les points de la sortie et les suivent : dans
+vos sauvegardes et une synchronisation chiffrée, nulle part ailleurs. Android ne demande aucune
+permission pour ce capteur, c'est donc écrit ici.
 
 **Fonctionner écran éteint (Android).** Une sortie maintient un service de premier plan et un
 wake lock pour que la trace ne s'arrête pas quand le téléphone s'endort dans une poche. C'est à
@@ -522,8 +540,11 @@ permission ci-dessus. Bati refuse délibérément la permission Wi-Fi voisine, q
 réseaux autour de vous : un nom de réseau est une position par un autre chemin.
 
 **Photos (facultatif).** Si vous choisissez une photo comme avatar, l'application lit cette
-image dans votre galerie. Elle est stockée sur votre appareil comme le reste, et jamais
-envoyée. Vous pouvez refuser : l'application fonctionne normalement avec les avatars intégrés.
+image dans votre galerie et garde un lien vers elle sur votre appareil ; l'image elle-même n'est
+jamais copiée ni envoyée. Si vous donnez une photo à un exercice ou une quête que vous avez créés,
+l'application la réduit et la stocke dans la base comme le reste : elle voyage donc avec vos
+sauvegardes et une synchronisation chiffrée, et nulle part ailleurs. Vous pouvez refuser :
+l'application fonctionne normalement avec les images intégrées.
 
 **Widget d'écran d'accueil (Android, facultatif).** Le widget de flamme lit votre régularité
 dans la même base locale.

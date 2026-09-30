@@ -529,7 +529,7 @@ export default function SettingsScreen() {
             }}
           />
 
-          {/* The app's only network call, and it is off until this row is tapped. The host is
+          {/* One of the app's three network destinations, off until this row is tapped. The host is
               named on the line below rather than in the policy, because "somewhere in Privacy"
               is where a hero finds out after the fact. */}
           <SettingRow

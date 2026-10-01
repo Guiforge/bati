@@ -1,10 +1,16 @@
+import assert from "node:assert/strict";
+
 import {
   ADVENTURE_ASSETS,
+  BOSS_ASSETS,
   EXERCISE_ASSETS,
   getAdventureAsset,
+  getBossAsset,
+  getBossKey,
   getExerciseAsset,
   getExerciseThumb,
   getQuestAsset,
+  getQuestThumb,
   getVillagerAsset,
   QUEST_ASSETS,
 } from "@/constants/assetMap";
@@ -63,6 +69,53 @@ describe("assetMap", () => {
     expect(getAdventureAsset("assets/images/adventures/scout_trial.jpg")).toBe(
       ADVENTURE_ASSETS.scout_trial,
     );
+  });
+});
+
+// A quest file from someone else's phone names its art, and a plain `MAP[key]` answered
+// "constructor" with a function and "__proto__" with `Object.prototype`, which expo-image would
+// then hand to native as a source. Every getter must answer only with the map's own entries.
+describe("a name the maps inherit is no asset", () => {
+  const PLACEHOLDER = getExerciseAsset("no_such_art_anywhere");
+  const INHERITED = [
+    "constructor",
+    "toString",
+    "__proto__",
+    "hasOwnProperty",
+    "valueOf.webp",
+    "assets/__proto__.jpg",
+    "assets/images/quests/constructor.png",
+  ];
+
+  test("the placeholder is a real asset, not one of the inherited values", () => {
+    expect(PLACEHOLDER).toBeDefined();
+    expect(typeof PLACEHOLDER).not.toBe("function");
+    expect(PLACEHOLDER).not.toBe(Object.prototype);
+    expect(PLACEHOLDER).not.toBe(EXERCISE_ASSETS.squat);
+  });
+
+  test.each(INHERITED)("%s falls back to the placeholder, or to nothing", (name) => {
+    expect(getExerciseAsset(name)).toBe(PLACEHOLDER);
+    expect(getExerciseThumb(name)).toBe(PLACEHOLDER);
+    expect(getQuestAsset(name)).toBe(PLACEHOLDER);
+    expect(getAdventureAsset(name)).toBe(PLACEHOLDER);
+    expect(getBossAsset(name)).toBe(PLACEHOLDER);
+    // Every chain of the boss lookup: defeated, legendary and wounded each read their own map.
+    expect(getBossAsset(name, 1)).toBe(PLACEHOLDER);
+    expect(getBossAsset(name, 0, "wounded")).toBe(PLACEHOLDER);
+    expect(getBossAsset(name, 1, "defeated")).toBe(PLACEHOLDER);
+    expect(getQuestThumb(name)).toBeNull();
+    expect(getBossKey(name)).toBeNull();
+  });
+
+  // The guard must not cost a real name its art.
+  test("a real boss still resolves through every chain", () => {
+    const [key] = Object.keys(BOSS_ASSETS);
+    assert(key);
+    expect(getBossKey(`assets/images/bosses/${key}.jpg`)).toBe(key);
+    expect(getBossAsset(key)).toBe(BOSS_ASSETS[key as keyof typeof BOSS_ASSETS]);
+    expect(getBossAsset(key, 0, "wounded")).not.toBe(PLACEHOLDER);
+    expect(getBossAsset(key, 1, "defeated")).not.toBe(PLACEHOLDER);
   });
 });
 

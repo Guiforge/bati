@@ -1,0 +1,9 @@
+- Eine Quest, die dir jemand schickt, öffnet sich mit
+  einem Tippen in Bati, direkt aus Chat, Mail oder Dateien.
+- Vorher kannst du sie umbenennen und Übungen weglassen.
+  Eine Quest, die du schon hast, wird aktualisiert oder
+  du behältst beide.
+- Eine Übung, die deine Version noch nicht kennt, blockiert
+  nicht mehr die ganze Quest: sie wird einfach weggelassen.
+- Empfangene Dateien werden genauer geprüft: übergroße
+  Bilder und versteckte Zeichen bleiben draußen.

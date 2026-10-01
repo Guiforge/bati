@@ -140,7 +140,11 @@ export default function RootLayout() {
     // onboarding group should be kicked back to "/".
     const isPostOnboardingOffer = segments[1] === "first-session";
 
-    if (!hasFinishedOnboarding && !inOnboardingGroup) {
+    // A quest file a friend sent is often why Bati was installed: the preview opens before
+    // onboarding, and onboarding follows the import (the quest screen is not in its group).
+    const inQuestImport = segments[0] === "quest-import";
+
+    if (!hasFinishedOnboarding && !inOnboardingGroup && !inQuestImport) {
       router.replace("/onboarding");
     } else if (hasFinishedOnboarding && inOnboardingGroup && !isPostOnboardingOffer) {
       router.replace("/");

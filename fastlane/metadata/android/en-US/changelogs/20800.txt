@@ -1,0 +1,9 @@
+- A quest someone sent you opens in Bati with one tap,
+  straight from your chat, mail or Files.
+- Before it joins yours, rename it and leave out the
+  movements you don't want. A quest you already have
+  can be updated or kept beside the new one.
+- A movement your version doesn't know yet no longer
+  blocks the whole quest: it is simply left out.
+- Received files are checked more closely: oversized
+  pictures and hidden characters stay out.

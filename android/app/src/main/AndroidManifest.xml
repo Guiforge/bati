@@ -38,6 +38,11 @@
         <data android:scheme="bati"/>
         <data android:scheme="exp+bati"/>
       </intent-filter>
+      <intent-filter data-generated="true">
+        <action android:name="android.intent.action.VIEW"/>
+        <data android:mimeType="application/json"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
     </activity>
     <receiver android:name=".widget.Flame" android:exported="false" android:label="Bati: Flame">
       <intent-filter>

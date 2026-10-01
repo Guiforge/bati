@@ -1,7 +1,7 @@
 import type { OutingGoal } from "@/src/gps/track";
 import type { Exercise } from "./exercises";
 import type { QuestConfig } from "./questConfig";
-import type { Locomotion } from "./schema";
+import { ADMIN_CREATOR, type Locomotion } from "./schema";
 import { DISTANCE_GOAL_RANGE, type Target, targetRangeFor } from "./targets";
 import { NON_REP_STYLE } from "./workUnits";
 
@@ -238,8 +238,13 @@ export function withOutingGoal(
  * already chose it by choosing the quest. Moved here from the session store so the quest screen
  * can estimate a ride from a distance with the same answer the speed cap uses.
  */
-export function isMountedOuting(quest: { exercises: { exercise: { enName: string } }[] }): boolean {
-  return quest.exercises.some((slot) => slot.exercise.enName === "Outrider's Ride");
+export function isMountedOuting(quest: {
+  exercises: { exercise: Pick<Exercise, "enName" | "creator"> }[];
+}): boolean {
+  // The seed movement, not a name: a hero's own (or an imported one) can be called anything.
+  return quest.exercises.some(
+    (slot) => slot.exercise.enName === "Outrider's Ride" && slot.exercise.creator === ADMIN_CREATOR,
+  );
 }
 
 /** Nominal speeds for an estimate, in m/s. A brisk walk and a steady ride; a run sits between. */

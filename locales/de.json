@@ -341,9 +341,20 @@
     "import_not_a_quest": "Diese Datei enthält keine Bati-Quest.",
     "import_newer": "Diese Quest stammt aus einer neueren Bati-Version. Aktualisiere die App, um sie zu öffnen.",
     "import_unknown_movement": "Diese Quest nutzt eine Übung, die deine Bati-Version noch nicht kennt. Aktualisiere die App, um sie zu öffnen.",
-    "import_hint": "Eine .bati-quest.json-Datei, die dir jemand geschickt hat.",
-    "share_quest_hint": "Schickt eine Datei, die sich in Bati öffnen lässt, mit Fotos.",
-    "import_updated": "Quest aktualisiert, sie ersetzt die frühere Version"
+    "import_hint": "Eine .bati-quest.json-Datei, die dir jemand geschickt hat. Du kannst sie auch direkt im Chat antippen.",
+    "share_quest_hint": "Sendet eine Datei, Fotos inklusive. Ein Tippen darauf öffnet Bati.",
+    "import_updated": "Quest aktualisiert, sie ersetzt die frühere Version",
+    "import_title": "Erhaltene Quest",
+    "import_rounds_one": "{{count}} Runde",
+    "import_rounds_other": "{{count}} Runden",
+    "import_existing": "Du hast diese Quest schon: {{title}}",
+    "import_choice_update": "Meine aktualisieren",
+    "import_choice_copy": "Beide behalten",
+    "import_movements": "Übungen übernehmen",
+    "import_missing_movement": "Noch nicht in deiner Bati-Version",
+    "import_none_kept": "Wähle mindestens eine Übung.",
+    "import_confirm": "Zu meinen Quests hinzufügen",
+    "import_confirm_update": "Meine Quest aktualisieren"
   },
   "adventures": {
     "gallery_title": "Abenteuer",

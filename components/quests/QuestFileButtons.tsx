@@ -5,7 +5,8 @@ import { Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { useToast } from "@/components/common/Toast";
 import { Download, Share2 } from "@/components/icons";
-import { importQuest, pickQuestFile, QuestFileError, shareQuest } from "@/src/questFile";
+import { holdIncomingFile } from "@/src/incomingFile";
+import { pickQuestFile, shareQuest } from "@/src/questFile";
 import { reportError } from "@/src/reportError";
 
 /** A quest the hero wrote, sent as a file through the share sheet (`src/questFile.ts`). */
@@ -64,18 +65,21 @@ export function ShareQuestButton({ questId }: { questId: number }) {
 export function ImportQuestButton() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { showError, showSuccess } = useToast();
+  const { showError } = useToast();
   const [busy, setBusy] = useState(false);
   // Read synchronously, unlike the state: a double tap ran the import twice, the second reporting
   // an update over the first.
   const working = useRef(false);
 
+  // The picker only finds the file: the preview reads it and imports it, the same screen a file
+  // tapped in a chat opens on (`app/quest-import.tsx`).
   const run = async () => {
-    const file = await pickQuestFile();
-    if (!file) return;
-    const { id, updated } = await importQuest(file);
-    showSuccess(t(updated ? "quests.import_updated" : "quests.import_done"));
-    router.replace(`/quests/${id}` as never);
+    const uri = await pickQuestFile();
+    if (!uri) return;
+    // The empty editor closes first: left under the preview, it was where back from the imported
+    // quest landed (seen on the emulator). The URI is held aside, never in the route.
+    if (router.canGoBack()) router.back();
+    router.push(`/quest-import?n=${holdIncomingFile(uri)}` as never);
   };
 
   const onPress = async () => {
@@ -83,10 +87,6 @@ export function ImportQuestButton() {
     working.current = true;
     setBusy(true);
     await run().catch((error: unknown) => {
-      if (error instanceof QuestFileError) {
-        showError(t(`quests.import_${error.reason}`));
-        return;
-      }
       reportError("quests.import", error);
       showError(t("quests.import_failed"));
     });

@@ -242,9 +242,17 @@ describe("outingGoal", () => {
 
 describe("isMountedOuting", () => {
   test("only the ride is mounted", () => {
-    const named = (enName: string) => ({ exercises: [{ exercise: { enName } }] });
+    const named = (enName: string, creator = "Admin") => ({
+      exercises: [{ exercise: { enName, creator } }],
+    });
     expect(isMountedOuting(named("Outrider's Ride"))).toBe(true);
     expect(isMountedOuting(named("Warden's Walk"))).toBe(false);
+  });
+
+  test("a hero's movement named after the ride stays on foot", () => {
+    // An imported file can name its own movement anything; the mounted speed cap is the seed's.
+    const own = { exercises: [{ exercise: { enName: "Outrider's Ride", creator: "hero" } }] };
+    expect(isMountedOuting(own)).toBe(false);
   });
 });
 

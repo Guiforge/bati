@@ -1,0 +1,9 @@
+- Una misión que te envían se abre en Bati con un toque,
+  desde tu chat, tu correo o Archivos.
+- Antes de añadirla, cámbiale el nombre y quita los
+  ejercicios que no quieras. Una misión que ya tienes
+  se actualiza, o conservas las dos.
+- Un ejercicio que tu versión aún no conoce ya no bloquea
+  toda la misión: simplemente se deja fuera.
+- Los archivos recibidos se revisan más a fondo: imágenes
+  enormes y caracteres ocultos se quedan fuera.

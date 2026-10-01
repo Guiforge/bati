@@ -556,10 +556,7 @@ export const EXERCISE_THUMB_ASSETS = {
   outriders_ride: require("@/assets/images/exercises/thumbs/outriders_ride.webp"),
 } as const;
 
-export type ExerciseAssetKey = keyof typeof EXERCISE_ASSETS;
-export type QuestAssetKey = keyof typeof QUEST_ASSETS;
 export type BossAssetKey = keyof typeof BOSS_ASSETS;
-export type AdventureAssetKey = keyof typeof ADVENTURE_ASSETS;
 export type VillageTierKey = keyof typeof VILLAGE_TIER_ASSETS;
 export type SportSpriteKey = keyof typeof SPORT_SPRITE_ASSETS;
 export type BuildingIconKey = keyof typeof BUILDING_ICON_ASSETS;
@@ -583,6 +580,16 @@ function keyFromPath(id: string): string {
 }
 
 /**
+ * The map's own entry for a path, never one it inherits. A plain `MAP[key]` answers
+ * `"constructor"` or `"__proto__"` with a function or `Object.prototype`, which expo-image then
+ * hands to native as a source; a quest file from someone else can name either.
+ */
+function lookup<T>(map: Record<string, T>, id: string): T | undefined {
+  const key = keyFromPath(id);
+  return Object.hasOwn(map, key) ? map[key] : undefined;
+}
+
+/**
  * A hero-authored movement carries its picture in the row itself: either a bundled illustration
  * it picked from the app's own art, or a `data:` URI of a photo (see `0035` and the exercise
  * editor). Both getters below take all three forms, so the five screens that render an exercise
@@ -597,11 +604,7 @@ function asUriSource(id: string): { uri: string } | null {
  * Get exercise asset by ID (with fallback to placeholder)
  */
 export function getExerciseAsset(id: string) {
-  return (
-    asUriSource(id) ??
-    EXERCISE_ASSETS[keyFromPath(id) as ExerciseAssetKey] ??
-    require("@/assets/placeholder.webp")
-  );
+  return asUriSource(id) ?? lookup(EXERCISE_ASSETS, id) ?? require("@/assets/placeholder.webp");
 }
 
 /**
@@ -612,9 +615,7 @@ export function getExerciseAsset(id: string) {
  */
 export function getExerciseThumb(id: string) {
   return (
-    asUriSource(id) ??
-    EXERCISE_THUMB_ASSETS[keyFromPath(id) as ExerciseAssetKey] ??
-    require("@/assets/placeholder.webp")
+    asUriSource(id) ?? lookup(EXERCISE_THUMB_ASSETS, id) ?? require("@/assets/placeholder.webp")
   );
 }
 
@@ -628,7 +629,7 @@ export function getExerciseThumb(id: string) {
  */
 export function getQuestThumb(id: string | null | undefined) {
   if (!id) return null;
-  return asUriSource(id) ?? QUEST_THUMB_ASSETS[keyFromPath(id) as QuestAssetKey] ?? null;
+  return asUriSource(id) ?? lookup(QUEST_THUMB_ASSETS, id) ?? null;
 }
 
 /**
@@ -636,11 +637,7 @@ export function getQuestThumb(id: string | null | undefined) {
  */
 export function getQuestAsset(id: string) {
   // A hero-chosen cover is a bundled key or a `data:` photo, exactly like a movement's art.
-  return (
-    asUriSource(id) ??
-    QUEST_ASSETS[keyFromPath(id) as QuestAssetKey] ??
-    require("@/assets/placeholder.webp")
-  );
+  return asUriSource(id) ?? lookup(QUEST_ASSETS, id) ?? require("@/assets/placeholder.webp");
 }
 
 /**
@@ -651,11 +648,16 @@ export function getQuestAsset(id: string) {
  * chain ends base → placeholder.
  */
 export function getBossAsset(id: string, tier = 0, state?: "wounded" | "defeated") {
-  const key = keyFromPath(id) as BossAssetKey;
-  if (state === "defeated" && key in BOSS_DEFEATED_ASSETS) return BOSS_DEFEATED_ASSETS[key];
-  if (tier >= 1 && key in BOSS_LEGENDARY_ASSETS) return BOSS_LEGENDARY_ASSETS[key];
-  if (state === "wounded" && key in BOSS_WOUNDED_ASSETS) return BOSS_WOUNDED_ASSETS[key];
-  return BOSS_ASSETS[key] ?? require("@/assets/placeholder.webp");
+  const defeated = state === "defeated" ? lookup(BOSS_DEFEATED_ASSETS, id) : undefined;
+  const legendary = tier >= 1 ? lookup(BOSS_LEGENDARY_ASSETS, id) : undefined;
+  const wounded = state === "wounded" ? lookup(BOSS_WOUNDED_ASSETS, id) : undefined;
+  return (
+    defeated ??
+    legendary ??
+    wounded ??
+    lookup(BOSS_ASSETS, id) ??
+    require("@/assets/placeholder.webp")
+  );
 }
 
 /**
@@ -669,16 +671,14 @@ export function getBossAsset(id: string, tier = 0, state?: "wounded" | "defeated
 export function getBossKey(id: string | null | undefined): BossAssetKey | null {
   if (!id) return null;
   const key = keyFromPath(id);
-  return key in BOSS_ASSETS ? (key as BossAssetKey) : null;
+  return Object.hasOwn(BOSS_ASSETS, key) ? (key as BossAssetKey) : null;
 }
 
 /**
  * Get adventure cover asset by ID (with fallback to placeholder)
  */
 export function getAdventureAsset(id: string) {
-  return (
-    ADVENTURE_ASSETS[keyFromPath(id) as AdventureAssetKey] ?? require("@/assets/placeholder.webp")
-  );
+  return lookup(ADVENTURE_ASSETS, id) ?? require("@/assets/placeholder.webp");
 }
 
 /**

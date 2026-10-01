@@ -1,0 +1,11 @@
+- Dein Verlauf folgt dir von Handy zu Handy,
+  verschlüsselt (Nextcloud, WebDAV, Syncthing):
+  Einstellungen, „Geräte synchronisieren“.
+- „Erinnere mich ans Training“ (Einstellungen), an
+  Tagen deiner Wahl.
+- Teile eine Einheit als Bild, aus dem Tagebuch oder
+  nach dem Sieg. Eigene Quests als Datei, mit Fotos.
+- Eine Übung geht nicht? „Nicht mehr vorschlagen“ auf
+  ihrer Seite: Quests nehmen eine ähnliche, das
+  Aufwärmen lässt sie aus.
+- Die Zurück-Geste geht wieder (Android 13 bis 15).

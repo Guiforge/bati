@@ -1,0 +1,10 @@
+- Tu historial te sigue de un móvil a otro, cifrado,
+  con Nextcloud, WebDAV o Syncthing: Ajustes,
+  «Sincronizar mis dispositivos».
+- «Recuérdame entrenar», en Ajustes, los días que elijas.
+- Comparte una sesión como imagen, desde el diario o la
+  victoria. Tus misiones salen como archivo, con fotos.
+- ¿Un ejercicio que no puedes hacer? «No proponérmelo
+  más» en su ficha. Las misiones ponen uno parecido y el
+  calentamiento lo salta.
+- El gesto de volver funciona otra vez en Android 13 a 15.

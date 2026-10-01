@@ -1,0 +1,11 @@
+- Ton historique te suit d'un téléphone à l'autre,
+  chiffré (Nextcloud, WebDAV, Syncthing) : Réglages,
+  « Synchroniser mes appareils ».
+- « Me rappeler de m'entraîner » (Réglages), les jours
+  que tu choisis.
+- Partage une séance en image, du journal ou de la
+  victoire. Tes quêtes partent en fichier, avec photos.
+- Un mouvement impossible ? « Ne plus me proposer » sur
+  sa fiche : les quêtes en servent un proche,
+  l'échauffement le saute.
+- Le geste retour remarche (Android 13 à 15).

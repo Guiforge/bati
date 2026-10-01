@@ -1,0 +1,10 @@
+- Your history follows you from phone to phone,
+  encrypted, through Nextcloud, WebDAV or Syncthing:
+  Settings, "Sync my devices".
+- "Remind me to train", in Settings, on the days you pick.
+- Share a session as a picture, from the journal or the
+  victory screen. Your own quests go as a file, photos
+  included.
+- A movement you can't do: "Don't suggest again" on its
+  page. Quests swap in a close one, the warm-up skips it.
+- The back gesture works again on Android 13 to 15.

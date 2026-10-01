@@ -8,7 +8,7 @@
       },
       "predictiveBackGestureEnabled": true,
       "package": "com.guiforge.bati",
-      "versionCode": 20600,
+      "versionCode": 20700,
       "blockedPermissions": ["android.permission.ACCESS_WIFI_STATE"]
     },
     "backgroundColor": "#0B0F19",
@@ -126,7 +126,7 @@
     "scheme": "bati",
     "slug": "bati",
     "userInterfaceStyle": "dark",
-    "version": "2.6.0",
+    "version": "2.7.0",
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"

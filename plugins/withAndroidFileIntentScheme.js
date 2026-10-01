@@ -22,6 +22,9 @@ module.exports = function withAndroidFileIntentScheme(config) {
       // Ours only: a library's `https` + MIME filter would become a catch-all without its scheme.
       if (data.some((d) => d.$?.["android:mimeType"] === "application/json")) {
         filter.data = data.filter((d) => !d.$?.["android:scheme"]);
+        // Expo's marker for the filters it generated: Android lint fails `lintRelease` on it
+        // (MissingPrefix), and `prebuild --clean` regenerates the manifest without needing it.
+        if (filter.$) delete filter.$["data-generated"];
       }
     }
     return cfg;

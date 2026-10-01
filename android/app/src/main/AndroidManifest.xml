@@ -38,7 +38,7 @@
         <data android:scheme="bati"/>
         <data android:scheme="exp+bati"/>
       </intent-filter>
-      <intent-filter data-generated="true">
+      <intent-filter>
         <action android:name="android.intent.action.VIEW"/>
         <data android:mimeType="application/json"/>
         <category android:name="android.intent.category.DEFAULT"/>

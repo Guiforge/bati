@@ -68,6 +68,8 @@ test("MainActivity opens JSON files, with no scheme narrowing the filter", () =>
   expect(json[0]).toContain('android:name="android.intent.action.VIEW"');
   expect(json[0]).toContain('android:name="android.intent.category.DEFAULT"');
   expect(json[0]).not.toContain("android:scheme");
+  // Expo's `data-generated` marker failed `lintRelease` in CI (MissingPrefix).
+  expect(main("AndroidManifest.xml")).not.toContain("data-generated");
 });
 
 /**

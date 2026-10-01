@@ -177,7 +177,10 @@ export function NSeg<T extends string>({
   );
 }
 
-/** `.btn`: always an outline. Primary is the accent, secondary the divider. */
+/**
+ * `.btn`: always an outline. Primary is the accent, secondary the divider, danger the red of an
+ * action that cannot be taken back, so "Remove from the journal" does not weigh what Share weighs.
+ */
 export function NButton({
   children,
   onPress,
@@ -188,12 +191,16 @@ export function NButton({
 }: {
   children: string;
   onPress: () => void;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "danger";
   block?: boolean;
   minH?: number;
   testID?: string;
 }) {
   const primary = variant === "primary";
+  const danger = variant === "danger";
+  // The raw red, not a token: the Journal theme folds `$danger` and `$error` into its inks on
+  // purpose, and the one action here that cannot be undone is the place to keep the red.
+  const tone = primary ? "$resourceGold" : danger ? rawColors.error : undefined;
   return (
     <YStack
       testID={testID}
@@ -207,17 +214,13 @@ export function NButton({
       px={10}
       rounded={8}
       borderWidth={1}
-      borderColor={primary ? "$resourceGold" : "$glassBorder"}
+      borderColor={tone ?? "$glassBorder"}
       items="center"
       justify="center"
       width={block ? "100%" : undefined}
       pressStyle={{ bg: primary ? "$gold900" : "$ink900" }}
     >
-      <NText
-        fontWeight="500"
-        fontSize={primary ? 15 : 14}
-        color={primary ? "$resourceGold" : "$text"}
-      >
+      <NText fontWeight="500" fontSize={primary ? 15 : 14} color={tone ?? "$text"}>
         {children}
       </NText>
     </YStack>

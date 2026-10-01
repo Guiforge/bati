@@ -1,4 +1,10 @@
-import { traceToPath } from "@/components/journal/tracePreview";
+import assert from "node:assert/strict";
+import {
+  HIDDEN_ENDS_M,
+  traceBounds,
+  traceToPath,
+  trimEnds,
+} from "@/components/journal/tracePreview";
 import type { LngLat } from "@/src/gps/trace";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
@@ -199,5 +205,88 @@ describe("previewPathsFor", () => {
 
     expect((await previewPathsFor(["never-walked"])).size).toBe(0);
     expect((await previewPathsFor([])).size).toBe(0);
+  });
+});
+
+/**
+ * The map under a journal row is a picture of `traceBounds`, stretched over the same square the
+ * line is drawn in. If the two disagree, the line runs beside its road: nothing crashes and no
+ * test that only checks a picture exists would notice.
+ */
+describe("traceBounds", () => {
+  const run: LngLat[] = [
+    [2.35, 48.85],
+    [2.352, 48.853],
+    [2.3535, 48.8545],
+    [2.351, 48.857],
+  ];
+
+  test("puts every point of the line where the map has that ground", () => {
+    const size = 64;
+    const bounds = traceBounds([run], size);
+    const d = traceToPath([run], size);
+    assert(bounds && d);
+    const [west, south, east, north] = bounds;
+
+    // Where a map stretched over these bounds draws each point, against where the line does.
+    const onMap = run.map(([lon, lat]) => [
+      ((lon - west) / (east - west)) * size,
+      ((north - lat) / (north - south)) * size,
+    ]);
+    coords(d).forEach(([x, y], i) => {
+      expect(x).toBeCloseTo(onMap[i]?.[0] ?? Number.NaN, 0);
+      expect(y).toBeCloseTo(onMap[i]?.[1] ?? Number.NaN, 0);
+    });
+  });
+
+  test("is square on the ground, so the map is not stretched to fit", () => {
+    const bounds = traceBounds([run], 64);
+    assert(bounds);
+    const [west, south, east, north] = bounds;
+    const kx = Math.cos((((48.85 + 48.857) / 2) * Math.PI) / 180);
+    expect((east - west) * kx).toBeCloseTo(north - south, 9);
+  });
+
+  test("frames nothing when the line has nothing to draw", () => {
+    expect(traceBounds([], 64)).toBeNull();
+    expect(
+      traceBounds(
+        [
+          [
+            [2.35, 48.85],
+            [2.35, 48.85],
+          ],
+        ],
+        64,
+      ),
+    ).toBeNull();
+  });
+});
+
+/**
+ * A shared picture with a map under it must not show where the hero's door is. Only measured
+ * along the line can say that: a loop starts and ends on the same doorstep.
+ */
+describe("trimEnds", () => {
+  /** Due north from a doorstep, one point every 60 m, `n` points. */
+  const north = (n: number): LngLat[] =>
+    Array.from({ length: n }, (_, i) => [2.35, 48.85 + (i * 60) / 111_195] as LngLat);
+
+  test("drops the first and last stretch, and keeps the middle", () => {
+    const run = north(21); // 1.2 km
+    const [kept] = trimEnds([run], HIDDEN_ENDS_M);
+    assert(kept);
+    expect(kept[0]).toEqual(run[4]); // 200 m in
+    expect(kept[kept.length - 1]).toEqual(run[16]); // 200 m before the end
+  });
+
+  test("a run shorter than both margins shows no line at all, not a dot on a house", () => {
+    expect(trimEnds([north(8)], HIDDEN_ENDS_M)).toEqual([]);
+  });
+
+  test("a gap stays a gap", () => {
+    const run = north(41);
+    const kept = trimEnds([run.slice(0, 20), run.slice(20)], HIDDEN_ENDS_M);
+    expect(kept).toHaveLength(2);
   });
 });

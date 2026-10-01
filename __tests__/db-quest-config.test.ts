@@ -27,6 +27,7 @@ const {
 function makeQuest(): Quest {
   const exercise = {
     id: 1,
+    uuid: null,
     enName: "Squat",
     frName: "Squat",
     deName: "Squat",
@@ -51,6 +52,7 @@ function makeQuest(): Quest {
 
   return {
     id: 7,
+    uuid: null,
     enTitle: "Test",
     frTitle: "Test",
     deTitle: "Test",
@@ -82,6 +84,7 @@ function makeQuest(): Quest {
 /** A different movement, to put in a slot. */
 const dip: Quest["exercises"][number]["exercise"] = {
   id: 2,
+  uuid: null,
   enName: "Dip",
   frName: "Dip",
   deName: "Dip",

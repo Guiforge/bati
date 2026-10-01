@@ -315,3 +315,155 @@ test("merging the same device twice changes nothing the second time", async () =
   await merge().mergePeer(file);
   expect(await merge().mergePeer(file)).toEqual({ merged: true, sessions: 0, changes: 0 });
 });
+
+/** A hero quest written in raw SQL, as another device's row would arrive. */
+function heroQuest(sqlite: Database.Database, title: string, at: number, uuid: string | null) {
+  return Number(
+    sqlite
+      .prepare(
+        `INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author, createdAt, updatedAt, uuid)
+         VALUES (?, ?, '', '', 'hero', ?, ?, ?)`,
+      )
+      .run(title, title, at, at, uuid).lastInsertRowid,
+  );
+}
+
+const heroQuests = () =>
+  t.sqlite
+    .prepare("SELECT enTitle, uuid FROM quests WHERE author = 'hero' ORDER BY enTitle")
+    .all() as { enTitle: string; uuid: string | null }[];
+
+const U1 = "0192b000-0000-7000-8000-000000000001";
+const U2 = "0192b000-0000-7000-8000-000000000002";
+
+/**
+ * Hero content is matched by uuid since 0066. By name, a quest renamed on one device was a new
+ * quest on the other, and the old name stayed beside it on both, for good.
+ */
+test("a hero quest renamed on the other device is the same quest here", async () => {
+  heroQuest(t.sqlite, "Porch forge", 100, U1);
+  const file = await peer("tablet.db", (sqlite) => {
+    sqlite
+      .prepare("UPDATE quests SET enTitle = 'Garden forge', updatedAt = 200 WHERE uuid = ?")
+      .run(U1);
+  });
+
+  await merge().mergePeer(file);
+
+  expect(heroQuests()).toEqual([{ enTitle: "Garden forge", uuid: U1 }]);
+  await converged(file);
+});
+
+/**
+ * The one shape that could break sync for good: here a quest "A" (uuid U1); there the same quest
+ * renamed "B", and a new quest that took the name "A" (uuid U2). A match by name would copy U2
+ * onto this device's U1 row while U1 still arrives with "B", and the UNIQUE index would roll the
+ * merge back on every sync. Matched by uuid first, it is two quests and no conflict.
+ */
+test("a quest that took another's old name never steals its uuid", async () => {
+  const here = heroQuest(t.sqlite, "A", 100, U1);
+  const file = await peer("tablet.db", (sqlite) => {
+    // The renamed quest moved past the new one in id order, so the new "A" is read first: the
+    // order in which a match by name alone would take this device's row for it.
+    sqlite
+      .prepare("UPDATE quests SET id = 99999, enTitle = 'B', updatedAt = 200 WHERE uuid = ?")
+      .run(U1);
+    sqlite
+      .prepare(
+        `INSERT INTO quests (id, enTitle, frTitle, enDescription, frDescription, author, createdAt, updatedAt, uuid)
+         VALUES (99998, 'A', 'A', '', '', 'hero', 300, 300, ?)`,
+      )
+      .run(U2);
+  });
+
+  await merge().mergePeer(file);
+
+  // This device's row is still the quest it was, whatever it is called now: its sessions, its
+  // config and its favourite all point at this id.
+  expect(t.sqlite.prepare("SELECT enTitle, uuid FROM quests WHERE id = ?").get(here)).toEqual({
+    enTitle: "B",
+    uuid: U1,
+  });
+  expect(heroQuests()).toEqual([
+    { enTitle: "A", uuid: U2 },
+    { enTitle: "B", uuid: U1 },
+  ]);
+  await converged(file);
+});
+
+test("a row neither side ever named still finds its namesake, and takes the other's uuid", async () => {
+  heroQuest(t.sqlite, "Old drill", 100, null);
+  const file = await peer("tablet.db", (sqlite) => {
+    sqlite
+      .prepare("UPDATE quests SET uuid = ?, updatedAt = 200 WHERE enTitle = 'Old drill'")
+      .run(U1);
+  });
+
+  await merge().mergePeer(file);
+
+  expect(heroQuests()).toEqual([{ enTitle: "Old drill", uuid: U1 }]);
+  await converged(file);
+});
+
+test("a hero movement renamed on the other device is the same movement here", async () => {
+  heroExercise(t.sqlite, "Porch dip", 100);
+  t.sqlite.prepare("UPDATE exercises SET uuid = ? WHERE enName = 'Porch dip'").run(U1);
+  const file = await peer("tablet.db", (sqlite) => {
+    sqlite
+      .prepare("UPDATE exercises SET enName = 'Step dip', updatedAt = 200 WHERE uuid = ?")
+      .run(U1);
+  });
+
+  await merge().mergePeer(file);
+
+  expect(
+    t.sqlite.prepare("SELECT enName, uuid FROM exercises WHERE creator = 'hero'").all(),
+  ).toEqual([{ enName: "Step dip", uuid: U1 }]);
+  await converged(file);
+});
+
+test("comparing with the other device counts a rename as one change, not a loss and a gain", async () => {
+  heroQuest(t.sqlite, "Porch forge", 100, U1);
+  const file = await peer("tablet.db", (sqlite) => {
+    sqlite
+      .prepare("UPDATE quests SET enTitle = 'Garden forge', updatedAt = 200 WHERE uuid = ?")
+      .run(U1);
+  });
+
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 1, localChanges: 0 });
+});
+
+/**
+ * An outing filed as a quest copies the seed quest's title, so two phones that each did it hold
+ * two different quests of one name. By name, the newer was written over the older, its target
+ * and the quest of its sessions with it. Both have a uuid, so they are two quests.
+ */
+test("two quests of one name, each with its own uuid, stay two quests", async () => {
+  const here = heroQuest(t.sqlite, "Forest walk", 100, U1);
+  const file = await peer("tablet.db", (sqlite) => {
+    sqlite.prepare("DELETE FROM quests WHERE uuid = ?").run(U1);
+    heroQuest(sqlite, "Forest walk", 200, U2);
+  });
+
+  await merge().mergePeer(file);
+
+  expect(t.sqlite.prepare("SELECT uuid FROM quests WHERE id = ?").get(here)).toEqual({ uuid: U1 });
+  expect(heroQuests()).toEqual([
+    { enTitle: "Forest walk", uuid: U1 },
+    { enTitle: "Forest walk", uuid: U2 },
+  ]);
+});
+
+test("a newer row here that has no uuid takes the other's, so the two devices agree", async () => {
+  heroQuest(t.sqlite, "Old drill", 300, null);
+  const file = await peer("tablet.db", (sqlite) => {
+    sqlite
+      .prepare("UPDATE quests SET uuid = ?, updatedAt = 200 WHERE enTitle = 'Old drill'")
+      .run(U1);
+  });
+
+  await merge().mergePeer(file);
+
+  expect(heroQuests()).toEqual([{ enTitle: "Old drill", uuid: U1 }]);
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0 });
+});

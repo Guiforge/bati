@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
-import { db, schema } from "./client";
+import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { dayKey } from "./dates";
 import { canDo } from "./equipment";
 import {
@@ -37,6 +37,7 @@ import {
   targetRangeFor,
   type UserLevel,
 } from "./targets";
+import { uuidv7 } from "./uuid";
 import { NON_REP_STYLE } from "./workUnits";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
@@ -138,6 +139,8 @@ export type QuestHead = {
   deDescription: string;
   esDescription: string;
   author: ContentOwner;
+  /** The quest's name off this database (0066). Null on seed quests. */
+  uuid: string | null;
   rounds: number;
   restSeconds: number;
   /** Rest between rounds. Null = no separate round rest, `restSeconds` applies there too. */
@@ -235,7 +238,7 @@ export type QuestSlotDraft = Omit<QuestTemplateExercise, "id">;
 
 export type CreateQuestTemplateInput = Omit<
   QuestTemplate,
-  "id" | "author" | "imagePath" | "archetype" | "exercises"
+  "id" | "author" | "imagePath" | "archetype" | "exercises" | "uuid"
 > & {
   exercises: QuestSlotDraft[];
   /** Seed quests carry authored art; a hero picks theirs, and null falls back to the placeholder. */
@@ -243,15 +246,25 @@ export type CreateQuestTemplateInput = Omit<
   author?: ContentOwner;
   /** Optional: user-authored quests declare no archetype. */
   archetype?: QuestArchetype | null;
+  /**
+   * The quest's name off this database (0066). A hero quest gets a new one unless it arrives with
+   * its own (a shared quest file); a seed quest has none.
+   */
+  uuid?: string;
 };
 
-export async function createQuestTemplate(input: CreateQuestTemplateInput): Promise<number> {
+export async function createQuestTemplate(
+  input: CreateQuestTemplateInput,
+  exec: typeof db | TransactionTx = db,
+): Promise<number> {
+  const author = input.author ?? ADMIN_CREATOR;
   // .returning() avoids the id race a "select the newest row with this title" lookup would
   // have: enTitle isn't unique, so two concurrent same-titled creations could both resolve
   // to the same (most recent) id and attach their exercises to the wrong quest.
-  const inserted = await db
+  const inserted = await exec
     .insert(quests)
     .values({
+      uuid: author === ADMIN_CREATOR ? null : (input.uuid ?? uuidv7()),
       enTitle: input.enTitle,
       frTitle: input.frTitle,
       deTitle: input.deTitle,
@@ -260,7 +273,7 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
       frDescription: input.frDescription,
       deDescription: input.deDescription,
       esDescription: input.esDescription,
-      author: input.author ?? ADMIN_CREATOR,
+      author,
       imagePath: input.imagePath ?? null,
       rounds: clampToRange(input.rounds, ROUNDS_RANGE),
       restSeconds: clampToRange(input.restSeconds, REST_RANGE),
@@ -273,7 +286,7 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
 
   let questId = inserted[0]?.id;
   if (questId == null) {
-    const row = await db
+    const row = await exec
       .select({ id: quests.id })
       .from(quests)
       .where(eq(quests.enTitle, input.enTitle))
@@ -284,19 +297,7 @@ export async function createQuestTemplate(input: CreateQuestTemplateInput): Prom
 
   if (questId == null) throw new Error("Failed to create quest");
 
-  if (input.exercises.length > 0) {
-    await db.insert(questExercises).values(
-      input.exercises.map((qex, i) => ({
-        questId,
-        exerciseId: qex.exerciseId,
-        sortOrder: i,
-        targetType: qex.baseTarget.type,
-        targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type, qex.style)),
-        targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type, qex.style)),
-        imagesJson: JSON.stringify(qex.images ?? []),
-      })),
-    );
-  }
+  await writeQuestSlots(exec, questId, input.exercises);
 
   invalidateQuestTemplates();
   return questId;
@@ -410,6 +411,7 @@ const questColumns = () => ({
   roundRestSeconds: quests.roundRestSeconds,
   archetype: quests.archetype,
   imagePath: quests.imagePath,
+  uuid: quests.uuid,
 });
 
 type QuestHeadRow = {
@@ -428,6 +430,7 @@ type QuestHeadRow = {
   roundRestSeconds: number | null;
   archetype: QuestArchetype | null;
   imagePath: string | null;
+  uuid: string | null;
 };
 
 /**
@@ -476,6 +479,7 @@ function templateSlot(r: {
 function questHead(r: QuestHeadRow): QuestHead {
   return {
     id: r.questId,
+    uuid: r.uuid,
     enTitle: r.enTitle,
     frTitle: r.frTitle,
     deTitle: r.deTitle,
@@ -582,6 +586,7 @@ type SlotRow = {
   exEsDescription: string;
   exImagePath: string;
   exCreator: ContentOwner;
+  exUuid: string | null;
   exDifficulty: DifficultyCode;
   exEquipment: EquipmentCode;
   exStyle: ExerciseStyle | null;
@@ -758,6 +763,7 @@ function buildSlot(
     esDescription: r.exEsDescription,
     imagePath: r.exImagePath,
     creator: r.exCreator,
+    uuid: r.exUuid,
     difficulty: r.exDifficulty,
     equipment: r.exEquipment,
     style: r.exStyle ?? "strength",
@@ -847,6 +853,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exEsDescription: exercises.esDescription,
       exImagePath: exercises.imagePath,
       exCreator: exercises.creator,
+      exUuid: exercises.uuid,
       exDifficulty: exercises.difficulty,
       exEquipment: exercises.equipment,
       exStyle: exercises.style,
@@ -956,8 +963,9 @@ export async function updateQuestMeta(
      */
     imagePath?: string | null;
   },
+  exec: typeof db | TransactionTx = db,
 ): Promise<void> {
-  await db
+  await exec
     .update(quests)
     .set({
       ...patch,
@@ -977,44 +985,39 @@ export async function updateQuestMeta(
   invalidateQuestTemplates(id);
 }
 
+/**
+ * A quest's slots, replaced whole, on whatever connection the caller holds. The one writer of
+ * `quest_exercises`: the editor, a new quest and an imported one all go through it, so the clamp
+ * on each target is the same three times.
+ */
+export async function writeQuestSlots(
+  exec: typeof db | TransactionTx,
+  questId: number,
+  next: readonly QuestSlotDraft[],
+): Promise<void> {
+  await exec.delete(questExercises).where(eq(questExercises.questId, questId));
+  if (next.length === 0) return;
+  await exec.insert(questExercises).values(
+    next.map((qex, i) => ({
+      questId,
+      exerciseId: qex.exerciseId,
+      sortOrder: i,
+      targetType: qex.baseTarget.type,
+      targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type, qex.style)),
+      targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type, qex.style)),
+      imagesJson: JSON.stringify(qex.images ?? []),
+    })),
+  );
+}
+
 export async function setQuestExercises(questId: number, next: QuestSlotDraft[]): Promise<void> {
-  type TransactionCallback = Parameters<(typeof db)["transaction"]>[0];
-  type TransactionTx = Parameters<TransactionCallback>[0];
-
-  const run = async (tx: TransactionTx) => {
-    await tx.delete(questExercises).where(eq(questExercises.questId, questId));
-
-    if (next.length === 0) return;
-
-    await tx.insert(questExercises).values(
-      next.map((qex, i) => ({
-        questId,
-        exerciseId: qex.exerciseId,
-        sortOrder: i,
-        targetType: qex.baseTarget.type,
-        targetMin: clampToRange(qex.baseTarget.min, targetRangeFor(qex.baseTarget.type, qex.style)),
-        targetMax: clampToRange(qex.baseTarget.max, targetRangeFor(qex.baseTarget.type, qex.style)),
-        imagesJson: JSON.stringify(qex.images ?? []),
-      })),
-    );
-  };
-
-  try {
-    await db.transaction(run);
-  } catch (e) {
-    if (
-      e instanceof TypeError &&
-      typeof e.message === "string" &&
-      e.message.includes("Transaction function cannot return a promise")
-    ) {
-      await run(db as unknown as TransactionTx);
-      invalidateQuestTemplates(questId);
-      return;
-    }
-    throw e;
-  }
-
-  invalidateQuestTemplates(questId);
+  // Through the shared queue, never a `db.transaction` of its own: that would open a BEGIN on the
+  // connection while another caller's transaction is still awaiting there (`transactionOrFallback`).
+  // Invalidated whatever the outcome: a read during the transaction may have cached the slots
+  // half-written, and a rollback leaves that copy wrong.
+  await transactionOrFallback((tx) => writeQuestSlots(tx, questId, next)).finally(() =>
+    invalidateQuestTemplates(questId),
+  );
 }
 
 /** @legacy Garde-fou de seed ; les invariants de contenu sont testés à la place. */

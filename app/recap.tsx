@@ -16,11 +16,11 @@ import { Text, XStack, YStack } from "tamagui";
 import { AppIconButton } from "@/components/common/AppButton";
 import { Figure } from "@/components/common/Figure";
 import { Skeleton } from "@/components/common/Skeleton";
-import { useToast } from "@/components/common/Toast";
-import { ChevronLeft, Share2 } from "@/components/icons";
+import { ChevronLeft } from "@/components/icons";
 import { MapFootnote } from "@/components/session/MapFootnote";
 import { MapRecenterButton } from "@/components/session/MapRecenterButton";
 import { roadLine } from "@/components/session/roadLine";
+import { ShareButton } from "@/components/share/ShareButton";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import {
   formatClock,
@@ -42,8 +42,6 @@ import { listQuestTemplates } from "@/db/quests";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
 import type { LocationFix } from "@/modules/bati-location";
 import { toTrace } from "@/src/gps/trace";
-import { accept, EMPTY } from "@/src/gps/track";
-import { flushTrack, shareTrack, trackFileFor } from "@/src/gps/trackFile";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -66,6 +64,8 @@ import { useSettingsStore } from "@/stores/settings";
 
 /** Everything this screen knows about one run, read in one pass. */
 type Recap = {
+  /** The session row, which the share screen is opened with. Null when the uuid names none. */
+  sessionId: number | null;
   fixes: LocationFix[];
   /** The quest's name in the hero's language, `null` when the row names no quest. */
   title: string | null;
@@ -82,6 +82,7 @@ type Recap = {
 };
 
 const NOTHING: Recap = {
+  sessionId: null,
   fixes: [],
   title: null,
   performedAt: null,
@@ -326,7 +327,6 @@ export default function ExpeditionRecapScreen() {
   // Off unless the hero has said yes. The whole map branch below reads this, and the style it
   // picks is what decides whether this screen touches a network at all.
   const mapTilesEnabled = useSettingsStore((s) => s.mapTilesEnabled);
-  const { showError } = useToast();
 
   const sessionUuid = Array.isArray(params.session) ? params.session[0] : params.session;
 
@@ -345,6 +345,7 @@ export default function ExpeditionRecapScreen() {
           ? undefined
           : (await listQuestTemplates()).find((q) => q.id === session.questId);
       setRecap({
+        sessionId: session?.id ?? null,
         fixes,
         title: quest ? localizedTitle(quest, language) : null,
         performedAt: session?.performedAt ?? null,
@@ -368,42 +369,16 @@ export default function ExpeditionRecapScreen() {
   }, [sessionUuid, load]);
 
   const fixes = recap?.fixes ?? null;
-  // The fold is the line and the file it is written to, and nothing else. Both figures under the
+  // The fold is the line, and nothing else (the GPX folds its own, `exportTrack`). Both figures under the
   // map are columns now: `leaguesM` since 0044, `movingSeconds` since 0046. Replaying the fixes
   // for either was a second answer to a question the reducer had already answered once, and the
   // two part company whenever a flush fails — `stores/expedition.ts` drops a batch of up to
   // thirty fixes on a database error, so the distance still holds them and the replay does not.
   // The pace between a kept distance and a replayed clock is wrong with nothing able to notice.
   const drawn = fixes ?? [];
-  const track = drawn.reduce(accept, EMPTY);
   const trace = toTrace(drawn);
   /** Whether the camera frames the whole trace. A finger on the map lets go, the button reframes. */
   const [framed, setFramed] = useState(true);
-
-  /**
-   * The trace, as a file the hero owns.
-   *
-   * Through `trackFile.ts` rather than a second call to `toGpx` here: that module already decides
-   * where a track is written and what it is called, and the format is the part importers reject.
-   * The name comes from the first fix, so it says when the outing happened and re-exporting the
-   * same one overwrites its own file instead of littering.
-   *
-   * Only where a trace exists. An expedition whose service never started has nothing to hand over,
-   * and a share sheet that opens on an empty file is worse than no button.
-   */
-  const exportTrace = () => {
-    const first = fixes?.[0];
-    if (!first || !fixes) return;
-
-    const file = trackFileFor(first.t);
-    // The file's own fixes, measured the way the panel measured them: a GPX describes what is
-    // inside it, so a batch that never reached the table must not be in its header either.
-    flushTrack(file, fixes, track.distanceM);
-    shareTrack(file).catch((error: unknown) => {
-      reportError("recap.share", error);
-      showError(t("recap.export_failed"));
-    });
-  };
 
   // The refused style has no vector source and no `glyphs`, so MapLibre has nothing to fetch:
   // the trace is drawn on the app's own ground and that is the whole picture. See
@@ -445,15 +420,10 @@ export default function ExpeditionRecapScreen() {
           </>
         )}
       </YStack>
-      {fixes && fixes.length > 0 ? (
-        <AppIconButton
-          testID="recap-export"
-          onPress={exportTrace}
-          accessibilityRole="button"
-          accessibilityLabel={t("recap.export")}
-        >
-          <Share2 size={20} color="$text" strokeWidth={2.5} />
-        </AppIconButton>
+      {/* Words, not a bare icon: a lone glyph in a corner was the button nobody found. The share
+          screen holds the picture and the GPX both, so this is the only door out of the recap. */}
+      {recap?.sessionId != null && fixes && fixes.length > 0 ? (
+        <ShareButton testID="recap-export" sessionId={recap.sessionId} />
       ) : null}
     </XStack>
   );

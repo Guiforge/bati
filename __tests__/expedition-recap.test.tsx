@@ -21,8 +21,7 @@ import config from "@/tamagui.config";
 const mockPointsOf = jest.fn<Promise<LocationFix[]>, [string]>();
 const mockOutingSession = jest.fn<Promise<unknown>, [string]>();
 const mockQuestTemplates = jest.fn<Promise<unknown[]>, []>();
-const mockFlushTrack = jest.fn<void, [unknown, unknown, unknown]>();
-const mockShareTrack = jest.fn<Promise<void>, [unknown]>(() => Promise.resolve());
+const mockPush = jest.fn<void, [string]>();
 /** Every style handed to MapLibre, in order. The refusal is asserted on the JSON of the last. */
 const mockMapStyle = jest.fn<void, [unknown]>();
 
@@ -44,18 +43,15 @@ import "@/i18n";
 
 jest.mock("@/src/widget", () => ({ requestWidgetsUpdate: jest.fn() }));
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
-jest.mock("@/src/gps/trackFile", () => ({
-  FLUSH_EVERY: 30,
-  trackFileFor: (startedAt: number) => ({ name: `bati-${startedAt}.gpx` }),
-  flushTrack: (file: unknown, fixes: unknown, distanceM: unknown) =>
-    mockFlushTrack(file, fixes, distanceM),
-  shareTrack: (file: unknown) => mockShareTrack(file),
-}));
 jest.mock("expo-localization", () => ({
   getLocales: () => [{ languageCode: "en", languageTag: "en-US" }],
 }));
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() }),
+  useRouter: () => ({
+    push: (href: string) => mockPush(href),
+    back: jest.fn(),
+    replace: jest.fn(),
+  }),
   useLocalSearchParams: () => ({ session: "session-uuid" }),
 }));
 
@@ -201,9 +197,9 @@ const MILE_PACE = `${clock(Math.round(MOVING_S * (1609.344 / CREDITED_M)))} /mi`
 
 beforeEach(() => {
   mockPointsOf.mockReset();
-  mockFlushTrack.mockClear();
-  mockShareTrack.mockClear();
+  mockPush.mockClear();
   mockOutingSession.mockResolvedValue({
+    id: 42,
     questId: 7,
     performedAt: new Date(T0),
     leaguesM: CREDITED_M,
@@ -445,6 +441,7 @@ describe("an outing long and varied enough to have a story", () => {
 describe("a session that never left the walls", () => {
   beforeEach(() => {
     mockOutingSession.mockResolvedValue({
+      id: 42,
       questId: null,
       performedAt: new Date(T0),
       leaguesM: null,
@@ -470,30 +467,19 @@ describe("a session that never left the walls", () => {
 
   /**
    * The export was written, tested and shipped to nobody: `shareTrack` was reachable only from
-   * `app/dev-gps.tsx`, which returns null outside `__DEV__`. The recap is where a hero looks at an
-   * outing, this one or one from the journal, so it is where the file is handed over.
-   *
-   * What matters is that it goes through `trackFile.ts` rather than formatting GPX a second time
-   * here, and that it is not offered when there is nothing to hand over.
+   * `app/dev-gps.tsx`, which returns null outside `__DEV__`. Then it was a bare icon in the
+   * header that a hero did not find. It is a worded button now, and it opens the share screen,
+   * which holds both the picture and the GPX (`exportTrack`, tested in `gps-track-file.test.ts`).
    */
-  test("hands the trace over as a file, through the writer that owns the format", async () => {
+  test("opens the share screen for this session, with a word on the button", async () => {
     mockPointsOf.mockResolvedValue(walkThenStand());
     await mount();
 
-    await fireEvent.press(await screen.findByTestId("recap-export"));
+    const button = await screen.findByTestId("recap-export");
+    expect(screen.getByText("Share")).toBeTruthy();
+    await fireEvent.press(button);
 
-    expect(mockFlushTrack).toHaveBeenCalledTimes(1);
-    const [file, fixes, distanceM] = mockFlushTrack.mock.calls[0] as [
-      { name: string },
-      LocationFix[],
-      number,
-    ];
-    // Named after the outing, not after the tap: exporting the same run twice overwrites one file.
-    expect(file.name).toBe(`bati-${walkThenStand()[0]?.t}.gpx`);
-    expect(fixes).toHaveLength(walkThenStand().length);
-    // The reducer's distance, the same one the screen prints, never a fresh sum of the fixes.
-    expect(distanceM).toBeCloseTo(walkThenStand().reduce(accept, EMPTY).distanceM, 5);
-    expect(mockShareTrack).toHaveBeenCalledWith(file);
+    expect(mockPush).toHaveBeenCalledWith("/share?session=42");
   });
 
   test("offers nothing to export when the walls were never left", async () => {

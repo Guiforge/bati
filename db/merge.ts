@@ -29,7 +29,8 @@ const PEER = "merge_peer";
  * maps: the id of a saved session, a cached screen or an open quest never changes under anyone.
  * Admin exercises are matched by `enName` and Admin quests by `enTitle`, since seeds written after
  * 0035 got different ids on devices that already had hero rows. Hero exercises and quests are
- * matched by name as `compareWithPeer` names them, the newer `updatedAt` winning.
+ * matched by `uuid` (0066), the newer `updatedAt` winning, so a rename on one device is the same
+ * row on the other. Only a row with no uuid at all (written in raw SQL) falls back to its name.
  *
  * **Timestamps are copied verbatim**, so the two devices agree afterwards on what is newer and a
  * second comparison finds nothing: a merge stamped with "now" would bounce between them forever.
@@ -38,9 +39,8 @@ const PEER = "merge_peer";
  * other device's campaign sessions count as training), quest configs and favourites (they name
  * quest ids, and `compareWithPeer` leaves them out for that reason), achievements (derived).
  *
- * ponytail: hero content is matched by name. A rename on one device while the other still uses
- *           the old one leaves both; a uuid column on exercises and quests is the real fix, with
- *           the backfill problem 0038 had.
+ * ponytail: a hero row renamed on one device *before* 0066 reached both still has two uuids
+ *           (0066 derives them from the name), and both stay. Only a manual merge could join them.
  *
  * One transaction on a connection of its own (an `ATTACH` cannot run behind Drizzle's statements),
  * rolled back whole on anything it cannot map. `path` must have passed `validateBackup`.
@@ -205,8 +205,9 @@ async function mergeInto(conn: IsolatedConnection): Promise<{ sessions: number; 
 /**
  * Hero-made rows of `exercises` or `quests`: Admin rows mapped by their seed name (every one must
  * exist here, or this build and that one do not hold the same content, and nothing is merged);
- * hero rows matched by name, the newer written over the older with its children replaced, the
- * unmatched inserted. Returns how many hero rows it wrote.
+ * hero rows matched by uuid, else by name when one side has none (`localHeroRow`), the newer
+ * written over the older with its children replaced, the unmatched inserted. Returns how many hero
+ * rows it wrote.
  */
 async function mergeAuthored(
   conn: IsolatedConnection,
@@ -235,35 +236,78 @@ async function mergeAuthored(
     "p",
     Object.fromEntries((spec.deferred ?? []).map((column) => [column, "NULL"])),
   );
-  const heroRows = await conn.getAllAsync<{ id: number; name: string; at: number | null }>(
-    `SELECT id, ${spec.hero} AS name, updatedAt AS at FROM ${PEER}.${table} WHERE ${owner} = 'hero'`,
+  const heroRows = await conn.getAllAsync<HeroRow>(
+    `SELECT id, uuid, ${spec.hero} AS name, updatedAt AS at FROM ${PEER}.${table} WHERE ${owner} = 'hero'`,
   );
   let written = 0;
   for (const row of heroRows) {
-    const local = await conn.getFirstAsync<{ id: number | null; at: number | null }>(
-      `SELECT min(id) AS id, updatedAt AS at FROM main.${table}
-        WHERE ${owner} = 'hero' AND ${spec.hero} = ${sqlString(row.name)}`,
-    );
+    const local = await localHeroRow(conn, spec, row);
     let id = local?.id ?? null;
+    const theirs = id === null || (row.at ?? 0) > (local?.at ?? 0);
     if (id === null) {
       await conn.execAsync(`INSERT INTO main.${table} (${columnList(cols)})
         SELECT ${values} FROM ${PEER}.${table} p WHERE p.id = ${row.id}`);
       id = Number(
         (await conn.getFirstAsync<{ id: number }>("SELECT last_insert_rowid() AS id"))?.id,
       );
-    } else if ((row.at ?? 0) > (local?.at ?? 0)) {
+    } else if (theirs) {
       await conn.execAsync(`UPDATE main.${table} SET (${columnList(cols)}) =
         (SELECT ${values} FROM ${PEER}.${table} p WHERE p.id = ${row.id}) WHERE id = ${id}`);
-    } else {
-      await conn.execAsync(`INSERT INTO temp.${map} VALUES (${row.id}, ${id})`);
-      continue;
+    }
+    // A row still unnamed after the match takes the other device's uuid, so the two devices name
+    // it alike and the next comparison finds nothing to take. Not a fresh one when that side has
+    // none either (raw SQL): this device alone would then name it, and the two would disagree.
+    if (row.uuid !== null) {
+      await conn.execAsync(
+        `UPDATE main.${table} SET uuid = ${sqlString(row.uuid)} WHERE id = ${id} AND uuid IS NULL`,
+      );
     }
     await conn.execAsync(`INSERT INTO temp.${map} VALUES (${row.id}, ${id})`);
+    if (!theirs) continue;
     await conn.execAsync(`INSERT INTO temp.written VALUES (${sqlString(table)}, ${id})`);
     await replaceChildren(conn, spec.children, row.id, id);
     written++;
   }
   return written;
+}
+
+type HeroRow = { id: number; uuid: string | null; name: string; at: number | null };
+
+/**
+ * The local row a hero row of the other device is, if any: the one with its uuid, else, only when
+ * one of the two has no uuid, one with its name.
+ *
+ * Two rows that both have a uuid and differ are two quests, whatever they are called: an outing
+ * filed as a quest on each phone copies the same seed title onto two different rows, and a match
+ * by name would write one over the other, its slots and its sessions' quest with it. Since 0066
+ * every hero row is named, so the name only speaks for a row written without one (raw SQL, a
+ * dev seed), and then the named side's uuid is adopted (`mergeAuthored`).
+ *
+ * A local row whose uuid the other device holds is never taken by name either: the copy that
+ * follows would give it a second row's uuid, and the UNIQUE index would roll the whole merge back
+ * on every sync.
+ */
+async function localHeroRow(
+  conn: IsolatedConnection,
+  spec: { table: string; owner: string; hero: string },
+  row: HeroRow,
+): Promise<{ id: number | null; at: number | null } | null> {
+  const { table, owner } = spec;
+  if (row.uuid !== null) {
+    const byUuid = await conn.getFirstAsync<{ id: number | null; at: number | null }>(
+      `SELECT min(id) AS id, updatedAt AS at FROM main.${table}
+        WHERE ${owner} = 'hero' AND uuid = ${sqlString(row.uuid)}`,
+    );
+    if (byUuid?.id != null) return byUuid;
+  }
+  const unnamed =
+    row.uuid === null
+      ? `(uuid IS NULL OR uuid NOT IN (SELECT uuid FROM ${PEER}.${table} WHERE uuid IS NOT NULL))`
+      : "uuid IS NULL";
+  return conn.getFirstAsync<{ id: number | null; at: number | null }>(
+    `SELECT min(id) AS id, updatedAt AS at FROM main.${table}
+      WHERE ${owner} = 'hero' AND ${spec.hero} = ${sqlString(row.name)} AND ${unnamed}`,
+  );
 }
 
 async function replaceChildren(

@@ -33,6 +33,7 @@ jest.mock("@/db/exercises", () => ({
 
 function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise {
   return {
+    uuid: null,
     enName: "Exercise",
     frName: "Exercice",
     deName: "Exercice",
@@ -59,6 +60,7 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise 
 
 function makeQuest(id: number, enTitle: string, exerciseIds: number[]): QuestTemplate {
   return {
+    uuid: null,
     id,
     enTitle,
     frTitle: enTitle,
@@ -86,6 +88,7 @@ function makeQuest(id: number, enTitle: string, exerciseIds: number[]): QuestTem
 // 0041: the three ways out. 0032: something that happens in the yard.
 const walk = makeExercise({
   id: 1,
+  uuid: null,
   enName: "Warden's Walk",
   frName: "Marche",
   deName: "Marche",
@@ -94,6 +97,7 @@ const walk = makeExercise({
 });
 const run = makeExercise({
   id: 2,
+  uuid: null,
   enName: "Messenger's Run",
   frName: "Course",
   deName: "Course",
@@ -102,6 +106,7 @@ const run = makeExercise({
 });
 const pushUp = makeExercise({
   id: 3,
+  uuid: null,
   enName: "Push-up",
   frName: "Pompe",
   deName: "Pompe",

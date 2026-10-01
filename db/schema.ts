@@ -120,6 +120,11 @@ export const exercises = sqliteTable(
     // Store a simple asset path; UI can map it to `require()`.
     imagePath: text().notNull().default("assets/placeholder.jpg"),
 
+    // The hero's movement's name off this database (0066): what device sync and a shared quest
+    // file recognise it by, whatever it is renamed to. Null on seed rows, which are known by
+    // `enName`. A uuid v7 (db/uuid.ts), set by the writers of hero rows and by nothing else.
+    uuid: text(),
+
     // Who wrote this movement: seed content, or the hero. Never a display name — the village
     // name lives in `user_preferences`, and the partial indexes below partition on this column,
     // so a value that can change would re-partition the table under them.
@@ -175,6 +180,7 @@ export const exercises = sqliteTable(
     // in the app resolves an exercise by a hero name — `officialByName` filters to seed rows,
     // and every migration is held to the same side by the seed-migration guard. Hero-authored
     // quests carry no title index either, for the same reason: it is their catalogue.
+    uuidUnique: uniqueIndex("exercises_uuid_unique").on(table.uuid),
     adminNameUnique: uniqueIndex("exercises_admin_name_unique")
       .on(table.enName)
       .where(sql`${table.creator} = 'Admin'`),
@@ -199,40 +205,50 @@ export const exerciseMuscles = sqliteTable(
 // Quests (workout sessions)
 // ------------------------------------------------------------
 
-export const quests = sqliteTable("quests", {
-  id: int().primaryKey({ autoIncrement: true }),
+export const quests = sqliteTable(
+  "quests",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
 
-  enTitle: text().notNull(),
-  frTitle: text().notNull(),
-  deTitle: text().notNull().default(""),
-  esTitle: text().notNull().default(""),
-  enDescription: text().notNull(),
-  frDescription: text().notNull(),
-  deDescription: text().notNull().default(""),
-  esDescription: text().notNull().default(""),
+    enTitle: text().notNull(),
+    frTitle: text().notNull(),
+    deTitle: text().notNull().default(""),
+    esTitle: text().notNull().default(""),
+    enDescription: text().notNull(),
+    frDescription: text().notNull(),
+    deDescription: text().notNull().default(""),
+    esDescription: text().notNull().default(""),
 
-  // Same two values as `exercises.creator`, and for the same reason: never a display name.
-  author: text().notNull().default(ADMIN_CREATOR).$type<ContentOwner>(),
+    // Same two values as `exercises.creator`, and for the same reason: never a display name.
+    author: text().notNull().default(ADMIN_CREATOR).$type<ContentOwner>(),
 
-  rounds: int().notNull().default(1),
+    // The quest's name off this database (0066), as `exercises.uuid` is the movement's. Null on
+    // seed quests, which are known by `enTitle`.
+    uuid: text(),
 
-  // Rest between sets (a "set" = one exercise target). In seconds.
-  restSeconds: int().notNull().default(30),
+    rounds: int().notNull().default(1),
 
-  // The longer rest taken when a round ends, in seconds. Null means there is no separate round
-  // rest and `restSeconds` applies there too — what every quest did before the column existed.
-  roundRestSeconds: int(),
+    // Rest between sets (a "set" = one exercise target). In seconds.
+    restSeconds: int().notNull().default(30),
 
-  // What kind of session this is meant to be — sets the rest range, the rep targets and how far
-  // its exercises may stack. Null for user-authored quests.
-  archetype: text().$type<QuestArchetype>(),
+    // The longer rest taken when a round ends, in seconds. Null means there is no separate round
+    // rest and `restSeconds` applies there too — what every quest did before the column existed.
+    roundRestSeconds: int(),
 
-  // Main cover image for the quest
-  imagePath: text(),
+    // What kind of session this is meant to be — sets the rest range, the rep targets and how far
+    // its exercises may stack. Null for user-authored quests.
+    archetype: text().$type<QuestArchetype>(),
 
-  createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
-});
+    // Main cover image for the quest
+    imagePath: text(),
+
+    createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+    updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    uuidUnique: uniqueIndex("quests_uuid_unique").on(table.uuid),
+  }),
+);
 
 export const questExercises = sqliteTable(
   "quest_exercises",

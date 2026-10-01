@@ -18,15 +18,29 @@
 // the commit the bot pins. `__tests__/fdroid-scanignore.test.ts` fails if this stops
 // working, or if another dependency arrives with the same problem.
 
+//
+// The same scanner deletes a Gradle file that declares a maven repository on a local path.
+// react-native-view-shot points one at `node_modules/react-native/android`, a folder React Native
+// stopped shipping years ago (its artifacts come from Maven Central and the React Native Gradle
+// plugin now), so the block resolves nothing and removing it changes nothing but the scanner's
+// verdict. Same reasoning as above for doing it here and not in the recipe's scanignore.
+
 import * as fs from "node:fs";
 
-const GRADLE = "node_modules/@maplibre/maplibre-react-native/android/build.gradle";
-const LINE = /^.*com\.google\.android\.gms:play-services-location.*\n/m;
+const EDITS = [
+  {
+    gradle: "node_modules/@maplibre/maplibre-react-native/android/build.gradle",
+    line: /^.*com\.google\.android\.gms:play-services-location.*\n/m,
+  },
+  {
+    gradle: "node_modules/react-native-view-shot/android/build.gradle",
+    line: /^\s*maven \{\n(?:\s*\/\/.*\n)*\s*url "\$projectDir\/\.\.\/node_modules\/react-native\/android"\n\s*\}\n/m,
+  },
+];
 
-// Absent in a partial install, and there is nothing to do then.
-if (fs.existsSync(GRADLE)) {
-  const source = fs.readFileSync(GRADLE, "utf8");
-  if (LINE.test(source)) {
-    fs.writeFileSync(GRADLE, source.replace(LINE, ""));
-  }
+for (const { gradle, line } of EDITS) {
+  // Absent in a partial install, and there is nothing to do then.
+  if (!fs.existsSync(gradle)) continue;
+  const source = fs.readFileSync(gradle, "utf8");
+  if (line.test(source)) fs.writeFileSync(gradle, source.replace(line, ""));
 }

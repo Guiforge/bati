@@ -13,6 +13,7 @@ import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard
 import { StatsView } from "@/components/journal/stats/StatsView";
 import { useJournalStats } from "@/components/journal/stats/useJournalStats";
 import { getQuestThumb } from "@/constants/assetMap";
+import { MAP_ATTRIBUTION } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
 import type { StoredRecord } from "@/db/completed";
 import { listCompletedSessions } from "@/db/completed";
@@ -126,6 +127,7 @@ export default function JournalScreen() {
           leaguesM: s.leaguesM,
           movingSeconds: s.movingSeconds,
           outing: s.outing,
+          uuid: s.uuid,
           tracePoints: (s.uuid && traces.get(s.uuid)) || [],
           userLevel: s.userLevel,
           hasNewRecords: s.hasNewRecords,
@@ -201,6 +203,8 @@ export default function JournalScreen() {
     />
   );
 
+  const tiles = useSettingsStore((s) => s.mapTilesEnabled);
+
   const openSession = useCallback((id: number) => router.push(`/journal/${id}` as never), [router]);
 
   const renderHistoryItem = useCallback(
@@ -236,6 +240,19 @@ export default function JournalScreen() {
               loadMore().catch((e) => reportError("journal.loadMoreHistory", e));
             }}
             onEndReachedThreshold={0.5}
+            // ODbL wants the credit wherever the map is shown, and the rows' pictures are a map.
+            ListFooterComponent={
+              tiles && history.some((entry) => entry.tracePoints.length > 1) ? (
+                <NMuted
+                  testID="journal-map-attribution"
+                  fontSize={10}
+                  mt={11}
+                  style={{ textAlign: "center" }}
+                >
+                  {MAP_ATTRIBUTION}
+                </NMuted>
+              ) : null
+            }
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingHorizontal: 11, paddingBottom: insets.bottom + 20 }}
             showsVerticalScrollIndicator={false}

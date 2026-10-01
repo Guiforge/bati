@@ -153,6 +153,8 @@ export async function totalLeaguesM(): Promise<number> {
 
 /** What the session that owns a trace says about itself: which quest, when, how far, how long. */
 export type OutingSession = {
+  /** The row id, which is what the share screen is opened with. */
+  id: number;
   questId: number | null;
   performedAt: Date;
   /** The reducer's metres, written once at save. Null on a session that measured no ground. */
@@ -178,6 +180,7 @@ export type OutingSession = {
 export async function outingSession(sessionId: string): Promise<OutingSession | null> {
   const rows = await db
     .select({
+      id: completedQuest.id,
       questId: completedQuest.questId,
       performedAt: completedQuest.performedAt,
       leaguesM: completedQuest.leaguesM,
@@ -191,6 +194,7 @@ export async function outingSession(sessionId: string): Promise<OutingSession | 
   const row = rows[0];
   if (!row) return null;
   return {
+    id: row.id,
     questId: row.questId ?? null,
     performedAt: row.performedAt,
     leaguesM: row.leaguesM ?? null,

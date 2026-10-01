@@ -280,12 +280,38 @@ export function serializeOnDatabase<T>(fn: () => Promise<T>): Promise<T> {
   return run;
 }
 
-/** Runs `fn` atomically, falling back to a plain call on runtimes without async transactions. */
+/**
+ * Runs `fn` atomically, falling back to a plain call on runtimes without async transactions.
+ *
+ * Under expo-sqlite, through the native handle's `withTransactionAsync` and never through
+ * Drizzle's `db.transaction`. Drizzle's expo driver is synchronous: it sends BEGIN, calls `fn`,
+ * which returns a promise at its first `await`, and sends COMMIT right then, before a single
+ * write of `fn` has run. Every caller (a saved session, boss damage, an oath, an imported quest)
+ * was committed write by write, and a failure halfway left the first half behind. Drizzle writes
+ * on the same native handle, so its statements inside `fn` land inside this transaction.
+ *
+ * Any other write that reaches the connection while `fn` awaits lands inside it too, and a
+ * `db.transaction` there would fail on the open BEGIN. Every caller that needs atomicity comes
+ * through here, and `serializeOnDatabase` puts them in line, so none opens one of its own.
+ *
+ * ponytail: a write from outside the queue (a preference, a GPS batch, the widget) that happens to
+ * run while a transaction is open joins it, and a rollback takes it too. Rare (a rollback is a
+ * failed save) and milder than what it replaces (no atomicity at all). The fix, if one is ever
+ * lost that way, is an exclusive connection, which needs every write inside `fn` to go through
+ * `tx`: one through `db` there would wait on the transaction it is part of.
+ */
 export function transactionOrFallback<T>(fn: (tx: TransactionTx) => Promise<T>): Promise<T> {
   return serializeOnDatabase(async () => {
+    const tx = db as unknown as TransactionTx;
     if (!(await supportsAsyncTransactions())) {
-      return await fn(db as unknown as TransactionTx);
+      return await fn(tx);
     }
-    return await db.transaction(fn);
+    let result: { value: T } | null = null;
+    await expoDb.withTransactionAsync(async () => {
+      result = { value: await fn(tx) };
+    });
+    // Set whenever `withTransactionAsync` resolved, which it only does after `fn` did.
+    if (result === null) throw new Error("Transaction finished without a result");
+    return (result as { value: T }).value;
   });
 }

@@ -17,6 +17,7 @@ import { ChevronLeft, Pencil, Repeat, Sparkles } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
 import { QuestExerciseRow } from "@/components/quests/QuestExerciseRow";
+import { ShareQuestButton } from "@/components/quests/QuestFileButtons";
 import { restsBetweenExercises } from "@/components/quests/questShape";
 import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { WarmupPreview } from "@/components/quests/WarmupPreview";
@@ -882,6 +883,10 @@ export default function QuestDetails() {
               ))}
             </YStack>
           ) : null}
+
+          {/* The hero's own quests only: a seed quest is already on every phone that has Bati.
+              Under the list, where the hero has just read what they would be sending. */}
+          {quest && isUserQuest(quest) ? <ShareQuestButton questId={quest.id} /> : null}
         </YStack>
       </ScrollView>
 

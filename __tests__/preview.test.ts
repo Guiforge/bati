@@ -9,6 +9,7 @@ import { QUEST_AS_WRITTEN } from "@/db/quests";
 
 const exercise = (id: number, over: Partial<Exercise> = {}): Exercise => ({
   id,
+  uuid: null,
   enName: `ex-${id}`,
   frName: `ex-${id}`,
   deName: `ex-${id}`,

@@ -147,6 +147,7 @@ export function KillReport({
       <ReportHero
         source={report.bossImagePath ? getBossAsset(report.bossImagePath, 0, "defeated") : null}
         height={240}
+        sessionId={session.id}
       >
         <XStack items="center" gap={6}>
           <Skull size={15} color="$resourceGold" strokeWidth={2.5} />

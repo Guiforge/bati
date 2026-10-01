@@ -3,6 +3,7 @@ import * as Sharing from "expo-sharing";
 import type { LocationFix } from "@/modules/bati-location";
 import { reportError } from "@/src/reportError";
 import { toGpx } from "./gpx";
+import { accept, EMPTY } from "./track";
 
 /**
  * The recorded track, on disk.
@@ -44,10 +45,29 @@ export function flushTrack(file: File, fixes: readonly LocationFix[], distanceM:
 
 /** Hands the file to the share sheet, which is how it reaches Strava or a laptop. */
 export async function shareTrack(file: File): Promise<void> {
-  if (!(await Sharing.isAvailableAsync())) return;
+  // Thrown, not returned: a button that does nothing at all reads as broken, and the caller has
+  // a message for a GPX that could not be handed over.
+  if (!(await Sharing.isAvailableAsync())) throw new Error("No share sheet available");
   await Sharing.shareAsync(file.uri, {
     mimeType: "application/gpx+xml",
     dialogTitle: file.name,
     UTI: "public.xml",
   });
+}
+
+/**
+ * A finished run, as a GPX in the share sheet.
+ *
+ * The one door for the recap and the share screen. The name comes from the first fix, so it says
+ * when the outing happened and re-exporting the same one overwrites its own file instead of
+ * littering. The distance in its header is measured from the file's own fixes, the way the panel
+ * measured them: a GPX describes what is inside it, so a batch that never reached the table must
+ * not be in its header either.
+ */
+export async function exportTrack(fixes: readonly LocationFix[]): Promise<void> {
+  const first = fixes[0];
+  if (!first) return;
+  const file = trackFileFor(first.t);
+  flushTrack(file, fixes, fixes.reduce(accept, EMPTY).distanceM);
+  await shareTrack(file);
 }

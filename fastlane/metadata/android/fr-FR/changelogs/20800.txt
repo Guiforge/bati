@@ -1,0 +1,9 @@
+- Une quête qu'on t'envoie s'ouvre dans Bati d'un toucher,
+  depuis ta conversation, tes mails ou Fichiers.
+- Avant de l'ajouter, renomme-la et retire les
+  mouvements que tu ne veux pas. Une quête que tu as
+  déjà se met à jour, ou tu gardes les deux.
+- Un mouvement que ta version ne connaît pas encore ne
+  bloque plus toute la quête : il est laissé de côté.
+- Les fichiers reçus sont vérifiés de plus près : images
+  démesurées et caractères cachés restent dehors.

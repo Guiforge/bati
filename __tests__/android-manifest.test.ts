@@ -53,6 +53,40 @@ test("MainActivity forwards back to JS on Android 13 to 15, without re-entering 
   expect(activity.match(/defaultBackWithoutJs\(\)/g)?.length).toBe(3);
 });
 
+/**
+ * A quest file tapped in a chat or in Files opens Bati on the import preview. The filter names a
+ * MIME type and no scheme, which is what lets it match `content:` and `file:` URIs: expo-dev-client
+ * appends `exp+bati` to every VIEW filter, and `plugins/withAndroidFileIntentScheme.js` takes it
+ * back out. With the scheme in, the filter matches nothing a chat app sends.
+ */
+test("MainActivity opens JSON files, with no scheme narrowing the filter", () => {
+  const filters = [
+    ...main("AndroidManifest.xml").matchAll(/<intent-filter[^>]*>([\s\S]*?)<\/intent-filter>/g),
+  ].map((m) => m[1] ?? "");
+  const json = filters.filter((f) => f.includes('android:mimeType="application/json"'));
+  expect(json).toHaveLength(1);
+  expect(json[0]).toContain('android:name="android.intent.action.VIEW"');
+  expect(json[0]).toContain('android:name="android.intent.category.DEFAULT"');
+  expect(json[0]).not.toContain("android:scheme");
+  // Expo's `data-generated` marker failed `lintRelease` in CI (MissingPrefix).
+  expect(main("AndroidManifest.xml")).not.toContain("data-generated");
+});
+
+/**
+ * A task started by a tapped quest file keeps that VIEW intent as its root. Reopened from recents
+ * after the process died, it showed the import preview again, "Update my quest" one tap from
+ * overwriting the hero's own edits (seen on the emulator). `plugins/withAndroidStaleFileIntent.js`
+ * drops the file before React Native reads its initial URL.
+ */
+test("MainActivity forgets a quest file when its task is restored, before RN reads it", () => {
+  const activity = main("java", "com", "guiforge", "bati", "MainActivity.kt");
+  const drop = activity.indexOf("intent = Intent(intent).setData(null)");
+  expect(drop).toBeGreaterThan(-1);
+  expect(activity).toContain("savedInstanceState != null || fromHistory");
+  expect(activity).toContain("Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY");
+  expect(drop).toBeLessThan(activity.indexOf("super.onCreate(null)"));
+});
+
 test("the launcher icon has a monochrome layer for themed icons", () => {
   for (const icon of ["ic_launcher.xml", "ic_launcher_round.xml"]) {
     expect(main("res", "mipmap-anydpi-v26", icon)).toContain("<monochrome ");

@@ -341,9 +341,20 @@
     "import_not_a_quest": "This file holds no Bati quest.",
     "import_newer": "This quest comes from a newer Bati. Update the app to open it.",
     "import_unknown_movement": "This quest uses a movement your Bati does not know yet. Update the app to open it.",
-    "import_hint": "A .bati-quest.json file someone sent you.",
-    "share_quest_hint": "Sends a file to open in Bati, photos included.",
-    "import_updated": "Quest updated, it replaces the earlier version"
+    "import_hint": "A .bati-quest.json file someone sent you. You can also just tap it in your chat.",
+    "share_quest_hint": "Sends a file, photos included. Tapping it opens Bati.",
+    "import_updated": "Quest updated, it replaces the earlier version",
+    "import_title": "Quest received",
+    "import_rounds_one": "{{count}} round",
+    "import_rounds_other": "{{count}} rounds",
+    "import_existing": "You already have this quest: {{title}}",
+    "import_choice_update": "Update mine",
+    "import_choice_copy": "Keep both",
+    "import_movements": "Movements to bring in",
+    "import_missing_movement": "Not in your version of Bati yet",
+    "import_none_kept": "Pick at least one movement.",
+    "import_confirm": "Add to my quests",
+    "import_confirm_update": "Update my quest"
   },
   "adventures": {
     "gallery_title": "Adventures",

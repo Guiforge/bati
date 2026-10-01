@@ -78,8 +78,25 @@ A finished session as a picture, an outing as a GPX, a quest the hero wrote as a
   uuid v7 (migration 0066, also what device sync matches hero content by): a second import of
   the same quest updates it in place, a movement the receiver already has is reused even
   renamed, and the whole import is one transaction. Not a QR code: one photo is ten times what a QR
-  code holds. Every field of an incoming file is validated, and a picture is only ever a
-  `data:image` or the name of an image the app ships, never a URL the app would then fetch.
+  code holds. Not a Wi-Fi transfer either: it needs a local server, a third network module and a
+  privacy policy change, and Android's Quick Share already carries a file between two phones in
+  the room.
+  - **Opening one**: tapping the file in a chat, a mail or Files opens Bati (an ACTION_VIEW filter
+    on `application/json`, `app/+native-intent.tsx`), and so does the editor's import button,
+    through the picker. Both land on one preview (`app/quest-import.tsx`): the hero renames the
+    quest, unticks the movements they do not want, and, for a quest they already have, chooses
+    between updating it and keeping both. A seed movement this version lacks is shown and left
+    out, instead of refusing the whole quest. The extension stays `.json`: chat apps type a file
+    by its extension, and `.bati` would arrive as `application/octet-stream`, which only a filter
+    claiming every unknown file on the phone could catch.
+  - **Trust**: every field of an incoming file is validated. A picture is only ever a
+    `data:image` whose header says 1024 px or less, or the name of an image the app ships, never a
+    URL the app would then fetch; asset names are looked up as own keys, so `constructor` is the
+    placeholder. Texts lose controls and invisible format marks (bidi overrides, zero-width
+    spaces), titles and names are capped at 120 and cannot be blank, and every number goes
+    through the same clamps as the editors, so an imported quest pays no more than one the hero
+    wrote. A code a newer version added (a muscle, a pattern) is dropped where it only labels,
+    and asks for an update where it changes what a set is worth.
 
 ---
 

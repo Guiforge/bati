@@ -2,6 +2,7 @@ package com.guiforge.bati
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 
@@ -33,6 +34,11 @@ class MainActivity : ReactActivity() {
     // coloring the background, status bar, and navigation bar.
     // This is required for expo-splash-screen.
     // setTheme(R.style.AppTheme);
+    // bati-stale-file-intent: see plugins/withAndroidStaleFileIntent.js.
+    val fromHistory = (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
+    if ((savedInstanceState != null || fromHistory) && intent.data?.scheme == "content") {
+      intent = Intent(intent).setData(null)
+    }
     // @generated begin expo-splashscreen - expo prebuild (DO NOT MODIFY) sync-f3ff59a738c56c9a6119210cb55f0b613eb8b6af
     SplashScreenManager.registerOnActivity(this)
     // @generated end expo-splashscreen

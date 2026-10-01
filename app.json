@@ -9,7 +9,14 @@
       "predictiveBackGestureEnabled": true,
       "package": "com.guiforge.bati",
       "versionCode": 20700,
-      "blockedPermissions": ["android.permission.ACCESS_WIFI_STATE"]
+      "blockedPermissions": ["android.permission.ACCESS_WIFI_STATE"],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": ["DEFAULT"],
+          "data": [{ "mimeType": "application/json" }]
+        }
+      ]
     },
     "backgroundColor": "#0B0F19",
     "experiments": {
@@ -111,6 +118,8 @@
       "./plugins/withAndroidReleaseFlags",
       "./plugins/withAndroidTrimPermissions",
       "./plugins/withAndroidMailtoQuery",
+      "./plugins/withAndroidFileIntentScheme",
+      "./plugins/withAndroidStaleFileIntent",
       "./plugins/withAndroidReproducibleNative",
       "./plugins/withAndroidLocalAppId",
       "./plugins/withAndroidDebugIcon",

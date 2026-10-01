@@ -38,8 +38,12 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@expo/*"
         update-types: ["version-update:semver-major"]
+      # The SDK pins these to an exact version, so even a patch fails expo-doctor (#147).
+      # Dependabot alone is muted: `expo install --fix` still moves them with the SDK.
       - dependency-name: "react-native"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native-reanimated"
+      - dependency-name: "react-native-svg"
+      - dependency-name: "react-native-worklets"
       - dependency-name: "react-native-*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "react"

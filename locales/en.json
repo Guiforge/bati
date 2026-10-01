@@ -1809,5 +1809,27 @@
     "check_off": "Turn off",
     "check_fine": "They're fine",
     "pause_row": "Pause"
+  },
+  "setAside": {
+    "leave_out": "Don't suggest {{name}} again",
+    "done": "{{name}} won't be suggested again.",
+    "instead_of": "Instead of {{name}} (set aside)",
+    "put_back_named": "Put {{name}} back",
+    "set_aside": "Don't suggest again",
+    "set_aside_tag": "Set aside",
+    "put_back": "Put back",
+    "hint": "It gets swapped for something close in your quests, and left out of your warm-ups.",
+    "title": "Set-aside exercises",
+    "none": "None",
+    "empty": "Nothing set aside. On an exercise's page, \"Don't suggest again\" takes it out of your quests and warm-ups.",
+    "browse": "Browse exercises",
+    "since": "Since {{date}}",
+    "limits": "Quests of your own stay as you made them. Setting a rung aside stops its path climbing there.",
+    "not_for_me": "Don't suggest this again",
+    "back": "{{name}} is back.",
+    "served_no_substitute": "Set aside, nothing close to stand in",
+    "served_own_quest": "Set aside, your quest keeps it as you wrote it",
+    "stops_path": "Your path stops climbing at this rung.",
+    "oath_stalls": "Your oath is on this exercise: it won't move while it is set aside."
   }
 }

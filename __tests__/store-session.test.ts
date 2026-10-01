@@ -610,6 +610,57 @@ describe("useSessionStore", () => {
       expect(await loadWarmup(mockQuest)).toEqual([]);
     });
 
+    // "Not for me" (issue #145): the movement in front of the hero, and every other step the
+    // hero just set aside with it, leave what is left of this warm-up.
+    test("dropping steps takes them out of what is left and opens the wait before the next", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      const before = store.getState().warmupSequence.map((s) => s.exerciseName);
+      const [first, ...rest] = before;
+      const last = rest.at(-1);
+      assert(first && last);
+
+      store.getState().startWarmupMove();
+      store.getState().dropWarmupSteps(new Set([first, last]));
+
+      expect(store.getState().warmupSequence.map((s) => s.exerciseName)).toEqual(
+        before.filter((name) => name !== first && name !== last),
+      );
+      expect(store.getState().warmupIndex).toBe(0);
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerDuration).toBe(PREP_SECONDS);
+    });
+
+    test("a step already passed goes too, so Previous cannot walk back onto it", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      const [first, second] = store.getState().warmupSequence.map((s) => s.exerciseName);
+      assert(first && second);
+      store.getState().nextWarmupStep();
+      store.getState().nextWarmupStep();
+
+      store.getState().dropWarmupSteps(new Set([first]));
+      store.getState().previousWarmupStep();
+      store.getState().previousWarmupStep();
+
+      expect(store.getState().warmupSequence[store.getState().warmupIndex]?.exerciseName).toBe(
+        second,
+      );
+    });
+
+    test("dropping the last step left ends the warm-up on the start screen", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      const sequence = store.getState().warmupSequence;
+      for (let i = 1; i < sequence.length; i++) store.getState().nextWarmupStep();
+      const last = sequence.at(-1);
+      assert(last);
+
+      store.getState().dropWarmupSteps(new Set([last.exerciseName]));
+
+      expect(store.getState().status).toBe("countdown");
+    });
+
     test("skipping goes straight to the start screen and journals nothing", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");

@@ -331,6 +331,7 @@ interface SessionState {
   startWarmupMove: () => void;
   nextWarmupStep: () => void;
   previousWarmupStep: () => void;
+  dropWarmupSteps: (names: ReadonlySet<string>) => void;
   skipWarmup: () => void;
   finishCountdown: () => void;
   pauseSession: () => void;
@@ -1231,6 +1232,32 @@ export const useSessionStore = create<SessionState>()(
       set({ warmupIndex: warmupIndex - 1, warmupPrep: true, ...prepTimer() });
     },
 
+    /**
+     * Take these movements out of what is left of the warm-up, then open the wait before
+     * whatever now stands at this step. "Not for me" (issue #145): the movement was just set
+     * aside, and the jumps with it when the hero said so.
+     *
+     * ponytail: drops without refilling, so this warm-up runs shorter. The next one is built
+     * with the set-aside list and fills from `NO_IMPACT`; rebuilding mid-warm-up would reshuffle
+     * steps the hero has already seen coming.
+     */
+    dropWarmupSteps: (names) => {
+      const { status, warmupIndex, warmupSequence } = get();
+      if (status !== "warmup") return;
+
+      // The steps already behind the hero too, so Previous cannot walk back onto one; the index
+      // moves down by however many of them went.
+      const keep = (s: WarmupStep) => !names.has(s.exerciseName);
+      const kept = warmupSequence.filter(keep);
+      const index = warmupSequence.slice(0, warmupIndex).filter(keep).length;
+      set({ warmupSequence: kept, warmupIndex: index });
+      if (index >= kept.length) {
+        get().skipWarmup();
+        return;
+      }
+      set({ warmupPrep: true, ...prepTimer() });
+    },
+
     /** Leave the warm-up for the start screen. Nothing is journaled: a warm-up is not work. */
     skipWarmup: () => {
       if (get().status !== "warmup") return;
@@ -1500,6 +1527,7 @@ export const useSessionStore = create<SessionState>()(
               images: [],
               ghost: undefined,
               substitutedFor: undefined,
+              setAsideServed: undefined,
             }
           : qex,
       );
@@ -1960,6 +1988,14 @@ function justStarted(curr: SessionStatus, prev: SessionStatus): boolean {
   return curr === "running" && (prev === "idle" || prev === "finished" || prev === "countdown");
 }
 
+/** "Not for me" took steps out of a running warm-up, which moves no index the save watches. */
+function warmupShortened(
+  curr: { status: SessionStatus; warmupLength: number },
+  prev: { warmupLength: number },
+): boolean {
+  return curr.status === "warmup" && curr.warmupLength < prev.warmupLength;
+}
+
 // Subscribe to session state changes and auto-save for crash recovery
 useSessionStore.subscribe(
   (state) => ({
@@ -1970,6 +2006,9 @@ useSessionStore.subscribe(
     // A mid-session swap moves none of the above, and a recovery that missed it hands the hero
     // back the movement they just refused.
     exerciseIds: state.quest?.exercises.map((qex) => qex.exercise.id),
+    // "Not for me" shortens the warm-up and moves nothing else; a recovery that missed it plays
+    // the movement the hero just set aside.
+    warmupLength: state.warmupSequence.length,
   }),
   async (curr, prev) => {
     const state = useSessionStore.getState();
@@ -2014,6 +2053,7 @@ useSessionStore.subscribe(
       curr.resultsCount !== prev.resultsCount ||
       // A movement swapped mid-session — a quest *arriving* is not progress, its start is.
       (prev.exerciseIds !== undefined && String(curr.exerciseIds) !== String(prev.exerciseIds)) ||
+      warmupShortened(curr, prev) ||
       curr.status === "paused";
 
     if (hasProgressed) {

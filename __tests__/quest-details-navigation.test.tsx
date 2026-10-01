@@ -17,6 +17,9 @@ const backHandlerSpy = jest.spyOn(
 ) as jest.SpyInstance;
 let mockParams: { id?: string; adventureId?: string; from?: string } = { id: "5" };
 
+// Setting aside is not what this file is about.
+jest.mock("@/hooks/useSetAside");
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: jest.fn(),
@@ -96,7 +99,10 @@ jest.mock("@/db/exercises", () => ({
 }));
 
 jest.mock("@/db/preferences", () => ({
-  preferences: { getOwnedEquipment: jest.fn().mockResolvedValue(null) },
+  preferences: {
+    getOwnedEquipment: jest.fn().mockResolvedValue(null),
+    getSetAsideExercises: jest.fn().mockResolvedValue([]),
+  },
 }));
 
 jest.mock("@/db/adventures-narrative", () => ({

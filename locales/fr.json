@@ -1887,5 +1887,27 @@
     "check_off": "Couper",
     "check_fine": "Ils me vont",
     "pause_row": "Mettre en pause"
+  },
+  "setAside": {
+    "leave_out": "Ne plus me proposer {{name}}",
+    "done": "On ne te proposera plus {{name}}.",
+    "instead_of": "À la place de {{name}} (exercice écarté)",
+    "put_back_named": "Remettre {{name}}",
+    "set_aside": "Ne plus me proposer",
+    "set_aside_tag": "Écarté",
+    "put_back": "Remettre",
+    "hint": "On le remplacera par un exercice proche dans tes quêtes, et il sortira de tes échauffements.",
+    "title": "Exercices écartés",
+    "none": "Aucun",
+    "empty": "Rien d'écarté. Sur la fiche d'un exercice, « Ne plus me proposer » le sort de tes quêtes et de tes échauffements.",
+    "browse": "Parcourir les exercices",
+    "since": "Depuis le {{date}}",
+    "limits": "Tes propres quêtes restent telles que tu les as faites. Écarter une étape arrête sa voie à cette hauteur.",
+    "not_for_me": "Ne plus me le proposer",
+    "back": "{{name}} est de retour.",
+    "served_no_substitute": "Exercice écarté, rien de proche pour le remplacer",
+    "served_own_quest": "Exercice écarté, ta quête le garde tel que tu l'as écrit",
+    "stops_path": "Ta voie s'arrêtera à cette étape.",
+    "oath_stalls": "Ton serment porte sur cet exercice : il n'avancera plus tant qu'il est écarté."
   }
 }

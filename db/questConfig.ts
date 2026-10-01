@@ -283,6 +283,8 @@ export function applyConfigToSlots(
             // the "we served you an easier rung" caption has to go with it. Left behind, the
             // screen would explain a substitution that is no longer on the slot.
             substitutedFor: undefined,
+            // Same for "set aside, served anyway": the swap runs something else.
+            setAsideServed: undefined,
           }),
     };
   });

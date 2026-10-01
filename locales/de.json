@@ -1813,5 +1813,27 @@
     "check_off": "Ausschalten",
     "check_fine": "Passt so",
     "pause_row": "Pausieren"
+  },
+  "setAside": {
+    "leave_out": "{{name}} nicht mehr vorschlagen",
+    "done": "{{name}} wird dir nicht mehr vorgeschlagen.",
+    "instead_of": "Statt {{name}} (beiseitegelegt)",
+    "put_back_named": "{{name}} zurückholen",
+    "set_aside": "Nicht mehr vorschlagen",
+    "set_aside_tag": "Beiseitegelegt",
+    "put_back": "Zurückholen",
+    "hint": "In deinen Quests bekommst du dann etwas Ähnliches, und beim Aufwärmen fällt die Übung weg.",
+    "title": "Beiseitegelegte Übungen",
+    "none": "Keine",
+    "empty": "Nichts beiseitegelegt. Auf der Seite einer Übung nimmt „Nicht mehr vorschlagen“ sie aus deinen Quests und dem Aufwärmen.",
+    "browse": "Übungen ansehen",
+    "since": "Seit dem {{date}}",
+    "limits": "Eigene Quests bleiben, wie du sie gebaut hast. Eine beiseitegelegte Stufe hält ihren Pfad dort an.",
+    "not_for_me": "Nicht mehr vorschlagen",
+    "back": "{{name}} ist wieder da.",
+    "served_no_substitute": "Beiseitegelegt, nichts Ähnliches als Ersatz",
+    "served_own_quest": "Beiseitegelegt, deine Quest behält die Übung, wie du sie geschrieben hast",
+    "stops_path": "Dein Pfad bleibt auf dieser Stufe stehen.",
+    "oath_stalls": "Dein Schwur gilt dieser Übung: Er kommt nicht voran, solange sie beiseitegelegt ist."
   }
 }

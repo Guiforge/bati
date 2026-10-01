@@ -13,6 +13,10 @@ import config from "@/tamagui.config";
 
 const mockPush = jest.fn();
 
+// Setting aside is not what this file is about.
+jest.mock("@/hooks/useSetAside");
+jest.mock("@/db/oaths", () => ({ getOath: () => Promise.resolve(null) }));
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useLocalSearchParams: () => ({ id: "30" }),
@@ -35,6 +39,7 @@ const mockGetChainTo = jest.fn();
 const mockGetNextProgression = jest.fn();
 
 jest.mock("@/db", () => ({
+  preferences: { getSetAsideExercises: jest.fn().mockResolvedValue([]) },
   getExerciseById: (id: number) => mockGetExerciseById(id),
   // Seed content, so the hero actions never render here — this suite is about the ladder.
   isUserExercise: (ex: { creator: string }) => ex.creator !== "Admin",

@@ -50,6 +50,11 @@ type Props = {
    * "Dead Bug" from seed content's. A string can only be empty or absent, and both are nullish.
    */
   captionFor?: (exercise: Exercise) => string | null;
+  /**
+   * Under the search, above the list: a Replace sheet puts its set-aside toggle here. Never in the
+   * footer, which is the thumb's resting place and already holds "Done".
+   */
+  header?: ReactNode;
   bottomInset: number;
 };
 
@@ -68,6 +73,7 @@ export function ExercisePickerSheet({
   closeOnPick = false,
   pickAction,
   captionFor,
+  header,
   bottomInset,
 }: Props) {
   const { t } = useTranslation();
@@ -179,6 +185,8 @@ export function ExercisePickerSheet({
             />
             <Search size={18} color="$textSecondary" />
           </XStack>
+
+          {header}
         </YStack>
 
         {/* A plain scroll view, not `Sheet.ScrollView`: that one exists to feed the sheet's drag,

@@ -1885,5 +1885,27 @@
     "check_off": "Apagar",
     "check_fine": "Me van bien",
     "pause_row": "Pausar"
+  },
+  "setAside": {
+    "leave_out": "No proponerme más {{name}}",
+    "done": "Ya no te propondremos {{name}}.",
+    "instead_of": "En lugar de {{name}} (ejercicio apartado)",
+    "put_back_named": "Recuperar {{name}}",
+    "set_aside": "No proponérmelo más",
+    "set_aside_tag": "Apartado",
+    "put_back": "Recuperar",
+    "hint": "En tus misiones te daremos algo parecido, y saldrá de tus calentamientos.",
+    "title": "Ejercicios apartados",
+    "none": "Ninguno",
+    "empty": "Nada apartado. En la página de un ejercicio, «No proponérmelo más» lo saca de tus misiones y calentamientos.",
+    "browse": "Ver ejercicios",
+    "since": "Desde el {{date}}",
+    "limits": "Tus propias misiones no cambian. Apartar una etapa detiene su senda en ese punto.",
+    "not_for_me": "No proponérmelo más",
+    "back": "{{name}} vuelve.",
+    "served_no_substitute": "Ejercicio apartado, nada parecido para sustituirlo",
+    "served_own_quest": "Ejercicio apartado, tu misión lo mantiene como lo escribiste",
+    "stops_path": "Tu senda se detendrá en esta etapa.",
+    "oath_stalls": "Tu juramento es sobre este ejercicio: no avanzará mientras esté apartado."
   }
 }

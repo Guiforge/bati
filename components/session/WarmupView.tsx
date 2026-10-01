@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -12,6 +13,7 @@ import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { describeExercise } from "@/hooks/useSessionInstructions";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
+import { useSetAside } from "@/hooks/useSetAside";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { MovementDescription, PrepView } from "./PrepView";
@@ -46,6 +48,8 @@ export function WarmupView() {
   const nextWarmupStep = useSessionStore((s) => s.nextWarmupStep);
   const previousWarmupStep = useSessionStore((s) => s.previousWarmupStep);
   const skipWarmup = useSessionStore((s) => s.skipWarmup);
+  const dropWarmupSteps = useSessionStore((s) => s.dropWarmupSteps);
+  const { setAside } = useSetAside();
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const { remainingSeconds, progress } = useSessionTimer();
   // Declared above the auto-advance effect below, the same way `RestView` does it: on the render
@@ -260,6 +264,41 @@ export function WarmupView() {
           accessibilityRole="button"
         />
       </XStack>
+
+      {/* Where issue #145 happened: a hero who cannot jump met Star Jump here, had only Next and
+          Skip, and skipped every warm-up after. This sets the movement aside for good and moves
+          on, so the next warm-up is built without it. A seed row only: the warm-up names nothing
+          else, and an unresolved name has nothing to set aside.
+          A text action, the shape of the session's own "Replace": it acts for good, and stacked
+          as a second outline button over Skip it weighed the same as a one-off skip (UX audit
+          on #145). A failed write drops nothing, so the step stays where it was. */}
+      {exercise ? (
+        <Pressable
+          testID="session-warmup-not-for-me"
+          hitSlop={12}
+          onPress={() => {
+            selection();
+            // The toast's "Put back" returns it to the list only: this warm-up carries on without
+            // the step, and the next one is built with it. Putting the step back mid-way would
+            // reshuffle what the hero already saw coming, or arrive after the warm-up has ended.
+            setAside(exercise, () => {
+              // Nothing on screen to undo: the step is gone from this warm-up either way.
+            })
+              .then((ok) => {
+                if (ok) dropWarmupSteps(new Set([exercise.enName]));
+              })
+              .catch(() => {
+                // Reported by `useSetAside`, which never rejects.
+              });
+          }}
+          accessibilityRole="button"
+          style={{ alignSelf: "center" }}
+        >
+          <Text py="$2" fontSize={14} fontWeight="700" color="$textSecondary">
+            {t("setAside.not_for_me")}
+          </Text>
+        </Pressable>
+      ) : null}
 
       {/* A control, and shaped like one: it used to be the smallest, dimmest text on the screen,
           which is how the hurried-lifter audit found it (2026-09-10). */}

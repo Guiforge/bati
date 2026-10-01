@@ -47,9 +47,13 @@ const slot = (over: Partial<QuestExercise> = {}): QuestExercise =>
   }) as unknown as QuestExercise;
 
 const onOpenExercise = jest.fn();
+const onPutBack = jest.fn();
+const onReplace = jest.fn();
 
 async function renderRow(over: Partial<QuestExercise> = {}, showTarget = true) {
   onOpenExercise.mockClear();
+  onPutBack.mockClear();
+  onReplace.mockClear();
   await render(
     <TamaguiProvider config={config} defaultTheme="dark">
       <QuestExerciseRow
@@ -58,6 +62,8 @@ async function renderRow(over: Partial<QuestExercise> = {}, showTarget = true) {
         language="en"
         showTarget={showTarget}
         onOpenExercise={onOpenExercise}
+        onPutBack={onPutBack}
+        onReplace={onReplace}
       />
     </TamaguiProvider>,
   );
@@ -96,4 +102,51 @@ test("the target is dropped when the caller says the goal is named elsewhere", a
 
   expect(screen.getByText("1. Wall Sit")).toBeTruthy();
   expect(screen.queryByText("15 min")).toBeNull();
+});
+
+const squat = {
+  id: 7,
+  enName: "Squat",
+  frName: "Squat",
+  deName: "Kniebeuge",
+  esName: "Sentadilla",
+  imagePath: "",
+};
+
+// A rung not reached yet promises the written movement back; a set-aside one must not, and the
+// panel is where the hero can take it back.
+test("a set-aside slot says what it stands in for, and hands it back from the panel", async () => {
+  await renderRow({ substitutedFor: { ...squat, setAside: true } });
+
+  expect(screen.getByText("Instead of Squat (set aside)")).toBeTruthy();
+  expect(screen.queryByText("Working up to Squat")).toBeNull();
+
+  await fireEvent.press(screen.getByText("1. Wall Sit"));
+  await fireEvent.press(screen.getByText("Put Squat back"));
+  expect(onPutBack).toHaveBeenCalledWith(7);
+});
+
+test("a rung substitution keeps its own caption and offers nothing to put back", async () => {
+  await renderRow({ substitutedFor: squat });
+
+  expect(screen.getByText("Working up to Squat")).toBeTruthy();
+  await fireEvent.press(screen.getByText("1. Wall Sit"));
+  expect(screen.queryByText("Put Squat back")).toBeNull();
+});
+
+// Issue #145, the promise kept: an exercise set aside that runs anyway says so, and the way out
+// is one tap away instead of on another screen.
+test("a set-aside exercise served anyway says so, and offers Replace", async () => {
+  await renderRow({ setAsideServed: "no_substitute" });
+
+  expect(screen.getByText("Set aside, nothing close to stand in")).toBeTruthy();
+  await fireEvent.press(screen.getByText("1. Wall Sit"));
+  await fireEvent.press(screen.getByText("Replace this exercise"));
+  expect(onReplace).toHaveBeenCalledWith(1);
+});
+
+test("in the hero's own quest the caption says the quest keeps it", async () => {
+  await renderRow({ setAsideServed: "own_quest" });
+
+  expect(screen.getByText("Set aside, your quest keeps it as you wrote it")).toBeTruthy();
 });

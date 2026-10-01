@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
@@ -41,24 +41,27 @@ export function WarmupPreview({
   );
   const [open, setOpen] = useState(false);
 
-  // Once, on mount, and not once per `quest` object: the quest screen hands a freshly built one
-  // on every level tap, every language change and the frame its catalogue lands, and each of
-  // those was paying for three journal reads to redraw a list of four names. What the quest
-  // decides is `buildWarmup`, which is pure and runs in the render below.
-  useEffect(() => {
-    let cancelled = false;
-    loadWarmupContext()
-      .then((next) => {
-        if (!cancelled) setContext(next);
-      })
-      .catch((error) => {
-        // The warm-up still plays; only the look ahead is lost.
-        reportError("quest.warmupPreview", error);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // On focus, and not once per `quest` object: the quest screen hands a freshly built one on
+  // every level tap, every language change and the frame its catalogue lands, and each of those
+  // was paying for three journal reads to redraw a list of four names. What the quest decides is
+  // `buildWarmup`, which is pure and runs in the render below. Focus rather than mount because
+  // each row opens its exercise, where the hero can set it aside: coming back must not still list it.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      loadWarmupContext()
+        .then((next) => {
+          if (!cancelled) setContext(next);
+        })
+        .catch((error) => {
+          // The warm-up still plays; only the look ahead is lost.
+          reportError("quest.warmupPreview", error);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }, []),
+  );
 
   const steps =
     context === null || !context.enabled

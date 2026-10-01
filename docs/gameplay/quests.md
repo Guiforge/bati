@@ -97,6 +97,60 @@ target generated from them. The app had the ladder recorded the whole time; it j
 reading it when it mattered. A session can now also skip a set outright, which writes no row at
 all rather than a number nobody performed.
 
+### A set-aside exercise is never served without saying so
+
+The second reason a slot runs something other than what it names. One action, one verb, "Don't
+suggest again" ("Ne plus me proposer"), from three places: the exercise's own page (which is also
+how the warm-up preview's rows reach it), a toggle at the top of either Replace sheet (committed
+only when the replacement is picked), and a text action on a step of the running warm-up. The
+state is "Set aside" ("Écarté"). The list lives in Settings > Set-aside exercises, where each one
+can be put back; a slot standing in for one offers "Put X back" in its open panel.
+
+After setting aside, a toast says "X won't be suggested again" with a **Put back** button, except
+on the exercise page, whose own button turns into "Put back". Put back returns it to the list and
+nothing else: swaps and target numbers dropped when it was set aside stay dropped, and a running
+warm-up carries on without the step (the next one includes it). The toast sits at the top, takes
+the tap (it used to let taps through to the control under it), and stays longer when it carries a
+button.
+
+What it changes:
+
+- **Quest slots.** `loadSlotJournal` resolves the replacement once (`SlotJournal.replaced`, which
+  outranks `served`), so the quest screen, Home and every gallery card agree. The replacement is
+  `setAsideReplacement`: an easier rung, the same pattern, or the same push/pull family, seed
+  content only, never a harder rung, never anything the hero lacks the kit or the rung for, never
+  another set-aside one. The caption reads "Instead of X (set aside)".
+- **Nothing close enough.** The slot runs as written and says so ("Set aside, nothing close to
+  stand in", `QuestExercise.setAsideServed`), with Replace in its panel. Decided 2026-10-01 over
+  dropping the slot, which would change the quest's XP, duration and boss damage, and leave a quest
+  whose every slot is set aside impossible to start.
+- **The hero's own quests** are never substituted, and say so the same way ("your quest keeps it
+  as you wrote it").
+- **The warm-up.** `unavailableMovements()` includes the list (seed rows only), the wrist step
+  included, and a phase that runs out of its own pool fills from `NO_IMPACT` (Squat, Lunge, Bear
+  Crawl, Glute Bridge). Everything set aside leaves an empty warm-up, which is skipped.
+- **Saved configs.** Swaps to the exercise, and target numbers on slots that name it, are dropped
+  when it is set aside (`db/setAside.ts`): a config is applied after the slot is resolved.
+- **Before the tap**, the exercise page says what it costs: a rung with a next step stops its path
+  there, and an oath on it stops moving.
+
+No category feature: a hero who does not want to jump sets each jump aside when they meet it
+(decided 2026-10-01; a "no jumping" or "spare the wrists" toggle would promise what the catalogue
+cannot keep, since nothing hands-free stands in for a push-up).
+
+Mid-session, the Replace sheet's toggle swaps the current slot only; another slot of the same
+running session that serves the exercise keeps it until the next session is built. The warm-up
+action takes every step of the exercise out of the running warm-up, including any already passed,
+so Previous cannot walk back onto one.
+
+Left alone: pickers the hero drives by hand (the quest editor, the oath) and the catalogue.
+
+Kept per device: the list stores ids, which differ between devices for seed rows written after
+`0035`, so it stays out of `MERGED_PREFERENCES` (see the `ponytail:` on `getSetAsideExercises`).
+
+**Why it exists.** [Issue #145](https://github.com/Guiforge/bati/issues/145): "I can't jump due to
+physical limitations", and the only way past the jumps was to skip the whole warm-up, every time.
+
 ### By Duration
 
 | Duration | Est. Time | Rounds |

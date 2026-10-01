@@ -8,6 +8,8 @@ import { Button, H1, Paragraph, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Crosshair, Pause } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
+import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
+import { slotCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
@@ -22,6 +24,7 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
+import { useSetAside } from "@/hooks/useSetAside";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -59,15 +62,23 @@ export function ActiveExerciseView() {
   // `listExercises()` is promise-cached, so this is free after the first read anywhere in the app.
   const [catalogue, setCatalogue] = useState<Exercise[]>([]);
   const [owned, setOwned] = useState<ReadonlySet<string> | null>(null);
+  const [setAsideIds, setSetAsideIds] = useState<ReadonlySet<number>>(new Set());
   const [swapOpen, setSwapOpen] = useState(false);
+  const [leaveOut, setLeaveOut] = useState(false);
+  const { setAside } = useSetAside();
 
   useEffect(() => {
     let alive = true;
-    Promise.all([listExercises(), preferences.getOwnedEquipment()])
-      .then(([all, equipment]) => {
+    Promise.all([
+      listExercises(),
+      preferences.getOwnedEquipment(),
+      preferences.getSetAsideExercises(),
+    ])
+      .then(([all, equipment, aside]) => {
         if (!alive) return;
         setCatalogue(all);
         setOwned(equipment === null ? null : new Set(equipment));
+        setSetAsideIds(new Set(aside.map((e) => e.id)));
       })
       .catch((e) => reportError("session.catalogue", e));
     return () => {
@@ -176,8 +187,12 @@ export function ActiveExerciseView() {
   // Ladder rungs first, then the same pattern, then the family — `rankSwapCandidates` already
   // encodes that order for the quest screen, and a hero stuck mid-set wants the easier rung at
   // the top of the list.
+  // What the hero set aside is never offered back as a replacement.
   const swapCandidates = swapOpen
-    ? rankSwapCandidates(pickableExercises(catalogue), currentEx.exercise, owned as never)
+    ? rankSwapCandidates(pickableExercises(catalogue), currentEx.exercise, owned as never).filter(
+        // After the ranking: a set-aside rung removed first would cut the ladder walk at the gap.
+        (c) => !setAsideIds.has(c.exercise.id),
+      )
     : [];
   const swapReasons = new Map(swapCandidates.map((c) => [c.exercise.id, c.reason] as const));
 
@@ -459,12 +474,9 @@ export function ActiveExerciseView() {
               {/* The template named a harder movement and the hero is not on that rung yet
                 (issue #33). Named here too: mid-session is where the substitution is felt, and
                 a hero who thinks the app got it wrong is a hero who logs a lie. */}
-              {currentEx.substitutedFor ? (
+              {slotCaption(t, currentEx, language) ? (
                 <Text fontSize={12} color="$textSecondary" fontFamily="$body" text="center">
-                  {t("quests.served_easier_rung", {
-                    name: localizedName(currentEx.substitutedFor, language),
-                    defaultValue: `Working up to ${localizedName(currentEx.substitutedFor, language)}`,
-                  })}
+                  {slotCaption(t, currentEx, language)}
                 </Text>
               ) : null}
 
@@ -785,11 +797,33 @@ export function ActiveExerciseView() {
         pickedIds={[currentEx.exercise.id]}
         language={language}
         open={swapOpen}
-        onOpenChange={setSwapOpen}
+        onOpenChange={(next) => {
+          setSwapOpen(next);
+          if (!next) setLeaveOut(false);
+        }}
         title={t("quests.swap_exercise", "Replace this exercise")}
+        header={
+          <SetAsideToggle exercise={currentEx.exercise} checked={leaveOut} onToggle={setLeaveOut} />
+        }
         onPick={(exercise) => {
+          if (leaveOut) {
+            const left = currentEx.exercise;
+            // Offered again in this sheet when it is not set aside after all: the write failed,
+            // or the toast's "Put back" undid it. The swap itself stands, it was a choice of its own.
+            const offerAgain = () =>
+              setSetAsideIds((prev) => new Set([...prev].filter((id) => id !== left.id)));
+            setSetAsideIds((prev) => new Set([...prev, left.id]));
+            setAside(left, offerAgain)
+              .then((ok) => {
+                if (!ok) offerAgain();
+              })
+              .catch(() => {
+                // Reported by `useSetAside`, which never rejects.
+              });
+          }
           swapCurrentExercise(exercise);
           setSwapOpen(false);
+          setLeaveOut(false);
         }}
         captionFor={(exercise) => swapReasonLabel(swapReasons.get(exercise.id))}
         bottomInset={insets.bottom}

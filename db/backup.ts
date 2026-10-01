@@ -251,17 +251,32 @@ export const MERGED_PREFERENCES = [
  * no cross-device id yet (roadmap 4.18 phase 4), so an exercise is named by its English name, a
  * quest by its titles, a preference by its key. Good enough to tell "something was written here".
  */
-function heroContent(schema: string): string {
+function heroContent(schema: string, named: boolean): string {
   const keys = MERGED_PREFERENCES.map(sqlString).join(", ");
-  return `SELECT 'e:' || enName AS id, updatedAt AS at FROM ${schema}.exercises WHERE creator = 'hero'
-    UNION ALL SELECT 'q:' || enTitle || '/' || frTitle, updatedAt FROM ${schema}.quests WHERE author = 'hero'
+  // By uuid (0066), as `mergePeer` matches them, so a rename is a change to one row and not a row
+  // gone plus a row new. A database from before 0066 has no such column and keeps its names.
+  const exercise = named ? "ifnull(uuid, enName)" : "enName";
+  const quest = named ? "ifnull(uuid, enTitle || '/' || frTitle)" : "enTitle || '/' || frTitle";
+  return `SELECT 'e:' || ${exercise} AS id, updatedAt AS at FROM ${schema}.exercises WHERE creator = 'hero'
+    UNION ALL SELECT 'q:' || ${quest}, updatedAt FROM ${schema}.quests WHERE author = 'hero'
     UNION ALL SELECT 'p:' || key, updatedAt FROM ${schema}.user_preferences WHERE key IN (${keys})`;
 }
 
-/** Rows of `a` that `b` lacks, or that `a` wrote later. */
-function newerIn(a: string, b: string): string {
-  return `SELECT count(*) FROM (${heroContent(a)}) x
-    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b)}) y WHERE y.id = x.id AND y.at >= x.at)`;
+/** Whether a schema's hero content carries a uuid, which a database before 0066 does not. */
+async function namesItsContent(conn: IsolatedConnection, schema: string): Promise<boolean> {
+  const row = await conn.getFirstAsync<{ n: number }>(
+    `SELECT count(*) AS n FROM pragma_table_info('quests', ${sqlString(schema)}) WHERE name = 'uuid'`,
+  );
+  return Number(row?.n ?? 0) > 0;
+}
+
+/**
+ * Rows of `a` that `b` lacks, or that `a` wrote later. Named by uuid only when both sides can be:
+ * one side's uuid and the other's name never match, and every hero row would read as news.
+ */
+function newerIn(a: string, b: string, named: boolean): string {
+  return `SELECT count(*) FROM (${heroContent(a, named)}) x
+    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named)}) y WHERE y.id = x.id AND y.at >= x.at)`;
 }
 
 /** A schema's tombstones, or none on a database written before 0064. */
@@ -318,6 +333,8 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
     ];
     const sessions = (schema: string) =>
       `SELECT uuid FROM ${schema}.completed_sessions WHERE uuid IS NOT NULL`;
+    const peerNamed = await namesItsContent(conn, CANDIDATE);
+    const named = peerNamed && (await namesItsContent(conn, "main"));
     const row = await conn.getFirstAsync<Record<string, number | string | null>>(
       `SELECT
          (SELECT count(*) FROM (${sessions(CANDIDATE)}) p
@@ -326,13 +343,13 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
             WHERE l.uuid NOT IN (${sessions(CANDIDATE)}) AND l.uuid NOT IN (${peerGone})) AS localOnly,
          (SELECT count(*) FROM (${sessions(CANDIDATE)}) p WHERE p.uuid IN (${localGone})) AS localDeleted,
          (SELECT count(*) FROM (${sessions("main")}) l WHERE l.uuid IN (${peerGone})) AS peerDeleted,
-         (${newerIn(CANDIDATE, "main")}) AS peerContent,
-         (${newerIn("main", CANDIDATE)}) AS localContent,
+         (${newerIn(CANDIDATE, "main", named)}) AS peerContent,
+         (${newerIn("main", CANDIDATE, named)}) AS localContent,
          (SELECT max(performedAt) FROM ${CANDIDATE}.completed_sessions) AS peerLatest,
          (SELECT value FROM ${CANDIDATE}.user_preferences WHERE key = 'villageName') AS peerVillage,
          (SELECT count(*) FROM main.completed_sessions) AS localSessions,
          (SELECT count(*) || ':' || ifnull(max(uuid), '') FROM ${CANDIDATE}.completed_sessions) AS s,
-         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE)})) AS c,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed)})) AS c,
          (SELECT count(*) FROM (${peerGone})) AS g`,
     );
     const n = (key: string) => Number(row?.[key] ?? 0);
@@ -361,7 +378,7 @@ export function stateFingerprint(): Promise<string> {
     const row = await conn.getFirstAsync<Record<string, string | number | null>>(
       `SELECT
          (SELECT count(*) || ':' || ifnull(max(uuid), '') FROM main.completed_sessions) AS s,
-         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main")})) AS c,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main", true)})) AS c,
          (SELECT count(*) FROM (${gone})) AS g`,
     );
     return `${row?.s}|${row?.c}|${row?.g}`;

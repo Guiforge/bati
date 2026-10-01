@@ -59,6 +59,28 @@ Walking, running and riding, measured by GPS, offline.
 - **Pays**: XP on moving time, and leagues that raise the High Road
 - **Doc**: [EXPEDITIONS.md](../gameplay/expeditions.md)
 
+### Sharing
+
+A finished session as a picture, an outing as a GPX, a quest the hero wrote as a file.
+
+- **Sessions**: one screen, `app/share.tsx`, reached by a worded "Share" button from the victory
+  screen, the journal page and the recap (`components/share/ShareButton.tsx`). It shows the card
+  that will be sent (title, date, the figures, the boss that fell, the record that broke, the run's
+  line) and captures exactly that view (`react-native-view-shot`). With the map turned on, the hero
+  chooses whether the picture carries the map, and the first and last 200 m of the line are left
+  off every shared picture, since a run from the front door says where the door is. The same screen exports the GPX (`exportTrack` in `src/gps/trackFile.ts`).
+- **Journal thumbnails**: with the map turned on, a run's thumbnail is its line over a still map,
+  drawn once by MapLibre's snapshotter and cached (`src/gps/mapThumb.ts`). Both are framed by
+  `traceBounds`, so the line lands on its roads.
+- **Quests**: a hero's own quest is shared as a `.bati-quest.json` file through the share sheet,
+  and imported from the new-quest editor (`src/questFile.ts`). Seed movements travel by name,
+  the hero's own travel whole with their photo. The quest and each hero movement carry their
+  uuid v7 (migration 0066, also what device sync matches hero content by): a second import of
+  the same quest updates it in place, a movement the receiver already has is reused even
+  renamed, and the whole import is one transaction. Not a QR code: one photo is ten times what a QR
+  code holds. Every field of an incoming file is validated, and a picture is only ever a
+  `data:image` or the name of an image the app ships, never a URL the app would then fetch.
+
 ---
 
 ## 🏰 RPG Systems

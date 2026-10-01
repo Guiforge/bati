@@ -1,5 +1,5 @@
 import { and, count, desc, eq, gte, inArray, sql } from "drizzle-orm";
-import { db, schema } from "./client";
+import { db, schema, type TransactionTx } from "./client";
 import { canDo, isEquipmentCode } from "./equipment";
 import { isMuscleCode } from "./muscles";
 import { getAllPreferences, preferences } from "./preferences";
@@ -17,6 +17,7 @@ import {
   questTargetTypes,
   USER_EXERCISE_CREATOR,
 } from "./schema";
+import { uuidv7 } from "./uuid";
 
 const { exercises, exerciseMuscles } = schema;
 
@@ -36,6 +37,8 @@ function isLocomotion(value: unknown): value is Locomotion {
 
 export type Exercise = {
   id: number;
+  /** The movement's name off this database (0066). Null on seed rows. */
+  uuid: string | null;
   enName: string;
   frName: string;
   deName: string;
@@ -143,6 +146,7 @@ const exerciseColumns = () => ({
   locomotion: exercises.locomotion,
   prerequisiteExerciseId: exercises.prerequisiteExerciseId,
   retiredAt: exercises.retiredAt,
+  uuid: exercises.uuid,
   muscle: exerciseMuscles.muscle,
 });
 
@@ -167,6 +171,7 @@ type ExerciseRow = {
   locomotion: Locomotion | null;
   prerequisiteExerciseId: number | null;
   retiredAt: Date | null;
+  uuid: string | null;
 };
 
 /** A movement with no muscles yet, from any row an `exerciseColumns` read returned. */
@@ -192,6 +197,7 @@ function exerciseFromRow(r: ExerciseRow): Exercise {
     locomotion: isLocomotion(r.locomotion) ? r.locomotion : null,
     prerequisiteExerciseId: r.prerequisiteExerciseId,
     retiredAt: r.retiredAt,
+    uuid: r.uuid,
     muscles: [],
   };
 }
@@ -959,20 +965,34 @@ async function assertHeroAuthored(id: number): Promise<void> {
 }
 
 /** Replace, not merge: the editor sends the whole set, and a stale tag is a wrong village. */
-async function writeMuscles(exerciseId: number, muscles: MuscleCode[]): Promise<void> {
-  await db.delete(exerciseMuscles).where(eq(exerciseMuscles.exerciseId, exerciseId));
+async function writeMuscles(
+  exerciseId: number,
+  muscles: MuscleCode[],
+  exec: typeof db | TransactionTx = db,
+): Promise<void> {
+  await exec.delete(exerciseMuscles).where(eq(exerciseMuscles.exerciseId, exerciseId));
   if (muscles.length === 0) return;
-  await db
+  await exec
     .insert(exerciseMuscles)
     .values([...new Set(muscles)].map((muscle) => ({ exerciseId, muscle })));
 }
 
-export async function createUserExercise(draft: UserExerciseDraft): Promise<number> {
+/**
+ * A movement the hero made, or one a shared quest brought (`src/questFile.ts`), which arrives with
+ * the uuid it had on the other phone so a second import finds it again. `exec` is the import's
+ * transaction when there is one.
+ */
+export async function createUserExercise(
+  draft: UserExerciseDraft,
+  options: { uuid?: string; exec?: typeof db | TransactionTx } = {},
+): Promise<number> {
+  const exec = options.exec ?? db;
   // `.returning()` rather than "select the newest row with this name": the same id race
   // `createQuestTemplate` documents, and here two rows really can share a name across creators.
-  const inserted = await db
+  const inserted = await exec
     .insert(exercises)
     .values({
+      uuid: options.uuid ?? uuidv7(),
       // A hero writes in one language, so every column carries the same words.
       enName: draft.name,
       frName: draft.name,
@@ -999,7 +1019,7 @@ export async function createUserExercise(draft: UserExerciseDraft): Promise<numb
   const id = inserted[0]?.id;
   if (id == null) throw new Error("Failed to create exercise");
 
-  await writeMuscles(id, draft.muscles);
+  await writeMuscles(id, draft.muscles, exec);
   invalidateExercisesCache();
   return id;
 }
@@ -1115,9 +1135,12 @@ export async function retireUserExercise(id: number): Promise<void> {
  * leaves the lists you pick from* — and the catalogue's "Retired" facet finds the movement
  * without being able to do anything with it.
  */
-export async function unretireUserExercise(id: number): Promise<void> {
+export async function unretireUserExercise(
+  id: number,
+  exec: typeof db | TransactionTx = db,
+): Promise<void> {
   await assertHeroAuthored(id);
-  await db.update(exercises).set({ retiredAt: null }).where(eq(exercises.id, id));
+  await exec.update(exercises).set({ retiredAt: null }).where(eq(exercises.id, id));
   invalidateExercisesCache();
 }
 

@@ -1,6 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,7 +27,9 @@ import {
   NRule,
   NText,
 } from "@/components/journal/nocturne";
+import { recordName, recordValue } from "@/components/journal/recordLabel";
 import { TraceThumb } from "@/components/journal/TraceThumb";
+import { ShareButton } from "@/components/share/ShareButton";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
 import { formatDistance, formatElevation, formatPace } from "@/constants/distanceFormat";
 import { rawColors } from "@/constants/rawColors";
@@ -41,7 +42,7 @@ import { formatCount, formatTargetValue } from "@/db/targets";
 import type { UserLevelInfo } from "@/db/userLevel";
 import type { LngLat } from "@/src/gps/trace";
 import { localizedName } from "@/src/i18n/localized";
-import { type AppLanguage, useSettingsStore } from "@/stores/settings";
+import { useSettingsStore } from "@/stores/settings";
 
 export type QuestLogData = {
   session: CompletedSession;
@@ -58,14 +59,19 @@ export type QuestLogData = {
 
 const MAX_BARS = 24;
 
-/** The painting the page leads with, fading into the ground, with the title written on it. */
+/**
+ * The painting the page leads with, fading into the ground, with the title written on it. Back on
+ * the left, Share on the right: the two ways off the page, reached without scrolling past it.
+ */
 export function ReportHero({
   source,
   height,
+  sessionId,
   children,
 }: {
   source: number | { uri: string } | null;
   height: number;
+  sessionId: number;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -86,26 +92,14 @@ export function ReportHero({
       <View style={{ position: "absolute", top: insets.top + 11, left: 11 }}>
         <NBackButton onPress={() => router.back()} label={t("common.go_back")} veiled />
       </View>
+      <View style={{ position: "absolute", top: insets.top + 11, right: 11 }}>
+        <ShareButton testID="journal-share" sessionId={sessionId} veiled />
+      </View>
       <YStack position="absolute" l={11} r={11} b={11}>
         {children}
       </YStack>
     </View>
   );
-}
-
-function recordName(t: TFunction, language: AppLanguage, record: FallenRecord): string {
-  if (record.name) return record.name[language] || record.name.en;
-  return t(`journal.record_${record.kind}`, { defaultValue: "" });
-}
-
-function recordValue(
-  record: FallenRecord,
-  distanceUnit: "metric" | "imperial",
-  language: AppLanguage,
-): string {
-  if (record.kind === "longest_outing") return formatDistance(record.value, distanceUnit, language);
-  if (record.kind === "longest_session") return formatDuration(record.value, language);
-  return formatTargetValue(record, language);
 }
 
 function RecordPanel({ records }: { records: FallenRecord[] }) {
@@ -443,7 +437,7 @@ function Ground({ data }: { data: QuestLogData }) {
       <NKickerQuiet>{t("journal.ground_title")}</NKickerQuiet>
       {trace.length > 0 && (
         <YStack mt={11} items="center" py={8} rounded={8} bg="$bgDark">
-          <TraceThumb segments={trace} size={160} />
+          <TraceThumb segments={trace} size={160} mapKey={session.uuid ?? undefined} />
         </YStack>
       )}
       <XStack gap={17} mt={11}>
@@ -494,7 +488,11 @@ export function QuestLog({ data }: { data: QuestLogData }) {
 
   return (
     <YStack testID="session-details-screen">
-      <ReportHero source={data.questImage ? getQuestAsset(data.questImage) : null} height={150}>
+      <ReportHero
+        source={data.questImage ? getQuestAsset(data.questImage) : null}
+        height={150}
+        sessionId={session.id}
+      >
         <NText fontWeight="500" fontSize={22} lineHeight={28}>
           {data.questTitle}
         </NText>

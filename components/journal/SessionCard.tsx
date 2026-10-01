@@ -43,6 +43,8 @@ export interface JournalEntry {
    * Empty on a workout, and on an outing whose service never started.
    */
   tracePoints: readonly LngLat[];
+  /** The session's uuid: names the cached map under the line. Null on rows saved before uuids. */
+  uuid?: string | null;
   userLevel: DifficultyCode;
   hasNewRecords?: boolean;
   /**
@@ -141,7 +143,7 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
           {/* One segment: `previewPathsFor` downsamples and drops the clock, so a row cannot know
               where the run broke. The detail screen behind it draws the real stretches. */}
           {entry.tracePoints.length > 1 ? (
-            <TraceThumb segments={[entry.tracePoints]} size={64} />
+            <TraceThumb segments={[entry.tracePoints]} size={64} mapKey={entry.uuid ?? undefined} />
           ) : entry.cover ? (
             <Image
               source={entry.cover}

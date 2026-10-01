@@ -6,7 +6,7 @@ head_title: "Privacy policy for Bati"
 description: "Bati collects nothing about you. No account, no server of ours, no analytics. Offline first, with three exceptions, all off by default: the map, which tells a tile host roughly where you go, a daily question to GitHub about a newer version, and device sync, which sends your history encrypted to a server you choose."
 type: legal
 status: active
-updated: 2026-09-28
+updated: 2026-10-01
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -33,7 +33,7 @@ francés: **feedback.bati@proton.me**
 
 # Privacy Policy for Bati
 
-**Last updated: 28 September 2026**
+**Last updated: 1 October 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -129,8 +129,10 @@ is made of, and that is the first of the app's three network destinations.
 [OpenFreeMap](https://openfreemap.org) serves OpenStreetMap data, free, with no key and no
 registration.
 
-- **What that request reveals:** the map is drawn twice, under you while an outing is running and
-  under the whole route on its recap. The tiles asked for are the ones around you as you move, then
+- **What that request reveals:** the map is drawn under you while an outing is running, under
+  the whole route on its recap, and once more as a still picture of the route for the journal and
+  the share screen. That picture is asked for the first time a row needs it, which can be long
+  after the outing (a history synced from another device, a journal scrolled back a year). The tiles asked for are the ones around you as you move, then
   the ones covering the outing, so the requests tell that host roughly where you are as you go,
   along with your device's IP address and the time of day. That is approximate location
   information leaving your phone, during the outing and not only after it, and it is why the app
@@ -301,7 +303,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 28 septembre 2026**
+**Dernière mise à jour : 1er octobre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -411,8 +413,11 @@ première des trois destinations réseau de l'application.
 [OpenFreeMap](https://openfreemap.org) sert des données OpenStreetMap, gratuitement, sans clé et
 sans inscription.
 
-- **Ce que cette demande révèle :** la carte est dessinée deux fois, sous vous pendant qu'une
-  sortie est en cours et sous le trajet entier sur son récap. Les tuiles demandées sont celles
+- **Ce que cette demande révèle :** la carte est dessinée sous vous pendant qu'une sortie est en
+  cours, sous le trajet entier sur son récap, et une fois de plus en image fixe du trajet pour le
+  journal et l'écran de partage. Cette image est demandée la première fois qu'une ligne en a
+  besoin, parfois longtemps après la sortie (un historique synchronisé depuis un autre appareil,
+  un journal remonté d'un an). Les tuiles demandées sont celles
   autour de vous au fil du trajet, puis celles qui couvrent la sortie, donc les demandes disent à
   cet hôte à peu près où vous êtes pendant que vous avancez, avec l'adresse IP de votre appareil et
   l'heure. C'est une information de localisation approximative qui sort de votre téléphone,

@@ -10,6 +10,7 @@ import type { Exercise } from "@/db/exercises";
 
 function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise {
   return {
+    uuid: null,
     enName: "Exercise",
     frName: "Exercice",
     deName: "Exercice",
@@ -37,6 +38,7 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise 
 // The pull ladder as `0022` seeds it, cut to three rungs.
 const tableRow = makeExercise({
   id: 1,
+  uuid: null,
   enName: "Table Row",
   frName: "Tirage sous table",
   deName: "Tirage sous table",
@@ -46,6 +48,7 @@ const tableRow = makeExercise({
 });
 const invertedRow = makeExercise({
   id: 2,
+  uuid: null,
   enName: "Inverted Row",
   frName: "Tirage australien",
   deName: "Tirage australien",
@@ -56,6 +59,7 @@ const invertedRow = makeExercise({
 });
 const pullUp = makeExercise({
   id: 3,
+  uuid: null,
   enName: "Pull-up",
   frName: "Traction",
   deName: "Traction",
@@ -68,6 +72,7 @@ const pullUp = makeExercise({
 // Off the ladder entirely: nothing leads to it, it leads nowhere.
 const pushUp = makeExercise({
   id: 4,
+  uuid: null,
   enName: "Push-up",
   frName: "Pompe",
   deName: "Pompe",
@@ -235,6 +240,7 @@ describe("rankSwapCandidates", () => {
   it("sinks unowned equipment inside its tier instead of hiding it", () => {
     const barRow = makeExercise({
       id: 6,
+      uuid: null,
       enName: "Bar Row",
       equipment: "pullup_bar",
       pattern: "pull_horizontal",
@@ -292,6 +298,7 @@ describe("rankSwapCandidates", () => {
 describe("hero-authored facets", () => {
   const seed = makeExercise({
     id: 1,
+    uuid: null,
     enName: "Squat",
     frName: "Squat",
     deName: "Squat",
@@ -299,6 +306,7 @@ describe("hero-authored facets", () => {
   });
   const mine = makeExercise({
     id: 2,
+    uuid: null,
     enName: "Archer Squat",
     frName: "Archer Squat",
     deName: "Archer Squat",
@@ -307,6 +315,7 @@ describe("hero-authored facets", () => {
   });
   const retired = makeExercise({
     id: 3,
+    uuid: null,
     enName: "Old Note",
     frName: "Old Note",
     deName: "Old Note",

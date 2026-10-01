@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, ScrollView, Share, useWindowDimensions } from "react-native";
+import { ActivityIndicator, ScrollView, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import Animated, {
   useAnimatedStyle,
@@ -21,8 +21,8 @@ import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
 import { useToast } from "@/components/common/Toast";
-import { Share2 } from "@/components/icons";
 import { confirmForget } from "@/components/journal/confirmForget";
+import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
@@ -300,21 +300,6 @@ export function VictoryView() {
   const questTitle = localizedTitle(quest, language);
   const heroTitle = felledBoss != null ? bossDisplayName(felledBoss, language) : questTitle;
   const { bg: questBg } = getQuestColorTokensFromQuest(quest);
-
-  // The message is built outside any `try`: a `??` inside one is what made the React Compiler
-  // skip this whole screen.
-  const handleShare = async () => {
-    const xp = result?.xpEarned ?? 0;
-    const message = t("session.share_message", {
-      quest: questTitle,
-      xp,
-      defaultValue: `I just completed the '${questTitle}' quest and earned ${xp} XP in Bati! ⚔️ #BatiApp`,
-    });
-    await Share.share({ message }).catch(() => {
-      // Dismissing the share sheet rejects. That is the hero changing their mind, not a
-      // failure — there is nothing to report and nothing to tell them.
-    });
-  };
 
   /**
    * The partant who just walked for 32 minutes without asking for anything is offered the same
@@ -717,7 +702,7 @@ export function VictoryView() {
         )}
       </ScrollView>
 
-      {/* Sticky actions: single Continue + Share */}
+      {/* Sticky actions: Share + Continue */}
       <XStack
         p="$4"
         pb={insets.bottom + 16}
@@ -727,18 +712,11 @@ export function VictoryView() {
         borderColor="$glassBorder"
         style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
       >
-        <Button
-          bg="$surface2"
-          height={60}
-          rounded="$6"
-          px="$4"
-          onPress={handleShare}
-          disabled={!result}
-          pressStyle={{ opacity: 0.8, scale: 0.98 }}
-          accessibilityLabel={t("session.share", "Share Result")}
-        >
-          <Share2 size={22} color="$text" />
-        </Button>
+        {/* Only once the row exists, and never on a short session the hero has not kept yet:
+            the share screen reads the saved session, and a discard would delete what it shows. */}
+        {result && !tooShort ? (
+          <ShareButton testID="session-victory-share" sessionId={result.sessionId} height={60} />
+        ) : null}
         {/* While the hero has not said whether a short session counts, the bar's big button is the
             keep, not a disabled "Saving…": nothing is being saved, and a phone trace on 2026-09-13
             showed twenty taps landing on it before the hero found Keep higher up. Discard stays

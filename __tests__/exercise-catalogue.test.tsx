@@ -68,6 +68,7 @@ jest.mock("@/db/exercises", () => ({
 
 function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id" | "enName">): Exercise {
   return {
+    uuid: null,
     frName: over.enName,
     deName: over.enName,
     esName: over.enName,
@@ -97,6 +98,7 @@ const TABLE_ROW = makeExercise({ id: 1, enName: "Table Row" });
 const INVERTED_ROW = makeExercise({ id: 2, enName: "Inverted Row", prerequisiteExerciseId: 1 });
 const PUSH_UP = makeExercise({
   id: 3,
+  uuid: null,
   enName: "Push-up",
   muscles: ["chest"],
   pattern: "push_horizontal",

@@ -119,6 +119,12 @@ export type CompletedSession = {
   movingSeconds: number | null;
   ascentM: number | null;
   outing: Locomotion | null;
+  /**
+   * Whether the session set a record, which is what the history row's badge reads. A row saved
+   * before `0051` has the flag and not the detail (`getFallenRecords` returns nothing for it), so
+   * a page or a shared card that only read the detail called a record session an ordinary one.
+   */
+  hasNewRecords: boolean;
   exercises: CompletedExercise[];
 };
 
@@ -670,6 +676,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       movingSeconds: completedQuest.movingSeconds,
       ascentM: completedQuest.ascentM,
       outing: completedQuest.outing,
+      hasNewRecords: completedQuest.hasNewRecords,
     })
     .from(completedQuest)
     .where(eq(completedQuest.id, id))
@@ -691,6 +698,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
     movingSeconds: head.movingSeconds,
     ascentM: head.ascentM,
     outing: head.outing,
+    hasNewRecords: head.hasNewRecords === 1,
     exercises: [],
   };
 
@@ -717,6 +725,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       exEsDescription: exercises.esDescription,
       exImagePath: exercises.imagePath,
       exCreator: exercises.creator,
+      exUuid: exercises.uuid,
       exDifficulty: exercises.difficulty,
       exEquipment: exercises.equipment,
       exSecondsPerRep: exercises.secondsPerRep,
@@ -764,6 +773,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
           esDescription: r.exEsDescription,
           imagePath: r.exImagePath,
           creator: r.exCreator,
+          uuid: r.exUuid,
           difficulty: r.exDifficulty,
           equipment: r.exEquipment,
           secondsPerRep: r.exSecondsPerRep,

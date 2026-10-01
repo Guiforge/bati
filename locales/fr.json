@@ -829,7 +829,19 @@
     "goal_sheet_title": "Combien de temps, ou quelle distance",
     "goal_sheet_custom": "Autre",
     "goal_sheet_custom_hint": "Entre ta propre valeur",
-    "goal_sheet_open": "Régler la sortie"
+    "goal_sheet_open": "Régler la sortie",
+    "share_quest": "Partager la quête",
+    "share_failed": "La quête n'a pas pu être préparée. Réessaie.",
+    "import_quest": "Importer une quête reçue",
+    "import_done": "Quête ajoutée à tes quêtes",
+    "import_failed": "La quête n'a pas pu être importée. Réessaie.",
+    "import_unreadable": "Ce fichier est illisible. Demande qu'on te le renvoie.",
+    "import_not_a_quest": "Ce fichier ne contient pas de quête Bati.",
+    "import_newer": "Cette quête vient d'une version plus récente de Bati. Mets l'application à jour pour l'ouvrir.",
+    "import_unknown_movement": "Cette quête utilise un mouvement que ta version de Bati ne connaît pas encore. Mets l'application à jour pour l'ouvrir.",
+    "import_hint": "Un fichier .bati-quest.json qu'on t'a envoyé.",
+    "share_quest_hint": "Envoie un fichier à ouvrir dans Bati, photos comprises.",
+    "import_updated": "Quête mise à jour, elle remplace l'ancienne version"
   },
   "recovery": {
     "description": "Une séance s'est arrêtée en cours de route.",
@@ -978,9 +990,7 @@
     "expedition_made_quest": "Rangée dans tes quêtes. Elle t'attend telle quelle.",
     "expedition_permission_why": "Bati lit ta position pendant la sortie, et elle ne quitte ce téléphone que dans tes propres sauvegardes et ta synchro. Android va te le demander.",
     "level_up": "Niveau supérieur",
-    "level_label": "Niveau",
-    "share": "Partager cette séance",
-    "share_message": "J'ai fini la quête « {{quest}} » dans Bati et gagné {{xp}} XP. ⚔️ #BatiApp"
+    "level_label": "Niveau"
   },
   "settings": {
     "avatar": "AVATAR",
@@ -1020,7 +1030,7 @@
     "distance_metric": "Kilomètres",
     "distance_imperial": "Miles",
     "map_tiles": "Carte",
-    "map_tiles_note": "Tant qu'elle est désactivée, Bati ne télécharge rien. Une fois activée, la sortie et son récap demandent à OpenFreeMap, sur tiles.openfreemap.org, la carte autour de toi, ce qui lui dit à peu près où tu vas, pendant et après. C'est l'un des trois appels réseau de l'application : les autres sont Synchroniser mes appareils, plus haut, et Chercher les mises à jour, en bas de cet écran.",
+    "map_tiles_note": "Tant qu'elle est désactivée, Bati ne télécharge rien. Une fois activée, la sortie, son récap et le journal demandent à OpenFreeMap, sur tiles.openfreemap.org, la carte autour de toi, ce qui lui dit à peu près où tu vas, pendant et après. C'est l'un des trois appels réseau de l'application : les autres sont Synchroniser mes appareils, plus haut, et Chercher les mises à jour, en bas de cet écran.",
     "update_check": "Chercher les mises à jour",
     "update_check_note": "Tant que c'est désactivé, Bati ne demande rien. Une fois activé, l'app demande une fois par jour à api.github.com si une version plus récente est parue, ce qui apprend à GitHub ton adresse IP et l'heure, rien d'autre. F-Droid et le Play Store guettent déjà pour toi : cette ligne sert à une copie installée à la main depuis un APK."
   },
@@ -1206,9 +1216,9 @@
     "open": "Voir le terrain parcouru",
     "no_trace": "Cette quête n'a jamais quitté les murs.",
     "privacy": "La carte vient d'OpenFreeMap, qui apprend à peu près où tu vas, jamais le tracé lui-même.",
-    "export": "Exporter la trace",
+    "export": "Exporter en GPX",
     "export_failed": "Le fichier n'a pas pu être écrit. Réessaie.",
-    "map_offer": "La carte sous ton trajet est éteinte. Allume-la et Bati demande à OpenFreeMap, sur tiles.openfreemap.org, la carte autour de toi, pendant tes sorties et sur leur récap, ce qui lui dit à peu près où tu vas. OpenFreeMap ne reçoit jamais le tracé lui-même.",
+    "map_offer": "La carte sous ton trajet est éteinte. Allume-la et Bati demande à OpenFreeMap, sur tiles.openfreemap.org, la carte autour de toi, pendant tes sorties, sur leur récap et dans le journal, ce qui lui dit à peu près où tu vas. OpenFreeMap ne reçoit jamais le tracé lui-même.",
     "map_enable": "Afficher la carte",
     "best_league": "Lieue la plus rapide de cette sortie, {{pace}}",
     "map_blocked": "La carte ne peut pas se charger : ton téléphone bloque l'accès réseau de Bati. Autorise-le dans les réglages de l'application, rubrique données mobiles et Wi-Fi.",
@@ -1234,7 +1244,7 @@
     "backups_title": "Les sauvegardes que vous faites",
     "backups_body": "Deux lignes écrivent votre base dans un fichier : « Partager ma sauvegarde » la remet au partage de votre système, « Enregistrer un fichier » l'écrit dans un dossier que vous choisissez sur l'appareil. Dans les deux cas l'application ne l'envoie nulle part. Ce fichier n'est pas chiffré, sauf si vous activez « Chiffrer mes sauvegardes » : sans cela, quiconque l'ouvre lit votre historique d'entraînement. Avec, il ne s'ouvre qu'avec votre mot de passe ou votre clé de récupération, et sans l'un des deux personne ne peut l'ouvrir ni le récupérer pour vous. Restaurer remplace tout ; la base que vous aviez est conservée sur l'appareil comme copie de secours.",
     "never_title": "Ce que Bati ne fait jamais",
-    "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. Rien de la base de données n'est jamais envoyé là où on pourrait le lire. L'application ne touche au réseau qu'à trois endroits, et seulement là où vous l'y autorisez. D'abord, la carte derrière le tracé d'une sortie est désactivée tant que vous ne l'activez pas dans les réglages. Une fois activée, le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, couvrant l'endroit de la sortie, pendant qu'elle a lieu et sur son récap. Ces demandes disent donc à cet hôte à peu près où vous êtes au fil du trajet, avec votre adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas l'entraînement, pas qui vous êtes, mais la zone et à peu près quand vous l'avez traversée, oui. Laissée désactivée, ou coupée d'une pression, l'application ne fait aucune requête réseau et le tracé se dessine sur un fond uni. Ensuite, Chercher les mises à jour, en bas des réglages, désactivé tant que vous ne l'activez pas non plus. Une fois activé, l'application demande une fois par jour à api.github.com si une version plus récente est parue. Cette requête ne porte aucun identifiant et rien de la base de données ; GitHub y apprend une adresse IP et une heure, comme de quiconque ouvre la page des versions dans un navigateur. Rien n'est téléchargé et rien n'est installé : la carte posée sur l'accueil ouvre cette page dans votre propre navigateur, et la suite vous appartient. Enfin, « Synchroniser mes appareils », désactivé tant que vous ne l'activez pas, et seulement avec le chiffrement activé. Activé, chaque appareil envoie son historique, scellé sur le téléphone, au serveur Nextcloud ou WebDAV auquel vous vous connectez, et lit celui des autres à l'ouverture. Ce serveur apprend votre adresse IP, l'heure et la taille du fichier, et rien de son contenu. Ou bien vous choisissez un dossier que Syncthing garde d'accord avec vos autres appareils, et Bati ne fait lui-même aucune requête réseau pour la synchronisation. Une règle de lint refuse tout appel réseau en dehors de ces trois-là.",
+    "never_body": "Aucun compte, aucune inscription, aucune analytics, aucune télémétrie, aucune publicité, aucun identifiant de suivi, aucun SDK tiers qui collecte quoi que ce soit. Rien de la base de données n'est jamais envoyé là où on pourrait le lire. L'application ne touche au réseau qu'à trois endroits, et seulement là où vous l'y autorisez. D'abord, la carte derrière le tracé d'une sortie est désactivée tant que vous ne l'activez pas dans les réglages. Une fois activée, le téléphone demande à OpenFreeMap (des données OpenStreetMap, servies depuis tiles.openfreemap.org) des tuiles, les carrés d'image qui composent une carte, couvrant l'endroit de la sortie, pendant qu'elle a lieu, sur son récap et pour son image dans le journal, parfois longtemps après. Ces demandes disent donc à cet hôte à peu près où vous êtes au fil du trajet, avec votre adresse IP et l'heure. Pas le tracé au mètre près, pas l'allure, pas l'entraînement, pas qui vous êtes, mais la zone et à peu près quand vous l'avez traversée, oui. Laissée désactivée, ou coupée d'une pression, l'application ne fait aucune requête réseau et le tracé se dessine sur un fond uni. Ensuite, Chercher les mises à jour, en bas des réglages, désactivé tant que vous ne l'activez pas non plus. Une fois activé, l'application demande une fois par jour à api.github.com si une version plus récente est parue. Cette requête ne porte aucun identifiant et rien de la base de données ; GitHub y apprend une adresse IP et une heure, comme de quiconque ouvre la page des versions dans un navigateur. Rien n'est téléchargé et rien n'est installé : la carte posée sur l'accueil ouvre cette page dans votre propre navigateur, et la suite vous appartient. Enfin, « Synchroniser mes appareils », désactivé tant que vous ne l'activez pas, et seulement avec le chiffrement activé. Activé, chaque appareil envoie son historique, scellé sur le téléphone, au serveur Nextcloud ou WebDAV auquel vous vous connectez, et lit celui des autres à l'ouverture. Ce serveur apprend votre adresse IP, l'heure et la taille du fichier, et rien de son contenu. Ou bien vous choisissez un dossier que Syncthing garde d'accord avec vos autres appareils, et Bati ne fait lui-même aucune requête réseau pour la synchronisation. Une règle de lint refuse tout appel réseau en dehors de ces trois-là.",
     "permissions_title": "Permissions",
     "permissions_body": "Photos : uniquement si vous en choisissez une pour votre avatar, un exercice ou une quête ; un avatar reste sur votre appareil, et une photo donnée à un exercice ou une quête est stockée dans la base, donc suit vos sauvegardes et une synchronisation chiffrée. Le widget Android lit votre flamme dans cette même base locale. Position : uniquement pendant une sortie, et uniquement la position exacte, parce qu'une marche ne se mesure pas à l'approximatif. Votre trajet est écrit sur ce téléphone et n'en sort que dans une sauvegarde que vous faites ou une synchronisation chiffrée. Sur un téléphone équipé d'un baromètre, la pression de l'air mesure votre dénivelé ; Android ne demande aucune permission pour ça, et les relevés restent avec le trajet. Une sortie affiche aussi une notification permanente : c'est elle qui tient le suivi en vie, et c'est pour ça que votre écran peut s'éteindre pendant la marche sans rien interrompre. Internet : pour la carte, la vérification de version et la synchronisation des appareils, chacune seulement tant que son interrupteur est activé dans les réglages ; les trois démarrent désactivées, et ce que chaque demande révèle est écrit plus haut. Biométrie : uniquement pour réafficher votre clé de récupération, derrière votre empreinte ; Android fait la vérification et Bati ne la voit jamais. Notifications et démarrage du téléphone : uniquement si vous activez le rappel d'entraînement. Il est programmé sur ce téléphone par Android, vos jours à votre heure ; un redémarrage efface les alarmes, Bati est donc prévenu quand le téléphone a démarré, pour le reprogrammer. Le téléphone garde les dix derniers jours où un rappel a sonné, pour agir sur ses boutons ; ce journal n'est envoyé nulle part.",
     "crashes_title": "Rapports de crash",
@@ -1909,5 +1919,25 @@
     "served_own_quest": "Exercice écarté, ta quête le garde tel que tu l'as écrit",
     "stops_path": "Ta voie s'arrêtera à cette étape.",
     "oath_stalls": "Ton serment porte sur cet exercice : il n'avancera plus tant qu'il est écarté."
+  },
+  "share": {
+    "open": "Partager",
+    "title": "Partager la séance",
+    "send_image": "Envoyer l'image",
+    "with_map": "Avec la carte",
+    "line_only": "Tracé seul",
+    "gpx_note": "Pour une autre appli de sport ou une montre. Le GPX contient chaque point du trajet, au mètre près.",
+    "failed": "L'image n'a pas pu être préparée. Réessaie.",
+    "distance": "distance",
+    "duration": "durée",
+    "rounds": "tours",
+    "xp": "XP",
+    "kicker_outing": "Sortie",
+    "kicker_quest": "Quête accomplie",
+    "boss_felled": "{{boss}} est tombé",
+    "record": "Exploit : {{record}}",
+    "kicker_kill": "Boss vaincu",
+    "kicker_record": "Exploit",
+    "hidden_ends": "Le début et la fin du trajet sont masqués sur l'image, pour qu'elle ne montre pas où tu habites."
   }
 }

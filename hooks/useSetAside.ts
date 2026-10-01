@@ -1,92 +1,74 @@
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
 import { useToast } from "@/components/common/Toast";
 import type { Exercise } from "@/db/exercises";
-import { otherJumps, putExerciseBack, setExerciseAside } from "@/db/setAside";
+import { putExerciseBack, setExerciseAside } from "@/db/setAside";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 /**
  * The one door to setting an exercise aside or putting it back from a screen: the write, the
- * offer to set the other jumps aside with it, the toast that says where to undo it, and the error
- * report. Every entry point goes through here so none of them forgets a half. Neither function
- * rejects: a failure is reported here and the caller carries on.
+ * toast that says what happened and offers it back, and the error report. Every entry point goes
+ * through here so none of them forgets a half. Neither function rejects: a failure is reported
+ * here and the caller is told, so a screen that already showed the change can take it back.
  */
 export function useSetAside() {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const { showSuccess } = useToast();
 
-  /** "Set aside the other jumps too?", answered. Resolves false on a dismiss. */
-  const askAboutJumps = (others: Exercise[]): Promise<boolean> =>
-    new Promise((resolve) => {
-      Alert.alert(
-        t("setAside.also_jumps_title"),
-        others.map((e) => localizedName(e, language)).join(", "),
-        [
-          { text: t("setAside.also_jumps_no"), style: "cancel", onPress: () => resolve(false) },
-          { text: t("setAside.also_jumps_yes"), onPress: () => resolve(true) },
-        ],
-        { cancelable: true, onDismiss: () => resolve(false) },
-      );
-    });
+  const putBack = (exercise: { id: number }): Promise<boolean> =>
+    putExerciseBack(exercise.id).then(
+      () => true,
+      (error: unknown) => {
+        reportError("setAside.putBack", error);
+        return false;
+      },
+    );
 
   return {
     /**
-     * Resolves with the `enName`s set aside, so a running warm-up can drop every one of them, or
-     * `null` when the write failed, so a screen that already showed it set aside can take it back.
+     * Resolves true once written, false when the write failed.
+     *
+     * `onUndone` is required, `null` included, so no screen can forget the toast's "Put back":
+     * each one holds its own copy of what is set aside, and an undo it is not told about leaves
+     * it showing a state the list no longer holds. `null` means no button at all, for a screen
+     * whose own control already puts it back in place (the exercise page).
      */
-    setAside(exercise: Exercise): Promise<ReadonlySet<string> | null> {
-      return setAsideWithJumps(exercise, askAboutJumps).then(
-        (done) => {
-          const name = localizedName(exercise, language);
+    setAside(exercise: Exercise, onUndone: (() => void) | null): Promise<boolean> {
+      const name = localizedName(exercise, language);
+      return setExerciseAside(exercise.id).then(
+        () => {
           showSuccess(
-            done.size > 1
-              ? t("setAside.done_many", { n: done.size })
-              : t("setAside.done", {
-                  name,
-                  defaultValue: `${name} is set aside. Put it back from Settings.`,
-                }),
+            t("setAside.done", { name, defaultValue: `${name} won't be suggested again.` }),
+            onUndone
+              ? {
+                  action: {
+                    label: t("setAside.put_back"),
+                    onPress: () => {
+                      putBack(exercise)
+                        .then((ok) => {
+                          if (!ok) return;
+                          onUndone();
+                          showSuccess(t("setAside.back", { name }));
+                        })
+                        .catch(() => {
+                          // Reported by `putBack`, which never rejects.
+                        });
+                    },
+                  },
+                }
+              : undefined,
           );
-          return done;
+          return true;
         },
         (error: unknown) => {
           reportError("setAside.write", error);
-          return null;
-        },
-      );
-    },
-    /** Resolves false when the write failed. */
-    putBack(exercise: { id: number }): Promise<boolean> {
-      return putExerciseBack(exercise.id).then(
-        () => true,
-        (error: unknown) => {
-          reportError("setAside.putBack", error);
           return false;
         },
       );
     },
+    /** Resolves false when the write failed. */
+    putBack,
   };
-}
-
-/**
- * The writes, outside the hook: the React Compiler cannot lower a conditional inside a `try`,
- * and skipped the whole hook over it.
- */
-async function setAsideWithJumps(
-  exercise: Exercise,
-  askAboutJumps: (others: Exercise[]) => Promise<boolean>,
-): Promise<Set<string>> {
-  await setExerciseAside(exercise.id);
-  const done = new Set([exercise.enName]);
-
-  const others = await otherJumps(exercise);
-  if (others.length > 0 && (await askAboutJumps(others))) {
-    for (const other of others) {
-      await setExerciseAside(other.id);
-      done.add(other.enName);
-    }
-  }
-  return done;
 }

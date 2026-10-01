@@ -9,7 +9,7 @@ import { GameIcon } from "@/components/common/GameIcon";
 import { Crosshair, Pause } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
-import { substitutionCaption } from "@/components/quests/substitutionCaption";
+import { slotCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
@@ -474,9 +474,9 @@ export function ActiveExerciseView() {
               {/* The template named a harder movement and the hero is not on that rung yet
                 (issue #33). Named here too: mid-session is where the substitution is felt, and
                 a hero who thinks the app got it wrong is a hero who logs a lie. */}
-              {currentEx.substitutedFor ? (
+              {slotCaption(t, currentEx, language) ? (
                 <Text fontSize={12} color="$textSecondary" fontFamily="$body" text="center">
-                  {substitutionCaption(t, currentEx.substitutedFor, language)}
+                  {slotCaption(t, currentEx, language)}
                 </Text>
               ) : null}
 
@@ -808,13 +808,14 @@ export function ActiveExerciseView() {
         onPick={(exercise) => {
           if (leaveOut) {
             const left = currentEx.exercise;
+            // Offered again in this sheet when it is not set aside after all: the write failed,
+            // or the toast's "Put back" undid it. The swap itself stands, it was a choice of its own.
+            const offerAgain = () =>
+              setSetAsideIds((prev) => new Set([...prev].filter((id) => id !== left.id)));
             setSetAsideIds((prev) => new Set([...prev, left.id]));
-            setAside(left)
-              .then((done) => {
-                // Not written: offer it again in this sheet, the list does not hold it.
-                if (done === null) {
-                  setSetAsideIds((prev) => new Set([...prev].filter((id) => id !== left.id)));
-                }
+            setAside(left, offerAgain)
+              .then((ok) => {
+                if (!ok) offerAgain();
               })
               .catch(() => {
                 // Reported by `useSetAside`, which never rejects.

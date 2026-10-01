@@ -7,7 +7,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
 import { ChevronDown, ChevronUp, Dumbbell, Footprints } from "@/components/icons";
-import { substitutionCaption } from "@/components/quests/substitutionCaption";
+import { slotCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { formatDuration } from "@/db/estimate";
@@ -48,11 +48,13 @@ function ExerciseDetail({
   language,
   onOpenExercise,
   onPutBack,
+  onReplace,
 }: {
   qex: QuestExercise;
   language: AppLanguage;
   onOpenExercise: () => void;
   onPutBack: (exerciseId: number) => void;
+  onReplace: (questExerciseId: number) => void;
 }) {
   const { t } = useTranslation();
 
@@ -144,6 +146,20 @@ function ExerciseDetail({
           })}
         </AppButton>
       ) : null}
+
+      {/* Set aside and served anyway: the caption admits it, and the way out is the Replace the
+          config card already offers, brought to where the hero is reading. */}
+      {qex.setAsideServed ? (
+        <AppButton
+          fullWidth={false}
+          variant="outline"
+          size="$3"
+          fontSize={14}
+          onPress={() => onReplace(qex.id)}
+        >
+          {t("quests.swap_exercise", "Replace this exercise")}
+        </AppButton>
+      ) : null}
     </YStack>
   );
 }
@@ -167,6 +183,7 @@ export function QuestExerciseRow({
   showTarget,
   onOpenExercise,
   onPutBack,
+  onReplace,
 }: {
   qex: QuestExercise;
   index: number;
@@ -180,11 +197,14 @@ export function QuestExerciseRow({
   onOpenExercise: () => void;
   /** Hands back the exercise this slot stands in for, when the hero set it aside. */
   onPutBack: (exerciseId: number) => void;
+  /** Opens the Replace sheet on this slot. */
+  onReplace: (questExerciseId: number) => void;
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   const name = localizedName(qex.exercise, language);
+  const caption = slotCaption(t, qex, language);
   const thumb = resolveExerciseImage(qex.exercise.imagePath);
   const Chevron = expanded ? ChevronUp : ChevronDown;
 
@@ -244,9 +264,9 @@ export function QuestExerciseRow({
           {/* A slot the hero is not on the rung for is served easier (issue #33). Said out loud,
               or the card disagrees with the quest for no visible reason — and the movement it
               names stays one tap away through swap. */}
-          {qex.substitutedFor ? (
+          {caption ? (
             <Text fontSize={12} color="$textSecondary" fontFamily="$body">
-              {substitutionCaption(t, qex.substitutedFor, language)}
+              {caption}
             </Text>
           ) : null}
 
@@ -285,6 +305,7 @@ export function QuestExerciseRow({
           language={language}
           onOpenExercise={onOpenExercise}
           onPutBack={onPutBack}
+          onReplace={onReplace}
         />
       ) : null}
     </Card>

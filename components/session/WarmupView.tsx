@@ -278,9 +278,14 @@ export function WarmupView() {
           hitSlop={12}
           onPress={() => {
             selection();
-            setAside(exercise)
-              .then((names) => {
-                if (names) dropWarmupSteps(names);
+            // The toast's "Put back" returns it to the list only: this warm-up carries on without
+            // the step, and the next one is built with it. Putting the step back mid-way would
+            // reshuffle what the hero already saw coming, or arrive after the warm-up has ended.
+            setAside(exercise, () => {
+              // Nothing on screen to undo: the step is gone from this warm-up either way.
+            })
+              .then((ok) => {
+                if (ok) dropWarmupSteps(new Set([exercise.enName]));
               })
               .catch(() => {
                 // Reported by `useSetAside`, which never rejects.

@@ -19,6 +19,7 @@ const mockGetExerciseUsage = jest.fn();
 
 // Setting aside is not what this file is about.
 jest.mock("@/hooks/useSetAside");
+jest.mock("@/db/oaths", () => ({ getOath: () => Promise.resolve(null) }));
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),

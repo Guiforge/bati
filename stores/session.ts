@@ -1527,6 +1527,7 @@ export const useSessionStore = create<SessionState>()(
               images: [],
               ghost: undefined,
               substitutedFor: undefined,
+              setAsideServed: undefined,
             }
           : qex,
       );

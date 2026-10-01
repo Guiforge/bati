@@ -339,6 +339,13 @@ test("with every jump unavailable, the warm-up keeps its length and never jumps"
   }
 });
 
+test("the wrist step goes like any other when the hero cannot do it", () => {
+  const skill = quest(["push_vertical"], "skill");
+
+  expect(names(skill)).toContain("Wrist Circles");
+  expect(names(skill, 0, new Set(["Wrist Circles"]))).not.toContain("Wrist Circles");
+});
+
 test("a hero who sets nothing aside keeps exactly the rotation they had", () => {
   // The no-impact fallback only fills a phase that came up short; it is not a pool tail.
   expect(names(quest([null]), 0)).toEqual([

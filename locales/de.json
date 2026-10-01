@@ -1815,24 +1815,25 @@
     "pause_row": "Pausieren"
   },
   "setAside": {
-    "leave_out": "{{name}} ab jetzt weglassen",
-    "done": "Übung beiseitegelegt: {{name}}. In den Einstellungen holst du sie zurück.",
-    "instead_of": "Statt {{name}}",
+    "leave_out": "{{name}} nicht mehr vorschlagen",
+    "done": "{{name}} wird dir nicht mehr vorgeschlagen.",
+    "instead_of": "Statt {{name}} (beiseitegelegt)",
     "put_back_named": "{{name}} zurückholen",
-    "set_aside": "Beiseitelegen",
+    "set_aside": "Nicht mehr vorschlagen",
     "set_aside_tag": "Beiseitegelegt",
     "put_back": "Zurückholen",
-    "hint": "Beiseitegelegt bekommst du in Quests etwas Ähnliches, und beim Aufwärmen fällt die Übung weg.",
+    "hint": "In deinen Quests bekommst du dann etwas Ähnliches, und beim Aufwärmen fällt die Übung weg.",
     "title": "Beiseitegelegte Übungen",
     "none": "Keine",
-    "empty": "Nichts beiseitegelegt. Öffne eine Übung, um sie nicht mehr in Quests und beim Aufwärmen zu bekommen.",
+    "empty": "Nichts beiseitegelegt. Auf der Seite einer Übung nimmt „Nicht mehr vorschlagen“ sie aus deinen Quests und dem Aufwärmen.",
     "browse": "Übungen ansehen",
     "since": "Seit dem {{date}}",
     "limits": "Eigene Quests bleiben, wie du sie gebaut hast. Eine beiseitegelegte Stufe hält ihren Pfad dort an.",
-    "not_for_me": "Nichts für mich",
-    "also_jumps_title": "Die anderen Sprünge auch beiseitelegen?",
-    "also_jumps_yes": "Alle",
-    "also_jumps_no": "Nur diesen",
-    "done_many": "{{n}} Übungen beiseitegelegt. In den Einstellungen holst du sie zurück."
+    "not_for_me": "Nicht mehr vorschlagen",
+    "back": "{{name}} ist wieder da.",
+    "served_no_substitute": "Beiseitegelegt, nichts Ähnliches als Ersatz",
+    "served_own_quest": "Beiseitegelegt, deine Quest behält die Übung, wie du sie geschrieben hast",
+    "stops_path": "Dein Pfad bleibt auf dieser Stufe stehen.",
+    "oath_stalls": "Dein Schwur gilt dieser Übung: Er kommt nicht voran, solange sie beiseitegelegt ist."
   }
 }

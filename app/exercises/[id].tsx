@@ -28,6 +28,7 @@ import {
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { getOath } from "@/db/oaths";
 import { readPath } from "@/db/paths";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "@/db/personalRecords";
 import type { QuestTargetType } from "@/db/schema";
@@ -573,7 +574,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
       {/* Every exercise, seed content included: what a body cannot do is not a question of who
           wrote the movement. Not an outing, which has no near substitute and no warm-up. */}
       {exercise.style === NON_REP_STYLE || exercise.retiredAt !== null ? null : (
-        <SetAsideCard exercise={exercise} />
+        <SetAsideCard exercise={exercise} hasNextStep={progression !== null} />
       )}
 
       {/* Seed content is never offered these — a content update must not be clobberable. */}
@@ -586,18 +587,20 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
  * Set this exercise aside, or put it back (issue #145). The entry point for the warm-up too: its
  * preview's rows open this screen, and the warm-up has no Replace of its own.
  */
-function SetAsideCard({ exercise }: { exercise: Exercise }) {
+function SetAsideCard({ exercise, hasNextStep }: { exercise: Exercise; hasNextStep: boolean }) {
   const { t } = useTranslation();
   const { setAside, putBack } = useSetAside();
   // `null` while the list is read: a button that flips label on arrival reads as a mis-tap.
   const [aside, setAsideState] = useState<boolean | null>(null);
+  const [sworn, setSworn] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    preferences
-      .getSetAsideExercises()
-      .then((list) => {
-        if (alive) setAsideState(list.some((e) => e.id === exercise.id));
+    Promise.all([preferences.getSetAsideExercises(), getOath()])
+      .then(([list, oath]) => {
+        if (!alive) return;
+        setAsideState(list.some((e) => e.id === exercise.id));
+        setSworn(oath?.exerciseId === exercise.id);
       })
       .catch((error) => reportError("exercise.setAsideRead", error));
     return () => {
@@ -614,6 +617,19 @@ function SetAsideCard({ exercise }: { exercise: Exercise }) {
         <Text fontSize={14} color="$textSecondary">
           {t("setAside.hint")}
         </Text>
+        {/* What it costs, said before the tap rather than discovered after: the path stops at a
+            rung that is never earned again, and an oath on it cannot move. No dialog, the button
+            turns into "Put back" the moment it is pressed. */}
+        {!aside && hasNextStep ? (
+          <Text fontSize={14} color="$textSecondary">
+            {t("setAside.stops_path")}
+          </Text>
+        ) : null}
+        {!aside && sworn ? (
+          <Text fontSize={14} color="$textSecondary">
+            {t("setAside.oath_stalls")}
+          </Text>
+        ) : null}
         <AppButton
           testID={aside ? "exercise-put-back" : "exercise-set-aside"}
           variant="outline"
@@ -621,7 +637,8 @@ function SetAsideCard({ exercise }: { exercise: Exercise }) {
             setAsideState(!aside);
             // Shown at once, taken back if the write failed: the card must not claim a state the
             // list does not hold.
-            (aside ? putBack(exercise) : setAside(exercise).then((done) => done !== null))
+            // No "Put back" on the toast here: this very button turns into it.
+            (aside ? putBack(exercise) : setAside(exercise, null))
               .then((ok) => {
                 if (!ok) setAsideState(aside);
               })

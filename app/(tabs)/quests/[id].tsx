@@ -869,6 +869,7 @@ export default function QuestDetails() {
                   language={language}
                   showTarget={!(isOuting && config.distanceM !== undefined)}
                   onOpenExercise={() => router.push(`/exercises/${qex.exercise.id}` as never)}
+                  onReplace={setSwapFor}
                   onPutBack={(exerciseId) => {
                     if (!questId) return;
                     putBack({ id: exerciseId })
@@ -975,7 +976,12 @@ export default function QuestDetails() {
             // on the copy this screen read before would write them straight back. The reload
             // shows every other slot that served the exercise already replaced.
             const slotId = swapSlot.id;
-            setAside(swapSlot.exercise)
+            // An undo from the toast reloads too: every slot that stood in for it goes back.
+            setAside(swapSlot.exercise, () => {
+              load(questId, effectiveLevel).catch(() => {
+                // `load` reports its own errors.
+              });
+            })
               .then(() => getQuestConfig(questId))
               .then((saved) => {
                 applySwap(slotId, exercise, saved ?? { level: config.level });

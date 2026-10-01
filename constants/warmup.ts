@@ -337,7 +337,11 @@ export function buildWarmup(
   // Wrists go after activation and before the work-specific movement — closest to what is about
   // to load them. Outside the budget on purpose: it is a safety step, so a short quest shortens
   // every other phase before it drops this one.
-  const needsWrists = quest.archetype === "skill" || patterns.includes("push_vertical");
+  // Still a safety step, but not one the hero said they cannot do: it skipped the filter every
+  // other step goes through, so a hero who set Wrist Circles aside was still handed them.
+  const needsWrists =
+    (quest.archetype === "skill" || patterns.includes("push_vertical")) &&
+    !unavailable.has(WRISTS.exerciseName);
 
   return [
     ...fill(RAISE, raise, offset, used),

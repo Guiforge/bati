@@ -1,42 +1,7 @@
-import { ADMIN_CREATOR, type Exercise, listExercises } from "./exercises";
 import { preferences } from "./preferences";
 import { clearCached } from "./queryCache";
 import { getAllQuestConfigs, saveQuestConfig } from "./questConfig";
 import { listQuestTemplates } from "./quests";
-
-/**
- * The seeded exercises that leave the floor. Issue #145 was "I can't jump", and one jump set aside
- * at a time is five sessions of meeting the next one; setting one aside offers the rest.
- *
- * ponytail: names in a list, like `ONE_SIDED` in `constants/warmup.ts`, until exercises carry an
- * impact column. A second reader (a "low impact" filter in the catalogue) is the moment for it.
- * `content-invariants` checks every name still resolves.
- */
-export const JUMPING: ReadonlySet<string> = new Set([
-  "Jumping Jack",
-  "Star Jump",
-  "Skater Hop",
-  "Jump Squat",
-  "Burpee",
-]);
-
-/** The other seeded jumps the hero still gets, when `exercise` is one of them. */
-export async function otherJumps(exercise: Exercise): Promise<Exercise[]> {
-  if (exercise.creator !== ADMIN_CREATOR || !JUMPING.has(exercise.enName)) return [];
-  const [catalogue, list] = await Promise.all([
-    listExercises(),
-    preferences.getSetAsideExercises(),
-  ]);
-  const aside = new Set(list.map((e) => e.id));
-  return catalogue.filter(
-    (e) =>
-      e.creator === ADMIN_CREATOR &&
-      JUMPING.has(e.enName) &&
-      e.id !== exercise.id &&
-      e.retiredAt === null &&
-      !aside.has(e.id),
-  );
-}
 
 /**
  * Set an exercise aside: quests stop serving it and the warm-up stops prescribing it.
@@ -89,7 +54,11 @@ export async function setExerciseAside(exerciseId: number, now = Date.now()): Pr
   clearCached("quest:");
 }
 
-/** Hand it back. The swaps dropped when it was set aside stay dropped: that was a separate choice. */
+/**
+ * Hand it back, from the list, from a slot, or from the toast just after setting it aside. The
+ * swaps and target numbers dropped when it was set aside stay dropped, the undo included: putting
+ * a saved config back would also erase the swap the hero may have picked in the same gesture.
+ */
 export async function putExerciseBack(exerciseId: number): Promise<void> {
   const list = await preferences.getSetAsideExercises();
   await preferences.setSetAsideExercises(list.filter((e) => e.id !== exerciseId));

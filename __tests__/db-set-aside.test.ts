@@ -8,6 +8,9 @@ import { clientMock, createTestDb } from "./helpers/testDb";
  * On a real database because every rule here is a join between the ladder, the kit and the list:
  * a stub of any one of them is the rule this file exists to watch drift.
  */
+/** The seeded movements that leave the floor, the ones issue #145 could not do. */
+const JUMPS = ["Jumping Jack", "Star Jump", "Skater Hop", "Jump Squat", "Burpee"];
+
 describe("set-aside exercises", () => {
   const t = createTestDb();
 
@@ -108,9 +111,12 @@ describe("set-aside exercises", () => {
     expect(journal.replaced.get(idOf("Jump Squat"))).toBe(idOf("Wall Sit"));
   });
 
-  /** The report itself, swept: every seeded quest, every jump set aside, no jump served. */
+  /**
+   * The report itself, swept: every seeded quest, every jump set aside one by one the way the
+   * hero meets them, and no quest serves a jump without saying so.
+   */
   test("with every jump set aside, no seeded quest serves one", async () => {
-    for (const name of setAsideApi().JUMPING) await setAsideApi().setExerciseAside(idOf(name));
+    for (const name of JUMPS) await setAsideApi().setExerciseAside(idOf(name));
 
     const quests = questsApi();
     const templates = await quests.listQuestTemplates();
@@ -119,8 +125,10 @@ describe("set-aside exercises", () => {
     );
 
     const jumps = loaded
-      .flatMap((q) => (q ? q.exercises.map((qex) => `${q.enTitle}: ${qex.exercise.enName}`) : []))
-      .filter((line) => [...setAsideApi().JUMPING].some((name) => line.endsWith(`: ${name}`)));
+      .flatMap((q) => q?.exercises ?? [])
+      // One that runs anyway must say so: nothing close stood in, and the caption admits it.
+      .filter((qex) => JUMPS.includes(qex.exercise.enName) && !qex.setAsideServed)
+      .map((qex) => qex.exercise.enName);
     expect(jumps).toEqual([]);
   });
 
@@ -211,6 +219,49 @@ describe("set-aside exercises", () => {
     }
   });
 
+  /**
+   * Nothing close enough left: every rung of the squat path and every squat-pattern movement set
+   * aside. The slot runs what it wrote, and says the exercise is set aside rather than serving it
+   * in silence, which is what "won't be suggested again" would otherwise quietly break.
+   */
+  test("with nothing close left, the slot runs it anyway and says so", async () => {
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const squats = (await exercises.listExercises())
+      .filter((e) => e.creator === "Admin" && (e.pattern === "squat" || e.enName === "Wall Sit"))
+      .map((e) => e.id);
+    for (const id of squats) await setAsideApi().setExerciseAside(id);
+
+    const slot = await squatSlot();
+
+    expect(slot?.setAsideServed).toBe("no_substitute");
+    expect(slot?.substitutedFor?.setAside).toBeUndefined();
+  });
+
+  test("a hero's own quest keeps a set-aside exercise, and says so", async () => {
+    const info = t.sqlite
+      .prepare(
+        "INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author, rounds, restSeconds) VALUES ('Mine', 'Mine', '', '', 'hero', 1, 30)",
+      )
+      .run();
+    const questId = Number(info.lastInsertRowid);
+    t.sqlite
+      .prepare(
+        "INSERT INTO quest_exercises (questId, exerciseId, sortOrder, targetType, targetMin, targetMax, imagesJson) VALUES (?, ?, 0, 'reps', 8, 12, '[]')",
+      )
+      .run(questId, idOf("Star Jump"));
+    try {
+      await setAsideApi().setExerciseAside(idOf("Star Jump"));
+
+      const quest = await questsApi().getQuestById(questId, "medium");
+
+      expect(quest?.exercises[0]?.exercise.enName).toBe("Star Jump");
+      expect(quest?.exercises[0]?.setAsideServed).toBe("own_quest");
+    } finally {
+      t.sqlite.prepare("DELETE FROM quest_exercises WHERE questId = ?").run(questId);
+      t.sqlite.prepare("DELETE FROM quests WHERE id = ?").run(questId);
+    }
+  });
+
   test("put back, the slot serves it again", async () => {
     for (const day of [7, 8, 9]) logOnTarget(idOf("Wall Sit"), day, "time");
     await setAsideApi().setExerciseAside(idOf("Squat"));
@@ -231,21 +282,6 @@ describe("set-aside exercises", () => {
 
     expect(unavailable.has("Star Jump")).toBe(true);
     expect(unavailable.has("High Knees")).toBe(false);
-  });
-
-  test("setting aside a jump offers the other seeded jumps, not the ones already aside", async () => {
-    const exercises = require("../db/exercises") as typeof import("../db/exercises");
-    const catalogue = await exercises.listExercises();
-    const starJump = catalogue.find((e) => e.id === idOf("Star Jump"));
-    const lunge = catalogue.find((e) => e.id === idOf("Lunge"));
-    assertDefined(starJump);
-    assertDefined(lunge);
-
-    await setAsideApi().setExerciseAside(idOf("Burpee"));
-    const others = (await setAsideApi().otherJumps(starJump)).map((e) => e.enName).sort();
-
-    expect(others).toEqual(["Jump Squat", "Jumping Jack", "Skater Hop"]);
-    expect(await setAsideApi().otherJumps(lunge)).toEqual([]);
   });
 });
 

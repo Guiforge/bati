@@ -79,6 +79,12 @@ export interface QuestExercise {
   };
 
   /**
+   * The exercise running here is one the hero set aside, served anyway (issue #145). Optional so
+   * a session saved before it existed still loads; cleared by any swap, which runs something else.
+   */
+  setAsideServed?: "no_substitute" | "own_quest";
+
+  /**
    * What the hero has already done on this movement, in *this slot's* unit — the best set of
    * their last session, and their all-time best. Absent when they have never trained it.
    *
@@ -602,9 +608,14 @@ export type SlotJournal = {
   /**
    * Written movement id -> what runs instead, because the movement `served` lands on was set
    * aside (issue #145). Outranks `served`. Absent when nothing close enough exists
-   * (`setAsideReplacement`): the slot then runs as written.
+   * (`setAsideReplacement`): the slot then runs as written, and says so (`setAside`).
    */
   replaced: ReadonlyMap<number, number>;
+  /**
+   * What the hero set aside, so a slot that still runs one can say it does: nothing close enough
+   * stood in, or the quest is the hero's own, which is never substituted.
+   */
+  setAside: ReadonlySet<number>;
   /** `ghostKey` -> what they did last time, which is also where a hold is prescribed from. */
   history: ReadonlyMap<string, ExerciseGhost>;
 };
@@ -613,26 +624,32 @@ export type SlotJournal = {
 export const QUEST_AS_WRITTEN: SlotJournal = {
   served: new Map(),
   replaced: new Map(),
+  setAside: new Set(),
   history: new Map(),
 };
 
 /** Every read at once, for every movement a set of quests can put on screen. */
 export async function loadSlotJournal(exerciseIds: number[]): Promise<SlotJournal> {
   const served = await currentRungFor(exerciseIds);
-  const replaced = await loadReplacements(exerciseIds, served);
+  const setAside = await loadSetAsideIds();
+  const replaced = await loadReplacements(exerciseIds, served, setAside);
   const history = await getExerciseHistory([
     ...new Set([...exerciseIds, ...served.values(), ...replaced.values()]),
   ]);
-  return { served, replaced, history };
+  return { served, replaced, setAside, history };
+}
+
+async function loadSetAsideIds(): Promise<Set<number>> {
+  return new Set((await preferences.getSetAsideExercises()).map((e) => e.id));
 }
 
 /** `SlotJournal.replaced`. Free when nothing is set aside, which is nearly every hero. */
 async function loadReplacements(
   exerciseIds: number[],
   served: ReadonlyMap<number, number>,
+  setAside: ReadonlySet<number>,
 ): Promise<Map<number, number>> {
   const replaced = new Map<number, number>();
-  const setAside = new Set((await preferences.getSetAsideExercises()).map((e) => e.id));
   if (setAside.size === 0) return replaced;
 
   const [catalogue, unavailable] = await Promise.all([listExercises(), unavailableExerciseIds()]);
@@ -675,6 +692,8 @@ export function resolveSlot(input: {
   ghost: ExerciseGhost | undefined;
   /** The set-aside movement this slot would have run, when `exercise` stands in for it. */
   setAsideFrom: Exercise | undefined;
+  /** `exercise` itself is set aside and runs anyway: nothing close enough, or the hero's quest. */
+  stillSetAside: boolean;
 } {
   const { base, written, userLevel, journal, catalogue, substitute } = input;
 
@@ -707,6 +726,7 @@ export function resolveSlot(input: {
     // hold next to a rep target would be a number the hero cannot act on.
     ghost: journal.history.get(ghostKey(exercise.id, target.type)),
     setAsideFrom: replacement ? rung : undefined,
+    stillSetAside: journal.setAside.has(exercise.id),
   };
 }
 
@@ -750,7 +770,7 @@ function buildSlot(
     muscles: [],
   };
 
-  const { exercise, target, ghost, setAsideFrom } = resolveSlot({
+  const { exercise, target, ghost, setAsideFrom, stillSetAside } = resolveSlot({
     base: { type: r.targetType, min: r.targetMin, max: r.targetMax },
     written,
     userLevel: ctx.userLevel,
@@ -763,6 +783,12 @@ function buildSlot(
   return {
     id: r.qexId,
     exercise,
+    // A set-aside exercise that runs anyway says so, rather than breaking "won't be suggested
+    // again" in silence. The reason picks the words: the hero's own quest was never going to be
+    // substituted, a seeded one had nothing close enough.
+    ...(stillSetAside
+      ? { setAsideServed: ctx.substitute ? ("no_substitute" as const) : ("own_quest" as const) }
+      : {}),
     // The quest's own art is *of the movement the template wrote*; on a substituted slot it
     // would illustrate the wrong exercise. Same call `applyQuestConfig` makes on a swap.
     images: isSubstituted ? [] : safeParseImages(r.imagesJson),
@@ -854,7 +880,12 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   const ids = rows.map((r) => r.exId);
   const journal = substitute
     ? await loadSlotJournal(ids)
-    : { ...QUEST_AS_WRITTEN, history: await getExerciseHistory([...new Set(ids)]) };
+    : {
+        ...QUEST_AS_WRITTEN,
+        // Not substituted, but still read: the slot has to say when it runs a set-aside exercise.
+        setAside: await loadSetAsideIds(),
+        history: await getExerciseHistory([...new Set(ids)]),
+      };
 
   // A substituted slot needs the whole movement, not the four fields the ladder carries: the
   // session prices it by `difficulty` and `secondsPerRep`, and the village counts its muscles.

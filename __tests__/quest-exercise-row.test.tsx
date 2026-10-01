@@ -48,10 +48,12 @@ const slot = (over: Partial<QuestExercise> = {}): QuestExercise =>
 
 const onOpenExercise = jest.fn();
 const onPutBack = jest.fn();
+const onReplace = jest.fn();
 
 async function renderRow(over: Partial<QuestExercise> = {}, showTarget = true) {
   onOpenExercise.mockClear();
   onPutBack.mockClear();
+  onReplace.mockClear();
   await render(
     <TamaguiProvider config={config} defaultTheme="dark">
       <QuestExerciseRow
@@ -61,6 +63,7 @@ async function renderRow(over: Partial<QuestExercise> = {}, showTarget = true) {
         showTarget={showTarget}
         onOpenExercise={onOpenExercise}
         onPutBack={onPutBack}
+        onReplace={onReplace}
       />
     </TamaguiProvider>,
   );
@@ -115,7 +118,7 @@ const squat = {
 test("a set-aside slot says what it stands in for, and hands it back from the panel", async () => {
   await renderRow({ substitutedFor: { ...squat, setAside: true } });
 
-  expect(screen.getByText("Instead of Squat")).toBeTruthy();
+  expect(screen.getByText("Instead of Squat (set aside)")).toBeTruthy();
   expect(screen.queryByText("Working up to Squat")).toBeNull();
 
   await fireEvent.press(screen.getByText("1. Wall Sit"));
@@ -129,4 +132,21 @@ test("a rung substitution keeps its own caption and offers nothing to put back",
   expect(screen.getByText("Working up to Squat")).toBeTruthy();
   await fireEvent.press(screen.getByText("1. Wall Sit"));
   expect(screen.queryByText("Put Squat back")).toBeNull();
+});
+
+// Issue #145, the promise kept: an exercise set aside that runs anyway says so, and the way out
+// is one tap away instead of on another screen.
+test("a set-aside exercise served anyway says so, and offers Replace", async () => {
+  await renderRow({ setAsideServed: "no_substitute" });
+
+  expect(screen.getByText("Set aside, nothing close to stand in")).toBeTruthy();
+  await fireEvent.press(screen.getByText("1. Wall Sit"));
+  await fireEvent.press(screen.getByText("Replace this exercise"));
+  expect(onReplace).toHaveBeenCalledWith(1);
+});
+
+test("in the hero's own quest the caption says the quest keeps it", async () => {
+  await renderRow({ setAsideServed: "own_quest" });
+
+  expect(screen.getByText("Set aside, your quest keeps it as you wrote it")).toBeTruthy();
 });

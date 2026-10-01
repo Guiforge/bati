@@ -47,9 +47,11 @@ const slot = (over: Partial<QuestExercise> = {}): QuestExercise =>
   }) as unknown as QuestExercise;
 
 const onOpenExercise = jest.fn();
+const onPutBack = jest.fn();
 
 async function renderRow(over: Partial<QuestExercise> = {}, showTarget = true) {
   onOpenExercise.mockClear();
+  onPutBack.mockClear();
   await render(
     <TamaguiProvider config={config} defaultTheme="dark">
       <QuestExerciseRow
@@ -58,6 +60,7 @@ async function renderRow(over: Partial<QuestExercise> = {}, showTarget = true) {
         language="en"
         showTarget={showTarget}
         onOpenExercise={onOpenExercise}
+        onPutBack={onPutBack}
       />
     </TamaguiProvider>,
   );
@@ -96,4 +99,34 @@ test("the target is dropped when the caller says the goal is named elsewhere", a
 
   expect(screen.getByText("1. Wall Sit")).toBeTruthy();
   expect(screen.queryByText("15 min")).toBeNull();
+});
+
+const squat = {
+  id: 7,
+  enName: "Squat",
+  frName: "Squat",
+  deName: "Kniebeuge",
+  esName: "Sentadilla",
+  imagePath: "",
+};
+
+// A rung not reached yet promises the written movement back; a set-aside one must not, and the
+// panel is where the hero can take it back.
+test("a set-aside slot says what it stands in for, and hands it back from the panel", async () => {
+  await renderRow({ substitutedFor: { ...squat, setAside: true } });
+
+  expect(screen.getByText("Instead of Squat")).toBeTruthy();
+  expect(screen.queryByText("Working up to Squat")).toBeNull();
+
+  await fireEvent.press(screen.getByText("1. Wall Sit"));
+  await fireEvent.press(screen.getByText("Put Squat back"));
+  expect(onPutBack).toHaveBeenCalledWith(7);
+});
+
+test("a rung substitution keeps its own caption and offers nothing to put back", async () => {
+  await renderRow({ substitutedFor: squat });
+
+  expect(screen.getByText("Working up to Squat")).toBeTruthy();
+  await fireEvent.press(screen.getByText("1. Wall Sit"));
+  expect(screen.queryByText("Put Squat back")).toBeNull();
 });

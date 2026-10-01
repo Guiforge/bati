@@ -24,6 +24,9 @@ import config from "@/tamagui.config";
  * again on a plain hold and asserts all four are back.
  */
 
+// Setting aside is not what this file is about.
+jest.mock("@/hooks/useSetAside");
+
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
 jest.mock("@/db/preferences", () => ({
@@ -33,6 +36,7 @@ jest.mock("@/db/preferences", () => ({
     clearSavedSession: jest.fn().mockResolvedValue(undefined),
     getWarmupEnabled: jest.fn().mockResolvedValue(false),
     getOwnedEquipment: jest.fn().mockResolvedValue(null),
+    getSetAsideExercises: jest.fn().mockResolvedValue([]),
   },
 }));
 jest.mock("@/db", () => ({ preferences: {} }));

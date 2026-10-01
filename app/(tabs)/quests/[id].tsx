@@ -18,6 +18,7 @@ import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
 import { QuestExerciseRow } from "@/components/quests/QuestExerciseRow";
 import { restsBetweenExercises } from "@/components/quests/questShape";
+import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { WarmupPreview } from "@/components/quests/WarmupPreview";
 import { getQuestAsset } from "@/constants/assetMap";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
@@ -51,6 +52,7 @@ import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
 import { formatCount, formatTargetValue } from "@/db/targets";
 import { outingXpPerMinute } from "@/db/xp";
+import { useSetAside } from "@/hooks/useSetAside";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { keepIfSame } from "@/src/sameContent";
@@ -251,6 +253,9 @@ export default function QuestDetails() {
   // original movement for a frame first.
   const [catalogue, setCatalogue] = useState<Exercise[]>([]);
   const [owned, setOwned] = useState<ReadonlySet<EquipmentCode> | null>(null);
+  const [setAsideIds, setSetAsideIds] = useState<ReadonlySet<number>>(new Set());
+  const [leaveOut, setLeaveOut] = useState(false);
+  const { setAside, putBack } = useSetAside();
   /** The `quest_exercises` row whose picker is open, if any. */
   const [swapFor, setSwapFor] = useState<number | null>(null);
   const [narrative, setNarrative] = useState<string | null>(null);
@@ -288,8 +293,9 @@ export default function QuestDetails() {
         getQuestById(id, nextLevel),
         listExercises(),
         preferences.getOwnedEquipment(),
+        preferences.getSetAsideExercises(),
       ])
-        .then(([quest, exercises, ownedList]) => {
+        .then(([quest, exercises, ownedList, aside]) => {
           if (!quest) {
             setState({
               status: "error",
@@ -302,6 +308,7 @@ export default function QuestDetails() {
           setCatalogue(exercises);
           // null means the question was never answered — "allow everything", as everywhere else.
           setOwned(ownedList === null ? null : new Set(ownedList));
+          setSetAsideIds(new Set(aside.map((e) => e.id)));
           setState({ status: "ready", quest, questLevel: nextLevel });
         })
         .catch((e: unknown) => {
@@ -515,7 +522,10 @@ export default function QuestDetails() {
   // `pickableExercises` here and not on `catalogue`: the line above resolves the slot's current
   // movement by id, and a retired one still has to render as the thing you are replacing.
   const swapCandidates = swapSlot
-    ? rankSwapCandidates(pickableExercises(catalogue), swapSlot.exercise, owned)
+    ? rankSwapCandidates(pickableExercises(catalogue), swapSlot.exercise, owned).filter(
+        // After the ranking: a set-aside rung removed first would cut the ladder walk at the gap.
+        (c) => !setAsideIds.has(c.exercise.id),
+      )
     : EMPTY_CANDIDATES;
   const swapReasons = new Map(swapCandidates.map((c) => [c.exercise.id, c.reason] as const));
 
@@ -847,6 +857,14 @@ export default function QuestDetails() {
                   language={language}
                   showTarget={!(isOuting && config.distanceM !== undefined)}
                   onOpenExercise={() => router.push(`/exercises/${qex.exercise.id}` as never)}
+                  onPutBack={(exerciseId) => {
+                    if (!questId) return;
+                    putBack({ id: exerciseId })
+                      .then(() => load(questId, effectiveLevel))
+                      .catch(() => {
+                        // Reported where it failed: `useSetAside` and `load` report their own.
+                      });
+                  }}
                 />
               ))}
             </YStack>
@@ -922,10 +940,37 @@ export default function QuestDetails() {
           language={language}
           open
           onOpenChange={(next) => {
-            if (!next) setSwapFor(null);
+            if (!next) {
+              setSwapFor(null);
+              setLeaveOut(false);
+            }
           }}
           title={t("quests.swap_exercise", "Replace this exercise")}
-          onPick={(exercise) => applySwap(swapSlot.id, exercise)}
+          header={
+            <SetAsideToggle
+              exercise={swapSlot.exercise}
+              checked={leaveOut}
+              onToggle={setLeaveOut}
+            />
+          }
+          onPick={(exercise) => {
+            if (!leaveOut || !questId) {
+              applySwap(swapSlot.id, exercise);
+              return;
+            }
+            // Set aside, then pin: both rewrite this quest's saved config, and `setAside` dropping
+            // swaps while the pin is still being written could drop the pin with them. The reload
+            // shows every other slot that served the exercise already replaced.
+            const slotId = swapSlot.id;
+            setAside(swapSlot.exercise)
+              .then(() => {
+                applySwap(slotId, exercise);
+                return load(questId, effectiveLevel);
+              })
+              .catch(() => {
+                // Reported where it failed: `useSetAside` and `load` report their own.
+              });
+          }}
           closeOnPick
           pickAction={<Repeat size={20} color="$primaryText" strokeWidth={2.5} />}
           captionFor={(exercise) => swapReasonLabel(swapReasons.get(exercise.id), t)}

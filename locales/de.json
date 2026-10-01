@@ -1813,5 +1813,26 @@
     "check_off": "Ausschalten",
     "check_fine": "Passt so",
     "pause_row": "Pausieren"
+  },
+  "setAside": {
+    "leave_out": "{{name}} ab jetzt weglassen",
+    "done": "{{name}} ist beiseitegelegt. In den Einstellungen holst du es zurück.",
+    "instead_of": "Statt {{name}}",
+    "put_back_named": "{{name}} zurückholen",
+    "set_aside": "Beiseitelegen",
+    "set_aside_tag": "Beiseitegelegt",
+    "put_back": "Zurückholen",
+    "hint": "Quests geben dir stattdessen etwas Ähnliches, und das Aufwärmen lässt sie aus.",
+    "title": "Beiseitegelegte Übungen",
+    "none": "Keine",
+    "empty": "Nichts beiseitegelegt. Öffne eine Übung, um sie nicht mehr in Quests und beim Aufwärmen zu bekommen.",
+    "browse": "Übungen ansehen",
+    "since": "Seit {{date}}",
+    "limits": "Quests, die du selbst geschrieben hast, laufen wie geschrieben. Eine beiseitegelegte Stufe hält den Pfad darüber an.",
+    "not_for_me": "Nichts für mich",
+    "also_jumps_title": "Die anderen Sprünge auch beiseitelegen?",
+    "also_jumps_yes": "Alle",
+    "also_jumps_no": "Nur diesen",
+    "done_many": "{{n}} Übungen beiseitegelegt. In den Einstellungen holst du sie zurück."
   }
 }

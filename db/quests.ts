@@ -1,8 +1,15 @@
 import { and, desc, eq } from "drizzle-orm";
+import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema } from "./client";
 import { dayKey } from "./dates";
 import { canDo } from "./equipment";
-import { currentRungFor, type Exercise, listExercises, type MovementRef } from "./exercises";
+import {
+  currentRungFor,
+  type Exercise,
+  listExercises,
+  type MovementRef,
+  unavailableExerciseIds,
+} from "./exercises";
 import { isMuscleCode } from "./muscles";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
 import { preferences, type TrainingLevel } from "./preferences";
@@ -62,7 +69,14 @@ export interface QuestExercise {
    * push-ups is a wall, not a stretch. The substitution is silent without this — and a quest that
    * quietly shows something other than its own card reads as a bug from where the hero sits.
    */
-  substitutedFor?: MovementRef;
+  substitutedFor?: MovementRef & {
+    /**
+     * Set when the hero set this movement aside (issue #145) rather than not reaching it yet. The
+     * two read differently: "Working up to X" promises X back, and here X is the one thing the
+     * hero asked never to be handed. Optional so a session saved before it existed still loads.
+     */
+    setAside?: true;
+  };
 
   /**
    * What the hero has already done on this movement, in *this slot's* unit — the best set of
@@ -585,18 +599,51 @@ type SlotRow = {
 export type SlotJournal = {
   /** Written movement id -> the rung the hero stands on (`currentRungFor`). */
   served: ReadonlyMap<number, number>;
+  /**
+   * Written movement id -> what runs instead, because the movement `served` lands on was set
+   * aside (issue #145). Outranks `served`. Absent when nothing close enough exists
+   * (`setAsideReplacement`): the slot then runs as written.
+   */
+  replaced: ReadonlyMap<number, number>;
   /** `ghostKey` -> what they did last time, which is also where a hold is prescribed from. */
   history: ReadonlyMap<string, ExerciseGhost>;
 };
 
 /** No ladder and no records: what a slot resolves to before anything is known about the hero. */
-export const QUEST_AS_WRITTEN: SlotJournal = { served: new Map(), history: new Map() };
+export const QUEST_AS_WRITTEN: SlotJournal = {
+  served: new Map(),
+  replaced: new Map(),
+  history: new Map(),
+};
 
-/** Both reads at once, for every movement a set of quests can put on screen. */
+/** Every read at once, for every movement a set of quests can put on screen. */
 export async function loadSlotJournal(exerciseIds: number[]): Promise<SlotJournal> {
   const served = await currentRungFor(exerciseIds);
-  const history = await getExerciseHistory([...new Set([...exerciseIds, ...served.values()])]);
-  return { served, history };
+  const replaced = await loadReplacements(exerciseIds, served);
+  const history = await getExerciseHistory([
+    ...new Set([...exerciseIds, ...served.values(), ...replaced.values()]),
+  ]);
+  return { served, replaced, history };
+}
+
+/** `SlotJournal.replaced`. Free when nothing is set aside, which is nearly every hero. */
+async function loadReplacements(
+  exerciseIds: number[],
+  served: ReadonlyMap<number, number>,
+): Promise<Map<number, number>> {
+  const replaced = new Map<number, number>();
+  const setAside = new Set((await preferences.getSetAsideExercises()).map((e) => e.id));
+  if (setAside.size === 0) return replaced;
+
+  const [catalogue, unavailable] = await Promise.all([listExercises(), unavailableExerciseIds()]);
+  const byId = new Map(catalogue.map((e) => [e.id, e] as const));
+  for (const id of new Set(exerciseIds)) {
+    const current = byId.get(served.get(id) ?? id);
+    if (!current || !setAside.has(current.id)) continue;
+    const replacement = setAsideReplacement(catalogue, current, unavailable);
+    if (replacement) replaced.set(id, replacement.id);
+  }
+  return replaced;
 }
 
 /**
@@ -622,13 +669,21 @@ export function resolveSlot(input: {
    * someone's own authoring, which is not this function's business.
    */
   substitute: boolean;
-}): { exercise: Exercise; target: Target; ghost: ExerciseGhost | undefined } {
+}): {
+  exercise: Exercise;
+  target: Target;
+  ghost: ExerciseGhost | undefined;
+  /** The set-aside movement this slot would have run, when `exercise` stands in for it. */
+  setAsideFrom: Exercise | undefined;
+} {
   const { base, written, userLevel, journal, catalogue, substitute } = input;
 
   // The movement this slot will actually run. Identical to the written one unless the hero is
-  // still working a rung below it.
-  const servedId = substitute ? (journal.served.get(written.id) ?? written.id) : written.id;
-  const exercise = (servedId === written.id ? written : catalogue[servedId]) ?? written;
+  // still working a rung below it, or set aside the one they would have been served.
+  const rungId = substitute ? (journal.served.get(written.id) ?? written.id) : written.id;
+  const rung = (rungId === written.id ? written : catalogue[rungId]) ?? written;
+  const replacement = substitute ? catalogue[journal.replaced.get(written.id) ?? -1] : undefined;
+  const exercise = replacement ?? rung;
 
   // A served rung runs in *its* unit, not the slot's: Squat's easier rung is Wall Sit, a hold.
   // Never for an outing, though: `generateTarget` treats a supplied best as a hold to work at a
@@ -651,6 +706,7 @@ export function resolveSlot(input: {
     // In the target's own unit: a movement trained both ways has two records, and showing the
     // hold next to a rep target would be a number the hero cannot act on.
     ghost: journal.history.get(ghostKey(exercise.id, target.type)),
+    setAsideFrom: replacement ? rung : undefined,
   };
 }
 
@@ -694,7 +750,7 @@ function buildSlot(
     muscles: [],
   };
 
-  const { exercise, target, ghost } = resolveSlot({
+  const { exercise, target, ghost, setAsideFrom } = resolveSlot({
     base: { type: r.targetType, min: r.targetMin, max: r.targetMax },
     written,
     userLevel: ctx.userLevel,
@@ -713,17 +769,31 @@ function buildSlot(
     target,
     ghost,
     // What the template asked for, when that is not what runs — the screens owe the hero an
-    // explanation and a way back, and nothing else in the object can tell them.
-    substitutedFor: isSubstituted
-      ? {
-          id: r.exId,
-          enName: r.exEnName,
-          frName: r.exFrName,
-          deName: r.exDeName,
-          esName: r.exEsName,
-          imagePath: r.exImagePath,
-        }
-      : undefined,
+    // explanation and a way back, and nothing else in the object can tell them. A set-aside slot
+    // names what was set aside rather than what was written: that is the one the hero can put back.
+    substitutedFor: setAsideFrom
+      ? { ...movementRef(setAsideFrom), setAside: true }
+      : isSubstituted
+        ? {
+            id: r.exId,
+            enName: r.exEnName,
+            frName: r.exFrName,
+            deName: r.exDeName,
+            esName: r.exEsName,
+            imagePath: r.exImagePath,
+          }
+        : undefined,
+  };
+}
+
+function movementRef(e: Exercise): MovementRef {
+  return {
+    id: e.id,
+    enName: e.enName,
+    frName: e.frName,
+    deName: e.deName,
+    esName: e.esName,
+    imagePath: e.imagePath,
   };
 }
 
@@ -784,12 +854,13 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   const ids = rows.map((r) => r.exId);
   const journal = substitute
     ? await loadSlotJournal(ids)
-    : { served: QUEST_AS_WRITTEN.served, history: await getExerciseHistory([...new Set(ids)]) };
+    : { ...QUEST_AS_WRITTEN, history: await getExerciseHistory([...new Set(ids)]) };
 
   // A substituted slot needs the whole movement, not the four fields the ladder carries: the
   // session prices it by `difficulty` and `secondsPerRep`, and the village counts its muscles.
   // `listExercises()` is promise-cached, so this is free after the first read anywhere.
-  const substituted = ids.some((id) => (journal.served.get(id) ?? id) !== id);
+  const substituted =
+    journal.replaced.size > 0 || ids.some((id) => (journal.served.get(id) ?? id) !== id);
   const catalogue: Record<number, Exercise> = substituted
     ? Object.fromEntries((await listExercises()).map((e) => [e.id, e] as const))
     : {};

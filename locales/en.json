@@ -1809,5 +1809,26 @@
     "check_off": "Turn off",
     "check_fine": "They're fine",
     "pause_row": "Pause"
+  },
+  "setAside": {
+    "leave_out": "Leave {{name}} out from now on",
+    "done": "{{name}} is set aside. Put it back from Settings.",
+    "instead_of": "Instead of {{name}}",
+    "put_back_named": "Put {{name}} back",
+    "set_aside": "Set aside",
+    "set_aside_tag": "Set aside",
+    "put_back": "Put back",
+    "hint": "Quests give you something close instead, and the warm-up skips it.",
+    "title": "Set-aside exercises",
+    "none": "None",
+    "empty": "Nothing set aside. Open an exercise to stop getting it in your quests and warm-ups.",
+    "browse": "Browse exercises",
+    "since": "Since {{date}}",
+    "limits": "Quests you wrote yourself run as you wrote them. Setting aside a rung holds the path above it where it is.",
+    "not_for_me": "Not for me",
+    "also_jumps_title": "Set aside the other jumps too?",
+    "also_jumps_yes": "All of them",
+    "also_jumps_no": "Just this one",
+    "done_many": "{{n}} exercises set aside. Put them back from Settings."
   }
 }

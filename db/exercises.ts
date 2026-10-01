@@ -247,19 +247,34 @@ export function listExercises(): Promise<Exercise[]> {
  * the ladder is telling the hero to work up to.
  */
 export async function unavailableMovements(): Promise<Set<string>> {
-  const [catalogue, ownedEquipment] = await Promise.all([
+  const [catalogue, unavailable] = await Promise.all([listExercises(), unavailableExerciseIds()]);
+  return new Set(catalogue.filter((ex) => unavailable.has(ex.id)).map((ex) => ex.enName));
+}
+
+/**
+ * The same answer by id, for the readers that hold ids: missing kit, a rung not reached yet, and
+ * whatever the hero set aside (issue #145). One rule for the warm-up and for what a quest may
+ * serve in place of a set-aside slot, so neither hands over what the other refuses.
+ */
+export async function unavailableExerciseIds(): Promise<Set<number>> {
+  const [catalogue, ownedEquipment, setAside] = await Promise.all([
     listExercises(),
     preferences.getOwnedEquipment(),
+    preferences.getSetAsideExercises(),
   ]);
   const owned = ownedEquipment === null ? null : new Set(ownedEquipment);
+  const aside = new Set(setAside.map((e) => e.id));
   const rungs = await currentRungFor(
     catalogue.filter((ex) => ex.prerequisiteExerciseId !== null).map((ex) => ex.id),
   );
 
   return new Set(
     catalogue
-      .filter((ex) => !canDo(ex.equipment, owned) || (rungs.get(ex.id) ?? ex.id) !== ex.id)
-      .map((ex) => ex.enName),
+      .filter(
+        (ex) =>
+          aside.has(ex.id) || !canDo(ex.equipment, owned) || (rungs.get(ex.id) ?? ex.id) !== ex.id,
+      )
+      .map((ex) => ex.id),
   );
 }
 

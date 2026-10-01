@@ -1885,5 +1885,26 @@
     "check_off": "Apagar",
     "check_fine": "Me van bien",
     "pause_row": "Pausar"
+  },
+  "setAside": {
+    "leave_out": "No volver a darme {{name}}",
+    "done": "{{name}} queda apartado. Puedes recuperarlo en Ajustes.",
+    "instead_of": "En lugar de {{name}}",
+    "put_back_named": "Recuperar {{name}}",
+    "set_aside": "Apartar",
+    "set_aside_tag": "Apartado",
+    "put_back": "Recuperar",
+    "hint": "Las misiones te dan algo parecido en su lugar, y el calentamiento lo salta.",
+    "title": "Ejercicios apartados",
+    "none": "Ninguno",
+    "empty": "Nada apartado. Abre un ejercicio para dejar de recibirlo en tus misiones y calentamientos.",
+    "browse": "Ver ejercicios",
+    "since": "Desde el {{date}}",
+    "limits": "Las misiones que escribiste tú se hacen tal como las escribiste. Apartar un escalón detiene el camino que hay encima.",
+    "not_for_me": "No es para mí",
+    "also_jumps_title": "¿Apartar también los demás saltos?",
+    "also_jumps_yes": "Todos",
+    "also_jumps_no": "Solo este",
+    "done_many": "{{n}} ejercicios apartados. Puedes recuperarlos en Ajustes."
   }
 }

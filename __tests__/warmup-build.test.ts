@@ -311,3 +311,40 @@ test("the one-sided movements are movements the warm-up can actually play", () =
     "World's Greatest Stretch",
   ]);
 });
+
+/**
+ * Issue #145: a hero who cannot jump sets the jumps aside. The raise and potentiation pools are
+ * then down to two movements between them, which the first phase spends, so the last phase used
+ * to come back empty and the warm-up shrank without saying so.
+ */
+test("with every jump unavailable, the warm-up keeps its length and never jumps", () => {
+  const NO_JUMPS: ReadonlySet<string> = new Set([
+    "Jumping Jack",
+    "Star Jump",
+    "Skater Hop",
+    "Jump Squat",
+    "Burpee",
+    "High Knees",
+  ]);
+
+  for (const q of [quest([null]), quest(["core", "core"]), longQuest(["squat", "hinge"])]) {
+    for (const session of [0, 1, 2, 3, 4]) {
+      const full = names(q, session);
+      const grounded = names(q, session, NO_JUMPS);
+
+      expect(grounded).toHaveLength(full.length);
+      expect(grounded.filter((name) => NO_JUMPS.has(name))).toEqual([]);
+      expect(new Set(grounded).size).toBe(grounded.length);
+    }
+  }
+});
+
+test("a hero who sets nothing aside keeps exactly the rotation they had", () => {
+  // The no-impact fallback only fills a phase that came up short; it is not a pool tail.
+  expect(names(quest([null]), 0)).toEqual([
+    "Jumping Jack",
+    "Cat-Cow",
+    "Glute Bridge",
+    "Jump Squat",
+  ]);
+});

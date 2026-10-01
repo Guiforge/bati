@@ -40,6 +40,7 @@ import {
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
 import { ReminderSection } from "@/components/settings/ReminderSection";
+import { SetAsideRow } from "@/components/settings/SetAsideRow";
 import { SettingRow } from "@/components/settings/SettingRow";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
@@ -558,6 +559,8 @@ export default function SettingsScreen() {
               cycleEquipment();
             }}
           />
+
+          <SetAsideRow />
 
           <SettingRow
             icon={<Swords size={22} color="$text" />}

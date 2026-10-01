@@ -1887,5 +1887,26 @@
     "check_off": "Couper",
     "check_fine": "Ils me vont",
     "pause_row": "Mettre en pause"
+  },
+  "setAside": {
+    "leave_out": "Ne plus me donner {{name}}",
+    "done": "{{name}} est écarté. Tu peux le remettre depuis les Paramètres.",
+    "instead_of": "À la place de {{name}}",
+    "put_back_named": "Remettre {{name}}",
+    "set_aside": "Écarter",
+    "set_aside_tag": "Écarté",
+    "put_back": "Remettre",
+    "hint": "Les quêtes te donnent un exercice proche à la place, et l'échauffement le saute.",
+    "title": "Exercices écartés",
+    "none": "Aucun",
+    "empty": "Rien d'écarté. Ouvre un exercice pour ne plus le recevoir dans tes quêtes ni tes échauffements.",
+    "browse": "Parcourir les exercices",
+    "since": "Depuis le {{date}}",
+    "limits": "Les quêtes que tu as écrites restent telles quelles. Écarter un palier arrête le chemin au-dessus de lui.",
+    "not_for_me": "Pas pour moi",
+    "also_jumps_title": "Écarter aussi les autres sauts ?",
+    "also_jumps_yes": "Tous",
+    "also_jumps_no": "Seulement celui-ci",
+    "done_many": "{{n}} exercices écartés. Tu peux les remettre depuis les Paramètres."
   }
 }

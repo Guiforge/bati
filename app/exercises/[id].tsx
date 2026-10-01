@@ -21,6 +21,7 @@ import {
   getExerciseById,
   getExerciseUsage,
   isUserExercise,
+  preferences,
   retireUserExercise,
   unretireUserExercise,
 } from "@/db";
@@ -32,6 +33,7 @@ import { type ExerciseGhost, getExerciseHistory, ghostKey } from "@/db/personalR
 import type { QuestTargetType } from "@/db/schema";
 import { formatTarget } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
+import { useSetAside } from "@/hooks/useSetAside";
 import { localizedName, localizedText } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -568,9 +570,66 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
       {chain ? <PathCard chain={chain} /> : null}
       {progression ? <NextStepCard progression={progression} /> : null}
 
+      {/* Every exercise, seed content included: what a body cannot do is not a question of who
+          wrote the movement. Not an outing, which has no near substitute and no warm-up. */}
+      {exercise.style === NON_REP_STYLE || exercise.retiredAt !== null ? null : (
+        <SetAsideCard exercise={exercise} />
+      )}
+
       {/* Seed content is never offered these — a content update must not be clobberable. */}
       {isUserExercise(exercise) ? <HeroActions exercise={exercise} onGone={onGone} /> : null}
     </YStack>
+  );
+}
+
+/**
+ * Set this exercise aside, or put it back (issue #145). The entry point for the warm-up too: its
+ * preview's rows open this screen, and the warm-up has no Replace of its own.
+ */
+function SetAsideCard({ exercise }: { exercise: Exercise }) {
+  const { t } = useTranslation();
+  const { setAside, putBack } = useSetAside();
+  // `null` while the list is read: a button that flips label on arrival reads as a mis-tap.
+  const [aside, setAsideState] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    preferences
+      .getSetAsideExercises()
+      .then((list) => {
+        if (alive) setAsideState(list.some((e) => e.id === exercise.id));
+      })
+      .catch((error) => reportError("exercise.setAsideRead", error));
+    return () => {
+      alive = false;
+    };
+  }, [exercise.id]);
+
+  if (aside === null) return null;
+
+  return (
+    <Card>
+      <YStack gap="$3">
+        {aside ? (
+          <Tag self="flex-start" label={t("setAside.set_aside_tag")} tone="secondary" />
+        ) : null}
+        <Text fontSize={14} color="$textSecondary">
+          {t("setAside.hint")}
+        </Text>
+        <AppButton
+          testID={aside ? "exercise-put-back" : "exercise-set-aside"}
+          variant="outline"
+          onPress={() => {
+            setAsideState(!aside);
+            (aside ? putBack(exercise) : setAside(exercise)).catch(() => {
+              // Reported by `useSetAside`, which never rejects.
+            });
+          }}
+        >
+          {aside ? t("setAside.put_back") : t("setAside.set_aside")}
+        </AppButton>
+      </YStack>
+    </Card>
   );
 }
 

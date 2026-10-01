@@ -12,6 +12,7 @@ import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { describeExercise } from "@/hooks/useSessionInstructions";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
+import { useSetAside } from "@/hooks/useSetAside";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { MovementDescription, PrepView } from "./PrepView";
@@ -46,6 +47,8 @@ export function WarmupView() {
   const nextWarmupStep = useSessionStore((s) => s.nextWarmupStep);
   const previousWarmupStep = useSessionStore((s) => s.previousWarmupStep);
   const skipWarmup = useSessionStore((s) => s.skipWarmup);
+  const dropWarmupSteps = useSessionStore((s) => s.dropWarmupSteps);
+  const { setAside } = useSetAside();
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const { remainingSeconds, progress } = useSessionTimer();
   // Declared above the auto-advance effect below, the same way `RestView` does it: on the render
@@ -260,6 +263,28 @@ export function WarmupView() {
           accessibilityRole="button"
         />
       </XStack>
+
+      {/* Where issue #145 happened: a hero who cannot jump met Star Jump here, had only Next and
+          Skip, and skipped every warm-up after. This sets the movement aside for good and moves
+          on, so the next warm-up is built without it. A seed row only: the warm-up names nothing
+          else, and an unresolved name has nothing to set aside. */}
+      {exercise ? (
+        <AppButton
+          testID="session-warmup-not-for-me"
+          variant="outline"
+          onPress={() => {
+            selection();
+            setAside(exercise)
+              .then((names) => dropWarmupSteps(names))
+              .catch(() => {
+                // Reported by `useSetAside`, which never rejects.
+              });
+          }}
+          accessibilityRole="button"
+        >
+          {t("setAside.not_for_me")}
+        </AppButton>
+      ) : null}
 
       {/* A control, and shaped like one: it used to be the smallest, dimmest text on the screen,
           which is how the hurried-lifter audit found it (2026-09-10). */}

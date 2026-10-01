@@ -13,6 +13,9 @@ import config from "@/tamagui.config";
 // second half of this file runs the same screen on an ordinary three-round workout and pins that
 // nothing was hidden from it.
 
+// Setting aside is not what this file is about.
+jest.mock("@/hooks/useSetAside");
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: jest.fn(),
@@ -210,7 +213,10 @@ jest.mock("@/db", () => ({
 jest.mock("@/db/exercises", () => ({ listExercises: jest.fn().mockResolvedValue([]) }));
 
 jest.mock("@/db/preferences", () => ({
-  preferences: { getOwnedEquipment: jest.fn().mockResolvedValue(null) },
+  preferences: {
+    getOwnedEquipment: jest.fn().mockResolvedValue(null),
+    getSetAsideExercises: jest.fn().mockResolvedValue([]),
+  },
 }));
 
 jest.mock("@/db/adventures-narrative", () => ({

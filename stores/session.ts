@@ -331,6 +331,7 @@ interface SessionState {
   startWarmupMove: () => void;
   nextWarmupStep: () => void;
   previousWarmupStep: () => void;
+  dropWarmupSteps: (names: ReadonlySet<string>) => void;
   skipWarmup: () => void;
   finishCountdown: () => void;
   pauseSession: () => void;
@@ -1229,6 +1230,31 @@ export const useSessionStore = create<SessionState>()(
       if (status !== "warmup" || warmupIndex === 0) return;
 
       set({ warmupIndex: warmupIndex - 1, warmupPrep: true, ...prepTimer() });
+    },
+
+    /**
+     * Take these movements out of what is left of the warm-up, then open the wait before
+     * whatever now stands at this step. "Not for me" (issue #145): the movement was just set
+     * aside, and the jumps with it when the hero said so.
+     *
+     * ponytail: drops without refilling, so this warm-up runs shorter. The next one is built
+     * with the set-aside list and fills from `NO_IMPACT`; rebuilding mid-warm-up would reshuffle
+     * steps the hero has already seen coming.
+     */
+    dropWarmupSteps: (names) => {
+      const { status, warmupIndex, warmupSequence } = get();
+      if (status !== "warmup") return;
+
+      const kept = [
+        ...warmupSequence.slice(0, warmupIndex),
+        ...warmupSequence.slice(warmupIndex).filter((s) => !names.has(s.exerciseName)),
+      ];
+      set({ warmupSequence: kept });
+      if (warmupIndex >= kept.length) {
+        get().skipWarmup();
+        return;
+      }
+      set({ warmupPrep: true, ...prepTimer() });
     },
 
     /** Leave the warm-up for the start screen. Nothing is journaled: a warm-up is not work. */

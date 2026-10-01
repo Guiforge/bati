@@ -7,6 +7,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
 import { ChevronDown, ChevronUp, Dumbbell, Footprints } from "@/components/icons";
+import { substitutionCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { formatDuration } from "@/db/estimate";
@@ -46,10 +47,12 @@ function ExerciseDetail({
   qex,
   language,
   onOpenExercise,
+  onPutBack,
 }: {
   qex: QuestExercise;
   language: AppLanguage;
   onOpenExercise: () => void;
+  onPutBack: (exerciseId: number) => void;
 }) {
   const { t } = useTranslation();
 
@@ -122,6 +125,25 @@ function ExerciseDetail({
       >
         {t("quests.open_exercise", "See the exercise")}
       </AppButton>
+
+      {/* The way back from a set-aside, where the hero sees what it cost: in the panel and not on
+          the caption, which sits inside the header's own press. */}
+      {qex.substitutedFor?.setAside ? (
+        <AppButton
+          fullWidth={false}
+          variant="outline"
+          size="$3"
+          fontSize={14}
+          onPress={() => {
+            if (qex.substitutedFor) onPutBack(qex.substitutedFor.id);
+          }}
+        >
+          {t("setAside.put_back_named", {
+            name: localizedName(qex.substitutedFor, language),
+            defaultValue: `Put ${localizedName(qex.substitutedFor, language)} back`,
+          })}
+        </AppButton>
+      ) : null}
     </YStack>
   );
 }
@@ -144,6 +166,7 @@ export function QuestExerciseRow({
   language,
   showTarget,
   onOpenExercise,
+  onPutBack,
 }: {
   qex: QuestExercise;
   index: number;
@@ -155,6 +178,8 @@ export function QuestExerciseRow({
    */
   showTarget: boolean;
   onOpenExercise: () => void;
+  /** Hands back the exercise this slot stands in for, when the hero set it aside. */
+  onPutBack: (exerciseId: number) => void;
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
@@ -221,10 +246,7 @@ export function QuestExerciseRow({
               names stays one tap away through swap. */}
           {qex.substitutedFor ? (
             <Text fontSize={12} color="$textSecondary" fontFamily="$body">
-              {t("quests.served_easier_rung", {
-                name: localizedName(qex.substitutedFor, language),
-                defaultValue: `Working up to ${localizedName(qex.substitutedFor, language)}`,
-              })}
+              {substitutionCaption(t, qex.substitutedFor, language)}
             </Text>
           ) : null}
 
@@ -258,7 +280,12 @@ export function QuestExerciseRow({
       </XStack>
 
       {expanded ? (
-        <ExerciseDetail qex={qex} language={language} onOpenExercise={onOpenExercise} />
+        <ExerciseDetail
+          qex={qex}
+          language={language}
+          onOpenExercise={onOpenExercise}
+          onPutBack={onPutBack}
+        />
       ) : null}
     </Card>
   );

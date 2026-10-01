@@ -17,6 +17,9 @@ import config from "@/tamagui.config";
 const mockGetExerciseById = jest.fn();
 const mockGetExerciseUsage = jest.fn();
 
+// Setting aside is not what this file is about.
+jest.mock("@/hooks/useSetAside");
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
   useLocalSearchParams: () => ({ id: "77" }),
@@ -44,6 +47,7 @@ jest.mock("@/components/common/Toast", () => ({
 }));
 
 jest.mock("@/db", () => ({
+  preferences: { getSetAsideExercises: jest.fn().mockResolvedValue([]) },
   getExerciseById: (id: number) => mockGetExerciseById(id),
   getExerciseUsage: (id: number) => mockGetExerciseUsage(id),
   isUserExercise: (ex: { creator: string }) => ex.creator !== "Admin",

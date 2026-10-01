@@ -598,6 +598,17 @@ describe("content invariants", () => {
     expect(WARMUP_MOVEMENTS.filter((name) => !catalogue.has(name))).toEqual([]);
   });
 
+  // "Set aside the other jumps too?" (issue #145) is a list of names: a rename would quietly
+  // leave a jump out of the offer, and the hero would meet it at the next session.
+  test("every jump the set-aside offer names exists in the catalogue", async () => {
+    const { JUMPING } = require("../db/setAside") as typeof import("../db/setAside");
+    const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
+
+    const catalogue = new Set((await listExercises()).map((e) => e.enName));
+
+    expect([...JUMPING].filter((name) => !catalogue.has(name))).toEqual([]);
+  });
+
   /**
    * The report: two days of "Traction scapulaire" in the warm-up of a hero who answered "sans
    * matériel" in Settings. `buildWarmup` had never read that answer, so the pull pools offered

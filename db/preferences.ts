@@ -32,6 +32,15 @@ function isPrepMode(value: string | null): value is PrepMode {
   return value === "timer" || value === "tap";
 }
 
+/** One set-aside exercise: which, and since when (epoch ms). */
+export type SetAsideExercise = { id: number; at: number };
+
+function isSetAsideExercise(value: unknown): value is SetAsideExercise {
+  if (typeof value !== "object" || value === null) return false;
+  const { id, at } = value as Record<string, unknown>;
+  return Number.isInteger(id) && typeof at === "number" && Number.isFinite(at);
+}
+
 /**
  * Get a preference value by key.
  *
@@ -257,6 +266,34 @@ export const preferences = {
 
   async setLastAutoBackupDay(day: string): Promise<void> {
     await setPreference("lastAutoBackupDay", day);
+  },
+
+  /**
+   * The exercises the hero asked never to be handed again (issue #145: "I can't jump"), with the
+   * day each was set aside so the list can say how long ago. Quests serve a near substitute in
+   * their place and the warm-up skips them; a picker the hero drives by hand still offers them.
+   *
+   * Read here, written only by `db/setAside.ts`, which also drops the saved swaps that would hand
+   * the exercise back.
+   *
+   * ponytail: ids, and kept out of `MERGED_PREFERENCES` like favourites, because a seed row can
+   * carry a different id on another device (`db/merge.ts`). Two devices keep two lists. Switch to
+   * `enName` and merge it the day someone asks for the list to follow them.
+   */
+  async getSetAsideExercises(): Promise<SetAsideExercise[]> {
+    const raw = await getPreference("setAsideExercises");
+    if (raw === null) return [];
+
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter(isSetAsideExercise) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  async setSetAsideExercises(list: SetAsideExercise[]): Promise<void> {
+    await setPreference("setAsideExercises", JSON.stringify(list));
   },
 
   async setOwnedEquipment(equipment: EquipmentCode[] | null): Promise<void> {

@@ -107,6 +107,15 @@ const POTENTIATE = ["Jump Squat", "High Knees", "Mountain Climber", "Star Jump"]
  */
 const WRISTS = step("Wrist Circles");
 
+/**
+ * What a phase falls back on once its own pool has nothing left the hero can do. Nothing here
+ * leaves the floor: issue #145 was a hero who cannot jump, and with every jump set aside the
+ * raise and potentiation pools are down to two movements between them, which `used` spends in
+ * the first phase. A fallback rather than a pool tail, so a hero who sets nothing aside keeps
+ * exactly the rotation they had.
+ */
+const NO_IMPACT = ["Squat", "Lunge", "Bear Crawl", "Glute Bridge"] as const;
+
 /** What a quest gets when nothing is known about it — and what every quest got before `0024`. */
 export const WARMUP_SEQUENCE: [WarmupStep, ...WarmupStep[]] = [
   // `as const` above makes these tuples, so index 0 is known to exist: no fallback branch.
@@ -162,6 +171,7 @@ export const WARMUP_MOVEMENTS: string[] = [
     ...POTENTIATE,
     ...Object.values(ACTIVATE_BY_FAMILY).flat(),
     ...Object.values(POTENTIATE_BY_FAMILY).flat(),
+    ...NO_IMPACT,
     WRISTS.exerciseName,
   ]),
 ];
@@ -227,6 +237,19 @@ function take(
   }
 
   return picked;
+}
+
+/** A phase's own pool first, then `NO_IMPACT` for whatever it could not fill. */
+function fill(
+  pool: readonly string[],
+  count: number,
+  offset: number,
+  used: Set<string>,
+): WarmupStep[] {
+  const picked = take(pool, count, offset, used);
+  return picked.length >= count
+    ? picked
+    : [...picked, ...take(NO_IMPACT, count - picked.length, 0, used)];
 }
 
 function dedupe(names: string[]): string[] {
@@ -317,10 +340,10 @@ export function buildWarmup(
   const needsWrists = quest.archetype === "skill" || patterns.includes("push_vertical");
 
   return [
-    ...take(RAISE, raise, offset, used),
-    ...take(MOBILISE, mobilise, offset, used),
-    ...take(activatePool, activate, offset, used),
+    ...fill(RAISE, raise, offset, used),
+    ...fill(MOBILISE, mobilise, offset, used),
+    ...fill(activatePool, activate, offset, used),
     ...(needsWrists ? [WRISTS] : []),
-    ...take(potentiatePool, potentiate, offset, used),
+    ...fill(potentiatePool, potentiate, offset, used),
   ];
 }

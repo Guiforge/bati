@@ -97,6 +97,40 @@ target generated from them. The app had the ladder recorded the whole time; it j
 reading it when it mattered. A session can now also skip a set outright, which writes no row at
 all rather than a number nobody performed.
 
+### A set-aside exercise is never served
+
+The second reason a slot runs something other than what it names. A hero can set an exercise
+aside, for good, from three places: the exercise's own page ("Set aside", which is also how the
+warm-up preview's rows reach it), a toggle at the top of either Replace sheet ("Leave X out from
+now on", committed only when the replacement is picked), and "Not for me" on a step of the
+running warm-up. The list lives in Settings > Set-aside exercises, where each one can be put back;
+a set-aside slot on the quest screen also offers "Put X back" in its open panel.
+
+What it changes:
+
+- **Quest slots.** `loadSlotJournal` resolves the replacement once (`SlotJournal.replaced`, which
+  outranks `served`), so the quest screen, Home and every gallery card agree. The replacement is
+  `setAsideReplacement`: an easier rung, the same pattern, or the same push/pull family, never a
+  harder rung, never anything the hero lacks the kit or the rung for, never another set-aside one.
+  Nothing that close: the slot runs as written. The caption reads "Instead of X", not "Working up
+  to X", because X is the one thing the hero asked never to be handed (`substitutedFor.setAside`).
+- **The warm-up.** `unavailableMovements()` includes the list, and a phase that runs out of its own
+  pool fills from `NO_IMPACT` (Squat, Lunge, Bear Crawl, Glute Bridge), so a hero who sets every
+  jump aside keeps a full-length warm-up. A hero who sets nothing aside keeps the exact rotation.
+- **Saved swaps.** A quest-screen swap to the exercise is dropped when it is set aside
+  (`db/setAside.ts`), because a config is applied after the slot is resolved and would hand it back.
+- **Jumps.** Setting one seeded jump aside offers the others (`JUMPING`).
+
+What it leaves alone: quests the hero wrote (they run as written, like the rung substitution),
+pickers the hero drives by hand (the quest editor, the oath), and the catalogue. Setting a lower
+rung aside holds the path above it where it is, since that rung is never earned.
+
+Kept per device: the list stores ids, which differ between devices for seed rows written after
+`0035`, so it stays out of `MERGED_PREFERENCES` (see the `ponytail:` on `getSetAsideExercises`).
+
+**Why it exists.** [Issue #145](https://github.com/Guiforge/bati/issues/145): "I can't jump due to
+physical limitations", and the only way past the jumps was to skip the whole warm-up, every time.
+
 ### By Duration
 
 | Duration | Est. Time | Rounds |

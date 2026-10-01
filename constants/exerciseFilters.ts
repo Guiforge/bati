@@ -219,3 +219,30 @@ export function rankSwapCandidates(
       .map(({ exercise, reason: why }) => ({ exercise, reason: why }))
   );
 }
+
+/**
+ * What a quest serves in place of an exercise the hero set aside, or `null` to keep it as written.
+ *
+ * `rankSwapCandidates` is built for a hero choosing, so it offers every rung both ways and, last,
+ * everything else. Chosen *for* them that is wrong twice: the harder rung of Squat is Jump Squat,
+ * which is exactly what issue #145 sets aside, and a crunch is not a squat. So only an easier rung
+ * or the same movement family, never what `unavailable` names (no kit, a rung not reached yet, set
+ * aside too), never a retired row. Nothing close enough: the slot runs as written, where "Replace"
+ * is one tap away, which beats a quest quietly turning into a different workout.
+ */
+export function setAsideReplacement(
+  exercises: Exercise[],
+  current: Exercise,
+  unavailable: ReadonlySet<number>,
+): Exercise | null {
+  // Ranked on the whole catalogue, filtered after: the ladder is walked through prerequisites, so
+  // removing a set-aside rung first cut the walk at the gap. Squat set aside left Jump Squat's
+  // slot with no way down to Wall Sit, and it was served a Lunge instead.
+  const pick = rankSwapCandidates(exercises, current, null).find(
+    (c) =>
+      (c.reason === "easier" || c.reason === "same_pattern" || c.reason === "same_family") &&
+      c.exercise.retiredAt === null &&
+      !unavailable.has(c.exercise.id),
+  );
+  return pick?.exercise ?? null;
+}

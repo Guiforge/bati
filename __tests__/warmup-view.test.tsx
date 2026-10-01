@@ -16,6 +16,9 @@ import config from "@/tamagui.config";
  * second movement and the first one was never shown.
  */
 
+// Setting aside is not what this file is about.
+jest.mock("@/hooks/useSetAside");
+
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
 jest.mock("@/db/exercises", () => ({

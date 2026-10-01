@@ -18,8 +18,10 @@ on:
     tags: ["v*"]
   workflow_dispatch:
 
-permissions:
-  contents: write
+# Nothing at the workflow level, so a job states what it needs: the signing key and the Play
+# credentials are in this workflow, and a write token should only sit beside the step that
+# publishes.
+permissions: {}
 
 concurrency:
   group: release
@@ -28,12 +30,19 @@ concurrency:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    # write: action-gh-release creates the GitHub Release and attaches the APK.
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: lts/*
+          # zizmor: ignore[cache-poisoning] the npm cache holds tarballs, and `npm ci` checks each
+          # one against the integrity hash in package-lock.json before installing it.
           cache: npm
       - run: npm ci
 
@@ -44,13 +53,13 @@ jobs:
       - run: npm test
       - run: npm run deadcode
 
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
           java-version: "17"
       # `packages` without its default `tools`, which cmdline-tools 20.0 no longer has (see
       # pages.yml).
-      - uses: android-actions/setup-android@v4
+      - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
         with:
           packages: platform-tools
 
@@ -60,8 +69,11 @@ jobs:
       # input points this at android/: `build-root-directory` was dropped by the action and had
       # been warning "Unexpected input" on every release since at least v1.9.0 while the cache
       # worked anyway.
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         with:
+          # zizmor: ignore[cache-poisoning] no other workflow uses setup-gradle, so the only runs
+          # that ever write this cache are this one's, a tag or a dispatch, both needing push.
+          # Dropping it would put a release back near the 29 minutes it used to take.
           cache-read-only: false
 
       # The same drift check ci.yml runs, and it belongs here too: scripts/release.sh regenerates
@@ -252,9 +264,11 @@ jobs:
           done
           echo "16 KB pages: $count libraries aligned (APK + AAB)" >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: softprops/action-gh-release@v3
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         if: startsWith(github.ref, 'refs/tags/')
         with:
+          # zizmor: ignore[superfluous-actions] `gh release create` would do it, but this step only
+          # runs on a tag, so a rewrite would first be tested on a real release. Pinned by SHA.
           files: ${{ steps.artefacts.outputs.apk_path }}
           generate_release_notes: true
           body: |
@@ -264,14 +278,14 @@ jobs:
             This APK is not from an app store. Android will ask you to allow installs from an
             unknown source the first time.
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: apk
           path: ${{ steps.artefacts.outputs.apk_path }}
 
       # Only the play job needs this one, and only on a tagged build — no point keeping it
       # around otherwise.
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: aab
@@ -286,12 +300,16 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     environment: play-internal
+    permissions:
+      contents: read
     steps:
       # Only for the store listing (fastlane/metadata/android below) — the AAB itself comes
       # from the apk job's artifact, not this checkout.
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: aab
 

@@ -338,8 +338,9 @@ Two things to know before tagging:
 Managed by [prek](https://github.com/j178/prek) via [`.pre-commit-config.yaml`](.pre-commit-config.yaml).
 `npm install` runs `prek install`, which writes the shims into `.git/hooks`.
 
-- **pre-commit**: file hygiene, `gitleaks` secret scan, `biome check --write` on staged
-  files, `tsc --noEmit` when a `.ts`/`.tsx` is staged.
+- **pre-commit**: file hygiene, `gitleaks` secret scan, `zizmor` on the workflows (a finding
+  that is deliberate gets a `# zizmor: ignore[…]` with its reason, never a looser config),
+  `biome check --write` on staged files, `tsc --noEmit` when a `.ts`/`.tsx` is staged.
 - **pre-push**: `npm test`.
 
 - Run everything by hand: `npx prek run --all-files`

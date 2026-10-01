@@ -102,10 +102,19 @@ export default function SetAsideScreen() {
                     size="$3"
                     fontSize={14}
                     onPress={() => {
-                      setRows((prev) => prev?.filter((r) => r.exercise.id !== exercise.id) ?? prev);
-                      putBack(exercise).catch(() => {
-                        // Reported by `useSetAside`, which never rejects.
-                      });
+                      // Off the list once the write holds: a row that vanished and comes back on
+                      // the next focus reads as a second bug.
+                      putBack(exercise)
+                        .then((ok) => {
+                          if (ok) {
+                            setRows(
+                              (prev) => prev?.filter((r) => r.exercise.id !== exercise.id) ?? prev,
+                            );
+                          }
+                        })
+                        .catch(() => {
+                          // Reported by `useSetAside`, which never rejects.
+                        });
                     }}
                   >
                     {t("setAside.put_back")}

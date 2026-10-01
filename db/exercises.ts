@@ -248,7 +248,13 @@ export function listExercises(): Promise<Exercise[]> {
  */
 export async function unavailableMovements(): Promise<Set<string>> {
   const [catalogue, unavailable] = await Promise.all([listExercises(), unavailableExerciseIds()]);
-  return new Set(catalogue.filter((ex) => unavailable.has(ex.id)).map((ex) => ex.enName));
+  // Seed rows only: the warm-up names seed movements, and a hero's own "Squat" set aside must not
+  // take the seed Squat out of every warm-up with it (the population rule, see AGENTS.md).
+  return new Set(
+    catalogue
+      .filter((ex) => ex.creator === ADMIN_CREATOR && unavailable.has(ex.id))
+      .map((ex) => ex.enName),
+  );
 }
 
 /**

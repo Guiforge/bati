@@ -809,9 +809,16 @@ export function ActiveExerciseView() {
           if (leaveOut) {
             const left = currentEx.exercise;
             setSetAsideIds((prev) => new Set([...prev, left.id]));
-            setAside(left).catch(() => {
-              // Reported by `useSetAside`, which never rejects.
-            });
+            setAside(left)
+              .then((done) => {
+                // Not written: offer it again in this sheet, the list does not hold it.
+                if (done === null) {
+                  setSetAsideIds((prev) => new Set([...prev].filter((id) => id !== left.id)));
+                }
+              })
+              .catch(() => {
+                // Reported by `useSetAside`, which never rejects.
+              });
           }
           swapCurrentExercise(exercise);
           setSwapOpen(false);

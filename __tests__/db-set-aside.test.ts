@@ -162,6 +162,55 @@ describe("set-aside exercises", () => {
     expect(second?.level).toBe("hard");
   });
 
+  /**
+   * A number saved for the written movement would land on its stand-in: "20" set for Jump Squat
+   * became 20 of the substitute. Dropped with the swaps, but only where the slot runs as written.
+   */
+  test("setting aside drops a target saved on a slot that names it, not on a swapped one", async () => {
+    const quests = questsApi();
+    const templates = await quests.listQuestTemplates();
+    const slots = templates.flatMap((q) =>
+      q.exercises.map((s) => ({ questId: q.id, slotId: s.id, exerciseId: s.exerciseId })),
+    );
+    const named = slots.find((s) => s.exerciseId === idOf("Jump Squat"));
+    const other = slots.find((s) => s.questId === named?.questId && s.slotId !== named?.slotId);
+    assertDefined(named);
+    assertDefined(other);
+
+    const config = require("../db/questConfig") as typeof import("../db/questConfig");
+    await config.saveQuestConfig(named.questId, {
+      level: "medium",
+      targets: { [String(named.slotId)]: 20, [String(other.slotId)]: 12 },
+    });
+
+    await setAsideApi().setExerciseAside(idOf("Jump Squat"));
+
+    expect((await config.getQuestConfig(named.questId))?.targets).toEqual({
+      [String(other.slotId)]: 12,
+    });
+  });
+
+  /** The population rule: a hero's own "Star Jump" set aside is not the seed Star Jump. */
+  test("a hero exercise sharing a seed name does not take the seed one out of the warm-up", async () => {
+    const info = t.sqlite
+      .prepare(
+        `INSERT INTO exercises (enName, frName, enDescription, frDescription, imagePath, creator,
+           difficulty, equipment, secondsPerRep)
+         VALUES ('Star Jump', 'Star Jump', '', '', '', 'hero', 'easy', 'none', 2)`,
+      )
+      .run();
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    exercises.invalidateExercisesCache();
+    try {
+      await setAsideApi().setExerciseAside(Number(info.lastInsertRowid));
+
+      expect((await exercises.unavailableMovements()).has("Star Jump")).toBe(false);
+    } finally {
+      t.sqlite.prepare("DELETE FROM exercises WHERE id = ?").run(Number(info.lastInsertRowid));
+      exercises.invalidateExercisesCache();
+    }
+  });
+
   test("put back, the slot serves it again", async () => {
     for (const day of [7, 8, 9]) logOnTarget(idOf("Wall Sit"), day, "time");
     await setAsideApi().setExerciseAside(idOf("Squat"));

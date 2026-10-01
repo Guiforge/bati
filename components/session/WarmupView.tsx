@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H3, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -267,23 +268,31 @@ export function WarmupView() {
       {/* Where issue #145 happened: a hero who cannot jump met Star Jump here, had only Next and
           Skip, and skipped every warm-up after. This sets the movement aside for good and moves
           on, so the next warm-up is built without it. A seed row only: the warm-up names nothing
-          else, and an unresolved name has nothing to set aside. */}
+          else, and an unresolved name has nothing to set aside.
+          A text action, the shape of the session's own "Replace": it acts for good, and stacked
+          as a second outline button over Skip it weighed the same as a one-off skip (UX audit
+          on #145). A failed write drops nothing, so the step stays where it was. */}
       {exercise ? (
-        <AppButton
+        <Pressable
           testID="session-warmup-not-for-me"
-          variant="outline"
+          hitSlop={12}
           onPress={() => {
             selection();
             setAside(exercise)
-              .then((names) => dropWarmupSteps(names))
+              .then((names) => {
+                if (names) dropWarmupSteps(names);
+              })
               .catch(() => {
                 // Reported by `useSetAside`, which never rejects.
               });
           }}
           accessibilityRole="button"
+          style={{ alignSelf: "center" }}
         >
-          {t("setAside.not_for_me")}
-        </AppButton>
+          <Text py="$2" fontSize={14} fontWeight="700" color="$textSecondary">
+            {t("setAside.not_for_me")}
+          </Text>
+        </Pressable>
       ) : null}
 
       {/* A control, and shaped like one: it used to be the smallest, dimmest text on the screen,

@@ -631,6 +631,23 @@ describe("useSessionStore", () => {
       expect(store.getState().timerDuration).toBe(PREP_SECONDS);
     });
 
+    test("a step already passed goes too, so Previous cannot walk back onto it", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      const [first, second] = store.getState().warmupSequence.map((s) => s.exerciseName);
+      assert(first && second);
+      store.getState().nextWarmupStep();
+      store.getState().nextWarmupStep();
+
+      store.getState().dropWarmupSteps(new Set([first]));
+      store.getState().previousWarmupStep();
+      store.getState().previousWarmupStep();
+
+      expect(store.getState().warmupSequence[store.getState().warmupIndex]?.exerciseName).toBe(
+        second,
+      );
+    });
+
     test("dropping the last step left ends the warm-up on the start screen", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");

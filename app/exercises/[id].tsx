@@ -610,9 +610,7 @@ function SetAsideCard({ exercise }: { exercise: Exercise }) {
   return (
     <Card>
       <YStack gap="$3">
-        {aside ? (
-          <Tag self="flex-start" label={t("setAside.set_aside_tag")} tone="secondary" />
-        ) : null}
+        {aside ? <Tag self="flex-start" label={t("setAside.set_aside_tag")} /> : null}
         <Text fontSize={14} color="$textSecondary">
           {t("setAside.hint")}
         </Text>
@@ -621,9 +619,15 @@ function SetAsideCard({ exercise }: { exercise: Exercise }) {
           variant="outline"
           onPress={() => {
             setAsideState(!aside);
-            (aside ? putBack(exercise) : setAside(exercise)).catch(() => {
-              // Reported by `useSetAside`, which never rejects.
-            });
+            // Shown at once, taken back if the write failed: the card must not claim a state the
+            // list does not hold.
+            (aside ? putBack(exercise) : setAside(exercise).then((done) => done !== null))
+              .then((ok) => {
+                if (!ok) setAsideState(aside);
+              })
+              .catch(() => {
+                // Reported by `useSetAside`, which never rejects.
+              });
           }}
         >
           {aside ? t("setAside.put_back") : t("setAside.set_aside")}

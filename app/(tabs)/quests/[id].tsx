@@ -456,7 +456,10 @@ export default function QuestDetails() {
   }, [config.level, updateConfig]);
 
   const applySwap = useCallback(
-    (questExerciseId: number, exercise: Exercise) => {
+    // `base` for the one caller whose config in state is already stale: setting an exercise
+    // aside rewrites saved configs underneath this screen, and pinning on top of the old one
+    // wrote back the swaps it had just dropped.
+    (questExerciseId: number, exercise: Exercise, base: QuestConfig = config) => {
       // The target override goes with the movement it was tuned for: "20" carried from push-ups
       // onto a one-arm push-up is a bad prescription, and a swap is the hero saying this movement
       // is not right for them. Dropped here rather than in `applyQuestConfig`, which stays a pure
@@ -465,13 +468,13 @@ export default function QuestDetails() {
       // key in a destructuring, and skipped this whole screen over it.
       const key = String(questExerciseId);
       const targets = Object.fromEntries(
-        Object.entries(config.targets ?? {}).filter(([id]) => id !== key),
+        Object.entries(base.targets ?? {}).filter(([id]) => id !== key),
       );
 
       updateConfig({
-        ...config,
+        ...base,
         targets,
-        swaps: { ...config.swaps, [key]: exercise.id },
+        swaps: { ...base.swaps, [key]: exercise.id },
       });
       setSwapFor(null);
     },
@@ -841,7 +844,16 @@ export default function QuestDetails() {
 
           {/* The configured quest, swaps included: it is what Start hands `startSession`, so
               the warm-up listed here is the one that plays. */}
-          {quest ? <WarmupPreview quest={quest} catalogue={catalogue} language={language} /> : null}
+          {/* Keyed on the set-aside list: the Replace sheet and a slot's "Put back" change it
+              without a focus event, and the preview re-reads its context on mount and focus. */}
+          {quest ? (
+            <WarmupPreview
+              key={[...setAsideIds].sort((a, b) => a - b).join(",")}
+              quest={quest}
+              catalogue={catalogue}
+              language={language}
+            />
+          ) : null}
 
           {quest ? (
             <YStack gap="$3">
@@ -958,13 +970,15 @@ export default function QuestDetails() {
               applySwap(swapSlot.id, exercise);
               return;
             }
-            // Set aside, then pin: both rewrite this quest's saved config, and `setAside` dropping
-            // swaps while the pin is still being written could drop the pin with them. The reload
+            // Set aside, then pin on the config as it now is on disk: setting aside drops saved
+            // swaps and targets naming the exercise, here and in every other quest, and pinning
+            // on the copy this screen read before would write them straight back. The reload
             // shows every other slot that served the exercise already replaced.
             const slotId = swapSlot.id;
             setAside(swapSlot.exercise)
-              .then(() => {
-                applySwap(slotId, exercise);
+              .then(() => getQuestConfig(questId))
+              .then((saved) => {
+                applySwap(slotId, exercise, saved ?? { level: config.level });
                 return load(questId, effectiveLevel);
               })
               .catch(() => {

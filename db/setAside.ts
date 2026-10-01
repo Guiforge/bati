@@ -2,6 +2,7 @@ import { ADMIN_CREATOR, type Exercise, listExercises } from "./exercises";
 import { preferences } from "./preferences";
 import { clearCached } from "./queryCache";
 import { getAllQuestConfigs, saveQuestConfig } from "./questConfig";
+import { listQuestTemplates } from "./quests";
 
 /**
  * The seeded exercises that leave the floor. Issue #145 was "I can't jump", and one jump set aside
@@ -45,20 +46,43 @@ export async function otherJumps(exercise: Exercise): Promise<Exercise[]> {
  * this exercise would hand it straight back. Those swaps are dropped here, once, instead of every
  * reader of a config having to know about the list. The slot falls back to the template, which
  * `resolveSlot` then substitutes.
+ *
+ * So are the target numbers saved on a slot that names the exercise: "20" was set for Jump Squat,
+ * and must not become 20 of whatever stands in for it. Only where the slot runs as written: a
+ * slot the hero swapped keeps its number, which was set for the swap.
+ *
+ * The configs first and the list last, so a write that fails halfway leaves the exercise off the
+ * list and the next attempt does the whole thing again.
  */
 export async function setExerciseAside(exerciseId: number, now = Date.now()): Promise<void> {
-  const list = await preferences.getSetAsideExercises();
-  if (list.some((e) => e.id === exerciseId)) return;
-  await preferences.setSetAsideExercises([...list, { id: exerciseId, at: now }]);
+  const [configs, templates] = await Promise.all([getAllQuestConfigs(), listQuestTemplates()]);
+  const writtenBy = new Map(
+    templates.flatMap((q) => q.exercises.map((s) => [String(s.id), s.exerciseId] as const)),
+  );
 
-  for (const [questId, config] of await getAllQuestConfigs()) {
-    const swaps = Object.entries(config.swaps ?? {});
-    if (!swaps.some(([, id]) => id === exerciseId)) continue;
-    const kept = Object.fromEntries(swaps.filter(([, id]) => id !== exerciseId));
+  for (const [questId, config] of configs) {
+    const swaps = config.swaps ?? {};
+    const keepSwap = ([, id]: [string, number]) => id !== exerciseId;
+    const keepTarget = ([slot]: [string, number]) =>
+      swaps[slot] !== undefined || writtenBy.get(slot) !== exerciseId;
+    const keptSwaps = Object.fromEntries(Object.entries(swaps).filter(keepSwap));
+    const keptTargets = Object.fromEntries(Object.entries(config.targets ?? {}).filter(keepTarget));
+    if (
+      Object.keys(keptSwaps).length === Object.keys(swaps).length &&
+      Object.keys(keptTargets).length === Object.keys(config.targets ?? {}).length
+    ) {
+      continue;
+    }
     await saveQuestConfig(questId, {
       ...config,
-      swaps: Object.keys(kept).length > 0 ? kept : undefined,
+      swaps: Object.keys(keptSwaps).length > 0 ? keptSwaps : undefined,
+      targets: Object.keys(keptTargets).length > 0 ? keptTargets : undefined,
     });
+  }
+
+  const list = await preferences.getSetAsideExercises();
+  if (!list.some((e) => e.id === exerciseId)) {
+    await preferences.setSetAsideExercises([...list, { id: exerciseId, at: now }]);
   }
 
   // A quest detail painted from cache would show the exercise for one frame, then swap.

@@ -116,10 +116,17 @@ What it changes:
   to X", because X is the one thing the hero asked never to be handed (`substitutedFor.setAside`).
 - **The warm-up.** `unavailableMovements()` includes the list, and a phase that runs out of its own
   pool fills from `NO_IMPACT` (Squat, Lunge, Bear Crawl, Glute Bridge), so a hero who sets every
-  jump aside keeps a full-length warm-up. A hero who sets nothing aside keeps the exact rotation.
+  jump aside keeps a full-length warm-up. The fallback only fills a phase that came up short, so a
+  phase that filled from its own pool keeps its rotation; one left short by missing kit or an
+  unreached rung, which used to shrink silently, now fills too.
 - **Saved swaps.** A quest-screen swap to the exercise is dropped when it is set aside
   (`db/setAside.ts`), because a config is applied after the slot is resolved and would hand it back.
 - **Jumps.** Setting one seeded jump aside offers the others (`JUMPING`).
+
+Mid-session, the Replace sheet's toggle swaps the current slot only; another slot of the same
+running session that serves the exercise keeps it until the next session is built. "Not for me"
+takes every step of the set-aside exercises out of the running warm-up, including any already
+passed, so Previous cannot walk back onto one.
 
 What it leaves alone: quests the hero wrote (they run as written, like the rung substitution),
 pickers the hero drives by hand (the quest editor, the oath), and the catalogue. Setting a lower

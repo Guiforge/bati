@@ -238,4 +238,30 @@ describe("WarmupView", () => {
 
     expect(getByText(howTo).props.numberOfLines).toBeUndefined();
   });
+
+  // Issue #145: the hero who cannot jump met the jump here and had only Next and Skip. "Not for
+  // me" sets it aside and takes it out of what is left, so the wait opens on the next movement.
+  it("Not for me takes the movement out of the warm-up and opens the wait before the next", async () => {
+    const [first, second] = WARMUP_SEQUENCE;
+    (listExercises as jest.Mock).mockResolvedValueOnce([
+      {
+        enName: first.exerciseName,
+        frName: first.exerciseName,
+        enDescription: "",
+        frDescription: "",
+        imagePath: "unknown",
+        creator: "Admin",
+      },
+    ]);
+
+    const { getByTestId } = await mountWarmup();
+    await act(async () => {
+      await fireEvent.press(getByTestId("session-warmup-not-for-me"));
+    });
+
+    const state = useSessionStore.getState();
+    expect(state.warmupSequence.map((s) => s.exerciseName)).not.toContain(first.exerciseName);
+    expect(state.warmupSequence[state.warmupIndex]?.exerciseName).toBe(second?.exerciseName);
+    expect(state.warmupPrep).toBe(true);
+  });
 });

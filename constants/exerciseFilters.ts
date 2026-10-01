@@ -241,6 +241,8 @@ export function setAsideReplacement(
   const pick = rankSwapCandidates(exercises, current, null).find(
     (c) =>
       (c.reason === "easier" || c.reason === "same_pattern" || c.reason === "same_family") &&
+      // Seed content only: a movement the hero wrote is theirs to put in a quest, not ours.
+      c.exercise.creator === ADMIN_CREATOR &&
       c.exercise.retiredAt === null &&
       !unavailable.has(c.exercise.id),
   );

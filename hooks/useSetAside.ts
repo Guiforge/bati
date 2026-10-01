@@ -33,8 +33,11 @@ export function useSetAside() {
     });
 
   return {
-    /** Resolves with the `enName`s set aside, so a running warm-up can drop every one of them. */
-    setAside(exercise: Exercise): Promise<ReadonlySet<string>> {
+    /**
+     * Resolves with the `enName`s set aside, so a running warm-up can drop every one of them, or
+     * `null` when the write failed, so a screen that already showed it set aside can take it back.
+     */
+    setAside(exercise: Exercise): Promise<ReadonlySet<string> | null> {
       return setAsideWithJumps(exercise, askAboutJumps).then(
         (done) => {
           const name = localizedName(exercise, language);
@@ -50,13 +53,18 @@ export function useSetAside() {
         },
         (error: unknown) => {
           reportError("setAside.write", error);
-          return new Set<string>();
+          return null;
         },
       );
     },
-    putBack(exercise: { id: number }): Promise<void> {
-      return putExerciseBack(exercise.id).catch((error: unknown) =>
-        reportError("setAside.putBack", error),
+    /** Resolves false when the write failed. */
+    putBack(exercise: { id: number }): Promise<boolean> {
+      return putExerciseBack(exercise.id).then(
+        () => true,
+        (error: unknown) => {
+          reportError("setAside.putBack", error);
+          return false;
+        },
       );
     },
   };

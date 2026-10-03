@@ -76,6 +76,8 @@
     "typescript": "~7.0.2"
   },
   "jest": {
+    "maxWorkers": "25%",
+    "workerIdleMemoryLimit": "1GB",
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/$1"
     },

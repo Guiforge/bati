@@ -358,6 +358,8 @@
     "import_choice_copy": "Conservar ambas",
     "import_movements": "Ejercicios que importar",
     "import_missing_movement": "Aún no está en tu versión de Bati",
+    "import_have": "Ya está en tus ejercicios",
+    "import_unticked_hint": "Un ejercicio sin marcar se queda fuera de la misión.",
     "import_none_kept": "Elige al menos un ejercicio.",
     "import_confirm": "Añadir a mis misiones",
     "import_confirm_update": "Actualizar mi misión"
@@ -752,6 +754,7 @@
     "bosses_title": "Jefes derrotados",
     "bosses_empty": "Los jefes que derrotes aparecerán aquí.",
     "bosses_standing": "Aún en pie",
+    "boss_standing_label": "Jefe invicto. Abre su aventura.",
     "own_quest": "Una misión tuya",
     "lead_empty": "Todavía no hay nada escrito. Cada récord de abajo está por conseguir: la primera repetición de un ejercicio siempre es un récord.",
     "lead_month_one": "{{count}} día de entrenamiento en {{month}}.",

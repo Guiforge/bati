@@ -11,6 +11,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useChorusStore } from "@/stores/chorus";
 import type { CameoBand } from "./cameoAnchor";
 import { useCueOwner } from "./useCueOwner";
+import { useGuideSeen } from "./useGuideSeen";
 import { useTypedLine } from "./useTypedLine";
 
 /**
@@ -47,6 +48,8 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
   // and an unfocused Village used to type (re-render every 24 ms) and dismiss other screens' cues.
   const mine = focused && current?.owner === "village" ? current : null;
   const { shown, rest, done } = useTypedLine(mine);
+  // Only once there is room to draw it: with no band the figure dismisses itself below.
+  useGuideSeen(band ? mine : null);
   const name = mine ? t(`villagers.names.${mine.villager}`) : "";
 
   // Focused but no room for a figure: nobody comes rather than someone over the title.

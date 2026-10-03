@@ -17,7 +17,14 @@ export default function Presentation() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { busy, runImport, secretRequest, submitSecret, cancelSecret } = useBackup();
+  const {
+    busy,
+    runImport,
+    secretRequest,
+    submitSecret,
+    cancelSecret,
+    dialog: backupDialog,
+  } = useBackup();
   const [cloudOpen, setCloudOpen] = useState(false);
   const { ask, dialog } = useConfirmDialog();
 
@@ -138,6 +145,7 @@ export default function Presentation() {
           the hero is asked whether their next backups should use it (useBackup `offerJoin`). */}
       <CloudRestoreLink open={cloudOpen} onClose={() => setCloudOpen(false)} />
       {dialog}
+      {backupDialog}
       <BackupSecretSheet request={secretRequest} onSubmit={submitSecret} onCancel={cancelSecret} />
     </YStack>
   );

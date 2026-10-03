@@ -15,6 +15,8 @@ jest.mock("@/db", () => ({
   preferences: {
     getRecentCameoLines: jest.fn().mockResolvedValue([]),
     setRecentCameoLines: jest.fn().mockResolvedValue(undefined),
+    getGuidesSeen: jest.fn().mockResolvedValue([]),
+    setGuidesSeen: jest.fn().mockResolvedValue(undefined),
   },
 }));
 jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));

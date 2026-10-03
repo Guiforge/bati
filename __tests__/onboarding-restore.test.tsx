@@ -21,6 +21,10 @@ jest.mock("@/hooks/useBackup", () => ({
     secretRequest: { open: false, wrong: false },
     submitSecret: jest.fn(),
     cancelSecret: jest.fn(),
+    // The hook's failure alert and join question: the screen must mount it, or they never show.
+    dialog: require("react").createElement(require("react-native").View, {
+      testID: "backup-dialog",
+    }),
   }),
 }));
 jest.mock("@/components/settings/BackupSecretSheet", () => ({ BackupSecretSheet: () => null }));
@@ -56,6 +60,11 @@ describe("onboarding restore", () => {
     expect(view.getByTestId("onboarding-restore")).toHaveTextContent("onboarding.restore_cta");
     expect(view.queryByTestId("onboarding-restore-backup")).toBeNull();
     expect(view.queryByTestId("onboarding-restore-cloud")).toBeNull();
+  });
+
+  it("mounts the backup's own dialog", async () => {
+    const view = await mount();
+    expect(view.getByTestId("backup-dialog")).toBeTruthy();
   });
 
   it("reaches the backup file from it", async () => {

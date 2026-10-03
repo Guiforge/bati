@@ -421,6 +421,7 @@
     "bosses_title": "Boss vaincus",
     "bosses_empty": "Les boss que tu vaincs arrivent ici.",
     "bosses_standing": "Encore debout",
+    "boss_standing_label": "Boss invaincu. Ouvre son aventure.",
     "own_quest": "Une quête à toi",
     "lead_empty": "Rien d'écrit pour l'instant. Chaque record ci-dessous est à prendre : la première rep d'un exercice est toujours un record.",
     "lead_month_one": "{{count}} jour d'entraînement en {{month}}.",
@@ -854,6 +855,8 @@
     "import_choice_copy": "Garder les deux",
     "import_movements": "Exercices à importer",
     "import_missing_movement": "Pas encore dans ta version de Bati",
+    "import_have": "Déjà dans tes exercices",
+    "import_unticked_hint": "Un exercice décoché est laissé de côté dans la quête.",
     "import_none_kept": "Garde au moins un exercice.",
     "import_confirm": "Ajouter à mes quêtes",
     "import_confirm_update": "Mettre ma quête à jour"

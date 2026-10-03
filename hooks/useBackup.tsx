@@ -1,9 +1,9 @@
 import type { File } from "expo-file-system";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
 
 import { useToast } from "@/components/common/Toast";
+import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { type BackupRejection, keepDeviceSettings, validateBackup } from "@/db/backup";
 import { useBugReport } from "@/hooks/useBugReport";
 import {
@@ -89,7 +89,8 @@ export function useBackup() {
   const { showSuccess, showError } = useToast();
   // A failure here is exactly the kind of report that used to arrive as a screenshot with no
   // cause — so every catch below offers the bug-report mail instead of a dead-end toast.
-  const { alertWithReport } = useBugReport();
+  const { alertWithReport, dialog: reportDialog } = useBugReport();
+  const { ask, dialog: joinDialog } = useConfirmDialog();
   const beginRestore = useRestoreStore((state) => state.beginRestore);
   const [busy, setBusy] = useState(false);
   // The folder automatic backups write into, as a label, or `null` when the feature is off.
@@ -125,21 +126,34 @@ export function useBackup() {
    * phone restoring their own history, and never silently, since a file someone else handed over
    * would otherwise make every later backup open with the giver's secret.
    */
+  // The native Alert outlived its screen; this dialog dies with it. Unmounted with the question
+  // open, the answer is "Not now": a pending one would hold `running`, and every backup action
+  // after it would be ignored until a restart. Here, not in useConfirmDialog: other callers'
+  // cancel records a decision (SyncPrompt's "keep"), which an unmount must not make for the hero.
+  const declineJoin = useRef<(() => void) | null>(null);
+  useEffect(() => () => declineJoin.current?.(), []);
+
   const offerJoin = useCallback(
     async (join: (options: { asPrimary: boolean }) => Promise<void>) => {
       if ((await encryptionStatus()) === "on") {
         await join({ asPrimary: false });
         return;
       }
-      const accepted = await new Promise<boolean>((resolve) =>
-        Alert.alert(t("backup.joinTitle"), t("backup.joinBody"), [
-          { text: t("backup.joinNo"), style: "cancel", onPress: () => resolve(false) },
-          { text: t("backup.joinYes"), onPress: () => resolve(true) },
-        ]),
-      );
+      const accepted = await new Promise<boolean>((resolve) => {
+        declineJoin.current = () => resolve(false);
+        ask({
+          title: t("backup.joinTitle"),
+          body: t("backup.joinBody"),
+          confirmLabel: t("backup.joinYes"),
+          cancelLabel: t("backup.joinNo"),
+          onConfirm: () => resolve(true),
+          // Hardware back is this too: the key is not adopted, and the restore goes ahead.
+          onCancel: () => resolve(false),
+        });
+      });
       if (accepted) await join({ asPrimary: true });
     },
-    [t],
+    [ask, t],
   );
 
   /**
@@ -306,6 +320,13 @@ export function useBackup() {
   // Returned as fire-and-forget handlers: both swallow their own failures into a toast, so a
   // caller has nothing to await and nothing to catch. It keeps the press handlers one-liners.
   return {
+    // The failure alert and the join question: every caller renders it once.
+    dialog: (
+      <>
+        {reportDialog}
+        {joinDialog}
+      </>
+    ),
     busy,
     autoFolder,
     secretRequest,

@@ -76,13 +76,12 @@ afterEach(() => {
 });
 
 describe("useScreenGuide", () => {
-  it("explains a screen the first time, and marks it met straight away", async () => {
+  it("explains a screen the first time, and leaves marking it met to the drawer", async () => {
     await mountAndSettle(() => useScreenGuide("guide_village"));
 
     await waitFor(() => expect(useChorusStore.getState().current?.moment).toBe("guide_village"));
-    // Marked as soon as it is raised, not when it finishes: a hero who leaves the screen
-    // mid-sentence has met the guide, and showing it again is the app not trusting them.
-    expect(prefs.setGuidesSeen).toHaveBeenCalledWith(["guide_village"]);
+    // Not here: a raised cue is not a drawn one (guide-seen-when-drawn.test.tsx, `useGuideSeen`).
+    expect(prefs.setGuidesSeen).not.toHaveBeenCalled();
   });
 
   it("never explains the same screen twice", async () => {
@@ -136,7 +135,6 @@ describe("useScreenGuide", () => {
     await mountAndSettle(() => useScreenGuide("guide_adventures"));
 
     expect(useChorusStore.getState().current?.moment).toBe("guide_adventures");
-    expect(prefs.setGuidesSeen).toHaveBeenCalledWith(["guide_adventures"]);
   });
 
   /**
@@ -159,16 +157,6 @@ describe("useScreenGuide", () => {
     await mountAndSettle(() => useScreenGuide("guide_adventures"));
 
     expect(useChorusStore.getState().current?.moment).toBe("guide_adventures");
-  });
-
-  it("keeps the other guides when one is met", async () => {
-    prefs.getGuidesSeen.mockResolvedValue(["guide_home"]);
-
-    await mountAndSettle(() => useScreenGuide("guide_quests"));
-
-    await waitFor(() =>
-      expect(prefs.setGuidesSeen).toHaveBeenCalledWith(["guide_home", "guide_quests"]),
-    );
   });
 });
 

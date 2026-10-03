@@ -171,6 +171,11 @@ export default function QuestImportScreen() {
               <Text fontWeight="700" fontSize={14} color="$textSecondary">
                 {t("quests.import_movements")}
               </Text>
+              {loaded.preview.slots.some((s) => s.available && !alreadyHere(s)) ? (
+                <Text fontSize={13} color="$textSecondary">
+                  {t("quests.import_unticked_hint")}
+                </Text>
+              ) : null}
               {loaded.file.slots.map((slot, i) => (
                 <SlotRow
                   // biome-ignore lint/suspicious/noArrayIndexKey: a file's slots have no id, and a movement can appear twice.
@@ -345,6 +350,11 @@ function ExistingQuest({
   );
 }
 
+/** Already on this phone (seed or the hero's own copy): it comes with the quest, nothing to choose. */
+function alreadyHere(preview: PreviewSlot | undefined): boolean {
+  return preview?.available === true && preview.exercise !== null;
+}
+
 /** One movement of the file, ticked to come in. A seed movement this version lacks cannot be. */
 function SlotRow({
   index,
@@ -368,6 +378,28 @@ function SlotRow({
   const official = "official" in slot.movement ? slot.movement.official : "";
   const label = exercise ? localizedName(exercise, language) : (own?.name ?? official);
   const target = preview?.target ?? { type: slot.target.type, value: slot.target.max };
+
+  if (exercise && alreadyHere(preview)) {
+    return (
+      <XStack testID={`quest-import-have-${index}`} gap="$3" items="center" p="$2">
+        <Image
+          source={getExerciseThumb(exercise.imagePath)}
+          style={{ width: 48, height: 48, borderRadius: 8 }}
+        />
+        <YStack flex={1}>
+          <Text color="$text" fontWeight="600" numberOfLines={2}>
+            {label}
+          </Text>
+          <Text fontSize={13} color="$textSecondary" numberOfLines={1}>
+            {formatTarget(target, language)}
+          </Text>
+          <Text fontSize={13} color="$textSecondary" numberOfLines={1}>
+            {t("quests.import_have")}
+          </Text>
+        </YStack>
+      </XStack>
+    );
+  }
 
   return (
     <Pressable

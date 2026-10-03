@@ -1,7 +1,9 @@
-import { act, renderHook } from "@testing-library/react-native";
-import { Alert } from "react-native";
+import { act, fireEvent, render, renderHook, screen } from "@testing-library/react-native";
+import { Alert, Pressable } from "react-native";
+import { TamaguiProvider } from "tamagui";
 
 import { useBugReport } from "@/hooks/useBugReport";
+import config from "@/tamagui.config";
 
 /**
  * What is pinned here is state, not navigation: the alert's report button must end in
@@ -50,6 +52,26 @@ jest.mock("@/src/reportError", () => ({
   reportError: (context: string) => mockReportedErrors.push(context),
 }));
 
+// biome-ignore lint/style/useComponentExportOnlyModules: a test file exports nothing
+function Probe() {
+  const { alertWithReport, dialog } = useBugReport();
+  return (
+    <>
+      <Pressable testID="fail" onPress={() => alertWithReport("backup.exportFailed")} />
+      {dialog}
+    </>
+  );
+}
+
+async function mountProbe() {
+  await render(
+    <TamaguiProvider config={config} defaultTheme="dark">
+      <Probe />
+    </TamaguiProvider>,
+  );
+  await fireEvent.press(screen.getByTestId("fail"));
+}
+
 beforeEach(() => {
   mockShownErrors.length = 0;
   mockOpened.length = 0;
@@ -69,34 +91,38 @@ describe("useBugReport", () => {
     expect(result.current.crashCount).toBe(1);
   });
 
-  test("alertWithReport shows the message with a close and a report button", async () => {
+  test("alertWithReport shows the message in the in-app dialog, with a close and a report button", async () => {
     const alertSpy = jest.spyOn(Alert, "alert");
-    const { result } = await renderHook(() => useBugReport());
+    await mountProbe();
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(screen.getByText("common.error")).toBeTruthy();
+    expect(screen.getByText("backup.exportFailed")).toBeTruthy();
+    expect(screen.getByText("common.close")).toBeTruthy();
+    expect(screen.getByText("feedback.report_cta")).toBeTruthy();
+  });
 
-    await act(() => {
-      result.current.alertWithReport("backup.exportFailed");
+  test("close dismisses it and nothing is opened; hardware back is the same", async () => {
+    await mountProbe();
+    await fireEvent.press(screen.getByTestId("confirm-dialog-cancel"));
+    expect(screen.queryByText("backup.exportFailed")).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("fail"));
+    await act(async () => {
+      await fireEvent(screen.getByTestId("confirm-dialog"), "requestClose");
+      await Promise.resolve();
     });
-
-    expect(alertSpy).toHaveBeenCalledWith("common.error", "backup.exportFailed", [
-      expect.objectContaining({ text: "common.close", style: "cancel" }),
-      expect.objectContaining({ text: "feedback.report_cta" }),
-    ]);
+    expect(screen.queryByText("backup.exportFailed")).toBeNull();
+    expect(mockOpened).toEqual([]);
   });
 
   test("the report button opens the built mailto in the hero's own mail app", async () => {
-    const alertSpy = jest.spyOn(Alert, "alert");
-    const { result } = await renderHook(() => useBugReport());
-
-    await act(() => {
-      result.current.alertWithReport("backup.exportFailed");
-    });
-    const buttons = alertSpy.mock.calls[0]?.[2];
+    await mountProbe();
     await act(async () => {
-      buttons?.[1]?.onPress?.();
+      await fireEvent.press(screen.getByTestId("confirm-dialog-confirm"));
       await Promise.resolve();
     });
-
     expect(mockOpened).toEqual(["mailto:test@example.com?subject=x"]);
+    expect(screen.queryByText("backup.exportFailed")).toBeNull();
   });
 
   test("a device with no visible mail app is told so, and nothing is opened", async () => {

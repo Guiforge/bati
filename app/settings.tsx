@@ -238,7 +238,7 @@ export default function SettingsScreen() {
   const hasNotes = releaseNotes(language).length > 0;
 
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
-  const { openBugReport, crashCount } = useBugReport();
+  const { openBugReport, crashCount, dialog: reportDialog } = useBugReport();
   const { showError, showSuccess } = useToast();
   const haptics = useHaptics();
   const { ask, dialog } = useConfirmDialog();
@@ -253,6 +253,7 @@ export default function SettingsScreen() {
     secretRequest,
     submitSecret,
     cancelSecret,
+    dialog: backupDialog,
   } = useBackup();
   // The confirmation lives here rather than in the hook: onboarding calls the same import with
   // no dialog, because at that point there is no history to lose. One writer, two entrances.
@@ -728,6 +729,8 @@ export default function SettingsScreen() {
 
       <BackupSecretSheet request={secretRequest} onSubmit={submitSecret} onCancel={cancelSecret} />
       {dialog}
+      {reportDialog}
+      {backupDialog}
     </YStack>
   );
 }

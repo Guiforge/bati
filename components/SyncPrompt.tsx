@@ -45,7 +45,7 @@ import { useSyncStore } from "@/stores/sync";
 export function SyncPrompt() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
-  const { runAdopt } = useBackup();
+  const { runAdopt, dialog: backupDialog } = useBackup();
   const result = useSyncStore((s) => s.result);
   const offered = useSyncStore((s) => s.offered);
   const markOffered = useSyncStore((s) => s.markOffered);
@@ -255,6 +255,7 @@ export function SyncPrompt() {
   return (
     <>
       {dialog}
+      {backupDialog}
       <BackupSecretSheet
         request={{ open: joining !== null, wrong: joining?.wrong ?? false }}
         title={t("sync.lockedTitle")}

@@ -7,7 +7,7 @@ import { Button, H1, H3, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Pause, SkipBack, SkipForward } from "@/components/icons";
 import { getExerciseAsset } from "@/constants/assetMap";
-import { PREP_SECONDS, switchesSides } from "@/constants/warmup";
+import { switchesSides } from "@/constants/warmup";
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -22,10 +22,10 @@ import { TimerBar } from "./TimerBar";
 /**
  * The dynamic warm-up, before the start screen (roadmap §14 H2).
  *
- * Every movement is two screens: the wait, which shows what the movement is before its clock
- * runs, then the movement itself. The wait is ten seconds or a tap on GO, whichever the hero chose
- * in Settings, and nothing advances by touch otherwise: a phone on the floor gets the whole
- * warm-up hands-free.
+ * The first movement is two screens: the wait, which shows what the movement is before its clock
+ * runs, then the movement itself. The ones after it start on their clock at once. The wait is
+ * ten seconds or a tap on GO, whichever the hero chose in Settings, and nothing advances by touch
+ * otherwise: a phone on the floor gets the whole warm-up hands-free.
  *
  * Movements come from the seeded catalogue, so their names and art are already bilingual and on
  * disk — nothing here is a second kind of content. Nothing is journaled either: the hero's
@@ -36,7 +36,6 @@ export function WarmupView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
-  const prepMode = useSettingsStore((s) => s.prepMode);
   const { selection, mediumImpact } = useHaptics();
 
   const warmupIndex = useSessionStore((s) => s.warmupIndex);
@@ -128,12 +127,9 @@ export function WarmupView() {
     : null;
   const switched = sided && remainingSeconds <= half;
 
-  // The whole warm-up still ahead, so "2 of 6" says how long it is rather than how many. The
-  // waits count only when they run on a clock: a wait for GO lasts as long as the hero wants.
-  const perWait = prepMode === "timer" ? PREP_SECONDS : 0;
-  const later = warmupSequence
-    .slice(warmupIndex + 1)
-    .reduce((sum, next) => sum + next.seconds + perWait, 0);
+  // The whole warm-up still ahead, so "2 of 6" says how long it is rather than how many. Only
+  // the first movement has a wait, so none is added for the ones after it.
+  const later = warmupSequence.slice(warmupIndex + 1).reduce((sum, next) => sum + next.seconds, 0);
   const left = Math.max(0, remainingSeconds) + (warmupPrep ? step.seconds : 0) + later;
 
   const isFirst = warmupIndex === 0;

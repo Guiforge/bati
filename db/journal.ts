@@ -1006,8 +1006,15 @@ export function readHits(
 const sortedHurt = (hurtBy: Map<string, KillHurt>) =>
   [...hurtBy.values()].sort((a, b) => b.damage - a.damage);
 
-/** The first boss campaign never won, in gallery order: the one still standing. */
-async function nextStandingBoss(): Promise<Localized | null> {
+export type StandingBoss = {
+  adventureId: number;
+  /** Tier 0: never won, so never fought again. */
+  title: Localized;
+  imagePath: string | null;
+};
+
+/** Every boss campaign never won, in gallery order: the ones still standing. */
+export async function getStandingBosses(): Promise<StandingBoss[]> {
   const won = await db
     .select({ adventureId: adventureRuns.adventureId })
     .from(adventureRuns)
@@ -1026,16 +1033,23 @@ async function nextStandingBoss(): Promise<Localized | null> {
     .from(adventures)
     .where(and(eq(adventures.kind, "boss"), eq(adventures.isActive, 1)))
     .orderBy(adventures.sortOrder, adventures.id);
-  const next = bosses.find((a) => !wonIds.has(a.id));
-  // Never won, so never fought again: tier 0.
-  return next
-    ? bossLocalizedName(next.bossImagePath ?? next.imagePath, 0, {
-        en: next.enTitle,
-        fr: next.frTitle,
-        de: next.deTitle,
-        es: next.esTitle,
-      })
-    : null;
+  return bosses
+    .filter((a) => !wonIds.has(a.id))
+    .map((a) => ({
+      adventureId: a.id,
+      title: bossLocalizedName(a.bossImagePath ?? a.imagePath, 0, {
+        en: a.enTitle,
+        fr: a.frTitle,
+        de: a.deTitle,
+        es: a.esTitle,
+      }),
+      imagePath: a.bossImagePath ?? a.imagePath,
+    }));
+}
+
+/** The first boss campaign never won: the one still standing. */
+async function nextStandingBoss(): Promise<Localized | null> {
+  return (await getStandingBosses())[0]?.title ?? null;
 }
 
 /**

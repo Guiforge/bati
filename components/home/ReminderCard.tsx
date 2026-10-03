@@ -1,9 +1,9 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
 import { Button, Text, XStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { Bell, ChevronRight, X } from "@/components/icons";
 import { dayKey } from "@/db/dates";
 import { reminderPrefs } from "@/db/reminders";
@@ -21,6 +21,7 @@ export function ReminderCard() {
   const router = useRouter();
   const haptics = useHaptics();
   const [kind, setKind] = useState<ReminderCardKind>(null);
+  const { ask, dialog } = useConfirmDialog();
 
   // On focus: coming back from Settings with days chosen takes the offer down.
   useFocusEffect(
@@ -69,52 +70,54 @@ export function ReminderCard() {
       openSettings();
       return;
     }
-    // ponytail: Android's own dialog rather than a Tamagui sheet, whose drag and whose
-    //           onOpenChange have both shipped bugs in this app. Three answers is its limit, and
-    //           three is what the question has. A sheet if a fourth answer ever joins.
-    Alert.alert(t("reminders.check"), undefined, [
-      {
-        text: t("reminders.check_change"),
-        onPress: () => {
-          answered();
-          openSettings();
-        },
+    // The three answers of the question: change (first), turn off (quiet), fine (cancel). Hardware
+    // back answers none of them: "fine" silences the question for a month, back only closes it.
+    ask({
+      title: t("reminders.check"),
+      body: "",
+      confirmLabel: t("reminders.check_change"),
+      extraLabel: t("reminders.check_off"),
+      cancelLabel: t("reminders.check_fine"),
+      onConfirm: () => {
+        answered();
+        openSettings();
       },
-      {
-        text: t("reminders.check_off"),
-        onPress: () => {
-          answered();
-          Reminders.setEnabled(false);
-          reminderPrefs
-            .setStreakFrom(today)
-            .then(replanRemindersNow)
-            .catch((error: unknown) => reportError("reminders.checkOff", error));
-        },
+      onExtra: () => {
+        answered();
+        Reminders.setEnabled(false);
+        reminderPrefs
+          .setStreakFrom(today)
+          .then(replanRemindersNow)
+          .catch((error: unknown) => reportError("reminders.checkOff", error));
       },
-      { text: t("reminders.check_fine"), onPress: answered },
-    ]);
+      onCancel: answered,
+      onDismiss: () => undefined,
+    });
   };
 
   return (
-    <Card testID={`home-reminder-${kind}`} mx="$4" mt="$3" py="$2" onPress={open}>
-      <XStack items="center" gap="$2">
-        <Bell size={16} color="$primaryText" />
-        <Text flex={1} fontSize="$3" color="$primaryText">
-          {t(kind === "check" ? "reminders.check" : "reminders.offer")}
-        </Text>
-        <ChevronRight size={16} color="$primaryText" />
-        <Button
-          testID="home-reminder-dismiss"
-          size="$2"
-          circular
-          chromeless
-          hitSlop={8}
-          onPress={close}
-          icon={<X size={18} color="$textSecondary" />}
-          accessibilityRole="button"
-          accessibilityLabel={t("common.close", "Close")}
-        />
-      </XStack>
-    </Card>
+    <>
+      <Card testID={`home-reminder-${kind}`} mx="$4" mt="$3" py="$2" onPress={open}>
+        <XStack items="center" gap="$2">
+          <Bell size={16} color="$primaryText" />
+          <Text flex={1} fontSize="$3" color="$primaryText">
+            {t(kind === "check" ? "reminders.check" : "reminders.offer")}
+          </Text>
+          <ChevronRight size={16} color="$primaryText" />
+          <Button
+            testID="home-reminder-dismiss"
+            size="$2"
+            circular
+            chromeless
+            hitSlop={8}
+            onPress={close}
+            icon={<X size={18} color="$textSecondary" />}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close", "Close")}
+          />
+        </XStack>
+      </Card>
+      {dialog}
+    </>
   );
 }

@@ -1,6 +1,7 @@
 # Design : l'échauffement montre avant de chronométrer
 
-Conçu le 10/09/2026, implémenté le 11/09/2026.
+Conçu le 10/09/2026, implémenté le 11/09/2026, révisé le 03/10/2026 (seul le premier mouvement
+attend, voir « Révision »).
 Status: IMPLEMENTED
 Code : `stores/session.ts` (`prepTimer`, `warmupPrep`, `loadWarmup`), `components/session/PrepView.tsx`,
 `components/session/WarmupView.tsx`, `components/session/CountdownView.tsx`,
@@ -40,7 +41,8 @@ L'app te dit tout **avant** que le chrono tourne, jamais pendant.
 ## Décisions (11/09/2026)
 
 1. **Un réglage, deux modes** : « Avant chaque mouvement : 10 s / Attendre GO » dans les paramètres.
-   Il vaut pour toutes les attentes, les transitions de l'échauffement comme l'écran de démarrage.
+   Il vaut pour l'attente du premier mouvement de l'échauffement et pour l'écran de démarrage
+   (depuis le 03/10, plus pour les transitions de l'échauffement).
    10 s par défaut : un échauffement se fait téléphone posé. Le store de séance lit le réglage à
    chaque transition (`prepTimer()`), donc un changement en pleine séance vaut à l'attente suivante.
 2. **L'épée disparaît** au profit d'un écran de démarrage : la peinture de la quête (ou du boss) en
@@ -58,19 +60,28 @@ L'app te dit tout **avant** que le chrono tourne, jamais pendant.
    matériel manquant) ne dépend pas de la quête : l'aperçu la relisait à chaque tap de niveau.
 2. **Démarrer** : attente du mouvement 1/6 (illustration, nom, description complète, 10 s ou GO).
 3. **Mouvement**, 30 s. Pour les mouvements d'un côté, « Change de côté » à mi-temps.
-4. **Attente du suivant**, et ainsi de suite. Suivant et Précédent mènent à une attente, jamais
-   directement au chrono.
+4. **Mouvement suivant**, chrono lancé tout de suite (`moveClock` dans `stores/session.ts`), et
+   ainsi de suite. Suivant et Précédent mènent au mouvement, chrono lancé, sans attente.
 5. **Écran de démarrage** avec le premier vrai exercice.
 
 ## Coût en temps (mode 10 s)
 
-| Échauffement | Avant | Avec l'attente |
-|---|---|---|
-| 4 mouvements (quête courte) | 2 min | 2 min 40 |
-| 11 mouvements (quête longue + poignets) | 5 min 30 | 7 min 20 |
+| Échauffement | Avant | Une attente par mouvement (11/09) | Une seule attente (03/10) |
+|---|---|---|---|
+| 4 mouvements (quête courte) | 2 min | 2 min 40 | 2 min 10 |
+| 11 mouvements (quête longue + poignets) | 5 min 30 | 7 min 20 | 5 min 40 |
 
 Reste dans les 5-10 min de la littérature (`docs/raw/bodyweight-app-research.md` §1). En mode
 « Attendre GO », c'est le rythme du joueur.
+
+## Révision (03/10/2026)
+
+L'audit du 03/10 a trouvé l'inverse du retour « hectic » : une attente avant chaque mouvement d'un
+échauffement continu faisait des minutes debout à attendre. Seul le premier mouvement garde son
+attente (10 s ou GO). Les suivants démarrent sur leur chrono dès la fin du précédent ; leur nom,
+leur illustration et leur description sont à l'écran pendant le mouvement, et la liste reste
+consultable avant de lancer sur la page de quête. L'aperçu et le « reste » de l'échauffement ne
+comptent plus qu'une attente.
 
 ## Laissé de côté
 

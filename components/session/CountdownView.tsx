@@ -27,6 +27,13 @@ const OVER_ART_SHADOW = {
 } as const;
 
 /**
+ * "Skip warm-up" sits where GO appears on this screen, so a double tap on it would start the
+ * first set unseen. GO ignores presses for this long after the screen appears (same idea as
+ * `DONE_GUARD_MS` in ActiveExerciseView).
+ */
+const GO_GUARD_MS = 700;
+
+/**
  * The session's first screen: what the hero is setting out against, and the first thing they
  * will do about it.
  *
@@ -55,6 +62,7 @@ export function CountdownView() {
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const { lightImpact, selection, success } = useHaptics();
   const prevSecondsRef = useRef(remainingSeconds);
+  const shownAt = useRef(Date.now());
   // No clock is a wait for GO (`prepTimer` in stores/session.ts), and its zero is not an ending.
   const timed = timerStartTimestamp !== null;
 
@@ -161,6 +169,7 @@ export function CountdownView() {
           target={formatTarget(first.target, language)}
           remainingSeconds={timed ? remainingSeconds : null}
           onGo={() => {
+            if (Date.now() - shownAt.current < GO_GUARD_MS) return;
             selection();
             finishCountdown();
           }}

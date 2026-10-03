@@ -9,7 +9,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { useToast } from "@/components/common/Toast";
-import { AlertTriangle, Check, ChevronLeft, Download } from "@/components/icons";
+import { Check, ChevronLeft, Download, Info } from "@/components/icons";
 import { getExerciseThumb, getQuestThumb } from "@/constants/assetMap";
 import type { QuestTemplate } from "@/db/quests";
 import { formatTarget } from "@/db/targets";
@@ -321,7 +321,8 @@ function ExistingQuest({
   return (
     <Card gap="$3" testID="quest-import-existing">
       <XStack gap="$2" items="center">
-        <AlertTriangle size={18} color="$warning" />
+        {/* Neutral: meeting a quest you already have is the normal case, not a warning. */}
+        <Info testID="quest-import-existing-icon" size={18} color="$textSecondary" />
         <Text flex={1} color="$text" fontWeight="700">
           {t("quests.import_existing", { title: localizedTitle(quest, language) })}
         </Text>

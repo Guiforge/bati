@@ -6,7 +6,7 @@ import { Avatar, Text, XStack, YStack } from "tamagui";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
-import { Castle } from "@/components/icons";
+import { Castle, Settings } from "@/components/icons";
 import { getAvatarSource } from "@/constants/avatars";
 import { getFlameLevel } from "@/db/streaks";
 import { formatCount } from "@/db/targets";
@@ -68,25 +68,45 @@ export function HomeHeader() {
       borderBottomWidth={1}
       borderColor="$borderStrong"
     >
-      {/* The avatar is the way to settings, and the only one: a gear badge on it made two gears
-          on one strip once the flame's disc was read as the second. */}
-      <Avatar
-        testID="home-settings"
-        circular
-        size={40}
-        // 40 is the design; 44×44 is the floor, and this is the only door to Settings. Same
-        // answer `AppIconButton` gives: hitSlop restores the hit area without moving a pixel.
-        hitSlop={2}
-        borderWidth={1}
-        borderColor="$borderStrong"
-        pressStyle={{ scale: 0.95 }}
-        onPress={() => router.push("/settings")}
-        accessibilityRole="button"
-        accessibilityLabel={t("home.open_settings_a11y", "Open settings")}
-      >
-        <Avatar.Image source={avatarSource} />
-        <Avatar.Fallback background="$primary" />
-      </Avatar>
+      {/* The avatar is the way to settings, and the only one. The gear badge is the cue for it
+          (the audit's first-launch strangers never found the door); it sits on the avatar's rim
+          and takes no touch, so the avatar is still the one target. */}
+      <YStack width={40} height={40}>
+        <Avatar
+          testID="home-settings"
+          circular
+          size={40}
+          // 40 is the design; 44x44 is the floor, and this is the only door to Settings. Same
+          // answer `AppIconButton` gives: hitSlop restores the hit area without moving a pixel.
+          hitSlop={2}
+          borderWidth={1}
+          borderColor="$borderStrong"
+          pressStyle={{ scale: 0.95 }}
+          onPress={() => router.push("/settings")}
+          accessibilityRole="button"
+          accessibilityLabel={t("home.open_settings_a11y", "Open settings")}
+        >
+          <Avatar.Image source={avatarSource} />
+          <Avatar.Fallback background="$primary" />
+        </Avatar>
+        <YStack
+          testID="home-settings-gear"
+          position="absolute"
+          r={-3}
+          b={-3}
+          width={18}
+          height={18}
+          rounded={9}
+          items="center"
+          justify="center"
+          bg="$surface"
+          borderWidth={1}
+          borderColor="$borderStrong"
+          pointerEvents="none"
+        >
+          <Settings size={11} color="$textSecondary" />
+        </YStack>
+      </YStack>
 
       {/* Identity here is progression, not the village name: the village owns its name */}
       <YStack flex={1} gap={4}>
@@ -185,12 +205,22 @@ export function HomeHeader() {
           onPress={() => router.push("/(tabs)/village")}
           accessibilityRole="button"
           accessibilityLabel={t("home.village_a11y", {
-            name: TIER_NAMES[tier][language],
+            name: `${TIER_NAMES[tier][language]}, ${t("village.tier", { tier })}`,
           })}
         >
           <Castle size={16} color="$textSecondary" />
-          <Text fontSize={11} fontWeight="700" color="$textSecondary">
-            {tier}
+          {/* "Tier 12", not a bare 12 next to a castle: the audit's strangers read it as a count.
+              Shrinks to fit the 44 dp cell, like the streak, instead of wrapping at large fonts. */}
+          <Text
+            testID="home-village-tier"
+            fontSize={10}
+            fontWeight="700"
+            color="$textSecondary"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
+            {t("village.tier", { tier })}
           </Text>
         </YStack>
       )}

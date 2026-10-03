@@ -34,6 +34,7 @@ const REST_ART = [
   require("../../assets/images/rest/rest_campfire_shadow.webp"),
 ];
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one screen, three rests (move, round, final) read top-to-bottom
 export function RestView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -81,6 +82,9 @@ export function RestView() {
   // tapped "skip". Same hands-free advance the warm-up and the countdown already do.
   // skipRest() re-checks the status itself, so a repeat render firing this is harmless.
   useEffect(() => {
+    // The final rest's clock is `FINAL_REST_SECONDS`, never shown (a dead countdown behind the
+    // last set was audit 2026-10-03): it ends on "See the results", or on its own for a hero who
+    // walked away, because the summary is what saves the session.
     if (status !== "resting" || remainingSeconds > 0) return;
     skipRest();
   }, [status, remainingSeconds, skipRest]);
@@ -96,6 +100,10 @@ export function RestView() {
   const nextExName = nextEx ? localizedName(nextEx.exercise, language) : "";
 
   const lastResult = results[results.length - 1];
+  // The set being corrected is the one just finished, not the up-next card's movement.
+  const lastExercise = quest.exercises.find(
+    (e) => e.exercise.id === lastResult?.exerciseId,
+  )?.exercise;
   const copy = restCopy(isFinal, isRoundRest);
   const onlyBeforeAMovement = isFinal ? "none" : "flex";
 
@@ -203,47 +211,48 @@ export function RestView() {
           style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1, justifyContent: "center", gap: 28 }}
         >
-          {/* Timer */}
-          <YStack items="center" gap="$2">
-            <H1 fontSize={112} fontWeight="700" fontFamily="$body" color="$text">
-              {formatTime(remainingSeconds)}
-            </H1>
-            <TimerBar
-              value={progress}
-              fill="$primary"
-              bg="$surface2"
-              borderWidth={1}
-              borderColor="$borderStrong"
-              style={{ maxWidth: 360 }}
-            />
-            {/* Nothing is coming to be ready for. The clock only says when the summary opens. */}
-            <XStack gap="$3" display={onlyBeforeAMovement}>
-              <Button
-                size="$3"
-                hitSlop={8}
-                bg="$surface"
+          {/* Timer. Not on the final rest: nothing is coming, so there is nothing to count to. */}
+          {!isFinal && (
+            <YStack items="center" gap="$2">
+              <H1 fontSize={112} fontWeight="700" fontFamily="$body" color="$text">
+                {formatTime(remainingSeconds)}
+              </H1>
+              <TimerBar
+                value={progress}
+                fill="$primary"
+                bg="$surface2"
                 borderWidth={1}
                 borderColor="$borderStrong"
-                onPress={() => handleAddRestTime(10)}
-              >
-                <Text fontWeight="700" color="$text">
-                  +10s
-                </Text>
-              </Button>
-              <Button
-                size="$3"
-                hitSlop={8}
-                bg="$surface"
-                borderWidth={1}
-                borderColor="$borderStrong"
-                onPress={() => handleAddRestTime(30)}
-              >
-                <Text fontWeight="700" color="$text">
-                  +30s
-                </Text>
-              </Button>
-            </XStack>
-          </YStack>
+                style={{ maxWidth: 360 }}
+              />
+              <XStack gap="$3">
+                <Button
+                  size="$3"
+                  hitSlop={8}
+                  bg="$surface"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  onPress={() => handleAddRestTime(10)}
+                >
+                  <Text fontWeight="700" color="$text">
+                    +10s
+                  </Text>
+                </Button>
+                <Button
+                  size="$3"
+                  hitSlop={8}
+                  bg="$surface"
+                  borderWidth={1}
+                  borderColor="$borderStrong"
+                  onPress={() => handleAddRestTime(30)}
+                >
+                  <Text fontWeight="700" color="$text">
+                    +30s
+                  </Text>
+                </Button>
+              </XStack>
+            </YStack>
+          )}
 
           {/* What the hero may do while the clock runs, held together by the tighter interval:
                 correct what was just logged, read what is next. Neither is the task. */}
@@ -251,7 +260,12 @@ export function RestView() {
             {/* Last Set Review, hidden after a skip. A skipped set writes no result, so
                   `results.at(-1)` is a set from an earlier round: the stepper would silently
                   correct something the hero is not looking at. */}
-            {!!lastResult && !lastSetSkipped && <LastSetCard result={lastResult} />}
+            {!!lastResult && !lastSetSkipped && (
+              <LastSetCard
+                result={lastResult}
+                name={lastExercise ? localizedName(lastExercise, language) : ""}
+              />
+            )}
 
             {/* Up Next Card. Tappable: the rest is the one moment reading is free, and the movement
               the hero is about to do is the one worth reading about. Same modal the running
@@ -358,7 +372,7 @@ function restCopy(isFinal: boolean, isRoundRest: boolean) {
  * Time-based sets record whatever the timer read when you tapped "done", often a few seconds off
  * from what you actually held. Same ± control as reps, stepped by 5s.
  */
-function LastSetCard({ result }: { result: CompletedExerciseInput }) {
+function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: string }) {
   const { t } = useTranslation();
   const { selection } = useHaptics();
   const updateLastResult = useSessionStore((s) => s.updateLastResult);
@@ -377,8 +391,9 @@ function LastSetCard({ result }: { result: CompletedExerciseInput }) {
     <YStack bg="$surface" p="$4" rounded="$6" borderWidth={1} borderColor="$borderStrong" gap="$2">
       <XStack justify="space-between" items="center" gap="$3">
         <YStack testID="rest-adjust-label" flex={1} shrink={1}>
+          {/* Names the set: "Up next" sits right below and would otherwise read as its subject. */}
           <Text color="$textSecondary" fontSize={12} fontWeight="700">
-            {isLastTimeBased ? t("session.adjust_seconds_label") : t("session.adjust_reps_label")}
+            {name}
           </Text>
           <Text fontSize={12} color="$textSecondary">
             {isLastTimeBased ? t("session.adjust_seconds_hint") : t("session.adjust_reps_hint")}

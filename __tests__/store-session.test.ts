@@ -11,9 +11,18 @@ import { computeSessionXp } from "@/db/xp";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { i18n } from "@/i18n";
 import { EMPTY } from "@/src/gps/track";
-import { useExpeditionStore } from "@/stores/expedition";
+import { bindSession, useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
-import { loadWarmup, useSessionStore } from "../stores/session";
+import { FINAL_REST_SECONDS, loadWarmup, useSessionStore } from "../stores/session";
+
+/** What the session store handed the expedition store when it loaded, read before any test runs. */
+const boundAtLoad = jest.mocked(bindSession).mock.calls[0]?.[0];
+
+// The real expedition store, with its `bindSession` watched: the session store calls it at load.
+jest.mock("@/stores/expedition", () => {
+  const actual = jest.requireActual("@/stores/expedition");
+  return { ...actual, bindSession: jest.fn(actual.bindSession) };
+});
 
 // Mock DB client to prevent actual SQLite initialization
 jest.mock("@/db/client", () => ({
@@ -297,7 +306,9 @@ describe("useSessionStore", () => {
 
     store.getState().completeExercise(40);
     expect(store.getState().status).toBe("resting");
-    expect(store.getState().timerDuration).toBe(30);
+    // No countdown is shown behind the last set, but it still has a clock: a hero who walks away
+    // reaches the summary (and the save) on their own, instead of resting until the snapshot expires.
+    expect(store.getState().timerDuration).toBe(FINAL_REST_SECONDS);
 
     store.getState().updateLastResult(55);
     // Ten seconds spent correcting it: the session ended at the set, not at the tap.
@@ -600,8 +611,9 @@ describe("useSessionStore", () => {
       expect(store.getState().timerDuration).toBe(WARMUP_SEQUENCE[0].seconds);
     });
 
-    // Zero seconds between two movements was the other half of the report.
-    test("it walks the sequence with a wait before every movement, then opens the start screen", async () => {
+    // Only the first movement has a wait: a get-ready countdown before each one made a
+    // continuous warm-up a series of standing waits (audit 2026-10-03).
+    test("it walks the sequence straight from movement to movement, then opens the start screen", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
 
@@ -610,24 +622,24 @@ describe("useSessionStore", () => {
         store.getState().nextWarmupStep();
         expect(store.getState().status).toBe("warmup");
         expect(store.getState().warmupIndex).toBe(i);
-        expect(store.getState().warmupPrep).toBe(true);
-        expect(store.getState().timerDuration).toBe(PREP_SECONDS);
+        expect(store.getState().warmupPrep).toBe(false);
+        expect(store.getState().timerDuration).toBe(WARMUP_SEQUENCE[i]?.seconds);
       }
 
-      store.getState().startWarmupMove();
       store.getState().nextWarmupStep();
       expect(store.getState().status).toBe("countdown");
       expect(store.getState().timerDuration).toBe(PREP_SECONDS);
     });
 
-    test("Next on a wait passes that movement for the wait before the one after", async () => {
+    test("Next on the first wait passes that movement for the second, already running", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
 
       store.getState().nextWarmupStep();
 
       expect(store.getState().warmupIndex).toBe(1);
-      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().warmupPrep).toBe(false);
+      expect(store.getState().timerStartTimestamp).not.toBeNull();
     });
 
     test("GO does nothing once the movement is running", async () => {
@@ -687,7 +699,7 @@ describe("useSessionStore", () => {
 
     // "Not for me" (issue #145): the movement in front of the hero, and every other step the
     // hero just set aside with it, leave what is left of this warm-up.
-    test("dropping steps takes them out of what is left and opens the wait before the next", async () => {
+    test("dropping steps takes them out of what is left and starts the next", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
       const before = store.getState().warmupSequence.map((s) => s.exerciseName);
@@ -702,8 +714,8 @@ describe("useSessionStore", () => {
         before.filter((name) => name !== first && name !== last),
       );
       expect(store.getState().warmupIndex).toBe(0);
-      expect(store.getState().warmupPrep).toBe(true);
-      expect(store.getState().timerDuration).toBe(PREP_SECONDS);
+      expect(store.getState().warmupPrep).toBe(false);
+      expect(store.getState().timerDuration).toBe(store.getState().warmupSequence[0]?.seconds);
     });
 
     test("a step already passed goes too, so Previous cannot walk back onto it", async () => {
@@ -748,7 +760,7 @@ describe("useSessionStore", () => {
       expect(store.getState().results).toEqual([]);
     });
 
-    test("stepping back returns to the wait before the previous movement", async () => {
+    test("stepping back returns to the previous movement, running", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
 
@@ -759,8 +771,8 @@ describe("useSessionStore", () => {
 
       expect(store.getState().status).toBe("warmup");
       expect(store.getState().warmupIndex).toBe(0);
-      expect(store.getState().warmupPrep).toBe(true);
-      expect(store.getState().timerDuration).toBe(PREP_SECONDS);
+      expect(store.getState().warmupPrep).toBe(false);
+      expect(store.getState().timerDuration).toBe(WARMUP_SEQUENCE[0]?.seconds);
     });
 
     test("stepping back on the first movement does nothing", async () => {
@@ -2093,4 +2105,13 @@ describe("what a session may claim it walked", () => {
 
     expect(outingSecondsToday).toHaveBeenCalledWith(77);
   });
+});
+
+// The expedition store cannot import this one (a require cycle), so this one hands itself over at
+// load. Without it the outing notification reads 0:00 forever and its Finish button does nothing.
+test("loading the session store binds the expedition store's bridge", () => {
+  // Captured once, at import: `clearAllMocks` in a beforeEach may have wiped the call since.
+  expect(boundAtLoad).toBeDefined();
+  expect(typeof boundAtLoad?.recordedSeconds()).toBe("number");
+  expect(typeof boundAtLoad?.completeOuting).toBe("function");
 });

@@ -18,6 +18,7 @@ import {
   type Localized,
   resolveAppLanguage,
 } from "@/src/i18n/deviceLanguage";
+import { pluralCategory } from "@/src/i18n/pluralRules";
 import { reportError } from "./reportError";
 
 // These used to be literals, because importing tamagui.config into a headless task drags in
@@ -106,8 +107,7 @@ type Lang = AppLanguage;
  */
 export function widgetUnit(lang: Lang, unit: "days" | "sessions", count: number | null): string {
   const forms = STRINGS[lang][unit];
-  const one = lang === "fr" ? count === 0 || count === 1 : count === 1;
-  return one ? forms.one : forms.other;
+  return pluralCategory(lang, count) === "one" ? forms.one : forms.other;
 }
 
 /** The app's own stored language, resolved by the same rule the app itself uses. */

@@ -40,6 +40,12 @@ jest.mock("@/db", () => ({ preferences: {} }));
 jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
 jest.mock("@/src/sounds", () => ({ playCue: jest.fn(), warm: jest.fn() }));
+// The key, with the time it was handed: "what is left" is asserted on its number.
+jest.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: { time?: string }) => (opts?.time ? `${key} ${opts.time}` : key),
+  }),
+}));
 
 async function mountWarmup() {
   let result!: ReturnType<typeof render>;
@@ -100,9 +106,9 @@ describe("WarmupView", () => {
     expect(useSessionStore.getState().warmupPrep).toBe(false);
   });
 
-  // Zero seconds between two movements is what four players described: the next one's clock
-  // started the instant the last one ended, before anyone had read what it was.
-  it("a movement that runs out opens the wait before the next one, not its clock", async () => {
+  // A get-ready countdown before every movement made a continuous warm-up a series of waits
+  // (audit 2026-10-03): only the first movement has one.
+  it("a movement that runs out starts the next one on its clock, with no wait", async () => {
     await mountWarmup();
 
     await act(() => {
@@ -110,8 +116,18 @@ describe("WarmupView", () => {
     });
 
     expect(useSessionStore.getState().warmupIndex).toBe(1);
-    expect(useSessionStore.getState().warmupPrep).toBe(true);
-    expect(useSessionStore.getState().timerDuration).toBe(PREP_SECONDS);
+    expect(useSessionStore.getState().warmupPrep).toBe(false);
+    expect(useSessionStore.getState().timerDuration).toBe(WARMUP_SEQUENCE[1]?.seconds);
+  });
+
+  // Only the first movement has a wait now (audit 2026-10-03), so the time still ahead adds none
+  // for the ones after it, even with the waits on a clock.
+  it("counts no wait in what is left after the current movement", async () => {
+    const { getByTestId } = await mountWarmup();
+
+    const total = WARMUP_SEQUENCE.reduce((sum, step) => sum + step.seconds, 0);
+    const clock = `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+    expect(getByTestId("warmup-left")).toHaveTextContent(new RegExp(clock));
   });
 
   /**
@@ -160,19 +176,19 @@ describe("WarmupView", () => {
    * timed view that never called `useCountdownCues`. The wait counts down the same way, so the
    * sounds of a warm-up are the sounds of the rest of a session: 3-2-1, then go, at every end.
    */
-  it("counts down the end of every movement and every wait, the same way", async () => {
+  it("counts down the end of every movement the same way", async () => {
     await mountWarmup();
 
     await tickSeconds(WARMUP_SEQUENCE[0].seconds);
     expect(cues()).toEqual(["tick", "tick", "tick", "go"]);
     expect(useSessionStore.getState().warmupIndex).toBe(1);
-    expect(useSessionStore.getState().warmupPrep).toBe(true);
+    expect(useSessionStore.getState().warmupPrep).toBe(false);
 
     (playCue as jest.Mock).mockClear();
-    await tickSeconds(PREP_SECONDS);
+    await tickSeconds(WARMUP_SEQUENCE[1]?.seconds ?? 0);
 
     expect(cues()).toEqual(["tick", "tick", "tick", "go"]);
-    expect(useSessionStore.getState().warmupPrep).toBe(false);
+    expect(useSessionStore.getState().warmupIndex).toBe(2);
   });
 
   // "Slide one arm under the other", and nothing about the other arm: thirty seconds of one side.
@@ -241,7 +257,7 @@ describe("WarmupView", () => {
 
   // Issue #145: the hero who cannot jump met the jump here and had only Next and Skip. "Not for
   // me" sets it aside and takes it out of what is left, so the wait opens on the next movement.
-  it("Not for me takes the movement out of the warm-up and opens the wait before the next", async () => {
+  it("Not for me takes the movement out of the warm-up and starts the next", async () => {
     const [first, second] = WARMUP_SEQUENCE;
     (listExercises as jest.Mock).mockResolvedValueOnce([
       {
@@ -262,6 +278,6 @@ describe("WarmupView", () => {
     const state = useSessionStore.getState();
     expect(state.warmupSequence.map((s) => s.exerciseName)).not.toContain(first.exerciseName);
     expect(state.warmupSequence[state.warmupIndex]?.exerciseName).toBe(second?.exerciseName);
-    expect(state.warmupPrep).toBe(true);
+    expect(state.warmupPrep).toBe(false);
   });
 });

@@ -71,9 +71,9 @@ export function WarmupPreview({
   // Off in Settings, or an outing: nothing will play, so nothing is announced.
   if (steps.length === 0) return null;
 
-  // The waits count only when they run on a clock, same as the warm-up's own "left" line.
-  const perWait = prepMode === "timer" ? PREP_SECONDS : 0;
-  const seconds = steps.reduce((sum, step) => sum + step.seconds + perWait, 0);
+  // Only the first movement has a wait, and only when it runs on a clock.
+  const firstWait = prepMode === "timer" ? PREP_SECONDS : 0;
+  const seconds = steps.reduce((sum, step) => sum + step.seconds, firstWait);
 
   return (
     <Card testID="quest-warmup" gap="$3">

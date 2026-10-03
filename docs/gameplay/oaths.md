@@ -92,6 +92,8 @@ an oath — the weight of the commitment is the point.
 The default path is a deck of ready-made oaths (`OATH_PRESETS` in [db/oaths.ts](../../db/oaths.ts))
 — tap one and it's sworn, no target to guess. Exercise presets name their exercise by `enName`
 (stable seed content); the screen resolves the id and drops any preset whose exercise is absent.
+A preset whose target the hero has passed climbs to the next multiple of its own step, and one
+within a tenth of that line (547 of 550) is offered the step after (`standingForPreset`).
 A "custom oath" toggle reveals the original metric/target/exercise form for exact targets.
 
 ## Surfaces

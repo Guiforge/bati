@@ -6,6 +6,7 @@ import { TamaguiProvider } from "tamagui";
 import "@/i18n";
 import QuestImportScreen from "@/app/quest-import";
 import { ImportQuestButton } from "@/components/quests/QuestFileButtons";
+import { rawColors } from "@/constants/rawColors";
 import type { QuestTemplate } from "@/db/quests";
 import { holdIncomingFile, incomingFile } from "@/src/incomingFile";
 import { parseQuestFile, type QuestFile, QuestFileError, type QuestPreview } from "@/src/questFile";
@@ -227,6 +228,10 @@ test("a quest the hero has says it will update, and keeping both imports under a
   expect(screen.getByTestId("quest-import-existing")).toBeTruthy();
   expect(screen.getByText("You already have this quest: Iron Dawn")).toBeTruthy();
   expect(screen.getByText("Update my quest")).toBeTruthy();
+  // Meeting a quest you already have is the normal case: a neutral icon, not the amber warning.
+  const icon = screen.getByTestId("quest-import-existing-icon");
+  expect(icon.props.stroke).toBe(rawColors.textSecondary);
+  expect(icon.props.stroke).not.toBe(rawColors.warning);
 
   await fireEvent.press(screen.getByTestId("quest-import-copy"));
   expect(screen.queryByText("Update my quest")).toBeNull();

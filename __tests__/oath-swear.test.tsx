@@ -117,10 +117,7 @@ test("tapping a preset swears that preset, then closes the screen", async () => 
 });
 
 test("an oath in force is not overwritten until the hero confirms", async () => {
-  let destructive: (() => void) | undefined;
-  const alert = jest.spyOn(Alert, "alert").mockImplementation((_title, _body, buttons) => {
-    destructive = buttons?.find((b) => b.style === "destructive")?.onPress as () => void;
-  });
+  const alert = jest.spyOn(Alert, "alert");
   mockGetOathProgress.mockResolvedValue(OATH_IN_FORCE);
   mockSwearOath.mockResolvedValue(undefined);
   await renderScreen();
@@ -129,15 +126,27 @@ test("an oath in force is not overwritten until the hero confirms", async () => 
 
   await fireEvent.press(screen.getByTestId("oath-preset"));
 
-  expect(alert).toHaveBeenCalledTimes(1);
+  // The app's own dialog, not the grey native one.
+  expect(alert).not.toHaveBeenCalled();
+  expect(screen.getByTestId("confirm-dialog-confirm")).toBeVisible();
   expect(mockSwearOath).not.toHaveBeenCalled();
   expect(mockBack).not.toHaveBeenCalled();
 
-  await act(async () => destructive?.());
+  await act(async () => fireEvent.press(screen.getByTestId("confirm-dialog-confirm")));
 
   expect(mockSwearOath).toHaveBeenCalledTimes(1);
   expect(mockBack).toHaveBeenCalledTimes(1);
   alert.mockRestore();
+});
+
+test("cancelling the replacement swears nothing", async () => {
+  mockGetOathProgress.mockResolvedValue(OATH_IN_FORCE);
+  await renderScreen();
+  expect(await screen.findByText("8 / 15")).toBeVisible();
+  await fireEvent.press(screen.getByTestId("oath-preset"));
+  await fireEvent.press(screen.getByTestId("confirm-dialog-cancel"));
+  expect(mockSwearOath).not.toHaveBeenCalled();
+  expect(screen.queryByTestId("confirm-dialog-confirm")).toBeNull();
 });
 
 test("a save that fails keeps the screen open", async () => {

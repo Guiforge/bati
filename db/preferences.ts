@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { getLocales } from "expo-localization";
 import { db, schema, type TransactionTx } from "./client";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
@@ -17,6 +18,19 @@ export type DistanceUnit = "metric" | "imperial";
 
 function isDistanceUnit(value: string | null): value is DistanceUnit {
   return value === "metric" || value === "imperial";
+}
+
+/**
+ * What the device says the hero measures in, for a hero who never chose. The one place that asks:
+ * language does the same through `resolveAppLanguage`. `us` and `uk` both road-sign in miles.
+ */
+function deviceDistanceUnit(): DistanceUnit {
+  try {
+    const system = getLocales()[0]?.measurementSystem;
+    return system === "us" || system === "uk" ? "imperial" : "metric";
+  } catch {
+    return "metric";
+  }
 }
 
 /**
@@ -312,12 +326,13 @@ export const preferences = {
    * converted number anywhere durable would leave a column whose unit depends on a preference
    * the hero can change afterwards, which is `db/workUnits.ts`'s bug one storey up.
    *
-   * Metric is the default rather than the device's locale: `expo-localization` reports a region,
-   * and a region is a poor guess at how someone measures a run. The row in Settings is one tap.
+   * Until the hero picks, the device answers (`deviceDistanceUnit`): a US phone read kilometres
+   * on a fresh install while the language already followed the device. The row in Settings is
+   * one tap, and a stored choice always wins.
    */
   async getDistanceUnit(): Promise<DistanceUnit> {
     const value = await getPreference("distanceUnit");
-    return isDistanceUnit(value) ? value : "metric";
+    return isDistanceUnit(value) ? value : deviceDistanceUnit();
   },
 
   async setDistanceUnit(unit: DistanceUnit): Promise<void> {

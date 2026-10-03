@@ -191,11 +191,15 @@ the spot. "Keep it" is part of the crash-recovery snapshot (`longHoldKept`).
 Done is also ignored for 700 ms after a new exercise appears, so a late tap meant for GO or "I'm
 ready" cannot log a set. At 0 HP the boss is announced down and the crit and weak-point lines go.
 
-**After the last set**: the same screen, titled "Last Set" / "Dernière série", so the final count
-can be corrected like every other one before the victory screen saves it. No up-next card, no
-+time, no countdown beeps; the CTA reads "See the results" and the clock hands over to the victory
-screen on its own. It follows the quest's `restSeconds` like any rest (none when that is 0), is
-skipped after a skipped or outdoor set, and its seconds are taken off the session's duration.
+**After the last set**: the same screen, titled "Check your last set" / "Vérifie ta dernière série", so
+the final count can be corrected like every other one before the victory screen saves it. No
+up-next card, no +time, no countdown and no beeps (nothing is coming, so no clock is shown). The
+way on is "See the results", which also settles an unanswered runaway hold. Its clock still runs,
+unseen: `FINAL_REST_SECONDS` (5 min) and the summary opens on its own, because the summary is what
+saves the session, and a hero who walked away must not rest until the recovery snapshot expires.
+The adjust row names the set it corrects. It exists only when the quest has a `restSeconds` (none
+when that is 0), is skipped after a skipped or outdoor set, and its seconds are taken off the
+session's duration.
 
 ---
 

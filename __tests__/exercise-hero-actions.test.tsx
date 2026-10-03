@@ -1,4 +1,5 @@
-import { act, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Alert } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
 import ExerciseDetails from "@/app/exercises/[id]";
@@ -103,6 +104,7 @@ describe("hero movement actions", () => {
   beforeEach(() => {
     mockGetExerciseById.mockResolvedValue(heroMovement);
     mockGetExerciseUsage.mockReset();
+    jest.requireMock("@/db").preferences.getSetAsideExercises.mockResolvedValue([]);
   });
 
   it("offers delete only for a movement nothing has ever used", async () => {
@@ -176,5 +178,68 @@ describe("hero movement actions", () => {
     expect(screen.queryByTestId("exercise-retire")).toBeNull();
     expect(screen.queryByTestId("exercise-delete")).toBeNull();
     expect(screen.getByTestId("exercise-edit")).toBeTruthy();
+  });
+
+  // "Don't suggest again" led a hero-made movement's page, above Edit (audit 2026-10-03). They
+  // chose the movement; retire is theirs to use, and the page opens on Edit.
+  it("leaves out 'Don't suggest again' on a hero movement and leads with Edit", async () => {
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0, preferenceRows: 0 });
+
+    const screen = await mountDetails();
+
+    await waitFor(() => expect(screen.getByTestId("exercise-edit")).toBeTruthy());
+    expect(screen.queryByTestId("exercise-set-aside")).toBeNull();
+  });
+
+  // Set aside before the button left hero movements: hiding the card took the only way back too.
+  it("still lets a hero movement already set aside be put back", async () => {
+    const { preferences } = jest.requireMock("@/db");
+    preferences.getSetAsideExercises.mockResolvedValue([{ id: 77 }]);
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0, preferenceRows: 0 });
+
+    const screen = await mountDetails();
+
+    await waitFor(() => expect(screen.getByTestId("exercise-put-back")).toBeTruthy());
+  });
+
+  it("still offers it on seed content", async () => {
+    mockGetExerciseById.mockResolvedValue({ ...heroMovement, creator: "Admin" });
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0, preferenceRows: 0 });
+
+    const screen = await mountDetails();
+
+    await waitFor(() => expect(screen.getByTestId("exercise-set-aside")).toBeTruthy());
+  });
+
+  it("confirms in the app's own dialog, not the native alert", async () => {
+    const alert = jest.spyOn(Alert, "alert");
+    const { retireUserExercise } = jest.requireMock("@/db");
+    retireUserExercise.mockResolvedValue(undefined);
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 3, questRows: 0, preferenceRows: 0 });
+    const screen = await mountDetails();
+    await waitFor(() => expect(screen.getByTestId("exercise-retire")).toBeTruthy());
+
+    await act(async () => fireEvent.press(screen.getByTestId("exercise-retire")));
+
+    expect(alert).not.toHaveBeenCalled();
+    expect(screen.getByText("Retire this exercise?")).toBeTruthy();
+    expect(retireUserExercise).not.toHaveBeenCalled();
+
+    await act(async () => fireEvent.press(screen.getByTestId("confirm-dialog-confirm")));
+    expect(retireUserExercise).toHaveBeenCalledWith(77);
+    alert.mockRestore();
+  });
+
+  it("cancels without acting", async () => {
+    const { deleteUserExercise } = jest.requireMock("@/db");
+    deleteUserExercise.mockClear();
+    mockGetExerciseUsage.mockResolvedValue({ completedRows: 0, questRows: 0, preferenceRows: 0 });
+    const screen = await mountDetails();
+    await waitFor(() => expect(screen.getByTestId("exercise-delete")).toBeTruthy());
+
+    await act(async () => fireEvent.press(screen.getByTestId("exercise-delete")));
+    await act(async () => fireEvent.press(screen.getByTestId("confirm-dialog-cancel")));
+
+    expect(deleteUserExercise).not.toHaveBeenCalled();
   });
 });

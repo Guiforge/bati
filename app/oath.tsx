@@ -1,7 +1,7 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView as RNScrollView } from "react-native";
+import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -11,6 +11,7 @@ import { GameIcon } from "@/components/common/GameIcon";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { useToast } from "@/components/common/Toast";
+import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { ChevronRight, PenLine } from "@/components/icons";
 import { useOathText } from "@/components/oath/useOathText";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
@@ -295,6 +296,7 @@ export default function OathScreen() {
   const [standings, setStandings] = useState<Map<string, PresetStanding>>(new Map());
   const { showError, showSuccess } = useToast();
   const { success } = useHaptics();
+  const { ask, dialog } = useConfirmDialog();
 
   useEffect(() => {
     getOathProgress()
@@ -438,29 +440,25 @@ export default function OathScreen() {
   const confirmThenSwear = useCallback(
     (input: Parameters<typeof swearOath>[0]) => {
       if (existing && !existing.isFulfilled) {
-        Alert.alert(
-          t("oath.replace_title", "Replace your current oath?"),
-          t("oath.replace_body", "The oath in force and its progress will be abandoned."),
-          [
-            { text: t("common.cancel", "Cancel"), style: "cancel" },
-            {
-              text: t("oath.replace_confirm", "Swear the new oath"),
-              style: "destructive",
-              onPress: () => {
-                performSwear(input).catch(() => {
-                  // Errors already surfaced via showError above
-                });
-              },
-            },
-          ],
-        );
+        ask({
+          title: t("oath.replace_title", "Replace your current oath?"),
+          body: t("oath.replace_body", "The oath in force and its progress will be abandoned."),
+          cancelLabel: t("common.cancel", "Cancel"),
+          confirmLabel: t("oath.replace_confirm", "Swear the new oath"),
+          destructive: true,
+          onConfirm: () => {
+            performSwear(input).catch(() => {
+              // Errors already surfaced via showError above
+            });
+          },
+        });
         return;
       }
       performSwear(input).catch(() => {
         // Errors already surfaced via showError above
       });
     },
-    [existing, performSwear, t],
+    [existing, performSwear, t, ask],
   );
 
   const swearPreset = useCallback(
@@ -512,31 +510,27 @@ export default function OathScreen() {
   }, [metric, target, exerciseId, weeklyTarget, confirmThenSwear, t, exercises]);
 
   const abandon = useCallback(() => {
-    Alert.alert(
-      t("oath.abandon_title", "Abandon this oath?"),
-      t("oath.abandon_body", "Its progress will be lost."),
-      [
-        { text: t("common.cancel", "Cancel"), style: "cancel" },
-        {
-          text: t("oath.abandon", "Abandon"),
-          style: "destructive",
-          onPress: () => {
-            breakOath()
-              .then(() => {
-                // Breaking the oath drops the quota back to the baseline — same redraw
-                // contract as swearing one.
-                requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
-                router.back();
-              })
-              .catch((e) => {
-                reportError("oath.abandon", e);
-                showError(t("oath.save_error", "Could not save the oath"));
-              });
-          },
-        },
-      ],
-    );
-  }, [router, showError, t]);
+    ask({
+      title: t("oath.abandon_title", "Abandon this oath?"),
+      body: t("oath.abandon_body", "Its progress will be lost."),
+      cancelLabel: t("common.cancel", "Cancel"),
+      confirmLabel: t("oath.abandon", "Abandon"),
+      destructive: true,
+      onConfirm: () => {
+        breakOath()
+          .then(() => {
+            // Breaking the oath drops the quota back to the baseline, same redraw
+            // contract as swearing one.
+            requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
+            router.back();
+          })
+          .catch((e) => {
+            reportError("oath.abandon", e);
+            showError(t("oath.save_error", "Could not save the oath"));
+          });
+      },
+    });
+  }, [router, showError, t, ask]);
 
   return (
     <YStack testID="oath-screen" flex={1} bg="$background" pt={insets.top}>
@@ -680,6 +674,7 @@ export default function OathScreen() {
           ) : null}
         </YStack>
       </RNScrollView>
+      {dialog}
     </YStack>
   );
 }

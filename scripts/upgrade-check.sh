@@ -40,8 +40,13 @@ figures() {
   # What is on screen, not what is in the table: a level is computed, and a computation is what
   # an update can change without touching a row.
   echo "level=$(grep -oE '(Level|Niveau|Stufe|Nivel) [0-9]+' "$dump" | head -1 || true)"
-  echo "flame=$(grep -oE 'resource-id="[^"]*home-streak-days"[^>]*text="[^"]*"' "$dump" \
-    | grep -oE 'text="[^"]*"' | head -1 || true)"
+  # The flame and the village by their spoken labels: a release build drops `testID` from the
+  # accessibility tree, and the label is what a screen reader says, so it is also what is stable.
+  echo "flame=$(grep -oE 'content-desc="[0-9]+-day flame"' "$dump" | head -1 || true)"
+  # Its name only: the name comes from the tier, so it freezes the tier, while the rest of the label
+  # ("Tier 11. Open the village") is copy that a release is free to reword.
+  echo "village=$(grep -oE 'content-desc="[^"]*Open the village"' "$dump" | head -1 \
+    | sed -E 's/content-desc="([^.,"]*).*/\1/' || true)"
 }
 
 # Fails, listing each figure that differs, unless `after` equals `before` on every line they share.

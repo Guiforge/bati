@@ -41,6 +41,7 @@ beforeEach(() => {
   git("config", "user.email", "t@example.com");
   git("config", "user.name", "t");
   git("config", "commit.gpgsign", "false");
+  git("config", "core.hooksPath", "/dev/null");
   git("config", "tag.gpgsign", "false");
   commit({ "0000_schema.sql": "CREATE TABLE a (x);" }, "first");
 });

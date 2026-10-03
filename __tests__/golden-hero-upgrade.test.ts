@@ -21,7 +21,7 @@ import { clientMock } from "./helpers/testDb";
  * that, on a database with three years in it, quietly recomputes or drops something. This is the
  * test that can, and `backup-compat.test.ts` (one session, one point) does not.
  *
- * Every point of the journal from 2 on, the first with quests to cycle through; the seed runs
+ * The points of the journal from 2 on (the first with quests to cycle through), sampled below; the seed runs
  * the same SQL the dev seeder does (`historyStatements`), written with the columns every schema
  * since 0000 has.
  *
@@ -36,7 +36,7 @@ import { clientMock } from "./helpers/testDb";
  *  - From `FULL_EQUALITY_FROM` on, nothing legitimate differs: the whole hero is the golden hero.
  *    Move it down when content stops changing; never up to make a failure go away.
  */
-const FULL_EQUALITY_FROM = 54;
+const FULL_EQUALITY_FROM = 54; // sampled points only: 54 is not one, 56 is the first
 
 const golden = JSON.parse(
   fs.readFileSync(path.join(__dirname, "golden", "hero-3-years.json"), "utf8"),
@@ -45,7 +45,12 @@ const golden = JSON.parse(
 const journal: { entries: { idx: number }[] } = JSON.parse(
   fs.readFileSync(path.join(process.cwd(), "drizzle", "meta", "_journal.json"), "utf8"),
 );
-const points = journal.entries.map((e) => e.idx).filter((idx) => idx >= 2);
+// Not every point: each one replays the whole journal twice, so the cost of the file grows with
+// the square of the journal and every migration would add a slower test. The first point with
+// quests, every third one, and always the last ten, where a migration is most likely to have just
+// moved something. `backup-compat.test.ts` still visits every point with one session.
+const all = journal.entries.map((e) => e.idx).filter((idx) => idx >= 2);
+const points = all.filter((_, i) => i === 0 || i % 3 === 0 || i >= all.length - 10);
 
 function scalar(sqlite: Database.Database, query: string): number {
   return (sqlite.prepare(query).get() as { n: number }).n;

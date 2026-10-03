@@ -639,11 +639,21 @@ describe("writePreMigrationCopy: the net under an update", () => {
     expect(fs.__disk.has(at("premigrate.tmp.db"))).toBe(false);
   });
 
-  test("a second update replaces the first copy instead of piling up or failing", async () => {
+  test("a second update replaces the first copy and keeps it as the previous one", async () => {
     write("premigrate.db", "the previous update's copy");
     await writePreMigrationCopy();
 
     expect(fs.__disk.get(at("premigrate.db"))).toBe("snapshot");
+    expect(fs.__disk.get(at("premigrate.prev.db"))).toBe("the previous update's copy");
+  });
+
+  test("a third update drops the oldest, so it never grows past two", async () => {
+    write("premigrate.db", "second");
+    write("premigrate.prev.db", "first");
+    await writePreMigrationCopy();
+
+    expect(fs.__disk.get(at("premigrate.prev.db"))).toBe("second");
+    expect(fs.__disk.has(at("premigrate.tmp.db"))).toBe(false);
   });
 
   test("a copy that dies halfway leaves no temp file that looks like a safety net", async () => {

@@ -88,11 +88,13 @@ function deleteIfPresent(name: string) {
 
 /**
  * The copy taken before a migration runs, in the database's own directory. Not `EXPORT_PREFIX`:
- * the export sweeps delete everything under that one, and this must outlive them. One file, the
- * newest, because what it answers is "what did this database look like just before the update".
+ * the export sweeps delete everything under that one, and this must outlive them. The newest and
+ * the one before: "what did this database look like just before the update", and the update before.
  */
 const PREMIGRATE_NAME = "premigrate.db";
 const PREMIGRATE_TMP = "premigrate.tmp.db";
+/** The copy before the update before. A migration that damages data is often noticed one update later. */
+const PREMIGRATE_PREVIOUS = "premigrate.prev.db";
 
 /**
  * Copies the database aside so an update that succeeds and still destroys something leaves a way
@@ -105,6 +107,11 @@ export async function writePreMigrationCopy(): Promise<void> {
   deleteIfPresent(PREMIGRATE_TMP);
   try {
     await snapshotDatabaseTo(pathIn(PREMIGRATE_TMP));
+    // Two generations. The newest alone would let the update after a damaging one replace the
+    // only good copy with the damaged one.
+    if (fileIn(PREMIGRATE_NAME).exists) {
+      await fileIn(PREMIGRATE_NAME).move(fileIn(PREMIGRATE_PREVIOUS), { overwrite: true });
+    }
     await fileIn(PREMIGRATE_TMP).move(fileIn(PREMIGRATE_NAME), { overwrite: true });
   } catch (error) {
     deleteIfPresent(PREMIGRATE_TMP);

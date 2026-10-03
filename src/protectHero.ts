@@ -34,14 +34,15 @@ export function daysSince(day: string, now: Date): number {
  * A copy of this hero exists somewhere that is not this phone, and it is recent.
  *
  * Two ways: the automatic backup folder, or a device sync that has succeeded lately (the data is
- * on the server). A folder with no day yet is protected: it was just picked, or an older build
- * wrote it, and the next launch's daily run stamps the day.
+ * on the server). A folder with no stamped day is not: `enableAutoBackup` and the daily run both
+ * stamp after a write that landed, so a folder without a day is one whose writes keep failing (a
+ * revoked permission, a card pulled out), which is the hero this card is for.
  */
 export async function heroIsProtected(now: Date = new Date()): Promise<boolean> {
   const folder = await preferences.getBackupFolderUri();
   if (folder !== null) {
     const day = await preferences.getLastAutoBackupDay();
-    if (day === null || daysSince(day, now) < BACKUP_STALE_DAYS) return true;
+    if (day !== null && daysSince(day, now) < BACKUP_STALE_DAYS) return true;
   }
 
   if ((await syncAccount()) !== null) {

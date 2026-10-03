@@ -21,9 +21,13 @@
 # `google_apis` image (not `google_apis_playstore`): the script needs `adb root` to put a database
 # where a release app, which is not debuggable, can read it.
 #
+# Needs on the host: adb, sqlite3, and Node 22.18 or later (it reads the seed SQL from a .ts file).
+# Run it from the repo root.
+#
 # It passes when nothing the hero reads moved, and fails, listing each figure that did, when the
-# update lost or changed anything, or when the app does not come back up. To see it fail, build an
-# APK with a migration that deletes rows and run it as NEW.
+# update lost or changed anything, when the app does not come back up, or when the new build left
+# no `premigrate.db` behind (pass --allow-no-premigrate for a NEW build that predates it). To see
+# it fail, build an APK with a migration that deletes rows and run it as NEW.
 set -euo pipefail
 
 # The figures, as `name=value` lines. One place, so before and after are read the same way.
@@ -61,18 +65,21 @@ if [ "${UPGRADE_CHECK_SOURCE_ONLY:-}" = "1" ]; then
   return 0 2>/dev/null || exit 0
 fi
 
-old_apk="${1:-}"
-new_apk="${2:-}"
-shift 2 || true
 device="${ANDROID_SERIAL:-}"
 package="com.guiforge.bati.perf"
+need_premigrate=1
+apks=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --device) device="$2"; shift 2 ;;
-    --package) package="$2"; shift 2 ;;
-    *) echo "Unknown option: $1" >&2; exit 2 ;;
+    --device) device="${2:-}"; shift 2 || shift ;;
+    --package) package="${2:-}"; shift 2 || shift ;;
+    --allow-no-premigrate) need_premigrate=0; shift ;;
+    -*) echo "Unknown option: $1" >&2; exit 2 ;;
+    *) apks+=("$1"); shift ;;
   esac
 done
+old_apk="${apks[0]:-}"
+new_apk="${apks[1]:-}"
 
 if [ ! -f "$old_apk" ] || [ ! -f "$new_apk" ]; then
   sed -n '2,12p' "$0" >&2
@@ -128,6 +135,12 @@ home_dump() {
 echo "== Clean slate on ${device}"
 a root >/dev/null
 a wait-for-device
+# `adb root` only works on a google_apis image. Without it every later step fails 90 s in, with a
+# message about something else.
+if [ "$(a shell id -u | tr -d '\r')" != "0" ]; then
+  echo "adb root did not take: use a google_apis emulator image, not google_apis_playstore." >&2
+  exit 2
+fi
 a uninstall "$package" >/dev/null 2>&1 || true
 
 echo "== Install the previous build and let it migrate"
@@ -159,13 +172,17 @@ a shell "rm -f ${dir}/${name}-wal ${dir}/${name}-shm && cp /data/local/tmp/upgra
 
 launch
 home_dump "$work/before.xml"
+a shell am force-stop "$package"
 pull_db "$work/before.db" >/dev/null
 figures "$work/before.db" "$work/before.xml" >"$work/before.txt"
 sed 's/^/   /' "$work/before.txt"
-if ! grep -q '^level=.\+' "$work/before.txt"; then
-  echo "The old build never reached Home, so there is nothing to compare. Is the emulator awake?" >&2
-  exit 1
-fi
+# Both read off the screen. An empty one on both sides would compare equal and prove nothing.
+for shown in level flame; do
+  if ! grep -q "^${shown}=.\+" "$work/before.txt"; then
+    echo "The old build never showed its ${shown} on Home, so there is nothing to compare. Is the emulator awake?" >&2
+    exit 1
+  fi
+done
 
 echo "== Install the new build over it"
 a shell am force-stop "$package"
@@ -173,12 +190,8 @@ a logcat -c
 a install -r "$new_apk" >/dev/null
 launch
 home_dump "$work/after.xml"
-pull_db "$work/after.db" >/dev/null
-figures "$work/after.db" "$work/after.xml" >"$work/after.txt"
-migrations_new="$(sqlite3 "$work/after.db" 'SELECT COUNT(*) FROM __drizzle_migrations')"
-sed 's/^/   /' "$work/after.txt"
-echo "   ${migrations_new} migrations applied after the update"
 
+# Read while it is still running, then stop it: a database pulled under a live app can be torn.
 status=0
 if [ -z "$(a shell pidof "$package" | tr -d '\r')" ]; then
   echo "  the app is not running after the update" >&2
@@ -187,6 +200,20 @@ fi
 if a logcat -d -b crash | grep -q "$package"; then
   echo "  the app crashed after the update:" >&2
   a logcat -d -b crash | grep -A8 "$package" | head -20 >&2
+  status=1
+fi
+a shell am force-stop "$package"
+pull_db "$work/after.db" >/dev/null
+figures "$work/after.db" "$work/after.xml" >"$work/after.txt"
+migrations_new="$(sqlite3 "$work/after.db" 'SELECT COUNT(*) FROM __drizzle_migrations')"
+sed 's/^/   /' "$work/after.txt"
+echo "   ${migrations_new} migrations applied after the update"
+
+# The net under the update: a build that migrated without leaving a copy has a broken guard.
+if [ "$need_premigrate" -eq 1 ] \
+  && [ "$migrations_new" -gt "$migrations_old" ] \
+  && ! a shell "ls ${dir}/premigrate.db" >/dev/null 2>&1; then
+  echo "  no premigrate.db after an update that ran migrations" >&2
   status=1
 fi
 if [ "$migrations_new" -lt "$migrations_old" ]; then

@@ -258,7 +258,14 @@ export function ensureMigrations(): Promise<void> {
       await backupBeforeMigrations().catch((e) => reportError("backup.auto.gate", e));
       // A fresh install has nothing to lose and reads -Infinity here. Before BEGIN IMMEDIATE:
       // VACUUM INTO is illegal inside a transaction.
-      if (Number.isFinite(lastAppliedAt)) {
+      // Asked again, not trusted from above: the widget task and the app each run this, and the
+      // other may have migrated while the folder copy was being written. Copying then would
+      // replace the old state with the new one, which is the one thing the copy must never do.
+      const stillAt = await readLastAppliedAt(client);
+      if (
+        Number.isFinite(stillAt) &&
+        config.journal.entries.some((entry) => isPending(entry, stillAt))
+      ) {
         await copyBeforeMigrations().catch((e) => reportError("backup.premigrate.gate", e));
       }
 

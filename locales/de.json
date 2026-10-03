@@ -1128,7 +1128,7 @@
     "auto": "Automatische Sicherung",
     "autoOff": "Aus",
     "protectTitle": "Schütze deinen Helden",
-    "protectBody": "Dein Held lebt nur auf diesem Handy. Schalte die automatische Sicherung ein.",
+    "protectBody": "Dein Held lebt auf diesem Handy. Schalte die automatische Sicherung ein.",
     "lastBackupToday": "Letzte Sicherung: heute",
     "lastBackupDays_one": "Letzte Sicherung vor {{count}} Tag",
     "lastBackupDays_other": "Letzte Sicherung vor {{count}} Tagen",

@@ -24,7 +24,10 @@ if [ "${#added[@]}" -le 1 ]; then
 fi
 
 for file in "${added[@]}"; do
-  if git show "${ref}:${file}" | grep -Eq -- '--[[:space:]]*multi-migration-ok:[[:space:]]*[^[:space:]]'; then
+  # Into a variable first: `grep -q` exits at the first match, and under pipefail the SIGPIPE it
+  # sends back to `git show` on a file past the pipe buffer reads as "no match".
+  body="$(git show "${ref}:${file}")"
+  if grep -Eq -- '--[[:space:]]*multi-migration-ok:[[:space:]]*[^[:space:]]' <<<"$body"; then
     echo "${#added[@]} new migrations since ${prev}, allowed by multi-migration-ok in ${file}."
     exit 0
   fi

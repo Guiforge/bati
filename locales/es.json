@@ -1190,7 +1190,7 @@
     "auto": "Copia automática",
     "autoOff": "Desactivada",
     "protectTitle": "Protege a tu héroe",
-    "protectBody": "Tu héroe solo vive en este teléfono. Activa la copia automática.",
+    "protectBody": "Tu héroe vive en este teléfono. Activa la copia automática.",
     "lastBackupToday": "Última copia: hoy",
     "lastBackupDays_one": "Última copia hace {{count}} día",
     "lastBackupDays_many": "Última copia hace {{count}} días",

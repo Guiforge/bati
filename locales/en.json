@@ -1128,7 +1128,7 @@
     "auto": "Automatic backup",
     "autoOff": "Off",
     "protectTitle": "Protect your hero",
-    "protectBody": "Your hero only lives on this phone. Turn on automatic backup.",
+    "protectBody": "Your hero lives on this phone. Turn on automatic backup.",
     "lastBackupToday": "Last backup: today",
     "lastBackupDays_one": "Last backup {{count}} day ago",
     "lastBackupDays_other": "Last backup {{count}} days ago",

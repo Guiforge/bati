@@ -87,9 +87,10 @@ describe("protectCardVisible", () => {
     expect(await protectCardVisible()).toBe(false);
   });
 
-  test("a folder just picked, with no day yet, already protects", async () => {
+  test("a folder that never wrote protects nobody, whatever Settings shows", async () => {
+    // No stamped day: every write that lands stamps one, so this is a folder that keeps failing.
     mockPrefs.set("backupFolderUri", "content://tree");
-    expect(await protectCardVisible()).toBe(false);
+    expect(await protectCardVisible()).toBe(true);
   });
 
   test("a backup that stopped running seven days ago no longer protects", async () => {
@@ -172,6 +173,7 @@ describe("ProtectCard", () => {
 
   test("renders nothing for a hero who is protected", async () => {
     mockPrefs.set("backupFolderUri", "content://tree");
+    mockPrefs.set("lastAutoBackupDay", ago(1));
     await mount();
     await waitFor(() => expect(mockSessions).toBe(5));
     expect(screen.queryByTestId("home-protect")).toBeNull();

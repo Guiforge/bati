@@ -318,7 +318,10 @@ describe("VillageScene", () => {
 
     const { findByText } = await renderScene();
 
-    expect(await findByText(/1,822 d$/)).toBeTruthy();
+    // The whole chip, not its tail: the flame's name is a key built from the level
+    // (`village.flame_${n}`), which a dead-code sweep once deleted as "referenced nowhere" while
+    // this test, matching only the day count, stayed green over "village.flame_3 · 1,822 d".
+    expect(await findByText("Blaze · 1,822 d")).toBeTruthy();
   });
 
   it("a plain visit plays nothing", async () => {

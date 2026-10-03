@@ -66,6 +66,15 @@ export function clampToRange(value: number, range: { min: number; max: number })
 export const TIME_TARGET_MAX = 3600;
 
 /**
+ * Whether a logged hold looks like a clock left running rather than a feat: past three targets
+ * and past the target plus two minutes. The one definition, read by the rest screen that asks
+ * and by the store that settles an unanswered question.
+ */
+export function isSuspiciousHold(value: number, target: number): boolean {
+  return value > Math.max(3 * target, target + 120);
+}
+
+/**
  * The same ceiling for a movement that covers ground, which is a different question.
  *
  * An hour is a hold's ceiling and a walk is not a hold. It is also `clampResultValue`'s bound on

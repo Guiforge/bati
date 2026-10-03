@@ -473,6 +473,81 @@ describe("useSessionStore", () => {
       rand.mockRestore();
     });
 
+    // A hold left running (a 60 s plank logged at 362 s) is not a feat. The rest screen asks; an
+    // unanswered rest logs the target, and the boss takes damage for that, not for the raw hold.
+    describe("a hold left running", () => {
+      const holdThenRest = async (seconds: number) => {
+        await store.getState().startSession(mockQuest, "medium", { adventureId: 42 });
+        // The plank slot of round one: the index moves to the next round on completion.
+        store.setState({ status: "running", currentExerciseIndex: 1 });
+        store.getState().completeExercise(seconds);
+      };
+
+      test("an unanswered suspicious hold logs the target and recomputes the boss damage", async () => {
+        const rand = jest.spyOn(Math, "random").mockReturnValue(0.99); // never a crit
+        await holdThenRest(60);
+        const control = store.getState().pendingDamage[0]?.damage;
+        store.setState({ status: "idle" });
+
+        await holdThenRest(362);
+        expect(store.getState().status).toBe("resting");
+        const raw = store.getState().pendingDamage.at(-1)?.damage;
+        expect(raw).toBeGreaterThan(control ?? Infinity);
+
+        store.getState().skipRest();
+
+        const state = store.getState();
+        expect(state.results.at(-1)?.result.value).toBe(60);
+        expect(state.pendingDamage.at(-1)?.damage).toBe(control);
+        expect(state.bossFight?.currentHp).toBe(100 - (control ?? 0) * state.pendingDamage.length);
+        rand.mockRestore();
+      });
+
+      test("keeping the held time survives the end of the rest", async () => {
+        await holdThenRest(362);
+        store.getState().keepLongHold();
+
+        store.getState().skipRest();
+
+        expect(store.getState().results.at(-1)?.result.value).toBe(362);
+      });
+
+      // Keeping moves nothing else the snapshot watches, so a crash after "Keep it" recovered a
+      // rest that then logged the target over the hero's answer.
+      test("keeping the held time is written to the recovery snapshot", async () => {
+        await holdThenRest(362);
+        (preferences.setSavedSession as jest.Mock).mockClear();
+
+        store.getState().keepLongHold();
+
+        await waitFor(() => expect(preferences.setSavedSession).toHaveBeenCalled());
+        const saved = JSON.parse(
+          (preferences.setSavedSession as jest.Mock).mock.calls.at(-1)?.[0] ?? "{}",
+        );
+        expect(saved.longHoldKept).toBe(true);
+      });
+
+      // No rest screen, no question: the target is logged on the spot, as an unanswered rest does.
+      test("a quest without rests logs the target straight away", async () => {
+        const noRest = { ...mockQuest, restSeconds: 0, roundRestSeconds: 0 } as unknown as Quest;
+        await store.getState().startSession(noRest, "medium");
+        store.setState({ status: "running", currentExerciseIndex: 1 });
+
+        store.getState().completeExercise(362);
+
+        expect(store.getState().status).toBe("running");
+        expect(store.getState().results.at(-1)?.result.value).toBe(60);
+      });
+
+      test("a normal overshoot is left alone", async () => {
+        await holdThenRest(150);
+
+        store.getState().skipRest();
+
+        expect(store.getState().results.at(-1)?.result.value).toBe(150);
+      });
+    });
+
     test("starts a plain quest with no boss and no lookup", async () => {
       await store.getState().startSession(mockQuest, "medium");
 

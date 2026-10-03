@@ -28,6 +28,7 @@ import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
 import { dayKey } from "@/db/dates";
 import type { DayActivity, WallEntry } from "@/db/journal";
+import { behindMuscles } from "@/db/muscleBalance";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { formatCount, formatTargetValue } from "@/db/targets";
 import { inSentence, localizedName, localizedTitle } from "@/src/i18n/localized";
@@ -586,7 +587,7 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
       </XStack>
       <XStack height={32} items="flex-end" gap={2} mt={11}>
         {shown.map((m, index) => {
-          const weak = balance.weakAreas.includes(m.muscle);
+          const weak = behindMuscles(balance).includes(m.muscle);
           return (
             <YStack
               key={m.muscle}

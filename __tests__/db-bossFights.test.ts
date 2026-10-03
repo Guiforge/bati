@@ -411,6 +411,26 @@ describe("db/bossFights", () => {
     expect((await b.getBossFightByAdventure(BOSS_WITH_HP))?.shiny).toBe(false);
   });
 
+  test("a defeated fight keeps the tier it was fought at; the rematch is the one that rises", async () => {
+    const b = boss();
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
+    if (!fight) throw new Error("fight not created");
+    t.sqlite
+      .prepare("UPDATE boss_fights SET currentHp = 0, defeatedAt = 1 WHERE id = ?")
+      .run(fight.id);
+    t.sqlite
+      .prepare("INSERT INTO adventure_runs (adventureId, status) VALUES (?, 'finished')")
+      .run(BOSS_WITH_HP);
+
+    expect((await b.getBossFightByAdventure(BOSS_WITH_HP))?.tier).toBe(0);
+
+    // The rematch starts: the fight is alive again, and now it is the legendary one.
+    t.sqlite
+      .prepare("UPDATE boss_fights SET currentHp = 50, defeatedAt = NULL WHERE id = ?")
+      .run(fight.id);
+    expect((await b.getBossFightByAdventure(BOSS_WITH_HP))?.tier).toBe(1);
+  });
+
   test("damaging a fight that does not exist throws instead of silently missing", async () => {
     const b = boss();
     await expect(

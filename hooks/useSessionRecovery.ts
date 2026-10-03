@@ -141,6 +141,8 @@ function restoreSnapshot(saved: SavedSessionState): void {
     warmupSequence: saved.warmupSequence ?? [],
     // ?? false for snapshots from before the warm-up waited: those were always mid-movement.
     warmupPrep: saved.warmupPrep ?? false,
+    // ?? false for snapshots from before the long-hold question.
+    longHoldKept: saved.longHoldKept ?? false,
     pendingDamage: saved.pendingDamage ?? [],
     totalPausedTime: saved.totalPausedTime + pauseDuration,
     lastPauseTimestamp: now,

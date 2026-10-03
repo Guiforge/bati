@@ -346,7 +346,10 @@ describe("a rep count typed past the target", () => {
     const count = screen.getByTestId("session-reps-input");
     await act(() => fireEvent(count, "focus"));
     await act(() => fireEvent.changeText(count, "150"));
+    // Past Done's guard against a stray tap right after the screen appears.
+    const now = jest.spyOn(Date, "now").mockReturnValue(Date.now() + 1000);
     await fireEvent.press(screen.getByTestId("session-complete-exercise"));
+    now.mockRestore();
 
     expect(useSessionStore.getState().results[0]?.result.value).toBe(150);
   });

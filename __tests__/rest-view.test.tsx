@@ -1,4 +1,5 @@
 import { act, fireEvent, render } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -214,5 +215,58 @@ describe("RestView", () => {
 
     expect(useSessionStore.getState().status).toBe("finished");
     expect(mockedPlayCue).not.toHaveBeenCalled();
+  });
+
+  describe("a hold that ran far past its target", () => {
+    const hold = (value: number) =>
+      useSessionStore.setState({
+        results: [
+          {
+            exerciseId: 2,
+            roundIndex: 0,
+            result: { type: "time", value },
+            target: { type: "time", value: 35 },
+          },
+        ] as never,
+      });
+
+    it("asks only when the hold is suspicious", async () => {
+      hold(40);
+      const view = await mountRest();
+      expect(view.queryByTestId("rest-hold-check")).toBeNull();
+
+      await act(() => hold(362));
+      expect(view.queryByTestId("rest-hold-check")).not.toBeNull();
+    });
+
+    it("logs the target on one answer and keeps the held time on the other", async () => {
+      hold(362);
+      const view = await mountRest();
+
+      await act(() => fireEvent.press(view.getByTestId("rest-hold-target")));
+      expect(useSessionStore.getState().results[0]?.result.value).toBe(35);
+      expect(view.queryByTestId("rest-hold-check")).toBeNull();
+
+      await act(() => hold(362));
+      await act(() => fireEvent.press(view.getByTestId("rest-hold-keep")));
+      expect(useSessionStore.getState().results[0]?.result.value).toBe(362);
+      expect(view.queryByTestId("rest-hold-check")).toBeNull();
+    });
+  });
+
+  // At Android font scale 1.3 the label column grew until it pushed the stepper's "+" off the
+  // card: it had no flex, so it never gave way. The label shrinks and wraps, the controls do not.
+  it("lets the adjust label shrink and keeps the stepper whole", async () => {
+    useSessionStore.setState({
+      results: [
+        { exerciseId: 1, result: { type: "reps", value: 10 }, target: { type: "reps", value: 10 } },
+      ] as never,
+    });
+    const view = await mountRest();
+
+    const label = StyleSheet.flatten(view.getByTestId("rest-adjust-label").props.style);
+    const controls = StyleSheet.flatten(view.getByTestId("rest-adjust-controls").props.style);
+    expect(label.flexShrink).toBe(1);
+    expect(controls.flexShrink).toBe(0);
   });
 });

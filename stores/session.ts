@@ -59,7 +59,7 @@ import type {
 } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import type { Target } from "@/db/targets";
-import { REST_RANGE, retargetForMovement, targetRangeFor } from "@/db/targets";
+import { isSuspiciousHold, REST_RANGE, retargetForMovement, targetRangeFor } from "@/db/targets";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import { uuidv7 } from "@/db/uuid";
 import {
@@ -180,6 +180,21 @@ function clampResultValue(
   return Math.min(ceiling, Math.max(1, Math.floor(resultValue)));
 }
 
+/**
+ * The set just logged, when it is a hold so long it is probably a clock left running and the
+ * hero has not said otherwise. The rest screen asks about it; `skipRest` settles it, or
+ * `completeExercise` when no rest follows. Outings are timed by their trace and never asked.
+ */
+export function holdNeedingAnswer(
+  state: Pick<SessionState, "results" | "lastSetSkipped" | "longHoldKept">,
+): CompletedExerciseInput | null {
+  const last = state.results[state.results.length - 1];
+  if (!last || state.lastSetSkipped || state.longHoldKept) return null;
+  if (last.result.type !== "time" || last.target?.type !== "time") return null;
+  if (isOutdoors(last.pricing?.style)) return null;
+  return isSuspiciousHold(last.result.value, last.target.value) ? last : null;
+}
+
 interface SessionState {
   // Static Data
   quest: Quest | null;
@@ -189,6 +204,8 @@ interface SessionState {
   // Boss Fight Data
   bossFight: BossFight | null;
   lastDamageResult: DamageResult | null;
+  /** Set once the hero keeps a suspiciously long hold; cleared by the next logged set. */
+  longHoldKept: boolean;
   /**
    * Hits landed this session, not yet in the database.
    *
@@ -347,6 +364,8 @@ interface SessionState {
   swapCurrentExercise: (exercise: Exercise) => void;
   updateLastResult: (resultValue: number) => void;
   skipRest: () => void;
+  /** The hero answered "keep it" to the rest screen's question about a very long hold. */
+  keepLongHold: () => void;
   addRestTime: (seconds: number) => void;
 
   // DB
@@ -425,6 +444,7 @@ export type SavedSessionState = Pick<
   | "timerDuration"
   | "results"
   | "lastSetSkipped"
+  | "longHoldKept"
   | "sessionUuid"
   | "goal"
 > & { savedAt: number };
@@ -1104,6 +1124,7 @@ export const useSessionStore = create<SessionState>()(
     felledByFinalBlow: false,
     pendingDamage: [],
     lastDamageResult: null,
+    longHoldKept: false,
     status: "idle",
     prePauseStatus: null,
     warmupSequence: [],
@@ -1466,7 +1487,13 @@ export const useSessionStore = create<SessionState>()(
           !isOutdoors(currentEx.exercise.style),
         ),
         lastSetSkipped: false,
+        longHoldKept: false,
       });
+
+      // No rest screen to ask on (a quest without rests): log the target, as an unanswered rest
+      // does in `skipRest`.
+      const unanswered = get().status === "resting" ? null : holdNeedingAnswer(get());
+      if (unanswered?.target) get().updateLastResult(unanswered.target.value);
     },
 
     /**
@@ -1583,9 +1610,17 @@ export const useSessionStore = create<SessionState>()(
       });
     },
 
+    keepLongHold: () => set({ longHoldKept: true }),
+
     skipRest: () => {
       const { status, quest, currentExerciseIndex, timerStartTimestamp, restTakenSeconds } = get();
       if (status !== "resting" || !quest) return;
+
+      // Every way out of the rest lands here, so a very long hold the hero never answered about
+      // is settled here: the target is logged, through the same action the stepper uses, which
+      // also re-lands the set's banked boss hit at that value.
+      const unanswered = holdNeedingAnswer(get());
+      if (unanswered?.target) get().updateLastResult(unanswered.target.value);
 
       const nextExDef = quest.exercises[currentExerciseIndex];
       const isNextTimeBased = nextExDef?.target.type === "time";
@@ -2009,6 +2044,8 @@ useSessionStore.subscribe(
     // "Not for me" shortens the warm-up and moves nothing else; a recovery that missed it plays
     // the movement the hero just set aside.
     warmupLength: state.warmupSequence.length,
+    // "Keep it" on a long hold moves nothing above, and a recovered rest would log the target.
+    longHoldKept: state.longHoldKept,
   }),
   async (curr, prev) => {
     const state = useSessionStore.getState();
@@ -2054,6 +2091,7 @@ useSessionStore.subscribe(
       // A movement swapped mid-session — a quest *arriving* is not progress, its start is.
       (prev.exerciseIds !== undefined && String(curr.exerciseIds) !== String(prev.exerciseIds)) ||
       warmupShortened(curr, prev) ||
+      curr.longHoldKept !== prev.longHoldKept ||
       curr.status === "paused";
 
     if (hasProgressed) {
@@ -2082,6 +2120,7 @@ useSessionStore.subscribe(
           timerDuration: state.timerDuration,
           results: state.results,
           lastSetSkipped: state.lastSetSkipped,
+          longHoldKept: state.longHoldKept,
           goal: state.goal,
           savedAt: Date.now(),
         };

@@ -64,6 +64,21 @@ export function bossDisplayName(
   return prefix + localizedName(fight, language);
 }
 
+/**
+ * The boss's name in every language, at a tier, falling back to the campaign title for unpainted
+ * content. For callers that hold a `Localized` rather than a language (kill reports): the name is
+ * the boss's, never the adventure's.
+ */
+export function bossLocalizedName(
+  imagePath: string | null | undefined,
+  tier: number,
+  campaign: Localized,
+): Localized {
+  const key = getBossKey(imagePath);
+  if (!key) return campaign;
+  return tier >= 1 ? BOSSES[key].legendaryName : BOSSES[key].name;
+}
+
 /** The boss's own voice, or the golem's as a stand-in for unpainted content. */
 export function bossVoice(imagePath: string): BossVoice {
   return BOSSES[getBossKey(imagePath) ?? "stone_golem"];

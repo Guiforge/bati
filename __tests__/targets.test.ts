@@ -4,6 +4,7 @@ import {
   formatTarget,
   formatTargetValue,
   generateTarget,
+  isSuspiciousHold,
   retargetForMovement,
 } from "@/db/targets";
 
@@ -131,5 +132,22 @@ describe("retargetForMovement", () => {
     // 25 rather than 23: time targets land on the five-second grid the stepper moves in, so a
     // prescription is always a value the hero could have dialled themselves.
     expect(retargetForMovement(repSlot, { measure: "time" }, Difficulty.Easy).value).toBe(25);
+  });
+});
+
+describe("isSuspiciousHold", () => {
+  it("flags a hold past three targets and past the target plus two minutes", () => {
+    // 35 s target: the +120 s floor (155) is the larger bound, a forgotten 362 s is far past it.
+    expect(isSuspiciousHold(362, 35)).toBe(true);
+    expect(isSuspiciousHold(156, 35)).toBe(true);
+    expect(isSuspiciousHold(155, 35)).toBe(false);
+    // 300 s target: three targets (900) is the larger bound.
+    expect(isSuspiciousHold(900, 300)).toBe(false);
+    expect(isSuspiciousHold(901, 300)).toBe(true);
+  });
+
+  it("leaves an honest overshoot alone", () => {
+    expect(isSuspiciousHold(40, 35)).toBe(false);
+    expect(isSuspiciousHold(35, 35)).toBe(false);
   });
 });

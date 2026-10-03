@@ -439,7 +439,12 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     frName: row.frTitle,
     deName: row.deTitle,
     esName: row.esTitle,
-    tier: await finishedRunCount(adventureId),
+    // A felled fight is named and painted at the tier it was fought at: the run that just ended
+    // is already counted, and the legendary name belongs to the rematch once it starts.
+    tier: Math.max(
+      0,
+      (await finishedRunCount(adventureId)) - (row.defeatedAt || row.currentHp <= 0 ? 1 : 0),
+    ),
     // Browsing must not roll the dice: the gleam belongs to the encounter, not the gallery.
     shiny: false,
   };

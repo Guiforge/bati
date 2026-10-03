@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
@@ -39,6 +39,13 @@ import { GhostLine } from "./GhostLine";
 import { LiveMap } from "./LiveMap";
 import { sessionArtHeight } from "./sessionArt";
 import { TimerBar } from "./TimerBar";
+
+/**
+ * A tap aimed at the previous screen's button (GO, "I'm ready") that arrives just after it
+ * advanced on its own lands where Done now sits. Done ignores presses for this long after a new
+ * exercise becomes active.
+ */
+const DONE_GUARD_MS = 700;
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
 export function ActiveExerciseView() {
@@ -107,6 +114,8 @@ export function ActiveExerciseView() {
   // remounted the field on its first digit and put the keyboard away.
   const [stepCount, setStepCount] = useState(0);
   const [showHowTo, setShowHowTo] = useState(false);
+  // When this slot became active: `app/session.tsx` keys the view on the slot, so the mount is it.
+  const shownAt = useRef(Date.now());
   // The same reader the paused screen uses, rather than a second derivation of "which movement
   // is this, drawn and described" built out of `currentEx` right here.
   const instruction = useSessionInstructions();
@@ -177,6 +186,11 @@ export function ActiveExerciseView() {
     // Elapsed seconds for a hold, the adjusted value for reps: `liveValue` above, which is the
     // same number the ghost line has been comparing to the record.
     completeExercise(liveValue);
+  };
+
+  const handleDonePress = () => {
+    if (Date.now() - shownAt.current < DONE_GUARD_MS) return;
+    handleComplete();
   };
 
   const handleSkip = () => {
@@ -257,6 +271,9 @@ export function ActiveExerciseView() {
     />
   );
   const targetMuscle = currentEx.exercise.muscles[0];
+  // A boss at 0 HP takes no damage (computeDamage returns 0), so nothing about crits or armour
+  // is true any more, though the fight stays in the store until the session saves.
+  const fightLive = !!bossFight && bossFight.currentHp > 0 && !bossFight.defeatedAt;
 
   /**
    * What this set is worth against this monster, in words.
@@ -268,9 +285,9 @@ export function ActiveExerciseView() {
    * 0.5x on a resistance, and this says which one is happening now (audit 2026-09-10, blocker 6).
    */
   const setStanding =
-    bossFight && targetMuscle && bossFight.weaknessMuscle === targetMuscle
+    fightLive && targetMuscle && bossFight.weaknessMuscle === targetMuscle
       ? t("session.boss_weak_point", { muscle: t(`muscles.${targetMuscle}`) })
-      : bossFight && targetMuscle && bossFight.resistanceMuscle === targetMuscle
+      : fightLive && targetMuscle && bossFight.resistanceMuscle === targetMuscle
         ? t("session.boss_resisted", { muscle: t(`muscles.${targetMuscle}`) })
         : null;
 
@@ -694,7 +711,7 @@ export function ActiveExerciseView() {
                   than "go to failure" — the safer and more teachable framing, and one the app can
                   give as a cue instead of collecting as data. */}
                     <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                      {bossFight
+                      {fightLive
                         ? t("session.crit_hint", {
                             percent: Math.round(critChance(adjustedReps, targetValue) * 100),
                           })
@@ -710,7 +727,7 @@ export function ActiveExerciseView() {
                 is deciding about: the crit line replaces the generic one there. */}
             {isTimeBased && !isOuting && (
               <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {bossFight
+                {fightLive
                   ? t("session.crit_hint_time", {
                       percent: Math.round(
                         critChance(
@@ -722,6 +739,12 @@ export function ActiveExerciseView() {
                   : t("session.keep_going_hint")}
               </Text>
             )}
+
+            {bossFight && !fightLive ? (
+              <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                {t("session.boss_down", { boss: bossDisplayName(bossFight, language) })}
+              </Text>
+            ) : null}
 
             {/* Which way this set lands, when the monster cares. One line, in the colour of what
                 it does: gold for a weak point, the warning colour for armour. */}
@@ -769,7 +792,7 @@ export function ActiveExerciseView() {
             size="$6"
             bg={isPastTarget ? "$success" : "$primary"}
             pressStyle={{ opacity: 0.8 }}
-            onPress={handleComplete}
+            onPress={handleDonePress}
             borderWidth={0}
             rounded="$6"
             accessibilityLabel={

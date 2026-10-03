@@ -182,6 +182,15 @@ was there for it.
 - Preview of next exercise
 - Quick actions: add time or skip
 
+**A hold left running**: when the set just logged is a hold past `isSuspiciousHold` (over three
+targets and over target + 2 minutes), the Adjust card asks "Held 6:02?" with two answers, keep it or
+log the target. If the rest ends unanswered (countdown, "I'm ready", "See the results") the target
+is logged through `updateLastResult`, so records, work units and the set's boss damage read it.
+A quest with no rest after that set has nowhere to ask, so `completeExercise` logs the target on
+the spot. "Keep it" is part of the crash-recovery snapshot (`longHoldKept`).
+Done is also ignored for 700 ms after a new exercise appears, so a late tap meant for GO or "I'm
+ready" cannot log a set. At 0 HP the boss is announced down and the crit and weak-point lines go.
+
 **After the last set**: the same screen, titled "Last Set" / "Dernière série", so the final count
 can be corrected like every other one before the victory screen saves it. No up-next card, no
 +time, no countdown beeps; the CTA reads "See the results" and the clock hands over to the victory

@@ -11,11 +11,13 @@ import {
   NRule,
   NText,
 } from "@/components/journal/nocturne";
-import { MIN_BALANCE_SESSIONS, workVerdict } from "@/components/journal/stats/workVerdict";
+import { workVerdict } from "@/components/journal/stats/workVerdict";
 import {
+  behindMuscles,
   getMuscleBalance,
   getPatternBalance,
   getPullDeficit,
+  MIN_BALANCE_SESSIONS,
   type MuscleBalance,
   type PatternBalance,
 } from "@/db/muscleBalance";
@@ -96,7 +98,7 @@ export function MuscleBalanceCard() {
 
       <YStack gap={8}>
         {balance.muscles.map((m) => {
-          const weak = balance.weakAreas.includes(m.muscle);
+          const weak = behindMuscles(balance).includes(m.muscle);
           const share = formatShare(language, m.percentage);
           return (
             // One label for the row: the bar is drawn against the biggest muscle, and read on its

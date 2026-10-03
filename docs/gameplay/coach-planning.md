@@ -46,7 +46,7 @@ suggests (`suggestDifficultyFromSessions`).
 | --- | --- | --- | --- |
 | 1 | An adventure run is active | `getAnyActiveAdventureRun()` | "Continue Adventure" + step count, rendered as a scene → the adventure map |
 | 2 | An unfulfilled oath names an exercise | `getOathProgress()` → `getChainTo()` → `findQuestWithExercise()` | "Start Quest" + `Oath · Rung 4/6 · <movement>` → **starts the session** |
-| 3 | A muscle sits below its share of 30-day volume | `getSuggestedQuestsForWeakAreas(1)` | "Start Quest" + the muscles it targets → **starts the session** |
+| 3 | A muscle is behind in the 30-day balance, the Journal's verdict (`behindMuscles`: below half its share, after 3 sessions) | `getSuggestedQuestsForWeakAreas(1)` | "Start Quest" + the muscles it targets → **starts the session** |
 | 4 | None of those | — | "Pick a quest" → the quest gallery |
 
 Each branch links to one concrete action, and its label names that action. It never just reports

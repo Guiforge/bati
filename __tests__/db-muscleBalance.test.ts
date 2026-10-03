@@ -101,29 +101,111 @@ describe("db/muscleBalance", () => {
     expect(suggestions).toEqual([]);
   });
 
-  test("getSuggestedFocusAreas returns weakest muscles as focus areas", async () => {
+  const pushupId = () =>
+    (t.sqlite.prepare(`SELECT id FROM exercises WHERE enName = 'Push-ups'`).get() as { id: number })
+      .id;
+
+  test("getSuggestedFocusAreas says nothing before three sessions, like the Journal", async () => {
     const { getSuggestedFocusAreas } =
       require("../db/muscleBalance") as typeof import("../db/muscleBalance");
     const now = Math.floor(Date.now() / 1000);
-
-    // Get a seeded exercise ID (Push-ups has chest and arms)
-    const pushupRow = t.sqlite
-      .prepare(`SELECT id FROM exercises WHERE enName = 'Push-ups'`)
-      .get() as { id: number } | undefined;
-    const pushupId = pushupRow?.id ?? 2;
-
-    // Add sessions with only chest and arms
     t.sqlite.exec(`
       INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${now});
-      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES (1, ${pushupId}, 'reps', 100, ${now}, 0);
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES (1, ${pushupId()}, 'reps', 100, ${now}, 0);
     `);
+    expect(await getSuggestedFocusAreas(2)).toEqual([]);
+  });
 
-    const suggestions = await getSuggestedFocusAreas(2);
+  test("getSuggestedFocusAreas is the Journal's weakAreas, not the N lowest muscles", async () => {
+    const { getSuggestedFocusAreas, getMuscleBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+    const now = Math.floor(Date.now() / 1000);
+    for (let i = 1; i <= 3; i++) {
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES (${i}, ${now});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES (${i}, ${pushupId()}, 'reps', 50, ${now}, 0);
+      `);
+    }
+    const { weakAreas } = await getMuscleBalance("30d");
+    expect(weakAreas.length).toBeGreaterThan(0);
+    expect((await getSuggestedFocusAreas(99)).toSorted()).toEqual(weakAreas.toSorted());
+  });
 
-    // Should suggest muscles with 0 volume
-    expect(suggestions.length).toBe(2);
-    // These should be muscles not worked (back, calf, abs, shoulder)
-    expect(["back", "legs", "abs", "shoulder"]).toEqual(expect.arrayContaining(suggestions));
+  // weakAreas comes out in volume order, biggest first: a Home asking for one focus muscle got the
+  // least neglected of the weak ones.
+  test("getSuggestedFocusAreas names the most neglected muscle first", async () => {
+    const { getSuggestedFocusAreas, getMuscleBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+    const now = Math.floor(Date.now() / 1000);
+    const lone = t.sqlite
+      .prepare(
+        `SELECT exerciseId FROM exercise_muscles GROUP BY exerciseId HAVING COUNT(*) = 1 AND MAX(muscle) <> (SELECT muscle FROM exercise_muscles WHERE exerciseId = ${pushupId()} LIMIT 1) LIMIT 1`,
+      )
+      .get() as { exerciseId: number };
+    for (let i = 1; i <= 3; i++) {
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES (${i}, ${now});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES (${i}, ${pushupId()}, 'reps', 100, ${now}, 0);
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES (${i}, ${lone.exerciseId}, 'reps', 1, ${now}, 1);
+      `);
+    }
+    const balance = await getMuscleBalance("30d");
+    const share = (code: string) => balance.muscles.find((m) => m.muscle === code)?.percentage;
+    const lowest = Math.min(...balance.weakAreas.map((m) => share(m) ?? 100));
+    // The fixture is only worth something if the volume order does not already put it first.
+    expect(share(balance.weakAreas[0] ?? "")).toBeGreaterThan(lowest);
+
+    const [focus] = await getSuggestedFocusAreas(1);
+    expect(share(focus ?? "")).toBe(lowest);
+  });
+
+  test("a balanced hero has no focus areas and no suggested quests", async () => {
+    const { getSuggestedFocusAreas, getSuggestedQuestsForWeakAreas, getMuscleBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+    const now = Math.floor(Date.now() / 1000);
+    const muscles = t.sqlite.prepare(`SELECT DISTINCT muscle FROM exercise_muscles`).all() as {
+      muscle: string;
+    }[];
+    let n = 0;
+    const add = (session: number, muscle: string) => {
+      const ex = t.sqlite
+        .prepare(`SELECT exerciseId FROM exercise_muscles WHERE muscle = ? LIMIT 1`)
+        .get(muscle) as { exerciseId: number };
+      t.sqlite.exec(
+        `INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES (${session}, ${ex.exerciseId}, 'reps', 20, ${now}, ${n++})`,
+      );
+    };
+    for (let i = 1; i <= 3; i++) {
+      t.sqlite.exec(`INSERT INTO completed_sessions (id, performedAt) VALUES (${i}, ${now})`);
+      for (const { muscle } of muscles) add(i, muscle);
+    }
+    // Feed whoever is still behind until the fixture is honestly balanced.
+    for (let guard = 0; guard < 30; guard++) {
+      const { weakAreas } = await getMuscleBalance("30d");
+      if (weakAreas.length === 0) break;
+      for (const m of weakAreas) add(1, m);
+      const { clearShortLivedQueries } =
+        require("../db/queryCache") as typeof import("../db/queryCache");
+      clearShortLivedQueries();
+    }
+    expect((await getMuscleBalance("30d")).weakAreas).toEqual([]);
+    expect(await getSuggestedFocusAreas(3)).toEqual([]);
+    expect(await getSuggestedQuestsForWeakAreas(3)).toEqual([]);
+    // The path the Home calls: no "weak points" offer for a hero the Journal calls balanced.
+    const { decideHomeOffer } = require("../db/homeOffer") as typeof import("../db/homeOffer");
+    expect((await decideHomeOffer("en"))?.kind).not.toBe("weak_muscles");
+  });
+
+  test("the Home does offer weak points to a hero the Journal calls behind", async () => {
+    const now = Math.floor(Date.now() / 1000);
+    for (let i = 1; i <= 3; i++) {
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES (${i}, ${now});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES (${i}, ${pushupId()}, 'reps', 50, ${now}, 0);
+      `);
+    }
+    const { decideHomeOffer } = require("../db/homeOffer") as typeof import("../db/homeOffer");
+    expect((await decideHomeOffer("en"))?.kind).toBe("weak_muscles");
   });
 
   test("getSuggestedQuestsForWeakAreas returns empty when no training history", async () => {

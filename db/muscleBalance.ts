@@ -173,21 +173,25 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
   };
 }
 
+/** Sessions in thirty days before the balance is worth a verdict. */
+export const MIN_BALANCE_SESSIONS = 3;
+
 /**
- * Get suggested muscles to focus on based on training history.
- * Returns muscles that are undertrained relative to others.
+ * The muscles the thirty days say are behind: the one answer the Journal's sentence, the Balance
+ * page's list and the Home's offer all read. Below the session gate a share is one quest's shape,
+ * so nothing is behind yet.
+ */
+export function behindMuscles(balance: MuscleBalance): MuscleCode[] {
+  return balance.totalSessions < MIN_BALANCE_SESSIONS ? [] : balance.weakAreas;
+}
+
+/**
+ * Muscles that are behind, per {@link behindMuscles}, most neglected first. Empty for a balanced
+ * or too-new hero.
  */
 export async function getSuggestedFocusAreas(limit = 2): Promise<MuscleCode[]> {
-  const balance = await getMuscleBalance("30d");
-
-  // If no training history, return empty
-  if (balance.totalVolume === 0) {
-    return [];
-  }
-
-  // Return the weakest areas (muscles with lowest percentage)
-  const sorted = [...balance.muscles].sort((a, b) => a.percentage - b.percentage);
-  return sorted.slice(0, limit).map((m) => m.muscle);
+  // weakAreas follows `muscles`, biggest volume first.
+  return [...behindMuscles(await getMuscleBalance("30d"))].reverse().slice(0, limit);
 }
 
 // ------------------------------------------------------------

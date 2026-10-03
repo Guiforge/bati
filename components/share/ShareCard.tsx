@@ -6,7 +6,7 @@ import { NKicker, NKickerQuiet, NMuted, NNum, NText } from "@/components/journal
 import type { QuestLogData } from "@/components/journal/QuestLog";
 import { recordName, recordValue } from "@/components/journal/recordLabel";
 import { type MapState, TraceThumb } from "@/components/journal/TraceThumb";
-import { getQuestAsset } from "@/constants/assetMap";
+import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { MAP_ATTRIBUTION } from "@/constants/mapStyle";
 import type { KillReport } from "@/db/journal";
@@ -58,7 +58,7 @@ export function ShareCard({
       borderColor="$glassBorder"
       overflow="hidden"
     >
-      <CardVisual log={log} width={width} showMap={showMap} onMapState={onMapState} />
+      <CardVisual log={log} kill={kill} width={width} showMap={showMap} onMapState={onMapState} />
 
       <YStack p={17} gap={6}>
         {/* The kicker names the best thing that happened, so a boss or a record is the first
@@ -106,11 +106,13 @@ export function ShareCard({
  */
 function CardVisual({
   log,
+  kill,
   width,
   showMap,
   onMapState,
 }: {
   log: QuestLogData;
+  kill: KillReport | null;
   width: number;
   showMap: boolean;
   onMapState: (state: MapState) => void;
@@ -132,10 +134,17 @@ function CardVisual({
       </YStack>
     );
   }
-  if (!log.questImage) return null;
+  // A felled boss leads with its own fallen painting, the one the victory screen shows.
+  const source = kill?.bossImagePath
+    ? getBossAsset(kill.bossImagePath, 0, "defeated")
+    : log.questImage
+      ? getQuestAsset(log.questImage)
+      : null;
+  if (!source) return null;
   return (
     <Image
-      source={getQuestAsset(log.questImage)}
+      testID="share-card-visual"
+      source={source}
       style={{ width, height: Math.round(width * 0.5) }}
       contentFit="cover"
       accessible={false}

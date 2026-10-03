@@ -13,6 +13,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
+import { bossLocalizedName } from "@/constants/bosses";
 import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import type { AchievementProgress } from "./achievements";
@@ -589,7 +590,12 @@ export async function getBossKills(): Promise<BossKill[]> {
     return [
       {
         adventureId: run.adventureId,
-        title: { en: run.enTitle, fr: run.frTitle, de: run.deTitle, es: run.esTitle },
+        // The boss's name at the tier it was fought at: the runs of this campaign before this one.
+        title: bossLocalizedName(
+          run.bossImagePath ?? run.imagePath,
+          runs.filter((r) => r.adventureId === run.adventureId && r.runId < run.runId).length,
+          { en: run.enTitle, fr: run.frTitle, de: run.deTitle, es: run.esTitle },
+        ),
         imagePath: run.bossImagePath ?? run.imagePath,
         felledAt: run.finishedAt,
         sessionId: last?.sessionId ?? null,
@@ -1014,12 +1020,22 @@ async function nextStandingBoss(): Promise<Localized | null> {
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      imagePath: adventures.imagePath,
+      bossImagePath: adventures.bossImagePath,
     })
     .from(adventures)
     .where(and(eq(adventures.kind, "boss"), eq(adventures.isActive, 1)))
     .orderBy(adventures.sortOrder, adventures.id);
   const next = bosses.find((a) => !wonIds.has(a.id));
-  return next ? { en: next.enTitle, fr: next.frTitle, de: next.deTitle, es: next.esTitle } : null;
+  // Never won, so never fought again: tier 0.
+  return next
+    ? bossLocalizedName(next.bossImagePath ?? next.imagePath, 0, {
+        en: next.enTitle,
+        fr: next.frTitle,
+        de: next.deTitle,
+        es: next.esTitle,
+      })
+    : null;
 }
 
 /**
@@ -1106,6 +1122,19 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       and(eq(adventureRuns.adventureId, step.adventureId), eq(adventureRuns.status, "finished")),
     );
 
+  // The tier it was fought at: the finished runs of this campaign before this one.
+  const [earlier] = await db
+    .select({ n: count() })
+    .from(adventureRuns)
+    .where(
+      and(
+        eq(adventureRuns.adventureId, step.adventureId),
+        eq(adventureRuns.status, "finished"),
+        lt(adventureRuns.id, step.runId),
+      ),
+    );
+  const foughtAtTier = Number(earlier?.n ?? 0);
+
   const next = await nextStandingBoss();
 
   const felledAt = step.finishedAt ?? session.performedAt;
@@ -1113,7 +1142,12 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
 
   return {
     adventureId: step.adventureId,
-    title: { en: step.enTitle, fr: step.frTitle, de: step.deTitle, es: step.esTitle },
+    title: bossLocalizedName(step.bossImagePath ?? step.imagePath, foughtAtTier, {
+      en: step.enTitle,
+      fr: step.frTitle,
+      de: step.deTitle,
+      es: step.esTitle,
+    }),
     bossImagePath: step.bossImagePath ?? step.imagePath,
     felledAt,
     steps: runSteps.length,

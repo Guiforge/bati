@@ -1,12 +1,9 @@
 import type { TFunction } from "i18next";
 import { formatShare } from "@/components/journal/journalFormat";
-import type { MuscleBalance } from "@/db/muscleBalance";
+import { behindMuscles, MIN_BALANCE_SESSIONS, type MuscleBalance } from "@/db/muscleBalance";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { inSentence } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
-
-/** Sessions in thirty days before the balance is worth a verdict. */
-export const MIN_BALANCE_SESSIONS = 3;
 
 /**
  * The one sentence about the thirty days' balance, said the same on the stats page and on the
@@ -27,7 +24,7 @@ export function workVerdict(
   }
   const label = (code: keyof typeof MUSCLE_LABELS) => MUSCLE_LABELS[code][language];
   const behind = balance.muscles
-    .filter((m) => balance.weakAreas.includes(m.muscle))
+    .filter((m) => behindMuscles(balance).includes(m.muscle))
     .map((m, index) =>
       t("journal.muscle_share", {
         muscle: index === 0 ? label(m.muscle) : inSentence(label(m.muscle), language),

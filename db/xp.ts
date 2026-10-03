@@ -211,8 +211,9 @@ function setEffortSeconds({ exercise, target, result }: XpSet): number {
   // A hold's result *is* a clock: `ActiveExerciseView` records the elapsed seconds and overtime
   // is unbounded, so a phone left face-up on a 30s plank declares two hours without anyone
   // lying. Reps are typed by a hero who is present, so their overshoot earns the decaying tail;
-  // a hold's does not. The `longest_hold` record still keeps the true value — XP pays for the
-  // work prescribed, the record celebrates the feat.
+  // a hold's does not. A hold past `isSuspiciousHold` never reaches here unanswered: the rest
+  // screen asks, and an unanswered rest logs the target, so the `longest_hold` record reads a
+  // value the hero kept on purpose. XP still pays for the work prescribed, not the overshoot.
   return result.type === "time"
     ? Math.min(done, allowed)
     : Math.min(done, allowed) + Math.max(0, done - allowed) * OVERSHOOT_DECAY;

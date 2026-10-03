@@ -18,7 +18,7 @@ import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { localizedName } from "@/src/i18n/localized";
 import { useChorusStore } from "@/stores/chorus";
-import { useSessionStore } from "@/stores/session";
+import { holdNeedingAnswer, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { CountInput } from "./CountInput";
 import { ExerciseInstructionsModal } from "./ExerciseInstructions";
@@ -362,6 +362,9 @@ function LastSetCard({ result }: { result: CompletedExerciseInput }) {
   const { t } = useTranslation();
   const { selection } = useHaptics();
   const updateLastResult = useSessionStore((s) => s.updateLastResult);
+  const keepLongHold = useSessionStore((s) => s.keepLongHold);
+  // A hold that looks like a clock left running. Unanswered, the rest logs the target when it ends.
+  const askAboutHold = useSessionStore(holdNeedingAnswer) === result;
   // A haptic per step, none per keystroke.
   const step = (value: number) => {
     selection();
@@ -372,8 +375,8 @@ function LastSetCard({ result }: { result: CompletedExerciseInput }) {
 
   return (
     <YStack bg="$surface" p="$4" rounded="$6" borderWidth={1} borderColor="$borderStrong" gap="$2">
-      <XStack justify="space-between" items="center">
-        <YStack>
+      <XStack justify="space-between" items="center" gap="$3">
+        <YStack testID="rest-adjust-label" flex={1} shrink={1}>
           <Text color="$textSecondary" fontSize={12} fontWeight="700">
             {isLastTimeBased ? t("session.adjust_seconds_label") : t("session.adjust_reps_label")}
           </Text>
@@ -382,7 +385,7 @@ function LastSetCard({ result }: { result: CompletedExerciseInput }) {
           </Text>
         </YStack>
 
-        <XStack items="center" gap="$3">
+        <XStack testID="rest-adjust-controls" items="center" gap="$3" shrink={0}>
           <Button
             size="$3"
             hitSlop={8}
@@ -416,6 +419,33 @@ function LastSetCard({ result }: { result: CompletedExerciseInput }) {
           />
         </XStack>
       </XStack>
+
+      {askAboutHold && result.target ? (
+        <XStack testID="rest-hold-check" items="center" gap="$2" flexWrap="wrap">
+          <Text fontWeight="700" color="$text" shrink={1}>
+            {t("session.hold_check_question", { time: formatTime(result.result.value) })}
+          </Text>
+          <Button
+            testID="rest-hold-keep"
+            size="$3"
+            hitSlop={8}
+            onPress={() => {
+              selection();
+              keepLongHold();
+            }}
+          >
+            <Text color="$text">{t("session.hold_check_keep")}</Text>
+          </Button>
+          <Button
+            testID="rest-hold-target"
+            size="$3"
+            hitSlop={8}
+            onPress={() => step(result.target?.value ?? 1)}
+          >
+            <Text color="$text">{t("session.hold_check_target")}</Text>
+          </Button>
+        </XStack>
+      ) : null}
     </YStack>
   );
 }

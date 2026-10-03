@@ -98,8 +98,8 @@ function log(over: Partial<QuestLogData["session"]> = {}, trace = [line]): Quest
   };
 }
 
-async function mount(data: QuestLogData) {
-  mockRead.mockResolvedValue({ status: "ready", log: data, kill: null });
+async function mount(data: QuestLogData, kill: unknown = null) {
+  mockRead.mockResolvedValue({ status: "ready", log: data, kill });
   await render(
     <SafeAreaProvider
       initialMetrics={{
@@ -200,4 +200,27 @@ test("the GPX goes out through the one writer of the format", async () => {
   await fireEvent.press(screen.getByTestId("share-gpx"));
 
   expect(mockExport).toHaveBeenCalledWith([{ t: 1 }]);
+});
+
+test("a felled boss is named by its own name and drawn fallen, not the quest's painting", async () => {
+  const { getBossAsset } = require("@/constants/assetMap") as typeof import("@/constants/assetMap");
+  const { BOSSES } = require("@/constants/bosses") as typeof import("@/constants/bosses");
+  await mount(log({ outing: null }, []), {
+    adventureId: 1,
+    title: BOSSES.fire_dragon.name,
+    bossImagePath: "fire_dragon.webp",
+    steps: 3,
+    days: 4,
+    hurt: [],
+    lastBlow: null,
+    pool: 100,
+    felledAt: new Date(2026, 8, 20),
+  });
+
+  expect(screen.getByTestId("share-card-kill")).toHaveTextContent(
+    new RegExp(BOSSES.fire_dragon.name.en),
+  );
+  expect(screen.getByTestId("share-card-kill")).not.toHaveTextContent("Path");
+  const fallen = getBossAsset("fire_dragon.webp", 0, "defeated");
+  expect(screen.getByTestId("share-card-visual").props.source).toEqual([fallen]);
 });

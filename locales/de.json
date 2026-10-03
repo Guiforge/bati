@@ -352,6 +352,8 @@
     "import_choice_copy": "Beide behalten",
     "import_movements": "Übungen übernehmen",
     "import_missing_movement": "Noch nicht in deiner Bati-Version",
+    "import_have": "Schon in deinen Übungen",
+    "import_unticked_hint": "Eine abgewählte Übung bleibt aus der Quest draußen.",
     "import_none_kept": "Wähle mindestens eine Übung.",
     "import_confirm": "Zu meinen Quests hinzufügen",
     "import_confirm_update": "Meine Quest aktualisieren"
@@ -739,6 +741,7 @@
     "bosses_title": "Besiegte Bosse",
     "bosses_empty": "Die Bosse, die du besiegst, landen hier.",
     "bosses_standing": "Noch unbesiegt",
+    "boss_standing_label": "Unbesiegter Boss. Öffnet sein Abenteuer.",
     "own_quest": "Eine eigene Quest",
     "lead_empty": "Noch nichts eingetragen. Jeder Rekord unten gehört dir: Die erste Wiederholung einer Übung ist immer ein Rekord.",
     "lead_month_one": "{{count}} Trainingstag im {{month}}.",

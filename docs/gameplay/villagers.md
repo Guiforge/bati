@@ -211,6 +211,11 @@ Five, one per tab, one villager and one sentence each, seen once ever. **One bub
 looking at needs one sentence; if it needs three, the screen is the problem. A guide on a tab is
 a line that stays until you leave; on the Village it is the figure, and a touch sends it away.
 
+A guide is marked seen when it is **drawn** (`useGuideSeen`, called by both drawers), never when
+it is cued: a Village that failed to load mounts no figure, and the Home guide used to be replaced
+by the comeback greeting before it rendered. The comeback now waits for a guide on screen (and is
+not marked greeted), so the next visit owes it.
+
 Settings → **Review the guides** clears the whole `guidesSeen` set at once. One key rather than
 five booleans, because forgetting one of five is exactly how a hero ends up with four guides back
 and no idea which one they missed.

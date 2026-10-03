@@ -41,6 +41,10 @@ jest.mock("@/hooks/useBackup", () => ({
   useBackup: () => ({
     runAdopt: (plain: { uri: string }, before: () => Promise<void>) =>
       mockAdopted.push({ uri: plain.uri, before }),
+    // The adopt's failure alert and join question: the prompt must mount it, or they never show.
+    dialog: require("react").createElement(require("react-native").View, {
+      testID: "backup-dialog",
+    }),
   }),
 }));
 jest.mock("@/src/backupFiles", () => ({
@@ -150,6 +154,11 @@ beforeEach(() => {
   mockSheet = null;
   useSyncStore.setState({ result: null, offered: [], run });
   useSessionStore.setState({ status: "idle" });
+});
+
+test("mounts the backup's own dialog, which an adopt's failure and join question need", async () => {
+  const view = await render(<SyncPrompt />);
+  expect(view.getByTestId("backup-dialog")).toBeTruthy();
 });
 
 test("ahead: taking its version adopts that device's file, with nothing to keep first", async () => {

@@ -127,9 +127,9 @@ interface ChorusState {
 
   hydrate: () => Promise<void>;
   /**
-   * Returns whether a villager actually came. Callers that spend something on the attempt need to
-   * know: a first-visit guide marked "seen" after a refused cue is a guide burnt without ever
-   * having been read, and there is no second chance for one.
+   * Returns whether a villager actually came. No caller spends anything on it any more (a guide is
+   * marked seen when drawn, `useGuideSeen`, since an accepted cue can still go undrawn); the
+   * admission tests read it.
    */
   cue: (moment: CueMoment, params?: CueParams, owner?: CueOwner) => boolean;
   /** Takes the id so a timer belonging to a cameo that was already replaced cannot clear its successor. */
@@ -284,8 +284,8 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
     // A guide waits its turn rather than taking it. Two screens mounting together — which the tab
     // navigator does — used to mean the second guide overwrote the first, and *both* were then
     // marked seen: four of the five tutorials burnt without ever being read. Refusing here, plus
-    // `useScreenGuide` only writing the flag when this returns true, is what makes each guide
-    // wait for a visit where it can actually be shown.
+    // the flag being written only once a drawer shows the guide (`useGuideSeen`), is what makes
+    // each guide wait for a visit where it can actually be shown.
 
     const admitted = admit(rule, state, now);
     if (!admitted) return false;

@@ -5,6 +5,7 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { getVillagerAsset } from "@/constants/assetMap";
 import { type CueOwner, useChorusStore } from "@/stores/chorus";
 import { useCueOwner } from "./useCueOwner";
+import { useGuideSeen } from "./useGuideSeen";
 import { useTypedLine } from "./useTypedLine";
 
 /**
@@ -30,6 +31,7 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
   const focused = useCueOwner(owner);
   const speaking = focused && current?.owner === owner ? current : null;
   const { shown, rest } = useTypedLine(speaking);
+  useGuideSeen(speaking);
 
   const block = speaking ? (
     <XStack

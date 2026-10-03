@@ -352,6 +352,8 @@
     "import_choice_copy": "Keep both",
     "import_movements": "Exercises to bring in",
     "import_missing_movement": "Not in your version of Bati yet",
+    "import_have": "Already in your exercises",
+    "import_unticked_hint": "An unticked exercise is left out of the quest.",
     "import_none_kept": "Pick at least one exercise.",
     "import_confirm": "Add to my quests",
     "import_confirm_update": "Update my quest"
@@ -739,6 +741,7 @@
     "bosses_title": "Bosses felled",
     "bosses_empty": "The bosses you defeat land here.",
     "bosses_standing": "Still standing",
+    "boss_standing_label": "Unbeaten boss. Opens its adventure.",
     "own_quest": "A quest of your own",
     "lead_empty": "Nothing written yet. Every record below is yours to set: the first rep of an exercise is always a record.",
     "lead_month_one": "{{count}} day trained in {{month}}.",

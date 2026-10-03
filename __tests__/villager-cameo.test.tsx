@@ -17,6 +17,8 @@ jest.mock("@/db", () => ({
   preferences: {
     getRecentCameoLines: jest.fn().mockResolvedValue([]),
     setRecentCameoLines: jest.fn().mockResolvedValue(undefined),
+    getGuidesSeen: jest.fn().mockResolvedValue([]),
+    setGuidesSeen: jest.fn().mockResolvedValue(undefined),
   },
 }));
 jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
@@ -123,6 +125,40 @@ describe("the Village's floating villager", () => {
     const { queryByTestId } = await renderVillage();
     expect(queryByTestId("villager-cameo")).toBeNull();
     expect(queryByTestId("villager-zone")).toBeNull();
+  });
+
+  // A guide has one chance: met when the figure is drawn saying it, never while the scene loads
+  // or on a window with no band for the figure.
+  it("marks the guide seen once the figure says it, and not before", async () => {
+    const { preferences } = jest.requireMock("@/db") as { preferences: Record<string, jest.Mock> };
+    const flush = () =>
+      act(async () => {
+        for (let i = 0; i < 5; i++) await Promise.resolve();
+      });
+    preferences.setGuidesSeen?.mockClear();
+
+    mockSceneLoading = true;
+    const { rerender } = await renderVillage();
+    speakGuide(en.villagers.farmer.guide_village[0] as string);
+    await flush();
+    expect(preferences.setGuidesSeen).not.toHaveBeenCalled();
+
+    await rerender(
+      <SafeAreaProvider>
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <VillagerCameo band={null} />
+        </TamaguiProvider>
+      </SafeAreaProvider>,
+    );
+    await act(async () => speakGuide(en.villagers.farmer.guide_village[0] as string));
+    await flush();
+    expect(preferences.setGuidesSeen).not.toHaveBeenCalled();
+
+    mockSceneLoading = false;
+    speakGuide(en.villagers.farmer.guide_village[0] as string);
+    await rerender(villageTree());
+    await flush();
+    expect(preferences.setGuidesSeen).toHaveBeenCalledWith(["guide_village"]);
   });
 
   it("shows the line", async () => {

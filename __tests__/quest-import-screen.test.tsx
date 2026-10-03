@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
 import type { ReactNode } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -8,6 +8,7 @@ import QuestImportScreen from "@/app/quest-import";
 import { ImportQuestButton } from "@/components/quests/QuestFileButtons";
 import { rawColors } from "@/constants/rawColors";
 import type { QuestTemplate } from "@/db/quests";
+import { formatTarget } from "@/db/targets";
 import { holdIncomingFile, incomingFile } from "@/src/incomingFile";
 import { parseQuestFile, type QuestFile, QuestFileError, type QuestPreview } from "@/src/questFile";
 import { reportError } from "@/src/reportError";
@@ -184,6 +185,47 @@ test("a movement this version lacks is unticked, cannot be ticked, and stays out
   // Untouched, the title keeps the sender's four translations.
   expect(sent.quest.title).toEqual(file.quest.title);
   expect(sent.quest.uuid).toBe(UUID);
+});
+
+// Jumping Jack is a catalogue exercise: a checkbox for it offered a choice that was not one.
+test("an exercise the hero already has is a plain row, and the unticking line explains the rest", async () => {
+  const have = { id: 7, enName: "Push-up", frName: "Pompe", imagePath: "" } as never;
+  mockPreview.mockResolvedValue({
+    ...preview(),
+    slots: [
+      { exercise: have, available: true, target: { type: "reps" as const, value: 14 } },
+      ...preview().slots.slice(1),
+    ],
+  });
+  await mount();
+  await screen.findByTestId("quest-import-title");
+
+  expect(screen.queryByTestId("quest-import-slot-0")).toBeNull();
+  expect(screen.getByTestId("quest-import-have-0")).toBeTruthy();
+  expect(screen.getByText("Already in your exercises")).toBeTruthy();
+  // Its target still shows, in the same words as a tickable row's.
+  expect(
+    within(screen.getByTestId("quest-import-have-0")).getByText(
+      formatTarget({ type: "reps", value: 14 }, "en"),
+      { exact: false },
+    ),
+  ).toBeTruthy();
+  expect(screen.getByText("An unticked exercise is left out of the quest.")).toBeTruthy();
+  expect(slot(2).props.accessibilityState).toEqual({ checked: true, disabled: false });
+
+  await fireEvent.press(confirm());
+  // What is already there still comes with the quest.
+  expect(imported().slots).toEqual([file.slots[0], file.slots[2]]);
+});
+
+test("with nothing to untick, the line about unticking is not shown", async () => {
+  const have = { id: 7, enName: "Push-up", frName: "Pompe", imagePath: "" } as never;
+  const row = { exercise: have, available: true, target: { type: "reps" as const, value: 10 } };
+  mockPreview.mockResolvedValue({ ...preview(), slots: [row, preview().slots[1], row] });
+  await mount();
+  await screen.findByTestId("quest-import-title");
+
+  expect(screen.queryByText("An unticked exercise is left out of the quest.")).toBeNull();
 });
 
 // The edits on screen must be the file written, not a preview the import ignores.

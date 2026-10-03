@@ -2,9 +2,9 @@ import Constants from "expo-constants";
 import * as Linking from "expo-linking";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
 
 import { useToast } from "@/components/common/Toast";
+import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { buildBugReportMailto, readCrashLog, readErrorLog } from "@/src/crashLog";
 import { reminderReportLine } from "@/src/reminderReport";
 import { reportError } from "@/src/reportError";
@@ -44,6 +44,7 @@ export function useBugReport() {
   const { t } = useTranslation();
   const { showError } = useToast();
   const [crashCount, setCrashCount] = useState(0);
+  const { ask, dialog } = useConfirmDialog();
 
   // Crashes only, not breadcrumbs: "3 reports" on the Settings row must mean three crashes,
   // not a healthy app whose widget redraw failed three times.
@@ -99,15 +100,17 @@ export function useBugReport() {
    */
   const alertWithReport = useCallback(
     (message: string) => {
-      Alert.alert(t("common.error"), message, [
-        // Positive is the emphasised button on Android, so the report action goes last — same
-        // ordering note as the auto-backup dialog in Settings.
-        { text: t("common.close"), style: "cancel" },
-        { text: t("feedback.report_cta"), onPress: openBugReport },
-      ]);
+      ask({
+        title: t("common.error"),
+        body: message,
+        confirmLabel: t("feedback.report_cta"),
+        cancelLabel: t("common.close"),
+        onConfirm: openBugReport,
+      });
     },
-    [t, openBugReport],
+    [ask, t, openBugReport],
   );
 
-  return { openBugReport, alertWithReport, crashCount };
+  // `dialog` is the in-app alert `alertWithReport` raises: every caller renders it once.
+  return { openBugReport, alertWithReport, crashCount, dialog };
 }

@@ -1,7 +1,10 @@
-import { act, renderHook, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react-native";
+import { Alert } from "react-native";
+import { TamaguiProvider } from "tamagui";
 
 import { useBackup } from "@/hooks/useBackup";
 import { useRestoreStore } from "@/stores/restore";
+import config from "@/tamagui.config";
 
 /**
  * The hook is where the safety promise lives, and the promise is about *order*: a backup is
@@ -21,26 +24,10 @@ let mockStageGate: Promise<void> | null = null;
 let mockSaveOutcome: () => boolean = () => true;
 let mockDecryptOutcomes: string[] = [];
 let mockEncryption = "off";
-let mockAlertAnswer = "backup.joinNo";
-const mockSystemAlerts: string[] = [];
 
 jest.mock("@/src/backupCipher", () => ({
   encryptionStatus: () => Promise.resolve(mockEncryption),
 }));
-
-// The join question is a system alert: answered here by the button whose text is `mockAlertAnswer`.
-jest.mock("react-native", () => {
-  const rn = jest.requireActual("react-native");
-  rn.Alert.alert = (
-    title: string,
-    _message: string,
-    buttons: { text: string; onPress?: () => void }[],
-  ) => {
-    mockSystemAlerts.push(title);
-    buttons.find((b) => b.text === mockAlertAnswer)?.onPress?.();
-  };
-  return rn;
-});
 
 jest.mock("@/db/backup", () => ({
   validateBackup: jest.fn(async () => {
@@ -141,6 +128,9 @@ jest.mock("@/hooks/useBugReport", () => ({
     alertWithReport: (message: string) => mockAlerts.push(message),
     openBugReport: jest.fn(),
     crashCount: 0,
+    dialog: require("react").createElement(require("react-native").View, {
+      testID: "report-dialog",
+    }),
   }),
 }));
 
@@ -167,8 +157,6 @@ beforeEach(() => {
   mockSaveOutcome = () => true;
   mockDecryptOutcomes = [];
   mockEncryption = "off";
-  mockAlertAnswer = "backup.joinNo";
-  mockSystemAlerts.length = 0;
   mockAutoFolderOutcome = () => null;
   mockEnableOutcome = () => "Documents/Bati";
   mockDisableOutcome = () => {};
@@ -282,44 +270,83 @@ test("two screens cannot run two imports into the one staging file", async () =>
 });
 
 describe("an encrypted backup opened with its password", () => {
-  test("with encryption off here, the hero is asked before the key becomes this phone's", async () => {
+  // The hook cannot render, so the join question comes back as `dialog` and the probe mounts it.
+  let latest: ReturnType<typeof useBackup>;
+  function Probe() {
+    latest = useBackup();
+    return latest.dialog;
+  }
+  async function importWithPassword() {
     mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
-    mockAlertAnswer = "backup.joinYes";
-    const { result } = await renderHook(() => useBackup());
+    await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <Probe />
+      </TamaguiProvider>,
+    );
+    await act(() => latest.runImport());
+    await waitFor(() => expect(latest.secretRequest.open).toBe(true));
+    await act(async () => latest.submitSecret("correct horse"));
+  }
 
-    await act(() => result.current.runImport());
-    await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
-    await act(async () => result.current.submitSecret("correct horse"));
+  test("its dialog also carries the failure alert, so a caller mounting one shows both", async () => {
+    await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <Probe />
+      </TamaguiProvider>,
+    );
+    expect(screen.getByTestId("report-dialog")).toBeTruthy();
+  });
+
+  test("with encryption off here, the hero is asked, in-app, before the key becomes this phone's", async () => {
+    const alert = jest.spyOn(Alert, "alert");
+    await importWithPassword();
+    await waitFor(() => expect(screen.getByText("backup.joinTitle")).toBeTruthy());
+    expect(alert).not.toHaveBeenCalled();
+    expect(useRestoreStore.getState().phase).not.toBe("restoring");
+
+    await act(async () => fireEvent.press(screen.getByTestId("confirm-dialog-confirm")));
     await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
-
-    expect(mockSystemAlerts).toEqual(["backup.joinTitle"]);
     expect(mockCalls).toContain("join:primary");
   });
 
   test("declined, nothing is adopted and the restore still goes ahead", async () => {
-    mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
-    mockAlertAnswer = "backup.joinNo";
-    const { result } = await renderHook(() => useBackup());
-
-    await act(() => result.current.runImport());
-    await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
-    await act(async () => result.current.submitSecret("correct horse"));
+    await importWithPassword();
+    await waitFor(() => expect(screen.getByText("backup.joinTitle")).toBeTruthy());
+    await act(async () => fireEvent.press(screen.getByTestId("confirm-dialog-cancel")));
     await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
 
     expect(mockCalls.some((c) => c.startsWith("join:"))).toBe(false);
   });
 
-  test("with encryption on here, the key is only remembered, without a question", async () => {
-    mockEncryption = "on";
-    mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
-    const { result } = await renderHook(() => useBackup());
-
-    await act(() => result.current.runImport());
-    await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
-    await act(async () => result.current.submitSecret("correct horse"));
+  test("hardware back on the question records nothing and the restore still goes ahead", async () => {
+    await importWithPassword();
+    await waitFor(() => expect(screen.getByText("backup.joinTitle")).toBeTruthy());
+    await act(async () => fireEvent(screen.getByTestId("confirm-dialog"), "requestClose"));
     await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
 
-    expect(mockSystemAlerts).toEqual([]);
+    expect(mockCalls.some((c) => c.startsWith("join:"))).toBe(false);
+  });
+
+  // The native Alert outlived its screen; an in-app dialog dies with it. A question left pending
+  // held the import lock, and every backup action after it was silently ignored until a restart.
+  test("a screen unmounted with the question open declines it, and the next backup runs", async () => {
+    await importWithPassword();
+    await waitFor(() => expect(screen.getByText("backup.joinTitle")).toBeTruthy());
+    await act(async () => screen.unmount());
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+    expect(mockCalls.some((c) => c.startsWith("join:"))).toBe(false);
+
+    const { result } = await renderHook(() => useBackup());
+    await act(async () => result.current.runExport());
+    expect(mockCalls).toContain("export");
+  });
+
+  test("with encryption on here, the key is only remembered, without a question", async () => {
+    mockEncryption = "on";
+    await importWithPassword();
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+
+    expect(screen.queryByText("backup.joinTitle")).toBeNull();
     expect(mockCalls).toContain("join:keyring");
   });
 });

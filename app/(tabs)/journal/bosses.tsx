@@ -75,7 +75,8 @@ export default function BossesScreen() {
             <NBlock
               key={boss.adventureId}
               testID="journal-boss-standing"
-              accessibilityLabel={boss.title[language] || boss.title.en}
+              // The title names the monster, which the silhouette hides: say what a press does.
+              accessibilityLabel={t("journal.boss_standing_label")}
               onPress={() => router.push(`/adventures/${boss.adventureId}` as never)}
             >
               <XStack items="center" gap={11}>

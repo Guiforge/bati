@@ -63,6 +63,16 @@ test("an empty shelf shows the bosses still standing, and a press opens that cam
   expect(mockPush).toHaveBeenCalledWith("/adventures/12");
 });
 
+test("a screen reader is not told the name the silhouette hides, only what the press does", async () => {
+  await mount();
+  const rows = await screen.findAllByTestId("journal-boss-standing");
+  for (const row of rows) {
+    expect(row.props.accessibilityLabel).toBe("journal.boss_standing_label");
+    expect(row.props.accessibilityRole).toBe("button");
+  }
+  expect(screen.queryByLabelText("Fire Dragon")).toBeNull();
+});
+
 test("with every boss felled there is nothing standing to show", async () => {
   mockStanding.mockResolvedValue([]);
   mockKills.mockResolvedValue([

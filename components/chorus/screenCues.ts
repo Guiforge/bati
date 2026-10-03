@@ -2,7 +2,7 @@ import { differenceInCalendarDays, parseISO } from "date-fns";
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
 
-import type { GuideMoment } from "@/constants/villagers";
+import { type GuideMoment, MOMENT_CAST } from "@/constants/villagers";
 import { preferences } from "@/db";
 import { getStreakInfo } from "@/db/streaks";
 import { reportError } from "@/src/reportError";
@@ -44,16 +44,15 @@ export function useScreenGuide(moment: GuideMoment, { enabled = true } = {}): vo
         .getGuidesSeen()
         .then((seen) => {
           if (cancelled || seen.includes(moment)) return;
-          // Only marked seen when a villager actually came. `cue` refuses a guide while an event
-          // or another guide is speaking, and a flag written on a refused cue is a tutorial burnt
-          // without ever having been read. There is no second chance for one, so it waits for a
-          // visit it can use.
-          if (!cue(moment)) return;
-          return preferences.setGuidesSeen([...seen, moment]);
+          // Marked seen by the drawer (`useGuideSeen`), once a villager is actually drawn saying
+          // it. `cue` refuses a guide while an event or another guide speaks, and an accepted cue
+          // can still go undrawn (the Village failing to load, Home's comeback replacing it): a
+          // flag written here would burn a tutorial nobody read, and there is no second chance.
+          cue(moment);
         })
         .catch((error) => reportError("chorus.guide", error));
 
-      // Marked as soon as it is *shown*, not when it finishes: a hero who leaves the screen
+      // Marked as soon as it is *drawn*, not when it finishes: a hero who leaves the screen
       // mid-sentence has met the guide, and showing it again would be the app not trusting them.
       return () => {
         cancelled = true;
@@ -87,6 +86,16 @@ export function useAmbientVisit(
 }
 
 /**
+ * A first-visit guide on screen is not replaced by the greeting: it has one chance and the
+ * greeting has many (not marked greeted, so the next visit owes it). Replacing it burnt
+ * guide_home. Asked right before the cue, after the last await: the guide can land during one.
+ */
+function guideSpeaking(): boolean {
+  const speaking = useChorusStore.getState().current;
+  return speaking !== null && MOMENT_CAST[speaking.moment].priority === "guide";
+}
+
+/**
  * Greet a hero who has been away, exactly once per absence.
  *
  * Keyed on the *last workout date* rather than on when the greeting was last shown. Storing "when
@@ -109,7 +118,7 @@ export function useComebackCue(): void {
         if (cancelled || !lastWorkoutDate) return;
         if (differenceInCalendarDays(new Date(), parseISO(lastWorkoutDate)) < ABSENCE_DAYS) return;
         if ((await preferences.getComebackGreetedAfter()) === lastWorkoutDate) return;
-        if (cancelled) return;
+        if (cancelled || guideSpeaking()) return;
 
         cue("comeback");
         await preferences.setComebackGreetedAfter(lastWorkoutDate);

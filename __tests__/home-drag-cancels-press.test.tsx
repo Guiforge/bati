@@ -22,6 +22,7 @@ jest.mock("@/components/chorus/screenCues", () => ({
   useScreenGuide: () => {},
   useComebackCue: () => {},
 }));
+jest.mock("@/components/chorus/VillagerLine", () => ({ VillagerLine: () => null }));
 jest.mock("@/components/home/HomeHeader", () => ({ HomeHeader: () => null }));
 jest.mock("@/components/home/HomeStage", () => ({ HomeStage: () => null }));
 jest.mock("@/components/home/QuickActions", () => ({ QuickActions: () => null }));

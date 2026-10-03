@@ -1304,6 +1304,16 @@
     "encryptionOffStopSyncCta": "Turn off and stop sync"
   },
   "villagers": {
+    "send_away": "Send away",
+    "names": {
+      "smith": "The Smith",
+      "watcher": "The Watcher",
+      "sage": "The Sage",
+      "champion": "The Champion",
+      "herbalist": "The Herbalist",
+      "minstrel": "The Minstrel",
+      "farmer": "The Farmer"
+    },
     "units": {
       "delta_reps_one": "{{count}} rep",
       "delta_reps_other": "{{count}} reps",
@@ -1433,7 +1443,9 @@
         "I've watched villages disappear. This one will hold.",
         "Stay a while. It heals as well as anything in my bottles."
       ],
-      "guide_journal": ["Everything you've done is here, so you can see what is moving."]
+      "guide_journal": [
+        "On a rest day, this is where to look. Recovery shows in the numbers well before it shows in the mirror."
+      ]
     },
     "minstrel": {
       "rest": [

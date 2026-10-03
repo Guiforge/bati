@@ -1,12 +1,12 @@
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 import type { GuideMoment } from "@/constants/villagers";
 import { preferences } from "@/db";
 import { getStreakInfo } from "@/db/streaks";
 import { reportError } from "@/src/reportError";
-import { useChorusStore } from "@/stores/chorus";
+import { type CueOwner, useChorusStore } from "@/stores/chorus";
 
 /**
  * The two cues a *screen* raises, as opposed to the ones a session does.
@@ -24,11 +24,10 @@ const ABSENCE_DAYS = 7;
  * Show a screen's first-visit guide, once ever.
  *
  * There is no tap-to-advance and no second bubble. One villager, one sentence, gone on its own —
- * which keeps the whole layer non-interactive (`pointerEvents="none"` everywhere, no exception for
- * a guide) and makes "short and skippable" true by construction rather than by a Skip button. A
+ * which makes "short and skippable" true by construction rather than by a Skip button. A
  * screen you are looking at needs one sentence; if it needs three, the screen is the problem.
  */
-export function useScreenGuide(moment: GuideMoment): void {
+export function useScreenGuide(moment: GuideMoment, { enabled = true } = {}): void {
   const cue = useChorusStore((s) => s.cue);
 
   // On *focus*, not on mount. A tab navigator keeps a screen mounted once it has been visited, so
@@ -36,6 +35,9 @@ export function useScreenGuide(moment: GuideMoment): void {
   // first time would then never try again. Arriving on a screen is a focus event.
   useFocusEffect(
     useCallback(() => {
+      // Off when the screen cannot show it (the Village on a window with no room for the figure):
+      // a guide marked seen and never drawn is a tutorial burnt unread.
+      if (!enabled) return;
       let cancelled = false;
 
       preferences
@@ -56,7 +58,7 @@ export function useScreenGuide(moment: GuideMoment): void {
       return () => {
         cancelled = true;
       };
-    }, [moment, cue]),
+    }, [moment, cue, enabled]),
   );
 }
 
@@ -68,7 +70,10 @@ export function useScreenGuide(moment: GuideMoment): void {
  * wandering Quests -> Adventures -> Journal before a session would quietly spend three times the
  * rate the session was tuned for.
  */
-export function useAmbientVisit(moment: "village_visit" | "menu_visit"): void {
+export function useAmbientVisit(
+  moment: "village_visit" | "menu_visit",
+  { owner, enabled = true }: { owner?: CueOwner; enabled?: boolean } = {},
+): void {
   const cue = useChorusStore((s) => s.cue);
 
   // Focus, not mount, for the same reason as the guide: a tab screen stays mounted after its first
@@ -76,8 +81,8 @@ export function useAmbientVisit(moment: "village_visit" | "menu_visit"): void {
   // again. The window is what keeps this rare, not the mounting.
   useFocusEffect(
     useCallback(() => {
-      cue(moment);
-    }, [moment, cue]),
+      if (enabled) cue(moment, undefined, owner);
+    }, [moment, owner, enabled, cue]),
   );
 }
 
@@ -92,21 +97,27 @@ export function useAmbientVisit(moment: "village_visit" | "menu_visit"): void {
 export function useComebackCue(): void {
   const cue = useChorusStore((s) => s.cue);
 
-  useEffect(() => {
-    let cancelled = false;
+  // On focus, not on mount: Home stays mounted behind a session, so a cold start straight into
+  // one used to greet (and mark the hero greeted) under the rest screen, where the line then
+  // showed as the first rest's and held the ambient budget.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
 
-    (async () => {
-      const { lastWorkoutDate } = await getStreakInfo();
-      if (cancelled || !lastWorkoutDate) return;
-      if (differenceInCalendarDays(new Date(), parseISO(lastWorkoutDate)) < ABSENCE_DAYS) return;
-      if ((await preferences.getComebackGreetedAfter()) === lastWorkoutDate) return;
+      (async () => {
+        const { lastWorkoutDate } = await getStreakInfo();
+        if (cancelled || !lastWorkoutDate) return;
+        if (differenceInCalendarDays(new Date(), parseISO(lastWorkoutDate)) < ABSENCE_DAYS) return;
+        if ((await preferences.getComebackGreetedAfter()) === lastWorkoutDate) return;
+        if (cancelled) return;
 
-      cue("comeback");
-      await preferences.setComebackGreetedAfter(lastWorkoutDate);
-    })().catch((error) => reportError("chorus.comeback", error));
+        cue("comeback");
+        await preferences.setComebackGreetedAfter(lastWorkoutDate);
+      })().catch((error) => reportError("chorus.comeback", error));
 
-    return () => {
-      cancelled = true;
-    };
-  }, [cue]);
+      return () => {
+        cancelled = true;
+      };
+    }, [cue]),
+  );
 }

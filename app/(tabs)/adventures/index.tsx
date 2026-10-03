@@ -11,6 +11,7 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AdventureFooter } from "@/components/adventures/AdventureFooter";
 import { starsFor } from "@/components/adventures/replayStars";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
+import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -373,7 +374,7 @@ function StatusMessage({
 
 export default function AdventuresGallery() {
   useScreenGuide("guide_adventures");
-  useAmbientVisit("menu_visit");
+  useAmbientVisit("menu_visit", { owner: "adventures" });
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -505,6 +506,8 @@ export default function AdventuresGallery() {
           {t("adventures.gallery_subtitle", "Multi-workout programs with a story and a boss fight")}
         </Text>
       </YStack>
+
+      <VillagerLine owner="adventures" />
 
       <StatusMessage
         state={state}

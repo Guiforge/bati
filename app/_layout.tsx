@@ -19,8 +19,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider, Theme } from "tamagui";
 
-import { dismissVillagerOnTouch } from "@/components/chorus/cameoTouch";
-import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
@@ -168,12 +166,7 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView
-      style={{ flex: 1 }}
-      // Watches every touch on its way down, never takes one: a villager on screen leaves on any
-      // tap, and the tap still lands on what was under it. See components/chorus/VillagerCameo.tsx.
-      onStartShouldSetResponderCapture={dismissVillagerOnTouch}
-    >
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="light" />
       <SafeAreaProvider>
         <TamaguiProvider config={config} defaultTheme={colorScheme}>
@@ -214,8 +207,6 @@ export default function RootLayout() {
                         },
                       }}
                     />
-                    {/* Above every route, mounted once. See components/chorus/VillagerCameo.tsx. */}
-                    <VillagerCameo />
                     {/* Offers another device's newer version after a sync. Renders nothing. */}
                     <SyncPrompt />
                     {/* Follows a language picked in Android's settings. Renders nothing. */}

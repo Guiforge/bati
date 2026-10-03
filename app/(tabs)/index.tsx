@@ -1,6 +1,7 @@
 import { PanResponder, ScrollView } from "react-native";
 import { YStack } from "tamagui";
 import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
+import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
 import { QuickActions } from "@/components/home/QuickActions";
@@ -55,6 +56,7 @@ export default function HomeScreen() {
     <YStack testID="home-screen" flex={1} bg="$background" {...dragCancelsPress}>
       {/* The whole top chrome: identity, level, XP, streak, village. Owns the top inset. */}
       <HomeHeader />
+      <VillagerLine owner="home" />
 
       {/* Grows to the viewport and scrolls only past it: the scene takes what the strip and the
           quick actions leave, and a recovery card above it pushes the column rather than crushing

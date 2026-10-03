@@ -9,9 +9,13 @@ jest.mock("@/src/widget", () => ({ requestWidgetsUpdate: jest.fn().mockResolvedV
 jest.mock("@/db/streaks", () => ({ getStreakInfo: jest.fn() }));
 // `useFocusEffect` is `useEffect` for a screen that is on top. With one hook rendered in
 // isolation it is always on top, so the two are the same thing here.
+let mockFocused = true;
 jest.mock("expo-router", () => ({
   useFocusEffect: (effect: import("react").EffectCallback) =>
-    (jest.requireActual("react") as typeof import("react")).useEffect(effect, [effect]),
+    (jest.requireActual("react") as typeof import("react")).useEffect(
+      () => (mockFocused ? effect() : undefined),
+      [effect],
+    ),
 }));
 jest.mock("@/db", () => ({
   preferences: {
@@ -58,6 +62,7 @@ const daysAgo = (n: number) =>
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockFocused = true;
   prefs.getGuidesSeen.mockResolvedValue([]);
   prefs.getComebackGreetedAfter.mockResolvedValue(null);
   jest.useFakeTimers().setSystemTime(TODAY);
@@ -67,6 +72,7 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.useRealTimers();
+  jest.restoreAllMocks();
 });
 
 describe("useScreenGuide", () => {
@@ -96,7 +102,14 @@ describe("useScreenGuide", () => {
    */
   it("does not burn a guide that never got to be shown", async () => {
     useChorusStore.setState({
-      current: { id: 9, moment: "boss_defeated", villager: "watcher", pose: "salute", line: "…" },
+      current: {
+        id: 9,
+        owner: "rest",
+        moment: "boss_defeated",
+        villager: "watcher",
+        pose: "salute",
+        line: "…",
+      },
     });
 
     await mountAndSettle(() => useScreenGuide("guide_adventures"));
@@ -107,7 +120,14 @@ describe("useScreenGuide", () => {
 
   it("shows it on the next visit instead", async () => {
     useChorusStore.setState({
-      current: { id: 9, moment: "boss_defeated", villager: "watcher", pose: "salute", line: "…" },
+      current: {
+        id: 9,
+        owner: "rest",
+        moment: "boss_defeated",
+        villager: "watcher",
+        pose: "salute",
+        line: "…",
+      },
     });
     await mountAndSettle(() => useScreenGuide("guide_adventures"));
 
@@ -126,7 +146,14 @@ describe("useScreenGuide", () => {
    */
   it("talks over village chatter, which is disposable, but never over an event", async () => {
     useChorusStore.setState({
-      current: { id: 9, moment: "menu_visit", villager: "sage", pose: "talk", line: "…" },
+      current: {
+        id: 9,
+        owner: "rest",
+        moment: "menu_visit",
+        villager: "sage",
+        pose: "talk",
+        line: "…",
+      },
     });
 
     await mountAndSettle(() => useScreenGuide("guide_adventures"));
@@ -145,7 +172,51 @@ describe("useScreenGuide", () => {
   });
 });
 
+describe("cue owners", () => {
+  it("gives a guide to the screen that owns it", async () => {
+    await mountAndSettle(() => useScreenGuide("guide_journal"));
+    await waitFor(() => expect(useChorusStore.getState().current?.owner).toBe("journal"));
+  });
+
+  it("makes the screen name itself for the shared menu moment, and refuses without one", () => {
+    jest.spyOn(Math, "random").mockReturnValue(0.01);
+    expect(useChorusStore.getState().cue("menu_visit")).toBe(false);
+    expect(useChorusStore.getState().cue("menu_visit", undefined, "quests")).toBe(true);
+    expect(useChorusStore.getState().current?.owner).toBe("quests");
+  });
+
+  it("dismissOwned sends away its own cue and nobody else's", () => {
+    jest.spyOn(Math, "random").mockReturnValue(0.01);
+    useChorusStore.getState().cue("rest");
+    useChorusStore.getState().dismissOwned("village");
+    expect(useChorusStore.getState().current?.owner).toBe("rest");
+    useChorusStore.getState().dismissOwned("rest");
+    expect(useChorusStore.getState().current).toBeNull();
+  });
+
+  // The Village on a window with no room for the figure: a guide marked seen and never drawn is a
+  // tutorial burnt unread (an 841x701 dp foldable).
+  it("does not cue, nor mark seen, a guide its screen cannot draw", async () => {
+    await mountAndSettle(() => useScreenGuide("guide_village", { enabled: false }));
+    expect(useChorusStore.getState().current).toBeNull();
+    expect(prefs.getGuidesSeen).not.toHaveBeenCalled();
+    expect(prefs.setGuidesSeen).not.toHaveBeenCalled();
+  });
+});
+
 describe("useComebackCue", () => {
+  // Home stays mounted behind a session: a cold start straight into one greeted the hero, marked
+  // them greeted, and the line then showed on the first rest.
+  it("does not greet while Home is not the focused screen", async () => {
+    mockFocused = false;
+    getStreakInfo.mockResolvedValue({ lastWorkoutDate: daysAgo(21) });
+
+    await mountAndSettle(() => useComebackCue());
+
+    expect(useChorusStore.getState().current).toBeNull();
+    expect(prefs.setComebackGreetedAfter).not.toHaveBeenCalled();
+  });
+
   it("says nothing to someone who trained this week", async () => {
     getStreakInfo.mockResolvedValue({ lastWorkoutDate: daysAgo(3) });
 

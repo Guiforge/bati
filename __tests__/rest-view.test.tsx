@@ -6,6 +6,7 @@ import { TamaguiProvider } from "tamagui";
 import { RestView } from "@/components/session/RestView";
 import type { Quest } from "@/db/quests";
 import { playCue } from "@/src/sounds";
+import { useChorusStore } from "@/stores/chorus";
 import { FINAL_REST_SECONDS, useSessionStore } from "@/stores/session";
 import config from "@/tamagui.config";
 
@@ -26,6 +27,7 @@ jest.mock("@/db/preferences", () => ({
   },
 }));
 jest.mock("@/db", () => ({ preferences: {} }));
+jest.mock("expo-router", () => ({ useIsFocused: () => true }));
 // `t` included because RestView cues a villager on mount and the chorus resolves its pools
 // through i18next. A mock that describes less than the real module is how the last two
 // suites went down — see the header of __tests__/store-settings.test.ts.
@@ -106,6 +108,39 @@ describe("RestView", () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  // A villager moved +10s/+30s up and the set stepper down about 50 dp: the column was centred and
+  // the line sat in the middle of it. The controls must not depend on whether anyone came.
+  it("keeps everything the hero aims at where it is, villager or not", async () => {
+    const view = await mountRest();
+    const bare = JSON.stringify(view.toJSON());
+    expect(bare).not.toContain("villager-line-block");
+
+    await act(() => {
+      useChorusStore.setState({
+        current: {
+          id: 1,
+          owner: "rest",
+          moment: "rest",
+          villager: "farmer",
+          pose: "talk",
+          line: "A line in the rest.",
+        },
+      });
+    });
+    const withVillager = JSON.stringify(view.toJSON());
+
+    expect(withVillager).toContain("villager-line-block");
+    // Same place for the controls, and the line comes after the last of them.
+    expect(withVillager.indexOf('"rest-up-next"')).toBe(bare.indexOf('"rest-up-next"'));
+    expect(withVillager.indexOf("+10s")).toBe(bare.indexOf("+10s"));
+    expect(withVillager.indexOf("villager-line-block")).toBeGreaterThan(
+      withVillager.indexOf('"rest-up-next"'),
+    );
+    // Top-anchored: a centred column re-centres around whatever is added to it.
+    const scroll = view.getByTestId("rest-scroll");
+    expect(JSON.stringify(scroll.props.contentContainerStyle)).toContain('"flex-start"');
   });
 
   it("names the rest after the round when a round just ended", async () => {

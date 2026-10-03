@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, Text, XStack, YStack } from "tamagui";
+import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
@@ -209,7 +210,15 @@ export function RestView() {
           // only puts the keyboard away. See __tests__/keyboard-taps-guard.test.ts.
           keyboardShouldPersistTaps="handled"
           style={{ flex: 1 }}
-          contentContainerStyle={{ flexGrow: 1, justifyContent: "center", gap: 28 }}
+          testID="rest-scroll"
+          // Top-anchored, not centred: a centred column moved the timer's buttons and the
+          // stepper whenever a villager arrived, and those are controls the hero is aiming at.
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "flex-start",
+            paddingTop: 24,
+            gap: 28,
+          }}
         >
           {/* Timer. Not on the final rest: nothing is coming, so there is nothing to count to. */}
           {!isFinal && (
@@ -321,6 +330,10 @@ export function RestView() {
               </XStack>
             </YStack>
           </YStack>
+
+          {/* A villager, if one came: last, so nothing the hero aims at depends on whether anyone
+              did. In the flow, not tappable. */}
+          <VillagerLine owner="rest" />
         </ScrollView>
 
         {/* Skip Button — the ScrollView's sibling, never inside it, so it stays reachable. */}

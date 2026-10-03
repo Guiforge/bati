@@ -7,6 +7,7 @@ import { RefreshControl, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
+import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { Skeleton } from "@/components/common/Skeleton";
 import { NMuted, NSeg, NText, NTitle } from "@/components/journal/nocturne";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
@@ -77,7 +78,7 @@ function recordLabel(
  */
 export default function JournalScreen() {
   useScreenGuide("guide_journal");
-  useAmbientVisit("menu_visit");
+  useAmbientVisit("menu_visit", { owner: "journal" });
 
   const { t } = useTranslation();
   const router = useRouter();
@@ -225,6 +226,8 @@ export default function JournalScreen() {
           ]}
         />
       </XStack>
+
+      <VillagerLine owner="journal" />
 
       {activeTab === "history" ? (
         history.length > 0 ? (

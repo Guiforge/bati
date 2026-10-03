@@ -86,11 +86,13 @@ tags:
 
 # --- 6. Victory -------------------------------------------------------------
 # (5 is the boss arena, captured last: jumping to it ends this session.)
+# Either footer button: a session under two minutes shows Keep instead of Continue, and a fast
+# run lands there (see subflows/run-a-session.yaml).
 - repeat:
     times: 40
     while:
       notVisible:
-        id: "session-victory-continue"
+        id: "session-victory-(continue|keep-short)"
     commands:
       - tapOn:
           id: "session-complete-exercise"
@@ -100,8 +102,17 @@ tags:
           optional: true
 - extendedWaitUntil:
     visible:
-      id: "session-victory-continue"
+      id: "session-victory-(continue|keep-short)"
     timeout: 25000
+- tapOn:
+    id: "session-victory-keep-short"
+    optional: true
+# Continue is disabled for the whole save; the XP only gets its testID once the session is banked.
+# The capture waits for it too: a store shot of the "keep this short session?" prompt is no shot.
+- extendedWaitUntil:
+    visible:
+      id: "session-victory-xp"
+    timeout: 20000
 - takeScreenshot: 6-victory
 - tapOn:
     id: "session-victory-continue"

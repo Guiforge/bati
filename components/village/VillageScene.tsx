@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import Animated, {
   Easing,
+  Extrapolation,
+  interpolate,
   useAnimatedRef,
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -14,7 +16,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
-
+import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { AppButton } from "@/components/common/AppButton";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
@@ -29,7 +31,7 @@ import {
 } from "@/components/village/VillageLists";
 import { VillageReward } from "@/components/village/VillageReward";
 import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
-import { villageHeroSlot } from "@/components/village/villageArt";
+import { villageCameoBand, villageHeroSlot } from "@/components/village/villageArt";
 import { getSportSpriteAsset, getVillageTierAsset } from "@/constants/assetMap";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
@@ -96,6 +98,14 @@ export function VillageScene() {
       { translateY: reducedMotion ? 0 : scrollY.value * PARALLAX_FACTOR },
       { scale: zoom.value },
     ],
+  }));
+
+  // The pinned status scrim comes in over the distance the painting's own top scrim takes to
+  // scroll away (`insets.top + 48`, below), so the clock always has one of the two behind it and
+  // the painting runs full-bleed under the status bar at rest. UI thread only, like the parallax.
+  const statusScrimFade = insets.top + 48;
+  const statusScrimStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [0, statusScrimFade], [0, 1], Extrapolation.CLAMP),
   }));
 
   // Written by the victory screen's "View Village" (formatGrown). A plain tab visit has none, so
@@ -264,6 +274,7 @@ export function VillageScene() {
     <YStack testID="village-screen" flex={1} bg="$background">
       <Animated.ScrollView
         ref={scrollRef}
+        testID="village-scroll"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
         onScroll={onScroll}
@@ -273,6 +284,7 @@ export function VillageScene() {
             `overflow="hidden"` is what keeps the parallaxed painting inside its own band
             instead of riding down over the list. */}
         <YStack
+          testID="village-hero"
           width="100%"
           height={heroHeight}
           position="relative"
@@ -390,6 +402,10 @@ export function VillageScene() {
           {/* Last child on purpose: the bottom scrim is near-opaque over the lower half of the
               hero, so embers drawn before it would simply not be there. */}
           <VillageEmbers heroHeight={heroHeight} heroWidth={columnWidth} tier={scene.tier} />
+
+          {/* The one floating villager in the app: part of the painting, above the title, so it
+              scrolls with it and the cards below are never under it. Its zone is this band. */}
+          <VillagerCameo band={villageCameoBand(width, height, insets.top)} />
         </YStack>
 
         {/* The panel rides up over the painting's last 14 dp, so the list reads as the scene's
@@ -437,13 +453,18 @@ export function VillageScene() {
 
       {/* Pinned outside the scroll: the status bar is transparent, so without this the list slid
           under the clock and the two read as one line. The scrim inside the painting only covers
-          the painting, and it scrolls away with it. */}
-      <LinearGradient
+          the painting, and it scrolls away with it. Invisible at rest (`statusScrimStyle`): drawn
+          always, it was an opaque band across the top of a painting meant to run full-bleed. */}
+      <Animated.View
         testID="village-status-scrim"
         pointerEvents="none"
-        colors={[rawColors.bgDark, rawColors.bgOverlaySoft]}
-        style={{ position: "absolute", top: 0, left: 0, right: 0, height: insets.top }}
-      />
+        style={[
+          { position: "absolute", top: 0, left: 0, right: 0, height: insets.top },
+          statusScrimStyle,
+        ]}
+      >
+        <LinearGradient colors={[rawColors.bgDark, rawColors.bgOverlaySoft]} style={{ flex: 1 }} />
+      </Animated.View>
 
       {rewardOpen ? (
         <VillageReward

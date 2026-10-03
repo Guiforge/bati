@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, ScrollView, useWindowDimensions } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import Animated, {
   useAnimatedStyle,
@@ -14,8 +14,8 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
-import { cameoTopEdge } from "@/components/chorus/cameoAnchor";
 import { recordCue } from "@/components/chorus/recordCue";
+import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
@@ -36,6 +36,7 @@ import type { FeedbackCode } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
 import { formatGrown } from "@/db/village";
+import { useFontScaled } from "@/hooks/useFontScaled";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
@@ -74,11 +75,63 @@ type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>
 const TRIVIAL_SESSION_SECONDS = 120;
 
 /**
+ * The villager's slot at the top of the hero banner. 88 dp holds a name row and three lines of
+ * text, padding included, at font scale 1 (the longest event line, 140 characters, fits in three
+ * at this width); it grows with the system font scale, or the third line is cut mid-glyph at 1.3.
+ * Anything longer is clamped rather than allowed to move the screen or reach the title below.
+ */
+const VILLAGER_SLOT_TOP = 12;
+const VILLAGER_SLOT_HEIGHT = 88;
+
+/**
  * The hero's own gauge, filling with what this session earned — the one number that makes
  * "come back tomorrow" legible, and it only ever moved on Home, outside the celebration
  * (2026-08 audit, §06-B). Same visual language as the home header: gold on a dark track.
  */
 function HeroLevelBar({
+  heroXp,
+  language,
+  reducedMotion,
+}: {
+  /** `null` until the save lands: the card is there from the first frame at its final height. */
+  heroXp: { before: number; after: number } | null;
+  language: AppLanguage;
+  reducedMotion: boolean;
+}) {
+  return heroXp ? (
+    <FilledLevelBar
+      before={heroXp.before}
+      after={heroXp.after}
+      language={language}
+      reducedMotion={reducedMotion}
+    />
+  ) : (
+    <Card
+      testID="victory-level-placeholder"
+      // Two ellipses and an empty bar: nothing for a screen reader to stop on.
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      width="100%"
+      maxW={520}
+      bg="$surface"
+      borderColor="$glassBorder"
+      gap="$2"
+      py="$3"
+    >
+      <XStack items="center" justify="space-between">
+        <Text fontFamily="$body" fontWeight="700" fontSize={14} color="$textSecondary">
+          …
+        </Text>
+        <Text fontFamily="$body" fontWeight="700" fontSize={12} color="$textSecondary">
+          …
+        </Text>
+      </XStack>
+      <XStack height={8} bg="$surface2" rounded={4} overflow="hidden" width="100%" />
+    </Card>
+  );
+}
+
+function FilledLevelBar({
   before,
   after,
   language,
@@ -140,16 +193,13 @@ export function VictoryView() {
   const { t } = useTranslation();
   const router = useRouter();
   const { confirmForget, dialog: forgetDialog } = useConfirmForget();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const villagerSlot = useFontScaled(VILLAGER_SLOT_HEIGHT);
   const language = useSettingsStore((s) => s.language);
   const reducedMotion = useReducedMotion();
   const { success, selection } = useHaptics();
   const { showError } = useToast();
-  // Whether the villager cameo (app/_layout.tsx, VillagerCameo) is on screen right now: it draws
-  // over the bottom of every screen it appears on, victory included, and this one's summary must
-  // never be permanently stuck behind it.
-  const cameoActive = useChorusStore((s) => s.current !== null);
   // Field by field: the whole store re-rendered this screen on every write, and `saveSession`
   // writes several while it holds the thread.
   const quest = useSessionStore((s) => s.quest);
@@ -366,14 +416,9 @@ export function VictoryView() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
-          // The sticky action row's own band, or — while a cameo is drawn over it — the taller
-          // band its top edge marks (cameoAnchor.ts), so scrolling to the end always clears the
-          // figure instead of leaving the last of the summary peeking out from behind it. Only
-          // reserved while a cameo is actually up: an ordinary victory must not carry a dead
-          // strip of padding for a figure that never appears.
-          paddingBottom: cameoActive
-            ? height - cameoTopEdge(width, height, insets.bottom)
-            : insets.bottom + 96,
+          // The sticky action row's own band. Nothing floats over this screen: the villager is a
+          // line inside the hero banner (VillagerLine), so there is nothing else to clear.
+          paddingBottom: insets.bottom + 96,
           alignItems: "center",
           gap: 20,
         }}
@@ -390,13 +435,6 @@ export function VictoryView() {
           p={0}
           overflow="hidden"
           {...(isBossDefeat ? { borderWidth: 2, borderColor: "$resourceGold" } : null)}
-          {...(felledBoss != null
-            ? {
-                onPress: () => setBossExpanded(true),
-                accessibilityRole: "imagebutton" as const,
-                accessibilityLabel: heroTitle,
-              }
-            : null)}
         >
           {/* The ratio follows the source, because this slot serves two of them: a felled boss is
               1024x1024 and a quest cover is 1024x768. One fixed 16:9 box cut 22% off each end of
@@ -418,6 +456,13 @@ export function VictoryView() {
               colors={["transparent", "rgba(11,15,25,0.55)", "rgba(11,15,25,0.95)"]}
               style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: 0 }}
             />
+            {/* The villager's line, top of the banner beside the trophy. Its slot is here from the
+                first frame, villager or not, at a fixed height: the cue fires after the save, and
+                a line that arrived with it would move things under the finger. Up here an empty
+                slot is just artwork, where under the title it read as dead space. */}
+            <YStack position="absolute" t={VILLAGER_SLOT_TOP} l={64} r="$3">
+              <VillagerLine owner="victory" reserve={villagerSlot} />
+            </YStack>
             <YStack position="absolute" t="$3" l="$3">
               <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$primaryText" />
             </YStack>
@@ -454,6 +499,24 @@ export function VictoryView() {
                 </Text>
               )}
             </YStack>
+            {/* What opens the felled boss: the banner below the villager's slot, never the slot.
+                The whole card used to be the button, so a tap on the line opened the boss and
+                TalkBack met a focusable line inside a focusable card. */}
+            {felledBoss != null && (
+              <Pressable
+                testID="victory-boss-open"
+                onPress={() => setBossExpanded(true)}
+                accessibilityRole="imagebutton"
+                accessibilityLabel={heroTitle}
+                style={{
+                  position: "absolute",
+                  top: VILLAGER_SLOT_TOP + villagerSlot,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+              />
+            )}
           </YStack>
         </Card>
 
@@ -468,8 +531,8 @@ export function VictoryView() {
 
         {/* What the walk was worth. Held until the save lands for the same reason the rewards
             are: the leagues it reports are the ones `saveSession` has just credited. Rendered
-            before the stat row (rather than at the bottom, with the rewards) so it lands above
-            the cameo's band instead of underneath it — see cameoAnchor.ts. */}
+            before the stat row (rather than at the bottom, with the rewards) so it is in view
+            without scrolling past the stat tiles. */}
         {!!result && isExpedition(quest) && (
           <ExpeditionSummary sessionUuid={sessionUuid} language={language} />
         )}
@@ -562,14 +625,13 @@ export function VictoryView() {
         </XStack>
 
         {/* The hero's level bar, filling with this session's XP */}
-        {!!result && (
-          <HeroLevelBar
-            before={result.heroXp.before}
-            after={result.heroXp.after}
-            language={language}
-            reducedMotion={reducedMotion}
-          />
-        )}
+        {/* From the first frame: it used to mount with the save and push the feel buttons about
+            80 dp down from under the finger that was about to press one. */}
+        <HeroLevelBar
+          heroXp={result ? result.heroXp : null}
+          language={language}
+          reducedMotion={reducedMotion}
+        />
 
         {/* Feedback — above the fold and above the rewards: this answer is what steers the next
             session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}

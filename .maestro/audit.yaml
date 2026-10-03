@@ -345,11 +345,13 @@ tags:
 - takeScreenshot: 32-session-rest
 
 # --- Victory ----------------------------------------------------------------
+# Either footer button: a session under two minutes shows Keep instead of Continue, and a fast
+# run lands there (see subflows/run-a-session.yaml).
 - repeat:
     times: 40
     while:
       notVisible:
-        id: "session-victory-continue"
+        id: "session-victory-(continue|keep-short)"
     commands:
       - tapOn:
           id: "session-complete-exercise"
@@ -359,7 +361,7 @@ tags:
           optional: true
 - extendedWaitUntil:
     visible:
-      id: "session-victory-continue"
+      id: "session-victory-(continue|keep-short)"
     timeout: 25000
     optional: true
 - takeScreenshot: 33-victory
@@ -367,6 +369,15 @@ tags:
 - waitForAnimationToEnd:
     timeout: 2000
 - takeScreenshot: 34-victory-scrolled
+- tapOn:
+    id: "session-victory-keep-short"
+    optional: true
+# Continue is disabled for the whole save; the XP only gets its testID once the session is banked.
+- extendedWaitUntil:
+    visible:
+      id: "session-victory-xp"
+    timeout: 20000
+    optional: true
 - tapOn:
     id: "session-victory-continue"
     optional: true

@@ -1304,6 +1304,16 @@
     "encryptionOffStopSyncCta": "Ausschalten und Synchronisierung beenden"
   },
   "villagers": {
+    "send_away": "Wegschicken",
+    "names": {
+      "smith": "Der Schmied",
+      "watcher": "Die Wächterin",
+      "sage": "Der Weise",
+      "champion": "Die Kämpferin",
+      "herbalist": "Die Kräuterkundige",
+      "minstrel": "Der Minnesänger",
+      "farmer": "Die Bäuerin"
+    },
     "units": {
       "delta_reps_one": "{{count}} Wiederholung",
       "delta_reps_other": "{{count}} Wiederholungen",
@@ -1436,7 +1446,7 @@
         "Bleib eine Weile. Das heilt so gut wie alles in meinen Fläschchen."
       ],
       "guide_journal": [
-        "Alles, was du getan hast, ist hier, damit du sehen kannst, was sich bewegt."
+        "An einem Ruhetag lohnt sich der Blick hierher. Erholung zeigt sich in den Zahlen lange vor dem Spiegel."
       ]
     },
     "minstrel": {

@@ -21,8 +21,8 @@ type Props = {
  * The return from a session, once: the first building that rose, before and after, in its own
  * paintings. The rest of the growth is named in one line and listed under "Since your last quest".
  *
- * No villager here. VictoryView has already picked the one villager a victory gets, and the cameo
- * layer is the only place a villager is ever drawn (components/chorus/VillagerCameo.tsx).
+ * No villager here. VictoryView has already picked the one villager a victory gets, and it is shown
+ * as a line in the victory banner (components/chorus/VillagerLine.tsx).
  */
 export function VillageReward({ growth, buildings, language, top, onDismiss }: Props) {
   const { t } = useTranslation();

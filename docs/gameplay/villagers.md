@@ -2,14 +2,15 @@
 title: Villagers
 type: system
 status: active
-updated: 2026-08-23
+updated: 2026-10-03
 related: [../content/image-style-prompt.md, session-flow.md, ../screens/village.md]
-sources: [constants/villagers.ts, stores/chorus.ts, components/chorus/VillagerCameo.tsx, scripts/generate-villagers.py]
+sources: [constants/villagers.ts, stores/chorus.ts, components/chorus/VillagerCameo.tsx, components/chorus/VillagerLine.tsx, scripts/generate-villagers.py]
 ---
 
 # Villagers
 
-A cut-out figure, posed over whatever screen is showing, saying one line.
+A villager saying one line. On the Village it is a cut-out figure standing on the painting; on
+every other screen it is a line in the content flow, under the header.
 
 ## Why the layer exists
 
@@ -70,7 +71,7 @@ what it **refuses**:
 - **18 % chance** on an eligible rest. The absence is what makes the presence worth noticing; a
   villager at every rest is furniture within two sessions.
 - **One switch** in Settings — "Villagers". It silences events too, not just atmosphere.
-- **Reduced motion** removes the slide, keeping the cameo.
+- **Reduced motion** removes the slide and the typing, keeping the villager.
 
 ### How those numbers were chosen
 
@@ -121,43 +122,94 @@ mention the absence either.
 
 ## What is tappable, and what is never
 
-The figure is inert, always. The **bubble** accepts a tap only for guides and events — never for
-ambient. That line is the safe-zone promise made concrete: during a session, at rest, between two
-sets, nothing this layer draws can intercept a tap meant for the screen underneath.
+The figure floats on **one screen only: the Village**, the one screen with a painting to stand
+on. Everywhere else (Home, Quests, Adventures, Journal, the rest screen, victory) a villager is a
+[`VillagerLine`](../../components/chorus/VillagerLine.tsx), in the flow, which by construction sits
+on top of nothing.
 
-A guide or an event lands on a screen the hero is *reading* rather than working through, so there
-the bubble behaves the way a text box should: **the first tap finishes the line, the second sends
-it away.** Which is also the Pokémon rhythm the layer borrows its dialogue shape from.
+This is the answer to a bug that shipped for a month. A single overlay above every route drew the
+figure over content, and because it let touches through, tapping the figure rated a session "Too
+Easy" unseen. A rule applied screen by screen ("a cameo never intersects a control") did not hold;
+a layer that cannot be over a control does. `__tests__/villager-figure-village-only.test.ts` fails
+if any module other than the Village screen renders the figure.
 
-The container is `pointerEvents="box-none"`, not `"none"`: it never receives a touch itself, only a
-child that explicitly opts in, and the only child that ever does is a non-ambient bubble.
+**On the Village.** The figure is a child of the hero painting (`VillageScene`, `testID`
+`village-hero`), in the band between the status bar and the village name (`cameoBand`): it scrolls
+with the painting and no card or building row is ever under it. A window too short to leave that
+band (compact) gets no villager at all rather than one over the title. Figure and bubble are one
+touch zone, a real view across that whole band (a `hitSlop` would lose to an adjacent sibling, and the generous zone is the
+point). A press in it sends the villager away **on touch down** and stops there: nothing
+underneath receives it. A touch anywhere else on the Village reaches the screen as usual, and the
+villager leaves too (a capture on the screen's root view, which never claims the touch). There is
+no "first tap finishes the line": one touch, gone. For TalkBack the zone is a button
+whose label is the speaker and the whole sentence (a user with hints off must still hear it) and
+whose hint is "Send away"; it handles `onPress` as well as `onPressIn`, because an accessibility
+activation never presses in. The bubble shows the speaker's name above the line and is pinned to the
+top of the band, so it does not sit on what the line points at; the typed text stays out of the
+tree.
+
+**Everywhere else.** `VillagerLine` has no pressable and no responder, and is plain text for a
+screen reader (villager name, then the line). It does not leave on a timer: it stays while its
+screen is focused, so the content never jumps up under a finger, and it is dismissed when the
+screen loses focus or unmounts.
+
+**Every cue has an owner**: the screen that raised it (`CueOwner` in `stores/chorus.ts`, derived
+from the moment, or named by the screen for the shared `menu_visit`). A cue is drawn only by its
+owner, only while the owner is focused, and dismissed when the owner blurs or unmounts
+(`useCueOwner`); nobody else adopts or dismisses it. Without owners, any focused line drew
+whatever was current: the Village guide cued during a load typed on the next tab, the comeback
+greeting (once raised on mount, now on focus) showed on the first rest, and tab A's line flashed on
+tab B. The Village page, not the figure, owns the cue while its scene is still a skeleton.
+
+On the Village, a window with no room for the figure (`villageCameoBand` is `null`, for instance an
+unfolded foldable at 841x701 dp) cues nothing: a guide marked seen and never drawn is a tutorial
+burnt unread.
+
+**What an in-flow line may move.** On a tab a first-visit guide arrives after an async read and
+pushes the content below it down once, once ever per tab: an accepted cost. On the rest screen the
+column is top-anchored and the line is the last child, so the timer, "+10s/+30s" and the set
+stepper are where they are whether or not a villager came. The victory screen's level card is
+rendered from the first frame (a placeholder until the save lands) so the feel buttons never drop.
+
+The line reads as speech, not instruction: the speaker's name above it, a face (cropped from the
+art) beside it, the sentence in regular weight. In the victory banner it is clamped to three lines.
+`CAMEO_LINGER_MS` applies to the Village figure alone.
+
+**Victory** reserves the line's slot inside the hero banner (top, beside the trophy, so an empty
+slot is just artwork) from the first render, at a fixed height, villager or not. The cue fires after the save, so the line cannot be known at the first
+frame, and a slot that appeared with it would push the feel buttons from under the finger. The line
+is clamped to the slot, whose height (88 dp at font scale 1, three lines) grows with the system
+font scale, so the third line is never cut at 1.3. Nothing pressable is under or around it: on a
+boss victory the banner used to be one imagebutton (it opens the felled boss), so a tap on the line
+opened the boss and TalkBack met a focusable line inside a focusable card. The boss now opens from
+the banner *below* the slot (`victory-boss-open`), a sibling of the slot, never its ancestor.
 
 ## The typing
 
-Guides and events type themselves out at 24 ms a character — about three seconds for a
+Guides and events type themselves out, on the Village and in `VillagerLine` alike, at 24 ms a character: about three seconds for a
 120-character guide, which reads as deliberate rather than slow. **Ambient lines never type**: a
-sentence appearing letter by letter between two sets is time taken from the session, and there is
-nothing there to tap to hurry it along.
+sentence appearing letter by letter between two sets is time taken from the session.
 
 Reduced motion switches it off entirely. A typewriter is motion.
 
 Two details that are easy to get wrong and are pinned by tests:
 
-- The untyped remainder is rendered **transparent rather than omitted**, so the bubble is its final
-  size from the first character instead of growing line by line under the reader's eye.
-- The accessibility label on the bubble is the **whole sentence**, not the part typed so far — a
-  label that changes every 24 ms is unusable, and a screen reader should get the line at once.
-  The text itself is `accessible={false}` so the half-typed version never reaches the tree.
+- The untyped remainder is rendered **transparent rather than omitted**, so the bubble or line is
+  its final size from the first character instead of growing line by line under the reader's eye.
+- What a screen reader gets is the **whole sentence**, not the part typed so far (the hint of the
+  Village's "Send away" button, the label of `VillagerLine`'s block): a label that changes every
+  24 ms is unusable. The text itself is `accessible={false}` so the half-typed version never
+  reaches the tree.
 
-`CAMEO_LINGER_MS` is measured from the *end* of the typing, not from the start: a flat total meant
-the guides, which are the longest lines in the app, got the least time to be read.
+On the Village, `CAMEO_LINGER_MS` is measured from the *end* of the typing, not from the start: a
+flat total meant the guides, which are the longest lines in the app, got the least time to be read.
 
 ## The guides
 
 Five, one per tab, one villager and one sentence each, seen once ever. **One bubble, not three**:
 "short and skippable" is true by construction rather than by a Skip button, and a screen you are
-looking at needs one sentence — if it needs three, the screen is the problem. Skipping is the tap
-described above.
+looking at needs one sentence; if it needs three, the screen is the problem. A guide on a tab is
+a line that stays until you leave; on the Village it is the figure, and a touch sends it away.
 
 Settings → **Review the guides** clears the whole `guidesSeen` set at once. One key rather than
 five booleans, because forgetting one of five is exactly how a hero ends up with four guides back

@@ -341,8 +341,19 @@ describe("planReminders: every case the Home has", () => {
     expect(titleFor(offer)).toBe('reminders.first_day.0 {"quest":"Chest Day","duration":"8 min"}');
   });
 
+  test("a quest left a while: its name, no day count", () => {
+    const offer = {
+      kind: "stale_quest",
+      days: 9,
+      quest,
+      startable: true,
+      seconds: 480,
+    } as unknown as HomeOffer;
+    expect(titleFor(offer)).toBe('reminders.stale_quest.0 {"quest":"Chest Day"}');
+  });
+
   test("the gallery, when nothing else would load", () => {
-    expect(titleFor({ kind: "gallery" })).toBe("reminders.gallery.0 {}");
+    expect(titleFor({ kind: "gallery", trained: false })).toBe("reminders.gallery.0 {}");
   });
 });
 

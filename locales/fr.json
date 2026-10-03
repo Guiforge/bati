@@ -296,6 +296,10 @@
     "start_adventure": "Démarrer une aventure",
     "no_active_adventure": "Choisis ta voie",
     "start_journey": "Commence ton aventure",
+    "pick_next": "Choisis ta prochaine quête",
+    "last_done_one": "Dernière fois hier",
+    "last_done_many": "Dernière fois il y a {{count}} jours",
+    "last_done_other": "Dernière fois il y a {{count}} jours",
     "play": "Jouer",
     "level_line": "Niveau {{level}} • {{title}}",
     "step_progress": "Étape {{current}} sur {{total}}",
@@ -1762,6 +1766,10 @@
     "weak_muscles": {
       "0": "{{quest}} t'attend. Au menu : {{muscles}}.",
       "1": "Ton jour. {{quest}} rattrape ce qui traîne : {{muscles}}."
+    },
+    "stale_quest": {
+      "0": "{{quest}} t'attend depuis un moment. Ton jour.",
+      "1": "Reprends {{quest}}, ça fait un moment."
     },
     "first_day": {
       "0": "Ton jour. {{quest}}, ≈ {{duration}}. Le premier bâtiment attend.",

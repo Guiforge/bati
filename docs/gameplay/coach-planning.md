@@ -47,7 +47,14 @@ suggests (`suggestDifficultyFromSessions`).
 | 1 | An adventure run is active | `getAnyActiveAdventureRun()` | "Continue Adventure" + step count, rendered as a scene → the adventure map |
 | 2 | An unfulfilled oath names an exercise | `getOathProgress()` → `getChainTo()` → `findQuestWithExercise()` | "Start Quest" + `Oath · Rung 4/6 · <movement>` → **starts the session** |
 | 3 | A muscle is behind in the 30-day balance, the Journal's verdict (`behindMuscles`: below half its share, after 3 sessions) | `getSuggestedQuestsForWeakAreas(1)` | "Start Quest" + the muscles it targets → **starts the session** |
-| 4 | None of those | — | "Pick a quest" → the quest gallery |
+| 4 | The hero has trained (any session) and no weak muscle: a balanced veteran | `getStalestQuest()` | "Start" on the workout quest left longest (outings and deleted quests excluded, last done before today, counted in calendar days) + "Last done N days ago" → **starts the session** |
+| 5 | No session at all | - | Onboarding's first quest, "Day one" |
+| 6 | None of those | - | "Pick a quest" → the quest gallery, titled "Choose your next quest" for a hero with sessions and "Start your journey" for one with none |
+
+Rule 4 exists because rule 3 is silent for a hero the Journal calls balanced: before it, a level-44
+hero fell through to the gallery and its beginner title. "Has trained" is `getSessionAggregates()`'s
+`totalSessions`, the same answer rule 5 asks. The reminders say it without the day count
+(`reminders.stale_quest`).
 
 Each branch links to one concrete action, and its label names that action. It never just reports
 a number.

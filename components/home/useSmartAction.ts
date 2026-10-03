@@ -65,6 +65,8 @@ function questSubtext(offer: QuestHomeOffer, t: TFunction): string {
         muscles: offer.muscles,
         defaultValue: `Focus: ${offer.muscles}`,
       });
+    case "stale_quest":
+      return t("home.last_done", { count: offer.days });
     // The onboarding step's own title, not a second copy of it: the hero met these words one
     // screen ago, and the offer is the same offer.
     case "first_day":
@@ -113,7 +115,11 @@ function stageFor(
       label: t("home.pick_quest_label", "Pick a quest"),
       subtext: t("home.quick_workout", "Quick Workout"),
       variant: "gallery",
-      scene: null,
+      // A hero with sessions is not at the start of a journey, which is what the stage's own
+      // fallback title says; a scene with no picture takes the stage's stand-in art.
+      scene: offer.trained
+        ? { title: t("home.pick_next", "Choose your next quest"), imagePath: null }
+        : null,
       startQuestId: null,
       onPress: () => router.push("/(tabs)/quests" as never),
     };

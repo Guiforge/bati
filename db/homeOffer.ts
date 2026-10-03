@@ -3,7 +3,7 @@ import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { getAdventureDetails, getAnyActiveAdventureRun } from "./adventures";
 import { getBossFightByAdventure } from "./bossFights";
-import { getSessionAggregates } from "./completed";
+import { getSessionAggregates, getStalestQuest } from "./completed";
 import { estimateQuestSeconds } from "./estimate";
 import { getChainTo } from "./exercises";
 import { hasOutdoorSlot } from "./expeditions";
@@ -55,8 +55,10 @@ export type HomeOffer =
     } & QuestOffer)
   | ({ kind: "oath_leagues"; target: number; done: number } & QuestOffer)
   | ({ kind: "weak_muscles"; muscles: string } & QuestOffer)
+  | ({ kind: "stale_quest"; days: number } & QuestOffer)
   | ({ kind: "first_day" } & QuestOffer)
-  | { kind: "gallery" };
+  /** `trained`: the hero has sessions, so the stage must not greet them as a beginner. */
+  | { kind: "gallery"; trained: boolean };
 
 async function questOffer(questId: number): Promise<QuestOffer | null> {
   const loaded = await loadConfiguredQuest(questId);
@@ -69,7 +71,8 @@ async function questOffer(questId: number): Promise<QuestOffer | null> {
  * Tonight's offer, or null when the read was abandoned (`isCancelled`).
  *
  * The order *is* the feature: an adventure under way, then the oath (an exercise, then leagues),
- * then what the last 30 days say is lagging, then day one's on-ramp, then the gallery.
+ * then what the last 30 days say is lagging, then the quest left longest, then day one's
+ * on-ramp, then the gallery.
  */
 // ponytail: priority waterfall — the order *is* the feature, so it reads better flat than
 //           split. Ceiling: a table of {predicate, action} once a seventh case lands.
@@ -157,19 +160,29 @@ export async function decideHomeOffer(
     if (offer && !isCancelled()) return { kind: "weak_muscles", muscles, ...offer };
   }
 
-  // 4. A day-one hero: offer back the session onboarding just offered. Asked of the journal, not
-  //    inferred from the rules above going quiet: a balanced veteran has no weak muscle either,
-  //    and was offered "Your first march" at level 44.
+  // 4. A hero who has trained and has no weak muscle (a balanced veteran, or one whose 30 days
+  //    were quiet): the quest they left longest, one tap away. Asked of the journal, not inferred
+  //    from the rules above going quiet. A quest done today is not left, so it is not offered.
   const { totalSessions } = await getSessionAggregates();
-  const onRamp =
-    totalSessions === 0
-      ? (await listQuestTemplates()).find((tpl) => tpl.enTitle === FIRST_QUEST_TITLE)
-      : undefined;
+  const trained = totalSessions > 0;
+  if (trained && !isCancelled()) {
+    const stale = await getStalestQuest();
+    const offer = stale && stale.daysAgo >= 1 ? await questOffer(stale.questId) : null;
+    if (offer && stale && !isCancelled()) {
+      return { kind: "stale_quest", days: stale.daysAgo, ...offer };
+    }
+  }
+
+  // 5. A day-one hero: offer back the session onboarding just offered.
+  const onRamp = trained
+    ? undefined
+    : (await listQuestTemplates()).find((tpl) => tpl.enTitle === FIRST_QUEST_TITLE);
   if (onRamp && !isCancelled()) {
     const offer = await questOffer(onRamp.id);
     if (offer && !isCancelled()) return { kind: "first_day", ...offer };
   }
 
-  // 5. The seed is gone, or it would not load. The gallery is still an honest answer.
-  return isCancelled() ? null : { kind: "gallery" };
+  // 6. The seed is gone, or it would not load, or nothing qualifies. The gallery is still an
+  //    honest answer.
+  return isCancelled() ? null : { kind: "gallery", trained };
 }

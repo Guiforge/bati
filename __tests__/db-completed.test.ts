@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 describe("db/completed", () => {
@@ -276,5 +277,64 @@ describe("db/completed", () => {
 
     const rows = await listCompletedSessions();
     expect(new Set(rows.map((r) => r.leaguesM))).toEqual(new Set([4580, null]));
+  });
+  describe("getStalestQuest", () => {
+    const at = (d: Date) => Math.floor(d.getTime() / 1000);
+    const questIds = () =>
+      (t.sqlite.prepare("SELECT id FROM quests ORDER BY id LIMIT 2").all() as { id: number }[]).map(
+        (r) => r.id,
+      );
+    const log = (questId: number, when: Date) =>
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, questId) VALUES ('medium', 10, ?, ?)",
+        )
+        .run(at(when), questId);
+
+    beforeEach(() => {
+      t.sqlite.exec("DELETE FROM completed_exercises");
+      t.sqlite.exec("DELETE FROM completed_sessions");
+      jest.useFakeTimers({
+        now: new Date(2026, 9, 4, 8, 0),
+        doNotFake: ["nextTick", "setImmediate", "queueMicrotask"],
+      });
+    });
+    afterEach(() => jest.useRealTimers());
+
+    // "Yesterday" is a calendar word: 23:00 two evenings ago is 33 hours, and it is not yesterday.
+    test("counts calendar days in the hero's timezone, not 24-hour blocks", async () => {
+      const { getStalestQuest } = require("../db/completed") as typeof import("../db/completed");
+      const [a] = questIds();
+      assert(a !== undefined);
+      log(a, new Date(2026, 9, 2, 23, 0));
+      expect((await getStalestQuest())?.daysAgo).toBe(2);
+    });
+
+    // Foreign keys are off on the device: a deleted quest leaves its sessions pointing at nothing,
+    // and as the quest nobody does any more it would be the stalest one forever.
+    test("skips a quest the hero has deleted", async () => {
+      const { getStalestQuest } = require("../db/completed") as typeof import("../db/completed");
+      const [a, b] = questIds();
+      assert(a !== undefined && b !== undefined);
+      log(a, new Date(2026, 9, 1, 12, 0));
+      t.sqlite.pragma("foreign_keys = OFF");
+      log(999999, new Date(2025, 0, 1, 12, 0));
+      t.sqlite.pragma("foreign_keys = ON");
+      log(b, new Date(2026, 9, 3, 12, 0));
+      expect((await getStalestQuest())?.questId).toBe(a);
+    });
+
+    test("an outing is not a quest left behind", async () => {
+      const { getStalestQuest } = require("../db/completed") as typeof import("../db/completed");
+      const [a, b] = questIds();
+      assert(a !== undefined && b !== undefined);
+      log(a, new Date(2026, 9, 1, 12, 0));
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, questId, outing) VALUES ('medium', 10, ?, ?, 'walk')",
+        )
+        .run(at(new Date(2025, 0, 1, 12, 0)), b);
+      expect((await getStalestQuest())?.questId).toBe(a);
+    });
   });
 });

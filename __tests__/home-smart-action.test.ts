@@ -58,7 +58,14 @@ jest.mock("react-i18next", () => {
             en,
           );
         // i18next resolves a flat dotted key before splitting on "."; mirror that order.
-        const found = walk([key]) ?? walk(key.split("."));
+        // ...and the plural suffix when a count is given, as i18next does.
+        const plural =
+          typeof opts?.count === "number" ? (opts.count === 1 ? "_one" : "_other") : "";
+        const found =
+          walk([key + plural]) ??
+          walk((key + plural).split(".")) ??
+          walk([key]) ??
+          walk(key.split("."));
         if (typeof found !== "string") return key;
         return found.replace(/{{(\w+)(?:, *\w+)?}}/g, (_: string, name: string) =>
           String(opts?.[name] ?? ""),
@@ -98,6 +105,7 @@ jest.mock("@/db/completed", () => ({
   getSessionAggregates: jest
     .fn()
     .mockResolvedValue({ totalSessions: 0, totalXp: 0, uniqueQuests: 0 }),
+  getStalestQuest: jest.fn().mockResolvedValue(null),
 }));
 
 jest.mock("@/db/oaths", () => ({
@@ -128,6 +136,7 @@ jest.mock("@/db/outings", () => ({
 }));
 
 const { getOathProgress } = require("@/db/oaths");
+const { getSessionAggregates, getStalestQuest } = require("@/db/completed");
 const { getChainTo } = require("@/db/exercises");
 const { findQuestWithExercise, listQuestTemplates } = require("@/db/quests");
 const { loadConfiguredQuest } = require("@/db/questConfig");
@@ -358,6 +367,47 @@ describe("useSmartAction", () => {
     expect(result.current.config?.label).toBe("Pick a quest");
     result.current.config?.onPress();
     expect(mockPush).toHaveBeenCalledWith("/(tabs)/quests");
+  });
+
+  describe("a hero who has trained, with nothing else to say", () => {
+    beforeEach(() => {
+      const { getSuggestedQuestsForWeakAreas } = require("@/db/muscleBalance");
+      getSuggestedQuestsForWeakAreas.mockResolvedValueOnce([]);
+      getSessionAggregates.mockResolvedValueOnce({
+        totalSessions: 40,
+        totalXp: 9000,
+        uniqueQuests: 6,
+      });
+    });
+
+    it("offers the quest left longest, startable, with the days it has waited", async () => {
+      getStalestQuest.mockResolvedValueOnce({ questId: 5, daysAgo: 9 });
+      loadConfiguredQuest.mockImplementation(async (id: number) => questNamed(id, "Chop Wood"));
+
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.variant).toBe("quest");
+      expect(result.current.config?.label).toBe("Start");
+      expect(result.current.config?.startQuestId).toBe(5);
+      expect(result.current.config?.scene?.title).toBe("Chop Wood");
+      expect(result.current.config?.subtext).toBe("Last done 9 days ago");
+    });
+
+    it("says the singular for a quest left one day", async () => {
+      getStalestQuest.mockResolvedValueOnce({ questId: 5, daysAgo: 1 });
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+      expect(result.current.config?.subtext).toBe("Last done yesterday");
+    });
+
+    it("titles the gallery for a veteran, never as a first step", async () => {
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.variant).toBe("gallery");
+      expect(result.current.config?.scene?.title).toBe("Choose your next quest");
+    });
   });
 });
 

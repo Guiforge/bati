@@ -25,6 +25,9 @@
     "start_adventure": "Start Adventure",
     "no_active_adventure": "Choose your path",
     "start_journey": "Start your journey",
+    "pick_next": "Choose your next quest",
+    "last_done_one": "Last done yesterday",
+    "last_done_other": "Last done {{count}} days ago",
     "play": "Play",
     "level_line": "Level {{level}} • {{title}}",
     "step_progress": "Step {{current}} of {{total}}",
@@ -1691,6 +1694,10 @@
     "weak_muscles": {
       "0": "{{quest}} awaits. On the menu: {{muscles}}.",
       "1": "Your day. {{quest}} catches up on what lags: {{muscles}}."
+    },
+    "stale_quest": {
+      "0": "{{quest}} has been waiting a while. Your day.",
+      "1": "Pick {{quest}} back up. It has been a while."
     },
     "first_day": {
       "0": "Your day. {{quest}}, about {{duration}}. The first building is waiting.",

@@ -503,7 +503,7 @@ function Preview({
     sessionActive: false,
     state: { resumeDate: view.resumeDate, log: view.log },
     // The words do not matter here, only the days.
-    offer: { kind: "gallery" },
+    offer: { kind: "gallery", trained: false },
     oath: null,
     language,
     t: (key) => key,

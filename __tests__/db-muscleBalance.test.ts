@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 describe("db/muscleBalance", () => {
@@ -195,7 +196,35 @@ describe("db/muscleBalance", () => {
     // no day-one on-ramp either. "Nothing to suggest" stopped meaning "never trained" the day the
     // weak-muscle rule learned to stay quiet: a balanced veteran was offered "Your first march".
     const { decideHomeOffer } = require("../db/homeOffer") as typeof import("../db/homeOffer");
+    // Nothing here names a quest (the fixture's sessions are free-form), so nothing qualifies
+    // for "the one you left longest": the gallery, for a hero who has trained.
+    expect(await decideHomeOffer("en")).toEqual({ kind: "gallery", trained: true });
+
+    // Give the history two quests, one done long ago: that one is the concrete offer, with the
+    // days it has waited. Before this a balanced veteran got the beginner's gallery.
+    const [older, newer] = t.sqlite.prepare(`SELECT id FROM quests ORDER BY id LIMIT 2`).all() as {
+      id: number;
+    }[];
+    assert(older && newer);
+    // A quest done today has not been left: still the gallery.
+    t.sqlite.exec(`UPDATE completed_sessions SET questId = ${older.id}`);
     expect((await decideHomeOffer("en"))?.kind).toBe("gallery");
+    const day = 86400;
+    t.sqlite.exec(`
+      UPDATE completed_sessions SET questId = ${newer.id}, performedAt = ${now - 2 * day} WHERE id IN (1, 2);
+      UPDATE completed_sessions SET questId = ${older.id}, performedAt = ${now - 9 * day} WHERE id = 3;
+    `);
+    const offer = await decideHomeOffer("en");
+    expect(offer?.kind).toBe("stale_quest");
+    assert(offer?.kind === "stale_quest");
+    expect(offer.quest.id).toBe(older.id);
+    expect(offer.days).toBe(9);
+    expect(offer.startable).toBe(true);
+  });
+
+  test("a hero with no session at all still gets the day-one on-ramp", async () => {
+    const { decideHomeOffer } = require("../db/homeOffer") as typeof import("../db/homeOffer");
+    expect((await decideHomeOffer("en"))?.kind).toBe("first_day");
   });
 
   test("the Home does offer weak points to a hero the Journal calls behind", async () => {

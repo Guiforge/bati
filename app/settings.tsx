@@ -4,12 +4,13 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView as RNScrollView } from "react-native";
+import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { useToast } from "@/components/common/Toast";
+import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import {
   Archive,
   ArchiveRestore,
@@ -240,6 +241,7 @@ export default function SettingsScreen() {
   const { openBugReport, crashCount } = useBugReport();
   const { showError, showSuccess } = useToast();
   const haptics = useHaptics();
+  const { ask, dialog } = useConfirmDialog();
   const {
     busy: backupBusy,
     autoFolder,
@@ -263,11 +265,15 @@ export default function SettingsScreen() {
       autoFolder === null
         ? t("backup.confirmMessage")
         : t("backup.confirmMessageAuto", { folder: autoFolder });
-    Alert.alert(t("backup.confirmTitle"), message, [
-      { text: t("common.cancel"), style: "cancel" },
-      { text: t("backup.confirmCta"), style: "destructive", onPress: runImport },
-    ]);
-  }, [autoFolder, runImport, t]);
+    ask({
+      title: t("backup.confirmTitle"),
+      body: message,
+      cancelLabel: t("common.cancel"),
+      confirmLabel: t("backup.confirmCta"),
+      destructive: true,
+      onConfirm: runImport,
+    });
+  }, [autoFolder, runImport, t, ask]);
 
   // Turning it on is one tap into the folder picker — there is nothing to warn about, and the
   // first snapshot is written before the folder is remembered, so the confirmation is the toast.
@@ -279,16 +285,19 @@ export default function SettingsScreen() {
       return;
     }
 
-    // Order matters, and not for iOS: React Native maps a three-button Android alert to
-    // neutral / negative / positive, and positive is the emphasised one on the right. Listing
-    // "Turn off" last would put the destructive choice under the most inviting button —
-    // `style: "destructive"` does nothing on Android to warn anyone off it.
-    Alert.alert(t("backup.auto"), t("backup.autoMessage", { folder: autoFolder }), [
-      { text: t("common.cancel"), style: "cancel" },
-      { text: t("backup.autoOffCta"), style: "destructive", onPress: runDisableAuto },
-      { text: t("backup.autoChangeCta"), onPress: runEnableAuto },
-    ]);
-  }, [autoFolder, runDisableAuto, runEnableAuto, t]);
+    // "Turn off" is the red confirm, "change folder" the quiet button between it and cancel: the
+    // dialog paints one destructive answer, so the other two cannot be mistaken for it.
+    ask({
+      title: t("backup.auto"),
+      body: t("backup.autoMessage", { folder: autoFolder }),
+      confirmLabel: t("backup.autoOffCta"),
+      destructive: true,
+      extraLabel: t("backup.autoChangeCta"),
+      cancelLabel: t("common.cancel"),
+      onConfirm: runDisableAuto,
+      onExtra: runEnableAuto,
+    });
+  }, [autoFolder, runDisableAuto, runEnableAuto, t, ask]);
 
   const pickCustomAvatar = useCallback(async () => {
     try {
@@ -718,6 +727,7 @@ export default function SettingsScreen() {
       </RNScrollView>
 
       <BackupSecretSheet request={secretRequest} onSubmit={submitSecret} onCancel={cancelSecret} />
+      {dialog}
     </YStack>
   );
 }

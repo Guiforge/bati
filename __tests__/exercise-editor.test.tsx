@@ -121,6 +121,24 @@ describe("exercise editor", () => {
     expect(mockBack).toHaveBeenCalled();
   });
 
+  // "Seconds per rep" under "Measured in: Seconds" asked a question a hold has no answer to.
+  it("hides seconds per rep for a movement measured in seconds, and keeps the stored value valid", async () => {
+    const editor = await mountEditor();
+    await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), "Plank"));
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-details-toggle")));
+    expect(editor.queryByText("exercise_editor.seconds_per_rep")).not.toBeNull();
+
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-measure-time")));
+    expect(editor.queryByText("exercise_editor.seconds_per_rep")).toBeNull();
+
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-save")));
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ measure: "time", secondsPerRep: 3 }),
+      );
+    });
+  });
+
   it("refuses a blank name and says so", async () => {
     const editor = await mountEditor();
 

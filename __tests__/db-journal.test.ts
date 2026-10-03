@@ -383,4 +383,25 @@ describe("db/journal", () => {
       BOSSES.fire_dragon.name.en,
     ]);
   });
+
+  test("the standing bosses are the boss campaigns never won, in gallery order", async () => {
+    const quest = t.sqlite.prepare("SELECT id FROM quests LIMIT 1").get() as { id: number };
+    t.sqlite.exec(`
+      DELETE FROM adventure_runs;
+      DELETE FROM adventures WHERE kind = 'boss' OR id IN (901, 902, 903);
+      INSERT INTO adventures (id, questId, kind, enTitle, frTitle, bossImagePath, sortOrder) VALUES
+        (901, ${quest.id}, 'boss', 'The Druid''s Path', 'La Voie', 'fire_dragon.webp', 0),
+        (902, ${quest.id}, 'boss', 'The Iron Lord', 'Le Seigneur', 'stone_golem.webp', 1),
+        (903, ${quest.id}, 'route', 'A road', 'Une route', NULL, 2);
+    `);
+    // Nothing won: every boss stands, the route is not one.
+    expect((await journal().getStandingBosses()).map((b) => b.adventureId)).toEqual([901, 902]);
+
+    t.sqlite.exec(`
+      INSERT INTO adventure_runs (id, adventureId, status, startedAt, finishedAt) VALUES (1, 901, 'finished', ${seconds(daysAgo(2))}, ${seconds(daysAgo(1))});
+    `);
+    const standing = await journal().getStandingBosses();
+    expect(standing.map((b) => b.adventureId)).toEqual([902]);
+    expect(standing[0]?.imagePath).toBe("stone_golem.webp");
+  });
 });

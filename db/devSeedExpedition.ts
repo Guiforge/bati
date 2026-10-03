@@ -79,7 +79,7 @@ type Point = { lat: number; lon: number };
 
 function metresBetween(a: Point, b: Point): number {
   const toRad = Math.PI / 180;
-  const x = (b.lon - a.lon) * toRad * Math.cos(((a.lat + b.lat) / 2) * toRad) * METRES_PER_DEGREE;
+  const x = (b.lon - a.lon) * Math.cos(((a.lat + b.lat) / 2) * toRad) * METRES_PER_DEGREE;
   const y = (b.lat - a.lat) * METRES_PER_DEGREE;
   return Math.hypot(x, y);
 }
@@ -105,7 +105,7 @@ function loopPolyline(steps: number): Point[] {
 }
 
 /** Walk the polyline at a constant pace, emitting one fix per second, with a stop partway. */
-function syntheticFixes(startedAt: number): LocationFix[] {
+export function syntheticFixes(startedAt: number): LocationFix[] {
   const line = loopPolyline(4000);
   const cumulative = [0];
   for (let i = 1; i < line.length; i++) {

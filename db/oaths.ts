@@ -106,7 +106,8 @@ export const OATH_PRESETS: OathPreset[] = [
  * promise already kept: "50 sessions" offered to a hero at 547, fulfilled by the tap that swore
  * it. The preset now names the shape of the promise and the journal names its size. A target
  * already passed climbs to the next multiple of the preset's own step, so a deck written in
- * fifties stays written in fifties and never offers a finish line behind the hero.
+ * fifties stays written in fifties and never offers a finish line behind the hero, nor one
+ * within a tenth of them.
  */
 export type PresetStanding = {
   /** Current value of the metric. Null for `weekly_sessions`, whose weeks start at the swear. */
@@ -133,13 +134,16 @@ export async function standingForPreset(
     fulfilledAt: null,
   });
 
-  return {
-    current,
-    target:
-      current < preset.target
-        ? preset.target
-        : Math.ceil((current + 1) / preset.target) * preset.target,
-  };
+  // Next step of the preset's own size above the hero, then past any finish line within a tenth
+  // of them: "550 sessions, now at 547" is a promise kept the day it is sworn.
+  let target =
+    current < preset.target
+      ? preset.target
+      : Math.ceil((current + 1) / preset.target) * preset.target;
+  // ponytail: one step on, not a loop: a long deck of ever-further lines would never be reachable.
+  if (current * 10 >= target * 9) target += preset.target;
+
+  return { current, target };
 }
 
 // ponytail: flat bonus, tune if oaths ever get tiers. A mini-boss-sized reward for the

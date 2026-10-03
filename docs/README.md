@@ -89,7 +89,7 @@ refused as well as the one taken, which is the half a commit message never keeps
 | [gps-without-google.md](designs/gps-without-google.md) | The local Expo module on Android's `LocationManager`, and why `INTERNET` came back |
 | [map-immersion.md](designs/map-immersion.md) | The map style, and the one tile host |
 | [error-breadcrumbs.md](designs/error-breadcrumbs.md) | `reportError` and what reaches a feedback mail |
-| [warmup-prep.md](designs/warmup-prep.md) | The wait before every movement, 10 s or GO, and the start screen that replaced the sword |
+| [warmup-prep.md](designs/warmup-prep.md) | The wait before the first warm-up movement and the start screen, 10 s or GO (the sword it replaced) |
 | [rappels.md](designs/rappels.md) | Local training reminders: your days, your hour, six promises not to nag, and no Firebase |
 
 ## 🖼️ Content & Assets — [content/](content/README.md)

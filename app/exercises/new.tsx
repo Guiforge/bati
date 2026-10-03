@@ -338,14 +338,18 @@ export default function ExerciseEditor() {
                 </XStack>
               </YStack>
 
-              <Stepper
-                label={t("exercise_editor.seconds_per_rep")}
-                hint={t("exercise_editor.seconds_per_rep_hint")}
-                value={details.secondsPerRep}
-                min={SECONDS_PER_REP_RANGE.min}
-                max={SECONDS_PER_REP_RANGE.max}
-                onChange={(secondsPerRep) => setDetails((d) => ({ ...d, secondsPerRep }))}
-              />
+              {/* A held movement is counted in seconds already: a tempo per rep means nothing for it.
+                  The stored value stays whatever it was (the default 3), which is always valid. */}
+              {details.measure === "reps" ? (
+                <Stepper
+                  label={t("exercise_editor.seconds_per_rep")}
+                  hint={t("exercise_editor.seconds_per_rep_hint")}
+                  value={details.secondsPerRep}
+                  min={SECONDS_PER_REP_RANGE.min}
+                  max={SECONDS_PER_REP_RANGE.max}
+                  onChange={(secondsPerRep) => setDetails((d) => ({ ...d, secondsPerRep }))}
+                />
+              ) : null}
             </YStack>
           ) : null}
         </Card>

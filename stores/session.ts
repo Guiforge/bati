@@ -85,7 +85,7 @@ import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
-import { isExpedition, useExpeditionStore } from "@/stores/expedition";
+import { bindSession, isExpedition, useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
 
 export type SessionStatus =
@@ -96,6 +96,15 @@ export type SessionStatus =
   | "resting"
   | "paused"
   | "finished";
+
+/**
+ * A warm-up movement that follows another one starts at once: only the first has a wait (its
+ * description is on screen during the movement anyway), because a get-ready countdown before
+ * every movement of a continuous warm-up added minutes of standing around.
+ */
+function moveClock(step: WarmupStep | undefined) {
+  return { warmupPrep: false, timerStartTimestamp: Date.now(), timerDuration: step?.seconds ?? 0 };
+}
 
 /**
  * The clock of a wait before a movement: `PREP_SECONDS` running on their own, or no clock at all
@@ -458,6 +467,14 @@ export type SavedSessionState = Pick<
  * choice alone carries the `??` that separates "no rest screen between rounds" from "fall back to
  * restSeconds".
  */
+/**
+ * The rest behind the last set shows no clock (nothing comes after it), but keeps one: a hero who
+ * walks away still reaches the summary, which is what saves the session, instead of resting until
+ * the recovery snapshot expires. Long enough to correct a count and read the screen. Its seconds
+ * leave the session's duration like a pause (`skipRest`).
+ */
+export const FINAL_REST_SECONDS = 300;
+
 function advanceAfterSet(
   quest: Quest,
   currentRoundIndex: number,
@@ -480,7 +497,7 @@ function advanceAfterSet(
         results,
         currentExerciseIndex: quest.exercises.length,
         timerStartTimestamp: Date.now(),
-        timerDuration: quest.restSeconds,
+        timerDuration: FINAL_REST_SECONDS,
       };
     }
     return { status: "finished", results, timerStartTimestamp: null, timerDuration: 0 };
@@ -1228,9 +1245,9 @@ export const useSessionStore = create<SessionState>()(
     },
 
     /**
-     * To the wait before the next movement, from its wait or from the movement itself: the end
-     * of a movement's clock, or Next. Never straight into the next movement's thirty seconds,
-     * which is the zero-second transition this replaced. Past the last one, the start screen.
+     * To the next movement, from its wait or from the movement itself: the end of a movement's
+     * clock, or Next. It starts on its clock at once (`moveClock`). Past the last one, the start
+     * screen.
      */
     nextWarmupStep: () => {
       const { status, warmupIndex, warmupSequence } = get();
@@ -1242,19 +1259,22 @@ export const useSessionStore = create<SessionState>()(
         return;
       }
 
-      set({ warmupIndex: next, warmupPrep: true, ...prepTimer() });
+      set({ warmupIndex: next, ...moveClock(warmupSequence[next]) });
     },
 
-    /** To the wait before the movement behind this one. Stops at the first: nothing is before it. */
+    /** To the movement behind this one. Stops at the first: nothing is before it. */
     previousWarmupStep: () => {
       const { status, warmupIndex } = get();
       if (status !== "warmup" || warmupIndex === 0) return;
 
-      set({ warmupIndex: warmupIndex - 1, warmupPrep: true, ...prepTimer() });
+      set({
+        warmupIndex: warmupIndex - 1,
+        ...moveClock(get().warmupSequence[warmupIndex - 1]),
+      });
     },
 
     /**
-     * Take these movements out of what is left of the warm-up, then open the wait before
+     * Take these movements out of what is left of the warm-up, then start
      * whatever now stands at this step. "Not for me" (issue #145): the movement was just set
      * aside, and the jumps with it when the hero said so.
      *
@@ -1276,7 +1296,7 @@ export const useSessionStore = create<SessionState>()(
         get().skipWarmup();
         return;
       }
-      set({ warmupPrep: true, ...prepTimer() });
+      set(moveClock(kept[index]));
     },
 
     /** Leave the warm-up for the start screen. Nothing is journaled: a warm-up is not work. */
@@ -1988,6 +2008,13 @@ export const useSessionStore = create<SessionState>()(
     },
   })),
 );
+
+// The expedition store cannot import this one (this one imports it: a require cycle), so this is
+// where it learns how long the hero has been out and who concludes an outing from the notification.
+bindSession({
+  recordedSeconds: recordedDurationSeconds,
+  completeOuting: () => useSessionStore.getState().completeOuting(),
+});
 
 /**
  * Take a logged session back out of the journal, from any screen that offers it.

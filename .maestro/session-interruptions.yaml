@@ -102,10 +102,10 @@ appId: com.guiforge.bati.dev
     retryTapIfNoChange: false
 
 # Restarting erases the round's sets, so it asks first (PausedOverlay handleRestartRound). The
-# confirmation is a native Alert: its buttons take no testID, but the destructive one is always
-# Android's positive button, whatever the language.
+# confirmation is the app's ConfirmDialog (no longer a native Alert): its confirm button carries
+# a testID, whatever the language.
 - tapOn:
-    id: "android:id/button1"
+    id: "confirm-dialog-confirm"
 - assertVisible:
     id: "session-complete-exercise"
 
@@ -122,9 +122,9 @@ appId: com.guiforge.bati.dev
     waitToSettleTimeoutMs: 500
     retryTapIfNoChange: false
 
-# Abandoning asks too (PausedOverlay handleQuit), through the same kind of native Alert.
+# Abandoning asks too (PausedOverlay handleQuit), through the same dialog.
 - tapOn:
-    id: "android:id/button1"
+    id: "confirm-dialog-confirm"
 
 # Where quitting lands is not asserted, because it has not held still. This flow asserted the
 # quest (`handleQuit` calls `router.back()`), then Home after two failure screenshots showed the

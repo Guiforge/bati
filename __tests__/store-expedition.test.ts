@@ -43,19 +43,19 @@ jest.mock("@/src/reportError", () => ({
 }));
 
 /**
- * The one thing this store now asks the session store for: how long the hero has been out.
- *
- * Mocked rather than run, for two reasons. The real function reads the session store, which
- * would drag the SQLite client into a test that has none; and the import goes back into a module
- * that already imports this one, so mocking it is also the cheapest place to notice if that
- * cycle ever stops being harmless. The number itself is what the assertions are about.
+ * This store never imports the session store: `stores/session` imports this one, and the way back
+ * was a require cycle logged at every launch (safe only while no module-scope code touched it).
+ * What it needs from the session store, how long the hero has been out and the Finish action, is
+ * bound by the session store itself through `bindSession`, and bound here by hand. The factory
+ * below only records that something loaded the real module, which nothing here may.
  */
 let mockElapsedSeconds = 0;
+let mockSessionStoreLoaded = false;
 const mockCompleteOuting = jest.fn();
-jest.mock("@/stores/session", () => ({
-  recordedDurationSeconds: () => mockElapsedSeconds,
-  useSessionStore: { getState: () => ({ completeOuting: mockCompleteOuting }) },
-}));
+jest.mock("@/stores/session", () => {
+  mockSessionStoreLoaded = true;
+  return {};
+});
 
 const mockHaptic = jest.fn().mockResolvedValue(undefined);
 jest.mock("expo-haptics", () => ({
@@ -111,8 +111,17 @@ describe("stores/expedition", () => {
     mockHaptic.mockClear();
     mockAvailable = true;
     mockElapsedSeconds = 0;
-    store = (require("@/stores/expedition") as typeof import("@/stores/expedition"))
-      .useExpeditionStore;
+    mockSessionStoreLoaded = false;
+    const expedition = require("@/stores/expedition") as typeof import("@/stores/expedition");
+    expedition.bindSession({
+      recordedSeconds: () => mockElapsedSeconds,
+      completeOuting: () => mockCompleteOuting(),
+    });
+    store = expedition.useExpeditionStore;
+  });
+
+  test("loading the store does not load the session store, which imports it", () => {
+    expect(mockSessionStoreLoaded).toBe(false);
   });
 
   // The notification's line is now driven by an interval, and `end()` is the only thing that

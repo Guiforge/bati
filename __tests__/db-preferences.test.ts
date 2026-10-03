@@ -50,7 +50,11 @@ describe("db/preferences", () => {
   // Metric is the default, and it has to survive a round trip both ways: a hero who switches to
   // imperial and back must not land on "whatever the column happened to hold". Storage is metres
   // either way — this key decides how they are drawn, never how they are written.
-  test("the distance unit round-trips, and an unset or junk value reads as metric", async () => {
+  test("the distance unit round-trips, and an unset or junk value reads as the device's", async () => {
+    jest.resetModules();
+    jest.doMock("expo-localization", () => ({
+      getLocales: () => [{ measurementSystem: "metric" }],
+    }));
     const prefs = require("../db/preferences") as typeof import("../db/preferences");
     const { preferences } = prefs;
 
@@ -65,6 +69,33 @@ describe("db/preferences", () => {
     await prefs.setPreference("distanceUnit", "furlongs");
     expect(await preferences.getDistanceUnit()).toBe("metric");
   });
+
+  // Mock the DEVICE, not the rule: the default follows what expo-localization answers, as the
+  // language does.
+  test.each([
+    ["us", "imperial"],
+    ["uk", "imperial"],
+    ["metric", "metric"],
+    [null, "metric"],
+  ] as const)(
+    "an unset unit follows the device measurement system (%s -> %s)",
+    async (system, expected) => {
+      jest.resetModules();
+      jest.doMock("expo-localization", () => ({
+        getLocales: () => [{ measurementSystem: system }],
+      }));
+      const prefs = require("../db/preferences") as typeof import("../db/preferences");
+      await prefs.deletePreference("distanceUnit");
+      expect(await prefs.preferences.getDistanceUnit()).toBe(expected);
+      // An explicit choice beats the device.
+      await prefs.preferences.setDistanceUnit(expected === "metric" ? "imperial" : "metric");
+      expect(await prefs.preferences.getDistanceUnit()).toBe(
+        expected === "metric" ? "imperial" : "metric",
+      );
+      await prefs.deletePreference("distanceUnit");
+      jest.dontMock("expo-localization");
+    },
+  );
 
   /**
    * The map is the only thing in this app that reaches a network, so "never answered" has to

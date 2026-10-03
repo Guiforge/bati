@@ -5,11 +5,11 @@ import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
 import { Skeleton } from "@/components/common/Skeleton";
-import { confirmForget } from "@/components/journal/confirmForget";
 import { KillReport } from "@/components/journal/KillReport";
 import { NButton, NMuted, NPageHeader, NStatusScrim } from "@/components/journal/nocturne";
 import { QuestLog } from "@/components/journal/QuestLog";
 import { type LoadedSession, readSession } from "@/components/journal/sessionLog";
+import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -28,6 +28,7 @@ export default function SessionDetailScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ id?: string | string[]; view?: string }>();
   const { t } = useTranslation();
+  const { confirmForget, dialog } = useConfirmForget();
   const language = useSettingsStore((s) => s.language);
   const sessionId = parseId(params.id);
   const [loaded, setLoaded] = useState<LoadedSession>({ status: "loading" });
@@ -100,13 +101,14 @@ export default function SessionDetailScreen() {
           <NButton
             testID="journal-forget-session"
             variant="danger"
-            onPress={() => confirmForget(sessionId, t, () => router.back())}
+            onPress={() => confirmForget(sessionId, () => router.back())}
           >
             {t("journal.forget")}
           </NButton>
         </YStack>
       </ScrollView>
       <NStatusScrim />
+      {dialog}
     </YStack>
   );
 }

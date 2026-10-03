@@ -6,15 +6,28 @@ import { act, render, waitFor } from "@testing-library/react-native";
  * what is remembered), not on the alert appearing, which is the navigation half.
  */
 
-type Button = { text: string; onPress?: () => void };
-const mockAlerts: { title: string; buttons: Button[] }[] = [];
-jest.mock("react-native", () => {
-  const rn = jest.requireActual("react-native");
-  rn.Alert.alert = (title: string, _message: string, buttons: Button[]) => {
-    mockAlerts.push({ title, buttons });
-  };
-  return rn;
-});
+type DialogProps = {
+  open: boolean;
+  title: string;
+  confirmLabel: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  onCancel?: () => void;
+  onDismiss?: () => void;
+};
+// The app's own dialog stands in as a probe (its rendering has its own tests): every opening is
+// logged, and `press` answers it the way a tap on that button would.
+const mockAlerts: { title: string }[] = [];
+let mockDialog: DialogProps | null = null;
+let mockWasOpen = false;
+jest.mock("@/components/common/ConfirmDialog", () => ({
+  ConfirmDialog: (props: DialogProps) => {
+    if (props.open && !mockWasOpen) mockAlerts.push({ title: props.title });
+    mockWasOpen = props.open;
+    mockDialog = props.open ? props : null;
+    return null;
+  },
+}));
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
@@ -111,16 +124,20 @@ const comparison = (peer: number, local: number, fingerprint: string, localSessi
 });
 const syncFound = (...peers: Peer[]) =>
   act(() => useSyncStore.setState({ result: { uploaded: true, peers } }));
-const press = (text: string) =>
-  mockAlerts
-    .at(-1)
-    ?.buttons.find((b) => b.text === text)
-    ?.onPress?.();
+const press = (text: string) => {
+  if (mockDialog?.confirmLabel === text) mockDialog.onConfirm();
+  else if (mockDialog?.cancelLabel === text) mockDialog.onCancel?.();
+};
+
+/** Hardware back, by ConfirmDialog's own rule (pinned in confirm-dialog.test.tsx). */
+const back = () => (mockDialog?.onDismiss ?? mockDialog?.onCancel ?? mockDialog?.onConfirm)?.();
 
 const run = jest.fn(() => Promise.resolve());
 
 beforeEach(() => {
   mockAlerts.length = 0;
+  mockDialog = null;
+  mockWasOpen = false;
   mockAdopted.length = 0;
   mockRemembered.length = 0;
   mockToasts.length = 0;
@@ -166,10 +183,41 @@ test("diverged: keep remembers this state; take first sends this device's copy a
   await waitFor(() => expect(mockAlerts).toHaveLength(1));
   press("sync.keep");
   await waitFor(() => expect(mockRemembered).toEqual(["bati-tab.batb@f1"]));
+  expect(mockAdopted).toEqual([]);
+});
 
+// Back is not an answer: on the diverged prompt the cancel button is "keep", which remembers
+// the state for good. A dismissal must close the question and record nothing.
+test("diverged: hardware back closes the question and remembers nothing", async () => {
+  await render(<SyncPrompt />);
+  await syncFound({
+    name: "bati-tab.batb",
+    etag: "e",
+    state: "diverged",
+    comparison: comparison(1, 3, "f1"),
+  });
+
+  await waitFor(() => expect(mockAlerts).toHaveLength(1));
+  await act(async () => back());
+  expect(mockDialog).toBeNull();
+  expect(mockRemembered).toEqual([]);
+  expect(mockAdopted).toEqual([]);
+});
+
+test("diverged: taking first sends this device's copy away", async () => {
+  await render(<SyncPrompt />);
+  await syncFound({
+    name: "bati-tab.batb",
+    etag: "e",
+    state: "diverged",
+    comparison: comparison(1, 3, "f1"),
+  });
+
+  await waitFor(() => expect(mockAlerts).toHaveLength(1));
   press("sync.take");
   await mockAdopted[0]?.before();
   expect(mockKeepCopy).toHaveBeenCalledTimes(1);
+  expect(mockRemembered).toEqual([]);
 });
 
 test("a device that can be merged is merged, not asked, and the app reloads to read it", async () => {

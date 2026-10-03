@@ -1,6 +1,7 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { getDevicePreferredAppLanguage, type Localized } from "@/src/i18n/deviceLanguage";
+import { installPluralRulesShim } from "@/src/i18n/pluralRules";
 
 import de from "./locales/de.json";
 import en from "./locales/en.json";
@@ -14,6 +15,8 @@ const resources: Localized<{ translation: typeof en }> = {
   de: { translation: de },
   es: { translation: es },
 };
+
+installPluralRulesShim();
 
 i18n
   .use(initReactI18next)

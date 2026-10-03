@@ -21,7 +21,7 @@ import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
 import { useToast } from "@/components/common/Toast";
-import { confirmForget } from "@/components/journal/confirmForget";
+import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
@@ -139,6 +139,7 @@ function HeroLevelBar({
 export function VictoryView() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { confirmForget, dialog: forgetDialog } = useConfirmForget();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
@@ -335,7 +336,7 @@ export function VictoryView() {
 
   const handleForget = () => {
     if (!result) return;
-    confirmForget(result.sessionId, t, () => {
+    confirmForget(result.sessionId, () => {
       quitSession();
       router.replace("/");
     });
@@ -772,6 +773,7 @@ export function VictoryView() {
         onClose={() => setShowOutroNarrative(false)}
         type="outro"
       />
+      {forgetDialog}
     </YStack>
   );
 }

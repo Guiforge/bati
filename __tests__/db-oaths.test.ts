@@ -350,6 +350,23 @@ describe("db/oaths", () => {
       expect((await oaths().standingForPreset(sessions50, null)).target).toBe(100);
     });
 
+    // The 2026-10-03 audit offered "550 sessions, now at 547 / 550": a finish line three sessions
+    // off is already won, and the tap that swore it fulfilled it the next day.
+    test("a hero within a tenth of the next step is offered the step after", async () => {
+      for (let i = 0; i < 547; i++) logSessionAt(i);
+
+      expect(await oaths().standingForPreset(sessions50, null)).toEqual({
+        current: 547,
+        target: 600,
+      });
+    });
+
+    test("a target still ahead but nearly reached is also pushed on", async () => {
+      for (let i = 0; i < 46; i++) logSessionAt(i);
+
+      expect((await oaths().standingForPreset(sessions50, null)).target).toBe(100);
+    });
+
     test("the weekly promise has no standing to show: its weeks start at the swear", async () => {
       for (let i = 0; i < 60; i++) logSessionAt(i);
 

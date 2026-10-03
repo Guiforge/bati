@@ -120,8 +120,18 @@ test("Stop asks first, and says what stays on the server", async () => {
   const onStop = jest.fn();
   await sheet(onStop);
   await fireEvent.press(screen.getByTestId("sync-stop"));
-  expect(alert.mock.calls[0]?.[1]).toBe("sync.stopBodyNextcloud");
-  const stop = alert.mock.calls[0]?.[2]?.find((b) => b.text === "sync.stopCta");
-  stop?.onPress?.();
+  // The app's own dialog, not the grey native one, and nothing stopped yet.
+  expect(alert).not.toHaveBeenCalled();
+  expect(screen.getByText("sync.stopBodyNextcloud")).toBeTruthy();
+  expect(onStop).not.toHaveBeenCalled();
+  await fireEvent.press(screen.getByTestId("confirm-dialog-confirm"));
   expect(onStop).toHaveBeenCalled();
+});
+
+test("cancelling Stop keeps syncing", async () => {
+  const onStop = jest.fn();
+  await sheet(onStop);
+  await fireEvent.press(screen.getByTestId("sync-stop"));
+  await fireEvent.press(screen.getByTestId("confirm-dialog-cancel"));
+  expect(onStop).not.toHaveBeenCalled();
 });

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
+import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { CloudUpload, Lock } from "@/components/icons";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { EncryptionSheet, type EncryptionSheetMode } from "@/components/settings/EncryptionSheet";
@@ -21,6 +21,7 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
   const { t } = useTranslation();
   const encryption = useBackupEncryption();
   const deviceSync = useDeviceSync();
+  const { ask, dialog } = useConfirmDialog();
   const [setupOpen, setSetupOpen] = useState(false);
   const [joining, setJoining] = useState<{ peer: string; wrong: boolean } | null>(null);
   // A server connected while encryption was off: the first sync waits for the key to exist.
@@ -52,20 +53,19 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
     const message = syncing
       ? `${t("backup.encryptionOffStopsSync")} ${t("backup.encryptionOffConfirm")}`
       : t("backup.encryptionOffConfirm");
-    Alert.alert(t("backup.encryption"), message, [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: syncing ? t("backup.encryptionOffStopSyncCta") : t("backup.encryptionOffCta"),
-        style: "destructive",
-        onPress: () => {
-          const stopSync =
-            deviceSync.account === null ? Promise.resolve() : deviceSync.disconnect();
-          stopSync
-            .then(() => encryption.disable())
-            .catch((e) => reportError("backup.encryption.disable", e));
-        },
+    ask({
+      title: t("backup.encryption"),
+      body: message,
+      cancelLabel: t("common.cancel"),
+      confirmLabel: syncing ? t("backup.encryptionOffStopSyncCta") : t("backup.encryptionOffCta"),
+      destructive: true,
+      onConfirm: () => {
+        const stopSync = deviceSync.account === null ? Promise.resolve() : deviceSync.disconnect();
+        stopSync
+          .then(() => encryption.disable())
+          .catch((e) => reportError("backup.encryption.disable", e));
       },
-    ]);
+    });
   };
 
   const enable = (password: string) =>
@@ -198,6 +198,7 @@ export function BackupSecurityRows({ disabled }: { disabled: boolean }) {
         onShowRecovery={showRecoveryKey}
         onDisable={confirmDisable}
       />
+      {dialog}
     </>
   );
 }

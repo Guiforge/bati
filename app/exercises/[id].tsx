@@ -3,11 +3,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Alert, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { PathStrip } from "@/components/common/PathStrip";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
@@ -323,24 +324,24 @@ function HeroActions({ exercise, onGone }: { exercise: Exercise; onGone: () => v
       });
   };
 
-  const confirmRetire = () =>
-    Alert.alert(t("exercises.retire_confirm_title"), t("exercises.retire_confirm_body"), [
-      { text: t("common.cancel", "Cancel"), style: "cancel" },
-      {
-        text: t("exercises.retire"),
-        onPress: () => run(() => retireUserExercise(exercise.id), "exercises.retire_failed"),
-      },
-    ]);
-
-  const confirmDelete = () =>
-    Alert.alert(t("exercises.delete_confirm_title"), t("exercises.delete_confirm_body"), [
-      { text: t("common.cancel", "Cancel"), style: "cancel" },
-      {
-        text: t("exercises.delete"),
-        style: "destructive",
-        onPress: () => run(() => deleteUserExercise(exercise.id), "exercises.delete_failed"),
-      },
-    ]);
+  // The app's own dialog, not the grey native Alert (the one surface that ignored the palette).
+  const [confirming, setConfirming] = useState<"retire" | "delete" | null>(null);
+  const confirmRetire = () => setConfirming("retire");
+  const confirmDelete = () => setConfirming("delete");
+  const dialog =
+    confirming === "delete"
+      ? {
+          title: t("exercises.delete_confirm_title"),
+          body: t("exercises.delete_confirm_body"),
+          label: t("exercises.delete"),
+          go: () => run(() => deleteUserExercise(exercise.id), "exercises.delete_failed"),
+        }
+      : {
+          title: t("exercises.retire_confirm_title"),
+          body: t("exercises.retire_confirm_body"),
+          label: t("exercises.retire"),
+          go: () => run(() => retireUserExercise(exercise.id), "exercises.retire_failed"),
+        };
 
   return (
     <Card>
@@ -401,6 +402,19 @@ function HeroActions({ exercise, onGone }: { exercise: Exercise; onGone: () => v
           </AppButton>
         )}
       </YStack>
+      <ConfirmDialog
+        open={confirming !== null}
+        title={dialog.title}
+        body={dialog.body}
+        confirmLabel={dialog.label}
+        cancelLabel={t("common.cancel", "Cancel")}
+        destructive={confirming === "delete"}
+        onConfirm={() => {
+          setConfirming(null);
+          dialog.go();
+        }}
+        onCancel={() => setConfirming(null)}
+      />
     </Card>
   );
 }
@@ -574,7 +588,11 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
       {/* Every exercise, seed content included: what a body cannot do is not a question of who
           wrote the movement. Not an outing, which has no near substitute and no warm-up. */}
       {exercise.style === NON_REP_STYLE || exercise.retiredAt !== null ? null : (
-        <SetAsideCard exercise={exercise} hasNextStep={progression !== null} />
+        <SetAsideCard
+          exercise={exercise}
+          hasNextStep={progression !== null}
+          heroMade={isUserExercise(exercise)}
+        />
       )}
 
       {/* Seed content is never offered these — a content update must not be clobberable. */}
@@ -587,7 +605,15 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
  * Set this exercise aside, or put it back (issue #145). The entry point for the warm-up too: its
  * preview's rows open this screen, and the warm-up has no Replace of its own.
  */
-function SetAsideCard({ exercise, hasNextStep }: { exercise: Exercise; hasNextStep: boolean }) {
+function SetAsideCard({
+  exercise,
+  hasNextStep,
+  heroMade,
+}: {
+  exercise: Exercise;
+  hasNextStep: boolean;
+  heroMade: boolean;
+}) {
   const { t } = useTranslation();
   const { setAside, putBack } = useSetAside();
   // `null` while the list is read: a button that flips label on arrival reads as a mis-tap.
@@ -609,6 +635,10 @@ function SetAsideCard({ exercise, hasNextStep }: { exercise: Exercise; hasNextSt
   }, [exercise.id]);
 
   if (aside === null) return null;
+  // Not offered on a movement the hero wrote: they chose it, and "Don't suggest again" led the
+  // page above Edit (audit 2026-10-03); retire is theirs to use. One set aside before that still
+  // shows the card, or its "Put back" would be gone with it.
+  if (heroMade && !aside) return null;
 
   return (
     <Card>

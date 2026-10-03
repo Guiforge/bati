@@ -27,7 +27,6 @@ import {
   type TrackState,
 } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
-import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
 
 /**
  * The live half of an expedition: the fixes arriving while the hero is out.
@@ -184,6 +183,23 @@ function clearedTransient(error: string | null): string | null {
   return error === "gps-off" || error === "no-fix" ? null : error;
 }
 
+/** What this store needs from the session store, handed over by it (see `bindSession`). */
+type SessionBridge = {
+  /** `recordedDurationSeconds`: how long the hero has been out, by the journal's rule. */
+  recordedSeconds: () => number;
+  /** The Finish action on the notification: the session store concludes the outing. */
+  completeOuting: () => void;
+};
+// ponytail: unbound until `stores/session` evaluates, which the app root always does before any
+// outing can begin; a second consumer of this store that never loads it would read 0 s and a
+// dead Finish button, and would bind its own.
+let sessionBridge: SessionBridge | null = null;
+
+/** Called once by `stores/session`, which imports this module and so can hand itself over. */
+export function bindSession(bridge: SessionBridge): void {
+  sessionBridge = bridge;
+}
+
 /**
  * The notification's second line, and the only surface an outing in a pocket has.
  *
@@ -193,12 +209,12 @@ function clearedTransient(error: string | null): string | null {
  * happening.
  *
  * The seconds are `recordedDurationSeconds()`, the rule the panel and the journal already read,
- * so the notification cannot tell a third story about how long the hero has been out. That is
- * an import back into `stores/session`, which imports this store: a cycle on paper, never one at
- * runtime, since neither side touches the other while its module is evaluating.
+ * so the notification cannot tell a third story about how long the hero has been out. It arrives
+ * through `bindSession` rather than an import: `stores/session` imports this store, and the way
+ * back was a require cycle, safe only while nothing used the other side at module scope.
  */
 function progressLine(track: TrackState, unit: DistanceUnit): string {
-  const elapsed = formatClock(recordedDurationSeconds() * 1000);
+  const elapsed = formatClock((sessionBridge?.recordedSeconds() ?? 0) * 1000);
   // `startedAt` is set by the first fix the gate accepts, so null is exactly "no sky yet" - the
   // same test the panel's status line makes.
   // The notification's words come from i18n at `begin`, so its number follows the same language.
@@ -385,7 +401,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       // The way out that only a locked screen takes. The service asks, the session store
       // concludes: the duration, the XP and the journal row are its business, and its alone.
       addListener("onFinishRequested", () => {
-        useSessionStore.getState().completeOuting();
+        sessionBridge?.completeOuting();
       }),
     ];
 

@@ -62,9 +62,11 @@ appId: com.guiforge.bati.dev
 # `times` is a guard against an infinite loop if a screen ever gets stuck.
 - repeat:
     times: 40
+    # Either footer button: a session under two minutes shows Keep instead of Continue, and the
+    # loop used to wait for a Continue that never came.
     while:
       notVisible:
-        id: "session-victory-continue"
+        id: "session-victory-(continue|keep-short)"
     commands:
       - tapOn:
           id: "session-complete-exercise"
@@ -79,7 +81,7 @@ appId: com.guiforge.bati.dev
 
 - extendedWaitUntil:
     visible:
-      id: "session-victory-continue"
+      id: "session-victory-(continue|keep-short)"
     timeout: 20000
 
 # A session under two minutes is not saved until the hero keeps it (TRIVIAL_SESSION_SECONDS in

@@ -169,26 +169,69 @@ describe("ReminderCard", () => {
   test("the question offers three answers, and turning off is one of them", async () => {
     mockState.enabled = true;
     mockState.log = ignoredDays;
-    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
+    const alert = jest.spyOn(Alert, "alert");
     await mount();
     await waitFor(() => expect(screen.getByTestId("home-reminder-check")).toBeTruthy());
     await act(async () => {
       await fireEvent.press(screen.getByTestId("home-reminder-check"));
     });
-    const buttons = alert.mock.calls[0]?.[2] ?? [];
-    expect(buttons.map((b) => b.text)).toEqual([
-      "reminders.check_change",
-      "reminders.check_off",
-      "reminders.check_fine",
-    ]);
-    await act(() => {
-      buttons[1]?.onPress?.();
+    // The app's own dialog, not the grey native one: three answers, none of them a dead end.
+    expect(alert).not.toHaveBeenCalled();
+    expect(screen.getByText("reminders.check_change")).toBeTruthy();
+    expect(screen.getByText("reminders.check_off")).toBeTruthy();
+    expect(screen.getByText("reminders.check_fine")).toBeTruthy();
+
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("confirm-dialog-extra"));
     });
     expect(Reminders.setEnabled).toHaveBeenCalledWith(false);
     expect(reminderPrefs.setAskedAt).toHaveBeenCalled();
+    expect(screen.queryByTestId("confirm-dialog-extra")).toBeNull();
+  });
 
+  test("fine only closes the question", async () => {
+    mockState.enabled = true;
+    mockState.log = ignoredDays;
+    await mount();
+    await waitFor(() => expect(screen.getByTestId("home-reminder-check")).toBeTruthy());
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("home-reminder-check"));
+    });
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("confirm-dialog-cancel"));
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(Reminders.setEnabled).not.toHaveBeenCalledWith(false);
+    expect(reminderPrefs.setAskedAt).toHaveBeenCalled();
+  });
+
+  // Back is not "fine": "fine" marks the question answered for a month.
+  test("hardware back closes the question without answering it", async () => {
+    mockState.enabled = true;
+    mockState.log = ignoredDays;
+    await mount();
+    await waitFor(() => expect(screen.getByTestId("home-reminder-check")).toBeTruthy());
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("home-reminder-check"));
+    });
     await act(() => {
-      buttons[0]?.onPress?.();
+      fireEvent(screen.getByTestId("confirm-dialog"), "requestClose");
+    });
+    expect(screen.queryByTestId("confirm-dialog-cancel")).toBeNull();
+    expect(reminderPrefs.setAskedAt).not.toHaveBeenCalled();
+    expect(Reminders.setEnabled).not.toHaveBeenCalledWith(false);
+  });
+
+  test("change opens Settings", async () => {
+    mockState.enabled = true;
+    mockState.log = ignoredDays;
+    await mount();
+    await waitFor(() => expect(screen.getByTestId("home-reminder-check")).toBeTruthy());
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("home-reminder-check"));
+    });
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("confirm-dialog-confirm"));
     });
     expect(mockPush).toHaveBeenCalledWith("/settings");
   });

@@ -2,9 +2,9 @@ import { reloadAppAsync } from "expo";
 import { type Href, router, usePathname } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, type AlertButton } from "react-native";
 
 import { useToast } from "@/components/common/Toast";
+import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { useBackup } from "@/hooks/useBackup";
 import { peerScratch } from "@/src/backupFiles";
@@ -55,6 +55,7 @@ export function SyncPrompt() {
   // An alert on screen. `markOffered` re-runs the effect, and without this the next device's
   // question opened on top of the one still being read.
   const [showing, setShowing] = useState(false);
+  const { ask: openDialog, dialog } = useConfirmDialog();
   const pathname = usePathname();
 
   // Said after the reload a merge ends with: the app vanished for a second, and this is why. And
@@ -71,22 +72,33 @@ export function SyncPrompt() {
       .catch((e) => reportError("sync.mergeNotice", e));
   }, [showSuccess, t]);
 
-  /** Every answer, and a dismissal, frees the screen for the next question. */
-  const ask = (title: string, body: string, buttons: AlertButton[]) => {
+  /**
+   * Every answer, and a dismissal, frees the screen for the next question. The cancel-styled
+   * button is the dialog's cancel, the other one its confirm; a single button is a message.
+   * Hardware back answers nothing: "keep" and "not mine" are remembered for good, and a back
+   * press is not the hero choosing them (the native alert ignored back altogether).
+   */
+  const ask = (title: string, body: string, buttons: AskButton[]) => {
     setShowing(true);
     const done = () => setShowing(false);
-    Alert.alert(
+    const cancel = buttons.length > 1 ? buttons.find((b) => b.cancel) : undefined;
+    const main = buttons.find((b) => b !== cancel);
+    if (!main) return;
+    openDialog({
       title,
       body,
-      buttons.map((b) => ({
-        ...b,
-        onPress: () => {
-          done();
-          b.onPress?.();
-        },
-      })),
-      { onDismiss: done },
-    );
+      confirmLabel: main.text,
+      cancelLabel: cancel?.text,
+      onConfirm: () => {
+        done();
+        main.onPress?.();
+      },
+      onCancel: () => {
+        done();
+        cancel?.onPress?.();
+      },
+      onDismiss: done,
+    });
   };
 
   /** Said once per file: most often that device runs a newer Bati. */
@@ -104,7 +116,7 @@ export function SyncPrompt() {
   const offerJoin = (peer: Peer) => {
     const when = peer.modified ? syncAgo(t, peer.modified) : t("sync.status.unknownWhen");
     ask(t("sync.lockedTitle"), t("sync.lockedBody", { when }), [
-      { text: t("sync.later"), style: "cancel" },
+      { text: t("sync.later"), cancel: true },
       { text: t("sync.lockedCta"), onPress: () => setJoining({ peer: peer.name, wrong: false }) },
     ]);
   };
@@ -117,7 +129,7 @@ export function SyncPrompt() {
       // Nothing here would be lost, so there is nothing to keep first and no "keep" to remember:
       // "later" only means "not now".
       ask(t("sync.aheadTitle"), t("sync.aheadBody", { count: peerChanges }), [
-        { text: t("sync.later"), style: "cancel" },
+        { text: t("sync.later"), cancel: true },
         { text: t("sync.take"), onPress: () => runAdopt(plain, () => Promise.resolve()) },
       ]);
       return;
@@ -128,7 +140,7 @@ export function SyncPrompt() {
       [
         {
           text: t("sync.keep"),
-          style: "cancel",
+          cancel: true,
           onPress: () => {
             rememberAnswer(peer).catch((e) => reportError("sync.remember", e));
           },
@@ -187,7 +199,7 @@ export function SyncPrompt() {
       [
         {
           text: t("sync.found.notMine"),
-          style: "cancel",
+          cancel: true,
           onPress: () => {
             rememberAnswer(peer).catch((e) => reportError("sync.remember", e));
           },
@@ -241,17 +253,22 @@ export function SyncPrompt() {
   };
 
   return (
-    <BackupSecretSheet
-      request={{ open: joining !== null, wrong: joining?.wrong ?? false }}
-      title={t("sync.lockedTitle")}
-      body={t("sync.lockedSecretBody")}
-      submitLabel={t("sync.useThisPassword")}
-      forgotHint={t("sync.secretForgot")}
-      onSubmit={submit}
-      onCancel={() => setJoining(null)}
-    />
+    <>
+      {dialog}
+      <BackupSecretSheet
+        request={{ open: joining !== null, wrong: joining?.wrong ?? false }}
+        title={t("sync.lockedTitle")}
+        body={t("sync.lockedSecretBody")}
+        submitLabel={t("sync.useThisPassword")}
+        forgotHint={t("sync.secretForgot")}
+        onSubmit={submit}
+        onCancel={() => setJoining(null)}
+      />
+    </>
   );
 }
+
+type AskButton = { text: string; cancel?: boolean; onPress?: () => void };
 
 type ComparedPeer = Extract<Peer, { comparison: unknown }>;
 

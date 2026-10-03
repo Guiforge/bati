@@ -141,6 +141,9 @@ const config = createTamagui({
       onPrimary: tokens.color.text,
       danger: tokens.color.error, // alias, no matching token
       muted: tokens.color.textSecondary, // deliberately not tokens.color.muted
+      // Stock primitives ask the theme for `borderColor`, and Tamagui logged a missing token for
+      // each at every launch. The app's one border colour answers.
+      borderColor: tokens.color.borderStrong,
     },
     dark: {
       ...tokens.color,
@@ -150,6 +153,7 @@ const config = createTamagui({
       onPrimary: tokens.color.text,
       danger: tokens.color.error,
       muted: tokens.color.textSecondary,
+      borderColor: tokens.color.borderStrong,
     },
     // The Journal (`<Theme name="journal">` in app/(tabs)/journal/_layout.tsx). The app's own keys
     // are remapped rather than left alone, so a shared component the Journal still mounts (the
@@ -173,6 +177,8 @@ const config = createTamagui({
       error: tokens.color.borderStrong,
       // Surfaces carry no border here: a shared card's outline takes the surface's own colour.
       borderStrong: tokens.color.surface2,
+      // Same for a stock primitive's (it would inherit dark's visible border otherwise).
+      borderColor: tokens.color.surface2,
       onPrimary: tokens.color.bgDark,
       // The shared Tag's tones: flat inks here, where the history rows used to carry a red and a
       // brown that meant nothing on a one-accent page.

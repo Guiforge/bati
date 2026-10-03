@@ -1,10 +1,12 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { H1, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { ArrowRight } from "@/components/icons";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { CloudRestoreLink } from "@/components/settings/CloudRestoreLink";
@@ -16,6 +18,20 @@ export default function Presentation() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { busy, runImport, secretRequest, submitSecret, cancelSecret } = useBackup();
+  const [cloudOpen, setCloudOpen] = useState(false);
+  const { ask, dialog } = useConfirmDialog();
+
+  // One link, then the choice: the two ways back are a backup file and the cloud.
+  const askSource = () =>
+    ask({
+      title: t("onboarding.restore_title"),
+      body: "",
+      confirmLabel: t("backup.onboardingCta"),
+      extraLabel: t("sync.onboardingCta"),
+      cancelLabel: t("common.cancel"),
+      onConfirm: runImport,
+      onExtra: () => setCloudOpen(true),
+    });
 
   return (
     <YStack flex={1} bg="$background">
@@ -102,9 +118,9 @@ export default function Presentation() {
 
           {/* Offered at the *start* of onboarding: a restore replaces the village name and
               training level the next screens are about to ask for, so asking first would be
-              asking twice. No confirmation dialog either — there is no history to lose yet. */}
+              asking twice. No "are you sure" before the restore: there is no history to lose yet. */}
           <Text
-            testID="onboarding-restore-backup"
+            testID="onboarding-restore"
             color="$textSecondary"
             fontSize={15}
             textDecorationLine="underline"
@@ -112,15 +128,16 @@ export default function Presentation() {
             opacity={busy ? 0.5 : 1}
             // `disabled` on a Text is an accessibility flag and does not stop `onPress` — the
             // handler has to be the thing that goes away. useBackup guards re-entry too.
-            onPress={busy ? undefined : runImport}
+            onPress={busy ? undefined : askSource}
           >
-            {t("backup.onboardingCta")}
+            {t("onboarding.restore_cta")}
           </Text>
-          <CloudRestoreLink disabled={busy} />
         </YStack>
       </YStack>
       {/* A new phone restoring an encrypted backup lands here: the password is asked once, and
           the hero is asked whether their next backups should use it (useBackup `offerJoin`). */}
+      <CloudRestoreLink open={cloudOpen} onClose={() => setCloudOpen(false)} />
+      {dialog}
       <BackupSecretSheet request={secretRequest} onSubmit={submitSecret} onCancel={cancelSecret} />
     </YStack>
   );

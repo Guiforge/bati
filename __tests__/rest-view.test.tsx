@@ -1,4 +1,4 @@
-import { act, fireEvent, render } from "@testing-library/react-native";
+import { act, fireEvent, render, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -6,7 +6,7 @@ import { TamaguiProvider } from "tamagui";
 import { RestView } from "@/components/session/RestView";
 import type { Quest } from "@/db/quests";
 import { playCue } from "@/src/sounds";
-import { useSessionStore } from "@/stores/session";
+import { FINAL_REST_SECONDS, useSessionStore } from "@/stores/session";
 import config from "@/tamagui.config";
 
 /**
@@ -191,30 +191,101 @@ describe("RestView", () => {
     expect(state.currentExerciseIndex).toBe(1);
   });
 
-  // The rest behind the last set: the count is still correctable, nothing is up next, the clock
-  // says nothing out loud, and the way out is the summary.
-  it("after the last set, offers the correction and hands over to the summary", async () => {
-    const mockedPlayCue = playCue as jest.MockedFunction<typeof playCue>;
-    mockedPlayCue.mockClear();
+  // The rest behind the last set: the count is still correctable, nothing is up next, there is
+  // no clock to wait out (it was a dead 28 s countdown, audit 2026-10-03), and the way out is the
+  // summary.
+  describe("after the last set", () => {
+    const finalRest = (value = 12, target = 12) =>
+      useSessionStore.setState({
+        currentRoundIndex: 1,
+        currentExerciseIndex: mockQuest.exercises.length,
+        timerDuration: FINAL_REST_SECONDS,
+        results: [
+          {
+            exerciseId: 2,
+            result: { type: "reps", value },
+            target: { type: "reps", value: target },
+          },
+        ] as never,
+      });
+
+    it("offers the correction and the summary, with no countdown", async () => {
+      const mockedPlayCue = playCue as jest.MockedFunction<typeof playCue>;
+      mockedPlayCue.mockClear();
+      finalRest();
+      const view = await mountRest();
+
+      expect(view.getByText("session.final_rest_title")).toBeTruthy();
+      expect(view.getByTestId("rest-result-input")).toBeTruthy();
+      expect(view.getByTestId("session-skip-rest")).toBeTruthy();
+      expect(view.queryByTestId("rest-up-next")).toBeNull();
+      expect(view.queryByText(/^\d+:\d{2}$/)).toBeNull();
+      expect(view.queryByText("+10s")).toBeNull();
+
+      await act(() => {
+        jest.advanceTimersByTime((REST_SECONDS + 5) * 1000);
+      });
+
+      // A quest's rest is not its clock: the hero corrects, then opens the summary.
+      expect(useSessionStore.getState().status).toBe("resting");
+      expect(mockedPlayCue).not.toHaveBeenCalled();
+
+      await act(() => fireEvent.press(view.getByTestId("session-skip-rest")));
+      expect(useSessionStore.getState().status).toBe("finished");
+    });
+
+    // A hero who walked away still reaches the summary, which is what saves the session.
+    it("ends on its own after the long, unshown grace", async () => {
+      (playCue as jest.MockedFunction<typeof playCue>).mockClear();
+      finalRest();
+      await mountRest();
+
+      await act(() => {
+        jest.advanceTimersByTime((FINAL_REST_SECONDS + 1) * 1000);
+      });
+
+      expect(useSessionStore.getState().status).toBe("finished");
+      expect(playCue).not.toHaveBeenCalled();
+    });
+
+    it("still settles an unanswered runaway hold when the summary is opened", async () => {
+      useSessionStore.setState({
+        currentRoundIndex: 1,
+        currentExerciseIndex: mockQuest.exercises.length,
+        results: [
+          {
+            exerciseId: 2,
+            roundIndex: 1,
+            result: { type: "time", value: 362 },
+            target: { type: "time", value: 35 },
+          },
+        ] as never,
+      });
+      const view = await mountRest();
+      expect(view.queryByTestId("rest-hold-check")).not.toBeNull();
+
+      await act(() => fireEvent.press(view.getByTestId("session-skip-rest")));
+
+      expect(useSessionStore.getState().status).toBe("finished");
+      expect(useSessionStore.getState().results[0]?.result.value).toBe(35);
+    });
+  });
+
+  // Right above "Up next: <another movement>", an unnamed "did you do more or less?" read as a
+  // question about the next one.
+  it("names the movement just finished on the adjust row, not the next one", async () => {
     useSessionStore.setState({
-      currentRoundIndex: 1,
-      currentExerciseIndex: mockQuest.exercises.length,
       results: [
-        { exerciseId: 2, result: { type: "reps", value: 12 }, target: { type: "reps", value: 12 } },
+        { exerciseId: 1, result: { type: "reps", value: 10 }, target: { type: "reps", value: 10 } },
       ] as never,
     });
     const view = await mountRest();
 
-    expect(view.getByText("session.final_rest_title")).toBeTruthy();
-    expect(view.getByTestId("rest-result-input")).toBeTruthy();
-    expect(view.queryByTestId("rest-up-next")).toBeNull();
-
-    await act(() => {
-      jest.advanceTimersByTime((REST_SECONDS + 1) * 1000);
-    });
-
-    expect(useSessionStore.getState().status).toBe("finished");
-    expect(mockedPlayCue).not.toHaveBeenCalled();
+    const label = view.getByTestId("rest-adjust-label");
+    expect(within(label).getByText("Pushups")).toBeTruthy();
+    expect(within(label).queryByText("Plank")).toBeNull();
+    // The up-next card still names the next one.
+    expect(within(view.getByTestId("rest-up-next")).getByText("Plank")).toBeTruthy();
   });
 
   describe("a hold that ran far past its target", () => {

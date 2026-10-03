@@ -247,6 +247,17 @@ describe("the countdown beeps, from inside a session", () => {
   });
 });
 
+// The pause card said "Sound off": the state or the action? Settings calls the row "Countdown
+// beeps", so the button says that name with its state, in every language.
+describe("the sound button's label", () => {
+  test.each(["en", "fr", "de", "es"])("%s names the setting and its state", (lang) => {
+    const locale = require(`../locales/${lang}.json`);
+    expect(locale.session.sound_on.startsWith(locale.settings.sound)).toBe(true);
+    expect(locale.session.sound_off.startsWith(locale.settings.sound)).toBe(true);
+    expect(locale.session.sound_on).not.toBe(locale.session.sound_off);
+  });
+});
+
 describe("restarting a round", () => {
   const twoLoggedSets = [
     { roundIndex: 0, exerciseIndex: 0, result: { type: "reps" as const, value: 12 } },

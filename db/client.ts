@@ -202,17 +202,6 @@ export async function closeDatabase() {
   }
 }
 
-/** @legacy Remise à zéro destructive, prévue pour l'écran dev, jamais branchée. */
-export async function resetDatabase() {
-  await closeDatabase();
-
-  try {
-    deleteDatabaseSync(DB_NAME);
-  } catch (_e) {
-    // No database file to delete — the reset has nothing left to do.
-  }
-}
-
 // Create drizzle instance with schema
 export const db = singleton.db;
 

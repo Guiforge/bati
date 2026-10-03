@@ -3,7 +3,6 @@ import * as path from "node:path";
 import {
   addListener,
   getPermissionStatus,
-  hasGpsProvider,
   isAvailable,
   requestNotificationPermission,
   requestPermission,
@@ -21,10 +20,6 @@ const MODULE_ROOT = path.resolve(__dirname, "..", "modules", "bati-location");
 describe("bati-location, without its native half", () => {
   test("reports itself unavailable instead of throwing", () => {
     expect(isAvailable()).toBe(false);
-  });
-
-  test("answers the provider question with false rather than a null crash", () => {
-    expect(hasGpsProvider()).toBe(false);
   });
 
   test("refuses to start, and says nothing started", () => {

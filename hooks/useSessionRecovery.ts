@@ -368,7 +368,6 @@ export function useSessionRecovery() {
     recoverSession,
     finishSession,
     discardSession,
-    checkForRecoverableSession,
   };
 }
 

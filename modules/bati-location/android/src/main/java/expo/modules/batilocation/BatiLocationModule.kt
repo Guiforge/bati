@@ -3,7 +3,6 @@ package expo.modules.batilocation
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.os.Build
@@ -70,12 +69,6 @@ class BatiLocationModule : Module() {
       /** Marks the goal reached; see `BatiLocationService.setReached` for what that changes. */
       Function("setReached") {
         BatiLocationService.setReached()
-      }
-
-      Function("hasGpsProvider") {
-        val context = appContext.reactContext ?: return@Function false
-        val manager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-        manager?.allProviders?.contains(LocationManager.GPS_PROVIDER) == true
       }
 
       /**

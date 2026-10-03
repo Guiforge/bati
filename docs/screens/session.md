@@ -73,7 +73,7 @@ Completing the session leads to the post-workout result moment (victory/rewards)
 
 The current session implementation uses tokenized dark surfaces and reduced-motion gating for confetti so the workout flow stays readable and predictable.
 
-The full-bleed exercise art lives in [`components/session/ExerciseHero.tsx`](../../components/session/ExerciseHero.tsx). Its gradient fades into the per-muscle screen colour, which means it needs that colour as a plain string: `getExerciseBgRawForSessionStep()` in [`constants/exerciseColors.ts`](../../constants/exerciseColors.ts) resolves it from the same token the screen itself uses, so the fade cannot end on a different colour than the background it fades into. `getPhaseLook()` returns the same pair — token and raw string — for a boss fight, for the same reason.
+The full-bleed exercise art lives in [`components/session/ExerciseHero.tsx`](../../components/session/ExerciseHero.tsx). Its gradient fades into the screen colour, which means it needs that colour as a plain string: the screen is `$bgDark` (`rawColors.bgDark`) outside a boss fight, and in one `getPhaseLook()` returns the pair, token and raw string, so the fade cannot end on a different colour than the background it fades into.
 
 ### The height budget
 

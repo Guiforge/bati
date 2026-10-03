@@ -22,7 +22,6 @@ import {
   buildBugReportMailto,
   CONTACT_EMAIL,
   type CrashReport,
-  clearCrashLog,
   installCrashHandler,
   readCrashLog,
   readErrorLog,
@@ -84,13 +83,6 @@ describe("crashLog", () => {
     const reports = await readCrashLog();
     expect(reports).toHaveLength(1);
     expect(reports[0]?.message).toBe("after corruption");
-  });
-
-  test("clearing empties the log", async () => {
-    await recordCrash("render", new Error("boom"));
-    await clearCrashLog();
-
-    expect(await readCrashLog()).toEqual([]);
   });
 
   test("two identical crashes merge into one entry that counts", async () => {

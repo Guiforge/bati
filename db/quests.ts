@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { dayKey } from "./dates";
@@ -1020,42 +1020,6 @@ export async function setQuestExercises(questId: number, next: QuestSlotDraft[])
   );
 }
 
-/** @legacy Garde-fou de seed ; les invariants de contenu sont testés à la place. */
-export async function ensureQuestHasExercise(
-  questId: number,
-  exerciseId: number,
-  baseTarget: { type: QuestTargetType; min: number; max: number },
-): Promise<void> {
-  const existing = await db
-    .select({ id: questExercises.id })
-    .from(questExercises)
-    .where(and(eq(questExercises.questId, questId), eq(questExercises.exerciseId, exerciseId)))
-    .limit(1);
-
-  if (existing.length > 0) return;
-
-  const last = await db
-    .select({ sortOrder: questExercises.sortOrder })
-    .from(questExercises)
-    .where(eq(questExercises.questId, questId))
-    .orderBy(desc(questExercises.sortOrder))
-    .limit(1);
-
-  const sortOrder = (last[0]?.sortOrder ?? -1) + 1;
-
-  await db.insert(questExercises).values({
-    questId,
-    exerciseId,
-    sortOrder,
-    targetType: baseTarget.type,
-    targetMin: baseTarget.min,
-    targetMax: baseTarget.max,
-    imagesJson: "[]",
-  });
-
-  invalidateQuestTemplates(questId);
-}
-
 // ------------------------------------------------------------
 // Eligibility — what the app is allowed to put in front of this user
 // ------------------------------------------------------------
@@ -1203,12 +1167,6 @@ async function pickDailyTemplate(): Promise<QuestTemplate | null> {
 
   // Modulo the array's own length, so always in range; the type does not know that.
   return candidates[Math.abs(hash) % candidates.length] ?? null;
-}
-
-/** @legacy La quête du jour ; l'accueil décide autrement depuis useSmartAction. */
-export async function getDailyQuest(userLevel: UserLevel): Promise<Quest | null> {
-  const template = await pickDailyTemplate();
-  return template ? await getQuestById(template.id, userLevel) : null;
 }
 
 export async function isDailyQuest(questId: number): Promise<boolean> {

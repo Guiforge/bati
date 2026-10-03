@@ -157,11 +157,14 @@ describe("quest eligibility", () => {
     setPreference("trainingLevel", "beginner");
     const q = quests();
 
-    const daily = await q.getDailyQuest(q.Difficulty.Medium);
-    expect(daily).toBeTruthy();
-    if (!daily) throw new Error("no daily quest");
+    // `isDailyQuest` is the only door the app has to the daily pick, so the test goes through it.
+    const templates = await q.listQuestTemplates();
+    const flags = await Promise.all(templates.map((tpl) => q.isDailyQuest(tpl.id)));
+    const picked = templates.filter((_, i) => flags[i]);
+    expect(picked).toHaveLength(1);
 
-    expect(daily.exercises.every((qex) => qex.exercise.equipment === "none")).toBe(true);
-    expect(await q.isDailyQuest(daily.id)).toBe(true);
+    const daily = await q.getQuestById(picked[0]?.id ?? -1, q.Difficulty.Medium);
+    expect(daily).toBeTruthy();
+    expect(daily?.exercises.every((qex) => qex.exercise.equipment === "none")).toBe(true);
   });
 });

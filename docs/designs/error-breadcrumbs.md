@@ -103,7 +103,7 @@ Step 0 first, the rest is the audited plan in `~/.claude/plans/les-feedback-fonc
    A collapsed entry updates `at` to the latest occurrence. `readErrorLog()` mirrors
    `readCrashLog()`. `buildBugReportMailto(crashes, handled, version, strings)` renders a second
    section; `BugReportStrings` gains `errorsHeader` / `noErrors` so both callers must supply them.
-   `clearCrashLog` is left alone (no app caller today; not extended).
+   `clearCrashLog` is left alone (no app caller today; not extended; deleted 2026-10-03 for that reason).
    Timing: `db/migrate.ts:258` and `backupBeforeMigrations` call `reportError` *before* migrations
    run; the sink write is swallowed on failure like `recordCrash`, and on a first launch the
    `user_preferences` table may not exist yet — that entry is lost by design, not retried.

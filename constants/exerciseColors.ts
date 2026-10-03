@@ -1,5 +1,4 @@
 import type { ColorTokens } from "tamagui";
-import { rawColors } from "@/constants/rawColors";
 import { estimateExerciseSeconds } from "@/db/estimate";
 import type { Exercise } from "@/db/exercises";
 import type { Quest, QuestTemplate } from "@/db/quests";
@@ -165,31 +164,4 @@ export function getQuestColorTokensFromTemplateWithExercises(input: {
   exercisesById: Record<number, Pick<Exercise, "muscles" | "secondsPerRep">>;
 }): ExerciseColorTokens {
   return getExerciseColorTokens(getQuestColorKeyFromTemplateWithExercises(input));
-}
-
-export function getExerciseBgForSessionStep(input: {
-  exercise: Pick<Exercise, "muscles" | "secondsPerRep">;
-  targetType: QuestTargetType;
-}): ColorTokens {
-  return getExerciseColorTokens(
-    getExerciseColorKey({
-      muscles: input.exercise.muscles,
-      targetType: input.targetType,
-    }),
-  ).bg;
-}
-
-/**
- * The same background as a plain string, for the one consumer that cannot take a token:
- * `expo-linear-gradient`, which the session hero uses to fade its artwork into the screen.
- *
- * It reads the token back out of `rawColors` rather than keeping a second table, so the fade
- * cannot end on a different colour than the screen it fades into.
- */
-export function getExerciseBgRawForSessionStep(input: {
-  exercise: Pick<Exercise, "muscles" | "secondsPerRep">;
-  targetType: QuestTargetType;
-}): string {
-  const token = getExerciseBgForSessionStep(input);
-  return rawColors[token.slice(1) as keyof typeof rawColors];
 }

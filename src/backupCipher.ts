@@ -400,10 +400,6 @@ async function readHeader(path: string): Promise<Header | null> {
   return parseHeader(fromB64(await batiCrypto().readPrefix(path, MAX_HEADER)));
 }
 
-export async function isEncryptedBackup(path: string): Promise<boolean> {
-  return (await readHeader(path)) !== null;
-}
-
 /** Encrypts a plaintext snapshot at `plainPath` into `outPath` with this device's key. */
 export async function sealBackup(plainPath: string, outPath: string): Promise<void> {
   const own = await ownKey();

@@ -78,7 +78,6 @@ type Subscription = { remove(): void };
  * what lets a GPS quest be hidden instead of crashing a screen.
  */
 type BatiLocationNativeModule = {
-  hasGpsProvider(): boolean;
   isNetworkBlocked(): boolean;
   start(options: StartOptions): boolean;
   stop(): void;
@@ -108,14 +107,6 @@ const DENIED: PermissionResponse = {
 /** Whether the native module is linked into this build at all. */
 export function isAvailable(): boolean {
   return native !== null;
-}
-
-/**
- * Whether this device exposes a real GPS provider. False on a build without the module, so a
- * caller never has to ask both questions.
- */
-export function hasGpsProvider(): boolean {
-  return native?.hasGpsProvider() ?? false;
 }
 
 /**

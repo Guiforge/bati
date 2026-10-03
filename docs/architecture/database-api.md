@@ -80,7 +80,6 @@ interface AchievementProgress {
 | `getAllAchievementsWithProgress()` | Returns all achievements with progress info |
 | `checkForNewAchievements()` | Checks and unlocks any new achievements |
 | `unlockAchievement(code)` | Manually unlock an achievement |
-| `getAchievementStats()` | Get summary (unlocked count, total) |
 
 ---
 

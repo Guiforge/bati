@@ -80,18 +80,6 @@ describe("db/achievements", () => {
     });
   });
 
-  describe("getAchievementStats", () => {
-    test("returns correct stats", async () => {
-      const achievements = require("../db/achievements") as typeof import("../db/achievements");
-
-      const stats = await achievements.getAchievementStats();
-      expect(stats.total).toBe(achievements.achievementDefinitions.length);
-      expect(stats.unlocked).toBeGreaterThanOrEqual(1); // We unlocked first_workout
-      expect(stats.percentage).toBeGreaterThanOrEqual(0);
-      expect(stats.percentage).toBeLessThanOrEqual(100);
-    });
-  });
-
   describe("getAllAchievementsWithProgress", () => {
     test("returns progress for all achievements", async () => {
       const achievements = require("../db/achievements") as typeof import("../db/achievements");

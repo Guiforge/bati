@@ -42,7 +42,6 @@ function resetChorus() {
     lastVillager: null,
     lastCameoAt: 0,
     ambientShown: 0,
-    isHydrated: true,
   });
 }
 
@@ -230,7 +229,6 @@ describe("what the chorus remembers", () => {
     await useChorusStore.getState().hydrate();
     useChorusStore.getState().cue("personal_record");
 
-    expect(useChorusStore.getState().isHydrated).toBe(true);
     expect(useChorusStore.getState().current?.line).toBe(en.villagers.smith.personal_record[1]);
   });
 

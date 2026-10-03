@@ -49,7 +49,6 @@ import {
   disableEncryption,
   enableEncryption,
   encryptionStatus,
-  isEncryptedBackup,
   normaliseRecoveryKey,
   openBackup,
   PASSWORD_ITERATIONS,
@@ -90,7 +89,6 @@ const open = (file: string, out: string, secret?: string) =>
 test("a sealed file is not the plaintext, and this phone opens it without asking", async () => {
   await sealedWith("correct horse");
   expect(fs.readFileSync(at("backup.batb")).includes(Buffer.from("pretend"))).toBe(false);
-  expect(await isEncryptedBackup(at("backup.batb"))).toBe(true);
 
   expect(await open("backup.batb", "out.db")).toBe("opened");
   expect(fs.readFileSync(at("out.db"), "utf8")).toBe(PLAIN);
@@ -239,7 +237,6 @@ test("a new password is a new key: the old one no longer opens what is written a
 
 test("a plain SQLite backup is not mistaken for an encrypted one", async () => {
   await enableEncryption("correct horse");
-  expect(await isEncryptedBackup(at("plain.db"))).toBe(false);
   expect(await open("plain.db", "out.db")).toBe("notEncrypted");
 });
 

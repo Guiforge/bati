@@ -50,7 +50,10 @@ async function migrate(sqlite: Database.Database, maxIdx?: number) {
   else process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX = String(maxIdx);
   jest.resetModules();
   jest.doMock("../db/client", () => ({ db: { $client: makeClient(sqlite) } }));
-  jest.doMock("../src/autoBackup", () => ({ backupBeforeMigrations: () => Promise.resolve() }));
+  jest.doMock("../src/autoBackup", () => ({
+    backupBeforeMigrations: () => Promise.resolve(),
+    copyBeforeMigrations: () => Promise.resolve(),
+  }));
   try {
     await (require("../db/migrate") as typeof import("../db/migrate")).ensureMigrations();
   } finally {

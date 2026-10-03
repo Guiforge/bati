@@ -1,5 +1,5 @@
 import migrations from "../drizzle/migrations";
-import { backupBeforeMigrations } from "../src/autoBackup";
+import { backupBeforeMigrations, copyBeforeMigrations } from "../src/autoBackup";
 import { reportError } from "../src/reportError";
 import { db } from "./client";
 import { sqlString } from "./sql";
@@ -256,6 +256,11 @@ export function ensureMigrations(): Promise<void> {
         return;
       }
       await backupBeforeMigrations().catch((e) => reportError("backup.auto.gate", e));
+      // A fresh install has nothing to lose and reads -Infinity here. Before BEGIN IMMEDIATE:
+      // VACUUM INTO is illegal inside a transaction.
+      if (Number.isFinite(lastAppliedAt)) {
+        await copyBeforeMigrations().catch((e) => reportError("backup.premigrate.gate", e));
+      }
 
       await runMigrationsAsync(client, config, { debug: migrationsDebugEnabled() });
     })();

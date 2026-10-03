@@ -2,7 +2,12 @@ import { Directory } from "expo-file-system";
 import { dayKey } from "@/db/dates";
 import { preferences } from "@/db/preferences";
 import { errorTrail } from "@/db/sql";
-import { pickBackupFolder, preRestoreFileStem, saveBackupToFolder } from "@/src/backupFiles";
+import {
+  pickBackupFolder,
+  preRestoreFileStem,
+  saveBackupToFolder,
+  writePreMigrationCopy,
+} from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -147,6 +152,21 @@ export async function backupBeforeMigrations(): Promise<void> {
     //           rides along in the next bug-report mail. Add a counter when a real device
     //           produces a failure that recovers on its own.
     await disableAutoBackup().catch((e) => reportError("backup.auto.forget", e));
+  }
+}
+
+/**
+ * Keeps a private copy of the database before the migration runner touches it, folder or not.
+ *
+ * `backupBeforeMigrations` leaves a hero who never picked a folder with nothing, and a migration
+ * that commits and still loses rows is not undone by the runner's ROLLBACK. Never throws, for the
+ * same reason: an update must not fail because a copy could not be made.
+ */
+export async function copyBeforeMigrations(): Promise<void> {
+  try {
+    await writePreMigrationCopy();
+  } catch (error) {
+    reportError("backup.premigrate", error);
   }
 }
 

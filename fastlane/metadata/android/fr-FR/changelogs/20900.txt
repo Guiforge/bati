@@ -1,0 +1,9 @@
+- Les villageois ne couvrent plus rien : dans le Village ils
+  se tiennent sur la peinture, ailleurs ils parlent sur une
+  ligne sous le titre.
+- Une tenue oubliée ne devient plus un record : Bati te
+  demande « Tenu 6:02 ? ». Tu peux corriger une série.
+- Un boss vaincu garde son nom sur la carte de partage.
+- L'accueil te propose la quête laissée le plus longtemps.
+- Les distances suivent la région du téléphone, tant que
+  tu n'as pas choisi.

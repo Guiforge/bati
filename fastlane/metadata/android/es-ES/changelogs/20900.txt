@@ -1,0 +1,9 @@
+- Los aldeanos ya no tapan nada: en la Aldea están sobre la
+  pintura, en el resto hablan en una línea bajo el título.
+- Un tiempo olvidado ya no se convierte en récord: Bati
+  pregunta "¿Aguantaste 6:02?". Puedes corregir una serie.
+- Un jefe vencido mantiene su nombre en la tarjeta de
+  compartir.
+- El inicio propone la misión que dejaste más tiempo.
+- Las distancias siguen la región del teléfono hasta que
+  elijas.

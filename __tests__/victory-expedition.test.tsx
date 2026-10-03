@@ -30,6 +30,7 @@ const mockGetVillageBuildings = jest.fn<Promise<VillageBuilding[]>, []>();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn(), back: jest.fn() }),
+  useIsFocused: () => true,
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db", () => ({ preferences: {} }));
@@ -290,9 +291,9 @@ describe("VictoryView, the walk it just celebrated", () => {
     expect(mockGetVillageBuildings).not.toHaveBeenCalled();
   });
 
-  // The villager cameo draws over the bottom of this screen (VillagerCameo.tsx). Anything below
-  // the stat tiles used to land in its band; the summary has to render first so it clears it.
-  test("renders above the stat tiles, so the cameo does not land on top of it", async () => {
+  // Nothing floats over this screen any more (the villager is a line in the banner). The summary
+  // is still worth reading first: it renders before the stat tiles.
+  test("renders above the stat tiles, in view without scrolling past them", async () => {
     await mountVictory();
 
     const tree = JSON.stringify(screen.toJSON());

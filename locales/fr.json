@@ -1366,6 +1366,16 @@
     "encryptionOffStopSyncCta": "Désactiver et arrêter la synchro"
   },
   "villagers": {
+    "send_away": "Renvoyer",
+    "names": {
+      "smith": "Le Forgeron",
+      "watcher": "La Guetteuse",
+      "sage": "Le Sage",
+      "champion": "La Championne",
+      "herbalist": "L'Herboriste",
+      "minstrel": "Le Ménestrel",
+      "farmer": "La Fermière"
+    },
     "units": {
       "delta_reps_one": "{{count}} répétition",
       "delta_reps_other": "{{count}} répétitions",
@@ -1498,7 +1508,7 @@
         "Reste là un moment. Ça soigne autant que mes fioles."
       ],
       "guide_journal": [
-        "Tout ce que tu as fait est là. Pas pour te juger : pour voir ce qui bouge."
+        "Un jour de repos, c'est ici qu'il faut regarder. La récupération se lit dans les chiffres bien avant de se voir dans le miroir."
       ]
     },
     "minstrel": {

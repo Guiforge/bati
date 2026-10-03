@@ -40,6 +40,7 @@ jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn(), t: (key: string)
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
+  useIsFocused: () => true,
 }));
 
 // Same hoisting rule as paused-overlay.test.tsx: a `jest.mock` factory is lifted above every

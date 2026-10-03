@@ -118,8 +118,9 @@ everything settles. Tapping the card dismisses it. It is keyed on the param stri
 the tab never replays it, and a plain tab visit never plays it. Under reduced motion: no lean, the
 card is simply there.
 
-No villager in the card: VictoryView already picked the one villager a victory gets, and
-`VillagerCameo` is the only place a villager is drawn.
+No villager in the card: VictoryView already picked the one villager a victory gets, and it is a
+line in the victory banner. The Village screen itself is the only place the floating `VillagerCameo`
+figure is drawn (see [villagers](../gameplay/villagers.md)).
 
 ## What left the screen, and where it went
 
@@ -156,7 +157,11 @@ no lean, only the card. The weakest placements: tier 8 (`tent` on a sail, `farm`
 boat), tier 10 (`dragon_lair` on the rock face), tier 12 (the starters on unnamed spires).
 
 The painting parallaxes and leans in inside one `Animated.View`; the scrims and the title do not
-move. Ambient motes are still `VillageEmbers.tsx`. Everything is
+move. The status-bar scrim pinned outside the scroll (`village-status-scrim`) is invisible at rest,
+so the painting runs full-bleed under the clock, and fades in over the first `insets.top + 48` dp
+of scroll, the distance the painting's own top scrim takes to leave: the clock always has one of
+the two behind it. Drawn always, it was an opaque band across the top of the painting. Ambient
+motes are still `VillageEmbers.tsx`. Everything is
 transform and opacity on the UI thread, and all of it stops under reduced motion. Transform and
 opacity only is what lets Reanimated's `ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS` path (on in
 `package.json`) skip the shadow tree commit each frame. Without it, the arrival cost the Fairphone

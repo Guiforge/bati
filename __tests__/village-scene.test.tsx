@@ -1,11 +1,13 @@
-import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
+import { getAnimatedStyle } from "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { VillageScene } from "@/components/village/VillageScene";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import * as village from "@/db/village";
+import { useChorusStore } from "@/stores/chorus";
 import config from "@/tamagui.config";
 
 /**
@@ -138,6 +140,29 @@ describe("VillageScene", () => {
 
     expect(style.height).toBe(METRICS.insets.top);
     expect(style.position).toBe("absolute");
+  });
+
+  // At rest the painting runs full-bleed under the status bar (its own top scrim keeps the clock
+  // readable). The pinned scrim only has a job once something scrolls under the clock: drawn
+  // always, it was an opaque band across the top of the painting (#153 regression).
+  it("keeps the status scrim invisible at rest, and brings it in once the scene scrolls", async () => {
+    mockScene([campfire, forge]);
+
+    const { findByTestId, getByTestId } = await renderScene();
+    await findByTestId("village-next");
+    // The animated half of the style, as the UI thread last wrote it.
+    const opacity = () => getAnimatedStyle(getByTestId("village-status-scrim")).opacity;
+
+    expect(opacity()).toBe(0);
+
+    await fireEvent.scroll(getByTestId("village-scroll"), {
+      nativeEvent: {
+        contentOffset: { x: 0, y: 400 },
+        contentSize: { width: 390, height: 2000 },
+        layoutMeasurement: { width: 390, height: 844 },
+      },
+    });
+    await waitFor(() => expect(opacity()).toBe(1));
   });
 
   it("states the rule on day one, when nothing has been earned", async () => {
@@ -305,5 +330,52 @@ describe("VillageScene", () => {
     expect(queryByTestId("village-reward")).toBeNull();
     expect(queryByTestId("village-changes")).toBeNull();
     expect(queryByText("Risen")).toBeNull();
+  });
+
+  // The figure stands on the painting. Anchored to the window it sat on "Village tier" and "Next
+  // to build" and covered their text (emulator pass, 2026-10-03).
+  describe("the floating villager", () => {
+    function speak() {
+      useChorusStore.setState({
+        current: {
+          id: 1,
+          owner: "village",
+          moment: "rest",
+          villager: "farmer",
+          pose: "talk",
+          line: "A line.",
+        },
+      });
+    }
+
+    it("is a child of the painting, not a window overlay, and the cards are outside it", async () => {
+      mockScene([campfire, forge]);
+      const { findByTestId } = await renderScene();
+      await findByTestId("village-next");
+      await act(() => {
+        speak();
+      });
+
+      const hero = within(await findByTestId("village-hero"));
+      expect(hero.getByTestId("villager-zone")).toBeTruthy();
+      for (const card of ["village-tier", "village-next", "village-families"]) {
+        expect(hero.queryByTestId(card)).toBeNull();
+      }
+    });
+
+    it("leaves a zone that stops above the title block, so nothing under it is pressable", async () => {
+      mockScene([campfire, forge]);
+      const { findByTestId } = await renderScene();
+      await findByTestId("village-next");
+      await act(() => {
+        speak();
+      });
+
+      const cameo = StyleSheet.flatten((await findByTestId("villager-cameo")).props.style);
+      const hero = StyleSheet.flatten((await findByTestId("village-hero")).props.style);
+      // Band bottom is above the hero's bottom title block: no card, and no title, lies under it.
+      expect(cameo.top + cameo.height).toBeLessThanOrEqual(hero.height - 150);
+      expect(cameo.top).toBeGreaterThanOrEqual(METRICS.insets.top);
+    });
   });
 });

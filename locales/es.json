@@ -1366,6 +1366,16 @@
     "encryptionOffStopSyncCta": "Desactivar y detener la sincronización"
   },
   "villagers": {
+    "send_away": "Despedir",
+    "names": {
+      "smith": "El Herrero",
+      "watcher": "La Vigía",
+      "sage": "El Sabio",
+      "champion": "La Campeona",
+      "herbalist": "La Herbolaria",
+      "minstrel": "El Juglar",
+      "farmer": "La Granjera"
+    },
     "units": {
       "delta_reps_one": "{{count}} repetición",
       "delta_reps_other": "{{count}} repeticiones",
@@ -1497,7 +1507,9 @@
         "He visto desaparecer aldeas. Esta aguantará.",
         "Quédate un rato. Cura tanto como mis frascos."
       ],
-      "guide_journal": ["Todo lo que has hecho está aquí, para que veas qué se mueve."]
+      "guide_journal": [
+        "En un día de descanso, aquí tienes dónde mirar. La recuperación se ve en los números mucho antes que en el espejo."
+      ]
     },
     "minstrel": {
       "rest": [

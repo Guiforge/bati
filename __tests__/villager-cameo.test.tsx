@@ -1,12 +1,10 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import assert from "node:assert/strict";
 
-import { act, render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
-
-import { cameoBottomOffset, cameoMaxHeight, cameoTopEdge } from "@/components/chorus/cameoAnchor";
-import { dismissVillagerOnTouch } from "@/components/chorus/cameoTouch";
+import VillagePage from "@/app/(tabs)/village";
+import { cameoBand } from "@/components/chorus/cameoAnchor";
 import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { CAMEO_LINGER_MS, TYPE_MS_PER_CHAR } from "@/constants/villagers";
 import en from "@/locales/en.json";
@@ -24,16 +22,45 @@ jest.mock("@/db", () => ({
 jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn() } }));
 jest.mock("@/src/widget", () => ({ requestWidgetsUpdate: jest.fn().mockResolvedValue(undefined) }));
 
-const mockSegments = jest.fn(() => ["(tabs)", "index"]);
-const mockPathname = jest.fn(() => "/quests");
-jest.mock("expo-router", () => ({
-  useSegments: () => mockSegments(),
-  usePathname: () => mockPathname(),
+let mockFocused = true;
+let mockSceneLoading = false;
+const mockUnderneath = jest.fn();
+// The real hero is itself pressable (it opens the whole painting), and the zone is its child.
+const mockPainting = jest.fn();
+jest.mock("expo-router", () => ({ useIsFocused: () => mockFocused }));
+jest.mock("@/components/chorus/screenCues", () => ({
+  useScreenGuide: jest.fn(),
+  useAmbientVisit: jest.fn(),
 }));
+// The scene is a stand-in shaped like the real one (the real one is covered in
+// village-scene.test.tsx): a hero holding the figure, and a control below it that a press on the
+// figure must never reach.
+jest.mock("@/components/village/VillageScene", () => {
+  const { View, Pressable, Text } = require("react-native");
+  const { VillagerCameo } = require("@/components/chorus/VillagerCameo");
+  return {
+    VillageScene: () => (
+      <View>
+        <Pressable
+          testID="village-hero"
+          onPressIn={() => mockPainting()}
+          onPress={() => mockPainting()}
+        >
+          {mockSceneLoading ? null : (
+            <VillagerCameo band={{ top: 55, height: 300, figureHeight: 180 }} />
+          )}
+        </Pressable>
+        <Pressable testID="under-the-villager" onPress={() => mockUnderneath()}>
+          <Text>building</Text>
+        </Pressable>
+      </View>
+    ),
+  };
+});
 
 const WINDOW = { width: 390, height: 844 };
 
-function cameoTree() {
+function villageTree() {
   return (
     <SafeAreaProvider
       initialMetrics={{
@@ -42,19 +69,26 @@ function cameoTree() {
       }}
     >
       <TamaguiProvider config={config} defaultTheme="dark">
-        <VillagerCameo />
+        <VillagePage />
       </TamaguiProvider>
     </SafeAreaProvider>
   );
 }
 
-function renderCameo() {
-  return render(cameoTree());
+function renderVillage() {
+  return render(villageTree());
 }
 
 function speakGuide(line: string) {
   useChorusStore.setState({
-    current: { id: 2, moment: "guide_village", villager: "farmer", pose: "talk", line },
+    current: {
+      id: 2,
+      owner: "village",
+      moment: "guide_village",
+      villager: "farmer",
+      pose: "talk",
+      line,
+    },
   });
 }
 
@@ -62,6 +96,7 @@ function speak() {
   useChorusStore.setState({
     current: {
       id: 1,
+      owner: "village",
       moment: "rest",
       villager: "farmer",
       pose: "talk",
@@ -70,238 +105,284 @@ function speak() {
   });
 }
 
-describe("VillagerCameo", () => {
+describe("the Village's floating villager", () => {
   beforeEach(() => {
     jest.useFakeTimers();
-    // The real hook reads the real store. Mocking `useReducedMotion` would verify the cameo
-    // against a stub and hide the day the hook stops reading that field.
+    mockFocused = true;
+    mockSceneLoading = false;
+    mockUnderneath.mockClear();
+    mockPainting.mockClear();
     useSettingsStore.setState({ reducedMotion: false });
     useChorusStore.setState({ current: null });
   });
-
-  // No state reset here: testing-library unmounts between tests, so a `setState` after that is an
-  // update to a component nobody is rendering — which is exactly what React's act() warning was
-  // pointing at. `beforeEach` already clears it.
   afterEach(() => {
     jest.useRealTimers();
   });
 
-  it("leaves when the hero leaves the screen that called it", async () => {
-    mockPathname.mockReturnValue("/quests");
-    const { queryByTestId, rerender } = await renderCameo();
-    await act(() => {
-      speakGuide("Quests are your workouts.");
-    });
-    expect(queryByTestId("villager-cameo")).toBeTruthy();
-
-    // The gallery's guide was still standing on the quest screen, drawn across "Start Quest" and
-    // the level chips, and the figure takes a tap: the left third of the primary button dismissed
-    // a villager instead of starting the session.
-    mockPathname.mockReturnValue("/quests/17");
-    await act(async () => {
-      await rerender(cameoTree());
-    });
-
-    expect(queryByTestId("villager-cameo")).toBeNull();
-  });
-
-  it("stays for a line the screen it arrived on raised itself", async () => {
-    // A guide raised *by* the screen being navigated to lands in the same commit as the change,
-    // so dismissing on any pathname change at all would send it away before its first character.
-    mockPathname.mockReturnValue("/quests/17");
-    const { queryByTestId } = await renderCameo();
-    await act(() => {
-      speakGuide("Pick a level, then start.");
-    });
-    expect(queryByTestId("villager-cameo")).toBeTruthy();
-  });
-
   it("draws nothing at all when nobody is speaking", async () => {
-    const { queryByTestId } = await renderCameo();
+    const { queryByTestId } = await renderVillage();
     expect(queryByTestId("villager-cameo")).toBeNull();
+    expect(queryByTestId("villager-zone")).toBeNull();
   });
 
-  it("shows the line, and never intercepts a tap meant for the screen underneath", async () => {
-    const { getByText, getByTestId } = await renderCameo();
-
+  it("shows the line", async () => {
+    const { getByText } = await renderVillage();
     await act(() => {
       speak();
     });
-
     expect(getByText(en.villagers.farmer.rest[0] as string)).toBeTruthy();
-    // `none`, not `box-none`: the figure and the bubble used to take a tap, and on the Village the
-    // villager stands over the building list, so a tap on a building never reached it.
-    expect(getByTestId("villager-cameo").props.pointerEvents).toBe("none");
   });
 
-  it("leaves on its own, without anyone dismissing it", async () => {
-    const { queryByText } = await renderCameo();
-
+  it("is sent away on press-in, and the press stops there", async () => {
+    const { getByTestId, queryByTestId } = await renderVillage();
     await act(() => {
       speak();
     });
+
     await act(() => {
-      jest.advanceTimersByTime(CAMEO_LINGER_MS.ambient + 1);
+      fireEvent(getByTestId("villager-zone"), "pressIn");
     });
 
-    expect(queryByText(en.villagers.farmer.rest[0] as string)).toBeNull();
     expect(useChorusStore.getState().current).toBeNull();
+    expect(queryByTestId("villager-cameo")).toBeNull();
+    // The zone takes the press itself: the painting it stands in (pressable, it opens the scene)
+    // never hears of it.
+    expect(mockPainting).not.toHaveBeenCalled();
+    expect(mockUnderneath).not.toHaveBeenCalled();
   });
 
-  it("shows an ambient line whole, with nothing to wait for between two sets", async () => {
-    const { getByText } = await renderCameo();
-
+  it("makes the zone one generous button for a screen reader, with the sentence readable", async () => {
+    const { getByTestId } = await renderVillage();
     await act(() => {
-      speak();
-    });
-
-    // No typing: a villager glanced at mid-session must never be something the hero has to
-    // finish reading.
-    expect(getByText(en.villagers.farmer.rest[0] as string)).toBeTruthy();
-  });
-
-  it("types a guide out", async () => {
-    const guide = en.villagers.farmer.guide_village[0] as string;
-    const { getByTestId } = await renderCameo();
-
-    await act(() => {
-      speakGuide(guide);
-    });
-    await act(() => {
-      jest.advanceTimersByTime(TYPE_MS_PER_CHAR * 5);
-    });
-
-    // Probed on the visible span, not on the bubble's text: the untyped remainder is rendered
-    // transparent so the bubble never grows mid-sentence, which means the whole string is in the
-    // tree from the first frame and `getByText` would find it regardless.
-    expect(getByTestId("villager-line").props.children).not.toBe(guide);
-  });
-
-  it("does not type at all under reduced motion", async () => {
-    useSettingsStore.setState({ reducedMotion: true });
-    const guide = en.villagers.farmer.guide_village[0] as string;
-    const { getByText } = await renderCameo();
-
-    await act(() => {
-      speakGuide(guide);
-    });
-
-    // A typewriter is motion. Someone who asked the OS for less of it gets the whole line at once.
-    expect(getByText(guide)).toBeTruthy();
-  });
-
-  it("gives a screen reader the whole sentence, not the part typed so far", async () => {
-    const guide = en.villagers.farmer.guide_village[0] as string;
-    const { getByTestId } = await renderCameo();
-
-    await act(() => {
-      speakGuide(guide);
+      speakGuide(en.villagers.farmer.guide_village[0] as string);
     });
     await act(() => {
       jest.advanceTimersByTime(TYPE_MS_PER_CHAR * 3);
     });
 
-    expect(getByTestId("villager-bubble").props.accessibilityLabel).toBe(guide);
-  });
-});
-
-/**
- * The villager leaves on any touch, and the touch still reaches what was tapped. The root view
- * calls this on the capture phase of every touch; returning `true` would steal every tap in the
- * app, which is why the return value is asserted as much as the dismissal.
- */
-describe("dismissVillagerOnTouch", () => {
-  beforeEach(() => {
-    jest.useFakeTimers();
-    useSettingsStore.setState({ reducedMotion: false });
-    useChorusStore.setState({ current: null });
-  });
-  afterEach(() => {
-    jest.useRealTimers();
+    const zone = getByTestId("villager-zone");
+    expect(zone.props.accessibilityRole).toBe("button");
+    // The sentence is in the label, not the hint: a user with hints off must still hear it. The
+    // whole sentence, not the part typed so far.
+    expect(zone.props.accessibilityLabel).toContain(en.villagers.farmer.guide_village[0] as string);
+    expect(zone.props.accessibilityLabel).toContain("villagers.names.farmer");
+    expect(zone.props.accessibilityHint).toBe("villagers.send_away");
   });
 
-  it("sends an ambient villager away, and lets the touch through", async () => {
-    const { queryByTestId } = await renderCameo();
+  // TalkBack and VoiceOver activate with a click, which calls `onPress` and never `onPressIn`.
+  it("is sent away by an accessibility activation too", async () => {
+    const { getByTestId } = await renderVillage();
+    await act(() => {
+      speak();
+    });
+    await fireEvent.press(getByTestId("villager-zone"));
+    expect(useChorusStore.getState().current).toBeNull();
+    expect(mockPainting).not.toHaveBeenCalled();
+  });
+
+  // The scene is a skeleton while it loads and the figure is not mounted: the page, which is, owns
+  // the cue, or a guide cued then would be typed on the next tab's line.
+  it("dismisses the Village's cue on blur even while the scene is still loading", async () => {
+    mockSceneLoading = true;
+    const { rerender } = await renderVillage();
+    await act(() => {
+      speakGuide(en.villagers.farmer.guide_village[0] as string);
+    });
+    expect(useChorusStore.getState().current).not.toBeNull();
+
+    mockFocused = false;
+    await act(async () => {
+      await rerender(villageTree());
+    });
+    expect(useChorusStore.getState().current).toBeNull();
+  });
+
+  it("names the speaker in the bubble", async () => {
+    const { getByText } = await renderVillage();
+    await act(() => {
+      speak();
+    });
+    expect(getByText("villagers.names.farmer")).toBeTruthy();
+  });
+
+  it("does not adopt another screen's cue", async () => {
+    const { queryByTestId } = await renderVillage();
+    await act(() => {
+      useChorusStore.setState({
+        current: {
+          id: 5,
+          owner: "journal",
+          moment: "guide_journal",
+          villager: "herbalist",
+          pose: "talk",
+          line: "Not for the Village.",
+        },
+      });
+    });
+    expect(queryByTestId("villager-cameo")).toBeNull();
+    expect(useChorusStore.getState().current?.owner).toBe("journal");
+  });
+
+  it("asks for no guide on a window with no room for the figure", async () => {
+    const { useScreenGuide, useAmbientVisit } = jest.requireMock(
+      "@/components/chorus/screenCues",
+    ) as { useScreenGuide: jest.Mock; useAmbientVisit: jest.Mock };
+    useScreenGuide.mockClear();
+    useAmbientVisit.mockClear();
+    // 841x701 dp, an unfolded foldable: the hero is a short band with no room above the title.
+    const dims = jest.spyOn(require("react-native"), "useWindowDimensions").mockReturnValue({
+      width: 841,
+      height: 701,
+      scale: 1,
+      fontScale: 1,
+    });
+    await renderVillage();
+    dims.mockRestore();
+    expect(useScreenGuide).toHaveBeenCalledWith("guide_village", { enabled: false });
+    expect(useAmbientVisit).toHaveBeenCalledWith("village_visit", { enabled: false });
+  });
+
+  it("lets a press elsewhere reach the screen, and sends the villager away on the way", async () => {
+    const { getByTestId, queryByTestId } = await renderVillage();
     await act(() => {
       speak();
     });
 
+    const watch = getByTestId("village-touch-watch");
     let claimed = true;
     await act(() => {
-      claimed = dismissVillagerOnTouch();
+      claimed = watch.props.onStartShouldSetResponderCapture();
     });
-
     expect(claimed).toBe(false);
     expect(useChorusStore.getState().current).toBeNull();
     expect(queryByTestId("villager-cameo")).toBeNull();
+
+    await fireEvent.press(getByTestId("under-the-villager"));
+    expect(mockUnderneath).toHaveBeenCalledTimes(1);
   });
 
-  it("sends a guide away mid-sentence too", async () => {
-    await renderCameo();
+  it("does not take a first tap to finish the line: one press-in and it is gone, mid-sentence", async () => {
+    const { getByTestId } = await renderVillage();
     await act(() => {
       speakGuide(en.villagers.farmer.guide_village[0] as string);
     });
     await act(() => {
       jest.advanceTimersByTime(TYPE_MS_PER_CHAR * 5);
     });
-
     await act(() => {
-      dismissVillagerOnTouch();
+      fireEvent(getByTestId("villager-zone"), "pressIn");
     });
-
     expect(useChorusStore.getState().current).toBeNull();
   });
 
-  it("never claims a touch when nobody is speaking", () => {
-    expect(dismissVillagerOnTouch()).toBe(false);
+  it("leaves on its own after the linger", async () => {
+    const { queryByText } = await renderVillage();
+    await act(() => {
+      speak();
+    });
+    await act(() => {
+      jest.advanceTimersByTime(CAMEO_LINGER_MS.ambient + 1);
+    });
+    expect(queryByText(en.villagers.farmer.rest[0] as string)).toBeNull();
     expect(useChorusStore.getState().current).toBeNull();
   });
 
-  // A handler nobody calls is covered by the tests above and does nothing in the app.
-  it("is what the root view watches every touch with", () => {
-    const layout = readFileSync(join(__dirname, "..", "app", "_layout.tsx"), "utf8");
-    expect(layout).toMatch(/onStartShouldSetResponderCapture=\{dismissVillagerOnTouch\}/);
+  it("leaves when the hero leaves the Village", async () => {
+    const { rerender } = await renderVillage();
+    await act(() => {
+      speak();
+    });
+    mockFocused = false;
+    await act(async () => {
+      await rerender(villageTree());
+    });
+    expect(useChorusStore.getState().current).toBeNull();
+  });
+
+  // Journal day one showed no guide. The Village tab stays mounted once visited, and its figure
+  // took every cue raised while it was unfocused for its own and dismissed it: the Journal's guide
+  // was cued, then sent away by a screen nobody was looking at.
+  it("does not dismiss a cue raised for another screen while the Village is not focused", async () => {
+    mockFocused = false;
+    const { queryByTestId } = await renderVillage();
+    await act(() => {
+      useChorusStore.setState({
+        current: {
+          id: 6,
+          owner: "journal",
+          moment: "guide_journal",
+          villager: "herbalist",
+          pose: "talk",
+          line: en.villagers.herbalist.guide_journal[0] as string,
+        },
+      });
+    });
+    // Long enough to type it out and outlive any linger: an unfocused Village must never draw it
+    // or time it out.
+    await act(() => {
+      jest.advanceTimersByTime(60_000);
+    });
+    expect(queryByTestId("villager-cameo")).toBeNull();
+    expect(useChorusStore.getState().current?.owner).toBe("journal");
+  });
+
+  it("types a guide out, and not under reduced motion", async () => {
+    const guide = en.villagers.farmer.guide_village[0] as string;
+    const { getByTestId } = await renderVillage();
+    await act(() => {
+      speakGuide(guide);
+    });
+    await act(() => {
+      jest.advanceTimersByTime(TYPE_MS_PER_CHAR * 5);
+    });
+    expect(getByTestId("villager-line").props.children).not.toBe(guide);
+  });
+
+  it("does not type at all under reduced motion", async () => {
+    useSettingsStore.setState({ reducedMotion: true });
+    const guide = en.villagers.farmer.guide_village[0] as string;
+    const { getByTestId } = await renderVillage();
+    await act(() => {
+      speakGuide(guide);
+    });
+    expect(getByTestId("villager-line").props.children).toBe(guide);
   });
 });
 
-describe("cameo anchor", () => {
-  it("stays clear of the band every screen puts its primary button in", () => {
-    expect(cameoBottomOffset(0)).toBeGreaterThanOrEqual(96);
-    expect(cameoBottomOffset(24)).toBe(cameoBottomOffset(0) + 24);
-  });
-
-  /**
-   * The regression this locks down was found by running the app, not by this suite.
-   * `cameoMaxHeight` first returned the design's *ceiling* (38% of the window) instead of its
-   * target, so on a 372x828dp phone the villager was 314dp tall and 236dp wide and sat squarely
-   * on the rest screen's "I'm ready" button. The old test asserted the ceiling was respected —
-   * which it was — and said nothing about the button, so it passed while the one product rule
-   * this layer must obey was broken on screen.
-   */
-  it("leaves the hero's own screen to the hero", () => {
-    const height = cameoMaxHeight(WINDOW.width, WINDOW.height);
-    const width = height * 0.75;
-
-    // A figure, not a takeover: under a quarter of the height and under half the width.
-    expect(height).toBeLessThanOrEqual(WINDOW.height * 0.25);
-    expect(width).toBeLessThan(WINDOW.width * 0.5);
-    // And the bubble beside it gets enough room for the longest word in either language.
-    expect(WINDOW.width - width - 40).toBeGreaterThan(150);
-  });
-
-  it("never reaches into the bottom action band, on any window it can be given", () => {
-    for (const [w, h] of [
-      [320, 568], // the smallest phone still supported
-      [372, 828], // the device this was caught on
-      [844, 390], // landscape / split screen
-      [800, 1280], // tablet
-    ] as const) {
-      const top = cameoTopEdge(w, h, 24);
-      const bottom = h - cameoBottomOffset(24);
-      expect(top).toBeGreaterThan(0);
-      expect(bottom).toBeLessThan(h);
-      // The figure occupies [top, bottom]; everything below `bottom` stays the screen's own.
-      expect(bottom - top).toBe(cameoMaxHeight(w, h));
+describe("cameo band", () => {
+  it("stays inside the painting, above the title block, on every window it can be given", () => {
+    for (const hero of [390, 520, 700]) {
+      const band = cameoBand(hero, 47, hero);
+      assert(band);
+      expect(band.top).toBeGreaterThanOrEqual(47);
+      // 150 is the title block: nothing the zone covers is a card or the village name.
+      expect(band.top + band.height).toBeLessThanOrEqual(hero - 150);
+      expect(band.figureHeight).toBeLessThanOrEqual(band.height);
     }
+  });
+
+  it("gives no band to a hero too short to hold a figure, rather than one over the title", () => {
+    expect(cameoBand(224, 47, 360)).toBeNull();
+  });
+
+  it("is a figure, not a takeover: under half the column wide", () => {
+    const band = cameoBand(700, 24, 700);
+    assert(band);
+    expect(band.figureHeight * 0.75).toBeLessThan(700 * 0.5);
+  });
+
+  it("leaves the villager home when there is no band", async () => {
+    // Not rendered by the Village stand-in with a band: render the figure bare with none.
+    useChorusStore.setState({ current: null });
+    const { queryByTestId } = await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <VillagerCameo band={null} />
+      </TamaguiProvider>,
+    );
+    await act(() => {
+      speak();
+    });
+    expect(queryByTestId("villager-zone")).toBeNull();
+    expect(useChorusStore.getState().current).toBeNull();
   });
 });

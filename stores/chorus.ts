@@ -65,8 +65,41 @@ const AMBIENT_CHANCE = 0.18;
  */
 const RECENT_MEMORY = 12;
 
+/**
+ * The screen a cue belongs to. A cue is drawn only by its owner and dismissed when its owner is
+ * left, and nobody else adopts it: the Village guide cued during a load, the comeback greeting
+ * raised under a session and tab A's line on tab B were all one cue drawn by the wrong screen.
+ */
+export type CueOwner =
+  | "home"
+  | "quests"
+  | "adventures"
+  | "journal"
+  | "village"
+  | "rest"
+  | "victory";
+
+/** Who owns each moment. `menu_visit` is shared by three screens, so its caller names the owner. */
+const MOMENT_OWNER: Record<Exclude<CueMoment, "menu_visit">, CueOwner> = {
+  rest: "rest",
+  village_visit: "village",
+  guide_village: "village",
+  comeback: "home",
+  guide_home: "home",
+  guide_quests: "quests",
+  guide_adventures: "adventures",
+  guide_journal: "journal",
+  personal_record: "victory",
+  personal_record_beat: "victory",
+  boss_defeated: "victory",
+  first_outing: "victory",
+  high_road: "victory",
+  longest_outing: "victory",
+};
+
 export type Cameo = {
   id: number;
+  owner: CueOwner;
   moment: CueMoment;
   villager: VillagerId;
   pose: VillagerPose;
@@ -98,9 +131,11 @@ interface ChorusState {
    * know: a first-visit guide marked "seen" after a refused cue is a guide burnt without ever
    * having been read, and there is no second chance for one.
    */
-  cue: (moment: CueMoment, params?: CueParams) => boolean;
+  cue: (moment: CueMoment, params?: CueParams, owner?: CueOwner) => boolean;
   /** Takes the id so a timer belonging to a cameo that was already replaced cannot clear its successor. */
   dismiss: (id: number) => void;
+  /** Sends away the current cue if `owner` raised it, and never anyone else's. */
+  dismissOwned: (owner: CueOwner) => void;
 }
 
 /** Monotonic, so a repeated line still counts as a new appearance for the host's enter animation. */
@@ -236,8 +271,11 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
     }));
   },
 
-  cue: (moment, params) => {
+  cue: (moment, params, explicitOwner) => {
     if (!useSettingsStore.getState().villagersEnabled) return false;
+
+    const owner = explicitOwner ?? (moment === "menu_visit" ? null : MOMENT_OWNER[moment]);
+    if (!owner) return false;
 
     const rule = MOMENT_CAST[moment];
     const state = get();
@@ -262,7 +300,7 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
 
     const recentKeys = [...state.recentKeys, selected.key].slice(-RECENT_MEMORY);
     set({
-      current: { id: nextCameoId++, moment, villager, pose: rule.pose, line: selected.line },
+      current: { id: nextCameoId++, owner, moment, villager, pose: rule.pose, line: selected.line },
       recentKeys,
       lastVillager: villager,
       lastCameoAt: now,
@@ -289,6 +327,11 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
 
   dismiss: (id) => {
     if (get().current?.id !== id) return;
+    set({ current: null });
+  },
+
+  dismissOwned: (owner) => {
+    if (get().current?.owner !== owner) return;
     set({ current: null });
   },
 }));

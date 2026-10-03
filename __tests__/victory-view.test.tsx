@@ -1,10 +1,13 @@
 import { act, fireEvent, render } from "@testing-library/react-native";
+import { StyleSheet, type ViewStyle } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { VictoryView } from "@/components/session/VictoryView";
 import type { Quest } from "@/db/quests";
+import { useChorusStore } from "@/stores/chorus";
 import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
 
 /**
@@ -21,6 +24,7 @@ const mockQuitSession = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn() }),
+  useIsFocused: () => true,
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/completed", () => ({
@@ -320,5 +324,178 @@ describe("VictoryView, a session too short to be one", () => {
 
     expect(view.queryByText("session.summary_too_short_title")).toBeNull();
     expect(view.getByText("session.summary_saving")).toBeTruthy();
+  });
+});
+
+/**
+ * The line sits in the hero banner, and the cue fires after the save, so the line cannot be known
+ * at the first frame. A slot that appeared with it would push the feel buttons from under the
+ * finger that was about to press one.
+ */
+describe("VictoryView villager slot", () => {
+  beforeEach(() => {
+    useChorusStore.setState({ current: null });
+  });
+
+  it("exists from the first render with no villager, and keeps its height when one arrives", async () => {
+    // An event types; reduced motion shows it whole, which is what is being asked here.
+    useSettingsStore.setState({ reducedMotion: true });
+    const { view, release } = await mountWithPendingSave();
+
+    const before = view.getByTestId("villager-line-slot");
+    const heightBefore = JSON.stringify(before.props.style);
+    expect(heightBefore).toMatch(/"height":\d+/);
+    expect(view.queryByTestId("villager-line-block")).toBeNull();
+
+    await release();
+    await act(() => {
+      useChorusStore.setState({
+        current: {
+          id: 9,
+          owner: "victory",
+          moment: "boss_defeated",
+          villager: "champion",
+          pose: "cheer",
+          line: "A line that arrives after the save.",
+        },
+      });
+    });
+
+    expect(view.getByTestId("villager-line-block")).toBeTruthy();
+    // Shown, not transparent or empty: the line itself is in the slot.
+    expect(view.getByTestId("villager-line").props.children).toBe(
+      "A line that arrives after the save.",
+    );
+    expect(JSON.stringify(view.getByTestId("villager-line-slot").props.style)).toBe(heightBefore);
+  });
+});
+
+/**
+ * The level bar mounted with the save and pushed the feel buttons about 80 dp down from under the
+ * finger that was about to press one: the same hazard the reserved line slot avoids.
+ */
+describe("VictoryView level card", () => {
+  it("is there from the first frame, above the feel buttons, and the save only fills it", async () => {
+    const { view, release } = await mountWithPendingSave();
+
+    const first = JSON.stringify(view.toJSON());
+    const placeholder = view.getByTestId("victory-level-placeholder", {
+      includeHiddenElements: true,
+    });
+    // Two ellipses and an empty bar say nothing: TalkBack must not stop on them.
+    expect(placeholder.props.importantForAccessibility).toBe("no-hide-descendants");
+    expect(placeholder.props.accessibilityElementsHidden).toBe(true);
+    expect(first.indexOf("victory-level-placeholder")).toBeLessThan(
+      first.indexOf("session.feedback_hard"),
+    );
+
+    await release();
+
+    // Replaced in place by the real bar, still above the buttons: nothing is inserted over them.
+    expect(
+      view.queryByTestId("victory-level-placeholder", { includeHiddenElements: true }),
+    ).toBeNull();
+    const after = JSON.stringify(view.toJSON());
+    expect(after).toContain("journal.xp_progress");
+    expect(after.indexOf("journal.xp_progress")).toBeLessThan(
+      after.indexOf("session.feedback_hard"),
+    );
+  });
+});
+
+/**
+ * Nothing pressable under a villager. On a boss victory the whole banner card was an imagebutton
+ * (it opens the felled boss), and the line sat inside it: a tap on the line opened the boss, and
+ * TalkBack found a focusable element inside a focusable one.
+ */
+describe("VictoryView villager slot, and what is under it", () => {
+  type Node = { parent: Node | null; props: Record<string, unknown> };
+
+  const boss = {
+    imagePath: "assets/bosses/troll.jpg",
+    enName: "Troll",
+    frName: "Troll",
+    deName: "Troll",
+    esName: "Troll",
+    tier: 1,
+    currentHp: 0,
+    maxHp: 100,
+  };
+
+  function pressableAncestors(node: Node) {
+    const found: string[] = [];
+    for (let n = node.parent; n; n = n.parent) {
+      if (typeof n.props.onPress === "function" || typeof n.props.onPressIn === "function") {
+        found.push("press");
+      }
+      if (/button/.test(String(n.props.accessibilityRole ?? n.props.role ?? ""))) {
+        found.push("button");
+      }
+    }
+    return found;
+  }
+
+  /** Where the slot really starts in the banner: its nearest absolutely positioned ancestor. */
+  function slotBand(node: Node) {
+    const flat = (style: unknown) => StyleSheet.flatten(style as ViewStyle) ?? {};
+    const height = flat(node.props.style).height as number;
+    for (let n = node.parent; n; n = n.parent) {
+      const style = flat(n.props.style);
+      if (style.position === "absolute") return { top: style.top as number, height };
+    }
+    throw new Error("the slot has no absolute ancestor");
+  }
+
+  it.each([
+    ["a quest victory", false],
+    ["a boss victory", true],
+  ])("has no pressable and no button among the line's ancestors on %s", async (_, isBoss) => {
+    const { view, release } = await mountWithPendingSave();
+    if (isBoss) {
+      await act(() => {
+        useSessionStore.setState({
+          bossFight: boss,
+          bossStartHp: 10,
+        } as unknown as Partial<ReturnType<typeof useSessionStore.getState>>);
+      });
+    }
+    await release();
+
+    const slot = view.getByTestId("villager-line-slot") as unknown as Node;
+    expect(pressableAncestors(slot)).toEqual([]);
+
+    if (isBoss) {
+      // The boss still opens, from the part of the banner below the slot, never over it.
+      const band = slotBand(slot);
+      const open = view.getByTestId("victory-boss-open");
+      expect(StyleSheet.flatten(open.props.style).top).toBeGreaterThanOrEqual(
+        band.top + band.height,
+      );
+      expect(open.props.accessibilityRole).toBe("imagebutton");
+      // The viewer is a Modal, empty until shown; open, it carries the boss's name too.
+      const label = String(open.props.accessibilityLabel);
+      expect(view.getAllByLabelText(label)).toHaveLength(1);
+      await fireEvent.press(open);
+      expect(view.getAllByLabelText(label)).toHaveLength(2);
+    } else {
+      expect(view.queryByTestId("victory-boss-open")).toBeNull();
+    }
+  });
+
+  // At 1.3 the 88 dp slot held two and a half lines and cut the third mid-glyph.
+  it("sizes the slot for three lines at the device's font scale, fixed for the render", async () => {
+    const rn = jest.requireActual("react-native") as typeof import("react-native");
+    const real = rn.useWindowDimensions;
+    const dims = jest
+      .spyOn(require("react-native"), "useWindowDimensions")
+      .mockImplementation(() => ({ ...real(), fontScale: 1.3 }));
+    const { view, release } = await mountWithPendingSave();
+    const height = () =>
+      StyleSheet.flatten(view.getByTestId("villager-line-slot").props.style).height;
+
+    expect(height()).toBe(Math.ceil(88 * 1.3));
+    await release();
+    expect(height()).toBe(Math.ceil(88 * 1.3));
+    dims.mockRestore();
   });
 });

@@ -1,24 +1,24 @@
 import { Image } from "expo-image";
-import { usePathname } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { useWindowDimensions } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, XStack, YStack } from "tamagui";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Pressable, useWindowDimensions } from "react-native";
+import { Paragraph, Text, XStack, YStack } from "tamagui";
 
 import { Card } from "@/components/common/Card";
 import { getVillagerAsset } from "@/constants/assetMap";
-import { CAMEO_LINGER_MS, MOMENT_CAST, TYPE_MS_PER_CHAR } from "@/constants/villagers";
+import { CAMEO_LINGER_MS, MOMENT_CAST } from "@/constants/villagers";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useChorusStore } from "@/stores/chorus";
-import { cameoBottomOffset, cameoMaxHeight } from "./cameoAnchor";
+import type { CameoBand } from "./cameoAnchor";
+import { useCueOwner } from "./useCueOwner";
+import { useTypedLine } from "./useTypedLine";
 
 /**
- * The one place a villager is ever drawn.
- *
- * Mounted once, as a sibling of the router's `<Slot />` in app/_layout.tsx, which is the same
- * trick BossTauntOverlay plays inside app/session.tsx — one host above every view, reading a
- * store — moved one level up so the tabs get it too. Nothing else in the app renders a villager,
- * and no screen knows which one answered its cue.
+ * The villager's figure, drawn only by the Village scene, inside the hero painting (above its
+ * title, `cameoBand`), so it stands on the painting, scrolls with it and never reaches the cards
+ * below. It is the one screen with a painting to stand on. Everywhere else a villager is a line in the flow, `VillagerLine`;
+ * `__tests__/villager-figure-village-only.test.ts` fails if anything else renders this, or if it
+ * leaves the hero.
  *
  * The source art is 3:4 and carries an alpha channel (scripts/cutout.py), so the figure lands on
  * whatever is behind it with no seam. Height comes from `cameoMaxHeight`; width follows the aspect
@@ -26,149 +26,114 @@ import { cameoBottomOffset, cameoMaxHeight } from "./cameoAnchor";
  *
  * ## Touch
  *
- * Nothing on this layer takes a touch (`pointerEvents="none"`), and any touch anywhere sends the
- * villager away: `dismissVillagerOnTouch` (cameoTouch.ts), which app/_layout.tsx puts on the root
- * view's capture phase. So a tap on the villager reaches whatever is under it *and* ends the cameo.
+ * Figure and bubble are one zone, a real view across the whole painting band where the villager stands
+ * (not a hitSlop, which loses to an adjacent sibling). A press in it sends the villager away on
+ * touch down and stops there: nothing underneath receives it. A touch anywhere else on the Village
+ * reaches the screen as usual and also sends the villager away, through the capture the screen
+ * puts on its own root (`dismissVillagerOnTouch`). There is no "first tap finishes the line".
  *
- * It used to be the other way round. The figure and the bubble were Pressables, so a villager
- * could be sent away with a tap on it, on the promise from `cameoAnchor.ts` that it only ever
- * stands over empty ground. It does not: on the Village it stands over the building list. An
- * instrumented run on 2026-09-13 caught a tap on a building landing on the villager and never
- * reaching the screen, and the hero confirmed it on the phone. The hero wanted both things at once, the button
- * underneath and the villager gone, and only the capture phase gives both.
+ * For a screen reader the zone is a button, "Send away", whose hint carries the whole sentence.
+ * The typed text itself stays out of the tree.
  */
-export function VillagerCameo() {
+export function VillagerCameo({ band }: { band: CameoBand | null }) {
+  const { t } = useTranslation();
   const current = useChorusStore((s) => s.current);
   const dismiss = useChorusStore((s) => s.dismiss);
   const reducedMotion = useReducedMotion();
-  const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
-  const pathname = usePathname();
+  const { width } = useWindowDimensions();
+  const focused = useCueOwner("village");
 
-  const line = current?.line ?? "";
-  const priority = current ? MOMENT_CAST[current.moment].priority : "ambient";
-  // Ambient lines never type: a villager glanced at between two sets must not be something the
-  // hero has to finish reading. Tapping sends any of them away all the same.
-  const types = priority !== "ambient" && !reducedMotion;
+  // Only the Village's own cue, and only while the Village is focused: tab screens stay mounted,
+  // and an unfocused Village used to type (re-render every 24 ms) and dismiss other screens' cues.
+  const mine = focused && current?.owner === "village" ? current : null;
+  const { shown, rest, done } = useTypedLine(mine);
+  const name = mine ? t(`villagers.names.${mine.villager}`) : "";
 
-  const [revealed, setRevealed] = useState(0);
-
+  // Focused but no room for a figure: nobody comes rather than someone over the title.
   useEffect(() => {
-    if (!(current && types)) {
-      setRevealed(line.length);
-      return;
-    }
+    if (mine && !band) dismiss(mine.id);
+  }, [mine, band, dismiss]);
 
-    // A local counter rather than a functional update that clears its own interval: a state
-    // updater that has a side effect in it runs twice under StrictMode and types at double speed.
-    setRevealed(0);
-    let shown = 0;
-    const typing = setInterval(() => {
-      shown += 1;
-      setRevealed(shown);
-      if (shown >= line.length) clearInterval(typing);
-    }, TYPE_MS_PER_CHAR);
-
-    return () => clearInterval(typing);
-  }, [current, types, line]);
-
-  const finished = revealed >= line.length;
-
-  // A villager belongs to the screen that called them.
-  //
-  // This layer outlives every route: one host above the router, a store, and a linger measured in
-  // seconds. So a guide raised on the quest gallery was still standing when the hero opened a
-  // quest, where it drew across "Start Quest" and the level chips, and the figure is tappable —
-  // so the left third of the primary button dismissed a villager instead of starting the session.
-  // The audit of 2026-09-10 found it on two screens and could not tell from a still whether the
-  // tap was eaten; it was.
-  //
-  // The pathname at the moment of the cue, not the pathname of the effect: a cue raised *by* the
-  // screen being navigated to lands in the same commit as the change, and dismissing on any
-  // change would send that one away before its first character.
-  const shownAt = useRef<string | null>(null);
+  // Measured from the end of the typing, so the longest lines are not given the least time to read.
   useEffect(() => {
-    if (!current) {
-      shownAt.current = null;
-      return;
-    }
-    if (shownAt.current === null) {
-      shownAt.current = pathname;
-      return;
-    }
-    if (shownAt.current !== pathname) dismiss(current.id);
-  }, [current, pathname, dismiss]);
-
-  useEffect(() => {
-    if (!(current && finished)) return;
-    const leaving = setTimeout(() => dismiss(current.id), CAMEO_LINGER_MS[priority]);
+    if (!(mine && done)) return;
+    const leaving = setTimeout(
+      () => dismiss(mine.id),
+      CAMEO_LINGER_MS[MOMENT_CAST[mine.moment].priority],
+    );
     return () => clearTimeout(leaving);
-  }, [current, finished, priority, dismiss]);
+  }, [mine, done, dismiss]);
 
-  if (!current) return null;
+  if (!(mine && band)) return null;
+  const current_ = mine;
 
-  const figureHeight = cameoMaxHeight(width, height);
+  const figureHeight = band.figureHeight;
   const figureWidth = Math.round(figureHeight * 0.75);
-  const bottom = cameoBottomOffset(insets.bottom);
-  const bubble = (
-    <Card
-      bg="$surface"
-      p="$3"
-      rounded="$4"
-      borderWidth={1}
-      borderColor="$borderStrong"
-      maxW={width - figureWidth - 40}
-      mt="$2"
-      style={{ borderBottomLeftRadius: 0 }}
-    >
-      {/* The rest of the line is rendered transparent rather than omitted, so the bubble is its
-          final size from the first character and does not grow line by line under the reader's
-          eye. `accessible={false}` keeps the half-typed text out of the accessibility tree — the
-          Pressable around it carries the whole sentence as its label instead. */}
-      <Paragraph color="$text" fontWeight="700" fontSize={14} accessible={false}>
-        <Paragraph testID="villager-line" color="$text" fontWeight="700" fontSize={14}>
-          {line.slice(0, revealed)}
-        </Paragraph>
-        <Paragraph color="transparent" fontWeight="700" fontSize={14}>
-          {line.slice(revealed)}
-        </Paragraph>
-      </Paragraph>
-    </Card>
-  );
 
   return (
     <YStack
       testID="villager-cameo"
       position="absolute"
-      // The whole layer: a tap meant for the screen underneath always reaches it. See the header.
-      pointerEvents="none"
-      b={bottom}
+      t={band.top}
+      height={band.height}
+      overflow="hidden"
+      justify="flex-end"
       l={0}
       r={0}
       z={900}
       transition={reducedMotion ? undefined : "bouncy"}
       enterStyle={reducedMotion ? undefined : { opacity: 0, y: 48 }}
     >
-      <XStack px="$3" gap="$2" items="flex-start">
-        {/* Out of the accessibility tree: the bubble beside it already carries the sentence. */}
-        <Image
-          testID="villager-figure"
-          source={getVillagerAsset(current.villager, current.pose)}
-          style={{ width: figureWidth, height: figureHeight }}
-          contentFit="contain"
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        />
-        <YStack
-          testID="villager-bubble"
-          accessible
-          // The whole line, not the part typed so far: a label that changes every 24ms is
-          // unusable, and a screen reader should get the sentence at once.
-          accessibilityLabel={line}
-        >
-          {bubble}
-        </YStack>
-      </XStack>
+      <Pressable
+        testID="villager-zone"
+        onPressIn={() => dismiss(current_.id)}
+        // An accessibility activation (TalkBack, VoiceOver) calls `onPress` and never `onPressIn`.
+        onPress={() => dismiss(current_.id)}
+        accessibilityRole="button"
+        // The whole sentence, not the part typed so far: a label that changes every 24ms is
+        // unusable, and a screen reader should get the line at once. In the label, not the hint,
+        // because a user with hints off must still hear what was said.
+        accessibilityLabel={`${name}. ${current_.line}`}
+        accessibilityHint={t("villagers.send_away")}
+        style={{ paddingHorizontal: 12, height: "100%", justifyContent: "flex-end" }}
+      >
+        <XStack gap="$2" items="flex-end">
+          <Image
+            testID="villager-figure"
+            source={getVillagerAsset(current_.villager, current_.pose)}
+            style={{ width: figureWidth, height: figureHeight }}
+            contentFit="contain"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+          <Card
+            bg="$surface"
+            p="$3"
+            rounded="$4"
+            borderWidth={1}
+            borderColor="$borderStrong"
+            maxW={width - figureWidth - 40}
+            // Pinned to the top of the band while the figure keeps its place: on day one the line
+            // points at the cabin roof, and a bubble at the figure's feet sat on it.
+            self="flex-start"
+            style={{ borderBottomLeftRadius: 0 }}
+          >
+            <Text fontSize={12} fontWeight="700" color="$textSecondary" accessible={false}>
+              {name}
+            </Text>
+            {/* The rest of the line is transparent rather than omitted, so the bubble is its final
+                size from the first character. */}
+            <Paragraph color="$text" fontWeight="700" fontSize={14} accessible={false}>
+              <Paragraph testID="villager-line" color="$text" fontWeight="700" fontSize={14}>
+                {shown}
+              </Paragraph>
+              <Paragraph color="transparent" fontWeight="700" fontSize={14}>
+                {rest}
+              </Paragraph>
+            </Paragraph>
+          </Card>
+        </XStack>
+      </Pressable>
     </YStack>
   );
 }

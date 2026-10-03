@@ -1,3 +1,6 @@
+import { cameoBand } from "@/components/chorus/cameoAnchor";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
+
 /**
  * How the village painting is cut to the window it lands in.
  *
@@ -43,4 +46,15 @@ export function villageHeroSlot(
     };
   }
   return { heroHeight: width, paintingTop: 0 };
+}
+
+/**
+ * Where the Village's figure stands for a given window, or `null` if the hero leaves no room.
+ * The one answer the scene (to draw it) and the page (to decide whether to cue anyone at all)
+ * both read, so they cannot disagree. Uses the column, not the window: see `VillageScene`.
+ */
+export function villageCameoBand(windowWidth: number, windowHeight: number, safeTop: number) {
+  const columnWidth = Math.min(windowWidth, CONTENT_MAX_WIDTH);
+  const { heroHeight } = villageHeroSlot(columnWidth, windowHeight);
+  return cameoBand(heroHeight, safeTop, columnWidth);
 }

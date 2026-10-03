@@ -9,6 +9,7 @@ import { Platform, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
+import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -448,7 +449,7 @@ const ANDROID_MIN_BOTTOM_INSET = 24;
 
 export default function QuestsGallery() {
   useScreenGuide("guide_quests");
-  useAmbientVisit("menu_visit");
+  useAmbientVisit("menu_visit", { owner: "quests" });
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -742,6 +743,8 @@ export default function QuestsGallery() {
           {t("quests.gallery_subtitle", "Single workouts. Pick one and go")}
         </Text>
       </YStack>
+
+      <VillagerLine owner="quests" />
 
       {/* Filters, in the page rather than behind a modal. Above StatusMessage on purpose:
           when a filter empties the list, the way out stays right under the message. */}

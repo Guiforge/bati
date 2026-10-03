@@ -150,4 +150,64 @@ describe("src/widget", () => {
 
     expect(renderedLang(renderWidget)).toBe("fr");
   });
+  test("the unit under the number agrees with it, in each language's own plural rule", () => {
+    const { widgetUnit } = widget();
+    // French counts 0 and 1 as singular, English only 1.
+    expect(widgetUnit("fr", "days", 0)).toBe("jour");
+    expect(widgetUnit("fr", "days", 1)).toBe("jour");
+    expect(widgetUnit("fr", "days", 2)).toBe("jours");
+    expect(widgetUnit("en", "days", 0)).toBe("days");
+    expect(widgetUnit("en", "days", 1)).toBe("day");
+    expect(widgetUnit("de", "days", 1)).toBe("Tag");
+    expect(widgetUnit("es", "days", 1)).toBe("día");
+    expect(widgetUnit("fr", "sessions", 1)).toBe("séance");
+    expect(widgetUnit("en", "sessions", 1)).toBe("session");
+    expect(widgetUnit("de", "sessions", 1)).toBe("Einheit");
+    expect(widgetUnit("es", "sessions", 1)).toBe("sesión");
+    // No reading (the error fallback) keeps the plural.
+    expect(widgetUnit("fr", "days", null)).toBe("jours");
+  });
+
+  // "1/3" reads as "one of three sessions": the unit is the quota's, not the count's.
+  test("the weekly unit agrees with the quota, so 1/3 is never '1/3 session'", async () => {
+    const { props, renderWidget } = taskProps("Weekly");
+    await widget().widgetTaskHandler(props);
+    const element = renderWidget.mock.calls[0][0] as {
+      type: (p: object) => unknown;
+      props: object;
+    };
+    const texts: string[] = [];
+    const walk = (node: unknown) => {
+      if (Array.isArray(node)) node.forEach(walk);
+      else if (node && typeof node === "object" && "props" in node) {
+        const p = (node as { props: { text?: string; children?: unknown } }).props;
+        if (p.text) texts.push(p.text);
+        walk(p.children);
+      }
+    };
+    walk(element.type({ ...element.props, done: 1, quota: 3, lang: "en" }));
+    expect(texts).toContain("sessions");
+    texts.length = 0;
+    walk(element.type({ ...element.props, done: 0, quota: 1, lang: "en" }));
+    expect(texts).toContain("session");
+  });
+
+  // Hermes ships Intl.Collator, DateTimeFormat and NumberFormat, and no PluralRules: a call to it
+  // throws in the headless task and the widget stays a placeholder.
+  test("the unit agrees without Intl.PluralRules, which Hermes does not have", () => {
+    const { widgetUnit } = widget();
+    const real = Intl.PluralRules;
+    Reflect.deleteProperty(Intl, "PluralRules");
+    try {
+      expect(widgetUnit("fr", "days", 0)).toBe("jour");
+      expect(widgetUnit("en", "days", 0)).toBe("days");
+      expect(widgetUnit("de", "sessions", 1)).toBe("Einheit");
+    } finally {
+      Object.defineProperty(Intl, "PluralRules", {
+        value: real,
+        configurable: true,
+        writable: true,
+      });
+    }
+  });
 });

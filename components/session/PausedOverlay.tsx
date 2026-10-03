@@ -1,9 +1,12 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
+import { ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { restsBetweenRounds } from "@/components/quests/questShape";
 import { ExerciseInstructionsBody } from "@/components/session/ExerciseInstructions";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -17,6 +20,7 @@ export function PausedOverlay() {
   const { t } = useTranslation();
   const router = useRouter();
   const { mediumImpact, selection, warning } = useHaptics();
+  const [confirming, setConfirming] = useState<"restart" | "quit" | null>(null);
   const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   const setSoundEnabled = useSettingsStore((s) => s.setSoundEnabled);
   const status = useSessionStore((s) => s.status);
@@ -31,6 +35,7 @@ export function PausedOverlay() {
   const measuring = useExpeditionStore((s) => s.sessionUuid !== null);
   // Above the early return: hook order may not depend on the paused state.
   const instruction = useSessionInstructions();
+  const insets = useSafeAreaInsets();
 
   if (status !== "paused") return null;
 
@@ -66,21 +71,7 @@ export function PausedOverlay() {
     // one tap away, unconfirmed, directly above the button that *was* confirmed. Worse, its label
     // reads additive: "redo the round" sounds like going again, not like erasing what is already
     // logged. The confirmation was on the button whose name already sounds dangerous.
-    Alert.alert(
-      t("session.restart_confirm_title", "Restart this round?"),
-      t("session.restart_confirm_body", "Every set you logged in this round is erased."),
-      [
-        { text: t("common.cancel", "Cancel"), style: "cancel" },
-        {
-          text: t("session.restart_round_button"),
-          style: "destructive",
-          onPress: () => {
-            mediumImpact();
-            restartRound();
-          },
-        },
-      ],
-    );
+    setConfirming("restart");
   };
 
   const confirmQuit = () => {
@@ -96,102 +87,130 @@ export function PausedOverlay() {
     warning();
     // Quitting wipes the session and its saved recovery slot; one mis-tap on a button that
     // sits right under "restart round" must not cost the workout.
-    Alert.alert(
-      t("session.quit_confirm_title", "Abandon this session?"),
-      t("session.quit_confirm_body", "This session's progress will be lost."),
-      [
-        { text: t("common.cancel", "Cancel"), style: "cancel" },
-        { text: t("session.quit_button"), style: "destructive", onPress: confirmQuit },
-      ],
-    );
+    setConfirming("quit");
   };
 
   return (
-    <YStack
-      fullscreen
-      bg="$bgOverlay"
-      style={{ zIndex: 1000 }}
-      items="center"
-      justify="center"
-      gap="$6"
-      p="$6"
-    >
-      <Card width="100%" maxW={360} bg="$surface">
-        <YStack gap="$3" items="center">
-          <Text fontWeight="700" fontSize={28} color="$text" style={{ textAlign: "center" }}>
-            {t("session.paused_title")}
-          </Text>
-          <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
-            {t("session.paused_subtitle")}
-          </Paragraph>
-          {measuring ? (
-            <Paragraph color="$textSecondary" size="$2" style={{ textAlign: "center" }}>
-              {t("session.paused_expedition_note")}
+    <YStack fullscreen bg="$bgOverlay" style={{ zIndex: 1000 }}>
+      {/* A scroll, not a centred column: at a large font the card is taller than the screen, and
+          a column centres it past both edges, under the status bar. The padding is the insets plus
+          the page's own margin, so it also clears the bar when it does fit. */}
+      <ScrollView
+        testID="paused-overlay-scroll"
+        contentContainerStyle={{
+          flexGrow: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingTop: insets.top + 24,
+          paddingBottom: insets.bottom + 24,
+          paddingHorizontal: 24,
+        }}
+      >
+        <Card width="100%" maxW={360} bg="$surface">
+          <YStack gap="$3" items="center">
+            <Text fontWeight="700" fontSize={28} color="$text" style={{ textAlign: "center" }}>
+              {t("session.paused_title")}
+            </Text>
+            <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
+              {t("session.paused_subtitle")}
             </Paragraph>
-          ) : null}
+            {measuring ? (
+              <Paragraph color="$textSecondary" size="$2" style={{ textAlign: "center" }}>
+                {t("session.paused_expedition_note")}
+              </Paragraph>
+            ) : null}
 
-          {/* Reading is free here, and it is free from the running screen and the rest too: the
+            {/* Reading is free here, and it is free from the running screen and the rest too: the
               how-to modal pauses on the way in. This is what the hero lands on if they pause by
               hand instead. Same block either way — see ExerciseInstructions.tsx. */}
-          {instruction ? (
-            <YStack pt="$2">
-              <ExerciseInstructionsBody instruction={instruction} artSize={120} />
-            </YStack>
-          ) : null}
+            {instruction ? (
+              <YStack pt="$2">
+                <ExerciseInstructionsBody instruction={instruction} artSize={120} />
+              </YStack>
+            ) : null}
 
-          <YStack width="100%" gap="$3" pt="$2">
-            <AppButton
-              testID="session-resume"
-              onPress={handleResume}
-              variant="primary"
-              accessibilityLabel={t("session.resume_button")}
-              accessibilityRole="button"
-            >
-              {t("session.resume_button")}
-            </AppButton>
-
-            {/* Between resume and the two that erase things: benign, and not adjacent to quit. */}
-            <AppButton
-              testID="session-sound"
-              onPress={handleToggleSound}
-              variant="outline"
-              backgroundColor="$surface2"
-              pressStyle={{ opacity: 0.9 }}
-              accessibilityLabel={t("settings.sound")}
-              accessibilityRole="switch"
-              accessibilityState={{ checked: soundEnabled }}
-            >
-              {soundEnabled ? t("session.sound_on") : t("session.sound_off")}
-            </AppButton>
-
-            {canRestartRound ? (
+            <YStack width="100%" gap="$3" pt="$2">
               <AppButton
-                testID="session-restart-round"
-                onPress={handleRestartRound}
+                testID="session-resume"
+                onPress={handleResume}
+                variant="primary"
+                accessibilityLabel={t("session.resume_button")}
+                accessibilityRole="button"
+              >
+                {t("session.resume_button")}
+              </AppButton>
+
+              {/* Between resume and the two that erase things: benign, and not adjacent to quit. */}
+              <AppButton
+                testID="session-sound"
+                onPress={handleToggleSound}
                 variant="outline"
                 backgroundColor="$surface2"
                 pressStyle={{ opacity: 0.9 }}
-                accessibilityLabel={t("session.restart_round_button")}
+                accessibilityLabel={t("settings.sound")}
+                accessibilityRole="switch"
+                accessibilityState={{ checked: soundEnabled }}
+              >
+                {soundEnabled ? t("session.sound_on") : t("session.sound_off")}
+              </AppButton>
+
+              {canRestartRound ? (
+                <AppButton
+                  testID="session-restart-round"
+                  onPress={handleRestartRound}
+                  variant="outline"
+                  backgroundColor="$surface2"
+                  pressStyle={{ opacity: 0.9 }}
+                  accessibilityLabel={t("session.restart_round_button")}
+                  accessibilityRole="button"
+                >
+                  {t("session.restart_round_button")}
+                </AppButton>
+              ) : null}
+
+              <AppButton
+                testID="session-quit"
+                onPress={handleQuit}
+                variant="outline"
+                backgroundColor="$surface2"
+                pressStyle={{ opacity: 0.9 }}
+                accessibilityLabel={t("session.quit_button")}
                 accessibilityRole="button"
               >
-                {t("session.restart_round_button")}
+                {t("session.quit_button")}
               </AppButton>
-            ) : null}
-
-            <AppButton
-              testID="session-quit"
-              onPress={handleQuit}
-              variant="outline"
-              backgroundColor="$surface2"
-              pressStyle={{ opacity: 0.9 }}
-              accessibilityLabel={t("session.quit_button")}
-              accessibilityRole="button"
-            >
-              {t("session.quit_button")}
-            </AppButton>
+            </YStack>
           </YStack>
-        </YStack>
-      </Card>
+        </Card>
+      </ScrollView>
+      <ConfirmDialog
+        open={confirming !== null}
+        destructive
+        title={
+          confirming === "quit"
+            ? t("session.quit_confirm_title", "Abandon this session?")
+            : t("session.restart_confirm_title", "Restart this round?")
+        }
+        body={
+          confirming === "quit"
+            ? t("session.quit_confirm_body", "This session's progress will be lost.")
+            : t("session.restart_confirm_body", "Every set you logged in this round is erased.")
+        }
+        confirmLabel={t(
+          confirming === "quit" ? "session.quit_button" : "session.restart_round_button",
+        )}
+        cancelLabel={t("common.cancel", "Cancel")}
+        onCancel={() => setConfirming(null)}
+        onConfirm={() => {
+          const action = confirming;
+          setConfirming(null);
+          if (action === "quit") confirmQuit();
+          else {
+            mediumImpact();
+            restartRound();
+          }
+        }}
+      />
     </YStack>
   );
 }

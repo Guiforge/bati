@@ -26,6 +26,8 @@ jobs:
       # nothing until 2026-08-16.
       - run: npx biome ci --error-on-warnings --reporter=github .
       - run: npx tsc --noEmit --project tsconfig.json
+      # Pillow decodes the boss art for __tests__/boss-art-frames.test.ts, which fails in CI without it.
+      - run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends python3-pil
       - run: npm test
       # Dead code is a correctness problem, not tidiness: saveSessionState() had five tests and
       # no callers, which is how its payload drifted from the real writer's unnoticed. Knip is at

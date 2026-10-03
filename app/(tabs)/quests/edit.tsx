@@ -2,12 +2,13 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Input, Separator, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
@@ -40,6 +41,16 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
+
+/** What the in-app dialog says; `onConfirm` and `cancelLabel` left out make it a plain message. */
+type DialogState = {
+  title: string;
+  body: string;
+  confirmLabel: string;
+  cancelLabel?: string;
+  destructive?: boolean;
+  onConfirm?: () => void;
+};
 
 /** An exercise as picked in the editor: one target value, not the min/max range seed content uses. */
 type PickedExercise = {
@@ -109,6 +120,11 @@ export default function QuestEditor() {
   const [imagePath, setImagePath] = useState(NO_COVER);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [dialog, setDialog] = useState<DialogState | null>(null);
+  // Set by a save that found the name empty: the field goes red until the hero types.
+  const [nameMissing, setNameMissing] = useState(false);
+  const showMessage = (title: string, body: string) =>
+    setDialog({ title, body, confirmLabel: t("common.close", "Close") });
   const nextUid = useRef(0);
   // The absolute save bar overlapped the "add an exercise" button by ~75px, so taps meant for
   // it fired the save instead. Measured, not guessed: the bar's height moves with the inset.
@@ -141,18 +157,14 @@ export default function QuestEditor() {
     return navigation.addListener("beforeRemove", (e) => {
       if (skipGuardRef.current || !isDirty) return;
       e.preventDefault();
-      Alert.alert(
-        t("quests.editor_discard_title", "Discard changes?"),
-        t("quests.editor_discard_body", "Your edits will be lost."),
-        [
-          { text: t("common.cancel", "Cancel"), style: "cancel" },
-          {
-            text: t("quests.editor_discard", "Discard"),
-            style: "destructive",
-            onPress: () => navigation.dispatch(e.data.action),
-          },
-        ],
-      );
+      setDialog({
+        title: t("quests.editor_discard_title", "Discard changes?"),
+        body: t("quests.editor_discard_body", "Your edits will be lost."),
+        confirmLabel: t("quests.editor_discard", "Discard"),
+        cancelLabel: t("common.cancel", "Cancel"),
+        destructive: true,
+        onConfirm: () => navigation.dispatch(e.data.action),
+      });
     });
   }, [navigation, t, isDirty]);
 
@@ -210,7 +222,11 @@ export default function QuestEditor() {
 
     load().catch((error) => {
       reportError("quest.editorLoad", error);
-      Alert.alert(t("common.error", "Oops!"), t("quests.load_error", "Failed to load quest"));
+      setDialog({
+        title: t("common.error", "Oops!"),
+        body: t("quests.load_error", "Failed to load quest"),
+        confirmLabel: t("common.close", "Close"),
+      });
     });
 
     return () => {
@@ -263,7 +279,8 @@ export default function QuestEditor() {
     const trimmed = title.trim();
     const missing = missingPiece(trimmed, picked.length, t);
     if (missing) {
-      Alert.alert(t("quests.editor_incomplete_title", "Almost there"), missing);
+      setNameMissing(trimmed.length === 0);
+      showMessage(t("quests.editor_incomplete_title", "Almost there"), missing);
       return;
     }
 
@@ -339,7 +356,7 @@ export default function QuestEditor() {
       skipGuardRef.current = false;
       reportError("quest.editorSave", e);
       const message = e instanceof Error ? e.message : "Unknown error";
-      Alert.alert(t("common.error", "Oops!"), message);
+      showMessage(t("common.error", "Oops!"), message);
     });
     setBusy(false);
   };
@@ -347,32 +364,30 @@ export default function QuestEditor() {
   const confirmDelete = () => {
     if (questId == null) return;
 
-    Alert.alert(
-      t("quests.editor_delete_title", "Delete this quest?"),
-      t("quests.editor_delete_body", "This cannot be undone."),
-      [
-        { text: t("common.cancel", "Cancel"), style: "cancel" },
-        {
-          text: t("quests.editor_delete", "Delete"),
-          style: "destructive",
-          onPress: () => {
-            setBusy(true);
-            skipGuardRef.current = true;
-            // The per-quest settings outlive the quest row otherwise: same key space, no FK.
-            deleteQuest(questId)
-              .then(() => clearQuestConfig(questId))
-              .then(() => router.replace("/quests" as never))
-              .catch((e: unknown) => {
-                setBusy(false);
-                skipGuardRef.current = false;
-                reportError("quest.editorDelete", e);
-                const message = e instanceof Error ? e.message : "Unknown error";
-                Alert.alert(t("common.error", "Oops!"), message);
-              });
-          },
-        },
-      ],
-    );
+    setDialog({
+      title: t("quests.editor_delete_title", "Delete this quest?"),
+      body: t("quests.editor_delete_body", "This cannot be undone."),
+      confirmLabel: t("quests.editor_delete", "Delete"),
+      cancelLabel: t("common.cancel", "Cancel"),
+      destructive: true,
+      onConfirm: () => {
+        setBusy(true);
+        skipGuardRef.current = true;
+        // The per-quest settings outlive the quest row otherwise: same key space, no FK.
+        deleteQuest(questId)
+          .then(() => clearQuestConfig(questId))
+          .then(() => router.replace("/quests" as never))
+          .catch((e: unknown) => {
+            setBusy(false);
+            skipGuardRef.current = false;
+            reportError("quest.editorDelete", e);
+            showMessage(
+              t("common.error", "Oops!"),
+              e instanceof Error ? e.message : "Unknown error",
+            );
+          });
+      },
+    });
   };
 
   return (
@@ -439,10 +454,14 @@ export default function QuestEditor() {
                 </Text>
                 <Input
                   value={title}
-                  onChangeText={setTitle}
+                  onChangeText={(next) => {
+                    setTitle(next);
+                    setNameMissing(false);
+                  }}
+                  testID="quest-name"
                   placeholder={t("quests.editor_name_placeholder", "Morning forge")}
                   bg="$background"
-                  borderColor="$borderStrong"
+                  borderColor={nameMissing ? "$error" : "$borderStrong"}
                   color="$text"
                 />
               </YStack>
@@ -611,6 +630,20 @@ export default function QuestEditor() {
           </Text>
         </AppButton>
       </YStack>
+      <ConfirmDialog
+        open={dialog !== null}
+        title={dialog?.title ?? ""}
+        body={dialog?.body ?? ""}
+        confirmLabel={dialog?.confirmLabel ?? ""}
+        cancelLabel={dialog?.cancelLabel}
+        destructive={dialog?.destructive}
+        onCancel={() => setDialog(null)}
+        onConfirm={() => {
+          const confirm = dialog?.onConfirm;
+          setDialog(null);
+          confirm?.();
+        }}
+      />
     </YStack>
   );
 }

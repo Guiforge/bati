@@ -187,15 +187,14 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
         }}
       >
         <Text style={{ color: rawColors.text, fontSize: 16, fontWeight: "bold", marginBottom: 10 }}>
-          {t("common.error")}:
+          {t("errors.migration_failed")}
         </Text>
-        <Text style={{ color: rawColors.error, fontSize: 14, marginBottom: 20 }}>
-          {error.message.substring(0, 200)}
-          {error.message.length > 200 ? "..." : ""}
-        </Text>
-        <Text style={{ color: rawColors.textSecondary, fontSize: 12, opacity: 0.7 }}>
-          Check console for full details.
-        </Text>
+        {__DEV__ ? (
+          <Text style={{ color: rawColors.error, fontSize: 14 }}>
+            {error.message.substring(0, 200)}
+            {error.message.length > 200 ? "…" : ""}
+          </Text>
+        ) : null}
       </View>
     );
   }

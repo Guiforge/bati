@@ -244,6 +244,62 @@ describe("locale typography", () => {
   });
 
   /**
+   * The same blind spot, in `db/` and `src/`: the path names, the widget, the crash-report mail
+   * body. A tokenising scan rather than a regex over the raw text, so a comment is skipped and a
+   * `//` inside a URL string is not mistaken for one, and all three literal forms are read.
+   */
+  it("no string literal in db/ or src/ uses an em dash", () => {
+    const TOKEN =
+      /\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\[\s\S])*`/g;
+    const offending = sourceFiles(path.join(ROOT, "db"), path.join(ROOT, "src")).flatMap((file) =>
+      [...fs.readFileSync(file, "utf8").matchAll(TOKEN)]
+        .map((m) => m[0])
+        .filter((tok) => !tok.startsWith("/") && tok.includes(EM_DASH))
+        .map((tok) => `${path.relative(ROOT, file)}: ${tok.slice(0, 70)}`),
+    );
+
+    expect(offending).toEqual([]);
+  });
+
+  /**
+   * The hero has no fixed gender in French either. 2026-09-10 fixed the XP masculine and the
+   * 2026-10-03 pass found "entraîné" (in `constants/restMessages.ts`, hence the second source
+   * below), "agacé" and "XP gagnée" back. Only the shapes that can
+   * only describe the hero are matched: "tu es/t'es + participle" and the reflexive perfect
+   * "tu t'es + participle". "Tu as" + participle agrees with nothing, and a noun in -é
+   * ("l'été", "la santé") never follows "t'es" or "tu es" directly. A participle that is
+   * legitimately invariable ("t'es prêt" is gendered, "t'es arrivé" is too) is never exempt.
+   * (`\b` is ASCII-only in JS and never fires after an "é", hence the lookahead.) Blind spot:
+   * "t'a + participle" ("qui t'a agacé") agrees only when `te` is a direct object, which a
+   * regex cannot tell from "elle t'a rapporté", so that shape stays a reviewer's job.
+   */
+  it("French copy never gives the hero a gender", () => {
+    const GENDERED =
+      /\b(?:t'es|tu es|tu t'es|t'étais|tu étais)\s+(?:[a-zà-ÿ]+\s+)?(?:[a-zà-ÿ]+(?:é|ée|és|ées|i|ie|is|ies|u|ue|us|ues)|prête?)(?![a-zà-ÿ])/i;
+    // adjectives of the form that are not gendered or are not participles
+    const NOT_GENDERED =
+      /\b(?:t'es|tu es)\s+(?:ici|ainsi|aussi|ensuite|ok|ou|su|plus|pas|si|vu\b)/i;
+    // The prose pools in `constants/` carry French literals no locale file sees. The shapes above
+    // are French-only, so the other languages' literals pass through untouched.
+    const constants = fs
+      .readdirSync(path.join(ROOT, "constants"))
+      .filter((file) => file.endsWith(".ts"))
+      .flatMap((file) =>
+        [
+          ...fs
+            .readFileSync(path.join(ROOT, "constants", file), "utf8")
+            .matchAll(/"(?:[^"\\\n]|\\.)*"/g),
+        ].map((m) => ({ key: `constants/${file}`, value: m[0] })),
+      );
+    const drifted = [...entriesOf("fr.json"), ...constants]
+      .filter((e) => !e.key.startsWith("privacy.") && !e.key.startsWith("safety."))
+      .filter((e) => GENDERED.test(e.value) && !NOT_GENDERED.test(e.value))
+      .map((e) => `${e.key}: ${e.value.slice(0, 70)}`);
+
+    expect(drifted).toEqual([]);
+  });
+
+  /**
    * Seed content is the third surface, and it was invisible to all of the above: an exercise or
    * quest description lives in a `drizzle/*.sql` string, reaches the hero through the database,
    * and no locale scan can see it. `0041` shipped three movement instructions with a dash and a

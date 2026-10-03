@@ -435,6 +435,16 @@ export function VillageScene() {
         </YStack>
       </Animated.ScrollView>
 
+      {/* Pinned outside the scroll: the status bar is transparent, so without this the list slid
+          under the clock and the two read as one line. The scrim inside the painting only covers
+          the painting, and it scrolls away with it. */}
+      <LinearGradient
+        testID="village-status-scrim"
+        pointerEvents="none"
+        colors={[rawColors.bgDark, rawColors.bgOverlaySoft]}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, height: insets.top }}
+      />
+
       {rewardOpen ? (
         <VillageReward
           growth={growth}

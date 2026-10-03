@@ -191,9 +191,11 @@ describe("db/muscleBalance", () => {
     expect((await getMuscleBalance("30d")).weakAreas).toEqual([]);
     expect(await getSuggestedFocusAreas(3)).toEqual([]);
     expect(await getSuggestedQuestsForWeakAreas(3)).toEqual([]);
-    // The path the Home calls: no "weak points" offer for a hero the Journal calls balanced.
+    // The path the Home calls: no "weak points" offer for a hero the Journal calls balanced, and
+    // no day-one on-ramp either. "Nothing to suggest" stopped meaning "never trained" the day the
+    // weak-muscle rule learned to stay quiet: a balanced veteran was offered "Your first march".
     const { decideHomeOffer } = require("../db/homeOffer") as typeof import("../db/homeOffer");
-    expect((await decideHomeOffer("en"))?.kind).not.toBe("weak_muscles");
+    expect((await decideHomeOffer("en"))?.kind).toBe("gallery");
   });
 
   test("the Home does offer weak points to a hero the Journal calls behind", async () => {

@@ -4,6 +4,7 @@ import { ScrollView } from "react-native";
 import { H1, H3, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
+import { useFontScaled } from "@/hooks/useFontScaled";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { SessionInstruction } from "@/hooks/useSessionInstructions";
 
@@ -15,12 +16,19 @@ import type { SessionInstruction } from "@/hooks/useSessionInstructions";
  * exists to prevent, and the exact complaint that started this: a hero who does not know the
  * movement, reading half a sentence while the clock runs.
  */
-const DESCRIPTION_STYLE = { maxHeight: 120, flexGrow: 0, flexShrink: 0 } as const;
+const DESCRIPTION_STYLE = { flexGrow: 0, flexShrink: 0 } as const;
 
 /** A movement's description, whole, scrolling rather than growing. */
 export function MovementDescription({ text }: { text: string }) {
+  // 120 dp is six lines at font scale 1; the cap follows the scale so a large-text hero gets six
+  // lines too, not four and a half cut through the middle.
+  const maxHeight = useFontScaled(120);
   return (
-    <ScrollView style={DESCRIPTION_STYLE} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      testID="movement-description"
+      style={[DESCRIPTION_STYLE, { maxHeight }]}
+      showsVerticalScrollIndicator={false}
+    >
       <Text fontSize={14} color="$textSecondary" lineHeight={20} style={{ textAlign: "center" }}>
         {text}
       </Text>

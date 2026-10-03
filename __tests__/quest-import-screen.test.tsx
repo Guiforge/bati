@@ -202,11 +202,11 @@ test("an unticked movement and a new title are what gets imported", async () => 
 // A quest with no movement, or no name, cannot be started once filed.
 test("nothing ticked or a blank title leaves nothing to import", async () => {
   await mountReady();
-  expect(screen.queryByText("Pick at least one movement.")).toBeNull();
+  expect(screen.queryByText("Pick at least one exercise.")).toBeNull();
 
   await fireEvent.press(slot(0));
   await fireEvent.press(slot(2));
-  expect(screen.getByText("Pick at least one movement.")).toBeTruthy();
+  expect(screen.getByText("Pick at least one exercise.")).toBeTruthy();
   expect(confirm()).toBeDisabled();
   await fireEvent.press(confirm());
 
@@ -305,7 +305,7 @@ test("an import refused by the writer says why and stays", async () => {
   await fireEvent.press(confirm());
 
   expect(mockShowError).toHaveBeenCalledWith(
-    "This quest uses a movement your Bati does not know yet. Update the app to open it.",
+    "This quest uses an exercise your Bati does not know yet. Update the app to open it.",
   );
   expect(mockRouter.dismissTo).not.toHaveBeenCalled();
   expect(reportError).not.toHaveBeenCalled();
@@ -427,7 +427,7 @@ test("a quest whose every movement this version lacks says to update", async () 
 
   expect(
     await screen.findByText(
-      "This quest uses a movement your Bati does not know yet. Update the app to open it.",
+      "This quest uses an exercise your Bati does not know yet. Update the app to open it.",
     ),
   ).toBeTruthy();
   expect(screen.queryByTestId("quest-import-confirm")).toBeNull();

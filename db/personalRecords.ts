@@ -1,9 +1,11 @@
-import { and, desc, eq, inArray, max, ne, sql } from "drizzle-orm";
+import { and, between, desc, eq, gt, inArray, lt, max, ne, sql } from "drizzle-orm";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
-import { isWorkout } from "./completed";
+import { isWorkout, markSessionWithNewRecords, parseRecords, type StoredRecord } from "./completed";
 import { hasGround } from "./expeditions";
+import { clearCached } from "./queryCache";
 import type { QuestTargetType } from "./schema";
+import { targetRangeFor } from "./targets";
 import { NON_REP_STYLE } from "./workUnits";
 
 const { completedQuest, completedExercises, exercises } = schema;
@@ -431,7 +433,12 @@ export async function getSessionStanding(
  * Call this after saving a session to detect PRs.
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: PR detection requires comparing current performance against historical bests
-export async function checkForNewRecords(sessionId: number): Promise<NewRecordResult[]> {
+export async function checkForNewRecords(
+  sessionId: number,
+  // A session corrected after the fact is judged against what came before it, not against
+  // sessions logged since: the same rule `getFallenRecords` reads the page by.
+  { earlierOnly = false }: { earlierOnly?: boolean } = {},
+): Promise<NewRecordResult[]> {
   const newRecords: NewRecordResult[] = [];
 
   // Get the session data
@@ -442,6 +449,7 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
       xpEarned: completedQuest.xpEarned,
       leaguesM: completedQuest.leaguesM,
       outing: completedQuest.outing,
+      performedAt: completedQuest.performedAt,
     })
     .from(completedQuest)
     .where(eq(completedQuest.id, sessionId))
@@ -553,7 +561,12 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
       })
       .from(completedExercises)
       .where(
-        sql`${completedExercises.exerciseId} = ${result.exerciseId} AND ${completedExercises.resultType} = ${result.resultType} AND ${completedExercises.sessionId} != ${sessionId}`,
+        and(
+          eq(completedExercises.exerciseId, result.exerciseId),
+          eq(completedExercises.resultType, result.resultType),
+          ne(completedExercises.sessionId, sessionId),
+          earlierOnly ? lt(completedExercises.performedAt, session.performedAt) : undefined,
+        ),
       );
 
     const prevMax = previousMax[0]?.maxValue ?? 0;
@@ -575,4 +588,95 @@ export async function checkForNewRecords(sessionId: number): Promise<NewRecordRe
   }
 
   return newRecords;
+}
+
+/**
+ * Correct the value of one logged set, from the session page.
+ *
+ * Everything derived (records, the wall, work units, balance) reads `completed_exercises`, so it
+ * follows the row. Two things are stored and are NOT touched: XP (`xpEarned`) and boss damage
+ * (`boss_damage_log`), which were earned by what was done at the time. The one stored thing that
+ * does have to follow is the session's `records_json`, re-decided for this movement by the same
+ * `checkForNewRecords` the save path calls. An outing's sets are not editable: their value comes
+ * from the trace. The value is clamped to the range the session itself allows.
+ */
+export async function correctLoggedSet(
+  setId: number,
+  value: number,
+): Promise<"updated" | "refused"> {
+  const [row] = await db
+    .select({
+      sessionId: completedExercises.sessionId,
+      exerciseId: completedExercises.exerciseId,
+      type: completedExercises.resultType,
+      oldValue: completedExercises.resultValue,
+      performedAt: completedExercises.performedAt,
+      style: exercises.style,
+      outing: completedQuest.outing,
+      recordsJson: completedQuest.recordsJson,
+    })
+    .from(completedExercises)
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
+    .where(eq(completedExercises.id, setId));
+  if (!row || row.outing !== null || row.style === NON_REP_STYLE) return "refused";
+
+  const { min, max: ceiling } = targetRangeFor(row.type, row.style);
+  const clamped = Math.min(ceiling, Math.max(min, Math.round(value)));
+  await db
+    .update(completedExercises)
+    .set({ resultValue: clamped })
+    .where(eq(completedExercises.id, setId));
+
+  // A later session was judged against this set too. Its verdict on the movement can only have
+  // moved if its own best lies between the old value and the new one, so only those are asked
+  // again: a correction from 362 s to 35 s gives a later 100 s its record back, and the reverse
+  // takes it away.
+  const later = await db
+    .selectDistinct({ id: completedQuest.id, recordsJson: completedQuest.recordsJson })
+    .from(completedExercises)
+    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
+    .where(
+      and(
+        eq(completedExercises.exerciseId, row.exerciseId),
+        eq(completedExercises.resultType, row.type),
+        ne(completedExercises.sessionId, row.sessionId),
+        gt(completedQuest.performedAt, row.performedAt),
+        between(
+          completedExercises.resultValue,
+          Math.min(row.oldValue, clamped),
+          Math.max(row.oldValue, clamped),
+        ),
+      ),
+    );
+  for (const session of [{ id: row.sessionId, recordsJson: row.recordsJson }, ...later]) {
+    await redecideMovementRecord(session.id, session.recordsJson, row.exerciseId);
+  }
+
+  // ponytail: device sync matches sessions by uuid and does not see a changed set, so the
+  // correction stays on this device (and a hand-off from a device that never had it undoes it).
+  // Give `completed_exercises` an `updatedAt` the merge reads if heroes correct sets often.
+  clearCached("quest:");
+  return "updated";
+}
+
+/** One session's stored records for one movement, decided again against what came before it. */
+async function redecideMovementRecord(
+  sessionId: number,
+  recordsJson: string | null,
+  exerciseId: number,
+): Promise<void> {
+  const kept = parseRecords(recordsJson).filter((r) => r.e !== exerciseId);
+  const fresh: StoredRecord[] = (await checkForNewRecords(sessionId, { earlierOnly: true }))
+    .filter((r) => r.exerciseId === exerciseId)
+    .map((r) => ({ t: r.recordType, e: exerciseId }));
+  const records = [...kept, ...fresh];
+  if (records.length > 0) await markSessionWithNewRecords(sessionId, records);
+  // Nothing to clear when nothing was stored. A null under a raised flag is a row from before
+  // 0051, whose badge may be for anything, and keeps it as that migration promised.
+  else if (recordsJson !== null)
+    await db
+      .update(completedQuest)
+      .set({ hasNewRecords: 0, recordsJson: null })
+      .where(eq(completedQuest.id, sessionId));
 }

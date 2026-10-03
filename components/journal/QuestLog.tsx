@@ -1,5 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,6 +29,7 @@ import {
   NText,
 } from "@/components/journal/nocturne";
 import { recordName, recordValue } from "@/components/journal/recordLabel";
+import { SetEditor } from "@/components/journal/SetEditor";
 import { TraceThumb } from "@/components/journal/TraceThumb";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
@@ -38,10 +40,12 @@ import { type CompletedSession, OUTING_COUNTS_AFTER_SECONDS } from "@/db/complet
 import type { VariationStep } from "@/db/exercises";
 import { type FallenRecord, type MuscleShift, type QuestStanding, sessionReps } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { correctLoggedSet } from "@/db/personalRecords";
 import { formatCount, formatTargetValue } from "@/db/targets";
 import type { UserLevelInfo } from "@/db/userLevel";
 import type { LngLat } from "@/src/gps/trace";
 import { localizedName } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 export type QuestLogData = {
@@ -353,10 +357,11 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
   );
 }
 
-function Rounds({ session }: { session: CompletedSession }) {
+function Rounds({ session, onChanged }: { session: CompletedSession; onChanged: () => void }) {
   const { t } = useTranslation();
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
+  const [editing, setEditing] = useState<number | null>(null);
   const rows = foldRounds(session.exercises);
   if (rows.length === 0) return null;
   const rounds = new Set(session.exercises.map((ex) => ex.roundIndex)).size;
@@ -370,36 +375,58 @@ function Rounds({ session }: { session: CompletedSession }) {
       <YStack mt={6}>
         {rows.map((row, index) => (
           <YStack key={row.exercise.id}>
-            <XStack
-              items="center"
-              gap={11}
-              py={8}
-              minH={44}
-              onPress={() => router.push(`/exercises/${row.exercise.id}` as never)}
-              accessibilityRole="button"
-              pressStyle={{ opacity: 0.8 }}
-            >
-              <NImage source={getExerciseThumb(row.exercise.imagePath)} size={28} />
-              <NText flex={1} fontSize={13.5} lineHeight={19} numberOfLines={1}>
-                {localizedName(row.exercise, language)}
-              </NText>
-              <NNum fontSize={13} lineHeight={18}>
+            <XStack items="center" gap={11} minH={44}>
+              <XStack
+                flex={1}
+                items="center"
+                gap={11}
+                minH={44}
+                onPress={() => router.push(`/exercises/${row.exercise.id}` as never)}
+                accessibilityRole="button"
+                pressStyle={{ opacity: 0.8 }}
+              >
+                <NImage source={getExerciseThumb(row.exercise.imagePath)} size={28} />
+                <NText flex={1} fontSize={13.5} lineHeight={19} numberOfLines={1}>
+                  {localizedName(row.exercise, language)}
+                </NText>
+              </XStack>
+              {/* Each set is its own door to the editor. Outings never reach this list. It wraps:
+                  a quest runs up to ten rounds, and ten 44 dp targets do not fit on one row. */}
+              <XStack
+                testID={`journal-sets-${row.exercise.id}`}
+                items="center"
+                justify="flex-end"
+                flexWrap="wrap"
+                shrink={1}
+                gap={2}
+              >
                 {row.sets.map((set, i) => (
-                  <NNum
-                    // biome-ignore lint/suspicious/noArrayIndexKey: sets in round order
-                    key={i}
-                    fontSize={13}
-                    // Each set carries its own colour: a nested text re-applies its own, so a
-                    // colour on the line alone never reached the numbers.
-                    color={
-                      set.met === false ? "$textSecondary" : row.cleared ? "$gold300" : "$text"
-                    }
+                  <XStack
+                    key={set.id}
+                    testID={`journal-set-${set.id}`}
+                    minH={44}
+                    px={5}
+                    items="center"
+                    onPress={() => setEditing(editing === set.id ? null : set.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${t("journal.set_edit_label")}: ${formatTargetValue(set, language)}`}
+                    pressStyle={{ opacity: 0.8 }}
                   >
-                    {i > 0 ? " · " : ""}
-                    {formatTargetValue(set, language)}
-                  </NNum>
+                    <NNum
+                      fontSize={13}
+                      // Each set carries its own colour: a nested text re-applies its own, so a
+                      // colour on the line alone never reached the numbers.
+                      color={
+                        set.met === false ? "$textSecondary" : row.cleared ? "$gold300" : "$text"
+                      }
+                      textDecorationLine={editing === set.id ? "underline" : "none"}
+                    >
+                      {i > 0 ? "· " : ""}
+                      {formatTargetValue(set, language)}
+                    </NNum>
+                  </XStack>
                 ))}
-              </NNum>
+              </XStack>
               <NMuted width={44} fontSize={11} style={{ textAlign: "right" }}>
                 {row.target
                   ? t("journal.target_of", {
@@ -408,10 +435,32 @@ function Rounds({ session }: { session: CompletedSession }) {
                   : ""}
               </NMuted>
             </XStack>
+            {row.sets.map((set) =>
+              editing === set.id ? (
+                <SetEditor
+                  key={set.id}
+                  initial={set.value}
+                  type={set.type}
+                  style={row.exercise.style}
+                  onCancel={() => setEditing(null)}
+                  onSave={(value) => {
+                    correctLoggedSet(set.id, value)
+                      .then(() => {
+                        setEditing(null);
+                        onChanged();
+                      })
+                      .catch((error: unknown) => reportError("journal.correctSet", error));
+                  }}
+                />
+              ) : null,
+            )}
             {index < rows.length - 1 && <NRule my={0} />}
           </YStack>
         ))}
       </YStack>
+      <NMuted fontSize={11} lineHeight={16} mt={6}>
+        {t("journal.set_edit_note")}
+      </NMuted>
     </NBlock>
   );
 }
@@ -468,7 +517,7 @@ function Ground({ data }: { data: QuestLogData }) {
 }
 
 /** The quest log: one session, told as where it sits, what it moved, and what was done. */
-export function QuestLog({ data }: { data: QuestLogData }) {
+export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: () => void }) {
   const { t } = useTranslation();
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
@@ -503,7 +552,7 @@ export function QuestLog({ data }: { data: QuestLogData }) {
         <RecordPanel records={data.records} />
         {data.standing ? <WhereItSits standing={data.standing} /> : null}
         <WhatItMoved data={data} />
-        {outing ? <Ground data={data} /> : <Rounds session={session} />}
+        {outing ? <Ground data={data} /> : <Rounds session={session} onChanged={onChanged} />}
         {!!session.notes && (
           <NBlock mt={6}>
             <NKickerQuiet>{t("journal.notes")}</NKickerQuiet>

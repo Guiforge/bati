@@ -3,6 +3,7 @@ import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { getAdventureDetails, getAnyActiveAdventureRun } from "./adventures";
 import { getBossFightByAdventure } from "./bossFights";
+import { getSessionAggregates } from "./completed";
 import { estimateQuestSeconds } from "./estimate";
 import { getChainTo } from "./exercises";
 import { hasOutdoorSlot } from "./expeditions";
@@ -156,8 +157,14 @@ export async function decideHomeOffer(
     if (offer && !isCancelled()) return { kind: "weak_muscles", muscles, ...offer };
   }
 
-  // 4. Nothing to go on — a day-one hero. Offer back the session onboarding just offered.
-  const onRamp = (await listQuestTemplates()).find((tpl) => tpl.enTitle === FIRST_QUEST_TITLE);
+  // 4. A day-one hero: offer back the session onboarding just offered. Asked of the journal, not
+  //    inferred from the rules above going quiet: a balanced veteran has no weak muscle either,
+  //    and was offered "Your first march" at level 44.
+  const { totalSessions } = await getSessionAggregates();
+  const onRamp =
+    totalSessions === 0
+      ? (await listQuestTemplates()).find((tpl) => tpl.enTitle === FIRST_QUEST_TITLE)
+      : undefined;
   if (onRamp && !isCancelled()) {
     const offer = await questOffer(onRamp.id);
     if (offer && !isCancelled()) return { kind: "first_day", ...offer };

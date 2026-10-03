@@ -93,6 +93,13 @@ jest.mock("@/db/muscleBalance", () => ({
     .mockResolvedValue([{ id: 12, matchingMuscles: ["chest"] }]),
 }));
 
+// A hero with no history unless a test says otherwise: the day-one rule asks the journal.
+jest.mock("@/db/completed", () => ({
+  getSessionAggregates: jest
+    .fn()
+    .mockResolvedValue({ totalSessions: 0, totalXp: 0, uniqueQuests: 0 }),
+}));
+
 jest.mock("@/db/oaths", () => ({
   getOathProgress: jest.fn().mockResolvedValue(null),
   oathNeedsExercise: (metric: string) => metric === "exercise_pr" || metric === "exercise_volume",
@@ -221,7 +228,7 @@ describe("useSmartAction", () => {
     // The gold line under the title reads as a sentence. "Oath · Rung 2/3 · Inverted Row" was
     // three fragments glued by middots, and the ladder is nowhere on Home to explain itself.
     expect(result.current.config?.subtext).toBe(
-      "Toward your oath: Pull-ups, rung 2 of 3, tonight: Inverted Row",
+      "Toward your oath: Pull-ups, rung 2 of 3, today: Inverted Row",
     );
 
     result.current.config?.onPress();

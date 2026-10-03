@@ -48,7 +48,7 @@ export function ageOf(at: Date, now: Date): Age {
 
 export type MovementRow = {
   exercise: CompletedExercise["exercise"];
-  sets: { value: number; met: boolean | null; type: QuestTargetType }[];
+  sets: { id: number; value: number; met: boolean | null; type: QuestTargetType }[];
   /** The target, when every set had the same one. */
   target: { value: number; type: QuestTargetType } | null;
   /** Every set reached its target. Null when there was no target to reach. */
@@ -73,7 +73,7 @@ export function foldRounds(exercises: readonly CompletedExercise[]): MovementRow
       target: ex.target ?? null,
       cleared: null,
     };
-    row.sets.push({ value: ex.result.value, met, type: ex.result.type });
+    row.sets.push({ id: ex.id, value: ex.result.value, met, type: ex.result.type });
     if (
       row.target &&
       (!ex.target || ex.target.value !== row.target.value || ex.target.type !== row.target.type)

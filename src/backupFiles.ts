@@ -210,7 +210,7 @@ export async function exportBackup(): Promise<void> {
   // app-private storage the user has no way to reach, and reporting "backup ready" for a file
   // nobody can open is worse than reporting the failure.
   if (!(await Sharing.isAvailableAsync())) {
-    throw new Error("No share sheet available — the backup would be unreachable");
+    throw new Error("No share sheet available: the backup would be unreachable");
   }
 
   const snapshot = await writeSnapshot();

@@ -382,6 +382,10 @@ export function QuickActions() {
                   color="$text"
                   numberOfLines={2}
                   lineHeight={14}
+                  // Words break between words only: Android's default strategy hyphenates and
+                  // splits a long name mid-word at large font ('Messe / nger').
+                  textBreakStrategy="simple"
+                  android_hyphenationFrequency="none"
                 >
                   {name}
                 </Text>

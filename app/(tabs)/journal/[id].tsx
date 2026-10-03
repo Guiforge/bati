@@ -94,7 +94,7 @@ export default function SessionDetailScreen() {
             onOpenLog={() => router.push(`/journal/${sessionId}?view=log` as never)}
           />
         ) : (
-          <QuestLog data={loaded.log} />
+          <QuestLog data={loaded.log} onChanged={() => load(sessionId)} />
         )}
         <YStack px={11} mt={24}>
           <NButton

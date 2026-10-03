@@ -68,14 +68,47 @@ const numberStyle = (k: number) =>
 // through i18next (whose init drags the whole app's locale files into the headless task).
 // Typed on every app language, so a new one is a compile error here rather than a blank widget.
 // Ceiling: these strings appearing anywhere else — then move them to locales/.
-type WidgetStrings = { flame: string; days: string; week: string; sessions: string };
+type Unit = { one: string; other: string };
+type WidgetStrings = { flame: string; days: Unit; week: string; sessions: Unit };
 const STRINGS: Localized<WidgetStrings> = {
-  fr: { flame: "FLAMME", days: "jours", week: "SEMAINE", sessions: "séances" },
-  en: { flame: "FLAME", days: "days", week: "WEEK", sessions: "sessions" },
-  de: { flame: "FLAMME", days: "Tage", week: "WOCHE", sessions: "Einheiten" },
-  es: { flame: "LLAMA", days: "días", week: "SEMANA", sessions: "sesiones" },
+  fr: {
+    flame: "FLAMME",
+    days: { one: "jour", other: "jours" },
+    week: "SEMAINE",
+    sessions: { one: "séance", other: "séances" },
+  },
+  en: {
+    flame: "FLAME",
+    days: { one: "day", other: "days" },
+    week: "WEEK",
+    sessions: { one: "session", other: "sessions" },
+  },
+  de: {
+    flame: "FLAMME",
+    days: { one: "Tag", other: "Tage" },
+    week: "WOCHE",
+    sessions: { one: "Einheit", other: "Einheiten" },
+  },
+  es: {
+    flame: "LLAMA",
+    days: { one: "día", other: "días" },
+    week: "SEMANA",
+    sessions: { one: "sesión", other: "sesiones" },
+  },
 };
 type Lang = AppLanguage;
+
+/**
+ * The unit under a number, agreed with it by the language's own plural rule (French counts 0 as
+ * singular, English does not). No reading, the error fallback, keeps the plural. Written out
+ * rather than `Intl.PluralRules`: Hermes has no PluralRules, and the call threw in the headless
+ * task. The counts here are whole and never negative, which is all these two rules need.
+ */
+export function widgetUnit(lang: Lang, unit: "days" | "sessions", count: number | null): string {
+  const forms = STRINGS[lang][unit];
+  const one = lang === "fr" ? count === 0 || count === 1 : count === 1;
+  return one ? forms.one : forms.other;
+}
 
 /** The app's own stored language, resolved by the same rule the app itself uses. */
 async function getLang(): Promise<Lang> {
@@ -116,7 +149,7 @@ function FlameWidget({
         text={`🔥 ${streak === null ? "–" : formatCount(lang, streak)}`}
         style={numberStyle(k)}
       />
-      <TextWidget text={s.days} style={unitStyle(k)} />
+      <TextWidget text={widgetUnit(lang, "days", streak)} style={unitStyle(k)} />
       <FlexWidget style={{ flexDirection: "row", flexGap: 4 * k, marginTop: 8 * k }}>
         {([0, 1, 2, 3, 4] as const).map((i) => (
           <FlexWidget
@@ -171,7 +204,8 @@ function WeeklyWidget({
         text={done === null || quota === null ? "–/–" : `⚔️ ${done}/${quota}`}
         style={numberStyle(k)}
       />
-      <TextWidget text={s.sessions} style={unitStyle(k)} />
+      {/* "1/3" reads as one of three sessions: the unit agrees with the quota. */}
+      <TextWidget text={widgetUnit(lang, "sessions", quota)} style={unitStyle(k)} />
       <FlexWidget
         style={{
           flexDirection: "row",

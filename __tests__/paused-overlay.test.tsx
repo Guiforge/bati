@@ -1,5 +1,5 @@
 import { act, fireEvent, render } from "@testing-library/react-native";
-import { Alert } from "react-native";
+import { Alert, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -77,14 +77,14 @@ const mockQuest = {
   exercises: [{ exercise: mockDeadBug, target: { type: "reps", value: 10 } }],
 } as unknown as Quest;
 
-async function mountPaused() {
+async function mountPaused(top = 0) {
   let result!: ReturnType<typeof render>;
   await act(() => {
     result = render(
       <SafeAreaProvider
         initialMetrics={{
           frame: { x: 0, y: 0, width: 390, height: 844 },
-          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+          insets: { top, left: 0, right: 0, bottom: 0 },
         }}
       >
         <TamaguiProvider config={config} defaultTheme="dark">
@@ -113,6 +113,25 @@ describe("PausedOverlay", () => {
     expect(paused.getByText("Dead Bug")).toBeTruthy();
     // The whole description, not a truncated head: the clock is stopped, so reading is free.
     expect(paused.getByText(HOW_TO)).toBeTruthy();
+  });
+
+  it("keeps the card below the status bar and scrolls a tall card instead of clipping it", async () => {
+    useSessionStore.setState({
+      quest: mockQuest,
+      status: "paused",
+      prePauseStatus: "running",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+      warmupSequence: [],
+      warmupIndex: 0,
+    });
+
+    const paused = await mountPaused(47);
+
+    const content = StyleSheet.flatten(
+      paused.getByTestId("paused-overlay-scroll").props.contentContainerStyle,
+    );
+    expect(content.paddingTop).toBeGreaterThanOrEqual(47);
   });
 
   it("shows the warm-up movement when the pause happened during the warm-up", async () => {
@@ -277,27 +296,23 @@ describe("restarting a round", () => {
     // One tap used to be the whole gesture, on the button sitting directly above the *guarded*
     // one, wearing a label that reads additive.
     expect(useSessionStore.getState().results).toHaveLength(2);
-    expect(alert).toHaveBeenCalledTimes(1);
+    expect(paused.getByTestId("confirm-dialog")).toBeTruthy();
+    expect(alert).not.toHaveBeenCalled();
     alert.mockRestore();
   });
 
   it("drops this round's sets once they do", async () => {
-    let destructive: (() => void) | undefined;
-    const alert = jest.spyOn(Alert, "alert").mockImplementation((_title, _body, buttons) => {
-      destructive = buttons?.find((b) => b.style === "destructive")?.onPress as () => void;
-    });
     pauseWithTwoSets();
     const paused = await mountPaused();
 
     await act(async () => {
       await fireEvent.press(paused.getByTestId("session-restart-round"));
     });
-    await act(() => {
-      destructive?.();
+    await act(async () => {
+      await fireEvent.press(paused.getByTestId("confirm-dialog-confirm"));
     });
 
     expect(useSessionStore.getState().results).toHaveLength(0);
-    alert.mockRestore();
   });
 });
 
@@ -322,18 +337,20 @@ describe("quitting the session", () => {
     });
   }
 
-  /** Taps Quit, keeps the dialog's destructive handler, and returns it. */
+  /** Taps Quit and returns the screen; the confirmation is the app's own dialog now. */
   async function tapQuit() {
-    let destructive: (() => void) | undefined;
-    const alert = jest.spyOn(Alert, "alert").mockImplementation((_title, _body, buttons) => {
-      destructive = buttons?.find((b) => b.style === "destructive")?.onPress as () => void;
-    });
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
     pauseMidSession();
     const paused = await mountPaused();
     await act(async () => {
       await fireEvent.press(paused.getByTestId("session-quit"));
     });
-    return { alert, confirm: () => act(() => destructive?.()) };
+    return {
+      alert,
+      paused,
+      confirm: () => act(async () => fireEvent.press(paused.getByTestId("confirm-dialog-confirm"))),
+      cancel: () => act(async () => fireEvent.press(paused.getByTestId("confirm-dialog-cancel"))),
+    };
   }
 
   beforeEach(() => {
@@ -343,9 +360,10 @@ describe("quitting the session", () => {
   });
 
   it("keeps the session until the hero confirms", async () => {
-    const { alert } = await tapQuit();
+    const { alert, paused } = await tapQuit();
 
-    expect(alert).toHaveBeenCalledTimes(1);
+    expect(paused.getByTestId("confirm-dialog")).toBeTruthy();
+    expect(alert).not.toHaveBeenCalled();
     expect(useSessionStore.getState().status).toBe("paused");
     expect(useSessionStore.getState().quest).not.toBeNull();
     expect(mockBack).not.toHaveBeenCalled();
@@ -371,6 +389,17 @@ describe("quitting the session", () => {
 
     expect(useSessionStore.getState().status).toBe("idle");
     expect(mockReplace).toHaveBeenCalledWith("/");
+    expect(mockBack).not.toHaveBeenCalled();
+    alert.mockRestore();
+  });
+
+  it("keeps it when they cancel", async () => {
+    const { alert, paused, cancel } = await tapQuit();
+    await cancel();
+
+    expect(paused.queryByTestId("confirm-dialog")).toBeNull();
+    expect(useSessionStore.getState().status).toBe("paused");
+    expect(useSessionStore.getState().quest).not.toBeNull();
     expect(mockBack).not.toHaveBeenCalled();
     alert.mockRestore();
   });

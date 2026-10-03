@@ -18,8 +18,8 @@ export const REST_SUGGESTION_MESSAGES: Record<
       "{{count}} workouts down this week. A recovery day sharpens the next one.",
     ],
     fr: [
-      "Tu t'es beaucoup entraîné cette semaine : {{count}} entraînements. Pense à une journée de récupération.",
-      "Déjà {{count}} entraînements cette semaine. Le repos se gagne autant que les gains.",
+      "Grosse semaine : {{count}} entraînements. Pense à une journée de récupération.",
+      "Déjà {{count}} entraînements cette semaine. Le corps gagne son repos comme il gagne ses forces.",
       "{{count}} entraînements au compteur cette semaine. Une journée de récup, et la prochaine sera meilleure.",
     ],
     de: [
@@ -40,7 +40,7 @@ export const REST_SUGGESTION_MESSAGES: Record<
       "That's {{count}} straight days of training. Rest is part of the plan, not a pause from it.",
     ],
     fr: [
-      "Tu t'es entraîné {{count}} jours d'affilée ! Prends un jour de repos pour éviter le surentraînement.",
+      "Pas un jour de repos depuis {{count}} jours ! Prends-en un pour éviter le surentraînement.",
       "{{count}} jours d'affilée sans pause. Même les héros en ont besoin.",
       "{{count}} jours de suite à t'entraîner. Le repos fait partie du plan, il ne l'interrompt pas.",
     ],

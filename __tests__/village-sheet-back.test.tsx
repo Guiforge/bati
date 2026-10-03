@@ -4,6 +4,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { VillageDetailSheet, type VillageSelection } from "@/components/village/VillageDetailSheet";
 import type { VillageBuilding } from "@/db/village";
+import "@/i18n";
 import config from "@/tamagui.config";
 
 /**
@@ -89,5 +90,15 @@ describe("VillageDetailSheet and hardware back", () => {
     );
 
     expect(removed).toHaveBeenCalled();
+  });
+});
+
+// "1234 reps" read as a code next to every other count in the app, which groups its digits.
+describe("VillageDetailSheet's driver line", () => {
+  it("formats the volume the way every other count is formatted", async () => {
+    const big = { ...FORGE, metricValue: 1234 } as VillageBuilding;
+    const sheet = await renderSheet({ kind: "building", building: big }, jest.fn());
+
+    expect(await sheet.findByText(/1,234 reps/)).toBeTruthy();
   });
 });

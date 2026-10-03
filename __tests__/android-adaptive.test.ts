@@ -68,7 +68,16 @@ describe("android adaptive layout", () => {
     // The resize the OS performs on a tablet is only survivable because the activity handles it
     // rather than being torn down and rebuilt mid-session.
     const configChanges = /android:configChanges="([^"]*)"/.exec(manifest)?.[1] ?? "";
-    for (const change of ["orientation", "screenSize", "screenLayout", "smallestScreenSize"]) {
+    for (const change of [
+      "orientation",
+      "screenSize",
+      "screenLayout",
+      "smallestScreenSize",
+      // Font size and display size are the two settings a large-text user changes with Bati open;
+      // without them the activity is recreated and a running session restarts its screen.
+      "fontScale",
+      "density",
+    ]) {
       expect(configChanges.split("|")).toContain(change);
     }
   });

@@ -192,6 +192,16 @@ it("names the movement, so the hero can see which one is the run", async () => {
   expect(screen.queryByText("La Parole Doit Passer")).toBeNull();
 });
 
+it("breaks a long outing name between words only, never through one", async () => {
+  await renderRow();
+
+  // Audit 2026-10-03 at font scale 1.3: "Messe / nger's Run". Android's default strategy
+  // hyphenates and splits mid-word; "simple" with no hyphenation wraps on spaces.
+  const name = await screen.findByText("Course du Messager");
+  expect(name.props.textBreakStrategy).toBe("simple");
+  expect(name.props.android_hyphenationFrequency).toBe("none");
+});
+
 it("says it starts, rather than wearing the label it had when it only opened a screen", async () => {
   await renderRow();
 

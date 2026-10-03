@@ -2,6 +2,7 @@ import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "tamagui";
+import { TabLabel } from "@/components/common/TabLabel";
 import { Castle, Home, Map as MapIcon, Scroll, Sparkles } from "@/components/icons";
 
 export default function TabsLayout() {
@@ -15,10 +16,7 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: theme.primaryText?.val,
         tabBarInactiveTintColor: theme.color?.val,
-        tabBarLabelStyle: {
-          fontWeight: "700",
-          fontSize: 12,
-        },
+        tabBarLabel: ({ color, children }) => <TabLabel color={color} label={children} />,
         tabBarStyle: {
           backgroundColor: theme.bgLight?.val,
           borderTopWidth: 1,

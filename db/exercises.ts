@@ -960,7 +960,7 @@ async function assertHeroAuthored(id: number): Promise<void> {
   const row = rows[0];
   if (!row) throw new Error(`Exercise ${id} not found`);
   if (row.creator === ADMIN_CREATOR) {
-    throw new Error(`Exercise ${id} is not hero-authored — seed content is not editable`);
+    throw new Error(`Exercise ${id} is not hero-authored: seed content is not editable`);
   }
 }
 
@@ -1157,7 +1157,7 @@ export async function deleteUserExercise(id: number): Promise<void> {
   const usage = await getExerciseUsage(id);
   if (Object.values(usage).some((n) => n > 0)) {
     throw new Error(
-      `Exercise ${id} is in use (${usage.completedRows} results, ${usage.questRows} quest slots, ${usage.preferenceRows} saved choices) — retire it instead`,
+      `Exercise ${id} is in use (${usage.completedRows} results, ${usage.questRows} quest slots, ${usage.preferenceRows} saved choices): retire it instead`,
     );
   }
 

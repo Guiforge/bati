@@ -139,6 +139,11 @@ describe("DatabaseProvider", () => {
     await waitFor(() => expect(screen.queryByText("the app")).toBeNull());
     // And the splash must come down, or the failure screen is behind it and the app looks frozen.
     await waitFor(() => expect(mockHideAsync).toHaveBeenCalled());
+    // The title is the localized message, with no English left on the screen, and the raw
+    // error shows in a dev build only (jest runs with __DEV__ on).
+    expect(screen.getByText("errors.migration_failed")).toBeTruthy();
+    expect(screen.queryByText(/Check console/)).toBeNull();
+    expect(screen.getByText("disk is full")).toBeTruthy();
   });
 
   it("replaces the app with a notice while a restore is in flight", async () => {

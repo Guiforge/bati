@@ -8,6 +8,7 @@ import type { ImageSourcePropType } from "react-native";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { AdventureFooter } from "@/components/adventures/AdventureFooter";
 import { starsFor } from "@/components/adventures/replayStars";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { AppButton } from "@/components/common/AppButton";
@@ -292,15 +293,7 @@ function AdventureCard({
             {row.description}
           </Paragraph>
 
-          <XStack items="center" justify="space-between" gap="$2">
-            <Text flex={1} fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
-              {metaLabel}
-            </Text>
-            {/* The reward reads in gold — same resource color as the quest gallery. */}
-            <Text fontSize={14} fontWeight="700" color="$resourceGold">
-              {row.xpLabel}
-            </Text>
-          </XStack>
+          <AdventureFooter meta={metaLabel} xp={row.xpLabel} />
         </YStack>
       </Card>
     </YStack>

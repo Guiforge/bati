@@ -224,7 +224,7 @@ function deviceLine(): string {
   const constants = Platform.constants as Record<string, unknown> | undefined;
   const model = [constants?.Brand, constants?.Model].filter(Boolean).join(" ");
   const os = `${Platform.OS} ${Platform.Version}`;
-  return model ? `${model} — ${os}` : os;
+  return model ? `${model} · ${os}` : os;
 }
 
 /** " ×3" for a merged entry, nothing for a single one. */
@@ -265,7 +265,7 @@ export function buildBugReportMailto(
     `--- ${strings.errorsHeader} ---`,
     ...(handled.length === 0
       ? [strings.noErrors]
-      : handled.map((r, i) => `[${i + 1}] ${r.at} (${r.context}${times(r)}) — ${r.message}`)),
+      : handled.map((r, i) => `[${i + 1}] ${r.at} (${r.context}${times(r)}) · ${r.message}`)),
   ].join("\n");
 
   return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(strings.subject)}&body=${encodeURIComponent(body)}`;

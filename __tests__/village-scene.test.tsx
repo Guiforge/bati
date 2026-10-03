@@ -1,4 +1,5 @@
 import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -125,6 +126,18 @@ describe("VillageScene", () => {
     // The six upgrades stop at 3; five pips under them promised a road that never came.
     expect(within(getByTestId("village-family-upgrade")).getByText("level 2 of 3")).toBeTruthy();
     expect(within(getByTestId("village-family-starter")).getByText("level 4 of 5")).toBeTruthy();
+  });
+
+  it("pins a status-bar-height scrim outside the scroll, so content never slides under the clock", async () => {
+    mockScene([campfire, forge]);
+
+    const { findByTestId } = await renderScene();
+    await findByTestId("village-next");
+    const scrim = await findByTestId("village-status-scrim");
+    const style = StyleSheet.flatten(scrim.props.style);
+
+    expect(style.height).toBe(METRICS.insets.top);
+    expect(style.position).toBe("absolute");
   });
 
   it("states the rule on day one, when nothing has been earned", async () => {

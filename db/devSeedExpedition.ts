@@ -219,7 +219,7 @@ export type SeededExpedition = {
 
 export async function seedExpedition(): Promise<SeededExpedition> {
   const slot = await anExpeditionSlot();
-  if (!slot) throw new Error("No expedition quest in the catalogue — is migration 0042 applied?");
+  if (!slot) throw new Error("No expedition quest in the catalogue: is migration 0042 applied?");
 
   await clearSeededExpeditions();
 

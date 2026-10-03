@@ -140,20 +140,20 @@ function rewardsResult(newRungs: VariationStep[]) {
 
 describe("the quest log on a rung that forks", () => {
   it("names the branches it does not illustrate", async () => {
-    await mount(<QuestLog data={questLogData(forkedRung(true))} />);
+    await mount(<QuestLog data={questLogData(forkedRung(true))} onChanged={() => {}} />);
 
     expect(screen.getByText("Push-ups is mastered: Dip is yours to try")).toBeTruthy();
     expect(screen.getByText(FORK_LINE)).toBeTruthy();
   });
 
   it("says nothing extra on a rung that leads to one movement", async () => {
-    await mount(<QuestLog data={questLogData(straightRung())} />);
+    await mount(<QuestLog data={questLogData(straightRung())} onChanged={() => {}} />);
 
     expect(screen.queryByText(/also leads to/i)).toBeNull();
   });
 
   it("stays silent below the bar, where no movement is named yet", async () => {
-    await mount(<QuestLog data={questLogData(forkedRung(false))} />);
+    await mount(<QuestLog data={questLogData(forkedRung(false))} onChanged={() => {}} />);
 
     expect(screen.queryByText(/also leads to/i)).toBeNull();
   });

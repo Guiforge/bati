@@ -26,6 +26,7 @@ import { type FinishedAdventureSummary, listFinishedRunSummaries } from "@/db/ad
 import { type ContributingSession, getRecentContributingSessions } from "@/db/completed";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { buildingDefinitions } from "@/db/schema";
+import { formatCount } from "@/db/targets";
 import {
   type BossBanner,
   BUILDING_LABELS,
@@ -259,13 +260,16 @@ function BuildingDetail({
         return building.level === 0
           ? t("village.detail_unlock_muscle", { muscle: muscleLabel })
           : `${t("village.detail_muscle_driver", {
-              volume: building.metricValue,
+              volume: formatCount(language, building.metricValue),
               muscle: muscleLabel,
             })}. ${repUnitNote}`;
       case "style":
         return building.level === 0
           ? t("village.detail_unlock_style", { style: styleLabel })
-          : `${t("village.detail_style_driver", { volume: building.metricValue, style: styleLabel })}. ${repUnitNote}`;
+          : `${t("village.detail_style_driver", {
+              volume: formatCount(language, building.metricValue),
+              style: styleLabel,
+            })}. ${repUnitNote}`;
       case "prereq":
         return building.level === 0
           ? t("village.detail_prereq_locked", {

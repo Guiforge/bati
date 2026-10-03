@@ -255,7 +255,7 @@ export function SessionRewards({
           )}
           <AppButton backgroundColor="$surface" onPress={onViewVillage}>
             <Text color="$text" fontSize={14} fontWeight="700">
-              {t("session.village_growth_cta", "View my village")}
+              {t("session.village_growth_cta", "View your village")}
             </Text>
           </AppButton>
         </Card>

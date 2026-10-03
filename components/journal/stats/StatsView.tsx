@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import type { TFunction } from "i18next";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
 import { Flame, Medal } from "@/components/icons";
@@ -181,7 +182,31 @@ function dayLabel(t: TFunction, language: AppLanguage, day: Date, now: Date): st
   return null;
 }
 
-function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
+/** The caption may shrink and wrap on its own line once it has been pushed there. */
+const CAPTION_STYLE = { textAlign: "right", flexShrink: 1 } as const;
+
+/**
+ * A card's title and the caption on its right. They share a row while both fit and the caption
+ * drops under the title when they do not: on one unwrapped row at a large font, or in French
+ * ("sur les memes 3 jours"), the caption overran the card or clipped.
+ */
+export function HeaderRow({ children, px }: { children: ReactNode; px?: number }) {
+  return (
+    <XStack
+      testID="journal-card-header"
+      px={px}
+      items="baseline"
+      justify="space-between"
+      flexWrap="wrap"
+      columnGap={8}
+      rowGap={2}
+    >
+      {children}
+    </XStack>
+  );
+}
+
+export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
   const { t } = useTranslation();
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
@@ -229,7 +254,7 @@ function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
             </YStack>
           ) : null}
         </XStack>
-        <NMuted numberOfLines={1}>
+        <NMuted testID="journal-wall-sub" numberOfLines={2}>
           {sub.before}
           {/* The row opens the movement; the record's date opens the day it fell. A veteran's
               question about a record is "what did I do that day", and History is hundreds of rows
@@ -278,12 +303,12 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
 
   return (
     <YStack testID="journal-wall">
-      <XStack px={11} items="baseline" justify="space-between" gap={11}>
+      <HeaderRow px={11}>
         <NKicker>{title}</NKicker>
-        <NMuted fontSize={11} style={{ textAlign: "right", flexShrink: 1 }}>
+        <NMuted fontSize={11} style={CAPTION_STYLE}>
           {mode === "firstDay" ? t("journal.wall_meta_first") : t("journal.wall_meta")}
         </NMuted>
-      </XStack>
+      </HeaderRow>
       <YStack px={11} pt={8} gap={6}>
         {stats.wall.map((entry) => (
           <WallRow key={`${entry.exerciseId}:${entry.type}`} entry={entry} now={stats.now} />
@@ -438,14 +463,14 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
 
   return (
     <NBlock testID="journal-month" mx={11} mt={6}>
-      <XStack items="baseline" justify="space-between" gap={8}>
+      <HeaderRow>
         <NKickerQuiet>
           {t("journal.month_so_far", { month: monthName(language, now) })}
         </NKickerQuiet>
-        <NMuted fontSize={11}>
+        <NMuted fontSize={11} style={CAPTION_STYLE}>
           {t("journal.month_vs", { month: previousName, count: month.days })}
         </NMuted>
-      </XStack>
+      </HeaderRow>
 
       <XStack flexWrap="wrap" rowGap={11} columnGap="6%" mt={11}>
         <Figure
@@ -579,12 +604,12 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
 
   return (
     <NBlock testID="journal-work" mx={11} mt={6}>
-      <XStack items="baseline" justify="space-between" gap={8}>
+      <HeaderRow>
         <NKickerQuiet>{t("journal.work_title")}</NKickerQuiet>
-        <NMuted fontSize={11}>
+        <NMuted fontSize={11} style={CAPTION_STYLE}>
           {t("journal.work_meta", { reps: number(language, stats.reps30) })}
         </NMuted>
-      </XStack>
+      </HeaderRow>
       <XStack height={32} items="flex-end" gap={2} mt={11}>
         {shown.map((m, index) => {
           const weak = behindMuscles(balance).includes(m.muscle);
@@ -659,17 +684,17 @@ function LevelBlock({ stats }: { stats: JournalStats }) {
 
   return (
     <NBlock testID="journal-level" mx={11} mt={6}>
-      <XStack items="baseline" justify="space-between" gap={8}>
+      <HeaderRow>
         <NKickerQuiet>
           {t("journal.level_kicker", { title: level.title[language], level: level.level })}
         </NKickerQuiet>
-        <NMuted fontSize={11}>
+        <NMuted fontSize={11} style={CAPTION_STYLE}>
           {t("journal.level_meta", {
             current: number(language, level.currentLevelXp),
             total: number(language, span),
           })}
         </NMuted>
-      </XStack>
+      </HeaderRow>
       <YStack mt={8}>
         <NBar progress={level.xpProgress} />
       </YStack>

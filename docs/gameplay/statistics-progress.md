@@ -55,6 +55,16 @@ and it obeys four gates: nothing at all on a night that set a record, never rank
 record), never a placing the hero did not earn by beating at least one past session, and a tie
 ranks behind the session that got there first.
 
+**Correcting a logged set.** A set on a past session's page can be corrected (a hold left running
+and logged as 362 s). `correctLoggedSet()` rewrites the one `completed_exercises` row, clamped to
+the session's own range, and re-decides that movement's entry in the session's `records_json`
+through `checkForNewRecords(id, { earlierOnly: true })`, and does the same for every later
+session whose best on that movement lies between the old value and the new one (the only ones
+whose verdict can have moved). Records, the wall, "to beat", work units and balance are derived,
+so they follow. XP and boss damage were earned at the time and are not re-priced. An outing's sets
+are not editable: their value comes from the trace. Device sync does not carry a correction yet:
+it matches sessions by uuid and never compares their sets.
+
 ### 3. Sessions per week
 
 The number the weekly-goal coach rule compares against

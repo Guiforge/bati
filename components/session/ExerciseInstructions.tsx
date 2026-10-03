@@ -4,6 +4,7 @@ import { Modal, ScrollView } from "react-native";
 import { Button, Text, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { getExerciseAsset } from "@/constants/assetMap";
+import { useFontScaled } from "@/hooks/useFontScaled";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { SessionInstruction } from "@/hooks/useSessionInstructions";
 
@@ -28,6 +29,7 @@ export function ExerciseInstructionsBody({
    */
   artSize: number;
 }) {
+  const maxHeight = useFontScaled(160);
   return (
     <YStack width="100%" gap="$2" items="center">
       <Image
@@ -41,7 +43,11 @@ export function ExerciseInstructionsBody({
       {/* Scrolls rather than grows: a long movement would otherwise push whatever sits below —
           "resume", or the modal's own close — off the bottom of a small screen. 160 is what the
           paused card can spare on a 640dp phone, and the modal has no reason to want more. */}
-      <ScrollView style={{ maxHeight: 160, width: "100%" }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        testID="instruction-description"
+        style={{ maxHeight, width: "100%" }}
+        showsVerticalScrollIndicator={false}
+      >
         <Text fontSize={14} color="$textSecondary" lineHeight={20}>
           {instruction.description}
         </Text>

@@ -127,6 +127,7 @@
       "./plugins/withAndroidBackupRules",
       "./plugins/withAndroidNetworkSecurity",
       "./plugins/withAndroidPredictiveBack",
+      "./plugins/withAndroidFontScaleConfigChanges",
       "./plugins/withAndroidPngIcons"
     ],
     "runtimeVersion": {

@@ -89,7 +89,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
     name: { en: "Cindermaw", fr: "Gueule-de-Cendre", de: "Aschenschlund", es: "Fauce de Ceniza" },
     legendaryName: {
       en: "Cindermaw the Crowned",
-      fr: "Gueule-de-Cendre Couronnée",
+      fr: "Gueule-de-Cendre couronnée",
       de: "Aschenschlund der Gekrönte",
       es: "Fauce de Ceniza la Coronada",
     },
@@ -529,7 +529,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
     },
     legendaryName: {
       en: "The Rustlord Reforged",
-      fr: "Le Seigneur de Rouille Reforgé",
+      fr: "Le Seigneur de Rouille reforgé",
       de: "Der Rostfürst, neu geschmiedet",
       es: "El Señor del Óxido Reforjado",
     },
@@ -571,7 +571,7 @@ export const BOSSES: Record<BossAssetKey, BossVoice> = {
       ],
       fr: [
         "Un rivet arraché. Je l'ai senti partir.",
-        "Tu frappes comme un marteau décidé.",
+        "Tu frappes comme un marteau qui sait où il va.",
         "Garantie annulée. Bien frappé.",
       ],
       de: [

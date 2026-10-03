@@ -280,7 +280,7 @@ describe("crashLog", () => {
       const body = decodeURIComponent(buildBugReportMailto(reports, handled, "1.0.0", strings));
 
       expect(body).toContain("--- Erreurs récentes ---");
-      expect(body).toContain("(backup.save ×3) — Unable to create file");
+      expect(body).toContain("(backup.save ×3) · Unable to create file");
       // The crash section is still there, above it.
       expect(body).toContain("boom");
     });

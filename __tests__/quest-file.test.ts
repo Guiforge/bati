@@ -980,7 +980,10 @@ describe("importing a quest file", () => {
     expect(after.move).toEqual(seedMove);
     // The new hero movement cannot take a uuid the seed row holds, so the write fails and rolls
     // back whole: refused, never an update of the seed row.
-    expect(outcome).toBeInstanceOf(Error);
+    // Not `toBeInstanceOf(Error)`: better-sqlite3's native addon keeps the SqliteError class of
+    // the first test file that loaded it in this worker, another realm's Error, so the check
+    // failed whenever jest scheduled a database suite before this one (every full run on Node 24).
+    expect(Object.prototype.toString.call(outcome)).toBe("[object Error]");
     expect(String(outcome)).toMatch(/UNIQUE/);
     expect(after.counts).toEqual(before);
   });

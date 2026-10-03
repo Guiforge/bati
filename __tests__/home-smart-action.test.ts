@@ -93,6 +93,13 @@ jest.mock("@/db/muscleBalance", () => ({
     .mockResolvedValue([{ id: 12, matchingMuscles: ["chest"] }]),
 }));
 
+// A hero with no history unless a test says otherwise: the day-one rule asks the journal.
+jest.mock("@/db/completed", () => ({
+  getSessionAggregates: jest
+    .fn()
+    .mockResolvedValue({ totalSessions: 0, totalXp: 0, uniqueQuests: 0 }),
+}));
+
 jest.mock("@/db/oaths", () => ({
   getOathProgress: jest.fn().mockResolvedValue(null),
   oathNeedsExercise: (metric: string) => metric === "exercise_pr" || metric === "exercise_volume",

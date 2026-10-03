@@ -1,0 +1,9 @@
+- Villagers never cover anything now: in the Village they
+  stand on the painting, everywhere else they speak in a
+  line under the title.
+- A hold left running no longer becomes a record: Bati asks
+  "Held 6:02?". You can correct a set from its session page.
+- A beaten boss keeps its own name on the share card.
+- Home offers the quest you left longest. Large text fits
+  on the main screens.
+- Distances follow your phone's region until you choose.

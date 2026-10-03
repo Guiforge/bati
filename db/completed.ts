@@ -1,3 +1,4 @@
+import { differenceInCalendarDays } from "date-fns";
 import { and, count, countDistinct, desc, eq, gt, gte, ne, sql, sum } from "drizzle-orm";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
@@ -532,6 +533,29 @@ export async function getSessionAggregates(): Promise<{
     totalXp: Number(row?.totalXp ?? 0),
     uniqueQuests: Number(row?.uniqueQuests ?? 0),
   };
+}
+
+/**
+ * The quest the hero has trained on for the longest time, among quests they have done, and how
+ * many whole days ago that was. Workouts only: an outing names a quest too, and is not "a quest
+ * to pick back up". Null when no workout names a quest.
+ */
+export async function getStalestQuest(): Promise<{ questId: number; daysAgo: number } | null> {
+  const lastAt = sql<number>`max(${completedQuest.performedAt})`;
+  const [row] = await db
+    .select({ questId: completedQuest.questId, lastAt })
+    .from(completedQuest)
+    // Foreign keys are off on the device: a deleted quest leaves its sessions pointing at
+    // nothing, and as the quest nobody does any more it would be the stalest one for good.
+    .innerJoin(quests, eq(quests.id, completedQuest.questId))
+    .where(isWorkout())
+    .groupBy(completedQuest.questId)
+    .orderBy(lastAt)
+    .limit(1);
+  if (!row || row.questId === null) return null;
+  // Calendar days where the hero stands: "yesterday" at 33 hours is the day before yesterday.
+  const daysAgo = differenceInCalendarDays(new Date(), new Date(Number(row.lastAt) * 1000));
+  return { questId: row.questId, daysAgo };
 }
 
 /**

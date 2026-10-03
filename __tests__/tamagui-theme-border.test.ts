@@ -20,3 +20,24 @@ test.each(["light", "dark", "dark_journal"] as const)(
     expect(read("borderColor")).toBe(read("borderStrong"));
   },
 );
+
+/**
+ * The same primitives also ask for the hover, press and focus borders, and Tamagui logged
+ * "missing token borderColor in category color - $borderColorHover" at every launch. They answer
+ * with the same one border colour (no hover tint exists in the palette), so the Journal stays
+ * borderless in every state.
+ */
+test.each(["light", "dark", "dark_journal"] as const)(
+  "the %s theme defines every border state as its borderColor",
+  (name) => {
+    const theme = config.themes[name] as Record<string, { val?: string } | string>;
+    const read = (key: string) => {
+      const v = theme[key];
+      return typeof v === "string" ? v : v?.val;
+    };
+    for (const state of ["borderColorHover", "borderColorPress", "borderColorFocus"]) {
+      expect(read(state)).toBeDefined();
+      expect(read(state)).toBe(read("borderColor"));
+    }
+  },
+);

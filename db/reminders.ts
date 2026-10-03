@@ -185,6 +185,7 @@ export const VARIANT_COUNTS = {
   oath_exercise: 2,
   oath_leagues: 2,
   weak_muscles: 2,
+  stale_quest: 2,
   first_day: 2,
   gallery: 2,
 } as const;
@@ -219,6 +220,9 @@ function sentenceFor(offer: HomeOffer, language: AppLanguage): Sentence {
         case: "weak_muscles",
         params: { quest: localizedTitle(offer.quest, language), muscles: offer.muscles },
       };
+    // No day count: one string per language, and "a while" is true at 3 days and at 300.
+    case "stale_quest":
+      return { case: "stale_quest", params: { quest: localizedTitle(offer.quest, language) } };
     case "first_day":
       return {
         case: "first_day",

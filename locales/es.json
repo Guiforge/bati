@@ -25,6 +25,10 @@
     "start_adventure": "Empezar una aventura",
     "no_active_adventure": "Elige tu camino",
     "start_journey": "Empieza tu aventura",
+    "pick_next": "Elige tu próxima misión",
+    "last_done_one": "Última vez ayer",
+    "last_done_many": "Última vez hace {{count}} días",
+    "last_done_other": "Última vez hace {{count}} días",
     "play": "Jugar",
     "level_line": "Nivel {{level}} • {{title}}",
     "step_progress": "Etapa {{current}} de {{total}}",
@@ -1762,6 +1766,10 @@
     "weak_muscles": {
       "0": "{{quest}} te espera. En el menú: {{muscles}}.",
       "1": "Tu día. {{quest}} recupera lo que va atrasado: {{muscles}}."
+    },
+    "stale_quest": {
+      "0": "{{quest}} te espera desde hace un rato. Tu día.",
+      "1": "Retoma {{quest}}, ya ha pasado un tiempo."
     },
     "first_day": {
       "0": "Tu día. {{quest}}, unos {{duration}}. El primer edificio te espera.",

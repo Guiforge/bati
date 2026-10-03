@@ -45,6 +45,10 @@ jest.mock("@/db/preferences", () => ({
       await Promise.resolve();
       mockStored.set("lastAutoBackupDay", day);
     },
+    clearLastAutoBackupDay: async () => {
+      await Promise.resolve();
+      mockStored.delete("lastAutoBackupDay");
+    },
   },
 }));
 
@@ -78,6 +82,7 @@ jest.mock("@/src/reportError", () => ({
   reportError: (context: string) => mockReported.push(context),
 }));
 
+import { dayKey } from "@/db/dates";
 import {
   backupBeforeMigrations,
   backupBeforeRestore,
@@ -256,6 +261,16 @@ describe("enableAutoBackup", () => {
     expect(mockStored.get("backupFolderUri")).toBe(TREE);
   });
 
+  test("stamps today, because the snapshot it just wrote is a backup", async () => {
+    // Settings reads "last backup" and the protect card reads whether one exists: until the next
+    // launch's daily run, a folder holding a fresh copy must not read as never backed up.
+    mockPicked.next = TREE;
+
+    await enableAutoBackup();
+
+    expect(mockStored.get("lastAutoBackupDay")).toBe(dayKey(new Date()));
+  });
+
   test("a folder whose first write fails is never remembered", async () => {
     // The whole point of writing immediately: "on" must not mean "on, probably, you will find
     // out at the next update" — and the next update is when finding out is too late.
@@ -284,6 +299,15 @@ describe("disableAutoBackup", () => {
     await disableAutoBackup();
 
     expect(mockStored.has("backupFolderUri")).toBe(false);
+  });
+
+  test("forgets the last backup day too, so Settings never says 3 days ago beside Off", async () => {
+    mockStored.set("backupFolderUri", TREE);
+    mockStored.set("lastAutoBackupDay", "2026-01-01");
+
+    await disableAutoBackup();
+
+    expect(mockStored.has("lastAutoBackupDay")).toBe(false);
   });
 });
 

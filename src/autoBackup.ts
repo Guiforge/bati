@@ -97,12 +97,18 @@ export async function enableAutoBackup(): Promise<string | null> {
 
   await saveBackupToFolder(folder);
   await preferences.setBackupFolderUri(folder.uri);
+  // The copy just written is a backup: Settings and the "protect your hero" card read this day,
+  // and until the next launch's daily run it would say "never" about a folder that holds one.
+  await preferences.setLastAutoBackupDay(dayKey(new Date()));
   return backupFolderLabel(folder.uri);
 }
 
 /** Forgets the folder. The snapshots already written are the hero's, and stay where they are. */
 export async function disableAutoBackup(): Promise<void> {
   await preferences.clearBackupFolderUri();
+  // Off means no backup is being made: a day left behind would read as "last backup 3 days ago"
+  // beside a row that says Off.
+  await preferences.clearLastAutoBackupDay();
 }
 
 /**

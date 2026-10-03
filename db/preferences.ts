@@ -282,6 +282,22 @@ export const preferences = {
     await setPreference("lastAutoBackupDay", day);
   },
 
+  async clearLastAutoBackupDay(): Promise<void> {
+    await deletePreference("lastAutoBackupDay");
+  },
+
+  /**
+   * The day the hero closed the "protect your hero" card, `yyyy-MM-dd`. It comes back after thirty
+   * days. Device-local: a restore onto a new phone must not inherit the old phone's silence.
+   */
+  async getProtectDismissedDay(): Promise<string | null> {
+    return await getPreference("protectDismissedDay");
+  },
+
+  async setProtectDismissedDay(day: string): Promise<void> {
+    await setPreference("protectDismissedDay", day);
+  },
+
   /**
    * The exercises the hero asked never to be handed again (issue #145: "I can't jump"), with the
    * day each was set aside so the list can say how long ago. Quests serve a near substitute in

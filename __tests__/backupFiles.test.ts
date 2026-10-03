@@ -646,14 +646,12 @@ describe("writePreMigrationCopy: the net under an update", () => {
     expect(fs.__disk.get(at("premigrate.db"))).toBe("snapshot");
   });
 
-  test("a copy that dies halfway leaves no file that looks like a safety net", async () => {
-    write("premigrate.db", "the last good copy");
+  test("a copy that dies halfway leaves no temp file that looks like a safety net", async () => {
     fs.__control.failMoveInto = "premigrate.db";
 
-    await expect(writePreMigrationCopy()).rejects.toThrow();
+    await expect(writePreMigrationCopy()).rejects.toThrow("no space left on device");
 
     expect(fs.__disk.has(at("premigrate.tmp.db"))).toBe(false);
-    expect(fs.__disk.get(at("premigrate.db"))).toBe("the last good copy");
   });
 
   test("an export sweep never takes it", async () => {

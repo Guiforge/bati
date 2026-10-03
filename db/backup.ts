@@ -398,6 +398,7 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "deviceId",
   "backupFolderUri",
   "lastAutoBackupDay",
+  "protectDismissedDay",
   "customAvatarUri",
   "crashLog",
   "errorLog",

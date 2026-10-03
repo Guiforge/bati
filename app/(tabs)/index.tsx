@@ -4,6 +4,7 @@ import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
+import { ProtectCard } from "@/components/home/ProtectCard";
 import { QuickActions } from "@/components/home/QuickActions";
 import { ReminderCard } from "@/components/home/ReminderCard";
 import { SyncCard } from "@/components/home/SyncCard";
@@ -78,6 +79,10 @@ export default function HomeScreen() {
         {/* Device sync, only when the hero must know: stopped, waiting on them, failing for
             days, or another device's sessions just arrived. Nothing while it works. */}
         <SyncCard />
+
+        {/* After a few sessions with no backup that works: one line to Settings, closable for a
+            month. Never shown to a hero who is already protected. */}
+        <ProtectCard />
 
         {/* The notes of the version just installed, once, and never on a fresh install. */}
         <WhatsNewCard />

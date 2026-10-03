@@ -51,7 +51,8 @@ describe("db/migrate", () => {
     sqlite = new Database(":memory:");
     sqlite.pragma("foreign_keys = ON");
     backupBeforeMigrations.mockClear();
-    copyBeforeMigrations.mockClear();
+    copyBeforeMigrations.mockReset();
+    copyBeforeMigrations.mockImplementation(() => Promise.resolve());
     backupBeforeMigrations.mockImplementation(() => Promise.resolve());
   });
 

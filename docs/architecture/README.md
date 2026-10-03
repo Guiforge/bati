@@ -16,6 +16,7 @@ related: [../README.md]
 - [database-api.md](database-api.md) — Database API reference (Drizzle)
 - [performance.md](performance.md) — RN performance best practices & antipatterns for this stack
 - [backup-and-sync.md](backup-and-sync.md) — the four copies of a hero's history, the key that seals them, and device sync
+- [data-safety.md](data-safety.md) — the gates around an update: golden hero, destructive-SQL guard, one migration per release, the copy before a migration, the real-APK upgrade check, the protect card
 - [exercise-ownership.md](exercise-ownership.md) — seed content and hero content share one table: the name partition, retirement, and the one rule every migration obeys
 
 ## Related

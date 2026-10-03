@@ -258,22 +258,6 @@ describe("db/quests", () => {
     const emptied = await quests.getQuestTemplateById(id);
     expect(emptied?.exercises.length).toBe(0);
 
-    await quests.ensureQuestHasExercise(id, squat.id, {
-      type: "reps",
-      min: 5,
-      max: 7,
-    });
-    const afterEnsure = await quests.getQuestTemplateById(id);
-    expect(afterEnsure?.exercises.length).toBe(1);
-
-    await quests.ensureQuestHasExercise(id, squat.id, {
-      type: "reps",
-      min: 5,
-      max: 7,
-    });
-    const afterEnsure2 = await quests.getQuestTemplateById(id);
-    expect(afterEnsure2?.exercises.length).toBe(1);
-
     await quests.deleteQuest(id);
     expect(await quests.getQuestTemplateById(id)).toBeNull();
   });

@@ -271,14 +271,6 @@ export function buildBugReportMailto(
   return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(strings.subject)}&body=${encodeURIComponent(body)}`;
 }
 
-export async function clearCrashLog(): Promise<void> {
-  try {
-    await setPreference(CRASH_LOG_KEY, "[]");
-  } catch {
-    // Nothing to do — the row is the only copy and it is not worth a second attempt.
-  }
-}
-
 /**
  * Catch uncaught JS errors. `ErrorUtils` is a React Native global, not a dependency.
  *

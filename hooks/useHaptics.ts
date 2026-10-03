@@ -33,8 +33,6 @@ export function useHaptics() {
   }
 
   return {
-    impact,
-    notification,
     selection,
     // Common presets
     lightImpact: () => impact(Haptics.ImpactFeedbackStyle.Light),
@@ -42,6 +40,5 @@ export function useHaptics() {
     heavyImpact: () => impact(Haptics.ImpactFeedbackStyle.Heavy),
     success: () => notification(Haptics.NotificationFeedbackType.Success),
     warning: () => notification(Haptics.NotificationFeedbackType.Warning),
-    error: () => notification(Haptics.NotificationFeedbackType.Error),
   };
 }

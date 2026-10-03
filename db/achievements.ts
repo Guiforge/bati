@@ -835,22 +835,3 @@ export async function checkForNewAchievements(sessionInfo: {
 
   return newlyUnlocked;
 }
-
-/**
- * Get summary stats for achievements
- */
-/** @legacy test */
-export async function getAchievementStats(): Promise<{
-  total: number;
-  unlocked: number;
-  percentage: number;
-}> {
-  const unlocked = await getUnlockedAchievements();
-  const total = achievementDefinitions.length;
-
-  return {
-    total,
-    unlocked: unlocked.length,
-    percentage: total > 0 ? Math.round((unlocked.length / total) * 100) : 0,
-  };
-}

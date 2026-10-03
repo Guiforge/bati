@@ -1,13 +1,12 @@
 describe("db/client", () => {
-  test("resetDatabase calls expo-sqlite deleteDatabaseSync", async () => {
+  test("opens the versioned database in WAL mode", () => {
     jest.resetModules();
 
-    const deleteDatabaseSync = jest.fn();
     const execSync = jest.fn();
     const openDatabaseSync = jest.fn(() => ({ dummy: true, execSync }));
 
     jest.doMock("expo-sqlite", () => ({
-      deleteDatabaseSync,
+      deleteDatabaseSync: jest.fn(),
       openDatabaseSync,
     }));
 
@@ -30,8 +29,5 @@ describe("db/client", () => {
     const pragmas = execSync.mock.calls.map(([sql]) => String(sql)).join(" ");
     expect(pragmas).toContain("journal_mode = WAL");
     expect(pragmas).toContain("busy_timeout");
-
-    await client.resetDatabase();
-    expect(deleteDatabaseSync).toHaveBeenCalledWith(expectedDbName);
   });
 });

@@ -123,7 +123,6 @@ interface ChorusState {
   lastVillager: VillagerId | null;
   lastCameoAt: number;
   ambientShown: number;
-  isHydrated: boolean;
 
   hydrate: () => Promise<void>;
   /**
@@ -258,7 +257,6 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
   lastVillager: null,
   lastCameoAt: 0,
   ambientShown: 0,
-  isHydrated: false,
 
   hydrate: async () => {
     const stored = await preferences.getRecentCameoLines();
@@ -267,7 +265,6 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
     // startup and the app could repeat one it had just used.
     set((state) => ({
       recentKeys: [...stored, ...state.recentKeys].slice(-RECENT_MEMORY),
-      isHydrated: true,
     }));
   },
 

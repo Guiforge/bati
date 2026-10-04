@@ -165,13 +165,18 @@ with that in mind. It is a fun project: I build it because I enjoy building it.
 ## Where the art comes from
 
 Every illustration in `assets/` (exercise art, quest and adventure covers, boss portraits,
-village buildings, avatars) is **AI-generated**. Nothing is stock, and nothing is traced from a
-specific artist's work.
+village buildings, avatars) is **AI-generated**. Nothing is stock.
 
-All of it comes from **FLUX.2 by Black Forest Labs**, through our own API account. That detail is
-the licence: the FLUX grant over outputs runs to whoever holds the key, so generating through an
-aggregator would have left us with art we could not license onward, which is why an earlier
-Midjourney-and-Gemini-via-Mammouth set was regenerated from scratch.
+All of it comes from **FLUX by Black Forest Labs** (FLUX.2, and FLUX 3 for the latest
+retouches), through our own API account. That detail is the licence: BFL's terms give the output to
+whoever holds the key, so generating through an aggregator would have left us with art we could not
+license onward, which is why an earlier Midjourney-and-Gemini-via-Mammouth set was regenerated from
+scratch.
+
+Many exercise pictures are drawn against a pose reference: line art from workout-guide, a
+photograph (mine, or one from Wikimedia Commons), or a posed 3D mannequin. The references
+themselves stay out of the repo, some of them being photos of me. Their credits stay in
+`scripts/pose-refs/`, and the ledger pins each one by hash.
 
 Icons are a separate system: game and fantasy icons go through the project's own icon hook,
 utility icons come from [`@tamagui/lucide-icons`](https://tamagui.dev).
@@ -240,23 +245,25 @@ Or just write to **<feedback.bati@proton.me>**. An idea is welcome in whatever f
 [MIT](LICENSE) for the code, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) for
 the artwork in `assets/`.
 
-The illustrations are generated with FLUX.2 by Black Forest Labs through our own API account,
-whose licence places no ownership claim on outputs and allows any use. `scripts/provenance.json`
-records the model, prompt and seed behind every one of them, so fork away: the art comes with
-you, and you can regenerate it yourself.
+The illustrations are generated with FLUX by Black Forest Labs through our own API account. BFL's
+Developer Terms give the account holder the output and allow personal and commercial use (§3.b, EU
+terms §4.b). BFL also signs every output with C2PA Content Credentials. Resizing and converting the
+pictures to WebP for the app drops them, so the signed originals are kept, and this is the place
+that says so: the art is AI-generated. `scripts/provenance.json` records the model, prompt, seed
+and references behind every picture, so fork away: the art comes with you, and you can regenerate
+it yourself.
 
-Most of the exercise illustrations in `assets/images/exercises/` are *derived* work on top of
-that: FLUX redrew them from anatomical line studies by
-[Everkinetic](https://github.com/everkinetic/data), reframed by
-[workout-guide](https://github.com/bryllim/workout-guide), both CC BY-SA 4.0. Credit is due to
-Everkinetic and Bryl Lim, and the share-alike obligation is already satisfied by the licence
-above. It binds the images, never the app code. `scripts/provenance.json` names the source frame
-for each one.
+Many exercise illustrations are *derived* work on top of that. FLUX redrew them from line art by
+[Bryl Lim](https://bryllim.com) in [workout-guide](https://github.com/bryllim/workout-guide), which
+builds on the anatomical studies of [Everkinetic](https://github.com/everkinetic/data), both
+CC BY-SA 4.0. The share-alike obligation is already satisfied by the licence above. It binds the
+images, never the app code. `scripts/provenance.json` names the source for each one.
 
 The tuck planche takes its pose from a photograph by
 [Mr. Yoga](https://commons.wikimedia.org/wiki/File:Mr-yoga-pendant_pose.jpg) (CC BY-SA 4.0),
-reduced to its outline before FLUX redrew it. `scripts/pose-refs/` keeps the source and licence
-of every pose reference.
+reduced to its outline before FLUX redrew it. Seven more take theirs from photographs of the
+maintainer, released under the same licence. The app's Credits screen carries the same
+attributions, since the APK does not ship this file.
 
 Two exceptions keep their own terms: the [game-icons.net](https://game-icons.net) set
 (CC BY 3.0 / CC0) and the store badges.

@@ -4,12 +4,16 @@ Why this module exists at all: the three original scripts each carried their own
 same `urllib` block, the same retry, the same base64 decode. They had already drifted apart on
 timeouts and error handling by the time anyone looked.
 
-Why *this* provider: the art has to be redistributable for the app to enter f-droid.org, and the
-FLUX licence is the clearest text on the market about outputs — "We claim no ownership rights in
-and to the Outputs... you may use Output for any purpose (including for commercial purposes)"
-(§2(d)), plus "Outputs are not considered Derivatives under this License" (§1(a)). That grant runs
-to whoever holds the API key. Going through an aggregator breaks it: the aggregator is the account
-holder, and its own terms say nothing about passing the grant on. Hence a direct BFL key.
+Why *this* provider: the art has to be redistributable for the app to enter f-droid.org. BFL's
+Developer Terms give the API account holder the output outright: "As between you and us, you own
+all right, title, and interest in and to Output" and "You ... may use Outputs for your ... own
+personal or commercial purposes" (§3.b, EU terms §4.b). That grant runs to whoever holds the API
+key. Going through an aggregator breaks it: the aggregator is the account holder, and its own terms
+say nothing about passing the grant on. Hence a direct BFL key.
+
+The same terms (§6.i) forbid removing the C2PA Content Credentials BFL signs into every output.
+Shipping a 1280 px JPEG, then WebP, cannot keep them, so the untouched signed file is kept in
+ORIGINALS and the ledger names it by hash. The app and README say the art is AI-generated.
 
 The API is asynchronous, unlike the chat-completions shape the old scripts spoke: POST the prompt,
 get a polling URL back, poll until Ready, then download from a signed URL that expires in about ten
@@ -36,6 +40,11 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 # `-preview` in the path is the vendor's, not ours; override with FLUX_ENDPOINT when it graduates.
 ENDPOINT = os.environ.get("FLUX_ENDPOINT", "https://api.bfl.ai/v1/flux-2-pro-preview")
 PROVENANCE = ROOT / "scripts" / "provenance.json"
+# The signed API originals (C2PA, see above). Private, beside the pose references, not in the repo.
+ORIGINALS = pathlib.Path(
+    os.environ.get("FLUX_ORIGINALS", pathlib.Path.home() / ".cache" / "bati-art-loop" / "pose-refs" / "originals")
+)
+LICENCE = "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
 
 # BFL allows 24 concurrent requests on this endpoint. Sitting at a quarter of the ceiling leaves
 # room for whatever else is holding the same key, and the wall-clock difference over a batch of
@@ -259,6 +268,12 @@ def generate(
                 print(f"  … {slug}: {error} (retry {attempt}/{attempts - 1})", file=sys.stderr)
             time.sleep(2.0 * attempt)
 
+    # Named by content, so a re-roll never overwrites an original another candidate points at.
+    digest = hashlib.sha256(raw).hexdigest()
+    kind = ".png" if raw[:4] == b"\x89PNG" else ".webp" if raw[8:12] == b"WEBP" else ".jpg"
+    ORIGINALS.mkdir(parents=True, exist_ok=True)
+    (ORIGINALS / f"{digest[:16]}{kind}").write_bytes(raw)
+
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_suffix(out.suffix + ".tmp")
     tmp.write_bytes(raw)
@@ -279,7 +294,8 @@ def generate(
     entry = {
         "model": ENDPOINT.rsplit("/", 1)[-1],
         "provider": "Black Forest Labs (direct API)",
-        "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+        "licence": LICENCE,
+        "signed_original": {"file": f"{digest[:16]}{kind}", "sha256": digest},
         "prompt": prompt,
         "seed": None if "flux-3" in ENDPOINT else seed,  # FLUX 3 takes no seed
         "width": width,

@@ -691,3 +691,62 @@ description and shows legs straight and the body flat, which reads as the *harde
   feet flat on the floor, torso inclined, chest pulled toward the edge.
 - **Check by looking** (see §8): the knees must read as bent. A model that falls back to the
   classic flat row reproduces exactly the drawing this replaces.
+
+## 11. OPEN — a coach's review of 2.4.0 (2026-09-30)
+
+A coach graded every exercise's picture and text. The texts are fixed in `0066`, including the
+ones where the cheaper fix was to make the text describe the picture (Flutter Kicks on the
+forearms, both L-sits on two supports). What is left are pictures that show the wrong movement,
+which no description can rescue.
+
+**Progress (2026-10-01).** Redrawn with [`scripts/art-loop.py`](../../scripts/art-loop.py): a
+pose reference sent as `input_image`, four candidates per attempt, each attempt judged by a fresh
+model against a fixed checklist, three attempts at most. Shipped: `dip`, `pullups`,
+`tuck_planche`, `mountain_climber`, `wall_handstand`, `handstand_pushup`, `standing_calf_raise`.
+What the 18-exercise run taught, beyond §8:
+
+- **The reference wins over the words.** FLUX copies a reference's flaw faithfully: crossed
+  shins, a shallow split squat, a bent "straight" leg, a dip rack where a bench belongs. A
+  reference that carries the fault is worse than none.
+- **The best references** are [workout-guide](https://github.com/bryllim/workout-guide)'s line
+  art (CC BY-SA 4.0, after Everkinetic), flattened onto the background; a CC photo through an
+  edge filter works too (`tuck_planche`). A stick mannequin holds side-on and front-on; a body on
+  the floor seen foreshortened is read as standing.
+- **The text must name the reference's own viewpoint.** "Seen from the front" over a back-view
+  drawing gave a front face on a back body.
+- **Words that turn into objects:** "silver"/"metallic" glow becomes armour, "bare stomach" a crop
+  top, "ground" a lit floor. "Knee-length shorts" is ignored, so tights appear unless asked against.
+- **Moderation:** "hang", "neck", "throat" with a figure under a bar, and "buttocks", are refused.
+
+Still open, each needing a photograph of a real person in the pose (no freely licensed one
+exists): `windshield_wipers`, `thread_the_needle`, `russian_twist`, `hollow_body_hold`,
+`pike_pushup`, `knee_pushup`, `skater_hop`, `towel_door_row`, `dragon_flag`, `chin_up` (the grip),
+plus the never-attempted `pigeon_pose`, `cobra_stretch`, `toes_to_bar`, `table_row`.
+
+The original findings, confirmed by looking, in order of how badly they mislead:
+
+| Slug | What is wrong | Pose to draw |
+| --- | --- | --- |
+| `windshield_wipers` | a floating Superman (already in §8) | on the back, arms in a T, legs vertical and tilted to one side |
+| `tuck_planche` | kneeling on one knee, not balanced | hands only on the floor, feet off, knees tucked to the chest |
+| `pullups` | stands on the floor, dungeon backdrop | hanging, chin over the bar, plain backdrop like the rest |
+| `chin_up` | neon poster style, off-set | the set's style, palms toward the face |
+| `dip` | one bar, knees bent near the floor | two parallel bars, body upright, legs off the floor |
+| `russian_twist` | a V-sit, no rotation | torso turned to one side, hands beside the hip |
+| `skater_hop` | reads as a lunge, side view | front view, landing on one leg, the other crossing behind |
+| `pigeon_pose` | front leg reads as a lunge | front shin across the mat, back leg long behind |
+| `cobra_stretch` | an upward dog, hips high | hips on the floor, chest lifted less |
+| `pushups` | elbows flared wide | elbows back along the ribs |
+| `bicycle_crunch` | extended leg is bent, oversized arms | one leg straight, elbow to opposite knee |
+| `thread_the_needle` | three arms, not on all fours | on all fours, one arm threaded under the other |
+| `towel_door_row` | towel held, not around the handle | towel looped round a door handle |
+| `toes_to_bar` | side view | front view, or two phases like `muscle_up` |
+| `dragon_flag` | holds the bench at the side | hands gripping behind the head |
+| `hollow_body_hold` | a V-sit, lower back off the floor | lower back flat, shoulders and legs just lifted |
+| `table_row` | legs straight (already §10) | knees bent, feet flat |
+
+Minor, not worth a re-roll alone: `downward_dog` wears shoes, `knee_pushup` crosses its feet,
+`mountain_climber` could bring the knee further in, `pike_pushup` should look back so the crown
+leads, `muscle_up` changes character between the two phases, `handstand_pushup` has odd
+shoulders. Found by the same pass and not by the coach: `wall_handstand` shows no wall, and
+`standing_calf_raise` is cropped at the waist. `bulgarian_split_squat` still has no art (§8).

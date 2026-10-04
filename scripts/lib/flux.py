@@ -16,7 +16,9 @@ get a polling URL back, poll until Ready, then download from a signed URL that e
 minutes. That last detail is why the download happens inline here and not in the caller.
 """
 
+import base64
 import concurrent.futures
+import hashlib
 import json
 import os
 import pathlib
@@ -164,6 +166,11 @@ def _record(rel_path: str, entry: dict) -> None:
         )
 
 
+def record(rel_path: str, entry: dict) -> None:
+    """File a candidate's entry under the path it ships at (see the sidecar in `generate`)."""
+    _record(rel_path, entry)
+
+
 def record_derived(out: pathlib.Path, source: pathlib.Path, how: str) -> None:
     """Note a file produced from another one rather than from a prompt.
 
@@ -190,6 +197,8 @@ def generate(
     height: int = 1024,
     quality: int = 82,
     attempts: int = 3,
+    seed: int | None = None,
+    references: tuple[pathlib.Path, ...] = (),
 ) -> bool:
     """Render one prompt to `out`. Returns False if it could not be produced.
 
@@ -202,7 +211,7 @@ def generate(
     The shared STYLE paragraph holds a family together well enough without it.
     """
     key = load_key()
-    seed = seed_for(slug)
+    seed = seed_for(slug) if seed is None else seed
     payload = {
         "prompt": prompt,
         "width": width,
@@ -210,6 +219,11 @@ def generate(
         "seed": seed,
         "output_format": "jpeg" if out.suffix in (".jpg", ".jpeg") else "png",
     }
+    # A pose reference is one of our own drawings (scripts/pose-refs.py), never a finished image:
+    # the ledger below pins it by hash, so provenance stays one level deep and re-runnable.
+    for index, reference in enumerate(references):
+        name = "input_image" if index == 0 else f"input_image_{index + 1}"
+        payload[name] = base64.b64encode(reference.read_bytes()).decode("ascii")
 
     for attempt in range(1, attempts + 1):
         try:
@@ -248,19 +262,30 @@ def generate(
     # Scratch renders outside the repo (style probes, one-off comparisons) still get made, they
     # just do not enter the ledger — it records what ships, and the crash it used to throw here
     # happened *after* the image was paid for and written, which is the worst possible moment.
-    _record(
-        str(out.relative_to(ROOT)) if out.is_relative_to(ROOT) else str(out),
-        {
-            "model": ENDPOINT.rsplit("/", 1)[-1],
-            "provider": "Black Forest Labs (direct API)",
-            "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-            "prompt": prompt,
-            "seed": seed,
-            "width": width,
-            "height": height,
-            "generated": time.strftime("%Y-%m-%d"),
-        },
-    )
+    entry = {
+        "model": ENDPOINT.rsplit("/", 1)[-1],
+        "provider": "Black Forest Labs (direct API)",
+        "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+        "prompt": prompt,
+        "seed": seed,
+        "width": width,
+        "height": height,
+        "generated": time.strftime("%Y-%m-%d"),
+    }
+    if references:
+        entry["references"] = [
+            {
+                "path": str(r.relative_to(ROOT)) if r.is_relative_to(ROOT) else str(r),
+                "sha256": hashlib.sha256(r.read_bytes()).hexdigest(),
+            }
+            for r in references
+        ]
+    if out.is_relative_to(ROOT):
+        _record(str(out.relative_to(ROOT)), entry)
+    else:
+        # A candidate outside the repo: its entry travels beside it, so `record()` can file it
+        # the day the candidate is chosen, without paying for the render twice.
+        out.with_suffix(".json").write_text(json.dumps(entry, indent=2, ensure_ascii=False))
 
     with _print_lock:
         print(f"  ✓ {out.name}  ({out.stat().st_size // 1024} KB, seed {seed})")

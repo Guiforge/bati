@@ -42,6 +42,8 @@ KEEP_AS_IS = {
     "assets/icon.png",
     "assets/adaptive-icon.png",
     "assets/favicon.png",
+    # `android.adaptiveIcon.monochromeImage` in `app.json`: same prebuild consumer as the icon.
+    "assets/monochrome-icon.png",
     "assets/badges/get-it-on-fdroid.png",
     "assets/badges/get-it-on-github.png",
     # Named by extension in `app.json` (`previewImage`), and this script deletes the original it

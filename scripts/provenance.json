@@ -638,21 +638,21 @@
     }
   },
   "assets/images/exercises/dip.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "reference": "prepared reference `_dip_pose.png`",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "Copy the body of image 1 exactly, limb for limb: an athlete at the bottom of a dip, side on, held in the air, elbows folded and pointing back behind the body, shoulders dropped to hand level, knees bent with the shins hanging back, both feet clear of the ground. Change one thing only, the equipment. Image 1 has two broken tubes lying across the chest -- draw none of that. Instead there is ONE single straight smooth horizontal bar, level and parallel to the top edge of the picture, running from the left edge of the frame to the right edge, passing exactly through the two closed hands and nowhere else. Nothing crosses the chest, nothing touches the head, and no second bar and no upright post is drawn anywhere",
-    "note": "seed not recorded — image carried over from an earlier campaign",
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "voile",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "prompt": "Image 1 is a crude jointed-mannequin diagram that fixes the exact pose and camera angle. Orange limbs are on the side nearest the camera, blue limbs on the far side, grey is the torso and head, and flat grey shapes are the equipment. Draw the hero in precisely this pose: the same joint angles, the same limbs touching the floor or the equipment, the same viewpoint. Draw a real person in the style described below; nothing of the diagram itself, its colours or its flat shapes appears in the picture. Seen exactly from the side, a fantasy athlete hero at the bottom of a dip on two parallel bars that run left to right at hip height, the near bar in front of the hips and the far bar behind them, a hand gripping each bar. The elbows are bent to a right angle and point straight back behind the body, the shoulders have sunk level with the elbows, and the torso leans slightly forward. The knees are bent and the feet are behind the body, high above the floor, with dark empty space beneath them. The hero wears a fitted dark sleeveless top and knee-length dark shorts, arms and shins bare, barefoot. A thin amber light traces the outline of the bare arms and chest. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 1420108557,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-01",
+    "references": [
+      {
+        "path": "scripts/pose-refs/dip.png",
+        "sha256": "450f5276e7be20d7159841bcd86aaa051f6e464ab2d87ae922c2775929a4051f"
+      }
+    ],
+    "reencoded": "cwebp -q 85, from dip.jpg"
   },
   "assets/images/exercises/downward_dog.webp": {
     "model": "flux-2-pro",
@@ -716,21 +716,27 @@
     }
   },
   "assets/images/exercises/handstand_pushup.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
-    "reference": "everkinetic frame `wall-handstand-push-up-1` via bryllim/workout-guide",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "The athlete is upside down at the very bottom of a handstand push-up, seen from the front. Behind him the whole background is one plain flat vertical surface: a single uniform dark tone, perfectly smooth, no border, no corner, no seam, no bricks, no texture, and no floor line or horizon anywhere. Both palms are flat on the ground, wider apart than his shoulders, fingers spread, and the hands sit well above the bottom edge with a clear band of empty dark below them. Both elbows are bent hard and flare out sideways, forearms vertical, upper arms almost horizontal, and the top of his head is down between his hands, nearly touching the ground. Above the shoulders the body runs straight up, legs pressed together, feet near the top. He wears dark shorts ending above the knee; from knee to sock his legs are bare skin, never leggings or long trousers, and low dark shoes on both feet.",
-    "seed": 1234,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "voile",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "derived work: pose traced from Bryl Lim (workout-guide), after Everkinetic (CC BY-SA 4.0), redistributed under CC BY-SA 4.0",
+    "prompt": "Image 1 is a pale line drawing on a dark ground that fixes the exact pose and camera angle. Draw the hero in precisely this pose: the same joint angles, the same parts of the body touching the floor, the same viewpoint. Draw a real person in the style described below; nothing of the drawing itself, its thin pale lines, appears in the picture, and any object in it that the description below does not name is left out. Seen from behind, a fantasy athlete hero upside down in a handstand beside a plain wall drawn as one thin receding line on the left, both heels resting against the top of that wall, legs straight and together. The viewer sees the back of the head, the two shoulder blades and the seat of the shorts. Both elbows are bent and point out to the sides, the back of the head is lowered to just above the ground between the hands, and the two hands are flat on the ground a little wider than the shoulders, five fingers each. Each arm grows out of a rounded shoulder at the top of the back, the trapezius running from the neck to each shoulder. The hero wears a fitted dark sleeveless top and knee-length dark shorts, arms and shins bare, barefoot. A thin amber light traces the outline of the bare shoulders and arms. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3852787408,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-01",
+    "references": [
+      {
+        "path": "scripts/pose-refs/handstand_pushup.traced.png",
+        "sha256": "9738813d9c5997c7e49f88a0180e426616f7a977a6adb383986f38cebc7104f6"
+      }
+    ],
+    "derived_from": {
+      "source_page": "https://github.com/bryllim/workout-guide/tree/main/packages/workout-guide/assets/wall-handstand-push-up",
+      "image_url": "https://raw.githubusercontent.com/bryllim/workout-guide/HEAD/packages/workout-guide/assets/wall-handstand-push-up/frame-2.png",
+      "licence": "CC BY-SA 4.0",
+      "author": "Bryl Lim (workout-guide), after Everkinetic"
+    },
+    "reencoded": "cwebp -q 85, from handstand_pushup.jpg"
   },
   "assets/images/exercises/hanging_leg_raise.webp": {
     "model": "flux-2-pro",
@@ -894,21 +900,15 @@
     "reencoded": "cwebp -q 85, from messengers_run.jpg"
   },
   "assets/images/exercises/mountain_climber.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
-    "reference": "everkinetic frame `mountain-climber-1` via bryllim/workout-guide",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "The athlete is in a push-up position seen from a three-quarter front angle, both arms straight and vertical, both palms flat on the ground under the shoulders. One leg is stretched straight back, knee locked, only the toes of that shoe touching down far behind. The other leg is folded hard forward: that knee has travelled all the way under the chest and now sits level with the hands, close beside one wrist, its shin slanting back and up so that foot hangs well clear of the ground. The straight back leg and the folded front leg are both fully drawn, each with its own thigh, shin and shoe, and neither hides the other. She wears a short-sleeved dark t-shirt and dark shorts ending above the knee, thighs and shins bare. The back is flat and level, the head up, the face looking at the ground just ahead of the hands",
-    "seed": 305,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "forge",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "Seen from the side, a fantasy athlete hero in a straight-arm push-up position, both hands flat on the floor directly under the shoulders, arms straight. The front thigh is pressed against the stomach, and its knee is level with the wrists, tucked under the chest between the arms. That shin points down and back under the body, and only the tips of its toes touch the floor below the hips. The other leg is straight behind, toes on the floor, heel up. The hips are level with the shoulders, so the back makes one flat line from neck to hips. The hero wears a fitted dark sleeveless top and knee-length dark shorts, arms and shins bare, barefoot. A thin cyan light traces the outline of the bare arms and calves. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2789762418,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-01",
+    "reencoded": "cwebp -q 85, from mountain_climber.jpg"
   },
   "assets/images/exercises/muscle_up.webp": {
     "model": "flux-2-pro",
@@ -1023,21 +1023,21 @@
     }
   },
   "assets/images/exercises/pullups.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "reference": "the `chin_up` render of this same catalogue, redrawn -- see that entry",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "(inherited from `chin_up`) Redraw image 1 exactly: same athlete, same clothes, same camera from directly behind, same body position at the top of the pull, same single straight bar. Both hands stay closed tight around the bar, wrapped into fists, gripping it just as firmly as in image 1 -- no open hand, no spread fingers, no palm laid flat. Change ONE thing only: how each forearm is rolled. In image 1 the two thumbs point inward toward each other and the knuckles face us. Roll each forearm the other way, so that the two thumbs now point OUTWARD, away from each other, each toward its own side of the picture, and the knuckles are turned away and hidden from us. What we see on the near side of each closed fist is the soft heel of the palm and the smooth inner edge of the curled fingers, no knuckle and no fingernail anywhere. The height of the body does not change: the back of the head stays clearly ABOVE the bar line with the bar passing behind the neck, and both elbows stay folded shut exactly as in image 1. Everything else in the picture stays exactly as it is",
-    "seed": 1234,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (single redraw) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt; reference image is new/chin_up.png, not new/pullups.png",
-      "background": "donjon",
-      "seed": 66,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "prompt": "Image 1 is a crude jointed-mannequin diagram that fixes the exact pose and camera angle. Orange limbs are on the side nearest the camera, blue limbs on the far side, grey is the torso and head, and flat grey shapes are the equipment. Draw the hero in precisely this pose: the same joint angles, the same limbs touching the floor or the equipment, the same viewpoint. Draw a real person in the style described below; nothing of the diagram itself, its colours or its flat shapes appears in the picture. A fantasy athlete hero at the top of a pull-up on a plain horizontal training bar, seen from the front against an empty dark background. Both hands grip the bar overhand, a little wider than the shoulders, and both elbows are bent and pointing down and out, so the fists sit level with the shoulders. The chin is just above the top of the bar and the face is turned to the camera, fully drawn with eyes, nose and mouth and a determined expression. The knees are bent and the ankles crossed, both feet in the air with empty dark space beneath them. The hero wears a fitted dark sleeveless top and knee-length dark shorts. A thin pale blue light traces the outline of the arms and shoulders. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3016800748,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-01",
+    "references": [
+      {
+        "path": "scripts/pose-refs/pullups.png",
+        "sha256": "8fb9a72eabe2030663fe3c06c0d80768d99f536dd8545a85e6744a2e847b8631"
+      }
+    ],
+    "reencoded": "cwebp -q 85, from pullups.jpg"
   },
   "assets/images/exercises/pushups.webp": {
     "model": "flux-2-pro",
@@ -1197,21 +1197,27 @@
     }
   },
   "assets/images/exercises/standing_calf_raise.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "reference": "none — text-only prompt",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "Strict side view of one athlete standing at the very top of a standing calf raise, facing left, the whole body from head to shoes inside the frame. The body is one straight vertical line: legs straight, knees locked, back upright, head up, arms hanging relaxed at the sides. The athlete stands on flat bare ground and nothing at all is placed under the feet. Each shoe touches the ground at its front tip only. The back of each shoe is lifted, and the heel is as far above the ground as the shoe is long, so the underside of each shoe is plainly visible from the tip right back to the heel, and open dark ground shows under both heels. The two feet are level with each other. Plain fitted dark short-sleeved t-shirt, dark shorts above the knee, bare shins, dark low-cut training shoes",
-    "note": "two panels generated separately and assembled by regen/diptych.py",
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "braise",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "derived work: pose traced from Bryl Lim (workout-guide), after Everkinetic (CC BY-SA 4.0), redistributed under CC BY-SA 4.0",
+    "prompt": "Image 1 is a pale line drawing on a dark ground that fixes the exact pose and camera angle. Draw the hero in precisely this pose: the same joint angles, the same parts of the body touching the floor, the same viewpoint. Draw a real person in the style described below; nothing of the drawing itself, its thin pale lines, appears in the picture, and any object in it that the description below does not name is left out. Seen from a three-quarter view from behind and to the left, a fantasy athlete hero standing tall on the front edge of a low dark wooden block, only the toes and balls of both feet pressing on its top surface, both heels lifted well above the toes, the pale soles of both feet facing the viewer, ankles fully extended, legs straight and side by side, the whole body from head to bare feet in the frame. Both hands are empty and rest on the hips, elbows pointing out to the sides. The hero wears a fitted dark sleeveless top and knee-length dark shorts, arms and shins bare, barefoot. A thin cyan light traces the outer outline of the figure, along the edge of the bare calves and arms. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 452353118,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-01",
+    "references": [
+      {
+        "path": "scripts/pose-refs/standing_calf_raise.traced.png",
+        "sha256": "d994b3983c454206655453be585fe09dfafd0c4932048bfd2b05810319420860"
+      }
+    ],
+    "derived_from": {
+      "source_page": "https://github.com/bryllim/workout-guide/tree/main/packages/workout-guide/assets/standing-calf-raise",
+      "image_url": "https://raw.githubusercontent.com/bryllim/workout-guide/HEAD/packages/workout-guide/assets/standing-calf-raise/frame-2.png",
+      "licence": "CC BY-SA 4.0",
+      "author": "Bryl Lim (workout-guide), after Everkinetic"
+    },
+    "reencoded": "cwebp -q 85, from standing_calf_raise.jpg"
   },
   "assets/images/exercises/standing_forward_fold.webp": {
     "model": "flux-2-pro",
@@ -1342,38 +1348,38 @@
     }
   },
   "assets/images/exercises/tuck_planche.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "reference": "none — text-only prompt",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "One athlete holding a tuck planche, seen from the side and turned just slightly toward us, facing left, so the far arm and the far knee show a little way behind the near ones. In this whole picture exactly two things touch the ground: the two flat palms. Nothing else touches down. Both arms are straight and locked from palm to shoulder, and the two shoulders lean forward past the line of the hands. The hips float behind the shoulders at the same height as them, so the trunk is level. Both knees are folded up toward the chest and the shoes are tucked in behind them, all of it hanging in mid-air. The knees rest on nothing: there is clear dark space between each knee and the arm below it, and open dark space runs under the hips, under the knees and under the shoes. The head is up and the face looks forward. Plain fitted dark short-sleeved t-shirt, dark shorts above the knee, bare shins, dark low-cut shoes",
-    "note": "seed not recorded — image carried over from an earlier campaign",
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "braise",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "derived work: pose traced from Mr. Yoga (CC BY-SA 4.0), redistributed under CC BY-SA 4.0",
+    "prompt": "Image 1 is a pale line drawing on a dark ground that fixes the exact pose and camera angle. Draw the hero in precisely this pose: the same joint angles, the same parts of the body touching the floor, the same viewpoint. Draw a real person in the style described below; nothing of the drawing itself, its thin pale lines, appears in the picture, and any object in it that the description below does not name is left out. A fantasy athlete hero seen straight from the front, balancing on the two hands on the bare floor. Both palms are flat on the ground a shoulder-width apart with the five fingers of each hand spread, and both arms are locked dead straight. The shoulders sit forward over the fingertips and the head is lowered between the two upper arms, the crown of the head facing the viewer. Both knees press against the chest just below the collarbones, one knee inside each upper arm. The two shins sit side by side and parallel under the thighs, and the two bare feet show side by side under the knees, soles facing back, toes pointing down, with the dark floor and the body's shadow visible beneath them. The two palms are the only thing touching the ground. The hero wears a fitted dark sleeveless top and knee-length dark shorts, arms and shins bare. A thin cyan light traces the outline of the bare shoulders and arms. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2375289796,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-01",
+    "references": [
+      {
+        "path": "scripts/pose-refs/tuck_planche.traced.png",
+        "sha256": "e2fb638ad20bb38a9986729aefe9219abd912adf102e67ee1ba68c4aaea44e51"
+      }
+    ],
+    "derived_from": {
+      "source_page": "https://commons.wikimedia.org/wiki/File:Mr-yoga-pendant_pose.jpg",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Mr-yoga-pendant_pose.jpg",
+      "licence": "CC BY-SA 4.0",
+      "author": "Mr. Yoga"
+    },
+    "reencoded": "cwebp -q 85, from tuck_planche.jpg"
   },
   "assets/images/exercises/wall_handstand.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
-    "reference": "everkinetic frame `wall-handstand-push-up-3` via bryllim/workout-guide",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "The athlete holds a handstand at full lockout, upside down, seen from the front, filling almost the whole height of the picture. Both palms are flat on the ground, shoulder width apart, well above the bottom edge with a clear band of empty dark below them. Each arm is one single straight line from the flat hand up to the shoulder, elbow locked, the wrist directly under the elbow and the elbow directly under the shoulder, with no crease and no bend anywhere along it. The shoulders are pushed up so far that a wide gap of empty dark opens between the top of the head and the ground, a gap as tall as a forearm. From the shoulders the body is one single straight vertical column, hips over shoulders, legs pressed together, feet near the top edge. A dark fitted t-shirt covers the waist, dark shorts end above the knee, bare shins, low dark shoes. The darkness all around is one flat empty field.",
-    "seed": 5,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "forge",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "Seen from the front, a fantasy athlete hero upside down in a handstand, back and heels against a plain dark wall drawn as a large flat rectangular panel with visible edge lines behind the whole body, the backs of both heels pressed flat on the panel, legs straight and together. Each arm is one straight vertical line: hand, wrist, elbow and shoulder stacked on top of each other, the hands flat on the ground shoulder-width apart, the head between the upper arms with the crown level with the elbows, a strip of dark floor showing between the crown and the ground. The hero wears a fitted dark sleeveless top and knee-length dark shorts, arms and shins bare, barefoot. A thin amber light traces the outline of the bare shoulders. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2742588862,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-01",
+    "reencoded": "cwebp -q 85, from wall_handstand.jpg"
   },
   "assets/images/exercises/wall_pushup.webp": {
     "model": "flux-2-pro",

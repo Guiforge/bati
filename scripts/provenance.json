@@ -1060,26 +1060,21 @@
     }
   },
   "assets/images/exercises/pike_pushup.webp": {
-    "model": "flux-2-pro-preview",
+    "model": "flux-2-pro",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "derived work: pose taken from a photograph by Guillaume Pouyat (CC BY-SA 4.0 (own work)), redistributed under CC BY-SA 4.0",
-    "prompt": "Redraw image 1 as an illustration. Keep the person's body exactly as it is in image 1: every limb in the same place, the same joint angles, the same parts touching the floor, the same camera angle and framing. Change only how it is drawn and dressed: replace the photograph with the style described below, replace the clothes, remove the glasses, the watch and the patch of floor, and give the person a new face. The person becomes a fantasy athlete hero in a pike push-up: hips the highest point, legs straight, elbows bent, the top of the head lowered toward the floor between the hands. The hero wears a fitted dark sleeveless top tucked in and dark shorts that reach the knees, barefoot. A thin amber light traces the outline of the shoulders. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
-    "seed": 753220968,
-    "width": 1280,
-    "height": 1280,
-    "generated": "2026-10-04",
-    "references": [
-      {
-        "path": "scripts/pose-refs/pike_pushup.cutout.png",
-        "sha256": "389c8d970d68a611072a28a2071506d6d607b772d85ccc469f25b07c984535fe"
-      }
-    ],
-    "derived_from": {
-      "source_page": "own photograph by the project maintainer, 2026-10",
-      "licence": "CC BY-SA 4.0 (own work)",
-      "author": "Guillaume Pouyat"
-    },
-    "reencoded": "cwebp -q 85, from pike_pushup.jpg"
+    "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
+    "reference": "everkinetic frame `pike-push-up-1` via bryllim/workout-guide",
+    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
+    "prompt": "Strict side view, the athlete facing left, at the bottom of a pike push-up: the body is folded into a sharp upside-down V and the hips are the highest point of the whole picture. The legs run straight down from the hips to the floor behind. The head is low, near the floor, just in front of the hands. We see the athlete from exactly side-on, so only ONE arm and ONE leg are drawn: the near arm runs from the shoulder down to a hand flat on the floor, complete and unbroken from shoulder to elbow to wrist to fingers, and the far arm is entirely hidden behind it -- no second hand, no second forearm and no floating hand appears anywhere near the face. The near leg likewise hides the far one, one shoe on the floor. The athlete wears a plain fitted dark short-sleeved t-shirt and dark shorts, and the lower legs are bare skin",
+    "seed": 1234,
+    "restyle": {
+      "model": "flux-2-pro",
+      "provider": "Black Forest Labs (direct API)",
+      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
+      "background": "donjon",
+      "seed": 1234,
+      "licence": "restyle of the render above — same licence, no new source introduced"
+    }
   },
   "assets/images/exercises/pistol_squat.webp": {
     "model": "flux-2-pro",

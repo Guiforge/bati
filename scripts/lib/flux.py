@@ -140,7 +140,9 @@ def _poll(polling_url: str, key: str, timeout: float = 300.0) -> str:
         # Anything that is not Ready and not still running is terminal — surface the vendor's own
         # wording rather than a generic failure, because "Content Moderated" needs a prompt edit
         # and "Request Failed" needs a retry, and they are not the same problem.
-        if status not in ("Pending", "Queued", "Processing", "Request Accepted"):
+        # Terminal states are listed; anything else is still working. FLUX 3 added "Reasoning"
+        # before it draws, and a list of working states broke on it.
+        if status in ("Error", "Failed", "Content Moderated", "Request Moderated", "Task not found"):
             raise RuntimeError(f"FLUX returned {status}: {json.dumps(body.get('details', body))}")
 
     raise TimeoutError(f"FLUX did not finish within {timeout:.0f}s")
@@ -224,6 +226,18 @@ def generate(
     for index, reference in enumerate(references):
         name = "input_image" if index == 0 else f"input_image_{index + 1}"
         payload[name] = base64.b64encode(reference.read_bytes()).decode("ascii")
+    if "flux-3" in ENDPOINT:
+        # FLUX 3 Image takes its references as one list and has no seed. Grounding is on by default
+        # and searches the web for images before drawing: off, or the ledger could no longer say
+        # what an image was made from.
+        payload = {
+            "prompt": prompt,
+            "aspect_ratio": "1:1" if width == height else "auto",
+            "resolution": "1k",
+            "grounding": False,
+        }
+        if references:
+            payload["images"] = [base64.b64encode(r.read_bytes()).decode("ascii") for r in references]
 
     for attempt in range(1, attempts + 1):
         try:
@@ -267,7 +281,7 @@ def generate(
         "provider": "Black Forest Labs (direct API)",
         "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
         "prompt": prompt,
-        "seed": seed,
+        "seed": None if "flux-3" in ENDPOINT else seed,  # FLUX 3 takes no seed
         "width": width,
         "height": height,
         "generated": time.strftime("%Y-%m-%d"),

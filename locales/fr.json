@@ -161,8 +161,10 @@
     "game_icons_site": "Game-icons.net",
     "game_icons_site_subtitle": "Bibliothèque d'icônes et liste des auteurs",
     "icons_title": "Icônes",
-    "illustrations_note": "Une grande partie des illustrations d'exercices dérive des planches anatomiques d'Everkinetic, recadrées par le projet workout-guide, sous licence CC BY-SA 4.0. Bati les a modifiées et les redistribue sous la même licence.",
+    "illustrations_note": "Les illustrations d'exercices sont générées par IA avec FLUX (Black Forest Labs) et choisies une à une. Beaucoup partent d'une pose dessinée par Bryl Lim pour le projet workout-guide, lui-même construit sur les planches anatomiques d'Everkinetic, d'autres d'une photo de Mr. Yoga ou de photos du développeur de Bati. Toutes sont publiées sous licence CC BY-SA 4.0.",
     "illustrations_title": "Illustrations d'exercices",
+    "mr_yoga": "Mr. Yoga",
+    "mr_yoga_subtitle": "Photo servant de modèle de pose, Wikimedia Commons",
     "open": "Ouvrir",
     "open_source_body": "Construit avec Expo + React Native, Tamagui, Zustand, Drizzle ORM, i18next, et plus encore.",
     "open_source_title": "Logiciels open-source",
@@ -171,7 +173,7 @@
     "title": "Crédits",
     "view_authors": "Voir les auteurs",
     "workout_guide": "workout-guide",
-    "workout_guide_subtitle": "Cadrages et normalisation par Bryl Lim"
+    "workout_guide_subtitle": "Dessins de poses par Bryl Lim"
   },
   "dark": "Sombre",
   "errors": {

@@ -300,7 +300,7 @@ describe("content invariants", () => {
     expect(byName.get("Dip")?.enDescription).toMatch(/^Support yourself on a sturdy edge/);
     expect(byName.get("Dip")?.frDescription).toMatch(/^En appui sur un rebord stable/);
     expect(byName.get("Dragon Flag")?.enDescription).toMatch(/^Lying on the floor/);
-    expect(byName.get("Dragon Flag")?.frDescription).toMatch(/^Allongé au sol/);
+    expect(byName.get("Dragon Flag")?.frDescription).toMatch(/^Allonge-toi au sol/);
     // And the tag itself stays where it is: `canDo` reads it, and a sturdy edge is furniture.
     expect(byName.get("Dip")?.equipment).toBe("none");
   });

@@ -91,6 +91,12 @@ export default function CreditsScreen() {
             onPress={openUrl}
           />
           <CreditLink
+            title={t("credits.mr_yoga")}
+            subtitle={t("credits.mr_yoga_subtitle")}
+            url="https://commons.wikimedia.org/wiki/File:Mr-yoga-pendant_pose.jpg"
+            onPress={openUrl}
+          />
+          <CreditLink
             title={t("credits.cc_by_sa_40")}
             subtitle={t("credits.cc_by_sa_40_subtitle")}
             url="https://creativecommons.org/licenses/by-sa/4.0/"

@@ -72,10 +72,10 @@ export const EXERCISE_ASSETS = {
   downward_dog: require("@/assets/images/exercises/downward_dog.webp"),
   pigeon_pose: require("@/assets/images/exercises/pigeon_pose.webp"),
   worlds_greatest_stretch: require("@/assets/images/exercises/worlds_greatest_stretch.webp"),
-  // The calisthenics rungs and summits from 0032/0033. bulgarian_split_squat is still absent
-  // on purpose — no usable art yet, and a wrong illustration in a training app is worse than
-  // the placeholder it falls back to — the model either sits the athlete on the bench or leaves
-  // them standing, five attempts.
+  // The calisthenics rungs and summits from 0032/0033. bulgarian_split_squat was left on the
+  // placeholder for months (text alone sat the athlete on the bench); a pose reference fixed it,
+  // see docs/content/missing-image.md §11.
+  bulgarian_split_squat: require("@/assets/images/exercises/bulgarian_split_squat.webp"),
   muscle_up: require("@/assets/images/exercises/muscle_up.webp"),
   knee_pushup: require("@/assets/images/exercises/knee_pushup.webp"),
   wall_handstand: require("@/assets/images/exercises/wall_handstand.webp"),
@@ -542,6 +542,7 @@ export const EXERCISE_THUMB_ASSETS = {
   knee_pushup: require("@/assets/images/exercises/thumbs/knee_pushup.webp"),
   wall_handstand: require("@/assets/images/exercises/thumbs/wall_handstand.webp"),
   dead_hang: require("@/assets/images/exercises/thumbs/dead_hang.webp"),
+  bulgarian_split_squat: require("@/assets/images/exercises/thumbs/bulgarian_split_squat.webp"),
   muscle_up: require("@/assets/images/exercises/thumbs/muscle_up.webp"),
   negative_pullup: require("@/assets/images/exercises/thumbs/negative_pullup.webp"),
   tuck_l_sit: require("@/assets/images/exercises/thumbs/tuck_l_sit.webp"),

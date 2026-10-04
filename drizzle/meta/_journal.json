@@ -470,6 +470,13 @@
       "when": 1790812800000,
       "tag": "0066_the_quest_that_names_itself",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "6",
+      "when": 1790899200000,
+      "tag": "0067_what_the_coach_read",
+      "breakpoints": true
     }
   ]
 }

@@ -63,6 +63,19 @@ TRACED_PREAMBLE = (
     "in it that the description below does not name is left out."
 )
 
+# For a real photo cut out of its background (`<slug>.cutout.png`, face blurred): colour and
+# volume say which arm passes under which, where the edge tracing of the same photo read as a
+# plain all-fours (thread_the_needle, a8).
+# Phrased as an edit of image 1, not as a new picture "in this pose": asked to draw from it, FLUX
+# drew its favourite all-fours twice (a8, a9); asked to redraw it, it keeps the body's geometry.
+PHOTO_PREAMBLE = (
+    "Redraw image 1 as an illustration. Keep the person's body exactly as it is in image 1: "
+    "every limb in the same place, the same joint angles, the same parts touching the floor, the "
+    "same camera angle and framing. Change only how it is drawn and dressed: replace the "
+    "photograph with the style described below, replace the clothes, remove the glasses, the "
+    "watch and the patch of floor, and give the person a new face."
+)
+
 # For a 3D mannequin render (see `render3d`): volume and a cast shadow carry the depth that a flat
 # stick figure lost on every floor pose.
 PREAMBLE3D = (
@@ -614,10 +627,16 @@ def candidates(slug: str, attempt: int, pose_file: str | None) -> None:
     # A traced photo wins over the mannequin. A pose may also opt out: a reference the model
     # misreads is worse than none (thread_the_needle, before it had a photo).
     traced = REFS / f"{slug}.traced.png"
-    if POSES.get(slug, {}).get("reference") is False:
-        refs, preamble = (), ""
+    cutout = REFS / f"{slug}.cutout.png"
+    # A reference made for this slug on purpose (a photo, a 3D pose) wins over the old opt-out,
+    # which only meant "the traced drawing carries the fault". The opt-out silently swallowed
+    # both for thread_the_needle and russian_twist: six attempts went out text-only.
+    if cutout.exists():
+        refs, preamble = (cutout,), PHOTO_PREAMBLE
     elif slug in POSES3D:
         refs, preamble = (render3d(slug),), PREAMBLE3D
+    elif POSES.get(slug, {}).get("reference") is False:
+        refs, preamble = (), ""
     elif traced.exists():
         refs, preamble = (traced,), TRACED_PREAMBLE
     elif "torso" in POSES[slug]:
@@ -653,7 +672,8 @@ def candidates(slug: str, attempt: int, pose_file: str | None) -> None:
          "400x400+6+6", "-pointsize", "20", str(sheet)],
         check=True,
     )
-    print(json.dumps({"sheet": str(sheet), "candidates": list(map(str, made)),
+    print(json.dumps({"sheet": str(sheet), "references": list(map(str, refs)),
+                      "candidates": list(map(str, made)),
                       "checklist": POSES.get(slug, {}).get("checklist", [])}, indent=2))
 
 
@@ -701,14 +721,17 @@ def accept(slug: str, candidate: str) -> None:
     # A pose traced from someone else's work makes the picture a derived work: say whose, under
     # which licence, the way the Everkinetic-derived entries already do.
     for ref in entry.get("references", []):
-        if not ref["path"].endswith(".traced.png"):
+        if not ref["path"].endswith((".traced.png", ".cutout.png")):
             continue  # a mannequin is ours
-        source = ROOT / ref["path"].replace(".traced.png", ".source.json")
+        source = ROOT / ref["path"].replace(".traced.png", ".source.json").replace(
+            ".cutout.png", ".source.json"
+        )
         if source.is_file():
             credit = json.loads(source.read_text(encoding="utf-8"))
             entry["derived_from"] = credit
+            how = "taken from a photograph by" if ref["path"].endswith(".cutout.png") else "traced from"
             entry["licence"] = (
-                f"derived work: pose traced from {credit['author']} ({credit['licence']}), "
+                f"derived work: pose {how} {credit['author']} ({credit['licence']}), "
                 "redistributed under CC BY-SA 4.0"
             )
     record(rel, entry)

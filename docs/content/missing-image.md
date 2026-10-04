@@ -718,9 +718,18 @@ What the 18-exercise run taught, beyond §8:
   top, "ground" a lit floor. "Knee-length shorts" is ignored, so tights appear unless asked against.
 - **Moderation:** "hang", "neck", "throat" with a figure under a bar, and "buttocks", are refused.
 
+**Two more references (2026-10-04).** `scripts/pose3d.py` renders a capsule mannequin in
+headless Blender: volume and a cast shadow say "lying" or "knees on the floor" where a flat stick
+figure could not (`knee_pushup` shipped from it). For what a mannequin cannot carry, a threaded
+arm or a twist, a photograph of the maintainer cut out of its background with `rembg`, face
+blurred, and sent with an *edit* prompt ("redraw image 1, keep the body") is copied almost
+exactly (`thread_the_needle` shipped from it). Because it is copied exactly, the photo must show
+the final position, from the side, with no glasses, watch or long trousers: each of those came
+back in the drawing.
+
 Still open, each needing a photograph of a real person in the pose (no freely licensed one
-exists): `windshield_wipers`, `thread_the_needle`, `russian_twist`, `hollow_body_hold`,
-`pike_pushup`, `knee_pushup`, `skater_hop`, `towel_door_row`, `dragon_flag`, `chin_up` (the grip),
+exists): `windshield_wipers`, `russian_twist`, `hollow_body_hold`,
+`pike_pushup`, `skater_hop`, `towel_door_row`, `dragon_flag`, `chin_up` (the grip),
 plus the never-attempted `pigeon_pose`, `cobra_stretch`, `toes_to_bar`, `table_row`.
 
 The original findings, confirmed by looking, in order of how badly they mislead:

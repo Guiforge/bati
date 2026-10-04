@@ -1281,21 +1281,26 @@
     "reencoded": "cwebp -q 85, from table_row.jpg"
   },
   "assets/images/exercises/thread_the_needle.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "reference": "none — text-only prompt",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "One athlete on hands and knees who has let one shoulder collapse to the ground, seen from the front and slightly above, the knees away from us. The two arms are drawn completely differently from each other and are never parallel. The LEFT arm is bent, its palm planted flat on the ground in front of the athlete, propping the upper body. The RIGHT arm is straight and lies flat along the ground pointing sideways to the LEFT of the picture, crossing under the athlete's own chest, and its open hand comes out past the left elbow, palm turned up. The right shoulder is squashed down onto the ground and the right side of the face lies on the ground next to it, cheek and ear down, so the head is at ground level while the hips stay high above. Both knees stay on the ground under the hips. Plain fitted dark short-sleeved t-shirt, dark shorts above the knee, bare shins, dark low-cut shoes",
-    "seed": 555,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "nebuleuse",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "derived work: pose taken from a photograph by Guillaume Pouyat (CC BY-SA 4.0 (own work)), redistributed under CC BY-SA 4.0",
+    "prompt": "Redraw image 1 as an illustration. Keep the person's body exactly as it is in image 1: every limb in the same place, the same joint angles, the same parts touching the floor, the same camera angle and framing. Change only how it is drawn and dressed: replace the photograph with the style described below, replace the clothes, remove the glasses, the watch and the patch of floor, and give the person a new face. The person becomes a fantasy athlete hero in a thread-the-needle stretch: kneeling with the hips above the knees, the right shoulder and the side of the head resting on the floor, the right arm lying flat on the floor under the chest with the palm up, the left hand planted on the floor in front of the head. No glasses, no watch, no ring, no floor line. The hero wears a fitted dark sleeveless top and dark shorts that reach the knees, barefoot. A thin cyan light traces the outline of the upper back. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2697445970,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-04",
+    "references": [
+      {
+        "path": "scripts/pose-refs/thread_the_needle.cutout.png",
+        "sha256": "dec21d3ff9f0d8386a381fd3d19f7f88d5f99ce8b95cf25eaf83837a1800025b"
+      }
+    ],
+    "derived_from": {
+      "source_page": "own photograph by the project maintainer, 2026-10",
+      "licence": "CC BY-SA 4.0 (own work)",
+      "author": "Guillaume Pouyat"
+    },
+    "reencoded": "cwebp -q 85, from thread_the_needle.jpg"
   },
   "assets/images/exercises/toes_to_bar.webp": {
     "model": "flux-2-pro",

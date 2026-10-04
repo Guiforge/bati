@@ -4,6 +4,7 @@ import path from "node:path";
 
 import Database from "better-sqlite3";
 
+import { migrate } from "./helpers/migrateTo";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 /**
@@ -27,36 +28,6 @@ type Journal = { entries: { idx: number; when: number }[] };
 const journal: Journal = JSON.parse(
   fs.readFileSync(path.join(process.cwd(), "drizzle", "meta", "_journal.json"), "utf8"),
 );
-
-/** better-sqlite3 wearing the four async methods the runner expects of expo-sqlite. */
-function makeClient(sqlite: Database.Database) {
-  return {
-    execAsync: (source: string) => {
-      sqlite.exec(source);
-      return Promise.resolve();
-    },
-    runAsync: (source: string, params: readonly unknown[] = []) =>
-      Promise.resolve(sqlite.prepare(source).run(...(params as unknown[]))),
-    getFirstAsync: <T>(source: string, params: readonly unknown[] = []) =>
-      Promise.resolve((sqlite.prepare(source).get(...(params as unknown[])) as T) ?? null),
-    getAllAsync: <T>(source: string, params: readonly unknown[] = []) =>
-      Promise.resolve(sqlite.prepare(source).all(...(params as unknown[])) as T[]),
-  };
-}
-
-/** The app's migration runner on `sqlite`, stopped after `maxIdx` when one is given. */
-async function migrate(sqlite: Database.Database, maxIdx?: number) {
-  if (maxIdx === undefined) delete process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX;
-  else process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX = String(maxIdx);
-  jest.resetModules();
-  jest.doMock("../db/client", () => ({ db: { $client: makeClient(sqlite) } }));
-  jest.doMock("../src/autoBackup", () => ({ backupBeforeMigrations: () => Promise.resolve() }));
-  try {
-    await (require("../db/migrate") as typeof import("../db/migrate")).ensureMigrations();
-  } finally {
-    delete process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX;
-  }
-}
 
 /** Everything that defines the schema, minus the runner's own bookkeeping. */
 function schemaOf(sqlite: Database.Database): string[] {

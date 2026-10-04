@@ -286,6 +286,19 @@ outlived it.
   [`docs/product/writing.md`](docs/product/writing.md) holds the rest and says which is which.
   The ban stops at what a reader sees: `docs/` and code comments are out of it on purpose.
 
+### Data safety
+
+The gates around an update are in [`docs/architecture/data-safety.md`](docs/architecture/data-safety.md).
+What to know before touching a migration or a formula:
+
+- A new migration (above `0066`) that drops, deletes or replaces rows carries
+  `-- destructive-ok: <why the rows are safe>`; two new migrations in one release need
+  `-- multi-migration-ok: <why>` on one of them, or the release workflow refuses the tag.
+- `__tests__/golden-hero*.test.ts` freeze every figure a hero reads. When one moves on purpose,
+  `UPDATE_GOLDEN=1 npx jest golden-hero`, commit the JSON, and list the moved figures and the reason
+  in the PR. Never regenerate it to make a red build green without reading the list.
+- Before tagging: `scripts/upgrade-check.sh` on an emulator, previous APK over new. Not in CI.
+
 ### Known debt
 
 - `app/(tabs)/quests/[id].tsx` composes `getQuestById` + `getQuestConfig` + `applyQuestConfig`

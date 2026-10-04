@@ -18,6 +18,7 @@ import config from "@/tamagui.config";
 // The reminders' line under the scene reads the database and the native module; it has its own
 // test (reminder-card.test.tsx), and a drag over Home is not about it.
 jest.mock("@/components/home/ReminderCard", () => ({ ReminderCard: () => null }));
+jest.mock("@/components/home/ProtectCard", () => ({ ProtectCard: () => null }));
 jest.mock("@/components/chorus/screenCues", () => ({
   useScreenGuide: () => {},
   useComebackCue: () => {},

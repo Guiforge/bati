@@ -1,0 +1,533 @@
+{
+  "rules": {
+    "levelOfXp": {
+      "0": 1,
+      "99": 1,
+      "100": 2,
+      "299": 2,
+      "300": 3,
+      "1000": 5,
+      "2500": 7,
+      "5000": 10,
+      "10000": 14,
+      "20000": 20,
+      "25000": 23,
+      "60000": 40
+    },
+    "xpOfLevel": {
+      "1": 0,
+      "2": 100,
+      "3": 300,
+      "4": 600,
+      "5": 1000,
+      "6": 1500,
+      "7": 2100,
+      "8": 2800,
+      "9": 3600,
+      "10": 4500,
+      "11": 5500,
+      "12": 6600,
+      "13": 7800,
+      "14": 9100,
+      "15": 10500,
+      "16": 12000,
+      "17": 13600,
+      "18": 15300,
+      "19": 17100,
+      "20": 19000,
+      "21": 21000,
+      "22": 23000,
+      "23": 25000,
+      "24": 27000,
+      "25": 29000,
+      "26": 31000,
+      "27": 33000,
+      "28": 35000,
+      "29": 37000,
+      "30": 39000,
+      "31": 41000,
+      "32": 43000,
+      "33": 45000,
+      "34": 47000,
+      "35": 49000,
+      "36": 51000,
+      "37": 53000,
+      "38": 55000,
+      "39": 57000,
+      "40": 59000,
+      "41": 61000,
+      "42": 63000,
+      "43": 65000,
+      "44": 67000,
+      "45": 69000
+    },
+    "tierOfLevel": {
+      "1": 1,
+      "2": 1,
+      "3": 2,
+      "4": 2,
+      "5": 3,
+      "6": 3,
+      "7": 3,
+      "8": 4,
+      "9": 4,
+      "10": 5,
+      "11": 5,
+      "12": 5,
+      "13": 6,
+      "14": 6,
+      "15": 7,
+      "16": 7,
+      "17": 7,
+      "18": 8,
+      "19": 8,
+      "20": 9,
+      "21": 9,
+      "22": 9,
+      "23": 9,
+      "24": 9,
+      "25": 10,
+      "26": 10,
+      "27": 10,
+      "28": 10,
+      "29": 10,
+      "30": 10,
+      "31": 10,
+      "32": 11,
+      "33": 11,
+      "34": 11,
+      "35": 11,
+      "36": 11,
+      "37": 11,
+      "38": 11,
+      "39": 11,
+      "40": 12,
+      "41": 12,
+      "42": 12,
+      "43": 12,
+      "44": 12,
+      "45": 12
+    },
+    "flameOfStreak": {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 1,
+      "6": 1,
+      "7": 2,
+      "13": 2,
+      "14": 3,
+      "29": 3,
+      "30": 4,
+      "59": 4,
+      "60": 4,
+      "99": 4,
+      "100": 5,
+      "365": 5,
+      "1000": 5
+    },
+    "bossPool": {
+      "easy": 750,
+      "medium": 1000,
+      "hard": 1250
+    },
+    "sessionXp": {
+      "easy/easy/3x12reps": 26,
+      "easy/easy/2x45s": 22,
+      "easy/medium/3x12reps": 32,
+      "easy/medium/2x45s": 27,
+      "easy/hard/3x12reps": 81,
+      "easy/hard/2x45s": 68,
+      "medium/easy/3x12reps": 29,
+      "medium/easy/2x45s": 24,
+      "medium/medium/3x12reps": 36,
+      "medium/medium/2x45s": 30,
+      "medium/hard/3x12reps": 90,
+      "medium/hard/2x45s": 75,
+      "hard/easy/3x12reps": 35,
+      "hard/easy/2x45s": 29,
+      "hard/medium/3x12reps": 43,
+      "hard/medium/2x45s": 36,
+      "hard/hard/3x12reps": 108,
+      "hard/hard/2x45s": 90
+    },
+    "sessionXpBounds": {
+      "clockCapsTheClaim": 72,
+      "overshootingTheTarget": 51,
+      "floor": 10,
+      "ceiling": 2000
+    },
+    "outingXp": {
+      "walk1h": 300,
+      "run1h": 600,
+      "walk1hAfter2h": 75
+    }
+  },
+  "hero": {
+    "sessions": {
+      "totalSessions": 546,
+      "totalXp": 48945,
+      "uniqueQuests": 37
+    },
+    "totalXp": 48945,
+    "level": {
+      "level": 34,
+      "currentLevelXp": 1945,
+      "xpToNextLevel": 55
+    },
+    "flame": {
+      "current": 1092,
+      "best": 1092,
+      "inWindow": 4,
+      "quota": 2,
+      "bestEndedOn": "2026-03-14T23:00:00.000Z",
+      "bestIsCurrent": true,
+      "litUntil": "2026-03-25T23:00:00.000Z",
+      "litDays": 1092,
+      "litDaysLast30": 30
+    },
+    "records": {
+      "wall": [
+        {
+          "exerciseId": 5,
+          "type": "time",
+          "best": 60,
+          "last": 43,
+          "recordSessionId": 418,
+          "seasonBest": 60
+        },
+        {
+          "exerciseId": 2,
+          "type": "reps",
+          "best": 20,
+          "last": 12,
+          "recordSessionId": 452,
+          "seasonBest": 20
+        },
+        {
+          "exerciseId": 1,
+          "type": "reps",
+          "best": 25,
+          "last": 16,
+          "recordSessionId": 526,
+          "seasonBest": 24
+        },
+        {
+          "exerciseId": 3,
+          "type": "reps",
+          "best": 10,
+          "last": 7,
+          "recordSessionId": 494,
+          "seasonBest": 9
+        },
+        {
+          "exerciseId": 28,
+          "type": "time",
+          "best": 30,
+          "last": 28,
+          "recordSessionId": 539,
+          "seasonBest": 30
+        },
+        {
+          "exerciseId": 4,
+          "type": "time",
+          "best": 45,
+          "last": 39,
+          "recordSessionId": 422,
+          "seasonBest": 45
+        },
+        {
+          "exerciseId": 32,
+          "type": "reps",
+          "best": 20,
+          "last": 15,
+          "recordSessionId": 504,
+          "seasonBest": 19
+        },
+        {
+          "exerciseId": 38,
+          "type": "reps",
+          "best": 12,
+          "last": 12,
+          "recordSessionId": 538,
+          "seasonBest": 12
+        }
+      ],
+      "movements": [
+        {
+          "exerciseId": 5,
+          "type": "time",
+          "best": 60,
+          "last": 43
+        },
+        {
+          "exerciseId": 2,
+          "type": "reps",
+          "best": 20,
+          "last": 12
+        },
+        {
+          "exerciseId": 1,
+          "type": "reps",
+          "best": 25,
+          "last": 16
+        },
+        {
+          "exerciseId": 3,
+          "type": "reps",
+          "best": 10,
+          "last": 7
+        },
+        {
+          "exerciseId": 28,
+          "type": "time",
+          "best": 30,
+          "last": 28
+        },
+        {
+          "exerciseId": 4,
+          "type": "time",
+          "best": 45,
+          "last": 39
+        },
+        {
+          "exerciseId": 32,
+          "type": "reps",
+          "best": 20,
+          "last": 15
+        },
+        {
+          "exerciseId": 38,
+          "type": "reps",
+          "best": 12,
+          "last": 12
+        },
+        {
+          "exerciseId": 31,
+          "type": "time",
+          "best": 30,
+          "last": 26
+        },
+        {
+          "exerciseId": 41,
+          "type": "reps",
+          "best": 15,
+          "last": 15
+        },
+        {
+          "exerciseId": 6,
+          "type": "reps",
+          "best": 30,
+          "last": 30
+        },
+        {
+          "exerciseId": 15,
+          "type": "reps",
+          "best": 12,
+          "last": 8
+        }
+      ]
+    },
+    "village": {
+      "tier": 11,
+      "level": 34,
+      "totalXp": 48945,
+      "streakDays": 1092,
+      "dominantSport": {
+        "muscle": "shoulder",
+        "percentage": 24.8
+      },
+      "buildings": 21
+    },
+    "bosses": [
+      {
+        "adventureId": 2,
+        "totalHp": 348
+      },
+      {
+        "adventureId": 3,
+        "totalHp": 764
+      },
+      {
+        "adventureId": 5,
+        "totalHp": 531
+      },
+      {
+        "adventureId": 6,
+        "totalHp": 1026
+      },
+      {
+        "adventureId": 7,
+        "totalHp": 1394
+      },
+      {
+        "adventureId": 8,
+        "totalHp": 963
+      }
+    ],
+    "achievements": [
+      {
+        "code": "first_workout",
+        "isUnlocked": true,
+        "currentValue": 1,
+        "targetValue": 1
+      },
+      {
+        "code": "sessions_10",
+        "isUnlocked": true,
+        "currentValue": 10,
+        "targetValue": 10
+      },
+      {
+        "code": "sessions_25",
+        "isUnlocked": true,
+        "currentValue": 25,
+        "targetValue": 25
+      },
+      {
+        "code": "sessions_50",
+        "isUnlocked": true,
+        "currentValue": 50,
+        "targetValue": 50
+      },
+      {
+        "code": "sessions_100",
+        "isUnlocked": true,
+        "currentValue": 100,
+        "targetValue": 100
+      },
+      {
+        "code": "sessions_250",
+        "isUnlocked": true,
+        "currentValue": 250,
+        "targetValue": 250
+      },
+      {
+        "code": "sessions_500",
+        "isUnlocked": true,
+        "currentValue": 500,
+        "targetValue": 500
+      },
+      {
+        "code": "streak_3",
+        "isUnlocked": true,
+        "currentValue": 3,
+        "targetValue": 3
+      },
+      {
+        "code": "streak_7",
+        "isUnlocked": true,
+        "currentValue": 7,
+        "targetValue": 7
+      },
+      {
+        "code": "streak_14",
+        "isUnlocked": true,
+        "currentValue": 14,
+        "targetValue": 14
+      },
+      {
+        "code": "streak_30",
+        "isUnlocked": true,
+        "currentValue": 30,
+        "targetValue": 30
+      },
+      {
+        "code": "streak_60",
+        "isUnlocked": true,
+        "currentValue": 60,
+        "targetValue": 60
+      },
+      {
+        "code": "streak_100",
+        "isUnlocked": true,
+        "currentValue": 100,
+        "targetValue": 100
+      },
+      {
+        "code": "xp_100",
+        "isUnlocked": true,
+        "currentValue": 100,
+        "targetValue": 100
+      },
+      {
+        "code": "xp_500",
+        "isUnlocked": true,
+        "currentValue": 500,
+        "targetValue": 500
+      },
+      {
+        "code": "xp_1000",
+        "isUnlocked": true,
+        "currentValue": 1000,
+        "targetValue": 1000
+      },
+      {
+        "code": "xp_5000",
+        "isUnlocked": true,
+        "currentValue": 5000,
+        "targetValue": 5000
+      },
+      {
+        "code": "xp_10000",
+        "isUnlocked": true,
+        "currentValue": 10000,
+        "targetValue": 10000
+      },
+      {
+        "code": "long_session_30min",
+        "isUnlocked": false,
+        "currentValue": 0,
+        "targetValue": 1
+      },
+      {
+        "code": "long_session_60min",
+        "isUnlocked": false,
+        "currentValue": 0,
+        "targetValue": 1
+      },
+      {
+        "code": "early_bird",
+        "isUnlocked": false,
+        "currentValue": 0,
+        "targetValue": 1
+      },
+      {
+        "code": "night_owl",
+        "isUnlocked": false,
+        "currentValue": 0,
+        "targetValue": 1
+      },
+      {
+        "code": "path_climbed",
+        "isUnlocked": true,
+        "currentValue": 1,
+        "targetValue": 1
+      },
+      {
+        "code": "first_outing",
+        "isUnlocked": false,
+        "currentValue": 0,
+        "targetValue": 1
+      },
+      {
+        "code": "hour_outside",
+        "isUnlocked": false,
+        "currentValue": 0,
+        "targetValue": 1
+      },
+      {
+        "code": "variety_3_quests",
+        "isUnlocked": true,
+        "currentValue": 3,
+        "targetValue": 3
+      },
+      {
+        "code": "variety_5_quests",
+        "isUnlocked": true,
+        "currentValue": 5,
+        "targetValue": 5
+      }
+    ]
+  }
+}

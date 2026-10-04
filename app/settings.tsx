@@ -40,6 +40,7 @@ import {
 } from "@/components/icons";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
+import { LastBackupLine } from "@/components/settings/LastBackupLine";
 import { ReminderSection } from "@/components/settings/ReminderSection";
 import { SetAsideRow } from "@/components/settings/SetAsideRow";
 import { SettingRow } from "@/components/settings/SettingRow";
@@ -621,6 +622,7 @@ export default function SettingsScreen() {
             disabled={backupBusy}
             onPress={confirmAuto}
           />
+          <LastBackupLine folderOn={autoFolder !== null} />
 
           <BackupSecurityRows disabled={backupBusy} />
 

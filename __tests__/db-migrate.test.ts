@@ -34,11 +34,13 @@ function makeClient(sqlite: Database.Database) {
  * *when* the runner calls it, and the tests below assert that against the schema, not the call.
  */
 const backupBeforeMigrations = jest.fn(() => Promise.resolve());
+/** The private copy kept whether or not a folder was picked; its own behaviour is in backupFiles. */
+const copyBeforeMigrations = jest.fn(() => Promise.resolve());
 
 function freshRunner(sqlite: Database.Database) {
   jest.resetModules();
   jest.doMock("../db/client", () => ({ db: { $client: makeClient(sqlite) } }));
-  jest.doMock("../src/autoBackup", () => ({ backupBeforeMigrations }));
+  jest.doMock("../src/autoBackup", () => ({ backupBeforeMigrations, copyBeforeMigrations }));
   return require("../db/migrate") as typeof import("../db/migrate");
 }
 
@@ -49,6 +51,8 @@ describe("db/migrate", () => {
     sqlite = new Database(":memory:");
     sqlite.pragma("foreign_keys = ON");
     backupBeforeMigrations.mockClear();
+    copyBeforeMigrations.mockReset();
+    copyBeforeMigrations.mockImplementation(() => Promise.resolve());
     backupBeforeMigrations.mockImplementation(() => Promise.resolve());
   });
 
@@ -120,6 +124,32 @@ describe("db/migrate", () => {
       .prepare("SELECT value FROM user_preferences WHERE key = 'language'")
       .get() as { value: string } | undefined;
     expect(kept?.value).toBe("fr");
+  });
+
+  it("keeps a private copy before an upgrade, and none on a fresh install", async () => {
+    // Fresh: nothing to lose, and VACUUM INTO of an empty file is noise.
+    await freshRunner(sqlite).ensureMigrations();
+    expect(copyBeforeMigrations).not.toHaveBeenCalled();
+
+    // An older database catching up: this is the copy a migration that succeeds and still
+    // destroys rows leaves the hero. It must run while the data is still the old data.
+    const old = new Database(":memory:");
+    try {
+      process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX = "0";
+      await freshRunner(old).ensureMigrations();
+      delete process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX;
+      copyBeforeMigrations.mockImplementation(() => {
+        const applied = old.prepare("SELECT COUNT(*) AS n FROM __drizzle_migrations").get() as {
+          n: number;
+        };
+        expect(applied.n).toBe(1);
+        return Promise.resolve();
+      });
+      await freshRunner(old).ensureMigrations();
+      expect(copyBeforeMigrations).toHaveBeenCalledTimes(1);
+    } finally {
+      old.close();
+    }
   });
 
   it("0038 names every session already in the journal", async () => {

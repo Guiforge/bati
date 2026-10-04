@@ -2,7 +2,12 @@ import { Directory } from "expo-file-system";
 import { dayKey } from "@/db/dates";
 import { preferences } from "@/db/preferences";
 import { errorTrail } from "@/db/sql";
-import { pickBackupFolder, preRestoreFileStem, saveBackupToFolder } from "@/src/backupFiles";
+import {
+  pickBackupFolder,
+  preRestoreFileStem,
+  saveBackupToFolder,
+  writePreMigrationCopy,
+} from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -92,12 +97,18 @@ export async function enableAutoBackup(): Promise<string | null> {
 
   await saveBackupToFolder(folder);
   await preferences.setBackupFolderUri(folder.uri);
+  // The copy just written is a backup: Settings and the "protect your hero" card read this day,
+  // and until the next launch's daily run it would say "never" about a folder that holds one.
+  await preferences.setLastAutoBackupDay(dayKey(new Date()));
   return backupFolderLabel(folder.uri);
 }
 
 /** Forgets the folder. The snapshots already written are the hero's, and stay where they are. */
 export async function disableAutoBackup(): Promise<void> {
   await preferences.clearBackupFolderUri();
+  // Off means no backup is being made: a day left behind would read as "last backup 3 days ago"
+  // beside a row that says Off.
+  await preferences.clearLastAutoBackupDay();
 }
 
 /**
@@ -147,6 +158,21 @@ export async function backupBeforeMigrations(): Promise<void> {
     //           rides along in the next bug-report mail. Add a counter when a real device
     //           produces a failure that recovers on its own.
     await disableAutoBackup().catch((e) => reportError("backup.auto.forget", e));
+  }
+}
+
+/**
+ * Keeps a private copy of the database before the migration runner touches it, folder or not.
+ *
+ * `backupBeforeMigrations` leaves a hero who never picked a folder with nothing, and a migration
+ * that commits and still loses rows is not undone by the runner's ROLLBACK. Never throws, for the
+ * same reason: an update must not fail because a copy could not be made.
+ */
+export async function copyBeforeMigrations(): Promise<void> {
+  try {
+    await writePreMigrationCopy();
+  } catch (error) {
+    reportError("backup.premigrate", error);
   }
 }
 

@@ -191,6 +191,7 @@ import {
   preRestoreFileStem,
   saveBackupToFolder,
   stageBackupForImport,
+  writePreMigrationCopy,
   writeSyncSnapshot,
 } from "@/src/backupFiles";
 
@@ -628,4 +629,45 @@ test("a phone locked out of its key writes no backup at all, rather than a plain
   await expect(exportBackup()).rejects.toThrow("Encryption is locked");
   expect(fs.__disk.size).toBe(0);
   mockCipher.status = "off";
+});
+
+describe("writePreMigrationCopy: the net under an update", () => {
+  test("leaves one readable copy next to the database, and no temp file", async () => {
+    await writePreMigrationCopy();
+
+    expect(fs.__disk.get(at("premigrate.db"))).toBe("snapshot");
+    expect(fs.__disk.has(at("premigrate.tmp.db"))).toBe(false);
+  });
+
+  test("a second update replaces the first copy and keeps it as the previous one", async () => {
+    write("premigrate.db", "the previous update's copy");
+    await writePreMigrationCopy();
+
+    expect(fs.__disk.get(at("premigrate.db"))).toBe("snapshot");
+    expect(fs.__disk.get(at("premigrate.prev.db"))).toBe("the previous update's copy");
+  });
+
+  test("a third update drops the oldest, so it never grows past two", async () => {
+    write("premigrate.db", "second");
+    write("premigrate.prev.db", "first");
+    await writePreMigrationCopy();
+
+    expect(fs.__disk.get(at("premigrate.prev.db"))).toBe("second");
+    expect(fs.__disk.has(at("premigrate.tmp.db"))).toBe(false);
+  });
+
+  test("a copy that dies halfway leaves no temp file that looks like a safety net", async () => {
+    fs.__control.failMoveInto = "premigrate.db";
+
+    await expect(writePreMigrationCopy()).rejects.toThrow("no space left on device");
+
+    expect(fs.__disk.has(at("premigrate.tmp.db"))).toBe(false);
+  });
+
+  test("an export sweep never takes it", async () => {
+    await writePreMigrationCopy();
+    await exportBackup();
+
+    expect(fs.__disk.has(at("premigrate.db"))).toBe(true);
+  });
 });

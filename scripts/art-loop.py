@@ -37,9 +37,13 @@ from PIL import Image, ImageDraw
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from lib.flux import ROOT, generate, record, seed_for  # noqa: E402
 
-REFS = ROOT / "scripts" / "pose-refs"
 # Not /tmp: a reboot wiped a whole run there, accepted candidates included.
 WORK = pathlib.Path(os.environ.get("ART_LOOP_DIR", pathlib.Path.home() / ".cache" / "bati-art-loop"))
+# The reference pictures stay out of the public repo: several are photographs of the maintainer.
+# They live in a private git repo of their own under WORK. Only their credits are public, beside
+# the art they license (the ledger pins each picture by sha256).
+REFS = WORK / "pose-refs"
+SOURCES = ROOT / "scripts" / "pose-refs"
 CANDIDATES = 4
 # ImageMagick stamps PNGs with the time they were written, so the same tracing redone later had
 # another hash and the provenance ledger could no longer pin it. Strip it.
@@ -710,7 +714,7 @@ def trace(slug: str, photo: str, choice: str) -> None:
         )
     source = json.loads(pathlib.Path(choice).read_text(encoding="utf-8"))
     keep = {k: source[k] for k in ("source_page", "image_url", "licence", "author") if k in source}
-    (REFS / f"{slug}.source.json").write_text(json.dumps(keep, indent=2, ensure_ascii=False) + "\n")
+    (SOURCES / f"{slug}.source.json").write_text(json.dumps(keep, indent=2, ensure_ascii=False) + "\n")
     print(out)
 
 
@@ -726,9 +730,8 @@ def accept(slug: str, candidate: str) -> None:
     for ref in entry.get("references", []):
         if not ref["path"].endswith((".traced.png", ".cutout.png")):
             continue  # a mannequin is ours
-        source = ROOT / ref["path"].replace(".traced.png", ".source.json").replace(
-            ".cutout.png", ".source.json"
-        )
+        name = pathlib.Path(ref["path"]).name
+        source = SOURCES / name.replace(".traced.png", ".source.json").replace(".cutout.png", ".source.json")
         if source.is_file():
             credit = json.loads(source.read_text(encoding="utf-8"))
             entry["derived_from"] = credit

@@ -289,7 +289,7 @@ def generate(
     if references:
         entry["references"] = [
             {
-                "path": str(r.relative_to(ROOT)) if r.is_relative_to(ROOT) else str(r),
+                "path": str(r.relative_to(ROOT)) if r.is_relative_to(ROOT) else r.name,
                 "sha256": hashlib.sha256(r.read_bytes()).hexdigest(),
             }
             for r in references

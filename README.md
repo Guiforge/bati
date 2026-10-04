@@ -255,8 +255,8 @@ for each one.
 
 The tuck planche takes its pose from a photograph by
 [Mr. Yoga](https://commons.wikimedia.org/wiki/File:Mr-yoga-pendant_pose.jpg) (CC BY-SA 4.0),
-reduced to its outline before FLUX redrew it. `scripts/pose-refs/` keeps every pose reference
-and its source.
+reduced to its outline before FLUX redrew it. `scripts/pose-refs/` keeps the source and licence
+of every pose reference.
 
 Two exceptions keep their own terms: the [game-icons.net](https://game-icons.net) set
 (CC BY 3.0 / CC0) and the store badges.

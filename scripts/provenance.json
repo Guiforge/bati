@@ -526,16 +526,26 @@
     }
   },
   "assets/images/exercises/chin_up.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "reference": "prepared reference `_chin_up_pose.png`",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "Redraw image 1 exactly: same athlete, same clothes, same camera from directly behind, same body position at the top of the pull, same single straight bar. Both hands stay closed tight around the bar, wrapped into fists, gripping it just as firmly as in image 1 -- no open hand, no spread fingers, no palm laid flat. Change ONE thing only: how each forearm is rolled. In image 1 the two thumbs point inward toward each other and the knuckles face us. Roll each forearm the other way, so that the two thumbs now point OUTWARD, away from each other, each toward its own side of the picture, and the knuckles are turned away and hidden from us. What we see on the near side of each closed fist is the soft heel of the palm and the smooth inner edge of the curled fingers, no knuckle and no fingernail anywhere. The height of the body does not change: the back of the head stays clearly ABOVE the bar line with the bar passing behind the neck, and both elbows stay folded shut exactly as in image 1. Everything else in the picture stays exactly as it is",
-    "seed": 1234,
-    "restyle": {
-      "note": "promoted by hand from a draw kept outside the ambiance batches — its own draw parameters are not recorded"
-    }
+    "licence": "derived work: pose taken from a photograph by Guillaume Pouyat (CC BY-SA 4.0 (own work)), redistributed under CC BY-SA 4.0",
+    "prompt": "Redraw image 1 as an illustration. Keep the person's body exactly as it is in image 1: every limb in the same place, the same joint angles, the same parts touching the floor, the same camera angle and framing. Change only how it is drawn and dressed: replace the photograph with the style described below, replace the clothes, remove the glasses, the watch and the patch of floor, and give the person a new face. The person becomes a fantasy athlete hero at the top of a chin-up on one plain horizontal bar: both hands grip the bar underhand, palms toward the face, elbows bent, the chin above the bar. Below the waist, which image 1 does not show, the knees are bent and the ankles crossed, both feet in the air with dark empty space beneath them, the whole body in the frame. No floor. The hero wears a fitted dark sleeveless top tucked in and dark shorts that reach the knees, barefoot. A thin pale blue light traces the outline of the arms. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3923989087,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-04",
+    "references": [
+      {
+        "path": "scripts/pose-refs/chin_up.cutout.png",
+        "sha256": "497471fdb588d3b81bbfa1654cef628538c4198f7696bc81b77a6985e03613cf"
+      }
+    ],
+    "derived_from": {
+      "source_page": "own photograph by the project maintainer, 2026-10",
+      "licence": "CC BY-SA 4.0 (own work)",
+      "author": "Guillaume Pouyat"
+    },
+    "reencoded": "cwebp -q 85, from chin_up.jpg"
   },
   "assets/images/exercises/cobra_stretch.webp": {
     "model": "flux-2-pro",
@@ -773,20 +783,26 @@
     }
   },
   "assets/images/exercises/hollow_body_hold.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "reference": "none — text-only prompt",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "seed": 1234,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "nebuleuse",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "derived work: pose taken from a photograph by Guillaume Pouyat (CC BY-SA 4.0 (own work)), redistributed under CC BY-SA 4.0",
+    "prompt": "Redraw image 1 as an illustration. Keep the person's body exactly as it is in image 1: every limb in the same place, the same joint angles, the same parts touching the floor, the same camera angle and framing. Change only how it is drawn and dressed: replace the photograph with the style described below, replace the clothes, remove the glasses, the watch and the patch of floor, and give the person a new face. The person becomes a fantasy athlete hero lying on the back, the lower back on the floor, the shoulders and the straight legs lifted off the floor, the arms stretched straight past the head. The hero wears a fitted dark sleeveless top tucked in and dark shorts that reach the knees, barefoot. A thin cyan light traces the outline of the stomach. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 3954818151,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-04",
+    "references": [
+      {
+        "path": "scripts/pose-refs/hollow_body_hold.cutout.png",
+        "sha256": "207f2243af71f98b4684b76c2888a472d440c8e7770d2125df225a0cdede942b"
+      }
+    ],
+    "derived_from": {
+      "source_page": "own photograph by the project maintainer, 2026-10",
+      "licence": "CC BY-SA 4.0 (own work)",
+      "author": "Guillaume Pouyat"
+    },
+    "reencoded": "cwebp -q 85, from hollow_body_hold.jpg"
   },
   "assets/images/exercises/inverted_row.webp": {
     "model": "flux-2-pro",
@@ -972,21 +988,26 @@
     }
   },
   "assets/images/exercises/pike_pushup.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
-    "reference": "everkinetic frame `pike-push-up-1` via bryllim/workout-guide",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "Strict side view, the athlete facing left, at the bottom of a pike push-up: the body is folded into a sharp upside-down V and the hips are the highest point of the whole picture. The legs run straight down from the hips to the floor behind. The head is low, near the floor, just in front of the hands. We see the athlete from exactly side-on, so only ONE arm and ONE leg are drawn: the near arm runs from the shoulder down to a hand flat on the floor, complete and unbroken from shoulder to elbow to wrist to fingers, and the far arm is entirely hidden behind it -- no second hand, no second forearm and no floating hand appears anywhere near the face. The near leg likewise hides the far one, one shoe on the floor. The athlete wears a plain fitted dark short-sleeved t-shirt and dark shorts, and the lower legs are bare skin",
-    "seed": 1234,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "donjon",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "derived work: pose taken from a photograph by Guillaume Pouyat (CC BY-SA 4.0 (own work)), redistributed under CC BY-SA 4.0",
+    "prompt": "Redraw image 1 as an illustration. Keep the person's body exactly as it is in image 1: every limb in the same place, the same joint angles, the same parts touching the floor, the same camera angle and framing. Change only how it is drawn and dressed: replace the photograph with the style described below, replace the clothes, remove the glasses, the watch and the patch of floor, and give the person a new face. The person becomes a fantasy athlete hero in a pike push-up: hips the highest point, legs straight, elbows bent, the top of the head lowered toward the floor between the hands. The hero wears a fitted dark sleeveless top tucked in and dark shorts that reach the knees, barefoot. A thin amber light traces the outline of the shoulders. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 753220968,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-04",
+    "references": [
+      {
+        "path": "scripts/pose-refs/pike_pushup.cutout.png",
+        "sha256": "389c8d970d68a611072a28a2071506d6d607b772d85ccc469f25b07c984535fe"
+      }
+    ],
+    "derived_from": {
+      "source_page": "own photograph by the project maintainer, 2026-10",
+      "licence": "CC BY-SA 4.0 (own work)",
+      "author": "Guillaume Pouyat"
+    },
+    "reencoded": "cwebp -q 85, from pike_pushup.jpg"
   },
   "assets/images/exercises/pistol_squat.webp": {
     "model": "flux-2-pro",
@@ -1076,21 +1097,25 @@
   "assets/images/exercises/russian_twist.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A fantasy athlete hero seated on the floor, seen from a three-quarter front angle, leaning back so the torso makes a wide V with the thighs. The knees are bent and BOTH feet are raised until both heels hover at the same height as the knees, high in the air, with a wide band of dark floor visible underneath the calves and the heels — the seat is the only part of the body touching the floor and neither shoe is anywhere near it. The two hands are clasped together and carried right across to one side, held low beside the right hip and outside the line of the body, and the shoulders and chest have turned to follow them so the torso faces off to that side while the knees still point forward. The obliques glow with electric-blue energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
-    "seed": 933091369,
+    "licence": "derived work: pose taken from a photograph by Guillaume Pouyat (CC BY-SA 4.0 (own work)), redistributed under CC BY-SA 4.0",
+    "prompt": "Redraw image 1 as an illustration. Keep the person's body exactly as it is in image 1: every limb in the same place, the same joint angles, the same parts touching the floor, the same camera angle and framing. Change only how it is drawn and dressed: replace the photograph with the style described below, replace the clothes, remove the glasses, the watch and the patch of floor, and give the person a new face. The person becomes a fantasy athlete hero sitting on the floor, knees bent, both feet lifted off the floor, torso leaning back, hands together in front of the chest. The hero wears a fitted dark sleeveless top tucked in and dark shorts that reach the knees, barefoot. A thin cyan light traces the outline of the waist. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 933111349,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-17",
+    "generated": "2026-10-04",
+    "references": [
+      {
+        "path": "scripts/pose-refs/russian_twist.cutout.png",
+        "sha256": "272b288c94a4597a3f96470155a516ed2666960dd9c1273a0b8a09559e3df163"
+      }
+    ],
+    "derived_from": {
+      "source_page": "own photograph by the project maintainer, 2026-10",
+      "licence": "CC BY-SA 4.0 (own work)",
+      "author": "Guillaume Pouyat"
+    },
     "reencoded": "cwebp -q 85, from russian_twist.jpg",
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "braise",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "edited": "50 px border cropped off (FLUX drew a frame), resized back to 1280"
   },
   "assets/images/exercises/scapular_pullup.webp": {
     "model": "flux-2-pro",
@@ -1163,21 +1188,24 @@
   "assets/images/exercises/skater_hop.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A fantasy athlete hero mid lateral bound, landing on one bent leg with the free leg crossing behind, arms swept across the body, motion streaks trailing sideways; the legs glow with warm golden energy. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
-    "seed": 2554704887,
+    "licence": "derived work: pose taken from a photograph by Guillaume Pouyat (CC BY-SA 4.0 (own work)), redistributed under CC BY-SA 4.0",
+    "prompt": "Redraw image 1 as an illustration. Keep the person's body exactly as it is in image 1: every limb in the same place, the same joint angles, the same parts touching the floor, the same camera angle and framing. Change only how it is drawn and dressed: replace the photograph with the style described below, replace the clothes, remove the glasses, the watch and the patch of floor, and give the person a new face. The person becomes a fantasy athlete hero landing a sideways bound on one foot, the other leg lifted behind. The hero wears a fitted dark sleeveless top tucked in and dark shorts that reach the knees, barefoot. A thin cyan light traces the outline of the thighs. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2554724887,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02",
-    "reencoded": "cwebp -q 85, from skater_hop.jpg",
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "forge",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "generated": "2026-10-04",
+    "references": [
+      {
+        "path": "scripts/pose-refs/skater_hop.cutout.png",
+        "sha256": "89825c649193e69c8001725d9de316de8e1d1b4ad49afb83730d6f19cd3bf975"
+      }
+    ],
+    "derived_from": {
+      "source_page": "own photograph by the project maintainer, 2026-10",
+      "licence": "CC BY-SA 4.0 (own work)",
+      "author": "Guillaume Pouyat"
+    },
+    "reencoded": "cwebp -q 85, from skater_hop.jpg"
   },
   "assets/images/exercises/squat.webp": {
     "model": "flux-2-pro",
@@ -1320,20 +1348,26 @@
     }
   },
   "assets/images/exercises/towel_door_row.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "reference": "none — text-only prompt",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "note": "seed not recorded — image carried over from an earlier campaign",
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "voile",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "derived work: pose taken from a photograph by Guillaume Pouyat (CC BY-SA 4.0 (own work)), redistributed under CC BY-SA 4.0",
+    "prompt": "Redraw image 1 as an illustration. Keep the person's body exactly as it is in image 1: every limb in the same place, the same joint angles, the same parts touching the floor, the same camera angle and framing. Change only how it is drawn and dressed: replace the photograph with the style described below, replace the clothes, remove the glasses, the watch and the patch of floor, and give the person a new face. The person becomes a fantasy athlete hero leaning back away from a closed door, holding the two ends of a towel looped around the door handle, arms straight, feet planted at the foot of the door. The door, its handle and the towel stay; the plant and the wall around the door become the dark background. The hero wears a fitted dark sleeveless top tucked in and dark shorts that reach the knees, barefoot. A thin pale blue light traces the outline of the arms and back. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2808818972,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-04",
+    "references": [
+      {
+        "path": "scripts/pose-refs/towel_door_row.cutout.png",
+        "sha256": "a7900658f0164cd889f6a6a0873416bf605209bb9bff1ca7261d9606caa20fcc"
+      }
+    ],
+    "derived_from": {
+      "source_page": "own photograph by the project maintainer, 2026-10",
+      "licence": "CC BY-SA 4.0 (own work)",
+      "author": "Guillaume Pouyat"
+    },
+    "reencoded": "cwebp -q 85, from towel_door_row.jpg"
   },
   "assets/images/exercises/tuck_l_sit.webp": {
     "model": "flux-2-pro",
@@ -1450,21 +1484,24 @@
   "assets/images/exercises/windshield_wipers.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A fantasy athlete hero lying on their back with arms stretched out to the sides and straight legs held together, rotated to one side in a sweeping arc with motion streaks; the obliques glow with electric-blue energy, seen from above. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
-    "seed": 783290121,
+    "licence": "derived work: pose taken from a photograph by Guillaume Pouyat (CC BY-SA 4.0 (own work)), redistributed under CC BY-SA 4.0",
+    "prompt": "Redraw image 1 as an illustration. Keep the person's body exactly as it is in image 1: every limb in the same place, the same joint angles, the same parts touching the floor, the same camera angle and framing. Change only how it is drawn and dressed: replace the photograph with the style described below, replace the clothes, remove the glasses, the watch and the patch of floor, and give the person a new face. The person becomes a fantasy athlete hero lying on the back, both arms out to the sides on the floor, both legs raised together and tipped over to one side. The hero wears a fitted dark sleeveless top tucked in and dark shorts that reach the knees, barefoot. A thin cyan light traces the outline of the waist. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 783310117,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02",
-    "reencoded": "cwebp -q 85, from windshield_wipers.jpg",
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (single redraw) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "voile",
-      "seed": 101,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "generated": "2026-10-04",
+    "references": [
+      {
+        "path": "scripts/pose-refs/windshield_wipers.cutout.png",
+        "sha256": "f810f314c23dee6d23bf684ed94b2e2c234adc54e41a7e5db64f2b4498c69cc9"
+      }
+    ],
+    "derived_from": {
+      "source_page": "own photograph by the project maintainer, 2026-10",
+      "licence": "CC BY-SA 4.0 (own work)",
+      "author": "Guillaume Pouyat"
+    },
+    "reencoded": "cwebp -q 85, from windshield_wipers.jpg"
   },
   "assets/images/exercises/worlds_greatest_stretch.webp": {
     "model": "flux-2-pro",

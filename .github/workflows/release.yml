@@ -63,7 +63,7 @@ jobs:
       - run: npx tsc --noEmit --project tsconfig.json
       # Pillow decodes the boss art for __tests__/boss-art-frames.test.ts, which fails in CI without it.
       - run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends python3-pil
-      - run: npm test
+      - run: npm test -- --coverage
       - run: npm run deadcode
 
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1

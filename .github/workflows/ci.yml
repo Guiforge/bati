@@ -28,7 +28,7 @@ jobs:
       - run: npx tsc --noEmit --project tsconfig.json
       # Pillow decodes the boss art for __tests__/boss-art-frames.test.ts, which fails in CI without it.
       - run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends python3-pil
-      - run: npm test
+      - run: npm test -- --coverage
       # Dead code is a correctness problem, not tidiness: saveSessionState() had five tests and
       # no callers, which is how its payload drifted from the real writer's unnoticed. Knip is at
       # zero; anything it reports is new.

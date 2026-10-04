@@ -157,7 +157,6 @@
         "functions": 88
       }
     },
-    "collectCoverage": true,
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.ts"
     ]

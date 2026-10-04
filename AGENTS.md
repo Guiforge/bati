@@ -17,82 +17,15 @@ SQLite + Drizzle for offline-first persistence and Expo Router for navigation.
 - Keep changes small, testable, and aligned with the existing architecture.
 - When you touch durable product or technical knowledge, update the docs wiki too.
 
-## Setup
+## Running and measuring builds
 
-- Install dependencies: `npm install`
-- Start the app: `npm start`
-- Android: `npm run android`
-- iOS: `npm run ios`
-- Web: `npm run web`
-
-## Running a dev build next to the release
-
-**Expo Go cannot run this app.** [`index.ts`](index.ts) registers the widget task handler from
-`react-native-android-widget` at the entry point, and Expo Go does not ship that native module —
-it fails before the first screen. Same for the two config plugins under `plugins/`. Use a dev
-build (`expo-dev-client` is already installed).
-
-Debug builds carry an `applicationIdSuffix` of `.dev`
-([`plugins/withAndroidLocalAppId.js`](plugins/withAndroidLocalAppId.js)), so
-`com.guiforge.bati.dev` installs *beside* an existing release instead of colliding with it.
-Without it, Android rejects the install (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`, the two variants
-are signed with different keys) and the usual workaround — uninstalling — takes the SQLite
-database with it.
-
-```bash
-npx expo run:android          # builds + installs com.guiforge.bati.dev, once
-npx expo start --dev-client   # afterwards, just this
-```
-
-The dev app has its own sandbox: empty database, so expect to redo onboarding. Both apps claim
-the `bati://` scheme, so Android asks which one to open for a deep link. The **release** id stays
-exactly `com.guiforge.bati` — suffixing it would orphan every installed copy.
-
-## Measuring like the release, without measuring the release
-
-Never take a performance number in dev. The dev bundle is several times heavier, `__DEV__`
-branches run, `console.*` is not stripped, and Hermes is not in the same conditions — the number
-means nothing. Two ways to get production conditions locally.
-
-**Production JS in the dev app.** No build, seconds:
-
-```bash
-npx expo start --dev-client --no-dev --minify
-```
-
-Minified bundle, `__DEV__` false, React in production mode. Good for jank, FPS and render work.
-Useless for cold start: the bundle still arrives over HTTP from Metro.
-
-**A real release build, installed beside everything else.** The only thing a TTI number can come
-from:
-
-```bash
-npm run android:release   # installs com.guiforge.bati.perf
-adb shell am start -W -S -n com.guiforge.bati.perf/com.guiforge.bati.MainActivity
-```
-
-On the home screen it is `Bati (perf)` behind a cyan icon, next to `Bati (dev)` in amber and the
-real `Bati` in the app's own navy — three identical launchers under three identical names is how
-the wrong app gets measured.
-
-The `.perf` suffix is what keeps it off the real app
-([`plugins/withAndroidLocalAppId.js`](plugins/withAndroidLocalAppId.js), on
-`-PbatiLocalId`). Without it a local release build installs *over* the installed release, and on
-a machine with no release key that build is debug-signed — Android refuses the update, and the
-tempting fix takes the database. Nothing in CI or in the F-Droid recipe passes the flag, so the
-published id stays exactly `com.guiforge.bati`.
-
-R8 and resource shrinking are the default now
-([`plugins/withAndroidReleaseFlags.js`](plugins/withAndroidReleaseFlags.js)), so this really is
-the shipped build rather than a release variant with the expensive parts switched off. Expect the
-first one to be slow: `expo.autolinking.buildFromSource` compiles every Expo module.
+Expo Go cannot run this app; use the dev build. Never uninstall an installed Bati to fix
+`INSTALL_FAILED_UPDATE_INCOMPATIBLE`: it deletes the SQLite database. Never take a performance
+number in dev. The `android-builds` skill (`.claude/skills/android-builds/SKILL.md`) has the
+dev, `--no-dev --minify` and `.perf` release workflows.
 
 ## Checks
 
-- Type/style check: `npm run check`
-- Formatting: `npm run format`
-- Tests: `npm test`
-- Watch tests: `npm run test:watch`
 - Dead code: `npm run deadcode` — named for the job, not for knip, because a script sharing a
   name with its own binary in `node_modules/.bin` is one of the things `expo-doctor` fails on.
 - Dependencies and project shape: `npx expo-doctor`, green at 20/20 since 2026-08-17 and a CI
@@ -309,42 +242,11 @@ What to know before touching a migration or a formula:
 
 ## Releases
 
-Commit to main; the hooks and CI are the gate, not a review step. Cutting a release is one
-command:
-
-```bash
-npm run release            # 1.0.0 -> 1.0.1
-npm run release -- minor   # 1.0.0 -> 1.1.0
-```
-
-It refuses a dirty tree, refuses a branch other than main, refuses to run when main and origin
-disagree, bumps `package.json` **and** `app.json` together, tags, and pushes. The tag is what
-[`.github/workflows/release.yml`](.github/workflows/release.yml) watches: it re-runs every gate,
-builds the APK (arm64-only, R8-minified — the R8 switches default to on in
-`plugins/withAndroidReleaseFlags.js`, so the `-P` flags the workflow and
-`fdroid/fdroiddata-recipe.yml` still pass are belt-and-braces rather than the source), and publishes it as a GitHub
-Release.
-
-No store is involved yet. [`docs/fdroid.md`](docs/fdroid.md) covers the F-Droid repository that
-turns those APKs into something that updates itself, and `docs/planning/roadmap.md` §1 covers
-the stores.
-
-The release keystore exists since 2026-07-31 and is wired through
-[`plugins/withAndroidReleaseSigning.js`](plugins/withAndroidReleaseSigning.js); a signed build was
-verified with `apksigner`. It is the one irreversible asset here — lose it and the published app
-can never be updated again.
-
-Two things to know before tagging:
-
-- **Write the changelog first.** `fastlane/metadata/android/*/changelogs/<versionCode>.txt` is
-  named after the integer, not the version string, and a missing file fails silently — the entry
-  just has no notes. `npx expo config --type public | grep versionCode` tells you the number.
-  The same file is what the app shows after an update (`app.config.js` embeds it, see
-  `src/whatsNew.ts`), so write it for a hero, not only for a store page.
-- **Expo modules build from source** (`expo.autolinking.buildFromSource` in `package.json`), which
-  is what lets F-Droid reproduce the build and costs a much slower one. `release.yml` also accepts
-  `workflow_dispatch`, and its publish step is guarded by `startsWith(github.ref, 'refs/tags/')` —
-  so you can run it on a branch to build the APK as an artefact without publishing anything.
+Commit to main; the hooks and CI are the gate, not a review step. `npm run release` cuts a
+release; the `release` skill (`.claude/skills/release/SKILL.md`) covers changelogs, the tag
+workflow and F-Droid. The release keystore
+([`plugins/withAndroidReleaseSigning.js`](plugins/withAndroidReleaseSigning.js)) is the one
+irreversible asset here: lose it and the published app can never be updated again.
 
 ## Git hooks
 
@@ -363,10 +265,12 @@ Managed by [prek](https://github.com/j178/prek) via [`.pre-commit-config.yaml`](
 Unlike lint-staged, prek does not re-stage files it rewrote: the commit fails with
 "files were modified by this hook", so `git add` the fixes and commit again.
 
-## Database commands
+## Database migrations
 
-- Generate Drizzle output: `npm run db:generate`
-- Push the schema: `npm run db:push`
+Migrations are hand-written, and registered by hand in `drizzle/migrations.js` and
+`drizzle/meta/_journal.json`. Never commit `npm run db:generate` output unread: the snapshots stop
+at 0025, so it re-emits every later change and the result breaks the database. The
+`drizzle-migration` skill has the full procedure.
 
 ## Docs conventions
 
@@ -379,6 +283,4 @@ under `../proj/wiki/projets/` when it exists.
 
 ## Shell usage
 
-- Prefer the repo helper wrapper `rtk` for shell commands when available.
-- Read before writing: inspect the relevant file(s) before editing.
 - If a command fails because of the environment, stop and diagnose rather than guessing.

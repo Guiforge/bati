@@ -1060,21 +1060,37 @@
     }
   },
   "assets/images/exercises/pike_pushup.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
     "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
-    "reference": "everkinetic frame `pike-push-up-1` via bryllim/workout-guide",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "Strict side view, the athlete facing left, at the bottom of a pike push-up: the body is folded into a sharp upside-down V and the hips are the highest point of the whole picture. The legs run straight down from the hips to the floor behind. The head is low, near the floor, just in front of the hands. We see the athlete from exactly side-on, so only ONE arm and ONE leg are drawn: the near arm runs from the shoulder down to a hand flat on the floor, complete and unbroken from shoulder to elbow to wrist to fingers, and the far arm is entirely hidden behind it -- no second hand, no second forearm and no floating hand appears anywhere near the face. The near leg likewise hides the far one, one shoe on the floor. The athlete wears a plain fitted dark short-sleeved t-shirt and dark shorts, and the lower legs are bare skin",
-    "seed": 1234,
-    "restyle": {
+    "prompt": "Edit image 1. Change only the head and the arms: the elbows bend more so the top of the head comes down toward the floor, just in front of the hands, and the eyes look back toward the feet. The hips stay the highest point and the legs stay straight. Keep everything else exactly as it is: the same hero, face, outfit, art style, dark background and camera angle.",
+    "seed": null,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-04",
+    "edited_from": {
+      "path": "assets/images/exercises/pike_pushup.webp",
+      "commit": "074cc580",
+      "how": "FLUX 3 Image edit of the shipped picture, grounding off"
+    },
+    "edit_of": {
       "model": "flux-2-pro",
       "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "donjon",
+      "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
+      "reference": "everkinetic frame `pike-push-up-1` via bryllim/workout-guide",
+      "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
+      "prompt": "Strict side view, the athlete facing left, at the bottom of a pike push-up: the body is folded into a sharp upside-down V and the hips are the highest point of the whole picture. The legs run straight down from the hips to the floor behind. The head is low, near the floor, just in front of the hands. We see the athlete from exactly side-on, so only ONE arm and ONE leg are drawn: the near arm runs from the shoulder down to a hand flat on the floor, complete and unbroken from shoulder to elbow to wrist to fingers, and the far arm is entirely hidden behind it -- no second hand, no second forearm and no floating hand appears anywhere near the face. The near leg likewise hides the far one, one shoe on the floor. The athlete wears a plain fitted dark short-sleeved t-shirt and dark shorts, and the lower legs are bare skin",
       "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+      "restyle": {
+        "model": "flux-2-pro",
+        "provider": "Black Forest Labs (direct API)",
+        "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
+        "background": "donjon",
+        "seed": 1234,
+        "licence": "restyle of the render above — same licence, no new source introduced"
+      }
+    },
+    "reencoded": "cwebp -q 85, from pike_pushup.jpg"
   },
   "assets/images/exercises/pistol_squat.webp": {
     "model": "flux-2-pro",
@@ -1359,14 +1375,30 @@
     }
   },
   "assets/images/exercises/table_row.webp": {
-    "model": "flux-2-pro-preview",
+    "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
     "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
-    "prompt": "A fantasy athlete hero lying face-up beneath a heavy wooden table, both hands gripping its edge, body held rigid in a straight line from heels to shoulders as they pull their chest up toward the underside of the table; the back and arm muscles glow with silver-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
-    "seed": 2379578559,
+    "prompt": "Edit image 1. Change only the legs: bend both knees to a right angle and put both feet flat on the floor, so the body forms one straight inclined line from the knees to the shoulders under the table edge. Hands keep gripping the table edge. Keep everything else exactly as it is: the same hero, face, outfit, art style, dark background and camera angle.",
+    "seed": null,
     "width": 1280,
     "height": 1280,
-    "generated": "2026-08-02",
+    "generated": "2026-10-04",
+    "edited_from": {
+      "path": "assets/images/exercises/table_row.webp",
+      "commit": "074cc580",
+      "how": "FLUX 3 Image edit of the shipped picture, grounding off"
+    },
+    "edit_of": {
+      "model": "flux-2-pro-preview",
+      "provider": "Black Forest Labs (direct API)",
+      "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+      "prompt": "A fantasy athlete hero lying face-up beneath a heavy wooden table, both hands gripping its edge, body held rigid in a straight line from heels to shoulders as they pull their chest up toward the underside of the table; the back and arm muscles glow with silver-blue energy, seen from the side. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+      "seed": 2379578559,
+      "width": 1280,
+      "height": 1280,
+      "generated": "2026-08-02",
+      "reencoded": "cwebp -q 85, from table_row.jpg"
+    },
     "reencoded": "cwebp -q 85, from table_row.jpg"
   },
   "assets/images/exercises/thread_the_needle.webp": {

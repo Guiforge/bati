@@ -41,6 +41,9 @@ REFS = ROOT / "scripts" / "pose-refs"
 # Not /tmp: a reboot wiped a whole run there, accepted candidates included.
 WORK = pathlib.Path(os.environ.get("ART_LOOP_DIR", pathlib.Path.home() / ".cache" / "bati-art-loop"))
 CANDIDATES = 4
+# ImageMagick stamps PNGs with the time they were written, so the same tracing redone later had
+# another hash and the provenance ledger could no longer pin it. Strip it.
+REPRODUCIBLE = ("-strip", "-define", "png:exclude-chunks=date,time")
 
 BG, TORSO, NEAR, FAR, PROP = "#0B0F19", "#9AA3B5", "#F28C28", "#3BA7E8", "#6B7280"
 
@@ -692,7 +695,7 @@ def trace(slug: str, photo: str, choice: str) -> None:
     if has_alpha:
         subprocess.run(
             ["magick", photo, "-resize", "900x900", "-background", BG, "-flatten",
-             "-gravity", "center", "-extent", "1024x1024", str(out)],
+             "-gravity", "center", "-extent", "1024x1024", *REPRODUCIBLE, str(out)],
             check=True,
         )
     else:
@@ -702,7 +705,7 @@ def trace(slug: str, photo: str, choice: str) -> None:
              "-canny", "0x1+6%+20%", "-threshold", "50%", "-morphology", "Dilate", "Disk:1.5",
              "-colorspace", "sRGB", "-fill", "#C8D0DC", "-opaque", "white", "-fill", BG,
              "-opaque", "black", "-gravity", "center", "-background", BG, "-extent", "1024x1024",
-             str(out)],
+             *REPRODUCIBLE, str(out)],
             check=True,
         )
     source = json.loads(pathlib.Path(choice).read_text(encoding="utf-8"))

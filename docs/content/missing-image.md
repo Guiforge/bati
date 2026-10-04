@@ -727,10 +727,7 @@ exactly (`thread_the_needle` shipped from it). Because it is copied exactly, the
 the final position, from the side, with no glasses, watch or long trousers: each of those came
 back in the drawing.
 
-Still open, each needing a photograph of a real person in the pose (no freely licensed one
-exists): `windshield_wipers`, `russian_twist`, `hollow_body_hold`,
-`pike_pushup`, `skater_hop`, `towel_door_row`, `dragon_flag`, `chin_up` (the grip),
-plus the never-attempted `pigeon_pose`, `cobra_stretch`, `toes_to_bar`, `table_row`.
+Still open (2026-10-04): `cobra_stretch` and `pigeon_pose` have PoseMy.Art captures ready (kept out of the repo: its terms allow using the screenshots, not redistributing them); `toes_to_bar`, `dragon_flag` and `table_row` need a photograph or a hand-posed capture; `handstand_pushup` and `knee_pushup` were judged weaker than hoped by the maintainer and wait for another pass; `standing_calf_raise` went back to its old picture, which the maintainer preferred.
 
 The original findings, confirmed by looking, in order of how badly they mislead:
 

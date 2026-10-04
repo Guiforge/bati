@@ -838,21 +838,21 @@
     }
   },
   "assets/images/exercises/knee_pushup.webp": {
-    "model": "flux-2-pro",
+    "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",
-    "licence": "derived work: redrawn by FLUX from an Everkinetic anatomical study (CC BY-SA 4.0, via bryllim/workout-guide) — redistributed under CC BY-SA 4.0, share-alike applies to the image, not to the app code",
-    "reference": "everkinetic frame `knee-push-up-1` via bryllim/workout-guide",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "The athlete is at the very bottom of a push-up done on the knees, seen from in front and slightly above, the chest only a hand's width above the floor. Both palms are flat on the floor level with the chest, fingers spread, five fingers on each hand, and both elbows are bent and point backward and outward. Both knees rest on the floor and carry the weight; head, back and thighs form one straight slanted line down to those knees. Behind the knees the two shins rise up into the air and the two dark low shoes are lifted well clear of the floor, soles turned upward. Between the knees and the shoes nothing touches down. The face is turned toward the viewer, chin up",
-    "seed": 1234,
-    "restyle": {
-      "model": "flux-2-pro",
-      "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "forge",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
-    }
+    "licence": "FLUX licence §2(d): outputs usable for any purpose, including commercial",
+    "prompt": "Image 1 is a rough 3D mannequin render that fixes the exact pose and camera angle. Orange limbs are the body's left side, blue limbs its right side, grey is the trunk and head, and the dark plane is the floor. Draw the hero in precisely this pose: the same joint angles, the same parts of the body touching the floor or the equipment, the same viewpoint. Draw a real person in the style described below; nothing of the mannequin, its colours or its rounded tube shapes appears in the picture, and the floor stays the same dark navy as the background, unlit. Seen from the side and slightly above, a fantasy athlete hero at the lowest point of a push-up resting on both knees. Both kneecaps touch the floor; both shins lie flat on the floor behind, side by side with a hand's width between them, the tops of the two feet flat on the floor and the toes pointing backwards. The thighs rise from the knees in one straight line through the hips, back and head. The hands are flat on the floor under the shoulders, the elbows bent at a right angle and tucked along the ribs, the chest a short gap above the floor. The hero wears a fitted dark sleeveless top tucked in and dark shorts that reach the knees, barefoot. A thin orange light traces the outline of the arms and chest. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 2335015826,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-04",
+    "references": [
+      {
+        "path": "scripts/pose-refs/knee_pushup.3d.png",
+        "sha256": "5000e13334e3f0c1f96da65678ac8e53951f7068b93b74cd280f11ebc5e110fb"
+      }
+    ],
+    "reencoded": "cwebp -q 85, from knee_pushup.jpg"
   },
   "assets/images/exercises/l_sit.webp": {
     "model": "flux-2-pro",

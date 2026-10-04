@@ -63,6 +63,18 @@ TRACED_PREAMBLE = (
     "in it that the description below does not name is left out."
 )
 
+# For a 3D mannequin render (see `render3d`): volume and a cast shadow carry the depth that a flat
+# stick figure lost on every floor pose.
+PREAMBLE3D = (
+    "Image 1 is a rough 3D mannequin render that fixes the exact pose and camera angle. Orange "
+    "limbs are the body's left side, blue limbs its right side, grey is the trunk and head, and "
+    "the dark plane is the floor. Draw the hero in precisely this pose: the same joint angles, "
+    "the same parts of the body touching the floor or the equipment, the same viewpoint. Draw a "
+    "real person in the style described below; nothing of the mannequin, its colours or its "
+    "rounded tube shapes appears in the picture, and the floor stays the same dark navy as the "
+    "background, unlit."
+)
+
 # Joints on a 1024 canvas, y downwards. Each limb is a polyline of joints; `far` is drawn first,
 # then the torso, then `near`, which is the whole occlusion model and all it needs to be.
 POSES = {
@@ -312,6 +324,248 @@ _SIDE = {
 for _slug, _pose in _SIDE.items():
     POSES[_slug].update(_pose)
 
+# 3D poses for scripts/pose3d.py: joint positions in metres, x right, y away from the camera,
+# z up. One skeleton for every pose, so only the joints change. The body's left limbs render
+# warm and its right limbs cool, which is what keeps a crossed or threaded limb readable.
+LIMBS3D = [
+    ("neck", "pelvis", 0.13, "trunk"),
+    ("neck", "l_shoulder", 0.06, "trunk"), ("neck", "r_shoulder", 0.06, "trunk"),
+    ("pelvis", "l_hip", 0.09, "trunk"), ("pelvis", "r_hip", 0.09, "trunk"),
+    ("l_shoulder", "l_elbow", 0.05, "left"), ("l_elbow", "l_wrist", 0.042, "left"),
+    ("r_shoulder", "r_elbow", 0.05, "right"), ("r_elbow", "r_wrist", 0.042, "right"),
+    ("l_hip", "l_knee", 0.07, "left"), ("l_knee", "l_ankle", 0.055, "left"),
+    ("l_ankle", "l_toe", 0.04, "left"),
+    ("r_hip", "r_knee", 0.07, "right"), ("r_knee", "r_ankle", 0.055, "right"),
+    ("r_ankle", "r_toe", 0.04, "right"),
+]
+POSES3D: dict[str, dict] = {
+    # Lying face up, head toward +x, arms in a T along y, legs raised and leaning to the left
+    # (-y) at 45 degrees: mid-sweep. Seen from beyond the feet, a little above.
+    "windshield_wipers": {
+        "joints": {
+            "head": (1.02, 0, 0.1), "neck": (0.78, 0, 0.09), "pelvis": (0.2, 0, 0.09),
+            "l_shoulder": (0.72, -0.2, 0.08), "r_shoulder": (0.72, 0.2, 0.08),
+            "l_elbow": (0.72, -0.5, 0.05), "r_elbow": (0.72, 0.5, 0.05),
+            "l_wrist": (0.72, -0.8, 0.04), "r_wrist": (0.72, 0.8, 0.04),
+            "l_hip": (0.12, -0.07, 0.09), "r_hip": (0.12, 0.07, 0.09),
+            "l_knee": (0.11, -0.38, 0.4), "r_knee": (0.11, -0.24, 0.4),
+            "l_ankle": (0.1, -0.69, 0.71), "r_ankle": (0.1, -0.55, 0.71),
+            "l_toe": (0.1, -0.76, 0.78), "r_toe": (0.1, -0.62, 0.78),
+        },
+        # From the head end, about 55 degrees up: from straight above the raised legs flattened
+        # onto the floor (a5); from low beyond the feet they read as a V-up (a4). Legs straight
+        # at 45 degrees, toes in line, so no segment reads as a bent knee or a planted foot.
+        "camera": {"at": (2.3, -0.5, 2.6), "look": (0.35, -0.25, 0.25), "lens": 45},
+    },
+}
+
+
+def _pair(name, left, right):
+    """`name` on both sides: the left joint at `left`, the right one at `right`."""
+    return {f"l_{name}": left, f"r_{name}": right}
+
+
+def _joints(head, neck, pelvis, *pairs):
+    joints = {"head": head, "neck": neck, "pelvis": pelvis}
+    for pair in pairs:
+        joints.update(pair)
+    return joints
+
+
+_SIDE_CAM = {"at": (0.0, -3.4, 0.7), "look": (0.0, 0.0, 0.3), "lens": 50}
+
+# Facing +x unless said otherwise, so the body's right side is -y, toward a side camera.
+POSES3D.update({
+    "knee_pushup": {
+        # Knees on the floor and the thighs rising from them: with a 15-degree knee bend the
+        # render read as a push-up on the toes (judge, a5). Shins flat, tops of the feet down.
+        "joints": _joints((0.92, 0, 0.42), (0.69, 0, 0.36), (0.15, 0, 0.19),
+                          _pair("shoulder", (0.66, 0.2, 0.34), (0.66, -0.2, 0.34)),
+                          _pair("elbow", (0.44, 0.28, 0.3), (0.44, -0.28, 0.3)),
+                          _pair("wrist", (0.46, 0.28, 0.02), (0.46, -0.28, 0.02)),
+                          _pair("hip", (0.17, 0.1, 0.19), (0.17, -0.1, 0.19)),
+                          _pair("knee", (-0.25, 0.11, 0.05), (-0.25, -0.11, 0.05)),
+                          _pair("ankle", (-0.68, 0.12, 0.04), (-0.68, -0.12, 0.04)),
+                          _pair("toe", (-0.79, 0.12, 0.02), (-0.79, -0.12, 0.02))),
+        "camera": {"at": (1.3, 3.1, 1.1), "look": (0.1, 0, 0.18), "lens": 45},
+    },
+    "pike_pushup": {
+        "joints": _joints((0.44, 0, 0.14), (0.3, 0, 0.35), (-0.12, 0, 0.78),
+                          _pair("shoulder", (0.32, 0.2, 0.38), (0.32, -0.2, 0.38)),
+                          _pair("elbow", (0.12, 0.27, 0.22), (0.12, -0.27, 0.22)),
+                          _pair("wrist", (0.26, 0.25, 0.02), (0.26, -0.25, 0.02)),
+                          _pair("hip", (-0.15, 0.1, 0.75), (-0.15, -0.1, 0.75)),
+                          _pair("knee", (-0.4, 0.1, 0.4), (-0.4, -0.1, 0.4)),
+                          _pair("ankle", (-0.65, 0.1, 0.06), (-0.65, -0.1, 0.06)),
+                          _pair("toe", (-0.56, 0.1, 0.02), (-0.56, -0.1, 0.02))),
+        "camera": {"at": (0.0, -3.3, 0.7), "look": (-0.1, 0, 0.42), "lens": 50},
+    },
+    "hollow_body_hold": {
+        "joints": _joints((0.74, 0, 0.3), (0.5, 0, 0.22), (0.0, 0, 0.1),
+                          _pair("shoulder", (0.48, 0.2, 0.22), (0.48, -0.2, 0.22)),
+                          _pair("elbow", (0.76, 0.18, 0.33), (0.76, -0.18, 0.33)),
+                          _pair("wrist", (1.02, 0.16, 0.42), (1.02, -0.16, 0.42)),
+                          _pair("hip", (-0.05, 0.1, 0.11), (-0.05, -0.1, 0.11)),
+                          _pair("knee", (-0.48, 0.07, 0.2), (-0.48, -0.07, 0.2)),
+                          _pair("ankle", (-0.9, 0.07, 0.3), (-0.9, -0.07, 0.3)),
+                          _pair("toe", (-1.0, 0.07, 0.33), (-1.0, -0.07, 0.33))),
+        "camera": {"at": (0.05, -3.4, 1.1), "look": (0.05, 0, 0.2), "lens": 45},
+    },
+    "thread_the_needle": {
+        # Trunk rolled ~70 degrees, right shoulder and head on the floor, hips the highest
+        # point; the right arm lies across the image under the chest, the left arm bent with the
+        # elbow up. Camera in front of the head, low and off to the hero's left (judge, a6).
+        "joints": _joints((0.42, -0.06, 0.11), (0.26, 0.04, 0.22), (-0.2, 0, 0.52),
+                          _pair("shoulder", (0.27, 0.16, 0.4), (0.25, -0.04, 0.07)),
+                          _pair("elbow", (0.32, 0.3, 0.55), (0.25, 0.26, 0.04)),
+                          _pair("wrist", (0.55, 0.32, 0.02), (0.25, 0.58, 0.03)),
+                          _pair("hip", (-0.2, 0.11, 0.51), (-0.2, -0.11, 0.51)),
+                          _pair("knee", (-0.2, 0.12, 0.05), (-0.2, -0.12, 0.05)),
+                          _pair("ankle", (-0.62, 0.12, 0.05), (-0.62, -0.12, 0.05)),
+                          _pair("toe", (-0.72, 0.12, 0.02), (-0.72, -0.12, 0.02))),
+        "camera": {"at": (2.2, 1.3, 0.45), "look": (0.0, 0.12, 0.22), "lens": 55},
+    },
+    "russian_twist": {
+        # Leaned back and turned 60 degrees to the left, both wrists meeting on the floor just
+        # outside the left hip, heels off the floor with the shins level: the near side-on
+        # capsule with feet down read as a seated lean-back (judge, a5).
+        "joints": _joints((-0.22, 0.24, 0.84), (-0.24, 0.12, 0.6), (0, 0, 0.12),
+                          _pair("shoulder", (-0.36, 0.25, 0.52), (-0.12, -0.02, 0.66)),
+                          _pair("elbow", (-0.14, 0.42, 0.28), (0.1, 0.1, 0.4)),
+                          _pair("wrist", (0.08, 0.3, 0.04), (0.1, 0.28, 0.06)),
+                          _pair("hip", (0, 0.1, 0.12), (0, -0.1, 0.12)),
+                          _pair("knee", (0.34, 0.1, 0.42), (0.34, -0.1, 0.42)),
+                          _pair("ankle", (0.74, 0.1, 0.36), (0.74, -0.1, 0.36)),
+                          _pair("toe", (0.83, 0.1, 0.4), (0.83, -0.1, 0.4))),
+        "camera": {"at": (2.3, 1.6, 0.75), "look": (0.05, 0.12, 0.3), "lens": 45},
+    },
+    "skater_hop": {  # facing the camera (-y): the body's right side is -x
+        "joints": _joints((-0.3, -0.2, 1.6), (-0.25, -0.15, 1.35), (-0.1, 0, 0.85),
+                          _pair("shoulder", (-0.05, -0.18, 1.36), (-0.45, -0.12, 1.32)),
+                          _pair("elbow", (-0.2, -0.42, 1.18), (-0.66, 0.05, 1.15)),
+                          _pair("wrist", (-0.42, -0.5, 1.08), (-0.82, 0.2, 1.0)),
+                          _pair("hip", (0.0, 0, 0.85), (-0.2, 0, 0.85)),
+                          _pair("knee", (-0.15, 0.2, 0.5), (-0.25, -0.06, 0.45)),
+                          _pair("ankle", (-0.42, 0.35, 0.25), (-0.3, 0, 0.05)),
+                          _pair("toe", (-0.47, 0.4, 0.2), (-0.3, -0.12, 0.02))),
+        "camera": {"at": (-0.2, -3.6, 1.0), "look": (-0.2, 0, 0.8), "lens": 45},
+    },
+    "towel_door_row": {
+        "joints": _joints((-0.38, 0, 1.51), (-0.26, 0, 1.3), (0.01, 0, 0.83),
+                          _pair("shoulder", (-0.24, 0.2, 1.28), (-0.24, -0.2, 1.28)),
+                          _pair("elbow", (0.03, 0.13, 1.15), (0.03, -0.13, 1.15)),
+                          _pair("wrist", (0.3, 0.07, 1.02), (0.3, -0.07, 1.02)),
+                          _pair("hip", (0.02, 0.1, 0.82), (0.02, -0.1, 0.82)),
+                          _pair("knee", (0.23, 0.1, 0.44), (0.23, -0.1, 0.44)),
+                          _pair("ankle", (0.45, 0.1, 0.06), (0.45, -0.1, 0.06)),
+                          _pair("toe", (0.56, 0.1, 0.02), (0.56, -0.1, 0.02))),
+        "boxes": [{"at": (0.74, 0, 1.0), "size": (0.04, 0.9, 2.0)}],
+        "bars": [((0.72, 0, 1.0), (0.64, 0, 1.0), 0.03), ((0.64, 0, 1.0), (0.3, 0.07, 1.02), 0.022),
+                 ((0.64, 0, 1.0), (0.3, -0.07, 1.02), 0.022)],
+        "camera": {"at": (0.1, -3.6, 1.0), "look": (0.15, 0, 0.9), "lens": 45},
+    },
+    "dragon_flag": {
+        "joints": _joints((-0.52, 0, 0.37), (-0.3, 0, 0.34), (0.19, 0, 0.66),
+                          _pair("shoulder", (-0.25, 0.2, 0.33), (-0.25, -0.2, 0.33)),
+                          _pair("elbow", (-0.38, 0.22, 0.6), (-0.38, -0.22, 0.6)),
+                          _pair("wrist", (-0.42, 0.14, 0.3), (-0.42, -0.14, 0.3)),
+                          _pair("hip", (0.2, 0.1, 0.66), (0.2, -0.1, 0.66)),
+                          _pair("knee", (0.55, 0.07, 0.92), (0.55, -0.07, 0.92)),
+                          _pair("ankle", (0.9, 0.07, 1.18), (0.9, -0.07, 1.18)),
+                          _pair("toe", (0.96, 0.07, 1.27), (0.96, -0.07, 1.27))),
+        "boxes": [{"at": (0.2, 0, 0.24), "size": (1.2, 0.3, 0.08)},
+                  {"at": (-0.3, 0, 0.1), "size": (0.06, 0.26, 0.2)},
+                  {"at": (0.7, 0, 0.1), "size": (0.06, 0.26, 0.2)}],
+        "camera": {"at": (0.2, -3.6, 0.8), "look": (0.2, 0, 0.6), "lens": 45},
+    },
+    "chin_up": {  # facing the camera (-y)
+        "joints": _joints((0, -0.04, 2.1), (0, 0, 1.93), (0, 0.02, 1.4),
+                          _pair("shoulder", (0.2, 0, 1.86), (-0.2, 0, 1.86)),
+                          _pair("elbow", (0.2, -0.16, 1.64), (-0.2, -0.16, 1.64)),
+                          _pair("wrist", (0.19, 0, 2.0), (-0.19, 0, 2.0)),
+                          _pair("hip", (0.1, 0.02, 1.38), (-0.1, 0.02, 1.38)),
+                          _pair("knee", (0.08, -0.12, 0.96), (-0.08, -0.12, 0.96)),
+                          _pair("ankle", (-0.04, 0.16, 0.66), (0.04, 0.18, 0.64)),
+                          _pair("toe", (-0.06, 0.2, 0.55), (0.06, 0.22, 0.53))),
+        "bars": [((-0.8, 0, 2.0), (0.8, 0, 2.0), 0.025)],
+        "floor": False,
+        "camera": {"at": (1.3, -2.9, 1.3), "look": (0, 0, 1.45), "lens": 45},
+    },
+    "pigeon_pose": {
+        "joints": _joints((0.13, 0, 1.0), (0.1, 0, 0.78), (0, 0, 0.24),
+                          _pair("shoulder", (0.1, 0.2, 0.76), (0.1, -0.2, 0.76)),
+                          _pair("elbow", (0.16, 0.26, 0.48), (0.16, -0.26, 0.48)),
+                          _pair("wrist", (0.22, 0.28, 0.03), (0.22, -0.28, 0.03)),
+                          _pair("hip", (0, 0.1, 0.22), (0, -0.1, 0.2)),
+                          _pair("knee", (0.36, 0.26, 0.05), (-0.44, -0.12, 0.05)),
+                          _pair("ankle", (0.3, -0.2, 0.05), (-0.87, -0.13, 0.04)),
+                          _pair("toe", (0.27, -0.3, 0.03), (-0.97, -0.13, 0.02))),
+        "camera": {"at": (1.8, 1.9, 1.3), "look": (0, 0, 0.3), "lens": 45},
+    },
+    "cobra_stretch": {
+        "joints": _joints((0.6, 0, 0.56), (0.42, 0, 0.4), (0, 0, 0.1),
+                          _pair("shoulder", (0.4, 0.2, 0.38), (0.4, -0.2, 0.38)),
+                          _pair("elbow", (0.3, 0.28, 0.2), (0.3, -0.28, 0.2)),
+                          _pair("wrist", (0.48, 0.27, 0.02), (0.48, -0.27, 0.02)),
+                          _pair("hip", (0, 0.1, 0.1), (0, -0.1, 0.1)),
+                          _pair("knee", (-0.44, 0.1, 0.06), (-0.44, -0.1, 0.06)),
+                          _pair("ankle", (-0.87, 0.1, 0.06), (-0.87, -0.1, 0.06)),
+                          _pair("toe", (-0.95, 0.1, 0.03), (-0.95, -0.1, 0.03))),
+        "camera": {"at": (0.0, -3.3, 0.7), "look": (-0.05, 0, 0.25), "lens": 50},
+    },
+    "toes_to_bar": {
+        "joints": _joints((-0.05, 0, 1.72), (-0.05, 0, 1.53), (-0.25, 0, 1.05),
+                          _pair("shoulder", (-0.04, 0.2, 1.55), (-0.04, -0.2, 1.55)),
+                          _pair("elbow", (-0.02, 0.23, 1.83), (-0.02, -0.23, 1.83)),
+                          _pair("wrist", (0, 0.25, 2.08), (0, -0.25, 2.08)),
+                          _pair("hip", (-0.25, 0.1, 1.05), (-0.25, -0.1, 1.05)),
+                          _pair("knee", (-0.1, 0.09, 1.44), (-0.1, -0.09, 1.44)),
+                          _pair("ankle", (0.03, 0.08, 1.85), (0.03, -0.08, 1.85)),
+                          _pair("toe", (0.05, 0.08, 1.98), (0.05, -0.08, 1.98))),
+        "bars": [((0, -0.8, 2.1), (0, 0.8, 2.1), 0.025)],
+        "floor": False,
+        "camera": {"at": (1.9, -2.6, 1.5), "look": (-0.1, 0, 1.5), "lens": 45},
+    },
+    "table_row": {
+        "joints": _joints((0.56, 0, 0.5), (0.38, 0, 0.47), (-0.12, 0, 0.25),
+                          _pair("shoulder", (0.36, 0.2, 0.45), (0.36, -0.2, 0.45)),
+                          _pair("elbow", (0.25, 0.32, 0.6), (0.25, -0.32, 0.6)),
+                          _pair("wrist", (0.4, 0.25, 0.74), (0.4, -0.25, 0.74)),
+                          _pair("hip", (-0.15, 0.1, 0.25), (-0.15, -0.1, 0.25)),
+                          _pair("knee", (-0.45, 0.1, 0.5), (-0.45, -0.1, 0.5)),
+                          _pair("ankle", (-0.6, 0.1, 0.06), (-0.6, -0.1, 0.06)),
+                          _pair("toe", (-0.49, 0.1, 0.02), (-0.49, -0.1, 0.02))),
+        "boxes": [{"at": (0, 0, 0.77), "size": (0.8, 1.0, 0.05)},
+                  {"at": (0.37, 0.47, 0.38), "size": (0.05, 0.05, 0.75)},
+                  {"at": (-0.37, 0.47, 0.38), "size": (0.05, 0.05, 0.75)},
+                  {"at": (-0.37, -0.47, 0.38), "size": (0.05, 0.05, 0.75)}],
+        "camera": {"at": (0.0, -3.4, 0.6), "look": (0.0, 0, 0.4), "lens": 50},
+    },
+})
+
+
+def render3d(slug: str) -> pathlib.Path:
+    pose = POSES3D[slug]
+    spec = {
+        "joints": pose["joints"],
+        "limbs": LIMBS3D,
+        "boxes": pose.get("boxes", []),
+        "bars": pose.get("bars", []),
+        "camera": pose["camera"],
+        "floor": pose.get("floor", True),
+    }
+    WORK.mkdir(parents=True, exist_ok=True)
+    spec_file = WORK / f"{slug}.pose3d.json"
+    spec_file.write_text(json.dumps(spec))
+    REFS.mkdir(parents=True, exist_ok=True)
+    out = REFS / f"{slug}.3d.png"
+    subprocess.run(
+        ["flatpak", "run", "--filesystem=home", "org.blender.Blender", "--background",
+         "--python", str(ROOT / "scripts" / "pose3d.py"), "--", str(spec_file), str(out)],
+        check=True, capture_output=True,
+    )
+    return out
+
 
 def draw_ref(slug: str) -> pathlib.Path:
     pose = POSES[slug]
@@ -360,8 +614,10 @@ def candidates(slug: str, attempt: int, pose_file: str | None) -> None:
     # A traced photo wins over the mannequin. A pose may also opt out: a reference the model
     # misreads is worse than none (thread_the_needle, before it had a photo).
     traced = REFS / f"{slug}.traced.png"
-    if POSES[slug].get("reference") is False:
+    if POSES.get(slug, {}).get("reference") is False:
         refs, preamble = (), ""
+    elif slug in POSES3D:
+        refs, preamble = (render3d(slug),), PREAMBLE3D
     elif traced.exists():
         refs, preamble = (traced,), TRACED_PREAMBLE
     elif "torso" in POSES[slug]:
@@ -374,8 +630,9 @@ def candidates(slug: str, attempt: int, pose_file: str | None) -> None:
     # Seeds are spaced by attempt so a re-roll never repeats a draw already judged.
     outs = [out_dir / f"a{attempt}_c{i}.jpg" for i in range(CANDIDATES)]
     with concurrent.futures.ThreadPoolExecutor(max_workers=CANDIDATES) as pool:
+        futures = []
         for i, out in enumerate(outs):
-            pool.submit(
+            futures.append(pool.submit(
                 generate,
                 slug=slug,
                 prompt=f"{preamble} {pose} {gen.STYLE}".strip(),
@@ -384,7 +641,10 @@ def candidates(slug: str, attempt: int, pose_file: str | None) -> None:
                 height=1280,
                 seed=seed_for(slug) + 1000 * attempt + i,
                 references=refs,
-            )
+            ))
+        # A worker's exception (no API key, a bad path) must stop the run, not vanish with it.
+        for future in futures:
+            future.result()
 
     made = [o for o in outs if o.exists()]
     sheet = out_dir / f"a{attempt}_sheet.jpg"
@@ -394,7 +654,7 @@ def candidates(slug: str, attempt: int, pose_file: str | None) -> None:
         check=True,
     )
     print(json.dumps({"sheet": str(sheet), "candidates": list(map(str, made)),
-                      "checklist": POSES[slug].get("checklist", [])}, indent=2))
+                      "checklist": POSES.get(slug, {}).get("checklist", [])}, indent=2))
 
 
 def trace(slug: str, photo: str, choice: str) -> None:
@@ -461,6 +721,8 @@ if __name__ == "__main__":
         print(draw_ref(slug))
     elif command == "candidates":
         candidates(slug, int(rest[0]), rest[1] if len(rest) > 1 else None)
+    elif command == "ref3d":
+        print(render3d(slug))
     elif command == "trace":
         trace(slug, rest[0], rest[1])
     elif command == "accept":

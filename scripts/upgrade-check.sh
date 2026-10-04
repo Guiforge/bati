@@ -67,6 +67,7 @@ compare() {
 
 # `source`d by the tests: the comparison is the part worth proving without an emulator.
 if [ "${UPGRADE_CHECK_SOURCE_ONLY:-}" = "1" ]; then
+  # shellcheck disable=SC2317 # `return` works when sourced, `exit` when run: one of them is always reached
   return 0 2>/dev/null || exit 0
 fi
 

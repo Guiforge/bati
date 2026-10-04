@@ -41,6 +41,11 @@ jest.mock("@/db/preferences", () => ({
     getBackupFolderUri: async () => mockPrefs.get("backupFolderUri") ?? null,
     getLastAutoBackupDay: async () => mockPrefs.get("lastAutoBackupDay") ?? null,
     getProtectDismissedDay: async () => mockPrefs.get("protectDismissedDay") ?? null,
+    getProtectDismissals: async () => Number(mockPrefs.get("protectDismissals")) || 0,
+    setProtectDismissals: (count: number) => {
+      mockPrefs.set("protectDismissals", String(count));
+      return Promise.resolve();
+    },
     setProtectDismissedDay: (day: string) => {
       mockPrefs.set("protectDismissedDay", day);
       return Promise.resolve();
@@ -56,7 +61,7 @@ jest.mock("@/src/deviceSync", () => ({
 }));
 
 import { ProtectCard } from "@/components/home/ProtectCard";
-import { protectCardVisible } from "@/src/protectHero";
+import { dismissProtectCard, protectCardVisible } from "@/src/protectHero";
 import config from "@/tamagui.config";
 
 const ago = (days: number) => format(subDays(new Date(), days), "yyyy-MM-dd");
@@ -120,7 +125,29 @@ describe("protectCardVisible", () => {
     expect(await protectCardVisible()).toBe(true);
   });
 
-  test("closed for thirty days, back on the thirtieth", async () => {
+  test("closed once: gone for thirty days, back on the thirtieth", async () => {
+    mockPrefs.set("protectDismissedDay", ago(29));
+    mockPrefs.set("protectDismissals", "1");
+    expect(await protectCardVisible()).toBe(false);
+    mockPrefs.set("protectDismissedDay", ago(30));
+    expect(await protectCardVisible()).toBe(true);
+  });
+
+  test("closed twice: gone for ninety days", async () => {
+    mockPrefs.set("protectDismissals", "2");
+    mockPrefs.set("protectDismissedDay", ago(89));
+    expect(await protectCardVisible()).toBe(false);
+    mockPrefs.set("protectDismissedDay", ago(90));
+    expect(await protectCardVisible()).toBe(true);
+  });
+
+  test("closed three times: never again, however long ago", async () => {
+    mockPrefs.set("protectDismissals", "3");
+    mockPrefs.set("protectDismissedDay", ago(2000));
+    expect(await protectCardVisible()).toBe(false);
+  });
+
+  test("a close from before the count existed counts as the first", async () => {
     mockPrefs.set("protectDismissedDay", ago(29));
     expect(await protectCardVisible()).toBe(false);
     mockPrefs.set("protectDismissedDay", ago(30));
@@ -169,6 +196,17 @@ describe("ProtectCard", () => {
     });
     expect(screen.queryByTestId("home-protect")).toBeNull();
     expect(mockPrefs.get("protectDismissedDay")).toBe(ago(0));
+    expect(mockPrefs.get("protectDismissals")).toBe("1");
+  });
+
+  test("each close counts: the third is the last", async () => {
+    for (const expected of ["1", "2", "3"]) {
+      mockPrefs.delete("protectDismissedDay");
+      if (expected !== "1") mockPrefs.set("protectDismissedDay", ago(400));
+      await dismissProtectCard();
+      expect(mockPrefs.get("protectDismissals")).toBe(expected);
+    }
+    expect(await protectCardVisible()).toBe(false);
   });
 
   test("renders nothing for a hero who is protected", async () => {

@@ -19,6 +19,7 @@ import {
 import { i18n } from "@/i18n";
 import * as Reminders from "@/modules/bati-reminders";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
+import { protectCardVisible } from "@/src/protectHero";
 import { type SessionStatus, useSessionStore } from "@/stores/session";
 import { reportError } from "./reportError";
 import { checkForUpdate } from "./updateCheck";
@@ -147,6 +148,9 @@ export type ReminderCardKind = "check" | "offer" | null;
 export async function reminderCardKind(now = new Date()): Promise<ReminderCardKind> {
   if (!Reminders.isAvailable()) return null;
   if ((await hasUnseenNotes()) || (await checkForUpdate()) !== null) return null;
+  // One line under the scene at a time, and the one about losing a hero outranks the one about
+  // reminders: the reminder waits, and comes back the day the other is closed or answered.
+  if (await protectCardVisible(now)) return null;
 
   const state = Reminders.getState();
   const today = dayKey(now);

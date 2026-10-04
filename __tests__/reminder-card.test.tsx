@@ -56,6 +56,8 @@ jest.mock("@/db/reminders", () => ({
   },
 }));
 jest.mock("@/db/homeOffer", () => ({ decideHomeOffer: jest.fn() }));
+let mockProtect = false;
+jest.mock("@/src/protectHero", () => ({ protectCardVisible: async () => mockProtect }));
 jest.mock("@/stores/session", () => ({ useSessionStore: { getState: () => ({}) } }));
 
 import { format, subDays } from "date-fns";
@@ -86,6 +88,7 @@ beforeEach(() => {
   mockDays = {};
   mockAskedAt = null;
   mockDismissed = false;
+  mockProtect = false;
 });
 
 describe("reminderCardKind", () => {
@@ -116,6 +119,16 @@ describe("reminderCardKind", () => {
     mockState.enabled = true;
     mockState.log = ignoredDays.slice(1);
     expect(await reminderCardKind()).toBeNull();
+  });
+
+  test("yields to the protect card: one line under the scene, the one about losing a hero first", async () => {
+    mockProtect = true;
+    expect(await reminderCardKind()).toBeNull();
+    mockState.enabled = true;
+    mockState.log = ignoredDays;
+    expect(await reminderCardKind()).toBeNull();
+    mockProtect = false;
+    expect(await reminderCardKind()).toBe("check");
   });
 
   test("silent while an update or the release notes are up", async () => {

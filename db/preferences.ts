@@ -298,6 +298,15 @@ export const preferences = {
     await setPreference("protectDismissedDay", day);
   },
 
+  /** How many times the hero closed it. The silence grows with it, see `src/protectHero.ts`. */
+  async getProtectDismissals(): Promise<number> {
+    return Number(await getPreference("protectDismissals")) || 0;
+  },
+
+  async setProtectDismissals(count: number): Promise<void> {
+    await setPreference("protectDismissals", String(count));
+  },
+
   /**
    * The exercises the hero asked never to be handed again (issue #145: "I can't jump"), with the
    * day each was set aside so the list can say how long ago. Quests serve a near substitute in

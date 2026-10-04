@@ -75,7 +75,8 @@ The comparison itself is covered without a device by `__tests__/upgrade-check-co
 ## Protect your hero
 
 After 5 workouts, while nothing protects the hero, Home shows a line that opens Settings in one
-tap and can be closed for 30 days (`protectDismissedDay`, device-local). Protected means an
+tap. Closing it is silence for 30 days, then 90, then for good (`protectDismissedDay` and
+`protectDismissals`, device-local). It is the one line under the scene: the reminder card yields to it. Protected means an
 automatic backup folder whose last copy is under 7 days old (a folder with no stamped day does not
 count: every write that lands stamps one), or a device sync that succeeded in the last 7 days. A hero with either never
 sees the card. Settings shows "last backup N days ago" under the automatic backup row, read from

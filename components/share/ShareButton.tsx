@@ -43,7 +43,7 @@ export function ShareButton({
         height={36}
         px={12}
         gap={6}
-        rounded={18}
+        rounded="$3"
         borderWidth={1}
         borderColor="$glassBorder"
         bg="$bgOverlaySoft"

@@ -117,4 +117,31 @@ describe("AppButton, the seal", () => {
     expect(flat.borderBottomColor).not.toBe(rawColors.primaryEdge);
     expect(screen.getByText("Delete")).toHaveStyle({ color: rawColors.bgDark });
   });
+
+  it("reads as a button while disabled: surface2 fill, textSecondary label, no edge, no translate", async () => {
+    const onPress = jest.fn();
+    await render(
+      themed(
+        <AppButton testID="off" disabled onPress={onPress}>
+          Start
+        </AppButton>,
+      ),
+    );
+    const flat = StyleSheet.flatten(screen.getByTestId("off").props.style);
+    expect(flat.backgroundColor).toBe(rawColors.surface2);
+    expect(flat.borderBottomWidth).not.toBe(3);
+    expect(flat.borderBottomColor).not.toBe(rawColors.primaryEdge);
+    expect(screen.getByText("Start")).toHaveStyle({ color: rawColors.textSecondary });
+    await act(() => {
+      fireEvent(screen.getByTestId("off"), "responderGrant", {
+        nativeEvent: {},
+        persist: () => {},
+      });
+    });
+    expect(
+      JSON.stringify(StyleSheet.flatten(screen.getByTestId("off").props.style).transform),
+    ).not.toContain("translateY");
+    await act(() => fireEvent.press(screen.getByTestId("off")));
+    expect(onPress).not.toHaveBeenCalled();
+  });
 });

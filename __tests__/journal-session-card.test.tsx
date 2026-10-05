@@ -112,4 +112,11 @@ describe("SessionCard", () => {
 
     await expect(screen.findByText("Test Quest")).resolves.toBeTruthy();
   });
+
+  it("never leaks a placeholder when the duration is missing", async () => {
+    await mount({ ...baseEntry, durationSeconds: 0 });
+
+    await screen.findByText("Test Quest");
+    expect(screen.queryByText(/--/)).toBeNull();
+  });
 });

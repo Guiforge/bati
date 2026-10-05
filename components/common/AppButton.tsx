@@ -26,7 +26,10 @@ export function AppButton({
   fullWidth = true,
   ...buttonProps
 }: AppButtonProps) {
+  // A disabled primary still reads as a button: a quiet surface, an ash label, no edge to press.
+  const dimmed = variant === "primary" && buttonProps.disabled === true;
   const getBackgroundColor = (): ColorTokens => {
+    if (dimmed) return "$surface2";
     if (backgroundColor) return backgroundColor;
     if (variant === "outline") return "$background";
     return "$primary";
@@ -36,12 +39,13 @@ export function AppButton({
   // and ink on the light signal fills, where a pale label measures 3:1.
   const onLightFill = backgroundColor !== undefined && LIGHT_FILLS.includes(backgroundColor);
   const getColor = (): ColorTokens => {
+    if (dimmed) return "$textSecondary";
     if (backgroundColor === "$error") return "$onError";
     if (onLightFill) return "$bgDark";
     return variant === "outline" ? "$text" : "$onPrimary";
   };
   // The seal: a bottom edge on the braise only. A braise edge under red would be wrong.
-  const seal = variant === "primary" && !backgroundColor;
+  const seal = variant === "primary" && !backgroundColor && !dimmed;
 
   return (
     <Button

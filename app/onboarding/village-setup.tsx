@@ -171,10 +171,6 @@ export default function VillageSetup() {
                 });
               }}
               disabled={!isValidName}
-              backgroundColor={isValidName ? undefined : "$surface"}
-              borderColor={isValidName ? "$primary" : "$borderStrong"}
-              borderWidth={0}
-              opacity={isValidName ? 1 : 0.5}
             >
               {t("onboarding.next", "Continue")}
             </AppButton>
@@ -191,7 +187,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 22,
     borderWidth: 2,
-    borderRadius: 16,
+    borderRadius: 7, // the `$3` of the control scale
     paddingHorizontal: 16,
     fontWeight: "600",
   },

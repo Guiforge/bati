@@ -174,6 +174,26 @@ describe("the exercise name over the art", () => {
   });
 });
 
+describe("the reps stepper", () => {
+  test("draws both signs as icons of one size, not as text glyphs", async () => {
+    await mount();
+
+    expect(screen.queryByText("\u2212")).toBeNull();
+    expect(screen.queryByText("-")).toBeNull();
+    expect(screen.queryByText("+")).toBeNull();
+  });
+
+  test("the tertiary links keep a 44 dp reach through hitSlop", async () => {
+    await mount();
+
+    for (const id of ["session-swap-exercise", "session-skip-exercise"]) {
+      const slop = screen.getByTestId(id).props.hitSlop;
+      expect(slop.top).toBeGreaterThanOrEqual(12);
+      expect(slop.bottom).toBeGreaterThanOrEqual(12);
+    }
+  });
+});
+
 describe("a boss that is already down", () => {
   test("drops the crit promise and the weak point, and says the rest is the hero's", async () => {
     await mount(fight(0));

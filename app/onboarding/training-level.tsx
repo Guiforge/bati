@@ -112,7 +112,7 @@ export default function TrainingLevelStep() {
                 <YStack
                   key={id}
                   height={56}
-                  rounded="$8"
+                  rounded="$3"
                   bg={isSelected ? "$primary" : "$surface"}
                   borderWidth={1}
                   borderColor={isSelected ? "$primary" : "$borderStrong"}
@@ -146,13 +146,7 @@ export default function TrainingLevelStep() {
             {t("safety.onboarding_line")}
           </Paragraph>
 
-          <AppButton
-            onPress={() => complete(selected)}
-            disabled={!selected}
-            backgroundColor={selected ? undefined : "$surface"}
-            borderWidth={0}
-            opacity={selected ? 1 : 0.5}
-          >
+          <AppButton onPress={() => complete(selected)} disabled={!selected}>
             {t("onboarding.finish", "Start my training journey")}
           </AppButton>
 

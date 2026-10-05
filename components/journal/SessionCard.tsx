@@ -92,10 +92,10 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
 
   const durationLabel = entry.durationSeconds
     ? formatDuration(entry.durationSeconds, language)
-    : "--";
+    : null;
   // An outing's row leads with the ground, which is the one number a walk is remembered by.
   const metaLabel = hasGround(entry)
-    ? `${formatDistance(entry.leaguesM, unit, language)} · ${durationLabel}`
+    ? [formatDistance(entry.leaguesM, unit, language), durationLabel].filter(Boolean).join(" · ")
     : durationLabel;
   // What the session was worth, not only how long it took. A row gave a duration and a difficulty
   // and never what was done inside it, so two runs of the same quest a month apart were

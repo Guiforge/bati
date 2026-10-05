@@ -22,6 +22,7 @@ import { restsBetweenExercises } from "@/components/quests/questShape";
 import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { WarmupPreview } from "@/components/quests/WarmupPreview";
 import { getQuestAsset } from "@/constants/assetMap";
+import { DIFFICULTY_TEXT } from "@/constants/difficultyText";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import {
   applyQuestConfig,
@@ -641,7 +642,13 @@ export default function QuestDetails() {
               ) : null}
               {/* Nothing on an outing: it is started at medium and the chips below are gone
                   with it, so a badge naming a level would name a decision nobody made. */}
-              {isOuting ? null : <Tag label={levelLabel(level, t)} />}
+              {isOuting ? null : (
+                <Tag
+                  testID="quest-level-tag"
+                  label={levelLabel(level, t)}
+                  textColor={DIFFICULTY_TEXT[level]}
+                />
+              )}
               {/* Only quests written in the app may be edited: seed content is shared. */}
               {quest && isUserQuest(quest) ? (
                 <AppIconButton
@@ -782,6 +789,7 @@ export default function QuestDetails() {
                       label={t(isOuting ? "quests.reward_xp_open" : "quests.reward_xp_estimate", {
                         count: formatCount(language, xpReward),
                       })}
+                      textColor="$resourceGold"
                     />
                   ) : null}
                   {/* What an outing has instead of a maximum. The number above is what the

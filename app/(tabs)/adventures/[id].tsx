@@ -17,6 +17,7 @@ import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Sparkles } from "@/components/icons";
 import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
+import { DIFFICULTY_TEXT } from "@/constants/difficultyText";
 import type {
   ActiveAdventureRun,
   AdventureDetails,
@@ -481,7 +482,10 @@ export default function AdventureDetailsScreen() {
             </XStack>
 
             <YStack items="flex-end" gap="$1">
-              <Tag label={levelLabel(effectiveDifficulty, t)} />
+              <Tag
+                label={levelLabel(effectiveDifficulty, t)}
+                textColor={DIFFICULTY_TEXT[effectiveDifficulty]}
+              />
               {/* Only when the shown level *is* the suggestion: a pinned run displays its own
                   starting level, and the caption would be describing something else. */}
               {feedbackAdjusted && !run?.run.difficultyOverride ? (
@@ -605,6 +609,7 @@ export default function AdventureDetailsScreen() {
                       label={t("adventures.reward_xp_per_step", {
                         count: formatCount(language, preview.xp),
                       })}
+                      textColor="$resourceGold"
                     />
                   ) : null}
                 </XStack>

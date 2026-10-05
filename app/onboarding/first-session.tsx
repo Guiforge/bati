@@ -121,8 +121,9 @@ export default function FirstSessionStep() {
             text="center"
             color="$textSecondary"
             fontSize={15}
-            textShadowColor={fade(rawColors.black, 0.5)}
-            textShadowRadius={4}
+            // The clouds behind it are the brightest thing on the page: a dark halo, not a hint.
+            textShadowColor={fade(rawColors.bgDark, 0.8)}
+            textShadowRadius={6}
           >
             {t(
               "onboarding.first_session_subtitle",

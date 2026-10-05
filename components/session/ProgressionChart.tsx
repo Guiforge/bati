@@ -158,7 +158,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       <YStack gap="$4">
         {/* Title */}
         <YStack gap="$1">
-          <Text fontWeight="700" fontSize={16} color="$text">
+          <Text fontFamily="$heading" fontWeight="700" fontSize={16} color="$text">
             {title || t("chart.progression_title")}
           </Text>
           <Paragraph color="$text" opacity={0.6} size="$2">
@@ -177,7 +177,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             </Text>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="700" fontSize={24} color="$success">
+            <Text fontWeight="700" fontSize={24} color="$text">
               {totalMinutes}
             </Text>
             <Text fontSize={12} color="$text" opacity={0.6}>

@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
-import { Text, XStack, YStack, type YStackProps } from "tamagui";
+import { type ColorTokens, Text, XStack, YStack, type YStackProps } from "tamagui";
 
 export type ChipProps = Omit<YStackProps, "children"> & {
   label: string;
   icon?: ReactNode;
   tone?: "default" | "primary" | "success";
+  /** Overrides the label colour only: a metric that wears its own role (gold XP). */
+  textColor?: ColorTokens;
 };
 
 function toneToBg(tone: ChipProps["tone"]) {
@@ -19,7 +21,7 @@ function toneToText(tone: ChipProps["tone"]) {
   return "$text";
 }
 
-export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
+export function Chip({ label, icon, tone = "default", textColor, ...props }: ChipProps) {
   const isPressable = typeof props.onPress === "function";
 
   return (
@@ -46,7 +48,7 @@ export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
     >
       <XStack items="center" gap="$2">
         {icon}
-        <Text fontWeight="700" fontSize={13} color={toneToText(tone)}>
+        <Text fontWeight="700" fontSize={13} color={textColor ?? toneToText(tone)}>
           {label}
         </Text>
       </XStack>

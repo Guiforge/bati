@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import { type ColorTokens, Text, XStack, YStack, type YStackProps } from "tamagui";
-
 export type TagProps = Omit<YStackProps, "children"> & {
   label: string;
   icon?: ReactNode;
   tone?: "default" | "primary" | "success";
+  /** Overrides the label colour only: a metric that wears its own role (gold XP, a difficulty). */
+  textColor?: ColorTokens;
 };
 
 function toneToBg(tone: TagProps["tone"]): ColorTokens {
@@ -23,7 +24,7 @@ function toneToText(tone: TagProps["tone"]): ColorTokens {
  * Non-interactive metadata label.
  * Use this for info that is NOT clickable (so it shouldn't look like a button/pill).
  */
-export function Tag({ label, icon, tone = "default", ...props }: TagProps) {
+export function Tag({ label, icon, tone = "default", textColor, ...props }: TagProps) {
   return (
     <YStack
       bg={toneToBg(tone)}
@@ -37,7 +38,7 @@ export function Tag({ label, icon, tone = "default", ...props }: TagProps) {
     >
       <XStack items="center" gap="$1">
         {icon}
-        <Text fontWeight="700" fontSize={12} color={toneToText(tone)} opacity={0.82}>
+        <Text fontWeight="700" fontSize={12} color={textColor ?? toneToText(tone)} opacity={0.82}>
           {label}
         </Text>
       </XStack>

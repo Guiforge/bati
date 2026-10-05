@@ -1,8 +1,9 @@
 import { fireEvent, render } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
-
 import { HomeHeader } from "@/components/home/HomeHeader";
+import { rawColors } from "@/constants/rawColors";
 import config from "@/tamagui.config";
 
 /**
@@ -67,5 +68,11 @@ describe("HomeHeader", () => {
     expect(tier).toHaveTextContent(/Tier \d+/);
     expect(tier.props.numberOfLines).toBe(1);
     expect(tier.props.adjustsFontSizeToFit).toBe(true);
+  });
+
+  it("prints the XP fraction in gold, the colour of what progresses", async () => {
+    const view = await mount();
+    const xp = await view.findByText(/10.*100/);
+    expect(StyleSheet.flatten(xp.props.style).color).toBe(rawColors.resourceGold);
   });
 });

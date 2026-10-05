@@ -292,7 +292,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
       {session.xpEarned > 0 && (
         <YStack gap={6}>
           <NFact>
-            <NText fontSize={13.5} lineHeight={19}>
+            <NText fontSize={13.5} lineHeight={19} color="$resourceGold">
               {t("journal.moved_xp", { xp: formatCount(language, session.xpEarned) })}
               {latest ? (
                 <NMuted fontSize={13.5}>

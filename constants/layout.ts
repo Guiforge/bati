@@ -15,3 +15,6 @@
  * `useWindowDimensions` cannot tell it.
  */
 export const CONTENT_MAX_WIDTH = 520;
+
+/** Victory's level card height, shared by the card and the spacer that holds its place. */
+export const LEVEL_CARD_HEIGHT = 78;

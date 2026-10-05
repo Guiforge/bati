@@ -4,7 +4,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { VictoryView } from "@/components/session/VictoryView";
-import { rawColors } from "@/constants/rawColors";
+import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
+import { fade, rawColors } from "@/constants/rawColors";
 import type { Quest } from "@/db/quests";
 import { useChorusStore } from "@/stores/chorus";
 import { useSessionStore } from "@/stores/session";
@@ -407,8 +408,8 @@ describe("VictoryView kicker", () => {
  * height holds its place until then.
  */
 describe("VictoryView level card", () => {
-  // A loading reward asserts nothing: no ellipsis glyph, and the card only mounts with its data
-  // (the one acceptable jump, decided in iteration 3).
+  // A loading reward asserts nothing: no ellipsis glyph, and the card only mounts with its data,
+  // into a spacer of its own height, so nothing moves when it arrives.
   it("is not mounted while the save is pending, and shows no ellipsis, then the real bar", async () => {
     const { view, release } = await mountWithPendingSave();
 
@@ -418,7 +419,7 @@ describe("VictoryView level card", () => {
     // The place is held: a hidden spacer sits above the feel buttons until the card replaces it.
     const spacer = view.getByTestId("victory-level-spacer", { includeHiddenElements: true });
     expect(spacer.props.accessibilityElementsHidden).toBe(true);
-    expect(StyleSheet.flatten(spacer.props.style).height).toBeGreaterThan(0);
+    expect(StyleSheet.flatten(spacer.props.style).height).toBe(LEVEL_CARD_HEIGHT);
     expect(first.indexOf("victory-level-spacer")).toBeLessThan(
       first.indexOf("session.feedback_hard"),
     );
@@ -426,6 +427,11 @@ describe("VictoryView level card", () => {
     await release();
 
     expect(view.queryByTestId("victory-level-spacer", { includeHiddenElements: true })).toBeNull();
+
+    // The earned gauge: the boss's inked gauge, in gold on a dark-gold track.
+    const fill = view.getByTestId("victory-level-fill");
+    expect(fill).toHaveStyle({ backgroundColor: fade(rawColors.resourceGold, 1) });
+    expect(StyleSheet.flatten(fill.parent?.props.style).backgroundColor).toBe(rawColors.gold800);
 
     const after = JSON.stringify(view.toJSON());
     expect(after).toContain("journal.xp_progress");

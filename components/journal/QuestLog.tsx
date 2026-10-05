@@ -2,9 +2,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
+import { Recitatif } from "@/components/common/Recitatif";
 import { Trophy } from "@/components/icons";
 import {
   foldRounds,
@@ -27,7 +28,6 @@ import {
   NPanel,
   NRule,
   NText,
-  NTitle,
 } from "@/components/journal/nocturne";
 import { recordName, recordValue } from "@/components/journal/recordLabel";
 import { SetEditor } from "@/components/journal/SetEditor";
@@ -522,12 +522,12 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
   const { t } = useTranslation();
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
+  const { width } = useWindowDimensions();
   const { session } = data;
   const outing = session.outing != null;
   const rounds = new Set(session.exercises.map((ex) => ex.roundIndex)).size;
 
   const meta = [
-    whenLabel(t, language, session.performedAt),
     // A difficulty means nothing on a walk.
     outing ? null : t(`quests.level_${session.userLevel}`),
     rounds > 0 && !outing ? t("journal.rounds_completed", { count: rounds }) : null,
@@ -540,13 +540,25 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
     <YStack testID="session-details-screen">
       <ReportHero
         source={data.questImage ? getQuestAsset(data.questImage) : null}
-        height={150}
+        height={Math.round((width * 3) / 4)}
         sessionId={session.id}
       >
-        <NTitle fontSize={22} lineHeight={28}>
-          {data.questTitle}
-        </NTitle>
-        <NMuted mt={2}>{meta}</NMuted>
+        {/* Victory's plate, reopened: the date kicks the title off in the body face (a date is
+            digits, and Alegreya never sets a digit), the title sits in the cartouche. */}
+        <YStack gap={2} self="flex-start">
+          <Text
+            testID="session-details-kicker"
+            fontFamily="$body"
+            fontWeight="700"
+            color="$resourceGold"
+            fontSize={13}
+            letterSpacing={2}
+          >
+            {whenLabel(t, language, session.performedAt).toUpperCase()}
+          </Text>
+          <Recitatif>{data.questTitle}</Recitatif>
+        </YStack>
+        <NMuted mt={6}>{meta}</NMuted>
       </ReportHero>
 
       <YStack px={11} pt={11}>

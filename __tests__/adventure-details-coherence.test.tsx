@@ -7,9 +7,8 @@ import { rawColors } from "@/constants/rawColors";
 import "@/i18n";
 import config from "@/tamagui.config";
 
-// Colour roles on the adventure screen; mocks as adventure-details-cta. (Regression note from the original: 6ed496a): a "boss" adventure is a multi-step campaign that
-// culminates in a boss fight on its final step — the CTA must not claim
-// "Fight Boss" while step 1 (a regular warm-up step) is what's actually next.
+// Colour roles on the adventure screen: each figure keeps the role it carries everywhere else
+// (gold for what is earned, red for danger), checked against the rendered screen.
 
 const mockPush = jest.fn();
 
@@ -56,8 +55,8 @@ function mockStep(stepIndex: number, questId = 100 + stepIndex) {
   };
 }
 
-// The screen reads the fight to draw its boss panel. Mocked to null — this test is about which
-// CTA a *fresh* campaign shows, and a campaign nobody has started has no fight row yet.
+// The screen reads the fight to draw its boss panel. Mocked to null: this test is about colours
+// on a *fresh* campaign, and a campaign nobody has started has no fight row yet.
 jest.mock("@/db/bossFights", () => ({
   getBossFightByAdventure: jest.fn().mockResolvedValue(null),
 }));

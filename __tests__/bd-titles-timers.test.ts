@@ -57,13 +57,16 @@ describe("one timer: body face, bold, tabular, $text", () => {
   });
 });
 
-describe("Journal report titles use NTitle", () => {
-  it.each([
-    ["components/journal/QuestLog.tsx", "{data.questTitle}"],
-    ["components/journal/KillReport.tsx", "{pick(report.title, language)}"],
-  ])("%s", (file, needle) => {
-    const head = before(file, needle, 200);
+describe("Journal report titles", () => {
+  it("the kill report uses NTitle", () => {
+    const head = before("components/journal/KillReport.tsx", "{pick(report.title, language)}", 200);
     expect(head.slice(head.lastIndexOf("<N"))).toMatch(/^<NTitle/);
+  });
+
+  it("the session details title is a Recitatif on the plate, once", () => {
+    const src = read("components/journal/QuestLog.tsx");
+    expect(src).toContain("<Recitatif>{data.questTitle}</Recitatif>");
+    expect(src.match(/data\.questTitle/g)).toHaveLength(1);
   });
 });
 

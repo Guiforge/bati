@@ -5,12 +5,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, ScrollView, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
@@ -20,6 +14,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
+import { InkGauge } from "@/components/common/InkGauge";
 import { Recitatif } from "@/components/common/Recitatif";
 import { useToast } from "@/components/common/Toast";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
@@ -27,6 +22,7 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
@@ -91,7 +87,6 @@ const VILLAGER_SLOT_HEIGHT = 88;
  * to arrive with the save and push the feel buttons down from under the finger about to press one.
  * ponytail: a font scale past ~1.3 grows the card beyond this and nudges once; measure if it matters.
  */
-const LEVEL_CARD_HEIGHT = 78;
 
 /**
  * The hero's own gauge, filling with what this session earned — the one number that makes
@@ -101,20 +96,13 @@ const LEVEL_CARD_HEIGHT = 78;
 function HeroLevelBar({
   heroXp,
   language,
-  reducedMotion,
 }: {
   /** `null` until the save lands: a loading reward asserts nothing, so the card is not mounted. */
   heroXp: { before: number; after: number } | null;
   language: AppLanguage;
-  reducedMotion: boolean;
 }) {
   return heroXp ? (
-    <FilledLevelBar
-      before={heroXp.before}
-      after={heroXp.after}
-      language={language}
-      reducedMotion={reducedMotion}
-    />
+    <FilledLevelBar after={heroXp.after} language={language} />
   ) : (
     <YStack
       testID="victory-level-spacer"
@@ -127,36 +115,13 @@ function HeroLevelBar({
   );
 }
 
-function FilledLevelBar({
-  before,
-  after,
-  language,
-  reducedMotion,
-}: {
-  before: number;
-  after: number;
-  language: AppLanguage;
-  reducedMotion: boolean;
-}) {
+function FilledLevelBar({ after, language }: { after: number; language: AppLanguage }) {
   const { t } = useTranslation();
   const level = calculateLevelFromXp(after);
   const base = getXpForLevel(level);
   const span = Math.max(1, getXpForLevel(level + 1) - base);
-  const target = Math.min(100, ((after - base) / span) * 100);
-  // Where the bar starts filling from: the hero's progress before the session, or the bottom
-  // of the level when the session crossed it — the sweep from zero *is* the level-up.
-  const from = before >= base ? Math.min(target, ((before - base) / span) * 100) : 0;
+  const progress = Math.min(1, (after - base) / span);
   const title = getLevelTitle(level)[language];
-
-  const width = useSharedValue(reducedMotion ? target : from);
-  useEffect(() => {
-    if (reducedMotion) {
-      width.value = target;
-      return;
-    }
-    width.value = withDelay(500, withTiming(target, { duration: 900 }));
-  }, [reducedMotion, target, width]);
-  const fill = useAnimatedStyle(() => ({ width: `${width.value}%` }));
 
   return (
     <Card
@@ -183,11 +148,13 @@ function FilledLevelBar({
           })}
         </Text>
       </XStack>
-      <XStack height={8} bg="$surface2" rounded={4} overflow="hidden" width="100%">
-        <Animated.View style={[{ height: "100%", borderRadius: 4 }, fill]}>
-          <YStack flex={1} bg="$resourceGold" rounded={4} />
-        </Animated.View>
-      </XStack>
+      <InkGauge
+        testIDPrefix="victory-level"
+        progress={progress}
+        fill="$resourceGold"
+        track="$gold800"
+        animate
+      />
     </Card>
   );
 }
@@ -639,11 +606,7 @@ export function VictoryView() {
         {/* The hero's level bar, filling with this session's XP */}
         {/* A spacer of the card's height holds its place until the save lands: the card itself
             mounts only with data, and must not push the feel buttons from under the finger. */}
-        <HeroLevelBar
-          heroXp={result ? result.heroXp : null}
-          language={language}
-          reducedMotion={reducedMotion}
-        />
+        <HeroLevelBar heroXp={result ? result.heroXp : null} language={language} />
 
         {/* Feedback — above the fold and above the rewards: this answer is what steers the next
             session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}

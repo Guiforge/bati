@@ -14,6 +14,7 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
+import { GameIcon } from "@/components/common/GameIcon";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Dumbbell, Map as MapIcon, Plus, Star } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
@@ -49,6 +50,7 @@ import { getAllQuestConfigs } from "@/db/questConfig";
 import { type QuestTemplate, questTrainingLevel } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 import { formatCount } from "@/db/targets";
+import type { GameIconName } from "@/hooks/useGameIcon";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { keepIfSame } from "@/src/sameContent";
@@ -73,10 +75,10 @@ type LoadState =
   | ({ status: "ready" } & GalleryData)
   | ({ status: "error"; message: string } & GalleryData);
 
-function questEmoji(rounds: number, exerciseCount: number) {
-  if (rounds >= 4) return "🧨";
-  if (exerciseCount >= 4) return "⚔️";
-  return "🪓";
+function questGlyph(rounds: number, exerciseCount: number): GameIconName {
+  if (rounds >= 4) return "flame";
+  if (exerciseCount >= 4) return "sword";
+  return "wood";
 }
 
 const COVER_IMAGE_STYLE = { width: "100%", height: "100%" } as const;
@@ -265,7 +267,11 @@ function QuestRow({
           ) : (
             // User-authored quests have no cover art: the muscle tint carries the banner.
             <YStack flex={1} bg={meta.tokens.bg} items="center" justify="center">
-              <Text fontSize={44}>{questEmoji(q.rounds, q.exercises.length)}</Text>
+              <GameIcon
+                name={questGlyph(q.rounds, q.exercises.length)}
+                size={44}
+                color="$textSecondary"
+              />
             </YStack>
           )}
           <XStack position="absolute" t="$3" l="$3" gap="$2">

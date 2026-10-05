@@ -3,8 +3,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Button, H3, Text, XStack, YStack } from "tamagui";
+import { Button, Text, XStack, YStack } from "tamagui";
 import { ProgressBar } from "@/components/common/ProgressBar";
+import { Recitatif } from "@/components/common/Recitatif";
 import { Info, Play, Sparkles, Target } from "@/components/icons";
 import { ADVENTURE_ASSETS, getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
 import { fade, rawColors } from "@/constants/rawColors";
@@ -78,8 +79,8 @@ export function HomeStage() {
       minH={STAGE_MIN_HEIGHT}
       mx="$4"
       mt="$3"
-      rounded={16}
-      borderWidth={1}
+      rounded="$3"
+      borderWidth={1.5}
       borderColor="$borderStrong"
       overflow="hidden"
     >
@@ -120,10 +121,11 @@ export function HomeStage() {
           accessibilityRole="button"
           accessibilityLabel={title}
         >
+          {/* The title is a récitatif pinned top-left of the art, not letters on the gradient. */}
+          <YStack position="absolute" t="$3" l="$3" r="$3">
+            <Recitatif>{title}</Recitatif>
+          </YStack>
           <YStack px="$4" gap="$1.5">
-            <H3 fontSize={27} fontWeight="700" color="$text" numberOfLines={2} lineHeight={30}>
-              {title}
-            </H3>
             {/* What the session is made of, then why it is the one being offered. */}
             {scene?.meta ? (
               <Text fontSize={12} color="$textSecondary">

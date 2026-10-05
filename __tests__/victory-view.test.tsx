@@ -154,6 +154,13 @@ describe("VictoryView feedback", () => {
     mockQuitSession.mockClear();
   });
 
+  it("asks how it went with glyphs, not emoji", async () => {
+    const { view } = await mountWithPendingSave();
+    for (const emoji of ["😊", "💪", "😤"]) expect(view.queryByText(emoji)).toBeNull();
+    for (const v of ["easy", "good", "hard"])
+      expect(view.getByLabelText(`session.feedback_${v}`)).toBeTruthy();
+  });
+
   it("persists a feeling tapped while the save is still in flight", async () => {
     const { view, release } = await mountWithPendingSave();
 

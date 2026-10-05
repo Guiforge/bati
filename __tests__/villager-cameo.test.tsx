@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 
 import { act, fireEvent, render } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import VillagePage from "@/app/(tabs)/village";
 import { cameoBand } from "@/components/chorus/cameoAnchor";
 import { VillagerCameo } from "@/components/chorus/VillagerCameo";
+import { rawColors } from "@/constants/rawColors";
 import { CAMEO_LINGER_MS, TYPE_MS_PER_CHAR } from "@/constants/villagers";
 import en from "@/locales/en.json";
 import { useChorusStore } from "@/stores/chorus";
@@ -159,6 +161,17 @@ describe("the Village's floating villager", () => {
     await rerender(villageTree());
     await flush();
     expect(preferences.setGuidesSeen).toHaveBeenCalledWith(["guide_village"]);
+  });
+
+  it("speaks in a bone bubble with dark ink", async () => {
+    const { getByTestId } = await renderVillage();
+    await act(() => {
+      speak();
+    });
+    const bubble = StyleSheet.flatten(getByTestId("villager-bubble").props.style);
+    expect(bubble.backgroundColor).toBe(rawColors.text);
+    const text = StyleSheet.flatten(getByTestId("villager-line").props.style);
+    expect(text.color).toBe(rawColors.bgDark);
   });
 
   it("shows the line", async () => {

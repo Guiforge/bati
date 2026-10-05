@@ -86,6 +86,9 @@ const FILL_LABELS = [
   ["bgDark", "error"],
   ["bgDark", "warning"],
   ["bgDark", "resourceGold"],
+  // The villager bubble is bone, and what is written on it is ink.
+  ["ink800", "text"],
+  ["bgDark", "text"],
 ] as const;
 
 const AA_TEXT = 4.5;

@@ -12,7 +12,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Text, XStack, YStack } from "tamagui";
+import { Button, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { recordCue } from "@/components/chorus/recordCue";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
@@ -20,6 +20,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
+import { Recitatif } from "@/components/common/Recitatif";
 import { useToast } from "@/components/common/Toast";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { ShareButton } from "@/components/share/ShareButton";
@@ -435,6 +436,8 @@ export function VictoryView() {
           mt="$4"
           p={0}
           overflow="hidden"
+          borderWidth={1.5}
+          borderColor="$borderStrong"
           {...(isBossDefeat ? { borderWidth: 2, borderColor: "$resourceGold" } : null)}
         >
           {/* The ratio follows the source, because this slot serves two of them: a felled boss is
@@ -480,9 +483,7 @@ export function VictoryView() {
                   : t("session.victory_title")
                 ).toUpperCase()}
               </Text>
-              <H1 fontFamily="$body" fontWeight="700" color="$text" fontSize={26} lineHeight={31}>
-                {heroTitle}
-              </H1>
+              <Recitatif>{heroTitle}</Recitatif>
               {isBossDefeat && (
                 <Text
                   fontFamily="$body"
@@ -649,11 +650,11 @@ export function VictoryView() {
           <XStack gap="$3" justify="center">
             {(
               [
-                { value: "easy", emoji: "😊", accent: "$success" },
-                { value: "good", emoji: "💪", accent: "$primary" },
-                { value: "hard", emoji: "😤", accent: "$error" },
+                { value: "easy", glyph: "wind", accent: "$success" },
+                { value: "good", glyph: "sword", accent: "$primaryText" },
+                { value: "hard", glyph: "flame", accent: "$error" },
               ] as const
-            ).map(({ value, emoji, accent }) => (
+            ).map(({ value, glyph, accent }) => (
               <Button
                 key={value}
                 flex={1}
@@ -669,7 +670,7 @@ export function VictoryView() {
                 accessibilityRole="button"
               >
                 <YStack items="center" gap="$1">
-                  <Text fontSize={20}>{emoji}</Text>
+                  <GameIcon name={glyph} size={22} color={feedback === value ? accent : "$text"} />
                   <Text
                     color="$text"
                     fontSize={12}

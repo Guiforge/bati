@@ -1,9 +1,11 @@
 import { act, render } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { useTypedLine } from "@/components/chorus/useTypedLine";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
+import { rawColors } from "@/constants/rawColors";
 import { CAMEO_LINGER_MS, TYPE_MS_PER_CHAR } from "@/constants/villagers";
 import en from "@/locales/en.json";
 import { type Cameo, type CueOwner, useChorusStore } from "@/stores/chorus";
@@ -63,6 +65,17 @@ describe("VillagerLine", () => {
   it("draws nothing when nobody speaks and no slot is asked for", async () => {
     const { queryByTestId } = await render(tree());
     expect(queryByTestId("villager-line-block")).toBeNull();
+  });
+
+  it("speaks in a bone bubble with dark ink", async () => {
+    const { getByTestId } = await render(tree());
+    await act(() => {
+      speak("rest", REST_LINE);
+    });
+    const bubble = StyleSheet.flatten(getByTestId("villager-line-block").props.style);
+    expect(bubble.backgroundColor).toBe(rawColors.text);
+    const text = StyleSheet.flatten(getByTestId("villager-line").props.style);
+    expect(text.color).toBe(rawColors.bgDark);
   });
 
   it("shows the line and carries nothing a touch could land on", async () => {

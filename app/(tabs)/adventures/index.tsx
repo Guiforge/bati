@@ -207,7 +207,7 @@ function AdventureCard({
             />
           ) : (
             <YStack flex={1} items="center" justify="center">
-              <Text fontSize={44}>🗺️</Text>
+              <GameIcon name="scroll" size={44} color="$textSecondary" />
             </YStack>
           )}
           <XStack position="absolute" t="$3" l="$3" items="center" gap="$2">

@@ -144,7 +144,7 @@ function Traits({ fight, isEnraged }: { fight: BossFight; isEnraged: boolean }) 
           </Trait>
         ) : null}
         {fight.weaknessMuscle ? (
-          <Trait icon={<Target size={12} color="$primaryText" />}>
+          <Trait icon={<Target size={12} color="$primaryText" />} color="$primaryText">
             {t("boss.weakness")} · {t(`muscles.${fight.weaknessMuscle}`)}
           </Trait>
         ) : null}

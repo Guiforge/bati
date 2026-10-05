@@ -30,11 +30,11 @@ export function OathFulfilledCard({ oath, bonusXp }: { oath: OathProgress; bonus
       items="center"
     >
       <XStack items="center" gap="$2">
-        <GameIcon name="star" size={20} color="$primaryText" />
-        <Text fontWeight="700" fontSize={16} color="$primaryText" style={{ textAlign: "center" }}>
+        <GameIcon name="star" size={20} color="$resourceGold" />
+        <Text fontWeight="700" fontSize={16} color="$resourceGold" style={{ textAlign: "center" }}>
           {t("oath.fulfilled_title")}
         </Text>
-        <GameIcon name="star" size={20} color="$primaryText" />
+        <GameIcon name="star" size={20} color="$resourceGold" />
       </XStack>
 
       <YStack
@@ -54,7 +54,12 @@ export function OathFulfilledCard({ oath, bonusXp }: { oath: OathProgress; bonus
           {t("oath.fulfilled_subtitle")}
         </Text>
         {bonusXp > 0 && (
-          <Text fontWeight="700" fontSize={15} color="$primaryText" style={{ textAlign: "center" }}>
+          <Text
+            fontWeight="700"
+            fontSize={15}
+            color="$resourceGold"
+            style={{ textAlign: "center" }}
+          >
             {t("oath.fulfilled_xp_bonus", { count: formatCount(language, bonusXp) })}
           </Text>
         )}

@@ -149,7 +149,11 @@ function PresetRow({
               <Text fontSize={12} color="$textSecondary">
                 {t("oath.preset_standing", { current, target: standing.target })}
               </Text>
-              <ProgressBar progress={Math.min(100, (current / standing.target) * 100)} />
+              <ProgressBar
+                progress={Math.min(100, (current / standing.target) * 100)}
+                color="$resourceGold"
+                trackColor="$gold800"
+              />
             </>
           ) : null}
         </YStack>
@@ -205,7 +209,7 @@ function CurrentOathCard({
         </Text>
       </XStack>
 
-      <ProgressBar progress={progress.progress} />
+      <ProgressBar progress={progress.progress} color="$resourceGold" trackColor="$gold800" />
 
       <Text fontSize={13} color="$text" opacity={0.75}>
         {progress.isFulfilled

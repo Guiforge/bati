@@ -219,7 +219,7 @@ export function ExercisePickerSheet({
                     // this movement, which beats saying who wrote it. Otherwise: a hero may own
                     // a name seed content also owns, and two identical rows are unpickable.
                     caption ? (
-                      <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+                      <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
                         {caption}
                       </Text>
                     ) : exercise.creator === ADMIN_CREATOR ? undefined : (

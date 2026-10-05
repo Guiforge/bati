@@ -64,8 +64,8 @@ function LeadsToCaption({ name }: { name: string }) {
   const { t } = useTranslation();
   return (
     <XStack items="center" gap="$1">
-      <Link2 size={11} color="$primaryText" strokeWidth={2.5} />
-      <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+      <Link2 size={11} color="$muted" strokeWidth={2.5} />
+      <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
         {t("exercises.leads_to", { name, defaultValue: `leads to ${name}` })}
       </Text>
     </XStack>

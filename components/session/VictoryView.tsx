@@ -468,7 +468,7 @@ export function VictoryView() {
               <VillagerLine owner="victory" reserve={villagerSlot} />
             </YStack>
             <YStack position="absolute" t="$3" l="$3">
-              <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$primaryText" />
+              <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$resourceGold" />
             </YStack>
             <YStack position="absolute" b={0} l={0} r={0} p="$4" gap="$1">
               <Text
@@ -589,7 +589,7 @@ export function VictoryView() {
               testID={result ? "session-victory-xp" : undefined}
               fontWeight="700"
               fontSize={26}
-              color="$primaryText"
+              color="$resourceGold"
               fontFamily="$body"
             >
               {result

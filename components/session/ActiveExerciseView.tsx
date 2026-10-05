@@ -754,7 +754,7 @@ export function ActiveExerciseView() {
                 fontSize={12}
                 fontWeight="700"
                 color={
-                  bossFight?.weaknessMuscle === targetMuscle ? "$resourceGold" : "$textSecondary"
+                  bossFight?.weaknessMuscle === targetMuscle ? "$primaryText" : "$textSecondary"
                 }
                 style={{ textAlign: "center" }}
               >

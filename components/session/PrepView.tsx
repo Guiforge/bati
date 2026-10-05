@@ -183,7 +183,7 @@ export function PrepView({
       <Text
         fontSize={13}
         fontWeight="700"
-        color="$primaryText"
+        color="$textSecondary"
         letterSpacing={1}
         textTransform="uppercase"
       >

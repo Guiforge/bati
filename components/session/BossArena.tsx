@@ -467,7 +467,7 @@ function StatusLine({
         {!!weaknessMuscle && (
           <XStack items="center" gap="$1">
             <Target size={12} color="$primaryText" />
-            <Text fontSize={11} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+            <Text fontSize={11} fontWeight="700" color="$primaryText" numberOfLines={1}>
               {t(`muscles.${weaknessMuscle}`)}
             </Text>
           </XStack>

@@ -414,7 +414,7 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
             {t("village.tier_next_line", { level: progress.nextLevel, count: progress.levelsAway })}
           </Text>
           <YStack gap={6} pt={2}>
-            <ProgressBar progress={progress.progress} height={5} color="$primaryText" />
+            <ProgressBar progress={progress.progress} height={5} color="$resourceGold" />
             <BarEnds
               left={t("village.tier_bar_end", {
                 level: progress.fromLevel,

@@ -26,7 +26,7 @@ type Props = {
 function RecordIcon({ type }: { type: NewRecordResult["recordType"] }) {
   switch (type) {
     case "longest_session":
-      return <Clock size={20} color="$primaryText" />;
+      return <Clock size={20} color="$resourceGold" />;
     case "most_xp":
       // Gold, the colour XP is written in everywhere else. `$pastelYellow` is not a pale yellow
       // but #33301A, a legacy safety-net tone: on the `$background` row right below, near black
@@ -38,9 +38,9 @@ function RecordIcon({ type }: { type: NewRecordResult["recordType"] }) {
     case "exercise_max_time":
       return <Clock size={20} color="$resourceGold" />;
     case "longest_outing":
-      return <Footprints size={20} color="$primaryText" />;
+      return <Footprints size={20} color="$resourceGold" />;
     default:
-      return <Award size={20} color="$primaryText" />;
+      return <Award size={20} color="$resourceGold" />;
   }
 }
 
@@ -122,14 +122,13 @@ export function NewRecordsBadge({ records }: Props) {
       <Card bg="$pastelYellow" borderColor="$primary">
         <YStack gap="$3">
           <XStack items="center" gap="$2" justify="center">
-            <Award size={22} color="$primaryText" />
-            {/* $text, not $primaryText: 18px bold is 13.5pt, just under WCAG's 14pt "large"
-                threshold, so it needs 4.5:1 — and $primaryText on $pastelYellow is 3.65. The
-                icons either side keep it: a meaningful icon only needs 3:1. */}
-            <Text fontWeight="700" fontSize={18} color="$text">
+            <Award size={22} color="$resourceGold" />
+            {/* Gold on $pastelYellow (#2A2413) is 8.0:1: the title clears the 4.5:1 body floor
+                (18px bold is 13.5pt, just under WCAG's "large"), not only the 3:1 an icon needs. */}
+            <Text fontWeight="700" fontSize={18} color="$resourceGold">
               {t("session.new_records", { count: records.length })}
             </Text>
-            <Award size={22} color="$primaryText" />
+            <Award size={22} color="$resourceGold" />
           </XStack>
 
           <YStack gap="$2">
@@ -149,7 +148,7 @@ export function NewRecordsBadge({ records }: Props) {
                 <Text flex={1} fontWeight="700" fontSize={13} color="$text">
                   <RecordLabel record={record} language={language} />
                 </Text>
-                <Text fontWeight="700" fontSize={14} color="$primaryText">
+                <Text fontWeight="700" fontSize={14} color="$resourceGold">
                   {formatRecordValue(record, distanceUnit, language)}
                 </Text>
               </XStack>

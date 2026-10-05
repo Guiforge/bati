@@ -63,11 +63,11 @@ function BestEffortCard({
   return (
     <Card {...reveal} width="100%" maxW={520} bg="$surface2" gap="$3">
       <XStack items="center" gap="$2" justify="center">
-        <GameIcon name="trophy" size={20} color="$primaryText" />
-        <Text fontWeight="700" fontSize={16} color="$primaryText">
+        <GameIcon name="trophy" size={20} color="$resourceGold" />
+        <Text fontWeight="700" fontSize={16} color="$resourceGold">
           {t("session.standing_title", "Best effort")}
         </Text>
-        <GameIcon name="trophy" size={20} color="$primaryText" />
+        <GameIcon name="trophy" size={20} color="$resourceGold" />
       </XStack>
       <XStack
         bg="$background"
@@ -97,7 +97,7 @@ function BestEffortCard({
             {t(`session.standing_${standing.scope}_${standing.rank}`, { count: standing.outOf })}
           </Text>
         </YStack>
-        <Text fontWeight="700" fontSize={15} color="$primaryText">
+        <Text fontWeight="700" fontSize={15} color="$resourceGold">
           {formatTarget({ type: standing.type, value: standing.value }, language)}
         </Text>
       </XStack>
@@ -151,10 +151,10 @@ export function SessionRewards({
               items="center"
               justify="center"
             >
-              <GameIcon name="star" size={30} color="$primaryText" />
+              <GameIcon name="star" size={30} color="$resourceGold" />
             </YStack>
             <YStack flex={1}>
-              <Text fontWeight="700" fontSize={13} color="$primaryText" textTransform="uppercase">
+              <Text fontWeight="700" fontSize={13} color="$resourceGold" textTransform="uppercase">
                 {t("session.level_up", "Level Up!")}
               </Text>
               <Text fontWeight="700" fontSize={20} color="$text">
@@ -187,7 +187,7 @@ export function SessionRewards({
             />
           </YStack>
           <YStack p="$4" gap="$1" items="center">
-            <Text fontWeight="700" fontSize={13} color="$primaryText" textTransform="uppercase">
+            <Text fontWeight="700" fontSize={13} color="$resourceGold" textTransform="uppercase">
               {t("session.village_tier_up_title", "Your village grew!")}
             </Text>
             <Text fontWeight="700" fontSize={20} color="$text" style={{ textAlign: "center" }}>
@@ -201,16 +201,16 @@ export function SessionRewards({
       {result.villageGrowth.length > 0 && (
         <Card {...reveal} width="100%" maxW={520} bg="$surface2" gap="$3">
           <XStack items="center" gap="$2" justify="center">
-            <GameIcon name="castle" size={22} color="$primaryText" />
+            <GameIcon name="castle" size={22} color="$resourceGold" />
             <Text
               fontWeight="700"
               fontSize={16}
-              color="$primaryText"
+              color="$resourceGold"
               style={{ textAlign: "center" }}
             >
               {t("session.village_growth_title", "Your village grows")}
             </Text>
-            <GameIcon name="castle" size={22} color="$primaryText" />
+            <GameIcon name="castle" size={22} color="$resourceGold" />
           </XStack>
           <YStack gap="$2">
             {result.villageGrowth.slice(0, VILLAGE_GROWTH_SHOWN).map((g) => (
@@ -271,11 +271,11 @@ export function SessionRewards({
       {result.newRungs.length > 0 && (
         <Card {...reveal} width="100%" maxW={520} bg="$surface2" gap="$3">
           <XStack items="center" gap="$2" justify="center">
-            <GameIcon name="muscle" size={20} color="$primaryText" />
+            <GameIcon name="muscle" size={20} color="$resourceGold" />
             <Text
               fontWeight="700"
               fontSize={16}
-              color="$primaryText"
+              color="$resourceGold"
               style={{ textAlign: "center" }}
             >
               {result.newRungs.length === 1
@@ -285,7 +285,7 @@ export function SessionRewards({
                     defaultValue: `${result.newRungs.length} new steps unlocked`,
                   })}
             </Text>
-            <GameIcon name="muscle" size={20} color="$primaryText" />
+            <GameIcon name="muscle" size={20} color="$resourceGold" />
           </XStack>
           <YStack gap="$2">
             {result.newRungs.map((step) => (
@@ -345,18 +345,18 @@ export function SessionRewards({
           gap="$3"
         >
           <XStack items="center" gap="$2" justify="center">
-            <GameIcon name="trophy" size={20} color="$primaryText" />
+            <GameIcon name="trophy" size={20} color="$resourceGold" />
             <Text
               fontWeight="700"
               fontSize={16}
-              color="$primaryText"
+              color="$resourceGold"
               style={{ textAlign: "center" }}
             >
               {result.newAchievements.length === 1
                 ? t("achievements.new_unlock")
                 : t("achievements.new_unlocks", { count: result.newAchievements.length })}
             </Text>
-            <GameIcon name="trophy" size={20} color="$primaryText" />
+            <GameIcon name="trophy" size={20} color="$resourceGold" />
           </XStack>
           <YStack gap="$2">
             {result.newAchievements.map((a) => (

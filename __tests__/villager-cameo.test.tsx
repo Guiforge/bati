@@ -163,15 +163,16 @@ describe("the Village's floating villager", () => {
     expect(preferences.setGuidesSeen).toHaveBeenCalledWith(["guide_village"]);
   });
 
-  it("speaks in a bone bubble with dark ink", async () => {
+  it("speaks in a parchment bubble with dark ink", async () => {
     const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speak();
     });
     const bubble = StyleSheet.flatten(getByTestId("villager-bubble").props.style);
-    expect(bubble.backgroundColor).toBe(rawColors.text);
+    expect(bubble.backgroundColor).toBe(rawColors.parchment);
     const text = StyleSheet.flatten(getByTestId("villager-line").props.style);
     expect(text.color).toBe(rawColors.bgDark);
+    expect([undefined, "400"]).toContain(text.fontWeight);
     expect(getByText("villagers.names.farmer")).toHaveStyle({ color: rawColors.ink800 });
   });
 

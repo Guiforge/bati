@@ -67,13 +67,13 @@ describe("VillagerLine", () => {
     expect(queryByTestId("villager-line-block")).toBeNull();
   });
 
-  it("speaks in a bone bubble with dark ink", async () => {
+  it("speaks in a parchment bubble with dark ink", async () => {
     const { getByTestId } = await render(tree());
     await act(() => {
       speak("rest", REST_LINE);
     });
     const bubble = StyleSheet.flatten(getByTestId("villager-bubble").props.style);
-    expect(bubble.backgroundColor).toBe(rawColors.text);
+    expect(bubble.backgroundColor).toBe(rawColors.parchment);
     const text = StyleSheet.flatten(getByTestId("villager-line").props.style);
     expect(text.color).toBe(rawColors.bgDark);
     // The face is the bubble's sibling, so the tail can point at it from outside.
@@ -83,6 +83,25 @@ describe("VillagerLine", () => {
       }),
     ).toBeNull();
     expect(getByTestId("villager-face", { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it("frames the face in an ink medallion and top-aligns the row", async () => {
+    const { getByTestId } = await render(tree());
+    await act(() => {
+      speak("rest", REST_LINE);
+    });
+    const medallion = StyleSheet.flatten(getByTestId("villager-medallion").props.style);
+    expect(medallion.backgroundColor).toBe(rawColors.bgDark);
+    expect(medallion.width).toBe(48);
+    expect(medallion.borderTopLeftRadius).toBe(24);
+    expect(medallion.borderTopWidth).toBe(1.5);
+    expect(
+      within(getByTestId("villager-medallion")).getByTestId("villager-face", {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
+    const row = StyleSheet.flatten(getByTestId("villager-line-block").props.style);
+    expect(row.alignItems).toBe("flex-start");
   });
 
   it("shows the line and carries nothing a touch could land on", async () => {

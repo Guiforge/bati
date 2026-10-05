@@ -114,6 +114,8 @@ export const rawColors = {
   gold800: "#362C15",
   gold900: "#211B0E",
   ink800: "#262A33",
+  /** The phylactère's paper, a step under bone so a speech bubble never outshines the screen's action; ink text 12.6:1, ink800 name 9.3:1. */
+  parchment: "#D9CFBC",
   ink900: "#101217",
   /** `glassBorder` at nothing: the ends of a fading rule. Transparent black would grey it. */
   glassBorderClear: "rgba(236, 228, 212, 0)",

@@ -39,25 +39,38 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
       accessible
       accessibilityLabel={`${t(`villagers.names.${speaking.villager}`)}. ${speaking.line}`}
       gap="$2"
-      items="center"
+      items="flex-start"
     >
-      {/* The face, not the figure: at this size a full body is a smudge. */}
-      <Image
-        testID="villager-face"
-        source={getVillagerAsset(speaking.villager, speaking.pose)}
-        style={{ width: 44, height: 44, borderRadius: 22 }}
-        contentFit="cover"
-        contentPosition="top"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      />
-      {/* A bone bubble beside the face, in the banner and in the flow alike. Its tail sits in the
-          8 dp gap and points at the face, so the slot's overflow never clips it. */}
-      <YStack testID="villager-bubble" flex={1} minW={0} bg="$text" rounded="$1" p="$2">
+      {/* The face, not the figure: at this size a full body is a smudge. It sits in an ink
+          medallion, top-aligned with the bubble, so the tail points at its centre. */}
+      <YStack
+        testID="villager-medallion"
+        width={48}
+        height={48}
+        rounded={24}
+        bg="$bgDark"
+        borderWidth={1.5}
+        borderColor="$borderStrong"
+        items="center"
+        justify="center"
+      >
+        <Image
+          testID="villager-face"
+          source={getVillagerAsset(speaking.villager, speaking.pose)}
+          style={{ width: 44, height: 44, borderRadius: 22 }}
+          contentFit="cover"
+          contentPosition="top"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        />
+      </YStack>
+      {/* A parchment bubble beside the medallion, in the banner and in the flow alike. Its tail
+          sits in the 8 dp gap and points at the face, so the slot's overflow never clips it. */}
+      <YStack testID="villager-bubble" flex={1} minW={0} bg="$parchment" rounded="$1" p="$2">
         <View
           position="absolute"
           l={-8}
-          t={14}
+          t={17}
           width={0}
           height={0}
           borderTopWidth={7}
@@ -65,7 +78,7 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
           borderRightWidth={8}
           borderTopColor="transparent"
           borderBottomColor="transparent"
-          borderRightColor="$text"
+          borderRightColor="$parchment"
         />
         {/* The speaker is the cue that this is speech; the line itself is regular weight, so it
             does not read as the screen's own instruction. */}

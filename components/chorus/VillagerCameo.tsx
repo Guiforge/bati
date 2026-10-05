@@ -110,7 +110,7 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
           />
           <YStack
             testID="villager-bubble"
-            bg="$text"
+            bg="$parchment"
             p="$3"
             rounded="$1"
             maxW={width - figureWidth - 40}
@@ -130,18 +130,18 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
               borderRightWidth={9}
               borderTopColor="transparent"
               borderBottomColor="transparent"
-              borderRightColor="$text"
+              borderRightColor="$parchment"
             />
             <Text fontSize={12} fontWeight="700" color="$ink800" accessible={false}>
               {name}
             </Text>
             {/* The rest of the line is transparent rather than omitted, so the bubble is its final
                 size from the first character. */}
-            <Paragraph color="$bgDark" fontWeight="700" fontSize={14} accessible={false}>
-              <Paragraph testID="villager-line" color="$bgDark" fontWeight="700" fontSize={14}>
+            <Paragraph color="$bgDark" fontSize={14} accessible={false}>
+              <Paragraph testID="villager-line" color="$bgDark" fontSize={14}>
                 {shown}
               </Paragraph>
-              <Paragraph color="transparent" fontWeight="700" fontSize={14}>
+              <Paragraph color="transparent" fontSize={14}>
                 {rest}
               </Paragraph>
             </Paragraph>

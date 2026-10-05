@@ -63,14 +63,17 @@ export function AppButton({
       fontFamily="$heading"
       fontWeight="700"
       fontSize={20}
-      // A translate, never a border-width change, so nothing below the button moves.
+      // A translate, never a border-width change, so nothing below the button moves. No
+      // `transition` anywhere: Tamagui runs its animation hooks only when one is set, so a
+      // caller toggling backgroundColor or variant on a mounted button changed the hook shape
+      // and threw. Presses are instant.
       {...(seal
         ? {
             borderBottomWidth: 3,
             borderBottomColor: "$primaryEdge",
             pressStyle: { y: 2, borderBottomColor: "$primary", opacity: 0.95 },
           }
-        : { transition: "quick", pressStyle: { opacity: 0.9, scale: 0.98 } })}
+        : { pressStyle: { opacity: 0.9, scale: 0.98 } })}
       {...buttonProps}
     >
       {children}

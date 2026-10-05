@@ -790,11 +790,8 @@ export function ActiveExerciseView() {
         ) : (
           <AppButton
             testID="session-complete-exercise"
-            // AppButton gives the seal no `transition` and the signal fills one, and Tamagui
-            // runs its animation hooks only when a transition exists: flipping between the two
-            // on a mounted button throws "Should have a queue". A key remounts it instead.
-            key={isPastTarget ? "past" : "under"}
             height={60}
+            fontSize={24}
             backgroundColor={isPastTarget ? "$success" : undefined}
             onPress={handleDonePress}
             accessibilityLabel={

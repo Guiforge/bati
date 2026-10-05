@@ -341,6 +341,7 @@ export function RestView() {
         <AppButton
           testID="session-skip-rest"
           height={60}
+          fontSize={24}
           onPress={handleSkipRest}
           accessibilityLabel={t(copy.ctaLabel)}
           accessibilityRole="button"

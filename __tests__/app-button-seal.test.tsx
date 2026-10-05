@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
-import type { ReactElement } from "react";
+import type { ComponentProps, ReactElement } from "react";
 import { StyleSheet } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
@@ -61,6 +61,26 @@ describe("AppButton, the seal", () => {
     const flat = StyleSheet.flatten(screen.getByTestId("press").props.style);
     expect(flat.borderBottomWidth).toBe(3);
     expect(JSON.stringify(flat.transform)).toContain('"translateY":2');
+  });
+
+  it("survives backgroundColor and variant toggling on a mounted instance", async () => {
+    const edge = () => StyleSheet.flatten(screen.getByTestId("t").props.style).borderBottomWidth;
+    const ui = (props: Partial<ComponentProps<typeof AppButton>>) =>
+      themed(
+        <AppButton testID="t" {...props}>
+          Go
+        </AppButton>,
+      );
+    const view = await render(ui({}));
+    expect(edge()).toBe(3);
+    await view.rerender(ui({ backgroundColor: "$success" }));
+    expect(edge()).not.toBe(3);
+    await view.rerender(ui({}));
+    expect(edge()).toBe(3);
+    await view.rerender(ui({ variant: "outline" }));
+    expect(edge()).not.toBe(3);
+    await view.rerender(ui({ variant: "primary" }));
+    expect(edge()).toBe(3);
   });
 
   it("refuses a caller's pressStyle and rounded", () => {

@@ -40,7 +40,6 @@ const headingFont = createFont({
   face: {
     400: { normal: "Alegreya_400Regular" },
     700: { normal: "Alegreya_700Bold" },
-    800: { normal: "Alegreya_800ExtraBold" },
   },
 });
 

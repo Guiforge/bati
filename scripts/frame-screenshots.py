@@ -23,11 +23,11 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 # Palette — the app's own, so a screenshot and the app it shows belong to one world.
 # ---------------------------------------------------------------------------------------------
 VOID = (12, 13, 17)  # $bgDark
-SURFACE = (16, 19, 34)  # $surface
-TEXT = (232, 236, 255)  # $text
-DIM = (144, 154, 203)  # $textSecondary
-ACCENT = (100, 124, 247)  # $primaryText — the AA-legible blue, not the fill blue
-GOLD = (255, 215, 0)  # $resourceGold, for the one number worth shouting
+SURFACE = (21, 23, 28)  # $surface
+TEXT = (236, 228, 212)  # $text
+DIM = (168, 156, 136)  # $textSecondary
+ACCENT = (240, 138, 75)  # $primaryText — the AA-legible braise, not the fill
+GOLD = (226, 181, 74)  # $resourceGold, for the one number worth shouting
 
 CANVAS = (1242, 2688)  # Play's tallest phone slot; F-Droid takes the same file
 MARGIN = 64

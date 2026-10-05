@@ -44,7 +44,7 @@ typography:
   display:
     fontFamily: "Alegreya, Georgia, serif"
     fontSize: "44px"
-    fontWeight: 800
+    fontWeight: 700
     lineHeight: "52px"
   headline:
     fontFamily: "Alegreya, Georgia, serif"
@@ -68,7 +68,7 @@ typography:
     fontWeight: 400
     lineHeight: "24px"
   button:
-    fontFamily: "NotoSans, system-ui, sans-serif"
+    fontFamily: "Alegreya, Georgia, serif"
     fontSize: "20px"
     fontWeight: 700
   caption:
@@ -98,7 +98,7 @@ components:
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
-    borderColor: "{colors.primary-edge}"
+    borderColor: "{colors.border-strong}"  # sides; the bottom edge is primary-edge, 3px
     rounded: "{rounded.md}"
     height: "44px"
   button-outline:
@@ -160,8 +160,8 @@ feel immersive but remain operationally clear in the middle of a workout.
   Difficulty maps to them one-to-one (`DIFFICULTY_COLORS`): easy `$success`, medium `$primary`,
   hard `$error`.
 - **Fills and their text.** `$primary` fills take `$onPrimary`. `$success`, `$error`, `$warning`
-  and `$resourceGold` fills take `$bgDark` text (7.9, 5.8, 8.9, 10.1:1). Light text on those fills
-  is banned (2.0 to 3.6:1).
+  and `$resourceGold` fills take `$bgDark` text (7.9, 5.8, 7.81, 10.1:1). Light text on those fills
+  is banned (1.5 to 3.1:1).
 - `$bgDark` (the Void, "encre froide"), `$surface`, `$surface2`: layered depth. `$bgOverlay` for
   sheets, `$bgOverlaySoft` or `$glassBg` + `$glassBorder` over artwork.
 - `$text` (bone), `$textSecondary` (ash): reading hierarchy. `$muted` resolves to `$textSecondary`
@@ -185,7 +185,7 @@ opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
 
 - Default border: 1px `$borderStrong`, or `$glassBorder` on glass. The one hero card of a screen
   (Home's quest stage, the Victory card) takes 1.5px.
-- `$borderStrong` is 1.6:1 on `$bgDark`: decorative. A control is recognised by its fill and
+- `$borderStrong` is 1.71:1 on `$bgDark`: decorative. A control is recognised by its fill and
   shape, never by its border alone.
 - Avoid thick white/off-white border accents on cards and buttons.
 - Cards have no drop shadow and there is no `flat` variant. Elevation comes from contrast and
@@ -194,13 +194,13 @@ opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
 - **Récitatif.** A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill,
   1px `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art
   (`components/common/Recitatif.tsx`).
-- **Phylactère.** A villager's spoken line is a bone bubble (`$text` fill, `$bgDark` text, radius
-  `$1`, a tail toward the speaker), never a dark card.
+- **Phylactère.** A villager's spoken line is a bone bubble (`$text` fill, `$bgDark` line, speaker name
+  in `$ink800`, radius `$1`, a tail toward the speaker), never a dark card.
 - No texture overlays, no halftone, no tilted panels, no hand-lettered fonts.
 
 ### Typography
 
-- Titles: `Alegreya` (`$heading`), 700 and 800, 400 for the rare light heading. No letter spacing.
+- Titles: `Alegreya` (`$heading`), 700 (400 for the rare light heading). No letter spacing.
   Alegreya never sets a digit: timers, HP, XP, levels and counts stay in `NotoSans` (`$body`)
   with tabular numerals.
 - Body and utility reading: `NotoSans` (`$body`).
@@ -218,7 +218,8 @@ exact tokens rather than rounding.
 ### Motion
 
 - `quick` spring (damping 30, stiffness 400): every press, no overshoot, ~150 to 200 ms.
-  Cards press to 0.99 / 0.92. The seal button does not spring: it moves down 2px.
+  Cards press to 0.99 / 0.92, the outline button to 0.98 / 0.9. The seal button does not
+  spring: it moves down 2px.
 - `bouncy` spring (damping 14, stiffness 150): rewards only.
 - Reduced motion follows the OS live; with it on, animations are switched off.
 
@@ -235,8 +236,8 @@ exact tokens rather than rounding.
 
 - Variants: `primary` (the **seal**) and `outline` (`$background`, `$text` label). `AppButton`
   derives the label colour and forbids `pressStyle`, `rounded` and `bg` overrides.
-- The seal: radius `$3`, a 3px bottom edge in `$primaryEdge`, label in the title font in
-  `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill colour.
+- Every button label is set in the title font (`$heading`, 20/700). The seal: radius `$3`, sides
+  in `$borderStrong`, a 3px bottom edge in `$primaryEdge`, label in `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill colour.
 - Interaction: consistent `pressed`, `disabled`, and loading states.
 - Minimum hit area: 44x44. `AppButton` enforces it as `minH`; a smaller glyph or button gets
   `hitSlop` to reach it.

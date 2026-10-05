@@ -44,7 +44,7 @@ typography:
   display:
     fontFamily: "Alegreya, Georgia, serif"
     fontSize: "44px"
-    fontWeight: 800
+    fontWeight: 700
     lineHeight: "52px"
   headline:
     fontFamily: "Alegreya, Georgia, serif"
@@ -68,7 +68,7 @@ typography:
     fontWeight: 400
     lineHeight: "24px"
   button:
-    fontFamily: "NotoSans, system-ui, sans-serif"
+    fontFamily: "Alegreya, Georgia, serif"
     fontSize: "20px"
     fontWeight: 700
   caption:
@@ -98,7 +98,7 @@ components:
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
-    borderColor: "{colors.primary-edge}"
+    borderColor: "{colors.border-strong}"  # sides; the bottom edge is primary-edge, 3px
     rounded: "{rounded.md}"
     height: "44px"
   button-outline:
@@ -161,7 +161,7 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
   accent; there is no second colour. Each use goes to the colour of its meaning: rewards and
   records `$resourceGold`, "hard" `$error`, a selected option `$primary`.
 - **Fills and their text.** `$primary` fills take `$onPrimary`; `$success`, `$error`, `$warning`
-  and `$resourceGold` fills take `$bgDark`. Light text on those is banned (2.0 to 3.6:1).
+  and `$resourceGold` fills take `$bgDark`. Light text on those is banned (1.5 to 3.1:1).
 - **One source per value.** No rgba literal outside `constants/rawColors.ts`; a gradient or text
   shadow that needs a translucent token calls `fade(token, alpha)`.
 - **No decorative emoji** where this direction applies (end-of-session feedback, quest and
@@ -175,8 +175,8 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 - **Efficiency.** The next workout action should be reachable in ≤2 taps; avoid modal-heavy
   paths when inline progression works.
 - **Icons.** `useGameIcon`/`GameIcon` for fantasy/resource/game-world icons;
-  `@tamagui/lucide-icons` for utility/navigation icons. No direct `lucide-react-native`
-  imports in product UI.
+  Lucide, imported only through `components/icons.ts`, for utility/navigation icons. No direct
+  `lucide-react-native` or `@tamagui/lucide-icons` imports in product UI.
 
 ## 3) Visual foundations
 
@@ -191,7 +191,7 @@ decision record is
 
 ### Typography
 
-- Titles: `Alegreya` (`$heading`), 700 and 800, 400 for the rare light heading. No letter
+- Titles: `Alegreya` (`$heading`), 700 (400 for the rare light heading). No letter
   spacing, and never a digit: timers, HP, XP, levels and counts stay in `NotoSans` (`$body`)
   with tabular numerals.
 - Body and utility reading: `NotoSans`.
@@ -204,9 +204,10 @@ decision record is
 
 ### Buttons
 
-- Primary is the **seal**: `$primary` fill, radius `$3`, a 3px `$primaryEdge` bottom edge, label
-  in the title font in `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill
-  colour; no spring. `AppButton` derives the label colour and forbids `pressStyle`, `rounded` and
+- Every button label is set in the title font (`$heading`, 20/700). Primary is the **seal**:
+  `$primary` fill, radius `$3`, `$borderStrong` sides, a 3px `$primaryEdge` bottom edge, label in
+  `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill colour; no spring. The
+  outline button keeps the `quick` press (scale 0.98, opacity 0.9). `AppButton` derives the label colour and forbids `pressStyle`, `rounded` and
   `bg` overrides.
 - Secondary/ghost: `outline`, neutral or glass treatment.
 - Consistent `pressed`, `disabled`, and loading states. Minimum hit area 44×44.
@@ -221,8 +222,8 @@ decision record is
 - A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill, 1px
   `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art:
   [`Recitatif`](../../components/common/Recitatif.tsx).
-- A villager's spoken line is a bone bubble (`$text` fill, `$bgDark` text, radius `$1`, a tail
-  toward the speaker), never a dark card.
+- A villager's spoken line is a bone bubble (`$text` fill, `$bgDark` line, speaker name in
+  `$ink800`, radius `$1`, a tail toward the speaker), never a dark card.
 
 ### Art heroes
 

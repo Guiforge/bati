@@ -3,7 +3,6 @@
 // (24 .ttf, 5.9 MB compressed, measured on the v1.13.0 APK).
 import { Alegreya_400Regular } from "@expo-google-fonts/alegreya/400Regular";
 import { Alegreya_700Bold } from "@expo-google-fonts/alegreya/700Bold";
-import { Alegreya_800ExtraBold } from "@expo-google-fonts/alegreya/800ExtraBold";
 import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
 import { Inter_500Medium } from "@expo-google-fonts/inter/500Medium";
 import { Inter_600SemiBold } from "@expo-google-fonts/inter/600SemiBold";
@@ -88,7 +87,6 @@ export default function RootLayout() {
     Alegreya: Alegreya_400Regular,
     Alegreya_400Regular,
     Alegreya_700Bold,
-    Alegreya_800ExtraBold,
     NotoSans: NotoSans_400Regular,
     NotoSans_400Regular,
     NotoSans_700Bold,

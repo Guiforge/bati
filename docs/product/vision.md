@@ -80,10 +80,10 @@ Daily workouts fuel your Sacred Flame:
 
 ## 🎨 Visual Style
 
-**NEW_STYLE — dark-fantasy / high-tech HUD** (single dark theme). Canonical: [DESIGN.md](../design/design-system.md).
+**NEW_STYLE — inked dark-fantasy BD** (single dark theme). Canonical: [DESIGN.md](../design/design-system.md).
 
-- Deep obsidian-blue background (`#0B0F19`), **deep indigo** accent (`#4A3FD6`), gold and ember highlights, glow
-- Glassmorphism surfaces, disciplined accent, Space Grotesk display font
+- Cold ink ground (`#0C0D11`), bone text, a **braise** accent (`#C2410C`), patinated gold highlights
+- Panel frames instead of shadows, one disciplined accent, Alegreya titles
 - Immersive dark fantasy — **not** a bright cartoon / candy palette
 
 ---

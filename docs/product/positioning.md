@@ -25,7 +25,7 @@ A minimal, ludic fitness RPG that makes staying consistent feel like playing a g
 > How a sentence is actually built — punctuation, register, sentence shape — is
 > [writing.md](writing.md). This section owns the tone; that page owns the mechanics.
 
-Minimal, epic, and focused. The voice is dark and immersive: a high-tech fantasy HUD that treats a workout like a heroic quest, but never at the cost of clarity. It speaks with confidence and restraint, no clutter, no filler, no cartoon mascots. Every screen should feel like gearing up for a fight, then get out of the way so the user can train.
+Minimal, epic, and focused. The voice is dark and immersive: an inked dark-fantasy BD world that treats a workout like a heroic quest, but never at the cost of clarity. It speaks with confidence and restraint, no clutter, no filler, no cartoon mascots. Every screen should feel like gearing up for a fight, then get out of the way so the user can train.
 
 ## Anti-references
 

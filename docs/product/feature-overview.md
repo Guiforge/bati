@@ -217,7 +217,7 @@ Color-coding by muscle group.
 Visual design guidelines.
 
 - **What**: Colors, typography, components, rules
-- **Style**: Dark-fantasy / high-tech HUD
+- **Style**: Inked dark-fantasy BD
 - **Doc**: [design-system.md](../design/design-system.md)
 
 ---

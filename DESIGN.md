@@ -164,8 +164,11 @@ feel immersive but remain operationally clear in the middle of a workout.
   is banned (1.5 to 3.1:1).
 - `$bgDark` (the Void, "encre froide"), `$surface`, `$surface2`: layered depth. `$bgOverlay` for
   sheets, `$bgOverlaySoft` or `$glassBg` + `$glassBorder` over artwork.
-- **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a hero's own label) is never
-  braise: it is ash, `$textSecondary`. Braise marks actions and the few states named above.
+- **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a
+  hero's own label) is never braise: it is ash, `$textSecondary`. Braise marks actions and the few
+  states named in this section, and these: the Home advice and kicker icons (`$primaryText`), the
+  completed segments of an adventure's progress bar (`$primary`) and the avatar's fallback fill
+  (`$primary`).
 - `$text` (bone), `$textSecondary` (ash): reading hierarchy. `$muted` resolves to `$textSecondary`
   through the theme; the raw grey `muted` in `rawColors.ts` is shadowed and should not carry text.
 - `$resourceGold`: patinated gold, progression (XP, rewards, the oath strip's `$goldHairline`).

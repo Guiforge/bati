@@ -65,8 +65,8 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
         />
       </YStack>
       {/* A parchment bubble beside the medallion, in the banner and in the flow alike. Its tail
-          sits in the gap beside the medallion (overlapping it by 1 dp) and points at the face, so the
-          slot's overflow never clips it. */}
+          sits in the gap beside the medallion (overlapping it by 1 dp) and points at the face, so
+          the slot's overflow never clips it. */}
       <YStack testID="villager-bubble" flex={1} minW={0} bg="$parchment" rounded="$1" p="$2">
         <View
           testID="villager-tail"

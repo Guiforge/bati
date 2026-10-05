@@ -19,8 +19,8 @@ blocks say what they say.
 
 Franco-Belgian BD: confident black ink outlines, flat cel-shaded colour, hard-edged shadows, no
 soft airbrushing. Anchored in deep obsidian blue `#0B0F19` (the art's own background, a hair
-bluer than the app's ink `$bgDark`, #0C0D11) with edges falling
-off into darkness so an image lands on the background without a visible seam.
+bluer than the app's ink `$bgDark`, #0C0D11) with edges falling off into darkness so an image
+lands on the background without a visible seam.
 
 The app is dark-mode only. An image that arrives on white paper is not a stylistic variation, it
 is a bug, and it was the single most common failure: roughly one render in seven, until the

@@ -159,11 +159,14 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
   their soft shadow.
 - **One accent.** The braise (`$primary` fill, `$primaryText` as text or icon) is the only
   accent; there is no second colour. Each use goes to the colour of its meaning: rewards and
-  records `$resourceGold`, "hard" `$error`, a selected option `$primary`.
-- **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a hero's own label) is never
-  braise: it is ash, `$textSecondary`. Braise marks actions and the few states named above.
-- **Every primary is the seal.** Home's Start, the session's Done and the rest screen's "I'm
-  ready" are `AppButton` primaries (64 px, 24 px label in a session), never a screen-local button.
+  records `$resourceGold`, "hard" `$error`.
+- **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a
+  hero's own label) is never braise: it is ash, `$textSecondary`. Braise marks actions and these
+  states: a selected option, medium difficulty, the boss's weakness and attack glyphs, an
+  adventure in progress and its completed progress segments, the Home advice and kicker icons,
+  and the avatar's fallback fill.
+- **Every primary is the seal.** Home's Start (56 px), the session's Done and the rest screen's
+  "I'm ready" (both 64 px, 24 px label) are `AppButton` primaries, never a screen-local button.
 - **Fills and their text.** `$primary` fills take `$onPrimary`; `$success`, `$error`, `$warning`
   and `$resourceGold` fills take `$bgDark`. Light text on those is banned (1.5 to 3.1:1).
 - **One source per value.** No rgba literal outside `constants/rawColors.ts`; a gradient or text

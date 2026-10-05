@@ -7,35 +7,40 @@ import { rawColors } from "@/constants/rawColors";
 // 1. TYPOGRAPHY (The Voice of the RPG)
 // -------------------------------------------------------------------------
 // Note: You must load these fonts in your root _layout.tsx using expo-font
+// Alegreya: a calligraphic book serif, the voice of a chronicle rather than a dashboard (design
+// review 2026-10-05). Its x-height is small, so the scale sits about one step above Space
+// Grotesk's. Never tracked, never used for a digit: its figures are old-style and a timer set in
+// it jumps. Numbers stay in the body font.
 const headingFont = createFont({
-  family: "SpaceGrotesk",
+  family: "Alegreya",
   size: {
-    1: 14,
-    2: 18,
-    3: 24,
-    4: 32,
-    5: 40, // Hero/Logo size
-    6: 48,
-    true: 18,
+    1: 15,
+    2: 20,
+    3: 26,
+    4: 35,
+    5: 44,
+    6: 52,
+    true: 20,
   },
   lineHeight: {
     1: 20,
     2: 26,
     3: 32,
-    4: 40,
-    5: 50,
+    4: 42,
+    5: 52,
   },
   weight: {
-    4: "300",
+    4: "400",
     7: "700",
   },
   letterSpacing: {
     4: 0,
-    5: 4, // "tracking-widest" style
+    5: 0,
   },
   face: {
-    300: { normal: "SpaceGrotesk_300Light" },
-    700: { normal: "SpaceGrotesk_700Bold" },
+    400: { normal: "Alegreya_400Regular" },
+    700: { normal: "Alegreya_700Bold" },
+    800: { normal: "Alegreya_800ExtraBold" },
   },
 });
 

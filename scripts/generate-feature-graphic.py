@@ -33,8 +33,8 @@ from lib.flux import ROOT, record_derived  # noqa: E402
 
 BG = ROOT / "fastlane" / "featureGraphic-bg.jpg"
 FONT = (
-    ROOT / "node_modules" / "@expo-google-fonts" / "space-grotesk"
-    / "700Bold" / "SpaceGrotesk_700Bold.ttf"
+    ROOT / "node_modules" / "@expo-google-fonts" / "alegreya"
+    / "800ExtraBold" / "Alegreya_800ExtraBold.ttf"
 )
 
 # One (tagline, pointsize) per shipped locale. Two lines, six words or fewer, >=60px once

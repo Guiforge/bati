@@ -202,7 +202,7 @@ export function WarmupView() {
               cheaper than a pause. */}
           {instruction?.description ? <MovementDescription text={instruction.description} /> : null}
 
-          <H1 color="$primaryText" fontSize={64} fontWeight="700">
+          <H1 color="$primaryText" fontFamily="$body" fontSize={64} fontWeight="700">
             {formatTime(Math.max(0, remainingSeconds))}
           </H1>
 

@@ -75,7 +75,6 @@ export default function Presentation() {
             color="$text"
             fontSize={40}
             fontWeight="700"
-            letterSpacing={4}
             textShadowColor={fade(rawColors.black, 0.5)}
             textShadowOffset={{ width: 2, height: 2 }}
             textShadowRadius={0}

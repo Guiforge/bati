@@ -1,14 +1,14 @@
 // Per-weight subpaths, never the package root: the barrel index requires every weight it ships,
 // so `from "@expo-google-fonts/noto-sans"` put all 18 Noto files in the APK for the 2 used here
 // (24 .ttf, 5.9 MB compressed, measured on the v1.13.0 APK).
+import { Alegreya_400Regular } from "@expo-google-fonts/alegreya/400Regular";
+import { Alegreya_700Bold } from "@expo-google-fonts/alegreya/700Bold";
+import { Alegreya_800ExtraBold } from "@expo-google-fonts/alegreya/800ExtraBold";
 import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
 import { Inter_500Medium } from "@expo-google-fonts/inter/500Medium";
 import { Inter_600SemiBold } from "@expo-google-fonts/inter/600SemiBold";
 import { NotoSans_400Regular } from "@expo-google-fonts/noto-sans/400Regular";
 import { NotoSans_700Bold } from "@expo-google-fonts/noto-sans/700Bold";
-import { SpaceGrotesk_300Light } from "@expo-google-fonts/space-grotesk/300Light";
-import { SpaceGrotesk_400Regular } from "@expo-google-fonts/space-grotesk/400Regular";
-import { SpaceGrotesk_700Bold } from "@expo-google-fonts/space-grotesk/700Bold";
 import { useFonts } from "expo-font";
 import { DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -85,9 +85,10 @@ export default function RootLayout() {
   // match its `face` maps exactly; the bare family names cover unspecified weights. On a load
   // error the app ships system fonts rather than hanging on the splash.
   const [fontsLoaded, fontError] = useFonts({
-    SpaceGrotesk: SpaceGrotesk_400Regular,
-    SpaceGrotesk_300Light,
-    SpaceGrotesk_700Bold,
+    Alegreya: Alegreya_400Regular,
+    Alegreya_400Regular,
+    Alegreya_700Bold,
+    Alegreya_800ExtraBold,
     NotoSans: NotoSans_400Regular,
     NotoSans_400Regular,
     NotoSans_700Bold,

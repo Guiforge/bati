@@ -144,7 +144,6 @@ export default function FirstSessionStep() {
               });
             }}
             disabled={!quest && !offerDead}
-            bg="$primary"
             borderWidth={0}
           >
             {offerDead

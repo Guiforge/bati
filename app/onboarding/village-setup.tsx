@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, useTheme, XStack, YStack } from "tamagui";
+import { H2, Text, useTheme, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
@@ -171,18 +171,12 @@ export default function VillageSetup() {
                 });
               }}
               disabled={!isValidName}
-              bg={isValidName ? "$primary" : "$surface"}
+              backgroundColor={isValidName ? "$primary" : "$surface"}
               borderColor={isValidName ? "$primary" : "$borderStrong"}
               borderWidth={0}
               opacity={isValidName ? 1 : 0.5}
             >
-              <Paragraph
-                color={isValidName ? "$white" : "$textSecondary"}
-                fontWeight="700"
-                fontSize={18}
-              >
-                {t("onboarding.next", "Continue")}
-              </Paragraph>
+              {t("onboarding.next", "Continue")}
             </AppButton>
           </YStack>
         </YStack>

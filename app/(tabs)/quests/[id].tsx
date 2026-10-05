@@ -125,10 +125,11 @@ function levelLabel(level: Difficulty, t: TFunction) {
 // The Journal's difficulty breakdown (components/journal/JournalStats.tsx) reads as "this colour
 // means this level": easy success green, medium primary braise, hard error red. Success and error
 // are light fills and take ink (rule 1 of the 2026-10 refresh); primary takes $onPrimary.
-const LEVEL_CHIP_COLORS: Record<Difficulty, { bg: ColorTokens; text: ColorTokens }> = {
-  [Difficulty.Easy]: { bg: "$success", text: "$bgDark" },
-  [Difficulty.Medium]: { bg: "$primary", text: "$onPrimary" },
-  [Difficulty.Hard]: { bg: "$error", text: "$bgDark" },
+// AppButton picks the label from the fill: bgDark on success/error, onPrimary on primary.
+const LEVEL_CHIP_COLORS: Record<Difficulty, { bg: ColorTokens }> = {
+  [Difficulty.Easy]: { bg: "$success" },
+  [Difficulty.Medium]: { bg: "$primary" },
+  [Difficulty.Hard]: { bg: "$error" },
 };
 
 function LevelChip({
@@ -153,14 +154,13 @@ function LevelChip({
       // sideways would make neighbouring chips fight over the same pixels.
       hitSlop={{ top: 4, bottom: 4 }}
       px="$3"
-      bg={active ? colors.bg : "$surface"}
+      variant={active ? "primary" : "outline"}
+      backgroundColor={active ? colors.bg : "$surface"}
       borderColor={active ? colors.bg : "$borderStrong"}
       borderWidth={1}
       fontSize={14}
     >
-      <Text color={active ? colors.text : "$text"} fontWeight="700">
-        {levelLabel(value, t)}
-      </Text>
+      {levelLabel(value, t)}
     </AppButton>
   );
 }

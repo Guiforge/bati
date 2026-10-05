@@ -687,7 +687,6 @@ export default function AdventureDetailsScreen() {
             variant="primary"
             fullWidth
             height={60}
-            bg="$primary"
             borderWidth={0}
           >
             {isStarting

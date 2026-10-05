@@ -149,17 +149,11 @@ export default function TrainingLevelStep() {
           <AppButton
             onPress={() => complete(selected)}
             disabled={!selected}
-            bg={selected ? "$primary" : "$surface"}
+            backgroundColor={selected ? "$primary" : "$surface"}
             borderWidth={0}
             opacity={selected ? 1 : 0.5}
           >
-            <Paragraph
-              color={selected ? "$white" : "$textSecondary"}
-              fontWeight="700"
-              fontSize={18}
-            >
-              {t("onboarding.finish", "Start my training journey")}
-            </Paragraph>
+            {t("onboarding.finish", "Start my training journey")}
           </AppButton>
 
           <Text

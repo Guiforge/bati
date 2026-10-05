@@ -114,7 +114,7 @@ export default function Presentation() {
             borderWidth={0}
           >
             <XStack items="center" gap="$2">
-              <Text color="$onPrimary" fontWeight="700" fontSize={18}>
+              <Text color="$onPrimary" fontFamily="$heading" fontWeight="700" fontSize={18}>
                 {t("onboarding.next")}
               </Text>
 

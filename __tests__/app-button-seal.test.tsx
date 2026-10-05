@@ -25,6 +25,19 @@ describe("AppButton, the seal", () => {
     );
   });
 
+  it("gives a light signal fill, set as backgroundColor, no edge and an ink label", async () => {
+    await render(
+      themed(
+        <AppButton testID="ok" backgroundColor="$success">
+          Easy
+        </AppButton>,
+      ),
+    );
+    const flat = StyleSheet.flatten(screen.getByTestId("ok").props.style);
+    expect(flat.borderBottomWidth).not.toBe(3);
+    expect(screen.getByText("Easy")).toHaveStyle({ color: rawColors.bgDark });
+  });
+
   it("translates on press and never changes the border width", async () => {
     await render(themed(<AppButton testID="press">Go</AppButton>));
     await act(() => {
@@ -41,7 +54,7 @@ describe("AppButton, the seal", () => {
   it("refuses a caller's pressStyle and rounded", () => {
     // @ts-expect-error the seal owns its press and its radius
     const a = <AppButton pressStyle={{}}>x</AppButton>;
-    // @ts-expect-error
+    // @ts-expect-error the seal owns its radius
     const b = <AppButton rounded="$6">x</AppButton>;
     expect([a, b]).toHaveLength(2);
   });

@@ -119,7 +119,7 @@ export function NewRecordsBadge({ records }: Props) {
 
   return (
     <AnimatedView style={[animatedStyle, { width: "100%", maxWidth: 520 }]}>
-      <Card bg="$pastelYellow" borderColor="$primary">
+      <Card bg="$pastelYellow" borderColor="$gold700">
         <YStack gap="$3">
           <XStack items="center" gap="$2" justify="center">
             <Award size={22} color="$resourceGold" />

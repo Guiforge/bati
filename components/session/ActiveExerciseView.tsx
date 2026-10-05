@@ -748,7 +748,7 @@ export function ActiveExerciseView() {
             ) : null}
 
             {/* Which way this set lands, when the monster cares. One line, in the colour of what
-                it does: gold for a weak point, the warning colour for armour. */}
+                it does: braise for a weak point, ash for armour. */}
             {setStanding ? (
               <Text
                 fontSize={12}

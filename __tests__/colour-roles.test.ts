@@ -57,4 +57,36 @@ describe("colour roles", () => {
     expect(caption).toContain('color="$muted"');
     expect(read("components/exercises/MineCaption.tsx")).not.toContain("$primaryText");
   });
+
+  it("reward cards write every figure and glyph in gold", () => {
+    expect(read("components/session/SessionRewards.tsx")).not.toContain("$primaryText");
+    expect(read("components/oath/OathFulfilledCard.tsx")).not.toContain("$primaryText");
+    expect(near("components/session/NewRecordsBadge.tsx", "<Card bg=", 1)).toContain(
+      'borderColor="$gold700"',
+    );
+    expect(near("components/session/NewRecordsBadge.tsx", "fontSize={18}", 1)).toContain(
+      'color="$resourceGold"',
+    );
+  });
+
+  it("the village tier bar is gold", () => {
+    expect(
+      near("components/village/VillageLists.tsx", "progress={progress.progress}", 1),
+    ).toContain('color="$resourceGold"');
+  });
+
+  it("the boss panel's weakness trait is braise", () => {
+    expect(near("components/adventures/BossPanel.tsx", "<Target size={12}", 1)).toContain(
+      'color="$primaryText"',
+    );
+    expect(near("components/adventures/BossPanel.tsx", "<Target size={12}", 1)).toMatch(
+      /\/> ?}\s*color="\$primaryText"/,
+    );
+  });
+
+  it("the prep kicker is ash", () => {
+    expect(read("components/session/PrepView.tsx")).toMatch(
+      /color="\$textSecondary"\s+letterSpacing=\{1\}[^>]*>\s*\{kicker\}/,
+    );
+  });
 });

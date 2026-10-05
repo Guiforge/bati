@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Turn raw device captures into store screenshots.
+"""Turn raw device captures into store screenshots, each one a page of the book.
 
-    python3 scripts/frame-screenshots.py --locale fr-FR --src fastlane/raw
+    python3 scripts/frame-screenshots.py --locale fr-FR --src fastlane/raw [--out DIR]
 
-A raw screencap is honest and flat. On a store page it sits next to competitors who all have a
-headline, a device frame and some colour, and it loses on sight before anyone reads a word.
+The app's identity is an inked dark-fantasy bande dessinee, so a store shot is a planche, not a
+phone mock-up. Ink ground (#0C0D11). Behind everything, the capture's own illustration (its top
+45%, blown up to cover, blurred past reading, darkened to about a fifth of its light and faded to ink
+over the bottom 40%) so each shot carries its world. A recitatif cartouche at the margin holds the
+eyebrow (gold, tracked) and the headline (Alegreya ExtraBold, bone) over one short braise bar.
+The capture itself is a panel: ink stroke, bone hairline, soft ink shadow, running off the bottom
+edge like a panel that continues on the next page. The sigil and the name sit at the top right.
+Nothing here invents UI: the panel is exactly what the device displayed.
 
-This composes each capture into a phone, on a lit background, under a headline that names the
-feature and a line that says why it matters. Nothing here invents UI: the screen inside the phone
-is exactly what the device displayed. The frame is the only thing added, which is the line the
-stores draw too.
+Fonts come from node_modules/@expo-google-fonts, not from the system. Without --out the shots go
+to fastlane/metadata/... and the web copies to docs/legal; with --out only the shots are written.
 """
 
 import argparse
@@ -17,23 +21,26 @@ import pathlib
 import re
 import sys
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageStat
 
-# ---------------------------------------------------------------------------------------------
-# Palette — the app's own, so a screenshot and the app it shows belong to one world.
-# ---------------------------------------------------------------------------------------------
-VOID = (12, 13, 17)  # $bgDark
-SURFACE = (21, 23, 28)  # $surface
-TEXT = (236, 228, 212)  # $text
-DIM = (168, 156, 136)  # $textSecondary
-ACCENT = (240, 138, 75)  # $primaryText — the AA-legible braise, not the fill
-GOLD = (226, 181, 74)  # $resourceGold, for the one number worth shouting
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+FONTS = ROOT / "node_modules" / "@expo-google-fonts"
+ALEGREYA = FONTS / "alegreya" / "800ExtraBold" / "Alegreya_800ExtraBold.ttf"
+NOTO = FONTS / "noto-sans" / "700Bold" / "NotoSans_700Bold.ttf"
+SIGIL = ROOT / "assets" / "icon.png"
+
+# Palette: DESIGN.md's own, so a screenshot and the app it shows belong to one world.
+INK = (12, 13, 17)  # #0C0D11
+BONE = (236, 228, 212)  # #ECE4D4
+GOLD = (226, 181, 74)  # #E2B54A, the eyebrow only
+BRAISE = (194, 65, 12)  # #C2410C, one accent per image
+RULE = (54, 58, 68)  # #363A44
 
 CANVAS = (1242, 2688)  # Play's tallest phone slot; F-Droid takes the same file
 MARGIN = 64
 
 # ---------------------------------------------------------------------------------------------
-# Copy. Each shot gets an eyebrow (what feature), a headline (the promise) and the phone below.
+# Copy. Each shot gets an eyebrow (what feature), a headline (the promise) and the panel below.
 # Written to be read in the half second a thumbnail gets, so the headline carries the meaning on
 # its own and the eyebrow is only there to orient.
 # ---------------------------------------------------------------------------------------------
@@ -88,132 +95,131 @@ COPY = {
     },
 }
 
-FONT_PATHS = [
-    "/usr/share/fonts/google-noto-vf/NotoSans[wght].ttf",
-    "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans-Bold.ttf",
-]
+
+def font(path: pathlib.Path, size: int) -> ImageFont.FreeTypeFont:
+    if not path.is_file():
+        raise SystemExit(f"frame-screenshots: {path} is missing; run npm install first")
+    return ImageFont.truetype(str(path), size)
 
 
-def font(size: int, weight: str = "Bold") -> ImageFont.FreeTypeFont:
-    for path in FONT_PATHS:
-        if pathlib.Path(path).exists():
-            f = ImageFont.truetype(path, size)
-            try:
-                f.set_variation_by_name(weight)
-            except (AttributeError, OSError):
-                pass  # static font: the file already is the weight it is
-            return f
-    raise SystemExit("frame-screenshots: install Noto Sans or DejaVu")
-
-
-def backdrop() -> Image.Image:
-    """A lit background: the void, a vertical lift, and a soft accent glow behind the phone."""
+def backdrop(shot: Image.Image) -> Image.Image:
+    """The capture's own art area, covering the canvas, darkened, fading to ink below."""
     w, h = CANVAS
-    base = Image.new("RGB", (1, h))
-    px = base.load()
-    for y in range(h):
-        t = y / (h - 1)
-        # Ease the wash so the top stays dark and the lift happens behind the device.
-        e = t * t * (3 - 2 * t)
-        px[0, y] = tuple(round(a + (b - a) * e) for a, b in zip(VOID, SURFACE))
-    canvas = base.resize(CANVAS).convert("RGBA")
-
-    glow = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
-    ImageDraw.Draw(glow).ellipse(
-        [(-w * 0.35, h * 0.16), (w * 1.35, h * 0.92)], fill=(*ACCENT, 46)
+    art = shot.crop((0, 0, shot.width, round(shot.height * 0.45)))
+    scale = max(w / art.width, h / art.height)
+    art = art.resize((round(art.width * scale), round(art.height * scale)), Image.LANCZOS)
+    art = art.crop(((art.width - w) // 2, 0, (art.width - w) // 2 + w, h)).filter(
+        ImageFilter.GaussianBlur(16)
     )
-    canvas.alpha_composite(glow.filter(ImageFilter.GaussianBlur(190)))
-    return canvas
+    # Aim at ~22% luminance whatever the capture; lift a dark one at most 2.5x.
+    lum = ImageStat.Stat(art.convert("L")).mean[0] / 255
+    gain = min(2.5, 0.22 / max(lum, 0.01))
+    art = art.point(lambda v: round(v * gain))
+    # Ink takes over from the top down: 0 at the top, fully ink from 60% of the height.
+    ramp = Image.linear_gradient("L").resize((1, h))  # black at top -> white at bottom
+    ramp = ramp.point(lambda v: min(255, round(v / 0.6)))
+    ramp = ramp.resize(CANVAS)
+    return Image.composite(Image.new("RGB", CANVAS, INK), art, ramp).convert("RGBA")
 
 
-def rounded(image: Image.Image, radius: int) -> Image.Image:
-    mask = Image.new("L", image.size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle([(0, 0), image.size], radius=radius, fill=255)
-    out = image.convert("RGBA")
-    out.putalpha(mask)
-    return out
+def tracked(draw: ImageDraw.ImageDraw, xy, text: str, f, fill, tracking: int) -> None:
+    """Draw text letter by letter with extra spacing."""
+    x, y = xy
+    for c in text:
+        draw.text((x, y), c, font=f, fill=fill, anchor="ls")
+        x += draw.textlength(c, font=f) + tracking
 
 
-BEZEL = 16
-BODY_RADIUS = 84
-SCREEN_RADIUS = 68
-SHADOW_PAD = 70
+def tracked_width(draw, text: str, f, tracking: int) -> float:
+    return sum(draw.textlength(c, font=f) + tracking for c in text) - tracking
 
 
-def in_phone(shot: Image.Image) -> Image.Image:
-    """Set the capture into a phone body: shadow, rim light, bezel, and a notch cut for realism."""
-    w, h = shot.size
-    body = (w + BEZEL * 2, h + BEZEL * 2)
-    size = (body[0] + SHADOW_PAD * 2, body[1] + SHADOW_PAD * 2)
-    x0, y0 = SHADOW_PAD, SHADOW_PAD
+def cartouche(canvas: Image.Image, xy: tuple[int, int], eyebrow: str, headline: str, max_w: int) -> int:
+    """The recitatif box. Returns its bottom edge. The headline shrinks until it fits max_w."""
+    pad_x, pad_y = 36, 28
+    d = ImageDraw.Draw(canvas)
+    lines = headline.split("\n")
+    size = 104
+    while size > 56:
+        head = font(ALEGREYA, size)
+        if max(d.textlength(line, font=head) for line in lines) <= max_w - 2 * pad_x:
+            break
+        size -= 2
+    eye = font(NOTO, 34)
+    inner_w = max(max(d.textlength(line, font=head) for line in lines), tracked_width(d, eyebrow, eye, 4))
+    pitch = round(size * 1.05)
+    cap = round(size * 0.72)
+    height = pad_y + 25 + 22 + 6 + 34 + cap + pitch * (len(lines) - 1) + round(size * 0.3) + pad_y
+    box = [xy, (xy[0] + round(inner_w) + 2 * pad_x, xy[1] + height)]
 
-    canvas = Image.new("RGBA", size, (0, 0, 0, 0))
+    layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    ImageDraw.Draw(layer).rounded_rectangle(box, radius=4, fill=(*INK, 235), outline=RULE, width=2)
+    canvas.alpha_composite(layer)
 
-    shadow = Image.new("RGBA", size, (0, 0, 0, 0))
+    x, y = xy[0] + pad_x, xy[1] + pad_y + 25  # y is the eyebrow baseline (cap height ~25)
+    tracked(d, (x, y), eyebrow, eye, GOLD, 4)
+    y += 22
+    d.rectangle([x, y, x + 71, y + 5], fill=BRAISE)  # 72 x 6
+    y += 6 + 34 + cap  # first headline baseline
+    for line in lines:
+        d.text((x, y), line, font=head, fill=BONE, anchor="ls")
+        y += pitch
+    return box[1][1]
+
+
+def wordmark(canvas: Image.Image) -> None:
+    """The sigil and the name, top right at the margin."""
+    sigil = Image.open(SIGIL).convert("RGBA").resize((96, 96), Image.LANCZOS)
+    mask = Image.new("L", (96, 96), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([(0, 0), (95, 95)], radius=14, fill=255)
+    sigil.putalpha(ImageChops.multiply(sigil.getchannel("A"), mask))
+    d = ImageDraw.Draw(canvas)
+    name = font(ALEGREYA, 40)
+    x = CANVAS[0] - MARGIN - 96 - 16 - d.textlength("Bati", font=name)
+    canvas.alpha_composite(sigil, (round(x), MARGIN))
+    d.text((x + 96 + 16, MARGIN + 48), "Bati", font=name, fill=BONE, anchor="lm")
+
+
+def panel(shot: Image.Image) -> tuple[Image.Image, int, int]:
+    """The capture as a BD panel: ink stroke, bone hairline, soft ink shadow. Returns it and its x, y."""
+    width = round(CANVAS[0] * 0.82)
+    inner = shot.resize((width, round(width * shot.height / shot.width)), Image.LANCZOS)
+    stroke, pad = 10, 60
+    box = (inner.width + 2 * stroke, inner.height + 2 * stroke)
+    out = Image.new("RGBA", (box[0] + 2 * pad, box[1] + 2 * pad), (0, 0, 0, 0))
+
+    shadow = Image.new("RGBA", out.size, (0, 0, 0, 0))
     ImageDraw.Draw(shadow).rounded_rectangle(
-        [(x0, y0 + 26), (x0 + body[0], y0 + body[1] + 26)], radius=BODY_RADIUS, fill=(0, 0, 0, 170)
+        [(pad, pad + 10), (pad + box[0], pad + box[1] + 10)], radius=14 + stroke, fill=(*INK, 153)
     )
-    canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(34)))
+    out.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(40)))
 
-    frame = Image.new("RGBA", size, (0, 0, 0, 0))
-    d = ImageDraw.Draw(frame)
-    d.rounded_rectangle(
-        [(x0, y0), (x0 + body[0], y0 + body[1])], radius=BODY_RADIUS, fill=(4, 6, 14, 255)
+    ImageDraw.Draw(out).rounded_rectangle(
+        [(pad, pad), (pad + box[0], pad + box[1])], radius=14 + stroke, fill=(*INK, 255)
     )
-    # Two hairlines: a brighter one on top where light would fall, a dim one all round.
-    d.rounded_rectangle(
-        [(x0, y0), (x0 + body[0], y0 + body[1])],
-        radius=BODY_RADIUS,
-        outline=(52, 60, 96, 255),
-        width=3,
+    mask = Image.new("L", inner.size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle([(0, 0), inner.size], radius=14, fill=255)
+    screen = inner.convert("RGBA")
+    screen.putalpha(mask)
+    out.alpha_composite(screen, (pad + stroke, pad + stroke))
+    # Hairline on the screen's edge, bone at 85%.
+    hair = Image.new("RGBA", out.size, (0, 0, 0, 0))
+    ImageDraw.Draw(hair).rounded_rectangle(
+        [(pad + stroke, pad + stroke), (pad + stroke + inner.width, pad + stroke + inner.height)],
+        radius=14, outline=(*BONE, 217), width=2,
     )
-    canvas.alpha_composite(frame)
-    canvas.alpha_composite(rounded(shot, SCREEN_RADIUS), (x0 + BEZEL, y0 + BEZEL))
-
-    # A pill notch, drawn over the screen: it is what makes the eye read "phone" instantly.
-    notch_w, notch_h = round(w * 0.30), 34
-    nx = x0 + BEZEL + (w - notch_w) // 2
-    ImageDraw.Draw(canvas).rounded_rectangle(
-        [(nx, y0 + BEZEL + 12), (nx + notch_w, y0 + BEZEL + 12 + notch_h)],
-        radius=notch_h // 2,
-        fill=(4, 6, 14, 255),
-    )
-    return canvas
-
-
-def draw_centred(draw, text: str, f, y: int, fill, tracking: int = 0) -> int:
-    if tracking:
-        width = sum(draw.textlength(c, font=f) + tracking for c in text) - tracking
-        x = (CANVAS[0] - width) / 2
-        for c in text:
-            draw.text((x, y), c, font=f, fill=fill)
-            x += draw.textlength(c, font=f) + tracking
-    else:
-        draw.text(((CANVAS[0] - draw.textlength(text, font=f)) / 2, y), text, font=f, fill=fill)
-    return y
+    out.alpha_composite(hair)
+    return out, (CANVAS[0] - box[0]) // 2 - pad, round(CANVAS[1] * 0.30) - pad
 
 
 def compose(shot: pathlib.Path, eyebrow: str, headline: str, dest: pathlib.Path) -> None:
-    canvas = backdrop()
-    draw = ImageDraw.Draw(canvas)
-
-    y = 104
-    draw_centred(draw, eyebrow, font(34, "Bold"), y, ACCENT, tracking=7)
-    y += 76
-
-    head_font = font(78, "Bold")
-    for line in headline.split("\n"):
-        draw_centred(draw, line, head_font, y, TEXT)
-        y += 92
-    y += 44
-
-    phone = in_phone(Image.open(shot).convert("RGB"))
-    room_h = CANVAS[1] - y + SHADOW_PAD  # the shadow may run off the bottom edge
-    room_w = CANVAS[0] - MARGIN
-    scale = min(room_w / phone.width, room_h / phone.height)
-    phone = phone.resize((round(phone.width * scale), round(phone.height * scale)), Image.LANCZOS)
-
-    canvas.alpha_composite(phone, (round((CANVAS[0] - phone.width) / 2), round(y - SHADOW_PAD * scale)))
+    raw = Image.open(shot).convert("RGB")
+    canvas = backdrop(raw)
+    wordmark(canvas)
+    cartouche(canvas, (MARGIN, 200), eyebrow, headline, CANVAS[0] - 2 * MARGIN)
+    # The panel goes on last; the canvas bottom edge crops it (the bleed).
+    pn, x, y = panel(raw)
+    canvas.alpha_composite(pn.crop((0, 0, pn.width, CANVAS[1] - y)), (x, y))
     dest.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(dest, "PNG", optimize=True)
 
@@ -249,6 +255,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--locale", default="en-US")
     ap.add_argument("--src", default="fastlane/raw")
+    ap.add_argument("--out", help="write shots here instead of fastlane/metadata (previews; skips web copies)")
     args = ap.parse_args()
 
     copy = COPY.get(args.locale)
@@ -262,7 +269,9 @@ def main() -> int:
         print(f"no captures in {src} — run `npm run screenshots` first", file=sys.stderr)
         return 1
 
-    out = pathlib.Path(f"fastlane/metadata/android/{args.locale}/images/phoneScreenshots")
+    out = pathlib.Path(
+        args.out or f"fastlane/metadata/android/{args.locale}/images/phoneScreenshots"
+    )
     for old in out.glob("*.png"):
         old.unlink()  # a renamed shot must not leave its predecessor behind on the listing
 
@@ -274,7 +283,8 @@ def main() -> int:
         compose(shot, entry[0], entry[1], out / f"{shot.stem}.png")
         print(f"  {shot.name} -> {out / f'{shot.stem}.png'}")
 
-    web_shots(shots, args.locale.split("-")[0])
+    if not args.out:
+        web_shots(shots, args.locale.split("-")[0])
     return 0
 
 

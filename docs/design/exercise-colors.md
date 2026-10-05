@@ -24,7 +24,7 @@ consistency across the app, and a quick way to identify workout focus.
 | **Back** | Pastel Blue | `$pastelBlue` | `#BAE1FF` |
 | **Chest** | Pastel Yellow | `$pastelYellow` | `#FFFFBA` |
 | **Abs** | Pastel Green | `$pastelGreen` | `#BAFFC9` |
-| **Shoulders** | Pastel Purple | `$pastelPurple` | `#D4BAFF` |
+| **Shoulders** | Default tint | `$bgLight` | the app's own surface (violet was removed); the art and the name carry the distinction |
 | **Legs/Calf** | Pastel Orange | `$pastelOrange` | `#FFD4BA` |
 
 ### Target Type → Color (Fallback)
@@ -127,7 +127,6 @@ const tokens = createTokens({
     pastelBlue: '#BAE1FF',
     pastelYellow: '#FFFFBA',
     pastelGreen: '#BAFFC9',
-    pastelPurple: '#D4BAFF',
     pastelOrange: '#FFD4BA',
   },
 });

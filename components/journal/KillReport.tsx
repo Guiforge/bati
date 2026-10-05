@@ -15,6 +15,7 @@ import {
   NNum,
   NPanel,
   NText,
+  NTitle,
 } from "@/components/journal/nocturne";
 import { ReportHero } from "@/components/journal/QuestLog";
 import { getBossAsset, getExerciseThumb } from "@/constants/assetMap";
@@ -153,9 +154,9 @@ export function KillReport({
           <Skull size={15} color="$resourceGold" strokeWidth={2.5} />
           <NKicker>{t("journal.felled_on", { date: felled })}</NKicker>
         </XStack>
-        <NText fontWeight="500" fontSize={28} lineHeight={34} mt={6}>
+        <NTitle fontSize={28} lineHeight={34} mt={6}>
           {pick(report.title, language)}
-        </NText>
+        </NTitle>
         <NMuted fontSize={12.5} mt={2}>
           {t("journal.kill_adventure", {
             count: report.steps,

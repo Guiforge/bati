@@ -16,6 +16,8 @@ describe("every screen title is in the title font", () => {
     ["app/oath.tsx", 't("oath.screen_title")'],
     ["app/credits.tsx", 't("credits.title")'],
     ["app/xp.tsx", 't("xp.title")'],
+    ["app/set-aside.tsx", 't("setAside.title")'],
+    ["app/(tabs)/quests/edit.tsx", "{questId == null\n"],
     ["app/settings.tsx", 't("settings.title", "Settings")'],
     ["app/privacy.tsx", 't("privacy.title")'],
     ["app/safety.tsx", 't("safety.title")'],
@@ -52,6 +54,16 @@ describe("one timer: body face, bold, tabular, $text", () => {
     expect(el).toContain('fontWeight="700"');
     expect(el).toContain('fontVariant={["tabular-nums"]}');
     expect(el).toContain('color="$text"');
+  });
+});
+
+describe("Journal report titles use NTitle", () => {
+  it.each([
+    ["components/journal/QuestLog.tsx", "{data.questTitle}"],
+    ["components/journal/KillReport.tsx", "{pick(report.title, language)}"],
+  ])("%s", (file, needle) => {
+    const head = before(file, needle, 200);
+    expect(head.slice(head.lastIndexOf("<N"))).toMatch(/^<NTitle/);
   });
 });
 

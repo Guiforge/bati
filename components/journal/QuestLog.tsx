@@ -27,6 +27,7 @@ import {
   NPanel,
   NRule,
   NText,
+  NTitle,
 } from "@/components/journal/nocturne";
 import { recordName, recordValue } from "@/components/journal/recordLabel";
 import { SetEditor } from "@/components/journal/SetEditor";
@@ -542,9 +543,9 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
         height={150}
         sessionId={session.id}
       >
-        <NText fontWeight="500" fontSize={22} lineHeight={28}>
+        <NTitle fontSize={22} lineHeight={28}>
           {data.questTitle}
-        </NText>
+        </NTitle>
         <NMuted mt={2}>{meta}</NMuted>
       </ReportHero>
 

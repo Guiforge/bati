@@ -38,6 +38,18 @@ describe("AppButton, the seal", () => {
     expect(screen.getByText("Easy")).toHaveStyle({ color: rawColors.bgDark });
   });
 
+  it("keeps the seal when a caller passes an undefined backgroundColor (enabled onboarding CTAs)", async () => {
+    await render(
+      themed(
+        <AppButton testID="cta" backgroundColor={undefined}>
+          Continue
+        </AppButton>,
+      ),
+    );
+    const flat = StyleSheet.flatten(screen.getByTestId("cta").props.style);
+    expect(flat.borderBottomWidth).toBe(3);
+  });
+
   it("translates on press and never changes the border width", async () => {
     await render(themed(<AppButton testID="press">Go</AppButton>));
     await act(() => {

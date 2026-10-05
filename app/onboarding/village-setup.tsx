@@ -171,7 +171,7 @@ export default function VillageSetup() {
                 });
               }}
               disabled={!isValidName}
-              backgroundColor={isValidName ? "$primary" : "$surface"}
+              backgroundColor={isValidName ? undefined : "$surface"}
               borderColor={isValidName ? "$primary" : "$borderStrong"}
               borderWidth={0}
               opacity={isValidName ? 1 : 0.5}

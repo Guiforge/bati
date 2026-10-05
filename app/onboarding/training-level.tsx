@@ -149,7 +149,7 @@ export default function TrainingLevelStep() {
           <AppButton
             onPress={() => complete(selected)}
             disabled={!selected}
-            backgroundColor={selected ? "$primary" : "$surface"}
+            backgroundColor={selected ? undefined : "$surface"}
             borderWidth={0}
             opacity={selected ? 1 : 0.5}
           >

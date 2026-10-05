@@ -502,7 +502,7 @@ export default function AdventuresGallery() {
     <YStack testID="adventures-screen" flex={1} bg="$background">
       <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
         <XStack items="center" gap="$2">
-          <Sparkles size={18} color="$primaryText" strokeWidth={2.5} />
+          <Sparkles size={18} color="$text" strokeWidth={2.5} />
           <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
             {title}
           </Text>

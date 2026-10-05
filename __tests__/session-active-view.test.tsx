@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -170,7 +170,7 @@ describe("the exercise name over the art", () => {
 
     const box = screen.getByTestId("exercise-hero-name");
     expect(StyleSheet.flatten(box.props.style).borderTopWidth).toBe(1);
-    expect(screen.getAllByRole("header").length).toBeGreaterThan(0);
+    expect(within(box).getByRole("header")).toBeTruthy();
   });
 });
 

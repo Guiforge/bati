@@ -284,7 +284,7 @@ function QuestRow({
           {meta.outsideLabel || meta.heroLabel ? (
             <XStack position="absolute" t="$3" r="$3" gap="$2">
               {meta.outsideLabel ? <Chip label={meta.outsideLabel} /> : null}
-              {meta.heroLabel ? <Chip label={meta.heroLabel} tone="primary" /> : null}
+              {meta.heroLabel ? <Chip label={meta.heroLabel} /> : null}
             </XStack>
           ) : null}
 

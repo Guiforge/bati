@@ -189,8 +189,7 @@ opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
   shape, never by its border alone.
 - Avoid thick white/off-white border accents on cards and buttons.
 - Cards have no drop shadow and there is no `flat` variant. Elevation comes from contrast and
-  spacing. Toasts and overlays keep their soft shadow. `$primaryGlow` is the only glow, once per
-  screen.
+  spacing. Toasts and overlays keep their soft shadow. There is no glow token any more.
 - **Récitatif.** A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill,
   1px `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art
   (`components/common/Recitatif.tsx`).

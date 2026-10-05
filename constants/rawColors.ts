@@ -71,7 +71,6 @@ export const rawColors = {
   // --- Effects ---
   borderStrong: "#363A44",
   shadowColor: "#000000",
-  primaryGlow: "rgba(194, 65, 12, 0.45)",
 
   // --- Boss phases ---
   // The room the fight happens in, darkening and reddening as the boss loses. Phase 1 uses

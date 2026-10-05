@@ -398,7 +398,6 @@ export function QuickActions() {
                   gap={4}
                   items="center"
                   rounded={10}
-                  bg="$primaryGlow"
                   borderWidth={1}
                   borderColor="$borderStrong"
                   hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}

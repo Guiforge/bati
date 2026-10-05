@@ -313,7 +313,7 @@ function BuildingDetail({
           tintColor={built ? undefined : rawColors.muted}
         />
         <YStack flex={1} minW={0} gap={3}>
-          <Text fontWeight="700" fontSize={20} color="$text">
+          <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
             {nameOf(building, language)}
           </Text>
           <Text fontSize={12.5} color="$textSecondary">
@@ -462,7 +462,7 @@ function BossDetail({ boss, extra, language, formatDate }: DetailProps & { boss:
           contentFit="cover"
         />
       </YStack>
-      <Text fontWeight="700" fontSize={20} color="$text">
+      <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
         {title}
       </Text>
       <ImageViewer

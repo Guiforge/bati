@@ -86,7 +86,7 @@ export function BossTauntOverlay() {
         rounded="$4"
         borderWidth={1}
         borderColor="$borderStrong"
-        maxW={220}
+        maxW={180}
         style={{ borderTopRightRadius: 0 }}
       >
         <Paragraph color="$text" fontWeight="700" fontSize={14}>

@@ -9,7 +9,6 @@ colors:
   primary-press: "#9A3412"
   primary-edge: "#7A2905"
   on-primary: "#FFF4E6"
-  primary-glow: "rgba(194, 65, 12, 0.45)"
   success: "#6DB57A"
   warning: "#F08A4B"
   error: "#F0595D"
@@ -160,11 +159,19 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 - **One accent.** The braise (`$primary` fill, `$primaryText` as text or icon) is the only
   accent; there is no second colour. Each use goes to the colour of its meaning: rewards and
   records `$resourceGold`, "hard" `$error`.
+- **Gold is earned, braise is done.** Every reward, record and progression figure or glyph is
+  `$resourceGold` (XP gained, trophies, achievements, new-record badges, the Victory figures,
+  oath progress bars on a `$gold800` track, the village tier bar). Braise marks the action.
+- **No violet.** `pastelPurple` is deleted; cards are `$surface` with the 1px frame, shoulder and
+  mixed quests use `$bgLight`, the rest screen's wash is an ink fade.
 - **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a
-  hero's own label) is never braise: it is ash, `$textSecondary`. Braise marks actions and these
-  states: a selected option, medium difficulty, the boss's weakness and attack glyphs, an
+  hero's own label) is never braise: it is ash, `$textSecondary`, glyphs `$muted`. That covers the
+  exercise list's "leads to X" captions and link glyph, the "Yours" caption, the picker's
+  substitution caption, the quest config card's shield and kickers such as "FIRST TRIAL". Braise
+  marks actions and these states: a selected option, medium difficulty, the boss's weakness and attack glyphs, an
   adventure in progress and its completed progress segments, the Home advice and kicker icons,
-  and the avatar's fallback fill.
+  and the avatar's fallback fill. The Home "Protect your hero" banner is quiet: bone title, ash body
+  and shield, braise only on the chevron.
 - **Every primary is the seal.** Home's Start (56 px), the session's Done and the rest screen's
   "I'm ready" (both 64 px, 24 px label) are `AppButton` primaries, never a screen-local button.
 - **Fills and their text.** `$primary` fills take `$onPrimary`; `$success`, `$error`, `$warning`
@@ -200,9 +207,14 @@ decision record is
 
 - Titles: `Alegreya` (`$heading`), 700 (400 for the rare light heading). Screen titles and the
   names of things in the world (quests, adventures, the village, buildings as titles) are titles;
-  lists, labels, metadata and the Journal are not. No letter
-  spacing, and never a digit: timers, HP, XP, levels and counts stay in `NotoSans` (`$body`)
-  with tabular numerals.
+  lists, labels, metadata and the Journal's body (Inter) are not. No letter
+  spacing, and never a digit of the app's own: timers, HP, XP, levels and counts stay in
+  `NotoSans` (`$body`) with tabular numerals. A title the hero wrote may carry digits.
+- **Every screen title is `$heading` 700**, the Journal's through `NTitle`. The what's-new title
+  keeps the body font because it interpolates a version.
+- **One timer treatment.** Warm-up, pre-start countdown, active and rest digits are `$body` 700,
+  tabular, `$text`; overtime is `$success`, the one state colour. Session progress bars stay
+  braise.
 - Body and utility reading: `NotoSans`.
 - Wide tracking (2px) belongs to short labels only, never body text.
 
@@ -218,7 +230,8 @@ pressable chips (the filter rail's), quick-action tiles, inputs and dialogs,
   `$primary` fill, radius `$3`, `$borderStrong` sides, a 3px `$primaryEdge` bottom edge, label in
   `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill colour. `AppButton` has no
   `transition` for any variant, so every press is instant (the outline goes to scale 0.98,
-  opacity 0.9). Session CTAs are `AppButton` primaries at 64 px with a 24 px label; Done past its
+  opacity 0.9). A disabled primary is `$surface2` with a `$textSecondary` label (6.04:1) and no
+  seal. Session CTAs are `AppButton` primaries at 64 px with a 24 px label; Done past its
   target is `$success` with an ink label and no edge. `AppButton` derives the label colour and forbids `pressStyle`, `rounded` and
   `bg` overrides.
 - Secondary/ghost: `outline`, neutral or glass treatment.
@@ -234,7 +247,10 @@ pressable chips (the filter rail's), quick-action tiles, inputs and dialogs,
 - A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill, 1px
   `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art:
   [`Recitatif`](../../components/common/Recitatif.tsx).
-- The exercise name over its illustration (`ExerciseHero`) sits in a Récitatif too.
+- Quest-list and adventure cards carry their title in a Récitatif on the art's bottom-left edge,
+  the body keeping the metadata. The exercise name over its illustration (`ExerciseHero`, and the
+  exercise detail, frame radius `$3`) sits in a Récitatif too. Victory's "QUEST COMPLETE!" is the
+  Récitatif's gold kicker.
 - A villager's spoken line is a parchment bubble (`$parchment` fill, `$bgDark` line 14 regular,
   speaker name in `$ink800`, radius `$1`), never a dark card; one bubble style everywhere. In
   the in-flow villager line (`VillagerLine`) the face sits in a round ink medallion (48 dp,
@@ -251,8 +267,8 @@ its edge of the screen instead of sitting in a card. Used by
 
 - Full width, no border, no inset. Height capped against *both* `width` and `height` from
   `useWindowDimensions` — one shared function, [`sessionArtHeight()`](../../components/session/sessionArt.ts),
-  not a per-component expression — so a short screen still leaves the primary action room and two
-  heroes in the same slot cannot end up different sizes.
+  not a per-component expression — so a short screen still leaves the primary action room. The
+  boss gets a taller cut (0.46 of the height against the exercise's 0.34), and both are floors.
 - Text goes **on** the art, held by a `LinearGradient` scrim ending on the colour behind the
   image — never by a box or a shadow. The scrim is what carries AA contrast in gym lighting; it
   is not decoration and is not optional because one particular painting happens to be dark.
@@ -269,9 +285,18 @@ its edge of the screen instead of sitting in a card. Used by
 > the same screen. Both comply as of 2026-08-03. A recipe documented here is a claim about the
 > code, and it is worth checking that the second user actually is one.
 
+### Boss HP gauge
+
+[`BossHpGauge`](../../components/session/BossHpGauge.tsx): 10 dp tall, `$bgDark` track, 1.5px
+`$borderStrong` frame, fill from `bossHpColor`, the figure in `$body` tabular `$text` beside it.
+The session arena (under the boss's name) and the adventure boss panel both mount it.
+
 ### Inputs
 
 - Legible text size (16px body-equivalent), clear labels, actionable validation copy.
+- Controls sit on the radius scale: onboarding level choices, the village-name input and the Share
+  chip are `$3`. The stepper uses Lucide `Minus` and `Plus` at the same size. The active set's
+  tertiary links reach 44 dp through `hitSlop`.
 - Focus state must be obvious without over-bright effects.
 
 ## 4) What good looks like

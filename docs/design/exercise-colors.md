@@ -35,7 +35,7 @@ When muscle is not specified:
 | ----------- | ----- |
 | **Reps** | Pastel Yellow |
 | **Time** | Pastel Blue |
-| **Mixed** | Pastel Purple |
+| **Mixed** | `$bgLight` |
 | **Default** | Gray |
 
 ---
@@ -81,7 +81,7 @@ function getQuestColor(quest: Quest): ExerciseColorKey {
 | Quest | Exercises | Dominant | Color |
 | ----- | --------- | -------- | ----- |
 | "Iron Arms" | 4 arms, 1 chest | Arms | Pink |
-| "Full Body" | 2 each muscle | Mixed | Purple |
+| "Full Body" | 2 each muscle | Mixed | `$bgLight` |
 | "Core Crusher" | 5 abs | Abs | Green |
 | "Push Day" | 3 chest, 2 shoulder | Chest | Yellow |
 

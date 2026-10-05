@@ -69,7 +69,7 @@ serif, panel frames) without giving up anything a lifter needs mid-set.
    records `$resourceGold`, the boss's weakness and attack glyphs `$primaryText`, "hard" `$error`,
    an adventure in progress `$primaryText` (completed `$resourceGold`), a selected option `$primary`
    with `$onPrimary`, a plain count or metadata the neutral default.
-3. **Titles in Alegreya** (700, 800; 400 for the rare light heading). Alegreya never sets a digit:
+3. **Titles in Alegreya** (700, 800; 400 for the rare light heading). Alegreya never sets a digit of the app's own:
    timers, HP, XP, levels and counts stay in Noto Sans (`$body`) with tabular numerals. No letter
    spacing on Alegreya.
 4. **Radius scale:** `$1` (3) tags and static chips, `$3` (7) cards, buttons, pressable chips,
@@ -92,6 +92,40 @@ serif, panel frames) without giving up anything a lifter needs mid-set.
 10. **No texture overlays, no halftone, no tilted panels, no hand-lettered fonts.**
 11. **One source per value:** no rgba literal outside `constants/rawColors.ts`; a gradient or text
     shadow needing a translucent token calls `fade(token, alpha)`.
+
+## Iteration 2 (2026-10-06, decisions G to N)
+
+Born from an expert audit of iteration 1 (not validated). The code is on `feat/bd-direction`.
+
+- **G. Gold is earned, braise is done.** Every reward, record and progression figure or glyph is
+  `$resourceGold`: XP gained, trophies, achievement titles and glyphs, new-record badges, oath
+  progress bars (on a `$gold800` track), the village tier bar. The boss's weakness line and
+  glyphs are `$primaryText`.
+- **H. Metadata is never braise.** "Leads to X" captions and their glyph (exercise list), "Yours",
+  the picker's substitution caption, the quest config card's shield, kickers like "FIRST TRIAL":
+  `$textSecondary`, glyphs `$muted`. A value that is itself an editable control keeps its colour.
+- **I. No violet.** `pastelPurple` is deleted (see the palette). Adventure cards, the adventure
+  hero card and the quest detail card are `$surface` with the 1 px frame; the rest screen's wash
+  is an ink fade; shoulder and mixed quests use `$bgLight`.
+- **J. One screen title.** Every screen title is `$heading` 700, the Journal's through `NTitle`;
+  the Journal body stays Inter; the what's-new title keeps the body font (it interpolates a
+  version).
+- **K. One timer.** `$body` 700, tabular, `$text` for every timer and countdown digit. Overtime
+  keeps `$success` (ruling B2: a meaningful state, also carried by the flame and the label).
+  Session progress bars stay braise.
+- **L. Controls on the scale.** A disabled primary is `$surface2` with a `$textSecondary` label
+  (6.04:1), no seal. Stepper minus and plus are Lucide `Minus` and `Plus`. Onboarding choices, the
+  village-name input and the Share chip are radius `$3`. Tertiary links in the active set reach
+  44 dp through `hitSlop`.
+- **M. Engagement.** The boss HP gauge: 10 dp, `$bgDark` track, 1.5 px `$borderStrong` frame, fill
+  from `bossHpColor`, the figure in `$body` tabular `$text`; one shared `BossHpGauge` for the arena
+  and the adventure boss panel (ruling B4). Titles on art in a Récitatif: quest and adventure
+  cards (bottom-left), the exercise detail (radius `$3`); the warm-up name is `$heading` 20.
+  Victory is a gold plate with "QUEST COMPLETE!" as the Récitatif's gold kicker. The Home
+  "Protect your hero" banner keeps a bone title over ash body and shield, braise on the chevron
+  only (ruling B1). Hero-written titles under `$heading` may carry digits (ruling B3).
+- **N. History placeholder.** The "-- ·" leaking into a Journal history row is fixed at its
+  formatter.
 
 ## Out of scope (follow-ups)
 

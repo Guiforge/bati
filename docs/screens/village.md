@@ -34,7 +34,7 @@ row can be read without a tap.
 3. **The panel**, riding up over the painting's last 14 dp:
    - **The village tier** (`VillageTier`, `getTierProgress`), first in every state. The village
      follows the hero's level alone, so it answers "when does the painting change" in those terms:
-     the hero level of the next tier and how many levels away, an indigo bar from the current
+     the hero level of the next tier and how many levels away, a gold bar from the current
      tier's floor to that level with XP at both ends, and the XP still missing, with "about N
      sessions at this week's pace" when the last seven days had any (`getWeekXpPerSession`). On
      tier 12 the bar goes and the sentence is final. A finished village (`isVillageComplete`: tier

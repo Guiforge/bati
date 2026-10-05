@@ -165,14 +165,26 @@ feel immersive but remain operationally clear in the middle of a workout.
 - `$bgDark` (the Void, "encre froide"), `$surface`, `$surface2`: layered depth. `$bgOverlay` for
   sheets, `$bgOverlaySoft` or `$glassBg` + `$glassBorder` over artwork.
 - **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a
-  hero's own label) is never braise: it is ash, `$textSecondary`. Braise marks actions and the few
-  states named in this section, and these: the Home advice and kicker icons (`$primaryText`), the
-  completed segments of an adventure's progress bar (`$primary`) and the avatar's fallback fill
-  (`$primary`).
+  hero's own label) is never braise: it is ash, `$textSecondary`, its glyphs `$muted`. That covers
+  the exercise list's "leads to X" captions and their link glyph, the "Yours" caption, the
+  exercise picker's substitution caption, the quest config card's shield glyph and a kicker such
+  as the prep screen's "FIRST TRIAL". A value that is itself an editable control keeps its colour.
+  Braise marks actions and the few states named in this section, and these: the boss's weakness
+  line and glyphs, the Home advice and kicker icons (`$primaryText`), the completed segments of an
+  adventure's progress bar (`$primary`) and the avatar's fallback fill (`$primary`).
+- **No violet.** `pastelPurple` is deleted. No card is violet: adventure cards, the adventure
+  hero card and the quest detail's info card are `$surface` with the 1px `$borderStrong` frame;
+  shoulder and mixed quests use `$bgLight`; the rest screen's wash is an ink fade of `$bgDark`.
+- **The Home "Protect your hero" banner is quiet.** Its title stays bone (`$text`) and its body
+  and shield ash; braise is only on the chevron. An ash title over an ash body loses the
+  hierarchy, so "quiet" means no braise, not no bone.
 - `$text` (bone), `$textSecondary` (ash): reading hierarchy. `$muted` resolves to `$textSecondary`
   through the theme; the raw grey `muted` in `rawColors.ts` is shadowed and should not carry text.
-- `$resourceGold`: patinated gold, progression (XP, rewards, the oath strip's `$goldHairline`).
-  Only gold and fire are drawn as colours; the other resources are white game-icons glyphs.
+- `$resourceGold`: patinated gold, **earned**: every reward, record and progression figure or
+  glyph (XP gained, trophies, achievement titles and glyphs, new-record badges, the Victory
+  figures, the oath strip's `$goldHairline`). Oath progress bars sit on a `$gold800` track and the
+  village tier bar is gold. Braise is *done*: it marks the action, never the prize. Only gold and
+  fire are drawn as colours; the other resources are white game-icons glyphs.
 - `$bossPhase2..4`: the boss room darkening and reddening after phase 1 on `$bgDark`.
 - `$parchment`: the phylactère's paper, a step under bone so a speech bubble never outshines the
   screen's action. Ink text 12.6:1, `$ink800` name 9.3:1.
@@ -206,8 +218,16 @@ opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
   **medallion** (48 dp, `$bgDark` fill, 1.5px `$borderStrong` ring) top-aligned with the bubble,
   and the tail points at the medallion's centre. The Village cameo keeps the full figure and its
   own tail.
-- **Récitatif on exercise art.** The exercise name over its illustration (`ExerciseHero`) sits in
-  a Récitatif, like a quest title over its art.
+- **Titles on art.** Quest-list and adventure cards carry their title in a Récitatif on the
+  art's bottom-left edge, and the card body keeps its metadata. The exercise name over its
+  illustration (`ExerciseHero`, and the exercise detail screen, frame radius `$3`) sits in a
+  Récitatif too. The warm-up's exercise name is `$heading` 20.
+- **Victory is a gold plate.** "QUEST COMPLETE!" is the Récitatif's kicker, in gold, and every
+  reward figure is gold.
+- **The boss HP gauge** (`BossHpGauge`): 10 dp tall, `$bgDark` track, 1.5px `$borderStrong` frame,
+  fill coloured by `bossHpColor` (phase, enraged, down), the figure in `$body` tabular `$text`
+  beside it. The arena draws it under the boss's name and the adventure's boss panel draws the
+  same component, so a monster never reads two ways.
 - No texture overlays, no halftone, no tilted panels, no hand-lettered fonts.
 
 ### Typography
@@ -215,8 +235,17 @@ opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
 - Titles: `Alegreya` (`$heading`), 700 (400 for the rare light heading). No letter spacing.
   Screen titles and the names of things in the world (quests, adventures, the village, buildings
   shown as titles) are titles; lists, labels, metadata and the Journal are not.
-  Alegreya never sets a digit: timers, HP, XP, levels and counts stay in `NotoSans` (`$body`)
-  with tabular numerals.
+  Alegreya never sets a digit of the app's own: timers, HP, XP, levels and counts stay in
+  `NotoSans` (`$body`) with tabular numerals. A title the hero wrote (a recap title, a quest
+  name) may carry digits.
+- **Every screen title is `$heading` 700**: Quest, Adventure, Exercises, Exercise, the quest
+  editor, Settings, session details, Swear an Oath, the recap, credits, privacy, XP and the
+  Journal's titles (through `NTitle`). The Journal's body stays Inter. The one exception is the
+  what's-new title, which keeps the body font because it interpolates a version number.
+- **One timer.** Every timer and countdown digit (warm-up, pre-start countdown, active, rest) is
+  `$body` 700, tabular, `$text`. The one state colour is overtime, `$success`, also carried by the
+  flame and the "target reached" label. Session progress bars stay braise: they are the session's
+  action line.
 - Body and utility reading: `NotoSans` (`$body`).
 - The Journal: `Inter` (`$nocturne`).
 - The **label** recipe: short, uppercase, `$body` 14/700, 2px tracking. Wide tracking belongs
@@ -260,6 +289,8 @@ rather than rounding.
 - Label colour follows the fill: `$onPrimary` on the braise, `$text` on the outline, ink
   (`$bgDark`) on `$success`, `$warning` and `$resourceGold`, `$onError` on `$error`.
 - The outing's hold-to-finish button is 64 px, radius `$3`, its label in the title font.
+- A **disabled primary** still reads as a button: `$surface2` fill, `$textSecondary` label
+  (6.04:1), no seal edge. Opacity is not used to fake it (that measured 2.4:1).
 - Interaction: consistent `pressed`, `disabled`, and loading states.
 - Minimum hit area: 44x44. `AppButton` enforces it as `minH`; a smaller glyph or button gets
   `hitSlop` to reach it.
@@ -283,8 +314,11 @@ rather than rounding.
 
 ### Inputs
 
-- `Stepper` is the numeric input: 36 dp round buttons with `hitSlop` 8, value 18/700, hold to
-  repeat and accelerate.
+- `Stepper` is the numeric input: 36 dp round buttons with `hitSlop` 8, Lucide `Minus` and `Plus`
+  glyphs of the same size, value 18/700, hold to repeat and accelerate.
+- Onboarding level choices, the village-name input and the Share chip are radius `$3`. The active
+  set's tertiary links ("How to do it", "Replace", "I couldn't do this one") reach 44 dp through
+  `hitSlop`.
 - Legible text size and clear labels.
 - Focus state must be obvious without over-bright effects.
 - Validation copy must be actionable.

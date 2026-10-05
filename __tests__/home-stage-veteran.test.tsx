@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
 import { HomeStage } from "@/components/home/HomeStage";
+import { rawColors } from "@/constants/rawColors";
 import config from "@/tamagui.config";
 
 /**
@@ -90,4 +92,12 @@ test("the gallery of a hero with no session keeps its first step", async () => {
   mockOffer = { kind: "gallery", trained: false };
   await stage();
   expect((await screen.findAllByLabelText("Start your journey")).length).toBeGreaterThan(0);
+});
+
+test("the Start button is the seal", async () => {
+  mockOffer = { kind: "stale_quest", days: 9, quest, startable: true, seconds: 1200 };
+  await stage();
+  const flat = StyleSheet.flatten((await screen.findByTestId("home-start-session")).props.style);
+  expect(flat.borderBottomWidth).toBe(3);
+  expect(flat.borderBottomColor).toBe(rawColors.primaryEdge);
 });

@@ -2,8 +2,8 @@ import { act, fireEvent, render, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
-
 import { RestView } from "@/components/session/RestView";
+import { rawColors } from "@/constants/rawColors";
 import type { Quest } from "@/db/quests";
 import { playCue } from "@/src/sounds";
 import { useChorusStore } from "@/stores/chorus";
@@ -141,6 +141,13 @@ describe("RestView", () => {
     // Top-anchored: a centred column re-centres around whatever is added to it.
     const scroll = view.getByTestId("rest-scroll");
     expect(JSON.stringify(scroll.props.contentContainerStyle)).toContain('"flex-start"');
+  });
+
+  it("puts the seal under I'm ready", async () => {
+    const view = await mountRest();
+    const flat = StyleSheet.flatten(view.getByTestId("session-skip-rest").props.style);
+    expect(flat.borderBottomWidth).toBe(3);
+    expect(flat.borderBottomColor).toBe(rawColors.primaryEdge);
   });
 
   it("names the rest after the round when a round just ended", async () => {

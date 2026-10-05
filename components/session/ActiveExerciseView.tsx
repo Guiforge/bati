@@ -5,6 +5,7 @@ import { Pressable, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Crosshair, Pause } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
@@ -787,14 +788,15 @@ export function ActiveExerciseView() {
         {isOuting ? (
           <OutingFinishButton onFinish={handleComplete} />
         ) : (
-          <Button
+          <AppButton
             testID="session-complete-exercise"
-            size="$6"
-            bg={isPastTarget ? "$success" : "$primary"}
-            pressStyle={{ opacity: 0.8 }}
+            // AppButton gives the seal no `transition` and the signal fills one, and Tamagui
+            // runs its animation hooks only when a transition exists: flipping between the two
+            // on a mounted button throws "Should have a queue". A key remounts it instead.
+            key={isPastTarget ? "past" : "under"}
+            height={60}
+            backgroundColor={isPastTarget ? "$success" : undefined}
             onPress={handleDonePress}
-            borderWidth={0}
-            rounded="$6"
             accessibilityLabel={
               isPastTarget
                 ? t("session.finish_exercise_accessibility")
@@ -802,10 +804,8 @@ export function ActiveExerciseView() {
             }
             accessibilityRole="button"
           >
-            <Text color={isPastTarget ? "$bgDark" : "$onPrimary"} fontSize={24} fontWeight="700">
-              {isPastTarget ? t("session.complete_overtime") : t("session.complete_button")}
-            </Text>
-          </Button>
+            {isPastTarget ? t("session.complete_overtime") : t("session.complete_button")}
+          </AppButton>
         )}
       </YStack>
 
@@ -932,7 +932,7 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
     >
       <YStack
         height={60}
-        rounded="$6"
+        rounded={7}
         bg="$primary"
         overflow="hidden"
         items="center"
@@ -949,7 +949,13 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
         {/* On an ink plate: the sweep crosses the label, braise then green, and no single label
             colour clears AA on both (bone on green is 1.95:1). Ink under bone reads on either. */}
         <YStack bg="$bgDark" rounded="$4" px="$3" py="$1">
-          <Text color="$text" fontSize={20} fontWeight="700" numberOfLines={1}>
+          <Text
+            color="$text"
+            fontFamily="$heading"
+            fontSize={20}
+            fontWeight="700"
+            numberOfLines={1}
+          >
             {t("session.expedition_hold_to_finish")}
           </Text>
         </YStack>

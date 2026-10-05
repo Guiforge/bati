@@ -3,7 +3,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Info, Play, Sparkles, Target } from "@/components/icons";
@@ -156,25 +157,16 @@ export function HomeStage() {
 
         <XStack px="$4" pt="$4" gap="$2.5" items="center">
           {/* The one filled button on the screen */}
-          <Button
+          <AppButton
             testID="home-start-session"
+            fullWidth={false}
             flex={1}
             height={56}
-            rounded={14}
-            bg="$primary"
-            color="$onPrimary"
-            fontWeight="700"
-            fontSize={17}
             icon={<Play size={16} color="$onPrimary" />}
             onPress={handlePress}
-            pressStyle={{ bg: "$primaryPress", scale: 0.98 }}
-            shadowColor="$primary"
-            shadowRadius={13}
-            shadowOffset={{ width: 0, height: 0 }}
-            shadowOpacity={0.45}
           >
             {label}
-          </Button>
+          </AppButton>
           {startQuestId === null ? null : (
             <YStack
               testID="home-quest-details"

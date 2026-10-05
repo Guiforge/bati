@@ -1,8 +1,10 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
+import { rawColors } from "@/constants/rawColors";
 import type { Quest } from "@/db/quests";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -178,5 +180,25 @@ describe("a boss that is already down", () => {
     expect(screen.getByText(/strike critical/)).toBeTruthy();
     expect(screen.getByText(/weak point/)).toBeTruthy();
     expect(screen.queryByText(/is down\./)).toBeNull();
+  });
+});
+
+describe("Done is a seal", () => {
+  const edge = () =>
+    StyleSheet.flatten(screen.getByTestId("session-complete-exercise").props.style);
+
+  test("carries the 3 px braise edge while the set is under target", async () => {
+    await mount();
+    expect(edge().borderBottomWidth).toBe(3);
+    expect(edge().borderBottomColor).toBe(rawColors.primaryEdge);
+  });
+
+  test("past the target it is the green fill: no edge, an ink label", async () => {
+    await mount();
+    await act(() => {
+      useSessionStore.setState({ timerStartTimestamp: Date.now() - 60_000, timerDuration: 5 });
+    });
+    expect(edge().borderBottomWidth).not.toBe(3);
+    expect(screen.getByText("Finish")).toHaveStyle({ color: rawColors.bgDark });
   });
 });

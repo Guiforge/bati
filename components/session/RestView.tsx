@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, Text, XStack, YStack } from "tamagui";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
+import { AppButton } from "@/components/common/AppButton";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
@@ -337,21 +338,15 @@ export function RestView() {
         </ScrollView>
 
         {/* Skip Button — the ScrollView's sibling, never inside it, so it stays reachable. */}
-        <Button
+        <AppButton
           testID="session-skip-rest"
-          size="$6"
-          bg="$primary"
-          pressStyle={{ opacity: 0.9 }}
+          height={60}
           onPress={handleSkipRest}
-          borderWidth={0}
-          rounded="$6"
           accessibilityLabel={t(copy.ctaLabel)}
           accessibilityRole="button"
         >
-          <Text color="$onPrimary" fontSize={20} fontWeight="700">
-            {t(copy.cta)}
-          </Text>
-        </Button>
+          {t(copy.cta)}
+        </AppButton>
       </YStack>
 
       <ExerciseInstructionsModal

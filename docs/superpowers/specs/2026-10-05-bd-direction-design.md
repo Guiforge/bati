@@ -37,7 +37,7 @@ serif, panel frames) without giving up anything a lifter needs mid-set.
 | primaryPress | #372FA6 | #9A3412 | |
 | primaryEdge | (new) | #7A2905 | the button's bottom edge |
 | onPrimary | (theme → text) | #FFF4E6 | new raw colour; label on a primary fill (4.77:1) |
-| primaryGlow | rgba(74,63,214,.45) | rgba(194,65,12,.45) | |
+| primaryGlow | rgba(74,63,214,.45) | removed | the glow was dropped in the audit fixes (2026-10-05); there is no glow token |
 | secondary | #DB2777 | removed | every use reassigned by meaning, see below |
 | success | #16A34A | #6DB57A | |
 | warning | #F59E0B | = primaryText #F08A4B | amber was indistinguishable from gold under deuteranopia |
@@ -49,6 +49,7 @@ serif, panel frames) without giving up anything a lifter needs mid-set.
 | resourceWood/Stone/Water/Wind/Grain | ... | removed | zero consumers |
 | gold100/300/600/700/800/900 | #FFF8D9 #FFE066 #C4A600 #6B5A12 #3A3110 #241F08 | #F7ECCF #EDCB76 #B08A2E #5E4A1E #362C15 #211B0E | the Journal's ramp |
 | ink800 / ink900 | #232A44 / #0E1220 | #262A33 / #101217 | |
+| parchment | (new) | #D9CFBC | the phylactère's paper, a step under bone; ink text 12.6:1, ink800 name 9.3:1 |
 | pastelBlue | #1A2633 | #18202A | |
 | pastelPink | #331A22 | #2A1719 | now an error tint |
 | pastelGreen | #1A3320 | #16261B | |
@@ -81,8 +82,9 @@ serif, panel frames) without giving up anything a lifter needs mid-set.
    No spring on press.
 7. **Récitatif.** A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill,
    1 px `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art.
-8. **Phylactère.** A villager's spoken line is a bone bubble (`$text` fill, `$bgDark` text, radius
-   `$1`, a tail toward the speaker), never a dark card.
+8. **Phylactère.** A villager's spoken line is a parchment bubble (`$parchment` fill, `$bgDark`
+   text in regular weight, speaker name `$ink800`, radius `$1`), never a dark card. The face sits
+   in a round ink medallion top-aligned with the bubble, and the tail points at its centre.
 9. **No decorative emoji** where this refresh touches: the end-of-session feedback and the quest and
    adventure cover fallbacks use game-icons glyphs through `GameIcon`.
 10. **No texture overlays, no halftone, no tilted panels, no hand-lettered fonts.**

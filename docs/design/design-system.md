@@ -155,11 +155,15 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 - **Panels, not shadows.** Cards are a 1px `$borderStrong` frame (`$glassBorder` on glass) and
   carry no drop shadow; the one hero card of a screen (Home's quest stage, the Victory card)
   takes 1.5px. No thick white/off-white accent borders — that's a bug, not a style choice.
-  Elevation comes from contrast and spacing; `$primaryGlow` is the only glow, once per screen.
-  Toasts and overlays keep their soft shadow.
+  Elevation comes from contrast and spacing; there is no glow token. Toasts and overlays keep
+  their soft shadow.
 - **One accent.** The braise (`$primary` fill, `$primaryText` as text or icon) is the only
   accent; there is no second colour. Each use goes to the colour of its meaning: rewards and
   records `$resourceGold`, "hard" `$error`, a selected option `$primary`.
+- **Braise means action.** `$primary` and `$primaryText` belong to buttons and links. Metadata (a
+  quest card's type and muscle line, a quick action's duration) is ash, `$textSecondary`.
+- **Every primary is the seal.** Home's Start, the session's Done and the rest screen's "I'm
+  ready" are `AppButton` primaries (64 px, 24 px label in a session), never a screen-local button.
 - **Fills and their text.** `$primary` fills take `$onPrimary`; `$success`, `$error`, `$warning`
   and `$resourceGold` fills take `$bgDark`. Light text on those is banned (1.5 to 3.1:1).
 - **One source per value.** No rgba literal outside `constants/rawColors.ts`; a gradient or text
@@ -183,7 +187,7 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 ### Palette
 
 Ink ground `$bgDark` (#0C0D11), `$surface` / `$surface2` above it, bone `$text`, ash
-`$textSecondary`, braise `$primary` (#C2410C, fill) and `$primaryText` (#F08A4B, text on dark,
+`$textSecondary`, parchment `$parchment` (#D9CFBC, the phylactère's paper), braise `$primary` (#C2410C, fill) and `$primaryText` (#F08A4B, text on dark,
 also `$warning` and `$resourceFire`), patinated gold `$resourceGold` (#E2B54A). Values and
 contrast ratios live in [`constants/rawColors.ts`](../../constants/rawColors.ts); the
 decision record is
@@ -191,7 +195,9 @@ decision record is
 
 ### Typography
 
-- Titles: `Alegreya` (`$heading`), 700 (400 for the rare light heading). No letter
+- Titles: `Alegreya` (`$heading`), 700 (400 for the rare light heading). Screen titles and the
+  names of things in the world (quests, adventures, the village, buildings as titles) are titles;
+  lists, labels, metadata and the Journal are not. No letter
   spacing, and never a digit: timers, HP, XP, levels and counts stay in `NotoSans` (`$body`)
   with tabular numerals.
 - Body and utility reading: `NotoSans`.
@@ -199,15 +205,18 @@ decision record is
 
 ### Radius
 
-`$1` (3) tags and static chips, `$3` (7) cards, buttons, pressable chips, inputs and dialogs,
+`$1` (3) tags and static chips, `$3` (7) cards (the rest screen's, the village's), buttons,
+pressable chips (the filter rail's), quick-action tiles, inputs and dialogs,
 `$6` (16) sheet tops, full circles for round icon buttons, steppers and avatars.
 
 ### Buttons
 
 - Every button label is set in the title font (`$heading`, 20/700). Primary is the **seal**:
   `$primary` fill, radius `$3`, `$borderStrong` sides, a 3px `$primaryEdge` bottom edge, label in
-  `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill colour; no spring. The
-  outline button keeps the `quick` press (scale 0.98, opacity 0.9). `AppButton` derives the label colour and forbids `pressStyle`, `rounded` and
+  `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill colour. `AppButton` has no
+  `transition` for any variant, so every press is instant (the outline goes to scale 0.98,
+  opacity 0.9). Session CTAs are `AppButton` primaries at 64 px with a 24 px label; Done past its
+  target is `$success` with an ink label and no edge. `AppButton` derives the label colour and forbids `pressStyle`, `rounded` and
   `bg` overrides.
 - Secondary/ghost: `outline`, neutral or glass treatment.
 - Consistent `pressed`, `disabled`, and loading states. Minimum hit area 44×44.
@@ -222,8 +231,11 @@ decision record is
 - A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill, 1px
   `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art:
   [`Recitatif`](../../components/common/Recitatif.tsx).
-- A villager's spoken line is a bone bubble (`$text` fill, `$bgDark` line, speaker name in
-  `$ink800`, radius `$1`, a tail toward the speaker), never a dark card.
+- The exercise name over its illustration (`ExerciseHero`) sits in a Récitatif too.
+- A villager's spoken line is a parchment bubble (`$parchment` fill, `$bgDark` line 14 regular,
+  speaker name in `$ink800`, radius `$1`), never a dark card. The face sits in a round ink
+  medallion (48 dp, `$bgDark`, 1.5px `$borderStrong` ring), top-aligned with the bubble, and the
+  tail points at its centre.
 
 ### Art heroes
 

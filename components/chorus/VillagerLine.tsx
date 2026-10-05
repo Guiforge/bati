@@ -68,6 +68,7 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
           sits in the 8 dp gap and points at the face, so the slot's overflow never clips it. */}
       <YStack testID="villager-bubble" flex={1} minW={0} bg="$parchment" rounded="$1" p="$2">
         <View
+          testID="villager-tail"
           position="absolute"
           l={-8}
           t={17}

@@ -9,7 +9,6 @@ colors:
   primary-press: "#9A3412"
   primary-edge: "#7A2905"
   on-primary: "#FFF4E6"
-  primary-glow: "rgba(194, 65, 12, 0.45)"
   success: "#6DB57A"
   warning: "#F08A4B"
   error: "#F0595D"
@@ -39,6 +38,7 @@ colors:
   gold-800: "#362C15"
   gold-900: "#211B0E"
   ink-800: "#262A33"
+  parchment: "#D9CFBC"
   ink-900: "#101217"
 typography:
   display:
@@ -164,11 +164,15 @@ feel immersive but remain operationally clear in the middle of a workout.
   is banned (1.5 to 3.1:1).
 - `$bgDark` (the Void, "encre froide"), `$surface`, `$surface2`: layered depth. `$bgOverlay` for
   sheets, `$bgOverlaySoft` or `$glassBg` + `$glassBorder` over artwork.
+- **Braise means action.** `$primary` fills and `$primaryText` links and buttons only. Metadata (a
+  quest card's type and muscle line, a quick action's duration) is ash, `$textSecondary`.
 - `$text` (bone), `$textSecondary` (ash): reading hierarchy. `$muted` resolves to `$textSecondary`
   through the theme; the raw grey `muted` in `rawColors.ts` is shadowed and should not carry text.
 - `$resourceGold`: patinated gold, progression (XP, rewards, the oath strip's `$goldHairline`).
   Only gold and fire are drawn as colours; the other resources are white game-icons glyphs.
 - `$bossPhase2..4`: the boss room darkening and reddening after phase 1 on `$bgDark`.
+- `$parchment`: the phylactère's paper, a step under bone so a speech bubble never outshines the
+  screen's action. Ink text 12.6:1, `$ink800` name 9.3:1.
 - `$mapWater`, `$mapWood`: the recap map's two own colours; everything else reuses a token.
 - One source per value: no rgba literal outside `constants/rawColors.ts`. A gradient or text
   shadow that needs a translucent token calls `fade(token, alpha)`.
@@ -193,13 +197,19 @@ opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
 - **Récitatif.** A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill,
   1px `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art
   (`components/common/Recitatif.tsx`).
-- **Phylactère.** A villager's spoken line is a bone bubble (`$text` fill, `$bgDark` line, speaker name
-  in `$ink800`, radius `$1`, a tail toward the speaker), never a dark card.
+- **Phylactère.** A villager's spoken line is a parchment bubble (`$parchment` fill, `$bgDark`
+  line 14 regular, speaker name `$ink800` 12/700, radius `$1`), never a dark card. The face sits
+  in a round ink **medallion** (48 dp, `$bgDark` fill, 1.5px `$borderStrong` ring) top-aligned
+  with the bubble, and the bubble's tail points at the medallion's centre. One style everywhere.
+- **Récitatif on exercise art.** The exercise name over its illustration (`ExerciseHero`) sits in
+  a Récitatif, like a quest title over its art.
 - No texture overlays, no halftone, no tilted panels, no hand-lettered fonts.
 
 ### Typography
 
 - Titles: `Alegreya` (`$heading`), 700 (400 for the rare light heading). No letter spacing.
+  Screen titles and the names of things in the world (quests, adventures, the village, buildings
+  shown as titles) are titles; lists, labels, metadata and the Journal are not.
   Alegreya never sets a digit: timers, HP, XP, levels and counts stay in `NotoSans` (`$body`)
   with tabular numerals.
 - Body and utility reading: `NotoSans` (`$body`).
@@ -210,15 +220,16 @@ opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
 ### Spacing and radius
 
 Tamagui v4 scales, not a 4px grid: `$1` 2, `$2` 7, `$3` 13, `$4` 18, `$5` 24, `$6` 32.
-Radius scale: `$1` (3) tags and static chips, `$3` (7) cards, buttons, pressable chips, inputs and
-dialogs, `$6` (16) sheet tops, full circles for round icon buttons, steppers and avatars. Keep the
+Radius scale: `$1` (3) tags and static chips, `$3` (7) cards (the rest screen's, the village's),
+buttons, pressable chips (the filter rail's), quick-action tiles, inputs and dialogs, `$6` (16) sheet tops, full circles for round icon buttons, steppers and avatars. Keep the
 exact tokens rather than rounding.
 
 ### Motion
 
-- `quick` spring (damping 30, stiffness 400): every press, no overshoot, ~150 to 200 ms.
-  Cards press to 0.99 / 0.92, the outline button to 0.98 / 0.9. The seal button does not
-  spring: it moves down 2px.
+- `quick` spring (damping 30, stiffness 400): every card press, no overshoot, ~150 to 200 ms.
+  Cards press to 0.99 / 0.92. `AppButton` has no `transition` at all, for any variant: its press
+  is instant (the seal moves down 2px, the outline goes to 0.98 / 0.9), because a transition
+  that toggles with a prop changes Tamagui's hook shape on a mounted button.
 - `bouncy` spring (damping 14, stiffness 150): rewards only.
 - Reduced motion follows the OS live; with it on, animations are switched off.
 
@@ -237,6 +248,12 @@ exact tokens rather than rounding.
   derives the label colour and forbids `pressStyle`, `rounded` and `bg` overrides.
 - Every button label is set in the title font (`$heading`, 20/700). The seal: radius `$3`, sides
   in `$borderStrong`, a 3px bottom edge in `$primaryEdge`, label in `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill colour.
+- **Every primary action is the seal**, session included: Home's Start, the session's Done and
+  the rest screen's "I'm ready" are `AppButton`s at 64 px with a 24 px label. Past its target,
+  Done turns `$success`: no edge, label in ink. No extra glow.
+- Label colour follows the fill: `$onPrimary` on the braise, `$text` on the outline, ink
+  (`$bgDark`) on `$success`, `$warning` and `$resourceGold`, `$onError` on `$error`.
+- The outing's hold-to-finish button is 64 px, radius `$3`, its label in the title font.
 - Interaction: consistent `pressed`, `disabled`, and loading states.
 - Minimum hit area: 44x44. `AppButton` enforces it as `minH`; a smaller glyph or button gets
   `hitSlop` to reach it.

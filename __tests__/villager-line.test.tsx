@@ -102,6 +102,10 @@ describe("VillagerLine", () => {
     ).toBeTruthy();
     const row = StyleSheet.flatten(getByTestId("villager-line-block").props.style);
     expect(row.alignItems).toBe("flex-start");
+    // The tail points at the face's centre: its top offset plus half its height is half the medallion.
+    const tail = StyleSheet.flatten(getByTestId("villager-tail").props.style);
+    const tailHeight = (tail.borderTopWidth ?? 0) + (tail.borderBottomWidth ?? 0);
+    expect((tail.top as number) + tailHeight / 2).toBe((medallion.height as number) / 2);
   });
 
   it("shows the line and carries nothing a touch could land on", async () => {

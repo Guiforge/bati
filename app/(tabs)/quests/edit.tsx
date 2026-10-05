@@ -10,6 +10,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
+import { StatusBand } from "@/components/common/StatusBand";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Plus, Trash2, X } from "@/components/icons";
@@ -604,16 +605,7 @@ export default function QuestEditor() {
       </ScrollView>
 
       {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
-      <YStack
-        position="absolute"
-        t={0}
-        l={0}
-        r={0}
-        height={insets.top}
-        bg="$background"
-        opacity={0.88}
-        pointerEvents="none"
-      />
+      <StatusBand />
 
       <YStack
         p="$4"

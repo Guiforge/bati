@@ -176,9 +176,20 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
-      <Sheet.Handle bg="$borderStrong" />
       <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
-        <YStack testID="village-detail" px="$4" pt="$4" pb={bottomInset + 16} gap="$4">
+        {/* Inside the frame: Sheet.Handle floats above its top edge, over the dimmed list. A bar
+            only: with one `fit` snap point the handle's tap has nothing to cycle, and the drag
+            still lives on the frame. */}
+        <YStack
+          testID="village-detail-handle"
+          self="center"
+          width={40}
+          height={4}
+          rounded={2}
+          mt="$2"
+          bg="$borderStrong"
+        />
+        <YStack testID="village-detail" px="$4" pt="$3" pb={bottomInset + 16} gap="$4">
           {shown?.kind === "building" ? (
             <BuildingDetail
               building={shown.building}

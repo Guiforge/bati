@@ -31,6 +31,18 @@ async function mount() {
   return view;
 }
 
+describe("ProgressionChart legend", () => {
+  it("names the three difficulties", async () => {
+    const view = await mount();
+    await view.findByText("30");
+    for (const level of ["easy", "medium", "hard"] as const) {
+      expect(view.getByTestId(`chart-legend-${level}`)).toHaveTextContent(
+        i18n.t(`quests.level_${level}`),
+      );
+    }
+  });
+});
+
 describe("ProgressionChart", () => {
   it("prints the total minutes in the text colour, not a green that means nothing", async () => {
     const view = await mount();

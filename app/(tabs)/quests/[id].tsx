@@ -11,6 +11,7 @@ import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Pencil, Repeat, Sparkles } from "@/components/icons";
@@ -888,16 +889,7 @@ export default function QuestDetails() {
       </ScrollView>
 
       {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
-      <YStack
-        position="absolute"
-        t={0}
-        l={0}
-        r={0}
-        height={insets.top}
-        bg="$bgDark"
-        opacity={0.88}
-        pointerEvents="none"
-      />
+      <StatusBand />
 
       {quest ? (
         <YStack

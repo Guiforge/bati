@@ -13,6 +13,7 @@ import { PathStrip } from "@/components/common/PathStrip";
 import { Recitatif } from "@/components/common/Recitatif";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@/components/icons";
@@ -764,16 +765,7 @@ export default function ExerciseDetails() {
 
       {/* Content scrolls edge-to-edge; this keeps the status bar readable over it, as on the
           quest screen. Without it the back button slid under the clock. */}
-      <YStack
-        position="absolute"
-        t={0}
-        l={0}
-        r={0}
-        height={insets.top}
-        bg="$bgDark"
-        opacity={0.88}
-        pointerEvents="none"
-      />
+      <StatusBand />
     </YStack>
   );
 }

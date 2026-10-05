@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { QuestLog, type QuestLogData } from "@/components/journal/QuestLog";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import "@/i18n";
 import config from "@/tamagui.config";
 
@@ -106,4 +106,29 @@ test("opens on the quest's plate: gold date kicker in the body face, one Recitat
   );
   expect(title.props.accessibilityRole).toBe("header");
   expect(screen.getAllByText("The Squire's Awakening")).toHaveLength(1);
+  expect(screen.queryByTestId("session-details-plate")).toBeNull();
+});
+
+test("a quest with no art gets a framed surface plate, and its XP line is the gold gauge", async () => {
+  await act(async () => {
+    await render(
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 390, height: 844 },
+          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+        }}
+      >
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <QuestLog data={dataWith(362)} onChanged={() => {}} />
+        </TamaguiProvider>
+      </SafeAreaProvider>,
+    );
+  });
+  const plate = StyleSheet.flatten(screen.getByTestId("session-details-plate").props.style);
+  expect(plate.backgroundColor).toBe(rawColors.surface);
+  expect(plate.borderWidth).toBe(1);
+  expect(plate.borderColor).toBe(rawColors.borderStrong);
+  const fill = screen.getByTestId("session-details-xp-fill");
+  expect(StyleSheet.flatten(fill.props.style).width).toBe("33%");
+  expect(fill).toHaveStyle({ backgroundColor: fade(rawColors.resourceGold, 1) });
 });

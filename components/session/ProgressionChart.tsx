@@ -12,6 +12,9 @@ import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
+const Y_LABELS_WIDTH = 35;
+const LEGEND = ["easy", "medium", "hard"] as const;
+
 type ChartMode = "quest" | "all";
 
 interface ProgressionChartProps {
@@ -118,8 +121,11 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
     );
   }
 
+  // Ten month labels do not fit unrotated: every other one, wide enough not to truncate.
+  const thin = sessions.length > 6;
+
   // Prepare chart data - show duration in minutes
-  const chartData: ChartDataPoint[] = sessions.map((session) => {
+  const chartData: ChartDataPoint[] = sessions.map((session, index) => {
     const durationMinutes = session.durationSeconds ? Math.round(session.durationSeconds / 60) : 0;
 
     const dateLabel = getDateTimeFormat(language, { day: "numeric", month: "short" }).format(
@@ -133,7 +139,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
 
     return {
       value: durationMinutes,
-      label: dateLabel,
+      label: thin && index % 2 === 1 ? "" : dateLabel,
       frontColor: barColor,
     };
   });
@@ -144,10 +150,12 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
   const avgMinutes = Math.round(avgDuration / 60);
   const totalMinutes = Math.round(totalDuration / 60);
 
-  // Chart dimensions
+  // Chart dimensions: the plot is the card's width less the y labels, and the bars spread over it
+  // (a bar and its gap share one slot), so the axis ends inside the card.
   const chartWidth = Math.min(width - 80, 320);
-  const barWidth = Math.max(16, Math.floor(chartWidth / (sessions.length * 2)));
-  const spacing = Math.max(8, Math.floor(barWidth / 2));
+  const slot = Math.floor((chartWidth - Y_LABELS_WIDTH - 8) / sessions.length);
+  const barWidth = Math.max(10, Math.floor(slot * 0.6));
+  const spacing = slot - barWidth;
 
   // Find max value for Y-axis
   const maxValue = Math.max(...chartData.map((d) => d.value), 1);
@@ -215,32 +223,30 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             xAxisLabelTextStyle={{
               color: rawColors.textSecondary,
               fontSize: 9,
-              transform: [{ rotate: "-45deg" }],
             }}
+            labelWidth={thin ? slot * 2 : slot}
+            yAxisLabelWidth={Y_LABELS_WIDTH}
+            initialSpacing={4}
+            endSpacing={0}
             hideRules
           />
         </YStack>
 
-        {/* Legend */}
+        {/* Legend: the fills mean difficulty, in the same three colours the bars use. */}
         <XStack gap="$4" justify="center" flexWrap="wrap">
-          <XStack items="center" gap="$2">
-            <YStack width={12} height={12} rounded={6} bg="$success" />
-            <Text fontSize={11} color="$text" opacity={0.7}>
-              {t("quests.level_easy")}
-            </Text>
-          </XStack>
-          <XStack items="center" gap="$2">
-            <YStack width={12} height={12} rounded={6} bg="$primary" />
-            <Text fontSize={11} color="$text" opacity={0.7}>
-              {t("quests.level_medium")}
-            </Text>
-          </XStack>
-          <XStack items="center" gap="$2">
-            <YStack width={12} height={12} rounded={6} bg="$error" />
-            <Text fontSize={11} color="$text" opacity={0.7}>
-              {t("quests.level_hard")}
-            </Text>
-          </XStack>
+          {LEGEND.map((level) => (
+            <XStack key={level} items="center" gap="$2" testID={`chart-legend-${level}`}>
+              <YStack
+                width={12}
+                height={12}
+                rounded={6}
+                style={{ backgroundColor: DIFFICULTY_COLORS[level] }}
+              />
+              <Text fontSize={11} color="$text" opacity={0.7}>
+                {t(`quests.level_${level}`)}
+              </Text>
+            </XStack>
+          ))}
         </XStack>
       </YStack>
     </Card>

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
+import { InkGauge } from "@/components/common/InkGauge";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Trophy } from "@/components/icons";
 import {
@@ -16,7 +17,6 @@ import {
 } from "@/components/journal/journalFormat";
 import {
   NBackButton,
-  NBar,
   NBlock,
   NButton,
   NFact,
@@ -83,25 +83,45 @@ export function ReportHero({
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  // No art: the plate is a framed `$surface` panel instead of a bare gradient, and its content
+  // sits 11 dp further in so the frame holds the back button and the kicker. Raw colours, not
+  // tokens: the Journal's theme folds `$borderStrong` into `$surface`, which would hide the frame.
+  const pad = source == null ? 22 : 11;
   return (
     <View style={{ height: height + insets.top }}>
-      {source != null && (
-        <View style={[StyleSheet.absoluteFill, { top: insets.top }]}>
-          <NImage source={source} width="100%" height={height} radius={0} />
-        </View>
+      {source == null ? (
+        <View
+          testID="session-details-plate"
+          style={{
+            position: "absolute",
+            top: insets.top,
+            bottom: 0,
+            left: 11,
+            right: 11,
+            backgroundColor: rawColors.surface,
+            borderWidth: 1,
+            borderColor: rawColors.borderStrong,
+          }}
+        />
+      ) : (
+        <>
+          <View style={[StyleSheet.absoluteFill, { top: insets.top }]}>
+            <NImage source={source} width="100%" height={height} radius={0} />
+          </View>
+          <LinearGradient
+            colors={[rawColors.bgDarkClear, rawColors.bgOverlaySoft, rawColors.bgDark]}
+            locations={[0, 0.55, 0.96]}
+            style={StyleSheet.absoluteFill}
+          />
+        </>
       )}
-      <LinearGradient
-        colors={[rawColors.bgDarkClear, rawColors.bgOverlaySoft, rawColors.bgDark]}
-        locations={[0, 0.55, 0.96]}
-        style={StyleSheet.absoluteFill}
-      />
-      <View style={{ position: "absolute", top: insets.top + 11, left: 11 }}>
+      <View style={{ position: "absolute", top: insets.top + pad, left: pad }}>
         <NBackButton onPress={() => router.back()} label={t("common.go_back")} veiled />
       </View>
-      <View style={{ position: "absolute", top: insets.top + 11, right: 11 }}>
+      <View style={{ position: "absolute", top: insets.top + pad, right: pad }}>
         <ShareButton testID="journal-share" sessionId={sessionId} veiled />
       </View>
-      <YStack position="absolute" l={11} r={11} b={11}>
+      <YStack position="absolute" l={pad} r={pad} b={pad}>
         {children}
       </YStack>
     </View>
@@ -309,7 +329,12 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
           </NFact>
           {latest ? (
             <YStack ml={17}>
-              <NBar progress={level.xpProgress} height={3} />
+              <InkGauge
+                testIDPrefix="session-details-xp"
+                progress={level.xpProgress / 100}
+                fill="$resourceGold"
+                track="$gold800"
+              />
             </YStack>
           ) : null}
         </YStack>
@@ -541,7 +566,7 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
     <YStack testID="session-details-screen">
       <ReportHero
         source={data.questImage ? getQuestAsset(data.questImage) : null}
-        height={data.questImage ? Math.round((Math.min(width, CONTENT_MAX_WIDTH) * 3) / 4) : 150}
+        height={data.questImage ? Math.round((Math.min(width, CONTENT_MAX_WIDTH) * 3) / 4) : 184}
         sessionId={session.id}
       >
         {/* Victory's plate, reopened: the date kicks the title off in the body face (a date is

@@ -13,7 +13,8 @@ import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 const Y_LABELS_WIDTH = 35;
-const LEAD_IN = 4;
+/** Room before the first bar, so its centred date (up to ~30 dp wide) stays inside the plot. */
+const LEAD_IN = 12;
 const LEGEND = ["easy", "medium", "hard"] as const;
 
 type ChartMode = "quest" | "all";

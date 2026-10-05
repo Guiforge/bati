@@ -238,6 +238,17 @@ tags:
 - waitForAnimationToEnd:
     timeout: 2000
 - takeScreenshot: 22-session-details-scrolled
+- back
+- tapOn:
+    id: "journal-session-card"
+    index: 1
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-details-screen"
+    timeout: 15000
+    optional: true
+- takeScreenshot: 22b-session-details-second
 - runFlow: subflows/back-to-tabs.yaml
 
 # --- Settings ---------------------------------------------------------------
@@ -419,6 +430,10 @@ tags:
       id: "session-victory-xp"
     timeout: 20000
     optional: true
+# Once kept (or saved), the level card sweeps in: wait past its 400 ms delay and 900 ms fill.
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 35-victory-kept
 - tapOn:
     id: "session-victory-continue"
     optional: true

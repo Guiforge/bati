@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ImageSourcePropType } from "react-native";
 import { H1, YStack } from "tamagui";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { HUD_HEIGHT } from "./sessionArt";
 
 type ExerciseHeroProps = {
@@ -124,7 +124,7 @@ export function ExerciseHero({
         color="$text"
         // Its own contrast, so the scrim above does not have to supply it by covering the
         // painting. Same trick the onboarding titles use over their full-bleed art.
-        textShadowColor="rgba(6, 8, 18, 0.85)"
+        textShadowColor={fade(rawColors.shadowColor, 0.85)}
         textShadowOffset={{ width: 0, height: 2 }}
         textShadowRadius={6}
         numberOfLines={1}

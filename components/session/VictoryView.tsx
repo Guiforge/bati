@@ -26,6 +26,7 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
@@ -453,7 +454,7 @@ export function VictoryView() {
               accessible={false}
             />
             <LinearGradient
-              colors={["transparent", "rgba(11,15,25,0.55)", "rgba(11,15,25,0.95)"]}
+              colors={["transparent", fade(rawColors.bgDark, 0.55), fade(rawColors.bgDark, 0.95)]}
               style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: 0 }}
             />
             {/* The villager's line, top of the banner beside the trophy. Its slot is here from the

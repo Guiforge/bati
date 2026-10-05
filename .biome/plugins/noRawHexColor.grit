@@ -9,15 +9,23 @@
 // cannot take a token: those import from constants/rawColors.ts, which is the only file allowed
 // to write a colour down — and the only exemption here, so there is nothing to remember.
 //
+// rgba(...) and rgb(...) string literals are covered since 2026-10: the old ground was retyped by
+// hand as rgba(11, 15, 25, a) in a dozen fades and kept the blue night after the palette moved.
+// Use fade(rawColors.x, alpha) or a token. JSX attribute strings (a different node from string())
+// are covered too.
+//
 // Scoped by $filename rather than a biome.json override: `overrides[].plugins: []` does not
 // suppress plugin diagnostics in Biome 2.5.6.
 language js
 
-string() as $color where {
-  $color <: r".*#[0-9a-fA-F]{6}.*",
+or {
+  string(),
+  JsxString()
+} as $color where {
+  or { $color <: r".*#[0-9a-fA-F]{6}.*", $color <: r"^.rgba?\(.*" },
   // Three conditions rather than one alternation: a group in a GritQL regex is read as a
   // metavariable binding, and the pattern fails with "matched 1 variables, but expected 0".
   $filename <: not r".*rawColors.*",
   $filename <: not r".*__tests__.*",
-  register_diagnostic(span=$color, message="Raw hex colour: use a Tamagui token, or import from constants/rawColors.ts when the library cannot take one.")
+  register_diagnostic(span=$color, message="Raw hex or rgba colour: use a Tamagui token, or import from constants/rawColors.ts (fade for alpha) when the library cannot take one.")
 }

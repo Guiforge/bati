@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Modal, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H2, Paragraph, ScrollView, Text, YStack } from "tamagui";
+import { fade, rawColors } from "@/constants/rawColors";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface NarrativeModalProps {
@@ -47,7 +48,7 @@ export function NarrativeModal({
             readable over a painting nobody chose for its contrast, and the painting has to
             survive it. */}
         <LinearGradient
-          colors={["transparent", "rgba(11,15,25,0.55)", "rgba(11,15,25,0.97)"]}
+          colors={["transparent", fade(rawColors.bgDark, 0.55), fade(rawColors.bgDark, 0.97)]}
           locations={[0, 0.35, 0.72]}
           style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
         />

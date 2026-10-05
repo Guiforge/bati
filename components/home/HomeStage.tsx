@@ -7,7 +7,7 @@ import { Button, H3, Text, XStack, YStack } from "tamagui";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Info, Play, Sparkles, Target } from "@/components/icons";
 import { ADVENTURE_ASSETS, getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { reportError } from "@/src/reportError";
 import { OathStrip } from "./OathStrip";
 import { RestNote } from "./RestNote";
@@ -99,9 +99,9 @@ export function HomeStage() {
           dark under the strip's edge, the art clear, then solid ground under the words. */}
       <LinearGradient
         colors={[
-          "rgba(11,15,25,0.25)",
-          "rgba(11,15,25,0)",
-          "rgba(11,15,25,0.78)",
+          fade(rawColors.bgDark, 0.25),
+          fade(rawColors.bgDark, 0),
+          fade(rawColors.bgDark, 0.78),
           rawColors.bgDark,
         ]}
         locations={[0, 0.2, 0.62, 1]}

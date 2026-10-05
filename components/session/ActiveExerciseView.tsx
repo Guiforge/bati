@@ -13,7 +13,7 @@ import { slotCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
@@ -381,7 +381,7 @@ export function ActiveExerciseView() {
             flex={1}
             // Its own contrast, so the scrim above it can stop covering the movement. Same trade
             // ExerciseHero's title makes one gradient down.
-            textShadowColor="rgba(6, 8, 18, 0.9)"
+            textShadowColor={fade(rawColors.shadowColor, 0.9)}
             textShadowOffset={{ width: 0, height: 1 }}
             textShadowRadius={6}
           >
@@ -401,7 +401,7 @@ export function ActiveExerciseView() {
                 fontSize={12}
                 fontWeight="700"
                 color="$textSecondary"
-                textShadowColor="rgba(6, 8, 18, 0.9)"
+                textShadowColor={fade(rawColors.shadowColor, 0.9)}
                 textShadowOffset={{ width: 0, height: 1 }}
                 textShadowRadius={6}
               >

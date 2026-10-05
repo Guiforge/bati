@@ -126,9 +126,12 @@ export const rawColors = {
  * a token: gradients and React Native text shadows. One source per value: a hand-typed rgba of
  * the ground is how the old fades kept the 2025 blue after the palette moved.
  */
-export function fade(hex: string, alpha: number): string {
+export function fade(
+  hex: `#${string}`,
+  alpha: number,
+): `rgba(${number}, ${number}, ${number}, ${number})` {
   const n = Number.parseInt(hex.slice(1), 16);
-  return `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+  return `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})` as const;
 }
 
 /**

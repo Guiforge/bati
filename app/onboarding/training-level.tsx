@@ -8,7 +8,7 @@ import { H1, Paragraph, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { preferences, type TrainingLevel } from "@/db";
 import { useHaptics } from "@/hooks/useHaptics";
 import { reportError } from "@/src/reportError";
@@ -67,11 +67,11 @@ export default function TrainingLevelStep() {
         contentFit="cover"
       />
       <LinearGradient
-        colors={["rgba(11, 15, 25, 0.85)", "transparent"]}
+        colors={[fade(rawColors.bgDark, 0.85), "transparent"]}
         style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(11, 15, 25, 0.95)", rawColors.bgDark]}
+        colors={["transparent", fade(rawColors.bgDark, 0.95), rawColors.bgDark]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%" }}
       />
 
@@ -84,7 +84,7 @@ export default function TrainingLevelStep() {
             color="$text"
             fontSize={30}
             fontWeight="700"
-            textShadowColor="rgba(0,0,0,0.5)"
+            textShadowColor={fade(rawColors.black, 0.5)}
             textShadowRadius={4}
           >
             {t("onboarding.level_title", "What's your level?")}
@@ -93,7 +93,7 @@ export default function TrainingLevelStep() {
             text="center"
             color="$textSecondary"
             fontSize={15}
-            textShadowColor="rgba(0,0,0,0.5)"
+            textShadowColor={fade(rawColors.black, 0.5)}
             textShadowRadius={4}
           >
             {t(
@@ -140,7 +140,7 @@ export default function TrainingLevelStep() {
             color="$textSecondary"
             fontSize={12}
             opacity={0.85}
-            textShadowColor="rgba(0,0,0,0.5)"
+            textShadowColor={fade(rawColors.black, 0.5)}
             textShadowRadius={4}
           >
             {t("safety.onboarding_line")}

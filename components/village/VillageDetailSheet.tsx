@@ -171,7 +171,7 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
       zIndex={100_000}
     >
       <Sheet.Overlay
-        bg="rgba(0,0,0,0.5)"
+        bg="$sheetScrim"
         transition={reducedMotion ? undefined : "quick"}
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}

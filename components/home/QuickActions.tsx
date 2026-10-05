@@ -10,6 +10,7 @@ import { RotateCcw, SlidersHorizontal } from "@/components/icons";
 import { OutingGoalSheet } from "@/components/quests/OutingGoalSheet";
 import { getQuestThumb } from "@/constants/assetMap";
 import { formatDistance } from "@/constants/distanceFormat";
+import { fade, rawColors } from "@/constants/rawColors";
 import { getRecentSessionHistory } from "@/db/completed";
 import { formatDurationEstimate } from "@/db/estimate";
 import { listExercises } from "@/db/exercises";
@@ -372,7 +373,7 @@ export function QuickActions() {
               />
               {/* $bgDark (#0B0F19) as rgba - LinearGradient takes plain colors, not tokens. */}
               <LinearGradient
-                colors={["rgba(11,15,25,0.1)", "rgba(11,15,25,0.92)"]}
+                colors={[fade(rawColors.bgDark, 0.1), fade(rawColors.bgDark, 0.92)]}
                 style={StyleSheet.absoluteFill}
               />
               <YStack flex={1} justify="flex-end" p="$2" gap={4}>

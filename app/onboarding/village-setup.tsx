@@ -10,7 +10,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
 import { getVillageTierAsset } from "@/constants/assetMap";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { reportError } from "@/src/reportError";
 import {
   VILLAGE_NAME_MAX_LENGTH as MAX_NAME_LENGTH,
@@ -71,11 +71,11 @@ export default function VillageSetup() {
         transition={200}
       />
       <LinearGradient
-        colors={["rgba(11, 15, 25, 0.85)", "transparent"]}
+        colors={[fade(rawColors.bgDark, 0.85), "transparent"]}
         style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(11, 15, 25, 0.92)", rawColors.bgDark]}
+        colors={["transparent", fade(rawColors.bgDark, 0.92), rawColors.bgDark]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%" }}
       />
 
@@ -98,7 +98,7 @@ export default function VillageSetup() {
               color="$text"
               fontWeight="700"
               fontSize={28}
-              textShadowColor="rgba(0,0,0,0.5)"
+              textShadowColor={fade(rawColors.black, 0.5)}
               textShadowOffset={{ width: 1, height: 1 }}
               textShadowRadius={4}
             >
@@ -113,7 +113,7 @@ export default function VillageSetup() {
               color="$text"
               fontSize={16}
               fontWeight="700"
-              textShadowColor="rgba(0,0,0,0.5)"
+              textShadowColor={fade(rawColors.black, 0.5)}
               textShadowRadius={4}
             >
               {t("onboarding.village_name_subtitle")}
@@ -122,7 +122,7 @@ export default function VillageSetup() {
               text="center"
               color="$textSecondary"
               fontSize={13}
-              textShadowColor="rgba(0,0,0,0.5)"
+              textShadowColor={fade(rawColors.black, 0.5)}
               textShadowRadius={4}
             >
               {t("onboarding.village_name_hint", "Every muscle you train raises a building here.")}

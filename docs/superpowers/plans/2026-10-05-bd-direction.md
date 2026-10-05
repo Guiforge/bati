@@ -15,7 +15,7 @@
 - Work in `/home/guiforge/Documents/code/bati/.claude/worktrees/design-system`, branch `worktree-design-system`. Never `cd` elsewhere.
 - Git through `/usr/bin/git` (a hook rewrites plain `git` and breaks it in worktrees). Stage only the files your task lists (`/usr/bin/git add <paths>`), never `-A`.
 - Search with `rg`, never `grep -r`.
-- Tests in this worktree: `rtk proxy npx jest --testPathIgnorePatterns /node_modules/ <paths or patterns>` (jest ignores `/.claude/worktrees/` by default; this flag overrides it; `rtk proxy` keeps the real `Test Suites:` line, which the rtk summary hides). Read the `Test Suites:` line, not only `Tests:`.
+- Tests in this worktree: `rtk proxy npx jest --testPathIgnorePatterns=/node_modules/ --testPathPatterns "a|b"` (the `=` matters: without it the option swallows the paths and runs the whole suite. Jest ignores `/.claude/worktrees/` by default; this flag overrides it. Wherever a step below writes `--testPathIgnorePatterns /node_modules/ <x> <y>`, run it in this form with `"x|y"`; `rtk proxy` keeps the real `Test Suites:` line, which the rtk summary hides). Read the `Test Suites:` line, not only `Tests:`.
 - Types: `rtk proxy npx tsc --noEmit`. Lint: `rtk proxy npx biome check <paths>`. Dead code: `npm run deadcode`. Never run `tsc` and jest at the same time (heavy suites OOM).
 - Colours: no hex or rgba literal outside `constants/rawColors.ts` (the lint plugin enforces hex; Task 4 extends it to rgba). Components use tokens (`bg="$surface"`), never values.
 - Copy: no em dash anywhere a reader sees it, in any language. French says `tu`. Straight apostrophe, real ellipsis.

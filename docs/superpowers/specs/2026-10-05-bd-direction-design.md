@@ -84,7 +84,9 @@ serif, panel frames) without giving up anything a lifter needs mid-set.
    1 px `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art.
 8. **Phylactère.** A villager's spoken line is a parchment bubble (`$parchment` fill, `$bgDark`
    text in regular weight, speaker name `$ink800`, radius `$1`), never a dark card. The face sits
-   in a round ink medallion top-aligned with the bubble, and the tail points at its centre.
+   in the in-flow villager line (`VillagerLine`) in a round ink medallion top-aligned with the
+   bubble, and the tail points at its centre. The bubble style is the same everywhere; the Village
+   cameo keeps its full figure and own tail.
 9. **No decorative emoji** where this refresh touches: the end-of-session feedback and the quest and
    adventure cover fallbacks use game-icons glyphs through `GameIcon`.
 10. **No texture overlays, no halftone, no tilted panels, no hand-lettered fonts.**

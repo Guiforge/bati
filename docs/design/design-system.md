@@ -160,8 +160,8 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 - **One accent.** The braise (`$primary` fill, `$primaryText` as text or icon) is the only
   accent; there is no second colour. Each use goes to the colour of its meaning: rewards and
   records `$resourceGold`, "hard" `$error`, a selected option `$primary`.
-- **Braise means action.** `$primary` and `$primaryText` belong to buttons and links. Metadata (a
-  quest card's type and muscle line, a quick action's duration) is ash, `$textSecondary`.
+- **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a hero's own label) is never
+  braise: it is ash, `$textSecondary`. Braise marks actions and the few states named above.
 - **Every primary is the seal.** Home's Start, the session's Done and the rest screen's "I'm
   ready" are `AppButton` primaries (64 px, 24 px label in a session), never a screen-local button.
 - **Fills and their text.** `$primary` fills take `$onPrimary`; `$success`, `$error`, `$warning`
@@ -233,9 +233,10 @@ pressable chips (the filter rail's), quick-action tiles, inputs and dialogs,
   [`Recitatif`](../../components/common/Recitatif.tsx).
 - The exercise name over its illustration (`ExerciseHero`) sits in a Récitatif too.
 - A villager's spoken line is a parchment bubble (`$parchment` fill, `$bgDark` line 14 regular,
-  speaker name in `$ink800`, radius `$1`), never a dark card. The face sits in a round ink
-  medallion (48 dp, `$bgDark`, 1.5px `$borderStrong` ring), top-aligned with the bubble, and the
-  tail points at its centre.
+  speaker name in `$ink800`, radius `$1`), never a dark card; one bubble style everywhere. In
+  the in-flow villager line (`VillagerLine`) the face sits in a round ink medallion (48 dp,
+  `$bgDark`, 1.5px `$borderStrong` ring), top-aligned with the bubble, and the tail points at its
+  centre. The Village cameo keeps the full figure and its own tail.
 
 ### Art heroes
 

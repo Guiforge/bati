@@ -80,7 +80,7 @@ shading.show_shadows = True
 shading.shadow_intensity = 0.6
 scene.display.light_direction = (0.35, -0.35, 0.87)
 shading.background_type = "VIEWPORT"
-shading.background_color = (0.0033, 0.0048, 0.0091)  # #0B0F19 in linear, the app surface
+shading.background_color = (0.0033, 0.0048, 0.0091)  # #0B0F19 in linear, the art's generation background
 scene.world = bpy.data.worlds.new("w")
 scene.world.color = (0.0033, 0.0048, 0.0091)
 scene.render.resolution_x = scene.render.resolution_y = 1024

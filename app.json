@@ -2,7 +2,7 @@
   "expo": {
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#0B0F19",
+        "backgroundColor": "#0C0D11",
         "foregroundImage": "./assets/adaptive-icon.png",
         "monochromeImage": "./assets/monochrome-icon.png"
       },
@@ -18,7 +18,7 @@
         }
       ]
     },
-    "backgroundColor": "#0B0F19",
+    "backgroundColor": "#0C0D11",
     "experiments": {
       "reactCompiler": true,
       "typedRoutes": true
@@ -41,7 +41,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0B0F19",
+          "backgroundColor": "#0C0D11",
           "image": "./assets/adaptive-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain"

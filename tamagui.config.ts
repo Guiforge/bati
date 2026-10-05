@@ -138,7 +138,7 @@ const config = createTamagui({
       ...tokens.color,
       background: tokens.color.bgOverlay,
       color: tokens.color.text,
-      onPrimary: tokens.color.text,
+      onPrimary: tokens.color.onPrimary,
       danger: tokens.color.error, // alias, no matching token
       muted: tokens.color.textSecondary, // deliberately not tokens.color.muted
       // Stock primitives ask the theme for `borderColor`, and Tamagui logged a missing token for
@@ -153,7 +153,7 @@ const config = createTamagui({
       background: tokens.color.bgOverlay,
       color: tokens.color.text,
       // What is written on a `$primary` fill: light on the app's indigo, dark on the Journal's gold.
-      onPrimary: tokens.color.text,
+      onPrimary: tokens.color.onPrimary,
       danger: tokens.color.error,
       muted: tokens.color.textSecondary,
       borderColor: tokens.color.borderStrong,

@@ -66,6 +66,7 @@ const TEXT_TOKENS = [
   "success",
   "warning",
   "white",
+  "onPrimary",
 ] as const;
 
 /**
@@ -74,6 +75,19 @@ const TEXT_TOKENS = [
  * one floor for everything.
  */
 const ACCENT_TOKENS = ["secondary", "error", "danger"] as const;
+
+/**
+ * A fill and the label written on it, each pair chosen by hand. The 2026-10 refresh made the
+ * states and the gold light enough that light text on them fails (2.0 to 3.6:1), so those take
+ * the ink; only the braise fill takes a light label.
+ */
+const FILL_LABELS = [
+  ["onPrimary", "primary"],
+  ["bgDark", "success"],
+  ["bgDark", "error"],
+  ["bgDark", "warning"],
+  ["bgDark", "resourceGold"],
+] as const;
 
 const AA_TEXT = 4.5;
 const AA_ICON = 3;
@@ -137,6 +151,10 @@ describe("colour contrast", () => {
     });
   });
 
+  it.each(FILL_LABELS)("$%s on a $%s fill clears AA for body text", (label, fill) => {
+    expect(contrast(value(label), value(fill))).toBeGreaterThanOrEqual(AA_TEXT);
+  });
+
   /**
    * The clause that makes the two lists above a ratchet rather than a snapshot: reaching for a
    * token nobody has weighed fails here, which is the only thing that would have stopped
@@ -159,7 +177,11 @@ describe("colour contrast", () => {
     };
     for (const root of roots) walk(root);
 
-    const declared = new Set<string>([...TEXT_TOKENS, ...ACCENT_TOKENS]);
+    const declared = new Set<string>([
+      ...TEXT_TOKENS,
+      ...ACCENT_TOKENS,
+      ...FILL_LABELS.map(([label]) => label),
+    ]);
     const undeclared = new Map<string, string>();
     for (const file of files) {
       const source = fs.readFileSync(file, "utf8");

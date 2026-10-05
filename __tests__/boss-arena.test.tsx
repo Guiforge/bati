@@ -201,12 +201,20 @@ describe("BossArena gauge", () => {
 
   it.each([
     [400, rawColors.resourceFire],
+    [250, rawColors.resourceFire],
     [150, rawColors.error],
+    [0, rawColors.error],
     [40, rawColors.error],
   ])("fills with the phase colour at %i HP", async (hp, colour) => {
     const root = await render(arena(hp));
 
     expect(root.getByTestId("boss-hp-fill")).toHaveStyle({ backgroundColor: fade(colour, 1) });
+  });
+
+  it("is empty when the boss is down", async () => {
+    const root = await render(arena(0));
+
+    expect(barWidths(root)[1]).toBe("0%");
   });
 
   it("is 10 dp tall in a framed track, with the figure in the body face", async () => {

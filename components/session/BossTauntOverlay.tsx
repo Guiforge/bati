@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
-import { REST_HEADER_HEIGHT, sessionArtHeight } from "@/components/session/sessionArt";
+import { HUD_HEIGHT, REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { bossVoice } from "@/constants/bosses";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionStore } from "@/stores/session";
@@ -19,7 +18,6 @@ export function BossTauntOverlay() {
   const status = useSessionStore((s) => s.status);
   const language = useSettingsStore((s) => s.language);
   const reducedMotion = useReducedMotion();
-  const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [taunt, setTaunt] = useState<string | null>(null);
 
@@ -58,9 +56,10 @@ export function BossTauntOverlay() {
   if (!taunt || !isActive) return null;
 
   return (
-    // Anchored to the arena's bottom edge. It cannot measure the arena — this renders above every
-    // session view — but the arena starts at y=0 in both the running and the resting screen and is
-    // sized by one pure function of the window, so the edge is knowable from here.
+    // Anchored to the arena's TOP, under the HUD, as if the boss spoke from near its head. It
+    // cannot measure the arena — this renders above every session view — and the arena's height is
+    // only a floor (it grows into whatever the counter and the CTA leave), so nothing may anchor
+    // to its bottom: that is where the name and the HP gauge sit.
     // Non-interactive: a decorative bubble must never swallow a tap aimed at the session.
     <YStack
       position="absolute"
@@ -74,9 +73,7 @@ export function BossTauntOverlay() {
         // over, because a rest looks the same whether or not a boss is being fought. Neither is
         // measured; both are fixed by construction in `sessionArt.ts`.
         top:
-          status === "resting"
-            ? insets.top + REST_HEADER_HEIGHT - 8
-            : sessionArtHeight(width, height, "boss") - 8,
+          status === "resting" ? insets.top + REST_HEADER_HEIGHT - 8 : insets.top + HUD_HEIGHT + 16,
         right: 20,
         zIndex: 1000,
       }}

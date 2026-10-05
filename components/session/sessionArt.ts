@@ -2,16 +2,14 @@
  * How tall a session's top artwork is, capped against *both* window axes so a short screen still
  * leaves the primary action room.
  *
- * Its own module because three things need the same answer and none of them can measure the
- * others: `ExerciseHero` and `BossArena`, which share the same picture slot, and
- * `BossTauntOverlay`, which renders above every session view and anchors its bubble under
- * whatever the screen puts at its top. A shared module is what makes that anchor correct on both
- * screens without a measurement, a context or a prop.
+ * Its own module because `ExerciseHero` and `BossArena` share the same picture slot and must
+ * start from the same cut.
  *
  * The boss gets a taller cut than the exercise: the monster is the screen's subject and play
- * testing said it still read too small at the shared size. The exercise branch only uses this
- * as a *floor*: `ExerciseHero` is the elastic sibling in its column and grows past it to fill
- * whatever the counter and the CTA leave.
+ * testing said it still read too small at the shared size. Both branches use this as a *floor*:
+ * the hero and the arena are the elastic child of their column and grow past it to fill whatever
+ * the counter and the CTA leave. So the art's height is NOT a pure function of the window, and
+ * nothing may anchor to its bottom edge: `BossTauntOverlay` anchors to the top (under the HUD).
  */
 const ART_FACTOR = {
   exercise: 0.34,
@@ -21,7 +19,8 @@ const ART_FACTOR = {
 export type SessionArtKind = keyof typeof ART_FACTOR;
 
 /**
- * The floating HUD row in ActiveExerciseView: 8 top + ~36 row + 8 gap + 3 hairline.
+ * The floating HUD row in ActiveExerciseView: 8 top + ~36 row + 8 gap + 3 for its own progress
+ * hairline (not the boss's: the HP gauge is under the boss's name now).
  *
  * Here rather than in `ExerciseHero` because `LiveMap` takes the same slot on an outing and has to
  * reserve the same room, and a component module that exports a constant loses Fast Refresh.

@@ -40,8 +40,9 @@ It guides you exercise-by-exercise, tracks your results, and ends with a clear c
   circular thumbnail over the art's base, so both images are on screen at once.
 - **The boss owns the screen, including its colour.** During a fight the background comes from
   the boss's phase rather than the exercise's muscle — a fire dragon should not be fought on the
-  "shoulders" pastel — and it darkens as the fight turns. Its health is a 3 px hairline at the
-  screen's top edge, where a game puts a boss bar, not a widget captioned under a picture.
+  "shoulders" pastel — and it darkens as the fight turns. Its health is a 10 dp gauge under the
+  boss's name (framed track, phase-coloured fill, "422 / 425" beside it), the same
+  `BossHpGauge` the campaign's boss panel draws.
 - **The HUD floats over the art, on one line**: where you are (round, exercise), how far in
   (percentage plus a hairline bar), and the way out (pause). It carries no value the screen
   didn't already show — it just stopped printing the round twice.
@@ -77,8 +78,8 @@ The full-bleed exercise art lives in [`components/session/ExerciseHero.tsx`](../
 
 ### The height budget
 
-`sessionArtHeight()` in [`components/session/sessionArt.ts`](../../components/session/sessionArt.ts) is `min(height × 0.42, width × 1.1)`, and it is the single answer for three consumers: the hero, the arena, and `BossTauntOverlay`, which renders above every session view and so cannot measure the arena — it anchors its bubble to `sessionArtHeight(width, height) - 8` instead, correct in both `running` and `resting` because the arena starts at y=0 in both.
+`sessionArtHeight()` in [`components/session/sessionArt.ts`](../../components/session/sessionArt.ts) is `min(height × 0.42, width × 1.1)`, and it is the single answer for three consumers: the hero, the arena, and `BossTauntOverlay`, which renders above every session view and so cannot measure the arena — it anchors its bubble to the arena's *top* (under the HUD) instead, because the height is only a floor and nothing may anchor to the arena's bottom.
 
-Every pixel over that comes straight out of the ScrollView below it. On a 360×640 running screen the arena is 269 px and the ScrollView gets 265, against ~226 of rep content — about 39 px of slack. That is why the arena is *equal* to the hero rather than larger, and why `RestView` drops its flame header during a fight: the boss is the screen's title there, and printing both costs more than the timer alone can spare.
+Every pixel over that comes straight out of the ScrollView below it. On a 360×640 running screen the arena is 269 px and the ScrollView gets 265, against ~226 of rep content — about 39 px of slack. That is why the arena's floor is equal to the hero's rather than larger, and why `RestView` drops its flame header during a fight: the boss is the screen's title there, and printing both costs more than the timer alone can spare.
 
-The CTA is the ScrollView's **sibling**, never inside it, in both `ActiveExerciseView` and `RestView`. Fixed-height siblings do not shrink in RN (`flexShrink` is 0), so before that fix tall content pushed "done" past the bottom edge — worst on a boss fight, on a small screen, with "how to" expanded. `BossArena`'s status line swaps content instead of adding a row, and every branch of it is pinned to the same height, so the arena's height stays a pure function of the window and the CTA cannot move mid-workout.
+The CTA is the ScrollView's **sibling**, never inside it, in both `ActiveExerciseView` and `RestView`. Fixed-height siblings do not shrink in RN (`flexShrink` is 0), so before that fix tall content pushed "done" past the bottom edge — worst on a boss fight, on a small screen, with "how to" expanded. `BossArena`'s status line swaps content instead of adding a row, and every branch of it is pinned to the same height, so the arena's height does not change mid-workout. The arena is the elastic child of its column: `sessionArtHeight()` is its floor, and any slack the counter and CTA leave goes into the painting rather than a void between them.

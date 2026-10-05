@@ -13,7 +13,8 @@ import { getBossAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import type { MuscleCode } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { bossHpColor, getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
+import { BossHpGauge } from "./BossHpGauge";
+import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { sessionArtHeight } from "./sessionArt";
 
 type BossArenaProps = {
@@ -45,7 +46,6 @@ type BossArenaProps = {
 
 /** How long the trail holds at the old HP before draining, and the HP gauge's own height. */
 const TRAIL_HOLD_MS = 700;
-const GAUGE_HEIGHT = 10;
 const ELASTIC = { flexGrow: 1 } as const;
 /** How long the portrait recoils from a hit. Short enough to read as impact, not as a wobble. */
 const FLINCH_MS = 120;
@@ -170,7 +170,6 @@ export function BossArena({
   lastDamage,
   children,
 }: BossArenaProps) {
-  const { t } = useTranslation();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
@@ -182,24 +181,12 @@ export function BossArena({
   // Felled mid-session (the last set landed the kill): the fight is over but the arena is still
   // on screen — the monster goes down instead of standing at 0 HP as if nothing happened.
   const isDown = currentHp <= 0;
-  /**
-   * Never green.
-   *
-   * `$success` is what this app paints "you are fine" in, and it was on a hostile creature's
-   * health for the whole first half of every fight: a serpent at 422 of 425 read as a healthy
-   * status row rather than as something that had barely been scratched. The phase palette is the
-   * register the arena already speaks in, a red rim and a darkening room, so the numeral and the
-   * bar live in it too: fire while the monster is whole, the error red once it is losing.
-   */
-  const hpColor = bossHpColor(hpPercent, isEnraged, isDown);
-
   const trailHp = useDamageTrail(currentHp, reducedMotion);
   const { showDamage, flinching } = useHitReaction(lastDamage, reducedMotion);
   const pulse = useEnragePulse(isEnraged && !isDown, reducedMotion);
   const [expanded, setExpanded] = useState(false);
 
   const artHeight = sessionArtHeight(width, height, "boss");
-  const trailPercent = getHpPercent(trailHp, totalHp);
   // The shiny floor keeps the gold visible even at phase 1, where the red rim would be off.
   const rimOpacity = Math.max(pulse ? look.rim * 0.55 : look.rim, shiny ? 0.25 : 0);
   const rimColor = shiny ? rawColors.resourceGold : rawColors.error;
@@ -330,53 +317,14 @@ export function BossArena({
           </Text>
         </XStack>
 
-        {/* The boss's health, as a gauge under its name. It was a 3 px hairline at the screen's
-            top edge, a bar nobody read. The trail sits under the live fill, so only the chunk
-            just lost shows. */}
-        <XStack items="center" gap="$2">
-          <YStack
-            flex={1}
-            height={GAUGE_HEIGHT}
-            bg="$bgDark"
-            borderWidth={1.5}
-            borderColor="$borderStrong"
-            rounded="$1"
-            overflow="hidden"
-          >
-            <YStack
-              testID="boss-hp-trail"
-              position="absolute"
-              t={0}
-              b={0}
-              l={0}
-              width={`${trailPercent}%`}
-              bg="$error"
-              opacity={0.45}
-              transition={quick}
-            />
-            <YStack
-              testID="boss-hp-fill"
-              position="absolute"
-              t={0}
-              b={0}
-              l={0}
-              width={`${hpPercent}%`}
-              bg={hpColor}
-              transition={quick}
-            />
-          </YStack>
-          <Text
-            testID="boss-hp-figure"
-            fontFamily="$body"
-            fontWeight="700"
-            fontSize={13}
-            color="$text"
-            fontVariant={["tabular-nums"]}
-            accessibilityLabel={`${currentHp} / ${totalHp} ${t("boss.hp")}`}
-          >
-            {currentHp} / {totalHp}
-          </Text>
-        </XStack>
+        {/* The boss's health: one gauge, shared with the campaign's boss panel. */}
+        <BossHpGauge
+          hp={currentHp}
+          maxHp={totalHp}
+          isEnraged={isEnraged}
+          isDown={isDown}
+          trailHp={trailHp}
+        />
 
         <StatusLine
           isEnraged={isEnraged}

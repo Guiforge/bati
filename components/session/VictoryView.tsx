@@ -86,6 +86,14 @@ const VILLAGER_SLOT_TOP = 12;
 const VILLAGER_SLOT_HEIGHT = 88;
 
 /**
+ * The level card's height, shared by the card and by the spacer that holds its place before the
+ * save lands. The card mounts only with its data (a loading reward asserts nothing), but it used
+ * to arrive with the save and push the feel buttons down from under the finger about to press one.
+ * ponytail: a font scale past ~1.3 grows the card beyond this and nudges once; measure if it matters.
+ */
+const LEVEL_CARD_HEIGHT = 78;
+
+/**
  * The hero's own gauge, filling with what this session earned — the one number that makes
  * "come back tomorrow" legible, and it only ever moved on Home, outside the celebration
  * (2026-08 audit, §06-B). Same visual language as the home header: gold on a dark track.
@@ -107,7 +115,16 @@ function HeroLevelBar({
       language={language}
       reducedMotion={reducedMotion}
     />
-  ) : null;
+  ) : (
+    <YStack
+      testID="victory-level-spacer"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      width="100%"
+      maxW={520}
+      height={LEVEL_CARD_HEIGHT}
+    />
+  );
 }
 
 function FilledLevelBar({
@@ -142,7 +159,15 @@ function FilledLevelBar({
   const fill = useAnimatedStyle(() => ({ width: `${width.value}%` }));
 
   return (
-    <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$2" py="$3">
+    <Card
+      width="100%"
+      maxW={520}
+      minH={LEVEL_CARD_HEIGHT}
+      bg="$surface"
+      borderColor="$glassBorder"
+      gap="$2"
+      py="$3"
+    >
       <XStack items="center" justify="space-between">
         <Text fontFamily="$body" fontWeight="700" fontSize={14} color="$text">
           {t("home.level_line", {
@@ -569,6 +594,8 @@ export function VictoryView() {
                 disabled, for the whole save, so it cannot tell an E2E flow when to tap it. */}
             <Text
               testID={result ? "session-victory-xp" : undefined}
+              accessibilityElementsHidden={!result}
+              importantForAccessibility={result ? "auto" : "no"}
               fontWeight="700"
               fontSize={26}
               color="$resourceGold"
@@ -610,8 +637,8 @@ export function VictoryView() {
         </XStack>
 
         {/* The hero's level bar, filling with this session's XP */}
-        {/* From the first frame: it used to mount with the save and push the feel buttons about
-            80 dp down from under the finger that was about to press one. */}
+        {/* A spacer of the card's height holds its place until the save lands: the card itself
+            mounts only with data, and must not push the feel buttons from under the finger. */}
         <HeroLevelBar
           heroXp={result ? result.heroXp : null}
           language={language}
@@ -690,6 +717,7 @@ export function VictoryView() {
             </Text>
             <AppButton
               variant="outline"
+              borderColor="$error"
               onPress={() => {
                 // Discard is the existing quit path: nothing was written, so there is nothing
                 // to undo, and the session state has to be cleared either way. Home rather than

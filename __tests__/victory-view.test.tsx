@@ -403,7 +403,8 @@ describe("VictoryView kicker", () => {
 
 /**
  * The level bar mounted with the save and pushed the feel buttons about 80 dp down from under the
- * finger that was about to press one: the same hazard the reserved line slot avoids.
+ * finger that was about to press one. The card now mounts only with data, so a spacer of its
+ * height holds its place until then.
  */
 describe("VictoryView level card", () => {
   // A loading reward asserts nothing: no ellipsis glyph, and the card only mounts with its data
@@ -414,8 +415,17 @@ describe("VictoryView level card", () => {
     const first = JSON.stringify(view.toJSON());
     expect(first).not.toContain("…");
     expect(first).not.toContain("journal.xp_progress");
+    // The place is held: a hidden spacer sits above the feel buttons until the card replaces it.
+    const spacer = view.getByTestId("victory-level-spacer", { includeHiddenElements: true });
+    expect(spacer.props.accessibilityElementsHidden).toBe(true);
+    expect(StyleSheet.flatten(spacer.props.style).height).toBeGreaterThan(0);
+    expect(first.indexOf("victory-level-spacer")).toBeLessThan(
+      first.indexOf("session.feedback_hard"),
+    );
 
     await release();
+
+    expect(view.queryByTestId("victory-level-spacer", { includeHiddenElements: true })).toBeNull();
 
     const after = JSON.stringify(view.toJSON());
     expect(after).toContain("journal.xp_progress");

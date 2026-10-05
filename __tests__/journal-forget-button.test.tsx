@@ -1,7 +1,7 @@
 import { act, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { TamaguiProvider } from "tamagui";
+import { TamaguiProvider, Theme } from "tamagui";
 import SessionDetailScreen from "@/app/(tabs)/journal/[id]";
 import { rawColors } from "@/constants/rawColors";
 import config from "@/tamagui.config";
@@ -31,7 +31,9 @@ test("Remove from the journal is an outline AppButton, in the family's face", as
         }}
       >
         <TamaguiProvider config={config} defaultTheme="dark">
-          <SessionDetailScreen />
+          <Theme name="journal">
+            <SessionDetailScreen />
+          </Theme>
         </TamaguiProvider>
       </SafeAreaProvider>,
     );
@@ -41,4 +43,6 @@ test("Remove from the journal is an outline AppButton, in the family's face", as
   expect(label.color).toBe(rawColors.text);
   const button = StyleSheet.flatten(screen.getByTestId("journal-forget-session").props.style);
   expect(button.borderBottomWidth).not.toBe(3);
+  // Under the Journal theme, which greys `$error`: the red edge is the raw colour.
+  expect(button.borderTopColor).toBe(rawColors.error);
 });

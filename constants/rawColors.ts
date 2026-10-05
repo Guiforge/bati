@@ -91,7 +91,6 @@ export const rawColors = {
   pastelPink: "#2A1719", // an error tint since the magenta left
   pastelGreen: "#16261B",
   pastelYellow: "#2A2413",
-  pastelPurple: "#261A33",
   pastelOrange: "#2B1B12",
 
   // --- Resources ---

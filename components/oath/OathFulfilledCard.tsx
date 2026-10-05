@@ -24,7 +24,6 @@ export function OathFulfilledCard({ oath, bonusXp }: { oath: OathProgress; bonus
       enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.92, y: 14 }}
       width="100%"
       maxW={520}
-      bg="$pastelPurple"
       borderColor="$glassBorder"
       gap="$3"
       items="center"

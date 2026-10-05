@@ -17,7 +17,6 @@ import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Sparkles } from "@/components/icons";
 import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
-import { getQuestColorTokensFromTemplateWithExercises } from "@/constants/exerciseColors";
 import type {
   ActiveAdventureRun,
   AdventureDetails,
@@ -390,14 +389,6 @@ export default function AdventureDetailsScreen() {
     activeTemplateStep != null &&
     activeTemplateStep.stepIndex === effectiveSteps.length - 1;
 
-  const tokens = useMemo(() => {
-    if (!activeTemplateStep) return null;
-    return getQuestColorTokensFromTemplateWithExercises({
-      quest: activeTemplateStep.quest,
-      exercisesById: state.exercisesById,
-    });
-  }, [activeTemplateStep, state.exercisesById]);
-
   const preview = useMemo(() => {
     if (!activeTemplateStep) return null;
     // At the run's difficulty, not at whatever the hero last saved on that quest: the CTA passes
@@ -478,6 +469,7 @@ export default function AdventureDetailsScreen() {
                 <Text
                   flex={1}
                   minW={0}
+                  fontFamily="$heading"
                   fontWeight="700"
                   fontSize={20}
                   color="$text"
@@ -541,7 +533,6 @@ export default function AdventureDetailsScreen() {
 
           {details ? (
             <Card
-              bg={tokens?.bg ?? "$surface"}
               p="$0"
               overflow="hidden"
               transition={reducedMotion ? undefined : "bouncy"}

@@ -34,7 +34,7 @@ export default function PrivacyScreen() {
         <ScreenBackButton />
         <XStack flex={1} items="center" gap="$2">
           <ShieldCheck size={20} color="$primaryText" />
-          <Text fontSize={22} fontWeight="700" color="$text">
+          <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
             {t("privacy.title")}
           </Text>
         </XStack>

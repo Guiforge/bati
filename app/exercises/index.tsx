@@ -373,7 +373,15 @@ export default function ExerciseCatalogue() {
               button, and with four elements the title — the one thing that gives way here —
               truncated to "Exerci…". The icon was the least informative of the four, on the
               one screen whose whole subject is exercises. */}
-            <Text flex={1} minW={0} fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
+            <Text
+              flex={1}
+              minW={0}
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={20}
+              color="$text"
+              numberOfLines={1}
+            >
               {t("exercises.catalogue_title", "Exercises")}
             </Text>
           </XStack>

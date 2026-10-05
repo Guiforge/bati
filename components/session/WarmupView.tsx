@@ -202,7 +202,13 @@ export function WarmupView() {
               cheaper than a pause. */}
           {instruction?.description ? <MovementDescription text={instruction.description} /> : null}
 
-          <H1 color="$primaryText" fontFamily="$body" fontSize={64} fontWeight="700">
+          <H1
+            color="$text"
+            fontFamily="$body"
+            fontSize={64}
+            fontWeight="700"
+            fontVariant={["tabular-nums"]}
+          >
             {formatTime(Math.max(0, remainingSeconds))}
           </H1>
 

@@ -73,7 +73,7 @@ function Header({ onBack, title }: { onBack: () => void; title: string }) {
       </AppIconButton>
       <XStack items="center" gap="$2">
         <Dumbbell size={18} color="$text" strokeWidth={2.5} />
-        <Text fontWeight="700" fontSize={20} color="$text">
+        <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
           {title}
         </Text>
       </XStack>

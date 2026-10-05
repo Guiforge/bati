@@ -159,7 +159,7 @@ export default function ExerciseEditor() {
           >
             <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
           </AppIconButton>
-          <Text fontWeight="700" fontSize={20} color="$text">
+          <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
             {editingId === null ? t("exercise_editor.title_new") : t("exercise_editor.title_edit")}
           </Text>
         </XStack>

@@ -20,10 +20,6 @@ import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Skull, Sparkles } from "@/components/icons";
 import { getAdventureAsset } from "@/constants/assetMap";
 import {
-  type ExerciseColorTokens,
-  getQuestColorTokensFromTemplateWithExercises,
-} from "@/constants/exerciseColors";
-import {
   type Adventure,
   adventureOrder,
   getAnyActiveAdventureRun,
@@ -36,7 +32,6 @@ import {
   suggestDifficultyFromSessions,
 } from "@/db";
 import { threatRank } from "@/db/bossFights";
-import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs } from "@/db/questConfig";
 import { formatCount } from "@/db/targets";
@@ -54,7 +49,6 @@ function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
 /** The posters' data. The cover quests' chips are priced in one read: see `previewQuests`. */
 type GalleryData = {
   adventures: Adventure[];
-  exercisesById: Record<number, Exercise>;
   previews: ReadonlyMap<number, QuestPreview>;
 };
 
@@ -72,7 +66,6 @@ const ANDROID_MIN_BOTTOM_INSET = 24;
 // row rebuild color maps and re-run the duration estimator while scrolling.
 type AdventureRow = {
   adventure: Adventure;
-  tokens: ExerciseColorTokens;
   durationSeconds: number;
   xp: number;
   cover: ImageSourcePropType | null;
@@ -101,7 +94,6 @@ type AdventureProgress = {
 
 function buildAdventureRow(
   a: Adventure,
-  exercisesById: Record<number, Exercise>,
   finishedCount: number,
   language: AppLanguage,
   t: TFunction,
@@ -115,7 +107,6 @@ function buildAdventureRow(
 
   return {
     adventure: a,
-    tokens: getQuestColorTokensFromTemplateWithExercises({ quest: q, exercisesById }),
     durationSeconds,
     xp,
     cover: resolveCoverImage(a.imagePath),
@@ -191,7 +182,6 @@ function AdventureCard({
     <YStack px="$5">
       <Card
         testID="adventures-adventure-card"
-        bg={row.tokens.bg}
         p="$0"
         overflow="hidden"
         onPress={() => onPressAdventure(item.id)}
@@ -390,7 +380,6 @@ export default function AdventuresGallery() {
   const [state, setState] = useState<LoadState>({
     status: "loading",
     adventures: [],
-    exercisesById: {},
     previews: new Map(),
   });
   const [activeProgress, setActiveProgress] = useState<AdventureProgress | null>(null);
@@ -440,7 +429,6 @@ export default function AdventuresGallery() {
           setState((s) => ({
             status: "ready",
             adventures,
-            exercisesById,
             previews: keepIfSame(s.previews, previews),
           }));
         });
@@ -463,7 +451,6 @@ export default function AdventuresGallery() {
   );
 
   const adventures = state.adventures;
-  const exercisesById = state.exercisesById;
   const previews = state.previews;
 
   const rows = useMemo(
@@ -473,7 +460,6 @@ export default function AdventuresGallery() {
       adventureOrder(adventures, activeProgress?.adventureId ?? null, finishedCounts).map((a) =>
         buildAdventureRow(
           a,
-          exercisesById,
           finishedCounts.get(a.id) ?? 0,
           language,
           t,
@@ -481,7 +467,7 @@ export default function AdventuresGallery() {
           pace,
         ),
       ),
-    [adventures, exercisesById, finishedCounts, language, t, previews, activeProgress, pace],
+    [adventures, finishedCounts, language, t, previews, activeProgress, pace],
   );
 
   const title = t("adventures.gallery_title", "Adventures");

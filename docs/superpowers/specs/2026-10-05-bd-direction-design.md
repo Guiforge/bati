@@ -54,7 +54,7 @@ serif, panel frames) without giving up anything a lifter needs mid-set.
 | pastelPink | #331A22 | #2A1719 | now an error tint |
 | pastelGreen | #1A3320 | #16261B | |
 | pastelYellow | #33301A | #2A2413 | |
-| pastelPurple | #261A33 | unchanged | |
+| pastelPurple | #261A33 | removed (iteration 2) | no card is violet; shoulder and mixed quests use `$bgLight` |
 | pastelOrange | #332618 | #2B1B12 | |
 | bossPhase2/3/4, mapWater, mapWood, sheetScrim, white, black | | unchanged | |
 

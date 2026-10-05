@@ -123,8 +123,9 @@ function PrepClock({ remainingSeconds }: { remainingSeconds: number | null }) {
       fontWeight="700"
       fontSize={running ? 64 : 40}
       lineHeight={68}
-      color="$primaryText"
+      color="$text"
       fontFamily="$body"
+      fontVariant={["tabular-nums"]}
       transition={reducedMotion ? undefined : "quick"}
       key={reducedMotion ? undefined : String(remainingSeconds)}
       enterStyle={reducedMotion ? undefined : { scale: 0.92, opacity: 0.6 }}

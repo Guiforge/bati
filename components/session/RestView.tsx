@@ -10,7 +10,6 @@ import { GameIcon } from "@/components/common/GameIcon";
 import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { getExerciseThumb } from "@/constants/assetMap";
-import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import type { CompletedExerciseInput } from "@/db/completed";
 import { targetRangeFor } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
@@ -109,10 +108,6 @@ export function RestView() {
   const copy = restCopy(isFinal, isRoundRest);
   const onlyBeforeAMovement = isFinal ? "none" : "flex";
 
-  // Same rule as the running screen: during a fight the room's colour is the boss's, and it
-  // darkens as the fight turns.
-  const screenBg = getQuestColorTokensFromQuest(quest).bg;
-
   // Reading the movement stops the clock, and closing starts it again. Same pairing as the
   // running screen, and the same reason: the rest is the one moment reading was already free, so
   // a modal that let the countdown run through it took that back. See ActiveExerciseView for the
@@ -144,7 +139,7 @@ export function RestView() {
     // inside a `px="$4"` container.
     <YStack
       flex={1}
-      bg={screenBg}
+      bg="$bgDark"
       pb={insets.bottom + 16}
       gap="$4"
       transition={reducedMotion ? undefined : "quick"}
@@ -224,7 +219,13 @@ export function RestView() {
           {/* Timer. Not on the final rest: nothing is coming, so there is nothing to count to. */}
           {!isFinal && (
             <YStack items="center" gap="$2">
-              <H1 fontSize={112} fontWeight="700" fontFamily="$body" color="$text">
+              <H1
+                fontSize={112}
+                fontWeight="700"
+                fontFamily="$body"
+                fontVariant={["tabular-nums"]}
+                color="$text"
+              >
                 {formatTime(remainingSeconds)}
               </H1>
               <TimerBar

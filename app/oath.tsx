@@ -195,7 +195,7 @@ function CurrentOathCard({
     : getDateTimeFormat(language, SWORN_DATE_OPTIONS).format(sworn);
 
   return (
-    <Card testID="oath-current" bg="$pastelPurple" gap="$2">
+    <Card testID="oath-current" gap="$2">
       <Text fontWeight="700" fontSize={13} color="$text" opacity={0.8}>
         {t("oath.current_title")}
       </Text>
@@ -540,7 +540,7 @@ export default function OathScreen() {
     <YStack testID="oath-screen" flex={1} bg="$background" pt={insets.top}>
       <XStack px="$4" py="$3" items="center" gap="$3">
         <ScreenBackButton />
-        <Text fontSize={20} fontWeight="700" color="$text">
+        <Text fontFamily="$heading" fontSize={20} fontWeight="700" color="$text">
           {t("oath.screen_title")}
         </Text>
       </XStack>

@@ -406,7 +406,13 @@ export default function ExpeditionRecapScreen() {
           <Skeleton height={18} width="60%" bg="$surface" />
         ) : (
           <>
-            <Text fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
+            <Text
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={20}
+              color="$text"
+              numberOfLines={1}
+            >
               {recap.title ?? t("recap.title")}
             </Text>
             {recap.performedAt ? (

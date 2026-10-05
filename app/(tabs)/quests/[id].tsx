@@ -22,7 +22,6 @@ import { restsBetweenExercises } from "@/components/quests/questShape";
 import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { WarmupPreview } from "@/components/quests/WarmupPreview";
 import { getQuestAsset } from "@/constants/assetMap";
-import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import {
   applyQuestConfig,
@@ -504,7 +503,6 @@ export default function QuestDetails() {
       quest,
       questTitle: localizedTitle(quest, language),
       questDesc: localizedText(quest, "description", language),
-      questTokens: getQuestColorTokensFromQuest(quest),
       estimatedSeconds,
       estimate: formatDurationEstimate(estimatedSeconds, language),
       xpReward: isOuting
@@ -543,7 +541,6 @@ export default function QuestDetails() {
   const quest = derived?.quest ?? null;
   const questTitle = derived?.questTitle ?? "";
   const questDesc = derived?.questDesc ?? "";
-  const questTokens = derived?.questTokens ?? null;
   const estimate = derived?.estimate ?? null;
   const xpReward = derived?.xpReward ?? null;
   // The tariff behind that number, when there is one. `pricedLocomotion` rather than the strict
@@ -630,7 +627,7 @@ export default function QuestDetails() {
 
               <XStack items="center" gap="$2">
                 <Sparkles size={18} color="$text" />
-                <Text fontWeight="700" fontSize={20} color="$text">
+                <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
                   {t("quests.details_title", "Quest")}
                 </Text>
               </XStack>
@@ -662,7 +659,7 @@ export default function QuestDetails() {
             <YStack
               width="100%"
               aspectRatio={16 / 9}
-              bg={questTokens?.bg ?? "$surface"}
+              bg="$surface"
               borderWidth={1}
               borderColor="$borderStrong"
               rounded="$8"
@@ -720,7 +717,7 @@ export default function QuestDetails() {
           ) : null}
 
           {quest ? (
-            <Card bg={questTokens?.bg ?? "$surface"}>
+            <Card>
               <YStack gap="$2">
                 <H2 color="$text" fontWeight="700" fontSize={26}>
                   {questTitle}

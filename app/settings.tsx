@@ -401,7 +401,7 @@ export default function SettingsScreen() {
       {/* Header */}
       <XStack px="$4" py="$3" items="center" gap="$3">
         <ScreenBackButton />
-        <Text fontSize={20} fontWeight="700" color="$text">
+        <Text fontFamily="$heading" fontSize={20} fontWeight="700" color="$text">
           {t("settings.title", "Settings")}
         </Text>
       </XStack>

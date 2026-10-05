@@ -616,6 +616,7 @@ export function ActiveExerciseView() {
                           lineHeight={80}
                           fontWeight="700"
                           fontFamily="$body"
+                          fontVariant={["tabular-nums"]}
                           color="$success"
                         >
                           {formatOvertime(overtimeSeconds)}
@@ -632,6 +633,7 @@ export function ActiveExerciseView() {
                           lineHeight={80}
                           fontWeight="700"
                           fontFamily="$body"
+                          fontVariant={["tabular-nums"]}
                           color="$text"
                         >
                           {formatTime(remainingSeconds)}

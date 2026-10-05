@@ -139,7 +139,7 @@ export function SessionRewards({
 
       {/* Level up */}
       {!!result.levelUp && (
-        <Card {...reveal} width="100%" maxW={520} bg="$pastelPurple" borderColor="$glassBorder">
+        <Card {...reveal} width="100%" maxW={520} borderColor="$glassBorder">
           <XStack items="center" gap="$3">
             <YStack
               width={52}
@@ -169,7 +169,7 @@ export function SessionRewards({
       {/* Village tier crossed — the biggest village moment there is, bigger than any one
           building leveling up, so it gets the real tier art instead of an icon. */}
       {!!result.tierUp && (
-        <Card {...reveal} width="100%" maxW={520} bg="$pastelPurple" p="$0" overflow="hidden">
+        <Card {...reveal} width="100%" maxW={520} p="$0" overflow="hidden">
           {/* Square, not `height: 140`. Ten of the twelve tier paintings are 1024x1024 and the
               composition is vertical — tier 10 is a spire that touches the top edge and a base
               that touches the bottom. 140dp at ~340dp wide is a 2.34:1 slot, so `cover` took a

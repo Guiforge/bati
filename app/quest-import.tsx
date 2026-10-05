@@ -131,7 +131,7 @@ export default function QuestImportScreen() {
         />
         <XStack flex={1} items="center" gap="$2">
           <Download size={20} color="$primaryText" />
-          <Text fontSize={22} fontWeight="700" color="$text">
+          <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
             {t("quests.import_title")}
           </Text>
         </XStack>

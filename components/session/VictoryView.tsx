@@ -95,7 +95,7 @@ function HeroLevelBar({
   language,
   reducedMotion,
 }: {
-  /** `null` until the save lands: the card is there from the first frame at its final height. */
+  /** `null` until the save lands: a loading reward asserts nothing, so the card is not mounted. */
   heroXp: { before: number; after: number } | null;
   language: AppLanguage;
   reducedMotion: boolean;
@@ -107,30 +107,7 @@ function HeroLevelBar({
       language={language}
       reducedMotion={reducedMotion}
     />
-  ) : (
-    <Card
-      testID="victory-level-placeholder"
-      // Two ellipses and an empty bar: nothing for a screen reader to stop on.
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      width="100%"
-      maxW={520}
-      bg="$surface"
-      borderColor="$glassBorder"
-      gap="$2"
-      py="$3"
-    >
-      <XStack items="center" justify="space-between">
-        <Text fontFamily="$body" fontWeight="700" fontSize={14} color="$textSecondary">
-          …
-        </Text>
-        <Text fontFamily="$body" fontWeight="700" fontSize={12} color="$textSecondary">
-          …
-        </Text>
-      </XStack>
-      <XStack height={8} bg="$surface2" rounded={4} overflow="hidden" width="100%" />
-    </Card>
-  );
+  ) : null;
 }
 
 function FilledLevelBar({
@@ -599,7 +576,8 @@ export function VictoryView() {
             >
               {result
                 ? t("quests.reward_xp", { count: formatCount(language, result.xpEarned) })
-                : "…"}
+                : // Same line height, no glyph: a loading reward asserts nothing.
+                  "\u00A0"}
             </Text>
             {!!result?.dailyBonusXp && (
               <Text fontWeight="700" fontSize={11} color="$success">
@@ -711,7 +689,7 @@ export function VictoryView() {
               )}
             </Text>
             <AppButton
-              backgroundColor="$surface2"
+              variant="outline"
               onPress={() => {
                 // Discard is the existing quit path: nothing was written, so there is nothing
                 // to undo, and the session state has to be cleared either way. Home rather than
@@ -720,9 +698,7 @@ export function VictoryView() {
                 router.replace("/");
               }}
             >
-              <Text color="$text" fontSize={16} fontWeight="700">
-                {t("session.summary_too_short_discard")}
-              </Text>
+              {t("session.summary_too_short_discard")}
             </AppButton>
           </YStack>
         ) : null}
@@ -837,6 +813,7 @@ export function VictoryView() {
       <NarrativeModal
         visible={showOutroNarrative}
         title={questTitle}
+        image={getQuestAsset(quest.imagePath)}
         text={outroNarrative ?? ""}
         onClose={() => setShowOutroNarrative(false)}
         type="outro"

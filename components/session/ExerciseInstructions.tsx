@@ -1,7 +1,8 @@
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { Modal, ScrollView } from "react-native";
-import { Button, Text, YStack } from "tamagui";
+import { Text, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { getExerciseAsset } from "@/constants/assetMap";
 import { useFontScaled } from "@/hooks/useFontScaled";
@@ -37,7 +38,13 @@ export function ExerciseInstructionsBody({
         style={{ width: artSize, height: artSize, borderRadius: 12 }}
         contentFit="cover"
       />
-      <Text fontWeight="700" fontSize={16} color="$text" style={{ textAlign: "center" }}>
+      <Text
+        fontFamily="$heading"
+        fontWeight="700"
+        fontSize={20}
+        color="$text"
+        style={{ textAlign: "center" }}
+      >
         {instruction.name}
       </Text>
       {/* Scrolls rather than grows: a long movement would otherwise push whatever sits below —
@@ -93,19 +100,9 @@ export function ExerciseInstructionsModal({
       <YStack flex={1} bg="$bgDark" justify="center" items="center" p="$4">
         <Card testID="session-instructions" width="100%" maxW={420} bg="$surface" gap="$3">
           <ExerciseInstructionsBody instruction={instruction} artSize={220} />
-          <Button
-            testID="session-instructions-close"
-            bg="$primary"
-            rounded="$6"
-            borderWidth={0}
-            onPress={onClose}
-            pressStyle={{ opacity: 0.9 }}
-            accessibilityRole="button"
-          >
-            <Text color="$onPrimary" fontSize={18} fontWeight="700">
-              {t("common.close")}
-            </Text>
-          </Button>
+          <AppButton testID="session-instructions-close" size="$3" onPress={onClose}>
+            {t("common.close")}
+          </AppButton>
         </Card>
       </YStack>
     </Modal>

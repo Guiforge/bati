@@ -295,6 +295,16 @@ describe("VictoryView, a session too short to be one", () => {
     expect(saveSession).not.toHaveBeenCalled();
   });
 
+  it("offers Discard as an outline AppButton: the family's label face, bone ink", async () => {
+    const { view } = await mountWithPendingSave(null, 5);
+
+    const label = StyleSheet.flatten(
+      view.getByText("session.summary_too_short_discard").props.style,
+    );
+    expect(label.fontFamily).toBe(config.fonts.heading.face[700].normal);
+    expect(label.color).toBe(rawColors.text);
+  });
+
   it("discarding takes the quit path, which writes nothing at all", async () => {
     const { view, saveSession } = await mountWithPendingSave(null, 5);
 
@@ -396,26 +406,17 @@ describe("VictoryView kicker", () => {
  * finger that was about to press one: the same hazard the reserved line slot avoids.
  */
 describe("VictoryView level card", () => {
-  it("is there from the first frame, above the feel buttons, and the save only fills it", async () => {
+  // A loading reward asserts nothing: no ellipsis glyph, and the card only mounts with its data
+  // (the one acceptable jump, decided in iteration 3).
+  it("is not mounted while the save is pending, and shows no ellipsis, then the real bar", async () => {
     const { view, release } = await mountWithPendingSave();
 
     const first = JSON.stringify(view.toJSON());
-    const placeholder = view.getByTestId("victory-level-placeholder", {
-      includeHiddenElements: true,
-    });
-    // Two ellipses and an empty bar say nothing: TalkBack must not stop on them.
-    expect(placeholder.props.importantForAccessibility).toBe("no-hide-descendants");
-    expect(placeholder.props.accessibilityElementsHidden).toBe(true);
-    expect(first.indexOf("victory-level-placeholder")).toBeLessThan(
-      first.indexOf("session.feedback_hard"),
-    );
+    expect(first).not.toContain("…");
+    expect(first).not.toContain("journal.xp_progress");
 
     await release();
 
-    // Replaced in place by the real bar, still above the buttons: nothing is inserted over them.
-    expect(
-      view.queryByTestId("victory-level-placeholder", { includeHiddenElements: true }),
-    ).toBeNull();
     const after = JSON.stringify(view.toJSON());
     expect(after).toContain("journal.xp_progress");
     expect(after.indexOf("journal.xp_progress")).toBeLessThan(

@@ -991,6 +991,7 @@ export default function QuestDetails() {
       <NarrativeModal
         visible={showNarrative}
         title={questTitle}
+        image={headerImage}
         text={narrative ?? ""}
         onClose={() => {
           setShowNarrative(false);

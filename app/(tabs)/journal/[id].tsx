@@ -4,12 +4,14 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { Skeleton } from "@/components/common/Skeleton";
 import { KillReport } from "@/components/journal/KillReport";
 import { NButton, NMuted, NPageHeader, NStatusScrim } from "@/components/journal/nocturne";
 import { QuestLog } from "@/components/journal/QuestLog";
 import { type LoadedSession, readSession } from "@/components/journal/sessionLog";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
+import { rawColors } from "@/constants/rawColors";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -98,13 +100,17 @@ export default function SessionDetailScreen() {
           <QuestLog data={loaded.log} onChanged={() => load(sessionId)} />
         )}
         <YStack px={11} mt={24}>
-          <NButton
+          {/* An outline AppButton like every other secondary action. The red stays on the edge as
+              the raw colour (the Journal theme folds `$error` into its inks); the label stays
+              bone, in the family's face. */}
+          <AppButton
             testID="journal-forget-session"
-            variant="danger"
+            variant="outline"
+            borderColor={rawColors.error as never}
             onPress={() => confirmForget(sessionId, () => router.back())}
           >
             {t("journal.forget")}
-          </NButton>
+          </AppButton>
         </YStack>
       </ScrollView>
       <NStatusScrim />

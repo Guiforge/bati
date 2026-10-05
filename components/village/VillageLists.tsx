@@ -143,7 +143,7 @@ export function NextToRise({ building, dayOne, language, onOpen }: NextProps) {
       testID="village-next"
       p={14}
       gap={10}
-      rounded={12}
+      rounded="$3"
       borderWidth={1}
       borderColor="$borderStrong"
       bg="$surface"
@@ -374,7 +374,7 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
       testID="village-tier"
       p={14}
       gap={8}
-      rounded={12}
+      rounded="$3"
       borderWidth={1}
       borderColor={complete ? "$resourceGold" : "$borderStrong"}
       bg="$surface"

@@ -55,9 +55,9 @@ function Pill({
       minH={44}
       justify="center"
       px="$3"
-      rounded="$10"
+      rounded="$3"
       bg={active ? "$primary" : "$bgLight"}
-      borderWidth={2}
+      borderWidth={1}
       borderColor={open ? "$primaryText" : "$borderStrong"}
       pressStyle={{ opacity: 0.92, scale: 0.99 }}
       onPress={onPress}
@@ -124,6 +124,7 @@ export function FilterRail({
               icon={g.chips[0].icon}
               tone={g.chips[0].active ? "primary" : "default"}
               onPress={g.chips[0].onPress}
+              borderWidth={1}
               accessibilityRole="button"
               accessibilityState={{ selected: g.chips[0].active }}
             />
@@ -152,6 +153,7 @@ export function FilterRail({
                 // "back AND chest" is two taps, not two openings.
                 if (openGroup.single) setOpenKey(null);
               }}
+              borderWidth={1}
               accessibilityRole="button"
               accessibilityState={{ selected: c.active }}
             />
@@ -166,6 +168,7 @@ export function FilterRail({
               tone="primary"
               icon={<X size={14} color="$white" strokeWidth={3} />}
               onPress={c.onPress}
+              borderWidth={1}
               accessibilityRole="button"
               accessibilityLabel={t("quests.filter_remove", {
                 label: c.label,
@@ -177,6 +180,7 @@ export function FilterRail({
             label={t("quests.filter_clear_all", "Clear")}
             icon={<X size={14} color="$text" />}
             onPress={onClearAll}
+            borderWidth={1}
             accessibilityRole="button"
           />
         </XStack>

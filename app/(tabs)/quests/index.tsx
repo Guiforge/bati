@@ -309,12 +309,18 @@ function QuestRow({
         </YStack>
 
         <YStack gap="$2" p="$4">
-          <Text fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
+          <Text
+            fontFamily="$heading"
+            fontWeight="700"
+            fontSize={18}
+            color="$text"
+            numberOfLines={1}
+          >
             {meta.title}
           </Text>
 
           {meta.focusLabel ? (
-            <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+            <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
               {meta.focusLabel}
             </Text>
           ) : null}
@@ -700,7 +706,14 @@ export default function QuestsGallery() {
         <XStack items="center" justify="space-between" gap="$2">
           <XStack items="center" gap="$2" flex={1} minW={0}>
             <MapIcon size={18} color="$text" strokeWidth={2.5} />
-            <Text flex={1} fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
+            <Text
+              flex={1}
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={20}
+              color="$text"
+              numberOfLines={1}
+            >
               {title}
             </Text>
           </XStack>

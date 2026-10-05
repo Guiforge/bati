@@ -164,6 +164,16 @@ describe("Done, right after the screen appears", () => {
   });
 });
 
+describe("the exercise name over the art", () => {
+  test("sits in a récitatif, a header in the title font", async () => {
+    await mount();
+
+    const box = screen.getByTestId("exercise-hero-name");
+    expect(StyleSheet.flatten(box.props.style).borderTopWidth).toBe(1);
+    expect(screen.getAllByRole("header").length).toBeGreaterThan(0);
+  });
+});
+
 describe("a boss that is already down", () => {
   test("drops the crit promise and the weak point, and says the rest is the hero's", async () => {
     await mount(fight(0));

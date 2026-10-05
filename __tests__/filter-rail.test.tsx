@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
@@ -61,6 +62,22 @@ const renderRail = (g: RailGroup[], onClearAll = noop) =>
 const press = (label: string) => act(async () => fireEvent.press(screen.getByText(label)));
 
 describe("FilterRail", () => {
+  it("draws its pills and chips on the radius scale, with a 1 px border", async () => {
+    await renderRail(groups());
+
+    // Two pills, and the lone toggle chip (text, then its row, then the chip itself).
+    const buttons = [
+      screen.getByLabelText("Duration"),
+      screen.getByLabelText("Muscles"),
+      screen.getByText("On a ladder").parent?.parent,
+    ];
+    for (const button of buttons) {
+      const flat = StyleSheet.flatten(button?.props.style);
+      expect(flat.borderTopLeftRadius).toBe(7);
+      expect(flat.borderTopWidth).toBe(1);
+    }
+  });
+
   it("shows one pill per dimension, a toggle for a one-chip group, and no second line", async () => {
     await renderRail(groups());
 

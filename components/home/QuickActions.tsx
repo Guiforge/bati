@@ -353,7 +353,7 @@ export function QuickActions() {
               bg="$surface"
               borderWidth={1}
               borderColor="$borderStrong"
-              rounded={12}
+              rounded="$3"
               overflow="hidden"
               onPress={() => {
                 startOuting(quest.id).catch((error) => reportError("home.startOuting", error));
@@ -400,15 +400,15 @@ export function QuickActions() {
                   rounded={10}
                   bg="$primaryGlow"
                   borderWidth={1}
-                  borderColor="$primaryText"
+                  borderColor="$borderStrong"
                   hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
                   onPress={() => setGoalFor(quest.id)}
                   pressStyle={{ opacity: 0.7 }}
                   accessibilityRole="button"
                   accessibilityLabel={t("home.goal_a11y", { quest: name, goal: label })}
                 >
-                  <SlidersHorizontal size={10} color="$text" />
-                  <Text fontSize={10} fontWeight="700" color="$text">
+                  <SlidersHorizontal size={10} color="$textSecondary" />
+                  <Text fontSize={10} fontWeight="700" color="$textSecondary">
                     {label}
                   </Text>
                 </XStack>
@@ -428,7 +428,7 @@ export function QuickActions() {
             bg="$surface"
             borderWidth={1}
             borderColor="$borderStrong"
-            rounded={12}
+            rounded="$3"
             onPress={() => {
               startQuest(replay.questId).catch((error) => reportError("home.replay", error));
             }}

@@ -285,7 +285,7 @@ export function RestView() {
               display={onlyBeforeAMovement}
               bg="$surface"
               p="$4"
-              rounded="$6"
+              rounded="$3"
               borderWidth={1}
               borderColor="$borderStrong"
               gap="$2"
@@ -397,7 +397,7 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
   const adjustStep = isLastTimeBased ? 5 : 1;
 
   return (
-    <YStack bg="$surface" p="$4" rounded="$6" borderWidth={1} borderColor="$borderStrong" gap="$2">
+    <YStack bg="$surface" p="$4" rounded="$3" borderWidth={1} borderColor="$borderStrong" gap="$2">
       <XStack justify="space-between" items="center" gap="$3">
         <YStack testID="rest-adjust-label" flex={1} shrink={1}>
           {/* Names the set: "Up next" sits right below and would otherwise read as its subject. */}

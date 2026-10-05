@@ -353,6 +353,7 @@ export function VillageScene() {
                 <Text
                   flex={1}
                   minW={0}
+                  fontFamily="$heading"
                   fontWeight="700"
                   fontSize={30}
                   lineHeight={32}

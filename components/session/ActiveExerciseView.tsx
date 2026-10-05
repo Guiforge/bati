@@ -928,7 +928,7 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
       }}
     >
       <YStack
-        height={60}
+        height={64}
         rounded="$3"
         bg="$primary"
         overflow="hidden"

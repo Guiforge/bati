@@ -279,12 +279,18 @@ function AdventureCard({
         </XStack>
 
         <YStack gap="$2" p="$4">
-          <Text fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
+          <Text
+            fontFamily="$heading"
+            fontWeight="700"
+            fontSize={18}
+            color="$text"
+            numberOfLines={1}
+          >
             {row.title}
           </Text>
 
           {row.focusLabel ? (
-            <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+            <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
               {row.focusLabel}
             </Text>
           ) : null}
@@ -497,7 +503,7 @@ export default function AdventuresGallery() {
       <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
         <XStack items="center" gap="$2">
           <Sparkles size={18} color="$primaryText" strokeWidth={2.5} />
-          <Text fontWeight="700" fontSize={20} color="$text">
+          <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
             {title}
           </Text>
         </XStack>

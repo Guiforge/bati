@@ -143,6 +143,12 @@ describe("RestView", () => {
     expect(JSON.stringify(scroll.props.contentContainerStyle)).toContain('"flex-start"');
   });
 
+  it("keeps the up-next card on the radius scale", async () => {
+    const view = await mountRest();
+    const flat = StyleSheet.flatten(view.getByTestId("rest-up-next").props.style);
+    expect(flat.borderTopLeftRadius).toBe(7);
+  });
+
   it("puts the seal under I'm ready", async () => {
     const view = await mountRest();
     const flat = StyleSheet.flatten(view.getByTestId("session-skip-rest").props.style);

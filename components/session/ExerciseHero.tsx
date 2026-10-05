@@ -1,8 +1,9 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ImageSourcePropType } from "react-native";
-import { H1, YStack } from "tamagui";
-import { fade, rawColors } from "@/constants/rawColors";
+import { YStack } from "tamagui";
+import { Recitatif } from "@/components/common/Recitatif";
+import { rawColors } from "@/constants/rawColors";
 import { HUD_HEIGHT } from "./sessionArt";
 
 type ExerciseHeroProps = {
@@ -96,8 +97,8 @@ export function ExerciseHero({
           32dp. On the darker illustrations the movement itself disappeared into it.
 
           The reason it had to be that heavy was the title below, not the seam: one gradient was
-          holding contrast for the H1 *and* dissolving the edge. The H1 carries its own shadow
-          now, so this only has the edge left to do — 38% of the hero, solid for the last tenth of
+          holding contrast for the title *and* dissolving the edge. The title sits in a
+          récitatif now, so this only has the edge left to do — 38% of the hero, solid for the last tenth of
           itself, which is all it takes to hide a seam. About 78dp of painting handed back. */}
       <LinearGradient
         colors={["transparent", fadeTo]}
@@ -112,25 +113,12 @@ export function ExerciseHero({
         pointerEvents="none"
       />
 
-      <H1
-        position="absolute"
-        b="$3"
-        l="$4"
-        r="$4"
-        fontFamily="$heading"
-        fontWeight="700"
-        fontSize={20}
-        lineHeight={24}
-        color="$text"
-        // Its own contrast, so the scrim above does not have to supply it by covering the
-        // painting. Same trick the onboarding titles use over their full-bleed art.
-        textShadowColor={fade(rawColors.shadowColor, 0.85)}
-        textShadowOffset={{ width: 0, height: 2 }}
-        textShadowRadius={6}
-        numberOfLines={1}
-      >
-        {name}
-      </H1>
+      {/* The name sits in a récitatif, bottom-left: legible on any art without a text shadow. */}
+      <YStack position="absolute" b="$3" l="$4" r="$4">
+        <Recitatif numberOfLines={2} testID="exercise-hero-name">
+          {name}
+        </Recitatif>
+      </YStack>
     </YStack>
   );
 }

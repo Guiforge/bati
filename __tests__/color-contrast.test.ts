@@ -70,11 +70,10 @@ const TEXT_TOKENS = [
 ] as const;
 
 /**
- * WCAG AA for a meaningful icon, and for large text. These are accents: short bold labels and
- * glyphs, never a paragraph. `$secondary` at 3.75:1 is the reason this tier exists rather than
- * one floor for everything.
+ * WCAG AA for a meaningful icon, and for large text: short bold labels and glyphs, never a
+ * paragraph.
  */
-const ACCENT_TOKENS = ["secondary", "error", "danger"] as const;
+const ACCENT_TOKENS = ["error", "danger", "resourceFire"] as const;
 
 /**
  * A fill and the label written on it, each pair chosen by hand. The 2026-10 refresh made the

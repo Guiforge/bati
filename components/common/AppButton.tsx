@@ -1,7 +1,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Button, type ColorTokens, type SpaceTokens } from "tamagui";
 
-type AppButtonVariant = "primary" | "secondary" | "outline";
+type AppButtonVariant = "primary" | "outline";
 
 type TamaguiButtonProps = ComponentProps<typeof Button>;
 
@@ -25,16 +25,11 @@ export function AppButton({
 }: AppButtonProps) {
   const getBackgroundColor = (): ColorTokens => {
     if (backgroundColor) return backgroundColor;
-    if (variant === "secondary") return "$secondary";
     if (variant === "outline") return "$background";
     return "$primary";
   };
 
-  const getColor = () => {
-    if (variant === "outline") return "$text";
-    if (variant === "secondary") return "$white";
-    return "$text";
-  };
+  const getColor = (): ColorTokens => "$text";
 
   return (
     <Button

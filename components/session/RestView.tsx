@@ -190,7 +190,7 @@ export function RestView() {
         transition={reducedMotion ? undefined : "bouncy"}
         enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
       >
-        <GameIcon name="flame" size={40} color="$warning" />
+        <GameIcon name="flame" size={40} color="$resourceFire" />
         <H2 color="$text" fontWeight="700" fontSize={32} lineHeight={38} text="center">
           {t(copy.title)}
         </H2>

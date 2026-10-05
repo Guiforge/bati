@@ -107,7 +107,6 @@ function ExerciseDetail({
               count: qex.exercise.secondsPerRep,
               defaultValue: `${qex.exercise.secondsPerRep}s/rep`,
             })}
-            tone="secondary"
           />
         ) : null}
         {qex.exercise.muscles.slice(0, MUSCLES_SHOWN).map((m) => (
@@ -274,7 +273,7 @@ export function QuestExerciseRow({
             {showTarget ? (
               <Tag
                 label={targetLabel(qex.target, qex.exercise.style, language)}
-                tone={qex.target.type === "time" ? "secondary" : "primary"}
+                tone={qex.target.type === "time" ? "default" : "primary"}
               />
             ) : null}
             {/* What the hero did on this movement last time, in the slot's own unit. In the shut
@@ -290,7 +289,6 @@ export function QuestExerciseRow({
                   ),
                   defaultValue: `Last: ${qex.ghost.last}`,
                 })}
-                tone="secondary"
               />
             ) : null}
           </XStack>

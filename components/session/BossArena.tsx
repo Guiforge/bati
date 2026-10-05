@@ -466,7 +466,7 @@ function StatusLine({
       <XStack items="center" gap="$3" height={16} accessibilityLabel={label}>
         {!!weaknessMuscle && (
           <XStack items="center" gap="$1">
-            <Target size={12} color="$secondary" />
+            <Target size={12} color="$primaryText" />
             <Text fontSize={11} fontWeight="700" color="$textSecondary" numberOfLines={1}>
               {t(`muscles.${weaknessMuscle}`)}
             </Text>
@@ -522,7 +522,7 @@ function DamageBurst({
       enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.4 }}
       exitStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
     >
-      {isCritical ? <Zap size={20} color="$error" /> : <Swords size={16} color="$secondary" />}
+      {isCritical ? <Zap size={20} color="$error" /> : <Swords size={16} color="$primaryText" />}
       <Text
         fontWeight="700"
         fontSize={isCritical ? 28 : 22}
@@ -530,7 +530,7 @@ function DamageBurst({
       >
         {isCritical ? `${t("common.crit")} ` : ""}−{damage}
       </Text>
-      {!!weaknessBonus && <Target size={16} color="$secondary" />}
+      {!!weaknessBonus && <Target size={16} color="$primaryText" />}
       {!!resistancePenalty && <Shield size={16} color="$textSecondary" />}
     </XStack>
   );

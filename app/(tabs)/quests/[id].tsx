@@ -122,17 +122,13 @@ function levelLabel(level: Difficulty, t: TFunction) {
   return t("quests.level_medium", "Medium");
 }
 
-// The Journal's difficulty breakdown (components/journal/JournalStats.tsx, the `Chip` tones on
-// its "Difficulty Split" card) is what a hero actually reads as "this colour means this level" —
-// easy/success green, medium/primary violet, hard/secondary pink, with success alone keeping dark
-// text (Task 7 moved primary and secondary to $white on contrast grounds; success was never
-// flagged, so its $bgDark text stays). Matching it here, not `DIFFICULTY_COLOR_TOKENS`
-// (constants/rawColors.ts), whose bar uses $error for hard — a second, undocumented mapping nested
-// in the same Journal card that this task does not touch.
+// The Journal's difficulty breakdown (components/journal/JournalStats.tsx) reads as "this colour
+// means this level": easy success green, medium primary braise, hard error red. Success and error
+// are light fills and take ink (rule 1 of the 2026-10 refresh); primary takes $onPrimary.
 const LEVEL_CHIP_COLORS: Record<Difficulty, { bg: ColorTokens; text: ColorTokens }> = {
   [Difficulty.Easy]: { bg: "$success", text: "$bgDark" },
-  [Difficulty.Medium]: { bg: "$primary", text: "$white" },
-  [Difficulty.Hard]: { bg: "$secondary", text: "$white" },
+  [Difficulty.Medium]: { bg: "$primary", text: "$onPrimary" },
+  [Difficulty.Hard]: { bg: "$error", text: "$bgDark" },
 };
 
 function LevelChip({
@@ -539,7 +535,7 @@ export default function QuestDetails() {
         <Text fontWeight="700" fontSize={18} color="$text">
           {t("quests.invalid_id", "Invalid quest")}
         </Text>
-        <AppButton fullWidth={false} variant="secondary" onPress={goToGallery}>
+        <AppButton fullWidth={false} variant="outline" onPress={goToGallery}>
           {t("quests.go_back", "Go back")}
         </AppButton>
       </YStack>
@@ -650,7 +646,7 @@ export default function QuestDetails() {
               ) : null}
               {/* Nothing on an outing: it is started at medium and the chips below are gone
                   with it, so a badge naming a level would name a decision nobody made. */}
-              {isOuting ? null : <Tag label={levelLabel(level, t)} tone="secondary" />}
+              {isOuting ? null : <Tag label={levelLabel(level, t)} />}
               {/* Only quests written in the app may be edited: seed content is shared. */}
               {quest && isUserQuest(quest) ? (
                 <AppIconButton
@@ -697,7 +693,7 @@ export default function QuestDetails() {
                 </Paragraph>
                 <AppButton
                   fullWidth={false}
-                  variant="secondary"
+                  variant="outline"
                   onPress={() => {
                     load(questId, effectiveLevel).catch(() => {
                       // Error already handled
@@ -782,7 +778,6 @@ export default function QuestDetails() {
                         duration: estimate,
                         defaultValue: `≈ ${estimate}`,
                       })}
-                      tone="secondary"
                     />
                   ) : null}
                   {xpReward != null ? (
@@ -792,7 +787,6 @@ export default function QuestDetails() {
                       label={t(isOuting ? "quests.reward_xp_open" : "quests.reward_xp_estimate", {
                         count: formatCount(language, xpReward),
                       })}
-                      tone="secondary"
                     />
                   ) : null}
                   {/* What an outing has instead of a maximum. The number above is what the

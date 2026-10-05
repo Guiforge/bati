@@ -802,7 +802,7 @@ export function ActiveExerciseView() {
             }
             accessibilityRole="button"
           >
-            <Text color="$text" fontSize={24} fontWeight="700">
+            <Text color={isPastTarget ? "$bgDark" : "$onPrimary"} fontSize={24} fontWeight="700">
               {isPastTarget ? t("session.complete_overtime") : t("session.complete_button")}
             </Text>
           </Button>

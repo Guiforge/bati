@@ -277,14 +277,14 @@ function QuestRow({
           )}
           <XStack position="absolute" t="$3" l="$3" gap="$2">
             <Chip label={meta.durationLabel} />
-            <Chip label={meta.levelLabel} tone="secondary" />
+            <Chip label={meta.levelLabel} />
           </XStack>
           {/* Opposite the duration, so a hero's own quest — and a quest that starts by leaving
             the house — is legible from the gallery rather than only once opened. Same words the
             movement rows and the filter rail wear. */}
           {meta.outsideLabel || meta.heroLabel ? (
             <XStack position="absolute" t="$3" r="$3" gap="$2">
-              {meta.outsideLabel ? <Chip label={meta.outsideLabel} tone="secondary" /> : null}
+              {meta.outsideLabel ? <Chip label={meta.outsideLabel} /> : null}
               {meta.heroLabel ? <Chip label={meta.heroLabel} tone="primary" /> : null}
             </XStack>
           ) : null}
@@ -378,7 +378,7 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3">
               {state.message}
             </Paragraph>
-            <AppButton fullWidth={false} variant="secondary" onPress={onRetry}>
+            <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
               {t("quests.retry", "Retry")} ↻
             </AppButton>
           </YStack>
@@ -434,7 +434,7 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3">
               {t("quests.empty_filters_subtitle", "Try removing filters.")}
             </Paragraph>
-            <AppButton fullWidth={false} variant="secondary" onPress={onClearFilters}>
+            <AppButton fullWidth={false} variant="outline" onPress={onClearFilters}>
               {t("quests.filters_clear", "Clear filters")}
             </AppButton>
           </YStack>
@@ -711,7 +711,6 @@ export default function QuestsGallery() {
                 count: filtered.length,
                 defaultValue: "{{count}} quests",
               })}
-              tone="secondary"
             />
             {/* The catalogue: the only way to ask "what does Bati know about rows?" without
                 first finding a quest that happens to contain one (roadmap 4.22). */}

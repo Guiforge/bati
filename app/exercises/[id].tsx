@@ -92,7 +92,7 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
         <Paragraph color="$text" opacity={0.6} size="$3">
           {message}
         </Paragraph>
-        <AppButton fullWidth={false} variant="secondary" onPress={onRetry}>
+        <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
           {t("exercises.retry", "Retry")} ↻
         </AppButton>
       </YStack>
@@ -495,10 +495,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
 
           {/* Tags */}
           <XStack gap="$2" flexWrap="wrap">
-            <Tag
-              label={equipmentLabel}
-              tone={exercise.equipment === "none" ? "default" : "secondary"}
-            />
+            <Tag label={equipmentLabel} />
             {/* A tempo is seconds per repetition, and neither a hold nor an expedition has
                 repetitions: one is measured in seconds held, the other in ground covered
                 (db/workUnits.ts). The column still holds a 1 so the duration estimator has
@@ -692,7 +689,7 @@ function InvalidIdView({ onBack }: { onBack: () => void }) {
       <Text fontWeight="700" fontSize={18} color="$text">
         {t("exercises.invalid_id", "Exercise not found")}
       </Text>
-      <AppButton fullWidth={false} variant="secondary" onPress={onBack}>
+      <AppButton fullWidth={false} variant="outline" onPress={onBack}>
         {t("exercises.go_back", "Go back")}
       </AppButton>
     </YStack>

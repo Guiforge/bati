@@ -81,9 +81,9 @@ function BestEffortCard({
         {/* The same two icons `NewRecordsBadge` gives the two units, because this names the same
             kind of thing one place further down. */}
         {standing.type === "time" ? (
-          <Clock size={20} color="$secondary" />
+          <Clock size={20} color="$resourceGold" />
         ) : (
-          <TrendingUp size={20} color="$secondary" />
+          <TrendingUp size={20} color="$resourceGold" />
         )}
         <YStack flex={1}>
           <Text fontWeight="700" fontSize={15} color="$text">

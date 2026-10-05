@@ -34,9 +34,9 @@ function RecordIcon({ type }: { type: NewRecordResult["recordType"] }) {
       // works out a contrast ratio by hand.
       return <Star size={20} color="$resourceGold" />;
     case "exercise_max_reps":
-      return <TrendingUp size={20} color="$secondary" />;
+      return <TrendingUp size={20} color="$resourceGold" />;
     case "exercise_max_time":
-      return <Clock size={20} color="$secondary" />;
+      return <Clock size={20} color="$resourceGold" />;
     case "longest_outing":
       return <Footprints size={20} color="$primaryText" />;
     default:

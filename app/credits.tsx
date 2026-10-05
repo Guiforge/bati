@@ -137,7 +137,7 @@ export default function CreditsScreen() {
 
           <XStack>
             <AppButton
-              variant="secondary"
+              variant="outline"
               fullWidth={false}
               onPress={() => openUrl("https://game-icons.net/about.html#authors")}
             >

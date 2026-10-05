@@ -185,7 +185,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             </Text>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="700" fontSize={24} color="$secondary">
+            <Text fontWeight="700" fontSize={24} color="$text">
               {avgMinutes}
             </Text>
             <Text fontSize={12} color="$text" opacity={0.6}>

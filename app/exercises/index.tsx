@@ -97,7 +97,7 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3">
               {state.message}
             </Paragraph>
-            <AppButton fullWidth={false} variant="secondary" onPress={onRetry}>
+            <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
               {t("exercises.retry", "Retry")} ↻
             </AppButton>
           </YStack>
@@ -135,7 +135,7 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3">
               {t("exercises.empty_filters_subtitle", "Try removing filters.")}
             </Paragraph>
-            <AppButton fullWidth={false} variant="secondary" onPress={onClearFilters}>
+            <AppButton fullWidth={false} variant="outline" onPress={onClearFilters}>
               {t("quests.filters_clear", "Clear filters")}
             </AppButton>
           </YStack>
@@ -390,7 +390,6 @@ export default function ExerciseCatalogue() {
               count: visible.length,
               defaultValue: "{{count}} movements",
             })}
-            tone="secondary"
           />
         </XStack>
 

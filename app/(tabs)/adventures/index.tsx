@@ -328,7 +328,7 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
               {state.message}
             </Paragraph>
-            <AppButton fullWidth={false} variant="secondary" onPress={onRetry}>
+            <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
               {t("quests.retry", "Retry")} ↻
             </AppButton>
           </YStack>

@@ -115,7 +115,7 @@ function ManageView({
       <AppButton variant="outline" testID="backup-change-password" onPress={onChange}>
         {t("backup.changePassword")}
       </AppButton>
-      <AppButton variant="secondary" testID="backup-disable-encryption" onPress={onDisable}>
+      <AppButton variant="outline" testID="backup-disable-encryption" onPress={onDisable}>
         {t("backup.encryptionOffCta")}
       </AppButton>
     </>

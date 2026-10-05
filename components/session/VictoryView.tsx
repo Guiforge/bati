@@ -650,7 +650,7 @@ export function VictoryView() {
               [
                 { value: "easy", emoji: "😊", accent: "$success" },
                 { value: "good", emoji: "💪", accent: "$primary" },
-                { value: "hard", emoji: "😤", accent: "$secondary" },
+                { value: "hard", emoji: "😤", accent: "$error" },
               ] as const
             ).map(({ value, emoji, accent }) => (
               <Button

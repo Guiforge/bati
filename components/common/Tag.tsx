@@ -4,19 +4,17 @@ import { type ColorTokens, Text, XStack, YStack, type YStackProps } from "tamagu
 export type TagProps = Omit<YStackProps, "children"> & {
   label: string;
   icon?: ReactNode;
-  tone?: "default" | "primary" | "secondary" | "success";
+  tone?: "default" | "primary" | "success";
 };
 
 function toneToBg(tone: TagProps["tone"]): ColorTokens {
   if (tone === "primary") return "$pastelBlue";
-  if (tone === "secondary") return "$pastelPink";
   if (tone === "success") return "$pastelGreen";
   return "$bgLight";
 }
 
 function toneToText(tone: TagProps["tone"]): ColorTokens {
   if (tone === "primary") return "$text";
-  if (tone === "secondary") return "$text";
   if (tone === "success") return "$text";
   return "$text";
 }

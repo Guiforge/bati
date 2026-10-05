@@ -95,7 +95,7 @@ function StepStatusTag({ status }: { status: "locked" | "active" | "completed" }
         ? t("adventures.step_active")
         : t("adventures.step_locked");
 
-  const tone = status === "completed" ? "primary" : status === "active" ? "secondary" : "default";
+  const tone = status === "completed" || status === "active" ? "primary" : "default";
 
   return <Tag label={label} tone={tone} />;
 }
@@ -111,8 +111,8 @@ const STEP_ART_STYLE = { width: STEP_ART, height: STEP_ART, borderRadius: 12 } a
 const LOCKED_ART_STYLE = { ...STEP_ART_STYLE, opacity: 0.55 } as const;
 
 const STATUS_COLOR: Record<"locked" | "active" | "completed", ColorTokens> = {
-  completed: "$primary",
-  active: "$secondary",
+  completed: "$resourceGold",
+  active: "$primaryText",
   locked: "$borderStrong",
 };
 
@@ -449,7 +449,7 @@ export default function AdventureDetailsScreen() {
         <Text fontWeight="700" fontSize={18} color="$text">
           {t("adventures.invalid_id")}
         </Text>
-        <AppButton fullWidth={false} variant="secondary" onPress={() => router.back()}>
+        <AppButton fullWidth={false} variant="outline" onPress={() => router.back()}>
           {t("quests.go_back")}
         </AppButton>
       </YStack>
@@ -489,7 +489,7 @@ export default function AdventureDetailsScreen() {
             </XStack>
 
             <YStack items="flex-end" gap="$1">
-              <Tag label={levelLabel(effectiveDifficulty, t)} tone="secondary" />
+              <Tag label={levelLabel(effectiveDifficulty, t)} />
               {/* Only when the shown level *is* the suggestion: a pinned run displays its own
                   starting level, and the caption would be describing something else. */}
               {feedbackAdjusted && !run?.run.difficultyOverride ? (
@@ -511,7 +511,7 @@ export default function AdventureDetailsScreen() {
                 </Paragraph>
                 <AppButton
                   fullWidth={false}
-                  variant="secondary"
+                  variant="outline"
                   onPress={() => {
                     load(adventureId).catch(() => {
                       // Error already handled
@@ -578,7 +578,7 @@ export default function AdventureDetailsScreen() {
                   <XStack gap="$2" flexWrap="wrap">
                     {isBoss ? <Tag label={t("adventures.kind_boss")} tone="primary" /> : null}
                     {focus.archetype ? (
-                      <Tag label={t(`quests.archetype_${focus.archetype}`)} tone="secondary" />
+                      <Tag label={t(`quests.archetype_${focus.archetype}`)} />
                     ) : null}
                     {focus.muscles.map((m) => (
                       <Tag key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} />
@@ -614,7 +614,6 @@ export default function AdventureDetailsScreen() {
                       label={t("adventures.reward_xp_per_step", {
                         count: formatCount(language, preview.xp),
                       })}
-                      tone="secondary"
                     />
                   ) : null}
                 </XStack>

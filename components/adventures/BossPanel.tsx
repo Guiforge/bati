@@ -34,7 +34,7 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
   const hpPercent = getHpPercent(fight.currentHp, fight.totalHp);
   const isDefeated = fight.defeatedAt != null || fight.currentHp <= 0;
   const isEnraged = getPhaseFromHp(hpPercent) === 4 && !isDefeated;
-  const hpColor = isEnraged ? "$error" : hpPercent < 50 ? "$secondary" : "$success";
+  const hpColor = isEnraged || isDefeated || hpPercent < 50 ? "$error" : "$resourceFire";
 
   return (
     <YStack
@@ -144,7 +144,7 @@ function Traits({ fight, isEnraged }: { fight: BossFight; isEnraged: boolean }) 
           </Trait>
         ) : null}
         {fight.weaknessMuscle ? (
-          <Trait icon={<Target size={12} color="$secondary" />}>
+          <Trait icon={<Target size={12} color="$primaryText" />}>
             {t("boss.weakness")} · {t(`muscles.${fight.weaknessMuscle}`)}
           </Trait>
         ) : null}

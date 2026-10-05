@@ -85,7 +85,7 @@ export function WarmupPreview({
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
       >
-        <Flame size={20} color="$warning" />
+        <Flame size={20} color="$resourceFire" />
         <Text flex={1} fontWeight="700" fontSize={16} color="$text">
           {t("quests.warmup_section", {
             count: steps.length,

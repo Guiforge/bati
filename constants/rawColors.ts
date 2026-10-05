@@ -36,8 +36,6 @@ export const rawColors = {
   primaryEdge: "#7A2905",
   /** The label on a `primary` fill: 4.77:1. */
   onPrimary: "#FFF4E6",
-  // Removed in Task 2 of the 2026-10 refresh; kept until its last consumer moves.
-  secondary: "#DB2777",
   success: "#6DB57A",
   warning: BRAISE_LIGHT,
   error: "#F0595D",

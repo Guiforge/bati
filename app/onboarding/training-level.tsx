@@ -113,9 +113,9 @@ export default function TrainingLevelStep() {
                   key={id}
                   height={56}
                   rounded="$8"
-                  bg={isSelected ? "$secondary" : "$surface"}
+                  bg={isSelected ? "$primary" : "$surface"}
                   borderWidth={1}
-                  borderColor={isSelected ? "$secondary" : "$borderStrong"}
+                  borderColor={isSelected ? "$primary" : "$borderStrong"}
                   items="center"
                   justify="center"
                   pressStyle={{ scale: 0.98, opacity: 0.9 }}
@@ -127,7 +127,7 @@ export default function TrainingLevelStep() {
                   accessibilityLabel={t(labelKey)}
                   accessibilityState={{ selected: isSelected }}
                 >
-                  <Text color="$text" fontSize={18} fontWeight="700">
+                  <Text color={isSelected ? "$onPrimary" : "$text"} fontSize={18} fontWeight="700">
                     {t(labelKey)}
                   </Text>
                 </YStack>

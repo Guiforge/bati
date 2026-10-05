@@ -152,7 +152,7 @@ const config = createTamagui({
       ...tokens.color,
       background: tokens.color.bgOverlay,
       color: tokens.color.text,
-      // What is written on a `$primary` fill: light on the app's indigo, dark on the Journal's gold.
+      // What is written on a `$primary` fill: light on the app's braise, dark on the Journal's gold.
       onPrimary: tokens.color.onPrimary,
       danger: tokens.color.error,
       muted: tokens.color.textSecondary,
@@ -177,7 +177,6 @@ const config = createTamagui({
       primaryText: tokens.color.resourceGold,
       primaryHover: tokens.color.gold300,
       primaryPress: tokens.color.gold600,
-      secondary: tokens.color.gold600,
       success: tokens.color.resourceGold,
       warning: tokens.color.gold300,
       error: tokens.color.borderStrong,

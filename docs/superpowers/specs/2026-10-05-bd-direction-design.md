@@ -102,11 +102,11 @@ Born from an expert audit of iteration 1 (not validated). The code is on `feat/b
   progress bars (on a `$gold800` track), the village tier bar. The boss's weakness line and
   glyphs are `$primaryText`.
 - **H. Metadata is never braise.** "Leads to X" captions and their glyph (exercise list), "Yours",
-  the picker's substitution caption, the quest config card's shield, kickers like "FIRST TRIAL":
+  the picker's substitution caption, kickers like "FIRST TRIAL":
   `$textSecondary`, glyphs `$muted`. A value that is itself an editable control keeps its colour.
 - **I. No violet.** `pastelPurple` is deleted (see the palette). Adventure cards, the adventure
-  hero card and the quest detail card are `$surface` with the 1 px frame; the rest screen's wash
-  is an ink fade; shoulder and mixed quests use `$bgLight`.
+  hero card and the quest detail card are `$surface` with the 1 px frame; the rest screen's campfire
+  art sits at 0.3 opacity over `$bgDark`; shoulder and mixed quests use `$bgLight`.
 - **J. One screen title.** Every screen title is `$heading` 700, the Journal's through `NTitle`;
   the Journal body stays Inter; the what's-new title keeps the body font (it interpolates a
   version).

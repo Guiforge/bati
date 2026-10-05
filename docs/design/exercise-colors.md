@@ -35,8 +35,8 @@ When muscle is not specified:
 | ----------- | ----- |
 | **Reps** | Pastel Yellow |
 | **Time** | Pastel Blue |
-| **Mixed** | `$bgLight` |
-| **Default** | Gray |
+| **Mixed** | `$bgLight` (returned by the quest's dominance step, never by `getExerciseColorKey`) |
+| **Default** | `$bgLight` |
 
 ---
 

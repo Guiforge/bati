@@ -163,11 +163,11 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
   `$resourceGold` (XP gained, trophies, achievements, new-record badges, the Victory figures,
   oath progress bars on a `$gold800` track, the village tier bar). Braise marks the action.
 - **No violet.** `pastelPurple` is deleted; cards are `$surface` with the 1px frame, shoulder and
-  mixed quests use `$bgLight`, the rest screen's wash is an ink fade.
+  mixed quests use `$bgLight`, the rest screen's campfire art sits at 0.3 opacity over `$bgDark`.
 - **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a
   hero's own label) is never braise: it is ash, `$textSecondary`, glyphs `$muted`. That covers the
   exercise list's "leads to X" captions and link glyph, the "Yours" caption, the picker's
-  substitution caption, the quest config card's shield and kickers such as "FIRST TRIAL". Braise
+  substitution caption, and kickers such as "FIRST TRIAL". Braise
   marks actions and these states: a selected option, medium difficulty, the boss's weakness and attack glyphs, an
   adventure in progress and its completed progress segments, the Home advice and kicker icons,
   and the avatar's fallback fill. The Home "Protect your hero" banner is quiet: bone title, ash body
@@ -247,8 +247,9 @@ pressable chips (the filter rail's), quick-action tiles, inputs and dialogs,
 - A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill, 1px
   `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art:
   [`Recitatif`](../../components/common/Recitatif.tsx).
-- Quest-list and adventure cards carry their title in a Récitatif on the art's bottom-left edge,
-  the body keeping the metadata. The exercise name over its illustration (`ExerciseHero`, and the
+- Quest-list and adventure cards carry their title in a Récitatif on the art's bottom-left edge
+  when the card has a cover (otherwise a `$heading` title in the body), the body keeping the
+  metadata. The exercise name over its illustration (`ExerciseHero`, and the
   exercise detail, frame radius `$3`) sits in a Récitatif too. Victory's "QUEST COMPLETE!" is the
   Récitatif's gold kicker.
 - A villager's spoken line is a parchment bubble (`$parchment` fill, `$bgDark` line 14 regular,
@@ -268,7 +269,9 @@ its edge of the screen instead of sitting in a card. Used by
 - Full width, no border, no inset. Height capped against *both* `width` and `height` from
   `useWindowDimensions` — one shared function, [`sessionArtHeight()`](../../components/session/sessionArt.ts),
   not a per-component expression — so a short screen still leaves the primary action room. The
-  boss gets a taller cut (0.46 of the height against the exercise's 0.34), and both are floors.
+  boss gets a taller cut (0.46 of the height against the exercise's 0.34). The arena's floor is the
+  boss cut; the hero's is the top inset plus the HUD plus 0.6 of the exercise cut (about 211 px at
+  640 dp with a 24 dp inset), and both grow into the slack.
 - Text goes **on** the art, held by a `LinearGradient` scrim ending on the colour behind the
   image — never by a box or a shadow. The scrim is what carries AA contrast in gym lighting; it
   is not decoration and is not optional because one particular painting happens to be dark.

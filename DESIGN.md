@@ -167,14 +167,14 @@ feel immersive but remain operationally clear in the middle of a workout.
 - **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a
   hero's own label) is never braise: it is ash, `$textSecondary`, its glyphs `$muted`. That covers
   the exercise list's "leads to X" captions and their link glyph, the "Yours" caption, the
-  exercise picker's substitution caption, the quest config card's shield glyph and a kicker such
-  as the prep screen's "FIRST TRIAL". A value that is itself an editable control keeps its colour.
+  exercise picker's substitution caption, a kicker such
+  as the prep screen's "FIRST TRIAL". A value that is itself an editable control keeps its colour; the quest config card's goal value is bone (`$text`), no longer braise.
   Braise marks actions and the few states named in this section, and these: the boss's weakness
   line and glyphs, the Home advice and kicker icons (`$primaryText`), the completed segments of an
   adventure's progress bar (`$primary`) and the avatar's fallback fill (`$primary`).
 - **No violet.** `pastelPurple` is deleted. No card is violet: adventure cards, the adventure
   hero card and the quest detail's info card are `$surface` with the 1px `$borderStrong` frame;
-  shoulder and mixed quests use `$bgLight`; the rest screen's wash is an ink fade of `$bgDark`.
+  shoulder and mixed quests use `$bgLight`; the rest screen's campfire art sits at 0.3 opacity over `$bgDark`.
 - **The Home "Protect your hero" banner is quiet.** Its title stays bone (`$text`) and its body
   and shield ash; braise is only on the chevron. An ash title over an ash body loses the
   hierarchy, so "quiet" means no braise, not no bone.
@@ -219,7 +219,8 @@ opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
   and the tail points at the medallion's centre. The Village cameo keeps the full figure and its
   own tail.
 - **Titles on art.** Quest-list and adventure cards carry their title in a Récitatif on the
-  art's bottom-left edge, and the card body keeps its metadata. The exercise name over its
+  art's bottom-left edge when the card has a cover (a hero's own quest has none and keeps a
+  `$heading` title in the body), and the card body keeps its metadata. The exercise name over its
   illustration (`ExerciseHero`, and the exercise detail screen, frame radius `$3`) sits in a
   Récitatif too. The warm-up's exercise name is `$heading` 20.
 - **Victory is a gold plate.** "QUEST COMPLETE!" is the Récitatif's kicker, in gold, and every

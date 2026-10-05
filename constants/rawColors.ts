@@ -1,3 +1,4 @@
+import type { ColorTokens } from "tamagui";
 import type { DifficultyCode } from "@/db/schema";
 
 /**
@@ -145,4 +146,14 @@ export const DIFFICULTY_COLORS: Record<DifficultyCode, string> = {
   easy: rawColors.success,
   medium: rawColors.primary,
   hard: rawColors.error,
+};
+
+/**
+ * The same three levels as Tamagui tokens, for *text*. Medium reads `$primaryText`, not `$primary`:
+ * the braise is a fill (3.75:1 on bgDark) and its lightened twin is the one legible as words.
+ */
+export const DIFFICULTY_TEXT_TOKENS: Record<DifficultyCode, ColorTokens> = {
+  easy: "$success",
+  medium: "$primaryText",
+  hard: "$error",
 };

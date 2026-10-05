@@ -22,8 +22,8 @@ import { restsBetweenExercises } from "@/components/quests/questShape";
 import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { WarmupPreview } from "@/components/quests/WarmupPreview";
 import { getQuestAsset } from "@/constants/assetMap";
-import { DIFFICULTY_TEXT } from "@/constants/difficultyText";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
+import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
 import {
   applyQuestConfig,
   Difficulty,
@@ -646,7 +646,7 @@ export default function QuestDetails() {
                 <Tag
                   testID="quest-level-tag"
                   label={levelLabel(level, t)}
-                  textColor={DIFFICULTY_TEXT[level]}
+                  textColor={DIFFICULTY_TEXT_TOKENS[level]}
                 />
               )}
               {/* Only quests written in the app may be edited: seed content is shared. */}

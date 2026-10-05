@@ -112,8 +112,8 @@ export default function FirstSessionStep() {
             color="$text"
             fontSize={30}
             fontWeight="700"
-            textShadowColor={fade(rawColors.black, 0.5)}
-            textShadowRadius={4}
+            textShadowColor={fade(rawColors.bgDark, 0.8)}
+            textShadowRadius={6}
           >
             {t("onboarding.first_session_title", "Your first march")}
           </H1>

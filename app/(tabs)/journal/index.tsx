@@ -218,7 +218,7 @@ export default function JournalScreen() {
     <YStack testID="journal-screen" flex={1} bg="$bgDark">
       {/* Quests and Adventures set their title 20 dp in, 20 px, a glyph before it: the tab bar
           moves between the three and a title that shrinks reads as a different app. */}
-      <XStack pt={insets.top + 12} px="$5" pb={11} items="center" justify="space-between">
+      <XStack pt={insets.top + 12} px="$5" pb="$3" items="center" justify="space-between">
         <XStack items="center" gap="$2">
           <Scroll testID="journal-title-glyph" size={18} color="$text" strokeWidth={2.5} />
           <NTitle fontSize={20} lineHeight={26}>

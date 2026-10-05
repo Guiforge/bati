@@ -38,7 +38,14 @@ export function Tag({ label, icon, tone = "default", textColor, ...props }: TagP
     >
       <XStack items="center" gap="$1">
         {icon}
-        <Text fontWeight="700" fontSize={12} color={textColor ?? toneToText(tone)} opacity={0.82}>
+        <Text
+          fontWeight="700"
+          fontSize={12}
+          color={textColor ?? toneToText(tone)}
+          // A role colour keeps the container's 0.92 only: at 0.82 more, `$error` falls to 3.6:1
+          // on the tag (4.75:1 without), under AA for 12 px text.
+          opacity={textColor ? 1 : 0.82}
+        >
           {label}
         </Text>
       </XStack>

@@ -1,4 +1,5 @@
 import { render } from "@testing-library/react-native";
+import i18n from "i18next";
 import { StyleSheet } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
@@ -8,7 +9,10 @@ import "@/i18n";
 import config from "@/tamagui.config";
 
 jest.mock("@/db", () => ({
-  getQuestSessionHistory: jest.fn(),
+  getQuestSessionHistory: jest.fn().mockResolvedValue([
+    { durationSeconds: 600, performedAt: 1_700_000_000_000, userLevel: "medium" },
+    { durationSeconds: 1200, performedAt: 1_700_100_000_000, userLevel: "hard" },
+  ]),
   getRecentSessionHistory: jest.fn().mockResolvedValue([
     { durationSeconds: 600, performedAt: 1_700_000_000_000, userLevel: "medium" },
     { durationSeconds: 1200, performedAt: 1_700_100_000_000, userLevel: "hard" },
@@ -17,10 +21,11 @@ jest.mock("@/db", () => ({
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("react-native-gifted-charts", () => ({ BarChart: () => null }));
 
+// The way VictoryView calls it: the title is its own key, not the chart's default.
 async function mount() {
   const view = await render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <ProgressionChart />
+      <ProgressionChart questId={5} limit={10} title={i18n.t("chart.your_progress")} />
     </TamaguiProvider>,
   );
   return view;
@@ -35,7 +40,7 @@ describe("ProgressionChart", () => {
 
   it("titles itself in the heading face, in sentence case", async () => {
     const view = await mount();
-    const title = await view.findByText("Your progress");
+    const title = await view.findByText("Your progress on this quest");
     expect(StyleSheet.flatten(title.props.style).fontFamily).toBe(
       config.fonts.heading.face[700].normal,
     );

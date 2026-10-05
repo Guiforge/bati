@@ -17,7 +17,7 @@ import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Sparkles } from "@/components/icons";
 import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
-import { DIFFICULTY_TEXT } from "@/constants/difficultyText";
+import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
 import type {
   ActiveAdventureRun,
   AdventureDetails,
@@ -483,8 +483,9 @@ export default function AdventureDetailsScreen() {
 
             <YStack items="flex-end" gap="$1">
               <Tag
+                testID="adventure-level-tag"
                 label={levelLabel(effectiveDifficulty, t)}
-                textColor={DIFFICULTY_TEXT[effectiveDifficulty]}
+                textColor={DIFFICULTY_TEXT_TOKENS[effectiveDifficulty]}
               />
               {/* Only when the shown level *is* the suggestion: a pinned run displays its own
                   starting level, and the caption would be describing something else. */}

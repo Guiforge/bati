@@ -22,7 +22,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 # ---------------------------------------------------------------------------------------------
 # Palette — the app's own, so a screenshot and the app it shows belong to one world.
 # ---------------------------------------------------------------------------------------------
-VOID = (11, 15, 25)  # $bgDark
+VOID = (12, 13, 17)  # $bgDark
 SURFACE = (16, 19, 34)  # $surface
 TEXT = (232, 236, 255)  # $text
 DIM = (144, 154, 203)  # $textSecondary

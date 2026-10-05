@@ -3,69 +3,65 @@ name: Bati
 description: A minimal, ludic fitness RPG that turns strength training into a dark-fantasy quest.
 source: constants/rawColors.ts, tamagui.config.ts, @tamagui/config/v4 defaults, components/common/
 colors:
-  primary: "#4A3FD6"
-  primary-text: "#8177F7"
-  primary-hover: "#5D53E8"
-  primary-press: "#372FA6"
-  primary-glow: "rgba(74, 63, 214, 0.45)"
-  secondary: "#DB2777"
-  success: "#16A34A"
-  warning: "#F59E0B"
-  error: "#FF1744"
-  bg-dark: "#0B0F19"
-  bg-overlay: "rgba(11, 15, 25, 0.92)"
-  bg-overlay-soft: "rgba(11, 15, 25, 0.72)"
-  surface: "#101322"
-  surface-2: "#151A2E"
-  glass-bg: "rgba(16, 19, 34, 0.65)"
-  glass-border: "rgba(232, 236, 255, 0.14)"
-  gold-hairline: "rgba(255, 215, 0, 0.22)"
-  border-strong: "#2A3360"
-  text: "#E8ECFF"
-  text-secondary: "#909ACB"
-  shadow: "#060812"
+  primary: "#C2410C"
+  primary-text: "#F08A4B"
+  primary-hover: "#D4501A"
+  primary-press: "#9A3412"
+  primary-edge: "#7A2905"
+  on-primary: "#FFF4E6"
+  primary-glow: "rgba(194, 65, 12, 0.45)"
+  success: "#6DB57A"
+  warning: "#F08A4B"
+  error: "#F0595D"
+  bg-dark: "#0C0D11"
+  bg-overlay: "rgba(12, 13, 17, 0.92)"
+  bg-overlay-soft: "rgba(12, 13, 17, 0.72)"
+  surface: "#15171C"
+  surface-2: "#1D2027"
+  glass-bg: "rgba(21, 23, 28, 0.65)"
+  glass-border: "rgba(236, 228, 212, 0.14)"
+  gold-hairline: "rgba(226, 181, 74, 0.22)"
+  border-strong: "#363A44"
+  text: "#ECE4D4"
+  text-secondary: "#A89C88"
+  shadow: "#000000"
   boss-phase-2: "#170F1D"
   boss-phase-3: "#1F0E18"
   boss-phase-4: "#280B12"
   map-water: "#0E1730"
   map-wood: "#101E1B"
-  resource-gold: "#FFD700"
-  resource-wood: "#8B4513"
-  resource-stone: "#808080"
-  resource-fire: "#FF6B35"
-  resource-water: "#4ECDC4"
-  resource-wind: "#C9B1FF"
-  resource-grain: "#DAA520"
-  gold-100: "#FFF8D9"
-  gold-300: "#FFE066"
-  gold-600: "#C4A600"
-  gold-700: "#6B5A12"
-  gold-800: "#3A3110"
-  gold-900: "#241F08"
-  ink-800: "#232A44"
-  ink-900: "#0E1220"
+  resource-gold: "#E2B54A"
+  resource-fire: "#F08A4B"
+  gold-100: "#F7ECCF"
+  gold-300: "#EDCB76"
+  gold-600: "#B08A2E"
+  gold-700: "#5E4A1E"
+  gold-800: "#362C15"
+  gold-900: "#211B0E"
+  ink-800: "#262A33"
+  ink-900: "#101217"
 typography:
   display:
-    fontFamily: "SpaceGrotesk, system-ui, sans-serif"
-    fontSize: "48px"
-    fontWeight: 700
-    lineHeight: "50px"
+    fontFamily: "Alegreya, Georgia, serif"
+    fontSize: "44px"
+    fontWeight: 800
+    lineHeight: "52px"
   headline:
-    fontFamily: "SpaceGrotesk, system-ui, sans-serif"
-    fontSize: "32px"
+    fontFamily: "Alegreya, Georgia, serif"
+    fontSize: "35px"
     fontWeight: 700
-    lineHeight: "40px"
+    lineHeight: "42px"
   title:
-    fontFamily: "SpaceGrotesk, system-ui, sans-serif"
-    fontSize: "24px"
+    fontFamily: "Alegreya, Georgia, serif"
+    fontSize: "26px"
     fontWeight: 700
     lineHeight: "32px"
   label:
-    fontFamily: "SpaceGrotesk, system-ui, sans-serif"
+    fontFamily: "NotoSans, system-ui, sans-serif"
     fontSize: "14px"
     fontWeight: 700
     lineHeight: "20px"
-    letterSpacing: "4px"
+    letterSpacing: "2px"
   body:
     fontFamily: "NotoSans, system-ui, sans-serif"
     fontSize: "16px"
@@ -85,10 +81,9 @@ typography:
     fontWeight: 400
     lineHeight: "22px"
 rounded:
-  tag: "7px"      # $3
-  chip: "9px"     # $4, static chip
-  md: "22px"      # $8, cards and buttons
-  pill: "34px"    # $10, pressable chip
+  tag: "3px"      # $1, tags and static chips
+  md: "7px"       # $3, cards, buttons, pressable chips, inputs
+  sheet: "16px"   # $6, sheet tops
   full: "9999px"
 spacing:
   xs: "2px"       # $1
@@ -102,14 +97,8 @@ sizes:
 components:
   button-primary:
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.text}"
-    borderColor: "{colors.border-strong}"
-    rounded: "{rounded.md}"
-    height: "44px"
-  button-secondary:
-    backgroundColor: "{colors.secondary}"
-    textColor: "#FFFFFF"
-    borderColor: "{colors.border-strong}"
+    textColor: "{colors.on-primary}"
+    borderColor: "{colors.primary-edge}"
     rounded: "{rounded.md}"
     height: "44px"
   button-outline:
@@ -127,7 +116,7 @@ components:
   chip:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
-    rounded: "{rounded.pill}"
+    rounded: "{rounded.md}"
     padding: "7px 13px"
   tag:
     backgroundColor: "{colors.surface}"
@@ -145,7 +134,8 @@ components:
 
 ## 1) System intent
 
-**Creative north star:** *The Hero's HUD* — immersive but operationally clear mid-workout.
+**Creative north star:** *Inked dark-fantasy BD*: the chrome speaks the art's language (ink, bone, one
+warm light, a chronicle serif, panel frames), immersive but operationally clear mid-workout.
 Ties directly to [roadmap.md](../planning/roadmap.md) (north star) and
 [positioning.md](../product/positioning.md) (brand): sport-first ergonomics over decorative
 complexity, dark-only visual world, one-screen-one-priority hierarchy.
@@ -162,9 +152,21 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 
 - **Dark-only.** No light theme, no per-OS reskinning, no white flash.
 - **One primary CTA per screen.** No competing equal-weight actions.
-- **Borders are subtle.** `$borderStrong` / `$glassBorder`, 1px. No thick white/off-white
-  accent borders — that's a bug, not a style choice. Elevation comes from contrast, spacing,
-  and controlled glow, not outlines.
+- **Panels, not shadows.** Cards are a 1px `$borderStrong` frame (`$glassBorder` on glass) and
+  carry no drop shadow; the one hero card of a screen (Home's quest stage, the Victory card)
+  takes 1.5px. No thick white/off-white accent borders — that's a bug, not a style choice.
+  Elevation comes from contrast and spacing; `$primaryGlow` is the only glow, once per screen.
+  Toasts and overlays keep their soft shadow.
+- **One accent.** The braise (`$primary` fill, `$primaryText` as text or icon) is the only
+  accent; there is no second colour. Each use goes to the colour of its meaning: rewards and
+  records `$resourceGold`, "hard" `$error`, a selected option `$primary`.
+- **Fills and their text.** `$primary` fills take `$onPrimary`; `$success`, `$error`, `$warning`
+  and `$resourceGold` fills take `$bgDark`. Light text on those is banned (2.0 to 3.6:1).
+- **One source per value.** No rgba literal outside `constants/rawColors.ts`; a gradient or text
+  shadow that needs a translucent token calls `fade(token, alpha)`.
+- **No decorative emoji** where this direction applies (end-of-session feedback, quest and
+  adventure cover fallbacks): use `GameIcon` glyphs. No texture overlays, halftone, tilted
+  panels or hand-lettered fonts.
 - **Tokens only.** No hardcoded hex/spacing in screens or components; reuse shared
   primitives (`card`, `button`, `header`, `state`) instead of one-off visuals. If a pattern
   appears on a second screen, promote it into this file before copying it again.
@@ -178,22 +180,49 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 
 ## 3) Visual foundations
 
+### Palette
+
+Ink ground `$bgDark` (#0C0D11), `$surface` / `$surface2` above it, bone `$text`, ash
+`$textSecondary`, braise `$primary` (#C2410C, fill) and `$primaryText` (#F08A4B, text on dark,
+also `$warning` and `$resourceFire`), patinated gold `$resourceGold` (#E2B54A). Values and
+contrast ratios live in [`constants/rawColors.ts`](../../constants/rawColors.ts); the
+decision record is
+[`docs/superpowers/specs/2026-10-05-bd-direction-design.md`](../superpowers/specs/2026-10-05-bd-direction-design.md).
+
 ### Typography
 
-- Hero/display moments: `SpaceGrotesk`.
+- Titles: `Alegreya` (`$heading`), 700 and 800, 400 for the rare light heading. No letter
+  spacing, and never a digit: timers, HP, XP, levels and counts stay in `NotoSans` (`$body`)
+  with tabular numerals.
 - Body and utility reading: `NotoSans`.
-- Wide tracking belongs to short labels only, never body text.
+- Wide tracking (2px) belongs to short labels only, never body text.
+
+### Radius
+
+`$1` (3) tags and static chips, `$3` (7) cards, buttons, pressable chips, inputs and dialogs,
+`$6` (16) sheet tops, full circles for round icon buttons, steppers and avatars.
 
 ### Buttons
 
-- Primary: `$primary` fill, high-contrast text, optional restrained glow.
-- Secondary/ghost: neutral or glass treatment.
+- Primary is the **seal**: `$primary` fill, radius `$3`, a 3px `$primaryEdge` bottom edge, label
+  in the title font in `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill
+  colour; no spring. `AppButton` derives the label colour and forbids `pressStyle`, `rounded` and
+  `bg` overrides.
+- Secondary/ghost: `outline`, neutral or glass treatment.
 - Consistent `pressed`, `disabled`, and loading states. Minimum hit area 44×44.
 
 ### Cards/containers
 
 - `$surface` or `$glassBg` depending on semantic layer; one card style family app-wide.
 - Group content, don't decorate with cards; avoid nesting unless IA truly requires it.
+
+### Récitatif and phylactère
+
+- A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill, 1px
+  `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art:
+  [`Recitatif`](../../components/common/Recitatif.tsx).
+- A villager's spoken line is a bone bubble (`$text` fill, `$bgDark` text, radius `$1`, a tail
+  toward the speaker), never a dark card.
 
 ### Art heroes
 

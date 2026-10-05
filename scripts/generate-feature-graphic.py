@@ -2,6 +2,7 @@
 """Compose the store feature graphics: one page of the book, 1024x500.
 
   python3 scripts/generate-feature-graphic.py [--out DIR]
+  python3 scripts/generate-feature-graphic.py --og      # docs/legal/assets/img/og.jpg, 1200x630
 
 `featureGraphic.png` is the 1024x500 banner Play requires and the F-Droid client shows at the
 top of the app page. It speaks the app's inked bande dessinee language: the forge render
@@ -20,6 +21,9 @@ Play's spec for the file is "JPEG or 24-bit PNG (no alpha)". In PNG terms that i
 8-bit, and *no tRNS chunk* — an alpha'd PNG uploads to F-Droid without complaint and is refused
 by Play, which is exactly how the two stores' copies would silently diverge. The compose step
 flattens and the check below fails the run rather than letting that file ship.
+
+`--og` composes the same page at 1200x630 (link previews, the README header) from the English
+tagline and writes the JPEG the site and README point at; nothing else is touched.
 
 Without --out the files go to fastlane/metadata/... and the provenance ledger is updated; with
 --out (previews) they go to DIR/featureGraphic-<locale>.png and the ledger is left alone.
@@ -45,6 +49,8 @@ BONE = (236, 228, 212)  # #ECE4D4
 BRAISE = (194, 65, 12)  # #C2410C, the one accent
 RULE = (54, 58, 68)  # #363A44
 SIZE = (1024, 500)
+OG_SIZE = (1200, 630)
+OG = ROOT / "docs" / "legal" / "assets" / "img" / "og.jpg"
 
 # One tagline per shipped locale. Two lines, six words or fewer, >=60px once rendered: the
 # banner is seen at roughly a third of its size on a phone card, and text that dies there is
@@ -62,7 +68,7 @@ def font(size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(str(ALEGREYA), size)
 
 
-def background() -> Image.Image:
+def background(SIZE=SIZE) -> Image.Image:
     """Cover-crop the render, then let ink take the left: opaque at the edge, gone at 80%."""
     art = Image.open(BG).convert("RGB")
     scale = max(SIZE[0] / art.width, SIZE[1] / art.height)
@@ -74,12 +80,12 @@ def background() -> Image.Image:
     return Image.composite(Image.new("RGB", SIZE, INK), art, ramp).convert("RGBA")
 
 
-def compose(tagline: str) -> Image.Image:
-    canvas = background()
+def compose(tagline: str, SIZE=SIZE, top=66) -> Image.Image:
+    canvas = background(SIZE)
     d = ImageDraw.Draw(canvas)
     lines = tagline.split("\n")
     pad_x, pad_y, margin = 36, 30, 64
-    size = 66
+    size = top
     while size > 60:
         f = font(size)
         if max(d.textlength(line, font=f) for line in lines) + 2 * pad_x <= SIZE[0] - 2 * margin - 180:
@@ -142,12 +148,19 @@ def check(path: pathlib.Path) -> list[str]:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
+    ap.add_argument("--og", action="store_true", help="write the 1200x630 link-preview image and stop")
     ap.add_argument("--out", help="write previews to DIR/featureGraphic-<locale>.png, skip the ledger")
     args = ap.parse_args()
     if not BG.is_file():
         sys.exit(f"{BG} is missing; re-render it from its provenance.json prompt first.")
     if not ALEGREYA.is_file():
         sys.exit(f"{ALEGREYA} is missing; run npm install first.")
+
+    if args.og:
+        OG.parent.mkdir(parents=True, exist_ok=True)
+        compose(TAGLINES["en-US"], OG_SIZE, 80).save(OG, "JPEG", quality=85, optimize=True, progressive=True)
+        print(f"  ✓ {OG}  ({OG.stat().st_size // 1024} KB)")
+        sys.exit(0)
 
     failed = False
     for locale, tagline in TAGLINES.items():

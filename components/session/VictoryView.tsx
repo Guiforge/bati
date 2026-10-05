@@ -549,69 +549,106 @@ export function VictoryView() {
         )}
 
         {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
-        <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
-          <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
-            <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
-              {t("session.total_time")}
-            </Text>
-            <Text fontWeight="700" fontSize={26} color="$text" fontFamily="$body">
-              {formatTime(durationSeconds)}
-            </Text>
-          </Card>
-          <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
-            <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
-              {t("session.xp_earned")}
-            </Text>
-            {/* The testID only exists once the session is banked: Continue is on screen, and
+        {!tooShort && (
+          <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
+            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
+              <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+                {t("session.total_time")}
+              </Text>
+              <Text fontWeight="700" fontSize={26} color="$text" fontFamily="$body">
+                {formatTime(durationSeconds)}
+              </Text>
+            </Card>
+            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
+              <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+                {t("session.xp_earned")}
+              </Text>
+              {/* The testID only exists once the session is banked: Continue is on screen, and
                 disabled, for the whole save, so it cannot tell an E2E flow when to tap it. */}
-            <Text
-              testID={result ? "session-victory-xp" : undefined}
-              accessibilityElementsHidden={!result}
-              importantForAccessibility={result ? "auto" : "no"}
-              fontWeight="700"
-              fontSize={26}
-              color="$resourceGold"
-              fontFamily="$body"
-            >
-              {result
-                ? t("quests.reward_xp", { count: formatCount(language, result.xpEarned) })
-                : // Same line height, no glyph: a loading reward asserts nothing.
-                  "\u00A0"}
-            </Text>
-            {!!result?.dailyBonusXp && (
-              <Text fontWeight="700" fontSize={11} color="$success">
-                {t("common.daily_xp_bonus", { count: formatCount(language, result.dailyBonusXp) })}
-              </Text>
-            )}
-            {/* The rate, said out loud. A hero who walks an hour and reads "+300" has no way to
-                know why, and a number with no rule behind it is the thing the research calls
-                controlling rather than informative. This is the rule, in the hero's own numbers. */}
-            {result?.outing ? (
-              <Text fontWeight="700" fontSize={11} color="$textSecondary">
-                {t("session.xp_outing_rate", {
-                  moving: formatDurationEstimate(result.outing.seconds, language),
-                  effort: formatDurationEstimate(result.outing.effortSeconds, language),
-                })}
-              </Text>
-            ) : null}
-            {!!result?.overshootXp && (
               <Text
+                testID={result ? "session-victory-xp" : undefined}
+                accessibilityElementsHidden={!result}
+                importantForAccessibility={result ? "auto" : "no"}
                 fontWeight="700"
-                fontSize={11}
-                color="$success"
-                text="center"
+                fontSize={26}
+                color="$resourceGold"
                 fontFamily="$body"
               >
-                {t("session.xp_overshoot", { count: formatCount(language, result.overshootXp) })}
+                {result
+                  ? t("quests.reward_xp", { count: formatCount(language, result.xpEarned) })
+                  : // Same line height, no glyph: a loading reward asserts nothing.
+                    "\u00A0"}
               </Text>
-            )}
-          </Card>
-        </XStack>
+              {!!result?.dailyBonusXp && (
+                <Text fontWeight="700" fontSize={11} color="$success">
+                  {t("common.daily_xp_bonus", {
+                    count: formatCount(language, result.dailyBonusXp),
+                  })}
+                </Text>
+              )}
+              {/* The rate, said out loud. A hero who walks an hour and reads "+300" has no way to
+                know why, and a number with no rule behind it is the thing the research calls
+                controlling rather than informative. This is the rule, in the hero's own numbers. */}
+              {result?.outing ? (
+                <Text fontWeight="700" fontSize={11} color="$textSecondary">
+                  {t("session.xp_outing_rate", {
+                    moving: formatDurationEstimate(result.outing.seconds, language),
+                    effort: formatDurationEstimate(result.outing.effortSeconds, language),
+                  })}
+                </Text>
+              ) : null}
+              {!!result?.overshootXp && (
+                <Text
+                  fontWeight="700"
+                  fontSize={11}
+                  color="$success"
+                  text="center"
+                  fontFamily="$body"
+                >
+                  {t("session.xp_overshoot", { count: formatCount(language, result.overshootXp) })}
+                </Text>
+              )}
+            </Card>
+          </XStack>
+        )}
 
         {/* The hero's level bar, filling with this session's XP */}
         {/* A spacer of the card's height holds its place until the save lands: the card itself
             mounts only with data, and must not push the feel buttons from under the finger. */}
-        <HeroLevelBar heroXp={result ? result.heroXp : null} language={language} />
+        {/* Held for the hero's answer: the question takes the level card's slot, above the fold,
+            and no reward is drawn for a session that may be discarded. */}
+        {tooShort ? (
+          <YStack width="100%" maxW={520} items="center" gap="$3" py="$4">
+            <Text color="$text" fontSize={18} fontWeight="700">
+              {t("session.summary_too_short_title")}
+            </Text>
+            <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
+              {/* A walk is not held, it is walked. The shared line says "you held out for", the
+                  verb of a plank, which reads as faint praise after ninety seconds outdoors. */}
+              {t(
+                isOutingSession(quest)
+                  ? "session.summary_too_short_body_outing"
+                  : "session.summary_too_short_body",
+                { duration: formatDuration(durationSeconds, language) },
+              )}
+            </Text>
+            <AppButton
+              variant="outline"
+              borderColor="$error"
+              onPress={() => {
+                // Discard is the existing quit path: nothing was written, so there is nothing
+                // to undo, and the session state has to be cleared either way. Home rather than
+                // back, because back from here is the session that just ended.
+                quitSession();
+                router.replace("/");
+              }}
+            >
+              {t("session.summary_too_short_discard")}
+            </AppButton>
+          </YStack>
+        ) : (
+          <HeroLevelBar heroXp={result ? result.heroXp : null} language={language} />
+        )}
 
         {/* Feedback — above the fold and above the rewards: this answer is what steers the next
             session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}
@@ -667,37 +704,6 @@ export function VictoryView() {
             ))}
           </XStack>
         </Card>
-
-        {tooShort ? (
-          <YStack width="100%" maxW={520} items="center" gap="$3" py="$4">
-            <Text color="$text" fontSize={18} fontWeight="700">
-              {t("session.summary_too_short_title")}
-            </Text>
-            <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
-              {/* A walk is not held, it is walked. The shared line says "you held out for", the
-                  verb of a plank, which reads as faint praise after ninety seconds outdoors. */}
-              {t(
-                isOutingSession(quest)
-                  ? "session.summary_too_short_body_outing"
-                  : "session.summary_too_short_body",
-                { duration: formatDuration(durationSeconds, language) },
-              )}
-            </Text>
-            <AppButton
-              variant="outline"
-              borderColor="$error"
-              onPress={() => {
-                // Discard is the existing quit path: nothing was written, so there is nothing
-                // to undo, and the session state has to be cleared either way. Home rather than
-                // back, because back from here is the session that just ended.
-                quitSession();
-                router.replace("/");
-              }}
-            >
-              {t("session.summary_too_short_discard")}
-            </AppButton>
-          </YStack>
-        ) : null}
 
         {/* Saving / error / rewards */}
         {!result && !saveError && !tooShort && (

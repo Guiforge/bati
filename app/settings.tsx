@@ -83,7 +83,7 @@ function AvatarSection({
 
   return (
     <Card bg="$surface" p="$4" gap="$3">
-      <Text fontSize="$3" fontWeight="bold" color="$textSecondary">
+      <Text fontSize={14} fontWeight="700" letterSpacing={2} color="$textSecondary">
         {t("settings.avatar", "AVATAR")}
       </Text>
 
@@ -425,7 +425,7 @@ export default function SettingsScreen() {
 
         {/* Preferences */}
         <YStack gap="$3">
-          <Text fontSize="$3" fontWeight="bold" color="$textSecondary" px="$1">
+          <Text fontSize={14} fontWeight="700" letterSpacing={2} color="$textSecondary" px="$1">
             {t("settings.preferences", "PREFERENCES")}
           </Text>
 

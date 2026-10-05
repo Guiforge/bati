@@ -519,7 +519,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
               they meet it. */}
           {loggedHere.length > 0 && (
             <YStack gap="$2">
-              <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
+              <Text fontSize={14} fontWeight="700" letterSpacing={2} color="$textSecondary">
                 {t("exercises.your_numbers", "Your numbers").toUpperCase()}
               </Text>
               {loggedHere.map(({ type, ghost }) => (
@@ -564,7 +564,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
           {/* Muscles */}
           {exercise.muscles.length > 0 && (
             <YStack gap="$2">
-              <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
+              <Text fontSize={14} fontWeight="700" letterSpacing={2} color="$textSecondary">
                 {t("exercises.muscles", "Muscles").toUpperCase()}
               </Text>
               <XStack gap="$2" flexWrap="wrap">

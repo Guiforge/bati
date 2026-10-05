@@ -108,7 +108,13 @@ export function PausedOverlay() {
       >
         <Card width="100%" maxW={360} bg="$surface">
           <YStack gap="$3" items="center">
-            <Text fontWeight="700" fontSize={28} color="$text" style={{ textAlign: "center" }}>
+            <Text
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={28}
+              color="$text"
+              style={{ textAlign: "center" }}
+            >
               {t("session.paused_title")}
             </Text>
             <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
@@ -171,6 +177,7 @@ export function PausedOverlay() {
                 onPress={handleQuit}
                 variant="outline"
                 backgroundColor="$surface2"
+                borderColor="$error"
                 accessibilityLabel={t("session.quit_button")}
                 accessibilityRole="button"
               >

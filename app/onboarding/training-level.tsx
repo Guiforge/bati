@@ -127,7 +127,12 @@ export default function TrainingLevelStep() {
                   accessibilityLabel={t(labelKey)}
                   accessibilityState={{ selected: isSelected }}
                 >
-                  <Text color={isSelected ? "$onPrimary" : "$text"} fontSize={18} fontWeight="700">
+                  <Text
+                    fontFamily="$heading"
+                    color={isSelected ? "$onPrimary" : "$text"}
+                    fontSize={18}
+                    fontWeight="700"
+                  >
                     {t(labelKey)}
                   </Text>
                 </YStack>

@@ -340,6 +340,20 @@ describe("VictoryView, a session too short to be one", () => {
     expect(view.getByTestId("session-victory-continue")).toBeTruthy();
   });
 
+  // Decision U: a held screen says what it is. No reward is drawn for a session that may be
+  // discarded, and the question sits above the feedback card, in the level card's slot.
+  it("holds no XP card and puts the question above the feedback card", async () => {
+    const { view } = await mountWithPendingSave(null, 5);
+
+    expect(view.queryByTestId("victory-stat-row")).toBeNull();
+    expect(view.queryByTestId("victory-level-spacer")).toBeNull();
+    const tree = JSON.stringify(view.toJSON());
+    const question = tree.indexOf("session.summary_too_short_title");
+    const feedback = tree.indexOf("session.feedback_title");
+    expect(question).toBeGreaterThan(-1);
+    expect(question).toBeLessThan(feedback);
+  });
+
   it("a real session is never questioned", async () => {
     const { view } = await mountWithPendingSave();
 

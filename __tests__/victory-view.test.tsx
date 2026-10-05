@@ -407,7 +407,13 @@ describe("VictoryView kicker", () => {
  * finger that was about to press one. The card now mounts only with data, so a spacer of its
  * height holds its place until then.
  */
+const toWidth = (node: { props: { style?: unknown } }) =>
+  (StyleSheet.flatten(node.props.style as object) as { width?: string }).width;
+
 describe("VictoryView level card", () => {
+  const motion = useSettingsStore.getState().reducedMotion;
+  afterEach(() => useSettingsStore.setState({ reducedMotion: motion }));
+
   // A loading reward asserts nothing: no ellipsis glyph, and the card only mounts with its data,
   // into a spacer of its own height, so nothing moves when it arrives.
   it("is not mounted while the save is pending, and shows no ellipsis, then the real bar", async () => {
@@ -438,6 +444,32 @@ describe("VictoryView level card", () => {
     expect(after.indexOf("journal.xp_progress")).toBeLessThan(
       after.indexOf("session.feedback_hard"),
     );
+  });
+
+  // The sweep starts where the session found the hero (a crossed level starts from empty, so the
+  // sweep is the level-up) and moves after a beat; the fill mounts at that start.
+  it("mounts the fill at the start of the sweep: empty when a level was crossed", async () => {
+    useSettingsStore.setState({ reducedMotion: false });
+    // Fixture: 50 -> 150 crosses into level 2 (base 100), so the sweep starts at 0.
+    const { view, release } = await mountWithPendingSave();
+    await release();
+
+    expect(toWidth(view.getByTestId("victory-level-fill"))).toBe("0%");
+  });
+
+  it("mounts the fill at the earlier progress when the level held", async () => {
+    useSettingsStore.setState({ reducedMotion: false });
+    // Level 2 spans 100..300: 140 is 20% in, 150 is 25%.
+    const fixture = saveResult.heroXp;
+    saveResult.heroXp = { before: 140, after: 150 };
+    try {
+      const { view, release } = await mountWithPendingSave();
+      await release();
+
+      expect(toWidth(view.getByTestId("victory-level-fill"))).toBe("20%");
+    } finally {
+      saveResult.heroXp = fixture;
+    }
   });
 });
 

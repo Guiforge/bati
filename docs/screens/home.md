@@ -92,7 +92,7 @@ chip says the goal the tap runs.
 ## Visual rules
 
 - One filled button on the screen. The ways out are image tiles, the recovery banner is a tint.
-- Gold is for what progresses: XP, flame, oath rungs, adventure steps. Advice is grey.
+- Gold is for what progresses: XP (the header's figure and its bar, on a `$gold800` track), flame, oath rungs, adventure steps. Advice is grey.
 - Every block reserves its height so nothing jumps as data lands: strip 52, scene flexible with a
   320 floor, row 84 (72 under 700 dp). Blank boxes or skeletons, never spinners, and never a zero
   presented as a fact.

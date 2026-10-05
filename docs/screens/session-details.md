@@ -20,8 +20,9 @@ the adventure, and the hero starts it there.
 
 ## The quest log
 
-1. **The painting** of the quest, fading into the ground, with the title and "Yesterday at 11:58 ·
-   Hard · 3 rounds · 10 min".
+1. **The plate**: the painting of the quest (4:3 of `min(width, 520)`, 150 dp tall when the quest
+   has none) fading into the ground, a gold date kicker ("Yesterday at 11:58", in Noto Sans), the
+   title in a Récitatif, then "Hard · 3 rounds · 10 min".
 2. **A record fell**, when one did: the one raised panel of the page, with the value, what it
    beat, and the number that beats it next time (`getFallenRecords`). On a first attempt it says
    "A first record", since nothing fell.
@@ -38,7 +39,8 @@ the adventure, and the hero starts it there.
 5. **The rounds**, one line per movement: the sets in order, the target, gold when every set cleared
    it and a quiet number for the set that missed. Each line opens the movement. An outing shows its
    trace, moving time, climb and pace instead, and opens the map.
-6. Notes, then "Take this quest again".
+6. Notes, then "Take this quest again". "Remove from the journal" is an outline button with a red
+   edge (the raw red: the Journal theme remaps `$error`). The XP figure is gold.
 
 ## The kill report
 

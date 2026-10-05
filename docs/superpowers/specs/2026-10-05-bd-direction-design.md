@@ -127,6 +127,46 @@ Born from an expert audit of iteration 1 (not validated). The code is on `feat/b
 - **N. History placeholder.** The "-- ·" leaking into a Journal history row is fixed at its
   formatter.
 
+## Iteration 3 (2026-10-06, decisions O to T)
+
+Born from the expert audit of iteration 2 (not validated on one P1). The code is on
+`feat/bd-direction`.
+
+- **O. The narrative is a full-page panel.** `NarrativeModal` owns its whole ground (`$bgDark`),
+  so the screen it interrupts never shows through. The art is full-bleed at the top (4:3, its foot
+  melted into the ground), the title is a Récitatif pinned to its bottom-left edge, the story sits
+  below on ink, the confirm is the seal. Without art the Récitatif opens the page. Same words, same
+  two actions, same testIDs.
+- **P. No button outside the family.** The exercise-instructions Close is an `AppButton` primary
+  (radius `$3`), its exercise name `$heading` 700 20. Victory's "Discard" and session details'
+  "Remove from the journal" are `AppButton` outlines. Ruling C1: a destructive outline keeps the
+  outline's `$text` label and gets a red edge (`$error`; the Journal screen passes the raw
+  `rawColors.error`, because the Journal theme remaps `$error`). The `NButton` "danger" variant
+  had no caller left and is deleted.
+- **Q. A loading reward asserts nothing.** Victory's XP card reserves its height with an empty
+  value (no "..." glyphs). The level card is not mounted until its data is present; until then a
+  bare, hidden spacer of exactly its height (`LEVEL_CARD_HEIGHT`, 78 dp) holds the place, so the
+  buttons below do not move when the card arrives (ruling C1).
+- **R. XP is gold everywhere.** The Home header's XP figure and bar (`$resourceGold` on a
+  `$gold800` track), session details' XP, the "up to +N XP" chips on quest and adventure details.
+- **S. Small coherence.** The difficulty text on quest and adventure details is read from
+  `DIFFICULTY_TEXT_TOKENS` (easy `$success`, medium `$primaryText`, hard `$error`), the single map
+  in `constants/rawColors.ts` next to `DIFFICULTY_COLORS` (ruling C2); the chip stays neutral
+  (`Tag` and `Chip` take a `textColor`). Victory's progression chart: "Total mins" figure `$text`,
+  title `$heading` 700 in sentence case. The Journal tab title matches Quests and Adventures (size,
+  gutter, the `Scroll` glyph through `components/icons.ts`), the Journal body stays Inter. The
+  onboarding first-session title and subtitle share one halo, `fade(rawColors.bgDark, .8)`, radius
+  6, like "Name your village" (ruling C2).
+- **T. Engagement.** (1) One ink gauge, `InkGauge`: 10 dp, framed track, optional figure, an
+  optional damage trail. `BossHpGauge` is now a thin wrapper that feeds it `bossHpColor`; Victory's
+  level card is the same gauge in `$resourceGold` on a `$gold800` track. The level fill sweeps once
+  from where the session found the hero to where it left them (from zero when the session crossed a
+  level, so the sweep is the level-up), in the `slow` animation (900 ms timing) after a 400 ms
+  beat; reduced motion shows the end state at once (ruling C3). (2) Session details open on a
+  plate: the quest's art at 4:3 of `min(window width, 520)` (150 dp tall without art), a gold date
+  kicker in Noto Sans (the date keeps its digits in the body face), the title in a Récitatif
+  (ruling C3). The Journal's faint cartouche on that plate is accepted.
+
 ## Out of scope (follow-ups)
 
 The long tail of numeric `rounded={n}` values in feature screens; decorative emoji in error and

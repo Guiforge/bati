@@ -161,7 +161,8 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
   records `$resourceGold`, "hard" `$error`.
 - **Gold is earned, braise is done.** Every reward, record and progression figure or glyph is
   `$resourceGold` (XP gained, trophies, achievements, new-record badges, the Victory figures,
-  oath progress bars on a `$gold800` track, the village tier bar). Braise marks the action.
+  oath progress bars on a `$gold800` track, the village tier bar, Victory's level gauge). XP is gold
+  everywhere, the Home header's figure and bar (on `$gold800`) included. Braise marks the action.
 - **No violet.** `pastelPurple` is deleted; cards are `$surface` with the 1px frame, shoulder and
   mixed quests use `$bgLight`, the rest screen's campfire art sits at 0.3 opacity over `$bgDark`.
 - **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a
@@ -234,7 +235,10 @@ pressable chips (the filter rail's), quick-action tiles, inputs and dialogs,
   seal. Session CTAs are `AppButton` primaries at 64 px with a 24 px label; Done past its
   target is `$success` with an ink label and no edge. `AppButton` derives the label colour and forbids `pressStyle`, `rounded` and
   `bg` overrides.
-- Secondary/ghost: `outline`, neutral or glass treatment.
+- Secondary/ghost: `outline`, neutral or glass treatment. There is no third variant (the old
+  `NButton` "danger" is deleted): a destructive outline (Victory's Discard, session details'
+  Remove) keeps the `$text` label and takes a red `$error` edge; the Journal screen passes the raw
+  red because its theme remaps `$error`. The exercise-instructions Close is a primary.
 - Consistent `pressed`, `disabled`, and loading states. Minimum hit area 44×44.
 
 ### Cards/containers
@@ -288,11 +292,27 @@ its edge of the screen instead of sitting in a card. Used by
 > the same screen. Both comply as of 2026-08-03. A recipe documented here is a claim about the
 > code, and it is worth checking that the second user actually is one.
 
-### Boss HP gauge
+### Ink gauge
 
-[`BossHpGauge`](../../components/session/BossHpGauge.tsx): 10 dp tall, `$bgDark` track, 1.5px
-`$borderStrong` frame, fill from `bossHpColor`, the figure in `$body` tabular `$text` beside it.
-The session arena (under the boss's name) and the adventure boss panel both mount it.
+[`InkGauge`](../../components/common/InkGauge.tsx): 10 dp tall, framed track (1.5px
+`$borderStrong`), an optional figure in `$body` tabular `$text` beside it. One gauge for progress,
+lost or earned. [`BossHpGauge`](../../components/session/BossHpGauge.tsx) is its wrapper for the
+boss (fill from `bossHpColor` on `$bgDark`), mounted by the session arena and the adventure boss
+panel. Victory's level card is the same gauge in `$resourceGold` on `$gold800`, sweeping once from
+where the session found the hero to where it left them (from empty if a level was crossed): the
+`slow` animation (900 ms) after a 400 ms beat, skipped under reduced motion.
+
+### Panels of story
+
+- **The narrative** ([`NarrativeModal`](../../components/adventures/NarrativeModal.tsx)) is a page
+  of its own: opaque `$bgDark`, art full-bleed at the top (4:3, foot melted into the ground), the
+  title in a Récitatif on its bottom-left edge, the story below, the confirm the seal.
+- **Session details** open on a plate: the quest's art at 4:3 of `min(width, 520)` (150 dp tall
+  without art), a gold date kicker in `$body`, the title in a Récitatif.
+- **A loading reward asserts nothing.** Victory's XP card reserves its height with an empty value,
+  and a hidden spacer of `LEVEL_CARD_HEIGHT` holds the level card's place until its data lands.
+- **Difficulty text** comes from `DIFFICULTY_TEXT_TOKENS` (easy `$success`, medium `$primaryText`,
+  hard `$error`); `Tag` and `Chip` take a `textColor`, the chip's fill stays neutral.
 
 ### Inputs
 

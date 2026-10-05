@@ -31,6 +31,8 @@ Onboarding is the first-time setup flow. It helps a new player start quickly and
 
 - Background art can be immersive, but the copy and CTAs must stay readable.
 - The onboarding steps should feel like one flow, not three separate mini-apps.
+- Text over the art carries a soft ink halo, `fade(rawColors.bgDark, .8)`: the first-session title
+  and subtitle share one, like "Name your village".
 - Button treatment should stay consistent from presentation through village naming.
 
 ## What the user does here

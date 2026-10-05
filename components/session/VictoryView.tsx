@@ -82,9 +82,10 @@ const VILLAGER_SLOT_TOP = 12;
 const VILLAGER_SLOT_HEIGHT = 88;
 
 /**
- * The hero's own gauge, filling from where the session found it to where it left it (from empty when the session crossed a level) — the one number that makes
- * "come back tomorrow" legible, and it only ever moved on Home, outside the celebration
- * (2026-08 audit, §06-B). Same visual language as the home header: gold on a dark track.
+ * The hero's own gauge, filling from where the session found it to where it left it (from empty
+ * when the session crossed a level). It is the one number that makes "come back tomorrow" legible,
+ * and it only ever moved on Home, outside the celebration (2026-08 audit, section 06-B). Same
+ * visual language as the home header: gold on a dark track.
  */
 function HeroLevelBar({
   heroXp,

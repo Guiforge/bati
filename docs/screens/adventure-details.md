@@ -31,6 +31,10 @@ Adventure Details is the campaign hub. It shows:
 - The campaign title should sit above the utility chips.
 - The step list should read like progression, not a second dashboard.
 - The primary continue/start action should remain visually dominant.
+- The difficulty text takes its colour from `DIFFICULTY_TEXT_TOKENS` (the chip stays neutral) and
+  the "up to +N XP" chip is gold.
+- The step's narrative opens as a full-page panel: art on top, its title in a Récitatif, the story on
+  ink, the seal to confirm.
 
 ## Typical user actions
 

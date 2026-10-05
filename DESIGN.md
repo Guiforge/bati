@@ -158,7 +158,8 @@ feel immersive but remain operationally clear in the middle of a workout.
   with `$onPrimary`, a plain count or metadata the neutral default.
 - `$success` / `$warning` / `$error`: state feedback, always paired with a label or icon.
   Difficulty maps to them one-to-one (`DIFFICULTY_COLORS`): easy `$success`, medium `$primary`,
-  hard `$error`.
+  hard `$error`. Difficulty text reads its token from `DIFFICULTY_TEXT_TOKENS` (easy `$success`,
+  medium `$primaryText`, hard `$error`); the tag or chip around it stays neutral.
 - **Fills and their text.** `$primary` fills take `$onPrimary`. `$success`, `$error`, `$warning`
   and `$resourceGold` fills take `$bgDark` text (7.9, 5.8, 7.81, 10.1:1). Light text on those fills
   is banned (1.5 to 3.1:1).
@@ -184,7 +185,9 @@ feel immersive but remain operationally clear in the middle of a workout.
 - `$resourceGold`: patinated gold, **earned**: every reward, record and progression figure or
   glyph (XP gained, trophies, achievement titles and glyphs, new-record badges, the Victory
   figures, the oath strip's `$goldHairline`). Oath progress bars sit on a `$gold800` track and the
-  village tier bar is gold. Braise is *done*: it marks the action, never the prize. Only gold and
+  village tier bar is gold. XP is gold everywhere: the Home header's figure and bar (on a
+  `$gold800` track), session details, the "up to +N XP" chips on quest and adventure details,
+  Victory's level gauge. Braise is *done*: it marks the action, never the prize. Only gold and
   fire are drawn as colours; the other resources are white game-icons glyphs.
 - `$bossPhase2..4`: the boss room darkening and reddening after phase 1 on `$bgDark`.
 - `$parchment`: the phylactère's paper, a step under bone so a speech bubble never outshines the
@@ -226,10 +229,18 @@ opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
   Récitatif too. The warm-up's exercise name is `$heading` 20.
 - **Victory is a gold plate.** "QUEST COMPLETE!" is the Récitatif's kicker, in gold, and every
   reward figure is gold.
-- **The boss HP gauge** (`BossHpGauge`): 10 dp tall, `$bgDark` track, 1.5px `$borderStrong` frame,
-  fill coloured by `bossHpColor` (phase, enraged, down), the figure in `$body` tabular `$text`
-  beside it. The arena draws it under the boss's name and the adventure's boss panel draws the
-  same component, so a monster never reads two ways.
+- **One ink gauge** (`InkGauge`): 10 dp tall, framed track (1.5px `$borderStrong`), an optional
+  figure in `$body` tabular `$text` beside it. The boss's HP (`BossHpGauge`, a thin wrapper) fills
+  with `bossHpColor` (phase, enraged, down) on `$bgDark`, under the boss's name in the arena and in
+  the adventure's boss panel, so a monster never reads two ways. Victory's level card draws the
+  same gauge in `$resourceGold` on a `$gold800` track and sweeps it once, from where the session
+  found the hero to where it left them (from empty when a level was crossed), in the `slow`
+  animation (900 ms) after a 400 ms beat. Reduced motion shows the end state at once.
+- **The narrative is a panel** (`NarrativeModal`): opaque `$bgDark`, the step's art full-bleed at
+  the top (4:3, foot melted into the ground), its title in a Récitatif on the art's bottom-left
+  edge, the story below, the confirm the seal. Nothing of the screen it interrupts shows through.
+- **Session details open on a plate**: the quest's art at 4:3 of `min(width, 520)` (150 dp tall
+  without art), a gold date kicker in `$body`, the title in a Récitatif.
 - No texture overlays, no halftone, no tilted panels, no hand-lettered fonts.
 
 ### Typography
@@ -281,7 +292,10 @@ rather than rounding.
 
 ### Buttons (`AppButton`, `AppIconButton`)
 
-- Variants: `primary` (the **seal**) and `outline` (`$background`, `$text` label). `AppButton`
+- Variants: `primary` (the **seal**) and `outline` (`$background`, `$text` label). There is no
+  other button: the exercise-instructions Close is a primary, and the destructive actions
+  (Victory's Discard, session details' Remove) are outlines with a red `$error` edge and the
+  same `$text` label (the Journal screen passes the raw red, since its theme remaps `$error`). `AppButton`
   derives the label colour and forbids `pressStyle`, `rounded` and `bg` overrides.
 - Every button label is set in the title font (`$heading`, 20/700). The seal: radius `$3`, sides
   in `$borderStrong`, a 3px bottom edge in `$primaryEdge`, label in `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill colour.
@@ -307,7 +321,11 @@ rather than rounding.
 - `Chip` is interactive when it has `onPress`: 44 dp, radius `$3`, 2px border, tones `default` /
   `primary` / `success`. Static, it is radius `$1`.
 - `Tag` is non-interactive metadata: radius `$1`, dark tint (`$pastelBlue`, `$pastelGreen`) under
-  `$text`. It must never look like a button.
+  `$text`. It must never look like a button. `Tag` and `Chip` take a `textColor` token (the
+  difficulty text on quest and adventure details) without changing the chip's fill.
+- **A loading reward asserts nothing.** Victory reserves the XP card's height with an empty value
+  and holds the level card's place with a hidden spacer (`LEVEL_CARD_HEIGHT`) until the save lands:
+  no "..." glyph reads as a verdict, and the buttons below never move.
 
 ### Feedback and covers
 

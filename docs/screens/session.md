@@ -64,7 +64,12 @@ It guides you exercise-by-exercise, tracks your results, and ends with a clear c
 
 ## What happens next
 
-Completing the session leads to the post-workout result moment (victory/rewards), and your progress becomes visible in:
+Completing the session leads to the post-workout result moment (victory/rewards). While the save
+lands, the XP card keeps its height with an empty value and a hidden spacer holds the level card's
+place: a loading reward asserts nothing and nothing below it moves. The level card is an `InkGauge`
+in gold on a `$gold800` track that sweeps once from where the session found you to where it left
+you (from empty when you crossed a level; instant under reduced motion). "Discard" is an outline
+button with a red edge. Your progress becomes visible in:
 
 - **[Journal](journal.md)** (history + stats)
 - **[Village](village.md)** (growth)

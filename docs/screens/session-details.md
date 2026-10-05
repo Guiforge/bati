@@ -21,7 +21,7 @@ the adventure, and the hero starts it there.
 ## The quest log
 
 1. **The plate**: the painting of the quest (4:3 of `min(width, 520)`, 150 dp tall when the quest
-   has none) fading into the ground, a gold date kicker ("Yesterday at 11:58", in Noto Sans), the
+   has none) fading into the ground, a gold date kicker ("YESTERDAY AT 11:58", in Noto Sans, upper case), the
    title in a Récitatif, then "Hard · 3 rounds · 10 min".
 2. **A record fell**, when one did: the one raised panel of the page, with the value, what it
    beat, and the number that beats it next time (`getFallenRecords`). On a first attempt it says

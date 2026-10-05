@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { Chip } from "@/components/common/Chip";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { Bell, Clock, Pause } from "@/components/icons";
 import { SettingRow } from "@/components/settings/SettingRow";
 import { getDateTimeFormat, getWeekStart } from "@/constants/dateFormatters";
@@ -256,9 +257,9 @@ export function ReminderSection() {
 
   return (
     <YStack gap="$3" testID="settings-reminder">
-      <Text fontSize="$3" fontWeight="bold" color="$textSecondary" px="$1" mt="$2">
+      <SectionLabel px="$1" mt="$2">
         {t("reminders.section")}
-      </Text>
+      </SectionLabel>
 
       <SettingRow
         testID="settings-reminder-switch"

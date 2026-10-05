@@ -254,9 +254,7 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
         </YStack>
 
         <YStack gap="$2" flex={1}>
-          <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
-            {t("exercises.next_step", "NEXT STEP").toUpperCase()}
-          </Text>
+          <SectionLabel>{t("exercises.next_step", "NEXT STEP")}</SectionLabel>
           <Text color="$text" fontWeight="700" fontSize={18}>
             {name}
           </Text>

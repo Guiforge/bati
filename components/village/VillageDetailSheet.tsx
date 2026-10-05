@@ -8,6 +8,7 @@ import { Sheet, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { LevelPips } from "@/components/village/LevelPips";
 import {
   barEnds,
@@ -18,7 +19,7 @@ import {
   nextLine,
   questLink,
 } from "@/components/village/rows";
-import { BarEnds, Kicker, QuestLink } from "@/components/village/VillageLists";
+import { BarEnds, QuestLink } from "@/components/village/VillageLists";
 import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
@@ -364,7 +365,7 @@ function BuildingDetail({
 
       {extra?.kind === "sessions" && extra.sessions.length > 0 && (
         <YStack gap="$2">
-          <Kicker label={t("village.detail_recent_title")} />
+          <SectionLabel>{t("village.detail_recent_title")}</SectionLabel>
           {extra.sessions.map((session) => {
             const title = session.enTitle
               ? localizedTitle(
@@ -396,13 +397,13 @@ function BuildingDetail({
 
       {listed.length > 0 && (
         <YStack gap="$2">
-          <Kicker
-            label={t(
+          <SectionLabel>
+            {t(
               building.driver === "rematches"
                 ? "village.rematches_title"
                 : "village.hall_finished_title",
             )}
-          />
+          </SectionLabel>
           {listed.map((adventure) => (
             <XStack key={adventure.adventureId} items="center" gap="$3">
               {!!adventure.imagePath && (

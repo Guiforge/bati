@@ -40,16 +40,6 @@ import type { AppLanguage } from "@/stores/settings";
 /** An unbuilt building is its own shape in outline: the same silhouette, no detail, no padlock. */
 const SILHOUETTE_TINT = rawColors.muted;
 
-function Kicker({
-  label,
-  color = "$textSecondary",
-}: {
-  label: string;
-  color?: "$textSecondary" | "$resourceGold";
-}) {
-  return <SectionLabel color={color}>{label}</SectionLabel>;
-}
-
 function BuildingThumb({ building, size }: { building: VillageBuilding; size: number }) {
   const built = building.level > 0;
   return (
@@ -138,7 +128,7 @@ export function NextToRise({ building, dayOne, language, onOpen }: NextProps) {
       borderColor="$borderStrong"
       bg="$surface"
     >
-      <Kicker label={nextTitle(building, t)} />
+      <SectionLabel>{nextTitle(building, t)}</SectionLabel>
       {building ? (
         <XStack
           gap={12}
@@ -193,7 +183,7 @@ export function SinceLastQuest({ growth, buildings, language }: ChangesProps) {
   const byCode = new Map(buildings.map((b) => [b.code, b]));
   return (
     <YStack testID="village-changes" gap={2}>
-      <Kicker label={t("village.changes_title")} />
+      <SectionLabel>{t("village.changes_title")}</SectionLabel>
       {growth.map((g) => {
         const building = byCode.get(g.code);
         if (!building) return null;
@@ -242,7 +232,9 @@ export function Families({ families, risen, next, language, onOpen }: FamiliesPr
       {families.map((family) => (
         <YStack key={family.key} testID={`village-family-${family.key}`} gap={2}>
           <XStack justify="space-between" items="baseline" gap={10}>
-            <Kicker label={t(`village.family_${family.key}`, { count: family.items.length })} />
+            <SectionLabel>
+              {t(`village.family_${family.key}`, { count: family.items.length })}
+            </SectionLabel>
             <Text fontSize={11} color="$textSecondary" opacity={0.75} shrink={1}>
               {t(`village.family_${family.key}_feeds`, { count: family.items.length })}
             </Text>
@@ -370,9 +362,9 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
       bg="$surface"
     >
       <XStack justify="space-between" items="baseline" gap={10}>
-        <Kicker
-          label={t(progress.final ? "village.tier_final_kicker" : "village.tier_next_kicker")}
-        />
+        <SectionLabel>
+          {t(progress.final ? "village.tier_final_kicker" : "village.tier_next_kicker")}
+        </SectionLabel>
         <Text
           fontSize={11.5}
           fontWeight="600"
@@ -444,5 +436,3 @@ function tierFoot(
   if (!complete) return t("village.tier_final_rest");
   return openDeeds > 0 ? t("village.done_deeds", { count: openDeeds }) : null;
 }
-
-export { Kicker };

@@ -580,9 +580,9 @@ export default function SettingsScreen() {
               nothing on a build without the reminders' native half. */}
           <ReminderSection />
 
-          <Text fontSize="$3" fontWeight="bold" color="$textSecondary" px="$1" mt="$2">
+          <SectionLabel px="$1" mt="$2">
             {t("backup.section")}
-          </Text>
+          </SectionLabel>
 
           <SettingRow
             testID="settings-export-backup"

@@ -354,6 +354,19 @@ describe("VictoryView, a session too short to be one", () => {
     expect(question).toBeLessThan(feedback);
   });
 
+  it("brings the stat row and the level slot back once it is kept, and keeps them when the save lands", async () => {
+    const { view, release } = await mountWithPendingSave(null, 5);
+
+    await fireEvent.press(view.getByTestId("session-victory-keep-short"));
+    expect(view.getByTestId("victory-stat-row")).toBeTruthy();
+    expect(view.getByTestId("victory-level-spacer", { includeHiddenElements: true })).toBeTruthy();
+    expect(view.queryByText("session.summary_too_short_title")).toBeNull();
+
+    await release();
+    expect(view.getByTestId("victory-stat-row")).toBeTruthy();
+    expect(view.getByTestId("session-victory-xp")).toBeTruthy();
+  });
+
   it("a real session is never questioned", async () => {
     const { view } = await mountWithPendingSave();
 

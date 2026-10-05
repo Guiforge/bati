@@ -789,13 +789,10 @@ export function VictoryView() {
             testID="session-victory-keep-short"
             onPress={() => setKeepShort(true)}
             height={60}
-            rounded="$6"
             fullWidth={false}
             flex={1}
           >
-            <Text color="$text" fontSize={20} fontWeight="700">
-              {t("session.summary_too_short_keep")}
-            </Text>
+            {t("session.summary_too_short_keep")}
           </AppButton>
         ) : (
           <AppButton
@@ -803,13 +800,10 @@ export function VictoryView() {
             onPress={handleContinue}
             disabled={!result}
             height={60}
-            rounded="$6"
             fullWidth={false}
             flex={1}
           >
-            <Text color="$text" fontSize={20} fontWeight="700">
-              {result ? t("session.continue") : t("common.saving")}
-            </Text>
+            {result ? t("session.continue") : t("common.saving")}
           </AppButton>
         )}
       </XStack>

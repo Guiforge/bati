@@ -151,7 +151,6 @@ export default function TrainingLevelStep() {
             disabled={!selected}
             bg={selected ? "$primary" : "$surface"}
             borderWidth={0}
-            rounded="$10"
             opacity={selected ? 1 : 0.5}
           >
             <Paragraph

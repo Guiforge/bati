@@ -152,7 +152,6 @@ export default function ShareScreen() {
             disabled={holding}
             opacity={holding ? 0.6 : 1}
             height={56}
-            rounded="$6"
             icon={<Share2 size={20} color="$text" strokeWidth={2.5} />}
             onPress={() => {
               shareImage().catch((error: unknown) => reportError("share.image", error));

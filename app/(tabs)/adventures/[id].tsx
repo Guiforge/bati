@@ -689,20 +689,16 @@ export default function AdventureDetailsScreen() {
             height={60}
             bg="$primary"
             borderWidth={0}
-            rounded="$6"
-            pressStyle={{ opacity: 0.9 }}
           >
-            <Text color="$text" fontWeight="700" fontSize={22}>
-              {isStarting
-                ? t("quests.starting", "Starting…")
-                : isNextStepBossFight
-                  ? t("adventures.fight_boss")
-                  : run?.activeStep
-                    ? t("adventures.continue")
-                    : finishedCount > 0
-                      ? t("adventures.cta_replay")
-                      : t("adventures.start")}
-            </Text>
+            {isStarting
+              ? t("quests.starting", "Starting…")
+              : isNextStepBossFight
+                ? t("adventures.fight_boss")
+                : run?.activeStep
+                  ? t("adventures.continue")
+                  : finishedCount > 0
+                    ? t("adventures.cta_replay")
+                    : t("adventures.start")}
           </AppButton>
         </YStack>
       ) : null}

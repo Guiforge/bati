@@ -146,13 +146,10 @@ export default function FirstSessionStep() {
             disabled={!quest && !offerDead}
             bg="$primary"
             borderWidth={0}
-            rounded="$10"
           >
-            <Text color="$text" fontSize={17} fontWeight="700">
-              {offerDead
-                ? t("onboarding.finish", "Start my training journey")
-                : t("onboarding.first_session_start", "Start now")}
-            </Text>
+            {offerDead
+              ? t("onboarding.finish", "Start my training journey")
+              : t("onboarding.first_session_start", "Start now")}
           </AppButton>
 
           {!offerDead && (

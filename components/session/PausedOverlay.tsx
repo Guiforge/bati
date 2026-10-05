@@ -146,7 +146,6 @@ export function PausedOverlay() {
                 onPress={handleToggleSound}
                 variant="outline"
                 backgroundColor="$surface2"
-                pressStyle={{ opacity: 0.9 }}
                 accessibilityLabel={t("settings.sound")}
                 accessibilityRole="switch"
                 accessibilityState={{ checked: soundEnabled }}
@@ -160,7 +159,6 @@ export function PausedOverlay() {
                   onPress={handleRestartRound}
                   variant="outline"
                   backgroundColor="$surface2"
-                  pressStyle={{ opacity: 0.9 }}
                   accessibilityLabel={t("session.restart_round_button")}
                   accessibilityRole="button"
                 >
@@ -173,7 +171,6 @@ export function PausedOverlay() {
                 onPress={handleQuit}
                 variant="outline"
                 backgroundColor="$surface2"
-                pressStyle={{ opacity: 0.9 }}
                 accessibilityLabel={t("session.quit_button")}
                 accessibilityRole="button"
               >

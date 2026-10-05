@@ -174,7 +174,6 @@ export default function VillageSetup() {
               bg={isValidName ? "$primary" : "$surface"}
               borderColor={isValidName ? "$primary" : "$borderStrong"}
               borderWidth={0}
-              rounded="$10"
               opacity={isValidName ? 1 : 0.5}
             >
               <Paragraph

@@ -5,7 +5,8 @@ type AppButtonVariant = "primary" | "outline";
 
 type TamaguiButtonProps = ComponentProps<typeof Button>;
 
-interface AppButtonProps extends Omit<TamaguiButtonProps, "children" | "variant"> {
+interface AppButtonProps
+  extends Omit<TamaguiButtonProps, "children" | "variant" | "pressStyle" | "rounded"> {
   variant?: AppButtonVariant;
   children: ReactNode;
   marginBottom?: SpaceTokens | number;

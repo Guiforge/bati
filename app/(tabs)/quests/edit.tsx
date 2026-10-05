@@ -624,10 +624,8 @@ export default function QuestEditor() {
         style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
         onLayout={(e) => setSaveBarHeight(e.nativeEvent.layout.height)}
       >
-        <AppButton testID="quest-save" height={56} disabled={busy} onPress={save} rounded="$6">
-          <Text color="$text" fontSize={20} fontWeight="700">
-            {t("quests.editor_save", "Save quest")}
-          </Text>
+        <AppButton testID="quest-save" height={56} disabled={busy} onPress={save}>
+          {t("quests.editor_save", "Save quest")}
         </AppButton>
       </YStack>
       <ConfirmDialog

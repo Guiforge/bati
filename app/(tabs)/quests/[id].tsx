@@ -156,9 +156,7 @@ function LevelChip({
       bg={active ? colors.bg : "$surface"}
       borderColor={active ? colors.bg : "$borderStrong"}
       borderWidth={1}
-      rounded="$10"
       fontSize={14}
-      pressStyle={{ opacity: 0.9 }}
     >
       <Text color={active ? colors.text : "$text"} fontWeight="700">
         {levelLabel(value, t)}
@@ -924,7 +922,6 @@ export default function QuestDetails() {
             testID="quest-start"
             height={60}
             variant="primary"
-            pressStyle={{ opacity: 0.9 }}
             onPress={() => {
               handleStart().catch(() => {
                 // Errors already surfaced via showError inside proceedToSession
@@ -932,13 +929,10 @@ export default function QuestDetails() {
             }}
             disabled={isStarting}
             opacity={isStarting ? 0.6 : 1}
-            rounded="$6"
           >
-            <Text color="$text" fontSize={22} fontWeight="700">
-              {isStarting
-                ? t("quests.starting", "Starting…")
-                : t("quests.start_button", "Start Quest")}
-            </Text>
+            {isStarting
+              ? t("quests.starting", "Starting…")
+              : t("quests.start_button", "Start Quest")}
           </AppButton>
         </YStack>
       ) : null}

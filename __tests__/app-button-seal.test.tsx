@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import type { ReactElement } from "react";
 import { StyleSheet } from "react-native";
 import { TamaguiProvider } from "tamagui";
@@ -20,6 +20,30 @@ describe("AppButton, the seal", () => {
     expect(flat.borderBottomWidth).toBe(3);
     expect(flat.borderBottomColor).toBe(rawColors.primaryEdge);
     expect(screen.getByText("Voir la quête")).toHaveStyle({ color: rawColors.onPrimary });
+    expect(StyleSheet.flatten(screen.getByText("Voir la quête").props.style).fontFamily).toBe(
+      config.fonts.heading.face[700].normal,
+    );
+  });
+
+  it("translates on press and never changes the border width", async () => {
+    await render(themed(<AppButton testID="press">Go</AppButton>));
+    await act(() => {
+      fireEvent(screen.getByTestId("press"), "responderGrant", {
+        nativeEvent: {},
+        persist: () => {},
+      });
+    });
+    const flat = StyleSheet.flatten(screen.getByTestId("press").props.style);
+    expect(flat.borderBottomWidth).toBe(3);
+    expect(JSON.stringify(flat.transform)).toContain('"translateY":2');
+  });
+
+  it("refuses a caller's pressStyle and rounded", () => {
+    // @ts-expect-error the seal owns its press and its radius
+    const a = <AppButton pressStyle={{}}>x</AppButton>;
+    // @ts-expect-error
+    const b = <AppButton rounded="$6">x</AppButton>;
+    expect([a, b]).toHaveLength(2);
   });
 
   it("keeps the outline variant flat and bone", async () => {
@@ -44,6 +68,7 @@ describe("AppButton, the seal", () => {
       ),
     );
     const flat = StyleSheet.flatten(screen.getByTestId("del").props.style);
+    expect(flat.borderBottomWidth).not.toBe(3);
     expect(flat.borderBottomColor).not.toBe(rawColors.primaryEdge);
     expect(screen.getByText("Delete")).toHaveStyle({ color: rawColors.bgDark });
   });

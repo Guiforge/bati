@@ -111,15 +111,14 @@ export default function Presentation() {
             testID="onboarding-presentation-continue"
             variant="primary"
             onPress={() => router.push("/onboarding/village-setup")}
-            rounded="$10"
             borderWidth={0}
           >
             <XStack items="center" gap="$2">
-              <Text color="$text" fontWeight="700" fontSize={18}>
+              <Text color="$onPrimary" fontWeight="700" fontSize={18}>
                 {t("onboarding.next")}
               </Text>
 
-              <ArrowRight size={20} color="$text" strokeWidth={3} />
+              <ArrowRight size={20} color="$onPrimary" strokeWidth={3} />
             </XStack>
           </AppButton>
 

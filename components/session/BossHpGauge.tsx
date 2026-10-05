@@ -30,7 +30,7 @@ export function BossHpGauge({
       testIDPrefix={testIDPrefix}
       progress={percent / 100}
       fill={bossHpColor(percent, isEnraged, isDown)}
-      {...(trailHp === undefined ? null : { trail: getHpPercent(trailHp, maxHp) / 100 })}
+      trail={trailHp === undefined ? undefined : getHpPercent(trailHp, maxHp) / 100}
       figure={`${hp} / ${maxHp}`}
       figureLabel={`${hp} / ${maxHp} ${t("boss.hp")}`}
     />

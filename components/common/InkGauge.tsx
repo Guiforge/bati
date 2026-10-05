@@ -3,16 +3,16 @@ import { type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const GAUGE_HEIGHT = 10;
-
-type ColorToken = ColorTokens;
+const SWEEP_DELAY_MS = 400;
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 const pct = (n: number): `${number}%` => `${+(clamp01(n) * 100).toFixed(2)}%`;
 
 /**
  * The inked gauge: a 10 dp framed track with an optional figure beside it. The boss's health and
- * the hero's level card both draw it, so progress, lost or earned, reads one way. `animate` fills
- * it once from empty when it mounts; reduced motion skips every transition.
+ * the hero's level card both draw it, so progress, lost or earned, reads one way. `from` sets the
+ * fill at that point on mount, then moves it once to `progress` (a slow sweep after a beat);
+ * reduced motion skips every transition and shows `progress` at once.
  */
 export function InkGauge({
   progress,
@@ -21,28 +21,33 @@ export function InkGauge({
   figure,
   figureColor = "$text",
   figureLabel,
-  animate = false,
+  from,
   testIDPrefix,
   trail,
 }: {
   /** 0..1. */
   progress: number;
-  fill: ColorToken;
-  track?: ColorToken;
+  fill: ColorTokens;
+  track?: ColorTokens;
   figure?: string;
-  figureColor?: ColorToken;
+  figureColor?: ColorTokens;
   figureLabel?: string;
-  animate?: boolean;
+  /** 0..1. Fill starts here on mount and sweeps once to `progress`. */
+  from?: number;
   testIDPrefix: string;
   /** A second, fainter bar behind the fill (the arena's damage trail), 0..1. */
   trail?: number;
 }) {
   const reducedMotion = useReducedMotion();
-  const quick = reducedMotion ? undefined : ("quick" as const);
+  const sweeps = from !== undefined && !reducedMotion;
+  const transition = reducedMotion ? undefined : sweeps ? ("slow" as const) : ("quick" as const);
   const target = clamp01(progress);
-  // One-shot fill: mount empty, then move to the target.
-  const [shown, setShown] = useState(animate && !reducedMotion ? 0 : target);
-  useEffect(() => setShown(target), [target]);
+  const [shown, setShown] = useState(sweeps ? clamp01(from) : target);
+  useEffect(() => {
+    if (!sweeps) return setShown(target);
+    const id = setTimeout(() => setShown(target), SWEEP_DELAY_MS);
+    return () => clearTimeout(id);
+  }, [sweeps, target]);
 
   return (
     <XStack items="center" gap="$2">
@@ -65,7 +70,7 @@ export function InkGauge({
             width={pct(trail)}
             bg="$error"
             opacity={0.45}
-            transition={quick}
+            transition={transition}
           />
         )}
         <YStack
@@ -76,7 +81,7 @@ export function InkGauge({
           l={0}
           width={pct(shown)}
           bg={fill}
-          transition={quick}
+          transition={transition}
         />
       </YStack>
       {figure === undefined ? null : (

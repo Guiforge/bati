@@ -16,5 +16,10 @@
  */
 export const CONTENT_MAX_WIDTH = 520;
 
-/** Victory's level card height, shared by the card and the spacer that holds its place. */
+/**
+ * The level card's height, shared by the card and by the spacer that holds its place before the
+ * save lands. The card mounts only with its data (a loading reward asserts nothing), but it used
+ * to arrive with the save and push the feel buttons down from under the finger about to press one.
+ * ponytail: a font scale past ~1.3 grows the card beyond this and nudges once; measure if it matters.
+ */
 export const LEVEL_CARD_HEIGHT = 78;

@@ -1,5 +1,4 @@
-import { render } from "@testing-library/react-native";
-import React from "react";
+import { act, render } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { TamaguiProvider } from "tamagui";
 import { InkGauge } from "@/components/common/InkGauge";
@@ -49,24 +48,24 @@ describe("InkGauge", () => {
     expect(flat(figure.props.style).fontFamily).toBe(config.fonts.body.face[700].normal);
   });
 
-  it("mounts empty and fills once when animated, unless reduced motion is on", async () => {
-    const initial = () => {
-      const spy = jest.spyOn(React, "useState");
-      return {
-        spy,
-        first: () => spy.mock.calls.map((c: unknown[]) => c[0]).find((v) => typeof v === "number"),
-      };
-    };
-    const live = initial();
-    const root = await render(gauge({ animate: true }));
-    expect(live.first()).toBe(0);
-    expect(flat(root.getByTestId("g-fill").props.style).width).toBe("40%");
-    live.spy.mockRestore();
+  it("sweeps from `from` to progress once, after a beat", async () => {
+    jest.useFakeTimers();
+    try {
+      const root = await render(gauge({ from: 0.1 }));
+      const width = () => flat(root.getByTestId("g-fill").props.style).width;
+      expect(width()).toBe("10%");
+      await act(() => {
+        jest.advanceTimersByTime(500);
+      });
+      expect(width()).toBe("40%");
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 
+  it("shows progress at once under reduced motion", async () => {
     mockReduced = true;
-    const still = initial();
-    await render(gauge({ animate: true }));
-    expect(still.first()).toBe(0.4);
-    still.spy.mockRestore();
+    const root = await render(gauge({ from: 0.1 }));
+    expect(flat(root.getByTestId("g-fill").props.style).width).toBe("40%");
   });
 });

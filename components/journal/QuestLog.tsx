@@ -35,6 +35,7 @@ import { TraceThumb } from "@/components/journal/TraceThumb";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
 import { formatDistance, formatElevation, formatPace } from "@/constants/distanceFormat";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
 import { formatDuration } from "@/db";
 import { type CompletedSession, OUTING_COUNTS_AFTER_SECONDS } from "@/db/completed";
@@ -540,7 +541,7 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
     <YStack testID="session-details-screen">
       <ReportHero
         source={data.questImage ? getQuestAsset(data.questImage) : null}
-        height={Math.round((width * 3) / 4)}
+        height={data.questImage ? Math.round((Math.min(width, CONTENT_MAX_WIDTH) * 3) / 4) : 150}
         sessionId={session.id}
       >
         {/* Victory's plate, reopened: the date kicks the title off in the body face (a date is
@@ -554,7 +555,7 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
             fontSize={13}
             letterSpacing={2}
           >
-            {whenLabel(t, language, session.performedAt).toUpperCase()}
+            {whenLabel(t, language, session.performedAt).toLocaleUpperCase(language)}
           </Text>
           <Recitatif>{data.questTitle}</Recitatif>
         </YStack>

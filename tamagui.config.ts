@@ -103,6 +103,8 @@ const animations = createAnimations({
     mass: 1,
     stiffness: 400,
   },
+  // A gauge earning its progress: slow enough to read, once.
+  slow: { type: "timing", duration: 900 },
 });
 
 // -------------------------------------------------------------------------

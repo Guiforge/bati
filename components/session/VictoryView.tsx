@@ -82,14 +82,7 @@ const VILLAGER_SLOT_TOP = 12;
 const VILLAGER_SLOT_HEIGHT = 88;
 
 /**
- * The level card's height, shared by the card and by the spacer that holds its place before the
- * save lands. The card mounts only with its data (a loading reward asserts nothing), but it used
- * to arrive with the save and push the feel buttons down from under the finger about to press one.
- * ponytail: a font scale past ~1.3 grows the card beyond this and nudges once; measure if it matters.
- */
-
-/**
- * The hero's own gauge, filling with what this session earned — the one number that makes
+ * The hero's own gauge, filling from where the session found it to where it left it (from empty when the session crossed a level) — the one number that makes
  * "come back tomorrow" legible, and it only ever moved on Home, outside the celebration
  * (2026-08 audit, §06-B). Same visual language as the home header: gold on a dark track.
  */
@@ -102,7 +95,7 @@ function HeroLevelBar({
   language: AppLanguage;
 }) {
   return heroXp ? (
-    <FilledLevelBar after={heroXp.after} language={language} />
+    <FilledLevelBar before={heroXp.before} after={heroXp.after} language={language} />
   ) : (
     <YStack
       testID="victory-level-spacer"
@@ -115,12 +108,23 @@ function HeroLevelBar({
   );
 }
 
-function FilledLevelBar({ after, language }: { after: number; language: AppLanguage }) {
+function FilledLevelBar({
+  before,
+  after,
+  language,
+}: {
+  before: number;
+  after: number;
+  language: AppLanguage;
+}) {
   const { t } = useTranslation();
   const level = calculateLevelFromXp(after);
   const base = getXpForLevel(level);
   const span = Math.max(1, getXpForLevel(level + 1) - base);
   const progress = Math.min(1, (after - base) / span);
+  // Where the sweep starts: the hero's progress before the session, or the bottom of the level
+  // when the session crossed it, so the sweep from zero *is* the level-up.
+  const from = before >= base ? Math.min(progress, (before - base) / span) : 0;
   const title = getLevelTitle(level)[language];
 
   return (
@@ -153,7 +157,7 @@ function FilledLevelBar({ after, language }: { after: number; language: AppLangu
         progress={progress}
         fill="$resourceGold"
         track="$gold800"
-        animate
+        from={from}
       />
     </Card>
   );

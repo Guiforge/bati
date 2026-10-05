@@ -150,9 +150,10 @@ export default function ShareScreen() {
           <AppButton
             testID="share-image"
             disabled={holding}
-            opacity={holding ? 0.6 : 1}
             height={56}
-            icon={<Share2 size={20} color="$text" strokeWidth={2.5} />}
+            icon={
+              <Share2 size={20} color={holding ? "$textSecondary" : "$text"} strokeWidth={2.5} />
+            }
             onPress={() => {
               shareImage().catch((error: unknown) => reportError("share.image", error));
             }}

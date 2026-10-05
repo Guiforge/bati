@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Text, useTheme, XStack, YStack } from "tamagui";
+import { getTokens, H2, Text, useTheme, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
@@ -142,6 +142,7 @@ export default function VillageSetup() {
                   styles.input,
                   {
                     backgroundColor: theme.surface?.val as string,
+                    borderRadius: getTokens().radius.$3.val,
                     borderColor: inputBorderColor as string,
                     color: theme.text?.val as string,
                   },
@@ -187,7 +188,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 22,
     borderWidth: 2,
-    borderRadius: 7, // the `$3` of the control scale
     paddingHorizontal: 16,
     fontWeight: "600",
   },

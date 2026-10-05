@@ -183,13 +183,21 @@ describe("the reps stepper", () => {
     expect(screen.queryByText("+")).toBeNull();
   });
 
-  test("the tertiary links keep a 44 dp reach through hitSlop", async () => {
+  test("both controls are there, by label", async () => {
     await mount();
 
-    for (const id of ["session-swap-exercise", "session-skip-exercise"]) {
+    expect(screen.getByLabelText("Decrease reps by one")).toBeTruthy();
+    expect(screen.getByLabelText("Increase reps by one")).toBeTruthy();
+  });
+
+  test("the four tertiary links reach 44 dp through a vertical slop of 12 or more", async () => {
+    Object.assign(quest.exercises[0]?.exercise ?? {}, { enDescription: "Lower, then press up." });
+    await mount();
+
+    for (const id of ["session-how-to", "session-swap-exercise", "session-skip-exercise"]) {
       const slop = screen.getByTestId(id).props.hitSlop;
-      expect(slop.top).toBeGreaterThanOrEqual(12);
-      expect(slop.bottom).toBeGreaterThanOrEqual(12);
+      const vertical = typeof slop === "number" ? [slop, slop] : [slop.top, slop.bottom];
+      expect(vertical.every((v: number) => v >= 12)).toBe(true);
     }
   });
 });

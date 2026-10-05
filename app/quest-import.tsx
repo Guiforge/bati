@@ -200,8 +200,13 @@ export default function QuestImportScreen() {
             <AppButton
               testID="quest-import-confirm"
               disabled={!canImport}
-              opacity={canImport ? 1 : 0.5}
-              icon={<Download size={18} color="$white" strokeWidth={2.5} />}
+              icon={
+                <Download
+                  size={18}
+                  color={canImport ? "$white" : "$textSecondary"}
+                  strokeWidth={2.5}
+                />
+              }
               onPress={() => {
                 onImport().catch((error: unknown) => reportError("quests.import", error));
               }}

@@ -48,9 +48,6 @@ import { TimerBar } from "./TimerBar";
  */
 const DONE_GUARD_MS = 700;
 
-// 12 px text plus `py="$2"` is ~30 dp tall; this takes the touch target to 44+ without moving it.
-const LINK_HIT_SLOP = { top: 12, bottom: 12, left: 8, right: 8 };
-
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
 export function ActiveExerciseView() {
   const { t } = useTranslation();
@@ -518,7 +515,7 @@ export function ActiveExerciseView() {
                   <Pressable
                     testID="session-how-to"
                     onPress={handleShowHowTo}
-                    hitSlop={LINK_HIT_SLOP}
+                    hitSlop={12}
                     accessibilityRole="button"
                     accessibilityLabel={t("session.how_to_do_it")}
                   >
@@ -536,7 +533,7 @@ export function ActiveExerciseView() {
                     </Text>
                     <Pressable
                       testID="session-swap-exercise"
-                      hitSlop={LINK_HIT_SLOP}
+                      hitSlop={12}
                       onPress={() => {
                         selection();
                         setSwapOpen(true);
@@ -560,7 +557,7 @@ export function ActiveExerciseView() {
                     </Text>
                     <Pressable
                       testID="session-skip-exercise"
-                      hitSlop={LINK_HIT_SLOP}
+                      hitSlop={12}
                       onPress={handleSkip}
                       accessibilityRole="button"
                       accessibilityLabel={t("session.skip_exercise")}

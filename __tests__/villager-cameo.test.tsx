@@ -164,7 +164,7 @@ describe("the Village's floating villager", () => {
   });
 
   it("speaks in a bone bubble with dark ink", async () => {
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speak();
     });
@@ -172,6 +172,7 @@ describe("the Village's floating villager", () => {
     expect(bubble.backgroundColor).toBe(rawColors.text);
     const text = StyleSheet.flatten(getByTestId("villager-line").props.style);
     expect(text.color).toBe(rawColors.bgDark);
+    expect(getByText("villagers.names.farmer")).toHaveStyle({ color: rawColors.ink800 });
   });
 
   it("shows the line", async () => {
@@ -201,7 +202,7 @@ describe("the Village's floating villager", () => {
   });
 
   it("makes the zone one generous button for a screen reader, with the sentence readable", async () => {
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speakGuide(en.villagers.farmer.guide_village[0] as string);
     });
@@ -220,7 +221,7 @@ describe("the Village's floating villager", () => {
 
   // TalkBack and VoiceOver activate with a click, which calls `onPress` and never `onPressIn`.
   it("is sent away by an accessibility activation too", async () => {
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speak();
     });
@@ -311,7 +312,7 @@ describe("the Village's floating villager", () => {
   });
 
   it("does not take a first tap to finish the line: one press-in and it is gone, mid-sentence", async () => {
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speakGuide(en.villagers.farmer.guide_village[0] as string);
     });
@@ -377,7 +378,7 @@ describe("the Village's floating villager", () => {
 
   it("types a guide out, and not under reduced motion", async () => {
     const guide = en.villagers.farmer.guide_village[0] as string;
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speakGuide(guide);
     });
@@ -390,7 +391,7 @@ describe("the Village's floating villager", () => {
   it("does not type at all under reduced motion", async () => {
     useSettingsStore.setState({ reducedMotion: true });
     const guide = en.villagers.farmer.guide_village[0] as string;
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speakGuide(guide);
     });

@@ -1,4 +1,4 @@
-import { act, render } from "@testing-library/react-native";
+import { act, render, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -72,10 +72,17 @@ describe("VillagerLine", () => {
     await act(() => {
       speak("rest", REST_LINE);
     });
-    const bubble = StyleSheet.flatten(getByTestId("villager-line-block").props.style);
+    const bubble = StyleSheet.flatten(getByTestId("villager-bubble").props.style);
     expect(bubble.backgroundColor).toBe(rawColors.text);
     const text = StyleSheet.flatten(getByTestId("villager-line").props.style);
     expect(text.color).toBe(rawColors.bgDark);
+    // The face is the bubble's sibling, so the tail can point at it from outside.
+    expect(
+      within(getByTestId("villager-bubble")).queryByTestId("villager-face", {
+        includeHiddenElements: true,
+      }),
+    ).toBeNull();
+    expect(getByTestId("villager-face", { includeHiddenElements: true })).toBeTruthy();
   });
 
   it("shows the line and carries nothing a touch could land on", async () => {

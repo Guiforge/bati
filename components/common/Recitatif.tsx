@@ -6,7 +6,15 @@ import { Text, YStack } from "tamagui";
  * art, instead of white letters on a gradient. Legible on any illustration, and the image stays
  * whole. The caller positions it (absolute, at the edge it wants); this only draws the box.
  */
-export function Recitatif({ children, testID }: { children: ReactNode; testID?: string }) {
+export function Recitatif({
+  children,
+  testID,
+  numberOfLines,
+}: {
+  children: ReactNode;
+  testID?: string;
+  numberOfLines?: number;
+}) {
   return (
     <YStack
       testID={testID}
@@ -20,6 +28,7 @@ export function Recitatif({ children, testID }: { children: ReactNode; testID?: 
     >
       <Text
         accessibilityRole="header"
+        numberOfLines={numberOfLines}
         fontFamily="$heading"
         fontWeight="700"
         fontSize="$3"

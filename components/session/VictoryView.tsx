@@ -670,7 +670,12 @@ export function VictoryView() {
                 accessibilityRole="button"
               >
                 <YStack items="center" gap="$1">
-                  <GameIcon name={glyph} size={22} color={feedback === value ? accent : "$text"} />
+                  <GameIcon
+                    testID={`feedback-glyph-${value}`}
+                    name={glyph}
+                    size={22}
+                    color={feedback === value ? accent : "$text"}
+                  />
                   <Text
                     color="$text"
                     fontSize={12}

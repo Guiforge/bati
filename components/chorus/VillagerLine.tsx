@@ -40,26 +40,10 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
       accessibilityLabel={`${t(`villagers.names.${speaking.villager}`)}. ${speaking.line}`}
       gap="$2"
       items="center"
-      // A bone bubble, in the banner and in the flow alike. The tail points at the face.
-      bg="$text"
-      rounded="$1"
-      p="$2"
     >
-      <View
-        position="absolute"
-        l={-8}
-        t={18}
-        width={0}
-        height={0}
-        borderTopWidth={7}
-        borderBottomWidth={7}
-        borderRightWidth={9}
-        borderTopColor="transparent"
-        borderBottomColor="transparent"
-        borderRightColor="$text"
-      />
       {/* The face, not the figure: at this size a full body is a smudge. */}
       <Image
+        testID="villager-face"
         source={getVillagerAsset(speaking.villager, speaking.pose)}
         style={{ width: 44, height: 44, borderRadius: 22 }}
         contentFit="cover"
@@ -67,7 +51,22 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       />
-      <YStack flex={1} minW={0}>
+      {/* A bone bubble beside the face, in the banner and in the flow alike. Its tail sits in the
+          8 dp gap and points at the face, so the slot's overflow never clips it. */}
+      <YStack testID="villager-bubble" flex={1} minW={0} bg="$text" rounded="$1" p="$2">
+        <View
+          position="absolute"
+          l={-8}
+          t={14}
+          width={0}
+          height={0}
+          borderTopWidth={7}
+          borderBottomWidth={7}
+          borderRightWidth={8}
+          borderTopColor="transparent"
+          borderBottomColor="transparent"
+          borderRightColor="$text"
+        />
         {/* The speaker is the cue that this is speech; the line itself is regular weight, so it
             does not read as the screen's own instruction. */}
         <Text fontSize={12} fontWeight="700" color="$ink800" accessible={false}>

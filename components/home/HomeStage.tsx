@@ -17,8 +17,8 @@ import { useStartQuest } from "./useStartQuest";
 
 // The floor under which a scene stops being one. At 360x640 the strip, the quick actions and the
 // tab bar leave it about 390, and a recovery card above it can take much of that: below this the
-// column scrolls rather than crushing the title into the button. What it has to hold: two title
-// lines, meta, reason, a 56 button, the rest line, the oath strip, and some art above them.
+// column scrolls rather than crushing the title into the button. What it has to hold: the
+// title's récitatif and kicker column over the art (they no longer take flow height), meta, reason, a 56 button, the rest line, the oath strip, and some art above them.
 const STAGE_MIN_HEIGHT = 320;
 
 /** The stage is always a scene. With nothing running, the on-ramp route's art stands in. */
@@ -121,10 +121,6 @@ export function HomeStage() {
           accessibilityRole="button"
           accessibilityLabel={title}
         >
-          {/* The title is a récitatif pinned top-left of the art, not letters on the gradient. */}
-          <YStack position="absolute" t="$3" l="$3" r="$3">
-            <Recitatif>{title}</Recitatif>
-          </YStack>
           <YStack px="$4" gap="$1.5">
             {/* What the session is made of, then why it is the one being offered. */}
             {scene?.meta ? (
@@ -214,27 +210,28 @@ export function HomeStage() {
 
       {/* Why this scene, when it is not the usual one: a first day, an adventure under way. Last,
           so it paints over the art, and deaf to touch, so a tap on it lands on the scene. */}
-      {scene?.kicker ? (
-        <XStack
-          position="absolute"
-          t="$3"
-          l="$4"
-          height={26}
-          px="$2.5"
-          gap="$1.5"
-          items="center"
-          rounded={13}
-          bg="$glassBg"
-          borderWidth={1}
-          borderColor="$glassBorder"
-          pointerEvents="none"
-        >
-          <Sparkles size={11} color="$primaryText" />
-          <Text fontSize={10} fontWeight="700" letterSpacing={1.2} color="$text">
-            {scene.kicker.toUpperCase()}
-          </Text>
-        </XStack>
-      ) : null}
+      {/* One column for the kicker and the title's récitatif, so they stack and cannot overlap. */}
+      <YStack position="absolute" t="$3" l="$4" r="$4" gap="$2" pointerEvents="none">
+        {scene?.kicker ? (
+          <XStack
+            self="flex-start"
+            height={26}
+            px="$2.5"
+            gap="$1.5"
+            items="center"
+            rounded={13}
+            bg="$glassBg"
+            borderWidth={1}
+            borderColor="$glassBorder"
+          >
+            <Sparkles size={11} color="$primaryText" />
+            <Text fontSize={10} fontWeight="700" letterSpacing={1.2} color="$text">
+              {scene.kicker.toUpperCase()}
+            </Text>
+          </XStack>
+        ) : null}
+        <Recitatif numberOfLines={2}>{title}</Recitatif>
+      </YStack>
     </YStack>
   );
 }

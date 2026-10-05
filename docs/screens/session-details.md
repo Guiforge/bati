@@ -22,14 +22,15 @@ the adventure, and the hero starts it there.
 
 1. **The plate**: the painting of the quest (4:3 of `min(width, 520)`, 150 dp tall when the quest
    has none) fading into the ground, a gold date kicker ("YESTERDAY AT 11:58", in Noto Sans, upper case), the
-   title in a Récitatif, then "Hard · 3 rounds · 10 min".
+   title in a Récitatif, then "Hard · 3 rounds · 10 min". Without a painting the plate is a
+   framed `$surface` panel (1 px `borderStrong`) with breathing room above the kicker.
 2. **A record fell**, when one did: the one raised panel of the page, with the value, what it
    beat, and the number that beats it next time (`getFallenRecords`). On a first attempt it says
    "A first record", since nothing fell.
 3. **Where it sits**: this run's place among every run of the quest, by reps, or among every
    outing, by ground, with all the runs drawn as bars (`getQuestStanding`), the best with its date,
    and, below the best, how far under it this run is. Absent on a first run.
-4. **What it moved**: the XP (with the level bar, on the latest session only, since the level is
+4. **What it moved**: the XP (in gold, with the gold `InkGauge` level bar, on the latest session only, since the level is
    today's), the reps sent to the village (with the hold rule, "holds at 1 per 3 s", when the
    session had a hold), the muscle whose thirty-day share moved most
    (`getMuscleShift`), and the rung its movements are climbing (`getSessionRung`). Once that rung is earned and it

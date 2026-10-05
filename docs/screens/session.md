@@ -69,7 +69,11 @@ lands, the XP card keeps its height with an empty value and a hidden spacer hold
 place: a loading reward asserts nothing and nothing below it moves. The level card is an `InkGauge`
 in gold on a `$gold800` track that sweeps once from where the session found you to where it left
 you (from empty when you crossed a level; instant under reduced motion). "Discard" is an outline
-button with a red edge. Your progress becomes visible in:
+button with a red edge. A session under two minutes is held: the "That was a short one" block
+(Keep it, Discard) takes the level card's slot above the fold and the whole stat row and the level
+card are hidden until you keep it. The chart of past sessions fits its card, centres each date under
+its bar and carries an easy / medium / hard legend. The pause dialog's title is "Session paused" in
+the title font and its actions are sentence case, "Quit quest" an outline with the red edge. Your progress becomes visible in:
 
 - **[Journal](journal.md)** (history + stats)
 - **[Village](village.md)** (growth)

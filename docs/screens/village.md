@@ -157,7 +157,10 @@ no lean, only the card. The weakest placements: tier 8 (`tent` on a sail, `farm`
 boat), tier 10 (`dragon_lair` on the rock face), tier 12 (the starters on unnamed spires).
 
 The painting parallaxes and leans in inside one `Animated.View`; the scrims and the title do not
-move. The status-bar scrim pinned outside the scroll (`village-status-scrim`) is invisible at rest,
+move. The detail sheet's handle is a bar inside the frame (`village-detail-handle`), not
+`Sheet.Handle`, which floats above the frame's edge over the dimmed list. Its section headers
+("next to build", recent, and the rest) are the shared `SectionLabel` (12/700, 1.5 tracking, ash).
+The status-bar scrim pinned outside the scroll (`village-status-scrim`) is invisible at rest,
 so the painting runs full-bleed under the clock, and fades in over the first `insets.top + 48` dp
 of scroll, the distance the painting's own top scrim takes to leave: the clock always has one of
 the two behind it. Drawn always, it was an opaque band across the top of the painting. Ambient

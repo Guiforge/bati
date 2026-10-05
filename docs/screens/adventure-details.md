@@ -33,6 +33,8 @@ Adventure Details is the campaign hub. It shows:
 - The primary continue/start action should remain visually dominant.
 - The difficulty text takes its colour from `DIFFICULTY_TEXT_TOKENS` (the chip stays neutral) and
   the "up to +N XP" chip is gold.
+- A `StatusBand` (ink, status-bar height, never touchable) keeps scrolled steps from showing
+  through under the clock.
 - The step's narrative opens as a full-page panel: art on top, its title in a Récitatif, the story on
   ink, the seal to confirm.
 

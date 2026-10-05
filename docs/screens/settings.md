@@ -24,6 +24,8 @@ Settings is where you personalize the experience.
 - Settings rows should feel like a tidy preference panel.
 - The avatar picker should stay readable and predictable.
 - Secondary values should support, not compete with, the labels.
+- Section headers (Avatar, Preferences, Backup, Reminder) are the shared `SectionLabel`: 12/700,
+  1.5 tracking, ash, upper case.
 
 ## Typical user actions
 

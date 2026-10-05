@@ -167,6 +167,45 @@ Born from the expert audit of iteration 2 (not validated on one P1). The code is
   kicker in Noto Sans (the date keeps its digits in the body face), the title in a Récitatif
   (ruling C3). The Journal's faint cartouche on that plate is accepted.
 
+## Iteration 4 (2026-10-06, decisions U to AA)
+
+Born from the expert audit of iteration 3 (validated, 8/8/8/8, no P1): its two P2 and the P3 that
+were coherence or craft defects. The code is on `feat/bd-direction`.
+
+- **U. A held state says what it is.** A session under two minutes waits on "Keep it". Victory
+  then renders the short-session block (title, body, Keep it, Discard) above the fold in the level
+  card's slot, and no reward is drawn: the whole stat row (Time and XP) is hidden, since a lone
+  half-width Time card read worse than none (ruling). Keeping the session brings the row and the
+  card back. The 78 dp spacer stays only for the in-flight save. Testids and handlers unchanged.
+- **V. No emoji in the chrome.** `FlameFlicker` draws the game-icons `flame` through `GameIcon`,
+  `$primaryText` when animated (streak alive), `$muted` otherwise. Flicker, gusts and sizes are
+  unchanged. The widget keeps its emoji.
+- **W. Dialog and choice titles in `$heading`:** "Session paused", the onboarding level choices.
+- **X. Every destructive outline has the red edge.** "Quit quest" in the pause dialog is treated
+  like Discard; the pause actions are sentence case ("Restart round", "Quit quest") in both
+  locales.
+- **Y. One label recipe.** The plan quoted 14/700, 2 px tracking, which matched no label that
+  existed (Quick actions was 10/1.8, the village's 10.5/600) and would have left three inline
+  copies. Ruling: one `SectionLabel` component, 12/700, `letterSpacing` 1.5, `$textSecondary`,
+  upper case in the component. Used by Quick actions, the village lists and detail sheet, Settings
+  (Avatar, Preferences, Backup, Reminder) and the exercise detail (Your numbers, Muscles, Next
+  step). The size changes on Quick actions and the village are the point of the ruling. Kickers
+  that carry a state or a date keep their own styles.
+- **Z. One XP colour, one gauge, in the Journal too.** The Journal level card and session details'
+  XP line use `InkGauge` (gold on `$gold800`), the Journal's XP caption is gold Inter (no Noto
+  figure: the Journal keeps Inter), and a history row's "+N XP" is gold. `InkGauge` gained an
+  optional `frame` colour; the Journal passes `rawColors.borderStrong` because its theme folds
+  `$borderStrong` into the surface and the track's outline vanished.
+- **AA. Craft.** The no-art session plate is a `$surface` panel with a 1 px
+  `rawColors.borderStrong` frame (raw for the same theme reason) and `$4` above the kicker. The
+  Victory chart fits its card (plot = card interior minus the Y labels, bars in equal slots, x
+  labels centred under their bars, every other one on a long history) and has a three-swatch
+  difficulty legend. The Village sheet's handle sits inside the frame. A new `StatusBand` (ink,
+  `insets.top`, `pointerEvents` none) replaces four hand-rolled bands on quest detail, the quest
+  editor, adventure steps and exercise detail.
+
+Out of scope, noted: meta-row chip treatment, onboarding cloud contrast, the sticky Journal bubble.
+
 ## Out of scope (follow-ups)
 
 The long tail of numeric `rounded={n}` values in feature screens; decorative emoji in error and

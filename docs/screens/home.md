@@ -67,6 +67,10 @@ A kicker chip names the unusual cases: "Day one", "Adventure". Which branch fire
 
 ## Quick actions
 
+The section's header is the shared `SectionLabel` (12/700, 1.5 tracking, ash), the same label
+Settings, the exercise detail and the village lists use. The streak flame in the status strip is
+the game-icons `flame` glyph, `$primaryText` while the streak is alive and `$muted` once out.
+
 - **A way out starts on one tap**, at `medium`, with the goal it is about to run written on the
   tile. The location preamble and the refusal notice speak above the row, one at a time.
 - **The goal chip, or a long press**, opens `OutingGoalSheet` and saves the pick through

@@ -32,6 +32,9 @@ Exercise Details explains a single movement — and, when the movement sits on o
   the wall dates one: the earliest session that reached the standing best. The two halves wrap
   as wholes, so a long record ("Record 1,000 reps") takes its date down with it instead of
   leaving the date alone on the next line.
+- **Section labels**: "Your numbers", "Muscles" and "Next step" are the shared `SectionLabel`
+  (12/700, 1.5 tracking, ash, upper case). A `StatusBand` sits under the clock while the page
+  scrolls.
 - **Muscle tags**: the muscles the movement trains.
 - **The path** — its name, a segment bar, and the rung the hero stands on. Tapping opens that
   rung.

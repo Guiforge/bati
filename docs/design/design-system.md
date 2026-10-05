@@ -57,10 +57,10 @@ typography:
     lineHeight: "32px"
   label:
     fontFamily: "NotoSans, system-ui, sans-serif"
-    fontSize: "14px"
+    fontSize: "12px"
     fontWeight: 700
-    lineHeight: "20px"
-    letterSpacing: "2px"
+    lineHeight: "16px"
+    letterSpacing: "1.5px"
   body:
     fontFamily: "NotoSans, system-ui, sans-serif"
     fontSize: "16px"
@@ -179,6 +179,8 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
   and `$resourceGold` fills take `$bgDark`. Light text on those is banned (1.5 to 3.1:1).
 - **One source per value.** No rgba literal outside `constants/rawColors.ts`; a gradient or text
   shadow that needs a translucent token calls `fade(token, alpha)`.
+- **The streak flame is a glyph.** `FlameFlicker` draws the game-icons `flame` through `GameIcon`,
+  `$primaryText` while the streak is alive, `$muted` once out; the widget keeps its emoji.
 - **No decorative emoji** where this direction applies (end-of-session feedback, quest and
   adventure cover fallbacks): use `GameIcon` glyphs. No texture overlays, halftone, tilted
   panels or hand-lettered fonts.
@@ -217,7 +219,11 @@ decision record is
   tabular, `$text`; overtime is `$success`, the one state colour. Session progress bars stay
   braise.
 - Body and utility reading: `NotoSans`.
-- Wide tracking (2px) belongs to short labels only, never body text.
+- Wide tracking belongs to short labels only, never body text. There is one section-label recipe,
+  [`SectionLabel`](../../components/common/SectionLabel.tsx): 12/700, 1.5px tracking,
+  `$textSecondary`, upper case in the hero's language (the component does it). Settings, the
+  exercise detail, Quick actions and the village lists use it; kickers that carry a state or a date
+  (Victory's gold line, session phases) are their own thing.
 
 ### Radius
 
@@ -236,9 +242,11 @@ pressable chips (the filter rail's), quick-action tiles, inputs and dialogs,
   target is `$success` with an ink label and no edge. `AppButton` derives the label colour and forbids `pressStyle`, `rounded` and
   `bg` overrides.
 - Secondary/ghost: `outline`, neutral or glass treatment. There is no third variant (the old
-  `NButton` "danger" is deleted): a destructive outline (Victory's Discard, session details'
+  `NButton` "danger" is deleted): a destructive outline (Victory's Discard, the pause dialog's "Quit quest", session details'
   Remove) keeps the `$text` label and takes a red `$error` edge; the Journal screen passes the raw
   red because its theme remaps `$error`. The exercise-instructions Close is a primary.
+- Pause actions are sentence case ("Restart round", "Quit quest") in both languages; the pause
+  title ("Session paused") and the onboarding level choices are `$heading`.
 - Consistent `pressed`, `disabled`, and loading states. Minimum hit area 44×44.
 
 ### Cards/containers
@@ -300,7 +308,10 @@ lost or earned. [`BossHpGauge`](../../components/session/BossHpGauge.tsx) is its
 boss (fill from `bossHpColor` on `$bgDark`), mounted by the session arena and the adventure boss
 panel. Victory's level card is the same gauge in `$resourceGold` on `$gold800`, sweeping once from
 where the session found the hero to where it left them (from empty if a level was crossed): the
-`slow` animation (900 ms) after a 400 ms beat, skipped under reduced motion.
+`slow` animation (900 ms) after a 400 ms beat, skipped under reduced motion. The Journal's level card and session details' XP line are the same
+gauge (gold, `$gold800`) with `frame={rawColors.borderStrong}`, an optional prop (default
+`$borderStrong`) because the Journal theme folds that token into its surface and would hide the
+outline. The Journal's XP caption is gold Inter, never ash, and a history row's "+N XP" is gold.
 
 ### Panels of story
 
@@ -311,6 +322,18 @@ where the session found the hero to where it left them (from empty if a level wa
   without art), a gold date kicker in `$body`, the title in a Récitatif.
 - **A loading reward asserts nothing.** Victory's XP card reserves its height with an empty value,
   and a hidden spacer of `LEVEL_CARD_HEIGHT` holds the level card's place until its data lands.
+- **A held state says what it is.** Under two minutes, Victory shows the short-session block
+  (title, body, Keep it, Discard) in the level card's slot and hides the whole stat row and the
+  level card until the hero keeps the session.
+- **The Victory chart** fits its card (plot = interior minus the Y labels), centres each x label
+  under its bar without truncating it, and carries a three-swatch difficulty legend
+  (`DIFFICULTY_COLORS`).
+- **The no-art plate** is a `$surface` panel with a 1px `rawColors.borderStrong` frame.
+- **`StatusBand`** is an ink band (`fade(bgDark, .92)`, `insets.top`, never touchable) over screens
+  that scroll with no art behind the status bar: quest detail, quest editor, adventure steps,
+  exercise detail.
+- **The Village sheet's handle** is a bar inside the frame, not `Sheet.Handle`, which floats over
+  the dimmed list.
 - **Difficulty text** comes from `DIFFICULTY_TEXT_TOKENS` (easy `$success`, medium `$primaryText`,
   hard `$error`); `Tag` and `Chip` take a `textColor`, the chip's fill stays neutral.
 

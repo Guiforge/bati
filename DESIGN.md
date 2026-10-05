@@ -58,10 +58,10 @@ typography:
     lineHeight: "32px"
   label:
     fontFamily: "NotoSans, system-ui, sans-serif"
-    fontSize: "14px"
+    fontSize: "12px"
     fontWeight: 700
-    lineHeight: "20px"
-    letterSpacing: "2px"
+    lineHeight: "16px"
+    letterSpacing: "1.5px"
   body:
     fontFamily: "NotoSans, system-ui, sans-serif"
     fontSize: "16px"
@@ -187,7 +187,8 @@ feel immersive but remain operationally clear in the middle of a workout.
   figures, the oath strip's `$goldHairline`). Oath progress bars sit on a `$gold800` track and the
   village tier bar is gold. XP is gold everywhere: the Home header's figure and bar (on a
   `$gold800` track), session details, the "up to +N XP" chips on quest and adventure details,
-  Victory's level gauge. Braise is *done*: it marks the action, never the prize. Only gold and
+  Victory's level gauge, the Journal's level card (figure and gauge) and the "+N XP" segment of a
+  history row. The Journal's XP caption is gold Inter, never ash. Braise is *done*: it marks the action, never the prize. Only gold and
   fire are drawn as colours; the other resources are white game-icons glyphs.
 - `$bossPhase2..4`: the boss room darkening and reddening after phase 1 on `$bgDark`.
 - `$parchment`: the phylactère's paper, a step under bone so a speech bubble never outshines the
@@ -235,7 +236,43 @@ opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
   the adventure's boss panel, so a monster never reads two ways. Victory's level card draws the
   same gauge in `$resourceGold` on a `$gold800` track and sweeps it once, from where the session
   found the hero to where it left them (from empty when a level was crossed), in the `slow`
-  animation (900 ms) after a 400 ms beat. Reduced motion shows the end state at once.
+  animation (900 ms) after a 400 ms beat. Reduced motion shows the end state at once. The Journal's
+  level card and the XP line of session details draw it too, gold on `$gold800`, and pass
+  `frame={rawColors.borderStrong}`: the Journal theme folds `$borderStrong` into its surface, which
+  would hide the track's outline (`frame` defaults to `$borderStrong`).
+- **One section label** (`SectionLabel`): 12/700, `letterSpacing` 1.5, `$textSecondary`, upper case
+  in the hero's language (the component uppercases, callers pass sentence case). Quick actions,
+  the village's lists and detail sheet ("next to build", and the reward's gold kicker through its
+  `color`), Settings (Avatar, Preferences, Backup, Reminder) and the exercise detail ("Your
+  numbers", "Muscles", "Next step") all use it; there is no second recipe. Kickers that
+  carry a state or a date (Victory's gold line, the session phase labels, the Journal's
+  `NKicker`) keep their own styles on purpose.
+- **No emoji in the chrome.** The streak flame (`FlameFlicker`, Home header and village) is the
+  game-icons `flame` glyph through `GameIcon`: `$primaryText` while the streak is alive and
+  animating, `$muted` once it is out. The flicker, the four gusts and the sizes are unchanged. The
+  home screen widget keeps its emoji (out of scope).
+- **A held state says what it is.** A session under two minutes waits on "Keep it": Victory then
+  shows the short-session block (title, body, Keep it, Discard) in the level card's slot, above
+  the fold, and hides the whole stat row (Time and XP) and the level card: a lone half-width Time
+  card read worse, and no reward is drawn for a session that may be discarded. Keeping it brings
+  the row and the card back. The 78 dp spacer remains only for the in-flight save.
+- **Dialog titles are `$heading`.** "Session paused" and the onboarding level choices
+  (Beginner, Regular, Advanced) set their titles like the quest detail's difficulty choices. The
+  pause actions are sentence case ("Restart round", "Quit quest") and "Quit quest" is an outline
+  with the red `$error` edge, like Discard.
+- **The Victory chart keeps inside its card.** The plot is the card's interior minus the Y labels;
+  the bars share it in equal slots (a bar and its gap), each x label is centred under its bar and
+  never truncated (a label every other bar when the history is long), and a three-swatch legend
+  (easy, medium, hard, in `DIFFICULTY_COLORS`) says what the fills mean.
+- **The no-art plate is framed.** A session-details plate with no painting is a `$surface` panel
+  with a 1 px `rawColors.borderStrong` frame and `$4` of breathing room above the kicker, matching
+  the Journal's blocks.
+- **A status band under the clock.** `StatusBand` is an ink band (`fade(bgDark, .92)`) of
+  `insets.top`, never touchable, over screens that scroll with no art behind the status bar: quest
+  detail, quest editor, adventure steps and exercise detail. A screen whose art runs under the bar
+  (the village, which has its own scrim) does not take one.
+- **The Village sheet's handle is inside its frame**: a 40 x 4 bar at `$2` from the top, since
+  `Sheet.Handle` floats above the edge, over the dimmed list.
 - **The narrative is a panel** (`NarrativeModal`): opaque `$bgDark`, the step's art full-bleed at
   the top (4:3, foot melted into the ground), its title in a Récitatif on the art's bottom-left
   edge, the story below, the confirm the seal. Nothing of the screen it interrupts shows through.

@@ -216,7 +216,7 @@ shipped exactly one mobility quest. See [quests.md](quests.md).
 │    ⚔️ QUEST COMPLETE! ⚔️    │
 ├─────────────────────────────┤
 │  +150 XP   Level 5 ████░░   │
-│  🔥 12-day flame            │
+│  12-day flame               │
 │                             │
 │  🏰 The village grows!      │
 │  (forge silhouette revealed)│

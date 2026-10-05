@@ -190,7 +190,6 @@ function AdventureCard({
   return (
     <YStack px="$5">
       <Card
-        flat
         testID="adventures-adventure-card"
         bg={row.tokens.bg}
         p="$0"

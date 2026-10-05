@@ -177,7 +177,7 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
         exitStyle={{ opacity: 0 }}
       />
       <Sheet.Handle bg="$borderStrong" />
-      <Sheet.Frame bg="$surface">
+      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
         <YStack testID="village-detail" px="$4" pt="$4" pb={bottomInset + 16} gap="$4">
           {shown?.kind === "building" ? (
             <BuildingDetail

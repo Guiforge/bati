@@ -68,7 +68,7 @@ export function FormSheet({ open, title, onClose, children }: Props) {
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
-      <Sheet.Frame bg="$surface">
+      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
         <Sheet.ScrollView keyboardShouldPersistTaps="handled">
           <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$3">
             <XStack items="center" justify="space-between" gap="$3">

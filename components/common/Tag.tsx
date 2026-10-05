@@ -30,7 +30,7 @@ export function Tag({ label, icon, tone = "default", ...props }: TagProps) {
       // Intentionally NOT pill-like (non-clickable metadata).
       // Keep it flatter and less "buttony" than Chip.
       opacity={0.92}
-      rounded="$3"
+      rounded="$1"
       px="$2"
       py="$1"
       {...props}

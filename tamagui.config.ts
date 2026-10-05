@@ -123,7 +123,7 @@ const config = createTamagui({
   tokens,
   // Every Input, so a field never shows the platform's default grey: next to typed text it read as
   // a filled name and the quest editor refused to save it.
-  defaultProps: { Input: { placeholderTextColor: "$textSecondary" } },
+  defaultProps: { Input: { placeholderTextColor: "$textSecondary", rounded: "$3" } },
   fonts: {
     heading: headingFont,
     body: bodyFont,

@@ -113,7 +113,7 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
     .join(" · ");
 
   return (
-    <Card flat testID="journal-session-card" onPress={onPress}>
+    <Card testID="journal-session-card" onPress={onPress}>
       <XStack gap="$3" items="center">
         {/* Icon */}
         {/* 64, not 50.

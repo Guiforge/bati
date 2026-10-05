@@ -251,14 +251,7 @@ function QuestRow({
 
   return (
     <YStack px="$5">
-      <Card
-        flat
-        testID="quests-quest-card"
-        bg="$surface"
-        p="$0"
-        overflow="hidden"
-        onPress={handlePress}
-      >
+      <Card testID="quests-quest-card" bg="$surface" p="$0" overflow="hidden" onPress={handlePress}>
         {/* Cover banner — same card family as the adventures gallery. */}
         <YStack height={140}>
           {meta.cover ? (

@@ -92,7 +92,6 @@ export function ExpeditionSummary({
           across both screens. Secondary by design: Continue is this screen's only primary. */}
       {sessionUuid ? (
         <Card
-          flat
           bg="$surface2"
           testID="victory-expedition-recap"
           onPress={() => router.push(`/recap?session=${encodeURIComponent(sessionUuid)}` as never)}

@@ -14,6 +14,8 @@ interface AppButtonProps extends Omit<TamaguiButtonProps, "children" | "variant"
   fullWidth?: boolean;
 }
 
+const LIGHT_FILLS: ColorTokens[] = ["$success", "$error", "$warning", "$resourceGold"];
+
 export function AppButton({
   variant = "primary",
   children,
@@ -29,7 +31,15 @@ export function AppButton({
     return "$primary";
   };
 
-  const getColor = (): ColorTokens => "$text";
+  // The label follows its fill (spec rule 1): onPrimary on the braise, bone on the outline,
+  // and ink on the light signal fills, where a pale label measures 3:1.
+  const onLightFill = backgroundColor !== undefined && LIGHT_FILLS.includes(backgroundColor);
+  const getColor = (): ColorTokens => {
+    if (onLightFill) return "$bgDark";
+    return variant === "outline" ? "$text" : "$onPrimary";
+  };
+  // The seal: a bottom edge on the braise only. A braise edge under red would be wrong.
+  const seal = variant === "primary" && !backgroundColor;
 
   return (
     <Button
@@ -46,12 +56,19 @@ export function AppButton({
       minH={44}
       width={fullWidth ? "100%" : undefined}
       borderWidth={1}
-      rounded="$8"
+      rounded="$3"
       borderColor="$borderStrong"
+      fontFamily="$heading"
       fontWeight="700"
       fontSize={20}
-      transition="quick"
-      pressStyle={{ opacity: 0.9, scale: 0.98 }}
+      // A translate, never a border-width change, so nothing below the button moves.
+      {...(seal
+        ? {
+            borderBottomWidth: 3,
+            borderBottomColor: "$primaryEdge",
+            pressStyle: { y: 2, borderBottomColor: "$primary", opacity: 0.95 },
+          }
+        : { transition: "quick", pressStyle: { opacity: 0.9, scale: 0.98 } })}
       {...buttonProps}
     >
       {children}

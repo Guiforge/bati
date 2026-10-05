@@ -122,7 +122,7 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, onPick }: Prop
       />
       {/* No handle, for the same reason the picker has none: with the drag off it would promise
           a gesture that answers nothing. The X and hardware back are the way out. */}
-      <Sheet.Frame bg="$surface">
+      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
         <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$4">
           <XStack items="center" justify="space-between" gap="$3">
             <Text flex={1} fontWeight="700" fontSize={18} color="$text">

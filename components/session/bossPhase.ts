@@ -59,3 +59,8 @@ export function getHpPercent(currentHp: number, totalHp: number): number {
   if (totalHp <= 0) return 0;
   return Math.max(0, Math.min(100, (currentHp / totalHp) * 100));
 }
+
+/** Fire while the monster is whole, the error red once it is losing, enraged or down. */
+export function bossHpColor(hpPercent: number, isEnraged: boolean, isDown: boolean) {
+  return isEnraged || isDown || hpPercent < 50 ? "$error" : "$resourceFire";
+}

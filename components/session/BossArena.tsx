@@ -13,7 +13,7 @@ import { getBossAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import type { MuscleCode } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
+import { bossHpColor, getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { sessionArtHeight } from "./sessionArt";
 
 type BossArenaProps = {
@@ -190,7 +190,7 @@ export function BossArena({
    * register the arena already speaks in, a red rim and a darkening room, so the numeral and the
    * bar live in it too: fire while the monster is whole, the error red once it is losing.
    */
-  const hpColor = isEnraged || isDown || hpPercent < 50 ? "$error" : "$resourceFire";
+  const hpColor = bossHpColor(hpPercent, isEnraged, isDown);
 
   const trailHp = useDamageTrail(currentHp, reducedMotion);
   const { showDamage, flinching } = useHitReaction(lastDamage, reducedMotion);

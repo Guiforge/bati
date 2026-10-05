@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Shield, Skull, Target } from "@/components/icons";
-import { getHpPercent, getPhaseFromHp } from "@/components/session/bossPhase";
+import { bossHpColor, getHpPercent, getPhaseFromHp } from "@/components/session/bossPhase";
 import { getBossAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { rawColors } from "@/constants/rawColors";
@@ -34,7 +34,7 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
   const hpPercent = getHpPercent(fight.currentHp, fight.totalHp);
   const isDefeated = fight.defeatedAt != null || fight.currentHp <= 0;
   const isEnraged = getPhaseFromHp(hpPercent) === 4 && !isDefeated;
-  const hpColor = isEnraged || isDefeated || hpPercent < 50 ? "$error" : "$resourceFire";
+  const hpColor = bossHpColor(hpPercent, isEnraged, isDefeated);
 
   return (
     <YStack

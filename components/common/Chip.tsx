@@ -14,7 +14,7 @@ function toneToBg(tone: ChipProps["tone"]) {
 }
 
 function toneToText(tone: ChipProps["tone"]) {
-  if (tone === "primary") return "$white";
+  if (tone === "primary") return "$onPrimary";
   if (tone === "success") return "$bgDark";
   return "$text";
 }

@@ -167,8 +167,9 @@ feel immersive but remain operationally clear in the middle of a workout.
 - **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a
   hero's own label) is never braise: it is ash, `$textSecondary`, its glyphs `$muted`. That covers
   the exercise list's "leads to X" captions and their link glyph, the "Yours" caption, the
-  exercise picker's substitution caption, a kicker such
-  as the prep screen's "FIRST TRIAL". A value that is itself an editable control keeps its colour; the quest config card's goal value is bone (`$text`), no longer braise.
+  exercise picker's substitution caption and a kicker such as the prep screen's "FIRST TRIAL". A
+  value that is itself an editable control keeps its colour; the quest config card's goal value is
+  bone (`$text`), no longer braise.
   Braise marks actions and the few states named in this section, and these: the boss's weakness
   line and glyphs, the Home advice and kicker icons (`$primaryText`), the completed segments of an
   adventure's progress bar (`$primary`) and the avatar's fallback fill (`$primary`).

@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { useToast } from "@/components/common/Toast";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import {
@@ -83,9 +84,7 @@ function AvatarSection({
 
   return (
     <Card bg="$surface" p="$4" gap="$3">
-      <Text fontSize={14} fontWeight="700" letterSpacing={2} color="$textSecondary">
-        {t("settings.avatar", "AVATAR")}
-      </Text>
+      <SectionLabel>{t("settings.avatar", "AVATAR")}</SectionLabel>
 
       {showAvatarPicker ? (
         <XStack flexWrap="wrap" gap="$3" justify="center">
@@ -425,9 +424,7 @@ export default function SettingsScreen() {
 
         {/* Preferences */}
         <YStack gap="$3">
-          <Text fontSize={14} fontWeight="700" letterSpacing={2} color="$textSecondary" px="$1">
-            {t("settings.preferences", "PREFERENCES")}
-          </Text>
+          <SectionLabel px="$1">{t("settings.preferences", "PREFERENCES")}</SectionLabel>
 
           <VillageNameRow />
 

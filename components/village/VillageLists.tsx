@@ -3,8 +3,8 @@ import { useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
-
 import { ProgressBar } from "@/components/common/ProgressBar";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { ChevronRight } from "@/components/icons";
 import { LevelPips } from "@/components/village/LevelPips";
 import {
@@ -47,17 +47,7 @@ function Kicker({
   label: string;
   color?: "$textSecondary" | "$resourceGold";
 }) {
-  return (
-    <Text
-      fontSize={10.5}
-      fontWeight="600"
-      letterSpacing={1.5}
-      textTransform="uppercase"
-      color={color}
-    >
-      {label}
-    </Text>
-  );
+  return <SectionLabel color={color}>{label}</SectionLabel>;
 }
 
 function BuildingThumb({ building, size }: { building: VillageBuilding; size: number }) {

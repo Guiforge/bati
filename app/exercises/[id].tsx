@@ -11,6 +11,7 @@ import { Card } from "@/components/common/Card";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { PathStrip } from "@/components/common/PathStrip";
 import { Recitatif } from "@/components/common/Recitatif";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
@@ -519,9 +520,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
               they meet it. */}
           {loggedHere.length > 0 && (
             <YStack gap="$2">
-              <Text fontSize={14} fontWeight="700" letterSpacing={2} color="$textSecondary">
-                {t("exercises.your_numbers", "Your numbers").toUpperCase()}
-              </Text>
+              <SectionLabel>{t("exercises.your_numbers", "Your numbers")}</SectionLabel>
               {loggedHere.map(({ type, ghost }) => (
                 // Two halves that wrap as wholes. One flat wrapping row broke wherever the width
                 // ran out, and "Record 1,000 reps" left its "Aug 15" alone on the next line.
@@ -564,9 +563,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
           {/* Muscles */}
           {exercise.muscles.length > 0 && (
             <YStack gap="$2">
-              <Text fontSize={14} fontWeight="700" letterSpacing={2} color="$textSecondary">
-                {t("exercises.muscles", "Muscles").toUpperCase()}
-              </Text>
+              <SectionLabel>{t("exercises.muscles", "Muscles")}</SectionLabel>
               <XStack gap="$2" flexWrap="wrap">
                 {exercise.muscles.map((m) => (
                   <Tag key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} tone="success" />

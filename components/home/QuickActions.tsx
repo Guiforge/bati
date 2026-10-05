@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Linking, ScrollView, StyleSheet, useWindowDimensions } from "react-native";
 import { getTokens, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { RotateCcw, SlidersHorizontal } from "@/components/icons";
 import { OutingGoalSheet } from "@/components/quests/OutingGoalSheet";
 import { getQuestThumb } from "@/constants/assetMap";
@@ -301,9 +302,7 @@ export function QuickActions() {
   return (
     <YStack pt="$2.5" pb="$2" gap="$2">
       <XStack px="$4" items="baseline" justify="space-between" gap="$3">
-        <Text fontSize={10} fontWeight="700" letterSpacing={1.8} color="$textSecondary">
-          {t("home.quick_actions", "Quick actions").toUpperCase()}
-        </Text>
+        <SectionLabel>{t("home.quick_actions", "Quick actions")}</SectionLabel>
         <Text flex={1} text="right" fontSize={10} color="$textSecondary" numberOfLines={1}>
           {t("home.quick_hint", "Long-press to set")}
         </Text>

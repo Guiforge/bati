@@ -4,9 +4,9 @@
     python3 scripts/frame-screenshots.py --locale fr-FR --src fastlane/raw [--out DIR]
 
 The app's identity is an inked dark-fantasy bande dessinee, so a store shot is a planche, not a
-phone mock-up. Ink ground (#0C0D11). Behind everything, the capture's own illustration (its top
-45%, blown up to cover, blurred past reading, darkened to about a fifth of its light and faded to ink
-over the bottom 40%) so each shot carries its world. A recitatif cartouche at the margin holds the
+phone mock-up. Ink ground (#0C0D11). Behind everything, one game illustration per shot (the
+BACKDROPS map: a quest cover, the boss, the village), covered, lightly blurred, darkened to about
+28% luminance, vignetted and faded to ink over the bottom 45%, so each shot carries its world. A recitatif cartouche at the margin holds the
 eyebrow (gold, tracked) and the headline (Alegreya ExtraBold, bone) over one short braise bar.
 The capture itself is a panel: ink stroke, bone hairline, soft ink shadow, running off the bottom
 edge like a panel that continues on the next page. The sigil and the name sit at the top right.
@@ -43,6 +43,25 @@ MARGIN = 64
 # Copy. Each shot gets an eyebrow (what feature), a headline (the promise) and the panel below.
 # Written to be read in the half second a thumbnail gets, so the headline carries the meaning on
 # its own and the eyebrow is only there to orient.
+# ---------------------------------------------------------------------------------------------
+#
+# Backdrops: the game's own art, one image per shot and none twice, chosen to match the world the
+# shot shows (path under assets/images, then why). The capture is never the source: blurred UI
+# reads as grey mush.
+# ---------------------------------------------------------------------------------------------
+BACKDROPS = {
+    "0-onboarding": ("village/tier_1.webp", "the hamlet where every hero starts"),
+    "1-home": ("quests/long_reach.webp", "the quest art of the stage the home capture shows"),
+    "2-quests": ("quests/shield_wall.webp", "a quest cover with a wall of torches: many quests, one line"),
+    "3-quest-detail": ("quests/chop_wood.webp", "the quest the detail capture is about"),
+    "4-session": ("quests/dawn_ritual.webp", "an open training ground in morning mist"),
+    "5-boss": ("bosses/shadow_serpent.webp", "the boss in the capture"),
+    "6-victory": ("quests/morning_champion.webp", "sunlit terrace: the work is done, the light is back"),
+    "7-village": ("village/tier_12.webp", "the max-tier village, what the reps built"),
+    "8-journal": ("quests/hearthside_unbinding.webp", "a hearth, a calm interior to read the years by"),
+    "9-recap": ("quests/word_must_travel.webp", "a road out of the walls"),
+}
+
 # ---------------------------------------------------------------------------------------------
 COPY = {
     "en-US": {
@@ -102,24 +121,26 @@ def font(path: pathlib.Path, size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(str(path), size)
 
 
-def backdrop(shot: Image.Image) -> Image.Image:
-    """The capture's own art area, covering the canvas, darkened, fading to ink below."""
+def backdrop(stem: str) -> Image.Image:
+    """The shot's own world: game art covering the canvas, darkened, vignetted, fading to ink."""
     w, h = CANVAS
-    art = shot.crop((0, 0, shot.width, round(shot.height * 0.45)))
+    art = Image.open(ROOT / "assets" / "images" / BACKDROPS[stem][0]).convert("RGB")
     scale = max(w / art.width, h / art.height)
     art = art.resize((round(art.width * scale), round(art.height * scale)), Image.LANCZOS)
-    art = art.crop(((art.width - w) // 2, 0, (art.width - w) // 2 + w, h)).filter(
-        ImageFilter.GaussianBlur(16)
-    )
-    # Aim at ~22% luminance whatever the capture; lift a dark one at most 2.5x.
+    left, top = (art.width - w) // 2, (art.height - h) // 2
+    art = art.crop((left, top, left + w, top + h)).filter(ImageFilter.GaussianBlur(4))
+    # Aim at ~28% luminance whatever the art; lift a dark one at most 3x.
     lum = ImageStat.Stat(art.convert("L")).mean[0] / 255
-    gain = min(2.5, 0.22 / max(lum, 0.01))
-    art = art.point(lambda v: round(v * gain))
-    # Ink takes over from the top down: 0 at the top, fully ink from 60% of the height.
+    gain = min(3.0, 0.28 / max(lum, 0.01))
+    art = art.point(lambda v: min(255, round(v * gain)))
+    # Vignette: ink creeps in from the corners.
+    vig = Image.radial_gradient("L").resize(CANVAS)  # black centre -> white edge
+    vig = vig.point(lambda v: max(0, v - 90) * 3 // 4)
+    art = Image.composite(Image.new("RGB", CANVAS, INK), art, vig)
+    # Ink takes over below: none until 55% of the height, total at the bottom.
     ramp = Image.linear_gradient("L").resize((1, h))  # black at top -> white at bottom
-    ramp = ramp.point(lambda v: min(255, round(v / 0.6)))
-    ramp = ramp.resize(CANVAS)
-    return Image.composite(Image.new("RGB", CANVAS, INK), art, ramp).convert("RGBA")
+    ramp = ramp.point(lambda v: max(0, min(255, round((v - 140) / 115 * 255))))
+    return Image.composite(Image.new("RGB", CANVAS, INK), art, ramp.resize(CANVAS)).convert("RGBA")
 
 
 def tracked(draw: ImageDraw.ImageDraw, xy, text: str, f, fill, tracking: int) -> None:
@@ -180,9 +201,9 @@ def wordmark(canvas: Image.Image) -> None:
     d.text((x + 96 + 16, MARGIN + 48), "Bati", font=name, fill=BONE, anchor="lm")
 
 
-def panel(shot: Image.Image) -> tuple[Image.Image, int, int]:
+def panel(shot: Image.Image, top: int) -> tuple[Image.Image, int, int]:
     """The capture as a BD panel: ink stroke, bone hairline, soft ink shadow. Returns it and its x, y."""
-    width = round(CANVAS[0] * 0.82)
+    width = round(CANVAS[0] * 0.88)
     inner = shot.resize((width, round(width * shot.height / shot.width)), Image.LANCZOS)
     stroke, pad = 10, 60
     box = (inner.width + 2 * stroke, inner.height + 2 * stroke)
@@ -209,16 +230,16 @@ def panel(shot: Image.Image) -> tuple[Image.Image, int, int]:
         radius=14, outline=(*BONE, 217), width=2,
     )
     out.alpha_composite(hair)
-    return out, (CANVAS[0] - box[0]) // 2 - pad, round(CANVAS[1] * 0.30) - pad
+    return out, CANVAS[0] - MARGIN - box[0] - pad, top - pad
 
 
 def compose(shot: pathlib.Path, eyebrow: str, headline: str, dest: pathlib.Path) -> None:
     raw = Image.open(shot).convert("RGB")
-    canvas = backdrop(raw)
+    canvas = backdrop(shot.stem)
     wordmark(canvas)
-    cartouche(canvas, (MARGIN, 200), eyebrow, headline, CANVAS[0] - 2 * MARGIN)
-    # The panel goes on last; the canvas bottom edge crops it (the bleed).
-    pn, x, y = panel(raw)
+    bottom = cartouche(canvas, (MARGIN, 200), eyebrow, headline, CANVAS[0] - 2 * MARGIN)
+    # The panel goes on last, 48 px under the cartouche; the canvas bottom edge crops it (the bleed).
+    pn, x, y = panel(raw, bottom + 48)
     canvas.alpha_composite(pn.crop((0, 0, pn.width, CANVAS[1] - y)), (x, y))
     dest.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(dest, "PNG", optimize=True)

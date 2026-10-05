@@ -4,6 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { VictoryView } from "@/components/session/VictoryView";
+import { rawColors } from "@/constants/rawColors";
 import type { Quest } from "@/db/quests";
 import { useChorusStore } from "@/stores/chorus";
 import { useSessionStore } from "@/stores/session";
@@ -383,6 +384,17 @@ describe("VictoryView villager slot", () => {
  * The level bar mounted with the save and pushed the feel buttons about 80 dp down from under the
  * finger that was about to press one: the same hazard the reserved line slot avoids.
  */
+describe("VictoryView kicker", () => {
+  it("announces the reward in gold, letter-spaced, over the title cartouche", async () => {
+    const { view } = await mountWithPendingSave();
+
+    const style = StyleSheet.flatten(view.getByTestId("victory-kicker").props.style);
+    expect(style.letterSpacing).toBe(2);
+    expect(style.color).toBe(rawColors.resourceGold);
+    expect(style.fontFamily).toBe(config.fonts.body.face[700].normal);
+  });
+});
+
 describe("VictoryView level card", () => {
   it("is there from the first frame, above the feel buttons, and the save only fills it", async () => {
     const { view, release } = await mountWithPendingSave();

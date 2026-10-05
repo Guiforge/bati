@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H3, Text, XStack, YStack } from "tamagui";
+import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Pause, SkipBack, SkipForward } from "@/components/icons";
 import { getExerciseAsset } from "@/constants/assetMap";
@@ -183,9 +183,16 @@ export function WarmupView() {
           ) : null}
 
           <YStack items="center" gap="$1">
-            <H3 color="$text" fontWeight="700" style={{ textAlign: "center" }}>
+            <Text
+              testID="warmup-name"
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={20}
+              color="$text"
+              style={{ textAlign: "center" }}
+            >
               {label}
-            </H3>
+            </Text>
             {eachSide ? (
               <Text
                 testID="warmup-sides"

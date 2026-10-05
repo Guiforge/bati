@@ -471,19 +471,24 @@ export function VictoryView() {
               <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$resourceGold" />
             </YStack>
             <YStack position="absolute" b={0} l={0} r={0} p="$4" gap="$1">
-              <Text
-                fontFamily="$body"
-                fontWeight="700"
-                color={isBossDefeat ? "$resourceGold" : "$textSecondary"}
-                fontSize={13}
-                letterSpacing={1.2}
-              >
-                {(isBossDefeat
-                  ? t("boss.victory_title")
-                  : t("session.victory_title")
-                ).toUpperCase()}
-              </Text>
-              <Recitatif>{heroTitle}</Recitatif>
+              {/* The kicker and the title are one unit: the kicker announces a reward, so it is gold
+                  on a boss kill and on a plain quest alike, directly over the cartouche. */}
+              <YStack gap={2} self="flex-start">
+                <Text
+                  testID="victory-kicker"
+                  fontFamily="$body"
+                  fontWeight="700"
+                  color="$resourceGold"
+                  fontSize={13}
+                  letterSpacing={2}
+                >
+                  {(isBossDefeat
+                    ? t("boss.victory_title")
+                    : t("session.victory_title")
+                  ).toUpperCase()}
+                </Text>
+                <Recitatif>{heroTitle}</Recitatif>
+              </YStack>
               {isBossDefeat && (
                 <Text
                   fontFamily="$body"

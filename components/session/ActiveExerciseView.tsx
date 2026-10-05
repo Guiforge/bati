@@ -454,10 +454,9 @@ export function ActiveExerciseView() {
           column's height is exactly what its children need and the CTA can never be pushed off
           screen. Give this flex back and Yoga splits the screen between it and the hero by grow
           factor instead of by content, which is how the CTA ended up below the fold.
-          The boss branch is the exception: the arena is fixed-height, so with nothing elastic
-          above, this column grows instead — the counter wrapper below carries the same grow, so
-          the slack lands around the counter and the CTA stays on the bottom edge. */}
-      <YStack px="$4" pt="$4" gap="$4" style={bossFight ? { flexGrow: 1 } : undefined}>
+          The boss branch is no exception: the arena grows (`flexGrow`, floored at its art cut), so
+          the slack lands in the monster's painting, not as a void around the counter. */}
+      <YStack px="$4" pt="$4" gap="$4">
         {/* An outing replaces the countdown entirely: what a hero wants at kilometre three is
             how far they have gone, not how much of a prescribed duration is left. The clock is
             still running underneath — `completeExercise` records the elapsed seconds either
@@ -484,7 +483,7 @@ export function ActiveExerciseView() {
           not a scroll to bring back.
           ponytail: a 640dp screen on a boss fight (fixed-height arena) in overtime with a ghost
           line is the ceiling. Past it, drop the ghost line or shrink the numeral. */}
-        <YStack justify="center" style={bossFight ? { flexGrow: 1 } : undefined}>
+        <YStack justify="center">
           <YStack items="center" justify="center" gap="$2">
             {/* The exercise's name is on the artwork either way now — the hero paints it, and in a
               fight the arena carries it on its own scrim. Nothing repeats it here. */}

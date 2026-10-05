@@ -43,9 +43,10 @@ type BossArenaProps = {
   children?: ReactNode;
 };
 
-/** How long the trail holds at the old HP before draining, and the HP hairline's own height. */
+/** How long the trail holds at the old HP before draining, and the HP gauge's own height. */
 const TRAIL_HOLD_MS = 700;
-const BAR_HEIGHT = 3;
+const GAUGE_HEIGHT = 10;
+const ELASTIC = { flexGrow: 1 } as const;
 /** How long the portrait recoils from a hit. Short enough to read as impact, not as a wobble. */
 const FLINCH_MS = 120;
 /** How long the damage numeral stays struck over the art. */
@@ -211,6 +212,9 @@ export function BossArena({
   return (
     <YStack
       height={artHeight}
+      // The arena is the column's elastic child: never shorter than the art's cut, it takes what
+      // the counter and the CTA leave instead of a dead band between them.
+      style={ELASTIC}
       width="100%"
       position="relative"
       overflow="hidden"
@@ -311,34 +315,6 @@ export function BossArena({
         pointerEvents="none"
       />
 
-      {/* HP as a hairline at the screen's own top edge, the way a game puts a boss bar at the top
-          of the world. It was a 10 px bar in a `$bgDark` strip under the picture with a
-          right-aligned `450 / 1070` beside it — a caption, not the boss's health. */}
-      <YStack position="absolute" t={0} l={0} r={0} height={BAR_HEIGHT} bg="$bgOverlay">
-        {/* Trail first, so the live bar paints over it and only the difference shows. */}
-        <YStack
-          testID="boss-hp-trail"
-          position="absolute"
-          t={0}
-          b={0}
-          l={0}
-          width={`${trailPercent}%`}
-          bg="$error"
-          opacity={0.45}
-          transition={quick}
-        />
-        <YStack
-          testID="boss-hp-fill"
-          position="absolute"
-          t={0}
-          b={0}
-          l={0}
-          width={`${hpPercent}%`}
-          bg={hpColor}
-          transition={quick}
-        />
-      </YStack>
-
       <YStack position="absolute" b="$3" l="$4" r="$4" gap="$2">
         <XStack items="flex-end" gap="$2">
           <Text
@@ -352,14 +328,54 @@ export function BossArena({
           >
             {bossName}
           </Text>
-          <XStack items="baseline" gap="$1">
-            <Text fontWeight="700" fontSize={15} color={hpColor} transition="quick">
-              {currentHp}
-            </Text>
-            <Text fontWeight="700" fontSize={12} color="$textSecondary">
-              / {totalHp} {t("boss.hp")}
-            </Text>
-          </XStack>
+        </XStack>
+
+        {/* The boss's health, as a gauge under its name. It was a 3 px hairline at the screen's
+            top edge, a bar nobody read. The trail sits under the live fill, so only the chunk
+            just lost shows. */}
+        <XStack items="center" gap="$2">
+          <YStack
+            flex={1}
+            height={GAUGE_HEIGHT}
+            bg="$bgDark"
+            borderWidth={1.5}
+            borderColor="$borderStrong"
+            rounded="$1"
+            overflow="hidden"
+          >
+            <YStack
+              testID="boss-hp-trail"
+              position="absolute"
+              t={0}
+              b={0}
+              l={0}
+              width={`${trailPercent}%`}
+              bg="$error"
+              opacity={0.45}
+              transition={quick}
+            />
+            <YStack
+              testID="boss-hp-fill"
+              position="absolute"
+              t={0}
+              b={0}
+              l={0}
+              width={`${hpPercent}%`}
+              bg={hpColor}
+              transition={quick}
+            />
+          </YStack>
+          <Text
+            testID="boss-hp-figure"
+            fontFamily="$body"
+            fontWeight="700"
+            fontSize={13}
+            color="$text"
+            fontVariant={["tabular-nums"]}
+            accessibilityLabel={`${currentHp} / ${totalHp} ${t("boss.hp")}`}
+          >
+            {currentHp} / {totalHp}
+          </Text>
         </XStack>
 
         <StatusLine

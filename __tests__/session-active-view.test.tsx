@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -103,10 +104,10 @@ const fight = (currentHp: number) => ({
   shiny: false,
 });
 
-async function mount(bossFight: ReturnType<typeof fight> | null = null) {
+async function mount(bossFight: ReturnType<typeof fight> | null = null, withQuest: Quest = quest) {
   useSettingsStore.setState({ language: "en", reducedMotion: true });
   useSessionStore.setState({
-    quest,
+    quest: withQuest,
     status: "running",
     currentRoundIndex: 0,
     currentExerciseIndex: 0,
@@ -190,9 +191,17 @@ describe("the reps stepper", () => {
     expect(screen.getByLabelText("Increase reps by one")).toBeTruthy();
   });
 
-  test("the four tertiary links reach 44 dp through a vertical slop of 12 or more", async () => {
-    Object.assign(quest.exercises[0]?.exercise ?? {}, { enDescription: "Lower, then press up." });
-    await mount();
+  test("the three tertiary links reach 44 dp through a vertical slop of 12 or more", async () => {
+    const [first, ...rest] = quest.exercises;
+    assert(first);
+    const described = {
+      ...quest,
+      exercises: [
+        { ...first, exercise: { ...first.exercise, enDescription: "Lower, then press up." } },
+        ...rest,
+      ],
+    } as Quest;
+    await mount(null, described);
 
     for (const id of ["session-how-to", "session-swap-exercise", "session-skip-exercise"]) {
       const slop = screen.getByTestId(id).props.hitSlop;

@@ -15,6 +15,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Dumbbell, Map as MapIcon, Plus, Star } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
@@ -95,6 +96,9 @@ const FAVOURITE_STYLE = {
   borderRadius: 999,
   backgroundColor: rawColors.bgOverlay,
 } as const;
+
+/** The star's right offset (12) + its box (20 icon + 2 x 8 padding) + a $4 (16) gap. */
+const STAR_CLEARANCE = 12 + 36 + 16;
 
 /** No path means no cover: the muscle tint carries the banner instead. Anything else — a bundled
  *  key, a seeded path, a hero's `data:` photo — `getQuestAsset` already knows. */
@@ -306,18 +310,30 @@ function QuestRow({
               strokeWidth={2.5}
             />
           </Pressable>
+
+          {/* The title on the art, like Home and the session. Right inset clears the star. */}
+          {meta.cover ? (
+            <YStack position="absolute" b="$3" l="$3" r={STAR_CLEARANCE}>
+              <Recitatif numberOfLines={2} testID="quest-card-title">
+                {meta.title}
+              </Recitatif>
+            </YStack>
+          ) : null}
         </YStack>
 
         <YStack gap="$2" p="$4">
-          <Text
-            fontFamily="$heading"
-            fontWeight="700"
-            fontSize={18}
-            color="$text"
-            numberOfLines={1}
-          >
-            {meta.title}
-          </Text>
+          {/* Without a cover there is no art to carry it: the title stays in the body. */}
+          {meta.cover ? null : (
+            <Text
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={18}
+              color="$text"
+              numberOfLines={1}
+            >
+              {meta.title}
+            </Text>
+          )}
 
           {meta.focusLabel ? (
             <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>

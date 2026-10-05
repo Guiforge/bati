@@ -16,6 +16,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Skull, Sparkles } from "@/components/icons";
 import { getAdventureAsset } from "@/constants/assetMap";
@@ -234,6 +235,14 @@ function AdventureCard({
               </XStack>
             ) : null}
           </XStack>
+          {/* The title on the art, like Home and the session: a poster names itself. */}
+          {row.cover ? (
+            <YStack position="absolute" b="$3" l="$3" r="$3">
+              <Recitatif numberOfLines={2} testID="adventure-card-title">
+                {row.title}
+              </Recitatif>
+            </YStack>
+          ) : null}
           {row.starsLabel ? (
             <XStack
               position="absolute"
@@ -269,15 +278,18 @@ function AdventureCard({
         </XStack>
 
         <YStack gap="$2" p="$4">
-          <Text
-            fontFamily="$heading"
-            fontWeight="700"
-            fontSize={18}
-            color="$text"
-            numberOfLines={1}
-          >
-            {row.title}
-          </Text>
+          {/* Without a cover there is no art to carry it: the title stays in the body. */}
+          {row.cover ? null : (
+            <Text
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={18}
+              color="$text"
+              numberOfLines={1}
+            >
+              {row.title}
+            </Text>
+          )}
 
           {row.focusLabel ? (
             <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>

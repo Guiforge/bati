@@ -10,6 +10,7 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { PathStrip } from "@/components/common/PathStrip";
+import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
@@ -117,7 +118,7 @@ function LoadingCard() {
 }
 
 /** Also the loading state, with nothing in it. */
-function ExerciseImage({ source }: { source?: ImageSourcePropType }) {
+function ExerciseImage({ source, name }: { source?: ImageSourcePropType; name?: string }) {
   return (
     <YStack
       width="100%"
@@ -129,7 +130,7 @@ function ExerciseImage({ source }: { source?: ImageSourcePropType }) {
       bg="$bgLight"
       borderWidth={1}
       borderColor="$borderStrong"
-      rounded="$8"
+      rounded="$3"
       shadowColor="$text"
       shadowRadius={0}
       shadowOffset={{ width: 0, height: 5 }}
@@ -145,6 +146,11 @@ function ExerciseImage({ source }: { source?: ImageSourcePropType }) {
           transition={200}
         />
       )}
+      {name ? (
+        <YStack position="absolute" b="$3" l="$3" r="$3">
+          <Recitatif testID="exercise-detail-name">{name}</Recitatif>
+        </YStack>
+      ) : null}
     </YStack>
   );
 }
@@ -477,15 +483,10 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
 
   return (
     <YStack gap="$4">
-      <ExerciseImage source={img} />
+      <ExerciseImage source={img} name={title} />
 
       <Card>
         <YStack gap="$3">
-          {/* Title */}
-          <Text color="$text" fontWeight="700" fontSize={24} lineHeight={28}>
-            {title}
-          </Text>
-
           {/* Description */}
           {desc ? (
             <Paragraph color="$text" opacity={0.7} size="$4" lineHeight={22}>

@@ -18,6 +18,7 @@ export function InkGauge({
   progress,
   fill,
   track = "$bgDark",
+  frame = "$borderStrong",
   figure,
   figureColor = "$text",
   figureLabel,
@@ -29,6 +30,8 @@ export function InkGauge({
   progress: number;
   fill: ColorTokens;
   track?: ColorTokens;
+  /** The track's outline. A theme that maps `$borderStrong` onto the ground passes a raw colour. */
+  frame?: ColorTokens | string;
   figure?: string;
   figureColor?: ColorTokens;
   figureLabel?: string;
@@ -56,7 +59,8 @@ export function InkGauge({
         height={GAUGE_HEIGHT}
         bg={track}
         borderWidth={1.5}
-        borderColor="$borderStrong"
+        // Tamagui types a raw colour out of `borderColor`, but it resolves one fine.
+        borderColor={frame as ColorTokens}
         rounded="$1"
         overflow="hidden"
       >

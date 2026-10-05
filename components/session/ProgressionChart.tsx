@@ -13,6 +13,7 @@ import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 const Y_LABELS_WIDTH = 35;
+const LEAD_IN = 4;
 const LEGEND = ["easy", "medium", "hard"] as const;
 
 type ChartMode = "quest" | "all";
@@ -150,12 +151,18 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
   const avgMinutes = Math.round(avgDuration / 60);
   const totalMinutes = Math.round(totalDuration / 60);
 
-  // Chart dimensions: the plot is the card's width less the y labels, and the bars spread over it
-  // (a bar and its gap share one slot), so the axis ends inside the card.
+  // Chart dimensions. gifted-charts' `width` is the plot alone: the y labels sit to its left, so
+  // the footprint is Y_LABELS_WIDTH + plotWidth and `chartWidth` is what the card can hold. The
+  // bars share the plot in equal slots (a bar and its gap), after a fixed lead-in.
   const chartWidth = Math.min(width - 80, 320);
-  const slot = Math.floor((chartWidth - Y_LABELS_WIDTH - 8) / sessions.length);
+  const plotWidth = chartWidth - Y_LABELS_WIDTH;
+  const slot = Math.floor((plotWidth - LEAD_IN) / sessions.length);
   const barWidth = Math.max(10, Math.floor(slot * 0.6));
   const spacing = slot - barWidth;
+  // A label's box is `labelWidth + spacing` wide, shifted left by `spacing / 2`, so its centre is
+  // the bar's centre only when labelWidth == barWidth. Wider text (thin mode: a label every other
+  // bar) is widened on the Text itself and pulled back by half the extra, which keeps the centre.
+  const labelTextWidth = thin ? slot * 2 : slot;
 
   // Find max value for Y-axis
   const maxValue = Math.max(...chartData.map((d) => d.value), 1);
@@ -206,7 +213,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         <YStack items="center" py="$2">
           <BarChart
             data={chartData}
-            width={chartWidth}
+            width={plotWidth}
             height={160}
             barWidth={barWidth}
             spacing={spacing}
@@ -223,10 +230,12 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             xAxisLabelTextStyle={{
               color: rawColors.textSecondary,
               fontSize: 9,
+              width: labelTextWidth,
+              marginLeft: (slot - labelTextWidth) / 2,
             }}
-            labelWidth={thin ? slot * 2 : slot}
+            labelWidth={barWidth}
             yAxisLabelWidth={Y_LABELS_WIDTH}
-            initialSpacing={4}
+            initialSpacing={LEAD_IN}
             endSpacing={0}
             hideRules
           />

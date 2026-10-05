@@ -125,9 +125,9 @@ test("a quest with no art gets a framed surface plate, and its XP line is the go
     );
   });
   const plate = StyleSheet.flatten(screen.getByTestId("session-details-plate").props.style);
-  expect(plate.backgroundColor).toBe(rawColors.surface);
-  expect(plate.borderWidth).toBe(1);
-  expect(plate.borderColor).toBe(rawColors.borderStrong);
+  expect(plate.backgroundColor).toBe(rawColors.surface); // `$surface` in the dark theme
+  expect(plate.borderTopWidth).toBe(1);
+  expect(plate.borderTopColor).toBe(rawColors.borderStrong);
   const fill = screen.getByTestId("session-details-xp-fill");
   expect(StyleSheet.flatten(fill.props.style).width).toBe("33%");
   expect(fill).toHaveStyle({ backgroundColor: fade(rawColors.resourceGold, 1) });

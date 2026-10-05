@@ -50,6 +50,8 @@ test("the Journal level card is the gold gauge with a gold XP figure", async () 
   const fill = screen.getByTestId("journal-level-gauge-fill");
   expect(StyleSheet.flatten(fill.props.style).width).toBe("33%");
   expect(fill).toHaveStyle({ backgroundColor: fade(rawColors.resourceGold, 1) });
+  // The Journal maps $borderStrong onto its ground, so the frame is the raw colour.
+  expect(StyleSheet.flatten(fill.parent?.props.style).borderTopColor).toBe(rawColors.borderStrong);
   const figure = screen.getByTestId("journal-level-xp");
   expect(figure).toHaveTextContent("50 / 150 XP");
   expect(StyleSheet.flatten(figure.props.style).color).toBe(rawColors.resourceGold);

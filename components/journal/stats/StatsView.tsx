@@ -28,6 +28,7 @@ import {
 import { getExerciseThumb } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
+import { rawColors } from "@/constants/rawColors";
 import { dayKey } from "@/db/dates";
 import type { DayActivity, WallEntry } from "@/db/journal";
 import { behindMuscles } from "@/db/muscleBalance";
@@ -708,6 +709,7 @@ export function LevelBlock({ stats }: { stats: JournalStats }) {
           progress={level.xpProgress / 100}
           fill="$resourceGold"
           track="$gold800"
+          frame={rawColors.borderStrong}
         />
       </YStack>
       <NMuted mt={8}>

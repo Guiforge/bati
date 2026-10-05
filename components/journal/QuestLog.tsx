@@ -83,25 +83,24 @@ export function ReportHero({
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  // No art: the plate is a framed `$surface` panel instead of a bare gradient, and its content
-  // sits 11 dp further in so the frame holds the back button and the kicker. Raw colours, not
-  // tokens: the Journal's theme folds `$borderStrong` into `$surface`, which would hide the frame.
+  // No art: the plate is a framed `$surface` panel (the Journal's own surface, like its blocks)
+  // instead of a bare gradient, and its content sits 11 dp further in so the frame holds the back
+  // button and the kicker. The frame is a raw colour: the Journal folds `$borderStrong` into
+  // `$surface`, which would hide it.
   const pad = source == null ? 22 : 11;
   return (
     <View style={{ height: height + insets.top }}>
       {source == null ? (
-        <View
+        <YStack
           testID="session-details-plate"
-          style={{
-            position: "absolute",
-            top: insets.top,
-            bottom: 0,
-            left: 11,
-            right: 11,
-            backgroundColor: rawColors.surface,
-            borderWidth: 1,
-            borderColor: rawColors.borderStrong,
-          }}
+          position="absolute"
+          t={insets.top}
+          b={0}
+          l={11}
+          r={11}
+          bg="$surface"
+          borderWidth={1}
+          borderColor={rawColors.borderStrong}
         />
       ) : (
         <>
@@ -334,6 +333,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
                 progress={level.xpProgress / 100}
                 fill="$resourceGold"
                 track="$gold800"
+                frame={rawColors.borderStrong}
               />
             </YStack>
           ) : null}

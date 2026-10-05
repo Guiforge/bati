@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { render } from "@testing-library/react-native";
 import i18n from "i18next";
 import { StyleSheet } from "react-native";
@@ -19,7 +20,10 @@ jest.mock("@/db", () => ({
   ]),
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
-jest.mock("react-native-gifted-charts", () => ({ BarChart: () => null }));
+const mockBarChart = jest.fn((_props: Record<string, unknown>) => null);
+jest.mock("react-native-gifted-charts", () => ({
+  BarChart: (props: Record<string, unknown>) => mockBarChart(props),
+}));
 
 // The way VictoryView calls it: the title is its own key, not the chart's default.
 async function mount() {
@@ -30,6 +34,22 @@ async function mount() {
   );
   return view;
 }
+
+describe("ProgressionChart layout", () => {
+  it("keeps the axis inside the card and centres a label under its bar", async () => {
+    const view = await mount();
+    await view.findByText("30");
+    const props = mockBarChart.mock.lastCall?.[0] as Record<string, number> | undefined;
+    assert(props);
+    // `width` is the plot alone: y labels plus plot must fit the 320 dp card interior.
+    expect(props["yAxisLabelWidth"]).toBe(35);
+    expect(props["width"]).toBe(320 - 35);
+    const slot = (props["barWidth"] ?? 0) + (props["spacing"] ?? 0);
+    expect((props["initialSpacing"] ?? 0) + slot * 2).toBeLessThanOrEqual(props["width"] ?? 0);
+    // A label box is centred on its bar only when labelWidth equals barWidth.
+    expect(props["labelWidth"]).toBe(props["barWidth"]);
+  });
+});
 
 describe("ProgressionChart legend", () => {
   it("names the three difficulties", async () => {

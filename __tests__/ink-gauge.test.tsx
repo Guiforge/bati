@@ -34,6 +34,17 @@ describe("InkGauge", () => {
     expect(track.backgroundColor).toBe(rawColors.gold800);
   });
 
+  it("outlines its track in $borderStrong unless given a frame", async () => {
+    const dflt = await render(gauge());
+    expect(flat(dflt.getByTestId("g-fill").parent?.props.style).borderTopColor).toBe(
+      rawColors.borderStrong,
+    );
+    const framed = await render(gauge({ frame: rawColors.gold700 }));
+    expect(flat(framed.getByTestId("g-fill").parent?.props.style).borderTopColor).toBe(
+      rawColors.gold700,
+    );
+  });
+
   it("clamps progress to 0..1", async () => {
     const root = await render(gauge({ progress: 3 }));
     expect(flat(root.getByTestId("g-fill").props.style).width).toBe("100%");

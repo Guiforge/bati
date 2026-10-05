@@ -83,7 +83,7 @@ const ACCENT_TOKENS = ["error", "danger", "resourceFire"] as const;
 const FILL_LABELS = [
   ["onPrimary", "primary"],
   ["bgDark", "success"],
-  ["bgDark", "error"],
+  ["onError", "error"],
   ["bgDark", "warning"],
   ["bgDark", "resourceGold"],
   // The villager bubble is bone, and what is written on it is ink.

@@ -371,7 +371,7 @@ export function QuickActions() {
                 contentFit="cover"
                 transition={200}
               />
-              {/* $bgDark (#0B0F19) as rgba - LinearGradient takes plain colors, not tokens. */}
+              {/* $bgDark (the ink) as rgba - LinearGradient takes plain colors, not tokens. */}
               <LinearGradient
                 colors={[fade(rawColors.bgDark, 0.1), fade(rawColors.bgDark, 0.92)]}
                 style={StyleSheet.absoluteFill}

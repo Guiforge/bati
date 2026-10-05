@@ -357,7 +357,7 @@ type TierProps = {
 
 /**
  * When the painting changes next, first on the panel in every state. The village follows the
- * hero's level alone, so the answer is a hero level and the XP to it. The bar is indigo on
+ * hero's level alone, so the answer is a hero level and the XP to it. The bar is braise on
  * purpose: gold belongs to the buildings, and two systems in one colour read as one.
  *
  * On the last tier the bar goes and the sentence becomes final, since a gauge at 100 % for life

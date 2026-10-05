@@ -390,7 +390,7 @@ function DaysRow({
               // The name alone: TalkBack adds "checked" from the state, "Tuesday, checked".
               accessibilityLabel={name}
             >
-              <Text fontWeight="700" color="$text">
+              <Text fontWeight="700" color={on ? "$onPrimary" : "$text"}>
                 {narrow.format(date)}
               </Text>
             </Button>

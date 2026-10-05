@@ -143,6 +143,7 @@ const config = createTamagui({
       background: tokens.color.bgOverlay,
       color: tokens.color.text,
       onPrimary: tokens.color.onPrimary,
+      onError: tokens.color.bgDark,
       danger: tokens.color.error, // alias, no matching token
       muted: tokens.color.textSecondary, // deliberately not tokens.color.muted
       // Stock primitives ask the theme for `borderColor`, and Tamagui logged a missing token for
@@ -158,6 +159,8 @@ const config = createTamagui({
       color: tokens.color.text,
       // What is written on a `$primary` fill: light on the app's braise, dark on the Journal's gold.
       onPrimary: tokens.color.onPrimary,
+      // What is written on an `$error` fill: ink here, bone in the Journal where error is dark.
+      onError: tokens.color.bgDark,
       danger: tokens.color.error,
       muted: tokens.color.textSecondary,
       borderColor: tokens.color.borderStrong,
@@ -168,7 +171,7 @@ const config = createTamagui({
     // The Journal (`<Theme name="journal">` in app/(tabs)/journal/_layout.tsx). The app's own keys
     // are remapped rather than left alone, so a shared component the Journal still mounts (the
     // achievements list, the balance card, a history row) takes its ground and its one accent
-    // without knowing it is on another tab. Indigo, green and red fold into the gold ramp.
+    // without knowing it is on another tab. The braise, green and red fold into the gold ramp.
     dark_journal: {
       ...tokens.color,
       background: tokens.color.bgDark,
@@ -192,6 +195,8 @@ const config = createTamagui({
       borderColorPress: tokens.color.surface2,
       borderColorFocus: tokens.color.surface2,
       onPrimary: tokens.color.bgDark,
+      onError: tokens.color.text,
+      primaryEdge: tokens.color.gold700,
       // The shared Tag's tones: flat inks here, where the history rows used to carry a red and a
       // brown that meant nothing on a one-accent page.
       pastelGreen: tokens.color.gold900,

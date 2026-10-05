@@ -348,7 +348,7 @@ export function RestView() {
           accessibilityLabel={t(copy.ctaLabel)}
           accessibilityRole="button"
         >
-          <Text color="$text" fontSize={20} fontWeight="700">
+          <Text color="$onPrimary" fontSize={20} fontWeight="700">
             {t(copy.cta)}
           </Text>
         </Button>

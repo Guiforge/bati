@@ -946,9 +946,13 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
         </Animated.View>
         {/* 20 and not 24: "Maintiens pour terminer" is the long form, and it has to hold one
             line on a 320dp screen. */}
-        <Text color="$text" fontSize={20} fontWeight="700" numberOfLines={1}>
-          {t("session.expedition_hold_to_finish")}
-        </Text>
+        {/* On an ink plate: the sweep crosses the label, braise then green, and no single label
+            colour clears AA on both (bone on green is 1.95:1). Ink under bone reads on either. */}
+        <YStack bg="$bgDark" rounded="$4" px="$3" py="$1">
+          <Text color="$text" fontSize={20} fontWeight="700" numberOfLines={1}>
+            {t("session.expedition_hold_to_finish")}
+          </Text>
+        </YStack>
       </YStack>
     </Pressable>
   );

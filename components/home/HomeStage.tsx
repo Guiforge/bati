@@ -96,7 +96,7 @@ export function HomeStage() {
         contentFit="cover"
         transition={200}
       />
-      {/* $bgDark (#0B0F19) as rgba: LinearGradient takes plain colors, not tokens. A touch of
+      {/* $bgDark (the ink) as rgba: LinearGradient takes plain colors, not tokens. A touch of
           dark under the strip's edge, the art clear, then solid ground under the words. */}
       <LinearGradient
         colors={[
@@ -162,10 +162,10 @@ export function HomeStage() {
             height={56}
             rounded={14}
             bg="$primary"
-            color="$text"
+            color="$onPrimary"
             fontWeight="700"
             fontSize={17}
-            icon={<Play size={16} color="$text" />}
+            icon={<Play size={16} color="$onPrimary" />}
             onPress={handlePress}
             pressStyle={{ bg: "$primaryPress", scale: 0.98 }}
             shadowColor="$primary"
@@ -230,7 +230,10 @@ export function HomeStage() {
             </Text>
           </XStack>
         ) : null}
-        <Recitatif numberOfLines={2}>{title}</Recitatif>
+        {/* The stage button already carries the title as its label: hide this copy from readers. */}
+        <YStack accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <Recitatif numberOfLines={2}>{title}</Recitatif>
+        </YStack>
       </YStack>
     </YStack>
   );

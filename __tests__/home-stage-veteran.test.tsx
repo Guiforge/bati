@@ -74,7 +74,7 @@ function stage() {
 test("a stale quest is a concrete card: its title, its reason, Start", async () => {
   mockOffer = { kind: "stale_quest", days: 9, quest, startable: true, seconds: 1200 };
   await stage();
-  expect(await screen.findByText("Chop Wood")).toBeTruthy();
+  expect(await screen.findByLabelText("Chop Wood")).toBeTruthy();
   expect(screen.getByText("Last done 9 days ago")).toBeTruthy();
   expect(screen.getByText("Start")).toBeTruthy();
 });
@@ -82,12 +82,12 @@ test("a stale quest is a concrete card: its title, its reason, Start", async () 
 test("the gallery of a trained hero is not a first step", async () => {
   mockOffer = { kind: "gallery", trained: true };
   await stage();
-  expect(await screen.findByText("Choose your next quest")).toBeTruthy();
-  expect(screen.queryByText("Start your journey")).toBeNull();
+  expect(await screen.findByLabelText("Choose your next quest")).toBeTruthy();
+  expect(screen.queryByLabelText("Start your journey")).toBeNull();
 });
 
 test("the gallery of a hero with no session keeps its first step", async () => {
   mockOffer = { kind: "gallery", trained: false };
   await stage();
-  expect((await screen.findAllByText("Start your journey")).length).toBeGreaterThan(0);
+  expect((await screen.findAllByLabelText("Start your journey")).length).toBeGreaterThan(0);
 });

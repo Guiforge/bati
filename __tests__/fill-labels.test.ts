@@ -16,6 +16,8 @@ import { parse } from "@babel/parser";
  */
 const LIGHT_FILLS = ["$success", "$error", "$warning", "$resourceGold"];
 const LIGHT_LABELS = ["$text", "$white", "$onPrimary", "$textSecondary"];
+// The braise takes `$onPrimary` alone: bone on it is 4.10:1, under AA for body text.
+const PRIMARY_BANNED = ["$text", "$textSecondary", "$white"];
 
 type Node = { type: string; [key: string]: unknown };
 
@@ -49,9 +51,14 @@ function lightLabelsOnLightFills(source: string): string[] {
       (n.attributes as Node[]).find(
         (a) => a.type === "JSXAttribute" && names.includes((a.name as Node).name as string),
       )?.value;
-    const fill = tokenIn(attr(["bg", "backgroundColor"]), LIGHT_FILLS);
+    const fillAttr = attr(["bg", "backgroundColor"]);
+    const fill = tokenIn(fillAttr, LIGHT_FILLS);
     const label = tokenIn(attr(["color"]), LIGHT_LABELS);
     if (fill && label) out.push(`${label} on ${fill}`);
+    const primaryLabel = tokenIn(attr(["color"]), PRIMARY_BANNED);
+    if (!fill && primaryLabel && tokenIn(fillAttr, ["$primary"])) {
+      out.push(`${primaryLabel} on $primary`);
+    }
   }
   return out;
 }
@@ -82,9 +89,16 @@ describe("labels on light fills", () => {
       ),
     ).toEqual(["$white on $error"]);
     expect(lightLabelsOnLightFills(`const a = <Box bg="$success" color="$bgDark" />;`)).toEqual([]);
+    // HomeStage's old CTA.
+    expect(
+      lightLabelsOnLightFills(`const a = <Button bg="$primary" color="$text" fontSize={17} />;`),
+    ).toEqual(["$text on $primary"]);
+    expect(
+      lightLabelsOnLightFills(`const a = <Button bg="$primary" color="$onPrimary" />;`),
+    ).toEqual([]);
   });
 
-  it("no element puts a light label on a state or gold fill", () => {
+  it("no element puts a light label on a state or gold fill, or bone on the braise", () => {
     const offenders: string[] = [];
     for (const file of sourceFiles().filter((f) => f.endsWith(".tsx"))) {
       for (const hit of lightLabelsOnLightFills(fs.readFileSync(file, "utf8"))) {

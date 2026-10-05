@@ -36,6 +36,7 @@ export function AppButton({
   // and ink on the light signal fills, where a pale label measures 3:1.
   const onLightFill = backgroundColor !== undefined && LIGHT_FILLS.includes(backgroundColor);
   const getColor = (): ColorTokens => {
+    if (backgroundColor === "$error") return "$onError";
     if (onLightFill) return "$bgDark";
     return variant === "outline" ? "$text" : "$onPrimary";
   };

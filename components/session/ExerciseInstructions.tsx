@@ -102,7 +102,7 @@ export function ExerciseInstructionsModal({
             pressStyle={{ opacity: 0.9 }}
             accessibilityRole="button"
           >
-            <Text color="$text" fontSize={18} fontWeight="700">
+            <Text color="$onPrimary" fontSize={18} fontWeight="700">
               {t("common.close")}
             </Text>
           </Button>

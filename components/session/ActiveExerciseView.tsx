@@ -790,7 +790,7 @@ export function ActiveExerciseView() {
         ) : (
           <AppButton
             testID="session-complete-exercise"
-            height={60}
+            height={64}
             fontSize={24}
             backgroundColor={isPastTarget ? "$success" : undefined}
             onPress={handleDonePress}
@@ -929,7 +929,7 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
     >
       <YStack
         height={60}
-        rounded={7}
+        rounded="$3"
         bg="$primary"
         overflow="hidden"
         items="center"

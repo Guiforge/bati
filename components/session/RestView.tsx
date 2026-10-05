@@ -340,7 +340,7 @@ export function RestView() {
         {/* Skip Button — the ScrollView's sibling, never inside it, so it stays reachable. */}
         <AppButton
           testID="session-skip-rest"
-          height={60}
+          height={64}
           fontSize={24}
           onPress={handleSkipRest}
           accessibilityLabel={t(copy.ctaLabel)}

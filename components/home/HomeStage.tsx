@@ -172,7 +172,7 @@ export function HomeStage() {
               testID="home-quest-details"
               width={56}
               height={56}
-              rounded={14}
+              rounded="$3"
               borderWidth={1}
               borderColor="$glassBorder"
               bg="$glassBg"

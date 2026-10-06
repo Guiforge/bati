@@ -1,0 +1,14 @@
+{
+  "note": "SecureStore and preference items exactly as the v2.9 cipher code left them",
+  "password": "correct horse battery staple",
+  "recovery": "679f 7781 c580 64bc 6a09 121d 3ea4 a347 6dd7 ee56 3167 e205 51d3 bbee d9be 71b0",
+  "plaintext": "SQLite format 3\u0000 the hero as 2.9 sealed it",
+  "file": "v2-phone.batb",
+  "secure": {
+    "bati.backup.vault": "{\"key\":\"t7IAanMWSSrzC2bljnWTmsx0m1rQXCXp0cU2YSUexXg=\",\"header\":\"QkFUQgICAQAJJ8CmalT8osy9DoYkWNg1krAzZBun35QHtrxp0PGMBKtrtmdcM1noEeH7L/m4Xijf+N/n6eLlSJn+O9aypDiA13Ll9SLmT2OKSfPujoPKAgAAAAAqgVKPXfnPia/xC22lb+zhkf5ELznxd95Ks8+wkVb3SGt4zb+MZaKBkYCkPTr5x0b0gBLX5jKXYNsiEuNRpOQULDMnzpF1vCdIb+VHNLxf4RlK9xNr5d2Hj3DsbBYXWh05G2IlwOoOlg==\"}",
+    "bati.sync.install": "0190a000-0000-7000-8000-00000000000a"
+  },
+  "preferences": {
+    "backupEncryption": "on"
+  }
+}

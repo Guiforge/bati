@@ -1,8 +1,8 @@
 import { useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { XStack, YStack } from "tamagui";
+import { type SpaceTokens, XStack, YStack } from "tamagui";
 import { InkGauge } from "@/components/common/InkGauge";
 import { Flame, Medal } from "@/components/icons";
 import {
@@ -159,7 +159,7 @@ function Lead({ stats, mode }: { stats: JournalStats; mode: Mode }) {
           : regularLead(t, language, stats);
 
   return (
-    <NText testID="journal-lead" px={11} pb={11} fontSize={15} lineHeight={22}>
+    <NText testID="journal-lead" px="$5" pb={11} fontSize={15} lineHeight={22}>
       {plain}
       {accent ? " " : ""}
       {accent ? (
@@ -192,7 +192,7 @@ const CAPTION_STYLE = { textAlign: "right", flexShrink: 1 } as const;
  * drops under the title when they do not: on one unwrapped row at a large font, or in French
  * ("sur les memes 3 jours"), the caption overran the card or clipped.
  */
-export function HeaderRow({ children, px }: { children: ReactNode; px?: number }) {
+export function HeaderRow({ children, px }: { children: ReactNode; px?: SpaceTokens }) {
   return (
     <XStack
       testID="journal-card-header"
@@ -305,13 +305,13 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
 
   return (
     <YStack testID="journal-wall">
-      <HeaderRow px={11}>
+      <HeaderRow px="$5">
         <NKicker>{title}</NKicker>
         <NMuted fontSize={11} style={CAPTION_STYLE}>
           {mode === "firstDay" ? t("journal.wall_meta_first") : t("journal.wall_meta")}
         </NMuted>
       </HeaderRow>
-      <YStack px={11} pt={8} gap={6}>
+      <YStack px="$5" pt={8} gap={6}>
         {stats.wall.map((entry) => (
           <WallRow key={`${entry.exerciseId}:${entry.type}`} entry={entry} now={stats.now} />
         ))}
@@ -352,7 +352,7 @@ function FlameBlock({ stats }: { stats: JournalStats }) {
     .join(" ");
 
   return (
-    <NBlock testID="journal-flame" mx={11} mt={17}>
+    <NBlock testID="journal-flame" mx="$5" mt={17}>
       <XStack items="center" gap={8}>
         <Flame size={18} color={flame.litUntil ? "$resourceGold" : "$muted"} strokeWidth={2.5} />
         {/* "0 days lit" beside today's gold dot told a hero with one session that nothing counted.
@@ -464,7 +464,7 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
   const todayKey = dayKey(now);
 
   return (
-    <NBlock testID="journal-month" mx={11} mt={6}>
+    <NBlock testID="journal-month" mx="$5" mt={6}>
       <HeaderRow>
         <NKickerQuiet>
           {t("journal.month_so_far", { month: monthName(language, now) })}
@@ -535,7 +535,9 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
 
       <NRule />
 
-      <XStack flexWrap="wrap" gap={3} accessibilityElementsHidden>
+      {/* One row, always: each mark takes its share of the width, up to its 9 dp. Fixed at 9 with a
+          wrap, a 31-day month dropped its last day onto a line of its own on a phone. */}
+      <XStack gap={3} accessibilityElementsHidden>
         {Array.from({ length: daysInMonth }, (_, index) => {
           const day = new Date(now.getFullYear(), now.getMonth(), index + 1);
           const key = dayKey(day);
@@ -545,6 +547,7 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
               kind={month.activity.get(key)}
               today={key === todayKey}
               future={day.getTime() > now.getTime()}
+              shrink
             />
           );
         })}
@@ -565,11 +568,14 @@ function DayMark({
   today,
   future,
   round,
+  shrink,
 }: {
   kind: DayActivity | undefined;
   today: boolean;
   future: boolean;
   round?: boolean;
+  /** Share the row's width instead of a fixed 9 dp, never wider. */
+  shrink?: boolean;
 }) {
   const filled = kind === "quest" || kind === "both";
   let bg: "$resourceGold" | "$ink900" | "$ink800" | undefined = "$ink800";
@@ -578,8 +584,7 @@ function DayMark({
   else if (future) bg = "$ink900";
   return (
     <YStack
-      width={9}
-      height={9}
+      {...(shrink ? { flex: 1, maxW: 9, aspectRatio: 1 } : { width: 9, height: 9 })}
       rounded={round ? 5 : 2}
       bg={bg}
       borderWidth={today || kind === "outing" ? 1.5 : 0}
@@ -598,14 +603,24 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
+  // A label is drawn only where its segment holds it with room to spare: by share alone,
+  // "Shoulders 21%" was judged to fit and ran into "Legs 18%" with no gap. The verdict below
+  // names the muscles that are behind, with their share, so a dropped label loses nothing.
+  const [rowWidth, setRowWidth] = useState(0);
   const { balance } = stats;
   if (balance.totalVolume === 0) return null;
   const verdict = workVerdict(t, language, balance);
   const shown = balance.muscles.filter((m) => m.percentage > 0);
   const label = (code: keyof typeof MUSCLE_LABELS) => MUSCLE_LABELS[code][language];
+  const total = shown.reduce((sum, m) => sum + m.percentage, 0) || 1;
+  // ponytail: glyphs estimated at 0.56 em of the 10 px label (read off a phone capture), no text
+  // measuring, and 6 dp of air before the next label; measure with
+  // onTextLayout if names start being dropped while they visibly fit.
+  const fits = (text: string, pct: number) =>
+    text.length * 5.6 + 6 <= ((rowWidth - 2 * (shown.length - 1)) * pct) / total;
 
   return (
-    <NBlock testID="journal-work" mx={11} mt={6}>
+    <NBlock testID="journal-work" mx="$5" mt={6}>
       <HeaderRow>
         <NKickerQuiet>{t("journal.work_title")}</NKickerQuiet>
         <NMuted fontSize={11} style={CAPTION_STYLE}>
@@ -629,20 +644,21 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
           );
         })}
       </XStack>
-      <XStack gap={2} mt={5}>
-        {shown.map((m) => (
-          <NMuted
-            key={m.muscle}
-            flex={m.percentage}
-            fontSize={10}
-            lineHeight={13}
-            numberOfLines={1}
-          >
-            {/* Only a segment wide enough for its name is labelled; the verdict below names the
-                ones that are behind, with their share. */}
-            {m.percentage >= 12 ? `${label(m.muscle)} ${formatShare(language, m.percentage)}` : ""}
-          </NMuted>
-        ))}
+      <XStack gap={2} mt={5} onLayout={(e) => setRowWidth(e.nativeEvent.layout.width)}>
+        {shown.map((m) => {
+          const text = `${label(m.muscle)} ${formatShare(language, m.percentage)}`;
+          return (
+            <NMuted
+              key={m.muscle}
+              flex={m.percentage}
+              fontSize={10}
+              lineHeight={13}
+              numberOfLines={1}
+            >
+              {fits(text, m.percentage) ? text : ""}
+            </NMuted>
+          );
+        })}
       </XStack>
       <XStack mt={11} flexWrap="wrap" items="baseline" gap={6}>
         <NText fontSize={12.5} lineHeight={18}>
@@ -685,7 +701,7 @@ export function LevelBlock({ stats }: { stats: JournalStats }) {
           : t("journal.shelf_next_special", { title: nextTitle });
 
   return (
-    <NBlock testID="journal-level" mx={11} mt={6}>
+    <NBlock testID="journal-level" mx="$5" mt={6}>
       <HeaderRow>
         <NKickerQuiet>
           {t("journal.level_kicker", { title: level.title[language], level: level.level })}
@@ -767,7 +783,7 @@ export function StatsView({ stats }: { stats: JournalStats }) {
       {stats.isFirstDay ? null : <MonthBlock stats={stats} />}
       <WorkBlock stats={stats} />
       <LevelBlock stats={stats} />
-      <XStack mx={11} mt={17} flexWrap="wrap" gap={6}>
+      <XStack mx="$5" mt={17} flexWrap="wrap" gap={6}>
         <NButton
           testID="journal-chip-lifetime"
           onPress={() => router.push("/journal/lifetime" as never)}

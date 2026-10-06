@@ -5,7 +5,7 @@ import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshControl, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { XStack, YStack } from "tamagui";
+import { getTokenValue, XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { Skeleton } from "@/components/common/Skeleton";
@@ -37,7 +37,7 @@ const ListGap = () => <YStack height={8} />;
 
 /** Reserves the wall's first screen, so the swap to real content does not shuffle. */
 const StatsSkeleton = () => (
-  <YStack px={11} gap={6}>
+  <YStack px="$5" gap={6}>
     <Skeleton height={44} bg="$surface2" />
     {[0, 1, 2, 3].map((i) => (
       <Skeleton key={i} height={60} bg="$surface2" />
@@ -263,13 +263,16 @@ export default function JournalScreen() {
               ) : null
             }
             style={{ flex: 1 }}
-            contentContainerStyle={{ paddingHorizontal: 11, paddingBottom: insets.bottom + 20 }}
+            contentContainerStyle={{
+              paddingHorizontal: getTokenValue("$5", "space"),
+              paddingBottom: insets.bottom + 20,
+            }}
             showsVerticalScrollIndicator={false}
           />
         ) : historyLoaded ? (
           <YStack
             testID="journal-history-empty"
-            mx={11}
+            mx="$5"
             mt={17}
             p={17}
             rounded={8}

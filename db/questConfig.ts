@@ -244,7 +244,12 @@ export function applyConfigToSlots(
   return slots.map((qex) => {
     const key = String(qex.id);
     const swappedId = swaps[key];
-    const substitute = swappedId === undefined ? undefined : exercisesById[swappedId];
+    // Swapped back onto the movement already in the slot is no swap: it keeps the slot's unit
+    // (issue #163), and its art.
+    const substitute =
+      swappedId === undefined || swappedId === qex.exercise.id
+        ? undefined
+        : exercisesById[swappedId];
     // The unit is resolved first, then the hero's number lands in it. `applySwap` drops the
     // override when the movement changes, so `targets[id]` is only ever a value for the movement
     // standing in the slot now — after a swap that flipped the unit, a value in the *new* unit.

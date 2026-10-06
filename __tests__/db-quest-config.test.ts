@@ -240,6 +240,23 @@ describe("db/questConfig", () => {
     expect(out.exercises[1]?.target).toEqual({ type: "time", value: 30 });
   });
 
+  /** Issue #163, the second door: swapped away and back, the written movement is not a stand-in. */
+  test("a swap back onto the written movement keeps the slot's own unit", () => {
+    const quest = makeQuest();
+    const slot = quest.exercises[0];
+    assert(slot);
+    const catCow = { ...slot.exercise, enName: "Cat-Cow", measure: "time" as const };
+    slot.exercise = catCow;
+
+    const out = applyQuestConfig(
+      quest,
+      { level: Difficulty.Medium, swaps: { 11: catCow.id } },
+      indexExercises([catCow]),
+    );
+
+    expect(out.exercises[0]?.target).toEqual({ type: "reps", value: 10 });
+  });
+
   /**
    * The second report on the same slot: the field went dead. A target written *after* a swap is
    * a value in the movement's own unit, and retargeting used to run last and overwrite it with

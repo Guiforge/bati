@@ -1562,7 +1562,7 @@ export const useSessionStore = create<SessionState>()(
       // The slot's target, unless the movement is measured the other way — same call
       // `applyQuestConfig` makes. Results already logged keep their own `exerciseId` and
       // `pricing`: they are true.
-      const target = retargetForMovement(slot.target, exercise, get().userLevel);
+      const target = retargetForMovement(slot.target, slot.exercise, exercise, get().userLevel);
       const exercises = quest.exercises.map((qex, i) =>
         i === currentExerciseIndex
           ? {

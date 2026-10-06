@@ -244,7 +244,11 @@ export function applyConfigToSlots(
   return slots.map((qex) => {
     const key = String(qex.id);
     const swappedId = swaps[key];
-    const substitute = swappedId === undefined ? undefined : exercisesById[swappedId];
+    // Swapped back onto the movement already in the slot is no swap: it keeps its art too.
+    const substitute =
+      swappedId === undefined || swappedId === qex.exercise.id
+        ? undefined
+        : exercisesById[swappedId];
     // The unit is resolved first, then the hero's number lands in it. `applySwap` drops the
     // override when the movement changes, so `targets[id]` is only ever a value for the movement
     // standing in the slot now — after a swap that flipped the unit, a value in the *new* unit.
@@ -255,7 +259,7 @@ export function applyConfigToSlots(
     const base =
       substitute === undefined
         ? qex.target
-        : retargetForMovement(qex.target, substitute, config.level);
+        : retargetForMovement(qex.target, qex.exercise, substitute, config.level);
     const raw = targets[key];
     // The style follows the resolved unit, for the same reason the unit follows the swap: an
     // hour is a hold's ceiling and a walk is not a hold, so a slot standing on an expedition

@@ -116,22 +116,38 @@ describe("formatTarget", () => {
 
 describe("retargetForMovement", () => {
   const repSlot = { type: "reps" as const, value: 22 };
+  const squat = { id: 1 };
 
   test("keeps the slot's target when the movement is measured the same way, or never said", () => {
-    expect(retargetForMovement(repSlot, { measure: "reps" }, Difficulty.Medium)).toBe(repSlot);
-    expect(retargetForMovement(repSlot, { measure: null }, Difficulty.Medium)).toBe(repSlot);
+    expect(retargetForMovement(repSlot, squat, { id: 2, measure: "reps" }, Difficulty.Medium)).toBe(
+      repSlot,
+    );
+    expect(retargetForMovement(repSlot, squat, { id: 2, measure: null }, Difficulty.Medium)).toBe(
+      repSlot,
+    );
   });
 
   // The bug: Squat (22 reps) swapped for Superman, a hold everywhere in the seeds, ran as
   // "22 reps of Superman" — and that row then poisoned records, volume, XP and the ladder.
   test("a hold landing in a rep slot runs in seconds, at the hero's level", () => {
-    expect(retargetForMovement(repSlot, { measure: "time" }, Difficulty.Medium)).toEqual({
+    expect(
+      retargetForMovement(repSlot, squat, { id: 2, measure: "time" }, Difficulty.Medium),
+    ).toEqual({
       type: "time",
       value: 30,
     });
     // 25 rather than 23: time targets land on the five-second grid the stepper moves in, so a
     // prescription is always a value the hero could have dialled themselves.
-    expect(retargetForMovement(repSlot, { measure: "time" }, Difficulty.Easy).value).toBe(25);
+    expect(
+      retargetForMovement(repSlot, squat, { id: 2, measure: "time" }, Difficulty.Easy).value,
+    ).toBe(25);
+  });
+
+  // Issue #163: the movement the slot was written for is not a stand-in, whatever its measure.
+  test("the slot's own movement keeps the unit it was written in", () => {
+    expect(retargetForMovement(repSlot, squat, { id: 1, measure: "time" }, Difficulty.Medium)).toBe(
+      repSlot,
+    );
   });
 });
 

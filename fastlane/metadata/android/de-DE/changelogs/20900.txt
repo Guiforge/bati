@@ -1,9 +1,5 @@
-- Dorfbewohner verdecken nichts mehr: im Dorf stehen sie auf
-  dem Bild, überall sonst sprechen sie in einer Zeile unter
-  dem Titel.
-- Eine vergessene Haltezeit wird kein Rekord mehr: Bati
-  fragt "6:02 gehalten?". Einen Satz kannst du korrigieren.
-- Ein besiegter Boss behält auf der Teilen-Karte seinen Namen.
-- Der Start schlägt die Quest vor, die am längsten liegt.
-- Entfernungen folgen der Region deines Telefons, bis du
-  wählst.
+- „Meine Sicherung teilen“ heißt jetzt „Datei speichern“: Drive und Downloads sind dabei.
+- Ein stärkeres Sicherungspasswort und 12 Wörter. Deine alten Dateien öffnen sich weiter.
+- Mehrere Geräte: Aktualisiere Bati auf allen, bevor du dein Passwort erneuerst.
+- Sync-Korrekturen: Nichts geht verloren oder hängt, wenn Geräte abweichen.
+- Außerdem: Dorfbewohner verdecken das Dorf nicht mehr, ein vergessenes Halten wird kein Rekord, Distanzen folgen deiner Region.

@@ -1,9 +1,5 @@
-- Les villageois ne couvrent plus rien : dans le Village ils
-  se tiennent sur la peinture, ailleurs ils parlent sur une
-  ligne sous le titre.
-- Une tenue oubliée ne devient plus un record : Bati te
-  demande « Tenu 6:02 ? ». Tu peux corriger une série.
-- Un boss vaincu garde son nom sur la carte de partage.
-- L'accueil te propose la quête laissée le plus longtemps.
-- Les distances suivent la région du téléphone, tant que
-  tu n'as pas choisi.
+- « Partager ma sauvegarde » devient « Enregistrer un fichier » : Drive et Téléchargements y sont.
+- Un mot de passe des sauvegardes plus solide et 12 mots. Tes anciens fichiers s'ouvrent toujours.
+- Plusieurs appareils : mets Bati à jour sur tous avant de mettre à jour ton mot de passe.
+- Synchro : rien ne se perd ni ne bloque quand les appareils divergent.
+- Aussi : les villageois ne couvrent plus le village, une tenue oubliée n'est plus un record, les distances suivent ta région.

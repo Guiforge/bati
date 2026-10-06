@@ -1,0 +1,12 @@
+{
+  "name": "bati-node-harness",
+  "private": true,
+  "description": "Tools of the Node harness only (property tests, mutation testing). Not part of the app: kept out of the root package.json so the app's dependencies, licences and build are untouched.",
+  "devDependencies": {
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/jest-runner": "^10.0.0",
+    "@stryker-mutator/typescript-checker": "^10.0.0",
+    "fast-check": "^4.10.2",
+    "typescript": "^5.9.3"
+  }
+}

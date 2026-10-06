@@ -92,10 +92,5 @@ test-gpx/
 # UX audit screenshots, throwaway by design
 .audit/
 
-# Release bench
-.bench-cache/
-verif/*/evidence/
-test/infra/data/
-
 # Pose reference pictures live in a private repo (~/.cache/bati-art-loop/pose-refs): some are photos of the maintainer.
 scripts/pose-refs/*.png

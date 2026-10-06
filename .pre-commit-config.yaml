@@ -16,10 +16,10 @@ repos:
         exclude: ^__tests__/fixtures/backup/emulator/
         stages: [pre-commit]
       - id: trailing-whitespace
-        exclude: ^(assets/|drizzle/|android/|package-lock\.json|test/mutants/.*\.patch$)
+        exclude: ^(assets/|drizzle/|android/|package-lock\.json)
         stages: [pre-commit]
       - id: end-of-file-fixer
-        exclude: ^(assets/|drizzle/|android/|package-lock\.json|test/mutants/.*\.patch$)
+        exclude: ^(assets/|drizzle/|android/|package-lock\.json)
         stages: [pre-commit]
 
   - repo: https://github.com/gitleaks/gitleaks

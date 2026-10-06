@@ -12,8 +12,6 @@
       "!**/metro.config.js",
       "!assets",
       "!.claude",
-      "!.bench-cache",
-      "!verif",
       "!.github",
       "!docs/legal/**/*.html",
       "!drizzle"

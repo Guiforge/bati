@@ -33,7 +33,10 @@ const DEV_XP_NOTE = "__dev_xp";
 async function setDevLevel(level: number): Promise<void> {
   await db.delete(completedQuest).where(eq(completedQuest.notes, DEV_XP_NOTE));
   const realXp = await getTotalXp();
-  const targetXp = getXpForLevel(level);
+  // Two thirds into the level, not on its first XP: a hero at 0 / 2,000 photographs as an empty
+  // bar on Home and Victory, which is what the store screenshots are taken from.
+  const base = getXpForLevel(level);
+  const targetXp = base + Math.round(((getXpForLevel(level + 1) - base) * 2) / 3);
   // Real sessions can already put the hero above the target: XP is only ever added, never
   // deducted, so going down means deleting real history — not this screen's job.
   if (targetXp > realXp) {

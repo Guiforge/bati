@@ -13,6 +13,7 @@ import { getBossAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import type { MuscleCode } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { BossHpGauge } from "./BossHpGauge";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { sessionArtHeight } from "./sessionArt";
 
@@ -43,9 +44,9 @@ type BossArenaProps = {
   children?: ReactNode;
 };
 
-/** How long the trail holds at the old HP before draining, and the HP hairline's own height. */
+/** How long the trail holds at the old HP before draining, and the HP gauge's own height. */
 const TRAIL_HOLD_MS = 700;
-const BAR_HEIGHT = 3;
+const ELASTIC = { flexGrow: 1 } as const;
 /** How long the portrait recoils from a hit. Short enough to read as impact, not as a wobble. */
 const FLINCH_MS = 120;
 /** How long the damage numeral stays struck over the art. */
@@ -169,7 +170,6 @@ export function BossArena({
   lastDamage,
   children,
 }: BossArenaProps) {
-  const { t } = useTranslation();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
@@ -181,24 +181,12 @@ export function BossArena({
   // Felled mid-session (the last set landed the kill): the fight is over but the arena is still
   // on screen — the monster goes down instead of standing at 0 HP as if nothing happened.
   const isDown = currentHp <= 0;
-  /**
-   * Never green.
-   *
-   * `$success` is what this app paints "you are fine" in, and it was on a hostile creature's
-   * health for the whole first half of every fight: a serpent at 422 of 425 read as a healthy
-   * status row rather than as something that had barely been scratched. The phase palette is the
-   * register the arena already speaks in, a red rim and a darkening room, so the numeral and the
-   * bar live in it too: fire while the monster is whole, the error red once it is losing.
-   */
-  const hpColor = isEnraged || isDown || hpPercent < 50 ? "$error" : "$resourceFire";
-
   const trailHp = useDamageTrail(currentHp, reducedMotion);
   const { showDamage, flinching } = useHitReaction(lastDamage, reducedMotion);
   const pulse = useEnragePulse(isEnraged && !isDown, reducedMotion);
   const [expanded, setExpanded] = useState(false);
 
   const artHeight = sessionArtHeight(width, height, "boss");
-  const trailPercent = getHpPercent(trailHp, totalHp);
   // The shiny floor keeps the gold visible even at phase 1, where the red rim would be off.
   const rimOpacity = Math.max(pulse ? look.rim * 0.55 : look.rim, shiny ? 0.25 : 0);
   const rimColor = shiny ? rawColors.resourceGold : rawColors.error;
@@ -211,6 +199,9 @@ export function BossArena({
   return (
     <YStack
       height={artHeight}
+      // The arena is the column's elastic child: never shorter than the art's cut, it takes what
+      // the counter and the CTA leave instead of a dead band between them.
+      style={ELASTIC}
       width="100%"
       position="relative"
       overflow="hidden"
@@ -311,34 +302,6 @@ export function BossArena({
         pointerEvents="none"
       />
 
-      {/* HP as a hairline at the screen's own top edge, the way a game puts a boss bar at the top
-          of the world. It was a 10 px bar in a `$bgDark` strip under the picture with a
-          right-aligned `450 / 1070` beside it — a caption, not the boss's health. */}
-      <YStack position="absolute" t={0} l={0} r={0} height={BAR_HEIGHT} bg="$bgOverlay">
-        {/* Trail first, so the live bar paints over it and only the difference shows. */}
-        <YStack
-          testID="boss-hp-trail"
-          position="absolute"
-          t={0}
-          b={0}
-          l={0}
-          width={`${trailPercent}%`}
-          bg="$error"
-          opacity={0.45}
-          transition={quick}
-        />
-        <YStack
-          testID="boss-hp-fill"
-          position="absolute"
-          t={0}
-          b={0}
-          l={0}
-          width={`${hpPercent}%`}
-          bg={hpColor}
-          transition={quick}
-        />
-      </YStack>
-
       <YStack position="absolute" b="$3" l="$4" r="$4" gap="$2">
         <XStack items="flex-end" gap="$2">
           <Text
@@ -352,15 +315,16 @@ export function BossArena({
           >
             {bossName}
           </Text>
-          <XStack items="baseline" gap="$1">
-            <Text fontWeight="700" fontSize={15} color={hpColor} transition="quick">
-              {currentHp}
-            </Text>
-            <Text fontWeight="700" fontSize={12} color="$textSecondary">
-              / {totalHp} {t("boss.hp")}
-            </Text>
-          </XStack>
         </XStack>
+
+        {/* The boss's health: one gauge, shared with the campaign's boss panel. */}
+        <BossHpGauge
+          hp={currentHp}
+          maxHp={totalHp}
+          isEnraged={isEnraged}
+          isDown={isDown}
+          trailHp={trailHp}
+        />
 
         <StatusLine
           isEnraged={isEnraged}
@@ -466,8 +430,8 @@ function StatusLine({
       <XStack items="center" gap="$3" height={16} accessibilityLabel={label}>
         {!!weaknessMuscle && (
           <XStack items="center" gap="$1">
-            <Target size={12} color="$secondary" />
-            <Text fontSize={11} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+            <Target size={12} color="$primaryText" />
+            <Text fontSize={11} fontWeight="700" color="$primaryText" numberOfLines={1}>
               {t(`muscles.${weaknessMuscle}`)}
             </Text>
           </XStack>
@@ -522,7 +486,7 @@ function DamageBurst({
       enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.4 }}
       exitStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
     >
-      {isCritical ? <Zap size={20} color="$error" /> : <Swords size={16} color="$secondary" />}
+      {isCritical ? <Zap size={20} color="$error" /> : <Swords size={16} color="$primaryText" />}
       <Text
         fontWeight="700"
         fontSize={isCritical ? 28 : 22}
@@ -530,7 +494,7 @@ function DamageBurst({
       >
         {isCritical ? `${t("common.crit")} ` : ""}−{damage}
       </Text>
-      {!!weaknessBonus && <Target size={16} color="$secondary" />}
+      {!!weaknessBonus && <Target size={16} color="$primaryText" />}
       {!!resistancePenalty && <Shield size={16} color="$textSecondary" />}
     </XStack>
   );

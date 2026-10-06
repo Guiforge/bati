@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 
 import { act, fireEvent, render } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import VillagePage from "@/app/(tabs)/village";
 import { cameoBand } from "@/components/chorus/cameoAnchor";
 import { VillagerCameo } from "@/components/chorus/VillagerCameo";
+import { rawColors } from "@/constants/rawColors";
 import { CAMEO_LINGER_MS, TYPE_MS_PER_CHAR } from "@/constants/villagers";
 import en from "@/locales/en.json";
 import { useChorusStore } from "@/stores/chorus";
@@ -161,6 +163,19 @@ describe("the Village's floating villager", () => {
     expect(preferences.setGuidesSeen).toHaveBeenCalledWith(["guide_village"]);
   });
 
+  it("speaks in a parchment bubble with dark ink", async () => {
+    const { getByTestId, getByText } = await renderVillage();
+    await act(() => {
+      speak();
+    });
+    const bubble = StyleSheet.flatten(getByTestId("villager-bubble").props.style);
+    expect(bubble.backgroundColor).toBe(rawColors.parchment);
+    const text = StyleSheet.flatten(getByTestId("villager-line").props.style);
+    expect(text.color).toBe(rawColors.bgDark);
+    expect([undefined, "400"]).toContain(text.fontWeight);
+    expect(getByText("villagers.names.farmer")).toHaveStyle({ color: rawColors.ink800 });
+  });
+
   it("shows the line", async () => {
     const { getByText } = await renderVillage();
     await act(() => {
@@ -188,7 +203,7 @@ describe("the Village's floating villager", () => {
   });
 
   it("makes the zone one generous button for a screen reader, with the sentence readable", async () => {
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speakGuide(en.villagers.farmer.guide_village[0] as string);
     });
@@ -207,7 +222,7 @@ describe("the Village's floating villager", () => {
 
   // TalkBack and VoiceOver activate with a click, which calls `onPress` and never `onPressIn`.
   it("is sent away by an accessibility activation too", async () => {
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speak();
     });
@@ -298,7 +313,7 @@ describe("the Village's floating villager", () => {
   });
 
   it("does not take a first tap to finish the line: one press-in and it is gone, mid-sentence", async () => {
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speakGuide(en.villagers.farmer.guide_village[0] as string);
     });
@@ -364,7 +379,7 @@ describe("the Village's floating villager", () => {
 
   it("types a guide out, and not under reduced motion", async () => {
     const guide = en.villagers.farmer.guide_village[0] as string;
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speakGuide(guide);
     });
@@ -377,7 +392,7 @@ describe("the Village's floating villager", () => {
   it("does not type at all under reduced motion", async () => {
     useSettingsStore.setState({ reducedMotion: true });
     const guide = en.villagers.farmer.guide_village[0] as string;
-    const { getByTestId } = await renderVillage();
+    const { getByTestId, getByText } = await renderVillage();
     await act(() => {
       speakGuide(guide);
     });

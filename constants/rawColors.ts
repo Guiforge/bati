@@ -1,3 +1,4 @@
+import type { ColorTokens } from "tamagui";
 import type { DifficultyCode } from "@/db/schema";
 
 /**
@@ -14,131 +15,128 @@ import type { DifficultyCode } from "@/db/schema";
  * (`.biome/plugins/noRawHexColor.grit`) now rejects raw hex everywhere but this file — which is
  * only enforceable because there is nothing left outside it.
  */
+
+// The braise as text: one value, three roles. Fire is the brand's light, and a caution in amber
+// was indistinguishable from the gold under deuteranopia (spec 2026-10-05, rule table).
+const BRAISE_LIGHT = "#F08A4B";
+
 export const rawColors = {
   // --- Core ---
-  // Deep nocturnal indigo, not electric blue: the whole world is desaturated night with gold
-  // and ember accents, and the old #0D33F2 read as imported from another app (2026-08 audit).
-  primary: "#4A3FD6", // Deep Indigo
+  // The braise: the warm light every illustration already has (an axe in a sunbeam, a window,
+  // a forge), on the cold ink night around it. A fill colour; text on it is `onPrimary`.
+  primary: "#C2410C",
   /**
-   * The same indigo, light enough to read as text on a dark background.
-   *
-   * `primary` is a fill colour: white on it clears AA comfortably (6.01:1 on the primary
-   * button). As *text* on any of our dark surfaces it lands under AA even at large
-   * sizes, and under the 3:1 that WCAG asks of meaningful icons. Same hue, same saturation,
-   * raised in lightness until it clears AA body on bgDark, surface and surface2 (5.39 / 5.20 /
-   * 4.85). Use this for text and icons; keep `primary` for anything you fill.
+   * The braise light enough to read as text or an icon on any of our dark surfaces (6.5:1 at
+   * worst, on surface2). `primary` itself is a fill: 3.75:1 on bgDark, fine for a shape, never
+   * for a sentence.
    */
-  primaryText: "#8177F7",
-  primaryHover: "#5D53E8",
-  primaryPress: "#372FA6",
-  secondary: "#DB2777", // Magenta
-  success: "#16A34A",
-  warning: "#F59E0B", // Amber (difficulty MEDIUM, cautions)
-  error: "#FF1744",
+  primaryText: BRAISE_LIGHT,
+  primaryHover: "#D4501A",
+  primaryPress: "#9A3412",
+  /** The seal button's bottom edge: the fill in shadow. */
+  primaryEdge: "#7A2905",
+  /** The label on a `primary` fill: 4.77:1. */
+  onPrimary: "#FFF4E6",
+  success: "#6DB57A",
+  warning: BRAISE_LIGHT,
+  error: "#F0595D",
 
   // --- Immersive backgrounds ---
-  bgDark: "#0B0F19", // The Void
-  bgOverlay: "rgba(11, 15, 25, 0.92)",
+  // Ink, barely cool: measured on the art (quest #373637, Ombre-Lovée #282A35) and the logo
+  // (#3B4D5E). A warm or saturated ground makes the paintings look dirty or imported.
+  bgDark: "#0C0D11", // The Void
+  bgOverlay: "rgba(12, 13, 17, 0.92)",
   // Lighter than the one above, for what has to sit on artwork and still let it through: the
-  // scrim that keeps the status bar readable over the village painting. Removed with the outing
-  // tile it was first made for (#90), back for this. Here rather than inline because the lint
-  // plugin only catches hex, so an rgba typed at a call site is a colour nobody can find again.
-  bgOverlaySoft: "rgba(11, 15, 25, 0.72)",
-  // Behind a bottom sheet that asks something (components/common/FormSheet.tsx). The older sheets
-  // still type the same rgba inline; they move here as they are touched.
+  // scrim that keeps the status bar readable over the village painting.
+  bgOverlaySoft: "rgba(12, 13, 17, 0.72)",
+  // Behind a bottom sheet that asks something (components/common/FormSheet.tsx).
   sheetScrim: "rgba(0, 0, 0, 0.5)",
 
-  // --- Surfaces (glass & tech) ---
-  surface: "#101322",
-  surface2: "#151A2E",
+  // --- Surfaces ---
+  surface: "#15171C",
+  surface2: "#1D2027",
 
-  // --- Glassmorphism ---
-  glassBg: "rgba(16, 19, 34, 0.65)",
-  glassBorder: "rgba(232, 236, 255, 0.14)",
+  // --- Glass ---
+  glassBg: "rgba(21, 23, 28, 0.65)",
+  glassBorder: "rgba(236, 228, 212, 0.14)",
   // `resourceGold` at a fifth: the hairline that marks the oath strip as progression on Home
   // without a full gold rule competing with the XP bar.
-  goldHairline: "rgba(255, 215, 0, 0.22)",
+  goldHairline: "rgba(226, 181, 74, 0.22)",
 
   // --- Text ---
-  text: "#E8ECFF", // Almost white
-  textSecondary: "#909ACB", // Muted Blue-Grey
-  muted: "#64748B",
+  text: "#ECE4D4", // Bone
+  textSecondary: "#A89C88", // Ash
+  // Icons and tints only (widget, recap trace, village rows): 4.08:1 on bgDark, under body AA.
+  muted: "#6B707B",
 
   // --- Effects ---
-  borderStrong: "#2A3360",
-  shadowColor: "#060812",
-  primaryGlow: "rgba(74, 63, 214, 0.45)",
+  borderStrong: "#363A44",
+  shadowColor: "#000000",
 
   // --- Boss phases ---
   // The room the fight happens in, darkening and reddening as the boss loses. Phase 1 uses
-  // `bgDark`; these are its wounded, critical and enraged siblings. They live here rather than as
-  // rgba literals in bossPhase.ts because the `noRawHexColor` plugin only catches hex — the old
-  // tints re-typed `secondary` and `error` by hand and drifted with nothing to stop them.
+  // `bgDark`; these are its wounded, critical and enraged siblings.
   bossPhase2: "#170F1D",
   bossPhase3: "#1F0E18",
   bossPhase4: "#280B12",
 
   // --- The recap map ---
-  // Two colours the basemap needs and the palette cannot lend it (docs/designs/map-immersion.md
-  // § Where the colours live). Everything else the style draws — ground, roads, buildings,
-  // labels — reuses a token above, which is the point of having a palette.
-  /**
-   * Water must read as *depth* against `bgDark` (#0B0F19), never as the blue every mapping app
-   * uses. `shadowColor` is too close to bgDark to read at all, and `surface2` is a UI surface:
-   * a lake painted in it looks like a card lying on the map.
-   */
+  /** Water must read as depth against `bgDark`, never as the blue every mapping app uses. */
   mapWater: "#0E1730",
-  /**
-   * Wood and park, one wash. The only green in the palette is `success`, which means a *state*,
-   * and `pastelGreen` is a legacy safety-net entry. A wood at recap zoom is a texture, not a
-   * status.
-   */
+  /** Wood and park, one wash: a texture at recap zoom, not a status. */
   mapWood: "#101E1B",
 
   // --- Legacy mapping (safety net) ---
-  bgLight: "#101322",
-  pastelBlue: "#1A2633", // Mapped to dark
-  pastelPink: "#331A22",
-  pastelGreen: "#1A3320",
-  pastelYellow: "#33301A",
-  pastelPurple: "#261A33",
-  pastelOrange: "#332618",
+  bgLight: "#15171C",
+  pastelBlue: "#18202A",
+  pastelPink: "#2A1719", // an error tint since the magenta left
+  pastelGreen: "#16261B",
+  pastelYellow: "#2A2413",
+  pastelOrange: "#2B1B12",
 
   // --- Resources ---
-  resourceGold: "#FFD700",
-  resourceWood: "#8B4513",
-  resourceStone: "#808080",
-  resourceFire: "#FF6B35",
-  resourceWater: "#4ECDC4",
-  resourceWind: "#C9B1FF",
-  resourceGrain: "#DAA520",
+  // Only the two that are drawn. The other resources are white game-icons glyphs, like inked
+  // vignettes; their five colours had no consumer and were removed (2026-10).
+  resourceGold: "#E2B54A", // patinated gold: progression, XP, rewards
+  resourceFire: BRAISE_LIGHT,
 
   white: "#FFFFFF",
   black: "#000000",
 
   // --- The Journal's ramps ---
-  // The Journal is drawn with Nocturne's structure (Inter, 0.7x density, borderless surfaces,
-  // outlined buttons, fading rules, one accent) on Bati's own colours: design project "Journal
-  // Bati", option 3c. Its ground, surface, text and accent are the tokens above (`bgDark`,
-  // `surface2`, `text`, `resourceGold`); what a mono system needs and Bati never had is a *ramp*
-  // of its one accent, because "done", "new" and "still coming" are steps of it rather than a
-  // green and a red. Five steps of gold, and two inks below `borderStrong` for empty marks.
-  gold100: "#FFF8D9",
-  gold300: "#FFE066",
-  gold600: "#C4A600",
-  gold700: "#6B5A12",
-  gold800: "#3A3110",
-  gold900: "#241F08",
-  ink800: "#232A44",
-  ink900: "#0E1220",
+  // The Journal is drawn with Nocturne's structure (Inter, borderless surfaces, fading rules,
+  // one accent) on Bati's own colours. Five steps of its gold, two inks for empty marks.
+  gold100: "#F7ECCF",
+  gold300: "#EDCB76",
+  gold600: "#B08A2E",
+  gold700: "#5E4A1E",
+  gold800: "#362C15",
+  gold900: "#211B0E",
+  ink800: "#262A33",
+  /** The phylactère's paper, a step under bone so a speech bubble never outshines the screen's action; ink text 12.6:1, ink800 name 9.3:1. */
+  parchment: "#D9CFBC",
+  ink900: "#101217",
   /** `glassBorder` at nothing: the ends of a fading rule. Transparent black would grey it. */
-  glassBorderClear: "rgba(232, 236, 255, 0)",
+  glassBorderClear: "rgba(236, 228, 212, 0)",
   /** `bgDark` at nothing: where a painting's fade starts. */
-  bgDarkClear: "rgba(11, 15, 25, 0)",
+  bgDarkClear: "rgba(12, 13, 17, 0)",
 } as const;
 
 /**
- * Difficulty has one colour per level, everywhere.
+ * A palette colour (`#rrggbb`) at `alpha`, for the few consumers that need a string rather than
+ * a token: gradients and React Native text shadows. One source per value: a hand-typed rgba of
+ * the ground is how the old fades kept the 2025 blue after the palette moved.
+ */
+export function fade(
+  hex: `#${string}`,
+  alpha: number,
+): `rgba(${number}, ${number}, ${number}, ${number})` {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})` as const;
+}
+
+/**
+ * Difficulty has one colour per level, everywhere: easy success, medium the braise, hard error.
  *
  * The progression chart used `$success`/`$primary`/`$error`; the journal's stats used `#22C55E`
  * and `#EF4444` — a different green and a different red for the same three words, on two screens
@@ -148,4 +146,14 @@ export const DIFFICULTY_COLORS: Record<DifficultyCode, string> = {
   easy: rawColors.success,
   medium: rawColors.primary,
   hard: rawColors.error,
+};
+
+/**
+ * The same three levels as Tamagui tokens, for *text*. Medium reads `$primaryText`, not `$primary`:
+ * the braise is a fill (3.75:1 on bgDark) and its lightened twin is the one legible as words.
+ */
+export const DIFFICULTY_TEXT_TOKENS: Record<DifficultyCode, ColorTokens> = {
+  easy: "$success",
+  medium: "$primaryText",
+  hard: "$error",
 };

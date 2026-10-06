@@ -10,7 +10,10 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { PathStrip } from "@/components/common/PathStrip";
+import { Recitatif } from "@/components/common/Recitatif";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@/components/icons";
@@ -73,7 +76,7 @@ function Header({ onBack, title }: { onBack: () => void; title: string }) {
       </AppIconButton>
       <XStack items="center" gap="$2">
         <Dumbbell size={18} color="$text" strokeWidth={2.5} />
-        <Text fontWeight="700" fontSize={20} color="$text">
+        <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
           {title}
         </Text>
       </XStack>
@@ -92,7 +95,7 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
         <Paragraph color="$text" opacity={0.6} size="$3">
           {message}
         </Paragraph>
-        <AppButton fullWidth={false} variant="secondary" onPress={onRetry}>
+        <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
           {t("exercises.retry", "Retry")} ↻
         </AppButton>
       </YStack>
@@ -117,7 +120,7 @@ function LoadingCard() {
 }
 
 /** Also the loading state, with nothing in it. */
-function ExerciseImage({ source }: { source?: ImageSourcePropType }) {
+function ExerciseImage({ source, name }: { source?: ImageSourcePropType; name?: string }) {
   return (
     <YStack
       width="100%"
@@ -129,7 +132,7 @@ function ExerciseImage({ source }: { source?: ImageSourcePropType }) {
       bg="$bgLight"
       borderWidth={1}
       borderColor="$borderStrong"
-      rounded="$8"
+      rounded="$3"
       shadowColor="$text"
       shadowRadius={0}
       shadowOffset={{ width: 0, height: 5 }}
@@ -145,6 +148,11 @@ function ExerciseImage({ source }: { source?: ImageSourcePropType }) {
           transition={200}
         />
       )}
+      {name ? (
+        <YStack position="absolute" b="$3" l="$3" r="$3">
+          <Recitatif testID="exercise-detail-name">{name}</Recitatif>
+        </YStack>
+      ) : null}
     </YStack>
   );
 }
@@ -246,9 +254,7 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
         </YStack>
 
         <YStack gap="$2" flex={1}>
-          <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
-            {t("exercises.next_step", "NEXT STEP").toUpperCase()}
-          </Text>
+          <SectionLabel>{t("exercises.next_step", "NEXT STEP")}</SectionLabel>
           <Text color="$text" fontWeight="700" fontSize={18}>
             {name}
           </Text>
@@ -477,15 +483,10 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
 
   return (
     <YStack gap="$4">
-      <ExerciseImage source={img} />
+      <ExerciseImage source={img} name={title} />
 
       <Card>
         <YStack gap="$3">
-          {/* Title */}
-          <Text color="$text" fontWeight="700" fontSize={24} lineHeight={28}>
-            {title}
-          </Text>
-
           {/* Description */}
           {desc ? (
             <Paragraph color="$text" opacity={0.7} size="$4" lineHeight={22}>
@@ -495,10 +496,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
 
           {/* Tags */}
           <XStack gap="$2" flexWrap="wrap">
-            <Tag
-              label={equipmentLabel}
-              tone={exercise.equipment === "none" ? "default" : "secondary"}
-            />
+            <Tag label={equipmentLabel} />
             {/* A tempo is seconds per repetition, and neither a hold nor an expedition has
                 repetitions: one is measured in seconds held, the other in ground covered
                 (db/workUnits.ts). The column still holds a 1 so the duration estimator has
@@ -521,9 +519,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
               they meet it. */}
           {loggedHere.length > 0 && (
             <YStack gap="$2">
-              <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
-                {t("exercises.your_numbers", "Your numbers").toUpperCase()}
-              </Text>
+              <SectionLabel>{t("exercises.your_numbers", "Your numbers")}</SectionLabel>
               {loggedHere.map(({ type, ghost }) => (
                 // Two halves that wrap as wholes. One flat wrapping row broke wherever the width
                 // ran out, and "Record 1,000 reps" left its "Aug 15" alone on the next line.
@@ -566,9 +562,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
           {/* Muscles */}
           {exercise.muscles.length > 0 && (
             <YStack gap="$2">
-              <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5}>
-                {t("exercises.muscles", "Muscles").toUpperCase()}
-              </Text>
+              <SectionLabel>{t("exercises.muscles", "Muscles")}</SectionLabel>
               <XStack gap="$2" flexWrap="wrap">
                 {exercise.muscles.map((m) => (
                   <Tag key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} tone="success" />
@@ -692,7 +686,7 @@ function InvalidIdView({ onBack }: { onBack: () => void }) {
       <Text fontWeight="700" fontSize={18} color="$text">
         {t("exercises.invalid_id", "Exercise not found")}
       </Text>
-      <AppButton fullWidth={false} variant="secondary" onPress={onBack}>
+      <AppButton fullWidth={false} variant="outline" onPress={onBack}>
         {t("exercises.go_back", "Go back")}
       </AppButton>
     </YStack>
@@ -769,16 +763,7 @@ export default function ExerciseDetails() {
 
       {/* Content scrolls edge-to-edge; this keeps the status bar readable over it, as on the
           quest screen. Without it the back button slid under the clock. */}
-      <YStack
-        position="absolute"
-        t={0}
-        l={0}
-        r={0}
-        height={insets.top}
-        bg="$bgDark"
-        opacity={0.88}
-        pointerEvents="none"
-      />
+      <StatusBand />
     </YStack>
   );
 }

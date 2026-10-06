@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { Pause } from "@/components/icons";
 import { getBossAsset, getExerciseAsset, getQuestAsset } from "@/constants/assetMap";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { formatTarget } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -21,7 +21,7 @@ import { sessionArtHeight } from "./sessionArt";
 
 /** Same shadow `ExerciseHero` gives its title: contrast of its own, so no scrim covers the art. */
 const OVER_ART_SHADOW = {
-  textShadowColor: "rgba(6, 8, 18, 0.85)",
+  textShadowColor: fade(rawColors.shadowColor, 0.85),
   textShadowOffset: { width: 0, height: 2 },
   textShadowRadius: 6,
 } as const;

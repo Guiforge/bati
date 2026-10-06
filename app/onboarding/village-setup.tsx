@@ -5,12 +5,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H2, Paragraph, Text, useTheme, XStack, YStack } from "tamagui";
+import { getTokens, H2, Text, useTheme, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
 import { getVillageTierAsset } from "@/constants/assetMap";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { reportError } from "@/src/reportError";
 import {
   VILLAGE_NAME_MAX_LENGTH as MAX_NAME_LENGTH,
@@ -71,11 +71,11 @@ export default function VillageSetup() {
         transition={200}
       />
       <LinearGradient
-        colors={["rgba(11, 15, 25, 0.85)", "transparent"]}
+        colors={[fade(rawColors.bgDark, 0.85), "transparent"]}
         style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(11, 15, 25, 0.92)", rawColors.bgDark]}
+        colors={["transparent", fade(rawColors.bgDark, 0.92), rawColors.bgDark]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%" }}
       />
 
@@ -98,7 +98,7 @@ export default function VillageSetup() {
               color="$text"
               fontWeight="700"
               fontSize={28}
-              textShadowColor="rgba(0,0,0,0.5)"
+              textShadowColor={fade(rawColors.black, 0.5)}
               textShadowOffset={{ width: 1, height: 1 }}
               textShadowRadius={4}
             >
@@ -113,7 +113,7 @@ export default function VillageSetup() {
               color="$text"
               fontSize={16}
               fontWeight="700"
-              textShadowColor="rgba(0,0,0,0.5)"
+              textShadowColor={fade(rawColors.black, 0.5)}
               textShadowRadius={4}
             >
               {t("onboarding.village_name_subtitle")}
@@ -122,7 +122,7 @@ export default function VillageSetup() {
               text="center"
               color="$textSecondary"
               fontSize={13}
-              textShadowColor="rgba(0,0,0,0.5)"
+              textShadowColor={fade(rawColors.black, 0.5)}
               textShadowRadius={4}
             >
               {t("onboarding.village_name_hint", "Every muscle you train raises a building here.")}
@@ -142,6 +142,7 @@ export default function VillageSetup() {
                   styles.input,
                   {
                     backgroundColor: theme.surface?.val as string,
+                    borderRadius: getTokens().radius.$3.val,
                     borderColor: inputBorderColor as string,
                     color: theme.text?.val as string,
                   },
@@ -171,19 +172,8 @@ export default function VillageSetup() {
                 });
               }}
               disabled={!isValidName}
-              bg={isValidName ? "$primary" : "$surface"}
-              borderColor={isValidName ? "$primary" : "$borderStrong"}
-              borderWidth={0}
-              rounded="$10"
-              opacity={isValidName ? 1 : 0.5}
             >
-              <Paragraph
-                color={isValidName ? "$white" : "$textSecondary"}
-                fontWeight="700"
-                fontSize={18}
-              >
-                {t("onboarding.next", "Continue")}
-              </Paragraph>
+              {t("onboarding.next", "Continue")}
             </AppButton>
           </YStack>
         </YStack>
@@ -198,7 +188,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 22,
     borderWidth: 2,
-    borderRadius: 16,
     paddingHorizontal: 16,
     fontWeight: "600",
   },

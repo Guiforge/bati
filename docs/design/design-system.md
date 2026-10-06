@@ -3,76 +3,71 @@ name: Bati
 description: A minimal, ludic fitness RPG that turns strength training into a dark-fantasy quest.
 source: constants/rawColors.ts, tamagui.config.ts, @tamagui/config/v4 defaults, components/common/
 colors:
-  primary: "#4A3FD6"
-  primary-text: "#8177F7"
-  primary-hover: "#5D53E8"
-  primary-press: "#372FA6"
-  primary-glow: "rgba(74, 63, 214, 0.45)"
-  secondary: "#DB2777"
-  success: "#16A34A"
-  warning: "#F59E0B"
-  error: "#FF1744"
-  bg-dark: "#0B0F19"
-  bg-overlay: "rgba(11, 15, 25, 0.92)"
-  bg-overlay-soft: "rgba(11, 15, 25, 0.72)"
-  surface: "#101322"
-  surface-2: "#151A2E"
-  glass-bg: "rgba(16, 19, 34, 0.65)"
-  glass-border: "rgba(232, 236, 255, 0.14)"
-  gold-hairline: "rgba(255, 215, 0, 0.22)"
-  border-strong: "#2A3360"
-  text: "#E8ECFF"
-  text-secondary: "#909ACB"
-  shadow: "#060812"
+  primary: "#C2410C"
+  primary-text: "#F08A4B"
+  primary-hover: "#D4501A"
+  primary-press: "#9A3412"
+  primary-edge: "#7A2905"
+  on-primary: "#FFF4E6"
+  success: "#6DB57A"
+  warning: "#F08A4B"
+  error: "#F0595D"
+  bg-dark: "#0C0D11"
+  bg-overlay: "rgba(12, 13, 17, 0.92)"
+  bg-overlay-soft: "rgba(12, 13, 17, 0.72)"
+  surface: "#15171C"
+  surface-2: "#1D2027"
+  glass-bg: "rgba(21, 23, 28, 0.65)"
+  glass-border: "rgba(236, 228, 212, 0.14)"
+  gold-hairline: "rgba(226, 181, 74, 0.22)"
+  border-strong: "#363A44"
+  text: "#ECE4D4"
+  text-secondary: "#A89C88"
+  shadow: "#000000"
   boss-phase-2: "#170F1D"
   boss-phase-3: "#1F0E18"
   boss-phase-4: "#280B12"
   map-water: "#0E1730"
   map-wood: "#101E1B"
-  resource-gold: "#FFD700"
-  resource-wood: "#8B4513"
-  resource-stone: "#808080"
-  resource-fire: "#FF6B35"
-  resource-water: "#4ECDC4"
-  resource-wind: "#C9B1FF"
-  resource-grain: "#DAA520"
-  gold-100: "#FFF8D9"
-  gold-300: "#FFE066"
-  gold-600: "#C4A600"
-  gold-700: "#6B5A12"
-  gold-800: "#3A3110"
-  gold-900: "#241F08"
-  ink-800: "#232A44"
-  ink-900: "#0E1220"
+  resource-gold: "#E2B54A"
+  resource-fire: "#F08A4B"
+  gold-100: "#F7ECCF"
+  gold-300: "#EDCB76"
+  gold-600: "#B08A2E"
+  gold-700: "#5E4A1E"
+  gold-800: "#362C15"
+  gold-900: "#211B0E"
+  ink-800: "#262A33"
+  ink-900: "#101217"
 typography:
   display:
-    fontFamily: "SpaceGrotesk, system-ui, sans-serif"
-    fontSize: "48px"
+    fontFamily: "Alegreya, Georgia, serif"
+    fontSize: "44px"
     fontWeight: 700
-    lineHeight: "50px"
+    lineHeight: "52px"
   headline:
-    fontFamily: "SpaceGrotesk, system-ui, sans-serif"
-    fontSize: "32px"
+    fontFamily: "Alegreya, Georgia, serif"
+    fontSize: "35px"
     fontWeight: 700
-    lineHeight: "40px"
+    lineHeight: "42px"
   title:
-    fontFamily: "SpaceGrotesk, system-ui, sans-serif"
-    fontSize: "24px"
+    fontFamily: "Alegreya, Georgia, serif"
+    fontSize: "26px"
     fontWeight: 700
     lineHeight: "32px"
   label:
-    fontFamily: "SpaceGrotesk, system-ui, sans-serif"
-    fontSize: "14px"
+    fontFamily: "NotoSans, system-ui, sans-serif"
+    fontSize: "12px"
     fontWeight: 700
-    lineHeight: "20px"
-    letterSpacing: "4px"
+    lineHeight: "16px"
+    letterSpacing: "1.5px"
   body:
     fontFamily: "NotoSans, system-ui, sans-serif"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: "24px"
   button:
-    fontFamily: "NotoSans, system-ui, sans-serif"
+    fontFamily: "Alegreya, Georgia, serif"
     fontSize: "20px"
     fontWeight: 700
   caption:
@@ -85,10 +80,9 @@ typography:
     fontWeight: 400
     lineHeight: "22px"
 rounded:
-  tag: "7px"      # $3
-  chip: "9px"     # $4, static chip
-  md: "22px"      # $8, cards and buttons
-  pill: "34px"    # $10, pressable chip
+  tag: "3px"      # $1, tags and static chips
+  md: "7px"       # $3, cards, buttons, pressable chips, inputs
+  sheet: "16px"   # $6, sheet tops
   full: "9999px"
 spacing:
   xs: "2px"       # $1
@@ -102,14 +96,8 @@ sizes:
 components:
   button-primary:
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.text}"
-    borderColor: "{colors.border-strong}"
-    rounded: "{rounded.md}"
-    height: "44px"
-  button-secondary:
-    backgroundColor: "{colors.secondary}"
-    textColor: "#FFFFFF"
-    borderColor: "{colors.border-strong}"
+    textColor: "{colors.on-primary}"
+    borderColor: "{colors.border-strong}"  # sides; the bottom edge is primary-edge, 3px
     rounded: "{rounded.md}"
     height: "44px"
   button-outline:
@@ -127,7 +115,7 @@ components:
   chip:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
-    rounded: "{rounded.pill}"
+    rounded: "{rounded.md}"
     padding: "7px 13px"
   tag:
     backgroundColor: "{colors.surface}"
@@ -145,7 +133,8 @@ components:
 
 ## 1) System intent
 
-**Creative north star:** *The Hero's HUD* — immersive but operationally clear mid-workout.
+**Creative north star:** *Inked dark-fantasy BD*: the chrome speaks the art's language (ink, bone, one
+warm light, a chronicle serif, panel frames), immersive but operationally clear mid-workout.
 Ties directly to [roadmap.md](../planning/roadmap.md) (north star) and
 [positioning.md](../product/positioning.md) (brand): sport-first ergonomics over decorative
 complexity, dark-only visual world, one-screen-one-priority hierarchy.
@@ -162,9 +151,39 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 
 - **Dark-only.** No light theme, no per-OS reskinning, no white flash.
 - **One primary CTA per screen.** No competing equal-weight actions.
-- **Borders are subtle.** `$borderStrong` / `$glassBorder`, 1px. No thick white/off-white
-  accent borders — that's a bug, not a style choice. Elevation comes from contrast, spacing,
-  and controlled glow, not outlines.
+- **Panels, not shadows.** Cards are a 1px `$borderStrong` frame (`$glassBorder` on glass) and
+  carry no drop shadow; the one hero card of a screen (Home's quest stage, the Victory card)
+  takes 1.5px. No thick white/off-white accent borders — that's a bug, not a style choice.
+  Elevation comes from contrast and spacing; there is no glow token. Toasts and overlays keep
+  their soft shadow.
+- **One accent.** The braise (`$primary` fill, `$primaryText` as text or icon) is the only
+  accent; there is no second colour. Each use goes to the colour of its meaning: rewards and
+  records `$resourceGold`, "hard" `$error`.
+- **Gold is earned, braise is done.** Every reward, record and progression figure or glyph is
+  `$resourceGold` (XP gained, trophies, achievements, new-record badges, the Victory figures,
+  oath progress bars on a `$gold800` track, the village tier bar, Victory's level gauge). XP is gold
+  everywhere, the Home header's figure and bar (on `$gold800`) included. Braise marks the action.
+- **No violet.** `pastelPurple` is deleted; cards are `$surface` with the 1px frame, shoulder and
+  mixed quests use `$bgLight`, the rest screen's campfire art sits at 0.3 opacity over `$bgDark`.
+- **Braise means action.** Metadata (a quest card's type and muscle line, a duration, a count, a
+  hero's own label) is never braise: it is ash, `$textSecondary`, glyphs `$muted`. That covers the
+  exercise list's "leads to X" captions and link glyph, the "Yours" caption, the picker's
+  substitution caption, and kickers such as "FIRST TRIAL". Braise
+  marks actions and these states: a selected option, medium difficulty, the boss's weakness and attack glyphs, an
+  adventure in progress and its completed progress segments, the Home advice and kicker icons,
+  and the avatar's fallback fill. The Home "Protect your hero" banner is quiet: bone title, ash body
+  and shield, braise only on the chevron.
+- **Every primary is the seal.** Home's Start (56 px), the session's Done and the rest screen's
+  "I'm ready" (both 64 px, 24 px label) are `AppButton` primaries, never a screen-local button.
+- **Fills and their text.** `$primary` fills take `$onPrimary`; `$success`, `$error`, `$warning`
+  and `$resourceGold` fills take `$bgDark`. Light text on those is banned (1.5 to 3.1:1).
+- **One source per value.** No rgba literal outside `constants/rawColors.ts`; a gradient or text
+  shadow that needs a translucent token calls `fade(token, alpha)`.
+- **The streak flame is a glyph.** `FlameFlicker` draws the game-icons `flame` through `GameIcon`,
+  `$primaryText` while the streak is alive, `$muted` once out; the widget keeps its emoji.
+- **No decorative emoji** where this direction applies (end-of-session feedback, quest and
+  adventure cover fallbacks): use `GameIcon` glyphs. No texture overlays, halftone, tilted
+  panels or hand-lettered fonts.
 - **Tokens only.** No hardcoded hex/spacing in screens or components; reuse shared
   primitives (`card`, `button`, `header`, `state`) instead of one-off visuals. If a pattern
   appears on a second screen, promote it into this file before copying it again.
@@ -173,27 +192,83 @@ complexity, dark-only visual world, one-screen-one-priority hierarchy.
 - **Efficiency.** The next workout action should be reachable in ≤2 taps; avoid modal-heavy
   paths when inline progression works.
 - **Icons.** `useGameIcon`/`GameIcon` for fantasy/resource/game-world icons;
-  `@tamagui/lucide-icons` for utility/navigation icons. No direct `lucide-react-native`
-  imports in product UI.
+  Lucide, imported only through `components/icons.ts`, for utility/navigation icons. No direct
+  `lucide-react-native` or `@tamagui/lucide-icons` imports in product UI.
 
 ## 3) Visual foundations
 
+### Palette
+
+Ink ground `$bgDark` (#0C0D11), `$surface` / `$surface2` above it, bone `$text`, ash
+`$textSecondary`, parchment `$parchment` (#D9CFBC, the phylactère's paper), braise `$primary` (#C2410C, fill) and `$primaryText` (#F08A4B, text on dark,
+also `$warning` and `$resourceFire`), patinated gold `$resourceGold` (#E2B54A). Values and
+contrast ratios live in [`constants/rawColors.ts`](../../constants/rawColors.ts); the
+decision record is
+[`docs/superpowers/specs/2026-10-05-bd-direction-design.md`](../superpowers/specs/2026-10-05-bd-direction-design.md).
+
 ### Typography
 
-- Hero/display moments: `SpaceGrotesk`.
+- Titles: `Alegreya` (`$heading`), 700 (400 for the rare light heading). Screen titles and the
+  names of things in the world (quests, adventures, the village, buildings as titles) are titles;
+  lists, labels, metadata and the Journal's body (Inter) are not. No letter
+  spacing, and never a digit of the app's own: timers, HP, XP, levels and counts stay in
+  `NotoSans` (`$body`) with tabular numerals. A title the hero wrote may carry digits.
+- **Every screen title is `$heading` 700**, the Journal's through `NTitle`. The what's-new title
+  keeps the body font because it interpolates a version.
+- **One timer treatment.** Warm-up, pre-start countdown, active and rest digits are `$body` 700,
+  tabular, `$text`; overtime is `$success`, the one state colour. Session progress bars stay
+  braise.
 - Body and utility reading: `NotoSans`.
-- Wide tracking belongs to short labels only, never body text.
+- Wide tracking belongs to short labels only, never body text. There is one section-label recipe,
+  [`SectionLabel`](../../components/common/SectionLabel.tsx): 12/700, 1.5px tracking,
+  `$textSecondary`, upper case in the hero's language (the component does it). Settings, the
+  exercise detail, Quick actions and the village lists use it; kickers that carry a state or a date
+  (Victory's gold line, session phases) are their own thing.
+
+### Radius
+
+`$1` (3) tags and static chips, `$3` (7) cards (the rest screen's, the village's), buttons,
+pressable chips (the filter rail's), quick-action tiles, inputs and dialogs,
+`$6` (16) sheet tops, full circles for round icon buttons, steppers and avatars.
 
 ### Buttons
 
-- Primary: `$primary` fill, high-contrast text, optional restrained glow.
-- Secondary/ghost: neutral or glass treatment.
+- Every button label is set in the title font (`$heading`, 20/700). Primary is the **seal**:
+  `$primary` fill, radius `$3`, `$borderStrong` sides, a 3px `$primaryEdge` bottom edge, label in
+  `$onPrimary`. Pressed, it moves down 2px and the edge takes the fill colour. `AppButton` has no
+  `transition` for any variant, so every press is instant (the outline goes to scale 0.98,
+  opacity 0.9). A disabled primary is `$surface2` with a `$textSecondary` label (6.04:1) and no
+  seal. Session CTAs are `AppButton` primaries at 64 px with a 24 px label; Done past its
+  target is `$success` with an ink label and no edge. `AppButton` derives the label colour and forbids `pressStyle`, `rounded` and
+  `bg` overrides.
+- Secondary/ghost: `outline`, neutral or glass treatment. There is no third variant (the old
+  `NButton` "danger" is deleted): a destructive outline (Victory's Discard, the pause dialog's "Quit quest", session details'
+  Remove) keeps the `$text` label and takes a red `$error` edge; the Journal screen passes the raw
+  red because its theme remaps `$error`. The exercise-instructions Close is a primary.
+- Pause actions are sentence case ("Restart round", "Quit quest") in both languages; the pause
+  title ("Session paused") and the onboarding level choices are `$heading`.
 - Consistent `pressed`, `disabled`, and loading states. Minimum hit area 44×44.
 
 ### Cards/containers
 
 - `$surface` or `$glassBg` depending on semantic layer; one card style family app-wide.
 - Group content, don't decorate with cards; avoid nesting unless IA truly requires it.
+
+### Récitatif and phylactère
+
+- A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill, 1px
+  `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art:
+  [`Recitatif`](../../components/common/Recitatif.tsx).
+- Quest-list and adventure cards carry their title in a Récitatif on the art's bottom-left edge
+  when the card has a cover (otherwise a `$heading` title in the body), the body keeping the
+  metadata. The exercise name over its illustration (`ExerciseHero`, and the
+  exercise detail, frame radius `$3`) sits in a Récitatif too. Victory's "QUEST COMPLETE!" is the
+  Récitatif's gold kicker.
+- A villager's spoken line is a parchment bubble (`$parchment` fill, `$bgDark` line 14 regular,
+  speaker name in `$ink800`, radius `$1`), never a dark card; one bubble style everywhere. In
+  the in-flow villager line (`VillagerLine`) the face sits in a round ink medallion (48 dp,
+  `$bgDark`, 1.5px `$borderStrong` ring), top-aligned with the bubble, and the tail points at its
+  centre. The Village cameo keeps the full figure and its own tail.
 
 ### Art heroes
 
@@ -205,8 +280,10 @@ its edge of the screen instead of sitting in a card. Used by
 
 - Full width, no border, no inset. Height capped against *both* `width` and `height` from
   `useWindowDimensions` — one shared function, [`sessionArtHeight()`](../../components/session/sessionArt.ts),
-  not a per-component expression — so a short screen still leaves the primary action room and two
-  heroes in the same slot cannot end up different sizes.
+  not a per-component expression — so a short screen still leaves the primary action room. The
+  boss gets a taller cut (0.46 of the height against the exercise's 0.34). The arena's floor is the
+  boss cut; the hero's is the top inset plus the HUD plus 0.6 of the exercise cut (about 211 px at
+  640 dp with a 24 dp inset), and both grow into the slack.
 - Text goes **on** the art, held by a `LinearGradient` scrim ending on the colour behind the
   image — never by a box or a shadow. The scrim is what carries AA contrast in gym lighting; it
   is not decoration and is not optional because one particular painting happens to be dark.
@@ -223,9 +300,49 @@ its edge of the screen instead of sitting in a card. Used by
 > the same screen. Both comply as of 2026-08-03. A recipe documented here is a claim about the
 > code, and it is worth checking that the second user actually is one.
 
+### Ink gauge
+
+[`InkGauge`](../../components/common/InkGauge.tsx): 10 dp tall, framed track (1.5px
+`$borderStrong`), an optional figure in `$body` tabular `$text` beside it. One gauge for progress,
+lost or earned. [`BossHpGauge`](../../components/session/BossHpGauge.tsx) is its wrapper for the
+boss (fill from `bossHpColor` on `$bgDark`), mounted by the session arena and the adventure boss
+panel. Victory's level card is the same gauge in `$resourceGold` on `$gold800`, sweeping once from
+where the session found the hero to where it left them (from empty if a level was crossed): the
+`slow` animation (900 ms) after a 400 ms beat, skipped under reduced motion. The Journal's level card and session details' XP line are the same
+gauge (gold, `$gold800`) with `frame={rawColors.borderStrong}`, an optional prop (default
+`$borderStrong`) because the Journal theme folds that token into its surface and would hide the
+outline. The Journal's XP caption is gold Inter, never ash, and a history row's "+N XP" is gold.
+
+### Panels of story
+
+- **The narrative** ([`NarrativeModal`](../../components/adventures/NarrativeModal.tsx)) is a page
+  of its own: opaque `$bgDark`, art full-bleed at the top (4:3, foot melted into the ground), the
+  title in a Récitatif on its bottom-left edge, the story below, the confirm the seal.
+- **Session details** open on a plate: the quest's art at 4:3 of `min(width, 520)` (150 dp tall
+  without art), a gold date kicker in `$body`, the title in a Récitatif.
+- **A loading reward asserts nothing.** Victory's XP card reserves its height with an empty value,
+  and a hidden spacer of `LEVEL_CARD_HEIGHT` holds the level card's place until its data lands.
+- **A held state says what it is.** Under two minutes, Victory shows the short-session block
+  (title, body, Keep it, Discard) in the level card's slot and hides the whole stat row and the
+  level card until the hero keeps the session.
+- **The Victory chart** fits its card (plot = interior minus the Y labels), centres each x label
+  under its bar without truncating it, and carries a three-swatch difficulty legend
+  (`DIFFICULTY_COLORS`).
+- **The no-art plate** is a `$surface` panel with a 1px `rawColors.borderStrong` frame.
+- **`StatusBand`** is an ink band (`fade(bgDark, .92)`, `insets.top`, never touchable) over screens
+  that scroll with no art behind the status bar: quest detail, quest editor, adventure steps,
+  exercise detail.
+- **The Village sheet's handle** is a bar inside the frame, not `Sheet.Handle`, which floats over
+  the dimmed list.
+- **Difficulty text** comes from `DIFFICULTY_TEXT_TOKENS` (easy `$success`, medium `$primaryText`,
+  hard `$error`); `Tag` and `Chip` take a `textColor`, the chip's fill stays neutral.
+
 ### Inputs
 
 - Legible text size (16px body-equivalent), clear labels, actionable validation copy.
+- Controls sit on the radius scale: onboarding level choices, the village-name input and the Share
+  chip are `$3`. The stepper uses Lucide `Minus` and `Plus` at the same size. The active set's
+  tertiary links reach 44 dp through `hitSlop`.
 - Focus state must be obvious without over-bright effects.
 
 ## 4) What good looks like

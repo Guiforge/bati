@@ -112,4 +112,20 @@ describe("SessionCard", () => {
 
     await expect(screen.findByText("Test Quest")).resolves.toBeTruthy();
   });
+
+  it("never leaks a placeholder when the duration is missing", async () => {
+    await mount({ ...baseEntry, durationSeconds: 0 });
+
+    await screen.findByText("Test Quest");
+    expect(screen.queryByText(/--/)).toBeNull();
+  });
+
+  it("shows an outing's distance alone when the duration is missing", async () => {
+    await mount({ ...baseEntry, leaguesM: 4580, durationSeconds: 0 });
+
+    await screen.findByText("Test Quest");
+    expect(screen.queryByText(/--/)).toBeNull();
+    expect(screen.queryByText(/·\s*$/)).toBeNull();
+    expect(screen.getByText(new RegExp(formatDistance(4580, "metric", "en")))).toBeTruthy();
+  });
 });

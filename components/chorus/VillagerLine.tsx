@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Paragraph, Text, View, XStack, YStack } from "tamagui";
 
 import { getVillagerAsset } from "@/constants/assetMap";
 import { type CueOwner, useChorusStore } from "@/stores/chorus";
@@ -39,36 +39,64 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
       accessible
       accessibilityLabel={`${t(`villagers.names.${speaking.villager}`)}. ${speaking.line}`}
       gap="$2"
-      items="center"
-      // In the banner the line sits over the artwork, so it gets its own ground; in a screen's
-      // flow it is text on the page and needs none.
-      {...(reserve != null ? { bg: "$glassBg", rounded: "$3", p: "$2" } : null)}
+      items="flex-start"
     >
-      {/* The face, not the figure: at this size a full body is a smudge. */}
-      <Image
-        source={getVillagerAsset(speaking.villager, speaking.pose)}
-        style={{ width: 44, height: 44, borderRadius: 22 }}
-        contentFit="cover"
-        contentPosition="top"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      />
-      <YStack flex={1} minW={0}>
+      {/* The face, not the figure: at this size a full body is a smudge. It sits in an ink
+          medallion, top-aligned with the bubble, so the tail points at its centre. */}
+      <YStack
+        testID="villager-medallion"
+        width={48}
+        height={48}
+        rounded={24}
+        bg="$bgDark"
+        borderWidth={1.5}
+        borderColor="$borderStrong"
+        items="center"
+        justify="center"
+      >
+        <Image
+          testID="villager-face"
+          source={getVillagerAsset(speaking.villager, speaking.pose)}
+          style={{ width: 44, height: 44, borderRadius: 22 }}
+          contentFit="cover"
+          contentPosition="top"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        />
+      </YStack>
+      {/* A parchment bubble beside the medallion, in the banner and in the flow alike. Its tail
+          sits in the gap beside the medallion (overlapping it by 1 dp) and points at the face, so
+          the slot's overflow never clips it. */}
+      <YStack testID="villager-bubble" flex={1} minW={0} bg="$parchment" rounded="$1" p="$2">
+        <View
+          testID="villager-tail"
+          position="absolute"
+          l={-8}
+          t={17}
+          width={0}
+          height={0}
+          borderTopWidth={7}
+          borderBottomWidth={7}
+          borderRightWidth={8}
+          borderTopColor="transparent"
+          borderBottomColor="transparent"
+          borderRightColor="$parchment"
+        />
         {/* The speaker is the cue that this is speech; the line itself is regular weight, so it
             does not read as the screen's own instruction. */}
-        <Text fontSize={12} fontWeight="700" color="$textSecondary" accessible={false}>
+        <Text fontSize={12} fontWeight="700" color="$ink800" accessible={false}>
           {t(`villagers.names.${speaking.villager}`)}
         </Text>
         {/* The untyped remainder is transparent rather than omitted, so the line is its final
             size from the first character. */}
         <Paragraph
-          color="$text"
+          color="$bgDark"
           fontSize={14}
           lineHeight={18}
           numberOfLines={reserve != null ? 3 : undefined}
           accessible={false}
         >
-          <Paragraph testID="villager-line" color="$text" fontSize={14} lineHeight={18}>
+          <Paragraph testID="villager-line" color="$bgDark" fontSize={14} lineHeight={18}>
             {shown}
           </Paragraph>
           <Paragraph color="transparent" fontSize={14} lineHeight={18}>

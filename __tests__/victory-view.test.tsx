@@ -4,6 +4,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { VictoryView } from "@/components/session/VictoryView";
+import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
+import { fade, rawColors } from "@/constants/rawColors";
 import type { Quest } from "@/db/quests";
 import { useChorusStore } from "@/stores/chorus";
 import { useSessionStore } from "@/stores/session";
@@ -154,6 +156,15 @@ describe("VictoryView feedback", () => {
     mockQuitSession.mockClear();
   });
 
+  it("asks how it went with glyphs, not emoji", async () => {
+    const { view } = await mountWithPendingSave();
+    for (const emoji of ["😊", "💪", "😤"]) expect(view.queryByText(emoji)).toBeNull();
+    for (const v of ["easy", "good", "hard"]) {
+      expect(view.getByTestId(`feedback-glyph-${v}`)).toBeTruthy();
+      expect(view.getByLabelText(`session.feedback_${v}`)).toBeTruthy();
+    }
+  });
+
   it("persists a feeling tapped while the save is still in flight", async () => {
     const { view, release } = await mountWithPendingSave();
 
@@ -285,6 +296,16 @@ describe("VictoryView, a session too short to be one", () => {
     expect(saveSession).not.toHaveBeenCalled();
   });
 
+  it("offers Discard as an outline AppButton: the family's label face, bone ink", async () => {
+    const { view } = await mountWithPendingSave(null, 5);
+
+    const label = StyleSheet.flatten(
+      view.getByText("session.summary_too_short_discard").props.style,
+    );
+    expect(label.fontFamily).toBe(config.fonts.heading.face[700].normal);
+    expect(label.color).toBe(rawColors.text);
+  });
+
   it("discarding takes the quit path, which writes nothing at all", async () => {
     const { view, saveSession } = await mountWithPendingSave(null, 5);
 
@@ -317,6 +338,33 @@ describe("VictoryView, a session too short to be one", () => {
     // Kept: the question is gone and the bar is Continue again, waiting on the save.
     expect(view.queryByTestId("session-victory-keep-short")).toBeNull();
     expect(view.getByTestId("session-victory-continue")).toBeTruthy();
+  });
+
+  // Decision U: a held screen says what it is. No reward is drawn for a session that may be
+  // discarded, and the question sits above the feedback card, in the level card's slot.
+  it("holds no XP card and puts the question above the feedback card", async () => {
+    const { view } = await mountWithPendingSave(null, 5);
+
+    expect(view.queryByTestId("victory-stat-row")).toBeNull();
+    expect(view.queryByTestId("victory-level-spacer")).toBeNull();
+    const tree = JSON.stringify(view.toJSON());
+    const question = tree.indexOf("session.summary_too_short_title");
+    const feedback = tree.indexOf("session.feedback_title");
+    expect(question).toBeGreaterThan(-1);
+    expect(question).toBeLessThan(feedback);
+  });
+
+  it("brings the stat row and the level slot back once it is kept, and keeps them when the save lands", async () => {
+    const { view, release } = await mountWithPendingSave(null, 5);
+
+    await fireEvent.press(view.getByTestId("session-victory-keep-short"));
+    expect(view.getByTestId("victory-stat-row")).toBeTruthy();
+    expect(view.getByTestId("victory-level-spacer", { includeHiddenElements: true })).toBeTruthy();
+    expect(view.queryByText("session.summary_too_short_title")).toBeNull();
+
+    await release();
+    expect(view.getByTestId("victory-stat-row")).toBeTruthy();
+    expect(view.getByTestId("session-victory-xp")).toBeTruthy();
   });
 
   it("a real session is never questioned", async () => {
@@ -370,36 +418,85 @@ describe("VictoryView villager slot", () => {
   });
 });
 
+describe("VictoryView kicker", () => {
+  it("announces the reward in gold, letter-spaced, over the title cartouche", async () => {
+    const { view } = await mountWithPendingSave();
+
+    const style = StyleSheet.flatten(view.getByTestId("victory-kicker").props.style);
+    expect(style.letterSpacing).toBe(2);
+    expect(style.color).toBe(rawColors.resourceGold);
+    expect(style.fontFamily).toBe(config.fonts.body.face[700].normal);
+  });
+});
+
 /**
  * The level bar mounted with the save and pushed the feel buttons about 80 dp down from under the
- * finger that was about to press one: the same hazard the reserved line slot avoids.
+ * finger that was about to press one. The card now mounts only with data, so a spacer of its
+ * height holds its place until then.
  */
+const toWidth = (node: { props: { style?: unknown } }) =>
+  (StyleSheet.flatten(node.props.style as object) as { width?: string }).width;
+
 describe("VictoryView level card", () => {
-  it("is there from the first frame, above the feel buttons, and the save only fills it", async () => {
+  const motion = useSettingsStore.getState().reducedMotion;
+  afterEach(() => useSettingsStore.setState({ reducedMotion: motion }));
+
+  // A loading reward asserts nothing: no ellipsis glyph, and the card only mounts with its data,
+  // into a spacer of its own height, so nothing moves when it arrives.
+  it("is not mounted while the save is pending, and shows no ellipsis, then the real bar", async () => {
     const { view, release } = await mountWithPendingSave();
 
     const first = JSON.stringify(view.toJSON());
-    const placeholder = view.getByTestId("victory-level-placeholder", {
-      includeHiddenElements: true,
-    });
-    // Two ellipses and an empty bar say nothing: TalkBack must not stop on them.
-    expect(placeholder.props.importantForAccessibility).toBe("no-hide-descendants");
-    expect(placeholder.props.accessibilityElementsHidden).toBe(true);
-    expect(first.indexOf("victory-level-placeholder")).toBeLessThan(
+    expect(first).not.toContain("…");
+    expect(first).not.toContain("journal.xp_progress");
+    // The place is held: a hidden spacer sits above the feel buttons until the card replaces it.
+    const spacer = view.getByTestId("victory-level-spacer", { includeHiddenElements: true });
+    expect(spacer.props.accessibilityElementsHidden).toBe(true);
+    expect(StyleSheet.flatten(spacer.props.style).height).toBe(LEVEL_CARD_HEIGHT);
+    expect(first.indexOf("victory-level-spacer")).toBeLessThan(
       first.indexOf("session.feedback_hard"),
     );
 
     await release();
 
-    // Replaced in place by the real bar, still above the buttons: nothing is inserted over them.
-    expect(
-      view.queryByTestId("victory-level-placeholder", { includeHiddenElements: true }),
-    ).toBeNull();
+    expect(view.queryByTestId("victory-level-spacer", { includeHiddenElements: true })).toBeNull();
+
+    // The earned gauge: the boss's inked gauge, in gold on a dark-gold track.
+    const fill = view.getByTestId("victory-level-fill");
+    expect(fill).toHaveStyle({ backgroundColor: fade(rawColors.resourceGold, 1) });
+    expect(StyleSheet.flatten(fill.parent?.props.style).backgroundColor).toBe(rawColors.gold800);
+
     const after = JSON.stringify(view.toJSON());
     expect(after).toContain("journal.xp_progress");
     expect(after.indexOf("journal.xp_progress")).toBeLessThan(
       after.indexOf("session.feedback_hard"),
     );
+  });
+
+  // The sweep starts where the session found the hero (a crossed level starts from empty, so the
+  // sweep is the level-up) and moves after a beat; the fill mounts at that start.
+  it("mounts the fill at the start of the sweep: empty when a level was crossed", async () => {
+    useSettingsStore.setState({ reducedMotion: false });
+    // Fixture: 50 -> 150 crosses into level 2 (base 100), so the sweep starts at 0.
+    const { view, release } = await mountWithPendingSave();
+    await release();
+
+    expect(toWidth(view.getByTestId("victory-level-fill"))).toBe("0%");
+  });
+
+  it("mounts the fill at the earlier progress when the level held", async () => {
+    useSettingsStore.setState({ reducedMotion: false });
+    // Level 2 spans 100..300: 140 is 20% in, 150 is 25%.
+    const fixture = saveResult.heroXp;
+    saveResult.heroXp = { before: 140, after: 150 };
+    try {
+      const { view, release } = await mountWithPendingSave();
+      await release();
+
+      expect(toWidth(view.getByTestId("victory-level-fill"))).toBe("20%");
+    } finally {
+      saveResult.heroXp = fixture;
+    }
   });
 });
 

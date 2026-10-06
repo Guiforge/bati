@@ -1,0 +1,213 @@
+# BD direction: visual identity refresh
+
+Validated by the owner on 2026-10-05, after a design review and an adversarial audit. The choices
+were made in the artifact "L'atelier des choix" (https://claude.ai/artifact/MBpGMarmn96QEFQ26iBiEz,
+db document `choix/bati`, 14 decisions, all on the post-audit recommendation).
+
+## Why
+
+Bati's illustrations are inked dark-fantasy BD: a cold, desaturated night lit by warm sources (an
+axe in a sunbeam, a window, a torch). Measured averages: quest art #373637, Ombre-Lovée #282A35,
+forest titan #334039, the logo #3B4D5E. The chrome around them spoke SaaS: electric indigo, a
+saturated blue-night ground, Space Grotesk, magenta, emoji, CSS-default resource colours. The
+refresh moves the chrome to the art's own language (ink, bone, one warm light, a chronicle
+serif, panel frames) without giving up anything a lifter needs mid-set.
+
+## The palette (`constants/rawColors.ts`)
+
+| token | old | new | note |
+|---|---|---|---|
+| bgDark | #0B0F19 | #0C0D11 | "encre froide", also app.json and the committed colors.xml |
+| bgOverlay | rgba(11,15,25,.92) | rgba(12,13,17,.92) | |
+| bgOverlaySoft | rgba(11,15,25,.72) | rgba(12,13,17,.72) | |
+| surface | #101322 | #15171C | |
+| surface2 | #151A2E | #1D2027 | |
+| bgLight | #101322 | #15171C | = surface |
+| borderStrong | #2A3360 | #363A44 | decorative only, as before |
+| glassBg | rgba(16,19,34,.65) | rgba(21,23,28,.65) | |
+| glassBorder | rgba(232,236,255,.14) | rgba(236,228,212,.14) | |
+| glassBorderClear | rgba(232,236,255,0) | rgba(236,228,212,0) | |
+| bgDarkClear | rgba(11,15,25,0) | rgba(12,13,17,0) | |
+| text | #E8ECFF | #ECE4D4 | "os" |
+| textSecondary | #909ACB | #A89C88 | |
+| muted | #64748B | #6B707B | icons and tints only |
+| primary | #4A3FD6 | #C2410C | "braise", a fill |
+| primaryText | #8177F7 | #F08A4B | braise as text/icon on dark |
+| primaryHover | #5D53E8 | #D4501A | |
+| primaryPress | #372FA6 | #9A3412 | |
+| primaryEdge | (new) | #7A2905 | the button's bottom edge |
+| onPrimary | (theme → text) | #FFF4E6 | new raw colour; label on a primary fill (4.77:1) |
+| primaryGlow | rgba(74,63,214,.45) | removed | the glow was dropped in the audit fixes (2026-10-05); there is no glow token |
+| secondary | #DB2777 | removed | every use reassigned by meaning, see below |
+| success | #16A34A | #6DB57A | |
+| warning | #F59E0B | = primaryText #F08A4B | amber was indistinguishable from gold under deuteranopia |
+| error | #FF1744 | #F0595D | >= 4.88:1 on every surface |
+| shadowColor | #060812 | #000000 | |
+| goldHairline | rgba(255,215,0,.22) | rgba(226,181,74,.22) | |
+| resourceGold | #FFD700 | #E2B54A | "or patiné" |
+| resourceFire | #FF6B35 | = primaryText #F08A4B | fire is the brand's braise |
+| resourceWood/Stone/Water/Wind/Grain | ... | removed | zero consumers |
+| gold100/300/600/700/800/900 | #FFF8D9 #FFE066 #C4A600 #6B5A12 #3A3110 #241F08 | #F7ECCF #EDCB76 #B08A2E #5E4A1E #362C15 #211B0E | the Journal's ramp |
+| ink800 / ink900 | #232A44 / #0E1220 | #262A33 / #101217 | |
+| parchment | (new) | #D9CFBC | the phylactère's paper, a step under bone; ink text 12.6:1, ink800 name 9.3:1 |
+| pastelBlue | #1A2633 | #18202A | |
+| pastelPink | #331A22 | #2A1719 | now an error tint |
+| pastelGreen | #1A3320 | #16261B | |
+| pastelYellow | #33301A | #2A2413 | |
+| pastelPurple | #261A33 | removed (iteration 2) | no card is violet; shoulder and mixed quests use `$bgLight` |
+| pastelOrange | #332618 | #2B1B12 | |
+| bossPhase2/3/4, mapWater, mapWood, sheetScrim, white, black | | unchanged | |
+
+`DIFFICULTY_COLORS` keeps its mapping (easy success, medium primary, hard error) with the new values.
+
+## Rules
+
+1. **Fills and their text.** `primary` fills take `$onPrimary`. `success`, `error`, `warning` and
+   `resourceGold` fills take `$bgDark` text (7.9, 5.8, 8.9, 10.1:1). Light text on those fills is
+   banned (2.0 to 3.6:1).
+2. **No second accent.** Each former `$secondary` use takes the colour of its meaning: rewards and
+   records `$resourceGold`, the boss's weakness and attack glyphs `$primaryText`, "hard" `$error`,
+   an adventure in progress `$primaryText` (completed `$resourceGold`), a selected option `$primary`
+   with `$onPrimary`, a plain count or metadata the neutral default.
+3. **Titles in Alegreya** (700, 800; 400 for the rare light heading). Alegreya never sets a digit of the app's own:
+   timers, HP, XP, levels and counts stay in Noto Sans (`$body`) with tabular numerals. No letter
+   spacing on Alegreya.
+4. **Radius scale:** `$1` (3) tags and static chips, `$3` (7) cards, buttons, pressable chips,
+   inputs and dialogs, `$6` (16) sheet tops, full circles for round icon buttons, steppers, avatars.
+5. **Panels, not shadows.** Cards have no drop shadow. A 1 px `$borderStrong` frame; the one hero
+   card of a screen (Home's quest stage, the Victory card) takes 1.5 px. Toast and overlays keep
+   their soft shadow.
+6. **The seal button.** Primary AppButton: radius `$3`, a 3 px bottom edge in `$primaryEdge`, label
+   in the title font in `$onPrimary`. Pressed: moves down 2 px and the edge takes the fill colour.
+   No spring on press.
+7. **Récitatif.** A quest title over its art sits in a rectangular ink cartouche (`$bgDark` fill,
+   1 px `$borderStrong`, radius `$1`, `$text`, title font) pinned to an edge of the art.
+8. **Phylactère.** A villager's spoken line is a parchment bubble (`$parchment` fill, `$bgDark`
+   text in regular weight, speaker name `$ink800`, radius `$1`), never a dark card. The face sits
+   in the in-flow villager line (`VillagerLine`) in a round ink medallion top-aligned with the
+   bubble, and the tail points at its centre. The bubble style is the same everywhere; the Village
+   cameo keeps its full figure and own tail.
+9. **No decorative emoji** where this refresh touches: the end-of-session feedback and the quest and
+   adventure cover fallbacks use game-icons glyphs through `GameIcon`.
+10. **No texture overlays, no halftone, no tilted panels, no hand-lettered fonts.**
+11. **One source per value:** no rgba literal outside `constants/rawColors.ts`; a gradient or text
+    shadow needing a translucent token calls `fade(token, alpha)`.
+
+## Iteration 2 (2026-10-06, decisions G to N)
+
+Born from an expert audit of iteration 1 (not validated). The code is on `feat/bd-direction`.
+
+- **G. Gold is earned, braise is done.** Every reward, record and progression figure or glyph is
+  `$resourceGold`: XP gained, trophies, achievement titles and glyphs, new-record badges, oath
+  progress bars (on a `$gold800` track), the village tier bar. The boss's weakness line and
+  glyphs are `$primaryText`.
+- **H. Metadata is never braise.** "Leads to X" captions and their glyph (exercise list), "Yours",
+  the picker's substitution caption, kickers like "FIRST TRIAL":
+  `$textSecondary`, glyphs `$muted`. A value that is itself an editable control keeps its colour.
+- **I. No violet.** `pastelPurple` is deleted (see the palette). Adventure cards, the adventure
+  hero card and the quest detail card are `$surface` with the 1 px frame; the rest screen's campfire
+  art sits at 0.3 opacity over `$bgDark`; shoulder and mixed quests use `$bgLight`.
+- **J. One screen title.** Every screen title is `$heading` 700, the Journal's through `NTitle`;
+  the Journal body stays Inter; the what's-new title keeps the body font (it interpolates a
+  version).
+- **K. One timer.** `$body` 700, tabular, `$text` for every timer and countdown digit. Overtime
+  keeps `$success` (ruling B2: a meaningful state, also carried by the flame and the label).
+  Session progress bars stay braise.
+- **L. Controls on the scale.** A disabled primary is `$surface2` with a `$textSecondary` label
+  (6.04:1), no seal. Stepper minus and plus are Lucide `Minus` and `Plus`. Onboarding choices, the
+  village-name input and the Share chip are radius `$3`. Tertiary links in the active set reach
+  44 dp through `hitSlop`.
+- **M. Engagement.** The boss HP gauge: 10 dp, `$bgDark` track, 1.5 px `$borderStrong` frame, fill
+  from `bossHpColor`, the figure in `$body` tabular `$text`; one shared `BossHpGauge` for the arena
+  and the adventure boss panel (ruling B4). Titles on art in a Récitatif: quest and adventure
+  cards (bottom-left), the exercise detail (radius `$3`); the warm-up name is `$heading` 20.
+  Victory is a gold plate with "QUEST COMPLETE!" as the Récitatif's gold kicker. The Home
+  "Protect your hero" banner keeps a bone title over ash body and shield, braise on the chevron
+  only (ruling B1). Hero-written titles under `$heading` may carry digits (ruling B3).
+- **N. History placeholder.** The "-- ·" leaking into a Journal history row is fixed at its
+  formatter.
+
+## Iteration 3 (2026-10-06, decisions O to T)
+
+Born from the expert audit of iteration 2 (not validated on one P1). The code is on
+`feat/bd-direction`.
+
+- **O. The narrative is a full-page panel.** `NarrativeModal` owns its whole ground (`$bgDark`),
+  so the screen it interrupts never shows through. The art is full-bleed at the top (4:3, its foot
+  melted into the ground), the title is a Récitatif pinned to its bottom-left edge, the story sits
+  below on ink, the confirm is the seal. Without art the Récitatif opens the page. Same words, same
+  two actions, same testIDs.
+- **P. No button outside the family.** The exercise-instructions Close is an `AppButton` primary
+  (radius `$3`), its exercise name `$heading` 700 20. Victory's "Discard" and session details'
+  "Remove from the journal" are `AppButton` outlines. Ruling C1: a destructive outline keeps the
+  outline's `$text` label and gets a red edge (`$error`; the Journal screen passes the raw
+  `rawColors.error`, because the Journal theme remaps `$error`). The `NButton` "danger" variant
+  had no caller left and is deleted.
+- **Q. A loading reward asserts nothing.** Victory's XP card reserves its height with an empty
+  value (no "..." glyphs). The level card is not mounted until its data is present; until then a
+  bare, hidden spacer of exactly its height (`LEVEL_CARD_HEIGHT`, 78 dp) holds the place, so the
+  buttons below do not move when the card arrives (ruling C1).
+- **R. XP is gold everywhere.** The Home header's XP figure and bar (`$resourceGold` on a
+  `$gold800` track), session details' XP, the "up to +N XP" chips on quest and adventure details.
+- **S. Small coherence.** The difficulty text on quest and adventure details is read from
+  `DIFFICULTY_TEXT_TOKENS` (easy `$success`, medium `$primaryText`, hard `$error`), the single map
+  in `constants/rawColors.ts` next to `DIFFICULTY_COLORS` (ruling C2); the chip stays neutral
+  (`Tag` and `Chip` take a `textColor`). Victory's progression chart: "Total mins" figure `$text`,
+  title `$heading` 700 in sentence case. The Journal tab title matches Quests and Adventures (size,
+  gutter, the `Scroll` glyph through `components/icons.ts`), the Journal body stays Inter. The
+  onboarding first-session title and subtitle share one halo, `fade(rawColors.bgDark, .8)`, radius
+  6, like "Name your village" (ruling C2).
+- **T. Engagement.** (1) One ink gauge, `InkGauge`: 10 dp, framed track, optional figure, an
+  optional damage trail. `BossHpGauge` is now a thin wrapper that feeds it `bossHpColor`; Victory's
+  level card is the same gauge in `$resourceGold` on a `$gold800` track. The level fill sweeps once
+  from where the session found the hero to where it left them (from zero when the session crossed a
+  level, so the sweep is the level-up), in the `slow` animation (900 ms timing) after a 400 ms
+  beat; reduced motion shows the end state at once (ruling C3). (2) Session details open on a
+  plate: the quest's art at 4:3 of `min(window width, 520)` (150 dp tall without art), a gold date
+  kicker in Noto Sans (the date keeps its digits in the body face), the title in a Récitatif
+  (ruling C3). The Journal's faint cartouche on that plate is accepted.
+
+## Iteration 4 (2026-10-06, decisions U to AA)
+
+Born from the expert audit of iteration 3 (validated, 8/8/8/8, no P1): its two P2 and the P3 that
+were coherence or craft defects. The code is on `feat/bd-direction`.
+
+- **U. A held state says what it is.** A session under two minutes waits on "Keep it". Victory
+  then renders the short-session block (title, body, Keep it, Discard) above the fold in the level
+  card's slot, and no reward is drawn: the whole stat row (Time and XP) is hidden, since a lone
+  half-width Time card read worse than none (ruling). Keeping the session brings the row and the
+  card back. The 78 dp spacer stays only for the in-flight save. Testids and handlers unchanged.
+- **V. No emoji in the chrome.** `FlameFlicker` draws the game-icons `flame` through `GameIcon`,
+  `$primaryText` when animated (streak alive), `$muted` otherwise. Flicker, gusts and sizes are
+  unchanged. The widget keeps its emoji.
+- **W. Dialog and choice titles in `$heading`:** "Session paused", the onboarding level choices.
+- **X. Every destructive outline has the red edge.** "Quit quest" in the pause dialog is treated
+  like Discard; the pause actions are sentence case ("Restart round", "Quit quest") in both
+  locales.
+- **Y. One label recipe.** The plan quoted 14/700, 2 px tracking, which matched no label that
+  existed (Quick actions was 10/1.8, the village's 10.5/600) and would have left three inline
+  copies. Ruling: one `SectionLabel` component, 12/700, `letterSpacing` 1.5, `$textSecondary`,
+  upper case in the component. Used by Quick actions, the village lists and detail sheet, Settings
+  (Avatar, Preferences, Backup, Reminder) and the exercise detail (Your numbers, Muscles, Next
+  step). The size changes on Quick actions and the village are the point of the ruling. Kickers
+  that carry a state or a date keep their own styles.
+- **Z. One XP colour, one gauge, in the Journal too.** The Journal level card and session details'
+  XP line use `InkGauge` (gold on `$gold800`), the Journal's XP caption is gold Inter (no Noto
+  figure: the Journal keeps Inter), and a history row's "+N XP" is gold. `InkGauge` gained an
+  optional `frame` colour; the Journal passes `rawColors.borderStrong` because its theme folds
+  `$borderStrong` into the surface and the track's outline vanished.
+- **AA. Craft.** The no-art session plate is a `$surface` panel with a 1 px
+  `rawColors.borderStrong` frame (raw for the same theme reason) and `$4` above the kicker. The
+  Victory chart fits its card (plot = card interior minus the Y labels, bars in equal slots, x
+  labels centred under their bars, every other one on a long history) and has a three-swatch
+  difficulty legend. The Village sheet's handle sits inside the frame. A new `StatusBand` (ink,
+  `insets.top`, `pointerEvents` none) replaces four hand-rolled bands on quest detail, the quest
+  editor, adventure steps and exercise detail.
+
+Out of scope, noted: meta-row chip treatment, onboarding cloud contrast, the sticky Journal bubble.
+
+## Out of scope (follow-ups)
+
+The long tail of numeric `rounded={n}` values in feature screens; decorative emoji in error and
+empty states, the widget and the DB splash; lettering for "QUÊTE ACCOMPLIE !" and critical hits;
+the adventure road as a strip of panels; the store screenshots and feature graphic artwork.

@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useWindowDimensions } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import Animated, {
   Easing,
   Extrapolation,
@@ -34,7 +34,7 @@ import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
 import { villageCameoBand, villageHeroSlot } from "@/components/village/villageArt";
 import { getSportSpriteAsset, getVillageTierAsset } from "@/constants/assetMap";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { pickDailyVariant } from "@/constants/restMessages";
 import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
 import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
@@ -353,6 +353,7 @@ export function VillageScene() {
                 <Text
                   flex={1}
                   minW={0}
+                  fontFamily="$heading"
                   fontWeight="700"
                   fontSize={30}
                   lineHeight={32}
@@ -463,7 +464,7 @@ export function VillageScene() {
           statusScrimStyle,
         ]}
       >
-        <LinearGradient colors={[rawColors.bgDark, rawColors.bgOverlaySoft]} style={{ flex: 1 }} />
+        <View style={{ flex: 1, backgroundColor: fade(rawColors.bgDark, 0.92) }} />
       </Animated.View>
 
       {rewardOpen ? (

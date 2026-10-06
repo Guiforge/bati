@@ -7,35 +7,39 @@ import { rawColors } from "@/constants/rawColors";
 // 1. TYPOGRAPHY (The Voice of the RPG)
 // -------------------------------------------------------------------------
 // Note: You must load these fonts in your root _layout.tsx using expo-font
+// Alegreya: a calligraphic book serif, the voice of a chronicle rather than a dashboard (design
+// review 2026-10-05). Its x-height is small, so the scale sits about one step above Space
+// Grotesk's. Never tracked, never used for a digit: its figures are old-style and a timer set in
+// it jumps. Numbers stay in the body font.
 const headingFont = createFont({
-  family: "SpaceGrotesk",
+  family: "Alegreya",
   size: {
-    1: 14,
-    2: 18,
-    3: 24,
-    4: 32,
-    5: 40, // Hero/Logo size
-    6: 48,
-    true: 18,
+    1: 15,
+    2: 20,
+    3: 26,
+    4: 35,
+    5: 44,
+    6: 52,
+    true: 20,
   },
   lineHeight: {
     1: 20,
     2: 26,
     3: 32,
-    4: 40,
-    5: 50,
+    4: 42,
+    5: 52,
   },
   weight: {
-    4: "300",
+    4: "400",
     7: "700",
   },
   letterSpacing: {
     4: 0,
-    5: 4, // "tracking-widest" style
+    5: 0,
   },
   face: {
-    300: { normal: "SpaceGrotesk_300Light" },
-    700: { normal: "SpaceGrotesk_700Bold" },
+    400: { normal: "Alegreya_400Regular" },
+    700: { normal: "Alegreya_700Bold" },
   },
 });
 
@@ -99,6 +103,8 @@ const animations = createAnimations({
     mass: 1,
     stiffness: 400,
   },
+  // A gauge earning its progress: slow enough to read, once.
+  slow: { type: "timing", duration: 900 },
 });
 
 // -------------------------------------------------------------------------
@@ -123,7 +129,7 @@ const config = createTamagui({
   tokens,
   // Every Input, so a field never shows the platform's default grey: next to typed text it read as
   // a filled name and the quest editor refused to save it.
-  defaultProps: { Input: { placeholderTextColor: "$textSecondary" } },
+  defaultProps: { Input: { placeholderTextColor: "$textSecondary", rounded: "$3" } },
   fonts: {
     heading: headingFont,
     body: bodyFont,
@@ -138,7 +144,8 @@ const config = createTamagui({
       ...tokens.color,
       background: tokens.color.bgOverlay,
       color: tokens.color.text,
-      onPrimary: tokens.color.text,
+      onPrimary: tokens.color.onPrimary,
+      onError: tokens.color.bgDark,
       danger: tokens.color.error, // alias, no matching token
       muted: tokens.color.textSecondary, // deliberately not tokens.color.muted
       // Stock primitives ask the theme for `borderColor`, and Tamagui logged a missing token for
@@ -152,8 +159,10 @@ const config = createTamagui({
       ...tokens.color,
       background: tokens.color.bgOverlay,
       color: tokens.color.text,
-      // What is written on a `$primary` fill: light on the app's indigo, dark on the Journal's gold.
-      onPrimary: tokens.color.text,
+      // What is written on a `$primary` fill: light on the app's braise, dark on the Journal's gold.
+      onPrimary: tokens.color.onPrimary,
+      // What is written on an `$error` fill: ink here, bone in the Journal where error is dark.
+      onError: tokens.color.bgDark,
       danger: tokens.color.error,
       muted: tokens.color.textSecondary,
       borderColor: tokens.color.borderStrong,
@@ -164,7 +173,7 @@ const config = createTamagui({
     // The Journal (`<Theme name="journal">` in app/(tabs)/journal/_layout.tsx). The app's own keys
     // are remapped rather than left alone, so a shared component the Journal still mounts (the
     // achievements list, the balance card, a history row) takes its ground and its one accent
-    // without knowing it is on another tab. Indigo, green and red fold into the gold ramp.
+    // without knowing it is on another tab. The braise, green and red fold into the gold ramp.
     dark_journal: {
       ...tokens.color,
       background: tokens.color.bgDark,
@@ -177,7 +186,6 @@ const config = createTamagui({
       primaryText: tokens.color.resourceGold,
       primaryHover: tokens.color.gold300,
       primaryPress: tokens.color.gold600,
-      secondary: tokens.color.gold600,
       success: tokens.color.resourceGold,
       warning: tokens.color.gold300,
       error: tokens.color.borderStrong,
@@ -189,6 +197,8 @@ const config = createTamagui({
       borderColorPress: tokens.color.surface2,
       borderColorFocus: tokens.color.surface2,
       onPrimary: tokens.color.bgDark,
+      onError: tokens.color.text,
+      primaryEdge: tokens.color.gold700,
       // The shared Tag's tones: flat inks here, where the history rows used to carry a red and a
       // brown that meant nothing on a one-accent page.
       pastelGreen: tokens.color.gold900,

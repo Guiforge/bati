@@ -149,7 +149,11 @@ function PresetRow({
               <Text fontSize={12} color="$textSecondary">
                 {t("oath.preset_standing", { current, target: standing.target })}
               </Text>
-              <ProgressBar progress={Math.min(100, (current / standing.target) * 100)} />
+              <ProgressBar
+                progress={Math.min(100, (current / standing.target) * 100)}
+                color="$resourceGold"
+                trackColor="$gold800"
+              />
             </>
           ) : null}
         </YStack>
@@ -191,7 +195,7 @@ function CurrentOathCard({
     : getDateTimeFormat(language, SWORN_DATE_OPTIONS).format(sworn);
 
   return (
-    <Card testID="oath-current" bg="$pastelPurple" gap="$2">
+    <Card testID="oath-current" gap="$2">
       <Text fontWeight="700" fontSize={13} color="$text" opacity={0.8}>
         {t("oath.current_title")}
       </Text>
@@ -205,7 +209,7 @@ function CurrentOathCard({
         </Text>
       </XStack>
 
-      <ProgressBar progress={progress.progress} />
+      <ProgressBar progress={progress.progress} color="$resourceGold" trackColor="$gold800" />
 
       <Text fontSize={13} color="$text" opacity={0.75}>
         {progress.isFulfilled
@@ -536,7 +540,7 @@ export default function OathScreen() {
     <YStack testID="oath-screen" flex={1} bg="$background" pt={insets.top}>
       <XStack px="$4" py="$3" items="center" gap="$3">
         <ScreenBackButton />
-        <Text fontSize={20} fontWeight="700" color="$text">
+        <Text fontFamily="$heading" fontSize={20} fontWeight="700" color="$text">
           {t("oath.screen_title")}
         </Text>
       </XStack>

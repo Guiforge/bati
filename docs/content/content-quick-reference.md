@@ -183,13 +183,13 @@ if (bossFight) {
 ```typescript
 // From constants/rawColors.ts, via tamagui.config.ts
 const TOKENS = {
-  $bgDark: "#0B0F19",                    // Main background
-  $primary: "#4A3FD6",                   // Deep indigo, fills only
-  $primaryText: "#8177F7",               // Indigo for text and icons
-  $glassBg: "rgba(16, 19, 34, 0.65)",    // Card backgrounds
-  $text: "#E8ECFF",                      // Primary text
-  $textSecondary: "#909ACB",             // Subtitles
-  $primaryGlow: "rgba(74, 63, 214, 0.45)", // Button glow effect
+  $bgDark: "#0C0D11",                    // Main background (ink)
+  $primary: "#C2410C",                   // The braise, fills only
+  $primaryText: "#F08A4B",               // The braise as text and icons
+  $glassBg: "rgba(21, 23, 28, 0.65)",    // Card backgrounds
+  $text: "#ECE4D4",                      // Primary text (bone)
+  $textSecondary: "#A89C88",             // Subtitles and metadata (ash)
+  $parchment: "#D9CFBC",                 // The villager speech bubble's paper
 };
 ```
 
@@ -380,7 +380,7 @@ const questTitle = i18n.language === "fr" ? quest.frTitle : quest.enTitle;
 
 ```typescript
 // Hardcoded hex colors
-<View style={{ backgroundColor: "#0B0F19" }} />
+<View style={{ backgroundColor: "#0C0D11" }} />
 
 // Direct icon imports
 import { Sword } from "lucide-react-native";

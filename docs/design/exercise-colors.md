@@ -24,7 +24,7 @@ consistency across the app, and a quick way to identify workout focus.
 | **Back** | Pastel Blue | `$pastelBlue` | `#BAE1FF` |
 | **Chest** | Pastel Yellow | `$pastelYellow` | `#FFFFBA` |
 | **Abs** | Pastel Green | `$pastelGreen` | `#BAFFC9` |
-| **Shoulders** | Pastel Purple | `$pastelPurple` | `#D4BAFF` |
+| **Shoulders** | Default tint | `$bgLight` | the app's own surface (violet was removed); the art and the name carry the distinction |
 | **Legs/Calf** | Pastel Orange | `$pastelOrange` | `#FFD4BA` |
 
 ### Target Type → Color (Fallback)
@@ -35,8 +35,8 @@ When muscle is not specified:
 | ----------- | ----- |
 | **Reps** | Pastel Yellow |
 | **Time** | Pastel Blue |
-| **Mixed** | Pastel Purple |
-| **Default** | Gray |
+| **Mixed** | `$bgLight` (returned by the quest's dominance step, never by `getExerciseColorKey`) |
+| **Default** | `$bgLight` |
 
 ---
 
@@ -81,7 +81,7 @@ function getQuestColor(quest: Quest): ExerciseColorKey {
 | Quest | Exercises | Dominant | Color |
 | ----- | --------- | -------- | ----- |
 | "Iron Arms" | 4 arms, 1 chest | Arms | Pink |
-| "Full Body" | 2 each muscle | Mixed | Purple |
+| "Full Body" | 2 each muscle | Mixed | `$bgLight` |
 | "Core Crusher" | 5 abs | Abs | Green |
 | "Push Day" | 3 chest, 2 shoulder | Chest | Yellow |
 
@@ -127,7 +127,6 @@ const tokens = createTokens({
     pastelBlue: '#BAE1FF',
     pastelYellow: '#FFFFBA',
     pastelGreen: '#BAFFC9',
-    pastelPurple: '#D4BAFF',
     pastelOrange: '#FFD4BA',
   },
 });

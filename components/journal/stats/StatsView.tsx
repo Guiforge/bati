@@ -3,6 +3,7 @@ import type { TFunction } from "i18next";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
+import { InkGauge } from "@/components/common/InkGauge";
 import { Flame, Medal } from "@/components/icons";
 import {
   ageOf,
@@ -27,6 +28,7 @@ import {
 import { getExerciseThumb } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
+import { rawColors } from "@/constants/rawColors";
 import { dayKey } from "@/db/dates";
 import type { DayActivity, WallEntry } from "@/db/journal";
 import { behindMuscles } from "@/db/muscleBalance";
@@ -661,7 +663,7 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
   );
 }
 
-function LevelBlock({ stats }: { stats: JournalStats }) {
+export function LevelBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
@@ -688,15 +690,27 @@ function LevelBlock({ stats }: { stats: JournalStats }) {
         <NKickerQuiet>
           {t("journal.level_kicker", { title: level.title[language], level: level.level })}
         </NKickerQuiet>
-        <NMuted fontSize={11} style={CAPTION_STYLE}>
+        <NText
+          testID="journal-level-xp"
+          fontSize={11}
+          lineHeight={17}
+          color="$resourceGold"
+          style={CAPTION_STYLE}
+        >
           {t("journal.level_meta", {
             current: number(language, level.currentLevelXp),
             total: number(language, span),
           })}
-        </NMuted>
+        </NText>
       </HeaderRow>
       <YStack mt={8}>
-        <NBar progress={level.xpProgress} />
+        <InkGauge
+          testIDPrefix="journal-level-gauge"
+          progress={level.xpProgress / 100}
+          fill="$resourceGold"
+          track="$gold800"
+          frame={rawColors.borderStrong}
+        />
       </YStack>
       <NMuted mt={8}>
         {quests

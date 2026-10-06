@@ -35,13 +35,14 @@ It guides you exercise-by-exercise, tracks your results, and ends with a clear c
 
 - **The artwork is the top of the screen.** The current movement runs full-bleed under the
   status bar with no border, no rounding and no inset — a picture you can read across a room,
-  not a thumbnail in a frame. In a boss fight the arena takes that slot, at exactly the same
-  size, and the exercise rides on the arena's own scrim: name, target muscle and a 36 px
+  not a thumbnail in a frame. In a boss fight the arena takes that slot, taller (0.46 of the
+  screen's height against the exercise's 0.34), and the exercise rides on the arena's own scrim: name, target muscle and a 36 px
   circular thumbnail over the art's base, so both images are on screen at once.
 - **The boss owns the screen, including its colour.** During a fight the background comes from
   the boss's phase rather than the exercise's muscle — a fire dragon should not be fought on the
-  "shoulders" pastel — and it darkens as the fight turns. Its health is a 3 px hairline at the
-  screen's top edge, where a game puts a boss bar, not a widget captioned under a picture.
+  "shoulders" pastel — and it darkens as the fight turns. Its health is a 10 dp gauge under the
+  boss's name (framed track, phase-coloured fill, "422 / 425" beside it), the same
+  `BossHpGauge` the campaign's boss panel draws.
 - **The HUD floats over the art, on one line**: where you are (round, exercise), how far in
   (percentage plus a hairline bar), and the way out (pause). It carries no value the screen
   didn't already show — it just stopped printing the round twice.
@@ -63,7 +64,16 @@ It guides you exercise-by-exercise, tracks your results, and ends with a clear c
 
 ## What happens next
 
-Completing the session leads to the post-workout result moment (victory/rewards), and your progress becomes visible in:
+Completing the session leads to the post-workout result moment (victory/rewards). While the save
+lands, the XP card keeps its height with an empty value and a hidden spacer holds the level card's
+place: a loading reward asserts nothing and nothing below it moves. The level card is an `InkGauge`
+in gold on a `$gold800` track that sweeps once from where the session found you to where it left
+you (from empty when you crossed a level; instant under reduced motion). "Discard" is an outline
+button with a red edge. A session under two minutes is held: the "That was a short one" block
+(Keep it, Discard) takes the level card's slot above the fold and the whole stat row and the level
+card are hidden until you keep it. The chart of past sessions fits its card, centres each date under
+its bar and carries an easy / medium / hard legend. The pause dialog's title is "Session paused" in
+the title font and its actions are sentence case, "Quit quest" an outline with the red edge. Your progress becomes visible in:
 
 - **[Journal](journal.md)** (history + stats)
 - **[Village](village.md)** (growth)
@@ -77,8 +87,8 @@ The full-bleed exercise art lives in [`components/session/ExerciseHero.tsx`](../
 
 ### The height budget
 
-`sessionArtHeight()` in [`components/session/sessionArt.ts`](../../components/session/sessionArt.ts) is `min(height × 0.42, width × 1.1)`, and it is the single answer for three consumers: the hero, the arena, and `BossTauntOverlay`, which renders above every session view and so cannot measure the arena — it anchors its bubble to `sessionArtHeight(width, height) - 8` instead, correct in both `running` and `resting` because the arena starts at y=0 in both.
+`sessionArtHeight()` in [`components/session/sessionArt.ts`](../../components/session/sessionArt.ts) is `min(height × factor, width × 1.1)`, with a factor of 0.34 for an exercise and 0.46 for a boss: the monster is the screen's subject, so its cut is taller. It answers three consumers. The arena is `height={artHeight}` (the 0.46 cut, 294 px at 640 dp) and grows with `flexGrow`. The hero's floor is the top inset plus `HUD_HEIGHT` plus 0.6 of the exercise cut (`heroMinHeight` in `ActiveExerciseView`, about 211 px at 640 dp with a 24 dp inset), and `LiveMap` on an outing takes the same floor (about 211 px, like the hero). The pre-start countdown takes 0.5 of the cut. Both art slots grow into whatever the counter and the CTA leave, so the art's height is not a pure function of the window. `BossTauntOverlay` renders above every session view and cannot measure any of this, so it does not call `sessionArtHeight()`; it anchors its bubble to the *top* of the art, under the HUD (`HUD_HEIGHT`), or under the rest header (`REST_HEADER_HEIGHT`) while resting, and never to the arena's bottom, where the boss's name and HP gauge sit. The bubble is narrowed to 180 dp so it covers less of the painting.
 
-Every pixel over that comes straight out of the ScrollView below it. On a 360×640 running screen the arena is 269 px and the ScrollView gets 265, against ~226 of rep content — about 39 px of slack. That is why the arena is *equal* to the hero rather than larger, and why `RestView` drops its flame header during a fight: the boss is the screen's title there, and printing both costs more than the timer alone can spare.
+Every pixel over the floor comes straight out of the ScrollView below it. On a 360×640 running screen the hero's floor is about 211 px and the arena's 294 px, so the arena's floor is larger than the hero's and the ScrollView has that much less. `RestView` does not render the arena: a rest looks the same whether or not a boss is being fought, and its flame header (`REST_HEADER_HEIGHT`) takes the slot, because printing the boss's art as well costs more than the timer can spare.
 
-The CTA is the ScrollView's **sibling**, never inside it, in both `ActiveExerciseView` and `RestView`. Fixed-height siblings do not shrink in RN (`flexShrink` is 0), so before that fix tall content pushed "done" past the bottom edge — worst on a boss fight, on a small screen, with "how to" expanded. `BossArena`'s status line swaps content instead of adding a row, and every branch of it is pinned to the same height, so the arena's height stays a pure function of the window and the CTA cannot move mid-workout.
+The CTA is the ScrollView's **sibling**, never inside it, in both `ActiveExerciseView` and `RestView`. Fixed-height siblings do not shrink in RN (`flexShrink` is 0), so before that fix tall content pushed "done" past the bottom edge — worst on a boss fight, on a small screen, with "how to" expanded. `BossArena`'s status line swaps content instead of adding a row, and every branch of it is pinned to the same height, so the arena's height does not change mid-workout. The arena is the elastic child of its column: its `sessionArtHeight()` cut is its floor, and any slack the counter and CTA leave goes into the painting rather than a void between them.

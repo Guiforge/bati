@@ -1,6 +1,7 @@
 # Reusable: walk through onboarding and land on the home tab.
 # Assumes the app was just launched with clearState (so onboarding is shown).
 # Selects by testID only, so it is locale-agnostic (en/fr).
+# VILLAGE_NAME names the village (default Testville); screenshots.sh passes a real one.
 appId: com.guiforge.bati.dev
 ---
 - assertVisible:
@@ -12,7 +13,7 @@ appId: com.guiforge.bati.dev
     id: "onboarding-village-name"
 - tapOn:
     id: "onboarding-village-name"
-- inputText: "Testville"
+- inputText: "${typeof VILLAGE_NAME === 'undefined' ? 'Testville' : VILLAGE_NAME}"
 - hideKeyboard
 - tapOn:
     id: "onboarding-village-continue"

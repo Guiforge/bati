@@ -8,6 +8,7 @@ import { Sheet, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { LevelPips } from "@/components/village/LevelPips";
 import {
   barEnds,
@@ -18,7 +19,7 @@ import {
   nextLine,
   questLink,
 } from "@/components/village/rows";
-import { BarEnds, Kicker, QuestLink } from "@/components/village/VillageLists";
+import { BarEnds, QuestLink } from "@/components/village/VillageLists";
 import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
@@ -171,14 +172,25 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
       zIndex={100_000}
     >
       <Sheet.Overlay
-        bg="rgba(0,0,0,0.5)"
+        bg="$sheetScrim"
         transition={reducedMotion ? undefined : "quick"}
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
-      <Sheet.Handle bg="$borderStrong" />
-      <Sheet.Frame bg="$surface">
-        <YStack testID="village-detail" px="$4" pt="$4" pb={bottomInset + 16} gap="$4">
+      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
+        {/* Inside the frame: Sheet.Handle floats above its top edge, over the dimmed list. A bar
+            only: with one `fit` snap point the handle's tap has nothing to cycle, and the drag
+            still lives on the frame. */}
+        <YStack
+          testID="village-detail-handle"
+          self="center"
+          width={40}
+          height={4}
+          rounded={2}
+          mt="$2"
+          bg="$borderStrong"
+        />
+        <YStack testID="village-detail" px="$4" pt="$3" pb={bottomInset + 16} gap="$4">
           {shown?.kind === "building" ? (
             <BuildingDetail
               building={shown.building}
@@ -313,7 +325,7 @@ function BuildingDetail({
           tintColor={built ? undefined : rawColors.muted}
         />
         <YStack flex={1} minW={0} gap={3}>
-          <Text fontWeight="700" fontSize={20} color="$text">
+          <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
             {nameOf(building, language)}
           </Text>
           <Text fontSize={12.5} color="$textSecondary">
@@ -353,7 +365,7 @@ function BuildingDetail({
 
       {extra?.kind === "sessions" && extra.sessions.length > 0 && (
         <YStack gap="$2">
-          <Kicker label={t("village.detail_recent_title")} />
+          <SectionLabel>{t("village.detail_recent_title")}</SectionLabel>
           {extra.sessions.map((session) => {
             const title = session.enTitle
               ? localizedTitle(
@@ -385,13 +397,13 @@ function BuildingDetail({
 
       {listed.length > 0 && (
         <YStack gap="$2">
-          <Kicker
-            label={t(
+          <SectionLabel>
+            {t(
               building.driver === "rematches"
                 ? "village.rematches_title"
                 : "village.hall_finished_title",
             )}
-          />
+          </SectionLabel>
           {listed.map((adventure) => (
             <XStack key={adventure.adventureId} items="center" gap="$3">
               {!!adventure.imagePath && (
@@ -462,7 +474,7 @@ function BossDetail({ boss, extra, language, formatDate }: DetailProps & { boss:
           contentFit="cover"
         />
       </YStack>
-      <Text fontWeight="700" fontSize={20} color="$text">
+      <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
         {title}
       </Text>
       <ImageViewer

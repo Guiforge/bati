@@ -1,8 +1,8 @@
 {
   "dependencies": {
+    "@expo-google-fonts/alegreya": "^0.4.2",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/noto-sans": "^0.4.2",
-    "@expo-google-fonts/space-grotesk": "^0.4.1",
     "@expo/metro-runtime": "~57.0.16",
     "@legendapp/list": "^3.4.0",
     "@maplibre/maplibre-react-native": "^11.4.0",
@@ -58,6 +58,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@babel/parser": "^7.29.9",
     "@biomejs/biome": "^2.5.14",
     "@j178/prek": "^0.5.3",
     "@tamagui/babel-plugin": "^2.7.7",
@@ -101,6 +102,7 @@
       "!**/node_modules/**",
       "!**/.claude/**",
       "!test/**",
+      "!.design-sync/**",
       "!**/__tests__/**",
       "!**/.expo/**",
       "!**/coverage/**",

@@ -64,8 +64,8 @@ function LeadsToCaption({ name }: { name: string }) {
   const { t } = useTranslation();
   return (
     <XStack items="center" gap="$1">
-      <Link2 size={11} color="$primaryText" strokeWidth={2.5} />
-      <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+      <Link2 size={11} color="$muted" strokeWidth={2.5} />
+      <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
         {t("exercises.leads_to", { name, defaultValue: `leads to ${name}` })}
       </Text>
     </XStack>
@@ -97,7 +97,7 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3">
               {state.message}
             </Paragraph>
-            <AppButton fullWidth={false} variant="secondary" onPress={onRetry}>
+            <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
               {t("exercises.retry", "Retry")} ↻
             </AppButton>
           </YStack>
@@ -135,7 +135,7 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3">
               {t("exercises.empty_filters_subtitle", "Try removing filters.")}
             </Paragraph>
-            <AppButton fullWidth={false} variant="secondary" onPress={onClearFilters}>
+            <AppButton fullWidth={false} variant="outline" onPress={onClearFilters}>
               {t("quests.filters_clear", "Clear filters")}
             </AppButton>
           </YStack>
@@ -373,7 +373,15 @@ export default function ExerciseCatalogue() {
               button, and with four elements the title — the one thing that gives way here —
               truncated to "Exerci…". The icon was the least informative of the four, on the
               one screen whose whole subject is exercises. */}
-            <Text flex={1} minW={0} fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
+            <Text
+              flex={1}
+              minW={0}
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={20}
+              color="$text"
+              numberOfLines={1}
+            >
               {t("exercises.catalogue_title", "Exercises")}
             </Text>
           </XStack>
@@ -390,7 +398,6 @@ export default function ExerciseCatalogue() {
               count: visible.length,
               defaultValue: "{{count}} movements",
             })}
-            tone="secondary"
           />
         </XStack>
 

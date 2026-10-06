@@ -3,11 +3,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Button, H3, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { ProgressBar } from "@/components/common/ProgressBar";
+import { Recitatif } from "@/components/common/Recitatif";
 import { Info, Play, Sparkles, Target } from "@/components/icons";
 import { ADVENTURE_ASSETS, getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { reportError } from "@/src/reportError";
 import { OathStrip } from "./OathStrip";
 import { RestNote } from "./RestNote";
@@ -16,8 +18,8 @@ import { useStartQuest } from "./useStartQuest";
 
 // The floor under which a scene stops being one. At 360x640 the strip, the quick actions and the
 // tab bar leave it about 390, and a recovery card above it can take much of that: below this the
-// column scrolls rather than crushing the title into the button. What it has to hold: two title
-// lines, meta, reason, a 56 button, the rest line, the oath strip, and some art above them.
+// column scrolls rather than crushing the title into the button. What it has to hold: the
+// title's récitatif and kicker column over the art (they no longer take flow height), meta, reason, a 56 button, the rest line, the oath strip, and some art above them.
 const STAGE_MIN_HEIGHT = 320;
 
 /** The stage is always a scene. With nothing running, the on-ramp route's art stands in. */
@@ -78,8 +80,8 @@ export function HomeStage() {
       minH={STAGE_MIN_HEIGHT}
       mx="$4"
       mt="$3"
-      rounded={16}
-      borderWidth={1}
+      rounded="$3"
+      borderWidth={1.5}
       borderColor="$borderStrong"
       overflow="hidden"
     >
@@ -95,13 +97,13 @@ export function HomeStage() {
         contentFit="cover"
         transition={200}
       />
-      {/* $bgDark (#0B0F19) as rgba: LinearGradient takes plain colors, not tokens. A touch of
+      {/* $bgDark (the ink) as rgba: LinearGradient takes plain colors, not tokens. A touch of
           dark under the strip's edge, the art clear, then solid ground under the words. */}
       <LinearGradient
         colors={[
-          "rgba(11,15,25,0.25)",
-          "rgba(11,15,25,0)",
-          "rgba(11,15,25,0.78)",
+          fade(rawColors.bgDark, 0.25),
+          fade(rawColors.bgDark, 0),
+          fade(rawColors.bgDark, 0.78),
           rawColors.bgDark,
         ]}
         locations={[0, 0.2, 0.62, 1]}
@@ -121,9 +123,6 @@ export function HomeStage() {
           accessibilityLabel={title}
         >
           <YStack px="$4" gap="$1.5">
-            <H3 fontSize={27} fontWeight="700" color="$text" numberOfLines={2} lineHeight={30}>
-              {title}
-            </H3>
             {/* What the session is made of, then why it is the one being offered. */}
             {scene?.meta ? (
               <Text fontSize={12} color="$textSecondary">
@@ -158,31 +157,22 @@ export function HomeStage() {
 
         <XStack px="$4" pt="$4" gap="$2.5" items="center">
           {/* The one filled button on the screen */}
-          <Button
+          <AppButton
             testID="home-start-session"
+            fullWidth={false}
             flex={1}
             height={56}
-            rounded={14}
-            bg="$primary"
-            color="$text"
-            fontWeight="700"
-            fontSize={17}
-            icon={<Play size={16} color="$text" />}
+            icon={<Play size={16} color="$onPrimary" />}
             onPress={handlePress}
-            pressStyle={{ bg: "$primaryPress", scale: 0.98 }}
-            shadowColor="$primary"
-            shadowRadius={13}
-            shadowOffset={{ width: 0, height: 0 }}
-            shadowOpacity={0.45}
           >
             {label}
-          </Button>
+          </AppButton>
           {startQuestId === null ? null : (
             <YStack
               testID="home-quest-details"
               width={56}
               height={56}
-              rounded={14}
+              rounded="$3"
               borderWidth={1}
               borderColor="$glassBorder"
               bg="$glassBg"
@@ -212,27 +202,31 @@ export function HomeStage() {
 
       {/* Why this scene, when it is not the usual one: a first day, an adventure under way. Last,
           so it paints over the art, and deaf to touch, so a tap on it lands on the scene. */}
-      {scene?.kicker ? (
-        <XStack
-          position="absolute"
-          t="$3"
-          l="$4"
-          height={26}
-          px="$2.5"
-          gap="$1.5"
-          items="center"
-          rounded={13}
-          bg="$glassBg"
-          borderWidth={1}
-          borderColor="$glassBorder"
-          pointerEvents="none"
-        >
-          <Sparkles size={11} color="$primaryText" />
-          <Text fontSize={10} fontWeight="700" letterSpacing={1.2} color="$text">
-            {scene.kicker.toUpperCase()}
-          </Text>
-        </XStack>
-      ) : null}
+      {/* One column for the kicker and the title's récitatif, so they stack and cannot overlap. */}
+      <YStack position="absolute" t="$3" l="$4" r="$4" gap="$2" pointerEvents="none">
+        {scene?.kicker ? (
+          <XStack
+            self="flex-start"
+            height={26}
+            px="$2.5"
+            gap="$1.5"
+            items="center"
+            rounded={13}
+            bg="$glassBg"
+            borderWidth={1}
+            borderColor="$glassBorder"
+          >
+            <Sparkles size={11} color="$primaryText" />
+            <Text fontSize={10} fontWeight="700" letterSpacing={1.2} color="$text">
+              {scene.kicker.toUpperCase()}
+            </Text>
+          </XStack>
+        ) : null}
+        {/* The stage button already carries the title as its label: hide this copy from readers. */}
+        <YStack accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <Recitatif numberOfLines={2}>{title}</Recitatif>
+        </YStack>
+      </YStack>
     </YStack>
   );
 }

@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rootDir": "../..",
+    "outDir": "../.cache/pkg/dist/types",
+    "noUnusedLocals": false,
+    "incremental": false
+  },
+  "include": [],
+  "files": [
+    "entry.tsx",
+    "../../types/expo.d.ts",
+    "../../types/lucide-icons.d.ts",
+    "../../tamagui.d.ts",
+    "../../expo-env.d.ts"
+  ]
+}

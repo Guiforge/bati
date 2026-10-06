@@ -16,13 +16,10 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Skull, Sparkles } from "@/components/icons";
 import { getAdventureAsset } from "@/constants/assetMap";
-import {
-  type ExerciseColorTokens,
-  getQuestColorTokensFromTemplateWithExercises,
-} from "@/constants/exerciseColors";
 import {
   type Adventure,
   adventureOrder,
@@ -36,7 +33,6 @@ import {
   suggestDifficultyFromSessions,
 } from "@/db";
 import { threatRank } from "@/db/bossFights";
-import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { getAllQuestConfigs } from "@/db/questConfig";
 import { formatCount } from "@/db/targets";
@@ -54,7 +50,6 @@ function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
 /** The posters' data. The cover quests' chips are priced in one read: see `previewQuests`. */
 type GalleryData = {
   adventures: Adventure[];
-  exercisesById: Record<number, Exercise>;
   previews: ReadonlyMap<number, QuestPreview>;
 };
 
@@ -72,7 +67,6 @@ const ANDROID_MIN_BOTTOM_INSET = 24;
 // row rebuild color maps and re-run the duration estimator while scrolling.
 type AdventureRow = {
   adventure: Adventure;
-  tokens: ExerciseColorTokens;
   durationSeconds: number;
   xp: number;
   cover: ImageSourcePropType | null;
@@ -101,7 +95,6 @@ type AdventureProgress = {
 
 function buildAdventureRow(
   a: Adventure,
-  exercisesById: Record<number, Exercise>,
   finishedCount: number,
   language: AppLanguage,
   t: TFunction,
@@ -115,7 +108,6 @@ function buildAdventureRow(
 
   return {
     adventure: a,
-    tokens: getQuestColorTokensFromTemplateWithExercises({ quest: q, exercisesById }),
     durationSeconds,
     xp,
     cover: resolveCoverImage(a.imagePath),
@@ -190,9 +182,7 @@ function AdventureCard({
   return (
     <YStack px="$5">
       <Card
-        flat
         testID="adventures-adventure-card"
-        bg={row.tokens.bg}
         p="$0"
         overflow="hidden"
         onPress={() => onPressAdventure(item.id)}
@@ -208,7 +198,7 @@ function AdventureCard({
             />
           ) : (
             <YStack flex={1} items="center" justify="center">
-              <Text fontSize={44}>🗺️</Text>
+              <GameIcon name="scroll" size={44} color="$textSecondary" />
             </YStack>
           )}
           <XStack position="absolute" t="$3" l="$3" items="center" gap="$2">
@@ -245,6 +235,14 @@ function AdventureCard({
               </XStack>
             ) : null}
           </XStack>
+          {/* The title on the art, like Home and the session: a poster names itself. */}
+          {row.cover ? (
+            <YStack position="absolute" b="$3" l="$3" r="$3">
+              <Recitatif numberOfLines={2} testID="adventure-card-title">
+                {row.title}
+              </Recitatif>
+            </YStack>
+          ) : null}
           {row.starsLabel ? (
             <XStack
               position="absolute"
@@ -280,12 +278,21 @@ function AdventureCard({
         </XStack>
 
         <YStack gap="$2" p="$4">
-          <Text fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
-            {row.title}
-          </Text>
+          {/* Without a cover there is no art to carry it: the title stays in the body. */}
+          {row.cover ? null : (
+            <Text
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={18}
+              color="$text"
+              numberOfLines={1}
+            >
+              {row.title}
+            </Text>
+          )}
 
           {row.focusLabel ? (
-            <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+            <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
               {row.focusLabel}
             </Text>
           ) : null}
@@ -328,7 +335,7 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
               {state.message}
             </Paragraph>
-            <AppButton fullWidth={false} variant="secondary" onPress={onRetry}>
+            <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
               {t("quests.retry", "Retry")} ↻
             </AppButton>
           </YStack>
@@ -385,7 +392,6 @@ export default function AdventuresGallery() {
   const [state, setState] = useState<LoadState>({
     status: "loading",
     adventures: [],
-    exercisesById: {},
     previews: new Map(),
   });
   const [activeProgress, setActiveProgress] = useState<AdventureProgress | null>(null);
@@ -435,7 +441,6 @@ export default function AdventuresGallery() {
           setState((s) => ({
             status: "ready",
             adventures,
-            exercisesById,
             previews: keepIfSame(s.previews, previews),
           }));
         });
@@ -458,7 +463,6 @@ export default function AdventuresGallery() {
   );
 
   const adventures = state.adventures;
-  const exercisesById = state.exercisesById;
   const previews = state.previews;
 
   const rows = useMemo(
@@ -468,7 +472,6 @@ export default function AdventuresGallery() {
       adventureOrder(adventures, activeProgress?.adventureId ?? null, finishedCounts).map((a) =>
         buildAdventureRow(
           a,
-          exercisesById,
           finishedCounts.get(a.id) ?? 0,
           language,
           t,
@@ -476,7 +479,7 @@ export default function AdventuresGallery() {
           pace,
         ),
       ),
-    [adventures, exercisesById, finishedCounts, language, t, previews, activeProgress, pace],
+    [adventures, finishedCounts, language, t, previews, activeProgress, pace],
   );
 
   const title = t("adventures.gallery_title", "Adventures");
@@ -497,8 +500,8 @@ export default function AdventuresGallery() {
     <YStack testID="adventures-screen" flex={1} bg="$background">
       <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
         <XStack items="center" gap="$2">
-          <Sparkles size={18} color="$primaryText" strokeWidth={2.5} />
-          <Text fontWeight="700" fontSize={20} color="$text">
+          <Sparkles size={18} color="$text" strokeWidth={2.5} />
+          <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
             {title}
           </Text>
         </XStack>

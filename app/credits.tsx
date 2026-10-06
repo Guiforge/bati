@@ -56,7 +56,7 @@ export default function CreditsScreen() {
         <ScreenBackButton />
         <XStack flex={1} items="center" gap="$2">
           <ScrollText size={20} color="$primaryText" />
-          <Text fontSize={22} fontWeight="700" color="$text">
+          <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
             {t("credits.title")}
           </Text>
         </XStack>
@@ -137,7 +137,7 @@ export default function CreditsScreen() {
 
           <XStack>
             <AppButton
-              variant="secondary"
+              variant="outline"
               fullWidth={false}
               onPress={() => openUrl("https://game-icons.net/about.html#authors")}
             >

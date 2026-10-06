@@ -5,11 +5,11 @@ import { ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, Text, XStack, YStack } from "tamagui";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
+import { AppButton } from "@/components/common/AppButton";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { getExerciseThumb } from "@/constants/assetMap";
-import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import type { CompletedExerciseInput } from "@/db/completed";
 import { targetRangeFor } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
@@ -108,10 +108,6 @@ export function RestView() {
   const copy = restCopy(isFinal, isRoundRest);
   const onlyBeforeAMovement = isFinal ? "none" : "flex";
 
-  // Same rule as the running screen: during a fight the room's colour is the boss's, and it
-  // darkens as the fight turns.
-  const screenBg = getQuestColorTokensFromQuest(quest).bg;
-
   // Reading the movement stops the clock, and closing starts it again. Same pairing as the
   // running screen, and the same reason: the rest is the one moment reading was already free, so
   // a modal that let the countdown run through it took that back. See ActiveExerciseView for the
@@ -143,7 +139,7 @@ export function RestView() {
     // inside a `px="$4"` container.
     <YStack
       flex={1}
-      bg={screenBg}
+      bg="$bgDark"
       pb={insets.bottom + 16}
       gap="$4"
       transition={reducedMotion ? undefined : "quick"}
@@ -190,7 +186,7 @@ export function RestView() {
         transition={reducedMotion ? undefined : "bouncy"}
         enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
       >
-        <GameIcon name="flame" size={40} color="$warning" />
+        <GameIcon name="flame" size={40} color="$resourceFire" />
         <H2 color="$text" fontWeight="700" fontSize={32} lineHeight={38} text="center">
           {t(copy.title)}
         </H2>
@@ -223,7 +219,13 @@ export function RestView() {
           {/* Timer. Not on the final rest: nothing is coming, so there is nothing to count to. */}
           {!isFinal && (
             <YStack items="center" gap="$2">
-              <H1 fontSize={112} fontWeight="700" fontFamily="$body" color="$text">
+              <H1
+                fontSize={112}
+                fontWeight="700"
+                fontFamily="$body"
+                fontVariant={["tabular-nums"]}
+                color="$text"
+              >
                 {formatTime(remainingSeconds)}
               </H1>
               <TimerBar
@@ -284,7 +286,7 @@ export function RestView() {
               display={onlyBeforeAMovement}
               bg="$surface"
               p="$4"
-              rounded="$6"
+              rounded="$3"
               borderWidth={1}
               borderColor="$borderStrong"
               gap="$2"
@@ -337,21 +339,16 @@ export function RestView() {
         </ScrollView>
 
         {/* Skip Button — the ScrollView's sibling, never inside it, so it stays reachable. */}
-        <Button
+        <AppButton
           testID="session-skip-rest"
-          size="$6"
-          bg="$primary"
-          pressStyle={{ opacity: 0.9 }}
+          height={64}
+          fontSize={24}
           onPress={handleSkipRest}
-          borderWidth={0}
-          rounded="$6"
           accessibilityLabel={t(copy.ctaLabel)}
           accessibilityRole="button"
         >
-          <Text color="$text" fontSize={20} fontWeight="700">
-            {t(copy.cta)}
-          </Text>
-        </Button>
+          {t(copy.cta)}
+        </AppButton>
       </YStack>
 
       <ExerciseInstructionsModal
@@ -401,7 +398,7 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
   const adjustStep = isLastTimeBased ? 5 : 1;
 
   return (
-    <YStack bg="$surface" p="$4" rounded="$6" borderWidth={1} borderColor="$borderStrong" gap="$2">
+    <YStack bg="$surface" p="$4" rounded="$3" borderWidth={1} borderColor="$borderStrong" gap="$2">
       <XStack justify="space-between" items="center" gap="$3">
         <YStack testID="rest-adjust-label" flex={1} shrink={1}>
           {/* Names the set: "Up next" sits right below and would otherwise read as its subject. */}

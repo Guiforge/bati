@@ -10,6 +10,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
+import { StatusBand } from "@/components/common/StatusBand";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Plus, Trash2, X } from "@/components/icons";
@@ -411,7 +412,7 @@ export default function QuestEditor() {
               >
                 <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
               </AppIconButton>
-              <Text fontWeight="700" fontSize={20} color="$text">
+              <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
                 {questId == null
                   ? t("quests.editor_new_title", "New quest")
                   : t("quests.editor_edit_title", "Edit quest")}
@@ -604,16 +605,7 @@ export default function QuestEditor() {
       </ScrollView>
 
       {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
-      <YStack
-        position="absolute"
-        t={0}
-        l={0}
-        r={0}
-        height={insets.top}
-        bg="$background"
-        opacity={0.88}
-        pointerEvents="none"
-      />
+      <StatusBand />
 
       <YStack
         p="$4"
@@ -624,10 +616,8 @@ export default function QuestEditor() {
         style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
         onLayout={(e) => setSaveBarHeight(e.nativeEvent.layout.height)}
       >
-        <AppButton testID="quest-save" height={56} disabled={busy} onPress={save} rounded="$6">
-          <Text color="$text" fontSize={20} fontWeight="700">
-            {t("quests.editor_save", "Save quest")}
-          </Text>
+        <AppButton testID="quest-save" height={56} disabled={busy} onPress={save}>
+          {t("quests.editor_save", "Save quest")}
         </AppButton>
       </YStack>
       <ConfirmDialog

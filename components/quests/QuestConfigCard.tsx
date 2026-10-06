@@ -103,7 +103,7 @@ function OutingGoalRow({
             ? t("quests.config_distance", "Distance")
             : t("quests.config_duration", "Duration")}
         </Text>
-        <Text fontWeight="700" fontSize={17} color="$primaryText">
+        <Text fontWeight="700" fontSize={17} color="$text">
           {byDistance
             ? formatDistance(goal.metres, unit, language)
             : formatDuration(goal.seconds, language)}
@@ -246,7 +246,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
           <Text flex={1} fontWeight="700" fontSize={16} color="$text">
             {t("quests.config_title", "Adjust this quest")}
           </Text>
-          {modified ? <Tag label={t("quests.config_modified", "Custom")} tone="secondary" /> : null}
+          {modified ? <Tag label={t("quests.config_modified", "Custom")} /> : null}
           {open ? (
             <ChevronUp size={20} color="$text" opacity={0.6} />
           ) : (

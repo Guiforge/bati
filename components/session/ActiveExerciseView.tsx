@@ -5,15 +5,16 @@ import { Pressable, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, Text, XStack, YStack } from "tamagui";
+import { AppButton } from "@/components/common/AppButton";
 import { GameIcon } from "@/components/common/GameIcon";
-import { Crosshair, Pause } from "@/components/icons";
+import { Crosshair, Minus, Pause, Plus } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { slotCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
@@ -381,7 +382,7 @@ export function ActiveExerciseView() {
             flex={1}
             // Its own contrast, so the scrim above it can stop covering the movement. Same trade
             // ExerciseHero's title makes one gradient down.
-            textShadowColor="rgba(6, 8, 18, 0.9)"
+            textShadowColor={fade(rawColors.shadowColor, 0.9)}
             textShadowOffset={{ width: 0, height: 1 }}
             textShadowRadius={6}
           >
@@ -401,7 +402,7 @@ export function ActiveExerciseView() {
                 fontSize={12}
                 fontWeight="700"
                 color="$textSecondary"
-                textShadowColor="rgba(6, 8, 18, 0.9)"
+                textShadowColor={fade(rawColors.shadowColor, 0.9)}
                 textShadowOffset={{ width: 0, height: 1 }}
                 textShadowRadius={6}
               >
@@ -453,10 +454,9 @@ export function ActiveExerciseView() {
           column's height is exactly what its children need and the CTA can never be pushed off
           screen. Give this flex back and Yoga splits the screen between it and the hero by grow
           factor instead of by content, which is how the CTA ended up below the fold.
-          The boss branch is the exception: the arena is fixed-height, so with nothing elastic
-          above, this column grows instead — the counter wrapper below carries the same grow, so
-          the slack lands around the counter and the CTA stays on the bottom edge. */}
-      <YStack px="$4" pt="$4" gap="$4" style={bossFight ? { flexGrow: 1 } : undefined}>
+          The boss branch is no exception: the arena grows (`flexGrow`, floored at its art cut), so
+          the slack lands in the monster's painting, not as a void around the counter. */}
+      <YStack px="$4" pt="$4" gap="$4">
         {/* An outing replaces the countdown entirely: what a hero wants at kilometre three is
             how far they have gone, not how much of a prescribed duration is left. The clock is
             still running underneath — `completeExercise` records the elapsed seconds either
@@ -483,7 +483,7 @@ export function ActiveExerciseView() {
           not a scroll to bring back.
           ponytail: a 640dp screen on a boss fight (fixed-height arena) in overtime with a ghost
           line is the ceiling. Past it, drop the ghost line or shrink the numeral. */}
-        <YStack justify="center" style={bossFight ? { flexGrow: 1 } : undefined}>
+        <YStack justify="center">
           <YStack items="center" justify="center" gap="$2">
             {/* The exercise's name is on the artwork either way now — the hero paints it, and in a
               fight the arena carries it on its own scrim. Nothing repeats it here. */}
@@ -615,6 +615,7 @@ export function ActiveExerciseView() {
                           lineHeight={80}
                           fontWeight="700"
                           fontFamily="$body"
+                          fontVariant={["tabular-nums"]}
                           color="$success"
                         >
                           {formatOvertime(overtimeSeconds)}
@@ -631,6 +632,7 @@ export function ActiveExerciseView() {
                           lineHeight={80}
                           fontWeight="700"
                           fontFamily="$body"
+                          fontVariant={["tabular-nums"]}
                           color="$text"
                         >
                           {formatTime(remainingSeconds)}
@@ -662,9 +664,7 @@ export function ActiveExerciseView() {
                         accessibilityLabel={t("session.decrease_reps_accessibility")}
                         accessibilityRole="button"
                       >
-                        <Text fontSize={24} fontWeight="700" color="$text">
-                          −
-                        </Text>
+                        <Minus size={24} color="$text" strokeWidth={2.5} />
                       </Button>
                       <YStack
                         items="center"
@@ -695,9 +695,7 @@ export function ActiveExerciseView() {
                         accessibilityLabel={t("session.increase_reps_accessibility")}
                         accessibilityRole="button"
                       >
-                        <Text fontSize={24} fontWeight="700" color="$text">
-                          +
-                        </Text>
+                        <Plus size={24} color="$text" strokeWidth={2.5} />
                       </Button>
                     </XStack>
                     {adjustedReps !== targetValue && (
@@ -747,13 +745,13 @@ export function ActiveExerciseView() {
             ) : null}
 
             {/* Which way this set lands, when the monster cares. One line, in the colour of what
-                it does: gold for a weak point, the warning colour for armour. */}
+                it does: braise for a weak point, ash for armour. */}
             {setStanding ? (
               <Text
                 fontSize={12}
                 fontWeight="700"
                 color={
-                  bossFight?.weaknessMuscle === targetMuscle ? "$resourceGold" : "$textSecondary"
+                  bossFight?.weaknessMuscle === targetMuscle ? "$primaryText" : "$textSecondary"
                 }
                 style={{ textAlign: "center" }}
               >
@@ -787,14 +785,12 @@ export function ActiveExerciseView() {
         {isOuting ? (
           <OutingFinishButton onFinish={handleComplete} />
         ) : (
-          <Button
+          <AppButton
             testID="session-complete-exercise"
-            size="$6"
-            bg={isPastTarget ? "$success" : "$primary"}
-            pressStyle={{ opacity: 0.8 }}
+            height={64}
+            fontSize={24}
+            backgroundColor={isPastTarget ? "$success" : undefined}
             onPress={handleDonePress}
-            borderWidth={0}
-            rounded="$6"
             accessibilityLabel={
               isPastTarget
                 ? t("session.finish_exercise_accessibility")
@@ -802,10 +798,8 @@ export function ActiveExerciseView() {
             }
             accessibilityRole="button"
           >
-            <Text color="$text" fontSize={24} fontWeight="700">
-              {isPastTarget ? t("session.complete_overtime") : t("session.complete_button")}
-            </Text>
-          </Button>
+            {isPastTarget ? t("session.complete_overtime") : t("session.complete_button")}
+          </AppButton>
         )}
       </YStack>
 
@@ -931,8 +925,8 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
       }}
     >
       <YStack
-        height={60}
-        rounded="$6"
+        height={64}
+        rounded="$3"
         bg="$primary"
         overflow="hidden"
         items="center"
@@ -946,9 +940,19 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
         </Animated.View>
         {/* 20 and not 24: "Maintiens pour terminer" is the long form, and it has to hold one
             line on a 320dp screen. */}
-        <Text color="$text" fontSize={20} fontWeight="700" numberOfLines={1}>
-          {t("session.expedition_hold_to_finish")}
-        </Text>
+        {/* On an ink plate: the sweep crosses the label, braise then green, and no single label
+            colour clears AA on both (bone on green is 1.95:1). Ink under bone reads on either. */}
+        <YStack bg="$bgDark" rounded="$4" px="$3" py="$1">
+          <Text
+            color="$text"
+            fontFamily="$heading"
+            fontSize={20}
+            fontWeight="700"
+            numberOfLines={1}
+          >
+            {t("session.expedition_hold_to_finish")}
+          </Text>
+        </YStack>
       </YStack>
     </Pressable>
   );

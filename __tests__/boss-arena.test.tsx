@@ -4,7 +4,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { BossArena } from "@/components/session/BossArena";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "@/components/session/bossPhase";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import config from "@/tamagui.config";
 
 /**
@@ -181,5 +181,50 @@ describe("BossArena status line", () => {
       ? Object.assign({}, ...style.filter(Boolean))
       : ((style ?? {}) as Record<string, unknown>);
     expect(flat.height).toBe(16);
+  });
+});
+
+/**
+ * The gauge is the boss's health: a 10 dp bar with the figure beside it, and the one HP bar the
+ * arena has. Its fill reads off `bossHpColor`, so the phase palette stays the only source.
+ */
+describe("BossArena gauge", () => {
+  beforeEach(() => {
+    mockReducedMotion = true;
+  });
+
+  const flat = (style: unknown) =>
+    (Array.isArray(style) ? Object.assign({}, ...style.filter(Boolean)) : (style ?? {})) as Record<
+      string,
+      unknown
+    >;
+
+  it.each([
+    [400, rawColors.resourceFire],
+    [250, rawColors.resourceFire],
+    [150, rawColors.error],
+    [0, rawColors.error],
+    [40, rawColors.error],
+  ])("fills with the phase colour at %i HP", async (hp, colour) => {
+    const root = await render(arena(hp));
+
+    expect(root.getByTestId("boss-hp-fill")).toHaveStyle({ backgroundColor: fade(colour, 1) });
+  });
+
+  it("is empty when the boss is down", async () => {
+    const root = await render(arena(0));
+
+    expect(barWidths(root)[1]).toBe("0%");
+  });
+
+  it("is 10 dp tall in a framed track, with the figure in the body face", async () => {
+    const root = await render(arena(399));
+
+    const track = flat(root.getByTestId("boss-hp-fill").parent?.props.style);
+    expect(track.height).toBe(10);
+    expect(track.borderTopWidth).toBe(1.5);
+    const figure = root.getByTestId("boss-hp-figure");
+    expect(figure).toHaveTextContent("399 / 400");
+    expect(flat(figure.props.style).fontFamily).toBe(config.fonts.body.face[700].normal);
   });
 });

@@ -15,7 +15,7 @@ export type ExerciseColorTokens = {
 const MUSCLE_BG: Record<MuscleCode, ColorTokens> = {
   arms: "$pastelPink",
   back: "$pastelBlue",
-  shoulder: "$pastelPurple",
+  shoulder: "$bgLight",
   chest: "$pastelYellow",
   abs: "$pastelGreen",
   // No dedicated "pastelOrange" in the theme for now.
@@ -41,7 +41,7 @@ export function getExerciseColorKey(input: {
 export function getExerciseColorTokens(key: ExerciseColorKey): ExerciseColorTokens {
   if (key === "mixed") {
     return {
-      bg: "$pastelPurple",
+      bg: "$bgLight",
       accent: "$primary",
       text: "$color",
     };

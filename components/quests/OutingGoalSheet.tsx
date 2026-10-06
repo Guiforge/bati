@@ -115,14 +115,14 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, onPick }: Prop
       zIndex={100_000}
     >
       <Sheet.Overlay
-        bg="rgba(0,0,0,0.5)"
+        bg="$sheetScrim"
         transition={reducedMotion ? undefined : "quick"}
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
       {/* No handle, for the same reason the picker has none: with the drag off it would promise
           a gesture that answers nothing. The X and hardware back are the way out. */}
-      <Sheet.Frame bg="$surface">
+      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
         <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$4">
           <XStack items="center" justify="space-between" gap="$3">
             <Text flex={1} fontWeight="700" fontSize={18} color="$text">

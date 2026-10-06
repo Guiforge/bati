@@ -1,11 +1,12 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Button, type ColorTokens, type SpaceTokens } from "tamagui";
 
-type AppButtonVariant = "primary" | "secondary" | "outline";
+type AppButtonVariant = "primary" | "outline";
 
 type TamaguiButtonProps = ComponentProps<typeof Button>;
 
-interface AppButtonProps extends Omit<TamaguiButtonProps, "children" | "variant"> {
+interface AppButtonProps
+  extends Omit<TamaguiButtonProps, "children" | "variant" | "pressStyle" | "rounded" | "bg"> {
   variant?: AppButtonVariant;
   children: ReactNode;
   marginBottom?: SpaceTokens | number;
@@ -13,6 +14,8 @@ interface AppButtonProps extends Omit<TamaguiButtonProps, "children" | "variant"
   backgroundColor?: ColorTokens;
   fullWidth?: boolean;
 }
+
+const LIGHT_FILLS: ColorTokens[] = ["$success", "$error", "$warning", "$resourceGold"];
 
 export function AppButton({
   variant = "primary",
@@ -23,18 +26,26 @@ export function AppButton({
   fullWidth = true,
   ...buttonProps
 }: AppButtonProps) {
+  // A disabled primary still reads as a button: a quiet surface, an ash label, no edge to press.
+  const dimmed = variant === "primary" && buttonProps.disabled === true;
   const getBackgroundColor = (): ColorTokens => {
+    if (dimmed) return "$surface2";
     if (backgroundColor) return backgroundColor;
-    if (variant === "secondary") return "$secondary";
     if (variant === "outline") return "$background";
     return "$primary";
   };
 
-  const getColor = () => {
-    if (variant === "outline") return "$text";
-    if (variant === "secondary") return "$white";
-    return "$text";
+  // The label follows its fill (spec rule 1): onPrimary on the braise, bone on the outline,
+  // and ink on the light signal fills, where a pale label measures 3:1.
+  const onLightFill = backgroundColor !== undefined && LIGHT_FILLS.includes(backgroundColor);
+  const getColor = (): ColorTokens => {
+    if (dimmed) return "$textSecondary";
+    if (backgroundColor === "$error") return "$onError";
+    if (onLightFill) return "$bgDark";
+    return variant === "outline" ? "$text" : "$onPrimary";
   };
+  // The seal: a bottom edge on the braise only. A braise edge under red would be wrong.
+  const seal = variant === "primary" && !backgroundColor && !dimmed;
 
   return (
     <Button
@@ -57,12 +68,22 @@ export function AppButton({
       py="$2"
       width={fullWidth ? "100%" : undefined}
       borderWidth={1}
-      rounded="$8"
+      rounded="$3"
       borderColor="$borderStrong"
+      fontFamily="$heading"
       fontWeight="700"
       fontSize={20}
-      transition="quick"
-      pressStyle={{ opacity: 0.9, scale: 0.98 }}
+      // A translate, never a border-width change, so nothing below the button moves. No
+      // `transition` anywhere: Tamagui runs its animation hooks only when one is set, so a
+      // caller toggling backgroundColor or variant on a mounted button changed the hook shape
+      // and threw. Presses are instant.
+      {...(seal
+        ? {
+            borderBottomWidth: 3,
+            borderBottomColor: "$primaryEdge",
+            pressStyle: { y: 2, borderBottomColor: "$primary", opacity: 0.95 },
+          }
+        : { pressStyle: { opacity: 0.9, scale: 0.98 } })}
       {...buttonProps}
     >
       {typeof children === "string" ? (

@@ -9,7 +9,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
 import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { Difficulty, getQuestById, listQuestTemplates, type Quest } from "@/db/quests";
 import { useHaptics } from "@/hooks/useHaptics";
 import { reportError } from "@/src/reportError";
@@ -96,11 +96,11 @@ export default function FirstSessionStep() {
         contentFit="cover"
       />
       <LinearGradient
-        colors={["rgba(11, 15, 25, 0.85)", "transparent"]}
+        colors={[fade(rawColors.bgDark, 0.85), "transparent"]}
         style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(11, 15, 25, 0.95)", rawColors.bgDark]}
+        colors={["transparent", fade(rawColors.bgDark, 0.95), rawColors.bgDark]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%" }}
       />
 
@@ -112,8 +112,8 @@ export default function FirstSessionStep() {
             color="$text"
             fontSize={30}
             fontWeight="700"
-            textShadowColor="rgba(0,0,0,0.5)"
-            textShadowRadius={4}
+            textShadowColor={fade(rawColors.bgDark, 0.8)}
+            textShadowRadius={6}
           >
             {t("onboarding.first_session_title", "Your first march")}
           </H1>
@@ -121,8 +121,9 @@ export default function FirstSessionStep() {
             text="center"
             color="$textSecondary"
             fontSize={15}
-            textShadowColor="rgba(0,0,0,0.5)"
-            textShadowRadius={4}
+            // The clouds behind it are the brightest thing on the page: a dark halo, not a hint.
+            textShadowColor={fade(rawColors.bgDark, 0.8)}
+            textShadowRadius={6}
           >
             {t(
               "onboarding.first_session_subtitle",
@@ -144,15 +145,11 @@ export default function FirstSessionStep() {
               });
             }}
             disabled={!quest && !offerDead}
-            bg="$primary"
             borderWidth={0}
-            rounded="$10"
           >
-            <Text color="$text" fontSize={17} fontWeight="700">
-              {offerDead
-                ? t("onboarding.finish", "Start my training journey")
-                : t("onboarding.first_session_start", "Start now")}
-            </Text>
+            {offerDead
+              ? t("onboarding.finish", "Start my training journey")
+              : t("onboarding.first_session_start", "Start now")}
           </AppButton>
 
           {!offerDead && (

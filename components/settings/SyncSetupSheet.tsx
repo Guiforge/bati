@@ -301,7 +301,7 @@ function NotListed({
       <AppButton testID="sync-handoff-roundsync" variant="outline" onPress={onRoundSync}>
         {t("sync.handoff.roundSyncCta")}
       </AppButton>
-      <AppButton testID="sync-handoff-back" variant="secondary" onPress={onBack}>
+      <AppButton testID="sync-handoff-back" variant="outline" onPress={onBack}>
         {t("sync.pick.back")}
       </AppButton>
     </>

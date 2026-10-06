@@ -4,6 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { PausedOverlay } from "@/components/session/PausedOverlay";
+import { rawColors } from "@/constants/rawColors";
 import type { Quest } from "@/db/quests";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
@@ -113,6 +114,25 @@ describe("PausedOverlay", () => {
     expect(paused.getByText("Dead Bug")).toBeTruthy();
     // The whole description, not a truncated head: the clock is stopped, so reading is free.
     expect(paused.getByText(HOW_TO)).toBeTruthy();
+  });
+
+  it("sets its title in the heading face and ends the quit button on the red edge", async () => {
+    useSessionStore.setState({
+      quest: mockQuest,
+      status: "paused",
+      prePauseStatus: "running",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+      warmupSequence: [],
+      warmupIndex: 0,
+    });
+
+    const paused = await mountPaused();
+
+    const title = StyleSheet.flatten(paused.getByText("session.paused_title").props.style);
+    expect(title.fontFamily).toBe(config.fonts.heading.face[700].normal);
+    const quit = StyleSheet.flatten(paused.getByTestId("session-quit").props.style);
+    expect(quit.borderTopColor).toBe(rawColors.error);
   });
 
   it("keeps the card below the status bar and scrolls a tall card instead of clipping it", async () => {

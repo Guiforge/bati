@@ -5,14 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, ScrollView, useWindowDimensions } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Text, XStack, YStack } from "tamagui";
+import { Button, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { recordCue } from "@/components/chorus/recordCue";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
@@ -20,12 +14,16 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
+import { InkGauge } from "@/components/common/InkGauge";
+import { Recitatif } from "@/components/common/Recitatif";
 import { useToast } from "@/components/common/Toast";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
+import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
+import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
@@ -84,50 +82,30 @@ const VILLAGER_SLOT_TOP = 12;
 const VILLAGER_SLOT_HEIGHT = 88;
 
 /**
- * The hero's own gauge, filling with what this session earned — the one number that makes
- * "come back tomorrow" legible, and it only ever moved on Home, outside the celebration
- * (2026-08 audit, §06-B). Same visual language as the home header: gold on a dark track.
+ * The hero's own gauge, filling from where the session found it to where it left it (from empty
+ * when the session crossed a level). It is the one number that makes "come back tomorrow" legible,
+ * and it only ever moved on Home, outside the celebration (2026-08 audit, section 06-B). Same
+ * visual language as the home header: gold on a dark track.
  */
 function HeroLevelBar({
   heroXp,
   language,
-  reducedMotion,
 }: {
-  /** `null` until the save lands: the card is there from the first frame at its final height. */
+  /** `null` until the save lands: a loading reward asserts nothing, so the card is not mounted. */
   heroXp: { before: number; after: number } | null;
   language: AppLanguage;
-  reducedMotion: boolean;
 }) {
   return heroXp ? (
-    <FilledLevelBar
-      before={heroXp.before}
-      after={heroXp.after}
-      language={language}
-      reducedMotion={reducedMotion}
-    />
+    <FilledLevelBar before={heroXp.before} after={heroXp.after} language={language} />
   ) : (
-    <Card
-      testID="victory-level-placeholder"
-      // Two ellipses and an empty bar: nothing for a screen reader to stop on.
+    <YStack
+      testID="victory-level-spacer"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
       width="100%"
       maxW={520}
-      bg="$surface"
-      borderColor="$glassBorder"
-      gap="$2"
-      py="$3"
-    >
-      <XStack items="center" justify="space-between">
-        <Text fontFamily="$body" fontWeight="700" fontSize={14} color="$textSecondary">
-          …
-        </Text>
-        <Text fontFamily="$body" fontWeight="700" fontSize={12} color="$textSecondary">
-          …
-        </Text>
-      </XStack>
-      <XStack height={8} bg="$surface2" rounded={4} overflow="hidden" width="100%" />
-    </Card>
+      height={LEVEL_CARD_HEIGHT}
+    />
   );
 }
 
@@ -135,35 +113,31 @@ function FilledLevelBar({
   before,
   after,
   language,
-  reducedMotion,
 }: {
   before: number;
   after: number;
   language: AppLanguage;
-  reducedMotion: boolean;
 }) {
   const { t } = useTranslation();
   const level = calculateLevelFromXp(after);
   const base = getXpForLevel(level);
   const span = Math.max(1, getXpForLevel(level + 1) - base);
-  const target = Math.min(100, ((after - base) / span) * 100);
-  // Where the bar starts filling from: the hero's progress before the session, or the bottom
-  // of the level when the session crossed it — the sweep from zero *is* the level-up.
-  const from = before >= base ? Math.min(target, ((before - base) / span) * 100) : 0;
+  const progress = Math.min(1, (after - base) / span);
+  // Where the sweep starts: the hero's progress before the session, or the bottom of the level
+  // when the session crossed it, so the sweep from zero *is* the level-up.
+  const from = before >= base ? Math.min(progress, (before - base) / span) : 0;
   const title = getLevelTitle(level)[language];
 
-  const width = useSharedValue(reducedMotion ? target : from);
-  useEffect(() => {
-    if (reducedMotion) {
-      width.value = target;
-      return;
-    }
-    width.value = withDelay(500, withTiming(target, { duration: 900 }));
-  }, [reducedMotion, target, width]);
-  const fill = useAnimatedStyle(() => ({ width: `${width.value}%` }));
-
   return (
-    <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$2" py="$3">
+    <Card
+      width="100%"
+      maxW={520}
+      minH={LEVEL_CARD_HEIGHT}
+      bg="$surface"
+      borderColor="$glassBorder"
+      gap="$2"
+      py="$3"
+    >
       <XStack items="center" justify="space-between">
         <Text fontFamily="$body" fontWeight="700" fontSize={14} color="$text">
           {t("home.level_line", {
@@ -179,11 +153,13 @@ function FilledLevelBar({
           })}
         </Text>
       </XStack>
-      <XStack height={8} bg="$surface2" rounded={4} overflow="hidden" width="100%">
-        <Animated.View style={[{ height: "100%", borderRadius: 4 }, fill]}>
-          <YStack flex={1} bg="$resourceGold" rounded={4} />
-        </Animated.View>
-      </XStack>
+      <InkGauge
+        testIDPrefix="victory-level"
+        progress={progress}
+        fill="$resourceGold"
+        track="$gold800"
+        from={from}
+      />
     </Card>
   );
 }
@@ -434,6 +410,8 @@ export function VictoryView() {
           mt="$4"
           p={0}
           overflow="hidden"
+          borderWidth={1.5}
+          borderColor="$borderStrong"
           {...(isBossDefeat ? { borderWidth: 2, borderColor: "$resourceGold" } : null)}
         >
           {/* The ratio follows the source, because this slot serves two of them: a felled boss is
@@ -453,7 +431,7 @@ export function VictoryView() {
               accessible={false}
             />
             <LinearGradient
-              colors={["transparent", "rgba(11,15,25,0.55)", "rgba(11,15,25,0.95)"]}
+              colors={["transparent", fade(rawColors.bgDark, 0.55), fade(rawColors.bgDark, 0.95)]}
               style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: 0 }}
             />
             {/* The villager's line, top of the banner beside the trophy. Its slot is here from the
@@ -464,24 +442,27 @@ export function VictoryView() {
               <VillagerLine owner="victory" reserve={villagerSlot} />
             </YStack>
             <YStack position="absolute" t="$3" l="$3">
-              <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$primaryText" />
+              <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$resourceGold" />
             </YStack>
             <YStack position="absolute" b={0} l={0} r={0} p="$4" gap="$1">
-              <Text
-                fontFamily="$body"
-                fontWeight="700"
-                color={isBossDefeat ? "$resourceGold" : "$textSecondary"}
-                fontSize={13}
-                letterSpacing={1.2}
-              >
-                {(isBossDefeat
-                  ? t("boss.victory_title")
-                  : t("session.victory_title")
-                ).toUpperCase()}
-              </Text>
-              <H1 fontFamily="$body" fontWeight="700" color="$text" fontSize={26} lineHeight={31}>
-                {heroTitle}
-              </H1>
+              {/* The kicker and the title are one unit: the kicker announces a reward, so it is gold
+                  on a boss kill and on a plain quest alike, directly over the cartouche. */}
+              <YStack gap={2} self="flex-start">
+                <Text
+                  testID="victory-kicker"
+                  fontFamily="$body"
+                  fontWeight="700"
+                  color="$resourceGold"
+                  fontSize={13}
+                  letterSpacing={2}
+                >
+                  {(isBossDefeat
+                    ? t("boss.victory_title")
+                    : t("session.victory_title")
+                  ).toUpperCase()}
+                </Text>
+                <Recitatif>{heroTitle}</Recitatif>
+              </YStack>
               {isBossDefeat && (
                 <Text
                   fontFamily="$body"
@@ -568,121 +549,74 @@ export function VictoryView() {
         )}
 
         {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
-        <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
-          <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
-            <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
-              {t("session.total_time")}
-            </Text>
-            <Text fontWeight="700" fontSize={26} color="$text" fontFamily="$body">
-              {formatTime(durationSeconds)}
-            </Text>
-          </Card>
-          <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
-            <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
-              {t("session.xp_earned")}
-            </Text>
-            {/* The testID only exists once the session is banked: Continue is on screen, and
+        {!tooShort && (
+          <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
+            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
+              <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+                {t("session.total_time")}
+              </Text>
+              <Text fontWeight="700" fontSize={26} color="$text" fontFamily="$body">
+                {formatTime(durationSeconds)}
+              </Text>
+            </Card>
+            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
+              <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+                {t("session.xp_earned")}
+              </Text>
+              {/* The testID only exists once the session is banked: Continue is on screen, and
                 disabled, for the whole save, so it cannot tell an E2E flow when to tap it. */}
-            <Text
-              testID={result ? "session-victory-xp" : undefined}
-              fontWeight="700"
-              fontSize={26}
-              color="$primaryText"
-              fontFamily="$body"
-            >
-              {result
-                ? t("quests.reward_xp", { count: formatCount(language, result.xpEarned) })
-                : "…"}
-            </Text>
-            {!!result?.dailyBonusXp && (
-              <Text fontWeight="700" fontSize={11} color="$success">
-                {t("common.daily_xp_bonus", { count: formatCount(language, result.dailyBonusXp) })}
-              </Text>
-            )}
-            {/* The rate, said out loud. A hero who walks an hour and reads "+300" has no way to
-                know why, and a number with no rule behind it is the thing the research calls
-                controlling rather than informative. This is the rule, in the hero's own numbers. */}
-            {result?.outing ? (
-              <Text fontWeight="700" fontSize={11} color="$textSecondary">
-                {t("session.xp_outing_rate", {
-                  moving: formatDurationEstimate(result.outing.seconds, language),
-                  effort: formatDurationEstimate(result.outing.effortSeconds, language),
-                })}
-              </Text>
-            ) : null}
-            {!!result?.overshootXp && (
               <Text
+                testID={result ? "session-victory-xp" : undefined}
+                accessibilityElementsHidden={!result}
+                importantForAccessibility={result ? "auto" : "no"}
                 fontWeight="700"
-                fontSize={11}
-                color="$success"
-                text="center"
+                fontSize={26}
+                color="$resourceGold"
                 fontFamily="$body"
               >
-                {t("session.xp_overshoot", { count: formatCount(language, result.overshootXp) })}
+                {result
+                  ? t("quests.reward_xp", { count: formatCount(language, result.xpEarned) })
+                  : // Same line height, no glyph: a loading reward asserts nothing.
+                    "\u00A0"}
               </Text>
-            )}
-          </Card>
-        </XStack>
+              {!!result?.dailyBonusXp && (
+                <Text fontWeight="700" fontSize={11} color="$success">
+                  {t("common.daily_xp_bonus", {
+                    count: formatCount(language, result.dailyBonusXp),
+                  })}
+                </Text>
+              )}
+              {/* The rate, said out loud. A hero who walks an hour and reads "+300" has no way to
+                know why, and a number with no rule behind it is the thing the research calls
+                controlling rather than informative. This is the rule, in the hero's own numbers. */}
+              {result?.outing ? (
+                <Text fontWeight="700" fontSize={11} color="$textSecondary">
+                  {t("session.xp_outing_rate", {
+                    moving: formatDurationEstimate(result.outing.seconds, language),
+                    effort: formatDurationEstimate(result.outing.effortSeconds, language),
+                  })}
+                </Text>
+              ) : null}
+              {!!result?.overshootXp && (
+                <Text
+                  fontWeight="700"
+                  fontSize={11}
+                  color="$success"
+                  text="center"
+                  fontFamily="$body"
+                >
+                  {t("session.xp_overshoot", { count: formatCount(language, result.overshootXp) })}
+                </Text>
+              )}
+            </Card>
+          </XStack>
+        )}
 
         {/* The hero's level bar, filling with this session's XP */}
-        {/* From the first frame: it used to mount with the save and push the feel buttons about
-            80 dp down from under the finger that was about to press one. */}
-        <HeroLevelBar
-          heroXp={result ? result.heroXp : null}
-          language={language}
-          reducedMotion={reducedMotion}
-        />
-
-        {/* Feedback — above the fold and above the rewards: this answer is what steers the next
-            session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}
-        <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">
-          <Text
-            fontFamily="$body"
-            fontWeight="700"
-            fontSize={15}
-            color="$text"
-            style={{ textAlign: "center" }}
-          >
-            {t("session.feedback_title")}
-          </Text>
-          <XStack gap="$3" justify="center">
-            {(
-              [
-                { value: "easy", emoji: "😊", accent: "$success" },
-                { value: "good", emoji: "💪", accent: "$primary" },
-                { value: "hard", emoji: "😤", accent: "$secondary" },
-              ] as const
-            ).map(({ value, emoji, accent }) => (
-              <Button
-                key={value}
-                flex={1}
-                size="$4"
-                bg={feedback === value ? "$surface2" : "$surface"}
-                borderWidth={1}
-                borderColor={feedback === value ? accent : "$glassBorder"}
-                opacity={feedback === value ? 1 : 0.85}
-                pressStyle={{ opacity: 0.8, scale: 0.98 }}
-                onPress={() => handleFeedbackSelect(value)}
-                rounded="$4"
-                accessibilityLabel={t(`session.feedback_${value}`)}
-                accessibilityRole="button"
-              >
-                <YStack items="center" gap="$1">
-                  <Text fontSize={20}>{emoji}</Text>
-                  <Text
-                    color="$text"
-                    fontSize={12}
-                    fontWeight="700"
-                    style={{ textAlign: "center" }}
-                  >
-                    {t(`session.feedback_${value}`)}
-                  </Text>
-                </YStack>
-              </Button>
-            ))}
-          </XStack>
-        </Card>
-
+        {/* A spacer of the card's height holds its place until the save lands: the card itself
+            mounts only with data, and must not push the feel buttons from under the finger. */}
+        {/* Held for the hero's answer: the question takes the level card's slot, above the fold,
+            and no reward is drawn for a session that may be discarded. */}
         {tooShort ? (
           <YStack width="100%" maxW={520} items="center" gap="$3" py="$4">
             <Text color="$text" fontSize={18} fontWeight="700">
@@ -699,7 +633,8 @@ export function VictoryView() {
               )}
             </Text>
             <AppButton
-              backgroundColor="$surface2"
+              variant="outline"
+              borderColor="$error"
               onPress={() => {
                 // Discard is the existing quit path: nothing was written, so there is nothing
                 // to undo, and the session state has to be cleared either way. Home rather than
@@ -708,12 +643,67 @@ export function VictoryView() {
                 router.replace("/");
               }}
             >
-              <Text color="$text" fontSize={16} fontWeight="700">
-                {t("session.summary_too_short_discard")}
-              </Text>
+              {t("session.summary_too_short_discard")}
             </AppButton>
           </YStack>
-        ) : null}
+        ) : (
+          <HeroLevelBar heroXp={result ? result.heroXp : null} language={language} />
+        )}
+
+        {/* Feedback — above the fold and above the rewards: this answer is what steers the next
+            session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}
+        <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">
+          <Text
+            fontFamily="$body"
+            fontWeight="700"
+            fontSize={15}
+            color="$text"
+            style={{ textAlign: "center" }}
+          >
+            {t("session.feedback_title")}
+          </Text>
+          <XStack gap="$3" justify="center">
+            {(
+              [
+                { value: "easy", glyph: "wind", accent: "$success" },
+                { value: "good", glyph: "sword", accent: "$primaryText" },
+                { value: "hard", glyph: "flame", accent: "$error" },
+              ] as const
+            ).map(({ value, glyph, accent }) => (
+              <Button
+                key={value}
+                flex={1}
+                size="$4"
+                bg={feedback === value ? "$surface2" : "$surface"}
+                borderWidth={1}
+                borderColor={feedback === value ? accent : "$glassBorder"}
+                opacity={feedback === value ? 1 : 0.85}
+                pressStyle={{ opacity: 0.8, scale: 0.98 }}
+                onPress={() => handleFeedbackSelect(value)}
+                rounded="$4"
+                accessibilityLabel={t(`session.feedback_${value}`)}
+                accessibilityRole="button"
+              >
+                <YStack items="center" gap="$1">
+                  <GameIcon
+                    testID={`feedback-glyph-${value}`}
+                    name={glyph}
+                    size={22}
+                    color={feedback === value ? accent : "$text"}
+                  />
+                  <Text
+                    color="$text"
+                    fontSize={12}
+                    fontWeight="700"
+                    style={{ textAlign: "center" }}
+                  >
+                    {t(`session.feedback_${value}`)}
+                  </Text>
+                </YStack>
+              </Button>
+            ))}
+          </XStack>
+        </Card>
 
         {/* Saving / error / rewards */}
         {!result && !saveError && !tooShort && (
@@ -789,13 +779,10 @@ export function VictoryView() {
             testID="session-victory-keep-short"
             onPress={() => setKeepShort(true)}
             height={60}
-            rounded="$6"
             fullWidth={false}
             flex={1}
           >
-            <Text color="$text" fontSize={20} fontWeight="700">
-              {t("session.summary_too_short_keep")}
-            </Text>
+            {t("session.summary_too_short_keep")}
           </AppButton>
         ) : (
           <AppButton
@@ -803,13 +790,10 @@ export function VictoryView() {
             onPress={handleContinue}
             disabled={!result}
             height={60}
-            rounded="$6"
             fullWidth={false}
             flex={1}
           >
-            <Text color="$text" fontSize={20} fontWeight="700">
-              {result ? t("session.continue") : t("common.saving")}
-            </Text>
+            {result ? t("session.continue") : t("common.saving")}
           </AppButton>
         )}
       </XStack>
@@ -831,6 +815,7 @@ export function VictoryView() {
       <NarrativeModal
         visible={showOutroNarrative}
         title={questTitle}
+        image={getQuestAsset(quest.imagePath)}
         text={outroNarrative ?? ""}
         onClose={() => setShowOutroNarrative(false)}
         type="outro"

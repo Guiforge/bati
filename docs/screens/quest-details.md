@@ -25,6 +25,10 @@ Quest Details helps you **understand the workout before you start**.
 
 - Keep the quest title and start action dominant.
 - Use subtle borders on the header image, exercise cards, and difficulty chips.
+- The difficulty text takes its colour from `DIFFICULTY_TEXT_TOKENS` (the chip stays neutral) and
+  the "up to +N XP" chip is gold.
+- A `StatusBand` (ink, status-bar height, never touchable) keeps scrolled content from showing
+  through under the clock.
 - Exercise thumbnails should support scanning, not compete with the quest summary.
 - The sticky start bar should feel like a clear action band, not a heavy divider.
 

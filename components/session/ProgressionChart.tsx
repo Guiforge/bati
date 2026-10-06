@@ -12,6 +12,11 @@ import { getQuestSessionHistory, getRecentSessionHistory } from "@/db";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
+const Y_LABELS_WIDTH = 35;
+/** Room before the first bar, so its centred date (up to ~30 dp wide) stays inside the plot. */
+const LEAD_IN = 12;
+const LEGEND = ["easy", "medium", "hard"] as const;
+
 type ChartMode = "quest" | "all";
 
 interface ProgressionChartProps {
@@ -118,8 +123,11 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
     );
   }
 
+  // Ten month labels do not fit unrotated: every other one, wide enough not to truncate.
+  const thin = sessions.length > 6;
+
   // Prepare chart data - show duration in minutes
-  const chartData: ChartDataPoint[] = sessions.map((session) => {
+  const chartData: ChartDataPoint[] = sessions.map((session, index) => {
     const durationMinutes = session.durationSeconds ? Math.round(session.durationSeconds / 60) : 0;
 
     const dateLabel = getDateTimeFormat(language, { day: "numeric", month: "short" }).format(
@@ -133,7 +141,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
 
     return {
       value: durationMinutes,
-      label: dateLabel,
+      label: thin && index % 2 === 1 ? "" : dateLabel,
       frontColor: barColor,
     };
   });
@@ -144,10 +152,18 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
   const avgMinutes = Math.round(avgDuration / 60);
   const totalMinutes = Math.round(totalDuration / 60);
 
-  // Chart dimensions
+  // Chart dimensions. gifted-charts' `width` is the plot alone: the y labels sit to its left, so
+  // the footprint is Y_LABELS_WIDTH + plotWidth and `chartWidth` is what the card can hold. The
+  // bars share the plot in equal slots (a bar and its gap), after a fixed lead-in.
   const chartWidth = Math.min(width - 80, 320);
-  const barWidth = Math.max(16, Math.floor(chartWidth / (sessions.length * 2)));
-  const spacing = Math.max(8, Math.floor(barWidth / 2));
+  const plotWidth = chartWidth - Y_LABELS_WIDTH;
+  const slot = Math.floor((plotWidth - LEAD_IN) / sessions.length);
+  const barWidth = Math.max(10, Math.floor(slot * 0.6));
+  const spacing = slot - barWidth;
+  // A label's box is `labelWidth + spacing` wide, shifted left by `spacing / 2`, so its centre is
+  // the bar's centre only when labelWidth == barWidth. Wider text (thin mode: a label every other
+  // bar) is widened on the Text itself and pulled back by half the extra, which keeps the centre.
+  const labelTextWidth = thin ? slot * 2 : slot;
 
   // Find max value for Y-axis
   const maxValue = Math.max(...chartData.map((d) => d.value), 1);
@@ -158,7 +174,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       <YStack gap="$4">
         {/* Title */}
         <YStack gap="$1">
-          <Text fontWeight="700" fontSize={16} color="$text">
+          <Text fontFamily="$heading" fontWeight="700" fontSize={16} color="$text">
             {title || t("chart.progression_title")}
           </Text>
           <Paragraph color="$text" opacity={0.6} size="$2">
@@ -169,7 +185,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         {/* Stats Row */}
         <XStack gap="$4" justify="space-around">
           <YStack items="center">
-            <Text fontWeight="700" fontSize={24} color="$primaryText">
+            <Text fontWeight="700" fontSize={24} color="$text">
               {sessions.length}
             </Text>
             <Text fontSize={12} color="$text" opacity={0.6}>
@@ -177,7 +193,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             </Text>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="700" fontSize={24} color="$success">
+            <Text fontWeight="700" fontSize={24} color="$text">
               {totalMinutes}
             </Text>
             <Text fontSize={12} color="$text" opacity={0.6}>
@@ -185,7 +201,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             </Text>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="700" fontSize={24} color="$secondary">
+            <Text fontWeight="700" fontSize={24} color="$text">
               {avgMinutes}
             </Text>
             <Text fontSize={12} color="$text" opacity={0.6}>
@@ -198,7 +214,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         <YStack items="center" py="$2">
           <BarChart
             data={chartData}
-            width={chartWidth}
+            width={plotWidth}
             height={160}
             barWidth={barWidth}
             spacing={spacing}
@@ -215,32 +231,32 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             xAxisLabelTextStyle={{
               color: rawColors.textSecondary,
               fontSize: 9,
-              transform: [{ rotate: "-45deg" }],
+              width: labelTextWidth,
+              marginLeft: (slot - labelTextWidth) / 2,
             }}
+            labelWidth={barWidth}
+            yAxisLabelWidth={Y_LABELS_WIDTH}
+            initialSpacing={LEAD_IN}
+            endSpacing={0}
             hideRules
           />
         </YStack>
 
-        {/* Legend */}
+        {/* Legend: the fills mean difficulty, in the same three colours the bars use. */}
         <XStack gap="$4" justify="center" flexWrap="wrap">
-          <XStack items="center" gap="$2">
-            <YStack width={12} height={12} rounded={6} bg="$success" />
-            <Text fontSize={11} color="$text" opacity={0.7}>
-              {t("quests.level_easy")}
-            </Text>
-          </XStack>
-          <XStack items="center" gap="$2">
-            <YStack width={12} height={12} rounded={6} bg="$primary" />
-            <Text fontSize={11} color="$text" opacity={0.7}>
-              {t("quests.level_medium")}
-            </Text>
-          </XStack>
-          <XStack items="center" gap="$2">
-            <YStack width={12} height={12} rounded={6} bg="$error" />
-            <Text fontSize={11} color="$text" opacity={0.7}>
-              {t("quests.level_hard")}
-            </Text>
-          </XStack>
+          {LEGEND.map((level) => (
+            <XStack key={level} items="center" gap="$2" testID={`chart-legend-${level}`}>
+              <YStack
+                width={12}
+                height={12}
+                rounded={6}
+                style={{ backgroundColor: DIFFICULTY_COLORS[level] }}
+              />
+              <Text fontSize={11} color="$text" opacity={0.7}>
+                {t(`quests.level_${level}`)}
+              </Text>
+            </XStack>
+          ))}
         </XStack>
       </YStack>
     </Card>

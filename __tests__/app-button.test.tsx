@@ -39,6 +39,6 @@ test("it keeps the look a button's text has: the bold face and the size come thr
   );
 
   const style = Object.assign({}, ...[screen.getByText("Save").props.style].flat());
-  expect(style.fontFamily).toBe("NotoSans_700Bold");
+  expect(style.fontFamily).toBe("Alegreya_700Bold");
   expect(style.fontSize).toBe(20);
 });

@@ -43,7 +43,7 @@ export function ShareButton({
         height={36}
         px={12}
         gap={6}
-        rounded={18}
+        rounded="$3"
         borderWidth={1}
         borderColor="$glassBorder"
         bg="$bgOverlaySoft"
@@ -65,8 +65,8 @@ export function ShareButton({
       testID={testID}
       variant="outline"
       fullWidth={fullWidth}
-      // Spread, not `rounded={undefined}`: an explicit undefined would overwrite AppButton's own.
-      {...(height ? { height, rounded: "$6" } : null)}
+      // Spread, not `height={undefined}`: an explicit undefined would overwrite AppButton's own.
+      {...(height ? { height } : null)}
       size="$3"
       fontSize={16}
       px="$3"

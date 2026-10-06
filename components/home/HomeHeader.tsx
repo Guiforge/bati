@@ -129,7 +129,7 @@ export function HomeHeader() {
               progress={levelInfo?.xpProgress ?? 0}
               height={3}
               color="$resourceGold"
-              trackColor="$surface2"
+              trackColor="$gold800"
             />
           </XStack>
           {/* The numbers, not a percentage of something this strip never named. The victory

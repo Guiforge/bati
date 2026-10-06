@@ -69,7 +69,9 @@ export function NNum(props: TextProps) {
 
 /** A screen or block title. */
 export function NTitle(props: TextProps) {
-  return <TextFrame fontWeight="500" fontSize={18} lineHeight={24} {...props} />;
+  return (
+    <TextFrame fontFamily="$heading" fontWeight="700" fontSize={18} lineHeight={24} {...props} />
+  );
 }
 
 /** `.card`: a surface with no border. Nocturne lifts by tone, not by outline. */
@@ -178,8 +180,7 @@ export function NSeg<T extends string>({
 }
 
 /**
- * `.btn`: always an outline. Primary is the accent, secondary the divider, danger the red of an
- * action that cannot be taken back, so "Remove from the journal" does not weigh what Share weighs.
+ * `.btn`: always an outline. Primary is the accent, secondary the divider.
  */
 export function NButton({
   children,
@@ -191,16 +192,13 @@ export function NButton({
 }: {
   children: string;
   onPress: () => void;
-  variant?: "primary" | "secondary" | "danger";
+  variant?: "primary" | "secondary";
   block?: boolean;
   minH?: number;
   testID?: string;
 }) {
   const primary = variant === "primary";
-  const danger = variant === "danger";
-  // The raw red, not a token: the Journal theme folds `$danger` and `$error` into its inks on
-  // purpose, and the one action here that cannot be undone is the place to keep the red.
-  const tone = primary ? "$resourceGold" : danger ? rawColors.error : undefined;
+  const tone = primary ? "$resourceGold" : undefined;
   return (
     <YStack
       testID={testID}

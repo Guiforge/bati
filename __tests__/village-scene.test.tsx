@@ -229,7 +229,7 @@ describe("VillageScene", () => {
     const { findByTestId } = await renderScene();
     const next = within(await findByTestId("village-next"));
 
-    expect(next.getByText("Next to build")).toBeTruthy();
+    expect(next.getByText("NEXT TO BUILD")).toBeTruthy();
     expect(next.getByText("Built when you beat a boss a second time")).toBeTruthy();
     expect(next.getByText("Pick a boss to beat again")).toBeTruthy();
     // "0 rematches" and "1 rematch for level 1" would be the same zero, twice more.

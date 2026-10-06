@@ -1,9 +1,11 @@
-import { act, render } from "@testing-library/react-native";
+import { act, render, within } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { useTypedLine } from "@/components/chorus/useTypedLine";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
+import { rawColors } from "@/constants/rawColors";
 import { CAMEO_LINGER_MS, TYPE_MS_PER_CHAR } from "@/constants/villagers";
 import en from "@/locales/en.json";
 import { type Cameo, type CueOwner, useChorusStore } from "@/stores/chorus";
@@ -63,6 +65,47 @@ describe("VillagerLine", () => {
   it("draws nothing when nobody speaks and no slot is asked for", async () => {
     const { queryByTestId } = await render(tree());
     expect(queryByTestId("villager-line-block")).toBeNull();
+  });
+
+  it("speaks in a parchment bubble with dark ink", async () => {
+    const { getByTestId } = await render(tree());
+    await act(() => {
+      speak("rest", REST_LINE);
+    });
+    const bubble = StyleSheet.flatten(getByTestId("villager-bubble").props.style);
+    expect(bubble.backgroundColor).toBe(rawColors.parchment);
+    const text = StyleSheet.flatten(getByTestId("villager-line").props.style);
+    expect(text.color).toBe(rawColors.bgDark);
+    // The face is the bubble's sibling, so the tail can point at it from outside.
+    expect(
+      within(getByTestId("villager-bubble")).queryByTestId("villager-face", {
+        includeHiddenElements: true,
+      }),
+    ).toBeNull();
+    expect(getByTestId("villager-face", { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it("frames the face in an ink medallion and top-aligns the row", async () => {
+    const { getByTestId } = await render(tree());
+    await act(() => {
+      speak("rest", REST_LINE);
+    });
+    const medallion = StyleSheet.flatten(getByTestId("villager-medallion").props.style);
+    expect(medallion.backgroundColor).toBe(rawColors.bgDark);
+    expect(medallion.width).toBe(48);
+    expect(medallion.borderTopLeftRadius).toBe(24);
+    expect(medallion.borderTopWidth).toBe(1.5);
+    expect(
+      within(getByTestId("villager-medallion")).getByTestId("villager-face", {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
+    const row = StyleSheet.flatten(getByTestId("villager-line-block").props.style);
+    expect(row.alignItems).toBe("flex-start");
+    // The tail points at the face's centre: its top offset plus half its height is half the medallion.
+    const tail = StyleSheet.flatten(getByTestId("villager-tail").props.style);
+    const tailHeight = (tail.borderTopWidth ?? 0) + (tail.borderBottomWidth ?? 0);
+    expect((tail.top as number) + tailHeight / 2).toBe((medallion.height as number) / 2);
   });
 
   it("shows the line and carries nothing a touch could land on", async () => {

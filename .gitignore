@@ -94,3 +94,11 @@ test-gpx/
 
 # Pose reference pictures live in a private repo (~/.cache/bati-art-loop/pose-refs): some are photos of the maintainer.
 scripts/pose-refs/*.png
+
+# design-sync (claude.ai/design): staged converter, regenerable bundle and machine state.
+# .design-sync/{config.json,NOTES.md,conventions.md,previews,docs,web} are the committed inputs.
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules

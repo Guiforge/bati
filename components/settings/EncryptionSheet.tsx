@@ -313,7 +313,7 @@ function ManageView({
             {t("vault.manageUpdate")}
           </AppButton>
         ) : null}
-        <AppButton variant="secondary" testID="backup-disable-encryption" onPress={actions.disable}>
+        <AppButton variant="outline" testID="backup-disable-encryption" onPress={actions.disable}>
           {t("backup.encryptionOffCta")}
         </AppButton>
       </>
@@ -344,7 +344,7 @@ function ManageView({
       <AppButton variant="outline" testID="backup-change-password" onPress={actions.changeOpen}>
         {t("backup.changePassword")}
       </AppButton>
-      <AppButton variant="secondary" testID="backup-disable-encryption" onPress={actions.disable}>
+      <AppButton variant="outline" testID="backup-disable-encryption" onPress={actions.disable}>
         {t("backup.encryptionOffCta")}
       </AppButton>
       <AppButton variant="outline" testID="vault-how" onPress={onHow}>

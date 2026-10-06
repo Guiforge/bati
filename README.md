@@ -17,7 +17,7 @@ and the village you build is made of what you actually lifted.
 **[guiforge.github.io/bati](https://guiforge.github.io/bati/)**, the site, in English, French, German and Spanish
 
 [![CI](https://github.com/Guiforge/bati/actions/workflows/ci.yml/badge.svg)](https://github.com/Guiforge/bati/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/Guiforge/bati?label=release&color=0D33F2)](https://github.com/Guiforge/bati/releases/latest)
+[![Release](https://img.shields.io/github/v/release/Guiforge/bati?label=release&color=C2410C)](https://github.com/Guiforge/bati/releases/latest)
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-green)](LICENSE)
 
 ![Expo 57](https://img.shields.io/badge/Expo-57-000020?logo=expo&logoColor=white)

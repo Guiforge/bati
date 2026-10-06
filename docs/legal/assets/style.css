@@ -1,44 +1,67 @@
-/* Bati — the public site.
-   Palette copied from constants/rawColors.ts, type from DESIGN.md. Two rules only:
-   dark world, one accent per surface. Nothing here is loaded from a third party — an app
+/* Bati, the public site, in the inked BD language of the app (docs/superpowers/specs/2026-10-05-bd-direction-design.md).
+   Palette from constants/rawColors.ts, type from DESIGN.md: Alegreya for titles (never on digits),
+   Noto Sans for the rest. Two rules only: dark world, one accent (braise) per surface. Nothing here is loaded from a third party — an app
    that makes no network requests should not have a homepage that phones Google for a font. */
 
 @font-face {
-  font-family: "Space Grotesk";
-  src: url("fonts/space-grotesk-700.woff2") format("woff2");
+  font-family: "Alegreya";
+  src: url("fonts/alegreya-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Alegreya";
+  src: url("fonts/alegreya-800.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans";
+  src: url("fonts/noto-sans-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans";
+  src: url("fonts/noto-sans-700.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
-  --void: #0b0f19;
-  --surface: #101322;
-  --surface-2: #151a2e;
-  --border: #2a3360;
-  --glass-border: rgba(232, 236, 255, 0.14);
-  /* Internal rules between rows of the same list: quieter than a card edge, or a table of
+  --ink: #0c0d11;
+  --surface: #15171c;
+  --surface-2: #1d2027;
+  --border: #363a44;
+  --bone: #ece4d4;
+  --ash: #a89c88;
+  --braise: #c2410c;
+  --braise-text: #f08a4b;
+  --on-braise: #fff4e6;
+  --edge: #7a2905;
+  --gold: #e2b54a;
+  --parchment: #d9cfbc;
+  /* Internal rules between rows of the same list: quieter than a panel frame, or a table of
      five systems reads as five separate objects. */
-  --hair: rgba(232, 236, 255, 0.09);
-  --indigo: #4a3fd6;
-  --indigo-lift: #5d53e8;
-  --indigo-text: #8177f7;
-  --magenta: #db2777;
-  --gold: #ffd700;
-  --text: #e8ecff;
-  --muted: #909acb;
-  --shadow: #060812;
+  --hair: rgba(236, 228, 212, 0.1);
 
-  --display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --display: "Alegreya", Georgia, "Times New Roman", serif;
   --body:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    "Noto Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --wrap: 1120px;
   /* Screenshots and village art run wider than the reading column: they are the evidence, and
      at 1120px four phones are thumbnails. */
   --wrap-wide: 1320px;
-  --radius: 16px;
+  --radius: 7px;
   --head-h: 60px;
 }
 
@@ -52,8 +75,8 @@ html {
 
 body {
   margin: 0;
-  background: var(--void);
-  color: var(--text);
+  background: var(--ink);
+  color: var(--bone);
   font-family: var(--body);
   font-size: 17px;
   line-height: 1.6;
@@ -66,28 +89,28 @@ img {
 }
 
 a {
-  color: var(--indigo-text);
-  text-decoration-color: rgba(129, 119, 247, 0.4);
+  color: var(--braise-text);
+  text-decoration-color: rgba(240, 138, 75, 0.45);
   text-underline-offset: 3px;
 }
 
 a:hover {
-  color: var(--text);
+  color: var(--bone);
 }
 
 :focus-visible {
-  outline: 2px solid var(--indigo-text);
+  outline: 2px solid var(--braise-text);
   outline-offset: 3px;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 h1,
 h2,
 h3 {
   font-family: var(--display);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.04;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
   margin: 0;
 }
 
@@ -139,7 +162,7 @@ html[data-lang="es"] .prose > [lang="en"] {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(11, 15, 25, 0.82);
+  background: rgba(12, 13, 17, 0.82);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
@@ -159,7 +182,7 @@ html[data-lang="es"] .prose > [lang="en"] {
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: var(--text);
+  color: var(--bone);
   text-decoration: none;
   margin-right: auto;
 }
@@ -167,7 +190,7 @@ html[data-lang="es"] .prose > [lang="en"] {
 .brand img {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: 7px;
 }
 
 /* A five-section page under a sticky bar that links nowhere wastes the bar. Anchors only —
@@ -180,13 +203,13 @@ html[data-lang="es"] .prose > [lang="en"] {
 .site-nav a,
 .head-link {
   font-size: 0.9rem;
-  color: var(--muted);
+  color: var(--ash);
   text-decoration: none;
 }
 
 .site-nav a:hover,
 .head-link:hover {
-  color: var(--text);
+  color: var(--bone);
 }
 
 @media (min-width: 900px) {
@@ -198,7 +221,7 @@ html[data-lang="es"] .prose > [lang="en"] {
 .langs {
   display: flex;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 7px;
   overflow: hidden;
 }
 
@@ -206,16 +229,16 @@ html[data-lang="es"] .prose > [lang="en"] {
   appearance: none;
   border: 0;
   background: transparent;
-  color: var(--muted);
-  font: 700 0.72rem / 1 var(--display);
-  letter-spacing: 0.12em;
+  color: var(--ash);
+  font: 700 0.8rem / 1 var(--display);
+  letter-spacing: 0.1em;
   padding: 0.5rem 0.7rem;
   cursor: pointer;
 }
 
 .langs button[aria-pressed="true"] {
-  background: var(--indigo);
-  color: #fff;
+  background: var(--braise);
+  color: var(--on-braise);
 }
 
 /* --- Hero ------------------------------------------------------------------------------ */
@@ -237,13 +260,13 @@ html[data-lang="es"] .prose > [lang="en"] {
   background:
     linear-gradient(
       90deg,
-      rgba(11, 15, 25, 0.94) 0%,
-      rgba(11, 15, 25, 0.72) 42%,
-      rgba(11, 15, 25, 0.34) 76%,
-      rgba(11, 15, 25, 0.5) 100%
+      rgba(12, 13, 17, 0.94) 0%,
+      rgba(12, 13, 17, 0.72) 42%,
+      rgba(12, 13, 17, 0.34) 76%,
+      rgba(12, 13, 17, 0.5) 100%
     ),
-    radial-gradient(120% 80% at 50% 4%, transparent 0%, rgba(11, 15, 25, 0.5) 66%, var(--void) 100%),
-    linear-gradient(180deg, rgba(11, 15, 25, 0.1) 0%, rgba(11, 15, 25, 0.45) 52%, var(--void) 93%),
+    radial-gradient(120% 80% at 50% 4%, transparent 0%, rgba(12, 13, 17, 0.5) 66%, var(--ink) 100%),
+    linear-gradient(180deg, rgba(12, 13, 17, 0.1) 0%, rgba(12, 13, 17, 0.45) 52%, var(--ink) 93%),
     url("img/hero.webp") center top / cover no-repeat;
   z-index: -1;
 }
@@ -251,21 +274,21 @@ html[data-lang="es"] .prose > [lang="en"] {
 /* 5.6vw, not more: the copy column is only ~610px at 1024 and the headline carries a hard
    <br>, so a steeper ramp overflows the second line before the phone breakpoint lets go. */
 .hero h1 {
-  font-size: clamp(2rem, 5.6vw, 4.75rem);
-  max-width: 15ch;
+  font-size: clamp(2.2rem, 6vw, 5rem);
+  max-width: 19ch;
   text-wrap: balance;
 }
 
 .lead {
   font-size: clamp(1.05rem, 2vw, 1.28rem);
-  color: var(--muted);
+  color: var(--ash);
   max-width: 52ch;
   margin: 1.5rem 0 2.25rem;
 }
 
 .lead strong {
-  color: var(--text);
-  font-weight: 600;
+  color: var(--bone);
+  font-weight: 700;
 }
 
 .cta {
@@ -279,12 +302,11 @@ html[data-lang="es"] .prose > [lang="en"] {
   height: 56px;
   width: auto;
   display: block;
-  border-radius: 10px;
+  border-radius: 7px;
 }
 
 .cta a {
-  border-radius: 10px;
-  box-shadow: 0 14px 30px -18px var(--shadow);
+  border-radius: 7px;
   transition: transform 0.15s ease;
 }
 
@@ -303,13 +325,13 @@ html[data-lang="es"] .prose > [lang="en"] {
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ash);
   margin: 1.5rem 0 0;
 }
 
 .note {
   font-size: 0.9rem;
-  color: var(--muted);
+  color: var(--ash);
   margin: 1.25rem 0 0;
   max-width: 54ch;
 }
@@ -335,18 +357,12 @@ html[data-lang="es"] .prose > [lang="en"] {
     isolation: isolate;
   }
 
-  /* The bloom the boss art throws — the screenshot in the frame is a boss fight, and its own
-     magenta is the only warm thing in the hero. */
+  /* The ember the forge throws behind the boss fight: braise, the one warm thing in the hero. */
   .hero__device::before {
     content: "";
     position: absolute;
     inset: -12% -22%;
-    background: radial-gradient(
-      50% 42% at 50% 46%,
-      rgba(219, 39, 119, 0.28),
-      rgba(74, 63, 214, 0.22) 45%,
-      transparent 72%
-    );
+    background: radial-gradient(50% 42% at 50% 46%, rgba(194, 65, 12, 0.24), transparent 72%);
     z-index: -1;
   }
 
@@ -358,21 +374,18 @@ html[data-lang="es"] .prose > [lang="en"] {
   }
 }
 
-/* One device treatment, hero and gallery alike: a hairline screen edge inside a bezel ring,
-   over a shadow with a real offset. */
+/* One frame, hero and gallery alike, as the store shots: 10 px of ink, then a 2 px bone
+   hairline, radius 14. A panel, so no shadow. */
 .device {
-  border-radius: 26px;
-  border: 1px solid var(--glass-border);
-  background: var(--surface);
-  box-shadow:
-    0 0 0 6px rgba(16, 19, 34, 0.72),
-    0 36px 70px -28px var(--shadow),
-    0 8px 20px -12px var(--shadow);
+  border-radius: 14px;
+  border: 2px solid var(--bone);
+  padding: 10px;
+  background: var(--ink);
 }
 
 /* --- The loop: reps in, village out -----------------------------------------------------
    The one claim the whole product rests on, so it gets the one drawn structure on the page:
-   a rail that runs indigo at the rep and gold at the village. */
+   a rail that runs braise at the rep and gold at the village. */
 
 /* margin-top alone: the shorthand would overwrite `.wrap`'s margin-inline and un-centre the row. */
 .loop-rail {
@@ -399,9 +412,9 @@ html[data-lang="es"] .prose > [lang="en"] {
   height: 1px;
   background: linear-gradient(
     90deg,
-    var(--indigo-text) 0%,
-    rgba(129, 119, 247, 0.55) 38%,
-    rgba(255, 215, 0, 0.5) 78%,
+    var(--braise-text) 0%,
+    rgba(240, 138, 75, 0.6) 38%,
+    rgba(226, 181, 74, 0.5) 78%,
     var(--gold) 100%
   );
   transform-origin: left center;
@@ -420,18 +433,18 @@ html[data-lang="es"] .prose > [lang="en"] {
   left: 0;
   width: 13px;
   height: 13px;
-  border-radius: 999px;
-  background: var(--void);
-  border: 1px solid var(--indigo-text);
-  box-shadow: 0 0 0 4px var(--void);
+  border-radius: 3px;
+  background: var(--ink);
+  border: 1px solid var(--braise-text);
+  box-shadow: 0 0 0 4px var(--ink);
 }
 
 .loop li:last-child::before {
   background: var(--gold);
   border-color: var(--gold);
   box-shadow:
-    0 0 0 4px var(--void),
-    0 0 18px 1px rgba(255, 215, 0, 0.55);
+    0 0 0 4px var(--ink),
+    0 0 10px 0 rgba(226, 181, 74, 0.45);
 }
 
 .loop__k {
@@ -441,16 +454,16 @@ html[data-lang="es"] .prose > [lang="en"] {
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ash);
   margin-bottom: 0.35rem;
 }
 
 .loop__v {
   display: block;
-  font-family: var(--display);
+  font-family: var(--body);
   font-size: clamp(1rem, 1.5vw, 1.2rem);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
   text-wrap: balance;
 }
 
@@ -459,7 +472,7 @@ html[data-lang="es"] .prose > [lang="en"] {
 }
 
 .loop-caption {
-  color: var(--muted);
+  color: var(--ash);
   font-size: 0.95rem;
   margin: 1.5rem 0 0;
   max-width: 54ch;
@@ -472,14 +485,30 @@ html[data-lang="es"] .prose > [lang="en"] {
   border-top: 1px solid var(--hair);
 }
 
+/* Section titles are récitatifs: a rectangular ink cartouche, a 2 px frame, a short braise bar
+   above the line. Inline-block so the box hugs the title instead of spanning the column. */
 .band h2 {
-  font-size: clamp(1.95rem, 4.4vw, 3rem);
-  max-width: 18ch;
+  display: inline-block;
+  max-width: min(100%, 22ch);
+  background: var(--ink);
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 1.35rem 1.4rem 0.85rem;
+  font-size: clamp(1.8rem, 4.2vw, 2.9rem);
   text-wrap: balance;
 }
 
+.band h2::before {
+  content: "";
+  display: block;
+  width: 36px;
+  height: 4px;
+  background: var(--braise);
+  margin-bottom: 0.7rem;
+}
+
 .band__intro {
-  color: var(--muted);
+  color: var(--ash);
   font-size: clamp(1rem, 1.5vw, 1.1rem);
   max-width: 56ch;
   margin: 1.25rem 0 0;
@@ -513,7 +542,7 @@ html[data-lang="es"] .prose > [lang="en"] {
 .shots figcaption {
   margin-top: 1.1rem;
   font-size: 0.95rem;
-  color: var(--muted);
+  color: var(--ash);
   max-width: 30ch;
 }
 
@@ -551,14 +580,14 @@ html[data-lang="es"] .prose > [lang="en"] {
 }
 
 .systems li:hover {
-  background-color: rgba(129, 119, 247, 0.05);
+  background-color: rgba(194, 65, 12, 0.08);
 }
 
 .systems svg {
   width: 24px;
   height: 24px;
   margin-top: 0.15rem;
-  stroke: var(--indigo-text);
+  stroke: var(--braise-text);
   stroke-width: 1.75;
   fill: none;
   stroke-linecap: round;
@@ -573,7 +602,7 @@ html[data-lang="es"] .prose > [lang="en"] {
 .systems p {
   grid-column: 2;
   margin: 0;
-  color: var(--muted);
+  color: var(--ash);
   font-size: 0.98rem;
 }
 
@@ -604,27 +633,26 @@ html[data-lang="es"] .prose > [lang="en"] {
 
 .village__strip img {
   width: 100%;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  box-shadow: 0 24px 50px -30px var(--shadow);
+  border-radius: 7px;
+  border: 1.5px solid var(--border);
   display: block;
 }
 
 .village > figcaption {
   margin-top: 1.5rem;
   font-size: 1rem;
-  color: var(--muted);
+  color: var(--ash);
   max-width: 62ch;
 }
 
 .village > figcaption strong {
-  color: var(--text);
-  font-weight: 600;
+  color: var(--bone);
+  font-weight: 700;
 }
 
 /* The last tier carries the same gold as the last node of the loop: same claim, two places. */
 .village__strip figure:last-child img {
-  border-color: rgba(255, 215, 0, 0.4);
+  border-color: rgba(226, 181, 74, 0.4);
 }
 
 .village__strip figure {
@@ -633,12 +661,12 @@ html[data-lang="es"] .prose > [lang="en"] {
 
 .village__strip figcaption {
   margin-top: 0.7rem;
-  font-family: var(--display);
+  font-family: var(--body);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ash);
 }
 
 .village__strip figure:last-child figcaption {
@@ -654,8 +682,7 @@ html[data-lang="es"] .prose > [lang="en"] {
    Four zeros are the section, not a chip row under it. */
 
 .privacy {
-  background:
-    radial-gradient(80% 120% at 20% 0%, rgba(74, 63, 214, 0.18), transparent 70%), var(--surface);
+  background: var(--surface);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
@@ -666,7 +693,7 @@ html[data-lang="es"] .prose > [lang="en"] {
   margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid var(--hair);
 }
 
 .zeros li {
@@ -674,17 +701,17 @@ html[data-lang="es"] .prose > [lang="en"] {
 }
 
 .zeros li + li {
-  border-left: 1px solid var(--glass-border);
+  border-left: 1px solid var(--hair);
   padding-left: 1.5rem;
 }
 
 .zeros b {
   display: block;
-  font-family: var(--display);
+  font-family: var(--body);
   font-size: clamp(2.75rem, 6vw, 4rem);
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
   color: var(--gold);
 }
 
@@ -696,7 +723,7 @@ html[data-lang="es"] .prose > [lang="en"] {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ash);
 }
 
 .link-arrow {
@@ -752,57 +779,62 @@ html[data-lang="es"] .prose > [lang="en"] {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--gold);
-  border: 1px solid rgba(255, 215, 0, 0.35);
-  border-radius: 999px;
+  border: 1px solid rgba(226, 181, 74, 0.4);
+  border-radius: 3px;
   padding: 0.3rem 0.6rem;
 }
 
 .install p {
-  color: var(--muted);
+  color: var(--ash);
   font-size: 0.97rem;
   max-width: 54ch;
 }
 
+/* The seal: braise fill, a 3 px bottom edge, label in the display face on on-braise. */
 .btn {
   display: inline-block;
   font-family: var(--display);
-  font-weight: 700;
-  font-size: 0.95rem;
-  background: var(--indigo);
-  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  background: var(--braise);
+  color: var(--on-braise);
   text-decoration: none;
-  padding: 0.85rem 1.4rem;
-  border-radius: 12px;
-  transition: background 0.15s ease;
+  padding: 0.8rem 1.4rem 0.7rem;
+  border-bottom: 3px solid var(--edge);
+  border-radius: 7px;
+  transition: transform 0.12s ease;
 }
 
 .btn:hover {
-  background: var(--indigo-lift);
-  color: #fff;
+  color: var(--on-braise);
+  transform: translateY(1px);
+  border-bottom-width: 2px;
+  padding-bottom: 0.8rem;
 }
 
 .btn--ghost {
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
+  border: 1.5px solid var(--border);
+  color: var(--bone);
 }
 
 .btn--ghost:hover {
   background: var(--surface-2);
-  border-color: var(--indigo-text);
-  color: var(--text);
+  border-color: var(--braise-text);
+  color: var(--bone);
+  transform: none;
 }
 
 .repo {
   display: block;
-  background: var(--void);
+  background: var(--ink);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 4px;
   padding: 0.9rem 1rem;
   margin: 1.5rem 0 0.75rem;
   font-size: 0.8rem;
   line-height: 1.7;
-  color: var(--text);
+  color: var(--bone);
 }
 
 /* Breaks at the spaces of the fingerprint, never inside a group: a hex block split mid-token
@@ -814,7 +846,7 @@ html[data-lang="es"] .prose > [lang="en"] {
 
 .repo span + span {
   margin-top: 0.5rem;
-  color: var(--muted);
+  color: var(--ash);
 }
 
 .warn {
@@ -829,7 +861,7 @@ html[data-lang="es"] .prose > [lang="en"] {
   padding: 3.5rem 0;
   border-top: 1px solid var(--border);
   font-size: 0.92rem;
-  color: var(--muted);
+  color: var(--ash);
 }
 
 .site-foot nav {
@@ -841,7 +873,7 @@ html[data-lang="es"] .prose > [lang="en"] {
 
 .colophon {
   font-size: 0.82rem;
-  color: var(--muted);
+  color: var(--ash);
   margin: 0;
   max-width: 70ch;
 }
@@ -876,14 +908,15 @@ html[data-lang="es"] .prose > [lang="en"] {
   margin: 1.5rem 0;
   padding: 1rem 1.25rem;
   background: var(--surface);
-  border-left: 1px solid var(--indigo);
-  border-radius: 0 12px 12px 0;
-  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--braise);
+  border-radius: 7px;
+  color: var(--bone);
 }
 
 .prose code {
   background: var(--surface-2);
-  border-radius: 5px;
+  border-radius: 3px;
   padding: 0.1em 0.4em;
   font-size: 0.9em;
 }
@@ -943,15 +976,15 @@ html[data-lang="es"] .prose > [lang="en"] {
     top: 15px;
     bottom: 0;
     width: 1px;
-    background: var(--seg, var(--indigo-text));
+    background: var(--seg, var(--braise-text));
   }
 
   .loop li:nth-child(2)::after {
-    --seg: rgba(129, 119, 247, 0.6);
+    --seg: rgba(240, 138, 75, 0.6);
   }
 
   .loop li:nth-child(3)::after {
-    --seg: rgba(255, 215, 0, 0.55);
+    --seg: rgba(226, 181, 74, 0.55);
   }
 
   .loop li:last-child {
@@ -978,7 +1011,7 @@ html[data-lang="es"] .prose > [lang="en"] {
   }
 
   .zeros li:nth-child(n + 3) {
-    border-top: 1px solid var(--glass-border);
+    border-top: 1px solid var(--hair);
   }
 }
 

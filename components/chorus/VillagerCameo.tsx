@@ -2,9 +2,8 @@ import { Image } from "expo-image";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, useWindowDimensions } from "react-native";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Paragraph, Text, View, XStack, YStack } from "tamagui";
 
-import { Card } from "@/components/common/Card";
 import { getVillagerAsset } from "@/constants/assetMap";
 import { CAMEO_LINGER_MS, MOMENT_CAST } from "@/constants/villagers";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -109,32 +108,44 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
           />
-          <Card
-            bg="$surface"
+          <YStack
+            testID="villager-bubble"
+            bg="$parchment"
             p="$3"
-            rounded="$4"
-            borderWidth={1}
-            borderColor="$borderStrong"
+            rounded="$1"
             maxW={width - figureWidth - 40}
             // Pinned to the top of the band while the figure keeps its place: on day one the line
             // points at the cabin roof, and a bubble at the figure's feet sat on it.
             self="flex-start"
-            style={{ borderBottomLeftRadius: 0 }}
           >
-            <Text fontSize={12} fontWeight="700" color="$textSecondary" accessible={false}>
+            {/* The figure stands to the left, so the tail leaves the bubble's left edge. */}
+            <View
+              position="absolute"
+              l={-9}
+              t={14}
+              width={0}
+              height={0}
+              borderTopWidth={7}
+              borderBottomWidth={7}
+              borderRightWidth={9}
+              borderTopColor="transparent"
+              borderBottomColor="transparent"
+              borderRightColor="$parchment"
+            />
+            <Text fontSize={12} fontWeight="700" color="$ink800" accessible={false}>
               {name}
             </Text>
             {/* The rest of the line is transparent rather than omitted, so the bubble is its final
                 size from the first character. */}
-            <Paragraph color="$text" fontWeight="700" fontSize={14} accessible={false}>
-              <Paragraph testID="villager-line" color="$text" fontWeight="700" fontSize={14}>
+            <Paragraph color="$bgDark" fontSize={14} accessible={false}>
+              <Paragraph testID="villager-line" color="$bgDark" fontSize={14}>
                 {shown}
               </Paragraph>
-              <Paragraph color="transparent" fontWeight="700" fontSize={14}>
+              <Paragraph color="transparent" fontSize={14}>
                 {rest}
               </Paragraph>
             </Paragraph>
-          </Card>
+          </YStack>
         </XStack>
       </Pressable>
     </YStack>

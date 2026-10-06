@@ -9,12 +9,12 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import { Text } from "tamagui";
+import { GameIcon } from "@/components/common/GameIcon";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface FlameFlickerProps {
   /**
-   * Size of the flame emoji
+   * Size of the flame glyph's box
    */
   size?: number;
   /**
@@ -75,7 +75,12 @@ export function FlameFlicker({ size = 48, animate = true }: FlameFlickerProps) {
 
   return (
     <Animated.View style={animatedStyle}>
-      <Text fontSize={size}>🔥</Text>
+      <GameIcon
+        name="flame"
+        size={size}
+        shape="square"
+        color={animate ? "$primaryText" : "$muted"}
+      />
     </Animated.View>
   );
 }

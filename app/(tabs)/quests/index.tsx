@@ -14,6 +14,8 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
+import { GameIcon } from "@/components/common/GameIcon";
+import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { Dumbbell, Map as MapIcon, Plus, Star } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
@@ -49,6 +51,7 @@ import { getAllQuestConfigs } from "@/db/questConfig";
 import { type QuestTemplate, questTrainingLevel } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
 import { formatCount } from "@/db/targets";
+import type { GameIconName } from "@/hooks/useGameIcon";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { keepIfSame } from "@/src/sameContent";
@@ -73,10 +76,10 @@ type LoadState =
   | ({ status: "ready" } & GalleryData)
   | ({ status: "error"; message: string } & GalleryData);
 
-function questEmoji(rounds: number, exerciseCount: number) {
-  if (rounds >= 4) return "🧨";
-  if (exerciseCount >= 4) return "⚔️";
-  return "🪓";
+function questGlyph(rounds: number, exerciseCount: number): GameIconName {
+  if (rounds >= 4) return "flame";
+  if (exerciseCount >= 4) return "sword";
+  return "wood";
 }
 
 const COVER_IMAGE_STYLE = { width: "100%", height: "100%" } as const;
@@ -93,6 +96,9 @@ const FAVOURITE_STYLE = {
   borderRadius: 999,
   backgroundColor: rawColors.bgOverlay,
 } as const;
+
+/** The star's right offset (12) + its box (20 icon + 2 x 8 padding) + a $4 (16) gap. */
+const STAR_CLEARANCE = 12 + 36 + 16;
 
 /** No path means no cover: the muscle tint carries the banner instead. Anything else — a bundled
  *  key, a seeded path, a hero's `data:` photo — `getQuestAsset` already knows. */
@@ -251,14 +257,7 @@ function QuestRow({
 
   return (
     <YStack px="$5">
-      <Card
-        flat
-        testID="quests-quest-card"
-        bg="$surface"
-        p="$0"
-        overflow="hidden"
-        onPress={handlePress}
-      >
+      <Card testID="quests-quest-card" bg="$surface" p="$0" overflow="hidden" onPress={handlePress}>
         {/* Cover banner — same card family as the adventures gallery. */}
         <YStack height={140}>
           {meta.cover ? (
@@ -272,20 +271,24 @@ function QuestRow({
           ) : (
             // User-authored quests have no cover art: the muscle tint carries the banner.
             <YStack flex={1} bg={meta.tokens.bg} items="center" justify="center">
-              <Text fontSize={44}>{questEmoji(q.rounds, q.exercises.length)}</Text>
+              <GameIcon
+                name={questGlyph(q.rounds, q.exercises.length)}
+                size={44}
+                color="$textSecondary"
+              />
             </YStack>
           )}
           <XStack position="absolute" t="$3" l="$3" gap="$2">
             <Chip label={meta.durationLabel} />
-            <Chip label={meta.levelLabel} tone="secondary" />
+            <Chip label={meta.levelLabel} />
           </XStack>
           {/* Opposite the duration, so a hero's own quest — and a quest that starts by leaving
             the house — is legible from the gallery rather than only once opened. Same words the
             movement rows and the filter rail wear. */}
           {meta.outsideLabel || meta.heroLabel ? (
             <XStack position="absolute" t="$3" r="$3" gap="$2">
-              {meta.outsideLabel ? <Chip label={meta.outsideLabel} tone="secondary" /> : null}
-              {meta.heroLabel ? <Chip label={meta.heroLabel} tone="primary" /> : null}
+              {meta.outsideLabel ? <Chip label={meta.outsideLabel} /> : null}
+              {meta.heroLabel ? <Chip label={meta.heroLabel} /> : null}
             </XStack>
           ) : null}
 
@@ -307,15 +310,33 @@ function QuestRow({
               strokeWidth={2.5}
             />
           </Pressable>
+
+          {/* The title on the art, like Home and the session. Right inset clears the star. */}
+          {meta.cover ? (
+            <YStack position="absolute" b="$3" l="$3" r={STAR_CLEARANCE}>
+              <Recitatif numberOfLines={2} testID="quest-card-title">
+                {meta.title}
+              </Recitatif>
+            </YStack>
+          ) : null}
         </YStack>
 
         <YStack gap="$2" p="$4">
-          <Text fontWeight="700" fontSize={18} color="$text" numberOfLines={1}>
-            {meta.title}
-          </Text>
+          {/* Without a cover there is no art to carry it: the title stays in the body. */}
+          {meta.cover ? null : (
+            <Text
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={18}
+              color="$text"
+              numberOfLines={1}
+            >
+              {meta.title}
+            </Text>
+          )}
 
           {meta.focusLabel ? (
-            <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+            <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
               {meta.focusLabel}
             </Text>
           ) : null}
@@ -378,7 +399,7 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3">
               {state.message}
             </Paragraph>
-            <AppButton fullWidth={false} variant="secondary" onPress={onRetry}>
+            <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
               {t("quests.retry", "Retry")} ↻
             </AppButton>
           </YStack>
@@ -434,7 +455,7 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3">
               {t("quests.empty_filters_subtitle", "Try removing filters.")}
             </Paragraph>
-            <AppButton fullWidth={false} variant="secondary" onPress={onClearFilters}>
+            <AppButton fullWidth={false} variant="outline" onPress={onClearFilters}>
               {t("quests.filters_clear", "Clear filters")}
             </AppButton>
           </YStack>
@@ -701,7 +722,14 @@ export default function QuestsGallery() {
         <XStack items="center" justify="space-between" gap="$2">
           <XStack items="center" gap="$2" flex={1} minW={0}>
             <MapIcon size={18} color="$text" strokeWidth={2.5} />
-            <Text flex={1} fontWeight="700" fontSize={20} color="$text" numberOfLines={1}>
+            <Text
+              flex={1}
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={20}
+              color="$text"
+              numberOfLines={1}
+            >
               {title}
             </Text>
           </XStack>
@@ -711,7 +739,6 @@ export default function QuestsGallery() {
                 count: filtered.length,
                 defaultValue: "{{count}} quests",
               })}
-              tone="secondary"
             />
             {/* The catalogue: the only way to ask "what does Bati know about rows?" without
                 first finding a quest that happens to contain one (roadmap 4.22). */}

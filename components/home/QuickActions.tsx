@@ -6,10 +6,12 @@ import { useTranslation } from "react-i18next";
 import { Linking, ScrollView, StyleSheet, useWindowDimensions } from "react-native";
 import { getTokens, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { RotateCcw, SlidersHorizontal } from "@/components/icons";
 import { OutingGoalSheet } from "@/components/quests/OutingGoalSheet";
 import { getQuestThumb } from "@/constants/assetMap";
 import { formatDistance } from "@/constants/distanceFormat";
+import { fade, rawColors } from "@/constants/rawColors";
 import { getRecentSessionHistory } from "@/db/completed";
 import { formatDurationEstimate } from "@/db/estimate";
 import { listExercises } from "@/db/exercises";
@@ -300,9 +302,7 @@ export function QuickActions() {
   return (
     <YStack pt="$2.5" pb="$2" gap="$2">
       <XStack px="$4" items="baseline" justify="space-between" gap="$3">
-        <Text fontSize={10} fontWeight="700" letterSpacing={1.8} color="$textSecondary">
-          {t("home.quick_actions", "Quick actions").toUpperCase()}
-        </Text>
+        <SectionLabel>{t("home.quick_actions", "Quick actions")}</SectionLabel>
         <Text flex={1} text="right" fontSize={10} color="$textSecondary" numberOfLines={1}>
           {t("home.quick_hint", "Long-press to set")}
         </Text>
@@ -352,7 +352,7 @@ export function QuickActions() {
               bg="$surface"
               borderWidth={1}
               borderColor="$borderStrong"
-              rounded={12}
+              rounded="$3"
               overflow="hidden"
               onPress={() => {
                 startOuting(quest.id).catch((error) => reportError("home.startOuting", error));
@@ -370,9 +370,9 @@ export function QuickActions() {
                 contentFit="cover"
                 transition={200}
               />
-              {/* $bgDark (#0B0F19) as rgba - LinearGradient takes plain colors, not tokens. */}
+              {/* $bgDark (the ink) as rgba - LinearGradient takes plain colors, not tokens. */}
               <LinearGradient
-                colors={["rgba(11,15,25,0.1)", "rgba(11,15,25,0.92)"]}
+                colors={[fade(rawColors.bgDark, 0.1), fade(rawColors.bgDark, 0.92)]}
                 style={StyleSheet.absoluteFill}
               />
               <YStack flex={1} justify="flex-end" p="$2" gap={4}>
@@ -397,17 +397,16 @@ export function QuickActions() {
                   gap={4}
                   items="center"
                   rounded={10}
-                  bg="$primaryGlow"
                   borderWidth={1}
-                  borderColor="$primaryText"
+                  borderColor="$borderStrong"
                   hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
                   onPress={() => setGoalFor(quest.id)}
                   pressStyle={{ opacity: 0.7 }}
                   accessibilityRole="button"
                   accessibilityLabel={t("home.goal_a11y", { quest: name, goal: label })}
                 >
-                  <SlidersHorizontal size={10} color="$text" />
-                  <Text fontSize={10} fontWeight="700" color="$text">
+                  <SlidersHorizontal size={10} color="$textSecondary" />
+                  <Text fontSize={10} fontWeight="700" color="$textSecondary">
                     {label}
                   </Text>
                 </XStack>
@@ -427,7 +426,7 @@ export function QuickActions() {
             bg="$surface"
             borderWidth={1}
             borderColor="$borderStrong"
-            rounded={12}
+            rounded="$3"
             onPress={() => {
               startQuest(replay.questId).catch((error) => reportError("home.replay", error));
             }}

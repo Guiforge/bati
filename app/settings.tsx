@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { useToast } from "@/components/common/Toast";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import {
@@ -80,9 +81,7 @@ function AvatarSection({
 
   return (
     <Card bg="$surface" p="$4" gap="$3">
-      <Text fontSize="$3" fontWeight="bold" color="$textSecondary">
-        {t("settings.avatar", "AVATAR")}
-      </Text>
+      <SectionLabel>{t("settings.avatar", "AVATAR")}</SectionLabel>
 
       {showAvatarPicker ? (
         <XStack flexWrap="wrap" gap="$3" justify="center">
@@ -398,7 +397,7 @@ export default function SettingsScreen() {
       {/* Header */}
       <XStack px="$4" py="$3" items="center" gap="$3">
         <ScreenBackButton />
-        <Text fontSize={20} fontWeight="700" color="$text">
+        <Text fontFamily="$heading" fontSize={20} fontWeight="700" color="$text">
           {t("settings.title", "Settings")}
         </Text>
       </XStack>
@@ -422,9 +421,7 @@ export default function SettingsScreen() {
 
         {/* Preferences */}
         <YStack gap="$3">
-          <Text fontSize="$3" fontWeight="bold" color="$textSecondary" px="$1">
-            {t("settings.preferences", "PREFERENCES")}
-          </Text>
+          <SectionLabel px="$1">{t("settings.preferences", "PREFERENCES")}</SectionLabel>
 
           <VillageNameRow />
 
@@ -580,9 +577,9 @@ export default function SettingsScreen() {
               nothing on a build without the reminders' native half. */}
           <ReminderSection />
 
-          <Text fontSize="$3" fontWeight="bold" color="$textSecondary" px="$1" mt="$2">
+          <SectionLabel px="$1" mt="$2">
             {t("backup.section")}
-          </Text>
+          </SectionLabel>
 
           <BackupSecurityRows
             disabled={backupBusy}

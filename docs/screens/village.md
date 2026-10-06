@@ -34,7 +34,7 @@ row can be read without a tap.
 3. **The panel**, riding up over the painting's last 14 dp:
    - **The village tier** (`VillageTier`, `getTierProgress`), first in every state. The village
      follows the hero's level alone, so it answers "when does the painting change" in those terms:
-     the hero level of the next tier and how many levels away, an indigo bar from the current
+     the hero level of the next tier and how many levels away, a gold bar from the current
      tier's floor to that level with XP at both ends, and the XP still missing, with "about N
      sessions at this week's pace" when the last seven days had any (`getWeekXpPerSession`). On
      tier 12 the bar goes and the sentence is final. A finished village (`isVillageComplete`: tier
@@ -157,7 +157,10 @@ no lean, only the card. The weakest placements: tier 8 (`tent` on a sail, `farm`
 boat), tier 10 (`dragon_lair` on the rock face), tier 12 (the starters on unnamed spires).
 
 The painting parallaxes and leans in inside one `Animated.View`; the scrims and the title do not
-move. The status-bar scrim pinned outside the scroll (`village-status-scrim`) is invisible at rest,
+move. The detail sheet's handle is a bar inside the frame (`village-detail-handle`), not
+`Sheet.Handle`, which floats above the frame's edge over the dimmed list. Its section headers
+("next to build", recent, and the rest) are the shared `SectionLabel` (12/700, 1.5 tracking, ash).
+The status-bar scrim pinned outside the scroll (`village-status-scrim`) is invisible at rest,
 so the painting runs full-bleed under the clock, and fades in over the first `insets.top + 48` dp
 of scroll, the distance the painting's own top scrim takes to leave: the clock always has one of
 the two behind it. Drawn always, it was an opaque band across the top of the painting. Ambient

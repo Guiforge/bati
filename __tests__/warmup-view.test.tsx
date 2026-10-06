@@ -1,4 +1,5 @@
 import { act, fireEvent, render } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -279,5 +280,23 @@ describe("WarmupView", () => {
     expect(state.warmupSequence.map((s) => s.exerciseName)).not.toContain(first.exerciseName);
     expect(state.warmupSequence[state.warmupIndex]?.exerciseName).toBe(second?.exerciseName);
     expect(state.warmupPrep).toBe(false);
+  });
+});
+
+describe("WarmupView movement name", () => {
+  it("is a 20 px title-face heading, not a caption", async () => {
+    useSessionStore.setState({
+      status: "warmup",
+      warmupSequence: WARMUP_SEQUENCE,
+      warmupIndex: 0,
+      warmupPrep: false,
+      timerStartTimestamp: Date.now(),
+      timerDuration: WARMUP_SEQUENCE[0].seconds,
+    });
+    const { getByTestId } = await mountWarmup();
+
+    const style = StyleSheet.flatten(getByTestId("warmup-name").props.style);
+    expect(style.fontSize).toBe(20);
+    expect(style.fontFamily).toBe(config.fonts.heading.face[700].normal);
   });
 });

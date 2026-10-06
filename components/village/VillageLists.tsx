@@ -3,8 +3,8 @@ import { useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
-
 import { ProgressBar } from "@/components/common/ProgressBar";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { ChevronRight } from "@/components/icons";
 import { LevelPips } from "@/components/village/LevelPips";
 import {
@@ -39,26 +39,6 @@ import type { AppLanguage } from "@/stores/settings";
 
 /** An unbuilt building is its own shape in outline: the same silhouette, no detail, no padlock. */
 const SILHOUETTE_TINT = rawColors.muted;
-
-function Kicker({
-  label,
-  color = "$textSecondary",
-}: {
-  label: string;
-  color?: "$textSecondary" | "$resourceGold";
-}) {
-  return (
-    <Text
-      fontSize={10.5}
-      fontWeight="600"
-      letterSpacing={1.5}
-      textTransform="uppercase"
-      color={color}
-    >
-      {label}
-    </Text>
-  );
-}
 
 function BuildingThumb({ building, size }: { building: VillageBuilding; size: number }) {
   const built = building.level > 0;
@@ -143,12 +123,12 @@ export function NextToRise({ building, dayOne, language, onOpen }: NextProps) {
       testID="village-next"
       p={14}
       gap={10}
-      rounded={12}
+      rounded="$3"
       borderWidth={1}
       borderColor="$borderStrong"
       bg="$surface"
     >
-      <Kicker label={nextTitle(building, t)} />
+      <SectionLabel>{nextTitle(building, t)}</SectionLabel>
       {building ? (
         <XStack
           gap={12}
@@ -203,7 +183,7 @@ export function SinceLastQuest({ growth, buildings, language }: ChangesProps) {
   const byCode = new Map(buildings.map((b) => [b.code, b]));
   return (
     <YStack testID="village-changes" gap={2}>
-      <Kicker label={t("village.changes_title")} />
+      <SectionLabel>{t("village.changes_title")}</SectionLabel>
       {growth.map((g) => {
         const building = byCode.get(g.code);
         if (!building) return null;
@@ -252,7 +232,9 @@ export function Families({ families, risen, next, language, onOpen }: FamiliesPr
       {families.map((family) => (
         <YStack key={family.key} testID={`village-family-${family.key}`} gap={2}>
           <XStack justify="space-between" items="baseline" gap={10}>
-            <Kicker label={t(`village.family_${family.key}`, { count: family.items.length })} />
+            <SectionLabel>
+              {t(`village.family_${family.key}`, { count: family.items.length })}
+            </SectionLabel>
             <Text fontSize={11} color="$textSecondary" opacity={0.75} shrink={1}>
               {t(`village.family_${family.key}_feeds`, { count: family.items.length })}
             </Text>
@@ -357,7 +339,7 @@ type TierProps = {
 
 /**
  * When the painting changes next, first on the panel in every state. The village follows the
- * hero's level alone, so the answer is a hero level and the XP to it. The bar is indigo on
+ * hero's level alone, so the answer is a hero level and the XP to it. The bar is braise on
  * purpose: gold belongs to the buildings, and two systems in one colour read as one.
  *
  * On the last tier the bar goes and the sentence becomes final, since a gauge at 100 % for life
@@ -374,15 +356,15 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
       testID="village-tier"
       p={14}
       gap={8}
-      rounded={12}
+      rounded="$3"
       borderWidth={1}
       borderColor={complete ? "$resourceGold" : "$borderStrong"}
       bg="$surface"
     >
       <XStack justify="space-between" items="baseline" gap={10}>
-        <Kicker
-          label={t(progress.final ? "village.tier_final_kicker" : "village.tier_next_kicker")}
-        />
+        <SectionLabel>
+          {t(progress.final ? "village.tier_final_kicker" : "village.tier_next_kicker")}
+        </SectionLabel>
         <Text
           fontSize={11.5}
           fontWeight="600"
@@ -414,7 +396,7 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
             {t("village.tier_next_line", { level: progress.nextLevel, count: progress.levelsAway })}
           </Text>
           <YStack gap={6} pt={2}>
-            <ProgressBar progress={progress.progress} height={5} color="$primaryText" />
+            <ProgressBar progress={progress.progress} height={5} color="$resourceGold" />
             <BarEnds
               left={t("village.tier_bar_end", {
                 level: progress.fromLevel,
@@ -454,5 +436,3 @@ function tierFoot(
   if (!complete) return t("village.tier_final_rest");
   return openDeeds > 0 ? t("village.done_deeds", { count: openDeeds }) : null;
 }
-
-export { Kicker };

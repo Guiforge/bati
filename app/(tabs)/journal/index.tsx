@@ -9,6 +9,7 @@ import { XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { Skeleton } from "@/components/common/Skeleton";
+import { Scroll } from "@/components/icons";
 import { NMuted, NSeg, NText, NTitle } from "@/components/journal/nocturne";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { StatsView } from "@/components/journal/stats/StatsView";
@@ -215,8 +216,15 @@ export default function JournalScreen() {
 
   return (
     <YStack testID="journal-screen" flex={1} bg="$bgDark">
-      <XStack pt={insets.top + 11} px={11} pb={11} items="center" justify="space-between">
-        <NTitle>{t("journal.title")}</NTitle>
+      {/* Quests and Adventures set their title 20 dp in, 20 px, a glyph before it: the tab bar
+          moves between the three and a title that shrinks reads as a different app. */}
+      <XStack pt={insets.top + 12} px="$5" pb="$3" items="center" justify="space-between">
+        <XStack items="center" gap="$2">
+          <Scroll testID="journal-title-glyph" size={18} color="$text" strokeWidth={2.5} />
+          <NTitle fontSize={20} lineHeight={26}>
+            {t("journal.title")}
+          </NTitle>
+        </XStack>
         <NSeg
           value={activeTab}
           onChange={setActiveTab}

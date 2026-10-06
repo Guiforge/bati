@@ -1,0 +1,22 @@
+/* The app loads its fonts through expo-font under these family names (tamagui.config.ts); on the
+   web Tamagui asks for the family and a weight, so each weight is one @font-face. */
+@font-face {
+  font-family: "Alegreya";
+  font-weight: 400;
+  src: url("../../node_modules/@expo-google-fonts/alegreya/400Regular/Alegreya_400Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Alegreya";
+  font-weight: 700;
+  src: url("../../node_modules/@expo-google-fonts/alegreya/700Bold/Alegreya_700Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "NotoSans";
+  font-weight: 400;
+  src: url("../../node_modules/@expo-google-fonts/noto-sans/400Regular/NotoSans_400Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "NotoSans";
+  font-weight: 700;
+  src: url("../../node_modules/@expo-google-fonts/noto-sans/700Bold/NotoSans_700Bold.ttf") format("truetype");
+}

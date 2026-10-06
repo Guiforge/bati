@@ -2,9 +2,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
+import { InkGauge } from "@/components/common/InkGauge";
+import { Recitatif } from "@/components/common/Recitatif";
 import { Trophy } from "@/components/icons";
 import {
   foldRounds,
@@ -15,7 +17,6 @@ import {
 } from "@/components/journal/journalFormat";
 import {
   NBackButton,
-  NBar,
   NBlock,
   NButton,
   NFact,
@@ -34,6 +35,7 @@ import { TraceThumb } from "@/components/journal/TraceThumb";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
 import { formatDistance, formatElevation, formatPace } from "@/constants/distanceFormat";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
 import { formatDuration } from "@/db";
 import { type CompletedSession, OUTING_COUNTS_AFTER_SECONDS } from "@/db/completed";
@@ -81,25 +83,44 @@ export function ReportHero({
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  // No art: the plate is a framed `$surface` panel (the Journal's own surface, like its blocks)
+  // instead of a bare gradient, and its content sits 11 dp further in so the frame holds the back
+  // button and the kicker. The frame is a raw colour: the Journal folds `$borderStrong` into
+  // `$surface`, which would hide it.
+  const pad = source == null ? 22 : 11;
   return (
     <View style={{ height: height + insets.top }}>
-      {source != null && (
-        <View style={[StyleSheet.absoluteFill, { top: insets.top }]}>
-          <NImage source={source} width="100%" height={height} radius={0} />
-        </View>
+      {source == null ? (
+        <YStack
+          testID="session-details-plate"
+          position="absolute"
+          t={insets.top}
+          b={0}
+          l={11}
+          r={11}
+          bg="$surface"
+          borderWidth={1}
+          borderColor={rawColors.borderStrong}
+        />
+      ) : (
+        <>
+          <View style={[StyleSheet.absoluteFill, { top: insets.top }]}>
+            <NImage source={source} width="100%" height={height} radius={0} />
+          </View>
+          <LinearGradient
+            colors={[rawColors.bgDarkClear, rawColors.bgOverlaySoft, rawColors.bgDark]}
+            locations={[0, 0.55, 0.96]}
+            style={StyleSheet.absoluteFill}
+          />
+        </>
       )}
-      <LinearGradient
-        colors={[rawColors.bgDarkClear, rawColors.bgOverlaySoft, rawColors.bgDark]}
-        locations={[0, 0.55, 0.96]}
-        style={StyleSheet.absoluteFill}
-      />
-      <View style={{ position: "absolute", top: insets.top + 11, left: 11 }}>
+      <View style={{ position: "absolute", top: insets.top + pad, left: pad }}>
         <NBackButton onPress={() => router.back()} label={t("common.go_back")} veiled />
       </View>
-      <View style={{ position: "absolute", top: insets.top + 11, right: 11 }}>
+      <View style={{ position: "absolute", top: insets.top + pad, right: pad }}>
         <ShareButton testID="journal-share" sessionId={sessionId} veiled />
       </View>
-      <YStack position="absolute" l={11} r={11} b={11}>
+      <YStack position="absolute" l={pad} r={pad} b={pad}>
         {children}
       </YStack>
     </View>
@@ -291,7 +312,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
       {session.xpEarned > 0 && (
         <YStack gap={6}>
           <NFact>
-            <NText fontSize={13.5} lineHeight={19}>
+            <NText fontSize={13.5} lineHeight={19} color="$resourceGold">
               {t("journal.moved_xp", { xp: formatCount(language, session.xpEarned) })}
               {latest ? (
                 <NMuted fontSize={13.5}>
@@ -307,7 +328,13 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
           </NFact>
           {latest ? (
             <YStack ml={17}>
-              <NBar progress={level.xpProgress} height={3} />
+              <InkGauge
+                testIDPrefix="session-details-xp"
+                progress={level.xpProgress / 100}
+                fill="$resourceGold"
+                track="$gold800"
+                frame={rawColors.borderStrong}
+              />
             </YStack>
           ) : null}
         </YStack>
@@ -521,12 +548,12 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
   const { t } = useTranslation();
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
+  const { width } = useWindowDimensions();
   const { session } = data;
   const outing = session.outing != null;
   const rounds = new Set(session.exercises.map((ex) => ex.roundIndex)).size;
 
   const meta = [
-    whenLabel(t, language, session.performedAt),
     // A difficulty means nothing on a walk.
     outing ? null : t(`quests.level_${session.userLevel}`),
     rounds > 0 && !outing ? t("journal.rounds_completed", { count: rounds }) : null,
@@ -539,13 +566,25 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
     <YStack testID="session-details-screen">
       <ReportHero
         source={data.questImage ? getQuestAsset(data.questImage) : null}
-        height={150}
+        height={data.questImage ? Math.round((Math.min(width, CONTENT_MAX_WIDTH) * 3) / 4) : 184}
         sessionId={session.id}
       >
-        <NText fontWeight="500" fontSize={22} lineHeight={28}>
-          {data.questTitle}
-        </NText>
-        <NMuted mt={2}>{meta}</NMuted>
+        {/* Victory's plate, reopened: the date kicks the title off in the body face (a date is
+            digits, and Alegreya never sets a digit), the title sits in the cartouche. */}
+        <YStack gap={2} self="flex-start">
+          <Text
+            testID="session-details-kicker"
+            fontFamily="$body"
+            fontWeight="700"
+            color="$resourceGold"
+            fontSize={13}
+            letterSpacing={2}
+          >
+            {whenLabel(t, language, session.performedAt).toLocaleUpperCase(language)}
+          </Text>
+          <Recitatif>{data.questTitle}</Recitatif>
+        </YStack>
+        <NMuted mt={6}>{meta}</NMuted>
       </ReportHero>
 
       <YStack px={11} pt={11}>

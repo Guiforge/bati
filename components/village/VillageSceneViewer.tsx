@@ -81,7 +81,7 @@ export function VillageSceneViewer({
       </YStack>
 
       <YStack position="absolute" b={insets.bottom + 24} px="$4" gap="$1" items="center">
-        <Text fontWeight="700" fontSize={22} color="$text">
+        <Text fontFamily="$heading" fontWeight="700" fontSize={22} color="$text">
           {title}
         </Text>
         <Text fontSize={13} color="$muted">

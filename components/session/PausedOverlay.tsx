@@ -108,7 +108,13 @@ export function PausedOverlay() {
       >
         <Card width="100%" maxW={360} bg="$surface">
           <YStack gap="$3" items="center">
-            <Text fontWeight="700" fontSize={28} color="$text" style={{ textAlign: "center" }}>
+            <Text
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={28}
+              color="$text"
+              style={{ textAlign: "center" }}
+            >
               {t("session.paused_title")}
             </Text>
             <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
@@ -146,7 +152,6 @@ export function PausedOverlay() {
                 onPress={handleToggleSound}
                 variant="outline"
                 backgroundColor="$surface2"
-                pressStyle={{ opacity: 0.9 }}
                 accessibilityLabel={t("settings.sound")}
                 accessibilityRole="switch"
                 accessibilityState={{ checked: soundEnabled }}
@@ -160,7 +165,6 @@ export function PausedOverlay() {
                   onPress={handleRestartRound}
                   variant="outline"
                   backgroundColor="$surface2"
-                  pressStyle={{ opacity: 0.9 }}
                   accessibilityLabel={t("session.restart_round_button")}
                   accessibilityRole="button"
                 >
@@ -173,7 +177,7 @@ export function PausedOverlay() {
                 onPress={handleQuit}
                 variant="outline"
                 backgroundColor="$surface2"
-                pressStyle={{ opacity: 0.9 }}
+                borderColor="$error"
                 accessibilityLabel={t("session.quit_button")}
                 accessibilityRole="button"
               >

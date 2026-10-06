@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { type ColorTokens, Text, XStack, YStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Shield, Skull, Target } from "@/components/icons";
+import { BossHpGauge } from "@/components/session/BossHpGauge";
 import { getHpPercent, getPhaseFromHp } from "@/components/session/bossPhase";
 import { getBossAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
@@ -34,7 +35,6 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
   const hpPercent = getHpPercent(fight.currentHp, fight.totalHp);
   const isDefeated = fight.defeatedAt != null || fight.currentHp <= 0;
   const isEnraged = getPhaseFromHp(hpPercent) === 4 && !isDefeated;
-  const hpColor = isEnraged ? "$error" : hpPercent < 50 ? "$secondary" : "$success";
 
   return (
     <YStack
@@ -81,17 +81,13 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
       </YStack>
 
       <YStack px="$4" py="$3" gap="$2">
-        <YStack height={6} rounded="$10" bg="$surface2" overflow="hidden">
-          <YStack
-            testID="boss-panel-hp"
-            position="absolute"
-            t={0}
-            b={0}
-            l={0}
-            width={`${hpPercent}%`}
-            bg={hpColor}
-          />
-        </YStack>
+        <BossHpGauge
+          hp={fight.currentHp}
+          maxHp={fight.totalHp}
+          isEnraged={isEnraged}
+          isDown={isDefeated}
+          testIDPrefix="boss-panel-hp"
+        />
 
         <XStack items="center" gap="$2">
           <Text flex={1} fontSize={12} color="$textSecondary">
@@ -108,14 +104,6 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
             {SKULL_KEYS.slice(0, threatRank(fight.totalHp)).map((k) => (
               <Skull key={k} size={12} color={isDefeated ? "$textSecondary" : "$error"} />
             ))}
-          </XStack>
-          <XStack items="baseline" gap="$1">
-            <Text fontWeight="700" fontSize={14} color={hpColor}>
-              {fight.currentHp}
-            </Text>
-            <Text fontWeight="700" fontSize={11} color="$textSecondary">
-              / {fight.totalHp} {t("boss.hp")}
-            </Text>
           </XStack>
         </XStack>
 
@@ -144,7 +132,7 @@ function Traits({ fight, isEnraged }: { fight: BossFight; isEnraged: boolean }) 
           </Trait>
         ) : null}
         {fight.weaknessMuscle ? (
-          <Trait icon={<Target size={12} color="$secondary" />}>
+          <Trait icon={<Target size={12} color="$primaryText" />} color="$primaryText">
             {t("boss.weakness")} · {t(`muscles.${fight.weaknessMuscle}`)}
           </Trait>
         ) : null}

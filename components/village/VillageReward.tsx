@@ -1,8 +1,8 @@
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
+import { SectionLabel } from "@/components/common/SectionLabel";
 import { feedsLine, nameOf } from "@/components/village/rows";
-import { Kicker } from "@/components/village/VillageLists";
 import { getBuildingIconAsset } from "@/constants/assetMap";
 import type { GrownBuilding, VillageBuilding } from "@/db/village";
 import { useAnimationProps } from "@/hooks/useReducedMotion";
@@ -63,7 +63,7 @@ export function VillageReward({ growth, buildings, language, top, onDismiss }: P
       accessibilityLabel={t("village.close")}
       {...anim}
     >
-      <Kicker label={t("village.reward_kicker")} color="$resourceGold" />
+      <SectionLabel color="$resourceGold">{t("village.reward_kicker")}</SectionLabel>
       <XStack items="center" gap={14}>
         <YStack items="center" gap={4} opacity={0.45}>
           <Image

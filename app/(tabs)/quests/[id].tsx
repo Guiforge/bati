@@ -11,6 +11,7 @@ import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Pencil, Repeat, Sparkles } from "@/components/icons";
@@ -22,8 +23,8 @@ import { restsBetweenExercises } from "@/components/quests/questShape";
 import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { WarmupPreview } from "@/components/quests/WarmupPreview";
 import { getQuestAsset } from "@/constants/assetMap";
-import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
+import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
 import {
   applyQuestConfig,
   Difficulty,
@@ -122,17 +123,14 @@ function levelLabel(level: Difficulty, t: TFunction) {
   return t("quests.level_medium", "Medium");
 }
 
-// The Journal's difficulty breakdown (components/journal/JournalStats.tsx, the `Chip` tones on
-// its "Difficulty Split" card) is what a hero actually reads as "this colour means this level" —
-// easy/success green, medium/primary violet, hard/secondary pink, with success alone keeping dark
-// text (Task 7 moved primary and secondary to $white on contrast grounds; success was never
-// flagged, so its $bgDark text stays). Matching it here, not `DIFFICULTY_COLOR_TOKENS`
-// (constants/rawColors.ts), whose bar uses $error for hard — a second, undocumented mapping nested
-// in the same Journal card that this task does not touch.
-const LEVEL_CHIP_COLORS: Record<Difficulty, { bg: ColorTokens; text: ColorTokens }> = {
-  [Difficulty.Easy]: { bg: "$success", text: "$bgDark" },
-  [Difficulty.Medium]: { bg: "$primary", text: "$white" },
-  [Difficulty.Hard]: { bg: "$secondary", text: "$white" },
+// The Journal's difficulty breakdown (components/journal/JournalStats.tsx) reads as "this colour
+// means this level": easy success green, medium primary braise, hard error red. Success and error
+// are light fills and take ink (rule 1 of the 2026-10 refresh); primary takes $onPrimary.
+// AppButton picks the label from the fill: bgDark on success/error, onPrimary on primary.
+const LEVEL_CHIP_COLORS: Record<Difficulty, { bg: ColorTokens }> = {
+  [Difficulty.Easy]: { bg: "$success" },
+  [Difficulty.Medium]: { bg: "$primary" },
+  [Difficulty.Hard]: { bg: "$error" },
 };
 
 function LevelChip({
@@ -157,16 +155,13 @@ function LevelChip({
       // sideways would make neighbouring chips fight over the same pixels.
       hitSlop={{ top: 4, bottom: 4 }}
       px="$3"
-      bg={active ? colors.bg : "$surface"}
+      variant={active ? "primary" : "outline"}
+      backgroundColor={active ? colors.bg : "$surface"}
       borderColor={active ? colors.bg : "$borderStrong"}
       borderWidth={1}
-      rounded="$10"
       fontSize={14}
-      pressStyle={{ opacity: 0.9 }}
     >
-      <Text color={active ? colors.text : "$text"} fontWeight="700">
-        {levelLabel(value, t)}
-      </Text>
+      {levelLabel(value, t)}
     </AppButton>
   );
 }
@@ -510,7 +505,6 @@ export default function QuestDetails() {
       quest,
       questTitle: localizedTitle(quest, language),
       questDesc: localizedText(quest, "description", language),
-      questTokens: getQuestColorTokensFromQuest(quest),
       estimatedSeconds,
       estimate: formatDurationEstimate(estimatedSeconds, language),
       xpReward: isOuting
@@ -539,7 +533,7 @@ export default function QuestDetails() {
         <Text fontWeight="700" fontSize={18} color="$text">
           {t("quests.invalid_id", "Invalid quest")}
         </Text>
-        <AppButton fullWidth={false} variant="secondary" onPress={goToGallery}>
+        <AppButton fullWidth={false} variant="outline" onPress={goToGallery}>
           {t("quests.go_back", "Go back")}
         </AppButton>
       </YStack>
@@ -549,7 +543,6 @@ export default function QuestDetails() {
   const quest = derived?.quest ?? null;
   const questTitle = derived?.questTitle ?? "";
   const questDesc = derived?.questDesc ?? "";
-  const questTokens = derived?.questTokens ?? null;
   const estimate = derived?.estimate ?? null;
   const xpReward = derived?.xpReward ?? null;
   // The tariff behind that number, when there is one. `pricedLocomotion` rather than the strict
@@ -636,7 +629,7 @@ export default function QuestDetails() {
 
               <XStack items="center" gap="$2">
                 <Sparkles size={18} color="$text" />
-                <Text fontWeight="700" fontSize={20} color="$text">
+                <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
                   {t("quests.details_title", "Quest")}
                 </Text>
               </XStack>
@@ -650,7 +643,13 @@ export default function QuestDetails() {
               ) : null}
               {/* Nothing on an outing: it is started at medium and the chips below are gone
                   with it, so a badge naming a level would name a decision nobody made. */}
-              {isOuting ? null : <Tag label={levelLabel(level, t)} tone="secondary" />}
+              {isOuting ? null : (
+                <Tag
+                  testID="quest-level-tag"
+                  label={levelLabel(level, t)}
+                  textColor={DIFFICULTY_TEXT_TOKENS[level]}
+                />
+              )}
               {/* Only quests written in the app may be edited: seed content is shared. */}
               {quest && isUserQuest(quest) ? (
                 <AppIconButton
@@ -668,7 +667,7 @@ export default function QuestDetails() {
             <YStack
               width="100%"
               aspectRatio={16 / 9}
-              bg={questTokens?.bg ?? "$surface"}
+              bg="$surface"
               borderWidth={1}
               borderColor="$borderStrong"
               rounded="$8"
@@ -697,7 +696,7 @@ export default function QuestDetails() {
                 </Paragraph>
                 <AppButton
                   fullWidth={false}
-                  variant="secondary"
+                  variant="outline"
                   onPress={() => {
                     load(questId, effectiveLevel).catch(() => {
                       // Error already handled
@@ -726,7 +725,7 @@ export default function QuestDetails() {
           ) : null}
 
           {quest ? (
-            <Card bg={questTokens?.bg ?? "$surface"}>
+            <Card>
               <YStack gap="$2">
                 <H2 color="$text" fontWeight="700" fontSize={26}>
                   {questTitle}
@@ -782,7 +781,6 @@ export default function QuestDetails() {
                         duration: estimate,
                         defaultValue: `≈ ${estimate}`,
                       })}
-                      tone="secondary"
                     />
                   ) : null}
                   {xpReward != null ? (
@@ -792,7 +790,7 @@ export default function QuestDetails() {
                       label={t(isOuting ? "quests.reward_xp_open" : "quests.reward_xp_estimate", {
                         count: formatCount(language, xpReward),
                       })}
-                      tone="secondary"
+                      textColor="$resourceGold"
                     />
                   ) : null}
                   {/* What an outing has instead of a maximum. The number above is what the
@@ -891,16 +889,7 @@ export default function QuestDetails() {
       </ScrollView>
 
       {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
-      <YStack
-        position="absolute"
-        t={0}
-        l={0}
-        r={0}
-        height={insets.top}
-        bg="$bgDark"
-        opacity={0.88}
-        pointerEvents="none"
-      />
+      <StatusBand />
 
       {quest ? (
         <YStack
@@ -930,7 +919,6 @@ export default function QuestDetails() {
             testID="quest-start"
             height={60}
             variant="primary"
-            pressStyle={{ opacity: 0.9 }}
             onPress={() => {
               handleStart().catch(() => {
                 // Errors already surfaced via showError inside proceedToSession
@@ -938,13 +926,10 @@ export default function QuestDetails() {
             }}
             disabled={isStarting}
             opacity={isStarting ? 0.6 : 1}
-            rounded="$6"
           >
-            <Text color="$text" fontSize={22} fontWeight="700">
-              {isStarting
-                ? t("quests.starting", "Starting…")
-                : t("quests.start_button", "Start Quest")}
-            </Text>
+            {isStarting
+              ? t("quests.starting", "Starting…")
+              : t("quests.start_button", "Start Quest")}
           </AppButton>
         </YStack>
       ) : null}
@@ -1006,6 +991,7 @@ export default function QuestDetails() {
       <NarrativeModal
         visible={showNarrative}
         title={questTitle}
+        image={headerImage}
         text={narrative ?? ""}
         onClose={() => {
           setShowNarrative(false);

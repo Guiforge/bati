@@ -67,6 +67,10 @@ A kicker chip names the unusual cases: "Day one", "Adventure". Which branch fire
 
 ## Quick actions
 
+The section's header is the shared `SectionLabel` (12/700, 1.5 tracking, ash), the same label
+Settings, the exercise detail and the village lists use. The streak flame in the status strip is
+the game-icons `flame` glyph, `$primaryText` while the streak is alive and `$muted` once out.
+
 - **A way out starts on one tap**, at `medium`, with the goal it is about to run written on the
   tile. The location preamble and the refusal notice speak above the row, one at a time.
 - **The goal chip, or a long press**, opens `OutingGoalSheet` and saves the pick through
@@ -92,7 +96,7 @@ chip says the goal the tap runs.
 ## Visual rules
 
 - One filled button on the screen. The ways out are image tiles, the recovery banner is a tint.
-- Gold is for what progresses: XP, flame, oath rungs, adventure steps. Advice is grey.
+- Gold is for what progresses: XP (the header's figure and its bar, on a `$gold800` track), flame, oath rungs, adventure steps. Advice is grey.
 - Every block reserves its height so nothing jumps as data lands: strip 52, scene flexible with a
   320 floor, row 84 (72 under 700 dp). Blank boxes or skeletons, never spinners, and never a zero
   presented as a fact.

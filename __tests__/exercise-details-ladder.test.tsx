@@ -305,3 +305,14 @@ describe("the tempo chip", () => {
     expect(screen.getByText("tempo 3s/rep")).toBeTruthy();
   });
 });
+
+describe("the exercise's name", () => {
+  it("sits in a récitatif on the art, not in a card under it", async () => {
+    await mountSummit(1, [false, false, false]);
+
+    const box = screen.getByTestId("exercise-detail-name");
+    expect(within(box).getByRole("header")).toBeTruthy();
+    expect(within(box).getByText("Dragon Flag")).toBeTruthy();
+    expect(screen.getAllByText("Dragon Flag")).toHaveLength(1);
+  });
+});

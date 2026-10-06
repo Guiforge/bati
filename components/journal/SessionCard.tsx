@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { XStack, YStack } from "tamagui";
@@ -92,28 +92,28 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
 
   const durationLabel = entry.durationSeconds
     ? formatDuration(entry.durationSeconds, language)
-    : "--";
+    : null;
   // An outing's row leads with the ground, which is the one number a walk is remembered by.
   const metaLabel = hasGround(entry)
-    ? `${formatDistance(entry.leaguesM, unit, language)} · ${durationLabel}`
+    ? [formatDistance(entry.leaguesM, unit, language), durationLabel].filter(Boolean).join(" · ")
     : durationLabel;
   // What the session was worth, not only how long it took. A row gave a duration and a difficulty
   // and never what was done inside it, so two runs of the same quest a month apart were
   // indistinguishable unless one happened to last longer. XP is priced off reps, tempo and
   // difficulty, so it is the effort, in the unit this game already counts in. A difficulty means
   // nothing on a walk.
-  const details = [
+  const parts: ReactNode[] = [
     metaLabel,
-    entry.xpEarned > 0
-      ? t("quests.reward_xp", { count: formatCount(language, entry.xpEarned) })
-      : null,
+    entry.xpEarned > 0 ? (
+      <NText key="xp" testID="journal-row-xp" fontSize={12} lineHeight={17} color="$resourceGold">
+        {t("quests.reward_xp", { count: formatCount(language, entry.xpEarned) })}
+      </NText>
+    ) : null,
     entry.outing ? null : t(`quests.level_${entry.userLevel}`, entry.userLevel),
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  ].filter(Boolean);
 
   return (
-    <Card flat testID="journal-session-card" onPress={onPress}>
+    <Card testID="journal-session-card" onPress={onPress}>
       <XStack gap="$3" items="center">
         {/* Icon */}
         {/* 64, not 50.
@@ -182,7 +182,7 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
               translation layer. A release build on a phone decides whether the row needs more. */}
           <NMuted numberOfLines={1}>{dateLabel}</NMuted>
           <NText fontSize={12} lineHeight={17} numberOfLines={1}>
-            {details}
+            {parts.flatMap((part, i) => (i ? [" · ", part] : [part]))}
           </NText>
         </YStack>
       </XStack>

@@ -33,7 +33,10 @@ const DEV_XP_NOTE = "__dev_xp";
 async function setDevLevel(level: number): Promise<void> {
   await db.delete(completedQuest).where(eq(completedQuest.notes, DEV_XP_NOTE));
   const realXp = await getTotalXp();
-  const targetXp = getXpForLevel(level);
+  // Two thirds into the level, not on its first XP: a hero at 0 / 2,000 photographs as an empty
+  // bar on Home and Victory, which is what the store screenshots are taken from.
+  const base = getXpForLevel(level);
+  const targetXp = base + Math.round(((getXpForLevel(level + 1) - base) * 2) / 3);
   // Real sessions can already put the hero above the target: XP is only ever added, never
   // deducted, so going down means deleting real history — not this screen's job.
   if (targetXp > realXp) {
@@ -202,7 +205,7 @@ export default function DevScreen() {
             Hero level {level} — {xp} XP
           </Text>
           <XStack gap="$2">
-            <AppButton fullWidth={false} variant="secondary" onPress={() => jumpLevel(-1)}>
+            <AppButton fullWidth={false} variant="outline" onPress={() => jumpLevel(-1)}>
               -1
             </AppButton>
             <AppButton fullWidth={false} onPress={() => jumpLevel(1)}>
@@ -211,7 +214,7 @@ export default function DevScreen() {
             <AppButton fullWidth={false} onPress={() => jumpLevel(5)}>
               +5
             </AppButton>
-            <AppButton fullWidth={false} variant="secondary" onPress={clearDevXp}>
+            <AppButton fullWidth={false} variant="outline" onPress={clearDevXp}>
               Clear fake XP
             </AppButton>
           </XStack>
@@ -234,7 +237,7 @@ export default function DevScreen() {
             <AppButton fullWidth={false} onPress={() => runSeed(5)}>
               5y
             </AppButton>
-            <AppButton fullWidth={false} variant="secondary" onPress={clearSeed}>
+            <AppButton fullWidth={false} variant="outline" onPress={clearSeed}>
               Clear
             </AppButton>
           </XStack>
@@ -261,7 +264,7 @@ export default function DevScreen() {
             Boss fight
           </Text>
           <AppButton onPress={() => runBossFight(false)}>Jump to boss fight</AppButton>
-          <AppButton variant="secondary" onPress={() => runBossFight(true)}>
+          <AppButton variant="outline" onPress={() => runBossFight(true)}>
             Jump to boss fight (1 HP)
           </AppButton>
         </Card>
@@ -278,7 +281,7 @@ export default function DevScreen() {
           <AppButton testID="dev-seed-expedition" onPress={runExpedition}>
             Seed an outing, open the recap
           </AppButton>
-          <AppButton variant="secondary" onPress={clearExpedition}>
+          <AppButton variant="outline" onPress={clearExpedition}>
             Clear seeded outings
           </AppButton>
         </Card>
@@ -304,7 +307,7 @@ export default function DevScreen() {
             Onboarding
           </Text>
           <AppButton
-            variant="secondary"
+            variant="outline"
             onPress={() => {
               setHasFinishedOnboarding(false).catch(() => setStatus("Reset failed"));
             }}

@@ -23,7 +23,7 @@ export default function SafetyScreen() {
         <ScreenBackButton />
         <XStack flex={1} items="center" gap="$2">
           <HeartPulse size={20} color="$primaryText" />
-          <Text fontSize={22} fontWeight="700" color="$text">
+          <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
             {t("safety.title")}
           </Text>
         </XStack>

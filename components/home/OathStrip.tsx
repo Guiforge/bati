@@ -57,7 +57,7 @@ function useOathChain(oath: OathProgress): Chain | null {
   return chain;
 }
 
-/** The rungs as ticks: gold behind the hero, indigo under their feet, the rest unlit. */
+/** The rungs as ticks: gold behind the hero, braise under their feet, the rest unlit. */
 function Rungs({ chain, climbed }: { chain: Chain; climbed: boolean }) {
   return (
     <XStack gap={3}>

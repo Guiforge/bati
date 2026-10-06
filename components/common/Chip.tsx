@@ -1,26 +1,27 @@
 import type { ReactNode } from "react";
-import { Text, XStack, YStack, type YStackProps } from "tamagui";
+import { type ColorTokens, Text, XStack, YStack, type YStackProps } from "tamagui";
 
 export type ChipProps = Omit<YStackProps, "children"> & {
   label: string;
   icon?: ReactNode;
-  tone?: "default" | "primary" | "secondary" | "success";
+  tone?: "default" | "primary" | "success";
+  /** Overrides the label colour only: a metric that wears its own role (gold XP). */
+  textColor?: ColorTokens;
 };
 
 function toneToBg(tone: ChipProps["tone"]) {
   if (tone === "primary") return "$primary";
-  if (tone === "secondary") return "$secondary";
   if (tone === "success") return "$success";
   return "$bgLight";
 }
 
 function toneToText(tone: ChipProps["tone"]) {
-  if (tone === "secondary" || tone === "primary") return "$white";
+  if (tone === "primary") return "$onPrimary";
   if (tone === "success") return "$bgDark";
   return "$text";
 }
 
-export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
+export function Chip({ label, icon, tone = "default", textColor, ...props }: ChipProps) {
   const isPressable = typeof props.onPress === "function";
 
   return (
@@ -30,7 +31,7 @@ export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
       bg={toneToBg(tone)}
       borderWidth={isPressable ? 2 : 1}
       borderColor="$borderStrong"
-      rounded={isPressable ? "$10" : "$4"}
+      rounded={isPressable ? "$3" : "$1"}
       px={isPressable ? "$3" : "$2"}
       py={isPressable ? "$2" : "$1"}
       opacity={isPressable ? 1 : 0.92}
@@ -47,7 +48,7 @@ export function Chip({ label, icon, tone = "default", ...props }: ChipProps) {
     >
       <XStack items="center" gap="$2">
         {icon}
-        <Text fontWeight="700" fontSize={13} color={toneToText(tone)}>
+        <Text fontWeight="700" fontSize={13} color={textColor ?? toneToText(tone)}>
           {label}
         </Text>
       </XStack>

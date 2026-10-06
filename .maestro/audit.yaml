@@ -30,11 +30,17 @@ tags:
     timeout: 30000
     optional: true
 - takeScreenshot: 01-home-top
-- scroll
+- swipe:
+    start: 50%, 75%
+    end: 50%, 45%
+    duration: 600
 - waitForAnimationToEnd:
     timeout: 2000
 - takeScreenshot: 02-home-scrolled
-- scroll
+- swipe:
+    start: 50%, 75%
+    end: 50%, 10%
+    duration: 600
 - waitForAnimationToEnd:
     timeout: 2000
 - takeScreenshot: 03-home-bottom
@@ -195,11 +201,17 @@ tags:
 - waitForAnimationToEnd:
     timeout: 10000
 - takeScreenshot: 17-journal-stats
-- scroll
+- swipe:
+    start: 50%, 75%
+    end: 50%, 45%
+    duration: 600
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 18-journal-stats-scrolled
-- scroll
+- swipe:
+    start: 50%, 75%
+    end: 50%, 10%
+    duration: 600
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 19-journal-stats-bottom
@@ -219,10 +231,24 @@ tags:
     timeout: 15000
     optional: true
 - takeScreenshot: 21-session-details
-- scroll
+- swipe:
+    start: 50%, 75%
+    end: 50%, 15%
+    duration: 600
 - waitForAnimationToEnd:
     timeout: 2000
 - takeScreenshot: 22-session-details-scrolled
+- back
+- tapOn:
+    id: "journal-session-card"
+    index: 1
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-details-screen"
+    timeout: 15000
+    optional: true
+- takeScreenshot: 22b-session-details-second
 - runFlow: subflows/back-to-tabs.yaml
 
 # --- Settings ---------------------------------------------------------------
@@ -318,12 +344,33 @@ tags:
       id: "session-complete-exercise"
     timeout: 20000
     optional: true
+# Guard: if the start tap already banked a set, the rest screen is up; skip it so 29 is a set.
+- tapOn:
+    id: "session-skip-rest"
+    optional: true
+    waitToSettleTimeoutMs: 500
+    retryTapIfNoChange: false
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
+    timeout: 20000
+    optional: true
 - takeScreenshot: 29-session-active
+- extendedWaitUntil:
+    visible:
+      id: "session-how-to"
+    timeout: 10000
+    optional: true
 - tapOn:
     id: "session-how-to"
     optional: true
-- waitForAnimationToEnd:
-    timeout: 3000
+    waitToSettleTimeoutMs: 500
+    retryTapIfNoChange: false
+- extendedWaitUntil:
+    visible:
+      id: "session-instructions"
+    timeout: 8000
+    optional: true
 - takeScreenshot: 30-session-instructions
 - tapOn:
     id: "session-instructions-close"
@@ -340,8 +387,13 @@ tags:
 - tapOn:
     id: "session-complete-exercise"
     optional: true
-- waitForAnimationToEnd:
-    timeout: 4000
+    waitToSettleTimeoutMs: 500
+    retryTapIfNoChange: false
+- extendedWaitUntil:
+    visible:
+      id: "session-skip-rest"
+    timeout: 15000
+    optional: true
 - takeScreenshot: 32-session-rest
 
 # --- Victory ----------------------------------------------------------------
@@ -378,6 +430,10 @@ tags:
       id: "session-victory-xp"
     timeout: 20000
     optional: true
+# Once kept (or saved), the level card sweeps in: wait past its 400 ms delay and 900 ms fill.
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 35-victory-kept
 - tapOn:
     id: "session-victory-continue"
     optional: true
@@ -410,10 +466,16 @@ tags:
 - tapOn:
     id: "quest-start"
     optional: true
+# The story modal opens over the quest screen; photograph it before confirming it.
+- extendedWaitUntil:
+    visible:
+      id: "narrative-confirm"
+    timeout: 10000
+    optional: true
+- takeScreenshot: 35-boss-narrative
 - tapOn:
     id: "narrative-confirm"
     optional: true
-- takeScreenshot: 35-boss-narrative
 - tapOn:
     id: "session-skip-warmup"
     optional: true

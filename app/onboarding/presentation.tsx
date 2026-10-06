@@ -10,7 +10,7 @@ import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { ArrowRight } from "@/components/icons";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { CloudRestoreLink } from "@/components/settings/CloudRestoreLink";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import { useBackup } from "@/hooks/useBackup";
 
 export default function Presentation() {
@@ -54,11 +54,11 @@ export default function Presentation() {
       />
 
       <LinearGradient
-        colors={["rgba(11, 15, 25, 0.9)", "transparent"]}
+        colors={[fade(rawColors.bgDark, 0.9), "transparent"]}
         style={{ position: "absolute", top: 0, left: 0, right: 0, height: "33%" }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(11, 15, 25, 0.8)", rawColors.bgDark]}
+        colors={["transparent", fade(rawColors.bgDark, 0.8), rawColors.bgDark]}
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "66%" }}
       />
 
@@ -75,8 +75,7 @@ export default function Presentation() {
             color="$text"
             fontSize={40}
             fontWeight="700"
-            letterSpacing={4}
-            textShadowColor="rgba(0,0,0,0.5)"
+            textShadowColor={fade(rawColors.black, 0.5)}
             textShadowOffset={{ width: 2, height: 2 }}
             textShadowRadius={0}
           >
@@ -111,15 +110,14 @@ export default function Presentation() {
             testID="onboarding-presentation-continue"
             variant="primary"
             onPress={() => router.push("/onboarding/village-setup")}
-            rounded="$10"
             borderWidth={0}
           >
             <XStack items="center" gap="$2">
-              <Text color="$text" fontWeight="700" fontSize={18}>
+              <Text color="$onPrimary" fontFamily="$heading" fontWeight="700" fontSize={18}>
                 {t("onboarding.next")}
               </Text>
 
-              <ArrowRight size={20} color="$text" strokeWidth={3} />
+              <ArrowRight size={20} color="$onPrimary" strokeWidth={3} />
             </XStack>
           </AppButton>
 

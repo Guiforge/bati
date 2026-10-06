@@ -44,7 +44,7 @@ Journal's own pieces are in `components/journal/nocturne.tsx`, one per Nocturne 
 | Flame | Days lit, the last seven days as dots, sessions in seven days against the quota, the rule, and the best run with the day it ended. Before the flame is lit, the count is left out and the note says how many more light it: "0 days lit" beside today's gold dot read as nothing counting. | `getFlameDetail` |
 | This month so far | Quests, reps, time in quests, ground, XP, records, each against the same number of days of last month; then the month as a frieze. | `getPeriodFigures`, `monthWindows`, `getActivityDays` |
 | Where the work went | The thirty days' muscle shares as one stacked bar, a verdict, a link to the balance page. | `getMuscleBalance`, `periodReps` |
-| Level and shelf | The level bar, the XP to the next level at this week's pace, the shelf count and the next achievement with how far it is. | `getUserLevelInfo`, `getWeekXpPerSession`, `nextOnShelf` |
+| Level and shelf | The level bar (an `InkGauge`, gold on `$gold800`, its XP caption gold), the XP to the next level at this week's pace, the shelf count and the next achievement with how far it is. | `getUserLevelInfo`, `getWeekXpPerSession`, `nextOnShelf` |
 | Buttons | Lifetime, Achievements n/27, Bosses n. | routes below |
 
 The record's date is not stored: it is the first row that reached the standing best, which is
@@ -87,7 +87,7 @@ The segmented control's second half: the sessions a hundred at a time, newest fi
 the quest log. It follows the same version check as the stats page, and when it does re-read, it
 reads back everything already scrolled through, so a return from a session keeps the hero's place.
 Nothing is read before the tab is first shown. A row is the cover, the title with its record in a gold kicker (no filled
-plate), the date, and one line of details (duration or ground, XP, difficulty): the icon and three tags it
+plate), the date, and one line of details (duration or ground, XP in gold, difficulty): the icon and three tags it
 had cost the emulator's GPU enough to scroll History at 26 ms a frame.
 An empty history is "An empty page", never a button that sends the hero elsewhere.
 

@@ -49,9 +49,9 @@ export function ProtectCard() {
   return (
     <Card testID="home-protect" mx="$4" mt="$3" py="$2" onPress={open}>
       <XStack items="center" gap="$2">
-        <Shield size={16} color="$primaryText" />
+        <Shield size={16} color="$textSecondary" />
         <YStack flex={1}>
-          <Text fontSize="$3" fontWeight="bold" color="$primaryText">
+          <Text fontSize="$3" fontWeight="bold" color="$text">
             {t("backup.protectTitle")}
           </Text>
           <Text fontSize="$2" color="$textSecondary">

@@ -12,6 +12,9 @@
       "!**/metro.config.js",
       "!assets",
       "!.claude",
+      "!.design-sync",
+      "!.ds-sync",
+      "!ds-bundle",
       "!.github",
       "!docs/legal/**/*.html",
       "!drizzle"
@@ -127,6 +130,8 @@
               "NText",
               "NTitle",
               "Paragraph",
+              "Recitatif",
+              "SectionLabel",
               "SizableText",
               "Trait"
             ]

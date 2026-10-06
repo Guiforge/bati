@@ -143,7 +143,7 @@ export function ExercisePickerSheet({
       zIndex={100_000}
     >
       <Sheet.Overlay
-        bg="rgba(0,0,0,0.5)"
+        bg="$sheetScrim"
         transition={reducedMotion ? undefined : "quick"}
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
@@ -154,7 +154,7 @@ export function ExercisePickerSheet({
           `height={frameSize}` before spreading these props. The stranding this once tried to fix
           by dropping a `flex` was the pane drift above, and `VillageDetailSheet` was never the
           reference — it is `snapPointsMode="fit"` with no ScrollView, so no pan to lose to. */}
-      <Sheet.Frame bg="$surface">
+      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
         <YStack px="$4" pt="$4" pb="$3" gap="$3">
           <XStack items="center" justify="space-between">
             <Text fontWeight="700" fontSize={18} color="$text">
@@ -219,7 +219,7 @@ export function ExercisePickerSheet({
                     // this movement, which beats saying who wrote it. Otherwise: a hero may own
                     // a name seed content also owns, and two identical rows are unpickable.
                     caption ? (
-                      <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+                      <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
                         {caption}
                       </Text>
                     ) : exercise.creator === ADMIN_CREATOR ? undefined : (

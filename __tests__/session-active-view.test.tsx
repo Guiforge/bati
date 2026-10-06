@@ -1,8 +1,11 @@
-import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import assert from "node:assert/strict";
+import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
+import { rawColors } from "@/constants/rawColors";
 import type { Quest } from "@/db/quests";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -101,10 +104,10 @@ const fight = (currentHp: number) => ({
   shiny: false,
 });
 
-async function mount(bossFight: ReturnType<typeof fight> | null = null) {
+async function mount(bossFight: ReturnType<typeof fight> | null = null, withQuest: Quest = quest) {
   useSettingsStore.setState({ language: "en", reducedMotion: true });
   useSessionStore.setState({
-    quest,
+    quest: withQuest,
     status: "running",
     currentRoundIndex: 0,
     currentExerciseIndex: 0,
@@ -162,6 +165,52 @@ describe("Done, right after the screen appears", () => {
   });
 });
 
+describe("the exercise name over the art", () => {
+  test("sits in a récitatif, a header in the title font", async () => {
+    await mount();
+
+    const box = screen.getByTestId("exercise-hero-name");
+    expect(StyleSheet.flatten(box.props.style).borderTopWidth).toBe(1);
+    expect(within(box).getByRole("header")).toBeTruthy();
+  });
+});
+
+describe("the reps stepper", () => {
+  test("draws both signs as icons of one size, not as text glyphs", async () => {
+    await mount();
+
+    expect(screen.queryByText("\u2212")).toBeNull();
+    expect(screen.queryByText("-")).toBeNull();
+    expect(screen.queryByText("+")).toBeNull();
+  });
+
+  test("both controls are there, by label", async () => {
+    await mount();
+
+    expect(screen.getByLabelText("Decrease reps by one")).toBeTruthy();
+    expect(screen.getByLabelText("Increase reps by one")).toBeTruthy();
+  });
+
+  test("the three tertiary links reach 44 dp through a vertical slop of 12 or more", async () => {
+    const [first, ...rest] = quest.exercises;
+    assert(first);
+    const described = {
+      ...quest,
+      exercises: [
+        { ...first, exercise: { ...first.exercise, enDescription: "Lower, then press up." } },
+        ...rest,
+      ],
+    } as Quest;
+    await mount(null, described);
+
+    for (const id of ["session-how-to", "session-swap-exercise", "session-skip-exercise"]) {
+      const slop = screen.getByTestId(id).props.hitSlop;
+      const vertical = typeof slop === "number" ? [slop, slop] : [slop.top, slop.bottom];
+      expect(vertical.every((v: number) => v >= 12)).toBe(true);
+    }
+  });
+});
+
 describe("a boss that is already down", () => {
   test("drops the crit promise and the weak point, and says the rest is the hero's", async () => {
     await mount(fight(0));
@@ -178,5 +227,25 @@ describe("a boss that is already down", () => {
     expect(screen.getByText(/strike critical/)).toBeTruthy();
     expect(screen.getByText(/weak point/)).toBeTruthy();
     expect(screen.queryByText(/is down\./)).toBeNull();
+  });
+});
+
+describe("Done is a seal", () => {
+  const edge = () =>
+    StyleSheet.flatten(screen.getByTestId("session-complete-exercise").props.style);
+
+  test("carries the 3 px braise edge while the set is under target", async () => {
+    await mount();
+    expect(edge().borderBottomWidth).toBe(3);
+    expect(edge().borderBottomColor).toBe(rawColors.primaryEdge);
+  });
+
+  test("past the target it is the green fill: no edge, an ink label", async () => {
+    await mount();
+    await act(() => {
+      useSessionStore.setState({ timerStartTimestamp: Date.now() - 60_000, timerDuration: 5 });
+    });
+    expect(edge().borderBottomWidth).not.toBe(3);
+    expect(screen.getByText("Finish")).toHaveStyle({ color: rawColors.bgDark });
   });
 });

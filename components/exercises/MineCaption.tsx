@@ -14,7 +14,7 @@ export function MineCaption() {
   const { t } = useTranslation();
 
   return (
-    <Text fontSize={12} fontWeight="700" color="$primaryText" numberOfLines={1}>
+    <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
       {t("common.hero_badge")}
     </Text>
   );

@@ -153,7 +153,7 @@ was there for it.
 
 ```
 ┌─────────────────────────────────────────────┐
-│              🔥 REST 🔥                     │
+│                 REST                        │
 ├─────────────────────────────────────────────┤
 │                                             │
 │           [🏕️ Campfire Animation]           │
@@ -223,9 +223,9 @@ movement's art and description that the overlay now draws.
 │           ░                     ░           │
 │           ░   [▶️ RESUME]       ░           │
 │           ░                     ░           │
-│           ░   [🔄 Restart Round]░           │
+│           ░   [🔄 Restart round]░           │
 │           ░                     ░           │
-│           ░   [🚪 Quit Quest]   ░           │
+│           ░   [🚪 Quit quest]   ░           │
 │           ░       (red)         ░           │
 │           ░                     ░           │
 │           ░░░░░░░░░░░░░░░░░░░░░░░           │
@@ -253,7 +253,7 @@ movement's art and description that the overlay now draws.
 │                                             │
 ├─────────────────────────────────────────────┤
 │                                             │
-│   ⏱️ Duration      📊 Exercises    🔥 Streak│
+│   ⏱️ Duration      📊 Exercises    Streak │
 │      18:32            15            5 days │
 │                                             │
 ├─────────────────────────────────────────────┤

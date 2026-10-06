@@ -37,6 +37,10 @@ tags:
     visible:
       id: "home-start-session"
     timeout: 30000
+# The backup nudge is for a real phone, not a store page: it pushes the quest stage half off-frame.
+- tapOn:
+    id: "home-protect-dismiss"
+    optional: true
 - takeScreenshot: 1-home
 
 # --- 2. The quest gallery ---------------------------------------------------
@@ -70,18 +74,12 @@ tags:
 - tapOn:
     id: "session-skip-warmup"
     optional: true
-- extendedWaitUntil:
-    visible:
-      id: "session-start-go"
-    timeout: 15000
-    optional: true
-- tapOn:
-    id: "session-start-go"
-    optional: true
+# No tap on the countdown's Go: it starts the set on its own, and a tap that arrives as it does
+# lands on Done in the same spot, finishing the first exercise before it is photographed.
 - extendedWaitUntil:
     visible:
       id: "session-complete-exercise"
-    timeout: 20000
+    timeout: 30000
 - takeScreenshot: 4-session
 
 # --- 6. Victory -------------------------------------------------------------
@@ -124,6 +122,13 @@ tags:
     visible:
       id: "village-screen"
     timeout: 30000
+# The villager's bubble covers the citadel for a few seconds after the tab opens, in some locales
+# only. Wait it out (a tap would land on the pressable cameo) so every locale shows the same state.
+- extendedWaitUntil:
+    notVisible:
+      id: "villager-bubble"
+    timeout: 30000
+    optional: true
 - takeScreenshot: 7-village
 
 # --- 8. The journal, three years deep ---------------------------------------
@@ -204,22 +209,19 @@ tags:
 - tapOn:
     id: "session-skip-warmup"
     optional: true
+# No tap on the countdown's Go: it starts the set on its own, and a tap that arrives as it does
+# lands on Done in the same spot, finishing the first exercise before it is photographed.
+# The dev jump sets tiny targets, so a timed first exercise can reach its target and hand over to
+# the rest screen before this step looks: either screen means the fight is under way.
 - extendedWaitUntil:
     visible:
-      id: "session-start-go"
-    timeout: 15000
-    optional: true
-- tapOn:
-    id: "session-start-go"
-    optional: true
-- extendedWaitUntil:
-    visible:
-      id: "session-complete-exercise"
+      id: "session-(complete-exercise|skip-rest)"
     timeout: 25000
 # One completed exercise, so the arena shows damage landing rather than a boss at full health:
 # the bar moving is the whole point of the screen.
 - tapOn:
     id: "session-complete-exercise"
+    optional: true
 - tapOn:
     id: "session-skip-rest"
     optional: true

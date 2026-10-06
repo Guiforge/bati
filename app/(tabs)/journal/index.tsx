@@ -235,8 +235,6 @@ export default function JournalScreen() {
         />
       </XStack>
 
-      <VillagerLine owner="journal" />
-
       {activeTab === "history" ? (
         history.length > 0 ? (
           <LegendList
@@ -295,6 +293,10 @@ export default function JournalScreen() {
           showsVerticalScrollIndicator={false}
           refreshControl={refreshControl}
         >
+          {/* Inside the scroll and on Stats only: pinned above the page it held a tenth of the
+              screen while the cards slid under it, and its line is about the numbers, so above
+              the History list it spoke about something that was not there. */}
+          <VillagerLine owner="journal" />
           {stats ? <StatsView stats={stats} /> : <StatsSkeleton />}
         </ScrollView>
       )}

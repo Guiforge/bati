@@ -1431,6 +1431,11 @@
     },
     "reencoded": "cwebp -q 85, from thread_the_needle.jpg"
   },
+  "assets/images/exercises/thumbs/*.webp": {
+    "derived_from": "assets/images/exercises/<same name>.webp",
+    "how": "downscale by scripts/thumb-exercises.py",
+    "licence": "same as the full-size picture; see that entry"
+  },
   "assets/images/exercises/toes_to_bar.webp": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
@@ -3524,7 +3529,7 @@
   },
   "fastlane/metadata/android/en-US/images/featureGraphic.png": {
     "derived_from": "fastlane/featureGraphic-bg.jpg",
-    "how": "cover-crop + left scrim + gradient-gold tagline",
+    "how": "cover-crop + left ink fade + cartouche tagline",
     "licence": "same as the source render; see that entry"
   },
   "fastlane/metadata/android/en-US/images/icon.png": {
@@ -3534,17 +3539,12 @@
   },
   "fastlane/metadata/android/fr-FR/images/featureGraphic.png": {
     "derived_from": "fastlane/featureGraphic-bg.jpg",
-    "how": "cover-crop + left scrim + gradient-gold tagline",
+    "how": "cover-crop + left ink fade + cartouche tagline",
     "licence": "same as the source render; see that entry"
   },
   "fastlane/metadata/android/fr-FR/images/icon.png": {
     "derived_from": "assets/icon.png",
     "how": "resized to 512x512 for the store listing",
     "licence": "same as the source render; see that entry"
-  },
-  "assets/images/exercises/thumbs/*.webp": {
-    "derived_from": "assets/images/exercises/<same name>.webp",
-    "how": "downscale by scripts/thumb-exercises.py",
-    "licence": "same as the full-size picture; see that entry"
   }
 }

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Paragraph, Text, View, XStack, YStack } from "tamagui";
 
 import { getVillagerAsset } from "@/constants/assetMap";
+import { type FaceFrame, VILLAGER_FACES } from "@/constants/villagerFaces";
 import { type CueOwner, useChorusStore } from "@/stores/chorus";
 import { useCueOwner } from "./useCueOwner";
 import { useGuideSeen } from "./useGuideSeen";
@@ -25,6 +26,16 @@ import { useTypedLine } from "./useTypedLine";
  * from under the finger. The slot is there from the first render, at that height, and the line is
  * clamped to three lines inside it. The caller sizes it, because it also lays out around it.
  */
+/** The face's circle inside the 48 dp medallion. */
+const FACE = 44;
+
+/** The art at the size and offset that put its head-and-shoulders square on the circle. */
+function faceStyle({ x, y, side }: FaceFrame) {
+  const width = FACE / side;
+  const height = width * (4 / 3); // the villager art is 3:4
+  return { position: "absolute" as const, width, height, left: -x * width, top: -y * height };
+}
+
 export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: number }) {
   const { t } = useTranslation();
   const current = useChorusStore((s) => s.current);
@@ -54,15 +65,18 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
         items="center"
         justify="center"
       >
-        <Image
-          testID="villager-face"
-          source={getVillagerAsset(speaking.villager, speaking.pose)}
-          style={{ width: 44, height: 44, borderRadius: 22 }}
-          contentFit="cover"
-          contentPosition="top"
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        />
+        {/* Head and shoulders: the art is drawn larger than the circle and moved so the square
+            `VILLAGER_FACES` measured around the head fills it. The whole half figure made a 13 dp
+            face nobody could read (villager audit, 2026-10-06). */}
+        <YStack width={FACE} height={FACE} rounded={FACE / 2} overflow="hidden">
+          <Image
+            testID="villager-face"
+            source={getVillagerAsset(speaking.villager, speaking.pose)}
+            style={faceStyle(VILLAGER_FACES[speaking.villager][speaking.pose])}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+        </YStack>
       </YStack>
       {/* A parchment bubble beside the medallion, in the banner and in the flow alike. Its tail
           sits in the gap beside the medallion (overlapping it by 1 dp) and points at the face, so

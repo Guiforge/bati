@@ -87,7 +87,13 @@ export function AppButton({
       {...buttonProps}
     >
       {typeof children === "string" ? (
-        <Button.Text numberOfLines={0}>{children}</Button.Text>
+        // The label spans the button and centres itself. Sized to its own text, the box is
+        // rounded to the pixel and can come out a fraction short, which drops the last word onto
+        // a line the button never grew for: "A synced folder" drew "A synced", and "A WebDAV
+        // server" drew "A WebDAV", off-centre, on a phone.
+        <Button.Text numberOfLines={0} style={{ flexGrow: 1, textAlign: "center" }}>
+          {children}
+        </Button.Text>
       ) : (
         children
       )}

@@ -10,15 +10,18 @@ import { useBackup } from "@/hooks/useBackup";
 import { peerScratch } from "@/src/backupFiles";
 import { failureOf } from "@/src/cloudSync";
 import {
+  announcedPeers,
   joinPeer,
   keepThisDeviceOnServer,
   mergeWithPeer,
   type Peer,
+  rememberAnnounced,
   rememberAnswer,
   rememberMergeNotice,
   rememberUnreadable,
   takeMergeNotice,
 } from "@/src/deviceSync";
+import { bestVaultFirst } from "@/src/joinOrder";
 import { reportError } from "@/src/reportError";
 import { failureMessage, syncAgo } from "@/src/syncWords";
 import { useSessionStore } from "@/stores/session";
@@ -42,6 +45,12 @@ import { useSyncStore } from "@/stores/sync";
  * until that device has news (`rememberAnswer`), and within a process the store remembers what
  * was offered.
  */
+/** Peers that ask nothing of the hero: in step, behind, waiting on this device, or a vault left. */
+const NEEDS_NOTHING = new Set<Peer["state"]>(["level", "behind", "waiting", "oldKey"]);
+
+/** News that is only ever said: a newer version on the other device, an unreadable file, an older copy set aside. */
+const SAID_ONCE = new Set<Peer["state"]>(["unreadable", "newerVersion", "replayed"]);
+
 export function SyncPrompt() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
@@ -52,6 +61,16 @@ export function SyncPrompt() {
   const run = useSyncStore((s) => s.run);
   const inSession = useSessionStore((s) => s.status !== "idle" && s.status !== "finished");
   const [joining, setJoining] = useState<{ peer: string; wrong: boolean } | null>(null);
+  // What was already said about which version of which file (read once; the sync sheet ignores it).
+  const [announced, setAnnounced] = useState<Record<string, string> | null>(null);
+  useEffect(() => {
+    announcedPeers()
+      .then(setAnnounced)
+      .catch((e) => {
+        reportError("sync.announced", e);
+        setAnnounced({});
+      });
+  }, []);
   // An alert on screen. `markOffered` re-runs the effect, and without this the next device's
   // question opened on top of the one still being read.
   const [showing, setShowing] = useState(false);
@@ -126,11 +145,16 @@ export function SyncPrompt() {
     const plain = peerScratch(peer.name, "plain");
     const { peerChanges, localChanges } = peer.comparison;
     if (peer.state === "ahead") {
-      // Nothing here would be lost, so there is nothing to keep first and no "keep" to remember:
-      // "later" only means "not now".
+      // "Ahead" compares sessions and hero content only. What only this device keeps (campaign progress,
+      // boss fights, quest settings, favourites, the set-aside list) is replaced by the take, so a copy of
+      // this device goes to the server first, as when the two diverged, and the dialog says what is replaced.
+      // There is no "keep" to remember: "later" only means "not now".
       ask(t("sync.aheadTitle"), t("sync.aheadBody", { count: peerChanges }), [
         { text: t("sync.later"), cancel: true },
-        { text: t("sync.take"), onPress: () => runAdopt(plain, () => Promise.resolve()) },
+        {
+          text: t("sync.take"),
+          onPress: () => runAdopt(plain, () => keepThisDeviceOnServer().then(() => undefined)),
+        },
       ]);
       return;
     }
@@ -209,24 +233,37 @@ export function SyncPrompt() {
     );
   };
 
-  // No dependency list: the helpers above are new on every render, and the guards (a question
-  // on screen, a session running, an offer already made) are what keep this from asking twice.
-  useEffect(() => {
-    if (inSession || joining !== null || showing) return;
-    const peer = result?.peers.find(
-      (p) =>
-        p.state !== "level" &&
-        p.state !== "behind" &&
-        p.state !== "waiting" &&
-        !offered.includes(offerKey(p)),
-    );
-    if (!peer) return;
-    markOffered(offerKey(peer));
-    if (peer.state === "unreadable") announceUnreadable(peer);
+  /** What to ask or do about one peer. */
+  const answer = (peer: Peer) => {
+    if (SAID_ONCE.has(peer.state)) {
+      // Said, so said once for this version of that file: not again at every launch until the app is updated.
+      const key = `${peer.state}@${peer.etag}`;
+      setAnnounced((now) => ({ ...(now ?? {}), [peer.name]: key }));
+      rememberAnnounced(peer).catch((e) => reportError("sync.announced", e));
+    }
+    if (peer.state === "replayed") showSuccess(t("sync.replayedToast"));
+    else if (peer.state === "unreadable" || peer.state === "newerVersion") announceUnreadable(peer);
     else if (peer.state === "locked") offerJoin(peer);
     else if (!("comparison" in peer)) return;
     else if (peer.comparison.localSessions === 0 && peer.comparison.peerOnly > 0) offerFound(peer);
     else merge(peer);
+  };
+
+  // No dependency list: the helpers above are new on every render, and the guards (a question
+  // on screen, a session running, an offer already made) are what keep this from asking twice.
+  useEffect(() => {
+    if (inSession || joining !== null || showing || announced === null) return;
+    // Best vault first: with two devices to join, the hero is asked about the one the other will
+    // end up joining as well.
+    const peer = bestVaultFirst(result?.peers ?? []).find(
+      (p) =>
+        !NEEDS_NOTHING.has(p.state) &&
+        !offered.includes(offerKey(p)) &&
+        !(SAID_ONCE.has(p.state) && announced[p.name] === `${p.state}@${p.etag}`),
+    );
+    if (!peer) return;
+    markOffered(offerKey(peer));
+    answer(peer);
   });
 
   const submit = (secret: string) => {

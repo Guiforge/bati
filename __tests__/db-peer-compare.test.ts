@@ -70,6 +70,39 @@ test("a snapshot of this very database is level", async () => {
   expect(comparison).toMatchObject({ peerChanges: 0, localChanges: 0, peerLatest: 1_000 });
 });
 
+// S8: an undated hero row compared as NULL >= NULL, which is never true, so it read as news against
+// its own copy for good, and the device that held it was `ahead` of a copy of itself.
+test("an undated hero row is no news against its own copy, and a dated one is news against an undated one", async () => {
+  t.sqlite.exec(
+    `INSERT INTO exercises (enName, frName, enDescription, frDescription, creator, difficulty, createdAt, updatedAt)
+     VALUES ('Undated', 'x', '', '', 'hero', 'medium', 1, NULL)`,
+  );
+  const level = await backup().compareWithPeer(await peer("undated-level.db"));
+  expect(level).toMatchObject({ peerChanges: 0, localChanges: 0 });
+
+  const dated = await peer("undated-dated.db", (sqlite) =>
+    sqlite.exec("UPDATE exercises SET updatedAt = 50 WHERE enName = 'Undated'"),
+  );
+  expect(await backup().compareWithPeer(dated)).toMatchObject({ peerChanges: 1, localChanges: 0 });
+});
+
+// S13: a session the other device deleted that this one keeps (its campaign moved on, `deleteSession` said "locked")
+// carries the same tombstone here after the merge. It was read as the other's news on every sync, so this device
+// stayed behind the other and never sent anything again until it recorded something new.
+test("a session kept despite the other device's tombstone is no news, and no reason to hold back", async () => {
+  const kept = addSession(t.sqlite, 1_000);
+  const file = await peer("deleted-there.db", (sqlite) => {
+    sqlite.prepare("DELETE FROM completed_sessions WHERE uuid = ?").run(kept);
+    sqlite.prepare("INSERT INTO deleted_sessions (uuid, deletedAt) VALUES (?, 1)").run(kept);
+  });
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 1, localChanges: 0 });
+
+  // The merge copies the tombstone here and the delete is refused: the session stays, tombstoned.
+  t.sqlite.prepare("INSERT INTO deleted_sessions (uuid, deletedAt) VALUES (?, 1)").run(kept);
+
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
+});
+
 test("a device with sessions this one lacks, and none it lacks, has news and nothing to lose", async () => {
   const file = await peer("ahead.db", (sqlite) => {
     addSession(sqlite, 2_000);
@@ -152,4 +185,25 @@ test("a device on a build from before 0064 has no tombstones, and is still read"
     addSession(sqlite, 2_000);
   });
   expect(await backup().compareWithPeer(file)).toMatchObject({ peerOnly: 1, localChanges: 0 });
+});
+
+test("a device on a build from before 0066 names its hero rows by name, and the comparison still reads it", async () => {
+  t.sqlite.exec(
+    `INSERT INTO exercises (enName, frName, enDescription, frDescription, creator, difficulty, createdAt, updatedAt)
+     VALUES ('Ring row', 'Ring row', '', '', 'hero', 'medium', 100, 100)`,
+  );
+  // A quest only this device has, which the other cannot name by a uuid it does not have.
+  t.sqlite.exec(
+    `INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author, createdAt, updatedAt)
+     VALUES ('Mine', 'Mienne', '', '', 'hero', 100, 100)`,
+  );
+  const file = await peer("pre-0066.db", (sqlite) => {
+    sqlite.exec(
+      "DROP INDEX quests_uuid_unique; DROP INDEX exercises_uuid_unique; ALTER TABLE quests DROP COLUMN uuid; ALTER TABLE exercises DROP COLUMN uuid;",
+    );
+    sqlite.exec("DELETE FROM quests WHERE author = 'hero'");
+  });
+
+  // The exercise matches by name on both sides; the quest is only here.
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 1 });
 });

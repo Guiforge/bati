@@ -372,3 +372,14 @@ export async function honourTombstones(): Promise<number> {
   }
   return removed;
 }
+
+/**
+ * Sessions this device keeps although a tombstone names them: the other device deleted them and
+ * `honourTombstones` was refused (S13). Nothing is lost; the sync sheet says how many.
+ */
+export async function keptSessions(): Promise<number> {
+  const rows = await db.all<{ n: number }>(
+    sql`SELECT count(*) AS n FROM completed_sessions WHERE uuid IN (SELECT uuid FROM deleted_sessions)`,
+  );
+  return Number(rows[0]?.n ?? 0);
+}

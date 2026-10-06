@@ -67,7 +67,10 @@ test("a sync that stopped by itself outranks everything, and forgetting it says 
 
 test("a device waiting for its password: the button asks the question again", async () => {
   useSyncStore.setState({
-    result: { uploaded: false, peers: [{ name: "bati-t.batb", etag: "e", state: "locked" }] },
+    result: {
+      uploaded: false,
+      peers: [{ name: "bati-t.batb", etag: "e", state: "locked", format: 2 }],
+    },
     offered: ["bati-t.batb@locked", "other@f1"],
   });
   await card();

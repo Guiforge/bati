@@ -38,9 +38,18 @@ export type DavTarget = { folderUrl: string; user: string; password: string };
 
 /**
  * A file in the sync folder, with the server's version of it: a changed etag is a new write.
- * `modified` is epoch ms from `getlastmodified`, 0 when a server leaves it out.
+ * `modified` is epoch ms from `getlastmodified`, 0 when a server leaves it out. `size` is
+ * `getcontentlength` when the server gives one.
  */
-export type RemoteFile = { name: string; etag: string; modified: number };
+export type RemoteFile = { name: string; etag: string; modified: number; size?: number };
+
+/**
+ * What an upload is called until it is moved into place. Not `.part`: Nextcloud refuses any name
+ * ending in `.part` or `.filepart` (its `blacklist_files_regex`, on by default) with a 400, so every
+ * upload to a Nextcloud failed with "HTTP 400" right after the login. Pinned by
+ * `__tests__/cloudSync-upload.test.ts` and by the bench's Nextcloud scenario N1.
+ */
+const TEMP_SUFFIX = ".upload";
 
 /** Where on the account this app keeps its files. One folder, created on first use. */
 const FOLDER = "Bati";
@@ -161,8 +170,13 @@ function sameOriginOrHttps(url: string, server: string): boolean {
 
 /** A Nextcloud account's sync folder, under its user's WebDAV root. */
 export function nextcloudTarget(account: NextcloudAccount): DavTarget {
-  const user = account.userId ?? account.loginName;
-  const root = `${account.server}/remote.php/dav/files/${encodeURIComponent(user)}`;
+  // The path wants the account's id, which is not always the name it signs in with: an email works
+  // on a recent Nextcloud and is a 404 on an older one. When the server did not say the id,
+  // `/remote.php/webdav` is the signed-in user's own root whatever the login name was.
+  const root =
+    account.userId === undefined
+      ? `${account.server}/remote.php/webdav`
+      : `${account.server}/remote.php/dav/files/${encodeURIComponent(account.userId)}`;
   return { folderUrl: `${root}/${FOLDER}`, user: account.loginName, password: account.appPassword };
 }
 
@@ -195,6 +209,19 @@ function refused(what: string, status: number): Error {
   return status === 401 || status === 403
     ? new DavAuthError(`${what}: HTTP ${status}`)
     : new DavHttpError(`${what}: HTTP ${status}`, status);
+}
+
+/**
+ * `refused`, plus what the server said about it: Sabre (Nextcloud, ownCloud) answers an error with
+ * `<s:message>`, and "HTTP 400" alone says nothing about which request it disliked. Only the error
+ * trail ("Send me the details") carries it; the hero's message stays the one line.
+ */
+async function refusedWithReason(what: string, response: Response): Promise<Error> {
+  const body = await response.text().catch(() => "");
+  const reason = /<s:message>([^<]{1,200})<\/s:message>/.exec(body)?.[1]?.trim();
+  const error = refused(what, response.status);
+  if (reason) error.message += ` (${reason})`;
+  return error;
 }
 
 /**
@@ -257,8 +284,127 @@ export async function listRemote(target: DavTarget): Promise<RemoteFile[]> {
     headers: { ...authHeader(target), Depth: "1", "Content-Type": "application/xml" },
     body: PROPFIND_BODY,
   });
-  if (response.status !== 207) throw refused("Listing", response.status);
+  if (response.status !== 207) throw await refusedWithReason("Listing", response);
   return parseListing(await response.text());
+}
+
+/** One question the connection test asked the server, and what it answered. */
+export type DiagnosticStep = {
+  id: "reach" | "account" | "folder" | "list" | "write";
+  ok: boolean;
+  /** The HTTP status the server gave, when it gave one. */
+  status?: number;
+  /** The layer it failed at, in `failureOf`'s words, so the screen can say what to do. */
+  kind?: SyncFailure["kind"];
+  /** What the server said about the refusal (Sabre's `<s:message>`). */
+  reason?: string;
+};
+
+/** A name no device reads as a peer, with the temporary suffix: the bench holds that nothing else is deleted. */
+const DIAGNOSTIC_FILE = `bati-diagnostic${TEMP_SUFFIX}`;
+
+/**
+ * Asks the server, one step at a time, what sync needs from it, and stops at the first it refuses:
+ * the server answers, the account is known (Nextcloud), the folder is there, it can be read, a small
+ * file can be written and removed. Nothing is thrown: a failure is the result. The one write is a
+ * four-byte file removed right after, under a name no device reads. `account` is the Nextcloud
+ * sign-in the target came from, whose server and id the first two steps ask about.
+ */
+export async function diagnoseServer(
+  target: DavTarget,
+  account?: NextcloudAccount,
+): Promise<DiagnosticStep[]> {
+  const steps: DiagnosticStep[] = [];
+  /** Runs one step, records it, and tells whether the next one may run. */
+  const step = async (
+    id: DiagnosticStep["id"],
+    ask: () => Promise<{ status: number; ok: boolean; reason?: string }>,
+  ): Promise<boolean> => {
+    try {
+      const answer = await ask();
+      steps.push({
+        id,
+        ok: answer.ok,
+        status: answer.status,
+        ...(answer.ok ? {} : { kind: failureOf(refused(id, answer.status)).kind }),
+        ...(answer.reason ? { reason: answer.reason } : {}),
+      });
+      return answer.ok;
+    } catch (error) {
+      steps.push({ id, ok: false, kind: failureOf(error).kind });
+      return false;
+    }
+  };
+  const reasonOf = async (response: Response) =>
+    /<s:message>([^<]{1,200})<\/s:message>/
+      .exec(await response.text().catch(() => ""))?.[1]
+      ?.trim();
+
+  const origin = new URL(account ? account.server : target.folderUrl).origin;
+  const reached = await step("reach", async () => {
+    // Any answer says the server is there; what it says is for the later steps to judge.
+    const answer = await request(account ? `${account.server}/status.php` : `${origin}/`, {
+      headers: authHeader(target),
+    });
+    return { status: answer.status, ok: true };
+  });
+  if (!reached) return steps;
+
+  if (account) {
+    const known = await step("account", async () => {
+      const answer = await request(`${account.server}/ocs/v2.php/cloud/user?format=json`, {
+        headers: { ...authHeader(target), "OCS-APIRequest": "true" },
+      });
+      return {
+        status: answer.status,
+        ok: answer.ok,
+        reason: answer.ok ? undefined : await reasonOf(answer),
+      };
+    });
+    // A server that does not say who the account is is not a failure: the path then has no id.
+    if (!known && steps.at(-1)?.status === 401) return steps;
+  }
+
+  const folder = await step("folder", async () => {
+    const answer = await request(`${target.folderUrl}/`, {
+      method: "MKCOL",
+      headers: authHeader(target),
+    });
+    // 405 and 409 are "already there" on the servers that say so; the listing right after decides.
+    const ok = answer.status < 400 || answer.status === 405 || answer.status === 409;
+    return { status: answer.status, ok, reason: ok ? undefined : await reasonOf(answer) };
+  });
+  if (!folder) return steps;
+
+  const listed = await step("list", async () => {
+    const answer = await request(`${target.folderUrl}/`, {
+      method: "PROPFIND",
+      headers: { ...authHeader(target), Depth: "1", "Content-Type": "application/xml" },
+      body: PROPFIND_BODY,
+    });
+    return {
+      status: answer.status,
+      ok: answer.status === 207,
+      reason: answer.status === 207 ? undefined : await reasonOf(answer),
+    };
+  });
+  if (!listed) return steps;
+
+  const file = `${target.folderUrl}/${DIAGNOSTIC_FILE}`;
+  await step("write", async () => {
+    const answer = await request(file, {
+      method: "PUT",
+      headers: authHeader(target),
+      body: "bati",
+    });
+    const ok = answer.status >= 200 && answer.status < 300;
+    const reason = ok ? undefined : await reasonOf(answer);
+    // Best effort: the next test overwrites it, and no device reads a temporary file.
+    if (ok)
+      await request(file, { method: "DELETE", headers: authHeader(target) }).catch(() => null);
+    return { status: answer.status, ok, reason };
+  });
+  return steps;
 }
 
 /** The inner text of the first `<prefix:tag>` in `xml`, whatever namespace prefix it carries. */
@@ -281,22 +427,42 @@ function field(xml: string, tag: string): string | undefined {
  *   a trailing `/` on servers that leave the type out.
  * - The version is the etag, quotes stripped (Nextcloud escapes them as `&quot;`). A server with
  *   no etag gets modification time and size instead: a changed file changes one of them.
+ * - The weak marker `W/` is dropped too: Apache answers the same file `W/"x"` to one request and
+ *   `"x"` to the next (mod_deflate decides per request), and a version that flickers looks like a
+ *   file replaced behind this device's back, so every idle sync re-sent its file.
  */
 export function parseListing(xml: string): RemoteFile[] {
   const files: RemoteFile[] = [];
   for (const response of xml.split(/<(?:[\w-]+:)?response[\s>]/i).slice(1)) {
     const href = field(response, "href");
     if (!href || href.endsWith("/") || /<(?:[\w-]+:)?collection\s*\/?>/i.test(response)) continue;
-    const etag = field(response, "getetag")?.replace(/&quot;|"/g, "");
+    const etag = field(response, "getetag")
+      ?.replace(/^W\//, "")
+      .replace(/&quot;|"/g, "");
     const lastModified = field(response, "getlastmodified");
     const version = etag || [lastModified, field(response, "getcontentlength")].join("|");
     const name = decodedName(href);
     const modified = Date.parse(lastModified ?? "");
     if (name && version !== "|") {
-      files.push({ name, etag: version, modified: Number.isNaN(modified) ? 0 : modified });
+      // What the server says it holds, so a download that comes back a different size (an empty
+      // 200, a login page, another file) is not taken for the file.
+      const size = sizeOf(response);
+      files.push({
+        name,
+        etag: version,
+        modified: Number.isNaN(modified) ? 0 : modified,
+        ...(size === undefined ? {} : { size }),
+      });
     }
   }
   return files;
+}
+
+/** `getcontentlength` as a number, or `undefined` when the server leaves it out or says nonsense. */
+function sizeOf(response: string): number | undefined {
+  const text = field(response, "getcontentlength");
+  const size = Number(text);
+  return text && Number.isFinite(size) ? size : undefined;
 }
 
 /** The last path segment, or "" for one no browser would have sent: skipped, not fatal. */
@@ -322,25 +488,95 @@ export async function downloadRemote(
 }
 
 /** Streams a local sealed file into the folder under `name`, replacing this device's last one. */
-export async function uploadRemote(target: DavTarget, source: File, name: string): Promise<void> {
+export async function uploadRemote(
+  target: DavTarget,
+  source: File,
+  name: string,
+): Promise<string | undefined> {
   await ensureFolder(target);
   const final = `${target.folderUrl}/${encodeURIComponent(name)}`;
   // Written under a name no device reads, then moved into place: a PUT cut off halfway left a
   // truncated file that every other device read as unreadable until this one's next upload.
-  const part = `${final}.part`;
-  await put(target, source, part);
+  const part = await putTemporary(target, source, final);
   const moved = await request(part, {
     method: "MOVE",
     headers: { ...authHeader(target), Destination: final, Overwrite: "T" },
   });
-  if (moved.ok) return;
+  if (moved.ok) return confirmHolds(target, final, source.size);
   if (moved.status !== 405 && moved.status !== 501) throw refused("Upload", moved.status);
-  // A server without MOVE: the direct write, and the stray `.part` goes on a best effort.
+  // A server without MOVE: the direct write, and the stray temporary file goes on a best effort.
   await put(target, source, final);
   await request(part, { method: "DELETE", headers: authHeader(target) }).catch(
-    // Harmless if it stays: no device reads a `.part`, and the next upload overwrites it.
+    // Harmless if it stays: no device reads it, and the next upload overwrites it.
     () => null,
   );
+  return confirmHolds(target, final, source.size);
+}
+
+/**
+ * The temporary copy of an upload. A PUT cut off halfway leaves its name locked on the server for a
+ * while (Nextcloud's file locking, rclone's WebDAV locks: measured at over thirty seconds), and every
+ * retry under that name answers 423 until it lets go, so the next sync would fail the same way. The
+ * retry takes another name; the abandoned one is a stray no device reads, which the server drops or
+ * the next upload overwrites.
+ */
+async function putTemporary(target: DavTarget, source: File, final: string): Promise<string> {
+  const part = `${final}${TEMP_SUFFIX}`;
+  try {
+    await put(target, source, part);
+    return part;
+  } catch (error) {
+    if (!(error instanceof DavHttpError) || error.status !== 423) throw error;
+    const other = `${final}.${Math.floor(Math.random() * 0xffffff).toString(16)}${TEMP_SUFFIX}`;
+    await put(target, source, other);
+    return other;
+  }
+}
+
+/**
+ * Asks the server whether it holds the file, at the size sent. A MOVE that answers 2xx has not always
+ * moved: a redirect to a login page is re-issued as a GET and ends in a 200, and some servers
+ * answer 201 and do nothing. Believing it wrote the "uploaded" marker, so the stale file stayed
+ * until this device's history moved again. Unverifiable when the server gives no size: then the
+ * answer stands. Returns the file's version on the server, when it says one.
+ */
+async function confirmHolds(
+  target: DavTarget,
+  final: string,
+  size: number,
+): Promise<string | undefined> {
+  const answer = await request(final, {
+    method: "PROPFIND",
+    headers: { ...authHeader(target), Depth: "0", "Content-Type": "application/xml" },
+    body: PROPFIND_BODY,
+  });
+  if (answer.status !== 207) throw refused("Upload", answer.status === 404 ? 404 : answer.status);
+  const body = await answer.text();
+  const listed = sizeOf(body);
+  if (listed !== undefined && listed !== size) {
+    throw new DavHttpError(`Upload: the server holds ${listed} bytes, ${size} were sent`, 409);
+  }
+  // The version the server gives it, in the same form a listing does: what a later listing is
+  // compared with, to notice that the file was replaced behind this device's back.
+  return parseListing(body)[0]?.etag;
+}
+
+/**
+ * One file as the server holds it, by name: what a listing would say of it, or `null` when it is not
+ * there. For a file the listing leaves out and this device already knows (a NAS, a WebDAV or an rclone
+ * that serves an old directory for a while): the server answers for the file itself when it does not
+ * for the folder. Throws on anything but 207 and 404, so a failing server is not read as "gone".
+ */
+export async function statRemote(target: DavTarget, name: string): Promise<RemoteFile | null> {
+  const answer = await request(`${target.folderUrl}/${encodeURIComponent(name)}`, {
+    method: "PROPFIND",
+    headers: { ...authHeader(target), Depth: "0", "Content-Type": "application/xml" },
+    body: PROPFIND_BODY,
+  });
+  if (answer.status === 404) return null;
+  if (answer.status !== 207) throw refused("Stat", answer.status);
+  const file = parseListing(await answer.text())[0];
+  return file?.name === name ? file : null;
 }
 
 async function put(target: DavTarget, source: File, url: string): Promise<void> {

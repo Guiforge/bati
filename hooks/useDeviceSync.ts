@@ -17,7 +17,9 @@ import {
   type SyncAccount,
   serverState,
   syncAccount,
+  testConnection,
 } from "@/src/deviceSync";
+import { isLowMemory } from "@/src/lowMemory";
 import { reportError } from "@/src/reportError";
 import { failureMessage } from "@/src/syncWords";
 import { useSyncStore } from "@/stores/sync";
@@ -104,6 +106,14 @@ export function useDeviceSync() {
       showError(failureMessage(t, failed ?? { kind: "unknown" }));
       return { next: "failed" };
     }
+    if (state.kind === "newerVersion") {
+      showError(t("sync.needsUpdate"));
+      // Not left connected: a launch sync would otherwise upload this device's own vault beside
+      // one of a format it cannot read, the second vault this refusal is there to prevent.
+      await disconnectSync().catch((error: unknown) => reportError("sync.disconnect", error));
+      setAccount(null);
+      return { next: "failed" };
+    }
     if (state.kind === "needsSecret") return { next: "join", peer: state.peer };
     if ((await encryptionStatus()) !== "on") return { next: "encrypt" };
     await syncAndSay(t("sync.connected", { host: accountLabel(connected) }));
@@ -117,13 +127,23 @@ export function useDeviceSync() {
     running,
     lastSyncAt,
     rowValue: rowValue(),
+    /** "Test the connection": the server's answer to each thing sync needs, for the Settings sheets. */
+    testConnection: () =>
+      testConnection().catch((error: unknown) => {
+        reportError("sync.test", error);
+        return [];
+      }),
 
     connect: async (server: string): Promise<ConnectNext> => {
       cancelled.current = false;
       const connected = await connectNextcloud(server, () => cancelled.current).catch(
         (error: unknown) => {
           reportError("sync.connect", error);
-          showError(t("sync.connectFailed"));
+          // A server that answered, and refused, says so; a login that never came back stays generic.
+          const failed = failureOf(error);
+          showError(
+            failed.kind === "unknown" ? t("sync.connectFailed") : failureMessage(t, failed),
+          );
           return null;
         },
       );
@@ -144,8 +164,8 @@ export function useDeviceSync() {
             ? t("sync.webdavAuthFailed")
             : error instanceof InsecureAddressError
               ? t("sync.webdavInsecure")
-              : failureOf(error).kind === "certificate"
-                ? t("sync.failure.certificate")
+              : ["certificate", "server", "storage"].includes(failureOf(error).kind)
+                ? failureMessage(t, failureOf(error))
                 : t("sync.webdavFailed"),
         );
         return null;
@@ -167,7 +187,7 @@ export function useDeviceSync() {
     join: async (peer: string, secret: string): Promise<boolean> => {
       const joined = await joinPeer(peer, secret).catch((error: unknown) => {
         reportError("sync.join", error);
-        showError(failureMessage(t, failureOf(error)));
+        showError(isLowMemory(error) ? t("backup.lowMemory") : failureMessage(t, failureOf(error)));
         return null;
       });
       if (joined) await syncAndSay(t("sync.joined"));

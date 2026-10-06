@@ -113,16 +113,20 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
             bg="$parchment"
             p="$3"
             rounded="$1"
-            maxW={width - figureWidth - 40}
+            maxW={Math.min(width - figureWidth - 40, Math.round(width * 0.42))}
             // Pinned to the top of the band while the figure keeps its place: on day one the line
-            // points at the cabin roof, and a bubble at the figure's feet sat on it.
+            // points at the cabin roof, and a bubble at the figure's feet sat on it. Narrow and
+            // to the right, so the painting's centre stays clear: a wide bubble hid the capital's
+            // spire, the thing three years of training built (villager audit, 2026-10-06).
             self="flex-start"
+            ml="auto"
           >
-            {/* The figure stands to the left, so the tail leaves the bubble's left edge. */}
+            {/* The figure stands to the left and below, so the tail leaves the bubble's left edge
+                near its foot, towards the head. */}
             <View
               position="absolute"
               l={-9}
-              t={14}
+              b={14}
               width={0}
               height={0}
               borderTopWidth={7}

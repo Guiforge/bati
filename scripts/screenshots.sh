@@ -120,7 +120,9 @@ run_marker="$(mktemp)"
 # a red run. A store run still aborts, because a half-captured listing must never get framed.
 # The hero's village name, a real one: "Testville" in the hero's own shot reads as a placeholder.
 case "${locale%%-*}" in fr) village="Valbrume" ;; *) village="Ironhold" ;; esac
-maestro test -e VILLAGE_NAME="$village" "$flow" || [ -n "${AUDIT:-}" ]
+# `--device` because Maestro ignores ANDROID_SERIAL, which adb above honours: with a phone plugged
+# in beside an emulator, the shell commands set up one device and the flow ran on the other.
+maestro ${ANDROID_SERIAL:+--device "$ANDROID_SERIAL"} test -e VILLAGE_NAME="$village" "$flow" || [ -n "${AUDIT:-}" ]
 
 # Maestro resolves takeScreenshot paths against its own artefact directory, not the project, so
 # the flow uses plain names and the files are collected here.

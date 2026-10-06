@@ -49,6 +49,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm ci --prefix test/node
+      # Their own check: fast-check lives in test/node/package.json, which the main check does not install.
+      - run: npx tsc --project test/node/tsconfig.json
       # xmllint checks the GPX the app writes against the GPX 1.1 schema.
       - run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends libxml2-utils
       # The server on 28190, and toxiproxy listening on 28090 (where the tests expect it) in front of it, its

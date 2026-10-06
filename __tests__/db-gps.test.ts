@@ -210,6 +210,17 @@ describe("db/gps", () => {
       });
     });
 
+    test("whether any trace exists at all, for the one line that depends on it", async () => {
+      const g = gps();
+      expect(await g.hasGpsHistory()).toBe(false);
+
+      await g.appendPoints("walk", [fix({ t: 1000 })]);
+      expect(await g.hasGpsHistory()).toBe(true);
+
+      await g.deletePoints("walk");
+      expect(await g.hasGpsHistory()).toBe(false);
+    });
+
     test("and can be thrown away, which is the only thing it ever wrote", async () => {
       const g = gps();
       await g.appendPoints("orphan", [fix({ t: 1000 }), fix({ t: 2000 })]);

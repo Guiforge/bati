@@ -30,6 +30,19 @@ describe("db/preferences", () => {
     expect(await prefs.getPreference("foo")).toBeNull();
   });
 
+  test("a corrupt set-aside list reads as empty and is reported, not silently dropped", async () => {
+    const { preferences, setPreference } =
+      require("../db/preferences") as typeof import("../db/preferences");
+    const reporter = require("../src/reportError") as typeof import("../src/reportError");
+    const reported = jest.spyOn(reporter, "reportError").mockImplementation(() => {});
+    await setPreference("setAsideExercises", "{not json");
+
+    expect(await preferences.getSetAsideExercises()).toEqual([]);
+
+    expect(reported).toHaveBeenCalledWith("preferences.setAside.parse", expect.any(SyntaxError));
+    reported.mockRestore();
+  });
+
   test("typed preference helpers", async () => {
     const { preferences } = require("../db/preferences") as typeof import("../db/preferences");
 

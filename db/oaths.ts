@@ -141,6 +141,7 @@ export async function standingForPreset(
       ? preset.target
       : Math.ceil((current + 1) / preset.target) * preset.target;
   // ponytail: one step on, not a loop: a long deck of ever-further lines would never be reachable.
+  // Ceiling: a `current` more than ten times a preset target still lands short of 90%. Loop then.
   if (current * 10 >= target * 9) target += preset.target;
 
   return { current, target };

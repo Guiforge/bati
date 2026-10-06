@@ -56,6 +56,15 @@ const { withAppBuildGradle, withGradleProperties } = require("expo/config-plugin
  * it covers far more than orientation: that one entry sits in the baseline instead, and this
  * paragraph is its justification. If it ever needs a second entry, read the message first.
  *
+ * ## `disable 'AcceptsUserCertificates'`
+ *
+ * `plugins/withAndroidNetworkSecurity.js` trusts the certificate authorities the hero installed in Android, for every
+ * host. That is the point: sync talks to a server the hero runs behind an authority of their own (a home server, a
+ * company one), and without the user store the certificate is refused and the connection test says so
+ * (`docs/architecture/backup-and-sync.md`). The owner chose it knowingly: what an installed authority can read is the
+ * sealed files, which are encrypted before they leave the phone. Narrowing it to the hero's own host is not possible,
+ * the host is typed at run time. This disable is that decision written down; the check is not a bug report.
+ *
  * ## `disable 'NewerVersionAvailable'`
  *
  * It fires on Fresco, and it is wrong here. Native dependency versions come from
@@ -106,7 +115,7 @@ const GRADLE_PROPERTIES = {
 };
 
 const LINT_BLOCK = `    lint {
-        disable 'ExtraTranslation', 'LockedOrientationActivity', 'NewerVersionAvailable'
+        disable 'AcceptsUserCertificates', 'ExtraTranslation', 'LockedOrientationActivity', 'NewerVersionAvailable'
         warningsAsErrors = true
         informational 'LintBaseline', 'LintBaselineFixed'
         baseline = file("$rootDir/../android-lint-baseline.xml")

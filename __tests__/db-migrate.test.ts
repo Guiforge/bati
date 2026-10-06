@@ -96,6 +96,23 @@ describe("db/migrate", () => {
     expect(after.n).toBe(before);
   });
 
+  it("a release build ignores the migration cap, so a stray variable cannot stop an upgrade short", async () => {
+    const dev = (globalThis as { __DEV__?: boolean }).__DEV__;
+    (globalThis as { __DEV__?: boolean }).__DEV__ = false;
+    process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX = "0";
+    try {
+      await freshRunner(sqlite).ensureMigrations();
+    } finally {
+      (globalThis as { __DEV__?: boolean }).__DEV__ = dev;
+      delete process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX;
+    }
+
+    const applied = sqlite.prepare("SELECT COUNT(*) AS n FROM __drizzle_migrations").get() as {
+      n: number;
+    };
+    expect(applied.n).toBeGreaterThan(1);
+  });
+
   it("upgrades a database that stopped partway instead of starting over", async () => {
     // The real upgrade path: a device on an older schema opens a newer build. Simulated by
     // capping the runner at migration 0, then lifting the cap — which is exactly what

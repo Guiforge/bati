@@ -69,6 +69,20 @@ describe("src/gps/gpx", () => {
     expect(xml).toContain("Rock &amp; Roll &lt;run&gt;");
   });
 
+  // XML 1.0 refuses a NUL or a lone surrogate even escaped, and a strict reader refuses the whole
+  // file for one (found by validating against the GPX 1.1 schema with xmllint).
+  test("characters XML cannot carry are dropped from the name, the rest stays", () => {
+    const xml = toGpx([fix()], { name: "Run\u0000 \u0001ok \ud800 \u{1F3C3}\n" });
+    expect(xml).toContain("<name>Run ok  \u{1F3C3}\n</name>");
+  });
+
+  // The schema's longitude is [-180, 180[, and six decimals round 179.9999996 up to 180.
+  test("a longitude that rounds to 180 is written as -180, the same meridian the schema accepts", () => {
+    expect(toGpx([fix({ lon: 179.9999996 })], { name: "t" })).toContain('lon="-180.000000"');
+    expect(toGpx([fix({ lon: -180 })], { name: "t" })).toContain('lon="-180.000000"');
+    expect(toGpx([fix({ lon: 179.5 })], { name: "t" })).toContain('lon="179.500000"');
+  });
+
   test("Bati's own distance rides along, so a comparison has both numbers in one file", () => {
     expect(toGpx([fix()], { name: "t", totalDistanceM: 5234.7 })).toContain(
       "<desc>Bati distance: 5235 m</desc>",

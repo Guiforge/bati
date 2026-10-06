@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getLocales } from "expo-localization";
+import { reportError } from "../src/reportError";
 import { db, schema, type TransactionTx } from "./client";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
@@ -326,7 +327,8 @@ export const preferences = {
     try {
       const parsed: unknown = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed.filter(isSetAsideExercise) : [];
-    } catch {
+    } catch (error) {
+      reportError("preferences.setAside.parse", error);
       return [];
     }
   },

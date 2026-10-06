@@ -11,8 +11,10 @@ const { withMainActivity } = require("expo/config-plugins");
  * API 35 emulator, 2026-10-02). An activity recreated from saved state, or launched from history,
  * is not a file being opened: its data is dropped before React Native asks for it.
  *
- * ponytail: patches generated Kotlin by string, like `withAndroidPredictiveBack.js`.
- * `__tests__/android-manifest.test.ts` pins the committed output.
+ * ponytail: patches generated Kotlin by string, like `withAndroidPredictiveBack.js`. The ceiling is
+ * that an Expo upgrade reshaping `MainActivity.onCreate` leaves the anchor unfound; the plugin then
+ * throws at prebuild and `__tests__/android-manifest.test.ts` pins the committed output, so it is a
+ * red build and never a silent one. Move to a real modifier when Expo ships one.
  */
 const MARKER = "bati-stale-file-intent";
 const ANCHOR = "    super.onCreate(null)\n";

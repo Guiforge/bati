@@ -92,8 +92,8 @@ android {
         applicationId 'com.guiforge.bati'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 20800
-        versionName "2.8.0"
+        versionCode 20900
+        versionName "2.9.0"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
         resourceConfigurations += ["b+en", "b+fr", "b+de", "b+es"]
@@ -115,7 +115,7 @@ android {
         }
     }
     lint {
-        disable 'ExtraTranslation', 'LockedOrientationActivity', 'NewerVersionAvailable'
+        disable 'AcceptsUserCertificates', 'ExtraTranslation', 'LockedOrientationActivity', 'NewerVersionAvailable'
         warningsAsErrors = true
         informational 'LintBaseline', 'LintBaselineFixed'
         baseline = file("$rootDir/../android-lint-baseline.xml")

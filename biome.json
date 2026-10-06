@@ -12,6 +12,8 @@
       "!**/metro.config.js",
       "!assets",
       "!.claude",
+      "!.bench-cache",
+      "!verif",
       "!.github",
       "!docs/legal/**/*.html",
       "!drizzle"
@@ -186,7 +188,13 @@
       }
     },
     {
-      "includes": ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/__tests__/**", "jest.setup.ts"],
+      "includes": [
+        "**/*.test.{ts,tsx}",
+        "**/*.spec.{ts,tsx}",
+        "**/__tests__/**",
+        "test/node/**",
+        "jest.setup.ts"
+      ],
       "javascript": {
         "globals": ["jest"]
       },

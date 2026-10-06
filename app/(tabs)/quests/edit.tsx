@@ -607,10 +607,12 @@ export default function QuestEditor() {
       {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
       <StatusBand />
 
+      {/* `$bgDark`, opaque like the quest screen's Start bar: the theme's `$background` is
+          translucent, and the form scrolling under it read through as ghost headings. */}
       <YStack
         p="$4"
         pb={insets.bottom + 16}
-        bg="$background"
+        bg="$bgDark"
         borderTopWidth={1}
         borderColor="$borderStrong"
         style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}

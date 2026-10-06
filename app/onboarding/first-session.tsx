@@ -148,7 +148,7 @@ export default function FirstSessionStep() {
             borderWidth={0}
           >
             {offerDead
-              ? t("onboarding.finish", "Start my training journey")
+              ? t("onboarding.finish", "Start my training adventure")
               : t("onboarding.first_session_start", "Start now")}
           </AppButton>
 

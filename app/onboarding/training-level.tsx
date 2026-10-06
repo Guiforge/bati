@@ -152,7 +152,7 @@ export default function TrainingLevelStep() {
           </Paragraph>
 
           <AppButton onPress={() => complete(selected)} disabled={!selected}>
-            {t("onboarding.finish", "Start my training journey")}
+            {t("onboarding.finish", "Start my training adventure")}
           </AppButton>
 
           <Text

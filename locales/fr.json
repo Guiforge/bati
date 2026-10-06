@@ -617,7 +617,7 @@
   },
   "onboarding": {
     "chars_min": "car. min",
-    "finish": "Commencer",
+    "finish": "Commencer l'aventure",
     "save_error": "Impossible d'enregistrer. Réessaie.",
     "level_advanced": "Confirmé",
     "level_beginner": "Débutant",

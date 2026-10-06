@@ -46,6 +46,7 @@ export function AppButton({
   };
   // The seal: a bottom edge on the braise only. A braise edge under red would be wrong.
   const seal = variant === "primary" && !backgroundColor && !dimmed;
+  const spans = fullWidth || buttonProps.flex !== undefined || buttonProps.width !== undefined;
 
   return (
     <Button
@@ -91,7 +92,13 @@ export function AppButton({
         // rounded to the pixel and can come out a fraction short, which drops the last word onto
         // a line the button never grew for: "A synced folder" drew "A synced", and "A WebDAV
         // server" drew "A WebDAV", off-centre, on a phone.
-        <Button.Text numberOfLines={0} style={{ flexGrow: 1, textAlign: "center" }}>
+        // Only when the parent decides the width. Yoga grows a content-sized box to fill whatever
+        // room a growing child is offered, so a spanning label made a `fullWidth={false}` button
+        // swallow its row: the recap's Share took the title's place and ran off the screen.
+        <Button.Text
+          numberOfLines={0}
+          style={spans ? { flexGrow: 1, textAlign: "center" } : { textAlign: "center" }}
+        >
           {children}
         </Button.Text>
       ) : (

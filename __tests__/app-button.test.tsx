@@ -42,3 +42,25 @@ test("it keeps the look a button's text has: the bold face and the size come thr
   expect(style.fontFamily).toBe("Alegreya_700Bold");
   expect(style.fontSize).toBe(20);
 });
+
+test("the label spans a full-width button but never stretches one sized to its text", async () => {
+  await render(
+    <SafeAreaProvider initialMetrics={METRICS}>
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AppButton>Wide</AppButton>
+        <AppButton fullWidth={false}>Hug</AppButton>
+        <AppButton fullWidth={false} flex={1}>
+          Half
+        </AppButton>
+      </TamaguiProvider>
+    </SafeAreaProvider>,
+  );
+
+  const grow = (text: string) =>
+    Object.assign({}, ...[screen.getByText(text).props.style].flat()).flexGrow;
+  expect(grow("Wide")).toBe(1);
+  // Yoga grows a content-sized box to fill whatever a growing child is offered: the recap's
+  // Share button swallowed the header row and ran off the screen.
+  expect(grow("Hug") ?? 0).toBe(0);
+  expect(grow("Half")).toBe(1);
+});

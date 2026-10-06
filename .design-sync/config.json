@@ -1,0 +1,48 @@
+{
+  "projectId": "9d1a9ca5-b080-4363-8d40-4c58a0b69240",
+  "pkg": "bati-ds",
+  "globalName": "BatiDS",
+  "shape": "package",
+  "buildCmd": "node .design-sync/web/build.mjs",
+  "entry": ".design-sync/.cache/pkg/dist/index.cjs",
+  "extraFonts": [
+    "../../web/fonts.css"
+  ],
+  "docsDir": "../../docs",
+  "provider": {
+    "component": "BatiProvider"
+  },
+  "overrides": {
+    "AppButton": {
+      "cardMode": "column"
+    },
+    "Card": {
+      "cardMode": "column"
+    },
+    "GameIcon": {
+      "cardMode": "column"
+    },
+    "InkGauge": {
+      "cardMode": "column"
+    },
+    "ProgressBar": {
+      "cardMode": "column"
+    },
+    "Recitatif": {
+      "cardMode": "column"
+    },
+    "Stepper": {
+      "cardMode": "column"
+    }
+  },
+  "componentSrcMap": {
+    "BatiProvider": null,
+    "Text": null,
+    "XStack": null,
+    "YStack": null
+  },
+  "dtsPropsFor": {
+    "GameIcon": "name: \"castle\" | \"flame\" | \"sword\" | \"scroll\" | \"shield\" | \"trophy\" | \"coins\" | \"crown\" | \"muscle\" | \"lightning\" | \"heart\" | \"star\" | \"wood\" | \"stone\" | \"fire\" | \"water\" | \"wind\" | \"grain\" | \"chest\" | \"gold\"; size?: number; color?: string; bgColor?: string; shape?: \"rounded\" | \"circle\" | \"square\"; borderWidth?: number; borderColor?: string; badge?: \"castle\" | \"flame\" | \"sword\" | \"scroll\" | \"shield\" | \"trophy\" | \"coins\" | \"crown\" | \"muscle\" | \"lightning\" | \"heart\" | \"star\" | \"wood\" | \"stone\" | \"fire\" | \"water\" | \"wind\" | \"grain\" | \"chest\" | \"gold\"; badgeColor?: string; badgeBg?: string;"
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}

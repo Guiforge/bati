@@ -8,7 +8,7 @@
     "__mocks__/**/*.{ts,tsx}",
     "plugins/*.js"
   ],
-  "project": ["**/*.{ts,tsx}"],
+  "project": ["**/*.{ts,tsx}", "!.design-sync/**"],
   "ignoreDependencies": [
     "expo-dev-client",
     "@react-navigation/bottom-tabs",

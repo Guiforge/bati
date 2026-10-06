@@ -244,8 +244,7 @@ export function applyConfigToSlots(
   return slots.map((qex) => {
     const key = String(qex.id);
     const swappedId = swaps[key];
-    // Swapped back onto the movement already in the slot is no swap: it keeps the slot's unit
-    // (issue #163), and its art.
+    // Swapped back onto the movement already in the slot is no swap: it keeps its art too.
     const substitute =
       swappedId === undefined || swappedId === qex.exercise.id
         ? undefined
@@ -260,7 +259,7 @@ export function applyConfigToSlots(
     const base =
       substitute === undefined
         ? qex.target
-        : retargetForMovement(qex.target, substitute, config.level);
+        : retargetForMovement(qex.target, qex.exercise, substitute, config.level);
     const raw = targets[key];
     // The style follows the resolved unit, for the same reason the unit follows the swap: an
     // hour is a hold's ceiling and a walk is not a hold, so a slot standing on an expedition

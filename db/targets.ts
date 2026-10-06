@@ -133,14 +133,21 @@ export function targetRangeFor(
  * on that unit's default at the hero's level. `null` — a hero movement that never said — trusts
  * the slot, as before.
  *
+ * Only a stand-in is retargeted, so the caller has to name the movement the slot holds: the
+ * written movement runs in the unit its slot was written in, and a hero's Cat-Cow in reps is their
+ * call (issue #163). The rule lived in one caller and #107 lost it while merging two of them; a
+ * parameter cannot be forgotten that way.
+ *
  * ponytail: a flipped unit gets the level-scaled default, not the movement's seeded band — add
  * baseMin/baseMax on `exercises` if 30 s of Wall Sit for a Squat slot turns out to be wrong.
  */
 export function retargetForMovement(
   target: Target,
-  movement: { measure: QuestTargetType | null },
+  replaced: { id: number },
+  movement: { id: number; measure: QuestTargetType | null },
   userLevel: UserLevel,
 ): Target {
+  if (movement.id === replaced.id) return target;
   if (movement.measure === null || movement.measure === target.type) return target;
   const value = DEFAULT_TARGET_VALUE[movement.measure];
   return generateTarget({ type: movement.measure, min: value, max: value }, userLevel);

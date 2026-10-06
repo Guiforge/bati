@@ -722,11 +722,12 @@ export function resolveSlot(input: {
   // does not touch either (`LOCOMOTION_RATE`, `db/xp.ts`). Scaling it made the same walk read as
   // 34, 45 or 56 minutes for three heroes, and paid all three the same for the same hour.
   const level = outing ? Difficulty.Medium : userLevel;
-  // Only a stand-in is retargeted. The written movement runs in the unit its slot was written in:
-  // a hero's Cat-Cow in reps is their call, not a unit flip to correct (issue #163).
-  const generated = generateTarget(base, level, bestHold);
-  const target =
-    exercise.id === written.id ? generated : retargetForMovement(generated, exercise, level);
+  const target = retargetForMovement(
+    generateTarget(base, level, bestHold),
+    written,
+    exercise,
+    level,
+  );
 
   return {
     exercise,

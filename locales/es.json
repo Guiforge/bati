@@ -932,10 +932,14 @@
     "complete_more": "Unos cuantos entrenamientos más y tu progreso se dibujará aquí.",
     "progression_title": "Tu progreso",
     "your_progress": "Tu progreso en esta misión",
-    "quest_history": "Duración del entrenamiento a lo largo del tiempo",
-    "all_history": "Duración de los últimos entrenamientos",
+    "quest_history_one": "Tu último entrenamiento, en minutos",
+    "quest_history_many": "Tus últimos {{count}} entrenamientos, en minutos",
+    "quest_history_other": "Tus últimos {{count}} entrenamientos, en minutos",
+    "all_history_one": "Tu último entrenamiento, en minutos",
+    "all_history_many": "Tus últimos {{count}} entrenamientos, en minutos",
+    "all_history_other": "Tus últimos {{count}} entrenamientos, en minutos",
     "workouts": "Entrenamientos",
-    "total_mins": "Min. totales",
+    "total_mins": "Minutos",
     "avg_mins": "Media (min)"
   },
   "common": {

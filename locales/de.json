@@ -887,10 +887,12 @@
     "complete_more": "Noch ein paar Trainings, und hier zeichnet sich dein Fortschritt ab.",
     "progression_title": "Dein Fortschritt",
     "your_progress": "Dein Fortschritt bei dieser Quest",
-    "quest_history": "Trainingsdauer im Verlauf",
-    "all_history": "Dauer der letzten Trainings",
+    "quest_history_one": "Dein letztes Training, in Minuten",
+    "quest_history_other": "Deine letzten {{count}} Trainings, in Minuten",
+    "all_history_one": "Dein letztes Training, in Minuten",
+    "all_history_other": "Deine letzten {{count}} Trainings, in Minuten",
     "workouts": "Trainings",
-    "total_mins": "Min. gesamt",
+    "total_mins": "Minuten",
     "avg_mins": "Ø Min."
   },
   "common": {

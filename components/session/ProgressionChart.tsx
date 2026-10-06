@@ -178,7 +178,11 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             {title || t("chart.progression_title")}
           </Text>
           <Paragraph color="$text" opacity={0.6} size="$2">
-            {mode === "quest" ? t("chart.quest_history") : t("chart.all_history")}
+            {/* The figures below are over this window, never over every run: "10 workouts, 262
+                total mins" sat above a session that was the quest's 10th of 15. */}
+            {mode === "quest"
+              ? t("chart.quest_history", { count: sessions.length })
+              : t("chart.all_history", { count: sessions.length })}
           </Paragraph>
         </YStack>
 

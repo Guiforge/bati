@@ -70,6 +70,14 @@ describe("ProgressionChart", () => {
     expect(StyleSheet.flatten(total.props.style).color).toBe(rawColors.text);
   });
 
+  // The figures are over the runs drawn, not over every run: "10 workouts, 262 total mins" sat
+  // above a session that was the quest's 10th of 15.
+  it("says the figures cover the last runs it drew", async () => {
+    const view = await mount();
+    await view.findByText("Your last 2 runs, in minutes");
+    expect(view.queryByText("Total mins")).toBeNull();
+  });
+
   it("titles itself in the heading face, in sentence case", async () => {
     const view = await mount();
     const title = await view.findByText("Your progress on this quest");

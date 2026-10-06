@@ -70,14 +70,18 @@
     "matchup_hint": "Sur sa faiblesse, tes dégâts ×1,5. Sur sa résistance, moitié moins."
   },
   "chart": {
-    "all_history": "Durées des entraînements récents",
+    "all_history_one": "Ton dernier entraînement, en minutes",
+    "all_history_many": "Tes {{count}} derniers entraînements, en minutes",
+    "all_history_other": "Tes {{count}} derniers entraînements, en minutes",
     "avg_mins": "Moy. min",
     "complete_more": "Encore quelques entraînements, et ta progression se dessinera ici.",
     "error": "Échec du chargement du graphique",
     "no_data": "Pas encore de données",
     "progression_title": "Ta progression",
-    "quest_history": "Durée d'entraînement au fil du temps",
-    "total_mins": "Total min",
+    "quest_history_one": "Ton dernier entraînement, en minutes",
+    "quest_history_many": "Tes {{count}} derniers entraînements, en minutes",
+    "quest_history_other": "Tes {{count}} derniers entraînements, en minutes",
+    "total_mins": "Minutes",
     "workouts": "Entraînements",
     "your_progress": "Ta progression sur cette quête"
   },

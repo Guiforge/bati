@@ -887,10 +887,12 @@
     "complete_more": "Complete more workouts to see your progress!",
     "progression_title": "Your progress",
     "your_progress": "Your progress on this quest",
-    "quest_history": "Workout duration over time",
-    "all_history": "Recent workout durations",
+    "quest_history_one": "Your last run, in minutes",
+    "quest_history_other": "Your last {{count}} runs, in minutes",
+    "all_history_one": "Your last workout, in minutes",
+    "all_history_other": "Your last {{count}} workouts, in minutes",
     "workouts": "Workouts",
-    "total_mins": "Total mins",
+    "total_mins": "Minutes",
     "avg_mins": "Avg mins"
   },
   "common": {

@@ -17,10 +17,11 @@ import {
   decryptStagedImport,
   discardStagedImport,
   exportBackup,
-  saveBackupToFolder,
+  saveBackupAs,
   stageBackupForImport,
   stagePeerForImport,
 } from "@/src/backupFiles";
+import { isLowMemory } from "@/src/lowMemory";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
 
@@ -71,6 +72,16 @@ async function copiesKept(beforeSwap?: () => Promise<void>): Promise<boolean> {
 }
 
 const isWaiting = (result: string) => result === "needsSecret" || result === "wrongSecret";
+
+/**
+ * What checking a staged file concluded. `join` is the adoption of the file's key, offered once the
+ * restore is certain to go ahead: adopting it earlier changes the vault of a restore that may still
+ * be abandoned (the copies it needs cannot be made).
+ */
+type StagedVerdict = {
+  verdict: "ok" | "cancelled" | BackupRejection;
+  join?: (options: { asPrimary: boolean }) => Promise<void>;
+};
 
 /** What the password sheet shows while an encrypted import waits for the hero. */
 export type SecretRequest = { open: boolean; wrong: boolean };
@@ -162,28 +173,41 @@ export function useBackup() {
    * already holds the key to, never shows the sheet. A sealed body that fails its tag rejects in
    * the cipher, and is the answer validation gives a damaged plain file: `"corrupt"`.
    */
+  // The restore stops, with the one sentence that says what to do, and without calling the file
+  // damaged: it is not.
+  const lowMemoryStop = useCallback(() => {
+    showError(t("backup.lowMemory"));
+    return "cancelled" as const;
+  }, [showError, t]);
+
   const checkStaged = useCallback(
-    async (staged: string): Promise<"ok" | "cancelled" | BackupRejection> => {
+    async (staged: string): Promise<StagedVerdict> => {
       const attempt = (secret?: string) =>
         decryptStagedImport(secret).catch((error: unknown) => {
           reportError("backup.decrypt", error);
-          return "corrupt" as const;
+          // Not a damaged file when this phone could not afford the key derivation: said as that.
+          return isLowMemory(error)
+            ? ({ result: "lowMemory" } as const)
+            : ({ result: "corrupt" } as const);
         });
 
       let opened = await attempt();
-      while (opened !== "corrupt" && isWaiting(opened.result)) {
+      if (opened.result === "newerVersion") return { verdict: "newerVersion" };
+      while (isWaiting(opened.result)) {
         const secret = await askSecret(opened.result === "wrongSecret");
-        if (secret === null) return "cancelled";
+        if (secret === null) return { verdict: "cancelled" };
         opened = await attempt(secret);
       }
-      if (opened === "corrupt") return "corrupt";
+      if (opened.result === "lowMemory") return { verdict: lowMemoryStop() };
+      if (opened.result === "corrupt") return { verdict: "corrupt" };
 
       const check = await validateBackup(staged);
-      if (!check.ok) return check.reason;
-      if (opened.join) await offerJoin(opened.join);
-      return "ok";
+      if (!check.ok) return { verdict: check.reason };
+      // Offered later, by the caller, once the copies are kept: adopting the key now would change
+      // the vault of a restore that may still be abandoned.
+      return { verdict: "ok", join: opened.join };
     },
-    [askSecret, offerJoin],
+    [askSecret, lowMemoryStop],
   );
 
   useEffect(() => {
@@ -195,6 +219,20 @@ export function useBackup() {
       .catch((error) => reportError("backup.auto.read", error));
   }, []);
 
+  // A locked vault (a new phone whose key did not follow) refuses to write, and that is not a
+  // fault to report: the way out is the password, so the toast says so.
+  const writeFailed = useCallback(
+    (context: string, error: unknown) => {
+      if (error instanceof Error && error.message.includes("Encryption is locked")) {
+        showError(t("backup.lockedFirst"));
+        return;
+      }
+      reportError(context, error);
+      alertWithReport(t("backup.exportFailed"));
+    },
+    [alertWithReport, showError, t],
+  );
+
   const runExport = useCallback(
     () =>
       exclusive(
@@ -204,30 +242,32 @@ export function useBackup() {
           await exportBackup();
           showSuccess(t("backup.exportDone"));
         },
-        (error) => {
-          reportError("backup.export", error);
-          alertWithReport(t("backup.exportFailed"));
-        },
+        (error) => writeFailed("backup.export", error),
       ),
-    [alertWithReport, showSuccess, t],
+    [showSuccess, t, writeFailed],
   );
 
-  const runSaveToFolder = useCallback(
+  const runSaveAs = useCallback(
     () =>
       exclusive(
         running,
         setBusy,
         async () => {
-          // Silence on `false` is deliberate: the hero closed the folder picker themselves, and
-          // telling them so is one toast for something they already know.
-          if (await saveBackupToFolder()) showSuccess(t("backup.saveDone"));
+          const saved = await saveBackupAs();
+          // Silence on `null` is deliberate: the hero backed out of Android's screen themselves,
+          // and telling them so is one toast for something they already know.
+          if (saved === null) return;
+          // A device with nothing to save a file with: the share sheet is the way left.
+          if (saved === "noPicker") {
+            await exportBackup();
+            showSuccess(t("backup.exportDone"));
+            return;
+          }
+          showSuccess(t("backup.savedAs", { name: saved.name }));
         },
-        (error) => {
-          reportError("backup.save", error);
-          alertWithReport(t("backup.exportFailed"));
-        },
+        (error) => writeFailed("backup.save", error),
       ),
-    [alertWithReport, showSuccess, t],
+    [showSuccess, t, writeFailed],
   );
 
   const runEnableAuto = useCallback(
@@ -237,7 +277,7 @@ export function useBackup() {
         setBusy,
         async () => {
           const folder = await enableAutoBackup();
-          // `null` is the hero closing the picker. Same silence as `runSaveToFolder`, same reason.
+          // `null` is the hero closing the picker. Same silence as `runSaveAs`, same reason.
           if (folder !== null) {
             setAutoFolder(folder);
             showSuccess(t("backup.autoOnDone", { folder }));
@@ -272,6 +312,19 @@ export function useBackup() {
   );
 
   /**
+   * The copies first, the key second: a restore abandoned for want of a copy leaves this device's
+   * vault exactly as it was. False when a copy could not be made.
+   */
+  const keepCopiesThenJoin = useCallback(
+    async (join: StagedVerdict["join"], beforeSwap?: () => Promise<void>) => {
+      if (!(await copiesKept(beforeSwap))) return false;
+      if (join) await offerJoin(join);
+      return true;
+    },
+    [offerJoin],
+  );
+
+  /**
    * The one road from a staged file to the swap, whichever door staged it: the picker here, or
    * another device's snapshot from sync (`runAdopt`). Nothing destructive happens before
    * `beginRestore`, and the failure paths all discard the staged file.
@@ -285,7 +338,7 @@ export function useBackup() {
           const staged = await stage();
           if (!staged) return;
 
-          const verdict = await checkStaged(staged);
+          const { verdict, join } = await checkStaged(staged);
           if (verdict !== "ok") {
             discardStagedImport();
             // Silence on a cancel, same reason as the picker: the hero closed it themselves.
@@ -298,7 +351,7 @@ export function useBackup() {
 
           // Last, so a file that will be refused never costs a snapshot; before `beginRestore`,
           // because after it the tree is gone and the database closes.
-          if (!(await copiesKept(beforeSwap))) {
+          if (!(await keepCopiesThenJoin(join, beforeSwap))) {
             discardStagedImport();
             alertWithReport(t("backup.beforeRestoreFailed"));
             return;
@@ -312,7 +365,7 @@ export function useBackup() {
           alertWithReport(t("backup.importFailed"));
         },
       ),
-    [alertWithReport, beginRestore, checkStaged, showError, t],
+    [alertWithReport, beginRestore, checkStaged, keepCopiesThenJoin, showError, t],
   );
 
   const runImport = useCallback(() => restoreStaged(stageBackupForImport), [restoreStaged]);
@@ -341,9 +394,9 @@ export function useBackup() {
     runDisableAuto: useCallback(() => {
       runDisableAuto().catch((e) => reportError("backup.auto.disable", e));
     }, [runDisableAuto]),
-    runSaveToFolder: useCallback(() => {
-      runSaveToFolder().catch((e) => reportError("backup.saveToFolder", e));
-    }, [runSaveToFolder]),
+    runSaveAs: useCallback(() => {
+      runSaveAs().catch((e) => reportError("backup.save", e));
+    }, [runSaveAs]),
     runImport: useCallback(() => {
       runImport().catch((e) => reportError("backup.import", e));
     }, [runImport]),

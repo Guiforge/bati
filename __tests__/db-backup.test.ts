@@ -262,6 +262,28 @@ describe("db/backup — validation rejects", () => {
     ).toBe("schemaMismatch");
   });
 
+  /**
+   * No migration makes a trigger or a view, and the schema comparison reads tables only, so a
+   * backup carrying one used to be accepted: the trigger then ran on the hero's next write.
+   */
+  test.each([
+    [
+      "a trigger",
+      "CREATE TRIGGER wipe AFTER INSERT ON user_preferences BEGIN DELETE FROM user_preferences; END",
+    ],
+    ["a view", "CREATE VIEW everything AS SELECT * FROM user_preferences"],
+  ])("a backup carrying %s is refused", async (what, sql) => {
+    expect(
+      await rejectionFor(`foreign-${what.split(" ")[1]}.db`, async (p) => {
+        const source = await makeValidBackup(`foreign-${what.split(" ")[1]}-source.db`);
+        fs.copyFileSync(source, p);
+        const edited = new Database(p);
+        edited.exec(sql);
+        edited.close();
+      }),
+    ).toBe("schemaMismatch");
+  });
+
   test("a backup at this build's migration point missing a table entirely", async () => {
     expect(
       await rejectionFor("dropped-table.db", async (p) => {

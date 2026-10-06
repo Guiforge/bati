@@ -49,7 +49,12 @@ export type BackupRejection =
    */
   | "schemaMismatch"
   /** Could not be read at all: permissions, a vanished temporary file, a full disk. */
-  | "unreadable";
+  | "unreadable"
+  /**
+   * A Bati backup of an encryption format after the ones this build reads. Not damaged, not a
+   * wrong password: the hero has to update Bati, and the message says so.
+   */
+  | "newerVersion";
 
 export type BackupCheck = { ok: true } | { ok: false; reason: BackupRejection };
 
@@ -148,6 +153,14 @@ async function inspectAttachedCandidate(conn: IsolatedConnection): Promise<Backu
   if ((await readPragma(conn, "user_version")) !== SCHEMA_VERSION) {
     return { ok: false, reason: "incompatibleVersion" };
   }
+
+  // No migration of Bati has ever made a trigger or a view, so one in a backup is somebody's: a
+  // trigger runs on the hero's next write (a DELETE after any INSERT is a whole history gone), and
+  // `tablesDivergeFromLive` only reads tables, so nothing else would notice it.
+  const foreign = await conn.getFirstAsync<{ name: string }>(
+    `SELECT name FROM ${CANDIDATE}.sqlite_master WHERE type IN ('trigger', 'view') LIMIT 1`,
+  );
+  if (foreign) return { ok: false, reason: "schemaMismatch" };
 
   // The backup's newest migration has to be one this build knows. Comparing against the maximum
   // alone would accept a divergent history whose timestamps merely happen to be lower, and the
@@ -273,10 +286,14 @@ async function namesItsContent(conn: IsolatedConnection, schema: string): Promis
 /**
  * Rows of `a` that `b` lacks, or that `a` wrote later. Named by uuid only when both sides can be:
  * one side's uuid and the other's name never match, and every hero row would read as news.
+ *
+ * An undated row reads as date 0, as `mergePeer` reads it (S8): with a bare `y.at >= x.at` a NULL
+ * is never "as new", so the same undated row read as news against itself, for good, while the
+ * merge refused to write it.
  */
 function newerIn(a: string, b: string, named: boolean): string {
   return `SELECT count(*) FROM (${heroContent(a, named)}) x
-    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named)}) y WHERE y.id = x.id AND y.at >= x.at)`;
+    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named)}) y WHERE y.id = x.id AND ifnull(y.at, 0) >= ifnull(x.at, 0))`;
 }
 
 /** A schema's tombstones, or none on a database written before 0064. */
@@ -293,6 +310,9 @@ async function tombstones(conn: IsolatedConnection, schema: string): Promise<str
  * How another device's snapshot stands against this database: what each side has that the other
  * does not, with no device clock in it (Joplin #5738: one skewed clock, 3,000 conflicts).
  *
+ * - **A session the other device deleted that this one still holds with the same tombstone** is the
+ *   merge's refusal (its campaign moved past it, `deleteSession` says "locked"), not the other's news: it
+ *   is kept here, nothing is deleted, and it must never keep this device from sending the rest (S13).
  * - **Sessions**, by `uuid` (0038), the one name a session keeps across devices. A session the
  *   other device has and this one *deleted* (0064) is not the other's news, it is this one's.
  * - **Hero content**: exercises and quests the hero made, the preferences that are theirs.
@@ -342,7 +362,8 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
          (SELECT count(*) FROM (${sessions("main")}) l
             WHERE l.uuid NOT IN (${sessions(CANDIDATE)}) AND l.uuid NOT IN (${peerGone})) AS localOnly,
          (SELECT count(*) FROM (${sessions(CANDIDATE)}) p WHERE p.uuid IN (${localGone})) AS localDeleted,
-         (SELECT count(*) FROM (${sessions("main")}) l WHERE l.uuid IN (${peerGone})) AS peerDeleted,
+         (SELECT count(*) FROM (${sessions("main")}) l
+            WHERE l.uuid IN (${peerGone}) AND l.uuid NOT IN (${localGone})) AS peerDeleted,
          (${newerIn(CANDIDATE, "main", named)}) AS peerContent,
          (${newerIn("main", CANDIDATE, named)}) AS localContent,
          (SELECT max(performedAt) FROM ${CANDIDATE}.completed_sessions) AS peerLatest,
@@ -400,6 +421,11 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "lastAutoBackupDay",
   "protectDismissedDay",
   "protectDismissals",
+  "backupWordsPending",
+  "passwordRemindersOn",
+  "passwordCheckStep",
+  "passwordCheckDue",
+  "passwordCheckIgnored",
   "customAvatarUri",
   "crashLog",
   "errorLog",

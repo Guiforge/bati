@@ -152,8 +152,14 @@ export function ownEveryRung(t: { sqlite: Database.Database }): void {
   }
 }
 
-export function createTestDb() {
-  const sqlite = new Database(":memory:");
+/** A bare SQLite file, no schema and no migrations: for building the files a restore is refused. */
+export function openRawSqlite(file: string): Database.Database {
+  return new Database(file);
+}
+
+/** `migrated`: the file already carries every migration (a database restored from another phone). */
+export function createTestDb(file = ":memory:", { migrated = false } = {}) {
+  const sqlite = new Database(file);
 
   // Stricter than the app on purpose. `db/client.ts` issues no `PRAGMA foreign_keys`, so on a
   // device SQLite leaves them OFF and every `ON DELETE` clause in the schema is decoration.
@@ -162,7 +168,7 @@ export function createTestDb() {
   // of trusting a constraint.
   sqlite.pragma("foreign_keys = ON");
 
-  applyMigrations(sqlite);
+  if (!migrated) applyMigrations(sqlite);
 
   const db = drizzle(sqlite, { schema });
 

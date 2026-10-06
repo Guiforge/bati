@@ -6,6 +6,7 @@ import { snapshotDatabaseTo } from "@/db/backup";
 import { closeDatabase, DB_NAME, SAFETY_NAME, serializeOnDatabase } from "@/db/client";
 import { dayKey } from "@/db/dates";
 import { SCHEMA_VERSION } from "@/db/schemaVersion";
+import { batiSave, NO_FILE_PICKER } from "@/modules/bati-save";
 import {
   encryptionStatus,
   MAX_SEALED_BYTES,
@@ -13,6 +14,7 @@ import {
   openBackup,
   sealBackup,
 } from "@/src/backupCipher";
+import { shortInstallId } from "@/src/installId";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -68,9 +70,34 @@ const KEEP_SNAPSHOTS = 5;
  * nothing, so the prune would silently never run on a device while every test stayed green.
  * Decoding the URI turns `%2F` back into a separator and makes both shapes match.
  */
-const SNAPSHOT_URI = new RegExp(
-  `(?:^|/)${EXPORT_PREFIX}v\\d+-(\\d{4}-\\d{2}-\\d{2})\\.(?:db|batb)$`,
-);
+/**
+ * `tag` is this device's eight hex digits, or `null` for the names written before there were any.
+ * A tagged pattern matches only this device's files and the untagged one only the old names, so a
+ * prune never reaches a copy another device wrote into the same folder.
+ */
+function snapshotUri(tag: string | null) {
+  return new RegExp(
+    `(?:^|/)${EXPORT_PREFIX}${tag === null ? "" : `${tag}-`}v\\d+-(\\d{4}-\\d{2}-\\d{2})\\.(?:db|batb)$`,
+  );
+}
+
+/**
+ * The sealed copies (`.batb`) in a chosen folder, whichever device wrote them, newest day first. For a phone that
+ * lost its key and is looking for a file to read it from: it tries the newest ones, so the list is short.
+ */
+export function sealedCopiesIn(folder: Directory, limit = 3): File[] {
+  const any = new RegExp(
+    `(?:^|/)${EXPORT_PREFIX}(?:[0-9a-f]{8}-)?v\\d+-(\\d{4}-\\d{2}-\\d{2})\\.batb$`,
+  );
+  const found: { day: string; entry: File }[] = [];
+  for (const entry of folder.list()) {
+    if (!(entry instanceof File)) continue;
+    const day = any.exec(decodeUri(entry.uri))?.[1];
+    if (day) found.push({ day, entry });
+  }
+  found.sort((a, b) => b.day.localeCompare(a.day));
+  return found.slice(0, limit).map((f) => f.entry);
+}
 
 function pathIn(name: string) {
   return `${DB_DIR}/${name}`;
@@ -120,19 +147,23 @@ export async function writePreMigrationCopy(): Promise<void> {
 }
 
 /**
- * `bati-export-v3-2026-08-15` — dated, for the human scrolling their files app. The hero's own
- * day, not UTC's: a backup taken at half past midnight in Paris is today's, not yesterday's.
- * A stem: `writeSnapshot` adds the extension once it knows whether the file is sealed.
+ * `bati-export-a1b2c3d4-v3-2026-08-15` — tagged with the device, then dated, for the human
+ * scrolling their files app. The hero's own day, not UTC's: a backup taken at half past midnight
+ * in Paris is today's, not yesterday's. A stem: `writeSnapshot` adds the extension once it knows
+ * whether the file is sealed.
+ *
+ * The tag is what lets two devices share a folder. Without it both wrote `…-v3-<day>.db`, the
+ * second overwrote the first's copy of the day, and the prune kept five files across both.
  */
-function exportFileStem(now: Date) {
-  return `${EXPORT_PREFIX}v${SCHEMA_VERSION}-${dayKey(now)}`;
+function exportFileStem(now: Date, tag: string | null) {
+  return `${EXPORT_PREFIX}${tag === null ? "" : `${tag}-`}v${SCHEMA_VERSION}-${dayKey(now)}`;
 }
 
 /**
  * `bati-export-before-restore-v3-2026-09-19-091502`: the database a restore is about to
  * replace. To the second, because two restores on one day must not overwrite each other: the
  * second one's "before" is the first one's backup, and the hero's own data is the file under
- * the first name. `SNAPSHOT_URI` does not match it, so pruning never takes one; they are rare
+ * the first name. `snapshotUri` does not match it, so pruning never takes one; they are rare
  * and they are the only copy of what a restore threw away.
  */
 export function preRestoreFileStem(now: Date) {
@@ -143,6 +174,21 @@ export function preRestoreFileStem(now: Date) {
 }
 
 /**
+ * Snapshots are written one at a time. They share one plaintext scratch file, and each begins by
+ * sweeping what an earlier one left: "Sync now" and "Save a file" at the same moment used to delete
+ * each other's scratch mid-write, so sync could seal a database cut short (valid to open, refused by
+ * every other device) or one of the two simply failed. The queue never rejects: a failed snapshot
+ * must not hold up the next.
+ */
+let snapshotQueue: Promise<unknown> = Promise.resolve();
+
+function oneSnapshotAtATime<T>(work: () => Promise<T>): Promise<T> {
+  const run = snapshotQueue.then(work, work);
+  snapshotQueue = run.catch(() => undefined);
+  return run;
+}
+
+/**
  * Writes a fresh dated snapshot in the app's own directory and returns it.
  *
  * Stale snapshots are cleared before writing rather than after the file has been handed on: when
@@ -150,7 +196,12 @@ export function preRestoreFileStem(now: Date) {
  * under a lazy reader would hand the user a truncated backup. This way at most one stale
  * snapshot exists, and it costs one database's worth of disk.
  */
-async function writeSnapshot(stem = exportFileStem(new Date())): Promise<File> {
+function writeSnapshot(stem?: string): Promise<File> {
+  return oneSnapshotAtATime(() => writeSnapshotNow(stem));
+}
+
+async function writeSnapshotNow(stem?: string): Promise<File> {
+  const name = stem ?? exportFileStem(new Date(), await shortInstallId());
   for (const entry of new Directory(`file://${DB_DIR}`).list()) {
     if (entry.name.startsWith(EXPORT_PREFIX)) entry.delete();
   }
@@ -162,14 +213,60 @@ async function writeSnapshot(stem = exportFileStem(new Date())): Promise<File> {
   const status = await encryptionStatus();
   if (status === "locked") throw new Error("Encryption is locked on this device");
   const encrypted = status === "on";
-  const name = stem + extension(encrypted);
+  const file = name + extension(encrypted);
   if (!encrypted) {
-    await snapshotDatabaseTo(pathIn(name));
-    return fileIn(name);
+    await snapshotDatabaseTo(pathIn(file));
+    return fileIn(file);
   }
 
-  await sealedSnapshotTo(name);
-  return fileIn(name);
+  await sealedSnapshotTo(file);
+  return fileIn(file);
+}
+
+/**
+ * Saves a backup wherever the hero says, with Android's own "Save as": they name the file and pick
+ * Drive, Downloads or a stick in the system's screen. Three steps in an order that is the point:
+ * the picker first, then the snapshot, then the write. A hero who backs out of the picker never
+ * costs a snapshot of the whole database (nor a plaintext copy of it in app storage), and the
+ * snapshot is deleted as soon as it is written: nobody is going to read it from here.
+ *
+ * Resolves to the file's name as the provider shows it (what the toast says, since the hero may
+ * have renamed it), `null` when they backed out, or `"noPicker"` on a device with no app that can
+ * save a file (some Android Go and TV builds), where the caller offers the share sheet instead.
+ */
+export async function saveBackupAs(): Promise<{ name: string } | null | "noPicker"> {
+  // Before the picker, so a locked vault is refused without asking where to save a file that
+  // could not be sealed, and so the name already says whether it will be.
+  const status = await encryptionStatus();
+  if (status === "locked") throw new Error("Encryption is locked on this device");
+
+  const stem = exportFileStem(new Date(), await shortInstallId());
+  let target: string | null;
+  try {
+    target = await batiSave().pickTarget(stem + extension(status === "on"));
+  } catch (error) {
+    // Expo wraps a native CodedException: the code is a property, the message is prose.
+    if ((error as { code?: unknown }).code === NO_FILE_PICKER) return "noPicker";
+    throw error;
+  }
+  if (target === null) return null;
+
+  let snapshot: File;
+  try {
+    snapshot = await writeSnapshot(stem);
+  } catch (error) {
+    // The document exists already, empty: do not leave something that looks like a backup.
+    await batiSave()
+      .discard(target)
+      .catch((discardError: unknown) => reportError("backup.discard", discardError));
+    throw error;
+  }
+  try {
+    const written = await batiSave().writeTo(target, snapshot.uri);
+    return { name: written.name };
+  } finally {
+    if (snapshot.exists) snapshot.delete();
+  }
 }
 
 /**
@@ -180,11 +277,20 @@ async function sealedSnapshotTo(name: string): Promise<void> {
   deleteIfPresent(name);
   // Left behind by a kill or a failed `VACUUM INTO`, which refuses an existing file: without this
   // every sync snapshot after it failed, and the plaintext stayed on disk.
+  removePlainSnapshot();
+  try {
+    await snapshotDatabaseTo(pathIn(PLAIN_SNAPSHOT));
+    await sealBackup(pathIn(PLAIN_SNAPSHOT), pathIn(name));
+  } finally {
+    // Also when the snapshot itself fails (no room left: found by the bench's K2): a half-written plain
+    // copy of the whole database, and its journal, stayed in app storage until the next backup.
+    removePlainSnapshot();
+  }
+}
+
+function removePlainSnapshot(): void {
   deleteIfPresent(PLAIN_SNAPSHOT);
-  await snapshotDatabaseTo(pathIn(PLAIN_SNAPSHOT));
-  await sealBackup(pathIn(PLAIN_SNAPSHOT), pathIn(name)).finally(() =>
-    deleteIfPresent(PLAIN_SNAPSHOT),
-  );
+  deleteIfPresent(`${PLAIN_SNAPSHOT}-journal`);
 }
 
 /**
@@ -195,10 +301,12 @@ async function sealedSnapshotTo(name: string): Promise<void> {
  */
 const SYNC_OUT = "bati-sync-out.batb";
 
-export async function writeSyncSnapshot(): Promise<File> {
-  if ((await encryptionStatus()) !== "on") throw new Error("Sync needs encryption on");
-  await sealedSnapshotTo(SYNC_OUT);
-  return fileIn(SYNC_OUT);
+export function writeSyncSnapshot(): Promise<File> {
+  return oneSnapshotAtATime(async () => {
+    if ((await encryptionStatus()) !== "on") throw new Error("Sync needs encryption on");
+    await sealedSnapshotTo(SYNC_OUT);
+    return fileIn(SYNC_OUT);
+  });
 }
 
 /** The snapshot written by `writeSyncSnapshot` and not sent yet, or `null`. */
@@ -302,7 +410,7 @@ export async function saveBackupToFolder(folder?: Directory, stem?: string): Pro
   // not be created". Unattended, it would be worse than a wrong toast: `backupBeforeMigrations`
   // forgets the folder on a throw, so a failed prune would switch the feature off for good.
   try {
-    pruneSnapshotsIn(target);
+    pruneSnapshotsIn(target, await shortInstallId());
   } catch (error) {
     reportError("backup.prune", error);
   }
@@ -311,7 +419,12 @@ export async function saveBackupToFolder(folder?: Directory, stem?: string): Pro
 }
 
 /**
- * Deletes all but the newest `KEEP_SNAPSHOTS` Bati snapshots in a folder.
+ * Deletes all but the newest `KEEP_SNAPSHOTS` of *this device's* Bati snapshots in a folder.
+ *
+ * This device's: a folder two devices share holds both their histories, and a prune over
+ * "Bati snapshots" would keep five across the pair and delete the other's. A copy with no tag is
+ * from before there were any and whose it is cannot be told, so while this device writes tagged
+ * names those are left alone, and with no tag (a keystore that is down) only they are pruned.
  *
  * Every write into a chosen tree ends here, so nothing accumulates unattended. The filter is the
  * safety: this runs inside a folder the hero picked, which may be their Documents root, and only
@@ -320,16 +433,22 @@ export async function saveBackupToFolder(folder?: Directory, stem?: string): Pro
  * Sorted on the captured day rather than the whole name: `v3` and `v10` do not sort as numbers,
  * so a name-ordered prune would start deleting the newest schema's backups first.
  */
-function pruneSnapshotsIn(folder: Directory): void {
+function pruneSnapshotsIn(folder: Directory, tag: string | null): void {
+  const own = snapshotUri(tag);
   const snapshots: { day: string; entry: File }[] = [];
   for (const entry of folder.list()) {
     if (!(entry instanceof File)) continue;
-    const day = SNAPSHOT_URI.exec(decodeUri(entry.uri))?.[1];
+    const day = own.exec(decodeUri(entry.uri))?.[1];
     if (day) snapshots.push({ day, entry });
   }
 
-  snapshots.sort((a, b) => b.day.localeCompare(a.day));
-  for (const stale of snapshots.slice(KEEP_SNAPSHOTS)) stale.entry.delete();
+  // A copy dated after today comes from a clock that ran ahead and was set right. It is not one of
+  // "the five newest" (today's copy, written a moment ago, would be the sixth and the one deleted,
+  // every launch, while the app says it backed up), and it is not ours to delete either.
+  const today = dayKey(new Date());
+  const dated = snapshots.filter((snapshot) => snapshot.day <= today);
+  dated.sort((a, b) => b.day.localeCompare(a.day));
+  for (const stale of dated.slice(KEEP_SNAPSHOTS)) stale.entry.delete();
 }
 
 /** A URI that will not decode is left as it is: the pattern simply will not match it, which is
@@ -363,9 +482,13 @@ export async function stageBackupForImport(): Promise<string | null> {
   // the filter stays open. Validation decides what is acceptable, never the file extension.
   const picked = await File.pickFileAsync({ mimeTypes: ["*/*"] });
   if (picked.canceled || !picked.result) return null;
+  return stageBackupFrom(picked.result);
+}
 
+/** The same staging for a file this app already has a handle on (a copy in the backup folder). */
+export async function stageBackupFrom(source: File): Promise<string> {
   deleteIfPresent(IMPORT_NAME);
-  await picked.result.copy(fileIn(IMPORT_NAME));
+  await source.copy(fileIn(IMPORT_NAME));
   return pathIn(IMPORT_NAME);
 }
 
@@ -394,6 +517,11 @@ export function discardStagedImport(): void {
   deleteIfPresent(IMPORT_PLAIN);
 }
 
+/** Moves a WAL that has to travel with its database (S6), when there is one. */
+async function moveWal(keep: boolean, from: string, to: string, overwrite = false): Promise<void> {
+  if (keep && fileIn(from).exists) await fileIn(from).move(fileIn(to), { overwrite });
+}
+
 /**
  * Replaces the database with the staged import. Destructive, and last for a reason.
  *
@@ -420,16 +548,20 @@ export function discardStagedImport(): void {
  */
 export function commitRestore(): Promise<void> {
   return serializeOnDatabase(async () => {
-    await closeDatabase();
+    const closed = await closeDatabase();
+    // A handle that did not close may still hold committed frames in its `-wal`: they travel with the
+    // database to the `.bak`, so the file the hero had is whole and so is the rollback target.
+    const keepWal = closed === false;
 
-    for (const suffix of ["-journal", "-wal", "-shm"]) {
-      deleteIfPresent(`${DB_NAME}${suffix}`);
-    }
+    for (const suffix of ["-journal", "-shm"]) deleteIfPresent(`${DB_NAME}${suffix}`);
+    if (!keepWal) deleteIfPresent(`${DB_NAME}-wal`);
 
     // Only the previous restore's `.bak` is expendable here; the live database never is.
     deleteIfPresent(SAFETY_NAME);
+    deleteIfPresent(`${SAFETY_NAME}-wal`);
     const parkedAside = fileIn(DB_NAME).exists;
     if (parkedAside) await fileIn(DB_NAME).move(fileIn(SAFETY_NAME));
+    await moveWal(keepWal, `${DB_NAME}-wal`, `${SAFETY_NAME}-wal`);
 
     try {
       await fileIn(IMPORT_NAME).move(fileIn(DB_NAME));
@@ -437,6 +569,7 @@ export function commitRestore(): Promise<void> {
       // `overwrite` here because a half-finished move may have left a partial file under the
       // real name, and a partial import is exactly what must not survive this.
       if (parkedAside) await fileIn(SAFETY_NAME).move(fileIn(DB_NAME), { overwrite: true });
+      await moveWal(keepWal, `${SAFETY_NAME}-wal`, `${DB_NAME}-wal`, true);
       throw error;
     }
   });

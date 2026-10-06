@@ -14,6 +14,9 @@ jest.mock("expo-file-system", () => {
     constructor(uri: string) {
       this.uri = uri;
     }
+    get exists() {
+      return !(globalThis as { mockTreeGone?: boolean }).mockTreeGone;
+    }
   }
   return { Directory };
 });
@@ -103,6 +106,7 @@ beforeEach(() => {
   mockControl.readThrows = null;
   mockPicked.next = null;
   mockPicked.saveThrows = null;
+  (globalThis as { mockTreeGone?: boolean }).mockTreeGone = false;
 });
 
 describe("backupBeforeMigrations", () => {
@@ -200,6 +204,17 @@ describe("backupBeforeRestore", () => {
     // Forgetting the folder is `backupBeforeMigrations`' policy for an unattended write. Here the
     // hero is watching and gets told; switching the feature off behind their back is not asked.
     expect(mockStored.get("backupFolderUri")).toBe(TREE);
+  });
+
+  test("a folder that cannot be reached any more (its permission did not travel to a new phone) is forgotten and the restore goes ahead", async () => {
+    mockStored.set("backupFolderUri", TREE);
+    mockPicked.saveThrows = new Error("permission denied");
+    (globalThis as { mockTreeGone?: boolean }).mockTreeGone = true;
+
+    await expect(backupBeforeRestore()).resolves.toBeUndefined();
+
+    expect(mockStored.has("backupFolderUri")).toBe(false);
+    expect(mockReported).toEqual(["backup.beforeRestore.staleFolder"]);
   });
 });
 

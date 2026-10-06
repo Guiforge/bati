@@ -35,8 +35,37 @@ function coord(value: number): string {
   return value.toFixed(6);
 }
 
+/**
+ * XML 1.0 cannot carry most control characters nor a lone surrogate, even escaped: a title with a
+ * NUL pasted into it made a file every strict reader refuses as a whole. They are dropped.
+ */
+function legalXmlChars(value: string): string {
+  let out = "";
+  for (const char of value) {
+    const code = char.codePointAt(0) ?? 0;
+    const legal =
+      code === 0x9 ||
+      code === 0xa ||
+      code === 0xd ||
+      (code >= 0x20 && code <= 0xd7ff) ||
+      (code >= 0xe000 && code <= 0xfffd) ||
+      (code >= 0x10000 && code <= 0x10ffff);
+    if (legal) out += char;
+  }
+  return out;
+}
+
+/**
+ * The schema's longitude is [-180, 180[: 179.9999996 rounds to "180.000000", which the XSD refuses
+ * (and with it the whole file), and is the same meridian as -180.
+ */
+function longitude(value: number): string {
+  const text = coord(value);
+  return text === "180.000000" ? "-180.000000" : text;
+}
+
 function escapeXml(value: string): string {
-  return value
+  return legalXmlChars(value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -44,7 +73,7 @@ function escapeXml(value: string): string {
 }
 
 function point(fix: LocationFix): string {
-  const parts = [`    <trkpt lat="${coord(fix.lat)}" lon="${coord(fix.lon)}">`];
+  const parts = [`    <trkpt lat="${coord(fix.lat)}" lon="${longitude(fix.lon)}">`];
   // Order is the XSD's, not ours.
   if (fix.ele !== null) parts.push(`      <ele>${fix.ele.toFixed(1)}</ele>`);
   parts.push(`      <time>${new Date(fix.t).toISOString()}</time>`);

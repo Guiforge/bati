@@ -17,8 +17,10 @@
     "expo-updates",
     "@tamagui/babel-plugin",
     "babel-plugin-transform-remove-console",
-    "jest-environment-node"
+    "jest-environment-node",
+    "fast-check"
   ],
+  "ignoreBinaries": ["xmllint"],
   "ignoreExportsUsedInFile": true,
   "ignoreUnresolved": ["./__tests__/helpers/timezoneEnvironment.js"],
   "tags": ["-legacy"]

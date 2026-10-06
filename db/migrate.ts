@@ -189,7 +189,8 @@ function migrationsDebugEnabled(): boolean {
  * Default: run all migrations.
  */
 function buildMigrationConfig() {
-  const rawMaxIdx = process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX;
+  // A release build ignores it: a variable left in a hero's build environment must never stop their migrations short.
+  const rawMaxIdx = __DEV__ ? process.env.EXPO_PUBLIC_MIGRATION_MAX_IDX : undefined;
   const parsedMaxIdx = rawMaxIdx === undefined ? Number.POSITIVE_INFINITY : Number(rawMaxIdx);
   const migrationMaxIdx = Number.isFinite(parsedMaxIdx) ? parsedMaxIdx : Number.POSITIVE_INFINITY;
 

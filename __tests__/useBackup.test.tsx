@@ -21,7 +21,7 @@ let mockValidation: { ok: true } | { ok: false; reason: string } = { ok: true };
 let mockExportBehaviour: () => void = () => {};
 let mockValidateBehaviour: () => void = () => {};
 let mockStageGate: Promise<void> | null = null;
-let mockSaveOutcome: () => boolean = () => true;
+let mockSaveOutcome: () => { name: string } | null | "noPicker" = () => ({ name: "x.db" });
 let mockDecryptOutcomes: string[] = [];
 let mockEncryption = "off";
 
@@ -66,6 +66,9 @@ jest.mock("@/src/backupFiles", () => ({
     await Promise.resolve();
     const outcome = mockDecryptOutcomes.shift() ?? "notEncrypted";
     if (outcome === "throw") throw new Error("Unsupported state or unable to authenticate data");
+    if (outcome === "lowMemory") {
+      throw Object.assign(new Error("Not enough memory"), { code: "LOW_MEMORY" });
+    }
     if (outcome === "openedWithSecret") {
       return {
         result: "opened",
@@ -78,7 +81,7 @@ jest.mock("@/src/backupFiles", () => ({
     return { result: outcome };
   }),
   // biome-ignore lint/suspicious/useAwait: mirrors the real Promise-returning signature
-  saveBackupToFolder: jest.fn(async () => {
+  saveBackupAs: jest.fn(async () => {
     mockCalls.push("save");
     return mockSaveOutcome();
   }),
@@ -154,7 +157,7 @@ beforeEach(() => {
   mockExportBehaviour = () => {};
   mockValidateBehaviour = () => {};
   mockStageGate = null;
-  mockSaveOutcome = () => true;
+  mockSaveOutcome = () => ({ name: "x.db" });
   mockDecryptOutcomes = [];
   mockEncryption = "off";
   mockAutoFolderOutcome = () => null;
@@ -190,6 +193,18 @@ describe("useBackup — encrypted import", () => {
     expect(result.current.secretRequest.open).toBe(false);
   });
 
+  test("a backup from a newer Bati says to update: not damaged, not a wrong password, nothing restored", async () => {
+    mockDecryptOutcomes = ["newerVersion"];
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runImport());
+
+    expect(mockShownErrors).toEqual(["backup.rejected.newerVersion"]);
+    expect(result.current.secretRequest.open).toBe(false);
+    expect(mockCalls).toEqual(["stage", "decrypt", "discard"]);
+    expect(useRestoreStore.getState().phase).not.toBe("restoring");
+  });
+
   test("cancelling the password discards the file and restores nothing", async () => {
     mockDecryptOutcomes = ["needsSecret"];
     const { result } = await renderHook(() => useBackup());
@@ -213,6 +228,30 @@ test("an encrypted file that fails to authenticate is reported as damaged", asyn
   expect(mockCalls).toEqual(["stage", "decrypt", "discard"]);
   expect(mockShownErrors).toEqual(["backup.rejected.corrupt"]);
   expect(mockReportedErrors).toEqual(["backup.decrypt"]);
+});
+
+test("a phone without the memory for the password says so, and does not call the file damaged", async () => {
+  mockDecryptOutcomes = ["needsSecret", "lowMemory"];
+  const { result } = await renderHook(() => useBackup());
+
+  await act(() => result.current.runImport());
+  await waitFor(() => expect(result.current.secretRequest.open).toBe(true));
+  await act(async () => result.current.submitSecret("a password"));
+
+  await waitFor(() => expect(mockShownErrors).toEqual(["backup.lowMemory"]));
+  expect(mockShownErrors).not.toContain("backup.rejected.corrupt");
+  // Nothing restored, and the staged copy is thrown away like any refused file.
+  expect(mockCalls.at(-1)).toBe("discard");
+  expect(useRestoreStore.getState().phase).toBe("idle");
+});
+
+test("the same on the very first read of the file", async () => {
+  mockDecryptOutcomes = ["lowMemory"];
+  const { result } = await renderHook(() => useBackup());
+
+  await act(async () => result.current.runImport());
+
+  expect(mockShownErrors).toEqual(["backup.lowMemory"]);
 });
 
 test("taking another device's snapshot walks the same road as a restore", async () => {
@@ -295,6 +334,18 @@ describe("an encrypted backup opened with its password", () => {
       </TamaguiProvider>,
     );
     expect(screen.getByTestId("report-dialog")).toBeTruthy();
+  });
+
+  test("a restore abandoned for want of a copy leaves the vault as it was: no question, no key adopted", async () => {
+    mockBeforeRestoreOutcome = () => {
+      throw new Error("no space left on device");
+    };
+    await importWithPassword();
+    await waitFor(() => expect(mockCalls).toContain("discard"));
+
+    expect(screen.queryByText("backup.joinTitle")).toBeNull();
+    expect(mockCalls.some((c) => c.startsWith("join:"))).toBe(false);
+    expect(useRestoreStore.getState().phase).toBe("idle");
   });
 
   test("with encryption off here, the hero is asked, in-app, before the key becomes this phone's", async () => {
@@ -461,14 +512,14 @@ describe("useBackup — import", () => {
   });
 });
 
-describe("useBackup — save to a folder", () => {
+describe("useBackup — save a file", () => {
   test("reports success once the file is written", async () => {
     const { result } = await renderHook(() => useBackup());
 
-    await act(async () => result.current.runSaveToFolder());
+    await act(async () => result.current.runSaveAs());
 
     expect(mockCalls).toEqual(["save"]);
-    expect(mockShownSuccesses).toEqual(["backup.saveDone"]);
+    expect(mockShownSuccesses).toEqual(["backup.savedAs"]);
   });
 
   /**
@@ -477,13 +528,36 @@ describe("useBackup — save to a folder", () => {
    * success for a file that was never written.
    */
   test("says nothing when the hero backs out of the picker", async () => {
-    mockSaveOutcome = () => false;
+    mockSaveOutcome = () => null;
     const { result } = await renderHook(() => useBackup());
 
-    await act(async () => result.current.runSaveToFolder());
+    await act(async () => result.current.runSaveAs());
 
     expect(mockShownSuccesses).toEqual([]);
     expect(mockShownErrors).toEqual([]);
+    expect(mockAlerts).toEqual([]);
+    expect(mockReportedErrors).toEqual([]);
+  });
+
+  test("on a device with no file picker the share sheet is offered instead", async () => {
+    mockSaveOutcome = () => "noPicker";
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runSaveAs());
+
+    expect(mockCalls).toEqual(["save", "export"]);
+    expect(mockShownSuccesses).toEqual(["backup.exportDone"]);
+  });
+
+  test("a locked vault says what to do, and is not reported as a fault", async () => {
+    mockSaveOutcome = () => {
+      throw new Error("Encryption is locked on this device");
+    };
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runSaveAs());
+
+    expect(mockShownErrors).toEqual(["backup.lockedFirst"]);
     expect(mockAlerts).toEqual([]);
     expect(mockReportedErrors).toEqual([]);
   });
@@ -494,7 +568,7 @@ describe("useBackup — save to a folder", () => {
     };
     const { result } = await renderHook(() => useBackup());
 
-    await act(async () => result.current.runSaveToFolder());
+    await act(async () => result.current.runSaveAs());
 
     expect(mockAlerts).toEqual(["backup.exportFailed"]);
     expect(mockReportedErrors).toEqual(["backup.save"]);

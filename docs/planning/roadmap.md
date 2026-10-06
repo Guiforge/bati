@@ -502,6 +502,13 @@ animation** is what is left, and it stays low by design.
 
 ### 4.18 Multi-device sync, end-to-end encrypted, over the hero's own cloud
 
+**Encryption v3 and simplified backup (2026-10-04, branch `backup-encryption-v3`).** Argon2id
+instead of PBKDF2, twelve BIP-39 words instead of 64 hex digits, a key per file with counter nonces,
+one Settings row "My hero, safe" for the daily copy and sync together, and "Save a file" as
+Android's own Save as (the share sheet is a small link). Format 2 is read forever and a v2 vault
+updates without losing a file: the old key stays in the keyring. Details in
+[`backup-and-sync.md`](../architecture/backup-and-sync.md), Format 3.
+
 **Phases 0 to 3 built on `feat/encrypted-sync` (2026-09-25)**, over Nextcloud and any WebDAV
 server (kDrive, Koofr, rclone through Round Sync), audited twice and checked against Joplin's
 history; how it works is [`docs/architecture/backup-and-sync.md`](../architecture/backup-and-sync.md).
@@ -585,6 +592,32 @@ skewed clock, #5738); do not count on Android background sync, sync at launch an
    the peer's preferences wholesale, so a fresh tablet cannot impose its onboarding. Cut for a
    first version: campaigns (keep local), quest configs and favourites (keep local), deleted hero
    content (comes back). The kept copy stays, once per peer, as the net.
+
+### 4.18b Merge v2: the two limits of the first merge, planned for the version after 2.9
+
+Decided on 2026-10-06 while preparing the release that ships sync: both limits below are exactly how 2.9.0
+merges (`db/merge.ts`, `db/exercises.ts`, `db/quests.ts`, `db/completed.ts` are identical to that commit, checked), so
+they are documented and frozen by tests (`__tests__/db-peer-merge.test.ts`, "what the merge does not carry"), not
+fixed in this build. The second version of the merge closes both together, because both change what the comparison
+fingerprints and so make every device see news once:
+
+1. **Tombstones for hero quests and movements.** Today a hero quest or movement deleted on one device comes back when
+   the device that still holds it is merged (see "Deletion" in `docs/testing/data-rules.md`), and the sessions of that quest on the
+   other device recreate it through `quest_map`. Same mechanism as `deleted_sessions` (migration 0064): a
+   `deleted_content` table, honoured after the merge, with the same rule that a deletion never undoes a newer edit.
+2. **The fields of a session that can change after it was saved travel too.** `xpEarned` (the oath's or the
+   Triumph's bonus lands in the saving transaction; the victory screen can still add the feeling and a prompt can
+   upload the session in between) and `feedback`. The rule: **XP that was earned is never taken away, so the larger value
+   wins** (and the feeling follows the later edit). Needs the fields in the fingerprint and in the merge, a migration,
+   and the golden hero files to move on purpose (`UPDATE_GOLDEN=1`, the moved figures listed in the change).
+
+3. **Two edits of one row in the same second** : neither side is newer, so each keeps its own
+   copy. Needs a content tie-break both devices compute alike (a hash of the row), in the same change.
+4. **`ownedEquipment` is one value, last writer wins**: two devices changing the list at once lose one side's
+   change. Becomes a union (an item owned on either device stays owned) in the same change.
+
+Until then, the first copy of a session wins on every device and a hero who deletes a quest on one device deletes it
+on the other by hand. Neither loses a session, an XP point already counted, or a copy.
 
 ### 4.20 `fallow`
 

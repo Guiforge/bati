@@ -1,0 +1,13 @@
+# Everything gitleaks ships with, plus one exception.
+#
+# `__tests__/fixtures/backup` holds backup files frozen on purpose, and the manifest beside them
+# carries the password, the recovery key and the master key each one was made with: that is what
+# lets a later build prove it still opens them. They protect nothing, a test hero's file made for
+# this repository, and a scanner that rejects them would only teach the next person to commit the
+# fixtures with `--no-verify`.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Test keys and passwords for the frozen backup fixtures"
+paths = ['''__tests__/fixtures/backup/''']

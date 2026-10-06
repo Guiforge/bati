@@ -186,7 +186,13 @@
       }
     },
     {
-      "includes": ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/__tests__/**", "jest.setup.ts"],
+      "includes": [
+        "**/*.test.{ts,tsx}",
+        "**/*.spec.{ts,tsx}",
+        "**/__tests__/**",
+        "test/node/**",
+        "jest.setup.ts"
+      ],
       "javascript": {
         "globals": ["jest"]
       },

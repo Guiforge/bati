@@ -14,5 +14,7 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
+  // The Node tests have their own dependencies (test/node/package.json) and their own check, in test/node/tsconfig.json.
+  "exclude": ["node_modules", "test/node"]
 }

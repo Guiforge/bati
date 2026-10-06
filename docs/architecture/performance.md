@@ -300,6 +300,12 @@ What is left is the 21 MiB of art. Every file is already WebP and has been throu
 pass; a second pass has to start by measuring the slot each one actually renders into, the way
 the exercise thumbnails were derived — not by re-compressing blind.
 
+**Bouncy Castle (2026-10-04).** Argon2id for backup format 3 comes from `bcprov` (the platform has none). R8
+trims its classes, but its resources (Picnic tables, X.509 messages) are 1.2 MiB it cannot shrink, so
+`android.packagingOptions.excludes=org/bouncycastle/**` keeps them out
+([`plugins/withAndroidReleaseFlags.js`](../../plugins/withAndroidReleaseFlags.js)). Measured on a local
+arm64 release build: 53.8 MiB before this branch, 55.7 with Bouncy Castle, 54.5 with the exclusion.
+
 [`.github/workflows/release.yml`](../../.github/workflows/release.yml) fails the release over
 55 MiB. It is a ratchet: lower it after a release that measures under it, never raise it to make
 a build pass.

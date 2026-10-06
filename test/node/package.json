@@ -1,0 +1,9 @@
+{
+  "name": "bati-node-harness",
+  "private": true,
+  "description": "Tools of the Node tests only (property tests). Not part of the app: kept out of the root package.json so the app's dependencies, licences and build are untouched.",
+  "devDependencies": {
+    "fast-check": "^4.10.2",
+    "typescript": "^5.9.3"
+  }
+}

@@ -11,8 +11,11 @@ import type { BatiCrypto } from "../../modules/bati-crypto";
  */
 const NONCE = 12;
 const TAG = 16;
-/** BatiCryptoModule.kt's SEGMENT_BYTES; a test may lower it to cross segments with small files. */
-export const segment = { bytes: 1024 * 1024 };
+
+import { argonCalls, heap, nodeBatiCryptoV3, segment } from "./nodeBatiCryptoV3";
+
+export { argonCalls, heap, segment };
+
 const b64 = (bytes: Uint8Array) => Buffer.from(bytes).toString("base64");
 const bytes = (value: string) => Buffer.from(value, "base64");
 const path = (value: string) => value.replace(/^file:\/\//, "");
@@ -48,6 +51,7 @@ const later = <T>(work: () => T): Promise<T> => Promise.resolve().then(work);
 export const pbkdf2Calls: number[] = [];
 
 export const nodeBatiCrypto: BatiCrypto = {
+  ...nodeBatiCryptoV3,
   randomBytes: (length) => later(() => b64(crypto.randomBytes(length))),
   pbkdf2: (password, salt, iterations) =>
     later(() => {
@@ -63,13 +67,13 @@ export const nodeBatiCrypto: BatiCrypto = {
       const headerBytes = bytes(header);
       const plain = fs.readFileSync(path(inPath));
       const parts: Buffer[] = [headerBytes];
-      // An empty file, or one that ends on a boundary, still ends with a (possibly empty) last one.
+      // BatiCryptoCore.sealFile's layout: a file of N whole segments has N, the Nth marked last,
+      // and an empty file has one empty segment. (It used to add an empty last segment after whole
+      // ones; both open, because "last" is where the file ends, but the two writers must agree.)
       const count = Math.max(1, Math.ceil(plain.length / segment.bytes));
-      const exact = plain.length > 0 && plain.length % segment.bytes === 0;
-      for (let i = 0; i < count + (exact ? 1 : 0); i++) {
+      for (let i = 0; i < count; i++) {
         const chunk = plain.subarray(i * segment.bytes, (i + 1) * segment.bytes);
-        const last = i === count + (exact ? 1 : 0) - 1;
-        parts.push(seal(key, chunk, segmentAad(headerBytes, i, last)));
+        parts.push(seal(key, chunk, segmentAad(headerBytes, i, i === count - 1)));
       }
       fs.writeFileSync(path(outPath), Buffer.concat(parts));
     }),

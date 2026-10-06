@@ -1,4 +1,4 @@
-import { act, render, waitFor } from "@testing-library/react-native";
+import { act, cleanup, render, waitFor } from "@testing-library/react-native";
 
 /**
  * The one place that decides to replace this device's history with another's, or to remember a
@@ -32,6 +32,7 @@ jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 const mockToasts: string[] = [];
+const mockJoinedPeers: string[] = [];
 jest.mock("@/components/common/Toast", () => ({
   useToast: () => ({ showSuccess: (m: string) => mockToasts.push(m), showError: () => {} }),
 }));
@@ -71,8 +72,15 @@ jest.mock("expo", () => ({
   reloadAppAsync: (reason: string) => mockReload(reason),
 }));
 const mockKeepCopy = jest.fn(() => Promise.resolve());
+/** What the prompt has already said, by file: it lives in SecureStore, so it outlives a launch. */
+const mockAnnounced: Record<string, string> = {};
 jest.mock("@/src/deviceSync", () => ({
   rememberUnreadable: () => Promise.resolve(),
+  announcedPeers: () => Promise.resolve({ ...mockAnnounced }),
+  rememberAnnounced: (peer: { name: string; etag: string; state: string }) =>
+    Promise.resolve().then(() => {
+      mockAnnounced[peer.name] = `${peer.state}@${peer.etag}`;
+    }),
   mergeWithPeer: () => Promise.resolve(mockMerge),
   rememberMergeNotice: (returnTo: string) =>
     Promise.resolve().then(() => {
@@ -89,7 +97,10 @@ jest.mock("@/src/deviceSync", () => ({
       mockRemembered.push(`${peer.name}@${peer.comparison.fingerprint}`);
     }),
   keepThisDeviceOnServer: () => mockKeepCopy(),
-  joinPeer: () => Promise.resolve(mockJoinOpens),
+  joinPeer: (peer: string) => {
+    mockJoinedPeers.push(peer);
+    return Promise.resolve(mockJoinOpens);
+  },
 }));
 
 // The secret sheet stands in as a probe: its props are what the prompt asked of it.
@@ -138,6 +149,10 @@ const back = () => (mockDialog?.onDismiss ?? mockDialog?.onCancel ?? mockDialog?
 
 const run = jest.fn(() => Promise.resolve());
 
+afterEach(async () => {
+  await cleanup();
+});
+
 beforeEach(() => {
   mockAlerts.length = 0;
   mockDialog = null;
@@ -145,7 +160,9 @@ beforeEach(() => {
   mockAdopted.length = 0;
   mockRemembered.length = 0;
   mockToasts.length = 0;
+  mockJoinedPeers.length = 0;
   mockKeepCopy.mockClear();
+  for (const name of Object.keys(mockAnnounced)) delete mockAnnounced[name];
   mockReload.mockClear();
   mockMerge = { result: "cannot" };
   mockNotice = null;
@@ -161,7 +178,9 @@ test("mounts the backup's own dialog, which an adopt's failure and join question
   expect(view.getByTestId("backup-dialog")).toBeTruthy();
 });
 
-test("ahead: taking its version adopts that device's file, with nothing to keep first", async () => {
+// "Ahead" counts sessions and hero content only: campaign progress, boss fights, quest settings, favourites and
+// the set-aside list live only here and are replaced by the take, so this device's copy goes to the server first.
+test("ahead: taking its version adopts that device's file, after a copy of this device went to the server", async () => {
   await render(<SyncPrompt />);
   await syncFound({
     name: "bati-tab.batb",
@@ -173,8 +192,9 @@ test("ahead: taking its version adopts that device's file, with nothing to keep 
   await waitFor(() => expect(mockAlerts.map((a) => a.title)).toEqual(["sync.aheadTitle"]));
   press("sync.take");
   expect(mockAdopted.map((a) => a.uri)).toEqual(["file:///db/bati-tab.batb.plain"]);
-  await mockAdopted[0]?.before();
   expect(mockKeepCopy).not.toHaveBeenCalled();
+  await mockAdopted[0]?.before();
+  expect(mockKeepCopy).toHaveBeenCalledTimes(1);
   // "Later" on a hand-off is not a refusal: nothing is remembered.
   expect(mockRemembered).toEqual([]);
 });
@@ -325,7 +345,7 @@ test("never during a session, and once per state", async () => {
 
 test("locked: the other device's password is asked for, retried, and joined", async () => {
   await render(<SyncPrompt />);
-  await syncFound({ name: "bati-tab.batb", etag: "e", state: "locked" });
+  await syncFound({ name: "bati-tab.batb", etag: "e", state: "locked", format: 2 });
 
   expect(mockAlerts.map((a) => a.title)).toEqual(["sync.lockedTitle"]);
   await act(async () => press("sync.lockedCta"));
@@ -340,6 +360,104 @@ test("locked: the other device's password is asked for, retried, and joined", as
   expect(mockToasts).toEqual(["sync.joined"]);
   // A fresh snapshot: the one sealed at launch is under the key this phone just left.
   expect(run).toHaveBeenCalledWith({ snapshotFirst: true });
+});
+
+test("an older copy handed back is said once, as a notice and not a question", async () => {
+  await render(<SyncPrompt />);
+  const result = {
+    uploaded: false,
+    peers: [{ name: "bati-a.batb", etag: "a", state: "replayed" as const }],
+  };
+
+  await act(async () => useSyncStore.setState({ result }));
+  await waitFor(() => expect(mockToasts).toEqual(["sync.replayedToast"]));
+  expect(mockAlerts).toHaveLength(0);
+
+  // The next sync finds the same file: not said again.
+  await act(async () => useSyncStore.setState({ result: { ...result, peers: [...result.peers] } }));
+  expect(mockToasts).toEqual(["sync.replayedToast"]);
+});
+
+test("a vault this phone has left is never asked about", async () => {
+  await render(<SyncPrompt />);
+
+  await act(async () =>
+    useSyncStore.setState({
+      result: { uploaded: false, peers: [{ name: "bati-a.batb", etag: "a", state: "oldKey" }] },
+    }),
+  );
+
+  expect(mockAlerts).toHaveLength(0);
+  expect(mockToasts).toEqual([]);
+});
+
+test("a file of a newer Bati says to update, like one that cannot be read", async () => {
+  await render(<SyncPrompt />);
+
+  await act(async () =>
+    useSyncStore.setState({
+      result: {
+        uploaded: false,
+        peers: [{ name: "bati-a.batb", etag: "a", state: "newerVersion" }],
+      },
+    }),
+  );
+
+  await waitFor(() => expect(mockAlerts.map((a) => a.title)).toEqual(["sync.unreadableTitle"]));
+});
+
+// The doc promised "once per file" and the code only kept it for an unreadable one: a newer Bati on the other
+// device (the usual reason) and an older copy set aside were said again at every launch.
+describe.each(["newerVersion", "replayed"] as const)("%s", (state) => {
+  const said = () => (state === "replayed" ? mockToasts.length : mockAlerts.length);
+  const peerAt = (etag: string) => ({
+    uploaded: false,
+    peers: [{ name: "bati-a.batb", etag, state }],
+  });
+
+  test("is said, and the phone remembers it was, for that version of the file", async () => {
+    await act(async () => useSyncStore.setState({ offered: [], result: null }));
+    await render(<SyncPrompt />);
+    await act(async () => useSyncStore.setState({ result: peerAt("a") }));
+
+    await waitFor(() => expect(said()).toBe(1));
+    await waitFor(() => expect(mockAnnounced["bati-a.batb"]).toBe(`${state}@a`));
+  });
+
+  test("is not said again at the next launch, and is said again for a new version of the file", async () => {
+    // A new launch: the process offered nothing yet, the phone remembers what it said.
+    mockAnnounced["bati-a.batb"] = `${state}@a`;
+    await act(async () => useSyncStore.setState({ offered: [], result: null }));
+    await render(<SyncPrompt />);
+    await act(async () => useSyncStore.setState({ result: peerAt("a") }));
+    expect(said()).toBe(0);
+
+    await act(async () => useSyncStore.setState({ result: peerAt("b") }));
+    await waitFor(() => expect(said()).toBe(1));
+  });
+});
+
+test("with two vaults to join, the better one is asked about first", async () => {
+  await render(<SyncPrompt />);
+
+  await act(async () =>
+    useSyncStore.setState({
+      result: {
+        uploaded: false,
+        peers: [
+          { name: "bati-a.batb", etag: "a", state: "locked", format: 2, modified: 9_000 },
+          { name: "bati-b.batb", etag: "b", state: "locked", format: 3, modified: 1_000 },
+        ],
+      },
+    }),
+  );
+
+  await waitFor(() => expect(mockAlerts).toHaveLength(1));
+  expect(mockAlerts[0]?.title).toBe("sync.lockedTitle");
+  await act(async () => press("sync.lockedCta"));
+  await waitFor(() => expect(mockSheet?.open).toBe(true));
+  await act(async () => mockSheet?.submit("the password"));
+  expect(mockJoinedPeers).toEqual(["bati-b.batb"]);
 });
 
 test("one question at a time: the next device waits for an answer to the first", async () => {

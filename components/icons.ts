@@ -10,7 +10,6 @@
 
 export { AlertCircle } from "@tamagui/lucide-icons/icons/AlertCircle";
 export { AlertTriangle } from "@tamagui/lucide-icons/icons/AlertTriangle";
-export { Archive } from "@tamagui/lucide-icons/icons/Archive";
 export { ArchiveRestore } from "@tamagui/lucide-icons/icons/ArchiveRestore";
 export { ArrowRight } from "@tamagui/lucide-icons/icons/ArrowRight";
 export { Award } from "@tamagui/lucide-icons/icons/Award";
@@ -33,13 +32,13 @@ export { Eye } from "@tamagui/lucide-icons/icons/Eye";
 export { EyeOff } from "@tamagui/lucide-icons/icons/EyeOff";
 export { Flame } from "@tamagui/lucide-icons/icons/Flame";
 export { FolderDown } from "@tamagui/lucide-icons/icons/FolderDown";
-export { FolderSync } from "@tamagui/lucide-icons/icons/FolderSync";
 export { Footprints } from "@tamagui/lucide-icons/icons/Footprints";
 export { Gem } from "@tamagui/lucide-icons/icons/Gem";
 export { HeartPulse } from "@tamagui/lucide-icons/icons/HeartPulse";
 export { Home } from "@tamagui/lucide-icons/icons/Home";
 export { ImagePlus } from "@tamagui/lucide-icons/icons/ImagePlus";
 export { Info } from "@tamagui/lucide-icons/icons/Info";
+export { KeyRound } from "@tamagui/lucide-icons/icons/KeyRound";
 export { Languages } from "@tamagui/lucide-icons/icons/Languages";
 export { Leaf } from "@tamagui/lucide-icons/icons/Leaf";
 export { Link2 } from "@tamagui/lucide-icons/icons/Link2";

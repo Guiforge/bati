@@ -1,4 +1,4 @@
-import { Directory } from "expo-file-system";
+import { Directory, type File } from "expo-file-system";
 import { dayKey } from "@/db/dates";
 import { preferences } from "@/db/preferences";
 import { errorTrail } from "@/db/sql";
@@ -6,6 +6,7 @@ import {
   pickBackupFolder,
   preRestoreFileStem,
   saveBackupToFolder,
+  sealedCopiesIn,
   writePreMigrationCopy,
 } from "@/src/backupFiles";
 import { reportError } from "@/src/reportError";
@@ -40,6 +41,12 @@ import { reportError } from "@/src/reportError";
 async function rememberedFolder(): Promise<Directory | null> {
   const uri = await preferences.getBackupFolderUri();
   return uri === null ? null : new Directory(uri);
+}
+
+/** The newest sealed copies in the remembered folder, for a phone that has lost its key; none without a folder. */
+export async function sealedCopiesInBackupFolder(): Promise<File[]> {
+  const folder = await rememberedFolder();
+  return folder === null ? [] : sealedCopiesIn(folder);
 }
 
 /**
@@ -124,7 +131,28 @@ export async function disableAutoBackup(): Promise<void> {
  */
 export async function backupBeforeRestore(): Promise<void> {
   const folder = await rememberedFolder();
-  if (folder) await saveBackupToFolder(folder, preRestoreFileStem(new Date()));
+  if (!folder) return;
+  try {
+    await saveBackupToFolder(folder, preRestoreFileStem(new Date()));
+  } catch (error) {
+    if (reachable(folder)) throw error;
+    // A database Android restored onto a new phone carries the old phone's folder, whose permission
+    // did not travel: nothing can ever be written there, and refusing the restore for it would
+    // trap the hero. The folder is forgotten, the swap keeps its own `.bak`.
+    // ponytail: an unmounted card looks the same as a lost permission, so its restore goes ahead
+    //           without the visible copy. Tell them apart when a device shows the difference.
+    reportError("backup.beforeRestore.staleFolder", error);
+    await disableAutoBackup();
+  }
+}
+
+/** Whether the tree can still be reached; a lost permission reads as missing, or throws. */
+function reachable(folder: Directory): boolean {
+  try {
+    return folder.exists;
+  } catch {
+    return false;
+  }
 }
 
 /**

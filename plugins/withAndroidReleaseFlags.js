@@ -21,6 +21,12 @@ const { withGradleProperties } = require("expo/config-plugins");
  * WebP is deliberately left enabled: the same reasoning would apply, but 295 of the app's assets
  * are WebP and a wrong call there is 295 blank images.
  *
+ * `android.packagingOptions.excludes` keeps Bouncy Castle's resources out. It is here for Argon2id
+ * (the platform has none), and R8 trims its classes to what is reached, but the jar also carries
+ * 1.2 MiB of data files the app never opens (the Picnic post-quantum tables, X.509 messages), which
+ * R8 cannot shrink because they are resources and not code. Without this the APK went from 53.8 to
+ * 55.7 MiB and over the release gate.
+ *
  * The other two are the R8 switches. Expo's generated `build.gradle` defaults both to **false**,
  * so a release build only minifies when something passes `-P` on the command line — which
  * `.github/workflows/release.yml` and `fdroid/fdroiddata-recipe.yml` do, and a local
@@ -33,6 +39,8 @@ const PROPERTIES = {
   "expo.gif.enabled": "false",
   "android.enableMinifyInReleaseBuilds": "true",
   "android.enableShrinkResourcesInReleaseBuilds": "true",
+  // Expo's generated build.gradle reads this one into `packagingOptions.excludes`.
+  "android.packagingOptions.excludes": "org/bouncycastle/**",
 };
 
 module.exports = function withAndroidReleaseFlags(config) {

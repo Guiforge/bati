@@ -15,12 +15,16 @@ on:
   push:
     paths:
       - "modules/*/android/**"
+      # The frozen backup files the JVM tests open (modules/bati-crypto/android/src/test).
+      - "__tests__/fixtures/backup/**"
       - ".editorconfig"
       - "scripts/ktlint.sh"
       - ".github/workflows/kotlin.yml"
   pull_request:
     paths:
       - "modules/*/android/**"
+      # The frozen backup files the JVM tests open (modules/bati-crypto/android/src/test).
+      - "__tests__/fixtures/backup/**"
       - ".editorconfig"
       - "scripts/ktlint.sh"
       - ".github/workflows/kotlin.yml"
@@ -80,4 +84,10 @@ jobs:
             fi
             echo "Compiling $target"
             ./gradlew "$target:compileDebugKotlin" --console=plain
+            # A module with JVM unit tests runs them here. bati-crypto's hold the backup format in
+            # place: RFC vectors, the segment layout, and the files frozen in the repo.
+            if [ -d "$dir/src/test" ]; then
+              echo "Testing $target"
+              ./gradlew "$target:testDebugUnitTest" --console=plain
+            fi
           done

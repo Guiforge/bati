@@ -77,8 +77,14 @@ test("an Apache listing is read whatever its namespace prefixes", () => {
       name: "bati-0190a000-0000-7000-8000-000000000001.batb",
       etag: "1-65c54d08e4063",
       modified: Date.parse("Fri, 25 Sep 2026 20:46:46 GMT"),
+      size: 1,
     },
   ]);
+});
+
+test("Apache's weak marker does not make a new version of the same file", () => {
+  const weak = APACHE.replace('"1-65c54d08e4063"', 'W/"1-65c54d08e4063"');
+  expect(parseListing(weak)[0]?.etag).toBe(parseListing(APACHE)[0]?.etag);
 });
 
 test("a server with no etag is versioned by modification time and size", () => {
@@ -88,6 +94,7 @@ test("a server with no etag is versioned by modification time and size", () => {
       name: "bati-0190a000-0000-7000-8000-000000000001.batb",
       etag: "Fri, 25 Sep 2026 20:46:46 GMT|1",
       modified: Date.parse("Fri, 25 Sep 2026 20:46:46 GMT"),
+      size: 1,
     },
   ]);
 });
@@ -101,10 +108,23 @@ test("a sub-folder without a trailing slash is still skipped by its resource typ
 
 test("Nextcloud keeps its files under the user's root; any other server under its address", () => {
   expect(
-    nextcloudTarget({ server: "https://cloud.test", loginName: "hé ro", appPassword: "p" }),
+    nextcloudTarget({
+      server: "https://cloud.test",
+      loginName: "hé ro",
+      userId: "hé ro",
+      appPassword: "p",
+    }),
   ).toEqual({
     folderUrl: "https://cloud.test/remote.php/dav/files/h%C3%A9%20ro/Bati",
     user: "hé ro",
+    password: "p",
+  });
+  // An email signs in, but is not always a path: with no id from the server, the account's own root.
+  expect(
+    nextcloudTarget({ server: "https://cloud.test", loginName: "a@b.org", appPassword: "p" }),
+  ).toEqual({
+    folderUrl: "https://cloud.test/remote.php/webdav/Bati",
+    user: "a@b.org",
     password: "p",
   });
   expect(webdavTarget("https://app.koofr.net/dav/Koofr/", "hero", "p").folderUrl).toBe(

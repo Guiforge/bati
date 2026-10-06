@@ -19,7 +19,10 @@ jest.mock("expo-file-system", () => {
   const disk = new Map<string, string>();
   const ops: string[] = [];
   /** A filename; the next move *into* it throws, the way a full disk would. */
-  const control: { failMoveInto: string | null } = { failMoveInto: null };
+  const control: { failMoveInto: string | null; sizes: Record<string, number> } = {
+    failMoveInto: null,
+    sizes: {},
+  };
 
   const strip = (uri: string) => uri.replace("file://", "");
 
@@ -42,6 +45,11 @@ jest.mock("expo-file-system", () => {
       return disk.has(this.path);
     }
 
+    /** What the provider says the file weighs: a test names a size, the rest weigh nothing. */
+    get size() {
+      return control.sizes[this.name] ?? 0;
+    }
+
     delete() {
       ops.push(`delete ${this.name}`);
       disk.delete(this.path);
@@ -49,6 +57,7 @@ jest.mock("expo-file-system", () => {
 
     // biome-ignore lint/suspicious/useAwait: mirrors the real Promise-returning signature
     async copy(destination: File | Directory, options?: { overwrite?: boolean }) {
+      if (mockCopy.refuse) throw new Error("No space left on device (ENOSPC)");
       // Copying into a *directory* keeps this file's name, which is the whole reason
       // `saveBackupToFolder` can hand the picked folder straight to `copy`.
       const target =
@@ -116,6 +125,48 @@ jest.mock("expo-file-system", () => {
   return { File, Directory, __disk: disk, __ops: ops, __control: control };
 });
 
+/** What the native Save-as was asked, in order, and what it answers. */
+const mockSave: {
+  calls: string[];
+  picked: string | null;
+  pickThrows: Error | null;
+  writeThrows: Error | null;
+  /** The provider takes the snapshot away when it writes (a move, not a copy). */
+  consumes: boolean;
+  name: string;
+} = {
+  calls: [],
+  picked: "content://docs/d1",
+  pickThrows: null,
+  writeThrows: null,
+  consumes: false,
+  name: "x",
+};
+jest.mock("@/modules/bati-save", () => ({
+  NO_FILE_PICKER: "NO_FILE_PICKER",
+  batiSave: () => ({
+    pickTarget: (name: string) => {
+      mockSave.calls.push(`pick ${name}`);
+      return mockSave.pickThrows
+        ? Promise.reject(mockSave.pickThrows)
+        : Promise.resolve(mockSave.picked);
+    },
+    discard: (uri: string) => {
+      mockSave.calls.push(`discard ${uri}`);
+      return Promise.resolve();
+    },
+    writeTo: (uri: string, source: string) => {
+      const fs = require("expo-file-system") as FakeFs;
+      // The snapshot must exist by now, and be the one that was made after the picker.
+      mockSave.calls.push(`write ${uri} exists=${fs.__disk.has(source.replace("file://", ""))}`);
+      if (mockSave.consumes) fs.__disk.delete(source.replace("file://", ""));
+      return mockSave.writeThrows
+        ? Promise.reject(mockSave.writeThrows)
+        : Promise.resolve({ name: mockSave.name, bytes: 9 });
+    },
+  }),
+}));
+
 const mockSharingAvailable = jest.fn(async () => true);
 jest.mock("expo-sharing", () => ({
   isAvailableAsync: () => mockSharingAvailable(),
@@ -135,15 +186,26 @@ jest.mock("@/db/client", () => ({
   SAFETY_NAME: "bati.v3.db.bak",
   closeDatabase: () => {
     (require("expo-file-system") as FakeFs).__ops.push("close");
-    return Promise.resolve();
+    return Promise.resolve(!(globalThis as { mockCloseFails?: boolean }).mockCloseFails);
   },
   // The real one queues behind in-flight transactions; there are none here.
   serializeOnDatabase: <T>(fn: () => Promise<T>) => fn(),
 }));
 
+/** A copy into the chosen folder that the provider refuses (a full quota). */
+const mockCopy = { refuse: false };
+
+/** A `VACUUM INTO` that runs out of room after writing part of the copy, and its journal. */
+const mockSnapshot = { failHalfway: false };
+
 jest.mock("@/db/backup", () => ({
   snapshotDatabaseTo: (destination: string) => {
     const fs = require("expo-file-system") as FakeFs;
+    if (mockSnapshot.failHalfway) {
+      fs.__disk.set(destination, "half a vacuum");
+      fs.__disk.set(`${destination}-journal`, "its journal");
+      return Promise.reject(new Error("database or disk is full"));
+    }
     // Like `VACUUM INTO`, which refuses a file that is already there.
     if (fs.__disk.has(destination)) return Promise.reject(new Error("output file already exists"));
     fs.__ops.push(`snapshot ${destination.split("/").pop()}`);
@@ -154,23 +216,41 @@ jest.mock("@/db/backup", () => ({
 
 jest.mock("@/db/schemaVersion", () => ({ SCHEMA_VERSION: 3 }));
 
+/** This device's tag in a file name. `null` is a keystore that is down: the pre-tag names. */
+const mockTag: { value: string | null } = { value: null };
+jest.mock("@/src/installId", () => ({
+  ...jest.requireActual("@/src/installId"),
+  shortInstallId: () => Promise.resolve(mockTag.value),
+}));
+
 /**
  * The cipher is tested for real in backupCipher.test.ts; here it only has to leave the same marks
  * on the fake disk: a sealed file is "sealed:" plus what it sealed, and opening one writes the
  * plaintext back. `mockCipher.status` is what the hero chose in Settings.
  */
-const mockCipher: { status: "off" | "on" | "locked"; open: string } = {
+const mockCipher: { status: "off" | "on" | "locked"; open: string; sealFails: boolean } = {
   status: "off",
   open: "opened",
+  sealFails: false,
 };
+/** How many seals run at once: they share one plaintext scratch file, so it must stay at one. */
+const mockSeals = { running: 0, most: 0 };
 jest.mock("@/src/backupCipher", () => {
   const disk = () => (require("expo-file-system") as FakeFs).__disk;
   return {
+    MAX_SEALED_BYTES: 256 * 1024 * 1024,
     encryptionStatus: () => Promise.resolve(mockCipher.status),
-    sealBackup: (plain: string, out: string) =>
-      Promise.resolve().then(() => {
+    sealBackup: async (plain: string, out: string) => {
+      mockSeals.running += 1;
+      mockSeals.most = Math.max(mockSeals.most, mockSeals.running);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 15));
+        if (mockCipher.sealFails) throw new Error("seal failed");
         disk().set(out, `sealed:${disk().get(plain)}`);
-      }),
+      } finally {
+        mockSeals.running -= 1;
+      }
+    },
     openBackup: (sealed: string, out: string) =>
       Promise.resolve().then(() => {
         if (mockCipher.open === "opened") {
@@ -184,16 +264,22 @@ jest.mock("@/src/backupCipher", () => {
 import type { Directory } from "expo-file-system";
 
 import {
+  clearPeerScratch,
   commitRestore,
   decryptStagedImport,
   discardStagedImport,
   exportBackup,
+  peerScratch,
+  pendingSyncSnapshot,
+  pickBackupFolder,
   preRestoreFileStem,
+  saveBackupAs,
   saveBackupToFolder,
   stageBackupForImport,
   writePreMigrationCopy,
   writeSyncSnapshot,
 } from "@/src/backupFiles";
+import { PEER_FILE } from "@/src/installId";
 
 type FakeFs = {
   File: { new (uri: string): object; pickFileAsync: jest.Mock };
@@ -203,7 +289,7 @@ type FakeFs = {
   Directory: { new (uri: string): Directory; pickDirectoryAsync: jest.Mock };
   __disk: Map<string, string>;
   __ops: string[];
-  __control: { failMoveInto: string | null };
+  __control: { failMoveInto: string | null; sizes: Record<string, number> };
 };
 
 const fs = require("expo-file-system") as FakeFs;
@@ -231,9 +317,21 @@ function picks(contents: string) {
 }
 
 beforeEach(() => {
+  mockTag.value = null;
+  mockSave.calls = [];
+  mockSave.picked = "content://docs/d1";
+  mockSave.pickThrows = null;
+  mockSave.writeThrows = null;
+  mockSave.consumes = false;
+  mockSave.name = "bati-export-v3-2026-10-04.db";
+  mockCipher.status = "off";
+  mockCipher.sealFails = false;
+  mockSeals.running = 0;
+  mockSeals.most = 0;
   fs.__disk.clear();
   fs.__ops.length = 0;
   fs.__control.failMoveInto = null;
+  fs.__control.sizes = {};
   mockSharingAvailable.mockImplementation(async () => true);
   fs.File.pickFileAsync.mockReset();
   fs.Directory.pickDirectoryAsync.mockReset();
@@ -241,6 +339,7 @@ beforeEach(() => {
 
 describe("commitRestore — the swap", () => {
   beforeEach(() => {
+    (globalThis as { mockCloseFails?: boolean }).mockCloseFails = false;
     write(mockDbName, "the hero's year");
     write(IMPORT_NAME, "the backup");
   });
@@ -300,6 +399,30 @@ describe("commitRestore — the swap", () => {
     // Losing the older `.bak` is the documented cost of keeping only one generation. Losing the
     // database it was standing in for is not.
     expect(fs.__disk.get(at(mockDbName))).toBe("the hero's year");
+  });
+
+  // A handle that would not close can still hold committed frames in its WAL. Deleting that file
+  // threw them away from the database that becomes `.bak`, the rollback target.
+  test("a handle that did not close parks its WAL with the database instead of deleting it", async () => {
+    (globalThis as { mockCloseFails?: boolean }).mockCloseFails = true;
+    write(`${mockDbName}-wal`, "committed frames");
+
+    await commitRestore();
+
+    expect(fs.__disk.get(at(`${SAFETY_NAME}-wal`))).toBe("committed frames");
+    expect(fs.__disk.has(at(`${mockDbName}-wal`))).toBe(false);
+    expect(fs.__disk.get(at(mockDbName))).toBe("the backup");
+  });
+
+  test("a failed swap after a parked WAL puts the WAL back too", async () => {
+    (globalThis as { mockCloseFails?: boolean }).mockCloseFails = true;
+    write(`${mockDbName}-wal`, "committed frames");
+    fs.__control.failMoveInto = mockDbName;
+
+    await expect(commitRestore()).rejects.toThrow();
+
+    expect(fs.__disk.get(at(mockDbName))).toBe("the hero's year");
+    expect(fs.__disk.get(at(`${mockDbName}-wal`))).toBe("committed frames");
   });
 
   test("a first restore with no database yet still lands, with nothing to roll back", async () => {
@@ -428,6 +551,18 @@ describe("saveBackupToFolder", () => {
    * prune sorts on the *day* rather than the whole name, because `v3` and `v10` do not sort as
    * numbers — a name-ordered prune would start by deleting the newest schema's backups.
    */
+  test("copies dated in the future (a clock that ran ahead) are neither kept as 'newest' nor deleted, and today's survives", async () => {
+    const folder = new fs.Directory("file:///sdcard/Documents");
+    const future = ["2099-01-01", "2099-01-02", "2099-01-03", "2099-01-04", "2099-01-05"];
+    for (const day of future) fs.__disk.set(`/sdcard/Documents/bati-export-v3-${day}.db`, day);
+
+    await saveBackupToFolder(folder);
+
+    const names = [...fs.__disk.keys()].filter((key) => key.startsWith("/sdcard/Documents/"));
+    for (const day of future) expect(names).toContain(`/sdcard/Documents/bati-export-v3-${day}.db`);
+    expect(names.filter((n) => !n.includes("2099"))).toHaveLength(1);
+  });
+
   test("keeps the five newest snapshots and deletes the older ones", async () => {
     const folder = new fs.Directory("file:///sdcard/Documents");
     for (const day of ["2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01"]) {
@@ -569,6 +704,8 @@ describe("encrypted backups", () => {
 
   afterEach(() => {
     mockCipher.status = "off";
+    mockSnapshot.failHalfway = false;
+    mockCopy.refuse = false;
   });
 
   test("a snapshot is sealed as .batb, and no plaintext copy is left beside the database", async () => {
@@ -577,6 +714,28 @@ describe("encrypted backups", () => {
     const local = [...fs.__disk.keys()].map((key) => key.split("/").pop());
     expect(local).toEqual([expect.stringMatching(/^bati-export-v3-\d{4}-\d{2}-\d{2}\.batb$/)]);
     expect([...fs.__disk.values()]).toEqual(["sealed:snapshot"]);
+  });
+
+  test("a copy the folder refuses costs none of the copies already there", async () => {
+    const folder = new fs.Directory("file:///sdcard/Documents");
+    // Six, as an earlier prune that failed can leave: the oldest is not deleted before the new one exists.
+    for (const day of [
+      "2026-09-19",
+      "2026-09-20",
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+    ]) {
+      fs.__disk.set(`/sdcard/Documents/bati-export-v3-${day}.batb`, day);
+    }
+    mockCopy.refuse = true;
+
+    await expect(saveBackupToFolder(folder)).rejects.toThrow("No space left");
+    mockCopy.refuse = false;
+
+    const kept = [...fs.__disk.keys()].filter((key) => key.startsWith("/sdcard/Documents/"));
+    expect(kept).toHaveLength(6);
   });
 
   test("sealed and plain snapshots are pruned as one series", async () => {
@@ -602,6 +761,15 @@ describe("encrypted backups", () => {
 
     expect(fs.__disk.get(sealed.uri.replace(/^file:\/\//, ""))).toBe("sealed:snapshot");
     expect(fs.__disk.has(at("bati-export-plain.tmp.db"))).toBe(false);
+  });
+
+  test("a snapshot that runs out of room leaves no half of the database in the clear", async () => {
+    mockSnapshot.failHalfway = true;
+
+    await expect(writeSyncSnapshot()).rejects.toThrow("disk is full");
+    mockSnapshot.failHalfway = false;
+
+    expect([...fs.__disk.keys()].map((key) => key.split("/").pop())).toEqual([]);
   });
 
   test("an opened import replaces the staged file with its plaintext", async () => {
@@ -669,5 +837,337 @@ describe("writePreMigrationCopy: the net under an update", () => {
     await exportBackup();
 
     expect(fs.__disk.has(at("premigrate.db"))).toBe(true);
+  });
+});
+
+/**
+ * Two devices that back up into the same folder, which is exactly what the sync sheet suggests.
+ * Before the tag both wrote `bati-export-v3-<day>.db`: the second overwrote the first's copy of the
+ * day, and the prune kept five files across both, so each device deleted the other's history.
+ */
+describe("copies tagged by device", () => {
+  const DOCS = "/sdcard/Documents";
+  const folder = () => new fs.Directory(`file://${DOCS}`);
+  const seed = (name: string) => fs.__disk.set(`${DOCS}/${name}`, name);
+  // The folder only: the snapshot is staged in the app's own directory first, and that copy is
+  // not what these tests are about.
+  const names = (prefix: string) =>
+    [...fs.__disk.keys()]
+      .filter((key) => key.startsWith(`${DOCS}/`))
+      .map((key) => key.split("/").pop() ?? "")
+      .filter((name) => name.startsWith(prefix))
+      .sort();
+  const days = ["2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01", "2026-05-01", "2026-06-01"];
+
+  test("the file name carries the device tag", async () => {
+    mockTag.value = "a1b2c3d4";
+    await saveBackupToFolder(folder());
+
+    expect(names("bati-export-")).toEqual([
+      expect.stringMatching(/^bati-export-a1b2c3d4-v3-\d{4}-\d{2}-\d{2}\.db$/),
+    ]);
+  });
+
+  test("a copy's name can never pass for a device's sync file", async () => {
+    mockTag.value = "a1b2c3d4";
+    await saveBackupToFolder(folder());
+
+    for (const name of names("bati-export-")) expect(PEER_FILE.test(name)).toBe(false);
+  });
+
+  test("each device keeps its own five, and never touches the other's", async () => {
+    for (const day of days) {
+      seed(`bati-export-aaaaaaaa-v3-${day}.db`);
+      seed(`bati-export-bbbbbbbb-v3-${day}.db`);
+    }
+
+    mockTag.value = "aaaaaaaa";
+    await saveBackupToFolder(folder());
+    expect(names("bati-export-aaaaaaaa-")).toHaveLength(5);
+    expect(names("bati-export-bbbbbbbb-")).toHaveLength(6);
+
+    mockTag.value = "bbbbbbbb";
+    await saveBackupToFolder(folder());
+    expect(names("bati-export-aaaaaaaa-")).toHaveLength(5);
+    expect(names("bati-export-bbbbbbbb-")).toHaveLength(5);
+  });
+
+  test("the oldest of its own go first, whatever the other device holds", async () => {
+    for (const day of days) seed(`bati-export-aaaaaaaa-v3-${day}.db`);
+    seed("bati-export-bbbbbbbb-v3-2000-01-01.db");
+
+    mockTag.value = "aaaaaaaa";
+    await saveBackupToFolder(folder());
+
+    expect(names("bati-export-aaaaaaaa-")).not.toContain("bati-export-aaaaaaaa-v3-2026-01-01.db");
+    expect(names("bati-export-aaaaaaaa-")).not.toContain("bati-export-aaaaaaaa-v3-2026-02-01.db");
+    expect(names("bati-export-bbbbbbbb-")).toEqual(["bati-export-bbbbbbbb-v3-2000-01-01.db"]);
+  });
+
+  test("a copy from before the tag is left alone: whose it is cannot be told", async () => {
+    for (const day of days) seed(`bati-export-v3-${day}.db`);
+
+    mockTag.value = "a1b2c3d4";
+    await saveBackupToFolder(folder());
+
+    expect(names("bati-export-v3-")).toHaveLength(6);
+  });
+
+  test("with the keystore down it writes the old name and prunes only old names", async () => {
+    for (const day of days.slice(0, 4)) seed(`bati-export-v3-${day}.db`);
+    for (const day of days) seed(`bati-export-a1b2c3d4-v3-${day}.db`);
+
+    mockTag.value = null;
+    await saveBackupToFolder(folder());
+
+    // Four old names plus today's make five: nothing pruned, and the tagged six are untouched.
+    expect(names("bati-export-v3-")).toHaveLength(5);
+    expect(names("bati-export-a1b2c3d4-")).toHaveLength(6);
+  });
+
+  test("saving twice on one day replaces this device's copy of the day", async () => {
+    mockTag.value = "a1b2c3d4";
+    await saveBackupToFolder(folder());
+    await saveBackupToFolder(folder());
+
+    expect(names("bati-export-a1b2c3d4-")).toHaveLength(1);
+  });
+
+  test("prunes a Storage Access Framework tree, tag and percent-encoding together", async () => {
+    const tree = "content://com.android.externalstorage.documents/tree/primary%3ADocuments";
+    const asDocument = (name: string) =>
+      `${tree}/document/${encodeURIComponent(`primary:Documents/${name}`)}`;
+    for (const day of days) {
+      fs.__disk.set(asDocument(`bati-export-aaaaaaaa-v3-${day}.db`), day);
+      fs.__disk.set(asDocument(`bati-export-bbbbbbbb-v3-${day}.db`), day);
+    }
+
+    mockTag.value = "aaaaaaaa";
+    await saveBackupToFolder(new fs.Directory(tree));
+
+    const left = [...fs.__disk.keys()]
+      .filter((key) => key.startsWith(tree))
+      .map((key) => decodeURIComponent(key));
+    expect(left.filter((key) => key.includes("export-aaaaaaaa-"))).toHaveLength(5);
+    expect(left.filter((key) => key.includes("export-bbbbbbbb-"))).toHaveLength(6);
+  });
+
+  test("a pre-restore copy still sits outside the prune, tag or not", async () => {
+    mockTag.value = "a1b2c3d4";
+    const before = preRestoreFileStem(new Date(2026, 8, 19, 9, 5, 2));
+    await saveBackupToFolder(folder(), before);
+    for (const day of days) seed(`bati-export-a1b2c3d4-v3-${day}.db`);
+    await saveBackupToFolder(folder());
+
+    expect(fs.__disk.has(`${DOCS}/${before}.db`)).toBe(true);
+  });
+});
+
+describe("saveBackupAs: Android's Save as", () => {
+  const diskNames = () => [...fs.__disk.keys()].map((key) => key.split("/").pop());
+
+  test("asks where first, then makes the snapshot, then writes: in that order, and says what the provider called it", async () => {
+    mockSave.name = "My hero.db";
+
+    const saved = await saveBackupAs();
+
+    expect(saved).toEqual({ name: "My hero.db" });
+    expect(mockSave.calls).toEqual([
+      expect.stringMatching(/^pick bati-export-v3-\d{4}-\d{2}-\d{2}\.db$/),
+      "write content://docs/d1 exists=true",
+    ]);
+  });
+
+  test("a hero who backs out of the picker costs no snapshot at all", async () => {
+    mockSave.picked = null;
+
+    expect(await saveBackupAs()).toBeNull();
+
+    expect(fs.__ops.filter((op) => op.startsWith("snapshot"))).toEqual([]);
+    expect(diskNames()).toEqual([]);
+  });
+
+  test("the snapshot does not stay in app storage once it is saved", async () => {
+    await saveBackupAs();
+
+    expect(diskNames().filter((name) => name?.startsWith("bati-export-"))).toEqual([]);
+  });
+
+  test("nor when the write failed, which is told and not swallowed", async () => {
+    mockSave.writeThrows = new Error("The destination holds 3 bytes, 9 were written");
+
+    await expect(saveBackupAs()).rejects.toThrow("holds 3 bytes");
+
+    expect(diskNames().filter((name) => name?.startsWith("bati-export-"))).toEqual([]);
+  });
+
+  test("a sealed vault is named .batb before the hero picks, so the name says what the file is", async () => {
+    mockCipher.status = "on";
+
+    await saveBackupAs();
+
+    expect(mockSave.calls[0]).toMatch(/\.batb$/);
+  });
+
+  test("a snapshot that cannot be made deletes the empty document the picker created", async () => {
+    mockCipher.status = "on";
+    mockCipher.sealFails = true;
+
+    await expect(saveBackupAs()).rejects.toThrow("seal failed");
+
+    expect(mockSave.calls.at(-1)).toBe("discard content://docs/d1");
+    expect(mockSave.calls.some((call) => call.startsWith("write"))).toBe(false);
+  });
+
+  test("a locked vault is refused before the picker opens: there is nothing it could save", async () => {
+    mockCipher.status = "locked";
+
+    await expect(saveBackupAs()).rejects.toThrow("Encryption is locked");
+
+    expect(mockSave.calls).toEqual([]);
+  });
+
+  test("on a device with nothing to save a file with, says so, and the share sheet is the way", async () => {
+    // The shape Expo gives JS for a native CodedException: a code, and prose for a message.
+    mockSave.pickThrows = Object.assign(
+      new Error(
+        "Call to function 'BatiSave.pickTarget' has been rejected.\n→ Caused by: No app on this device can save a file",
+      ),
+      { code: "NO_FILE_PICKER" },
+    );
+
+    expect(await saveBackupAs()).toBe("noPicker");
+    expect(diskNames()).toEqual([]);
+  });
+
+  test("any other failure of the picker is a failure", async () => {
+    mockSave.pickThrows = new Error("the activity was destroyed");
+
+    await expect(saveBackupAs()).rejects.toThrow("destroyed");
+  });
+
+  test("the file name carries the device tag, like every other copy", async () => {
+    mockTag.value = "a1b2c3d4";
+
+    await saveBackupAs();
+
+    expect(mockSave.calls[0]).toMatch(/^pick bati-export-a1b2c3d4-v3-/);
+  });
+});
+
+describe("snapshots, one at a time", () => {
+  test("'Sync now' and 'Save a file' at the same moment never seal together: they share a scratch file", async () => {
+    mockCipher.status = "on";
+
+    const [sync, saved] = await Promise.all([writeSyncSnapshot(), saveBackupAs()]);
+
+    expect(mockSeals.most).toBe(1);
+    expect(sync.exists).toBe(true);
+    expect(saved).toEqual({ name: expect.any(String) });
+  });
+
+  test("a snapshot that fails does not hold up the next one", async () => {
+    mockCipher.status = "on";
+    mockCipher.sealFails = true;
+    await expect(writeSyncSnapshot()).rejects.toThrow("seal failed");
+
+    mockCipher.sealFails = false;
+    await expect(writeSyncSnapshot()).resolves.toBeDefined();
+  });
+});
+
+describe("error branches", () => {
+  test("a provider that took the snapshot away when it wrote leaves nothing to delete, and no error", async () => {
+    mockSave.consumes = true;
+
+    await expect(saveBackupAs()).resolves.toEqual({ name: mockSave.name });
+
+    expect(fs.__ops.filter((op) => op.startsWith("delete bati-export-"))).toEqual([]);
+  });
+
+  test.each(["off", "locked"] as const)(
+    "a sync snapshot is refused with encryption %s, and nothing is written",
+    async (status) => {
+      mockCipher.status = status;
+
+      await expect(writeSyncSnapshot()).rejects.toThrow("Sync needs encryption on");
+
+      expect(fs.__ops.filter((op) => op.startsWith("snapshot"))).toEqual([]);
+      expect(pendingSyncSnapshot()).toBeNull();
+    },
+  );
+
+  test("the pending sync snapshot is the one written, and only once it exists", async () => {
+    mockCipher.status = "on";
+    expect(pendingSyncSnapshot()).toBeNull();
+
+    const written = await writeSyncSnapshot();
+
+    expect(pendingSyncSnapshot()?.uri).toBe(written.uri);
+  });
+
+  test("a peer's scratch file is named after its file, sealed or plain", () => {
+    expect(peerScratch("abc.batb", "sealed").name).toBe("bati-peer-abc.tmp.batb");
+    expect(peerScratch("abc.batb", "plain").name).toBe("bati-peer-abc.tmp.db");
+  });
+
+  test("clearing peer scratch deletes every peer file but the one kept, and nothing else", () => {
+    const keep = peerScratch("b.batb", "plain");
+    write("bati-peer-a.tmp.batb", "x");
+    write(keep.name, "y");
+    write(mockDbName, "the hero");
+    write("bati-sync-out.batb", "sealed");
+
+    clearPeerScratch(keep);
+
+    expect([...fs.__disk.keys()].sort()).toEqual(
+      [at(keep.name), at(mockDbName), at("bati-sync-out.batb")].sort(),
+    );
+    clearPeerScratch();
+    expect(fs.__disk.has(at(keep.name))).toBe(false);
+    expect(fs.__disk.has(at(mockDbName))).toBe(true);
+  });
+
+  test("a sub-folder in the chosen folder is skipped by the prune, never deleted", async () => {
+    const folder = new fs.Directory("file:///sd/Bati");
+    const sub = new fs.Directory("file:///sd/Bati/bati-export-v3-2020-01-01.db");
+    folder.list = () => [sub];
+
+    await expect(saveBackupToFolder(folder)).resolves.toBe(true);
+  });
+
+  test.each([
+    ["no message", { code: "ERR_OTHER" }],
+    ["nothing at all", null],
+  ])("a picker that fails with %s is a failure, not a cancellation", async (_label, failure) => {
+    fs.Directory.pickDirectoryAsync.mockRejectedValue(failure);
+
+    await expect(pickBackupFolder()).rejects.toBe(failure);
+  });
+
+  test("a picker that only says cancelled in prose is a cancellation", async () => {
+    fs.Directory.pickDirectoryAsync.mockRejectedValue(new Error("User cancelled the picker"));
+
+    await expect(pickBackupFolder()).resolves.toBeNull();
+  });
+
+  test("a staged import over the size limit is refused before the cipher reads it", async () => {
+    write(IMPORT_NAME, "huge");
+    fs.__control.sizes[IMPORT_NAME] = 256 * 1024 * 1024 + 1;
+
+    await expect(decryptStagedImport("password")).rejects.toThrow("Backup file is too large");
+
+    expect(fs.__disk.get(at(IMPORT_NAME))).toBe("huge");
+  });
+
+  test("a swap that fails with no database to park leaves the staged file and puts nothing back", async () => {
+    write(IMPORT_NAME, "the backup");
+    fs.__control.failMoveInto = mockDbName;
+
+    await expect(commitRestore()).rejects.toThrow("no space left on device");
+
+    expect(fs.__ops.some((op) => op.endsWith(`-> ${mockDbName}`))).toBe(true);
+    expect(fs.__ops.some((op) => op.startsWith(`move ${SAFETY_NAME}`))).toBe(false);
+    expect(fs.__disk.has(at(mockDbName))).toBe(false);
   });
 });

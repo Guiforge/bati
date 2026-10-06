@@ -1,0 +1,74 @@
+# The app's data code against a real WebDAV server, with two or three devices, in Node: no emulator.
+#
+# ci.yml runs the app's own jest suite, where the network, the filesystem and the other devices are fakes.
+# This runs the real sync, merge, restore and cipher code against `test/infra/faulty/faulty.py`, a WebDAV
+# server in the Python standard library that misbehaves on command, behind toxiproxy (to cut the way to it
+# mid-upload), plus property tests: random days of three devices, quest files, and GPX against the GPX 1.1
+# schema. Short mode: one random day of eight events. A longer run is the same command with more:
+#
+#   SYNC_RUNS=40 SYNC_EVENTS=14 node node_modules/jest/bin/jest.js --config test/node/jest.config.js sync/random
+#
+# A counterexample prints its seed: replay it alone with SYNC_SEED and SYNC_PATH.
+name: Node stage
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "db/**"
+      - "test/node/**"
+      - "test/infra/faulty/**"
+      - "__tests__/fixtures/backup/**"
+      - "package-lock.json"
+      - ".github/workflows/node-stage.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "db/**"
+      - "test/node/**"
+      - "test/infra/faulty/**"
+      - "__tests__/fixtures/backup/**"
+      - "package-lock.json"
+      - ".github/workflows/node-stage.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  node-stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix test/node
+      # Their own check: fast-check lives in test/node/package.json, which the main check does not install.
+      - run: npx tsc --project test/node/tsconfig.json
+      # xmllint checks the GPX the app writes against the GPX 1.1 schema.
+      - run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends libxml2-utils
+      # The server on 28190, and toxiproxy listening on 28090 (where the tests expect it) in front of it, its
+      # control API on 18474. The container reaches the host through host.docker.internal.
+      - name: Start the server that misbehaves on command, and the proxy in front of it
+        run: |
+          mkdir -p "$RUNNER_TEMP/faulty"
+          DATA_DIR="$RUNNER_TEMP/faulty" python3 test/infra/faulty/faulty.py 28190 &
+          docker run -d --name toxiproxy \
+            --add-host=host.docker.internal:host-gateway \
+            -p 127.0.0.1:18474:8474 -p 127.0.0.1:28090:28090 \
+            ghcr.io/shopify/toxiproxy:2.12.0
+          for _ in $(seq 1 30); do curl -fs http://127.0.0.1:18474/version && break; sleep 1; done
+          curl -fs -X POST http://127.0.0.1:18474/proxies \
+            -H 'Content-Type: application/json' \
+            -d '{"name":"FAULTY","listen":"0.0.0.0:28090","upstream":"host.docker.internal:28190","enabled":true}'
+          for _ in $(seq 1 20); do curl -fs http://127.0.0.1:28090/_admin/files && break; sleep 1; done
+      - run: node node_modules/jest/bin/jest.js --config test/node/jest.config.js gpx quests restore sync/lagging sync/random
+        env:
+          SYNC_RUNS: "1"
+          SYNC_EVENTS: "8"

@@ -12,14 +12,12 @@ import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { useToast } from "@/components/common/Toast";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import {
-  Archive,
   ArchiveRestore,
   Bug,
   Download,
   Dumbbell,
   Flame,
   FolderDown,
-  FolderSync,
   HeartPulse,
   ImagePlus,
   Languages,
@@ -40,7 +38,6 @@ import {
 } from "@/components/icons";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
-import { LastBackupLine } from "@/components/settings/LastBackupLine";
 import { ReminderSection } from "@/components/settings/ReminderSection";
 import { SetAsideRow } from "@/components/settings/SetAsideRow";
 import { SettingRow } from "@/components/settings/SettingRow";
@@ -248,7 +245,7 @@ export default function SettingsScreen() {
     autoFolder,
     runExport,
     runImport,
-    runSaveToFolder,
+    runSaveAs,
     runEnableAuto,
     runDisableAuto,
     secretRequest,
@@ -587,44 +584,36 @@ export default function SettingsScreen() {
             {t("backup.section")}
           </Text>
 
-          <SettingRow
-            testID="settings-export-backup"
-            icon={<Archive size={22} color="$text" />}
-            label={t("backup.export")}
-            value={t("backup.exportHint")}
+          <BackupSecurityRows
             disabled={backupBusy}
-            onPress={runExport}
-          />
-
-          {/* Separate from the share sheet rather than an option inside it: on a device with
-              nothing installed that accepts a `.db`, the sheet is a dead end, and this is the
-              row that still produces a file. Doing both is a hero's right. */}
-          <SettingRow
-            testID="settings-save-backup"
-            icon={<FolderDown size={22} color="$text" />}
-            label={t("backup.save")}
-            value={t("backup.saveHint")}
-            disabled={backupBusy}
-            onPress={runSaveToFolder}
-          />
-
-          {/* Between the two manual rows and the destructive one, because it is the same act as
-              "Save a file" with the remembering added — and because a hero scanning this section
-              should meet the option that keeps working without them before the one that replaces
-              everything. The value is the folder and nothing else: every other row here spends
-              the same few words, and "Before each update · Documents/Bati" squeezed the label off
-              the screen. When it runs is one tap away, in the dialog. */}
-          <SettingRow
-            testID="settings-auto-backup"
-            icon={<FolderSync size={22} color="$text" />}
-            label={t("backup.auto")}
-            value={autoFolder ?? t("backup.autoOff")}
-            disabled={backupBusy}
-            onPress={confirmAuto}
-          />
-          <LastBackupLine folderOn={autoFolder !== null} />
-
-          <BackupSecurityRows disabled={backupBusy} />
+            autoFolder={autoFolder}
+            onLocalCopy={confirmAuto}
+          >
+            {/* One door, Android's own "Save as": the hero names the file and picks Drive,
+              Downloads or a stick. The share sheet stays one small link below, for the hero who
+              wants to hand the file straight to another app. */}
+            <SettingRow
+              testID="settings-save-backup"
+              icon={<FolderDown size={22} color="$text" />}
+              label={t("backup.save")}
+              value={t("backup.saveHint")}
+              disabled={backupBusy}
+              onPress={runSaveAs}
+            />
+            <Text
+              testID="settings-export-backup"
+              fontSize="$3"
+              color="$textSecondary"
+              textDecorationLine="underline"
+              px="$1"
+              minH={44}
+              verticalAlign="middle"
+              role="link"
+              onPress={runExport}
+            >
+              {t("backup.export")}
+            </Text>
+          </BackupSecurityRows>
 
           <SettingRow
             testID="settings-import-backup"

@@ -6,7 +6,7 @@ head_title: "Privacy policy for Bati"
 description: "Bati collects nothing about you. No account, no server of ours, no analytics. Offline first, with three exceptions, all off by default: the map, which tells a tile host roughly where you go, a daily question to GitHub about a newer version, and device sync, which sends your history encrypted to a server you choose."
 type: legal
 status: active
-updated: 2026-10-01
+updated: 2026-10-04
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -33,7 +33,7 @@ francés: **feedback.bati@proton.me**
 
 # Privacy Policy for Bati
 
-**Last updated: 1 October 2026**
+**Last updated: 4 October 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -76,8 +76,10 @@ and air-pressure readings of an outing) is written to a
 
 ## Backups you make
 
-Settings offers three ways to write that database to a file. **Share my backup** hands it to your
-system's share sheet. **Save a file** writes it into a folder you choose on the device.
+Settings offers three ways to write that database to a file. **Save a file** opens Android's own
+"Save as" screen: you name the file and pick where it goes (this device, Downloads, a cloud app you
+have installed, a USB stick). A small link next to it, **Send to another app**, hands the file to
+your system's share sheet instead.
 **Automatic backup** writes it into a folder you choose once, and then again on its own once a
 day and before each app update. Where any of those files goes from there is entirely your choice: the app sends
 it nowhere and has no way to.
@@ -85,11 +87,11 @@ it nowhere and has no way to.
 - **The file is not encrypted unless you ask.** Without encryption, anyone who opens it can read
   your training history: keep it the way you would keep a personal photo. **Encrypt my backups**
   seals every backup the app writes from then on (AES-256-GCM) with a key that opens only with a
-  password you choose or with a recovery key the app shows you once. The key stays on your phone,
+  password you choose or with twelve recovery words the app shows you once. The key stays on your phone,
   inside Android's protected storage, and is left out of your phone's own backup. Without the
-  password or the recovery key nobody can open those files, and nobody can recover them for you:
+  password or the twelve words nobody can open those files, and nobody can recover them for you:
   there is no copy of either anywhere but with you. On a phone with a fingerprint set up, the
-  recovery key is also kept behind it, so it can be shown again.
+  twelve words are also kept behind it, so they can be shown again.
 - **Restoring replaces everything.** Importing a backup swaps the app's contents for the file you
   supply. The database you had is kept on the device as a recovery copy, in the same private
   storage, until the next restore overwrites it.
@@ -256,7 +258,7 @@ and nowhere else. Decline the permission and the app works normally with the bui
 **Home-screen widget (Android, optional).** The flame widget reads your flame from
 the same on-device database.
 
-**Biometrics (optional).** Used for one thing: showing your backup recovery key again, behind your
+**Biometrics (optional).** Used for one thing: showing your twelve backup recovery words again, behind your
 fingerprint. Android runs the check; Bati never sees your fingerprint, only whether it matched.
 Nothing else in the app asks for it, and every backup opens with its password without it.
 
@@ -303,7 +305,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 1er octobre 2026**
+**Dernière mise à jour : 4 octobre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -350,9 +352,10 @@ votre appareil**.
 
 ## Les sauvegardes que vous faites
 
-Les réglages proposent trois façons d'écrire cette base dans un fichier. **Partager ma sauvegarde**
-la remet au partage de votre système. **Enregistrer un fichier** l'écrit dans un dossier que vous
-choisissez sur l'appareil. **Sauvegarde automatique** l'écrit dans un dossier que vous choisissez
+Les réglages proposent trois façons d'écrire cette base dans un fichier. **Enregistrer un fichier**
+ouvre l'écran « Enregistrer sous » d'Android : vous nommez le fichier et choisissez où il va (cet
+appareil, Téléchargements, une application de nuage installée, une clé USB). Un petit lien à côté,
+**Envoyer à une autre app**, remet plutôt le fichier au partage de votre système. **Sauvegarde automatique** l'écrit dans un dossier que vous choisissez
 une fois, puis de nouveau toute seule une fois par jour et avant chaque mise à jour de
 l'application. Ce que ces
 fichiers deviennent ensuite ne dépend que de vous : l'application ne les envoie nulle part, et
@@ -361,12 +364,12 @@ n'en a aucun moyen.
 - **Ce fichier n'est pas chiffré, sauf si vous le demandez.** Sans chiffrement, quiconque l'ouvre
   lit votre historique d'entraînement : rangez-le comme une photo personnelle. **Chiffrer mes
   sauvegardes** scelle chaque sauvegarde écrite ensuite par l'application (AES-256-GCM) avec une
-  clé qui ne s'ouvre qu'avec un mot de passe que vous choisissez ou avec une clé de récupération
+  clé qui ne s'ouvre qu'avec un mot de passe que vous choisissez ou avec douze mots de récupération
   que l'application vous montre une fois. La clé reste sur votre téléphone, dans le stockage
-  protégé d'Android, et n'entre pas dans la sauvegarde du téléphone. Sans le mot de passe ni la
-  clé de récupération, personne ne peut ouvrir ces fichiers ni les récupérer pour vous : il n'en
+  protégé d'Android, et n'entre pas dans la sauvegarde du téléphone. Sans le mot de passe ni les
+  douze mots, personne ne peut ouvrir ces fichiers ni les récupérer pour vous : il n'en
   existe aucune copie ailleurs que chez vous. Sur un téléphone où une empreinte est configurée,
-  la clé de récupération est aussi gardée derrière elle, pour pouvoir la revoir.
+  les douze mots sont aussi gardés derrière elle, pour pouvoir les revoir.
 - **Restaurer remplace tout.** Importer une sauvegarde échange le contenu de l'application contre
   le fichier que vous fournissez. La base que vous aviez est conservée sur l'appareil comme copie
   de secours, dans le même stockage privé, jusqu'à la restauration suivante.
@@ -554,7 +557,7 @@ l'application fonctionne normalement avec les images intégrées.
 **Widget d'écran d'accueil (Android, facultatif).** Le widget de flamme lit votre régularité
 dans la même base locale.
 
-**Biométrie (facultatif).** Pour une seule chose : réafficher votre clé de récupération de
+**Biométrie (facultatif).** Pour une seule chose : réafficher vos douze mots de récupération de
 sauvegarde, derrière votre empreinte. Android fait la vérification ; Bati ne voit jamais votre
 empreinte, seulement si elle correspond. Rien d'autre dans l'application ne la demande, et chaque
 sauvegarde s'ouvre avec son mot de passe sans elle.

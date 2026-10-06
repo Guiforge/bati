@@ -12,6 +12,8 @@ repos:
       - id: check-added-large-files
         # Village/building art legitimately reaches ~1.8 MB.
         args: [--maxkb=2048]
+        # The captured fixtures need a database over two segments (2 MiB) to hold three of them.
+        exclude: ^__tests__/fixtures/backup/emulator/
         stages: [pre-commit]
       - id: trailing-whitespace
         exclude: ^(assets/|drizzle/|android/|package-lock\.json)

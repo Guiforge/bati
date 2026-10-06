@@ -8,10 +8,17 @@ import {
   stateFingerprint,
   validateBackup,
 } from "@/db/backup";
-import { honourTombstones, mergePeer } from "@/db/merge";
+import { honourTombstones, keptSessions, mergePeer } from "@/db/merge";
 import { deletePreference, getPreference, setPreference } from "@/db/preferences";
-import { batiCrypto } from "@/modules/bati-crypto";
-import { encryptionStatus, MAX_SEALED_BYTES, openBackup, sealingHeader } from "@/src/backupCipher";
+import {
+  CIPHER_READS,
+  encryptionStatus,
+  MAX_SEALED_BYTES,
+  type OpenOutcome,
+  openBackup,
+  sealingHeader,
+  vaultFormat,
+} from "@/src/backupCipher";
 import {
   clearPeerScratch,
   peerScratch,
@@ -21,7 +28,10 @@ import {
 } from "@/src/backupFiles";
 import {
   type DavTarget,
+  type DiagnosticStep,
+  diagnoseServer,
   downloadRemote,
+  failureOf,
   InsecureAddressError,
   isOnThisDevice,
   listRemote,
@@ -31,10 +41,12 @@ import {
   type RemoteFile,
   revokeNextcloudAppPassword,
   type SyncFailure,
+  statRemote,
   uploadRemote,
   webdavTarget,
 } from "@/src/cloudSync";
 import { folderLabel, folderPath, folderRemote } from "@/src/folderSync";
+import { fileFor, installId, PEER_FILE } from "@/src/installId";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -64,11 +76,18 @@ import { reportError } from "@/src/reportError";
  */
 
 const STORE_ACCOUNT = "bati.sync.account";
-const STORE_INSTALL = "bati.sync.install";
 /** name → fingerprint of every other device's state the hero has already answered for. */
 const STORE_ANSWERED = "bati.sync.answered";
 /** The state last uploaded, so an unchanged history is not sealed and sent again. */
 const STORE_UPLOADED = "bati.sync.uploaded";
+/** name -> `state@etag` of what the prompt already told the hero about that device's file. */
+const STORE_ANNOUNCED = "bati.sync.announced";
+/** The device files seen in any listing, so one a later listing leaves out is looked for by name. */
+const STORE_SEEN = "bati.sync.seen";
+/** The local state the pending launch snapshot was sealed for: a later state must not send it as its own. */
+const STORE_PENDING_STATE = "bati.sync.pendingState";
+/** The version of this device's own file on the server, as the server gave it after the last upload. */
+const STORE_OWN_ETAG = "bati.sync.ownEtag";
 /**
  * name → the verdict on another device's file, stamped with its etag and this device's state.
  * Only verdicts that ask nothing of the hero are kept (`level`, `behind`, `unreadable`): with the
@@ -76,35 +95,21 @@ const STORE_UPLOADED = "bati.sync.uploaded";
  * every launch, on mobile data too, is how a sync gets switched off.
  */
 const STORE_VERDICTS = "bati.sync.verdicts";
-type Verdict = { stamp: string; state: "level" | "behind" | "unreadable" };
+/**
+ * name → the highest counter seen in a file of that device that opened under this phone's own key.
+ * SecureStore like the install id, so a restored database cannot reset it: a file must not read as
+ * newer than the last one only because the phone was restored.
+ */
+const STORE_COUNTERS = "bati.sync.counters";
+/** name → the etag of the file when the hero forgot that device. A new etag means it is alive. */
+const STORE_FORGOTTEN = "bati.sync.forgotten";
+type Verdict = {
+  stamp: string;
+  state: "level" | "behind" | "unreadable" | "oldKey" | "newerVersion" | "replayed";
+};
 
 /** More devices than any hero owns; a server listing more is not ours to download. */
 const MAX_PEERS = 16;
-
-/**
- * This install's name in the sync folder: random, so it says nothing about when it was made.
- * SecureStore, not the database: a restore or Android's own backup copies the database to a
- * second phone, and two devices under one name would take turns overwriting each other's history.
- */
-async function installId(): Promise<string> {
-  const existing = await SecureStore.getItemAsync(STORE_INSTALL);
-  if (existing !== null) return existing;
-  const hex = Array.from(atob(await batiCrypto().randomBytes(16)), (c) =>
-    c.charCodeAt(0).toString(16).padStart(2, "0"),
-  ).join("");
-  const fresh = [
-    hex.slice(0, 8),
-    hex.slice(8, 12),
-    hex.slice(12, 16),
-    hex.slice(16, 20),
-    hex.slice(20),
-  ].join("-");
-  await SecureStore.setItemAsync(STORE_INSTALL, fresh);
-  return fresh;
-}
-
-const fileFor = (id: string) => `bati-${id}.batb`;
-const PEER_FILE = /^bati-[0-9a-f-]{36}\.batb$/;
 
 /**
  * Where this device syncs: a Nextcloud signed in through the browser, any WebDAV server with the
@@ -133,8 +138,11 @@ type Remote = {
   folder: string;
   user: string;
   list(): Promise<RemoteFile[]>;
+  /** One file by name, `null` when the server does not hold it. Absent where the listing is the folder itself. */
+  stat?(name: string): Promise<RemoteFile | null>;
   read(name: string, destination: File): Promise<void>;
-  write(source: File, name: string): Promise<void>;
+  /** The file's version on the server after the write, when the server says one. */
+  write(source: File, name: string): Promise<string | undefined>;
 };
 
 function davRemote(target: DavTarget): Remote {
@@ -143,6 +151,7 @@ function davRemote(target: DavTarget): Remote {
     folder: `${target.folderUrl}/`,
     user: target.user,
     list: () => listRemote(target),
+    stat: (name) => statRemote(target, name),
     read: (name, destination) => downloadRemote(target, name, destination),
     write: (source, name) => uploadRemote(target, source, name),
   };
@@ -173,6 +182,7 @@ export function accountLabel(account: SyncAccount): string {
 }
 
 async function remember(account: SyncAccount): Promise<SyncAccount> {
+  candidate = null; // whatever was refused before is not the account now
   await SecureStore.setItemAsync(STORE_ACCOUNT, JSON.stringify(account));
   await setPreference(SYNC_SERVER_PREFERENCE, accountLabel(account));
   return account;
@@ -248,8 +258,37 @@ export async function connectNextcloud(
   server: string,
   isCancelled: () => boolean,
 ): Promise<SyncAccount | null> {
-  const account = await loginToNextcloud(server, isCancelled);
-  return account === null ? null : remember({ kind: "nextcloud", ...account });
+  const signedIn = await loginToNextcloud(server, isCancelled);
+  if (signedIn === null) return null;
+  const account: SyncAccount = { kind: "nextcloud", ...signedIn };
+  // Remembered once the server is known to work, as a WebDAV account is: a 400 on the first listing
+  // used to leave an account that failed at every launch, and no way to say why.
+  await verified(account);
+  return remember(account);
+}
+
+/**
+ * The account a connection attempt got as far as, when the server then refused it: what "Test the
+ * connection" asks about while nothing is remembered yet. Cleared by the next attempt.
+ */
+let candidate: SyncAccount | null = null;
+
+/** Lists the folder on a new account, which proves it; a refusal leaves it as the candidate to test. */
+async function verified(account: SyncAccount): Promise<void> {
+  candidate = account;
+  await remoteFor(account).list();
+  candidate = null;
+}
+
+/**
+ * The connection test: what the server answers, step by step, for the account just refused or the
+ * one that is connected. `[]` when there is nothing to test, or the account is a folder.
+ */
+export async function testConnection(): Promise<DiagnosticStep[]> {
+  const account = candidate ?? (await syncAccount());
+  if (account === null || account.kind === "folder") return [];
+  if (account.kind === "nextcloud") return diagnoseServer(nextcloudTarget(account), account);
+  return diagnoseServer(webdavTarget(account.url, account.user, account.password));
 }
 
 /**
@@ -270,7 +309,7 @@ export async function connectWebDav(
     throw new InsecureAddressError("Plain HTTP is only allowed to this phone");
   }
   const account: SyncAccount = { kind: "webdav", url: address, user: user.trim(), password, label };
-  await remoteFor(account).list();
+  await verified(account);
   return remember(account);
 }
 
@@ -304,7 +343,13 @@ export async function disconnectSync(): Promise<void> {
   await SecureStore.deleteItemAsync(STORE_ACCOUNT);
   await SecureStore.deleteItemAsync(STORE_ANSWERED);
   await SecureStore.deleteItemAsync(STORE_UPLOADED);
+  await SecureStore.deleteItemAsync(STORE_PENDING_STATE);
+  await SecureStore.deleteItemAsync(STORE_SEEN);
+  await SecureStore.deleteItemAsync(STORE_ANNOUNCED);
+  await SecureStore.deleteItemAsync(STORE_OWN_ETAG);
   await SecureStore.deleteItemAsync(STORE_VERDICTS);
+  await SecureStore.deleteItemAsync(STORE_COUNTERS);
+  await SecureStore.deleteItemAsync(STORE_FORGOTTEN);
   await SecureStore.deleteItemAsync(STORE_MERGED);
   clearPeerScratch();
   pendingSyncSnapshot()?.delete();
@@ -330,7 +375,7 @@ async function changedSinceUpload(
  * upload marker, so an update sends this device's file once more, for peers that were waiting on it.
  */
 async function localState(): Promise<string> {
-  return `${await stateFingerprint()}#${await sealingHeader()}#${BUILD_MIGRATIONS}`;
+  return `${await stateFingerprint()}#${await sealingHeader()}#${BUILD_MIGRATIONS}#${CIPHER_READS}`;
 }
 
 /**
@@ -341,8 +386,10 @@ export async function prepareSyncAtLaunch(): Promise<void> {
   try {
     const account = await syncAccount();
     if (account === null || (await encryptionStatus()) !== "on") return;
-    if (!(await changedSinceUpload(remoteFor(account))).changed) return;
+    const { changed, now } = await changedSinceUpload(remoteFor(account));
+    if (!changed) return;
     await writeSyncSnapshot();
+    await SecureStore.setItemAsync(STORE_PENDING_STATE, now);
   } catch (error) {
     reportError("sync.prepare", error);
   }
@@ -357,8 +404,25 @@ export type Peer = {
 } & (
   | { state: "ahead" | "diverged"; comparison: PeerComparison }
   | { state: "level" | "behind" }
-  /** Sealed with a key this phone does not hold: the other device's password will open it. */
-  | { state: "locked" }
+  /**
+   * Sealed with a key this phone does not hold, of a format at least as high as this phone's
+   * vault: the other device's password will open it. `format` orders the vaults to join.
+   */
+  | { state: "locked"; format: 2 | 3 }
+  /**
+   * A vault this phone has left: the file opens with a key it keeps for reading, or it is sealed
+   * with a key it does not hold in a format older than its own (a phone that never updated,
+   * or changed its password in an older build). Never merged, never joined, never holds back this
+   * device's upload; the other device is told to update and join the current vault.
+   */
+  | { state: "oldKey" }
+  /** A Bati file of a format after the ones this build reads: update, and it will open. */
+  | { state: "newerVersion" }
+  /**
+   * A file whose counter is lower than the last this phone saw from that device: an older copy
+   * handed back (Nextcloud and Syncthing both keep versions). Not merged, never waited on.
+   */
+  | { state: "replayed" }
   /**
    * Sealed with a key this phone does not hold, but older on the server than this device's own
    * file: that device is the one to learn this phone's password, and asking here too is how two
@@ -369,11 +433,155 @@ export type Peer = {
   | { state: "unreadable" }
 );
 
-export type SyncResult = { uploaded: boolean; peers: Peer[] };
+export type SyncResult = {
+  uploaded: boolean;
+  peers: Peer[];
+  /**
+   * Set when other devices' files were there and none could be read (a 403 on every one, a server
+   * that drops each download): the run learned nothing about them, so it is not an "up to date".
+   */
+  peerFailure?: SyncFailure;
+  /** Sessions another device deleted that this one keeps (their campaign moved on); only set when there are some. */
+  keptSessions?: number;
+};
 
-/** Every other device's file in the folder, at most `MAX_PEERS` of them. */
+/** Every other device's file in the folder. */
 function othersIn(remote: RemoteFile[], own: string): RemoteFile[] {
-  return remote.filter((f) => f.name !== own && PEER_FILE.test(f.name)).slice(0, MAX_PEERS);
+  return remote.filter((f) => f.name !== own && PEER_FILE.test(f.name));
+}
+
+async function readRecord(store: string): Promise<Record<string, string>> {
+  const value = await SecureStore.getItemAsync(store);
+  return value === null ? {} : (JSON.parse(value) as Record<string, string>);
+}
+
+/**
+ * The listing, plus the files it leaves out that this device knows exist: its own, and every device it
+ * has already read. A listing can be late (a NAS, an rclone with its directory cache, a WebDAV behind a
+ * proxy) while the server still answers for the file itself; trusting it as the whole folder made a
+ * hidden peer invisible (no hold-back for a vault to join, a forgotten device back), and a hidden own
+ * file read as missing (the date that decides which vault joins which was gone). One request per such
+ * file, never more than `MAX_PEERS`, and none for a device the hero forgot.
+ * ponytail: a device whose file was deleted by hand costs one request per sync until it is forgotten.
+ */
+async function withKnownFiles(
+  target: Remote,
+  listing: RemoteFile[],
+  own: string,
+): Promise<RemoteFile[]> {
+  const { stat } = target;
+  if (!stat) return listing;
+  const forgotten = await readRecord(STORE_FORGOTTEN);
+  const seenValue = await SecureStore.getItemAsync(STORE_SEEN);
+  const seen = seenValue === null ? [] : (JSON.parse(seenValue) as string[]);
+  const known = new Set([
+    own,
+    ...seen,
+    ...Object.keys(await readRecord(STORE_COUNTERS)),
+    ...Object.keys(await readRecord(STORE_ANSWERED)),
+  ]);
+  const missing = [...known]
+    .filter(
+      (name) =>
+        PEER_FILE.test(name) &&
+        forgotten[name] === undefined &&
+        !listing.some((f) => f.name === name),
+    )
+    .slice(0, MAX_PEERS);
+  const found = await Promise.all(missing.map((name) => stat.call(target, name).catch(() => null)));
+  const all = [...listing, ...found.filter((f): f is RemoteFile => f !== null)];
+  // Remembered for the next listing; newest last, and the oldest go first past twice the places there are.
+  const names = all.map((f) => f.name).filter((n) => n !== own && PEER_FILE.test(n));
+  const next = [...seen.filter((n) => !names.includes(n)), ...names].slice(-MAX_PEERS * 2);
+  if (JSON.stringify(next) !== JSON.stringify(seen)) {
+    await SecureStore.setItemAsync(STORE_SEEN, JSON.stringify(next));
+  }
+  return all;
+}
+
+/**
+ * The other devices this phone looks at: `othersIn`, without the ones the hero forgot. A device
+ * is forgotten for the file it had then; a new file from it (another etag) means it is alive, and
+ * it comes back by itself. The forgotten list is tidied here, since this is where it is read.
+ */
+async function visibleOthers(remote: RemoteFile[], own: string): Promise<RemoteFile[]> {
+  const others = othersIn(remote, own);
+  const forgotten = await readRecord(STORE_FORGOTTEN);
+  // Dropped only for a file listed with another version: absent from one listing is not alive, a late
+  // listing would bring a device the hero forgot back.
+  const alive = Object.fromEntries(
+    Object.entries(forgotten).filter(
+      ([name, etag]) => !others.some((f) => f.name === name && f.etag !== etag),
+    ),
+  );
+  if (Object.keys(alive).length !== Object.keys(forgotten).length) {
+    await SecureStore.setItemAsync(STORE_FORGOTTEN, JSON.stringify(alive));
+  }
+  // Cut after the forgotten ones are gone: sixteen stale files that sort first must not hide a
+  // live device, even once the hero has forgotten every one of them.
+  return others.filter((f) => alive[f.name] === undefined).slice(0, MAX_PEERS);
+}
+
+/**
+ * "Forget this device": for a device that is not merged (waiting for a password, an old vault, a
+ * file that cannot be read, a copy from before), because a phone reinstalled, restored or lost
+ * leaves its file on the server for ever and nothing else would ever make it go away. It is
+ * hidden, never deleted: the file is the hero's, and on the server. Its counter is dropped too, so
+ * if it comes back as the same install after a restore it is not taken for an old copy.
+ */
+export async function forgetPeer(peer: { name: string; etag: string }): Promise<void> {
+  const forgotten = await readRecord(STORE_FORGOTTEN);
+  await SecureStore.setItemAsync(
+    STORE_FORGOTTEN,
+    JSON.stringify({ ...forgotten, [peer.name]: peer.etag }),
+  );
+  for (const store of [STORE_COUNTERS, STORE_ANSWERED, STORE_VERDICTS]) {
+    const { [peer.name]: _gone, ...rest } = await readRecord(store);
+    await SecureStore.setItemAsync(store, JSON.stringify(rest));
+  }
+}
+
+/** Whether a file named for a device really is that device's: the uuid in the name is the id inside. */
+const nameIsId = (name: string, installId: string) =>
+  name
+    .replace(/^bati-/, "")
+    .replace(/\.batb$/, "")
+    .replaceAll("-", "") === installId;
+
+/**
+ * A format 3 file against what this phone knows of that device: it must be named for the install
+ * that wrote it, and its counter must not be lower than the last seen. Remembered only here, and
+ * only for files that opened under this phone's own key (the caller returns before this for a
+ * key kept for reading): a counter read from anything else could be forged to make every real
+ * file of that device look old.
+ */
+async function judgeCounter(
+  file: RemoteFile,
+  sealedBy: { installId: string; counter: string },
+): Promise<"fresh" | "replayed" | "unreadable"> {
+  if (!nameIsId(file.name, sealedBy.installId)) return "unreadable";
+  const counter = BigInt(sealedBy.counter);
+  if (counter > BigInt(Number.MAX_SAFE_INTEGER)) return "unreadable";
+  const counters = await readRecord(STORE_COUNTERS);
+  const seen = BigInt(counters[file.name] ?? "0");
+  if (counter < seen) return "replayed";
+  if (counter > seen) {
+    await SecureStore.setItemAsync(
+      STORE_COUNTERS,
+      JSON.stringify({ ...counters, [file.name]: String(counter) }),
+    );
+  }
+  return "fresh";
+}
+
+/**
+ * The devices still waiting to be given a password: what stops the vault being updated. A new key
+ * would have to be told to each of them in turn, so the hero is asked to settle those first. A
+ * sync runs first, so this is what the server holds now and not what it held at launch.
+ */
+export async function vaultUpdateBlockers(): Promise<string[]> {
+  const { peers } = await syncNow({ snapshotFirst: false });
+  return peers.filter((peer) => peer.state === "locked").map((peer) => peer.name);
 }
 
 /**
@@ -391,34 +599,98 @@ export async function syncNow(options: { snapshotFirst: boolean }): Promise<Sync
   if ((await encryptionStatus()) !== "on") throw new Error("Sync needs encryption on");
 
   const own = fileFor(await installId());
-  const listing = await target.list();
+  const listing = await withKnownFiles(target, await target.list(), own);
 
   clearPeerScratch();
   const context: JudgeContext = {
     answered: await answeredPeers(),
     known: await knownVerdicts(),
     here: await localState(),
+    ownFormat: await vaultFormat(),
     ownFile: listing.find((f) => f.name === own),
     verdicts: {},
+    failedToOpen: new Set(),
   };
   const peers: Peer[] = [];
-  for (const file of othersIn(listing, own)) peers.push(await judge(target, file, context));
+  let firstFailure: unknown;
+  let failures = 0;
+  for (const file of await visibleOthers(listing, own)) {
+    try {
+      peers.push(await judge(target, file, context));
+    } catch (error) {
+      failures++;
+      firstFailure ??= error;
+      // One file that cannot be fetched or read right now (a ghost in an eventually consistent
+      // listing, a 403 or 423 on it, a download cut short) is that device's problem, retried at the
+      // next sync. Letting it throw here stopped this device from ever uploading while the file
+      // stayed listed, and nothing remembers the failure: a lasting "unreadable" is for a file
+      // that was read and is not a backup.
+      reportError("sync.peer", error);
+    }
+  }
   await SecureStore.setItemAsync(STORE_VERDICTS, JSON.stringify(context.verdicts));
 
   const uploaded = (await holdBack(target, peers))
     ? false
-    : await uploadIfNeeded(target, own, listing, options.snapshotFirst);
-  return { uploaded, peers };
+    : await uploadIfNeeded(target, own, listing, options.snapshotFirst, peers);
+  const kept = await keptSessions();
+  const result: SyncResult =
+    peers.length === 0 && failures > 0
+      ? { uploaded, peers, peerFailure: failureOf(firstFailure) }
+      : { uploaded, peers };
+  return kept > 0 ? { ...result, keptSessions: kept } : result;
 }
 
 type JudgeContext = {
   answered: Record<string, string>;
   known: Record<string, Verdict>;
   here: string;
+  /** The format this phone seals with. */
+  ownFormat: 2 | 3 | null;
   ownFile: RemoteFile | undefined;
   /** Filled in: the verdicts worth keeping for the next sync. */
   verdicts: Record<string, Verdict>;
+  /**
+   * Filled in: the files whose opening threw. "Unreadable" is said about them now, but not kept: a throw
+   * is as likely to be this phone's (no room for the plain copy, an I/O error) as the file's, and a kept
+   * verdict would stop it ever being downloaded again until one side wrote something new.
+   */
+  failedToOpen: Set<string>;
 };
+
+/** Verdicts that ask nothing of the hero, so with the same file on both sides they cannot change. */
+function isKeptVerdict(state: Peer["state"]): state is Verdict["state"] {
+  return (
+    state === "level" ||
+    state === "behind" ||
+    state === "unreadable" ||
+    state === "oldKey" ||
+    state === "newerVersion" ||
+    state === "replayed"
+  );
+}
+
+/**
+ * What a peer sealed with a key this phone does not hold turns into: a vault this phone has left
+ * (`oldKey`), one that will come to this phone's (`waiting`), or one this phone must join (still
+ * `locked`).
+ */
+function settleLocked(
+  peer: Peer & { state: "locked" },
+  file: RemoteFile,
+  context: JudgeContext,
+): Peer {
+  const gone = { name: file.name, etag: file.etag, modified: peer.modified };
+  // A phone that never updated, or changed its password in an older build, wrote this. Joining it
+  // would take this hero's vault a step back; waiting for it would hold back the upload for ever.
+  // It is told to update, and nothing here waits on it.
+  if (context.ownFormat !== null && peer.format < context.ownFormat) {
+    return { ...gone, state: "oldKey" };
+  }
+  return mustJoin(file, context.ownFile, peer.format, context.ownFormat)
+    ? peer
+    : { ...gone, state: "waiting" };
+}
 
 /** What this sync concludes about one other device, from a kept verdict when one still holds. */
 async function judge(target: Remote, file: RemoteFile, context: JudgeContext): Promise<Peer> {
@@ -427,14 +699,12 @@ async function judge(target: Remote, file: RemoteFile, context: JudgeContext): P
   let peer: Peer =
     cached?.stamp === stamp
       ? { name: file.name, etag: file.etag, state: cached.state }
-      : await fetchAndJudge(target, file);
+      : await fetchAndJudge(target, file, context);
   if (file.modified > 0) peer = { ...peer, modified: file.modified };
-  if (peer.state === "level" || peer.state === "behind" || peer.state === "unreadable") {
+  if (isKeptVerdict(peer.state) && !context.failedToOpen.has(file.name)) {
     context.verdicts[file.name] = { stamp, state: peer.state };
   }
-  if (peer.state === "locked" && !mustJoin(file, context.ownFile)) {
-    peer = { name: file.name, etag: file.etag, modified: peer.modified, state: "waiting" };
-  }
+  if (peer.state === "locked") peer = settleLocked(peer, file, context);
   // An answer the hero already gave for this exact state is not asked again. Only news from that
   // device (new sessions, new content) changes the fingerprint; sealing the same history anew
   // does not.
@@ -452,14 +722,28 @@ async function judge(target: Remote, file: RemoteFile, context: JudgeContext): P
 }
 
 /**
- * Of two devices sealing under different keys, the one whose file reached the server last has the
- * newer vault, and the other joins it. A device re-uploads right after its key changes, so its
- * file's date on the server is when that happened, measured by the server's clock alone: no
- * phone clock can tip it. Without a date on either side, the question is asked, as before.
+ * Of two devices sealing under different keys, which joins which. A higher format wins outright:
+ * the vault only ever moves forward, so a device on an older one joins, whatever the dates say.
+ * At the same format the one whose file reached the server last has the newer vault, and the other
+ * joins it. A device re-uploads right after its key changes, so its file's date on the server is
+ * when that happened, measured by the server's clock alone: no phone clock can tip it. Without a
+ * date on either side, or on the same date, the file name decides, so two devices never both
+ * wait for the other, nor both join the other.
  */
-function mustJoin(peer: RemoteFile, ownFile: RemoteFile | undefined): boolean {
-  if (!ownFile || ownFile.modified === 0 || peer.modified === 0) return true;
-  return peer.modified > ownFile.modified;
+// ponytail: a server that gives no date at all decides by file name, which is arbitrary but the same
+// on both devices; the old answer (each asked to join the other) swapped the vaults. A tie-break that
+// follows what the hero last did needs a date the server does not give.
+function mustJoin(
+  peer: RemoteFile,
+  ownFile: RemoteFile | undefined,
+  peerFormat: number,
+  ownFormat: number | null,
+): boolean {
+  if (ownFormat !== null && peerFormat !== ownFormat) return peerFormat > ownFormat;
+  if (!ownFile) return true;
+  const dated = ownFile.modified !== 0 && peer.modified !== 0;
+  if (dated && peer.modified !== ownFile.modified) return peer.modified > ownFile.modified;
+  return peer.name > ownFile.name;
 }
 
 async function knownVerdicts(): Promise<Record<string, Verdict>> {
@@ -484,39 +768,128 @@ async function holdBack(target: Remote, peers: Peer[]): Promise<boolean> {
   return hasNews && (await changedSinceUpload(target)).firstContact;
 }
 
+/** True when this device knows the version it left on the server and the listing shows another. */
+async function ownEtagBefore(target: Remote, listed: string): Promise<boolean> {
+  const value = await SecureStore.getItemAsync(STORE_OWN_ETAG);
+  if (!value) return false;
+  const known = JSON.parse(value) as { place: string; etag: string };
+  return known.place === target.id && known.etag !== listed;
+}
+
+/**
+ * A vault this device deliberately left (`oldKey`: its key is only kept for reading, after a new password) whose file is
+ * as new as this device's own, or newer. The other devices choose which vault to join by those dates, so they would
+ * keep the old vault, and wait for this one to join it, while this one never will: nobody moves, for good. Sent
+ * again, this device's file is the newest and they join it, as they must. Only with dates on both sides, and it
+ * repeats at most while the two are in the same second, since the next send is later.
+ */
+function vaultLeftIsNewer(own: RemoteFile, peers: Peer[]): boolean {
+  if (own.modified === 0) return false;
+  return peers.some((p) => p.state === "oldKey" && (p.modified ?? 0) >= own.modified);
+}
+
 async function uploadIfNeeded(
   target: Remote,
   own: string,
   listing: RemoteFile[],
   snapshotFirst: boolean,
+  peers: Peer[],
 ): Promise<boolean> {
   const { changed, now } = await changedSinceUpload(target);
-  const onServer = listing.some((f) => f.name === own);
-  if (!changed && onServer) {
+  const ownListed = listing.find((f) => f.name === own);
+  const outdated = ownListed !== undefined && vaultLeftIsNewer(ownListed, peers);
+  // Not what this device wrote: a server restored from a backup, a Nextcloud "restore this version".
+  // Nothing else repairs it: peers read the old file as in step, and this device saw nothing change.
+  const replaced = ownListed !== undefined && (await ownEtagBefore(target, ownListed.etag));
+  if (!changed && ownListed !== undefined && !replaced && !outdated) {
     pendingSyncSnapshot()?.delete();
     return false;
   }
-  const snapshot = (!snapshotFirst && pendingSyncSnapshot()) || (await writeSyncSnapshot());
-  await target.write(snapshot, own);
+  // The launch snapshot is only as current as the state it was sealed for: a session finished since
+  // would be missing from it while the marker below says the new state went up.
+  const pending = !snapshotFirst && (await SecureStore.getItemAsync(STORE_PENDING_STATE)) === now;
+  const snapshot = (pending && pendingSyncSnapshot()) || (await writeSyncSnapshot());
+  const etag = await target.write(snapshot, own);
   snapshot.delete();
   await SecureStore.setItemAsync(STORE_UPLOADED, now);
+  await SecureStore.setItemAsync(
+    STORE_OWN_ETAG,
+    etag === undefined ? "" : JSON.stringify({ place: target.id, etag }),
+  );
   return true;
 }
 
-async function fetchAndJudge(target: Remote, file: RemoteFile): Promise<Peer> {
+type Settled =
+  | { state: "unreadable" | "newerVersion" | "oldKey" | "replayed" }
+  | { state: "locked"; format: 2 | 3 };
+
+/**
+ * What opening a peer's file already settles, before its history is read: a version this build
+ * does not know, a key this phone does not hold, a vault it has left, a file that is not that
+ * device's or is older than the last one. `null` when it is a file to compare.
+ *
+ * A key this phone only keeps for reading is a vault it has left: merging would let an old key
+ * steer the history of a hero who moved on, and the opened copy is not kept.
+ */
+/** A file named for a device and saying a lower count than the last one read here from that device. */
+async function claimsToBeOlder(
+  file: RemoteFile,
+  claims: { installId: string; counter: string },
+): Promise<boolean> {
+  if (!nameIsId(file.name, claims.installId)) return false;
+  const seen = (await readRecord(STORE_COUNTERS))[file.name];
+  return seen !== undefined && BigInt(claims.counter) < BigInt(seen);
+}
+
+async function settledByOpening(
+  opened: OpenOutcome | null,
+  file: RemoteFile,
+): Promise<Settled | null> {
+  if (opened === null) return { state: "unreadable" };
+  if (opened.result === "newerVersion") return { state: "newerVersion" };
+  if (opened.result === "needsSecret") {
+    // Under a key this phone never held, so nothing is verified. But a file that says it is an older one of a
+    // device whose newer file was read here is a copy put back, and its fresh date on the server would make it
+    // look like a newer vault: this device would hold back every upload and ask for a password that has no
+    // right answer (the device that wrote it has left that key).
+    if (opened.claims && (await claimsToBeOlder(file, opened.claims))) return { state: "replayed" };
+    return { state: "locked", format: opened.format ?? 2 };
+  }
+  if (opened.result !== "opened") return { state: "unreadable" };
+  if (opened.viaKeyring) return { state: "oldKey" };
+  if (opened.sealedBy) {
+    const verdict = await judgeCounter(file, opened.sealedBy);
+    if (verdict !== "fresh") return { state: verdict };
+  }
+  return null;
+}
+
+async function fetchAndJudge(
+  target: Remote,
+  file: RemoteFile,
+  context: JudgeContext,
+): Promise<Peer> {
   const base = { name: file.name, etag: file.etag };
   const sealed = peerScratch(file.name, "sealed");
   const plain = peerScratch(file.name, "plain");
   await target.read(file.name, sealed);
   try {
+    if (file.size !== undefined && sealed.size !== file.size) {
+      throw new Error(
+        `${file.name}: the server lists ${file.size} bytes and ${sealed.size} came back`,
+      );
+    }
     if (sealed.size > MAX_SEALED_BYTES) return { ...base, state: "unreadable" };
     const opened = await openBackup(sealed.uri, plain.uri).catch((error: unknown) => {
       reportError("sync.open", error);
+      context.failedToOpen.add(file.name);
       return null;
     });
-    if (opened === null) return { ...base, state: "unreadable" };
-    if (opened.result === "needsSecret") return { ...base, state: "locked" };
-    if (opened.result !== "opened") return { ...base, state: "unreadable" };
+    const settled = await settledByOpening(opened, file);
+    if (settled !== null) {
+      if (plain.exists) plain.delete();
+      return { ...base, ...settled };
+    }
 
     const path = plain.uri.replace(/^file:\/\//, "");
     if (!(await validateBackup(path)).ok) return { ...base, state: "unreadable" };
@@ -537,6 +910,27 @@ async function answeredPeers(): Promise<Record<string, string>> {
 }
 
 /** "Keep this device's version": not asked again until that device has news. */
+/**
+ * What the prompt has already said about a file ("another device is newer", "an older copy was left aside"), by
+ * name, for the version of the file it said it about. Only the prompt reads this: the sync sheet keeps showing the
+ * state, because "update Bati" is something the hero may look for there.
+ */
+export function announcedPeers(): Promise<Record<string, string>> {
+  return readRecord(STORE_ANNOUNCED);
+}
+
+export async function rememberAnnounced(peer: {
+  name: string;
+  etag: string;
+  state: string;
+}): Promise<void> {
+  const announced = await readRecord(STORE_ANNOUNCED);
+  await SecureStore.setItemAsync(
+    STORE_ANNOUNCED,
+    JSON.stringify({ ...announced, [peer.name]: `${peer.state}@${peer.etag}` }),
+  );
+}
+
 /** "Seen": this unreadable file is not announced again until that device writes a new one. */
 export async function rememberUnreadable(peer: { name: string; etag: string }): Promise<void> {
   const answered = await answeredPeers();
@@ -570,8 +964,14 @@ export async function rememberAnswer(peer: {
 export async function keepThisDeviceOnServer(): Promise<string> {
   const account = await syncAccount();
   if (account === null) throw new Error("Sync is not connected");
-  const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 13);
-  const name = `bati-${await installId()}-kept-${stamp}.batb`;
+  // To the second, with a random tail: the first sync of a phone that joins two devices merges
+  // twice within a minute, and the second copy used to replace the first, which held the history
+  // the first merge was about to overwrite.
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15);
+  const tail = Math.floor(Math.random() * 0xffff)
+    .toString(16)
+    .padStart(4, "0");
+  const name = `bati-${await installId()}-kept-${stamp}-${tail}.batb`;
   const snapshot = await writeSyncSnapshot();
   await remoteFor(account).write(snapshot, name);
   snapshot.delete();
@@ -670,54 +1070,150 @@ export function dismissMergeCard(): Promise<void> {
 /**
  * What a freshly connected server holds, for the one decision the hero must take before the first
  * sync: `empty` (this device starts the vault), `ready` (a key this phone holds opens what is
- * there, or encryption is on and nothing else is), or `needsSecret` naming a device whose
- * password this phone must learn to join rather than invent a second vault.
+ * there, or encryption is on and nothing else is), `needsSecret` naming a device whose password
+ * this phone must learn to join rather than invent a second vault, or `newerVersion` (a file this
+ * build cannot read is there: starting a vault now would be a second one, in an older format).
  */
-export type ServerState = { kind: "empty" | "ready" } | { kind: "needsSecret"; peer: string };
+export type ServerState =
+  | { kind: "empty" | "ready" | "newerVersion" }
+  | { kind: "needsSecret"; peer: string };
+
+/** A peer's file as a vault: one a key this phone holds opens, or one that wants a secret, in its format. */
+type Looked = { file: RemoteFile; kind: "opens" | "locked"; format: 2 | 3 };
+
+/** What opening a file without a secret says about it as a vault: `null` for what no secret could open. */
+function asVault(file: RemoteFile, opened: OpenOutcome): Looked | "newer" | null {
+  const format = opened.format ?? 2;
+  if (opened.result === "newerVersion") return "newer";
+  if (opened.result === "opened") return { file, kind: "opens", format };
+  return opened.result === "needsSecret" ? { file, kind: "locked", format } : null;
+}
+
+/**
+ * Every other device's file, looked at without a secret, to learn which vaults are on the server. A file
+ * that cannot be fetched or opened (a ghost in an eventually consistent listing, a 403, a body cut short)
+ * is counted and skipped: one damaged file must not decide which vault this phone joins, or whether it can
+ * connect at all. A file no secret could ever open, or that is not a backup, is no vault to join either.
+ */
+async function lookAtVaults(
+  target: Remote,
+  others: RemoteFile[],
+): Promise<{ looked: Looked[]; newer: boolean; failed: number }> {
+  const looked: Looked[] = [];
+  let failed = 0;
+  for (const file of others) {
+    const sealed = peerScratch(file.name, "sealed");
+    const plain = peerScratch(file.name, "plain");
+    try {
+      await target.read(file.name, sealed);
+      const vault = asVault(file, await openBackup(sealed.uri, plain.uri));
+      if (vault === "newer") return { looked, newer: true, failed };
+      if (vault !== null) looked.push(vault);
+    } catch (error) {
+      failed += 1;
+      reportError("sync.vaultLook", error);
+    } finally {
+      if (sealed.exists) sealed.delete();
+      if (plain.exists) plain.delete();
+    }
+  }
+  return { looked, newer: false, failed };
+}
+
+/**
+ * Which vault is the one to join: a higher format wins, then the file written last (a phone reset months
+ * ago can leave a file sealed with a vault nobody uses any more, and joining that one would lock out every
+ * live device), then the larger name, the same order sync uses.
+ */
+const bestVaultFirst = (a: Looked, b: Looked) =>
+  b.format - a.format || b.file.modified - a.file.modified || (a.file.name < b.file.name ? 1 : -1);
 
 export async function serverState(): Promise<ServerState> {
   const account = await syncAccount();
   if (account === null) throw new Error("Sync is not connected");
   const target = remoteFor(account);
-  // The most recently written file: a phone reset months ago can leave a file sealed with a vault
-  // nobody uses any more, and joining that one would lock out every live device.
-  const others = othersIn(await target.list(), fileFor(await installId())).sort(
-    (a, b) => b.modified - a.modified,
-  );
-  const first = others[0];
-  if (first === undefined) return { kind: "empty" };
+  const listing = await target.list();
+  const ownName = fileFor(await installId());
+  const others = await visibleOthers(listing, ownName);
+  if (others.length === 0) return { kind: "empty" };
 
-  const sealed = peerScratch(first.name, "sealed");
-  const plain = peerScratch(first.name, "plain");
-  await target.read(first.name, sealed);
-  try {
-    const opened = await openBackup(sealed.uri, plain.uri);
-    return opened.result === "needsSecret"
-      ? { kind: "needsSecret", peer: first.name }
-      : { kind: "ready" };
-  } finally {
-    sealed.delete();
-    if (plain.exists) plain.delete();
+  const { looked, newer, failed } = await lookAtVaults(target, others);
+  if (newer) return { kind: "newerVersion" };
+  // The vault never goes back a format: a phone that already seals in a newer one does not go and join an
+  // older one, whatever the dates say. Sync tells that device to update.
+  const own = await vaultFormat();
+  const [best] = looked
+    .filter((vault) => vault.kind === "opens" || own === null || vault.format >= own)
+    .sort(bestVaultFirst);
+  if (best === undefined) {
+    // Files are there and none could be read: that is not an empty server, and starting a vault on it could
+    // make a second one.
+    if (failed > 0 && looked.length === 0) {
+      throw new Error(`The server lists ${others.length} file(s) and none could be read`);
+    }
+    return { kind: "ready" };
   }
+  if (best.kind === "opens") return { kind: "ready" };
+  // A device that stops and connects again still holds its own file on the server. When that file is the newer
+  // vault, it is the other device that joins this one, and asking this one for the other's password would split
+  // the two (each ends up reading the other's files through a key it has left).
+  const ownFile = listing.find((f) => f.name === ownName);
+  if (own !== null && ownFile !== undefined && !mustJoin(best.file, ownFile, best.format, own)) {
+    return { kind: "ready" };
+  }
+  return { kind: "needsSecret", peer: best.file.name };
 }
 
 /**
  * Opens another device's file with its password or recovery key and makes its key this phone's,
  * so both write into one vault from now on. `false` when the secret does not open it.
  */
+/**
+ * The files a secret is tried on, in order: the named one first, then the others from the best vault down. One
+ * damaged or wrong file next to an intact one of the same vault must not decide the answer. Never a format lower
+ * than the best on the server, nor than the one this phone already seals in: that would take the hero's vault a
+ * step back.
+ */
+function joinCandidates(looked: Looked[], peer: string, own: 2 | 3 | null): RemoteFile[] {
+  const top = Math.max(own ?? 0, ...looked.map((vault) => vault.format));
+  const named = (vault: Looked) => (vault.file.name === peer ? 1 : 0);
+  return looked
+    .filter((vault) => vault.kind === "locked" && vault.format >= top)
+    .sort((a, b) => named(b) - named(a) || bestVaultFirst(a, b))
+    .map((vault) => vault.file);
+}
+
 export async function joinPeer(peer: string, secret: string): Promise<boolean> {
   const account = await syncAccount();
   if (account === null) throw new Error("Sync is not connected");
-  const sealed = peerScratch(peer, "sealed");
-  const plain = peerScratch(peer, "plain");
-  await remoteFor(account).read(peer, sealed);
-  try {
-    const opened = await openBackup(sealed.uri, plain.uri, secret);
-    if (opened.result !== "opened") return false;
-    await opened.join?.({ asPrimary: true });
-    return true;
-  } finally {
-    sealed.delete();
-    if (plain.exists) plain.delete();
+  const target = remoteFor(account);
+  const others = await visibleOthers(await target.list(), fileFor(await installId()));
+  const { looked, failed } = await lookAtVaults(target, others);
+  // Files are there and none could be read: not a wrong password.
+  if (looked.length === 0 && failed > 0) {
+    throw new Error(`The server lists ${others.length} file(s) and none could be read`);
   }
+  const candidates = joinCandidates(looked, peer, await vaultFormat());
+  let failure: unknown = null;
+  for (const file of candidates) {
+    const sealed = peerScratch(file.name, "sealed");
+    const plain = peerScratch(file.name, "plain");
+    try {
+      await target.read(file.name, sealed);
+      const opened = await openBackup(sealed.uri, plain.uri, secret);
+      if (opened.result === "opened") {
+        await opened.join?.({ asPrimary: true });
+        return true;
+      }
+    } catch (error) {
+      failure = error; // this file only: the next one may be the intact copy of the same vault
+      reportError("sync.joinFile", error);
+    } finally {
+      if (sealed.exists) sealed.delete();
+      if (plain.exists) plain.delete();
+    }
+  }
+  // Every candidate failed to be read, and none said "wrong": that is a read failure, not a wrong password.
+  if (failure !== null && candidates.length > 0) throw failure;
+  return false;
 }

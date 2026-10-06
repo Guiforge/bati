@@ -91,7 +91,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       return;
     }
     const outcome = await syncNow(options).then(
-      (result) => ({ result, failure: null }),
+      (result) => ({ result, failure: result.peerFailure ?? null }),
       (error: unknown) => {
         reportError("sync.run", error);
         return { result: get().result, failure: failureFrom(error) };

@@ -1,16 +1,19 @@
 import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Pressable } from "react-native";
 import { Text, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { Wifi } from "@/components/icons";
+import { ConnectionTest } from "@/components/settings/ConnectionTest";
 import { SettingRow } from "@/components/settings/SettingRow";
-import type { SyncFailure } from "@/src/cloudSync";
+import type { DiagnosticStep, SyncFailure } from "@/src/cloudSync";
 import {
   accountLabel,
+  forgetPeer,
   type LastMerge,
   lastMerge,
   type SyncAccount,
@@ -22,12 +25,30 @@ import { reportError } from "@/src/reportError";
 import { failureMessage, syncAgo } from "@/src/syncWords";
 import { useSyncStore } from "@/stores/sync";
 
+/**
+ * Devices whose file is never merged, so nothing would ever make them go away: a phone that was
+ * reinstalled, restored or lost leaves its file on the server for good. "Forget" hides them.
+ */
+const NOT_MERGED = new Set<string>(["locked", "oldKey", "unreadable", "replayed", "newerVersion"]);
+
+/**
+ * What the store reads as "no peers yet". A new `[]` at every read is a store that changes every
+ * time, as far as React can tell: with `result` still null (a first sync that was refused) the sheet
+ * re-rendered until React gave up, and the Settings page, which mounts it whenever an account exists,
+ * fell to the error screen at every visit.
+ */
+const NO_PEERS: never[] = [];
+
 type Props = {
   open: boolean;
   account: SyncAccount;
   onClose: () => void;
   onSyncNow: () => void;
   onStop: () => void;
+  /** The connection test, for a server account. */
+  onTest: () => Promise<DiagnosticStep[]>;
+  /** The automatic backup, as the extra copy kept on this phone: where, or `null` while off. */
+  local: { folder: string | null; onPress: () => void };
 };
 
 /**
@@ -37,13 +58,22 @@ type Props = {
  * The technical hero asked for a view of it; the one who is not asked for "2 min ago" instead of
  * a server address (docs/design/audits/2026-09-26-sync-journeys.md, F6).
  */
-export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: Props) {
+export function SyncStatusSheet({
+  open,
+  account,
+  onClose,
+  onSyncNow,
+  onStop,
+  onTest,
+  local,
+}: Props) {
   const { t } = useTranslation();
   const running = useSyncStore((s) => s.running);
   const failure = useSyncStore((s) => s.failure);
   const waitingWifi = useSyncStore((s) => s.waitingWifi);
   const lastSyncAt = useSyncStore((s) => s.lastSyncAt);
-  const peers = useSyncStore((s) => s.result?.peers ?? []);
+  const peers = useSyncStore((s) => s.result?.peers ?? NO_PEERS);
+  const kept = useSyncStore((s) => s.result?.keptSessions ?? 0);
   const [merge, setMerge] = useState<LastMerge | null>(null);
   const [wifiOnly, setWifiOnly] = useState(false);
   const { folder, user } = syncFolderOf(account);
@@ -60,6 +90,21 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
   }, [open]);
 
   const status = statusLine(t, { running, waitingWifi, failure, lastSyncAt });
+
+  const confirmForget = (peer: { name: string; etag: string }) => {
+    ask({
+      title: t("sync.forgetTitle"),
+      body: t("sync.forgetBody", { id: shortId(peer.name) }),
+      cancelLabel: t("common.cancel"),
+      confirmLabel: t("sync.forgetCta"),
+      destructive: true,
+      onConfirm: () => {
+        forgetPeer(peer)
+          .then(onSyncNow)
+          .catch((error: unknown) => reportError("sync.forget", error));
+      },
+    });
+  };
 
   const confirmStop = () => {
     ask({
@@ -95,6 +140,27 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
           ) : null}
         </YStack>
 
+        <Pressable
+          testID="sync-local-copy"
+          accessibilityRole="button"
+          onPress={() => {
+            onClose();
+            local.onPress();
+          }}
+        >
+          <Text color="$textSecondary" fontSize="$3" textDecorationLine="underline">
+            {local.folder
+              ? t("shelter.alsoPhone", { folder: local.folder })
+              : t("shelter.alsoPhoneAdd")}
+          </Text>
+        </Pressable>
+
+        {kept > 0 ? (
+          <Text testID="sync-kept" color="$textSecondary" fontSize="$3">
+            {t("sync.status.keptSessions", { count: kept })}
+          </Text>
+        ) : null}
+
         <YStack gap="$1">
           <Text color="$text" fontWeight="700">
             {t("sync.status.devices")}
@@ -105,13 +171,25 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
             </Text>
           ) : (
             peers.map((peer) => (
-              <Text key={peer.name} testID="sync-peer" color="$textSecondary" fontSize="$3">
-                {t("sync.status.device", {
-                  id: shortId(peer.name),
-                  state: t(`sync.peerState.${peer.state}`),
-                  when: peer.modified ? syncAgo(t, peer.modified) : t("sync.status.unknownWhen"),
-                })}
-              </Text>
+              <YStack key={peer.name}>
+                <Text testID="sync-peer" color="$textSecondary" fontSize="$3">
+                  {t("sync.status.device", {
+                    id: shortId(peer.name),
+                    state: t(`sync.peerState.${peer.state}`),
+                    when: peer.modified ? syncAgo(t, peer.modified) : t("sync.status.unknownWhen"),
+                  })}
+                </Text>
+                {NOT_MERGED.has(peer.state) ? (
+                  <AppButton
+                    testID="sync-forget"
+                    variant="outline"
+                    size="$2"
+                    onPress={() => confirmForget(peer)}
+                  >
+                    {t("sync.forgetCta")}
+                  </AppButton>
+                ) : null}
+              </YStack>
             ))
           )}
         </YStack>
@@ -145,6 +223,7 @@ export function SyncStatusSheet({ open, account, onClose, onSyncNow, onStop }: P
         <AppButton testID="sync-now" disabled={running} onPress={onSyncNow}>
           {t("sync.now")}
         </AppButton>
+        {account.kind === "folder" ? null : <ConnectionTest run={onTest} />}
         <AppButton testID="sync-stop" variant="outline" onPress={confirmStop}>
           {t("sync.stopCta")}
         </AppButton>

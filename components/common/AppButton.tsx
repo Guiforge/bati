@@ -60,6 +60,12 @@ export function AppButton({
       // stays compact and the target does not shrink. Before the spread, so a caller that
       // really wants something shorter still can.
       minH={44}
+      // A label is never cut: "Comment marche le chiffre…" read as a broken button at 130 % text in French.
+      // Tamagui fixes a button's height and its text to one line (`ellipsis` cannot be switched off from
+      // the button, measured); the label below wraps instead, and a short one is as tall as before
+      // (`minH` is the floor).
+      height="auto"
+      py="$2"
       width={fullWidth ? "100%" : undefined}
       borderWidth={1}
       rounded="$3"
@@ -80,7 +86,11 @@ export function AppButton({
         : { pressStyle: { opacity: 0.9, scale: 0.98 } })}
       {...buttonProps}
     >
-      {children}
+      {typeof children === "string" ? (
+        <Button.Text numberOfLines={0}>{children}</Button.Text>
+      ) : (
+        children
+      )}
     </Button>
   );
 }

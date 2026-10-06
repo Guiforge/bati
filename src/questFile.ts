@@ -633,6 +633,9 @@ export async function readQuestFile(uri: string): Promise<QuestFile> {
   if (!uri.startsWith("content://")) throw new QuestFileError("unreadable");
   const file = new File(uri);
   // A provider that reports no size gets its text measured instead, which costs one read.
+  // ponytail: that read is unbounded when the provider lies about its size. The picker and the
+  //           open-with door both hand over a real file; bound the read the day a provider that
+  //           streams without a size shows up.
   if (file.size != null && file.size > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
   const raw = await file.text();
   if (raw.length > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");

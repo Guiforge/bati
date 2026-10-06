@@ -68,7 +68,7 @@ export function folderRemote(uri: string) {
      *           reads as unreadable until its next write. The fix, if that is ever seen, is a
      *           `DocumentsContract.renameDocument` in a local module.
      */
-    write: async (source: File, name: string): Promise<void> => {
+    write: async (source: File, name: string): Promise<string | undefined> => {
       // The snapshot has its own name; the folder must get the device's.
       const local = new File(Paths.cache, name);
       await source.copy(local, { overwrite: true });
@@ -77,6 +77,7 @@ export function folderRemote(uri: string) {
       } finally {
         local.delete();
       }
+      return undefined; // a folder has no version to report; the listing's is compared as it is
     },
   };
 }

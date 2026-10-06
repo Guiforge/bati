@@ -1,0 +1,42 @@
+[
+  {
+    "file": "v2-small.batb",
+    "size": 52,
+    "sha256": "35cfc85f49d3ad7b9d31867c6126e559fb8af8c17d0ec44fa6a8d198f47a15aa",
+    "password": "correct horse battery staple",
+    "recovery": "e5f7 9ad7 61de 2045 b221 256f efe6 7eca df5e e6c0 a0e9 e70b 6efd f639 b570 908d",
+    "key": "+Cc5km7Bkp/4bOWBR2eykIZeBnhbS/nE7ECTzfI14Bw=",
+    "headerLength": 196,
+    "note": "a few bytes: one short segment"
+  },
+  {
+    "file": "v2-two-segments.batb",
+    "size": 2097169,
+    "sha256": "343bfe29d60d4fd677327b2c9fd4e27c3356fb2c16a11f6b0a37dfe809401a24",
+    "password": "correct horse battery staple",
+    "recovery": "03cd 65cd ce76 d681 db06 4508 ae10 25f2 9bae 3743 5b72 d2ba 5b78 27e5 7c3b 7ae3",
+    "key": "f5VFFgO/Ck7EpT8rBDTQKlzI77CcVirQEme58AlFFzg=",
+    "headerLength": 196,
+    "note": "crosses two segment boundaries"
+  },
+  {
+    "file": "v2-exact-segment.batb",
+    "size": 1048576,
+    "sha256": "0048bc214533eddfc8f47522778a86f5f17db855f161223b36edc538174f1e7b",
+    "password": "correct horse battery staple",
+    "recovery": "b9dd b040 0c24 6204 9ad5 4d3c 11b6 4314 6ff9 70d1 40e1 7365 d9e0 77ee 5353 15c4",
+    "key": "cEt4AC2EKIr/hxgOLtHwI5F4zVci4Mlbg4yO5Z0NY8I=",
+    "headerLength": 196,
+    "note": "exactly one segment: no empty segment after it"
+  },
+  {
+    "file": "v2-accented.batb",
+    "size": 300,
+    "sha256": "2f9d0c86ebe7e846c60daffcab42c094d9faadcaeba9b2fdb67dd26f0726d756",
+    "password": "Élodie-à-Noël 2026",
+    "recovery": "edd7 1ac9 aae3 94e7 9e69 bbe6 8063 f925 179f a263 2d32 a929 a1a1 fb09 18d7 8adf",
+    "key": "X/ykf7wmXFZX5c48HWBsdjqBIV7wrDH+IKwSyGHUeH4=",
+    "headerLength": 196,
+    "note": "an accented password: same key from NFC and NFD"
+  }
+]

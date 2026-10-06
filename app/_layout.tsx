@@ -28,6 +28,7 @@ import { installCrashHandler, recordCrash } from "@/src/crashLog";
 import { keepRemindersInStep, replanRemindersNow } from "@/src/reminders";
 import { reportError } from "@/src/reportError";
 import { AppBackground } from "@/src/ui/AppBackground";
+import { noteFirstLaunch } from "@/src/vaultUpdateDelay";
 import { requestWidgetsUpdate } from "@/src/widget";
 import { useChorusStore } from "@/stores/chorus";
 import { useSettingsStore } from "@/stores/settings";
@@ -113,6 +114,9 @@ export default function RootLayout() {
     // The "lines said recently" ring, so the first rest of a fresh session is not where the
     // repetition shows. Nothing waits on it: an unhydrated ring costs one possible repeat.
     hydrateChorus().catch((e) => reportError("chorus.hydrate", e));
+    // Starts the 14 days a format 2 vault is left alone (src/vaultUpdateDelay.ts). Noted once and
+    // never throws, so nothing waits on it.
+    noteFirstLaunch().catch((e) => reportError("vault.firstSeen", e));
   }, [loadUserFromDatabase, loadSettingsFromDatabase, hydrateChorus]);
 
   useEffect(() => {

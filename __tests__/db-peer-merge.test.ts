@@ -171,6 +171,81 @@ test("deletions travel both ways, and a merge never brings back what was deleted
   await converged(file);
 });
 
+test("a session deleted here is never brought back, by any number of merges with a device that still holds it", async () => {
+  const gone = addSession(t.sqlite, 1_000);
+  const file = await peer("tablet.db");
+  t.sqlite.prepare("DELETE FROM completed_sessions WHERE uuid = ?").run(gone);
+  t.sqlite.prepare("INSERT INTO deleted_sessions (uuid, deletedAt) VALUES (?, 1)").run(gone);
+
+  for (let round = 0; round < 3; round++) {
+    await merge().mergePeer(file);
+    await merge().honourTombstones();
+    expect(t.sqlite.prepare("SELECT uuid FROM completed_sessions").all()).toEqual([]);
+  }
+  await converged(file);
+});
+
+// The limits of the merge as of 2.9.0, frozen so a change to them is a decision and not an accident. Both are
+// planned for the version that follows ("merge v2" in docs/planning/roadmap.md): tombstones for hero quests and
+// movements, and fields of a session that can change after it was saved, the larger XP winning.
+describe("what the merge does not carry (frozen as 2.9.0 does it)", () => {
+  test("a hero quest deleted here comes back when the device that still has it is merged", async () => {
+    heroQuest(t.sqlite, "Porch forge", 100, U1);
+    const file = await peer("tablet.db");
+    t.sqlite.prepare("DELETE FROM quests WHERE uuid = ?").run(U1);
+    expect(heroQuests()).toEqual([]);
+
+    await merge().mergePeer(file);
+
+    expect(heroQuests()).toEqual([{ enTitle: "Porch forge", uuid: U1 }]);
+  });
+
+  test("the first copy of a session wins: a bonus added to it afterwards on one device never reaches the other", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    const file = await peer("tablet.db");
+    // The oath tips over on this device after the tablet copied the session: its XP goes up here only.
+    t.sqlite
+      .prepare("UPDATE completed_sessions SET xpEarned = xpEarned + 50 WHERE uuid = ?")
+      .run(uuid);
+
+    await merge().mergePeer(file);
+
+    const xp = () =>
+      (
+        t.sqlite.prepare("SELECT xpEarned FROM completed_sessions WHERE uuid = ?").get(uuid) as {
+          xpEarned: number;
+        }
+      ).xpEarned;
+    expect(xp()).toBe(60);
+    // And the comparison finds nothing to take: the two devices disagree and nothing says so.
+    await converged(file);
+    const other = new Database(file);
+    const there = (
+      other.prepare("SELECT xpEarned FROM completed_sessions WHERE uuid = ?").get(uuid) as {
+        xpEarned: number;
+      }
+    ).xpEarned;
+    other.close();
+    expect(there).toBe(10);
+  });
+
+  test("a bonus added on the other device after the copy is not taken either", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    const file = await peer("tablet.db", (sqlite) => {
+      sqlite.prepare("UPDATE completed_sessions SET xpEarned = 99 WHERE uuid = ?").run(uuid);
+    });
+
+    await merge().mergePeer(file);
+
+    const row = t.sqlite
+      .prepare("SELECT xpEarned FROM completed_sessions WHERE uuid = ?")
+      .get(uuid) as {
+      xpEarned: number;
+    };
+    expect(row.xpEarned).toBe(10);
+  });
+});
+
 test("the newer preference wins, its date copied as is, and a tie stays here", async () => {
   setPref(t.sqlite, "villageName", "Hautecombe", 100);
   setPref(t.sqlite, "avatarId", "knight", 300);
@@ -466,4 +541,150 @@ test("a newer row here that has no uuid takes the other's, so the two devices ag
 
   expect(heroQuests()).toEqual([{ enTitle: "Old drill", uuid: U1 }]);
   expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0 });
+});
+
+describe("error branches", () => {
+  const sessionCount = () =>
+    (t.sqlite.prepare("SELECT count(*) AS n FROM completed_sessions").get() as { n: number }).n;
+
+  test("an Admin movement of the other build that this build does not have refuses the whole merge", async () => {
+    addSession(t.sqlite, 1_000);
+    const file = await peer("newer-build.db", (sqlite) => {
+      sqlite.exec(
+        `INSERT INTO exercises (enName, frName, enDescription, frDescription, creator, difficulty, createdAt, updatedAt)
+         VALUES ('Only in the next build', 'x', '', '', 'Admin', 'medium', 1, 1)`,
+      );
+      addSession(sqlite, 2_000);
+    });
+
+    await expect(merge().mergePeer(file)).rejects.toThrow(
+      "Merge: 1 exercises of the other build are unknown here",
+    );
+
+    expect(sessionCount()).toBe(1);
+  });
+
+  test("a quest of the other device naming a movement that is neither seeded nor the hero's rolls the merge back", async () => {
+    const file = await peer("dangling.db", (sqlite) => {
+      sqlite.pragma("foreign_keys = OFF");
+      const quest = heroQuest(sqlite, "Orphan", 100, U1);
+      sqlite
+        .prepare(
+          `INSERT INTO quest_exercises (questId, exerciseId, sortOrder, targetType, targetMin, targetMax)
+           VALUES (?, 424242, 0, 'reps', 5, 10)`,
+        )
+        .run(quest);
+    });
+
+    await expect(merge().mergePeer(file)).rejects.toThrow("names rows this device lacks");
+
+    expect(heroQuests()).toEqual([]);
+  });
+
+  test("rows with no date are older than any date, and two undated copies are a tie that stays here", async () => {
+    const undated = (sqlite: Database.Database, name: string) => {
+      const id = heroExercise(sqlite, name, 100);
+      sqlite.prepare("UPDATE exercises SET updatedAt = NULL WHERE id = ?").run(id);
+    };
+    heroExercise(t.sqlite, "Dated here", 100);
+    t.sqlite.exec("UPDATE exercises SET updatedAt = NULL WHERE enName = 'Dated here'");
+    undated(t.sqlite, "Both undated");
+    const file = await peer("undated.db", (sqlite) => {
+      // Dated there, undated here: the dated one is newer. Undated on both sides: nobody's news.
+      sqlite.exec("UPDATE exercises SET updatedAt = 50 WHERE enName = 'Dated here'");
+      sqlite.exec("UPDATE exercises SET frName = 'changed there' WHERE enName = 'Both undated'");
+    });
+
+    const outcome = await merge().mergePeer(file);
+
+    expect(outcome).toMatchObject({ merged: true, changes: 1 });
+    const frName = (en: string) =>
+      (
+        t.sqlite.prepare("SELECT frName FROM exercises WHERE enName = ?").get(en) as {
+          frName: string;
+        }
+      ).frName;
+    expect(frName("Both undated")).toBe("Both undated");
+    expect(
+      t.sqlite.prepare("SELECT updatedAt FROM exercises WHERE enName = 'Dated here'").get(),
+    ).toEqual({
+      updatedAt: 50,
+    });
+  });
+
+  test("a merged session's records follow the movement to this device's id; a record with none, or one this device cannot map, is kept as it was", async () => {
+    const pushUp = adminExercise();
+    const file = await peer("records.db", (sqlite) => {
+      sqlite.pragma("foreign_keys = OFF");
+      sqlite.prepare("UPDATE exercises SET id = 90000 WHERE id = ?").run(pushUp);
+      sqlite
+        .prepare("UPDATE exercise_muscles SET exerciseId = 90000 WHERE exerciseId = ?")
+        .run(pushUp);
+      sqlite
+        .prepare("UPDATE quest_exercises SET exerciseId = 90000 WHERE exerciseId = ?")
+        .run(pushUp);
+      addSession(sqlite, 2_000);
+      sqlite
+        .prepare("UPDATE completed_sessions SET records_json = ?")
+        .run(JSON.stringify([{ t: "pr", e: 90000 }, { t: "streak" }, { t: "pr", e: 777777 }]));
+    });
+    const theirs = `0190b000-0000-7000-8000-${String(n).padStart(12, "0")}`;
+
+    await merge().mergePeer(file);
+
+    const row = t.sqlite
+      .prepare("SELECT records_json AS json FROM completed_sessions WHERE uuid = ?")
+      .get(theirs) as { json: string };
+    expect(JSON.parse(row.json)).toEqual([
+      { t: "pr", e: pushUp },
+      { t: "streak" },
+      { t: "pr", e: 777777 },
+    ]);
+  });
+
+  test("a deletion that the campaign refuses (locked) is not counted, and the session stays", async () => {
+    const completed = require("../db/completed") as typeof import("../db/completed");
+    const adventures = require("../db/adventures") as typeof import("../db/adventures");
+    const save = (questId: number | null) =>
+      completed.createCompletedSession({
+        questId,
+        durationSeconds: 600,
+        xpEarned: 40,
+        exercises: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 10 } }],
+      });
+    const adv = (await adventures.listAdventures()).find((a) => a.kind !== "boss");
+    assert(adv);
+    const run = await adventures.startAdventureRun({ adventureId: adv.id });
+    assert(run.activeStep);
+    const first = await save(run.activeStep.questId);
+    const next = await adventures.completeAdventureRunStep({
+      runStepId: run.activeStep.id,
+      completedSessionId: first,
+    });
+    assert(next.nextRunStepId != null);
+    const second = await save(next.nextQuestId);
+    await adventures.completeAdventureRunStep({
+      runStepId: next.nextRunStepId,
+      completedSessionId: second,
+    });
+    const loose = await save(null);
+    for (const id of [first, loose]) {
+      t.sqlite
+        .prepare(
+          "INSERT INTO deleted_sessions (uuid, deletedAt) SELECT uuid, 1 FROM completed_sessions WHERE id = ?",
+        )
+        .run(id);
+    }
+
+    expect(await merge().keptSessions()).toBe(2);
+
+    expect(await merge().honourTombstones()).toBe(1);
+
+    const left = t.sqlite
+      .prepare("SELECT id FROM completed_sessions WHERE id IN (?, ?)")
+      .all(first, loose);
+    expect(left).toEqual([{ id: first }]);
+    // The one that stayed is counted, so the sync sheet can say so; nothing was deleted for it.
+    expect(await merge().keptSessions()).toBe(1);
+  });
 });

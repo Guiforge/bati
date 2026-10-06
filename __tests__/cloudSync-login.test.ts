@@ -15,7 +15,12 @@ jest.mock("react-native", () => ({
   },
 }));
 
-import { isOnThisDevice, loginToNextcloud, nextcloudTarget } from "@/src/cloudSync";
+import {
+  isOnThisDevice,
+  loginToNextcloud,
+  nextcloudTarget,
+  revokeNextcloudAppPassword,
+} from "@/src/cloudSync";
 
 function serverAnswers(login: string, done: object) {
   global.fetch = jest
@@ -101,4 +106,55 @@ test.each([
   ["http://127.0.0.1.evil.test", false],
 ])("%s is on this phone: %p", (url, expected) => {
   expect(isOnThisDevice(url)).toBe(expected);
+});
+
+const flowStart = {
+  ok: true,
+  json: () =>
+    Promise.resolve({
+      login: "https://cloud.test/login",
+      poll: { token: "t", endpoint: "https://cloud.test/poll" },
+    }),
+};
+const approved = {
+  ok: true,
+  json: () =>
+    Promise.resolve({ server: "https://cloud.test", loginName: "hero", appPassword: "p" }),
+};
+
+test("a server that refuses to start the login flow is an error, and no page is opened", async () => {
+  global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503 }) as unknown as typeof fetch;
+  await expect(loginToNextcloud("cloud.test", () => false)).rejects.toThrow(
+    "Login flow refused: HTTP 503",
+  );
+  expect(mockOpened).toEqual([]);
+});
+
+test("a poll the server answers 404 (not yet) or drops is retried, and the next approval connects", async () => {
+  jest.useFakeTimers();
+  global.fetch = jest
+    .fn()
+    .mockResolvedValueOnce(flowStart)
+    .mockResolvedValueOnce({ ok: false, status: 404 })
+    .mockRejectedValueOnce(new Error("Network request failed"))
+    .mockResolvedValueOnce(approved)
+    // No answer on the user id: the account stays without one.
+    .mockResolvedValueOnce({ ok: false, status: 404 }) as unknown as typeof fetch;
+  const account = loginToNextcloud("cloud.test", () => false);
+  await jest.advanceTimersByTimeAsync(7_000);
+  const signedIn = await account;
+  assert(signedIn);
+  expect(signedIn.userId).toBeUndefined();
+  expect(nextcloudTarget(signedIn).folderUrl).toBe("https://cloud.test/remote.php/webdav/Bati");
+  jest.useRealTimers();
+});
+
+test("the app password is revoked when the server says ok, and not when it refuses or is unreachable", async () => {
+  const account = { server: "https://cloud.test", loginName: "hero", appPassword: "p" };
+  global.fetch = jest.fn().mockResolvedValue({ ok: true }) as unknown as typeof fetch;
+  expect(await revokeNextcloudAppPassword(account)).toBe(true);
+  global.fetch = jest.fn().mockResolvedValue({ ok: false }) as unknown as typeof fetch;
+  expect(await revokeNextcloudAppPassword(account)).toBe(false);
+  global.fetch = jest.fn().mockRejectedValue(new Error("offline")) as unknown as typeof fetch;
+  expect(await revokeNextcloudAppPassword(account)).toBe(false);
 });

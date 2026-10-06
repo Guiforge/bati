@@ -1,23 +1,17 @@
 package expo.modules.baticrypto
 
 import android.util.Base64
+import expo.modules.kotlin.exception.CodedException
+import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.nio.ByteBuffer
-import java.security.SecureRandom
-import javax.crypto.Cipher
-import javax.crypto.Mac
-import javax.crypto.spec.GCMParameterSpec
-import javax.crypto.spec.SecretKeySpec
 
 /**
- * The four primitives an encrypted backup needs, from the platform's own `javax.crypto` and
- * nothing else.
+ * The primitives an encrypted backup needs, from the platform's own `javax.crypto` and nothing
+ * else. The work is in [BatiCryptoCore]; this file only crosses the bridge.
  *
  * Not a library: react-native-quick-crypto and react-native-libsodium both ship prebuilt native
  * binaries that F-Droid would have to rebuild, and a pure-JS KDF on Hermes (no JIT) takes tens of
@@ -29,190 +23,150 @@ import javax.crypto.spec.SecretKeySpec
  * holds, what the key slots are — is decided in TypeScript (src/backupCipher.ts), where it is
  * tested; this file only ever sees opaque bytes.
  *
- * Every function is an `AsyncFunction`, so Expo runs it off the main thread: 600,000 PBKDF2
- * iterations is most of a second on a mid-range phone.
+ * Every heavy function is a `Coroutine` on `Dispatchers.Default`. An `AsyncFunction` runs on the
+ * module's one queue, and 600,000 PBKDF2 iterations (most of a second on a mid-range phone) or a
+ * 100 MB seal on it holds up every other module call that is waiting its turn.
  */
 class BatiCryptoModule : Module() {
-  private val random = SecureRandom()
+  private val core = BatiCryptoCore()
+  private val v3 = BatiCryptoV3()
 
   override fun definition() =
     ModuleDefinition {
       Name("BatiCrypto")
 
-      AsyncFunction("randomBytes") { length: Int ->
-        val bytes = ByteArray(length)
-        random.nextBytes(bytes)
-        encode(bytes)
+      AsyncFunction("randomBytes") { length: Int -> encode(core.randomBytes(length)) }
+
+      AsyncFunction("pbkdf2") Coroutine { password: String, salt: String, iterations: Int ->
+        withContext(Dispatchers.Default) { encode(core.pbkdf2(decode(password), decode(salt), iterations)) }
       }
 
-      /**
-       * PBKDF2-HMAC-SHA256 over the password's *bytes* (UTF-8 of its NFC form, made in JS). Not
-       * `SecretKeyFactory`: that takes a `char[]` and leaves the char-to-byte conversion to the
-       * provider, and a password with an accent has to stretch to the same key on every phone.
-       * One output block, since the key is exactly one SHA-256 wide.
-       */
-      AsyncFunction("pbkdf2") { password: String, salt: String, iterations: Int ->
-        val mac = Mac.getInstance("HmacSHA256").apply { init(SecretKeySpec(decode(password), "HmacSHA256")) }
-        var u = mac.doFinal(decode(salt) + byteArrayOf(0, 0, 0, 1))
-        val out = u.copyOf()
-        repeat(iterations - 1) {
-          u = mac.doFinal(u)
-          for (i in out.indices) out[i] = (out[i].toInt() xor u[i].toInt()).toByte()
-        }
-        encode(out)
-      }
-
-      /** Up to `length` bytes from the start of a file: enough to read a header before any key. */
       AsyncFunction("readPrefix") { inPath: String, length: Int ->
-        BufferedInputStream(FileInputStream(path(inPath))).use { input ->
-          val bytes = ByteArray(length)
-          var offset = 0
-          while (offset < length) {
-            val read = input.read(bytes, offset, length - offset)
-            if (read < 0) break
-            offset += read
-          }
-          encode(bytes.copyOf(offset))
-        }
+        encode(core.readPrefix(path(inPath), length))
       }
 
-      /** `nonce ‖ ciphertext ‖ tag`, for things small enough to live in a string: wrapped keys. */
       AsyncFunction("seal") { key: String, plaintext: String, aad: String ->
-        val nonce = ByteArray(NONCE_BYTES).also(random::nextBytes)
-        val cipher = cipher(Cipher.ENCRYPT_MODE, key, nonce, decode(aad))
-        encode(nonce + cipher.doFinal(decode(plaintext)))
+        encode(core.seal(decode(key), decode(plaintext), decode(aad)))
       }
 
-      /** Throws `AEADBadTagException` on a wrong key or a single changed byte. */
       AsyncFunction("open") { key: String, sealed: String, aad: String ->
-        val bytes = decode(sealed)
-        val nonce = bytes.copyOfRange(0, NONCE_BYTES)
-        val cipher = cipher(Cipher.DECRYPT_MODE, key, nonce, decode(aad))
-        encode(cipher.doFinal(bytes, NONCE_BYTES, bytes.size - NONCE_BYTES))
+        encode(core.open(decode(key), decode(sealed), decode(aad)))
       }
 
+      AsyncFunction("sealFile") Coroutine { key: String, inPath: String, outPath: String, header: String ->
+        withContext(Dispatchers.Default) {
+          core.sealFile(decode(key), path(inPath), path(outPath), decode(header))
+        }
+      }
+
+      AsyncFunction("openFile") Coroutine { key: String, inPath: String, outPath: String, headerLength: Int ->
+        withContext(Dispatchers.Default) {
+          core.openFile(decode(key), path(inPath), path(outPath), headerLength)
+        }
+      }
+
+      // --- format 3. Argon2 and the file work are heavy, so all of it is off the module queue.
+
       /**
-       * Writes `header ‖ segment ‖ segment ‖ …` to `outPath`, each segment `nonce ‖ ciphertext ‖ tag`
-       * over at most `SEGMENT_BYTES` of plaintext. The header is authenticated but not encrypted,
-       * which is what lets a reader find the key slots before it has a key.
-       *
-       * Segments, because one GCM over the whole file is not streaming on Android: Conscrypt buffers
-       * every `update()` until `doFinal`, and a 128 MB database asked the heap for 134 MB at once and
-       * failed on a 192 MB phone (measured on the emulator, 2026-09-26). Each segment's AAD is the
-       * header, its index and whether it is the last, so segments cannot be reordered, dropped, or
-       * cut off at a boundary without failing like any other altered byte.
+       * A v3 header, read and shape-checked here: JS never parses one. `{ kind: "ok", header }`,
+       * `{ kind: "newerVersion" }` for a BATB file of a version after 3, or `{ kind: "notThis" }`.
        */
-      AsyncFunction("sealFile") { key: String, inPath: String, outPath: String, header: String ->
-        val headerBytes = decode(header)
-        writeOrDelete(outPath) { out ->
-          out.write(headerBytes)
-          BufferedInputStream(FileInputStream(path(inPath))).use { input ->
-            var current = input.readUpTo(SEGMENT_BYTES)
-            var index = 0
-            while (true) {
-              val next = input.readUpTo(SEGMENT_BYTES)
-              val last = next.isEmpty()
-              val nonce = ByteArray(NONCE_BYTES).also(random::nextBytes)
-              val cipher = cipher(Cipher.ENCRYPT_MODE, key, nonce, segmentAad(headerBytes, index, last))
-              out.write(nonce)
-              out.write(cipher.doFinal(current))
-              if (last) break
-              current = next
-              index++
-            }
+      AsyncFunction("readHeader") Coroutine { path: String ->
+        withContext(Dispatchers.Default) {
+          when (val parsed = v3.parse(core.readPrefix(path(path), BatiCryptoV3.MAX_HEADER_BYTES))) {
+            is BatiCryptoV3.Parsed.Ok -> mapOf("kind" to "ok", "header" to headerMap(parsed.header))
+            is BatiCryptoV3.Parsed.NewerVersion -> mapOf("kind" to "newerVersion")
+            else -> mapOf("kind" to "notThis")
           }
         }
       }
 
-      /**
-       * The reverse of `sealFile`, given the header's length. The plaintext is written beside the
-       * target and only takes its name once the tag verified: whether a provider releases plaintext
-       * before `doFinal` is its business, and a file cut short by a wrong key must never be found at
-       * `outPath`.
-       */
-      AsyncFunction("openFile") { key: String, inPath: String, outPath: String, headerLength: Int ->
-        val part = "${path(outPath).path}.part"
-        BufferedInputStream(FileInputStream(path(inPath))).use { input ->
-          val headerBytes = input.readExactly(headerLength)
-          writeOrDelete(part) { out ->
-            var index = 0
-            while (true) {
-              val segment = input.readUpTo(NONCE_BYTES + SEGMENT_BYTES + TAG_BYTES)
-              if (segment.size < NONCE_BYTES + TAG_BYTES) {
-                throw IllegalArgumentException("Truncated encrypted file")
-              }
-              input.mark(1)
-              val last = input.read() < 0
-              input.reset()
-              val nonce = segment.copyOfRange(0, NONCE_BYTES)
-              val cipher = cipher(Cipher.DECRYPT_MODE, key, nonce, segmentAad(headerBytes, index, last))
-              out.write(cipher.doFinal(segment, NONCE_BYTES, segment.size - NONCE_BYTES))
-              if (last) break
-              index++
-            }
-          }
-        }
-        val target = path(outPath)
-        target.delete()
-        if (!File(part).renameTo(target)) {
-          File(part).delete()
-          throw IllegalStateException("Could not move the decrypted file into place")
+      /** Constant time, from the header alone: a wrong key costs one HMAC and no body is read. */
+      AsyncFunction("checkKey") Coroutine { key: String, path: String ->
+        withContext(Dispatchers.Default) {
+          val parsed = v3.parse(core.readPrefix(path(path), BatiCryptoV3.MAX_HEADER_BYTES))
+          parsed is BatiCryptoV3.Parsed.Ok && v3.checkKey(decode(key), parsed.header)
         }
       }
+
+      /** The master key a slot holds, or null if `secret` is not what it was made with. */
+      AsyncFunction("unwrapSlot") Coroutine { secret: String, slot: String ->
+        withContext(Dispatchers.Default) {
+          lowMemoryAsCode { v3.unwrap(v3.decodeSlot(decode(slot)), decode(secret))?.let(::encode) }
+        }
+      }
+
+      AsyncFunction("wrapSlot") Coroutine {
+        key: String,
+        secret: String,
+        kind: Int,
+        gen: Int,
+        memoryKib: Int,
+        passes: Int,
+        lanes: Int,
+        ->
+        withContext(Dispatchers.Default) {
+          lowMemoryAsCode {
+            slotMap(v3.wrap(decode(key), decode(secret), kind, gen.toLong(), memoryKib.toLong(), passes, lanes))
+          }
+        }
+      }
+
+      AsyncFunction("sealFileV3") Coroutine {
+        key: String,
+        inPath: String,
+        outPath: String,
+        slots: List<String>,
+        installId: String,
+        counter: String,
+        ->
+        withContext(Dispatchers.Default) {
+          v3.sealFile(
+            decode(key),
+            path(inPath),
+            path(outPath),
+            slots.map { v3.decodeSlot(decode(it)) },
+            hexBytes(installId),
+            java.lang.Long.parseLong(counter),
+          )
+          // Nothing back: a Header is not a type the bridge can convert, and it said so only in a
+          // release build (R8 renames it), after the file was already sealed.
+          Unit
+        }
+      }
+
+      AsyncFunction("openFileV3") Coroutine { key: String, inPath: String, outPath: String ->
+        withContext(Dispatchers.Default) { v3.openFile(decode(key), path(inPath), path(outPath)) }
+      }
+
+      AsyncFunction("keyId") { key: String -> encode(v3.keyId(decode(key))) }
     }
 
-  private fun cipher(
-    mode: Int,
-    key: String,
-    nonce: ByteArray,
-    aad: ByteArray,
-  ): Cipher =
-    Cipher.getInstance("AES/GCM/NoPadding").apply {
-      init(mode, SecretKeySpec(decode(key), "AES"), GCMParameterSpec(TAG_BITS, nonce))
-      updateAAD(aad)
-    }
+  private fun slotMap(slot: BatiCryptoV3.Slot): Map<String, Any> =
+    mapOf(
+      "kind" to slot.kind,
+      "gen" to slot.gen.toInt(),
+      "memoryKib" to slot.memoryKib.toInt(),
+      "passes" to slot.passes,
+      "lanes" to slot.lanes,
+      "raw" to encode(slot.encode()),
+    )
 
-  private fun writeOrDelete(
-    outPath: String,
-    write: (BufferedOutputStream) -> Unit,
-  ) {
-    val target = path(outPath)
+  private fun headerMap(header: BatiCryptoV3.Header): Map<String, Any> =
+    mapOf(
+      "headerLength" to header.length,
+      "installId" to header.installId.joinToString("") { "%02x".format(it) },
+      "counter" to header.counter,
+      "sealedAt" to header.sealedAt.toDouble(),
+      "slots" to header.slots.map(::slotMap),
+    )
+
+  /** The pure Kotlin core throws its own exception; the bridge can only carry a coded one. */
+  private fun <T> lowMemoryAsCode(block: () -> T): T =
     try {
-      BufferedOutputStream(FileOutputStream(target)).use(write)
-    } catch (error: Throwable) {
-      target.delete()
-      throw error
-    }
-  }
-
-  /** `header ‖ index (u32 BE) ‖ last (0 or 1)`: what binds a segment to its place in its file. */
-  private fun segmentAad(
-    header: ByteArray,
-    index: Int,
-    last: Boolean,
-  ): ByteArray =
-    ByteBuffer
-      .allocate(header.size + 5)
-      .put(header)
-      .putInt(index)
-      .put(if (last) 1 else 0)
-      .array()
-
-  /** Up to `length` bytes, fewer only at the end of the stream; empty there. */
-  private fun BufferedInputStream.readUpTo(length: Int): ByteArray {
-    val bytes = ByteArray(length)
-    var offset = 0
-    while (offset < length) {
-      val read = read(bytes, offset, length - offset)
-      if (read < 0) break
-      offset += read
-    }
-    return if (offset == length) bytes else bytes.copyOf(offset)
-  }
-
-  private fun BufferedInputStream.readExactly(length: Int): ByteArray =
-    readUpTo(length).also {
-      if (it.size < length) throw IllegalArgumentException("Truncated encrypted file")
+      block()
+    } catch (error: BatiCryptoV3.LowMemoryException) {
+      throw LowMemoryCodedException()
     }
 
   /** SQLite speaks paths and expo-file-system speaks `file://` URIs; accept both. */
@@ -221,13 +175,6 @@ class BatiCryptoModule : Module() {
   private fun encode(bytes: ByteArray) = Base64.encodeToString(bytes, Base64.NO_WRAP)
 
   private fun decode(value: String) = Base64.decode(value, Base64.NO_WRAP)
-
-  private companion object {
-    const val NONCE_BYTES = 12
-    const val TAG_BITS = 128
-    const val TAG_BYTES = TAG_BITS / 8
-
-    /** Plaintext per segment; the Node double in __tests__/helpers/nodeBatiCrypto.ts says the same. */
-    const val SEGMENT_BYTES = 1024 * 1024
-  }
 }
+
+private class LowMemoryCodedException : CodedException("LOW_MEMORY", "Not enough memory for the key derivation", null)

@@ -1,9 +1,5 @@
-- Villagers never cover anything now: in the Village they
-  stand on the painting, everywhere else they speak in a
-  line under the title.
-- A hold left running no longer becomes a record: Bati asks
-  "Held 6:02?". You can correct a set from its session page.
-- A beaten boss keeps its own name on the share card.
-- Home offers the quest you left longest. Large text fits
-  on the main screens.
-- Distances follow your phone's region until you choose.
+- "Share my backup" is now "Save a file": Drive and Downloads are there.
+- A stronger backup password and 12 words. Your old files still open.
+- Several devices: update Bati on all of them before you update your password.
+- Sync fixes: nothing is lost or held back when devices disagree.
+- Also: villagers never cover the village, a hold left running is no longer a record, distances follow your region.

@@ -15,7 +15,7 @@ test("the release build allows cleartext to localhost and 127.0.0.1 only", () =>
   );
 
   const release = read("main", "res", "xml", "bati_network_security.xml");
-  expect(release).toContain('<base-config cleartextTrafficPermitted="false" />');
+  expect(release).toContain('<base-config cleartextTrafficPermitted="false">');
   const domains = [...release.matchAll(/<domain[^>]*>([^<]+)<\/domain>/g)].map((m) => m[1]);
   expect(domains).toEqual(["localhost", "127.0.0.1"]);
 });
@@ -24,4 +24,11 @@ test("only the debug build, which loads its bundle from Metro, allows cleartext 
   expect(read("debug", "res", "xml", "bati_network_security.xml")).toContain(
     '<base-config cleartextTrafficPermitted="true" />',
   );
+});
+
+test("certificates the hero installed are trusted beside the system's, for a private authority", () => {
+  const release = read("main", "res", "xml", "bati_network_security.xml");
+  const anchors = [...release.matchAll(/<certificates src="(\w+)"/g)].map((m) => m[1]);
+
+  expect(anchors).toEqual(["system", "user"]);
 });

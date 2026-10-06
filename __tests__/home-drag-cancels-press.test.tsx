@@ -19,6 +19,7 @@ import config from "@/tamagui.config";
 // test (reminder-card.test.tsx), and a drag over Home is not about it.
 jest.mock("@/components/home/ReminderCard", () => ({ ReminderCard: () => null }));
 jest.mock("@/components/home/ProtectCard", () => ({ ProtectCard: () => null }));
+jest.mock("@/components/home/PasswordCheckCard", () => ({ PasswordCheckCard: () => null }));
 jest.mock("@/components/chorus/screenCues", () => ({
   useScreenGuide: () => {},
   useComebackCue: () => {},

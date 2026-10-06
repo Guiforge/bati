@@ -154,6 +154,16 @@ Decisions nobody has taken yet.
 - **Palier** for the village's tier, in French. It was *niveau*, the same word as the hero's level
   and a building's, so the Village's own header put two numbers called *niveau* side by side.
 
+## Settled on 2026-10-04
+
+- **Mot de passe des sauvegardes** / *backup password*, the one name for what protects a backup.
+  Never "secret" or "passphrase" in front of a hero.
+- **Les douze mots** / *the twelve words* for the recovery key of a new vault; *clé de récupération*
+  survives only for a format 2 vault, which shows 64 characters.
+- **Mon héros à l'abri** / *My hero, safe* for the single place where the daily copy and device sync
+  are chosen. **Enregistrer un fichier** / *Save a file* for Android's Save as, **Envoyer à une autre
+  app** / *Send to another app* for the share sheet.
+
 ## Related
 
 - [writing.md](writing.md): the sentence rules, and rule 7, the one-word-one-meaning table this

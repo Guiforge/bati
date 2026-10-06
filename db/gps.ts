@@ -57,6 +57,15 @@ export async function appendPoints(sessionId: string, fixes: readonly LocationFi
     .onConflictDoNothing();
 }
 
+/**
+ * Whether a single point is stored. One row, not a count: the backup screens only ask whether a
+ * file they write would carry a trace of where the hero has been.
+ */
+export async function hasGpsHistory(): Promise<boolean> {
+  const rows = await db.select({ t: gpsPoints.t }).from(gpsPoints).limit(1);
+  return rows.length > 0;
+}
+
 /** Every fix of one session, in the order it arrived. */
 export async function pointsOf(sessionId: string): Promise<LocationFix[]> {
   const rows = await db

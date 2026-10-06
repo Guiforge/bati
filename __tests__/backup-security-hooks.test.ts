@@ -15,28 +15,93 @@ jest.mock("@/components/common/Toast", () => ({
   }),
 }));
 jest.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }),
 }));
 const mockReported: string[] = [];
 jest.mock("@/src/reportError", () => ({
   reportError: (context: string) => mockReported.push(context),
 }));
 
-const mockCipher = { status: "off", fail: false, recovery: null as string | null };
-const failOr = <T>(value: T) =>
-  mockCipher.fail ? Promise.reject(new Error("keystore")) : Promise.resolve(value);
+const mockCipher = {
+  status: "off",
+  fail: false,
+  /** The key derivation refuses for lack of memory, as the bridge's coded error. */
+  lowMemory: false,
+  recovery: null as string | null,
+  format: 3 as 2 | 3 | null,
+  pending: false,
+  /** What the password check answers, and the calls made to the cipher, in order. */
+  passwordRight: true,
+  calls: [] as string[],
+};
+const failOr = <T>(value: T) => {
+  if (mockCipher.lowMemory) {
+    return Promise.reject(Object.assign(new Error("Not enough memory"), { code: "LOW_MEMORY" }));
+  }
+  return mockCipher.fail ? Promise.reject(new Error("keystore")) : Promise.resolve(value);
+};
 jest.mock("@/src/backupCipher", () => ({
   MAX_SEALED_BYTES: 1000,
   encryptionStatus: () => Promise.resolve(mockCipher.status),
-  enableEncryption: () => failOr("abcd efgh"),
+  enableEncryption: () => {
+    if (!mockCipher.fail) mockCipher.status = "on";
+    return failOr("abcd efgh");
+  },
   changePassword: () => failOr("ijkl mnop"),
-  disableEncryption: () => failOr(undefined),
+  vaultFormat: () => Promise.resolve(mockCipher.format),
+  wordsPending: () => Promise.resolve(mockCipher.pending),
+  confirmWords: () => {
+    mockCipher.calls.push("confirmWords");
+    mockCipher.pending = false;
+    return Promise.resolve();
+  },
+  rewrapPassword: (password: string) => {
+    mockCipher.calls.push(`rewrapPassword:${password}`);
+    return failOr(undefined);
+  },
+  rewrapWords: () => {
+    mockCipher.calls.push("rewrapWords");
+    return failOr("new twelve words");
+  },
+  checkPassword: (password: string) => {
+    mockCipher.calls.push(`checkPassword:${password}`);
+    return Promise.resolve(mockCipher.passwordRight);
+  },
+  disableEncryption: () => {
+    if (!mockCipher.fail) mockCipher.status = "off";
+    return failOr(undefined);
+  },
   readRecoveryKey: () =>
     mockCipher.recovery === null
       ? Promise.reject(new Error("dismissed"))
       : Promise.resolve(mockCipher.recovery),
   canShowRecoveryKeyAgain: () => true,
   openBackup: () => Promise.resolve({ result: "notEncrypted" }),
+}));
+const mockReminders: string[] = [];
+const mockRemindersOn = { value: false };
+jest.mock("@/src/passwordReminders", () => ({
+  restartPasswordChecks: () => {
+    mockReminders.push("restart");
+    return Promise.resolve();
+  },
+  setPasswordReminders: (on: boolean) => {
+    mockReminders.push(`remind:${on}`);
+    return Promise.resolve();
+  },
+  passwordRemindersOn: () => Promise.resolve(mockRemindersOn.value),
+}));
+const mockOffered = { value: false };
+jest.mock("@/src/vaultUpdateDelay", () => ({
+  vaultUpdateOffered: () => Promise.resolve(mockOffered.value),
+}));
+const mockUnlock = { result: "unlocked" as string };
+jest.mock("@/src/vaultUnlock", () => ({
+  unlockSources: () => Promise.resolve({ server: false, folder: true }),
+  unlockWith: () => {
+    if (mockUnlock.result === "unlocked") mockCipher.status = "on";
+    return Promise.resolve(mockUnlock.result);
+  },
 }));
 jest.mock("@/db/backup", () => ({}));
 jest.mock("@/db/merge", () => ({}));
@@ -54,12 +119,19 @@ const mockSync = {
   account: null as ({ kind: "nextcloud" } & typeof ACCOUNT) | null,
   connect: true,
   runFails: false,
+  /** The run finished but could read none of the other devices' files. */
+  peerFailure: null as { kind: string } | null,
   davRefuses: null as "auth" | "down" | "insecure" | null,
   server: { kind: "empty" } as { kind: string; peer?: string },
   joins: true,
+  joinLowMemory: false,
+  disconnects: 0,
   /** The server sync was on with before it vanished, or `null` (see `lostSync`). */
   lost: null as string | null,
   wifiOnly: false,
+  /** Devices still waiting for a password, as the sync that precedes an update finds them. */
+  blockers: [] as string[],
+  blockersFail: false,
 };
 const mockNetwork = { type: "CELLULAR" };
 jest.mock("expo-network", () => ({
@@ -83,8 +155,18 @@ jest.mock("@/src/deviceSync", () => {
       return Promise.resolve({ kind: "webdav", url, user, password, label });
     },
     serverState: () => Promise.resolve(mockSync.server),
-    joinPeer: () => Promise.resolve(mockSync.joins),
-    disconnectSync: () => Promise.resolve(),
+    joinPeer: () =>
+      mockSync.joinLowMemory
+        ? Promise.reject(Object.assign(new Error("Not enough memory"), { code: "LOW_MEMORY" }))
+        : Promise.resolve(mockSync.joins),
+    vaultUpdateBlockers: () =>
+      mockSync.blockersFail
+        ? Promise.reject(new Error("Network request failed"))
+        : Promise.resolve(mockSync.blockers),
+    disconnectSync: () => {
+      mockSync.disconnects += 1;
+      return Promise.resolve();
+    },
     lostSync: () => Promise.resolve(mockSync.lost),
     syncWifiOnly: () => Promise.resolve(mockSync.wifiOnly),
     recordSyncOutcome: (failure: unknown) =>
@@ -96,7 +178,11 @@ jest.mock("@/src/deviceSync", () => {
     syncNow: () =>
       mockSync.runFails
         ? Promise.reject(new Error("Network request failed"))
-        : Promise.resolve({ uploaded: true, peers: [] }),
+        : Promise.resolve({
+            uploaded: true,
+            peers: [],
+            ...(mockSync.peerFailure ? { peerFailure: mockSync.peerFailure } : {}),
+          }),
   };
 });
 
@@ -107,16 +193,33 @@ import { useSyncStore } from "@/stores/sync";
 beforeEach(() => {
   mockToasts.length = 0;
   mockReported.length = 0;
-  Object.assign(mockCipher, { status: "off", fail: false, recovery: null });
+  Object.assign(mockCipher, {
+    status: "off",
+    fail: false,
+    lowMemory: false,
+    recovery: null,
+    format: 3,
+    pending: false,
+    passwordRight: true,
+    calls: [],
+  });
+  mockReminders.length = 0;
+  mockRemindersOn.value = false;
+  mockOffered.value = false;
   Object.assign(mockSync, {
+    disconnects: 0,
+    joinLowMemory: false,
     account: null,
     lost: null,
     wifiOnly: false,
     connect: true,
     runFails: false,
+    peerFailure: null,
     davRefuses: null,
     server: { kind: "empty" },
     joins: true,
+    blockers: [],
+    blockersFail: false,
   });
   useSyncStore.setState({
     running: false,
@@ -175,6 +278,25 @@ describe("useBackupEncryption", () => {
     await waitFor(() => expect(result.current.status).toBe("locked"));
   });
 
+  test("unlocking a locked phone re-reads the status, and a wrong password leaves it locked", async () => {
+    mockCipher.status = "locked";
+    const { result } = await renderHook(() => useBackupEncryption());
+    await waitFor(() => expect(result.current.status).toBe("locked"));
+
+    mockUnlock.result = "wrong";
+    await act(async () => {
+      expect(await result.current.unlock("folder", "nope")).toBe("wrong");
+    });
+    expect(result.current.status).toBe("locked");
+
+    mockUnlock.result = "unlocked";
+    await act(async () => {
+      expect(await result.current.unlock("folder", "right")).toBe("unlocked");
+    });
+    await waitFor(() => expect(result.current.status).toBe("on"));
+    expect(await result.current.unlockSources()).toEqual({ server: false, folder: true });
+  });
+
   test("a dismissed fingerprint shows nothing and is not an error toast", async () => {
     const { result } = await renderHook(() => useBackupEncryption());
 
@@ -215,6 +337,22 @@ describe("useDeviceSync", () => {
     expect(mockToasts).toEqual([]);
   });
 
+  test("a server holding a file this build cannot read says to update, and starts no vault of its own", async () => {
+    mockSync.server = { kind: "newerVersion" };
+    const { result } = await renderHook(() => useDeviceSync());
+
+    let next: unknown;
+    await act(async () => {
+      next = await result.current.connect("cloud.test");
+    });
+
+    expect(next).toEqual({ next: "failed" });
+    expect(mockToasts).toEqual(["error:sync.needsUpdate"]);
+    // The account the server accepted is gone again: nothing syncs at the next launch.
+    expect(mockSync.disconnects).toBe(1);
+    expect(result.current.account).toBeNull();
+  });
+
   test("a server that already holds another device's vault asks to join it", async () => {
     mockSync.server = { kind: "needsSecret", peer: "bati-tablet.batb" };
     const { result } = await renderHook(() => useDeviceSync());
@@ -238,6 +376,17 @@ describe("useDeviceSync", () => {
     });
     expect(joined).toBe(true);
     expect(mockToasts).toEqual(["success:sync.joined"]);
+  });
+
+  test("joining on a phone without the memory for the password says so", async () => {
+    mockSync.joinLowMemory = true;
+    const { result } = await renderHook(() => useDeviceSync());
+
+    await act(async () => {
+      await result.current.join("bati-tablet.batb", "tablet password");
+    });
+
+    expect(mockToasts).toEqual(["error:backup.lowMemory"]);
   });
 
   test("a server that cannot be reached says so and stays off", async () => {
@@ -350,9 +499,189 @@ describe("the sync store", () => {
     });
   });
 
+  test("a run that could read none of the other devices' files is a failure, not an up to date", async () => {
+    mockSync.account = { kind: "nextcloud", ...ACCOUNT };
+    mockSync.peerFailure = { kind: "server" };
+
+    await useSyncStore.getState().run({ snapshotFirst: false });
+
+    expect(useSyncStore.getState()).toMatchObject({
+      failure: { kind: "server" },
+      lastSyncAt: null,
+    });
+  });
+
   test("an offer is remembered for the process", () => {
     useSyncStore.setState({ offered: [] });
     useSyncStore.getState().markOffered("bati-x.batb@e1");
     expect(useSyncStore.getState().offered).toEqual(["bati-x.batb@e1"]);
+  });
+});
+
+describe("useBackupEncryption: what a vault can do", () => {
+  const mount = () => renderHook(() => useBackupEncryption());
+
+  test("says which format the vault is and whether its words still have to be checked", async () => {
+    mockCipher.status = "on";
+    mockCipher.format = 2;
+    mockCipher.pending = true;
+    const { result } = await mount();
+
+    await waitFor(() => expect(result.current.format).toBe(2));
+    expect(result.current.wordsToCheck).toBe(true);
+  });
+
+  test("typing the words back clears what was waiting, and says so to the row", async () => {
+    mockCipher.status = "on";
+    mockCipher.pending = true;
+    const { result } = await mount();
+    await waitFor(() => expect(result.current.wordsToCheck).toBe(true));
+
+    await act(() => result.current.wordsChecked());
+
+    expect(mockCipher.calls).toContain("confirmWords");
+    await waitFor(() => expect(result.current.wordsToCheck).toBe(false));
+  });
+
+  test("a new key starts the password check again, a failed one does not", async () => {
+    const { result } = await mount();
+    await act(async () => {
+      await result.current.change("a long enough new password");
+    });
+    expect(mockReminders).toEqual(["restart"]);
+
+    mockCipher.fail = true;
+    await act(async () => {
+      await result.current.change("another long password here");
+    });
+    expect(mockReminders).toEqual(["restart"]);
+  });
+
+  test("forgetting the password saves a new one on the same key, and restarts the check", async () => {
+    const { result } = await mount();
+
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.current.forgot("a long enough new password");
+    });
+
+    expect(saved).toBe(true);
+    expect(mockCipher.calls).toEqual(["rewrapPassword:a long enough new password"]);
+    expect(mockReminders).toEqual(["restart"]);
+  });
+
+  test("a forgotten password that could not be saved says so and returns false", async () => {
+    mockCipher.fail = true;
+    const { result } = await mount();
+
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.current.forgot("a long enough new password");
+    });
+
+    expect(saved).toBe(false);
+    expect(mockToasts).toEqual(["error:backup.encryptionFailed"]);
+    expect(mockReminders).toEqual([]);
+  });
+
+  test("new words come back to be shown, and restart the check", async () => {
+    const { result } = await mount();
+
+    let words: string | null = null;
+    await act(async () => {
+      words = await result.current.newWords();
+    });
+
+    expect(words).toBe("new twelve words");
+    expect(mockReminders).toEqual(["restart"]);
+  });
+
+  test("the hero's answer to 'ask me again' reaches the reminders", async () => {
+    const { result } = await mount();
+
+    await act(() => result.current.remind(true));
+    await act(() => result.current.remind(false));
+
+    expect(mockReminders).toEqual(["remind:true", "remind:false"]);
+  });
+
+  test("'No thanks' does not switch off reminders the hero had already turned on", async () => {
+    mockRemindersOn.value = true;
+    const { result } = await mount();
+
+    await act(() => result.current.remind(false));
+
+    expect(mockReminders).toEqual([]);
+  });
+
+  test("says whether the update may be offered yet, from the 14-day delay", async () => {
+    mockCipher.status = "on";
+    mockCipher.format = 2;
+    const { result } = await mount();
+    await waitFor(() => expect(result.current.format).toBe(2));
+    expect(result.current.updateOffered).toBe(false);
+
+    mockOffered.value = true;
+    await act(async () => result.current.refresh());
+    await waitFor(() => expect(result.current.updateOffered).toBe(true));
+  });
+
+  test("a phone without the memory for the key says so instead of a vague failure", async () => {
+    mockCipher.lowMemory = true;
+    const { result } = await mount();
+
+    let words: unknown = "unset";
+    await act(async () => {
+      words = await result.current.enable("a password of fifteen+");
+    });
+
+    expect(words).toBeNull();
+    expect(mockToasts).toEqual(["error:backup.lowMemory"]);
+  });
+
+  test("the same for 'I don't remember it'", async () => {
+    mockCipher.lowMemory = true;
+    const { result } = await mount();
+
+    let saved: unknown = "unset";
+    await act(async () => {
+      saved = await result.current.forgot("a password of fifteen+");
+    });
+
+    expect(saved).toBe(false);
+    expect(mockToasts).toEqual(["error:backup.lowMemory"]);
+  });
+
+  test("the password check asks the cipher and nothing else", async () => {
+    const { result } = await mount();
+
+    let right: boolean | undefined;
+    await act(async () => {
+      right = await result.current.checkPassword("what was typed");
+    });
+
+    expect(right).toBe(true);
+    expect(mockCipher.calls).toEqual(["checkPassword:what was typed"]);
+  });
+
+  test("with no sync, nothing stops an update", async () => {
+    const { result } = await mount();
+    expect(await result.current.updateBlocked()).toBe(false);
+  });
+
+  test("with a device waiting for a password, the update waits", async () => {
+    mockSync.account = { kind: "nextcloud", ...ACCOUNT };
+    mockSync.blockers = ["bati-a.batb"];
+    const { result } = await mount();
+    expect(await result.current.updateBlocked()).toBe(true);
+  });
+
+  test("with a sync that cannot run, the update goes ahead on what is known, and it is reported", async () => {
+    mockSync.account = { kind: "nextcloud", ...ACCOUNT };
+    mockSync.blockersFail = true;
+    const { result } = await mount();
+
+    expect(await result.current.updateBlocked()).toBe(false);
+    expect(mockReported).toContain("backup.encryption.blockers");
   });
 });

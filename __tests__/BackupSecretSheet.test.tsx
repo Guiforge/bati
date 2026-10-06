@@ -57,3 +57,19 @@ test("while the password is being checked, the button says so and the old error 
   await act(async () => finish());
   expect(screen.getByText("sync.useThisPassword")).toBeTruthy();
 });
+
+test("shows what is typed from the start, because twelve words are not typed blind", async () => {
+  await render(
+    <SafeAreaProvider initialMetrics={METRICS}>
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <BackupSecretSheet
+          request={{ open: true, wrong: false }}
+          onSubmit={() => {}}
+          onCancel={() => {}}
+        />
+      </TamaguiProvider>
+    </SafeAreaProvider>,
+  );
+
+  expect(screen.getByTestId("backup-secret-input").props.secureTextEntry).toBe(false);
+});

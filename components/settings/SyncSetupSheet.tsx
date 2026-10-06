@@ -4,6 +4,8 @@ import { Keyboard, Pressable } from "react-native";
 import { Input, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
+import { ConnectionTest } from "@/components/settings/ConnectionTest";
+import type { DiagnosticStep } from "@/src/cloudSync";
 
 type Props = {
   open: boolean;
@@ -20,8 +22,15 @@ type Props = {
   onConnectDav: (url: string, user: string, password: string, label?: string) => Promise<boolean>;
   /** A folder another app keeps in step: `uri` for one already granted, else the system picker. */
   onConnectFolder: (uri?: string) => Promise<boolean>;
+  /** What the server answers, step by step, for the account that was just refused. */
+  onTest: () => Promise<DiagnosticStep[]>;
   /** The automatic backup's folder, when there is one: it can carry sync too, in one tap. */
   backupFolder?: { uri: string; label: string } | null;
+  /**
+   * Settings only: the automatic backup's own door, so one sheet answers "where do I keep my
+   * hero" for both engines. `folder` is where it writes now, `null` while it is off.
+   */
+  local?: { folder: string | null; onPress: () => void; gpsNotice?: boolean };
 };
 
 /** Where Round Sync serves rclone to Bati, on the phone itself. */
@@ -62,7 +71,9 @@ export function SyncSetupSheet({
   onCancelNextcloud,
   onConnectDav,
   onConnectFolder,
+  onTest,
   backupFolder,
+  local,
 }: Props) {
   const { t } = useTranslation();
   const [step, setStep] = useState<Step>({ kind: "pick" });
@@ -72,6 +83,8 @@ export function SyncSetupSheet({
   const [url, setUrl] = useState("");
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
+  // An attempt that reached no connection: the test is offered, because the toast says one thing.
+  const [refused, setRefused] = useState(false);
 
   const close = () => {
     if (waiting && step.kind === "form" && step.mode === "nextcloud") onCancelNextcloud();
@@ -84,9 +97,11 @@ export function SyncSetupSheet({
   const attempt = (connect: () => Promise<boolean>) => {
     Keyboard.dismiss();
     setWaiting(true);
+    setRefused(false);
     connect().then(
       (connected) => {
         setWaiting(false);
+        setRefused(!connected);
         if (connected) {
           setStep({ kind: "pick" });
           onClose();
@@ -124,11 +139,20 @@ export function SyncSetupSheet({
     );
 
   return (
-    <FormSheet open={open} title={t("sync.connectTitle")} onClose={close}>
+    <FormSheet
+      open={open}
+      title={context === "settings" ? t("shelter.title") : t("sync.connectTitle")}
+      onClose={close}
+    >
       {step.kind === "pick" ? (
         <Doors
           context={context}
           backupFolder={backupFolder ?? null}
+          local={context === "settings" ? local : undefined}
+          onLocal={() => {
+            close();
+            local?.onPress();
+          }}
           onDoor={(mode) => setStep({ kind: "form", mode })}
           onNotListed={() => setStep({ kind: "notListed" })}
         />
@@ -144,6 +168,7 @@ export function SyncSetupSheet({
       ) : (
         <>
           {form(step.mode)}
+          {refused && !waiting && step.mode !== "folder" ? <ConnectionTest run={onTest} /> : null}
           {waiting ? null : (
             <AppButton testID="sync-other-service" variant="outline" onPress={back}>
               {t("sync.pick.back")}
@@ -167,11 +192,15 @@ const FIELD = {
 function Doors({
   context,
   backupFolder,
+  local,
+  onLocal,
   onDoor,
   onNotListed,
 }: {
   context: "onboarding" | "settings";
   backupFolder: { label: string } | null;
+  local: { folder: string | null; gpsNotice?: boolean } | undefined;
+  onLocal: () => void;
   onDoor: (mode: Mode) => void;
   onNotListed: () => void;
 }) {
@@ -196,6 +225,23 @@ function Doors({
       <Text color="$textSecondary">
         {context === "onboarding" ? t("sync.pick.whereIsIt") : t("sync.pick.whereToKeep")}
       </Text>
+      {local ? (
+        <YStack gap="$1">
+          <AppButton testID="sync-door-phone" variant="outline" onPress={onLocal}>
+            {t("shelter.doorPhone")}
+          </AppButton>
+          <Text color="$textSecondary" fontSize="$2" px="$2">
+            {local.folder
+              ? t("shelter.doorPhoneOn", { folder: local.folder })
+              : t("shelter.doorPhoneNote")}
+          </Text>
+          {local.gpsNotice ? (
+            <Text testID="sync-door-phone-gps" color="$textSecondary" fontSize="$2" px="$2">
+              {t("backup.gpsNotice")}
+            </Text>
+          ) : null}
+        </YStack>
+      ) : null}
       {doors.map((door) => (
         <YStack key={door.mode} gap="$1">
           <AppButton

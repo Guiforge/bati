@@ -48,6 +48,7 @@ export function CloudRestoreLink({ open, onClose }: { open: boolean; onClose: ()
         onClose={onClose}
         onConnectNextcloud={(server) => deviceSync.connect(server).then(follow)}
         onCancelNextcloud={deviceSync.cancelConnect}
+        onTest={deviceSync.testConnection}
         onConnectFolder={(uri) => deviceSync.connectFolder(uri).then(follow)}
         backupFolder={deviceSync.backupFolder}
         onConnectDav={(url, user, password, label) =>

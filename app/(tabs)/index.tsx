@@ -4,6 +4,7 @@ import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
+import { PasswordCheckCard } from "@/components/home/PasswordCheckCard";
 import { ProtectCard } from "@/components/home/ProtectCard";
 import { QuickActions } from "@/components/home/QuickActions";
 import { ReminderCard } from "@/components/home/ReminderCard";
@@ -94,6 +95,10 @@ export default function HomeScreen() {
             after the first session, or the question after three ignored. Silent while an update
             or release notes are up. */}
         <ReminderCard />
+
+        {/* The quietest line on Home: the backup password check, only for a hero who asked for it,
+            only when due, and never beside the cards above. */}
+        <PasswordCheckCard />
 
         {/* The doors out, and the last quest again, in the thumb's reach */}
         <QuickActions />

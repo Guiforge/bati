@@ -24,9 +24,9 @@ type Props = {
 
 /**
  * The one question an encrypted file asks: its password, or the recovery key. One field for both,
- * because the hero holding a recovery key should not have to know it is a different thing;
- * src/backupCipher.ts tells them apart by shape. The eye shows what is typed: a 64-character
- * recovery key copied off paper is not something to type blind.
+ * because the hero holding the twelve words should not have to know it is a different thing;
+ * src/backupCipher.ts tells them apart by shape. The field shows what is typed, with an eye to hide it: twelve
+ * words copied off paper are not something to type blind.
  *
  * Mounted by every screen that calls `useBackup().runImport`, since the import pauses on it.
  */
@@ -41,7 +41,8 @@ export function BackupSecretSheet({
 }: Props) {
   const { t } = useTranslation();
   const [secret, setSecret] = useState("");
-  const [shown, setShown] = useState(false);
+  // Visible from the start: twelve words typed blind are how a typo costs a hero their backup.
+  const [shown, setShown] = useState(true);
   // Opening a vault stretches the password 600,000 times: seconds on a slow phone, during which
   // the sheet used to sit unchanged with the last error still on it.
   const [busy, setBusy] = useState(false);

@@ -162,7 +162,7 @@ move. The detail sheet's handle is a bar inside the frame (`village-detail-handl
 ("next to build", recent, and the rest) are the shared `SectionLabel` (12/700, 1.5 tracking, ash).
 The status-bar scrim pinned outside the scroll (`village-status-scrim`) is invisible at rest,
 so the painting runs full-bleed under the clock, and fades in over the first `insets.top + 48` dp
-of scroll, the distance the painting's own top scrim takes to leave: the clock always has one of
+of scroll, the distance the painting's own top scrim takes to leave, up to an opaque `bgDark`: the clock always has one of
 the two behind it. Drawn always, it was an opaque band across the top of the painting. Ambient
 motes are still `VillageEmbers.tsx`. Everything is
 transform and opacity on the UI thread, and all of it stops under reduced motion. Transform and

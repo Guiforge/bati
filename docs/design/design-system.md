@@ -329,7 +329,8 @@ outline. The Journal's XP caption is gold Inter, never ash, and a history row's 
   under its bar without truncating it, and carries a three-swatch difficulty legend
   (`DIFFICULTY_COLORS`).
 - **The no-art plate** is a `$surface` panel with a 1px `rawColors.borderStrong` frame.
-- **`StatusBand`** is an ink band (`fade(bgDark, .92)`, `insets.top`, never touchable) over screens
+- **`StatusBand`** is an opaque ink band (`$bgDark`, `insets.top`, never touchable; at .92 a scrolled
+  heading still read as ghost text by the clock) over screens
   that scroll with no art behind the status bar: quest detail, quest editor, adventure steps,
   exercise detail.
 - **The Village sheet's handle** is a bar inside the frame, not `Sheet.Handle`, which floats over

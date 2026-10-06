@@ -1,11 +1,11 @@
 /**
  * Random days of a hero with three devices on one server (the model-based half of stage 1): sessions are made,
  * devices sync, the way to the server breaks and comes back, a clock jumps. Whatever the order, once the way is
- * back and everyone has synced, every device holds every session ever made (I1, no deletion in this model),
- * the server holds at most one file per device and none of them is plain SQLite (I4, I8), and one gesture
- * (the sync sheet's visit, a few rounds) is enough to get there (I6).
+ * back and everyone has synced, every device holds every session ever made (no deletion in this model),
+ * the server holds at most one file per device and none of them is plain SQLite, and one gesture
+ * (the sync sheet's visit, a few rounds) is enough to get there.
  *
- *   SYNC_RUNS=40 SYNC_SEED=123 SYNC_SERVER=nextcloud  node node_modules/jest/bin/jest.js --config test/node/jest.config.js random
+ *   SYNC_RUNS=40 SYNC_SEED=123 node node_modules/jest/bin/jest.js --config test/node/jest.config.js random
  *
  * The seed fast-check prints on a failure replays it. Short mode (the default, a few minutes): 4 days of 10 events.
  */
@@ -14,15 +14,7 @@ import fs from "node:fs";
 import fc from "fast-check";
 
 import { type Device, newDevice, reports } from "../harness/device";
-import {
-  deviceFiles,
-  letListingCatchUp,
-  net,
-  PASSWORD,
-  SERVERS,
-  USER,
-  wipe,
-} from "../harness/servers";
+import { deviceFiles, net, PASSWORD, SERVERS, USER, wipe } from "../harness/servers";
 import {
   at,
   clockOf,
@@ -39,7 +31,7 @@ import {
 
 beforeAll(() => useDeviceClocks());
 
-const server = SERVERS[process.env.SYNC_SERVER ?? "apache"] as (typeof SERVERS)[string];
+const server = SERVERS.faulty as (typeof SERVERS)[string];
 const runs = Number(process.env.SYNC_RUNS ?? 4);
 const seed = process.env.SYNC_SEED ? Number(process.env.SYNC_SEED) : undefined;
 /** A failing case, replayed alone: the `path` fast-check prints beside the seed. */
@@ -115,7 +107,7 @@ const event: fc.Arbitrary<Event> = fc.oneof(
       pick: fc.nat(1000),
     }),
   },
-  // S13: a device whose campaign moved past a session, and another device deleting it: it stays on the first, the
+  // A device whose campaign moved past a session, and another device deleting it: it stays on the first, the
   // second one's tombstone must not keep the first from sending, and the third never gets it back.
   {
     weight: 1,
@@ -158,7 +150,7 @@ async function deleteOne(d: Device, pick: number, made: Set<string>, gone: Set<s
   }
 }
 
-/** The holder's campaign moves past a session the deleter also has; the deleter then deletes it (S13). */
+/** The holder's campaign moves past a session the deleter also has; the deleter then deletes it. */
 async function lockedDelete(
   holder: Device,
   deleter: Device,
@@ -290,7 +282,7 @@ async function oneDay(events: Event[]) {
   const secrets = [HERO_PASSWORD];
   // The devices Android restored onto a new phone, and still locked.
   const restored = new Set<number>();
-  // Sessions the hero deleted somewhere, and the campaign locks that keep one on the device that holds it (S13).
+  // Sessions the hero deleted somewhere, and the campaign locks that keep one on the device that holds it.
   const gone = new Set<string>();
   const locks = new Map<string, Set<string>>();
   try {
@@ -301,9 +293,6 @@ async function oneDay(events: Event[]) {
     for (const [serial, e] of events.entries())
       await play(devices, e, serial, made, secrets, restored, gone, locks);
     net.clear(server);
-    // Minutes pass on a server that keeps an old listing: the app cannot ask it to refresh, and a file nobody has
-    // ever listed has no name to look for. Once the listing has caught up, the devices must agree.
-    letListingCatchUp(server);
     await unlockRestored(devices, restored, secrets);
     // One visit each, as many rounds as the sheet takes: the hero does nothing else.
     // A session kept by a lock stays on its device and nowhere else; everything else reaches every device.

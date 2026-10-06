@@ -184,7 +184,7 @@ export function withWritableConnection<T>(
  * underneath: the legacy reset below, and the restore in src/backupFiles.ts. A handle that will
  * not close cleanly must not stop the file operation that follows — a half-closed database is
  * still less bad than a half-restored one. Returns whether it closed cleanly: a handle that did not
- * may still hold committed frames in its `-wal`, which the restore must park, not delete (S6).
+ * may still hold committed frames in its `-wal`, which the restore must park, not delete.
  */
 export async function closeDatabase(): Promise<boolean> {
   try {

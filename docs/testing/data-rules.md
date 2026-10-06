@@ -1,17 +1,17 @@
 ---
 title: Data rules, as the code implements them
 type: technical
-status: draft
-updated: 2026-10-05
+status: current
+updated: 2026-10-06
 related: [../architecture/backup-and-sync.md, ../architecture/data-safety.md]
 ---
 
 # Data rules, as the code implements them
 
 Purpose: a written statement of what the data code does, so invariant tests are derived from it
-and not from guesses. Every rule cites `path:line` (lines as of branch `bench-green`, 2026-10-05).
+and not from guesses. Every rule cites `path:line` (as of the release that ships device sync).
 "Invariant" is phrased for a property-based test on simulated devices. Where the code is silent it
-says so; where code and docs disagree it is listed under "Contradictions between code and plan".
+says so.
 
 Vocabulary. A *device* is an install: SecureStore identity (`bati.sync.identity`), one SQLite file
 `bati.v3.db`, one sealed file `bati-<id>.batb` on the sync remote. A *peer file* is another
@@ -52,25 +52,24 @@ and preferences in `MERGED_PREFERENCES`, as `(identity, updatedAt)` rows. Identi
 (fallback name) when both databases have the `uuid` column (0066), else names only. A row is
 "news" from side X if the other side has no row with the same identity and `updatedAt >=` it.
 `db/backup.ts:259-285`.
-Invariant: after a merge in both directions, `peerContent=localContent=0` (modulo R8, R9).
+Invariant: after a merge in both directions, `peerContent=localContent=0` (modulo R9).
 
 **R6. Content news uses the device wall clock.** `updatedAt` is `new Date()` at write time, seconds
 resolution. The "no device clock" claim holds for sessions only. `db/backup.ts:282-285`,
 `db/schema.ts:101`, `db/preferences.ts:88`, `db/quests.ts:283`.
 Invariant: with skewed clocks, the side with the later `updatedAt` wins hero content, whichever
-edit was really last (see Contradictions C4).
+edit was really last.
 
 **R7. `MERGED_PREFERENCES` = villageName, avatarId, trainingLevel, ownedEquipment, oath,
 reminderDays.** `db/backup.ts:243-252`.
 Invariant: only these keys ever change in `user_preferences` through a merge (plus R12).
 
-**R8. `NULL updatedAt` is news forever on the compare side and never merged.** The compare
-predicate `y.at >= x.at` is NULL when either is NULL, so NOT EXISTS is true (`db/backup.ts:284`);
-the merge predicate `p.updatedAt > l.updatedAt` is NULL, false (`db/merge.ts:184`). The column is
-nullable (`drizzle/0000_schema.sql:10`). The code does not say whether any migration writes a
-merged key with NULL.
-Invariant (to test, may fail): for any peer row with NULL updatedAt, a completed merge leaves
-`peerContent=0`.
+**R8. An undated row (`NULL updatedAt`) reads as date 0 on both sides.** The comparison reads
+`ifnull(y.at, 0) >= ifnull(x.at, 0)` (`db/backup.ts`) and the merge reads `row.at ?? 0` (`db/merge.ts`), so a NULL is
+older than any date and two undated copies are a tie that stays where it is. The column is nullable
+(`drizzle/0000_schema.sql:10`).
+Invariant: a database compared with a copy of itself shows no news, undated rows included; a dated row is news
+against an undated copy of it.
 
 **R9. Equal `updatedAt` with different content is a permanent silent divergence.** Compare says
 no news both ways (`>=`, `db/backup.ts:284`); merge keeps local (strict `>`, `db/merge.ts:246,
@@ -196,10 +195,13 @@ the receiver's own copy.** `db/merge.ts:139-140, 367`.
 Invariant: a deleted session cannot reappear through sync; a deletion can remove a session
 another device created (its copy, never the other device's own file).
 
-**R31. A tombstoned session whose campaign has moved on stays** ("locked"); compare then counts it
-as `peerDeleted` forever, harmlessly (no change, no reload), but the state stays `ahead`.
-`db/merge.ts:361-363`, `db/backup.ts:350`.
-Invariant: honourTombstones may leave a tombstoned session in place; it never errors.
+**R31. A tombstoned session whose campaign has moved on stays** ("locked"). The merge copied the other device's
+tombstone here and `deleteSession` refused, so the session and its tombstone are both here. The comparison does not
+count it as the other's news (a session that carries a local tombstone is excluded from `peerDeleted`), so it never
+holds this device back from sending; `keptSessions` (`db/merge.ts`) counts them and the sync sheet says how many.
+Nothing is deleted for it. `db/merge.ts`, `db/backup.ts`.
+Invariant: honourTombstones may leave a tombstoned session in place and never errors; such a session never makes a peer
+read as `ahead`, and every other session still reaches every device.
 
 **R32. Deletion of hero exercises and quests does not propagate and is undone by sync.**
 `deleteUserExercise` (only when unused) and `deleteQuest` delete the row with no tombstone; the
@@ -300,7 +302,7 @@ Invariant: a truncated sealed file never reaches validate as valid.
 **R45. A password-opened file may join the vault, but only after asking** (primary iff encryption
 is off here and the hero accepts; with encryption on, it is only remembered in the keyring).
 It happens after the copies of R47 are kept, so a restore abandoned for want of a copy leaves the vault as
-it was (S2, fixed in 5aaf6a83).
+it was.
 `hooks/useBackup.tsx:137-158, 196`, `src/backupCipher.ts:803-829`.
 
 **R46. `keepDeviceSettings` rewrites the staged copy only:** deletes from it every R34 key and
@@ -310,15 +312,18 @@ Invariant: staged R34 rows == live R34 rows; live DB untouched.
 **R47. Copies before a swap:** `backupBeforeRestore` writes a dated pre-restore snapshot
 (`bati-export-before-restore-v3-<day>-<HHMMSS>.<ext>`, to the second) into the remembered backup
 folder when there is one; for taking a peer's version, `keepThisDeviceOnServer` too when diverged.
-If either throws, the restore is abandoned. With no folder remembered nothing is written.
+If either throws, the restore is abandoned, except when the remembered folder cannot be reached at all (its permission
+did not travel to a new phone): that folder is forgotten and the restore goes ahead, the swap keeping its own `.bak`.
+With no folder remembered nothing is written.
 `src/autoBackup.ts:125-128`, `hooks/useBackup.tsx:69-72, 330-334`, `src/backupFiles.ts:151-156`.
-Invariant: if a remembered folder cannot be written, the swap does not run (see S4).
+Invariant: if a reachable folder cannot be written, the swap does not run; an unreachable one is forgotten.
 
 **R48. `commitRestore` order:** serialize on the DB queue; close handle (best effort); delete
-`-journal`, `-wal`, `-shm` of the live file; delete previous `.bak`; rename live to
+`-journal` and `-shm` of the live file, and its `-wal` unless the handle did not close (then the `-wal` is parked as
+`.bak-wal` with the database, so committed frames are not lost); delete previous `.bak`; rename live to
 `bati.v3.db.bak`; rename staged to live; on failure of the last rename move `.bak` back with
 overwrite and rethrow. `src/backupFiles.ts:522-544`, `db/client.ts:19-21`.
-Invariant: after a failed swap the live file equals the pre-swap file (modulo S6); after a
+Invariant: after a failed swap the live file equals the pre-swap file ; after a
 successful swap a `.bak` equal to the pre-swap file exists.
 
 **R49. Startup repair:** no live file and a `.bak` present means the `.bak` is moved back before
@@ -552,10 +557,11 @@ Invariant: per name, the stored counter is non-decreasing; sealing counters stri
 also across concurrent seals.
 
 **R81. `mustJoin(peer, own, peerFormat, ownFormat)`:** higher peer format: join (true); lower or
-(own non-null and different): false; same format: if either file has no server date, true for
-both; else later `modified` wins; equal dates: larger file name wins. `src/deviceSync.ts:652-662`.
+(own non-null and different): false; same format: later `modified` wins; no date on either side or equal dates:
+larger file name wins. `src/deviceSync.ts:652-662`.
 Invariant: for two devices of equal format with distinct non-zero dates or names, exactly one
-`mustJoin` is true (no mutual wait, no swap). With a zero date on either side both are true (S11).
+`mustJoin` is true (no mutual wait, no swap). With no date on either side the larger file name decides, the same
+on both devices.
 
 **R82. A `locked` peer: if its format is lower than ours it is `oldKey`** (never joined, never
 waited for), if higher we join it, if equal the later file wins. `src/deviceSync.ts:606-611`.
@@ -699,162 +705,3 @@ localhost. `src/deviceSync.ts:246-316`, `src/cloudSync.ts:75-77`.
 
 **R105. Lost sync detection:** the `syncServer` preference without a SecureStore account means
 sync was lost (not stopped). `src/deviceSync.ts:191-195, 329`.
-
----
-
-## 9. Contradictions between code and plan
-
-C1. **Upload temporary suffix.** Doc: "A file goes up as `….batb.part`" (`docs/architecture/
-backup-and-sync.md:285-288`). Code: `.upload`, because Nextcloud refuses `.part` with a 400
-(`src/cloudSync.ts:52, 495`). Doc is stale.
-
-C2. **premigrate generations.** Doc: `premigrate.db` "replaced at the next update"
-(`docs/architecture/data-safety.md:49-51`). Code keeps two: `premigrate.db` and
-`premigrate.prev.db` (`src/backupFiles.ts:103-106, 121-124`).
-
-C3. **"Unreadable is announced once per file".** Doc `backup-and-sync.md:326-328` and the comment at
-`src/deviceSync.ts:633`. Code only silences state `unreadable` (`:634-636`); `newerVersion`, the
-usual reason, is announced by the same dialog (`components/SyncPrompt.tsx:219`) and
-`rememberUnreadable` stores a mark that `judge` never consults for it; the per-process `offered`
-list resets at launch. So it re-announces at every launch until the app is updated. `replayed`
-re-toasts the same way (`:218`). Possible bug (S3).
-
-C4. **"No device clock takes part."** `src/deviceSync.ts:61-62`, `db/backup.ts:299`. Sessions yes;
-hero content and the R7 preferences are compared and merged by device-clock `updatedAt`
-(`db/backup.ts:282-285`, `db/merge.ts:182-185, 246`).
-
-C5. **Keyring "every key this phone has ever held stays".** `src/backupCipher.ts:60-61`, doc rule 4
-(`backup-and-sync.md:216-217`). `disableEncryption` deletes the keyring
-(`src/backupCipher.ts:519`), as well as the vault and recovery key.
-
-C6. **Slot tie-break.** Comments say "the smaller install id wins" (`src/backupCipher.ts:262-266,
-485-486`). Code compares `theirs.raw < mine.raw` (`:505`), the slot's serialized bytes; the stored
-`writer` is not consulted.
-
-C7. **Nothing would be lost by taking an `ahead` peer.** `components/SyncPrompt.tsx:133-137` (no
-kept copy). `ahead` is computed on a view that ignores campaigns, boss fights, quest configs,
-favourites, set-aside list and non-merged preferences (R11), all replaced by the take (R51). Only
-reached when merge refuses (R12); a folder copy and the `.bak` still exist when a folder is set.
-
-C8. **What each side lacks lists six items.** Doc `backup-and-sync.md:299-302` names village name,
-avatar, level, equipment, oath; code adds `reminderDays` (`db/backup.ts:250-251`).
-
-C9. **"Password of the most recently written one."** Doc `backup-and-sync.md:289-291`. Code orders
-by format first, then date, then larger name (`src/deviceSync.ts:1005-1006`), and refuses lower
-formats than the phone's own.
-
-C10. **Android backup "carries `bati.v<N>.db` and its journal".** Doc `:42`. Rules include the
-`-wal` and `-shm` sidecars (`plugins/withAndroidBackupRules.js:51-53`); there is no `-journal` as
-the DB is in WAL (`db/client.ts:75`), though `commitRestore` deletes a `-journal` too.
-
-C11. **Vault delay.** `src/vaultUpdateDelay.ts:5-12` says a v2 vault "keeps writing format 2" for
-14 days. Nothing enforces that: only the Settings line is hidden (`hooks/useBackupEncryption.ts
-:84-92`); a v2 vault that joins a v3 peer becomes v3 at once (`src/backupCipher.ts:812-824`).
-Probably intended (doc says so at `backup-and-sync.md:147-149`), but the delay does not protect
-that path.
-
-C12. **Outdated header comment.** `src/backupCipher.ts:13-21, 40-43` still describe the model as
-PBKDF2 and a 64-character recovery key and one header layout; the rules in the same file are
-format 3 first.
-
----
-
-## 10. The code does not say
-
-- Whether kept copies on the remote (`-kept-`) are ever pruned: no code does.
-- Which 16 peer files are read when more than 16 live ones exist (listing order).
-- Behaviour of validate for an older backup with an inconsistent history (R42).
-- Whether any migration writes a merged preference or hero row with NULL `updatedAt` (R8).
-- How two edits to one hero row in the same second reconcile (R9).
-- What happens to `savedSession` (an interrupted session) on a merge: nothing, it is local.
-- A limit on the number of tombstones or any pruning of them.
-- Merging campaigns, boss progress, quest configs, favourites, achievements: explicitly "local in
-  this version" (`db/merge.ts:38-40`), no plan in code.
-- Whether a session's `uuid` can ever be NULL after migration 0038 and what then happens (R1).
-- Timezone handling of merged sessions beyond copying `tzOffsetMin`.
-- Conflict on `exercises.uuid` unique index if a peer row's uuid equals a local row by another
-  identity: R19 avoids it for the cases described; others roll back the merge each sync
-  (`db/merge.ts:286-289`).
-- Rate limits, retry/backoff, and cancellation of an in-flight sync.
-
----
-
-## 11. Suspected bugs (for a human to decide)
-
-Status on `bench-green` (2026-10-06): **fixed, each with a test and a mutant**: S1 (`df2d8e63`, M43), S2 (`5aaf6a83`,
-M47), S10 (`2d7605ea`, M44, M45), S11 (`ca40d2ef`, M46); also fixed, each with a unit test: S3/C3 (announced once per file version), S4 (a folder that cannot be reached any
-more no longer blocks a restore; unverified on a device), S5/C7 (copy first), S6 (a handle that did not close parks its
-WAL with the database), S8 first half (an undated row reads as date 0 in the comparison, as in the merge). **Frozen on
-purpose**: S7 (as 2.9.0 did), S9 (first copy wins, with a test). **S13 fixed**: a session the other device deleted that this one keeps (its campaign moved past it, `deleteSession`
-answers "locked") stays here, nothing is deleted, it no longer reads as the other's news so it never holds back the
-send, and the sync sheet says how many are kept (`keptSessions`). Pinned by `__tests__/db-peer-compare.test.ts`,
-`db-peer-merge.test.ts`, `deviceSync.test.ts`, `SyncStatusSheet.test.tsx`, mutants M61 and M62, and the random model's
-`lockedDelete` event. **Accepted, documented, planned for merge v2** (`docs/planning/roadmap.md` 4.18b): S8 second half
-(two edits of one row in the same second keep both versions) and S12 (`ownedEquipment` is last writer wins, no union).
-Found since by the Node stage, not listed below: Apache's weak etag flicker (`d779adc2`, M42), a temporary upload name
-locked by a cut upload on Nextcloud and rclone (`68f55ead`, M41), a backup carrying a trigger or a view accepted
-(`6f4eac7e`, M48), GPX with a control character in the name or a longitude rounding to 180 (`92a9b521`, M49, M50).
-
-S1. **Stale pending snapshot reuse.** `uploadIfNeeded` reuses `bati-sync-out.batb` sealed at
-launch when `snapshotFirst` is false (`src/deviceSync.ts:709`) but writes the marker for the
-current state (`:712`). `vaultUpdateBlockers` calls `syncNow({snapshotFirst:false})`
-(`:511`); if the launch sync held back (peer `ahead`/`locked`) the pending file is never deleted,
-a session finished since launch is missing from it, and the marker then says it was uploaded.
-Peers do not see that session until the next state change.
-
-S2. **Restore abandoned after the vault was changed.** `offerJoin` can make a foreign key primary
-(SecureStore) at `hooks/useBackup.tsx:196`, before `copiesKept` can still abort the restore
-(`:330-334`). The DB is untouched but the vault is not "exactly the previous one".
-
-S3. **Newer-version and replay peers are announced at every launch** (C3).
-
-S4. **Stale `backupFolderUri` blocks restore.** `backupBeforeRestore` throws when the remembered
-folder cannot be written (`src/autoBackup.ts:125-128`), which abandons the restore
-(`hooks/useBackup.tsx:70`). A DB Android restored onto a new phone carries the old phone's
-`backupFolderUri` (R34 only protects from a *restore*), whose permission did not travel; nothing
-clears it except a failing pre-migration copy (`autoBackup.ts:160`). Unverified on a device.
-
-S5. **Take of an `ahead` peer without a kept copy** (C7).
-
-S6. **WAL deleted before parking.** `commitRestore` deletes `-wal` and `-shm` of the live file
-after a best-effort close (`src/backupFiles.ts:526-528`, `db/client.ts:188-203`). If the close
-failed silently with committed frames still in the WAL, those are discarded from the file that
-becomes `.bak` and from the rollback target. Low likelihood.
-
-S7. **Hero content deleted on one device returns** (R32), including a quest the hero deleted on
-purpose; sessions of that quest on the peer re-create it through `quest_map`.
-
-S8. **Permanent `ahead` from NULL `updatedAt`** (R8) and **silent divergence on equal
-`updatedAt`** (R9).
-
-S9. **Session edits do not converge** (R15): oath bonus XP or feedback applied after the other
-device already copied the session leaves two values for one uuid forever, and `xpEarned` feeds
-level and village.
-
-S10. **Per-peer failures are recorded as a successful sync** (R100): every peer file can fail
-(a 403 on all of them) and Home still reads "up to date".
-
-S11. **`mustJoin` with a missing server date returns true for both devices**
-(`src/deviceSync.ts:659`): both ask to join the other, the vault swap the comment says it avoids.
-Needs a server without `getlastmodified` or an unreadable mtime.
-
-S12. **`ownedEquipment` is a whole-value last-writer-wins JSON** (R21): concurrent changes lose one
-side, no union.
-
-S13. **`ahead` held forever by a locked session** (R31): a peer holding a tombstoned
-campaign-locked session stays `ahead` and that device never uploads until it records something
-new.
-
-
-## 12. Found by the random nights
-
-**C13 (fixed). A vault this device left could be elected by the others.** After a new password a device keeps the old
-key for reading only (`viaKeyring`, state `oldKey`: a vault it has left) and never joins that vault again. The other
-devices choose which vault to join by the server's file dates (`mustJoin`), so when their own file was as new as the
-one the first device sent after its new password (the same second: the server's dates have one), they kept the old vault
-and waited for that device to join it. Each side was waiting for the other, for good, with nothing saying so. Fixed in
-`uploadIfNeeded`: a device that sees an `oldKey` peer file as new as its own or newer sends its own again
-(`vaultLeftIsNewer`), so that its vault is the newest and the others join it. Pinned by `__tests__/deviceSync.test.ts`
-("a vault this device left whose file is as new as its own"), by `test/node/sync/lagging-listing.test.ts` and by mutant
-M60. The same split could happen without a tie when the listing was late (a device uploads under the old key after the
-new one was sent): that case is also repaired by the same send.

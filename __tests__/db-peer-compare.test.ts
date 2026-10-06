@@ -70,7 +70,7 @@ test("a snapshot of this very database is level", async () => {
   expect(comparison).toMatchObject({ peerChanges: 0, localChanges: 0, peerLatest: 1_000 });
 });
 
-// S8: an undated hero row compared as NULL >= NULL, which is never true, so it read as news against
+// An undated hero row compared as NULL >= NULL, which is never true, so it read as news against
 // its own copy for good, and the device that held it was `ahead` of a copy of itself.
 test("an undated hero row is no news against its own copy, and a dated one is news against an undated one", async () => {
   t.sqlite.exec(
@@ -86,7 +86,7 @@ test("an undated hero row is no news against its own copy, and a dated one is ne
   expect(await backup().compareWithPeer(dated)).toMatchObject({ peerChanges: 1, localChanges: 0 });
 });
 
-// S13: a session the other device deleted that this one keeps (its campaign moved on, `deleteSession` said "locked")
+// A session the other device deleted that this one keeps (its campaign moved on, `deleteSession` said "locked")
 // carries the same tombstone here after the merge. It was read as the other's news on every sync, so this device
 // stayed behind the other and never sent anything again until it recorded something new.
 test("a session kept despite the other device's tombstone is no news, and no reason to hold back", async () => {

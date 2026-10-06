@@ -1074,7 +1074,7 @@ describe("updating the vault", () => {
 
 // After a new password this device keeps the old key for reading only: that vault is one it left. The other devices
 // pick the vault to join by file dates, so one whose file is as new as this device's own would be kept, with this
-// device never joining it: a split for good (found by the random nights, a tie on the server's one second dates).
+// device never joining it: a split for good (a tie on the server's one second dates).
 describe("a vault this device left whose file is as new as its own", () => {
   const leftVault = (modified: number) => {
     mockServer.set(OLD_PHONE, "o1");
@@ -1559,7 +1559,7 @@ describe("what syncNow says when other devices' files cannot be read", () => {
     expect("peerFailure" in (await syncNow({ snapshotFirst: true }))).toBe(false);
   });
 
-  // S13: a session another device deleted that this one keeps never stops the rest from being sent; the sheet is told.
+  // A session another device deleted that this one keeps never stops the rest from being sent; the sheet is told.
   test("sessions kept despite a tombstone are reported with the result, and the send still goes out", async () => {
     const { keptSessions } = jest.requireMock("@/db/merge") as { keptSessions: jest.Mock };
     keptSessions.mockResolvedValueOnce(2);

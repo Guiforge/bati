@@ -45,7 +45,7 @@ export type Device = {
   addSessions(count: number, tag: string): string[];
   /**
    * The campaign moves past this session: it completed a step and a later step is completed too, so `deleteSession`
-   * answers "locked" for it (S13). False when this device does not hold the session.
+   * answers "locked" for it. False when this device does not hold the session.
    */
   lockSession(uuid: string): boolean;
   sessions(): string[];

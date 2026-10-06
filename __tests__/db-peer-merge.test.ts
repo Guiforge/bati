@@ -684,7 +684,7 @@ describe("error branches", () => {
       .prepare("SELECT id FROM completed_sessions WHERE id IN (?, ?)")
       .all(first, loose);
     expect(left).toEqual([{ id: first }]);
-    // S13: the one that stayed is counted, so the sync sheet can say so; nothing was deleted for it.
+    // The one that stayed is counted, so the sync sheet can say so; nothing was deleted for it.
     expect(await merge().keptSessions()).toBe(1);
   });
 });

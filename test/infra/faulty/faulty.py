@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""A WebDAV server that misbehaves on command, for the release bench.
+"""A WebDAV server that misbehaves on command, for the Node tests.
 
 It speaks only what Bati speaks (src/cloudSync.ts): MKCOL, PROPFIND depth 1, GET, PUT, MOVE, DELETE,
 with basic auth. Everything is stored under DATA_DIR. What makes it useful is /_admin: a test says
 "the next PUT of a .batb answers 507" or "hide this file from listings" and the server does exactly
 that, once or every time, and keeps a log of every request it saw.
 
-Admin API (no auth, never exposed beyond the compose network and the bench's own port):
+Admin API (no auth, meant for a loopback port, never exposed):
   POST   /_admin/fault    {"method": "PUT", "path": ".batb", "action": "status", "status": 507,
                            "after": 0, "count": 1, "headers": {...}, "ms": 0}
   DELETE /_admin/faults   forget every fault
@@ -148,7 +148,7 @@ class Handler(BaseHTTPRequestHandler):
             time.sleep(fault.get("ms", 1000) / 1000)
             fault = None
         if not self.authed():
-            return self.send(401, headers={"WWW-Authenticate": 'Basic realm="bench"'}, fault=label)
+            return self.send(401, headers={"WWW-Authenticate": 'Basic realm="faulty"'}, fault=label)
         if fault and fault["action"] == "status":
             headers = {str(k): str(v) for k, v in (fault.get("headers") or {}).items()}
             return self.send(int(fault["status"]), headers=headers, fault=label)

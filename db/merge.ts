@@ -375,7 +375,7 @@ export async function honourTombstones(): Promise<number> {
 
 /**
  * Sessions this device keeps although a tombstone names them: the other device deleted them and
- * `honourTombstones` was refused (S13). Nothing is lost; the sync sheet says how many.
+ * `honourTombstones` was refused. Nothing is lost; the sync sheet says how many.
  */
 export async function keptSessions(): Promise<number> {
   const rows = await db.all<{ n: number }>(

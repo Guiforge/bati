@@ -47,7 +47,7 @@ export type RemoteFile = { name: string; etag: string; modified: number; size?: 
  * What an upload is called until it is moved into place. Not `.part`: Nextcloud refuses any name
  * ending in `.part` or `.filepart` (its `blacklist_files_regex`, on by default) with a 400, so every
  * upload to a Nextcloud failed with "HTTP 400" right after the login. Pinned by
- * `__tests__/cloudSync-upload.test.ts` and by the bench's Nextcloud scenario N1.
+ * `__tests__/cloudSync-upload.test.ts`.
  */
 const TEMP_SUFFIX = ".upload";
 
@@ -300,7 +300,7 @@ export type DiagnosticStep = {
   reason?: string;
 };
 
-/** A name no device reads as a peer, with the temporary suffix: the bench holds that nothing else is deleted. */
+/** A name no device reads as a peer, with the temporary suffix: the one file a diagnostic writes and removes, never a device's. */
 const DIAGNOSTIC_FILE = `bati-diagnostic${TEMP_SUFFIX}`;
 
 /**

@@ -1,5 +1,5 @@
 /**
- * The Node harness: the app's data code against the bench's real servers, no emulator.
+ * The Node harness: the app's data code against a real WebDAV server, no emulator.
  *
  *   node node_modules/jest/bin/jest.js --config test/node/jest.config.js
  *

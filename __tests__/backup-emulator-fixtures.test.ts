@@ -5,9 +5,9 @@ import path from "node:path";
 import Database from "better-sqlite3";
 
 /**
- * The files the release bench captured from real emulators running real release builds, frozen in
- * `fixtures/backup/emulator` (see its README and test/bench/capture_fixtures.py), opened here by the
- * real `src/backupCipher.ts` with the secrets the hero was shown.
+ * The files captured once from real emulators running real release builds, frozen in
+ * `fixtures/backup/emulator` (see its README), opened here by the real `src/backupCipher.ts` with the secrets the hero
+ * was shown.
  *
  * What this adds to the other frozen files: these were written by the *device* (Kotlin through the
  * Expo bridge, R8 on), not by a Node double, so they pin the bytes a phone really writes. The

@@ -138,7 +138,7 @@ export async function backupBeforeRestore(): Promise<void> {
     if (reachable(folder)) throw error;
     // A database Android restored onto a new phone carries the old phone's folder, whose permission
     // did not travel: nothing can ever be written there, and refusing the restore for it would
-    // trap the hero (S4). The folder is forgotten, the swap keeps its own `.bak`.
+    // trap the hero. The folder is forgotten, the swap keeps its own `.bak`.
     // ponytail: an unmounted card looks the same as a lost permission, so its restore goes ahead
     //           without the visible copy. Tell them apart when a device shows the difference.
     reportError("backup.beforeRestore.staleFolder", error);

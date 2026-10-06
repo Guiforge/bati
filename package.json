@@ -94,14 +94,12 @@
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "/.claude/worktrees/",
-      "/.bench-cache/"
+      "/.claude/worktrees/"
     ],
     "collectCoverageFrom": [
       "**/*.{ts,tsx}",
       "!**/node_modules/**",
       "!**/.claude/**",
-      "!**/.bench-cache/**",
       "!test/**",
       "!**/__tests__/**",
       "!**/.expo/**",

@@ -401,7 +401,7 @@ describe("commitRestore — the swap", () => {
     expect(fs.__disk.get(at(mockDbName))).toBe("the hero's year");
   });
 
-  // S6: a handle that would not close can still hold committed frames in its WAL. Deleting that file
+  // A handle that would not close can still hold committed frames in its WAL. Deleting that file
   // threw them away from the database that becomes `.bak`, the rollback target.
   test("a handle that did not close parks its WAL with the database instead of deleting it", async () => {
     (globalThis as { mockCloseFails?: boolean }).mockCloseFails = true;

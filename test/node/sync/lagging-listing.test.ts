@@ -1,6 +1,6 @@
 /**
  * A listing that is late: NAS boxes, some WebDAV servers and rclone's directory cache show a folder as it was a
- * while ago. On FAULTY, which hides or empties a listing on command, the app must still keep I1 to I6: no file
+ * while ago. On FAULTY, which hides or empties a listing on command, the app must still hold that no file
  * of anyone's is lost or overwritten, a server that merely looks empty is not treated as a reason to lose data, and
  * the devices agree at the next visit once the listing has caught up.
  */
@@ -179,7 +179,7 @@ describe("a listing that lags around a password change and around a forgotten de
   });
 
   test("a vault this device left that the server dates as new as its own does not split the two for good", async () => {
-    // Found by the random nights: A moves to a new password, and B's last file is as new as A's first new one
+    // A moves to a new password, and B's last file is as new as A's first new one
     // (the server's dates have one second). B reads A's file as 'the older vault' and waits for A to join its own,
     // A has left that vault and never will: both stay as they are.
     const { fileA, fileB } = await bChangesPasswordFirstFile();

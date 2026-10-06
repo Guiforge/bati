@@ -602,7 +602,7 @@ fixed in this build. The second version of the merge closes both together, becau
 fingerprints and so make every device see news once:
 
 1. **Tombstones for hero quests and movements.** Today a hero quest or movement deleted on one device comes back when
-   the device that still holds it is merged (R32 in `docs/testing/data-rules.md`), and the sessions of that quest on the
+   the device that still holds it is merged (see "Deletion" in `docs/testing/data-rules.md`), and the sessions of that quest on the
    other device recreate it through `quest_map`. Same mechanism as `deleted_sessions` (migration 0064): a
    `deleted_content` table, honoured after the merge, with the same rule that a deletion never undoes a newer edit.
 2. **The fields of a session that can change after it was saved travel too.** `xpEarned` (the oath's or the
@@ -611,9 +611,9 @@ fingerprints and so make every device see news once:
    wins** (and the feeling follows the later edit). Needs the fields in the fingerprint and in the merge, a migration,
    and the golden hero files to move on purpose (`UPDATE_GOLDEN=1`, the moved figures listed in the change).
 
-3. **Two edits of one row in the same second** (S8b in `data-rules.md`): neither side is newer, so each keeps its own
+3. **Two edits of one row in the same second** : neither side is newer, so each keeps its own
    copy. Needs a content tie-break both devices compute alike (a hash of the row), in the same change.
-4. **`ownedEquipment` is one value, last writer wins** (S12): two devices changing the list at once lose one side's
+4. **`ownedEquipment` is one value, last writer wins**: two devices changing the list at once lose one side's
    change. Becomes a union (an item owned on either device stays owned) in the same change.
 
 Until then, the first copy of a session wins on every device and a hero who deletes a quest on one device deletes it

@@ -287,7 +287,7 @@ async function namesItsContent(conn: IsolatedConnection, schema: string): Promis
  * Rows of `a` that `b` lacks, or that `a` wrote later. Named by uuid only when both sides can be:
  * one side's uuid and the other's name never match, and every hero row would read as news.
  *
- * An undated row reads as date 0, as `mergePeer` reads it (S8): with a bare `y.at >= x.at` a NULL
+ * An undated row reads as date 0, as `mergePeer` reads it: with a bare `y.at >= x.at` a NULL
  * is never "as new", so the same undated row read as news against itself, for good, while the
  * merge refused to write it.
  */
@@ -312,7 +312,7 @@ async function tombstones(conn: IsolatedConnection, schema: string): Promise<str
  *
  * - **A session the other device deleted that this one still holds with the same tombstone** is the
  *   merge's refusal (its campaign moved past it, `deleteSession` says "locked"), not the other's news: it
- *   is kept here, nothing is deleted, and it must never keep this device from sending the rest (S13).
+ *   is kept here, nothing is deleted, and it must never keep this device from sending the rest.
  * - **Sessions**, by `uuid` (0038), the one name a session keeps across devices. A session the
  *   other device has and this one *deleted* (0064) is not the other's news, it is this one's.
  * - **Hero content**: exercises and quests the hero made, the preferences that are theirs.

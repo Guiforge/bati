@@ -282,7 +282,7 @@ async function sealedSnapshotTo(name: string): Promise<void> {
     await snapshotDatabaseTo(pathIn(PLAIN_SNAPSHOT));
     await sealBackup(pathIn(PLAIN_SNAPSHOT), pathIn(name));
   } finally {
-    // Also when the snapshot itself fails (no room left: found by the bench's K2): a half-written plain
+    // Also when the snapshot itself fails (no room left): a half-written plain
     // copy of the whole database, and its journal, stayed in app storage until the next backup.
     removePlainSnapshot();
   }
@@ -517,7 +517,7 @@ export function discardStagedImport(): void {
   deleteIfPresent(IMPORT_PLAIN);
 }
 
-/** Moves a WAL that has to travel with its database (S6), when there is one. */
+/** Moves a WAL that has to travel with its database, when there is one. */
 async function moveWal(keep: boolean, from: string, to: string, overwrite = false): Promise<void> {
   if (keep && fileIn(from).exists) await fileIn(from).move(fileIn(to), { overwrite });
 }

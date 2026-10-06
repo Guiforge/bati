@@ -155,7 +155,7 @@ export async function converge(
   expected: string[],
   limit = 8,
   options: SyncOptions = {},
-  /** Sessions a device keeps although they were deleted elsewhere (their campaign moved on: S13). */
+  /** Sessions a device keeps although they were deleted elsewhere (their campaign moved on). */
   kept: (device: Device) => string[] = () => [],
 ): Promise<number> {
   const wanted = (d: Device) => [...expected, ...kept(d)].sort();
@@ -173,7 +173,7 @@ export async function converge(
 }
 
 // --- what must be true (the invariants of docs/testing/data-rules.md, as checks) -----------------------------
-/** I8, the half about files: nothing readable in the clear lies in a device's folders but its live database. */
+/** The half about files: nothing readable in the clear lies in a device's folders but its live database. */
 export function plainDatabasesOutside(device: Device): string[] {
   const live = `bati.v`;
   const found: string[] = [];
@@ -192,7 +192,7 @@ export function plainDatabasesOutside(device: Device): string[] {
   return found;
 }
 
-/** I2/I4: every device file on the server is a whole BATB (right magic, readable header), none is plain SQLite. */
+/** Every device file on the server is a whole BATB (right magic, readable header), none is plain SQLite. */
 export function serverFilesAreSound(server: ServerSpec): { name: string; problem: string }[] {
   const bad: { name: string; problem: string }[] = [];
   for (const name of deviceFiles(server)) {

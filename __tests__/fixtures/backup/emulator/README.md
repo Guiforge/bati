@@ -1,6 +1,6 @@
 # Fixtures captured from emulators
 
-Written once by `test/bench/capture_fixtures.py` on real emulators running real release builds, then
+Written once on real emulators running real release builds, then
 frozen. **Never regenerate.** A diff here is the signal to stop: a hero's old file might not open any more.
 
 | file | made by | secrets (test values) |

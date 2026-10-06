@@ -118,7 +118,7 @@ test("a session kept although another device deleted it is said in one line, and
   expect(screen.queryByTestId("sync-kept")).toBeNull();
 });
 
-test("S13: the sessions this device keeps are counted in the sheet", async () => {
+test("the sessions this device keeps are counted in the sheet", async () => {
   useSyncStore.setState({ result: { uploaded: true, peers: [], keptSessions: 2 } });
   await sheet();
   expect(screen.getByTestId("sync-kept").props.children).toContain("sync.status.keptSessions");

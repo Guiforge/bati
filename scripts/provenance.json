@@ -3527,6 +3527,11 @@
     "height": 640,
     "generated": "2026-08-13"
   },
+  "fastlane/metadata/android/de-DE/images/featureGraphic.png": {
+    "derived_from": "fastlane/featureGraphic-bg.jpg",
+    "how": "cover-crop + left ink fade + cartouche tagline",
+    "licence": "same as the source render; see that entry"
+  },
   "fastlane/metadata/android/en-US/images/featureGraphic.png": {
     "derived_from": "fastlane/featureGraphic-bg.jpg",
     "how": "cover-crop + left ink fade + cartouche tagline",
@@ -3535,6 +3540,11 @@
   "fastlane/metadata/android/en-US/images/icon.png": {
     "derived_from": "assets/icon.png",
     "how": "resized to 512x512 for the store listing",
+    "licence": "same as the source render; see that entry"
+  },
+  "fastlane/metadata/android/es-ES/images/featureGraphic.png": {
+    "derived_from": "fastlane/featureGraphic-bg.jpg",
+    "how": "cover-crop + left ink fade + cartouche tagline",
     "licence": "same as the source render; see that entry"
   },
   "fastlane/metadata/android/fr-FR/images/featureGraphic.png": {

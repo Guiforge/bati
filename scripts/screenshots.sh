@@ -41,8 +41,9 @@ adb shell settings put global sysui_demo_allowed 1 >/dev/null 2>&1 || true
 demo enter
 demo clock -e hhmm 0940          # a plausible morning, the hour someone trains
 demo battery -e level 100 -e plugged false
-demo network -e wifi show -e level 4
-demo network -e mobile show -e level 4 -e datatype false
+# Wi-Fi fully validated (no "!") and no mobile glyph (no "3G"): either reads as a bad connection.
+demo network -e wifi show -e level 4 -e fully true
+demo network -e mobile hide
 demo notifications -e visible false
 # Demo mode empties the status bar but does not stop a heads-up banner dropping over the app
 # mid-capture — one arrived in the middle of a session shot, carrying a real name and a real
@@ -117,7 +118,9 @@ run_marker="$(mktemp)"
 
 # An audit keeps whatever it managed to photograph: twenty-five good screens are worth more than
 # a red run. A store run still aborts, because a half-captured listing must never get framed.
-maestro test "$flow" || [ -n "${AUDIT:-}" ]
+# The hero's village name, a real one: "Testville" in the hero's own shot reads as a placeholder.
+case "${locale%%-*}" in fr) village="Valbrume" ;; *) village="Ironhold" ;; esac
+maestro test -e VILLAGE_NAME="$village" "$flow" || [ -n "${AUDIT:-}" ]
 
 # Maestro resolves takeScreenshot paths against its own artefact directory, not the project, so
 # the flow uses plain names and the files are collected here.

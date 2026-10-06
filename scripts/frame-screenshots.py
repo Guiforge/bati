@@ -69,50 +69,57 @@ COPY = {
         "1-home": ("TODAY", "Your next session,\none tap away."),
         "2-quests": ("QUESTS", "Every workout\nis a quest."),
         "3-quest-detail": ("BEFORE YOU LIFT", "See the whole session\nbefore you start it."),
-        "4-session": ("MID-SESSION", "Every rep\ndoes damage."),
+        "4-session": ("MID-SESSION", "Beat your\nlast time."),
         "5-boss": ("BOSS FIGHTS", "Some sessions\nfight back."),
         "6-victory": ("VICTORY", "The loot drops\nwhen the work is done."),
         "7-village": ("YOUR VILLAGE", "Your reps\nbuilt all of this."),
         "8-journal": ("PROGRESS", "Years of training,\non one screen."),
-        "9-recap": ("OUTINGS", "Some quests\nleave the walls."),
+        "9-recap": ("OUTINGS", "Take the quest\noutside."),
     },
     "fr-FR": {
         "0-onboarding": ("BIENVENUE", "Ton entraînement,\nen aventure."),
         "1-home": ("AUJOURD'HUI", "Ta prochaine séance,\nen un coup d'œil."),
         "2-quests": ("QUÊTES", "Chaque séance\nest une quête."),
         "3-quest-detail": ("AVANT DE COMMENCER", "Toute la séance,\navant de t'y mettre."),
-        "4-session": ("EN PLEINE SÉANCE", "Chaque répétition\nfait des dégâts."),
-        "5-boss": ("COMBATS DE BOSS", "Certaines séances\nse défendent."),
+        "4-session": ("EN PLEINE SÉANCE", "Fais mieux que\nla dernière fois."),
+        "5-boss": ("COMBATS DE BOSS", "Certaines séances\nrendent les coups."),
         "6-victory": ("VICTOIRE", "Le butin tombe\nquand le travail est fait."),
         "7-village": ("TON VILLAGE", "Tes séances\nont bâti tout ça."),
         "8-journal": ("PROGRESSION", "Des années de sport,\nsur un seul écran."),
-        "9-recap": ("SORTIES", "Certaines quêtes\nsortent des murs."),
+        "9-recap": ("SORTIES", "Emmène ta quête\ndehors."),
     },
     "de-DE": {
         "0-onboarding": ("WILLKOMMEN", "Dein Training\nals Abenteuer."),
         "1-home": ("HEUTE", "Deine nächste Einheit,\nein Tippen entfernt."),
         "2-quests": ("QUESTS", "Jedes Training\nist eine Quest."),
         "3-quest-detail": ("VOR DEM START", "Die ganze Einheit,\nbevor du loslegst."),
-        "4-session": ("MITTEN IM TRAINING", "Jede Wiederholung\nmacht Schaden."),
+        "4-session": ("MITTEN IM TRAINING", "Besser als\nbeim letzten Mal."),
         "5-boss": ("BOSSKÄMPFE", "Manche Einheiten\nschlagen zurück."),
         "6-victory": ("SIEG", "Die Beute fällt,\nwenn die Arbeit getan ist."),
         "7-village": ("DEIN DORF", "Deine Wiederholungen\nhaben das gebaut."),
         "8-journal": ("FORTSCHRITT", "Jahre an Training\nauf einem Bildschirm."),
-        "9-recap": ("TOUREN", "Manche Quests\nführen vor die Mauern."),
+        "9-recap": ("TOUREN", "Nimm die Quest\nmit nach draußen."),
     },
     "es-ES": {
         "0-onboarding": ("BIENVENIDA", "Tu entrenamiento,\nhecho aventura."),
         "1-home": ("HOY", "Tu próxima sesión,\na un toque."),
         "2-quests": ("MISIONES", "Cada entrenamiento\nes una misión."),
         "3-quest-detail": ("ANTES DE EMPEZAR", "Toda la sesión,\nantes de empezarla."),
-        "4-session": ("EN PLENA SESIÓN", "Cada repetición\nhace daño."),
+        "4-session": ("EN PLENA SESIÓN", "Supera\ntu última marca."),
         "5-boss": ("COMBATES CONTRA JEFES", "Algunas sesiones\ndevuelven el golpe."),
         "6-victory": ("VICTORIA", "El botín cae\ncuando acabas el trabajo."),
         "7-village": ("TU ALDEA", "Tus repeticiones\nlevantaron todo esto."),
         "8-journal": ("PROGRESO", "Años de entrenamiento\nen una sola pantalla."),
-        "9-recap": ("SALIDAS", "Algunas misiones\nsalen de las murallas."),
+        "9-recap": ("SALIDAS", "Lleva la misión\na la calle."),
     },
 }
+
+
+# The eight store shots, in story order: the boss and the village sell the game, so they lead. Play
+# caps phone screenshots at 8 and shows the first three without a scroll. Files are written as
+# "<position>-<name>.png" so the listing's alphabetical order is this order. 0-onboarding and
+# 3-quest-detail keep their raw stems (and COPY) but are not shipped.
+STORE_ORDER = ["5-boss", "7-village", "4-session", "6-victory", "1-home", "2-quests", "8-journal", "9-recap"]
 
 
 def font(path: pathlib.Path, size: int) -> ImageFont.FreeTypeFont:
@@ -125,6 +132,11 @@ def backdrop(stem: str) -> Image.Image:
     """The shot's own world: game art covering the canvas, darkened, vignetted, fading to ink."""
     w, h = CANVAS
     art = Image.open(ROOT / "assets" / "images" / BACKDROPS[stem][0]).convert("RGB")
+    # Some art is letterboxed: trim flat near-black rows top and bottom, or a hard band shows.
+    rows = [ImageStat.Stat(art.crop((0, y, art.width, y + 1)).convert("L")).mean[0] for y in range(art.height)]
+    lit = [y for y, m in enumerate(rows) if m > 25]
+    if lit:
+        art = art.crop((0, lit[0], art.width, lit[-1] + 1))
     scale = max(w / art.width, h / art.height)
     art = art.resize((round(art.width * scale), round(art.height * scale)), Image.LANCZOS)
     left, top = (art.width - w) // 2, (art.height - h) // 2
@@ -242,7 +254,9 @@ def compose(shot: pathlib.Path, eyebrow: str, headline: str, dest: pathlib.Path)
     pn, x, y = panel(raw, bottom + 48)
     canvas.alpha_composite(pn.crop((0, 0, pn.width, CANVAS[1] - y)), (x, y))
     dest.parent.mkdir(parents=True, exist_ok=True)
-    canvas.convert("RGB").save(dest, "PNG", optimize=True)
+    # JPEG at 92: indistinguishable on a phone, and the grained night art made the boss PNG 2.2 MB,
+    # over the repo's 2 MB large-file gate. Play and F-Droid both take JPEG.
+    canvas.convert("RGB").save(dest, "JPEG", quality=92, optimize=True, progressive=True)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -293,16 +307,18 @@ def main() -> int:
     out = pathlib.Path(
         args.out or f"fastlane/metadata/android/{args.locale}/images/phoneScreenshots"
     )
-    for old in out.glob("*.png"):
+    for old in [*out.glob("*.png"), *out.glob("*.jpg")]:
         old.unlink()  # a renamed shot must not leave its predecessor behind on the listing
 
-    for shot in shots:
-        entry = copy.get(shot.stem)
-        if entry is None:
-            print(f"  skipped {shot.name} (no copy)")
-            continue
-        compose(shot, entry[0], entry[1], out / f"{shot.stem}.png")
-        print(f"  {shot.name} -> {out / f'{shot.stem}.png'}")
+    by_stem = {x.stem: x for x in shots}
+    for pos, stem in enumerate(STORE_ORDER, 1):
+        shot = by_stem.get(stem)
+        if shot is None:
+            print(f"  missing {stem} in {src}", file=sys.stderr)
+            return 1
+        dest = out / f"{pos}-{stem.split('-', 1)[1]}.jpg"
+        compose(shot, copy[stem][0], copy[stem][1], dest)
+        print(f"  {shot.name} -> {dest}")
 
     if not args.out:
         web_shots(shots, args.locale.split("-")[0])

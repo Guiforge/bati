@@ -122,6 +122,13 @@ tags:
     visible:
       id: "village-screen"
     timeout: 30000
+# The villager's bubble covers the citadel for a few seconds after the tab opens, in some locales
+# only. Wait it out (a tap would land on the pressable cameo) so every locale shows the same state.
+- extendedWaitUntil:
+    notVisible:
+      id: "villager-bubble"
+    timeout: 30000
+    optional: true
 - takeScreenshot: 7-village
 
 # --- 8. The journal, three years deep ---------------------------------------

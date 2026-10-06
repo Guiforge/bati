@@ -61,6 +61,8 @@ OG = ROOT / "docs" / "legal" / "assets" / "img" / "og.jpg"
 TAGLINES = {
     "en-US": "BUILD YOUR BODY.\nBUILD YOUR VILLAGE.",
     "fr-FR": "BÂTIS TON CORPS.\nBÂTIS TON VILLAGE.",
+    "de-DE": "BAU DEINEN KÖRPER.\nBAU DEIN DORF.",
+    "es-ES": "FORJA TU CUERPO.\nLEVANTA TU ALDEA.",
 }
 
 

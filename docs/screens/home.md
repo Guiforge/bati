@@ -39,7 +39,7 @@ column only scrolls when a recovery card pushes it.
 
 | Block | Component | Answers |
 | --- | --- | --- |
-| Status strip | `HomeHeader` | who I am, what my training built: avatar → settings, level + title, XP as `340 / 500`, flame + day count → journal, village crest + tier → village |
+| Status strip | `HomeHeader` | who I am, what my training built: avatar → settings, level + title, XP as `340 / 500`, village crest + tier → village |
 | Recovery banner | `SessionRecoveryBanner` | *conditional*: an interrupted session, before anything else is offered |
 | Stage | `HomeStage` | what I do right now: one full-bleed scene, **Start**, **Details** |
 | Rest note | `RestNote` | *conditional*: one quiet line under the button, never a gate |
@@ -68,8 +68,8 @@ A kicker chip names the unusual cases: "Day one", "Adventure". Which branch fire
 ## Quick actions
 
 The section's header is the shared `SectionLabel` (12/700, 1.5 tracking, ash), the same label
-Settings, the exercise detail and the village lists use. The streak flame in the status strip is
-the game-icons `flame` glyph, `$primaryText` while the streak is alive and `$muted` once out.
+Settings, the exercise detail and the village lists use. The status strip has no streak flame
+since 2.9.0: the Journal and the village carry it.
 
 - **A way out starts on one tap**, at `medium`, with the goal it is about to run written on the
   tile. The location preamble and the refusal notice speak above the row, one at a time.

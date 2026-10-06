@@ -67,7 +67,7 @@ rewrites its database). The header of the script has the whole recipe; the shape
 
 It installs the old build, lets it migrate, gives it a three-year hero through the same SQL as the
 dev seeder, installs the new build with `adb install -r`, and compares sessions, exercises, XP,
-the level and the flame as read off the Home screen, plus that the app is running with no crash
+the level and the village as read off the Home screen, plus that the app is running with no crash
 and that no migration disappeared. It prints each figure that moved and exits 1.
 
 The comparison itself is covered without a device by `__tests__/upgrade-check-compare.test.ts`.

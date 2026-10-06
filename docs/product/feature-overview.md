@@ -130,7 +130,7 @@ Consistency tracking — days the hero held their weekly rhythm, not days they t
   counts while the trailing week holds the hero's session quota, or the week before it did.
 - **Quota**: 2 sessions a week by default (WHO baseline); a `weekly_sessions`
   [oath](../gameplay/oaths.md) raises it to the hero's chosen 2, 3 or 4.
-- **Visual**: Flame intensity and day count on Home's strip (`HomeHeader`), and the Village scene
+- **Visual**: Flame intensity and day count in the Journal, and the Village scene
 - **Behavior**: Rest days cost nothing. One blank week is forgiven, two put the flame out.
 - **Status**: Implemented
 

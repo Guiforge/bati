@@ -179,7 +179,7 @@ Preferences:
 **Purpose:** the dashboard to jump back into training.
 
 - **Home** (`/`)
-  - One strip at the top: your level, XP, flame, and the village's crest (tap it to visit).
+  - One strip at the top: your level, XP, and the village's crest (tap it to visit).
   - The one session on offer tonight, full screen: one tap on Start, or Details to look first.
   - Your Oath along the foot of the scene, with the rung of the ladder you are on.
   - Quick actions under it: a walk, a run or a ride with its goal on the tile, and your last

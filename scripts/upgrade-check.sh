@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Does a real update keep a hero? Installs the previous APK on an emulator, gives it a three-year
 # hero, installs the new APK over it (`adb install -r`, exactly what an update is), and compares
-# what the hero reads: level, flame, and the counts under them.
+# what the hero reads: level, village, and the counts under them.
 #
 # Run by hand before every tag. It is not in CI: it needs an emulator and two release builds.
 #
@@ -40,9 +40,9 @@ figures() {
   # What is on screen, not what is in the table: a level is computed, and a computation is what
   # an update can change without touching a row.
   echo "level=$(grep -oE '(Level|Niveau|Stufe|Nivel) [0-9]+' "$dump" | head -1 || true)"
-  # The flame and the village by their spoken labels: a release build drops `testID` from the
-  # accessibility tree, and the label is what a screen reader says, so it is also what is stable.
-  echo "flame=$(grep -oE 'content-desc="[0-9]+-day flame"' "$dump" | head -1 || true)"
+  # The village by its spoken label: a release build drops `testID` from the accessibility tree,
+  # and the label is what a screen reader says, so it is also what is stable. The flame left Home's
+  # strip in 2.9.0; `golden-hero` holds its figure.
   # Its name only: the name comes from the tier, so it freezes the tier, while the rest of the label
   # ("Tier 11. Open the village") is copy that a release is free to reword.
   echo "village=$(grep -oE 'content-desc="[^"]*Open the village"' "$dump" | head -1 \
@@ -183,7 +183,7 @@ pull_db "$work/before.db" >/dev/null
 figures "$work/before.db" "$work/before.xml" >"$work/before.txt"
 sed 's/^/   /' "$work/before.txt"
 # Both read off the screen. An empty one on both sides would compare equal and prove nothing.
-for shown in level flame; do
+for shown in level village; do
   if ! grep -q "^${shown}=.\+" "$work/before.txt"; then
     echo "The old build never showed its ${shown} on Home, so there is nothing to compare. Is the emulator awake?" >&2
     exit 1

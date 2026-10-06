@@ -3,31 +3,24 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Avatar, Text, XStack, YStack } from "tamagui";
-import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Castle, Settings } from "@/components/icons";
 import { getAvatarSource } from "@/constants/avatars";
-import { getFlameLevel } from "@/db/streaks";
 import { formatCount } from "@/db/targets";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { getVillageTier, TIER_NAMES } from "@/db/village";
 import { useReloadOnChange } from "@/hooks/useReloadOnChange";
-import { useStreakInfo } from "@/hooks/useStreakInfo";
 import { useSettingsStore } from "@/stores/settings";
 
 /** The strip under the status bar. Everything Home no longer spends on chrome goes to the scene. */
 const HUD_HEIGHT = 52;
 
-/** Every tap target in the strip: the 44 dp floor, and the cell the flame and the crest sit in. */
+/** Every tap target in the strip: the 44 dp floor, and the cell the crest sits in. */
 const CELL = 44;
 
-// The flame still grows with the streak (db/village.ts thresholds), inside a cell that also holds
-// the count: 24 is the most that leaves the number room under it.
-const FLAME_SIZES: Record<number, number> = { 0: 16, 1: 16, 2: 18, 3: 20, 4: 22, 5: 24 };
-
 /**
- * The whole of Home's chrome: who the hero is, how far to the next level, the streak, the village.
+ * The whole of Home's chrome: who the hero is, how far to the next level, the village.
  *
  * One strip instead of a header and a village band. The band spent 53 dp saying what the Village
  * tab right under it already said, so the village keeps a crest here, its tier and a tap, and the
@@ -41,7 +34,6 @@ export function HomeHeader() {
   const customAvatarUri = useSettingsStore((s) => s.customAvatarUri);
   const language = useSettingsStore((s) => s.language);
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
-  const streak = useStreakInfo();
 
   const avatarSource = getAvatarSource(avatarId, customAvatarUri);
 
@@ -52,8 +44,6 @@ export function HomeHeader() {
   );
 
   const levelTitle = levelInfo ? levelInfo.title[language] : "";
-  const currentStreak = streak?.current ?? 0;
-  const flameLevel = getFlameLevel(currentStreak);
   const tier = levelInfo ? getVillageTier(levelInfo.level) : null;
 
   return (
@@ -123,7 +113,7 @@ export function HomeHeader() {
         )}
         <XStack items="center" gap="$1.5">
           {/* ProgressBar is width:100% and doesn't shrink: without this flex wrapper it takes the
-              whole row and pushes the numbers out under the flame. */}
+              whole row and pushes the numbers out under the crest. */}
           <XStack flex={1}>
             <ProgressBar
               progress={levelInfo?.xpProgress ?? 0}
@@ -144,49 +134,6 @@ export function HomeHeader() {
           ) : null}
         </XStack>
       </YStack>
-
-      {/* The streak, in gold with its count and unit: gold is for what progresses, and a grey
-          flame with no number was the least legible thing on the old header. The count is the
-          `formatCount` every other number in this strip goes through: a five-year flame read
-          "1823d" beside "2,000 XP". The spoken label keeps the bare digits on purpose, because a
-          separator is what makes a screen reader say "one, comma, eight hundred". Always rendered,
-          blank but space-holding until the first read lands, so it neither flashes a zero nor
-          resizes the XP bar. An unlit flame is dimmed, never hidden: it is the thing to relight. */}
-      {!streak ? (
-        <YStack width={CELL} height={CELL} />
-      ) : (
-        <YStack
-          width={CELL}
-          height={CELL}
-          items="center"
-          justify="center"
-          opacity={currentStreak > 0 ? 1 : 0.4}
-          pressStyle={{ scale: 0.95 }}
-          onPress={() => router.push("/(tabs)/journal")}
-          accessibilityRole="button"
-          accessibilityLabel={t("home.streak_a11y", {
-            count: currentStreak,
-            defaultValue: `${currentStreak} day streak`,
-          })}
-        >
-          <FlameFlicker size={FLAME_SIZES[flameLevel]} animate={currentStreak > 0} />
-          {/* No "0d" under an unlit flame: the dimmed flame already says it, and a zero reads as a
-              verdict on a first day (the Journal hides it too). */}
-          <Text
-            testID="home-streak-days"
-            fontSize={11}
-            fontWeight="700"
-            color="$resourceGold"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.6}
-          >
-            {currentStreak > 0
-              ? t("home.streak_short", { days: formatCount(language, currentStreak) })
-              : " "}
-          </Text>
-        </YStack>
-      )}
 
       {/* The village as a crest and its tier. Reads level only, like the band it replaces:
           getVillageScene() is five queries for a number. */}
@@ -210,7 +157,7 @@ export function HomeHeader() {
         >
           <Castle size={16} color="$textSecondary" />
           {/* "Tier 12", not a bare 12 next to a castle: the audit's strangers read it as a count.
-              Shrinks to fit the 44 dp cell, like the streak, instead of wrapping at large fonts. */}
+              Shrinks to fit the 44 dp cell instead of wrapping at large fonts. */}
           <Text
             testID="home-village-tier"
             fontSize={10}

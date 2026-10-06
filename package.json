@@ -102,6 +102,7 @@
       "!**/node_modules/**",
       "!**/.claude/**",
       "!test/**",
+      "!.design-sync/**",
       "!**/__tests__/**",
       "!**/.expo/**",
       "!**/coverage/**",

@@ -165,4 +165,61 @@ describe("db/quests — a slot serves the rung the hero stands on", () => {
     expect(quest?.exercises[0]?.exercise.enName).toBe("Push-ups");
     expect(quest?.exercises[0]?.substitutedFor).toBeUndefined();
   });
+
+  /**
+   * Issue #163: Cat-Cow is seeded as a hold, and a hero who wrote it in reps got the default hold
+   * instead. A movement's `measure` only decides the unit of a movement standing in for another.
+   */
+  test("a hero's quest keeps the unit they wrote, even against the movement's measure", async () => {
+    const info = t.sqlite
+      .prepare(
+        "INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author, rounds, restSeconds) VALUES ('Flow', 'Flow', '', '', 'hero', 1, 30)",
+      )
+      .run();
+    const questId = Number(info.lastInsertRowid);
+    t.sqlite
+      .prepare(
+        "INSERT INTO quest_exercises (questId, exerciseId, sortOrder, targetType, targetMin, targetMax, imagesJson) VALUES (?, ?, 0, 'reps', 10, 10, '[]')",
+      )
+      .run(questId, idOf("Cat-Cow"));
+
+    const quest = await questsApi().getQuestById(questId, "medium");
+
+    expect(quest?.exercises[0]?.exercise.measure).toBe("time");
+    expect(quest?.exercises[0]?.target).toEqual({ type: "reps", value: 10 });
+  });
+
+  /**
+   * The same rule as a sweep: every seeded movement, written in the unit it is *not* measured in,
+   * runs as written. A movement added later is covered the day it lands.
+   */
+  test("a hero's quest runs every seeded movement in the unit they wrote", async () => {
+    const measured = t.sqlite
+      .prepare(
+        "SELECT id, measure FROM exercises WHERE creator = 'Admin' AND measure IS NOT NULL AND style != 'expedition' AND retiredAt IS NULL",
+      )
+      .all() as { id: number; measure: "reps" | "time" }[];
+    expect(measured.length).toBeGreaterThan(50);
+
+    const info = t.sqlite
+      .prepare(
+        "INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author, rounds, restSeconds) VALUES ('Sweep', 'Sweep', '', '', 'hero', 1, 30)",
+      )
+      .run();
+    const questId = Number(info.lastInsertRowid);
+    const insert = t.sqlite.prepare(
+      "INSERT INTO quest_exercises (questId, exerciseId, sortOrder, targetType, targetMin, targetMax, imagesJson) VALUES (?, ?, ?, ?, 10, 10, '[]')",
+    );
+    measured.forEach((ex, i) => {
+      insert.run(questId, ex.id, i, ex.measure === "reps" ? "time" : "reps");
+    });
+
+    const quest = await questsApi().getQuestById(questId, "medium");
+
+    expect(quest?.exercises).toHaveLength(measured.length);
+    const overruled = (quest?.exercises ?? [])
+      .filter((qex) => qex.target.type === qex.exercise.measure)
+      .map((qex) => qex.exercise.enName);
+    expect(overruled).toEqual([]);
+  });
 });

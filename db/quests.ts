@@ -722,7 +722,12 @@ export function resolveSlot(input: {
   // does not touch either (`LOCOMOTION_RATE`, `db/xp.ts`). Scaling it made the same walk read as
   // 34, 45 or 56 minutes for three heroes, and paid all three the same for the same hour.
   const level = outing ? Difficulty.Medium : userLevel;
-  const target = retargetForMovement(generateTarget(base, level, bestHold), exercise, level);
+  const target = retargetForMovement(
+    generateTarget(base, level, bestHold),
+    written,
+    exercise,
+    level,
+  );
 
   return {
     exercise,

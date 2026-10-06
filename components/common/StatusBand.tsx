@@ -1,6 +1,5 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
-import { fade, rawColors } from "@/constants/rawColors";
 
 /**
  * An ink band the height of the status bar, over a scroll view with no art behind it: content
@@ -17,7 +16,8 @@ export function StatusBand() {
       l={0}
       r={0}
       height={insets.top}
-      bg={fade(rawColors.bgDark, 0.92)}
+      // Opaque: at 0.92 the white of a heading still showed through as ghost text by the clock.
+      bg="$bgDark"
       pointerEvents="none"
     />
   );

@@ -86,5 +86,6 @@ test("the status band is an ink band that never takes a touch", async () => {
   expect(band.props.pointerEvents).toBe("none");
   const style = StyleSheet.flatten(band.props.style);
   expect(style.height).toBe(24);
-  expect(style.backgroundColor).toBe(fade(rawColors.bgDark, 0.92));
+  // Opaque: at 0.92 a heading scrolled under the clock still read as ghost text.
+  expect(style.backgroundColor).toBe(rawColors.bgDark);
 });

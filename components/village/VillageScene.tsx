@@ -34,7 +34,7 @@ import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
 import { villageCameoBand, villageHeroSlot } from "@/components/village/villageArt";
 import { getSportSpriteAsset, getVillageTierAsset } from "@/constants/assetMap";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
-import { fade, rawColors } from "@/constants/rawColors";
+import { rawColors } from "@/constants/rawColors";
 import { pickDailyVariant } from "@/constants/restMessages";
 import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
 import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
@@ -464,7 +464,8 @@ export function VillageScene() {
           statusScrimStyle,
         ]}
       >
-        <View style={{ flex: 1, backgroundColor: fade(rawColors.bgDark, 0.92) }} />
+        {/* Opaque: at 0.92 the list still read as ghost text behind the clock. */}
+        <View style={{ flex: 1, backgroundColor: rawColors.bgDark }} />
       </Animated.View>
 
       {rewardOpen ? (

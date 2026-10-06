@@ -1,3 +1,4 @@
+- A new look, inked like a comic book, on every screen.
 - "Share my backup" is now "Save a file": Drive and Downloads are there.
 - A stronger backup password and 12 words. Your old files still open.
 - Several devices: update Bati on all of them before you update your password.

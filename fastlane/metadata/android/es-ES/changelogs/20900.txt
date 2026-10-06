@@ -1,5 +1,6 @@
+- Nuevo estilo, entintado como un cómic, en cada pantalla.
 - «Compartir mi copia» ahora es «Guardar un archivo»: Drive y Descargas están ahí.
-- Una contraseña de copias más sólida y 12 palabras. Tus archivos antiguos siguen abriéndose.
+- Una contraseña más sólida y 12 palabras. Tus archivos antiguos siguen abriéndose.
 - Varios dispositivos: actualiza Bati en todos antes de renovar tu contraseña.
-- Correcciones de sincronización: nada se pierde ni se bloquea cuando los dispositivos difieren.
+- Sincronización: nada se pierde ni se bloquea entre dispositivos.
 - Además: los aldeanos ya no tapan la aldea, una pausa olvidada ya no es un récord, las distancias siguen tu región.

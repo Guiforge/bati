@@ -1,5 +1,6 @@
+- Un nouveau look, encré comme une BD, sur chaque écran.
 - « Partager ma sauvegarde » devient « Enregistrer un fichier » : Drive et Téléchargements y sont.
-- Un mot de passe des sauvegardes plus solide et 12 mots. Tes anciens fichiers s'ouvrent toujours.
-- Plusieurs appareils : mets Bati à jour sur tous avant de mettre à jour ton mot de passe.
-- Synchro : rien ne se perd ni ne bloque quand les appareils divergent.
+- Mot de passe plus solide et 12 mots. Tes anciens fichiers s'ouvrent toujours.
+- Plusieurs appareils : mets Bati à jour partout avant de changer de mot de passe.
+- Synchro : rien ne se perd ni ne bloque.
 - Aussi : les villageois ne couvrent plus le village, une tenue oubliée n'est plus un record, les distances suivent ta région.

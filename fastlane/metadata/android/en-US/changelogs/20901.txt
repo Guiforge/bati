@@ -1,0 +1,7 @@
+- A new look, inked like a comic book, on every screen.
+- The villagers show their faces, and no longer hide the village.
+- "Share my backup" is now "Save a file": Drive and Downloads are there.
+- A stronger backup password and 12 words. Your old files still open.
+- Several devices: update Bati on all of them before you update your password.
+- Sync fixes: nothing is lost or held back when devices disagree.
+- Also: a hold left running is no longer a record, distances follow your region.

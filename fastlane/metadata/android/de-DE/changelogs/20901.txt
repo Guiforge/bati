@@ -1,0 +1,7 @@
+- Neuer Look, getuscht wie ein Comic.
+- Dorfbewohner zeigen ihr Gesicht und verdecken das Dorf nicht mehr.
+- „Meine Sicherung teilen“ heißt jetzt „Datei speichern“: Drive und Downloads sind dabei.
+- Stärkeres Passwort und 12 Wörter. Alte Dateien öffnen sich weiter.
+- Mehrere Geräte: Aktualisiere Bati auf allen, bevor du dein Passwort erneuerst.
+- Sync: Nichts geht verloren oder hängt zwischen Geräten.
+- Außerdem: Ein vergessenes Halten wird kein Rekord, Distanzen folgen deiner Region.

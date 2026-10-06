@@ -756,7 +756,6 @@ export default function QuestDetails() {
                         count: quest.exercises.length,
                         defaultValue: `${quest.exercises.length} exercises`,
                       })}
-                      tone="primary"
                     />
                   ) : null}
                   {/* One movement means every gap is a round boundary, so this rest is never

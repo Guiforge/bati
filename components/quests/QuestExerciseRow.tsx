@@ -273,7 +273,9 @@ export function QuestExerciseRow({
             {showTarget ? (
               <Tag
                 label={targetLabel(qex.target, qex.exercise.style, language)}
-                tone={qex.target.type === "time" ? "default" : "primary"}
+                // A hold's target is filled like a count's: "40s" bare under Plank, beside "14
+                // reps" in a pill under Squat, read as a different kind of thing.
+                tone="primary"
               />
             ) : null}
             {/* What the hero did on this movement last time, in the slot's own unit. In the shut

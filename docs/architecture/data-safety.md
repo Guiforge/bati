@@ -46,8 +46,8 @@ migration: the price of a risky one is a line of explanation, never a refusal.
 
 `premigrate.db` sits next to the database, in the app's private storage. It is written before the
 runner's `BEGIN IMMEDIATE` (`VACUUM INTO` is illegal inside a transaction), through a temp name
-and a rename so a copy cut short by a full disk is never mistaken for a net, and replaced at the
-next update: it is the state just before the last one. It is skipped on a fresh install and can
+and a rename so a copy cut short by a full disk is never mistaken for a net, and rotated at the
+next update (`premigrate.prev.db` keeps the generation before): it is the state just before the last one. It is skipped on a fresh install and can
 never stop an update.
 
 It exists because `backupBeforeMigrations` returns at once when no backup folder was picked, which

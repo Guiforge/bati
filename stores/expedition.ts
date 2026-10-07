@@ -396,7 +396,10 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       }),
       addListener("onNoFixTimeout", (event) => {
         set({ error: "no-fix", recentSpeedMps: null });
-        reportEvent("expedition.noFix", `no fix for ${event.sinceLastFixMs} ms`);
+        // A category, not the count: the log merges identical lines, and a count that differs
+        // each time would spend one of its twenty slots per tunnel.
+        const why = event.rejected > 0 ? `fixes rejected (${event.reason})` : "receiver silent";
+        reportEvent("expedition.noFix", `no fix for ${event.sinceLastFixMs} ms, ${why}`);
       }),
       // The way out that only a locked screen takes. The service asks, the session store
       // concludes: the duration, the XP and the journal row are its business, and its alone.

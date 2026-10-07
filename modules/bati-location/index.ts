@@ -29,11 +29,22 @@ export type LocationError = {
   message: string;
 };
 
+/**
+ * `rejected` counts the fixes the native filter threw away during the silence, `reason` says why
+ * the latest one went. Zero rejected is a receiver that heard nothing; any other count is fixes
+ * arriving and failing our accuracy or speed bar, which is ours to tune.
+ */
+export type NoFixEvent = {
+  sinceLastFixMs: number;
+  rejected: number;
+  reason: "accuracy" | "speed" | null;
+};
+
 type BatiLocationEvents = {
   onLocation: (fix: LocationFix) => void;
   onProviderEnabled: (event: { enabled: boolean }) => void;
   /** Only ever after a first fix: cold TTFF without SUPL or PSDS is minutes, not seconds. */
-  onNoFixTimeout: (event: { sinceLastFixMs: number }) => void;
+  onNoFixTimeout: (event: NoFixEvent) => void;
   /**
    * The hero pressed "Finish" on the notification, which is how a walk ends with the phone
    * locked in a pocket. No body: the service knows the button was pressed and nothing else, and

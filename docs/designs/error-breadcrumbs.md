@@ -191,5 +191,13 @@ the one that explained a report.
   when the failure is a `MapSnapshotTimeout` (any other snapshot failure stays an error).
 - A merged entry keeps `first` beside `at`, and the mail prints the span
   (`first → at (context ×n)`): ×5 over two minutes is a tunnel, ×5 over a week is a pattern.
-- Not done: telling a silent receiver from fixes our accuracy filter rejects, in `noFix`. It needs
-  Kotlin, and is worth it only once a hero reports a wrong distance or a cut trace.
+- `noFix` says which silence it was. `BatiLocationService` counts the fixes its filter threw away
+  since the last one it kept, and the event carries `rejected` and `reason`: the line reads
+  `receiver silent` or `fixes rejected (accuracy|speed)`. A category, never the count, so two
+  tunnels still merge into one entry.
+- Verified on the emulator (release build under its own id, `-PbatiLocalId=.somebug`): a real
+  outing fed 100 kn fixes produced `no fix for 30000 ms, fixes rejected (speed)` in `eventLog`,
+  nothing in `errorLog`, and a second one merged into `×2` with `first` kept. The emulator cannot
+  play `receiver silent`: it repeats its last `geo fix` every second (`dumpsys location`), so that
+  branch rests on jest. Gmail opened on Feedback; with no account it will not show the draft, so
+  the body rests on `crashLog.test.ts` and `useBugReport.test.tsx`.

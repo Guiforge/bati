@@ -61,6 +61,14 @@ class BatiLocationService :
   private var previous: Location? = null
 
   /**
+   * Fixes the filter below threw away since the last one it kept, and why the latest went. A
+   * receiver that falls silent and one whose every fix fails our filter look the same from JS,
+   * and they call for opposite fixes: the no-fix event says which it was.
+   */
+  private var rejectedSinceFix = 0
+  private var lastRejection: String? = null
+
+  /**
    * Barometric height in metres, smoothed, or null when the phone has no barometer or it has not
    * reported yet. Rides along on every fix rather than being its own event: the reducer measures
    * a climb only on a fix that proved the hero moved, and one stream is one ordering.
@@ -200,6 +208,8 @@ class BatiLocationService :
     // A second start() replaces the first rather than stacking a listener.
     manager.removeUpdates(this)
     previous = null
+    rejectedSinceFix = 0
+    lastRejection = null
     state = if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) State.ACQUIRING else State.GPS_OFF
 
     if (!enterForeground()) return
@@ -274,8 +284,19 @@ class BatiLocationService :
   override fun onLocationChanged(location: Location) {
     // An unmeasured fix cannot be filtered, and this filter is the only thing between a bad
     // receiver and a distance nobody ran.
-    if (!location.hasAccuracy() || location.accuracy > MAX_ACCURACY_M) return
-    if (location.hasSpeed() && location.speed > maxSpeed) return
+    val rejection =
+      when {
+        !location.hasAccuracy() || location.accuracy > MAX_ACCURACY_M -> REJECTED_ACCURACY
+        location.hasSpeed() && location.speed > maxSpeed -> REJECTED_SPEED
+        else -> null
+      }
+    if (rejection != null) {
+      rejectedSinceFix += 1
+      lastRejection = rejection
+      return
+    }
+    rejectedSinceFix = 0
+    lastRejection = null
 
     val distFromPrev = previous?.distanceTo(location) ?: 0f
     previous = location
@@ -333,7 +354,14 @@ class BatiLocationService :
 
   private fun onNoFix() {
     setState(State.PAUSED)
-    emit(EVENT_NO_FIX, mapOf("sinceLastFixMs" to NO_FIX_TIMEOUT_MS.toDouble()))
+    emit(
+      EVENT_NO_FIX,
+      mapOf(
+        "sinceLastFixMs" to NO_FIX_TIMEOUT_MS.toDouble(),
+        "rejected" to rejectedSinceFix.toDouble(),
+        "reason" to lastRejection,
+      ),
+    )
   }
 
   private fun setState(next: State) {
@@ -516,6 +544,9 @@ class BatiLocationService :
 
     /** The hero pressed "Finish" on the notification. No body: there is nothing to say but this. */
     const val EVENT_FINISH = "onFinishRequested"
+
+    const val REJECTED_ACCURACY = "accuracy"
+    const val REJECTED_SPEED = "speed"
 
     const val ERROR_PERMISSION = "permission"
     const val ERROR_NO_PROVIDER = "provider-missing"

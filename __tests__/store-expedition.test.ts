@@ -1,4 +1,4 @@
-import type { LocationFix } from "@/modules/bati-location";
+import type { LocationFix, NoFixEvent } from "@/modules/bati-location";
 
 const mockListeners = new Map<string, (payload: never) => void>();
 const mockAppendPoints = jest.fn().mockResolvedValue(undefined);
@@ -507,10 +507,15 @@ describe("stores/expedition", () => {
       emit({ ...walking(0), speed: 3 });
       expect(store.getState().recentSpeedMps).toBe(3);
 
-      (mockListeners.get("onNoFixTimeout") as (e: { sinceLastFixMs: number }) => void)({
+      (mockListeners.get("onNoFixTimeout") as (e: NoFixEvent) => void)({
         sinceLastFixMs: 30_000,
+        rejected: 0,
+        reason: null,
       });
-      expect(mockReportEvent).toHaveBeenCalledWith("expedition.noFix", "no fix for 30000 ms");
+      expect(mockReportEvent).toHaveBeenCalledWith(
+        "expedition.noFix",
+        "no fix for 30000 ms, receiver silent",
+      );
       expect(mockReportError).not.toHaveBeenCalled();
       expect(store.getState().error).toBe("no-fix");
       // The last window's pace is not how fast the hero is going thirty seconds later.
@@ -519,6 +524,23 @@ describe("stores/expedition", () => {
       // A fix landing ends it: silence is the only thing either of these two errors is about.
       emit(walking(0));
       expect(store.getState().error).toBeNull();
+    });
+
+    // Fixes arriving and failing our filter is ours to tune, a silent receiver is not: the line
+    // says which, and as a category, so two tunnels still merge into one entry.
+    test("says when the silence was fixes the filter threw away", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric");
+      emit(walking(0));
+
+      (mockListeners.get("onNoFixTimeout") as (e: NoFixEvent) => void)({
+        sinceLastFixMs: 30_000,
+        rejected: 17,
+        reason: "accuracy",
+      });
+      expect(mockReportEvent).toHaveBeenCalledWith(
+        "expedition.noFix",
+        "no fix for 30000 ms, fixes rejected (accuracy)",
+      );
     });
 
     // The pill must not un-say a refusal the hero has to fix in Android's settings.

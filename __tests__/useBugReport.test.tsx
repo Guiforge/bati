@@ -30,9 +30,11 @@ jest.mock("@/src/crashLog", () => ({
     await Promise.resolve();
     return [{ at: "2026-08-30T09:00:00.000Z", context: "fatal", message: "boom", stack: null }];
   }),
-  readErrorLog: jest.fn(async () => {
+  readErrorLog: jest.fn(async (kind?: string) => {
     await Promise.resolve();
-    return [];
+    return kind === "event"
+      ? [{ at: "2026-10-07T20:25:52.749Z", context: "expedition.noFix", message: "m", stack: null }]
+      : [];
   }),
   buildBugReportMailto: jest.fn(() => "mailto:test@example.com?subject=x"),
 }));
@@ -123,6 +125,24 @@ describe("useBugReport", () => {
     });
     expect(mockOpened).toEqual(["mailto:test@example.com?subject=x"]);
     expect(screen.queryByText("backup.exportFailed")).toBeNull();
+  });
+
+  // The event log is a second row the hook has to read and hand over, or the mail's events
+  // section is a template nobody fills.
+  test("the mail carries the event log, under its own header", async () => {
+    const { buildBugReportMailto } = jest.requireMock("@/src/crashLog") as {
+      buildBugReportMailto: jest.Mock;
+    };
+    const { result } = await renderHook(() => useBugReport());
+
+    await act(async () => {
+      await result.current.openBugReport();
+    });
+
+    const [, handled, , strings, , events] = buildBugReportMailto.mock.calls[0] ?? [];
+    expect(handled).toEqual([]);
+    expect(strings.eventsHeader).toBe("feedback.events_header");
+    expect(events).toEqual([expect.objectContaining({ context: "expedition.noFix" })]);
   });
 
   test("a device with no visible mail app is told so, and nothing is opened", async () => {

@@ -343,13 +343,16 @@ the target is **per side**. A timed slot runs side, 8 s switch, side (`src/perSi
 `switch.wav` (two short beeps) into it and 3-2-1 then "go" out of it. The warm-up reads the same
 column through the same hook, with no switch (its sides are fifteen seconds of mobility).
 
-The journal logs one side's worth, the weaker one (`perSideHeldSeconds`): the time held on the
+The journal logs one side's worth, the weaker one (`perSideSet`): the time held on the
 first side, the full first side if stopped in the switch, the second side if it fell short, and
 the average of the two past the target. Never the switch. XP and boss damage pay both sides
 (`pricing.perSide`, `computeDamage`) once both were worked (`perSideSet`: a hold stopped before
 the second side's first 3 s is one side, and is paid as one); the switch is never paid. Boss pools
 price both sides: computed ones in `calculateBossHp`, seeded ones raised in `0068` by the extra
-their per-side slots deal. A counted slot reads "Reps per side".
+their per-side slots deal; a boss fight already open at the update keeps the pool it was created
+with, so it may fall one step early, once. A counted slot reads "Reps per side" and is paid for
+both sides: there is no clock to say otherwise, and a hero who logs one side as two could already
+type any count.
 Every surface that prints such a figure says "per side" (`perSideLabel` in `db/targets.ts`), except
 the session's ghost line, whose caption right above already says it. Estimates count both sides and
 the switch.

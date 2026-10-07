@@ -32,6 +32,7 @@ import {
   perSideSet,
   SECOND_SIDE_GRACE_SECONDS,
   SIDE_SWITCH_SECONDS,
+  type SidePhase,
   sidePhase,
 } from "@/src/perSide";
 
@@ -70,6 +71,22 @@ function heldSeconds(
   return perSide
     ? perSideSet(elapsedSeconds, targetSeconds, firstSideSeconds).seconds
     : elapsedSeconds;
+}
+
+/**
+ * The timer bar on a per-side hold: each side fills from empty over its own length, and the switch
+ * drains its eight seconds. Anything else reads the whole clock.
+ */
+function sideBarValue(
+  side: SidePhase | null,
+  progress: number,
+  firstSideSeconds: number,
+  secondSideSeconds: number,
+): number {
+  if (!side) return progress;
+  if (side.phase === "switch") return side.seconds / SIDE_SWITCH_SECONDS;
+  const length = side.phase === "first" ? firstSideSeconds : secondSideSeconds;
+  return length > 0 ? 1 - side.seconds / length : 1;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
@@ -527,9 +544,10 @@ export function ActiveExerciseView() {
           <YStack gap="$2">
             {/* No label row: the numeral below is the same figure at 72px. */}
             <TimerBar
-              // The switch drains its own eight seconds: on the whole clock it barely moved, and
-              // the hero had no way to see how long was left to turn.
-              value={inSwitch && side ? side.seconds / SIDE_SWITCH_SECONDS : progress}
+              // The phase in progress, like the numeral: each side fills from empty, and the switch
+              // drains its own eight seconds. On the whole clock the switch barely moved, and the
+              // second side opened at two thirds full.
+              value={sideBarValue(side, progress, targetValue, secondSideSeconds)}
               fill={isOvertime ? "$success" : inSwitch ? "$warning" : "$primary"}
               fillOpacity={isOvertime ? 0.9 : 1}
               bg="$surface2"
@@ -894,9 +912,11 @@ export function ActiveExerciseView() {
                 wrong too (the clock does not run on past it), so it says what comes next. */}
             {isTimeBased && !isOuting && (
               <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {/* Kept, blank, during the switch: a line that leaves lets the art above grow
-                    and the whole screen jumps under a hero who is mid-move. */}
-                {inSwitch
+                {/* Kept, blank, during the switch and the second side up to its target: a line
+                    that leaves lets the art above grow, and "keep going past the target" wraps to
+                    two lines at a large font, so either one jumps the screen under a hero who is
+                    getting into the second side. It comes back once the target is reached. */}
+                {inSwitch || (side?.phase === "second" && !isOvertime && !fightLive)
                   ? " "
                   : side?.phase === "first" && !fightLive
                     ? t("session.side_switch_ahead", { seconds: SIDE_SWITCH_SECONDS })

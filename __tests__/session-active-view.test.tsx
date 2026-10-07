@@ -300,6 +300,8 @@ describe("a per-side hold", () => {
     // The switch is announced before it comes.
     await tick(25);
     expect(sideLine()).toBe("Get ready to switch sides");
+    // 25 of the first side's 30 s.
+    expect(screen.getByTestId("timer-bar").props.accessibilityValue.now).toBe(83);
     // The edges light up with it.
     expect(glow()).toBe(1);
 
@@ -326,6 +328,10 @@ describe("a per-side hold", () => {
     await tick(4);
     expect(sideLine()).toBe("Go, side 2");
     expect(screen.getByText("0:30")).toBeTruthy();
+    // The second side fills from empty, not from where the whole clock stood.
+    expect(screen.getByTestId("timer-bar").props.accessibilityValue.now).toBe(0);
+    // And nothing below the figure grows while the hero gets into it.
+    expect(screen.queryByText("Keep going! Timer continues after target.")).toBeNull();
     expect(playCue.mock.calls.map(([cue]) => cue).slice(4)).toEqual(["tick", "tick", "tick", "go"]);
 
     await tick(3);

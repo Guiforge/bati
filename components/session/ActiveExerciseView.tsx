@@ -703,15 +703,11 @@ export function ActiveExerciseView() {
                             equally available. The audit of 2026-09-10 read it as counting up. */}
                         {/* Not during the switch: its five seconds are not "left of 20 s per
                             side", and the line under the numeral already says what they are. */}
+                        {/* The same component in every phase, so the line keeps its height. */}
                         {side?.phase === "switch" ? (
-                          <Text
-                            testID="session-side-two-in"
-                            fontSize={20}
-                            fontWeight="700"
-                            color="$text"
-                          >
+                          <Paragraph testID="session-side-two-in" fontWeight="700" color="$text">
                             {t("session.side_two_in", { seconds: side.seconds })}
-                          </Text>
+                          </Paragraph>
                         ) : (
                           <Paragraph fontWeight="700" color="$textSecondary">
                             {t("session.seconds_left_of", {
@@ -719,9 +715,18 @@ export function ActiveExerciseView() {
                             })}
                           </Paragraph>
                         )}
+                        {/* One line height whatever it says, and kept blank through the switch: the
+                            art above is the elastic part of the screen, so a line that grows or
+                            leaves makes the whole picture jump while the hero is changing sides. */}
+                        {side && inSwitch ? (
+                          <Text fontSize={20} lineHeight={28}>
+                            {" "}
+                          </Text>
+                        ) : null}
                         {side && !inSwitch ? (
                           <Text
                             testID="session-side"
+                            lineHeight={28}
                             // Bigger when it announces something: it is read from the floor.
                             fontSize={switchSoon || secondSideStarting ? 20 : 14}
                             fontWeight="700"
@@ -816,20 +821,24 @@ export function ActiveExerciseView() {
             {/* Not during the switch: "the clock keeps running past the target" and the crit odds
                 both say a side is being timed, and none is. On the first side the plain hint is
                 wrong too (the clock does not run on past it), so it says what comes next. */}
-            {isTimeBased && !isOuting && !inSwitch && (
+            {isTimeBased && !isOuting && (
               <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {side?.phase === "first" && !fightLive
-                  ? t("session.side_switch_ahead", { seconds: SIDE_SWITCH_SECONDS })
-                  : fightLive
-                    ? t("session.crit_hint_time", {
-                        percent: Math.round(
-                          critChance(
-                            heldSeconds(elapsedSeconds, perSideHold, currentEx.target.value),
-                            currentEx.target.value,
-                          ) * 100,
-                        ),
-                      })
-                    : t("session.keep_going_hint")}
+                {/* Kept, blank, during the switch: a line that leaves lets the art above grow
+                    and the whole screen jumps under a hero who is mid-move. */}
+                {inSwitch
+                  ? " "
+                  : side?.phase === "first" && !fightLive
+                    ? t("session.side_switch_ahead", { seconds: SIDE_SWITCH_SECONDS })
+                    : fightLive
+                      ? t("session.crit_hint_time", {
+                          percent: Math.round(
+                            critChance(
+                              heldSeconds(elapsedSeconds, perSideHold, currentEx.target.value),
+                              currentEx.target.value,
+                            ) * 100,
+                          ),
+                        })
+                      : t("session.keep_going_hint")}
               </Text>
             )}
 

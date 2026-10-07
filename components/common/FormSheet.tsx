@@ -23,8 +23,9 @@ type Props = {
  *
  * - `moveOnKeyboardChange`: the fields sit where the keyboard lands. Without it the second one is
  *   typed into blind, and a tap meant for it lands in the first (found on an emulator).
- * - a scroll view that lets taps through with the keyboard up (`keyboardShouldPersistTaps`), or
- *   the first tap on the button only dismissed the keyboard and the hero pressed twice.
+ * - a scroll view that lets taps through with the keyboard up (`keyboardShouldPersistTaps`), and
+ *   that never claims a touch on a move (see below): either way the first tap on the button was
+ *   lost and the hero pressed twice.
  * - closing when the route changes: a modal sheet is portalled above the navigator, and one left
  *   open while a row underneath navigated stayed painted over the next screen.
  */
@@ -69,7 +70,16 @@ export function FormSheet({ open, title, onClose, children }: Props) {
         exitStyle={{ opacity: 0 }}
       />
       <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
-        <Sheet.ScrollView keyboardShouldPersistTaps="handled">
+        {/* ponytail: `onMoveShouldSetResponder` overrides Tamagui 2.7.7's, which compares each
+            touch to a `lastPageY` it never resets: the first move of any new touch reads as a
+            >10px drag, the scroll view seizes the responder and the button's press is cancelled.
+            The first tap did nothing, the second, landing near the first, worked (6/6 on an
+            emulator with a 3 px finger drift). Drag is off here, so the hook has nothing to feed.
+            Drop this once `useSheetScrollViewGestures.native.ts` resets it per touch. */}
+        <Sheet.ScrollView
+          keyboardShouldPersistTaps="handled"
+          onMoveShouldSetResponder={() => false}
+        >
           <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$3">
             <XStack items="center" justify="space-between" gap="$3">
               <Text flex={1} fontWeight="700" fontSize={18} color="$text">

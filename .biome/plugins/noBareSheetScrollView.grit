@@ -1,0 +1,19 @@
+// `Sheet.ScrollView` loses the first tap on any button inside it, on a real phone.
+//
+// Tamagui 2.7.7's native gesture hook (`useSheetScrollViewGestures.native.ts`) keeps a
+// `lastPageY` it never resets between touches. The first move of a new tap is compared to where
+// the previous gesture ended, reads as a drag of more than 10px, and the scroll view takes the
+// responder, cancelling the press. The second tap lands near the first and goes through, so the
+// hero "has to press twice". An `adb shell input tap` sends no move and never shows it, which is
+// how it shipped twice: once in ExercisePickerSheet, once in FormSheet (every Settings sheet).
+//
+// Allowed with `onMoveShouldSetResponder={() => false}`, which overrides the hook's handler
+// (FormSheet), or use the plain `ScrollView` from tamagui (ExercisePickerSheet). Delete this
+// plugin once Tamagui resets the value per touch and the dependency is bumped past that fix.
+language js
+
+`<Sheet.ScrollView $props>$_</Sheet.ScrollView>` where {
+  $props <: not contains `onMoveShouldSetResponder`,
+  // No backslash escapes in this message: GritQL eats them and the diagnostic comes out mangled.
+  register_diagnostic(span=$props, message="Sheet.ScrollView cancels the first tap of every button inside it (Tamagui never resets lastPageY between touches). Add onMoveShouldSetResponder={() => false} like FormSheet, or use the plain tamagui ScrollView like ExercisePickerSheet.")
+}

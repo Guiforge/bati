@@ -346,8 +346,10 @@ column through the same hook, with no switch (its sides are fifteen seconds of m
 The journal logs one side's worth, the weaker one (`perSideHeldSeconds`): the time held on the
 first side, the full first side if stopped in the switch, the second side if it fell short, and
 the average of the two past the target. Never the switch. XP and boss damage pay both sides
-(`pricing.perSide`, `computeDamage`), and a computed boss pool prices both; the switch is never
-paid. A counted slot reads "Reps per side".
+(`pricing.perSide`, `computeDamage`) once both were worked (`perSideSet`: a hold stopped before
+the second side's first 3 s is one side, and is paid as one); the switch is never paid. Boss pools
+price both sides: computed ones in `calculateBossHp`, seeded ones raised in `0068` by the extra
+their per-side slots deal. A counted slot reads "Reps per side".
 Every surface that prints such a figure says "per side" (`perSideLabel` in `db/targets.ts`), except
 the session's ghost line, whose caption right above already says it. Estimates count both sides and
 the switch.

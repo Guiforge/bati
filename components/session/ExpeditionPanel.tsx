@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking } from "react-native";
-import { Paragraph, Text, XStack } from "tamagui";
+import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Mountain } from "@/components/icons";
@@ -11,10 +11,13 @@ import {
   formatElevation,
   formatRate,
   formatRateAt,
+  rateKind,
 } from "@/constants/distanceFormat";
+import { formatDuration } from "@/db/estimate";
 import type { DistanceUnit } from "@/db/preferences";
+import type { Locomotion } from "@/db/schema";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
-import type { TrackState } from "@/src/gps/track";
+import type { OutingGoal, TrackState } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
 import { useExpeditionStore } from "@/stores/expedition";
 import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
@@ -72,25 +75,123 @@ function Climb({
   unit: DistanceUnit;
   color: "$text" | "$textSecondary";
 }) {
+  const { t } = useTranslation();
   if (track.climbFrom === null) return null;
   return (
-    <XStack items="center" gap="$1">
-      <Mountain size={16} color={color} />
-      <Text
-        testID="expedition-climb"
-        fontSize={20}
-        fontWeight="700"
-        color={color}
-        style={{ fontVariant: ["tabular-nums"] }}
-      >
-        {formatElevation(track.ascentM, unit)}
-      </Text>
-    </XStack>
+    <Reading label={t("session.expedition_climb")}>
+      <XStack items="center" gap="$1">
+        <Mountain size={16} color={color} />
+        <Text
+          testID="expedition-climb"
+          fontSize={20}
+          fontWeight="700"
+          color={color}
+          style={{ fontVariant: ["tabular-nums"] }}
+        >
+          {formatElevation(track.ascentM, unit)}
+        </Text>
+      </XStack>
+    </Reading>
   );
 }
 
 /** How long the "you can put the phone away" line stays, in seconds of recorded walking. */
 const POCKET_HINT_SECONDS = 30;
+
+/** Under this, a reported speed is a standstill: a slow walk is 1 m/s, a stop wobbles near 0. */
+const STILL_SPEED_MPS = 0.3;
+
+/**
+ * The pace (or speed) of the last twenty seconds, not of the whole outing.
+ *
+ * The average is a figure that stops moving: after an hour, a hard four hundred metres shifts it
+ * by six seconds per kilometre, so the panel answered "how fast has this walk been" to a hero
+ * asking "how fast am I going". The average is still what the recap prints, where looking back is
+ * the point. Falls back to it while the window is empty, which is the first few seconds and any
+ * receiver that reports no speed at all.
+ *
+ * And while the receiver swears to a standstill the reducer does not see. Some report a speed of
+ * 0 with every fix (the emulator does, always), and the panel read "..." for a whole ride that
+ * was covering ground. Standing still for real is the auto-pause's call, and once it holds the
+ * instant reading is the honest one again.
+ */
+function liveRate(
+  track: TrackState,
+  recentSpeedMps: number | null,
+  unit: DistanceUnit,
+  language: string,
+  locomotion: Locomotion | null,
+): string {
+  const receiverSaysStopped =
+    recentSpeedMps !== null && recentSpeedMps < STILL_SPEED_MPS && !track.paused;
+  return recentSpeedMps === null || receiverSaysStopped
+    ? formatRate(track.distanceM, track.movingMs, unit, language, locomotion)
+    : formatRateAt(recentSpeedMps, unit, language, locomotion);
+}
+
+/**
+ * How far into the goal, in the unit the goal was set in. "261 m" said nothing about whether that
+ * was a warm-up for 15 km or most of a 300 m stroll: the hero had to remember the number they
+ * picked on another screen. The track is the bar's parent and always renders with it, so the
+ * percentage always measures the same node.
+ */
+function GoalBar({
+  goal,
+  metres,
+  seconds,
+  reached,
+}: {
+  goal: OutingGoal | null;
+  metres: number;
+  seconds: number;
+  reached: boolean;
+}) {
+  const { t } = useTranslation();
+  const unit = useSettingsStore((state) => state.distanceUnit);
+  const language = useSettingsStore((state) => state.language);
+  // A free outing has nothing to measure against.
+  if (goal === null) return null;
+  const distance = goal.type === "distance";
+  const share = Math.min(1, distance ? metres / goal.metres : seconds / goal.seconds);
+  const label = distance
+    ? formatDistance(goal.metres, unit, language)
+    : formatDuration(goal.seconds, language);
+  return (
+    <YStack gap="$2" testID="expedition-goal">
+      <YStack height={4} rounded="$10" bg="$bgOverlay" overflow="hidden">
+        <YStack
+          height={4}
+          width={`${share * 100}%`}
+          bg={reached ? "$success" : "$text"}
+          opacity={reached ? 1 : 0.55}
+        />
+      </YStack>
+      <Text fontSize={15} color="$textSecondary">
+        {t("session.expedition_goal_of", { goal: label })}
+      </Text>
+    </YStack>
+  );
+}
+
+/** A figure and the word for it underneath, at the size a glance from a handlebar can still read. */
+function Reading({
+  label,
+  end = false,
+  children,
+}: {
+  label: string;
+  end?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <YStack items={end ? "flex-end" : "flex-start"} gap="$1">
+      {children}
+      <Text fontSize={13} color="$textSecondary">
+        {label}
+      </Text>
+    </YStack>
+  );
+}
 
 export function ExpeditionPanel() {
   const { t } = useTranslation();
@@ -146,19 +247,7 @@ export function ExpeditionPanel() {
 
   const clock = formatClock(recorded * 1000);
   const distance = formatDistance(track.distanceM, unit, language);
-  /**
-   * The pace of the last twenty seconds, not of the whole outing.
-   *
-   * The average is a figure that stops moving: after an hour, a hard four hundred metres shifts
-   * it by six seconds per kilometre, so the panel answered "how fast has this walk been" to a
-   * hero asking "how fast am I going". The average is still what the recap prints, where looking
-   * back is the point. Falls back to it while the window is empty, which is the first few
-   * seconds and any receiver that reports no speed at all.
-   */
-  const pace =
-    recentSpeedMps === null
-      ? formatRate(track.distanceM, track.movingMs, unit, language, locomotion)
-      : formatRateAt(recentSpeedMps, unit, language, locomotion);
+  const pace = liveRate(track, recentSpeedMps, unit, language, locomotion);
 
   /**
    * The big figure carries the unit the hero set out in: metres when the goal is metres, the
@@ -167,8 +256,9 @@ export function ExpeditionPanel() {
    * type, and on a phone with no SUPL it is a verdict the hero reads for minutes.
    */
   const distanceLeads = !acquiring && goal?.type === "distance";
-  const bigFigure = distanceLeads ? distance : clock;
-  const secondFigure = distanceLeads ? clock : distance;
+  const [bigFigure, secondFigure, secondKey] = distanceLeads
+    ? [distance, clock, "quests.config_duration"]
+    : [clock, distance, "session.expedition_ground"];
 
   return (
     <Card p="$4" gap="$3">
@@ -181,34 +271,52 @@ export function ExpeditionPanel() {
         {bigFigure}
       </Text>
 
+      {acquiring ? null : (
+        <GoalBar goal={goal} metres={track.distanceM} seconds={recorded} reached={goalReached} />
+      )}
+
       {/* Two values, never three: the total in 56px and the moving time in 24 are two durations
           with no label between them, minutes apart on an urban walk, and nothing on the card
-          says which one the journal will keep. Moving time lives on the recap. */}
+          says which one the journal will keep. Moving time lives on the recap.
+
+          Each with its word under it: "2:18", "0 m" and "..." side by side left a hero guessing
+          which was the climb and what the dots were waiting for. */}
       {acquiring ? null : (
-        <XStack justify="space-between" items="baseline">
-          <Text
-            fontSize={24}
-            fontWeight="700"
-            color={figureColor}
-            style={{ fontVariant: ["tabular-nums"] }}
-          >
-            {secondFigure}
-          </Text>
+        <XStack justify="space-between" items="flex-start">
+          <Reading label={t(secondKey)}>
+            <Text
+              fontSize={24}
+              fontWeight="700"
+              color={figureColor}
+              style={{ fontVariant: ["tabular-nums"] }}
+            >
+              {secondFigure}
+            </Text>
+          </Reading>
           <Climb track={track} unit={unit} color={figureColor} />
-          <Text fontSize={20} fontWeight="700" color={figureColor}>
-            {pace}
-          </Text>
+          <Reading label={t(`session.expedition_${rateKind(locomotion)}`)} end>
+            <Text
+              testID="expedition-rate"
+              fontSize={20}
+              fontWeight="700"
+              color={figureColor}
+              style={{ fontVariant: ["tabular-nums"] }}
+            >
+              {pace}
+            </Text>
+          </Reading>
         </XStack>
       )}
 
       {/* The thin band: the status in words, and the accuracy beside it. Worth keeping while the
-          sky is being found, it is the one thing on screen that visibly improves. */}
-      <XStack items="center" gap="$2">
-        <Text fontSize={13} color={track.paused || error !== null ? "$textSecondary" : "$text"}>
+          sky is being found, it is the one thing on screen that visibly improves. 15 px, not 13:
+          it is the line that says the clock stopped on purpose, read at arm's length. */}
+      <XStack items="center" gap="$2" flexWrap="wrap">
+        <Text fontSize={15} color={track.paused || error !== null ? "$textSecondary" : "$text"}>
           {status}
         </Text>
         {lastFix ? (
-          <Paragraph fontSize={13} color="$textSecondary">
+          <Paragraph fontSize={15} color="$textSecondary">
             {/* Through the same formatter as the distance above, and for the same reason: a hero
                 walking in feet was reading "1.2 mi" over "within 8 m", two units on one line,
                 from the one file that is allowed to convert. */}

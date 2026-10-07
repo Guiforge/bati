@@ -643,6 +643,17 @@ describe("stores/expedition", () => {
       expect(mockHaptic).toHaveBeenCalledTimes(2);
     });
 
+    // At twenty kilometres an hour a buzz per league is one every three minutes, in a bag.
+    test("a ride buzzes every fifth league, not every one", async () => {
+      await store.getState().begin("s1", NOTIFICATION, true, "metric");
+      for (let i = 0; i <= 95; i++) emit(striding(i));
+      expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(95));
+      expect(mockHaptic).not.toHaveBeenCalled();
+
+      for (let i = 96; i <= 110; i++) emit(striding(i));
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
     /**
      * The trap the whole counter is built around. `begin` replays `gps_points` through the
      * reducer, so a walk the OS killed at three leagues comes back with three leagues of ground

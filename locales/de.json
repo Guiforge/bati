@@ -583,6 +583,7 @@
     "expedition_moving": "In Bewegung",
     "expedition_pace": "Tempo",
     "expedition_speed": "Geschwindigkeit",
+    "expedition_goal_of": "von {{goal}}",
     "expedition_climb": "Höhenmeter",
     "live_map_finding": "Deine Position wird gesucht",
     "live_map_loading": "Karte wird geladen",

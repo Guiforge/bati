@@ -133,6 +133,8 @@ export function LiveMap({
   const last = useExpeditionStore((s) => (visible ? (s.fixes.at(-1) ?? null) : null));
   const hasFix = last !== null;
   const tilesEnabled = useSettingsStore((s) => s.mapTilesEnabled);
+  /** Under way: the auto-pause has not caught the hero standing, and the sky has been found. */
+  const moving = useExpeditionStore((s) => s.track.startedAt !== null && !s.track.paused);
 
   /**
    * The walk, folded at most every `TRACE_EVERY_MS`. It was folded on every fix, 11 ms at one hour
@@ -281,7 +283,7 @@ export function LiveMap({
       />
 
       <YStack position="absolute" b="$3" l="$4" r="$4">
-        <MapFootnote />
+        <MapFootnote quiet={moving} />
       </YStack>
 
       {styleLoaded ? null : <Waiting label={t("session.live_map_loading")} />}

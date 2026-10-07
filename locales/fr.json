@@ -921,6 +921,7 @@
     "expedition_moving": "En mouvement",
     "expedition_pace": "Allure",
     "expedition_speed": "Vitesse",
+    "expedition_goal_of": "sur {{goal}}",
     "expedition_climb": "Dénivelé",
     "live_map_finding": "Recherche de ta position",
     "live_map_loading": "Chargement de la carte",

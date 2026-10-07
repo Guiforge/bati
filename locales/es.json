@@ -594,6 +594,7 @@
     "expedition_moving": "En marcha",
     "expedition_pace": "Ritmo",
     "expedition_speed": "Velocidad",
+    "expedition_goal_of": "de {{goal}}",
     "expedition_climb": "Desnivel",
     "live_map_finding": "Buscando tu posición",
     "live_map_loading": "Cargando el mapa",

@@ -414,4 +414,41 @@ describe("ExpeditionPanel", () => {
     expect(screen.getByText("Goal met")).toBeTruthy();
     expect(screen.queryByText("On the road")).toBeNull();
   });
+
+  // "261 m" said nothing about whether that was a warm-up for 15 km or most of a short stroll.
+  test("a goal is shown under the figure that measures it, and a free outing shows none", async () => {
+    setSession({ type: "distance", metres: 5000 }, 600_000);
+    setTrack(walked(600, 600, 2500));
+    await mount();
+    expect(screen.getByText("of 5.00 km")).toBeTruthy();
+  });
+
+  test("a free outing has no goal to show", async () => {
+    setTrack(walked(600, 600, 2500));
+    await mount();
+    expect(screen.queryByTestId("expedition-goal")).toBeNull();
+  });
+
+  // The emulator reports a speed of 0 with every fix, and so do some receivers: the panel read
+  // "..." for a ride that was covering ground.
+  test("a receiver swearing to a standstill while the ground moves falls back to the average", async () => {
+    setTrack(walked(600, 600, 2500));
+    useExpeditionStore.setState({ recentSpeedMps: 0 });
+    await mount();
+    expect(screen.getByTestId("expedition-rate").props.children).toBe("4:00 /km");
+  });
+
+  test("once the auto-pause holds, a standstill reads as one", async () => {
+    setTrack({ ...walked(600, 600, 2500), paused: true });
+    useExpeditionStore.setState({ recentSpeedMps: 0 });
+    await mount();
+    expect(screen.getByTestId("expedition-rate").props.children).toBe("...");
+  });
+
+  test("every figure on the second row says what it is", async () => {
+    setTrack(walked(600, 600, 2500));
+    await mount();
+    expect(screen.getByText("Ground")).toBeTruthy();
+    expect(screen.getByText("Pace")).toBeTruthy();
+  });
 });

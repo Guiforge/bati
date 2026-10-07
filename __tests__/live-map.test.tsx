@@ -197,6 +197,22 @@ test("follows the hero, and fetches nothing until the hero says yes", async () =
   expect(screen.getByTestId("map-attribution")).toBeTruthy();
 });
 
+// Four lines of reading over the trace, at the one moment nobody reads. The credit is owed.
+test("under way, the offer waits for the next stop and the credit stays", async () => {
+  const fixes = Array.from({ length: 10 }, (_, i) => walking(i));
+  const underWay = { ...useExpeditionStore.getState().track, startedAt: 1, paused: false };
+  useExpeditionStore.setState({ track: underWay });
+  await mount(fixes, false);
+  expect(screen.queryByTestId("map-offer")).toBeNull();
+
+  await act(async () => useExpeditionStore.setState({ track: { ...underWay, paused: true } }));
+  expect(screen.getByTestId("map-offer")).toBeTruthy();
+
+  await act(async () => useExpeditionStore.setState({ track: underWay }));
+  await act(async () => useSettingsStore.setState({ mapTilesEnabled: true }));
+  expect(screen.getByTestId("map-attribution")).toBeTruthy();
+});
+
 test("stops drawing while the app is in the background, and draws the whole walk on return", async () => {
   const { AppState } = require("react-native");
   const addListener = jest.spyOn(AppState, "addEventListener");

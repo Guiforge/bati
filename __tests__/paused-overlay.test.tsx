@@ -265,6 +265,21 @@ describe("the countdown beeps, from inside a session", () => {
     });
     expect(off.getByTestId("session-sound")).toHaveTextContent(/session\.sound_on/);
   });
+
+  // A whole outing never counts down, so the switch would be a control wired to nothing.
+  it("is not offered on an outing, which has no countdown to beep", async () => {
+    const ride = { ...mockDeadBug, style: "expedition", locomotion: "ride" };
+    useSessionStore.setState({
+      quest: {
+        ...mockQuest,
+        exercises: [{ exercise: ride, target: { type: "time", value: 900 } }],
+      } as unknown as Quest,
+      status: "paused",
+    });
+    const paused = await mountPaused();
+    expect(paused.queryByTestId("session-sound")).toBeNull();
+    expect(paused.getByTestId("session-resume")).toBeTruthy();
+  });
 });
 
 // The pause card said "Sound off": the state or the action? Settings calls the row "Countdown

@@ -9,6 +9,7 @@ import { Card } from "@/components/common/Card";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { restsBetweenRounds } from "@/components/quests/questShape";
 import { ExerciseInstructionsBody } from "@/components/session/ExerciseInstructions";
+import { isOutingSession } from "@/db/expeditions";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { reportError } from "@/src/reportError";
@@ -29,6 +30,9 @@ export function PausedOverlay() {
   const restartRound = useSessionStore((s) => s.restartRound);
   const quitSession = useSessionStore((s) => s.quitSession);
   const rounds = useSessionStore((s) => s.quest?.rounds ?? 1);
+  // A whole outing never counts down (`useCountdownCues` is handed 0 there), so the beeps switch
+  // was a control wired to nothing on a ride. A mixed quest keeps it: its later sets do count.
+  const allOuting = useSessionStore((s) => s.quest !== null && isOutingSession(s.quest));
   // The GPS is deliberately left running through a pause: stopping and restarting the service
   // loses the lock and breaks the segment on the way back, and the reducer already credits
   // nothing while the hero stands still. So the screen is what has to be honest about it.
@@ -147,17 +151,19 @@ export function PausedOverlay() {
               </AppButton>
 
               {/* Between resume and the two that erase things: benign, and not adjacent to quit. */}
-              <AppButton
-                testID="session-sound"
-                onPress={handleToggleSound}
-                variant="outline"
-                backgroundColor="$surface2"
-                accessibilityLabel={t("settings.sound")}
-                accessibilityRole="switch"
-                accessibilityState={{ checked: soundEnabled }}
-              >
-                {soundEnabled ? t("session.sound_on") : t("session.sound_off")}
-              </AppButton>
+              {allOuting ? null : (
+                <AppButton
+                  testID="session-sound"
+                  onPress={handleToggleSound}
+                  variant="outline"
+                  backgroundColor="$surface2"
+                  accessibilityLabel={t("settings.sound")}
+                  accessibilityRole="switch"
+                  accessibilityState={{ checked: soundEnabled }}
+                >
+                  {soundEnabled ? t("session.sound_on") : t("session.sound_off")}
+                </AppButton>
+              )}
 
               {canRestartRound ? (
                 <AppButton

@@ -257,9 +257,15 @@ function buzz(context: string): void {
  * `leaguesCrossed` is a high-water mark because credited distance can go *down*: closing a pause
  * window takes back what it advanced (`RULES.pauseAfterMs`), so a hero who stops just past the
  * ninth league would otherwise be buzzed a second time for the same kilometre on the way back up.
+ *
+ * Every fifth on a mount: at twenty kilometres an hour a buzz per league is one every three
+ * minutes, which stops being news and starts being the phone fidgeting in a bag.
  */
-function announceLeague(track: TrackState, haptics: boolean): void {
-  const leagues = leaguesOf(track);
+const LEAGUES_PER_BUZZ = { onFoot: 1, mounted: 5 } as const;
+
+function announceLeague(track: TrackState, haptics: boolean, mounted: boolean): void {
+  const step = mounted ? LEAGUES_PER_BUZZ.mounted : LEAGUES_PER_BUZZ.onFoot;
+  const leagues = Math.floor(leaguesOf(track) / step) * step;
   if (leagues <= leaguesCrossed) return;
   leaguesCrossed = leagues;
   if (haptics) buzz("expedition.leagueHaptic");
@@ -367,7 +373,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         });
 
         if (reached && !wasReached) announceGoalReached(track, unit, haptics);
-        announceLeague(track, haptics);
+        announceLeague(track, haptics, mounted);
 
         // Same cadence as the write, so a pocket that is never looked at costs one notification
         // update every thirty seconds rather than one a second.

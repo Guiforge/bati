@@ -89,6 +89,7 @@ export default function ExerciseEditor() {
           equipment: ex.equipment,
           pattern: ex.pattern,
           measure: ex.measure,
+          perSide: ex.perSide,
           secondsPerRep: ex.secondsPerRep,
           imagePath: ex.imagePath,
         });
@@ -315,6 +316,14 @@ export default function ExerciseEditor() {
                 </XStack>
               </YStack>
 
+              {/* Not offered on an outing, which has no sides; the writer refuses it there too. */}
+              {details.style === "expedition" ? null : (
+                <SidesPicker
+                  perSide={details.perSide}
+                  onChange={(perSide) => setDetails((d) => ({ ...d, perSide }))}
+                />
+              )}
+
               <YStack gap="$2">
                 <Text fontSize={12} color="$textSecondary">
                   {t("exercise_editor.pattern")}
@@ -365,6 +374,45 @@ export default function ExerciseEditor() {
           {t("exercise_editor.save")}
         </AppButton>
       </ScrollView>
+    </YStack>
+  );
+}
+
+/**
+ * One side, then the other (`0068`): the target counts per side, and a timed movement runs both
+ * sides with a switch between them. A movement that alternates within the set is "both at once",
+ * which the hint says, because that is the common mistake.
+ */
+function SidesPicker({
+  perSide,
+  onChange,
+}: {
+  perSide: boolean;
+  onChange: (perSide: boolean) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <YStack gap="$2">
+      <Text fontSize={12} color="$textSecondary">
+        {t("exercise_editor.sides")}
+      </Text>
+      <XStack gap="$2" flexWrap="wrap">
+        <Chip
+          testID="exercise-sides-both"
+          label={t("exercise_editor.sides_both")}
+          tone={perSide ? "default" : "primary"}
+          onPress={() => onChange(false)}
+        />
+        <Chip
+          testID="exercise-sides-each"
+          label={t("exercise_editor.sides_each")}
+          tone={perSide ? "primary" : "default"}
+          onPress={() => onChange(true)}
+        />
+      </XStack>
+      <Text fontSize={12} color="$textSecondary">
+        {t("exercise_editor.sides_hint")}
+      </Text>
     </YStack>
   );
 }

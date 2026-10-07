@@ -68,6 +68,26 @@ describe("hero-authored exercises", () => {
     expect(created.retiredAt).toBeNull();
   });
 
+  // One side, then the other (`0068`), offered in the editor. Never on an outing: a walk has no
+  // sides, and a per-side clock would double the ground it pays for.
+  test("a hero movement can be per side, an outing never", async () => {
+    const { createUserExercise, updateUserExercise, getExerciseById } =
+      require("../db/exercises") as typeof import("../db/exercises");
+
+    const id = await createUserExercise({ ...draft("Copenhagen Plank"), perSide: true });
+    expect((await getExerciseById(id))?.perSide).toBe(true);
+
+    await updateUserExercise(id, { ...draft("Copenhagen Plank"), perSide: false });
+    expect((await getExerciseById(id))?.perSide).toBe(false);
+
+    const walk = await createUserExercise({
+      ...draft("Hill Walk"),
+      style: "expedition",
+      perSide: true,
+    });
+    expect((await getExerciseById(walk))?.perSide).toBe(false);
+  });
+
   test("an edit rewrites both locales and replaces the muscle tags", async () => {
     const { createUserExercise, updateUserExercise, getExerciseById } =
       require("../db/exercises") as typeof import("../db/exercises");

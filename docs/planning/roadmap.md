@@ -360,7 +360,14 @@ the switch.
 Known ambiguity, kept on purpose: results logged before `0068` were never told what the target
 meant, and are now read as per side. A hero who logged a total keeps an old best that may be twice
 a side. Migrating them would guess what each hero did; the first per-side session sets a fair
-ghost again. Left out: the flag on hero-made movements (the editor does not offer it yet).
+ghost again.
+
+A hero's own movement can be per side too: the editor asks "Sides" (both at once, or one side
+then the other), never for an outing, and the quest file carries the flag (`perSide`, absent and
+read as false in files from before `0068`). A movement that alternates within the set, like the
+Curtsy Squat or the Lunge, is "both at once": its count already covers both sides. A per-side set
+counted in reps has no clock, so it gets no switch, glow or cues: the hero does one side then the
+other and enters the count per side.
 
 Release note for the version that ships it (into
 `fastlane/metadata/android/*/changelogs/<versionCode>.txt`): « Gainage latéral, squat pistolet,

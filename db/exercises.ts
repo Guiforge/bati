@@ -872,6 +872,7 @@ export type UserExerciseDraft = {
   | "equipment"
   | "pattern"
   | "measure"
+  | "perSide"
   | "secondsPerRep"
   | "imagePath"
 >;
@@ -924,9 +925,18 @@ export const DEFAULT_USER_EXERCISE_DRAFT: Omit<UserExerciseDraft, "name" | "desc
   equipment: "none",
   pattern: null,
   measure: "reps",
+  perSide: false,
   secondsPerRep: DEFAULT_SECONDS_PER_REP,
   imagePath: "assets/placeholder.webp",
 };
+
+/**
+ * Whether a hero's own movement is done one side, then the other (`0068`). Never an outing: a walk
+ * has no sides, and a per-side clock on one would double the ground the session pays for.
+ */
+function perSideFor(draft: Pick<UserExerciseDraft, "style" | "perSide">): boolean {
+  return draft.style !== "expedition" && draft.perSide;
+}
 
 /** Drops the cached catalogue. Every writer below calls it; nothing else should have to. */
 export function invalidateExercisesCache(): void {
@@ -1015,6 +1025,7 @@ export async function createUserExercise(
       pattern: draft.pattern,
       locomotion: locomotionFor(draft.style),
       measure: draft.measure,
+      perSide: perSideFor(draft),
       secondsPerRep: clampSecondsPerRep(draft.secondsPerRep),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -1051,6 +1062,7 @@ export async function updateUserExercise(id: number, draft: UserExerciseDraft): 
       pattern: draft.pattern,
       locomotion: locomotionFor(draft.style),
       measure: draft.measure,
+      perSide: perSideFor(draft),
       secondsPerRep: clampSecondsPerRep(draft.secondsPerRep),
       updatedAt: new Date(),
     })

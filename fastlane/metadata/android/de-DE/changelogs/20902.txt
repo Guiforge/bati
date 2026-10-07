@@ -1,0 +1,1 @@
+- Einstellungen: Die Knöpfe in den Bereichen Sicherung, Sync und Passwort reagieren beim ersten Tippen.

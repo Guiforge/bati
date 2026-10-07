@@ -1,0 +1,1 @@
+- Réglages : les boutons des panneaux de sauvegarde, de synchro et de mot de passe répondent au premier appui.

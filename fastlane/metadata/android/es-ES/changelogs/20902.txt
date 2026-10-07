@@ -1,0 +1,1 @@
+- Ajustes: los botones de los paneles de copia, sincronización y contraseña responden al primer toque.

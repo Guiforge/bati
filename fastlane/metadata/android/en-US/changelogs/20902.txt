@@ -1,0 +1,1 @@
+- Settings: the buttons in the backup, sync and password panels answer the first tap.

@@ -526,6 +526,7 @@
     "round_label": "ROUND {{count}} / {{total}}",
     "seconds_left_of": "left of {{target}}",
     "side_of": "Side {{side}} of 2",
+    "next_side": "Next side",
     "side_switch_ahead": "When this side ends, {{seconds}} s to switch.",
     "side_switch_soon": "Get ready to switch sides",
     "side_two_in": "Side 2 in {{seconds}} s",

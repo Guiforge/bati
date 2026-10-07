@@ -335,6 +335,45 @@ describe("a per-side hold", () => {
     expect(useSessionStore.getState().results[0]?.pricing?.perSide).toBe(true);
   });
 
+  // 10 s on the first side, 5 on the second, with no time spent waiting on a clock for a side that
+  // is over: "Next side" goes straight to the switch, and the weaker side is what gets logged.
+  test("Next side cuts the first side short, and the weaker side is logged", async () => {
+    const tick = async (seconds: number) => {
+      for (let second = 0; second < seconds; second++) {
+        await act(() => {
+          jest.advanceTimersByTime(1_000);
+        });
+      }
+    };
+    jest.useFakeTimers();
+    await mount(null, sidePlank);
+    await act(() => {
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 68 });
+    });
+    await tick(10);
+    await act(() => fireEvent.press(screen.getByTestId("session-next-side")));
+    await tick(1);
+    expect(screen.getByTestId("session-switch-title").props.children).toBe("Switch sides");
+    // Nothing left to cut short, and the link keeps its place so the row does not move.
+    // Hidden from screen readers too, hence the hidden-elements query.
+    expect(screen.queryByTestId("session-next-side")).toBeNull();
+    expect(
+      screen.getByTestId("session-next-side", { includeHiddenElements: true }).props
+        .accessibilityState?.disabled,
+    ).toBe(true);
+
+    // The second already ticked above is the first of the switch's eight. The second side is as
+    // long as the first one was.
+    await tick(7);
+    expect(screen.getByText("0:10")).toBeTruthy();
+    expect(screen.getByText("left of 10s per side")).toBeTruthy();
+
+    await tick(5);
+    await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(5);
+    expect(useSessionStore.getState().results[0]?.pricing?.perSide).toBe(true);
+  });
+
   // The hero who stops on the first side because it hurts held what they held. Halving it would
   // write a false record at the worst moment.
   test("a set stopped on the first side logs the time held", async () => {

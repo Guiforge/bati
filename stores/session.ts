@@ -83,7 +83,7 @@ import type { OutingGoal } from "@/src/gps/track";
 import { credited } from "@/src/gps/track";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
-import { perSideClockSeconds } from "@/src/perSide";
+import { perSideClockSeconds, SIDE_SWITCH_SECONDS } from "@/src/perSide";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
 import { bindSession, isExpedition, useExpeditionStore } from "@/stores/expedition";
@@ -221,6 +221,11 @@ interface SessionState {
   lastDamageResult: DamageResult | null;
   /** Set once the hero keeps a suspiciously long hold; cleared by the next logged set. */
   longHoldKept: boolean;
+  /**
+   * How long the first side of a per-side hold lasted, when the hero cut it short with "Next
+   * side" (`nextSide`). Null while it runs its course; every new set clears it (`setTimer`).
+   */
+  firstSideSeconds: number | null;
   /**
    * Hits landed this session, not yet in the database.
    *
@@ -385,6 +390,11 @@ interface SessionState {
   skipRest: () => void;
   /** The hero answered "keep it" to the rest screen's question about a very long hold. */
   keepLongHold: () => void;
+  /**
+   * The first side of a per-side hold is over before its target: remember how long it lasted and
+   * go straight to the switch, as if its clock had run out.
+   */
+  nextSide: () => void;
   addRestTime: (seconds: number) => void;
 
   // DB
@@ -464,6 +474,7 @@ export type SavedSessionState = Pick<
   | "results"
   | "lastSetSkipped"
   | "longHoldKept"
+  | "firstSideSeconds"
   | "sessionUuid"
   | "goal"
 > & { savedAt: number };
@@ -553,8 +564,11 @@ function advanceAfterSet(
  * its time.
  */
 function setTimer(slot: { target: Target; exercise: Pick<Exercise, "perSide"> } | undefined) {
-  if (slot?.target.type !== "time") return { timerStartTimestamp: null, timerDuration: 0 };
+  if (slot?.target.type !== "time") {
+    return { timerStartTimestamp: null, timerDuration: 0, firstSideSeconds: null };
+  }
   return {
+    firstSideSeconds: null,
     timerStartTimestamp: Date.now(),
     timerDuration: slot.exercise.perSide
       ? perSideClockSeconds(slot.target.value)
@@ -1169,6 +1183,7 @@ export const useSessionStore = create<SessionState>()(
     pendingDamage: [],
     lastDamageResult: null,
     longHoldKept: false,
+    firstSideSeconds: null,
     status: "idle",
     prePauseStatus: null,
     warmupSequence: [],
@@ -1650,6 +1665,28 @@ export const useSessionStore = create<SessionState>()(
 
     keepLongHold: () => set({ longHoldKept: true }),
 
+    nextSide: () => {
+      const { quest, currentExerciseIndex, status, timerStartTimestamp } = get();
+      const slot = quest?.exercises[currentExerciseIndex];
+      if (status !== "running" || timerStartTimestamp === null) return;
+      if (!slot?.exercise.perSide || slot.target.type !== "time") return;
+
+      const side = slot.target.value;
+      const held = Math.floor((Date.now() - timerStartTimestamp) / 1000);
+      if (held >= side) return; // The switch is already here.
+
+      // Moving the start back puts the clock exactly at the end of the first side, so the switch,
+      // its cues and the second side all run as they do when the side is held to the end. The
+      // second side is as long as the first one was: past that, the weaker side is all that
+      // counts (`perSideSet`), so a longer clock would only ask for seconds nothing records.
+      const first = Math.max(1, held);
+      set({
+        firstSideSeconds: first,
+        timerStartTimestamp: Date.now() - side * 1000,
+        timerDuration: side + SIDE_SWITCH_SECONDS + first,
+      });
+    },
+
     skipRest: () => {
       const { status, quest, currentExerciseIndex, timerStartTimestamp, restTakenSeconds } = get();
       if (status !== "resting" || !quest) return;
@@ -2090,6 +2127,9 @@ useSessionStore.subscribe(
     warmupLength: state.warmupSequence.length,
     // "Keep it" on a long hold moves nothing above, and a recovered rest would log the target.
     longHoldKept: state.longHoldKept,
+    // "Next side" moves nothing above either, and a recovery that missed it would credit a
+    // first side the hero cut short.
+    firstSideSeconds: state.firstSideSeconds,
   }),
   async (curr, prev) => {
     const state = useSessionStore.getState();
@@ -2136,6 +2176,7 @@ useSessionStore.subscribe(
       (prev.exerciseIds !== undefined && String(curr.exerciseIds) !== String(prev.exerciseIds)) ||
       warmupShortened(curr, prev) ||
       curr.longHoldKept !== prev.longHoldKept ||
+      curr.firstSideSeconds !== prev.firstSideSeconds ||
       curr.status === "paused";
 
     if (hasProgressed) {
@@ -2165,6 +2206,7 @@ useSessionStore.subscribe(
           results: state.results,
           lastSetSkipped: state.lastSetSkipped,
           longHoldKept: state.longHoldKept,
+          firstSideSeconds: state.firstSideSeconds,
           goal: state.goal,
           savedAt: Date.now(),
         };

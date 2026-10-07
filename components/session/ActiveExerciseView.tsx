@@ -61,8 +61,15 @@ const SIDE_SWITCH_WARNING_SECONDS = 5;
 const DONE_GUARD_MS = 700;
 
 /** The seconds a hold counts for: one side's worth on a per-side hold (`src/perSide.ts`). */
-function heldSeconds(elapsedSeconds: number, perSide: boolean, targetSeconds: number): number {
-  return perSide ? perSideSet(elapsedSeconds, targetSeconds).seconds : elapsedSeconds;
+function heldSeconds(
+  elapsedSeconds: number,
+  perSide: boolean,
+  targetSeconds: number,
+  firstSideSeconds: number | null,
+): number {
+  return perSide
+    ? perSideSet(elapsedSeconds, targetSeconds, firstSideSeconds).seconds
+    : elapsedSeconds;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
@@ -112,6 +119,8 @@ export function ActiveExerciseView() {
   }, []);
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const resumeSession = useSessionStore((s) => s.resumeSession);
+  const nextSide = useSessionStore((s) => s.nextSide);
+  const firstSideSeconds = useSessionStore((s) => s.firstSideSeconds);
   const bossFight = useSessionStore((s) => s.bossFight);
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
 
@@ -132,7 +141,10 @@ export function ActiveExerciseView() {
   const perSideHold = !isOuting && currentEx?.target.type === "time" && currentEx.exercise.perSide;
   // No clock yet reads as zero left, which is the second side: nothing to turn before it starts.
   const clockStarted = useSessionStore((s) => s.timerStartTimestamp !== null);
-  const side = perSideHold && clockStarted ? sidePhase(remainingSeconds, targetValue) : null;
+  // The second side matches the first: its target, or what the first side lasted when "Next side"
+  // cut it short (`nextSide`), since past that the weaker side is all that counts.
+  const secondSideSeconds = firstSideSeconds ?? targetValue;
+  const side = perSideHold && clockStarted ? sidePhase(remainingSeconds, secondSideSeconds) : null;
   /** What the numeral counts down: the side in progress, not the whole clock. */
   const sideRemainingSeconds = side ? side.seconds : remainingSeconds;
   // The switch read as a timer: a 0:08 counting down where the second side's clock would be, under
@@ -142,8 +154,8 @@ export function ActiveExerciseView() {
   const inSwitch = side?.phase === "switch";
   const switchSoon = side?.phase === "first" && side.seconds <= SIDE_SWITCH_WARNING_SECONDS;
   const secondSideStarting =
-    side?.phase === "second" && targetValue - side.seconds < SECOND_SIDE_GRACE_SECONDS;
-  useSideSwitch(remainingSeconds, targetValue, SIDE_SWITCH_SECONDS, perSideHold);
+    side?.phase === "second" && secondSideSeconds - side.seconds < SECOND_SIDE_GRACE_SECONDS;
+  useSideSwitch(remainingSeconds, secondSideSeconds, SIDE_SWITCH_SECONDS, perSideHold);
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
   // Counts ± taps, and keys the numeral's bounce. Keyed on the count itself, a typed "150"
   // remounted the field on its first digit and put the keyboard away.
@@ -170,7 +182,9 @@ export function ActiveExerciseView() {
    */
   const liveValue = Math.max(
     1,
-    isTimeBased ? heldSeconds(elapsedSeconds, perSideHold, targetValue) : adjustedReps,
+    isTimeBased
+      ? heldSeconds(elapsedSeconds, perSideHold, targetValue, firstSideSeconds)
+      : adjustedReps,
   );
 
   const exerciseName = localizedName(currentEx.exercise, language);
@@ -226,7 +240,7 @@ export function ActiveExerciseView() {
     // A per-side hold says how many sides were worked: tapping Done in the switch is one.
     completeExercise(
       liveValue,
-      perSideHold ? perSideSet(elapsedSeconds, targetValue).sides : undefined,
+      perSideHold ? perSideSet(elapsedSeconds, targetValue, firstSideSeconds).sides : undefined,
     );
   };
 
@@ -568,6 +582,49 @@ export function ActiveExerciseView() {
                   </Pressable>
                 ) : null}
 
+                {/* The first side gave out before its target: go to the switch now instead of
+                    waiting on a clock for a side that is over. Here with the other links, away
+                    from Done, which would end the whole set and never offer the second side. */}
+                {/* Mounted for the whole per-side set and live on the first side only: a link that
+                    left at the switch would shorten this row and move the counter and Done. */}
+                {perSideHold ? (
+                  <XStack
+                    items="center"
+                    gap="$3"
+                    opacity={side?.phase === "first" ? 1 : 0}
+                    pointerEvents={side?.phase === "first" ? "auto" : "none"}
+                    accessibilityElementsHidden={side?.phase !== "first"}
+                    importantForAccessibility={
+                      side?.phase === "first" ? "auto" : "no-hide-descendants"
+                    }
+                  >
+                    <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                      ·
+                    </Text>
+                    <Pressable
+                      testID="session-next-side"
+                      hitSlop={12}
+                      disabled={side?.phase !== "first"}
+                      onPress={() => {
+                        selection();
+                        nextSide();
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={t("session.next_side")}
+                    >
+                      <Text
+                        py="$2"
+                        fontSize={12}
+                        fontWeight="700"
+                        color="$textSecondary"
+                        numberOfLines={1}
+                      >
+                        {t("session.next_side")}
+                      </Text>
+                    </Pressable>
+                  </XStack>
+                ) : null}
+
                 {/* Not on an outing: a walk has no movement to swap and no set to fail. */}
                 {isOuting ? null : (
                   <>
@@ -712,7 +769,13 @@ export function ActiveExerciseView() {
                         ) : (
                           <Paragraph fontWeight="700" color="$textSecondary">
                             {t("session.seconds_left_of", {
-                              target: formatSlotTarget(currentEx, language),
+                              target: formatSlotTarget(
+                                {
+                                  target: { ...currentEx.target, value: secondSideSeconds },
+                                  exercise: currentEx.exercise,
+                                },
+                                language,
+                              ),
                             })}
                           </Paragraph>
                         )}
@@ -834,7 +897,12 @@ export function ActiveExerciseView() {
                       ? t("session.crit_hint_time", {
                           percent: Math.round(
                             critChance(
-                              heldSeconds(elapsedSeconds, perSideHold, currentEx.target.value),
+                              heldSeconds(
+                                elapsedSeconds,
+                                perSideHold,
+                                currentEx.target.value,
+                                firstSideSeconds,
+                              ),
                               currentEx.target.value,
                             ) * 100,
                           ),

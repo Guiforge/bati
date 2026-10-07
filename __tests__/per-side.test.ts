@@ -39,4 +39,14 @@ describe("a per-side hold of 30 s a side", () => {
     expect(perSideSet(30 + S + 30, side)).toEqual({ seconds: 30, sides: 2 }); // both full
     expect(perSideSet(30 + S + 50, side)).toEqual({ seconds: 40, sides: 2 }); // 30 left, 50 right
   });
+
+  // "Next side" after 10 s (`nextSide`): that side's real time stands, and the weaker side is logged.
+  test("a first side cut short logs the weaker of the two sides", () => {
+    const S = SIDE_SWITCH_SECONDS;
+    const G = SECOND_SIDE_GRACE_SECONDS;
+    expect(perSideSet(30 + S + G - 1, side, 10)).toEqual({ seconds: 10, sides: 1 }); // stopped on the "go"
+    expect(perSideSet(30 + S + 5, side, 10)).toEqual({ seconds: 5, sides: 2 }); // 10 then 5
+    expect(perSideSet(30 + S + 20, side, 10)).toEqual({ seconds: 10, sides: 2 }); // 10 then 20
+    expect(perSideSet(30 + S + 40, side, 10)).toEqual({ seconds: 10, sides: 2 }); // 10 then 40
+  });
 });

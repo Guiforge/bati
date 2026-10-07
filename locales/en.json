@@ -1118,6 +1118,7 @@
     "technical_header": "Technical details (edit or delete anything below)",
     "no_crash": "No crash was recorded on this device.",
     "errors_header": "Recent errors",
+    "events_header": "Events (GPS, network)",
     "no_errors": "No recent errors recorded.",
     "report_cta": "Send me the details"
   },

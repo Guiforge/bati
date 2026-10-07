@@ -129,3 +129,20 @@ test("pictures of an older style are deleted, and the folder is read once", () =
   expect(fs.__disk.has("file:///cache/map-thumbs/run-1-64-v1.png")).toBe(false);
   expect(fs.__calls.list).toBe(1);
 });
+
+// A snapshot whose tiles never come is a weak signal, not a fault: the row logs it as an event,
+// and tells it apart from a real failure by this class alone.
+test("a snapshot that never finishes rejects as a timeout, not a generic error", async () => {
+  jest.useFakeTimers();
+  try {
+    snapshotter().mockImplementationOnce(() => new Promise(() => {}));
+    const map = load();
+    const job = map.mapThumbFor("run-1", [run], 64);
+    const settled = expect(job).rejects.toBeInstanceOf(map.MapSnapshotTimeout);
+    await jest.advanceTimersByTimeAsync(20_000);
+    await settled;
+    expect(map.cachedMapThumb("run-1", 64)).toBeNull();
+  } finally {
+    jest.useRealTimers();
+  }
+});

@@ -26,7 +26,7 @@ import {
   type OutingGoal,
   type TrackState,
 } from "@/src/gps/track";
-import { reportError } from "@/src/reportError";
+import { reportError, reportEvent } from "@/src/reportError";
 
 /**
  * The live half of an expedition: the fixes arriving while the hero is out.
@@ -392,11 +392,11 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         // The window's pace is only refreshed by a fix, so it would stay on screen under "GPS off"
         // for as long as the silence lasts. Null falls back to the average, which is still true.
         set({ error: "gps-off", recentSpeedMps: null });
-        reportError("expedition.providerOff", new Error("provider disabled"));
+        reportEvent("expedition.providerOff", "provider disabled");
       }),
       addListener("onNoFixTimeout", (event) => {
         set({ error: "no-fix", recentSpeedMps: null });
-        reportError("expedition.noFix", new Error(`no fix for ${event.sinceLastFixMs} ms`));
+        reportEvent("expedition.noFix", `no fix for ${event.sinceLastFixMs} ms`);
       }),
       // The way out that only a locked screen takes. The service asks, the session store
       // concludes: the duration, the XP and the journal row are its business, and its alone.

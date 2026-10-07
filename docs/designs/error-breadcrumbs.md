@@ -177,3 +177,19 @@ in prebuild in every pipeline, and CI's prebuild-and-diff step proves the commit
 **The assignment:** before writing a line, put a dev build on a phone with exactly one mail app
 and tap Feedback. If it says "No email app found", premise 1 is proven on hardware, not just in
 a manifest.
+
+## Addendum 2026-10-07: events apart from errors
+
+Two field reports carried only `expedition.noFix ×5` and `journal.mapThumb ×3` (a snapshot timed
+out). Both are the world, not the app: a GPS losing the sky under a bridge, tiles that never came
+on a weak signal. Filed as errors, they shared the twenty slots with real failures and could evict
+the one that explained a report.
+
+- `reportEvent(context, detail)` in `src/reportError.ts` goes to its own row, `eventLog` (cap 20,
+  device-local like `errorLog`), and to its own mail section, after the errors and only when
+  non-empty. Callers today: `expedition.noFix`, `expedition.providerOff`, and `journal.mapThumb`
+  when the failure is a `MapSnapshotTimeout` (any other snapshot failure stays an error).
+- A merged entry keeps `first` beside `at`, and the mail prints the span
+  (`first → at (context ×n)`): ×5 over two minutes is a tunnel, ×5 over a week is a pattern.
+- Not done: telling a silent receiver from fixes our accuracy filter rejects, in `noFix`. It needs
+  Kotlin, and is worth it only once a hero reports a wrong distance or a cut trace.

@@ -1118,6 +1118,7 @@
     "technical_header": "Technische Details (alles hier drunter kannst du ändern oder löschen)",
     "no_crash": "Auf diesem Gerät wurde kein Absturz aufgezeichnet.",
     "errors_header": "Letzte Fehler",
+    "events_header": "Ereignisse (GPS, Netzwerk)",
     "no_errors": "Keine aktuellen Fehler aufgezeichnet.",
     "report_cta": "Schick mir die Details"
   },

@@ -74,6 +74,7 @@ test("the line lands in the technical block of the mail", () => {
       noCrash: "nc",
       errorsHeader: "eh",
       noErrors: "ne",
+      eventsHeader: "ev",
     },
     ["Reminders: on · posted 2"],
   );

@@ -1178,6 +1178,7 @@
   },
   "feedback": {
     "errors_header": "Erreurs récentes",
+    "events_header": "Événements (GPS, réseau)",
     "no_crash": "Aucun plantage enregistré sur cet appareil.",
     "no_errors": "Aucune erreur récente enregistrée.",
     "prompt": "Dis-moi tout, il n'y a pas de mauvaise réponse. Si tu sèches, ces trois-là aident :\n\n1. Qu'est-ce qui t'a fait ouvrir l'app aujourd'hui ?\n2. Qu'est-ce qui t'a fait râler ?\n3. Qu'est-ce que tu as failli chercher sans le trouver ?\n",

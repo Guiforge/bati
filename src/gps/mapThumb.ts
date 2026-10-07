@@ -83,9 +83,16 @@ export function releaseMapThumb(uuid: string, size: number): void {
   wanted.delete(keyOf(uuid, size));
 }
 
+/** The tiles did not arrive in time: a weak signal, not a fault. The caller logs it as an event. */
+export class MapSnapshotTimeout extends Error {
+  constructor() {
+    super("Map snapshot timed out");
+  }
+}
+
 function withTimeout<T>(promise: Promise<T>): Promise<T> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error("Map snapshot timed out")), TIMEOUT_MS);
+    const timer = setTimeout(() => reject(new MapSnapshotTimeout()), TIMEOUT_MS);
     promise.then(
       (value) => {
         clearTimeout(timer);

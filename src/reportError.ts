@@ -19,9 +19,11 @@
  * failures in the widget task, whose entry point never runs `app/_layout.tsx`, still go only to
  * the dev console.
  */
-let sink: ((context: string, error: unknown) => void) | null = null;
+export type LogKind = "error" | "event";
 
-export function setErrorSink(fn: (context: string, error: unknown) => void): void {
+let sink: ((context: string, error: unknown, kind: LogKind) => void) | null = null;
+
+export function setErrorSink(fn: (context: string, error: unknown, kind: LogKind) => void): void {
   sink = fn;
 }
 
@@ -30,5 +32,19 @@ export function reportError(context: string, error: unknown): void {
     console.error(`[${context}]`, error);
   }
 
-  sink?.(context, error);
+  sink?.(context, error, "error");
+}
+
+/**
+ * Something that went wrong in the world rather than in the app: a GPS that lost the sky under a
+ * bridge, a map tile that never arrived on a weak signal. Worth knowing when a hero writes "my
+ * distance stopped", noise in every other report. It goes to its own log, so a walk through a
+ * forest can never push the one real error out of the twenty slots.
+ */
+export function reportEvent(context: string, detail: string): void {
+  if (__DEV__) {
+    console.warn(`[${context}]`, detail);
+  }
+
+  sink?.(context, detail, "event");
 }

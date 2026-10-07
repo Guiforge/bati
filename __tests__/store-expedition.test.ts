@@ -38,8 +38,10 @@ jest.mock("@/modules/bati-location", () => ({
   },
 }));
 const mockReportError = jest.fn();
+const mockReportEvent = jest.fn();
 jest.mock("@/src/reportError", () => ({
   reportError: (...a: never[]) => mockReportError(...a),
+  reportEvent: (...a: never[]) => mockReportEvent(...a),
 }));
 
 /**
@@ -108,6 +110,7 @@ describe("stores/expedition", () => {
     mockSetProgress.mockClear();
     mockSetReached.mockClear();
     mockReportError.mockClear();
+    mockReportEvent.mockClear();
     mockHaptic.mockClear();
     mockAvailable = true;
     mockElapsedSeconds = 0;
@@ -484,17 +487,18 @@ describe("stores/expedition", () => {
       (mockListeners.get("onProviderEnabled") as (e: { enabled: boolean }) => void)({
         enabled: false,
       });
-      expect(mockReportError).toHaveBeenCalledWith("expedition.providerOff", expect.any(Error));
+      // An event, not an error: the hero switched it off, nothing in the app broke.
+      expect(mockReportEvent).toHaveBeenCalledWith("expedition.providerOff", "provider disabled");
       // And says so where the hero is looking, not only in the log: the figures freeze either
       // way, and the notification two swipes away already said the GPS was off.
       expect(store.getState().error).toBe("gps-off");
 
       // Coming back is not news.
-      mockReportError.mockClear();
+      mockReportEvent.mockClear();
       (mockListeners.get("onProviderEnabled") as (e: { enabled: boolean }) => void)({
         enabled: true,
       });
-      expect(mockReportError).not.toHaveBeenCalled();
+      expect(mockReportEvent).not.toHaveBeenCalled();
       expect(store.getState().error).toBeNull();
     });
 
@@ -506,7 +510,8 @@ describe("stores/expedition", () => {
       (mockListeners.get("onNoFixTimeout") as (e: { sinceLastFixMs: number }) => void)({
         sinceLastFixMs: 30_000,
       });
-      expect(mockReportError).toHaveBeenCalledWith("expedition.noFix", expect.any(Error));
+      expect(mockReportEvent).toHaveBeenCalledWith("expedition.noFix", "no fix for 30000 ms");
+      expect(mockReportError).not.toHaveBeenCalled();
       expect(store.getState().error).toBe("no-fix");
       // The last window's pace is not how fast the hero is going thirty seconds later.
       expect(store.getState().recentSpeedMps).toBeNull();

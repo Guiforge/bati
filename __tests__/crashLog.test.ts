@@ -28,7 +28,7 @@ import {
   recordCrash,
   recordHandledError,
 } from "@/src/crashLog";
-import { reportError } from "@/src/reportError";
+import { reportError, reportEvent } from "@/src/reportError";
 
 /** Lets the error-log write queue (microtasks + one macrotask) drain. */
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -137,6 +137,48 @@ describe("crashLog", () => {
       expect(Date.parse(entries[0]?.at ?? "")).not.toBeNaN();
     });
 
+    // "×5" over two minutes is a tunnel; "×5" over a week is a pattern. Only both ends say which.
+    test("a merged entry keeps when it first happened", async () => {
+      jest.useFakeTimers({ now: new Date("2026-10-04T04:00:00.000Z") });
+      try {
+        await recordHandledError("backup.auto", new Error("grant revoked"));
+        jest.setSystemTime(new Date("2026-10-04T04:10:00.000Z"));
+        await recordHandledError("backup.auto", new Error("grant revoked"));
+        jest.setSystemTime(new Date("2026-10-04T04:19:00.000Z"));
+        await recordHandledError("backup.auto", new Error("grant revoked"));
+      } finally {
+        jest.useRealTimers();
+      }
+
+      const [entry] = await readErrorLog();
+      expect(entry?.first).toBe("2026-10-04T04:00:00.000Z");
+      expect(entry?.at).toBe("2026-10-04T04:19:00.000Z");
+      expect(entry?.count).toBe(3);
+    });
+
+    // The path the app calls, as for errors: `reportEvent` → sink → its own row.
+    test("reportEvent lands in the event log, not the error log", async () => {
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+      installCrashHandler();
+
+      reportEvent("expedition.noFix", "no fix for 30000 ms");
+      await flush();
+
+      expect((await readErrorLog("event"))[0]?.message).toBe("no fix for 30000 ms");
+      expect(await readErrorLog()).toEqual([]);
+      warnSpy.mockRestore();
+    });
+
+    test("a walk's worth of events can never evict an error", async () => {
+      await recordHandledError("backup.save", new Error("the one that matters"));
+      for (let i = 0; i < 25; i++) {
+        await recordHandledError("journal.mapThumb", `timeout ${i}`, "event");
+      }
+
+      expect((await readErrorLog())[0]?.message).toBe("the one that matters");
+      expect(await readErrorLog("event")).toHaveLength(20);
+    });
+
     test("distinct errors cap at twenty, newest first", async () => {
       for (let i = 0; i < 25; i++) {
         await recordHandledError("backup.auto", new Error(`failure ${i}`));
@@ -211,6 +253,7 @@ describe("crashLog", () => {
       noCrash: "Aucun plantage enregistré sur cet appareil.",
       errorsHeader: "Erreurs récentes",
       noErrors: "Aucune erreur récente enregistrée.",
+      eventsHeader: "Événements (GPS, réseau)",
     };
 
     test("is a mailto to the contact address, carrying the crash", () => {
@@ -275,6 +318,48 @@ describe("crashLog", () => {
       expect(body).toContain("(backup.save ×3) · Unable to create file");
       // The crash section is still there, above it.
       expect(body).toContain("boom");
+    });
+
+    test("a merged entry shows its span", () => {
+      const handled: CrashReport[] = [
+        {
+          at: "2026-10-04T04:19:04.647Z",
+          first: "2026-10-04T04:02:11.000Z",
+          context: "journal.mapThumb",
+          message: "Map snapshot timed out",
+          stack: null,
+          count: 3,
+        },
+      ];
+
+      const body = decodeURIComponent(buildBugReportMailto([], handled, "1.0.0", strings));
+
+      expect(body).toContain(
+        "[1] 2026-10-04T04:02:11.000Z → 2026-10-04T04:19:04.647Z (journal.mapThumb ×3)",
+      );
+    });
+
+    test("events get their own section after the errors, and none when there are none", () => {
+      const events: CrashReport[] = [
+        {
+          at: "2026-10-02T17:08:31.333Z",
+          context: "expedition.noFix",
+          message: "no fix",
+          stack: null,
+        },
+      ];
+
+      const withEvents = decodeURIComponent(
+        buildBugReportMailto([], [], "1.0.0", strings, [], events),
+      );
+      const errorsAt = withEvents.indexOf("--- Erreurs récentes ---");
+      const eventsAt = withEvents.indexOf("--- Événements (GPS, réseau) ---");
+      expect(errorsAt).toBeGreaterThan(-1);
+      expect(eventsAt).toBeGreaterThan(errorsAt);
+      expect(withEvents).toContain("(expedition.noFix) · no fix");
+
+      const without = decodeURIComponent(buildBugReportMailto([], [], "1.0.0", strings));
+      expect(without).not.toContain("Événements");
     });
   });
 });

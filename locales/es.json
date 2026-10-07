@@ -1182,6 +1182,7 @@
     "technical_header": "Detalles técnicos (edita o borra lo que quieras de aquí abajo)",
     "no_crash": "No se ha registrado ningún cierre inesperado en este dispositivo.",
     "errors_header": "Errores recientes",
+    "events_header": "Eventos (GPS, red)",
     "no_errors": "No se han registrado errores recientes.",
     "report_cta": "Envíame los detalles"
   },

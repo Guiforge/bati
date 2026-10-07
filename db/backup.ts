@@ -429,6 +429,7 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "customAvatarUri",
   "crashLog",
   "errorLog",
+  "eventLog",
   "updateCheck",
   "updateCheckedAt",
   "updateDismissed",

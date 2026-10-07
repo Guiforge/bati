@@ -223,7 +223,7 @@ session being absent.
 **R34. These are never synchronised and are kept from the current device on restore
 (`DEVICE_LOCAL_PREFERENCES`):** deviceId, backupFolderUri, lastAutoBackupDay,
 protectDismissedDay, protectDismissals, backupWordsPending, passwordRemindersOn,
-passwordCheckStep/Due/Ignored, customAvatarUri, crashLog, errorLog, updateCheck,
+passwordCheckStep/Due/Ignored, customAvatarUri, crashLog, errorLog, eventLog, updateCheck,
 updateCheckedAt, updateDismissed, updateLatest, notesSeenVersion, languageChosenOn, guidesSeen,
 recentCameoLines, comebackGreetedAfter, backupEncryption, syncServer, syncWifiOnly,
 reminderAskedAt, reminderStreakFrom, reminderOfferDismissed. `db/backup.ts:402-442`.

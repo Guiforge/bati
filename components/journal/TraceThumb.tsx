@@ -3,9 +3,15 @@ import { memo, useEffect, useState } from "react";
 import { View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { rawColors } from "@/constants/rawColors";
-import { cachedMapThumb, MAP_THUMB_CROP, mapThumbFor, releaseMapThumb } from "@/src/gps/mapThumb";
+import {
+  cachedMapThumb,
+  MAP_THUMB_CROP,
+  MapSnapshotTimeout,
+  mapThumbFor,
+  releaseMapThumb,
+} from "@/src/gps/mapThumb";
 import type { LngLat } from "@/src/gps/trace";
-import { reportError } from "@/src/reportError";
+import { reportError, reportEvent } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 import { thumbPadding, traceToPath } from "./tracePreview";
 
@@ -37,7 +43,11 @@ function useMapThumb(
       .then((uri) => {
         if (live) setDrawn({ key, uri });
       })
-      .catch((error: unknown) => reportError("journal.mapThumb", error));
+      .catch((error: unknown) =>
+        error instanceof MapSnapshotTimeout
+          ? reportEvent("journal.mapThumb", error.message)
+          : reportError("journal.mapThumb", error),
+      );
     return () => {
       live = false;
       // Scrolled away or recycled to another run before its turn: the queued job fetches nothing.

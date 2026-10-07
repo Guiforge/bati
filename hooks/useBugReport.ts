@@ -61,9 +61,10 @@ export function useBugReport() {
   // is on disk now, and the row only ever needed the count.
   const openBugReport = useCallback(async () => {
     try {
-      const [reports, handled, reminders] = await Promise.all([
+      const [reports, handled, events, reminders] = await Promise.all([
         readCrashLog(),
         readErrorLog(),
+        readErrorLog("event"),
         reminderLines(),
       ]);
       const url = buildBugReportMailto(
@@ -77,8 +78,10 @@ export function useBugReport() {
           noCrash: t("feedback.no_crash"),
           errorsHeader: t("feedback.errors_header"),
           noErrors: t("feedback.no_errors"),
+          eventsHeader: t("feedback.events_header"),
         },
         reminders,
+        events,
       );
       if (!(await Linking.canOpenURL(url))) {
         // Tapping the row and having nothing ever happen reads as broken, not as "no mail app".

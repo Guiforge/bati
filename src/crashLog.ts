@@ -28,10 +28,10 @@ import { getPreference, setPreference } from "@/db/preferences";
  *           two rows cannot explain.
  */
 
-import { setErrorSink } from "@/src/reportError";
+import { type LogKind, setErrorSink } from "@/src/reportError";
 
 const CRASH_LOG_KEY = "crashLog";
-const ERROR_LOG_KEY = "errorLog";
+const LOG_KEYS: Record<LogKind, string> = { error: "errorLog", event: "eventLog" };
 
 /** Enough to show a pattern, few enough that the row stays small and the mail stays readable. */
 const MAX_ENTRIES = 5;
@@ -54,6 +54,8 @@ export type CrashReport = {
   stack: string | null;
   /** How many consecutive identical reports this entry stands for. Absent means 1. */
   count?: number;
+  /** For a merged entry, its first occurrence: "×5" over two minutes is not "×5" over a week. */
+  first?: string;
 };
 
 /**
@@ -91,7 +93,15 @@ function parse(raw: string | null): CrashReport[] {
 function push(entries: CrashReport[], report: CrashReport, cap: number): CrashReport[] {
   const latest = entries[0];
   if (latest && latest.context === report.context && latest.message === report.message) {
-    return [{ ...latest, at: report.at, count: (latest.count ?? 1) + 1 }, ...entries.slice(1)];
+    return [
+      {
+        ...latest,
+        at: report.at,
+        first: latest.first ?? latest.at,
+        count: (latest.count ?? 1) + 1,
+      },
+      ...entries.slice(1),
+    ];
   }
   return [report, ...entries].slice(0, cap);
 }
@@ -160,15 +170,20 @@ export async function readCrashLog(): Promise<CrashReport[]> {
  */
 let errorLogQueue: Promise<void> = Promise.resolve();
 
-export function recordHandledError(context: string, error: unknown): Promise<void> {
+export function recordHandledError(
+  context: string,
+  error: unknown,
+  kind: LogKind = "error",
+): Promise<void> {
   const report = toReport(context, error);
   report.stack = null;
   report.message = report.message.slice(0, MAX_ERROR_MESSAGE_CHARS);
 
   errorLogQueue = errorLogQueue.then(async () => {
     try {
-      const entries = push(parse(await getPreference(ERROR_LOG_KEY)), report, MAX_ERROR_ENTRIES);
-      await setPreference(ERROR_LOG_KEY, JSON.stringify(entries));
+      const key = LOG_KEYS[kind];
+      const entries = push(parse(await getPreference(key)), report, MAX_ERROR_ENTRIES);
+      await setPreference(key, JSON.stringify(entries));
     } catch {
       // A breadcrumb that throws while recording a failure helps nobody.
     }
@@ -176,9 +191,9 @@ export function recordHandledError(context: string, error: unknown): Promise<voi
   return errorLogQueue;
 }
 
-export async function readErrorLog(): Promise<CrashReport[]> {
+export async function readErrorLog(kind: LogKind = "error"): Promise<CrashReport[]> {
   try {
-    return parse(await getPreference(ERROR_LOG_KEY));
+    return parse(await getPreference(LOG_KEYS[kind]));
   } catch {
     return [];
   }
@@ -211,6 +226,8 @@ export type BugReportStrings = {
   noCrash: string;
   errorsHeader: string;
   noErrors: string;
+  /** Shown only when there are events: an empty section would be one more line to skim past. */
+  eventsHeader: string;
 };
 
 /**
@@ -232,6 +249,15 @@ function times(report: CrashReport): string {
   return report.count && report.count > 1 ? ` ×${report.count}` : "";
 }
 
+/** When it happened, as a span for a merged entry. */
+function when(report: CrashReport): string {
+  return report.first ? `${report.first} → ${report.at}` : report.at;
+}
+
+function line(r: CrashReport, i: number): string {
+  return `[${i + 1}] ${when(r)} (${r.context}${times(r)}) · ${r.message}`;
+}
+
 export function buildBugReportMailto(
   reports: CrashReport[],
   handled: CrashReport[],
@@ -239,6 +265,8 @@ export function buildBugReportMailto(
   strings: BugReportStrings,
   /** More technical lines, such as the reminders' counts (`src/reminderReport.ts`). */
   extra: readonly string[] = [],
+  /** `reportEvent`'s log: what the world did, kept apart from what the app got wrong. */
+  events: CrashReport[] = [],
 ): string {
   const header = [
     "",
@@ -257,15 +285,14 @@ export function buildBugReportMailto(
       ? [strings.noCrash]
       : reports.map(
           (r, i) =>
-            `\n[${i + 1}] ${r.at} (${r.context}${times(r)})\n${r.message}\n${r.stack ?? ""}`,
+            `\n[${i + 1}] ${when(r)} (${r.context}${times(r)})\n${r.message}\n${r.stack ?? ""}`,
         )),
     "",
     // One line per handled error, no stacks: the context+message pair names the call site, and
     // twenty stacks would make the mail unreadable — and the URL enormous.
     `--- ${strings.errorsHeader} ---`,
-    ...(handled.length === 0
-      ? [strings.noErrors]
-      : handled.map((r, i) => `[${i + 1}] ${r.at} (${r.context}${times(r)}) · ${r.message}`)),
+    ...(handled.length === 0 ? [strings.noErrors] : handled.map(line)),
+    ...(events.length === 0 ? [] : ["", `--- ${strings.eventsHeader} ---`, ...events.map(line)]),
   ].join("\n");
 
   return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(strings.subject)}&body=${encodeURIComponent(body)}`;

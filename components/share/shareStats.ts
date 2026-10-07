@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next";
 import { HIDDEN_ENDS_M, trimEnds } from "@/components/journal/tracePreview";
-import { formatDistance, formatElevation, formatPace } from "@/constants/distanceFormat";
+import { formatDistance, formatElevation, formatRate, rateKind } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
 import type { CompletedSession } from "@/db/completed";
 import type { DistanceUnit } from "@/db/preferences";
@@ -37,7 +37,10 @@ function outingStats(
       ? { value: formatDuration(moving, language), label: t("journal.ground_moving") }
       : null,
     paced
-      ? { value: formatPace(metres, moving * 1000, unit), label: t("journal.ground_pace") }
+      ? {
+          value: formatRate(metres, moving * 1000, unit, language, session.outing),
+          label: t(`journal.ground_${rateKind(session.outing)}`),
+        }
       : null,
     ascent > 0
       ? { value: formatElevation(ascent, unit), label: t("journal.ground_climbed") }

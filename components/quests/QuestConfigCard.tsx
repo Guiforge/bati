@@ -17,7 +17,7 @@ import {
   targetRangeFor,
 } from "@/db";
 import { formatDuration } from "@/db/estimate";
-import { isOutingSession, outingGoal, withOutingGoal } from "@/db/expeditions";
+import { isOutingSession, outingGoal, outingLocomotion, withOutingGoal } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import { formatTarget } from "@/db/targets";
@@ -282,6 +282,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                     onOpenChange={setGoalOpen}
                     goal={goal}
                     unit={unit}
+                    locomotion={outingLocomotion(quest)}
                     onPick={setGoal}
                   />
                 ) : null}

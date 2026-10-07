@@ -444,6 +444,25 @@ code, à faire dans cet ordre.
 Pas de voix, ni ici ni plus tard dans ce plan. Le réglage reste `soundEnabled`, pas de troisième
 mode.
 
+## Objectifs par type de sortie (07/10/2026)
+
+La liste unique 5 / 10 / 21,1 km proposait un 5 km d'un quart d'heure au cycliste et un
+semi-marathon au marcheur. La feuille lit maintenant la locomotion (`outingLocomotion`, `null` =
+quête mixte, qui garde les presets course) :
+
+- **Presets par type.** Marche 3 / 5 / 10 km, course 5 / 10 / 21,1 km, vélo 15 / 30 / 50 km ; durées
+  20 à 60 min, vélo 30 à 120 min. Équivalents ronds en miles.
+- **« Comme d'habitude » en premier**, médiane des trois dernières sorties du même type de plus de
+  10 min (`db/outingHabit.ts`), arrondie à 100 m ou à la minute. Absent sous trois sorties.
+- **Jamais « +10 % » comme cible.** Proposé à chaque sortie, il double une distance en sept sorties.
+  Le 10 % est un **plafond affiché** : pour une course seulement, une ligne donne la plus longue
+  course des 30 derniers jours et le seuil à 110 %. Elle s'affiche avant le choix, parce qu'un
+  chip ferme la feuille. Rien n'est bloqué ni grisé, aucun XP n'en dépend.
+- **Source.** Frandsen, Nielsen et al., *How much running is too much?*, BJSM 2025 (5 205 coureurs
+  Garmin, 18 mois) : le risque de blessure de surcharge monte (HR 1,64 entre +10 et +30 %) quand une
+  seule sortie dépasse la plus longue des 30 derniers jours, pas avec la hausse hebdomadaire. Étude
+  sur la course seule, d'où l'absence de ligne pour la marche et le vélo.
+
 ## Le Kotlin, et ce qui le garde
 
 *Décidé le 03/09, en même temps que le choix de tout livrer dans une seule 2.1.0.*

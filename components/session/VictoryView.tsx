@@ -28,7 +28,7 @@ import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
 import { formatDuration, formatDurationEstimate } from "@/db/estimate";
-import { isOutingSession } from "@/db/expeditions";
+import { isOutingSession, outingLocomotion } from "@/db/expeditions";
 import { createQuestFromOuting } from "@/db/quests";
 import type { FeedbackCode } from "@/db/schema";
 import { formatCount } from "@/db/targets";
@@ -515,7 +515,11 @@ export function VictoryView() {
             before the stat row (rather than at the bottom, with the rewards) so it is in view
             without scrolling past the stat tiles. */}
         {!!result && isExpedition(quest) && (
-          <ExpeditionSummary sessionUuid={sessionUuid} language={language} />
+          <ExpeditionSummary
+            sessionUuid={sessionUuid}
+            language={language}
+            locomotion={outingLocomotion(quest)}
+          />
         )}
 
         {/* The bridge (docs/designs/outing-doors.md, T17). Only after a *free* outing: a walk

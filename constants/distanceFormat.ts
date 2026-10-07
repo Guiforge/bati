@@ -1,4 +1,5 @@
 import type { DistanceUnit } from "@/db/preferences";
+import type { Locomotion } from "@/db/schema";
 import { RULES } from "@/src/gps/track";
 
 /**
@@ -63,21 +64,6 @@ export function formatElevation(metres: number, unit: DistanceUnit): string {
  * on a panel that read "0 m" one line above. The two lines now agree on what going somewhere is,
  * because they read the same rule.
  */
-/**
- * The pace of one instant, from a speed the receiver reported.
- *
- * `formatPace` below answers "how fast has this outing been", which is a number a hard four
- * hundred metres moves by six seconds per kilometre after an hour. This one answers "how fast am
- * I going", which is the question a hero asks mid-run, and it is a different figure entirely.
- *
- * An hour of that speed, in metres, over an hour: the same division, so both readings round the
- * same way and neither can disagree with the other about what a kilometre is. The recap's colour
- * ramp has been doing exactly this inline since it was written.
- */
-export function formatSpeedAsPace(metresPerSecond: number, unit: DistanceUnit): string {
-  return formatPace(metresPerSecond * 3600, 3_600_000, unit);
-}
-
 export function formatPace(metres: number, movingMs: number, unit: DistanceUnit): string {
   if (
     !Number.isFinite(metres) ||
@@ -92,6 +78,68 @@ export function formatPace(metres: number, movingMs: number, unit: DistanceUnit)
   const total = Math.round((movingMs / 1000) * (perUnitM / metres));
   const suffix = unit === "imperial" ? "/mi" : "/km";
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")} ${suffix}`;
+}
+
+/** Speed, one decimal, under the same moving threshold as `formatPace` and for the same reason. */
+function formatSpeed(metres: number, movingMs: number, unit: DistanceUnit, language: string) {
+  if (
+    !Number.isFinite(metres) ||
+    !Number.isFinite(movingMs) ||
+    metres < RULES.movingThresholdM ||
+    movingMs <= 0
+  ) {
+    return "...";
+  }
+  const perUnitM = unit === "imperial" ? M_PER_MILE : 1000;
+  const perHour = (metres / perUnitM) * (3_600_000 / movingMs);
+  const value = new Intl.NumberFormat(language, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(perHour);
+  return `${value} ${unit === "imperial" ? "mph" : "km/h"}`;
+}
+
+/**
+ * How fast an outing went, in the shape its kind of hero thinks in: a pace for feet ("5:12 /km"),
+ * a speed for wheels ("18.4 km/h"). A cyclist reads min/km the way a runner reads km/h, as a
+ * number to convert first. `null` is a mixed quest, which `outingLocomotion` leaves unnamed.
+ *
+ * Both shapes divide the same two numbers, so they never disagree about what a kilometre is.
+ */
+export function formatRate(
+  metres: number,
+  movingMs: number,
+  unit: DistanceUnit,
+  language: string,
+  locomotion: Locomotion | null,
+): string {
+  return locomotion === "ride"
+    ? formatSpeed(metres, movingMs, unit, language)
+    : formatPace(metres, movingMs, unit);
+}
+
+/**
+ * The rate of one instant, from a speed the receiver reported.
+ *
+ * `formatRate` answers "how fast has this outing been", which is a number a hard four hundred
+ * metres moves by six seconds per kilometre after an hour. This one answers "how fast am I
+ * going", which is the question a hero asks mid-run, and it is a different figure entirely.
+ *
+ * An hour of that speed, in metres, over an hour: the same division, so both readings round the
+ * same way and neither can disagree with the other about what a kilometre is.
+ */
+export function formatRateAt(
+  metresPerSecond: number,
+  unit: DistanceUnit,
+  language: string,
+  locomotion: Locomotion | null,
+): string {
+  return formatRate(metresPerSecond * 3600, 3_600_000, unit, language, locomotion);
+}
+
+/** What the figure `formatRate` printed is called, as the last word of a locale key. */
+export function rateKind(locomotion: Locomotion | null): "pace" | "speed" {
+  return locomotion === "ride" ? "speed" : "pace";
 }
 
 /**

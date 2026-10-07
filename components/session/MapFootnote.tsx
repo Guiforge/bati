@@ -42,11 +42,16 @@ function useNetworkBlocked(): boolean {
  * One component for the recap and the live map, so the two screens that can fetch a tile ask
  * with the same sentence and credit with the same line.
  */
-export function MapFootnote() {
+export function MapFootnote({ quiet = false }: { quiet?: boolean }) {
   const { t } = useTranslation();
   const enabled = useSettingsStore((s) => s.mapTilesEnabled);
   const setEnabled = useSettingsStore((s) => s.setMapTilesEnabled);
   const blocked = useNetworkBlocked();
+
+  // `quiet` is a hero in motion on the live map. The credit is owed whenever tiles are drawn, so
+  // it stays; the offer and the blocked notice are four lines of reading laid over the trace, at
+  // the one moment nobody reads. They come back at the first stop.
+  if (quiet && !(enabled && !blocked)) return null;
 
   if (enabled && blocked) {
     return (

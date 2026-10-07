@@ -212,6 +212,14 @@ jest.mock("@/db", () => ({
 
 jest.mock("@/db/exercises", () => ({ listExercises: jest.fn().mockResolvedValue([]) }));
 
+// The habit is read from the journal; `__tests__/outing-habit.test.ts` covers the arithmetic.
+const mockGetOutingHabit = jest.fn();
+jest.mock("@/db/outingHabit", () => ({
+  NO_HABIT: { usual: null, longestM: null },
+  LONGEST_RUN_CEILING: 1.1,
+  getOutingHabit: (...args: unknown[]) => mockGetOutingHabit(...args),
+}));
+
 // The share and import buttons write files and open the share sheet; this screen's tests
 // are about the quest, and `src/questFile.ts` has its own.
 jest.mock("@/src/questFile", () => ({
@@ -247,6 +255,7 @@ beforeEach(() => {
   mockParams.id = "5";
   delete mockParams.level;
   mockSettings.distanceUnit = "metric";
+  mockGetOutingHabit.mockReset().mockResolvedValue({ usual: null, longestM: null });
   mockStartSession.mockClear();
   const db = require("@/db");
   db.getQuestById.mockClear();
@@ -391,7 +400,7 @@ describe("an expedition on the quest screen", () => {
     // Reopened, it offers distances: a hero who saved 10 km and came back would otherwise be
     // editing minutes that `outingGoal` has already decided to ignore.
     await fireEvent.press(view.getByText("Set up the outing"));
-    expect(view.getByText("21.10 km")).toBeTruthy();
+    expect(view.getByText("3.00 km")).toBeTruthy();
     expect(view.queryByText("30 min")).toBeNull();
   });
 
@@ -399,6 +408,45 @@ describe("an expedition on the quest screen", () => {
    * The other half of constat 3: 21.1 km is not a multiple of the 500 m the stepper moved in, so
    * a half marathon was unreachable however many taps the hero was willing to spend.
    */
+  /**
+   * A cyclist was offered a fifteen-minute 5 km and a walker a half marathon: one list for all
+   * three. And the first chip is what this hero already does, never "+10%" on it.
+   */
+  test("a run offers its habit first and shows the ceiling of the month", async () => {
+    mockGetOutingHabit.mockResolvedValue({
+      usual: { metres: 5234, seconds: 1700 },
+      longestM: 8200,
+    });
+    const quest = expeditionQuest();
+    const [slot] = quest.exercises;
+    assert(slot);
+    slot.exercise = movement({ style: "expedition", locomotion: "run" });
+    const view = await mountQuest(quest);
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    await fireEvent.press(view.getByText("Distance"));
+    expect(mockGetOutingHabit).toHaveBeenCalledWith("run");
+    expect(view.getByTestId("goal-longest-run").props.children).toContain("9.02 km");
+    await fireEvent.press(view.getByText("As usual · 5.20 km"));
+
+    expect(lastSavedConfig()).toMatchObject({ distanceM: 5200 });
+  });
+
+  test("a ride is offered a ride's distances, and no running ceiling", async () => {
+    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 40_000 });
+    const quest = expeditionQuest();
+    const [slot] = quest.exercises;
+    assert(slot);
+    slot.exercise = movement({ style: "expedition", locomotion: "ride" });
+    const view = await mountQuest(quest);
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    await fireEvent.press(view.getByText("Distance"));
+    expect(view.getByText("30.00 km")).toBeTruthy();
+    expect(view.queryByText("5.00 km")).toBeNull();
+    expect(view.queryByTestId("goal-longest-run")).toBeNull();
+  });
+
   test("Other takes a value the presets never offered", async () => {
     const view = await mountQuest(expeditionQuest());
 
@@ -412,9 +460,9 @@ describe("an expedition on the quest screen", () => {
   });
 
   /**
-   * The presets have to be the numbers the hero's own system is written in. 5 km / 10 km / half
-   * marathon become 3 mi / 6 mi / 13.1 mi: the same three distances, named the way they are named
-   * over there, rather than a 5 km offered as "3.11 mi".
+   * The presets have to be the numbers the hero's own system is written in. A walk's 3 / 5 / 10 km
+   * become 2 / 3 / 6 mi: named the way they are named over there, rather than a 5 km offered as
+   * "3.11 mi".
    */
   test("an imperial hero is offered miles, and gets metres in the config", async () => {
     mockSettings.distanceUnit = "imperial";
@@ -424,10 +472,10 @@ describe("an expedition on the quest screen", () => {
     await fireEvent.press(view.getByText("Distance"));
     expect(view.getByText("3.00 mi")).toBeTruthy();
     expect(view.queryByText("5.00 km")).toBeNull();
-    await fireEvent.press(view.getByText("13.10 mi"));
+    await fireEvent.press(view.getByText("6.00 mi"));
 
     // Metres are the storage unit and the only storage unit, whatever the hero reads.
-    expect(lastSavedConfig()).toMatchObject({ distanceM: 21_082 });
+    expect(lastSavedConfig()).toMatchObject({ distanceM: 9656 });
 
     // And what is typed is read in miles too: 2 mi, not 2 km.
     await fireEvent.press(view.getByText("Set up the outing"));

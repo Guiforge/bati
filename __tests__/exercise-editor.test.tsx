@@ -171,7 +171,7 @@ describe("exercise editor", () => {
       fireEvent.changeText(editor.getByTestId("exercise-name"), "Copenhagen Plank"),
     );
     await act(async () => fireEvent.press(editor.getByTestId("exercise-details-toggle")));
-    await act(async () => fireEvent.press(editor.getByTestId("exercise-sides-each")));
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-per-side")));
     await act(async () => fireEvent.press(editor.getByTestId("exercise-save")));
 
     await waitFor(() => {

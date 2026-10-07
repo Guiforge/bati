@@ -41,7 +41,8 @@
     "./.biome/plugins/noRawHexColor.grit",
     "./.biome/plugins/noIdenticalTernaryArms.grit",
     "./.biome/plugins/noDynamicEnvAccess.grit",
-    "./.biome/plugins/noJsNetwork.grit"
+    "./.biome/plugins/noJsNetwork.grit",
+    "./.biome/plugins/noBareSheetScrollView.grit"
   ],
   "linter": {
     "enabled": true,

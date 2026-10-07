@@ -532,7 +532,7 @@
     "next_side": "Nächste Seite",
     "side_switch_ahead": "Danach {{seconds}} s zum Seitenwechsel.",
     "side_switch_soon": "Mach dich bereit zum Seitenwechsel",
-    "side_two_in": "Seite 2 in {{seconds}} s",
+    "side_two_next": "Seite 1 geschafft, dann Seite 2",
     "side_two_go": "Los, Seite 2",
     "skip_rest": "Ich bin bereit",
     "skip_rest_accessibility": "Pause überspringen und nächste Übung starten",

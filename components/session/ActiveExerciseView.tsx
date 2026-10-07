@@ -527,7 +527,9 @@ export function ActiveExerciseView() {
           <YStack gap="$2">
             {/* No label row: the numeral below is the same figure at 72px. */}
             <TimerBar
-              value={progress}
+              // The switch drains its own eight seconds: on the whole clock it barely moved, and
+              // the hero had no way to see how long was left to turn.
+              value={inSwitch && side ? side.seconds / SIDE_SWITCH_SECONDS : progress}
               fill={isOvertime ? "$success" : inSwitch ? "$warning" : "$primary"}
               fillOpacity={isOvertime ? 0.9 : 1}
               bg="$surface2"
@@ -728,20 +730,20 @@ export function ActiveExerciseView() {
                       </>
                     ) : (
                       <>
-                        {/* The switch takes the numeral's box, so nothing below moves: a word where
-                            a timer was is what tells the hero no side is being timed. */}
-                        {inSwitch ? (
+                        {/* The switch keeps the big figure and counts its own seconds down, bare
+                            and orange so it never reads as a side's 0:08. A word in its place left
+                            the time to turn in a small line nobody read from the floor. */}
+                        {inSwitch && side ? (
                           <H1
-                            testID="session-switch-title"
-                            fontSize={44}
+                            testID="session-switch-count"
+                            fontSize={72}
                             lineHeight={80}
                             fontWeight="700"
                             fontFamily="$body"
+                            fontVariant={["tabular-nums"]}
                             color="$warning"
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
                           >
-                            {t("session.switch_sides")}
+                            {String(side.seconds)}
                           </H1>
                         ) : (
                           // Normal countdown
@@ -763,12 +765,19 @@ export function ActiveExerciseView() {
                         {/* Not during the switch: its five seconds are not "left of 20 s per
                             side", and the line under the numeral already says what they are. */}
                         {/* The same component in every phase, so the line keeps its height. */}
-                        {side?.phase === "switch" ? (
-                          <Paragraph testID="session-side-two-in" fontWeight="700" color="$text">
-                            {t("session.side_two_in", { seconds: side.seconds })}
-                          </Paragraph>
+                        {inSwitch ? (
+                          <Text
+                            testID="session-switch-title"
+                            fontSize={22}
+                            lineHeight={28}
+                            fontWeight="700"
+                            color="$warning"
+                            textTransform="uppercase"
+                          >
+                            {t("session.switch_sides")}
+                          </Text>
                         ) : (
-                          <Paragraph fontWeight="700" color="$textSecondary">
+                          <Paragraph lineHeight={28} fontWeight="700" color="$textSecondary">
                             {t("session.seconds_left_of", {
                               target: formatSlotTarget(
                                 {
@@ -780,15 +789,10 @@ export function ActiveExerciseView() {
                             })}
                           </Paragraph>
                         )}
-                        {/* One line height whatever it says, and kept blank through the switch: the
-                            art above is the elastic part of the screen, so a line that grows or
-                            leaves makes the whole picture jump while the hero is changing sides. */}
-                        {side && inSwitch ? (
-                          <Text fontSize={20} lineHeight={28}>
-                            {" "}
-                          </Text>
-                        ) : null}
-                        {side && !inSwitch ? (
+                        {/* One line height whatever it says: the art above is the elastic part of
+                            the screen, so a line that grows or leaves makes the whole picture jump
+                            while the hero is changing sides. */}
+                        {side ? (
                           <Text
                             testID="session-side"
                             lineHeight={28}
@@ -797,11 +801,13 @@ export function ActiveExerciseView() {
                             fontWeight="700"
                             color={switchSoon || secondSideStarting ? "$warning" : "$text"}
                           >
-                            {switchSoon
-                              ? t("session.side_switch_soon")
-                              : secondSideStarting
-                                ? t("session.side_two_go")
-                                : t("session.side_of", { side: side.phase === "first" ? 1 : 2 })}
+                            {inSwitch
+                              ? t("session.side_two_next")
+                              : switchSoon
+                                ? t("session.side_switch_soon")
+                                : secondSideStarting
+                                  ? t("session.side_two_go")
+                                  : t("session.side_of", { side: side.phase === "first" ? 1 : 2 })}
                           </Text>
                         ) : null}
                       </>

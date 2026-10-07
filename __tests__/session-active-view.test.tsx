@@ -304,20 +304,26 @@ describe("a per-side hold", () => {
     expect(glow()).toBe(1);
 
     await tick(5);
-    // A word where the timer was, and nothing that says a side is being timed.
+    // The big figure counts the switch itself, bare, never as a side's 0:08.
+    expect(screen.getByTestId("session-switch-count").props.children).toBe("8");
     expect(screen.getByTestId("session-switch-title").props.children).toBe("Switch sides");
     // And go out when the switch starts: the change itself is the signal.
     expect(glow()).toBe(0);
-    expect(screen.getByTestId("session-side-two-in").props.children).toBe("Side 2 in 8 s");
-    expect(screen.queryByTestId("session-side")).toBeNull();
+    expect(sideLine()).toBe("Side 1 done, side 2 next");
     expect(screen.queryByText("0:08")).toBeNull();
+    // The bar drains the switch's own eight seconds.
+    expect(screen.getByTestId("timer-bar").props.accessibilityValue.now).toBe(100);
     expect(screen.queryByText("left of 30s per side")).toBeNull();
     expect(screen.queryByText("Keep going! Timer continues after target.")).toBeNull();
     // The figure turns at the switch, so the hero sees the second side while getting into it.
     expect(scaleX()).toBe(-1);
     expect(playCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "switch"]);
 
-    await tick(8);
+    await tick(4);
+    expect(screen.getByTestId("session-switch-count").props.children).toBe("4");
+    expect(screen.getByTestId("timer-bar").props.accessibilityValue.now).toBe(50);
+
+    await tick(4);
     expect(sideLine()).toBe("Go, side 2");
     expect(screen.getByText("0:30")).toBeTruthy();
     expect(playCue.mock.calls.map(([cue]) => cue).slice(4)).toEqual(["tick", "tick", "tick", "go"]);

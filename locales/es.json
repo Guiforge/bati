@@ -543,7 +543,7 @@
     "next_side": "Lado siguiente",
     "side_switch_ahead": "Al terminar, {{seconds}} s para cambiar de lado.",
     "side_switch_soon": "Prepárate para cambiar de lado",
-    "side_two_in": "Lado 2 en {{seconds}} s",
+    "side_two_next": "Lado 1 hecho, ahora el lado 2",
     "side_two_go": "Vamos, lado 2",
     "skip_rest": "Seguimos",
     "skip_rest_accessibility": "Saltar el descanso y empezar el siguiente ejercicio",

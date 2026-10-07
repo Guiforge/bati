@@ -532,7 +532,7 @@
     "next_side": "Next side",
     "side_switch_ahead": "When this side ends, {{seconds}} s to switch.",
     "side_switch_soon": "Get ready to switch sides",
-    "side_two_in": "Side 2 in {{seconds}} s",
+    "side_two_next": "Side 1 done, side 2 next",
     "side_two_go": "Go, side 2",
     "skip_rest": "I'm ready",
     "skip_rest_accessibility": "Skip rest and start next exercise",

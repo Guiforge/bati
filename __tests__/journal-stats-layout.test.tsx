@@ -40,6 +40,7 @@ test("the wall's sub-line may take two lines, so a record keeps its year", async
     name: { en: "Push-ups", fr: "Pompes", de: "Liegestuetze", es: "Flexiones" },
     imagePath: "",
     type: "reps",
+    perSide: false,
     best: 24,
     last: 11,
     recordAt: new Date(2025, 2, 30, 12),
@@ -48,4 +49,21 @@ test("the wall's sub-line may take two lines, so a record keeps its year", async
   };
   const view = await wrap(<WallRow entry={entry} now={new Date(2026, 8, 15, 12)} />);
   expect(view.getByTestId("journal-wall-sub").props.numberOfLines).toBe(2);
+});
+
+test("a one-sided movement's wall row says its figure is per side", async () => {
+  const entry: WallEntry = {
+    exerciseId: 2,
+    name: { en: "Side Plank", fr: "Gainage latéral", de: "Seitstütz", es: "Plancha lateral" },
+    imagePath: "",
+    type: "time",
+    perSide: true,
+    best: 26,
+    last: 26,
+    recordAt: new Date(2026, 8, 14, 12),
+    recordSessionId: 7,
+    seasonBest: 26,
+  };
+  const view = await wrap(<WallRow entry={entry} now={new Date(2026, 8, 15, 12)} />);
+  expect(view.getByText("hold per side")).toBeTruthy();
 });

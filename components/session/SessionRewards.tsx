@@ -13,7 +13,7 @@ import { getBuildingIconAsset, getExerciseThumb, getVillageTierAsset } from "@/c
 import { pickSessionEmptyVariant } from "@/constants/sessionEmptyMessages";
 import type { SessionStanding } from "@/db/personalRecords";
 import { buildingDefinitions } from "@/db/schema";
-import { formatTarget } from "@/db/targets";
+import { formatTarget, perSideLabel } from "@/db/targets";
 import { getLevelTitle } from "@/db/userLevel";
 import { buildingCeiling, TIER_NAMES } from "@/db/village";
 import { useAnimationProps } from "@/hooks/useReducedMotion";
@@ -98,7 +98,11 @@ function BestEffortCard({
           </Text>
         </YStack>
         <Text fontWeight="700" fontSize={15} color="$resourceGold">
-          {formatTarget({ type: standing.type, value: standing.value }, language)}
+          {perSideLabel(
+            formatTarget({ type: standing.type, value: standing.value }, language),
+            standing.perSide,
+            language,
+          )}
         </Text>
       </XStack>
     </Card>

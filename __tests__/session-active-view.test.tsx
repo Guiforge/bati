@@ -261,32 +261,50 @@ describe("a per-side hold", () => {
     ],
   } as unknown as Quest;
 
-  // The store runs twice the target (`setTimer`); the view counts each side down, beeps the
-  // switch at halfway rather than the end-of-set "go", and logs one side's worth.
-  test("counts each side, beeps the switch at halfway, and logs per side", async () => {
+  // The store runs side, switch, side (`setTimer`, `src/perSide.ts`); the view counts each phase
+  // down, beeps the switch rather than the end-of-set "go", starts the second side on a "go", and
+  // logs one side's worth.
+  test("counts each side, gives a switch between them, and logs per side", async () => {
     const { playCue } = jest.requireMock("@/src/sounds") as { playCue: jest.Mock };
+    const tick = async (seconds: number) => {
+      // A second at a time: one big jump lands in one render, which the hook answers with the
+      // zero alone, as it does for a phone that slept through the ticks.
+      for (let second = 0; second < seconds; second++) {
+        await act(() => {
+          jest.advanceTimersByTime(1_000);
+        });
+      }
+    };
     jest.useFakeTimers();
     await mount(null, sidePlank);
     await act(() => {
       useSettingsStore.setState({ soundEnabled: true });
-      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 60 });
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 65 });
     });
-    expect(screen.getByText("Side 1 of 2")).toBeTruthy();
+    const scaleX = () =>
+      (
+        StyleSheet.flatten(screen.getByTestId("exercise-hero-art").props.style).transform as
+          | { scaleX?: number }[]
+          | undefined
+      )?.[0]?.scaleX;
+    expect(screen.getByTestId("session-side").props.children).toBe("Side 1 of 2");
     expect(screen.getByText("left of 30s per side")).toBeTruthy();
+    expect(scaleX()).toBe(1);
 
-    // A second at a time: one big jump lands in one render, which the hook answers with the zero
-    // alone, as it does for a phone that slept through the ticks.
-    for (let second = 0; second < 30; second++) {
-      await act(() => {
-        jest.advanceTimersByTime(1_000);
-      });
-    }
-    expect(screen.getByText("Side 2 of 2")).toBeTruthy();
-    expect(screen.getByText("0:30")).toBeTruthy();
+    await tick(30);
+    expect(screen.getByTestId("session-side").props.children).toBe("Switch sides");
+    // The figure turns at the switch, so the hero sees the second side while getting into it.
+    expect(scaleX()).toBe(-1);
+    expect(screen.getByText("0:05")).toBeTruthy();
     expect(playCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "switch"]);
 
-    // 41 s in, eleven into the second side: the full first side stands until the average of the two
-    // passes it, so stopping here does not log less than stopping at the switch.
+    await tick(5);
+    expect(screen.getByTestId("session-side").props.children).toBe("Side 2 of 2");
+    expect(screen.getByText("0:30")).toBeTruthy();
+    expect(playCue.mock.calls.map(([cue]) => cue).slice(4)).toEqual(["tick", "tick", "tick", "go"]);
+
+    // 46 s in, eleven into the second side: the full first side stands until the average of the
+    // two passes it, so stopping here does not log less than stopping at the switch.
     await act(() => {
       jest.advanceTimersByTime(11_000);
     });
@@ -300,7 +318,7 @@ describe("a per-side hold", () => {
     jest.useFakeTimers();
     await mount(null, sidePlank);
     await act(() => {
-      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 60 });
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 65 });
     });
     await act(() => {
       jest.advanceTimersByTime(25_000);

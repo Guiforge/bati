@@ -110,7 +110,7 @@ export function WarmupView() {
   const perSide = exercise?.perSide === true;
   const sided = !warmupPrep && perSide;
   const half = step ? Math.floor(step.seconds / 2) : 0;
-  useSideSwitch(remainingSeconds, half, sided);
+  useSideSwitch(remainingSeconds, half, 0, sided);
 
   if (!step) return null;
 
@@ -169,7 +169,13 @@ export function WarmupView() {
           {exercise ? (
             <Image
               source={getExerciseAsset(exercise.imagePath)}
-              style={{ width: 180, height: 180, borderRadius: 16 }}
+              // The second side faces the other way, as in a quest's per-side hold (`ExerciseHero`).
+              style={{
+                width: 180,
+                height: 180,
+                borderRadius: 16,
+                transform: [{ scaleX: switched ? -1 : 1 }],
+              }}
               contentFit="cover"
             />
           ) : null}

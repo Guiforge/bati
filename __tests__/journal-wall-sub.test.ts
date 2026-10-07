@@ -14,6 +14,7 @@ const entry = (over: Partial<WallEntry>): WallEntry => ({
   name: { en: "Push-ups", fr: "Pompes", de: "Liegestütze", es: "Flexiones" },
   imagePath: "",
   type: "reps",
+  perSide: false,
   best: 24,
   last: 11,
   recordAt: new Date(2026, 8, 2, 12),

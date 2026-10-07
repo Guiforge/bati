@@ -229,8 +229,16 @@ export function formatSlotTarget(
   slot: { target: Target; exercise: { perSide: boolean } },
   language: AppLanguage,
 ): string {
-  const target = formatTarget(slot.target, language);
-  return slot.exercise.perSide ? `${target} ${PER_SIDE[language]}` : target;
+  return perSideLabel(formatTarget(slot.target, language), slot.exercise.perSide, language);
+}
+
+/**
+ * Any figure logged against a per-side movement, said as one: "26 s per side". Every surface that
+ * prints such a result goes through here, so the same number never reads per side on one screen
+ * and as a total on the next.
+ */
+export function perSideLabel(text: string, perSide: boolean, language: AppLanguage): string {
+  return perSide ? `${text} ${PER_SIDE[language]}` : text;
 }
 
 /**

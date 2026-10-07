@@ -83,6 +83,7 @@ import type { OutingGoal } from "@/src/gps/track";
 import { credited } from "@/src/gps/track";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
+import { perSideClockSeconds } from "@/src/perSide";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
 import { bindSession, isExpedition, useExpeditionStore } from "@/stores/expedition";
@@ -538,15 +539,17 @@ function advanceAfterSet(
 /**
  * The clock a set starts with: a hold counts its target down, a counted set runs no clock.
  *
- * A per-side hold (`0068`) runs the target twice, once for each side, and the view beeps the switch
- * at halfway. Every door into a set goes through here, so no door can start a side plank on half
+ * A per-side hold (`0068`) runs the target twice, once for each side, with a short switch between
+ * them (`src/perSide.ts`). Every door into a set goes through here, so no door can start a side plank on half
  * its time.
  */
 function setTimer(slot: { target: Target; exercise: Pick<Exercise, "perSide"> } | undefined) {
   if (slot?.target.type !== "time") return { timerStartTimestamp: null, timerDuration: 0 };
   return {
     timerStartTimestamp: Date.now(),
-    timerDuration: slot.target.value * (slot.exercise.perSide ? 2 : 1),
+    timerDuration: slot.exercise.perSide
+      ? perSideClockSeconds(slot.target.value)
+      : slot.target.value,
   };
 }
 

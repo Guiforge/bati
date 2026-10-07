@@ -14,6 +14,7 @@ function record(over: Partial<NewRecordResult> = {}): NewRecordResult {
     recordType: "exercise_max_reps",
     newValue: 20,
     previousValue: 10,
+    perSide: false,
     exerciseName: { en: "Squat", fr: "Squat", de: "Squat", es: "Squat" },
     ...over,
   };

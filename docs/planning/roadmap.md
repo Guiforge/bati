@@ -336,13 +336,20 @@ moment for the column."* This is the second reader. The fix is that column (a la
 switch between them in the session, with the warm-up reading the same flag so the name list goes.
 
 **Built** (`0068_one_side_then_the_other.sql`). `exercises.perSide` marks nine seed movements, and
-the target is **per side**. A timed slot runs twice the target (`setTimer` in `stores/session.ts`),
-the numeral counts the side in progress under "Side 1 of 2", and `useSideSwitch` vibrates and plays
-`switch.wav` (two short beeps, after 3-2-1) at halfway, in the warm-up too. The journal logs one
-side's worth, half the elapsed time, so a side plank compares to the side planks before it and no
-golden figure moved. A counted slot reads "Reps per side" and logs what the hero enters. The quest
-estimate counts both sides. Left out: a pause between the two sides (add it if heroes say the
-second side starts late), and the flag on hero-made movements (the editor does not offer it yet).
+the target is **per side**. A timed slot runs side, 5 s switch, side (`src/perSide.ts`, set by
+`setTimer` in `stores/session.ts`); the numeral counts the phase in progress under "Side 1 of 2",
+"Switch sides", "Side 2 of 2". `useSideSwitch` vibrates at both ends of the switch and, with beeps
+on, plays 3-2-1 then `switch.wav` (two short beeps) into it and 3-2-1 then "go" out of it. The
+warm-up reads the same column through the same hook, with no switch (its sides are fifteen seconds
+of mobility). The journal logs one side's worth (`perSideHeldSeconds`): the time held while on the
+first side, then the full first side until the average of the two passes it, never the switch. A
+counted slot reads "Reps per side". Every surface that prints such a figure says "per side"
+(`perSideLabel` in `db/targets.ts`). Estimates count both sides and the switch.
+
+Known ambiguity, kept on purpose: results logged before `0068` were never told what the target
+meant, and are now read as per side. A hero who logged a total keeps an old best that may be twice
+a side. Migrating them would guess what each hero did; the first per-side session sets a fair
+ghost again. Left out: the flag on hero-made movements (the editor does not offer it yet).
 
 ### 4.3 The session becomes a mission — art, and the narrative out loud
 

@@ -28,6 +28,7 @@ import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionT
 import { useSetAside } from "@/hooks/useSetAside";
 import { useSideSwitch } from "@/hooks/useSideSwitch";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
+import { perSideHeldSeconds, SIDE_SWITCH_SECONDS, sidePhase } from "@/src/perSide";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -49,18 +50,9 @@ import { TimerBar } from "./TimerBar";
  */
 const DONE_GUARD_MS = 700;
 
-/**
- * The seconds a hold counts for. A per-side hold logs one side's worth: the target is per side, so
- * the record, the ghost and the Journal compare a side plank to the side planks before it.
- *
- * On the first side that is the time held, not half of it: a hero who stops at 25 s because the
- * shoulder hurt held 25 s, and halving it would write a false record exactly then. On the second
- * side the full first side stands until the average of the two passes it, so the figure never
- * drops while the hero keeps holding, which the ghost line and the crit odds both read live.
- */
+/** The seconds a hold counts for: one side's worth on a per-side hold (`src/perSide.ts`). */
 function heldSeconds(elapsedSeconds: number, perSide: boolean, targetSeconds: number): number {
-  if (!perSide) return elapsedSeconds;
-  return Math.max(Math.min(elapsedSeconds, targetSeconds), Math.floor(elapsedSeconds / 2));
+  return perSide ? perSideHeldSeconds(elapsedSeconds, targetSeconds) : elapsedSeconds;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
@@ -125,13 +117,15 @@ export function ActiveExerciseView() {
   // lake. Zero is the value a rep-based set already parks on, which the hook is silent about.
   useCountdownCues(isOuting ? 0 : remainingSeconds);
   const targetValue = currentEx?.target.value ?? 0;
-  // One side, then the other (`0068`): the store runs the clock for twice the target, and the
-  // first half counts down to the switch.
+  // One side, a short switch, then the other (`0068`, `src/perSide.ts`): the store runs the
+  // clock for all three, and the numeral counts down the phase in progress.
   const perSideHold = !isOuting && currentEx?.target.type === "time" && currentEx.exercise.perSide;
-  const onFirstSide = perSideHold && remainingSeconds > targetValue;
-  /** What the numeral counts down: the side in progress, not the two together. */
-  const sideRemainingSeconds = onFirstSide ? remainingSeconds - targetValue : remainingSeconds;
-  useSideSwitch(remainingSeconds, targetValue, perSideHold);
+  // No clock yet reads as zero left, which is the second side: nothing to turn before it starts.
+  const clockStarted = useSessionStore((s) => s.timerStartTimestamp !== null);
+  const side = perSideHold && clockStarted ? sidePhase(remainingSeconds, targetValue) : null;
+  /** What the numeral counts down: the side in progress, not the whole clock. */
+  const sideRemainingSeconds = side ? side.seconds : remainingSeconds;
+  useSideSwitch(remainingSeconds, targetValue, SIDE_SWITCH_SECONDS, perSideHold);
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
   // Counts ± taps, and keys the numeral's bounce. Keyed on the count itself, a typed "150"
   // remounted the field on its first digit and put the keyboard away.
@@ -294,6 +288,9 @@ export function ActiveExerciseView() {
       topInset={insets.top}
       onPress={handleShowHowTo}
       accessibilityLabel={t("session.how_to_do_it")}
+      // Turned from the switch on, so the hero sees how to set up the second side while getting
+      // there, not once its clock is already running.
+      mirrored={side !== null && side.phase !== "first"}
     />
   );
   const targetMuscle = currentEx.exercise.muscles[0];
@@ -671,9 +668,16 @@ export function ActiveExerciseView() {
                             target: formatSlotTarget(currentEx, language),
                           })}
                         </Paragraph>
-                        {perSideHold ? (
-                          <Text fontSize={14} fontWeight="700" color="$text">
-                            {t("session.side_of", { side: onFirstSide ? 1 : 2 })}
+                        {side ? (
+                          <Text
+                            testID="session-side"
+                            fontSize={14}
+                            fontWeight="700"
+                            color={side.phase === "switch" ? "$warning" : "$text"}
+                          >
+                            {side.phase === "switch"
+                              ? t("session.switch_sides")
+                              : t("session.side_of", { side: side.phase === "first" ? 1 : 2 })}
                           </Text>
                         ) : null}
                       </>

@@ -94,6 +94,8 @@ export type WallEntry = {
   name: Localized;
   imagePath: string;
   type: QuestTargetType;
+  /** Its figures are one side's, and say so. */
+  perSide: boolean;
   /** Null on a movement never logged, which is what a first day's wall is made of. */
   best: number | null;
   last: number | null;
@@ -177,6 +179,7 @@ export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
     name: nameOf(record),
     imagePath: record.imagePath,
     type: record.type,
+    perSide: record.perSide,
     best: record.best,
     last: record.last,
     recordAt: first.get(key(record.exerciseId, record.type))?.at ?? record.at,
@@ -201,6 +204,7 @@ export async function getStarterWall(limit = 4): Promise<WallEntry[]> {
       deName: exercises.deName,
       esName: exercises.esName,
       imagePath: exercises.imagePath,
+      perSide: exercises.perSide,
       type: questExercises.targetType,
     })
     .from(questExercises)
@@ -218,6 +222,7 @@ export async function getStarterWall(limit = 4): Promise<WallEntry[]> {
       name: nameOf(row),
       imagePath: row.imagePath,
       type: row.type,
+      perSide: row.perSide,
       best: null,
       last: null,
       recordAt: null,
@@ -691,6 +696,8 @@ export type FallenRecord = {
   name: Localized | null;
   imagePath: string | null;
   type: QuestTargetType | null;
+  /** A one-sided movement's record is one side's. False for a session record. */
+  perSide: boolean;
   value: number;
   /** The best before this session. Null when there was none: the first time is a record. */
   previous: number | null;
@@ -746,6 +753,7 @@ async function movementRecordFell(
     name: exercise ? nameOf(exercise) : null,
     imagePath: exercise?.imagePath ?? null,
     type,
+    perSide: exercise?.perSide ?? false,
     value: Math.max(0, ...mine.map((ex) => ex.result.value)),
     previous: before?.best ?? null,
   };
@@ -787,6 +795,7 @@ async function sessionRecordFell(
     name: null,
     imagePath: null,
     type: null,
+    perSide: false,
     value,
     previous: before?.best ?? null,
   };

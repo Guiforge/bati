@@ -33,7 +33,7 @@ import { dayKey } from "@/db/dates";
 import type { DayActivity, WallEntry } from "@/db/journal";
 import { behindMuscles } from "@/db/muscleBalance";
 import { MUSCLE_LABELS } from "@/db/muscles";
-import { formatCount, formatTargetValue } from "@/db/targets";
+import { formatCount, formatTargetValue, perSideLabel } from "@/db/targets";
 import { inSentence, localizedName, localizedTitle } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 import type { JournalStats } from "./useJournalStats";
@@ -284,7 +284,11 @@ export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
             {formatTargetValue({ type: entry.type, value: target }, language)}
           </NNum>
           <NKickerQuiet fontSize={9.5}>
-            {entry.type === "time" ? t("journal.unit_hold") : t("journal.unit_reps")}
+            {perSideLabel(
+              entry.type === "time" ? t("journal.unit_hold") : t("journal.unit_reps"),
+              entry.perSide,
+              language,
+            )}
           </NKickerQuiet>
         </YStack>
       )}

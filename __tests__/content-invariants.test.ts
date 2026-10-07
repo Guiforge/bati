@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { eq } from "drizzle-orm";
 
+import { WARMUP_MOVEMENTS } from "../constants/warmup";
 import { type DifficultyCode, movementPatterns, type QuestArchetype } from "../db/schema";
 import { clientMock, createTestDb, ownEveryRung } from "./helpers/testDb";
 
@@ -589,8 +590,6 @@ describe("content invariants", () => {
   // ever covered the branches the test remembered to write, and a movement reachable by one rule
   // alone is exactly the one a rename breaks unseen.
   test("every warm-up movement exists in the catalogue", async () => {
-    const { WARMUP_MOVEMENTS } =
-      require("../constants/warmup") as typeof import("../constants/warmup");
     const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
 
     const catalogue = new Set((await listExercises()).map((e) => e.enName));
@@ -651,8 +650,7 @@ describe("content invariants", () => {
    * any movement added to a pool above the bottom of a path fails here, whoever adds it.
    */
   test("a hero on day one is never warmed up with a rung above their own", async () => {
-    const { buildWarmup, WARMUP_MOVEMENTS } =
-      require("../constants/warmup") as typeof import("../constants/warmup");
+    const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");
     const { currentRungFor, listExercises, unavailableMovements } =
       require("../db/exercises") as typeof import("../db/exercises");
 
@@ -690,8 +688,6 @@ describe("content invariants", () => {
   // A warm-up prepares; it does not train. Anything hard enough to cost the session is not a
   // warm-up movement, however well it fits the pattern the quest is about to load.
   test("no warm-up movement is a hard exercise", async () => {
-    const { WARMUP_MOVEMENTS } =
-      require("../constants/warmup") as typeof import("../constants/warmup");
     const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
 
     const byName = new Map((await listExercises()).map((e) => [e.enName, e]));

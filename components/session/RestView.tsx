@@ -11,7 +11,7 @@ import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { getExerciseThumb } from "@/constants/assetMap";
 import type { CompletedExerciseInput } from "@/db/completed";
-import { formatSlotTarget, targetRangeFor } from "@/db/targets";
+import { formatSlotTarget, PER_SIDE, targetRangeFor } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -274,7 +274,14 @@ export function RestView() {
             {!!lastResult && !lastSetSkipped && (
               <LastSetCard
                 result={lastResult}
-                name={lastExercise ? localizedName(lastExercise, language) : ""}
+                // A per-side set logs one side's worth: the figure says so, here as everywhere.
+                name={
+                  !lastExercise
+                    ? ""
+                    : lastExercise.perSide
+                      ? `${localizedName(lastExercise, language)} · ${PER_SIDE[language]}`
+                      : localizedName(lastExercise, language)
+                }
               />
             )}
 

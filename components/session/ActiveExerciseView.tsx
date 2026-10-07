@@ -52,9 +52,15 @@ const DONE_GUARD_MS = 700;
 /**
  * The seconds a hold counts for. A per-side hold logs one side's worth: the target is per side, so
  * the record, the ghost and the Journal compare a side plank to the side planks before it.
+ *
+ * On the first side that is the time held, not half of it: a hero who stops at 25 s because the
+ * shoulder hurt held 25 s, and halving it would write a false record exactly then. On the second
+ * side the full first side stands until the average of the two passes it, so the figure never
+ * drops while the hero keeps holding, which the ghost line and the crit odds both read live.
  */
-function heldSeconds(elapsedSeconds: number, perSide: boolean): number {
-  return perSide ? Math.floor(elapsedSeconds / 2) : elapsedSeconds;
+function heldSeconds(elapsedSeconds: number, perSide: boolean, targetSeconds: number): number {
+  if (!perSide) return elapsedSeconds;
+  return Math.max(Math.min(elapsedSeconds, targetSeconds), Math.floor(elapsedSeconds / 2));
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
@@ -152,7 +158,7 @@ export function ActiveExerciseView() {
    */
   const liveValue = Math.max(
     1,
-    isTimeBased ? heldSeconds(elapsedSeconds, perSideHold) : adjustedReps,
+    isTimeBased ? heldSeconds(elapsedSeconds, perSideHold, targetValue) : adjustedReps,
   );
 
   const exerciseName = localizedName(currentEx.exercise, language);
@@ -755,7 +761,7 @@ export function ActiveExerciseView() {
                   ? t("session.crit_hint_time", {
                       percent: Math.round(
                         critChance(
-                          heldSeconds(elapsedSeconds, perSideHold),
+                          heldSeconds(elapsedSeconds, perSideHold, currentEx.target.value),
                           currentEx.target.value,
                         ) * 100,
                       ),

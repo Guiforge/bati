@@ -285,10 +285,27 @@ describe("a per-side hold", () => {
     expect(screen.getByText("0:30")).toBeTruthy();
     expect(playCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "switch"]);
 
+    // 41 s in, eleven into the second side: the full first side stands until the average of the two
+    // passes it, so stopping here does not log less than stopping at the switch.
     await act(() => {
       jest.advanceTimersByTime(11_000);
     });
     await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
-    expect(useSessionStore.getState().results[0]?.result.value).toBe(20);
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(30);
+  });
+
+  // The hero who stops on the first side because it hurts held what they held. Halving it would
+  // write a false record at the worst moment.
+  test("a set stopped on the first side logs the time held", async () => {
+    jest.useFakeTimers();
+    await mount(null, sidePlank);
+    await act(() => {
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 60 });
+    });
+    await act(() => {
+      jest.advanceTimersByTime(25_000);
+    });
+    await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(25);
   });
 });

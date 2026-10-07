@@ -214,7 +214,12 @@ export function formatTarget(target: Target, language: AppLanguage): string {
   return target.type === "time" ? value : `${value} ${REPS_WORD[language]}`;
 }
 
-const PER_SIDE: Localized = { en: "per side", fr: "par côté", de: "pro Seite", es: "por lado" };
+export const PER_SIDE: Localized = {
+  en: "per side",
+  fr: "par côté",
+  de: "pro Seite",
+  es: "por lado",
+};
 
 /**
  * A slot's target, with "per side" when its movement is done one side then the other (`0068`).

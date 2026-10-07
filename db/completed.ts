@@ -43,7 +43,10 @@ export type CompletedExerciseInput = {
     secondsPerRep: number;
     difficulty: DifficultyCode;
     style: ExerciseStyle;
-    /** Paid for both sides (`0068`). Absent on sets from before it, which were one side. */
+    /**
+     * Both sides were worked and are paid (`0068`, `perSideSet`). False on a per-side hold
+     * stopped before its second side; absent on sets from before the column, which were one side.
+     */
     perSide?: boolean;
   };
 };

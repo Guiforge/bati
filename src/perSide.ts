@@ -38,23 +38,35 @@ export function sidePhase(remainingSeconds: number, sideSeconds: number): SidePh
 }
 
 /**
- * The seconds a per-side hold logs: one side's worth, so the record, the ghost and the Journal
- * compare a side plank to the side planks before it. In coaching it is the weaker side that counts,
- * so a short side is never hidden behind a full one.
+ * A second side shorter than this has not really been started: the hero tapped Done on the "go",
+ * or reached for the phone instead of the floor. It counts as the switch.
+ */
+export const SECOND_SIDE_GRACE_SECONDS = 3;
+
+/**
+ * What a per-side hold logs, and how many sides it pays for.
+ *
+ * `seconds` is one side's worth, so the record, the ghost and the Journal compare a side plank to
+ * the side planks before it. In coaching it is the weaker side that counts, so a short side is
+ * never hidden behind a full one:
  *
  * - On the first side, the time held. A hero who stops at 25 s because the shoulder hurt held 25 s.
- * - During the switch, the full first side: the second was never started.
+ * - In the switch, or the first few seconds after it, the full first side.
  * - On the second side, short of the target, the second side: 30 s left then 8 s right is 8 s per
  *   side, because that 8 is what the next target has to be built on.
  * - Past it, the average of the two, so a longer second side still counts for something.
  *
- * The switch is never counted. The figure dips when the second side starts, and the screen says so
- * honestly: the ghost line then compares the side in progress.
+ * `sides` is what XP and the boss pay for: two only once the second side has really been worked.
+ * Holding the first side and tapping Done in the switch is one side of work, and is paid as one.
+ * The switch is never counted.
  */
-export function perSideHeldSeconds(elapsedSeconds: number, sideSeconds: number): number {
-  if (elapsedSeconds < sideSeconds) return elapsedSeconds;
+export function perSideSet(
+  elapsedSeconds: number,
+  sideSeconds: number,
+): { seconds: number; sides: 1 | 2 } {
+  if (elapsedSeconds < sideSeconds) return { seconds: elapsedSeconds, sides: 1 };
   const second = elapsedSeconds - sideSeconds - SIDE_SWITCH_SECONDS;
-  if (second < 0) return sideSeconds;
-  if (second < sideSeconds) return second;
-  return Math.floor((sideSeconds + second) / 2);
+  if (second < SECOND_SIDE_GRACE_SECONDS) return { seconds: sideSeconds, sides: 1 };
+  if (second < sideSeconds) return { seconds: second, sides: 2 };
+  return { seconds: Math.floor((sideSeconds + second) / 2), sides: 2 };
 }

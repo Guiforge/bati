@@ -1,6 +1,7 @@
 import {
   perSideClockSeconds,
-  perSideHeldSeconds,
+  perSideSet,
+  SECOND_SIDE_GRACE_SECONDS,
   SIDE_SWITCH_SECONDS,
   sidePhase,
 } from "@/src/perSide";
@@ -30,10 +31,12 @@ describe("a per-side hold of 30 s a side", () => {
 
   test("logs the weaker side, never the switch, and the average past the target", () => {
     const S = SIDE_SWITCH_SECONDS;
-    expect(perSideHeldSeconds(25, side)).toBe(25); // stopped on the first side
-    expect(perSideHeldSeconds(30 + S - 1, side)).toBe(30); // in the switch: one full side done
-    expect(perSideHeldSeconds(30 + S + 8, side)).toBe(8); // 30 left, 8 right
-    expect(perSideHeldSeconds(30 + S + 30, side)).toBe(30); // both full
-    expect(perSideHeldSeconds(30 + S + 50, side)).toBe(40); // 30 left, 50 right
+    const G = SECOND_SIDE_GRACE_SECONDS;
+    expect(perSideSet(25, side)).toEqual({ seconds: 25, sides: 1 }); // stopped on the first side
+    expect(perSideSet(30 + S - 1, side)).toEqual({ seconds: 30, sides: 1 }); // in the switch
+    expect(perSideSet(30 + S + G - 1, side)).toEqual({ seconds: 30, sides: 1 }); // Done on the "go"
+    expect(perSideSet(30 + S + 8, side)).toEqual({ seconds: 8, sides: 2 }); // 30 left, 8 right
+    expect(perSideSet(30 + S + 30, side)).toEqual({ seconds: 30, sides: 2 }); // both full
+    expect(perSideSet(30 + S + 50, side)).toEqual({ seconds: 40, sides: 2 }); // 30 left, 50 right
   });
 });

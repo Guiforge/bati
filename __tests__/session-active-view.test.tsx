@@ -310,6 +310,8 @@ describe("a per-side hold", () => {
     });
     await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
     expect(useSessionStore.getState().results[0]?.result.value).toBe(11);
+    // Both sides were worked, so both are paid.
+    expect(useSessionStore.getState().results[0]?.pricing?.perSide).toBe(true);
   });
 
   // The hero who stops on the first side because it hurts held what they held. Halving it would
@@ -325,5 +327,7 @@ describe("a per-side hold", () => {
     });
     await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
     expect(useSessionStore.getState().results[0]?.result.value).toBe(25);
+    // One side of work is paid as one: no doubled XP or blow for a side never done.
+    expect(useSessionStore.getState().results[0]?.pricing?.perSide).toBe(false);
   });
 });

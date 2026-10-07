@@ -342,7 +342,7 @@
     "bosses": [
       {
         "adventureId": 2,
-        "totalHp": 348
+        "totalHp": 378
       },
       {
         "adventureId": 3,
@@ -350,7 +350,7 @@
       },
       {
         "adventureId": 5,
-        "totalHp": 531
+        "totalHp": 651
       },
       {
         "adventureId": 6,
@@ -358,11 +358,11 @@
       },
       {
         "adventureId": 7,
-        "totalHp": 1394
+        "totalHp": 1428
       },
       {
         "adventureId": 8,
-        "totalHp": 963
+        "totalHp": 1026
       }
     ],
     "achievements": [

@@ -13,7 +13,12 @@ import { i18n } from "@/i18n";
 import { EMPTY } from "@/src/gps/track";
 import { bindSession, useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
-import { FINAL_REST_SECONDS, loadWarmup, useSessionStore } from "../stores/session";
+import {
+  FINAL_REST_SECONDS,
+  holdNeedingAnswer,
+  loadWarmup,
+  useSessionStore,
+} from "../stores/session";
 
 /** What the session store handed the expedition store when it loaded, read before any test runs. */
 const boundAtLoad = jest.mocked(bindSession).mock.calls[0]?.[0];
@@ -2114,4 +2119,32 @@ test("loading the session store binds the expedition store's bridge", () => {
   expect(boundAtLoad).toBeDefined();
   expect(typeof boundAtLoad?.recordedSeconds()).toBe("number");
   expect(typeof boundAtLoad?.completeOuting).toBe("function");
+});
+
+// A per-side hold logs the average of its sides past the target (`perSideSet`), so a second side
+// left running for minutes is halved before the long-hold check sees it. 30 s a side, then four
+// minutes on the second: the average is 135, under the bar, but the second side is 240.
+test("a per-side second side left running is asked about, not halved past the check", () => {
+  const set = (perSide: boolean) => ({
+    results: [
+      {
+        exerciseId: 1,
+        roundIndex: 0,
+        sortOrder: 0,
+        result: { type: "time" as const, value: 135 },
+        target: { type: "time" as const, value: 30 },
+        pricing: {
+          secondsPerRep: 3,
+          difficulty: "medium" as const,
+          style: "strength" as const,
+          perSide,
+        },
+        performedAt: new Date(),
+      },
+    ],
+    lastSetSkipped: false,
+    longHoldKept: false,
+  });
+  expect(holdNeedingAnswer(set(true))).not.toBeNull();
+  expect(holdNeedingAnswer(set(false))).toBeNull();
 });

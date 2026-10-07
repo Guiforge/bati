@@ -202,7 +202,12 @@ export function holdNeedingAnswer(
   if (!last || state.lastSetSkipped || state.longHoldKept) return null;
   if (last.result.type !== "time" || last.target?.type !== "time") return null;
   if (isOutdoors(last.pricing?.style)) return null;
-  return isSuspiciousHold(last.result.value, last.target.value) ? last : null;
+  // A per-side hold logs the average past its target, so a second side left running for minutes
+  // is halved before the check sees it. Asked about the second side itself, rebuilt from the two.
+  const held = last.pricing?.perSide
+    ? 2 * last.result.value - last.target.value
+    : last.result.value;
+  return isSuspiciousHold(held, last.target.value) ? last : null;
 }
 
 interface SessionState {
@@ -367,7 +372,11 @@ interface SessionState {
   quitSession: () => void;
 
   // Progression
-  completeExercise: (resultValue: number) => void;
+  /**
+   * `sidesWorked`: a per-side hold stopped before its second side is paid for one side
+   * (`perSideSet`). Omitted, a per-side set is paid for both: a counted one has no clock to tell.
+   */
+  completeExercise: (resultValue: number, sidesWorked?: 1 | 2) => void;
   /** Ends an outing from outside any view. See the implementation for why it exists. */
   completeOuting: () => void;
   skipExercise: () => void;
@@ -1094,6 +1103,14 @@ function recordOf(
   };
 }
 
+/**
+ * Whether a set is paid for both sides (`0068`): XP (`pricing.perSide`) and the blow read this one
+ * flag. Only when both were worked; a counted per-side set has no clock to say, so it is.
+ */
+function paysBothSides(exercise: Pick<Exercise, "perSide">, sidesWorked?: 1 | 2): boolean {
+  return exercise.perSide && sidesWorked !== 1;
+}
+
 export function beginTrackingIfOuting(
   quest: Quest,
   sessionUuid: string | null,
@@ -1441,12 +1458,14 @@ export const useSessionStore = create<SessionState>()(
         .catch((e) => reportError("session.stopExpedition", e));
     },
 
-    completeExercise: (resultValue) => {
+    completeExercise: (resultValue, sidesWorked) => {
       const { quest, currentRoundIndex, currentExerciseIndex, results, bossFight, goal } = get();
       if (!quest) return;
 
       const currentEx = quest.exercises[currentExerciseIndex];
       if (!currentEx) return;
+
+      const bothSides = paysBothSides(currentEx.exercise, sidesWorked);
 
       const { result, target } = recordOf(quest, goal, currentEx, resultValue);
       const safeResultValue = result.value;
@@ -1463,7 +1482,7 @@ export const useSessionStore = create<SessionState>()(
           muscle: primaryMuscle,
           targetType: currentEx.target.type,
           style: currentEx.exercise.style,
-          perSide: currentEx.exercise.perSide,
+          perSide: bothSides,
         });
 
         set({
@@ -1498,7 +1517,7 @@ export const useSessionStore = create<SessionState>()(
           secondsPerRep: currentEx.exercise.secondsPerRep,
           difficulty: currentEx.exercise.difficulty,
           style: currentEx.exercise.style,
-          perSide: currentEx.exercise.perSide,
+          perSide: bothSides,
         },
         performedAt: new Date(),
       };

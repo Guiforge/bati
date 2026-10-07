@@ -497,6 +497,8 @@ describe("content invariants", () => {
         // Joined for the style alone: the boss-HP arithmetic below must weigh each slot the way
         // the app will, and `toRepEquivalent` now answers differently per style.
         style: schema.exercises.style,
+        // A per-side slot lands both sides (`computeDamage`, `0068`).
+        perSide: schema.exercises.perSide,
       })
       .from(schema.questExercises)
       .innerJoin(schema.exercises, eq(schema.exercises.id, schema.questExercises.exerciseId));
@@ -518,7 +520,7 @@ describe("content invariants", () => {
         // comment claiming seed quests carry no cardio slot; they carry eleven, and that one
         // hardcoded word is what let a change zeroing cardio pass this suite. A test bent to
         // stay green cannot see the thing it was written to see.
-        return sum + toRepEquivalent(target.value, ex.targetType, ex.style);
+        return sum + toRepEquivalent(target.value, ex.targetType, ex.style) * (ex.perSide ? 2 : 1);
       }, 0);
 
     const byAdventure = new Map<string, { hp: number; steps: typeof steps }>();

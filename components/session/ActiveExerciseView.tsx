@@ -28,7 +28,7 @@ import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionT
 import { useSetAside } from "@/hooks/useSetAside";
 import { useSideSwitch } from "@/hooks/useSideSwitch";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
-import { perSideHeldSeconds, SIDE_SWITCH_SECONDS, sidePhase } from "@/src/perSide";
+import { perSideSet, SIDE_SWITCH_SECONDS, sidePhase } from "@/src/perSide";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -52,7 +52,7 @@ const DONE_GUARD_MS = 700;
 
 /** The seconds a hold counts for: one side's worth on a per-side hold (`src/perSide.ts`). */
 function heldSeconds(elapsedSeconds: number, perSide: boolean, targetSeconds: number): number {
-  return perSide ? perSideHeldSeconds(elapsedSeconds, targetSeconds) : elapsedSeconds;
+  return perSide ? perSideSet(elapsedSeconds, targetSeconds).seconds : elapsedSeconds;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
@@ -205,7 +205,11 @@ export function ActiveExerciseView() {
 
     // Elapsed seconds for a hold, the adjusted value for reps: `liveValue` above, which is the
     // same number the ghost line has been comparing to the record.
-    completeExercise(liveValue);
+    // A per-side hold says how many sides were worked: tapping Done in the switch is one.
+    completeExercise(
+      liveValue,
+      perSideHold ? perSideSet(elapsedSeconds, targetValue).sides : undefined,
+    );
   };
 
   const handleDonePress = () => {

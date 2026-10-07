@@ -279,7 +279,7 @@ describe("a per-side hold", () => {
     await mount(null, sidePlank);
     await act(() => {
       useSettingsStore.setState({ soundEnabled: true });
-      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 65 });
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 68 });
     });
     const scaleX = () =>
       (
@@ -295,16 +295,16 @@ describe("a per-side hold", () => {
     expect(screen.getByTestId("session-side").props.children).toBe("Switch sides");
     // The figure turns at the switch, so the hero sees the second side while getting into it.
     expect(scaleX()).toBe(-1);
-    expect(screen.getByText("0:05")).toBeTruthy();
+    expect(screen.getByText("0:08")).toBeTruthy();
     expect(screen.queryByText("left of 30s per side")).toBeNull();
     expect(playCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "switch"]);
 
-    await tick(5);
+    await tick(8);
     expect(screen.getByTestId("session-side").props.children).toBe("Side 2 of 2");
     expect(screen.getByText("0:30")).toBeTruthy();
     expect(playCue.mock.calls.map(([cue]) => cue).slice(4)).toEqual(["tick", "tick", "tick", "go"]);
 
-    // 46 s in, eleven into the second side: the weaker side is what the next target builds on.
+    // 49 s in, eleven into the second side: the weaker side is what the next target builds on.
     await act(() => {
       jest.advanceTimersByTime(11_000);
     });
@@ -318,7 +318,7 @@ describe("a per-side hold", () => {
     jest.useFakeTimers();
     await mount(null, sidePlank);
     await act(() => {
-      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 65 });
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 68 });
     });
     await act(() => {
       jest.advanceTimersByTime(25_000);

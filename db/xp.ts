@@ -1,4 +1,4 @@
-import { estimateExerciseSeconds } from "./estimate";
+import { estimateExerciseSeconds, exerciseWorkSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
 import { cheapestLocomotion } from "./expeditions";
 import type { DifficultyCode, Locomotion } from "./schema";
@@ -15,8 +15,9 @@ import { NON_REP_STYLE, SECONDS_PER_REP_EQUIVALENT } from "./workUnits";
  * "XP, the village and the flame all measure how much and how often". Only the code disagreed.
  *
  * Effort is counted in seconds, at the catalogue's own tempo (`secondsPerRep`), which makes
- * `estimateExerciseSeconds` the whole conversion: the function that estimates a quest's length
- * from its targets estimates a set's effort from its result. Rate is one XP per
+ * `exerciseWorkSeconds` the whole conversion: the function that estimates a quest's length from
+ * its targets estimates a set's effort from its result, less the switch of a per-side hold, which
+ * takes time and is not work. Rate is one XP per
  * `SECONDS_PER_REP_EQUIVALENT` — so 1 XP per rep at the default 3s tempo, and a minute of holds
  * is worth a minute of reps.
  *
@@ -150,7 +151,12 @@ const LEVEL_MULTIPLIER: Record<DifficultyCode, number> = {
 
 /** One set as XP reads it: what was asked, what was done, and by whom. */
 export type XpSet = {
-  exercise: Pick<Exercise, "secondsPerRep" | "difficulty" | "style">;
+  /**
+   * `perSide` (`0068`): the result is one side's, the work was both, and both are paid. Optional
+   * because a set logged before the column, or restored from an older snapshot, never carried it.
+   */
+  exercise: Pick<Exercise, "secondsPerRep" | "difficulty" | "style"> &
+    Partial<Pick<Exercise, "perSide">>;
   target: Target;
   result: Target;
 };
@@ -205,8 +211,8 @@ export type ComputeSessionXpInput = {
  * session, which is the opposite of why the weight is wide.
  */
 function setEffortSeconds({ exercise, target, result }: XpSet): number {
-  const done = Math.max(0, estimateExerciseSeconds(exercise, result));
-  const allowed = Math.max(0, estimateExerciseSeconds(exercise, target)) * OVERSHOOT_ALLOWANCE;
+  const done = Math.max(0, exerciseWorkSeconds(exercise, result));
+  const allowed = Math.max(0, exerciseWorkSeconds(exercise, target)) * OVERSHOOT_ALLOWANCE;
 
   // A hold's result *is* a clock: `ActiveExerciseView` records the elapsed seconds and overtime
   // is unbounded, so a phone left face-up on a 30s plank declares two hours without anyone

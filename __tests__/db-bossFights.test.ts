@@ -253,6 +253,19 @@ describe("db/bossFights", () => {
     expect(walk.newHp).toBe(fight.currentHp);
   });
 
+  // A per-side set logs one side and lands both (0068).
+  test("a per-side set hits for both sides", async () => {
+    jest.spyOn(Math, "random").mockReturnValue(0.99);
+    const b = boss();
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
+    if (!fight) throw new Error("Expected a boss fight");
+
+    const hit = (perSide: boolean) =>
+      b.computeDamage(fight, { resultValue: 12, targetValue: 12, style: "strength", perSide })
+        .damage;
+    expect(hit(true)).toBe(hit(false) * 2);
+  });
+
   test("only exceeding the target can crit, and by more than you exceed it", async () => {
     jest.spyOn(Math, "random").mockReturnValue(0.1);
     const b = boss();

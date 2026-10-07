@@ -39,7 +39,13 @@ export type CompletedExerciseInput = {
    * a `hard` movement on the last round would re-price every set already logged, inflating the
    * whole workout. The price belongs to the moment, like `target` beside it.
    */
-  pricing?: { secondsPerRep: number; difficulty: DifficultyCode; style: ExerciseStyle };
+  pricing?: {
+    secondsPerRep: number;
+    difficulty: DifficultyCode;
+    style: ExerciseStyle;
+    /** Paid for both sides (`0068`). Absent on sets from before it, which were one side. */
+    perSide?: boolean;
+  };
 };
 
 export type CompletedSessionInput = {

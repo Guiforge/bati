@@ -8,8 +8,12 @@
  * the estimate that prices it cannot disagree on where the switch is.
  */
 
-/** Long enough to get onto the other side, short enough not to cool down. */
-export const SIDE_SWITCH_SECONDS = 5;
+/**
+ * Long enough to get onto the other side, short enough not to cool down. Five was too short to
+ * change legs in a pigeon pose on a knee that is coming back from surgery; eight is one constant
+ * for every movement rather than a table of postures.
+ */
+export const SIDE_SWITCH_SECONDS = 8;
 
 /** The whole clock for a per-side hold of `sideSeconds` a side. */
 export function perSideClockSeconds(sideSeconds: number): number {

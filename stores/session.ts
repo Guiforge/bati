@@ -1463,6 +1463,7 @@ export const useSessionStore = create<SessionState>()(
           muscle: primaryMuscle,
           targetType: currentEx.target.type,
           style: currentEx.exercise.style,
+          perSide: currentEx.exercise.perSide,
         });
 
         set({
@@ -1497,6 +1498,7 @@ export const useSessionStore = create<SessionState>()(
           secondsPerRep: currentEx.exercise.secondsPerRep,
           difficulty: currentEx.exercise.difficulty,
           style: currentEx.exercise.style,
+          perSide: currentEx.exercise.perSide,
         },
         performedAt: new Date(),
       };
@@ -1716,6 +1718,7 @@ export const useSessionStore = create<SessionState>()(
           muscle: lastHit.muscle ?? undefined,
           targetType: last.target.type,
           style: lastHit.style,
+          perSide: last.pricing?.perSide,
           forcedCritical: lastHit.isCritical,
         });
         set({

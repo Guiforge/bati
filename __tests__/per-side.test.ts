@@ -19,19 +19,21 @@ describe("a per-side hold of 30 s a side", () => {
   });
 
   test("counts the first side, then the switch, then the second side down", () => {
+    const S = SIDE_SWITCH_SECONDS;
     expect(at(0)).toEqual({ phase: "first", seconds: 30 });
     expect(at(29)).toEqual({ phase: "first", seconds: 1 });
-    expect(at(30)).toEqual({ phase: "switch", seconds: 5 });
-    expect(at(34)).toEqual({ phase: "switch", seconds: 1 });
-    expect(at(35)).toEqual({ phase: "second", seconds: 30 });
-    expect(at(70)).toEqual({ phase: "second", seconds: -5 });
+    expect(at(30)).toEqual({ phase: "switch", seconds: S });
+    expect(at(30 + S - 1)).toEqual({ phase: "switch", seconds: 1 });
+    expect(at(30 + S)).toEqual({ phase: "second", seconds: 30 });
+    expect(at(30 + S + 35)).toEqual({ phase: "second", seconds: -5 });
   });
 
   test("logs the weaker side, never the switch, and the average past the target", () => {
+    const S = SIDE_SWITCH_SECONDS;
     expect(perSideHeldSeconds(25, side)).toBe(25); // stopped on the first side
-    expect(perSideHeldSeconds(33, side)).toBe(30); // in the switch: one full side done
-    expect(perSideHeldSeconds(43, side)).toBe(8); // 30 left, 8 right
-    expect(perSideHeldSeconds(65, side)).toBe(30); // both full
-    expect(perSideHeldSeconds(85, side)).toBe(40); // 30 left, 50 right
+    expect(perSideHeldSeconds(30 + S - 1, side)).toBe(30); // in the switch: one full side done
+    expect(perSideHeldSeconds(30 + S + 8, side)).toBe(8); // 30 left, 8 right
+    expect(perSideHeldSeconds(30 + S + 30, side)).toBe(30); // both full
+    expect(perSideHeldSeconds(30 + S + 50, side)).toBe(40); // 30 left, 50 right
   });
 });

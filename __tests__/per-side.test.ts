@@ -27,16 +27,11 @@ describe("a per-side hold of 30 s a side", () => {
     expect(at(70)).toEqual({ phase: "second", seconds: -5 });
   });
 
-  test("logs the first side as held, never counts the switch, then the average", () => {
-    expect(perSideHeldSeconds(25, side)).toBe(25);
-    expect(perSideHeldSeconds(33, side)).toBe(30);
-    expect(perSideHeldSeconds(50, side)).toBe(30);
-    expect(perSideHeldSeconds(65, side)).toBe(30);
-    expect(perSideHeldSeconds(85, side)).toBe(40);
-  });
-
-  test("the logged figure never drops while the hero keeps holding", () => {
-    const figures = Array.from({ length: 100 }, (_, e) => perSideHeldSeconds(e, side));
-    expect(figures.every((f, i) => i === 0 || f >= (figures[i - 1] ?? 0))).toBe(true);
+  test("logs the weaker side, never the switch, and the average past the target", () => {
+    expect(perSideHeldSeconds(25, side)).toBe(25); // stopped on the first side
+    expect(perSideHeldSeconds(33, side)).toBe(30); // in the switch: one full side done
+    expect(perSideHeldSeconds(43, side)).toBe(8); // 30 left, 8 right
+    expect(perSideHeldSeconds(65, side)).toBe(30); // both full
+    expect(perSideHeldSeconds(85, side)).toBe(40); // 30 left, 50 right
   });
 });

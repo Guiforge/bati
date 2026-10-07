@@ -663,15 +663,20 @@ export function ActiveExerciseView() {
                             below it talks about carrying on past that target, so a caption that
                             only named the unit left the two readings of 0:24 (elapsed? left?)
                             equally available. The audit of 2026-09-10 read it as counting up. */}
-                        <Paragraph fontWeight="700" color="$textSecondary">
-                          {t("session.seconds_left_of", {
-                            target: formatSlotTarget(currentEx, language),
-                          })}
-                        </Paragraph>
+                        {/* Not during the switch: its five seconds are not "left of 20 s per
+                            side", and the line under the numeral already says what they are. */}
+                        {side?.phase === "switch" ? null : (
+                          <Paragraph fontWeight="700" color="$textSecondary">
+                            {t("session.seconds_left_of", {
+                              target: formatSlotTarget(currentEx, language),
+                            })}
+                          </Paragraph>
+                        )}
                         {side ? (
                           <Text
                             testID="session-side"
-                            fontSize={14}
+                            // Bigger at the switch: it is read from the floor, mid-move.
+                            fontSize={side.phase === "switch" ? 20 : 14}
                             fontWeight="700"
                             color={side.phase === "switch" ? "$warning" : "$text"}
                           >

@@ -296,6 +296,7 @@ describe("a per-side hold", () => {
     // The figure turns at the switch, so the hero sees the second side while getting into it.
     expect(scaleX()).toBe(-1);
     expect(screen.getByText("0:05")).toBeTruthy();
+    expect(screen.queryByText("left of 30s per side")).toBeNull();
     expect(playCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "switch"]);
 
     await tick(5);
@@ -303,13 +304,12 @@ describe("a per-side hold", () => {
     expect(screen.getByText("0:30")).toBeTruthy();
     expect(playCue.mock.calls.map(([cue]) => cue).slice(4)).toEqual(["tick", "tick", "tick", "go"]);
 
-    // 46 s in, eleven into the second side: the full first side stands until the average of the
-    // two passes it, so stopping here does not log less than stopping at the switch.
+    // 46 s in, eleven into the second side: the weaker side is what the next target builds on.
     await act(() => {
       jest.advanceTimersByTime(11_000);
     });
     await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
-    expect(useSessionStore.getState().results[0]?.result.value).toBe(30);
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(11);
   });
 
   // The hero who stops on the first side because it hurts held what they held. Halving it would

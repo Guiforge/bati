@@ -35,17 +35,22 @@ export function sidePhase(remainingSeconds: number, sideSeconds: number): SidePh
 
 /**
  * The seconds a per-side hold logs: one side's worth, so the record, the ghost and the Journal
- * compare a side plank to the side planks before it.
+ * compare a side plank to the side planks before it. In coaching it is the weaker side that counts,
+ * so a short side is never hidden behind a full one.
  *
- * On the first side that is the time held, not half of it: a hero who stops at 25 s because the
- * shoulder hurt held 25 s, and halving it would write a false record exactly then. After it the
- * full first side stands until the average of the two sides passes it, so the figure never drops
- * while the hero keeps holding, which the ghost line and the crit odds both read live. The switch
- * is never counted.
+ * - On the first side, the time held. A hero who stops at 25 s because the shoulder hurt held 25 s.
+ * - During the switch, the full first side: the second was never started.
+ * - On the second side, short of the target, the second side: 30 s left then 8 s right is 8 s per
+ *   side, because that 8 is what the next target has to be built on.
+ * - Past it, the average of the two, so a longer second side still counts for something.
+ *
+ * The switch is never counted. The figure dips when the second side starts, and the screen says so
+ * honestly: the ghost line then compares the side in progress.
  */
 export function perSideHeldSeconds(elapsedSeconds: number, sideSeconds: number): number {
-  return Math.max(
-    Math.min(elapsedSeconds, sideSeconds),
-    Math.floor((elapsedSeconds - SIDE_SWITCH_SECONDS) / 2),
-  );
+  if (elapsedSeconds < sideSeconds) return elapsedSeconds;
+  const second = elapsedSeconds - sideSeconds - SIDE_SWITCH_SECONDS;
+  if (second < 0) return sideSeconds;
+  if (second < sideSeconds) return second;
+  return Math.floor((sideSeconds + second) / 2);
 }

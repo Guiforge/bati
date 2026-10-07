@@ -338,18 +338,27 @@ switch between them in the session, with the warm-up reading the same flag so th
 **Built** (`0068_one_side_then_the_other.sql`). `exercises.perSide` marks nine seed movements, and
 the target is **per side**. A timed slot runs side, 5 s switch, side (`src/perSide.ts`, set by
 `setTimer` in `stores/session.ts`); the numeral counts the phase in progress under "Side 1 of 2",
-"Switch sides", "Side 2 of 2". `useSideSwitch` vibrates at both ends of the switch and, with beeps
-on, plays 3-2-1 then `switch.wav` (two short beeps) into it and 3-2-1 then "go" out of it. The
-warm-up reads the same column through the same hook, with no switch (its sides are fifteen seconds
-of mobility). The journal logs one side's worth (`perSideHeldSeconds`): the time held while on the
-first side, then the full first side until the average of the two passes it, never the switch. A
-counted slot reads "Reps per side". Every surface that prints such a figure says "per side"
-(`perSideLabel` in `db/targets.ts`). Estimates count both sides and the switch.
+"Switch sides", "Side 2 of 2", and the exercise art turns to face the other way from the switch on.
+`useSideSwitch` vibrates at both ends of the switch and, with beeps on, plays 3-2-1 then
+`switch.wav` (two short beeps) into it and 3-2-1 then "go" out of it. The warm-up reads the same
+column through the same hook, with no switch (its sides are fifteen seconds of mobility).
+
+The journal logs one side's worth, the weaker one (`perSideHeldSeconds`): the time held on the
+first side, the full first side if stopped in the switch, the second side if it fell short, and
+the average of the two past the target. Never the switch. A counted slot reads "Reps per side".
+Every surface that prints such a figure says "per side" (`perSideLabel` in `db/targets.ts`), except
+the session's ghost line, whose caption right above already says it. Estimates count both sides and
+the switch.
 
 Known ambiguity, kept on purpose: results logged before `0068` were never told what the target
 meant, and are now read as per side. A hero who logged a total keeps an old best that may be twice
 a side. Migrating them would guess what each hero did; the first per-side session sets a fair
 ghost again. Left out: the flag on hero-made movements (the editor does not offer it yet).
+
+Release note for the version that ships it (into
+`fastlane/metadata/android/*/changelogs/<versionCode>.txt`): « Gainage latéral, squat pistolet,
+pigeon et 6 autres : l'objectif est par côté, avec 5 s et un double bip pour changer de côté. Tes
+anciens records sur ces mouvements sont lus par côté. »
 
 ### 4.3 The session becomes a mission — art, and the narrative out loud
 

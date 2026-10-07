@@ -209,6 +209,13 @@ describe("WarmupView", () => {
     await tickSeconds(15);
 
     expect(getByTestId("warmup-sides").props.children).toBe("session.switch_sides");
+
+    // The step's end is its "go", alone. When the next step is not per side the switch countdown
+    // stops, and it used to stop on the 0 that meant "no countdown": a switch cue 40 ms after the
+    // go, seen on the emulator, drowning it.
+    (playCue as jest.Mock).mockClear();
+    await tickSeconds(15);
+    expect(cues()).toEqual(["tick", "tick", "tick", "go"]);
   });
 
   it("shows the movement's description on the wait, before its clock runs", async () => {

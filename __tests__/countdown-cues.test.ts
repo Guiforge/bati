@@ -174,3 +174,31 @@ describe("useCountdownCues with another zero", () => {
     ]);
   });
 });
+
+describe("useCountdownCues with no countdown (null)", () => {
+  async function play(values: (number | null)[], zeroCue: "go" | "switch" = "go") {
+    const [first, ...rest] = values;
+    const { rerender } = await renderHook((v: number | null) => useCountdownCues(v, zeroCue), {
+      initialProps: first ?? null,
+    });
+    for (const v of rest) {
+      await act(async () => {
+        await rerender(v);
+      });
+    }
+    return mockedPlayCue.mock.calls.map(([cue]) => cue);
+  }
+
+  // Seen on the emulator: a per-side warm-up step ended, the next one was not per side, and the
+  // switch hook went from -15 to the 0 that used to mean "no countdown". Its cue landed 40 ms
+  // after the step's real "go" and drowned it.
+  test("a countdown that stops being one says nothing", async () => {
+    expect(await play([-14, -15, null], "switch")).toEqual([]);
+    expect(await play([12, null])).toEqual([]);
+  });
+
+  test("the countdown after it starts as a mount", async () => {
+    expect(await play([null, 0])).toEqual([]);
+    expect(await play([null, 5, 4, 3, 2, 1, 0])).toEqual(["tick", "tick", "tick", "go"]);
+  });
+});

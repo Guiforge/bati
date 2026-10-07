@@ -133,8 +133,9 @@ export function ActiveExerciseView() {
   const { remainingSeconds, elapsedSeconds, isOvertime, progress } = useSessionTimer();
   // An outing has nothing to announce. Left on the real count, this fired three ticks and a "go"
   // from a phone in a pocket at the target mark, while the hero was a third of the way round the
-  // lake. Zero is the value a rep-based set already parks on, which the hook is silent about.
-  useCountdownCues(isOuting ? 0 : remainingSeconds);
+  // lake. A counted set has no countdown either, and says so with null rather than the 0 its idle
+  // clock reads: swapping a hold for a counted movement mid-set made that 0 sound like the hold's.
+  useCountdownCues(isOuting || currentEx?.target.type !== "time" ? null : remainingSeconds);
   const targetValue = currentEx?.target.value ?? 0;
   // One side, a short switch, then the other (`0068`, `src/perSide.ts`): the store runs the
   // clock for all three, and the numeral counts down the phase in progress.

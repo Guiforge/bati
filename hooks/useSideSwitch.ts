@@ -23,8 +23,8 @@ export function useSideSwitch(
   sided: boolean,
 ): void {
   const { mediumImpact } = useHaptics();
-  useCountdownCues(sided ? remainingSeconds - sideSeconds - switchSeconds : 0, "switch");
-  useCountdownCues(sided && switchSeconds > 0 ? remainingSeconds - sideSeconds : 0, "go");
+  useCountdownCues(sided ? remainingSeconds - sideSeconds - switchSeconds : null, "switch");
+  useCountdownCues(sided && switchSeconds > 0 ? remainingSeconds - sideSeconds : null, "go");
 
   const previousRef = useRef(remainingSeconds);
   useEffect(() => {

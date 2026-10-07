@@ -60,7 +60,7 @@ export function RestView() {
   // Declared above the auto-advance effect below on purpose: on the render where the rest hits
   // zero, this one runs first, so the "go" starts before skipRest() unmounts the screen. No "go"
   // before a summary.
-  useCountdownCues(isFinal ? 0 : remainingSeconds);
+  useCountdownCues(isFinal ? null : remainingSeconds);
   const cue = useChorusStore((s) => s.cue);
   // During a rest this is the movement *about to start* — `completeExercise` advances the index
   // before handing over — which is exactly the one the "up next" card names.

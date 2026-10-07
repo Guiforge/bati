@@ -287,26 +287,40 @@ describe("a per-side hold", () => {
           | { scaleX?: number }[]
           | undefined
       )?.[0]?.scaleX;
-    expect(screen.getByTestId("session-side").props.children).toBe("Side 1 of 2");
+    const sideLine = () => screen.getByTestId("session-side").props.children;
+    expect(sideLine()).toBe("Side 1 of 2");
     expect(screen.getByText("left of 30s per side")).toBeTruthy();
+    // On the first side the hint says what comes next, not that the clock runs on past it.
+    expect(screen.getByText("When this side ends, 8 s to switch.")).toBeTruthy();
     expect(scaleX()).toBe(1);
 
-    await tick(30);
-    expect(screen.getByTestId("session-side").props.children).toBe("Switch sides");
+    // The switch is announced before it comes.
+    await tick(25);
+    expect(sideLine()).toBe("Get ready to switch sides");
+
+    await tick(5);
+    // A word where the timer was, and nothing that says a side is being timed.
+    expect(screen.getByTestId("session-switch-title").props.children).toBe("Switch sides");
+    expect(screen.getByTestId("session-side-two-in").props.children).toBe("Side 2 in 8 s");
+    expect(screen.queryByTestId("session-side")).toBeNull();
+    expect(screen.queryByText("0:08")).toBeNull();
+    expect(screen.queryByText("left of 30s per side")).toBeNull();
+    expect(screen.queryByText("Keep going! Timer continues after target.")).toBeNull();
     // The figure turns at the switch, so the hero sees the second side while getting into it.
     expect(scaleX()).toBe(-1);
-    expect(screen.getByText("0:08")).toBeTruthy();
-    expect(screen.queryByText("left of 30s per side")).toBeNull();
     expect(playCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "switch"]);
 
     await tick(8);
-    expect(screen.getByTestId("session-side").props.children).toBe("Side 2 of 2");
+    expect(sideLine()).toBe("Go, side 2");
     expect(screen.getByText("0:30")).toBeTruthy();
     expect(playCue.mock.calls.map(([cue]) => cue).slice(4)).toEqual(["tick", "tick", "tick", "go"]);
 
+    await tick(3);
+    expect(sideLine()).toBe("Side 2 of 2");
+
     // 49 s in, eleven into the second side: the weaker side is what the next target builds on.
     await act(() => {
-      jest.advanceTimersByTime(11_000);
+      jest.advanceTimersByTime(8_000);
     });
     await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
     expect(useSessionStore.getState().results[0]?.result.value).toBe(11);

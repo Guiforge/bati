@@ -28,7 +28,13 @@ import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionT
 import { useSetAside } from "@/hooks/useSetAside";
 import { useSideSwitch } from "@/hooks/useSideSwitch";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
-import { perSideSet, SIDE_SWITCH_SECONDS, sidePhase } from "@/src/perSide";
+import {
+  perSideSet,
+  SECOND_SIDE_GRACE_SECONDS,
+  SIDE_SWITCH_SECONDS,
+  sidePhase,
+} from "@/src/perSide";
+
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -42,6 +48,9 @@ import { GhostLine } from "./GhostLine";
 import { LiveMap } from "./LiveMap";
 import { sessionArtHeight } from "./sessionArt";
 import { TimerBar } from "./TimerBar";
+
+/** How long before the switch the first side says it is coming. */
+const SIDE_SWITCH_WARNING_SECONDS = 5;
 
 /**
  * A tap aimed at the previous screen's button (GO, "I'm ready") that arrives just after it
@@ -125,6 +134,14 @@ export function ActiveExerciseView() {
   const side = perSideHold && clockStarted ? sidePhase(remainingSeconds, targetValue) : null;
   /** What the numeral counts down: the side in progress, not the whole clock. */
   const sideRemainingSeconds = side ? side.seconds : remainingSeconds;
+  // The switch read as a timer: a 0:08 counting down where the second side's clock would be, under
+  // "keep going, the clock runs past the target". The product owner tried it and could not tell
+  // which side he was on. So it is announced before it comes, says what it is while it lasts, and
+  // the second side is greeted when it starts (audit of 2026-10-07, option B).
+  const inSwitch = side?.phase === "switch";
+  const switchSoon = side?.phase === "first" && side.seconds <= SIDE_SWITCH_WARNING_SECONDS;
+  const secondSideStarting =
+    side?.phase === "second" && targetValue - side.seconds < SECOND_SIDE_GRACE_SECONDS;
   useSideSwitch(remainingSeconds, targetValue, SIDE_SWITCH_SECONDS, perSideHold);
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
   // Counts ± taps, and keys the numeral's bounce. Keyed on the count itself, a typed "150"
@@ -495,7 +512,7 @@ export function ActiveExerciseView() {
             {/* No label row: the numeral below is the same figure at 72px. */}
             <TimerBar
               value={progress}
-              fill={isOvertime ? "$success" : "$primary"}
+              fill={isOvertime ? "$success" : inSwitch ? "$warning" : "$primary"}
               fillOpacity={isOvertime ? 0.9 : 1}
               bg="$surface2"
             />
@@ -652,41 +669,69 @@ export function ActiveExerciseView() {
                       </>
                     ) : (
                       <>
-                        {/* Normal countdown */}
-                        <H1
-                          fontSize={72}
-                          lineHeight={80}
-                          fontWeight="700"
-                          fontFamily="$body"
-                          fontVariant={["tabular-nums"]}
-                          color="$text"
-                        >
-                          {formatTime(sideRemainingSeconds)}
-                        </H1>
+                        {/* The switch takes the numeral's box, so nothing below moves: a word where
+                            a timer was is what tells the hero no side is being timed. */}
+                        {inSwitch ? (
+                          <H1
+                            testID="session-switch-title"
+                            fontSize={44}
+                            lineHeight={80}
+                            fontWeight="700"
+                            fontFamily="$body"
+                            color="$warning"
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                          >
+                            {t("session.switch_sides")}
+                          </H1>
+                        ) : (
+                          // Normal countdown
+                          <H1
+                            fontSize={72}
+                            lineHeight={80}
+                            fontWeight="700"
+                            fontFamily="$body"
+                            fontVariant={["tabular-nums"]}
+                            color="$text"
+                          >
+                            {formatTime(sideRemainingSeconds)}
+                          </H1>
+                        )}
                         {/* Not "Seconds". The number counts *down* to the target, and the hint
                             below it talks about carrying on past that target, so a caption that
                             only named the unit left the two readings of 0:24 (elapsed? left?)
                             equally available. The audit of 2026-09-10 read it as counting up. */}
                         {/* Not during the switch: its five seconds are not "left of 20 s per
                             side", and the line under the numeral already says what they are. */}
-                        {side?.phase === "switch" ? null : (
+                        {side?.phase === "switch" ? (
+                          <Text
+                            testID="session-side-two-in"
+                            fontSize={20}
+                            fontWeight="700"
+                            color="$text"
+                          >
+                            {t("session.side_two_in", { seconds: side.seconds })}
+                          </Text>
+                        ) : (
                           <Paragraph fontWeight="700" color="$textSecondary">
                             {t("session.seconds_left_of", {
                               target: formatSlotTarget(currentEx, language),
                             })}
                           </Paragraph>
                         )}
-                        {side ? (
+                        {side && !inSwitch ? (
                           <Text
                             testID="session-side"
-                            // Bigger at the switch: it is read from the floor, mid-move.
-                            fontSize={side.phase === "switch" ? 20 : 14}
+                            // Bigger when it announces something: it is read from the floor.
+                            fontSize={switchSoon || secondSideStarting ? 20 : 14}
                             fontWeight="700"
-                            color={side.phase === "switch" ? "$warning" : "$text"}
+                            color={switchSoon || secondSideStarting ? "$warning" : "$text"}
                           >
-                            {side.phase === "switch"
-                              ? t("session.switch_sides")
-                              : t("session.side_of", { side: side.phase === "first" ? 1 : 2 })}
+                            {switchSoon
+                              ? t("session.side_switch_soon")
+                              : secondSideStarting
+                                ? t("session.side_two_go")
+                                : t("session.side_of", { side: side.phase === "first" ? 1 : 2 })}
                           </Text>
                         ) : null}
                       </>
@@ -768,18 +813,23 @@ export function ActiveExerciseView() {
             {/* Hint for time-based exercises. In a fight the same overshoot rule applies to a
                 hold as to a rep, and the seconds past the target are exactly the moment the hero
                 is deciding about: the crit line replaces the generic one there. */}
-            {isTimeBased && !isOuting && (
+            {/* Not during the switch: "the clock keeps running past the target" and the crit odds
+                both say a side is being timed, and none is. On the first side the plain hint is
+                wrong too (the clock does not run on past it), so it says what comes next. */}
+            {isTimeBased && !isOuting && !inSwitch && (
               <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {fightLive
-                  ? t("session.crit_hint_time", {
-                      percent: Math.round(
-                        critChance(
-                          heldSeconds(elapsedSeconds, perSideHold, currentEx.target.value),
-                          currentEx.target.value,
-                        ) * 100,
-                      ),
-                    })
-                  : t("session.keep_going_hint")}
+                {side?.phase === "first" && !fightLive
+                  ? t("session.side_switch_ahead", { seconds: SIDE_SWITCH_SECONDS })
+                  : fightLive
+                    ? t("session.crit_hint_time", {
+                        percent: Math.round(
+                          critChance(
+                            heldSeconds(elapsedSeconds, perSideHold, currentEx.target.value),
+                            currentEx.target.value,
+                          ) * 100,
+                        ),
+                      })
+                    : t("session.keep_going_hint")}
               </Text>
             )}
 

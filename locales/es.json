@@ -305,6 +305,8 @@
     "favourite_remove": "Quitar de arriba",
     "goal_sheet_title": "¿Cuánto tiempo o qué distancia?",
     "goal_sheet_custom": "Otro",
+    "goal_usual": "Lo de siempre · {{value}}",
+    "goal_longest_run": "Tu carrera más larga este mes: {{longest}}. Tu cuerpo lo lleva mejor por debajo de {{ceiling}}.",
     "goal_sheet_custom_hint": "Introduce tu propio valor",
     "goal_sheet_open": "Ajustar la salida",
     "share_quest": "Compartir la misión",

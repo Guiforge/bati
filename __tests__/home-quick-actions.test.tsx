@@ -103,6 +103,12 @@ jest.mock("@/db/outings", () => ({
   listOutings: () => mockListOutings(),
 }));
 
+jest.mock("@/db/outingHabit", () => ({
+  NO_HABIT: { usual: null, longestM: null },
+  LONGEST_RUN_CEILING: 1.1,
+  getOutingHabit: () => Promise.resolve({ usual: null, longestM: null }),
+}));
+
 const mockRecentSessions = jest.fn();
 
 jest.mock("@/db/completed", () => ({

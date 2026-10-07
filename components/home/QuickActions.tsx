@@ -454,6 +454,7 @@ export function QuickActions() {
           }}
           goal={goals[goalFor] ?? FALLBACK_GOAL}
           unit={unit}
+          locomotion={outings.find((o) => o.quest.id === goalFor)?.exercise.locomotion ?? null}
           onPick={(goal) => {
             saveGoal(goalFor, goal).catch((error) => reportError("home.saveGoal", error));
           }}

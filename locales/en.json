@@ -300,6 +300,8 @@
     "favourite_remove": "Unpin",
     "goal_sheet_title": "How long, or how far",
     "goal_sheet_custom": "Other",
+    "goal_usual": "As usual · {{value}}",
+    "goal_longest_run": "Your longest run this month: {{longest}}. Your body copes better with one under {{ceiling}}.",
     "goal_sheet_custom_hint": "Enter your own value",
     "goal_sheet_open": "Set up the outing",
     "share_quest": "Share this quest",

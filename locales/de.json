@@ -300,6 +300,8 @@
     "favourite_remove": "Nicht mehr anheften",
     "goal_sheet_title": "Wie lange oder wie weit",
     "goal_sheet_custom": "Andere",
+    "goal_usual": "Wie immer · {{value}}",
+    "goal_longest_run": "Dein längster Lauf diesen Monat: {{longest}}. Dein Körper verkraftet einen Lauf unter {{ceiling}} besser.",
     "goal_sheet_custom_hint": "Gib deinen eigenen Wert ein",
     "goal_sheet_open": "Tour einrichten",
     "share_quest": "Quest teilen",

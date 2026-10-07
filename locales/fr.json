@@ -759,6 +759,8 @@
     "favourite_remove": "Retirer l'épingle",
     "goal_sheet_title": "Combien de temps, ou quelle distance",
     "goal_sheet_custom": "Autre",
+    "goal_usual": "Comme d'habitude · {{value}}",
+    "goal_longest_run": "Ta plus longue course ce mois-ci : {{longest}}. Ton corps encaisse mieux une sortie sous {{ceiling}}.",
     "goal_sheet_custom_hint": "Entre ta propre valeur",
     "goal_sheet_open": "Régler la sortie",
     "share_quest": "Partager la quête",

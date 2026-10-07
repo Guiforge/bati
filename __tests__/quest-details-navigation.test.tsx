@@ -94,6 +94,12 @@ jest.mock("@/db", () => ({
   TARGET_RANGE: { min: 1, max: 999 },
 }));
 
+jest.mock("@/db/outingHabit", () => ({
+  NO_HABIT: { usual: null, longestM: null },
+  LONGEST_RUN_CEILING: 1.1,
+  getOutingHabit: () => Promise.resolve({ usual: null, longestM: null }),
+}));
+
 jest.mock("@/db/exercises", () => ({
   listExercises: jest.fn().mockResolvedValue([]),
 }));

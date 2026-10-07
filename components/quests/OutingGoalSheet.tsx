@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -8,9 +8,12 @@ import { Chip } from "@/components/common/Chip";
 import { X } from "@/components/icons";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db/estimate";
+import { getOutingHabit, LONGEST_RUN_CEILING, NO_HABIT, type OutingHabit } from "@/db/outingHabit";
 import type { DistanceUnit } from "@/db/preferences";
+import type { Locomotion } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { OutingGoal } from "@/src/gps/track";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 /**
@@ -18,18 +21,31 @@ import { useSettingsStore } from "@/stores/settings";
  * kilometres. The stepper this replaces moved in five-second steps, so 15 min to 45 min was
  * 360 taps and 21.1 km was not on its grid at all.
  */
-const DURATION_PRESETS_SECONDS = [20, 30, 45, 60].map((minutes) => minutes * 60);
+const minutes = (list: number[]) => list.map((m) => m * 60);
+
+/** A ride's hour is a short one: thirty minutes on a bike is the walk to the bakery. */
+const DURATION_PRESETS_SECONDS: Record<Locomotion, number[]> = {
+  walk: minutes([20, 30, 45, 60]),
+  run: minutes([20, 30, 45, 60]),
+  ride: minutes([30, 60, 90, 120]),
+};
 
 /**
- * The same three races in both unit systems, stored in metres because metres are the only
- * storage unit (`constants/distanceFormat.ts`). 5 km / 10 km / half marathon reads as
- * 3 mi / 6 mi / 13.1 mi for an imperial hero: the round numbers of that system, at the same
- * distances, rather than "3.11 mi" for a 5 km nobody there would name that way.
+ * Round numbers per kind of outing, in both unit systems, stored in metres because metres are
+ * the only storage unit (`constants/distanceFormat.ts`). A run reads the three races (5 km /
+ * 10 km / half marathon, 3 / 6 / 13.1 mi); a walk and a ride read what each actually goes out
+ * for. One list for all three offered a cyclist a fifteen-minute 5 km and a walker a half
+ * marathon. The imperial values are the round numbers of that system, not "3.11 mi" for a 5 km.
  */
-const DISTANCE_PRESETS_M: Record<DistanceUnit, number[]> = {
-  metric: [5000, 10_000, 21_100],
-  imperial: [4828, 9656, 21_082],
+const DISTANCE_PRESETS_M: Record<Locomotion, Record<DistanceUnit, number[]>> = {
+  walk: { metric: [3000, 5000, 10_000], imperial: [3219, 4828, 9656] },
+  run: { metric: [5000, 10_000, 21_100], imperial: [4828, 9656, 21_082] },
+  ride: { metric: [15_000, 30_000, 50_000], imperial: [16_093, 32_187, 48_280] },
 };
+
+/** A habit read back as a goal: a tenth of a kilometre or a whole minute, not "5.23 km". */
+const roundMetres = (metres: number) => Math.max(100, Math.round(metres / 100) * 100);
+const roundSeconds = (seconds: number) => Math.max(60, Math.round(seconds / 60) * 60);
 
 /**
  * ponytail: second copy of the mile, `constants/distanceFormat.ts` holds the first and owns the
@@ -47,6 +63,11 @@ type Props = {
    */
   goal: OutingGoal;
   unit: DistanceUnit;
+  /**
+   * What the outing is, which picks the presets and whose history is the habit. `null` is a
+   * mixed quest (`outingLocomotion`): it gets the run presets it always had, and no habit.
+   */
+  locomotion: Locomotion | null;
   /** One goal at a time: the caller writes a duration or a distance, never both. */
   onPick: (goal: OutingGoal) => void;
 };
@@ -56,7 +77,7 @@ type Props = {
  * which is not a preference: with the drag on, the pane drifts off its snap point and a close
  * leaves the frame painted where it drifted, taps falling through to the screen behind.
  */
-export function OutingGoalSheet({ open, onOpenChange, goal, unit, onPick }: Props) {
+export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, onPick }: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const language = useSettingsStore((s) => s.language);
@@ -66,6 +87,16 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, onPick }: Prop
   // to ignore, and yesterday's half-typed number is not still in the box.
   const [tab, setTab] = useState<OutingGoal["type"]>(goal.type);
   const [custom, setCustom] = useState("");
+  // Read on every open, never cached: the habit is the journal's, and a run deleted there must
+  // stop being "usual" here the next time the sheet opens.
+  const [habit, setHabit] = useState<OutingHabit>(NO_HABIT);
+  useEffect(() => {
+    if (locomotion === null) return;
+    getOutingHabit(locomotion)
+      .then(setHabit)
+      .catch((e) => reportError("goalSheet.habit", e));
+  }, [locomotion]);
+  const kind = locomotion ?? "run";
 
   // Same lesson as the picker: the sheet leaves, its input keeps the focus, and every keystroke
   // aimed at the screen behind lands in a box nobody can see.
@@ -92,17 +123,40 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, onPick }: Prop
 
   const durationTab = tab === "time";
   const unitWord = durationTab ? "min" : unit === "imperial" ? "mi" : "km";
-  const presets: { key: number; label: string; goal: OutingGoal }[] = durationTab
-    ? DURATION_PRESETS_SECONDS.map((seconds) => ({
-        key: seconds,
-        label: formatDuration(seconds, language),
-        goal: { type: "time", seconds },
-      }))
-    : DISTANCE_PRESETS_M[unit].map((metres) => ({
-        key: metres,
-        label: formatDistance(metres, unit, language),
-        goal: { type: "distance", metres },
-      }));
+  const asTime = (seconds: number): OutingGoal => ({ type: "time", seconds });
+  const asDistance = (metres: number): OutingGoal => ({ type: "distance", metres });
+  const labelOf = (g: OutingGoal) =>
+    g.type === "time"
+      ? formatDuration(g.seconds, language)
+      : formatDistance(g.metres, unit, language);
+
+  const fixed = durationTab
+    ? DURATION_PRESETS_SECONDS[kind].map(asTime)
+    : DISTANCE_PRESETS_M[kind][unit].map(asDistance);
+  const presets: { key: string; label: string; goal: OutingGoal }[] = fixed.map((g) => ({
+    key: labelOf(g),
+    label: labelOf(g),
+    goal: g,
+  }));
+
+  // First, ahead of the round numbers: what this hero already does. Never "+10%", which proposed
+  // on every outing doubles a distance in seven of them.
+  if (habit.usual !== null) {
+    const usual = durationTab
+      ? asTime(roundSeconds(habit.usual.seconds))
+      : asDistance(roundMetres(habit.usual.metres));
+    presets.unshift({
+      key: "usual",
+      label: t("quests.goal_usual", { value: labelOf(usual) }),
+      goal: usual,
+    });
+  }
+
+  // The ceiling, shown before the choice rather than after it: picking a chip closes the sheet,
+  // so a warning on the chosen goal would never be read. Runs only, because that is what the
+  // study measured; nothing equivalent exists for walking or riding.
+  const longestRun =
+    kind === "run" && !durationTab && habit.longestM !== null ? habit.longestM : null;
 
   return (
     <Sheet
@@ -165,6 +219,15 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, onPick }: Prop
               />
             ))}
           </XStack>
+
+          {longestRun === null ? null : (
+            <Text testID="goal-longest-run" fontSize={13} color="$textSecondary">
+              {t("quests.goal_longest_run", {
+                longest: formatDistance(longestRun, unit, language),
+                ceiling: formatDistance(longestRun * LONGEST_RUN_CEILING, unit, language),
+              })}
+            </Text>
+          )}
 
           <YStack gap="$2">
             <Text fontWeight="700" fontSize={15} color="$text">

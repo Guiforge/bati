@@ -423,6 +423,16 @@ describe("ExpeditionPanel", () => {
     expect(screen.getByText("of 5.00 km")).toBeTruthy();
   });
 
+  // `goalReached` reads moving seconds. On the recorded total, red lights filled the bar minutes
+  // before the goal was met.
+  test("a time goal's bar fills on moving time, the clock the goal is met on", async () => {
+    setSession({ type: "time", seconds: 600 }, 900_000);
+    setTrack(walked(900, 300, 1000));
+    await mount();
+    const bar = screen.getByTestId("expedition-goal-fill");
+    expect(bar.props.style.width).toBe("50%");
+  });
+
   test("a free outing has no goal to show", async () => {
     setTrack(walked(600, 600, 2500));
     await mount();

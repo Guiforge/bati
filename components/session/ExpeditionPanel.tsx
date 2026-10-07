@@ -14,6 +14,7 @@ import {
   rateKind,
 } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db/estimate";
+import { outingLocomotion } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
@@ -152,7 +153,9 @@ function GoalBar({
   // A free outing has nothing to measure against.
   if (goal === null) return null;
   const distance = goal.type === "distance";
-  const share = Math.min(1, distance ? metres / goal.metres : seconds / goal.seconds);
+  const target = distance ? goal.metres : goal.seconds;
+  // A typed goal can round to zero; an empty bar beats a NaN width.
+  const share = target > 0 ? Math.min(1, (distance ? metres : seconds) / target) : 0;
   const label = distance
     ? formatDistance(goal.metres, unit, language)
     : formatDuration(goal.seconds, language);
@@ -161,6 +164,7 @@ function GoalBar({
       <YStack height={4} rounded="$10" bg="$bgOverlay" overflow="hidden">
         <YStack
           height={4}
+          testID="expedition-goal-fill"
           width={`${share * 100}%`}
           bg={reached ? "$success" : "$text"}
           opacity={reached ? 1 : 0.55}
@@ -203,9 +207,13 @@ export function ExpeditionPanel() {
   const unit = useSettingsStore((state) => state.distanceUnit);
   const language = useSettingsStore((state) => state.language);
   const goal = useSessionStore((state) => state.goal);
-  /** The slot being travelled, not the quest's cheapest: a ride slot reads km/h whatever else is in the quest. */
-  const locomotion = useSessionStore(
-    (state) => state.quest?.exercises[state.currentExerciseIndex]?.exercise.locomotion ?? null,
+  /**
+   * The same answer the saved row's `outing` holds, so the speed read here is the shape the
+   * victory screen, the recap and the journal print afterwards. Read per slot, a ride leg of a
+   * walk-and-ride quest showed km/h live and a pace for the same outing one screen later.
+   */
+  const locomotion = useSessionStore((state) =>
+    state.quest === null ? null : outingLocomotion(state.quest),
   );
 
   /**
@@ -272,7 +280,14 @@ export function ExpeditionPanel() {
       </Text>
 
       {acquiring ? null : (
-        <GoalBar goal={goal} metres={track.distanceM} seconds={recorded} reached={goalReached} />
+        // Moving seconds, the clock `goalReached` reads: the recorded total counts red lights,
+        // and filled the bar minutes before the goal was met.
+        <GoalBar
+          goal={goal}
+          metres={track.distanceM}
+          seconds={Math.floor(track.movingMs / 1000)}
+          reached={goalReached}
+        />
       )}
 
       {/* Two values, never three: the total in 56px and the moving time in 24 are two durations

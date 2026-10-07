@@ -15,7 +15,7 @@ import { fade, rawColors } from "@/constants/rawColors";
 import { getRecentSessionHistory } from "@/db/completed";
 import { formatDurationEstimate } from "@/db/estimate";
 import { listExercises } from "@/db/exercises";
-import { hasOutdoorSlot, outingGoal, withOutingGoal } from "@/db/expeditions";
+import { cheapestLocomotion, hasOutdoorSlot, outingGoal, withOutingGoal } from "@/db/expeditions";
 import { listOutings, type Outing } from "@/db/outings";
 import { previewOutingGoal } from "@/db/preview";
 import {
@@ -454,7 +454,11 @@ export function QuickActions() {
           }}
           goal={goals[goalFor] ?? FALLBACK_GOAL}
           unit={unit}
-          locomotion={outings.find((o) => o.quest.id === goalFor)?.exercise.locomotion ?? null}
+          // Through the rule the quest screen's door uses, so both offer the same presets: an
+          // outdoor movement that never said becomes a walk there, and must here too.
+          locomotion={cheapestLocomotion(
+            outings.filter((o) => o.quest.id === goalFor).map((o) => o.exercise),
+          )}
           onPick={(goal) => {
             saveGoal(goalFor, goal).catch((error) => reportError("home.saveGoal", error));
           }}

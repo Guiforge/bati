@@ -288,6 +288,9 @@ describe("a per-side hold", () => {
           | undefined
       )?.[0]?.scaleX;
     const sideLine = () => screen.getByTestId("session-side").props.children;
+    const glow = () =>
+      StyleSheet.flatten(screen.getByTestId("session-switch-glow").props.style).opacity;
+    expect(glow()).toBe(0);
     expect(sideLine()).toBe("Side 1 of 2");
     expect(screen.getByText("left of 30s per side")).toBeTruthy();
     // On the first side the hint says what comes next, not that the clock runs on past it.
@@ -297,10 +300,14 @@ describe("a per-side hold", () => {
     // The switch is announced before it comes.
     await tick(25);
     expect(sideLine()).toBe("Get ready to switch sides");
+    // The edges light up with it.
+    expect(glow()).toBe(1);
 
     await tick(5);
     // A word where the timer was, and nothing that says a side is being timed.
     expect(screen.getByTestId("session-switch-title").props.children).toBe("Switch sides");
+    // And go out when the switch starts: the change itself is the signal.
+    expect(glow()).toBe(0);
     expect(screen.getByTestId("session-side-two-in").props.children).toBe("Side 2 in 8 s");
     expect(screen.queryByTestId("session-side")).toBeNull();
     expect(screen.queryByText("0:08")).toBeNull();

@@ -46,6 +46,7 @@ import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { ExpeditionPanel } from "./ExpeditionPanel";
 import { GhostLine } from "./GhostLine";
 import { LiveMap } from "./LiveMap";
+import { SwitchGlow } from "./SwitchGlow";
 import { sessionArtHeight } from "./sessionArt";
 import { TimerBar } from "./TimerBar";
 
@@ -950,6 +951,9 @@ export function ActiveExerciseView() {
         bottomInset={insets.bottom}
         pickAction={null}
       />
+
+      {/* Last, so it lies over everything, and touches nothing. */}
+      <SwitchGlow visible={switchSoon} reducedMotion={reducedMotion} />
     </YStack>
   );
 }

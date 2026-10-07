@@ -11,7 +11,7 @@ import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { getExerciseThumb } from "@/constants/assetMap";
 import type { CompletedExerciseInput } from "@/db/completed";
-import { targetRangeFor } from "@/db/targets";
+import { formatSlotTarget, targetRangeFor } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -324,9 +324,7 @@ export function RestView() {
                     {nextExName}
                   </Text>
                   <Text color="$textSecondary">
-                    {nextEx?.target.type === "time"
-                      ? `${nextEx.target.value}s`
-                      : `${nextEx?.target.value ?? 0} reps`}
+                    {nextEx ? formatSlotTarget(nextEx, language) : null}
                   </Text>
                 </YStack>
               </XStack>

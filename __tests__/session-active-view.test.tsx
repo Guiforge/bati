@@ -249,3 +249,46 @@ describe("Done is a seal", () => {
     expect(screen.getByText("Finish")).toHaveStyle({ color: rawColors.bgDark });
   });
 });
+
+describe("a per-side hold", () => {
+  const sidePlank = {
+    ...quest,
+    exercises: [
+      {
+        exercise: { ...exercise(3, "Side Plank"), perSide: true },
+        target: { type: "time", value: 30 },
+      },
+    ],
+  } as unknown as Quest;
+
+  // The store runs twice the target (`setTimer`); the view counts each side down, beeps the
+  // switch at halfway rather than the end-of-set "go", and logs one side's worth.
+  test("counts each side, beeps the switch at halfway, and logs per side", async () => {
+    const { playCue } = jest.requireMock("@/src/sounds") as { playCue: jest.Mock };
+    jest.useFakeTimers();
+    await mount(null, sidePlank);
+    await act(() => {
+      useSettingsStore.setState({ soundEnabled: true });
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 60 });
+    });
+    expect(screen.getByText("Side 1 of 2")).toBeTruthy();
+    expect(screen.getByText("left of 30s per side")).toBeTruthy();
+
+    // A second at a time: one big jump lands in one render, which the hook answers with the zero
+    // alone, as it does for a phone that slept through the ticks.
+    for (let second = 0; second < 30; second++) {
+      await act(() => {
+        jest.advanceTimersByTime(1_000);
+      });
+    }
+    expect(screen.getByText("Side 2 of 2")).toBeTruthy();
+    expect(screen.getByText("0:30")).toBeTruthy();
+    expect(playCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "switch"]);
+
+    await act(() => {
+      jest.advanceTimersByTime(11_000);
+    });
+    await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(20);
+  });
+});

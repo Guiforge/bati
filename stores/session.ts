@@ -526,16 +526,27 @@ function advanceAfterSet(
     };
   }
 
-  const nextExDef = quest.exercises[nextExercise];
-  const isNextTimeBased = nextExDef?.target.type === "time";
-
   return {
     status: "running",
     results,
     currentRoundIndex: nextRound,
     currentExerciseIndex: nextExercise,
-    timerStartTimestamp: isNextTimeBased ? Date.now() : null,
-    timerDuration: isNextTimeBased ? nextExDef.target.value : 0,
+    ...setTimer(quest.exercises[nextExercise]),
+  };
+}
+
+/**
+ * The clock a set starts with: a hold counts its target down, a counted set runs no clock.
+ *
+ * A per-side hold (`0068`) runs the target twice, once for each side, and the view beeps the switch
+ * at halfway. Every door into a set goes through here, so no door can start a side plank on half
+ * its time.
+ */
+function setTimer(slot: { target: Target; exercise: Pick<Exercise, "perSide"> } | undefined) {
+  if (slot?.target.type !== "time") return { timerStartTimestamp: null, timerDuration: 0 };
+  return {
+    timerStartTimestamp: Date.now(),
+    timerDuration: slot.target.value * (slot.exercise.perSide ? 2 : 1),
   };
 }
 
@@ -950,13 +961,9 @@ async function dealFinalBlow(
  * and the view then hands `completeExercise` a single second.
  */
 function runningFrom(quest: Quest, currentExerciseIndex: number) {
-  const firstEx = quest.exercises[currentExerciseIndex];
-  const isTimeBased = firstEx?.target.type === "time";
-
   return {
     status: "running" as const,
-    timerStartTimestamp: isTimeBased ? Date.now() : null,
-    timerDuration: isTimeBased ? firstEx.target.value : 0,
+    ...setTimer(quest.exercises[currentExerciseIndex]),
   };
 }
 
@@ -1370,17 +1377,11 @@ export const useSessionStore = create<SessionState>()(
             }
           : bossFight;
 
-      // Get target duration for first exercise in round (if time-based)
-      const firstExercise = quest.exercises[0];
-      const isTimeBased = firstExercise?.target.type === "time";
-      const targetDuration = isTimeBased ? firstExercise.target.value : 0;
-
       set({
         status: "running",
         prePauseStatus: null,
         currentExerciseIndex: 0,
-        timerStartTimestamp: isTimeBased ? Date.now() : null,
-        timerDuration: targetDuration,
+        ...setTimer(quest.exercises[0]),
         results: resultsForPriorRounds,
         pendingDamage: keptDamage,
         bossFight: restoredFight,
@@ -1582,16 +1583,9 @@ export const useSessionStore = create<SessionState>()(
       // Every other entry into a movement sets this pair, and the two units are not
       // interchangeable: a hold timer left running on a rep movement counts nothing down, and reps
       // arrived at with no timer would show seconds that never started.
-      const isTimeBased = target.type === "time";
-
       set({
         quest: { ...quest, exercises },
-        ...(status === "running"
-          ? {
-              timerStartTimestamp: isTimeBased ? Date.now() : null,
-              timerDuration: isTimeBased ? target.value : 0,
-            }
-          : {}),
+        ...(status === "running" ? setTimer({ target, exercise }) : {}),
       });
 
       // Deliberately not written to the quest's saved config, unlike the same sheet on the quest
@@ -1643,7 +1637,6 @@ export const useSessionStore = create<SessionState>()(
       if (unanswered?.target) get().updateLastResult(unanswered.target.value);
 
       const nextExDef = quest.exercises[currentExerciseIndex];
-      const isNextTimeBased = nextExDef?.target.type === "time";
 
       // The single exit from `resting` — the skip button and RestView's auto-advance at 0:00 both
       // land here — so it is the one place rest gets measured. `timerStartTimestamp` is pushed
@@ -1669,8 +1662,7 @@ export const useSessionStore = create<SessionState>()(
       set({
         status: "running",
         restTakenSeconds: restTakenSeconds + restTaken,
-        timerStartTimestamp: isNextTimeBased ? Date.now() : null,
-        timerDuration: isNextTimeBased ? nextExDef.target.value : 0,
+        ...setTimer(nextExDef),
       });
     },
 

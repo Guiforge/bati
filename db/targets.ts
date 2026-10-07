@@ -214,6 +214,20 @@ export function formatTarget(target: Target, language: AppLanguage): string {
   return target.type === "time" ? value : `${value} ${REPS_WORD[language]}`;
 }
 
+const PER_SIDE: Localized = { en: "per side", fr: "par côté", de: "pro Seite", es: "por lado" };
+
+/**
+ * A slot's target, with "per side" when its movement is done one side then the other (`0068`).
+ * The figure is per side either way: that is what the session counts and what the Journal logs.
+ */
+export function formatSlotTarget(
+  slot: { target: Target; exercise: { perSide: boolean } },
+  language: AppLanguage,
+): string {
+  const target = formatTarget(slot.target, language);
+  return slot.exercise.perSide ? `${target} ${PER_SIDE[language]}` : target;
+}
+
 /**
  * How much of a quest's prescribed range the hero actually gets. Also what a boss's HP pool is
  * scaled by — damage *is* the work you did, so a pool tuned at one level is unreachable at

@@ -27,6 +27,7 @@ const exercise = (id: number, over: Partial<Exercise> = {}): Exercise => ({
   muscles: [],
   pattern: null,
   measure: "reps",
+  perSide: false,
   locomotion: null,
   prerequisiteExerciseId: null,
   retiredAt: null,

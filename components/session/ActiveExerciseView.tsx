@@ -19,13 +19,14 @@ import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
-import { formatTarget, TARGET_RANGE } from "@/db/targets";
+import { formatSlotTarget, TARGET_RANGE } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSetAside } from "@/hooks/useSetAside";
+import { useSideSwitch } from "@/hooks/useSideSwitch";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -47,6 +48,14 @@ import { TimerBar } from "./TimerBar";
  * exercise becomes active.
  */
 const DONE_GUARD_MS = 700;
+
+/**
+ * The seconds a hold counts for. A per-side hold logs one side's worth: the target is per side, so
+ * the record, the ghost and the Journal compare a side plank to the side planks before it.
+ */
+function heldSeconds(elapsedSeconds: number, perSide: boolean): number {
+  return perSide ? Math.floor(elapsedSeconds / 2) : elapsedSeconds;
+}
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
 export function ActiveExerciseView() {
@@ -110,6 +119,13 @@ export function ActiveExerciseView() {
   // lake. Zero is the value a rep-based set already parks on, which the hook is silent about.
   useCountdownCues(isOuting ? 0 : remainingSeconds);
   const targetValue = currentEx?.target.value ?? 0;
+  // One side, then the other (`0068`): the store runs the clock for twice the target, and the
+  // first half counts down to the switch.
+  const perSideHold = !isOuting && currentEx?.target.type === "time" && currentEx.exercise.perSide;
+  const onFirstSide = perSideHold && remainingSeconds > targetValue;
+  /** What the numeral counts down: the side in progress, not the two together. */
+  const sideRemainingSeconds = onFirstSide ? remainingSeconds - targetValue : remainingSeconds;
+  useSideSwitch(remainingSeconds, targetValue, perSideHold);
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
   // Counts ± taps, and keys the numeral's bounce. Keyed on the count itself, a typed "150"
   // remounted the field on its first digit and put the keyboard away.
@@ -134,7 +150,10 @@ export function ActiveExerciseView() {
    * two expressions would be two answers to "did that beat your best", and the one the hero sees
    * is the one that would be wrong.
    */
-  const liveValue = Math.max(1, isTimeBased ? elapsedSeconds : adjustedReps);
+  const liveValue = Math.max(
+    1,
+    isTimeBased ? heldSeconds(elapsedSeconds, perSideHold) : adjustedReps,
+  );
 
   const exerciseName = localizedName(currentEx.exercise, language);
 
@@ -635,7 +654,7 @@ export function ActiveExerciseView() {
                           fontVariant={["tabular-nums"]}
                           color="$text"
                         >
-                          {formatTime(remainingSeconds)}
+                          {formatTime(sideRemainingSeconds)}
                         </H1>
                         {/* Not "Seconds". The number counts *down* to the target, and the hint
                             below it talks about carrying on past that target, so a caption that
@@ -643,9 +662,14 @@ export function ActiveExerciseView() {
                             equally available. The audit of 2026-09-10 read it as counting up. */}
                         <Paragraph fontWeight="700" color="$textSecondary">
                           {t("session.seconds_left_of", {
-                            target: formatTarget(currentEx.target, language),
+                            target: formatSlotTarget(currentEx, language),
                           })}
                         </Paragraph>
+                        {perSideHold ? (
+                          <Text fontSize={14} fontWeight="700" color="$text">
+                            {t("session.side_of", { side: onFirstSide ? 1 : 2 })}
+                          </Text>
+                        ) : null}
                       </>
                     )}
                   </YStack>
@@ -682,7 +706,9 @@ export function ActiveExerciseView() {
                           accessibilityLabel={t("session.reps_count_accessibility")}
                         />
                         <Paragraph fontWeight="700" color="$textSecondary">
-                          {t("session.reps")}
+                          {currentEx.exercise.perSide
+                            ? t("session.reps_per_side")
+                            : t("session.reps")}
                         </Paragraph>
                       </YStack>
                       <Button
@@ -729,7 +755,7 @@ export function ActiveExerciseView() {
                   ? t("session.crit_hint_time", {
                       percent: Math.round(
                         critChance(
-                          currentEx.target.value - remainingSeconds,
+                          heldSeconds(elapsedSeconds, perSideHold),
                           currentEx.target.value,
                         ) * 100,
                       ),

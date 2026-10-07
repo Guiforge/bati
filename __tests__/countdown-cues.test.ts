@@ -154,3 +154,23 @@ describe("useCountdownCues", () => {
     expect(mockedPlayCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick"]);
   });
 });
+
+describe("useCountdownCues with another zero", () => {
+  // A per-side hold counts down to halfway through this same hook, then runs negative.
+  test("a per-side hold's halfway sounds the switch, not the end of the set", async () => {
+    const { rerender } = await renderHook((s: number) => useCountdownCues(s, "switch"), {
+      initialProps: 4,
+    });
+    for (const second of [3, 2, 1, 0, -1, -30]) {
+      await act(async () => {
+        await rerender(second);
+      });
+    }
+    expect(mockedPlayCue.mock.calls.map(([cue]) => cue)).toEqual([
+      "tick",
+      "tick",
+      "tick",
+      "switch",
+    ]);
+  });
+});

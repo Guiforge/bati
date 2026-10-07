@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { playCue, warm } from "@/src/sounds";
+import { type Cue, playCue, warm } from "@/src/sounds";
 import { useSettingsStore } from "@/stores/settings";
 
 /**
@@ -27,8 +27,11 @@ import { useSettingsStore } from "@/stores/settings";
  *
  * The two crossings that *do* repeat are meant to: `addRestTime(+30)` during a rest, and the
  * remount `ActiveExerciseView` does per exercise.
+ *
+ * `zeroCue` is what the zero sounds like. A per-side hold counts down to its halfway mark with
+ * `"switch"`, through this same hook, so the guards above hold for the switch too.
  */
-export function useCountdownCues(remainingSeconds: number): void {
+export function useCountdownCues(remainingSeconds: number, zeroCue: Cue = "go"): void {
   const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   // `null` until the first run, which is what tells a mount apart from a tick.
   const previousRef = useRef<number | null>(null);
@@ -52,6 +55,6 @@ export function useCountdownCues(remainingSeconds: number): void {
     if (previous === null && remainingSeconds === 0) return;
 
     if (remainingSeconds >= 1 && remainingSeconds <= 3) playCue("tick");
-    else if (remainingSeconds === 0) playCue("go");
-  }, [remainingSeconds, soundEnabled]);
+    else if (remainingSeconds === 0) playCue(zeroCue);
+  }, [remainingSeconds, soundEnabled, zeroCue]);
 }

@@ -5,7 +5,7 @@ attend, voir « Révision »).
 Status: IMPLEMENTED
 Code : `stores/session.ts` (`prepTimer`, `warmupPrep`, `loadWarmup`), `components/session/PrepView.tsx`,
 `components/session/WarmupView.tsx`, `components/session/CountdownView.tsx`,
-`components/quests/WarmupPreview.tsx`, `constants/warmup.ts` (`PREP_SECONDS`, `switchesSides`).
+`components/quests/WarmupPreview.tsx`, `constants/warmup.ts` (`PREP_SECONDS`), `hooks/useSideSwitch.ts`.
 
 ## Le problème en une phrase
 
@@ -87,5 +87,6 @@ comptent plus qu'une attente.
 
 - Le snapshot de reprise ne s'écrit toujours pas quand l'échauffement change de mouvement, seulement
   à la pause. L'échauffement n'est pas journalisé, et une pause écrit un état cohérent.
-- « Change de côté » vient d'une liste de noms en dur (`ONE_SIDED`, marquée `ponytail:`), en
-  attendant un champ de latéralité sur les exercices.
+- « Change de côté » venait d'une liste de noms en dur (`ONE_SIDED`). Depuis `0068`, il lit
+  `exercises.perSide`, la même colonne que les quêtes, via `useSideSwitch` : vibration et deux
+  bips courts à mi-parcours.

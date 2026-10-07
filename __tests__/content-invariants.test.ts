@@ -823,4 +823,29 @@ describe("content invariants", () => {
 
     expect(offenders).toEqual([]);
   });
+
+  // `0068` names its movements by `enName`, so a typo or a later rename leaves a one-sided
+  // movement timed as one side again, without a sound. The warm-up's two are the ones it used to
+  // keep in a list of its own.
+  test("every movement 0068 marks per side exists, warm-up ones included", () => {
+    const perSide = (
+      t.sqlite
+        .prepare("SELECT enName FROM exercises WHERE perSide = 1 AND creator = 'Admin'")
+        .all() as { enName: string }[]
+    ).map((r) => r.enName);
+
+    expect(perSide.sort()).toEqual(
+      [
+        "Bulgarian Split Squat",
+        "Pigeon Pose",
+        "Pistol Squat",
+        "Side Plank",
+        "Single-Leg Deadlift",
+        "Single-Leg Glute Bridge",
+        "Thread the Needle",
+        "Warrior Pose",
+        "World's Greatest Stretch",
+      ].sort(),
+    );
+  });
 });

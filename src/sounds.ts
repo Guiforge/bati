@@ -14,12 +14,13 @@ import { reportError } from "@/src/reportError";
 const SOURCES = {
   tick: require("../assets/sounds/tick.wav"),
   go: require("../assets/sounds/go.wav"),
+  switch: require("../assets/sounds/switch.wav"),
 } as const;
 
-type Cue = keyof typeof SOURCES;
+export type Cue = keyof typeof SOURCES;
 
 // `createAudioPlayer` does not release on its own, unlike the `useAudioPlayer` hook — which is
-// exactly what this wants. Two players, made once, replayed for the life of the process: a
+// exactly what this wants. One player per cue, made once, replayed for the life of the process: a
 // player created per beep would be three allocations and three file loads per rest.
 //
 // `warm()` is their only writer. Nothing releases them, so nothing here may allocate a second

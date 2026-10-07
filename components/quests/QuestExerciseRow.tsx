@@ -11,10 +11,10 @@ import { slotCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { formatDuration } from "@/db/estimate";
+import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { QuestExercise } from "@/db/quests";
-import type { ExerciseStyle } from "@/db/schema";
-import { formatTarget, type Target } from "@/db/targets";
+import { formatSlotTarget, type Target } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedText } from "@/src/i18n/localized";
@@ -34,12 +34,16 @@ function resolveExerciseImage(path?: string | null): ImageSourcePropType | null 
  *
  * A hold and a count are `formatTarget`'s, the same "1:00" the session and the Journal print. An
  * outing is not a hold: it asks for 900 s, and "15:00" reads as a stopwatch where "15 min" reads
- * as a walk, so its time goes through `formatDuration`.
+ * as a walk, so its time goes through `formatDuration`. A per-side movement says so: the figure is
+ * per side, and so is the last result logged against it.
  */
-function targetLabel(target: Target, style: ExerciseStyle, language: AppLanguage): string {
-  return style === NON_REP_STYLE && target.type === "time"
-    ? formatDuration(target.value, language)
-    : formatTarget(target, language);
+function targetLabel(
+  slot: { target: Target; exercise: Pick<Exercise, "style" | "perSide"> },
+  language: AppLanguage,
+): string {
+  return slot.exercise.style === NON_REP_STYLE && slot.target.type === "time"
+    ? formatDuration(slot.target.value, language)
+    : formatSlotTarget(slot, language);
 }
 
 /** Everything the shut row leaves out: the art, the how-to, and the way to the movement's screen. */
@@ -272,7 +276,7 @@ export function QuestExerciseRow({
           <XStack items="center" gap="$2" flexWrap="wrap">
             {showTarget ? (
               <Tag
-                label={targetLabel(qex.target, qex.exercise.style, language)}
+                label={targetLabel(qex, language)}
                 // A hold's target is filled like a count's: "40s" bare under Plank, beside "14
                 // reps" in a pill under Squat, read as a different kind of thing.
                 tone="primary"
@@ -285,8 +289,10 @@ export function QuestExerciseRow({
               <Tag
                 label={t("quests.ghost_last", {
                   value: targetLabel(
-                    { type: qex.target.type, value: qex.ghost.last },
-                    qex.exercise.style,
+                    {
+                      target: { type: qex.target.type, value: qex.ghost.last },
+                      exercise: qex.exercise,
+                    },
                     language,
                   ),
                   defaultValue: `Last: ${qex.ghost.last}`,

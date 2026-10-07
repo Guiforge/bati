@@ -45,7 +45,7 @@ describe("one timer: body face, bold, tabular, $text", () => {
     ["components/session/WarmupView.tsx", "formatTime(Math.max(0, remainingSeconds))"],
     ["components/session/PrepView.tsx", "{running ? remainingSeconds"],
     ["components/session/RestView.tsx", "formatTime(remainingSeconds)"],
-    ["components/session/ActiveExerciseView.tsx", "formatTime(remainingSeconds)"],
+    ["components/session/ActiveExerciseView.tsx", "formatTime(sideRemainingSeconds)"],
   ];
   it.each(timers)("%s", (file, needle) => {
     const head = before(file, needle, 600);

@@ -198,6 +198,9 @@ describe("WarmupView", () => {
       warmupSequence: [{ exerciseName: "Thread the Needle", seconds: 30 }, ...WARMUP_SEQUENCE],
       timerDuration: 30,
     });
+    (listExercises as jest.Mock).mockResolvedValueOnce([
+      { enName: "Thread the Needle", creator: "Admin", perSide: true, imagePath: "unknown" },
+    ]);
     const { getByTestId } = await mountWarmup();
 
     // i18n is not initialised in tests, so `t()` echoes the key.

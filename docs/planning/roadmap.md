@@ -237,7 +237,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | # | Item | Impact | Effort | Prio | From |
 | --- | --- | --- | --- | --- | --- |
 | 4.2 | Local training reminders, no Firebase (built: #137 to #140) | High | M | **P1** | |
-| 4.26 | One-sided holds are timed as one side, and journaled wrong | Med-high | S–M | **P1** | |
+| 4.26 | One-sided holds are timed as one side, and journaled wrong (built: `0068`) | Med-high | S–M | **P1** | |
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
 | 4.6 | Boss battle refonte | High | M–L | **P1** | |
 | 4.24 | Translations open to contributors, now that four locales ship | Med-high | S | **P1** | Streak |
@@ -334,6 +334,15 @@ names the trigger for the real fix: *"A second reader (a timed quest slot, the j
 moment for the column."* This is the second reader. The fix is that column (a laterality flag on
 `exercises`, set by a content migration scoped to `creator`), then two countdowns with a short
 switch between them in the session, with the warm-up reading the same flag so the name list goes.
+
+**Built** (`0068_one_side_then_the_other.sql`). `exercises.perSide` marks nine seed movements, and
+the target is **per side**. A timed slot runs twice the target (`setTimer` in `stores/session.ts`),
+the numeral counts the side in progress under "Side 1 of 2", and `useSideSwitch` vibrates and plays
+`switch.wav` (two short beeps, after 3-2-1) at halfway, in the warm-up too. The journal logs one
+side's worth, half the elapsed time, so a side plank compares to the side planks before it and no
+golden figure moved. A counted slot reads "Reps per side" and logs what the hero enters. The quest
+estimate counts both sides. Left out: a pause between the two sides (add it if heroes say the
+second side starts late), and the flag on hero-made movements (the editor does not offer it yet).
 
 ### 4.3 The session becomes a mission — art, and the narrative out loud
 

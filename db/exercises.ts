@@ -61,6 +61,8 @@ export type Exercise = {
    * case the quest slot's unit stands. Seed rows always have one.
    */
   measure: QuestTargetType | null;
+  /** Done on one side, then the other (`0068`): its target is per side. */
+  perSide: boolean;
   /**
    * How this movement covers ground (`0049`). Null on everything that is not an `expedition`,
    * `walk` on every hero-authored one — the price of a minute outside is read from here, and the
@@ -143,6 +145,7 @@ const exerciseColumns = () => ({
   secondsPerRep: exercises.secondsPerRep,
   pattern: exercises.pattern,
   measure: exercises.measure,
+  perSide: exercises.perSide,
   locomotion: exercises.locomotion,
   prerequisiteExerciseId: exercises.prerequisiteExerciseId,
   retiredAt: exercises.retiredAt,
@@ -168,6 +171,7 @@ type ExerciseRow = {
   secondsPerRep: number;
   pattern: MovementPattern | null;
   measure: QuestTargetType | null;
+  perSide: boolean;
   locomotion: Locomotion | null;
   prerequisiteExerciseId: number | null;
   retiredAt: Date | null;
@@ -194,6 +198,7 @@ function exerciseFromRow(r: ExerciseRow): Exercise {
     secondsPerRep: typeof r.secondsPerRep === "number" ? r.secondsPerRep : 3,
     pattern: r.pattern ?? null,
     measure: isQuestTargetType(r.measure) ? r.measure : null,
+    perSide: r.perSide,
     locomotion: isLocomotion(r.locomotion) ? r.locomotion : null,
     prerequisiteExerciseId: r.prerequisiteExerciseId,
     retiredAt: r.retiredAt,

@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,13 +7,13 @@ import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Pause, SkipBack, SkipForward } from "@/components/icons";
 import { getExerciseAsset } from "@/constants/assetMap";
-import { switchesSides } from "@/constants/warmup";
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { describeExercise } from "@/hooks/useSessionInstructions";
 import { formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSetAside } from "@/hooks/useSetAside";
+import { useSideSwitch } from "@/hooks/useSideSwitch";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { MovementDescription, PrepView } from "./PrepView";
@@ -36,7 +36,7 @@ export function WarmupView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
-  const { selection, mediumImpact } = useHaptics();
+  const { selection } = useHaptics();
 
   const warmupIndex = useSessionStore((s) => s.warmupIndex);
   // Built per quest at startSession — a squat day and a handstand day do not warm up the same.
@@ -100,31 +100,23 @@ export function WarmupView() {
     if (!step) skipWarmup();
   }, [step, skipWarmup]);
 
-  // One-sided movements are fifteen seconds a side, and the swap is felt as well as read: the
-  // phone is on the floor, and a line of text changing colour is not something anyone sees from
-  // a lunge. No sound, deliberately: the beeps mean the same thing everywhere in a session.
-  const sided = !warmupPrep && step !== undefined && switchesSides(step.exerciseName);
-  const half = step ? Math.floor(step.seconds / 2) : 0;
-  const previousRemaining = useRef(remainingSeconds);
-  useEffect(() => {
-    const previous = previousRemaining.current;
-    previousRemaining.current = remainingSeconds;
-    if (sided && previous > half && remainingSeconds <= half && remainingSeconds > 0) {
-      mediumImpact();
-    }
-  }, [remainingSeconds, sided, half, mediumImpact]);
-
-  if (!step) return null;
-
   // Seed rows only: since `0035` a hero can own a name too, and the warm-up prescribes the
   // seeded movement, and teaching someone their own half-written note would be worse than the
   // English fallback.
-  const exercise = officialByName(catalogue, step.exerciseName);
+  const exercise = step ? officialByName(catalogue, step.exerciseName) : undefined;
+
+  // One-sided movements (`exercises.perSide`) are fifteen seconds a side, switched the same way a
+  // quest's per-side hold is: see `useSideSwitch`.
+  const perSide = exercise?.perSide === true;
+  const sided = !warmupPrep && perSide;
+  const half = step ? Math.floor(step.seconds / 2) : 0;
+  useSideSwitch(remainingSeconds, half, sided);
+
+  if (!step) return null;
+
   const instruction = exercise ? describeExercise(exercise, language) : null;
   const label = instruction?.name ?? step.exerciseName;
-  const eachSide = switchesSides(step.exerciseName)
-    ? t("session.each_side", { seconds: half })
-    : null;
+  const eachSide = perSide ? t("session.each_side", { seconds: half }) : null;
   const switched = sided && remainingSeconds <= half;
 
   // The whole warm-up still ahead, so "2 of 6" says how long it is rather than how many. Only

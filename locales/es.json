@@ -541,7 +541,7 @@
     "side_of": "Lado {{side}} de 2",
     "per_side_weaker": "Cuenta tu lado más débil.",
     "next_side": "Lado siguiente",
-    "side_switch_ahead": "Al terminar, {{seconds}} s para cambiar de lado.",
+    "side_switch_ahead": "Al terminar este lado, {{seconds}} s para cambiar.",
     "side_switch_soon": "Prepárate para cambiar de lado",
     "side_two_next": "Lado 1 hecho, ahora el lado 2",
     "side_two_go": "Vamos, lado 2",

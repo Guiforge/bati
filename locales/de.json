@@ -530,7 +530,7 @@
     "side_of": "Seite {{side}} von 2",
     "per_side_weaker": "Deine schwächere Seite zählt.",
     "next_side": "Nächste Seite",
-    "side_switch_ahead": "Danach {{seconds}} s zum Seitenwechsel.",
+    "side_switch_ahead": "Nach dieser Seite {{seconds}} s zum Wechseln.",
     "side_switch_soon": "Mach dich bereit zum Seitenwechsel",
     "side_two_next": "Seite 1 geschafft, dann Seite 2",
     "side_two_go": "Los, Seite 2",

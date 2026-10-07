@@ -31,12 +31,24 @@ jest.mock("@/hooks/useHaptics", () => ({
 
 import "@/i18n";
 
-type Case = { type: QuestTargetType; last: number; best: number; live: number };
+type Case = {
+  type: QuestTargetType;
+  last: number;
+  best: number;
+  live: number;
+  perSide?: boolean;
+};
 
-function line({ type, last, best, live }: Case) {
+function line({ type, last, best, live, perSide }: Case) {
   return (
     <TamaguiProvider config={config} defaultTheme="dark">
-      <GhostLine ghost={{ last, best, at: 0, bestAt: 0 }} type={type} live={live} reducedMotion />
+      <GhostLine
+        ghost={{ last, best, at: 0, bestAt: 0 }}
+        type={type}
+        live={live}
+        perSide={perSide}
+        reducedMotion
+      />
     </TamaguiProvider>
   );
 }
@@ -55,6 +67,16 @@ describe("the ghost line, while the set is still happening", () => {
     expect(screen.getByText("45s")).toBeTruthy();
     expect(screen.queryByText("Past your best")).toBeNull();
     expect(mockSuccess).not.toHaveBeenCalled();
+  });
+
+  // One side then the other (`0068`): the figures are one side's, said once at the end of the line.
+  test("a per-side hold says per side once, after the last figure", async () => {
+    await render(line({ type: "time", last: 39, best: 45, live: 40, perSide: true }));
+    expect(screen.getByText("39s")).toBeTruthy();
+    expect(screen.getByText("45s per side")).toBeTruthy();
+
+    await render(line({ type: "time", last: 45, best: 45, live: 40, perSide: true }));
+    expect(screen.getByText("45s per side")).toBeTruthy();
   });
 
   test("equalling the best is not beating it", async () => {

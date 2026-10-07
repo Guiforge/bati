@@ -610,96 +610,103 @@ export function ActiveExerciseView() {
                   </Pressable>
                 ) : null}
 
-                {/* The first side gave out before its target: go to the switch now instead of
-                    waiting on a clock for a side that is over. Here with the other links, away
-                    from Done, which would end the whole set and never offer the second side. */}
-                {/* Mounted for the whole per-side set and live on the first side only: a link that
-                    left at the switch would shorten this row and move the counter and Done. */}
-                {perSideHold ? (
-                  <XStack
-                    items="center"
-                    gap="$3"
-                    opacity={side?.phase === "first" ? 1 : 0}
-                    pointerEvents={side?.phase === "first" ? "auto" : "none"}
-                    accessibilityElementsHidden={side?.phase !== "first"}
-                    importantForAccessibility={
-                      side?.phase === "first" ? "auto" : "no-hide-descendants"
-                    }
-                  >
-                    <Text fontSize={12} color="$textSecondary" opacity={0.5}>
-                      ·
-                    </Text>
-                    <Pressable
-                      testID="session-next-side"
-                      hitSlop={12}
-                      disabled={side?.phase !== "first"}
-                      onPress={() => {
-                        selection();
-                        nextSide();
-                      }}
-                      accessibilityRole="button"
-                      accessibilityLabel={t("session.next_side")}
-                    >
-                      <Text
-                        py="$2"
-                        fontSize={12}
-                        fontWeight="700"
-                        color="$textSecondary"
-                        numberOfLines={1}
-                      >
-                        {t("session.next_side")}
-                      </Text>
-                    </Pressable>
-                  </XStack>
-                ) : null}
-
                 {/* Not on an outing: a walk has no movement to swap and no set to fail. */}
                 {isOuting ? null : (
                   <>
-                    <Text fontSize={12} color="$textSecondary" opacity={0.5}>
-                      ·
-                    </Text>
-                    <Pressable
-                      testID="session-swap-exercise"
-                      hitSlop={12}
-                      onPress={() => {
-                        selection();
-                        setSwapOpen(true);
-                      }}
-                      accessibilityRole="button"
-                      accessibilityLabel={t("quests.swap_exercise")}
-                    >
-                      <Text
-                        py="$2"
-                        fontSize={12}
-                        fontWeight="700"
-                        color="$textSecondary"
-                        numberOfLines={1}
-                      >
-                        {t("session.swap_short", "Replace")}
+                    {/* Each dot travels with the link after it, so a row that wraps at a large
+                        font never leaves one dangling at the end of a line. */}
+                    <XStack items="center" gap="$3">
+                      <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                        ·
                       </Text>
-                    </Pressable>
+                      <Pressable
+                        testID="session-swap-exercise"
+                        hitSlop={12}
+                        onPress={() => {
+                          selection();
+                          setSwapOpen(true);
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("quests.swap_exercise")}
+                      >
+                        <Text
+                          py="$2"
+                          fontSize={12}
+                          fontWeight="700"
+                          color="$textSecondary"
+                          numberOfLines={1}
+                        >
+                          {t("session.swap_short", "Replace")}
+                        </Text>
+                      </Pressable>
+                    </XStack>
 
-                    <Text fontSize={12} color="$textSecondary" opacity={0.5}>
-                      ·
-                    </Text>
-                    <Pressable
-                      testID="session-skip-exercise"
-                      hitSlop={12}
-                      onPress={handleSkip}
-                      accessibilityRole="button"
-                      accessibilityLabel={t("session.skip_exercise")}
-                    >
-                      <Text
-                        py="$2"
-                        fontSize={12}
-                        fontWeight="700"
-                        color="$textSecondary"
-                        numberOfLines={1}
-                      >
-                        {t("session.skip_exercise")}
+                    <XStack items="center" gap="$3">
+                      <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                        ·
                       </Text>
-                    </Pressable>
+                      <Pressable
+                        testID="session-skip-exercise"
+                        hitSlop={12}
+                        onPress={handleSkip}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("session.skip_exercise")}
+                      >
+                        <Text
+                          py="$2"
+                          fontSize={12}
+                          fontWeight="700"
+                          color="$textSecondary"
+                          numberOfLines={1}
+                        >
+                          {t("session.skip_exercise")}
+                        </Text>
+                      </Pressable>
+                    </XStack>
+
+                    {/* The first side gave out before its target: go to the switch now instead of
+                    waiting on a clock for a side that is over. Here with the other links, away
+                    from Done, which would end the whole set and never offer the second side. */}
+                    {/* Mounted for the whole per-side set and live on the first side only: a link that
+                    left at the switch would shorten this row and move the counter and Done. Last in
+                    the row, so once hidden it leaves no gap between two dots. */}
+                    {perSideHold ? (
+                      <XStack
+                        items="center"
+                        gap="$3"
+                        opacity={side?.phase === "first" ? 1 : 0}
+                        pointerEvents={side?.phase === "first" ? "auto" : "none"}
+                        accessibilityElementsHidden={side?.phase !== "first"}
+                        importantForAccessibility={
+                          side?.phase === "first" ? "auto" : "no-hide-descendants"
+                        }
+                      >
+                        <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                          ·
+                        </Text>
+                        <Pressable
+                          testID="session-next-side"
+                          hitSlop={12}
+                          disabled={side?.phase !== "first"}
+                          onPress={() => {
+                            selection();
+                            nextSide();
+                          }}
+                          accessibilityRole="button"
+                          accessibilityLabel={t("session.next_side")}
+                        >
+                          <Text
+                            py="$2"
+                            fontSize={12}
+                            fontWeight="700"
+                            color="$textSecondary"
+                            numberOfLines={1}
+                          >
+                            {t("session.next_side")}
+                          </Text>
+                        </Pressable>
+                      </XStack>
+                    ) : null}
                   </>
                 )}
               </XStack>
@@ -982,6 +989,7 @@ export function ActiveExerciseView() {
                 ghost={ghost}
                 type={currentEx.target.type}
                 live={liveValue}
+                perSide={currentEx.exercise.perSide}
                 reducedMotion={reducedMotion}
               />
             ) : null}

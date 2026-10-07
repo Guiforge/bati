@@ -93,7 +93,7 @@ function sideBarValue(
 export function ActiveExerciseView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { width, height, fontScale } = useWindowDimensions();
   const language = useSettingsStore((s) => s.language);
   const { selection, heavyImpact } = useHaptics();
   const reducedMotion = useReducedMotion();
@@ -331,8 +331,15 @@ export function ActiveExerciseView() {
 
   // The hero is the elastic part of the column: the counter and the CTA take their own height
   // and the picture gets everything left over, so nothing below it is ever clipped and a tall
-  // screen shows more movement rather than more empty tint. This is only its floor.
-  const heroMinHeight = Math.round(sessionArtHeight(width, height) * 0.6);
+  // screen shows more movement rather than more empty tint. This is only its floor, and it gives
+  // way to a large font: at 130% on a 360x640 screen the text below grows by a third, the action
+  // row wraps, and a fixed floor pushed Done under the navigation bar.
+  // ponytail: scales with the font, not with what the column measures. Past ~150% on 640dp,
+  // measure the column (onLayout) and give the hero what is left.
+  const heroMinHeight = Math.round(
+    // `|| 1`: a mocked window has no fontScale, and NaN would erase the floor.
+    (sessionArtHeight(width, height) * 0.6) / Math.max(1, fontScale || 1),
+  );
   const hero = (
     <ExerciseHero
       source={getExerciseAsset(currentEx.exercise.imagePath)}

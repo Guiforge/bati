@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable } from "react-native";
+import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -146,80 +146,87 @@ export function WarmupView() {
         />
       </XStack>
 
-      {warmupPrep ? (
-        <YStack flex={1} justify="center">
-          <PrepView
-            kicker={t("session.prep_title", {
-              current: warmupIndex + 1,
-              total: warmupSequence.length,
-            })}
-            instruction={instruction}
-            fallbackName={label}
-            target={eachSide ?? `${step.seconds}s`}
-            remainingSeconds={timerStartTimestamp === null ? null : remainingSeconds}
-            onGo={() => {
-              selection();
-              startWarmupMove();
-            }}
-            goTestID="session-prep-go"
-          />
-        </YStack>
-      ) : (
-        <YStack flex={1} items="center" justify="center" gap="$4">
-          {exercise ? (
-            <Image
-              source={getExerciseAsset(exercise.imagePath)}
-              // The second side faces the other way, as in a quest's per-side hold (`ExerciseHero`).
-              style={{
-                width: 180,
-                height: 180,
-                borderRadius: 16,
-                transform: [{ scaleX: switched ? -1 : 1 }],
+      {/* Scrolls rather than overlaps: at a 130% font on a 360x640 screen the movement, its
+          description and the countdown are taller than the space between the header and the step
+          controls, and a centred box spilled over both. `flexGrow` keeps it centred while it fits. */}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+        {warmupPrep ? (
+          <YStack style={{ flexGrow: 1 }} justify="center">
+            <PrepView
+              kicker={t("session.prep_title", {
+                current: warmupIndex + 1,
+                total: warmupSequence.length,
+              })}
+              instruction={instruction}
+              fallbackName={label}
+              target={eachSide ?? `${step.seconds}s`}
+              remainingSeconds={timerStartTimestamp === null ? null : remainingSeconds}
+              onGo={() => {
+                selection();
+                startWarmupMove();
               }}
-              contentFit="cover"
+              goTestID="session-prep-go"
             />
-          ) : null}
-
-          <YStack items="center" gap="$1">
-            <Text
-              testID="warmup-name"
-              fontFamily="$heading"
-              fontWeight="700"
-              fontSize={20}
-              color="$text"
-              style={{ textAlign: "center" }}
-            >
-              {label}
-            </Text>
-            {eachSide ? (
-              <Text
-                testID="warmup-sides"
-                fontSize={15}
-                fontWeight="700"
-                color={switched ? "$warning" : "$textSecondary"}
-              >
-                {switched ? t("session.switch_sides") : t("session.each_side", { seconds: half })}
-              </Text>
-            ) : null}
           </YStack>
+        ) : (
+          <YStack style={{ flexGrow: 1 }} items="center" justify="center" gap="$4">
+            {exercise ? (
+              <Image
+                source={getExerciseAsset(exercise.imagePath)}
+                // The second side faces the other way, as in a quest's per-side hold (`ExerciseHero`).
+                style={{
+                  width: 180,
+                  height: 180,
+                  borderRadius: 16,
+                  transform: [{ scaleX: switched ? -1 : 1 }],
+                }}
+                contentFit="cover"
+              />
+            ) : null}
 
-          {/* Still here during the movement: the wait showed it, and a glance mid-movement is
+            <YStack items="center" gap="$1">
+              <Text
+                testID="warmup-name"
+                fontFamily="$heading"
+                fontWeight="700"
+                fontSize={20}
+                color="$text"
+                style={{ textAlign: "center" }}
+              >
+                {label}
+              </Text>
+              {eachSide ? (
+                <Text
+                  testID="warmup-sides"
+                  fontSize={15}
+                  fontWeight="700"
+                  color={switched ? "$warning" : "$textSecondary"}
+                >
+                  {switched ? t("session.switch_sides") : t("session.each_side", { seconds: half })}
+                </Text>
+              ) : null}
+            </YStack>
+
+            {/* Still here during the movement: the wait showed it, and a glance mid-movement is
               cheaper than a pause. */}
-          {instruction?.description ? <MovementDescription text={instruction.description} /> : null}
+            {instruction?.description ? (
+              <MovementDescription text={instruction.description} />
+            ) : null}
 
-          <H1
-            color="$text"
-            fontFamily="$body"
-            fontSize={64}
-            fontWeight="700"
-            fontVariant={["tabular-nums"]}
-          >
-            {formatTime(Math.max(0, remainingSeconds))}
-          </H1>
+            <H1
+              color="$text"
+              fontFamily="$body"
+              fontSize={64}
+              fontWeight="700"
+              fontVariant={["tabular-nums"]}
+            >
+              {formatTime(Math.max(0, remainingSeconds))}
+            </H1>
 
-          <TimerBar value={progress} fill="$primary" bg="$surface" />
-        </YStack>
-      )}
+            <TimerBar value={progress} fill="$primary" bg="$surface" />
+          </YStack>
+        )}
+      </ScrollView>
 
       <XStack items="center" justify="center" gap="$5">
         <Button

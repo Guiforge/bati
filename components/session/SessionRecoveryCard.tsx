@@ -135,7 +135,9 @@ export function SessionRecoveryCard({
           </AppButton>
         ) : null}
 
-        <XStack gap="$3" justify="flex-end">
+        {/* Wraps: at a 130% font on a 360dp screen the pair is wider than the card, and the
+            discard button was pushed off its left edge. */}
+        <XStack gap="$3" justify="flex-end" flexWrap="wrap">
           <Button
             size="$3"
             height={44}

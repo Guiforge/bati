@@ -3,8 +3,35 @@ import {
   formatDistance,
   formatElevation,
   formatPace,
+  formatRate,
+  formatRateAt,
 } from "@/constants/distanceFormat";
 import { RULES } from "@/src/gps/track";
+
+// A cyclist reads km/h, a runner min/km: the same two numbers, printed in the shape each thinks in.
+describe("formatRate", () => {
+  test("a ride reads a speed, in the hero's decimal separator, in km and in miles", () => {
+    expect(formatRate(18_400, 3_600_000, "metric", "fr", "ride")).toBe("18,4 km/h");
+    expect(formatRate(18_400, 3_600_000, "metric", "en", "ride")).toBe("18.4 km/h");
+    expect(formatRate(18_400, 3_600_000, "imperial", "en", "ride")).toBe("11.4 mph");
+  });
+
+  test("a run, a walk and a mixed quest read a pace", () => {
+    expect(formatRate(1000, 312_000, "metric", "fr", "run")).toBe("5:12 /km");
+    expect(formatRate(1000, 312_000, "imperial", "en", "walk")).toBe("8:22 /mi");
+    expect(formatRate(1000, 312_000, "metric", "en", null)).toBe("5:12 /km");
+  });
+
+  test("a ride under the moving threshold says nothing, like a pace does", () => {
+    expect(formatRate(RULES.movingThresholdM - 0.01, 28_000, "metric", "en", "ride")).toBe("...");
+    expect(formatRate(1000, 0, "metric", "en", "ride")).toBe("...");
+  });
+
+  test("an instant speed goes through the same rule", () => {
+    expect(formatRateAt(18_400 / 3600, "metric", "fr", "ride")).toBe("18,4 km/h");
+    expect(formatRateAt(1000 / 312, "metric", "fr", "run")).toBe("5:12 /km");
+  });
+});
 
 // The helper is the only converter in the app, so the numbers below are the contract: a mile is
 // 1609.344 m and a foot 0.3048 m, exactly, and nothing here may round its way past a threshold.

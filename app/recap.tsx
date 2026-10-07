@@ -26,8 +26,9 @@ import {
   formatClock,
   formatDistance,
   formatElevation,
-  formatPace,
-  formatSpeedAsPace,
+  formatRate,
+  formatRateAt,
+  rateKind,
 } from "@/constants/distanceFormat";
 import {
   LEAGUE_PIP_PAINT,
@@ -39,6 +40,7 @@ import { rawColors } from "@/constants/rawColors";
 import { outingSession, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
 import { listQuestTemplates } from "@/db/quests";
+import type { Locomotion } from "@/db/schema";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
 import type { LocationFix } from "@/modules/bati-location";
 import { toTrace } from "@/src/gps/trace";
@@ -79,6 +81,8 @@ type Recap = {
   movingSeconds: number | null;
   /** The reducer's metres of climb, `null` before 0052 or when the receiver gave no height. */
   ascentM: number | null;
+  /** Walk and run read a pace, a ride a speed; `null` reads as a pace. */
+  outing: Locomotion | null;
 };
 
 const NOTHING: Recap = {
@@ -89,6 +93,7 @@ const NOTHING: Recap = {
   leaguesM: null,
   movingSeconds: null,
   ascentM: null,
+  outing: null,
 };
 
 /** Where the outing began and where it ended, as the map's only two other lit points. */
@@ -163,16 +168,20 @@ function SpeedLegend({
   range,
   best,
   unit,
+  locomotion = null,
 }: {
   range: [number, number] | null;
   best: { metres: number; ms: number } | null;
   unit: DistanceUnit;
+  /** `undefined` while the row is still being read, which reads as a pace like a mixed quest. */
+  locomotion?: Locomotion | null;
 }) {
   const { t } = useTranslation();
+  const language = useSettingsStore((s) => s.language);
   if (range === null && best === null) return null;
 
-  // A speed, as the pace of one hour held at it. One conversion, in constants/distanceFormat.
-  const paceAt = (speed: number) => formatSpeedAsPace(speed, unit);
+  // A speed, as a pace or as itself depending on who travelled. One conversion, in constants/distanceFormat.
+  const paceAt = (speed: number) => formatRateAt(speed, unit, language, locomotion);
 
   return (
     <YStack gap="$2" testID="recap-speed-legend">
@@ -198,7 +207,9 @@ function SpeedLegend({
           screen compares it to the last time the same ground was covered. */}
       {best === null ? null : (
         <Text testID="recap-best-league" fontSize={11} color="$textSecondary">
-          {t("recap.best_league", { pace: formatPace(best.metres, best.ms, unit) })}
+          {t("recap.best_league", {
+            pace: formatRate(best.metres, best.ms, unit, language, locomotion),
+          })}
         </Text>
       )}
     </YStack>
@@ -218,11 +229,13 @@ function Figures({
   movingSeconds,
   ascentM,
   unit,
+  locomotion,
 }: {
   leaguesM: number;
   movingSeconds: number | null;
   ascentM: number | null;
   unit: DistanceUnit;
+  locomotion: Locomotion | null;
 }) {
   const language = useSettingsStore((s) => s.language);
   const { t } = useTranslation();
@@ -249,8 +262,8 @@ function Figures({
             />
             <Figure
               testID="recap-pace"
-              label={t("session.expedition_pace")}
-              value={formatPace(leaguesM, movingSeconds * 1000, unit)}
+              label={t(`session.expedition_${rateKind(locomotion)}`)}
+              value={formatRate(leaguesM, movingSeconds * 1000, unit, language, locomotion)}
             />
           </>
         )}
@@ -352,6 +365,7 @@ export default function ExpeditionRecapScreen() {
         leaguesM: session?.leaguesM ?? null,
         movingSeconds: session?.movingSeconds ?? null,
         ascentM: session?.ascentM ?? null,
+        outing: session?.outing ?? null,
       });
     },
     [language],
@@ -591,7 +605,12 @@ export default function ExpeditionRecapScreen() {
             absence of measurement. */}
         {/* No guard for "this quest never left the walls": a run with no fixes has no ramp and
             no best league, and the legend already draws nothing when it has nothing to say. */}
-        <SpeedLegend range={trace.speedRange} best={trace.bestLeague} unit={distanceUnit} />
+        <SpeedLegend
+          range={trace.speedRange}
+          best={trace.bestLeague}
+          unit={distanceUnit}
+          locomotion={recap?.outing}
+        />
 
         {/* What the ground moved, above what the ground was.
             This screen used to open on distance, moving time and pace, which is what every other
@@ -607,6 +626,7 @@ export default function ExpeditionRecapScreen() {
             movingSeconds={recap.movingSeconds}
             ascentM={recap.ascentM}
             unit={distanceUnit}
+            locomotion={recap.outing}
           />
         ) : null}
 

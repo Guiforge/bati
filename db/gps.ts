@@ -2,6 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import type { LocationFix } from "@/modules/bati-location";
 import type { LngLat } from "@/src/gps/trace";
 import { db, schema } from "./client";
+import type { Locomotion } from "./schema";
 
 const { gpsPoints, completedQuest } = schema;
 
@@ -176,6 +177,8 @@ export type OutingSession = {
   movingSeconds: number | null;
   /** The reducer's metres of climb, written at save beside them (0052). Null when unmeasured. */
   ascentM: number | null;
+  /** How the ground was crossed, which decides whether it reads as a pace or a speed. */
+  outing: Locomotion | null;
 };
 
 /**
@@ -195,6 +198,7 @@ export async function outingSession(sessionId: string): Promise<OutingSession | 
       leaguesM: completedQuest.leaguesM,
       movingSeconds: completedQuest.movingSeconds,
       ascentM: completedQuest.ascentM,
+      outing: completedQuest.outing,
     })
     .from(completedQuest)
     .where(eq(completedQuest.uuid, sessionId))
@@ -209,6 +213,7 @@ export async function outingSession(sessionId: string): Promise<OutingSession | 
     leaguesM: row.leaguesM ?? null,
     movingSeconds: row.movingSeconds ?? null,
     ascentM: row.ascentM ?? null,
+    outing: row.outing ?? null,
   };
 }
 

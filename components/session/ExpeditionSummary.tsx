@@ -5,7 +5,8 @@ import { Text, XStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Figure } from "@/components/common/Figure";
 import { ChevronRight, Map as MapIcon } from "@/components/icons";
-import { formatClock, formatDistance, formatPace } from "@/constants/distanceFormat";
+import { formatClock, formatDistance, formatRate, rateKind } from "@/constants/distanceFormat";
+import type { Locomotion } from "@/db/schema";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
 import { reportError } from "@/src/reportError";
 import { useExpeditionStore } from "@/stores/expedition";
@@ -28,9 +29,12 @@ import { roadLine } from "./roadLine";
 export function ExpeditionSummary({
   sessionUuid,
   language,
+  locomotion,
 }: {
   sessionUuid: string | null;
   language: AppLanguage;
+  /** What `saveSession` wrote as the row's `outing`, so this screen and the recap say the same. */
+  locomotion: Locomotion | null;
 }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -72,8 +76,8 @@ export function ExpeditionSummary({
         />
         <Figure
           testID="victory-expedition-pace"
-          label={t("session.expedition_pace")}
-          value={formatPace(track.distanceM, track.movingMs, unit)}
+          label={t(`session.expedition_${rateKind(locomotion)}`)}
+          value={formatRate(track.distanceM, track.movingMs, unit, language, locomotion)}
         />
       </XStack>
 

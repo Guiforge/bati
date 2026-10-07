@@ -9,8 +9,8 @@ import {
   formatClock,
   formatDistance,
   formatElevation,
-  formatPace,
-  formatSpeedAsPace,
+  formatRate,
+  formatRateAt,
 } from "@/constants/distanceFormat";
 import type { DistanceUnit } from "@/db/preferences";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
@@ -102,6 +102,10 @@ export function ExpeditionPanel() {
   const unit = useSettingsStore((state) => state.distanceUnit);
   const language = useSettingsStore((state) => state.language);
   const goal = useSessionStore((state) => state.goal);
+  /** The slot being travelled, not the quest's cheapest: a ride slot reads km/h whatever else is in the quest. */
+  const locomotion = useSessionStore(
+    (state) => state.quest?.exercises[state.currentExerciseIndex]?.exercise.locomotion ?? null,
+  );
 
   /**
    * One line, and it never lies by omission. A blank readout while the sky is being found looks
@@ -153,8 +157,8 @@ export function ExpeditionPanel() {
    */
   const pace =
     recentSpeedMps === null
-      ? formatPace(track.distanceM, track.movingMs, unit)
-      : formatSpeedAsPace(recentSpeedMps, unit);
+      ? formatRate(track.distanceM, track.movingMs, unit, language, locomotion)
+      : formatRateAt(recentSpeedMps, unit, language, locomotion);
 
   /**
    * The big figure carries the unit the hero set out in: metres when the goal is metres, the

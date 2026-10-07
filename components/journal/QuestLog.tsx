@@ -34,7 +34,7 @@ import { SetEditor } from "@/components/journal/SetEditor";
 import { TraceThumb } from "@/components/journal/TraceThumb";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
-import { formatDistance, formatElevation, formatPace } from "@/constants/distanceFormat";
+import { formatDistance, formatElevation, formatRate, rateKind } from "@/constants/distanceFormat";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
 import { formatDuration } from "@/db";
@@ -529,8 +529,10 @@ function Ground({ data }: { data: QuestLogData }) {
         )}
         {session.leaguesM != null && session.leaguesM > 0 && moving > 0 && (
           <YStack>
-            <NNum fontSize={17}>{formatPace(session.leaguesM, moving * 1000, distanceUnit)}</NNum>
-            <NMuted fontSize={10.5}>{t("journal.ground_pace")}</NMuted>
+            <NNum fontSize={17}>
+              {formatRate(session.leaguesM, moving * 1000, distanceUnit, language, session.outing)}
+            </NNum>
+            <NMuted fontSize={10.5}>{t(`journal.ground_${rateKind(session.outing)}`)}</NMuted>
           </YStack>
         )}
       </XStack>

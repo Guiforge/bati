@@ -215,6 +215,52 @@ describe("RestView", () => {
     expect(useSessionStore.getState().results[0]?.result.value).toBe(40);
   });
 
+  // A per-side hold short of its target logged its weaker side: lower than the hold felt, so the
+  // card says why. Not when only one side was worked, nor when both passed the target (an average).
+  it.each([
+    ["both sides, one short", true, 5, true],
+    ["one side only", false, 5, false],
+    ["both sides past the target", true, 25, false],
+  ])("explains the weaker side: %s", async (_case, bothSides, value, shown) => {
+    useSessionStore.setState({
+      results: [
+        {
+          exerciseId: 1,
+          result: { type: "time", value },
+          target: { type: "time", value: 20 },
+          pricing: {
+            secondsPerRep: 3,
+            difficulty: "medium",
+            style: "strength",
+            perSide: bothSides,
+          },
+        },
+      ] as never,
+    });
+    const view = await mountRest();
+
+    expect(view.queryByTestId("rest-weaker-side") !== null).toBe(shown);
+  });
+
+  // A figure the hero lowers by hand is theirs, not the weaker-side rule's.
+  it("does not explain a value the hero lowered with the stepper", async () => {
+    useSessionStore.setState({
+      results: [
+        {
+          exerciseId: 1,
+          result: { type: "time", value: 22 },
+          target: { type: "time", value: 20 },
+          pricing: { secondsPerRep: 3, difficulty: "medium", style: "strength", perSide: true },
+        },
+      ] as never,
+    });
+    const view = await mountRest();
+    await act(() => useSessionStore.getState().updateLastResult(17));
+
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(17);
+    expect(view.queryByTestId("rest-weaker-side")).toBeNull();
+  });
+
   it("stays resting while the timer still has time on it", async () => {
     await mountRest();
 

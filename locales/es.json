@@ -537,6 +537,7 @@
     "round_label": "RONDA {{count}} / {{total}}",
     "seconds_left_of": "restantes de {{target}}",
     "side_of": "Lado {{side}} de 2",
+    "per_side_weaker": "Cuenta tu lado más débil.",
     "next_side": "Lado siguiente",
     "side_switch_ahead": "Al terminar, {{seconds}} s para cambiar de lado.",
     "side_switch_soon": "Prepárate para cambiar de lado",

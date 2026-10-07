@@ -863,6 +863,7 @@
     "round_label": "TOUR {{count}} / {{total}}",
     "seconds_left_of": "restantes sur {{target}}",
     "side_of": "Côté {{side}} sur 2",
+    "per_side_weaker": "C'est ton côté le plus faible qui compte.",
     "next_side": "Côté suivant",
     "side_switch_ahead": "À la fin, {{seconds}} s pour changer de côté.",
     "side_switch_soon": "Prépare-toi à changer de côté",

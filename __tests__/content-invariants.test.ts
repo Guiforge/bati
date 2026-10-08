@@ -520,7 +520,7 @@ describe("content invariants", () => {
         // comment claiming seed quests carry no cardio slot; they carry eleven, and that one
         // hardcoded word is what let a change zeroing cardio pass this suite. A test bent to
         // stay green cannot see the thing it was written to see.
-        return sum + toRepEquivalent(target.value, ex.targetType, ex.style) * (ex.perSide ? 2 : 1);
+        return sum + toRepEquivalent(target.value, ex.targetType, ex.style, ex.perSide ? 2 : 1);
       }, 0);
 
     const byAdventure = new Map<string, { hp: number; steps: typeof steps }>();

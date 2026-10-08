@@ -98,6 +98,8 @@ export type CompletedExercise = {
   roundIndex: number;
   sortOrder: number;
   result: { type: QuestTargetType; value: number };
+  /** Sides the result was done on (`0069`): 2 for a per-side set that worked both. */
+  sides: number;
   target?: { type: QuestTargetType; value: number };
   notes: string;
   performedAt: Date;
@@ -236,6 +238,8 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         sortOrder,
         resultType: ex.result.type,
         resultValue,
+        // The figure is one side's; the work was both when both were done (`0069`).
+        sides: ex.pricing?.perSide ? 2 : 1,
         targetType: ex.target?.type,
         targetValue,
         notes: ex.notes ?? "",
@@ -742,6 +746,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       sortOrder: completedExercises.sortOrder,
       resultType: completedExercises.resultType,
       resultValue: completedExercises.resultValue,
+      sides: completedExercises.sides,
       targetType: completedExercises.targetType,
       targetValue: completedExercises.targetValue,
       cexNotes: completedExercises.notes,
@@ -789,6 +794,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
         roundIndex: r.roundIndex,
         sortOrder: r.sortOrder,
         result: { type: r.resultType, value: r.resultValue },
+        sides: r.sides,
         target:
           r.targetType && r.targetValue != null
             ? { type: r.targetType, value: r.targetValue }
@@ -929,7 +935,7 @@ export async function getRecentContributingSessions(
   filter: { muscle: MuscleCode } | { style: ExerciseStyle },
   limit = 3,
 ): Promise<ContributingSession[]> {
-  const volume = sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`;
+  const volume = sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style, completedExercises.sides)}), 0)`;
 
   const base = db
     .select({

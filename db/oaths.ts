@@ -277,7 +277,7 @@ async function measure(oath: Oath): Promise<number> {
       // docs/designs/expeditions.md, open question 6.
       const rows = await db
         .select({
-          value: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
+          value: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style, completedExercises.sides)}), 0)`,
         })
         .from(completedExercises)
         .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))

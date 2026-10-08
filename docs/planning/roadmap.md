@@ -352,10 +352,12 @@ price both sides: computed ones in `calculateBossHp`, seeded ones raised in `006
 their per-side slots deal; a boss fight already open at the update keeps the pool it was created
 with, so it may fall one step early, once. A counted slot reads "Reps per side" and is paid for
 both sides: there is no clock to say otherwise, and a hero who logs one side as two could already
-type any count.
-Every surface that prints such a figure says "per side" (`perSideLabel` in `db/targets.ts`), except
-the session's ghost line, whose caption right above already says it. Estimates count both sides and
-the switch.
+type any count. Work-unit sums (muscle volume, village, oaths, the journal's reps) count both sides
+the same way: `completed_exercises.sides` (`0069`) is written at save from `pricing.perSide`, and
+`toRepEquivalent` / `repEquivalentSql` take it as a required argument. Rows from before `0069` stay
+1.
+Every surface that prints such a figure says "per side" (`perSideLabel` in `db/targets.ts`); the
+session's ghost line says it once, after its last figure. Estimates count both sides and the switch.
 
 Known ambiguity, kept on purpose: results logged before `0068` were never told what the target
 meant, and are now read as per side. A hero who logged a total keeps an old best that may be twice

@@ -69,6 +69,7 @@ import m0065 from "./0065_the_height_the_air_measured.sql";
 import m0066 from "./0066_the_quest_that_names_itself.sql";
 import m0067 from "./0067_what_the_coach_read.sql";
 import m0068 from "./0068_one_side_then_the_other.sql";
+import m0069 from "./0069_both_sides_counted.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -143,5 +144,6 @@ export default {
     m0066,
     m0067,
     m0068,
+    m0069,
   },
 };

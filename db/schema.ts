@@ -577,6 +577,9 @@ export const completedExercises = sqliteTable(
     // What the user actually did.
     resultType: text().notNull().$type<QuestTargetType>(),
     resultValue: int().notNull(),
+    // How many sides `resultValue` was done on (`0069`): 2 for a per-side set that worked both,
+    // 1 otherwise. The figure stays one side's; work-unit sums multiply by this.
+    sides: int().notNull().default(1),
 
     // Optional: what was asked (target) at the time.
     targetType: text().$type<QuestTargetType>(),

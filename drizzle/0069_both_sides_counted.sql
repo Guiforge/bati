@@ -1,0 +1,13 @@
+-- A per-side set (`0068`) logs one side's figure: 30 s of side plank is 30, not 60, so a record
+-- and the next target read the same before and after. The work behind it is both sides, and boss
+-- damage and XP already paid for both. Muscle volume, the village, oaths and the journal's reps
+-- summed the row once, so a side plank built half the wall a front plank did for the same effort.
+--
+-- `sides` is how many sides the figure was done on, and every work-unit sum multiplies by it
+-- (`db/workUnits.ts`). It is written at save, from what the set actually did: a hold stopped
+-- before its second side is one side. Every row before this one stays 1, because what it measured
+-- is not known, and history should not grow on an update.
+--
+-- multi-migration-ok: 0068 and 0069 ship together; 0068 already ran on dev builds, so its column
+-- cannot be amended in place.
+ALTER TABLE `completed_exercises` ADD `sides` integer DEFAULT 1 NOT NULL;

@@ -65,6 +65,39 @@ describe("db/muscleBalance", () => {
     expect(arms?.volume).toBe(20);
   });
 
+  // A per-side set logs one side's figure (`0068`) and did the work twice (`0069`): saved through
+  // the path the session uses, 30 s a side counts as 60 s of work, and a hold stopped on its first
+  // side as 30. The SQL sums (village, oaths, journal) multiply by the same column.
+  test("a per-side set counts both sides it worked", async () => {
+    const { getMuscleBalance } =
+      require("../db/muscleBalance") as typeof import("../db/muscleBalance");
+    const { createCompletedSession } =
+      require("../db/completed") as typeof import("../db/completed");
+    const sidePlank = t.sqlite
+      .prepare(`SELECT id FROM exercises WHERE enName = 'Side Plank' AND creator = 'Admin'`)
+      .get() as { id: number } | undefined;
+    assert(sidePlank);
+    const set = (sortOrder: number, perSide: boolean) => ({
+      exerciseId: sidePlank.id,
+      roundIndex: 0,
+      sortOrder,
+      result: { type: "time" as const, value: 30 },
+      pricing: {
+        secondsPerRep: 3,
+        difficulty: "medium" as const,
+        style: "strength" as const,
+        perSide,
+      },
+    });
+
+    await createCompletedSession({ exercises: [set(0, true), set(1, false)] });
+
+    const balance = await getMuscleBalance("30d");
+    const abs = balance.muscles.find((m) => m.muscle === "abs");
+    // 30 s is 10 units: 20 for both sides, 10 for the one.
+    expect(abs?.volume).toBe(30);
+  });
+
   test("getMuscleBalance identifies weak and strong areas correctly", async () => {
     const { getMuscleBalance } =
       require("../db/muscleBalance") as typeof import("../db/muscleBalance");

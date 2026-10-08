@@ -386,6 +386,33 @@ describe("a per-side hold", () => {
     expect(useSessionStore.getState().results[0]?.pricing?.perSide).toBe(true);
   });
 
+  // Tapped on the last second of the first side, after its 3-2-1: the switch sounds once, and no
+  // tick slips in before it. The clock used to read the store a render late, so for one render the
+  // view paired the new second side with the old count and beeped a "2" between the "1" and the
+  // switch.
+  test("Next side in the last seconds sounds the switch alone", async () => {
+    const { playCue } = jest.requireMock("@/src/sounds") as { playCue: jest.Mock };
+    jest.useFakeTimers();
+    await mount(null, sidePlank);
+    await act(() => {
+      useSettingsStore.setState({ soundEnabled: true });
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 68 });
+    });
+    for (let second = 0; second < 29; second++) {
+      await act(() => {
+        jest.advanceTimersByTime(1_000);
+      });
+    }
+    const before = playCue.mock.calls.length;
+
+    await act(() => fireEvent.press(screen.getByTestId("session-next-side")));
+    await act(() => {
+      jest.advanceTimersByTime(1_000);
+    });
+
+    expect(playCue.mock.calls.slice(before).map(([cue]) => cue)).toEqual(["switch"]);
+  });
+
   // The hero who stops on the first side because it hurts held what they held. Halving it would
   // write a false record at the worst moment.
   test("a set stopped on the first side logs the time held", async () => {

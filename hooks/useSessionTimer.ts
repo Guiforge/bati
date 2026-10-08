@@ -90,17 +90,36 @@ function isSameTimerState(a: SessionTimerState, b: SessionTimerState): boolean {
   );
 }
 
+function isSameInputs(a: TimerInputs, b: TimerInputs): boolean {
+  return (
+    a.timerStartTimestamp === b.timerStartTimestamp &&
+    a.timerDuration === b.timerDuration &&
+    a.status === b.status &&
+    a.lastPauseTimestamp === b.lastPauseTimestamp
+  );
+}
+
 export function useSessionTimer(): SessionTimerState {
   const timerStartTimestamp = useSessionStore((s) => s.timerStartTimestamp);
   const timerDuration = useSessionStore((s) => s.timerDuration);
   const status = useSessionStore((s) => s.status);
   const lastPauseTimestamp = useSessionStore((s) => s.lastPauseTimestamp);
 
-  const [state, setState] = useState<SessionTimerState>(
-    () =>
-      readTimerState({ timerStartTimestamp, timerDuration, status, lastPauseTimestamp }) ??
-      IDLE_TIMER,
-  );
+  const inputs = { timerStartTimestamp, timerDuration, status, lastPauseTimestamp };
+  const [state, setState] = useState(() => ({
+    inputs,
+    value: readTimerState(inputs) ?? IDLE_TIMER,
+  }));
+
+  // A store change that moves the clock is read in the render that sees it, not one effect later.
+  // "Next side" moves the start and the second side's length in one `set`: with the clock a render
+  // behind, the view paired the new length with the old count, and the side switch beeped a tick
+  // that belonged to neither. React re-runs this render before committing it.
+  let current = state;
+  if (!isSameInputs(state.inputs, inputs)) {
+    current = { inputs, value: readTimerState(inputs) ?? state.value };
+    setState(current);
+  }
 
   useEffect(() => {
     const inputs = { timerStartTimestamp, timerDuration, status, lastPauseTimestamp };
@@ -109,7 +128,9 @@ export function useSessionTimer(): SessionTimerState {
       const next = readTimerState(inputs);
       // Ticks 10x a second but the values only move once a second: bail on an unchanged read,
       // or every session screen re-renders ten times per second for nothing.
-      if (next) setState((prev) => (isSameTimerState(prev, next) ? prev : next));
+      if (next) {
+        setState((prev) => (isSameTimerState(prev.value, next) ? prev : { ...prev, value: next }));
+      }
     };
 
     tick(); // Immediate update
@@ -128,5 +149,5 @@ export function useSessionTimer(): SessionTimerState {
     return () => clearInterval(interval);
   }, [timerStartTimestamp, timerDuration, status, lastPauseTimestamp]);
 
-  return state;
+  return current.value;
 }

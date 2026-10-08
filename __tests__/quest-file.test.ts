@@ -122,6 +122,7 @@ function received(over: Partial<QuestFile["quest"]> = {}): QuestFile {
         movement: {
           own: {
             uuid: DIP_UUID,
+            perSide: false,
             name: "Porch dip",
             description: "Hands on the step behind you.",
             image: PHOTO,
@@ -154,6 +155,21 @@ describe("reading a quest file", () => {
 
   test("a file as written is read back as written", () => {
     expect(parse(JSON.stringify(received()))).toEqual(received());
+  });
+
+  // A file written before `0068` has no such key, and its movements were both at once.
+  test("an own movement's per-side flag travels, and reads as false when absent or not true", () => {
+    const file = received();
+    const withOwn = (perSide: unknown) => {
+      const slots = file.slots.map((s) =>
+        "own" in s.movement ? { ...s, movement: { own: { ...s.movement.own, perSide } } } : s,
+      );
+      const read = parse(JSON.stringify({ ...file, slots })).slots.find((s) => "own" in s.movement);
+      return read && "own" in read.movement ? read.movement.own.perSide : null;
+    };
+    expect(withOwn(true)).toBe(true);
+    expect(withOwn(undefined)).toBe(false);
+    expect(withOwn("yes")).toBe(false);
   });
 
   test("a missing translation reads as English, as untranslated seed rows do", () => {

@@ -19,14 +19,23 @@ import { critChance } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
-import { formatTarget, TARGET_RANGE } from "@/db/targets";
+import { formatSlotTarget, TARGET_RANGE } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSetAside } from "@/hooks/useSetAside";
+import { useSideSwitch } from "@/hooks/useSideSwitch";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
+import {
+  perSideSet,
+  SECOND_SIDE_GRACE_SECONDS,
+  SIDE_SWITCH_SECONDS,
+  type SidePhase,
+  sidePhase,
+} from "@/src/perSide";
+
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -38,8 +47,12 @@ import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { ExpeditionPanel } from "./ExpeditionPanel";
 import { GhostLine } from "./GhostLine";
 import { LiveMap } from "./LiveMap";
+import { SwitchGlow } from "./SwitchGlow";
 import { sessionArtHeight } from "./sessionArt";
 import { TimerBar } from "./TimerBar";
+
+/** How long before the switch the first side says it is coming. */
+const SIDE_SWITCH_WARNING_SECONDS = 5;
 
 /**
  * A tap aimed at the previous screen's button (GO, "I'm ready") that arrives just after it
@@ -48,11 +61,39 @@ import { TimerBar } from "./TimerBar";
  */
 const DONE_GUARD_MS = 700;
 
+/** The seconds a hold counts for: one side's worth on a per-side hold (`src/perSide.ts`). */
+function heldSeconds(
+  elapsedSeconds: number,
+  perSide: boolean,
+  targetSeconds: number,
+  firstSideSeconds: number | null,
+): number {
+  return perSide
+    ? perSideSet(elapsedSeconds, targetSeconds, firstSideSeconds).seconds
+    : elapsedSeconds;
+}
+
+/**
+ * The timer bar on a per-side hold: each side fills from empty over its own length, and the switch
+ * drains its eight seconds. Anything else reads the whole clock.
+ */
+function sideBarValue(
+  side: SidePhase | null,
+  progress: number,
+  firstSideSeconds: number,
+  secondSideSeconds: number,
+): number {
+  if (!side) return progress;
+  if (side.phase === "switch") return side.seconds / SIDE_SWITCH_SECONDS;
+  const length = side.phase === "first" ? firstSideSeconds : secondSideSeconds;
+  return length > 0 ? 1 - side.seconds / length : 1;
+}
+
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Main workout session view with multiple UI states
 export function ActiveExerciseView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { width, height, fontScale } = useWindowDimensions();
   const language = useSettingsStore((s) => s.language);
   const { selection, heavyImpact } = useHaptics();
   const reducedMotion = useReducedMotion();
@@ -95,6 +136,8 @@ export function ActiveExerciseView() {
   }, []);
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const resumeSession = useSessionStore((s) => s.resumeSession);
+  const nextSide = useSessionStore((s) => s.nextSide);
+  const firstSideSeconds = useSessionStore((s) => s.firstSideSeconds);
   const bossFight = useSessionStore((s) => s.bossFight);
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
 
@@ -107,9 +150,30 @@ export function ActiveExerciseView() {
   const { remainingSeconds, elapsedSeconds, isOvertime, progress } = useSessionTimer();
   // An outing has nothing to announce. Left on the real count, this fired three ticks and a "go"
   // from a phone in a pocket at the target mark, while the hero was a third of the way round the
-  // lake. Zero is the value a rep-based set already parks on, which the hook is silent about.
-  useCountdownCues(isOuting ? 0 : remainingSeconds);
+  // lake. A counted set has no countdown either, and says so with null rather than the 0 its idle
+  // clock reads: swapping a hold for a counted movement mid-set made that 0 sound like the hold's.
+  useCountdownCues(isOuting || currentEx?.target.type !== "time" ? null : remainingSeconds);
   const targetValue = currentEx?.target.value ?? 0;
+  // One side, a short switch, then the other (`0068`, `src/perSide.ts`): the store runs the
+  // clock for all three, and the numeral counts down the phase in progress.
+  const perSideHold = !isOuting && currentEx?.target.type === "time" && currentEx.exercise.perSide;
+  // No clock yet reads as zero left, which is the second side: nothing to turn before it starts.
+  const clockStarted = useSessionStore((s) => s.timerStartTimestamp !== null);
+  // The second side matches the first: its target, or what the first side lasted when "Next side"
+  // cut it short (`nextSide`), since past that the weaker side is all that counts.
+  const secondSideSeconds = firstSideSeconds ?? targetValue;
+  const side = perSideHold && clockStarted ? sidePhase(remainingSeconds, secondSideSeconds) : null;
+  /** What the numeral counts down: the side in progress, not the whole clock. */
+  const sideRemainingSeconds = side ? side.seconds : remainingSeconds;
+  // The switch read as a timer: a 0:08 counting down where the second side's clock would be, under
+  // "keep going, the clock runs past the target". The product owner tried it and could not tell
+  // which side he was on. So it is announced before it comes, says what it is while it lasts, and
+  // the second side is greeted when it starts (audit of 2026-10-07, option B).
+  const inSwitch = side?.phase === "switch";
+  const switchSoon = side?.phase === "first" && side.seconds <= SIDE_SWITCH_WARNING_SECONDS;
+  const secondSideStarting =
+    side?.phase === "second" && secondSideSeconds - side.seconds < SECOND_SIDE_GRACE_SECONDS;
+  useSideSwitch(remainingSeconds, secondSideSeconds, SIDE_SWITCH_SECONDS, perSideHold);
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
   // Counts ± taps, and keys the numeral's bounce. Keyed on the count itself, a typed "150"
   // remounted the field on its first digit and put the keyboard away.
@@ -134,7 +198,12 @@ export function ActiveExerciseView() {
    * two expressions would be two answers to "did that beat your best", and the one the hero sees
    * is the one that would be wrong.
    */
-  const liveValue = Math.max(1, isTimeBased ? elapsedSeconds : adjustedReps);
+  const liveValue = Math.max(
+    1,
+    isTimeBased
+      ? heldSeconds(elapsedSeconds, perSideHold, targetValue, firstSideSeconds)
+      : adjustedReps,
+  );
 
   const exerciseName = localizedName(currentEx.exercise, language);
 
@@ -186,7 +255,11 @@ export function ActiveExerciseView() {
 
     // Elapsed seconds for a hold, the adjusted value for reps: `liveValue` above, which is the
     // same number the ghost line has been comparing to the record.
-    completeExercise(liveValue);
+    // A per-side hold says how many sides were worked: tapping Done in the switch is one.
+    completeExercise(
+      liveValue,
+      perSideHold ? perSideSet(elapsedSeconds, targetValue, firstSideSeconds).sides : undefined,
+    );
   };
 
   const handleDonePress = () => {
@@ -258,8 +331,15 @@ export function ActiveExerciseView() {
 
   // The hero is the elastic part of the column: the counter and the CTA take their own height
   // and the picture gets everything left over, so nothing below it is ever clipped and a tall
-  // screen shows more movement rather than more empty tint. This is only its floor.
-  const heroMinHeight = Math.round(sessionArtHeight(width, height) * 0.6);
+  // screen shows more movement rather than more empty tint. This is only its floor, and it gives
+  // way to a large font: at 130% on a 360x640 screen the text below grows by a third, the action
+  // row wraps, and a fixed floor pushed Done under the navigation bar.
+  // ponytail: scales with the font, not with what the column measures. Past ~150% on 640dp,
+  // measure the column (onLayout) and give the hero what is left.
+  const heroMinHeight = Math.round(
+    // `|| 1`: a mocked window has no fontScale, and NaN would erase the floor.
+    (sessionArtHeight(width, height) * 0.6) / Math.max(1, fontScale || 1),
+  );
   const hero = (
     <ExerciseHero
       source={getExerciseAsset(currentEx.exercise.imagePath)}
@@ -269,6 +349,9 @@ export function ActiveExerciseView() {
       topInset={insets.top}
       onPress={handleShowHowTo}
       accessibilityLabel={t("session.how_to_do_it")}
+      // Turned from the switch on, so the hero sees how to set up the second side while getting
+      // there, not once its clock is already running.
+      mirrored={side !== null && side.phase !== "first"}
     />
   );
   const targetMuscle = currentEx.exercise.muscles[0];
@@ -468,8 +551,11 @@ export function ActiveExerciseView() {
           <YStack gap="$2">
             {/* No label row: the numeral below is the same figure at 72px. */}
             <TimerBar
-              value={progress}
-              fill={isOvertime ? "$success" : "$primary"}
+              // The phase in progress, like the numeral: each side fills from empty, and the switch
+              // drains its own eight seconds. On the whole clock the switch barely moved, and the
+              // second side opened at two thirds full.
+              value={sideBarValue(side, progress, targetValue, secondSideSeconds)}
+              fill={isOvertime ? "$success" : inSwitch ? "$warning" : "$primary"}
               fillOpacity={isOvertime ? 0.9 : 1}
               bg="$surface2"
             />
@@ -527,50 +613,100 @@ export function ActiveExerciseView() {
                 {/* Not on an outing: a walk has no movement to swap and no set to fail. */}
                 {isOuting ? null : (
                   <>
-                    <Text fontSize={12} color="$textSecondary" opacity={0.5}>
-                      ·
-                    </Text>
-                    <Pressable
-                      testID="session-swap-exercise"
-                      hitSlop={12}
-                      onPress={() => {
-                        selection();
-                        setSwapOpen(true);
-                      }}
-                      accessibilityRole="button"
-                      accessibilityLabel={t("quests.swap_exercise")}
-                    >
-                      <Text
-                        py="$2"
-                        fontSize={12}
-                        fontWeight="700"
-                        color="$textSecondary"
-                        numberOfLines={1}
-                      >
-                        {t("session.swap_short", "Replace")}
+                    {/* Each dot travels with the link after it, so a row that wraps at a large
+                        font never leaves one dangling at the end of a line. */}
+                    <XStack items="center" gap="$3">
+                      <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                        ·
                       </Text>
-                    </Pressable>
+                      <Pressable
+                        testID="session-swap-exercise"
+                        hitSlop={12}
+                        onPress={() => {
+                          selection();
+                          setSwapOpen(true);
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("quests.swap_exercise")}
+                      >
+                        <Text
+                          py="$2"
+                          fontSize={12}
+                          fontWeight="700"
+                          color="$textSecondary"
+                          numberOfLines={1}
+                        >
+                          {t("session.swap_short", "Replace")}
+                        </Text>
+                      </Pressable>
+                    </XStack>
 
-                    <Text fontSize={12} color="$textSecondary" opacity={0.5}>
-                      ·
-                    </Text>
-                    <Pressable
-                      testID="session-skip-exercise"
-                      hitSlop={12}
-                      onPress={handleSkip}
-                      accessibilityRole="button"
-                      accessibilityLabel={t("session.skip_exercise")}
-                    >
-                      <Text
-                        py="$2"
-                        fontSize={12}
-                        fontWeight="700"
-                        color="$textSecondary"
-                        numberOfLines={1}
-                      >
-                        {t("session.skip_exercise")}
+                    <XStack items="center" gap="$3">
+                      <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                        ·
                       </Text>
-                    </Pressable>
+                      <Pressable
+                        testID="session-skip-exercise"
+                        hitSlop={12}
+                        onPress={handleSkip}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("session.skip_exercise")}
+                      >
+                        <Text
+                          py="$2"
+                          fontSize={12}
+                          fontWeight="700"
+                          color="$textSecondary"
+                          numberOfLines={1}
+                        >
+                          {t("session.skip_exercise")}
+                        </Text>
+                      </Pressable>
+                    </XStack>
+
+                    {/* The first side gave out before its target: go to the switch now instead of
+                    waiting on a clock for a side that is over. Here with the other links, away
+                    from Done, which would end the whole set and never offer the second side. */}
+                    {/* Mounted for the whole per-side set and live on the first side only: a link that
+                    left at the switch would shorten this row and move the counter and Done. Last in
+                    the row, so once hidden it leaves no gap between two dots. */}
+                    {perSideHold ? (
+                      <XStack
+                        items="center"
+                        gap="$3"
+                        opacity={side?.phase === "first" ? 1 : 0}
+                        pointerEvents={side?.phase === "first" ? "auto" : "none"}
+                        accessibilityElementsHidden={side?.phase !== "first"}
+                        importantForAccessibility={
+                          side?.phase === "first" ? "auto" : "no-hide-descendants"
+                        }
+                      >
+                        <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                          ·
+                        </Text>
+                        <Pressable
+                          testID="session-next-side"
+                          hitSlop={12}
+                          disabled={side?.phase !== "first"}
+                          onPress={() => {
+                            selection();
+                            nextSide();
+                          }}
+                          accessibilityRole="button"
+                          accessibilityLabel={t("session.next_side")}
+                        >
+                          <Text
+                            py="$2"
+                            fontSize={12}
+                            fontWeight="700"
+                            color="$textSecondary"
+                            numberOfLines={1}
+                          >
+                            {t("session.next_side")}
+                          </Text>
+                        </Pressable>
+                      </XStack>
+                    ) : null}
                   </>
                 )}
               </XStack>
@@ -626,26 +762,86 @@ export function ActiveExerciseView() {
                       </>
                     ) : (
                       <>
-                        {/* Normal countdown */}
-                        <H1
-                          fontSize={72}
-                          lineHeight={80}
-                          fontWeight="700"
-                          fontFamily="$body"
-                          fontVariant={["tabular-nums"]}
-                          color="$text"
-                        >
-                          {formatTime(remainingSeconds)}
-                        </H1>
+                        {/* The switch keeps the big figure and counts its own seconds down, bare
+                            and orange so it never reads as a side's 0:08. A word in its place left
+                            the time to turn in a small line nobody read from the floor. */}
+                        {inSwitch && side ? (
+                          <H1
+                            testID="session-switch-count"
+                            fontSize={72}
+                            lineHeight={80}
+                            fontWeight="700"
+                            fontFamily="$body"
+                            fontVariant={["tabular-nums"]}
+                            color="$warning"
+                          >
+                            {String(side.seconds)}
+                          </H1>
+                        ) : (
+                          // Normal countdown
+                          <H1
+                            fontSize={72}
+                            lineHeight={80}
+                            fontWeight="700"
+                            fontFamily="$body"
+                            fontVariant={["tabular-nums"]}
+                            color="$text"
+                          >
+                            {formatTime(sideRemainingSeconds)}
+                          </H1>
+                        )}
                         {/* Not "Seconds". The number counts *down* to the target, and the hint
                             below it talks about carrying on past that target, so a caption that
                             only named the unit left the two readings of 0:24 (elapsed? left?)
                             equally available. The audit of 2026-09-10 read it as counting up. */}
-                        <Paragraph fontWeight="700" color="$textSecondary">
-                          {t("session.seconds_left_of", {
-                            target: formatTarget(currentEx.target, language),
-                          })}
-                        </Paragraph>
+                        {/* Not during the switch: its five seconds are not "left of 20 s per
+                            side", and the line under the numeral already says what they are. */}
+                        {/* The same component in every phase, so the line keeps its height. */}
+                        {inSwitch ? (
+                          <Text
+                            testID="session-switch-title"
+                            fontSize={22}
+                            lineHeight={28}
+                            fontWeight="700"
+                            color="$warning"
+                            textTransform="uppercase"
+                          >
+                            {t("session.switch_sides")}
+                          </Text>
+                        ) : (
+                          <Paragraph lineHeight={28} fontWeight="700" color="$textSecondary">
+                            {t("session.seconds_left_of", {
+                              target: formatSlotTarget(
+                                {
+                                  target: { ...currentEx.target, value: secondSideSeconds },
+                                  exercise: currentEx.exercise,
+                                },
+                                language,
+                              ),
+                            })}
+                          </Paragraph>
+                        )}
+                        {/* One line height whatever it says: the art above is the elastic part of
+                            the screen, so a line that grows or leaves makes the whole picture jump
+                            while the hero is changing sides. */}
+                        {side ? (
+                          <Text
+                            testID="session-side"
+                            lineHeight={28}
+                            // Bigger when it announces something: it is read from the floor.
+                            fontSize={switchSoon || secondSideStarting ? 20 : 14}
+                            fontWeight="700"
+                            color={switchSoon || secondSideStarting ? "$warning" : "$text"}
+                          >
+                            {inSwitch
+                              ? t("session.side_two_next")
+                              : switchSoon
+                                ? t("session.side_switch_soon")
+                                : secondSideStarting
+                                  ? t("session.side_two_go")
+                                  : t("session.side_of", { side: side.phase === "first" ? 1 : 2 })}
+                          </Text>
+                        ) : null}
                       </>
                     )}
                   </YStack>
@@ -682,7 +878,9 @@ export function ActiveExerciseView() {
                           accessibilityLabel={t("session.reps_count_accessibility")}
                         />
                         <Paragraph fontWeight="700" color="$textSecondary">
-                          {t("session.reps")}
+                          {currentEx.exercise.perSide
+                            ? t("session.reps_per_side")
+                            : t("session.reps")}
                         </Paragraph>
                       </YStack>
                       <Button
@@ -723,18 +921,34 @@ export function ActiveExerciseView() {
             {/* Hint for time-based exercises. In a fight the same overshoot rule applies to a
                 hold as to a rep, and the seconds past the target are exactly the moment the hero
                 is deciding about: the crit line replaces the generic one there. */}
+            {/* Not during the switch: "the clock keeps running past the target" and the crit odds
+                both say a side is being timed, and none is. On the first side the plain hint is
+                wrong too (the clock does not run on past it), so it says what comes next. */}
             {isTimeBased && !isOuting && (
               <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {fightLive
-                  ? t("session.crit_hint_time", {
-                      percent: Math.round(
-                        critChance(
-                          currentEx.target.value - remainingSeconds,
-                          currentEx.target.value,
-                        ) * 100,
-                      ),
-                    })
-                  : t("session.keep_going_hint")}
+                {/* Kept, blank, during the switch and the second side up to its target: a line
+                    that leaves lets the art above grow, and "keep going past the target" wraps to
+                    two lines at a large font, so either one jumps the screen under a hero who is
+                    getting into the second side. It comes back once the target is reached. */}
+                {inSwitch || (side?.phase === "second" && !isOvertime && !fightLive)
+                  ? " "
+                  : side?.phase === "first" && !fightLive
+                    ? t("session.side_switch_ahead", { seconds: SIDE_SWITCH_SECONDS })
+                    : fightLive
+                      ? t("session.crit_hint_time", {
+                          percent: Math.round(
+                            critChance(
+                              heldSeconds(
+                                elapsedSeconds,
+                                perSideHold,
+                                currentEx.target.value,
+                                firstSideSeconds,
+                              ),
+                              currentEx.target.value,
+                            ) * 100,
+                          ),
+                        })
+                      : t("session.keep_going_hint")}
               </Text>
             )}
 
@@ -775,6 +989,7 @@ export function ActiveExerciseView() {
                 ghost={ghost}
                 type={currentEx.target.type}
                 live={liveValue}
+                perSide={currentEx.exercise.perSide}
                 reducedMotion={reducedMotion}
               />
             ) : null}
@@ -846,6 +1061,9 @@ export function ActiveExerciseView() {
         bottomInset={insets.bottom}
         pickAction={null}
       />
+
+      {/* Last, so it lies over everything, and touches nothing. */}
+      <SwitchGlow visible={switchSoon} reducedMotion={reducedMotion} />
     </YStack>
   );
 }

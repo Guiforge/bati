@@ -237,7 +237,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | # | Item | Impact | Effort | Prio | From |
 | --- | --- | --- | --- | --- | --- |
 | 4.2 | Local training reminders, no Firebase (built: #137 to #140) | High | M | **P1** | |
-| 4.26 | One-sided holds are timed as one side, and journaled wrong | Med-high | S–M | **P1** | |
+| 4.26 | One-sided holds are timed as one side, and journaled wrong (built: `0068`) | Med-high | S–M | **P1** | |
 | 4.3 | Immersive session: exercise art **and** audio | High | M | **P1** | Zombies, Run! |
 | 4.6 | Boss battle refonte | High | M–L | **P1** | |
 | 4.24 | Translations open to contributors, now that four locales ship | Med-high | S | **P1** | Streak |
@@ -334,6 +334,46 @@ names the trigger for the real fix: *"A second reader (a timed quest slot, the j
 moment for the column."* This is the second reader. The fix is that column (a laterality flag on
 `exercises`, set by a content migration scoped to `creator`), then two countdowns with a short
 switch between them in the session, with the warm-up reading the same flag so the name list goes.
+
+**Built** (`0068_one_side_then_the_other.sql`). `exercises.perSide` marks nine seed movements, and
+the target is **per side**. A timed slot runs side, 8 s switch, side (`src/perSide.ts`, set by
+`setTimer` in `stores/session.ts`); the numeral counts the phase in progress under "Side 1 of 2",
+"Switch sides", "Side 2 of 2", and the exercise art turns to face the other way from the switch on.
+`useSideSwitch` vibrates at both ends of the switch and, with beeps on, plays 3-2-1 then
+`switch.wav` (two short beeps) into it and 3-2-1 then "go" out of it. The warm-up reads the same
+column through the same hook, with no switch (its sides are fifteen seconds of mobility).
+
+The journal logs one side's worth, the weaker one (`perSideSet`): the time held on the
+first side, the full first side if stopped in the switch, the second side if it fell short, and
+the average of the two past the target. Never the switch. XP and boss damage pay both sides
+(`pricing.perSide`, `computeDamage`) once both were worked (`perSideSet`: a hold stopped before
+the second side's first 3 s is one side, and is paid as one); the switch is never paid. Boss pools
+price both sides: computed ones in `calculateBossHp`, seeded ones raised in `0068` by the extra
+their per-side slots deal; a boss fight already open at the update keeps the pool it was created
+with, so it may fall one step early, once. A counted slot reads "Reps per side" and is paid for
+both sides: there is no clock to say otherwise, and a hero who logs one side as two could already
+type any count.
+Every surface that prints such a figure says "per side" (`perSideLabel` in `db/targets.ts`), except
+the session's ghost line, whose caption right above already says it. Estimates count both sides and
+the switch.
+
+Known ambiguity, kept on purpose: results logged before `0068` were never told what the target
+meant, and are now read as per side. A hero who logged a total keeps an old best that may be twice
+a side. Migrating them would guess what each hero did; the first per-side session sets a fair
+ghost again.
+
+A hero's own movement can be per side too: the editor asks "Sides" (both at once, or one side
+then the other), never for an outing, and the quest file carries the flag (`perSide`, absent and
+read as false in files from before `0068`). A movement that alternates within the set, like the
+Curtsy Squat or the Lunge, is "both at once": its count already covers both sides. A per-side set
+counted in reps has no clock, so it gets no switch, glow or cues: the hero does one side then the
+other and enters the count per side.
+
+Release note for the version that ships it (into
+`fastlane/metadata/android/*/changelogs/<versionCode>.txt`): « Gainage latéral, squat pistolet,
+pigeon et 6 autres : l'objectif est par côté, avec 8 s et un double bip pour changer de côté, et l'XP compte les deux
+côtés. Tes
+anciens records sur ces mouvements sont lus par côté. »
 
 ### 4.3 The session becomes a mission — art, and the narrative out loud
 

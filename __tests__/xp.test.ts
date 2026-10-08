@@ -411,3 +411,16 @@ describe("db/xp", () => {
     ).toBe(144);
   });
 });
+
+describe("a per-side set (0068)", () => {
+  // The result is one side's, the work was both: a side plank of 30 s a side pays for 60, and the
+  // switch between the sides pays nothing.
+  test("pays both sides of a hold and of a count, and never the switch", () => {
+    const perSide = { ...MEDIUM, perSide: true };
+    const xp = (set: XpSet) =>
+      computeSessionXp({ sets: [set], effortCeilingSeconds: 3600, userLevel: "medium" });
+
+    expect(xp(hold(30, 30, perSide))).toBe(xp(hold(60, 60)));
+    expect(xp(reps(12, 12, perSide))).toBe(xp(reps(24, 24)));
+  });
+});

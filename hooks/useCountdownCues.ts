@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { playCue, warm } from "@/src/sounds";
+import { type Cue, playCue, warm } from "@/src/sounds";
 import { useSettingsStore } from "@/stores/settings";
 
 /**
@@ -27,8 +27,17 @@ import { useSettingsStore } from "@/stores/settings";
  *
  * The two crossings that *do* repeat are meant to: `addRestTime(+30)` during a rest, and the
  * remount `ActiveExerciseView` does per exercise.
+ *
+ * `zeroCue` is what the zero sounds like. A per-side hold counts down to its halfway mark with
+ * `"switch"`, through this same hook, so the guards above hold for the switch too.
+ *
+ * `null` means "no countdown here", and is not the same as a countdown at zero. The two used to
+ * share the value 0, so any countdown that stopped being one (a warm-up step that is no longer
+ * per side, a hold swapped for a counted movement) moved from, say, -15 to 0 and sounded its zero:
+ * a switch cue laid 40 ms over the step's real "go". Null is silent and forgets the last value, so
+ * the countdown that follows starts as a mount.
  */
-export function useCountdownCues(remainingSeconds: number): void {
+export function useCountdownCues(remainingSeconds: number | null, zeroCue: Cue = "go"): void {
   const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   // `null` until the first run, which is what tells a mount apart from a tick.
   const previousRef = useRef<number | null>(null);
@@ -38,6 +47,10 @@ export function useCountdownCues(remainingSeconds: number): void {
   }, [soundEnabled]);
 
   useEffect(() => {
+    if (remainingSeconds === null) {
+      previousRef.current = null;
+      return;
+    }
     const previous = previousRef.current;
     // Updated before the enabled check, deliberately: turning sound on at 0:02 should be heard
     // as "1", not as "2" and "1" fired back to back once the effect re-runs.
@@ -52,6 +65,6 @@ export function useCountdownCues(remainingSeconds: number): void {
     if (previous === null && remainingSeconds === 0) return;
 
     if (remainingSeconds >= 1 && remainingSeconds <= 3) playCue("tick");
-    else if (remainingSeconds === 0) playCue("go");
-  }, [remainingSeconds, soundEnabled]);
+    else if (remainingSeconds === 0) playCue(zeroCue);
+  }, [remainingSeconds, soundEnabled, zeroCue]);
 }

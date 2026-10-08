@@ -202,6 +202,8 @@ export type DamageParams = {
    * only the magnitude recomputed.
    */
   forcedCritical?: boolean;
+  /** Both sides land (`0068`): the result is one side's, the blow is both. */
+  perSide?: boolean;
 };
 
 /**
@@ -224,7 +226,8 @@ export function computeDamage(fight: DamageableFight, params: DamageParams): Dam
   }
 
   // Base damage = the result value, with seconds converted to rep-equivalents
-  let damage = toRepEquivalent(params.resultValue, params.targetType, params.style);
+  let damage =
+    toRepEquivalent(params.resultValue, params.targetType, params.style) * (params.perSide ? 2 : 1);
   let weaknessBonus = false;
   let resistancePenalty = false;
 
@@ -511,6 +514,7 @@ export async function calculateBossHp(
       targetType: questExercises.targetType,
       rounds: quests.rounds,
       style: exercises.style,
+      perSide: exercises.perSide,
     })
     .from(questExercises)
     .innerJoin(quests, eq(quests.id, questExercises.questId))
@@ -520,7 +524,8 @@ export async function calculateBossHp(
   // A cardio slot contributes nothing, so a campaign built only of expeditions floors at the
   // minimum below rather than handing the boss an unreachable HP total.
   const totalHp = slots.reduce((sum, ex) => {
-    const perSet = toRepEquivalent(ex.targetMax, ex.targetType, ex.style);
+    // A per-side slot hits for both sides (`computeDamage`), so it is priced for both here.
+    const perSet = toRepEquivalent(ex.targetMax, ex.targetType, ex.style) * (ex.perSide ? 2 : 1);
     return sum + perSet * ex.rounds * (stepCountByQuestId.get(ex.questId) ?? 0);
   }, 0);
 

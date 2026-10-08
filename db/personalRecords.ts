@@ -28,6 +28,8 @@ export type NewRecordResult = {
   previousValue: number | null;
   exerciseId?: number;
   exerciseName?: Localized;
+  /** A one-sided movement's record is one side's. False for a session record. */
+  perSide: boolean;
 };
 
 /**
@@ -136,6 +138,7 @@ export type MovementRecord = {
   deName: string;
   esName: string;
   imagePath: string;
+  perSide: boolean;
   /** Reps and seconds are different records on the same movement, so the unit is part of one. */
   type: QuestTargetType;
   best: number;
@@ -170,6 +173,7 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
       deName: exercises.deName,
       esName: exercises.esName,
       imagePath: exercises.imagePath,
+      perSide: exercises.perSide,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
@@ -198,6 +202,7 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
         deName: row.deName,
         esName: row.esName,
         imagePath: row.imagePath,
+        perSide: row.perSide,
         type: row.type,
         best,
         last: ghost?.last ?? best,
@@ -213,6 +218,7 @@ export type SessionStanding = {
   exerciseName: Localized;
   /** Reps and seconds are separate records on one movement, so they are separate standings. */
   type: QuestTargetType;
+  perSide: boolean;
   value: number;
   /** 2 or 3. Rank 1 is a record, and `checkForNewRecords` already owns that moment. */
   rank: number;
@@ -340,6 +346,7 @@ export async function getSessionStanding(
       frName: exercises.frName,
       deName: exercises.deName,
       esName: exercises.esName,
+      perSide: exercises.perSide,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
@@ -407,6 +414,7 @@ export async function getSessionStanding(
         exerciseId: row.exerciseId,
         exerciseName: { en: row.enName, fr: row.frName, de: row.deName, es: row.esName },
         type: row.type,
+        perSide: row.perSide,
         value,
         ...claim,
       },
@@ -476,6 +484,7 @@ export async function checkForNewRecords(
       newRecords.push({
         isNewRecord: true,
         recordType: "longest_session",
+        perSide: false,
         newValue: session.durationSeconds,
         previousValue: prevMax > 0 ? prevMax : null,
       });
@@ -497,6 +506,7 @@ export async function checkForNewRecords(
       newRecords.push({
         isNewRecord: true,
         recordType: "most_xp",
+        perSide: false,
         newValue: session.xpEarned,
         previousValue: prevMax > 0 ? prevMax : null,
       });
@@ -515,6 +525,7 @@ export async function checkForNewRecords(
       newRecords.push({
         isNewRecord: true,
         recordType: "longest_outing",
+        perSide: false,
         newValue: session.leaguesM,
         previousValue: prevMax > 0 ? prevMax : null,
       });
@@ -537,6 +548,7 @@ export async function checkForNewRecords(
       frName: exercises.frName,
       deName: exercises.deName,
       esName: exercises.esName,
+      perSide: exercises.perSide,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
@@ -583,6 +595,7 @@ export async function checkForNewRecords(
           de: result.deName,
           es: result.esName,
         },
+        perSide: result.perSide,
       });
     }
   }

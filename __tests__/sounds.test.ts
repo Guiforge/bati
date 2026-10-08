@@ -67,25 +67,25 @@ describe("warm", () => {
 
     warm();
 
-    expect(mockCreateAudioPlayer).toHaveBeenCalledTimes(2);
+    expect(mockCreateAudioPlayer).toHaveBeenCalledTimes(3);
   });
 
   /**
    * The one thing this file cannot check by running the module: jest-expo's asset transformer
-   * stubs every `require` of a binary asset to the same value, so `SOURCES.tick` and `SOURCES.go`
-   * are indistinguishable here — a copy-paste making both cues point at tick.wav would pass every
+   * stubs every `require` of a binary asset to the same value, so the cues in `SOURCES` are
+   * indistinguishable here — a copy-paste making both cues point at tick.wav would pass every
    * assertion above, and the countdown would beep its zero in the same voice as its ticks.
    *
    * ponytail: regex over the source, same text-scan trade `android-permissions.test.ts` makes on
-   * the trim plugin. If SOURCES ever stops being two literal requires, assert it another way
+   * the trim plugin. If SOURCES ever stops being literal requires, assert it another way
    * rather than deleting this.
    */
-  test("the two cues really are two different files", () => {
+  test("every cue really is a different file", () => {
     const source = fs.readFileSync(path.join(__dirname, "..", "src", "sounds.ts"), "utf8");
     const wavs = [...source.matchAll(/require\("[^"]*\/([a-z]+\.wav)"\)/g)].map(([, file]) => file);
 
-    expect(wavs).toHaveLength(2);
-    expect(new Set(wavs).size).toBe(2);
+    expect(wavs).toHaveLength(3);
+    expect(new Set(wavs).size).toBe(3);
   });
 
   test("plays over the hero's music without pausing it, and is not muted by vibrate", () => {
@@ -111,7 +111,7 @@ describe("warm", () => {
     // ActiveExerciseView remounts per exercise; the audio mode is process-global and each call
     // writes device audio routing on the UI thread.
     expect(mockSetAudioModeAsync).toHaveBeenCalledTimes(1);
-    expect(mockCreateAudioPlayer).toHaveBeenCalledTimes(2);
+    expect(mockCreateAudioPlayer).toHaveBeenCalledTimes(3);
   });
 
   test("a device that refuses the audio mode does not take the session down", async () => {
@@ -148,7 +148,7 @@ describe("playCue", () => {
     expect(tick?.seekTo).toHaveBeenCalledTimes(2);
     expect(tick?.seekTo).toHaveBeenCalledWith(0);
     expect(tick?.play).toHaveBeenCalledTimes(2);
-    expect(mockCreateAudioPlayer).toHaveBeenCalledTimes(2); // reused, not rebuilt per beep
+    expect(mockCreateAudioPlayer).toHaveBeenCalledTimes(3); // reused, not rebuilt per beep
   });
 
   test("says nothing when warm never ran, rather than building an unconfigured player", () => {

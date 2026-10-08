@@ -83,6 +83,7 @@ import type { OutingGoal } from "@/src/gps/track";
 import { credited } from "@/src/gps/track";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
+import { perSideClockSeconds, SIDE_SWITCH_SECONDS } from "@/src/perSide";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
 import { bindSession, isExpedition, useExpeditionStore } from "@/stores/expedition";
@@ -201,7 +202,12 @@ export function holdNeedingAnswer(
   if (!last || state.lastSetSkipped || state.longHoldKept) return null;
   if (last.result.type !== "time" || last.target?.type !== "time") return null;
   if (isOutdoors(last.pricing?.style)) return null;
-  return isSuspiciousHold(last.result.value, last.target.value) ? last : null;
+  // A per-side hold logs the average past its target, so a second side left running for minutes
+  // is halved before the check sees it. Asked about the second side itself, rebuilt from the two.
+  const held = last.pricing?.perSide
+    ? 2 * last.result.value - last.target.value
+    : last.result.value;
+  return isSuspiciousHold(held, last.target.value) ? last : null;
 }
 
 interface SessionState {
@@ -215,6 +221,11 @@ interface SessionState {
   lastDamageResult: DamageResult | null;
   /** Set once the hero keeps a suspiciously long hold; cleared by the next logged set. */
   longHoldKept: boolean;
+  /**
+   * How long the first side of a per-side hold lasted, when the hero cut it short with "Next
+   * side" (`nextSide`). Null while it runs its course; every new set clears it (`setTimer`).
+   */
+  firstSideSeconds: number | null;
   /**
    * Hits landed this session, not yet in the database.
    *
@@ -366,7 +377,11 @@ interface SessionState {
   quitSession: () => void;
 
   // Progression
-  completeExercise: (resultValue: number) => void;
+  /**
+   * `sidesWorked`: a per-side hold stopped before its second side is paid for one side
+   * (`perSideSet`). Omitted, a per-side set is paid for both: a counted one has no clock to tell.
+   */
+  completeExercise: (resultValue: number, sidesWorked?: 1 | 2) => void;
   /** Ends an outing from outside any view. See the implementation for why it exists. */
   completeOuting: () => void;
   skipExercise: () => void;
@@ -375,6 +390,11 @@ interface SessionState {
   skipRest: () => void;
   /** The hero answered "keep it" to the rest screen's question about a very long hold. */
   keepLongHold: () => void;
+  /**
+   * The first side of a per-side hold is over before its target: remember how long it lasted and
+   * go straight to the switch, as if its clock had run out.
+   */
+  nextSide: () => void;
   addRestTime: (seconds: number) => void;
 
   // DB
@@ -454,6 +474,7 @@ export type SavedSessionState = Pick<
   | "results"
   | "lastSetSkipped"
   | "longHoldKept"
+  | "firstSideSeconds"
   | "sessionUuid"
   | "goal"
 > & { savedAt: number };
@@ -526,16 +547,32 @@ function advanceAfterSet(
     };
   }
 
-  const nextExDef = quest.exercises[nextExercise];
-  const isNextTimeBased = nextExDef?.target.type === "time";
-
   return {
     status: "running",
     results,
     currentRoundIndex: nextRound,
     currentExerciseIndex: nextExercise,
-    timerStartTimestamp: isNextTimeBased ? Date.now() : null,
-    timerDuration: isNextTimeBased ? nextExDef.target.value : 0,
+    ...setTimer(quest.exercises[nextExercise]),
+  };
+}
+
+/**
+ * The clock a set starts with: a hold counts its target down, a counted set runs no clock.
+ *
+ * A per-side hold (`0068`) runs the target twice, once for each side, with a short switch between
+ * them (`src/perSide.ts`). Every door into a set goes through here, so no door can start a side plank on half
+ * its time.
+ */
+function setTimer(slot: { target: Target; exercise: Pick<Exercise, "perSide"> } | undefined) {
+  if (slot?.target.type !== "time") {
+    return { timerStartTimestamp: null, timerDuration: 0, firstSideSeconds: null };
+  }
+  return {
+    firstSideSeconds: null,
+    timerStartTimestamp: Date.now(),
+    timerDuration: slot.exercise.perSide
+      ? perSideClockSeconds(slot.target.value)
+      : slot.target.value,
   };
 }
 
@@ -950,13 +987,9 @@ async function dealFinalBlow(
  * and the view then hands `completeExercise` a single second.
  */
 function runningFrom(quest: Quest, currentExerciseIndex: number) {
-  const firstEx = quest.exercises[currentExerciseIndex];
-  const isTimeBased = firstEx?.target.type === "time";
-
   return {
     status: "running" as const,
-    timerStartTimestamp: isTimeBased ? Date.now() : null,
-    timerDuration: isTimeBased ? firstEx.target.value : 0,
+    ...setTimer(quest.exercises[currentExerciseIndex]),
   };
 }
 
@@ -1084,6 +1117,14 @@ function recordOf(
   };
 }
 
+/**
+ * Whether a set is paid for both sides (`0068`): XP (`pricing.perSide`) and the blow read this one
+ * flag. Only when both were worked; a counted per-side set has no clock to say, so it is.
+ */
+function paysBothSides(exercise: Pick<Exercise, "perSide">, sidesWorked?: 1 | 2): boolean {
+  return exercise.perSide && sidesWorked !== 1;
+}
+
 export function beginTrackingIfOuting(
   quest: Quest,
   sessionUuid: string | null,
@@ -1142,6 +1183,7 @@ export const useSessionStore = create<SessionState>()(
     pendingDamage: [],
     lastDamageResult: null,
     longHoldKept: false,
+    firstSideSeconds: null,
     status: "idle",
     prePauseStatus: null,
     warmupSequence: [],
@@ -1370,17 +1412,11 @@ export const useSessionStore = create<SessionState>()(
             }
           : bossFight;
 
-      // Get target duration for first exercise in round (if time-based)
-      const firstExercise = quest.exercises[0];
-      const isTimeBased = firstExercise?.target.type === "time";
-      const targetDuration = isTimeBased ? firstExercise.target.value : 0;
-
       set({
         status: "running",
         prePauseStatus: null,
         currentExerciseIndex: 0,
-        timerStartTimestamp: isTimeBased ? Date.now() : null,
-        timerDuration: targetDuration,
+        ...setTimer(quest.exercises[0]),
         results: resultsForPriorRounds,
         pendingDamage: keptDamage,
         bossFight: restoredFight,
@@ -1437,12 +1473,14 @@ export const useSessionStore = create<SessionState>()(
         .catch((e) => reportError("session.stopExpedition", e));
     },
 
-    completeExercise: (resultValue) => {
+    completeExercise: (resultValue, sidesWorked) => {
       const { quest, currentRoundIndex, currentExerciseIndex, results, bossFight, goal } = get();
       if (!quest) return;
 
       const currentEx = quest.exercises[currentExerciseIndex];
       if (!currentEx) return;
+
+      const bothSides = paysBothSides(currentEx.exercise, sidesWorked);
 
       const { result, target } = recordOf(quest, goal, currentEx, resultValue);
       const safeResultValue = result.value;
@@ -1459,6 +1497,7 @@ export const useSessionStore = create<SessionState>()(
           muscle: primaryMuscle,
           targetType: currentEx.target.type,
           style: currentEx.exercise.style,
+          perSide: bothSides,
         });
 
         set({
@@ -1493,6 +1532,7 @@ export const useSessionStore = create<SessionState>()(
           secondsPerRep: currentEx.exercise.secondsPerRep,
           difficulty: currentEx.exercise.difficulty,
           style: currentEx.exercise.style,
+          perSide: bothSides,
         },
         performedAt: new Date(),
       };
@@ -1582,16 +1622,9 @@ export const useSessionStore = create<SessionState>()(
       // Every other entry into a movement sets this pair, and the two units are not
       // interchangeable: a hold timer left running on a rep movement counts nothing down, and reps
       // arrived at with no timer would show seconds that never started.
-      const isTimeBased = target.type === "time";
-
       set({
         quest: { ...quest, exercises },
-        ...(status === "running"
-          ? {
-              timerStartTimestamp: isTimeBased ? Date.now() : null,
-              timerDuration: isTimeBased ? target.value : 0,
-            }
-          : {}),
+        ...(status === "running" ? setTimer({ target, exercise }) : {}),
       });
 
       // Deliberately not written to the quest's saved config, unlike the same sheet on the quest
@@ -1632,6 +1665,28 @@ export const useSessionStore = create<SessionState>()(
 
     keepLongHold: () => set({ longHoldKept: true }),
 
+    nextSide: () => {
+      const { quest, currentExerciseIndex, status, timerStartTimestamp } = get();
+      const slot = quest?.exercises[currentExerciseIndex];
+      if (status !== "running" || timerStartTimestamp === null) return;
+      if (!slot?.exercise.perSide || slot.target.type !== "time") return;
+
+      const side = slot.target.value;
+      const held = Math.floor((Date.now() - timerStartTimestamp) / 1000);
+      if (held >= side) return; // The switch is already here.
+
+      // Moving the start back puts the clock exactly at the end of the first side, so the switch,
+      // its cues and the second side all run as they do when the side is held to the end. The
+      // second side is as long as the first one was: past that, the weaker side is all that
+      // counts (`perSideSet`), so a longer clock would only ask for seconds nothing records.
+      const first = Math.max(1, held);
+      set({
+        firstSideSeconds: first,
+        timerStartTimestamp: Date.now() - side * 1000,
+        timerDuration: side + SIDE_SWITCH_SECONDS + first,
+      });
+    },
+
     skipRest: () => {
       const { status, quest, currentExerciseIndex, timerStartTimestamp, restTakenSeconds } = get();
       if (status !== "resting" || !quest) return;
@@ -1643,7 +1698,6 @@ export const useSessionStore = create<SessionState>()(
       if (unanswered?.target) get().updateLastResult(unanswered.target.value);
 
       const nextExDef = quest.exercises[currentExerciseIndex];
-      const isNextTimeBased = nextExDef?.target.type === "time";
 
       // The single exit from `resting` — the skip button and RestView's auto-advance at 0:00 both
       // land here — so it is the one place rest gets measured. `timerStartTimestamp` is pushed
@@ -1669,8 +1723,7 @@ export const useSessionStore = create<SessionState>()(
       set({
         status: "running",
         restTakenSeconds: restTakenSeconds + restTaken,
-        timerStartTimestamp: isNextTimeBased ? Date.now() : null,
-        timerDuration: isNextTimeBased ? nextExDef.target.value : 0,
+        ...setTimer(nextExDef),
       });
     },
 
@@ -1721,6 +1774,7 @@ export const useSessionStore = create<SessionState>()(
           muscle: lastHit.muscle ?? undefined,
           targetType: last.target.type,
           style: lastHit.style,
+          perSide: last.pricing?.perSide,
           forcedCritical: lastHit.isCritical,
         });
         set({
@@ -2073,6 +2127,9 @@ useSessionStore.subscribe(
     warmupLength: state.warmupSequence.length,
     // "Keep it" on a long hold moves nothing above, and a recovered rest would log the target.
     longHoldKept: state.longHoldKept,
+    // "Next side" moves nothing above either, and a recovery that missed it would credit a
+    // first side the hero cut short.
+    firstSideSeconds: state.firstSideSeconds,
   }),
   async (curr, prev) => {
     const state = useSessionStore.getState();
@@ -2119,6 +2176,7 @@ useSessionStore.subscribe(
       (prev.exerciseIds !== undefined && String(curr.exerciseIds) !== String(prev.exerciseIds)) ||
       warmupShortened(curr, prev) ||
       curr.longHoldKept !== prev.longHoldKept ||
+      curr.firstSideSeconds !== prev.firstSideSeconds ||
       curr.status === "paused";
 
     if (hasProgressed) {
@@ -2148,6 +2206,7 @@ useSessionStore.subscribe(
           results: state.results,
           lastSetSkipped: state.lastSetSkipped,
           longHoldKept: state.longHoldKept,
+          firstSideSeconds: state.firstSideSeconds,
           goal: state.goal,
           savedAt: Date.now(),
         };

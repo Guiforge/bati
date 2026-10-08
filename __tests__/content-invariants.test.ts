@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { eq } from "drizzle-orm";
 
+import { WARMUP_MOVEMENTS } from "../constants/warmup";
 import { type DifficultyCode, movementPatterns, type QuestArchetype } from "../db/schema";
 import { clientMock, createTestDb, ownEveryRung } from "./helpers/testDb";
 
@@ -496,6 +497,8 @@ describe("content invariants", () => {
         // Joined for the style alone: the boss-HP arithmetic below must weigh each slot the way
         // the app will, and `toRepEquivalent` now answers differently per style.
         style: schema.exercises.style,
+        // A per-side slot lands both sides (`computeDamage`, `0068`).
+        perSide: schema.exercises.perSide,
       })
       .from(schema.questExercises)
       .innerJoin(schema.exercises, eq(schema.exercises.id, schema.questExercises.exerciseId));
@@ -517,7 +520,7 @@ describe("content invariants", () => {
         // comment claiming seed quests carry no cardio slot; they carry eleven, and that one
         // hardcoded word is what let a change zeroing cardio pass this suite. A test bent to
         // stay green cannot see the thing it was written to see.
-        return sum + toRepEquivalent(target.value, ex.targetType, ex.style);
+        return sum + toRepEquivalent(target.value, ex.targetType, ex.style) * (ex.perSide ? 2 : 1);
       }, 0);
 
     const byAdventure = new Map<string, { hp: number; steps: typeof steps }>();
@@ -589,8 +592,6 @@ describe("content invariants", () => {
   // ever covered the branches the test remembered to write, and a movement reachable by one rule
   // alone is exactly the one a rename breaks unseen.
   test("every warm-up movement exists in the catalogue", async () => {
-    const { WARMUP_MOVEMENTS } =
-      require("../constants/warmup") as typeof import("../constants/warmup");
     const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
 
     const catalogue = new Set((await listExercises()).map((e) => e.enName));
@@ -651,8 +652,7 @@ describe("content invariants", () => {
    * any movement added to a pool above the bottom of a path fails here, whoever adds it.
    */
   test("a hero on day one is never warmed up with a rung above their own", async () => {
-    const { buildWarmup, WARMUP_MOVEMENTS } =
-      require("../constants/warmup") as typeof import("../constants/warmup");
+    const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");
     const { currentRungFor, listExercises, unavailableMovements } =
       require("../db/exercises") as typeof import("../db/exercises");
 
@@ -690,8 +690,6 @@ describe("content invariants", () => {
   // A warm-up prepares; it does not train. Anything hard enough to cost the session is not a
   // warm-up movement, however well it fits the pattern the quest is about to load.
   test("no warm-up movement is a hard exercise", async () => {
-    const { WARMUP_MOVEMENTS } =
-      require("../constants/warmup") as typeof import("../constants/warmup");
     const { listExercises } = require("../db/exercises") as typeof import("../db/exercises");
 
     const byName = new Map((await listExercises()).map((e) => [e.enName, e]));
@@ -822,5 +820,30 @@ describe("content invariants", () => {
     });
 
     expect(offenders).toEqual([]);
+  });
+
+  // `0068` names its movements by `enName`, so a typo or a later rename leaves a one-sided
+  // movement timed as one side again, without a sound. The warm-up's two are the ones it used to
+  // keep in a list of its own.
+  test("every movement 0068 marks per side exists, warm-up ones included", () => {
+    const perSide = (
+      t.sqlite
+        .prepare("SELECT enName FROM exercises WHERE perSide = 1 AND creator = 'Admin'")
+        .all() as { enName: string }[]
+    ).map((r) => r.enName);
+
+    expect(perSide.sort()).toEqual(
+      [
+        "Bulgarian Split Squat",
+        "Pigeon Pose",
+        "Pistol Squat",
+        "Side Plank",
+        "Single-Leg Deadlift",
+        "Single-Leg Glute Bridge",
+        "Thread the Needle",
+        "Warrior Pose",
+        "World's Greatest Stretch",
+      ].sort(),
+    );
   });
 });

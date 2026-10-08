@@ -46,6 +46,7 @@ function makeExercise(id: number, enName: string): Exercise {
     muscles: ["back"],
     pattern: "pull_horizontal",
     measure: null,
+    perSide: false,
     locomotion: null,
     prerequisiteExerciseId: null,
     retiredAt: null,

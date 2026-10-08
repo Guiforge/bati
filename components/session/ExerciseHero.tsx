@@ -1,9 +1,11 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ImageSourcePropType } from "react-native";
+import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { YStack } from "tamagui";
 import { Recitatif } from "@/components/common/Recitatif";
 import { rawColors } from "@/constants/rawColors";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { HUD_HEIGHT } from "./sessionArt";
 
 type ExerciseHeroProps = {
@@ -20,7 +22,16 @@ type ExerciseHeroProps = {
   /** Opens the movement's instructions. The art is the biggest, most obvious thing to tap. */
   onPress?: () => void;
   accessibilityLabel?: string;
+  /**
+   * The other side of a per-side hold (`0068`): the figure turns to face the other way. Every
+   * exercise is drawn on one side, so the mirror is the second side for free, and the turn itself
+   * says "switch" to someone who only glances at the screen.
+   */
+  mirrored?: boolean;
 };
+
+/** Long enough to be seen turning, short enough to be done before the hero is down. */
+const FLIP_MS = 400;
 
 /**
  * The exercise, at the size of the thing you are about to do.
@@ -41,7 +52,17 @@ export function ExerciseHero({
   topInset,
   onPress,
   accessibilityLabel,
+  mirrored = false,
 }: ExerciseHeroProps) {
+  const reducedMotion = useReducedMotion();
+  const scaleX = mirrored ? -1 : 1;
+  // Through zero, so it reads as a card turning over rather than a jump cut. Reduced motion gets
+  // the cut, as a plain style.
+  const flip = useAnimatedStyle(
+    () => ({ transform: [{ scaleX: withTiming(scaleX, { duration: FLIP_MS }) }] }),
+    [scaleX],
+  );
+
   return (
     <YStack
       // Plain RN flex, not Tamagui's `flex={1}`: without a `styleCompat`, Tamagui expands that to
@@ -60,12 +81,20 @@ export function ExerciseHero({
       {/* ponytail: the exercise art ships at 1024x768, so a full-bleed hero upscales it ~1.2x on
           a 3x screen and `cover` crops the sides. Re-export the assets wider (and as WebP, see
           docs/architecture/performance.md rule #2) if the softness ever reads as blur. */}
-      <Image
-        source={source}
-        style={{ width: "100%", height: "100%" }}
-        contentFit="cover"
-        transition={150}
-      />
+      <Animated.View
+        testID="exercise-hero-art"
+        style={[
+          { width: "100%", height: "100%" },
+          reducedMotion ? { transform: [{ scaleX }] } : flip,
+        ]}
+      >
+        <Image
+          source={source}
+          style={{ width: "100%", height: "100%" }}
+          contentFit="cover"
+          transition={150}
+        />
+      </Animated.View>
 
       {/* Top scrim: the status bar's own band, and barely past it.
 

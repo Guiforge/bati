@@ -164,6 +164,21 @@ describe("exercise editor", () => {
     });
   });
 
+  it("carries one side, then the other, into the draft", async () => {
+    const editor = await mountEditor();
+
+    await act(async () =>
+      fireEvent.changeText(editor.getByTestId("exercise-name"), "Copenhagen Plank"),
+    );
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-details-toggle")));
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-per-side")));
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-save")));
+
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ perSide: true }));
+    });
+  });
+
   it("loads a hero movement for editing and updates it in place", async () => {
     mockParams.id = "7";
     mockGetById.mockResolvedValue({

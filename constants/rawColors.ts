@@ -39,6 +39,9 @@ export const rawColors = {
   onPrimary: "#FFF4E6",
   success: "#6DB57A",
   warning: BRAISE_LIGHT,
+  /** `warning` at 0.45, for the edge glow before a side switch (components/session/SwitchGlow.tsx).
+   *  0.35 was measured too faint on the emulator to catch from the corner of an eye. */
+  warningGlow: "rgba(240, 138, 75, 0.45)",
   error: "#F0595D",
 
   // --- Immersive backgrounds ---

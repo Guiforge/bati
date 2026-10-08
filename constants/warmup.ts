@@ -50,21 +50,6 @@ export const PREP_SECONDS = 10;
 const step = (exerciseName: string): WarmupStep => ({ exerciseName, seconds: STEP_SECONDS });
 
 /**
- * Movements done one side at a time, so their thirty seconds are fifteen a side. Their
- * descriptions say "slide one arm under the other" and never say to swap, so they were played as
- * thirty seconds of one side.
- *
- * ponytail: names in a list until exercises carry a laterality column. Only the warm-up needs it
- * today, and a warm-up is not journaled, so there is no result to split in two. A second reader
- * (a timed quest slot, the journal) is the moment for the column.
- */
-const ONE_SIDED = new Set<string>(["Thread the Needle", "World's Greatest Stretch"]);
-
-export function switchesSides(exerciseName: string): boolean {
-  return ONE_SIDED.has(exerciseName);
-}
-
-/**
  * The four RAMP phases, in the order they are always played: raise the temperature, take the
  * joints through range, wake the patterns the session is about to use, then one movement close to
  * the real work. Intensity climbs across the sequence — that ordering is the protocol, not a

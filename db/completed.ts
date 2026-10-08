@@ -39,7 +39,16 @@ export type CompletedExerciseInput = {
    * a `hard` movement on the last round would re-price every set already logged, inflating the
    * whole workout. The price belongs to the moment, like `target` beside it.
    */
-  pricing?: { secondsPerRep: number; difficulty: DifficultyCode; style: ExerciseStyle };
+  pricing?: {
+    secondsPerRep: number;
+    difficulty: DifficultyCode;
+    style: ExerciseStyle;
+    /**
+     * Both sides were worked and are paid (`0068`, `perSideSet`). False on a per-side hold
+     * stopped before its second side; absent on sets from before the column, which were one side.
+     */
+    perSide?: boolean;
+  };
 };
 
 export type CompletedSessionInput = {
@@ -755,6 +764,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       exSecondsPerRep: exercises.secondsPerRep,
       exPattern: exercises.pattern,
       exMeasure: exercises.measure,
+      exPerSide: exercises.perSide,
       exLocomotion: exercises.locomotion,
       exPrerequisiteId: exercises.prerequisiteExerciseId,
       exRetiredAt: exercises.retiredAt,
@@ -803,6 +813,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
           secondsPerRep: r.exSecondsPerRep,
           pattern: r.exPattern ?? null,
           measure: r.exMeasure,
+          perSide: r.exPerSide,
           locomotion: r.exLocomotion,
           prerequisiteExerciseId: r.exPrerequisiteId,
           retiredAt: r.exRetiredAt,

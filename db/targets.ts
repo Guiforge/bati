@@ -214,6 +214,33 @@ export function formatTarget(target: Target, language: AppLanguage): string {
   return target.type === "time" ? value : `${value} ${REPS_WORD[language]}`;
 }
 
+export const PER_SIDE: Localized = {
+  en: "per side",
+  fr: "par côté",
+  de: "pro Seite",
+  es: "por lado",
+};
+
+/**
+ * A slot's target, with "per side" when its movement is done one side then the other (`0068`).
+ * The figure is per side either way: that is what the session counts and what the Journal logs.
+ */
+export function formatSlotTarget(
+  slot: { target: Target; exercise: { perSide: boolean } },
+  language: AppLanguage,
+): string {
+  return perSideLabel(formatTarget(slot.target, language), slot.exercise.perSide, language);
+}
+
+/**
+ * Any figure logged against a per-side movement, said as one: "26 s per side". Every surface that
+ * prints such a result goes through here, so the same number never reads per side on one screen
+ * and as a total on the next.
+ */
+export function perSideLabel(text: string, perSide: boolean, language: AppLanguage): string {
+  return perSide ? `${text} ${PER_SIDE[language]}` : text;
+}
+
 /**
  * How much of a quest's prescribed range the hero actually gets. Also what a boss's HP pool is
  * scaled by — damage *is* the work you did, so a pool tuned at one level is unreachable at

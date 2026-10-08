@@ -477,6 +477,13 @@
       "when": 1790899200000,
       "tag": "0067_what_the_coach_read",
       "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "6",
+      "when": 1791331200000,
+      "tag": "0068_one_side_then_the_other",
+      "breakpoints": true
     }
   ]
 }

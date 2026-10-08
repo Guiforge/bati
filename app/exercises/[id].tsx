@@ -36,7 +36,7 @@ import { getOath } from "@/db/oaths";
 import { readPath } from "@/db/paths";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "@/db/personalRecords";
 import type { QuestTargetType } from "@/db/schema";
-import { formatTarget } from "@/db/targets";
+import { formatSlotTarget } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import { useSetAside } from "@/hooks/useSetAside";
 import { localizedName, localizedText } from "@/src/i18n/localized";
@@ -529,7 +529,10 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                       {t("session.ghost_last_label", "Last time")}
                     </Text>
                     <Text fontSize={15} fontWeight="700" color="$text">
-                      {formatTarget({ type, value: ghost.last }, language)}
+                      {formatSlotTarget(
+                        { target: { type, value: ghost.last }, exercise },
+                        language,
+                      )}
                     </Text>
                     <Text fontSize={12} color="$textSecondary">
                       {shortDate(language, new Date(ghost.at), now)}
@@ -547,7 +550,10 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                         {t("exercises.record_label", "Record")}
                       </Text>
                       <Text fontSize={15} fontWeight="700" color="$resourceGold">
-                        {formatTarget({ type, value: ghost.best }, language)}
+                        {formatSlotTarget(
+                          { target: { type, value: ghost.best }, exercise },
+                          language,
+                        )}
                       </Text>
                       <Text fontSize={12} color="$textSecondary">
                         {recordWhen(t, language, new Date(ghost.bestAt), now)}

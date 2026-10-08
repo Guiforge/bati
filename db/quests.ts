@@ -593,6 +593,7 @@ type SlotRow = {
   exSecondsPerRep: number;
   exPattern: MovementPattern | null;
   exMeasure: QuestTargetType | null;
+  exPerSide: boolean;
   exLocomotion: Locomotion | null;
   exPrerequisiteId: number | null;
   exRetiredAt: Date | null;
@@ -775,6 +776,7 @@ function buildSlot(
     secondsPerRep: r.exSecondsPerRep,
     pattern: r.exPattern ?? null,
     measure: r.exMeasure,
+    perSide: r.exPerSide,
     locomotion: r.exLocomotion,
     prerequisiteExerciseId: r.exPrerequisiteId,
     retiredAt: r.exRetiredAt,
@@ -865,6 +867,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exSecondsPerRep: exercises.secondsPerRep,
       exPattern: exercises.pattern,
       exMeasure: exercises.measure,
+      exPerSide: exercises.perSide,
       exLocomotion: exercises.locomotion,
       exPrerequisiteId: exercises.prerequisiteExerciseId,
       exRetiredAt: exercises.retiredAt,

@@ -198,6 +198,9 @@ describe("WarmupView", () => {
       warmupSequence: [{ exerciseName: "Thread the Needle", seconds: 30 }, ...WARMUP_SEQUENCE],
       timerDuration: 30,
     });
+    (listExercises as jest.Mock).mockResolvedValueOnce([
+      { enName: "Thread the Needle", creator: "Admin", perSide: true, imagePath: "unknown" },
+    ]);
     const { getByTestId } = await mountWarmup();
 
     // i18n is not initialised in tests, so `t()` echoes the key.
@@ -206,6 +209,13 @@ describe("WarmupView", () => {
     await tickSeconds(15);
 
     expect(getByTestId("warmup-sides").props.children).toBe("session.switch_sides");
+
+    // The step's end is its "go", alone. When the next step is not per side the switch countdown
+    // stops, and it used to stop on the 0 that meant "no countdown": a switch cue 40 ms after the
+    // go, seen on the emulator, drowning it.
+    (playCue as jest.Mock).mockClear();
+    await tickSeconds(15);
+    expect(cues()).toEqual(["tick", "tick", "tick", "go"]);
   });
 
   it("shows the movement's description on the wait, before its clock runs", async () => {

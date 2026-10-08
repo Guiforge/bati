@@ -4,7 +4,7 @@ import { Text, XStack } from "tamagui";
 import { GameIcon } from "@/components/common/GameIcon";
 import type { ExerciseGhost } from "@/db/personalRecords";
 import type { QuestTargetType } from "@/db/schema";
-import { formatTarget } from "@/db/targets";
+import { formatTarget, perSideLabel } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -26,6 +26,7 @@ export function GhostLine({
   ghost,
   type,
   live,
+  perSide = false,
   reducedMotion,
 }: {
   ghost: ExerciseGhost;
@@ -38,6 +39,11 @@ export function GhostLine({
    * taps the reps back down has not set a record.
    */
   live: number;
+  /**
+   * One side then the other (`0068`): every figure here is one side's, as the line above the
+   * counter says. Said once, after the last figure, so the line stays one line at a large font.
+   */
+  perSide?: boolean;
   reducedMotion: boolean;
 }) {
   const { t } = useTranslation();
@@ -99,7 +105,7 @@ export function GhostLine({
             {t("session.ghost_record_label", "Past your best")}
           </Text>
           <Text fontSize={15} fontWeight="700" color="$text">
-            {formatTarget({ type, value: live }, language)}
+            {perSideLabel(formatTarget({ type, value: live }, language), perSide, language)}
           </Text>
         </XStack>
       ) : (
@@ -119,7 +125,11 @@ export function GhostLine({
             {t("session.ghost_last_label", "Last time")}
           </Text>
           <Text fontSize={15} fontWeight="700" color="$text">
-            {formatTarget({ type, value: ghost.last }, language)}
+            {perSideLabel(
+              formatTarget({ type, value: ghost.last }, language),
+              perSide && ghost.best <= ghost.last,
+              language,
+            )}
           </Text>
           {ghost.best > ghost.last ? (
             <>
@@ -130,7 +140,11 @@ export function GhostLine({
                 {t("session.ghost_best_label", "best")}
               </Text>
               <Text fontSize={15} fontWeight="700" color="$resourceGold">
-                {formatTarget({ type, value: ghost.best }, language)}
+                {perSideLabel(
+                  formatTarget({ type, value: ghost.best }, language),
+                  perSide,
+                  language,
+                )}
               </Text>
             </>
           ) : null}

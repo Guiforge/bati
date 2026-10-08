@@ -14,7 +14,7 @@ import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db/estimate";
 import type { NewRecordResult } from "@/db/personalRecords";
 import type { DistanceUnit } from "@/db/preferences";
-import { formatCount, formatTarget } from "@/db/targets";
+import { formatCount, formatTarget, perSideLabel } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { useSettingsStore } from "@/stores/settings";
@@ -80,11 +80,17 @@ function formatRecordValue(
     // A hold reads the way every hold does (`formatTarget`), not in `formatDuration`'s
     // "4 min 43s" shape, which is a session's.
     case "exercise_max_time":
-      return formatTarget({ type: "time", value: record.newValue }, language);
+      return perSideLabel(
+        formatTarget({ type: "time", value: record.newValue }, language),
+        record.perSide,
+        language,
+      );
     case "longest_session":
       return formatDuration(record.newValue, language);
     case "longest_outing":
       return formatDistance(record.newValue, unit, language);
+    case "exercise_max_reps":
+      return perSideLabel(formatCount(language, record.newValue), record.perSide, language);
     default:
       return formatCount(language, record.newValue);
   }

@@ -76,6 +76,8 @@ type OwnMovement = {
   equipment: Exercise["equipment"];
   pattern: Exercise["pattern"];
   measure: Exercise["measure"];
+  /** Absent in files written before `0068`, which read as both sides at once, as they were. */
+  perSide: boolean;
   secondsPerRep: number;
 };
 
@@ -173,6 +175,7 @@ export function questToFile(quest: QuestTemplate, catalogue: readonly Exercise[]
               equipment: ex.equipment,
               pattern: ex.pattern,
               measure: ex.measure,
+              perSide: ex.perSide,
               secondsPerRep: ex.secondsPerRep,
             },
           }
@@ -378,6 +381,9 @@ function ownMovement(value: unknown): OwnMovement {
     // A pattern only groups movements in the picker, so one this version lacks reads as none.
     pattern: movementPatterns.find((p) => p === value.pattern) ?? null,
     measure: value.measure == null ? null : oneOf(questTargetTypes, value.measure),
+    // Anything but a literal true is false: an older file has no such key, and a version that
+    // only knows both-at-once ignores the key it does not read.
+    perSide: value.perSide === true,
     secondsPerRep: count(value.secondsPerRep, SECONDS_PER_REP_RANGE),
   };
 }
@@ -592,6 +598,7 @@ export async function importQuest(file: QuestFile): Promise<ImportedQuest> {
             equipment: own.equipment,
             pattern: own.pattern,
             measure: own.measure,
+            perSide: own.perSide,
             secondsPerRep: own.secondsPerRep,
           },
           { uuid: own.uuid, exec: tx },

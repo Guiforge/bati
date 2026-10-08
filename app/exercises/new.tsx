@@ -10,7 +10,7 @@ import { Chip } from "@/components/common/Chip";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
-import { ChevronDown, ChevronLeft, ChevronUp } from "@/components/icons";
+import { Check, ChevronDown, ChevronLeft, ChevronUp } from "@/components/icons";
 import { EXERCISE_THUMB_ASSETS, getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { EQUIPMENT_LABELS } from "@/db/equipment";
 import {
@@ -89,6 +89,7 @@ export default function ExerciseEditor() {
           equipment: ex.equipment,
           pattern: ex.pattern,
           measure: ex.measure,
+          perSide: ex.perSide,
           secondsPerRep: ex.secondsPerRep,
           imagePath: ex.imagePath,
         });
@@ -315,6 +316,14 @@ export default function ExerciseEditor() {
                 </XStack>
               </YStack>
 
+              {/* Not offered on an outing, which has no sides; the writer refuses it there too. */}
+              {details.style === "expedition" ? null : (
+                <SidesPicker
+                  perSide={details.perSide}
+                  onChange={(perSide) => setDetails((d) => ({ ...d, perSide }))}
+                />
+              )}
+
               <YStack gap="$2">
                 <Text fontSize={12} color="$textSecondary">
                   {t("exercise_editor.pattern")}
@@ -365,6 +374,44 @@ export default function ExerciseEditor() {
           {t("exercise_editor.save")}
         </AppButton>
       </ScrollView>
+    </YStack>
+  );
+}
+
+/**
+ * One side, then the other (`0068`): the target counts per side, and a timed movement runs both
+ * sides with a switch between them.
+ *
+ * A checkbox, not a choice between two answers: most movements have no sides at all (a push-up, a
+ * squat), and "both at once" read wrong for them. Unchecked is the answer for every one of those,
+ * and for a movement that alternates within the set, which the hint says because it is the common
+ * mistake.
+ */
+function SidesPicker({
+  perSide,
+  onChange,
+}: {
+  perSide: boolean;
+  onChange: (perSide: boolean) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <YStack gap="$2">
+      <Chip
+        self="flex-start"
+        testID="exercise-per-side"
+        tone={perSide ? "primary" : "default"}
+        icon={perSide ? <Check size={14} color="$white" strokeWidth={3} /> : undefined}
+        label={t("exercise_editor.sides_each")}
+        onPress={() => onChange(!perSide)}
+        // `role`, not only `accessibilityRole`: Tamagui sets its own role on a pressable stack.
+        role="checkbox"
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: perSide }}
+      />
+      <Text fontSize={12} color="$textSecondary">
+        {t("exercise_editor.sides_hint")}
+      </Text>
     </YStack>
   );
 }

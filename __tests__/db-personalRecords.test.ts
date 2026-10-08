@@ -562,7 +562,13 @@ describe("db/personalRecords", () => {
       // The same data as the first test, with a record in hand. The badge above already paid
       // this session, and a placing printed beside a record is what makes the record ordinary.
       const result = await standing()(4, [
-        { isNewRecord: true, recordType: "longest_session", newValue: 1, previousValue: null },
+        {
+          isNewRecord: true,
+          recordType: "longest_session",
+          newValue: 1,
+          previousValue: null,
+          perSide: false,
+        },
       ]);
       expect(result).toBeNull();
     });

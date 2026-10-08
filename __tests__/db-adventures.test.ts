@@ -119,7 +119,8 @@ describe("db/adventures", () => {
 
     const golem = all.find((a) => a.enTitle === "The Golem");
     assert(golem);
-    expect(golem.bossTotalHp).toBe(278);
+    // 278 seeded, +24 for its per-side slots now hitting both sides (`0068`).
+    expect(golem.bossTotalHp).toBe(302);
   });
 });
 

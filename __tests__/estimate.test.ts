@@ -13,6 +13,13 @@ describe("db/estimate", () => {
     expect(estimateExerciseSeconds({ secondsPerRep: 3 }, { type: "reps", value: 10 })).toBe(30);
   });
 
+  it("counts a per-side target twice, held or counted", () => {
+    const perSide = { secondsPerRep: 3, perSide: true };
+    expect(estimateExerciseSeconds(perSide, { type: "reps", value: 10 })).toBe(60);
+    // Two sides and the switch between them (`src/perSide.ts`).
+    expect(estimateExerciseSeconds(perSide, { type: "time", value: 30 })).toBe(68);
+  });
+
   it("adds rest between sets when estimating quest", () => {
     const quest = {
       rounds: 2,

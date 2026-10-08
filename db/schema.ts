@@ -157,6 +157,10 @@ export const exercises = sqliteTable(
     // screen, never a gate: nothing in the app is locked behind it.
     prerequisiteExerciseId: int(),
 
+    // Done on one side, then the other (0068): the target is per side. A timed one runs twice
+    // the target with a switch at halfway, and its result is logged per side.
+    perSide: int({ mode: "boolean" }).notNull().default(false),
+
     // For rep-based targets: rough average seconds per repetition.
     // Used to estimate quest duration. (Time-based exercises ignore it.)
     secondsPerRep: int().notNull().default(3),

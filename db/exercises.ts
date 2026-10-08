@@ -61,6 +61,8 @@ export type Exercise = {
    * case the quest slot's unit stands. Seed rows always have one.
    */
   measure: QuestTargetType | null;
+  /** Done on one side, then the other (`0068`): its target is per side. */
+  perSide: boolean;
   /**
    * How this movement covers ground (`0049`). Null on everything that is not an `expedition`,
    * `walk` on every hero-authored one — the price of a minute outside is read from here, and the
@@ -143,6 +145,7 @@ const exerciseColumns = () => ({
   secondsPerRep: exercises.secondsPerRep,
   pattern: exercises.pattern,
   measure: exercises.measure,
+  perSide: exercises.perSide,
   locomotion: exercises.locomotion,
   prerequisiteExerciseId: exercises.prerequisiteExerciseId,
   retiredAt: exercises.retiredAt,
@@ -168,6 +171,7 @@ type ExerciseRow = {
   secondsPerRep: number;
   pattern: MovementPattern | null;
   measure: QuestTargetType | null;
+  perSide: boolean;
   locomotion: Locomotion | null;
   prerequisiteExerciseId: number | null;
   retiredAt: Date | null;
@@ -194,6 +198,7 @@ function exerciseFromRow(r: ExerciseRow): Exercise {
     secondsPerRep: typeof r.secondsPerRep === "number" ? r.secondsPerRep : 3,
     pattern: r.pattern ?? null,
     measure: isQuestTargetType(r.measure) ? r.measure : null,
+    perSide: r.perSide,
     locomotion: isLocomotion(r.locomotion) ? r.locomotion : null,
     prerequisiteExerciseId: r.prerequisiteExerciseId,
     retiredAt: r.retiredAt,
@@ -867,6 +872,7 @@ export type UserExerciseDraft = {
   | "equipment"
   | "pattern"
   | "measure"
+  | "perSide"
   | "secondsPerRep"
   | "imagePath"
 >;
@@ -919,9 +925,18 @@ export const DEFAULT_USER_EXERCISE_DRAFT: Omit<UserExerciseDraft, "name" | "desc
   equipment: "none",
   pattern: null,
   measure: "reps",
+  perSide: false,
   secondsPerRep: DEFAULT_SECONDS_PER_REP,
   imagePath: "assets/placeholder.webp",
 };
+
+/**
+ * Whether a hero's own movement is done one side, then the other (`0068`). Never an outing: a walk
+ * has no sides, and a per-side clock on one would double the ground the session pays for.
+ */
+function perSideFor(draft: Pick<UserExerciseDraft, "style" | "perSide">): boolean {
+  return draft.style !== "expedition" && draft.perSide;
+}
 
 /** Drops the cached catalogue. Every writer below calls it; nothing else should have to. */
 export function invalidateExercisesCache(): void {
@@ -1010,6 +1025,7 @@ export async function createUserExercise(
       pattern: draft.pattern,
       locomotion: locomotionFor(draft.style),
       measure: draft.measure,
+      perSide: perSideFor(draft),
       secondsPerRep: clampSecondsPerRep(draft.secondsPerRep),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -1046,6 +1062,7 @@ export async function updateUserExercise(id: number, draft: UserExerciseDraft): 
       pattern: draft.pattern,
       locomotion: locomotionFor(draft.style),
       measure: draft.measure,
+      perSide: perSideFor(draft),
       secondsPerRep: clampSecondsPerRep(draft.secondsPerRep),
       updatedAt: new Date(),
     })

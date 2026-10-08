@@ -1,12 +1,30 @@
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
+import { perSideClockSeconds } from "@/src/perSide";
 import type { Exercise } from "./exercises";
 import { MINUTES_WORD, SECONDS_SUFFIX, type Target } from "./targets";
 
-export function estimateExerciseSeconds(exercise: Pick<Exercise, "secondsPerRep">, target: Target) {
-  if (target.type === "time") return Math.max(1, target.value);
+/**
+ * A per-side target (`0068`) is done twice, once on each side. Optional, because the warm-up and
+ * the colour scale estimate shapes that are not movements from the table: none of them is per side.
+ */
+type EstimatedMovement = Pick<Exercise, "secondsPerRep"> & Partial<Pick<Exercise, "perSide">>;
+
+export function estimateExerciseSeconds(exercise: EstimatedMovement, target: Target) {
+  const work = exerciseWorkSeconds(exercise, target);
+  // The switch between the sides takes time, so the estimate counts it. It is not work, so the
+  // XP that prices `exerciseWorkSeconds` does not.
+  return exercise.perSide && target.type === "time"
+    ? perSideClockSeconds(Math.max(1, target.value))
+    : work;
+}
+
+/** The seconds of work a target asks for: both sides of a per-side one, never the switch. */
+export function exerciseWorkSeconds(exercise: EstimatedMovement, target: Target) {
+  const sides = exercise.perSide ? 2 : 1;
+  if (target.type === "time") return Math.max(1, target.value) * sides;
 
   const secondsPerRep = Math.max(1, Math.round(exercise.secondsPerRep));
-  return Math.max(1, target.value * secondsPerRep);
+  return Math.max(1, target.value * secondsPerRep) * sides;
 }
 
 export type EstimateQuestInput = {
@@ -14,7 +32,7 @@ export type EstimateQuestInput = {
   restSeconds: number;
   roundRestSeconds: number | null;
   exercises: Array<{
-    exercise: Pick<Exercise, "secondsPerRep">;
+    exercise: EstimatedMovement;
     target: Target;
   }>;
 };

@@ -249,3 +249,157 @@ describe("Done is a seal", () => {
     expect(screen.getByText("Finish")).toHaveStyle({ color: rawColors.bgDark });
   });
 });
+
+describe("a per-side hold", () => {
+  const sidePlank = {
+    ...quest,
+    exercises: [
+      {
+        exercise: { ...exercise(3, "Side Plank"), perSide: true },
+        target: { type: "time", value: 30 },
+      },
+    ],
+  } as unknown as Quest;
+
+  // The store runs side, switch, side (`setTimer`, `src/perSide.ts`); the view counts each phase
+  // down, beeps the switch rather than the end-of-set "go", starts the second side on a "go", and
+  // logs one side's worth.
+  test("counts each side, gives a switch between them, and logs per side", async () => {
+    const { playCue } = jest.requireMock("@/src/sounds") as { playCue: jest.Mock };
+    const tick = async (seconds: number) => {
+      // A second at a time: one big jump lands in one render, which the hook answers with the
+      // zero alone, as it does for a phone that slept through the ticks.
+      for (let second = 0; second < seconds; second++) {
+        await act(() => {
+          jest.advanceTimersByTime(1_000);
+        });
+      }
+    };
+    jest.useFakeTimers();
+    await mount(null, sidePlank);
+    await act(() => {
+      useSettingsStore.setState({ soundEnabled: true });
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 68 });
+    });
+    const scaleX = () =>
+      (
+        StyleSheet.flatten(screen.getByTestId("exercise-hero-art").props.style).transform as
+          | { scaleX?: number }[]
+          | undefined
+      )?.[0]?.scaleX;
+    const sideLine = () => screen.getByTestId("session-side").props.children;
+    const glow = () =>
+      StyleSheet.flatten(screen.getByTestId("session-switch-glow").props.style).opacity;
+    expect(glow()).toBe(0);
+    expect(sideLine()).toBe("Side 1 of 2");
+    expect(screen.getByText("left of 30s per side")).toBeTruthy();
+    // On the first side the hint says what comes next, not that the clock runs on past it.
+    expect(screen.getByText("When this side ends, 8 s to switch.")).toBeTruthy();
+    expect(scaleX()).toBe(1);
+
+    // The switch is announced before it comes.
+    await tick(25);
+    expect(sideLine()).toBe("Get ready to switch sides");
+    // 25 of the first side's 30 s.
+    expect(screen.getByTestId("timer-bar").props.accessibilityValue.now).toBe(83);
+    // The edges light up with it.
+    expect(glow()).toBe(1);
+
+    await tick(5);
+    // The big figure counts the switch itself, bare, never as a side's 0:08.
+    expect(screen.getByTestId("session-switch-count").props.children).toBe("8");
+    expect(screen.getByTestId("session-switch-title").props.children).toBe("Switch sides");
+    // And go out when the switch starts: the change itself is the signal.
+    expect(glow()).toBe(0);
+    expect(sideLine()).toBe("Side 1 done, side 2 next");
+    expect(screen.queryByText("0:08")).toBeNull();
+    // The bar drains the switch's own eight seconds.
+    expect(screen.getByTestId("timer-bar").props.accessibilityValue.now).toBe(100);
+    expect(screen.queryByText("left of 30s per side")).toBeNull();
+    expect(screen.queryByText("Keep going! Timer continues after target.")).toBeNull();
+    // The figure turns at the switch, so the hero sees the second side while getting into it.
+    expect(scaleX()).toBe(-1);
+    expect(playCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "switch"]);
+
+    await tick(4);
+    expect(screen.getByTestId("session-switch-count").props.children).toBe("4");
+    expect(screen.getByTestId("timer-bar").props.accessibilityValue.now).toBe(50);
+
+    await tick(4);
+    expect(sideLine()).toBe("Go, side 2");
+    expect(screen.getByText("0:30")).toBeTruthy();
+    // The second side fills from empty, not from where the whole clock stood.
+    expect(screen.getByTestId("timer-bar").props.accessibilityValue.now).toBe(0);
+    // And nothing below the figure grows while the hero gets into it.
+    expect(screen.queryByText("Keep going! Timer continues after target.")).toBeNull();
+    expect(playCue.mock.calls.map(([cue]) => cue).slice(4)).toEqual(["tick", "tick", "tick", "go"]);
+
+    await tick(3);
+    expect(sideLine()).toBe("Side 2 of 2");
+
+    // 49 s in, eleven into the second side: the weaker side is what the next target builds on.
+    await act(() => {
+      jest.advanceTimersByTime(8_000);
+    });
+    await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(11);
+    // Both sides were worked, so both are paid.
+    expect(useSessionStore.getState().results[0]?.pricing?.perSide).toBe(true);
+  });
+
+  // 10 s on the first side, 5 on the second, with no time spent waiting on a clock for a side that
+  // is over: "Next side" goes straight to the switch, and the weaker side is what gets logged.
+  test("Next side cuts the first side short, and the weaker side is logged", async () => {
+    const tick = async (seconds: number) => {
+      for (let second = 0; second < seconds; second++) {
+        await act(() => {
+          jest.advanceTimersByTime(1_000);
+        });
+      }
+    };
+    jest.useFakeTimers();
+    await mount(null, sidePlank);
+    await act(() => {
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 68 });
+    });
+    await tick(10);
+    await act(() => fireEvent.press(screen.getByTestId("session-next-side")));
+    await tick(1);
+    expect(screen.getByTestId("session-switch-title").props.children).toBe("Switch sides");
+    // Nothing left to cut short, and the link keeps its place so the row does not move.
+    // Hidden from screen readers too, hence the hidden-elements query.
+    expect(screen.queryByTestId("session-next-side")).toBeNull();
+    expect(
+      screen.getByTestId("session-next-side", { includeHiddenElements: true }).props
+        .accessibilityState?.disabled,
+    ).toBe(true);
+
+    // The second already ticked above is the first of the switch's eight. The second side is as
+    // long as the first one was.
+    await tick(7);
+    expect(screen.getByText("0:10")).toBeTruthy();
+    expect(screen.getByText("left of 10s per side")).toBeTruthy();
+
+    await tick(5);
+    await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(5);
+    expect(useSessionStore.getState().results[0]?.pricing?.perSide).toBe(true);
+  });
+
+  // The hero who stops on the first side because it hurts held what they held. Halving it would
+  // write a false record at the worst moment.
+  test("a set stopped on the first side logs the time held", async () => {
+    jest.useFakeTimers();
+    await mount(null, sidePlank);
+    await act(() => {
+      useSessionStore.setState({ timerStartTimestamp: Date.now(), timerDuration: 68 });
+    });
+    await act(() => {
+      jest.advanceTimersByTime(25_000);
+    });
+    await act(() => fireEvent.press(screen.getByTestId("session-complete-exercise")));
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(25);
+    // One side of work is paid as one: no doubled XP or blow for a side never done.
+    expect(useSessionStore.getState().results[0]?.pricing?.perSide).toBe(false);
+  });
+});

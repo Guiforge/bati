@@ -43,7 +43,7 @@ import type { VariationStep } from "@/db/exercises";
 import { type FallenRecord, type MuscleShift, type QuestStanding, sessionReps } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { correctLoggedSet } from "@/db/personalRecords";
-import { formatCount, formatTargetValue } from "@/db/targets";
+import { formatCount, formatTargetValue, PER_SIDE, perSideLabel } from "@/db/targets";
 import type { UserLevelInfo } from "@/db/userLevel";
 import type { LngLat } from "@/src/gps/trace";
 import { localizedName } from "@/src/i18n/localized";
@@ -140,7 +140,11 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
 
   const next =
     record.exerciseId != null
-      ? formatTargetValue({ type: record.type, value: targetToBeat(record.value) }, language)
+      ? perSideLabel(
+          formatTargetValue({ type: record.type, value: targetToBeat(record.value) }, language),
+          record.perSide,
+          language,
+        )
       : null;
   const context =
     record.previous == null
@@ -413,9 +417,15 @@ function Rounds({ session, onChanged }: { session: CompletedSession; onChanged: 
                 pressStyle={{ opacity: 0.8 }}
               >
                 <NImage source={getExerciseThumb(row.exercise.imagePath)} size={28} />
-                <NText flex={1} fontSize={13.5} lineHeight={19} numberOfLines={1}>
-                  {localizedName(row.exercise, language)}
-                </NText>
+                <YStack flex={1} minW={0}>
+                  <NText fontSize={13.5} lineHeight={19} numberOfLines={1}>
+                    {localizedName(row.exercise, language)}
+                  </NText>
+                  {/* Said once for the row: the sets and the target are all one side's. */}
+                  {row.exercise.perSide ? (
+                    <NMuted fontSize={11}>{PER_SIDE[language]}</NMuted>
+                  ) : null}
+                </YStack>
               </XStack>
               {/* Each set is its own door to the editor. Outings never reach this list. It wraps:
                   a quest runs up to ten rounds, and ten 44 dp targets do not fit on one row. */}
@@ -436,7 +446,7 @@ function Rounds({ session, onChanged }: { session: CompletedSession; onChanged: 
                     items="center"
                     onPress={() => setEditing(editing === set.id ? null : set.id)}
                     accessibilityRole="button"
-                    accessibilityLabel={`${t("journal.set_edit_label")}: ${formatTargetValue(set, language)}`}
+                    accessibilityLabel={`${t("journal.set_edit_label")}: ${perSideLabel(formatTargetValue(set, language), row.exercise.perSide, language)}`}
                     pressStyle={{ opacity: 0.8 }}
                   >
                     <NNum

@@ -11,7 +11,7 @@ import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { getExerciseThumb } from "@/constants/assetMap";
 import type { CompletedExerciseInput } from "@/db/completed";
-import { targetRangeFor } from "@/db/targets";
+import { formatSlotTarget, PER_SIDE, targetRangeFor } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -60,7 +60,7 @@ export function RestView() {
   // Declared above the auto-advance effect below on purpose: on the render where the rest hits
   // zero, this one runs first, so the "go" starts before skipRest() unmounts the screen. No "go"
   // before a summary.
-  useCountdownCues(isFinal ? 0 : remainingSeconds);
+  useCountdownCues(isFinal ? null : remainingSeconds);
   const cue = useChorusStore((s) => s.cue);
   // During a rest this is the movement *about to start* — `completeExercise` advances the index
   // before handing over — which is exactly the one the "up next" card names.
@@ -274,7 +274,14 @@ export function RestView() {
             {!!lastResult && !lastSetSkipped && (
               <LastSetCard
                 result={lastResult}
-                name={lastExercise ? localizedName(lastExercise, language) : ""}
+                // A per-side set logs one side's worth: the figure says so, here as everywhere.
+                name={
+                  !lastExercise
+                    ? ""
+                    : lastExercise.perSide
+                      ? `${localizedName(lastExercise, language)} · ${PER_SIDE[language]}`
+                      : localizedName(lastExercise, language)
+                }
               />
             )}
 
@@ -324,9 +331,7 @@ export function RestView() {
                     {nextExName}
                   </Text>
                   <Text color="$textSecondary">
-                    {nextEx?.target.type === "time"
-                      ? `${nextEx.target.value}s`
-                      : `${nextEx?.target.value ?? 0} reps`}
+                    {nextEx ? formatSlotTarget(nextEx, language) : null}
                   </Text>
                 </YStack>
               </XStack>
@@ -396,6 +401,17 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
   };
   const isLastTimeBased = result.result.type === "time";
   const adjustStep = isLastTimeBased ? 5 : 1;
+  // A per-side hold short of its target logged the weaker of its two sides (`perSideSet`): the
+  // figure is lower than the hold felt, and without this line it reads as a mistake. Only when both
+  // sides were worked (`pricing.perSide`) and one fell short: past the target it is an average.
+  // Read off the value as it was logged, not as the stepper moves it: a figure the hero lowered
+  // by hand is theirs, and the rule did not produce it.
+  const [loggedValue] = useState(result.result.value);
+  const weakerSide =
+    isLastTimeBased &&
+    result.pricing?.perSide === true &&
+    result.target !== undefined &&
+    loggedValue < result.target.value;
 
   return (
     <YStack bg="$surface" p="$4" rounded="$3" borderWidth={1} borderColor="$borderStrong" gap="$2">
@@ -444,6 +460,12 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
           />
         </XStack>
       </XStack>
+
+      {weakerSide ? (
+        <Text testID="rest-weaker-side" fontSize={12} color="$textSecondary">
+          {t("session.per_side_weaker")}
+        </Text>
+      ) : null}
 
       {askAboutHold && result.target ? (
         <XStack testID="rest-hold-check" items="center" gap="$2" flexWrap="wrap">

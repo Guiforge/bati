@@ -6,7 +6,7 @@ import { Button, Text, XStack, YStack } from "tamagui";
 import { Pause } from "@/components/icons";
 import { getBossAsset, getExerciseAsset, getQuestAsset } from "@/constants/assetMap";
 import { fade, rawColors } from "@/constants/rawColors";
-import { formatTarget } from "@/db/targets";
+import { formatSlotTarget } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { describeExercise } from "@/hooks/useSessionInstructions";
@@ -166,7 +166,7 @@ export function CountdownView() {
           kicker={t("session.start_first")}
           instruction={describeExercise(first.exercise, language)}
           fallbackName={localizedName(first.exercise, language)}
-          target={formatTarget(first.target, language)}
+          target={formatSlotTarget(first, language)}
           remainingSeconds={timed ? remainingSeconds : null}
           onGo={() => {
             if (Date.now() - shownAt.current < GO_GUARD_MS) return;

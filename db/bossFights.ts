@@ -226,8 +226,12 @@ export function computeDamage(fight: DamageableFight, params: DamageParams): Dam
   }
 
   // Base damage = the result value, with seconds converted to rep-equivalents
-  let damage =
-    toRepEquivalent(params.resultValue, params.targetType, params.style) * (params.perSide ? 2 : 1);
+  let damage = toRepEquivalent(
+    params.resultValue,
+    params.targetType,
+    params.style,
+    params.perSide ? 2 : 1,
+  );
   let weaknessBonus = false;
   let resistancePenalty = false;
 
@@ -525,7 +529,7 @@ export async function calculateBossHp(
   // minimum below rather than handing the boss an unreachable HP total.
   const totalHp = slots.reduce((sum, ex) => {
     // A per-side slot hits for both sides (`computeDamage`), so it is priced for both here.
-    const perSet = toRepEquivalent(ex.targetMax, ex.targetType, ex.style) * (ex.perSide ? 2 : 1);
+    const perSet = toRepEquivalent(ex.targetMax, ex.targetType, ex.style, ex.perSide ? 2 : 1);
     return sum + perSet * ex.rounds * (stepCountByQuestId.get(ex.questId) ?? 0);
   }, 0);
 

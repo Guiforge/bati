@@ -473,7 +473,7 @@ async function getLifetimeVolumeByMuscle(): Promise<Map<MuscleCode, number>> {
   const rows = await db
     .select({
       muscle: exerciseMuscles.muscle,
-      volume: sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
+      volume: sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style, completedExercises.sides)}), 0)`,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
@@ -487,7 +487,7 @@ async function getStyleVolumes(): Promise<Partial<Record<ExerciseStyle, number>>
   const rows = await db
     .select({
       style: exercises.style,
-      volume: sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
+      volume: sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style, completedExercises.sides)}), 0)`,
     })
     .from(completedExercises)
     .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))

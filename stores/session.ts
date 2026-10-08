@@ -519,9 +519,16 @@ function advanceAfterSet(
         currentExerciseIndex: quest.exercises.length,
         timerStartTimestamp: Date.now(),
         timerDuration: FINAL_REST_SECONDS,
+        firstSideSeconds: null,
       };
     }
-    return { status: "finished", results, timerStartTimestamp: null, timerDuration: 0 };
+    return {
+      status: "finished",
+      results,
+      timerStartTimestamp: null,
+      timerDuration: 0,
+      firstSideSeconds: null,
+    };
   }
 
   const nextRound = isLastExerciseInRound ? currentRoundIndex + 1 : currentRoundIndex;
@@ -544,6 +551,8 @@ function advanceAfterSet(
       currentExerciseIndex: nextExercise,
       timerStartTimestamp: Date.now(),
       timerDuration: restSeconds,
+      // The set it belonged to is over: a rest, or a recovery snapshot of one, carries no side.
+      firstSideSeconds: null,
     };
   }
 

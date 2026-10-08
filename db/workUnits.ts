@@ -52,15 +52,20 @@ const CONVERSIONS: Record<QuestTargetType, (value: number) => number> = {
   time: (value) => Math.max(1, Math.round(value / SECONDS_PER_REP_EQUIVALENT)),
 };
 
+/**
+ * `sides` is how many sides the figure was done on (`completed_exercises.sides`, `0069`): a
+ * per-side set logs one side's figure and did the work twice. Required, so no sum can forget it.
+ */
 export function toRepEquivalent(
   resultValue: number,
   type: QuestTargetType | null | undefined,
   style: ExerciseStyle,
+  sides: number,
 ): number {
   if (style === NON_REP_STYLE) return 0;
   // Null is "the row predates the column": it meant reps then and it means reps now.
-  if (type === null || type === undefined) return resultValue;
-  return CONVERSIONS[type](resultValue);
+  if (type === null || type === undefined) return resultValue * sides;
+  return CONVERSIONS[type](resultValue) * sides;
 }
 
 /**
@@ -75,6 +80,7 @@ export function repEquivalentSql(
   value: SQLiteColumn,
   type: SQLiteColumn,
   style: SQLiteColumn,
+  sides: SQLiteColumn,
 ): SQL {
   // SQLite's ROUND rounds half away from zero for positive numbers, exactly like Math.round, and
   // the two-argument MAX is the scalar form, so a one-second hold still lands on 1 rather than 0.
@@ -86,5 +92,5 @@ export function repEquivalentSql(
     WHEN ${style} = ${NON_REP_STYLE} THEN 0
     WHEN ${type} = 'time' THEN MAX(1, CAST(ROUND(${value} * 1.0 / ${SECONDS_PER_REP_EQUIVALENT}) AS INTEGER))
     ELSE ${value}
-  END)`;
+  END * ${sides})`;
 }

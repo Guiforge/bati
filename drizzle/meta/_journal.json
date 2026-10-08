@@ -484,6 +484,13 @@
       "when": 1791331200000,
       "tag": "0068_one_side_then_the_other",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "6",
+      "when": 1791417600000,
+      "tag": "0069_both_sides_counted",
+      "breakpoints": true
     }
   ]
 }

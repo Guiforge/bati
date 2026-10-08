@@ -220,6 +220,19 @@ describe("useSessionStore", () => {
     expect(state.results[0]?.result.value).toBe(10);
   });
 
+  // A first side cut short ("Next side") belongs to its set: the rest after it carries none, so a
+  // recovery snapshot of that rest does not hand a stale second-side length to anything.
+  test("a set's cut-short first side is forgotten when its rest begins", async () => {
+    await store.getState().startSession(mockQuest, "medium");
+    store.getState().finishCountdown();
+    store.setState({ firstSideSeconds: 12 });
+
+    await store.getState().completeExercise(10);
+
+    expect(store.getState().status).toBe("resting");
+    expect(store.getState().firstSideSeconds).toBeNull();
+  });
+
   // Both guards below were added when noUncheckedIndexedAccess showed the store indexing
   // `quest.exercises` and `results` without checking. They are reachable: a saved session
   // restored against a quest that has since been edited lands exactly here. Doing nothing is

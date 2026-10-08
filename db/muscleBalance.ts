@@ -76,6 +76,7 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
       exerciseId: completedExercises.exerciseId,
       resultValue: completedExercises.resultValue,
       resultType: completedExercises.resultType,
+      sides: completedExercises.sides,
       muscle: exerciseMuscles.muscle,
       performedAt: completedQuest.performedAt,
       style: exercises.style,
@@ -115,7 +116,7 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
     const muscle = row.muscle as MuscleCode;
     const data = muscleVolumes.get(muscle);
     if (data) {
-      data.volume += toRepEquivalent(row.resultValue, row.resultType, row.style);
+      data.volume += toRepEquivalent(row.resultValue, row.resultType, row.style, row.sides);
       data.sessions.add(row.sessionId);
     }
     allSessions.add(row.sessionId);
@@ -242,6 +243,7 @@ async function computePatternBalance(period: BalancePeriod): Promise<PatternBala
       pattern: exercises.pattern,
       resultValue: completedExercises.resultValue,
       resultType: completedExercises.resultType,
+      sides: completedExercises.sides,
       style: exercises.style,
     })
     .from(completedQuest)
@@ -255,7 +257,7 @@ async function computePatternBalance(period: BalancePeriod): Promise<PatternBala
   let totalVolume = 0;
   for (const row of rows) {
     if (!isMovementPattern(row.pattern)) continue;
-    const units = toRepEquivalent(row.resultValue, row.resultType, row.style);
+    const units = toRepEquivalent(row.resultValue, row.resultType, row.style, row.sides);
     volumes.set(row.pattern, (volumes.get(row.pattern) ?? 0) + units);
     totalVolume += units;
   }

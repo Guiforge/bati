@@ -357,7 +357,7 @@ const periodWindow = (from: Date | null, to: Date) =>
 export async function periodReps(from: Date | null, to: Date): Promise<number> {
   const [work] = await db
     .select({
-      reps: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)}), 0)`,
+      reps: sql<number>`COALESCE(SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style, completedExercises.sides)}), 0)`,
     })
     .from(completedExercises)
     .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
@@ -490,7 +490,7 @@ async function bestSessionBy(metric: "duration" | "xp" | "ground"): Promise<Sess
 }
 
 async function mostRepsSession(): Promise<SessionBest | null> {
-  const reps = sql<number>`SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)})`;
+  const reps = sql<number>`SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style, completedExercises.sides)})`;
   const [row] = await db
     .select({
       sessionId: completedQuest.id,
@@ -616,7 +616,8 @@ export async function getBossKills(): Promise<BossKill[]> {
 /** Reps a session put into the world, the same conversion as everywhere else. */
 export function sessionReps(session: Pick<CompletedSession, "exercises">): number {
   return session.exercises.reduce(
-    (total, ex) => total + toRepEquivalent(ex.result.value, ex.result.type, ex.exercise.style),
+    (total, ex) =>
+      total + toRepEquivalent(ex.result.value, ex.result.type, ex.exercise.style, ex.sides),
     0,
   );
 }
@@ -652,7 +653,7 @@ export async function getQuestStanding(session: CompletedSession): Promise<Quest
     ).map((r) => ({ sessionId: r.sessionId, value: r.value ?? 0, at: r.at }));
   } else {
     if (session.questId == null) return null;
-    const reps = sql<number>`SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style)})`;
+    const reps = sql<number>`SUM(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style, completedExercises.sides)})`;
     rows = (
       await db
         .select({ sessionId: completedQuest.id, value: reps, at: completedQuest.performedAt })
@@ -847,6 +848,7 @@ export async function getMuscleShift(session: CompletedSession): Promise<MuscleS
       muscle: exerciseMuscles.muscle,
       value: completedExercises.resultValue,
       type: completedExercises.resultType,
+      sides: completedExercises.sides,
       style: exercises.style,
     })
     .from(completedQuest)
@@ -864,7 +866,7 @@ export async function getMuscleShift(session: CompletedSession): Promise<MuscleS
     rows.map((r) => ({
       sessionId: r.sessionId,
       muscle: r.muscle as MuscleCode,
-      volume: toRepEquivalent(r.value, r.type, r.style),
+      volume: toRepEquivalent(r.value, r.type, r.style, r.sides),
     })),
     session.id,
   );

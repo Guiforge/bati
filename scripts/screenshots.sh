@@ -110,11 +110,10 @@ rm -f "$devmenu_prefs"
 rm -rf "$raw"
 mkdir -p "$raw"
 
-# A marker to collect against, rather than "the newest run directory wins". Maestro leaves a
-# directory behind when it tears the driver down, so the newest one after a run is sometimes an
-# empty one made a minute after the shots — and the collector below reported zero while eight
-# screenshots sat in the directory before it.
-run_marker="$(mktemp)"
+# This run's own artefact directory, so the collector below reads only what this run wrote. A
+# shared ~/.maestro/tests searched by timestamp collected the shots of every run in progress, and
+# one emulator per locale running side by side framed each other's screens.
+run_out="$(mktemp -d)"
 
 # An audit keeps whatever it managed to photograph: twenty-five good screens are worth more than
 # a red run. A store run still aborts, because a half-captured listing must never get framed.
@@ -122,7 +121,7 @@ run_marker="$(mktemp)"
 case "${locale%%-*}" in fr) village="Valbrume" ;; *) village="Ironhold" ;; esac
 # `--device` because Maestro ignores ANDROID_SERIAL, which adb above honours: with a phone plugged
 # in beside an emulator, the shell commands set up one device and the flow ran on the other.
-maestro ${ANDROID_SERIAL:+--device "$ANDROID_SERIAL"} test -e VILLAGE_NAME="$village" "$flow" || [ -n "${AUDIT:-}" ]
+maestro ${ANDROID_SERIAL:+--device "$ANDROID_SERIAL"} test --test-output-dir "$run_out" -e VILLAGE_NAME="$village" "$flow" || [ -n "${AUDIT:-}" ]
 
 # Maestro resolves takeScreenshot paths against its own artefact directory, not the project, so
 # the flow uses plain names and the files are collected here.
@@ -133,8 +132,8 @@ maestro ${ANDROID_SERIAL:+--device "$ANDROID_SERIAL"} test -e VILLAGE_NAME="$vil
 # (Maestro leaves an empty one behind when it tears the driver down). Both collected zero and said
 # so only in a count nobody reads. `step-*.png` is excluded by the leading digit, the failure
 # shots are the other kind.
-find "$HOME/.maestro/tests" -name '[0-9]*-*.png' -newer "$run_marker" -exec cp {} "$raw"/ \;
-rm -f "$run_marker"
+find "$run_out" -name '[0-9]*-*.png' -exec cp {} "$raw"/ \;
+rm -rf "$run_out"
 collected="$(find "$raw" -type f | wc -l)"
 echo "  Collected $collected shots"
 [ "$collected" -gt 0 ] || echo "  Nothing collected. The flow died before its first takeScreenshot." >&2

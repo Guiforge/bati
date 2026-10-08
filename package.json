@@ -58,7 +58,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@babel/parser": "^7.29.9",
+    "@babel/parser": "^8.0.6",
     "@biomejs/biome": "^2.5.14",
     "@j178/prek": "^0.5.3",
     "@tamagui/babel-plugin": "^2.7.7",

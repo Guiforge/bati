@@ -84,7 +84,7 @@ def flame_level(days):
     return 5 if days >= 100 else 4 if days >= 30 else 3 if days >= 14 else 2 if days >= 7 else 1 if days >= 3 else 0
 
 
-def flame_run(day_offsets, quota=2):
+def flame_run(day_offsets, quota=2):  # quota 2 = DEFAULT_WEEKLY_QUOTA in constants/weeklyTargets.ts
     """Lit days in a row ending today. Offsets are days before today (0 = today, 3 = three ago)."""
     if not day_offsets:
         return 0

@@ -529,6 +529,7 @@ interface StreakInfo {
 }
 
 const DEFAULT_WEEKLY_QUOTA = 2; // WHO baseline; a weekly_sessions oath overrides it
+// Lives in constants/weeklyTargets.ts, next to WEEKLY_TARGETS, so screens can read it without SQLite.
 ```
 
 ### Functions

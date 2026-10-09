@@ -8,7 +8,7 @@ import VillagePage from "@/app/(tabs)/village";
 import { cameoBand } from "@/components/chorus/cameoAnchor";
 import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { rawColors } from "@/constants/rawColors";
-import { CAMEO_LINGER_MS, TYPE_MS_PER_CHAR } from "@/constants/villagers";
+import { cameoLingerMs, TYPE_MS_PER_CHAR } from "@/constants/villagers";
 import en from "@/locales/en.json";
 import { useChorusStore } from "@/stores/chorus";
 import { useSettingsStore } from "@/stores/settings";
@@ -332,7 +332,12 @@ describe("the Village's floating villager", () => {
       speak();
     });
     await act(() => {
-      jest.advanceTimersByTime(CAMEO_LINGER_MS.ambient + 1);
+      jest.advanceTimersByTime(cameoLingerMs(en.villagers.farmer.rest[0] as string, "ambient") - 1);
+    });
+    // Still up a millisecond before: the line's length, not the flat floor, decides.
+    expect(useChorusStore.getState().current).not.toBeNull();
+    await act(() => {
+      jest.advanceTimersByTime(2);
     });
     expect(queryByText(en.villagers.farmer.rest[0] as string)).toBeNull();
     expect(useChorusStore.getState().current).toBeNull();

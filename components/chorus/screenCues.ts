@@ -80,7 +80,7 @@ export function useAmbientVisit(
   // again. The window is what keeps this rare, not the mounting.
   useFocusEffect(
     useCallback(() => {
-      if (enabled) cue(moment, undefined, owner);
+      if (enabled) cue(moment, owner);
     }, [moment, owner, enabled, cue]),
   );
 }

@@ -186,8 +186,6 @@
     "cc_by_sa_40_subtitle": "Licence terms: share-alike"
   },
   "progression": {
-    "new_rung": "New rung unlocked",
-    "new_rungs": "{{count}} new rungs unlocked",
     "new_rung_from": "You have mastered {{name}}",
     "rung_also_leads_to": "The same rung also leads to {{names}}."
   },
@@ -508,7 +506,6 @@
     "pr_more": "+{{count}} more bests",
     "pr_most_xp": "Most XP in one session",
     "pr_new_record": "New best",
-    "standing_title": "Best effort",
     "standing_lifetime_2": "2nd best in {{count}} sessions",
     "standing_lifetime_3": "3rd best in {{count}} sessions",
     "standing_recent_1": "Your best in {{count}} sessions",
@@ -545,15 +542,11 @@
     "summary_too_short_keep": "Keep it",
     "summary_too_short_discard": "Discard",
     "summary_forget": "Don't keep this session",
-    "summary_saving": "Saving your session…",
     "target_reached": "Target reached!",
     "total_time": "Total Time",
     "up_next": "Up Next",
     "victory_title": "Quest Complete!",
     "village_growth_cta": "View your village",
-    "village_growth_more": "+{{count}} more",
-    "village_growth_title": "Your village grows",
-    "village_tier_up_title": "Your village grew!",
     "xp_overshoot": "incl. +{{count}} for beating your targets",
     "xp_outing_rate": "{{moving}} moving · counted as {{effort}} of effort",
     "swap_short": "Replace",
@@ -609,7 +602,6 @@
     "expedition_make_quest": "Make this a quest",
     "expedition_made_quest": "Filed with your quests. It is waiting exactly as you left it.",
     "expedition_permission_why": "Bati reads your location during an outing, and it leaves this phone only in your own backups and sync. Android is about to ask.",
-    "level_up": "Level up",
     "level_label": "Level",
     "tonight_reveal_bear": "A bear comes out of the forest and settles in {{place}}.",
     "tonight_reveal_ermine": "An ermine slips out of the forest and settles in {{place}}.",
@@ -939,9 +931,7 @@
     "filter_xp": "XP",
     "filter_special": "Special",
     "more_count": "+{{count}} more achievements",
-    "show_less": "Show less",
-    "new_unlock": "Achievement Unlocked!",
-    "new_unlocks": "{{count}} Achievements Unlocked!"
+    "show_less": "Show less"
   },
   "chart": {
     "error": "Failed to load chart",
@@ -1304,12 +1294,6 @@
       "herbalist": "The Herbalist",
       "minstrel": "The Minstrel",
       "farmer": "The Farmer"
-    },
-    "units": {
-      "delta_reps_one": "{{count}} rep",
-      "delta_reps_other": "{{count}} reps",
-      "delta_seconds_one": "{{count}} second",
-      "delta_seconds_other": "{{count}} seconds"
     },
     "smith": {
       "rest": [

@@ -186,8 +186,6 @@
     "cc_by_sa_40_subtitle": "Lizenzbedingungen: Weitergabe unter gleichen Bedingungen"
   },
   "progression": {
-    "new_rung": "Neue Stufe freigeschaltet",
-    "new_rungs": "{{count}} neue Stufen freigeschaltet",
     "new_rung_from": "Du beherrschst {{name}}",
     "rung_also_leads_to": "Dieselbe Stufe führt auch zu {{names}}."
   },
@@ -508,7 +506,6 @@
     "pr_more": "+{{count}} weitere Bestwerte",
     "pr_most_xp": "Meiste XP in einer Einheit",
     "pr_new_record": "Neuer Bestwert",
-    "standing_title": "Beste Leistung",
     "standing_lifetime_2": "Zweitbeste von {{count}} Einheiten",
     "standing_lifetime_3": "Drittbeste von {{count}} Einheiten",
     "standing_recent_1": "Deine beste von {{count}} Einheiten",
@@ -545,15 +542,11 @@
     "summary_too_short_keep": "Behalten",
     "summary_too_short_discard": "Verwerfen",
     "summary_forget": "Diese Einheit nicht behalten",
-    "summary_saving": "Deine Einheit wird gespeichert…",
     "target_reached": "Ziel erreicht!",
     "total_time": "Gesamtzeit",
     "up_next": "Als Nächstes",
     "victory_title": "Quest geschafft!",
     "village_growth_cta": "Dein Dorf ansehen",
-    "village_growth_more": "+{{count}} weitere",
-    "village_growth_title": "Dein Dorf wächst",
-    "village_tier_up_title": "Dein Dorf ist gewachsen!",
     "xp_overshoot": "davon +{{count}} fürs Übertreffen deiner Ziele",
     "xp_outing_rate": "{{moving}} in Bewegung · gewertet als {{effort}} Anstrengung",
     "swap_short": "Ersetzen",
@@ -609,7 +602,6 @@
     "expedition_make_quest": "Eine Quest daraus machen",
     "expedition_made_quest": "Bei deinen Quests abgelegt. Sie ist genau so gespeichert, wie sie war.",
     "expedition_permission_why": "Bati liest während einer Tour deinen Standort, und er verlässt dieses Handy nur in deinen eigenen Sicherungen und deiner Synchronisierung. Android fragt gleich nach.",
-    "level_up": "Stufe aufgestiegen",
     "level_label": "Level",
     "tonight_reveal_bear": "Ein Bär tritt aus dem Wald und zieht in {{place}} ein.",
     "tonight_reveal_ermine": "Ein Hermelin schlüpft aus dem Wald und zieht in {{place}} ein.",
@@ -939,9 +931,7 @@
     "filter_xp": "XP",
     "filter_special": "Besondere",
     "more_count": "+{{count}} weitere Erfolge",
-    "show_less": "Weniger anzeigen",
-    "new_unlock": "Erfolg freigeschaltet!",
-    "new_unlocks": "{{count}} Erfolge freigeschaltet!"
+    "show_less": "Weniger anzeigen"
   },
   "chart": {
     "error": "Diagramm konnte nicht geladen werden",
@@ -1304,12 +1294,6 @@
       "herbalist": "Die Kräuterkundige",
       "minstrel": "Der Minnesänger",
       "farmer": "Die Bäuerin"
-    },
-    "units": {
-      "delta_reps_one": "{{count}} Wiederholung",
-      "delta_reps_other": "{{count}} Wiederholungen",
-      "delta_seconds_one": "{{count}} Sekunde",
-      "delta_seconds_other": "{{count}} Sekunden"
     },
     "smith": {
       "rest": [

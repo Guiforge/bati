@@ -7,8 +7,6 @@
     "filter_xp": "XP",
     "more_count": "+{{count}} autres succès",
     "show_less": "Afficher moins",
-    "new_unlock": "Succès débloqué !",
-    "new_unlocks": "{{count}} succès débloqués !",
     "progress": "{{unlocked}} / {{total}} débloqués"
   },
   "adventures": {
@@ -644,9 +642,7 @@
     "first_session_later": "Plus tard"
   },
   "progression": {
-    "new_rung": "Nouvelle étape débloquée",
     "new_rung_from": "Tu as maîtrisé {{name}}",
-    "new_rungs": "{{count}} nouvelles étapes débloquées",
     "rung_also_leads_to": "La même étape mène aussi à {{names}}."
   },
   "quests": {
@@ -846,7 +842,6 @@
     "pr_more": "+{{count}} autres marques",
     "pr_most_xp": "Le plus d'XP en une séance",
     "pr_new_record": "Nouvelle marque",
-    "standing_title": "Meilleur effort",
     "standing_lifetime_2": "2e meilleure sur {{count}} séances",
     "standing_lifetime_3": "3e meilleure sur {{count}} séances",
     "standing_recent_1": "Ta meilleure sur {{count}} séances",
@@ -883,15 +878,11 @@
     "summary_too_short_keep": "Garder",
     "summary_too_short_discard": "Jeter",
     "summary_forget": "Ne pas garder cette séance",
-    "summary_saving": "Enregistrement de ta séance…",
     "target_reached": "Objectif atteint !",
     "total_time": "Temps total",
     "up_next": "À suivre",
     "victory_title": "Quête accomplie !",
     "village_growth_cta": "Voir ton village",
-    "village_growth_more": "+{{count}} autres",
-    "village_growth_title": "Ton village grandit",
-    "village_tier_up_title": "Ton village a grandi !",
     "xp_overshoot": "dont +{{count}} pour avoir dépassé tes objectifs",
     "xp_outing_rate": "{{moving}} en mouvement · comptées {{effort}} d'effort",
     "swap_short": "Remplacer",
@@ -947,7 +938,6 @@
     "expedition_make_quest": "En faire une quête",
     "expedition_made_quest": "Rangée dans tes quêtes. Elle t'attend telle quelle.",
     "expedition_permission_why": "Bati lit ta position pendant la sortie, et elle ne quitte ce téléphone que dans tes propres sauvegardes et ta synchro. Android va te le demander.",
-    "level_up": "Niveau supérieur",
     "level_label": "Niveau",
     "tonight_reveal_bear": "Un ours sort de la forêt et s'installe {{place}}.",
     "tonight_reveal_ermine": "Une hermine se glisse hors de la forêt et s'installe {{place}}.",
@@ -1370,14 +1360,6 @@
       "herbalist": "L'Herboriste",
       "minstrel": "Le Ménestrel",
       "farmer": "La Fermière"
-    },
-    "units": {
-      "delta_reps_one": "{{count}} répétition",
-      "delta_reps_other": "{{count}} répétitions",
-      "delta_reps_many": "{{count}} répétitions",
-      "delta_seconds_one": "{{count}} seconde",
-      "delta_seconds_other": "{{count}} secondes",
-      "delta_seconds_many": "{{count}} secondes"
     },
     "smith": {
       "rest": [

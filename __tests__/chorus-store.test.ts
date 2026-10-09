@@ -202,37 +202,6 @@ describe("what the chorus remembers", () => {
     expect(say()).toEqual(["watcher", en.villagers.watcher.boss_defeated[1]]);
   });
 
-  test("an event line is filled in with what actually happened", () => {
-    // No shipped line quotes a number any more, so the one the store reads is swapped for a
-    // template: the point is that the values reach the bubble, not that a template does.
-    const shipped = i18n.getResourceBundle("en", "translation").villagers.watcher.boss_defeated;
-    i18n.addResourceBundle(
-      "en",
-      "translation",
-      {
-        villagers: { watcher: { boss_defeated: ["{{exercise}}: {{delta}} more than last time."] } },
-      },
-      true,
-      true,
-    );
-    try {
-      useChorusStore.getState().cue("boss_defeated", { delta: "10 reps", exercise: "Squat" });
-    } finally {
-      i18n.addResourceBundle(
-        "en",
-        "translation",
-        { villagers: { watcher: { boss_defeated: shipped } } },
-        true,
-        true,
-      );
-    }
-
-    const line = useChorusStore.getState().current?.line ?? "";
-    expect(line).toContain("10 reps");
-    expect(line).toContain("Squat");
-    expect(line).not.toContain("{{");
-  });
-
   test("the ring is persisted, so a cold start does not replay the last line", () => {
     useChorusStore.getState().cue("boss_defeated");
 

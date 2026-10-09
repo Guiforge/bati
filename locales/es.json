@@ -188,8 +188,6 @@
     "cc_by_sa_40_subtitle": "Condiciones de la licencia: compartir igual"
   },
   "progression": {
-    "new_rung": "Nueva etapa desbloqueada",
-    "new_rungs": "{{count}} nuevas etapas desbloqueadas",
     "new_rung_from": "Dominas {{name}}",
     "rung_also_leads_to": "La misma etapa también lleva a {{names}}."
   },
@@ -519,7 +517,6 @@
     "pr_more": "+{{count}} mejores marcas más",
     "pr_most_xp": "Más XP en una sesión",
     "pr_new_record": "Nueva mejor marca",
-    "standing_title": "Entre tus mejores",
     "standing_lifetime_2": "2.ª mejor de {{count}} sesiones",
     "standing_lifetime_3": "3.ª mejor de {{count}} sesiones",
     "standing_recent_1": "Tu mejor de {{count}} sesiones",
@@ -556,15 +553,11 @@
     "summary_too_short_keep": "Guardar",
     "summary_too_short_discard": "Descartar",
     "summary_forget": "No guardar esta sesión",
-    "summary_saving": "Guardando tu sesión…",
     "target_reached": "¡Objetivo cumplido!",
     "total_time": "Tiempo total",
     "up_next": "A continuación",
     "victory_title": "¡Misión cumplida!",
     "village_growth_cta": "Ver tu aldea",
-    "village_growth_more": "+{{count}} más",
-    "village_growth_title": "Tu aldea crece",
-    "village_tier_up_title": "¡Tu aldea ha crecido!",
     "xp_overshoot": "incluye +{{count}} por superar tus objetivos",
     "xp_outing_rate": "{{moving}} en movimiento · cuenta como {{effort}} de esfuerzo",
     "swap_short": "Sustituir",
@@ -620,7 +613,6 @@
     "expedition_make_quest": "Convertirla en misión",
     "expedition_made_quest": "Guardada con tus misiones. Te espera tal como la dejaste.",
     "expedition_permission_why": "Bati lee tu ubicación durante una salida, y solo sale de este móvil en tus propias copias de seguridad y tu sincronización. Android te lo va a pedir.",
-    "level_up": "Subes de nivel",
     "level_label": "Nivel",
     "tonight_reveal_bear": "Un oso sale del bosque y se instala en {{place}}.",
     "tonight_reveal_ermine": "Un armiño se desliza fuera del bosque y se instala en {{place}}.",
@@ -985,9 +977,7 @@
     "filter_xp": "XP",
     "filter_special": "Especiales",
     "more_count": "+{{count}} logros más",
-    "show_less": "Mostrar menos",
-    "new_unlock": "¡Logro desbloqueado!",
-    "new_unlocks": "¡{{count}} logros desbloqueados!"
+    "show_less": "Mostrar menos"
   },
   "chart": {
     "error": "Error al cargar el gráfico",
@@ -1370,14 +1360,6 @@
       "herbalist": "La Herbolaria",
       "minstrel": "El Juglar",
       "farmer": "La Granjera"
-    },
-    "units": {
-      "delta_reps_one": "{{count}} repetición",
-      "delta_reps_other": "{{count}} repeticiones",
-      "delta_reps_many": "{{count}} repeticiones",
-      "delta_seconds_one": "{{count}} segundo",
-      "delta_seconds_other": "{{count}} segundos",
-      "delta_seconds_many": "{{count}} segundos"
     },
     "smith": {
       "rest": [

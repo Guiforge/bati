@@ -130,6 +130,23 @@ describe("TonightList", () => {
     expect(queryByText(/null|ancien/i)).toBeNull();
   });
 
+  test("a boar demoted to a card by an epilogue says what it mixes, and a single practice says nothing", async () => {
+    const led = (quarters: [string, string]) =>
+      show(
+        rankFeasts({
+          epilogue: true,
+          result: { ...base, crestReveal: { animal: "boar", quarters } } as never,
+        }),
+      );
+    const mixed = await led(["strength", "run"]);
+    expect(mixed.getByText("Un sanglier sort des fourrés et s'installe à Brumeval.")).toBeTruthy();
+    expect(mixed.getByText("Tu mêles force et endurance.")).toBeTruthy();
+    await mixed.unmount();
+
+    const single = await led(["yoga", "yoga"]);
+    expect(single.queryByText(/Tu mêles/)).toBeNull();
+  });
+
   test("a tier is a line after the epilogue... and a card when something else leads", async () => {
     const feasts = rank(
       { tierUp: { oldTier: 2, newTier: 3 } as never, levelUp: { oldLevel: 4, newLevel: 5 } },

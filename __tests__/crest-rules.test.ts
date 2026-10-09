@@ -147,9 +147,13 @@ describe("the first animal", () => {
 
   test("a mixed workout is the practice with the most movements done, a tie going to the fixed order", () => {
     expect(auto(seq(["mixed", 8]))?.animal).toBe("salmon");
-    expect(
-      auto([...seq(["strength", 7]), { ...session("none"), strength: 2, yoga: 2 }])?.animal,
-    ).toBe("bear");
+    // 3 strength and 4 yoga around a tied session: it is the 8th, and the totals say where it went
+    // (strength 4, yoga 4 if the fixed order broke the tie; a later-wins tie would give yoga 5).
+    const tied = { ...session("none"), strength: 2, yoga: 2 };
+    expect(auto([...seq(["yoga", 4], ["strength", 3]), tied])?.evidence.totals).toMatchObject({
+      strength: 4,
+      yoga: 4,
+    });
   });
 
   test("a workout with no movement counted has no practice, and the 8th session is the 8th with one", () => {
@@ -171,6 +175,15 @@ describe("the first animal", () => {
     ]);
     expect(auto(journal)?.animal).toBe("stag");
     expect(auto(journal.slice(1))?.animal).toBe("bear");
+  });
+});
+
+describe("the stages", () => {
+  test("adult from 40 sessions of the practice, venerable from 200", () => {
+    expect(auto(seq(["strength", 39]))?.stage).toBe("young");
+    expect(auto(seq(["strength", 40]))?.stage).toBe("adult");
+    expect(auto(seq(["strength", 199]))?.stage).toBe("adult");
+    expect(auto(seq(["strength", 200]))?.stage).toBe("venerable");
   });
 });
 

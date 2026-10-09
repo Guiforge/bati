@@ -1,5 +1,5 @@
 import { differenceInYears } from "date-fns";
-import { and, eq, gt, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
 import { type CrestAnimals, type CrestSession, crestAnimals } from "./crestRules";
@@ -42,13 +42,8 @@ export async function getCrest(now: Date = new Date()): Promise<Crest | null> {
       cardio: doneIn("cardio"),
     })
     .from(completedQuest)
-    .leftJoin(
-      completedExercises,
-      and(
-        eq(completedExercises.sessionId, completedQuest.id),
-        gt(completedExercises.resultValue, 0),
-      ),
-    )
+    // No `resultValue > 0` here: `completed_exercises` already CHECKs it (drizzle/0000_schema.sql:219).
+    .leftJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
     .leftJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
     .where(countsAsSession())
     .groupBy(completedQuest.id)

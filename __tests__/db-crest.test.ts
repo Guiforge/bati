@@ -131,6 +131,16 @@ describe("what counts for the animal is what countsAsSession accepts", () => {
   });
 });
 
+describe("the replay order", () => {
+  test("equal times are replayed by uuid, not by insertion order", async () => {
+    const at = atDay(5);
+    // Inserted cardio first, strength second: by rowid the Bear is the latest, by uuid the Stag.
+    for (let i = 0; i < 4; i++) add(at, { uuid: `b-${i}`, sets: [{ style: "cardio" }] });
+    for (let i = 0; i < 4; i++) add(at, { uuid: `a-${i}`, sets: [{ style: "strength" }] });
+    expect((await crest().getCrest(NOW))?.animal).toBe("stag");
+  });
+});
+
 describe("the figures beside the animal", () => {
   test("rings are whole years since the first session that counts, empty years included", async () => {
     for (let i = 0; i < 7; i++) strength(i + 1);
@@ -149,6 +159,13 @@ describe("the figures beside the animal", () => {
     expect((await crest().getCrest(NOW))?.longestFlame).toBe(0);
 
     for (let i = 0; i < 40; i++) strength(40 - i);
+    expect((await crest().getCrest(NOW))?.longestFlame).toBeGreaterThanOrEqual(4);
+  });
+
+  test("the longest flame outlives the current one: an old long run, a gap, a short recent one", async () => {
+    for (let i = 0; i < 40; i++) strength(300 - i);
+    for (let i = 0; i < 2; i++) strength(2 - i);
+    // The flame held now is under 3 days; the band remembers the one of 30 or more.
     expect((await crest().getCrest(NOW))?.longestFlame).toBeGreaterThanOrEqual(4);
   });
 });

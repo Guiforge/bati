@@ -136,7 +136,7 @@ function FilledLevelBar({
       bg="$surface"
       borderColor="$glassBorder"
       gap="$2"
-      py="$3"
+      py="$2"
     >
       <XStack items="center" justify="space-between">
         <Text fontFamily="$body" fontWeight="700" fontSize={14} color="$text">
@@ -389,7 +389,7 @@ export function VictoryView() {
   };
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top + 16}>
+    <YStack flex={1} bg="$background" pt={insets.top + 12}>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
@@ -397,7 +397,7 @@ export function VictoryView() {
           // line inside the hero banner (VillagerLine), so there is nothing else to clear.
           paddingBottom: insets.bottom + 96,
           alignItems: "center",
-          gap: 20,
+          gap: 12,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -408,7 +408,6 @@ export function VictoryView() {
           bg={questBg}
           width="100%"
           maxW={520}
-          mt="$4"
           p={0}
           overflow="hidden"
           borderWidth={1.5}
@@ -556,15 +555,15 @@ export function VictoryView() {
         {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
         {!tooShort && (
           <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
-            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
+            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$2">
               <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
                 {t("session.total_time")}
               </Text>
-              <Text fontWeight="700" fontSize={26} color="$text" fontFamily="$body">
+              <Text fontWeight="700" fontSize={26} lineHeight={32} color="$text" fontFamily="$body">
                 {result ? formatTime(durationSeconds) : "\u00A0"}
               </Text>
             </Card>
-            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
+            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$2">
               <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
                 {t("session.xp_earned")}
               </Text>
@@ -576,6 +575,7 @@ export function VictoryView() {
                 importantForAccessibility={result ? "auto" : "no"}
                 fontWeight="700"
                 fontSize={26}
+                lineHeight={32}
                 color="$resourceGold"
                 fontFamily="$body"
               >
@@ -761,8 +761,9 @@ export function VictoryView() {
 
       {/* Sticky actions: Share + Continue */}
       <XStack
-        p="$4"
-        pb={insets.bottom + 16}
+        px="$4"
+        pt="$3"
+        pb={insets.bottom + 8}
         gap="$3"
         bg="$bgDark"
         borderTopWidth={1}

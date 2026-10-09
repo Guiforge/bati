@@ -1,6 +1,8 @@
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, within } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
+import { crestFootprint } from "@/components/village/crestGeometry";
 import { VillageScene } from "@/components/village/VillageScene";
 import * as crestDb from "@/db/crest";
 import * as village from "@/db/village";
@@ -23,6 +25,10 @@ jest.mock("expo-router", () => ({
   useIsFocused: () => true,
   useLocalSearchParams: () => ({}),
   useRouter: () => ({ push: jest.fn() }),
+}));
+jest.mock("@/components/village/VillageEmbers", () => ({
+  VillageEmbers: () =>
+    require("react").createElement(require("react-native").View, { testID: "village-embers" }),
 }));
 jest.mock("@/components/common/FlameFlicker", () => ({ FlameFlicker: () => null }));
 jest.mock("@/hooks/useGameIcon", () => ({ useGameIcon: (name: string) => name }));
@@ -104,9 +110,9 @@ describe("the village header", () => {
     expect(screen.getByLabelText("A bear.")).toBeTruthy();
   });
 
-  it("says since tonight on the day of the reveal", async () => {
+  it("says from today on the day of the reveal", async () => {
     await mount(crestOf({ revealedAt: new Date() }));
-    expect(await line()).toBe("A bear has watched over Brumeval since tonight.");
+    expect(await line()).toBe("A bear watches over Brumeval from today.");
   });
 
   it("two animals, and the stage only when it is venerable", async () => {
@@ -121,7 +127,7 @@ describe("the village header", () => {
 
   it("the boar names its two practices", async () => {
     await mount(crestOf({ animal: "boar", quarters: ["strength", "run"] }));
-    expect(await line()).toBe("A boar watches over Brumeval, strength and running.");
+    expect(await line()).toBe("A boar watches over Brumeval: you blend strength and running.");
   });
 
   it("while loading, nothing is asserted: no sentence, no glow, the name in its place", async () => {
@@ -129,6 +135,80 @@ describe("the village header", () => {
     expect(screen.getByText("Brumeval")).toBeTruthy();
     expect(screen.queryByTestId("village-crest-line")).toBeNull();
     expect(screen.queryByTestId("village-glow")).toBeNull();
+  });
+});
+
+describe("the header's rules", () => {
+  it("a first animal that is only adult is not called venerable", async () => {
+    await mount(crestOf({ stage: "adult" }));
+    expect(await line()).toBe("A bear watches over Brumeval.");
+    jest.restoreAllMocks();
+    await mount(crestOf({ stage: "adult", second: { animal: "stag", stage: "adult" } }));
+    expect(await screen.findByText("A bear and a stag watch over Brumeval.")).toBeTruthy();
+  });
+
+  it("a crest that cannot be read is an error screen, never the glow", async () => {
+    useUserStore.setState({ villageName: "Brumeval" });
+    jest.spyOn(village, "getVillageScene").mockResolvedValue({
+      tier: 4,
+      level: 8,
+      title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
+      totalXp: 3180,
+      xpPerSession: 370,
+      flame: 1,
+      streakDays: 4,
+      dominantSport: null,
+      buildings: [],
+    });
+    jest.spyOn(crestDb, "getCrest").mockRejectedValue(new Error("db"));
+    await render(
+      <SafeAreaProvider initialMetrics={METRICS}>
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <VillageScene />
+        </TamaguiProvider>
+      </SafeAreaProvider>,
+    );
+    expect(await screen.findByText(i18n.t("common.retry"))).toBeTruthy();
+    expect(screen.queryByTestId("village-glow")).toBeNull();
+    expect(screen.queryByTestId("village-crest-line")).toBeNull();
+  });
+
+  it("gives a long hyphenated name somewhere to wrap: a zero-width space after each hyphen", async () => {
+    await mount(crestOf(), "Rochebrune-sur-Lande");
+    expect(await screen.findByText("Rochebrune-\u200Bsur-\u200BLande")).toBeTruthy();
+  });
+
+  it("holds the glow in the crest's own slot, so the name does not move", async () => {
+    await mount(null);
+    await screen.findByTestId("village-glow");
+    const slot = StyleSheet.flatten(screen.getByTestId("village-glow-slot").props.style);
+    expect(slot).toMatchObject(crestFootprint(56, true));
+  });
+
+  it("while loading, the hero already grows to the title block, so it does not jump on arrival", async () => {
+    await mount(crestOf(), "Brumeval", true);
+    const hero = () => StyleSheet.flatten(screen.getByTestId("village-hero-loading").props.style);
+    const before = hero().height as number;
+    await fireEvent(screen.getByTestId("village-title"), "layout", {
+      nativeEvent: { layout: { height: 600 } },
+    });
+    // The block's height plus the status bar's inset (47) and 8.
+    expect(hero().height).toBe(600 + 47 + 8);
+    expect(before).toBeLessThan(600);
+  });
+
+  it("draws the embers under the title block, never over the crest", async () => {
+    await mount(crestOf());
+    await screen.findByTestId("village-title");
+    const hero = screen.getByTestId("village-hero");
+    const order = (hero.children as { props?: { testID?: string } }[]).map((c) => c.props?.testID);
+    expect(order.indexOf("village-embers")).toBeGreaterThanOrEqual(0);
+    expect(order.indexOf("village-embers")).toBeLessThan(order.indexOf("village-title"));
+  });
+
+  it("while loading, the name is in the title block, the same one the loaded header uses", async () => {
+    await mount(crestOf(), "Brumeval", true);
+    expect(within(screen.getByTestId("village-title")).getByText("Brumeval")).toBeTruthy();
   });
 });
 
@@ -148,4 +228,23 @@ describe("the sentences, in every language", () => {
       expect(text).not.toMatch(BANNED);
     }
   });
+});
+
+describe("the reveal day and the boar's line, in every language", () => {
+  const TODAY = { fr: "aujourd'hui", en: "from today", de: "seit heute", es: "desde hoy" } as const;
+  const args = { animal: "x", first: "a", second: "b", place: "p" };
+  it.each(["fr", "en", "de", "es"] as const)(
+    "%s says today, and the boar names no apposition",
+    (lng) => {
+      const t = i18n.getFixedT(lng);
+      for (const key of ["one_t", "pair_t", "boar_t"])
+        expect(t(`village.crest_line_${key}`, args)).toContain(TODAY[lng]);
+      // A colon, then what the hero does: "tu mêles a et b", not "…, a et b".
+      for (const key of ["boar", "boar_t"]) {
+        const line = t(`village.crest_line_${key}`, args);
+        expect(line).toMatch(/p[^:]*: [^,]*a [^,]*b/);
+        expect(line).not.toMatch(/, a /);
+      }
+    },
+  );
 });

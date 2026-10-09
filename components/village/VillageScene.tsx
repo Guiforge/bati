@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useWindowDimensions, View } from "react-native";
+import { type LayoutChangeEvent, PixelRatio, useWindowDimensions, View } from "react-native";
 import Animated, {
   Easing,
   Extrapolation,
@@ -22,7 +22,7 @@ import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Crest } from "@/components/village/Crest";
 import { crestFootprint } from "@/components/village/crestGeometry";
-import { useCrestLine } from "@/components/village/crestLine";
+import { revealedToday, useCrestLine } from "@/components/village/crestLine";
 import { groupFamilies } from "@/components/village/rows";
 import { VillageDetailSheet, type VillageSelection } from "@/components/village/VillageDetailSheet";
 import { VillageEmbers } from "@/components/village/VillageEmbers";
@@ -100,15 +100,31 @@ function TitleText({ children }: { children: string }) {
   );
 }
 
-/** Two bone-coloured eyes in the dark, before the 8th session: still, no halo, no animation. */
+/**
+ * Two bone-coloured eyes in the dark, before the 8th session: still, no halo, no animation. They
+ * sit in the crest's own slot, same place and same size, so the name beside them is where it will
+ * be when the crest comes, and where the skeleton put it.
+ */
 function Glow() {
   return (
-    <XStack testID="village-glow" gap={9} accessible={false}>
-      <YStack width={7} height={4} rounded={999} bg="$text" />
-      <YStack width={7} height={4} rounded={999} bg="$text" />
-    </XStack>
+    <YStack
+      testID="village-glow-slot"
+      {...crestFootprint(CREST_SIZE, true)}
+      items="center"
+      justify="center"
+    >
+      <XStack testID="village-glow" gap={9} accessible={false}>
+        <YStack width={7} height={4} rounded={999} bg="$text" />
+        <YStack width={7} height={4} rounded={999} bg="$text" />
+      </XStack>
+    </YStack>
   );
 }
+
+/** The title block's own box: the loaded header and its skeleton share it, so nothing slides. */
+const TITLE_BLOCK = { px: "$4", pb: 28, gap: 6 } as const;
+/** A line of the header's small text: its height at the current font scale, for the skeleton. */
+const TEXT_LINE = 17;
 
 const LEAN = { duration: 900, easing: Easing.bezier(0.2, 0.7, 0.2, 1) } as const;
 
@@ -158,6 +174,8 @@ export function VillageScene() {
   // How tall the title block really is: at a large font the crest, the wrapped name and the two
   // lines outgrow the painting's band, and the block must not climb under the status bar.
   const [titleHeight, setTitleHeight] = useState(0);
+  const measureTitle = (e: LayoutChangeEvent) =>
+    setTitleHeight(Math.round(e.nativeEvent.layout.height));
   const [loadFailed, setLoadFailed] = useState(false);
   // Read-only: a tap explains what earned the building, it never unlocks anything.
   const [selected, setSelected] = useState<VillageSelection | null>(null);
@@ -211,7 +229,7 @@ export function VillageScene() {
   const crestLine = useCrestLine(
     crest,
     villageName,
-    crest !== null && dayKey(crest.revealedAt) === dayKey(new Date()),
+    crest !== null && revealedToday(crest.revealedAt, new Date()),
   );
   const ready = scene !== null;
   // Where the painting leans in. Nothing is drawn there: the gold dots that used to mark every
@@ -289,16 +307,27 @@ export function VillageScene() {
         </YStack>
       );
     }
+    // The loaded header's own layout, bar for bar: the name stays where it will be, the lines
+    // under it are held at their height. The block's height goes into `titleHeight` too, so the
+    // hero is already its final height when the data arrives.
+    const lineHeight = Math.round(TEXT_LINE * PixelRatio.getFontScale());
     return (
       <YStack testID="village-screen" flex={1} bg="$background">
-        <YStack width="100%" height={heroHeight} justify="flex-end" px="$4" pb={28}>
+        <YStack testID="village-hero-loading" width="100%" height={heroHeight} justify="flex-end">
           <YStack position="absolute" t={0} l={0} r={0} b={0}>
             <Skeleton width="100%" height={heroHeight} radius={0} />
           </YStack>
-          <XStack items="center" gap={10}>
-            <Skeleton bg="$surface2" {...crestFootprint(CREST_SIZE, true)} />
-            {villageName ? <TitleText>{villageName}</TitleText> : null}
-          </XStack>
+          <YStack testID="village-title" {...TITLE_BLOCK} onLayout={measureTitle}>
+            <XStack items="center" gap={10}>
+              <Skeleton bg="$surface2" {...crestFootprint(CREST_SIZE, true)} />
+              <XStack flex={1} minW={0} flexWrap="wrap" items="center">
+                {villageName ? <TitleText>{villageName}</TitleText> : null}
+              </XStack>
+            </XStack>
+            <Skeleton height={lineHeight} width="55%" />
+            <Skeleton height={lineHeight} width="85%" />
+            <Skeleton height={20} width="40%" />
+          </YStack>
         </YStack>
         <YStack gap="$3" p="$4">
           <Skeleton height={28} width="60%" />
@@ -389,7 +418,8 @@ export function VillageScene() {
             }}
           />
 
-          {/* Bottom scrim dissolves the artwork into the page; the title sits inside it */}
+          {/* Bottom scrim dissolves the artwork into the page; the title sits over it, further
+              down this list. */}
           <LinearGradient
             colors={["transparent", rawColors.bgOverlay, rawColors.bgDark]}
             locations={[0, 0.66, 0.94]}
@@ -399,71 +429,73 @@ export function VillageScene() {
               left: 0,
               right: 0,
               height: Math.max(Math.round(heroHeight * 0.62), titleHeight + 24),
-              justifyContent: "flex-end",
             }}
-          >
-            {/* The bottom 14 is what the panel below overlaps. The focus line comes last, where
-                the scrim is darkest: above the name it sat on the bright top of the painting
-                (an aurora on tier 12), secondary text on pale turquoise. The flame shares the
-                name's line, which gives the panel back a whole row. */}
-            <YStack
-              px="$4"
-              pb={28}
-              gap={6}
-              onLayout={(e) => setTitleHeight(Math.round(e.nativeEvent.layout.height))}
-            >
-              {crest === null ? <Glow /> : null}
-              <XStack items="center" gap={10}>
-                {crest !== null ? <Crest crest={crest} size={CREST_SIZE} onPainting /> : null}
-                {/* The chip wraps under the name when the row is full: a long name takes two
-                    lines and nothing is cut. */}
-                <XStack flex={1} minW={0} flexWrap="wrap" items="center" columnGap={10} rowGap={4}>
-                  <TitleText>{villageName || tierName}</TitleText>
-                  {scene.flame > 0 && (
-                    <XStack
-                      items="center"
-                      gap={5}
-                      px={9}
-                      py={3}
-                      rounded={999}
-                      bg="$glassBg"
-                      borderWidth={1}
-                      borderColor="$glassBorder"
-                    >
-                      <FlameFlicker size={14} />
-                      <Text fontSize={11.5} fontWeight="600" color="$text" numberOfLines={1}>
-                        {`${t(`village.flame_${scene.flame}`)} · ${t("village.flame_days", { days: formatCount(language, scene.streakDays) })}`}
-                      </Text>
-                    </XStack>
-                  )}
-                </XStack>
-              </XStack>
-              <Text fontSize={13} fontWeight="500" color="$textSecondary">
-                {tierLine}
-              </Text>
-              <Text testID="village-crest-line" fontSize={13} color="$text">
-                {crestLine}
-              </Text>
-              {scene.dominantSport ? (
-                <XStack items="center" gap={8}>
-                  <Image
-                    source={getSportSpriteAsset(scene.dominantSport.muscle)}
-                    style={{ width: 20, height: 20 }}
-                    contentFit="contain"
-                  />
-                  <Text fontSize={11.5} color="$textSecondary">
-                    {t("village.focus_line", {
-                      muscle: MUSCLE_LABELS[scene.dominantSport.muscle][lang],
-                    })}
-                  </Text>
-                </XStack>
-              ) : null}
-            </YStack>
-          </LinearGradient>
+          />
 
-          {/* Last child on purpose: the bottom scrim is near-opaque over the lower half of the
-              hero, so embers drawn before it would simply not be there. */}
+          {/* Under the title, over the scrim: the scrim is near-opaque over the lower half of the
+              hero, so embers drawn before it would simply not be there, and one drawn over the
+              title fell on the crest and read as a ring. */}
           <VillageEmbers heroHeight={heroHeight} heroWidth={columnWidth} tier={scene.tier} />
+
+          {/* The bottom 14 is what the panel below overlaps. The focus line comes last, where
+              the scrim is darkest: above the name it sat on the bright top of the painting
+              (an aurora on tier 12), secondary text on pale turquoise. The flame shares the
+              name's line, which gives the panel back a whole row. Its box is the skeleton's. */}
+          <YStack
+            testID="village-title"
+            position="absolute"
+            b={0}
+            l={0}
+            r={0}
+            {...TITLE_BLOCK}
+            onLayout={measureTitle}
+          >
+            <XStack items="center" gap={10}>
+              {crest === null ? <Glow /> : <Crest crest={crest} size={CREST_SIZE} onPainting />}
+              {/* The chip wraps under the name when the row is full: a long name takes two
+                  lines and nothing is cut. */}
+              <XStack flex={1} minW={0} flexWrap="wrap" items="center" columnGap={10} rowGap={4}>
+                <TitleText>{villageName || tierName}</TitleText>
+                {scene.flame > 0 && (
+                  <XStack
+                    items="center"
+                    gap={5}
+                    px={9}
+                    py={3}
+                    rounded={999}
+                    bg="$glassBg"
+                    borderWidth={1}
+                    borderColor="$glassBorder"
+                  >
+                    <FlameFlicker size={14} />
+                    <Text fontSize={11.5} fontWeight="600" color="$text" numberOfLines={1}>
+                      {`${t(`village.flame_${scene.flame}`)} · ${t("village.flame_days", { days: formatCount(language, scene.streakDays) })}`}
+                    </Text>
+                  </XStack>
+                )}
+              </XStack>
+            </XStack>
+            <Text fontSize={13} lineHeight={TEXT_LINE} fontWeight="500" color="$textSecondary">
+              {tierLine}
+            </Text>
+            <Text testID="village-crest-line" fontSize={13} lineHeight={TEXT_LINE} color="$text">
+              {crestLine}
+            </Text>
+            {scene.dominantSport ? (
+              <XStack items="center" gap={8}>
+                <Image
+                  source={getSportSpriteAsset(scene.dominantSport.muscle)}
+                  style={{ width: 20, height: 20 }}
+                  contentFit="contain"
+                />
+                <Text fontSize={11.5} color="$textSecondary">
+                  {t("village.focus_line", {
+                    muscle: MUSCLE_LABELS[scene.dominantSport.muscle][lang],
+                  })}
+                </Text>
+              </XStack>
+            ) : null}
+          </YStack>
 
           {/* The one floating villager in the app: part of the painting, above the title, so it
               scrolls with it and the cards below are never under it. Its zone is this band. */}

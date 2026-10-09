@@ -1,13 +1,18 @@
 import { useTranslation } from "react-i18next";
 import type { Crest } from "@/db/crest";
 import type { Animal } from "@/db/crestRules";
+import { dayKey } from "@/db/dates";
 import { PRACTICE_KEY, sentence } from "./crestText";
 
 type Line = Pick<Crest, "animal" | "second" | "quarters" | "stage">;
 
+/** Whether the reveal happened on the hero's own calendar day: local time, never UTC. */
+export const revealedToday = (revealedAt: Date, now: Date): boolean =>
+  dayKey(revealedAt) === dayKey(now);
+
 /**
  * The line under the title: whole sentences, one per shape, so no language agrees a part with a
- * whole. A stage is said only when it is "venerable" (the mockups' state C), and "since tonight"
+ * whole. A stage is said only when it is "venerable" (the mockups' state C), and "from today"
  * only on the day the 8th session revealed the crest. No crest yet: the glow's sentence.
  */
 export function useCrestLine(

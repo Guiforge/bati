@@ -58,9 +58,11 @@ describe("colour roles", () => {
     expect(read("components/exercises/MineCaption.tsx")).not.toContain("$primaryText");
   });
 
-  it("tonight writes every glyph and badge in gold, never in the primary text role", () => {
+  it("tonight writes every glyph and badge in gold, and only its village link in braise", () => {
     const tonight = read("components/session/TonightList.tsx");
-    expect(tonight).not.toContain("$primaryText");
+    // The link is an action (braise); everything else is something earned (gold).
+    expect(tonight.match(/\$primaryText/g)).toHaveLength(1);
+    expect(tonight).toMatch(/color="\$primaryText"[^>]*>\s*\{t\("session.village_growth_cta"\)\}/);
     expect(tonight).toContain('color="$resourceGold"');
   });
 

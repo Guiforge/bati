@@ -143,6 +143,8 @@ export type RingsLayout = {
  * its width. A visible `RING_GAP` stays between neighbours at every count: what gives is the
  * ring's size (5.2 u across at 5 or fewer per row, 3.4 u at 7, the last count the hollow of a
  * ring reads at 96), never the count. That is the whole rule: one per year, two rows at most.
+ * Past 14 the rows lengthen and the hollow shrinks (2.0 u at 14, 1.7 at 16, 1.2 at 20): fine to
+ * about 16, a filled dot from about 20.
  */
 export function ringsLayout(n: number): RingsLayout {
   const rows = n > PER_ROW ? 2 : 1;

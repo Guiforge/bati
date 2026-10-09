@@ -269,4 +269,24 @@ describe("the preferences", () => {
     expect(reportError).toHaveBeenCalled();
     reportError.mockRestore();
   });
+
+  test("two marks that cross keep both ids, in one statement", async () => {
+    await Promise.all([prefs().markBigFeastShown("reveal"), prefs().markBigFeastShown("age")]);
+    expect((await prefs().getBigFeastsShown()).sort()).toEqual(["age", "reveal"]);
+
+    // A stored value that is valid JSON but not a list starts over.
+    t.sqlite
+      .prepare("UPDATE user_preferences SET value = '{\"a\":1}' WHERE key = 'bigFeastsShown'")
+      .run();
+    await prefs().markBigFeastShown("reveal");
+    expect(await prefs().getBigFeastsShown()).toEqual(["reveal"]);
+  });
+
+  test("marking a big feast is a single query", async () => {
+    const runs = jest.spyOn(t.sqlite, "prepare");
+    await prefs().markBigFeastShown("reveal");
+    const touching = runs.mock.calls.filter(([q]) => String(q).includes("bigFeastsShown"));
+    runs.mockRestore();
+    expect(touching).toHaveLength(1);
+  });
 });

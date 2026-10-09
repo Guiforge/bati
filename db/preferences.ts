@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getLocales } from "expo-localization";
 import { reportError } from "../src/reportError";
 import { db, schema, type TransactionTx } from "./client";
@@ -369,9 +369,20 @@ export const preferences = {
   },
 
   async markBigFeastShown(id: string): Promise<void> {
-    const shown = await preferences.getBigFeastsShown();
-    if (shown.includes(id)) return;
-    await setPreference("bigFeastsShown", JSON.stringify([...shown, id]));
+    // One statement, so two marks that cross cannot lose an id (read-then-write did). A value that
+    // is not a JSON array starts over from [id]; an id already in the list leaves it untouched.
+    await db.run(sql`
+      INSERT INTO user_preferences (key, value, updatedAt)
+      VALUES ('bigFeastsShown', json_array(${id}), unixepoch())
+      ON CONFLICT(key) DO UPDATE SET
+        value = CASE
+          WHEN NOT json_valid(user_preferences.value) OR json_type(user_preferences.value) != 'array'
+            THEN json_array(${id})
+          WHEN EXISTS (SELECT 1 FROM json_each(user_preferences.value) WHERE json_each.value = ${id})
+            THEN user_preferences.value
+          ELSE json_insert(user_preferences.value, '$[#]', ${id})
+        END,
+        updatedAt = unixepoch()`);
   },
 
   async setOwnedEquipment(equipment: EquipmentCode[] | null): Promise<void> {

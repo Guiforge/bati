@@ -95,7 +95,7 @@ log, adventure runs, set-aside exercises, `language`, `warmupEnabled`, `prepMode
 `distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `villagersEnabled`, `bigFeastsShown`
 (a JSON list of the big feasts this phone already showed; it only decides display), and every
 other preference not in R7. They are excluded by being absent from the whitelist `MERGED_PREFERENCES`
-(`db/backup.ts:251-262`), the only list the comparison and the merge read (`db/backup.ts:270`,
+(`db/backup.ts:251-262`), the only list the comparison and the merge read (`db/backup.ts:270-277`,
 `db/merge.ts:181`).
 Invariant: after any merge, the local value of each of these keys is byte-identical to before.
 

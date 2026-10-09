@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { YStack } from "tamagui";
 import { ANIMAL_TOKEN } from "@/constants/animalColors";
 import { rawColors } from "@/constants/rawColors";
 import type { Crest as CrestData } from "@/db/crest";
@@ -10,8 +11,8 @@ import { type GameIconName, useGameIcon } from "@/hooks/useGameIcon";
 import {
   ANIMAL_BOX,
   BAND,
-  CROSS,
   type CrestSize,
+  crossPath,
   DIAMOND,
   filetInset,
   filetWidth,
@@ -57,23 +58,37 @@ const practiceFill = (p: Practice): string => {
 
 const sentence = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** The crest, read aloud: the animals as a whole sentence, never as parts. */
+/** One word per practice: the three styles already have theirs, running and cycling do not. */
+const PRACTICE_KEY: Record<Practice, string> = {
+  strength: "village.style_strength",
+  calisthenics: "village.style_calisthenics",
+  yoga: "village.style_yoga",
+  run: "village.crest_practice_run",
+  ride: "village.crest_practice_ride",
+};
+
+/** The crest, read aloud: whole sentences, so no language has to agree a part with a whole. */
 function useCrestLabel(crest: CrestShape | null): string {
   const { t } = useTranslation();
   if (crest === null) return "";
-  const name = (a: Animal) => t(`village.crest_${a}`);
-  let what = name(crest.animal);
+  const name = (a: Animal) => sentence(t(`village.crest_${a}`));
+  let what: string;
   if (crest.animal === "boar" && crest.quarters) {
     what = t("village.crest_boar_of", {
-      boar: what,
-      first: t(`village.crest_practice_${crest.quarters[0]}`),
-      second: t(`village.crest_practice_${crest.quarters[1]}`),
+      first: t(PRACTICE_KEY[crest.quarters[0]]),
+      second: t(PRACTICE_KEY[crest.quarters[1]]),
     });
   } else if (crest.second) {
-    what = t("village.crest_pair", { first: what, second: name(crest.second.animal) });
+    what = sentence(
+      t("village.crest_pair", {
+        first: t(`village.crest_${crest.animal}`),
+        second: t(`village.crest_${crest.second.animal}`),
+      }),
+    );
+  } else {
+    what = t("village.crest_one", { animal: name(crest.animal) });
   }
-  if (crest.manual) what = t("village.crest_manual", { what });
-  return sentence(what);
+  return crest.manual ? t("village.crest_manual", { what }) : what;
 }
 
 const INK = rawColors.bgDark;
@@ -81,14 +96,13 @@ const GOLD = rawColors.resourceGold;
 
 /** The field: one animal's colour, that colour inside a border, or the boar's four quarters. */
 function Field({ crest, size }: { crest: CrestShape; size: CrestSize }) {
-  const f = filetWidth(size);
   if (crest.animal === "boar") {
     const q = crest.quarters;
     return (
       <>
         <Path d={SHIELD} fill={q ? practiceFill(q[0]) : rawColors.animalBear} />
         {q !== null ? <Path d={QUARTERS_B} fill={practiceFill(q[1])} /> : null}
-        <Path d={CROSS} stroke={INK} strokeWidth={f} fill="none" />
+        <Path d={crossPath(size)} fill={INK} />
       </>
     );
   }
@@ -99,7 +113,12 @@ function Field({ crest, size }: { crest: CrestShape; size: CrestSize }) {
   return (
     <>
       <Path d={SHIELD} fill={fillOf(ANIMAL_TOKEN[second])} />
-      <Path d={insetShield(filetInset(size))} fill={fill} stroke={INK} strokeWidth={f} />
+      <Path
+        d={insetShield(filetInset(size))}
+        fill={fill}
+        stroke={INK}
+        strokeWidth={filetWidth(size)}
+      />
     </>
   );
 }
@@ -160,16 +179,8 @@ export function Crest({ crest, size, onPainting = false }: CrestProps) {
   );
   if (!onPainting) return drawn;
   return (
-    <View
-      style={{
-        padding: 3,
-        borderRadius: 6,
-        borderWidth: 1,
-        borderColor: rawColors.glassBorder,
-        backgroundColor: INK,
-      }}
-    >
+    <YStack bg="$bgDark" borderColor="$glassBorder" borderWidth={1} p="$1.5" rounded="$2">
       {drawn}
-    </View>
+    </YStack>
   );
 }

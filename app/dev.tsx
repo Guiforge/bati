@@ -80,8 +80,20 @@ const CREST_ROWS: [string, CrestShape][] = [
     "worst: bear + stag, 9 rings, chosen",
     crestOf({ animal: "bear", second: second("stag"), longestFlame: 5, rings: 9, manual: true }),
   ],
+  [
+    "worst: boar chosen, flame 5, 9 rings",
+    crestOf({
+      animal: "boar",
+      quarters: ["strength", "run"],
+      longestFlame: 5,
+      rings: 9,
+      manual: true,
+    }),
+  ],
+  ["bear + stag, 10 rings", crestOf({ animal: "bear", second: second("stag"), rings: 10 })],
+  ["bear + stag, 12 rings", crestOf({ animal: "bear", second: second("stag"), rings: 12 })],
 ];
-const CREST_SIZES = [24, 48, 96] as const;
+const CREST_SIZES = [24, 48, 56, 96] as const;
 const CREST_GROUNDS = [
   ["bgDark", "$bgDark", false],
   ["surface2", "$surface2", false],

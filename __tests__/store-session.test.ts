@@ -194,6 +194,17 @@ describe("useSessionStore", () => {
     });
   });
 
+  test("the crest read before a save does not outlive the session it belonged to", async () => {
+    const kept = { crest: null };
+    store.setState({ crestSeenBefore: kept });
+    await store.getState().startSession(mockQuest, "medium");
+    expect(store.getState().crestSeenBefore).toBeNull();
+
+    store.setState({ crestSeenBefore: kept });
+    store.getState().quitSession();
+    expect(store.getState().crestSeenBefore).toBeNull();
+  });
+
   test("startSession initializes state correctly", async () => {
     await store.getState().startSession(mockQuest, "medium");
 

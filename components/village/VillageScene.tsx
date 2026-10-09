@@ -79,7 +79,11 @@ const REWARD_ZOOM = 1.85;
 const REWARD_TIMING = { zoom: 250, card: 1300, done: 5200 } as const;
 const CREST_SIZE = 56;
 
-/** The village's name, as the hero title; loading and loaded draw it through here, so it never moves. */
+/**
+ * The village's name, as the hero title; loading and loaded draw it through here, so it never
+ * moves. Android never breaks a word after its hyphen, so a long name was cut mid-word
+ * ("Rochebrune-sur-La / nde"): a zero-width space after each one gives it somewhere to wrap.
+ */
 function TitleText({ children }: { children: string }) {
   return (
     <Text
@@ -91,7 +95,7 @@ function TitleText({ children }: { children: string }) {
       color="$text"
       numberOfLines={2}
     >
-      {children}
+      {children.replace(/-/g, "-\u200B")}
     </Text>
   );
 }

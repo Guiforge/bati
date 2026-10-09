@@ -35,8 +35,10 @@ export type CameoBand = { top: number; height: number; figureHeight: number };
  * the status bar to just above the title block. `null` when the hero is too short to hold a
  * figure (a compact window), in which case there is no villager rather than one over the title.
  *
- * ponytail: the title block is a constant shared with the Village's title pin. If the title row
- * becomes variable (a wrapped village name), measure it at the call site and keep this as the floor.
+ * ponytail: the title block is a constant shared with the Village's title pin. A wrapped village
+ * name already grows the block downward, but it is pinned by its top, so the figure's band stays
+ * correct. It breaks only if the title row gains height above its pinned top (a taller crest, a
+ * line above the name): then measure it at the call site and keep this as the floor.
  */
 export function cameoBand(
   heroHeight: number,

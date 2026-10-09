@@ -11,6 +11,7 @@ import { type GameIconName, useGameIcon } from "@/hooks/useGameIcon";
 import {
   ANIMAL_BOX,
   BAND,
+  CREST_PLATE_PAD,
   type CrestSize,
   crossPath,
   DIAMOND,
@@ -24,6 +25,7 @@ import {
   VIEW_H,
   VIEW_W,
 } from "./crestGeometry";
+import { PRACTICE_KEY, sentence } from "./crestText";
 
 /** What `getCrest` renders, less the evidence and stages the drawing does not read. */
 export type CrestShape = Pick<
@@ -54,17 +56,6 @@ const fillOf = (token: (typeof ANIMAL_TOKEN)[keyof typeof ANIMAL_TOKEN]): string
 const practiceFill = (p: Practice): string => {
   const a = ANIMAL_OF[p];
   return fillOf(ANIMAL_TOKEN[a]);
-};
-
-const sentence = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-/** One word per practice: the three styles already have theirs, running and cycling do not. */
-const PRACTICE_KEY: Record<Practice, string> = {
-  strength: "village.style_strength",
-  calisthenics: "village.style_calisthenics",
-  yoga: "village.style_yoga",
-  run: "village.crest_practice_run",
-  ride: "village.crest_practice_ride",
 };
 
 /** The crest, read aloud: whole sentences, so no language has to agree a part with a whole. */
@@ -179,7 +170,13 @@ export function Crest({ crest, size, onPainting = false }: CrestProps) {
   );
   if (!onPainting) return drawn;
   return (
-    <YStack bg="$bgDark" borderColor="$glassBorder" borderWidth={1} p="$1.5" rounded="$2">
+    <YStack
+      bg="$bgDark"
+      borderColor="$glassBorder"
+      borderWidth={1}
+      p={CREST_PLATE_PAD}
+      rounded="$2"
+    >
       {drawn}
     </YStack>
   );

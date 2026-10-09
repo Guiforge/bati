@@ -5,6 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { VillageScene } from "@/components/village/VillageScene";
+import * as crestDb from "@/db/crest";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import * as village from "@/db/village";
 import { useChorusStore } from "@/stores/chorus";
@@ -99,6 +100,9 @@ function renderScene() {
 }
 
 describe("VillageScene", () => {
+  beforeEach(() => {
+    jest.spyOn(crestDb, "getCrest").mockResolvedValue(null);
+  });
   afterEach(() => {
     jest.restoreAllMocks();
     mockParams = {};

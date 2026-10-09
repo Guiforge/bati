@@ -1,3 +1,4 @@
+import { getTokenValue } from "tamagui";
 /** The crest's drawing, in a 96 x 112 box. Pure, so the pixel arithmetic can be tested. */
 export const VIEW_W = 96;
 export const VIEW_H = 112;
@@ -155,3 +156,12 @@ export function ringsLayout(n: number): RingsLayout {
 export const DIAMOND = "M77 44L81 48L77 52L73 48Z";
 /** The animal's box inside the viewBox. */
 export const ANIMAL_BOX = { x: 25, y: 28, size: 46 } as const;
+
+/** The plate a crest sits on over a painting (`Crest`): its padding token, plus a 1 border. */
+export const CREST_PLATE_PAD = "$1.5";
+
+/** The room a crest takes, plate included, so a skeleton can hold exactly its place. */
+export function crestFootprint(size: CrestSize, onPainting = false) {
+  const pad = onPainting ? Number(getTokenValue(CREST_PLATE_PAD, "space")) + 1 : 0;
+  return { width: size + 2 * pad, height: (VIEW_H * size) / VIEW_W + 2 * pad };
+}

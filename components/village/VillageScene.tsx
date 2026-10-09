@@ -20,6 +20,9 @@ import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { AppButton } from "@/components/common/AppButton";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
+import { Crest } from "@/components/village/Crest";
+import { crestFootprint } from "@/components/village/crestGeometry";
+import { useCrestLine } from "@/components/village/crestLine";
 import { groupFamilies } from "@/components/village/rows";
 import { VillageDetailSheet, type VillageSelection } from "@/components/village/VillageDetailSheet";
 import { VillageEmbers } from "@/components/village/VillageEmbers";
@@ -38,6 +41,7 @@ import { rawColors } from "@/constants/rawColors";
 import { pickDailyVariant } from "@/constants/restMessages";
 import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
 import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
+import { type Crest as CrestData, getCrest } from "@/db/crest";
 import { dayKey } from "@/db/dates";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { formatCount } from "@/db/targets";
@@ -73,6 +77,35 @@ const REWARD_ZOOM = 1.85;
  * everything back. About five seconds, once per session, never on a plain visit.
  */
 const REWARD_TIMING = { zoom: 250, card: 1300, done: 5200 } as const;
+const CREST_SIZE = 56;
+
+/** The village's name, as the hero title; loading and loaded draw it through here, so it never moves. */
+function TitleText({ children }: { children: string }) {
+  return (
+    <Text
+      shrink={1}
+      fontFamily="$heading"
+      fontWeight="700"
+      fontSize={30}
+      lineHeight={32}
+      color="$text"
+      numberOfLines={2}
+    >
+      {children}
+    </Text>
+  );
+}
+
+/** Two bone-coloured eyes in the dark, before the 8th session: still, no halo, no animation. */
+function Glow() {
+  return (
+    <XStack testID="village-glow" gap={9} accessible={false}>
+      <YStack width={7} height={4} rounded={999} bg="$text" />
+      <YStack width={7} height={4} rounded={999} bg="$text" />
+    </XStack>
+  );
+}
+
 const LEAN = { duration: 900, easing: Easing.bezier(0.2, 0.7, 0.2, 1) } as const;
 
 export function VillageScene() {
@@ -115,6 +148,9 @@ export function VillageScene() {
   const risen = new Set(growth.map((g) => g.code));
 
   const [scene, setScene] = useState<VillageSceneData | null>(null);
+  // Read with the scene, in the same focus: one answer for the whole header, so the glow is never
+  // drawn for a hero whose crest has simply not arrived yet.
+  const [crest, setCrest] = useState<CrestData | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   // Read-only: a tap explains what earned the building, it never unlocks anything.
   const [selected, setSelected] = useState<VillageSelection | null>(null);
@@ -138,9 +174,10 @@ export function VillageScene() {
   // Refetch on focus: the whole point of this screen is "what changed since I trained",
   // and a tab screen stays mounted, so a mount-only effect would show yesterday forever.
   const loadScene = useCallback(() => {
-    getVillageScene()
-      .then((data) => {
+    Promise.all([getVillageScene(), getCrest()])
+      .then(([data, crestData]) => {
         setScene(data);
+        setCrest(crestData);
         setLoadFailed(false);
       })
       .catch((error) => {
@@ -164,6 +201,11 @@ export function VillageScene() {
     }, [loadScene, scrollRef, scrollY]),
   );
 
+  const crestLine = useCrestLine(
+    crest,
+    villageName,
+    crest !== null && dayKey(crest.revealedAt) === dayKey(new Date()),
+  );
   const ready = scene !== null;
   // Where the painting leans in. Nothing is drawn there: the gold dots that used to mark every
   // building were taken off the painting, and the anchors only say which part of it to zoom on.
@@ -241,7 +283,15 @@ export function VillageScene() {
     }
     return (
       <YStack testID="village-screen" flex={1} bg="$background">
-        <Skeleton width="100%" height={heroHeight} radius={0} />
+        <YStack width="100%" height={heroHeight} justify="flex-end" px="$4" pb={28}>
+          <YStack position="absolute" t={0} l={0} r={0} b={0}>
+            <Skeleton width="100%" height={heroHeight} radius={0} />
+          </YStack>
+          <XStack items="center" gap={10}>
+            <Skeleton bg="$surface2" {...crestFootprint(CREST_SIZE, true)} />
+            {villageName ? <TitleText>{villageName}</TitleText> : null}
+          </XStack>
+        </YStack>
         <YStack gap="$3" p="$4">
           <Skeleton height={28} width="60%" />
           <Skeleton height={16} width="40%" />
@@ -349,39 +399,37 @@ export function VillageScene() {
                 (an aurora on tier 12), secondary text on pale turquoise. The flame shares the
                 name's line, which gives the panel back a whole row. */}
             <YStack px="$4" pb={28} gap={6}>
+              {crest === null ? <Glow /> : null}
               <XStack items="center" gap={10}>
-                <Text
-                  flex={1}
-                  minW={0}
-                  fontFamily="$heading"
-                  fontWeight="700"
-                  fontSize={30}
-                  lineHeight={32}
-                  color="$text"
-                  numberOfLines={1}
-                >
-                  {villageName || tierName}
-                </Text>
-                {scene.flame > 0 && (
-                  <XStack
-                    items="center"
-                    gap={5}
-                    px={9}
-                    py={3}
-                    rounded={999}
-                    bg="$glassBg"
-                    borderWidth={1}
-                    borderColor="$glassBorder"
-                  >
-                    <FlameFlicker size={14} />
-                    <Text fontSize={11.5} fontWeight="600" color="$text" numberOfLines={1}>
-                      {`${t(`village.flame_${scene.flame}`)} · ${t("village.flame_days", { days: formatCount(language, scene.streakDays) })}`}
-                    </Text>
-                  </XStack>
-                )}
+                {crest !== null ? <Crest crest={crest} size={CREST_SIZE} onPainting /> : null}
+                {/* The chip wraps under the name when the row is full: a long name takes two
+                    lines and nothing is cut. */}
+                <XStack flex={1} minW={0} flexWrap="wrap" items="center" columnGap={10} rowGap={4}>
+                  <TitleText>{villageName || tierName}</TitleText>
+                  {scene.flame > 0 && (
+                    <XStack
+                      items="center"
+                      gap={5}
+                      px={9}
+                      py={3}
+                      rounded={999}
+                      bg="$glassBg"
+                      borderWidth={1}
+                      borderColor="$glassBorder"
+                    >
+                      <FlameFlicker size={14} />
+                      <Text fontSize={11.5} fontWeight="600" color="$text" numberOfLines={1}>
+                        {`${t(`village.flame_${scene.flame}`)} · ${t("village.flame_days", { days: formatCount(language, scene.streakDays) })}`}
+                      </Text>
+                    </XStack>
+                  )}
+                </XStack>
               </XStack>
               <Text fontSize={13} fontWeight="500" color="$textSecondary">
                 {tierLine}
+              </Text>
+              <Text testID="village-crest-line" fontSize={13} color="$text">
+                {crestLine}
               </Text>
               {scene.dominantSport ? (
                 <XStack items="center" gap={8}>

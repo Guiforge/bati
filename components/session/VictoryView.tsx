@@ -23,7 +23,6 @@ import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
-import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
 import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession, outingLocomotion } from "@/db/expeditions";
@@ -221,7 +220,9 @@ export function VictoryView() {
     ? rankFeasts({
         result,
         epilogue: result.campaign?.isFinished === true,
-        boss: felledBoss ? { name: bossDisplayName(felledBoss, language) } : null,
+        boss: felledBoss
+          ? { name: bossDisplayName(felledBoss, language), finalBlow: felledByFinalBlow }
+          : null,
       })
     : [];
   // The reveal is marked as seen only when it was shown here, as a card (the night of an
@@ -463,22 +464,6 @@ export function VictoryView() {
                 )}
                 <Recitatif>{heroTitle}</Recitatif>
               </YStack>
-              {isBossDefeat && (
-                <Text
-                  fontFamily="$body"
-                  fontSize={14}
-                  fontWeight={felledByFinalBlow ? "400" : "700"}
-                  color={felledByFinalBlow ? "$textSecondary" : "$resourceGold"}
-                >
-                  {/* The Triumph is the pool emptied by your own damage — what HP are for; the
-                      final blow is the guarantee that finishing the campaign always kills. */}
-                  {felledByFinalBlow
-                    ? t("boss.final_blow")
-                    : t("boss.triumph_subtitle", {
-                        xp: formatCount(language, TRIUMPH_XP_BONUS),
-                      })}
-                </Text>
-              )}
             </YStack>
             {/* What opens the felled boss: the banner below the villager's slot, never the slot.
                 The whole card used to be the button, so a tap on the line opened the boss and

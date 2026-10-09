@@ -218,6 +218,7 @@ describe("TonightList", () => {
     expect(getByText("Forge, rang 6")).toBeTruthy();
     expect(getByText("Boss vaincu !")).toBeTruthy();
     expect(getByText("Golem")).toBeTruthy();
+    expect(getByText("Triomphe ! Il tombe sous tes coups. +100 XP")).toBeTruthy();
     expect(getAllByText("SERMENT ACCOMPLI")).toHaveLength(1);
     // The card keeps what the old reward card said: the oath itself and its bonus.
     expect(getByText(oathText(OATH, i18n))).toBeTruthy();

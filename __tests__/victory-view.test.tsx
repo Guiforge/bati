@@ -647,6 +647,20 @@ describe("VictoryView villager slot, and what is under it", () => {
     expect(view.queryAllByTestId("victory-kicker")).toHaveLength(count);
   });
 
+  // The triumph sentence and its +XP belong to the "Tonight" card; the banner keeps the name only.
+  it("says a boss victory's triumph once, in the card", async () => {
+    const { view, release } = await mountWithPendingSave();
+    await act(() => {
+      useSessionStore.setState({
+        bossFight: boss,
+        bossStartHp: 10,
+        felledByFinalBlow: false,
+      } as unknown as Partial<ReturnType<typeof useSessionStore.getState>>);
+    });
+    await release();
+    expect(view.queryAllByText(/boss\.triumph_subtitle/i)).toHaveLength(1);
+  });
+
   // At 1.3 the 88 dp slot held two and a half lines and cut the third mid-glyph.
   it("sizes the slot for three lines at the device's font scale, fixed for the render", async () => {
     const rn = jest.requireActual("react-native") as typeof import("react-native");

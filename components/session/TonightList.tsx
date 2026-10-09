@@ -12,6 +12,7 @@ import { oathText } from "@/components/oath/useOathText";
 import { Crest } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
 import { getExerciseThumb, getVillageTierAsset } from "@/constants/assetMap";
+import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import type { Animal } from "@/db/crestRules";
 import type { DistanceUnit } from "@/db/preferences";
 import { formatCount, formatTarget, perSideLabel } from "@/db/targets";
@@ -235,7 +236,12 @@ function cardOf(
       return {
         id: f.id,
         title: t("boss.victory_title"),
-        body: [f.name],
+        body: [
+          f.name,
+          f.finalBlow
+            ? t("boss.final_blow")
+            : t("boss.triumph_subtitle", { xp: formatCount(language, TRIUMPH_XP_BONUS) }),
+        ],
         art: <GameIcon name="sword" size={32} color="$resourceGold" />,
       };
     case "oath":

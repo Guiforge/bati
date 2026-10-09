@@ -22,7 +22,7 @@ export type FeastFacts = {
   /** The campaign ended with this session: today's full-screen epilogue. */
   epilogue?: boolean;
   /** The boss this session felled, by name. */
-  boss?: { name: string } | null;
+  boss?: { name: string; finalBlow?: boolean } | null;
   // V-03 has no producer yet: the types are here so the order below is the spec's, whole.
   age?: { name: string } | null;
   anniversary?: { years: number } | null;
@@ -42,7 +42,7 @@ export type Feast =
   | Of<"tier", { tier: VillageTier; level: number | null }>
   | Of<"secondJoins", NonNullable<Result["crestEvents"]["secondJoins"]>>
   | Of<"stageUp", Result["crestEvents"]["stageUp"][number]>
-  | Of<"boss", { name: string }>
+  | Of<"boss", { name: string; finalBlow?: boolean }>
   | Of<"oath", { progress: NonNullable<Result["fulfilledOath"]>; bonusXp: number }>
   | Of<"level", { level: number }>
   | Of<"growth", { building: VillageGrowth }>
@@ -96,7 +96,7 @@ function lineOnes(r: Result): Built<Feast>[] {
 
 function cardOnes({ result: r, boss }: FeastFacts): Built<Feast>[] {
   const cards: Built<Feast>[] = [];
-  if (boss) cards.push({ kind: "boss", name: boss.name });
+  if (boss) cards.push({ kind: "boss", ...boss });
   if (r.fulfilledOath)
     cards.push({ kind: "oath", progress: r.fulfilledOath, bonusXp: r.oathBonusXp });
   if (r.crestEvents.secondJoins) cards.push({ kind: "secondJoins", ...r.crestEvents.secondJoins });

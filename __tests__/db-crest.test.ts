@@ -148,6 +148,26 @@ describe("the figures beside the animal", () => {
     expect((await crest().getCrest(NOW))?.rings).toBe(2);
   });
 
+  test("a ring is a whole year: a new calendar year is not one", async () => {
+    const at = (iso: string) => Math.floor(new Date(iso).getTime() / 1000);
+    add(at("2025-12-31T12:00:00Z"), { sets: [{ style: "strength" }] });
+    for (let i = 0; i < 7; i++)
+      add(at("2026-11-20T12:00:00Z") + i * DAY, { sets: [{ style: "strength" }] });
+    expect((await crest().getCrest(new Date("2026-12-01T12:00:00Z")))?.rings).toBe(0);
+  });
+
+  test("the exact anniversary of the first session is one ring", async () => {
+    add(atDay(365), { sets: [{ style: "strength" }] });
+    for (let i = 0; i < 7; i++) strength(i + 1);
+    expect((await crest().getCrest(NOW))?.rings).toBe(1);
+  });
+
+  test("rings start at the first session that counts, even one with no practice", async () => {
+    add(atDay(365 * 2 + 31), { sets: [{ style: "expedition" }] });
+    for (let i = 0; i < 8; i++) strength(i + 1);
+    expect((await crest().getCrest(NOW))?.rings).toBe(2);
+  });
+
   test("a hero under a year has no ring, and the first session may be a short outing's neighbour, not it", async () => {
     for (let i = 0; i < 8; i++) strength(i + 1);
     add(atDay(800), { outing: "walk", moving: 60 });

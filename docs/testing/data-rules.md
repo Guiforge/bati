@@ -187,6 +187,8 @@ calisthenics, yoga, run, ride. Second animal from the 9th session on (`n*100 >= 
 `n >= 20`, kept once in). A boar, from the sessions or picked by hand, never has a second animal
 and so no border. The boar's two quarters are the practices in the lead among those actually done;
 a hero with a single practice gets that one in both.
+`revealedAt` is the `performedAt` of the 8th session with a practice, so it follows the replay like
+everything else.
 Rings are whole years from the first session that counts to now (a year without a session
 included). The longest flame is the flame level of the longest streak, always measured at
 `DEFAULT_WEEKLY_QUOTA` (2), never at the oath's quota: raising an oath must not erase a band

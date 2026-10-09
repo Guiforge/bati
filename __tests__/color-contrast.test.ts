@@ -69,11 +69,25 @@ const TEXT_TOKENS = [
   "onPrimary",
 ] as const;
 
+const ANIMAL_FILLS = [
+  "animalBear",
+  "animalErmine",
+  "animalSalmon",
+  "animalStag",
+  "animalHorse",
+] as const;
+
 /**
  * WCAG AA for a meaningful icon, and for large text: short bold labels and glyphs, never a
  * paragraph.
  */
-const ACCENT_TOKENS = ["error", "danger", "resourceFire"] as const;
+const ACCENT_TOKENS = [
+  "error",
+  "danger",
+  "resourceFire",
+  // The crest's animal fills: shapes under a `bgDark` ink glyph, never text (see FILL_INKS).
+  ...ANIMAL_FILLS,
+] as const;
 
 /**
  * A fill and the label written on it, each pair chosen by hand. The 2026-10 refresh made the
@@ -90,6 +104,9 @@ const FILL_LABELS = [
   ["ink800", "parchment"],
   ["bgDark", "parchment"],
 ] as const;
+
+/** The crest's ink on its worst animal (the bear), the margin the spec keeps for the ink. */
+const ANIMAL_INK_FLOOR = 3.75;
 
 const AA_TEXT = 4.5;
 const AA_ICON = 3;
@@ -151,6 +168,15 @@ describe("colour contrast", () => {
     it.each(ACCENT_TOKENS)(`$%s clears AA for a meaningful icon`, (token) => {
       expect(contrast(value(token), value(surface))).toBeGreaterThanOrEqual(AA_ICON);
     });
+  });
+
+  it.each(ANIMAL_FILLS)("the crest's bgDark ink on $%s clears 3:1", (fill) => {
+    expect(contrast(value("bgDark"), value(fill))).toBeGreaterThanOrEqual(AA_ICON);
+  });
+
+  it("the worst animal still gives the ink 3.75:1", () => {
+    const worst = Math.min(...ANIMAL_FILLS.map((f) => contrast(value("bgDark"), value(f))));
+    expect(worst).toBeGreaterThanOrEqual(ANIMAL_INK_FLOOR);
   });
 
   it.each(FILL_LABELS)("$%s on a $%s fill clears AA for body text", (label, fill) => {

@@ -103,6 +103,21 @@ export const rawColors = {
   resourceGold: "#E2B54A", // patinated gold: progression, XP, rewards
   resourceFire: BRAISE_LIGHT,
 
+  // --- The animals of the crest ---
+  // Fills for a shape, never for text; the animal is drawn over them in `bgDark` ink. Contrast of
+  // that ink on the fill, then of the fill against bgDark / surface / surface2. The bear is ocre
+  // and not russet: a russet bear touched the braise and the stag under deuteranopia.
+  /** Strength. 3.75 ink; 3.46 / 3.15 on the surfaces (3.75 against bgDark). */
+  animalBear: "#8A672C",
+  /** Calisthenics. 12.01 ink; 11.09 / 10.08 on the surfaces (12.01 against bgDark). */
+  animalErmine: "#5EDBFA",
+  /** Yoga. 10.72 ink; 9.90 / 9.00 on the surfaces (10.72 against bgDark). */
+  animalSalmon: "#FFAAAB",
+  /** Run and cardio. 4.32 ink; 3.99 / 3.63 on the surfaces (4.32 against bgDark). */
+  animalStag: "#178485",
+  /** Ride. 6.61 ink; 6.10 / 5.55 on the surfaces (6.61 against bgDark). */
+  animalHorse: "#599AE2",
+
   white: "#FFFFFF",
   black: "#000000",
 

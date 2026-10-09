@@ -4,7 +4,7 @@ import type { ExerciseStyle, Locomotion } from "./schema";
 export const PRACTICES = ["strength", "calisthenics", "yoga", "run", "ride"] as const;
 export type Practice = (typeof PRACTICES)[number];
 
-const ANIMAL_OF = {
+export const ANIMAL_OF = {
   strength: "bear",
   calisthenics: "ermine",
   yoga: "salmon",

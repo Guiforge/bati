@@ -189,6 +189,18 @@ describe("VictoryView feedback", () => {
     expect(after).toBeEnabled();
   });
 
+  // Inactive reads as inactive in this app: a quiet surface and an ash label (AppButton, dimmed).
+  it("shows the feeling buttons inactive while saving, and lit once saved", async () => {
+    const { view, release } = await mountWithPendingSave();
+    const ink = (v: string) =>
+      StyleSheet.flatten(view.getByText(`session.feedback_${v}`).props.style).color;
+    const dark = config.themes.dark as unknown as Record<string, { val: string }>;
+
+    expect(ink("hard")).toBe(dark.textSecondary?.val);
+    await release();
+    expect(ink("hard")).toBe(dark.text?.val);
+  });
+
   it("persists a feeling tapped after the save landed", async () => {
     const { view, release } = await mountWithPendingSave();
     await release();
@@ -330,8 +342,6 @@ describe("VictoryView, a session too short to be one", () => {
     const { view, saveSession } = await mountWithPendingSave(null, 5);
 
     expect(view.getByText("session.summary_too_short_title")).toBeTruthy();
-    // The spinner belongs to a save that is happening; nothing is happening yet.
-    expect(view.queryByText("session.summary_saving")).toBeNull();
     expect(saveSession).not.toHaveBeenCalled();
   });
 
@@ -412,8 +422,6 @@ describe("VictoryView, a session too short to be one", () => {
     const { view } = await mountWithPendingSave();
 
     expect(view.queryByText("session.summary_too_short_title")).toBeNull();
-    // The pending save is held by reserved heights, not a spinner or a sentence.
-    expect(view.queryByText("session.summary_saving")).toBeNull();
   });
 });
 

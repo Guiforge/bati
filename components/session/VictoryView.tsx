@@ -691,7 +691,7 @@ export function VictoryView() {
                 key={value}
                 flex={1}
                 size="$4"
-                bg={feedback === value ? "$surface2" : "$surface"}
+                bg={feedback === value || !result ? "$surface2" : "$surface"}
                 borderWidth={1}
                 borderColor={feedback === value ? accent : "$glassBorder"}
                 opacity={feedback === value ? 1 : 0.85}
@@ -709,10 +709,10 @@ export function VictoryView() {
                     testID={`feedback-glyph-${value}`}
                     name={glyph}
                     size={22}
-                    color={feedback === value ? accent : "$text"}
+                    color={feedback === value ? accent : result ? "$text" : "$textSecondary"}
                   />
                   <Text
-                    color="$text"
+                    color={result ? "$text" : "$textSecondary"}
                     fontSize={12}
                     fontWeight="700"
                     style={{ textAlign: "center" }}
@@ -776,7 +776,7 @@ export function VictoryView() {
         {/* Only once the row exists, and never on a short session the hero has not kept yet:
             the share screen reads the saved session, and a discard would delete what it shows. */}
         {result && !tooShort ? (
-          <ShareButton testID="session-victory-share" sessionId={result.sessionId} height={60} />
+          <ShareButton testID="session-victory-share" sessionId={result.sessionId} height={52} />
         ) : null}
         {/* While the hero has not said whether a short session counts, the bar's big button is the
             keep, not a disabled "Saving…": nothing is being saved, and a phone trace on 2026-09-13
@@ -786,7 +786,7 @@ export function VictoryView() {
           <AppButton
             testID="session-victory-keep-short"
             onPress={() => setKeepShort(true)}
-            height={60}
+            height={52}
             fullWidth={false}
             flex={1}
           >
@@ -797,7 +797,7 @@ export function VictoryView() {
             testID="session-victory-continue"
             onPress={handleContinue}
             disabled={!result}
-            height={60}
+            height={52}
             fullWidth={false}
             flex={1}
           >

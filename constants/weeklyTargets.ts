@@ -29,3 +29,9 @@ export const DEFAULT_WEEKLY_QUOTA = 2;
  * for a hero whose flame burned. Two is a real answer, not a lesser one.
  */
 export const WEEKLY_TARGETS = [2, 3, 4] as const;
+
+/**
+ * How many sessions make a week count, when an oath of the `weekly_sessions` metric names no
+ * target. It must be one of `WEEKLY_TARGETS`, or the oath screen opens with no chip selected.
+ */
+export const DEFAULT_WEEKLY_TARGET = 3;

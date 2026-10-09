@@ -100,9 +100,7 @@ function Field({ crest, size }: { crest: CrestShape; size: CrestSize }) {
     );
   }
   const fill = fillOf(ANIMAL_TOKEN[crest.animal]);
-  // A second animal is never the boar (crestRules: `border` is null for it, tested); the type
-  // cannot say so without threading a narrower animal through the rules.
-  const second = crest.second?.animal as keyof typeof ANIMAL_TOKEN | undefined;
+  const second = crest.second?.animal;
   if (second === undefined) return <Path d={SHIELD} fill={fill} />;
   // The filet is stroked along the inset shield, its outer edge on the border's inner edge.
   return (

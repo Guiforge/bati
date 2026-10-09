@@ -13,6 +13,8 @@ export const ANIMAL_OF = {
 } as const satisfies Record<Practice, string>;
 
 export type Animal = (typeof ANIMAL_OF)[Practice] | "boar";
+/** An animal a practice earns: every one but the boar, which no practice owns. */
+export type PracticeAnimal = (typeof ANIMAL_OF)[Practice];
 export const ANIMALS: readonly Animal[] = [...Object.values(ANIMAL_OF), "boar"];
 
 export type CrestStage = "young" | "adult" | "venerable";
@@ -31,7 +33,8 @@ export type CrestAnimals = {
   stage: CrestStage;
   /** Chosen by the hero: the ink diamond. */
   manual: boolean;
-  second: { animal: Animal; stage: CrestStage } | null;
+  /** Never the boar: it fills the field, so it has no border to stand in. */
+  second: { animal: PracticeAnimal; stage: CrestStage } | null;
   /** The boar's two quarters, the practices in the lead over every session; null for the others. */
   quarters: [Practice, Practice] | null;
   /** What "Why the Bear?" reads: counts per practice, over the first 8 and over all. */
@@ -149,15 +152,21 @@ export function crestAnimals(
   const secondPractice =
     firstPractice === undefined ? undefined : secondOf(list, firstPractice, firstEight);
 
-  const first: Animal = firstPractice === undefined ? "boar" : ANIMAL_OF[firstPractice];
+  const firstOfPractice = firstPractice === undefined ? null : ANIMAL_OF[firstPractice];
+  const first: Animal = firstOfPractice ?? "boar";
   const secondFromSessions = secondPractice === undefined ? null : ANIMAL_OF[secondPractice];
 
   let center = first;
-  let border: Animal | null = secondFromSessions;
+  let border: PracticeAnimal | null = secondFromSessions;
   if (choice !== "auto") {
     center = choice;
     // The first animal steps out to the border only when the hero picked the second one.
-    border = choice === secondFromSessions ? first : choice === "boar" ? null : secondFromSessions;
+    border =
+      choice === secondFromSessions
+        ? firstOfPractice
+        : choice === "boar"
+          ? null
+          : secondFromSessions;
   }
   const manual = choice !== "auto";
 

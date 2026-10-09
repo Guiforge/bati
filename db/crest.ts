@@ -15,6 +15,8 @@ export type Crest = CrestAnimals & {
   longestFlame: FlameLevel;
   /** Whole years since the first session that counts, a year without a session included. */
   rings: number;
+  /** When the 8th session that has a practice was done: "since tonight" says the day it reveals. */
+  revealedAt: Date;
 };
 
 /** Distinct movements done in a session, for one style. */
@@ -48,7 +50,8 @@ export async function getCrest(now: Date = new Date()): Promise<Crest | null> {
   const sessions: CrestSession[] = rows.map((r) => ({ ...r, uuid: r.uuid ?? "" }));
   const animals = crestAnimals(sessions, await preferences.getCrestAnimal());
   const first = rows[0];
-  if (animals === null || first === undefined) return null;
+  const revealed = animals === null ? undefined : rows[animals.revealedIndex];
+  if (animals === null || first === undefined || revealed === undefined) return null;
 
   const dates = rows.map((r) => r.performedAt);
   // The oath's quota is not read: a hero who raises it must not lose a band already earned.
@@ -57,5 +60,6 @@ export async function getCrest(now: Date = new Date()): Promise<Crest | null> {
     ...animals,
     longestFlame: getFlameLevel(best),
     rings: differenceInYears(now, first.performedAt),
+    revealedAt: revealed.performedAt,
   };
 }

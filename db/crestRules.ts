@@ -35,6 +35,8 @@ export type CrestAnimals = {
   /** The boar's two quarters, the practices in the lead over every session; null for the others. */
   quarters: [Practice, Practice] | null;
   /** What "Why the Bear?" reads: counts per practice, over the first 8 and over all. */
+  /** Where in `sessions` the 8th session that has a practice sits: the one that revealed it. */
+  revealedIndex: number;
   evidence: { firstEight: Tally; totals: Tally; first: Animal; secondFromSessions: Animal | null };
 };
 
@@ -64,6 +66,19 @@ function practiceOf(s: CrestSession): Practice | null {
   for (const p of PRACTICES)
     if (counts[p] > 0 && (best === null || counts[p] > counts[best])) best = p;
   return best;
+}
+
+/** The practices in journal order, and where in `sessions` the 8th of them sits (-1 before it). */
+function practised(sessions: CrestSession[]) {
+  const list: Practice[] = [];
+  let revealedIndex = -1;
+  for (const [i, s] of sessions.entries()) {
+    const p = practiceOf(s);
+    if (p === null) continue;
+    list.push(p);
+    if (list.length === REVEAL_AT) revealedIndex = i;
+  }
+  return { list, revealedIndex };
 }
 
 const stageOf = (n: number): CrestStage =>
@@ -110,11 +125,7 @@ export function crestAnimals(
   sessions: CrestSession[],
   choice: Animal | "auto",
 ): CrestAnimals | null {
-  const list: Practice[] = [];
-  for (const s of sessions) {
-    const p = practiceOf(s);
-    if (p !== null) list.push(p);
-  }
+  const { list, revealedIndex } = practised(sessions);
   if (list.length < REVEAL_AT) return null;
 
   // Recency is the position of a practice's last session, so a tie on counts reads the journal.
@@ -164,6 +175,7 @@ export function crestAnimals(
     manual,
     second: border === null ? null : { animal: border, stage: stageFor(border, true) },
     quarters,
+    revealedIndex,
     evidence: { firstEight, totals, first, secondFromSessions },
   };
 }

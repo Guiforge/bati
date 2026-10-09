@@ -131,6 +131,16 @@ describe("what counts for the animal is what countsAsSession accepts", () => {
   });
 });
 
+describe("the day it was revealed", () => {
+  test("is the day of the 8th practised session, not the latest", async () => {
+    for (let i = 0; i < 7; i++) strength(30 - i);
+    add(atDay(23));
+    strength(22);
+    strength(5);
+    expect((await crest().getCrest(NOW))?.revealedAt).toEqual(new Date(atDay(22) * 1000));
+  });
+});
+
 describe("the replay order", () => {
   test("equal times are replayed by uuid, not by insertion order", async () => {
     const at = atDay(5);

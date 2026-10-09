@@ -36,6 +36,24 @@ const of = (steps: Step[]) => steps.map(session);
 const auto = (sessions: CrestSession[], choice: Animal | "auto" = "auto") =>
   crestAnimals(sessions, choice);
 
+describe("the session that revealed it", () => {
+  test("is the 8th that has a practice, a workout with none not counted", () => {
+    const list = of([
+      "strength",
+      "none",
+      "strength",
+      "strength",
+      "strength",
+      "none",
+      "strength",
+      "strength",
+      "strength",
+      "run",
+    ]);
+    expect(auto(list)?.revealedIndex).toBe(9);
+  });
+});
+
 describe("the spec's examples", () => {
   test("A: 5 strength, 2 run, 1 yoga is a young Bear, and the 8th session reveals it", () => {
     const crest = auto(seq(["strength", 5], ["run", 2], ["yoga", 1]));

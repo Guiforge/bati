@@ -697,6 +697,9 @@ export function VictoryView() {
                 opacity={feedback === value ? 1 : 0.85}
                 pressStyle={{ opacity: 0.8, scale: 0.98 }}
                 onPress={() => handleFeedbackSelect(value)}
+                // Like Continue: "Tonight" lands with the save and has no reserved height, so a
+                // tap during the save could land on whatever it pushes into this slot.
+                disabled={!result}
                 rounded="$4"
                 accessibilityLabel={t(`session.feedback_${value}`)}
                 accessibilityRole="button"

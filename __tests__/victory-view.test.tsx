@@ -168,16 +168,18 @@ describe("VictoryView feedback", () => {
     }
   });
 
-  it("persists a feeling tapped while the save is still in flight", async () => {
+  it("leaves the feeling buttons inactive while the save is in flight", async () => {
     const { view, release } = await mountWithPendingSave();
 
-    // The tap lands before there is any session id to write against.
-    await fireEvent.press(view.getByLabelText("session.feedback_hard"));
-    expect(mockUpdateSessionFeedback).not.toHaveBeenCalled();
-
+    // Tonight arrives with the save and has no reserved height: a tap now could land on its content.
+    const hard = view.getByLabelText("session.feedback_hard");
+    expect(hard).toBeDisabled();
+    await fireEvent.press(hard);
     await release();
 
-    expect(mockUpdateSessionFeedback).toHaveBeenCalledWith(SESSION_ID, "hard");
+    expect(mockUpdateSessionFeedback).not.toHaveBeenCalled();
+    const after = view.getByLabelText("session.feedback_hard");
+    expect(after).toBeEnabled();
   });
 
   it("persists a feeling tapped after the save landed", async () => {
@@ -616,7 +618,7 @@ describe("VictoryView villager slot, and what is under it", () => {
   it.each([
     ["a quest victory", false, 1],
     ["a boss victory", true, 0],
-  ])("shows the gold kicker on %s: %i time(s)", async (_, isBoss, count) => {
+  ])("shows the gold kicker on %s (boss: %s): %i time(s)", async (_, isBoss, count) => {
     const { view, release } = await mountWithPendingSave();
     if (isBoss) {
       await act(() => {

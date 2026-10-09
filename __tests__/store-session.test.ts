@@ -116,6 +116,7 @@ jest.mock("@/db/preferences", () => ({
     // Read by beginTrackingIfOuting, only exercised by the outing cases below.
     getDistanceUnit: jest.fn().mockResolvedValue("metric"),
     getHapticsEnabled: jest.fn().mockResolvedValue(true),
+    getBigFeastsShown: jest.fn().mockResolvedValue([]),
   },
 }));
 // `computeDamage` stays real — it is pure maths and the store's damage behaviour is only
@@ -859,6 +860,7 @@ describe("useSessionStore", () => {
         currentExerciseIndex: 0,
         results: [],
         savedSessionId: null,
+        crestSeenBefore: null,
       });
     });
 
@@ -1022,7 +1024,60 @@ describe("useSessionStore", () => {
       const result = await store.getState().saveSession(null);
 
       expect(order).toEqual(["before", "write", "after"]);
-      expect(result.crestEvents.reveal).toEqual({ animal: "bear", quarters: null });
+      expect(result.crestReveal).toEqual({ animal: "bear", quarters: null });
+      (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
+    });
+
+    test("a retry keeps the crest the first pass read, so the stage card survives", async () => {
+      const records = require("@/db/personalRecords") as { checkForNewRecords: jest.Mock };
+      const at = (stage: "young" | "adult") => ({
+        animal: "bear",
+        stage,
+        manual: false,
+        quarters: null,
+        second: null,
+        evidence: { totals: { strength: 40 }, first: "bear", secondFromSessions: null },
+      });
+      (getCrest as jest.Mock)
+        .mockReset()
+        .mockResolvedValueOnce(at("young"))
+        .mockResolvedValue(at("adult"));
+      records.checkForNewRecords.mockRejectedValueOnce(new Error("db went away"));
+      await expect(store.getState().saveSession(null)).rejects.toThrow("db went away");
+
+      const result = await store.getState().saveSession(null);
+
+      expect(result.crestEvents.stageUp).toEqual([
+        { animal: "bear", stage: "adult", n: 40, own: true },
+      ]);
+      (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
+    });
+
+    test("the reveal needs the crest and a key without it; an unreadable key says nothing", async () => {
+      const { reportError } = require("@/src/reportError") as { reportError: jest.Mock };
+      const crest = {
+        animal: "bear",
+        stage: "young",
+        manual: false,
+        quarters: null,
+        second: null,
+        evidence: { totals: { strength: 300 }, first: "bear", secondFromSessions: null },
+      };
+      const shown = preferences.getBigFeastsShown as jest.Mock;
+      (getCrest as jest.Mock).mockReset().mockResolvedValue(crest);
+
+      expect((await store.getState().saveSession(null)).crestReveal?.animal).toBe("bear");
+      store.setState({ savedSessionId: null, crestSeenBefore: null });
+      shown.mockResolvedValueOnce(["reveal"]);
+      expect((await store.getState().saveSession(null)).crestReveal).toBeNull();
+
+      store.setState({ savedSessionId: null, crestSeenBefore: null });
+      reportError.mockClear();
+      shown.mockRejectedValueOnce(new Error("no key"));
+      const result = await store.getState().saveSession(null);
+      expect(result.sessionId).toBe(1);
+      expect(result.crestReveal).toBeNull();
+      expect(reportError).toHaveBeenCalledWith("session.bigFeastsShown", expect.any(Error));
       (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
     });
 
@@ -1034,7 +1089,8 @@ describe("useSessionStore", () => {
       const result = await store.getState().saveSession(null);
 
       expect(result.sessionId).toBe(1);
-      expect(result.crestEvents).toEqual({ reveal: null, secondJoins: null, stageUp: [] });
+      expect(result.crestEvents).toEqual({ secondJoins: null, stageUp: [] });
+      expect(result.crestReveal).toBeNull();
       expect(reportError).toHaveBeenCalledWith("session.crest", expect.any(Error));
       (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
     });

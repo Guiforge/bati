@@ -1,4 +1,4 @@
-import { crestEvents, NO_CREST_EVENTS } from "../db/crestEvents";
+import { crestEvents, crestReveal, NO_CREST_EVENTS } from "../db/crestEvents";
 import { type Animal, type CrestSession, crestAnimals, type Practice } from "../db/crestRules";
 
 let n = 0;
@@ -27,21 +27,52 @@ function step(history: CrestSession[], practice: Practice, choice: Animal | "aut
 
 describe("crestEvents", () => {
   test("the 8th session reveals the animal the sessions chose", () => {
-    expect(step(seq(["strength", 7]), "strength").reveal).toEqual({
-      animal: "bear",
-      quarters: null,
-    });
+    const after = crestAnimals(seq(["strength", 8]), "auto");
+    expect(crestReveal(after, [])).toEqual({ animal: "bear", quarters: null });
+    expect(crestReveal(crestAnimals(seq(["strength", 7]), "auto"), [])).toBeNull();
+  });
+
+  test("a hero with 300 sessions and no reveal in the key sees it on the first victory", () => {
+    const after = crestAnimals(seq(["strength", 300]), "auto");
+    expect(crestReveal(after, ["age-50"])?.animal).toBe("bear");
+  });
+
+  test("a key that holds the reveal says nothing", () => {
+    expect(crestReveal(crestAnimals(seq(["strength", 8]), "auto"), ["reveal"])).toBeNull();
+  });
+
+  test("no crest, or a key that could not be read, says nothing", () => {
+    expect(crestReveal(null, [])).toBeNull();
+    expect(crestReveal(undefined, [])).toBeNull();
+    expect(crestReveal(crestAnimals(seq(["strength", 8]), "auto"), undefined)).toBeNull();
   });
 
   test("a boar is revealed with its two quarters", () => {
-    const h = seq(["strength", 2], ["run", 2], ["yoga", 2], ["ride", 1]);
-    const { reveal } = step(h, "calisthenics");
+    const h = seq(["strength", 2], ["run", 2], ["yoga", 2], ["ride", 1], ["calisthenics", 1]);
+    const reveal = crestReveal(crestAnimals(h, "auto"), []);
     expect(reveal?.animal).toBe("boar");
     expect(reveal?.quarters).toHaveLength(2);
   });
 
   test("a hand-picked animal never changes what is revealed", () => {
-    expect(step(seq(["strength", 7]), "strength", "stag").reveal?.animal).toBe("bear");
+    const after = crestAnimals(seq(["strength", 8]), "stag");
+    expect(crestReveal(after, [])?.animal).toBe("bear");
+  });
+
+  test("the second animal joins once: the next sessions after the entry say nothing", () => {
+    const h = [...seq(["strength", 8], ["run", 11], ["strength", 20])];
+    let hist = h;
+    let joins = 0;
+    let last = step(hist, "run");
+    for (let i = 0; i < 30 && joins === 0; i++) {
+      last = step(hist, "run");
+      hist = [...hist, session("run")];
+      if (last.secondJoins) joins += 1;
+    }
+    expect(joins).toBe(1);
+    expect(step(hist, "run").secondJoins).toBeNull();
+    hist = [...hist, session("run")];
+    expect(step(hist, "run").secondJoins).toBeNull();
   });
 
   test("the 20th session of a 30 % practice makes the second animal join", () => {
@@ -65,27 +96,27 @@ describe("crestEvents", () => {
 
   test("the 40th session of a practice makes the animal adult, the 200th venerable", () => {
     expect(step(seq(["strength", 39]), "strength").stageUp).toEqual([
-      { animal: "bear", stage: "adult", n: 40 },
+      { animal: "bear", stage: "adult", n: 40, own: true },
     ]);
     expect(step(seq(["strength", 199]), "strength").stageUp).toEqual([
-      { animal: "bear", stage: "venerable", n: 200 },
+      { animal: "bear", stage: "venerable", n: 200, own: true },
     ]);
   });
 
   test("the second animal rises on its own practice", () => {
     const h = [...seq(["strength", 60], ["run", 39])];
     const e = step(h, "run");
-    expect(e.stageUp).toEqual([{ animal: "stag", stage: "adult", n: 40 }]);
+    expect(e.stageUp).toEqual([{ animal: "stag", stage: "adult", n: 40, own: true }]);
   });
 
-  test("the boar and a hand-picked animal rise on every session, with no count of a practice", () => {
+  test("the boar and a hand-picked animal rise on every session, and say the threshold, not a practice count", () => {
     const boar = step(
       seq(["strength", 3], ["run", 3], ["yoga", 2], ["strength", 11], ["run", 10], ["yoga", 10]),
       "yoga",
     );
-    expect(boar.stageUp).toEqual([{ animal: "boar", stage: "adult", n: null }]);
+    expect(boar.stageUp).toEqual([{ animal: "boar", stage: "adult", n: 40, own: false }]);
     const picked = step(seq(["strength", 30], ["run", 9]), "run", "stag");
-    expect(picked.stageUp).toEqual([{ animal: "stag", stage: "adult", n: null }]);
+    expect(picked.stageUp).toEqual([{ animal: "stag", stage: "adult", n: 40, own: false }]);
   });
 
   test("nothing changes, nothing is said", () => {

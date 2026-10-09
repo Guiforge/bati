@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import type { TFunction } from "i18next";
+import type { i18n as I18n, TFunction } from "i18next";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
@@ -7,12 +7,13 @@ import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { SectionLabel } from "@/components/common/SectionLabel";
+import { oathText } from "@/components/oath/useOathText";
 import { Crest } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
 import { getExerciseThumb, getVillageTierAsset } from "@/constants/assetMap";
 import type { Animal } from "@/db/crestRules";
 import type { DistanceUnit } from "@/db/preferences";
-import { formatTarget, perSideLabel } from "@/db/targets";
+import { formatCount, formatTarget, perSideLabel } from "@/db/targets";
 import { getLevelTitle } from "@/db/userLevel";
 import { TIER_NAMES } from "@/db/village";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
@@ -23,7 +24,7 @@ import { formatRecordValue, recordTitle } from "./recordText";
 
 type Badge = "after" | "record";
 type Line = { id: string; text: string; badge?: Badge };
-type CardData = { id: string; title: string; body?: string; art: ReactNode };
+type CardData = { id: string; title: string; body?: string[]; art: ReactNode };
 
 const shield = (animal: Animal) => (
   <Crest
@@ -31,6 +32,18 @@ const shield = (animal: Animal) => (
     crest={{ animal, manual: false, second: null, quarters: null, longestFlame: 0, rings: 0 }}
   />
 );
+
+/** "Brumeval becomes a Village.", or "Your village becomes a Village." before it has a name. */
+const tierSentence = (
+  t: TFunction,
+  tier: Extract<Feast, { kind: "tier" }>["tier"],
+  villageName: string,
+  language: AppLanguage,
+) =>
+  t(`session.tonight_tier_${tier}`, {
+    subject: villageName || t("session.tonight_tier_subject_unnamed"),
+    tier: TIER_NAMES[tier][language],
+  });
 
 function placeOf(t: TFunction, villageName: string) {
   return villageName
@@ -52,7 +65,7 @@ function largeLine(t: TFunction, f: Feast, villageName: string, language: AppLan
     case "anniversary":
       return t("session.tonight_anniversary", { count: f.years });
     case "tier":
-      return t("session.tonight_tier_title", { tier: TIER_NAMES[f.tier][language] });
+      return tierSentence(t, f.tier, villageName, language);
     default:
       return "";
   }
@@ -121,14 +134,16 @@ function lineOf(
   }
 }
 
+/** A stage rises exactly at its threshold, so the body is that many sessions of its own practice. */
 function stageBody(t: TFunction, f: Extract<Feast, { kind: "stageUp" }>) {
-  return f.n === null || f.animal === "boar"
-    ? undefined
-    : t(`session.tonight_stage_body_${f.animal}`, { n: f.n });
+  return t(f.own ? `session.tonight_stage_body_${f.animal}` : "session.tonight_stage_body_any", {
+    n: f.n,
+  });
 }
 
 function cardOf(
   t: TFunction,
+  i18n: I18n,
   f: Feast,
   villageName: string,
   language: AppLanguage,
@@ -141,10 +156,12 @@ function cardOf(
         title: t(`session.tonight_reveal_${f.animal}`, { place: placeOf(t, villageName) }),
         body:
           a && b && a !== b
-            ? t("session.tonight_boar_body", {
-                first: t(PRACTICE_KEY[a]),
-                second: t(PRACTICE_KEY[b]),
-              })
+            ? [
+                t("session.tonight_boar_body", {
+                  first: t(PRACTICE_KEY[a]),
+                  second: t(PRACTICE_KEY[b]),
+                }),
+              ]
             : undefined,
         art: shield(f.animal),
       };
@@ -156,24 +173,25 @@ function cardOf(
           second: sentence(t(`village.crest_${f.animal}`)),
           first: t(`village.crest_to_${f.first}`),
         }),
-        body: t(`session.tonight_join_body_${f.animal}`, { n: f.n, total: f.total }),
+        body: [t(`session.tonight_join_body_${f.animal}`, { n: f.n, total: f.total })],
         art: shield(f.animal),
       };
     case "stageUp":
       return {
         id: f.id,
         title: t(`session.tonight_stage_${f.stage}`, { animal: the(t, f.animal) }),
-        body: stageBody(t, f),
+        body: [stageBody(t, f)],
         art: shield(f.animal),
       };
     case "tier":
       return {
         id: f.id,
-        title: t("session.tonight_tier_title", { tier: TIER_NAMES[f.tier][language] }),
-        body:
+        title: tierSentence(t, f.tier, villageName, language),
+        body: [
           f.level === null
             ? t("session.tonight_tier_plain")
             : t("session.tonight_tier_body", { level: f.level }),
+        ],
         art: (
           <Image
             source={getVillageTierAsset(f.tier)}
@@ -198,21 +216,36 @@ function cardOf(
       return {
         id: f.id,
         title: t("boss.victory_title"),
-        body: f.name,
+        body: [f.name],
         art: <GameIcon name="sword" size={32} color="$resourceGold" />,
       };
     case "oath":
       return {
         id: f.id,
         title: t("oath.fulfilled_title"),
-        body: t("oath.fulfilled_subtitle"),
+        body: [
+          oathText(f.progress, i18n),
+          t("oath.fulfilled_subtitle"),
+          ...(f.bonusXp > 0
+            ? [t("oath.fulfilled_xp_bonus", { count: formatCount(language, f.bonusXp) })]
+            : []),
+        ],
         art: <GameIcon name="scroll" size={32} color="$resourceGold" />,
       };
     case "rung":
       return {
         id: f.id,
         title: localizedName(f.step.next, language),
-        body: t("progression.new_rung_from", { name: localizedName(f.step.from, language) }),
+        body: [
+          t("progression.new_rung_from", { name: localizedName(f.step.from, language) }),
+          ...(f.step.alsoNext.length > 0
+            ? [
+                t("progression.rung_also_leads_to", {
+                  names: f.step.alsoNext.map((m) => localizedName(m, language)).join(", "),
+                }),
+              ]
+            : []),
+        ],
         art: (
           <Image
             source={getExerciseThumb(f.step.next.imagePath)}
@@ -225,7 +258,7 @@ function cardOf(
       return {
         id: f.id,
         title: localizedTitle(f.achievement.definition, language),
-        body: localizedText(f.achievement.definition, "description", language),
+        body: [localizedText(f.achievement.definition, "description", language)],
         art: <AchievementIcon icon={f.achievement.definition.icon} size={32} color="$text" />,
       };
     default:
@@ -264,7 +297,7 @@ function CardRow({ card }: { card: CardData }) {
       bg="$background"
       p="$3"
       accessible
-      accessibilityLabel={card.body ? `${card.title}. ${card.body}` : card.title}
+      accessibilityLabel={card.body ? [card.title, ...card.body].join(". ") : card.title}
     >
       <XStack items="center" gap="$3">
         <YStack width={48} items="center" importantForAccessibility="no-hide-descendants">
@@ -274,11 +307,11 @@ function CardRow({ card }: { card: CardData }) {
           <Text fontWeight="700" fontSize={17} color="$text">
             {card.title}
           </Text>
-          {card.body ? (
-            <Text fontSize={13} color="$textSecondary">
-              {card.body}
+          {card.body?.map((line) => (
+            <Text key={line} fontSize={13} color="$textSecondary">
+              {line}
             </Text>
-          ) : null}
+          ))}
         </YStack>
       </XStack>
     </Card>
@@ -291,14 +324,14 @@ function CardRow({ card }: { card: CardData }) {
  * renders nothing, not even the title. No animation.
  */
 export function TonightList({ feasts, villageName }: { feasts: Feast[]; villageName: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const unit = useSettingsStore((s) => s.distanceUnit);
   if (feasts.length === 0) return null;
 
   const lines = feasts.flatMap((f) => lineOf(t, f, villageName, language, unit) ?? []);
   const cards = feasts.flatMap((f) =>
-    f.size === "medium" ? (cardOf(t, f, villageName, language) ?? []) : [],
+    f.size === "medium" ? (cardOf(t, i18n, f, villageName, language) ?? []) : [],
   );
 
   return (

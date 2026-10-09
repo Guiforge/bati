@@ -47,8 +47,8 @@ const REVEAL_AT = 8;
 const FIRST_SHARE = 40;
 const SECOND_SHARE = 30;
 const SECOND_MIN = 20;
-const ADULT_AT = 40;
-const VENERABLE_AT = 200;
+export const ADULT_AT = 40;
+export const VENERABLE_AT = 200;
 
 const tally = (): Tally => ({ strength: 0, calisthenics: 0, yoga: 0, run: 0, ride: 0 });
 

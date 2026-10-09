@@ -144,7 +144,7 @@ describe("Crest", () => {
     expect(screen.getByLabelText("A bear and a stag.")).toBeTruthy();
     await mount(boar, 48);
     expect(
-      screen.getByLabelText("A boar that blends strength and running. It is your choice."),
+      screen.getByLabelText("A boar that blends strength and endurance. It is your choice."),
     ).toBeTruthy();
     await mount({ ...base, manual: true }, 24);
     expect(screen.getByRole("image", { name: "A bear. It is your choice." })).toBeTruthy();
@@ -193,19 +193,16 @@ describe("Crest label", () => {
     es: ["Un oso y un ciervo.", "Un salmón y un armiño.", "Un armiño y un caballo."],
   };
   const boars = {
-    fr: ["Un sanglier qui mêle force et course.", "Un sanglier qui mêle callisthénie et vélo."],
+    fr: ["Un sanglier qui mêle force et endurance.", "Un sanglier qui mêle callisthénie et vélo."],
     de: [
-      "Ein Wildschwein, das Kraft und Laufen vereint.",
+      "Ein Wildschwein, das Kraft und Ausdauer vereint.",
       "Ein Wildschwein, das Calisthenics und Radfahren vereint.",
     ],
     en: [
-      "A boar that blends strength and running.",
+      "A boar that blends strength and endurance.",
       "A boar that blends calisthenics and cycling.",
     ],
-    es: [
-      "Un jabalí que reúne fuerza y carrera a pie.",
-      "Un jabalí que reúne calistenia y ciclismo.",
-    ],
+    es: ["Un jabalí que reúne fuerza y resistencia.", "Un jabalí que reúne calistenia y ciclismo."],
   };
 
   afterAll(() => i18n.changeLanguage("en"));

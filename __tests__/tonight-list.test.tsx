@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { act, render } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
-
+import { oathText } from "@/components/oath/useOathText";
 import { type Feast, type FeastFacts, rankFeasts } from "@/components/session/feasts";
 import { TonightList } from "@/components/session/TonightList";
 import { achievementDefinitions } from "@/db/achievements";
@@ -23,6 +23,12 @@ async function show(feasts: Feast[], lang: Lang = "fr", villageName = "Brumeval"
   );
 }
 
+const OATH = {
+  oath: { metric: "weekly_sessions", weeklyTarget: 3 },
+  target: 8,
+  exerciseName: null,
+} as never;
+
 const base: FeastFacts["result"] = {
   levelUp: null,
   tierUp: null,
@@ -34,12 +40,13 @@ const base: FeastFacts["result"] = {
   fulfilledOath: null,
   oathBonusXp: 0,
   crestEvents: NO_CREST_EVENTS,
+  crestReveal: null,
 };
 const rank = (over: Partial<FeastFacts["result"]>, rest: Omit<FeastFacts, "result"> = {}) =>
   rankFeasts({ result: { ...base, ...over }, ...rest });
 
 const reveal = (animal: "bear" | "ermine" | "salmon" | "stag" | "horse" | "boar") =>
-  rank({ crestEvents: { ...NO_CREST_EVENTS, reveal: { animal, quarters: null } } });
+  rank({ crestReveal: { animal, quarters: null } });
 
 describe("TonightList", () => {
   afterEach(async () => {
@@ -54,7 +61,7 @@ describe("TonightList", () => {
 
   test("the large feast is a line with the 'after' badge, a record a line with 'record'", async () => {
     const feasts = rank({
-      crestEvents: { ...NO_CREST_EVENTS, reveal: { animal: "bear", quarters: null } },
+      crestReveal: { animal: "bear", quarters: null },
       newRecords: [
         {
           isNewRecord: true,
@@ -89,33 +96,38 @@ describe("TonightList", () => {
       crestEvents: {
         ...NO_CREST_EVENTS,
         secondJoins: { animal: "stag", first: "bear", n: 39, total: 130 },
-        stageUp: [{ animal: "bear", stage: "adult", n: 40 }],
+        stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
       },
     });
     const { getByText, queryByText } = await show(feasts);
     expect(getByText("Un cerf rejoint l'ours")).toBeTruthy();
     expect(
-      getByText("39 de tes 130 séances sont des courses : le cerf veille aussi."),
+      getByText("39 de tes 130 séances sont de l'endurance : le cerf veille aussi."),
     ).toBeTruthy();
     expect(getByText("L'ours devient adulte")).toBeTruthy();
     expect(getByText("40 séances de force.")).toBeTruthy();
     expect(queryByText("après")).toBeNull();
   });
 
-  test("venerable, and a boar says no count of a practice", async () => {
+  test("venerable; a boar or a hand-picked animal counts every session", async () => {
     const feasts = rank({
       crestEvents: {
         ...NO_CREST_EVENTS,
         stageUp: [
-          { animal: "stag", stage: "venerable", n: 200 },
-          { animal: "boar", stage: "adult", n: null },
+          { animal: "stag", stage: "venerable", n: 200, own: true },
+          { animal: "boar", stage: "adult", n: 40, own: false },
+          { animal: "ermine", stage: "venerable", n: 200, own: false },
         ],
       },
     });
     const { getByText, queryByText } = await show(feasts);
     expect(getByText("Le cerf devient vénérable")).toBeTruthy();
     expect(getByText("Le sanglier devient adulte")).toBeTruthy();
-    expect(queryByText(/ancien/i)).toBeNull();
+    // The stage rises exactly at its threshold: the body is that count, never "null".
+    expect(getByText("200 séances d'endurance.")).toBeTruthy();
+    expect(getByText("40 séances.")).toBeTruthy();
+    expect(getByText("200 séances.")).toBeTruthy();
+    expect(queryByText(/null|ancien/i)).toBeNull();
   });
 
   test("a tier is a line after the epilogue... and a card when something else leads", async () => {
@@ -124,7 +136,7 @@ describe("TonightList", () => {
       {},
     );
     const alone = await show(feasts);
-    expect(alone.getByText("Nouveau palier : Village")).toBeTruthy();
+    expect(alone.getByText("Brumeval devient un Village.")).toBeTruthy();
     expect(alone.getByText("après")).toBeTruthy();
     await alone.unmount();
 
@@ -148,7 +160,8 @@ describe("TonightList", () => {
       boss: { name: "Golem" },
       result: {
         ...base,
-        fulfilledOath: {} as never,
+        fulfilledOath: OATH,
+        oathBonusXp: 120,
         villageGrowth: [
           {
             code: "forge",
@@ -168,6 +181,54 @@ describe("TonightList", () => {
     expect(getByText("Boss vaincu !")).toBeTruthy();
     expect(getByText("Golem")).toBeTruthy();
     expect(getAllByText("SERMENT ACCOMPLI")).toHaveLength(1);
+    // The card keeps what the old reward card said: the oath itself and its bonus.
+    expect(getByText(oathText(OATH, i18n))).toBeTruthy();
+    expect(getByText("+120 XP")).toBeTruthy();
+  });
+
+  test("a rung card keeps the other doors the step leads to", async () => {
+    const m = (name: string) => ({
+      id: 1,
+      enName: name,
+      frName: name,
+      deName: name,
+      esName: name,
+      imagePath: "squat.webp",
+    });
+    const feasts = rank({
+      newRungs: [
+        { from: m("Squat"), next: m("Jump Squat"), alsoNext: [m("Lunge"), m("Step-up")] } as never,
+      ],
+    });
+    const { getByText } = await show(feasts);
+    expect(getByText("La même étape mène aussi à Lunge, Step-up.")).toBeTruthy();
+  });
+
+  test.each([
+    ["fr", "Brumeval devient une Cité florissante.", "Ton village devient une Cité florissante."],
+    ["en", "Brumeval becomes a Flourishing City.", "Your village becomes a Flourishing City."],
+    ["de", "Brumeval wird zur Blühenden Stadt.", "Dein Dorf wird zur Blühenden Stadt."],
+    [
+      "es",
+      "Brumeval se convierte en una Ciudad próspera.",
+      "Tu pueblo se convierte en una Ciudad próspera.",
+    ],
+  ])("a tier is a whole sentence, named or not, in %s", async (lang, named, unnamed) => {
+    const feasts = rank({ tierUp: { oldTier: 8, newTier: 9 } as never });
+    const a = await show(feasts, lang as Lang);
+    expect(a.getByText(named)).toBeTruthy();
+    await a.unmount();
+    expect((await show(feasts, lang as Lang, "")).getByText(unnamed)).toBeTruthy();
+  });
+
+  test.each(["fr", "en", "de", "es"])("every one of the 12 tiers has its sentence in %s", (lng) => {
+    const t = i18n.getFixedT(lng);
+    for (let tier = 1; tier <= 12; tier++) {
+      const text = t(`session.tonight_tier_${tier}`, { subject: "S", tier: "T" });
+      expect(text).not.toContain("tonight_tier");
+      expect(text).toMatch(/^S /);
+      expect(text).toMatch(/\.$/);
+    }
   });
 
   test("a level, a standing, a rung, an achievement, an Age and an anniversary all have a place", async () => {
@@ -206,7 +267,7 @@ describe("TonightList", () => {
     const { getByText } = await show(feasts);
     expect(getByText("L'Âge de la pompe diamant")).toBeTruthy();
     expect(getByText("après")).toBeTruthy();
-    expect(getByText("2 ans de village.")).toBeTruthy();
+    expect(getByText("Ton village a 2 ans.")).toBeTruthy();
     expect(getByText(/^Niveau 6/)).toBeTruthy();
     expect(getByText(/^Pompes 14.* : 2e meilleure de tes 10 dernières$/)).toBeTruthy();
     expect(getByText("Jump Squat")).toBeTruthy();
@@ -260,13 +321,13 @@ describe("TonightList", () => {
     [
       "de",
       "Ein Hirsch gesellt sich zum Bären",
-      "39 deiner 130 Einheiten sind Läufe: der Hirsch wacht mit.",
+      "39 deiner 130 Einheiten sind Ausdauer: Der Hirsch wacht mit.",
     ],
-    ["en", "A stag joins the bear", "39 of your 130 sessions are runs: the stag watches too."],
+    ["en", "A stag joins the bear", "39 of your 130 sessions are endurance: the stag watches too."],
     [
       "es",
       "Un ciervo se une al oso",
-      "39 de tus 130 sesiones son carreras: el ciervo también vela.",
+      "39 de tus 130 sesiones son de resistencia: el ciervo también vela.",
     ],
   ])("a second animal joins, in %s", async (lang, title, body) => {
     const feasts = rank({
@@ -286,7 +347,10 @@ describe("TonightList", () => {
     ["es", "El oso es ahora adulto", "40 sesiones de fuerza."],
   ])("a stage rises, in %s", async (lang, title, body) => {
     const feasts = rank({
-      crestEvents: { ...NO_CREST_EVENTS, stageUp: [{ animal: "bear", stage: "adult", n: 40 }] },
+      crestEvents: {
+        ...NO_CREST_EVENTS,
+        stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
+      },
     });
     const { getByText } = await show(feasts, lang as Lang);
     expect(getByText(title)).toBeTruthy();
@@ -308,7 +372,9 @@ describe("the Tonight copy, in every language", () => {
     "tonight_stage_adult",
     "tonight_stage_venerable",
     "tonight_boar_body",
-    "tonight_tier_title",
+    ...Array.from({ length: 12 }, (_, i) => `tonight_tier_${i + 1}`),
+    "tonight_tier_subject_unnamed",
+    "tonight_stage_body_any",
     "tonight_tier_body",
     "tonight_tier_plain",
     "tonight_growth",

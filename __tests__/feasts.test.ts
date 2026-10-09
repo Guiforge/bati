@@ -12,6 +12,7 @@ const empty: FeastFacts["result"] = {
   fulfilledOath: null,
   oathBonusXp: 0,
   crestEvents: NO_CREST_EVENTS,
+  crestReveal: null,
 };
 const reveal = { animal: "bear", quarters: null } as const;
 const tierUp = { oldTier: 2, newTier: 3 } as const;
@@ -31,7 +32,7 @@ describe("rankFeasts", () => {
       {
         tierUp,
         levelUp: { oldLevel: 4, newLevel: 5 },
-        crestEvents: { ...NO_CREST_EVENTS, reveal },
+        crestReveal: reveal,
       },
       { epilogue: true, age: { name: "Age" }, anniversary: { years: 2 } },
     );
@@ -53,7 +54,7 @@ describe("rankFeasts", () => {
     const f = facts(
       {
         tierUp: set.tierUp,
-        crestEvents: { ...NO_CREST_EVENTS, reveal: "reveal" in set ? reveal : null },
+        crestReveal: "reveal" in set ? reveal : null,
       },
       {
         age: "age" in set ? set.age : null,
@@ -83,7 +84,7 @@ describe("rankFeasts", () => {
         newAchievements: [{ code: "x" } as never],
         crestEvents: {
           ...NO_CREST_EVENTS,
-          stageUp: [{ animal: "bear", stage: "adult", n: 40 }],
+          stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
         },
       },
       { epilogue: true },
@@ -111,10 +112,10 @@ describe("rankFeasts", () => {
       facts({
         newRecords: [{} as never, {} as never],
         newRungs: [{} as never, {} as never],
+        crestReveal: reveal,
         crestEvents: {
-          reveal,
           secondJoins: { animal: "stag", first: "bear", n: 20, total: 60 },
-          stageUp: [{ animal: "bear", stage: "adult", n: 40 }],
+          stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
         },
       }),
     );

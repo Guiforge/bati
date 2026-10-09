@@ -24,7 +24,13 @@ import {
   outingSecondsToday,
 } from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
-import { type CrestEvents, crestEvents, NO_CREST_EVENTS } from "@/db/crestEvents";
+import {
+  type CrestEvents,
+  type CrestReveal,
+  crestEvents,
+  crestReveal,
+  NO_CREST_EVENTS,
+} from "@/db/crestEvents";
 import { estimateQuestSeconds } from "@/db/estimate";
 import {
   checkForNewRungs,
@@ -339,6 +345,14 @@ interface SessionState {
   goal: OutingGoal | null;
   savedSessionId: number | null;
   /**
+   * The crest as the FIRST pass of `saveSession` read it, before the row existed. A retry finds
+   * the row already written, so a fresh read would already hold this session and the second
+   * animal's and the stage's cards would be lost. Wrapped so "not read yet" (null) differs from
+   * "read, no crest" (null inside) and "unreadable" (undefined inside). Not persisted, like
+   * `savedSessionId`.
+   */
+  crestSeenBefore: { crest: Crest | null | undefined } | null;
+  /**
    * Whether this session already paid the Triumph bonus.
    *
    * Not derivable from the boss: by the time the bonus is paid the pool is already empty in the
@@ -441,6 +455,8 @@ interface SessionState {
     villageGrowth: VillageGrowth[];
     /** What this session changed on the crest, read before and after the write; empty when unreadable. */
     crestEvents: CrestEvents;
+    /** The crest's reveal when it exists now and this phone has not shown it; null when either read failed. */
+    crestReveal: CrestReveal | null;
   }>;
 }
 
@@ -450,6 +466,24 @@ async function readCrest() {
     return await getCrest();
   } catch (error) {
     reportError("session.crest", error);
+    return undefined;
+  }
+}
+
+/** The crest before this save: read on the first pass, then kept for every retry. */
+async function crestSeenOnFirstPass(): Promise<Crest | null | undefined> {
+  const kept = useSessionStore.getState().crestSeenBefore;
+  if (kept) return kept.crest;
+  const crest = await readCrest();
+  useSessionStore.setState({ crestSeenBefore: { crest } });
+  return crest;
+}
+
+async function readBigFeastsShown() {
+  try {
+    return await preferences.getBigFeastsShown();
+  } catch (error) {
+    reportError("session.bigFeastsShown", error);
     return undefined;
   }
 }
@@ -1227,6 +1261,7 @@ export const useSessionStore = create<SessionState>()(
     lastSetSkipped: false,
     goal: null,
     savedSessionId: null,
+    crestSeenBefore: null,
     triumphBonusPaid: false,
 
     startSession: async (quest, userLevel, options) => {
@@ -1293,6 +1328,7 @@ export const useSessionStore = create<SessionState>()(
         lastSetSkipped: false,
         goal: options?.goal ?? null,
         savedSessionId: null,
+        crestSeenBefore: null,
         triumphBonusPaid: false,
       });
 
@@ -1489,6 +1525,7 @@ export const useSessionStore = create<SessionState>()(
         sessionUuid: null,
         goal: null,
         savedSessionId: null,
+        crestSeenBefore: null,
         triumphBonusPaid: false,
       });
       // Whether the hero quit or the session ended, the service must let go: it holds a wake
@@ -1903,8 +1940,12 @@ export const useSessionStore = create<SessionState>()(
       // Snapshot before this session's exercises land, so the village-growth diff at the
       // end reflects exactly what this save changed.
       const beforeBuildings = await getVillageBuildings();
-      // Read-only, and never allowed to block the save: no crest read, no crest event.
-      const crestBefore = await readCrest();
+      // Read-only, and never allowed to block the save: no crest read, no crest event. Kept from
+      // the first pass: a retry would read a crest that already holds this session.
+      // ponytail: beforeBuildings and oldTotalXp have the same defect on a retry (read again after
+      // the row is written, so the diff and the XP "before" lose what pass one wrote); fix them
+      // the way crestSeenBefore is, if a retried save is ever seen with a wrong growth card.
+      const crestBefore = await crestSeenOnFirstPass();
 
       // Half of what the quest *proposed*, not half of what the hero did.
       //
@@ -2069,6 +2110,7 @@ export const useSessionStore = create<SessionState>()(
       const afterBuildings = await getVillageBuildings();
       const villageGrowth = diffVillageGrowth(beforeBuildings, afterBuildings);
       const crestAfter = await readCrest();
+      const shown = await readBigFeastsShown();
       return {
         sessionId,
         xpEarned,
@@ -2087,6 +2129,7 @@ export const useSessionStore = create<SessionState>()(
         tierUp,
         villageGrowth,
         crestEvents: diffCrest(crestBefore, crestAfter),
+        crestReveal: crestReveal(crestAfter, shown),
       };
     },
   })),

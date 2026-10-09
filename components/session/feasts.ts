@@ -17,6 +17,7 @@ export type FeastFacts = {
     | "fulfilledOath"
     | "oathBonusXp"
     | "crestEvents"
+    | "crestReveal"
   >;
   /** The campaign ended with this session: today's full-screen epilogue. */
   epilogue?: boolean;
@@ -35,7 +36,7 @@ type Result = FeastFacts["result"];
 /** One thing tonight says, said once. `large` is shown full screen after "Continue". */
 export type Feast =
   | Of<"epilogue">
-  | Of<"reveal", NonNullable<Result["crestEvents"]["reveal"]>>
+  | Of<"reveal", NonNullable<Result["crestReveal"]>>
   | Of<"age", { name: string }>
   | Of<"anniversary", { years: number }>
   | Of<"tier", { tier: VillageTier; level: number | null }>
@@ -76,7 +77,7 @@ export function rankFeasts(facts: FeastFacts): Feast[] {
 function bigOnes({ result: r, epilogue, age, anniversary }: FeastFacts): Built<Feast>[] {
   const big: Built<Feast>[] = [];
   if (epilogue) big.push({ kind: "epilogue" });
-  if (r.crestEvents.reveal) big.push({ kind: "reveal", ...r.crestEvents.reveal });
+  if (r.crestReveal) big.push({ kind: "reveal", ...r.crestReveal });
   if (age) big.push({ kind: "age", name: age.name });
   if (anniversary) big.push({ kind: "anniversary", years: anniversary.years });
   if (r.tierUp)

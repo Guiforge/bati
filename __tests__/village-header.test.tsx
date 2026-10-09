@@ -136,7 +136,7 @@ describe("the village header", () => {
 
   it("the boar names its two practices", async () => {
     await mount(crestOf({ animal: "boar", quarters: ["strength", "run"] }));
-    expect(await line()).toBe("A boar watches over Brumeval: you blend strength and running.");
+    expect(await line()).toBe("A boar watches over Brumeval: you blend strength and endurance.");
   });
 
   it("while loading, nothing is asserted: no sentence, no glow, the name in its place", async () => {

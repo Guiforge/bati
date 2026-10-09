@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { act, render } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { TamaguiProvider } from "tamagui";
 import { oathText } from "@/components/oath/useOathText";
 import { type Feast, type FeastFacts, rankFeasts } from "@/components/session/feasts";
@@ -51,6 +52,26 @@ const reveal = (animal: "bear" | "ermine" | "salmon" | "stag" | "horse" | "boar"
 describe("TonightList", () => {
   afterEach(async () => {
     await act(() => i18n.changeLanguage("en"));
+  });
+
+  // Gold means earned; the way into the village is an action, so it wears the ember like the
+  // app's other links (settings, oath, stats), on a 44 dp target.
+  test("'See your village' is an ember link on a 44 dp target, not gold", async () => {
+    await i18n.changeLanguage("fr");
+    useSettingsStore.setState({ language: "fr" });
+    const view = await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <TonightList feasts={reveal("bear")} villageName="Brumeval" onViewVillage={() => {}} />
+      </TamaguiProvider>,
+    );
+    const link = view.getByTestId("tonight-view-village");
+    const style = StyleSheet.flatten(link.props.style);
+    expect(style.minHeight).toBeGreaterThanOrEqual(44);
+    expect(style.minWidth).toBeGreaterThanOrEqual(44);
+    const dark = config.themes.dark as unknown as Record<string, { val: string }>;
+    const color = StyleSheet.flatten(view.getByText("Voir ton village").props.style).color;
+    expect(color).toBe(dark.primaryText?.val);
+    expect(color).not.toBe(dark.resourceGold?.val);
   });
 
   test("an empty list renders nothing at all, not even the title", async () => {

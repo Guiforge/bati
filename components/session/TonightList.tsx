@@ -364,7 +364,7 @@ export function TonightList({
           onPress={onViewVillage}
           style={{ minHeight: 44, minWidth: 44, justifyContent: "center" }}
         >
-          <Text fontSize={15} color="$resourceGold" textDecorationLine="underline">
+          <Text fontSize={15} color="$primaryText" textDecorationLine="underline">
             {t("session.village_growth_cta")}
           </Text>
         </Pressable>

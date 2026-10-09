@@ -23,6 +23,8 @@ import {
   markSessionWithNewRecords,
   outingSecondsToday,
 } from "@/db/completed";
+import { type Crest, getCrest } from "@/db/crest";
+import { type CrestEvents, crestEvents, NO_CREST_EVENTS } from "@/db/crestEvents";
 import { estimateQuestSeconds } from "@/db/estimate";
 import {
   checkForNewRungs,
@@ -437,8 +439,23 @@ interface SessionState {
     heroXp: { before: number; after: number };
     tierUp: VillageTierUp | null;
     villageGrowth: VillageGrowth[];
+    /** What this session changed on the crest, read before and after the write; empty when unreadable. */
+    crestEvents: CrestEvents;
   }>;
 }
+
+/** The crest as the journal reads it now, or undefined when it cannot be read (reported, never thrown). */
+async function readCrest() {
+  try {
+    return await getCrest();
+  } catch (error) {
+    reportError("session.crest", error);
+    return undefined;
+  }
+}
+
+const diffCrest = (before: Crest | null | undefined, after: Crest | null | undefined) =>
+  before === undefined || after === undefined ? NO_CREST_EVENTS : crestEvents(before, after);
 
 /**
  * The crash-recovery snapshot: every piece of session state that has to survive the app dying,
@@ -1886,6 +1903,8 @@ export const useSessionStore = create<SessionState>()(
       // Snapshot before this session's exercises land, so the village-growth diff at the
       // end reflects exactly what this save changed.
       const beforeBuildings = await getVillageBuildings();
+      // Read-only, and never allowed to block the save: no crest read, no crest event.
+      const crestBefore = await readCrest();
 
       // Half of what the quest *proposed*, not half of what the hero did.
       //
@@ -2049,7 +2068,7 @@ export const useSessionStore = create<SessionState>()(
 
       const afterBuildings = await getVillageBuildings();
       const villageGrowth = diffVillageGrowth(beforeBuildings, afterBuildings);
-
+      const crestAfter = await readCrest();
       return {
         sessionId,
         xpEarned,
@@ -2067,6 +2086,7 @@ export const useSessionStore = create<SessionState>()(
         heroXp: { before: oldTotalXp, after: newTotalXp },
         tierUp,
         villageGrowth,
+        crestEvents: diffCrest(crestBefore, crestAfter),
       };
     },
   })),

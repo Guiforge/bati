@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
 import { hasSessionForQuestToday, outingSecondsToday } from "@/db/completed";
+import { getCrest } from "@/db/crest";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
 import { saveQuestConfig } from "@/db/questConfig";
@@ -147,6 +148,7 @@ jest.mock("@/db/streaks", () => ({
     lastWorkoutDate: null,
   }),
 }));
+jest.mock("@/db/crest", () => ({ getCrest: jest.fn().mockResolvedValue(null) }));
 jest.mock("@/db/achievements", () => ({
   checkForNewAchievements: jest.fn().mockResolvedValue([]),
 }));
@@ -988,6 +990,53 @@ describe("useSessionStore", () => {
       // Still one row: the retry reused it.
       expect(completed.createCompletedSession).toHaveBeenCalledTimes(1);
       expect(result.sessionId).toBe(1);
+    });
+
+    test("the crest is read before and after the write, and the diff comes back", async () => {
+      const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
+      completed.createCompletedSession.mockClear();
+      const order: string[] = [];
+      completed.createCompletedSession.mockImplementationOnce(() => {
+        order.push("write");
+        return Promise.resolve(1);
+      });
+      const seen = (animal: "bear") => ({
+        animal,
+        stage: "young",
+        manual: false,
+        quarters: null,
+        second: null,
+        evidence: { totals: { strength: 8 }, first: animal, secondFromSessions: null },
+      });
+      (getCrest as jest.Mock)
+        .mockReset()
+        .mockImplementationOnce(() => {
+          order.push("before");
+          return Promise.resolve(null);
+        })
+        .mockImplementationOnce(() => {
+          order.push("after");
+          return Promise.resolve(seen("bear"));
+        });
+
+      const result = await store.getState().saveSession(null);
+
+      expect(order).toEqual(["before", "write", "after"]);
+      expect(result.crestEvents.reveal).toEqual({ animal: "bear", quarters: null });
+      (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
+    });
+
+    test("a crest that cannot be read never blocks the save", async () => {
+      const { reportError } = require("@/src/reportError") as { reportError: jest.Mock };
+      reportError.mockClear();
+      (getCrest as jest.Mock).mockReset().mockRejectedValue(new Error("no crest"));
+
+      const result = await store.getState().saveSession(null);
+
+      expect(result.sessionId).toBe(1);
+      expect(result.crestEvents).toEqual({ reveal: null, secondJoins: null, stageUp: [] });
+      expect(reportError).toHaveBeenCalledWith("session.crest", expect.any(Error));
+      (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
     });
 
     test("a boss already dead when the session opened takes no further hits", async () => {

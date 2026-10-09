@@ -982,7 +982,8 @@
     "tonight_badge_record": "record",
     "tonight_epilogue": "Ta campagne est terminée.",
     "tonight_anniversary_one": "Un an de village.",
-    "tonight_anniversary_other": "{{count}} ans de village."
+    "tonight_anniversary_other": "{{count}} ans de village.",
+    "tonight_anniversary_many": "{{count}} d'ans de village."
   },
   "settings": {
     "avatar": "AVATAR",

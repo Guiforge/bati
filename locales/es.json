@@ -655,7 +655,8 @@
     "tonight_badge_record": "récord",
     "tonight_epilogue": "Tu campaña ha terminado.",
     "tonight_anniversary_one": "Un año de pueblo.",
-    "tonight_anniversary_other": "{{count}} años de pueblo."
+    "tonight_anniversary_other": "{{count}} años de pueblo.",
+    "tonight_anniversary_many": "{{count}} de años de pueblo."
   },
   "muscles": {
     "arms": "Brazos",

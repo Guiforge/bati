@@ -37,8 +37,8 @@ export type CameoBand = { top: number; height: number; figureHeight: number };
  *
  * ponytail: the title block is a constant shared with the Village's title pin. A wrapped village
  * name already grows the block downward, but it is pinned by its top, so the figure's band stays
- * correct. It breaks only if the title row gains height above its pinned top (a taller crest, a
- * line above the name): then measure it at the call site and keep this as the floor.
+ * correct. It breaks only if the title row gains height above its pinned top (a line above
+ * the name): then measure it at the call site and keep this as the floor.
  */
 export function cameoBand(
   heroHeight: number,

@@ -15,7 +15,7 @@ export type Crest = CrestAnimals & {
   longestFlame: FlameLevel;
   /** Whole years since the first session that counts, a year without a session included. */
   rings: number;
-  /** When the 8th session that has a practice was done: "since tonight" says the day it reveals. */
+  /** When the 8th session that has a practice was done: "from today" says the day it reveals. */
   revealedAt: Date;
 };
 

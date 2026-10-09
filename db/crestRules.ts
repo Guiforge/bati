@@ -37,9 +37,9 @@ export type CrestAnimals = {
   second: { animal: PracticeAnimal; stage: CrestStage } | null;
   /** The boar's two quarters, the practices in the lead over every session; null for the others. */
   quarters: [Practice, Practice] | null;
-  /** What "Why the Bear?" reads: counts per practice, over the first 8 and over all. */
   /** Where in `sessions` the 8th session that has a practice sits: the one that revealed it. */
   revealedIndex: number;
+  /** What "Why the Bear?" reads: counts per practice, over the first 8 and over all. */
   evidence: { firstEight: Tally; totals: Tally; first: Animal; secondFromSessions: Animal | null };
 };
 

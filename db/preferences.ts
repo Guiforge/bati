@@ -187,16 +187,25 @@ export const preferences = {
     await setPreference("avatarId", avatarId);
   },
 
+  /**
+   * The photo the hero picked instead of an avatar, null for a preset.
+   *
+   * Stored as a data URI under `customAvatar` (`src/customAvatar.ts`), which travels with backups
+   * and sync (`MERGED_PREFERENCES`). Installs from before it kept the image picker's cache path
+   * under the device-local `customAvatarUri`, which Android could purge and no backup carried;
+   * that path is still read here until `portLegacyAvatar` converts it at launch.
+   */
   async getCustomAvatarUri(): Promise<string | null> {
+    const portable = await getPreference("customAvatar");
+    if (portable !== null) return portable || null;
     return await getPreference("customAvatarUri");
   },
 
   async setCustomAvatarUri(uri: string | null): Promise<void> {
-    if (uri === null) {
-      await deletePreference("customAvatarUri");
-      return;
-    }
-    await setPreference("customAvatarUri", uri);
+    // An empty value rather than a delete for "back to a preset": a missing row never wins a
+    // merge, so a preset chosen on this phone would lose to the other phone's older photo.
+    await setPreference("customAvatar", uri ?? "");
+    await deletePreference("customAvatarUri");
   },
 
   // Training level captured at onboarding (null = skipped). Read by the coach/

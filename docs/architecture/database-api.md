@@ -367,7 +367,8 @@ User settings persistence.
 | `hasFinishedOnboarding` | `boolean` | `false` | Onboarding completion flag |
 | `language` | `"en" \| "fr"` | device language, fallback `"en"` | UI language |
 | `avatarId` | `string` | first configured avatar (`guardian`) | Selected avatar |
-| `customAvatarUri` | `string \| null` | `null` | Photo the hero picked instead of an avatar |
+| `customAvatar` | data URI \| `""` | absent | Photo the hero picked instead of an avatar, 256 px JPEG (`src/customAvatar.ts`); `""` once a preset replaced it, so the preset wins a merge. Synced and backed up |
+| `customAvatarUri` | `string` | absent | Pre-`customAvatar` image picker cache path, device-local; converted at launch, then deleted |
 | `trainingLevel` | `TrainingLevel \| null` | `null` | Answer from onboarding, used to size quests |
 | `ownedEquipment` | JSON array \| `null` | `null` | `null` means never answered, which is not `[]` |
 | `hapticsEnabled` | `boolean` | `true` | Haptic feedback |

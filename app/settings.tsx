@@ -49,6 +49,7 @@ import type { EquipmentCode } from "@/db/schema";
 import { useBackup } from "@/hooks/useBackup";
 import { useBugReport, versionLabel } from "@/hooks/useBugReport";
 import { useHaptics } from "@/hooks/useHaptics";
+import { encodeAvatar } from "@/src/customAvatar";
 import { LANGUAGE_NAMES, MACHINE_TRANSLATED, nextAppLanguage } from "@/src/i18n/deviceLanguage";
 import { reportError } from "@/src/reportError";
 import { UPDATE_CHECK_OFFERED } from "@/src/updateCheck";
@@ -317,7 +318,7 @@ export default function SettingsScreen() {
 
       const picked = result.assets[0];
       if (!picked) return;
-      await setCustomAvatarUri(picked.uri);
+      await setCustomAvatarUri(await encodeAvatar(picked.uri));
       setShowAvatarPicker(false);
     } catch (error) {
       reportError("settings.avatar", error);

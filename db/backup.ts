@@ -251,6 +251,9 @@ export function validateBackup(path: string): Promise<BackupCheck> {
 export const MERGED_PREFERENCES = [
   "villageName",
   "avatarId",
+  // The custom avatar's data URI, "" once a preset replaced it (db/preferences.ts). Paired with
+  // `avatarId`: the later of the two choices wins, on every device.
+  "customAvatar",
   "trainingLevel",
   "ownedEquipment",
   "oath",
@@ -412,7 +415,7 @@ export function stateFingerprint(): Promise<string> {
  * phone inherited the old phone's backup folder, whose Android permission does not travel, and
  * every later restore stopped on "the destination path does not exist" while Settings still
  * showed the folder. The same held for `deviceId` (two phones claiming one origin, see its note in
- * db/preferences.ts), a custom avatar that is a file path on the old phone, the crash log a bug
+ * db/preferences.ts), a pre-`customAvatar` avatar that is a file path on the old phone, the crash log a bug
  * report sends from *this* device, this copy's update check, and the one-per-device greetings.
  */
 export const DEVICE_LOCAL_PREFERENCES = [
@@ -426,6 +429,7 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "passwordCheckStep",
   "passwordCheckDue",
   "passwordCheckIgnored",
+  // The avatar from before `customAvatar`: a path into this phone's cache (src/customAvatar.ts).
   "customAvatarUri",
   "crashLog",
   "errorLog",

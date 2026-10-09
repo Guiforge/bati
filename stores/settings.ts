@@ -4,6 +4,7 @@ import { type AvatarId, avatarIds, isAvatarId } from "@/constants/avatars";
 import { preferences } from "@/db";
 import type { DistanceUnit, PrepMode } from "@/db/preferences";
 import { i18n } from "@/i18n";
+import { portLegacyAvatar } from "@/src/customAvatar";
 import {
   type AppLanguage,
   getDevicePreferredAppLanguage,
@@ -290,6 +291,16 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
           if (settled !== reducedMotion) set({ reducedMotion: settled });
         })
         .catch((error: unknown) => reportError("settings.reducedMotionSettled", error));
+
+      // Once per install from before `customAvatar`: the picker's cache path becomes a data URI
+      // that backups carry, before Android purges the file under it.
+      if (customAvatarUri && !customAvatarUri.startsWith("data:")) {
+        portLegacyAvatar(customAvatarUri)
+          .then((ported) => {
+            if (get().customAvatarUri === customAvatarUri) set({ customAvatarUri: ported });
+          })
+          .catch((error: unknown) => reportError("settings.avatarPort", error));
+      }
 
       i18n.changeLanguage(normalizedLanguage).catch(() => {
         // Ignore i18n errors

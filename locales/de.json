@@ -635,7 +635,7 @@
     "rest_title": "Pausen und Stillstand bringen nie etwas",
     "rest_body": "Drinnen wird die Pause abgezogen. Draußen zählen nur die Sekunden, in denen das GPS dich in Bewegung gesehen hat, eine rote Ampel bringt also nichts. Ohne Signal springt die Uhr ein, begrenzt auf vier Stunden.",
     "movement_title": "Jede Übung hat ihren eigenen Preis",
-    "movement_body": "Eine schwere Wiederholung ist etwa drei leichte wert, und eine Einheit ist die Summe ihrer Übungen. Eine Quest, bei der du erst gehst und dann Liegestütze machst, bewertet also jede Hälfte auf ihre Weise.",
+    "movement_body": "Eine schwere Wiederholung ist etwa drei leichte wert, eine Dehnung weniger als ein gleich langes Halten, und eine Einheit ist die Summe ihrer Übungen. Eine Quest, bei der du erst gehst und dann Liegestütze machst, bewertet also jede Hälfte auf ihre Weise.",
     "outside_title": "Draußen zählt ein fester Faktor, keine Schwierigkeit",
     "outside_body": "Eine Minute in Bewegung ist ein Bruchteil einer Minute Anstrengung wert: ein Viertel zu Fuß, ein Viertel auf dem Rad, die Hälfte beim Laufen. Ein Spaziergang ist weder leicht noch schwer, dein Level ändert daran also nichts. Radfahren steht nicht über dem Gehen, weil ein Handy ein Fahrrad nicht von einem Auto unterscheiden kann.",
     "decay_title": "Draußen bringt jede Stunde weniger als die davor",

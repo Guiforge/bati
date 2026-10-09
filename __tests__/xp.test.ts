@@ -378,17 +378,49 @@ describe("db/xp", () => {
   });
 
   /**
-   * `docs/gameplay/progression.md` designs the 10-15 minute mobility session as a retention
-   * mechanic: low-fatigue by design, done on a day the hero should not train hard, and it still
-   * lights the flame. A formula that pays for effort could have quietly killed it. Holds convert
-   * second for second, so it gains instead — 204 against the 180 the old clock paid.
+   * Holds convert second for second, so a session of easy holds gained by the move to effort:
+   * 204 against the 180 the old clock paid. A `yoga` hold is priced lower on top of that
+   * (`STYLE_WEIGHT`, next test), and the mobility session still lights the flame, because the
+   * flame counts sessions, not XP (`db/streaks.ts`).
    */
-  test("a mobility session does not lose by the change", () => {
+  test("a session of easy holds does not lose by the change", () => {
     const sets = Array.from({ length: 16 }, () => hold(45, 45, movement("easy")));
 
     expect(
       computeSessionXp({ sets, effortCeilingSeconds: 15 * 60, userLevel: "medium" }),
     ).toBeGreaterThan(180);
+  });
+
+  /**
+   * A tester holds a plank for ninety seconds and flows through cat-cow for five minutes, so a
+   * second of stretching was never worth 80% of a second of plank. The style weight brings those
+   * two efforts, the ones the hero called equal, to about the same pay.
+   */
+  test("a stretch pays less per second than a hold of the same difficulty", () => {
+    const at = (style: ExerciseStyle, difficulty: DifficultyCode, seconds: number) =>
+      computeSessionXp({
+        sets: [hold(seconds, seconds, movement(difficulty, 3, style))],
+        effortCeilingSeconds: 60 * 60,
+        userLevel: "medium",
+      });
+
+    expect(at("strength", "medium", 90)).toBe(30);
+    expect(at("yoga", "medium", 90)).toBe(12);
+    // Five minutes of easy cat-cow against ninety seconds of plank.
+    expect(at("yoga", "easy", 300)).toBe(32);
+
+    // The quest screen's preview reads the same price.
+    const preview = (style: ExerciseStyle) =>
+      estimateQuestXp(
+        {
+          rounds: 1,
+          exercises: [
+            { exercise: movement("medium", 3, style), target: { type: "time", value: 120 } },
+          ],
+        },
+        "medium",
+      );
+    expect(preview("yoga")).toBeLessThan(preview("strength"));
   });
 
   test("estimateQuestXp advertises the allowance, and reads no rest column", () => {

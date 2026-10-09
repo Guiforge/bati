@@ -45,8 +45,9 @@ that drives the village's tier (below). Nothing else consumes or stores XP per-b
 **One XP per three seconds of effort** — so one XP per rep on a `medium` movement at the
 catalogue's default 3s tempo, and a minute of holds is worth a minute of reps. Effort is read from
 what the hero logged, at each movement's own `secondsPerRep`, then weighted by how hard that
-movement is: **easy 0.8 · medium 1.0 · hard 2.5**. The hero's chosen level scales the payout on top
-of that (×0.9 / ×1.0 / ×1.2), as the quest screen advertises.
+movement is: **easy 0.8 · medium 1.0 · hard 2.5**, and by its style: **`yoga` 0.4**, every other
+style 1.0. The hero's chosen level scales the payout on top of that (×0.9 / ×1.0 / ×1.2), as the
+quest screen advertises.
 
 A session has two legs and they are priced in different units. The above is the one for sets. The
 other is [ground](#ground-is-priced-by-the-way-out-not-by-the-movement), and a session that has
@@ -62,6 +63,13 @@ protocol* — ten seconds of front lever, two minutes of recovery — so a volum
 them: at 0.85/1.0/1.25 they paid 0.31× and 0.51× of what the old clock paid, while `mobility` kept
 0.97×. A hard rep being worth roughly three easy ones is also simply true; one pull-up is not one
 jumping jack.
+
+The style weight is the other half of that measurement: `mobility` kept 0.97× because a volume
+metric overpays a stretch. A tester holds a plank for ninety seconds and flows through cat-cow for
+five minutes or more, so a stretch is sustainable for about three times as long because it costs
+about a third as much. At 0.4, five minutes of easy cat-cow (0.8 × 0.4) and ninety seconds of plank
+pay about the same. It is XP only: boss damage and village work read `toRepEquivalent` and do not
+move. A mobility session still lights the flame, which counts sessions, not XP.
 
 Order matters between the weight and the ceiling below: the ceiling bounds *physical* seconds,
 the weight prices them. Weighting first would clip every honest session of hard movements against

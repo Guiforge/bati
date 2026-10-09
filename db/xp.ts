@@ -1,7 +1,7 @@
 import { estimateExerciseSeconds, exerciseWorkSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
 import { cheapestLocomotion } from "./expeditions";
-import type { DifficultyCode, Locomotion } from "./schema";
+import type { DifficultyCode, ExerciseStyle, Locomotion } from "./schema";
 import type { Target } from "./targets";
 import { NON_REP_STYLE, SECONDS_PER_REP_EQUIVALENT } from "./workUnits";
 
@@ -86,6 +86,36 @@ const DIFFICULTY_WEIGHT: Record<DifficultyCode, number> = {
   easy: 0.8,
   medium: 1.0,
   hard: 2.5,
+};
+
+/**
+ * What a second of each kind of movement is worth, on top of its difficulty. XP only: boss
+ * damage and village work units read `toRepEquivalent` and do not move with it.
+ *
+ * Difficulty alone priced a second of cat-cow at 80% of a second of plank, and a tester said the
+ * obvious thing: they hold a plank for ninety seconds and flow through cat-cow for five minutes
+ * or more. A stretch is sustainable for far longer because it costs far less, so "a minute is a
+ * minute" overpaid every `yoga` slot by the ratio of those durations. 0.4 is that ratio: five
+ * minutes of easy cat-cow at 0.8 × 0.4 pays 96 effort seconds, ninety seconds of plank pays 90,
+ * so the two efforts the hero described as equal now pay about the same. It is also what the
+ * "mobility kept 0.97×" note above was quietly saying: the narrow spread hurt strength because
+ * mobility was the archetype a volume metric already overpaid.
+ *
+ * A hero's own movement picks its style (`createUserExercise`); calling a stretch `strength` is
+ * a 2.5× self-grant of the same kind as calling it `hard`, bounded the same way.
+ *
+ * `expedition` is never priced here (`toXpSets` drops it, ground has `LOCOMOTION_RATE`), but the
+ * key stays so a new style is a compile error until someone decides what it is worth.
+ *
+ * ponytail: 0.4 rests on one tester's plank-to-cat-cow ratio. If yoga quests start to feel
+ *           pointless on a month of journals, 0.5 is the next step; nothing else has to move.
+ */
+const STYLE_WEIGHT: Record<ExerciseStyle, number> = {
+  strength: 1,
+  calisthenics: 1,
+  yoga: 0.4,
+  cardio: 1,
+  expedition: 1,
 };
 
 /**
@@ -227,7 +257,11 @@ function setEffortSeconds({ exercise, target, result }: XpSet): number {
 
 /** What that set is worth, once the movement it trained is taken into account. */
 function setWeightedSeconds(set: XpSet): number {
-  return setEffortSeconds(set) * DIFFICULTY_WEIGHT[set.exercise.difficulty];
+  return (
+    setEffortSeconds(set) *
+    DIFFICULTY_WEIGHT[set.exercise.difficulty] *
+    STYLE_WEIGHT[set.exercise.style]
+  );
 }
 
 /**

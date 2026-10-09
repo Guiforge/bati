@@ -126,6 +126,20 @@ export function measureRules() {
         ]),
       ),
     ),
+    // A stretch is priced below a hold of the same length (`STYLE_WEIGHT`), one case per difficulty.
+    yogaSessionXp: Object.fromEntries(
+      difficulties.map((exercise) => [
+        `medium/${exercise}/2x45s`,
+        computeSessionXp({
+          sets: [1, 2].map(() => ({
+            ...set(exercise, "time", 45),
+            exercise: { secondsPerRep: 3, difficulty: exercise, style: "yoga" as const },
+          })),
+          effortCeilingSeconds: 600,
+          userLevel: "medium",
+        }),
+      ]),
+    ),
     // The bounds, one case each: the clock capping the claim, a result past its target, the
     // floor, and the ceiling of what one session can pay.
     sessionXpBounds: {

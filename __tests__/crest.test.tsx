@@ -202,7 +202,10 @@ describe("Crest label", () => {
       "A boar that blends strength and running.",
       "A boar that blends calisthenics and cycling.",
     ],
-    es: ["Un jabalí que reúne fuerza y carrera.", "Un jabalí que reúne calistenia y ciclismo."],
+    es: [
+      "Un jabalí que reúne fuerza y carrera a pie.",
+      "Un jabalí que reúne calistenia y ciclismo.",
+    ],
   };
 
   afterAll(() => i18n.changeLanguage("en"));

@@ -257,6 +257,8 @@ export const MERGED_PREFERENCES = [
   // The days the reminders ring and their hour: the hero's rhythm, not this phone's. Whether a
   // phone rings at all lives in the native module and never travels (docs/designs/rappels.md).
   "reminderDays",
+  // The animal the hero picked for their crest, or `auto`: a choice of theirs, not this phone's.
+  "crestAnimal",
 ] as const;
 
 /**

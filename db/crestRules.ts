@@ -1,0 +1,175 @@
+import type { ExerciseStyle, Locomotion } from "./schema";
+
+/** In the fixed order that settles every tie. `run` is the Stag's: cardio, or a walk or a run. */
+export const PRACTICES = ["strength", "calisthenics", "yoga", "run", "ride"] as const;
+export type Practice = (typeof PRACTICES)[number];
+
+const ANIMAL_OF = {
+  strength: "bear",
+  calisthenics: "ermine",
+  yoga: "salmon",
+  run: "stag",
+  ride: "horse",
+} as const satisfies Record<Practice, string>;
+
+export type Animal = (typeof ANIMAL_OF)[Practice] | "boar";
+export const ANIMALS: readonly Animal[] = [...Object.values(ANIMAL_OF), "boar"];
+
+export type CrestStage = "young" | "adult" | "venerable";
+
+/** One session that counts, with the exercises it got done, by style (see `db/crest.ts`). */
+export type CrestSession = {
+  uuid: string;
+  outing: Locomotion | null;
+  // `expedition` is left out on purpose: it counts for no practice.
+} & Record<Exclude<ExerciseStyle, "expedition">, number>;
+
+type Tally = Record<Practice, number>;
+
+export type CrestAnimals = {
+  animal: Animal;
+  stage: CrestStage;
+  /** Chosen by the hero: the ink diamond. */
+  manual: boolean;
+  second: { animal: Animal; stage: CrestStage } | null;
+  /** The boar's two quarters, the practices in the lead over every session; null for the others. */
+  quarters: [Practice, Practice] | null;
+  /** What "Why the Bear?" reads: counts per practice, over the first 8 and over all. */
+  evidence: { firstEight: Tally; totals: Tally; first: Animal; secondFromSessions: Animal | null };
+};
+
+const REVEAL_AT = 8;
+const FIRST_SHARE = 40;
+const SECOND_SHARE = 30;
+const SECOND_MIN = 20;
+const ADULT_AT = 40;
+const VENERABLE_AT = 200;
+
+const tally = (): Tally => ({ strength: 0, calisthenics: 0, yoga: 0, run: 0, ride: 0 });
+
+/**
+ * The practice of one session, or null. A workout with no exercise done that counts has none and
+ * is ignored by everything below (and still holds the flame and starts the rings).
+ */
+function practiceOf(s: CrestSession): Practice | null {
+  if (s.outing !== null) return s.outing === "ride" ? "ride" : "run";
+  const counts: Tally = {
+    strength: s.strength,
+    calisthenics: s.calisthenics,
+    yoga: s.yoga,
+    run: s.cardio,
+    ride: 0,
+  };
+  let best: Practice | null = null;
+  for (const p of PRACTICES)
+    if (counts[p] > 0 && (best === null || counts[p] > counts[best])) best = p;
+  return best;
+}
+
+const stageOf = (n: number): CrestStage =>
+  n >= VENERABLE_AT ? "venerable" : n >= ADULT_AT ? "adult" : "young";
+
+/** The most recently trained of `among`, then the fixed order. */
+function mostRecent(among: Practice[], last: Tally): Practice | undefined {
+  return [...among].sort(
+    (a, b) => last[b] - last[a] || PRACTICES.indexOf(a) - PRACTICES.indexOf(b),
+  )[0];
+}
+
+/** Replays from the 9th session; the first practice to cross stays for good, even if it falls back. */
+function secondOf(list: Practice[], first: Practice, firstEight: Tally, eightLast: Tally) {
+  const n = { ...firstEight };
+  const seen = { ...eightLast };
+  for (let i = REVEAL_AT; i < list.length; i++) {
+    const p = list[i] as Practice;
+    n[p]++;
+    seen[p] = i;
+    const joined = mostRecent(
+      PRACTICES.filter(
+        (q) => q !== first && n[q] >= SECOND_MIN && n[q] * 100 >= SECOND_SHARE * (i + 1),
+      ),
+      seen,
+    );
+    if (joined !== undefined) return joined;
+  }
+  return undefined;
+}
+
+/**
+ * Everything the animal says, replayed from the journal in order (`performedAt`, then `uuid`: the
+ * caller sorts). Nothing is stored, so a merge or a deletion that changes the history changes the
+ * answer. Thresholds are integers: `n * 100 >= 40 * total`, never a float.
+ *
+ * `choice` is the hero's pick (`auto` or an animal). Before the reveal there is no crest at all.
+ */
+export function crestAnimals(
+  sessions: CrestSession[],
+  choice: Animal | "auto",
+): CrestAnimals | null {
+  const list: Practice[] = [];
+  for (const s of sessions) {
+    const p = practiceOf(s);
+    if (p !== null) list.push(p);
+  }
+  if (list.length < REVEAL_AT) return null;
+
+  // Recency is the position of a practice's last session, so a tie on counts reads the journal.
+  const count = (from: Practice[]) => {
+    const n = tally();
+    const last: Tally = { strength: -1, calisthenics: -1, yoga: -1, run: -1, ride: -1 };
+    from.forEach((p, i) => {
+      n[p]++;
+      last[p] = i;
+    });
+    return { n, last };
+  };
+  const { n: totals, last } = count(list);
+  const { n: firstEight, last: eightLast } = count(list.slice(0, REVEAL_AT));
+
+  const firstPractice = mostRecent(
+    PRACTICES.filter((p) => firstEight[p] * 100 >= FIRST_SHARE * REVEAL_AT),
+    eightLast,
+  );
+
+  const secondPractice =
+    firstPractice === undefined ? undefined : secondOf(list, firstPractice, firstEight, eightLast);
+
+  const first: Animal = firstPractice === undefined ? "boar" : ANIMAL_OF[firstPractice];
+  const secondFromSessions = secondPractice === undefined ? null : ANIMAL_OF[secondPractice];
+
+  let center = first;
+  let border: Animal | null = secondFromSessions;
+  if (choice !== "auto") {
+    center = choice;
+    // The first animal steps out to the border only when the hero picked the second one.
+    border = choice === secondFromSessions ? first : choice === "boar" ? null : secondFromSessions;
+  }
+  const manual = choice !== "auto";
+
+  const practiceOfAnimal = (a: Animal) => PRACTICES.find((p) => ANIMAL_OF[p] === a);
+  const stageFor = (a: Animal, own: boolean) => {
+    const p = practiceOfAnimal(a);
+    return stageOf(own && p !== undefined ? totals[p] : list.length);
+  };
+
+  const quarters =
+    center === "boar"
+      ? ([...PRACTICES]
+          .sort(
+            (a, b) =>
+              totals[b] - totals[a] ||
+              last[b] - last[a] ||
+              PRACTICES.indexOf(a) - PRACTICES.indexOf(b),
+          )
+          .slice(0, 2) as [Practice, Practice])
+      : null;
+
+  return {
+    animal: center,
+    stage: stageFor(center, !manual),
+    manual,
+    second: border === null ? null : { animal: border, stage: stageFor(border, true) },
+    quarters,
+    evidence: { firstEight, totals, first, secondFromSessions },
+  };
+}

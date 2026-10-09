@@ -45,6 +45,7 @@ FIRST8_FORCE_LED = ["force", "force", "course", "force", "yoga", "force", "cours
 # counts: practice -> sessions. first8: the opening eight, in order. last: practice of the final
 # session (the one an -avant state leaves unplayed). xp: total after it; last_xp: what it earned.
 # flame: lit days in a row ending today. span: days between the first session and today.
+B_COUNTS = {"force": 78, "course": 39, "yoga": 13}  # the first year of C is B's whole history
 STATES = {
     "jour1": dict(counts={}, xp=0, flame=0, level=1, tier="Hameau", name="Brumeval"),
     "a": dict(counts={"force": 5, "course": 2, "yoga": 1}, xp=1118, last_xp=118, flame=4, span=50,
@@ -53,7 +54,7 @@ STATES = {
     "b": dict(counts={"force": 78, "course": 39, "yoga": 13}, xp=21020, last_xp=150, flame=9,
               span=365, first8=FIRST8_FORCE_LED, last="course", level=21,
               tier="Cité florissante", name="Brumeval"),
-    "c": dict(counts={"force": 320, "course": 70, "yoga": 26}, xp=83400, flame=40, span=1130,
+    "c": dict(counts={"force": 320, "course": 70, "yoga": 26}, head=B_COUNTS, xp=83400, flame=40, span=1130,
               first8=FIRST8_FORCE_LED, last="force", level=52, tier="Capitale éternelle",
               name="Brumeval"),
     "e": dict(counts={"run": 40, "ride": 20}, xp=9800, flame=9, span=220, first8=["run"] * 8,
@@ -61,7 +62,7 @@ STATES = {
     "sanglier": dict(counts={"force": 14, "course": 13, "yoga": 13}, xp=3900, flame=9, span=150,
                      first8=["force", "course", "yoga", "force", "course", "yoga", "force", "course"],
                      last="course", level=9, tier="Carrefour", name="Brumeval"),
-    "nom-long": dict(counts={"force": 320, "course": 70, "yoga": 26}, xp=83400, flame=1092,
+    "nom-long": dict(counts={"force": 320, "course": 70, "yoga": 26}, head=B_COUNTS, xp=83400, flame=1092,
                      span=1100, first8=FIRST8_FORCE_LED, last="force", level=52,
                      tier="Capitale éternelle", name="Rochebrune-sur-Lande"),
 }
@@ -149,6 +150,35 @@ def split_weights(total, weights, fixed_last=None):
     return out + ([fixed_last] if fixed_last else [])
 
 
+def second_entry(seq):
+    """(index, course count) where course first holds 30 % of the sessions so far with >= 20 of them."""
+    c = 0
+    for i, p in enumerate(seq, 1):
+        c += p == "course"
+        if i >= 20 and c * 100 >= 30 * i:
+            return i, c
+    return None
+
+
+def head_sequence(counts, first8, rng):
+    """B's order: the opening eight, then a shuffle ending on course, redrawn until the cerf enters
+    exactly on the last session (39/130), as the spec's example B says."""
+    while True:
+        rest = list((Counter(counts) - Counter(first8)).elements())
+        rest.remove("course")
+        rng.shuffle(rest)
+        seq = first8 + rest + ["course"]
+        if second_entry(seq) == (sum(counts.values()), counts["course"]):
+            return seq
+
+
+def tail_sequence(counts, last, rng):
+    rest = list(counts.elements())
+    rest.remove(last)
+    rng.shuffle(rest)
+    return rest + [last]
+
+
 def uuid7(ms, rng):
     rand = rng.getrandbits(74)
     b = (ms << 80) | (0x7 << 76) | ((rand >> 62) << 64) | (0b10 << 62) | (rand & ((1 << 62) - 1))
@@ -177,10 +207,14 @@ def build(base, state, out):
     if n:
         days = make_days(n, spec["flame"], spec["span"], rng)
         first8 = spec["first8"]
-        rest = list((Counter(counts) - Counter(first8)).elements())
-        rest.remove(spec["last"]) if len(first8) < n else None
-        rng.shuffle(rest)
-        seq = first8 + rest + ([spec["last"]] if n > 8 else [])
+        if "head" in spec:  # B's year (cerf enters on its last session), then the rest of the history
+            seq = head_sequence(spec["head"], first8, rng) + tail_sequence(
+                Counter(counts) - Counter(spec["head"]), spec["last"], rng)
+        else:
+            rest = list((Counter(counts) - Counter(first8)).elements())
+            rest.remove(spec["last"]) if len(first8) < n else None
+            rng.shuffle(rest)
+            seq = first8 + rest + ([spec["last"]] if n > 8 else [])
         assert Counter(seq) == Counter(counts) and seq[-1] == spec["last"], "practice sequence drifted"
         factor = {"force": 1.0, "course": 1.1, "yoga": 0.8, "run": 1.0, "ride": 1.2}
         weights = [factor[p] * rng.uniform(0.75, 1.25) for p in seq]
@@ -257,6 +291,7 @@ def practices(db):
 
 def verify(db, state, spec, drop_last):
     rows = practices(db)
+    uuids = [u for (u,) in db.execute("SELECT uuid FROM completed_sessions ORDER BY performedAt, id")]
     counts = Counter(p for p, _, _ in rows)
     want = Counter({("vélo" if k == "ride" else "course" if k == "run" else k): v
                     for k, v in spec["counts"].items()})
@@ -289,6 +324,12 @@ def verify(db, state, spec, drop_last):
     elif rows:
         expect = "course" if state == "e" else "force"
         assert animal == expect and first8[expect] > len(rows[:8]) / 2, f"{state}: first 8 {dict(first8)}, wanted {expect}"
+    if "head" in spec:  # the cerf must enter during B's year and stay, though C ends at 17 %
+        order = [p for p, _, _ in sorted(((p, at, u) for (p, at, _), u in zip(rows, uuids)), key=lambda r: (r[1], r[2]))]
+        hit = second_entry(order)
+        assert hit, f"{state}: course never reaches 30 % with 20 sessions"
+        assert counts["course"] == 70 and len(rows) == 416, f"{state}: course {counts['course']}/{len(rows)} != 70/416"
+        print(f"{state}: cerf enters at session {hit[0]} with course={hit[1]}, ends {counts['course']}/{len(rows)}")
     name = db.execute("SELECT value FROM user_preferences WHERE key='villageName'").fetchone()[0]
     assert name == spec["name"], f"{state}: villageName {name}"
     assert not db.execute("SELECT 1 FROM user_preferences WHERE key LIKE 'streak%' OR key='savedSession'").fetchall()

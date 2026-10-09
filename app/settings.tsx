@@ -51,6 +51,7 @@ import { useBugReport, versionLabel } from "@/hooks/useBugReport";
 import { useHaptics } from "@/hooks/useHaptics";
 import { LANGUAGE_NAMES, MACHINE_TRANSLATED, nextAppLanguage } from "@/src/i18n/deviceLanguage";
 import { reportError } from "@/src/reportError";
+import { UPDATE_CHECK_OFFERED } from "@/src/updateCheck";
 import { releaseNotes } from "@/src/whatsNew";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -664,23 +665,33 @@ export default function SettingsScreen() {
 
           {/* Next to the version rather than beside the map row, because the question it answers
               is the one the line below raises. The second host this app talks to, off like the
-              first, and named on the line under it rather than inside the policy. */}
-          <SettingRow
-            testID="settings-update-check"
-            icon={<Download size={22} color="$text" />}
-            label={t("settings.update_check", "Check for updates")}
-            value={onOffLabel(updateCheckEnabled, t)}
-            onPress={() => {
-              haptics.selection();
-              setUpdateCheckEnabled(!updateCheckEnabled).catch((error) => {
-                reportError("settings.updateCheckWrite", error);
-              });
-            }}
-          />
+              first, and named on the line under it rather than inside the policy. Absent from the
+              F-Droid build, whose signature the GitHub APK does not share. */}
+          {UPDATE_CHECK_OFFERED ? (
+            <>
+              <SettingRow
+                testID="settings-update-check"
+                icon={<Download size={22} color="$text" />}
+                label={t("settings.update_check", "Check for updates")}
+                value={onOffLabel(updateCheckEnabled, t)}
+                onPress={() => {
+                  haptics.selection();
+                  setUpdateCheckEnabled(!updateCheckEnabled).catch((error) => {
+                    reportError("settings.updateCheckWrite", error);
+                  });
+                }}
+              />
 
-          <Text testID="settings-update-check-note" fontSize="$2" color="$textSecondary" px="$3">
-            {t("settings.update_check_note")}
-          </Text>
+              <Text
+                testID="settings-update-check-note"
+                fontSize="$2"
+                color="$textSecondary"
+                px="$3"
+              >
+                {t("settings.update_check_note")}
+              </Text>
+            </>
+          ) : null}
 
           <DevFooter />
           {/* The version line is also the door to its release notes, any time after the card,

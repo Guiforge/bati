@@ -776,7 +776,7 @@ export function VictoryView() {
         {/* Only once the row exists, and never on a short session the hero has not kept yet:
             the share screen reads the saved session, and a discard would delete what it shows. */}
         {result && !tooShort ? (
-          <ShareButton testID="session-victory-share" sessionId={result.sessionId} height={52} />
+          <ShareButton testID="session-victory-share" sessionId={result.sessionId} height={48} />
         ) : null}
         {/* While the hero has not said whether a short session counts, the bar's big button is the
             keep, not a disabled "Saving…": nothing is being saved, and a phone trace on 2026-09-13
@@ -786,7 +786,7 @@ export function VictoryView() {
           <AppButton
             testID="session-victory-keep-short"
             onPress={() => setKeepShort(true)}
-            height={52}
+            height={48}
             fullWidth={false}
             flex={1}
           >
@@ -797,7 +797,7 @@ export function VictoryView() {
             testID="session-victory-continue"
             onPress={handleContinue}
             disabled={!result}
-            height={52}
+            height={48}
             fullWidth={false}
             flex={1}
           >

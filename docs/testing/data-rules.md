@@ -94,7 +94,9 @@ fingerprint unchanged; adding one session changes it; adding a tombstone changes
 log, adventure runs, set-aside exercises, `language`, `warmupEnabled`, `prepMode`,
 `distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `villagersEnabled`, `bigFeastsShown`
 (a JSON list of the big feasts this phone already showed; it only decides display), and every
-other preference not in R7. `db/backup.ts:242-250`, `db/merge.ts:38-40`, `db/preferences.ts`.
+other preference not in R7. They are excluded by being absent from the whitelist `MERGED_PREFERENCES`
+(`db/backup.ts:251-262`), the only list the comparison and the merge read (`db/backup.ts:270`,
+`db/merge.ts:181`).
 Invariant: after any merge, the local value of each of these keys is byte-identical to before.
 
 ### 1.2 What the merge does
@@ -185,6 +187,10 @@ calisthenics, yoga, run, ride. Second animal from the 9th session on (`n*100 >= 
 `n >= 20`, kept once in). A boar, from the sessions or picked by hand, never has a second animal
 and so no border. The boar's two quarters are the practices in the lead among those actually done;
 a hero with a single practice gets that one in both.
+Rings are whole years from the first session that counts to now (a year without a session
+included). The longest flame is the flame level of the longest streak, always measured at
+`DEFAULT_WEEKLY_QUOTA` (2), never at the oath's quota: raising an oath must not erase a band
+already earned.
 Choosing the second animal by hand swaps it with the first, which keeps in the border the stage of
 its own practice.
 Stages: the boar's and a hand-picked animal's count every session that counts, workouts with no
@@ -279,7 +285,9 @@ Invariant: the set of files matched by the include rules is exactly those three.
 
 **R38. Streak caches, `unlocked_achievements` and `bigFeastsShown` travel with a restore** (none
 is in R34) but are not compared or merged by sync. That `bigFeastsShown` follows a restore like
-`streak_*` is intended: the village spec compares it to those caches. `db/backup.ts:241-250`.
+`streak_*` is intended: the village spec compares it to those caches. `keepDeviceSettings`
+(`db/backup.ts:476-487`) overwrites only `DEVICE_LOCAL_PREFERENCES` (`db/backup.ts:420-461`) and drops
+`savedSession` (`db/backup.ts:469`); every other key, these three included, comes from the backup.
 Invariant: restore replaces them with the backup's values.
 
 ---

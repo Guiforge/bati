@@ -190,6 +190,11 @@ feel immersive but remain operationally clear in the middle of a workout.
   Victory's level gauge, the Journal's level card (figure and gauge) and the "+N XP" segment of a
   history row. The Journal's XP caption is gold Inter, never ash. Braise is *done*: it marks the action, never the prize. Only gold and
   fire are drawn as colours; the other resources are white game-icons glyphs.
+- `$animalBear`, `$animalErmine`, `$animalSalmon`, `$animalStag`, `$animalHorse`: the crest's five
+  fills, **shapes, never text**. The animal is drawn over them in `$bgDark` ink (3.75:1 at worst,
+  on the bear), and an ink line (`$bgDark`) always separates two of them. The boar has no token:
+  its quarters borrow the colours of its two leading practices. Gold is laid on the ink only,
+  never on an animal fill. Measured gaps are in `__tests__/animal-colour-gap.test.ts`.
 - `$bossPhase2..4`: the boss room darkening and reddening after phase 1 on `$bgDark`.
 - `$parchment`: the phylactère's paper, a step under bone so a speech bubble never outshines the
   screen's action. Ink text 12.6:1, `$ink800` name 9.3:1.

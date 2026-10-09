@@ -253,6 +253,13 @@ describe("the hero's choice", () => {
     });
   });
 
+  test("a chosen boar over a single practice shows only that practice, in both quarters", () => {
+    expect(auto(seq(["yoga", 8]), "boar")).toMatchObject({
+      animal: "boar",
+      quarters: ["yoga", "yoga"],
+    });
+  });
+
   test("a chosen animal over a boar of the sessions takes the centre alone", () => {
     const boar = of(["strength", "yoga", "run", "strength", "yoga", "run", "strength", "yoga"]);
     expect(auto(boar, "bear")).toMatchObject({

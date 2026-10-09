@@ -90,6 +90,15 @@ function secondOf(list: Practice[], first: Practice, firstEight: Tally) {
   return undefined;
 }
 
+/** The boar's quarters: practices actually done, the leaders first; with a single one, both are it. */
+function quartersOf(totals: Tally, last: Tally): [Practice, Practice] | null {
+  const [q1, q2] = PRACTICES.filter((p) => totals[p] > 0).sort(
+    (a, b) =>
+      totals[b] - totals[a] || last[b] - last[a] || PRACTICES.indexOf(a) - PRACTICES.indexOf(b),
+  );
+  return q1 === undefined ? null : [q1, q2 ?? q1];
+}
+
 /**
  * Everything the animal says, replayed from the journal in order (`performedAt`, then `uuid`: the
  * caller sorts). Nothing is stored, so a merge or a deletion that changes the history changes the
@@ -147,17 +156,7 @@ export function crestAnimals(
     return stageOf(own && p !== undefined ? totals[p] : list.length);
   };
 
-  const quarters =
-    center === "boar"
-      ? ([...PRACTICES]
-          .sort(
-            (a, b) =>
-              totals[b] - totals[a] ||
-              last[b] - last[a] ||
-              PRACTICES.indexOf(a) - PRACTICES.indexOf(b),
-          )
-          .slice(0, 2) as [Practice, Practice])
-      : null;
+  const quarters = center === "boar" ? quartersOf(totals, last) : null;
 
   return {
     animal: center,

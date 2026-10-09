@@ -65,10 +65,10 @@ La taille de l'APK n'est pas un critère pour ce chantier (choix de Guillaume) :
 ### L'écu (`Crest`)
 - Fond = 1er animal ; l'animal à l'encre (`bgDark`, 3:1 au moins sur chaque fond, 3,75 au pire) ; bordure = 2e animal.
 - Un filet d'encre sépare toujours deux couleurs d'animaux (bordure/fond, quartiers du sanglier) : 1 px en 24, 2 px au-delà, calé au pixel en 24.
-- La plus longue flamme (1 à 5) en or dans une bande d'encre en haut. Les anneaux (un par année du village, même une année sans séance) en or sur une pastille d'encre.
+- La plus longue flamme (1 à 5) en or dans une bande d'encre en haut, DANS la bordure et sous le filet : la silhouette de l'écu reste entière, et un animal seul garde un liseré de sa couleur au-dessus de la bande (l'encre est la couleur du fond de l'app). Les anneaux (un par année du village, même une année sans séance) sont des cercles creux, tracés en or, sur une pastille d'encre : 5 par rangée, 2 rangées au plus, un espace visible entre deux ; au-delà de 10 la taille des anneaux baisse, jamais leur nombre (lisibles jusqu'à 14).
 - Paliers de détail : 24 = fond, animal, bordure ; 48 = + flamme ; 96 = + anneaux.
 - Hermine : une grande moucheture d'hermine à l'encre à la place de l'animal, dès 24 ; en bordure, sa couleur unie.
-- Sanglier : 4 quartiers aux couleurs des 2 pratiques en tête, recalculées depuis le journal, sanglier à l'encre par-dessus.
+- Sanglier : 4 quartiers aux couleurs des 2 pratiques en tête, recalculées depuis le journal, sanglier à l'encre par-dessus, détouré d'un halo os (le même glyphe, plus grand) pour ne pas se fondre dans la croix d'encre. Glyphes : cerf = `deer-head` (Caro Asercion), sanglier = `boar-tusks` (Lorc).
 - Toujours sur sa pastille (`bgDark`, 1 px `glassBorder`) quand il est posé sur une peinture.
 - Coût : 12 nœuds SVG au plus, borné (flammes en une path, anneaux en une path, animal en glyphe game-icons teinté comme `GameIcon`).
 - Écarts mesurés (Machado 2009, ΔE OKLab ×100, seuil 10) : minimum 10,9 entre animaux dans les 4 vues (cerf et cheval en tritanopie) ; minimum 11,9 avec les tokens interdits.
@@ -123,5 +123,5 @@ La taille de l'APK n'est pas un critère pour ce chantier (choix de Guillaume) :
 
 ## Reste ouvert
 - Le texte de la révélation pour un héros qui a déjà 300 séances à la mise à jour.
-- Le jour 1 : « la lueur » = deux yeux couleur os, fixes, dans la forêt de la peinture (pas de halo, pas de braise).
+- Le jour 1 : « la lueur » = deux yeux couleur os, fixes, à la place exacte de l'écu (même emplacement, même taille : le nom ne bouge pas quand l'écu arrive), pas de halo, pas de braise. Les braises de la peinture passent sous le bloc titre.
 - « Voir Brumeval » : si le village n'a pas de nom, le bouton dit « Voir ton village ».

@@ -7,6 +7,7 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
+import { Crest, type CrestShape } from "@/components/village/Crest";
 import {
   calculateUserLevelFromXp,
   db,
@@ -46,6 +47,69 @@ async function setDevLevel(level: number): Promise<void> {
       notes: DEV_XP_NOTE,
     });
   }
+}
+
+const crestOf = (c: Partial<CrestShape> & Pick<CrestShape, "animal">): CrestShape => ({
+  manual: false,
+  second: null,
+  quarters: null,
+  longestFlame: 3,
+  rings: 3,
+  ...c,
+});
+const second = (animal: "bear" | "stag" | "horse" | "ermine") => ({
+  animal,
+  stage: "young" as const,
+});
+
+/** Hard-coded crests for the screenshots of the village header: no database. */
+const CREST_ROWS: [string, CrestShape][] = [
+  ...(["bear", "stag", "horse", "salmon", "ermine"] as const).map((a): [string, CrestShape] => [
+    a,
+    crestOf({ animal: a }),
+  ]),
+  ["boar", crestOf({ animal: "boar", quarters: ["strength", "run"] })],
+  ["bear + stag", crestOf({ animal: "bear", second: second("stag") })],
+  ["stag + horse", crestOf({ animal: "stag", second: second("horse") })],
+  ["salmon + ermine", crestOf({ animal: "salmon", second: second("ermine") })],
+  ["chosen", crestOf({ animal: "stag", manual: true })],
+  ["flame 1 / 0 rings", crestOf({ animal: "bear", longestFlame: 1, rings: 0 })],
+  ["flame 3 / 1 ring", crestOf({ animal: "bear", longestFlame: 3, rings: 1 })],
+  ["flame 5 / 3 rings", crestOf({ animal: "bear", longestFlame: 5, rings: 3 })],
+  [
+    "worst: bear + stag, 9 rings, chosen",
+    crestOf({ animal: "bear", second: second("stag"), longestFlame: 5, rings: 9, manual: true }),
+  ],
+];
+const CREST_SIZES = [24, 48, 96] as const;
+const CREST_GROUNDS = [
+  ["bgDark", "$bgDark", false],
+  ["surface2", "$surface2", false],
+  ["painting", "$surface", true],
+] as const;
+
+function CrestBoard() {
+  return (
+    <Card p="$4" gap="$3">
+      <Text fontSize="$4" fontWeight="700" color="$text">
+        Crests
+      </Text>
+      {CREST_ROWS.map(([name, crest]) => (
+        <YStack key={name} gap="$2">
+          <Text fontSize="$2" color="$textSecondary">
+            {name}
+          </Text>
+          {CREST_GROUNDS.map(([ground, bg, onPainting]) => (
+            <XStack key={ground} bg={bg} p="$2" gap="$3" items="center">
+              {CREST_SIZES.map((size) => (
+                <Crest key={size} crest={crest} size={size} onPainting={onPainting} />
+              ))}
+            </XStack>
+          ))}
+        </YStack>
+      ))}
+    </Card>
+  );
 }
 
 export default function DevScreen() {
@@ -258,6 +322,8 @@ export default function DevScreen() {
             session journal, so seeding history above is what actually grows the village.
           </Paragraph>
         </Card>
+
+        <CrestBoard />
 
         <Card p="$4" gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">

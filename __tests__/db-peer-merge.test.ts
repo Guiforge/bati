@@ -270,6 +270,30 @@ test("the newer preference wins, its date copied as is, and a tie stays here", a
   await converged(file);
 });
 
+// The photo is a data URI in `customAvatar`, and going back to a preset writes "" rather than
+// deleting it: a missing row never wins, so the other phone's older photo would come back.
+test("a preset chosen here after a photo there stays, and a newer photo travels", async () => {
+  setPref(t.sqlite, "customAvatar", "", 300);
+  addSession(t.sqlite, 1_000);
+  const older = await peer("old-photo.db", (sqlite) => {
+    setPref(sqlite, "customAvatar", "data:image/jpeg;base64,OLD", 200);
+  });
+  await merge().mergePeer(older);
+  const avatar = () =>
+    (
+      t.sqlite.prepare("SELECT value FROM user_preferences WHERE key = 'customAvatar'").get() as {
+        value: string;
+      }
+    ).value;
+  expect(avatar()).toBe("");
+
+  const newer = await peer("new-photo.db", (sqlite) => {
+    setPref(sqlite, "customAvatar", "data:image/jpeg;base64,NEW", 400);
+  });
+  await merge().mergePeer(newer);
+  expect(avatar()).toBe("data:image/jpeg;base64,NEW");
+});
+
 test("the reminder days travel with the hero, this phone's reminder answers never do", async () => {
   // The days are the hero's rhythm (docs/designs/rappels.md); when this phone last asked about
   // ignored reminders, and since when it counts them, are this phone's.

@@ -1,7 +1,7 @@
 import { estimateExerciseSeconds, exerciseWorkSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
 import { cheapestLocomotion } from "./expeditions";
-import type { DifficultyCode, Locomotion } from "./schema";
+import type { DifficultyCode, ExerciseStyle, Locomotion } from "./schema";
 import type { Target } from "./targets";
 import { NON_REP_STYLE, SECONDS_PER_REP_EQUIVALENT } from "./workUnits";
 
@@ -86,6 +86,39 @@ const DIFFICULTY_WEIGHT: Record<DifficultyCode, number> = {
   easy: 0.8,
   medium: 1.0,
   hard: 2.5,
+};
+
+/**
+ * What a second of each kind of movement is worth, on top of its difficulty. XP only: boss
+ * damage and village work units read `toRepEquivalent` and do not move with it.
+ *
+ * Difficulty alone priced a second of cat-cow at 80% of a second of plank, and a tester said the
+ * obvious thing: they hold a plank for ninety seconds and flow through cat-cow for five minutes
+ * or more. A stretch is sustainable for far longer because it costs far less, so "a minute is a
+ * minute" overpaid every `yoga` slot. Their ratio alone says 0.4: five minutes of easy cat-cow at
+ * 0.8 × 0.4 is 96 effort seconds against 90 for the plank. 0.5 was kept instead (120 against 90)
+ * because the weight also falls on `medium` postures (downward dog, pigeon) that cost a hero
+ * coming back from a break as much as a hold does, and a mobility session is how a rest day
+ * still counts: at 0.4 the three all-yoga quests fell from about 107 XP to 43, at 0.5 to 54.
+ * It is also what the "mobility kept 0.97×" note above was quietly saying: the narrow spread hurt
+ * strength because mobility was the archetype a volume metric already overpaid.
+ *
+ * A hero's own movement picks its style (`createUserExercise`); calling a stretch `strength` is
+ * a 2.5× self-grant of the same kind as calling it `hard`, bounded the same way.
+ *
+ * `expedition` is never priced here (`toXpSets` drops it, ground has `LOCOMOTION_RATE`), but the
+ * key stays so a new style is a compile error until someone decides what it is worth.
+ *
+ * ponytail: 0.5 rests on one tester's plank-to-cat-cow ratio, softened for the postures. If a
+ *           month of journals shows a yoga regular outpacing someone who trains, 0.4 is the
+ *           tester's own figure; if yoga quests feel pointless, 0.6. Nothing else has to move.
+ */
+const STYLE_WEIGHT: Record<ExerciseStyle, number> = {
+  strength: 1,
+  calisthenics: 1,
+  yoga: 0.5,
+  cardio: 1,
+  expedition: 1,
 };
 
 /**
@@ -227,7 +260,12 @@ function setEffortSeconds({ exercise, target, result }: XpSet): number {
 
 /** What that set is worth, once the movement it trained is taken into account. */
 function setWeightedSeconds(set: XpSet): number {
-  return setEffortSeconds(set) * DIFFICULTY_WEIGHT[set.exercise.difficulty];
+  return (
+    setEffortSeconds(set) *
+    DIFFICULTY_WEIGHT[set.exercise.difficulty] *
+    // A style this version does not know (a hero row synced from a newer one) prices at 1, not NaN.
+    (STYLE_WEIGHT[set.exercise.style] ?? 1)
+  );
 }
 
 /**

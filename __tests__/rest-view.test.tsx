@@ -215,6 +215,21 @@ describe("RestView", () => {
     expect(useSessionStore.getState().results[0]?.result.value).toBe(40);
   });
 
+  // Stopping the clock takes a second or two, so a hold is corrected to the second, not by fives.
+  it("steps a hold by one second", async () => {
+    useSessionStore.setState({
+      results: [
+        { exerciseId: 1, result: { type: "time", value: 32 }, target: { type: "time", value: 30 } },
+      ] as never,
+    });
+    const view = await mountRest();
+
+    await fireEvent.press(view.getByLabelText("Decrease result"));
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(31);
+    await fireEvent.press(view.getByLabelText("Increase result"));
+    expect(useSessionStore.getState().results[0]?.result.value).toBe(32);
+  });
+
   // A per-side hold short of its target logged its weaker side: lower than the hold felt, so the
   // card says why. Not when only one side was worked, nor when both passed the target (an average).
   it.each([

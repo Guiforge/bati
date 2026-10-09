@@ -242,6 +242,25 @@ export const CAMEO_LINGER_MS: Record<CuePriority, number> = {
 };
 
 /**
+ * Reading time per character, for a first read in a second language.
+ *
+ * A native first read runs about 200 words a minute, and a word is about six characters with its
+ * space, so 50 ms a character. A tester reading in a second language asked for the bubbles to
+ * stay longer; 70 ms is about 140 words a minute, the pace of that reader rather than of the
+ * one who wrote the line. The floor (`CAMEO_LINGER_MS`) still holds for a short line.
+ */
+export const READ_MS_PER_CHAR = 70;
+
+/**
+ * How long a bubble stays up after its line has appeared: long enough to read it, never less
+ * than its priority's floor. No cap of its own, `LINE_LENGTH_CAP` is one: the longest guide
+ * (200 characters) stays 14 seconds, and any tap sends it away sooner.
+ */
+export function cameoLingerMs(line: string, priority: CuePriority): number {
+  return Math.max(CAMEO_LINGER_MS[priority], line.length * READ_MS_PER_CHAR);
+}
+
+/**
  * How fast a line types itself out, per character.
  *
  * Only guides and events type — the Pokémon rhythm belongs to moments the hero is reading, not to

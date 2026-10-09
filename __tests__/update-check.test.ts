@@ -1,3 +1,6 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { checkForUpdate, isNewer, RELEASES_URL } from "@/src/updateCheck";
 
 // Fixed here rather than read from app.json: these tests are about the comparison, and a release
@@ -189,4 +192,40 @@ describe("checkForUpdate", () => {
 test("the card sends a hero to a page, never to a file", () => {
   expect(RELEASES_URL).toBe("https://github.com/Guiforge/bati/releases/latest");
   expect(RELEASES_URL.endsWith(".apk")).toBe(false);
+});
+
+// F-Droid signs with its own key, so the release APK cannot install over its build: following
+// the card meant uninstalling, and the hero with it (docs/fdroid.md § The signing key).
+describe("the f-droid.org build", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    delete process.env.EXPO_PUBLIC_DISTRIBUTION;
+  });
+
+  test("never offers the update, even switched on with one already known", async () => {
+    process.env.EXPO_PUBLIC_DISTRIBUTION = "fdroid";
+    const fetchMock = replyWith("v9.9.9");
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    let fdroid: typeof import("@/src/updateCheck") | undefined;
+    jest.isolateModules(() => {
+      fdroid = require("@/src/updateCheck");
+      // The isolated registry builds its own copy of the mocked preferences.
+      const { store } = jest.requireMock("@/db/preferences").preferences as typeof preferences;
+      store.updateCheck = "true";
+      store.updateLatest = "9.0.0";
+    });
+    assert(fdroid);
+
+    expect(fdroid.UPDATE_CHECK_OFFERED).toBe(false);
+    await expect(fdroid.checkForUpdate()).resolves.toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  test("our copy of the recipe sets the variable before the JS is bundled", () => {
+    const recipe = readFileSync(join(__dirname, "../fdroid/fdroiddata-recipe.yml"), "utf8");
+    expect(recipe).toContain("echo EXPO_PUBLIC_DISTRIBUTION=fdroid > .env");
+  });
 });

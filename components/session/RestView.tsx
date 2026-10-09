@@ -385,7 +385,8 @@ function restCopy(isFinal: boolean, isRoundRest: boolean) {
  * The set just logged, correctable while the clock runs: stepped by ± or typed.
  *
  * Time-based sets record whatever the timer read when you tapped "done", often a few seconds off
- * from what you actually held. Same ± control as reps, stepped by 5s.
+ * from what you actually held. Same ± control as reps, stepped by 1s: stopping the clock takes a
+ * second or two, and a coarser step forced a wrong value.
  */
 function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: string }) {
   const { t } = useTranslation();
@@ -400,7 +401,6 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
     updateLastResult(value);
   };
   const isLastTimeBased = result.result.type === "time";
-  const adjustStep = isLastTimeBased ? 5 : 1;
   // A per-side hold short of its target logged the weaker of its two sides (`perSideSet`): the
   // figure is lower than the hold felt, and without this line it reads as a mistake. Only when both
   // sides were worked (`pricing.perSide`) and one fell short: past the target it is an average.
@@ -433,7 +433,7 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
             circular
             icon={<Minus size={16} />}
             accessibilityLabel={t("session.decrease_result_accessibility", "Decrease result")}
-            onPress={() => step(Math.max(1, result.result.value - adjustStep))}
+            onPress={() => step(Math.max(1, result.result.value - 1))}
           />
           <XStack minW={42} items="baseline" justify="center">
             <CountInput
@@ -456,7 +456,7 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
             circular
             icon={<Plus size={16} />}
             accessibilityLabel={t("session.increase_result_accessibility", "Increase result")}
-            onPress={() => step(result.result.value + adjustStep)}
+            onPress={() => step(result.result.value + 1)}
           />
         </XStack>
       </XStack>

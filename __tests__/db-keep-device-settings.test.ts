@@ -55,6 +55,8 @@ test("the backup brings the hero, and this phone keeps its own folder, id and cr
   setPref(old, "deviceId", "old-phone");
   setPref(old, "backupFolderUri", "content://old/tree/primary%3ADocuments");
   setPref(old, "customAvatarUri", "file:///data/old/avatar.jpg");
+  // The photo itself, about 30 KB of it: the hero's face, not the old phone's cache.
+  setPref(old, "customAvatar", `data:image/jpeg;base64,${"A".repeat(40_000)}`);
   setPref(old, "updateLatest", "9.9.9");
   setPref(old, "backupEncryption", "on");
   setPref(old, "savedSession", '{"questId":3}');
@@ -73,10 +75,24 @@ test("the backup brings the hero, and this phone keeps its own folder, id and cr
   expect(after.backupFolderUri).toBe("content://this/tree/primary%3ABati");
   expect(after.crashLog).toBe("[]");
   expect(after).not.toHaveProperty("customAvatarUri");
+  expect(after.customAvatar).toBe(`data:image/jpeg;base64,${"A".repeat(40_000)}`);
   // The other phone's update check says nothing about this copy of the app.
   expect(after).not.toHaveProperty("updateLatest");
   // Sealing is this phone's choice: an import it declined to join must not lock it.
   expect(after).not.toHaveProperty("backupEncryption");
+});
+
+test("a backup from before the portable avatar keeps the photo this phone already ported", async () => {
+  const staged = path.join(dir, "pre-avatar.db");
+  await backup().snapshotDatabaseTo(staged);
+  const old = new Database(staged);
+  old.prepare("DELETE FROM user_preferences WHERE key = 'customAvatar'").run();
+  old.close();
+  setPref(t.sqlite, "customAvatar", "data:image/jpeg;base64,THIS");
+
+  await backup().keepDeviceSettings(staged);
+
+  expect(prefs(staged).customAvatar).toBe("data:image/jpeg;base64,THIS");
 });
 
 test("a session interrupted on either device does not survive the swap", async () => {

@@ -1,9 +1,12 @@
 import {
+  CAMEO_LINGER_MS,
   CUE_MOMENTS,
+  cameoLingerMs,
   LINE_LENGTH_CAP,
   MINIMUM_POOL,
   MOMENT_CAST,
   POSES_AWAITING_A_MOMENT,
+  READ_MS_PER_CHAR,
   VILLAGER_IDS,
   VILLAGER_POSES,
 } from "@/constants/villagers";
@@ -223,5 +226,14 @@ describe("villager cast", () => {
       expect(cued.has(pose) || waiting.has(pose)).toBe(true);
       expect(cued.has(pose) && waiting.has(pose)).toBe(false);
     }
+  });
+});
+
+describe("how long a bubble stays", () => {
+  test("a short line keeps its floor, a long one gets its reading time", () => {
+    expect(cameoLingerMs("Hi.", "ambient")).toBe(CAMEO_LINGER_MS.ambient);
+    const long = "x".repeat(LINE_LENGTH_CAP.guide);
+    expect(cameoLingerMs(long, "guide")).toBe(LINE_LENGTH_CAP.guide * READ_MS_PER_CHAR);
+    expect(cameoLingerMs(long, "guide")).toBeGreaterThan(CAMEO_LINGER_MS.guide);
   });
 });

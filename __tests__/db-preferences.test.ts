@@ -140,4 +140,63 @@ describe("db/preferences", () => {
     await prefs.setPreference("mapTiles", "1");
     expect(await preferences.getMapTilesEnabled()).toBe(false);
   });
+
+  test("the custom avatar: legacy path read, ported with its own date, preset as an empty row", async () => {
+    const prefs = require("../db/preferences") as typeof import("../db/preferences");
+    const { preferences } = prefs;
+    const legacy = "file:///cache/ImagePicker/a.jpg";
+    t.sqlite
+      .prepare("INSERT INTO user_preferences (key, value, updatedAt) VALUES (?, ?, ?)")
+      .run("customAvatarUri", legacy, 1_700_000_000);
+    expect(await preferences.getCustomAvatarUri()).toBe(legacy);
+
+    // A path that moved since it was read is not ported over.
+    expect(await preferences.portCustomAvatar("file:///other.jpg", "data:x")).toBe(false);
+    expect(await preferences.portCustomAvatar(legacy, "data:x")).toBe(true);
+    expect(await preferences.getCustomAvatarUri()).toBe("data:x");
+    expect(await prefs.getPreference("customAvatarUri")).toBeNull();
+    // Dated when the hero picked it, so a newer preset on another phone still wins the merge.
+    const row = t.sqlite
+      .prepare("SELECT updatedAt FROM user_preferences WHERE key = 'customAvatar'")
+      .get() as { updatedAt: number };
+    expect(row.updatedAt).toBe(1_700_000_000);
+    // Once ported, a second port has nothing to do.
+    expect(await preferences.portCustomAvatar(legacy, "data:y")).toBe(false);
+
+    await preferences.setCustomAvatarUri(null);
+    expect(await prefs.getPreference("customAvatar")).toBe("");
+    expect(await preferences.getCustomAvatarUri()).toBeNull();
+  });
+
+  test("a newer avatarId never erases the photo it ports (onboarding on a second phone writes one)", async () => {
+    const prefs = require("../db/preferences") as typeof import("../db/preferences");
+    const { preferences } = prefs;
+    const legacy = "file:///cache/ImagePicker/old.jpg";
+    t.sqlite.exec(
+      "DELETE FROM user_preferences WHERE key IN ('customAvatar', 'customAvatarUri', 'avatarId')",
+    );
+    const insert = t.sqlite.prepare(
+      "INSERT INTO user_preferences (key, value, updatedAt) VALUES (?, ?, ?)",
+    );
+    insert.run("customAvatarUri", legacy, 1_700_000_000);
+    insert.run("avatarId", "knight", 1_700_000_500);
+
+    expect(await preferences.portCustomAvatar(legacy, "data:x")).toBe(true);
+    expect(await preferences.getCustomAvatarUri()).toBe("data:x");
+    expect(await prefs.getPreference("customAvatarUri")).toBeNull();
+  });
+
+  test("a legacy path is dropped once customAvatar exists, and kept while it does not", async () => {
+    const prefs = require("../db/preferences") as typeof import("../db/preferences");
+    const { preferences } = prefs;
+    t.sqlite.exec("DELETE FROM user_preferences WHERE key IN ('customAvatar', 'customAvatarUri')");
+    await prefs.setPreference("customAvatarUri", "file:///cache/a.jpg");
+
+    await preferences.dropSupersededLegacyAvatar();
+    expect(await prefs.getPreference("customAvatarUri")).toBe("file:///cache/a.jpg");
+
+    await prefs.setPreference("customAvatar", "data:restored");
+    await preferences.dropSupersededLegacyAvatar();
+    expect(await prefs.getPreference("customAvatarUri")).toBeNull();
+  });
 });

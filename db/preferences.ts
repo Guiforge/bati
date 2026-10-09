@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getLocales } from "expo-localization";
 import { reportError } from "../src/reportError";
-import { db, schema, type TransactionTx } from "./client";
+import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
 import { uuidv7 } from "./uuid";
@@ -187,16 +187,82 @@ export const preferences = {
     await setPreference("avatarId", avatarId);
   },
 
+  /**
+   * The photo the hero picked instead of an avatar, null for a preset.
+   *
+   * Stored as a data URI under `customAvatar` (`src/customAvatar.ts`), which travels with backups
+   * and sync (`MERGED_PREFERENCES`). Installs from before it kept the image picker's cache path
+   * under the device-local `customAvatarUri`, which Android could purge and no backup carried;
+   * that path is still read here until `portLegacyAvatar` converts it at launch.
+   */
   async getCustomAvatarUri(): Promise<string | null> {
+    const portable = await getPreference("customAvatar");
+    if (portable !== null) return portable || null;
     return await getPreference("customAvatarUri");
   },
 
   async setCustomAvatarUri(uri: string | null): Promise<void> {
-    if (uri === null) {
-      await deletePreference("customAvatarUri");
-      return;
-    }
-    await setPreference("customAvatarUri", uri);
+    // An empty value rather than a delete for "back to a preset": a missing row never wins a
+    // merge, so a preset chosen on this phone would lose to the other phone's older photo.
+    await setPreference("customAvatar", uri ?? "");
+    await deletePreference("customAvatarUri");
+  },
+
+  /**
+   * Moves a legacy picker path to `customAvatar` as `portable`, in one transaction.
+   *
+   * Dated when the hero picked the photo, not now: a port stamped "now" would beat a preset chosen
+   * on another phone in between, and bring the old photo back there at the next merge. Writes
+   * nothing when the rows moved since `path` was read (a pick made while the photo was encoding),
+   * and returns whether it wrote.
+   *
+   * ponytail: a preset chosen on another phone still on the old version wrote `avatarId` and no
+   *           `""`, so this photo, older, still wins there once ported (once per multi-phone hero).
+   *           `avatarId`'s date cannot settle it: onboarding writes it too, and a second phone set
+   *           up after the photo would erase it. Losing a face is worse than showing an old one.
+   */
+  async portCustomAvatar(path: string, portable: string): Promise<boolean> {
+    return await transactionOrFallback(async (tx) => {
+      const [legacy] = await tx
+        .select({ value: userPreferences.value, updatedAt: userPreferences.updatedAt })
+        .from(userPreferences)
+        .where(eq(userPreferences.key, "customAvatarUri"))
+        .limit(1);
+      const [current] = await tx
+        .select({ id: userPreferences.id })
+        .from(userPreferences)
+        .where(eq(userPreferences.key, "customAvatar"))
+        .limit(1);
+      if (legacy?.value !== path || current) return false;
+      await tx
+        .insert(userPreferences)
+        .values({
+          key: "customAvatar",
+          value: portable,
+          updatedAt: legacy.updatedAt ?? new Date(),
+        })
+        // A pick written outside the queue lands inside this transaction (`transactionOrFallback`):
+        // a UNIQUE failure would roll the pick back with the port, so the pick's row simply wins.
+        .onConflictDoNothing();
+      await tx.delete(userPreferences).where(eq(userPreferences.key, "customAvatarUri"));
+      return true;
+    });
+  },
+
+  /**
+   * Forgets a legacy picker path once `customAvatar` exists, which the getter already prefers. A
+   * restore or a merge can bring `customAvatar` in while this phone still holds its unported path
+   * (device-local), and then the port never runs to delete it.
+   */
+  async dropSupersededLegacyAvatar(): Promise<void> {
+    await db
+      .delete(userPreferences)
+      .where(
+        and(
+          eq(userPreferences.key, "customAvatarUri"),
+          sql`EXISTS (SELECT 1 FROM user_preferences WHERE key = 'customAvatar')`,
+        ),
+      );
   },
 
   // Training level captured at onboarding (null = skipped). Read by the coach/

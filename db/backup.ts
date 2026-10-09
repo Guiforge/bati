@@ -251,6 +251,9 @@ export function validateBackup(path: string): Promise<BackupCheck> {
 export const MERGED_PREFERENCES = [
   "villageName",
   "avatarId",
+  // The custom avatar's data URI, "" once a preset replaced it (db/preferences.ts). Paired with
+  // `avatarId`: the later of the two choices wins, on every device.
+  "customAvatar",
   "trainingLevel",
   "ownedEquipment",
   "oath",
@@ -412,7 +415,7 @@ export function stateFingerprint(): Promise<string> {
  * phone inherited the old phone's backup folder, whose Android permission does not travel, and
  * every later restore stopped on "the destination path does not exist" while Settings still
  * showed the folder. The same held for `deviceId` (two phones claiming one origin, see its note in
- * db/preferences.ts), a custom avatar that is a file path on the old phone, the crash log a bug
+ * db/preferences.ts), a pre-`customAvatar` avatar that is a file path on the old phone, the crash log a bug
  * report sends from *this* device, this copy's update check, and the one-per-device greetings.
  */
 export const DEVICE_LOCAL_PREFERENCES = [
@@ -426,6 +429,7 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "passwordCheckStep",
   "passwordCheckDue",
   "passwordCheckIgnored",
+  // The avatar from before `customAvatar`: a path into this phone's cache (src/customAvatar.ts).
   "customAvatarUri",
   "crashLog",
   "errorLog",
@@ -480,6 +484,13 @@ export function keepDeviceSettings(stagedPath: string): Promise<void> {
     await conn.execAsync(
       `INSERT INTO ${CANDIDATE}.user_preferences (key, value, updatedAt)
          SELECT key, value, updatedAt FROM main.user_preferences WHERE key IN (${kept})`,
+    );
+    // A backup from before `customAvatar` carries no photo at all, while this phone has already
+    // ported its own: restoring it must not trade the hero's face for a preset.
+    await conn.execAsync(
+      `INSERT INTO ${CANDIDATE}.user_preferences (key, value, updatedAt)
+         SELECT key, value, updatedAt FROM main.user_preferences WHERE key = 'customAvatar'
+           AND NOT EXISTS (SELECT 1 FROM ${CANDIDATE}.user_preferences WHERE key = 'customAvatar')`,
     );
   });
 }

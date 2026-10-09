@@ -23,6 +23,15 @@ import { preferences } from "@/db/preferences";
  * only here.
  */
 
+/**
+ * False in the f-droid.org build, whose recipe writes `EXPO_PUBLIC_DISTRIBUTION=fdroid` to `.env`
+ * before Gradle bundles the JS. F-Droid signs with its own key, so the GitHub APK this would
+ * point to cannot install over it, and uninstalling first deletes the hero (docs/fdroid.md § The
+ * signing key). Play and our own F-Droid repository ship the GitHub key, so they keep the offer.
+ * A literal read: Babel inlines it at build time, a dynamic one would be `undefined`.
+ */
+export const UPDATE_CHECK_OFFERED = process.env.EXPO_PUBLIC_DISTRIBUTION !== "fdroid";
+
 /** Where the card sends a hero. The page, never a file. */
 export const RELEASES_URL = "https://github.com/Guiforge/bati/releases/latest";
 
@@ -113,7 +122,8 @@ export function checkForUpdate(): Promise<string | null> {
 let inflight: Promise<string | null> | null = null;
 
 async function askForUpdate(): Promise<string | null> {
-  if (!(await preferences.getUpdateCheckEnabled())) return null;
+  // Also covers a hero who switched it on before the F-Droid build hid the row.
+  if (!UPDATE_CHECK_OFFERED || !(await preferences.getUpdateCheckEnabled())) return null;
 
   const checkedAt = await preferences.getUpdateCheckedAt();
   // Absolute, so a clock that moved backwards heals instead of locking the check out: a stamp

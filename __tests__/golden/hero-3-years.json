@@ -151,6 +151,11 @@
       "hard/hard/3x12reps": 108,
       "hard/hard/2x45s": 90
     },
+    "yogaSessionXp": {
+      "medium/easy/2x45s": 12,
+      "medium/medium/2x45s": 15,
+      "medium/hard/2x45s": 38
+    },
     "sessionXpBounds": {
       "clockCapsTheClaim": 72,
       "overshootingTheTarget": 51,

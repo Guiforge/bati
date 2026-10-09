@@ -203,6 +203,10 @@ Two details that are easy to get wrong and are pinned by tests:
 
 On the Village, `CAMEO_LINGER_MS` is measured from the *end* of the typing, not from the start: a
 flat total meant the guides, which are the longest lines in the app, got the least time to be read.
+And it scales with the line (`cameoLingerMs`): 70 ms a character, about 140 words a minute, with
+the flat value as a floor. A tester reading in a second language lost the long lines before the
+end of them; the answer is a pace for the slower reader, not a setting, and a tap still sends the
+villager away sooner.
 
 ## The guides
 

@@ -1008,7 +1008,12 @@ describe("useSessionStore", () => {
         manual: false,
         quarters: null,
         second: null,
-        evidence: { totals: { strength: 8 }, first: animal, secondFromSessions: null },
+        evidence: {
+          totals: { strength: 8 },
+          first: animal,
+          secondFromSessions: null,
+          boarQuarters: null,
+        },
       });
       (getCrest as jest.Mock)
         .mockReset()
@@ -1036,7 +1041,12 @@ describe("useSessionStore", () => {
         manual: false,
         quarters: null,
         second: null,
-        evidence: { totals: { strength: 40 }, first: "bear", secondFromSessions: null },
+        evidence: {
+          totals: { strength: 40 },
+          first: "bear",
+          secondFromSessions: null,
+          boarQuarters: null,
+        },
       });
       (getCrest as jest.Mock)
         .mockReset()
@@ -1061,7 +1071,12 @@ describe("useSessionStore", () => {
         manual: false,
         quarters: null,
         second: null,
-        evidence: { totals: { strength: 300 }, first: "bear", secondFromSessions: null },
+        evidence: {
+          totals: { strength: 300 },
+          first: "bear",
+          secondFromSessions: null,
+          boarQuarters: null,
+        },
       };
       const shown = preferences.getBigFeastsShown as jest.Mock;
       (getCrest as jest.Mock).mockReset().mockResolvedValue(crest);

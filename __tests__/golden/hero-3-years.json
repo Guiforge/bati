@@ -388,7 +388,8 @@
           "ride": 0
         },
         "first": "bear",
-        "secondFromSessions": null
+        "secondFromSessions": null,
+        "boarQuarters": null
       },
       "longestFlame": 5,
       "rings": 2,

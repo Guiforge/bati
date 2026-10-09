@@ -54,6 +54,15 @@ describe("crestEvents", () => {
     expect(reveal?.quarters).toHaveLength(2);
   });
 
+  test("a boar keeps its quarters when the hero put another animal on show", () => {
+    const h = seq(["strength", 2], ["run", 2], ["yoga", 2], ["ride", 1], ["calisthenics", 1]);
+    const auto = crestReveal(crestAnimals(h, "auto"), []);
+    const picked = crestAnimals(h, "bear");
+    expect(picked?.quarters).toBeNull();
+    expect(crestReveal(picked, [])).toEqual(auto);
+    expect(auto?.quarters).toEqual(["yoga", "run"]);
+  });
+
   test("a hand-picked animal never changes what is revealed", () => {
     const after = crestAnimals(seq(["strength", 8]), "stag");
     expect(crestReveal(after, [])?.animal).toBe("bear");

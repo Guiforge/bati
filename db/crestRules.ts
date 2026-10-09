@@ -40,7 +40,14 @@ export type CrestAnimals = {
   /** Where in `sessions` the 8th session that has a practice sits: the one that revealed it. */
   revealedIndex: number;
   /** What "Why the Bear?" reads: counts per practice, over the first 8 and over all. */
-  evidence: { firstEight: Tally; totals: Tally; first: Animal; secondFromSessions: Animal | null };
+  evidence: {
+    firstEight: Tally;
+    totals: Tally;
+    first: Animal;
+    secondFromSessions: Animal | null;
+    /** The quarters the sessions give a boar, whichever animal the hero put on show; null otherwise. */
+    boarQuarters: [Practice, Practice] | null;
+  };
 };
 
 const REVEAL_AT = 8;
@@ -185,6 +192,12 @@ export function crestAnimals(
     second: border === null ? null : { animal: border, stage: stageFor(border, true) },
     quarters,
     revealedIndex,
-    evidence: { firstEight, totals, first, secondFromSessions },
+    evidence: {
+      firstEight,
+      totals,
+      first,
+      secondFromSessions,
+      boarQuarters: first === "boar" ? quartersOf(totals, last) : null,
+    },
   };
 }

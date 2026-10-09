@@ -46,7 +46,7 @@ export function crestReveal(
 ): CrestReveal | null {
   if (!after || !shown || shown.includes("reveal")) return null;
   const { first } = after.evidence;
-  return { animal: first, quarters: first === "boar" ? after.quarters : null };
+  return { animal: first, quarters: after.evidence.boarQuarters };
 }
 
 function secondJoinsOf(before: Seen | null, after: Seen): CrestEvents["secondJoins"] {

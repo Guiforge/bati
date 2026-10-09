@@ -8,6 +8,8 @@ import { VillageScene } from "@/components/village/VillageScene";
 import * as crestDb from "@/db/crest";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import * as village from "@/db/village";
+import { i18n } from "@/i18n";
+import * as reporting from "@/src/reportError";
 import { useChorusStore } from "@/stores/chorus";
 import config from "@/tamagui.config";
 
@@ -302,6 +304,50 @@ describe("VillageScene", () => {
 
     expect(await findByText(/Newer/)).toBeTruthy();
     expect(queryByText(/Older/)).toBeNull();
+  });
+
+  it("ignores an older answer that fails after a newer one succeeded", async () => {
+    const answers: { ok: (s: village.VillageScene) => void; fail: (e: Error) => void }[] = [];
+    jest
+      .spyOn(village, "getVillageScene")
+      .mockImplementation(() => new Promise((ok, fail) => answers.push({ ok, fail })));
+    const reported = jest.spyOn(reporting, "reportError").mockImplementation(() => {});
+    const ui = () => (
+      <SafeAreaProvider initialMetrics={METRICS}>
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <VillageScene />
+        </TamaguiProvider>
+      </SafeAreaProvider>
+    );
+    const { rerender, findByText, queryByText } = await render(ui());
+    mockFocusTick = 1;
+    await rerender(ui());
+    await waitFor(() => expect(answers).toHaveLength(2));
+
+    await act(async () =>
+      answers[1]?.ok({
+        tier: 4,
+        level: 8,
+        title: { en: "Newer", fr: "Newer", de: "Newer", es: "Newer" },
+        totalXp: 3180,
+        xpPerSession: 370,
+        flame: 0,
+        streakDays: 0,
+        dominantSport: null,
+        buildings: [campfire],
+      }),
+    );
+    await act(async () => {
+      answers[0]?.fail(new Error("stale failure"));
+      // Promise.all, then the catch: let the rejection travel before the act closes.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(await findByText(/Newer/)).toBeTruthy();
+    expect(queryByText(i18n.t("village.load_error"))).toBeNull();
+    expect(queryByText(i18n.t("common.retry"))).toBeNull();
+    // The stale failure is not even reported: it says nothing about the screen the hero sees.
+    expect(reported).not.toHaveBeenCalledWith("village.scene", expect.anything());
   });
 
   it("tapping a row explains what raised it", async () => {

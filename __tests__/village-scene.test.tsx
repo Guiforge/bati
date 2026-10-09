@@ -24,8 +24,9 @@ jest.mock("@/db/completed", () => ({
   getRecentContributingSessions: jest.fn().mockResolvedValue([]),
 }));
 let mockParams: { grown?: string } = {};
+let mockFocusTick = 0;
 jest.mock("expo-router", () => ({
-  useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
+  useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb, mockFocusTick]),
   useIsFocused: () => true,
   useLocalSearchParams: () => mockParams,
   useRouter: () => ({ push: jest.fn() }),
@@ -106,6 +107,7 @@ describe("VillageScene", () => {
   afterEach(() => {
     jest.restoreAllMocks();
     mockParams = {};
+    mockFocusTick = 0;
   });
 
   it("puts the closest rung first, in reps, with its unit at both ends of the bar", async () => {
@@ -265,6 +267,41 @@ describe("VillageScene", () => {
     expect(
       within(await findByTestId("village-detail")).getByText("7 routes for level 4"),
     ).toBeTruthy();
+  });
+
+  it("keeps the answer of the last focus when an older one arrives after it", async () => {
+    const answers: ((s: village.VillageScene) => void)[] = [];
+    jest
+      .spyOn(village, "getVillageScene")
+      .mockImplementation(() => new Promise((resolve) => answers.push(resolve)));
+    const scene = (name: string): village.VillageScene => ({
+      tier: 4,
+      level: 8,
+      title: { en: name, fr: name, de: name, es: name },
+      totalXp: 3180,
+      xpPerSession: 370,
+      flame: 0,
+      streakDays: 0,
+      dominantSport: null,
+      buildings: [campfire],
+    });
+    const ui = () => (
+      <SafeAreaProvider initialMetrics={METRICS}>
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <VillageScene />
+        </TamaguiProvider>
+      </SafeAreaProvider>
+    );
+    const { rerender, findByText, queryByText } = await render(ui());
+    mockFocusTick = 1;
+    await rerender(ui());
+    await waitFor(() => expect(answers).toHaveLength(2));
+
+    await act(async () => answers[1]?.(scene("Newer")));
+    await act(async () => answers[0]?.(scene("Older")));
+
+    expect(await findByText(/Newer/)).toBeTruthy();
+    expect(queryByText(/Older/)).toBeNull();
   });
 
   it("tapping a row explains what raised it", async () => {

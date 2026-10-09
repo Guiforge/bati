@@ -199,10 +199,11 @@ export function VillageScene() {
   // drawn for a hero whose crest has simply not arrived yet.
   // `undefined` is a crest that could not be read: the slot stays empty and nothing is said.
   const [crest, setCrest] = useState<CrestData | null | undefined>(null);
-  // How tall the title block really is: at a large font the crest, the wrapped name and the two
-  // lines outgrow the painting's band, and the block must not climb under the status bar.
   // Whether any visit has read the crest: only then is a failed read allowed to keep the last one.
   const crestRead = useRef(false);
+  const loadId = useRef(0);
+  // How tall the title block really is: at a large font the crest, the wrapped name and the two
+  // lines outgrow the painting's band, and the block must not climb under the status bar.
   const [titleHeight, setTitleHeight] = useState(0);
   const measureTitle = (e: LayoutChangeEvent) =>
     setTitleHeight(Math.round(e.nativeEvent.layout.height));
@@ -229,6 +230,8 @@ export function VillageScene() {
   // Refetch on focus: the whole point of this screen is "what changed since I trained",
   // and a tab screen stays mounted, so a mount-only effect would show yesterday forever.
   const loadScene = useCallback(() => {
+    // Two focuses in a row can be answered in the wrong order; only the last one may apply.
+    const mine = ++loadId.current;
     // The crest never fails the screen: only the scene does. An unreadable crest leaves its slot
     // empty (no eyes, no sentence: nothing asserted) and the next visit tries again.
     const readCrest = getCrest().catch((error) => {
@@ -237,6 +240,7 @@ export function VillageScene() {
     });
     Promise.all([getVillageScene(), readCrest])
       .then(([data, crestData]) => {
+        if (mine !== loadId.current) return;
         setScene(data);
         // An unreadable crest after a drawn one keeps the drawn one, like the scene keeps yesterday's.
         if (crestData !== undefined) crestRead.current = true;
@@ -244,6 +248,7 @@ export function VillageScene() {
         setLoadFailed(false);
       })
       .catch((error) => {
+        if (mine !== loadId.current) return;
         // This is the tab's only fetch: without the failed flag, a first-load failure
         // left the skeleton on screen forever. Later failures keep yesterday's scene.
         reportError("village.scene", error);

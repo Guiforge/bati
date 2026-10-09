@@ -365,6 +365,33 @@
         "totalHp": 1026
       }
     ],
+    "crest": {
+      "animal": "bear",
+      "stage": "venerable",
+      "manual": false,
+      "second": null,
+      "quarters": null,
+      "evidence": {
+        "firstEight": {
+          "strength": 4,
+          "calisthenics": 2,
+          "yoga": 1,
+          "run": 1,
+          "ride": 0
+        },
+        "totals": {
+          "strength": 314,
+          "calisthenics": 87,
+          "yoga": 58,
+          "run": 45,
+          "ride": 0
+        },
+        "first": "bear",
+        "secondFromSessions": null
+      },
+      "longestFlame": 5,
+      "rings": 2
+    },
     "achievements": [
       {
         "code": "first_workout",

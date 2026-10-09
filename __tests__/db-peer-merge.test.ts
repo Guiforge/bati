@@ -688,3 +688,139 @@ describe("error branches", () => {
     expect(await merge().keptSessions()).toBe(1);
   });
 });
+
+describe("the crest follows the journal, not the device", () => {
+  const styleExercise = (style: string) =>
+    (
+      t.sqlite
+        .prepare(
+          "SELECT id FROM exercises WHERE creator = 'Admin' AND style = ? ORDER BY id LIMIT 1",
+        )
+        .get(style) as { id: number }
+    ).id;
+
+  /** One session under a chosen uuid, with one movement of a style done in it. */
+  function addStyled(
+    sqlite: Database.Database,
+    uuid: string,
+    at: number,
+    style: string,
+    exercises: Record<string, number>,
+  ) {
+    const { lastInsertRowid } = sqlite
+      .prepare(
+        "INSERT INTO completed_sessions (uuid, userLevel, xpEarned, performedAt) VALUES (?, 'medium', 10, ?)",
+      )
+      .run(uuid, at);
+    sqlite
+      .prepare(
+        `INSERT INTO completed_exercises (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, performedAt)
+         VALUES (?, ?, 0, 0, 'reps', 12, ?)`,
+      )
+      .run(lastInsertRowid, exercises[style], at);
+  }
+
+  type Entry = { uuid: string; at: number; style: string };
+  const NOW = new Date("2026-03-15T12:00:00Z");
+
+  /** Merges the other's journal into one device, both ways round, and reads the crest each ends on. */
+  async function bothWays(mine: Entry[], theirs: Entry[]) {
+    const crests = [];
+    for (const [local, remote] of [
+      [mine, theirs],
+      [theirs, mine],
+    ] as const) {
+      jest.resetModules();
+      t.close();
+      t = createTestDb();
+      jest.doMock("../db/client", () => clientMock(t));
+      const exercises = Object.fromEntries(
+        ["strength", "yoga", "cardio"].map((style) => [style, styleExercise(style)]),
+      );
+      const file = await peer(`other-${crests.length}.db`, (sqlite) => {
+        for (const e of remote) addStyled(sqlite, e.uuid, e.at, e.style, exercises);
+      });
+      for (const e of local) addStyled(t.sqlite, e.uuid, e.at, e.style, exercises);
+      await merge().mergePeer(file);
+      crests.push(await (require("../db/crest") as typeof import("../db/crest")).getCrest(NOW));
+      await converged(file);
+    }
+    return crests;
+  }
+
+  const uuidOf = (i: number) => `0190d000-0000-7000-8000-${String(i).padStart(12, "0")}`;
+  const DAY = 86_400;
+  const BASE = Math.floor(NOW.getTime() / 1000) - 100 * DAY;
+
+  test("a boar split between two devices has the same quarters in both directions, ties included", async () => {
+    // 14 strength, 13 yoga, 13 run, in turns; even entries on one device, odd ones on the other.
+    const cycle = ["strength", "yoga", "cardio"];
+    const journal: Entry[] = Array.from({ length: 40 }, (_, i) => ({
+      uuid: uuidOf(i),
+      at: BASE + i * DAY,
+      style: cycle[i % 3] ?? "strength",
+    }));
+    const [a, b] = await bothWays(
+      journal.filter((_, i) => i % 2 === 0),
+      journal.filter((_, i) => i % 2 === 1),
+    );
+    expect(a).toEqual(b);
+    // Yoga and run are level at 13; the run came last.
+    expect(a).toMatchObject({ animal: "boar", quarters: ["strength", "run"] });
+  });
+
+  test("a tie at the reveal, on one instant, is settled by the uuid on both devices", async () => {
+    const at = BASE;
+    const journal: Entry[] = [
+      ...[0, 1, 2, 3].map((i) => ({ uuid: uuidOf(i), at, style: "strength" })),
+      ...[4, 5, 6, 7].map((i) => ({ uuid: uuidOf(i), at, style: "cardio" })),
+    ];
+    const [a, b] = await bothWays(
+      journal.filter((_, i) => i % 2 === 0),
+      journal.filter((_, i) => i % 2 === 1),
+    );
+    expect(a).toEqual(b);
+    expect(a).toMatchObject({ animal: "stag", evidence: { first: "stag" } });
+  });
+
+  test("auto survives the merge: a pick undone later wins over the older pick elsewhere, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "crestAnimal", "auto", 3_000);
+    const olderPick = await peer("older-pick.db", (sqlite) =>
+      setPref(sqlite, "crestAnimal", "stag", 2_000),
+    );
+    await merge().mergePeer(olderPick);
+    expect(prefValue("crestAnimal")).toBe("auto");
+    await converged(olderPick);
+
+    // The other way: this device kept the older pick, the other went back to auto afterwards.
+    setPref(t.sqlite, "crestAnimal", "stag", 2_000);
+    const laterAuto = await peer("later-auto.db", (sqlite) =>
+      setPref(sqlite, "crestAnimal", "auto", 3_000),
+    );
+    await merge().mergePeer(laterAuto);
+    expect(prefValue("crestAnimal")).toBe("auto");
+    await converged(laterAuto);
+  });
+
+  test("the feasts this phone showed are never carried, and never news", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "bigFeastsShown", '["reveal"]', 100);
+    const file = await peer("feasts.db", (sqlite) =>
+      setPref(sqlite, "bigFeastsShown", '["age"]', 9_000),
+    );
+
+    expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
+    await merge().mergePeer(file);
+
+    expect(prefValue("bigFeastsShown")).toBe('["reveal"]');
+  });
+
+  function prefValue(key: string) {
+    return (
+      t.sqlite.prepare("SELECT value FROM user_preferences WHERE key = ?").get(key) as
+        | { value: string }
+        | undefined
+    )?.value;
+  }
+});

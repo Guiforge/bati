@@ -190,6 +190,7 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
   const { getSessionAggregates } =
     require("../../db/completed") as typeof import("../../db/completed");
 
+  const { getCrest } = require("../../db/crest") as typeof import("../../db/crest");
   const { getOrCreateBossFight } =
     require("../../db/bossFights") as typeof import("../../db/bossFights");
   const { db } = require("../../db/client") as typeof import("../../db/client");
@@ -212,6 +213,7 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
   const scene = await getVillageScene();
   const aggregates = await getSessionAggregates();
   const achievements = await getAllAchievementsWithProgress();
+  const crest = await getCrest(now);
 
   return {
     sessions: aggregates,
@@ -251,6 +253,7 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
       buildings: scene.buildings.length,
     },
     bosses,
+    crest,
     achievements: achievements.map((a) => ({
       code: a.definition.code,
       isUnlocked: a.isUnlocked,

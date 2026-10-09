@@ -47,6 +47,7 @@ const prefs = {
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
+  dropSupersededLegacyAvatar: jest.fn().mockResolvedValue(undefined),
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
   setVillagersEnabled: jest.fn().mockResolvedValue(undefined),
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
@@ -171,6 +172,8 @@ describe("useSettingsStore", () => {
     await settingsStore().getState().loadFromDatabase();
 
     expect(portLegacyAvatar).not.toHaveBeenCalled();
+    // A restore or merge may have brought it in over an unported path: that path goes.
+    expect(prefs.dropSupersededLegacyAvatar).toHaveBeenCalled();
     expect(settingsStore().getState().customAvatarUri).toBe("data:image/jpeg;base64,BBBB");
   });
 

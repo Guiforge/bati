@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getLocales } from "expo-localization";
 import { reportError } from "../src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
@@ -215,6 +215,11 @@ export const preferences = {
    * on another phone in between, and bring the old photo back there at the next merge. Writes
    * nothing when the rows moved since `path` was read (a pick made while the photo was encoding),
    * and returns whether it wrote.
+   *
+   * ponytail: a preset chosen on another phone still on the old version wrote `avatarId` and no
+   *           `""`, so this photo, older, still wins there once ported (once per multi-phone hero).
+   *           `avatarId`'s date cannot settle it: onboarding writes it too, and a second phone set
+   *           up after the photo would erase it. Losing a face is worse than showing an old one.
    */
   async portCustomAvatar(path: string, portable: string): Promise<boolean> {
     return await transactionOrFallback(async (tx) => {
@@ -229,14 +234,35 @@ export const preferences = {
         .where(eq(userPreferences.key, "customAvatar"))
         .limit(1);
       if (legacy?.value !== path || current) return false;
-      await tx.insert(userPreferences).values({
-        key: "customAvatar",
-        value: portable,
-        updatedAt: legacy.updatedAt ?? new Date(),
-      });
+      await tx
+        .insert(userPreferences)
+        .values({
+          key: "customAvatar",
+          value: portable,
+          updatedAt: legacy.updatedAt ?? new Date(),
+        })
+        // A pick written outside the queue lands inside this transaction (`transactionOrFallback`):
+        // a UNIQUE failure would roll the pick back with the port, so the pick's row simply wins.
+        .onConflictDoNothing();
       await tx.delete(userPreferences).where(eq(userPreferences.key, "customAvatarUri"));
       return true;
     });
+  },
+
+  /**
+   * Forgets a legacy picker path once `customAvatar` exists, which the getter already prefers. A
+   * restore or a merge can bring `customAvatar` in while this phone still holds its unported path
+   * (device-local), and then the port never runs to delete it.
+   */
+  async dropSupersededLegacyAvatar(): Promise<void> {
+    await db
+      .delete(userPreferences)
+      .where(
+        and(
+          eq(userPreferences.key, "customAvatarUri"),
+          sql`EXISTS (SELECT 1 FROM user_preferences WHERE key = 'customAvatar')`,
+        ),
+      );
   },
 
   // Training level captured at onboarding (null = skipped). Read by the coach/

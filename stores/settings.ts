@@ -300,6 +300,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
             if (get().customAvatarUri === customAvatarUri) set({ customAvatarUri: ported });
           })
           .catch((error: unknown) => reportError("settings.avatarPort", error));
+      } else {
+        preferences
+          .dropSupersededLegacyAvatar()
+          .catch((error: unknown) => reportError("settings.avatarLegacyDrop", error));
       }
 
       i18n.changeLanguage(normalizedLanguage).catch(() => {

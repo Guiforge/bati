@@ -167,4 +167,36 @@ describe("db/preferences", () => {
     expect(await prefs.getPreference("customAvatar")).toBe("");
     expect(await preferences.getCustomAvatarUri()).toBeNull();
   });
+
+  test("a newer avatarId never erases the photo it ports (onboarding on a second phone writes one)", async () => {
+    const prefs = require("../db/preferences") as typeof import("../db/preferences");
+    const { preferences } = prefs;
+    const legacy = "file:///cache/ImagePicker/old.jpg";
+    t.sqlite.exec(
+      "DELETE FROM user_preferences WHERE key IN ('customAvatar', 'customAvatarUri', 'avatarId')",
+    );
+    const insert = t.sqlite.prepare(
+      "INSERT INTO user_preferences (key, value, updatedAt) VALUES (?, ?, ?)",
+    );
+    insert.run("customAvatarUri", legacy, 1_700_000_000);
+    insert.run("avatarId", "knight", 1_700_000_500);
+
+    expect(await preferences.portCustomAvatar(legacy, "data:x")).toBe(true);
+    expect(await preferences.getCustomAvatarUri()).toBe("data:x");
+    expect(await prefs.getPreference("customAvatarUri")).toBeNull();
+  });
+
+  test("a legacy path is dropped once customAvatar exists, and kept while it does not", async () => {
+    const prefs = require("../db/preferences") as typeof import("../db/preferences");
+    const { preferences } = prefs;
+    t.sqlite.exec("DELETE FROM user_preferences WHERE key IN ('customAvatar', 'customAvatarUri')");
+    await prefs.setPreference("customAvatarUri", "file:///cache/a.jpg");
+
+    await preferences.dropSupersededLegacyAvatar();
+    expect(await prefs.getPreference("customAvatarUri")).toBe("file:///cache/a.jpg");
+
+    await prefs.setPreference("customAvatar", "data:restored");
+    await preferences.dropSupersededLegacyAvatar();
+    expect(await prefs.getPreference("customAvatarUri")).toBeNull();
+  });
 });

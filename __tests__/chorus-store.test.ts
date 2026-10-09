@@ -65,7 +65,7 @@ afterEach(() => {
 
 describe("what the chorus refuses", () => {
   test("an ambient line stays away while someone is already speaking", () => {
-    useChorusStore.getState().cue("personal_record");
+    useChorusStore.getState().cue("boss_defeated");
     const speaking = useChorusStore.getState().current;
 
     useChorusStore.getState().cue("rest");
@@ -120,17 +120,17 @@ describe("what the chorus refuses", () => {
     const ambient = useChorusStore.getState().current;
     expect(ambient).not.toBeNull();
 
-    useChorusStore.getState().cue("personal_record");
+    useChorusStore.getState().cue("boss_defeated");
 
     const current = useChorusStore.getState().current;
-    expect(current?.moment).toBe("personal_record");
+    expect(current?.moment).toBe("boss_defeated");
     expect(current?.id).not.toBe(ambient?.id);
   });
 
   test("the toggle silences events too, not just atmosphere", () => {
     useSettingsStore.setState({ villagersEnabled: false });
 
-    useChorusStore.getState().cue("personal_record");
+    useChorusStore.getState().cue("boss_defeated");
 
     expect(useChorusStore.getState().current).toBeNull();
   });
@@ -138,23 +138,23 @@ describe("what the chorus refuses", () => {
   test("a timer belonging to a replaced cameo cannot clear its successor", () => {
     useChorusStore.getState().cue("rest");
     const stale = useChorusStore.getState().current?.id ?? -1;
-    useChorusStore.getState().cue("personal_record");
+    useChorusStore.getState().cue("boss_defeated");
 
     useChorusStore.getState().dismiss(stale);
 
-    expect(useChorusStore.getState().current?.moment).toBe("personal_record");
+    expect(useChorusStore.getState().current?.moment).toBe("boss_defeated");
   });
 });
 
 describe("what the chorus reports back", () => {
   test("says whether a villager actually came", () => {
-    expect(useChorusStore.getState().cue("personal_record")).toBe(true);
+    expect(useChorusStore.getState().cue("boss_defeated")).toBe(true);
   });
 
   test("says no when it refused", () => {
     useSettingsStore.setState({ villagersEnabled: false });
 
-    expect(useChorusStore.getState().cue("personal_record")).toBe(false);
+    expect(useChorusStore.getState().cue("boss_defeated")).toBe(false);
   });
 
   test("a guide waits for an event, and takes over from village chatter", () => {
@@ -176,7 +176,7 @@ describe("what the chorus reports back", () => {
 
 describe("what the chorus remembers", () => {
   test("hydrating does not throw away what was said while it was reading", async () => {
-    useChorusStore.getState().cue("personal_record");
+    useChorusStore.getState().cue("boss_defeated");
     const saidAtStartup = useChorusStore.getState().recentKeys;
     (mockPreferences.getRecentCameoLines as jest.Mock).mockResolvedValueOnce(["from:disk:0"]);
 
@@ -189,47 +189,67 @@ describe("what the chorus remembers", () => {
 
   test("the ring is per villager, so one repeating does not silence the other", () => {
     const say = () => {
-      useChorusStore.getState().cue("personal_record");
+      useChorusStore.getState().cue("boss_defeated");
       const c = useChorusStore.getState().current;
       return [c?.villager, c?.line] as const;
     };
 
     // Two speakers carry this moment and nobody may go twice running, so the cast alternates —
-    // and each villager's memory has to be its own. The smith having used his first line must not
+    // and each villager's memory has to be its own. The watcher having used his first line must not
     // push the champion off hers.
-    expect(say()).toEqual(["smith", en.villagers.smith.personal_record[0]]);
-    expect(say()).toEqual(["champion", en.villagers.champion.personal_record[0]]);
-    expect(say()).toEqual(["smith", en.villagers.smith.personal_record[1]]);
+    expect(say()).toEqual(["watcher", en.villagers.watcher.boss_defeated[0]]);
+    expect(say()).toEqual(["champion", en.villagers.champion.boss_defeated[0]]);
+    expect(say()).toEqual(["watcher", en.villagers.watcher.boss_defeated[1]]);
   });
 
   test("an event line is filled in with what actually happened", () => {
-    useChorusStore.getState().cue("personal_record_beat", { delta: "10 reps", exercise: "Squat" });
+    // No shipped line quotes a number any more, so the one the store reads is swapped for a
+    // template: the point is that the values reach the bubble, not that a template does.
+    const shipped = i18n.getResourceBundle("en", "translation").villagers.watcher.boss_defeated;
+    i18n.addResourceBundle(
+      "en",
+      "translation",
+      {
+        villagers: { watcher: { boss_defeated: ["{{exercise}}: {{delta}} more than last time."] } },
+      },
+      true,
+      true,
+    );
+    try {
+      useChorusStore.getState().cue("boss_defeated", { delta: "10 reps", exercise: "Squat" });
+    } finally {
+      i18n.addResourceBundle(
+        "en",
+        "translation",
+        { villagers: { watcher: { boss_defeated: shipped } } },
+        true,
+        true,
+      );
+    }
 
     const line = useChorusStore.getState().current?.line ?? "";
-    // The template is `{{exercise}}: {{delta}} more than last time.` — the point of the whole
-    // moment is that the numbers reach the bubble, not that the template does.
     expect(line).toContain("10 reps");
     expect(line).toContain("Squat");
     expect(line).not.toContain("{{");
   });
 
   test("the ring is persisted, so a cold start does not replay the last line", () => {
-    useChorusStore.getState().cue("personal_record");
+    useChorusStore.getState().cue("boss_defeated");
 
     expect(mockPreferences.setRecentCameoLines).toHaveBeenCalledWith([
-      "villagers.smith.personal_record:0",
+      "villagers.watcher.boss_defeated:0",
     ]);
   });
 
   test("the ring comes back from disk, so a cold start does not repeat the last line", async () => {
     (mockPreferences.getRecentCameoLines as jest.Mock).mockResolvedValueOnce([
-      "villagers.smith.personal_record:0",
+      "villagers.watcher.boss_defeated:0",
     ]);
 
     await useChorusStore.getState().hydrate();
-    useChorusStore.getState().cue("personal_record");
+    useChorusStore.getState().cue("boss_defeated");
 
-    expect(useChorusStore.getState().current?.line).toBe(en.villagers.smith.personal_record[1]);
+    expect(useChorusStore.getState().current?.line).toBe(en.villagers.watcher.boss_defeated[1]);
   });
 
   /**
@@ -243,20 +263,20 @@ describe("what the chorus remembers", () => {
       throw new Error("no database here");
     });
 
-    expect(() => useChorusStore.getState().cue("personal_record")).not.toThrow();
-    expect(useChorusStore.getState().current?.moment).toBe("personal_record");
+    expect(() => useChorusStore.getState().cue("boss_defeated")).not.toThrow();
+    expect(useChorusStore.getState().current?.moment).toBe("boss_defeated");
   });
 
   test("the ring keys on the index, so switching language keeps the memory", async () => {
-    useChorusStore.getState().cue("personal_record");
-    expect(useChorusStore.getState().current?.villager).toBe("smith");
+    useChorusStore.getState().cue("boss_defeated");
+    expect(useChorusStore.getState().current?.villager).toBe("watcher");
 
     await i18n.changeLanguage("fr");
-    useChorusStore.setState({ lastVillager: "champion" }); // force the smith back up
-    useChorusStore.getState().cue("personal_record");
+    useChorusStore.setState({ lastVillager: "champion" }); // force the watcher back up
+    useChorusStore.getState().cue("boss_defeated");
 
-    // His *second* line, in French — not his first again. The same line in the other language is
+    // Her *second* line, in French — not his first again. The same line in the other language is
     // the same line, so the memory has to survive the switch.
-    expect(useChorusStore.getState().current?.line).toBe(fr.villagers.smith.personal_record[1]);
+    expect(useChorusStore.getState().current?.line).toBe(fr.villagers.watcher.boss_defeated[1]);
   });
 });

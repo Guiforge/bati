@@ -89,8 +89,6 @@ const MOMENT_OWNER: Record<Exclude<CueMoment, "menu_visit">, CueOwner> = {
   guide_quests: "quests",
   guide_adventures: "adventures",
   guide_journal: "journal",
-  personal_record: "victory",
-  personal_record_beat: "victory",
   boss_defeated: "victory",
   first_outing: "victory",
   high_road: "victory",

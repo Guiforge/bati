@@ -1394,26 +1394,6 @@
         "Lo que acabas de hacer se nota primero en las manos.",
         "Respira. El resto viene, o no. Ya veremos."
       ],
-      "personal_record": [
-        "Nueva marca en el poste. La tallo yo mismo.",
-        "Es la primera vez que se hace aquí.",
-        "Vaya. Por una vez, el metal cedió antes que tú.",
-        "Eso es trabajo limpio. Lo digo una vez.",
-        "Has encontrado una muesca más, y estuvo ahí todo el tiempo.",
-        "Lo apunto. El próximo que diga que no se puede tendrá una línea que leer.",
-        "La técnica aguantó hasta el final. Eso es lo que marcó la diferencia.",
-        "Ahí está. Nada mágico, nada espectacular. Trabajo, y hecho."
-      ],
-      "personal_record_beat": [
-        "{{exercise}}: {{delta}} más que la última vez. Yo llevo la cuenta.",
-        "Has añadido {{delta}}. Eso no cae del cielo.",
-        "{{delta}} mejor. Eso es trabajo, al gramo.",
-        "La última vez soltaste {{delta}} antes. Hoy no.",
-        "{{delta}} más. Dicho así, no suena a nada. En los brazos es otra cosa.",
-        "{{exercise}}: {{delta}} mejor. Eso va al poste con lo demás.",
-        "{{delta}} por encima de tu marca, y tu cuerpo lo recordará antes que tú.",
-        "Has llegado {{delta}} más lejos que antes."
-      ],
       "guide_quests": ["Las misiones son tus sesiones. Elige una y yo me encargo del resto."],
       "menu_visit": [
         "Estás mirando. Eso ya es una forma de trabajo, siendo generosos.",
@@ -1580,26 +1560,6 @@
       ]
     },
     "champion": {
-      "personal_record": [
-        "Techo elevado. El siguiente está más alto.",
-        "El trabajo da sus frutos.",
-        "Esa muesca me costó tres inviernos.",
-        "Récord batido. Recuerda esta sensación.",
-        "Así que esto es lo que se siente.",
-        "El margen estaba ahí. Lo aprovechaste.",
-        "La primera vez. Solo hay una.",
-        "La próxima vez, por encima."
-      ],
-      "personal_record_beat": [
-        "{{delta}} por encima de tu mejor marca, y no por casualidad.",
-        "{{exercise}}, {{delta}} por encima. Conozco el precio.",
-        "{{delta}} más que tu yo de antes.",
-        "{{delta}} mejor. El siguiente listón, más alto.",
-        "La última vez, {{delta}} menos. Hoy, esto.",
-        "{{delta}} más, y la técnica aguantó hasta el final.",
-        "{{exercise}}, {{delta}} por encima de tu marca. Guárdalo para los días flojos.",
-        "{{delta}} más. Ve a dormir."
-      ],
       "boss_defeated": [
         "Se acabó. Siéntate antes de que tus piernas se den cuenta.",
         "Han caído cosas más grandes. No muchas.",

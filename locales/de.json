@@ -1326,26 +1326,6 @@
         "Was du gerade getan hast, sieht man zuerst an den Händen.",
         "Atme. Der Rest kommt, oder eben nicht. Wir werden sehen."
       ],
-      "personal_record": [
-        "Neue Kerbe am Pfosten. Ich schnitze sie selbst.",
-        "Das hat hier noch keiner geschafft.",
-        "Sieh an. Diesmal hat das Metall vor dir nachgegeben.",
-        "Das ist saubere Arbeit. Ich sag's nur einmal.",
-        "Du hast noch eine Kerbe gefunden, und sie war die ganze Zeit da.",
-        "Ich schreib's auf. Der Nächste, der sagt, das geht nicht, kann es dann nachlesen.",
-        "Die Technik saß bis zum Schluss. Das hat es ausgemacht.",
-        "Da. Nichts Magisches, nichts Spektakuläres. Arbeit, und erledigt."
-      ],
-      "personal_record_beat": [
-        "{{exercise}}: {{delta}} mehr als letztes Mal. Ich zähle mit.",
-        "Du hast {{delta}} draufgelegt. Das fällt nicht vom Himmel.",
-        "{{delta}} besser. Das ist Arbeit, aufs Gramm genau.",
-        "Letztes Mal hast du {{delta}} früher losgelassen. Heute nicht.",
-        "{{delta}} mehr. Klingt nach nichts. In den Armen ist es was anderes.",
-        "{{exercise}}: {{delta}} besser. Das kommt mit dem Rest an den Pfosten.",
-        "{{delta}} über deiner Marke, und dein Körper wird es sich vor dir merken.",
-        "Du hast {{delta}} mehr geschafft als vorher."
-      ],
       "guide_quests": [
         "Quests sind deine Einheiten. Such dir eine aus, um den Rest kümmere ich mich."
       ],
@@ -1514,26 +1494,6 @@
       ]
     },
     "champion": {
-      "personal_record": [
-        "Grenze verschoben. Die nächste liegt höher.",
-        "Die Arbeit zahlt sich aus.",
-        "Für diese Kerbe habe ich drei Winter gebraucht.",
-        "Rekord gebrochen. Merk dir, wie es sich angefühlt hat.",
-        "So fühlt sich das also an.",
-        "Da war noch Luft nach oben. Du hast sie genutzt.",
-        "Das erste Mal. Das gibt es nur einmal.",
-        "Nächstes Mal darüber."
-      ],
-      "personal_record_beat": [
-        "{{delta}} über deinem Bestwert, und nicht zufällig.",
-        "{{exercise}}, {{delta}} darüber. Ich kenne den Preis.",
-        "{{delta}} gewonnen gegenüber deinem früheren Ich.",
-        "{{delta}} besser. Die nächste Latte liegt höher.",
-        "Letztes Mal {{delta}} weniger. Heute das hier.",
-        "{{delta}} mehr, und die Technik saß bis zum Schluss.",
-        "{{exercise}}, {{delta}} über deiner Marke. Heb dir das für die zähen Tage auf.",
-        "{{delta}} gewonnen. Geh schlafen."
-      ],
       "boss_defeated": [
         "Es ist vorbei. Setz dich, bevor deine Beine das merken.",
         "Größeres ist schon gefallen. Nicht viel.",

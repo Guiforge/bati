@@ -1326,26 +1326,6 @@
         "What you just did shows in the hands first.",
         "Breathe. The rest follows, or it doesn't. We'll see."
       ],
-      "personal_record": [
-        "New mark on the post. I cut it myself.",
-        "First time that's been done here.",
-        "Well. The metal gave before you did, for once.",
-        "That's clean work. I'll say it once.",
-        "You found one more notch, and it was there the whole time.",
-        "I'm writing it down. The next one who says it can't be done will have a line to read.",
-        "The form held all the way through. That's what did it.",
-        "There. Nothing magic, nothing spectacular. Work, and it's done."
-      ],
-      "personal_record_beat": [
-        "{{exercise}}: {{delta}} more than last time. I keep count.",
-        "You added {{delta}}. Nobody adds that by accident.",
-        "{{delta}} better. That's work, to the gram.",
-        "Last time you let go {{delta}} sooner. Not today.",
-        "{{delta}} more. Sounds like nothing out loud. In the arms it's something else.",
-        "{{exercise}}: {{delta}} better. That goes on the post with the rest.",
-        "{{delta}} above your mark, and your body will remember it before you do.",
-        "You pushed {{delta}} further than before."
-      ],
       "guide_quests": ["Quests are your sessions. Pick one, and I'll see to the rest."],
       "menu_visit": [
         "You're looking. That's a form of work, if we're being generous.",
@@ -1512,26 +1492,6 @@
       ]
     },
     "champion": {
-      "personal_record": [
-        "Ceiling raised. The next one sits higher.",
-        "Work coming in.",
-        "That notch took me three winters.",
-        "Record beaten. Keep what it felt like.",
-        "So that's what it feels like.",
-        "The room was there. You took it.",
-        "First time. There's only ever one.",
-        "Above it, next time."
-      ],
-      "personal_record_beat": [
-        "{{delta}} above your best, and not by chance.",
-        "{{exercise}}, {{delta}} above. I know the price.",
-        "{{delta}} gained on the you of before.",
-        "{{delta}} better. Next step up, higher.",
-        "Last time, {{delta}} fewer. Today, this.",
-        "{{delta}} more, and the form held all the way.",
-        "{{exercise}}, {{delta}} above your mark. Keep it for the flat days.",
-        "{{delta}} gained. Go and sleep."
-      ],
       "boss_defeated": [
         "It's over. Sit down before your legs work that out.",
         "Bigger things have gone down. Not many.",

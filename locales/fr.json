@@ -1394,26 +1394,6 @@
         "Ce que tu viens de faire, ça se voit d'abord dans les mains.",
         "Souffle. Le reste suit, ou pas. On verra."
       ],
-      "personal_record": [
-        "Nouveau record sur le poteau. Je le taille moi-même.",
-        "Première fois que ça se fait ici.",
-        "Tiens. Le métal a cédé avant toi, pour une fois.",
-        "Ça, c'est du travail propre. Je le dirai une fois.",
-        "Tu as trouvé un cran de plus, il était là depuis le début.",
-        "Je note. Le prochain qui dira que c'est impossible aura une ligne à lire.",
-        "Le geste a tenu jusqu'au bout. C'est ça qui a fait la différence.",
-        "Voilà. Rien de magique, rien de spectaculaire. Du travail, et il est fait."
-      ],
-      "personal_record_beat": [
-        "{{exercise}} : {{delta}} de plus que la dernière fois. Je compte, moi.",
-        "Tu as ajouté {{delta}}. Ça ne tombe pas du ciel.",
-        "{{delta}} de mieux. C'est du travail, au gramme près.",
-        "La dernière fois, tu as lâché {{delta}} plus tôt. Aujourd'hui, non.",
-        "{{delta}} de plus. Dit comme ça, ce n'est rien. Dans les bras, c'est autre chose.",
-        "{{exercise}} : {{delta}} de mieux. Ça va sur le poteau avec le reste.",
-        "{{delta}} au-dessus de ton record, et le corps s'en souviendra avant toi.",
-        "Tu as poussé {{delta}} plus loin qu'avant."
-      ],
       "guide_quests": ["Les quêtes, ce sont tes séances. Choisis-en une, je m'occupe du reste."],
       "menu_visit": [
         "Tu regardes. C'est déjà une forme de travail, si on est généreux.",
@@ -1580,26 +1560,6 @@
       ]
     },
     "champion": {
-      "personal_record": [
-        "Plafond relevé. Le prochain sera plus haut.",
-        "Du travail qui rentre.",
-        "Ce cran-là m'a pris trois hivers.",
-        "Record battu. Retiens ce que ça faisait.",
-        "Voilà ce que ça fait.",
-        "La place était là. Tu l'as prise.",
-        "Première fois. Il n'y en a qu'une.",
-        "Au-dessus, la prochaine fois."
-      ],
-      "personal_record_beat": [
-        "{{delta}} au-dessus du meilleur, et pas par hasard.",
-        "{{exercise}}, {{delta}} au-dessus. Le prix, je le connais.",
-        "{{delta}} de gagné sur toi d'avant.",
-        "{{delta}} de mieux. Marche suivante, plus haute.",
-        "La dernière fois, {{delta}} de moins. Aujourd'hui, ça.",
-        "{{delta}} de plus, et le geste a tenu jusqu'au bout.",
-        "{{exercise}}, {{delta}} au-dessus de ton record. Garde-le pour les jours creux.",
-        "{{delta}} de gagné. Va dormir."
-      ],
       "boss_defeated": [
         "C'est fini. Assieds-toi avant que tes jambes s'en aperçoivent.",
         "Des plus grosses sont tombées. Pas beaucoup.",

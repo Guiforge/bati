@@ -122,8 +122,6 @@ export const CUE_MOMENTS = [
   "rest",
   "village_visit",
   "menu_visit",
-  "personal_record",
-  "personal_record_beat",
   "boss_defeated",
   "comeback",
   "first_outing",
@@ -166,13 +164,6 @@ export const MOMENT_CAST: Record<
     priority: "ambient",
     pose: "talk",
   },
-  // The smith keeps the marks; the champion has stood where you are. Both react to a record,
-  // neither ever names the number when there is nothing to compare it to.
-  personal_record: { speakers: ["smith", "champion"], priority: "event", pose: "cheer" },
-  // The same two, when there *is* something to compare it to. Separate from `personal_record`
-  // rather than a branch inside it, because a line written around "{{delta}} more than last time"
-  // cannot degrade gracefully into a first-ever record — it would read as a comparison to nothing.
-  personal_record_beat: { speakers: ["smith", "champion"], priority: "event", pose: "cheer" },
   boss_defeated: { speakers: ["watcher", "champion"], priority: "event", pose: "salute" },
   // The village was silent in the village, which was the layer's biggest thematic hole: you opened
   // the screen that *is* their home and nobody lived there. Only the three who work it day to day

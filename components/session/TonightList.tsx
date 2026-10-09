@@ -335,7 +335,13 @@ function CardRow({ card }: { card: CardData }) {
           {card.art}
         </YStack>
         <YStack flex={1} gap="$1">
-          <Text fontWeight="700" fontSize={17} color="$text">
+          {/* Alegreya for a name, Noto for a title carrying a digit ("Level 5", "3 years"). */}
+          <Text
+            fontFamily={/\d/.test(card.title) ? "$body" : "$heading"}
+            fontWeight="700"
+            fontSize={17}
+            color="$text"
+          >
             {card.title}
           </Text>
           {card.body?.map((line) => (

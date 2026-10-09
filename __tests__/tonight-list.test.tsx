@@ -435,6 +435,8 @@ describe("the Tonight copy, in every language", () => {
       expect(text).not.toBe(key);
       expect(text).not.toMatch(BANNED);
       expect(text).not.toMatch(REPS);
+      // Only well-formed bold tags are allowed: a stray "</ b>" would print as text.
+      expect(text.replace(/<\/?b>/g, "")).not.toMatch(/[<>]/);
     }
   });
 });
@@ -497,6 +499,32 @@ describe("TonightList style", () => {
     expect(StyleSheet.flatten(getByText("après").props.style).color).not.toBe(
       dark.resourceGold?.val,
     );
+  });
+
+  // Alegreya never sets a digit (DESIGN.md): a title without one is a name, with one it stays Noto.
+  test("card titles are Alegreya, unless the title carries a digit", async () => {
+    const family = (n: { props: { style?: unknown } }) =>
+      (StyleSheet.flatten(n.props.style as never) as { fontFamily?: string }).fontFamily;
+    const move = (name: string) => ({
+      id: 1,
+      enName: name,
+      frName: name,
+      deName: name,
+      esName: name,
+      imagePath: "squat.webp",
+    });
+    const named = await show(rankFeasts({ boss: { name: "Golem" }, result: base }), "en");
+    expect(family(named.getByText("Boss Defeated!"))).toMatch(/Alegreya/);
+    await named.unmount();
+    const digit = await show(
+      rank({
+        newRungs: [
+          { from: move("Squat"), next: move("Squat 2"), alsoNext: [], metTarget: 3 } as never,
+        ],
+      }),
+      "en",
+    );
+    expect(family(digit.getByText("Squat 2"))).not.toMatch(/Alegreya/);
   });
 
   test("a first record carries its unit: reps and seconds", async () => {

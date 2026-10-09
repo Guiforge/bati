@@ -15,6 +15,7 @@ import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { ChevronRight, PenLine } from "@/components/icons";
 import { useOathText } from "@/components/oath/useOathText";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { WEEKLY_TARGETS } from "@/constants/weeklyTargets";
 import { canDo } from "@/db/equipment";
 import { type Exercise, listExercises, officialByName, pickableExercises } from "@/db/exercises";
 import {
@@ -33,7 +34,6 @@ import {
 } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
-import { WEEKLY_TARGETS } from "@/db/streaks";
 import { targetRangeFor } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import { useHaptics } from "@/hooks/useHaptics";

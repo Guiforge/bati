@@ -1,16 +1,12 @@
 import { differenceInYears } from "date-fns";
 import { eq, sql } from "drizzle-orm";
+import { DEFAULT_WEEKLY_QUOTA } from "@/constants/weeklyTargets";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
 import { type CrestAnimals, type CrestSession, crestAnimals } from "./crestRules";
 import { preferences } from "./preferences";
 import type { ExerciseStyle } from "./schema";
-import {
-  calculateStreakFromSessions,
-  DEFAULT_WEEKLY_QUOTA,
-  type FlameLevel,
-  getFlameLevel,
-} from "./streaks";
+import { calculateStreakFromSessions, type FlameLevel, getFlameLevel } from "./streaks";
 
 const { completedExercises, completedQuest, exercises } = schema;
 

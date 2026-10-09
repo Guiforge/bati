@@ -371,6 +371,7 @@
       "manual": false,
       "second": null,
       "quarters": null,
+      "revealedIndex": 7,
       "evidence": {
         "firstEight": {
           "strength": 4,
@@ -390,7 +391,8 @@
         "secondFromSessions": null
       },
       "longestFlame": 5,
-      "rings": 2
+      "rings": 2,
+      "revealedAt": "2023-04-01T07:58:04.000Z"
     },
     "achievements": [
       {

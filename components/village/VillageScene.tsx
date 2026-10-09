@@ -129,7 +129,7 @@ function Glow() {
 }
 
 /** The title block's own box: the loaded header and its skeleton share it, so nothing slides. */
-const TITLE_BLOCK = { px: "$4", pb: 28, gap: 6 } as const;
+const TITLE_BLOCK_STYLE = { px: "$4", pb: 28, gap: 6 } as const;
 /** A line of the header's small text: its height at the current font scale, for the skeleton. */
 const TEXT_LINE = 17;
 /** Stands where the level's number goes while the line is translated. */
@@ -201,6 +201,8 @@ export function VillageScene() {
   const [crest, setCrest] = useState<CrestData | null | undefined>(null);
   // How tall the title block really is: at a large font the crest, the wrapped name and the two
   // lines outgrow the painting's band, and the block must not climb under the status bar.
+  // Whether any visit has read the crest: only then is a failed read allowed to keep the last one.
+  const crestRead = useRef(false);
   const [titleHeight, setTitleHeight] = useState(0);
   const measureTitle = (e: LayoutChangeEvent) =>
     setTitleHeight(Math.round(e.nativeEvent.layout.height));
@@ -236,7 +238,9 @@ export function VillageScene() {
     Promise.all([getVillageScene(), readCrest])
       .then(([data, crestData]) => {
         setScene(data);
-        setCrest(crestData);
+        // An unreadable crest after a drawn one keeps the drawn one, like the scene keeps yesterday's.
+        if (crestData !== undefined) crestRead.current = true;
+        if (crestData !== undefined || !crestRead.current) setCrest(crestData);
         setLoadFailed(false);
       })
       .catch((error) => {
@@ -360,7 +364,7 @@ export function VillageScene() {
             t={titleTop}
             l={0}
             r={0}
-            {...TITLE_BLOCK}
+            {...TITLE_BLOCK_STYLE}
             onLayout={measureTitle}
           >
             <XStack items="flex-start" gap={10}>
@@ -504,7 +508,7 @@ export function VillageScene() {
             t={titleTop}
             l={0}
             r={0}
-            {...TITLE_BLOCK}
+            {...TITLE_BLOCK_STYLE}
             onLayout={measureTitle}
           >
             <XStack items="flex-start" gap={10}>

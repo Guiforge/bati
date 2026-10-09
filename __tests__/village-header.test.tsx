@@ -183,6 +183,9 @@ describe("the header's rules", () => {
     expect(screen.queryByTestId("village-glow")).toBeNull();
     expect(screen.queryByTestId("village-crest-line")).toBeNull();
     expect(report).toHaveBeenCalledWith("village.crest", expect.any(Error));
+    // The empty slot is the crest's own size, so the name does not move when the crest arrives.
+    const empty = StyleSheet.flatten(screen.getByTestId("village-crest-empty").props.style);
+    expect(empty).toMatchObject(crestFootprint(56, true));
 
     getCrest.mockResolvedValue(crestOf());
     await act(() => {
@@ -190,6 +193,42 @@ describe("the header's rules", () => {
     });
     expect(await line()).toBe("A bear watches over Brumeval.");
     expect(screen.getByLabelText("A bear.")).toBeTruthy();
+    expect(screen.queryByTestId("village-crest-empty")).toBeNull();
+  });
+
+  it.each([
+    ["a drawn crest", crestOf()],
+    ["a glow", null],
+  ])("a failed read after %s keeps what was shown, and reports", async (_name, first) => {
+    const getCrest = jest.spyOn(crestDb, "getCrest").mockResolvedValue(first);
+    const report = jest.spyOn(errors, "reportError").mockImplementation(() => {});
+    useUserStore.setState({ villageName: "Brumeval" });
+    jest.spyOn(village, "getVillageScene").mockResolvedValue({
+      tier: 4,
+      level: 8,
+      title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
+      totalXp: 3180,
+      xpPerSession: 370,
+      flame: 1,
+      streakDays: 4,
+      dominantSport: null,
+      buildings: [],
+    });
+    await render(
+      <SafeAreaProvider initialMetrics={METRICS}>
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <VillageScene />
+        </TamaguiProvider>
+      </SafeAreaProvider>,
+    );
+    const shown = first ? "village-crest-line" : "village-glow";
+    await screen.findByTestId(shown);
+    getCrest.mockRejectedValue(new Error("db"));
+    await act(() => {
+      for (const cb of mockFocusCallbacks) cb();
+    });
+    expect(report).toHaveBeenCalledWith("village.crest", expect.any(Error));
+    expect(screen.getByTestId(shown)).toBeTruthy();
     expect(screen.queryByTestId("village-crest-empty")).toBeNull();
   });
 

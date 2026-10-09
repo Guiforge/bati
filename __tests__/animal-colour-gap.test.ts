@@ -80,3 +80,57 @@ describe("animal colours for colour-blind heroes", () => {
     });
   });
 });
+
+const MIN_GAP = 10;
+const PINNED_MIN = 10.89;
+const MOVED =
+  "an animal colour moved: measure everything again (contrasts, gaps, mockup) before changing this figure";
+
+const gap = (x: string, y: string, matrix: Matrix | null) => {
+  const [l1, a1, b1] = seen(x, matrix);
+  const [l2, a2, b2] = seen(y, matrix);
+  return 100 * Math.hypot(l1 - l2, a1 - a2, b1 - b2);
+};
+
+describe("animal colour gaps stay as measured", () => {
+  it("the closest pair is stag and horse in tritanopia, 10.89", () => {
+    const all = Object.entries(VIEWS).flatMap(([view, matrix]) =>
+      pairs.map((p) => ({ view, p, d: gap(ANIMALS[p[0]], ANIMALS[p[1]], matrix) })),
+    );
+    const min = all.reduce((m, c) => (c.d < m.d ? c : m));
+    if (Math.abs(min.d - PINNED_MIN) > 0.05 || min.view !== "tritanopia")
+      throw new Error(`${MOVED} (${min.view} ${min.p.join("/")} ${min.d.toFixed(2)})`);
+    expect(min.p).toEqual(["stag", "horse"]);
+  });
+});
+
+/**
+ * Normal vision only: the flame's and the rings' gold is always laid on the ink, never on an
+ * animal fill, and under colour-blind views gold and salmon do meet (2.94 in tritanopia).
+ */
+const FORBIDDEN = [
+  "primary",
+  "primaryText",
+  "success",
+  "error",
+  "resourceGold",
+  "gold300",
+  "gold600",
+  "gold700",
+] as const;
+
+describe("animal colours against the colours the crest keeps clear of", () => {
+  it.each(FORBIDDEN)("%s exists in the palette", (token) => {
+    expect(rawColors).toHaveProperty(token);
+  });
+
+  it("every animal is at least 10 from every one of them, worst bear and gold700 at 11.9", () => {
+    const all = names.flatMap((a) =>
+      FORBIDDEN.map((t) => ({ a, t, d: gap(ANIMALS[a], rawColors[t], null) })),
+    );
+    for (const c of all) expect(c.d).toBeGreaterThanOrEqual(MIN_GAP);
+    const min = all.reduce((m, c) => (c.d < m.d ? c : m));
+    expect([min.a, min.t]).toEqual(["bear", "gold700"]);
+    expect(min.d).toBeCloseTo(11.9, 1);
+  });
+});

@@ -153,7 +153,7 @@ export function crestAnimals(
   const practiceOfAnimal = (a: Animal) => PRACTICES.find((p) => ANIMAL_OF[p] === a);
   const stageFor = (a: Animal, own: boolean) => {
     const p = practiceOfAnimal(a);
-    return stageOf(own && p !== undefined ? totals[p] : list.length);
+    return stageOf(own && p !== undefined ? totals[p] : sessions.length);
   };
 
   const quarters = center === "boar" ? quartersOf(totals, last) : null;

@@ -253,6 +253,17 @@ describe("the hero's choice", () => {
     });
   });
 
+  test("the boar's stage reads every session that counts, practice or not", () => {
+    const thirtyNine = Array.from({ length: 13 }, () => of(["strength", "yoga", "run"])).flat();
+    expect(auto(thirtyNine)).toMatchObject({ animal: "boar", stage: "young" });
+    // An expedition-only workout has no practice, and still counts toward the 40.
+    expect(auto([...thirtyNine, session("none")])).toMatchObject({
+      animal: "boar",
+      stage: "adult",
+    });
+    expect(auto([...thirtyNine, session("none")], "boar")).toMatchObject({ stage: "adult" });
+  });
+
   test("a chosen boar over a single practice shows only that practice, in both quarters", () => {
     expect(auto(seq(["yoga", 8]), "boar")).toMatchObject({
       animal: "boar",

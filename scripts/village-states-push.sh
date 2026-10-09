@@ -11,5 +11,13 @@ pkg=com.guiforge.bati.dev
 a shell am force-stop $pkg
 a push "$src" /data/local/tmp/village.db >/dev/null
 a shell "run-as $pkg cp /data/local/tmp/village.db files/SQLite/bati.v3.db && run-as $pkg rm -f files/SQLite/bati.v3.db-wal files/SQLite/bati.v3.db-shm && rm /data/local/tmp/village.db"
+if [ "$state" = orig ]; then
+  # Before relaunch (the app rewrites the file on open). The device must hold the original byte for byte, or the hero's data is not what it was.
+  back=$(mktemp)
+  a shell "run-as $pkg cat files/SQLite/bati.v3.db" > "$back"
+  cmp -s "$src" "$back" || { rm -f "$back"; echo "orig NOT restored: device database differs from $src" >&2; exit 1; }
+  rm -f "$back"
+  echo "orig confirmed identical (cmp -s)"
+fi
 a shell monkey -p $pkg -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
 echo "pushed $state"

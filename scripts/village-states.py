@@ -224,7 +224,7 @@ def build(base, state, out):
                     db.execute(
                         "INSERT INTO completed_exercises(sessionId,exerciseId,roundIndex,sortOrder,resultType,"
                         "resultValue,targetType,targetValue,notes,performedAt) VALUES(?,?,?,?,?,?,?,?,'',?)",
-                        (sid, e, r, o, tt, value, tt, rng.randint(lo, hi), ts + o * 90 + r * 240))
+                        (sid, e, r, o, tt, value, tt, rng.randint(lo, hi), min(ts + o * 90 + r * 240, int(now))))
         if drop_last:  # the unplayed session; completed_exercises follow by cascade
             db.execute("DELETE FROM completed_sessions WHERE id=(SELECT id FROM completed_sessions ORDER BY performedAt DESC LIMIT 1)")
     db.commit()
@@ -238,7 +238,8 @@ def build(base, state, out):
 PRACTICE_SQL = """
 SELECT s.performedAt, s.xpEarned, s.outing, COALESCE(s.movingSeconds, s.durationSeconds),
   (SELECT e.style FROM completed_exercises ce JOIN exercises e ON e.id = ce.exerciseId
-    WHERE ce.sessionId = s.id GROUP BY e.style ORDER BY COUNT(*) DESC, e.style LIMIT 1)
+    WHERE ce.sessionId = s.id GROUP BY e.style ORDER BY COUNT(*) DESC,
+      CASE e.style WHEN 'strength' THEN 0 WHEN 'calisthenics' THEN 1 WHEN 'yoga' THEN 2 ELSE 3 END LIMIT 1)
 FROM completed_sessions s ORDER BY s.performedAt, s.id"""
 
 
@@ -277,6 +278,8 @@ def verify(db, state, spec, drop_last):
     assert run == want_run, f"{state}: flame {run} != {want_run}"
     assert len(set(offsets)) == len(offsets), f"{state}: two sessions on one day"
     assert max(at for _, at, _ in rows) <= time.time() if rows else True, f"{state}: session in the future"
+    late = db.execute("SELECT COUNT(*) FROM completed_exercises WHERE performedAt > ?", (int(time.time()),)).fetchone()[0]
+    assert late == 0, f"{state}: {late} exercises in the future"
     first8 = Counter(p for p, _, _ in rows[:8])
     animal = first8.most_common(1)[0][0] if first8 else None
     if state.startswith("sanglier"):

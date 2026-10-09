@@ -34,6 +34,13 @@ const STREAK_WINDOW_KEY = "streak_window";
  */
 export const DEFAULT_WEEKLY_QUOTA = 2;
 
+/**
+ * Sessions per week the oath form offers. None may sit under `DEFAULT_WEEKLY_QUOTA`: the crest
+ * (db/crest.ts) measures its longest flame at that quota, so a lower oath would read "flame 0"
+ * for a hero whose flame burned. Two is a real answer, not a lesser one.
+ */
+export const WEEKLY_TARGETS = [2, 3, 4] as const;
+
 const WINDOW_DAYS = 7;
 
 export type StreakInfo = {

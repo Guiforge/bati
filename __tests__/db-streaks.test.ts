@@ -181,4 +181,11 @@ describe("db/streaks", () => {
 
     expect(await streaks().getWeeklyProgress()).toEqual({ done: 3, quota: 4 });
   });
+
+  test("no weekly target the oath offers sits under the quota the crest measures its flame at", () => {
+    // db/crest.ts reads the longest flame at DEFAULT_WEEKLY_QUOTA; a lower oath would say "flame 0".
+    expect(Math.min(...streaks().WEEKLY_TARGETS)).toBeGreaterThanOrEqual(
+      streaks().DEFAULT_WEEKLY_QUOTA,
+    );
+  });
 });

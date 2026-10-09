@@ -33,6 +33,7 @@ import {
 } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
+import { WEEKLY_TARGETS } from "@/db/streaks";
 import { targetRangeFor } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -50,9 +51,6 @@ const METRICS: OathMetric[] = [
   "streak",
   "leagues",
 ];
-
-/** Sessions per week offered in the custom form. Two is a real answer, not a lesser one. */
-const WEEKLY_TARGETS = [2, 3, 4];
 
 function MetricChip({
   metric,

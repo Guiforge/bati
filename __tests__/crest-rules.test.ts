@@ -232,8 +232,10 @@ describe("the hero's choice", () => {
   test("choosing the second animal swaps it with the first", () => {
     expect(auto(bearAndStag(), "stag")).toMatchObject({
       animal: "stag",
+      stage: "adult",
       manual: true,
-      second: { animal: "bear" },
+      // The bear steps out to the border with the stage of its own 38 strength sessions, not all 58.
+      second: { animal: "bear", stage: "young" },
     });
   });
 

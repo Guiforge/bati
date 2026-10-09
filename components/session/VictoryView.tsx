@@ -31,7 +31,7 @@ import { createQuestFromOuting } from "@/db/quests";
 import type { FeedbackCode } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
-import { formatGrown } from "@/db/village";
+import { getVillageTier } from "@/db/village";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime } from "@/hooks/useSessionTimer";
@@ -43,6 +43,7 @@ import { isExpedition } from "@/stores/expedition";
 import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
+import { continueTarget, villageHref } from "./destinations";
 import { ExpeditionSummary } from "./ExpeditionSummary";
 import { rankFeasts } from "./feasts";
 import { ProgressionChart } from "./ProgressionChart";
@@ -220,6 +221,7 @@ export function VictoryView() {
     ? rankFeasts({
         result,
         epilogue: result.campaign?.isFinished === true,
+        shown: result.bigFeastsShown,
         boss: felledBoss
           ? { name: bossDisplayName(felledBoss, language), finalBlow: felledByFinalBlow }
           : null,
@@ -227,6 +229,10 @@ export function VictoryView() {
     : [];
   // The reveal is marked as seen only when it was shown here, as a card (the night of an
   // epilogue). As the large feast it is marked when its full screen opens, which comes later.
+  // The one that opens full screen after "Continue". Once it has opened, "Tonight" stops
+  // announcing it (the phone has shown it).
+  const bigFeast = feasts.find((f) => f.size === "large");
+  const [feastOpened, setFeastOpened] = useState(false);
   const revealShownAsCard = feasts.some((f) => f.kind === "reveal" && f.size !== "large");
 
   // What the journal is about to record, not the raw clock. They are different numbers for an
@@ -359,7 +365,7 @@ export function VictoryView() {
   const handleViewVillage = () => {
     if (!result) return;
     // Levels travel with the codes: the village plays the rise from one rung to the next.
-    router.push(`/(tabs)/village?grown=${formatGrown(result.villageGrowth)}` as never);
+    router.push(villageHref(result.villageGrowth) as never);
   };
 
   const handleForget = () => {
@@ -370,23 +376,34 @@ export function VictoryView() {
     });
   };
 
-  const handleContinue = () => {
+  const goOn = () => {
     if (!result) return;
     quitSession();
+    const { href, anchor } = continueTarget(result.campaign);
+    if (anchor) router.replace(href as never, { withAnchor: true });
+    else router.replace(href as never);
+  };
 
-    const campaign = result.campaign;
-    if (campaign?.nextQuestId && campaign.nextRunStepId) {
-      router.replace(
-        `/quests/${campaign.nextQuestId}?runStepId=${campaign.nextRunStepId}&adventureId=${campaign.adventureId}` as never,
-        { withAnchor: true },
-      );
+  const handleContinue = () => {
+    if (!result) return;
+    // One big feast a night. It opens over this screen and leads back to `goOn`'s road itself
+    // (its button, or the back gesture), so nothing is quit before it closes.
+    if (bigFeast && !feastOpened) {
+      setFeastOpened(true);
+      const { href, anchor } = continueTarget(result.campaign);
+      router.push({
+        pathname: "/big-feast",
+        params: {
+          feast: JSON.stringify(bigFeast),
+          next: href,
+          anchor: anchor ? "1" : "0",
+          village: villageHref(result.villageGrowth),
+          tier: String(getVillageTier(calculateLevelFromXp(result.heroXp.after))),
+        },
+      } as never);
       return;
     }
-    if (campaign?.isFinished) {
-      router.replace(`/adventures/${campaign.adventureId}` as never, { withAnchor: true });
-      return;
-    }
-    router.replace("/");
+    goOn();
   };
 
   return (
@@ -644,7 +661,7 @@ export function VictoryView() {
             nothing at all on a night where nothing rose. "See your village" only when it grew. */}
         {!!result && (
           <TonightList
-            feasts={feasts}
+            feasts={feastOpened ? feasts.filter((f) => f !== bigFeast) : feasts}
             villageName={villageName}
             onViewVillage={
               result.tierUp || result.villageGrowth.length > 0 ? handleViewVillage : undefined

@@ -50,7 +50,7 @@ export type CrestAnimals = {
   };
 };
 
-const REVEAL_AT = 8;
+export const REVEAL_AT = 8;
 const FIRST_SHARE = 40;
 const SECOND_SHARE = 30;
 const SECOND_MIN = 20;

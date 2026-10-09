@@ -19,8 +19,13 @@ export type FeastFacts = {
     | "crestEvents"
     | "crestReveal"
   >;
-  /** The campaign ended with this session: today's full-screen epilogue. */
+  /**
+   * The campaign ended with this session: its epilogue is already full screen, so it holds the
+   * place of the one big feast and says nothing in "Tonight" (its own screen says it).
+   */
   epilogue?: boolean;
+  /** The big feasts this phone has shown (`bigFeastsShown`); one in it is a card, not a screen. */
+  shown?: string[];
   /** The boss this session felled, by name. */
   boss?: { name: string; finalBlow?: boolean } | null;
   // V-03 has no producer yet: the types are here so the order below is the spec's, whole.
@@ -35,7 +40,6 @@ type Result = FeastFacts["result"];
 
 /** One thing tonight says, said once. `large` is shown full screen after "Continue". */
 export type Feast =
-  | Of<"epilogue">
   | Of<"reveal", NonNullable<Result["crestReveal"]>>
   | Of<"age", { name: string }>
   | Of<"anniversary", { years: number }>
@@ -56,13 +60,16 @@ type Built<T> = T extends Feast ? Omit<T, "size" | "id"> : never;
 /**
  * Sorts tonight's facts into a line, a card or the one full-screen feast. Pure.
  *
- * One `large` at most, the first of: the campaign's epilogue (already full screen today), the
- * reveal, an Age, the anniversary, a village tier. The others become cards. A boss and an oath
+ * One `large` at most, the first of: the campaign's epilogue (listed nowhere: its own screen is
+ * the feast), the reveal, an Age, the anniversary, a village tier not shown yet. The others
+ * become cards. A boss and an oath
  * are cards, always. A level reached on the same night as a tier is the tier card's own line, so
  * it is not said twice. Order of the list: the large one, the lines, then the cards (a demoted feast first).
  */
 export function rankFeasts(facts: FeastFacts): Feast[] {
-  const [first, ...demoted] = bigOnes(facts);
+  const bigs = bigOnes(facts);
+  const first = facts.epilogue ? undefined : bigs.find((f) => !isShown(f, facts.shown));
+  const demoted = bigs.filter((f) => f !== first);
   const sized = (items: Built<Feast>[], size: FeastSize) => items.map((f) => ({ ...f, size }));
   const ordered = [
     ...sized(first ? [first] : [], "large"),
@@ -74,9 +81,8 @@ export function rankFeasts(facts: FeastFacts): Feast[] {
 }
 
 /** The candidates for the one full-screen feast, in the spec's order. */
-function bigOnes({ result: r, epilogue, age, anniversary }: FeastFacts): Built<Feast>[] {
+function bigOnes({ result: r, age, anniversary }: FeastFacts): Built<Feast>[] {
   const big: Built<Feast>[] = [];
-  if (epilogue) big.push({ kind: "epilogue" });
   if (r.crestReveal) big.push({ kind: "reveal", ...r.crestReveal });
   if (age) big.push({ kind: "age", name: age.name });
   if (anniversary) big.push({ kind: "anniversary", years: anniversary.years });
@@ -84,6 +90,12 @@ function bigOnes({ result: r, epilogue, age, anniversary }: FeastFacts): Built<F
     big.push({ kind: "tier", tier: r.tierUp.newTier, level: r.levelUp?.newLevel ?? null });
   return big;
 }
+
+/** The id a big feast is marked under in `bigFeastsShown`: once per phone. */
+export const feastKey = (f: Built<Feast>) => (f.kind === "tier" ? `tier:${f.tier}` : f.kind);
+
+const isShown = (f: Built<Feast>, shown: string[] | undefined) =>
+  shown?.includes(feastKey(f)) === true;
 
 function lineOnes(r: Result): Built<Feast>[] {
   const lines: Built<Feast>[] = [];

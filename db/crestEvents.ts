@@ -7,13 +7,24 @@ import {
   PRACTICES,
   type Practice,
   type PracticeAnimal,
+  REVEAL_AT,
   VENERABLE_AT,
 } from "./crestRules";
 
 type Seen = Pick<Crest, "animal" | "stage" | "second" | "manual" | "quarters" | "evidence">;
 
 /** The animal the sessions chose and, for the boar, its quarters. */
-export type CrestReveal = { animal: Animal; quarters: [Practice, Practice] | null };
+export type CrestReveal = {
+  animal: Animal;
+  quarters: [Practice, Practice] | null;
+  /** The practices of the first 8 sessions, with their counts, the most done first. */
+  firstEight: [Practice, number][];
+  /**
+   * More than 8 sessions had a practice when the phone first shows this: a hero who already had
+   * them at the update, so the animal has watched since an earlier session than tonight's.
+   */
+  late: boolean;
+};
 
 export type CrestEvents = {
   /** The second animal entered: `n` of the `total` sessions with a practice are its practice. */
@@ -45,8 +56,15 @@ export function crestReveal(
   shown: string[] | undefined,
 ): CrestReveal | null {
   if (!after || !shown || shown.includes("reveal")) return null;
-  const { first } = after.evidence;
-  return { animal: first, quarters: after.evidence.boarQuarters };
+  const { first, firstEight } = after.evidence;
+  return {
+    animal: first,
+    quarters: after.evidence.boarQuarters,
+    firstEight: PRACTICES.flatMap((p): [Practice, number][] =>
+      firstEight[p] > 0 ? [[p, firstEight[p]]] : [],
+    ).sort((a, b) => b[1] - a[1]),
+    late: sessionsWithPractice(after) > REVEAL_AT,
+  };
 }
 
 function secondJoinsOf(before: Seen | null, after: Seen): CrestEvents["secondJoins"] {

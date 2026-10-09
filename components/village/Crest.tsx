@@ -7,7 +7,7 @@ import { ANIMAL_TOKEN } from "@/constants/animalColors";
 import { rawColors } from "@/constants/rawColors";
 import type { Crest as CrestData } from "@/db/crest";
 import { ANIMAL_OF, type Animal, type Practice } from "@/db/crestRules";
-import { type GameIconName, useGameIcon } from "@/hooks/useGameIcon";
+import { useGameIcon } from "@/hooks/useGameIcon";
 import {
   ANIMAL_BOX,
   BAND,
@@ -25,7 +25,7 @@ import {
   VIEW_H,
   VIEW_W,
 } from "./crestGeometry";
-import { PRACTICE_KEY, sentence } from "./crestText";
+import { CREST_ICON, PRACTICE_KEY, sentence } from "./crestText";
 
 /** What `getCrest` renders, less the evidence and stages the drawing does not read. */
 export type CrestShape = Pick<
@@ -39,15 +39,6 @@ export type CrestProps = {
   size: CrestSize;
   /** On a painting the crest sits on its own `bgDark` plate. */
   onPainting?: boolean;
-};
-
-const ICON: Record<Animal, GameIconName> = {
-  bear: "crestBear",
-  ermine: "crestErmine",
-  salmon: "crestSalmon",
-  stag: "crestStag",
-  horse: "crestHorse",
-  boar: "crestBoar",
 };
 
 /** A token like `$animalBear` as the colour Svg takes: Svg cannot read a Tamagui token. */
@@ -139,7 +130,7 @@ function Marks({ crest, size }: { crest: CrestShape; size: CrestSize }) {
 }
 
 export function Crest({ crest, size, onPainting = false }: CrestProps) {
-  const icon = useGameIcon(ICON[crest?.animal ?? "bear"]);
+  const icon = useGameIcon(CREST_ICON[crest?.animal ?? "bear"]);
   const label = useCrestLabel(crest);
   if (crest === null) return null;
 

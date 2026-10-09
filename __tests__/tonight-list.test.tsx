@@ -47,7 +47,7 @@ const rank = (over: Partial<FeastFacts["result"]>, rest: Omit<FeastFacts, "resul
   rankFeasts({ result: { ...base, ...over }, ...rest });
 
 const reveal = (animal: "bear" | "ermine" | "salmon" | "stag" | "horse" | "boar") =>
-  rank({ crestReveal: { animal, quarters: null } });
+  rank({ crestReveal: { animal, quarters: null, firstEight: [], late: false } });
 
 describe("TonightList", () => {
   afterEach(async () => {
@@ -82,7 +82,7 @@ describe("TonightList", () => {
 
   test("the large feast is a line with the 'after' badge, a record a line with 'record'", async () => {
     const feasts = rank({
-      crestReveal: { animal: "bear", quarters: null },
+      crestReveal: { animal: "bear", quarters: null, firstEight: [], late: false },
       newRecords: [
         {
           isNewRecord: true,
@@ -156,7 +156,10 @@ describe("TonightList", () => {
       show(
         rankFeasts({
           epilogue: true,
-          result: { ...base, crestReveal: { animal: "boar", quarters } } as never,
+          result: {
+            ...base,
+            crestReveal: { animal: "boar", quarters, firstEight: [], late: false },
+          } as never,
         }),
       );
     const mixed = await led(["strength", "run"]);
@@ -168,7 +171,7 @@ describe("TonightList", () => {
     expect(single.queryByText(/Tu mêles/)).toBeNull();
   });
 
-  test("a tier is a line after the epilogue... and a card when something else leads", async () => {
+  test("a tier is a line after... and a card when the epilogue holds the big place, which says nothing here", async () => {
     const feasts = rank(
       { tierUp: { oldTier: 2, newTier: 3 } as never, levelUp: { oldLevel: 4, newLevel: 5 } },
       {},
@@ -188,9 +191,9 @@ describe("TonightList", () => {
         } as never,
       }),
     );
-    expect(led.getByText("Ta campagne est terminée.")).toBeTruthy();
+    expect(led.queryByText("Ta campagne est terminée.")).toBeNull();
     expect(led.getByText("Niveau 5. Le village change d'allure.")).toBeTruthy();
-    expect(led.getAllByText("après")).toHaveLength(1);
+    expect(led.queryByText("après")).toBeNull();
   });
 
   test("a boss, an oath and a building rank are said once each", async () => {
@@ -421,7 +424,6 @@ describe("the Tonight copy, in every language", () => {
     "tonight_pair",
     "tonight_badge_after",
     "tonight_badge_record",
-    "tonight_epilogue",
     "tonight_anniversary_one",
     "tonight_anniversary_other",
     ...ANIMALS.map((a) => `tonight_reveal_${a}`),
@@ -492,7 +494,7 @@ describe("TonightList style", () => {
 
   test("the reveal wears its animal, the badges are ash and not gold", async () => {
     const { getByLabelText, getByText, getAllByRole } = await show(
-      rank({ crestReveal: { animal: "bear", quarters: null } }),
+      rank({ crestReveal: { animal: "bear", quarters: null, firstEight: [], late: false } }),
     );
     expect(getByLabelText(/^Un ours sort de la forêt.*, après$/)).toBeTruthy();
     expect(getAllByRole("image", { hidden: true })).toHaveLength(1);

@@ -1,5 +1,5 @@
 import { type Feast, type FeastFacts, rankFeasts } from "@/components/session/feasts";
-import { NO_CREST_EVENTS } from "@/db/crestEvents";
+import { type CrestReveal, NO_CREST_EVENTS } from "@/db/crestEvents";
 
 const empty: FeastFacts["result"] = {
   levelUp: null,
@@ -14,7 +14,7 @@ const empty: FeastFacts["result"] = {
   crestEvents: NO_CREST_EVENTS,
   crestReveal: null,
 };
-const reveal = { animal: "bear", quarters: null } as const;
+const reveal: CrestReveal = { animal: "bear", quarters: null, firstEight: [], late: false };
 const tierUp = { oldTier: 2, newTier: 3 } as const;
 const facts = (over: Partial<FeastFacts["result"]>, rest: Omit<FeastFacts, "result"> = {}) => ({
   result: { ...empty, ...over },
@@ -27,7 +27,7 @@ describe("rankFeasts", () => {
     expect(rankFeasts(facts({}))).toEqual([]);
   });
 
-  test("the epilogue is the only large one", () => {
+  test("the epilogue holds the big place and is listed nowhere", () => {
     const f = facts(
       {
         tierUp,
@@ -36,13 +36,7 @@ describe("rankFeasts", () => {
       },
       { epilogue: true, age: { name: "Age" }, anniversary: { years: 2 } },
     );
-    expect(sizes(f)).toEqual([
-      "epilogue:large",
-      "reveal:medium",
-      "age:medium",
-      "anniversary:medium",
-      "tier:medium",
-    ]);
+    expect(sizes(f)).toEqual(["reveal:medium", "age:medium", "anniversary:medium", "tier:medium"]);
   });
 
   test.each([
@@ -90,7 +84,6 @@ describe("rankFeasts", () => {
       { epilogue: true },
     );
     expect(sizes(f)).toEqual([
-      "epilogue:large",
       "level:small",
       "growth:small",
       "growth:small",
@@ -99,6 +92,12 @@ describe("rankFeasts", () => {
       "stageUp:medium",
       "achievement:medium",
     ]);
+  });
+
+  test("a tier this phone has shown is a card, and the next one leads", () => {
+    const shown = (key: string) => rankFeasts(facts({ tierUp }, { shown: [key] }));
+    expect(shown("tier:3").map((x) => `${x.kind}:${x.size}`)).toEqual(["tier:medium"]);
+    expect(shown("tier:2").map((x) => `${x.kind}:${x.size}`)).toEqual(["tier:large"]);
   });
 
   test("the level reached with a tier is the tier's, said once", () => {

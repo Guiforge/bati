@@ -457,6 +457,8 @@ interface SessionState {
     crestEvents: CrestEvents;
     /** The crest's reveal when it exists now and this phone has not shown it; null when either read failed. */
     crestReveal: CrestReveal | null;
+    /** The big feasts this phone has shown; undefined when the key could not be read. */
+    bigFeastsShown: string[] | undefined;
   }>;
 }
 
@@ -2130,6 +2132,7 @@ export const useSessionStore = create<SessionState>()(
         villageGrowth,
         crestEvents: diffCrest(crestBefore, crestAfter),
         crestReveal: crestReveal(crestAfter, shown),
+        bigFeastsShown: shown,
       };
     },
   })),

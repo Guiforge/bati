@@ -17,10 +17,10 @@ import type { Animal } from "@/db/crestRules";
 import type { DistanceUnit } from "@/db/preferences";
 import { formatCount, formatTarget, perSideLabel } from "@/db/targets";
 import { getLevelTitle } from "@/db/userLevel";
-import { TIER_NAMES } from "@/db/village";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
+import { tierSentence } from "./bigFeastText";
 import type { Feast } from "./feasts";
 import { formatRecordValue, recordTitle } from "./recordText";
 
@@ -36,18 +36,6 @@ const shield = (animal: Animal, size: 24 | 48 = 48) => (
   />
 );
 
-/** "Brumeval becomes a Village.", or "Your village becomes a Village." before it has a name. */
-const tierSentence = (
-  t: TFunction,
-  tier: Extract<Feast, { kind: "tier" }>["tier"],
-  villageName: string,
-  language: AppLanguage,
-) =>
-  t(`session.tonight_tier_${tier}`, {
-    subject: villageName || t("session.tonight_tier_subject_unnamed"),
-    tier: TIER_NAMES[tier][language],
-  });
-
 function placeOf(t: TFunction, villageName: string) {
   return villageName
     ? t("session.tonight_place_named", { name: villageName })
@@ -59,8 +47,6 @@ const the = (t: TFunction, a: Animal) => sentence(t(`village.crest_the_${a}`));
 /** The text of the feast that is shown full screen later: one line, with the "after" badge. */
 function largeLine(t: TFunction, f: Feast, villageName: string, language: AppLanguage): string {
   switch (f.kind) {
-    case "epilogue":
-      return t("session.tonight_epilogue");
     case "reveal":
       return t(`session.tonight_reveal_${f.animal}`, { place: placeOf(t, villageName) });
     case "age":

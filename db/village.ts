@@ -49,7 +49,7 @@ export type VillageTier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 // their first two months, and four levels between scenes is a long time to watch nothing change.
 // The top half deliberately did not get the same treatment: the art there is already at the edge
 // of what can escalate convincingly, and an intermediate step would read as a duplicate.
-const TIER_LEVEL_FLOORS: Record<VillageTier, number> = {
+export const TIER_LEVEL_FLOORS: Record<VillageTier, number> = {
   1: 1,
   2: 3,
   3: 5,

@@ -79,12 +79,15 @@ const saveResult = {
   newAchievements: [],
   oathBonusXp: 0,
   crestEvents: { secondJoins: null, stageUp: [] },
-  crestReveal: null as null | { animal: string; quarters: null },
+  crestReveal: null as null | { animal: string; quarters: null; firstEight: []; late: boolean },
+  bigFeastsShown: [] as string[],
   // `SaveResult` declares this required and `saveSession` always returns it; the fixture is cast
   // through `as unknown` and so was free to omit it until something read it. The villager cameo
   // does — it asks whether this session set a record before deciding who, if anyone, speaks.
   newRecords: [],
 };
+
+const BEAR = { animal: "bear", quarters: null, firstEight: [] as [], late: false };
 
 const mockQuest = {
   id: 1,
@@ -777,7 +780,7 @@ describe("VictoryView tonight", () => {
     const { release } = await mountWithPendingSave(
       { isFinished: true, adventureId: 3, nextQuestId: null, nextRunStepId: null } as never,
       12 * 60,
-      { crestReveal: { animal: "bear", quarters: null } },
+      { crestReveal: BEAR },
     );
     await release();
 
@@ -786,12 +789,97 @@ describe("VictoryView tonight", () => {
 
   it("leaves the reveal unmarked when it is the large feast, which the full screen marks", async () => {
     const { view, release } = await mountWithPendingSave(null, 12 * 60, {
-      crestReveal: { animal: "bear", quarters: null },
+      crestReveal: BEAR,
     });
     await release();
 
     // It is on screen as the line with its "after" badge, and not marked.
     expect(view.getByText("session.tonight_badge_after")).toBeTruthy();
     expect(mockMarkBigFeastShown).not.toHaveBeenCalled();
+  });
+
+  describe("the big feast", () => {
+    beforeEach(() => {
+      mockPush.mockClear();
+      mockReplace.mockClear();
+      mockQuitSession.mockClear();
+    });
+
+    const campaign = {
+      isFinished: false,
+      adventureId: 3,
+      nextQuestId: 9,
+      nextRunStepId: 4,
+    } as never;
+
+    it("opens by itself after Continue, keeps the session, and carries the road Continue would take", async () => {
+      const { view, release } = await mountWithPendingSave(campaign, 12 * 60, {
+        crestReveal: BEAR,
+      });
+      await release();
+      await fireEvent.press(view.getByTestId("session-victory-continue"));
+
+      expect(mockQuitSession).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(mockPush).toHaveBeenCalledTimes(1);
+      const arg = mockPush.mock.calls[0]?.[0] as {
+        pathname: string;
+        params: Record<string, string>;
+      };
+      expect(arg.pathname).toBe("/big-feast");
+      expect(JSON.parse(arg.params.feast ?? "null")).toMatchObject({
+        kind: "reveal",
+        animal: "bear",
+      });
+      expect(arg.params.next).toBe("/quests/9?runStepId=4&adventureId=3");
+      expect(arg.params.anchor).toBe("1");
+      expect(arg.params.village).toBe("/(tabs)/village?grown=");
+      expect(arg.params.tier).toBe("1");
+    });
+
+    it("opens once a night: the second Continue goes on, and Tonight stops announcing it", async () => {
+      const { view, release } = await mountWithPendingSave(null, 12 * 60, { crestReveal: BEAR });
+      await release();
+      expect(view.getByText("session.tonight_badge_after")).toBeTruthy();
+      await fireEvent.press(view.getByTestId("session-victory-continue"));
+      expect(view.queryByText("session.tonight_badge_after")).toBeNull();
+
+      await fireEvent.press(view.getByTestId("session-victory-continue"));
+      expect(mockPush).toHaveBeenCalledTimes(1);
+      expect(mockQuitSession).toHaveBeenCalledTimes(1);
+      expect(mockReplace).toHaveBeenCalledWith("/");
+    });
+
+    it("does not open when there is none, or when this phone has shown the tier", async () => {
+      const plain = await mountWithPendingSave(null, 12 * 60, { newRecords: [record] });
+      await plain.release();
+      await fireEvent.press(plain.view.getByTestId("session-victory-continue"));
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledWith("/");
+      await plain.view.unmount();
+
+      mockReplace.mockClear();
+      const seen = await mountWithPendingSave(null, 12 * 60, {
+        tierUp: { oldTier: 2, newTier: 3 },
+        bigFeastsShown: ["tier:3"],
+      });
+      await seen.release();
+      await fireEvent.press(seen.view.getByTestId("session-victory-continue"));
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledWith("/");
+    });
+
+    it("leaves the full screen to the epilogue: nothing opens and Tonight does not list it", async () => {
+      const { view, release } = await mountWithPendingSave(
+        { isFinished: true, adventureId: 3, nextQuestId: null, nextRunStepId: null } as never,
+        12 * 60,
+        { crestReveal: BEAR, tierUp: { oldTier: 2, newTier: 3 } },
+      );
+      await release();
+      expect(view.queryByText("session.tonight_badge_after")).toBeNull();
+      await fireEvent.press(view.getByTestId("session-victory-continue"));
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledWith("/adventures/3", { withAnchor: true });
+    });
   });
 });

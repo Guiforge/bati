@@ -28,13 +28,31 @@ function step(history: CrestSession[], practice: Practice, choice: Animal | "aut
 describe("crestEvents", () => {
   test("the 8th session reveals the animal the sessions chose", () => {
     const after = crestAnimals(seq(["strength", 8]), "auto");
-    expect(crestReveal(after, [])).toEqual({ animal: "bear", quarters: null });
+    expect(crestReveal(after, [])).toEqual({
+      animal: "bear",
+      quarters: null,
+      firstEight: [["strength", 8]],
+      late: false,
+    });
     expect(crestReveal(crestAnimals(seq(["strength", 7]), "auto"), [])).toBeNull();
   });
 
   test("a hero with 300 sessions and no reveal in the key sees it on the first victory", () => {
     const after = crestAnimals(seq(["strength", 300]), "auto");
     expect(crestReveal(after, ["age-50"])?.animal).toBe("bear");
+  });
+
+  test("a reveal that comes after the 8th session counts the first eight and says it is late", () => {
+    const h = seq(["strength", 5], ["yoga", 3], ["run", 40]);
+    const reveal = crestReveal(crestAnimals(h, "auto"), []);
+    expect(reveal).toMatchObject({
+      animal: "bear",
+      firstEight: [
+        ["strength", 5],
+        ["yoga", 3],
+      ],
+      late: true,
+    });
   });
 
   test("a key that holds the reveal says nothing", () => {

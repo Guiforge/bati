@@ -5,13 +5,13 @@ import { rawColors } from "@/constants/rawColors";
  * 10 in the normal view and under Machado 2009 (severity 1) protanopia, deuteranopia, tritanopia.
  * The closest pair measured is stag and horse in tritanopia, 10.89.
  */
-const ANIMALS = {
-  bear: rawColors.animalBear,
-  ermine: rawColors.animalErmine,
-  salmon: rawColors.animalSalmon,
-  stag: rawColors.animalStag,
-  horse: rawColors.animalHorse,
-};
+// Derived from the palette, so a sixth `animal*` colour is measured without anyone remembering to
+// list it. The cast only names today's five for the type checker; the keys come from `rawColors`.
+const ANIMALS = Object.fromEntries(
+  Object.entries(rawColors)
+    .filter(([key]) => key.startsWith("animal"))
+    .map(([key, value]) => [key.slice("animal".length).toLowerCase(), value]),
+) as Record<"bear" | "ermine" | "salmon" | "stag" | "horse", string>;
 
 type Matrix = readonly [
   readonly [number, number, number],

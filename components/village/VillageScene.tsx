@@ -125,6 +125,9 @@ function Glow() {
 const TITLE_BLOCK = { px: "$4", pb: 28, gap: 6 } as const;
 /** A line of the header's small text: its height at the current font scale, for the skeleton. */
 const TEXT_LINE = 17;
+/** The flame chip: about 118 wide and 24 high at 100 %, 14 dp icon and 11.5 text plus padding. */
+const CHIP_W = 118;
+const CHIP_H = 24;
 
 const LEAN = { duration: 900, easing: Easing.bezier(0.2, 0.7, 0.2, 1) } as const;
 
@@ -320,8 +323,11 @@ export function VillageScene() {
           <YStack testID="village-title" {...TITLE_BLOCK} onLayout={measureTitle}>
             <XStack items="center" gap={10}>
               <Skeleton bg="$surface2" {...crestFootprint(CREST_SIZE, true)} />
-              <XStack flex={1} minW={0} flexWrap="wrap" items="center">
+              <XStack flex={1} minW={0} flexWrap="wrap" items="center" columnGap={10} rowGap={4}>
                 {villageName ? <TitleText>{villageName}</TitleText> : null}
+                {/* The flame chip's room (a streak is the common case): where it wraps under
+                    the name, the name is already as high as it will be. */}
+                <Skeleton width={CHIP_W} height={CHIP_H} radius={999} />
               </XStack>
             </XStack>
             <Skeleton height={lineHeight} width="55%" />

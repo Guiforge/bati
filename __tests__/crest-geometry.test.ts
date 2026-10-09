@@ -1,12 +1,15 @@
 import {
   ANIMAL_BOX,
+  BAND,
   BORDER,
   type CrestSize,
   crossRects,
   DIAMOND,
   filetInset,
   filetWidth,
+  flamesPath,
   insetShield,
+  RING_GAP,
   ringsLayout,
   SHIELD,
   VIEW_W,
@@ -140,14 +143,67 @@ describe("crest rings", () => {
 
   it("keeps every ring inside its pastille, one per year, even past 10", () => {
     for (let n = 1; n <= 14; n++) {
-      const { box, centres, r } = ringsLayout(n);
+      const { box, centres, r, strokeWidth } = ringsLayout(n);
+      const out = r + strokeWidth / 2;
       expect(centres).toHaveLength(n);
       for (const [x, y] of centres) {
-        expect(x - r).toBeGreaterThan(box.x);
-        expect(x + r).toBeLessThan(box.x + box.w);
-        expect(y - r).toBeGreaterThan(box.y);
-        expect(y + r).toBeLessThan(box.y + box.h);
+        expect(x - out).toBeGreaterThan(box.x);
+        expect(x + out).toBeLessThan(box.x + box.w);
+        expect(y - out).toBeGreaterThan(box.y);
+        expect(y + out).toBeLessThan(box.y + box.h);
       }
     }
+  });
+
+  it("has 5 to a row and 2 rows at most", () => {
+    for (let n = 1; n <= 14; n++) {
+      const { centres } = ringsLayout(n);
+      const rows = new Set(centres.map(([, y]) => y));
+      expect(rows.size).toBeLessThanOrEqual(2);
+      for (const y of rows) {
+        const inRow = centres.filter((c) => c[1] === y).length;
+        if (n <= 10) expect(inRow).toBeLessThanOrEqual(5);
+      }
+    }
+  });
+
+  it("leaves a visible gap between rings and a hollow in each, up to 14", () => {
+    // 0.1 u under the nominal gap: the radii are rounded to a tenth.
+    for (let n = 1; n <= 14; n++) {
+      const { centres, r, strokeWidth } = ringsLayout(n);
+      const out = r + strokeWidth / 2;
+      for (const [i, a] of centres.entries())
+        for (const b of centres.slice(i + 1))
+          expect(Math.hypot(a[0] - b[0], a[1] - b[1]) - 2 * out).toBeGreaterThanOrEqual(
+            RING_GAP - 0.1,
+          );
+      expect(2 * (r - strokeWidth / 2)).toBeGreaterThanOrEqual(1.9);
+    }
+  });
+
+  it("is a stroked outline, not a disc", () => {
+    expect(ringsLayout(3).strokeWidth).toBeGreaterThan(0);
+  });
+});
+
+describe("crest flame band", () => {
+  const xs = (d: string) => sample(d).map((p) => p[0]);
+  const ys = (d: string) => sample(d).map((p) => p[1]);
+
+  it("sits inside the border, not on the edge of the shield, so the silhouette stays whole", () => {
+    expect(Math.min(...xs(BAND))).toBeGreaterThanOrEqual(BORDER);
+    expect(Math.max(...xs(BAND))).toBeLessThanOrEqual(VIEW_W - BORDER);
+    expect(Math.min(...ys(BAND))).toBeGreaterThanOrEqual(BORDER);
+  });
+
+  it("holds its flames, five at most, and leaves the animal's box clear", () => {
+    for (let n = 1; n <= 5; n++) {
+      const d = flamesPath(n);
+      expect(Math.min(...xs(d))).toBeGreaterThanOrEqual(Math.min(...xs(BAND)));
+      expect(Math.max(...xs(d))).toBeLessThanOrEqual(Math.max(...xs(BAND)));
+      expect(Math.min(...ys(d))).toBeGreaterThanOrEqual(Math.min(...ys(BAND)));
+      expect(Math.max(...ys(d))).toBeLessThanOrEqual(Math.max(...ys(BAND)));
+    }
+    expect(Math.max(...ys(BAND))).toBeLessThanOrEqual(ANIMAL_BOX.y);
   });
 });

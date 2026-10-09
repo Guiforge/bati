@@ -90,8 +90,11 @@ const CREST_ROWS: [string, CrestShape][] = [
       manual: true,
     }),
   ],
+  ["bear + stag, 5 rings", crestOf({ animal: "bear", second: second("stag"), rings: 5 })],
+  ["bear + stag, 6 rings", crestOf({ animal: "bear", second: second("stag"), rings: 6 })],
   ["bear + stag, 10 rings", crestOf({ animal: "bear", second: second("stag"), rings: 10 })],
   ["bear + stag, 12 rings", crestOf({ animal: "bear", second: second("stag"), rings: 12 })],
+  ["bear + stag, 14 rings", crestOf({ animal: "bear", second: second("stag"), rings: 14 })],
 ];
 const CREST_SIZES = [24, 48, 56, 96] as const;
 const CREST_GROUNDS = [

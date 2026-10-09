@@ -4,7 +4,6 @@ export const VIEW_W = 96;
 export const VIEW_H = 112;
 /** The border, 8 u of 96: 2 px at 24. */
 export const BORDER = 8;
-export const BAND_H = 22;
 
 export type CrestSize = 24 | 48 | 56 | 96;
 
@@ -91,51 +90,69 @@ export const crossPath = (size: CrestSize): string =>
   crossRects(size)
     .map(({ x, y, w, h }) => `M${r1(x)} ${r1(y)}h${r1(w)}v${r1(h)}h${r1(-w)}Z`)
     .join("");
-export const BAND = `M0 0H${VIEW_W}V${BAND_H}H0Z`;
+/** The bottom of the flame band, in u: the animal's box starts one unit under it. */
+const BAND_BOTTOM = 27;
 
-/** `n` flames side by side, centred, in one path. */
+/**
+ * The flame band: ink, inside the border and over the filet's own ink, never up to the edge of
+ * the shield. A single animal keeps a rim of its colour (the border's width) above and beside the
+ * band, so the shield's silhouette stays whole on `bgDark`, which is also the ink.
+ */
+export const BAND = `M${BORDER} ${BORDER}H${VIEW_W - BORDER}V${BAND_BOTTOM}H${BORDER}Z`;
+
+/** `n` flames side by side, centred, in one path, inside `BAND`. */
 export function flamesPath(n: number): string {
   const pitch = 13;
   const x0 = 48 - ((n - 1) * pitch) / 2;
   let d = "";
   for (let i = 0; i < n; i++) {
     const cx = r1(x0 + i * pitch);
-    d += `M${cx} 4C${r1(cx + 6)} 9 ${r1(cx + 5)} 15 ${cx} 18C${r1(cx - 5)} 15 ${r1(cx - 6)} 9 ${cx} 4Z`;
+    d += `M${cx} 12C${r1(cx + 5)} 16 ${r1(cx + 4)} 21 ${cx} 24C${r1(cx - 4)} 21 ${r1(cx - 5)} 16 ${cx} 12Z`;
   }
   return d;
 }
 
-const PITCH = 6;
 const PER_ROW = 5;
 const PAD = 2;
+/** The space left between two rings, row to row and ring to ring, in u: 1 px or more at 96. */
+export const RING_GAP = 1.2;
 /** The pastille's bottom edge: the lowest the point of the shield leaves it room, for two rows. */
 const PASTILLE_BOTTOM = 90;
+/** Ring to ring, centre to centre, at 5 or fewer per row. */
+const PITCH = 6.4;
 
+/** A circle as one closed sub-path, to be stroked: a ring, not a disc. */
 const circle = (cx: number, cy: number, r: number) =>
   `M${r1(cx - r)} ${r1(cy)}a${r1(r)} ${r1(r)} 0 1 0 ${r1(2 * r)} 0a${r1(r)} ${r1(r)} 0 1 0 ${r1(-2 * r)} 0Z`;
 
 export type RingsLayout = {
   pastille: string;
+  /** The rings' centre lines: stroked in gold, `strokeWidth` wide, never filled. */
   rings: string;
+  strokeWidth: number;
   /** The pastille's bounding box, its corners rounded inside it. */
   box: { x: number; y: number; w: number; h: number };
   centres: [number, number][];
+  /** The centre line's radius: the outside of a ring is `r + strokeWidth / 2`. */
   r: number;
 };
 
 /**
- * One ring per year. Up to 10 they sit `PER_ROW` to a row, in at most two rows, on a pastille
- * that ends at `PASTILLE_BOTTOM` and stays clear of the filet and of the animal's box. Past 10
- * the rows stay two and the rings shrink to fit the same width: legible to about 14, and one ring
- * per year always, which is the rule that matters.
+ * One hollow ring per year, gold on an ink pastille. Up to 5 they share a row at the full pitch;
+ * from 6 there are two rows of `ceil(n / 2)`, and past 10 the pitch shrinks so the pastille keeps
+ * its width. A visible `RING_GAP` stays between neighbours at every count: what gives is the
+ * ring's size (5.2 u across at 5 or fewer per row, 3.4 u at 7, the last count the hollow of a
+ * ring reads at 96), never the count. That is the whole rule: one per year, two rows at most.
  */
 export function ringsLayout(n: number): RingsLayout {
   const rows = n > PER_ROW ? 2 : 1;
   const perRow = n > PER_ROW ? Math.max(PER_ROW, Math.ceil(n / 2)) : n;
   const pitch = Math.min(PITCH, (PER_ROW * PITCH) / perRow);
-  const r = (pitch * 13) / 30;
-  const w = perRow * pitch + 2 * PAD;
-  const h = rows * pitch + 2 * PAD - 1;
+  const outer = pitch - RING_GAP;
+  const strokeWidth = r1(Math.min(1, outer * 0.2));
+  const r = r1((outer - strokeWidth) / 2);
+  const w = perRow * pitch + 2 * PAD - RING_GAP;
+  const h = (rows - 1) * pitch + outer + 2 * PAD;
   const box = { x: 48 - w / 2, y: PASTILLE_BOTTOM - h, w, h };
   const rad = 5;
   const pastille = `M${r1(box.x + rad)} ${r1(box.y)}h${r1(w - 2 * rad)}a${rad} ${rad} 0 0 1 ${rad} ${rad}v${r1(h - 2 * rad)}a${rad} ${rad} 0 0 1 ${-rad} ${rad}h${r1(2 * rad - w)}a${rad} ${rad} 0 0 1 ${-rad} ${-rad}v${r1(2 * rad - h)}a${rad} ${rad} 0 0 1 ${rad} ${-rad}Z`;
@@ -144,9 +161,16 @@ export function ringsLayout(n: number): RingsLayout {
     const row = Math.floor(i / perRow);
     const inRow = Math.min(perRow, n - row * perRow);
     const cx = 48 + ((i % perRow) - (inRow - 1) / 2) * pitch;
-    centres.push([cx, box.y + h / 2 + ((rows - 1) / 2 - row) * pitch]);
+    centres.push([cx, box.y + h / 2 + (row - (rows - 1) / 2) * pitch]);
   }
-  return { pastille, rings: centres.map(([x, y]) => circle(x, y, r)).join(""), box, centres, r };
+  return {
+    pastille,
+    rings: centres.map(([x, y]) => circle(x, y, r)).join(""),
+    strokeWidth,
+    box,
+    centres,
+    r,
+  };
 }
 
 /**

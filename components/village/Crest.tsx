@@ -83,6 +83,8 @@ function useCrestLabel(crest: CrestShape | null): string {
 }
 
 const INK = rawColors.bgDark;
+/** How far the boar's halo goes past its glyph, in u. */
+const HALO = 4;
 const GOLD = rawColors.resourceGold;
 
 /** The field: one animal's colour, that colour inside a border, or the boar's four quarters. */
@@ -98,8 +100,10 @@ function Field({ crest, size }: { crest: CrestShape; size: CrestSize }) {
     );
   }
   const fill = fillOf(ANIMAL_TOKEN[crest.animal]);
-  const second = crest.second?.animal;
-  if (second === undefined || second === "boar") return <Path d={SHIELD} fill={fill} />;
+  // A second animal is never the boar (crestRules: `border` is null for it, tested); the type
+  // cannot say so without threading a narrower animal through the rules.
+  const second = crest.second?.animal as keyof typeof ANIMAL_TOKEN | undefined;
+  if (second === undefined) return <Path d={SHIELD} fill={fill} />;
   // The filet is stroked along the inset shield, its outer edge on the border's inner edge.
   return (
     <>
@@ -128,7 +132,7 @@ function Marks({ crest, size }: { crest: CrestShape; size: CrestSize }) {
       {rings !== null ? (
         <>
           <Path d={rings.pastille} fill={INK} />
-          <Path d={rings.rings} fill={GOLD} />
+          <Path d={rings.rings} fill="none" stroke={GOLD} strokeWidth={rings.strokeWidth} />
         </>
       ) : null}
       {crest.manual && size > 24 ? <Path d={DIAMOND} fill={INK} /> : null}
@@ -154,6 +158,22 @@ export function Crest({ crest, size, onPainting = false }: CrestProps) {
         <Field crest={crest} size={size} />
         <Marks crest={crest} size={size} />
       </Svg>
+      {crest.animal === "boar" ? (
+        // The boar's ink glyph sits on the ink cross and merges with it: the same glyph, larger
+        // and bone, behind it, cuts the head out of the cross.
+        <Image
+          source={icon}
+          tintColor={rawColors.text}
+          contentFit="contain"
+          style={{
+            position: "absolute",
+            left: (ANIMAL_BOX.x - HALO) * scale,
+            top: (ANIMAL_BOX.y - HALO) * scale,
+            width: (ANIMAL_BOX.size + 2 * HALO) * scale,
+            height: (ANIMAL_BOX.size + 2 * HALO) * scale,
+          }}
+        />
+      ) : null}
       <Image
         source={icon}
         tintColor={INK}

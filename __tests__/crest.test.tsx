@@ -1,4 +1,5 @@
 import { act, render, screen } from "@testing-library/react-native";
+import { processColor } from "react-native";
 import { TamaguiProvider } from "tamagui";
 import { Crest, type CrestShape } from "@/components/village/Crest";
 import { rawColors } from "@/constants/rawColors";
@@ -62,11 +63,11 @@ describe("Crest", () => {
     expect(svgNodes()).toBe(0);
   });
 
-  it("stays within 12 SVG nodes for the worst crests, and the animal is one more node", async () => {
+  it("stays within 12 nodes for the worst crests, the glyph images counted too", async () => {
     for (const worst of [boar, bearStag]) {
       await mount(worst, 96);
-      // Image is an expo-image over the Svg, not a node of it: 12 holds with it counted too.
-      expect(svgNodes() + 1).toBeLessThanOrEqual(12);
+      // Images are expo-images over the Svg, not nodes of it: 12 holds with them counted.
+      expect(svgNodes() + svgHosts((t) => t.includes("ExpoImage")).length).toBeLessThanOrEqual(12);
       expect(svgNodes()).toBeGreaterThan(0);
     }
   });
@@ -89,6 +90,14 @@ describe("Crest", () => {
     expect(svgNodes()).toBe(3);
     await mount({ ...base, manual: true }, 48);
     expect(svgNodes()).toBe(4);
+  });
+
+  it("draws the rings as gold outlines on an ink pastille, never as discs", async () => {
+    await mount({ ...base, rings: 3 }, 96);
+    const ring = paths().find((p) => p.stroke !== undefined && p.stroke !== null);
+    expect(ring).toBeDefined();
+    expect(ring?.stroke).toEqual({ type: 0, payload: processColor(rawColors.resourceGold) });
+    expect(ring?.fill).not.toEqual({ type: 0, payload: processColor(rawColors.resourceGold) });
   });
 
   it("separates two animal colours with an ink filet, and a lone animal has none", async () => {
@@ -120,6 +129,14 @@ describe("Crest", () => {
     expect(glyph()).toEqual(["crestErmine"]);
     await mount({ ...base, animal: "bear" }, 48);
     expect(glyph()).toEqual(["crestBear"]);
+  });
+
+  it("cuts the boar's head out of its cross with a bone halo, a glyph twice, and no other animal", async () => {
+    const images = () => svgHosts((t) => t.includes("ExpoImage")).length;
+    await mount({ ...base, animal: "boar", quarters: ["strength", "run"] }, 96);
+    expect(images()).toBe(2);
+    await mount({ ...base, animal: "stag" }, 96);
+    expect(images()).toBe(1);
   });
 
   it("reads the crest as whole sentences", async () => {

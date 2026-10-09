@@ -446,22 +446,22 @@ export function VictoryView() {
               <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$resourceGold" />
             </YStack>
             <YStack position="absolute" b={0} l={0} r={0} p="$4" gap="$1">
-              {/* The kicker and the title are one unit: the kicker announces a reward, so it is gold
-                  on a boss kill and on a plain quest alike, directly over the cartouche. */}
+              {/* The kicker and the title are one unit: the kicker announces a reward, gold, directly
+                  over the cartouche. A felled boss has none: "Tonight" carries that fact as a card,
+                  and a fact is said once. */}
               <YStack gap={2} self="flex-start">
-                <Text
-                  testID="victory-kicker"
-                  fontFamily="$body"
-                  fontWeight="700"
-                  color="$resourceGold"
-                  fontSize={13}
-                  letterSpacing={2}
-                >
-                  {(isBossDefeat
-                    ? t("boss.victory_title")
-                    : t("session.victory_title")
-                  ).toUpperCase()}
-                </Text>
+                {!isBossDefeat && (
+                  <Text
+                    testID="victory-kicker"
+                    fontFamily="$body"
+                    fontWeight="700"
+                    color="$resourceGold"
+                    fontSize={13}
+                    letterSpacing={2}
+                  >
+                    {t("session.victory_title").toUpperCase()}
+                  </Text>
+                )}
                 <Recitatif>{heroTitle}</Recitatif>
               </YStack>
               {isBossDefeat && (

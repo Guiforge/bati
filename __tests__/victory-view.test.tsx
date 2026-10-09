@@ -612,6 +612,24 @@ describe("VictoryView villager slot, and what is under it", () => {
     }
   });
 
+  // "Tonight" carries the boss as a card, so the banner must not announce it a second time.
+  it.each([
+    ["a quest victory", false, 1],
+    ["a boss victory", true, 0],
+  ])("shows the gold kicker on %s: %i time(s)", async (_, isBoss, count) => {
+    const { view, release } = await mountWithPendingSave();
+    if (isBoss) {
+      await act(() => {
+        useSessionStore.setState({
+          bossFight: boss,
+          bossStartHp: 10,
+        } as unknown as Partial<ReturnType<typeof useSessionStore.getState>>);
+      });
+    }
+    await release();
+    expect(view.queryAllByTestId("victory-kicker")).toHaveLength(count);
+  });
+
   // At 1.3 the 88 dp slot held two and a half lines and cut the third mid-glyph.
   it("sizes the slot for three lines at the device's font scale, fixed for the render", async () => {
     const rn = jest.requireActual("react-native") as typeof import("react-native");

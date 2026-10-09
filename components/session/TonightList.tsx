@@ -24,12 +24,13 @@ import type { Feast } from "./feasts";
 import { formatRecordValue, recordTitle } from "./recordText";
 
 type Badge = "after" | "record";
-type Line = { id: string; text: string; badge?: Badge };
+/** `text` may hold `<b>…</b>` runs: the figure the line is about, set in bold. */
+type Line = { id: string; text: string; badge?: Badge; art?: ReactNode };
 type CardData = { id: string; title: string; body?: string[]; art: ReactNode };
 
-const shield = (animal: Animal) => (
+const shield = (animal: Animal, size: 24 | 48 = 48) => (
   <Crest
-    size={48}
+    size={size}
     crest={{ animal, manual: false, second: null, quarters: null, longestFlame: 0, rings: 0 }}
   />
 );
@@ -85,7 +86,18 @@ function recordLine(
   if (!isExercise)
     return t("session.tonight_pair", { what: recordTitle(t, record, language), detail: value });
   const name = record.exerciseName?.[language] ?? recordTitle(t, record, language);
-  if (record.previousValue === null) return `${name} ${value}`;
+  if (record.previousValue === null) {
+    // No "was" to read the unit off, so the figure carries it, as it does everywhere else.
+    const unitValue =
+      record.recordType === "exercise_max_reps"
+        ? perSideLabel(
+            formatTarget({ type: "reps", value: record.newValue }, language),
+            record.perSide,
+            language,
+          )
+        : value;
+    return `<b>${name} ${unitValue}</b>`;
+  }
   const was = formatRecordValue({ ...record, newValue: record.previousValue }, unit, language);
   return t("session.tonight_record_was", { name, value, was });
 }
@@ -98,7 +110,13 @@ function lineOf(
   unit: DistanceUnit,
 ): Line | null {
   if (f.size === "large")
-    return { id: f.id, text: largeLine(t, f, villageName, language), badge: "after" };
+    return {
+      id: f.id,
+      text: largeLine(t, f, villageName, language),
+      badge: "after",
+      // The reveal wears the animal it names, where the other lines wear the gold bead.
+      ...(f.kind === "reveal" ? { art: shield(f.animal, 24) } : {}),
+    };
   switch (f.kind) {
     case "level":
       return {
@@ -267,23 +285,35 @@ function cardOf(
   }
 }
 
+const TAGS = /<\/?b>/g;
+
 function LineRow({ line }: { line: Line }) {
   const { t } = useTranslation();
   const badge = line.badge ? t(`session.tonight_badge_${line.badge}`) : null;
+  const plain = line.text.replace(TAGS, "");
   return (
     <XStack
       items="center"
       gap="$3"
       accessible
-      accessibilityLabel={badge ? `${line.text}, ${badge}` : line.text}
+      accessibilityLabel={badge ? `${plain}, ${badge}` : plain}
     >
-      <YStack width={8} height={8} rounded={4} bg="$resourceGold" />
+      {line.art ?? <YStack width={8} height={8} rounded={4} bg="$resourceGold" />}
       <Text flex={1} fontSize={15} color="$text">
-        {line.text}
+        {line.text.split(/<b>|<\/b>/).map((part, i) =>
+          i % 2 ? (
+            // biome-ignore lint/suspicious/noArrayIndexKey: a static split, never reordered
+            <Text key={i} fontWeight="700">
+              {part}
+            </Text>
+          ) : (
+            part
+          ),
+        )}
       </Text>
       {badge ? (
         <YStack borderWidth={1} borderColor="$glassBorder" rounded="$2" px="$2" py="$1">
-          <Text fontSize={12} color="$resourceGold">
+          <Text fontSize={12} color="$textSecondary">
             {badge}
           </Text>
         </YStack>

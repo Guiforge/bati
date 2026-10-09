@@ -438,3 +438,75 @@ describe("the Tonight copy, in every language", () => {
     }
   });
 });
+
+describe("TonightList style", () => {
+  afterEach(async () => {
+    await act(() => i18n.changeLanguage("en"));
+  });
+  const dark = config.themes.dark as unknown as Record<string, { val: string }>;
+  const weight = (node: { props: { style?: unknown } }) =>
+    (StyleSheet.flatten(node.props.style as never) as { fontWeight?: string }).fontWeight;
+  const record = (over: Record<string, unknown>) =>
+    rank({
+      newRecords: [
+        {
+          isNewRecord: true,
+          recordType: "exercise_max_reps",
+          newValue: 14,
+          previousValue: 12,
+          exerciseName: { en: "Push-ups", fr: "Pompes", de: "Liegestütze", es: "Flexiones" },
+          perSide: false,
+          ...over,
+        } as never,
+      ],
+    });
+
+  test("the record's name and figure are bold, what it was is not", async () => {
+    const { getByText } = await show(record({}));
+    expect(weight(getByText("Pompes 14"))).toBe("700");
+    expect(getByText("Pompes 14, était 12")).toBeTruthy();
+  });
+
+  test("a building's rank is bold, its name is not", async () => {
+    const { getByText } = await show(
+      rank({
+        villageGrowth: [
+          {
+            code: "forge",
+            enName: "Forge",
+            frName: "Forge",
+            deName: "Schmiede",
+            esName: "Herrería",
+            relatedMuscle: null,
+            oldLevel: 5,
+            newLevel: 6,
+          },
+        ],
+      }),
+    );
+    expect(weight(getByText("rang 6"))).toBe("700");
+  });
+
+  test("the reveal wears its animal, the badges are ash and not gold", async () => {
+    const { getByLabelText, getByText, getAllByRole } = await show(
+      rank({ crestReveal: { animal: "bear", quarters: null } }),
+    );
+    expect(getByLabelText(/^Un ours sort de la forêt.*, après$/)).toBeTruthy();
+    expect(getAllByRole("image", { hidden: true })).toHaveLength(1);
+    expect(StyleSheet.flatten(getByText("après").props.style).color).toBe(dark.textSecondary?.val);
+    expect(StyleSheet.flatten(getByText("après").props.style).color).not.toBe(
+      dark.resourceGold?.val,
+    );
+  });
+
+  test("a first record carries its unit: reps and seconds", async () => {
+    const reps = await show(record({ previousValue: null, newValue: 10 }), "en");
+    expect(reps.getByText("Push-ups 10 reps")).toBeTruthy();
+    await reps.unmount();
+    const hold = await show(
+      record({ recordType: "exercise_max_time", previousValue: null, newValue: 45 }),
+      "en",
+    );
+    expect(hold.getByText("Push-ups 45s")).toBeTruthy();
+  });
+});

@@ -82,6 +82,19 @@ test("the backup brings the hero, and this phone keeps its own folder, id and cr
   expect(after).not.toHaveProperty("backupEncryption");
 });
 
+test("a backup from before the portable avatar keeps the photo this phone already ported", async () => {
+  const staged = path.join(dir, "pre-avatar.db");
+  await backup().snapshotDatabaseTo(staged);
+  const old = new Database(staged);
+  old.prepare("DELETE FROM user_preferences WHERE key = 'customAvatar'").run();
+  old.close();
+  setPref(t.sqlite, "customAvatar", "data:image/jpeg;base64,THIS");
+
+  await backup().keepDeviceSettings(staged);
+
+  expect(prefs(staged).customAvatar).toBe("data:image/jpeg;base64,THIS");
+});
+
 test("a session interrupted on either device does not survive the swap", async () => {
   const staged = path.join(dir, "interrupted.db");
   await backup().snapshotDatabaseTo(staged);

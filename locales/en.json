@@ -635,7 +635,7 @@
     "rest_title": "Rest and standing still never pay",
     "rest_body": "Indoors, the rest you took comes out. Outside, only the seconds the GPS saw you moving count, so a red light is worth nothing. With no signal, the clock stands in, capped at four hours.",
     "movement_title": "Every exercise carries its own price",
-    "movement_body": "A hard rep is worth roughly three easy ones, a stretch less than a hold of the same length, and a session is the sum of its exercises. So a quest that has you walk and then do push-ups prices each half its own way.",
+    "movement_body": "A hard rep is worth roughly three easy ones, a stretch is worth less than a hold of the same length, and a session is the sum of its exercises. So a quest that has you walk and then do push-ups prices each half its own way.",
     "outside_title": "Going out has a rate, not a difficulty",
     "outside_body": "A minute moving is worth a fraction of a minute of effort: a quarter walking, a quarter riding, a half running. A walk is neither easy nor hard, so your level does not change it. Riding is not above walking because a phone cannot tell a bicycle from a car.",
     "decay_title": "Outside, the hour pays less than the one before",

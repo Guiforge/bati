@@ -394,7 +394,7 @@ describe("db/xp", () => {
   /**
    * A tester holds a plank for ninety seconds and flows through cat-cow for five minutes, so a
    * second of stretching was never worth 80% of a second of plank. The style weight brings those
-   * two efforts, the ones the hero called equal, to about the same pay.
+   * two efforts, the ones the hero called equal, within a third of each other.
    */
   test("a stretch pays less per second than a hold of the same difficulty", () => {
     const at = (style: ExerciseStyle, difficulty: DifficultyCode, seconds: number) =>
@@ -405,9 +405,9 @@ describe("db/xp", () => {
       });
 
     expect(at("strength", "medium", 90)).toBe(30);
-    expect(at("yoga", "medium", 90)).toBe(12);
+    expect(at("yoga", "medium", 90)).toBe(15);
     // Five minutes of easy cat-cow against ninety seconds of plank.
-    expect(at("yoga", "easy", 300)).toBe(32);
+    expect(at("yoga", "easy", 300)).toBe(40);
 
     // The quest screen's preview reads the same price.
     const preview = (style: ExerciseStyle) =>

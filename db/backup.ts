@@ -485,5 +485,12 @@ export function keepDeviceSettings(stagedPath: string): Promise<void> {
       `INSERT INTO ${CANDIDATE}.user_preferences (key, value, updatedAt)
          SELECT key, value, updatedAt FROM main.user_preferences WHERE key IN (${kept})`,
     );
+    // A backup from before `customAvatar` carries no photo at all, while this phone has already
+    // ported its own: restoring it must not trade the hero's face for a preset.
+    await conn.execAsync(
+      `INSERT INTO ${CANDIDATE}.user_preferences (key, value, updatedAt)
+         SELECT key, value, updatedAt FROM main.user_preferences WHERE key = 'customAvatar'
+           AND NOT EXISTS (SELECT 1 FROM ${CANDIDATE}.user_preferences WHERE key = 'customAvatar')`,
+    );
   });
 }

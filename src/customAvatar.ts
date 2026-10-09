@@ -28,6 +28,9 @@ export async function portLegacyAvatar(path: string): Promise<string | null> {
     return null;
   }
   const portable = await encodeAvatar(path);
-  await preferences.setCustomAvatarUri(portable);
+  // Lost the race to a pick made while encoding: what the hero chose since is the answer.
+  if (!(await preferences.portCustomAvatar(path, portable))) {
+    return await preferences.getCustomAvatarUri();
+  }
   return portable;
 }

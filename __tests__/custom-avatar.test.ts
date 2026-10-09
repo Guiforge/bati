@@ -16,7 +16,11 @@ jest.mock("@/src/exercisePhoto", () => ({
 }));
 jest.mock("@/db/preferences", () => ({
   deletePreference: jest.fn(() => Promise.resolve()),
-  preferences: { setCustomAvatarUri: jest.fn(() => Promise.resolve()) },
+  preferences: {
+    setCustomAvatarUri: jest.fn(() => Promise.resolve()),
+    portCustomAvatar: jest.fn(() => Promise.resolve(true)),
+    getCustomAvatarUri: jest.fn(() => Promise.resolve("data:picked-meanwhile")),
+  },
 }));
 
 import { deletePreference, preferences } from "@/db/preferences";
@@ -33,7 +37,19 @@ test("a cache path still on disk becomes the data URI backups carry", async () =
   await expect(portLegacyAvatar("file:///cache/ImagePicker/a.jpg")).resolves.toBe(
     `data:${AVATAR_SIZE}`,
   );
-  expect(preferences.setCustomAvatarUri).toHaveBeenCalledWith(`data:${AVATAR_SIZE}`);
+  expect(preferences.portCustomAvatar).toHaveBeenCalledWith(
+    "file:///cache/ImagePicker/a.jpg",
+    `data:${AVATAR_SIZE}`,
+  );
+});
+
+test("a pick made while the old photo was encoding wins over the port", async () => {
+  mockExisting.add("file:///cache/ImagePicker/a.jpg");
+  jest.mocked(preferences.portCustomAvatar).mockResolvedValueOnce(false);
+
+  await expect(portLegacyAvatar("file:///cache/ImagePicker/a.jpg")).resolves.toBe(
+    "data:picked-meanwhile",
+  );
 });
 
 test("a path Android already purged is forgotten, without dating a preset choice", async () => {

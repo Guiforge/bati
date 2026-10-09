@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { getLocales } from "expo-localization";
 import { reportError } from "../src/reportError";
-import { db, schema, type TransactionTx } from "./client";
+import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
 import { uuidv7 } from "./uuid";
@@ -206,6 +206,37 @@ export const preferences = {
     // merge, so a preset chosen on this phone would lose to the other phone's older photo.
     await setPreference("customAvatar", uri ?? "");
     await deletePreference("customAvatarUri");
+  },
+
+  /**
+   * Moves a legacy picker path to `customAvatar` as `portable`, in one transaction.
+   *
+   * Dated when the hero picked the photo, not now: a port stamped "now" would beat a preset chosen
+   * on another phone in between, and bring the old photo back there at the next merge. Writes
+   * nothing when the rows moved since `path` was read (a pick made while the photo was encoding),
+   * and returns whether it wrote.
+   */
+  async portCustomAvatar(path: string, portable: string): Promise<boolean> {
+    return await transactionOrFallback(async (tx) => {
+      const [legacy] = await tx
+        .select({ value: userPreferences.value, updatedAt: userPreferences.updatedAt })
+        .from(userPreferences)
+        .where(eq(userPreferences.key, "customAvatarUri"))
+        .limit(1);
+      const [current] = await tx
+        .select({ id: userPreferences.id })
+        .from(userPreferences)
+        .where(eq(userPreferences.key, "customAvatar"))
+        .limit(1);
+      if (legacy?.value !== path || current) return false;
+      await tx.insert(userPreferences).values({
+        key: "customAvatar",
+        value: portable,
+        updatedAt: legacy.updatedAt ?? new Date(),
+      });
+      await tx.delete(userPreferences).where(eq(userPreferences.key, "customAvatarUri"));
+      return true;
+    });
   },
 
   // Training level captured at onboarding (null = skipped). Read by the coach/

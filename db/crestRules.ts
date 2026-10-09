@@ -76,21 +76,16 @@ function mostRecent(among: Practice[], last: Tally): Practice | undefined {
   )[0];
 }
 
-/** Replays from the 9th session; the first practice to cross stays for good, even if it falls back. */
-function secondOf(list: Practice[], first: Practice, firstEight: Tally, eightLast: Tally) {
+/**
+ * Replays from the 9th session; the first practice to cross stays for good, even if it falls back.
+ * Only the practice just trained can cross, and none can before 20 sessions: no tie to break.
+ */
+function secondOf(list: Practice[], first: Practice, firstEight: Tally) {
   const n = { ...firstEight };
-  const seen = { ...eightLast };
   for (let i = REVEAL_AT; i < list.length; i++) {
     const p = list[i] as Practice;
     n[p]++;
-    seen[p] = i;
-    const joined = mostRecent(
-      PRACTICES.filter(
-        (q) => q !== first && n[q] >= SECOND_MIN && n[q] * 100 >= SECOND_SHARE * (i + 1),
-      ),
-      seen,
-    );
-    if (joined !== undefined) return joined;
+    if (p !== first && n[p] >= SECOND_MIN && n[p] * 100 >= SECOND_SHARE * (i + 1)) return p;
   }
   return undefined;
 }
@@ -132,7 +127,7 @@ export function crestAnimals(
   );
 
   const secondPractice =
-    firstPractice === undefined ? undefined : secondOf(list, firstPractice, firstEight, eightLast);
+    firstPractice === undefined ? undefined : secondOf(list, firstPractice, firstEight);
 
   const first: Animal = firstPractice === undefined ? "boar" : ANIMAL_OF[firstPractice];
   const secondFromSessions = secondPractice === undefined ? null : ANIMAL_OF[secondPractice];

@@ -61,7 +61,7 @@ Invariant: with skewed clocks, the side with the later `updatedAt` wins hero con
 edit was really last.
 
 **R7. `MERGED_PREFERENCES` = villageName, avatarId, trainingLevel, ownedEquipment, oath,
-reminderDays, crestAnimal.** `db/backup.ts:251-263`.
+reminderDays, crestAnimal.** `db/backup.ts:251-262`.
 `crestAnimal` is `auto` or an animal slug; a missing or unknown value reads as `auto`. Nothing
 writes a default (a device that never chose has no row, or two such devices would diverge in
 `db-peer-compare`), and going back to the animal the sessions chose writes `auto`, never a delete:
@@ -179,8 +179,11 @@ quarters, the longest flame and the rings are replayed from the journal on every
 `countsAsSession()`, in `performedAt` then `uuid` order; a session's practice is its outing
 (`ride`, else `run`) or the style with the most distinct movements done (a tie going to the fixed
 order strength, calisthenics, yoga, run, ride), and a workout with none has no practice and is
-ignored. First animal at the 8th session with a practice (`n*100 >= 40*8`, else boar, then fixed);
-second from the 9th on (`n*100 >= 30*total` and `n >= 20`, never for a boar, kept once in).
+ignored. First animal at the 8th session with a practice (`n*100 >= 40*8`, else boar); when
+several practices reach it, the most recently trained wins, then the fixed order strength,
+calisthenics, yoga, run, ride. Second animal from the 9th session on (`n*100 >= 30*total` and
+`n >= 20`, kept once in). A boar, from the sessions or picked by hand, never has a second animal
+and so no border.
 Invariant: after a merge in both directions both devices read the same crest, ties included;
 deleting or adding a session anywhere in the journal replays the whole of it.
 
@@ -244,8 +247,8 @@ protectDismissedDay, protectDismissals, backupWordsPending, passwordRemindersOn,
 passwordCheckStep/Due/Ignored, customAvatarUri, crashLog, errorLog, eventLog, updateCheck,
 updateCheckedAt, updateDismissed, updateLatest, notesSeenVersion, languageChosenOn, guidesSeen,
 recentCameoLines, comebackGreetedAfter, backupEncryption, syncServer, syncWifiOnly,
-reminderAskedAt, reminderStreakFrom, reminderOfferDismissed. `db/backup.ts:402-442`.
-`savedSession` is dropped from a restored file and not kept. `db/backup.ts:450`.
+reminderAskedAt, reminderStreakFrom, reminderOfferDismissed. `db/backup.ts:420-461`.
+`savedSession` is dropped from a restored file and not kept. `db/backup.ts:469`.
 Invariant: after restore, each key above has the value it had before the restore, or is absent
 if it was absent; `savedSession` is absent.
 
@@ -269,8 +272,9 @@ Invariant: `vaultUpdateOffered(now)` is monotone: once true, always true.
 no imports, no gpx files). `plugins/withAndroidBackupRules.js:51-53`.
 Invariant: the set of files matched by the include rules is exactly those three.
 
-**R38. Streak caches and `unlocked_achievements` travel with a restore** (they are not in R34)
-but are not compared or merged by sync. `db/backup.ts:242-250`.
+**R38. Streak caches, `unlocked_achievements` and `bigFeastsShown` travel with a restore** (none
+is in R34) but are not compared or merged by sync. That `bigFeastsShown` follows a restore like
+`streak_*` is intended: the village spec compares it to those caches. `db/backup.ts:241-250`.
 Invariant: restore replaces them with the backup's values.
 
 ---
@@ -324,7 +328,7 @@ it was.
 `hooks/useBackup.tsx:137-158, 196`, `src/backupCipher.ts:803-829`.
 
 **R46. `keepDeviceSettings` rewrites the staged copy only:** deletes from it every R34 key and
-`savedSession`, then copies this device's R34 rows in. `db/backup.ts:457-468`.
+`savedSession`, then copies this device's R34 rows in. `db/backup.ts:476-487`.
 Invariant: staged R34 rows == live R34 rows; live DB untouched.
 
 **R47. Copies before a swap:** `backupBeforeRestore` writes a dated pre-restore snapshot

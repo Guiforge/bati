@@ -51,18 +51,24 @@ Invariant: compare is antisymmetric: `ahead` on A about B implies B sees A as `b
 and preferences in `MERGED_PREFERENCES`, as `(identity, updatedAt)` rows. Identity is `uuid`
 (fallback name) when both databases have the `uuid` column (0066), else names only. A row is
 "news" from side X if the other side has no row with the same identity and `updatedAt >=` it.
-`db/backup.ts:259-285`.
+`db/backup.ts:269-300`.
 Invariant: after a merge in both directions, `peerContent=localContent=0` (modulo R9).
 
 **R6. Content news uses the device wall clock.** `updatedAt` is `new Date()` at write time, seconds
-resolution. The "no device clock" claim holds for sessions only. `db/backup.ts:282-285`,
+resolution. The "no device clock" claim holds for sessions only. `db/backup.ts:296-300`,
 `db/schema.ts:101`, `db/preferences.ts:88`, `db/quests.ts:283`.
 Invariant: with skewed clocks, the side with the later `updatedAt` wins hero content, whichever
 edit was really last.
 
 **R7. `MERGED_PREFERENCES` = villageName, avatarId, trainingLevel, ownedEquipment, oath,
-reminderDays.** `db/backup.ts:243-252`.
-Invariant: only these keys ever change in `user_preferences` through a merge (plus R12).
+reminderDays, crestAnimal.** `db/backup.ts:251-263`.
+`crestAnimal` is `auto` or an animal slug; a missing or unknown value reads as `auto`. Nothing
+writes a default (a device that never chose has no row, or two such devices would diverge in
+`db-peer-compare`), and going back to the animal the sessions chose writes `auto`, never a delete:
+a preference has no tombstone, so a deletion could not beat an older pick on the other device.
+`db/preferences.ts` (`getCrestAnimal`, `setCrestAnimal`).
+Invariant: only these keys ever change in `user_preferences` through a merge (plus R12); `auto`
+written later wins over an older animal on the other device, in both merge directions.
 
 **R8. An undated row (`NULL updatedAt`) reads as date 0 on both sides.** The comparison reads
 `ifnull(y.at, 0) >= ifnull(x.at, 0)` (`db/backup.ts`) and the merge reads `row.at ?? 0` (`db/merge.ts`), so a NULL is
@@ -72,7 +78,7 @@ Invariant: a database compared with a copy of itself shows no news, undated rows
 against an undated copy of it.
 
 **R9. Equal `updatedAt` with different content is a permanent silent divergence.** Compare says
-no news both ways (`>=`, `db/backup.ts:284`); merge keeps local (strict `>`, `db/merge.ts:246,
+no news both ways (`>=`, `db/backup.ts:298`); merge keeps local (strict `>`, `db/merge.ts:246,
 184`).
 Invariant: two devices that edit the same hero row in the same second hold different values after
 any number of syncs, and compare reports `level`.
@@ -86,8 +92,9 @@ fingerprint unchanged; adding one session changes it; adding a tombstone changes
 **R11. Never compared and never merged:** derived caches (`streak_*`, achievements), favourites
 (`favourite_quests`), quest configs (`quest:<id>:config`), campaigns, boss fights and boss damage
 log, adventure runs, set-aside exercises, `language`, `warmupEnabled`, `prepMode`,
-`distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `villagersEnabled`, and every other
-preference not in R7. `db/backup.ts:236-242`, `db/merge.ts:38-40`, `db/preferences.ts:318-320`.
+`distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `villagersEnabled`, `bigFeastsShown`
+(a JSON list of the big feasts this phone already showed; it only decides display), and every
+other preference not in R7. `db/backup.ts:242-250`, `db/merge.ts:38-40`, `db/preferences.ts`.
 Invariant: after any merge, the local value of each of these keys is byte-identical to before.
 
 ### 1.2 What the merge does
@@ -165,6 +172,17 @@ Invariant: a written exercise's prerequisite resolves to a local exercise or NUL
 `db/merge.ts:35-36`.
 Invariant (idempotence): `merge(A,B); merge(A,B)` equals `merge(A,B)`; and after
 `merge(A,B); merge(B,A)` both devices have compare `level` against each other.
+
+**R25b. The crest is computed, never stored.** The animal, the second one, the stages, the boar's
+quarters, the longest flame and the rings are replayed from the journal on every read
+(`getCrest`, `db/crest.ts`; the rule is pure, `db/crestRules.ts`). Sessions are those of
+`countsAsSession()`, in `performedAt` then `uuid` order; a session's practice is its outing
+(`ride`, else `run`) or the style with the most distinct movements done (a tie going to the fixed
+order strength, calisthenics, yoga, run, ride), and a workout with none has no practice and is
+ignored. First animal at the 8th session with a practice (`n*100 >= 40*8`, else boar, then fixed);
+second from the 9th on (`n*100 >= 30*total` and `n >= 20`, never for a boar, kept once in).
+Invariant: after a merge in both directions both devices read the same crest, ties included;
+deleting or adding a session anywhere in the journal replays the whole of it.
 
 ### 1.3 Deletion
 
@@ -252,7 +270,7 @@ no imports, no gpx files). `plugins/withAndroidBackupRules.js:51-53`.
 Invariant: the set of files matched by the include rules is exactly those three.
 
 **R38. Streak caches and `unlocked_achievements` travel with a restore** (they are not in R34)
-but are not compared or merged by sync. `db/backup.ts:236-242`.
+but are not compared or merged by sync. `db/backup.ts:242-250`.
 Invariant: restore replaces them with the backup's values.
 
 ---

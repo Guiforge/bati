@@ -27,8 +27,11 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 jest.mock("@/components/village/VillageEmbers", () => ({
-  VillageEmbers: () =>
-    require("react").createElement(require("react-native").View, { testID: "village-embers" }),
+  VillageEmbers: (p: { heroHeight: number }) =>
+    require("react").createElement(require("react-native").View, {
+      testID: "village-embers",
+      heroHeight: p.heroHeight,
+    }),
 }));
 jest.mock("@/components/common/FlameFlicker", () => ({ FlameFlicker: () => null }));
 jest.mock("@/hooks/useGameIcon", () => ({ useGameIcon: (name: string) => name }));
@@ -192,9 +195,72 @@ describe("the header's rules", () => {
     await fireEvent(screen.getByTestId("village-title"), "layout", {
       nativeEvent: { layout: { height: 600 } },
     });
-    // The block's height plus the status bar's inset (47) and 8.
-    expect(hero().height).toBe(600 + 47 + 8);
+    // The name's fixed top (the 520 dp column less 160) plus the block's height.
+    expect(hero().height).toBe(360 + 600);
     expect(before).toBeLessThan(600);
+  });
+
+  // Both states pin the name at the same fixed top (the 520 dp column less 160) and neither
+  // anchors it to the bottom, so a missing Focus line or a longer sentence cannot move it.
+  it("pins the name from the top while loading", async () => {
+    await mount(crestOf(), "Brumeval", true);
+    const s = StyleSheet.flatten(screen.getByTestId("village-title").props.style);
+    expect(s.top).toBe(360);
+    expect(s.bottom).toBeUndefined();
+  });
+
+  it("pins the name from the same top once loaded", async () => {
+    await mount(crestOf());
+    await screen.findByTestId("village-crest-line");
+    const s = StyleSheet.flatten(screen.getByTestId("village-title").props.style);
+    expect(s.top).toBe(360);
+    expect(s.bottom).toBeUndefined();
+  });
+
+  // The row is top-aligned with a fixed pad: a chip wrapping under the name (or absent) only
+  // makes the row taller, it never moves the name.
+  it.each([true, false])(
+    "keeps the name's row top-aligned with a fixed pad (loading: %s)",
+    async (pending) => {
+      await mount(crestOf(), "Brumeval", pending);
+      await screen.findByText("Brumeval");
+      const row = StyleSheet.flatten(screen.getByTestId("village-name-row").props.style);
+      expect(row.paddingTop).toBe((crestFootprint(56, true).height - 32) / 2);
+      expect(row.alignItems).toBe("center");
+      const outer = screen.getByTestId("village-name-row").parent;
+      expect(StyleSheet.flatten(outer?.props.style).alignItems).toBe("flex-start");
+    },
+  );
+
+  it("while loading, the crest's skeleton holds the crest's footprint, not a square", async () => {
+    await mount(crestOf(), "Brumeval", true);
+    const sk = StyleSheet.flatten(screen.getByTestId("village-crest-skeleton").props.style);
+    expect(sk).toMatchObject(crestFootprint(56, true));
+  });
+
+  it("while loading, the flame chip's room is held", async () => {
+    await mount(crestOf(), "Brumeval", true);
+    const sk = StyleSheet.flatten(screen.getByTestId("village-chip-skeleton").props.style);
+    expect(sk).toMatchObject({ width: 118, height: 24 });
+  });
+
+  it("keeps the embers above the title block: they get only the hero's height down to its top", async () => {
+    await mount(crestOf());
+    await screen.findByTestId("village-title");
+    expect(screen.getByTestId("village-embers").props.heroHeight).toBe(360);
+  });
+
+  it("sets the level's number in bold, inside the one status line", async () => {
+    await mount(crestOf());
+    await screen.findByTestId("village-crest-line");
+    const num = within(screen.getByTestId("village-title")).getByText("8");
+    expect(StyleSheet.flatten(num.props.style).fontWeight).toBe("700");
+    expect(screen.getByText(/Level .*8.* · Champion/)).toBeTruthy();
+  });
+
+  it.each(["fr", "en", "de", "es"])("%s level line carries the number exactly once", (lng) => {
+    const parts = i18n.getFixedT(lng)("village.level_line", { level: "\u0001" }).split("\u0001");
+    expect(parts).toHaveLength(2);
   });
 
   it("draws the embers under the title block, never over the crest", async () => {

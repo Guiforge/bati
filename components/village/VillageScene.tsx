@@ -78,6 +78,8 @@ const REWARD_ZOOM = 1.85;
  */
 const REWARD_TIMING = { zoom: 250, card: 1300, done: 5200 } as const;
 const CREST_SIZE = 56;
+/** The name's line height: `TitleText` and the row that centres it share it. */
+const TITLE_LINE = 32;
 
 /**
  * The village's name, as the hero title; loading and loaded draw it through here, so it never
@@ -91,7 +93,7 @@ function TitleText({ children }: { children: string }) {
       fontFamily="$heading"
       fontWeight="700"
       fontSize={30}
-      lineHeight={32}
+      lineHeight={TITLE_LINE}
       color="$text"
       numberOfLines={2}
     >
@@ -113,9 +115,10 @@ function Glow() {
       items="center"
       justify="center"
     >
-      <XStack testID="village-glow" gap={9} accessible={false}>
-        <YStack width={7} height={4} rounded={999} bg="$text" />
-        <YStack width={7} height={4} rounded={999} bg="$text" />
+      {/* Upright ovals, well apart: flat dashes read as "- -", a missing value. */}
+      <XStack testID="village-glow" gap={16} accessible={false}>
+        <YStack width={6} height={10} rounded={999} bg="$text" />
+        <YStack width={6} height={10} rounded={999} bg="$text" />
       </XStack>
     </YStack>
   );
@@ -125,6 +128,26 @@ function Glow() {
 const TITLE_BLOCK = { px: "$4", pb: 28, gap: 6 } as const;
 /** A line of the header's small text: its height at the current font scale, for the skeleton. */
 const TEXT_LINE = 17;
+/** Stands where the level's number goes while the line is translated. */
+const LEVEL_MARK = "\u0001";
+/** About how tall the title block is at 100 % with a streak: it sets how far above the hero's
+ * bottom the name sits, at the band's own size. */
+const TITLE_REF = 160;
+/**
+ * The name's line is centred on the crest at its own height, from the row's top. The row is
+ * top-aligned, so a chip that wraps under the name (or is not there) cannot move the name: it
+ * only makes the row taller.
+ */
+const nameRow = () =>
+  ({
+    flex: 1,
+    minW: 0,
+    flexWrap: "wrap",
+    items: "center",
+    columnGap: 10,
+    rowGap: 4,
+    pt: (crestFootprint(CREST_SIZE, true).height - TITLE_LINE) / 2,
+  }) as const;
 /** The flame chip: about 118 wide and 24 high at 100 %, 14 dp icon and 11.5 text plus padding. */
 const CHIP_W = 118;
 const CHIP_H = 24;
@@ -287,7 +310,10 @@ export function VillageScene() {
   // window that does not need it.
   const columnWidth = Math.min(width, CONTENT_MAX_WIDTH);
   const { heroHeight: bandHeight, paintingTop } = villageHeroSlot(columnWidth, height);
-  const heroHeight = Math.max(bandHeight, titleHeight + insets.top + 8);
+  // The name is pinned from the top, so what sits under it (a Focus line that day one lacks, a
+  // two-line animal sentence) can only push the hero longer, never move the name.
+  const titleTop = Math.max(insets.top + 8, bandHeight - TITLE_REF);
+  const heroHeight = Math.max(bandHeight, titleTop + titleHeight);
 
   if (!scene) {
     if (loadFailed) {
@@ -316,18 +342,35 @@ export function VillageScene() {
     const lineHeight = Math.round(TEXT_LINE * PixelRatio.getFontScale());
     return (
       <YStack testID="village-screen" flex={1} bg="$background">
-        <YStack testID="village-hero-loading" width="100%" height={heroHeight} justify="flex-end">
+        <YStack testID="village-hero-loading" width="100%" height={heroHeight}>
           <YStack position="absolute" t={0} l={0} r={0} b={0}>
             <Skeleton width="100%" height={heroHeight} radius={0} />
           </YStack>
-          <YStack testID="village-title" {...TITLE_BLOCK} onLayout={measureTitle}>
-            <XStack items="center" gap={10}>
-              <Skeleton bg="$surface2" {...crestFootprint(CREST_SIZE, true)} />
-              <XStack flex={1} minW={0} flexWrap="wrap" items="center" columnGap={10} rowGap={4}>
+          <YStack
+            testID="village-title"
+            position="absolute"
+            t={titleTop}
+            l={0}
+            r={0}
+            {...TITLE_BLOCK}
+            onLayout={measureTitle}
+          >
+            <XStack items="flex-start" gap={10}>
+              <Skeleton
+                testID="village-crest-skeleton"
+                bg="$surface2"
+                {...crestFootprint(CREST_SIZE, true)}
+              />
+              <XStack testID="village-name-row" {...nameRow()}>
                 {villageName ? <TitleText>{villageName}</TitleText> : null}
                 {/* The flame chip's room (a streak is the common case): where it wraps under
                     the name, the name is already as high as it will be. */}
-                <Skeleton width={CHIP_W} height={CHIP_H} radius={999} />
+                <Skeleton
+                  testID="village-chip-skeleton"
+                  width={CHIP_W}
+                  height={CHIP_H}
+                  radius={999}
+                />
               </XStack>
             </XStack>
             <Skeleton height={lineHeight} width="55%" />
@@ -345,13 +388,11 @@ export function VillageScene() {
 
   const tierName = TIER_NAMES[scene.tier][lang];
   // The tier only needs saying separately once the village has its own name.
-  const tierLine = [
-    villageName ? tierName : null,
-    t("village.level_line", { level: scene.level }),
-    scene.title[lang],
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  // The level's number is bold. Translated with a marker and split on it, so each language
+  // keeps its own word order ("Level 5", "Nivel 5") and nothing is concatenated around a number.
+  const [beforeLevel = "", afterLevel = ""] = t("village.level_line", { level: LEVEL_MARK }).split(
+    LEVEL_MARK,
+  );
   const dayOne = isDayOne(scene.buildings);
   const complete = isVillageComplete(scene.tier, scene.buildings);
   const families = groupFamilies(scene.buildings, complete);
@@ -434,14 +475,16 @@ export function VillageScene() {
               bottom: 0,
               left: 0,
               right: 0,
-              height: Math.max(Math.round(heroHeight * 0.62), titleHeight + 24),
+              height: Math.max(Math.round(heroHeight * 0.62), heroHeight - titleTop + 24),
             }}
           />
 
+          {/* Handed only the part of the hero above the title: a mote that started inside the
+              title block fell on the status line and read as a full stop ("Divin ."). */}
           {/* Under the title, over the scrim: the scrim is near-opaque over the lower half of the
               hero, so embers drawn before it would simply not be there, and one drawn over the
               title fell on the crest and read as a ring. */}
-          <VillageEmbers heroHeight={heroHeight} heroWidth={columnWidth} tier={scene.tier} />
+          <VillageEmbers heroHeight={titleTop} heroWidth={columnWidth} tier={scene.tier} />
 
           {/* The bottom 14 is what the panel below overlaps. The focus line comes last, where
               the scrim is darkest: above the name it sat on the bright top of the painting
@@ -450,17 +493,17 @@ export function VillageScene() {
           <YStack
             testID="village-title"
             position="absolute"
-            b={0}
+            t={titleTop}
             l={0}
             r={0}
             {...TITLE_BLOCK}
             onLayout={measureTitle}
           >
-            <XStack items="center" gap={10}>
+            <XStack items="flex-start" gap={10}>
               {crest === null ? <Glow /> : <Crest crest={crest} size={CREST_SIZE} onPainting />}
               {/* The chip wraps under the name when the row is full: a long name takes two
                   lines and nothing is cut. */}
-              <XStack flex={1} minW={0} flexWrap="wrap" items="center" columnGap={10} rowGap={4}>
+              <XStack testID="village-name-row" {...nameRow()}>
                 <TitleText>{villageName || tierName}</TitleText>
                 {scene.flame > 0 && (
                   <XStack
@@ -482,7 +525,10 @@ export function VillageScene() {
               </XStack>
             </XStack>
             <Text fontSize={13} lineHeight={TEXT_LINE} fontWeight="500" color="$textSecondary">
-              {tierLine}
+              {villageName ? `${tierName} · ` : null}
+              {beforeLevel}
+              <Text fontWeight="700">{scene.level}</Text>
+              {`${afterLevel} · ${scene.title[lang]}`}
             </Text>
             <Text testID="village-crest-line" fontSize={13} lineHeight={TEXT_LINE} color="$text">
               {crestLine}

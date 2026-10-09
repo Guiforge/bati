@@ -179,6 +179,10 @@ describe("colour contrast", () => {
     expect(contrast(value("bgDark"), value(fill))).toBeGreaterThanOrEqual(AA_ICON);
   });
 
+  it("every animal fill is held to the accent floors", () => {
+    for (const fill of ANIMAL_FILLS) expect(ACCENT_TOKENS).toContain(fill);
+  });
+
   it("the crest has five animal colours", () => {
     expect(ANIMAL_FILLS).toHaveLength(5);
     expect(Object.keys(ANIMAL_INK_CONTRAST).sort()).toEqual([...ANIMAL_FILLS].sort());

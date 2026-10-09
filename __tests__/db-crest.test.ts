@@ -188,6 +188,36 @@ describe("the figures beside the animal", () => {
     // The flame held now is under 3 days; the band remembers the one of 30 or more.
     expect((await crest().getCrest(NOW))?.longestFlame).toBeGreaterThanOrEqual(4);
   });
+
+  test("the longest flame never reads the oath: raising the quota leaves the band alone", async () => {
+    // 40 weeks at 2 sessions a week: a flame at the default quota of 2, none at 3.
+    for (let w = 0; w < 40; w++) {
+      strength(w * 7 + 1);
+      strength(w * 7 + 4);
+    }
+    const swear = (weeklyTarget: number) =>
+      t.sqlite
+        .prepare(
+          "INSERT OR REPLACE INTO user_preferences (key, value, updatedAt) VALUES ('oath', ?, 1)",
+        )
+        .run(JSON.stringify({ metric: "weekly_sessions", weeklyTarget }));
+    const flame = async () => (await crest().getCrest(NOW))?.longestFlame;
+
+    const base = await flame();
+    expect(base).toBeGreaterThanOrEqual(4);
+    for (const target of [1, 2, 3]) {
+      swear(target);
+      expect(await flame()).toBe(base);
+    }
+    // The oath is finished: the preference goes, or turns to another metric.
+    swear(3);
+    t.sqlite
+      .prepare("UPDATE user_preferences SET value = ? WHERE key = 'oath'")
+      .run(JSON.stringify({ metric: "streak", weeklyTarget: 3 }));
+    expect(await flame()).toBe(base);
+    t.sqlite.prepare("DELETE FROM user_preferences WHERE key = 'oath'").run();
+    expect(await flame()).toBe(base);
+  });
 });
 
 describe("the preferences", () => {

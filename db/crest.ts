@@ -7,9 +7,9 @@ import { preferences } from "./preferences";
 import type { ExerciseStyle } from "./schema";
 import {
   calculateStreakFromSessions,
+  DEFAULT_WEEKLY_QUOTA,
   type FlameLevel,
   getFlameLevel,
-  getWeeklyQuota,
 } from "./streaks";
 
 const { completedExercises, completedQuest, exercises } = schema;
@@ -55,7 +55,8 @@ export async function getCrest(now: Date = new Date()): Promise<Crest | null> {
   if (animals === null || first === undefined) return null;
 
   const dates = rows.map((r) => r.performedAt);
-  const { best } = calculateStreakFromSessions(dates, await getWeeklyQuota(), now);
+  // The oath's quota is not read: a hero who raises it must not lose a band already earned.
+  const { best } = calculateStreakFromSessions(dates, DEFAULT_WEEKLY_QUOTA, now);
   return {
     ...animals,
     longestFlame: getFlameLevel(best),

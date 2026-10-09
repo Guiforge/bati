@@ -3,7 +3,7 @@ import type { Animal } from "@/db/crestRules";
 
 /**
  * The fill of each animal on the crest, as the Tamagui token (`rawColors.animal*`). The boar has
- * no entry: its quarters take the colours of the two leading practices, through `ANIMAL_OF`.
+ * no entry: its quarters take the colours of the two leading practices, through `ANIMAL_OF` (`db/crestRules.ts`).
  */
 export const ANIMAL_TOKEN: {
   // Each value is the one token named after its own animal, so a wrong row does not compile.

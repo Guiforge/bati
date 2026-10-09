@@ -1,4 +1,8 @@
-import { villageHeroSlot } from "@/components/village/villageArt";
+import {
+  villageCameoBand,
+  villageHeroSlot,
+  villageTitleTop,
+} from "@/components/village/villageArt";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 
 /**
@@ -60,5 +64,24 @@ describe("village art geometry", () => {
     expect(villageHeroSlot(360, 640).heroHeight).toBe(224);
     expect(villageHeroSlot(411, 914).heroHeight).toBe(411);
     expect(villageHeroSlot(393, 852).heroHeight).toBe(393);
+  });
+});
+
+describe("the figure and the name", () => {
+  it.each([
+    [390, 844],
+    [412, 915],
+    [673, 841],
+    [360, 640],
+  ])("%ix%i: the figure's band ends above where the name starts", (width, height) => {
+    const safeTop = 47;
+    const band = villageCameoBand(width, height, safeTop);
+    if (!band) return;
+    const { heroHeight } = villageHeroSlot(Math.min(width, CONTENT_MAX_WIDTH), height);
+    expect(band.top + band.height).toBeLessThanOrEqual(villageTitleTop(heroHeight, safeTop));
+  });
+
+  it("holds a figure on a phone, so the loop above is not vacuous", () => {
+    expect(villageCameoBand(390, 844, 47)).not.toBeNull();
   });
 });

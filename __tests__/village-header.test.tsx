@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -7,6 +7,7 @@ import { VillageScene } from "@/components/village/VillageScene";
 import * as crestDb from "@/db/crest";
 import * as village from "@/db/village";
 import { i18n } from "@/i18n";
+import * as errors from "@/src/reportError";
 import { useUserStore } from "@/stores/user";
 import config from "@/tamagui.config";
 
@@ -15,13 +16,18 @@ import config from "@/tamagui.config";
  * eyes and "something watches" before. The sentence rule runs for real; only the database is
  * stood in for.
  */
+// A revisit of the tab: the screen stays mounted and its focus callback runs again.
+const mockFocusCallbacks = new Set<() => void>();
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/adventures", () => ({ listFinishedRunSummaries: jest.fn().mockResolvedValue([]) }));
 jest.mock("@/db/completed", () => ({
   getRecentContributingSessions: jest.fn().mockResolvedValue([]),
 }));
 jest.mock("expo-router", () => ({
-  useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
+  useFocusEffect: (cb: () => void) => {
+    mockFocusCallbacks.add(cb);
+    require("react").useEffect(cb, [cb]);
+  },
   useIsFocused: () => true,
   useLocalSearchParams: () => ({}),
   useRouter: () => ({ push: jest.fn() }),
@@ -150,7 +156,7 @@ describe("the header's rules", () => {
     expect(await screen.findByText("A bear and a stag watch over Brumeval.")).toBeTruthy();
   });
 
-  it("a crest that cannot be read is an error screen, never the glow", async () => {
+  it("a crest that cannot be read leaves its slot empty: the scene shows, nothing is asserted, the next visit retries", async () => {
     useUserStore.setState({ villageName: "Brumeval" });
     jest.spyOn(village, "getVillageScene").mockResolvedValue({
       tier: 4,
@@ -163,7 +169,8 @@ describe("the header's rules", () => {
       dominantSport: null,
       buildings: [],
     });
-    jest.spyOn(crestDb, "getCrest").mockRejectedValue(new Error("db"));
+    const getCrest = jest.spyOn(crestDb, "getCrest").mockRejectedValue(new Error("db"));
+    const report = jest.spyOn(errors, "reportError").mockImplementation(() => {});
     await render(
       <SafeAreaProvider initialMetrics={METRICS}>
         <TamaguiProvider config={config} defaultTheme="dark">
@@ -171,9 +178,29 @@ describe("the header's rules", () => {
         </TamaguiProvider>
       </SafeAreaProvider>,
     );
-    expect(await screen.findByText(i18n.t("common.retry"))).toBeTruthy();
+    expect(await screen.findByTestId("village-crest-empty")).toBeTruthy();
+    expect(screen.queryByText(i18n.t("common.retry"))).toBeNull();
     expect(screen.queryByTestId("village-glow")).toBeNull();
     expect(screen.queryByTestId("village-crest-line")).toBeNull();
+    expect(report).toHaveBeenCalledWith("village.crest", expect.any(Error));
+
+    getCrest.mockResolvedValue(crestOf());
+    await act(() => {
+      for (const cb of mockFocusCallbacks) cb();
+    });
+    expect(await line()).toBe("A bear watches over Brumeval.");
+    expect(screen.getByLabelText("A bear.")).toBeTruthy();
+    expect(screen.queryByTestId("village-crest-empty")).toBeNull();
+  });
+
+  it("the glow's eyes are 6 by 10 dp, upright", async () => {
+    await mount(null);
+    const eyes = (await screen.findByTestId("village-glow")).children;
+    expect(eyes).toHaveLength(2);
+    for (const eye of eyes) {
+      const style = StyleSheet.flatten(typeof eye === "string" ? {} : eye.props.style);
+      expect(style).toMatchObject({ width: 6, height: 10 });
+    }
   });
 
   it("gives a long hyphenated name somewhere to wrap: a zero-width space after each hyphen", async () => {

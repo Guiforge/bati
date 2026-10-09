@@ -12,10 +12,12 @@
  */
 
 /**
- * The hero's bottom band that belongs to the title: village name, tier line, focus line and the
- * scrim's padding (about 130 dp at default font scale, with room for a larger one).
+ * The hero's bottom band that belongs to the title: village name, tier line, crest line, focus
+ * line and the scrim's padding, about 160 dp at default font scale with a streak. The Village
+ * pins its name this far above the hero's bottom (`villageTitleTop`), so the figure's band ends
+ * exactly where the name starts: one number, read by both.
  */
-const TITLE_BLOCK = 150;
+export const TITLE_BLOCK = 160;
 
 /** Gap kept under the status bar. */
 const TOP_GAP = 8;
@@ -33,8 +35,8 @@ export type CameoBand = { top: number; height: number; figureHeight: number };
  * the status bar to just above the title block. `null` when the hero is too short to hold a
  * figure (a compact window), in which case there is no villager rather than one over the title.
  *
- * ponytail: the title block is a constant. If the title row becomes variable (a wrapped village
- * name), measure it at the call site and keep this as the floor.
+ * ponytail: the title block is a constant shared with the Village's title pin. If the title row
+ * becomes variable (a wrapped village name), measure it at the call site and keep this as the floor.
  */
 export function cameoBand(
   heroHeight: number,

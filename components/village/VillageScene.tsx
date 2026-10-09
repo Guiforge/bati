@@ -34,7 +34,11 @@ import {
 } from "@/components/village/VillageLists";
 import { VillageReward } from "@/components/village/VillageReward";
 import { VillageSceneViewer } from "@/components/village/VillageSceneViewer";
-import { villageCameoBand, villageHeroSlot } from "@/components/village/villageArt";
+import {
+  villageCameoBand,
+  villageHeroSlot,
+  villageTitleTop,
+} from "@/components/village/villageArt";
 import { getSportSpriteAsset, getVillageTierAsset } from "@/constants/assetMap";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
@@ -130,9 +134,6 @@ const TITLE_BLOCK = { px: "$4", pb: 28, gap: 6 } as const;
 const TEXT_LINE = 17;
 /** Stands where the level's number goes while the line is translated. */
 const LEVEL_MARK = "\u0001";
-/** About how tall the title block is at 100 % with a streak: it sets how far above the hero's
- * bottom the name sits, at the band's own size. */
-const TITLE_REF = 160;
 /**
  * The name's line is centred on the crest at its own height, from the row's top. The row is
  * top-aligned, so a chip that wraps under the name (or is not there) cannot move the name: it
@@ -196,7 +197,8 @@ export function VillageScene() {
   const [scene, setScene] = useState<VillageSceneData | null>(null);
   // Read with the scene, in the same focus: one answer for the whole header, so the glow is never
   // drawn for a hero whose crest has simply not arrived yet.
-  const [crest, setCrest] = useState<CrestData | null>(null);
+  // `undefined` is a crest that could not be read: the slot stays empty and nothing is said.
+  const [crest, setCrest] = useState<CrestData | null | undefined>(null);
   // How tall the title block really is: at a large font the crest, the wrapped name and the two
   // lines outgrow the painting's band, and the block must not climb under the status bar.
   const [titleHeight, setTitleHeight] = useState(0);
@@ -225,7 +227,13 @@ export function VillageScene() {
   // Refetch on focus: the whole point of this screen is "what changed since I trained",
   // and a tab screen stays mounted, so a mount-only effect would show yesterday forever.
   const loadScene = useCallback(() => {
-    Promise.all([getVillageScene(), getCrest()])
+    // The crest never fails the screen: only the scene does. An unreadable crest leaves its slot
+    // empty (no eyes, no sentence: nothing asserted) and the next visit tries again.
+    const readCrest = getCrest().catch((error) => {
+      reportError("village.crest", error);
+      return undefined;
+    });
+    Promise.all([getVillageScene(), readCrest])
       .then(([data, crestData]) => {
         setScene(data);
         setCrest(crestData);
@@ -253,9 +261,9 @@ export function VillageScene() {
   );
 
   const crestLine = useCrestLine(
-    crest,
+    crest ?? null,
     villageName,
-    crest !== null && revealedToday(crest.revealedAt, new Date()),
+    crest != null && revealedToday(crest.revealedAt, new Date()),
   );
   const ready = scene !== null;
   // Where the painting leans in. Nothing is drawn there: the gold dots that used to mark every
@@ -312,7 +320,7 @@ export function VillageScene() {
   const { heroHeight: bandHeight, paintingTop } = villageHeroSlot(columnWidth, height);
   // The name is pinned from the top, so what sits under it (a Focus line that day one lacks, a
   // two-line animal sentence) can only push the hero longer, never move the name.
-  const titleTop = Math.max(insets.top + 8, bandHeight - TITLE_REF);
+  const titleTop = villageTitleTop(bandHeight, insets.top);
   const heroHeight = Math.max(bandHeight, titleTop + titleHeight);
 
   if (!scene) {
@@ -500,7 +508,13 @@ export function VillageScene() {
             onLayout={measureTitle}
           >
             <XStack items="flex-start" gap={10}>
-              {crest === null ? <Glow /> : <Crest crest={crest} size={CREST_SIZE} onPainting />}
+              {crest === undefined ? (
+                <YStack testID="village-crest-empty" {...crestFootprint(CREST_SIZE, true)} />
+              ) : crest === null ? (
+                <Glow />
+              ) : (
+                <Crest crest={crest} size={CREST_SIZE} onPainting />
+              )}
               {/* The chip wraps under the name when the row is full: a long name takes two
                   lines and nothing is cut. */}
               <XStack testID="village-name-row" {...nameRow()}>
@@ -530,9 +544,11 @@ export function VillageScene() {
               <Text fontWeight="700">{scene.level}</Text>
               {`${afterLevel} · ${scene.title[lang]}`}
             </Text>
-            <Text testID="village-crest-line" fontSize={13} lineHeight={TEXT_LINE} color="$text">
-              {crestLine}
-            </Text>
+            {crest === undefined ? null : (
+              <Text testID="village-crest-line" fontSize={13} lineHeight={TEXT_LINE} color="$text">
+                {crestLine}
+              </Text>
+            )}
             {scene.dominantSport ? (
               <XStack items="center" gap={8}>
                 <Image

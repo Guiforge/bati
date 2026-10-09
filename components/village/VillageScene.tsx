@@ -151,6 +151,9 @@ export function VillageScene() {
   // Read with the scene, in the same focus: one answer for the whole header, so the glow is never
   // drawn for a hero whose crest has simply not arrived yet.
   const [crest, setCrest] = useState<CrestData | null>(null);
+  // How tall the title block really is: at a large font the crest, the wrapped name and the two
+  // lines outgrow the painting's band, and the block must not climb under the status bar.
+  const [titleHeight, setTitleHeight] = useState(0);
   const [loadFailed, setLoadFailed] = useState(false);
   // Read-only: a tap explains what earned the building, it never unlocks anything.
   const [selected, setSelected] = useState<VillageSelection | null>(null);
@@ -258,7 +261,8 @@ export function VillageScene() {
   // to fill, which both cuts the square off at the column edge and trips the compact band for a
   // window that does not need it.
   const columnWidth = Math.min(width, CONTENT_MAX_WIDTH);
-  const { heroHeight, paintingTop } = villageHeroSlot(columnWidth, height);
+  const { heroHeight: bandHeight, paintingTop } = villageHeroSlot(columnWidth, height);
+  const heroHeight = Math.max(bandHeight, titleHeight + insets.top + 8);
 
   if (!scene) {
     if (loadFailed) {
@@ -390,7 +394,7 @@ export function VillageScene() {
               bottom: 0,
               left: 0,
               right: 0,
-              height: Math.round(heroHeight * 0.62),
+              height: Math.max(Math.round(heroHeight * 0.62), titleHeight + 24),
               justifyContent: "flex-end",
             }}
           >
@@ -398,7 +402,12 @@ export function VillageScene() {
                 the scrim is darkest: above the name it sat on the bright top of the painting
                 (an aurora on tier 12), secondary text on pale turquoise. The flame shares the
                 name's line, which gives the panel back a whole row. */}
-            <YStack px="$4" pb={28} gap={6}>
+            <YStack
+              px="$4"
+              pb={28}
+              gap={6}
+              onLayout={(e) => setTitleHeight(Math.round(e.nativeEvent.layout.height))}
+            >
               {crest === null ? <Glow /> : null}
               <XStack items="center" gap={10}>
                 {crest !== null ? <Crest crest={crest} size={CREST_SIZE} onPainting /> : null}

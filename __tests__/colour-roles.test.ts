@@ -58,15 +58,10 @@ describe("colour roles", () => {
     expect(read("components/exercises/MineCaption.tsx")).not.toContain("$primaryText");
   });
 
-  it("reward cards write every figure and glyph in gold", () => {
-    expect(read("components/session/SessionRewards.tsx")).not.toContain("$primaryText");
-    expect(read("components/oath/OathFulfilledCard.tsx")).not.toContain("$primaryText");
-    expect(near("components/session/NewRecordsBadge.tsx", "<Card bg=", 1)).toContain(
-      'borderColor="$gold700"',
-    );
-    expect(near("components/session/NewRecordsBadge.tsx", "fontSize={18}", 1)).toContain(
-      'color="$resourceGold"',
-    );
+  it("tonight writes every glyph and badge in gold, never in the primary text role", () => {
+    const tonight = read("components/session/TonightList.tsx");
+    expect(tonight).not.toContain("$primaryText");
+    expect(tonight).toContain('color="$resourceGold"');
   });
 
   it("the village tier bar is gold", () => {

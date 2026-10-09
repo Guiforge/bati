@@ -35,7 +35,7 @@ const value = (token: string): string => {
 /**
  * Everything text or a meaningful icon is drawn on. Fills are not here: `$primary`, `$error`,
  * `$resourceGold` and the one-off `$pastelYellow` celebration card carry a label of their own
- * choosing, picked by hand against that fill — `NewRecordsBadge` writes the working out in a
+ * choosing, picked by hand against that fill, each with the working out in a
  * comment. A fill in this list would fail those deliberate pairings.
  *
  * `ink800`/`ink900` are missing on purpose. They belong to the Journal's `dark_journal` sub-theme,

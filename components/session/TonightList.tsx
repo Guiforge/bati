@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import type { i18n as I18n, TFunction } from "i18next";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { Card } from "@/components/common/Card";
@@ -323,7 +324,16 @@ function CardRow({ card }: { card: CardData }) {
  * with an "after" badge: it opens full screen once the hero presses Continue. Nothing to say
  * renders nothing, not even the title. No animation.
  */
-export function TonightList({ feasts, villageName }: { feasts: Feast[]; villageName: string }) {
+export function TonightList({
+  feasts,
+  villageName,
+  onViewVillage,
+}: {
+  feasts: Feast[];
+  villageName: string;
+  /** Given only on a night the village grew: the way into it, same road as the Village tab. */
+  onViewVillage?: (() => void) | undefined;
+}) {
   const { t, i18n } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const unit = useSettingsStore((s) => s.distanceUnit);
@@ -347,6 +357,18 @@ export function TonightList({ feasts, villageName }: { feasts: Feast[]; villageN
       {cards.map((card) => (
         <CardRow key={card.id} card={card} />
       ))}
+      {onViewVillage ? (
+        <Pressable
+          testID="tonight-view-village"
+          accessibilityRole="link"
+          onPress={onViewVillage}
+          style={{ minHeight: 44, minWidth: 44, justifyContent: "center" }}
+        >
+          <Text fontSize={15} color="$resourceGold" textDecorationLine="underline">
+            {t("session.village_growth_cta")}
+          </Text>
+        </Pressable>
+      ) : null}
     </YStack>
   );
 }

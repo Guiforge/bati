@@ -23,6 +23,7 @@ const mockUpdateSessionFeedback = jest.fn().mockResolvedValue(undefined);
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockQuitSession = jest.fn();
+const mockMarkBigFeastShown = jest.fn().mockResolvedValue(undefined);
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn() }),
@@ -42,6 +43,7 @@ jest.mock("@/db/preferences", () => ({
     setSavedSession: jest.fn().mockResolvedValue(undefined),
     clearSavedSession: jest.fn().mockResolvedValue(undefined),
     getWarmupEnabled: jest.fn().mockResolvedValue(false),
+    markBigFeastShown: (...args: unknown[]) => mockMarkBigFeastShown(...args),
   },
 }));
 jest.mock("@/db", () => ({ preferences: {} }));
@@ -53,18 +55,7 @@ jest.mock("@/hooks/useHaptics", () => ({
 jest.mock("@/components/common/Toast", () => ({
   useToast: () => ({ showError: jest.fn(), showSuccess: jest.fn() }),
 }));
-jest.mock("react-native-confetti-cannon", () => "ConfettiCannon");
 jest.mock("@/components/session/ProgressionChart", () => ({ ProgressionChart: () => null }));
-jest.mock("@/components/session/SessionRewards", () => {
-  const { Pressable, Text } = require("react-native");
-  return {
-    SessionRewards: ({ onViewVillage }: { onViewVillage: () => void }) => (
-      <Pressable accessibilityLabel="test-view-village" onPress={onViewVillage}>
-        <Text>village</Text>
-      </Pressable>
-    ),
-  };
-});
 
 const SESSION_ID = 42;
 
@@ -74,13 +65,21 @@ type Campaign = Awaited<ReturnType<StoreState["saveSession"]>>["campaign"];
 const saveResult = {
   sessionId: SESSION_ID,
   xpEarned: 100,
-  levelUp: false,
+  levelUp: null,
   dailyBonusXp: 0,
   heroXp: { before: 50, after: 150 },
   villageGrowth: [],
   campaign: null as Campaign,
   fulfilledOath: null,
-  tierUp: false,
+  tierUp: null,
+  // What "Tonight" reads, all of it: `saveSession` always returns these, and a fixture that
+  // omitted one would crash the ranking rather than say nothing.
+  standing: null,
+  newRungs: [],
+  newAchievements: [],
+  oathBonusXp: 0,
+  crestEvents: { secondJoins: null, stageUp: [] },
+  crestReveal: null as null | { animal: string; quarters: null },
   // `SaveResult` declares this required and `saveSession` always returns it; the fixture is cast
   // through `as unknown` and so was free to omit it until something read it. The villager cameo
   // does — it asks whether this session set a record before deciding who, if anyone, speaks.
@@ -106,10 +105,14 @@ const mockQuest = {
 } as unknown as Quest;
 
 /** Mount with the save deliberately left in flight; call the returned fn to let it land. */
-async function mountWithPendingSave(campaign: Campaign = null, sessionSeconds = 12 * 60) {
+async function mountWithPendingSave(
+  campaign: Campaign = null,
+  sessionSeconds = 12 * 60,
+  over: Record<string, unknown> = {},
+) {
   let release!: () => void;
   const pending = new Promise((resolve) => {
-    release = () => resolve({ ...saveResult, campaign });
+    release = () => resolve({ ...saveResult, campaign, ...over });
   });
   // Counted, because "nothing was saved" is a claim about the store, not about a spinner.
   const saveSession = jest.fn(() => pending);
@@ -217,14 +220,41 @@ describe("VictoryView village navigation", () => {
     mockQuitSession.mockClear();
   });
 
+  const grew = {
+    villageGrowth: [
+      {
+        code: "forge",
+        enName: "Forge",
+        frName: "Forge",
+        deName: "Schmiede",
+        esName: "Forja",
+        relatedMuscle: null,
+        oldLevel: 1,
+        newLevel: 2,
+      },
+    ],
+  };
+
   it("viewing the village does not tear down the session — the hero can come back to the rewards", async () => {
-    const { view, release } = await mountWithPendingSave();
+    const { view, release } = await mountWithPendingSave(null, 12 * 60, grew);
     await release();
 
-    await fireEvent.press(view.getByLabelText("test-view-village"));
+    await fireEvent.press(view.getByTestId("tonight-view-village"));
 
     expect(mockQuitSession).not.toHaveBeenCalled();
-    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("/village"));
+    // The levels travel with the codes: the village plays the rise from one rung to the next.
+    expect(mockPush).toHaveBeenCalledWith("/(tabs)/village?grown=forge:1:2");
+  });
+
+  it("offers the village on a night it grew, and only then", async () => {
+    const quiet = await mountWithPendingSave();
+    await quiet.release();
+    expect(quiet.view.queryByTestId("tonight-view-village")).toBeNull();
+    await quiet.view.unmount();
+
+    const tier = await mountWithPendingSave(null, 12 * 60, { tierUp: { oldTier: 2, newTier: 3 } });
+    await tier.release();
+    expect(tier.view.getByTestId("tonight-view-village")).toBeTruthy();
   });
 });
 
@@ -322,7 +352,9 @@ describe("VictoryView, a session too short to be one", () => {
 
     await fireEvent.press(view.getByText("session.summary_too_short_keep"));
 
-    expect(view.getByText("session.summary_saving")).toBeTruthy();
+    // The keep gave way to Continue, held until the save lands.
+    expect(view.queryByText("session.summary_too_short_keep")).toBeNull();
+    expect(view.getByText("session.continue")).toBeTruthy();
     expect(saveSession).toHaveBeenCalledTimes(1);
   });
 
@@ -371,7 +403,8 @@ describe("VictoryView, a session too short to be one", () => {
     const { view } = await mountWithPendingSave();
 
     expect(view.queryByText("session.summary_too_short_title")).toBeNull();
-    expect(view.getByText("session.summary_saving")).toBeTruthy();
+    // The pending save is held by reserved heights, not a spinner or a sentence.
+    expect(view.queryByText("session.summary_saving")).toBeNull();
   });
 });
 
@@ -594,5 +627,93 @@ describe("VictoryView villager slot, and what is under it", () => {
     await release();
     expect(height()).toBe(Math.ceil(88 * 1.3));
     dims.mockRestore();
+  });
+});
+
+/**
+ * "Tonight" replaces the old reward cards. It arrives with the save, under the level gauge and
+ * above the feeling, and a night where nothing rose has no such block at all. Each fact is said
+ * once on this screen, so the villager no longer repeats a record.
+ */
+describe("VictoryView tonight", () => {
+  const record = {
+    isNewRecord: true,
+    recordType: "exercise_max_reps",
+    newValue: 14,
+    previousValue: 12,
+    exerciseName: { en: "Push-ups", fr: "Pompes", de: "Liegestütze", es: "Flexiones" },
+    perSide: false,
+  };
+  const cue = jest.fn();
+  beforeEach(() => {
+    cue.mockClear();
+    mockMarkBigFeastShown.mockClear();
+    useChorusStore.setState({ cue: cue as never, current: null });
+  });
+
+  it("holds its place with reserved heights while saving: no spinner, nothing asserted", async () => {
+    const { view } = await mountWithPendingSave();
+
+    expect(view.queryByRole("progressbar")).toBeNull();
+    expect(view.queryByText("SESSION.TONIGHT_TITLE")).toBeNull();
+    // The bar's button is there and still, on the same label it will keep.
+    expect(view.getByText("session.continue")).toBeTruthy();
+    await fireEvent.press(view.getByTestId("session-victory-continue"));
+    expect(mockReplace).not.toHaveBeenCalled();
+    // The time and the XP are empty values, not a zero.
+    expect(view.queryByText("quests.reward_xp")).toBeNull();
+  });
+
+  it("lists what the save changed, under the gauge and above the feeling", async () => {
+    const { view, release, saveSession } = await mountWithPendingSave(null, 12 * 60, {
+      newRecords: [record],
+    });
+    await release();
+
+    expect(saveSession).toHaveBeenCalledTimes(1);
+    expect(view.getByText("SESSION.TONIGHT_TITLE")).toBeTruthy();
+    expect(view.getByText("session.tonight_badge_record")).toBeTruthy();
+    const tree = JSON.stringify(view.toJSON());
+    expect(tree.indexOf("journal.xp_progress")).toBeLessThan(tree.indexOf("SESSION.TONIGHT_TITLE"));
+    expect(tree.indexOf("SESSION.TONIGHT_TITLE")).toBeLessThan(
+      tree.indexOf("session.feedback_hard"),
+    );
+  });
+
+  it("says nothing on a night where nothing rose", async () => {
+    const { view, release } = await mountWithPendingSave();
+    await release();
+
+    expect(view.queryByText("SESSION.TONIGHT_TITLE")).toBeNull();
+    expect(view.queryByTestId("tonight-list")).toBeNull();
+  });
+
+  it("does not have the villager repeat a record the list already says", async () => {
+    const { release } = await mountWithPendingSave(null, 12 * 60, { newRecords: [record] });
+    await release();
+
+    expect(cue).not.toHaveBeenCalled();
+  });
+
+  it("marks the reveal as seen when it was shown as a card, on the night of an epilogue", async () => {
+    const { release } = await mountWithPendingSave(
+      { isFinished: true, adventureId: 3, nextQuestId: null, nextRunStepId: null } as never,
+      12 * 60,
+      { crestReveal: { animal: "bear", quarters: null } },
+    );
+    await release();
+
+    expect(mockMarkBigFeastShown).toHaveBeenCalledWith("reveal");
+  });
+
+  it("leaves the reveal unmarked when it is the large feast, which the full screen marks", async () => {
+    const { view, release } = await mountWithPendingSave(null, 12 * 60, {
+      crestReveal: { animal: "bear", quarters: null },
+    });
+    await release();
+
+    // It is on screen as the line with its "after" badge, and not marked.
+    expect(view.getByText("session.tonight_badge_after")).toBeTruthy();
+    expect(mockMarkBigFeastShown).not.toHaveBeenCalled();
   });
 });

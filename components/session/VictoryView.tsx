@@ -3,12 +3,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, ScrollView, useWindowDimensions } from "react-native";
-import ConfettiCannon from "react-native-confetti-cannon";
+import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
-import { recordCue } from "@/components/chorus/recordCue";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
@@ -29,6 +27,7 @@ import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
 import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession, outingLocomotion } from "@/db/expeditions";
+import { preferences } from "@/db/preferences";
 import { createQuestFromOuting } from "@/db/quests";
 import type { FeedbackCode } from "@/db/schema";
 import { formatCount } from "@/db/targets";
@@ -36,7 +35,6 @@ import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLev
 import { formatGrown } from "@/db/village";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useHaptics } from "@/hooks/useHaptics";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
@@ -45,9 +43,11 @@ import { useChorusStore } from "@/stores/chorus";
 import { isExpedition } from "@/stores/expedition";
 import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { useUserStore } from "@/stores/user";
 import { ExpeditionSummary } from "./ExpeditionSummary";
+import { rankFeasts } from "./feasts";
 import { ProgressionChart } from "./ProgressionChart";
-import { SessionRewards } from "./SessionRewards";
+import { TonightList } from "./TonightList";
 
 type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>["saveSession"]>>;
 
@@ -169,11 +169,10 @@ export function VictoryView() {
   const { t } = useTranslation();
   const router = useRouter();
   const { confirmForget, dialog: forgetDialog } = useConfirmForget();
-  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const villagerSlot = useFontScaled(VILLAGER_SLOT_HEIGHT);
   const language = useSettingsStore((s) => s.language);
-  const reducedMotion = useReducedMotion();
+  const villageName = useUserStore((s) => s.villageName);
   const { success, selection } = useHaptics();
   const { showError } = useToast();
   // Field by field: the whole store re-rendered this screen on every write, and `saveSession`
@@ -216,6 +215,19 @@ export function VictoryView() {
   /** The monster this session felled, when it did — what the hero card shows instead of the quest. */
   const felledBoss = isBossDefeat ? bossFight : null;
 
+  // What tonight says, sorted once the save has landed. Nothing before it: a loading screen
+  // asserts nothing, and a retried save reaches here with the same facts.
+  const feasts = result
+    ? rankFeasts({
+        result,
+        epilogue: result.campaign?.isFinished === true,
+        boss: felledBoss ? { name: bossDisplayName(felledBoss, language) } : null,
+      })
+    : [];
+  // The reveal is marked as seen only when it was shown here, as a card (the night of an
+  // epilogue). As the large feast it is marked when its full screen opens, which comes later.
+  const revealShownAsCard = feasts.some((f) => f.kind === "reveal" && f.size !== "large");
+
   // What the journal is about to record, not the raw clock. They are different numbers for an
   // outing — `sessionClock` clamps a walk to its moving time plus twenty minutes of red lights —
   // and this screen showed 52 min for the session the next screen filed as 32.
@@ -251,8 +263,8 @@ export function VictoryView() {
   // Keyed on both, so a tap before the save and a tap after take the same path.
   // One villager per victory, chosen here rather than by competing effects: these are all `event`
   // priority, so firing two would just mean the second silently overwrote the first and which one
-  // you saw depended on effect ordering. A felled boss outranks a record — it is the rarer thing,
-  // and the hero already has the badge for the other.
+  // you saw depended on effect ordering. A record is not cued at all: "Tonight" lists it, and a
+  // fact is said once on this screen.
   useEffect(() => {
     if (!result) return;
     if (isBossDefeat) {
@@ -281,23 +293,12 @@ export function VictoryView() {
       cue("longest_outing");
       return;
     }
+  }, [result, isBossDefeat, cue]);
 
-    const earned = recordCue(result.newRecords, language);
-    if (!earned) return;
-    if (earned.moment === "personal_record") {
-      cue("personal_record");
-      return;
-    }
-
-    // The one place a villager quotes a number, and the reason the layer bothers: "ten more than
-    // last time" is the shape the evidence says keeps working, where "well done!" stops working
-    // inside two months. Pluralised through i18next rather than glued together, so the English
-    // says "1 rep" and not "1 reps".
-    cue("personal_record_beat", {
-      delta: t(`villagers.units.delta_${earned.unit}`, { count: earned.delta }),
-      exercise: earned.exercise,
-    });
-  }, [result, isBossDefeat, cue, language, t]);
+  useEffect(() => {
+    if (!revealShownAsCard) return;
+    preferences.markBigFeastShown("reveal").catch((e) => reportError("session.markRevealShown", e));
+  }, [revealShownAsCard]);
 
   useEffect(() => {
     if (!result || !feedbackTouched.current) return;
@@ -560,7 +561,7 @@ export function VictoryView() {
                 {t("session.total_time")}
               </Text>
               <Text fontWeight="700" fontSize={26} color="$text" fontFamily="$body">
-                {formatTime(durationSeconds)}
+                {result ? formatTime(durationSeconds) : "\u00A0"}
               </Text>
             </Card>
             <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
@@ -654,7 +655,19 @@ export function VictoryView() {
           <HeroLevelBar heroXp={result ? result.heroXp : null} language={language} />
         )}
 
-        {/* Feedback — above the fold and above the rewards: this answer is what steers the next
+        {/* "Tonight": what the save changed. It arrives with the save and says nothing before it,
+            nothing at all on a night where nothing rose. "See your village" only when it grew. */}
+        {!!result && (
+          <TonightList
+            feasts={feasts}
+            villageName={villageName}
+            onViewVillage={
+              result.tierUp || result.villageGrowth.length > 0 ? handleViewVillage : undefined
+            }
+          />
+        )}
+
+        {/* Feedback — above the fold: this answer is what steers the next
             session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}
         <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">
           <Text
@@ -709,16 +722,7 @@ export function VictoryView() {
           </XStack>
         </Card>
 
-        {/* Saving / error / rewards */}
-        {!result && !saveError && !tooShort && (
-          <YStack items="center" gap="$3" py="$6">
-            <ActivityIndicator />
-            <Text color="$textSecondary" fontSize={14}>
-              {t("session.summary_saving")}
-            </Text>
-          </YStack>
-        )}
-
+        {/* A failed save: the only thing that replaces "Tonight". */}
         {!!saveError && (
           <YStack width="100%" maxW={520} items="center" gap="$3">
             <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
@@ -730,10 +734,6 @@ export function VictoryView() {
               </Text>
             </AppButton>
           </YStack>
-        )}
-
-        {!!result && (
-          <SessionRewards result={result} language={language} onViewVillage={handleViewVillage} />
         )}
 
         {/* Progression chart (lower priority; also available in the journal) */}
@@ -797,24 +797,10 @@ export function VictoryView() {
             fullWidth={false}
             flex={1}
           >
-            {result ? t("session.continue") : t("common.saving")}
+            {t("session.continue")}
           </AppButton>
         )}
       </XStack>
-
-      {/* Confetti: fewer pieces (JS-thread animated), and held until the save finishes so the
-          burst doesn't fight the DB write + sound decode on the mount frame. */}
-      {!reducedMotion && result && (
-        <ConfettiCannon
-          // A boss defeat, a fulfilled oath, or a village tier crossed is a big win — bigger, faster burst.
-          count={isBossDefeat || result.fulfilledOath || result.tierUp ? 120 : 80}
-          origin={{ x: width / 2, y: -20 }}
-          autoStart={true}
-          fadeOut={true}
-          explosionSpeed={isBossDefeat || result.fulfilledOath || result.tierUp ? 450 : 350}
-          fallSpeed={3000}
-        />
-      )}
 
       <NarrativeModal
         visible={showOutroNarrative}

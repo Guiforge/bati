@@ -29,7 +29,7 @@
  * first half for the weather line — "nothing may name a number, a muscle or a streak — the moment
  * one does, it is a stat in disguise, and it will contradict the tiles beside it". Here it
  * generalises: the villager encouraging you mid-rest does not know how many reps are left. And
- * the smith celebrating a record does not repeat the number — `NewRecordsBadge` is already
+ * the smith celebrating a record does not repeat the number — the Tonight list is already
  * showing it, and two sources for one value is how they drift apart.
  *
  * `__tests__/villagers.test.ts` enforces what a machine can: no digits in an ambient pool, the
@@ -198,7 +198,7 @@ export const MOMENT_CAST: Record<
   // rarity: the first measured outing ever (`longest_outing` with nothing to compare it to,
   // db/personalRecords.ts), the High Road rising a floor (`high_road` in `diffVillageGrowth`),
   // and a longest-outing record with a previous mark. None of the lines quotes the distance:
-  // `NewRecordsBadge` and the village already show it, and the smith's rule holds here too.
+  // the Tonight list and the village already show it, and the smith's rule holds here too.
   first_outing: { speakers: ["watcher"], priority: "event", pose: "talk" },
   high_road: { speakers: ["watcher"], priority: "event", pose: "cheer" },
   longest_outing: { speakers: ["watcher"], priority: "event", pose: "cheer" },

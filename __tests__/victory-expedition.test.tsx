@@ -62,9 +62,7 @@ jest.mock("@/hooks/useHaptics", () => ({
 jest.mock("@/components/common/Toast", () => ({
   useToast: () => ({ showError: jest.fn(), showSuccess: jest.fn() }),
 }));
-jest.mock("react-native-confetti-cannon", () => "ConfettiCannon");
 jest.mock("@/components/session/ProgressionChart", () => ({ ProgressionChart: () => null }));
-jest.mock("@/components/session/SessionRewards", () => ({ SessionRewards: () => null }));
 
 type StoreState = ReturnType<typeof useSessionStore.getState>;
 
@@ -79,6 +77,13 @@ const saveResult = {
   fulfilledOath: null,
   tierUp: null,
   newRecords: [],
+  // What "Tonight" ranks: `saveSession` always returns these.
+  standing: null,
+  newRungs: [],
+  newAchievements: [],
+  oathBonusXp: 0,
+  crestEvents: { secondJoins: null, stageUp: [] },
+  crestReveal: null,
 };
 
 /** The High Road, at whatever floor a test needs it at. */

@@ -111,8 +111,10 @@ async function mountWithPendingSave(
   over: Record<string, unknown> = {},
 ) {
   let release!: () => void;
-  const pending = new Promise((resolve) => {
+  let fail!: () => void;
+  const pending = new Promise((resolve, reject) => {
     release = () => resolve({ ...saveResult, campaign, ...over });
+    fail = () => reject(new Error("disk full"));
   });
   // Counted, because "nothing was saved" is a claim about the store, not about a spinner.
   const saveSession = jest.fn(() => pending);
@@ -149,7 +151,12 @@ async function mountWithPendingSave(
     </SafeAreaProvider>,
   );
 
-  return { view, saveSession, release: async () => await act(async () => release()) };
+  return {
+    view,
+    saveSession,
+    release: async () => await act(async () => release()),
+    fail: async () => await act(async () => fail()),
+  };
 }
 
 describe("VictoryView feedback", () => {
@@ -684,6 +691,27 @@ describe("VictoryView tonight", () => {
     expect(view.queryByText("quests.reward_xp")).toBeNull();
   });
 
+  it("shows the session time only once the save has landed, a blank before", async () => {
+    const { view, release } = await mountWithPendingSave(null, 12 * 60);
+    expect(view.queryByText("12:00")).toBeNull();
+    await release();
+    expect(view.getByText("12:00")).toBeTruthy();
+  });
+
+  it("on a failed save offers a retry, claims nothing and keeps Continue shut", async () => {
+    const { view, fail } = await mountWithPendingSave();
+    await fail();
+
+    expect(view.getByText("common.retry")).toBeTruthy();
+    expect(view.queryByTestId("tonight-list")).toBeNull();
+    expect(view.queryByText("quests.reward_xp")).toBeNull();
+    expect(view.queryByTestId("session-victory-xp")).toBeNull();
+    expect(view.queryByText("12:00")).toBeNull();
+    await fireEvent.press(view.getByTestId("session-victory-continue"));
+    expect(mockQuitSession).not.toHaveBeenCalled();
+    expect(view.getByTestId("session-victory-continue")).toBeDisabled();
+  });
+
   it("lists what the save changed, under the gauge and above the feeling", async () => {
     const { view, release, saveSession } = await mountWithPendingSave(null, 12 * 60, {
       newRecords: [record],
@@ -698,6 +726,14 @@ describe("VictoryView tonight", () => {
     expect(tree.indexOf("SESSION.TONIGHT_TITLE")).toBeLessThan(
       tree.indexOf("session.feedback_hard"),
     );
+  });
+
+  it("offers no village on a night with a record but no growth", async () => {
+    const { view, release } = await mountWithPendingSave(null, 12 * 60, { newRecords: [record] });
+    await release();
+
+    expect(view.getByTestId("tonight-list")).toBeTruthy();
+    expect(view.queryByTestId("tonight-view-village")).toBeNull();
   });
 
   it("says nothing on a night where nothing rose", async () => {

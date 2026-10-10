@@ -16,7 +16,12 @@ import type { AppLanguage } from "@/stores/settings";
 function subjectName(m: Milestone, t: TFunction, language: AppLanguage): string {
   const { subject } = m;
   if (subject === null) return "";
-  if ("muscle" in subject) return inSentence(MUSCLE_LABELS[subject.muscle][language], language);
+  if ("muscle" in subject) {
+    const label = inSentence(MUSCLE_LABELS[subject.muscle][language], language);
+    // English labels are plural ("Arms") and "arms sessions" is wrong: strip the s, except "abs",
+    // which is the singular attributive too ("abs session"), hence three letters before it.
+    return language === "en" ? label.replace(/(?<=\w{3})s$/, "") : label;
+  }
   return t(`village.style_${subject.style}`);
 }
 

@@ -1,5 +1,6 @@
 import { milestoneLine, victoryMilestoneLine } from "@/components/village/milestoneLine";
 import type { Milestone } from "@/db/milestone";
+import { muscleCodes } from "@/db/schema";
 import type { VillageBuilding } from "@/db/village";
 import { i18n } from "@/i18n";
 import type { AppLanguage } from "@/stores/settings";
@@ -125,5 +126,29 @@ describe("victoryMilestoneLine", () => {
       "The Forge, rank 4 in about 3 chest sessions.",
     );
     expect(victoryMilestoneLine([forge], feeds, nothing, null, i18n.t, "en")).toBeNull();
+  });
+});
+
+describe("milestoneLine, every muscle", () => {
+  it("says the singular attributive in English", async () => {
+    const said = [];
+    for (const muscle of muscleCodes) said.push(await say("en", sessions(3, { muscle }), "forge"));
+    expect(said).toEqual([
+      "Rank 4 in about 3 arm sessions.",
+      "Rank 4 in about 3 back sessions.",
+      "Rank 4 in about 3 shoulder sessions.",
+      "Rank 4 in about 3 chest sessions.",
+      "Rank 4 in about 3 abs sessions.",
+      "Rank 4 in about 3 leg sessions.",
+    ]);
+  });
+
+  it.each([
+    ["fr", "séances de bras", "séances de jambes"],
+    ["de", "Einheiten für Arme", "Einheiten für Beine"],
+    ["es", "sesiones de brazos", "sesiones de piernas"],
+  ] as const)("leaves the plural alone in %s", async (lang, arms, legs) => {
+    expect(await say(lang, sessions(3, { muscle: "arms" }), "forge")).toContain(arms);
+    expect(await say(lang, sessions(3, { muscle: "legs" }), "forge")).toContain(legs);
   });
 });

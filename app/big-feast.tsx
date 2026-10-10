@@ -32,8 +32,8 @@ export default function BigFeastScreen() {
   const finished = useSessionStore((s) => s.status === "finished");
   const result = useSessionStore((s) => s.savedResult);
   // The shown list is read live, not taken from the result (frozen when the session was saved):
-  // a feast marked since, by a forged link or a second open, never opens again. null: unreadable.
-  const [shown, setShown] = useState<string[] | null | undefined>(undefined);
+  // a feast marked since, by a forged link or a second open, never opens again.
+  const [shown, setShown] = useState<string[] | undefined>(undefined);
   const found =
     finished && result && shown ? bigFeastOf({ ...result, bigFeastsShown: shown }) : undefined;
   const feast: BigFeast | null = found && KINDS.includes(found.kind) ? (found as BigFeast) : null;
@@ -48,7 +48,9 @@ export default function BigFeastScreen() {
       .then(setShown)
       .catch((e) => {
         reportError("bigFeast.shown", e);
-        setShown(null);
+        // A tier exists only in the session that crossed it: fall back on the list the victory
+        // screen used (frozen at save) rather than close and lose the feast for good.
+        setShown(useSessionStore.getState().savedResult?.bigFeastsShown ?? []);
       });
   }, []);
 

@@ -40,6 +40,8 @@ jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => mockReduc
 
 const mockStackScreen = jest.fn();
 const mockShown = jest.fn();
+const mockReport = jest.fn();
+jest.mock("@/src/reportError", () => ({ reportError: (...a: unknown[]) => mockReport(...a) }));
 const mockMark = jest.fn().mockResolvedValue(undefined);
 jest.mock("@/db/preferences", () => ({
   preferences: {
@@ -433,6 +435,36 @@ describe("the big-feast route", () => {
     expect(mockMark).not.toHaveBeenCalled();
     expect(quit).not.toHaveBeenCalled();
     expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
+  describe("when the shown list cannot be read", () => {
+    beforeEach(() => mockShown.mockRejectedValue(new Error("db")));
+
+    test("a tier, which exists only in this session, still opens and is marked", async () => {
+      finish({ tierUp: { oldTier: 8, newTier: 9 }, levelUp: { oldLevel: 19, newLevel: 20 } });
+      const v = await mount();
+      expect(v.getByTestId("big-feast")).toBeTruthy();
+      expect(mockMark).toHaveBeenCalledWith("tier:9");
+      expect(mockBack).not.toHaveBeenCalled();
+    });
+
+    test("a feast already in the frozen list does not reopen", async () => {
+      finish({ crestReveal: revealFacts, bigFeastsShown: ["reveal"] });
+      await mount();
+      expect(mockMark).not.toHaveBeenCalled();
+      expect(mockBack).toHaveBeenCalledTimes(1);
+    });
+
+    test("the failure is reported", async () => {
+      await mount();
+      expect(mockReport).toHaveBeenCalledWith("bigFeast.shown", expect.any(Error));
+    });
+
+    test("a result without a list still opens its feast", async () => {
+      finish({ crestReveal: revealFacts, bigFeastsShown: undefined });
+      const v = await mount();
+      expect(v.getByTestId("big-feast")).toBeTruthy();
+    });
   });
 
   test("the no-slide option is set on the very first render, before any figure has arrived", async () => {

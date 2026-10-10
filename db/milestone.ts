@@ -78,3 +78,35 @@ function feedOf(
   }
   return null;
 }
+
+/** What one session brought: the muscles and styles it did work for, and whether it left the walls. */
+export type SessionFed = { muscles: MuscleCode[]; styles: ExerciseStyle[]; outing: boolean };
+
+/**
+ * The building the victory screen names: among those THIS session fed, the one whose rank is
+ * nearest in sessions (the Forge for a strength session, the Grand Chemin for an outing). A tie goes
+ * to the earlier building in `buildings`, the Village's own fixed order. Null when the session fed
+ * nothing that has an estimate; the caller then falls back to the Village's "Next to rise".
+ */
+export function pickSessionMilestone<B extends Rising>(
+  buildings: readonly B[],
+  feeds: RecentFeeds,
+  fed: SessionFed,
+): { building: B; milestone: Milestone } | null {
+  let best: { building: B; milestone: Milestone } | null = null;
+  for (const building of buildings) {
+    const m = nextMilestone(building, feeds);
+    if (m === null) continue;
+    const def = buildingDefinitions[building.code];
+    const nourished =
+      m.unit === "outings"
+        ? fed.outing
+        : m.subject !== null && "muscle" in m.subject
+          ? fed.muscles.some((x) => x === def.relatedMuscle)
+          : m.subject !== null && fed.styles.includes(m.subject.style);
+    if (nourished && (best === null || m.count < best.milestone.count)) {
+      best = { building, milestone: m };
+    }
+  }
+  return best;
+}

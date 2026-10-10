@@ -2,34 +2,43 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, YStack } from "tamagui";
 import { SectionLabel } from "@/components/common/SectionLabel";
-import { buildingMilestoneLine } from "@/components/village/milestoneLine";
-import { getRecentFeeds } from "@/db/milestoneFeed";
+import { victoryMilestoneLine } from "@/components/village/milestoneLine";
+import { getRecentFeeds, getSessionFed } from "@/db/milestoneFeed";
 import { getVillageBuildings, pickNextToRise } from "@/db/village";
 import { reportError } from "@/src/reportError";
 import type { AppLanguage } from "@/stores/settings";
 
 /**
- * When the building "Next to rise" names next rises, said under the feeling question: the village
- * card and this line read the same building. Read once the session is saved (the estimate counts
- * it), so nothing is said before; and nothing at all without an estimate.
+ * When the building this session fed rises next, said under the feeling question (the Village's
+ * "Next to rise" when it fed none with an estimate). Read once the session is saved (the estimate
+ * counts it), so nothing is said before; and nothing at all without an estimate.
  */
-export function NextMilestone({ saved, language }: { saved: boolean; language: AppLanguage }) {
+export function NextMilestone({
+  sessionId,
+  language,
+}: {
+  /** Null until the save lands. */
+  sessionId: number | null;
+  language: AppLanguage;
+}) {
   const { t } = useTranslation();
   const [line, setLine] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!saved) return;
+    if (sessionId === null) return;
     let cancelled = false;
-    Promise.all([getVillageBuildings(), getRecentFeeds()])
-      .then(([buildings, feeds]) => {
-        const next = pickNextToRise(buildings);
-        if (!cancelled && next) setLine(buildingMilestoneLine(next, feeds, t, language, true));
+    Promise.all([getVillageBuildings(), getRecentFeeds(), getSessionFed(sessionId)])
+      .then(([buildings, feeds, fed]) => {
+        if (!cancelled)
+          setLine(
+            victoryMilestoneLine(buildings, feeds, fed, pickNextToRise(buildings), t, language),
+          );
       })
       .catch((e) => reportError("victory.next", e));
     return () => {
       cancelled = true;
     };
-  }, [saved, t, language]);
+  }, [sessionId, t, language]);
 
   if (line === null) return null;
   return (

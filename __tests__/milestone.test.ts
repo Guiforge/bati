@@ -1,4 +1,9 @@
-import { nextMilestone, type RecentFeeds, sessionsToGo } from "../db/milestone";
+import {
+  nextMilestone,
+  pickSessionMilestone,
+  type RecentFeeds,
+  sessionsToGo,
+} from "../db/milestone";
 import type { BuildingCode } from "../db/schema";
 
 const none: RecentFeeds = { muscle: {}, style: {}, outing: [] };
@@ -121,5 +126,48 @@ describe("nextMilestone", () => {
   test("a building nothing has fed yet has no line", () => {
     expect(nextMilestone(forge(), none)).toBeNull();
     expect(nextMilestone(forge(), { ...none, muscle: { chest: [] } })).toBeNull();
+  });
+});
+
+describe("pickSessionMilestone", () => {
+  const bld = (code: BuildingCode, over: Partial<Parameters<typeof nextMilestone>[0]> = {}) => ({
+    ...forge({ code, level: 1 }),
+    ...over,
+  });
+  const feeds: RecentFeeds = {
+    muscle: { chest: [100], back: [100] },
+    style: { strength: [100] },
+    outing: [1],
+  };
+  const chest = bld("forge", { metricValue: 300, nextTarget: 600 }); // 3 sessions
+  const road = bld("high_road", { driver: "leagues", metricValue: 2, nextTarget: 5 }); // 3 outings
+  const none = { muscles: [], styles: [], outing: false };
+
+  test("a strength session names the Forge, an outing names the road", () => {
+    const strength = { ...none, muscles: ["chest" as const] };
+    expect(pickSessionMilestone([chest, road], feeds, strength)?.building.code).toBe("forge");
+    const walk = { ...none, outing: true };
+    const got = pickSessionMilestone([chest, road], feeds, walk);
+    expect(got?.building.code).toBe("high_road");
+    expect(got?.milestone.unit).toBe("outings");
+  });
+
+  test("among the fed, the smallest estimate wins, not the top rank or the list order", () => {
+    const near = bld("forge", { metricValue: 500, nextTarget: 600 }); // 1 session
+    const far = bld("quarry", { metricValue: 0, nextTarget: 600 }); // 6 sessions
+    const fed = { ...none, muscles: ["chest" as const, "back" as const] };
+    expect(pickSessionMilestone([far, near], feeds, fed)?.building.code).toBe("forge");
+  });
+
+  test("a tie goes to the earlier building in the list", () => {
+    const a = bld("forge", { metricValue: 400, nextTarget: 600 });
+    const b = bld("quarry", { metricValue: 400, nextTarget: 600 });
+    const fed = { ...none, muscles: ["chest" as const, "back" as const] };
+    expect(pickSessionMilestone([a, b], feeds, fed)?.building.code).toBe("forge");
+    expect(pickSessionMilestone([b, a], feeds, fed)?.building.code).toBe("quarry");
+  });
+
+  test("a session that fed nothing estimable gets null, for the caller's fallback", () => {
+    expect(pickSessionMilestone([chest, road], feeds, none)).toBeNull();
   });
 });

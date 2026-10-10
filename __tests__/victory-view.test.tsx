@@ -55,7 +55,10 @@ jest.mock("@/db/village", () => ({
   ...jest.requireActual("@/db/village"),
   getVillageBuildings: () => mockBuildings(),
 }));
-jest.mock("@/db/milestoneFeed", () => ({ getRecentFeeds: () => mockFeeds() }));
+jest.mock("@/db/milestoneFeed", () => ({
+  getRecentFeeds: () => mockFeeds(),
+  getSessionFed: async () => ({ muscles: ["chest"], styles: ["strength"], outing: false }),
+}));
 jest.mock("@/db/preferences", () => ({
   preferences: {
     getSavedSession: jest.fn().mockResolvedValue(null),

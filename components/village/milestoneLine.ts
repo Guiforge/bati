@@ -1,5 +1,11 @@
 import type { TFunction } from "i18next";
-import { type Milestone, nextMilestone, type RecentFeeds } from "@/db/milestone";
+import {
+  type Milestone,
+  nextMilestone,
+  pickSessionMilestone,
+  type RecentFeeds,
+  type SessionFed,
+} from "@/db/milestone";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { BuildingCode } from "@/db/schema";
 import type { VillageBuilding } from "@/db/village";
@@ -54,4 +60,22 @@ export function buildingMilestoneLine(
 ): string | null {
   const m = feeds === null ? null : nextMilestone(b, feeds);
   return m === null ? null : milestoneLine(m, b.code, t, language, named);
+}
+
+/**
+ * The victory screen's line: the building this session fed that rises soonest; when it fed none
+ * with an estimate, `fallback` (the Village's own "Next to rise", `pickNextToRise`). Null where
+ * neither has anything to say.
+ */
+export function victoryMilestoneLine(
+  buildings: VillageBuilding[],
+  feeds: RecentFeeds,
+  fed: SessionFed,
+  fallback: VillageBuilding | null,
+  t: TFunction,
+  language: AppLanguage,
+): string | null {
+  const picked = pickSessionMilestone(buildings, feeds, fed);
+  if (picked) return milestoneLine(picked.milestone, picked.building.code, t, language, true);
+  return fallback ? buildingMilestoneLine(fallback, feeds, t, language, true) : null;
 }

@@ -73,4 +73,20 @@ describe("db/milestoneFeed", () => {
   test("nothing done: nothing fed", async () => {
     expect(await feeds()).toEqual({ muscle: {}, style: {}, outing: [] });
   });
+
+  test("getSessionFed reads one session: its muscles, its style, and whether it was an outing", async () => {
+    const fed = async (id: number) =>
+      await (require("../db/milestoneFeed") as typeof import("../db/milestoneFeed")).getSessionFed(
+        id,
+      );
+    session(1000, [["Push-ups", 10]]);
+    const pushups = sid;
+    session(2000, [], 3000);
+    const walk = sid;
+    const a = await fed(pushups);
+    expect(a.muscles).toContain("chest");
+    expect(a.styles).toEqual(["strength"]);
+    expect(a.outing).toBe(false);
+    expect(await fed(walk)).toEqual({ muscles: [], styles: [], outing: true });
+  });
 });

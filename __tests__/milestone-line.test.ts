@@ -1,5 +1,6 @@
-import { milestoneLine } from "@/components/village/milestoneLine";
+import { milestoneLine, victoryMilestoneLine } from "@/components/village/milestoneLine";
 import type { Milestone } from "@/db/milestone";
+import type { VillageBuilding } from "@/db/village";
 import { i18n } from "@/i18n";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -96,5 +97,33 @@ describe("milestoneLine", () => {
       const line = await say(lang, sessions(3, { muscle: "chest" }), "forge");
       expect(line).not.toMatch(/\b(reps?|wdh|répétitions)\b/i);
     }
+  });
+});
+
+describe("victoryMilestoneLine", () => {
+  const feeds = { muscle: { chest: [100] }, style: {}, outing: [] };
+  const forge = {
+    code: "forge",
+    level: 3,
+    driver: "muscle",
+    metricValue: 300,
+    nextTarget: 600,
+  } as unknown as VillageBuilding;
+  const fed = { muscles: ["chest" as const], styles: [], outing: false };
+
+  it("names the building the session fed, in rank words", async () => {
+    await i18n.changeLanguage("fr");
+    expect(victoryMilestoneLine([forge], feeds, fed, null, i18n.t, "fr")).toBe(
+      "La Forge, rang 4 dans environ 3 séances de pectoraux.",
+    );
+  });
+
+  it("falls back to the Village's pick when the session fed nothing estimable", async () => {
+    await i18n.changeLanguage("en");
+    const nothing = { muscles: [], styles: [], outing: false };
+    expect(victoryMilestoneLine([forge], feeds, nothing, forge, i18n.t, "en")).toBe(
+      "The Forge, rank 4 in about 3 chest sessions.",
+    );
+    expect(victoryMilestoneLine([forge], feeds, nothing, null, i18n.t, "en")).toBeNull();
   });
 });

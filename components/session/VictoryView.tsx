@@ -725,7 +725,7 @@ export function VictoryView() {
           </XStack>
         </Card>
 
-        <NextMilestone saved={!!result} language={language} />
+        <NextMilestone sessionId={result?.sessionId ?? null} language={language} />
 
         {/* A failed save: the only thing that replaces "Tonight". */}
         {!!saveError && (

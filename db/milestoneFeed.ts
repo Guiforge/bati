@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { METRES_PER_LEAGUE } from "./gps";
-import { MILESTONE_WINDOW, type RecentFeeds } from "./milestone";
+import { MILESTONE_WINDOW, type RecentFeeds, type SessionFed } from "./milestone";
 import type { ExerciseStyle, MuscleCode } from "./schema";
 import { repEquivalentSql } from "./workUnits";
 
@@ -65,4 +65,36 @@ export async function getRecentFeeds(): Promise<RecentFeeds> {
     else add(feeds.style, key as ExerciseStyle, n);
   }
   return feeds;
+}
+
+/** What one saved session brought, to name the building it fed: same tags and reps as `getRecentFeeds`. */
+export async function getSessionFed(sessionId: number): Promise<SessionFed> {
+  const reps = repEquivalentSql(
+    completedExercises.resultValue,
+    completedExercises.resultType,
+    exercises.style,
+    completedExercises.sides,
+  );
+  const rows = await db.all<{ kind: "muscle" | "style"; key: string }>(sql`
+    SELECT 'muscle' AS kind, ${exerciseMuscles.muscle} AS key
+    FROM ${completedExercises}
+    JOIN ${exercises} ON ${exercises.id} = ${completedExercises.exerciseId}
+    JOIN ${exerciseMuscles} ON ${exerciseMuscles.exerciseId} = ${exercises.id}
+    WHERE ${completedExercises.sessionId} = ${sessionId}
+    GROUP BY ${exerciseMuscles.muscle} HAVING SUM(${reps}) > 0
+    UNION ALL
+    SELECT 'style', ${exercises.style}
+    FROM ${completedExercises}
+    JOIN ${exercises} ON ${exercises.id} = ${completedExercises.exerciseId}
+    WHERE ${completedExercises.sessionId} = ${sessionId}
+    GROUP BY ${exercises.style} HAVING SUM(${reps}) > 0
+  `);
+  const [outing] = await db.all<{ n: number }>(
+    sql`SELECT COUNT(*) AS n FROM ${completedQuest} WHERE ${completedQuest.id} = ${sessionId} AND ${completedQuest.leaguesM} > 0`,
+  );
+  return {
+    muscles: rows.filter((r) => r.kind === "muscle").map((r) => r.key as MuscleCode),
+    styles: rows.filter((r) => r.kind === "style").map((r) => r.key as ExerciseStyle),
+    outing: (outing?.n ?? 0) > 0,
+  };
 }

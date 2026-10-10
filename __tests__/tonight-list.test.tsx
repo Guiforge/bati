@@ -322,7 +322,7 @@ describe("TonightList", () => {
     [
       "es",
       "Brumeval se convierte en una Ciudad próspera.",
-      "Tu pueblo se convierte en una Ciudad próspera.",
+      "Tu aldea se convierte en una Ciudad próspera.",
     ],
   ])("a tier is a whole sentence, named or not, in %s", async (lang, named, unnamed) => {
     const feasts = rank({ tierUp: { oldTier: 8, newTier: 9 } as never });
@@ -432,7 +432,7 @@ describe("TonightList", () => {
     [
       "de",
       "Ein Hirsch gesellt sich zum Bären",
-      "39 deiner 130 Einheiten sind Ausdauer: Der Hirsch wacht mit.",
+      "39 deiner 130 Einheiten sind Ausdauertraining: Der Hirsch wacht mit.",
     ],
     ["en", "A stag joins the bear", "39 of your 130 sessions are endurance: the stag watches too."],
     [

@@ -49,7 +49,7 @@ export type CrestAnimals = {
     firstEight: Tally;
     totals: Tally;
     first: Animal;
-    secondFromSessions: Animal | null;
+    secondFromSessions: PracticeAnimal | null;
     /** The quarters the sessions give a boar, whichever animal the hero put on show; null otherwise. */
     boarQuarters: [Practice, Practice] | null;
   };

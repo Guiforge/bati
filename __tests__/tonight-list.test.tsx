@@ -6,6 +6,7 @@ import { oathText } from "@/components/oath/useOathText";
 import { type Feast, type FeastFacts, rankFeasts } from "@/components/session/feasts";
 import { TonightList } from "@/components/session/TonightList";
 import { achievementDefinitions } from "@/db/achievements";
+import type { Crest as CrestRead } from "@/db/crest";
 import { NO_CREST_EVENTS } from "@/db/crestEvents";
 import { i18n } from "@/i18n";
 import { useSettingsStore } from "@/stores/settings";
@@ -14,12 +15,17 @@ import config from "@/tamagui.config";
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 
 type Lang = "fr" | "en" | "de" | "es";
-async function show(feasts: Feast[], lang: Lang = "fr", villageName = "Brumeval") {
+async function show(
+  feasts: Feast[],
+  lang: Lang = "fr",
+  villageName = "Brumeval",
+  crest: CrestRead | null = null,
+) {
   await i18n.changeLanguage(lang);
   useSettingsStore.setState({ language: lang });
   return render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <TonightList feasts={feasts} villageName={villageName} />
+      <TonightList feasts={feasts} villageName={villageName} crest={crest} />
     </TamaguiProvider>,
   );
 }
@@ -48,6 +54,31 @@ const rank = (over: Partial<FeastFacts["result"]>, rest: Omit<FeastFacts, "resul
 
 const reveal = (animal: "bear" | "ermine" | "salmon" | "stag" | "horse" | "boar") =>
   rank({ crestReveal: { animal, quarters: null, firstEight: [], late: false } });
+
+describe("TonightList reveal shield", () => {
+  const crest = (second: string | null) =>
+    ({
+      longestFlame: 0,
+      rings: 0,
+      evidence: { secondFromSessions: second },
+    }) as unknown as CrestRead;
+
+  test("a boar is drawn with its quarters, like the big feast", async () => {
+    const feasts = rank({
+      crestReveal: { animal: "boar", quarters: ["yoga", "run"], firstEight: [], late: false },
+    });
+    const { getByLabelText } = await show(feasts, "en", "Brumeval", crest(null));
+    expect(getByLabelText("A boar that blends yoga and endurance.")).toBeTruthy();
+  });
+
+  test("a late reveal with a second animal is drawn with its border", async () => {
+    const feasts = rank({
+      crestReveal: { animal: "bear", quarters: null, firstEight: [], late: true },
+    });
+    const { getByLabelText } = await show(feasts, "en", "Brumeval", crest("stag"));
+    expect(getByLabelText(/bear.*stag/i)).toBeTruthy();
+  });
+});
 
 describe("TonightList", () => {
   afterEach(async () => {

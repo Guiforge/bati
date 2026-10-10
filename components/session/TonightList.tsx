@@ -14,6 +14,7 @@ import { Crest } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
 import { getExerciseThumb, getVillageTierAsset } from "@/constants/assetMap";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
+import type { Crest as CrestRead } from "@/db/crest";
 import type { Animal } from "@/db/crestRules";
 import type { DistanceUnit } from "@/db/preferences";
 import { formatCount, formatTarget, perSideLabel } from "@/db/targets";
@@ -21,7 +22,7 @@ import { getLevelTitle } from "@/db/userLevel";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
-import { tierSentence } from "./bigFeastText";
+import { revealShield, tierSentence } from "./bigFeastText";
 import type { Feast } from "./feasts";
 import { formatRecordValue, recordTitle } from "./recordText";
 
@@ -96,6 +97,7 @@ function lineOf(
   villageName: string,
   language: AppLanguage,
   unit: DistanceUnit,
+  crest: CrestRead | null,
 ): Line | null {
   if (f.size === "large")
     return {
@@ -103,7 +105,7 @@ function lineOf(
       text: largeLine(t, f, villageName, language),
       badge: "after",
       // The reveal wears the animal it names, where the other lines wear the gold bead.
-      ...(f.kind === "reveal" ? { art: shield(f.animal, 24) } : {}),
+      ...(f.kind === "reveal" ? { art: <Crest size={24} crest={revealShield(f, crest)} /> } : {}),
     };
   switch (f.kind) {
     case "level":
@@ -351,12 +353,15 @@ export function TonightList({
   feasts,
   villageName,
   epilogue = false,
+  crest = null,
   onViewVillage,
 }: {
   feasts: Feast[];
   villageName: string;
   /** The campaign ended and no outro text opened over this screen: Tonight says it once. */
   epilogue?: boolean;
+  /** The crest read after the save: the reveal line draws the shield the big feast will. */
+  crest?: CrestRead | null;
   /** Given only on a night the village grew: the way into it, same road as the Village tab. */
   onViewVillage?: (() => void) | undefined;
 }) {
@@ -367,7 +372,7 @@ export function TonightList({
 
   const lines = [
     ...(epilogue ? [{ id: "epilogue", text: t("session.tonight_epilogue") }] : []),
-    ...feasts.flatMap((f) => lineOf(t, f, villageName, language, unit) ?? []),
+    ...feasts.flatMap((f) => lineOf(t, f, villageName, language, unit, crest) ?? []),
   ];
   const cards = feasts.flatMap((f) =>
     f.size === "medium" ? (cardOf(t, i18n, f, villageName, language) ?? []) : [],

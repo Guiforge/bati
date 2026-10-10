@@ -24,6 +24,7 @@ import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { updateSessionFeedback } from "@/db/completed";
+import { type Crest, getCrest } from "@/db/crest";
 import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession, outingLocomotion } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
@@ -230,6 +231,15 @@ export function VictoryView() {
   // announcing it (the phone has shown it).
   const bigFeast = feasts.find((f) => f.size === "large");
   const [feastOpened, setFeastOpened] = useState(false);
+  // Read only for the reveal line of Tonight, which draws the same shield as the big feast.
+  const [crest, setCrest] = useState<Crest | null>(null);
+  const revealing = result?.crestReveal != null;
+  useEffect(() => {
+    if (!revealing) return;
+    getCrest()
+      .then(setCrest)
+      .catch((e) => reportError("victory.crest", e));
+  }, [revealing]);
   const revealShownAsCard = feasts.some((f) => f.kind === "reveal" && f.size !== "large");
 
   // What the journal is about to record, not the raw clock. They are different numbers for an
@@ -644,6 +654,7 @@ export function VictoryView() {
           <TonightList
             feasts={feastOpened ? feasts.filter((f) => f !== bigFeast) : feasts}
             villageName={villageName}
+            crest={crest}
             epilogue={result.campaign?.isFinished === true && outroSettled && !outroNarrative}
             onViewVillage={
               result.tierUp || result.villageGrowth.length > 0 ? handleViewVillage : undefined

@@ -72,13 +72,14 @@ export const nextTierLevel = (tier: VillageTier): number | null =>
  * hero's flame and rings. Unreadable, it is the bare animal rather than a missing shield.
  */
 export function revealShield(f: Reveal, crest: Crest | null): CrestShape {
-  const second = (f.animal !== "boar" && crest?.evidence.secondFromSessions) || null;
+  // A boar has no `secondFromSessions` (null by construction, R25b), so no guard here.
+  const second = crest?.evidence.secondFromSessions ?? null;
   return {
     manual: false,
     longestFlame: crest?.longestFlame ?? 0,
     rings: crest?.rings ?? 0,
     animal: f.animal,
     quarters: f.quarters,
-    second: second && second !== "boar" ? { animal: second } : null,
+    second: second ? { animal: second } : null,
   };
 }

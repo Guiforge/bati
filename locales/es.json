@@ -675,6 +675,7 @@
     "feast_tier_kicker": "Nueva etapa",
     "feast_tier_level_one": "Nivel {{level}}, tras {{count}} sesión.",
     "feast_tier_level_other": "Nivel {{level}}, tras {{count}} sesiones.",
+    "feast_tier_level_many": "Nivel {{level}}, tras {{count}} sesiones.",
     "feast_tier_next": "La próxima etapa llega en el nivel {{level}}.",
     "tonight_growth": "{{name}}, <b>rango {{level}}</b>",
     "tonight_record_was": "<b>{{name}} {{value}}</b>, antes {{was}}",

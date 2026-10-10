@@ -1000,6 +1000,7 @@
     "feast_tier_kicker": "Nouveau palier",
     "feast_tier_level_one": "Niveau {{level}}, après {{count}} séance.",
     "feast_tier_level_other": "Niveau {{level}}, après {{count}} séances.",
+    "feast_tier_level_many": "Niveau {{level}}, après {{count}} séances.",
     "feast_tier_next": "Le prochain palier arrive au niveau {{level}}.",
     "tonight_growth": "{{name}}, <b>rang {{level}}</b>",
     "tonight_record_was": "<b>{{name}} {{value}}</b>, était {{was}}",

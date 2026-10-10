@@ -1020,7 +1020,8 @@ describe("useSessionStore", () => {
         quarters: null,
         second: null,
         evidence: {
-          totals: { strength: 8 },
+          firstEight: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          totals: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
           first: animal,
           secondFromSessions: null,
           boarQuarters: null,
@@ -1040,7 +1041,12 @@ describe("useSessionStore", () => {
       const result = await store.getState().saveSession(null);
 
       expect(order).toEqual(["before", "write", "after"]);
-      expect(result.crestReveal).toEqual({ animal: "bear", quarters: null });
+      expect(result.crestReveal).toEqual({
+        animal: "bear",
+        quarters: null,
+        firstEight: [["strength", 8]],
+        late: false,
+      });
       (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
     });
 
@@ -1053,7 +1059,8 @@ describe("useSessionStore", () => {
         quarters: null,
         second: null,
         evidence: {
-          totals: { strength: 40 },
+          firstEight: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          totals: { strength: 40, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
           first: "bear",
           secondFromSessions: null,
           boarQuarters: null,
@@ -1083,7 +1090,8 @@ describe("useSessionStore", () => {
         quarters: null,
         second: null,
         evidence: {
-          totals: { strength: 300 },
+          firstEight: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          totals: { strength: 300, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
           first: "bear",
           secondFromSessions: null,
           boarQuarters: null,
@@ -1092,10 +1100,18 @@ describe("useSessionStore", () => {
       const shown = preferences.getBigFeastsShown as jest.Mock;
       (getCrest as jest.Mock).mockReset().mockResolvedValue(crest);
 
-      expect((await store.getState().saveSession(null)).crestReveal?.animal).toBe("bear");
+      const first = await store.getState().saveSession(null);
+      expect(first.crestReveal).toMatchObject({
+        animal: "bear",
+        firstEight: [["strength", 8]],
+        late: true,
+      });
       store.setState({ savedSessionId: null, crestSeenBefore: null });
       shown.mockResolvedValueOnce(["reveal"]);
-      expect((await store.getState().saveSession(null)).crestReveal).toBeNull();
+      const seen = await store.getState().saveSession(null);
+      expect(seen.crestReveal).toBeNull();
+      // The key travels with the result, so "Tonight" can tell a tier already shown.
+      expect(seen.bigFeastsShown).toEqual(["reveal"]);
 
       store.setState({ savedSessionId: null, crestSeenBefore: null });
       reportError.mockClear();

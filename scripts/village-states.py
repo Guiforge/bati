@@ -10,13 +10,14 @@ counts per practice, total XP (hence level, title, village tier), a flame of the
 and villageName. Every state ends with a check that reads the finished database back through
 plain SQL and fails the script if the state is wrong.
 
-States: jour1 a-avant a b-avant b c e sanglier nom-long. `x-avant` is `x` minus its last
+States: jour1 a-avant a b-avant b palier-avant palier c e sanglier nom-long. `x-avant` is `x` minus its last
 session, the one the hero is meant to play on the emulator to reach `x`.
 
 Not touched: the streak_* caches are deleted, not forged. Their day stamp is stale, so the app
 recomputes the flame from the journal on the first read. Stdlib only.
 """
 
+import json
 import math
 import os
 import random
@@ -54,6 +55,11 @@ STATES = {
     "b": dict(counts={"force": 78, "course": 39, "yoga": 13}, xp=21020, last_xp=150, flame=9,
               span=365, first8=FIRST8_FORCE_LED, last="course", level=21,
               tier="Cité florissante", name="Brumeval"),
+    # A revealed hero (the reveal is in `bigFeastsShown`), 5 XP short of level 8 (a quick session crosses it), Carrefour: the
+    # session played from `palier-avant` crosses the tier and earns the tier's big feast.
+    "palier": dict(counts={"force": 12, "course": 6, "yoga": 3}, xp=2925, last_xp=130, flame=9, span=90,
+                   first8=FIRST8_FORCE_LED, last="force", level=8, tier="Carrefour", name="Brumeval",
+                   shown=["reveal"]),
     "c": dict(counts={"force": 320, "course": 70, "yoga": 26}, head=B_COUNTS, xp=83400, flame=40, span=1130,
               first8=FIRST8_FORCE_LED, last="force", level=52, tier="Capitale éternelle",
               name="Brumeval"),
@@ -66,7 +72,7 @@ STATES = {
                      span=1100, first8=FIRST8_FORCE_LED, last="force", level=52,
                      tier="Capitale éternelle", name="Rochebrune-sur-Lande"),
 }
-AVANT = {"a-avant": "a", "b-avant": "b"}
+AVANT = {"a-avant": "a", "b-avant": "b", "palier-avant": "palier"}
 
 
 # ---- the app's rules, ported (db/streaks.ts, db/userLevel.ts, db/village.ts) -------------------
@@ -202,6 +208,13 @@ def build(base, state, out):
         "INSERT INTO user_preferences(key,value,updatedAt) VALUES('villageName',?,strftime('%s','now')) "
         "ON CONFLICT(key) DO UPDATE SET value=excluded.value", (spec["name"],))
 
+    if "shown" in spec:
+        db.execute(
+            "INSERT INTO user_preferences(key,value,updatedAt) VALUES('bigFeastsShown',?,strftime('%s','now')) "
+            "ON CONFLICT(key) DO UPDATE SET value=excluded.value", (json.dumps(spec["shown"]),))
+    else:
+        db.execute("DELETE FROM user_preferences WHERE key='bigFeastsShown'")
+
     counts = spec["counts"]
     n = sum(counts.values())
     if n:
@@ -332,6 +345,8 @@ def verify(db, state, spec, drop_last):
         print(f"{state}: cerf enters at session {hit[0]} with course={hit[1]}, ends {counts['course']}/{len(rows)}")
     name = db.execute("SELECT value FROM user_preferences WHERE key='villageName'").fetchone()[0]
     assert name == spec["name"], f"{state}: villageName {name}"
+    shown = db.execute("SELECT value FROM user_preferences WHERE key='bigFeastsShown'").fetchone()
+    assert (json.loads(shown[0]) if shown else None) == spec.get("shown"), f"{state}: bigFeastsShown {shown}"
     assert not db.execute("SELECT 1 FROM user_preferences WHERE key LIKE 'streak%' OR key='savedSession'").fetchall()
     assert not [r for r in db.execute("PRAGMA foreign_key_check") if r[0] in ("completed_exercises", "completed_sessions")]
     print(f"{state}: OK  sessions={len(rows)} {dict(counts)} xp={xp} level={level} tier={tier_of(level)!r} "

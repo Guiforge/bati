@@ -228,6 +228,17 @@ describe("TonightList", () => {
     expect(getByText("+120 XP")).toBeTruthy();
   });
 
+  test("a boss felled by the final blow says so and pays no triumph XP", async () => {
+    const { getByText, queryByText } = await show(
+      rankFeasts({ boss: { name: "Golem", finalBlow: true }, result: base }),
+    );
+    expect(getByText("Boss vaincu !")).toBeTruthy();
+    expect(getByText("Golem")).toBeTruthy();
+    expect(getByText("Abattu par ton coup final !")).toBeTruthy();
+    expect(queryByText(/Triomphe/)).toBeNull();
+    expect(queryByText(/\+100 XP/)).toBeNull();
+  });
+
   test("a rung card keeps the other doors the step leads to", async () => {
     const m = (name: string) => ({
       id: 1,

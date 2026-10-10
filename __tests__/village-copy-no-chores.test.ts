@@ -57,6 +57,10 @@ it("says grado for a building in Spanish, rango only for the village", () => {
     expect(es[k]).not.toMatch(/rango/i);
   expect(es.building_rank).toMatch(/grado/);
   expect(es.tier_badge).toMatch(/rango/);
+  const session = JSON.parse(fs.readFileSync(path.join(LOCALES, "es.json"), "utf8"))
+    .session as Record<string, string>;
+  expect(session.tonight_growth).toMatch(/grado/);
+  expect(session.tonight_growth).not.toMatch(/rango/i);
 });
 
 describe.each(Object.keys(CHORES))("%s copy of the Village", (lang) => {

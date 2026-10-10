@@ -114,6 +114,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | rematch | A beaten boss campaign finished again, what raises the Champion Arena | rematch | revanche |  | Revanche | revancha |
 | route | A finished adventure that is not a boss, what raises the Hall of Heroes | route | route | chemin (taken by quest titles) | Route | ruta |
 | achievement | An unlockable trophy | achievement | succès |  | Erfolg | logro |
+| building rank | How far a building has risen, 1 to 5 (3 for an upgrade), shown as "rank 3" | rank | rang | niveau (the hero's) | Rang | grado (not rango, the village's tier) |
 | tier | One of the village's twelve stages, one painting each, raised by the hero's level | tier | palier | niveau (the hero's and a building's) | Ausbaustufe (not Stufe, a rung) | rango (not etapa, a rung) |
 | village tiers | The village's size names | Hamlet … Eternal Capital | Hameau … Capitale éternelle |  | Weiler … Ewige Hauptstadt | Caserío … Capital eterna |
 

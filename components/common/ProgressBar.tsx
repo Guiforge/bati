@@ -75,7 +75,7 @@ export function ProgressBar({
   const stacked = fontScale >= STACK_FROM_SCALE;
   return (
     <YStack gap={6} width="100%">
-      {caption === undefined ? null : (
+      {!caption ? null : (
         <Text fontFamily="$body" fontSize={13} fontWeight="700" color="$resourceGold">
           {caption}
         </Text>

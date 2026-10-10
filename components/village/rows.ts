@@ -131,7 +131,10 @@ export function buildingScale(
       const unit = (n: number) => t(`village.unit_${b.driver}`, { count: n });
       return {
         progress,
-        caption: t(`village.detail_${b.driver}_driver`, { count: b.metricValue }),
+        caption:
+          b.metricValue <= 0
+            ? ""
+            : t(`village.detail_${b.driver}_driver`, { count: b.metricValue }),
         ends: { left: { value: unit(0) }, right: { value: unit(b.nextTarget) } },
       };
     }

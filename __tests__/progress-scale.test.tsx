@@ -62,6 +62,12 @@ describe("xp scale", () => {
     await i18n.changeLanguage("fr");
   });
 
+  it("has no caption when nothing is done: the two ends stay, no gold '0 XP done'", async () => {
+    expect(xpAt(1000).caption).toBe("");
+    await bar(xpAt(1000));
+    expect(texts()).toEqual(["niveau 5 · 1 000 XP", "niveau 8 · 2 800 XP"]);
+  });
+
   it("shows both ends, level over figure, on one line at the normal font size", async () => {
     await bar(xpAt(1320));
     expect(texts()).toEqual(["320 XP faits", "niveau 5 · 1 000 XP", "niveau 8 · 2 800 XP"]);
@@ -89,6 +95,13 @@ describe("reps scale", () => {
         `${plain(new Intl.NumberFormat("fr").format(value))} reps faites`,
       );
     }
+  });
+
+  it("has no caption before the first rep, and keeps both ends", async () => {
+    const none = repsScale(i18n.t, "fr", { value: 0, from: 0, to: 100 });
+    expect(none.caption).toBe("");
+    await bar(none);
+    expect(texts()).toEqual(["0 rep", "100 reps"]);
   });
 
   it("is singular for one", () => {

@@ -3,7 +3,7 @@ import type { BarEnd } from "@/components/common/ProgressBar";
 import { formatCount } from "@/db/targets";
 import type { AppLanguage } from "@/stores/settings";
 
-/** What `ProgressBar` is given for a scale with a caption and two ends. */
+/** What `ProgressBar` is given for a scale with a caption and two ends. An empty caption is no caption: nothing done is not worth a gold "0 XP done". */
 export type Scale = {
   progress: number;
   caption: string;
@@ -29,9 +29,12 @@ export function xpScale(
   const pastHalf = done * 2 >= p.toXp - p.fromXp;
   return {
     progress: percent(p.totalXp, p.fromXp, p.toXp),
-    caption: pastHalf
-      ? t("village.bar_xp_left", { xp: xp(left) })
-      : t("village.bar_xp_done", { xp: xp(done), count: done }),
+    caption:
+      done === 0
+        ? ""
+        : pastHalf
+          ? t("village.bar_xp_left", { xp: xp(left) })
+          : t("village.bar_xp_done", { xp: xp(done), count: done }),
     ends: {
       left: {
         lead: t("village.bar_end_level", { level: p.fromLevel }),
@@ -58,7 +61,10 @@ export function repsScale(
   const reps = (n: number) => t("village.bar_end_reps", { n: formatCount(language, n), count: n });
   return {
     progress: percent(p.value, p.from, p.to),
-    caption: t("village.bar_reps_done", { n: formatCount(language, p.value), count: p.value }),
+    caption:
+      p.value <= 0
+        ? ""
+        : t("village.bar_reps_done", { n: formatCount(language, p.value), count: p.value }),
     ends: { left: { value: reps(p.from) }, right: { value: reps(p.to) } },
   };
 }

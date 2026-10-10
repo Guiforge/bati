@@ -4,6 +4,7 @@ import { buildingScale, feedsLine, groupFamilies, questLink } from "@/components
 import { type BuildingCode, buildingDefinitions, muscleCodes } from "@/db/schema";
 import {
   buildingCeiling,
+  deedProgress,
   deedRungStart,
   formatGrown,
   isDayOne,
@@ -215,6 +216,26 @@ describe("buildingScale, the deeds", () => {
     expect(scale?.ends.left.value).toBe(i18n.t("village.unit_leagues", { count: start }));
     expect(scale?.ends.left.value).not.toBe(i18n.t("village.unit_leagues", { count: 0 }));
     expect(scale?.progress).toBeCloseTo(((80.5 - start) / (90 - start)) * 100);
+  });
+});
+
+describe("buildingScale, a kept rank", () => {
+  // The old count gave a rank the new tally has not reached: the done figure sits under the rung.
+  it.each([
+    ["heroes_hall", "routes", 3, 2, 7],
+    ["champion_arena", "rematches", 3, 4, 10],
+  ] as const)("never puts %s's done figure left of its bar", (code, driver, level, done, next) => {
+    const kept = b(code, level, { driver, metricValue: done, nextTarget: next, kept: true });
+    expect(deedRungStart(code, level)).toBeGreaterThan(done);
+    const scale = buildingScale(kept, i18n.t, "en");
+    assert(scale);
+    const left = Number.parseInt(scale.ends.left.value, 10);
+    expect(left).toBeLessThanOrEqual(done);
+    expect(scale.caption).toBe(i18n.t(`village.detail_${driver}_driver`, { count: done }));
+    expect(scale.progress).toBeGreaterThanOrEqual(0);
+    expect(scale.progress).toBeLessThanOrEqual(100);
+    expect(scale.progress).toBeCloseTo(((done - left) / (next - left)) * 100);
+    expect(deedProgress(kept)).toBe(scale.progress);
   });
 });
 

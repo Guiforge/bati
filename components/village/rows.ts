@@ -5,8 +5,8 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import {
   BUILDING_LABELS,
+  deedBarStart,
   deedProgress,
-  deedRungStart,
   getBuildingProgress,
   isDayOne,
   repsRungStart,
@@ -131,7 +131,7 @@ export function buildingScale(
       });
     default: {
       const unit = (n: number) => t(`village.unit_${b.driver}`, { count: n });
-      const from = deedRungStart(b.code, b.level);
+      const from = deedBarStart(b);
       return {
         progress: deedProgress(b),
         caption:

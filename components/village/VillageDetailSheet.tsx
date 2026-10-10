@@ -260,8 +260,8 @@ function BuildingDetail({
   // middot, where a period would be wrong.
   const repUnitNote = t("village.rep_unit", { seconds: SECONDS_PER_REP_EQUIVALENT });
 
-  // The row shows no bar; this is the one place a building's bar is allowed, because it is the
-  // one place it arrives with its unit at both ends. Same call as "Next to rise", so the two
+  // The bar lives here because here it arrives with its unit at both ends. It starts at the rung
+  // the building stands on (`buildingScale`), the same start "Next to rise" ranks by, so the two
   // cannot disagree about what "almost there" means.
   const progress = getBuildingProgress(building);
   const scale = buildingScale(building, t, language);

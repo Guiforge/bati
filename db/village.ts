@@ -439,9 +439,18 @@ export function deedRungStart(code: BuildingCode, level: number): number {
   return level <= 1 ? 0 : (TIER_4_DRIVERS[code]?.floors[level - 1] ?? 0);
 }
 
+/**
+ * Where a deed building's bar starts: its rung, but never above the tally. A kept rank (the old
+ * count, before drizzle/0060) can stand above what the new count gives, and a bar that starts at
+ * 4 routes over "2 routes done" says the done figure is smaller than its own left end.
+ */
+export function deedBarStart(b: VillageBuilding): number {
+  return Math.min(deedRungStart(b.code, b.level), b.metricValue);
+}
+
 /** A deed building's bar, 0-100, from the rung it stands on: the one figure the bar and the pick share. */
 export function deedProgress(b: VillageBuilding): number {
-  return percent(b.exactValue ?? b.metricValue, deedRungStart(b.code, b.level), b.nextTarget ?? 0);
+  return percent(b.exactValue ?? b.metricValue, deedBarStart(b), b.nextTarget ?? 0);
 }
 
 const TIER_4_DRIVERS: Partial<
@@ -685,7 +694,7 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
  * Whether a building has a bar at all: null when there is nothing honest to count, a maxed
  * building or one not built yet, otherwise the tally as a share of the next target counted from
  * zero. That number is not the bar, which starts at the rung the building stands on (`repsRungStart`,
- * `deedRungStart`, `deedProgress`); read it for null-ness, never to rank or to draw.
+ * `deedBarStart`, `deedProgress`); read it for null-ness, never to rank or to draw.
  *
  * A building has three states, not two. Unbuilt is a condition in words; treating it as "in progress at 0 %" drew "0 bosses, level 1 at 1" over an empty bar,
  * three ways of writing the same zero.

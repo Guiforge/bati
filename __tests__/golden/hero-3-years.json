@@ -369,6 +369,7 @@
       "animal": "bear",
       "stage": "venerable",
       "manual": false,
+      "picked": "auto",
       "second": null,
       "quarters": null,
       "revealedIndex": 7,
@@ -384,6 +385,7 @@
           "run": 1,
           "ride": 0
         },
+        "firstEightOrder": ["strength", "calisthenics", "run", "yoga"],
         "totals": {
           "strength": 314,
           "calisthenics": 87,

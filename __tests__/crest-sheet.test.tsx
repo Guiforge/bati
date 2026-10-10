@@ -275,6 +275,22 @@ describe("Ton animal", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it.each([
+    ["stag", "crest-pick-stag"],
+    ["auto", "crest-pick-auto"],
+  ] as const)(
+    "pressing the choice already on show (%s) only closes: no write, no change",
+    async (choice, id) => {
+      const onChanged = jest.fn();
+      const onClose = jest.fn();
+      await sheet(crestOf(FIVE_OF_EIGHT, choice), "pick", onClose, onChanged);
+      await fireEvent.press(screen.getByTestId(id));
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(write).not.toHaveBeenCalled();
+      expect(onChanged).not.toHaveBeenCalled();
+    },
+  );
+
   it("a failed write changes nothing and closes nothing", async () => {
     write.mockRejectedValue(new Error("disk"));
     const onChanged = jest.fn();

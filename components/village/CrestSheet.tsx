@@ -58,8 +58,13 @@ function Link({ testID, label, onPress }: { testID: string; label: string; onPre
 }
 
 /** Writes the choice and closes: no confirmation, going back is one tap more. `auto` is written, never deleted. */
-function useChoose(onChanged: () => void, onClose: () => void) {
+function useChoose(crest: CrestData | null, onChanged: () => void, onClose: () => void) {
   return (value: Animal | "auto") => {
+    // The choice already on show: nothing to write, and the caller must not leave for the Village.
+    if (crest !== null && value === (crest.manual ? crest.animal : "auto")) {
+      onClose();
+      return;
+    }
     preferences
       .setCrestAnimal(value)
       .then(() => {
@@ -294,7 +299,7 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
  */
 export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
   const { t } = useTranslation();
-  const choose = useChoose(onChanged, onClose);
+  const choose = useChoose(crest, onChanged, onClose);
   // Mounted on the first opening only: a sheet behind every Village visit is dead weight.
   const [mounted, setMounted] = useState(false);
   if (view !== null && !mounted) setMounted(true);

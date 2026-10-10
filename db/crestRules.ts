@@ -50,7 +50,7 @@ export type CrestAnimals = {
     totals: Tally;
     first: Animal;
     secondFromSessions: PracticeAnimal | null;
-    /** The quarters the sessions give a boar, whichever animal is on show; null with fewer than two practices. */
+    /** The quarters the sessions give a boar, whichever animal is on show; null only with no practice, [p, p] with a single one. */
     boarQuarters: [Practice, Practice] | null;
   };
 };

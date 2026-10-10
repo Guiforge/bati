@@ -64,7 +64,9 @@ STATES = {
               first8=FIRST8_FORCE_LED, last="force", level=52, tier="Capitale éternelle",
               name="Brumeval"),
     "e": dict(counts={"run": 40, "ride": 20}, xp=9800, flame=9, span=220, first8=["run"] * 8,
-              last="run", level=14, tier="Ville franche", name="Brumeval"),
+              last="run", level=14, tier="Ville franche", name="Brumeval",
+              # Grand Chemin: rank 3 is 40-89 leagues; the last 5 outings (metres) leave ~3 outings to rank 4.
+              road_m=80500, road_last5=[3600, 4200, 3000, 4800, 3400], road_gps_outings=20),
     "sanglier": dict(counts={"force": 14, "course": 13, "yoga": 13}, xp=3900, flame=9, span=150,
                      first8=["force", "course", "yoga", "force", "course", "yoga", "force", "course"],
                      last="course", level=9, tier="Carrefour", name="Brumeval"),
@@ -272,6 +274,18 @@ def build(base, state, out):
                         "INSERT INTO completed_exercises(sessionId,exerciseId,roundIndex,sortOrder,resultType,"
                         "resultValue,targetType,targetValue,notes,performedAt) VALUES(?,?,?,?,?,?,?,?,'',?)",
                         (sid, e, r, o, tt, value, tt, rng.randint(lo, hi), min(ts + o * 90 + r * 240, int(now))))
+        if "road_m" in spec:  # only the latest outings carry a GPS distance, the older ones predate tracking
+            rows = db.execute("SELECT id, movingSeconds FROM completed_sessions WHERE outing IS NOT NULL "
+                              "ORDER BY performedAt, id").fetchall()
+            db.execute("UPDATE completed_sessions SET leaguesM = NULL")
+            gps, last5 = rows[-spec["road_gps_outings"]:], spec["road_last5"]
+            body = gps[:-len(last5)]
+            share = spec["road_m"] - sum(last5)
+            tot = sum(m for _, m in body)
+            vals = [round(share * m / tot) for _, m in body]
+            vals[0] += share - sum(vals)
+            for (sid, _), v in zip(gps, vals + last5):
+                db.execute("UPDATE completed_sessions SET leaguesM=? WHERE id=?", (v, sid))
         if drop_last:  # the unplayed session; completed_exercises follow by cascade
             db.execute("DELETE FROM completed_sessions WHERE id=(SELECT id FROM completed_sessions ORDER BY performedAt DESC LIMIT 1)")
     db.commit()
@@ -343,6 +357,11 @@ def verify(db, state, spec, drop_last):
         assert hit, f"{state}: course never reaches 30 % with 20 sessions"
         assert counts["course"] == 70 and len(rows) == 416, f"{state}: course {counts['course']}/{len(rows)} != 70/416"
         print(f"{state}: cerf enters at session {hit[0]} with course={hit[1]}, ends {counts['course']}/{len(rows)}")
+    if "road_m" in spec:  # Grand Chemin: floors 1, 15, 40, 90, 200 leagues (db/village.ts ROAD_FLOORS)
+        road = db.execute("SELECT COALESCE(SUM(leaguesM), 0) FROM completed_sessions").fetchone()[0] // 1000
+        rank = sum(road >= f for f in (1, 15, 40, 90, 200))
+        assert rank == 3, f"{state}: Grand Chemin rank {rank} ({road} leagues) != 3"
+    road_note = f" grandChemin=rang{rank}({road}l)" if "road_m" in spec else ""
     name = db.execute("SELECT value FROM user_preferences WHERE key='villageName'").fetchone()[0]
     assert name == spec["name"], f"{state}: villageName {name}"
     shown = db.execute("SELECT value FROM user_preferences WHERE key='bigFeastsShown'").fetchone()
@@ -350,7 +369,7 @@ def verify(db, state, spec, drop_last):
     assert not db.execute("SELECT 1 FROM user_preferences WHERE key LIKE 'streak%' OR key='savedSession'").fetchall()
     assert not [r for r in db.execute("PRAGMA foreign_key_check") if r[0] in ("completed_exercises", "completed_sessions")]
     print(f"{state}: OK  sessions={len(rows)} {dict(counts)} xp={xp} level={level} tier={tier_of(level)!r} "
-          f"flame={run}j ({FLAME_NAMES[flame_level(run)] or 'éteinte'}) first8={dict(first8)} name={name!r}")
+          f"flame={run}j ({FLAME_NAMES[flame_level(run)] or 'éteinte'}) first8={dict(first8)} name={name!r}{road_note}")
 
 
 if __name__ == "__main__":

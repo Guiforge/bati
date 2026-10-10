@@ -31,7 +31,14 @@ export function NextMilestone({
       .then(([buildings, feeds, fed]) => {
         if (!cancelled)
           setLine(
-            victoryMilestoneLine(buildings, feeds, fed, pickNextToRise(buildings), t, language),
+            victoryMilestoneLine(
+              buildings,
+              feeds,
+              fed,
+              pickNextToRise(buildings, feeds),
+              t,
+              language,
+            ),
           );
       })
       .catch((e) => reportError("victory.next", e));

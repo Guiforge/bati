@@ -4,6 +4,7 @@ import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
+import { pickSessionMilestone, type RecentFeeds } from "./milestone";
 import { getMuscleBalance } from "./muscleBalance";
 import { getPreference } from "./preferences";
 import {
@@ -724,6 +725,9 @@ function repsLeft(building: VillageBuilding): number {
 /**
  * The one building the screen puts first: the thing a single session is most likely to raise.
  *
+ * The one with the fewest sessions to go by the hero's own recent pace, when any has an estimate.
+ * Otherwise:
+ *
  * Reps first, and the fewest of them wins: "40 reps of chest" is closer than "350 reps of legs"
  * whatever the percentages say, because the hero trains in reps, not in fractions. Level 0 waits
  * while any rep building is still rising, since one rep builds any of those and they would win
@@ -733,8 +737,15 @@ function repsLeft(building: VillageBuilding): number {
  * along, the fewest units left. Null when nothing has a rung left, and on day one: the screen says
  * the rule instead.
  */
-export function pickNextToRise(buildings: VillageBuilding[]): VillageBuilding | null {
+export function pickNextToRise(
+  buildings: VillageBuilding[],
+  feeds: RecentFeeds | null,
+): VillageBuilding | null {
   if (isDayOne(buildings)) return null;
+  // The building the hero's own pace raises soonest, in sessions or outings, wins outright: the
+  // same pick as the victory's PROCHAIN line. The rules below are for when no pace says anything.
+  const soonest = feeds === null ? null : pickSessionMilestone(buildings, feeds, null);
+  if (soonest) return soonest.building;
   const reps = buildings.filter(
     (b) => (b.driver === "muscle" || b.driver === "style") && b.nextTarget !== null,
   );

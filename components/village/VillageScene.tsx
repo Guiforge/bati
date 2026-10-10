@@ -430,7 +430,7 @@ export function VillageScene() {
   const dayOne = isDayOne(scene.buildings);
   const complete = isVillageComplete(scene.tier, scene.buildings);
   const families = groupFamilies(scene.buildings, complete);
-  const next = pickNextToRise(scene.buildings);
+  const next = pickNextToRise(scene.buildings, feeds);
   const openDeeds = scene.buildings.filter((b) => b.tier === 4 && b.nextTarget !== null).length;
   // Weather, not a stat. It used to sit under the name, above the fold, in the place "Next to
   // rise" needed; Home's village band that took it next was removed with the Home redesign, so it

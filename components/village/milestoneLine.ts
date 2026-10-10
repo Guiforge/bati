@@ -64,7 +64,7 @@ export function buildingMilestoneLine(
 
 /**
  * The victory screen's line: the building this session fed that rises soonest; when it fed none
- * with an estimate, `fallback` (the Village's own "Next to rise", `pickNextToRise`). Null where
+ * with an estimate, `fallback` (the Village's own "Next to rise", `pickNextToRise`, which is the soonest of all). Null where
  * neither has anything to say.
  */
 export function victoryMilestoneLine(

@@ -83,15 +83,16 @@ function feedOf(
 export type SessionFed = { muscles: MuscleCode[]; styles: ExerciseStyle[]; outing: boolean };
 
 /**
- * The building the victory screen names: among those THIS session fed, the one whose rank is
- * nearest in sessions (the Forge for a strength session, the Grand Chemin for an outing). A tie goes
- * to the earlier building in `buildings`, the Village's own fixed order. Null when the session fed
- * nothing that has an estimate; the caller then falls back to the Village's "Next to rise".
+ * The building that rises soonest, the one function behind the victory's PROCHAIN line and the
+ * Village's "Next to rise". With `fed` (the victory), only among those THIS session fed (the Forge
+ * for a strength session, the Grand Chemin for an outing); with null, among all of them. Nearest
+ * in sessions wins; a tie goes to the earlier building in `buildings`, the Village's own fixed
+ * order. Null when nothing has an estimate.
  */
 export function pickSessionMilestone<B extends Rising>(
   buildings: readonly B[],
   feeds: RecentFeeds,
-  fed: SessionFed,
+  fed: SessionFed | null,
 ): { building: B; milestone: Milestone } | null {
   let best: { building: B; milestone: Milestone } | null = null;
   for (const building of buildings) {
@@ -99,11 +100,12 @@ export function pickSessionMilestone<B extends Rising>(
     if (m === null) continue;
     const def = buildingDefinitions[building.code];
     const nourished =
-      m.unit === "outings"
+      fed === null ||
+      (m.unit === "outings"
         ? fed.outing
         : m.subject !== null && "muscle" in m.subject
           ? fed.muscles.some((x) => x === def.relatedMuscle)
-          : m.subject !== null && fed.styles.includes(m.subject.style);
+          : m.subject !== null && fed.styles.includes(m.subject.style));
     if (nourished && (best === null || m.count < best.milestone.count)) {
       best = { building, milestone: m };
     }

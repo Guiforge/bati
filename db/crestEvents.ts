@@ -27,7 +27,7 @@ export type CrestReveal = {
 };
 
 export type CrestEvents = {
-  /** The second animal entered: `n` of the `total` sessions with a practice are its practice. */
+  /** A border appeared on the shield: `n` of the `total` sessions with a practice are its practice. */
   secondJoins: { animal: PracticeAnimal; first: Animal; n: number; total: number } | null;
   /**
    * An animal on the crest went up a stage. A stage rises exactly at its threshold, so `n` is
@@ -68,14 +68,14 @@ export function crestReveal(
 }
 
 function secondJoinsOf(before: Seen | null, after: Seen): CrestEvents["secondJoins"] {
-  const joined = after.evidence.secondFromSessions;
-  if (before === null || before.evidence.secondFromSessions !== null) return null;
-  if (joined === null || joined === "boar") return null;
-  const p = practiceOf(joined);
+  // The card follows the shield on show: a border appearing, whatever the hero put at the centre.
+  if (before === null || before.second !== null || after.second === null) return null;
+  const { animal } = after.second;
+  const p = practiceOf(animal);
   if (p === undefined) return null;
   return {
-    animal: joined,
-    first: after.evidence.first,
+    animal,
+    first: after.animal,
     n: after.evidence.totals[p],
     total: sessionsWithPractice(after),
   };
@@ -96,9 +96,9 @@ function stageUpOf(before: Seen | null, after: Seen): CrestEvents["stageUp"] {
 }
 
 /**
- * What one session changed on the crest, from two reads of the journal. Pure. It compares the
- * animals the *sessions* chose (`evidence`), never the one on show: a hero's own pick is a
- * display and must not announce a reveal or a newcomer that the journal did not make.
+ * What one session changed on the crest, from two reads of the journal. Pure. The reveal is the
+ * sessions' (`crestReveal`); a newcomer and a stage are read off the shield on show, so the card
+ * never names an animal that does not appear.
  */
 export function crestEvents(before: Seen | null, after: Seen | null): CrestEvents {
   if (after === null) return NO_CREST_EVENTS;

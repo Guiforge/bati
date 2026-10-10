@@ -129,6 +129,37 @@ describe("crestEvents", () => {
     expect(joined?.n && joined.total && joined.n * 100 >= 30 * joined.total).toBe(true);
   });
 
+  describe("the join card follows the shield on show", () => {
+    /** Runs on from 39 strength + runs until the shield on show grows a border; null if it never does. */
+    function joinWith(choice: Animal | "auto") {
+      let hist = seq(["strength", 8], ["run", 11], ["strength", 20]);
+      for (let i = 0; i < 40; i++) {
+        const e = step(hist, "run", choice);
+        hist = [...hist, session("run")];
+        if (e.secondJoins) return e.secondJoins;
+      }
+      return null;
+    }
+
+    test("auto: the stag joins the bear", () => {
+      expect(joinWith("auto")).toMatchObject({ animal: "stag", first: "bear" });
+    });
+    test("a horse on show: the stag joins the horse", () => {
+      expect(joinWith("horse")).toMatchObject({ animal: "stag", first: "horse" });
+    });
+    test("an ermine on show: the stag joins the ermine", () => {
+      expect(joinWith("ermine")).toMatchObject({ animal: "stag", first: "ermine" });
+    });
+    test("the stag on show: the bear steps to the border, and its practice is counted", () => {
+      const j = joinWith("stag");
+      expect(j).toMatchObject({ animal: "bear", first: "stag" });
+      expect(j?.n).toBeGreaterThan(j?.total ? j.total / 3 : 0);
+    });
+    test("a boar on show has no border, so no card", () => {
+      expect(joinWith("boar")).toBeNull();
+    });
+  });
+
   test("the 40th session of a practice makes the animal adult, the 200th venerable", () => {
     expect(step(seq(["strength", 39]), "strength").stageUp).toEqual([
       { animal: "bear", stage: "adult", n: 40, own: true },

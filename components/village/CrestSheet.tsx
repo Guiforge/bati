@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable } from "react-native";
+import { BackHandler, Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { FormSheet } from "@/components/common/FormSheet";
 import { Check, ChevronRight } from "@/components/icons";
@@ -210,7 +210,7 @@ function Option({
     <Pressable
       testID={testID}
       accessibilityRole="radio"
-      accessibilityState={{ selected }}
+      accessibilityState={{ checked: selected }}
       onPress={onPress}
       style={{ minHeight: 44 }}
     >
@@ -293,6 +293,16 @@ export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
   // Mounted on the first opening only: a sheet behind every Village visit is dead weight.
   const [mounted, setMounted] = useState(false);
   if (view !== null && !mounted) setMounted(true);
+  // Same as VillageDetailSheet: back closes the sheet first, and the router never sees the press.
+  const open = view !== null;
+  useEffect(() => {
+    if (!open) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      onClose();
+      return true;
+    });
+    return () => sub.remove();
+  }, [open, onClose]);
   if (!mounted || crest === null) return null;
 
   return (

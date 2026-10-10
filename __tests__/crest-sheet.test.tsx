@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import type { ReactNode } from "react";
+import { BackHandler } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
@@ -170,6 +171,34 @@ describe("Pourquoi l'Ours ?", () => {
     expect(write).toHaveBeenCalledWith("auto");
   });
 
+  it("keeps the two links of a chosen animal in one group", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT, "stag"), "why");
+    expect(screen.getByTestId("crest-why-links")).toBeTruthy();
+  });
+
+  it("hardware back closes the open sheet first, and only then", async () => {
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    const onClose = jest.fn();
+    await sheet(crestOf(FIVE_OF_EIGHT), "why", onClose);
+    const press = spy.mock.calls.at(-1)?.[1] as () => boolean;
+    expect(press()).toBe(true);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("registers no back handler while closed", async () => {
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    await wrap(
+      <CrestSheet
+        view={null}
+        crest={crestOf(FIVE_OF_EIGHT)}
+        onView={jest.fn()}
+        onClose={jest.fn()}
+        onChanged={jest.fn()}
+      />,
+    );
+    expect(spy).not.toHaveBeenCalled();
+  });
+
   it("a pick equal to the sessions' animal reads as the sessions' own, never as a choice", async () => {
     await sheet(crestOf(FIVE_OF_EIGHT, "bear"), "why");
     expect(screen.queryByTestId("crest-why-chosen")).toBeNull();
@@ -247,14 +276,14 @@ describe("Ton animal", () => {
 
   it("the current choice is selected, the sessions' animal when none was made", async () => {
     await sheet(crestOf(FIVE_OF_EIGHT), "pick");
-    expect(screen.getByTestId("crest-pick-auto").props.accessibilityState.selected).toBe(true);
-    expect(screen.getByTestId("crest-pick-stag").props.accessibilityState.selected).toBe(false);
+    expect(screen.getByTestId("crest-pick-auto").props.accessibilityState.checked).toBe(true);
+    expect(screen.getByTestId("crest-pick-stag").props.accessibilityState.checked).toBe(false);
   });
 
   it("a chosen animal is the selected one", async () => {
     await sheet(crestOf(FIVE_OF_EIGHT, "stag"), "pick");
-    expect(screen.getByTestId("crest-pick-stag").props.accessibilityState.selected).toBe(true);
-    expect(screen.getByTestId("crest-pick-auto").props.accessibilityState.selected).toBe(false);
+    expect(screen.getByTestId("crest-pick-stag").props.accessibilityState.checked).toBe(true);
+    expect(screen.getByTestId("crest-pick-auto").props.accessibilityState.checked).toBe(false);
   });
 });
 

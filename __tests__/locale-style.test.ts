@@ -262,6 +262,29 @@ describe("locale typography", () => {
   });
 
   /**
+   * The same scan over the rest of the app's source: the village's tier names, the feast and
+   * record texts, the stores' toasts. `app/dev.tsx` is the one name on the list, a developer
+   * tool no hero opens whose strings are English notes to the person holding the phone. Blind
+   * spot: JSX text between tags is not a literal, so it needs `t()` or a reviewer.
+   */
+  it("no string literal in app/, components/, hooks/ or stores/ uses an em dash", () => {
+    const TOKEN =
+      /\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\[\s\S])*`/g;
+    const offending = sourceFiles(
+      ...["app", "components", "hooks", "stores"].map((d) => path.join(ROOT, d)),
+    )
+      .filter((file) => path.relative(ROOT, file) !== path.join("app", "dev.tsx"))
+      .flatMap((file) =>
+        [...fs.readFileSync(file, "utf8").matchAll(TOKEN)]
+          .map((m) => m[0])
+          .filter((tok) => !tok.startsWith("/") && tok.includes(EM_DASH))
+          .map((tok) => `${path.relative(ROOT, file)}: ${tok.slice(0, 70)}`),
+      );
+
+    expect(offending).toEqual([]);
+  });
+
+  /**
    * The hero has no fixed gender in French either. 2026-09-10 fixed the XP masculine and the
    * 2026-10-03 pass found "entraîné" (in `constants/restMessages.ts`, hence the second source
    * below), "agacé" and "XP gagnée" back. Only the shapes that can

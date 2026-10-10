@@ -232,6 +232,7 @@ describe("BigFeastView", () => {
   });
 
   test("the reveal's last image links to the sheet 'Why the Bear?', and only the reveal", async () => {
+    mockReduced = true; // the storyboard keeps the link inert until its text shows
     const onWhy = jest.fn();
     await render(
       wrap(
@@ -249,6 +250,54 @@ describe("BigFeastView", () => {
     expect(screen.getByText("Pourquoi l'Ours ?")).toBeTruthy();
     await fireEvent.press(screen.getByTestId("big-feast-why"));
     expect(onWhy).toHaveBeenCalledTimes(1);
+  });
+
+  test("while the storyboard has not shown the text the link takes no press and TalkBack skips it", async () => {
+    jest.useFakeTimers();
+    try {
+      await render(
+        wrap(
+          <BigFeastView
+            feast={bear as never}
+            crest={null}
+            tier={9}
+            villageName="Brumeval"
+            sessions={118}
+            onSeeVillage={mockSee}
+            onWhy={jest.fn()}
+          />,
+        ),
+      );
+      const link = () => screen.getByTestId("big-feast-why", { includeHiddenElements: true });
+      expect(link().props.pointerEvents).toBe("none");
+      expect(link().props.accessibilityElementsHidden).toBe(true);
+      expect(link().props.importantForAccessibility).toBe("no-hide-descendants");
+      await act(() => {
+        jest.advanceTimersByTime(2 * 550 + 500);
+      });
+      expect(link().props.pointerEvents).toBe("auto");
+      expect(link().props.accessibilityElementsHidden).toBeFalsy();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test("under reduced motion the link is touchable at once", async () => {
+    mockReduced = true;
+    await render(
+      wrap(
+        <BigFeastView
+          feast={bear as never}
+          crest={null}
+          tier={9}
+          villageName="Brumeval"
+          sessions={118}
+          onSeeVillage={mockSee}
+          onWhy={jest.fn()}
+        />,
+      ),
+    );
+    expect(screen.getByTestId("big-feast-why").props.pointerEvents).toBe("auto");
   });
 
   test("the boar's count is the fact and its colors a separate, paler line", async () => {

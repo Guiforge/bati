@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import Animated, {
@@ -108,13 +108,25 @@ type Ctx = {
 };
 
 /** "Why the Bear?": the reveal's way into the sheet the Village's shield opens too. */
-function WhyLink({ animal, onPress }: { animal: Animal; onPress: (() => void) | undefined }) {
+function WhyLink({
+  animal,
+  onPress,
+  inert,
+}: {
+  animal: Animal;
+  onPress: (() => void) | undefined;
+  /** The storyboard has not shown the text yet: no press lands and TalkBack skips it. */
+  inert?: boolean;
+}) {
   const { t } = useTranslation();
   if (!onPress) return null;
   return (
     <Pressable
       testID="big-feast-why"
       accessibilityRole="button"
+      pointerEvents={inert ? "none" : "auto"}
+      accessibilityElementsHidden={inert}
+      importantForAccessibility={inert ? "no-hide-descendants" : "auto"}
       onPress={onPress}
       style={{ minHeight: 44, justifyContent: "center" }}
     >
@@ -129,7 +141,13 @@ function WhyLink({ animal, onPress }: { animal: Animal; onPress: (() => void) | 
 }
 
 /** The text of the last image, which is the whole feast under reduced motion. */
-function FeastText({ feast, villageName, sessions, onWhy }: Omit<Ctx, "crest">) {
+function FeastText({
+  feast,
+  villageName,
+  sessions,
+  onWhy,
+  whyInert,
+}: Omit<Ctx, "crest"> & { whyInert?: boolean }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   if (feast.kind === "reveal") {
@@ -149,7 +167,7 @@ function FeastText({ feast, villageName, sessions, onWhy }: Omit<Ctx, "crest">) 
           </Line>
         ) : null}
         {body && colors ? <Line testID="big-feast-colors">{colors}</Line> : null}
-        <WhyLink animal={feast.animal} onPress={onWhy} />
+        <WhyLink animal={feast.animal} onPress={onWhy} inert={whyInert} />
       </>
     );
   }
@@ -308,6 +326,12 @@ function RevealStoryboard({
     land.value = withDelay(2 * BEAT, withSpring(1, BOUNCY));
     text.value = withDelay(2 * BEAT, withTiming(1, { duration: 500 }));
   }, [beat, rise, land, text]);
+  // The words fade in over 500 ms after two beats: until then the link is invisible, not absent.
+  const [textShown, setTextShown] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setTextShown(true), 2 * BEAT + 500);
+    return () => clearTimeout(id);
+  }, []);
 
   const veil = useAnimatedStyle(() => ({ opacity: interpolate(beat.value, [0, 1, 2], VEIL) }));
   const eyes = useAnimatedStyle(() => ({
@@ -350,7 +374,13 @@ function RevealStoryboard({
         <YStack style={SECTION}>
           <Shield crest={crest} style={shield} />
           <Animated.View style={[SECTION, words]}>
-            <FeastText feast={feast} villageName={villageName} sessions={sessions} onWhy={onWhy} />
+            <FeastText
+              feast={feast}
+              villageName={villageName}
+              sessions={sessions}
+              onWhy={onWhy}
+              whyInert={!textShown}
+            />
           </Animated.View>
         </YStack>
       </YStack>

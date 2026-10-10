@@ -10,7 +10,7 @@ export type Scale = {
   ends: { left: BarEnd; right: BarEnd };
 };
 
-const percent = (value: number, from: number, to: number) =>
+export const percent = (value: number, from: number, to: number) =>
   to > from ? Math.max(0, Math.min(100, ((value - from) / (to - from)) * 100)) : 0;
 
 /**

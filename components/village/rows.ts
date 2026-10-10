@@ -1,10 +1,11 @@
 import type { TFunction } from "i18next";
 
-import { repsScale, type Scale } from "@/components/village/barScale";
+import { percent, repsScale, type Scale } from "@/components/village/barScale";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import {
   BUILDING_LABELS,
+  deedRungStart,
   getBuildingProgress,
   isDayOne,
   repsRungStart,
@@ -107,7 +108,7 @@ export function levelText(b: VillageBuilding, t: TFunction): string {
 /**
  * A building's bar: what is done and the two ends, each with its unit. Null for the buildings whose
  * driver is a level rather than a tally (starters, upgrades), and for one nothing has started.
- * Reps start from the rung the building stands on; the deeds count from zero.
+ * Every bar starts from the rung the building stands on, reps and deeds alike.
  */
 export function buildingScale(
   b: VillageBuilding,
@@ -129,13 +130,14 @@ export function buildingScale(
       });
     default: {
       const unit = (n: number) => t(`village.unit_${b.driver}`, { count: n });
+      const from = deedRungStart(b.code, b.level);
       return {
-        progress,
+        progress: percent(b.exactValue ?? b.metricValue, from, b.nextTarget),
         caption:
           b.metricValue <= 0
             ? ""
             : t(`village.detail_${b.driver}_driver`, { count: b.metricValue }),
-        ends: { left: { value: unit(0) }, right: { value: unit(b.nextTarget) } },
+        ends: { left: { value: unit(from) }, right: { value: unit(b.nextTarget) } },
       };
     }
   }

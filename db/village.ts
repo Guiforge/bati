@@ -433,6 +433,11 @@ const TIER_4_VALUES = {
 /** A tier-4 building answers to a deed tally, never to volume. */
 type DeedDriver = keyof typeof TIER_4_VALUES;
 
+/** `repsRungStart` for the deeds: where the rung a tier-4 building stands on begins. Rank 1 starts at 0. */
+export function deedRungStart(code: BuildingCode, level: number): number {
+  return level <= 1 ? 0 : (TIER_4_DRIVERS[code]?.floors[level - 1] ?? 0);
+}
+
 const TIER_4_DRIVERS: Partial<
   Record<BuildingCode, { driver: DeedDriver; floors: readonly number[] }>
 > = {

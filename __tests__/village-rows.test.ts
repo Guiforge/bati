@@ -3,6 +3,7 @@ import { buildingScale, groupFamilies, questLink } from "@/components/village/ro
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import {
   buildingCeiling,
+  deedRungStart,
   formatGrown,
   isDayOne,
   isVillageComplete,
@@ -127,6 +128,23 @@ describe("buildingScale", () => {
     expect(start).toBeGreaterThan(0);
     expect(scale?.ends.left.value).toBe(`${new Intl.NumberFormat("en").format(start)} reps`);
     expect(scale?.progress).toBeCloseTo(((700 - start) / (1000 - start)) * 100);
+  });
+});
+
+describe("buildingScale, the deeds", () => {
+  it("starts a rank 3 road at the rung it stands on, not at zero leagues", () => {
+    const road = b("high_road", 3, {
+      driver: "leagues",
+      metricValue: 80,
+      exactValue: 80.5,
+      nextTarget: 90,
+    });
+    const scale = buildingScale(road, i18n.t, "en");
+    const start = deedRungStart("high_road", 3);
+    expect(start).toBeGreaterThan(0);
+    expect(scale?.ends.left.value).toBe(i18n.t("village.unit_leagues", { count: start }));
+    expect(scale?.ends.left.value).not.toBe(i18n.t("village.unit_leagues", { count: 0 }));
+    expect(scale?.progress).toBeCloseTo(((80.5 - start) / (90 - start)) * 100);
   });
 });
 

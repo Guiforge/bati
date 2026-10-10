@@ -1,4 +1,4 @@
-import { act, fireEvent, render } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { processColor, StyleSheet, type ViewStyle } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -35,6 +35,16 @@ jest.mock("@/db/completed", () => ({
 }));
 jest.mock("@/db/adventures-narrative", () => ({
   getAdventureStepOutroNarrative: jest.fn().mockResolvedValue(null),
+}));
+// The reveal line draws the shield from the crest VictoryView reads; the test reads what it was given.
+let mockCrestRead: () => Promise<unknown> = () => Promise.resolve(null);
+const mockCrestDrawn = jest.fn();
+jest.mock("@/db/crest", () => ({ getCrest: () => mockCrestRead() }));
+jest.mock("@/components/village/Crest", () => ({
+  Crest: ({ crest }: { crest: unknown }) => {
+    mockCrestDrawn(crest);
+    return null;
+  },
 }));
 jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
 jest.mock("@/db/preferences", () => ({
@@ -816,6 +826,38 @@ describe("VictoryView tonight", () => {
     // It is on screen as the line with its "after" badge, and not marked.
     expect(view.getByText("session.tonight_badge_after")).toBeTruthy();
     expect(mockMarkBigFeastShown).not.toHaveBeenCalled();
+  });
+
+  describe("the reveal line's shield", () => {
+    beforeEach(() => mockCrestDrawn.mockClear());
+    afterEach(() => {
+      mockCrestRead = () => Promise.resolve(null);
+    });
+
+    it("keeps the border of a late reveal, read after the save, and draws nothing before it", async () => {
+      mockCrestRead = () =>
+        Promise.resolve({ longestFlame: 0, rings: 0, evidence: { secondFromSessions: "stag" } });
+      const { release } = await mountWithPendingSave(null, 12 * 60, { crestReveal: BEAR });
+      await release();
+      await waitFor(() =>
+        expect(mockCrestDrawn).toHaveBeenLastCalledWith(
+          expect.objectContaining({ animal: "bear", second: { animal: "stag" } }),
+        ),
+      );
+      // Never the bare shield on the way to the bordered one.
+      expect(mockCrestDrawn).not.toHaveBeenCalledWith(expect.objectContaining({ second: null }));
+    });
+
+    it("falls back to the shield without a border when the crest cannot be read", async () => {
+      mockCrestRead = () => Promise.reject(new Error("db"));
+      const { release } = await mountWithPendingSave(null, 12 * 60, { crestReveal: BEAR });
+      await release();
+      await waitFor(() =>
+        expect(mockCrestDrawn).toHaveBeenLastCalledWith(
+          expect.objectContaining({ animal: "bear", second: null }),
+        ),
+      );
+    });
   });
 
   describe("the big feast", () => {

@@ -71,6 +71,28 @@ describe("TonightList reveal shield", () => {
     expect(getByLabelText("A boar that blends yoga and endurance.")).toBeTruthy();
   });
 
+  test("a crest still being read draws no shield, a failed read draws the one without border", async () => {
+    const feasts = rank({
+      crestReveal: { animal: "bear", quarters: null, firstEight: [], late: true },
+    });
+    await i18n.changeLanguage("en");
+    useSettingsStore.setState({ language: "en" });
+    const tree = (c: CrestRead | null | undefined) => (
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <TonightList feasts={feasts} villageName="Brumeval" crest={c} />
+      </TamaguiProvider>
+    );
+    // The line's own label also says "bear": the shield is the label that is not the sentence.
+    const shield = /^(?!.*forest).*bear/i;
+    const view = await render(tree(undefined));
+    expect(view.queryByLabelText(shield)).toBeNull();
+    await view.rerender(tree(null));
+    expect(view.getByLabelText(shield)).toBeTruthy();
+    expect(view.queryByLabelText(/bear.*stag/i)).toBeNull();
+    await view.rerender(tree(crest("stag")));
+    expect(view.getByLabelText(/bear.*stag/i)).toBeTruthy();
+  });
+
   test("a late reveal with a second animal is drawn with its border", async () => {
     const feasts = rank({
       crestReveal: { animal: "bear", quarters: null, firstEight: [], late: true },

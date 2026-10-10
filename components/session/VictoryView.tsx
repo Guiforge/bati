@@ -232,13 +232,17 @@ export function VictoryView() {
   const bigFeast = feasts.find((f) => f.size === "large");
   const [feastOpened, setFeastOpened] = useState(false);
   // Read only for the reveal line of Tonight, which draws the same shield as the big feast.
-  const [crest, setCrest] = useState<Crest | null>(null);
+  // Undefined until read: Tonight keeps the place and draws no shield before it knows the border.
+  const [crest, setCrest] = useState<Crest | null | undefined>(undefined);
   const revealing = result?.crestReveal != null;
   useEffect(() => {
     if (!revealing) return;
     getCrest()
       .then(setCrest)
-      .catch((e) => reportError("victory.crest", e));
+      .catch((e) => {
+        setCrest(null); // read failed: the shield of the sessions, without a border
+        reportError("victory.crest", e);
+      });
   }, [revealing]);
   const revealShownAsCard = feasts.some((f) => f.kind === "reveal" && f.size !== "large");
 

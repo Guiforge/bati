@@ -97,7 +97,7 @@ function lineOf(
   villageName: string,
   language: AppLanguage,
   unit: DistanceUnit,
-  crest: CrestRead | null,
+  crest: CrestRead | null | undefined,
 ): Line | null {
   if (f.size === "large")
     return {
@@ -105,7 +105,17 @@ function lineOf(
       text: largeLine(t, f, villageName, language),
       badge: "after",
       // The reveal wears the animal it names, where the other lines wear the gold bead.
-      ...(f.kind === "reveal" ? { art: <Crest size={24} crest={revealShield(f, crest)} /> } : {}),
+      // A crest still being read draws nothing: the border would appear a moment later.
+      ...(f.kind === "reveal"
+        ? {
+            art:
+              crest === undefined ? (
+                <YStack width={24} height={24} />
+              ) : (
+                <Crest size={24} crest={revealShield(f, crest)} />
+              ),
+          }
+        : {}),
     };
   switch (f.kind) {
     case "level":
@@ -353,15 +363,18 @@ export function TonightList({
   feasts,
   villageName,
   epilogue = false,
-  crest = null,
+  crest,
   onViewVillage,
 }: {
   feasts: Feast[];
   villageName: string;
   /** The campaign ended and no outro text opened over this screen: Tonight says it once. */
   epilogue?: boolean;
-  /** The crest read after the save: the reveal line draws the shield the big feast will. */
-  crest?: CrestRead | null;
+  /**
+   * The crest read after the save: the reveal line draws the shield the big feast will. Undefined
+   * while it is being read (the place is kept, nothing is drawn); null, it could not be.
+   */
+  crest?: CrestRead | null | undefined;
   /** Given only on a night the village grew: the way into it, same road as the Village tab. */
   onViewVillage?: (() => void) | undefined;
 }) {

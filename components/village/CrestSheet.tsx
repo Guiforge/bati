@@ -284,7 +284,7 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
           testID={`crest-pick-${a}`}
           shape={shape(a)}
           label={`${sentence(t(`village.crest_the_${a}`))} · ${stage("chosen")}`}
-          sub={t(`village.crest_pick_desc_${a}`)}
+          sub={sentence(t(`village.crest_pick_desc_${a}`))}
           selected={!autoSelected && crest.animal === a}
           onPress={() => choose(a)}
         />

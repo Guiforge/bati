@@ -317,11 +317,18 @@ describe("Ton animal", () => {
     expect(screen.getByText("Le sanglier · adulte")).toBeTruthy();
   });
 
+  it("every option's subtitle starts with a capital, like the sessions' option", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT), "pick");
+    expect(screen.getByText("Vélo")).toBeTruthy();
+    expect(screen.getByText("Un peu de tout")).toBeTruthy();
+    expect(screen.getByText("Force, 5 séances sur 8")).toBeTruthy();
+  });
+
   it("lists the five others, with what they are", async () => {
     await sheet(crestOf(FIVE_OF_EIGHT), "pick");
-    expect(screen.getByText("course, marche, cardio")).toBeTruthy();
-    expect(screen.getByText("yoga et mobilité")).toBeTruthy();
-    expect(screen.getByText("un peu de tout")).toBeTruthy();
+    expect(screen.getByText("Course, marche, cardio")).toBeTruthy();
+    expect(screen.getByText("Yoga et mobilité")).toBeTruthy();
+    expect(screen.getByText("Un peu de tout")).toBeTruthy();
     expect(screen.queryByTestId("crest-pick-bear")).toBeNull();
   });
 

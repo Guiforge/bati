@@ -96,3 +96,16 @@ test("a session interrupted on either device does not survive the swap", async (
   // Resumed here while the other device finishes it too, it would count, and hit the boss, twice.
   expect(prefs(staged)).not.toHaveProperty("savedSession");
 });
+
+test("the hero's animal follows the backup, like the village name", async () => {
+  const staged = path.join(dir, "animal.db");
+  await backup().snapshotDatabaseTo(staged);
+  const old = new Database(staged);
+  setPref(old, "crestAnimal", "stag");
+  old.close();
+  setPref(t.sqlite, "crestAnimal", "boar");
+
+  await backup().keepDeviceSettings(staged);
+
+  expect(prefs(staged).crestAnimal).toBe("stag");
+});

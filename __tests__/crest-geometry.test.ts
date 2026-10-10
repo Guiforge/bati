@@ -133,6 +133,14 @@ describe("crest diamond, cross", () => {
   });
 });
 
+describe("crest diamond, band", () => {
+  it("sits under the flame band, never down in it", () => {
+    const ys = [...DIAMOND.matchAll(/[ML]\d+ (\d+)/g)].map((m) => Number(m[1]));
+    const bandBottom = Number(/V(\d+)/.exec(BAND)?.[1]);
+    expect(Math.min(...ys)).toBeGreaterThan(bandBottom);
+  });
+});
+
 describe("crest diamond, size", () => {
   const xs = [...DIAMOND.matchAll(/[ML](\d+) /g)].map((m) => Number(m[1]));
 

@@ -724,11 +724,15 @@ describe("the crest follows the journal, not the device", () => {
   const NOW = new Date("2026-03-15T12:00:00Z");
 
   /** Merges the other's journal into one device, both ways round, and reads the crest each ends on. */
-  async function bothWays(mine: Entry[], theirs: Entry[]) {
+  async function bothWays(
+    mine: Entry[],
+    theirs: Entry[],
+    prefs: [mine: [string, number], theirs: [string, number]] | null = null,
+  ) {
     const crests = [];
-    for (const [local, remote] of [
-      [mine, theirs],
-      [theirs, mine],
+    for (const [local, remote, localPref, remotePref] of [
+      [mine, theirs, prefs?.[0], prefs?.[1]],
+      [theirs, mine, prefs?.[1], prefs?.[0]],
     ] as const) {
       jest.resetModules();
       t.close();
@@ -737,10 +741,12 @@ describe("the crest follows the journal, not the device", () => {
       const exercises = Object.fromEntries(
         ["strength", "yoga", "cardio"].map((style) => [style, styleExercise(style)]),
       );
-      const file = await peer(`other-${crests.length}.db`, (sqlite) => {
+      const file = await peer(`other-${n++}.db`, (sqlite) => {
         for (const e of remote) addStyled(sqlite, e.uuid, e.at, e.style, exercises);
+        if (remotePref) setPref(sqlite, "crestAnimal", ...remotePref);
       });
       for (const e of local) addStyled(t.sqlite, e.uuid, e.at, e.style, exercises);
+      if (localPref) setPref(t.sqlite, "crestAnimal", ...localPref);
       await merge().mergePeer(file);
       crests.push(await (require("../db/crest") as typeof import("../db/crest")).getCrest(NOW));
       await converged(file);
@@ -801,6 +807,27 @@ describe("the crest follows the journal, not the device", () => {
     await merge().mergePeer(laterAuto);
     expect(prefValue("crestAnimal")).toBe("auto");
     await converged(laterAuto);
+  });
+
+  test("a pick equal to the sessions' animal, from before the rule, leaves the same crest as auto, either way", async () => {
+    // Eight strength sessions: the bear. One device kept an old explicit "bear", the other is on
+    // auto; whichever value the merge keeps, neither side draws the diamond.
+    const journal: Entry[] = Array.from({ length: 8 }, (_, i) => ({
+      uuid: uuidOf(i),
+      at: BASE + i * DAY,
+      style: "strength",
+    }));
+    for (const [bearAt, autoAt] of [
+      [2_000, 3_000],
+      [3_000, 2_000],
+    ] as const) {
+      const [a, b] = await bothWays(journal.slice(0, 4), journal.slice(4), [
+        ["bear", bearAt],
+        ["auto", autoAt],
+      ]);
+      expect(a).toEqual(b);
+      expect(a).toMatchObject({ animal: "bear", manual: false });
+    }
   });
 
   test("the feasts this phone showed are never carried, and never news", async () => {

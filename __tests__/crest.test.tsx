@@ -234,6 +234,9 @@ describe("Crest label", () => {
       expect(await label({ ...boarOf(["strength", "run"]), manual: true }, lang)).toBe(
         `${boars[lang][0]} ${chosen[lang]}`,
       );
+      expect(await label(boarOf(["strength", "strength"]), lang)).toBe(
+        { fr: "Un sanglier.", de: "Ein Wildschwein.", en: "A boar.", es: "Un jabalí." }[lang],
+      );
       expect(await label({ ...base, animal: "boar" }, lang)).toBe(
         { fr: "Un sanglier.", de: "Ein Wildschwein.", en: "A boar.", es: "Un jabalí." }[lang],
       );

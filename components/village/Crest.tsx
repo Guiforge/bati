@@ -64,7 +64,7 @@ function useCrestLabel(crest: CrestShape | null): string {
   if (crest === null) return "";
   const name = (a: Animal) => sentence(t(`village.crest_${a}`));
   let what: string;
-  if (crest.animal === "boar" && crest.quarters) {
+  if (crest.animal === "boar" && crest.quarters && crest.quarters[0] !== crest.quarters[1]) {
     what = t("village.crest_boar_of", {
       first: t(PRACTICE_KEY[crest.quarters[0]]),
       second: t(PRACTICE_KEY[crest.quarters[1]]),

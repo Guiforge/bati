@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { featureCopy } from "./helpers/villageCopy";
 
 // The Village and the victory say what is DONE and WHEN a building next rises, in sessions or
 // outings. A number of reps or sessions the hero still has to do is a chore, and the first
@@ -69,6 +70,14 @@ describe.each(Object.keys(CHORES))("%s copy of the Village", (lang) => {
 
   it("never asks for a number of reps or sessions to do", () => {
     const hits = Object.entries(village).filter(([, value]) => CHORES[lang]?.test(value));
+    expect(hits).toEqual([]);
+  });
+
+  // The feasts and "Ce soir" say what was done tonight, so they ask for nothing either.
+  it("asks for no chore anywhere in the feature, in the feasts and tonight as well", () => {
+    const hits = featureCopy(lang as "fr" | "en" | "de" | "es").filter(([, value]) =>
+      CHORES[lang]?.test(value),
+    );
     expect(hits).toEqual([]);
   });
 

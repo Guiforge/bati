@@ -394,6 +394,22 @@ describe("VillageScene", () => {
     await waitFor(() => expect(queryByTestId("village-reward")).toBeNull());
   });
 
+  it("lays the return card under the title block, not over the shield and the name", async () => {
+    mockParams = { grown: "farm:3:4" };
+    mockScene([campfire, forge, farm]);
+
+    const { findByTestId } = await renderScene();
+    const reward = await findByTestId("village-reward");
+    const title = await findByTestId("village-title");
+    await act(() =>
+      fireEvent(title, "layout", {
+        nativeEvent: { layout: { x: 0, y: 0, width: 360, height: 400 } },
+      }),
+    );
+    const top = (node: typeof reward) => StyleSheet.flatten(node.props.style).top as number;
+    expect(top(await findByTestId("village-reward"))).toBeGreaterThanOrEqual(top(title) + 400);
+  });
+
   /**
    * The flame's day count is a number like any other on this screen, and it was the one that did
    * not go through `formatCount`: a five-year flame read "1822 d" beside a village whose XP reads

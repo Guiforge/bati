@@ -643,7 +643,9 @@ export function VillageScene() {
           growth={growth}
           buildings={scene.buildings}
           language={language}
-          top={Math.round(heroHeight * 0.5)}
+          // Under the shield and the name, never over them: on a small screen half the hero
+          // is still inside the title block.
+          top={Math.max(Math.round(heroHeight * 0.5), titleTop + titleHeight + 8)}
           onDismiss={dismissReward}
         />
       ) : null}

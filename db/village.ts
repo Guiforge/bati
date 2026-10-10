@@ -325,6 +325,11 @@ const VOLUME_FLOORS: readonly number[] = [1, 2, 3, 4, 5].map((lvl) =>
   lvl === 1 ? 1 : (buildingLevelThresholds[lvl] ?? 0),
 );
 
+/** Where the rung a rep building stands on begins: the figure its bar starts from. Rank 1 starts at 0. */
+export function repsRungStart(level: number): number {
+  return level <= 1 ? 0 : (VOLUME_FLOORS[level - 1] ?? 0);
+}
+
 // The legendary three answer to deeds, and no finished campaign feeds two of them
 // (tallyFinishedRuns). Six bosses exist in the content since the Golem (drizzle/0027), so the
 // lair tops out on the full set; the floors used to stop at five, and the sixth boss raised

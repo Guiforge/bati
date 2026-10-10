@@ -38,7 +38,7 @@ const VEIL = [0.75, 0.6, 0.5];
 const BEAT = 550;
 const RISE = 24;
 /** A tier's painting is the point of it: a lighter veil than the reveal's. */
-const TEXT_VEIL = 0.35;
+const TEXT_VEIL = 0.2;
 
 const heading = (text: string) => (/\d/.test(text) ? "$body" : "$heading");
 
@@ -175,12 +175,15 @@ function Frame({
   veil,
   villageName,
   onSeeVillage,
+  low = false,
   children,
 }: {
   tier: VillageTier;
   veil: object;
   villageName: string;
   onSeeVillage: () => void;
+  /** The mockup's tier feast: painting on top, the words in a block at the bottom on the dark. */
+  low?: boolean;
   children: ReactNode;
 }) {
   const { t } = useTranslation();
@@ -200,14 +203,15 @@ function Frame({
       {/* Still, under the words: the painting is busy and the body is small. */}
       <LinearGradient
         pointerEvents="none"
-        colors={["transparent", fade(rawColors.bgDark, 0.9)]}
-        locations={[0.3, 0.75]}
+        colors={["transparent", fade(rawColors.bgDark, low ? 0.97 : 0.9)]}
+        locations={low ? [0.3, 0.62] : [0.3, 0.75]}
         style={FILL}
       />
       <ScrollView
+        testID="big-feast-scroll"
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: "center",
+          justifyContent: low ? "flex-end" : "center",
           alignItems: "center",
           paddingHorizontal: 24,
           paddingTop: insets.top + 24,
@@ -337,6 +341,7 @@ function TextStoryboard({ feast, tier, villageName, sessions, onSeeVillage }: Pr
       veil={{ opacity: TEXT_VEIL }}
       villageName={villageName}
       onSeeVillage={onSeeVillage}
+      low
     >
       <Animated.View style={[SECTION, words]}>
         <FeastText feast={feast} villageName={villageName} sessions={sessions} />
@@ -352,6 +357,7 @@ function TextFinal({ feast, tier, villageName, sessions, onSeeVillage }: Props) 
       veil={{ opacity: TEXT_VEIL }}
       villageName={villageName}
       onSeeVillage={onSeeVillage}
+      low
     >
       <YStack style={SECTION}>
         <FeastText feast={feast} villageName={villageName} sessions={sessions} />

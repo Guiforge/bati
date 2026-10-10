@@ -1,5 +1,5 @@
 import { act, fireEvent, render } from "@testing-library/react-native";
-import { BackHandler } from "react-native";
+import { BackHandler, StyleSheet } from "react-native";
 import { withRepeat, withSpring, withTiming } from "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -255,6 +255,18 @@ describe("BigFeastView", () => {
     expect(v.getByText("Le village change d'allure.")).toBeTruthy();
     expect(v.queryByTestId("big-feast-level")).toBeNull();
   });
+
+  test.each([true, false])(
+    "a tier puts its words at the bottom, on the dark, the reveal keeps its middle (reduced %s)",
+    async (reduced) => {
+      mockReduced = reduced;
+      const justify = (v: Awaited<ReturnType<typeof view>>) =>
+        StyleSheet.flatten(v.getByTestId("big-feast-scroll").props.contentContainerStyle)
+          .justifyContent;
+      expect(justify(await view(tier))).toBe("flex-end");
+      expect(justify(await view(bear))).toBe("center");
+    },
+  );
 
   test("under reduced motion a tier is the same image, still", async () => {
     mockReduced = true;

@@ -7,10 +7,12 @@ import { TamaguiProvider } from "tamagui";
 import BigFeastScreen from "@/app/big-feast";
 import { BigFeastView } from "@/components/session/BigFeastView";
 import {
+  BEAT,
   revealBody,
   revealColors,
   revealShield,
   revealTitle,
+  TEXT_FADE,
 } from "@/components/session/bigFeastText";
 import type { Feast } from "@/components/session/feasts";
 import { NO_CREST_EVENTS } from "@/db/crestEvents";
@@ -273,10 +275,42 @@ describe("BigFeastView", () => {
       expect(link().props.accessibilityElementsHidden).toBe(true);
       expect(link().props.importantForAccessibility).toBe("no-hide-descendants");
       await act(() => {
-        jest.advanceTimersByTime(2 * 550 + 500);
+        jest.advanceTimersByTime(2 * BEAT + TEXT_FADE - 1);
+      });
+      expect(link().props.pointerEvents).toBe("none");
+      await act(() => {
+        jest.advanceTimersByTime(1);
       });
       expect(link().props.pointerEvents).toBe("auto");
       expect(link().props.accessibilityElementsHidden).toBeFalsy();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test("leaving before the text has shown clears the link's timer", async () => {
+    jest.useFakeTimers();
+    const set = jest.spyOn(global, "setTimeout");
+    const clear = jest.spyOn(global, "clearTimeout");
+    try {
+      await render(
+        wrap(
+          <BigFeastView
+            feast={bear as never}
+            crest={null}
+            tier={9}
+            villageName="Brumeval"
+            sessions={118}
+            onSeeVillage={mockSee}
+            onWhy={jest.fn()}
+          />,
+        ),
+      );
+      const at = set.mock.calls.findIndex(([, ms]) => ms === 2 * BEAT + TEXT_FADE);
+      expect(at).toBeGreaterThanOrEqual(0);
+      const id = set.mock.results[at]?.value;
+      await screen.unmount();
+      expect(clear).toHaveBeenCalledWith(id);
     } finally {
       jest.useRealTimers();
     }

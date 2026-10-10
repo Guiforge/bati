@@ -83,3 +83,8 @@ export function revealShield(f: Reveal, crest: Crest | null): CrestShape {
     second: second ? { animal: second } : null,
   };
 }
+
+/** One beat is 550 ms: the whole storyboard is about 1.6 s, played once and never looped. */
+export const BEAT = 550;
+/** The words fade in over this long: the "Why" link waits the same, so it is never touchable while faint. */
+export const TEXT_FADE = 500;

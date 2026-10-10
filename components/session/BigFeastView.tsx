@@ -26,7 +26,15 @@ import type { VillageTier } from "@/db/village";
 import { useGameIcon } from "@/hooks/useGameIcon";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
-import { nextTierLevel, revealBody, revealColors, revealTitle, tierSentence } from "./bigFeastText";
+import {
+  BEAT,
+  nextTierLevel,
+  revealBody,
+  revealColors,
+  revealTitle,
+  TEXT_FADE,
+  tierSentence,
+} from "./bigFeastText";
 import type { Feast } from "./feasts";
 
 /** The feasts that fill the screen. Age and anniversary have no producer yet (V-03). */
@@ -37,8 +45,6 @@ const BOUNCY = { damping: 14, mass: 0.8, stiffness: 150 } as const;
 
 /** The veil over the painting lifts with each beat: 0.75, then 0.6, then 0.5 (the mockup's). */
 const VEIL = [0.75, 0.6, 0.5];
-/** One beat is 550 ms: the whole storyboard is about 1.6 s, played once and never looped. */
-const BEAT = 550;
 const RISE = 24;
 /** A tier's painting is the point of it: a lighter veil than the reveal's. */
 const TEXT_VEIL = 0.2;
@@ -324,12 +330,12 @@ function RevealStoryboard({
     beat.value = withTiming(2, { duration: 2 * BEAT, easing: Easing.linear });
     rise.value = withDelay(BEAT, withSpring(1, BOUNCY));
     land.value = withDelay(2 * BEAT, withSpring(1, BOUNCY));
-    text.value = withDelay(2 * BEAT, withTiming(1, { duration: 500 }));
+    text.value = withDelay(2 * BEAT, withTiming(1, { duration: TEXT_FADE }));
   }, [beat, rise, land, text]);
-  // The words fade in over 500 ms after two beats: until then the link is invisible, not absent.
+  // The words fade in over TEXT_FADE after two beats: until then the link is invisible, not absent.
   const [textShown, setTextShown] = useState(false);
   useEffect(() => {
-    const id = setTimeout(() => setTextShown(true), 2 * BEAT + 500);
+    const id = setTimeout(() => setTextShown(true), 2 * BEAT + TEXT_FADE);
     return () => clearTimeout(id);
   }, []);
 
@@ -394,7 +400,7 @@ function TextStoryboard({ feast, tier, villageName, sessions, onSeeVillage }: Pr
   const text = useSharedValue(0);
   useEffect(() => {
     lift.value = withSpring(1, BOUNCY);
-    text.value = withTiming(1, { duration: 500 });
+    text.value = withTiming(1, { duration: TEXT_FADE });
   }, [lift, text]);
   const words = useAnimatedStyle(() => ({
     opacity: text.value,

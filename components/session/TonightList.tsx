@@ -7,6 +7,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { AchievementIcon } from "@/components/common/AchievementIcon";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
+import { headingFont } from "@/components/common/headingFont";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { oathText } from "@/components/oath/useOathText";
 import { Crest } from "@/components/village/Crest";
@@ -327,13 +328,7 @@ function CardRow({ card }: { card: CardData }) {
           {card.art}
         </YStack>
         <YStack flex={1} gap="$1">
-          {/* Alegreya for a name, Noto for a title carrying a digit ("Level 5", "3 years"). */}
-          <Text
-            fontFamily={/\d/.test(card.title) ? "$body" : "$heading"}
-            fontWeight="700"
-            fontSize={17}
-            color="$text"
-          >
+          <Text fontFamily={headingFont(card.title)} fontWeight="700" fontSize={17} color="$text">
             {card.title}
           </Text>
           {card.body?.map((line) => (

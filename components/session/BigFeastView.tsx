@@ -15,6 +15,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { headingFont } from "@/components/common/headingFont";
 import { ChevronRight } from "@/components/icons";
 import { Crest, type CrestShape } from "@/components/village/Crest";
 import { CREST_ICON } from "@/components/village/crestText";
@@ -42,8 +43,6 @@ const RISE = 24;
 /** A tier's painting is the point of it: a lighter veil than the reveal's. */
 const TEXT_VEIL = 0.2;
 
-const heading = (text: string) => (/\d/.test(text) ? "$body" : "$heading");
-
 function Kicker({ children }: { children: string }) {
   return (
     <Text
@@ -64,7 +63,7 @@ function Title({ children }: { children: string }) {
   return (
     <Text
       testID="big-feast-title"
-      fontFamily={heading(children)}
+      fontFamily={headingFont(children)}
       fontWeight="700"
       fontSize={26}
       color="$text"

@@ -50,10 +50,14 @@ const one = (p: Practice | "none", extra: Partial<CrestSession> = {}): CrestSess
 const seq = (...parts: [Practice, number][]) =>
   parts.flatMap(([p, k]) => Array.from({ length: k }, () => one(p)));
 
-function crestOf(sessions: CrestSession[], choice: Animal | "auto" = "auto"): crestDb.Crest {
+function crestOf(
+  sessions: CrestSession[],
+  choice: Animal | "auto" = "auto",
+  marks: Pick<crestDb.Crest, "longestFlame" | "rings"> = { longestFlame: 0, rings: 0 },
+): crestDb.Crest {
   const animals = crestAnimals(sessions, choice);
   if (animals === null) throw new Error("no crest");
-  return { ...animals, longestFlame: 0, rings: 0, revealedAt: new Date("2020-01-01") };
+  return { ...animals, ...marks, revealedAt: new Date("2020-01-01") };
 }
 
 const FIVE_OF_EIGHT = seq(["strength", 5], ["yoga", 2], ["calisthenics", 1]);
@@ -72,14 +76,19 @@ const wrap = (ui: ReactNode) =>
     </SafeAreaProvider>,
   );
 
-function sheet(crest: crestDb.Crest | null, view: CrestView, onClose = jest.fn()) {
+function sheet(
+  crest: crestDb.Crest | null,
+  view: CrestView,
+  onClose = jest.fn(),
+  onChanged = jest.fn(),
+) {
   return wrap(
     <CrestSheet
       view={view}
       crest={crest}
       onView={jest.fn()}
       onClose={onClose}
-      onChanged={jest.fn()}
+      onChanged={onChanged}
     />,
   );
 }
@@ -99,8 +108,40 @@ describe("Pourquoi l'Ours ?", () => {
     expect(screen.getByText(/L'animal vient de ce que tu fais le plus souvent/)).toBeTruthy();
     expect(screen.getByText("Force")).toBeTruthy();
     expect(screen.getByText("Callisthénie")).toBeTruthy();
-    expect(screen.getByText("Ton ours, ta flamme la plus longue, tes années.")).toBeTruthy();
+    expect(screen.getByText("Au centre, ton ours.")).toBeTruthy();
     expect(screen.queryByTestId("crest-why-second")).toBeNull();
+  });
+
+  it("the bars say what they count, above them, in every state", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    expect(screen.getByText("Tes 8 premières séances")).toBeTruthy();
+    await screen.unmount();
+    await sheet(crestOf([...seq(["strength", 8]), ...seq(["run", 30])]), "why");
+    expect(screen.getByText("Tes 8 premières séances")).toBeTruthy();
+  });
+
+  it("the sentence names only what the shield draws: A, a flame and no ring", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT, "auto", { longestFlame: 3, rings: 0 }), "why");
+    expect(screen.getByTestId("crest-why-shield").props.children).toBe(
+      "Au centre, ton ours. En haut, ta flamme la plus longue.",
+    );
+  });
+
+  it("C: a flame and rings", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT, "auto", { longestFlame: 3, rings: 2 }), "why");
+    expect(screen.getByTestId("crest-why-shield").props.children).toBe(
+      "Au centre, ton ours. En haut, ta flamme la plus longue. En bas, un anneau par année du village.",
+    );
+  });
+
+  it("a hero with no flame hears of the animal alone", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    expect(screen.getByTestId("crest-why-shield").props.children).toBe("Au centre, ton ours.");
+  });
+
+  it("the shield is drawn at 96, the size that carries flames and rings", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    expect(screen.getByRole("image").props.style.width).toBe(96);
   });
 
   it("a second animal says when it joined", async () => {
@@ -124,8 +165,16 @@ describe("Pourquoi l'Ours ?", () => {
     expect(
       screen.getByText("Choisi par toi. Tes séances, elles, donnent l'ours : 5 de force sur 8."),
     ).toBeTruthy();
+    expect(screen.getByText("Le petit losange sur ton écu le rappelle.")).toBeTruthy();
     await fireEvent.press(screen.getByText("Reprendre l'animal de tes séances"));
     expect(write).toHaveBeenCalledWith("auto");
+  });
+
+  it("a pick equal to the sessions' animal reads as the sessions' own, never as a choice", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT, "bear"), "why");
+    expect(screen.queryByTestId("crest-why-chosen")).toBeNull();
+    expect(screen.queryByText(/losange/)).toBeNull();
+    expect(screen.getByText("Au centre, ton ours.")).toBeTruthy();
   });
 
   it("nothing to explain before the reveal", async () => {
@@ -151,6 +200,26 @@ describe("Ton animal", () => {
     await fireEvent.press(screen.getByTestId("crest-pick-auto"));
     expect(write).toHaveBeenLastCalledWith("auto");
     await waitFor(() => expect(write).toHaveBeenCalledTimes(1));
+  });
+
+  it("M1: a written choice tells the caller to read the crest again, then closes", async () => {
+    const onChanged = jest.fn();
+    const onClose = jest.fn();
+    await sheet(crestOf(FIVE_OF_EIGHT), "pick", onClose, onChanged);
+    await fireEvent.press(screen.getByTestId("crest-pick-stag"));
+    await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("a failed write changes nothing and closes nothing", async () => {
+    write.mockRejectedValue(new Error("disk"));
+    const onChanged = jest.fn();
+    const onClose = jest.fn();
+    await sheet(crestOf(FIVE_OF_EIGHT), "pick", onClose, onChanged);
+    await fireEvent.press(screen.getByTestId("crest-pick-stag"));
+    await waitFor(() => expect(write).toHaveBeenCalled());
+    expect(onChanged).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it("closes on a choice, with no confirmation", async () => {
@@ -220,11 +289,13 @@ describe("the words", () => {
   it.each(["fr", "de", "en", "es"])("%s names the six animals, titles and descriptions", (lng) => {
     const t = i18n.getFixedT(lng);
     for (const a of ANIMALS) {
-      for (const k of ["crest_why_title", "crest_why_shield", "crest_pick_desc", "crest_the"]) {
+      for (const k of ["crest_why_title", "crest_why_center", "crest_pick_desc", "crest_the"]) {
         const key = `village.${k}_${a}`;
         expect(t(key)).not.toBe(key);
       }
     }
+    for (const k of ["crest_why_bars", "crest_why_flame", "crest_why_rings", "crest_why_diamond"])
+      expect(t(`village.${k}`)).not.toBe(`village.${k}`);
     expect(t("village.crest_why_title_stag")).toBe(
       {
         fr: "Pourquoi le Cerf ?",

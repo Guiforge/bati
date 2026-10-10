@@ -94,6 +94,9 @@ function Why({
                 part: t(`village.crest_count_${firstPractice}`),
               })}
         </Text>
+        <Text fontSize={14} color="$textSecondary">
+          {t("village.crest_why_diamond")}
+        </Text>
         <Link
           testID="crest-why-reset"
           label={t("village.crest_why_reset")}
@@ -114,6 +117,9 @@ function Why({
     <>
       <Text fontSize={15} color="$text">
         {t("village.crest_why_intro")}
+      </Text>
+      <Text fontSize={13} color="$textSecondary">
+        {t("village.crest_why_bars")}
       </Text>
       <YStack gap="$2">
         {barsOf(crest).map(([p, n]) => (
@@ -148,8 +154,14 @@ function Why({
           })}
         </Text>
       ) : null}
-      <Text fontSize={15} color="$text">
-        {t(`village.crest_why_shield_${crest.animal}`)}
+      <Text testID="crest-why-shield" fontSize={15} color="$text">
+        {[
+          t(`village.crest_why_center_${crest.animal}`),
+          crest.longestFlame > 0 ? t("village.crest_why_flame") : null,
+          crest.rings > 0 ? t("village.crest_why_rings") : null,
+        ]
+          .filter(Boolean)
+          .join(" ")}
       </Text>
       {secondFromSessions !== null && secondPractice !== undefined ? (
         <YStack testID="crest-why-second" gap="$1">
@@ -235,7 +247,7 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
   });
   const stage = (s: "sessions" | "chosen") => t(`village.crest_stage_${crest.optionStages[s]}`);
   const firstPractice = practiceOf(first);
-  const autoSelected = !crest.manual || crest.animal === first;
+  const autoSelected = !crest.manual;
   return (
     <YStack gap="$2" role="radiogroup">
       <Option
@@ -295,7 +307,7 @@ export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
       ) : (
         <>
           <XStack justify="center">
-            <Crest crest={crest} size={56} />
+            <Crest crest={crest} size={96} />
           </XStack>
           <Why crest={crest} onView={onView} choose={choose} />
         </>

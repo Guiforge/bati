@@ -91,13 +91,15 @@ export function VillageReward({ growth, buildings, language, top, onDismiss }: P
           </Text>
         </YStack>
         <YStack flex={1} minW={0} gap={5}>
-          <Text fontWeight="700" fontSize={17} lineHeight={21} color="$text">
+          <Text fontWeight="700" fontSize={17} lineHeight={21} color="$text" numberOfLines={2}>
             {t("village.reward_title", {
               building: nameOf(building, language),
               level: first.newLevel,
             })}
           </Text>
-          <Text fontSize={12.5} lineHeight={18} color="$textSecondary">
+          {/* Capped so the card is never taller than the room under the title: the rest of the growth
+              is listed under "Since your last quest". */}
+          <Text fontSize={12.5} lineHeight={18} color="$textSecondary" numberOfLines={4}>
             {body}
           </Text>
         </YStack>

@@ -394,6 +394,16 @@ describe("VillageScene", () => {
     await waitFor(() => expect(queryByTestId("village-reward")).toBeNull());
   });
 
+  it("caps the return card's text, so a long list of risen buildings never grows it off the screen", async () => {
+    mockParams = { grown: "farm:3:4,barn:1:2,quarry:0:1" };
+    mockScene([campfire, forge, farm, quarry, barn]);
+
+    const { findByTestId } = await renderScene();
+    const reward = within(await findByTestId("village-reward"));
+    expect(reward.getByText("Farm, level 4").props.numberOfLines).toBe(2);
+    expect(reward.getByText(/Also rose: /).props.numberOfLines).toBe(4);
+  });
+
   it("lays the return card under the title block, not over the shield and the name", async () => {
     mockParams = { grown: "farm:3:4" };
     mockScene([campfire, forge, farm]);

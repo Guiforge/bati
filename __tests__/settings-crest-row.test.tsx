@@ -1,9 +1,10 @@
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import Settings from "@/app/settings";
 import { ToastProvider } from "@/components/common/Toast";
 import * as crestDb from "@/db/crest";
+import { preferences } from "@/db/preferences";
 import { i18n } from "@/i18n";
 import config from "@/tamagui.config";
 
@@ -13,6 +14,11 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() }),
   usePathname: () => "/settings",
   Stack: { Screen: () => null },
+}));
+
+jest.mock("@/components/common/FormSheet", () => ({
+  FormSheet: (p: { open: boolean; children: import("react").ReactNode }) =>
+    p.open ? require("react").createElement(require("react-native").View, null, p.children) : null,
 }));
 
 const tally = { strength: 0, calisthenics: 0, yoga: 0, run: 0, ride: 0 };
@@ -70,5 +76,19 @@ describe("the Settings screen", () => {
     await mount();
     await screen.findByText("Langue");
     expect(screen.queryByTestId("settings-crest-animal")).toBeNull();
+  });
+
+  it("reads the animal again after a choice, so the row follows the sheet", async () => {
+    jest
+      .spyOn(crestDb, "getCrest")
+      .mockResolvedValueOnce(crest)
+      .mockResolvedValue({ ...crest, animal: "bear", manual: false });
+    jest.spyOn(preferences, "setCrestAnimal").mockResolvedValue();
+    await mount();
+    expect(await screen.findByText("le cerf")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("settings-crest-animal"));
+    await fireEvent.press(await screen.findByTestId("crest-pick-auto"));
+    expect(await screen.findByText("l'ours")).toBeTruthy();
+    expect(screen.queryByText("le cerf")).toBeNull();
   });
 });

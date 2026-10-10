@@ -6,7 +6,13 @@ import { YStack } from "tamagui";
 import { ANIMAL_TOKEN } from "@/constants/animalColors";
 import { rawColors } from "@/constants/rawColors";
 import type { Crest as CrestData } from "@/db/crest";
-import { ANIMAL_OF, type Animal, type Practice } from "@/db/crestRules";
+import {
+  ANIMAL_OF,
+  type Animal,
+  type CrestStage,
+  type Practice,
+  type PracticeAnimal,
+} from "@/db/crestRules";
 import { useGameIcon } from "@/hooks/useGameIcon";
 import {
   ANIMAL_BOX,
@@ -30,8 +36,11 @@ import { CREST_ICON, PRACTICE_KEY, sentence } from "./crestText";
 /** What `getCrest` renders, less the evidence and stages the drawing does not read. */
 export type CrestShape = Pick<
   CrestData,
-  "animal" | "manual" | "second" | "quarters" | "longestFlame" | "rings"
->;
+  "animal" | "manual" | "quarters" | "longestFlame" | "rings"
+> & {
+  /** Only the animal is drawn: the stage a border has is not, so the big feast leaves it out. */
+  second: { animal: PracticeAnimal; stage?: CrestStage } | null;
+};
 
 export type CrestProps = {
   /** Null before the first animal: nothing is drawn, the caller draws the glow. */

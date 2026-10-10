@@ -36,6 +36,21 @@ function readCrest(set: (crest: Crest | null) => void) {
     });
 }
 
+/** A chosen animal is not the one revealed: the link would open a sheet titled for another. */
+const whyOf = (crest: Crest | null | undefined, open: () => void) =>
+  crest != null && !crest.manual ? open : undefined;
+
+function useBackPress(active: boolean, onPress: () => void) {
+  useEffect(() => {
+    if (!active) return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      onPress();
+      return true;
+    });
+    return () => subscription.remove();
+  });
+}
+
 export default function BigFeastScreen() {
   const router = useRouter();
   const villageName = useUserStore((s) => s.villageName);
@@ -47,6 +62,7 @@ export default function BigFeastScreen() {
   const found =
     finished && result && shown ? bigFeastOf({ ...result, bigFeastsShown: shown }) : undefined;
   const feast: BigFeast | null = found && KINDS.includes(found.kind) ? (found as BigFeast) : null;
+  const [crestView, setCrestView] = useState<CrestView | null>(null);
   const [sessions, setSessions] = useState<number | null | undefined>(undefined);
   const [crest, setCrest] = useState<Crest | null | undefined>(undefined);
   // Leaving quits the session, which empties what this screen reads: it must not leave twice.
@@ -95,13 +111,8 @@ export default function BigFeastScreen() {
     if (finished && result) goOn(router, result);
   };
 
-  useEffect(() => {
-    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
-      close();
-      return true;
-    });
-    return () => subscription.remove();
-  });
+  // The sheet (CrestSheet) takes the press while it is open.
+  useBackPress(crestView === null, close);
 
   // Nothing to say (no finished session, or nothing big left in it): leave, and touch nothing.
   // Until the shown list is read there is no telling, so wait for it.
@@ -122,7 +133,6 @@ export default function BigFeastScreen() {
     seeVillage(router, result);
   };
 
-  const [crestView, setCrestView] = useState<CrestView | null>(null);
   const waiting = (isTier && sessions === undefined) || (isReveal && crest === undefined);
   return (
     <>
@@ -147,7 +157,7 @@ export default function BigFeastScreen() {
           tier={getVillageTier(calculateLevelFromXp(result.heroXp.after))}
           villageName={villageName}
           sessions={sessions ?? null}
-          onWhy={() => setCrestView("why")}
+          onWhy={whyOf(crest, () => setCrestView("why"))}
           onSeeVillage={toVillage}
         />
       )}

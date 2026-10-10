@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { BackHandler, StyleSheet } from "react-native";
 import { withRepeat, withSpring, withTiming } from "react-native-reanimated";
@@ -282,6 +283,15 @@ describe("BigFeastView", () => {
     expect(mockSee).toHaveBeenCalledTimes(1);
   });
 
+  test("a title with a digit is not set in Alegreya, one without is", async () => {
+    const font = (v: Awaited<ReturnType<typeof view>>) =>
+      StyleSheet.flatten(v.getAllByTestId("big-feast-title").at(-1)?.props.style)?.fontFamily;
+    const first = await view(bear, "Brumeval");
+    expect(font(first)).toBe(config.fonts.heading.face[700].normal);
+    const second = await view(bear, "Brumeval 2");
+    expect(font(second)).not.toBe(config.fonts.heading.face[700].normal);
+  });
+
   test("without a name the village is yours", async () => {
     const v = await view(bear, "");
     expect(v.getByText("TON VILLAGE A UN ANIMAL")).toBeTruthy();
@@ -343,23 +353,45 @@ describe("BigFeastView", () => {
 });
 
 describe("the reveal's shield", () => {
-  test("is the hero's own crest, with the animal and quarters the sessions named", () => {
-    const own = {
-      animal: "stag",
-      manual: true,
-      second: { animal: "horse", stage: "young" },
-      quarters: null,
-      longestFlame: 3,
-      rings: 2,
-    } as const;
+  // 8 strength then 20 rides: the bear, and the horse as its border since the 28th session.
+  const journal = [
+    ...Array.from({ length: 8 }, () => ({ outing: null, strength: 1 })),
+    ...Array.from({ length: 20 }, () => ({ outing: "ride" as const, strength: 0 })),
+  ].map((s, i) => ({
+    ...s,
+    uuid: String(i).padStart(6, "0"),
+    calisthenics: 0,
+    yoga: 0,
+    cardio: 0,
+  }));
+  const crestWith = (picked: Parameters<typeof crestAnimals>[1], sessions = journal) => {
+    const animals = crestAnimals(sessions, picked);
+    assert(animals);
+    return { ...animals, longestFlame: 3 as const, rings: 2, revealedAt: new Date("2020-01-01") };
+  };
+  const SESSIONS_SHIELD = {
+    animal: "bear",
+    quarters: null,
+    manual: false,
+    second: { animal: "horse" },
+    longestFlame: 3,
+    rings: 2,
+  };
+
+  test.each(["auto", "stag", "ermine", "boar", "horse", "bear"] as const)(
+    "a hero who chose %s before the feast sees the sessions' shield",
+    (picked) => {
+      expect(revealShield(bear, crestWith(picked))).toEqual(SESSIONS_SHIELD);
+    },
+  );
+
+  test("a boar of the sessions has no border, whatever was chosen, and keeps its quarters", () => {
     const boar: typeof bear = { ...bear, animal: "boar", quarters: ["strength", "run"] };
-    expect(revealShield(boar, own)).toMatchObject({
+    expect(revealShield(boar, crestWith("stag"))).toEqual({
+      ...SESSIONS_SHIELD,
       animal: "boar",
       quarters: ["strength", "run"],
-      manual: true,
-      second: { animal: "horse", stage: "young" },
-      longestFlame: 3,
-      rings: 2,
+      second: null,
     });
   });
 
@@ -445,6 +477,7 @@ describe("the big-feast route", () => {
       quarters: null,
       longestFlame: 3,
       rings: 1,
+      evidence: { secondFromSessions: null },
     });
     await mount();
     expect(mockCrestDrawn).toHaveBeenCalledWith(
@@ -565,6 +598,43 @@ describe("the big-feast route", () => {
       expect((await v.findByTestId("sheet-title")).props.children).toBe("Pourquoi l'Ours ?");
       expect(v.getByTestId("crest-why-pick")).toBeTruthy();
       expect(v.queryByTestId("crest-pick-stag")).toBeNull();
+    });
+
+    test("a chosen animal hides the link: the sheet would be titled for another animal", async () => {
+      const strength = { outing: null, strength: 1, calisthenics: 0, yoga: 0, cardio: 0 };
+      const sessions = Array.from({ length: 8 }, (_, i) => ({
+        ...strength,
+        uuid: String(i).padStart(6, "0"),
+      }));
+      const animals = crestAnimals(sessions, "stag");
+      mockGetCrest.mockResolvedValue({ ...animals, longestFlame: 0, rings: 0 });
+      const v = await mount();
+      expect(await v.findByTestId("big-feast-title")).toBeTruthy();
+      expect(v.queryByTestId("big-feast-why")).toBeNull();
+    });
+
+    test("an unreadable crest hides the link too: it would open nothing", async () => {
+      mockGetCrest.mockResolvedValue(null);
+      const v = await mount();
+      expect(await v.findByTestId("big-feast-title")).toBeTruthy();
+      expect(v.queryByTestId("big-feast-why")).toBeNull();
+    });
+
+    test("hardware back closes the open sheet first, and the feast stays", async () => {
+      mockGetCrest.mockResolvedValue(bearCrest());
+      const spy = jest.spyOn(BackHandler, "addEventListener");
+      const v = await mount();
+      await fireEvent.press(v.getByTestId("big-feast-why"));
+      await v.findByTestId("sheet-title");
+      const press = spy.mock.calls.at(-1)?.[1] as () => boolean;
+      await act(() => {
+        expect(press()).toBe(true);
+      });
+      expect(v.queryByTestId("sheet-title")).toBeNull();
+      expect(mockBack).not.toHaveBeenCalled();
+      expect(quit).not.toHaveBeenCalled();
+      expect(v.getByTestId("big-feast-title")).toBeTruthy();
+      spy.mockRestore();
     });
 
     test("M10: a choice reads the crest again and leaves for the village by the button's road", async () => {

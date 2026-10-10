@@ -1,6 +1,7 @@
 import type { TFunction } from "i18next";
 import type { CrestShape } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
+import type { Crest } from "@/db/crest";
 import { ANIMAL_OF } from "@/db/crestRules";
 import { MAX_TIER, TIER_LEVEL_FLOORS, TIER_NAMES, type VillageTier } from "@/db/village";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
@@ -65,18 +66,19 @@ export const nextTierLevel = (tier: VillageTier): number | null =>
   tier === MAX_TIER ? null : TIER_LEVEL_FLOORS[(tier + 1) as VillageTier];
 
 /**
- * The crest the reveal draws: the hero's own as the Village shows it (flame, rings, their choice),
- * except the animal and the boar's quarters, which are what the sessions said when it was revealed.
- * Unreadable, it is the bare animal rather than a missing shield.
+ * The crest the reveal draws: the sessions' own shield, whatever the hero has picked since (a hero
+ * with 8+ sessions at the update may choose before seeing this): the animal that was revealed, no
+ * diamond, the sessions' second animal as the border (`evidence`, so never a boar's), and the
+ * hero's flame and rings. Unreadable, it is the bare animal rather than a missing shield.
  */
-export function revealShield(f: Reveal, crest: CrestShape | null): CrestShape {
+export function revealShield(f: Reveal, crest: Crest | null): CrestShape {
+  const second = (f.animal !== "boar" && crest?.evidence.secondFromSessions) || null;
   return {
     manual: false,
-    second: null,
-    longestFlame: 0,
-    rings: 0,
-    ...crest,
+    longestFlame: crest?.longestFlame ?? 0,
+    rings: crest?.rings ?? 0,
     animal: f.animal,
     quarters: f.quarters,
+    second: second && second !== "boar" ? { animal: second } : null,
   };
 }

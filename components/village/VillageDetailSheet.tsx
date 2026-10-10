@@ -10,8 +10,9 @@ import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { LevelPips } from "@/components/village/LevelPips";
+import { buildingMilestoneLine } from "@/components/village/milestoneLine";
 import {
-  barEnds,
+  buildingScale,
   ctaLabel,
   feedsLine,
   levelText,
@@ -19,12 +20,13 @@ import {
   nextLine,
   questLink,
 } from "@/components/village/rows";
-import { BarEnds, QuestLink } from "@/components/village/VillageLists";
+import { QuestLink } from "@/components/village/VillageLists";
 import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "@/db/adventures";
 import { type ContributingSession, getRecentContributingSessions } from "@/db/completed";
+import type { RecentFeeds } from "@/db/milestone";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { buildingDefinitions } from "@/db/schema";
 import { formatCount } from "@/db/targets";
@@ -53,6 +55,8 @@ type Props = {
   selected: VillageSelection | null;
   onClose: () => void;
   language: AppLanguage;
+  /** What the latest sessions brought, for the milestone sentence; null until read. */
+  feeds: RecentFeeds | null;
   bottomInset: number;
 };
 
@@ -114,7 +118,7 @@ async function loadExtra(selected: VillageSelection): Promise<Extra> {
   return null;
 }
 
-export function VillageDetailSheet({ selected, onClose, language, bottomInset }: Props) {
+export function VillageDetailSheet({ selected, onClose, language, feeds, bottomInset }: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const [extra, setExtra] = useState<Extra>(null);
@@ -196,6 +200,7 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
               building={shown.building}
               extra={extra}
               language={language}
+              feeds={feeds}
               formatDate={formatDate}
               onClose={onClose}
             />
@@ -230,8 +235,13 @@ function BuildingDetail({
   extra,
   language,
   formatDate,
+  feeds,
   onClose,
-}: DetailProps & { building: VillageBuilding; onClose: () => void }) {
+}: DetailProps & {
+  building: VillageBuilding;
+  feeds: RecentFeeds | null;
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
   const built = building.level > 0;
@@ -254,7 +264,10 @@ function BuildingDetail({
   // one place it arrives with its unit at both ends. Same call as "Next to rise", so the two
   // cannot disagree about what "almost there" means.
   const progress = getBuildingProgress(building);
-  const ends = barEnds(building, t);
+  const scale = buildingScale(building, t, language);
+  const milestone = buildingMilestoneLine(building, feeds, t, language);
+  // The deeds' driver line above already says what is done; saying it twice over the bar is noise.
+  const doneIsInDriverLine = building.driver !== "muscle" && building.driver !== "style";
   // An unbuilt deed is its condition and nothing else: "0 rematches won" above "Not built yet"
   // above "Built by your first rematch" said the same zero three times.
   const unbuiltDeed = building.tier === 4 && progress === null && !built;
@@ -351,16 +364,26 @@ function BuildingDetail({
         ) : null}
         {/* Only with both ends: starters and upgrades count a level, and a bar from zero to it
             without a unit said nothing about the rung. */}
-        {ends && progress !== null ? (
-          <>
-            <ProgressBar progress={progress} height={6} color="$resourceGold" />
-            <BarEnds left={ends.left} right={ends.right} />
-          </>
-        ) : unbuiltDeed ? null : (
+        {scale ? (
+          <ProgressBar
+            progress={scale.progress}
+            height={6}
+            color="$resourceGold"
+            caption={doneIsInDriverLine ? undefined : scale.caption}
+            ends={scale.ends}
+          />
+        ) : building.nextTarget === null ||
+          building.driver === "tier" ||
+          building.driver === "prereq" ? (
           <Text fontSize={12} color="$textSecondary">
             {nextLine(building, t, language)}
           </Text>
-        )}
+        ) : null}
+        {milestone ? (
+          <Text fontSize={12.5} lineHeight={18} color="$text">
+            {milestone}
+          </Text>
+        ) : null}
       </YStack>
 
       {extra?.kind === "sessions" && extra.sessions.length > 0 && (

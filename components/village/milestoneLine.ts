@@ -1,7 +1,8 @@
 import type { TFunction } from "i18next";
-import type { Milestone } from "@/db/milestone";
+import { type Milestone, nextMilestone, type RecentFeeds } from "@/db/milestone";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import type { BuildingCode } from "@/db/schema";
+import type { VillageBuilding } from "@/db/village";
 import { inSentence } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -38,4 +39,19 @@ export function milestoneLine(
     building: named ? t(`village.building_the_${building}`) : "",
     context: OPENS_ON_VOWEL.test(what) ? "vowel" : undefined,
   });
+}
+
+/**
+ * The line for a building, or null where there is nothing honest to say: the top rank, a building
+ * nothing has fed, or feeds not read yet (nothing is asserted before they are).
+ */
+export function buildingMilestoneLine(
+  b: VillageBuilding,
+  feeds: RecentFeeds | null,
+  t: TFunction,
+  language: AppLanguage,
+  named = false,
+): string | null {
+  const m = feeds === null ? null : nextMilestone(b, feeds);
+  return m === null ? null : milestoneLine(m, b.code, t, language, named);
 }

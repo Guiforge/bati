@@ -54,6 +54,8 @@ import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
 import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
 import { type Crest as CrestData, getCrest } from "@/db/crest";
 import { dayKey } from "@/db/dates";
+import type { RecentFeeds } from "@/db/milestone";
+import { getRecentFeeds } from "@/db/milestoneFeed";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { formatCount } from "@/db/targets";
 import {
@@ -202,6 +204,7 @@ export function VillageScene() {
   const risen = new Set(growth.map((g) => g.code));
 
   const [scene, setScene] = useState<VillageSceneData | null>(null);
+  const [feeds, setFeeds] = useState<RecentFeeds | null>(null);
   // Read with the scene, in the same focus: one answer for the whole header, so the glow is never
   // drawn for a hero whose crest has simply not arrived yet.
   // `undefined` is a crest that could not be read: the slot stays empty and nothing is said.
@@ -246,10 +249,16 @@ export function VillageScene() {
       reportError("village.crest", error);
       return undefined;
     });
-    Promise.all([getVillageScene(), readCrest])
-      .then(([data, crestData]) => {
+    // Like the crest, the estimates never fail the screen: unread, the cards say no sentence.
+    const readFeeds = getRecentFeeds().catch((error) => {
+      reportError("village.feeds", error);
+      return null;
+    });
+    Promise.all([getVillageScene(), readCrest, readFeeds])
+      .then(([data, crestData, feedsData]) => {
         if (mine !== loadId.current) return;
         setScene(data);
+        if (feedsData !== null) setFeeds(feedsData);
         // An unreadable crest after a drawn one keeps the drawn one, like the scene keeps yesterday's.
         if (crestData !== undefined) crestRead.current = true;
         if (crestData !== undefined || !crestRead.current) setCrest(crestData);
@@ -614,13 +623,19 @@ export function VillageScene() {
           {...sectionAnim}
         >
           <VillageTier
-            progress={getTierProgress(scene.level, scene.totalXp, scene.xpPerSession)}
+            progress={getTierProgress(scene.level, scene.totalXp)}
             name={villageName || tierName}
             complete={complete}
             openDeeds={openDeeds}
             language={language}
           />
-          <NextToRise building={next} dayOne={dayOne} language={language} onOpen={openBuilding} />
+          <NextToRise
+            building={next}
+            dayOne={dayOne}
+            language={language}
+            feeds={feeds}
+            onOpen={openBuilding}
+          />
           {growth.length > 0 ? (
             <SinceLastQuest growth={growth} buildings={scene.buildings} language={language} />
           ) : null}
@@ -691,6 +706,7 @@ export function VillageScene() {
           selected={selected}
           onClose={closeDetail}
           language={language}
+          feeds={feeds}
           bottomInset={insets.bottom}
         />
       ) : null}

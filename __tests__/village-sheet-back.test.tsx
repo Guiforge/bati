@@ -42,7 +42,13 @@ const selection: VillageSelection = { kind: "building", building: FORGE };
 function renderSheet(selected: VillageSelection | null, onClose: () => void) {
   return render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <VillageDetailSheet selected={selected} onClose={onClose} language="en" bottomInset={0} />
+      <VillageDetailSheet
+        selected={selected}
+        onClose={onClose}
+        language="en"
+        feeds={null}
+        bottomInset={0}
+      />
     </TamaguiProvider>,
   );
 }
@@ -85,7 +91,13 @@ describe("VillageDetailSheet and hardware back", () => {
 
     await rerender(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <VillageDetailSheet selected={null} onClose={onClose} language="en" bottomInset={0} />
+        <VillageDetailSheet
+          selected={null}
+          onClose={onClose}
+          language="en"
+          feeds={null}
+          bottomInset={0}
+        />
       </TamaguiProvider>,
     );
 
@@ -99,6 +111,6 @@ describe("VillageDetailSheet's driver line", () => {
     const big = { ...FORGE, metricValue: 1234 } as VillageBuilding;
     const sheet = await renderSheet({ kind: "building", building: big }, jest.fn());
 
-    expect(await sheet.findByText(/1,234 reps/)).toBeTruthy();
+    expect(await sheet.findByText(/1,234 reps of/)).toBeTruthy();
   });
 });

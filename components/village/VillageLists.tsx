@@ -6,9 +6,11 @@ import { Text, XStack, YStack } from "tamagui";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { ChevronRight } from "@/components/icons";
+import { xpScale } from "@/components/village/barScale";
 import { LevelPips } from "@/components/village/LevelPips";
+import { buildingMilestoneLine } from "@/components/village/milestoneLine";
 import {
-  barEnds,
+  buildingScale,
   ctaLabel,
   type Family,
   feedsLine,
@@ -20,12 +22,11 @@ import {
 } from "@/components/village/rows";
 import { getBuildingIconAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
+import type { RecentFeeds } from "@/db/milestone";
 import type { BuildingCode } from "@/db/schema";
-import { formatCount } from "@/db/targets";
 import {
   buildingCeiling,
   type GrownBuilding,
-  getBuildingProgress,
   MAX_TIER,
   type TierProgress,
   type VillageBuilding,
@@ -84,24 +85,12 @@ export function QuestLink({ label, onPress }: { label: string; onPress: () => vo
   );
 }
 
-/** The ends of a bar, under it, so the bar is never a measure without a unit. */
-export function BarEnds({ left, right }: { left: string; right: string }) {
-  return (
-    <XStack justify="space-between" gap="$2">
-      <Text fontSize={11.5} fontWeight="600" color="$textSecondary">
-        {left}
-      </Text>
-      <Text fontSize={11.5} fontWeight="600" color="$textSecondary">
-        {right}
-      </Text>
-    </XStack>
-  );
-}
-
 type NextProps = {
   building: VillageBuilding | null;
   dayOne: boolean;
   language: AppLanguage;
+  /** What the latest sessions brought; null until read, when no sentence is said. */
+  feeds: RecentFeeds | null;
   onOpen: (building: VillageBuilding) => void;
 };
 
@@ -110,13 +99,18 @@ type NextProps = {
  * what it costs, in the unit it counts. On day one there is no such building yet, so it states the
  * rule instead, and it is the one place the village carries a call to action: to a quest.
  */
-export function NextToRise({ building, dayOne, language, onOpen }: NextProps) {
+export function NextToRise({ building, dayOne, language, feeds, onOpen }: NextProps) {
   const { t } = useTranslation();
   const router = useRouter();
   if (!(building || dayOne)) return null;
 
-  const progress = building ? getBuildingProgress(building) : null;
-  const ends = building ? barEnds(building, t) : null;
+  const scale = building ? buildingScale(building, t, language) : null;
+  // Unbuilt, it says what builds it; built, when it next rises, and nothing at all without an estimate.
+  const line = !building
+    ? null
+    : building.level === 0
+      ? nextLine(building, t, language)
+      : buildingMilestoneLine(building, feeds, t, language);
 
   return (
     <YStack
@@ -139,18 +133,32 @@ export function NextToRise({ building, dayOne, language, onOpen }: NextProps) {
         >
           <BuildingThumb building={building} size={40} />
           <YStack flex={1} minW={0} gap={4}>
-            <Text fontWeight="700" fontSize={16} color="$text">
-              {nameOf(building, language)}
-            </Text>
-            <Text fontSize={13} lineHeight={18} color="$text">
-              {nextLine(building, t, language)}
-            </Text>
-            {progress !== null ? (
+            <XStack justify="space-between" items="baseline" gap={10}>
+              <Text fontWeight="700" fontSize={16} color="$text" shrink={1}>
+                {nameOf(building, language)}
+              </Text>
+              {building.level > 0 ? (
+                <Text fontSize={12} fontWeight="600" color="$resourceGold">
+                  {levelText(building, t)}
+                </Text>
+              ) : null}
+            </XStack>
+            {scale ? (
               <YStack pt={5}>
-                <ProgressBar progress={progress} height={5} color="$resourceGold" />
+                <ProgressBar
+                  progress={scale.progress}
+                  height={5}
+                  color="$resourceGold"
+                  caption={scale.caption}
+                  ends={scale.ends}
+                />
               </YStack>
             ) : null}
-            {ends ? <BarEnds left={ends.left} right={ends.right} /> : null}
+            {line ? (
+              <Text fontSize={13} lineHeight={18} color="$text">
+                {line}
+              </Text>
+            ) : null}
           </YStack>
         </XStack>
       ) : (
@@ -348,8 +356,10 @@ type TierProps = {
  */
 export function VillageTier({ progress, name, complete, openDeeds, language }: TierProps) {
   const { t } = useTranslation();
-  const xp = (n: number) => formatCount(language, n);
-  const foot = tierFoot(progress, complete, openDeeds, t, xp);
+  const foot = tierFoot(progress, complete, openDeeds, t);
+  const scale = progress.final
+    ? null
+    : xpScale(t, language, { ...progress, toLevel: progress.nextLevel, toXp: progress.targetXp });
 
   return (
     <YStack
@@ -361,19 +371,18 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
       borderColor={complete ? "$resourceGold" : "$borderStrong"}
       bg="$surface"
     >
-      <XStack justify="space-between" items="baseline" gap={10}>
-        <SectionLabel>
-          {t(progress.final ? "village.tier_final_kicker" : "village.tier_next_kicker")}
-        </SectionLabel>
-        <Text
-          fontSize={11.5}
-          fontWeight="600"
-          color={progress.final ? "$resourceGold" : "$textSecondary"}
-          numberOfLines={1}
-        >
-          {t("village.tier_badge", { tier: progress.tier, max: MAX_TIER })}
-        </Text>
-      </XStack>
+      <SectionLabel>
+        {t(progress.final ? "village.tier_final_kicker" : "village.tier_next_kicker")}
+      </SectionLabel>
+      {/* Under the title, not beside it: at 130 % the two did not fit on one line and the chip was
+          cut at the card's edge in every state. */}
+      <Text
+        fontSize={12}
+        fontWeight="700"
+        color={progress.final ? "$resourceGold" : "$textSecondary"}
+      >
+        {t("village.tier_badge", { tier: progress.tier, max: MAX_TIER })}
+      </Text>
 
       {complete ? (
         <YStack testID="village-done" gap={4}>
@@ -395,19 +404,17 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
           <Text fontSize={13} lineHeight={19} color="$text">
             {t("village.tier_next_line", { level: progress.nextLevel, count: progress.levelsAway })}
           </Text>
-          <YStack gap={6} pt={2}>
-            <ProgressBar progress={progress.progress} height={5} color="$resourceGold" />
-            <BarEnds
-              left={t("village.tier_bar_end", {
-                level: progress.fromLevel,
-                xp: xp(progress.fromXp),
-              })}
-              right={t("village.tier_bar_end", {
-                level: progress.nextLevel,
-                xp: xp(progress.targetXp),
-              })}
-            />
-          </YStack>
+          {scale ? (
+            <YStack pt={2}>
+              <ProgressBar
+                progress={scale.progress}
+                height={5}
+                color="$resourceGold"
+                caption={scale.caption}
+                ends={scale.ends}
+              />
+            </YStack>
+          ) : null}
         </>
       )}
 
@@ -420,19 +427,14 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
   );
 }
 
-/** What is left once the sentence above has said when: the XP gap, or what still moves. */
+/** What still moves once the village has its last painting; the XP gap is the bar's now. */
 function tierFoot(
   progress: TierProgress,
   complete: boolean,
   openDeeds: number,
   t: TFunction,
-  xp: (n: number) => string,
 ): string | null {
-  if (!progress.final) {
-    return progress.sessionsAtPace === null
-      ? t("village.tier_short", { xp: xp(progress.xpShort) })
-      : t("village.tier_short_pace", { xp: xp(progress.xpShort), count: progress.sessionsAtPace });
-  }
+  if (!progress.final) return null;
   if (!complete) return t("village.tier_final_rest");
   return openDeeds > 0 ? t("village.done_deeds", { count: openDeeds }) : null;
 }

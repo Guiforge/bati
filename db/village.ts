@@ -840,16 +840,10 @@ export type TierProgress =
       xpShort: number;
       /** 0-100, from where this tier began to where the next one does. */
       progress: number;
-      /** Sessions like this week's that would cover the gap, or null with nothing to go by. */
-      sessionsAtPace: number | null;
     }
   | { final: true; tier: VillageTier; reachedAt: number };
 
-export function getTierProgress(
-  level: number,
-  totalXp: number,
-  xpPerSession: number | null,
-): TierProgress {
+export function getTierProgress(level: number, totalXp: number): TierProgress {
   const tier = getVillageTier(level);
   if (tier === MAX_TIER) return { final: true, tier, reachedAt: TIER_LEVEL_FLOORS[MAX_TIER] };
 
@@ -869,7 +863,6 @@ export function getTierProgress(
     targetXp,
     xpShort,
     progress: Math.max(0, Math.min(100, ((totalXp - fromXp) / (targetXp - fromXp)) * 100)),
-    sessionsAtPace: xpPerSession && xpPerSession > 0 ? Math.ceil(xpShort / xpPerSession) : null,
   };
 }
 
@@ -885,8 +878,6 @@ export type VillageScene = {
   /** The hero's rank, shown beside the level on the scene, without the level repeated in it. */
   title: Localized;
   totalXp: number;
-  /** Average XP of a session over the last seven days, or null when there was none. */
-  xpPerSession: number | null;
   flame: FlameLevel;
   /** Days the flame has stayed lit, which the flame's name alone does not say. */
   streakDays: number;
@@ -900,12 +891,11 @@ export type VillageScene = {
  * no village-specific table.
  */
 export async function getVillageScene(): Promise<VillageScene> {
-  const [levelInfo, streak, dominantSport, buildings, xpPerSession] = await Promise.all([
+  const [levelInfo, streak, dominantSport, buildings] = await Promise.all([
     getUserLevelInfo(),
     getStreakInfo(),
     getDominantSportOverlay(),
     getVillageBuildings(),
-    getWeekXpPerSession(),
   ]);
 
   return {
@@ -913,7 +903,6 @@ export async function getVillageScene(): Promise<VillageScene> {
     level: levelInfo.level,
     title: getLevelTitle(levelInfo.level),
     totalXp: levelInfo.totalXp,
-    xpPerSession,
     flame: getFlameLevel(streak.current),
     streakDays: streak.current,
     dominantSport,

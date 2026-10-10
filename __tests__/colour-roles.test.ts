@@ -70,9 +70,9 @@ describe("colour roles", () => {
   });
 
   it("the village tier bar is gold", () => {
-    expect(
-      near("components/village/VillageLists.tsx", "progress={progress.progress}", 1),
-    ).toContain('color="$resourceGold"');
+    expect(near("components/village/VillageLists.tsx", "progress={scale.progress}", 3)).toContain(
+      'color="$resourceGold"',
+    );
   });
 
   it("the boss panel's weakness trait is braise", () => {

@@ -6,6 +6,8 @@ import { TamaguiProvider } from "tamagui";
 
 import { VillageScene } from "@/components/village/VillageScene";
 import * as crestDb from "@/db/crest";
+import type { RecentFeeds } from "@/db/milestone";
+import * as feedDb from "@/db/milestoneFeed";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import * as village from "@/db/village";
 import { i18n } from "@/i18n";
@@ -83,13 +85,19 @@ function mockScene(buildings: village.VillageBuilding[], over: Partial<village.V
     level: 8,
     title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
     totalXp: 3180,
-    xpPerSession: 370,
     flame: 0,
     streakDays: 0,
     dominantSport: null,
     buildings,
     ...over,
   });
+}
+
+/** What the latest sessions brought; empty by default, which is a hero nothing has fed. */
+function mockFeeds(over: Partial<RecentFeeds> = {}) {
+  jest
+    .spyOn(feedDb, "getRecentFeeds")
+    .mockResolvedValue({ muscle: {}, style: {}, outing: [], ...over });
 }
 
 function renderScene() {
@@ -105,6 +113,7 @@ function renderScene() {
 describe("VillageScene", () => {
   beforeEach(() => {
     jest.spyOn(crestDb, "getCrest").mockResolvedValue(null);
+    mockFeeds();
   });
   afterEach(() => {
     jest.restoreAllMocks();
@@ -114,14 +123,54 @@ describe("VillageScene", () => {
 
   it("puts the closest rung first, in reps, with its unit at both ends of the bar", async () => {
     mockScene([campfire, forge, farm, quarry, barn]);
+    mockFeeds({ muscle: { chest: [20, 20] } });
 
     const { findByTestId } = await renderScene();
     const next = within(await findByTestId("village-next"));
 
     expect(next.getByText("Forge")).toBeTruthy();
-    expect(next.getByText("Chest: 40 reps to level 2")).toBeTruthy();
-    expect(next.getByText("60 reps")).toBeTruthy();
-    expect(next.getByText("100 reps for level 2")).toBeTruthy();
+    // What is done and the two ends of the rung; never what is left to do.
+    expect(next.getByText("60 reps done")).toBeTruthy();
+    expect(next.getByText("0 reps")).toBeTruthy();
+    expect(next.getByText("100 reps")).toBeTruthy();
+    expect(next.getByText("Rank 2 in about 2 chest sessions.")).toBeTruthy();
+    expect(next.queryByText(/to level|reps to go/)).toBeNull();
+  });
+
+  it("says nothing of when for a building nothing has fed", async () => {
+    mockScene([campfire, forge, farm, quarry, barn]);
+
+    const { findByTestId } = await renderScene();
+    const next = within(await findByTestId("village-next"));
+
+    expect(next.getByText("60 reps done")).toBeTruthy();
+    expect(next.queryByText(/Rank 2/)).toBeNull();
+  });
+
+  it("says nothing of when at the top rank", async () => {
+    mockScene([
+      campfire,
+      building("forge", 5, { driver: "muscle", metricValue: 9000, nextTarget: null }),
+      farm,
+    ]);
+    mockFeeds({ muscle: { chest: [20, 20] } });
+
+    const { findByTestId, queryByText } = await renderScene();
+    await findByTestId("village-next");
+
+    expect(queryByText(/Rank 6/)).toBeNull();
+  });
+
+  it("counts a road in outings, and its bar is what was walked", async () => {
+    const road = building("high_road", 3, { driver: "leagues", metricValue: 18, nextTarget: 30 });
+    mockScene([campfire, building("farm", 5, { driver: "muscle", nextTarget: null }), road]);
+    mockFeeds({ outing: [3, 3, 6] });
+
+    const { findByTestId } = await renderScene();
+    const next = within(await findByTestId("village-next"));
+
+    expect(next.getByText("18 leagues covered beyond the walls")).toBeTruthy();
+    expect(next.getByText("Rank 4 in about 3 outings.")).toBeTruthy();
   });
 
   it("files every building with what feeds it, unbuilt ones included, on its real ceiling", async () => {
@@ -132,7 +181,7 @@ describe("VillageScene", () => {
 
     // No locked drawer: the unbuilt Quarry sits with the muscles that feed it.
     expect(muscles.getByText("Quarry")).toBeTruthy();
-    expect(muscles.getByText("Back: one rep builds it")).toBeTruthy();
+    expect(muscles.getByText("Rises with every rep of back")).toBeTruthy();
     // The six upgrades stop at 3; five pips under them promised a road that never came.
     expect(within(getByTestId("village-family-upgrade")).getByText("level 2 of 3")).toBeTruthy();
     expect(within(getByTestId("village-family-starter")).getByText("level 4 of 5")).toBeTruthy();
@@ -219,9 +268,14 @@ describe("VillageScene", () => {
     expect(
       tier.getByText("The village changes its look at hero level 10, 2 levels away."),
     ).toBeTruthy();
-    expect(tier.getByText("level 8 · 2,800 XP")).toBeTruthy();
-    expect(tier.getByText("level 10 · 4,500 XP")).toBeTruthy();
-    expect(tier.getByText("1,320 XP to go, about 4 sessions like this week's.")).toBeTruthy();
+    // Before the middle of the span it says what is done, with the two ends (no break inside a
+    // part; the test's font scale stacks each end over two lines).
+    expect(tier.getByText("380 XP done")).toBeTruthy();
+    expect(tier.getByText("level\u00a08")).toBeTruthy();
+    expect(tier.getByText("2,800\u00a0XP")).toBeTruthy();
+    expect(tier.getByText("level\u00a010")).toBeTruthy();
+    expect(tier.getByText("4,500\u00a0XP")).toBeTruthy();
+    expect(tier.queryByText(/to go|sessions like/)).toBeNull();
   });
 
   it("names an unbuilt deed by what builds it, and its sheet says it once", async () => {
@@ -266,9 +320,7 @@ describe("VillageScene", () => {
     await fireEvent.press(deeds.getByLabelText("Hall of Heroes"));
 
     expect(await findByText(/carries over from what you had done before/)).toBeTruthy();
-    expect(
-      within(await findByTestId("village-detail")).getByText("7 routes for level 4"),
-    ).toBeTruthy();
+    expect(within(await findByTestId("village-detail")).getByText("7 routes")).toBeTruthy();
   });
 
   it("keeps the answer of the last focus when an older one arrives after it", async () => {
@@ -281,7 +333,6 @@ describe("VillageScene", () => {
       level: 8,
       title: { en: name, fr: name, de: name, es: name },
       totalXp: 3180,
-      xpPerSession: 370,
       flame: 0,
       streakDays: 0,
       dominantSport: null,
@@ -330,7 +381,6 @@ describe("VillageScene", () => {
         level: 8,
         title: { en: "Newer", fr: "Newer", de: "Newer", es: "Newer" },
         totalXp: 3180,
-        xpPerSession: 370,
         flame: 0,
         streakDays: 0,
         dominantSport: null,
@@ -362,9 +412,25 @@ describe("VillageScene", () => {
     expect(
       await findByText("350 reps of chest training. A hold counts one rep every 3 seconds."),
     ).toBeTruthy();
-    // In the sheet: the Forge is also "Next to rise", whose bar carries the same two ends.
+    // In the sheet: the rung's own two ends, from where the level began.
+    const sheet = within(await findByTestId("village-detail"));
+    expect(sheet.getByText("350 reps done")).toBeTruthy();
+    expect(sheet.getByText("600 reps")).toBeTruthy();
+  });
+
+  it("the sheet says when the building next rises, and says nothing at the top rank", async () => {
+    mockScene([building("forge", 3, { driver: "muscle", metricValue: 350, nextTarget: 600 })]);
+    mockFeeds({ muscle: { chest: [100, 125] } });
+
+    const { findByTestId, findByText } = await renderScene();
+    const muscles = within(await findByTestId("village-family-muscle"));
+    await fireEvent.press(muscles.getByLabelText("Forge"));
+
+    // (600 - 350) over the 112.5 a session brings, rounded up.
     expect(
-      within(await findByTestId("village-detail")).getByText("600 reps for level 4"),
+      await within(await findByTestId("village-detail")).findByText(
+        "Rank 4 in about 3 chest sessions.",
+      ),
     ).toBeTruthy();
   });
 

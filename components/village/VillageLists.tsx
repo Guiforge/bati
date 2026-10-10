@@ -436,5 +436,5 @@ function tierFoot(
 ): string | null {
   if (!progress.final) return null;
   if (!complete) return t("village.tier_final_rest");
-  return openDeeds > 0 ? t("village.done_deeds", { count: openDeeds }) : null;
+  return openDeeds > 0 ? t("village.done_deeds") : null;
 }

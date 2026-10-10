@@ -10,10 +10,34 @@ import * as path from "node:path";
 const LOCALES = path.resolve(__dirname, "..", "locales");
 
 const CHORES: Record<string, RegExp> = {
-  en: /(reps?|sessions?|bosses|boss|routes?|rematch(es)?|leagues?) (to level|to go|left)|(more|another) (reps?|sessions?|bosses|boss|routes?|rematch(es)?)|before level|to level|for level|one rep builds/i,
-  fr: /il manque|encore \{\{count\}\}|avant le niveau|avant le rang|pour le niveau|une rep suffit/i,
-  de: /noch \{\{count\}\} (wiederholung|einheit|boss|route|revanche|wegstunde)|fehlen|bis zu stufe|bis stufe|für stufe|wiederholung reicht/i,
-  es: /faltan \{\{count\}\}|todavía \{\{count\}\}|hasta el nivel|para el nivel|basta una/i,
+  en: /(reps?|sessions?|bosses|boss|routes?|rematch(es)?|leagues?) (to level|to go|left)|(more|another) (reps?|sessions?|bosses|boss|routes?|rematch(es)?)|before level|to level|for level|one rep builds|(left|remain(s|ing)?|still) to\b/i,
+  fr: /il manque|encore \{\{count\}\}|avant le niveau|avant le rang|pour le niveau|une rep suffit|il reste/i,
+  de: /noch \{\{count\}\} (wiederholung|einheit|boss|route|revanche|wegstunde)|fehlen|bis zu stufe|bis stufe|für stufe|wiederholung reicht|noch \{\{count\}\} (?!level)/i,
+  es: /faltan \{\{count\}\}|todavía \{\{count\}\}|hasta el nivel|para el nivel|basta una|\bquedan?\b/i,
+};
+
+// The milestone is sessions or outings, so no word for a rep, in any language.
+// A building has a rank; "level" is the hero's and the village's.
+const LEVEL_WORD: Record<string, RegExp> = {
+  en: /\blevel/i,
+  fr: /\bniveau/i,
+  de: /\blevel/i,
+  es: /\bnivel/i,
+};
+const BUILDING_KEYS = [
+  "reward_title",
+  "next_prereq",
+  "build_prereq",
+  "detail_prereq_driver",
+  "detail_prereq_locked",
+  "kept_level",
+];
+
+const REP: Record<string, RegExp> = {
+  en: /\brep/i,
+  fr: /\brep/i,
+  de: /wiederholung|\brep/i,
+  es: /repetici|\brep/i,
 };
 
 describe.each(Object.keys(CHORES))("%s copy of the Village", (lang) => {
@@ -28,6 +52,13 @@ describe.each(Object.keys(CHORES))("%s copy of the Village", (lang) => {
   it("keeps the milestone in sessions or outings", () => {
     const milestone = Object.keys(village).filter((k) => k.startsWith("milestone_"));
     expect(milestone.length).toBeGreaterThan(0);
-    for (const k of milestone) expect(village[k]).not.toMatch(/\brep/i);
+    for (const k of milestone) expect(village[k]).not.toMatch(REP[lang] ?? /\brep/i);
+  });
+
+  it("says rank, never level, where it speaks of a building", () => {
+    for (const k of BUILDING_KEYS) {
+      expect(village[k]).toBeDefined();
+      expect(village[k]?.replace(/\{\{\w+\}\}/g, "")).not.toMatch(LEVEL_WORD[lang] ?? /level/i);
+    }
   });
 });

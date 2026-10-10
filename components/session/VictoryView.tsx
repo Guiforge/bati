@@ -264,10 +264,9 @@ export function VictoryView() {
     runSave().catch((e) => reportError("session.save", e));
   }, [runSave, tooShort]);
 
-  // The feeling can be tapped while the save is still in flight, but persisting it needs a
-  // session id that only exists once `result` lands. Writing it from the tap handler meant the
-  // early taps were dropped on the floor — the button lit up, the row kept `feedback: null`.
-  // Keyed on both, so a tap before the save and a tap after take the same path.
+  // The feeling buttons are inactive until the save lands (they are `disabled` below), because
+  // persisting a feeling needs a session id that only exists once `result` does. The effect is
+  // still keyed on both, so a feeling set at any time takes the one path.
   // One villager per victory, chosen here rather than by competing effects: these are all `event`
   // priority, so firing two would just mean the second silently overwrote the first and which one
   // you saw depended on effect ordering. A record is not cued at all: "Tonight" lists it, and a

@@ -68,7 +68,7 @@ describe("xp scale", () => {
   });
 
   it("at 130 % each end takes two lines and nothing is cut", async () => {
-    await bar(xpAt(1320), 1.3);
+    await bar(xpAt(1320), Math.fround(1.3));
     expect(texts()).toEqual(["320 XP faits", "niveau 5", "1 000 XP", "niveau 8", "2 800 XP"]);
   });
 

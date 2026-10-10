@@ -6,7 +6,8 @@ import { Text, XStack, YStack } from "tamagui";
 export type BarEnd = { lead?: string; value: string };
 
 /** From this font scale up the ends stack, lead over value, rather than wrap in the middle. */
-const STACK_FROM_SCALE = 1.3;
+// Not 1.3: Android's 130 % option reaches JS as a float32, 1.29999995, which a `>= 1.3` misses.
+const STACK_FROM_SCALE = 1.29;
 const NBSP = "\u00a0";
 
 type Props = {

@@ -7,17 +7,24 @@ import { MAX_TIER, TIER_LEVEL_FLOORS, TIER_NAMES, type VillageTier } from "@/db/
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import type { Feast } from "./feasts";
 
-/** "Brumeval becomes a Village.", or "Your village becomes a Village." before it has a name. */
+/**
+ * "Brumeval becomes a Village.", or "Your village becomes a Flourishing City." before it has a name.
+ * Tier 3 is named after the generic word ("Village", "Dorf", "Aldea"), so the unnamed village
+ * would "become a Village": it has its own sentence ("Your village grows: it is now a Village.").
+ */
 export const tierSentence = (
   t: TFunction,
   tier: VillageTier,
   villageName: string,
   language: AppLanguage,
 ) =>
-  t(`session.tonight_tier_${tier}`, {
-    subject: villageName || t("session.tonight_tier_subject_unnamed"),
-    tier: TIER_NAMES[tier][language],
-  });
+  t(
+    !villageName && tier === 3 ? "session.tonight_tier_3_unnamed" : `session.tonight_tier_${tier}`,
+    {
+      subject: villageName || t("session.tonight_tier_subject_unnamed"),
+      tier: TIER_NAMES[tier][language],
+    },
+  );
 
 type Reveal = Extract<Feast, { kind: "reveal" }>;
 

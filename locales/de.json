@@ -632,6 +632,7 @@
     "tonight_tier_1": "{{subject}} wird zum {{tier}}.",
     "tonight_tier_2": "{{subject}} wird zur {{tier}}.",
     "tonight_tier_3": "{{subject}} wird zum {{tier}}.",
+    "tonight_tier_3_unnamed": "Dein Dorf wächst: Es ist jetzt ein {{tier}}.",
     "tonight_tier_4": "{{subject}} wird zum {{tier}}.",
     "tonight_tier_5": "{{subject}} wird zum {{tier}}.",
     "tonight_tier_6": "{{subject}} wird zur {{tier}}.",

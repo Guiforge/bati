@@ -643,6 +643,7 @@
     "tonight_tier_1": "{{subject}} se convierte en un {{tier}}.",
     "tonight_tier_2": "{{subject}} se convierte en un {{tier}}.",
     "tonight_tier_3": "{{subject}} se convierte en una {{tier}}.",
+    "tonight_tier_3_unnamed": "Tu aldea crece: ahora es una {{tier}}.",
     "tonight_tier_4": "{{subject}} se convierte en una {{tier}}.",
     "tonight_tier_5": "{{subject}} se convierte en una {{tier}}.",
     "tonight_tier_6": "{{subject}} se convierte en una {{tier}}.",

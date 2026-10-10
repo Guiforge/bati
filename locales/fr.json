@@ -966,6 +966,7 @@
     "tonight_tier_1": "{{subject}} devient un {{tier}}.",
     "tonight_tier_2": "{{subject}} devient une {{tier}}.",
     "tonight_tier_3": "{{subject}} devient un {{tier}}.",
+    "tonight_tier_3_unnamed": "Ton village grandit : c'est maintenant un {{tier}}.",
     "tonight_tier_4": "{{subject}} devient un {{tier}}.",
     "tonight_tier_5": "{{subject}} devient un {{tier}}.",
     "tonight_tier_6": "{{subject}} devient une {{tier}}.",

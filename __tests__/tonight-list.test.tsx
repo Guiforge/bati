@@ -239,6 +239,11 @@ describe("TonightList", () => {
     expect(alone.getByText("après")).toBeTruthy();
     await alone.unmount();
 
+    // Tier 3 is named "Village": the unnamed village does not "become a Village".
+    const bare = await show(feasts, "fr", "");
+    expect(bare.getByText("Ton village grandit : c'est maintenant un Village.")).toBeTruthy();
+    await bare.unmount();
+
     const led = await show(
       rankFeasts({
         epilogue: true,
@@ -484,6 +489,7 @@ describe("the Tonight copy, in every language", () => {
     "tonight_stage_venerable",
     "tonight_boar_body",
     ...Array.from({ length: 12 }, (_, i) => `tonight_tier_${i + 1}`),
+    "tonight_tier_3_unnamed",
     "tonight_tier_subject_unnamed",
     "tonight_stage_body_any",
     "tonight_tier_body",

@@ -632,6 +632,7 @@
     "tonight_tier_1": "{{subject}} becomes a {{tier}}.",
     "tonight_tier_2": "{{subject}} becomes a {{tier}}.",
     "tonight_tier_3": "{{subject}} becomes a {{tier}}.",
+    "tonight_tier_3_unnamed": "Your village grows: it is now a {{tier}}.",
     "tonight_tier_4": "{{subject}} becomes a {{tier}}.",
     "tonight_tier_5": "{{subject}} becomes a {{tier}}.",
     "tonight_tier_6": "{{subject}} becomes a {{tier}}.",

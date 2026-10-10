@@ -1,5 +1,5 @@
 import { act, fireEvent, render } from "@testing-library/react-native";
-import { StyleSheet, type ViewStyle } from "react-native";
+import { processColor, StyleSheet, type ViewStyle } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -202,6 +202,26 @@ describe("VictoryView feedback", () => {
     expect(ink("hard")).toBe(dark.textSecondary?.val);
     await release();
     expect(ink("hard")).toBe(dark.text?.val);
+  });
+
+  it("greys the feeling buttons' fill and icon while saving, and lights both once saved", async () => {
+    const { view, release } = await mountWithPendingSave();
+    const dark = config.themes.dark as unknown as Record<string, { val: string }>;
+    const fill = () =>
+      StyleSheet.flatten(view.getByLabelText("session.feedback_hard").props.style).backgroundColor;
+    // The glyph's wrapper carries the testID; the image inside carries the processed tint.
+    const icon = () =>
+      Number(
+        JSON.stringify(view.toJSON())
+          .split('"testID":"feedback-glyph-hard"')[1]
+          ?.match(/"tintColor":(\d+)/)?.[1],
+      );
+
+    expect(fill()).toBe(dark.surface2?.val);
+    expect(icon()).toBe(processColor(dark.textSecondary?.val));
+    await release();
+    expect(fill()).toBe(dark.surface?.val);
+    expect(icon()).toBe(processColor(dark.text?.val));
   });
 
   it("persists a feeling tapped after the save landed", async () => {

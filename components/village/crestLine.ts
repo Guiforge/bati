@@ -4,7 +4,7 @@ import type { Animal } from "@/db/crestRules";
 import { dayKey } from "@/db/dates";
 import { PRACTICE_KEY, sentence } from "./crestText";
 
-type Line = Pick<Crest, "animal" | "second" | "quarters" | "stage">;
+type Line = Pick<Crest, "animal" | "second" | "quarters" | "stage" | "manual">;
 
 /** Whether the reveal happened on the hero's own calendar day: local time, never UTC. */
 export const revealedToday = (revealedAt: Date, now: Date): boolean =>
@@ -27,7 +27,8 @@ export function useCrestLine(
   const name = (a: Animal, venerable: boolean) =>
     t(venerable ? `village.crest_${a}_venerable` : `village.crest_${a}`);
   const first = sentence(name(crest.animal, crest.stage === "venerable"));
-  const suffix = revealedToday ? "_t" : "";
+  // A hand-picked animal is not what the 8th session revealed: "from today" would date the wrong thing.
+  const suffix = revealedToday && !crest.manual ? "_t" : "";
   if (crest.animal === "boar" && crest.quarters) {
     const [a, b] = crest.quarters;
     if (a !== b) {

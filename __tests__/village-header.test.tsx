@@ -133,6 +133,11 @@ describe("the village header", () => {
     expect(await line()).toBe("A bear watches over Brumeval from today.");
   });
 
+  it("never says from today for a hand-picked animal, whatever day it is", async () => {
+    await mount(crestOf({ revealedAt: new Date(), manual: true }));
+    expect(await line()).toBe("A bear watches over Brumeval.");
+  });
+
   it("two animals, and the stage only when it is venerable", async () => {
     await mount(crestOf({ second: { animal: "stag", stage: "adult" } }));
     expect(await line()).toBe("A bear and a stag watch over Brumeval.");

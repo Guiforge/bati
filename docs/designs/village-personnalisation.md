@@ -122,6 +122,7 @@ La taille de l'APK n'est pas un critère pour ce chantier (choix de Guillaume) :
 - Les tests de la victoire réécrits (environ 38 : `victory-view`, `victory-expedition`).
 
 ## Reste ouvert
-- Le texte de la révélation pour un héros qui a déjà 300 séances à la mise à jour.
+- Le texte de la révélation pour un héros qui a déjà plus de 8 séances à la mise à jour : proposé en tranche 5, à valider (« Cela remonte à ta 8e séance : 5 de tes 8 premières étaient de la force. », le soir de la 8e : « 5 de tes 8 séances étaient de la force. »). Le sanglier suit la même règle (`feast_reveal_boar_late`).
+- La grande fête est la route `app/big-feast.tsx`, ouverte par « Continuer » (`VictoryView`), qui se marque dans `bigFeastsShown` à l'ouverture (`reveal`, `tier:<n>`). L'épilogue garde la place mais n'est plus listé dans « Ce soir ».
 - Le jour 1 : « la lueur » = deux yeux couleur os, fixes, à la place exacte de l'écu (même emplacement, même taille : le nom ne bouge pas quand l'écu arrive), pas de halo, pas de braise. Les braises de la peinture passent sous le bloc titre.
 - « Voir Brumeval » : si le village n'a pas de nom, le bouton dit « Voir ton village ».

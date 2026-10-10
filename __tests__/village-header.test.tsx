@@ -59,6 +59,7 @@ function crestOf(over: Partial<crestDb.Crest> = {}): crestDb.Crest {
     animal: "bear",
     stage: "young",
     manual: false,
+    picked: "auto",
     second: null,
     quarters: null,
     revealedIndex: 7,

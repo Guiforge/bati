@@ -33,6 +33,8 @@ export type CrestAnimals = {
   stage: CrestStage;
   /** Chosen by the hero: the ink diamond. */
   manual: boolean;
+  /** What is stored, as written: `manual` is false when the pick equals the sessions' animal, this is not. */
+  picked: Animal | "auto";
   /** Never the boar: it fills the field, so it has no border to stand in. */
   second: { animal: PracticeAnimal; stage: CrestStage } | null;
   /** The boar's two quarters, the practices in the lead over every session; null for the others. */
@@ -206,6 +208,7 @@ export function crestAnimals(
     animal: center,
     stage: stageFor(center, !manual),
     manual,
+    picked,
     second: border === null ? null : { animal: border, stage: stageFor(border, true) },
     quarters,
     revealedIndex,

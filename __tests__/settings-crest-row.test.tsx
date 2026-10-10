@@ -26,6 +26,7 @@ const crest: crestDb.Crest = {
   animal: "stag",
   stage: "young",
   manual: true,
+  picked: "stag",
   second: null,
   quarters: null,
   revealedIndex: 7,

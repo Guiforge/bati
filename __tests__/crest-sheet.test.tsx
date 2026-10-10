@@ -292,6 +292,17 @@ describe("Ton animal", () => {
     },
   );
 
+  it("pressing the sessions' option writes auto when the stored pick merely equals their animal", async () => {
+    // Stored `bear`, sessions say bear: the shield reads as auto, the stored value is not.
+    const crest = crestOf(FIVE_OF_EIGHT, "bear");
+    expect(crest.manual).toBe(false);
+    const onChanged = jest.fn();
+    await sheet(crest, "pick", jest.fn(), onChanged);
+    await fireEvent.press(screen.getByTestId("crest-pick-auto"));
+    await waitFor(() => expect(write).toHaveBeenCalledWith("auto"));
+    await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
+  });
+
   it("a failed write changes nothing and closes nothing", async () => {
     write.mockRejectedValue(new Error("disk"));
     const onChanged = jest.fn();

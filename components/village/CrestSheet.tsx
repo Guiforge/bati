@@ -58,8 +58,9 @@ function Link({ testID, label, onPress }: { testID: string; label: string; onPre
 /** Writes the choice and closes: no confirmation, going back is one tap more. `auto` is written, never deleted. */
 function useChoose(crest: CrestData | null, onChanged: () => void, onClose: () => void) {
   return (value: Animal | "auto") => {
-    // The choice already on show: nothing to write, and the caller must not leave for the Village.
-    if (crest !== null && value === (crest.manual ? crest.animal : "auto")) {
+    // The value already stored: nothing to write, and the caller must not leave for the Village.
+    // The shield showing the pressed animal is not enough, a stored pick equal to it reads as auto.
+    if (crest !== null && value === crest.picked) {
       onClose();
       return;
     }

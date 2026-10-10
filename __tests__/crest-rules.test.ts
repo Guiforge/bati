@@ -250,8 +250,9 @@ describe("the hero's choice", () => {
   test("a pick equal to the sessions' own animal is the sessions' animal: no diamond, the practice's stage", () => {
     const sessions = [...seq(["strength", 8]), ...seq(["yoga", 35])];
     const crest = auto(sessions, "bear");
-    expect(crest).toEqual(auto(sessions));
-    expect(crest).toMatchObject({ manual: false, stage: "young" });
+    // Everything but `picked`, which keeps what is stored.
+    expect({ ...crest, picked: "auto" }).toEqual(auto(sessions));
+    expect(crest).toMatchObject({ manual: false, stage: "young", picked: "bear" });
     const boar = of(["strength", "yoga", "run", "strength", "yoga", "run", "strength", "yoga"]);
     expect(auto(boar, "boar")).toMatchObject({ manual: false });
   });

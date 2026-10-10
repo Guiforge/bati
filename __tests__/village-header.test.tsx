@@ -1,10 +1,11 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { crestFootprint } from "@/components/village/crestGeometry";
 import { VillageScene } from "@/components/village/VillageScene";
 import * as crestDb from "@/db/crest";
+import { preferences } from "@/db/preferences";
 import * as village from "@/db/village";
 import { i18n } from "@/i18n";
 import * as errors from "@/src/reportError";
@@ -160,6 +161,22 @@ describe("the shield's press", () => {
     await mount(crestOf());
     await fireEvent.press(await screen.findByTestId("village-crest"));
     expect(await screen.findByText("Why the Bear?")).toBeTruthy();
+  });
+
+  it("M7: a choice made in the sheet is read again, and the header follows", async () => {
+    const write = jest.spyOn(preferences, "setCrestAnimal").mockResolvedValue();
+    await mount(crestOf());
+    expect(await line()).toBe("A bear watches over Brumeval.");
+    jest.spyOn(crestDb, "getCrest").mockResolvedValue(crestOf({ animal: "stag", manual: true }));
+    await fireEvent.press(await screen.findByTestId("village-crest"));
+    await fireEvent.press(await screen.findByTestId("crest-why-pick"));
+    await fireEvent.press(await screen.findByTestId("crest-pick-stag"));
+    expect(write).toHaveBeenCalledWith("stag");
+    await waitFor(() =>
+      expect(screen.getByTestId("village-crest-line").props.children).toBe(
+        "A stag watches over Brumeval.",
+      ),
+    );
   });
 });
 

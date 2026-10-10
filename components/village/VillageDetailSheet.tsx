@@ -266,8 +266,8 @@ function BuildingDetail({
   const progress = getBuildingProgress(building);
   const scale = buildingScale(building, t, language);
   const milestone = buildingMilestoneLine(building, feeds, t, language);
-  // The deeds' driver line above already says what is done; saying it twice over the bar is noise.
-  const doneIsInDriverLine = building.driver !== "muscle" && building.driver !== "style";
+  // The driver line above always says what is done ("101 reps of chest", "3 routes"): the bar
+  // keeps its two ends and does not say it a second time.
   // An unbuilt deed is its condition and nothing else: "0 rematches won" above "Not built yet"
   // above "Built by your first rematch" said the same zero three times.
   const unbuiltDeed = building.tier === 4 && progress === null && !built;
@@ -369,7 +369,6 @@ function BuildingDetail({
             progress={scale.progress}
             height={6}
             color="$resourceGold"
-            caption={doneIsInDriverLine ? undefined : scale.caption}
             ends={scale.ends}
           />
         ) : building.nextTarget === null ||

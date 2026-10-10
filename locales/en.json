@@ -1134,7 +1134,7 @@
     "reward_kicker": "Your quest built this",
     "reward_title": "{{building}}, level {{level}}",
     "reward_also": "Also rose: {{names}}.",
-    "level_of": "level {{level}} of {{max}}",
+    "building_rank": "rank {{level}}",
     "not_built": "Not built yet",
     "at_ceiling": "At its ceiling",
     "next_tier": "Rises when your hero reaches level {{target}}",

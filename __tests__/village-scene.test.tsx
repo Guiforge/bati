@@ -183,8 +183,8 @@ describe("VillageScene", () => {
     expect(muscles.getByText("Quarry")).toBeTruthy();
     expect(muscles.getByText("Rises with every rep of back")).toBeTruthy();
     // The six upgrades stop at 3; five pips under them promised a road that never came.
-    expect(within(getByTestId("village-family-upgrade")).getByText("level 2 of 3")).toBeTruthy();
-    expect(within(getByTestId("village-family-starter")).getByText("level 4 of 5")).toBeTruthy();
+    expect(within(getByTestId("village-family-upgrade")).getByText("rank 2")).toBeTruthy();
+    expect(within(getByTestId("village-family-starter")).getByText("rank 4")).toBeTruthy();
   });
 
   it("pins a status-bar-height scrim outside the scroll, so content never slides under the clock", async () => {
@@ -414,7 +414,7 @@ describe("VillageScene", () => {
     ).toBeTruthy();
     // In the sheet: the rung's own two ends, from where the level began.
     const sheet = within(await findByTestId("village-detail"));
-    expect(sheet.getByText("350 reps done")).toBeTruthy();
+    expect(sheet.queryByText("350 reps done")).toBeNull();
     expect(sheet.getByText("600 reps")).toBeTruthy();
   });
 

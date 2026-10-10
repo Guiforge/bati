@@ -1134,7 +1134,7 @@
     "reward_kicker": "Das hat deine Quest gebaut",
     "reward_title": "{{building}}, Level {{level}}",
     "reward_also": "Auch gewachsen: {{names}}.",
-    "level_of": "Level {{level}} von {{max}}",
+    "building_rank": "Rang {{level}}",
     "not_built": "Noch nicht gebaut",
     "at_ceiling": "Am Maximum",
     "next_tier": "Wächst, wenn dein Held Level {{target}} erreicht",

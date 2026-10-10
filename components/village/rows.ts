@@ -5,7 +5,6 @@ import { MUSCLE_LABELS } from "@/db/muscles";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import {
   BUILDING_LABELS,
-  buildingCeiling,
   getBuildingProgress,
   isDayOne,
   repsRungStart,
@@ -100,11 +99,9 @@ export function feedsLine(b: VillageBuilding, t: TFunction, language: AppLanguag
   }
 }
 
-/** "level 2 of 3", on the building's real ceiling. */
+/** "rank 2": the pips beside it carry the ceiling. */
 export function levelText(b: VillageBuilding, t: TFunction): string {
-  return b.level > 0
-    ? t("village.level_of", { level: b.level, max: buildingCeiling(b) })
-    : t("village.not_built");
+  return b.level > 0 ? t("village.building_rank", { level: b.level }) : t("village.not_built");
 }
 
 /**

@@ -52,7 +52,7 @@ row can be read without a tap.
      "3 → 4".
    - **Families** (`groupFamilies` in `components/village/rows.ts`): Muscles, Styles, Upgrades,
      Deeds, Starter, each labelled with what feeds it. Unbuilt buildings sit in their family, not
-     in a locked drawer. A row is the name, the next rung in words, and "level 2 of 3" with pips
+     in a locked drawer. A row is the name, the next rung in words, and "rank 2" with pips
      on the building's **real ceiling** (`buildingCeiling`: 3 for the six upgrades, 5 elsewhere).
      The building "Next to rise" already names keeps its row, marked by a gold edge, so it is found
      where it belongs without being read twice. Day one shows the starters and one "Not built yet"

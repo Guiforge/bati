@@ -1209,7 +1209,7 @@
     "reward_kicker": "Ta quête a bâti ça",
     "reward_title": "{{building}}, niveau {{level}}",
     "reward_also": "Aussi monté : {{names}}.",
-    "level_of": "niveau {{level}} sur {{max}}",
+    "building_rank": "rang {{level}}",
     "not_built": "À bâtir",
     "at_ceiling": "Au plafond",
     "next_tier": "Monte quand ton héros atteint le niveau {{target}}",

@@ -1189,7 +1189,7 @@
     "reward_kicker": "Esto lo ha construido tu misión",
     "reward_title": "{{building}}, nivel {{level}}",
     "reward_also": "También ha subido: {{names}}.",
-    "level_of": "nivel {{level}} de {{max}}",
+    "building_rank": "rango {{level}}",
     "not_built": "Aún sin construir",
     "at_ceiling": "En el tope",
     "next_tier": "Sube cuando tu héroe llegue al nivel {{target}}",

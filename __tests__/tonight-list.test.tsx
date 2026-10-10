@@ -5,6 +5,7 @@ import { TamaguiProvider } from "tamagui";
 import { oathText } from "@/components/oath/useOathText";
 import { type Feast, type FeastFacts, rankFeasts } from "@/components/session/feasts";
 import { TonightList } from "@/components/session/TonightList";
+import { crestFootprint } from "@/components/village/crestGeometry";
 import { achievementDefinitions } from "@/db/achievements";
 import type { Crest as CrestRead } from "@/db/crest";
 import { NO_CREST_EVENTS } from "@/db/crestEvents";
@@ -86,6 +87,10 @@ describe("TonightList reveal shield", () => {
     const shield = /^(?!.*forest).*bear/i;
     const view = await render(tree(undefined));
     expect(view.queryByLabelText(shield)).toBeNull();
+    // The room kept is the shield's own, 24 wide and 28 tall: the line does not jump when it lands.
+    const room = StyleSheet.flatten(view.getByTestId("tonight-crest-room").props.style);
+    expect(room).toMatchObject(crestFootprint(24));
+    expect(crestFootprint(24)).toEqual({ width: 24, height: 28 });
     await view.rerender(tree(null));
     expect(view.getByLabelText(shield)).toBeTruthy();
     expect(view.queryByLabelText(/bear.*stag/i)).toBeNull();

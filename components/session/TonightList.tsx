@@ -11,6 +11,7 @@ import { headingFont } from "@/components/common/headingFont";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { oathText } from "@/components/oath/useOathText";
 import { Crest } from "@/components/village/Crest";
+import { crestFootprint } from "@/components/village/crestGeometry";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
 import { getExerciseThumb, getVillageTierAsset } from "@/constants/assetMap";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
@@ -110,7 +111,7 @@ function lineOf(
         ? {
             art:
               crest === undefined ? (
-                <YStack width={24} height={24} />
+                <YStack testID="tonight-crest-room" {...crestFootprint(24)} />
               ) : (
                 <Crest size={24} crest={revealShield(f, crest)} />
               ),

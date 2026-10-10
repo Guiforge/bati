@@ -240,11 +240,20 @@ describe("the hero's choice", () => {
   const bearAndStag = () => seq(["strength", 8], ["run", 20], ["strength", 30]);
 
   test("it puts the animal in the centre with the diamond, the border staying", () => {
-    expect(auto(bearAndStag(), "bear")).toMatchObject({
-      animal: "bear",
+    expect(auto(bearAndStag(), "ermine")).toMatchObject({
+      animal: "ermine",
       manual: true,
       second: { animal: "stag" },
     });
+  });
+
+  test("a pick equal to the sessions' own animal is the sessions' animal: no diamond, the practice's stage", () => {
+    const sessions = [...seq(["strength", 8]), ...seq(["yoga", 35])];
+    const crest = auto(sessions, "bear");
+    expect(crest).toEqual(auto(sessions));
+    expect(crest).toMatchObject({ manual: false, stage: "young" });
+    const boar = of(["strength", "yoga", "run", "strength", "yoga", "run", "strength", "yoga"]);
+    expect(auto(boar, "boar")).toMatchObject({ manual: false });
   });
 
   test("choosing the second animal swaps it with the first", () => {

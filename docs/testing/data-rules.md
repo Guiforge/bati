@@ -186,7 +186,9 @@ several practices reach it, the most recently trained wins, then the fixed order
 calisthenics, yoga, run, ride. Second animal from the 9th session on (`n*100 >= 30*total` and
 `n >= 20`, kept once in). A boar, from the sessions or picked by hand, never has a second animal
 and so no border. The boar's two quarters are the practices in the lead among those actually done;
-a hero with a single practice gets that one in both.
+a hero with a single practice gets that one in both. A pick equal to the animal the sessions give
+is no pick: it reads as `auto` (not manual, no diamond, the practice's own stage), however it
+arrived (a merge of two devices' choices included).
 `revealedAt` is the `performedAt` of the 8th session with a practice, so it follows the replay like
 everything else.
 Rings are whole years from the first session that counts to now (a year without a session

@@ -134,11 +134,11 @@ function quartersOf(totals: Tally, last: Tally): [Practice, Practice] | null {
  * caller sorts). Nothing is stored, so a merge or a deletion that changes the history changes the
  * answer. Thresholds are integers: `n * 100 >= 40 * total`, never a float.
  *
- * `choice` is the hero's pick (`auto` or an animal). Before the reveal there is no crest at all.
+ * `picked` is the hero's pick (`auto` or an animal). Before the reveal there is no crest at all.
  */
 export function crestAnimals(
   sessions: CrestSession[],
-  choice: Animal | "auto",
+  picked: Animal | "auto",
 ): CrestAnimals | null {
   const { list, revealedIndex } = practised(sessions);
   if (list.length < REVEAL_AT) return null;
@@ -168,6 +168,8 @@ export function crestAnimals(
   const first: Animal = firstOfPractice ?? "boar";
   const secondFromSessions = secondPractice === undefined ? null : ANIMAL_OF[secondPractice];
 
+  // A pick equal to the sessions' own animal is the sessions' animal: not manual, no diamond.
+  const choice = picked === first ? "auto" : picked;
   let center = first;
   let border: PracticeAnimal | null = secondFromSessions;
   if (choice !== "auto") {

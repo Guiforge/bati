@@ -233,7 +233,6 @@ describe("buildingScale, a kept rank", () => {
     expect(left).toBe(done);
     expect(scale.progress).toBe(0);
     expect(scale.caption).toBe(i18n.t(`village.detail_${driver}_driver`, { count: done }));
-    expect(scale.progress).toBeGreaterThanOrEqual(0);
     expect(scale.progress).toBeLessThanOrEqual(100);
     expect(scale.progress).toBeCloseTo(((done - left) / (next - left)) * 100);
     expect(deedProgress(kept)).toBe(scale.progress);

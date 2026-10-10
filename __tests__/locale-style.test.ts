@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { TOKEN } from "./helpers/villageCopy";
 
 // Four rules the locale files drifted on, kept from drifting again.
 //
@@ -249,8 +250,6 @@ describe("locale typography", () => {
    * `//` inside a URL string is not mistaken for one, and all three literal forms are read.
    */
   it("no string literal in db/ or src/ uses an em dash", () => {
-    const TOKEN =
-      /\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\[\s\S])*`/g;
     const offending = sourceFiles(path.join(ROOT, "db"), path.join(ROOT, "src")).flatMap((file) =>
       [...fs.readFileSync(file, "utf8").matchAll(TOKEN)]
         .map((m) => m[0])
@@ -268,8 +267,6 @@ describe("locale typography", () => {
    * spot: JSX text between tags is not a literal, so it needs `t()` or a reviewer.
    */
   it("no string literal in app/, components/, hooks/ or stores/ uses an em dash", () => {
-    const TOKEN =
-      /\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\[\s\S])*`/g;
     const offending = sourceFiles(
       ...["app", "components", "hooks", "stores"].map((d) => path.join(ROOT, d)),
     )

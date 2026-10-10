@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { TIER_NAMES } from "@/db/village";
-import { featureCopy, LANGS, type Lang } from "./helpers/villageCopy";
+import { featureCopy, LANGS, type Lang, TOKEN } from "./helpers/villageCopy";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 
@@ -20,11 +20,11 @@ const FORBIDDEN: Record<Lang, RegExp> = {
     "iu",
   ),
   de: new RegExp(
-    `${L}(w[äa]chter|totem|abstammung|chef|m[öo]bel|besant|ringlein|geviert|[äa]lteste|alt(?![\\p{L}])|alte[nmrs]?(?![\\p{L}]))`,
+    `${L}(w[äa]chter|totem|abstammung|chef|m[öo]bel|besant|ringlein|geviert|h[äa]uptling|[äa]lteste|alt(?![\\p{L}])|alte[nmrs]?(?![\\p{L}]))`,
     "iu",
   ),
   es: new RegExp(
-    `${L}(guardi[áa]n|t[óo]tem|linaje|mueble|besante|anillete|cuartelado|anciano|antiguo|jefe)`,
+    `${L}(guardi[áa]n|t[óo]tem|linaje|mueble|besante|anillete|cuartelado|anciano|antiguo|jef[ea])`,
     "iu",
   ),
 };
@@ -32,16 +32,18 @@ const FORBIDDEN: Record<Lang, RegExp> = {
 // "old" and "alt" are the village's age in "Your village is one year old": a fact, not a stage.
 const AGE_OF_VILLAGE = /^session\.tonight_anniversary_/;
 // "jefe" is Spanish for the boss of an adventure everywhere in the app (glossary.md), so it is
-// the monster's word on these keys and nowhere else.
+// the monster's word on these keys and nowhere else ("jefa" is its feminine).
 const BOSS_KEY = /boss|rematch/;
 
+// Every match counts, not the first: an exempt "jefe" must not hide a "guardián" after it.
 function hits(lang: Lang, key: string, value: string): boolean {
-  const match = FORBIDDEN[lang].exec(value);
-  if (!match) return false;
-  const word = match[1]?.toLowerCase() ?? "";
-  if (AGE_OF_VILLAGE.test(key) && /^(old|alt|alte[nmrs]?)$/.test(word)) return false;
-  if (lang === "es" && word === "jefe" && BOSS_KEY.test(key)) return false;
-  return true;
+  const all = new RegExp(FORBIDDEN[lang].source, "giu");
+  return [...value.matchAll(all)].some((match) => {
+    const word = match[1]?.toLowerCase() ?? "";
+    if (AGE_OF_VILLAGE.test(key) && /^(old|alt|alte[nmrs]?)$/.test(word)) return false;
+    if (lang === "es" && /^jef[ea]/.test(word) && BOSS_KEY.test(key)) return false;
+    return true;
+  });
 }
 
 it("sees what it is written for", () => {
@@ -53,6 +55,15 @@ it("sees what it is written for", () => {
   expect(FORBIDDEN.de.test("Der Wächter")).toBe(true);
   expect(FORBIDDEN.es.test("Un oso anciano")).toBe(true);
   expect(FORBIDDEN.es.test("Un oso antiguo")).toBe(true);
+  expect(FORBIDDEN.de.test("Der Häuptling")).toBe(true);
+  expect(FORBIDDEN.es.test("La jefa")).toBe(true);
+});
+
+it("reads every match, not the first", () => {
+  expect(hits("es", "village.boss_x", "Vence al jefe")).toBe(false);
+  expect(hits("es", "village.boss_x", "Vence al jefe, guardián del linaje")).toBe(true);
+  expect(hits("es", "village.x", "Vence a la jefa")).toBe(true);
+  expect(hits("en", "session.tonight_anniversary_1", "One year old, an elder village")).toBe(true);
 });
 
 it("does not catch a longer word that ends the same way", () => {
@@ -96,7 +107,7 @@ describe.each(LANGS)("%s copy of the Village, the crest, the feasts and tonight"
 
 // Copy written in a .ts file bypasses the locales. These are the files of the feature that
 // build or hold a sentence; their string literals (comments stripped) get the same scan, in
-// every language, except the two ambiguous short words.
+// every language, with no key to excuse "jefe", "old" or "alt".
 describe("the feature's .ts files", () => {
   const ROOT = path.resolve(__dirname, "..");
   const FILES = [
@@ -112,8 +123,6 @@ describe("the feature's .ts files", () => {
     "db/crestRules.ts",
     "db/milestone.ts",
   ];
-  const TOKEN =
-    /\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\[\s\S])*`/g;
   // Identifiers that are strings, not sentences: a key path or a code needs a space or a capital
   // to be read as copy.
   const literals = FILES.flatMap((f) =>
@@ -128,8 +137,8 @@ describe("the feature's .ts files", () => {
   });
 
   it("holds no forbidden word", () => {
-    const bad = literals.filter(({ text }) =>
-      LANGS.some((lang) => lang !== "es" && /\s|^[A-Z]/.test(text) && FORBIDDEN[lang].test(text)),
+    const bad = literals.filter(
+      ({ text }) => /\s|^[A-Z]/.test(text) && LANGS.some((lang) => hits(lang, "", text)),
     );
     expect(bad.map((b) => `${b.file}: ${b.text}`)).toEqual([]);
   });

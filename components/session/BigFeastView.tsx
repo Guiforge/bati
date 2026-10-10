@@ -120,10 +120,10 @@ function WhyLink({ animal, onPress }: { animal: Animal; onPress: (() => void) | 
       style={{ minHeight: 44, justifyContent: "center" }}
     >
       <XStack items="center" gap="$1">
-        <Text fontSize={15} fontWeight="600" color="$primary">
+        <Text fontSize={15} fontWeight="600" color="$primaryText">
           {t(`village.crest_why_title_${animal}`)}
         </Text>
-        <ChevronRight size={16} color="$primary" />
+        <ChevronRight size={16} color="$primaryText" />
       </XStack>
     </Pressable>
   );

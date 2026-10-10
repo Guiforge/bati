@@ -372,6 +372,10 @@
       "second": null,
       "quarters": null,
       "revealedIndex": 7,
+      "optionStages": {
+        "sessions": "venerable",
+        "chosen": "venerable"
+      },
       "evidence": {
         "firstEight": {
           "strength": 4,

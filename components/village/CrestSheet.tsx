@@ -44,10 +44,10 @@ function Link({ testID, label, onPress }: { testID: string; label: string; onPre
       style={{ minHeight: 44, justifyContent: "center" }}
     >
       <XStack items="center" gap="$1">
-        <Text fontSize={15} fontWeight="600" color="$primary">
+        <Text fontSize={15} fontWeight="600" color="$primaryText">
           {label}
         </Text>
-        <ChevronRight size={16} color="$primary" />
+        <ChevronRight size={16} color="$primaryText" />
       </XStack>
     </Pressable>
   );
@@ -209,14 +209,14 @@ function Option({
       >
         <Crest crest={shape} size={24} />
         <YStack flex={1}>
-          <Text fontSize={15} fontWeight="600" color={selected ? "$primary" : "$text"}>
+          <Text fontSize={15} fontWeight="600" color={selected ? "$primaryText" : "$text"}>
             {label}
           </Text>
           <Text fontSize={13} color="$textSecondary">
             {sub}
           </Text>
         </YStack>
-        {selected ? <Check size={18} color="$primary" /> : null}
+        {selected ? <Check size={18} color="$primaryText" /> : null}
       </XStack>
     </Pressable>
   );

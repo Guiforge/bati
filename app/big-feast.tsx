@@ -1,5 +1,5 @@
 import { Stack, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BackHandler } from "react-native";
 import { type BigFeast, BigFeastView } from "@/components/session/BigFeastView";
 import { revealShield } from "@/components/session/bigFeastText";
@@ -27,6 +27,15 @@ const KINDS = ["reveal", "tier", "age", "anniversary"];
  * It ends two ways, both the stack "Continue" leaves: the back gesture, or its button, which goes
  * to the village by the victory screen's own "see your village" road.
  */
+function readCrest(set: (crest: Crest | null) => void) {
+  getCrest()
+    .then(set)
+    .catch((e) => {
+      reportError("bigFeast.crest", e);
+      set(null);
+    });
+}
+
 export default function BigFeastScreen() {
   const router = useRouter();
   const villageName = useUserStore((s) => s.villageName);
@@ -72,17 +81,9 @@ export default function BigFeastScreen() {
   }, [isTier]);
 
   const isReveal = feast?.kind === "reveal";
-  const loadCrest = useCallback(() => {
-    getCrest()
-      .then(setCrest)
-      .catch((e) => {
-        reportError("bigFeast.crest", e);
-        setCrest(null);
-      });
-  }, []);
   useEffect(() => {
-    if (isReveal) loadCrest();
-  }, [isReveal, loadCrest]);
+    if (isReveal) readCrest(setCrest);
+  }, [isReveal]);
 
   // Pop this screen, then do what the victory screen would. The two actions queue on one stack,
   // so the session screen under this one is replaced, exactly as "Continue" without a feast did.
@@ -125,7 +126,7 @@ export default function BigFeastScreen() {
         crest={crest ?? null}
         onView={setCrestView}
         onClose={() => setCrestView(null)}
-        onChanged={loadCrest}
+        onChanged={() => readCrest(setCrest)}
       />
       {!feast || !result || waiting ? null : (
         <BigFeastView

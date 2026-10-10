@@ -82,7 +82,7 @@ export function FormSheet({ open, title, onClose, children }: Props) {
         >
           <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$3">
             <XStack items="center" justify="space-between" gap="$3">
-              <Text flex={1} fontWeight="700" fontSize={18} color="$text">
+              <Text flex={1} fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
                 {title}
               </Text>
               <Pressable

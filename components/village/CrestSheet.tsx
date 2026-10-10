@@ -294,7 +294,8 @@ export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
   const [mounted, setMounted] = useState(false);
   if (view !== null && !mounted) setMounted(true);
   // Same as VillageDetailSheet: back closes the sheet first, and the router never sees the press.
-  const open = view !== null;
+  // Only while the sheet is drawn: a crest gone null under an open view renders nothing to close.
+  const open = view !== null && crest !== null;
   useEffect(() => {
     if (!open) return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {

@@ -385,14 +385,23 @@ describe("the reveal's shield", () => {
     },
   );
 
-  test("a boar of the sessions has no border, whatever was chosen, and keeps its quarters", () => {
-    const boar: typeof bear = { ...bear, animal: "boar", quarters: ["strength", "run"] };
-    expect(revealShield(boar, crestWith("stag"))).toEqual({
-      ...SESSIONS_SHIELD,
-      animal: "boar",
-      quarters: ["strength", "run"],
-      second: null,
-    });
+  test("a boar of the sessions has no border (no second animal exists for it), whatever was chosen", () => {
+    // 2 sessions of each of four practices: no practice reaches 40 % of the first eight, a boar.
+    const mixed = (["strength", "calisthenics", "yoga", "cardio"] as const).flatMap((p, k) =>
+      [0, 1].map((i) => ({
+        uuid: `${k}${i}`.padStart(6, "0"),
+        outing: null,
+        strength: 0,
+        calisthenics: 0,
+        yoga: 0,
+        cardio: 0,
+        [p]: 1,
+      })),
+    );
+    const crest = crestWith("stag", mixed);
+    const boar: typeof bear = { ...bear, animal: "boar", quarters: crest.evidence.boarQuarters };
+    expect(crest.evidence.secondFromSessions).toBeNull();
+    expect(revealShield(boar, crest)).toMatchObject({ animal: "boar", second: null });
   });
 
   test("is the bare animal when the crest could not be read", () => {
@@ -634,6 +643,32 @@ describe("the big-feast route", () => {
       expect(mockBack).not.toHaveBeenCalled();
       expect(quit).not.toHaveBeenCalled();
       expect(v.getByTestId("big-feast-title")).toBeTruthy();
+      spy.mockRestore();
+    });
+
+    test("no back listener outlives the route, or the sheet it opened and closed", async () => {
+      mockGetCrest.mockResolvedValue(bearCrest());
+      const live = new Set<object>();
+      const spy = jest.spyOn(BackHandler, "addEventListener").mockImplementation(() => {
+        const sub = {
+          remove: () => {
+            live.delete(sub);
+          },
+        };
+        live.add(sub);
+        return sub;
+      });
+      const v = await mount();
+      expect(live.size).toBe(1);
+      await fireEvent.press(v.getByTestId("big-feast-why"));
+      await v.findByTestId("sheet-title");
+      const press = spy.mock.calls.at(-1)?.[1] as () => boolean;
+      await act(() => {
+        press();
+      });
+      expect(live.size).toBe(1);
+      await v.unmount();
+      expect(live.size).toBe(0);
       spy.mockRestore();
     });
 

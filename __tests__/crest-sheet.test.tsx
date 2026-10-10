@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 import type { ReactNode } from "react";
 import { BackHandler } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -63,19 +63,19 @@ function crestOf(
 
 const FIVE_OF_EIGHT = seq(["strength", 5], ["yoga", 2], ["calisthenics", 1]);
 
-const wrap = (ui: ReactNode) =>
-  render(
-    <SafeAreaProvider
-      initialMetrics={{
-        frame: { x: 0, y: 0, width: 390, height: 844 },
-        insets: { top: 0, left: 0, right: 0, bottom: 0 },
-      }}
-    >
-      <TamaguiProvider config={config} defaultTheme="dark">
-        {ui}
-      </TamaguiProvider>
-    </SafeAreaProvider>,
-  );
+const tree = (ui: ReactNode) => (
+  <SafeAreaProvider
+    initialMetrics={{
+      frame: { x: 0, y: 0, width: 390, height: 844 },
+      insets: { top: 0, left: 0, right: 0, bottom: 0 },
+    }}
+  >
+    <TamaguiProvider config={config} defaultTheme="dark">
+      {ui}
+    </TamaguiProvider>
+  </SafeAreaProvider>
+);
+const wrap = (ui: ReactNode) => render(tree(ui));
 
 function sheet(
   crest: crestDb.Crest | null,
@@ -173,7 +173,42 @@ describe("Pourquoi l'Ours ?", () => {
 
   it("keeps the two links of a chosen animal in one group", async () => {
     await sheet(crestOf(FIVE_OF_EIGHT, "stag"), "why");
-    expect(screen.getByTestId("crest-why-links")).toBeTruthy();
+    const group = screen.getByTestId("crest-why-links");
+    expect(within(group).getByTestId("crest-why-reset")).toBeTruthy();
+    expect(within(group).getByTestId("crest-why-pick")).toBeTruthy();
+  });
+
+  const props = (view: CrestView | null, crest: crestDb.Crest | null) => (
+    <CrestSheet
+      view={view}
+      crest={crest}
+      onView={jest.fn()}
+      onClose={jest.fn()}
+      onChanged={jest.fn()}
+    />
+  );
+
+  it("takes its back handler off when the sheet closes or unmounts", async () => {
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    const v = await wrap(props("why", crestOf(FIVE_OF_EIGHT)));
+    const remove = jest.spyOn(spy.mock.results[0]?.value, "remove");
+    await v.rerender(tree(props(null, crestOf(FIVE_OF_EIGHT))));
+    expect(remove).toHaveBeenCalledTimes(1);
+    await v.rerender(tree(props("why", crestOf(FIVE_OF_EIGHT))));
+    const again = jest.spyOn(spy.mock.results[1]?.value, "remove");
+    await v.unmount();
+    expect(again).toHaveBeenCalledTimes(1);
+  });
+
+  it("listens to back only while it draws: a crest gone null under an open view is not drawn", async () => {
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    const v = await wrap(props("why", crestOf(FIVE_OF_EIGHT)));
+    const remove = jest.spyOn(spy.mock.results[0]?.value, "remove");
+    await v.rerender(tree(props("why", null)));
+    expect(remove).toHaveBeenCalledTimes(1);
+    const calls = spy.mock.calls.length;
+    await v.rerender(tree(props("why", null)));
+    expect(spy.mock.calls.length).toBe(calls);
   });
 
   it("hardware back closes the open sheet first, and only then", async () => {

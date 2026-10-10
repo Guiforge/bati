@@ -1110,6 +1110,14 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
   const fillStyle = useAnimatedStyle(() => ({ width: `${fill.value * 100}%` }));
 
   const label = t("session.expedition_finish");
+  const [width, setWidth] = useState(0);
+  // 20 and not 24: "Maintiens pour terminer" is the long form, and it has to hold one line on a
+  // 320dp screen.
+  const holdLabel = (color: "$onPrimary" | "$bgDark") => (
+    <Text color={color} fontFamily="$heading" fontSize={20} fontWeight="700" numberOfLines={1}>
+      {t("session.expedition_hold_to_finish")}
+    </Text>
+  );
 
   return (
     <Pressable
@@ -1149,28 +1157,27 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
         overflow="hidden"
         items="center"
         justify="center"
+        onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
       >
+        {holdLabel("$onPrimary")}
+        {/* The sweep carries its own copy of the label, in ink: no single label colour reads on
+            both the braise and the green (cream on green is 2.3:1), and the plate that used to
+            solve it put a black box in the middle of the button. The copy is laid out at the
+            button's full width, so the two labels coincide and the sweep's edge recolours the
+            letters as it crosses them. */}
         <Animated.View
-          style={[{ position: "absolute", left: 0, top: 0, bottom: 0 }, fillStyle]}
+          style={[
+            { position: "absolute", left: 0, top: 0, bottom: 0, overflow: "hidden" },
+            fillStyle,
+          ]}
           pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
         >
-          <YStack flex={1} bg="$success" />
+          <YStack width={width} flex={1} bg="$success" items="center" justify="center">
+            {holdLabel("$bgDark")}
+          </YStack>
         </Animated.View>
-        {/* 20 and not 24: "Maintiens pour terminer" is the long form, and it has to hold one
-            line on a 320dp screen. */}
-        {/* On an ink plate: the sweep crosses the label, braise then green, and no single label
-            colour clears AA on both (bone on green is 1.95:1). Ink under bone reads on either. */}
-        <YStack bg="$bgDark" rounded="$4" px="$3" py="$1">
-          <Text
-            color="$text"
-            fontFamily="$heading"
-            fontSize={20}
-            fontWeight="700"
-            numberOfLines={1}
-          >
-            {t("session.expedition_hold_to_finish")}
-          </Text>
-        </YStack>
       </YStack>
     </Pressable>
   );

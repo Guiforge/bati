@@ -1,10 +1,14 @@
 import type { VillageGrowth } from "@/db/village";
 import { formatGrown } from "@/db/village";
-import type { useSessionStore } from "@/stores/session";
+import { type SaveResult, useSessionStore } from "@/stores/session";
 
-type Campaign = Awaited<
-  ReturnType<ReturnType<typeof useSessionStore.getState>["saveSession"]>
->["campaign"];
+type Campaign = SaveResult["campaign"];
+
+/** The two navigation calls the roads below use; `useRouter()` is one. */
+type Navigator = {
+  push: (href: never) => void;
+  replace: (href: never, options?: { withAnchor?: boolean }) => void;
+};
 
 /**
  * Where "Continue" leads: the next step of a campaign, its page when it ended, else Home. One
@@ -23,3 +27,19 @@ export function continueTarget(campaign: Campaign): { href: string; anchor: bool
 /** The village tab, with the levels that rose tonight so it plays the rise (see `formatGrown`). */
 export const villageHref = (growth: VillageGrowth[]) =>
   `/(tabs)/village?grown=${formatGrown(growth)}`;
+
+/**
+ * "Continue": the session ends and the road `continueTarget` names replaces the victory screen.
+ * The victory screen's button and the big feast's close both come here, so the stack is the same
+ * whichever door the hero took.
+ */
+export function goOn(router: Navigator, result: SaveResult) {
+  useSessionStore.getState().quitSession();
+  const { href, anchor } = continueTarget(result.campaign);
+  if (anchor) router.replace(href as never, { withAnchor: true });
+  else router.replace(href as never);
+}
+
+/** "See your village": pushed over the victory screen, so back returns to it. */
+export const seeVillage = (router: Navigator, result: SaveResult) =>
+  router.push(villageHref(result.villageGrowth) as never);

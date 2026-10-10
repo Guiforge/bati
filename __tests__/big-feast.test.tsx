@@ -5,8 +5,10 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import BigFeastScreen from "@/app/big-feast";
 import { BigFeastView } from "@/components/session/BigFeastView";
-import { revealBody, revealTitle } from "@/components/session/bigFeastText";
+import { revealBody, revealShield, revealTitle } from "@/components/session/bigFeastText";
 import type { Feast } from "@/components/session/feasts";
+import { NO_CREST_EVENTS } from "@/db/crestEvents";
+import { getXpForLevel } from "@/db/userLevel";
 import { i18n } from "@/i18n";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -38,16 +40,47 @@ jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => mockReduc
 
 const mockMark = jest.fn().mockResolvedValue(undefined);
 jest.mock("@/db/preferences", () => ({
-  preferences: { markBigFeastShown: (...a: unknown[]) => mockMark(...a) },
+  preferences: {
+    markBigFeastShown: (...a: unknown[]) => mockMark(...a),
+    // The session store clears its saved copy when a run ends.
+    clearSavedSession: jest.fn().mockResolvedValue(undefined),
+  },
 }));
 jest.mock("@/db/completed", () => ({ countSessions: jest.fn().mockResolvedValue(118) }));
 
 const mockReplace = jest.fn();
-let mockParams: Record<string, string> = {};
+const mockBack = jest.fn();
+const mockPush = jest.fn();
+let mockCanGoBack = true;
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ replace: mockReplace }),
-  useLocalSearchParams: () => mockParams,
+  useRouter: () => ({
+    replace: mockReplace,
+    back: mockBack,
+    push: mockPush,
+    canGoBack: () => mockCanGoBack,
+  }),
+  Stack: { Screen: () => null },
 }));
+
+const mockTierAsset = jest.fn();
+jest.mock("@/constants/assetMap", () => ({
+  ...jest.requireActual("@/constants/assetMap"),
+  getVillageTierAsset: (tier: number) => {
+    mockTierAsset(tier);
+    return 0;
+  },
+}));
+
+const mockCrestDrawn = jest.fn();
+jest.mock("@/components/village/Crest", () => ({
+  Crest: (p: { crest: unknown }) => {
+    mockCrestDrawn(p.crest);
+    return null;
+  },
+}));
+
+const mockGetCrest = jest.fn();
+jest.mock("@/db/crest", () => ({ getCrest: (...a: unknown[]) => mockGetCrest(...a) }));
 
 const bear: Extract<Feast, { kind: "reveal" }> = {
   kind: "reveal",
@@ -98,7 +131,7 @@ describe("the reveal's text", () => {
     await lang("fr");
     expect(revealBody(t(), bear)).toBe("5 de tes 8 séances étaient de la force.");
     expect(revealBody(t(), { ...bear, late: true })).toBe(
-      "Cela remonte à ta 8e séance : 5 de tes 8 premières étaient de la force.",
+      "Depuis ta 8e séance : 5 de tes 8 premières étaient de la force.",
     );
   });
 
@@ -115,11 +148,14 @@ describe("the reveal's text", () => {
       ],
     };
     expect(revealBody(t(), boar)).toBe(
-      "Aucune pratique ne passe 40 % : force 3, endurance 3, yoga 2. Ses couleurs : force et endurance, tes deux pratiques en tête.",
+      "Tes 8 séances se partagent : force 3, endurance 3, yoga 2. Les couleurs de l'écu : force et endurance, tes deux pratiques en tête.",
     );
-    expect(revealBody(t(), { ...boar, late: true })).toMatch(
-      /^Cela remonte à ta 8e séance\. Aucune/,
+    expect(revealBody(t(), { ...boar, late: true })).toBe(
+      "Depuis ta 8e séance. Tes 8 premières se partagent : force 3, endurance 3, yoga 2. Les couleurs de l'écu : force et endurance, tes deux pratiques en tête.",
     );
+    // The order of the counts is the order the journal gave: most done first, as `firstEight` is.
+    const swapped = { ...boar, firstEight: [...boar.firstEight].reverse() };
+    expect(revealBody(t(), swapped)).toContain("yoga 2, endurance 3, force 3");
   });
 
   test("the title names the village, or says your village before it has a name", async () => {
@@ -145,6 +181,7 @@ describe("BigFeastView", () => {
       wrap(
         <BigFeastView
           feast={feast as never}
+          crest={null}
           tier={9}
           villageName={villageName}
           sessions={sessions}
@@ -219,21 +256,79 @@ describe("BigFeastView", () => {
   });
 });
 
+describe("the reveal's shield", () => {
+  test("is the hero's own crest, with the animal and quarters the sessions named", () => {
+    const own = {
+      animal: "stag",
+      manual: true,
+      second: { animal: "horse", stage: "young" },
+      quarters: null,
+      longestFlame: 3,
+      rings: 2,
+    } as const;
+    const boar: typeof bear = { ...bear, animal: "boar", quarters: ["strength", "run"] };
+    expect(revealShield(boar, own)).toMatchObject({
+      animal: "boar",
+      quarters: ["strength", "run"],
+      manual: true,
+      second: { animal: "horse", stage: "young" },
+      longestFlame: 3,
+      rings: 2,
+    });
+  });
+
+  test("is the bare animal when the crest could not be read", () => {
+    expect(revealShield(bear, null)).toEqual({
+      animal: "bear",
+      quarters: null,
+      manual: false,
+      second: null,
+      longestFlame: 0,
+      rings: 0,
+    });
+  });
+});
+
 describe("the big-feast route", () => {
   const quit = jest.fn();
+  const base = {
+    levelUp: null,
+    tierUp: null,
+    villageGrowth: [{ code: "forge", oldLevel: 1, newLevel: 2 }],
+    newRecords: [],
+    standing: null,
+    newRungs: [],
+    newAchievements: [],
+    fulfilledOath: null,
+    oathBonusXp: 0,
+    crestEvents: NO_CREST_EVENTS,
+    crestReveal: null,
+    bigFeastsShown: [] as string[] | undefined,
+    heroXp: { before: 0, after: 4000 },
+    campaign: {
+      adventureId: 3,
+      runId: 1,
+      isFinished: false,
+      nextRunStepId: 4,
+      nextQuestId: 9,
+    },
+  };
+  const finish = (over: object = {}, status = "finished") =>
+    useSessionStore.setState({
+      status,
+      savedResult: { ...base, ...over },
+      quitSession: quit,
+    } as never);
+  const { kind: _k, size: _s, id: _i, ...revealFacts } = bear;
+
   beforeEach(async () => {
     jest.clearAllMocks();
     mockReduced = true;
+    mockCanGoBack = true;
+    mockGetCrest.mockResolvedValue(null);
     await lang("fr");
     useUserStore.setState({ villageName: "Brumeval" } as never);
-    useSessionStore.setState({ quitSession: quit } as never);
-    mockParams = {
-      feast: JSON.stringify(bear),
-      next: "/quests/9?runStepId=4&adventureId=3",
-      anchor: "1",
-      village: "/(tabs)/village?grown=forge:1:2",
-      tier: "9",
-    };
+    finish({ crestReveal: revealFacts });
   });
   const mount = () => render(wrap(<BigFeastScreen />));
 
@@ -243,15 +338,38 @@ describe("the big-feast route", () => {
   });
 
   test("marks a tier under its own key, so the next tier can still open", async () => {
-    mockParams = { ...mockParams, feast: JSON.stringify(tier) };
+    finish({ tierUp: { oldTier: 8, newTier: 9 }, levelUp: { oldLevel: 19, newLevel: 20 } });
     await mount();
     expect(mockMark).toHaveBeenCalledWith("tier:9");
   });
 
-  test("the button goes to the village by the victory screen's road, with the grown levels", async () => {
+  test("paints the tier the hero's XP is in, not the first", async () => {
+    finish({ crestReveal: revealFacts, heroXp: { before: 0, after: getXpForLevel(20) } });
+    await mount();
+    expect(mockTierAsset).toHaveBeenCalledWith(9);
+    expect(mockTierAsset).not.toHaveBeenCalledWith(1);
+  });
+
+  test("draws the crest the hero has now, flame included", async () => {
+    mockGetCrest.mockResolvedValue({
+      animal: "bear",
+      manual: false,
+      second: null,
+      quarters: null,
+      longestFlame: 3,
+      rings: 1,
+    });
+    await mount();
+    expect(mockCrestDrawn).toHaveBeenCalledWith(
+      expect.objectContaining({ animal: "bear", longestFlame: 3, rings: 1 }),
+    );
+  });
+
+  test("the button pops the feast and pushes the village by the victory screen's road", async () => {
     const v = await mount();
     await fireEvent.press(v.getByText("Voir Brumeval"));
-    expect(mockReplace).toHaveBeenCalledWith("/(tabs)/village?grown=forge:1:2");
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith("/(tabs)/village?grown=forge:1:2");
     expect(quit).not.toHaveBeenCalled();
   });
 
@@ -264,6 +382,7 @@ describe("the big-feast route", () => {
       handled = press();
     });
     expect(handled).toBe(true);
+    expect(mockBack).toHaveBeenCalledTimes(1);
     expect(quit).toHaveBeenCalledTimes(1);
     expect(mockReplace).toHaveBeenCalledWith("/quests/9?runStepId=4&adventureId=3", {
       withAnchor: true,
@@ -271,13 +390,34 @@ describe("the big-feast route", () => {
     spy.mockRestore();
   });
 
-  test("a feast it cannot read sends on to where Continue leads, and marks nothing", async () => {
-    mockParams = { ...mockParams, feast: "not json" };
+  test("a forged link marks nothing, quits nothing and closes: no finished session", async () => {
+    useSessionStore.setState({ status: "idle", savedResult: null, quitSession: quit } as never);
     await mount();
     expect(mockMark).not.toHaveBeenCalled();
-    expect(quit).toHaveBeenCalledTimes(1);
-    expect(mockReplace).toHaveBeenCalledWith("/quests/9?runStepId=4&adventureId=3", {
-      withAnchor: true,
-    });
+    expect(quit).not.toHaveBeenCalled();
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  test("a session under way is not quit by the link", async () => {
+    finish({ crestReveal: revealFacts }, "running");
+    await mount();
+    expect(mockMark).not.toHaveBeenCalled();
+    expect(quit).not.toHaveBeenCalled();
+  });
+
+  test("a feast this phone already showed opens nothing", async () => {
+    finish({ crestReveal: revealFacts, bigFeastsShown: ["reveal"] });
+    await mount();
+    expect(mockMark).not.toHaveBeenCalled();
+    expect(quit).not.toHaveBeenCalled();
+    expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
+  test("with nothing to go back to, it lands on Home", async () => {
+    mockCanGoBack = false;
+    useSessionStore.setState({ status: "idle", savedResult: null } as never);
+    await mount();
+    expect(mockReplace).toHaveBeenCalledWith("/");
   });
 });

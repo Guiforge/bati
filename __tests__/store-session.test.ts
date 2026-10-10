@@ -1112,6 +1112,9 @@ describe("useSessionStore", () => {
       expect(seen.crestReveal).toBeNull();
       // The key travels with the result, so "Tonight" can tell a tier already shown.
       expect(seen.bigFeastsShown).toEqual(["reveal"]);
+      // And stays in the store while the session is finished: the big feast's route reads it
+      // there.
+      expect(store.getState().savedResult).toBe(seen);
 
       store.setState({ savedSessionId: null, crestSeenBefore: null });
       reportError.mockClear();
@@ -1121,6 +1124,9 @@ describe("useSessionStore", () => {
       expect(result.crestReveal).toBeNull();
       expect(reportError).toHaveBeenCalledWith("session.bigFeastsShown", expect.any(Error));
       (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
+      // A quit takes it away: nothing finished is left for a link to open.
+      store.getState().quitSession();
+      expect(store.getState().savedResult).toBeNull();
     });
 
     test("a crest that cannot be read never blocks the save", async () => {

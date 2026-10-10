@@ -1,4 +1,5 @@
 import type { TFunction } from "i18next";
+import type { CrestShape } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
 import { ANIMAL_OF } from "@/db/crestRules";
 import { MAX_TIER, TIER_LEVEL_FLOORS, TIER_NAMES, type VillageTier } from "@/db/village";
@@ -54,3 +55,20 @@ export function revealBody(t: TFunction, f: Reveal): string {
 /** The level a tier is followed by, or null at the last one. */
 export const nextTierLevel = (tier: VillageTier): number | null =>
   tier === MAX_TIER ? null : TIER_LEVEL_FLOORS[(tier + 1) as VillageTier];
+
+/**
+ * The crest the reveal draws: the hero's own as the Village shows it (flame, rings, their choice),
+ * except the animal and the boar's quarters, which are what the sessions said when it was revealed.
+ * Unreadable, it is the bare animal rather than a missing shield.
+ */
+export function revealShield(f: Reveal, crest: CrestShape | null): CrestShape {
+  return {
+    manual: false,
+    second: null,
+    longestFlame: 0,
+    rings: 0,
+    ...crest,
+    animal: f.animal,
+    quarters: f.quarters,
+  };
+}

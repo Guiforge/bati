@@ -1,7 +1,5 @@
 import type { VillageGrowth, VillageTier } from "@/db/village";
-import type { useSessionStore } from "@/stores/session";
-
-type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>["saveSession"]>>;
+import type { SaveResult } from "@/stores/session";
 
 /** What tonight can say, as the victory screen knows it. Nothing here is written anywhere. */
 export type FeastFacts = {
@@ -117,3 +115,15 @@ function cardOnes({ result: r, boss }: FeastFacts): Built<Feast>[] {
   for (const achievement of r.newAchievements) cards.push({ kind: "achievement", achievement });
   return cards;
 }
+
+/** Tonight as a save result tells it: the one place that reads the epilogue and the shown list. */
+export const tonight = (result: SaveResult, boss: FeastFacts["boss"] = null) =>
+  rankFeasts({
+    result,
+    epilogue: result.campaign?.isFinished === true,
+    shown: result.bigFeastsShown,
+    boss,
+  });
+
+/** The one feast that opens full screen after "Continue", or none. */
+export const bigFeastOf = (result: SaveResult) => tonight(result).find((f) => f.size === "large");

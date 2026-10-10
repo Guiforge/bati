@@ -15,7 +15,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
-import { Crest } from "@/components/village/Crest";
+import { Crest, type CrestShape } from "@/components/village/Crest";
 import { CREST_ICON } from "@/components/village/crestText";
 import { getVillageTierAsset } from "@/constants/assetMap";
 import { fade, rawColors } from "@/constants/rawColors";
@@ -73,9 +73,23 @@ function Title({ children }: { children: string }) {
   );
 }
 
-function Line({ children, testID }: { children: string; testID: string }) {
+/** The fact is the line to read: `$text` at 16, the mockup's. A plain explanation stays pale. */
+function Line({
+  children,
+  testID,
+  fact = false,
+}: {
+  children: string;
+  testID: string;
+  fact?: boolean;
+}) {
   return (
-    <Text testID={testID} fontSize={15} color="$textSecondary" style={{ textAlign: "center" }}>
+    <Text
+      testID={testID}
+      fontSize={fact ? 16 : 15}
+      color={fact ? "$text" : "$textSecondary"}
+      style={{ textAlign: "center" }}
+    >
       {children}
     </Text>
   );
@@ -83,13 +97,15 @@ function Line({ children, testID }: { children: string; testID: string }) {
 
 type Ctx = {
   feast: BigFeast;
+  /** A reveal's crest as the Village will draw it, with the animal it names; null for the others. */
+  crest: CrestShape | null;
   villageName: string;
   /** Sessions that count, for a tier's "after 118 sessions"; null says no such figure. */
   sessions: number | null;
 };
 
 /** The text of the last image, which is the whole feast under reduced motion. */
-function FeastText({ feast, villageName, sessions }: Ctx) {
+function FeastText({ feast, villageName, sessions }: Omit<Ctx, "crest">) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   if (feast.kind === "reveal") {
@@ -102,7 +118,11 @@ function FeastText({ feast, villageName, sessions }: Ctx) {
             : t("session.feast_reveal_kicker_unnamed")}
         </Kicker>
         <Title>{revealTitle(t, feast, villageName)}</Title>
-        {body ? <Line testID="big-feast-body">{body}</Line> : null}
+        {body ? (
+          <Line testID="big-feast-body" fact>
+            {body}
+          </Line>
+        ) : null}
       </>
     );
   }
@@ -141,27 +161,10 @@ function FeastText({ feast, villageName, sessions }: Ctx) {
   );
 }
 
-function Shield({
-  feast,
-  style,
-}: {
-  feast: Extract<BigFeast, { kind: "reveal" }>;
-  style?: object;
-}) {
+function Shield({ crest, style }: { crest: CrestShape | null; style?: object }) {
   return (
     <Animated.View style={style}>
-      <Crest
-        size={96}
-        onPainting
-        crest={{
-          animal: feast.animal,
-          manual: false,
-          second: null,
-          quarters: feast.quarters,
-          longestFlame: 0,
-          rings: 0,
-        }}
-      />
+      <Crest size={96} onPainting crest={crest} />
     </Animated.View>
   );
 }
@@ -232,7 +235,7 @@ const LAYER = { position: "absolute", alignItems: "center", gap: 16 } as const;
 type Props = Ctx & { tier: VillageTier; onSeeVillage: () => void };
 
 /** The last image of the reveal, and the whole of it under reduced motion: nothing moves. */
-function RevealFinal({ feast, tier, villageName, sessions, onSeeVillage }: Props) {
+function RevealFinal({ feast, crest, tier, villageName, sessions, onSeeVillage }: Props) {
   if (feast.kind !== "reveal") return null;
   return (
     <Frame
@@ -242,7 +245,7 @@ function RevealFinal({ feast, tier, villageName, sessions, onSeeVillage }: Props
       onSeeVillage={onSeeVillage}
     >
       <YStack style={SECTION}>
-        <Shield feast={feast} />
+        <Shield crest={crest} />
         <FeastText feast={feast} villageName={villageName} sessions={sessions} />
       </YStack>
     </Frame>
@@ -250,7 +253,7 @@ function RevealFinal({ feast, tier, villageName, sessions, onSeeVillage }: Props
 }
 
 /** The three beats of the reveal, once: two eyes, the silhouette, the shield and its text. */
-function RevealStoryboard({ feast, tier, villageName, sessions, onSeeVillage }: Props) {
+function RevealStoryboard({ feast, crest, tier, villageName, sessions, onSeeVillage }: Props) {
   const { t } = useTranslation();
   const animal = feast.kind === "reveal" ? feast.animal : "bear";
   const icon = useGameIcon(CREST_ICON[animal]);
@@ -306,7 +309,7 @@ function RevealStoryboard({ feast, tier, villageName, sessions, onSeeVillage }: 
           <Title>{t(`session.feast_reveal_t2_${feast.animal}`)}</Title>
         </Animated.View>
         <YStack style={SECTION}>
-          <Shield feast={feast} style={shield} />
+          <Shield crest={crest} style={shield} />
           <Animated.View style={[SECTION, words]}>
             <FeastText feast={feast} villageName={villageName} sessions={sessions} />
           </Animated.View>

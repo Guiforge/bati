@@ -355,19 +355,25 @@ function CardRow({ card }: { card: CardData }) {
 export function TonightList({
   feasts,
   villageName,
+  epilogue = false,
   onViewVillage,
 }: {
   feasts: Feast[];
   villageName: string;
+  /** The campaign ended and no outro text opened over this screen: Tonight says it once. */
+  epilogue?: boolean;
   /** Given only on a night the village grew: the way into it, same road as the Village tab. */
   onViewVillage?: (() => void) | undefined;
 }) {
   const { t, i18n } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const unit = useSettingsStore((s) => s.distanceUnit);
-  if (feasts.length === 0) return null;
+  if (feasts.length === 0 && !epilogue) return null;
 
-  const lines = feasts.flatMap((f) => lineOf(t, f, villageName, language, unit) ?? []);
+  const lines = [
+    ...(epilogue ? [{ id: "epilogue", text: t("session.tonight_epilogue") }] : []),
+    ...feasts.flatMap((f) => lineOf(t, f, villageName, language, unit) ?? []),
+  ];
   const cards = feasts.flatMap((f) =>
     f.size === "medium" ? (cardOf(t, i18n, f, villageName, language) ?? []) : [],
   );

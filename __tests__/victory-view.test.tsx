@@ -2,10 +2,10 @@ import { act, fireEvent, render } from "@testing-library/react-native";
 import { processColor, StyleSheet, type ViewStyle } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
-
 import { VictoryView } from "@/components/session/VictoryView";
 import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
+import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import type { Quest } from "@/db/quests";
 import { useChorusStore } from "@/stores/chorus";
 import { useSessionStore } from "@/stores/session";
@@ -832,7 +832,7 @@ describe("VictoryView tonight", () => {
       nextRunStepId: 4,
     } as never;
 
-    it("opens by itself after Continue, keeps the session, and carries the road Continue would take", async () => {
+    it("opens by itself after Continue and keeps the session", async () => {
       const { view, release } = await mountWithPendingSave(campaign, 12 * 60, {
         crestReveal: BEAR,
       });
@@ -841,20 +841,9 @@ describe("VictoryView tonight", () => {
 
       expect(mockQuitSession).not.toHaveBeenCalled();
       expect(mockReplace).not.toHaveBeenCalled();
+      // The link carries nothing: the route reads the feast from the finished session.
       expect(mockPush).toHaveBeenCalledTimes(1);
-      const arg = mockPush.mock.calls[0]?.[0] as {
-        pathname: string;
-        params: Record<string, string>;
-      };
-      expect(arg.pathname).toBe("/big-feast");
-      expect(JSON.parse(arg.params.feast ?? "null")).toMatchObject({
-        kind: "reveal",
-        animal: "bear",
-      });
-      expect(arg.params.next).toBe("/quests/9?runStepId=4&adventureId=3");
-      expect(arg.params.anchor).toBe("1");
-      expect(arg.params.village).toBe("/(tabs)/village?grown=");
-      expect(arg.params.tier).toBe("1");
+      expect(mockPush).toHaveBeenCalledWith("/big-feast");
     });
 
     it("opens once a night: the second Continue goes on, and Tonight stops announcing it", async () => {
@@ -900,6 +889,41 @@ describe("VictoryView tonight", () => {
       await fireEvent.press(view.getByTestId("session-victory-continue"));
       expect(mockPush).not.toHaveBeenCalled();
       expect(mockReplace).toHaveBeenCalledWith("/adventures/3", { withAnchor: true });
+    });
+
+    describe("the epilogue line in Tonight", () => {
+      const finished = {
+        isFinished: true,
+        adventureId: 3,
+        nextQuestId: null,
+        nextRunStepId: null,
+      } as never;
+      const line = "session.tonight_epilogue";
+
+      async function night(campaign: unknown, outro: string | null) {
+        (getAdventureStepOutroNarrative as jest.Mock).mockResolvedValue(outro);
+        const mounted = await mountWithPendingSave(campaign as never, 12 * 60, {
+          newRecords: [record],
+        });
+        await act(async () => useSessionStore.setState({ adventureRunStepId: 5 }));
+        await mounted.release();
+        return mounted.view;
+      }
+
+      it("comes back in Tonight when no outro text opens", async () => {
+        const view = await night(finished, null);
+        expect(view.getByText(line)).toBeTruthy();
+      });
+
+      it("stays absent when the outro opens, so the fact is said once", async () => {
+        const view = await night(finished, "The end.");
+        expect(view.queryByText(line)).toBeNull();
+      });
+
+      it("is absent on a night that does not end a campaign", async () => {
+        const view = await night(campaign, null);
+        expect(view.queryByText(line)).toBeNull();
+      });
     });
   });
 });

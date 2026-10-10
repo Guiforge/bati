@@ -218,6 +218,54 @@ export function holdNeedingAnswer(
   return isSuspiciousHold(held, last.target.value) ? last : null;
 }
 
+/** What `saveSession` returns, and what the big feast reads back while the session is finished. */
+export type SaveResult = {
+  sessionId: number;
+  xpEarned: number;
+  /**
+   * What the day's quest paid on top, or zero. One field rather than a flag beside a number:
+   * two of those can disagree, and only the number has a reader.
+   */
+  dailyBonusXp: number;
+  newRecords: NewRecordResult[];
+  /**
+   * What this session was best at, when it broke nothing. Null whenever `newRecords` is not
+   * empty: a night that set a record has already been paid, and a second-best set printed
+   * beside a record is the clutter, not the reward.
+   */
+  standing: SessionStanding | null;
+  newRungs: VariationStep[];
+  newAchievements: NewAchievementResult[];
+  fulfilledOath: OathProgress | null;
+  oathBonusXp: number;
+  /** Of `xpEarned`, how much came from beating targets rather than meeting them. */
+  overshootXp: number;
+  /**
+   * The ground this session covered and what it was worth, or null when it never left the
+   * walls. `effortSeconds` is already decayed by whatever the day had paid for, so the victory
+   * screen can show the conversion that actually happened rather than the tariff.
+   */
+  outing: { seconds: number; effortSeconds: number; locomotion: Locomotion } | null;
+  campaign: {
+    adventureId: number;
+    runId: number;
+    isFinished: boolean;
+    nextRunStepId: number | null;
+    nextQuestId: number | null;
+  } | null;
+  levelUp: { oldLevel: number; newLevel: number } | null;
+  /** Total XP around the save, so the victory screen can animate the hero's level bar. */
+  heroXp: { before: number; after: number };
+  tierUp: VillageTierUp | null;
+  villageGrowth: VillageGrowth[];
+  /** What this session changed on the crest, read before and after the write; empty when unreadable. */
+  crestEvents: CrestEvents;
+  /** The crest's reveal when it exists now and this phone has not shown it; null when either read failed. */
+  crestReveal: CrestReveal | null;
+  /** The big feasts this phone has shown; undefined when the key could not be read. */
+  bigFeastsShown: string[] | undefined;
+};
+
 interface SessionState {
   // Static Data
   quest: Quest | null;
@@ -353,6 +401,11 @@ interface SessionState {
    */
   crestSeenBefore: { crest: Crest | null | undefined } | null;
   /**
+   * What the last `saveSession` returned, for the screens that open over the victory screen (the
+   * big feast reads its facts here, never from a link). Cleared with the session.
+   */
+  savedResult: SaveResult | null;
+  /**
    * Whether this session already paid the Triumph bonus.
    *
    * Not derivable from the boss: by the time the bonus is paid the pool is already empty in the
@@ -414,52 +467,7 @@ interface SessionState {
   addRestTime: (seconds: number) => void;
 
   // DB
-  saveSession: (feedback?: FeedbackCode | null) => Promise<{
-    sessionId: number;
-    xpEarned: number;
-    /**
-     * What the day's quest paid on top, or zero. One field rather than a flag beside a number:
-     * two of those can disagree, and only the number has a reader.
-     */
-    dailyBonusXp: number;
-    newRecords: NewRecordResult[];
-    /**
-     * What this session was best at, when it broke nothing. Null whenever `newRecords` is not
-     * empty: a night that set a record has already been paid, and a second-best set printed
-     * beside a record is the clutter, not the reward.
-     */
-    standing: SessionStanding | null;
-    newRungs: VariationStep[];
-    newAchievements: NewAchievementResult[];
-    fulfilledOath: OathProgress | null;
-    oathBonusXp: number;
-    /** Of `xpEarned`, how much came from beating targets rather than meeting them. */
-    overshootXp: number;
-    /**
-     * The ground this session covered and what it was worth, or null when it never left the
-     * walls. `effortSeconds` is already decayed by whatever the day had paid for, so the victory
-     * screen can show the conversion that actually happened rather than the tariff.
-     */
-    outing: { seconds: number; effortSeconds: number; locomotion: Locomotion } | null;
-    campaign: {
-      adventureId: number;
-      runId: number;
-      isFinished: boolean;
-      nextRunStepId: number | null;
-      nextQuestId: number | null;
-    } | null;
-    levelUp: { oldLevel: number; newLevel: number } | null;
-    /** Total XP around the save, so the victory screen can animate the hero's level bar. */
-    heroXp: { before: number; after: number };
-    tierUp: VillageTierUp | null;
-    villageGrowth: VillageGrowth[];
-    /** What this session changed on the crest, read before and after the write; empty when unreadable. */
-    crestEvents: CrestEvents;
-    /** The crest's reveal when it exists now and this phone has not shown it; null when either read failed. */
-    crestReveal: CrestReveal | null;
-    /** The big feasts this phone has shown; undefined when the key could not be read. */
-    bigFeastsShown: string[] | undefined;
-  }>;
+  saveSession: (feedback?: FeedbackCode | null) => Promise<SaveResult>;
 }
 
 /** The crest as the journal reads it now, or undefined when it cannot be read (reported, never thrown). */
@@ -1264,6 +1272,7 @@ export const useSessionStore = create<SessionState>()(
     goal: null,
     savedSessionId: null,
     crestSeenBefore: null,
+    savedResult: null,
     triumphBonusPaid: false,
 
     startSession: async (quest, userLevel, options) => {
@@ -1331,6 +1340,7 @@ export const useSessionStore = create<SessionState>()(
         goal: options?.goal ?? null,
         savedSessionId: null,
         crestSeenBefore: null,
+        savedResult: null,
         triumphBonusPaid: false,
       });
 
@@ -1528,6 +1538,7 @@ export const useSessionStore = create<SessionState>()(
         goal: null,
         savedSessionId: null,
         crestSeenBefore: null,
+        savedResult: null,
         triumphBonusPaid: false,
       });
       // Whether the hero quit or the session ended, the service must let go: it holds a wake
@@ -2113,7 +2124,7 @@ export const useSessionStore = create<SessionState>()(
       const villageGrowth = diffVillageGrowth(beforeBuildings, afterBuildings);
       const crestAfter = await readCrest();
       const shown = await readBigFeastsShown();
-      return {
+      const saved: SaveResult = {
         sessionId,
         xpEarned,
         dailyBonusXp,
@@ -2134,6 +2145,8 @@ export const useSessionStore = create<SessionState>()(
         crestReveal: crestReveal(crestAfter, shown),
         bigFeastsShown: shown,
       };
+      set({ savedResult: saved });
+      return saved;
     },
   })),
 );

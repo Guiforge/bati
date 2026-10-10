@@ -31,7 +31,6 @@ import { createQuestFromOuting } from "@/db/quests";
 import type { FeedbackCode } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
-import { getVillageTier } from "@/db/village";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime } from "@/hooks/useSessionTimer";
@@ -40,16 +39,14 @@ import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useChorusStore } from "@/stores/chorus";
 import { isExpedition } from "@/stores/expedition";
-import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
+import { recordedDurationSeconds, type SaveResult, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
-import { continueTarget, villageHref } from "./destinations";
+import { goOn, seeVillage } from "./destinations";
 import { ExpeditionSummary } from "./ExpeditionSummary";
-import { rankFeasts } from "./feasts";
+import { tonight } from "./feasts";
 import { ProgressionChart } from "./ProgressionChart";
 import { TonightList } from "./TonightList";
-
-type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>["saveSession"]>>;
 
 /**
  * Under this, the session is asked about rather than saved.
@@ -197,6 +194,8 @@ export function VictoryView() {
   const [feedback, setFeedback] = useState<FeedbackCode | null>(null);
   const [outroNarrative, setOutroNarrative] = useState<string | null>(null);
   const [showOutroNarrative, setShowOutroNarrative] = useState(false);
+  /** The outro lookup came back (with text or without): until then, "no outro" is not known. */
+  const [outroSettled, setOutroSettled] = useState(false);
   const savedRef = useRef(false);
   const feedbackTouched = useRef(false);
   /** The bridge, once crossed: the button goes, the sentence stays. */
@@ -218,14 +217,12 @@ export function VictoryView() {
   // What tonight says, sorted once the save has landed. Nothing before it: a loading screen
   // asserts nothing, and a retried save reaches here with the same facts.
   const feasts = result
-    ? rankFeasts({
+    ? tonight(
         result,
-        epilogue: result.campaign?.isFinished === true,
-        shown: result.bigFeastsShown,
-        boss: felledBoss
+        felledBoss
           ? { name: bossDisplayName(felledBoss, language), finalBlow: felledByFinalBlow }
           : null,
-      })
+      )
     : [];
   // The reveal is marked as seen only when it was shown here, as a card (the night of an
   // epilogue). As the large feast it is marked when its full screen opens, which comes later.
@@ -314,19 +311,22 @@ export function VictoryView() {
   }, [result, feedback]);
 
   useEffect(() => {
-    if (adventureRunStepId) {
-      getAdventureStepOutroNarrative(adventureRunStepId, language)
-        .then((text) => {
-          if (text) {
-            setOutroNarrative(text);
-            setShowOutroNarrative(true);
-          }
-        })
-        .catch((error) => {
-          // No outro is a fine victory; an unhandled rejection mid-save is not.
-          reportError("session.outroNarrative", error);
-        });
+    if (!adventureRunStepId) {
+      setOutroSettled(true);
+      return;
     }
+    getAdventureStepOutroNarrative(adventureRunStepId, language)
+      .then((text) => {
+        if (text) {
+          setOutroNarrative(text);
+          setShowOutroNarrative(true);
+        }
+      })
+      .catch((error) => {
+        // No outro is a fine victory; an unhandled rejection mid-save is not.
+        reportError("session.outroNarrative", error);
+      })
+      .finally(() => setOutroSettled(true));
   }, [adventureRunStepId, language]);
 
   if (!quest || !startTime) return null;
@@ -363,8 +363,7 @@ export function VictoryView() {
 
   const handleViewVillage = () => {
     if (!result) return;
-    // Levels travel with the codes: the village plays the rise from one rung to the next.
-    router.push(villageHref(result.villageGrowth) as never);
+    seeVillage(router, result);
   };
 
   const handleForget = () => {
@@ -375,34 +374,16 @@ export function VictoryView() {
     });
   };
 
-  const goOn = () => {
-    if (!result) return;
-    quitSession();
-    const { href, anchor } = continueTarget(result.campaign);
-    if (anchor) router.replace(href as never, { withAnchor: true });
-    else router.replace(href as never);
-  };
-
   const handleContinue = () => {
     if (!result) return;
-    // One big feast a night. It opens over this screen and leads back to `goOn`'s road itself
-    // (its button, or the back gesture), so nothing is quit before it closes.
+    // One big feast a night. It opens over this screen and ends on `goOn`'s road itself (its
+    // button, or the back gesture), so nothing is quit before it closes.
     if (bigFeast && !feastOpened) {
       setFeastOpened(true);
-      const { href, anchor } = continueTarget(result.campaign);
-      router.push({
-        pathname: "/big-feast",
-        params: {
-          feast: JSON.stringify(bigFeast),
-          next: href,
-          anchor: anchor ? "1" : "0",
-          village: villageHref(result.villageGrowth),
-          tier: String(getVillageTier(calculateLevelFromXp(result.heroXp.after))),
-        },
-      } as never);
+      router.push("/big-feast" as never);
       return;
     }
-    goOn();
+    goOn(router, result);
   };
 
   return (
@@ -662,6 +643,7 @@ export function VictoryView() {
           <TonightList
             feasts={feastOpened ? feasts.filter((f) => f !== bigFeast) : feasts}
             villageName={villageName}
+            epilogue={result.campaign?.isFinished === true && outroSettled && !outroNarrative}
             onViewVillage={
               result.tierUp || result.villageGrowth.length > 0 ? handleViewVillage : undefined
             }

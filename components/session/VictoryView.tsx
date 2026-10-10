@@ -46,6 +46,7 @@ import { useUserStore } from "@/stores/user";
 import { goOn, seeVillage } from "./destinations";
 import { ExpeditionSummary } from "./ExpeditionSummary";
 import { tonight } from "./feasts";
+import { NextMilestone } from "./NextMilestone";
 import { ProgressionChart } from "./ProgressionChart";
 import { TonightList } from "./TonightList";
 
@@ -723,6 +724,8 @@ export function VictoryView() {
             ))}
           </XStack>
         </Card>
+
+        <NextMilestone saved={!!result} language={language} />
 
         {/* A failed save: the only thing that replaces "Tonight". */}
         {!!saveError && (

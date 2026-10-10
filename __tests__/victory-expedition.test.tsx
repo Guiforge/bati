@@ -55,6 +55,8 @@ jest.mock("@/db/village", () => ({
   ...jest.requireActual("@/db/village"),
   getVillageBuildings: () => mockGetVillageBuildings(),
 }));
+// The next-milestone line reads the village too; this suite is about what the walk reads.
+jest.mock("@/components/session/NextMilestone", () => ({ NextMilestone: () => null }));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
 jest.mock("@/hooks/useHaptics", () => ({
   useHaptics: () => ({ success: jest.fn(), selection: jest.fn() }),

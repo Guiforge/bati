@@ -6,7 +6,9 @@ import { VictoryView } from "@/components/session/VictoryView";
 import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
+import type { RecentFeeds } from "@/db/milestone";
 import type { Quest } from "@/db/quests";
+import type { VillageBuilding } from "@/db/village";
 import { useChorusStore } from "@/stores/chorus";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -47,6 +49,13 @@ jest.mock("@/components/village/Crest", () => ({
   },
 }));
 jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
+const mockBuildings = jest.fn<Promise<VillageBuilding[]>, []>();
+const mockFeeds = jest.fn<Promise<RecentFeeds>, []>();
+jest.mock("@/db/village", () => ({
+  ...jest.requireActual("@/db/village"),
+  getVillageBuildings: () => mockBuildings(),
+}));
+jest.mock("@/db/milestoneFeed", () => ({ getRecentFeeds: () => mockFeeds() }));
 jest.mock("@/db/preferences", () => ({
   preferences: {
     getSavedSession: jest.fn().mockResolvedValue(null),
@@ -171,6 +180,46 @@ async function mountWithPendingSave(
     fail: async () => await act(async () => fail()),
   };
 }
+
+const FORGE = {
+  code: "forge",
+  tier: 2,
+  level: 1,
+  driver: "muscle",
+  relatedMuscle: "chest",
+  metricValue: 3880,
+  nextTarget: 4000,
+} as unknown as VillageBuilding;
+
+describe("VictoryView, when its next building rises", () => {
+  beforeEach(() => {
+    mockBuildings.mockReset();
+    mockFeeds.mockReset();
+    mockBuildings.mockResolvedValue([FORGE]);
+    mockFeeds.mockResolvedValue({ muscle: { chest: [60, 40] }, style: {}, outing: [] });
+  });
+
+  it("says nothing before the save, then PROCHAIN under the feeling question", async () => {
+    const { view, release } = await mountWithPendingSave();
+    expect(view.queryByTestId("victory-next")).toBeNull();
+    expect(mockBuildings).not.toHaveBeenCalled();
+
+    await release();
+
+    await waitFor(() => expect(view.getByTestId("victory-next")).toBeTruthy());
+    expect(view.getByText("SESSION.NEXT_TITLE")).toBeTruthy();
+    expect(view.getByText("village.milestone_named_sessions")).toBeTruthy();
+  });
+
+  it("says nothing without an estimate", async () => {
+    mockFeeds.mockResolvedValue({ muscle: {}, style: {}, outing: [] });
+    const { view, release } = await mountWithPendingSave();
+    await release();
+
+    await waitFor(() => expect(mockFeeds).toHaveBeenCalled());
+    expect(view.queryByTestId("victory-next")).toBeNull();
+  });
+});
 
 describe("VictoryView feedback", () => {
   beforeEach(() => {

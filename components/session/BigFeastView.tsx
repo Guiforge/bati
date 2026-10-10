@@ -23,7 +23,7 @@ import type { VillageTier } from "@/db/village";
 import { useGameIcon } from "@/hooks/useGameIcon";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
-import { nextTierLevel, revealBody, revealTitle, tierSentence } from "./bigFeastText";
+import { nextTierLevel, revealBody, revealColors, revealTitle, tierSentence } from "./bigFeastText";
 import type { Feast } from "./feasts";
 
 /** The feasts that fill the screen. Age and anniversary have no producer yet (V-03). */
@@ -110,6 +110,7 @@ function FeastText({ feast, villageName, sessions }: Omit<Ctx, "crest">) {
   const language = useSettingsStore((s) => s.language);
   if (feast.kind === "reveal") {
     const body = revealBody(t, feast);
+    const colors = revealColors(t, feast);
     return (
       <>
         <Kicker>
@@ -123,6 +124,7 @@ function FeastText({ feast, villageName, sessions }: Omit<Ctx, "crest">) {
             {body}
           </Line>
         ) : null}
+        {body && colors ? <Line testID="big-feast-colors">{colors}</Line> : null}
       </>
     );
   }

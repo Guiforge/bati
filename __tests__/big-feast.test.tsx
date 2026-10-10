@@ -5,7 +5,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import BigFeastScreen from "@/app/big-feast";
 import { BigFeastView } from "@/components/session/BigFeastView";
-import { revealBody, revealShield, revealTitle } from "@/components/session/bigFeastText";
+import {
+  revealBody,
+  revealColors,
+  revealShield,
+  revealTitle,
+} from "@/components/session/bigFeastText";
 import type { Feast } from "@/components/session/feasts";
 import { NO_CREST_EVENTS } from "@/db/crestEvents";
 import { getXpForLevel } from "@/db/userLevel";
@@ -141,7 +146,7 @@ describe("the reveal's text", () => {
     await lang("fr");
     expect(revealBody(t(), bear)).toBe("5 de tes 8 séances étaient de la force.");
     expect(revealBody(t(), { ...bear, late: true })).toBe(
-      "Depuis ta 8e séance : 5 de tes 8 premières étaient de la force.",
+      "Depuis ta 8e séance. 5 de tes 8 premières étaient de la force.",
     );
   });
 
@@ -158,11 +163,15 @@ describe("the reveal's text", () => {
       ],
     };
     expect(revealBody(t(), boar)).toBe(
-      "Tes 8 séances se partagent : force 3, endurance 3, yoga 2. Les couleurs de l'écu : force et endurance, tes deux pratiques en tête.",
+      "Tes 8 séances se partagent : force 3, endurance 3, yoga 2.",
     );
     expect(revealBody(t(), { ...boar, late: true })).toBe(
-      "Depuis ta 8e séance. Tes 8 premières se partagent : force 3, endurance 3, yoga 2. Les couleurs de l'écu : force et endurance, tes deux pratiques en tête.",
+      "Depuis ta 8e séance. Tes 8 premières se partagent : force 3, endurance 3, yoga 2.",
     );
+    expect(revealColors(t(), boar)).toBe(
+      "Les couleurs de l'écu : force et endurance, tes deux pratiques en tête.",
+    );
+    expect(revealColors(t(), bear)).toBe("");
     // The order of the counts is the order the journal gave: most done first, as `firstEight` is.
     const swapped = { ...boar, firstEight: [...boar.firstEight].reverse() };
     expect(revealBody(t(), swapped)).toContain("yoga 2, endurance 3, force 3");
@@ -205,6 +214,27 @@ describe("BigFeastView", () => {
     mockReduced = false;
     jest.clearAllMocks();
     await lang("fr");
+  });
+
+  test("the boar's count is the fact and its colors a separate, paler line", async () => {
+    const boar = {
+      ...bear,
+      animal: "boar",
+      quarters: ["strength", "run"],
+      firstEight: [
+        ["strength", 3],
+        ["run", 3],
+        ["yoga", 2],
+      ],
+    } as Feast;
+    const v = await view(boar);
+    expect(v.getByTestId("big-feast-body")).toHaveTextContent(
+      "Tes 8 séances se partagent : force 3, endurance 3, yoga 2.",
+    );
+    expect(v.getByTestId("big-feast-colors")).toHaveTextContent(/^Les couleurs de l'écu/);
+    const color = (id: string) => StyleSheet.flatten(v.getByTestId(id).props.style)?.color;
+    expect(color("big-feast-colors")).not.toBe(color("big-feast-body"));
+    expect((await view(bear)).queryByTestId("big-feast-colors")).toBeNull();
   });
 
   test("the reveal ends on the shield, its kicker, title and body, with the button from the start", async () => {

@@ -40,8 +40,6 @@ export function revealBody(t: TFunction, f: Reveal): string {
     if (!first || !second) return "";
     return t(`session.feast_reveal_boar${suffix}`, {
       list: f.firstEight.map(([p, n]) => `${t(PRACTICE_KEY[p])} ${n}`).join(", "),
-      first: t(PRACTICE_KEY[first]),
-      second: t(PRACTICE_KEY[second]),
     });
   }
   const own = f.firstEight.find(([p]) => ANIMAL_OF[p] === f.animal);
@@ -49,6 +47,16 @@ export function revealBody(t: TFunction, f: Reveal): string {
   return t(`session.feast_reveal_body${suffix}`, {
     n: own[1],
     part: t(`session.feast_part_${own[0]}`),
+  });
+}
+
+/** The boar's colors, apart from the count: the fact is one line, what the shield shows another. */
+export function revealColors(t: TFunction, f: Reveal): string {
+  const [first, second] = f.animal === "boar" ? (f.quarters ?? []) : [];
+  if (!first || !second) return "";
+  return t("session.feast_reveal_boar_colors", {
+    first: t(PRACTICE_KEY[first]),
+    second: t(PRACTICE_KEY[second]),
   });
 }
 

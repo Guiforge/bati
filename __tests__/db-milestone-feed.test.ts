@@ -60,6 +60,21 @@ describe("db/milestoneFeed", () => {
     expect((await feeds()).outing).toEqual([2.5, 1]);
   });
 
+  test("a timed hold and a two-sided set count as the reps they are worth, like the tally", async () => {
+    session(1000, []);
+    const ins = (type: string, value: number, sides: number, order: number) =>
+      t.sqlite
+        .prepare(
+          `INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, sides, performedAt, sortOrder)
+           VALUES (?, ?, ?, ?, ?, 1000, ?)`,
+        )
+        .run(sid, idOf("Push-ups"), type, value, sides, order);
+    ins("time", 30, 1, 0); // 30 s at 3 s a rep: 10
+    ins("reps", 5, 2, 1); // five a side: 10
+    expect((await feeds()).muscle.chest).toEqual([20]);
+    expect((await feeds()).style.strength).toEqual([20]);
+  });
+
   test("a style reads the exercises of that style", async () => {
     session(1000, [["Push-ups", 10]]);
     const style = (

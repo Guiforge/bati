@@ -34,16 +34,22 @@ row can be read without a tap.
 3. **The panel**, riding up over the painting's last 14 dp:
    - **The village tier** (`VillageTier`, `getTierProgress`), first in every state. The village
      follows the hero's level alone, so it answers "when does the painting change" in those terms:
-     the hero level of the next tier and how many levels away, a gold bar from the current
-     tier's floor to that level with XP at both ends, and the XP still missing, with "about N
-     sessions at this week's pace" when the last seven days had any (`getWeekXpPerSession`). On
-     tier 12 the bar goes and the sentence is final. A finished village (`isVillageComplete`: tier
-     12 and every building that can top out has) says so inside the same block, then how many
-     deeds are still open.
-   - **Next to rise** (`pickNextToRise`): the rep building fewest reps from its next rung, level 0
-     waiting while any is still rising (one rep builds those). Past the rep buildings, the
-     deed with the most of its bar filled. It carries its bar with its unit at both ends ("60
-     reps", "100 reps for level 2"), and a link named after what raises it: quests filtered on that
+     the hero level of the next tier and how many levels away, and a gold bar from the current
+     tier's floor to that level (`xpScale`). The bar says what is done ("320 XP done") before its
+     middle and what is left ("only 410 XP to go") from it, with level and XP at both ends; with
+     nothing done it has no caption and keeps the two ends. On tier 12 the bar goes and the
+     sentence is final. A finished village (`isVillageComplete`: tier 12 and every building that
+     can top out has) says so inside the same block, then that the deeds are just below, with no
+     count.
+   - **Next to rise** (`pickNextToRise`): the building with the fewest sessions or outings to go
+     by the hero's own recent pace (`pickSessionMilestone` with no `fed` filter, the same function
+     as the victory's PROCHAIN line). A runner sees the Grand Chemin, a strength hero the nearest
+     muscle. Only when no building has an estimate does the older rule apply: the rep building
+     fewest reps from its next rung, level 0 waiting while any is still rising, then the deed with
+     the most of its bar filled. The name is set in the heading font. Rep buildings carry a bar
+     of what is done, between the figures of the rung they stand on ("3,000 reps" to "4,000
+     reps", `repsRungStart`), and a sentence under it, "Rank 4 in about 3 outings." (`milestoneLine`).
+     Never a number of reps still to do. A link named after what raises it: quests filtered on that
      muscle, the outings for the High Road, the adventures for the other deeds. When that building
      is unbuilt the title reads **Next to build** and there is no bar. On **day one** (`isDayOne`:
      nothing earned beyond the three starters; a walk counts) it states the rule instead, and links

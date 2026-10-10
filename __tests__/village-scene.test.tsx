@@ -137,6 +137,27 @@ describe("VillageScene", () => {
     expect(next.queryByText(/to level|reps to go/)).toBeNull();
   });
 
+  it("names the road for a runner: the soonest rank is in outings, whatever the reps left say", async () => {
+    const road = building("high_road", 3, { driver: "leagues", metricValue: 18, nextTarget: 30 });
+    mockScene([campfire, forge, road]);
+    mockFeeds({ muscle: { chest: [10] }, outing: [3, 3, 6] });
+
+    const { findByTestId } = await renderScene();
+    const next = within(await findByTestId("village-next"));
+
+    expect(next.getByText("Rank 4 in about 3 outings.")).toBeTruthy();
+    expect(next.queryByText("Forge")).toBeNull();
+  });
+
+  it("sets the building's name in the chronicle's font, like its sheet", async () => {
+    mockScene([campfire, forge, farm, quarry, barn]);
+
+    const { findByTestId } = await renderScene();
+    const name = within(await findByTestId("village-next")).getByText("Forge");
+
+    expect(StyleSheet.flatten(name.props.style).fontFamily).toMatch(/Alegreya/i);
+  });
+
   it("says nothing of when for a building nothing has fed", async () => {
     mockScene([campfire, forge, farm, quarry, barn]);
 
@@ -254,7 +275,7 @@ describe("VillageScene", () => {
     expect(
       tier.getByText("Last tier reached at level 40. The village will not change its look again."),
     ).toBeTruthy();
-    expect(tier.getByText("1 deed still open, just below.")).toBeTruthy();
+    expect(tier.getByText("The deeds are just below.")).toBeTruthy();
     expect(getByTestId("village-family-rest")).toBeTruthy();
   });
 
@@ -451,7 +472,7 @@ describe("VillageScene", () => {
     const { findByTestId, getByTestId, getAllByText, queryByTestId } = await renderScene();
 
     const reward = await findByTestId("village-reward");
-    expect(within(reward).getByText("Farm, level 4")).toBeTruthy();
+    expect(within(reward).getByText("Farm, rank 4")).toBeTruthy();
     expect(within(reward).getByText(/Also rose: Barn\./)).toBeTruthy();
     expect(within(getByTestId("village-changes")).getByText("3 → 4")).toBeTruthy();
     expect(getAllByText("Risen")).toHaveLength(2);
@@ -466,7 +487,7 @@ describe("VillageScene", () => {
 
     const { findByTestId } = await renderScene();
     const reward = within(await findByTestId("village-reward"));
-    expect(reward.getByText("Farm, level 4").props.numberOfLines).toBe(2);
+    expect(reward.getByText("Farm, rank 4").props.numberOfLines).toBe(2);
     expect(reward.getByText(/Also rose: /).props.numberOfLines).toBe(4);
   });
 

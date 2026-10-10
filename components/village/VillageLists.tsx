@@ -134,7 +134,7 @@ export function NextToRise({ building, dayOne, language, feeds, onOpen }: NextPr
           <BuildingThumb building={building} size={40} />
           <YStack flex={1} minW={0} gap={4}>
             <XStack justify="space-between" items="baseline" gap={10}>
-              <Text fontWeight="700" fontSize={16} color="$text" shrink={1}>
+              <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$text" shrink={1}>
                 {nameOf(building, language)}
               </Text>
               {building.level > 0 ? (

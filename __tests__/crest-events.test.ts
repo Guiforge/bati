@@ -153,7 +153,8 @@ describe("crestEvents", () => {
     test("the stag on show: the bear steps to the border, and its practice is counted", () => {
       const j = joinWith("stag");
       expect(j).toMatchObject({ animal: "bear", first: "stag" });
-      expect(j?.n).toBeGreaterThan(j?.total ? j.total / 3 : 0);
+      // The bear's own practice, all 28 strength sessions of the history, not the stag's runs.
+      expect(j).toMatchObject({ n: 28 });
     });
     test("a boar on show has no border, so no card", () => {
       expect(joinWith("boar")).toBeNull();

@@ -47,6 +47,8 @@ export type CrestAnimals = {
   /** What "Why the Bear?" reads: counts per practice, over the first 8 and over all. */
   evidence: {
     firstEight: Tally;
+    /** The practices of `firstEight`, in the order the quarters use: count, then recency. */
+    firstEightOrder: Practice[];
     totals: Tally;
     first: Animal;
     secondFromSessions: PracticeAnimal | null;
@@ -124,12 +126,17 @@ function secondOf(list: Practice[], first: Practice, firstEight: Tally) {
   return undefined;
 }
 
+/** The practices done, the most often first, a tie going to the most recent: one order for every line that lists them. */
+function ranked(counts: Tally, last: Tally): Practice[] {
+  return PRACTICES.filter((p) => counts[p] > 0).sort(
+    (a, b) =>
+      counts[b] - counts[a] || last[b] - last[a] || PRACTICES.indexOf(a) - PRACTICES.indexOf(b),
+  );
+}
+
 /** The boar's quarters: practices actually done, the leaders first; with a single one, both are it. */
 function quartersOf(totals: Tally, last: Tally): [Practice, Practice] | null {
-  const [q1, q2] = PRACTICES.filter((p) => totals[p] > 0).sort(
-    (a, b) =>
-      totals[b] - totals[a] || last[b] - last[a] || PRACTICES.indexOf(a) - PRACTICES.indexOf(b),
-  );
+  const [q1, q2] = ranked(totals, last);
   return q1 === undefined ? null : [q1, q2 ?? q1];
 }
 
@@ -205,6 +212,7 @@ export function crestAnimals(
     optionStages: { sessions: stageFor(first, true), chosen: stageFor(first, false) },
     evidence: {
       firstEight,
+      firstEightOrder: ranked(firstEight, eightLast),
       totals,
       first,
       secondFromSessions,

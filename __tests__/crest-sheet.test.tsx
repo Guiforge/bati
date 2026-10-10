@@ -155,9 +155,10 @@ describe("Pourquoi l'Ours ?", () => {
     await sheet(crestOf(seq(["strength", 3], ["run", 3], ["yoga", 2])), "why");
     expect(screen.getByTestId("sheet-title").props.children).toBe("Pourquoi le Sanglier ?");
     expect(
-      screen.getByText("Tes 8 premières séances se partagent : force 3, endurance 3, yoga 2."),
+      screen.getByText("Tes 8 premières séances se partagent : endurance 3, force 3, yoga 2."),
     ).toBeTruthy();
-    expect(screen.getByText(/Les couleurs de l'écu/)).toBeTruthy();
+    // The tie reads the most recent first in the fact and in the colours alike.
+    expect(screen.getByText(/Les couleurs de l'écu.*endurance et force/)).toBeTruthy();
   });
 
   it("a chosen animal: whose choice it is, and one tap back writes auto", async () => {

@@ -65,6 +65,7 @@ function crestOf(over: Partial<crestDb.Crest> = {}): crestDb.Crest {
     optionStages: { sessions: "young", chosen: "young" },
     evidence: {
       firstEight: tally,
+      firstEightOrder: [],
       totals: tally,
       first: "bear",
       secondFromSessions: null,

@@ -290,6 +290,12 @@ describe("the hero's choice", () => {
     expect(auto(sessions)?.evidence.boarQuarters).toEqual(chosen?.quarters);
   });
 
+  test("a boar's tie reads the same order in the fact and in the colours: count, then recency", () => {
+    const boar = auto(seq(["strength", 3], ["run", 2], ["yoga", 3]));
+    expect(boar).toMatchObject({ animal: "boar", quarters: ["yoga", "strength"] });
+    expect(boar?.evidence.firstEightOrder).toEqual(["yoga", "strength", "run"]);
+  });
+
   test("the boar's stage reads every session that counts, practice or not", () => {
     const thirtyNine = Array.from({ length: 13 }, () => of(["strength", "yoga", "run"])).flat();
     expect(auto(thirtyNine)).toMatchObject({ animal: "boar", stage: "young" });

@@ -33,11 +33,9 @@ type Props = {
   onChanged: () => void;
 };
 
-/** The practices done in the first 8, the most often first, ties in the fixed order. */
+/** The practices done in the first 8, in the order the quarters use. */
 const barsOf = (crest: CrestData): [Practice, number][] =>
-  PRACTICES.map((p): [Practice, number] => [p, crest.evidence.firstEight[p]])
-    .filter(([, n]) => n > 0)
-    .sort((a, b) => b[1] - a[1]);
+  crest.evidence.firstEightOrder.map((p): [Practice, number] => [p, crest.evidence.firstEight[p]]);
 
 function Link({ testID, label, onPress }: { testID: string; label: string; onPress: () => void }) {
   return (

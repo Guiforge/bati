@@ -55,13 +55,11 @@ export function crestReveal(
   shown: string[] | undefined,
 ): CrestReveal | null {
   if (!after || !shown || shown.includes("reveal")) return null;
-  const { first, firstEight } = after.evidence;
+  const { first, firstEight, firstEightOrder } = after.evidence;
   return {
     animal: first,
     quarters: first === "boar" ? after.evidence.boarQuarters : null,
-    firstEight: PRACTICES.flatMap((p): [Practice, number][] =>
-      firstEight[p] > 0 ? [[p, firstEight[p]]] : [],
-    ).sort((a, b) => b[1] - a[1]),
+    firstEight: firstEightOrder.map((p): [Practice, number] => [p, firstEight[p]]),
     late: sessionsWithPractice(after) > REVEAL_AT,
   };
 }

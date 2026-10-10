@@ -45,6 +45,19 @@ describe("crestEvents", () => {
     ]);
   });
 
+  test("a tie in the first eight puts the most recent practice first, as the colours do", () => {
+    const reveal = crestReveal(
+      crestAnimals(seq(["strength", 3], ["run", 2], ["yoga", 3]), "auto"),
+      [],
+    );
+    expect(reveal?.firstEight).toEqual([
+      ["yoga", 3],
+      ["strength", 3],
+      ["run", 2],
+    ]);
+    expect(reveal?.quarters).toEqual(["yoga", "strength"]);
+  });
+
   test("a hero with 300 sessions and no reveal in the key sees it on the first victory", () => {
     const after = crestAnimals(seq(["strength", 300]), "auto");
     expect(crestReveal(after, ["age-50"])?.animal).toBe("bear");

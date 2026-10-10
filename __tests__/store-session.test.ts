@@ -1030,6 +1030,7 @@ describe("useSessionStore", () => {
         second: null,
         evidence: {
           firstEight: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          firstEightOrder: ["strength"],
           totals: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
           first: animal,
           secondFromSessions: null,
@@ -1069,6 +1070,7 @@ describe("useSessionStore", () => {
         second: null,
         evidence: {
           firstEight: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          firstEightOrder: ["strength"],
           totals: { strength: 40, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
           first: "bear",
           secondFromSessions: null,
@@ -1100,6 +1102,7 @@ describe("useSessionStore", () => {
         second: null,
         evidence: {
           firstEight: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          firstEightOrder: ["strength"],
           totals: { strength: 300, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
           first: "bear",
           secondFromSessions: null,

@@ -68,6 +68,17 @@ function add(
 }
 const strength = (daysAgo: number) => add(atDay(daysAgo), { sets: [{ style: "strength" }] });
 
+describe("countSessions, the figure a village tier's feast says", () => {
+  test("counts the workouts and the outings of ten minutes, not a shorter one", async () => {
+    const { countSessions } = require("../db/completed") as typeof import("../db/completed");
+    expect(await countSessions()).toBe(0);
+    strength(5);
+    add(atDay(4), { outing: "run", moving: 10 * 60 });
+    add(atDay(3), { outing: "run", moving: 9 * 60 });
+    expect(await countSessions()).toBe(2);
+  });
+});
+
 describe("what counts for the animal is what countsAsSession accepts", () => {
   test("a short outing is no session, a ten-minute one is", async () => {
     for (let i = 0; i < 7; i++) strength(30 - i);

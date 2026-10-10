@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { type ReactNode, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
@@ -17,7 +18,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Crest } from "@/components/village/Crest";
 import { CREST_ICON } from "@/components/village/crestText";
 import { getVillageTierAsset } from "@/constants/assetMap";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 import type { VillageTier } from "@/db/village";
 import { useGameIcon } from "@/hooks/useGameIcon";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -192,6 +193,13 @@ function Frame({
       <Animated.View
         pointerEvents="none"
         style={[FILL, { backgroundColor: rawColors.bgDark }, veil]}
+      />
+      {/* Still, under the words: the painting is busy and the body is small. */}
+      <LinearGradient
+        pointerEvents="none"
+        colors={["transparent", fade(rawColors.bgDark, 0.9)]}
+        locations={[0.3, 0.75]}
+        style={FILL}
       />
       <ScrollView
         contentContainerStyle={{

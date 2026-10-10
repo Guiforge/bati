@@ -336,6 +336,13 @@ describe("Ton animal", () => {
     expect(screen.getByText("Force, 5 séances sur 8")).toBeTruthy();
   });
 
+  it("a boar hero's sessions option says the boar and a capitalised 'a bit of everything'", async () => {
+    await sheet(crestOf(seq(["strength", 3], ["run", 3], ["yoga", 2])), "pick");
+    expect(screen.getByText("Celui de tes séances (le sanglier) · jeune")).toBeTruthy();
+    // Once: the boar is not offered again among the others.
+    expect(screen.getAllByText("Un peu de tout")).toHaveLength(1);
+  });
+
   it("lists the five others, with what they are", async () => {
     await sheet(crestOf(FIVE_OF_EIGHT), "pick");
     expect(screen.getByText("Course, marche, cardio")).toBeTruthy();

@@ -97,16 +97,19 @@ function Why({
         <Text fontSize={14} color="$textSecondary">
           {t("village.crest_why_diamond")}
         </Text>
-        <Link
-          testID="crest-why-reset"
-          label={t("village.crest_why_reset")}
-          onPress={() => choose("auto")}
-        />
-        <Link
-          testID="crest-why-pick"
-          label={t("village.crest_why_pick")}
-          onPress={() => onView("pick")}
-        />
+        {/* One group: the parent's gap would add 12 to the 44 dp each link already takes. */}
+        <YStack testID="crest-why-links">
+          <Link
+            testID="crest-why-reset"
+            label={t("village.crest_why_reset")}
+            onPress={() => choose("auto")}
+          />
+          <Link
+            testID="crest-why-pick"
+            label={t("village.crest_why_pick")}
+            onPress={() => onView("pick")}
+          />
+        </YStack>
       </>
     );
   }

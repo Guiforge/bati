@@ -1,0 +1,6 @@
+- Mouvements d'un seul côté : l'objectif vaut par côté, avec un changement de côté annoncé.
+- Sorties : vitesse à vélo en km/h, un objectif par type de sortie, un écran en direct plus lisible.
+- Un étirement rapporte moins d'XP qu'un maintien de même durée.
+- Ta photo d'avatar suit tes sauvegardes et la synchro.
+- Les villageois restent le temps d'être lus. Un maintien se corrige à la seconde.
+- F-Droid : l'app ne propose plus une mise à jour impossible à installer.

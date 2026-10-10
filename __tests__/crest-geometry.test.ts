@@ -123,6 +123,15 @@ describe("crest diamond", () => {
   });
 });
 
+describe("crest diamond, size", () => {
+  const xs = [...DIAMOND.matchAll(/[ML](\d+) /g)].map((m) => Number(m[1]));
+
+  it("is at least 10 u across (5 px at 48), and stays off the animal's box", () => {
+    expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThanOrEqual(10);
+    expect(Math.min(...xs)).toBeGreaterThan(ANIMAL_BOX.x + ANIMAL_BOX.size);
+  });
+});
+
 describe("crest rings", () => {
   const inner = BORDER + filetWidth(96);
   const corners = (b: { x: number; y: number; w: number; h: number }): Pt[] => [

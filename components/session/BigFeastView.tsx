@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { type ReactNode, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { Pressable, ScrollView } from "react-native";
 import Animated, {
   Easing,
   interpolate,
@@ -13,12 +13,14 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Text, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { ChevronRight } from "@/components/icons";
 import { Crest, type CrestShape } from "@/components/village/Crest";
 import { CREST_ICON } from "@/components/village/crestText";
 import { getVillageTierAsset } from "@/constants/assetMap";
 import { fade, rawColors } from "@/constants/rawColors";
+import type { Animal } from "@/db/crestRules";
 import type { VillageTier } from "@/db/village";
 import { useGameIcon } from "@/hooks/useGameIcon";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -102,10 +104,33 @@ type Ctx = {
   villageName: string;
   /** Sessions that count, for a tier's "after 118 sessions"; null says no such figure. */
   sessions: number | null;
+  /** The reveal's "Why the Bear?" link: the Village's shield opens the same sheet. */
+  onWhy?: () => void;
 };
 
+/** "Why the Bear?": the reveal's way into the sheet the Village's shield opens too. */
+function WhyLink({ animal, onPress }: { animal: Animal; onPress: (() => void) | undefined }) {
+  const { t } = useTranslation();
+  if (!onPress) return null;
+  return (
+    <Pressable
+      testID="big-feast-why"
+      accessibilityRole="button"
+      onPress={onPress}
+      style={{ minHeight: 44, justifyContent: "center" }}
+    >
+      <XStack items="center" gap="$1">
+        <Text fontSize={15} fontWeight="600" color="$primary">
+          {t(`village.crest_why_title_${animal}`)}
+        </Text>
+        <ChevronRight size={16} color="$primary" />
+      </XStack>
+    </Pressable>
+  );
+}
+
 /** The text of the last image, which is the whole feast under reduced motion. */
-function FeastText({ feast, villageName, sessions }: Omit<Ctx, "crest">) {
+function FeastText({ feast, villageName, sessions, onWhy }: Omit<Ctx, "crest">) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   if (feast.kind === "reveal") {
@@ -125,6 +150,7 @@ function FeastText({ feast, villageName, sessions }: Omit<Ctx, "crest">) {
           </Line>
         ) : null}
         {body && colors ? <Line testID="big-feast-colors">{colors}</Line> : null}
+        <WhyLink animal={feast.animal} onPress={onWhy} />
       </>
     );
   }
@@ -241,7 +267,7 @@ const LAYER = { position: "absolute", alignItems: "center", gap: 16 } as const;
 type Props = Ctx & { tier: VillageTier; onSeeVillage: () => void };
 
 /** The last image of the reveal, and the whole of it under reduced motion: nothing moves. */
-function RevealFinal({ feast, crest, tier, villageName, sessions, onSeeVillage }: Props) {
+function RevealFinal({ feast, crest, tier, villageName, sessions, onSeeVillage, onWhy }: Props) {
   if (feast.kind !== "reveal") return null;
   return (
     <Frame
@@ -252,14 +278,22 @@ function RevealFinal({ feast, crest, tier, villageName, sessions, onSeeVillage }
     >
       <YStack style={SECTION}>
         <Shield crest={crest} />
-        <FeastText feast={feast} villageName={villageName} sessions={sessions} />
+        <FeastText feast={feast} villageName={villageName} sessions={sessions} onWhy={onWhy} />
       </YStack>
     </Frame>
   );
 }
 
 /** The three beats of the reveal, once: two eyes, the silhouette, the shield and its text. */
-function RevealStoryboard({ feast, crest, tier, villageName, sessions, onSeeVillage }: Props) {
+function RevealStoryboard({
+  feast,
+  crest,
+  tier,
+  villageName,
+  sessions,
+  onSeeVillage,
+  onWhy,
+}: Props) {
   const { t } = useTranslation();
   const animal = feast.kind === "reveal" ? feast.animal : "bear";
   const icon = useGameIcon(CREST_ICON[animal]);
@@ -317,7 +351,7 @@ function RevealStoryboard({ feast, crest, tier, villageName, sessions, onSeeVill
         <YStack style={SECTION}>
           <Shield crest={crest} style={shield} />
           <Animated.View style={[SECTION, words]}>
-            <FeastText feast={feast} villageName={villageName} sessions={sessions} />
+            <FeastText feast={feast} villageName={villageName} sessions={sessions} onWhy={onWhy} />
           </Animated.View>
         </YStack>
       </YStack>

@@ -39,6 +39,7 @@ import {
 } from "@/components/icons";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
+import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
 import { ReminderSection } from "@/components/settings/ReminderSection";
 import { SetAsideRow } from "@/components/settings/SetAsideRow";
 import { SettingRow } from "@/components/settings/SettingRow";
@@ -419,11 +420,15 @@ export default function SettingsScreen() {
           pickCustomAvatar={pickCustomAvatar}
         />
 
+        <YStack gap="$3">
+          <SectionLabel px="$1">{t("settings.village_section")}</SectionLabel>
+          <VillageNameRow />
+          <CrestAnimalRow />
+        </YStack>
+
         {/* Preferences */}
         <YStack gap="$3">
           <SectionLabel px="$1">{t("settings.preferences", "PREFERENCES")}</SectionLabel>
-
-          <VillageNameRow />
 
           <SettingRow
             icon={<Languages size={22} color="$text" />}

@@ -3,7 +3,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { type LayoutChangeEvent, PixelRatio, useWindowDimensions, View } from "react-native";
+import {
+  type LayoutChangeEvent,
+  PixelRatio,
+  Pressable,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
   Extrapolation,
@@ -21,6 +27,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Crest } from "@/components/village/Crest";
+import { CrestSheet, type CrestView } from "@/components/village/CrestSheet";
 import { crestFootprint } from "@/components/village/crestGeometry";
 import { revealedToday, useCrestLine } from "@/components/village/crestLine";
 import { groupFamilies } from "@/components/village/rows";
@@ -215,6 +222,7 @@ export function VillageScene() {
   const [sheetMounted, setSheetMounted] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [rewardOpen, setRewardOpen] = useState(false);
+  const [crestView, setCrestView] = useState<CrestView | null>(null);
 
   // Stable: the sheet subscribes to hardware back on it, and a fresh identity every render
   // would resubscribe every render.
@@ -522,7 +530,19 @@ export function VillageScene() {
               ) : crest === null ? (
                 <Glow />
               ) : (
-                <Crest crest={crest} size={CREST_SIZE} onPainting />
+                // The shield wins its own press over the hero's "see the scene"; the plate is at
+                // least 44 on both sides (56 plus its padding).
+                <Pressable
+                  testID="village-crest"
+                  accessibilityRole="button"
+                  accessibilityLabel={t(`village.crest_why_title_${crest.animal}`)}
+                  onPress={() => {
+                    haptics.selection();
+                    setCrestView("why");
+                  }}
+                >
+                  <Crest crest={crest} size={CREST_SIZE} onPainting />
+                </Pressable>
               )}
               {/* The chip wraps under the name when the row is full: a long name takes two
                   lines and nothing is cut. */}
@@ -657,6 +677,14 @@ export function VillageScene() {
           onClose={() => setViewerOpen(false)}
         />
       ) : null}
+
+      <CrestSheet
+        view={crestView}
+        crest={crest ?? null}
+        onView={setCrestView}
+        onClose={() => setCrestView(null)}
+        onChanged={loadScene}
+      />
 
       {sheetMounted ? (
         <VillageDetailSheet

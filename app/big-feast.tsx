@@ -1,10 +1,11 @@
 import { Stack, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BackHandler } from "react-native";
 import { type BigFeast, BigFeastView } from "@/components/session/BigFeastView";
 import { revealShield } from "@/components/session/bigFeastText";
 import { goOn, seeVillage } from "@/components/session/destinations";
 import { bigFeastOf, feastKey } from "@/components/session/feasts";
+import { CrestSheet, type CrestView } from "@/components/village/CrestSheet";
 import { countSessions } from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
 import { preferences } from "@/db/preferences";
@@ -71,15 +72,17 @@ export default function BigFeastScreen() {
   }, [isTier]);
 
   const isReveal = feast?.kind === "reveal";
-  useEffect(() => {
-    if (!isReveal) return;
+  const loadCrest = useCallback(() => {
     getCrest()
       .then(setCrest)
       .catch((e) => {
         reportError("bigFeast.crest", e);
         setCrest(null);
       });
-  }, [isReveal]);
+  }, []);
+  useEffect(() => {
+    if (isReveal) loadCrest();
+  }, [isReveal, loadCrest]);
 
   // Pop this screen, then do what the victory screen would. The two actions queue on one stack,
   // so the session screen under this one is replaced, exactly as "Continue" without a feast did.
@@ -109,6 +112,7 @@ export default function BigFeastScreen() {
     }
   });
 
+  const [crestView, setCrestView] = useState<CrestView | null>(null);
   const waiting = (isTier && sessions === undefined) || (isReveal && crest === undefined);
   return (
     <>
@@ -116,6 +120,13 @@ export default function BigFeastScreen() {
           early return: the push is already animating by the time a figure has arrived. */}
       <Stack.Screen options={{ animation: "none" }} />
       {/* A figure still on its way: say nothing rather than half of it. */}
+      <CrestSheet
+        view={crestView}
+        crest={crest ?? null}
+        onView={setCrestView}
+        onClose={() => setCrestView(null)}
+        onChanged={loadCrest}
+      />
       {!feast || !result || waiting ? null : (
         <BigFeastView
           feast={feast}
@@ -123,6 +134,7 @@ export default function BigFeastScreen() {
           tier={getVillageTier(calculateLevelFromXp(result.heroXp.after))}
           villageName={villageName}
           sessions={sessions ?? null}
+          onWhy={() => setCrestView("why")}
           onSeeVillage={() => {
             if (left.current) return;
             left.current = true;

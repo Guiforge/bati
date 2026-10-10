@@ -1,4 +1,4 @@
-import { act, fireEvent, render } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { BackHandler, StyleSheet } from "react-native";
 import { withRepeat, withSpring, withTiming } from "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -214,6 +214,26 @@ describe("BigFeastView", () => {
     mockReduced = false;
     jest.clearAllMocks();
     await lang("fr");
+  });
+
+  test("the reveal's last image links to the sheet 'Why the Bear?', and only the reveal", async () => {
+    const onWhy = jest.fn();
+    await render(
+      wrap(
+        <BigFeastView
+          feast={bear as never}
+          crest={null}
+          tier={9}
+          villageName="Brumeval"
+          sessions={118}
+          onSeeVillage={mockSee}
+          onWhy={onWhy}
+        />,
+      ),
+    );
+    expect(screen.getByText("Pourquoi l'Ours ?")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("big-feast-why"));
+    expect(onWhy).toHaveBeenCalledTimes(1);
   });
 
   test("the boar's count is the fact and its colors a separate, paler line", async () => {

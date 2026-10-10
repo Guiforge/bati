@@ -8,7 +8,7 @@ These images have a job the rest of the art does not: someone mid-session has to
 know what to do with their body. Everything below resolves ties towards legibility.
 
 **Square, not 4:3.** The art lands in six slots and five are square: 180x180 in WarmupView, 64x64
-in ProgressionCard, 56x56 in SessionRewards, 50x50 in RestView. The sixth, ActiveExerciseView, is
+in ProgressionCard, 48x48 in the Tonight cards, 50x50 in RestView. The sixth, ActiveExerciseView, is
 `aspectRatio={16 / 10}` and crops the top and bottom off these.
 
 **No armour.** Plate hides the joint it covers. The hero trains in fitted cloth with bare arms and

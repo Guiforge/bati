@@ -62,7 +62,7 @@ export function nextLine(b: VillageBuilding, t: TFunction, language: AppLanguage
 
 /** "Next to rise" cannot head a building nothing has built yet. */
 export function nextTitle(b: VillageBuilding | null, t: TFunction): string {
-  return b?.level === 0 ? t("village.build_title") : t("village.next_title");
+  return !b || b.level === 0 ? t("village.build_title") : t("village.next_title");
 }
 
 /** The link under a building, named after what actually raises it. */

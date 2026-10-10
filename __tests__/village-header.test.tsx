@@ -29,6 +29,7 @@ jest.mock("expo-router", () => ({
     require("react").useEffect(cb, [cb]);
   },
   useIsFocused: () => true,
+  usePathname: () => "/village",
   useLocalSearchParams: () => ({}),
   useRouter: () => ({ push: jest.fn() }),
 }));
@@ -60,6 +61,7 @@ function crestOf(over: Partial<crestDb.Crest> = {}): crestDb.Crest {
     second: null,
     quarters: null,
     revealedIndex: 7,
+    optionStages: { sessions: "young", chosen: "young" },
     evidence: {
       firstEight: tally,
       totals: tally,
@@ -150,6 +152,14 @@ describe("the village header", () => {
     expect(screen.getByText("Brumeval")).toBeTruthy();
     expect(screen.queryByTestId("village-crest-line")).toBeNull();
     expect(screen.queryByTestId("village-glow")).toBeNull();
+  });
+});
+
+describe("the shield's press", () => {
+  it("opens the sheet 'Why the Bear?'", async () => {
+    await mount(crestOf());
+    await fireEvent.press(await screen.findByTestId("village-crest"));
+    expect(await screen.findByText("Why the Bear?")).toBeTruthy();
   });
 });
 

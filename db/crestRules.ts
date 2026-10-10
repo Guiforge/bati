@@ -37,6 +37,11 @@ export type CrestAnimals = {
   second: { animal: PracticeAnimal; stage: CrestStage } | null;
   /** The boar's two quarters, the practices in the lead over every session; null for the others. */
   quarters: [Practice, Practice] | null;
+  /**
+   * The stage the picker shows beside each animal: the one the sessions' own animal has (its
+   * practice's count), and the one any animal the hero chose has (every session that counts).
+   */
+  optionStages: { sessions: CrestStage; chosen: CrestStage };
   /** Where in `sessions` the 8th session that has a practice sits: the one that revealed it. */
   revealedIndex: number;
   /** What "Why the Bear?" reads: counts per practice, over the first 8 and over all. */
@@ -192,6 +197,7 @@ export function crestAnimals(
     second: border === null ? null : { animal: border, stage: stageFor(border, true) },
     quarters,
     revealedIndex,
+    optionStages: { sessions: stageFor(first, true), chosen: stageFor(first, false) },
     evidence: {
       firstEight,
       totals,

@@ -48,7 +48,9 @@ row can be read without a tap.
      fewest reps from its next rung, level 0 waiting while any is still rising, then the deed with
      the most of its bar filled. The name is set in the heading font. Rep buildings carry a bar
      of what is done, between the figures of the rung they stand on ("3,000 reps" to "4,000
-     reps", `repsRungStart`), and a sentence under it, "Rank 4 in about 3 outings." (`milestoneLine`).
+     reps", `repsRungStart`), and so does every deed bar (leagues, bosses, rematches, routes) from
+     the threshold of the rank it stands on (`deedRungStart`, `deedProgress`), the same figure the
+     deed fallback of "Next to rise" ranks by; and a sentence under it, "Rank 4 in about 3 outings." (`milestoneLine`).
      Never a number of reps still to do. A link named after what raises it: quests filtered on that
      muscle, the outings for the High Road, the adventures for the other deeds. When that building
      is unbuilt the title reads **Next to build** and there is no bar. On **day one** (`isDayOne`:
@@ -67,7 +69,7 @@ row can be read without a tap.
 
 A building has **three states**: unbuilt (the condition in words, no bar, no "level 1 at 1"),
 rising (a bar with its unit), at its ceiling (no bar). `getBuildingProgress` returns null for the
-first and the last. The one exception is the High Road inside its first league, whose whole-league
+first and the last; it is not the bar's percentage, which counts from the rung's threshold. The one exception is the High Road inside its first league, whose whole-league
 tally cannot show a first walk and whose bar can.
 
 Below 700 dp of window height the painting is cut to a band 62% of the width tall (starting 20% in),

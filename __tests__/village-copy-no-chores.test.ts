@@ -10,7 +10,7 @@ import * as path from "node:path";
 const LOCALES = path.resolve(__dirname, "..", "locales");
 
 const CHORES: Record<string, RegExp> = {
-  en: /(reps?|sessions?|bosses|boss|routes?|rematch(es)?|leagues?) (to level|to go|left)|(more|another) (reps?|sessions?|bosses|boss|routes?|rematch(es)?)|before level|to level|for level|one rep builds|(left|remain(s|ing)?|still) to\b/i,
+  en: /(reps?|sessions?|bosses|boss|routes?|rematch(es)?|leagues?) (to level|to go|left)|(more|another) (reps?|sessions?|bosses|boss|routes?|rematch(es)?)|before level|to level|for level|one rep builds|(left|remain(s|ing)?|still) to\b|still open|deeds still/i,
   fr: /il manque|encore \{\{count\}\}|avant le niveau|avant le rang|pour le niveau|une rep suffit|il reste/i,
   de: /noch \{\{count\}\} (wiederholung|einheit|boss|route|revanche|wegstunde)|fehlen|bis zu stufe|bis stufe|für stufe|wiederholung reicht|noch \{\{count\}\} (?!level)/i,
   es: /faltan \{\{count\}\}|todavía \{\{count\}\}|hasta el nivel|para el nivel|basta una|\bquedan?\b/i,
@@ -31,6 +31,7 @@ const BUILDING_KEYS = [
   "detail_prereq_driver",
   "detail_prereq_locked",
   "kept_level",
+  "building_rank",
 ];
 
 const REP: Record<string, RegExp> = {
@@ -39,6 +40,24 @@ const REP: Record<string, RegExp> = {
   de: /wiederholung|\brep/i,
   es: /repetici|\brep/i,
 };
+
+it("catches the chores it is written for, in English", () => {
+  for (const line of ["3 deeds still open", "Deeds still to do", "2 sessions to go"]) {
+    expect(CHORES.en?.test(line)).toBe(true);
+  }
+});
+
+// A building's rank is "grado" in Spanish: "rango" already names the village's tier.
+it("says grado for a building in Spanish, rango only for the village", () => {
+  const es = JSON.parse(fs.readFileSync(path.join(LOCALES, "es.json"), "utf8")).village as Record<
+    string,
+    string
+  >;
+  for (const k of [...BUILDING_KEYS, ...Object.keys(es).filter((x) => x.startsWith("milestone_"))])
+    expect(es[k]).not.toMatch(/rango/i);
+  expect(es.building_rank).toMatch(/grado/);
+  expect(es.tier_badge).toMatch(/rango/);
+});
 
 describe.each(Object.keys(CHORES))("%s copy of the Village", (lang) => {
   const village = JSON.parse(fs.readFileSync(path.join(LOCALES, `${lang}.json`), "utf8"))

@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next";
 import type { BarEnd } from "@/components/common/ProgressBar";
-import { formatCount } from "@/db/targets";
+import { formatCount, percent } from "@/db/targets";
 import type { AppLanguage } from "@/stores/settings";
 
 /** What `ProgressBar` is given for a scale with a caption and two ends. An empty caption is no caption: nothing done is not worth a gold "0 XP done". */
@@ -9,9 +9,6 @@ export type Scale = {
   caption: string;
   ends: { left: BarEnd; right: BarEnd };
 };
-
-export const percent = (value: number, from: number, to: number) =>
-  to > from ? Math.max(0, Math.min(100, ((value - from) / (to - from)) * 100)) : 0;
 
 /**
  * "320 XP done" before the middle, "only 410 XP to go" from it: a bar that has barely moved is

@@ -202,7 +202,7 @@ describe("VillageScene", () => {
 
     // No locked drawer: the unbuilt Quarry sits with the muscles that feed it.
     expect(muscles.getByText("Quarry")).toBeTruthy();
-    expect(muscles.getByText("Rises with every rep of back")).toBeTruthy();
+    expect(muscles.getByText("Rises with your back")).toBeTruthy();
     // The six upgrades stop at 3; five pips under them promised a road that never came.
     expect(within(getByTestId("village-family-upgrade")).getByText("rank 2")).toBeTruthy();
     expect(within(getByTestId("village-family-starter")).getByText("rank 4")).toBeTruthy();

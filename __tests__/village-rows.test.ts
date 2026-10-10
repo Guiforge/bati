@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
-import { buildingScale, groupFamilies, questLink } from "@/components/village/rows";
-import { type BuildingCode, buildingDefinitions } from "@/db/schema";
+import { victoryMilestoneLine } from "@/components/village/milestoneLine";
+import { buildingScale, feedsLine, groupFamilies, questLink } from "@/components/village/rows";
+import { type BuildingCode, buildingDefinitions, muscleCodes } from "@/db/schema";
 import {
   buildingCeiling,
   deedRungStart,
@@ -83,6 +84,15 @@ describe("pickNextToRise", () => {
     expect(pickNextToRise([...starters, farm, grove, road], null)?.code).toBe("druid_grove");
   });
 
+  it("ranks the deed fallback by the bar the hero sees, from the rung and not from zero", () => {
+    const farm = b("farm", 5);
+    // 50 of 90 is 55 % from zero but 20 % from the rung it stands on (40).
+    const road = b("high_road", 3, { driver: "leagues", metricValue: 50, nextTarget: 90 });
+    // 6 of 10 is 60 % from zero but 0 % from its rung (6).
+    const arena = b("champion_arena", 3, { driver: "rematches", metricValue: 6, nextTarget: 10 });
+    expect(pickNextToRise([...starters, farm, arena, road], null)?.code).toBe("high_road");
+  });
+
   describe("with the hero's own pace", () => {
     const forge = () => b("forge", 2, { metricValue: 50, nextTarget: 100 });
     const road = () => b("high_road", 3, { driver: "leagues", metricValue: 20, nextTarget: 30 });
@@ -131,7 +141,67 @@ describe("buildingScale", () => {
   });
 });
 
+describe("deedRungStart", () => {
+  it.each([
+    ["high_road", 1, 0],
+    ["high_road", 3, 40],
+    ["high_road", 5, 200],
+    ["dragon_lair", 1, 0],
+    ["dragon_lair", 3, 3],
+    ["dragon_lair", 5, 6],
+    ["champion_arena", 1, 0],
+    ["champion_arena", 3, 6],
+    ["champion_arena", 5, 15],
+    ["heroes_hall", 1, 0],
+    ["heroes_hall", 3, 4],
+    ["heroes_hall", 5, 10],
+  ] as const)("%s at rank %i starts at %i", (code, level, start) => {
+    expect(deedRungStart(code, level)).toBe(start);
+  });
+});
+
+describe("the victory line and the Village card", () => {
+  it("name the same building when the session fed nothing estimable", async () => {
+    await i18n.changeLanguage("en");
+    const forge = b("forge", 2, { metricValue: 50, nextTarget: 100 });
+    const road = b("high_road", 3, { driver: "leagues", metricValue: 20, nextTarget: 30 });
+    const buildings = [...starters, forge, road];
+    const muscle = buildingDefinitions.forge.relatedMuscle;
+    assert(muscle);
+    const feeds = { muscle: { [muscle]: [10] }, style: {}, outing: [4, 4] };
+    const nothing = { muscles: [], styles: [], outing: false };
+    const card = pickNextToRise(buildings, feeds);
+    expect(card?.code).toBe("high_road");
+    expect(victoryMilestoneLine(buildings, feeds, nothing, card, i18n.t, "en")).toMatch(
+      /^The High Road, rank 4 in about 3 outings/,
+    );
+  });
+});
+
+describe("the muscles' sentence", () => {
+  it("agrees with every muscle in French", async () => {
+    await i18n.changeLanguage("fr");
+    const said = muscleCodes.map((m) =>
+      feedsLine(b("forge", 1, { driver: "muscle", relatedMuscle: m }), i18n.t, "fr"),
+    );
+    expect(said).toEqual([
+      "Monte avec tes bras",
+      "Monte avec ton dos",
+      "Monte avec tes épaules",
+      "Monte avec tes pectoraux",
+      "Monte avec tes abdos",
+      "Monte avec tes jambes",
+    ]);
+    await i18n.changeLanguage("en");
+  });
+});
+
 describe("buildingScale, the deeds", () => {
+  it("has no caption for a deed building nothing has fed", () => {
+    const lair = b("dragon_lair", 1, { driver: "bosses", metricValue: 0, nextTarget: 2 });
+    expect(buildingScale(lair, i18n.t, "en")?.caption).toBe("");
+  });
+
   it("starts a rank 3 road at the rung it stands on, not at zero leagues", () => {
     const road = b("high_road", 3, {
       driver: "leagues",

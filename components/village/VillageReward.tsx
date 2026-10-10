@@ -73,7 +73,7 @@ export function VillageReward({ growth, buildings, language, top, onDismiss }: P
           />
           <Text fontSize={10} fontWeight="600" color="$textSecondary">
             {first.oldLevel > 0
-              ? t("village.level_line", { level: first.oldLevel })
+              ? t("village.building_rank", { level: first.oldLevel })
               : t("village.not_built")}
           </Text>
         </YStack>
@@ -87,7 +87,7 @@ export function VillageReward({ growth, buildings, language, top, onDismiss }: P
             contentFit="contain"
           />
           <Text fontSize={10} fontWeight="600" color="$resourceGold">
-            {t("village.level_line", { level: first.newLevel })}
+            {t("village.building_rank", { level: first.newLevel })}
           </Text>
         </YStack>
         <YStack flex={1} minW={0} gap={5}>

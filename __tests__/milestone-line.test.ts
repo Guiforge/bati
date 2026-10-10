@@ -65,13 +65,13 @@ describe("milestoneLine", () => {
     [
       "es",
       [
-        "Rango 4 en alrededor de 3 sesiones de pecho.",
-        "Rango 4 en alrededor de 1 sesión de abdominales.",
-        "Rango 4 en alrededor de 2 sesiones de yoga.",
-        "Rango 4 en alrededor de 3 salidas.",
-        "Rango 4 en alrededor de 1 salida.",
-        "La Forja, rango 4 en alrededor de 2 sesiones de pecho.",
-        "El Camino Real, rango 4 en alrededor de 3 salidas.",
+        "Grado 4 en alrededor de 3 sesiones de pecho.",
+        "Grado 4 en alrededor de 1 sesión de abdominales.",
+        "Grado 4 en alrededor de 2 sesiones de yoga.",
+        "Grado 4 en alrededor de 3 salidas.",
+        "Grado 4 en alrededor de 1 salida.",
+        "La Forja, grado 4 en alrededor de 2 sesiones de pecho.",
+        "El Camino Real, grado 4 en alrededor de 3 salidas.",
       ],
     ],
   ];

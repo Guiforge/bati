@@ -17,6 +17,7 @@ import {
   type MuscleCode,
 } from "./schema";
 import { type FlameLevel, getFlameLevel, getStreakInfo } from "./streaks";
+import { percent } from "./targets";
 import { getLevelTitle, getUserLevelInfo, getXpForLevel } from "./userLevel";
 import { repEquivalentSql } from "./workUnits";
 
@@ -438,6 +439,11 @@ export function deedRungStart(code: BuildingCode, level: number): number {
   return level <= 1 ? 0 : (TIER_4_DRIVERS[code]?.floors[level - 1] ?? 0);
 }
 
+/** A deed building's bar, 0-100, from the rung it stands on: the one figure the bar and the pick share. */
+export function deedProgress(b: VillageBuilding): number {
+  return percent(b.exactValue ?? b.metricValue, deedRungStart(b.code, b.level), b.nextTarget ?? 0);
+}
+
 const TIER_4_DRIVERS: Partial<
   Record<BuildingCode, { driver: DeedDriver; floors: readonly number[] }>
 > = {
@@ -676,9 +682,12 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
 }
 
 /**
- * Progress toward the next level, 0-100, or null when there is nothing honest to count: a maxed
- * building, or one not built yet. A building has three states, not two. Unbuilt is a condition in
- * words; treating it as "in progress at 0 %" drew "0 bosses, level 1 at 1" over an empty bar,
+ * Whether a building has a bar at all: null when there is nothing honest to count, a maxed
+ * building or one not built yet, otherwise the tally as a share of the next target counted from
+ * zero. That number is not the bar, which starts at the rung the building stands on (`repsRungStart`,
+ * `deedRungStart`, `deedProgress`); read it for null-ness, never to rank or to draw.
+ *
+ * A building has three states, not two. Unbuilt is a condition in words; treating it as "in progress at 0 %" drew "0 bosses, level 1 at 1" over an empty bar,
  * three ways of writing the same zero.
  *
  * One exception, the road inside its first league: its tally is whole leagues, so a first walk of
@@ -762,12 +771,11 @@ export function pickNextToRise(
   if (unbuilt) return unbuilt;
 
   // A kept hall at 0 of 7 routes and an unbuilt road one walk away are both at 0 %: the walk wins.
-  const progress = (b: VillageBuilding) => getBuildingProgress(b) ?? 0;
   const left = (b: VillageBuilding) =>
     (b.nextTarget ?? Number.POSITIVE_INFINITY) - (b.exactValue ?? b.metricValue);
   const deeds = buildings
     .filter((b) => b.tier === 4 && b.nextTarget !== null)
-    .sort((a, b) => progress(b) - progress(a) || left(a) - left(b));
+    .sort((a, b) => deedProgress(b) - deedProgress(a) || left(a) - left(b));
   return deeds[0] ?? null;
 }
 

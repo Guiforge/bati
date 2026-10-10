@@ -1,10 +1,11 @@
 import type { TFunction } from "i18next";
 
-import { percent, repsScale, type Scale } from "@/components/village/barScale";
+import { repsScale, type Scale } from "@/components/village/barScale";
 import { MUSCLE_LABELS } from "@/db/muscles";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import {
   BUILDING_LABELS,
+  deedProgress,
   deedRungStart,
   getBuildingProgress,
   isDayOne,
@@ -90,7 +91,7 @@ export function feedsLine(b: VillageBuilding, t: TFunction, language: AppLanguag
   const lang = language;
   switch (b.driver) {
     case "muscle":
-      return t("village.feeds_muscle", { what: inSentence(repSubject(b, t, lang), lang) });
+      return t(`village.feeds_muscle_${b.relatedMuscle}`);
     case "style":
       return t("village.feeds_style", { what: inSentence(repSubject(b, t, lang), lang) });
     case "prereq":
@@ -132,7 +133,7 @@ export function buildingScale(
       const unit = (n: number) => t(`village.unit_${b.driver}`, { count: n });
       const from = deedRungStart(b.code, b.level);
       return {
-        progress: percent(b.exactValue ?? b.metricValue, from, b.nextTarget),
+        progress: deedProgress(b),
         caption:
           b.metricValue <= 0
             ? ""

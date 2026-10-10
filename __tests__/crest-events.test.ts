@@ -37,6 +37,14 @@ describe("crestEvents", () => {
     expect(crestReveal(crestAnimals(seq(["strength", 7]), "auto"), [])).toBeNull();
   });
 
+  test("the first eight come most done first, whatever order the practices are listed in", () => {
+    const reveal = crestReveal(crestAnimals(seq(["yoga", 5], ["strength", 3]), "auto"), []);
+    expect(reveal?.firstEight).toEqual([
+      ["yoga", 5],
+      ["strength", 3],
+    ]);
+  });
+
   test("a hero with 300 sessions and no reveal in the key sees it on the first victory", () => {
     const after = crestAnimals(seq(["strength", 300]), "auto");
     expect(crestReveal(after, ["age-50"])?.animal).toBe("bear");

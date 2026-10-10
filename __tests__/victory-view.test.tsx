@@ -920,6 +920,21 @@ describe("VictoryView tonight", () => {
         expect(view.queryByText(line)).toBeNull();
       });
 
+      it("waits for the outro lookup: the line never shows then vanishes when the text arrives", async () => {
+        let arrive: (text: string | null) => void = () => {};
+        (getAdventureStepOutroNarrative as jest.Mock).mockReturnValue(
+          new Promise((resolve) => {
+            arrive = resolve;
+          }),
+        );
+        const mounted = await mountWithPendingSave(finished, 12 * 60, { newRecords: [record] });
+        await act(async () => useSessionStore.setState({ adventureRunStepId: 5 }));
+        await mounted.release();
+        expect(mounted.view.queryByText(line)).toBeNull();
+        await act(async () => arrive("The end."));
+        expect(mounted.view.queryByText(line)).toBeNull();
+      });
+
       it("is absent on a night that does not end a campaign", async () => {
         const view = await night(campaign, null);
         expect(view.queryByText(line)).toBeNull();

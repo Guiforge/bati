@@ -315,6 +315,7 @@ export function VictoryView() {
       setOutroSettled(true);
       return;
     }
+    setOutroSettled(false);
     getAdventureStepOutroNarrative(adventureRunStepId, language)
       .then((text) => {
         if (text) {

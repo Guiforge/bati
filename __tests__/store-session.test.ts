@@ -205,6 +205,15 @@ describe("useSessionStore", () => {
     expect(store.getState().crestSeenBefore).toBeNull();
   });
 
+  test("a new session does not inherit the last one's result, whose feast would open again", async () => {
+    store.setState({
+      status: "finished",
+      savedResult: { heroXp: { before: 0, after: 1 } } as never,
+    });
+    await store.getState().startSession(mockQuest, "medium");
+    expect(store.getState().savedResult).toBeNull();
+  });
+
   test("startSession initializes state correctly", async () => {
     await store.getState().startSession(mockQuest, "medium");
 

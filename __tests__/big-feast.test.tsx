@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { BackHandler, StyleSheet } from "react-native";
 import { withRepeat, withSpring, withTiming } from "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -13,6 +13,7 @@ import {
 } from "@/components/session/bigFeastText";
 import type { Feast } from "@/components/session/feasts";
 import { NO_CREST_EVENTS } from "@/db/crestEvents";
+import { crestAnimals } from "@/db/crestRules";
 import { getXpForLevel } from "@/db/userLevel";
 import { i18n } from "@/i18n";
 import { useSessionStore } from "@/stores/session";
@@ -47,11 +48,24 @@ const mockStackScreen = jest.fn();
 const mockShown = jest.fn();
 const mockReport = jest.fn();
 jest.mock("@/src/reportError", () => ({ reportError: (...a: unknown[]) => mockReport(...a) }));
+const mockSetCrestAnimal = jest.fn().mockResolvedValue(undefined);
+jest.mock("@/components/common/FormSheet", () => ({
+  FormSheet: (p: { open: boolean; title: string; children: React.ReactNode }) => {
+    const { Text, View } = require("react-native");
+    return p.open ? (
+      <View>
+        <Text testID="sheet-title">{p.title}</Text>
+        {p.children}
+      </View>
+    ) : null;
+  },
+}));
 const mockMark = jest.fn().mockResolvedValue(undefined);
 jest.mock("@/db/preferences", () => ({
   preferences: {
     markBigFeastShown: (...a: unknown[]) => mockMark(...a),
     getBigFeastsShown: () => mockShown(),
+    setCrestAnimal: (...a: unknown[]) => mockSetCrestAnimal(...a),
     // The session store clears its saved copy when a run ends.
     clearSavedSession: jest.fn().mockResolvedValue(undefined),
   },
@@ -531,6 +545,40 @@ describe("the big-feast route", () => {
     const v = await mount();
     expect(v.getByTestId("big-feast")).toBeTruthy();
     expect(mockCrestDrawn).toHaveBeenCalledWith(expect.objectContaining({ animal: "bear" }));
+  });
+
+  describe("the crest sheet", () => {
+    const bearCrest = () => {
+      const strength = { uuid: "", outing: null, strength: 1, calisthenics: 0, yoga: 0, cardio: 0 };
+      const sessions = Array.from({ length: 8 }, (_, i) => ({
+        ...strength,
+        uuid: String(i).padStart(6, "0"),
+      }));
+      const animals = crestAnimals(sessions, "auto");
+      return { ...animals, longestFlame: 0, rings: 0, revealedAt: new Date("2020-01-01") };
+    };
+
+    test("M9: the link opens 'Why the Bear?', not the choice", async () => {
+      mockGetCrest.mockResolvedValue(bearCrest());
+      const v = await mount();
+      await fireEvent.press(v.getByTestId("big-feast-why"));
+      expect((await v.findByTestId("sheet-title")).props.children).toBe("Pourquoi l'Ours ?");
+      expect(v.getByTestId("crest-why-pick")).toBeTruthy();
+      expect(v.queryByTestId("crest-pick-stag")).toBeNull();
+    });
+
+    test("M10: a choice reads the crest again and leaves for the village by the button's road", async () => {
+      mockGetCrest.mockResolvedValue(bearCrest());
+      const v = await mount();
+      await fireEvent.press(v.getByTestId("big-feast-why"));
+      await fireEvent.press(await v.findByTestId("crest-why-pick"));
+      await fireEvent.press(await v.findByTestId("crest-pick-stag"));
+      await waitFor(() => expect(mockGetCrest).toHaveBeenCalledTimes(2));
+      expect(mockSetCrestAnimal).toHaveBeenCalledWith("stag");
+      expect(mockBack).toHaveBeenCalledTimes(1);
+      expect(mockPush).toHaveBeenCalledWith("/(tabs)/village?grown=forge:1:2");
+      expect(quit).not.toHaveBeenCalled();
+    });
   });
 
   test("two taps on the button push the village once", async () => {

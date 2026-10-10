@@ -113,6 +113,15 @@ export default function BigFeastScreen() {
     }
   });
 
+  // The one road out to the village: the button, and a choice of animal (the shield the feast
+  // revealed is no longer the hero's, and "Why the Bear?" beside a stag would be a lie).
+  const toVillage = () => {
+    if (left.current || !result) return;
+    left.current = true;
+    router.back();
+    seeVillage(router, result);
+  };
+
   const [crestView, setCrestView] = useState<CrestView | null>(null);
   const waiting = (isTier && sessions === undefined) || (isReveal && crest === undefined);
   return (
@@ -126,7 +135,10 @@ export default function BigFeastScreen() {
         crest={crest ?? null}
         onView={setCrestView}
         onClose={() => setCrestView(null)}
-        onChanged={() => readCrest(setCrest)}
+        onChanged={() => {
+          readCrest(setCrest);
+          toVillage();
+        }}
       />
       {!feast || !result || waiting ? null : (
         <BigFeastView
@@ -136,12 +148,7 @@ export default function BigFeastScreen() {
           villageName={villageName}
           sessions={sessions ?? null}
           onWhy={() => setCrestView("why")}
-          onSeeVillage={() => {
-            if (left.current) return;
-            left.current = true;
-            router.back();
-            seeVillage(router, result);
-          }}
+          onSeeVillage={toVillage}
         />
       )}
     </>

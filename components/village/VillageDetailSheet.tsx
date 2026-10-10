@@ -405,7 +405,7 @@ function BuildingDetail({
             );
             return (
               <XStack key={session.sessionId} justify="space-between" gap="$2">
-                <Text fontSize={12} color="$textSecondary" flex={1} numberOfLines={1}>
+                <Text fontSize={12} color="$textSecondary" flex={1}>
                   {`${title ? `${title} · ` : ""}${when}`}
                 </Text>
                 <Text fontSize={12} color="$textSecondary">
@@ -437,7 +437,7 @@ function BuildingDetail({
                   />
                 </YStack>
               )}
-              <Text fontSize={12} color="$textSecondary" flex={1} numberOfLines={1}>
+              <Text fontSize={12} color="$textSecondary" flex={1}>
                 {localizedTitle(adventure, language)}
               </Text>
               {adventure.times > 1 && (

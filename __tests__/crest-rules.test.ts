@@ -282,6 +282,14 @@ describe("the hero's choice", () => {
     });
   });
 
+  test("the boar preview of a bear hero carries the quarters the chosen boar gets", () => {
+    const sessions = bearAndStag();
+    expect(auto(sessions)).toMatchObject({ animal: "bear" });
+    const chosen = auto(sessions, "boar");
+    expect(chosen?.quarters).toEqual(["strength", "run"]);
+    expect(auto(sessions)?.evidence.boarQuarters).toEqual(chosen?.quarters);
+  });
+
   test("the boar's stage reads every session that counts, practice or not", () => {
     const thirtyNine = Array.from({ length: 13 }, () => of(["strength", "yoga", "run"])).flat();
     expect(auto(thirtyNine)).toMatchObject({ animal: "boar", stage: "young" });

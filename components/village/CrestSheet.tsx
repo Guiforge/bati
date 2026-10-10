@@ -8,7 +8,13 @@ import { Crest, type CrestShape } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
 import { ANIMAL_TOKEN } from "@/constants/animalColors";
 import type { Crest as CrestData } from "@/db/crest";
-import { ANIMAL_OF, type Animal, PRACTICES, type Practice } from "@/db/crestRules";
+import {
+  ANIMAL_OF,
+  type Animal,
+  PRACTICES,
+  type Practice,
+  practiceOfAnimal,
+} from "@/db/crestRules";
 import { preferences } from "@/db/preferences";
 import { reportError } from "@/src/reportError";
 
@@ -26,8 +32,6 @@ type Props = {
   /** A choice was written: the caller reads the crest again. */
   onChanged: () => void;
 };
-
-const practiceOf = (a: Animal): Practice | undefined => PRACTICES.find((p) => ANIMAL_OF[p] === a);
 
 /** The practices done in the first 8, the most often first, ties in the fixed order. */
 const barsOf = (crest: CrestData): [Practice, number][] =>
@@ -77,7 +81,7 @@ function Why({
 }) {
   const { t } = useTranslation();
   const { first, firstEight, totals, secondFromSessions } = crest.evidence;
-  const firstPractice = practiceOf(first);
+  const firstPractice = practiceOfAnimal(first);
   const list = barsOf(crest)
     .map(([p, n]) => `${t(PRACTICE_KEY[p])} ${n}`)
     .join(", ");
@@ -114,7 +118,8 @@ function Why({
     );
   }
 
-  const secondPractice = secondFromSessions === null ? undefined : practiceOf(secondFromSessions);
+  const secondPractice =
+    secondFromSessions === null ? undefined : practiceOfAnimal(secondFromSessions);
   const sessions = PRACTICES.reduce((sum, p) => sum + totals[p], 0);
   return (
     <>
@@ -249,7 +254,7 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
     rings: 0,
   });
   const stage = (s: "sessions" | "chosen") => t(`village.crest_stage_${crest.optionStages[s]}`);
-  const firstPractice = practiceOf(first);
+  const firstPractice = practiceOfAnimal(first);
   const autoSelected = !crest.manual;
   return (
     <YStack gap="$2" role="radiogroup">

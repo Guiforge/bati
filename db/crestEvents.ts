@@ -1,12 +1,12 @@
 import type { Crest } from "./crest";
 import {
   ADULT_AT,
-  ANIMAL_OF,
   type Animal,
   type CrestStage,
   PRACTICES,
   type Practice,
   type PracticeAnimal,
+  practiceOfAnimal,
   REVEAL_AT,
   VENERABLE_AT,
 } from "./crestRules";
@@ -40,7 +40,6 @@ export type CrestEvents = {
 export const NO_CREST_EVENTS: CrestEvents = { secondJoins: null, stageUp: [] };
 
 const RANK: Record<CrestStage, number> = { young: 0, adult: 1, venerable: 2 };
-const practiceOf = (a: Animal) => PRACTICES.find((p) => ANIMAL_OF[p] === a);
 
 const sessionsWithPractice = (a: Seen) =>
   PRACTICES.reduce((sum, p) => sum + a.evidence.totals[p], 0);
@@ -59,7 +58,7 @@ export function crestReveal(
   const { first, firstEight } = after.evidence;
   return {
     animal: first,
-    quarters: after.evidence.boarQuarters,
+    quarters: first === "boar" ? after.evidence.boarQuarters : null,
     firstEight: PRACTICES.flatMap((p): [Practice, number][] =>
       firstEight[p] > 0 ? [[p, firstEight[p]]] : [],
     ).sort((a, b) => b[1] - a[1]),
@@ -71,7 +70,7 @@ function secondJoinsOf(before: Seen | null, after: Seen): CrestEvents["secondJoi
   // The card follows the shield on show: a border appearing, whatever the hero put at the centre.
   if (before === null || before.second !== null || after.second === null) return null;
   const { animal } = after.second;
-  const p = practiceOf(animal);
+  const p = practiceOfAnimal(animal);
   if (p === undefined) return null;
   return {
     animal,

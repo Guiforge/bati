@@ -393,7 +393,7 @@
         },
         "first": "bear",
         "secondFromSessions": null,
-        "boarQuarters": null
+        "boarQuarters": ["strength", "calisthenics"]
       },
       "longestFlame": 5,
       "rings": 2,

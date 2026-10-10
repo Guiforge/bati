@@ -50,7 +50,7 @@ export type CrestAnimals = {
     totals: Tally;
     first: Animal;
     secondFromSessions: PracticeAnimal | null;
-    /** The quarters the sessions give a boar, whichever animal the hero put on show; null otherwise. */
+    /** The quarters the sessions give a boar, whichever animal is on show; null with fewer than two practices. */
     boarQuarters: [Practice, Practice] | null;
   };
 };
@@ -61,6 +61,10 @@ const SECOND_SHARE = 30;
 const SECOND_MIN = 20;
 export const ADULT_AT = 40;
 export const VENERABLE_AT = 200;
+
+/** The practice an animal belongs to; the boar has none. */
+export const practiceOfAnimal = (a: Animal): Practice | undefined =>
+  PRACTICES.find((p) => ANIMAL_OF[p] === a);
 
 const tally = (): Tally => ({ strength: 0, calisthenics: 0, yoga: 0, run: 0, ride: 0 });
 
@@ -184,7 +188,6 @@ export function crestAnimals(
   }
   const manual = choice !== "auto";
 
-  const practiceOfAnimal = (a: Animal) => PRACTICES.find((p) => ANIMAL_OF[p] === a);
   const stageFor = (a: Animal, own: boolean) => {
     const p = practiceOfAnimal(a);
     return stageOf(own && p !== undefined ? totals[p] : sessions.length);
@@ -205,7 +208,7 @@ export function crestAnimals(
       totals,
       first,
       secondFromSessions,
-      boarQuarters: first === "boar" ? quartersOf(totals, last) : null,
+      boarQuarters: quartersOf(totals, last),
     },
   };
 }

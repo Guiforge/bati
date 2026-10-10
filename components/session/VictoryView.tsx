@@ -691,6 +691,9 @@ export function VictoryView() {
                 key={value}
                 flex={1}
                 size="$4"
+                // Fixed height clipped the glyph onto the top edge once a label wrapped at 130 %.
+                height="auto"
+                py="$2"
                 bg={feedback === value || !result ? "$surface2" : "$surface"}
                 borderWidth={1}
                 borderColor={feedback === value ? accent : "$glassBorder"}

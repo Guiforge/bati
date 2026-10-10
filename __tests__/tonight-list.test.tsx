@@ -460,7 +460,7 @@ describe("TonightList", () => {
   test.each([
     ["de", "Der Bär ist jetzt erwachsen", "40 Einheiten Krafttraining."],
     ["en", "The bear is now an adult", "40 strength sessions."],
-    ["es", "El oso es ahora adulto", "40 sesiones de fuerza."],
+    ["es", "El oso ya es adulto", "40 sesiones de fuerza."],
   ])("a stage rises, in %s", async (lang, title, body) => {
     const feasts = rank({
       crestEvents: {

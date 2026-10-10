@@ -165,7 +165,9 @@ describe("Pourquoi l'Ours ?", () => {
     await sheet(crestOf(FIVE_OF_EIGHT, "stag"), "why");
     expect(screen.getByTestId("sheet-title").props.children).toBe("Pourquoi le Cerf ?");
     expect(
-      screen.getByText("Choisi par toi. Tes séances, elles, donnent l'ours : 5 de force sur 8."),
+      screen.getByText(
+        "Choisi par toi. Tes séances, elles, donnent l'ours : 5 séances de force sur 8.",
+      ),
     ).toBeTruthy();
     expect(screen.getByText("Le petit losange sur ton écu le rappelle.")).toBeTruthy();
     await fireEvent.press(screen.getByText("Reprendre l'animal de tes séances"));

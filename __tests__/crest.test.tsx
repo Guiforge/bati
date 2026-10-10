@@ -196,7 +196,7 @@ describe("Crest label", () => {
     fr: ["Un sanglier qui mêle force et endurance.", "Un sanglier qui mêle callisthénie et vélo."],
     de: [
       "Ein Wildschwein, das Kraft und Ausdauer vereint.",
-      "Ein Wildschwein, das Calisthenics und Radfahren vereint.",
+      "Ein Wildschwein, das Calisthenics und Radtouren vereint.",
     ],
     en: [
       "A boar that blends strength and endurance.",

@@ -20,6 +20,9 @@ function subjectName(m: Milestone, t: TFunction, language: AppLanguage): string 
     const label = inSentence(MUSCLE_LABELS[subject.muscle][language], language);
     // English labels are plural ("Arms") and "arms sessions" is wrong: strip the s, except "abs",
     // which is the singular attributive too ("abs session"), hence three letters before it.
+    // ponytail: one regex for every English label. It is right for the six muscles; a label that
+    // ends in a single "s" without being a plural ("Calves" would become "Calve") breaks it, and
+    // the day a muscle or style like that is added, replace the regex with a singular table.
     return language === "en" ? label.replace(/(?<=\w{3})s$/, "") : label;
   }
   return t(`village.style_${subject.style}`);

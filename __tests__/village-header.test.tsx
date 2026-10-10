@@ -129,12 +129,12 @@ describe("the village header", () => {
     expect(screen.getByLabelText("A bear.")).toBeTruthy();
   });
 
-  it("says from today on the day of the reveal", async () => {
+  it("says as of today on the day of the reveal", async () => {
     await mount(crestOf({ revealedAt: new Date() }));
-    expect(await line()).toBe("A bear watches over Brumeval from today.");
+    expect(await line()).toBe("A bear watches over Brumeval as of today.");
   });
 
-  it("never says from today for a hand-picked animal, whatever day it is", async () => {
+  it("never says as of today for a hand-picked animal, whatever day it is", async () => {
     await mount(crestOf({ revealedAt: new Date(), manual: true }));
     expect(await line()).toBe("A bear watches over Brumeval.");
   });
@@ -151,7 +151,7 @@ describe("the village header", () => {
 
   it("the boar names its two practices", async () => {
     await mount(crestOf({ animal: "boar", quarters: ["strength", "run"] }));
-    expect(await line()).toBe("A boar watches over Brumeval: you blend strength and endurance.");
+    expect(await line()).toBe("A boar watches over Brumeval: you mix strength and endurance.");
   });
 
   it("while loading, nothing is asserted: no sentence, no glow, the name in its place", async () => {
@@ -400,7 +400,12 @@ describe("the sentences, in every language", () => {
 });
 
 describe("the reveal day and the boar's line, in every language", () => {
-  const TODAY = { fr: "aujourd'hui", en: "from today", de: "seit heute", es: "desde hoy" } as const;
+  const TODAY = {
+    fr: "aujourd'hui",
+    en: "as of today",
+    de: "seit heute",
+    es: "desde hoy",
+  } as const;
   const args = { animal: "x", first: "a", second: "b", place: "p" };
   it.each(["fr", "en", "de", "es"] as const)(
     "%s says today, and the boar names no apposition",

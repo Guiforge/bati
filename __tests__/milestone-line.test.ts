@@ -54,25 +54,25 @@ describe("milestoneLine", () => {
     [
       "de",
       [
-        "Rang 4 in etwa 3 Einheiten für Brust.",
+        "Rang 4 in etwa 3 Einheiten mit Schwerpunkt Brust.",
         "Rang 4 in etwa 1 Einheit für Bauch.",
-        "Rang 4 in etwa 2 Einheiten für Yoga.",
+        "Rang 4 in etwa 2 Einheiten mit Schwerpunkt Yoga.",
         "Rang 4 in etwa 3 Touren.",
         "Rang 4 in etwa 1 Tour.",
-        "Die Schmiede, Rang 4 in etwa 2 Einheiten für Brust.",
+        "Die Schmiede, Rang 4 in etwa 2 Einheiten mit Schwerpunkt Brust.",
         "Die Hohe Straße, Rang 4 in etwa 3 Touren.",
       ],
     ],
     [
       "es",
       [
-        "Grado 4 en alrededor de 3 sesiones de pecho.",
-        "Grado 4 en alrededor de 1 sesión de abdominales.",
-        "Grado 4 en alrededor de 2 sesiones de yoga.",
-        "Grado 4 en alrededor de 3 salidas.",
-        "Grado 4 en alrededor de 1 salida.",
-        "La Forja, grado 4 en alrededor de 2 sesiones de pecho.",
-        "El Camino Real, grado 4 en alrededor de 3 salidas.",
+        "Grado 4 en unas 3 sesiones de pecho.",
+        "Grado 4 en aproximadamente 1 sesión de abdominales.",
+        "Grado 4 en unas 2 sesiones de yoga.",
+        "Grado 4 en unas 3 salidas.",
+        "Grado 4 en aproximadamente 1 salida.",
+        "La Forja, grado 4 en unas 2 sesiones de pecho.",
+        "El Camino Real, grado 4 en unas 3 salidas.",
       ],
     ],
   ];
@@ -145,7 +145,7 @@ describe("milestoneLine, every muscle", () => {
 
   it.each([
     ["fr", "séances de bras", "séances de jambes"],
-    ["de", "Einheiten für Arme", "Einheiten für Beine"],
+    ["de", "Einheiten mit Schwerpunkt Arme", "Einheiten mit Schwerpunkt Beine"],
     ["es", "sesiones de brazos", "sesiones de piernas"],
   ] as const)("leaves the plural alone in %s", async (lang, arms, legs) => {
     expect(await say(lang, sessions(3, { muscle: "arms" }), "forge")).toContain(arms);

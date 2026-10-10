@@ -177,9 +177,9 @@ export function ringsLayout(n: number): RingsLayout {
 
 /**
  * The choice's diamond, right of the animal. Only from 48 up: the mockup shows it "en 48 et 96",
- * 24 px has no room for a mark that small. Ten u across, so about 5 px at 48 (the first cut, 8 u, read as a speck): its point keeps 2 u clear of the filet's inner edge, and its left tip 1 u off the animal's box.
+ * 24 px has no room for a mark that small. Ten u across, so about 5 px at 48 (the first cut, 8 u, read as a speck): its point keeps 2 u clear of the filet's inner edge, and its left tip 1 u off the animal's box, and its bottom point 1 px or more above the cross's bar.
  */
-export const DIAMOND = "M77 43L82 48L77 53L72 48Z";
+export const DIAMOND = "M77 41L82 46L77 51L72 46Z";
 /** The animal's box inside the viewBox. */
 export const ANIMAL_BOX = { x: 25, y: 28, size: 46 } as const;
 

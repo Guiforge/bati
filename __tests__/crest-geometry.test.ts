@@ -123,6 +123,16 @@ describe("crest diamond", () => {
   });
 });
 
+describe("crest diamond, cross", () => {
+  it("keeps 1 px of air above the cross's horizontal bar at 48, 56 and 96", () => {
+    const ys = [...DIAMOND.matchAll(/[ML]\d+ (\d+)/g)].map((m) => Number(m[1]));
+    for (const size of [48, 56, 96] as const) {
+      const bar = crossRects(size)[1];
+      expect(((bar?.y ?? 0) - Math.max(...ys)) * (size / VIEW_W)).toBeGreaterThanOrEqual(1);
+    }
+  });
+});
+
 describe("crest diamond, size", () => {
   const xs = [...DIAMOND.matchAll(/[ML](\d+) /g)].map((m) => Number(m[1]));
 

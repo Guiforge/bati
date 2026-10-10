@@ -31,12 +31,26 @@ export default function BigFeastScreen() {
   const villageName = useUserStore((s) => s.villageName);
   const finished = useSessionStore((s) => s.status === "finished");
   const result = useSessionStore((s) => s.savedResult);
-  const found = finished && result ? bigFeastOf(result) : undefined;
+  // The shown list is read live, not taken from the result (frozen when the session was saved):
+  // a feast marked since, by a forged link or a second open, never opens again. null: unreadable.
+  const [shown, setShown] = useState<string[] | null | undefined>(undefined);
+  const found =
+    finished && result && shown ? bigFeastOf({ ...result, bigFeastsShown: shown }) : undefined;
   const feast: BigFeast | null = found && KINDS.includes(found.kind) ? (found as BigFeast) : null;
   const [sessions, setSessions] = useState<number | null | undefined>(undefined);
   const [crest, setCrest] = useState<Crest | null | undefined>(undefined);
   // Leaving quits the session, which empties what this screen reads: it must not leave twice.
   const left = useRef(false);
+
+  useEffect(() => {
+    preferences
+      .getBigFeastsShown()
+      .then(setShown)
+      .catch((e) => {
+        reportError("bigFeast.shown", e);
+        setShown(null);
+      });
+  }, []);
 
   const id = feast ? feastKey(feast) : null;
   useEffect(() => {
@@ -84,8 +98,9 @@ export default function BigFeastScreen() {
   });
 
   // Nothing to say (no finished session, or nothing big left in it): leave, and touch nothing.
+  // Until the shown list is read there is no telling, so wait for it.
   useEffect(() => {
-    if (feast === null && !left.current) {
+    if (feast === null && shown !== undefined && !left.current) {
       left.current = true;
       if (router.canGoBack()) router.back();
       else router.replace("/");
@@ -93,26 +108,27 @@ export default function BigFeastScreen() {
   });
 
   const waiting = (isTier && sessions === undefined) || (isReveal && crest === undefined);
-  // A figure still on its way: say nothing rather than half of it.
-  if (!feast || !result || waiting) return null;
-
   return (
     <>
-      {/* No slide: the first beat is two eyes on the painting, and a fade would eat it. */}
+      {/* No slide: the first beat is two eyes on the painting, and a fade would eat it. Before any
+          early return: the push is already animating by the time a figure has arrived. */}
       <Stack.Screen options={{ animation: "none" }} />
-      <BigFeastView
-        feast={feast}
-        crest={feast.kind === "reveal" ? revealShield(feast, crest ?? null) : null}
-        tier={getVillageTier(calculateLevelFromXp(result.heroXp.after))}
-        villageName={villageName}
-        sessions={sessions ?? null}
-        onSeeVillage={() => {
-          if (left.current) return;
-          left.current = true;
-          router.back();
-          seeVillage(router, result);
-        }}
-      />
+      {/* A figure still on its way: say nothing rather than half of it. */}
+      {!feast || !result || waiting ? null : (
+        <BigFeastView
+          feast={feast}
+          crest={feast.kind === "reveal" ? revealShield(feast, crest ?? null) : null}
+          tier={getVillageTier(calculateLevelFromXp(result.heroXp.after))}
+          villageName={villageName}
+          sessions={sessions ?? null}
+          onSeeVillage={() => {
+            if (left.current) return;
+            left.current = true;
+            router.back();
+            seeVillage(router, result);
+          }}
+        />
+      )}
     </>
   );
 }

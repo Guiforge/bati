@@ -38,10 +38,13 @@ jest.mock("react-native-reanimated", () => {
 let mockReduced = false;
 jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => mockReduced }));
 
+const mockStackScreen = jest.fn();
+const mockShown = jest.fn();
 const mockMark = jest.fn().mockResolvedValue(undefined);
 jest.mock("@/db/preferences", () => ({
   preferences: {
     markBigFeastShown: (...a: unknown[]) => mockMark(...a),
+    getBigFeastsShown: () => mockShown(),
     // The session store clears its saved copy when a run ends.
     clearSavedSession: jest.fn().mockResolvedValue(undefined),
   },
@@ -59,7 +62,12 @@ jest.mock("expo-router", () => ({
     push: mockPush,
     canGoBack: () => mockCanGoBack,
   }),
-  Stack: { Screen: () => null },
+  Stack: {
+    Screen: (p: unknown) => {
+      mockStackScreen(p);
+      return null;
+    },
+  },
 }));
 
 const mockTierAsset = jest.fn();
@@ -326,6 +334,7 @@ describe("the big-feast route", () => {
     mockReduced = true;
     mockCanGoBack = true;
     mockGetCrest.mockResolvedValue(null);
+    mockShown.mockResolvedValue([]);
     await lang("fr");
     useUserStore.setState({ villageName: "Brumeval" } as never);
     finish({ crestReveal: revealFacts });
@@ -406,12 +415,53 @@ describe("the big-feast route", () => {
     expect(quit).not.toHaveBeenCalled();
   });
 
-  test("a feast this phone already showed opens nothing", async () => {
-    finish({ crestReveal: revealFacts, bigFeastsShown: ["reveal"] });
+  test("the shown list is read live: a feast marked since the result was saved never reopens", async () => {
+    mockShown.mockResolvedValue(["reveal"]);
     await mount();
     expect(mockMark).not.toHaveBeenCalled();
     expect(quit).not.toHaveBeenCalled();
     expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
+  test("the no-slide option is set on the very first render, before any figure has arrived", async () => {
+    mockGetCrest.mockReturnValue(new Promise(() => {}));
+    const v = await mount();
+    expect(v.queryByTestId("big-feast")).toBeNull();
+    expect(mockStackScreen).toHaveBeenCalledWith(
+      expect.objectContaining({ options: { animation: "none" } }),
+    );
+  });
+
+  test("a crest that cannot be read still shows the animal alone, not an empty screen", async () => {
+    mockGetCrest.mockRejectedValue(new Error("db"));
+    const v = await mount();
+    expect(v.getByTestId("big-feast")).toBeTruthy();
+    expect(mockCrestDrawn).toHaveBeenCalledWith(expect.objectContaining({ animal: "bear" }));
+  });
+
+  test("two taps on the button push the village once", async () => {
+    const v = await mount();
+    await fireEvent.press(v.getByText("Voir Brumeval"));
+    await fireEvent.press(v.getByText("Voir Brumeval"));
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledTimes(1);
+  });
+
+  test("the back gesture pressed twice leaves once, even when quitting empties the store", async () => {
+    // The real quit empties what the screen reads, so only the guard stops the second leave.
+    quit.mockImplementation(() =>
+      useSessionStore.setState({ status: "idle", savedResult: null } as never),
+    );
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    await mount();
+    const press = spy.mock.calls.at(-1)?.[1] as () => boolean;
+    await act(() => {
+      press();
+      press();
+    });
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(quit).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
   });
 
   test("with nothing to go back to, it lands on Home", async () => {

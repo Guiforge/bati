@@ -230,12 +230,27 @@ describe("buildingScale, a kept rank", () => {
     const scale = buildingScale(kept, i18n.t, "en");
     assert(scale);
     const left = Number.parseInt(scale.ends.left.value, 10);
-    expect(left).toBeLessThanOrEqual(done);
+    expect(left).toBe(done);
+    expect(scale.progress).toBe(0);
     expect(scale.caption).toBe(i18n.t(`village.detail_${driver}_driver`, { count: done }));
     expect(scale.progress).toBeGreaterThanOrEqual(0);
     expect(scale.progress).toBeLessThanOrEqual(100);
     expect(scale.progress).toBeCloseTo(((done - left) / (next - left)) * 100);
     expect(deedProgress(kept)).toBe(scale.progress);
+  });
+});
+
+describe("buildingScale, a kept rank swept along the tally", () => {
+  it("never lets the bar recede as routes grow at the same rank", () => {
+    const bars = [2, 3, 4, 5, 6, 7, 8].map((done) =>
+      deedProgress(
+        b("heroes_hall", 3, { driver: "routes", metricValue: done, nextTarget: 7, kept: true }),
+      ),
+    );
+    bars.forEach((bar, i) => {
+      expect(bar).toBeGreaterThanOrEqual(bars[i - 1] ?? 0);
+    });
+    expect(bars[0]).toBe(0);
   });
 });
 

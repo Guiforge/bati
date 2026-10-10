@@ -3,9 +3,9 @@ title: Village
 type: screen
 route: /village
 status: active
-updated: 2026-09-14
+updated: 2026-10-11
 related: [../gameplay/progression.md, ../gameplay/boss-fights.md, ../gameplay/villagers.md]
-sources: [app/(tabs)/village.tsx, components/village/, constants/villageAnchors.ts, db/village.ts]
+sources: [app/(tabs)/village.tsx, components/village/, constants/villageAnchors.ts, db/village.ts, db/crest.ts, db/crestRules.ts, db/milestone.ts]
 ---
 
 # Village (`/village`)
@@ -49,7 +49,9 @@ row can be read without a tap.
      the most of its bar filled. The name is set in the heading font. Rep buildings carry a bar
      of what is done, between the figures of the rung they stand on ("3,000 reps" to "4,000
      reps", `repsRungStart`), and so does every deed bar (leagues, bosses, rematches, routes) from
-     the threshold of the rank it stands on (`deedRungStart`, `deedProgress`), the same figure the
+     the threshold of the rank it stands on, capped at the tally (`deedBarStart`: the lesser of the
+     threshold and the count, so a kept rank standing above the new count starts its bar at the
+     count and never shows a left end larger than "done"; `deedProgress`), the same figure the
      deed fallback of "Next to rise" ranks by; and a sentence under it, "Rank 4 in about 3 outings." (`milestoneLine`).
      Never a number of reps still to do. A link named after what raises it: quests filtered on that
      muscle, the outings for the High Road, the adventures for the other deeds. When that building
@@ -188,3 +190,26 @@ The reasoning, and why a rest between climbs could not buy the same thing here, 
 
 The emblems carry an alpha channel, cut by [`scripts/cutout.py`](../../scripts/cutout.py); an
 unbuilt row draws the same emblem as a silhouette through `tintColor`, which needs that alpha.
+
+## The crest, the milestone line and the feasts
+
+"A village that looks like you" (design: [village-personnalisation](../designs/village-personnalisation.md)).
+
+- **Crest** (`Crest`, read by `getCrest`): the animal of the hero's practice, revealed at the 8th
+  session that counts (`REVEAL_AT`). Bear for strength, ermine for calisthenics, salmon for yoga,
+  stag for running and walking, horse for cycling, boar when no practice reaches 40 % of the first
+  eight (its four quarters show the two leading practices). A second animal joins at 30 % of the
+  sessions and at least 20; the stage is young, adult at 40 sessions of its practice, venerable at
+  200. The shield adds the longest flame and one ring per village year. The hero can pick another
+  animal in Settings or from the crest sheet (`crestAnimal`, `auto` goes back to the sessions'
+  animal, a hand-picked one carries a small ink diamond). The header line says "A bear watches
+  over Brumeval", "as of today" on the day of the reveal and never for a hand-picked animal.
+- **Milestone line** (`milestoneLine`): under a rising building's bar, "Rank 4 in about 3 chest
+  sessions." or "in about 3 outings", the mean of the five latest sessions that fed it, rounded
+  up. Never a number of reps to do (`village-copy-no-chores`). Absent at the top rank and where
+  nothing has fed the building.
+- **Feasts** (`rankFeasts`): small is a line in "Tonight", medium a card, large the full-screen
+  `/big-feast` route (one per session: epilogue, reveal, an Age, anniversary, tier). A tier
+  sentence names the village ("Brumeval becomes a Flourishing City."); an unnamed tier 3 village
+  has its own ("Your village grows: it is now a Village."), since the tier is named after the
+  generic word. See [session](session.md) for the victory.

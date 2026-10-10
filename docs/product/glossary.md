@@ -2,7 +2,7 @@
 title: Glossary
 type: reference
 status: draft
-updated: 2026-09-14
+updated: 2026-10-11
 related: [writing.md, ../design/audits/2026-09-10-french-copy.md]
 ---
 
@@ -106,13 +106,17 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | village | What training builds | village | village |  | Dorf | aldea |
 | building | One structure, raised by a muscle, a style or a deed | building | bâtiment |  | Gebäude | edificio |
 | rises | A building gaining a level | rises | monte (not nourrit: a building is raised, not fed) |  | wächst | sube |
-| ceiling | A building's last level | ceiling | plafond |  | Höchststufe | tope |
+| ceiling | A building's last level | ceiling | plafond |  | Maximum (the app says "Am Maximum") | tope |
 | starter | The buildings the village begins with | starter | fondations | départ (a departure) | Fundament | cimientos |
 | upgrade | A building that follows its base building | upgrade | amélioration |  | Ausbau | mejora |
 | deed | First wins, rematches, routes and leagues, as a building family | deed | haut fait |  | Heldentat | hazaña |
 | first win | A boss beaten for the first time, what raises the Dragon Lair | first win | première victoire |  | erster Sieg | primera victoria |
 | rematch | A beaten boss campaign finished again, what raises the Champion Arena | rematch | revanche |  | Revanche | revancha |
 | route | A finished adventure that is not a boss, what raises the Hall of Heroes | route | route | chemin (taken by quest titles) | Route | ruta |
+| crest | The shield of the village: the hero's animal, flame and rings | crest | écu | blason | Wappen | escudo |
+| feast | A thing the village celebrates after a session: small (line), medium (card), large (full screen) | feast | fête (grande fête for the full screen) |  | not shown | not shown |
+| tonight | The list of what a session changed | Tonight | Ce soir |  | Heute Abend | Esta noche |
+| milestone | Sessions or outings until a building rises | milestone | jalon |  | not shown (the line says "Rang 2 in etwa 3 Einheiten") | not shown |
 | achievement | An unlockable trophy | achievement | succès |  | Erfolg | logro |
 | building rank | How far a building has risen, 1 to 5 (3 for an upgrade), shown as "rank 3" | rank | rang | niveau (the hero's) | Rang | grado (not rango, the village's tier) |
 | tier | One of the village's twelve stages, one painting each, raised by the hero's level | tier | palier | niveau (the hero's and a building's) | Ausbaustufe (not Stufe, a rung) | rango (not etapa, a rung) |

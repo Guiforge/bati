@@ -266,12 +266,14 @@ export function listExercises(): Promise<Exercise[]> {
  * back down to Squat by `currentRungFor`. Same rule here, so the warm-up never asks for a movement
  * the ladder is telling the hero to work up to.
  */
-export async function unavailableMovements(): Promise<Set<string>> {
-  const [catalogue, unavailable, level, { totalSessions }] = await Promise.all([
+export async function unavailableMovements(sessions?: number): Promise<Set<string>> {
+  // `sessions` from a caller that already counted them (the warm-up does, one line earlier):
+  // the count is a pass over the whole journal, and this runs on every quest screen.
+  const [catalogue, unavailable, level, totalSessions] = await Promise.all([
     listExercises(),
     unavailableExerciseIds(),
     preferences.getTrainingLevel(),
-    getSessionAggregates(),
+    sessions ?? getSessionAggregates().then((aggregates) => aggregates.totalSessions),
   ]);
   // A hero starting out is not warmed up with jumps (`startsGently`). Every raise movement but
   // one was a jump, so day one opened on Jumping Jacks for someone back from a knee operation,

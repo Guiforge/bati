@@ -1,5 +1,5 @@
 import { differenceInCalendarDays } from "date-fns";
-import { and, count, countDistinct, desc, eq, gt, gte, ne, sql, sum } from "drizzle-orm";
+import { and, count, countDistinct, desc, eq, gt, gte, lt, ne, sql, sum } from "drizzle-orm";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { Exercise } from "./exercises";
@@ -154,7 +154,7 @@ export type CompletedSession = {
  * And a movement left mid-session, skipped or swapped away from: a skip writes no row, so one
  * clean round followed by "I couldn't" used to read as a clean session. Deduced from the rows
  * themselves, so it survives the OS killing the app between the skip and the save: a movement
- * in a slot is neutral when it lacks a row for any round between its first and the session's
+ * in a slot is neutral when it lacks a row for any round it was due in, up to the session's
  * last. A replacement done on every remaining round counts as it always did.
  *
  * ponytail: "the session's last round" is the last round that left a row. A hero who skips
@@ -167,14 +167,22 @@ export function ladderNeutralSets(sets: readonly CompletedExerciseInput[]): bool
   const key = (set: CompletedExerciseInput) => `${set.sortOrder}:${set.exerciseId}`;
 
   const spans = new Map<string, { first: number; rows: number }>();
+  // The first round each slot left a row in, whatever the movement.
+  const slotStart = new Map<number, number>();
   for (const set of sets) {
     const span = spans.get(key(set)) ?? { first: round(set), rows: 0 };
     spans.set(key(set), { first: Math.min(span.first, round(set)), rows: span.rows + 1 });
+    slotStart.set(set.sortOrder, Math.min(slotStart.get(set.sortOrder) ?? round(set), round(set)));
   }
 
   return sets.map((set) => {
     const span = spans.get(key(set));
-    const left = span !== undefined && span.rows < lastRound - span.first + 1;
+    // The movement that opens a slot was due from round one: rounds it is missing before its
+    // first row are skips too. Only a replacement, which arrives after another movement's rows,
+    // is counted from where it came in.
+    const due =
+      span !== undefined && span.first === slotStart.get(set.sortOrder) ? 0 : (span?.first ?? 0);
+    const left = span !== undefined && span.rows < lastRound - due + 1;
     const lowered =
       set.prescribed !== undefined &&
       set.target !== undefined &&
@@ -596,6 +604,20 @@ export async function getSessionAggregates(): Promise<{
     totalXp: Number(row?.totalXp ?? 0),
     uniqueQuests: Number(row?.uniqueQuests ?? 0),
   };
+}
+
+/**
+ * Workouts logged before today began. For a rule that must not change its answer in the middle
+ * of a day: the daily quest is drawn from the quests a hero may be suggested, and a pool that
+ * grew when tonight's session was saved pointed the same day at a second quest, and paid the
+ * daily bonus twice.
+ */
+export async function workoutsBeforeToday(): Promise<number> {
+  const [row] = await db
+    .select({ n: count() })
+    .from(completedQuest)
+    .where(and(isWorkout(), lt(completedQuest.performedAt, startOfLocalDay())));
+  return Number(row?.n ?? 0);
 }
 
 /**

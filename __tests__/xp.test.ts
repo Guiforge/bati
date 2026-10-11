@@ -355,6 +355,33 @@ describe("db/xp", () => {
    * twenty times the exploit it was written to close. `MAX_SESSION_XP` is the only bound no
    * input can raise.
    */
+  // The session prices a set against what the app prescribed, so the tag has to as well: read
+  // off the hero's own number, a stepper raised from 12 to 100 advertised eight times the pay.
+  test("the estimate prices a changed target the way the session will", () => {
+    const quest = (target: number, prescribed?: number) => ({
+      rounds: 1,
+      exercises: [
+        { exercise: MEDIUM, target: { type: "reps" as const, value: target }, prescribed },
+      ],
+    });
+    const asWritten = estimateQuestXp(quest(12), "medium");
+
+    // Raised to 100, a quarter over: 15 paid in full, the 110 past the allowance at the
+    // decaying rate. Exactly what the session pays for those reps on a prescribed twelve.
+    expect(estimateQuestXp(quest(100, 12), "medium")).toBe(
+      computeSessionXp({
+        sets: [reps(12, 125)],
+        effortCeilingSeconds: Number.POSITIVE_INFINITY,
+        userLevel: "medium",
+      }),
+    );
+    expect(estimateQuestXp(quest(100, 12), "medium")).toBeLessThan(
+      estimateQuestXp(quest(100), "medium"),
+    );
+    // Lowered to 5, the tag still follows what the hero means to do.
+    expect(estimateQuestXp(quest(5, 12), "medium")).toBeLessThan(asWritten);
+  });
+
   test("a hero-authored monster quest is bounded by the one cap no input can raise", () => {
     const monster = {
       rounds: 10,

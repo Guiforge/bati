@@ -67,16 +67,29 @@ describe("quest eligibility", () => {
   const questId = (enTitle: string): number =>
     (t.sqlite.prepare("SELECT id FROM quests WHERE enTitle = ?").get(enTitle) as { id: number }).id;
 
-  /** Three sessions: past the start, where nothing is known of a hero yet (`startsGently`). */
-  function logThreeSessions() {
+  /**
+   * Three sessions: past the start, where nothing is known of a hero yet (`startsGently`).
+   * Two days ago by default, because the rule counts the sessions logged before today.
+   */
+  function logThreeSessions(when = "'now', '-2 days'") {
     for (let i = 0; i < 3; i++) {
       t.sqlite
         .prepare(
-          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, strftime('%s', 'now'))",
+          `INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, strftime('%s', ${when}))`,
         )
         .run();
     }
   }
+
+  // The daily quest is drawn from this set by the date. A pool that grew when tonight's third
+  // session was saved pointed the same day at another quest, and paid the daily bonus twice.
+  test("what was logged today does not change what the app may suggest today", async () => {
+    const before = await quests().getEligibleQuestIds();
+
+    logThreeSessions("'now'");
+
+    expect([...(await quests().getEligibleQuestIds())].sort()).toEqual([...before].sort());
+  });
 
   test("with no preferences set, a hero who has trained is filtered out of nothing", async () => {
     logThreeSessions();

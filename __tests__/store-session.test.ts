@@ -1239,6 +1239,29 @@ describe("useSessionStore", () => {
       expect(slot?.images).toEqual([]);
     });
 
+    // A target lowered to 1 on the quest screen keeps its "the app asked for ten" through a
+    // swap. Dropped, the 1 became what was prescribed on the new movement, and one rep was a
+    // clean session on its rung.
+    test("carries what the app prescribed across a swap that keeps the hero's number", () => {
+      const quest = store.getState().quest;
+      assert(quest);
+      const [first, ...rest] = quest.exercises;
+      assert(first);
+      store.setState({
+        quest: {
+          ...quest,
+          exercises: [{ ...first, target: { ...first.target, value: 1 }, prescribed: 10 }, ...rest],
+        },
+      });
+
+      // Counted, like the movement it replaces: a swap that changes the unit asks a fresh target.
+      store.getState().swapCurrentExercise({ ...easier, measure: "reps" });
+      store.getState().completeExercise(1);
+
+      expect(store.getState().quest?.exercises[0]?.prescribed).toBe(10);
+      expect(store.getState().results[0]?.prescribed).toBe(10);
+    });
+
     test("leaves results already logged exactly as they were", () => {
       store.getState().completeExercise(10);
       const before = store.getState().results;

@@ -615,20 +615,6 @@
     "expedition_made_quest": "Filed with your quests. It is waiting exactly as you left it.",
     "expedition_permission_why": "Bati reads your location during an outing, and it leaves this phone only in your own backups and sync. Android is about to ask.",
     "level_label": "Level",
-    "empty_variants": [
-      {
-        "title": "Nice work!",
-        "subtitle": "Session logged. Keep the flame lit."
-      },
-      {
-        "title": "Solid session.",
-        "subtitle": "Every rep still counts toward the next one."
-      },
-      {
-        "title": "In the books!",
-        "subtitle": "No fireworks today. The flame doesn't care, it just grows."
-      }
-    ],
     "tonight_reveal_bear": "A bear comes out of the forest and settles in {{place}}.",
     "tonight_reveal_ermine": "An ermine slips out of the forest and settles in {{place}}.",
     "tonight_reveal_salmon": "A salmon swims upriver and settles in {{place}}.",

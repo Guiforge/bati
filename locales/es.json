@@ -626,20 +626,6 @@
     "expedition_made_quest": "Guardada con tus misiones. Te espera tal como la dejaste.",
     "expedition_permission_why": "Bati lee tu ubicación durante una salida, y solo sale de este móvil en tus propias copias de seguridad y tu sincronización. Android te lo va a pedir.",
     "level_label": "Nivel",
-    "empty_variants": [
-      {
-        "title": "¡Buen trabajo!",
-        "subtitle": "Sesión guardada. Mantén la llama encendida."
-      },
-      {
-        "title": "Sesión sólida.",
-        "subtitle": "Cada repetición cuenta para la siguiente."
-      },
-      {
-        "title": "¡Apuntado!",
-        "subtitle": "Hoy no hay fuegos artificiales. A la llama le da igual, crece igualmente."
-      }
-    ],
     "tonight_reveal_bear": "Un oso sale del bosque y se instala en {{place}}.",
     "tonight_reveal_ermine": "Un armiño se desliza fuera del bosque y se instala en {{place}}.",
     "tonight_reveal_salmon": "Un salmón remonta el río y se instala en {{place}}.",

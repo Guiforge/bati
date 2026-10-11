@@ -61,7 +61,7 @@ Invariant: with skewed clocks, the side with the later `updatedAt` wins hero con
 edit was really last.
 
 **R7. `MERGED_PREFERENCES` = villageName, avatarId, customAvatar, trainingLevel, ownedEquipment, oath,
-reminderDays, crestAnimal.** `db/backup.ts:251-262`.
+reminderDays, crestAnimal.** `db/backup.ts:251-265`.
 `crestAnimal` is `auto` or an animal slug; a missing or unknown value reads as `auto`. Nothing
 writes a default (a device that never chose has no row, or two such devices would diverge in
 `db-peer-compare`), and going back to the animal the sessions chose writes `auto`, never a delete:
@@ -95,7 +95,7 @@ log, adventure runs, set-aside exercises, `language`, `warmupEnabled`, `prepMode
 `distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `villagersEnabled`, `bigFeastsShown`
 (a JSON list of the big feasts this phone already showed; it only decides display), and every
 other preference not in R7. They are excluded by being absent from the whitelist `MERGED_PREFERENCES`
-(`db/backup.ts:251-262`), the only list the comparison and the merge read (`db/backup.ts:270-277`,
+(`db/backup.ts:251-265`), the only list the comparison and the merge read (`db/backup.ts:270-277`,
 `db/merge.ts:181`).
 Invariant: after any merge, the local value of each of these keys is byte-identical to before.
 

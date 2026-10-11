@@ -1186,6 +1186,7 @@
     "crest_why_pick": "Choose another animal",
     "crest_why_reset": "Go back to your sessions' animal",
     "crest_pick_title": "Your animal",
+    "crest_pick_stage": "Your animal stays {{stage}}.",
     "crest_pick_auto": "The one from your sessions ({{animal}})",
     "crest_pick_auto_sub": "{{practice}}, {{n}} of 8 sessions",
     "crest_count_strength": "strength sessions",

@@ -1186,6 +1186,7 @@
     "crest_why_pick": "Anderes Tier wählen",
     "crest_why_reset": "Das Tier deiner Einheiten übernehmen",
     "crest_pick_title": "Dein Tier",
+    "crest_pick_stage": "Dein Tier bleibt {{stage}}.",
     "crest_pick_auto": "Das Tier deiner Einheiten ({{animal}})",
     "crest_pick_auto_sub": "{{practice}}, {{n}} von 8 Einheiten",
     "crest_count_strength": "Krafttraining",

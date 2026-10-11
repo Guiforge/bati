@@ -1255,6 +1255,7 @@
     "crest_why_pick": "Choisir un autre animal",
     "crest_why_reset": "Reprendre l'animal de tes séances",
     "crest_pick_title": "Ton animal",
+    "crest_pick_stage": "Ton animal reste {{stage}}.",
     "crest_pick_auto": "Celui de tes séances ({{animal}})",
     "crest_pick_auto_sub": "{{practice}}, {{n}} séances sur 8",
     "crest_count_strength": "de force",

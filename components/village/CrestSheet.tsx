@@ -287,6 +287,10 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
           onPress={() => choose(a)}
         />
       ))}
+      {/* A pick never moves the stage: the sheet is where the hero reads which one it is. */}
+      <Text testID="crest-pick-stage" fontSize={13} color="$textSecondary">
+        {t("village.crest_pick_stage", { stage: t(`village.crest_stage_${crest.stage}`) })}
+      </Text>
     </YStack>
   );
 }

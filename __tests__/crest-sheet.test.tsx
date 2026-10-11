@@ -366,6 +366,63 @@ describe("Ton animal", () => {
   });
 });
 
+describe("the stage line under the options", () => {
+  const SAID = {
+    fr: [
+      "Ton animal reste jeune.",
+      "Ton animal reste adulte.",
+      "Ton animal reste vénérable.",
+      "Ton animal reste légendaire.",
+    ],
+    en: [
+      "Your animal stays young.",
+      "Your animal stays adult.",
+      "Your animal stays venerable.",
+      "Your animal stays legendary.",
+    ],
+    de: [
+      "Dein Tier bleibt jung.",
+      "Dein Tier bleibt erwachsen.",
+      "Dein Tier bleibt ehrwürdig.",
+      "Dein Tier bleibt legendär.",
+    ],
+    es: [
+      "Tu animal sigue joven.",
+      "Tu animal sigue adulto.",
+      "Tu animal sigue venerable.",
+      "Tu animal sigue legendario.",
+    ],
+  } as const;
+  // 8 sessions (young), then the thresholds of the sessions' animal: 40, 200, 500.
+  const LEVELS = [
+    FIVE_OF_EIGHT,
+    seq(["strength", 40]),
+    seq(["strength", 200]),
+    seq(["strength", 500]),
+  ];
+
+  it.each(
+    (["fr", "en", "de", "es"] as const).flatMap((lang) =>
+      [0, 1, 2, 3].map((i) => [lang, i] as const),
+    ),
+  )("says the stage in %s, level %d", async (lang, i) => {
+    await i18n.changeLanguage(lang);
+    try {
+      await sheet(crestOf(LEVELS[i] ?? []), "pick");
+      expect(screen.getByTestId("crest-pick-stage").props.children).toBe(SAID[lang][i]);
+    } finally {
+      await i18n.changeLanguage("fr");
+    }
+  });
+
+  it("a hand-picked animal keeps the sessions' stage, and the line says it", async () => {
+    await sheet(crestOf(seq(["strength", 200]), "salmon"), "pick");
+    expect(screen.getByTestId("crest-pick-stage").props.children).toBe(
+      "Ton animal reste vénérable.",
+    );
+  });
+});
+
 describe("the Settings row", () => {
   const mountRow = (crest: crestDb.Crest | null) => {
     jest.spyOn(crestDb, "getCrest").mockResolvedValue(crest);

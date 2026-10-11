@@ -50,7 +50,7 @@ const ARTICLED = rx(`(?:${ART})`, `${REPS}|${MOVES}|${SESSIONS}`);
 const EFFORT = new RegExp(`${COUNTED.source}|${ARTICLED.source}`, "iu");
 const HAS_REPS = new RegExp(`${B}(?:${REPS}|${MOVES})${E}`, "iu");
 
-// Why a count is allowed. Six reasons, no other, and the four reserved ones belong to their keys:
+// Why a count is allowed. Seven reasons, no other, and the five reserved ones belong to their keys:
 //  - "fait": it says what the hero HAS ALREADY done (records, totals, "5 de tes 8 séances", the
 //    history behind a building);
 //  - "estimation": the spec's milestone, "rank 2 in about 3 sessions", never a quantity of reps;
@@ -61,16 +61,28 @@ const HAS_REPS = new RegExp(`${B}(?:${REPS}|${MOVES})${E}`, "iu");
 //    the hero's whole history. Only the literals of db/achievements.ts;
 //  - "échelle": the figure at the end of a bar (rows.ts, barScale.ts), a scale mark, not a
 //    sentence. Only village.bar_end_reps_* and village.unit_*;
-//  - "règle": how a hold converts to reps, an explanation. Only village.rep_unit.
-type Why = "fait" | "estimation" | "serment" | "succès" | "échelle" | "règle";
-const REASONS: readonly Why[] = ["fait", "estimation", "serment", "succès", "échelle", "règle"];
+//  - "règle": a rule the village states, an explanation (how a hold converts to reps, "each level
+//    comes from a recorded session"). Only village.rep_unit and village.foot;
+//  - "déblocage": the condition that unlocks a detail ("Built by your first {{style}} exercise"),
+//    a fact about the past, not a quantity to reach. Only village.detail_unlock_*.
+type Why = "fait" | "estimation" | "serment" | "succès" | "échelle" | "règle" | "déblocage";
+const REASONS: readonly Why[] = [
+  "fait",
+  "estimation",
+  "serment",
+  "succès",
+  "échelle",
+  "règle",
+  "déblocage",
+];
 // The keys a reserved reason is for, both ways: an entry with the reason must match, and a key
 // that matches must carry the reason (so "fait" cannot be used to dodge the scoping).
 const RESERVED: Partial<Record<Why, RegExp>> = {
   serment: /^oath\.metric_/,
   succès: /^db\/achievements\.ts:/,
   échelle: /^village\.(bar_end_reps_|unit_)/,
-  règle: /^village\.rep_unit$/,
+  règle: /^village\.(rep_unit|foot)$/,
+  déblocage: /^village\.detail_unlock_/,
 };
 // A locale key is allowed with the EXACT text of each language it is read in (plural variants are
 // keys of their own), so editing an allowed copy fails until someone re-reads it and updates the
@@ -362,11 +374,11 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     es: "Más XP en una sesión",
   },
   "village.detail_unlock_style": {
-    why: "fait",
+    why: "déblocage",
     en: "Built by your first {{style}} exercise",
   },
   "village.foot": {
-    why: "fait",
+    why: "règle",
     fr: "Rien ne se gère ici. Chaque niveau vient d'une séance enregistrée.",
     es: "Aquí no se gestiona nada. Cada nivel sale de una sesión registrada.",
   },

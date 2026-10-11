@@ -292,6 +292,15 @@ describe("TonightList", () => {
     );
     expect(spoken({ title: "Boss", body: [""] })).toBe("Boss");
     expect(spoken({ title: "Boss", body: [] })).toBe("Boss");
+    expect(spoken({ title: "Nouveau palier :", body: ["Village"] })).toBe(
+      "Nouveau palier : Village",
+    );
+  });
+
+  test("the spoken label of a card with nothing in it is empty, not a crash", () => {
+    expect(spoken({ title: "" })).toBe("");
+    expect(spoken({ title: "", body: [""] })).toBe("");
+    expect(spoken({ title: "", body: ["Niveau 5."] })).toBe("Niveau 5");
   });
 
   test("a boss, an oath and a building rank are said once each", async () => {

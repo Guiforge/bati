@@ -98,12 +98,12 @@ export const TEXT_FADE = 500;
 
 /**
  * Title and body as one sentence run. Parts are joined with a full stop, except after one that
- * already ends on a final mark (. ! ? …), which gets a space. Only the very last full stop goes.
+ * already ends on a final mark (. ! ? … :), which gets a space. Only the very last full stop goes. A card with nothing to say is an empty string.
  */
 export const spoken = (card: { title: string; body?: string[] }) => {
   const parts = [card.title, ...(card.body ?? [])].filter(Boolean);
   const last = parts.length - 1;
   return parts
     .map((p, i) => (i === last ? p.replace(/\.$/, "") : p))
-    .reduce((run, p) => `${run}${/[.!?…]$/.test(run) ? " " : ". "}${p}`);
+    .reduce((run, p) => (run ? `${run}${/[.!?…:]$/.test(run) ? " " : ". "}${p}` : p), "");
 };

@@ -452,17 +452,33 @@ describe("an expedition on the quest screen", () => {
     expect(view.getByTestId("goal-longest-run").props.children).toContain("33 min");
   });
 
-  test("the duration ceiling yields to the walk-run when it sits under it", async () => {
-    // A hero whose longest run this month is twelve minutes: the real rule proposes them the
-    // walk-run, and the sheet asks the rule.
+  // "Copes better under 13 min", or under 2.2 km, printed over a proposal of twenty minutes was
+  // the screen contradicting itself. The slot says the run is the walk-run proposal
+  // (`resolveSlot`), and the sheet is told rather than guessing from the habit.
+  test("the ceiling yields to the walk-run proposal, on both tabs", async () => {
+    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 2000, longestSeconds: 720 });
+    const quest = runQuest();
+    const [slot] = quest.exercises;
+    assert(slot);
+    // Not a field of this file's fixture type: it is what `resolveSlot` adds to a real slot.
+    Object.assign(slot, { walkRun: true });
+    const view = await mountQuest(quest);
+
+    expect(view.getByTestId("goal-walk-run")).toBeTruthy();
+    await fireEvent.press(view.getByText("Set up the outing"));
+    expect(view.queryByTestId("goal-longest-run")).toBeNull();
+    await fireEvent.press(view.getByText("Distance"));
+    expect(view.queryByTestId("goal-longest-run")).toBeNull();
+  });
+
+  // A hero's own run quest is never proposed the walk-run: with the same short month, nothing
+  // contradicts the ceiling, and it is the one line that tells them not to jump.
+  test("a run that is not the walk-run proposal keeps its ceiling, however short the month", async () => {
     mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 2000, longestSeconds: 720 });
     const view = await mountQuest(runQuest());
 
     await fireEvent.press(view.getByText("Set up the outing"));
-    expect(view.queryByTestId("goal-longest-run")).toBeNull();
-    // In the other unit too: "stay under 2.2 km" over the same twenty-minute proposal.
-    await fireEvent.press(view.getByText("Distance"));
-    expect(view.queryByTestId("goal-longest-run")).toBeNull();
+    expect(view.getByTestId("goal-longest-run").props.children).toContain("13 min");
   });
 
   test("a ride is offered a ride's distances, and no running ceiling", async () => {

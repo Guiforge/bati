@@ -822,10 +822,12 @@ async function dailyBonusFor(
   xpAtTarget: number,
 ): Promise<number> {
   if (savedSessionId !== null) return dailyBonusOf(savedSessionId);
+  // The two counts first: they are one indexed read each, and the day's pick walks the whole
+  // catalogue. After the day's bonus is paid, every later save stops at the first line.
   const earned =
-    (await isDailyQuest(questId, startedAt)) &&
-    !(await dailyBonusPaidOn(startedAt, null)) &&
-    !(await hasSessionForQuestToday(questId, null, startedAt));
+    !(await dailyBonusPaidOn(startedAt)) &&
+    !(await hasSessionForQuestToday(questId, startedAt)) &&
+    (await isDailyQuest(questId, startedAt));
   return earned ? Math.round(0.5 * xpAtTarget) : 0;
 }
 
@@ -1162,6 +1164,17 @@ function recordOf(
     // Nothing prescribes ground: an outing's number is a goal the hero set, or none at all.
     prescribed: isOutdoors(slot.exercise.style) ? undefined : prescribedValue(slot),
   };
+}
+
+/**
+ * The round a slot's movement first came in, when the hero swapped it in mid-session, for
+ * `ladderNeutralSets`: due from that round, not from round one and not from its first row, since
+ * swapped in and skipped it was still due then. Undefined for the movement the quest handed
+ * over, swapped away from and back to or not: that one was due from the start.
+ */
+function arrivalOf(slot: QuestExercise): number | undefined {
+  if (!slot.swaps || slot.exercise.id === slot.swaps.handedOver) return undefined;
+  return slot.swaps.arrivals[slot.exercise.id];
 }
 
 /**
@@ -1591,7 +1604,7 @@ export const useSessionStore = create<SessionState>()(
         result,
         target,
         prescribed,
-        swappedIn: currentEx.swappedIn,
+        swappedIn: arrivalOf(currentEx),
         pricing: {
           secondsPerRep: currentEx.exercise.secondsPerRep,
           difficulty: currentEx.exercise.difficulty,
@@ -1662,24 +1675,34 @@ export const useSessionStore = create<SessionState>()(
 
       const slot = quest.exercises[currentExerciseIndex];
       if (!slot || slot.exercise.id === exercise.id) return;
-      // Which movement the quest handed over here, and the round each other one first came in.
+      // What the session remembers of this slot (`QuestExercise.swaps`): which movement the
+      // quest handed over, the round each other one first came in, and what each was asked.
       const handedOver = slot.swaps?.handedOver ?? slot.exercise.id;
       const arrivals = {
         ...slot.swaps?.arrivals,
         [exercise.id]: slot.swaps?.arrivals[exercise.id] ?? currentRoundIndex,
       };
-      // Back to the movement the quest wrote, from the rung the ladder served: the same answer
-      // "Do X instead" gives on the quest screen, what the quest wrote for it. Through the
-      // retarget it was the unit's default, with nothing prescribed beside it.
       const written = slot.substitutedFor;
-      const asWritten =
-        written && !written.setAside && written.id === exercise.id ? written.target : undefined;
+      const targets: NonNullable<QuestExercise["swaps"]>["targets"] = {
+        // The movement the quest wrote, when the ladder served a rung in its place: what the
+        // quest wrote for it. Remembered at the first swap, which is where the slot stops
+        // saying it. Through the retarget it was the unit's default, nothing prescribed beside.
+        ...(written?.target && !written.setAside
+          ? { [written.id]: { target: written.target } }
+          : {}),
+        ...slot.swaps?.targets,
+        // And the movement being left: its target and what the app prescribed under it.
+        [slot.exercise.id]: { target: slot.target, prescribed: slot.prescribed },
+      };
+      // Coming back to a movement gives it back its own target, the same answer "Do X instead"
+      // gives on the quest screen for the written one, however many swaps came between.
+      const known = targets[exercise.id];
 
       // The slot's target, unless the movement is measured the other way — same call
       // `applyQuestConfig` makes. Results already logged keep their own `exerciseId` and
       // `pricing`: they are true.
       const target =
-        asWritten ?? retargetForMovement(slot.target, slot.exercise, exercise, get().userLevel);
+        known?.target ?? retargetForMovement(slot.target, slot.exercise, exercise, get().userLevel);
       const exercises = quest.exercises.map((qex, i) =>
         i === currentExerciseIndex
           ? {
@@ -1696,18 +1719,14 @@ export const useSessionStore = create<SessionState>()(
               // and so must what the app had prescribed under it: dropped, a target lowered to 1
               // became "what was asked" on the new movement, and one rep earned its rung. A swap
               // that changed the unit generated a fresh target, which is the app's own again.
-              prescribed:
-                asWritten === undefined && target.type === slot.target.type
+              prescribed: known
+                ? known.prescribed
+                : target.type === slot.target.type
                   ? slot.prescribed
                   : undefined,
               // The pin was on the old movement.
               pinnedOver: undefined,
-              // Due from the round it *first* arrived in, not from round one and not from its
-              // first row (`ladderNeutralSets`): swapped in and skipped, it was still due then,
-              // however many swaps follow. And never on the movement the quest handed over,
-              // swapped away from and back to: that one was due from the start.
-              swaps: { handedOver, arrivals },
-              swappedIn: exercise.id === handedOver ? undefined : arrivals[exercise.id],
+              swaps: { handedOver, arrivals, targets },
             }
           : qex,
       );

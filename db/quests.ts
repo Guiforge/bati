@@ -111,19 +111,20 @@ export interface QuestExercise {
   prescribed?: number;
 
   /**
-   * The round (0-based) in which the hero first swapped this movement into the slot during the
-   * session. Set by the session store and by nothing else: its sets are due from that round
-   * (`ladderNeutralSets`). Absent on the movement the quest handed over, swapped back to or not.
+   * What the session remembers of this slot's swaps, set by the session store and by nothing
+   * else. Kept on the slot, which is in `SavedSessionState`, because the rows cannot say it:
+   * - `handedOver`: the movement the quest handed over, which is due from round one;
+   * - `arrivals`: the round each other movement *first* came in. Swapped in, skipped, swapped
+   *   out and back, a movement was still due from that first round (`ladderNeutralSets`);
+   * - `targets`: what each movement was asked when it stood here, the hero's own number and the
+   *   app's under it. Coming back to a movement gives it back its own target, so the movement
+   *   the quest wrote returns with what the quest wrote for it however many swaps were made.
    */
-  swappedIn?: number;
-
-  /**
-   * What the session remembers of this slot's swaps: the movement the quest handed over, and
-   * the round each other movement first arrived in. Kept on the slot because a movement can be
-   * swapped in, skipped, swapped out and swapped back in: read off its rows, its first arrival
-   * was forgotten and the skip with it.
-   */
-  swaps?: { handedOver: number; arrivals: Record<number, number> };
+  swaps?: {
+    handedOver: number;
+    arrivals: Record<number, number>;
+    targets: Record<number, { target: Target; prescribed?: number }>;
+  };
 
   /**
    * This run is proposed as twenty minutes of walk and run mixed, because the hero has not run
@@ -1165,6 +1166,8 @@ export async function getEligibleQuestIds(
      * an oath sworn on a jump is not the app picking jumps for them.
      */
     allowJumps?: boolean;
+    /** The instant "today" is read from, for a save asking about the day it started on. */
+    at?: Date;
   } = {},
 ): Promise<Set<number>> {
   // Sessions before today, not up to now: the daily quest is drawn from this set, and it must
@@ -1172,7 +1175,7 @@ export async function getEligibleQuestIds(
   const [ownedEquipment, trainingLevel, sessions, rows] = await Promise.all([
     preferences.getOwnedEquipment(),
     preferences.getTrainingLevel(),
-    workoutsBeforeToday(),
+    workoutsBeforeToday(options.at),
     db
       .select({
         questId: questExercises.questId,
@@ -1314,7 +1317,7 @@ async function pickDailyTemplate(at = new Date()): Promise<QuestTemplate | null>
 
   // Falling back to the whole catalogue keeps the daily bonus reachable even if the hero's
   // filters leave nothing — an empty pool would silently remove the bonus altogether.
-  const eligible = await getEligibleQuestIds();
+  const eligible = await getEligibleQuestIds({ at });
   const pool = templates.filter((tpl) => eligible.has(tpl.id));
   const candidates = pool.length > 0 ? pool : templates;
 

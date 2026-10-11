@@ -33,9 +33,9 @@ export type CompletedExerciseInput = {
    */
   prescribed?: number;
   /**
-   * The round (0-based) in which the hero swapped this movement into the slot. In memory only,
-   * for `ladderNeutralSets`: such a movement is due from that round, not from round one. Absent
-   * on a movement the quest handed over.
+   * The round (0-based) in which the hero first swapped this movement into the slot. In memory
+   * only, for `ladderNeutralSets`: such a movement is due from that round, not from round one.
+   * Absent on a movement the quest handed over.
    */
   swappedIn?: number;
 
@@ -175,6 +175,10 @@ export type CompletedSession = {
  * replacement done on every round that remained counts as it always did, including one swapped
  * in after a skipped round. The rows alone cannot tell those cases apart, which is why the set
  * says when it came in.
+ *
+ * A movement swapped away from and back to is neutral too, with the one that stood in for it:
+ * neither was done on every round it was due in. That is the rule as written ("a movement the
+ * hero left"), not an accident of the counting.
  *
  * `rounds` is the quest's own count. Without it the last round is the last one that left a row,
  * and a hero who skipped every slot of the final round kept the credit of the rounds before.
@@ -633,11 +637,13 @@ export async function getSessionAggregates(): Promise<{
  * grew when tonight's session was saved pointed the same day at a second quest, and paid the
  * daily bonus twice.
  */
-export async function workoutsBeforeToday(): Promise<number> {
+export async function workoutsBeforeToday(at = new Date()): Promise<number> {
   const [row] = await db
     .select({ n: count() })
     .from(completedQuest)
-    .where(and(isWorkout(), lt(completedQuest.performedAt, startOfLocalDay())));
+    // `at` for a save: "today" is the day the session started on, like every other question
+    // its bonus asks. Read off the clock, a session begun at 23:50 counted its own evening.
+    .where(and(isWorkout(), lt(completedQuest.performedAt, startOfLocalDay(at))));
   return Number(row?.n ?? 0);
 }
 
@@ -765,20 +771,13 @@ export async function outingSecondsToday(excludeSessionId: number | null): Promi
  */
 export async function hasSessionForQuestToday(
   questId: number,
-  excludeSessionId: number | null,
   /** The instant "today" is read from. A session's own start, when it is asked for a save. */
   at = new Date(),
 ): Promise<boolean> {
   const [row] = await db
     .select({ n: count() })
     .from(completedQuest)
-    .where(
-      and(
-        eq(completedQuest.questId, questId),
-        onLocalDayOf(at),
-        excludeSessionId === null ? undefined : ne(completedQuest.id, excludeSessionId),
-      ),
-    );
+    .where(and(eq(completedQuest.questId, questId), onLocalDayOf(at)));
 
   return Number(row?.n ?? 0) > 0;
 }
@@ -799,20 +798,11 @@ function onLocalDayOf(at: Date) {
  * from another device brings its bonus with it. `at` is the instant the day is read from, the
  * session's own start, because that is the day its row is dated.
  */
-export async function dailyBonusPaidOn(
-  at: Date,
-  excludeSessionId: number | null,
-): Promise<boolean> {
+export async function dailyBonusPaidOn(at: Date): Promise<boolean> {
   const [row] = await db
     .select({ n: count() })
     .from(completedQuest)
-    .where(
-      and(
-        gt(completedQuest.dailyBonusXp, 0),
-        onLocalDayOf(at),
-        excludeSessionId === null ? undefined : ne(completedQuest.id, excludeSessionId),
-      ),
-    );
+    .where(and(gt(completedQuest.dailyBonusXp, 0), onLocalDayOf(at)));
   return Number(row?.n ?? 0) > 0;
 }
 

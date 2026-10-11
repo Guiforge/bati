@@ -95,6 +95,8 @@ jest.mock("@/db/exercises", () => ({ listExercises: () => Promise.resolve([]) })
 // real schema in `__tests__/db-change-version.test.ts`; here it is what the row does with it.
 jest.mock("@/db/preview", () => ({
   previewOutingGoal: (quest: { id: number }) => mockPreviewGoal(quest.id),
+  // No tile here stands on the walk-run proposal: these cases are about the goal a hero set.
+  previewWalkRun: () => false,
 }));
 
 const mockListOutings = jest.fn();

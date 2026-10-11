@@ -17,7 +17,13 @@ import {
   targetRangeFor,
 } from "@/db";
 import { formatDuration } from "@/db/estimate";
-import { isOutingSession, outingGoal, outingLocomotion, withOutingGoal } from "@/db/expeditions";
+import {
+  isOutingSession,
+  outingGoal,
+  outingLocomotion,
+  proposesWalkRun,
+  withOutingGoal,
+} from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import { formatTarget } from "@/db/targets";
@@ -198,16 +204,10 @@ type Props = {
   onSwap: (questExerciseId: number) => void;
 };
 
-/** The run on this card is still the app's walk-run proposal, not a goal the hero set. */
-function proposesWalkRun(quest: Quest, config: QuestConfig): boolean {
-  return (
-    config.distanceM === undefined &&
-    quest.exercises.some((qex) => qex.walkRun && qex.prescribed === undefined)
-  );
-}
-
 export function QuestConfigCard({ quest, config, language, onChange, onReset, onSwap }: Props) {
   const { t } = useTranslation();
+  // The run on this card is still the app's walk-run proposal, not a goal the hero set.
+  const walkRun = proposesWalkRun(quest.exercises, config.distanceM);
   // Open on a quest that is one movement in one round, closed on everything else. On such a
   // quest this panel holds a single control, the target, and on an outing that target is the
   // whole decision the hero came here to make: how long they are going out for. Collapsed, it
@@ -283,7 +283,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                 {/* The run is proposed as a walk-run because the hero has not run lately: say how
                     one is done, here where the twenty minutes are read. Gone as soon as the goal
                     is theirs, a duration they set or a distance. */}
-                {proposesWalkRun(quest, config) ? (
+                {walkRun ? (
                   <Text testID="goal-walk-run" fontSize={13} color="$textSecondary">
                     {t("quests.goal_walk_run")}
                   </Text>
@@ -299,6 +299,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                     goal={goal}
                     unit={unit}
                     locomotion={outingLocomotion(quest)}
+                    walkRun={walkRun}
                     onPick={setGoal}
                   />
                 ) : null}

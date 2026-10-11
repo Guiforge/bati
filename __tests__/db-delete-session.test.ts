@@ -47,15 +47,13 @@ describe("deleteSession", () => {
     });
     expect(await completed().dailyBonusOf(paid)).toBe(50);
     expect(await completed().dailyBonusOf(other)).toBe(0);
-    expect(await completed().dailyBonusPaidOn(at, null)).toBe(true);
-    // A retry of that very session is not told its own bonus spent the day.
-    expect(await completed().dailyBonusPaidOn(at, paid)).toBe(false);
+    expect(await completed().dailyBonusPaidOn(at)).toBe(true);
 
     await completed().deleteSession(other);
-    expect(await completed().dailyBonusPaidOn(at, null)).toBe(true);
+    expect(await completed().dailyBonusPaidOn(at)).toBe(true);
 
     await completed().deleteSession(paid);
-    expect(await completed().dailyBonusPaidOn(at, null)).toBe(false);
+    expect(await completed().dailyBonusPaidOn(at)).toBe(false);
   });
 
   test("a bonus paid yesterday does not spend today", async () => {
@@ -67,8 +65,8 @@ describe("deleteSession", () => {
       exercises: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 10 } }],
     });
 
-    expect(await completed().dailyBonusPaidOn(yesterday, null)).toBe(true);
-    expect(await completed().dailyBonusPaidOn(new Date(), null)).toBe(false);
+    expect(await completed().dailyBonusPaidOn(yesterday)).toBe(true);
+    expect(await completed().dailyBonusPaidOn(new Date())).toBe(false);
   });
 
   test("removes the row, its sets and its trace, and the XP goes with it", async () => {

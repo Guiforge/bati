@@ -172,6 +172,21 @@ function timeGoal(exercises: { target: Target; exercise: Styled }[]): OutingGoal
 }
 
 /**
+ * Whether the run on these slots is still the app's walk-run proposal (`proposedRunSeconds`),
+ * and not a goal the hero set: a distance, or a duration of their own. The quest screen and
+ * Home's tile both ask it, to say how a walk-run is done and to keep the ceiling line, which
+ * would contradict a proposal of twenty minutes, off the goal sheet.
+ */
+export function proposesWalkRun(
+  slots: readonly { walkRun?: true; prescribed?: number }[],
+  distanceGoalM: number | null | undefined,
+): boolean {
+  return (
+    distanceGoalM == null && slots.some((slot) => slot.walkRun && slot.prescribed === undefined)
+  );
+}
+
+/**
  * What the hero set out to do. A distance, when they chose one on the quest screen; otherwise the
  * outdoor slots' combined duration, which is the number the steppers on that screen edit for a
  * pure outing. A quest with no outdoor timed slot at all - no slots, an indoor-only quest, or a

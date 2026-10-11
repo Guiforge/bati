@@ -1,7 +1,7 @@
 import type { OutingGoal } from "@/src/gps/track";
 import { estimateQuestSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
-import { outingGoal } from "./expeditions";
+import { outingGoal, proposesWalkRun } from "./expeditions";
 import type { OutingHabit } from "./outingRule";
 import { applyConfigToSlots, type QuestConfig, resolveTemplateOverrides } from "./questConfig";
 import {
@@ -64,7 +64,7 @@ function resolveTemplateExercises(input: PreviewInput): QuestExercise[] {
     const written = input.exercisesById[qex.exerciseId];
     if (!written) return [];
 
-    const { exercise, target, ghost, asWritten, setAsideFrom } = resolveSlot({
+    const { exercise, target, ghost, asWritten, setAsideFrom, walkRun } = resolveSlot({
       base: qex.baseTarget,
       written,
       userLevel: userLevelEnum,
@@ -81,6 +81,7 @@ function resolveTemplateExercises(input: PreviewInput): QuestExercise[] {
         images: exercise.id === written.id ? qex.images : [],
         target,
         ghost,
+        ...(walkRun ? { walkRun: true as const } : {}),
         // And the same account of a stepped-down slot as `buildSlot` gives, because the saved
         // config reads it: a hero who took the written movement back ("Do X instead") is
         // prescribed what the quest wrote for it. Without this the card priced that slot at the
@@ -209,4 +210,25 @@ export function previewOutingGoal(
     journal: runHabit ? { ...QUEST_AS_WRITTEN, runHabit } : QUEST_AS_WRITTEN,
   });
   return outingGoal({ exercises }, config?.distanceM ?? null);
+}
+
+/**
+ * Whether that same tile's run is still the app's walk-run proposal, by the same resolution as
+ * the goal above and the same predicate as the quest screen (`proposesWalkRun`).
+ */
+export function previewWalkRun(
+  template: Parameters<typeof previewOutingGoal>[0],
+  exercisesById: Record<number, Exercise>,
+  saved: QuestConfig | null,
+  runHabit: OutingHabit,
+): boolean {
+  const config = saved === null ? null : { ...saved, level: Difficulty.Medium };
+  const exercises = resolveTemplateExercises({
+    template,
+    exercisesById,
+    userLevel: Difficulty.Medium,
+    config,
+    journal: { ...QUEST_AS_WRITTEN, runHabit },
+  });
+  return proposesWalkRun(exercises, config?.distanceM);
 }

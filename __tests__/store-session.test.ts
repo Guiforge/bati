@@ -1271,6 +1271,40 @@ describe("useSessionStore", () => {
       expect(store.getState().results[0]?.prescribed).toBe(10);
     });
 
+    // And through any number of swaps: the slot stops saying what the quest wrote at the first
+    // one, so it is remembered there. Two swaps to reach the written movement gave the default.
+    test("the written movement keeps its own target through another swap first", () => {
+      const quest = store.getState().quest;
+      assert(quest);
+      const [first, ...rest] = quest.exercises;
+      assert(first);
+      const written = { ...easier, id: 98, enName: "Squat", measure: "reps" } as Exercise;
+      const other = { ...easier, id: 201, measure: "time" } as Exercise;
+      const substitutedFor = {
+        id: 98,
+        enName: "Squat",
+        frName: "Squat",
+        deName: "",
+        esName: "",
+        imagePath: "",
+        target: { type: "reps" as const, value: 17 },
+      };
+      store.setState({
+        quest: {
+          ...quest,
+          exercises: [{ ...first, target: { type: "time", value: 20 }, substitutedFor }, ...rest],
+        },
+      });
+
+      store.getState().swapCurrentExercise(other);
+      store.getState().swapCurrentExercise(written);
+      expect(store.getState().quest?.exercises[0]?.target).toEqual({ type: "reps", value: 17 });
+
+      // And back to the rung it started on: its own twenty seconds, not a default either.
+      store.getState().swapCurrentExercise(first.exercise);
+      expect(store.getState().quest?.exercises[0]?.target).toEqual({ type: "time", value: 20 });
+    });
+
     // The second door to "Do X instead". From the quest screen the written movement comes with
     // what the quest wrote for it; from the swap sheet mid-session it came with the unit's
     // default, which was then the bar its rung was earned on.
@@ -1316,7 +1350,15 @@ describe("useSessionStore", () => {
       assert(original);
       const other = { ...easier, id: 201, measure: "reps" } as Exercise;
       const third = { ...easier, id: 202, measure: "reps" } as Exercise;
-      const arrival = () => store.getState().quest?.exercises[0]?.swappedIn;
+      // What the next set would be logged with: read through a set, the way the journal is.
+      const arrival = () => {
+        const round = store.getState().currentRoundIndex;
+        store.setState({ currentExerciseIndex: 0, status: "running" });
+        store.getState().completeExercise(10);
+        const logged = store.getState().results.at(-1)?.swappedIn;
+        store.setState({ currentExerciseIndex: 0, currentRoundIndex: round, status: "running" });
+        return logged;
+      };
 
       store.getState().swapCurrentExercise(other);
       expect(arrival()).toBe(0);
@@ -2191,7 +2233,7 @@ describe("the day's quest", () => {
       const startedAt = new Date(useSessionStore.getState().startTime ?? 0);
       expect((isDailyQuest as jest.Mock).mock.calls.at(-1)?.[1]).toEqual(startedAt);
       expect((dailyBonusPaidOn as jest.Mock).mock.calls.at(-1)?.[0]).toEqual(startedAt);
-      expect((hasSessionForQuestToday as jest.Mock).mock.calls.at(-1)?.[2]).toEqual(startedAt);
+      expect((hasSessionForQuestToday as jest.Mock).mock.calls.at(-1)?.[1]).toEqual(startedAt);
     });
 
     // A retried save reports what its row holds and asks nothing again. Asked again, a pick that

@@ -133,7 +133,7 @@ IDENTITY = {
 # to frost. Each sentence adds age and leaves the identity sentence's coat, marks and parts alone.
 STAGE = {
     "bear": {
-        "young": "It is a yearling bear facing right in the same calm three-quarter view, the same deep chestnut coat, tawny muzzle and pale claws as a grown bear, but rangy and narrow: long legs and oversized paws for its thin body, only a low hint of a shoulder hump, a short muzzle, small ears, small dark matte eyes with no catchlight, a closed mouth with no smile, a uniform coat with no chest patch, no shadow on the ground, and the rim light along its edge faint and cool, never a pale halo or border.",
+        "young": "It is a yearling bear facing right in the same calm three-quarter view, small dark matte eyes with no white catchlight or highlight at all, no shadow on the ground beneath it, the same deep chestnut coat, tawny muzzle and pale claws as a grown bear, but with a young bear's proportions: a head big for its body, a short muzzle, ears large for the head, long legs and wide oversized paws, a narrow body and a barely marked shoulder hump, a closed mouth with no smile, a uniform coat with no chest patch, and the rim light along its edge faint and cool, never a pale halo or border. The bear is small in the picture, filling only about half its width, with wide empty margins all round.",
         "adult": "It is a bear in its prime: huge and powerful, with a thick neck, heavy shoulder muscle and a full glossy coat.",
         "venerable": "It is a very old bear: massive and heavy-bellied, with grey-tipped fur along the muzzle and shoulders, a shaggy worn coat, blunted claws and a notched ear.",
     },

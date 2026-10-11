@@ -38,7 +38,9 @@ export function StartingPointRow() {
   }, []);
 
   const toggle = () => {
-    const next: TrainingLevel = answer === "beginner" ? "regular" : "beginner";
+    // No answer goes to `regular` first: it is what a hero from before the question already
+    // lives under (`isStartingOut`), so a tap to see what the row does changes nothing for them.
+    const next: TrainingLevel = answer === "regular" ? "beginner" : "regular";
     haptics.selection();
     setAnswer(next);
     preferences.setTrainingLevel(next).catch((error) => {

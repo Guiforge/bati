@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { featureCopy } from "./helpers/villageCopy";
+import { featureCopy, TOKEN } from "./helpers/villageCopy";
 
 // The Village and the victory say what is DONE and WHEN a building next rises, in sessions or
 // outings. A number of reps or sessions the hero still has to do is a chore, and the first
@@ -11,10 +11,10 @@ import { featureCopy } from "./helpers/villageCopy";
 const LOCALES = path.resolve(__dirname, "..", "locales");
 
 const CHORES: Record<string, RegExp> = {
-  en: /(reps?|sessions?|bosses|boss|routes?|rematch(es)?|leagues?) (to level|to go|left)|(more|another) (reps?|sessions?|bosses|boss|routes?|rematch(es)?)|before level|to level|for level|one rep builds|(left|remain(s|ing)?|still) to\b|still open|deeds still/i,
-  fr: /il manque|encore \{\{count\}\}|avant le niveau|avant le rang|pour le niveau|une rep suffit|il reste/i,
-  de: /noch \{\{count\}\} (wiederholung|einheit|boss|route|revanche|wegstunde)|fehlen|bis zu stufe|bis stufe|für stufe|wiederholung reicht|noch \{\{count\}\} (?!level)/i,
-  es: /faltan \{\{count\}\}|todavía \{\{count\}\}|hasta el nivel|para el nivel|basta una|\bquedan?\b/i,
+  en: /(reps?|sessions?|bosses|boss|routes?|rematch(es)?|leagues?) (to level|to go|left)|(more|another) (reps?|sessions?|bosses|boss|routes?|rematch(es)?)|before level|to level|for level|one rep builds|(left|remain(s|ing)?|still) to\b|to do\b|still open|deeds still/i,
+  fr: /il manque|encore \{\{count\}\}|avant le niveau|avant le rang|pour le niveau|une rep suffit|il reste|à faire|il te reste|encore (\{\{\w+\}\}|\d+)/i,
+  de: /noch \{\{count\}\} (wiederholung|einheit|boss|route|revanche|wegstunde)|fehlen|bis zu stufe|bis stufe|für stufe|wiederholung reicht|noch \{\{count\}\} (?!level)|noch zu|zu erledigen/i,
+  es: /faltan \{\{count\}\}|todavía \{\{count\}\}|hasta el nivel|para el nivel|basta una|\bquedan?\b|por hacer|te quedan/i,
 };
 
 // The milestone is sessions or outings, so no word for a rep, in any language.
@@ -42,10 +42,22 @@ const REP: Record<string, RegExp> = {
   es: /repetici|\brep/i,
 };
 
-it("catches the chores it is written for, in English", () => {
-  for (const line of ["3 deeds still open", "Deeds still to do", "2 sessions to go"]) {
-    expect(CHORES.en?.test(line)).toBe(true);
-  }
+it("catches the chores it is written for, in every language", () => {
+  const LINES: Record<string, string[]> = {
+    en: [
+      "3 deeds still open",
+      "Deeds still to do",
+      "2 sessions to go",
+      "5 reps to do",
+      "5 reps left to do",
+    ],
+    fr: ["5 reps à faire", "Il te reste 5 reps", "Encore 5 reps", "encore {{n}} reps"],
+    de: ["5 Wdh. noch zu machen", "5 Wiederholungen zu erledigen"],
+    es: ["5 reps por hacer", "Te quedan 5 reps"],
+  };
+  for (const [lang, lines] of Object.entries(LINES))
+    for (const line of lines)
+      expect([lang, line, CHORES[lang]?.test(line)]).toEqual([lang, line, true]);
 });
 
 // A building's rank is "grado" in Spanish: "rango" already names the village's tier.
@@ -92,5 +104,23 @@ describe.each(Object.keys(CHORES))("%s copy of the Village", (lang) => {
       expect(village[k]).toBeDefined();
       expect(village[k]?.replace(/\{\{\w+\}\}/g, "")).not.toMatch(LEVEL_WORD[lang] ?? /level/i);
     }
+  });
+});
+
+// Copy written in a .ts file is read by no locale scan: the level titles and the achievements'
+// titles and descriptions are shown beside the village, so a chore there is the same defect.
+describe("the titles and achievements written in .ts", () => {
+  const ROOT = path.resolve(__dirname, "..");
+  const literals = ["db/userLevel.ts", "db/achievements.ts"].flatMap((f) =>
+    [...fs.readFileSync(path.join(ROOT, f), "utf8").matchAll(TOKEN)]
+      .map((m) => m[0])
+      .filter((tok) => !tok.startsWith("/"))
+      .map((tok) => `${f}: ${tok.slice(1, -1)}`),
+  );
+
+  it("asks for no chore", () => {
+    expect(literals.length).toBeGreaterThan(50);
+    const hits = literals.filter((l) => Object.values(CHORES).some((re) => re.test(l)));
+    expect(hits).toEqual([]);
   });
 });

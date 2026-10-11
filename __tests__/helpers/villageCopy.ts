@@ -18,7 +18,7 @@ export const TOKEN =
  * copy, so they answer to the same rules. An explicit list: a new key there is added by hand.
  */
 const ADJACENT_KEYS =
-  /^(session\.(level_label|next_title|pr_\w+|standing_\w+)|boss\.(victory_title|final_blow|triumph_subtitle)|oath\.fulfilled_\w+|progression\.(new_rung_from|rung_also_leads_to)|journal\.pr_longest_outing)$/;
+  /^(session\.(level_label|next_title|pr_\w+|standing_\w+)|boss\.(victory_title|final_blow|triumph_subtitle)|oath\.(fulfilled|metric)_\w+|progression\.(new_rung_from|rung_also_leads_to)|journal\.pr_longest_outing)$/;
 
 /** Whether a dotted locale key belongs to "Un village qui te ressemble": the Village, the crest, the feasts, "Ce soir". */
 export function isFeatureKey(key: string): boolean {

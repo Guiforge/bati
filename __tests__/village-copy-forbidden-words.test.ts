@@ -122,6 +122,8 @@ describe("the feature's .ts files", () => {
     "db/village.ts",
     "db/crestRules.ts",
     "db/milestone.ts",
+    "db/userLevel.ts",
+    "db/achievements.ts",
   ];
   // Identifiers that are strings, not sentences: a key path or a code needs a space or a capital
   // to be read as copy.

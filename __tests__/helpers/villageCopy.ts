@@ -51,8 +51,9 @@ export const COPY_FILES = [
 ];
 
 /**
- * The victory and home screens render the XP lines and the level next to the village; they hold
- * no copy of the feature, so only their keys are read (see derivedKeys), not their literals.
+ * The victory and home screens render next to the village; they hold no copy of the feature, so
+ * only the locale keys they read (all of them, not just the XP lines and the level) are taken
+ * into scope (see derivedKeys), not their own literals.
  */
 const KEY_ONLY_FILES = ["components/session/VictoryView.tsx", "components/home/HomeHeader.tsx"];
 

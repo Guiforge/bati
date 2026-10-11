@@ -556,6 +556,39 @@ function checkMarker(id: string, text: string, verdicts: string[]) {
   else verdicts.push(`marker|${id}|${text}`);
 }
 
+// The old self-test table, word for word.
+const OLD_LINES: Record<string, string[]> = {
+  en: [
+    "Only {{count}} sessions until rank 2",
+    "Do 20 more push-ups tomorrow.",
+    "3 deeds still open",
+    "Deeds still to do",
+    "2 sessions to go",
+    "5 reps to do",
+    "5 reps left to do",
+  ],
+  fr: [
+    "Plus que {{count}} séances pour le rang 2",
+    "Fais encore 20 pompes",
+    "5 reps à faire",
+    "Il te reste 5 reps",
+    "Encore 5 reps",
+    "encore {{n}} reps",
+  ],
+  de: [
+    "Nur noch {{n}} Einheiten bis Rang 2",
+    "Mach noch 20 Liegestütze",
+    "5 Wdh. noch zu machen",
+    "5 Wiederholungen zu erledigen",
+  ],
+  es: [
+    "Solo {{count}} sesiones más para el grado 2",
+    "Haz 20 flexiones más",
+    "5 reps por hacer",
+    "Te quedan 5 reps",
+  ],
+};
+
 it("catches a count of effort, whatever the sentence", () => {
   const LINES = [
     "120 reps to rank 2",
@@ -583,37 +616,6 @@ it("catches a count of effort, whatever the sentence", () => {
     "une rep suffit",
   ];
   // The old table, word for word: what the phrasing detector was written for.
-  const OLD_LINES: Record<string, string[]> = {
-    en: [
-      "Only {{count}} sessions until rank 2",
-      "Do 20 more push-ups tomorrow.",
-      "3 deeds still open",
-      "Deeds still to do",
-      "2 sessions to go",
-      "5 reps to do",
-      "5 reps left to do",
-    ],
-    fr: [
-      "Plus que {{count}} séances pour le rang 2",
-      "Fais encore 20 pompes",
-      "5 reps à faire",
-      "Il te reste 5 reps",
-      "Encore 5 reps",
-      "encore {{n}} reps",
-    ],
-    de: [
-      "Nur noch {{n}} Einheiten bis Rang 2",
-      "Mach noch 20 Liegestütze",
-      "5 Wdh. noch zu machen",
-      "5 Wiederholungen zu erledigen",
-    ],
-    es: [
-      "Solo {{count}} sesiones más para el grado 2",
-      "Haz 20 flexiones más",
-      "5 reps por hacer",
-      "Te quedan 5 reps",
-    ],
-  };
   for (const [lang, lines] of Object.entries(OLD_LINES))
     for (const line of lines)
       expect([lang, line, oldIsChore(lang, line)]).toEqual([lang, line, true]);
@@ -622,6 +624,52 @@ it("catches a count of effort, whatever the sentence", () => {
   for (const line of LINES) expect([line, countHit(line)]).toEqual([line, true]);
   for (const ok of ["Plus que {{xp}} XP", "Rang 2", "12 km", "3 jours", "2 semaines", "niveau 4"])
     expect([ok, countHit(ok)]).toEqual([ok, false]);
+});
+
+// The guard against a weaker detector. Every probe below is a chore the phrasing detector (or the
+// count rule) is known to catch, and `by` names who must keep catching it: removing a pattern from
+// either fails here, and the combined check must reject every probe whoever catches it.
+const rejects = (lang: Lang, text: string) =>
+  countHit(text) || CHORE_MARKER.test(text) || oldIsChore(lang, text);
+type Probe = { lang: Lang; text: string; by: "old" | "count" };
+const PROBES: Probe[] = [
+  ...Object.entries(OLD_LINES).flatMap(([lang, lines]) =>
+    lines.map((text) => ({ lang: lang as Lang, text, by: "old" as const })),
+  ),
+  { lang: "en", text: "One more session for rank 2", by: "old" },
+  { lang: "en", text: "Another session for rank 2", by: "old" },
+  { lang: "en", text: "Sessions left before rank 2", by: "old" },
+  { lang: "en", text: "Sessions left: {{count}}", by: "old" },
+  { lang: "en", text: "Deeds still open", by: "old" },
+  { lang: "en", text: "Reps to go", by: "old" },
+  { lang: "en", text: "before level 2", by: "old" },
+  { lang: "en", text: "to level 2", by: "old" },
+  { lang: "en", text: "for level 2", by: "old" },
+  { lang: "fr", text: "Il reste des séances", by: "old" },
+  { lang: "fr", text: "Il manque des séances", by: "old" },
+  { lang: "fr", text: "avant le niveau 2", by: "old" },
+  { lang: "de", text: "Es fehlen Einheiten für Rang 2", by: "old" },
+  { lang: "de", text: "bis Stufe 2", by: "old" },
+  { lang: "de", text: "für Stufe 2", by: "old" },
+  { lang: "de", text: "Noch 3 Wochen bis Rang 2", by: "old" },
+  { lang: "es", text: "Quedan sesiones para el grado 2", by: "old" },
+  { lang: "es", text: "Basta una sesión", by: "old" },
+  { lang: "es", text: "Faltan {{count}} para el grado 2", by: "old" },
+  { lang: "es", text: "Todavía {{count}} para el grado 2", by: "old" },
+  { lang: "es", text: "hasta el nivel 2", by: "old" },
+  { lang: "es", text: "para el nivel 2", by: "old" },
+  { lang: "en", text: "120 reps to rank 2", by: "count" },
+  { lang: "fr", text: "120 reps pour le rang 2", by: "count" },
+  { lang: "de", text: "120 Wiederholungen für Rang 2", by: "count" },
+  { lang: "en", text: "Rank 2 needs 120 reps", by: "count" },
+];
+
+it("never lets the check get weaker than the detector it replaced", () => {
+  const verdicts = PROBES.flatMap(({ lang, text, by }) => {
+    const caught = by === "old" ? oldIsChore(lang, text) : countHit(text);
+    return caught && rejects(lang, text) ? [] : [`${by}|${lang}|${text}`];
+  });
+  expect(verdicts).toEqual([]);
 });
 
 const used = new Set<string>();

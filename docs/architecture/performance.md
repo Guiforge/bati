@@ -306,6 +306,8 @@ trims its classes, but its resources (Picnic tables, X.509 messages) are 1.2 MiB
 ([`plugins/withAndroidReleaseFlags.js`](../../plugins/withAndroidReleaseFlags.js)). Measured on a local
 arm64 release build: 53.8 MiB before this branch, 55.7 with Bouncy Castle, 54.5 with the exclusion.
 
+**V-02 animal portraits (2026-10-12).** Local `.perf` arm64 release build: 54.14 MiB before the crest portraits, 56.42 MiB with the 53 of them at 512 px, 55.09 MiB after the fit below (57,760,500 bytes, still 0.09 MiB over the ceiling). The portraits are 448 px, q70, method 6, alpha quality 0 (2.28 MiB down to 0.895); the nine amber-eyed bears keep q90 (`KEEP_Q90` in [`scripts/fit-small-art.py`](../../scripts/fit-small-art.py)), because at q70 chroma subsampling turns an amber iris grey-blue, which a before/after at 4x shows and a global chroma-loss measure does not (fur hatching and contour edges outscore every eye).
+
 [`.github/workflows/release.yml`](../../.github/workflows/release.yml) fails the release over
 55 MiB. It is a ratchet: lower it after a release that measures under it, never raise it to make
 a build pass.

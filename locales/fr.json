@@ -5,10 +5,14 @@
     "filter_special": "Spéciaux",
     "filter_streaks": "Flammes",
     "filter_xp": "XP",
-    "more_count": "+{{count}} autres succès",
+    "more_count_one": "+{{count}} autre succès",
+    "more_count_other": "+{{count}} autres succès",
+    "more_count_many": "+{{count}} autres succès",
     "show_less": "Afficher moins",
     "new_unlock": "Succès débloqué !",
-    "new_unlocks": "{{count}} succès débloqués !",
+    "new_unlocks_one": "{{count}} succès débloqué !",
+    "new_unlocks_other": "{{count}} succès débloqués !",
+    "new_unlocks_many": "{{count}} succès débloqués !",
     "progress": "{{unlocked}} / {{total}} débloqués",
     "badges": {
       "first_workout": {
@@ -148,7 +152,9 @@
     "step_label": "Étape {{count}}",
     "step_locked": "Verrouillée",
     "step_progress": "Étape {{current}}/{{total}}",
-    "steps": "{{count}} étapes",
+    "steps_one": "{{count}} étape",
+    "steps_other": "{{count}} étapes",
+    "steps_many": "{{count}} étapes",
     "steps_title": "Étapes de la campagne",
     "weeks_one": "≈ {{count}} semaine",
     "weeks_other": "≈ {{count}} semaines",
@@ -259,7 +265,8 @@
     "off": "Désactivé",
     "on": "Activé",
     "retry": "Réessayer",
-    "saving": "Enregistrement…"
+    "saving": "Enregistrement…",
+    "list_and": "{{a}} et {{b}}"
   },
   "credits": {
     "attribution_example": "Exemple d'attribution (depuis game-icons.net) : \"Icons made by {author}. Available on https://game-icons.net\".",
@@ -373,15 +380,6 @@
     "leads_to": "mène à {{name}}",
     "empty_filters_title": "Aucun résultat",
     "empty_filters_subtitle": "Retire un filtre ou vide la recherche.",
-    "pattern_push_horizontal": "Poussée (horizontale)",
-    "pattern_push_vertical": "Poussée (verticale)",
-    "pattern_pull_horizontal": "Tirage (horizontal)",
-    "pattern_pull_vertical": "Tirage (vertical)",
-    "pattern_squat": "Squat",
-    "pattern_hinge": "Charnière",
-    "pattern_core": "Gainage",
-    "pattern_locomotion": "Déplacement",
-    "pattern_mobility": "Mobilité",
     "path_rung": "{{path}} · Étape {{position}}/{{total}}",
     "path_working_up": "En route vers {{name}} · étape {{position}} sur {{total}}",
     "path_climbed": "{{path}} · sommet atteint",
@@ -700,7 +698,6 @@
     "work_behind_one": "{{muscles}} : en retard.",
     "work_behind_many": "{{muscles}} : en retard.",
     "work_behind_other": "{{muscles}} : en retard.",
-    "list_and": "{{a}} et {{b}}",
     "muscle_share": "{{muscle}} ({{share}})",
     "duration_hm": "{{h}} h {{m}}",
     "duration_m": "{{m}} min",
@@ -758,14 +755,18 @@
   "progression": {
     "new_rung": "Nouvelle étape débloquée",
     "new_rung_from": "Tu as maîtrisé {{name}}",
-    "new_rungs": "{{count}} nouvelles étapes débloquées",
+    "new_rungs_one": "{{count}} nouvelle étape débloquée",
+    "new_rungs_other": "{{count}} nouvelles étapes débloquées",
+    "new_rungs_many": "{{count}} nouvelles étapes débloquées",
     "rung_also_leads_to": "La même étape mène aussi à {{names}}."
   },
   "quests": {
     "written_for_beginner": "Débutant",
     "written_for_regular": "Régulier",
     "written_for_advanced": "Confirmé",
-    "count": "{{count}} quêtes",
+    "count_one": "{{count}} quête",
+    "count_other": "{{count}} quêtes",
+    "count_many": "{{count}} quêtes",
     "config_hint": "Enregistré pour cette quête. Tu le retrouveras la prochaine fois.",
     "config_modified": "Personnalisée",
     "config_reps": "Reps",
@@ -952,7 +953,9 @@
     "increase_result_accessibility": "Augmenter le résultat",
     "hold_release_hint": "Lâche au bip, c'est l'objectif.",
     "hold_fight_hint": "Tiens jusqu'au bip : le coup part entier.",
-    "fight_target_changed": "Objectif modifié : le boss compte jusqu'à {{count}} répétitions.",
+    "fight_target_changed_one": "Objectif modifié : le boss compte jusqu'à {{count}} répétition.",
+    "fight_target_changed_other": "Objectif modifié : le boss compte jusqu'à {{count}} répétitions.",
+    "fight_target_changed_many": "Objectif modifié : le boss compte jusqu'à {{count}} répétitions.",
     "fight_target_changed_time": "Objectif modifié : le boss compte jusqu'à {{seconds}} s.",
     "crit_rule": "Coup critique : {{one}} % à une répétition de plus, {{two}} % à deux, pas au-delà.",
     "crit_rule_one": "Coup critique : {{one}} % à une répétition de plus, pas au-delà.",
@@ -966,13 +969,21 @@
     "paused_title": "Séance en pause",
     "pr_exercise": "Record {{exercise}}",
     "pr_longest_session": "Séance la plus longue",
-    "pr_more": "+{{count}} autres marques",
+    "pr_more_one": "+{{count}} autre marque",
+    "pr_more_other": "+{{count}} autres marques",
+    "pr_more_many": "+{{count}} autres marques",
     "pr_most_xp": "Le plus d'XP en une séance",
     "pr_new_record": "Nouvelle marque",
     "standing_title": "Meilleur effort",
-    "standing_lifetime_2": "2e meilleure sur {{count}} séances",
-    "standing_lifetime_3": "3e meilleure sur {{count}} séances",
-    "standing_recent_1": "Ta meilleure sur {{count}} séances",
+    "standing_lifetime_2_one": "2e meilleure sur {{count}} séance",
+    "standing_lifetime_2_other": "2e meilleure sur {{count}} séances",
+    "standing_lifetime_2_many": "2e meilleure sur {{count}} séances",
+    "standing_lifetime_3_one": "3e meilleure sur {{count}} séance",
+    "standing_lifetime_3_other": "3e meilleure sur {{count}} séances",
+    "standing_lifetime_3_many": "3e meilleure sur {{count}} séances",
+    "standing_recent_1_one": "Ta meilleure sur {{count}} séance",
+    "standing_recent_1_other": "Ta meilleure sur {{count}} séances",
+    "standing_recent_1_many": "Ta meilleure sur {{count}} séances",
     "standing_recent_2": "2e meilleure de tes {{count}} dernières",
     "standing_recent_3": "3e meilleure de tes {{count}} dernières",
     "quit_button": "Quitter la quête",
@@ -1012,7 +1023,9 @@
     "up_next": "À suivre",
     "victory_title": "Quête accomplie !",
     "village_growth_cta": "Voir ton village",
-    "village_growth_more": "+{{count}} autres",
+    "village_growth_more_one": "+{{count}} autre",
+    "village_growth_more_other": "+{{count}} autres",
+    "village_growth_more_many": "+{{count}} autres",
     "village_growth_title": "Ton village grandit",
     "village_tier_up_title": "Ton village a grandi !",
     "xp_overshoot": "dont +{{count}} pour avoir dépassé tes objectifs",
@@ -1175,7 +1188,9 @@
     "kept_level": "Ce niveau vient de ce que tu avais accompli avant que le village change sa façon de compter.",
     "hall_times": "×{{count}}",
     "trophy_defeated": "Vaincu le {{date}}",
-    "trophy_victories": "{{count}} victoires",
+    "trophy_victories_one": "{{count}} victoire",
+    "trophy_victories_other": "{{count}} victoires",
+    "trophy_victories_many": "{{count}} victoires",
     "style_strength": "force",
     "style_calisthenics": "callisthénie",
     "style_yoga": "yoga",
@@ -2138,7 +2153,9 @@
     "pwTitle": "Un mot de passe pour Bati",
     "pwTitleChange": "Un nouveau mot de passe",
     "pwNotCloud": "Pas celui de ton cloud.",
-    "pwHint": "Au moins {{count}} caractères. Une petite phrase marche très bien.",
+    "pwHint_one": "Au moins {{count}} caractère. Une petite phrase marche très bien.",
+    "pwHint_other": "Au moins {{count}} caractères. Une petite phrase marche très bien.",
+    "pwHint_many": "Au moins {{count}} caractères. Une petite phrase marche très bien.",
     "pwMore_one": "Encore {{count}} caractère. Une petite phrase marche très bien.",
     "pwMore_many": "Encore {{count}} caractères. Une petite phrase marche très bien.",
     "pwMore_other": "Encore {{count}} caractères. Une petite phrase marche très bien.",
@@ -2244,7 +2261,7 @@
     "squat": "Squat",
     "hinge": "Charnière",
     "core": "Gainage",
-    "locomotion": "Locomotion",
+    "locomotion": "Déplacement",
     "mobility": "Mobilité"
   },
   "level_titles": {
@@ -2420,24 +2437,66 @@
   },
   "rest_messages": {
     "overtraining": [
-      "Grosse semaine : {{count}} entraînements. Pense à une journée de récupération.",
-      "Déjà {{count}} entraînements cette semaine. Le corps gagne son repos comme il gagne ses forces.",
-      "{{count}} entraînements au compteur cette semaine. Une journée de récup, et la prochaine sera meilleure."
+      {
+        "line_one": "Grosse semaine : {{count}} entraînement. Pense à une journée de récupération.",
+        "line_other": "Grosse semaine : {{count}} entraînements. Pense à une journée de récupération.",
+        "line_many": "Grosse semaine : {{count}} entraînements. Pense à une journée de récupération."
+      },
+      {
+        "line_one": "Déjà {{count}} entraînement cette semaine. Le corps gagne son repos comme il gagne ses forces.",
+        "line_other": "Déjà {{count}} entraînements cette semaine. Le corps gagne son repos comme il gagne ses forces.",
+        "line_many": "Déjà {{count}} entraînements cette semaine. Le corps gagne son repos comme il gagne ses forces."
+      },
+      {
+        "line_one": "{{count}} entraînement au compteur cette semaine. Une journée de récup, et la prochaine sera meilleure.",
+        "line_other": "{{count}} entraînements au compteur cette semaine. Une journée de récup, et la prochaine sera meilleure.",
+        "line_many": "{{count}} entraînements au compteur cette semaine. Une journée de récup, et la prochaine sera meilleure."
+      }
     ],
     "consecutive_days": [
-      "Pas un jour de repos depuis {{count}} jours ! Prends-en un pour éviter le surentraînement.",
-      "{{count}} jours d'affilée sans pause. Même les héros en ont besoin.",
-      "{{count}} jours de suite à t'entraîner. Le repos fait partie du plan, il ne l'interrompt pas."
+      {
+        "line_one": "Pas un jour de repos depuis {{count}} jour ! Prends-en un pour éviter le surentraînement.",
+        "line_other": "Pas un jour de repos depuis {{count}} jours ! Prends-en un pour éviter le surentraînement.",
+        "line_many": "Pas un jour de repos depuis {{count}} jours ! Prends-en un pour éviter le surentraînement."
+      },
+      {
+        "line_one": "{{count}} jour d'affilée sans pause. Même les héros en ont besoin.",
+        "line_other": "{{count}} jours d'affilée sans pause. Même les héros en ont besoin.",
+        "line_many": "{{count}} jours d'affilée sans pause. Même les héros en ont besoin."
+      },
+      {
+        "line_one": "{{count}} jour de suite à t'entraîner. Le repos fait partie du plan, il ne l'interrompt pas.",
+        "line_other": "{{count}} jours de suite à t'entraîner. Le repos fait partie du plan, il ne l'interrompt pas.",
+        "line_many": "{{count}} jours de suite à t'entraîner. Le repos fait partie du plan, il ne l'interrompt pas."
+      }
     ],
     "high_volume": [
-      "Tu as fait {{count}} entraînements cette semaine ! Ton corps a besoin de temps pour récupérer et devenir plus fort.",
-      "{{count}} entraînements cette semaine, un sacré volume. C'est pendant la récup que la force se construit.",
-      "{{count}} entraînements en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition."
+      {
+        "line_one": "Tu as fait {{count}} entraînement cette semaine ! Ton corps a besoin de temps pour récupérer et devenir plus fort.",
+        "line_other": "Tu as fait {{count}} entraînements cette semaine ! Ton corps a besoin de temps pour récupérer et devenir plus fort.",
+        "line_many": "Tu as fait {{count}} entraînements cette semaine ! Ton corps a besoin de temps pour récupérer et devenir plus fort."
+      },
+      {
+        "line_one": "{{count}} entraînement cette semaine, un sacré volume. C'est pendant la récup que la force se construit.",
+        "line_other": "{{count}} entraînements cette semaine, un sacré volume. C'est pendant la récup que la force se construit.",
+        "line_many": "{{count}} entraînements cette semaine, un sacré volume. C'est pendant la récup que la force se construit."
+      },
+      {
+        "line_one": "{{count}} entraînement en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition.",
+        "line_other": "{{count}} entraînements en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition.",
+        "line_many": "{{count}} entraînements en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition."
+      }
     ],
     "deload": [
-      "Quatre semaines chargées d'affilée. Prends-en une plus légère : moins de volume, la même régularité. Ton prochain mois commence là.",
-      "Un mois de semaines chargées derrière toi. Lève le pied quelques jours : les progrès se font pendant que tu récupères.",
-      "Quatre semaines chargées d'affilée. Cette semaine, on allège, on ne s'arrête pas."
+      {
+        "line": "Quatre semaines chargées d'affilée. Prends-en une plus légère : moins de volume, la même régularité. Ton prochain mois commence là."
+      },
+      {
+        "line": "Un mois de semaines chargées derrière toi. Lève le pied quelques jours : les progrès se font pendant que tu récupères."
+      },
+      {
+        "line": "Quatre semaines chargées d'affilée. Cette semaine, on allège, on ne s'arrête pas."
+      }
     ]
   }
 }

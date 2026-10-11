@@ -19,6 +19,6 @@ import type { Localized } from "@/src/i18n/deviceLanguage";
  * assume a size: the same line is drawn over a two-cabin clearing and an eternal capital, so
  * "the forges" and "the walls" work while "the harbour" does not.
  *
- * Same shape as REST_SUGGESTION_MESSAGES, and drawn with the same `pickDailyVariant()`.
+ * A pool drawn by the day with `pickDailyVariant()`, like the rest note of the Home.
  */
 export const VILLAGE_FLAVOUR: Localized<string[]> = localized((l) => l.village.flavour);

@@ -28,12 +28,14 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.guiforge.bati",
       "infoPlist": {
-        "CFBundleLocalizations": ["en", "fr"]
+        "CFBundleLocalizations": ["en", "fr", "de", "es"]
       }
     },
     "locales": {
-      "en": "./locales/ios/en.json",
-      "fr": "./locales/ios/fr.json"
+      "en": "./locales/native/en.json",
+      "fr": "./locales/native/fr.json",
+      "de": "./locales/native/de.json",
+      "es": "./locales/native/es.json"
     },
     "name": "Bati",
     "orientation": "portrait",
@@ -51,7 +53,7 @@
         "expo-localization",
         {
           "supportedLocales": {
-            "ios": ["en", "fr"],
+            "ios": ["en", "fr", "de", "es"],
             "android": ["en", "fr", "de", "es"]
           }
         }
@@ -74,6 +76,7 @@
           "photosPermission": "Used to pick a photo for your hero's avatar, or for an exercise or quest you made. It stays on your device, and leaves it only inside a backup or an encrypted sync you turn on."
         }
       ],
+      "./plugins/withAndroidWidgetCopy",
       [
         "react-native-android-widget",
         {

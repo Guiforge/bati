@@ -40,12 +40,12 @@ const LOCALES = path.join(ROOT, "locales");
  * `app.json`. Add a file here the day a new one starts carrying prose, because nothing else
  * will notice.
  *
- * `app.json` is on the list for the two widget entries: their `label` is inlined straight into
- * `AndroidManifest.xml` as `android:label` and their `description` becomes a `translatable="false"`
- * string resource, so both are read by anyone opening the Android widget picker and neither
- * passes through `locales/`. Both shipped a dash for months. Checking the source rather than the
- * prebuild output is deliberate: `app.json` is the single writer, it is what a person edits, and
- * `ci.yml`'s prebuild-and-diff step is what proves the committed manifest still matches it.
+ * `app.json` is on the list for the two widget entries, and `locales/native/` for their
+ * translations and the iOS permission prompt: the Android widget picker and the OS read those,
+ * never `t()`, so none of them passes through `locales/*.json`. The widget entries shipped a dash
+ * for months. Checking the source rather than the prebuild output is deliberate: these files are
+ * the single writers, they are what a person edits, and `ci.yml`'s prebuild-and-diff step is
+ * what proves the committed resources still match them.
  */
 function sourceFiles(...roots: string[]): string[] {
   const out: string[] = [];
@@ -78,6 +78,10 @@ function readerFacingFiles(): string[] {
 
   return [
     "app.json",
+    // The widget picker and the iOS permission prompt, in every language.
+    ...fs
+      .readdirSync(path.join(ROOT, "locales", "native"))
+      .map((f) => path.join("locales", "native", f)),
     "README.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
@@ -165,8 +169,6 @@ describe("locale typography", () => {
       .filter((e) => !e.key.startsWith("privacy.") && !e.key.startsWith("safety."))
       // The watcher reports on a road, which may well be quiet.
       .filter((e) => !e.key.startsWith("villagers.watcher.boss_defeated"))
-      // So does the village's line of weather, which by its own rule never speaks of the hero.
-      .filter((e) => !e.key.startsWith("village.flavour"))
       .filter((e) => GENDERED.test(e.value))
       .map((e) => `${e.key}: ${e.value}`);
 

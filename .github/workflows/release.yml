@@ -286,7 +286,7 @@ jobs:
           generate_release_notes: true
           body: |
             Install directly, or add the F-Droid repository for automatic updates:
-            `https://guiforge.github.io/bati/fdroid/repo`
+            `https://getbati.app/fdroid/repo`
 
             This APK is not from an app store. Android will ask you to allow installs from an
             unknown source the first time.

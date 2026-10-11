@@ -33,6 +33,19 @@ const AGE_OF_VILLAGE = /^session\.tonight_anniversary_/;
 // the monster's word on these keys and nowhere else ("jefa" is its feminine).
 const BOSS_KEY = /boss|rematch/;
 
+// The ambience line about the road says "old" of the road, not of an animal's stage. Frozen text
+// per language (Spanish needs none: "viejo" is not on its list), like the other allow-lists: an edit to the line re-opens every word on it, and
+// only the word of age is exempt, so "guardian" on this key stays red.
+const OLD_ROAD_KEY = "village.flavour.15";
+const EN_ROAD = "The old road is quiet. It usually is, this time of year.";
+const OLD_ROAD: Partial<Record<Lang, string>> = {
+  fr: "La vieille route est calme. Elle l'est souvent, en cette saison.",
+  en: EN_ROAD,
+  de: "Die alte Straße ist ruhig. Um diese Jahreszeit ist sie das meistens.",
+};
+const AGE_WORD = /^(vieux|vieil|old|alt|alte[nmrs]?)$/;
+const roadExemptionUsed = new Set<Lang>();
+
 // Every match counts, not the first: an exempt "jefe" must not hide a "guardián" after it.
 function hits(lang: Lang, key: string, value: string): boolean {
   const all = new RegExp(FORBIDDEN[lang].source, "giu");
@@ -40,6 +53,10 @@ function hits(lang: Lang, key: string, value: string): boolean {
     const word = match[1]?.toLowerCase() ?? "";
     if (AGE_OF_VILLAGE.test(key) && /^(old|alt|alte[nmrs]?)$/.test(word)) return false;
     if (lang === "es" && /^jef[ea]/.test(word) && BOSS_KEY.test(key)) return false;
+    if (key === OLD_ROAD_KEY && value === OLD_ROAD[lang] && AGE_WORD.test(word)) {
+      roadExemptionUsed.add(lang);
+      return false;
+    }
     return true;
   });
 }
@@ -121,4 +138,14 @@ describe("the feature's .ts and .tsx files", () => {
     );
     expect(bad.map((b) => `${b.file}: ${b.text}`)).toEqual([]);
   });
+});
+
+// Runs last in the file: the scans above have filled roadExemptionUsed.
+it("has no dead road exemption", () => {
+  expect(LANGS.filter((l) => OLD_ROAD[l] && !roadExemptionUsed.has(l))).toEqual([]);
+});
+
+it("keeps every other forbidden word red on the road line", () => {
+  expect(hits("en", OLD_ROAD_KEY, `${EN_ROAD} A guardian.`)).toBe(true);
+  expect(hits("en", OLD_ROAD_KEY, EN_ROAD)).toBe(false);
 });

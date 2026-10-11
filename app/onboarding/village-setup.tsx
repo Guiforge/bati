@@ -68,7 +68,7 @@ export default function VillageSetup() {
     } catch (error) {
       // Without this, a failed write left the hero stuck on step 2 with a mute button.
       reportError("onboarding.villageName", error);
-      showError(t("onboarding.save_error", "Could not save. Try again"));
+      showError(t("onboarding.save_error"));
       return;
     }
     router.push("/onboarding/training-level");
@@ -90,7 +90,7 @@ export default function VillageSetup() {
             </YStack>
             <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
             <H2 text="center" color="$text" fontWeight="700" fontSize={28}>
-              {t("onboarding.village_name_title", "Name your village")}
+              {t("onboarding.village_name_title")}
             </H2>
           </YStack>
 
@@ -104,10 +104,7 @@ export default function VillageSetup() {
                   {t("onboarding.village_name_subtitle")}
                 </Text>
                 <Text text="center" color="$textSecondary" fontSize={13}>
-                  {t(
-                    "onboarding.village_name_hint",
-                    "Every muscle you train raises a building here.",
-                  )}
+                  {t("onboarding.village_name_hint")}
                 </Text>
               </>
             )}
@@ -157,7 +154,7 @@ export default function VillageSetup() {
               }}
               disabled={!isValidName}
             >
-              {t("onboarding.next", "Continue")}
+              {t("onboarding.next")}
             </AppButton>
           </YStack>
         </YStack>

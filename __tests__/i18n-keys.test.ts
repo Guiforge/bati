@@ -1,3 +1,5 @@
+import { BOSS_ASSETS } from "@/constants/assetMap";
+import { buildingCodes, equipmentCodes, movementPatterns, muscleCodes } from "@/db/schema";
 import de from "@/locales/de.json";
 import en from "@/locales/en.json";
 import es from "@/locales/es.json";
@@ -52,6 +54,18 @@ function collectLeafKeys(
   }
 
   return out;
+}
+
+/** Every array in a locale file, with its key path. */
+function collectArrays(value: JsonValue, keyPath = ""): [string, JsonValue[]][] {
+  if (Array.isArray(value)) {
+    const nested = value.flatMap((item, i) => collectArrays(item, `${keyPath}.${i}`));
+    return [[keyPath, value], ...nested];
+  }
+  if (!isObject(value)) return [];
+  return Object.entries(value).flatMap(([k, v]) =>
+    collectArrays(v, keyPath ? `${keyPath}.${k}` : k),
+  );
 }
 
 describe("i18n locale parity", () => {
@@ -150,6 +164,34 @@ describe("i18n locale parity", () => {
 
     expect(empty).toEqual([]);
   });
+
+  /**
+   * A pool is drawn from by index, so an empty one hands `undefined` to the screen. The tables in
+   * the code said so with a tuple type (`[string, ...string[]]`); a JSON array cannot, and the
+   * parity test above reads four empty arrays as four files that agree.
+   */
+  test.each(APP_LANGUAGES)("%s.json has no empty pool", (language) => {
+    const empty = collectArrays(LOCALE_FILES[language] as unknown as JsonObject)
+      .filter(([, pool]) => pool.length === 0)
+      .map(([keyPath]) => keyPath);
+
+    expect(empty).toEqual([]);
+  });
+
+  /**
+   * The blocks the code reads by a code (`src/i18n/copy.ts`). A code with no entry is a compile
+   * error there; an entry with no code is copy that someone translates four times and nobody
+   * reads, and only this sees it.
+   */
+  test.each([
+    ["muscles", en.muscles, muscleCodes],
+    ["equipment", en.equipment, equipmentCodes],
+    ["patterns", en.patterns, movementPatterns],
+    ["village.buildings", en.village.buildings, buildingCodes],
+    ["bosses", en.bosses, Object.keys(BOSS_ASSETS)],
+  ] as const)("%s holds an entry for each code and no other", (_name, block, codes) => {
+    expect(Object.keys(block).sort()).toEqual([...codes].sort());
+  });
 });
 
 /**
@@ -189,6 +231,29 @@ describe("keys named in the source", () => {
       );
 
     expect(missing).toEqual([]);
+  });
+
+  /**
+   * A literal key always resolves, by the test above, so a default beside it is never shown: it is
+   * a second copy of the English that nobody reads and nothing keeps true. 360 of them were
+   * removed on 2026-10-11, thirty already saying something else than `en.json` ("Oops!" for
+   * "Something went wrong"), two written in French. A key built from a template may keep its
+   * default: there it is what the screen shows when the key does not exist.
+   */
+  test("no literal t() key carries a default text", () => {
+    const POSITIONAL = /\bt\(\s*"\w+(?:\.\w+)+",\s*["`]/g;
+    const OPTION = /\bt\(\s*"\w+(?:\.\w+)+",\s*\{[^{}]*\bdefaultValue\b/g;
+
+    const carrying = ["app", "components", "constants", "db", "hooks", "src", "stores"]
+      .flatMap(sources)
+      .flatMap((file) => {
+        const source = readFileSync(file, "utf8");
+        return [...source.matchAll(POSITIONAL), ...source.matchAll(OPTION)].map(
+          (m) => `${file}: ${m[0].replace(/\s+/g, " ").slice(0, 60)}`,
+        );
+      });
+
+    expect(carrying).toEqual([]);
   });
 });
 

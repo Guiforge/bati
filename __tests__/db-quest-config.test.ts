@@ -16,6 +16,8 @@ jest.doMock("../db/client", () => clientMock(t));
 
 const {
   applyQuestConfig,
+  dropSlotSwap,
+  getQuestConfig,
   hasQuestOverrides,
   indexExercises,
   loadConfiguredQuest,
@@ -240,6 +242,81 @@ describe("db/questConfig", () => {
     expect(out.exercises[0]?.target).toEqual({ type: "time", value: 30 });
     // The slot next to it, untouched, keeps its own unit.
     expect(out.exercises[1]?.target).toEqual({ type: "time", value: 30 });
+  });
+
+  // `0070`. Rung credit, crit odds and the damage cap read what the app asked for, so the slot
+  // has to keep it once the hero's own number is on it.
+  test("a target the hero set keeps what the app had prescribed beside it", () => {
+    const out = applyQuestConfig(
+      makeQuest(),
+      { level: Difficulty.Medium, targets: { 11: 3 } },
+      CATALOGUE,
+    );
+
+    expect(out.exercises[0]?.target.value).toBe(3);
+    expect(out.exercises[0]?.prescribed).toBe(10);
+    // Untouched, a slot has no second number to carry.
+    expect(out.exercises[1]?.prescribed).toBeUndefined();
+  });
+
+  /**
+   * "I can already do this." The ladder stepped the slot down to Squat and says the quest wrote
+   * Dip; the hero swaps Dip back in. That is a pin, and it has to name the rung it overrides,
+   * because the swap erases `substitutedFor` and the way back would have no name to show.
+   */
+  test("the written movement put back over a served rung is a pin, and names the way back", () => {
+    const written = {
+      id: dip.id,
+      enName: dip.enName,
+      frName: dip.frName,
+      deName: dip.deName,
+      esName: dip.esName,
+      imagePath: dip.imagePath,
+    };
+    const stepped = (substitutedFor: Quest["exercises"][number]["substitutedFor"]) => {
+      const quest = makeQuest();
+      const slot = quest.exercises[0];
+      assert(slot);
+      slot.substitutedFor = substitutedFor;
+      return applyQuestConfig(quest, { level: Difficulty.Medium, swaps: { 11: dip.id } }, CATALOGUE)
+        .exercises[0];
+    };
+
+    const pinned = stepped(written);
+    expect(pinned?.exercise.enName).toBe("Dip");
+    expect(pinned?.pinnedOver?.enName).toBe("Squat");
+    expect(pinned?.substitutedFor).toBeUndefined();
+
+    // And it is prescribed what the quest wrote for that movement, which the slot carries
+    // (`resolveSlot`), not the served rung's number moved across.
+    expect(stepped({ ...written, target: { type: "reps", value: 6 } })?.target).toEqual({
+      type: "reps",
+      value: 6,
+    });
+
+    // A slot that runs as written and is swapped to something else is a swap, not a pin.
+    expect(stepped(undefined)?.pinnedOver).toBeUndefined();
+    // And a set-aside slot never pins the one movement the hero asked not to be handed.
+    expect(stepped({ ...written, setAside: true })?.pinnedOver).toBeUndefined();
+  });
+
+  test("giving a pin up drops that slot's swap and target, and nothing else", async () => {
+    await saveQuestConfig(7, {
+      level: Difficulty.Hard,
+      rounds: 4,
+      swaps: { 11: 2, 12: 3 },
+      targets: { 11: 8, 12: 9 },
+    });
+
+    await dropSlotSwap(7, 11);
+
+    expect(await getQuestConfig(7)).toEqual({
+      level: Difficulty.Hard,
+      rounds: 4,
+      swaps: { 12: 3 },
+      targets: { 12: 9 },
+    });
+    await clearQuestConfig(7);
   });
 
   /** Issue #163, the second door: swapped away and back, the written movement is not a stand-in. */

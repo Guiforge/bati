@@ -7,8 +7,8 @@ import { getSessionAggregates, getStalestQuest, hasSessionToday } from "./comple
 import { estimateQuestSeconds } from "./estimate";
 import { getChainTo } from "./exercises";
 import { hasOutdoorSlot } from "./expeditions";
+import { MUSCLE_LABELS } from "./labels";
 import { getSuggestedQuestsForWeakAreas } from "./muscleBalance";
-import { MUSCLE_LABELS } from "./muscles";
 import { getOathProgress, oathNeedsExercise } from "./oaths";
 import { listOutings } from "./outings";
 import { loadConfiguredQuest } from "./questConfig";

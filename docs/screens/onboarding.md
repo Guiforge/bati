@@ -37,9 +37,10 @@ lives in Settings.
 - **Starting point** (step 3): saved by `preferences.setTrainingLevel`, edited in Settings
   ("Point de départ"). It sets where a quest never played starts, by the one rule in
   [progression.md](../gameplay/progression.md#where-a-quest-starts), which quests are offered
-  (`getEligibleQuestIds`), and whether the warm-up may jump (`BEGINNER_UNAVAILABLE`,
-  `constants/warmup.ts`). No answer is treated like the gentler one while the journal holds fewer
-  than five sessions (`isStartingOut`).
+  (`getEligibleQuestIds`), and whether the warm-up may jump (`startsGently`,
+  `db/preferences.ts`: a beginner, and anyone for their first three sessions). For the dose, no
+  answer is treated like the gentler one while the journal holds fewer than three sessions
+  (`isStartingOut`).
 - **Finishing**: step 3 writes `hasFinishedOnboarding` *before* step 4 opens. The first-session
   offer is an offer, never a gate: skipping it, leaving it or crashing in it lands in the app.
 

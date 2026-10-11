@@ -1,7 +1,7 @@
 import type { TFunction } from "i18next";
 import { formatShare } from "@/components/journal/journalFormat";
+import { MUSCLE_LABELS } from "@/db/labels";
 import { behindMuscles, MIN_BALANCE_SESSIONS, type MuscleBalance } from "@/db/muscleBalance";
-import { MUSCLE_LABELS } from "@/db/muscles";
 import { inSentence } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
 

@@ -269,7 +269,7 @@ export function ReminderSection({ onLayout }: { onLayout?: (event: LayoutChangeE
         testID="settings-reminder-switch"
         icon={<Bell size={22} color="$text" />}
         label={t("reminders.switch")}
-        value={view.enabled ? t("common.on", "On") : t("common.off", "Off")}
+        value={view.enabled ? t("common.on") : t("common.off")}
         onPress={() => {
           haptics.selection();
           run("reminders.switch", view.enabled ? turnOff : turnOn);

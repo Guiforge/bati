@@ -1,0 +1,17 @@
+-- The day's quest pays a bonus once a day, and nothing recorded that it had. The guard asked
+-- whether *this quest* was already logged today, but the day's quest is drawn by the date from a
+-- pool the hero can reshape before lunch (the level, the equipment, a quest of their own), so the
+-- same date could point at a second quest and pay again (issue #177).
+--
+-- The bonus is written where it went: on the session that earned it. "Was today's bonus paid" is
+-- then a question asked of the journal, like every other figure here, and the answers that a
+-- separate record had to be taught come for free. Deleting the session gives the day back. A
+-- retried save reads what its own row holds. A session synced from another device carries its
+-- bonus with it.
+--
+-- 0 on every existing row: which past sessions were the day's quest is not recoverable, and
+-- nothing reads the column further back than the day a session starts on.
+--
+-- multi-migration-ok: 0070 and 0071 ship together; 0070 already ran on dev builds, so its
+-- columns could not gain a fourth by editing it. Both only add columns with a default.
+ALTER TABLE `completed_sessions` ADD `dailyBonusXp` integer DEFAULT 0 NOT NULL;

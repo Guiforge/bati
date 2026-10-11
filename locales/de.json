@@ -233,6 +233,9 @@
     "seconds_per_rep": "Tempo {{count}} s/Wdh.",
     "ghost_last": "Zuletzt: {{value}}",
     "served_easier_rung": "Auf dem Weg zu {{name}}",
+    "pin_written": "Stattdessen {{name}} machen",
+    "unpin_written": "Zurück zu {{name}}",
+    "pinned_over": "Deine Wahl, statt {{name}}",
     "swap_exercise": "Diese Übung ersetzen",
     "swap_reason_easier": "Eine leichtere Stufe",
     "swap_reason_harder": "Eine schwerere Stufe",
@@ -305,6 +308,7 @@
     "goal_sheet_title": "Wie lange oder wie weit",
     "goal_sheet_custom": "Andere",
     "goal_usual": "Wie immer · {{value}}",
+    "goal_walk_run": "Gehen und Laufen im Wechsel. Geh, sobald du nicht mehr reden kannst.",
     "goal_longest_run": "Dein längster Lauf diesen Monat: {{longest}}. Dein Körper verkraftet einen Lauf unter {{ceiling}} besser.",
     "goal_sheet_custom_hint": "Gib deinen eigenen Wert ein",
     "goal_sheet_open": "Tour einrichten",
@@ -500,7 +504,14 @@
     "how_to_do_it": "So geht's",
     "increase_reps_accessibility": "Wiederholungen um eins erhöhen",
     "increase_result_accessibility": "Ergebnis erhöhen",
-    "keep_going_hint": "Weiter so! Die Uhr läuft nach dem Ziel weiter.",
+    "hold_release_hint": "Lass beim Signalton los. Das ist das Ziel.",
+    "hold_fight_hint": "Halte bis zum Signalton: Der Schlag sitzt ganz.",
+    "fight_target_changed": "Ziel geändert: Der Boss zählt bis {{count}} Wiederholungen.",
+    "fight_target_changed_time": "Ziel geändert: Der Boss zählt bis {{seconds}} s.",
+    "crit_rule": "Kritischer Treffer: {{one}} % bei einer Wiederholung mehr, {{two}} % bei zwei, nicht darüber.",
+    "crit_rule_one": "Kritischer Treffer: {{one}} % bei einer Wiederholung mehr, nicht darüber.",
+    "pain_rule": "Stechender Schmerz? Hör hier auf. Überspringen kostet nichts.",
+    "pain_rule_last": "Stechender Schmerz? Hör hier auf.",
     "new_records": "Neue Bestwerte!",
     "overtime": "BONUSZEIT",
     "pause_accessibility": "Einheit pausieren",
@@ -581,8 +592,6 @@
     "reserve_hint": "Hör mit 1 bis 2 Wiederholungen Reserve auf, nicht beim Muskelversagen.",
     "boss_weak_point": "{{muscle}}, Schwäche. Anderthalbfacher Schaden.",
     "boss_resisted": "{{muscle}}, gepanzert. Nur halber Schaden.",
-    "crit_hint": "Jede Wiederholung über dem Ziel ist eine Chance auf einen kritischen Treffer: gerade {{percent}} %.",
-    "crit_hint_time": "Jede Sekunde über dem Ziel ist eine Chance auf einen kritischen Treffer: gerade {{percent}} %.",
     "boss_down": "{{boss}} ist besiegt. Der Rest dieser Einheit gehört dir.",
     "hold_check_question": "{{time}} gehalten?",
     "hold_check_keep": "Behalten",
@@ -614,14 +623,28 @@
     "expedition_made_quest": "Bei deinen Quests abgelegt. Sie ist genau so gespeichert, wie sie war.",
     "expedition_permission_why": "Bati liest während einer Tour deinen Standort, und er verlässt dieses Handy nur in deinen eigenen Sicherungen und deiner Synchronisierung. Android fragt gleich nach.",
     "level_up": "Stufe aufgestiegen",
-    "level_label": "Level"
+    "level_label": "Level",
+    "empty_variants": [
+      {
+        "title": "Gute Arbeit!",
+        "subtitle": "Einheit gespeichert. Lass die Flamme weiterbrennen."
+      },
+      {
+        "title": "Solide Einheit.",
+        "subtitle": "Jede Wiederholung zählt für die nächste."
+      },
+      {
+        "title": "Abgehakt!",
+        "subtitle": "Heute kein Feuerwerk. Der Flamme ist das egal, sie wächst trotzdem."
+      }
+    ]
   },
   "muscles": {
     "arms": "Arme",
     "back": "Rücken",
     "chest": "Brust",
     "abs": "Bauch",
-    "shoulders": "Schultern",
+    "shoulder": "Schultern",
     "legs": "Beine"
   },
   "tabs": {
@@ -898,7 +921,117 @@
     "more_count": "+{{count}} weitere Erfolge",
     "show_less": "Weniger anzeigen",
     "new_unlock": "Erfolg freigeschaltet!",
-    "new_unlocks": "{{count}} Erfolge freigeschaltet!"
+    "new_unlocks": "{{count}} Erfolge freigeschaltet!",
+    "badges": {
+      "first_workout": {
+        "title": "Erste Schritte",
+        "description": "Schließ dein erstes Training ab"
+      },
+      "sessions_10": {
+        "title": "Gut gestartet",
+        "description": "Schließ 10 Trainings ab"
+      },
+      "sessions_25": {
+        "title": "Beharrlich",
+        "description": "Schließ 25 Trainings ab"
+      },
+      "sessions_50": {
+        "title": "Feuer und Flamme",
+        "description": "Schließ 50 Trainings ab"
+      },
+      "sessions_100": {
+        "title": "Krieger der Hundert",
+        "description": "Schließ 100 Trainings ab"
+      },
+      "sessions_250": {
+        "title": "Champion",
+        "description": "Schließ 250 Trainings ab"
+      },
+      "sessions_500": {
+        "title": "Legende",
+        "description": "Schließ 500 Trainings ab"
+      },
+      "streak_3": {
+        "title": "Erster Keim",
+        "description": "Lass deine Flamme 3 Tage lang brennen"
+      },
+      "streak_7": {
+        "title": "Wochenkrieger",
+        "description": "Lass deine Flamme 7 Tage lang brennen"
+      },
+      "streak_14": {
+        "title": "Zwei Wochen Feuer",
+        "description": "Lass deine Flamme 14 Tage lang brennen"
+      },
+      "streak_30": {
+        "title": "Monatsmeister",
+        "description": "Lass deine Flamme 30 Tage lang brennen"
+      },
+      "streak_60": {
+        "title": "Unaufhaltsam",
+        "description": "Lass deine Flamme 60 Tage lang brennen"
+      },
+      "streak_100": {
+        "title": "Zenturio",
+        "description": "Lass deine Flamme 100 Tage lang brennen"
+      },
+      "xp_100": {
+        "title": "XP-Jäger",
+        "description": "Sammle insgesamt 100 XP"
+      },
+      "xp_500": {
+        "title": "XP-Sammler",
+        "description": "Sammle insgesamt 500 XP"
+      },
+      "xp_1000": {
+        "title": "XP-Meister",
+        "description": "Sammle insgesamt 1.000 XP"
+      },
+      "xp_5000": {
+        "title": "XP-Elite",
+        "description": "Sammle insgesamt 5.000 XP"
+      },
+      "xp_10000": {
+        "title": "XP-Legende",
+        "description": "Sammle insgesamt 10.000 XP"
+      },
+      "long_session_30min": {
+        "title": "Ausdauer",
+        "description": "Schließ ein Training von mindestens 30 Minuten ab"
+      },
+      "long_session_60min": {
+        "title": "Eiserner Wille",
+        "description": "Schließ ein Training von mindestens 60 Minuten ab"
+      },
+      "early_bird": {
+        "title": "Frühaufsteher",
+        "description": "Schließ ein Training vor 7 Uhr ab"
+      },
+      "night_owl": {
+        "title": "Nachteule",
+        "description": "Schließ ein Training nach 22 Uhr ab"
+      },
+      "path_climbed": {
+        "title": "Pfad erklommen",
+        "description": "Meistere jede Stufe eines Pfads"
+      },
+      "first_outing": {
+        "title": "Vor den Toren",
+        "description": "Schließ eine Tour ab"
+      },
+      "hour_outside": {
+        "title": "Eine Stunde unterwegs",
+        "description": "Sei auf einer Tour eine Stunde in Bewegung"
+      },
+      "variety_3_quests": {
+        "title": "Vielseitig",
+        "description": "Schließ 3 verschiedene Quests ab"
+      },
+      "variety_5_quests": {
+        "title": "Questmeister",
+        "description": "Schließ 5 verschiedene Quests ab"
+      }
+    }
   },
   "chart": {
     "error": "Diagramm konnte nicht geladen werden",
@@ -1066,7 +1199,64 @@
     "family_unbuilt": "Noch nicht gebaut · {{count}}",
     "family_unbuilt_feeds": "eine Einheit baut eines",
     "family_rest": "Alles andere",
-    "family_rest_feeds": "{{count}} am Maximum"
+    "family_rest_feeds": "{{count}} am Maximum",
+    "tiers": {
+      "1": "Weiler",
+      "2": "Lichtung",
+      "3": "Dorf",
+      "4": "Wegkreuz",
+      "5": "Marktflecken",
+      "6": "Freistadt",
+      "7": "Stadt",
+      "8": "Handelsstadt",
+      "9": "Blühende Stadt",
+      "10": "Zitadelle",
+      "11": "Metropole",
+      "12": "Ewige Hauptstadt"
+    },
+    "buildings": {
+      "campfire": "Lagerfeuer",
+      "tent": "Zelt",
+      "training_dummy": "Übungspuppe",
+      "archery_range": "Schießstand",
+      "quarry": "Steinbruch",
+      "forge": "Schmiede",
+      "well": "Ziehbrunnen",
+      "windmill": "Windmühle",
+      "farm": "Bauernhof",
+      "wizard_tower": "Magierturm",
+      "druid_grove": "Druidenhain",
+      "watchtower": "Wachturm",
+      "castle_wall": "Burgmauer",
+      "armory": "Waffenkammer",
+      "fountain": "Springbrunnen",
+      "observatory": "Sternwarte",
+      "barn": "Scheune",
+      "dragon_lair": "Drachenhort",
+      "heroes_hall": "Heldenhalle",
+      "champion_arena": "Arena der Champions",
+      "high_road": "Hohe Straße"
+    },
+    "flavour": [
+      "Rauch kräuselt sich aus den Schornsteinen. Jemand hat die Feuer gehütet.",
+      "Vor Tagesanbruch kam ein Reisender durch und nannte keinen Namen.",
+      "Die Schmieden sind heute Morgen still. Das bleibt nicht so.",
+      "Reif auf den Dächern. Die Wache wurde wortlos abgelöst.",
+      "Die Laternen an der Straße werden schwächer. Das Dorf wartet.",
+      "In der Nacht kam Regen. Die Wege erinnern sich daran.",
+      "Ein Hund bellte ins Nichts, zweimal, und besann sich dann.",
+      "Die Glocke läutete früh. Niemand hat gesagt, warum.",
+      "Jemand hat vor dem ersten Licht die Treppe gefegt.",
+      "Kalter Wind von den Hügeln. Die Fensterläden haben gehalten.",
+      "Zwei Krähen auf dem Dachfirst, den Blick auf die Oststraße.",
+      "Der Brunnen gab heute klares Wasser. Das ist nicht nichts.",
+      "Über Nacht wurde Holz gestapelt, höher als zuvor.",
+      "Nebel bis zu den Knien im Morgengrauen, verschwunden, bevor jemand hinsah.",
+      "Ein Fensterladen hatte sich gelöst, vor Mittag war er repariert.",
+      "Die alte Straße ist ruhig. Um diese Jahreszeit ist sie das meistens.",
+      "Früh angezündete Lampen. Die Dunkelheit kam schneller als gedacht.",
+      "Heute ist hier nichts passiert, und auch das ist eine Nachricht."
+    ]
   },
   "errors": {
     "save_session_failed": "Die Einheit konnte nicht gespeichert werden. Versuch es nochmal.",
@@ -1335,7 +1525,7 @@
         "Ich habe Mittel gegen vieles. Gegen Ungeduld habe ich keins gefunden.",
         "Der Körper repariert sich, während du nichts tust. Ungerecht verteilt, ich weiß.",
         "Setz dich, wenn du willst. Die Leute halten das für Schummeln. Sie irren sich.",
-        "Schmerz, der schreit, lügt meistens. Hör auf den, der flüstert.",
+        "Ein stechender Schmerz ist keine Anstrengung. Hör auf, ich bin morgen noch da.",
         "Ich habe viel Stärkere fallen sehen, weil sie nicht wussten, wann Schluss ist.",
         "Schlaf tut deinen Muskeln besser als alles, was ich in Fläschchen habe.",
         "Du schwitzt. Der Körper tut seine Arbeit.",
@@ -1816,6 +2006,7 @@
     "browse": "Übungen ansehen",
     "since": "Seit dem {{date}}",
     "limits": "Eigene Quests bleiben, wie du sie gebaut hast. Eine beiseitegelegte Stufe hält ihren Pfad dort an.",
+    "all_jumps": "Alle Sprünge beiseitelegen",
     "not_for_me": "Nicht mehr vorschlagen",
     "back": "{{name}} ist wieder da.",
     "served_no_substitute": "Beiseitegelegt, nichts Ähnliches als Ersatz",
@@ -1959,5 +2150,222 @@
     "doorPhoneOn": "Eine Kopie pro Tag in {{folder}}. Tippen zum Ändern oder Beenden. Verlierst du dieses Handy, geht diese Kopie mit ihm.",
     "alsoPhone": "Zusätzliche Kopie auf diesem Telefon: {{folder}}",
     "alsoPhoneAdd": "Zusätzliche Kopie auf diesem Telefon anlegen"
+  },
+  "equipment": {
+    "none": "Ohne Geräte",
+    "pullup_bar": "Klimmzugstange",
+    "dip_bar": "Dip-Barren",
+    "dumbbell": "Kurzhanteln",
+    "barbell": "Langhantel",
+    "kettlebell": "Kettlebell",
+    "band": "Widerstandsband",
+    "bench": "Bank"
+  },
+  "patterns": {
+    "push_horizontal": "Horizontales Drücken",
+    "push_vertical": "Vertikales Drücken",
+    "pull_horizontal": "Horizontales Ziehen",
+    "pull_vertical": "Vertikales Ziehen",
+    "squat": "Kniebeuge",
+    "hinge": "Hüftbeuge",
+    "core": "Rumpf",
+    "locomotion": "Fortbewegung",
+    "mobility": "Mobilität"
+  },
+  "level_titles": {
+    "1": "Lehrling",
+    "2": "Novize",
+    "3": "Rekrut",
+    "4": "Knappe",
+    "5": "Krieger",
+    "6": "Kämpfer",
+    "7": "Veteran",
+    "8": "Champion",
+    "9": "Elite",
+    "10": "Meister",
+    "11": "Großmeister",
+    "12": "Legende",
+    "13": "Mythisch",
+    "14": "Titan",
+    "15": "Halbgott",
+    "16": "Held",
+    "17": "Vollendeter",
+    "18": "Aufgestiegener",
+    "19": "Unsterblicher",
+    "20": "Göttlich"
+  },
+  "paths": {
+    "Muscle-Up": "Pfad des Ziehens",
+    "Toes to Bar": "Pfad des Hängens",
+    "Handstand Push-Up": "Pfad des Gleichgewichts",
+    "Dip": "Pfad der Stütze",
+    "Archer Push-Up": "Pfad des Bogenschützen",
+    "Tuck Planche": "Pfad der Planche",
+    "Jump Squat": "Pfad des Sprungs",
+    "Pistol Squat": "Pfad der Pistole",
+    "Single-Leg Deadlift": "Pfad der Hüftbeuge",
+    "Dragon Flag": "Pfad des Drachen",
+    "Side Plank": "Pfad der Flanke",
+    "Windshield Wipers": "Pfad der Rotation",
+    "Flutter Kicks": "Pfad des Flatterns"
+  },
+  "bosses": {
+    "fire_dragon": {
+      "name": "Aschenschlund",
+      "legendaryName": "Aschenschlund der Gekrönte",
+      "idle": [
+        "Die Schmiede hat länger gebraucht, um mich zu brechen.",
+        "Du brennst langsam, Held.",
+        "Asche. Alles nur Asche.",
+        "Dein kleines Dorf gäbe gutes Anzündholz ab.",
+        "Ich habe Ritter mit besserer Haltung gefressen."
+      ],
+      "crit": [
+        "Der war heiß.",
+        "Die Glut beißt also zurück.",
+        "Vorsicht, Held. Du fängst an, mich zu beeindrucken."
+      ],
+      "resist": ["Schuppen ist es egal, wie fest du zuschlägst.", "Du polierst meine Rüstung."],
+      "enrage": [
+        "Dann brennen wir beide!",
+        "Ich reiße den Himmel mit in die Tiefe!",
+        "Na komm! Das Feuer erinnert sich an dich!"
+      ]
+    },
+    "stone_golem": {
+      "name": "Der Steinbruchkönig",
+      "legendaryName": "Der Steinbruchgott",
+      "idle": [
+        "Ich war vor deinem Dorf da.",
+        "Berge haben keine Eile.",
+        "Dann schleif mich doch ab.",
+        "Schon deine Ahnen haben an mir gemeißelt.",
+        "Zähl deine Sätze. Ich zähle Jahrhunderte."
+      ],
+      "crit": [
+        "Ein Riss. Ein einziger Riss.",
+        "Du hast die Fuge gefunden.",
+        "Noch mal. Schlag noch mal dorthin, wenn du dich traust."
+      ],
+      "resist": ["Stein gegen Stein.", "Du schlägst dort zu, wo ich am dicksten bin."],
+      "enrage": [
+        "Ich stürze auf dich!",
+        "Selbst Ruinen haben Gewicht!",
+        "Der Steinbruch wird dein Grab!"
+      ]
+    },
+    "shadow_serpent": {
+      "name": "Nachtschlinge",
+      "legendaryName": "Nachtschlinge die Ewige",
+      "idle": [
+        "Ich bin längst hinter dir.",
+        "Atme. Ich kann warten.",
+        "Dein Schatten ist nur geliehen.",
+        "Ruh dich aus. Dann arbeite ich am besten.",
+        "Mit jeder Wiederholung rolle ich mich näher heran."
+      ],
+      "crit": [
+        "Du hast mich gesehen. Selten.",
+        "Schnell. Schneller als der Letzte.",
+        "Der ging durch mich hindurch. Wie?"
+      ],
+      "resist": ["Du hast dort zugeschlagen, wo ich nicht war.", "Windungen brechen nicht, Held."],
+      "enrage": [
+        "Dann kommt die Dunkelheit mit Zähnen!",
+        "Schluss mit dem Warten!",
+        "Ich trage deinen Schatten wie eine Krone!"
+      ]
+    },
+    "forest_titan": {
+      "name": "Wurzelvater",
+      "legendaryName": "Die Uralte Wurzel",
+      "idle": [
+        "Ich habe Bessere überdauert.",
+        "Jahreszeiten, Held. Ich zähle in Jahreszeiten.",
+        "Wachse, oder werde Erde.",
+        "Der Wald behält, wer aufgibt.",
+        "Dein Schweiß tränkt meine Wurzeln. Mach weiter."
+      ],
+      "crit": [
+        "Das hat das Kernholz gespürt.",
+        "Du schneidest tief. Gut.",
+        "Ein Sturm hat mir einmal weniger genommen."
+      ],
+      "resist": ["Rinde, Held. Nur Rinde.", "Das Holz trinkt deine Schläge."],
+      "enrage": [
+        "Der ganze Hain erwacht!",
+        "Wurzeln bis auf die Knochen!",
+        "Ich habe stärkere Helden als dich begraben!"
+      ]
+    },
+    "wind_wraith": {
+      "name": "Der Böengeist",
+      "legendaryName": "Der Sturmherrscher",
+      "idle": [
+        "Du schlägst ins Leere.",
+        "Dann fang mich doch.",
+        "Ich bin die Luft, die du atmest.",
+        "Deine Lungen leere ich, wann ich will.",
+        "Blas fester, kleiner Blasebalg."
+      ],
+      "crit": [
+        "Du hast den Wind getroffen!",
+        "Sogar ich habe den Luftzug gespürt.",
+        "Du lernst, zu treffen, was nicht da ist."
+      ],
+      "resist": [
+        "Durch mich hindurch. Immer durch mich hindurch.",
+        "Eine Bö bekommt keine blauen Flecken."
+      ],
+      "enrage": [
+        "Dann soll der Sturm losbrechen!",
+        "Ich werde dein Dorf verwehen!",
+        "Atme, solange du noch kannst!"
+      ]
+    },
+    "iron_golem": {
+      "name": "Der Rostfürst",
+      "legendaryName": "Der Rostfürst, neu geschmiedet",
+      "idle": [
+        "Die Gießerei schläft nie. Ich auch nicht.",
+        "Man hat mich gebaut, um mehr zu schuften als du.",
+        "Rost ist geduldig, Held.",
+        "Mein Soll, Held: deine Niederlage.",
+        "Ich habe mehr gestemmt, als du je heben wirst."
+      ],
+      "crit": [
+        "Eine Niete weg. Ich hab gespürt, wie sie ging.",
+        "Du schlägst wie ein Hammer, der es ernst meint.",
+        "Garantie erloschen. Guter Schlag."
+      ],
+      "resist": ["Eisen bekommt keine Beulen.", "Du lässt meine Platten klingen, mehr nicht."],
+      "enrage": [
+        "Der Schmelzofen übernimmt!",
+        "Ich schmelze, bevor ich knie!",
+        "Die ganze Gießerei stirbt mit mir!"
+      ]
+    }
+  },
+  "rest_messages": {
+    "overtraining": [
+      "Du hast diese Woche hart trainiert: {{count}} Trainings. Denk an einen Erholungstag.",
+      "Schon {{count}} Trainings diese Woche. Ruhe verdient man sich genauso wie Fortschritt.",
+      "{{count}} Trainings diese Woche geschafft. Ein Erholungstag schärft das nächste."
+    ],
+    "consecutive_days": [
+      "Du hast {{count}} Tage am Stück trainiert! Gönn dir einen Ruhetag, bevor du dich übertrainierst.",
+      "{{count}} Tage am Stück ohne Pause. Auch Helden brauchen eine.",
+      "{{count}} Tage Training in Folge. Ruhe gehört zum Plan, sie unterbricht ihn nicht."
+    ],
+    "high_volume": [
+      "{{count}} Trainings diese Woche! Dein Körper braucht Zeit, um sich zu erholen und stärker zu werden.",
+      "{{count}} Trainings diese Woche, das ist ordentlich Volumen. Kraft entsteht in der Erholung.",
+      "{{count}} Trainings in sieben Tagen. Gib deinem Körper einen Tag, um deinen Ehrgeiz einzuholen."
+    ],
+    "deload": [
+      "Vier harte Wochen am Stück. Nimm dir eine leichtere: weniger Volumen, dieselbe Gewohnheit. Dein nächster Monat beginnt hier.",
+      "Ein Monat voller harter Wochen liegt hinter dir. Schalt ein paar Tage zurück, der Fortschritt kommt, während du dich erholst.",
+      "Vier harte Wochen in Folge. Diese Woche heißt es: leichter trainieren, nicht aufhören."
+    ]
   }
 }

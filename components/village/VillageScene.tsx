@@ -39,7 +39,7 @@ import { pickDailyVariant } from "@/constants/restMessages";
 import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
 import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
 import { dayKey } from "@/db/dates";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { MUSCLE_LABELS } from "@/db/labels";
 import { formatCount } from "@/db/targets";
 import {
   getTierProgress,
@@ -231,10 +231,10 @@ export function VillageScene() {
           p="$4"
         >
           <Text fontSize={16} fontWeight="700" color="$text" style={{ textAlign: "center" }}>
-            {t("village.load_error", "The village is out of reach")}
+            {t("village.load_error")}
           </Text>
           <AppButton fullWidth={false} onPress={loadScene}>
-            {t("common.retry", "Retry")}
+            {t("common.retry")}
           </AppButton>
         </YStack>
       );
@@ -294,7 +294,7 @@ export function VillageScene() {
             setViewerOpen(true);
           }}
           accessibilityRole="button"
-          accessibilityLabel={t("village.open_scene", "See the whole scene")}
+          accessibilityLabel={t("village.open_scene")}
         >
           {/* Only the painting moves: it parallaxes, and leans in on the building that just rose.
               The scrims and the title stay anchored. */}

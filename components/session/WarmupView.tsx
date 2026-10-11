@@ -8,6 +8,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Pause, SkipBack, SkipForward } from "@/components/icons";
 import { getExerciseAsset } from "@/constants/assetMap";
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
+import { SECONDS_SUFFIX } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { describeExercise } from "@/hooks/useSessionInstructions";
@@ -131,7 +132,7 @@ export function WarmupView() {
     <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16} px="$5" gap="$4">
       <XStack justify="space-between" items="center">
         <Text fontSize={13} fontWeight="700" color="$textSecondary" letterSpacing={1}>
-          {t("session.warmup_title", "WARM-UP")}
+          {t("session.warmup_title")}
         </Text>
         <Button
           testID="session-pause"
@@ -156,7 +157,7 @@ export function WarmupView() {
           })}
           instruction={instruction}
           fallbackName={label}
-          target={eachSide ?? `${step.seconds}s`}
+          target={eachSide ?? `${step.seconds}${SECONDS_SUFFIX[language]}`}
           remainingSeconds={timerStartTimestamp === null ? null : remainingSeconds}
           onGo={() => {
             selection();
@@ -253,7 +254,6 @@ export function WarmupView() {
             {t("session.warmup_step", {
               current: warmupIndex + 1,
               total: warmupSequence.length,
-              defaultValue: `${warmupIndex + 1} of ${warmupSequence.length}`,
             })}
           </Text>
           <Text testID="warmup-left" fontSize={13} color="$textSecondary">
@@ -325,7 +325,7 @@ export function WarmupView() {
         }}
         accessibilityRole="button"
       >
-        {t("session.warmup_skip", "Skip warm-up")}
+        {t("session.warmup_skip")}
       </AppButton>
     </YStack>
   );

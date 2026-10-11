@@ -1,10 +1,4 @@
-import {
-  BEGINNER_UNAVAILABLE,
-  buildWarmup,
-  NO_IMPACT,
-  WARMUP_SEQUENCE,
-  type WarmupQuest,
-} from "@/constants/warmup";
+import { buildWarmup, WARMUP_SEQUENCE, type WarmupQuest } from "@/constants/warmup";
 import type { ExerciseStyle, MovementPattern, QuestArchetype } from "@/db/schema";
 
 /**
@@ -343,35 +337,4 @@ test("a hero who sets nothing aside keeps exactly the rotation they had", () => 
     "Glute Bridge",
     "Jump Squat",
   ]);
-});
-
-// Audit 2026-10-11, F3: the first movement asked of a hero who is starting again was a jump.
-// `loadWarmupContext` hands this list to `buildWarmup` for a beginner and for a hero who never said.
-test("a beginner opens on a movement that stays on the floor, whatever the rotation", () => {
-  const gentle = new Set(BEGINNER_UNAVAILABLE);
-  const quests = [quest([null]), quest(["squat", "hinge"]), longQuest(["push_vertical"], "skill")];
-
-  for (const q of quests) {
-    for (const session of [0, 1, 2, 3, 4, 5]) {
-      const built = names(q, session, gentle);
-
-      expect(NO_IMPACT).toContain(built[0]);
-      expect(built.filter((name) => gentle.has(name))).toEqual([]);
-    }
-  }
-});
-
-// The hero the list is for owns no rung yet: the ladder keeps Squat and Lunge from them too, and
-// what was left of `NO_IMPACT` opened day one on a bear crawl, harder than the session behind it.
-test("on day one, with Squat and Lunge still out of reach, a beginner opens on the glute bridge", () => {
-  const dayOne = new Set([...BEGINNER_UNAVAILABLE, "Squat", "Lunge"]);
-
-  for (const session of [0, 1, 2, 3, 4, 5]) {
-    const built = names(quest(["push_horizontal", "core"]), session, dayOne);
-
-    expect(built[0]).toBe("Glute Bridge");
-    expect(built).not.toContain("Bear Crawl");
-    // The last phase has nothing left to give this hero; the warm-up is still one.
-    expect(built.length).toBeGreaterThanOrEqual(3);
-  }
 });

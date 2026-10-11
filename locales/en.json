@@ -233,6 +233,9 @@
     "seconds_per_rep": "tempo {{count}}s/rep",
     "ghost_last": "Last: {{value}}",
     "served_easier_rung": "Working up to {{name}}",
+    "pin_written": "Do {{name}} instead",
+    "unpin_written": "Back to {{name}}",
+    "pinned_over": "Your choice, instead of {{name}}",
     "swap_exercise": "Replace this exercise",
     "swap_reason_easier": "An easier rung",
     "swap_reason_harder": "A harder rung",
@@ -305,6 +308,7 @@
     "goal_sheet_title": "How long, or how far",
     "goal_sheet_custom": "Other",
     "goal_usual": "As usual · {{value}}",
+    "goal_walk_run": "Walk and run by turns. Walk as soon as you cannot talk.",
     "goal_longest_run": "Your longest run this month: {{longest}}. Your body copes better with one under {{ceiling}}.",
     "goal_sheet_custom_hint": "Enter your own value",
     "goal_sheet_open": "Set up the outing",
@@ -500,7 +504,14 @@
     "how_to_do_it": "How to do it",
     "increase_reps_accessibility": "Increase reps by one",
     "increase_result_accessibility": "Increase result",
-    "keep_going_hint": "Keep going! Timer continues after target.",
+    "hold_release_hint": "Let go at the beep. That is the target.",
+    "hold_fight_hint": "Hold to the beep: the blow lands whole.",
+    "fight_target_changed": "Target changed: the boss counts up to {{count}} reps.",
+    "fight_target_changed_time": "Target changed: the boss counts up to {{seconds}} s.",
+    "crit_rule": "Critical hit: {{one}}% at one rep more, {{two}}% at two, no further.",
+    "crit_rule_one": "Critical hit: {{one}}% at one rep more, no further.",
+    "pain_rule": "Sharp pain? Stop there. Skipping costs nothing.",
+    "pain_rule_last": "Sharp pain? Stop there.",
     "new_records": "New bests!",
     "overtime": "BONUS TIME",
     "pause_accessibility": "Pause session",
@@ -581,8 +592,6 @@
     "reserve_hint": "Stop with 1-2 reps left in the tank, not at failure.",
     "boss_weak_point": "{{muscle}}, weak point. Half again the damage.",
     "boss_resisted": "{{muscle}}, armoured. Half the damage.",
-    "crit_hint": "Every rep past the target is a chance to strike critical. {{percent}}% right now.",
-    "crit_hint_time": "Every second past the target is a chance to strike critical. {{percent}}% right now.",
     "boss_down": "{{boss}} is down. The rest of this session is yours.",
     "hold_check_question": "Held {{time}}?",
     "hold_check_keep": "Keep it",
@@ -614,14 +623,28 @@
     "expedition_made_quest": "Filed with your quests. It is waiting exactly as you left it.",
     "expedition_permission_why": "Bati reads your location during an outing, and it leaves this phone only in your own backups and sync. Android is about to ask.",
     "level_up": "Level up",
-    "level_label": "Level"
+    "level_label": "Level",
+    "empty_variants": [
+      {
+        "title": "Nice work!",
+        "subtitle": "Session logged. Keep the flame lit."
+      },
+      {
+        "title": "Solid session.",
+        "subtitle": "Every rep still counts toward the next one."
+      },
+      {
+        "title": "In the books!",
+        "subtitle": "No fireworks today. The flame doesn't care, it just grows."
+      }
+    ]
   },
   "muscles": {
     "arms": "Arms",
     "back": "Back",
     "chest": "Chest",
     "abs": "Abs",
-    "shoulders": "Shoulders",
+    "shoulder": "Shoulders",
     "legs": "Legs"
   },
   "tabs": {
@@ -898,7 +921,117 @@
     "more_count": "+{{count}} more achievements",
     "show_less": "Show less",
     "new_unlock": "Achievement Unlocked!",
-    "new_unlocks": "{{count}} Achievements Unlocked!"
+    "new_unlocks": "{{count}} Achievements Unlocked!",
+    "badges": {
+      "first_workout": {
+        "title": "First Steps",
+        "description": "Complete your first workout"
+      },
+      "sessions_10": {
+        "title": "Getting Started",
+        "description": "Complete 10 workouts"
+      },
+      "sessions_25": {
+        "title": "Dedicated",
+        "description": "Complete 25 workouts"
+      },
+      "sessions_50": {
+        "title": "On Fire",
+        "description": "Complete 50 workouts"
+      },
+      "sessions_100": {
+        "title": "Century Warrior",
+        "description": "Complete 100 workouts"
+      },
+      "sessions_250": {
+        "title": "Champion",
+        "description": "Complete 250 workouts"
+      },
+      "sessions_500": {
+        "title": "Legend",
+        "description": "Complete 500 workouts"
+      },
+      "streak_3": {
+        "title": "Sprouting",
+        "description": "Keep your flame lit for 3 days"
+      },
+      "streak_7": {
+        "title": "Weekly Warrior",
+        "description": "Keep your flame lit for 7 days"
+      },
+      "streak_14": {
+        "title": "Two Week Wonder",
+        "description": "Keep your flame lit for 14 days"
+      },
+      "streak_30": {
+        "title": "Monthly Master",
+        "description": "Keep your flame lit for 30 days"
+      },
+      "streak_60": {
+        "title": "Unstoppable",
+        "description": "Keep your flame lit for 60 days"
+      },
+      "streak_100": {
+        "title": "Centurion",
+        "description": "Keep your flame lit for 100 days"
+      },
+      "xp_100": {
+        "title": "XP Hunter",
+        "description": "Earn 100 total XP"
+      },
+      "xp_500": {
+        "title": "XP Collector",
+        "description": "Earn 500 total XP"
+      },
+      "xp_1000": {
+        "title": "XP Master",
+        "description": "Earn 1,000 total XP"
+      },
+      "xp_5000": {
+        "title": "XP Elite",
+        "description": "Earn 5,000 total XP"
+      },
+      "xp_10000": {
+        "title": "XP Legend",
+        "description": "Earn 10,000 total XP"
+      },
+      "long_session_30min": {
+        "title": "Endurance",
+        "description": "Complete a 30+ minute workout"
+      },
+      "long_session_60min": {
+        "title": "Iron Will",
+        "description": "Complete a 60+ minute workout"
+      },
+      "early_bird": {
+        "title": "Early Bird",
+        "description": "Complete a workout before 7am"
+      },
+      "night_owl": {
+        "title": "Night Owl",
+        "description": "Complete a workout after 10pm"
+      },
+      "path_climbed": {
+        "title": "Path Climbed",
+        "description": "Own every rung of one path"
+      },
+      "first_outing": {
+        "title": "Out the Gate",
+        "description": "Finish one outing"
+      },
+      "hour_outside": {
+        "title": "An Hour on the Road",
+        "description": "Spend an hour moving in one outing"
+      },
+      "variety_3_quests": {
+        "title": "Variety Seeker",
+        "description": "Complete 3 different quests"
+      },
+      "variety_5_quests": {
+        "title": "Quest Master",
+        "description": "Complete 5 different quests"
+      }
+    }
   },
   "chart": {
     "error": "Failed to load chart",
@@ -1066,7 +1199,64 @@
     "family_unbuilt": "Not built yet · {{count}}",
     "family_unbuilt_feeds": "one session builds one",
     "family_rest": "Everything else",
-    "family_rest_feeds": "{{count}} at their ceiling"
+    "family_rest_feeds": "{{count}} at their ceiling",
+    "tiers": {
+      "1": "Hamlet",
+      "2": "Clearing",
+      "3": "Village",
+      "4": "Crossroads",
+      "5": "Town",
+      "6": "Free Town",
+      "7": "City",
+      "8": "Merchant City",
+      "9": "Flourishing City",
+      "10": "Citadel",
+      "11": "Metropolis",
+      "12": "Eternal Capital"
+    },
+    "buildings": {
+      "campfire": "Campfire",
+      "tent": "Tent",
+      "training_dummy": "Training Dummy",
+      "archery_range": "Archery Range",
+      "quarry": "Quarry",
+      "forge": "Forge",
+      "well": "Well",
+      "windmill": "Windmill",
+      "farm": "Farm",
+      "wizard_tower": "Wizard Tower",
+      "druid_grove": "Druid Grove",
+      "watchtower": "Watchtower",
+      "castle_wall": "Castle Wall",
+      "armory": "Armory",
+      "fountain": "Fountain",
+      "observatory": "Observatory",
+      "barn": "Barn",
+      "dragon_lair": "Dragon Lair",
+      "heroes_hall": "Hall of Heroes",
+      "champion_arena": "Champion Arena",
+      "high_road": "High Road"
+    },
+    "flavour": [
+      "Smoke curls from the chimneys. Someone kept the fires lit.",
+      "A traveller passed through before dawn and left no name.",
+      "The forges are quiet this morning. They will not stay that way.",
+      "Frost on the rooftops. The watch changed without a word.",
+      "Lanterns burn low along the road. The village waits.",
+      "Rain came in the night. The paths remember it.",
+      "A dog barked at nothing, twice, then thought better of it.",
+      "The bell was rung early. Nobody has said why.",
+      "Someone swept the steps before first light.",
+      "Cold wind off the hills. The shutters held.",
+      "Two crows on the ridgepole, watching the road east.",
+      "The well came up clear today. That is worth something.",
+      "Wood was stacked overnight, higher than it was.",
+      "Mist to the knees at dawn, gone by the time anyone looked.",
+      "A shutter banged loose and was fixed before noon.",
+      "The old road is quiet. It usually is, this time of year.",
+      "Lamps lit early. The dark came on faster than expected.",
+      "Nothing happened here today, and that is its own kind of news."
+    ]
   },
   "errors": {
     "save_session_failed": "Failed to save the session. Please try again.",
@@ -1333,7 +1523,7 @@
         "I have remedies for a great many things. For impatience I've found none.",
         "The body repairs while you do nothing. Badly distributed, I'm aware.",
         "Sit down if you want. People think it's cheating. They're wrong.",
-        "Pain that shouts is usually lying. Listen to the one that whispers.",
+        "A sharp pain is not effort. Stop there, I will still be here tomorrow.",
         "I've seen far stronger people go down for want of knowing when to stop.",
         "Sleep does more for your muscles than anything I keep in a bottle.",
         "You're sweating. Normal machinery.",
@@ -1805,6 +1995,7 @@
     "browse": "Browse exercises",
     "since": "Since {{date}}",
     "limits": "Quests of your own stay as you made them. Setting a rung aside stops its path climbing there.",
+    "all_jumps": "Set every jump aside",
     "not_for_me": "Don't suggest this again",
     "back": "{{name}} is back.",
     "served_no_substitute": "Set aside, nothing close to stand in",
@@ -1948,5 +2139,215 @@
     "doorPhoneOn": "One copy a day in {{folder}}. Tap to change or stop it. If you lose this phone, this copy goes with it.",
     "alsoPhone": "Extra copy on this phone: {{folder}}",
     "alsoPhoneAdd": "Add a copy on this phone"
+  },
+  "equipment": {
+    "none": "No equipment",
+    "pullup_bar": "Pull-up bar",
+    "dip_bar": "Dip bar",
+    "dumbbell": "Dumbbells",
+    "barbell": "Barbell",
+    "kettlebell": "Kettlebell",
+    "band": "Band",
+    "bench": "Bench"
+  },
+  "patterns": {
+    "push_horizontal": "Horizontal push",
+    "push_vertical": "Vertical push",
+    "pull_horizontal": "Horizontal pull",
+    "pull_vertical": "Vertical pull",
+    "squat": "Squat",
+    "hinge": "Hinge",
+    "core": "Core",
+    "locomotion": "Locomotion",
+    "mobility": "Mobility"
+  },
+  "level_titles": {
+    "1": "Apprentice",
+    "2": "Novice",
+    "3": "Trainee",
+    "4": "Squire",
+    "5": "Warrior",
+    "6": "Fighter",
+    "7": "Veteran",
+    "8": "Champion",
+    "9": "Elite",
+    "10": "Master",
+    "11": "Grandmaster",
+    "12": "Legend",
+    "13": "Mythic",
+    "14": "Titan",
+    "15": "Demigod",
+    "16": "Hero",
+    "17": "Paragon",
+    "18": "Ascended",
+    "19": "Immortal",
+    "20": "Divine"
+  },
+  "paths": {
+    "Muscle-Up": "Path of the Pull",
+    "Toes to Bar": "Path of the Hang",
+    "Handstand Push-Up": "Path of Balance",
+    "Dip": "Path of the Support",
+    "Archer Push-Up": "Path of the Archer",
+    "Tuck Planche": "Path of the Planche",
+    "Jump Squat": "Path of the Leap",
+    "Pistol Squat": "Path of the Pistol",
+    "Single-Leg Deadlift": "Path of the Hinge",
+    "Dragon Flag": "Path of the Dragon",
+    "Side Plank": "Path of the Flank",
+    "Windshield Wipers": "Path of Rotation",
+    "Flutter Kicks": "Path of the Flutter"
+  },
+  "bosses": {
+    "fire_dragon": {
+      "name": "Cindermaw",
+      "legendaryName": "Cindermaw the Crowned",
+      "idle": [
+        "The forge took longer to break me.",
+        "You burn slowly, hero.",
+        "Ash. All of it, ash.",
+        "Your little village would make fine kindling.",
+        "I have eaten knights with better form."
+      ],
+      "crit": [
+        "That one had heat in it.",
+        "So the ember bites back.",
+        "Careful, hero. You are starting to impress me."
+      ],
+      "resist": ["Scale does not care how hard you swing.", "You are polishing my armour."],
+      "enrage": [
+        "Then we both burn!",
+        "I will take the sky with me!",
+        "Come then! The fire remembers you!"
+      ]
+    },
+    "stone_golem": {
+      "name": "The Quarry King",
+      "legendaryName": "The Quarry God",
+      "idle": [
+        "I was here before your village.",
+        "Mountains do not hurry.",
+        "Wear me down, then.",
+        "Your ancestors chipped at me too.",
+        "Count your sets. I count centuries."
+      ],
+      "crit": [
+        "A crack. One crack.",
+        "You found the seam.",
+        "Again. Strike there again, if you dare."
+      ],
+      "resist": ["Stone against stone.", "You strike where I am thickest."],
+      "enrage": ["I will fall on you!", "Even ruins have weight!", "The quarry will be your grave!"]
+    },
+    "shadow_serpent": {
+      "name": "Nightcoil",
+      "legendaryName": "Nightcoil Eternal",
+      "idle": [
+        "I am already behind you.",
+        "Breathe. I can wait.",
+        "Your shadow is mine on loan.",
+        "Rest. I do my best work while you rest.",
+        "Every rep, I coil a little closer."
+      ],
+      "crit": [
+        "You saw me. Rare.",
+        "Quick. Quicker than the last one.",
+        "That one went through me. How?"
+      ],
+      "resist": ["You struck where I was not.", "Coils do not break, hero."],
+      "enrage": [
+        "Then the dark comes with teeth!",
+        "No more waiting!",
+        "I will wear your shadow like a crown!"
+      ]
+    },
+    "forest_titan": {
+      "name": "Rootfather",
+      "legendaryName": "The Elder Root",
+      "idle": [
+        "I have outlasted better.",
+        "Seasons, hero. I count in seasons.",
+        "Grow, or be soil.",
+        "The forest keeps what quits.",
+        "Your sweat waters my roots. Continue."
+      ],
+      "crit": [
+        "The heartwood felt that.",
+        "You cut deep. Good.",
+        "A storm took less from me once."
+      ],
+      "resist": ["Bark, hero. Only bark.", "The wood drinks your blows."],
+      "enrage": [
+        "The whole grove wakes!",
+        "Roots to the bone!",
+        "I have buried stronger heroes than you!"
+      ]
+    },
+    "wind_wraith": {
+      "name": "The Gale Wraith",
+      "legendaryName": "The Storm Sovereign",
+      "idle": [
+        "You are swinging at weather.",
+        "Catch me, then.",
+        "I am the space you breathe.",
+        "Your lungs are mine to empty.",
+        "Blow harder, little bellows."
+      ],
+      "crit": [
+        "You struck the wind!",
+        "Even I felt the draught.",
+        "You are learning to hit what is not there."
+      ],
+      "resist": ["Through me. Always through me.", "You cannot bruise a gust."],
+      "enrage": [
+        "Then let the storm land!",
+        "I will scatter your village!",
+        "Breathe while you still can!"
+      ]
+    },
+    "iron_golem": {
+      "name": "The Rustlord",
+      "legendaryName": "The Rustlord Reforged",
+      "idle": [
+        "The foundry never sleeps. Neither do I.",
+        "They built me to outwork you.",
+        "Rust is patient, hero.",
+        "Quotas, hero. Mine is your defeat.",
+        "I have pressed more than you will ever lift."
+      ],
+      "crit": [
+        "A rivet gone. I felt it go.",
+        "You strike like a hammer that means it.",
+        "Warranty void. Well struck."
+      ],
+      "resist": ["Iron does not bruise.", "You are ringing my plates, nothing more."],
+      "enrage": [
+        "The furnace takes over!",
+        "I will melt before I kneel!",
+        "The whole foundry dies with me!"
+      ]
+    }
+  },
+  "rest_messages": {
+    "overtraining": [
+      "You've been training hard with {{count}} workouts this week. Consider a recovery day.",
+      "That's {{count}} workouts this week. Your body earns its rest the same as its gains.",
+      "{{count}} workouts down this week. A recovery day sharpens the next one."
+    ],
+    "consecutive_days": [
+      "You've trained {{count}} days in a row! Take a rest day to prevent overtraining.",
+      "{{count}} days in a row without a break. Even heroes need one.",
+      "That's {{count}} straight days of training. Rest is part of the plan, not a pause from it."
+    ],
+    "high_volume": [
+      "You've completed {{count}} workouts this week! Your body needs time to recover and grow stronger.",
+      "{{count}} workouts this week, which is serious volume. Recovery is where the strength actually builds.",
+      "{{count}} workouts in seven days. Give your body a day to catch up to your ambition."
+    ],
+    "deload": [
+      "Four hard weeks in a row. Take an easier one: less volume, the same habit. Your next month starts here.",
+      "A month of heavy weeks behind you. Ease off for a few days, the gains catch up while you rest.",
+      "Four straight heavy weeks. This is the week to go lighter, not the week to stop."
+    ]
   }
 }

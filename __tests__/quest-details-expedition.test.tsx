@@ -216,8 +216,6 @@ jest.mock("@/db/exercises", () => ({ listExercises: jest.fn().mockResolvedValue(
 // The habit is read from the journal; `__tests__/outing-habit.test.ts` covers the arithmetic.
 const mockGetOutingHabit = jest.fn();
 jest.mock("@/db/outingHabit", () => ({
-  NO_HABIT: { usual: null, longestM: null },
-  LONGEST_RUN_CEILING: 1.1,
   getOutingHabit: (...args: unknown[]) => mockGetOutingHabit(...args),
 }));
 
@@ -256,7 +254,9 @@ beforeEach(() => {
   mockParams.id = "5";
   delete mockParams.level;
   mockSettings.distanceUnit = "metric";
-  mockGetOutingHabit.mockReset().mockResolvedValue({ usual: null, longestM: null });
+  mockGetOutingHabit
+    .mockReset()
+    .mockResolvedValue({ usual: null, longestM: null, longestSeconds: null });
   mockStartSession.mockClear();
   const db = require("@/db");
   db.getQuestById.mockClear();
@@ -417,6 +417,7 @@ describe("an expedition on the quest screen", () => {
     mockGetOutingHabit.mockResolvedValue({
       usual: { metres: 5234, seconds: 1700 },
       longestM: 8200,
+      longestSeconds: 2700,
     });
     const quest = expeditionQuest();
     const [slot] = quest.exercises;
@@ -433,8 +434,60 @@ describe("an expedition on the quest screen", () => {
     expect(lastSavedConfig()).toMatchObject({ distanceM: 5200 });
   });
 
+  // The ceiling is said in the tab's own unit. And not at all on the duration tab while it sits
+  // under the twenty-minute walk-run the app proposes to that hero: "copes better under 13 min"
+  // over a proposal of twenty was the screen contradicting itself.
+  const runQuest = () => {
+    const quest = expeditionQuest();
+    const [slot] = quest.exercises;
+    assert(slot);
+    slot.exercise = movement({ style: "expedition", locomotion: "run" });
+    return quest;
+  };
+
+  test("the ceiling is said in the duration tab's own unit", async () => {
+    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 6000, longestSeconds: 1800 });
+    const view = await mountQuest(runQuest());
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    expect(view.getByTestId("goal-longest-run").props.children).toContain("33 min");
+  });
+
+  // "Copes better under 13 min", or under 2.2 km, printed over a proposal of twenty minutes was
+  // the screen contradicting itself. The slot says the run is the walk-run proposal
+  // (`resolveSlot`), and the sheet is told rather than guessing from the habit.
+  test("the ceiling yields to the walk-run proposal, on both tabs", async () => {
+    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 2000, longestSeconds: 720 });
+    const quest = runQuest();
+    const [slot] = quest.exercises;
+    assert(slot);
+    // Not a field of this file's fixture type: it is what `resolveSlot` adds to a real slot.
+    Object.assign(slot, { walkRun: true });
+    const view = await mountQuest(quest);
+
+    expect(view.getByTestId("goal-walk-run")).toBeTruthy();
+    await fireEvent.press(view.getByText("Set up the outing"));
+    expect(view.queryByTestId("goal-longest-run")).toBeNull();
+    await fireEvent.press(view.getByText("Distance"));
+    expect(view.queryByTestId("goal-longest-run")).toBeNull();
+  });
+
+  // A hero's own run quest is never proposed the walk-run: with the same short month, nothing
+  // contradicts the ceiling, and it is the one line that tells them not to jump.
+  test("a run that is not the walk-run proposal keeps its ceiling, however short the month", async () => {
+    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 2000, longestSeconds: 720 });
+    const view = await mountQuest(runQuest());
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    expect(view.getByTestId("goal-longest-run").props.children).toContain("13 min");
+  });
+
   test("a ride is offered a ride's distances, and no running ceiling", async () => {
-    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 40_000 });
+    mockGetOutingHabit.mockResolvedValue({
+      usual: null,
+      longestM: 40_000,
+      longestSeconds: 7200,
+    });
     const quest = expeditionQuest();
     const [slot] = quest.exercises;
     assert(slot);

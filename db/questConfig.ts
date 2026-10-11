@@ -1,6 +1,6 @@
 import { eq, isNotNull, sql } from "drizzle-orm";
 import { db, schema } from "./client";
-import { getSessionAggregates } from "./completed";
+import { workoutsBeforeToday } from "./completed";
 import { type Exercise, listExercises } from "./exercises";
 import { isOutingSession } from "./expeditions";
 import {
@@ -11,7 +11,13 @@ import {
   setPreference,
   type TrainingLevel,
 } from "./preferences";
-import { getQuestById, type Quest, type QuestExercise, USER_QUEST_AUTHOR } from "./quests";
+import {
+  getQuestById,
+  movementRef,
+  type Quest,
+  type QuestExercise,
+  USER_QUEST_AUTHOR,
+} from "./quests";
 import {
   clampToRange,
   DISTANCE_GOAL_RANGE,
@@ -62,15 +68,21 @@ function clamp(value: number, range: { min: number; max: number }): number {
   return clampToRange(value, range);
 }
 
-/** A hero who never answered stops being read as one who is starting after this many sessions. */
-const SETTLED_AFTER_SESSIONS = 5;
+/**
+ * A hero who never answered stops being read as one who is starting after this many sessions:
+ * the count `startsGently` holds the jumps back for, so the dose and the warm-up let go together.
+ */
+const SETTLED_AFTER_SESSIONS = 3;
 
 /**
  * Whether the hero is to be treated as starting, or starting again: they said so, or they never
  * said and the journal is still short. The second half is what keeps an update from touching a
  * hero who was here before the question existed, or who skipped it two hundred sessions ago:
- * read as a beginner, they lost every jump of their warm-up and saw their quests open at Easy.
- * One answer for the dose and for the warm-up (`loadWarmupContext`).
+ * read as a beginner, they saw their quests open at Easy.
+ *
+ * The dose's rule, not the warm-up's: `startsGently` (`db/preferences.ts`) holds the jumps back
+ * for anyone's first sessions, whatever they answered, and a hero who said "I already train" is
+ * still handed the dose they asked for.
  */
 export function isStartingOut(answer: TrainingLevel | null, sessions: number): boolean {
   return answer === "beginner" || (answer === null && sessions < SETTLED_AFTER_SESSIONS);
@@ -99,9 +111,10 @@ export function startingDifficulty(answer: TrainingLevel | null, sessions: numbe
  */
 export async function loadDefaultLevels(): Promise<(questId: number) => UserLevel> {
   const { completedQuest, quests } = schema;
-  const [answer, { totalSessions }, written, rows] = await Promise.all([
+  const [answer, sessions, written, rows] = await Promise.all([
     preferences.getTrainingLevel(),
-    getSessionAggregates(),
+    // Before today, like `startsGently`'s count: the answer must not change in the middle of a day.
+    workoutsBeforeToday(),
     db.select({ id: quests.id }).from(quests).where(eq(quests.author, USER_QUEST_AUTHOR)),
     // SQLite hands back the bare columns of the row that holds the max().
     db
@@ -116,7 +129,7 @@ export async function loadDefaultLevels(): Promise<(questId: number) => UserLeve
   ]);
   const played = new Map(rows.map((r) => [r.questId, r.level] as const));
   const asWritten = new Set(written.map((q) => q.id));
-  const fallback = startingDifficulty(answer, totalSessions);
+  const fallback = startingDifficulty(answer, sessions);
   return (questId) =>
     played.get(questId) ?? (asWritten.has(questId) ? Difficulty.Medium : fallback);
 }
@@ -220,6 +233,30 @@ export async function saveQuestConfig(questId: number, config: QuestConfig): Pro
   await setPreference(configKey(questId), JSON.stringify(config));
 }
 
+/**
+ * Give up a saved swap on one slot, from a session: the hero pinned a movement above their rung
+ * ("I can already do this"), then skipped it or swapped away from it mid-set. Left in place, the
+ * quest would serve the same movement next time, and the only way back is a button on a screen
+ * they are not on. The target tuned for that movement goes with it, as in `applySwap`.
+ */
+export async function dropSlotSwap(questId: number, questExerciseId: number): Promise<void> {
+  const config = await getQuestConfig(questId);
+  if (!config || config.swaps?.[String(questExerciseId)] === undefined) return;
+  await saveQuestConfig(questId, withoutSlotSwap(config, questExerciseId));
+}
+
+/**
+ * A config with one slot's swap gone, and the target tuned for that movement with it: the pair
+ * `applySwap` keeps together. The one place that says what "this slot's swap" is made of, for
+ * the session above and for the quest screen's "Back to X".
+ */
+export function withoutSlotSwap(config: QuestConfig, questExerciseId: number): QuestConfig {
+  const key = String(questExerciseId);
+  const without = (entries: Record<string, number> | undefined) =>
+    Object.fromEntries(Object.entries(entries ?? {}).filter(([id]) => id !== key));
+  return { ...config, swaps: without(config.swaps), targets: without(config.targets) };
+}
+
 export async function clearQuestConfig(questId: number): Promise<void> {
   await deletePreference(configKey(questId));
 }
@@ -294,6 +331,32 @@ export function applyQuestConfig(
 }
 
 /**
+ * A slot's target once the hero's own number is on it, and what the app had prescribed there
+ * (`0070`): rung credit, crit odds and the damage cap keep reading the app's value.
+ */
+function ownTarget(
+  base: QuestExercise["target"],
+  value: number | undefined,
+): Pick<QuestExercise, "target" | "prescribed"> {
+  if (value === undefined || value === base.value) return { target: base };
+  return { target: { ...base, value }, prescribed: base.value };
+}
+
+/**
+ * "I can already do this": the hero swapped in the very movement the ladder stepped down from.
+ * Not a swap to something else, and not a set-aside slot, where the written movement is the one
+ * thing they asked never to be handed. Names the rung it overrides, which is the way back.
+ */
+function pinOver(
+  qex: QuestExercise,
+  substitute: Exercise | undefined,
+): Pick<QuestExercise, "pinnedOver"> {
+  const written = qex.substitutedFor;
+  const pinned = substitute && written && !written.setAside && written.id === substitute.id;
+  return pinned ? { pinnedOver: movementRef(qex.exercise) } : {};
+}
+
+/**
  * The hero's per-slot overrides, applied to slots that are already resolved for their level.
  *
  * Split out of `applyQuestConfig` so the gallery's synchronous preview reads the saved config
@@ -326,10 +389,13 @@ export function applyConfigToSlots(
     // movement showed the level's default reps and every step of the field was thrown away on
     // the next render, which read as a frozen control. The clamp follows the resolved unit too;
     // on the old order it measured reps against the range for seconds.
+    // A pin has a better answer than a retarget: the target the quest wrote for that movement.
+    const pin = pinOver(qex, substitute);
     const base =
       substitute === undefined
         ? qex.target
-        : retargetForMovement(qex.target, qex.exercise, substitute, config.level);
+        : (pin.pinnedOver && qex.substitutedFor?.target) ||
+          retargetForMovement(qex.target, qex.exercise, substitute, config.level);
     const raw = targets[key];
     // The style follows the resolved unit, for the same reason the unit follows the swap: an
     // hour is a hold's ceiling and a walk is not a hold, so a slot standing on an expedition
@@ -342,7 +408,8 @@ export function applyConfigToSlots(
 
     return {
       ...qex,
-      target: value === undefined ? base : { ...base, value },
+      ...ownTarget(base, value),
+      ...pin,
       ...(substitute === undefined
         ? {}
         : {

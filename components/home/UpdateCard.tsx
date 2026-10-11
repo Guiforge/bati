@@ -62,7 +62,7 @@ export function UpdateCard() {
     <Card mx="$4" mt="$3" gap="$3">
       <XStack items="flex-start" gap="$2">
         <Text flex={1} fontSize="$5" fontWeight="700" color="$text">
-          {t("home.update_title", "Version {{version}} is out", { version })}
+          {t("home.update_title", { version })}
         </Text>
         <Button
           testID="home-update-dismiss"
@@ -75,12 +75,12 @@ export function UpdateCard() {
           }}
           icon={<X size={18} color="$textSecondary" />}
           accessibilityRole="button"
-          accessibilityLabel={t("home.update_later", "Later")}
+          accessibilityLabel={t("home.update_later")}
         />
       </XStack>
 
       <Paragraph color="$textSecondary" fontSize="$3">
-        {t("home.update_body", "You are on {{current}}.", { current: appVersion })}
+        {t("home.update_body", { current: appVersion })}
       </Paragraph>
 
       <AppButton
@@ -97,7 +97,7 @@ export function UpdateCard() {
           });
         }}
       >
-        {t("home.update_open", "See the release")}
+        {t("home.update_open")}
       </AppButton>
     </Card>
   );

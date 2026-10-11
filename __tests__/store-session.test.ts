@@ -1,10 +1,16 @@
 import assert from "node:assert/strict";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
-import { BEGINNER_UNAVAILABLE, NO_IMPACT, PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
-import { hasSessionForQuestToday, outingSecondsToday } from "@/db/completed";
+import { PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
+import {
+  createCompletedSession,
+  dailyBonusOf,
+  dailyBonusPaidOn,
+  hasSessionForQuestToday,
+  outingSecondsToday,
+} from "@/db/completed";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
-import { saveQuestConfig } from "@/db/questConfig";
+import { dropSlotSwap, saveQuestConfig } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
 import { isDailyQuest } from "@/db/quests";
 import { computeSessionXp } from "@/db/xp";
@@ -17,7 +23,6 @@ import {
   FINAL_REST_SECONDS,
   holdNeedingAnswer,
   loadWarmup,
-  loadWarmupContext,
   recordedDurationSeconds,
   useSessionStore,
 } from "../stores/session";
@@ -64,6 +69,9 @@ jest.mock("@/db/completed", () => ({
   // "is not a function", which is exactly how this line came to exist.
   outingSecondsToday: jest.fn().mockResolvedValue(0),
   hasSessionForQuestToday: jest.fn().mockResolvedValue(false),
+  // The day's bonus, read off the journal: nobody paid yet, and no row holding one.
+  dailyBonusPaidOn: jest.fn().mockResolvedValue(false),
+  dailyBonusOf: jest.fn().mockResolvedValue(0),
 }));
 // The rest of what saveSession touches on its way through. Stubbed so the store's own
 // behaviour — what it banks, commits and clears — is what these cases actually measure.
@@ -81,6 +89,7 @@ jest.mock("@/db/oaths", () => ({
 jest.mock("@/db/questConfig", () => ({
   ...jest.requireActual("@/db/questConfig"),
   saveQuestConfig: jest.fn().mockResolvedValue(undefined),
+  dropSlotSwap: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock("@/db/queryCache", () => ({
   ...jest.requireActual("@/db/queryCache"),
@@ -562,7 +571,8 @@ describe("useSessionStore", () => {
       expect(store.getState().bossStartHp).toBeNull();
     });
 
-    // The journal records the corrected reps; the boss must take damage for the same number.
+    // The journal records the corrected reps; the boss takes damage for them up to two past the
+    // prescribed ten, and no further (`damagingValue`): the fight does not pay for grinding reps.
     test("correcting the last result re-lands the banked hit", async () => {
       const rand = jest.spyOn(Math, "random").mockReturnValue(0.99); // never a crit
       await store.getState().startSession(mockQuest, "medium", { adventureId: 42 });
@@ -576,8 +586,8 @@ describe("useSessionStore", () => {
       const state = store.getState();
       expect(state.results.at(-1)?.result.value).toBe(15);
       expect(state.pendingDamage).toHaveLength(1);
-      expect(state.pendingDamage[0]?.damage).toBe(15);
-      expect(state.bossFight?.currentHp).toBe(85);
+      expect(state.pendingDamage[0]?.damage).toBe(12);
+      expect(state.bossFight?.currentHp).toBe(88);
 
       rand.mockRestore();
     });
@@ -600,8 +610,10 @@ describe("useSessionStore", () => {
 
         await holdThenRest(362);
         expect(store.getState().status).toBe("resting");
+        // The hit is already the target's, before the rest is answered: a hold lands its
+        // prescribed seconds and nothing past them. It used to land all 362 and be rewound here.
         const raw = store.getState().pendingDamage.at(-1)?.damage;
-        expect(raw).toBeGreaterThan(control ?? Infinity);
+        expect(raw).toBe(control);
 
         store.getState().skipRest();
 
@@ -902,25 +914,6 @@ describe("useSessionStore", () => {
       await store.getState().startSession(mockQuest, "medium");
 
       expect(store.getState().status).toBe("countdown");
-    });
-
-    // Audit 2026-10-11, F3. The preview and the session both read `loadWarmupContext`, so the
-    // answer is asserted there and on the sequence a session really starts with.
-    test.each(["beginner", null])("a hero whose level is %s opens on the floor", async (level) => {
-      prefs.getWarmupEnabled.mockResolvedValue(true);
-      prefs.getTrainingLevel.mockResolvedValue(level);
-
-      const { unavailable } = await loadWarmupContext();
-      expect([...unavailable]).toEqual(expect.arrayContaining([...BEGINNER_UNAVAILABLE]));
-
-      await store.getState().startSession(mockQuest, "medium");
-      expect(NO_IMPACT).toContain(store.getState().warmupSequence[0]?.exerciseName);
-    });
-
-    test("a hero past the beginning keeps the pulse raisers", async () => {
-      prefs.getWarmupEnabled.mockResolvedValue(true);
-
-      expect((await loadWarmupContext()).unavailable.size).toBe(0);
     });
   });
 
@@ -1257,6 +1250,30 @@ describe("useSessionStore", () => {
       expect(store.getState().bossFight?.currentHp).toBe(100);
     });
 
+    // "I can already do this", then "I couldn't": the pin must not outlive the evening, or the
+    // quest serves the same wall next time and the way back is on a screen the hero is not on.
+    test("skipping a movement the hero pinned over their rung gives the pin up", () => {
+      const quest = store.getState().quest;
+      assert(quest);
+      const [first, ...rest] = quest.exercises;
+      assert(first);
+      const pinnedOver = { ...first.exercise, id: 99, enName: "Dead Bug" };
+      store.setState({ quest: { ...quest, exercises: [{ ...first, pinnedOver }, ...rest] } });
+      (dropSlotSwap as jest.Mock).mockClear();
+
+      store.getState().skipExercise();
+
+      expect(dropSlotSwap).toHaveBeenCalledWith(quest.id, first.id);
+    });
+
+    test("skipping a movement that was never pinned touches no saved config", () => {
+      (dropSlotSwap as jest.Mock).mockClear();
+
+      store.getState().skipExercise();
+
+      expect(dropSlotSwap).not.toHaveBeenCalled();
+    });
+
     test("completing a set afterwards clears the flag the rest screen reads", () => {
       store.getState().skipExercise();
       expect(store.getState().lastSetSkipped).toBe(true);
@@ -1310,6 +1327,134 @@ describe("useSessionStore", () => {
       const slot = store.getState().quest?.exercises[0];
       expect(slot?.exercise.enName).toBe("Wall Push-Up");
       expect(slot?.images).toEqual([]);
+    });
+
+    // A target lowered to 1 on the quest screen keeps its "the app asked for ten" through a
+    // swap. Dropped, the 1 became what was prescribed on the new movement, and one rep was a
+    // clean session on its rung.
+    test("carries what the app prescribed across a swap that keeps the hero's number", () => {
+      const quest = store.getState().quest;
+      assert(quest);
+      const [first, ...rest] = quest.exercises;
+      assert(first);
+      store.setState({
+        quest: {
+          ...quest,
+          exercises: [{ ...first, target: { ...first.target, value: 1 }, prescribed: 10 }, ...rest],
+        },
+      });
+
+      // Counted, like the movement it replaces: a swap that changes the unit asks a fresh target.
+      store.getState().swapCurrentExercise({ ...easier, measure: "reps" });
+      store.getState().completeExercise(1);
+
+      expect(store.getState().quest?.exercises[0]?.prescribed).toBe(10);
+      expect(store.getState().results[0]?.prescribed).toBe(10);
+    });
+
+    // And through any number of swaps: the slot stops saying what the quest wrote at the first
+    // one, so it is remembered there. Two swaps to reach the written movement gave the default.
+    test("the written movement keeps its own target through another swap first", () => {
+      const quest = store.getState().quest;
+      assert(quest);
+      const [first, ...rest] = quest.exercises;
+      assert(first);
+      const written = { ...easier, id: 98, enName: "Squat", measure: "reps" } as Exercise;
+      const other = { ...easier, id: 201, measure: "time" } as Exercise;
+      const substitutedFor = {
+        id: 98,
+        enName: "Squat",
+        frName: "Squat",
+        deName: "",
+        esName: "",
+        imagePath: "",
+        target: { type: "reps" as const, value: 17 },
+      };
+      store.setState({
+        quest: {
+          ...quest,
+          exercises: [{ ...first, target: { type: "time", value: 20 }, substitutedFor }, ...rest],
+        },
+      });
+
+      store.getState().swapCurrentExercise(other);
+      store.getState().swapCurrentExercise(written);
+      expect(store.getState().quest?.exercises[0]?.target).toEqual({ type: "reps", value: 17 });
+
+      // And back to the rung it started on: its own twenty seconds, not a default either.
+      store.getState().swapCurrentExercise(first.exercise);
+      expect(store.getState().quest?.exercises[0]?.target).toEqual({ type: "time", value: 20 });
+    });
+
+    // The second door to "Do X instead". From the quest screen the written movement comes with
+    // what the quest wrote for it; from the swap sheet mid-session it came with the unit's
+    // default, which was then the bar its rung was earned on.
+    test("taking the written movement back asks what the quest wrote for it", () => {
+      const quest = store.getState().quest;
+      assert(quest);
+      const [first, ...rest] = quest.exercises;
+      assert(first);
+      const written = { ...easier, id: 98, enName: "Squat", measure: "reps" } as Exercise;
+      const substitutedFor = {
+        id: 98,
+        enName: "Squat",
+        frName: "Squat",
+        deName: "",
+        esName: "",
+        imagePath: "",
+        target: { type: "reps" as const, value: 17 },
+      };
+      store.setState({
+        quest: {
+          ...quest,
+          // Served a hold in the written movement's place, with the hero's own number on it.
+          exercises: [
+            { ...first, target: { type: "time", value: 20 }, prescribed: 30, substitutedFor },
+            ...rest,
+          ],
+        },
+      });
+
+      store.getState().swapCurrentExercise(written);
+
+      const slot = store.getState().quest?.exercises[0];
+      expect(slot?.target).toEqual({ type: "reps", value: 17 });
+      // The app's own number again: nothing of the hero's is left on it.
+      expect(slot?.prescribed).toBeUndefined();
+    });
+
+    // A set is due from the round its movement *first* came in. Remembered on the slot, because
+    // read off the rows a movement swapped in, skipped, swapped out and swapped back in looked
+    // like it had just arrived, and the skip was forgiven.
+    test("a movement swapped in, away and back keeps the round it first came in", () => {
+      const original = store.getState().quest?.exercises[0]?.exercise;
+      assert(original);
+      const other = { ...easier, id: 201, measure: "reps" } as Exercise;
+      const third = { ...easier, id: 202, measure: "reps" } as Exercise;
+      // What the next set would be logged with: read through a set, the way the journal is.
+      const arrival = () => {
+        const round = store.getState().currentRoundIndex;
+        store.setState({ currentExerciseIndex: 0, status: "running" });
+        store.getState().completeExercise(10);
+        const logged = store.getState().results.at(-1)?.swappedIn;
+        store.setState({ currentExerciseIndex: 0, currentRoundIndex: round, status: "running" });
+        return logged;
+      };
+
+      store.getState().swapCurrentExercise(other);
+      expect(arrival()).toBe(0);
+
+      store.setState({ currentRoundIndex: 1 });
+      store.getState().swapCurrentExercise(third);
+      expect(arrival()).toBe(1);
+
+      store.setState({ currentRoundIndex: 2 });
+      store.getState().swapCurrentExercise(other);
+      expect(arrival()).toBe(0);
+
+      // The movement the quest handed over is never marked, swapped back to or not.
+      store.getState().swapCurrentExercise(original);
+      expect(arrival()).toBeUndefined();
     });
 
     test("leaves results already logged exactly as they were", () => {
@@ -2055,7 +2200,8 @@ describe("useSessionStore", () => {
  * 1200 where the quest suggested thirty minutes.
  */
 describe("the day's quest", () => {
-  const bonusOf = async (): Promise<number> => {
+  /** `savedSessionId` set: the save is a retry of a session whose row already landed. */
+  const bonusOf = async (savedSessionId: number | null = null): Promise<number> => {
     const walk = {
       id: 41,
       rounds: 1,
@@ -2084,7 +2230,12 @@ describe("the day's quest", () => {
       track: { ...EMPTY, startedAt, lastAt: Date.now(), distanceM: 10_000, movingMs: 7_200_000 },
     });
     await useSessionStore.getState().startSession(walk, "medium", {});
-    useSessionStore.setState({ startTime: startedAt, totalPausedTime: 0, restTakenSeconds: 0 });
+    useSessionStore.setState({
+      startTime: startedAt,
+      totalPausedTime: 0,
+      restTakenSeconds: 0,
+      savedSessionId,
+    });
 
     const result = await useSessionStore.getState().saveSession(null);
     return result.dailyBonusXp;
@@ -2121,6 +2272,64 @@ describe("the day's quest", () => {
   test("pays once, however many times the same quest is run", async () => {
     (hasSessionForQuestToday as jest.Mock).mockResolvedValue(true);
     expect(await bonusOf()).toBe(0);
+  });
+
+  /**
+   * Issue #177. The day's quest is drawn from a pool the hero can reshape before lunch (level,
+   * equipment, a quest of their own), so the same date could point at a second quest. "This
+   * quest was not logged today" was true of that one, and it paid again. The bonus is written
+   * on the session's own row, and "was today paid" is asked of the journal.
+   */
+  describe("once a day, whatever the day's quest has become", () => {
+    afterEach(() => {
+      (dailyBonusPaidOn as jest.Mock).mockResolvedValue(false);
+      (dailyBonusOf as jest.Mock).mockResolvedValue(0);
+    });
+
+    test("a bonus that is paid is written on the session's own row", async () => {
+      (createCompletedSession as jest.Mock).mockClear();
+
+      expect(await bonusOf()).toBe(50);
+
+      expect((createCompletedSession as jest.Mock).mock.calls[0]?.[0]).toMatchObject({
+        dailyBonusXp: 50,
+      });
+    });
+
+    test("a second quest that became the day's pays nothing", async () => {
+      (dailyBonusPaidOn as jest.Mock).mockResolvedValue(true);
+      (createCompletedSession as jest.Mock).mockClear();
+
+      expect(await bonusOf()).toBe(0);
+      expect((createCompletedSession as jest.Mock).mock.calls[0]?.[0]).toMatchObject({
+        dailyBonusXp: 0,
+      });
+    });
+
+    // A session is the quest of the day it started on, the day its row is dated. Read at save
+    // time, one begun at 23:50 was judged against the next day's pick and the next day's journal.
+    test("every question is asked of the day the session started", async () => {
+      await bonusOf();
+
+      const startedAt = new Date(useSessionStore.getState().startTime ?? 0);
+      expect((isDailyQuest as jest.Mock).mock.calls.at(-1)?.[1]).toEqual(startedAt);
+      expect((dailyBonusPaidOn as jest.Mock).mock.calls.at(-1)?.[0]).toEqual(startedAt);
+      expect((hasSessionForQuestToday as jest.Mock).mock.calls.at(-1)?.[1]).toEqual(startedAt);
+    });
+
+    // A retried save reports what its row holds and asks nothing again. Asked again, a pick that
+    // moved since (a rung the landed rows earned, midnight) showed a bonus the journal did not
+    // have, or dropped one it did.
+    test("a retry reports the bonus its row holds, whatever the day says now", async () => {
+      (isDailyQuest as jest.Mock).mockResolvedValue(false);
+      (dailyBonusOf as jest.Mock).mockResolvedValue(50);
+      expect(await bonusOf(77)).toBe(50);
+      expect(dailyBonusOf).toHaveBeenCalledWith(77);
+
+      (isDailyQuest as jest.Mock).mockResolvedValue(true);
+      (dailyBonusOf as jest.Mock).mockResolvedValue(0);
+      expect(await bonusOf(78)).toBe(0);
+    });
   });
 });
 

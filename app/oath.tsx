@@ -425,7 +425,7 @@ export default function OathScreen() {
         // swearOath throws on invalid input; without this the tap looked like it worked
         // while the promise rejected unhandled and the screen never closed.
         reportError("oath.swear", e);
-        showError(t("oath.save_error", "Could not save the oath"));
+        showError(t("oath.save_error"));
         return;
       }
       // The oath is the bar the flame and the weekly count are measured against — both
@@ -433,7 +433,7 @@ export default function OathScreen() {
       requestWidgetsUpdate().catch((e) => reportError("widget.update", e));
       // The app's most ceremonial commitment used to end in a silent router.back().
       success();
-      showSuccess(t("oath.sworn_toast", "Oath sworn"));
+      showSuccess(t("oath.sworn_toast"));
       router.back();
     },
     [router, showError, showSuccess, success, t],
@@ -445,10 +445,10 @@ export default function OathScreen() {
     (input: Parameters<typeof swearOath>[0]) => {
       if (existing && !existing.isFulfilled) {
         ask({
-          title: t("oath.replace_title", "Replace your current oath?"),
-          body: t("oath.replace_body", "The oath in force and its progress will be abandoned."),
-          cancelLabel: t("common.cancel", "Cancel"),
-          confirmLabel: t("oath.replace_confirm", "Swear the new oath"),
+          title: t("oath.replace_title"),
+          body: t("oath.replace_body"),
+          cancelLabel: t("common.cancel"),
+          confirmLabel: t("oath.replace_confirm"),
           destructive: true,
           onConfirm: () => {
             performSwear(input).catch(() => {
@@ -515,10 +515,10 @@ export default function OathScreen() {
 
   const abandon = useCallback(() => {
     ask({
-      title: t("oath.abandon_title", "Abandon this oath?"),
-      body: t("oath.abandon_body", "Its progress will be lost."),
-      cancelLabel: t("common.cancel", "Cancel"),
-      confirmLabel: t("oath.abandon", "Abandon"),
+      title: t("oath.abandon_title"),
+      body: t("oath.abandon_body"),
+      cancelLabel: t("common.cancel"),
+      confirmLabel: t("oath.abandon"),
       destructive: true,
       onConfirm: () => {
         breakOath()
@@ -530,7 +530,7 @@ export default function OathScreen() {
           })
           .catch((e) => {
             reportError("oath.abandon", e);
-            showError(t("oath.save_error", "Could not save the oath"));
+            showError(t("oath.save_error"));
           });
       },
     });

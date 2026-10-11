@@ -59,7 +59,7 @@ export default function TrainingLevelStep() {
         .then(() => router.replace("/onboarding/first-session" as never))
         .catch((error) => {
           reportError("onboarding.finish", error);
-          showError(t("onboarding.save_error", "Could not save. Try again"));
+          showError(t("onboarding.save_error"));
         });
     },
     [success, setHasFinishedOnboarding, router, showError, t],
@@ -99,7 +99,7 @@ export default function TrainingLevelStep() {
             onPress={() => complete(null)}
             accessibilityRole="button"
           >
-            {t("onboarding.skip", "Skip")}
+            {t("onboarding.skip")}
           </Text>
         </XStack>
 
@@ -118,7 +118,7 @@ export default function TrainingLevelStep() {
               textShadowColor={fade(rawColors.black, 0.5)}
               textShadowRadius={4}
             >
-              {t("onboarding.level_title", "Where are you at?")}
+              {t("onboarding.level_title")}
             </H1>
             <Paragraph
               text="center"
@@ -191,7 +191,7 @@ export default function TrainingLevelStep() {
           onPress={() => complete(selected)}
           disabled={!selected}
         >
-          {t("onboarding.next", "Continue")}
+          {t("onboarding.next")}
         </AppButton>
       </YStack>
     </YStack>

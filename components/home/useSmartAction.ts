@@ -67,7 +67,6 @@ function questSubtext(offer: QuestHomeOffer, t: TFunction): string {
     case "weak_muscles":
       return t("home.focus_on", {
         muscles: offer.muscles,
-        defaultValue: `Focus: ${offer.muscles}`,
       });
     case "stale_quest":
       return t("home.last_done", { count: offer.days });
@@ -95,35 +94,32 @@ function stageFor(
 ): SmartActionConfig {
   if (offer.kind === "adventure") {
     return {
-      label: t("home.continue_adventure_label", "Continue Adventure"),
+      label: t("home.continue_adventure_label"),
       subtext: t("home.step_progress", {
         current: offer.step,
         total: offer.total,
-        defaultValue: `Step ${offer.step} of ${offer.total}`,
       }),
       variant: "adventure",
       // The step's own screen starts it: it has a narrative to tell first.
       startQuestId: null,
       onPress: () => router.push(`/adventures/${offer.adventureId}` as never),
       scene: {
-        title: offer.title ?? t("home.resume_journey", "Resume your journey"),
+        title: offer.title ?? t("home.resume_journey"),
         imagePath: offer.imagePath,
         progress: { done: offer.done, total: offer.total },
-        kicker: t("home.kicker_adventure", "Adventure"),
+        kicker: t("home.kicker_adventure"),
       },
     };
   }
 
   if (offer.kind === "gallery") {
     return {
-      label: t("home.pick_quest_label", "Pick a quest"),
-      subtext: t("home.quick_workout", "Quick Workout"),
+      label: t("home.pick_quest_label"),
+      subtext: t("home.quick_workout"),
       variant: "gallery",
       // A hero with sessions is not at the start of a journey, which is what the stage's own
       // fallback title says; a scene with no picture takes the stage's stand-in art.
-      scene: offer.trained
-        ? { title: t("home.pick_next", "Choose your next quest"), imagePath: null }
-        : null,
+      scene: offer.trained ? { title: t("home.pick_next"), imagePath: null } : null,
       startQuestId: null,
       onPress: () => router.push("/(tabs)/quests" as never),
     };
@@ -132,7 +128,7 @@ function stageFor(
   if (offer.kind === "done_today") {
     return {
       // A text link on this stage, not its button: the hero who wants more can still pick.
-      label: t("home.pick_quest_label", "Pick a quest"),
+      label: t("home.pick_quest_label"),
       // No quest to name (a hero who only goes out): the first sentence stands alone.
       subtext: offer.next
         ? t("home.next_session", {
@@ -153,7 +149,7 @@ function stageFor(
   return {
     // "Start" when the tap starts, "See the quest" when it only opens the screen that does:
     // one verb per button, and the verb says what the tap does.
-    label: startable ? t("home.start", "Start") : t("home.see_quest", "See the quest"),
+    label: startable ? t("home.start") : t("home.see_quest"),
     subtext,
     variant: "quest",
     startQuestId: startable ? quest.id : null,
@@ -164,19 +160,17 @@ function stageFor(
       // has no reason of its own to say: the adventure and day one keep theirs.
       kicker:
         offer.kind === "first_day"
-          ? t("home.kicker_day_one", "Day one")
+          ? t("home.kicker_day_one")
           : yourDay
             ? t("home.kicker_your_day")
             : undefined,
       meta: [
         t("quests.exercises", {
           count: quest.exercises.length,
-          defaultValue: `${quest.exercises.length} exercises`,
         }),
         quest.archetype ? t(`quests.archetype_${quest.archetype}`) : null,
         t("quests.estimate", {
           duration: formatDurationEstimate(seconds, language),
-          defaultValue: `≈ ${formatDurationEstimate(seconds, language)}`,
         }),
       ]
         .filter(Boolean)

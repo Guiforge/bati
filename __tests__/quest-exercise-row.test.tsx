@@ -49,11 +49,13 @@ const slot = (over: Partial<QuestExercise> = {}): QuestExercise =>
 const onOpenExercise = jest.fn();
 const onPutBack = jest.fn();
 const onReplace = jest.fn();
+const onPin = jest.fn();
 
 async function renderRow(over: Partial<QuestExercise> = {}, showTarget = true) {
   onOpenExercise.mockClear();
   onPutBack.mockClear();
   onReplace.mockClear();
+  onPin.mockClear();
   await render(
     <TamaguiProvider config={config} defaultTheme="dark">
       <QuestExerciseRow
@@ -64,6 +66,7 @@ async function renderRow(over: Partial<QuestExercise> = {}, showTarget = true) {
         onOpenExercise={onOpenExercise}
         onPutBack={onPutBack}
         onReplace={onReplace}
+        onPin={onPin}
       />
     </TamaguiProvider>,
   );
@@ -132,6 +135,33 @@ test("a rung substitution keeps its own caption and offers nothing to put back",
   expect(screen.getByText("Working up to Squat")).toBeTruthy();
   await fireEvent.press(screen.getByText("1. Wall Sit"));
   expect(screen.queryByText("Put Squat back")).toBeNull();
+});
+
+// "I can already do this." The hero who holds a clean plank was served dead bugs, and the only
+// way to the written movement was an icon in a folded card, then a search of the catalogue.
+test("a rung substitution offers the written movement in one tap", async () => {
+  await renderRow({ substitutedFor: squat });
+
+  await fireEvent.press(screen.getByText("1. Wall Sit"));
+  await fireEvent.press(screen.getByText("Do Squat instead"));
+  expect(onPin).toHaveBeenCalledWith(1, 7);
+});
+
+test("a set-aside slot never offers the movement the hero asked not to be handed", async () => {
+  await renderRow({ substitutedFor: { ...squat, setAside: true } });
+
+  await fireEvent.press(screen.getByText("1. Wall Sit"));
+  expect(screen.queryByText("Do Squat instead")).toBeNull();
+});
+
+test("a movement chosen over the hero's rung says so, and the same spot leads back", async () => {
+  const wallSit = { ...squat, id: 3, enName: "Wall Sit" };
+  await renderRow({ pinnedOver: wallSit });
+
+  expect(screen.getByText("Your choice, instead of Wall Sit")).toBeTruthy();
+  await fireEvent.press(screen.getByText("1. Wall Sit"));
+  await fireEvent.press(screen.getByText("Back to Wall Sit"));
+  expect(onPin).toHaveBeenCalledWith(1, null);
 });
 
 // Issue #145, the promise kept: an exercise set aside that runs anyway says so, and the way out

@@ -1,5 +1,5 @@
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,6 +13,8 @@ import { shortDate } from "@/components/journal/journalFormat";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { type Exercise, listExercises } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
+import { ADMIN_CREATOR } from "@/db/schema";
+import { setImpactAside } from "@/db/setAside";
 import { useSetAside } from "@/hooks/useSetAside";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -32,14 +34,23 @@ export default function SetAsideScreen() {
   const { putBack } = useSetAside();
   const [rows, setRows] = useState<{ exercise: Exercise; at: number }[] | null>(null);
 
-  // On focus: an exercise opened from this list can be put back from its own page.
-  useFocusEffect(
-    useCallback(() => {
-      let alive = true;
+  // Whether a seeded jump is still being served: what the one group action below is for.
+  const [jumpsLeft, setJumpsLeft] = useState(false);
+  const [settingJumpsAside, setSettingJumpsAside] = useState(false);
+  // The state above greys the button on the next render; this holds within the same frame, where
+  // two taps would both have read `false` and started two passes over the same list.
+  const settingJumpsAsideNow = useRef(false);
+
+  const load = useCallback(
+    (isAlive: () => boolean = () => true) =>
       Promise.all([preferences.getSetAsideExercises(), listExercises()])
         .then(([list, catalogue]) => {
-          if (!alive) return;
+          if (!isAlive()) return;
           const byId = new Map(catalogue.map((e) => [e.id, e] as const));
+          const aside = new Set(list.map((e) => e.id));
+          setJumpsLeft(
+            catalogue.some((e) => e.impact && e.creator === ADMIN_CREATOR && !aside.has(e.id)),
+          );
           setRows(
             list.flatMap(({ id, at }) => {
               const exercise = byId.get(id);
@@ -48,12 +59,50 @@ export default function SetAsideScreen() {
             }),
           );
         })
-        .catch((error) => reportError("setAside.list", error));
+        .catch((error) => reportError("setAside.list", error)),
+    [],
+  );
+
+  // On focus: an exercise opened from this list can be put back from its own page.
+  useFocusEffect(
+    useCallback(() => {
+      let alive = true;
+      // Never rejects: `load` reports its own failure.
+      load(() => alive).catch(() => undefined);
       return () => {
         alive = false;
       };
-    }, []),
+    }, [load]),
   );
+
+  // The one thing added from here, and it is not a second door to the catalogue: no search finds
+  // "everything that jumps". For a hero who cannot jump, one tap instead of meeting each of the
+  // six mid-warm-up. Each lands in the list above, where it is put back like any other.
+  // No toast and no "Put back" on one: the answer is the six rows that appear right above, each
+  // with its own. Disabled while it writes, because the six writes run one after the other and
+  // a second tap would start a second pass over the same list.
+  const allJumps = jumpsLeft ? (
+    <AppButton
+      testID="set-aside-all-jumps"
+      fullWidth={false}
+      variant="outline"
+      disabled={settingJumpsAside}
+      onPress={() => {
+        if (settingJumpsAsideNow.current) return;
+        settingJumpsAsideNow.current = true;
+        setSettingJumpsAside(true);
+        setImpactAside()
+          .then(() => load())
+          .catch((error) => reportError("setAside.allJumps", error))
+          .finally(() => {
+            settingJumpsAsideNow.current = false;
+            setSettingJumpsAside(false);
+          });
+      }}
+    >
+      {t("setAside.all_jumps")}
+    </AppButton>
+  ) : null;
 
   return (
     <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
@@ -78,6 +127,7 @@ export default function SetAsideScreen() {
             >
               {t("setAside.browse")}
             </AppButton>
+            {allJumps}
           </Card>
         ) : (
           <>
@@ -122,6 +172,7 @@ export default function SetAsideScreen() {
                 }
               />
             ))}
+            {allJumps}
             <Paragraph color="$textSecondary" size="$2" px="$1">
               {t("setAside.limits")}
             </Paragraph>

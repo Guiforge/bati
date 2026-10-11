@@ -43,7 +43,7 @@ function resolveCover(config: SmartActionConfig | null): ImageSourcePropType {
  */
 /** What stands under the title when the offer brings no sentence: nothing once the day is done. */
 function fallbackSubtitle(done: boolean, t: ReturnType<typeof useTranslation>["t"]): string {
-  return done ? "" : t("home.start_journey", "Start your journey");
+  return done ? "" : t("home.start_journey");
 }
 
 /** The stage's one action: the filled button, or a text link once the day is done. */
@@ -99,8 +99,8 @@ export function HomeStage() {
   }
 
   const effectiveConfig: SmartActionConfig = config ?? {
-    label: t("home.start_adventure", "Start Adventure"),
-    subtext: t("home.no_active_adventure", "Choose your path"),
+    label: t("home.start_adventure"),
+    subtext: t("home.no_active_adventure"),
     onPress: () => router.push("/adventures"),
     variant: "gallery",
     scene: null,
@@ -108,12 +108,12 @@ export function HomeStage() {
   };
 
   const { scene, startQuestId } = effectiveConfig;
-  const title = scene?.title ?? t("home.start_journey", "Start your journey");
+  const title = scene?.title ?? t("home.start_journey");
   // The evening of a session (audit 2026-10-11, F5): nothing is asked, so no fallback sentence
   // and no filled button.
   const done = effectiveConfig.variant === "done";
   const subtitle = effectiveConfig.subtext || fallbackSubtitle(done, t);
-  const label = effectiveConfig.label || t("home.play", "Play");
+  const label = effectiveConfig.label || t("home.play");
   const handlePress =
     startQuestId === null
       ? effectiveConfig.onPress
@@ -221,11 +221,11 @@ export function HomeStage() {
               onPress={effectiveConfig.onPress}
               pressStyle={{ opacity: 0.8 }}
               accessibilityRole="button"
-              accessibilityLabel={t("home.see_quest", "See the quest")}
+              accessibilityLabel={t("home.see_quest")}
             >
               <Info size={18} color="$primaryText" />
               <Text fontSize={10} fontWeight="700" color="$primaryText">
-                {t("home.details", "Details")}
+                {t("home.details")}
               </Text>
             </YStack>
           )}

@@ -2,7 +2,7 @@
 title: How Bati Writes
 type: concept
 status: active
-updated: 2026-09-28
+updated: 2026-10-11
 related: [positioning.md, ../gameplay/villagers.md, ../CONTRIBUTING.md, ../meta/wiki-protocol.md]
 ---
 
@@ -223,6 +223,32 @@ read by a person.
 
 ---
 
+## Where copy lives
+
+Every sentence, label and name the app writes is in `locales/<language>.json`. A translator who
+has translated that file has translated the app, and adding a language is that file, an entry in
+`APP_LANGUAGES`, a line in `LOCALES` ([`src/i18n/copy.ts`](../../src/i18n/copy.ts)) and the
+per-language settings below.
+
+Screens read it with `t()`. Code outside a screen reads it through `src/i18n/copy.ts`, which hands
+back the same block in every language at once: the muscle, equipment and pattern labels, the
+village's tiers and buildings, the level titles, the path names, the bosses' names and taunts, the
+badges, and the three pools drawn by the day (`rest_messages`, `village.flavour`,
+`session.empty_variants`). Those blocks are keyed by a code the game owns, and a code with no
+entry in `en.json` does not compile.
+
+Four things stay in the code, each for a reason:
+
+| What | Where | Why |
+| :--- | :--- | :--- |
+| The widget's four words | `src/widget.tsx` | It runs in a headless task, and reading a locale file there loads all of them. `__tests__/widget.test.ts` fails if it ever does |
+| The unit words: reps, s, min, per side | `db/targets.ts` | "s" against " s" is spacing, and a value that is a leading space is what a translation tool trims. They were in the locale files once and drifted |
+| Per-language settings | `LANGUAGE_NAMES`, `MACHINE_TRANSLATED`, `WEEK_START`, `CAPITALISED_NOUNS` | Facts about a language, not prose |
+| Quests, adventures, movements | the database, one column per language | Seeded content, written by migrations |
+
+A JSON file has no comments, so a note a translator needs (why a word was refused, what must stay
+short) goes in [`glossary.md`](glossary.md), on the row of the term.
+
 ## Where each rule is checked
 
 A rule nobody enforces is a rule that lasted one release. Most of these are held by
@@ -234,7 +260,7 @@ the permissions test: the fix is always to write the string correctly, never to 
 | No em dash, either language | `locale-style.test.ts` | `locales/*.json`, the README, both legal pages, the whole store listing and its changelogs, and `app.json`, whose two widget entries are the labels the Android widget picker shows. Not `docs/`, and not code comments |
 | One apostrophe, one ellipsis | `locale-style.test.ts` | anything outside `locales/*.json` |
 | `tu` outside the legal pages | `locale-style.test.ts` | English, which has no such distinction |
-| No sentence shape over three quarters of a pool | [`__tests__/villagers.test.ts`](../../__tests__/villagers.test.ts) for the villagers, [`__tests__/seed-copy-shape.test.ts`](../../__tests__/seed-copy-shape.test.ts) for quest descriptions, adventure descriptions and step narratives, both languages | any pool of reader-facing prose that is neither of those. A new one is a blind spot until it is added to `seed-copy-shape.test.ts` |
+| No sentence shape over three quarters of a pool | [`__tests__/villagers.test.ts`](../../__tests__/villagers.test.ts) for the villagers, [`__tests__/seed-copy-shape.test.ts`](../../__tests__/seed-copy-shape.test.ts) for quest descriptions, adventure descriptions and step narratives, both languages | any pool of reader-facing prose that is neither of those: the boss taunts, the rest messages and the village's weather are in `locales/*.json` and under none of the villagers' rules. A new one is a blind spot until it is added to `seed-copy-shape.test.ts` |
 | Release notes under 500 characters | [`__tests__/changelog.test.ts`](../../__tests__/changelog.test.ts) | whether a hero understands them. § 8 is read by a person |
 | No villager repeats a line, across all their pools | `villagers.test.ts` | every other pool of copy. The seeded catalogue is unchecked for repetition |
 | Each villager sounds like **themselves** | **nothing, and one attempt was thrown away for being worse than nothing** | see § 4, *The half of this rule nothing holds* |

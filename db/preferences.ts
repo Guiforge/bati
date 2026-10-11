@@ -14,6 +14,19 @@ function isTrainingLevel(value: string | null): value is TrainingLevel {
   return value === "beginner" || value === "regular" || value === "advanced";
 }
 
+/**
+ * Whether this hero is kept off impact movements (`exercises.impact`, `0070`) in what the app
+ * chooses for them: the warm-up, and the quests it suggests. A beginner for as long as they say
+ * they are one, and anyone at all for their first three sessions, since nothing is known of them
+ * yet. Never a lock: the gallery shows every quest, and a hero who starts one gets its jumps.
+ *
+ * Sessions rather than "unanswered" for the second half, because `null` is also every hero from
+ * before the onboarding question, and two hundred sessions in they are not starting.
+ */
+export function startsGently(level: TrainingLevel | null, trainingSessions: number): boolean {
+  return level === "beginner" || trainingSessions < 3;
+}
+
 /** Which units a distance is *read* in. Never which units it is stored in — see below. */
 export type DistanceUnit = "metric" | "imperial";
 

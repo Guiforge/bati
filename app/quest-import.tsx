@@ -126,7 +126,7 @@ export default function QuestImportScreen() {
           circular
           chromeless
           onPress={leave}
-          aria-label={t("quests.go_back", "Go back")}
+          aria-label={t("quests.go_back")}
           icon={<ChevronLeft size={24} color="$text" />}
         />
         <XStack flex={1} items="center" gap="$2">
@@ -264,7 +264,7 @@ function QuestHead({
       ) : null}
       <YStack gap="$2">
         <Text fontWeight="700" fontSize={14} color="$textSecondary">
-          {t("quests.editor_name", "Name")}
+          {t("quests.editor_name")}
         </Text>
         <Input
           testID="quest-import-title"
@@ -309,7 +309,7 @@ function Refused({ reason, onLeave }: { reason: QuestFileError["reason"]; onLeav
         </Paragraph>
       </Card>
       <AppButton variant="outline" onPress={onLeave}>
-        {t("quests.go_back", "Go back")}
+        {t("quests.go_back")}
       </AppButton>
     </YStack>
   );

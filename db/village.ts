@@ -1,5 +1,6 @@
 import { and, count, eq, gte, isNotNull, lt, sql, sum } from "drizzle-orm";
 import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
+import { localizedTable } from "@/src/i18n/copy";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
@@ -65,30 +66,7 @@ const TIER_LEVEL_FLOORS: Record<VillageTier, number> = {
 };
 
 // Shared by the village scene and the home teaser, so the two can never disagree.
-export const TIER_NAMES: Record<VillageTier, Localized> = {
-  1: { en: "Hamlet", fr: "Hameau", de: "Weiler", es: "Caserío" },
-  2: { en: "Clearing", fr: "Clairière", de: "Lichtung", es: "Claro" },
-  3: { en: "Village", fr: "Village", de: "Dorf", es: "Aldea" },
-  4: { en: "Crossroads", fr: "Carrefour", de: "Wegkreuz", es: "Encrucijada" },
-  5: { en: "Town", fr: "Bourg", de: "Marktflecken", es: "Villa" },
-  6: { en: "Free Town", fr: "Ville franche", de: "Freistadt", es: "Villa libre" },
-  7: { en: "City", fr: "Cité", de: "Stadt", es: "Ciudad" },
-  8: { en: "Merchant City", fr: "Cité marchande", de: "Handelsstadt", es: "Ciudad mercante" },
-  9: {
-    en: "Flourishing City",
-    fr: "Cité florissante",
-    de: "Blühende Stadt",
-    es: "Ciudad próspera",
-  },
-  10: { en: "Citadel", fr: "Citadelle", de: "Zitadelle", es: "Ciudadela" },
-  11: { en: "Metropolis", fr: "Métropole", de: "Metropole", es: "Metrópolis" },
-  12: {
-    en: "Eternal Capital",
-    fr: "Capitale éternelle",
-    de: "Ewige Hauptstadt",
-    es: "Capital eterna",
-  },
-};
+export const TIER_NAMES: Record<VillageTier, Localized> = localizedTable((l) => l.village.tiers);
 
 export function getVillageTier(level: number): VillageTier {
   let tier: VillageTier = 1;
@@ -213,63 +191,11 @@ export async function getDominantSportOverlay(): Promise<DominantSportOverlay> {
 // Buildings (derived, never stored)
 // ------------------------------------------------------------
 
-// Same convention as MUSCLE_LABELS in db/muscles.ts: labels live next to the data,
-// not in locales/*.json, so a new building code is one edit instead of three.
-export const BUILDING_LABELS: Record<BuildingCode, Localized> = {
-  campfire: { en: "Campfire", fr: "Feu de camp", de: "Lagerfeuer", es: "Fogata" },
-  tent: { en: "Tent", fr: "Tente", de: "Zelt", es: "Tienda" },
-  // fr deliberately not "Mannequin d'entraînement": « d'entraînement » is wider than a
-  // building card, and an unbreakable word that long wraps mid-word at large font scales.
-  training_dummy: {
-    en: "Training Dummy",
-    fr: "Mannequin de bois",
-    de: "Übungspuppe",
-    es: "Muñeco de madera",
-  },
-  archery_range: {
-    en: "Archery Range",
-    fr: "Champ de tir",
-    de: "Schießstand",
-    es: "Campo de tiro",
-  },
-  quarry: { en: "Quarry", fr: "Carrière", de: "Steinbruch", es: "Cantera" },
-  forge: { en: "Forge", fr: "Forge", de: "Schmiede", es: "Forja" },
-  well: { en: "Well", fr: "Puits", de: "Ziehbrunnen", es: "Pozo" },
-  windmill: { en: "Windmill", fr: "Moulin", de: "Windmühle", es: "Molino" },
-  farm: { en: "Farm", fr: "Ferme", de: "Bauernhof", es: "Granja" },
-  wizard_tower: { en: "Wizard Tower", fr: "Tour du mage", de: "Magierturm", es: "Torre del mago" },
-  druid_grove: {
-    en: "Druid Grove",
-    fr: "Bosquet druidique",
-    de: "Druidenhain",
-    es: "Arboleda druídica",
-  },
-  watchtower: { en: "Watchtower", fr: "Tour de guet", de: "Wachturm", es: "Atalaya" },
-  castle_wall: { en: "Castle Wall", fr: "Remparts", de: "Burgmauer", es: "Murallas" },
-  armory: { en: "Armory", fr: "Armurerie", de: "Waffenkammer", es: "Armería" },
-  fountain: { en: "Fountain", fr: "Fontaine", de: "Springbrunnen", es: "Fuente" },
-  observatory: { en: "Observatory", fr: "Observatoire", de: "Sternwarte", es: "Observatorio" },
-  barn: { en: "Barn", fr: "Grange", de: "Scheune", es: "Granero" },
-  dragon_lair: {
-    en: "Dragon Lair",
-    fr: "Antre du dragon",
-    de: "Drachenhort",
-    es: "Guarida del dragón",
-  },
-  heroes_hall: {
-    en: "Hall of Heroes",
-    fr: "Salle des héros",
-    de: "Heldenhalle",
-    es: "Salón de los héroes",
-  },
-  champion_arena: {
-    en: "Champion Arena",
-    fr: "Arène des champions",
-    de: "Arena der Champions",
-    es: "Arena de campeones",
-  },
-  high_road: { en: "High Road", fr: "Grand Chemin", de: "Hohe Straße", es: "Camino Real" },
-};
+// The labels live in `locales/*.json` (`village.buildings`). The notes a translator needs, like
+// why the French training dummy is not « d'entraînement », are in `docs/product/glossary.md`.
+export const BUILDING_LABELS: Record<BuildingCode, Localized> = localizedTable(
+  (l) => l.village.buildings,
+);
 
 /** What raises a building, so the detail sheet can answer "why is it at this level". */
 export type BuildingDriver =

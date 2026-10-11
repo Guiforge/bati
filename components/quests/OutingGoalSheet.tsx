@@ -8,7 +8,8 @@ import { Chip } from "@/components/common/Chip";
 import { X } from "@/components/icons";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db/estimate";
-import { getOutingHabit, LONGEST_RUN_CEILING, NO_HABIT, type OutingHabit } from "@/db/outingHabit";
+import { getOutingHabit } from "@/db/outingHabit";
+import { LONGEST_RUN_CEILING, NO_HABIT, type OutingHabit } from "@/db/outingRule";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -68,16 +69,40 @@ type Props = {
    * mixed quest (`outingLocomotion`): it gets the run presets it always had, and no habit.
    */
   locomotion: Locomotion | null;
+  /**
+   * The goal on this sheet is still the app's walk-run proposal (`proposesWalkRun`). The caller
+   * knows, because it holds the slots the proposal was made on; from the habit alone the sheet
+   * could not tell a hero's own run quest, which is never proposed one.
+   */
+  walkRun: boolean;
   /** One goal at a time: the caller writes a duration or a distance, never both. */
   onPick: (goal: OutingGoal) => void;
 };
+
+/**
+ * The longest run of the month in the tab's own unit, moving seconds or metres, for the line
+ * that names the ceiling above it. `shown` false when the line has no business there: another
+ * kind of outing, or a goal that is still the walk-run proposal.
+ */
+function longestOf(habit: OutingHabit, durationTab: boolean, shown: boolean): number | null {
+  if (!shown) return null;
+  return durationTab ? habit.longestSeconds : habit.longestM;
+}
 
 /**
  * The outing's whole decision, on the model of `ExercisePickerSheet` — including its `disableDrag`,
  * which is not a preference: with the drag on, the pane drifts off its snap point and a close
  * leaves the frame painted where it drifted, taps falling through to the screen behind.
  */
-export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, onPick }: Props) {
+export function OutingGoalSheet({
+  open,
+  onOpenChange,
+  goal,
+  unit,
+  locomotion,
+  walkRun,
+  onPick,
+}: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const language = useSettingsStore((s) => s.language);
@@ -155,8 +180,15 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, on
   // The ceiling, shown before the choice rather than after it: picking a chip closes the sheet,
   // so a warning on the chosen goal would never be read. Runs only, because that is what the
   // study measured; nothing equivalent exists for walking or riding.
-  const longestRun =
-    kind === "run" && !durationTab && habit.longestM !== null ? habit.longestM : null;
+  // On both tabs, each in its own unit: the line was on the distance tab alone, and a hero who
+  // sets a run by its duration is the one the proposal below it speaks to.
+  // And not at all, on either tab, while the goal is the walk-run proposal: "your body copes
+  // better under 13 min", or under 1.3 km, over a proposal of twenty minutes contradicted it.
+  // The walk-run is mostly walking, which is why it may be longer than their longest run.
+  const longestRun = longestOf(habit, durationTab, kind === "run" && !walkRun);
+  const longestLabel = durationTab
+    ? (seconds: number) => formatDuration(seconds, language)
+    : (metres: number) => formatDistance(metres, unit, language);
 
   return (
     <Sheet
@@ -180,12 +212,12 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, on
         <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$4">
           <XStack items="center" justify="space-between" gap="$3">
             <Text flex={1} fontWeight="700" fontSize={18} color="$text">
-              {t("quests.goal_sheet_title", "How long, or how far")}
+              {t("quests.goal_sheet_title")}
             </Text>
             <Pressable
               hitSlop={12}
               accessibilityRole="button"
-              accessibilityLabel={t("common.close", "Close")}
+              accessibilityLabel={t("common.close")}
               onPress={close}
             >
               <X size={20} color="$textSecondary" />
@@ -194,13 +226,13 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, on
 
           <XStack gap="$2">
             <Chip
-              label={t("quests.config_duration", "Duration")}
+              label={t("quests.config_duration")}
               tone={durationTab ? "primary" : "default"}
               accessibilityState={{ selected: durationTab }}
               onPress={() => setTab("time")}
             />
             <Chip
-              label={t("quests.config_distance", "Distance")}
+              label={t("quests.config_distance")}
               tone={durationTab ? "default" : "primary"}
               accessibilityState={{ selected: !durationTab }}
               onPress={() => setTab("distance")}
@@ -223,15 +255,15 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, on
           {longestRun === null ? null : (
             <Text testID="goal-longest-run" fontSize={13} color="$textSecondary">
               {t("quests.goal_longest_run", {
-                longest: formatDistance(longestRun, unit, language),
-                ceiling: formatDistance(longestRun * LONGEST_RUN_CEILING, unit, language),
+                longest: longestLabel(longestRun),
+                ceiling: longestLabel(longestRun * LONGEST_RUN_CEILING),
               })}
             </Text>
           )}
 
           <YStack gap="$2">
             <Text fontWeight="700" fontSize={15} color="$text">
-              {t("quests.goal_sheet_custom", "Other")}
+              {t("quests.goal_sheet_custom")}
             </Text>
             <XStack items="center" gap="$2">
               <Input
@@ -242,7 +274,7 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, on
                 keyboardType="decimal-pad"
                 returnKeyType="done"
                 onSubmitEditing={applyCustom}
-                placeholder={t("quests.goal_sheet_custom_hint", "Enter your own value")}
+                placeholder={t("quests.goal_sheet_custom_hint")}
                 bg="$background"
                 borderColor="$borderStrong"
                 color="$text"
@@ -256,7 +288,7 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, on
           </YStack>
 
           <AppButton variant="outline" onPress={applyCustom}>
-            {t("common.done", "Done")}
+            {t("common.done")}
           </AppButton>
         </YStack>
       </Sheet.Frame>

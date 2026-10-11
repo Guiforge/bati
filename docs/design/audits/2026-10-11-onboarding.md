@@ -537,9 +537,19 @@ captures sit beside the "before" ones.
 - P12: the end stamp is in `SavedSessionState`, but the snapshot is cleared at `finished`.
 - The first-session screen uses the quest's own cover, the one the victory shows again.
 
+**Merged with #175 before landing.** `main` had meanwhile answered part of this audit its own
+way ("Sports safety", #175): a Settings row for the level, the first quest saved at Easy, and
+`startsGently`, which keeps a beginner, and anyone for three sessions, off the six movements
+marked `impact`. Reconciled as follows. The gentle start is `main`'s rule alone: this branch's
+list of warm-up names and its bear-crawl exception are gone, and a hero on day one opens on what
+`startsGently` leaves in the raise pool. The question keeps this branch's two answers and its
+"Point de départ" row; #175's cycling row is removed, so there is one. The dose keeps this
+branch's rule on every door, which replaces #175's saved Easy config on the first quest (that
+save would have pinned Easy on a hero who said "I already train").
+
 **Found by the review before the pull request**, and fixed: a hero with no answer is read as
-starting only while their journal holds fewer than five sessions (`isStartingOut`), so the update
-changes neither the dose nor the warm-up of a hero who was here before the question; a quest the
+starting only while their journal holds fewer than three sessions (`isStartingOut`), so the
+update does not change the dose of a hero who was here before the question; a quest the
 hero wrote starts as written; the merge notice has the same single reader as the restore notice;
 the safety line is an actionable control for a screen reader; `main-journey.yaml` asserts the
 evening Home. So the "existing heroes" note of P1 now only concerns a hero who answered

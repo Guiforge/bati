@@ -2,7 +2,7 @@
 title: Paths (the variation ladder)
 type: system
 status: active
-updated: 2026-09-16
+updated: 2026-10-11
 related:
   [
     progression.md,
@@ -81,10 +81,38 @@ sessions left the window, and the exercise page, every quest and the warm-up ser
 to a hero doing fifteen real ones. And a hero holding a clean 45 s plank was told to do dead bugs.
 The floor now only ever rises; the next rung still has to be earned lately.
 
-Known ceilings, marked in the code: the bar is the target the hero was *handed*, and `QuestConfig`
-lets them lower it, so a self-lowered target earns rungs faster, and one clean session at a
-lowered target puts the rungs below it behind the hero. Reading the quest template's own value
-means joining `quest_exercises` into every path read; deferred until someone reports it.
+**The bar is what the app prescribed, not what the hero set** (`0070`). `QuestConfig` lets a hero
+lower a target to 1, and the ladder used to read that handed value: one rep earned a rung. Each
+set now carries `completed_exercises.prescribedValue`, the target before the stepper was touched,
+and a session is clean when every set reached *that*. `targetValue` is still what the hero was
+handed and what the Journal shows, so a target raised to 20 on a prescribed 12, with 15 done, reads
+"under target" in the Journal and counts for the rung, on purpose. Rows from before the column
+have no prescribed value and are judged on the handed one, as they always were: no rung a hero
+already owns moved.
+
+Some sets the ladder does not judge at all, neither clean nor missed
+(`completed_exercises.ladderNeutral`, written by `createCompletedSession` and nothing else):
+
+- **A lowered target not reached at the prescribed value.** A careful evening is not a failure.
+  Counted as a miss, it would have made lowering a target cost a streak.
+- **A movement left mid-session**, skipped or swapped away from. A skip writes no row, so one
+  clean round followed by "I couldn't" used to read as a clean session. It is deduced from the
+  rows (`ladderNeutralSets`), so it survives the app being killed before the save: a movement is
+  neutral when it lacks a row for any round it was due in, up to the quest's last round. A
+  movement the quest handed over is due from round one, so rounds missing *before* its first row
+  are skips too. A movement the hero swapped in mid-session is due from the round it arrived in,
+  and counts as it always did, including one swapped in after a skipped round. The rows alone
+  cannot tell those apart, so each set says the round its movement *first* came in
+  (`swappedIn`). The slot remembers it for the whole session (`QuestExercise.swaps`), because a
+  movement swapped in and skipped was still due in that round, however many swaps follow. The
+  movement the quest handed over is never marked, swapped away from and back to or not.
+
+A swap made mid-session keeps what the app had prescribed when it keeps the hero's number (same
+unit). Otherwise the lowered number would become "what was asked" on the new movement.
+
+Known ceilings, marked in the code: a hero's own quest sets its own bar, so a quest written with a
+target of 1 still earns rungs; and lowering every target by one makes misses neutral, so a streak
+of three never breaks. Tighten either if someone reports rungs earned that way.
 
 ## A hint, never a gate
 
@@ -102,9 +130,43 @@ Since [issue #33](https://github.com/Guiforge/bati/issues/33) a quest *answers t
 itself*: a slot naming a movement whose lower rungs are not behind the hero runs at the rung the
 hero is on.
 That is still not a gate, and the distinction is the whole point — the written movement is named
-on the card ("Working up to Push-ups") and is one tap away in the swap sheet. What changed is the
-default, not the permission. A hero who wants the summit tonight still gets it by asking; before,
-the only way to decline was to type a number they had not performed.
+on the card ("Working up to Push-ups"). What changed is the default, not the permission. A hero
+who wants the summit tonight still gets it by asking; before, the only way to decline was to type
+a number they had not performed.
+
+### "I can already do this"
+
+A hero who holds a clean plank and installs Bati today is served dead bugs: with an empty journal
+everyone starts at the bottom of every chain. The way to the written movement used to be an
+icon-only Replace inside a folded card, then a search of the whole catalogue, which is not "one
+tap away" whatever the code comment said.
+
+The expanded row of a stepped-down slot now carries one button, **"Do Plank instead"**
+(`QuestExerciseRow`, `onPin`). It is the existing swap with the movement the quest wrote, saved
+per quest, and nothing is declared or stored about what a hero can do. The pinned movement is
+prescribed what the quest wrote for it, its band and its own record for a hold, which the slot
+carries (`substitutedFor.target`, set by `resolveSlot` for the screen and the gallery card
+alike), not the easier rung's number moved across. Taking the written movement back from the
+swap sheet in the middle of a session gives the same number. The journal settles the rest:
+one clean session on the Plank puts Dead Bug behind the hero in *every* quest (`rungsBehind`), and
+the pin becomes moot.
+
+The way back is the same spot: a pinned slot reads "Your choice, instead of Dead Bug" and its
+button says **"Back to Dead Bug"**. And a pin does not outlive a bad evening. Skipping the
+movement or swapping away from it mid-session drops the pin (`dropSlotSwap`), and tonight's rows
+for it are neutral (above), so the quest serves the hero's own rung again next time.
+
+The training level asked in onboarding moves no rung. It is editable in Settings since the same
+change, and what it decides is what the app *picks* for the hero (`startsGently`,
+[`db/preferences.ts`](../../db/preferences.ts)): no jump in the warm-up, and no quest that would
+*serve* them a jump in the suggestions, the daily quest included. The suggestions ask what the
+slot would run, in the slot's own order (`servedJumps`): what the hero set aside is replaced
+first, then the rung they stand on. So a quest naming Jump Squat is fine for a hero still on
+Squat and held back once they are served the jump itself, and a hero who set every jump aside is
+not kept off the quests those jumps were written in. Three things bound it. It counts the sessions
+logged *before today* (`workoutsBeforeToday`), so the daily quest, drawn from that set by the
+date, cannot change in the middle of a day. It applies to quests the app wrote, never to a hero's
+own. And an oath sworn on a jump still finds its quest: that is the hero's choice, not the app's.
 
 ## Where a path speaks
 

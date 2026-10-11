@@ -31,7 +31,7 @@ export function SetAsideToggle({
       self="flex-start"
       tone={checked ? "primary" : "default"}
       icon={checked ? <Check size={14} color="$white" strokeWidth={3} /> : undefined}
-      label={t("setAside.leave_out", { name, defaultValue: `Leave ${name} out from now on` })}
+      label={t("setAside.leave_out", { name })}
       onPress={() => onToggle(!checked)}
       // `role`, not only `accessibilityRole`: Tamagui sets its own role on a pressable stack.
       role="checkbox"

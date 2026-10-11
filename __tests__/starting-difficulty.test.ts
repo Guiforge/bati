@@ -56,8 +56,8 @@ test("the rule: no answer and beginner start Easy, the rest Medium, never Hard",
 // The question is recent and skippable: a hero who was here before it, or skipped it long ago,
 // has no answer and two hundred sessions. An update must not read them as a beginner.
 test("no answer stops meaning 'starting' once the journal is no longer short", () => {
-  expect(isStartingOut(null, 4)).toBe(true);
-  expect(isStartingOut(null, 5)).toBe(false);
+  expect(isStartingOut(null, 2)).toBe(true);
+  expect(isStartingOut(null, 3)).toBe(false);
   expect(startingDifficulty(null, 200)).toBe(Difficulty.Medium);
   // An answer is an answer, however long ago.
   expect(isStartingOut("beginner", 200)).toBe(true);

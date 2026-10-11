@@ -217,7 +217,7 @@ rather than a guess. Until it lands, leagues are a number the journal shows and 
 progression that is not a bigger number.
 
 **Priced honestly after review: about half a day, not a line.** A new `BuildingCode` costs
-`buildingCodes`, `buildingDefinitions`, `BUILDING_LABELS`, an icon in `constants/assetMap.ts`,
+`buildingCodes`, `buildingDefinitions`, its name in `village.buildings` of each locale file, an icon in `constants/assetMap.ts`,
 the `BuildingDriver` union, the hardcoded driver chain at `village.ts:331-336`,
 `getBuildingProgress` (whose whitelist otherwise shows nothing for a locked road at level 0),
 and a leagues fetch threaded into `LevelInputs` and the `Promise.all` in `getVillageBuildings`.

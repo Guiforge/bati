@@ -33,7 +33,7 @@ import {
   suggestDifficultyFromSessions,
 } from "@/db";
 import { threatRank } from "@/db/bossFights";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { MUSCLE_LABELS } from "@/db/labels";
 import { preferences } from "@/db/preferences";
 import { getAllQuestConfigs, startingDifficulty } from "@/db/questConfig";
 import { formatCount } from "@/db/targets";
@@ -57,7 +57,7 @@ type GalleryData = {
 type LoadState =
   | ({ status: "loading" } & GalleryData)
   | ({ status: "ready" } & GalleryData)
-  | ({ status: "error"; message: string } & GalleryData);
+  | ({ status: "error" } & GalleryData);
 
 /** A poster whose cover quest was not in the last pricing draws its chips off zero, not a guess. */
 const EMPTY_PREVIEW: QuestPreview = { seconds: 0, xp: 0 };
@@ -117,10 +117,10 @@ function buildAdventureRow(
       localizedText(a, "description", language) || localizedText(q, "description", language),
     kindLabel:
       a.kind === "boss"
-        ? t("adventures.kind_boss", "BOSS")
+        ? t("adventures.kind_boss")
         : a.kind === "event"
-          ? t("adventures.kind_event", "EVENT")
-          : t("adventures.kind_route", "ROUTE"),
+          ? t("adventures.kind_event")
+          : t("adventures.kind_route"),
     focusLabel: [
       a.focus.archetype ? t(`quests.archetype_${a.focus.archetype}`) : null,
       ...a.focus.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
@@ -130,7 +130,6 @@ function buildAdventureRow(
     weeksLabel: adventureWeeksLabel(a.stepsCount, pace, t),
     stepsLabel: t("adventures.steps", {
       count: a.stepsCount,
-      defaultValue: `${a.stepsCount} steps`,
     }),
     xpLabel: t("adventures.reward_xp_per_step", {
       count: formatCount(language, xp),
@@ -169,7 +168,6 @@ function AdventureCard({
     ? t("adventures.step_progress", {
         current: progress.currentIndex + 1,
         total: item.stepsCount,
-        defaultValue: `Step ${progress.currentIndex + 1}/${item.stepsCount}`,
       })
     : null;
   // The weeks join once the hero's days are read, never a guess in the meantime.
@@ -331,13 +329,13 @@ function StatusMessage({
           <YStack gap="$3" items="center" py="$2">
             <Text fontSize={32}>😵</Text>
             <Text fontWeight="700" fontSize={16} color="$text">
-              {t("quests.load_error", "Oops!")}
+              {t("quests.load_error")}
             </Text>
             <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
-              {state.message}
+              {t("errors.generic")}
             </Paragraph>
             <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
-              {t("quests.retry", "Retry")} ↻
+              {t("quests.retry")} ↻
             </AppButton>
           </YStack>
         </Card>
@@ -362,14 +360,14 @@ function StatusMessage({
         <Card bg="$surface">
           <YStack gap="$3" items="center" py="$2">
             <Text fontWeight="700" fontSize={16} color="$text">
-              {t("adventures.empty_title", "No adventures yet")}
+              {t("adventures.empty_title")}
             </Text>
             <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
-              {t("adventures.empty_subtitle", "Come back soon!")}
+              {t("adventures.empty_subtitle")}
             </Paragraph>
             {/* Campaigns can't be authored; single quests are the way to train meanwhile. */}
             <AppButton fullWidth={false} onPress={onBrowseQuests}>
-              {t("quests.gallery_title", "Quest gallery")}
+              {t("quests.gallery_title")}
             </AppButton>
           </YStack>
         </Card>
@@ -449,8 +447,7 @@ export default function AdventuresGallery() {
       })
       .catch((e: unknown) => {
         reportError("adventures.gallery", e);
-        const message = e instanceof Error ? e.message : "Unknown error";
-        setState((s) => ({ ...s, status: "error", message }));
+        setState((s) => ({ ...s, status: "error" }));
       });
   }, []);
 
@@ -484,7 +481,7 @@ export default function AdventuresGallery() {
     [adventures, finishedCounts, language, t, previews, activeProgress, pace],
   );
 
-  const title = t("adventures.gallery_title", "Adventures");
+  const title = t("adventures.gallery_title");
 
   const onPressAdventure = (id: number) => router.push(`/adventures/${id}` as never);
 
@@ -508,7 +505,7 @@ export default function AdventuresGallery() {
           </Text>
         </XStack>
         <Text color="$textSecondary" fontSize={13}>
-          {t("adventures.gallery_subtitle", "Multi-workout programs with a story and a boss fight")}
+          {t("adventures.gallery_subtitle")}
         </Text>
       </YStack>
 

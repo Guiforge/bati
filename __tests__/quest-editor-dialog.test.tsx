@@ -79,7 +79,7 @@ describe("quest editor, saving without a name", () => {
     });
 
     expect(editor.getByTestId("confirm-dialog")).toBeTruthy();
-    expect(editor.getByText("Your quest needs a name.")).toBeTruthy();
+    expect(editor.getByText("quests.editor_incomplete_name")).toBeTruthy();
     expect(alert).not.toHaveBeenCalled();
     expect(mockCreate).not.toHaveBeenCalled();
     alert.mockRestore();

@@ -131,6 +131,10 @@ describe("i18n locale parity", () => {
    * 5 побед) has nowhere to write it while the English key is a single string. So `{{count}}`
    * lives in a plural family, or in this list: the strings where the number stands alone, or
    * beside a unit that never agrees. Shrink the list, and add to it only a string of that kind.
+   *
+   * Blind to a number under any other name: i18next only pluralises on `count`, so "{{reps}} reps"
+   * or "every {{seconds}} seconds" passes here and still cannot be inflected. Those are listed in
+   * `docs/architecture/adding-a-language.md`, and each needs its number renamed to `count` first.
    */
   test("a string that counts a noun has plural forms", () => {
     const STANDS_ALONE = new Set([
@@ -151,7 +155,6 @@ describe("i18n locale parity", () => {
       "session.round_label",
       "session.standing_recent_2",
       "session.standing_recent_3",
-      "session.village_growth_more",
       "session.xp_overshoot",
       "village.family_rest_feeds",
       "village.family_unbuilt",

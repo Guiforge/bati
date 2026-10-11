@@ -1021,7 +1021,9 @@
     "up_next": "À suivre",
     "victory_title": "Quête accomplie !",
     "village_growth_cta": "Voir ton village",
-    "village_growth_more": "+{{count}} autres",
+    "village_growth_more_one": "+{{count}} autre",
+    "village_growth_more_other": "+{{count}} autres",
+    "village_growth_more_many": "+{{count}} autres",
     "village_growth_title": "Ton village grandit",
     "village_tier_up_title": "Ton village a grandi !",
     "xp_overshoot": "dont +{{count}} pour avoir dépassé tes objectifs",
@@ -2475,7 +2477,7 @@
         "line_many": "{{count}} entraînements cette semaine, un sacré volume. C'est pendant la récup que la force se construit."
       },
       {
-        "line_one": "{{count}} entraînement en sept jour. Accorde une journée à ton corps pour qu'il rattrape ton ambition.",
+        "line_one": "{{count}} entraînement en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition.",
         "line_other": "{{count}} entraînements en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition.",
         "line_many": "{{count}} entraînements en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition."
       }

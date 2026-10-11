@@ -238,9 +238,11 @@ per language (`common.list_and`). A string that counts a noun is a plural family
 Screens read it with `t()`. Code outside a screen reads it through `src/i18n/copy.ts`, which hands
 back the same block in every language at once: the muscle, equipment and pattern labels, the
 village's tiers and buildings, the level titles, the path names, the bosses' names and taunts, the
-badges, and the three pools drawn by the day (`rest_messages`, `village.flavour`,
+badges, and the two pools drawn by the day (`village.flavour`,
 `session.empty_variants`). Those blocks are keyed by a code the game owns, and a code with no
-entry in `en.json` does not compile.
+entry in `en.json` does not compile. The rest note is the exception among the pools: its lines
+count days and sessions, so they are plural families read with `t()`, and the code only takes
+the size of each pool from `en.json`.
 
 Five things stay out of those files, each for a reason:
 

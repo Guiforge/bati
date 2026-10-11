@@ -563,7 +563,8 @@
     "up_next": "Als Nächstes",
     "victory_title": "Quest geschafft!",
     "village_growth_cta": "Dein Dorf ansehen",
-    "village_growth_more": "+{{count}} weitere",
+    "village_growth_more_one": "+{{count}} weiteres",
+    "village_growth_more_other": "+{{count}} weitere",
     "village_growth_title": "Dein Dorf wächst",
     "village_tier_up_title": "Dein Dorf ist gewachsen!",
     "xp_overshoot": "davon +{{count}} fürs Übertreffen deiner Ziele",
@@ -2384,7 +2385,7 @@
         "line_other": "{{count}} Trainings diese Woche, das ist ordentlich Volumen. Kraft entsteht in der Erholung."
       },
       {
-        "line_one": "{{count}} Training in sieben Tagn. Gib deinem Körper einen Tag, um deinen Ehrgeiz einzuholen.",
+        "line_one": "{{count}} Training in sieben Tagen. Gib deinem Körper einen Tag, um deinen Ehrgeiz einzuholen.",
         "line_other": "{{count}} Trainings in sieben Tagen. Gib deinem Körper einen Tag, um deinen Ehrgeiz einzuholen."
       }
     ],

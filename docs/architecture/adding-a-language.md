@@ -50,6 +50,15 @@ If English counts a noun with a single string, the language has nowhere to put i
 a bug in `en.json`, held by the test *a string that counts a noun has plural forms*: give the key
 `_one` and `_other`, do not work around it in the translation.
 
+That test only sees a number named `{{count}}`, because that is the only one i18next pluralises
+on. These strings put a number under another name beside a noun, and a language that inflects it
+(Russian, Polish) cannot write them correctly until the number is renamed to `count` and the key
+split: `journal.work_meta` and `journal.pull_deficit_body` (reps), `village.detail_recent_units`,
+`village.detail_muscle_driver` and `village.detail_style_driver` (reps), `village.rep_unit`
+(seconds), the `journal.moved_rung_left_*` family (a second count of sessions), and the reminder
+lines that say "{{total}} leagues". A string with two numbers needs one of them written so that it
+never agrees. Not done yet: it is copy work for the first such language.
+
 ## 4. Seeded content: a migration
 
 Quests, adventures, movements, bosses and achievements carry one column per language

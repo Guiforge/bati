@@ -582,7 +582,9 @@
     "up_next": "A continuación",
     "victory_title": "¡Misión cumplida!",
     "village_growth_cta": "Ver tu aldea",
-    "village_growth_more": "+{{count}} más",
+    "village_growth_more_one": "+{{count}} más",
+    "village_growth_more_other": "+{{count}} más",
+    "village_growth_more_many": "+{{count}} más",
     "village_growth_title": "Tu aldea crece",
     "village_tier_up_title": "¡Tu aldea ha crecido!",
     "xp_overshoot": "incluye +{{count}} por superar tus objetivos",
@@ -2435,7 +2437,7 @@
         "line_many": "Has entrenado duro esta semana: {{count}} entrenamientos. Piensa en un día de recuperación."
       },
       {
-        "line_one": "Ya van {{count}} entrenamiento esta semana. El descanso se gana igual que el progreso.",
+        "line_one": "Ya va {{count}} entrenamiento esta semana. El descanso se gana igual que el progreso.",
         "line_other": "Ya van {{count}} entrenamientos esta semana. El descanso se gana igual que el progreso.",
         "line_many": "Ya van {{count}} entrenamientos esta semana. El descanso se gana igual que el progreso."
       },

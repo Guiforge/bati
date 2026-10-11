@@ -133,7 +133,7 @@ IDENTITY = {
 # to frost. Each sentence adds age and leaves the identity sentence's coat, marks and parts alone.
 STAGE = {
     "bear": {
-        "young": "It is a young bear: small and round, with oversized paws, a soft fluffy coat and a round curious face.",
+        "young": "It is a young bear, a lean half-grown cub of this same heavy brown bear, with the same deep chestnut coat, tan muzzle and gritty ink hatching as the adult; its muzzle is already long, its eyes are small and dark with no highlight, its mouth is closed with no smile, there is no pale patch on its chest, and nothing beneath it casts a shadow on the ground.",
         "adult": "It is a bear in its prime: huge and powerful, with a thick neck, heavy shoulder muscle and a full glossy coat.",
         "venerable": "It is a very old bear: massive and heavy-bellied, with grey-tipped fur along the muzzle and shoulders, a shaggy worn coat, blunted claws and a notched ear.",
     },

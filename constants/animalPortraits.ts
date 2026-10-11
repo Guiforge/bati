@@ -11,4 +11,5 @@ export const ANIMAL_PORTRAITS: Readonly<Record<string, ImageSource>> = {
   "bear-young": require("@/assets/images/animals/bear-young.webp"),
   "bear-adult": require("@/assets/images/animals/bear-adult.webp"),
   "bear-venerable": require("@/assets/images/animals/bear-venerable.webp"),
+  "bear-legendary": require("@/assets/images/animals/bear-legendary.webp"),
 };

@@ -63,7 +63,7 @@ const WORDS = {
       "L'hermine se pare de nouvelles couleurs",
       "Le sanglier se pare de nouvelles couleurs",
     ],
-    coatBody: "Pointes d'argent. Ta flamme a tenu 100 jours.",
+    coatBody: "Pointes d'argent. 100 jours de flamme sur ton écu.",
   },
   en: {
     stage: "legendary",
@@ -110,7 +110,7 @@ const WORDS = {
       "The ermine takes on new colors",
       "The boar takes on new colors",
     ],
-    coatBody: "Silvertip. Your flame burned for 100 days.",
+    coatBody: "Silvertip. 100 days of flame on your crest.",
   },
   de: {
     stage: "legendär",
@@ -157,7 +157,7 @@ const WORDS = {
       "Das Hermelin trägt neue Farben",
       "Das Wildschwein trägt neue Farben",
     ],
-    coatBody: "Silberspitzen. Deine Flamme brannte 100 Tage lang.",
+    coatBody: "Silberspitzen. 100 Tage Flamme auf deinem Wappen.",
   },
   es: {
     stage: "legendario",
@@ -204,7 +204,7 @@ const WORDS = {
       "El armiño luce nuevos colores",
       "El jabalí luce nuevos colores",
     ],
-    coatBody: "Puntas de plata. Tu llama ardió 100 días.",
+    coatBody: "Puntas de plata. 100 días de llama en tu escudo.",
   },
 } as const;
 

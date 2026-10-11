@@ -659,7 +659,7 @@
     "tonight_stage_legendary": "{{animal}} is now legendary",
     "tonight_stage_legendary_late": "{{animal}} is legendary",
     "tonight_coat_rare": "{{animal}} takes on new colors",
-    "tonight_coat_rare_body": "{{coat}}. Your flame burned for {{days}} days.",
+    "tonight_coat_rare_body": "{{coat}}. {{days}} days of flame on your crest.",
     "tonight_boar_body": "You mix {{first}} and {{second}}.",
     "tonight_tier_1": "{{subject}} becomes a {{tier}}.",
     "tonight_tier_2": "{{subject}} becomes a {{tier}}.",

@@ -670,7 +670,7 @@
     "tonight_stage_legendary": "{{animal}} ya es legendario",
     "tonight_stage_legendary_late": "{{animal}} es legendario",
     "tonight_coat_rare": "{{animal}} luce nuevos colores",
-    "tonight_coat_rare_body": "{{coat}}. Tu llama ardió {{days}} días.",
+    "tonight_coat_rare_body": "{{coat}}. {{days}} días de llama en tu escudo.",
     "tonight_boar_body": "Mezclas {{first}} y {{second}}.",
     "tonight_tier_1": "{{subject}} se convierte en un {{tier}}.",
     "tonight_tier_2": "{{subject}} se convierte en un {{tier}}.",

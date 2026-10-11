@@ -264,7 +264,7 @@ describe("TonightList", () => {
     expect(getByText("L'hermine devient légendaire")).toBeTruthy();
     expect(getByText("Ta 500e séance de callisthénie, ce soir.")).toBeTruthy();
     expect(getByText("L'ours se pare de nouvelles couleurs")).toBeTruthy();
-    expect(getByText("Pointes d'argent. Ta flamme a tenu 100 jours.")).toBeTruthy();
+    expect(getByText("Pointes d'argent. 100 jours de flamme sur ton écu.")).toBeTruthy();
   });
 
   test("a boar demoted to a card by an epilogue says what it mixes, and a single practice says nothing", async () => {

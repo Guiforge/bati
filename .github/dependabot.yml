@@ -38,6 +38,12 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@expo/*"
         update-types: ["version-update:semver-major"]
+      # Versioned with the SDK but not matched by `expo-*`: Dependabot tried
+      # babel-preset-expo 58 on SDK 57 and failed the whole npm run on its peer dependencies.
+      - dependency-name: "babel-preset-expo"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "jest-expo"
+        update-types: ["version-update:semver-major"]
       # The SDK pins these to an exact version, so even a patch fails expo-doctor (#147).
       # Dependabot alone is muted: `expo install --fix` still moves them with the SDK.
       - dependency-name: "react-native"

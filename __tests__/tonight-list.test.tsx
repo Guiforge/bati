@@ -3,6 +3,7 @@ import { act, render } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { TamaguiProvider } from "tamagui";
 import { oathText } from "@/components/oath/useOathText";
+import { spoken } from "@/components/session/bigFeastText";
 import { type Feast, type FeastFacts, rankFeasts } from "@/components/session/feasts";
 import { TonightList } from "@/components/session/TonightList";
 import { crestFootprint } from "@/components/village/crestGeometry";
@@ -239,9 +240,9 @@ describe("TonightList", () => {
     expect(alone.getByText("après")).toBeTruthy();
     await alone.unmount();
 
-    // Tier 3 is named "Village": the unnamed village does not "become a Village".
+    // The unnamed village has no subject for "becomes": it gets the label form, with no full stop.
     const bare = await show(feasts, "fr", "");
-    expect(bare.getByText("Nouveau palier : Village.")).toBeTruthy();
+    expect(bare.getByText("Nouveau palier : Village")).toBeTruthy();
     await bare.unmount();
 
     const led = await show(
@@ -257,6 +258,31 @@ describe("TonightList", () => {
     expect(led.queryByText("Ta campagne est terminée.")).toBeNull();
     expect(led.getByText("Niveau 5. Le village change d'allure.")).toBeTruthy();
     expect(led.queryByText("après")).toBeNull();
+  });
+
+  test.each([
+    ["fr", "Nouveau palier : Village. Le village change d'allure"],
+    ["en", "New tier: Village. The village takes on a new look"],
+  ])(
+    "a tier demoted to a card by a reveal keeps its full label when unnamed, in %s",
+    async (lang, label) => {
+      // The reveal takes the large place, so the tier is a medium card with no kicker above it:
+      // it must say "New tier" itself.
+      const feasts = rank({
+        tierUp: { oldTier: 2, newTier: 3 } as never,
+        crestReveal: { animal: "bear", quarters: null, firstEight: [], late: false },
+      });
+      expect(feasts.find((f) => f.kind === "tier")?.size).toBe("medium");
+      const { getByLabelText } = await show(feasts, lang as Lang, "");
+      expect(getByLabelText(label)).toBeTruthy();
+    },
+  );
+
+  test("the spoken label never doubles a full stop", () => {
+    expect(spoken({ title: "Brumeval devient un Village.", body: ["Niveau 5."] })).toBe(
+      "Brumeval devient un Village. Niveau 5",
+    );
+    expect(spoken({ title: "Nouveau palier : Village" })).toBe("Nouveau palier : Village");
   });
 
   test("a boss, an oath and a building rank are said once each", async () => {
@@ -321,10 +347,10 @@ describe("TonightList", () => {
   });
 
   test.each([
-    ["fr", "Brumeval devient une Cité florissante.", "Nouveau palier : Cité florissante."],
-    ["en", "Brumeval becomes a Flourishing City.", "New tier: Flourishing City."],
-    ["de", "Brumeval wird zur Blühenden Stadt.", "Neue Ausbaustufe: Blühende Stadt."],
-    ["es", "Brumeval se convierte en una Ciudad próspera.", "Nuevo rango: Ciudad próspera."],
+    ["fr", "Brumeval devient une Cité florissante.", "Nouveau palier : Cité florissante"],
+    ["en", "Brumeval becomes a Flourishing City.", "New tier: Flourishing City"],
+    ["de", "Brumeval wird zur Blühenden Stadt.", "Neue Ausbaustufe: Blühende Stadt"],
+    ["es", "Brumeval se convierte en una Ciudad próspera.", "Nuevo rango: Ciudad próspera"],
   ])(
     "a tier is a sentence when named and a label when not, in %s",
     async (lang, named, unnamed) => {

@@ -95,3 +95,7 @@ export function revealShield(f: Reveal, crest: Crest | null): CrestShape {
 export const BEAT = 550;
 /** The words fade in over this long: the "Why" link waits the same, so it is never touchable while faint. */
 export const TEXT_FADE = 500;
+
+/** Title and body as one sentence run. A part that already ends on a full stop does not get a second. */
+export const spoken = (card: { title: string; body?: string[] }) =>
+  [card.title, ...(card.body ?? [])].map((p) => p.replace(/\.$/, "")).join(". ");

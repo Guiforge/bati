@@ -23,7 +23,7 @@ import { getLevelTitle } from "@/db/userLevel";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
-import { revealShield, tierSentence } from "./bigFeastText";
+import { revealShield, spoken, tierSentence } from "./bigFeastText";
 import type { Feast } from "./feasts";
 import { formatRecordValue, recordTitle } from "./recordText";
 
@@ -330,12 +330,7 @@ function LineRow({ line }: { line: Line }) {
 
 function CardRow({ card }: { card: CardData }) {
   return (
-    <Card
-      bg="$background"
-      p="$3"
-      accessible
-      accessibilityLabel={card.body ? [card.title, ...card.body].join(". ") : card.title}
-    >
+    <Card bg="$background" p="$3" accessible accessibilityLabel={spoken(card)}>
       <XStack items="center" gap="$3">
         <YStack width={48} items="center" importantForAccessibility="no-hide-descendants">
           {card.art}

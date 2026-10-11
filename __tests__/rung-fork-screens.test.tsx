@@ -142,7 +142,7 @@ describe("the quest log on a rung that forks", () => {
   it("names the branches it does not illustrate", async () => {
     await mount(<QuestLog data={questLogData(forkedRung(true))} onChanged={() => {}} />);
 
-    expect(screen.getByText("Push-ups is mastered: Dip is yours to try")).toBeTruthy();
+    expect(screen.getByText("Mastered: Push-ups. Dip is yours to try")).toBeTruthy();
     expect(screen.getByText(FORK_LINE)).toBeTruthy();
   });
 

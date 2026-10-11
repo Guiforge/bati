@@ -131,7 +131,7 @@ describe("the village header", () => {
 
   it("says from now on on the day of the reveal", async () => {
     await mount(crestOf({ revealedAt: new Date() }));
-    expect(await line()).toBe("A bear watches over Brumeval from now on.");
+    expect(await line()).toBe("A bear now watches over Brumeval.");
   });
 
   it("never says from now on for a hand-picked animal, whatever day it is", async () => {
@@ -402,7 +402,7 @@ describe("the sentences, in every language", () => {
 describe("the reveal day and the boar's line, in every language", () => {
   const TODAY = {
     fr: "aujourd'hui",
-    en: "from now on",
+    en: "now watch",
     de: "seit heute",
     es: "desde hoy",
   } as const;

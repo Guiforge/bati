@@ -4,7 +4,7 @@ type: technical
 status: active
 updated: 2026-10-11
 related: [technical-architecture.md, ../gameplay/progression.md]
-sources: [db/index.ts, db/schema.ts, db/preferences.ts, db/resources.ts, db/crest.ts, db/crestRules.ts, db/milestone.ts]
+sources: [db/index.ts, db/schema.ts, db/preferences.ts, db/resources.ts, db/crest.ts, db/crestRules.ts, db/milestone.ts, db/backup.ts]
 ---
 
 # Database API Reference

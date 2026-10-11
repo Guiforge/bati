@@ -413,7 +413,7 @@ describe("BigFeastView", () => {
     const v = await view(tier, "");
     expect(v.getByText("NOUVEAU PALIER")).toBeTruthy();
     expect(v.getByText("Cité florissante")).toBeTruthy();
-    expect(v.queryByText("Nouveau palier : Cité florissante.")).toBeNull();
+    expect(v.queryByText("Nouveau palier : Cité florissante")).toBeNull();
   });
 
   test("the last tier has no next one, and a session count that failed to load says no figure", async () => {

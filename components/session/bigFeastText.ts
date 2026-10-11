@@ -8,23 +8,23 @@ import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import type { Feast } from "./feasts";
 
 /**
- * "Brumeval becomes a Village.", or "Your village becomes a Flourishing City." before it has a name.
- * Tier 3 is named after the generic word ("Village", "Dorf", "Aldea"), so the unnamed village
- * would "become a Village": it has its own sentence ("Your village grows: it is now a Village.").
+ * "Brumeval becomes a Village.", or "New tier: Flourishing City." before it has a name. An unnamed
+ * village has no subject to put a verb on: "Your village becomes a Hamlet" read as a demotion at
+ * tiers 1 and 2 and "it is now a Village" as a tautology at 3, so every tier takes the label form,
+ * which also needs no article. The full screen already carries a "New tier" kicker above its
+ * title, so it passes `underKicker` and gets the bare tier name instead of a repeat.
  */
 export const tierSentence = (
   t: TFunction,
   tier: VillageTier,
   villageName: string,
   language: AppLanguage,
-) =>
-  t(
-    !villageName && tier === 3 ? "session.tonight_tier_3_unnamed" : `session.tonight_tier_${tier}`,
-    {
-      subject: villageName || t("session.tonight_tier_subject_unnamed"),
-      tier: TIER_NAMES[tier][language],
-    },
-  );
+  underKicker = false,
+) => {
+  const name = TIER_NAMES[tier][language];
+  if (villageName) return t(`session.tonight_tier_${tier}`, { subject: villageName, tier: name });
+  return underKicker ? name : t("session.tonight_tier_unnamed", { tier: name });
+};
 
 type Reveal = Extract<Feast, { kind: "reveal" }>;
 

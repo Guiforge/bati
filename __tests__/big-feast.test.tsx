@@ -409,6 +409,13 @@ describe("BigFeastView", () => {
     expect(withRepeat).not.toHaveBeenCalled();
   });
 
+  test("an unnamed village's tier is the bare name, the kicker already says it is a new tier", async () => {
+    const v = await view(tier, "");
+    expect(v.getByText("NOUVEAU PALIER")).toBeTruthy();
+    expect(v.getByText("Cité florissante")).toBeTruthy();
+    expect(v.queryByText("Nouveau palier : Cité florissante.")).toBeNull();
+  });
+
   test("the last tier has no next one, and a session count that failed to load says no figure", async () => {
     const v = await view({ ...tier, tier: 12 }, "Brumeval", null);
     expect(v.getByText("Le village change d'allure.")).toBeTruthy();

@@ -129,12 +129,12 @@ describe("the village header", () => {
     expect(screen.getByLabelText("A bear.")).toBeTruthy();
   });
 
-  it("says as of today on the day of the reveal", async () => {
+  it("says from now on on the day of the reveal", async () => {
     await mount(crestOf({ revealedAt: new Date() }));
-    expect(await line()).toBe("A bear watches over Brumeval as of today.");
+    expect(await line()).toBe("A bear watches over Brumeval from now on.");
   });
 
-  it("never says as of today for a hand-picked animal, whatever day it is", async () => {
+  it("never says from now on for a hand-picked animal, whatever day it is", async () => {
     await mount(crestOf({ revealedAt: new Date(), manual: true }));
     expect(await line()).toBe("A bear watches over Brumeval.");
   });
@@ -402,7 +402,7 @@ describe("the sentences, in every language", () => {
 describe("the reveal day and the boar's line, in every language", () => {
   const TODAY = {
     fr: "aujourd'hui",
-    en: "as of today",
+    en: "from now on",
     de: "seit heute",
     es: "desde hoy",
   } as const;

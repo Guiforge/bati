@@ -166,7 +166,7 @@ describe("the victory screen on a rung that forks", () => {
     // One rung crossed, not three: the fork is what it opens, not three separate unlocks.
     expect(screen.getAllByText("Dip")).toHaveLength(1);
     expect(screen.queryByText("Pike Push-Up")).toBeNull();
-    expect(screen.getByText("You have mastered Push-ups")).toBeTruthy();
+    expect(screen.getByText("Mastered: Push-ups")).toBeTruthy();
     expect(screen.getByText(FORK_LINE)).toBeTruthy();
   });
 

@@ -55,7 +55,7 @@ describe("milestoneLine", () => {
       "de",
       [
         "Rang 4 in etwa 3 Einheiten mit Schwerpunkt Brust.",
-        "Rang 4 in etwa 1 Einheit für Bauch.",
+        "Rang 4 in etwa 1 Einheit mit Schwerpunkt Bauch.",
         "Rang 4 in etwa 2 Einheiten mit Schwerpunkt Yoga.",
         "Rang 4 in etwa 3 Touren.",
         "Rang 4 in etwa 1 Tour.",
@@ -67,10 +67,10 @@ describe("milestoneLine", () => {
       "es",
       [
         "Grado 4 en unas 3 sesiones de pecho.",
-        "Grado 4 en aproximadamente 1 sesión de abdominales.",
+        "Grado 4 en 1 sesión de abdominales, más o menos.",
         "Grado 4 en unas 2 sesiones de yoga.",
         "Grado 4 en unas 3 salidas.",
-        "Grado 4 en aproximadamente 1 salida.",
+        "Grado 4 en 1 salida, más o menos.",
         "La Forja, grado 4 en unas 2 sesiones de pecho.",
         "El Camino Real, grado 4 en unas 3 salidas.",
       ],

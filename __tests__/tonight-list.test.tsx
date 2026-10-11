@@ -241,7 +241,7 @@ describe("TonightList", () => {
 
     // Tier 3 is named "Village": the unnamed village does not "become a Village".
     const bare = await show(feasts, "fr", "");
-    expect(bare.getByText("Ton village grandit : c'est maintenant un Village.")).toBeTruthy();
+    expect(bare.getByText("Nouveau palier : Village.")).toBeTruthy();
     await bare.unmount();
 
     const led = await show(
@@ -321,21 +321,20 @@ describe("TonightList", () => {
   });
 
   test.each([
-    ["fr", "Brumeval devient une Cité florissante.", "Ton village devient une Cité florissante."],
-    ["en", "Brumeval becomes a Flourishing City.", "Your village becomes a Flourishing City."],
-    ["de", "Brumeval wird zur Blühenden Stadt.", "Dein Dorf wird zur Blühenden Stadt."],
-    [
-      "es",
-      "Brumeval se convierte en una Ciudad próspera.",
-      "Tu aldea se convierte en una Ciudad próspera.",
-    ],
-  ])("a tier is a whole sentence, named or not, in %s", async (lang, named, unnamed) => {
-    const feasts = rank({ tierUp: { oldTier: 8, newTier: 9 } as never });
-    const a = await show(feasts, lang as Lang);
-    expect(a.getByText(named)).toBeTruthy();
-    await a.unmount();
-    expect((await show(feasts, lang as Lang, "")).getByText(unnamed)).toBeTruthy();
-  });
+    ["fr", "Brumeval devient une Cité florissante.", "Nouveau palier : Cité florissante."],
+    ["en", "Brumeval becomes a Flourishing City.", "New tier: Flourishing City."],
+    ["de", "Brumeval wird zur Blühenden Stadt.", "Neue Ausbaustufe: Blühende Stadt."],
+    ["es", "Brumeval se convierte en una Ciudad próspera.", "Nuevo rango: Ciudad próspera."],
+  ])(
+    "a tier is a sentence when named and a label when not, in %s",
+    async (lang, named, unnamed) => {
+      const feasts = rank({ tierUp: { oldTier: 8, newTier: 9 } as never });
+      const a = await show(feasts, lang as Lang);
+      expect(a.getByText(named)).toBeTruthy();
+      await a.unmount();
+      expect((await show(feasts, lang as Lang, "")).getByText(unnamed)).toBeTruthy();
+    },
+  );
 
   test.each(["fr", "en", "de", "es"])("every one of the 12 tiers has its sentence in %s", (lng) => {
     const t = i18n.getFixedT(lng);
@@ -489,8 +488,7 @@ describe("the Tonight copy, in every language", () => {
     "tonight_stage_venerable",
     "tonight_boar_body",
     ...Array.from({ length: 12 }, (_, i) => `tonight_tier_${i + 1}`),
-    "tonight_tier_3_unnamed",
-    "tonight_tier_subject_unnamed",
+    "tonight_tier_unnamed",
     "tonight_stage_body_any",
     "tonight_tier_body",
     "tonight_tier_plain",

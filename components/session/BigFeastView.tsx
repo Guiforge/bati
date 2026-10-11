@@ -182,7 +182,7 @@ function FeastText({
     return (
       <>
         <Kicker>{t("session.feast_tier_kicker")}</Kicker>
-        <Title>{tierSentence(t, feast.tier, villageName, language)}</Title>
+        <Title>{tierSentence(t, feast.tier, villageName, language, true)}</Title>
         {sessions !== null && feast.level !== null ? (
           <Text
             testID="big-feast-level"

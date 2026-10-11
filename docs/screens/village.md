@@ -203,13 +203,13 @@ unbuilt row draws the same emblem as a silhouette through `tintColor`, which nee
   200. The shield adds the longest flame and one ring per village year. The hero can pick another
   animal in Settings or from the crest sheet (`crestAnimal`, `auto` goes back to the sessions'
   animal, a hand-picked one carries a small ink diamond). The header line says "A bear watches
-  over Brumeval", "as of today" on the day of the reveal and never for a hand-picked animal.
+  over Brumeval", "from now on" on the day of the reveal and never for a hand-picked animal.
 - **Milestone line** (`milestoneLine`): under a rising building's bar, "Rank 4 in about 3 chest
   sessions." or "in about 3 outings", the mean of the five latest sessions that fed it, rounded
   up. Never a number of reps to do (`village-copy-no-chores`). Absent at the top rank and where
   nothing has fed the building.
 - **Feasts** (`rankFeasts`): small is a line in "Tonight", medium a card, large the full-screen
   `/big-feast` route (one per session: epilogue, reveal, an Age, anniversary, tier). A tier
-  sentence names the village ("Brumeval becomes a Flourishing City."); an unnamed tier 3 village
-  has its own ("Your village grows: it is now a Village."), since the tier is named after the
-  generic word. See [session](session.md) for the victory.
+  sentence names the village ("Brumeval becomes a Flourishing City."); an unnamed village has no
+  subject, so every tier is a label ("New tier: Village."), and the full screen, whose kicker
+  already says "New tier", shows the bare tier name. See [session](session.md) for the victory.

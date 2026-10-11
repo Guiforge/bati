@@ -188,7 +188,7 @@
     "cc_by_sa_40_subtitle": "Licence terms: share-alike"
   },
   "progression": {
-    "new_rung_from": "You have mastered {{name}}",
+    "new_rung_from": "Mastered: {{name}}",
     "rung_also_leads_to": "The same rung also leads to {{names}}."
   },
   "quests": {
@@ -628,11 +628,10 @@
     "tonight_stage_adult": "{{animal}} is now an adult",
     "tonight_stage_venerable": "{{animal}} is now venerable",
     "tonight_boar_body": "You mix {{first}} and {{second}}.",
-    "tonight_tier_subject_unnamed": "Your village",
     "tonight_tier_1": "{{subject}} becomes a {{tier}}.",
     "tonight_tier_2": "{{subject}} becomes a {{tier}}.",
     "tonight_tier_3": "{{subject}} becomes a {{tier}}.",
-    "tonight_tier_3_unnamed": "Your village grows: it is now a {{tier}}.",
+    "tonight_tier_unnamed": "New tier: {{tier}}.",
     "tonight_tier_4": "{{subject}} becomes a {{tier}}.",
     "tonight_tier_5": "{{subject}} becomes a {{tier}}.",
     "tonight_tier_6": "{{subject}} becomes a {{tier}}.",
@@ -1011,11 +1010,11 @@
     "crest_place": "your village",
     "crest_line_glow": "Something watches {{place}}.",
     "crest_line_one": "{{animal}} watches over {{place}}.",
-    "crest_line_one_t": "{{animal}} watches over {{place}} as of today.",
+    "crest_line_one_t": "{{animal}} watches over {{place}} from now on.",
     "crest_line_pair": "{{first}} and {{second}} watch over {{place}}.",
-    "crest_line_pair_t": "{{first}} and {{second}} watch over {{place}} as of today.",
+    "crest_line_pair_t": "{{first}} and {{second}} watch over {{place}} from now on.",
     "crest_line_boar": "{{animal}} watches over {{place}}: you mix {{first}} and {{second}}.",
-    "crest_line_boar_t": "{{animal}} watches over {{place}} as of today: you mix {{first}} and {{second}}.",
+    "crest_line_boar_t": "{{animal}} watches over {{place}} from now on: you mix {{first}} and {{second}}.",
     "crest_bear_venerable": "a venerable bear",
     "crest_stag_venerable": "a venerable stag",
     "crest_horse_venerable": "a venerable horse",

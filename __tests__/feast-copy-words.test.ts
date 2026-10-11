@@ -59,7 +59,7 @@ const WORDS = {
     tierLevelOne: "Level 20, after 1 session.",
     tierNext: "The next tier arrives at level 25.",
     tierSentence: "Brumeval becomes a Flourishing City.",
-    tierSentenceUnnamed: "Your village grows: it is now a Village.",
+    tierUnnamed: ["New tier: Clearing.", "New tier: Village.", "New tier: Town."],
     join: "A stag joins the bear",
     joinBody: "39 of your 130 sessions are endurance: the stag watches too.",
     adult: "The bear is now an adult",
@@ -85,7 +85,11 @@ const WORDS = {
     tierLevelOne: "Level 20, nach 1 Einheit.",
     tierNext: "Die nächste Ausbaustufe kommt bei Level 25.",
     tierSentence: "Brumeval wird zur Blühenden Stadt.",
-    tierSentenceUnnamed: "Dein Dorf wächst: Es ist jetzt ein Dorf.",
+    tierUnnamed: [
+      "Neue Ausbaustufe: Lichtung.",
+      "Neue Ausbaustufe: Dorf.",
+      "Neue Ausbaustufe: Marktflecken.",
+    ],
     join: "Ein Hirsch gesellt sich zum Bären",
     joinBody: "39 deiner 130 Einheiten sind Ausdauertraining: Der Hirsch wacht mit.",
     adult: "Der Bär ist jetzt erwachsen",
@@ -111,7 +115,7 @@ const WORDS = {
     tierLevelOne: "Nivel 20, tras 1 sesión.",
     tierNext: "El próximo rango llega en el nivel 25.",
     tierSentence: "Brumeval se convierte en una Ciudad próspera.",
-    tierSentenceUnnamed: "Tu aldea crece: ahora es una Aldea.",
+    tierUnnamed: ["Nuevo rango: Claro.", "Nuevo rango: Aldea.", "Nuevo rango: Villa."],
     join: "Un ciervo se une al oso",
     joinBody: "39 de tus 130 sesiones son de resistencia: el ciervo también vela.",
     adult: "El oso ya es adulto",
@@ -153,8 +157,11 @@ describe.each(["en", "de", "es"] as const)("the feast copy in %s", (lang) => {
     expect(t("session.feast_tier_level", { level: 20, count: 1 })).toBe(w.tierLevelOne);
     expect(t("session.feast_tier_next", { level: 25 })).toBe(w.tierNext);
     expect(tierSentence(t, 9, "Brumeval", lang)).toBe(w.tierSentence);
-    // Tier 3 is named after the generic word: an unnamed village must not "become a Village".
-    expect(tierSentence(t, 3, "", lang)).toBe(w.tierSentenceUnnamed);
+    // No name, no subject: every tier is a label, never "becomes a Hamlet" (a demotion) or "is now
+    // a Village" (a tautology).
+    expect([2, 3, 5].map((tier) => tierSentence(t, tier as 2 | 3 | 5, "", lang))).toEqual(
+      w.tierUnnamed,
+    );
   });
 
   test("a second animal joins, a stage rises, the boar says what it mixes", () => {

@@ -47,6 +47,14 @@ const EXPORT_PREFIX = "bati-export-";
  */
 const PLAIN_SNAPSHOT = `${EXPORT_PREFIX}plain.tmp.db`;
 
+/**
+ * What an export is named since the day moved to the front: `bati-2026-10-11-a1b2c3d4-v3.batb`.
+ * The system picker cut `bati-export-a1b2c3d4-…` to "bati-export-c…" and showed three files alike.
+ * Anchored on the day, never on `bati-` alone, which is also how the sync and import files start.
+ */
+const DATED_EXPORT = "bati-(\\d{4}-\\d{2}-\\d{2})-";
+const DATED_EXPORT_NAME = new RegExp(`^${DATED_EXPORT}`);
+
 /** `.batb` for a sealed snapshot (src/backupCipher.ts), `.db` for a plain one. */
 const extension = (encrypted: boolean) => (encrypted ? ".batb" : ".db");
 
@@ -76,9 +84,19 @@ const KEEP_SNAPSHOTS = 5;
  * prune never reaches a copy another device wrote into the same folder.
  */
 function snapshotUri(tag: string | null) {
-  return new RegExp(
-    `(?:^|/)${EXPORT_PREFIX}${tag === null ? "" : `${tag}-`}v\\d+-(\\d{4}-\\d{2}-\\d{2})\\.(?:db|batb)$`,
-  );
+  return exportUri(tag === null ? "" : `${tag}-`, "(?:db|batb)");
+}
+
+/** Both names an export has had, the day in group 1 or 2: see `exportDay`. */
+function exportUri(tag: string, ext: string) {
+  const old = `${EXPORT_PREFIX}${tag}v\\d+-(\\d{4}-\\d{2}-\\d{2})`;
+  const dated = `${DATED_EXPORT}${tag}v\\d+`;
+  return new RegExp(`(?:^|/)(?:${old}|${dated})\\.${ext}$`);
+}
+
+function exportDay(pattern: RegExp, entry: File): string | undefined {
+  const match = pattern.exec(decodeUri(entry.uri));
+  return match?.[1] ?? match?.[2];
 }
 
 /**
@@ -86,13 +104,11 @@ function snapshotUri(tag: string | null) {
  * lost its key and is looking for a file to read it from: it tries the newest ones, so the list is short.
  */
 export function sealedCopiesIn(folder: Directory, limit = 3): File[] {
-  const any = new RegExp(
-    `(?:^|/)${EXPORT_PREFIX}(?:[0-9a-f]{8}-)?v\\d+-(\\d{4}-\\d{2}-\\d{2})\\.batb$`,
-  );
+  const any = exportUri("(?:[0-9a-f]{8}-)?", "batb");
   const found: { day: string; entry: File }[] = [];
   for (const entry of folder.list()) {
     if (!(entry instanceof File)) continue;
-    const day = any.exec(decodeUri(entry.uri))?.[1];
+    const day = exportDay(any, entry);
     if (day) found.push({ day, entry });
   }
   found.sort((a, b) => b.day.localeCompare(a.day));
@@ -147,16 +163,17 @@ export async function writePreMigrationCopy(): Promise<void> {
 }
 
 /**
- * `bati-export-a1b2c3d4-v3-2026-08-15` — tagged with the device, then dated, for the human
- * scrolling their files app. The hero's own day, not UTC's: a backup taken at half past midnight
- * in Paris is today's, not yesterday's. A stem: `writeSnapshot` adds the extension once it knows
- * whether the file is sealed.
+ * `bati-2026-08-15-a1b2c3d4-v3` — dated first, then tagged with the device, for the human
+ * scrolling their files app, where a long name is cut after a dozen letters. The hero's own day,
+ * not UTC's: a backup taken at half past midnight in Paris is today's, not yesterday's. A stem:
+ * `writeSnapshot` adds the extension once it knows whether the file is sealed.
  *
- * The tag is what lets two devices share a folder. Without it both wrote `…-v3-<day>.db`, the
- * second overwrote the first's copy of the day, and the prune kept five files across both.
+ * The tag is what lets two devices share a folder. Without it both wrote
+ * `bati-export-v3-<day>.db`, the second overwrote the first's copy of the day, and the prune kept
+ * five files across both.
  */
 function exportFileStem(now: Date, tag: string | null) {
-  return `${EXPORT_PREFIX}${tag === null ? "" : `${tag}-`}v${SCHEMA_VERSION}-${dayKey(now)}`;
+  return `bati-${dayKey(now)}-${tag === null ? "" : `${tag}-`}v${SCHEMA_VERSION}`;
 }
 
 /**
@@ -203,7 +220,7 @@ function writeSnapshot(stem?: string): Promise<File> {
 async function writeSnapshotNow(stem?: string): Promise<File> {
   const name = stem ?? exportFileStem(new Date(), await shortInstallId());
   for (const entry of new Directory(`file://${DB_DIR}`).list()) {
-    if (entry.name.startsWith(EXPORT_PREFIX)) entry.delete();
+    if (entry.name.startsWith(EXPORT_PREFIX) || DATED_EXPORT_NAME.test(entry.name)) entry.delete();
   }
 
   // Asked on every write rather than once: the hero can switch it on between two backups, and a
@@ -438,7 +455,7 @@ function pruneSnapshotsIn(folder: Directory, tag: string | null): void {
   const snapshots: { day: string; entry: File }[] = [];
   for (const entry of folder.list()) {
     if (!(entry instanceof File)) continue;
-    const day = own.exec(decodeUri(entry.uri))?.[1];
+    const day = exportDay(own, entry);
     if (day) snapshots.push({ day, entry });
   }
 

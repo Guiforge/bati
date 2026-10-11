@@ -231,6 +231,12 @@ function sentenceFor(offer: HomeOffer, language: AppLanguage): Sentence {
           duration: formatDurationEstimate(offer.seconds, language),
         },
       };
+    // A reminder rings on a later day, when the stage has moved on from "done for today" to the
+    // quest it named: say that one, in the words that day's stage will have for it.
+    case "done_today":
+      return offer.next
+        ? { case: "stale_quest", params: { quest: localizedTitle(offer.next.quest, language) } }
+        : { case: "gallery", params: {} };
     case "gallery":
       return { case: "gallery", params: {} };
   }

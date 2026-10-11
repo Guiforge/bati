@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { renderHook, waitFor } from "@testing-library/react-native";
 
 import { useSmartAction } from "@/components/home/useSmartAction";
@@ -106,6 +107,7 @@ jest.mock("@/db/completed", () => ({
     .fn()
     .mockResolvedValue({ totalSessions: 0, totalXp: 0, uniqueQuests: 0 }),
   getStalestQuest: jest.fn().mockResolvedValue(null),
+  hasSessionToday: jest.fn().mockResolvedValue(false),
 }));
 
 jest.mock("@/db/oaths", () => ({
@@ -136,7 +138,7 @@ jest.mock("@/db/outings", () => ({
 }));
 
 const { getOathProgress } = require("@/db/oaths");
-const { getSessionAggregates, getStalestQuest } = require("@/db/completed");
+const { getSessionAggregates, getStalestQuest, hasSessionToday } = require("@/db/completed");
 const { getChainTo } = require("@/db/exercises");
 const { findQuestWithExercise, listQuestTemplates } = require("@/db/quests");
 const { loadConfiguredQuest } = require("@/db/questConfig");
@@ -408,6 +410,76 @@ describe("useSmartAction", () => {
       expect(result.current.config?.variant).toBe("gallery");
       expect(result.current.config?.scene?.title).toBe("Choose your next quest");
     });
+
+    // Audit 2026-10-11, F5: the evening of the first victory, the stage sent the hero shopping.
+    it("says the day is done and names the next session, with nothing to start", async () => {
+      getStalestQuest.mockResolvedValueOnce({ questId: 5, daysAgo: 0 });
+      hasSessionToday.mockResolvedValueOnce(true);
+      loadConfiguredQuest.mockImplementation(async (id: number) => questNamed(id, "Chop Wood"));
+
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.variant).toBe("done");
+      expect(result.current.config?.scene?.title).toBe("Done for today.");
+      expect(result.current.config?.subtext).toBe("Your next session: Chop Wood, 20 min");
+      expect(result.current.config?.startQuestId).toBeNull();
+      result.current.config?.onPress();
+      expect(mockPush).toHaveBeenCalledWith("/(tabs)/quests");
+    });
+  });
+});
+
+/**
+ * The evening of a session. The quest named is rule 4's own, with its "not done today" guard
+ * lifted, so the journal is the only thing moved between the two reads below: one day.
+ */
+describe("decideHomeOffer, a day already done", () => {
+  const { decideHomeOffer } = require("@/db/homeOffer") as typeof import("@/db/homeOffer");
+  const { getSuggestedQuestsForWeakAreas } = require("@/db/muscleBalance");
+
+  beforeEach(() => {
+    getSuggestedQuestsForWeakAreas.mockResolvedValue([]);
+    loadConfiguredQuest.mockImplementation(async (id: number) => questNamed(id, "Chop Wood"));
+  });
+
+  afterEach(() => {
+    getSuggestedQuestsForWeakAreas.mockResolvedValue([{ id: 12, matchingMuscles: ["chest"] }]);
+    getSessionAggregates.mockResolvedValue({ totalSessions: 0, totalXp: 0, uniqueQuests: 0 });
+    getStalestQuest.mockResolvedValue(null);
+    hasSessionToday.mockResolvedValue(false);
+    listQuestTemplates.mockResolvedValue([]);
+  });
+
+  it("names in the evening the quest it offers the next day", async () => {
+    getSessionAggregates.mockResolvedValue({ totalSessions: 1, totalXp: 100, uniqueQuests: 1 });
+    getStalestQuest.mockResolvedValue({ questId: 5, daysAgo: 0 });
+    hasSessionToday.mockResolvedValue(true);
+    const evening = await decideHomeOffer("en");
+
+    getStalestQuest.mockResolvedValue({ questId: 5, daysAgo: 1 });
+    hasSessionToday.mockResolvedValue(false);
+    const nextDay = await decideHomeOffer("en");
+
+    assert(evening?.kind === "done_today" && nextDay?.kind === "stale_quest");
+    expect(evening.next?.quest.id).toBe(5);
+    expect(nextDay.quest.id).toBe(evening.next?.quest.id);
+    expect(nextDay.seconds).toBe(evening.next?.seconds);
+  });
+
+  // `getStalestQuest` reads workouts only, so a hero who only goes out has no quest to name,
+  // and day one's on-ramp must not greet them as someone who has not started.
+  it("an outing that counts is a day done, with no quest named", async () => {
+    hasSessionToday.mockResolvedValue(true);
+    listQuestTemplates.mockResolvedValue([{ id: 9, enTitle: FIRST_QUEST_TITLE }]);
+
+    expect(await decideHomeOffer("en")).toEqual({ kind: "done_today", next: null });
+  });
+
+  it("leaves a day with no session to the rules it had", async () => {
+    getSessionAggregates.mockResolvedValue({ totalSessions: 3, totalXp: 100, uniqueQuests: 1 });
+
+    expect(await decideHomeOffer("en")).toEqual({ kind: "gallery", trained: true });
   });
 });
 

@@ -275,6 +275,7 @@ import {
   preRestoreFileStem,
   saveBackupAs,
   saveBackupToFolder,
+  sealedCopiesIn,
   stageBackupForImport,
   writePreMigrationCopy,
   writeSyncSnapshot,
@@ -440,7 +441,7 @@ describe("exportBackup", () => {
     await exportBackup();
 
     const written = [...fs.__disk.keys()].map((key) => key.split("/").pop());
-    expect(written).toEqual([expect.stringMatching(/^bati-export-v3-\d{4}-\d{2}-\d{2}\.db$/)]);
+    expect(written).toEqual([expect.stringMatching(/^bati-\d{4}-\d{2}-\d{2}-v3\.db$/)]);
     expect(fs.__ops).toContain("share");
   });
 
@@ -471,6 +472,17 @@ describe("exportBackup", () => {
     expect(fs.__disk.size).toBe(1);
   });
 
+  test("clears a previous snapshot under the dated name too, and not the sync file beside it", async () => {
+    write("bati-2020-01-01-a1b2c3d4-v3.batb", "last year's");
+    write("bati-sync-out.batb", "waiting to be sent");
+
+    await exportBackup();
+
+    expect(fs.__disk.has(at("bati-2020-01-01-a1b2c3d4-v3.batb"))).toBe(false);
+    expect(fs.__disk.get(at("bati-sync-out.batb"))).toBe("waiting to be sent");
+    expect(fs.__disk.size).toBe(2);
+  });
+
   test("leaves the database and any staged import alone", async () => {
     write(mockDbName, "the hero's year");
     write(IMPORT_NAME, "staged");
@@ -489,7 +501,7 @@ describe("saveBackupToFolder", () => {
     expect(await saveBackupToFolder()).toBe(true);
 
     const copied = [...fs.__disk.keys()].filter((key) => key.startsWith("/sdcard/Documents/"));
-    expect(copied).toEqual([expect.stringMatching(/bati-export-v3-\d{4}-\d{2}-\d{2}\.db$/)]);
+    expect(copied).toEqual([expect.stringMatching(/bati-\d{4}-\d{2}-\d{2}-v3\.db$/)]);
   });
 
   /**
@@ -543,7 +555,7 @@ describe("saveBackupToFolder", () => {
 
     expect(fs.Directory.pickDirectoryAsync).not.toHaveBeenCalled();
     const copied = [...fs.__disk.keys()].filter((key) => key.startsWith("content://tree/"));
-    expect(copied).toEqual([expect.stringMatching(/bati-export-v3-\d{4}-\d{2}-\d{2}\.db$/)]);
+    expect(copied).toEqual([expect.stringMatching(/bati-\d{4}-\d{2}-\d{2}-v3\.db$/)]);
   });
 
   /**
@@ -712,7 +724,7 @@ describe("encrypted backups", () => {
     await exportBackup();
 
     const local = [...fs.__disk.keys()].map((key) => key.split("/").pop());
-    expect(local).toEqual([expect.stringMatching(/^bati-export-v3-\d{4}-\d{2}-\d{2}\.batb$/)]);
+    expect(local).toEqual([expect.stringMatching(/^bati-\d{4}-\d{2}-\d{2}-v3\.batb$/)]);
     expect([...fs.__disk.values()]).toEqual(["sealed:snapshot"]);
   });
 
@@ -752,6 +764,37 @@ describe("encrypted backups", () => {
     const kept = [...fs.__disk.keys()].filter((key) => key.startsWith("/sdcard/Documents/"));
     expect(kept).toHaveLength(5);
     expect(kept).not.toContain("/sdcard/Documents/bati-export-v3-2026-09-20.db");
+  });
+
+  /** What a phone that lost its key is handed to read it from: sealed copies only, newest first. */
+  const sealedNames = () =>
+    sealedCopiesIn(new fs.Directory("file:///sdcard/Documents")).map((file) =>
+      file.uri.split("/").pop(),
+    );
+
+  test("the sealed copies under the old name are found, newest first, any device's", () => {
+    fs.__disk.set("/sdcard/Documents/bati-export-v3-2026-09-20.batb", "untagged");
+    fs.__disk.set("/sdcard/Documents/bati-export-a1b2c3d4-v3-2026-09-22.batb", "tagged");
+    fs.__disk.set("/sdcard/Documents/bati-export-v3-2026-09-23.db", "plain");
+
+    expect(sealedNames()).toEqual([
+      "bati-export-a1b2c3d4-v3-2026-09-22.batb",
+      "bati-export-v3-2026-09-20.batb",
+    ]);
+  });
+
+  test("the sealed copies under the dated name are found too, and a sync file is not one", () => {
+    fs.__disk.set("/sdcard/Documents/bati-2026-10-11-a1b2c3d4-v3.batb", "tagged");
+    fs.__disk.set("/sdcard/Documents/bati-2026-10-09-v3.batb", "untagged");
+    fs.__disk.set("/sdcard/Documents/bati-export-v3-2026-10-10.batb", "old name");
+    fs.__disk.set("/sdcard/Documents/bati-2026-10-12-a1b2c3d4-v3.db", "plain");
+    fs.__disk.set("/sdcard/Documents/bati-0190a000-0000-7000-8000-0000000000aa.batb", "sync");
+
+    expect(sealedNames()).toEqual([
+      "bati-2026-10-11-a1b2c3d4-v3.batb",
+      "bati-export-v3-2026-10-10.batb",
+      "bati-2026-10-09-v3.batb",
+    ]);
   });
 
   test("plaintext a killed snapshot left behind does not block the next one", async () => {
@@ -858,13 +901,16 @@ describe("copies tagged by device", () => {
       .filter((name) => name.startsWith(prefix))
       .sort();
   const days = ["2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01", "2026-05-01", "2026-06-01"];
+  // Both names an export has had: today's copy is written under the dated one.
+  const copiesOf = (tag: string) => names("bati-").filter((name) => name.includes(`-${tag}-v`));
+  const untagged = () => names("bati-").filter((name) => /^bati-(export-v\d|[\d-]+v\d)/.test(name));
 
   test("the file name carries the device tag", async () => {
     mockTag.value = "a1b2c3d4";
     await saveBackupToFolder(folder());
 
-    expect(names("bati-export-")).toEqual([
-      expect.stringMatching(/^bati-export-a1b2c3d4-v3-\d{4}-\d{2}-\d{2}\.db$/),
+    expect(names("bati-")).toEqual([
+      expect.stringMatching(/^bati-\d{4}-\d{2}-\d{2}-a1b2c3d4-v3\.db$/),
     ]);
   });
 
@@ -872,7 +918,8 @@ describe("copies tagged by device", () => {
     mockTag.value = "a1b2c3d4";
     await saveBackupToFolder(folder());
 
-    for (const name of names("bati-export-")) expect(PEER_FILE.test(name)).toBe(false);
+    expect(names("bati-")).toHaveLength(1);
+    for (const name of names("bati-")) expect(PEER_FILE.test(name)).toBe(false);
   });
 
   test("each device keeps its own five, and never touches the other's", async () => {
@@ -883,13 +930,28 @@ describe("copies tagged by device", () => {
 
     mockTag.value = "aaaaaaaa";
     await saveBackupToFolder(folder());
-    expect(names("bati-export-aaaaaaaa-")).toHaveLength(5);
-    expect(names("bati-export-bbbbbbbb-")).toHaveLength(6);
+    expect(copiesOf("aaaaaaaa")).toHaveLength(5);
+    expect(copiesOf("bbbbbbbb")).toHaveLength(6);
 
     mockTag.value = "bbbbbbbb";
     await saveBackupToFolder(folder());
-    expect(names("bati-export-aaaaaaaa-")).toHaveLength(5);
-    expect(names("bati-export-bbbbbbbb-")).toHaveLength(5);
+    expect(copiesOf("aaaaaaaa")).toHaveLength(5);
+    expect(copiesOf("bbbbbbbb")).toHaveLength(5);
+  });
+
+  test("copies under the dated name are pruned the same way, each device its own", async () => {
+    for (const day of days) {
+      seed(`bati-${day}-aaaaaaaa-v3.batb`);
+      seed(`bati-${day}-bbbbbbbb-v3.batb`);
+    }
+
+    mockTag.value = "aaaaaaaa";
+    await saveBackupToFolder(folder());
+
+    expect(copiesOf("aaaaaaaa")).toHaveLength(5);
+    expect(copiesOf("aaaaaaaa")).not.toContain("bati-2026-01-01-aaaaaaaa-v3.batb");
+    expect(copiesOf("aaaaaaaa")).not.toContain("bati-2026-02-01-aaaaaaaa-v3.batb");
+    expect(copiesOf("bbbbbbbb")).toHaveLength(6);
   });
 
   test("the oldest of its own go first, whatever the other device holds", async () => {
@@ -913,16 +975,16 @@ describe("copies tagged by device", () => {
     expect(names("bati-export-v3-")).toHaveLength(6);
   });
 
-  test("with the keystore down it writes the old name and prunes only old names", async () => {
+  test("with the keystore down it writes an untagged name and prunes only untagged names", async () => {
     for (const day of days.slice(0, 4)) seed(`bati-export-v3-${day}.db`);
     for (const day of days) seed(`bati-export-a1b2c3d4-v3-${day}.db`);
 
     mockTag.value = null;
     await saveBackupToFolder(folder());
 
-    // Four old names plus today's make five: nothing pruned, and the tagged six are untouched.
-    expect(names("bati-export-v3-")).toHaveLength(5);
-    expect(names("bati-export-a1b2c3d4-")).toHaveLength(6);
+    // Four untagged names plus today's make five: nothing pruned, and the tagged six are untouched.
+    expect(untagged()).toHaveLength(5);
+    expect(copiesOf("a1b2c3d4")).toHaveLength(6);
   });
 
   test("saving twice on one day replaces this device's copy of the day", async () => {
@@ -930,7 +992,7 @@ describe("copies tagged by device", () => {
     await saveBackupToFolder(folder());
     await saveBackupToFolder(folder());
 
-    expect(names("bati-export-a1b2c3d4-")).toHaveLength(1);
+    expect(copiesOf("a1b2c3d4")).toHaveLength(1);
   });
 
   test("prunes a Storage Access Framework tree, tag and percent-encoding together", async () => {
@@ -948,8 +1010,8 @@ describe("copies tagged by device", () => {
     const left = [...fs.__disk.keys()]
       .filter((key) => key.startsWith(tree))
       .map((key) => decodeURIComponent(key));
-    expect(left.filter((key) => key.includes("export-aaaaaaaa-"))).toHaveLength(5);
-    expect(left.filter((key) => key.includes("export-bbbbbbbb-"))).toHaveLength(6);
+    expect(left.filter((key) => key.includes("-aaaaaaaa-v"))).toHaveLength(5);
+    expect(left.filter((key) => key.includes("-bbbbbbbb-v"))).toHaveLength(6);
   });
 
   test("a pre-restore copy still sits outside the prune, tag or not", async () => {
@@ -973,7 +1035,7 @@ describe("saveBackupAs: Android's Save as", () => {
 
     expect(saved).toEqual({ name: "My hero.db" });
     expect(mockSave.calls).toEqual([
-      expect.stringMatching(/^pick bati-export-v3-\d{4}-\d{2}-\d{2}\.db$/),
+      expect.stringMatching(/^pick bati-\d{4}-\d{2}-\d{2}-v3\.db$/),
       "write content://docs/d1 exists=true",
     ]);
   });
@@ -990,7 +1052,7 @@ describe("saveBackupAs: Android's Save as", () => {
   test("the snapshot does not stay in app storage once it is saved", async () => {
     await saveBackupAs();
 
-    expect(diskNames().filter((name) => name?.startsWith("bati-export-"))).toEqual([]);
+    expect(diskNames().filter((name) => name?.startsWith("bati-"))).toEqual([]);
   });
 
   test("nor when the write failed, which is told and not swallowed", async () => {
@@ -998,7 +1060,7 @@ describe("saveBackupAs: Android's Save as", () => {
 
     await expect(saveBackupAs()).rejects.toThrow("holds 3 bytes");
 
-    expect(diskNames().filter((name) => name?.startsWith("bati-export-"))).toEqual([]);
+    expect(diskNames().filter((name) => name?.startsWith("bati-"))).toEqual([]);
   });
 
   test("a sealed vault is named .batb before the hero picks, so the name says what the file is", async () => {
@@ -1051,7 +1113,7 @@ describe("saveBackupAs: Android's Save as", () => {
 
     await saveBackupAs();
 
-    expect(mockSave.calls[0]).toMatch(/^pick bati-export-a1b2c3d4-v3-/);
+    expect(mockSave.calls[0]).toMatch(/^pick bati-\d{4}-\d{2}-\d{2}-a1b2c3d4-v3\./);
   });
 });
 
@@ -1082,7 +1144,7 @@ describe("error branches", () => {
 
     await expect(saveBackupAs()).resolves.toEqual({ name: mockSave.name });
 
-    expect(fs.__ops.filter((op) => op.startsWith("delete bati-export-"))).toEqual([]);
+    expect(fs.__ops.filter((op) => op.startsWith("delete bati-"))).toEqual([]);
   });
 
   test.each(["off", "locked"] as const)(

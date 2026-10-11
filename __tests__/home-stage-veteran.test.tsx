@@ -94,6 +94,24 @@ test("the gallery of a hero with no session keeps its first step", async () => {
   expect((await screen.findAllByLabelText("Start your journey")).length).toBeGreaterThan(0);
 });
 
+// Audit 2026-10-11, F5: the evening of a session the stage asks for nothing.
+test("a day already done has no filled button, and keeps the gallery as a text link", async () => {
+  mockOffer = { kind: "done_today", next: { quest, startable: true, seconds: 1200 } };
+  await stage();
+  expect(await screen.findByLabelText("Done for today.")).toBeTruthy();
+  expect(screen.getByText("Your next session: Chop Wood, 20 min")).toBeTruthy();
+  expect(screen.queryByTestId("home-start-session")).toBeNull();
+  expect(screen.getByTestId("home-pick-quest")).toHaveTextContent("Pick a quest");
+});
+
+test("with no quest to name, the first sentence stands alone", async () => {
+  mockOffer = { kind: "done_today", next: null };
+  await stage();
+  expect(await screen.findByLabelText("Done for today.")).toBeTruthy();
+  expect(screen.queryByText(/next session/)).toBeNull();
+  expect(screen.queryByText("Start your journey")).toBeNull();
+});
+
 test("the Start button is the seal", async () => {
   mockOffer = { kind: "stale_quest", days: 9, quest, startable: true, seconds: 1200 };
   await stage();

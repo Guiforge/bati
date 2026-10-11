@@ -38,6 +38,7 @@ appId: com.guiforge.bati.dev
 
 # --- Full circle ------------------------------------------------------------
 
-# Back on home, with the session banked.
+# Back on home, with the session banked: the day is done, so the stage offers no session to
+# start, only the way to the gallery (docs/design/audits/2026-10-11-onboarding.md, F5).
 - assertVisible:
-    id: "home-start-session"
+    id: "home-pick-quest"

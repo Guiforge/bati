@@ -66,7 +66,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | hold | A movement measured in seconds, not reps | hold | tenue |  | Halten | mantener |
 | target | The number to reach: a set's, an outing's, an oath's | target (goal for an outing) | objectif | cible | Ziel | objetivo |
 | difficulty | Easy, Medium, Hard, chosen per quest | Easy / Medium / Hard | Facile / Moyen / Difficile |  | Leicht / Mittel / Schwer | Fácil / Media / Difícil |
-| training level | What the hero said at onboarding | Beginner / Regular / Advanced | Débutant / Régulier / Confirmé |  | Einsteiger / Regelmäßig / Fortgeschritten | Principiante / Habitual / Avanzado |
+| written for | Who a quest was written for, the tag on its card | Beginner / Regular / Advanced | Débutant / Régulier / Confirmé |  | Einsteiger / Regelmäßig / Fortgeschritten | Principiante / Habitual / Avanzado |
 
 ## Progression
 
@@ -81,6 +81,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | ghost | What the hero did on this movement last time, shown during the set | last time / best | la dernière fois / record |  | letztes Mal / Rekord | la última vez / récord |
 | XP | Experience, one rep is one | XP | XP |  | XP | XP |
 | level | The hero's level, from XP | level | niveau |  | Level | nivel |
+| starting point | The hero's answer to "where are you at", which sets where a quest never played starts | starting point | point de départ | niveau (the hero's, from XP) | Ausgangspunkt | punto de partida |
 | rank | The title a level carries | Apprentice … Divine | Apprenti … Divin | Entraîné (says "trained") | Lehrling … Göttlich | Aprendiz … Divino |
 
 ## Flame and oath

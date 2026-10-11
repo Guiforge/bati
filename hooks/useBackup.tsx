@@ -21,6 +21,7 @@ import {
   stageBackupForImport,
   stagePeerForImport,
 } from "@/src/backupFiles";
+import { wordCandidates } from "@/src/backupWords";
 import { isLowMemory } from "@/src/lowMemory";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
@@ -81,6 +82,8 @@ const isWaiting = (result: string) => result === "needsSecret" || result === "wr
 type StagedVerdict = {
   verdict: "ok" | "cancelled" | BackupRejection;
   join?: (options: { asPrimary: boolean }) => Promise<void>;
+  /** The secret that opened it was the twelve words: the join question says so. */
+  byWords?: boolean;
 };
 
 /** What the password sheet shows while an encrypted import waits for the hero. */
@@ -145,7 +148,7 @@ export function useBackup() {
   useEffect(() => () => declineJoin.current?.(), []);
 
   const offerJoin = useCallback(
-    async (join: (options: { asPrimary: boolean }) => Promise<void>) => {
+    async (join: (options: { asPrimary: boolean }) => Promise<void>, byWords = false) => {
       if ((await encryptionStatus()) === "on") {
         await join({ asPrimary: false });
         return;
@@ -154,7 +157,7 @@ export function useBackup() {
         declineJoin.current = () => resolve(false);
         ask({
           title: t("backup.joinTitle"),
-          body: t("backup.joinBody"),
+          body: t(byWords ? "backup.joinBodyWords" : "backup.joinBody"),
           confirmLabel: t("backup.joinYes"),
           cancelLabel: t("backup.joinNo"),
           onConfirm: () => resolve(true),
@@ -192,11 +195,15 @@ export function useBackup() {
         });
 
       let opened = await attempt();
+      let byWords = false;
       if (opened.result === "newerVersion") return { verdict: "newerVersion" };
       while (isWaiting(opened.result)) {
         const secret = await askSecret(opened.result === "wrongSecret");
         if (secret === null) return { verdict: "cancelled" };
         opened = await attempt(secret);
+        // The cipher tries the words before the password: a secret that reads as words opened as
+        // words.
+        byWords = wordCandidates(secret).length > 0;
       }
       if (opened.result === "lowMemory") return { verdict: lowMemoryStop() };
       if (opened.result === "corrupt") return { verdict: "corrupt" };
@@ -205,7 +212,7 @@ export function useBackup() {
       if (!check.ok) return { verdict: check.reason };
       // Offered later, by the caller, once the copies are kept: adopting the key now would change
       // the vault of a restore that may still be abandoned.
-      return { verdict: "ok", join: opened.join };
+      return { verdict: "ok", join: opened.join, byWords };
     },
     [askSecret, lowMemoryStop],
   );
@@ -316,9 +323,12 @@ export function useBackup() {
    * vault exactly as it was. False when a copy could not be made.
    */
   const keepCopiesThenJoin = useCallback(
-    async (join: StagedVerdict["join"], beforeSwap?: () => Promise<void>) => {
+    async (
+      { join, byWords }: Pick<StagedVerdict, "join" | "byWords">,
+      beforeSwap?: () => Promise<void>,
+    ) => {
       if (!(await copiesKept(beforeSwap))) return false;
-      if (join) await offerJoin(join);
+      if (join) await offerJoin(join, byWords);
       return true;
     },
     [offerJoin],
@@ -338,7 +348,7 @@ export function useBackup() {
           const staged = await stage();
           if (!staged) return;
 
-          const { verdict, join } = await checkStaged(staged);
+          const { verdict, ...opened } = await checkStaged(staged);
           if (verdict !== "ok") {
             discardStagedImport();
             // Silence on a cancel, same reason as the picker: the hero closed it themselves.
@@ -351,7 +361,7 @@ export function useBackup() {
 
           // Last, so a file that will be refused never costs a snapshot; before `beginRestore`,
           // because after it the tree is gone and the database closes.
-          if (!(await keepCopiesThenJoin(join, beforeSwap))) {
+          if (!(await keepCopiesThenJoin(opened, beforeSwap))) {
             discardStagedImport();
             alertWithReport(t("backup.beforeRestoreFailed"));
             return;

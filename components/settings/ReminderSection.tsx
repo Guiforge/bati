@@ -3,6 +3,7 @@ import * as Linking from "expo-linking";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { LayoutChangeEvent } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { Chip } from "@/components/common/Chip";
 import { SectionLabel } from "@/components/common/SectionLabel";
@@ -135,8 +136,11 @@ function hourOf(days: ReminderDays, sessions: ReminderSession[]): string {
  * rule under it, then the days, the hour, the pause and a preview that always says why.
  *
  * Absent on a build without the native module (jest, iOS): there would be nothing behind it.
+ *
+ * `onLayout` is Settings' anchor: Home's reminder line lands on this section, and only the
+ * section knows when it is on screen, since it mounts after its own read.
  */
-export function ReminderSection() {
+export function ReminderSection({ onLayout }: { onLayout?: (event: LayoutChangeEvent) => void }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const haptics = useHaptics();
@@ -256,7 +260,7 @@ export function ReminderSection() {
   };
 
   return (
-    <YStack gap="$3" testID="settings-reminder">
+    <YStack gap="$3" testID="settings-reminder" onLayout={onLayout}>
       <SectionLabel px="$1" mt="$2">
         {t("reminders.section")}
       </SectionLabel>

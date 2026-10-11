@@ -41,6 +41,52 @@ function resolveCover(config: SmartActionConfig | null): ImageSourcePropType {
  * A card inset to the quick actions' edge rather than full bleed: the scene still takes every
  * spare dp of height, and the margin is what lets it read as one thing you can pick up.
  */
+/** What stands under the title when the offer brings no sentence: nothing once the day is done. */
+function fallbackSubtitle(done: boolean, t: ReturnType<typeof useTranslation>["t"]): string {
+  return done ? "" : t("home.start_journey");
+}
+
+/** The stage's one action: the filled button, or a text link once the day is done. */
+function StageAction({
+  done,
+  label,
+  onPress,
+}: {
+  done: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  if (done) {
+    return (
+      <XStack
+        testID="home-pick-quest"
+        minH={48}
+        items="center"
+        onPress={onPress}
+        pressStyle={{ opacity: 0.7 }}
+        accessibilityRole="button"
+      >
+        <Text fontSize={14} fontWeight="700" color="$primaryText">
+          {label}
+        </Text>
+      </XStack>
+    );
+  }
+  return (
+    // The one filled button on the screen
+    <AppButton
+      testID="home-start-session"
+      fullWidth={false}
+      flex={1}
+      height={56}
+      icon={<Play size={16} color="$onPrimary" />}
+      onPress={onPress}
+    >
+      {label}
+    </AppButton>
+  );
+}
+
 export function HomeStage() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -63,7 +109,10 @@ export function HomeStage() {
 
   const { scene, startQuestId } = effectiveConfig;
   const title = scene?.title ?? t("home.start_journey");
-  const subtitle = effectiveConfig.subtext || t("home.start_journey");
+  // The evening of a session (audit 2026-10-11, F5): nothing is asked, so no fallback sentence
+  // and no filled button.
+  const done = effectiveConfig.variant === "done";
+  const subtitle = effectiveConfig.subtext || fallbackSubtitle(done, t);
   const label = effectiveConfig.label || t("home.play");
   const handlePress =
     startQuestId === null
@@ -140,7 +189,7 @@ export function HomeStage() {
                 </Text>
                 <ProgressBar progress={stepProgress} height={4} color="$resourceGold" />
               </YStack>
-            ) : (
+            ) : subtitle ? (
               // The reason is advice, not progression, so it is grey with a target, never gold:
               // the strongest colour on the screen used to go to its least actionable sentence.
               <XStack gap="$1.5" items="flex-start">
@@ -151,22 +200,12 @@ export function HomeStage() {
                   {subtitle}
                 </Text>
               </XStack>
-            )}
+            ) : null}
           </YStack>
         </YStack>
 
         <XStack px="$4" pt="$4" gap="$2.5" items="center">
-          {/* The one filled button on the screen */}
-          <AppButton
-            testID="home-start-session"
-            fullWidth={false}
-            flex={1}
-            height={56}
-            icon={<Play size={16} color="$onPrimary" />}
-            onPress={handlePress}
-          >
-            {label}
-          </AppButton>
+          <StageAction done={done} label={label} onPress={handlePress} />
           {startQuestId === null ? null : (
             <YStack
               testID="home-quest-details"

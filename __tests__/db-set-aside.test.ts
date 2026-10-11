@@ -43,7 +43,7 @@ describe("set-aside exercises", () => {
     for (let i = 0; i < 3; i++) {
       t.sqlite
         .prepare(
-          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, strftime('%s', 'now'))",
+          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, strftime('%s', 'now', '-2 days'))",
         )
         .run();
     }

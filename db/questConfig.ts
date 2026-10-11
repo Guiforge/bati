@@ -307,10 +307,11 @@ export function applyConfigToSlots(
     // the next render, which read as a frozen control. The clamp follows the resolved unit too;
     // on the old order it measured reps against the range for seconds.
     // A pin has a better answer than a retarget: the target the quest wrote for that movement.
+    const pin = pinOver(qex, substitute);
     const base =
       substitute === undefined
         ? qex.target
-        : (pinOver(qex, substitute).pinnedOver && qex.substitutedFor?.target) ||
+        : (pin.pinnedOver && qex.substitutedFor?.target) ||
           retargetForMovement(qex.target, qex.exercise, substitute, config.level);
     const raw = targets[key];
     // The style follows the resolved unit, for the same reason the unit follows the swap: an
@@ -325,7 +326,7 @@ export function applyConfigToSlots(
     return {
       ...qex,
       ...ownTarget(base, value),
-      ...pinOver(qex, substitute),
+      ...pin,
       ...(substitute === undefined
         ? {}
         : {

@@ -123,6 +123,79 @@ describe("quest eligibility", () => {
     expect((await quests().getEligibleQuestIds()).has(storm)).toBe(false);
   });
 
+  /**
+   * The filter asks what this hero would be *served*, the question the warm-up asks too. Jump
+   * Squat is the one jump on a ladder: a hero still on Squat gets Squat, so a quest naming it is
+   * fine for them; a beginner who has earned Squat gets the jump itself, and the quest is held
+   * back. Reading the template alone hid the first quest; exempting every laddered jump let the
+   * second through while the same hero's warm-up still withheld Jump Squat.
+   */
+  test("a quest naming Jump Squat is judged on the rung the hero is served", async () => {
+    const exerciseId = (enName: string): number =>
+      (t.sqlite.prepare("SELECT id FROM exercises WHERE enName = ?").get(enName) as { id: number })
+        .id;
+    const quest = Number(
+      t.sqlite
+        .prepare(
+          `INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author)
+           VALUES ('Only Jump Squats', 'x', '', '', 'Admin')`,
+        )
+        .run().lastInsertRowid,
+    );
+    t.sqlite
+      .prepare(
+        `INSERT INTO quest_exercises (questId, exerciseId, sortOrder, targetType, targetMin, targetMax)
+         VALUES (?, ?, 0, 'reps', 10, 12)`,
+      )
+      .run(quest, exerciseId("Jump Squat"));
+    quests().invalidateQuestTemplates();
+    setPreference("trainingLevel", "beginner");
+
+    try {
+      // Still on the ladder below it: served something that does not jump.
+      expect((await quests().getEligibleQuestIds()).has(quest)).toBe(true);
+
+      // Squat earned, three clean sessions before today: now served the jump.
+      for (const daysAgo of [2, 3, 4]) {
+        const session = Number(
+          t.sqlite
+            .prepare(
+              `INSERT INTO completed_sessions (userLevel, xpEarned, performedAt)
+               VALUES ('medium', 10, strftime('%s', 'now', ?))`,
+            )
+            .run(`-${daysAgo} days`).lastInsertRowid,
+        );
+        t.sqlite
+          .prepare(
+            `INSERT INTO completed_exercises
+               (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, targetType,
+                targetValue, performedAt)
+             VALUES (?, ?, 0, 0, 'reps', 12, 'reps', 12, strftime('%s', 'now', ?))`,
+          )
+          .run(session, exerciseId("Squat"), `-${daysAgo} days`);
+      }
+      expect((await quests().getEligibleQuestIds()).has(quest)).toBe(false);
+    } finally {
+      t.sqlite.exec("DELETE FROM completed_exercises");
+      t.sqlite.prepare("DELETE FROM quest_exercises WHERE questId = ?").run(quest);
+      t.sqlite.prepare("DELETE FROM quests WHERE id = ?").run(quest);
+      quests().invalidateQuestTemplates();
+    }
+  });
+
+  // An oath sworn on a jump is the hero's own choice of a jump. The filter that keeps the app
+  // from picking one for them left that oath with no quest to offer, and Home dropped it.
+  test("an oath on a jump still finds its quest for a beginner", async () => {
+    setPreference("trainingLevel", "beginner");
+    const starJump = (
+      t.sqlite.prepare("SELECT id FROM exercises WHERE enName = 'Star Jump'").get() as {
+        id: number;
+      }
+    ).id;
+
+    expect(await quests().findQuestWithExercise(starJump)).not.toBeNull();
+  });
+
   // Two hard movements out of four rated "regular" under the lower median, and reached beginners.
   test("a beginner is not offered a quest half made of hard movements", async () => {
     logThreeSessions();

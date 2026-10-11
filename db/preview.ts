@@ -7,6 +7,7 @@ import { applyConfigToSlots, type QuestConfig, resolveTemplateOverrides } from "
 import {
   isUserQuest,
   loadSlotJournal,
+  movementRef,
   QUEST_AS_WRITTEN,
   type QuestExercise,
   type QuestTemplate,
@@ -63,7 +64,7 @@ function resolveTemplateExercises(input: PreviewInput): QuestExercise[] {
     const written = input.exercisesById[qex.exerciseId];
     if (!written) return [];
 
-    const { exercise, target, ghost } = resolveSlot({
+    const { exercise, target, ghost, asWritten, setAsideFrom } = resolveSlot({
       base: qex.baseTarget,
       written,
       userLevel: userLevelEnum,
@@ -72,9 +73,24 @@ function resolveTemplateExercises(input: PreviewInput): QuestExercise[] {
       substitute,
     });
 
-    // Same rule as `buildSlot`: the quest's own art is of the movement the template wrote.
     return [
-      { id: qex.id, exercise, images: exercise.id === written.id ? qex.images : [], target, ghost },
+      {
+        id: qex.id,
+        exercise,
+        // Same rule as `buildSlot`: the quest's own art is of the movement the template wrote.
+        images: exercise.id === written.id ? qex.images : [],
+        target,
+        ghost,
+        // And the same account of a stepped-down slot as `buildSlot` gives, because the saved
+        // config reads it: a hero who took the written movement back ("Do X instead") is
+        // prescribed what the quest wrote for it. Without this the card priced that slot at the
+        // unit's default while the screen behind it priced the quest's own number.
+        ...(setAsideFrom
+          ? { substitutedFor: { ...movementRef(setAsideFrom), setAside: true as const } }
+          : asWritten
+            ? { substitutedFor: { ...movementRef(written), target: asWritten } }
+            : {}),
+      },
     ];
   });
 

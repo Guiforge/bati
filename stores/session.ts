@@ -1062,7 +1062,7 @@ export async function loadWarmupContext(): Promise<{
   // What the hero said they do not own. A failed read costs the filter, never the warm-up: an
   // unfiltered warm-up is the old behaviour, and no warm-up is a worse answer than a scapular
   // pull-up someone skips.
-  const unavailable = await unavailableMovements(totalSessions).catch(() => new Set<string>());
+  const unavailable = await unavailableMovements().catch(() => new Set<string>());
   return { enabled, totalSessions, unavailable };
 }
 
@@ -1661,7 +1661,7 @@ export const useSessionStore = create<SessionState>()(
               // and so must what the app had prescribed under it: dropped, a target lowered to 1
               // became "what was asked" on the new movement, and one rep earned its rung. A swap
               // that changed the unit generated a fresh target, which is the app's own again.
-              prescribed: target === slot.target ? slot.prescribed : undefined,
+              prescribed: target.type === slot.target.type ? slot.prescribed : undefined,
               // The pin was on the old movement.
               pinnedOver: undefined,
             }

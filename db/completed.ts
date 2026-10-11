@@ -157,6 +157,12 @@ export type CompletedSession = {
  * in a slot is neutral when it lacks a row for any round it was due in, up to the session's
  * last. A replacement done on every remaining round counts as it always did.
  *
+ * ponytail: the rows cannot tell a movement skipped in round one from a replacement swapped in
+ * after a skipped round one, because both are "the first row of the slot, late". Both are read
+ * as the first, so that replacement earns no credit that evening. Neutral, never a miss, and
+ * the alternative was a pinned movement skipped first and done after counting as clean. Carry a
+ * marker on the result if heroes report a swap that did not count.
+ *
  * ponytail: "the session's last round" is the last round that left a row. A hero who skips
  * every slot of the final round keeps the credit of the rounds before. Pass the quest's round
  * count in if that is ever reported.

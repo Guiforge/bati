@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { workoutsBeforeToday } from "./completed";
@@ -1134,7 +1134,15 @@ export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLeve
  * swaps in means scanning `user_preferences` here, on a path Home hits on every mount — do it
  * when someone reports the quest staying hidden after they fixed it.
  */
-export async function getEligibleQuestIds(): Promise<Set<number>> {
+export async function getEligibleQuestIds(
+  options: {
+    /**
+     * Leave quests with a jump in. For the one caller that is answering a choice the hero made:
+     * an oath sworn on a jump is not the app picking jumps for them.
+     */
+    allowJumps?: boolean;
+  } = {},
+): Promise<Set<number>> {
   // Sessions before today, not up to now: the daily quest is drawn from this set, and it must
   // name the same quest all day (`workoutsBeforeToday`).
   const [ownedEquipment, trainingLevel, sessions, rows] = await Promise.all([
@@ -1144,19 +1152,23 @@ export async function getEligibleQuestIds(): Promise<Set<number>> {
     db
       .select({
         questId: questExercises.questId,
+        exerciseId: questExercises.exerciseId,
         difficulty: exercises.difficulty,
         equipment: exercises.equipment,
-        // A jump nothing walks down, in a quest the app wrote. Jump Squat sits on a ladder, so a
-        // hero who has not earned it is served Squat and the quest is fine for them; and a
-        // hero's own quest is theirs to be suggested, jumps included.
-        impact: sql<number>`${exercises.impact} = 1
-          and ${exercises.prerequisiteExerciseId} is null
-          and ${quests.author} = ${ADMIN_CREATOR}`,
+        author: quests.author,
       })
       .from(questExercises)
       .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId))
       .innerJoin(quests, eq(quests.id, questExercises.questId)),
   ]);
+
+  // Which slots would put a jump in front of this hero. Asked of the movement they are *served*
+  // (`currentRungFor`), which is the question the warm-up asks too: Jump Squat sits on a ladder,
+  // so a hero who has not earned it gets Squat and the quest is fine, and one who has earned it
+  // gets the jump. Only in a quest the app wrote: a hero's own is theirs to be suggested. Read
+  // only for a hero who is kept off jumps, which is the first three sessions and beginners.
+  const gentle = !options.allowJumps && startsGently(trainingLevel, sessions);
+  const jumps = gentle ? await servedJumps(rows.map((row) => row.exerciseId)) : new Set<number>();
 
   const byQuest = new Map<
     number,
@@ -1170,27 +1182,31 @@ export async function getEligibleQuestIds(): Promise<Set<number>> {
     };
     entry.difficulties.push(row.difficulty);
     entry.equipment.add(row.equipment);
-    entry.impact ||= row.impact === 1;
+    entry.impact ||= row.author === ADMIN_CREATOR && jumps.has(row.exerciseId);
     byQuest.set(row.questId, entry);
   }
 
   const owned = ownedEquipment === null ? null : new Set<EquipmentCode>(ownedEquipment);
-  const gentle = startsGently(trainingLevel, sessions);
   const eligible = new Set<number>();
 
   for (const [questId, entry] of byQuest) {
     const hasKit = [...entry.equipment].every((code) => canDo(code, owned));
     const tooHard =
       trainingLevel === "beginner" && questTrainingLevel(entry.difficulties) === "advanced";
-    // A quest built on jumps is not what the app picks for someone starting out: the ladder
-    // walks a hard movement down to the hero's rung, and nothing walks a Burpee down (which is
-    // what `impact` means here, see the query above).
-    const tooJumpy = gentle && entry.impact;
+    // A quest that would serve a jump is not what the app picks for someone starting out.
+    const tooJumpy = entry.impact;
 
     if (hasKit && !tooHard && !tooJumpy) eligible.add(questId);
   }
 
   return eligible;
+}
+
+/** The written movements, among `exerciseIds`, that this hero would be served as a jump. */
+async function servedJumps(exerciseIds: number[]): Promise<Set<number>> {
+  const [served, catalogue] = await Promise.all([currentRungFor(exerciseIds), listExercises()]);
+  const impact = new Set(catalogue.filter((e) => e.impact === true).map((e) => e.id));
+  return new Set(exerciseIds.filter((id) => impact.has(served.get(id) ?? id)));
 }
 
 /**
@@ -1205,8 +1221,11 @@ export async function getEligibleQuestIds(): Promise<Set<number>> {
  * a twelve-movement circuit that happens to include it.
  */
 export async function findQuestWithExercise(exerciseId: number): Promise<number | null> {
+  // An oath sworn on a jump is the hero's own choice of a jump: the filter that keeps the app
+  // from picking one for them must not leave that oath with no quest to offer.
+  const sought = (await listExercises()).find((e) => e.id === exerciseId);
   const [eligible, rows] = await Promise.all([
-    getEligibleQuestIds(),
+    getEligibleQuestIds({ allowJumps: sought?.impact === true }),
     db
       .select({
         questId: questExercises.questId,

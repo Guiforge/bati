@@ -1,6 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
+import { workoutsBeforeToday } from "./completed";
 import { dayKey } from "./dates";
 import { canDo } from "./equipment";
 import {
@@ -11,8 +12,10 @@ import {
   unavailableExerciseIds,
 } from "./exercises";
 import { isMuscleCode } from "./muscles";
+import { getOutingHabit } from "./outingHabit";
+import { type OutingHabit, proposedRunSeconds } from "./outingRule";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
-import { preferences, type TrainingLevel } from "./preferences";
+import { preferences, startsGently, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
 import {
   ADMIN_CREATOR,
@@ -77,6 +80,11 @@ export interface QuestExercise {
      * hero asked never to be handed. Optional so a session saved before it existed still loads.
      */
     setAside?: true;
+    /**
+     * What this slot asks of the written movement itself, for the hero who takes it back
+     * ("Do X instead"). Only on a rung substitution. Optional so a saved session still loads.
+     */
+    target?: Target;
   };
 
   /**
@@ -84,6 +92,46 @@ export interface QuestExercise {
    * a session saved before it existed still loads; cleared by any swap, which runs something else.
    */
   setAsideServed?: "no_substitute" | "own_quest";
+
+  /**
+   * The easier rung this slot would be served, when the hero asked for the written movement
+   * instead ("I can already do this"). Set by `applyConfigToSlots` and by nothing else: a pin is
+   * a saved swap equal to the movement the ladder substituted for, so no state says what a hero
+   * "can do". It names the way back on the quest screen, and it is how a session knows that a
+   * skip or a swap on this slot gives the pin up. Gone once the hero owns the rung: the ladder
+   * then serves the written movement by itself.
+   */
+  pinnedOver?: MovementRef;
+
+  /**
+   * What the app prescribed here before the hero set their own number (`0070`). Absent when the
+   * target is still the app's, which is nearly always; read it through `prescribedValue`.
+   * Optional so a session saved before it existed still loads.
+   */
+  prescribed?: number;
+
+  /**
+   * What the session remembers of this slot's swaps, set by the session store and by nothing
+   * else. Kept on the slot, which is in `SavedSessionState`, because the rows cannot say it:
+   * - `handedOver`: the movement the quest handed over, which is due from round one;
+   * - `arrivals`: the round each other movement *first* came in. Swapped in, skipped, swapped
+   *   out and back, a movement was still due from that first round (`ladderNeutralSets`);
+   * - `targets`: what each movement was asked when it stood here, the hero's own number and the
+   *   app's under it. Coming back to a movement gives it back its own target, so the movement
+   *   the quest wrote returns with what the quest wrote for it however many swaps were made.
+   */
+  swaps?: {
+    handedOver: number;
+    arrivals: Record<number, number>;
+    targets: Record<number, { target: Target; prescribed?: number }>;
+  };
+
+  /**
+   * This run is proposed as twenty minutes of walk and run mixed, because the hero has not run
+   * lately (`proposedRunSeconds`). The quest screen says how to do one. Meaningless once the
+   * hero set their own duration, which `prescribed` being there says.
+   */
+  walkRun?: true;
 
   /**
    * What the hero has already done on this movement, in *this slot's* unit — the best set of
@@ -594,6 +642,7 @@ type SlotRow = {
   exPattern: MovementPattern | null;
   exMeasure: QuestTargetType | null;
   exPerSide: boolean;
+  exImpact: boolean;
   exLocomotion: Locomotion | null;
   exPrerequisiteId: number | null;
   exRetiredAt: Date | null;
@@ -624,6 +673,12 @@ export type SlotJournal = {
   setAside: ReadonlySet<number>;
   /** `ghostKey` -> what they did last time, which is also where a hold is prescribed from. */
   history: ReadonlyMap<string, ExerciseGhost>;
+  /**
+   * The hero's month of running, which is what a run slot is proposed from (`proposedRunSeconds`).
+   * Absent means nobody asked: the slot runs at its seeded duration, which is right for a hero's
+   * own quest and for a caller with no run to resolve.
+   */
+  runHabit?: OutingHabit;
 };
 
 /** No ladder and no records: what a slot resolves to before anything is known about the hero. */
@@ -642,7 +697,11 @@ export async function loadSlotJournal(exerciseIds: number[]): Promise<SlotJourna
   const history = await getExerciseHistory([
     ...new Set([...exerciseIds, ...served.values(), ...replaced.values()]),
   ]);
-  return { served, replaced, setAside, history };
+  // Read only when a run is among them. `listExercises` is promise-cached, so asking is free.
+  const ids = new Set(exerciseIds);
+  const hasRun = (await listExercises()).some((e) => ids.has(e.id) && e.locomotion === "run");
+  const runHabit = hasRun ? await getOutingHabit("run") : undefined;
+  return { served, replaced, setAside, history, ...(runHabit ? { runHabit } : {}) };
 }
 
 async function loadSetAsideIds(): Promise<Set<number>> {
@@ -700,6 +759,10 @@ export function resolveSlot(input: {
   setAsideFrom: Exercise | undefined;
   /** `exercise` itself is set aside and runs anyway: nothing close enough, or the hero's quest. */
   stillSetAside: boolean;
+  /** The run is proposed as walk and run mixed (`proposedRunSeconds`). */
+  walkRun: boolean;
+  /** The written movement's own target, when another movement is served in its place. */
+  asWritten: Target | undefined;
 } {
   const { base, written, userLevel, journal, catalogue, substitute } = input;
 
@@ -723,16 +786,39 @@ export function resolveSlot(input: {
   // does not touch either (`LOCOMOTION_RATE`, `db/xp.ts`). Scaling it made the same walk read as
   // 34, 45 or 56 minutes for three heroes, and paid all three the same for the same hour.
   const level = outing ? Difficulty.Medium : userLevel;
-  const target = retargetForMovement(
+  const generated = retargetForMovement(
     generateTarget(base, level, bestHold),
     written,
     exercise,
     level,
   );
+  // A run is the one outing whose length is proposed from the hero's own month rather than from
+  // the seeded band: the band said thirty minutes to everyone, including someone who has never
+  // run. Runs only. A walk or a ride keeps its band, and so does a hero's own quest, which has no
+  // `runHabit` to read. The one place this is decided, so the gallery card, the Home tile and the
+  // quest screen cannot show three durations for one run.
+  const proposal =
+    substitute && exercise.locomotion === "run" && generated.type === "time" && journal.runHabit
+      ? proposedRunSeconds(journal.runHabit)
+      : null;
+  const target = proposal ? { ...generated, value: proposal.seconds } : generated;
 
   return {
     exercise,
     target,
+    // What the slot would ask of the movement the quest wrote, when something else is served:
+    // the band the template gives it, and its own record for a hold. It is what "Do X instead"
+    // prescribes. Derived from the served rung's target it was the unit's default (10 reps, 30 s)
+    // whenever the two are measured differently, and that default became the bar a rung is
+    // earned on.
+    // Only for a rung served in the written movement's place. A set-aside slot never offers the
+    // written movement back that way, and an outing is neither stepped down nor prescribed off a
+    // record, so both get nothing rather than a number computed under the wrong rules.
+    asWritten:
+      exercise.id === written.id || replacement !== undefined || outing
+        ? undefined
+        : generateTarget(base, userLevel, journal.history.get(ghostKey(written.id, "time"))?.best),
+    walkRun: proposal?.walkRun === true,
     // In the target's own unit: a movement trained both ways has two records, and showing the
     // hold next to a rep target would be a number the hero cannot act on.
     ghost: journal.history.get(ghostKey(exercise.id, target.type)),
@@ -777,13 +863,16 @@ function buildSlot(
     pattern: r.exPattern ?? null,
     measure: r.exMeasure,
     perSide: r.exPerSide,
+    // A slot's movement says whether it jumps like any other (`0070`). Left off this mapping,
+    // a written Burpee read as "does not jump" on the one object a session runs.
+    impact: r.exImpact,
     locomotion: r.exLocomotion,
     prerequisiteExerciseId: r.exPrerequisiteId,
     retiredAt: r.exRetiredAt,
     muscles: [],
   };
 
-  const { exercise, target, ghost, setAsideFrom, stillSetAside } = resolveSlot({
+  const { exercise, target, ghost, setAsideFrom, stillSetAside, walkRun, asWritten } = resolveSlot({
     base: { type: r.targetType, min: r.targetMin, max: r.targetMax },
     written,
     userLevel: ctx.userLevel,
@@ -807,6 +896,7 @@ function buildSlot(
     images: isSubstituted ? [] : safeParseImages(r.imagesJson),
     target,
     ghost,
+    ...(walkRun ? { walkRun: true as const } : {}),
     // What the template asked for, when that is not what runs — the screens owe the hero an
     // explanation and a way back, and nothing else in the object can tell them. A set-aside slot
     // names what was set aside rather than what was written: that is the one the hero can put back.
@@ -820,12 +910,13 @@ function buildSlot(
             deName: r.exDeName,
             esName: r.exEsName,
             imagePath: r.exImagePath,
+            ...(asWritten ? { target: asWritten } : {}),
           }
         : undefined,
   };
 }
 
-function movementRef(e: Exercise): MovementRef {
+export function movementRef(e: Exercise): MovementRef {
   return {
     id: e.id,
     enName: e.enName,
@@ -868,6 +959,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exPattern: exercises.pattern,
       exMeasure: exercises.measure,
       exPerSide: exercises.perSide,
+      exImpact: exercises.impact,
       exLocomotion: exercises.locomotion,
       exPrerequisiteId: exercises.prerequisiteExerciseId,
       exRetiredAt: exercises.retiredAt,
@@ -1044,7 +1136,9 @@ export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLeve
   if (difficulties.length === 0) return "regular";
 
   const ranks = difficulties.map((d) => DIFFICULTY_RANK[d]).sort((a, b) => a - b);
-  const median = ranks[Math.ceil(ranks.length / 2) - 1];
+  // The upper median, as the sentence above always said. `ceil(n / 2) - 1` is the lower one on an
+  // even count, so two hard movements out of four rated "regular" and were offered to a beginner.
+  const median = ranks[Math.floor(ranks.length / 2)];
   // In range by construction — the index comes from the array's own length — but the type
   // cannot see it. Falls back to the same value the empty case returns.
   return median === undefined ? "regular" : (LEVEL_BY_RANK[median] ?? "regular");
@@ -1053,10 +1147,11 @@ export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLeve
 /**
  * Quest ids the app may suggest, given what the hero owns and where they are starting from.
  *
- * Only two things are excluded, both because they leave the user stuck rather than challenged:
- * equipment they do not have, and advanced quests for someone who said they are a beginner.
+ * Three things are excluded, because they leave the user stuck or hurt rather than challenged:
+ * equipment they do not have, advanced quests for someone who said they are a beginner, and
+ * quests with a jump in them for a hero who is starting out (`startsGently`).
  * A "regular" hero still gets offered advanced work — that is a stretch, not a wall — and a
- * hero who skipped the onboarding question (`null`) is not filtered at all.
+ * hero who skipped the onboarding question (`null`) is only kept off jumps for three sessions.
  */
 /**
  * ponytail: eligibility reads the template, so a quest the hero has swapped the barbell movement
@@ -1064,31 +1159,62 @@ export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLeve
  * swaps in means scanning `user_preferences` here, on a path Home hits on every mount — do it
  * when someone reports the quest staying hidden after they fixed it.
  */
-export async function getEligibleQuestIds(): Promise<Set<number>> {
-  const [ownedEquipment, trainingLevel, rows] = await Promise.all([
+export async function getEligibleQuestIds(
+  options: {
+    /**
+     * Leave quests with a jump in. For the one caller that is answering a choice the hero made:
+     * an oath sworn on a jump is not the app picking jumps for them.
+     */
+    allowJumps?: boolean;
+    /** The instant "today" is read from, for a save asking about the day it started on. */
+    at?: Date;
+  } = {},
+): Promise<Set<number>> {
+  // Sessions before today, not up to now: the daily quest is drawn from this set, and it must
+  // name the same quest all day (`workoutsBeforeToday`).
+  const [ownedEquipment, trainingLevel, sessions, rows] = await Promise.all([
     preferences.getOwnedEquipment(),
     preferences.getTrainingLevel(),
+    workoutsBeforeToday(options.at),
     db
       .select({
         questId: questExercises.questId,
+        exerciseId: questExercises.exerciseId,
         difficulty: exercises.difficulty,
         equipment: exercises.equipment,
+        impact: exercises.impact,
+        author: quests.author,
       })
       .from(questExercises)
-      .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId)),
+      .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId))
+      .innerJoin(quests, eq(quests.id, questExercises.questId)),
   ]);
+
+  // Which slots would put a jump in front of this hero. Asked of the movement the slot would
+  // *run* (`servedJumps`), which is the question the warm-up asks too: Jump Squat sits on a
+  // ladder, so a hero who has not earned it gets Squat and the quest is fine, and one who has
+  // earned it gets the jump. Only in a quest the app wrote: a hero's own is theirs to be
+  // suggested. Read only for a hero who is kept off jumps (the first three sessions, and
+  // beginners), and only for the slots that name a jump, which is a handful: Home asks this on
+  // every mount.
+  const gentle = !options.allowJumps && startsGently(trainingLevel, sessions);
+  const jumps = gentle
+    ? await servedJumps(rows.filter((row) => row.impact).map((row) => row.exerciseId))
+    : new Set<number>();
 
   const byQuest = new Map<
     number,
-    { difficulties: DifficultyCode[]; equipment: Set<EquipmentCode> }
+    { difficulties: DifficultyCode[]; equipment: Set<EquipmentCode>; impact: boolean }
   >();
   for (const row of rows) {
     const entry = byQuest.get(row.questId) ?? {
       difficulties: [],
       equipment: new Set<EquipmentCode>(),
+      impact: false,
     };
     entry.difficulties.push(row.difficulty);
     entry.equipment.add(row.equipment);
+    entry.impact ||= row.author === ADMIN_CREATOR && jumps.has(row.exerciseId);
     byQuest.set(row.questId, entry);
   }
 
@@ -1099,11 +1225,37 @@ export async function getEligibleQuestIds(): Promise<Set<number>> {
     const hasKit = [...entry.equipment].every((code) => canDo(code, owned));
     const tooHard =
       trainingLevel === "beginner" && questTrainingLevel(entry.difficulties) === "advanced";
+    // A quest that would serve a jump is not what the app picks for someone starting out.
+    const tooJumpy = entry.impact;
 
-    if (hasKit && !tooHard) eligible.add(questId);
+    if (hasKit && !tooHard && !tooJumpy) eligible.add(questId);
   }
 
   return eligible;
+}
+
+/**
+ * The written jumps, among `exerciseIds`, whose slot would still run a jump for this hero.
+ *
+ * The slot's own answer, in the slot's own order (`resolveSlot`): what the hero set aside is
+ * replaced first, then the rung they stand on. So a hero who set every jump aside is not kept
+ * off the quests those jumps were written in, since nothing in them jumps any more; and a jump
+ * set aside with nothing to stand in runs as written, and still counts.
+ *
+ * ponytail: only written jumps are asked about. A slot that names no jump could in principle be
+ * handed one as a set-aside replacement of the same family; none of the seeded ladders does
+ * that. Ask about every slot if a ladder ever puts a jump below a movement that is not one.
+ */
+async function servedJumps(exerciseIds: number[]): Promise<Set<number>> {
+  if (exerciseIds.length === 0) return new Set();
+  const [served, setAside, catalogue] = await Promise.all([
+    currentRungFor(exerciseIds),
+    loadSetAsideIds(),
+    listExercises(),
+  ]);
+  const replaced = await loadReplacements(exerciseIds, served, setAside);
+  const impact = new Set(catalogue.filter((e) => e.impact === true).map((e) => e.id));
+  return new Set(exerciseIds.filter((id) => impact.has(replaced.get(id) ?? served.get(id) ?? id)));
 }
 
 /**
@@ -1118,8 +1270,11 @@ export async function getEligibleQuestIds(): Promise<Set<number>> {
  * a twelve-movement circuit that happens to include it.
  */
 export async function findQuestWithExercise(exerciseId: number): Promise<number | null> {
+  // An oath sworn on a jump is the hero's own choice of a jump: the filter that keeps the app
+  // from picking one for them must not leave that oath with no quest to offer.
+  const sought = (await listExercises()).find((e) => e.id === exerciseId);
   const [eligible, rows] = await Promise.all([
-    getEligibleQuestIds(),
+    getEligibleQuestIds({ allowJumps: sought?.impact === true }),
     db
       .select({
         questId: questExercises.questId,
@@ -1156,17 +1311,19 @@ export async function findQuestWithExercise(exerciseId: number): Promise<number 
  * Get the daily quest based on the current date.
  * Deterministically picks a quest from all available quests the user can actually train.
  */
-async function pickDailyTemplate(): Promise<QuestTemplate | null> {
+async function pickDailyTemplate(at = new Date()): Promise<QuestTemplate | null> {
   const templates = await listQuestTemplates();
   if (templates.length === 0) return null;
 
   // Falling back to the whole catalogue keeps the daily bonus reachable even if the hero's
   // filters leave nothing — an empty pool would silently remove the bonus altogether.
-  const eligible = await getEligibleQuestIds();
+  const eligible = await getEligibleQuestIds({ at });
   const pool = templates.filter((tpl) => eligible.has(tpl.id));
   const candidates = pool.length > 0 ? pool : templates;
 
-  const today = dayKey(new Date());
+  // `at` for a save: a session is the quest of the day it started on, which is the day its row
+  // is dated, not of whatever day the clock shows when the summary is reached.
+  const today = dayKey(at);
   let hash = 0;
   for (let i = 0; i < today.length; i++) {
     hash = (hash << 5) - hash + today.charCodeAt(i);
@@ -1177,7 +1334,7 @@ async function pickDailyTemplate(): Promise<QuestTemplate | null> {
   return candidates[Math.abs(hash) % candidates.length] ?? null;
 }
 
-export async function isDailyQuest(questId: number): Promise<boolean> {
-  const template = await pickDailyTemplate();
+export async function isDailyQuest(questId: number, at = new Date()): Promise<boolean> {
+  const template = await pickDailyTemplate(at);
   return template?.id === questId;
 }

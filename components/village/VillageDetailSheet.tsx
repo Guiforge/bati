@@ -25,7 +25,7 @@ import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "@/db/adventures";
 import { type ContributingSession, getRecentContributingSessions } from "@/db/completed";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { MUSCLE_LABELS } from "@/db/labels";
 import { buildingDefinitions } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import {
@@ -210,7 +210,7 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
           ) : null}
 
           <AppButton testID="village-detail-close" variant="outline" onPress={onClose}>
-            {t("village.close", "Close")}
+            {t("village.close")}
           </AppButton>
         </YStack>
       </Sheet.Frame>

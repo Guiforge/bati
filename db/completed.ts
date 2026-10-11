@@ -1,5 +1,5 @@
 import { differenceInCalendarDays } from "date-fns";
-import { and, count, countDistinct, desc, eq, gt, gte, ne, sql, sum } from "drizzle-orm";
+import { and, count, countDistinct, desc, eq, gt, gte, lt, ne, sql, sum } from "drizzle-orm";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { Exercise } from "./exercises";
@@ -26,6 +26,18 @@ export type CompletedExerciseInput = {
 
   result: { type: QuestTargetType; value: number };
   target?: { type: QuestTargetType; value: number };
+  /**
+   * What the app prescribed for this set before the hero touched the stepper (`0070`), in the
+   * target's unit. Absent when nothing was prescribed (an outing) or on a caller that predates
+   * it; rung credit, crit odds and the damage cap then fall back to `target`.
+   */
+  prescribed?: number;
+  /**
+   * The round (0-based) in which the hero first swapped this movement into the slot. In memory
+   * only, for `ladderNeutralSets`: such a movement is due from that round, not from round one.
+   * Absent on a movement the quest handed over.
+   */
+  swappedIn?: number;
 
   notes?: string;
   performedAt?: Date;
@@ -86,9 +98,13 @@ export type CompletedSessionInput = {
   userLevel?: DifficultyCode;
   durationSeconds?: number | null;
   xpEarned?: number;
+  /** The part of `xpEarned` that is the day's quest bonus (`0071`). Zero for every other session. */
+  dailyBonusXp?: number;
   notes?: string;
   feedback?: FeedbackCode | null;
   performedAt?: Date;
+  /** The quest's round count, so a final round skipped whole is seen as one (`ladderNeutralSets`). */
+  rounds?: number;
 
   exercises: CompletedExerciseInput[];
 };
@@ -140,6 +156,65 @@ export type CompletedSession = {
   exercises: CompletedExercise[];
 };
 
+/**
+ * Which sets the ladder must not judge, neither clean nor missed (`0070`), by index.
+ *
+ * Two cases. A target the hero lowered and did not reach at the prescribed value: a careful
+ * evening is not a failure, and counting it as one made lowering a target cost a rung streak.
+ * And a movement left mid-session, skipped or swapped away from: a skip writes no row, so one
+ * clean round followed by "I couldn't" used to read as a clean session. Deduced from the rows
+ * themselves, so it survives the OS killing the app between the skip and the save: a movement
+ * in a slot is neutral when it lacks a row for any round it was due in, up to the session's
+ * last.
+ *
+ * "Due" is the whole question. A movement the quest handed over was due from round one, so the
+ * rounds it is missing before its first row are skips too: "I couldn't" in round one followed by
+ * two clean rounds is not a clean session. A movement the hero swapped in mid-session is due
+ * from the round it arrived in (`swappedIn`, the round itself and not the round of its first
+ * row: swapped in during round one and skipped there, it was still due in round one). So a
+ * replacement done on every round that remained counts as it always did, including one swapped
+ * in after a skipped round. The rows alone cannot tell those cases apart, which is why the set
+ * says when it came in.
+ *
+ * A movement swapped away from and back to is neutral too, with the one that stood in for it:
+ * neither was done on every round it was due in. That is the rule as written ("a movement the
+ * hero left"), not an accident of the counting.
+ *
+ * `rounds` is the quest's own count. Without it the last round is the last one that left a row,
+ * and a hero who skipped every slot of the final round kept the credit of the rounds before.
+ */
+export function ladderNeutralSets(
+  sets: readonly CompletedExerciseInput[],
+  rounds?: number,
+): boolean[] {
+  const round = (set: CompletedExerciseInput) => Math.max(0, Math.floor(set.roundIndex ?? 0));
+  const lastRound = Math.max(0, ...sets.map(round), Math.floor(rounds ?? 0) - 1);
+  const key = (set: CompletedExerciseInput) => `${set.sortOrder}:${set.exerciseId}`;
+
+  // Rows of a movement in a slot, and the round it was due from: the earliest any of its rows
+  // names, and round one for a row that names none.
+  const spans = new Map<string, { due: number; rows: number }>();
+  for (const set of sets) {
+    const span = spans.get(key(set));
+    const due = Math.max(0, Math.floor(set.swappedIn ?? 0));
+    spans.set(key(set), {
+      due: span === undefined ? due : Math.min(span.due, due),
+      rows: (span?.rows ?? 0) + 1,
+    });
+  }
+
+  return sets.map((set) => {
+    const span = spans.get(key(set));
+    const left = span !== undefined && span.rows < lastRound - span.due + 1;
+    const lowered =
+      set.prescribed !== undefined &&
+      set.target !== undefined &&
+      set.target.value < set.prescribed &&
+      set.result.value < set.prescribed;
+    return left || lowered;
+  });
+}
+
 function parseExerciseStyle(value: unknown): ExerciseStyle {
   return value === "strength" || value === "calisthenics" || value === "yoga" || value === "cardio"
     ? value
@@ -167,6 +242,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
   // starts before it is saved (stores/session.ts passes `startTime`), so those are different
   // clocks and different days, and 0038 backfilled the older half from `performedAt`.
   const performedAt = input.performedAt ?? new Date();
+  const dailyBonusXp = Math.max(0, Math.round(input.dailyBonusXp ?? 0));
 
   return transactionOrFallback(async (tx) => {
     const inserted = await tx
@@ -176,6 +252,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         userLevel: input.userLevel ?? "medium",
         durationSeconds: input.durationSeconds ?? null,
         xpEarned: Math.max(0, Math.round(input.xpEarned ?? 0)),
+        dailyBonusXp,
         notes: input.notes ?? "",
         feedback: input.feedback ?? null,
         performedAt,
@@ -203,8 +280,9 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
 
     if (sessionId == null) throw new Error("Failed to create completed session");
 
+    const neutral = ladderNeutralSets(input.exercises, input.rounds);
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Exercise data validation and transformation with multiple null checks
-    const rowsToInsert = input.exercises.map((ex) => {
+    const rowsToInsert = input.exercises.map((ex, index) => {
       const roundIndexRaw = ex.roundIndex;
       const sortOrderRaw = ex.sortOrder;
       const resultValueRaw = ex.result.value;
@@ -242,6 +320,11 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         sides: ex.pricing?.perSide ? 2 : 1,
         targetType: ex.target?.type,
         targetValue,
+        prescribedValue:
+          typeof ex.prescribed === "number" && Number.isFinite(ex.prescribed)
+            ? Math.max(1, Math.floor(ex.prescribed))
+            : null,
+        ladderNeutral: neutral[index] ?? false,
         notes: ex.notes ?? "",
         performedAt: ex.performedAt ?? input.performedAt ?? new Date(),
       };
@@ -549,6 +632,22 @@ export async function getSessionAggregates(): Promise<{
 }
 
 /**
+ * Workouts logged before today began. For a rule that must not change its answer in the middle
+ * of a day: the daily quest is drawn from the quests a hero may be suggested, and a pool that
+ * grew when tonight's session was saved pointed the same day at a second quest, and paid the
+ * daily bonus twice.
+ */
+export async function workoutsBeforeToday(at = new Date()): Promise<number> {
+  const [row] = await db
+    .select({ n: count() })
+    .from(completedQuest)
+    // `at` for a save: "today" is the day the session started on, like every other question
+    // its bonus asks. Read off the clock, a session begun at 23:50 counted its own evening.
+    .where(and(isWorkout(), lt(completedQuest.performedAt, startOfLocalDay(at))));
+  return Number(row?.n ?? 0);
+}
+
+/**
  * The quest the hero has trained on for the longest time, among quests they have done, and how
  * many whole days ago that was. Workouts only: an outing names a quest too, and is not "a quest
  * to pick back up". Null when no workout names a quest.
@@ -672,20 +771,49 @@ export async function outingSecondsToday(excludeSessionId: number | null): Promi
  */
 export async function hasSessionForQuestToday(
   questId: number,
-  excludeSessionId: number | null,
+  /** The instant "today" is read from. A session's own start, when it is asked for a save. */
+  at = new Date(),
 ): Promise<boolean> {
   const [row] = await db
     .select({ n: count() })
     .from(completedQuest)
-    .where(
-      and(
-        eq(completedQuest.questId, questId),
-        gte(completedQuest.performedAt, startOfLocalDay()),
-        excludeSessionId === null ? undefined : ne(completedQuest.id, excludeSessionId),
-      ),
-    );
+    .where(and(eq(completedQuest.questId, questId), onLocalDayOf(at)));
 
   return Number(row?.n ?? 0) > 0;
+}
+
+/** Sessions dated on the local day `at` falls on, from its midnight to the next. */
+function onLocalDayOf(at: Date) {
+  const start = startOfLocalDay(at);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  return and(gte(completedQuest.performedAt, start), lt(completedQuest.performedAt, end));
+}
+
+/**
+ * Whether the day's quest bonus has already gone to a session of that day (issue #177).
+ *
+ * Read off the journal (`completed_sessions.dailyBonusXp`, `0071`), so there is no second record
+ * to keep true: a deleted session gives the day back by not being there, and a session merged in
+ * from another device brings its bonus with it. `at` is the instant the day is read from, the
+ * session's own start, because that is the day its row is dated.
+ */
+export async function dailyBonusPaidOn(at: Date): Promise<boolean> {
+  const [row] = await db
+    .select({ n: count() })
+    .from(completedQuest)
+    .where(and(gt(completedQuest.dailyBonusXp, 0), onLocalDayOf(at)));
+  return Number(row?.n ?? 0) > 0;
+}
+
+/** The daily bonus a saved session holds: what a retried save must report, no more and no less. */
+export async function dailyBonusOf(sessionId: number): Promise<number> {
+  const [row] = await db
+    .select({ xp: completedQuest.dailyBonusXp })
+    .from(completedQuest)
+    .where(eq(completedQuest.id, sessionId))
+    .limit(1);
+  return Number(row?.xp ?? 0);
 }
 
 /**

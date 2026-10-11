@@ -143,7 +143,6 @@ function FilledLevelBar({
           {t("home.level_line", {
             level,
             title,
-            defaultValue: `Level ${level} • ${title}`,
           })}
         </Text>
         <Text fontFamily="$body" fontWeight="700" fontSize={12} color="$resourceGold">

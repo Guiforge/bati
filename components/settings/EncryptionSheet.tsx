@@ -10,7 +10,7 @@ import { useToast } from "@/components/common/Toast";
 import { Eye, EyeOff } from "@/components/icons";
 import { type UnlockSources, VaultUnlockFlow } from "@/components/settings/VaultUnlockFlow";
 import { MIN_PASSWORD_LENGTH } from "@/src/backupCipher";
-import { wordMatches } from "@/src/backupWords";
+import { wordLanguageFor, wordMatches } from "@/src/backupWords";
 import { reportError } from "@/src/reportError";
 import { copySensitive } from "@/src/sensitiveClipboard";
 import type { UnlockResult, UnlockSource } from "@/src/vaultUnlock";
@@ -523,11 +523,11 @@ function WordsView({
           </Text>
         ))}
       </XStack>
-      {language === "de" ? (
+      {wordLanguageFor(language) === language ? null : (
         <Text testID="vault-words-english" color="$textSecondary" fontSize="$3">
           {t("vault.wordsEnglishOnly")}
         </Text>
-      ) : null}
+      )}
       <AppButton
         testID="vault-words-copy"
         variant="outline"

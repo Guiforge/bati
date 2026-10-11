@@ -34,6 +34,12 @@ describe("src/widget", () => {
     // The real `expo-localization`, so the widget resolves its language through the same
     // `resolveAppLanguage` the app uses instead of a test-local reimplementation of the rule.
     jest.doMock("expo-localization", () => ({ getLocales: () => deviceLocales }));
+    // The headless task must never load the locale files: that is why its strings are in the
+    // code (the `ponytail:` note in src/widget.tsx). Any module on its import path that reads
+    // them (`src/i18n/copy.ts`, `i18n.ts`) would bring all of them in without a word.
+    jest.doMock("../locales/en.json", () => {
+      throw new Error("the widget task loaded a locale file");
+    });
   });
 
   afterAll(() => {

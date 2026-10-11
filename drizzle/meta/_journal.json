@@ -491,6 +491,20 @@
       "when": 1791417600000,
       "tag": "0069_both_sides_counted",
       "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "6",
+      "when": 1791504000000,
+      "tag": "0070_what_was_asked_and_what_jumps",
+      "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "6",
+      "when": 1791590400000,
+      "tag": "0071_the_day_that_was_paid",
+      "breakpoints": true
     }
   ]
 }

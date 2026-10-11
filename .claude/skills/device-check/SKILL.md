@@ -20,8 +20,8 @@ The phone plugged in over USB holds the hero's real release data. Use the AVD:
 ```
 
 Without `-gpu host -feature -Vulkan` it segfaults on cold boot. Before starting one, check
-`adb devices` and `pgrep qemu`: another session may already run one, two emulators freeze the
-machine, and never kill someone else's.
+`adb devices` and `pgrep qemu`: another session may already run one, more than two emulators
+freeze the machine, and never kill someone else's.
 
 - The repo's debug APK is arm64 only and crashes under translation on x86_64. Build
   `cd android && ./gradlew :app:assembleDebug -PreactNativeArchitectures=x86_64`.
@@ -31,10 +31,25 @@ machine, and never kill someone else's.
 - If `screencap` and `uiautomator dump` both return a stale screen (the clock moves, nothing
   else), the emulator display froze under `-gpu host`: `adb reboot`, it is not the app.
 
-**Always pass the serial.** `adb -s emulator-5554 …`, and `maestro test --device emulator-5554`.
-Maestro ignores `ANDROID_SERIAL` and picks any device; it once ran 24 `clearState` launches on
-the phone and wiped its dev app. Check its `Selected device` log line. In zsh, wrap adb in a
-function (`a(){ adb -s emulator-5554 "$@"; }`), since `$A shell` does not word-split.
+**Claim your emulator, then always pass its serial.** Several sessions work in several worktrees
+at once, and two of them on one emulator overwrite each other's build, database and taps.
+`scripts/emu.sh claim` prints the serial this worktree holds, taking a free emulator the first
+time, and fails when every running one is held by another worktree: then wait, or start a
+second AVD (`-port 5556`) if only one is running. Never type a serial by hand, and call it
+again in every command rather than remembering the answer: a claim left alone for two hours
+gives way to a worktree that finds nothing free. It never moves you silently. If your emulator
+has gone it fails until you restart it or `release`, since another one has neither your build
+nor your database:
+
+```bash
+S=$(scripts/emu.sh claim) || exit 1
+adb -s "$S" shell …
+npm run maestro                          # claims by itself; bare: maestro test --device "$S"
+```
+
+`scripts/emu.sh release` when the device work is over, `scripts/emu.sh list` to see who holds
+what. Maestro ignores `ANDROID_SERIAL` and picks any device; it once ran 24 `clearState`
+launches on the phone and wiped its dev app. Check its `Selected device` log line.
 
 ## Metro and the dev client
 

@@ -86,19 +86,17 @@ export function NarrativeModal({
           </ScrollView>
 
           <AppButton testID="narrative-confirm" onPress={onClose}>
-            {type === "intro"
-              ? t("common.begin_adventure", "Begin Adventure")
-              : t("common.continue", "Continue")}
+            {type === "intro" ? t("common.begin_adventure") : t("common.continue")}
           </AppButton>
 
           {type === "intro" && onDismiss ? (
             <AppButton
               testID="narrative-dismiss"
               variant="outline"
-              accessibilityLabel={t("common.not_now", "Not now")}
+              accessibilityLabel={t("common.not_now")}
               onPress={onDismiss}
             >
-              {t("common.not_now", "Not now")}
+              {t("common.not_now")}
             </AppButton>
           ) : null}
         </YStack>

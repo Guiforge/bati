@@ -13,7 +13,7 @@ import {
   type SessionBest,
 } from "@/db/journal";
 import { type FlameDetail, getFlameDetail } from "@/db/streaks";
-import { formatCount } from "@/db/targets";
+import { formatCount, MINUTES_WORD } from "@/db/targets";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -217,7 +217,11 @@ export default function LifetimeScreen() {
             <NKicker>{t("journal.session_records")}</NKicker>
             {(
               [
-                ["sr_longest", data.bests.longest, (v: number) => `${Math.round(v / 60)} min`],
+                [
+                  "sr_longest",
+                  data.bests.longest,
+                  (v: number) => `${Math.round(v / 60)} ${MINUTES_WORD[language]}`,
+                ],
                 ["sr_most_xp", data.bests.mostXp, (v: number) => number(language, v)],
                 ["sr_most_reps", data.bests.mostReps, (v: number) => number(language, v)],
                 [

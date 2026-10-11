@@ -41,11 +41,12 @@ import { formatDuration } from "@/db";
 import { type CompletedSession, OUTING_COUNTS_AFTER_SECONDS } from "@/db/completed";
 import type { VariationStep } from "@/db/exercises";
 import { type FallenRecord, type MuscleShift, type QuestStanding, sessionReps } from "@/db/journal";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { MUSCLE_LABELS } from "@/db/labels";
 import { correctLoggedSet } from "@/db/personalRecords";
 import { formatCount, formatTargetValue, PER_SIDE, perSideLabel } from "@/db/targets";
 import type { UserLevelInfo } from "@/db/userLevel";
 import type { LngLat } from "@/src/gps/trace";
+import { formatList } from "@/src/i18n/list";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -281,7 +282,10 @@ function RungFact({ rung }: { rung: VariationStep }) {
       {rung.isEarned && rung.alsoNext.length > 0 ? (
         <NMuted fontSize={12.5} lineHeight={18} mt={2}>
           {t("progression.rung_also_leads_to", {
-            names: rung.alsoNext.map((m) => localizedName(m, language)).join(", "),
+            names: formatList(
+              rung.alsoNext.map((m) => localizedName(m, language)),
+              language,
+            ),
           })}
         </NMuted>
       ) : null}

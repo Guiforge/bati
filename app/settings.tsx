@@ -32,6 +32,7 @@ import {
   ShieldCheck,
   Swords,
   Timer,
+  TrendingUp,
   Vibrate,
   Volume2,
   Wrench,
@@ -45,6 +46,7 @@ import { SettingRow } from "@/components/settings/SettingRow";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
+import type { TrainingLevel } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
 import { useBackup } from "@/hooks/useBackup";
 import { useBugReport, versionLabel } from "@/hooks/useBugReport";
@@ -78,12 +80,12 @@ function AvatarSection({
   const currentAvatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
   const currentAvatarSource = getAvatarSource(avatarId, customAvatarUri);
   const currentAvatarLabel = customAvatarUri
-    ? t("settings.avatar_custom", "Photo perso")
+    ? t("settings.avatar_custom")
     : t(currentAvatar.labelKey);
 
   return (
     <Card bg="$surface" p="$4" gap="$3">
-      <SectionLabel>{t("settings.avatar", "AVATAR")}</SectionLabel>
+      <SectionLabel>{t("settings.avatar")}</SectionLabel>
 
       {showAvatarPicker ? (
         <XStack flexWrap="wrap" gap="$3" justify="center">
@@ -114,7 +116,7 @@ function AvatarSection({
             bg="$surface2"
             borderWidth={customAvatarUri ? 2 : 1}
             borderColor={customAvatarUri ? "$primary" : "$borderStrong"}
-            accessibilityLabel={t("settings.avatar_custom", "Photo perso")}
+            accessibilityLabel={t("settings.avatar_custom")}
             accessibilityState={{ selected: !!customAvatarUri }}
             onPress={pickCustomAvatar}
           >
@@ -146,7 +148,7 @@ function AvatarSection({
                 {currentAvatarLabel}
               </Text>
               <Text fontSize="$2" color="$textSecondary">
-                {t("settings.tap_change", "Tap to change")}
+                {t("settings.tap_change")}
               </Text>
             </YStack>
           </XStack>
@@ -184,16 +186,57 @@ function PrepModeRow() {
     <SettingRow
       testID="settings-prep-mode"
       icon={<Timer size={22} color="$text" />}
-      label={t("settings.prep_mode", "Before each exercise")}
-      value={
-        prepMode === "timer"
-          ? t("settings.prep_timer", "10 s")
-          : t("settings.prep_tap", "Wait for GO")
-      }
+      label={t("settings.prep_mode")}
+      value={prepMode === "timer" ? t("settings.prep_timer") : t("settings.prep_tap")}
       onPress={() => {
         haptics.selection();
         setPrepMode(prepMode === "timer" ? "tap" : "timer").catch((error) => {
           reportError("settings.prepModeWrite", error);
+        });
+      }}
+    />
+  );
+}
+
+const TRAINING_LEVELS: TrainingLevel[] = ["beginner", "regular", "advanced"];
+
+/**
+ * The level answered in onboarding, changeable here. The onboarding step says "you can change
+ * this later" and nothing could: it was written once and read forever. Cycled in one row, like
+ * the equipment above it. It moves no rung and no target, only what the app picks for the hero:
+ * the quests it suggests, and whether a warm-up may open on a jump (`startsGently`).
+ */
+function TrainingLevelRow() {
+  const { t } = useTranslation();
+  const haptics = useHaptics();
+  const [level, setLevel] = useState<TrainingLevel | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    preferences
+      .getTrainingLevel()
+      .then((value) => {
+        if (!cancelled) setLevel(value);
+      })
+      .catch((error) => reportError("settings.trainingLevelRead", error));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <SettingRow
+      testID="settings-training-level"
+      icon={<TrendingUp size={22} color="$text" />}
+      label={t("settings.training_level")}
+      value={level ? t(`onboarding.level_${level}`) : t("settings.training_level_unset")}
+      onPress={() => {
+        haptics.selection();
+        const next =
+          TRAINING_LEVELS[(TRAINING_LEVELS.indexOf(level ?? "advanced") + 1) % 3] ?? "beginner";
+        setLevel(next);
+        preferences.setTrainingLevel(next).catch((error) => {
+          reportError("settings.trainingLevelWrite", error);
         });
       }}
     />
@@ -206,7 +249,7 @@ function PrepModeRow() {
  * is not what should be allowed to push it over.
  */
 function onOffLabel(enabled: boolean, t: ReturnType<typeof useTranslation>["t"]): string {
-  return enabled ? t("common.on", "On") : t("common.off", "Off");
+  return enabled ? t("common.on") : t("common.off");
 }
 
 export default function SettingsScreen() {
@@ -304,7 +347,7 @@ export default function SettingsScreen() {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
         // A silently-declined permission used to make this row do nothing, forever.
-        showError(t("settings.photos_denied", "Photo access is off. Allow it in system settings"));
+        showError(t("settings.photos_denied"));
         return;
       }
 
@@ -322,7 +365,7 @@ export default function SettingsScreen() {
       setShowAvatarPicker(false);
     } catch (error) {
       reportError("settings.avatar", error);
-      showError(t("common.error", "Something went wrong"));
+      showError(t("common.error"));
     }
   }, [setCustomAvatarUri, showError, t]);
 
@@ -376,12 +419,12 @@ export default function SettingsScreen() {
 
   const equipmentLabel =
     ownedEquipment === null
-      ? t("settings.equipment_any", "Show all")
+      ? t("settings.equipment_any")
       : ownedEquipment.length === 0
-        ? t("settings.equipment_none", "Bodyweight only")
+        ? t("settings.equipment_none")
         : ownedEquipment.length === 1
-          ? t("settings.equipment_bar", "Pull-up bar")
-          : t("settings.equipment_bar_dip", "Bar + dip station");
+          ? t("settings.equipment_bar")
+          : t("settings.equipment_bar_dip");
 
   const openOath = useCallback(() => {
     router.push("/oath" as never);
@@ -400,7 +443,7 @@ export default function SettingsScreen() {
       <XStack px="$4" py="$3" items="center" gap="$3">
         <ScreenBackButton />
         <Text fontFamily="$heading" fontSize={20} fontWeight="700" color="$text">
-          {t("settings.title", "Settings")}
+          {t("settings.title")}
         </Text>
       </XStack>
 
@@ -423,13 +466,13 @@ export default function SettingsScreen() {
 
         {/* Preferences */}
         <YStack gap="$3">
-          <SectionLabel px="$1">{t("settings.preferences", "PREFERENCES")}</SectionLabel>
+          <SectionLabel px="$1">{t("settings.preferences")}</SectionLabel>
 
           <VillageNameRow />
 
           <SettingRow
             icon={<Languages size={22} color="$text" />}
-            label={t("settings.language", "Language")}
+            label={t("settings.language")}
             value={LANGUAGE_NAMES[language]}
             onPress={cycleLanguage}
           />
@@ -442,8 +485,8 @@ export default function SettingsScreen() {
 
           <SettingRow
             icon={<Vibrate size={22} color="$text" />}
-            label={t("settings.haptics", "Haptics")}
-            value={hapticsEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            label={t("settings.haptics")}
+            value={hapticsEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
               const next = !hapticsEnabled;
               setHapticsEnabled(next);
@@ -461,8 +504,8 @@ export default function SettingsScreen() {
           <SettingRow
             testID="settings-sound"
             icon={<Volume2 size={22} color="$text" />}
-            label={t("settings.sound", "Countdown beeps")}
-            value={soundEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            label={t("settings.sound")}
+            value={soundEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
               haptics.selection();
               setSoundEnabled(!soundEnabled).catch((error) => {
@@ -474,8 +517,8 @@ export default function SettingsScreen() {
           <SettingRow
             testID="settings-villagers"
             icon={<MessagesSquare size={22} color="$text" />}
-            label={t("settings.villagers", "Villagers")}
-            value={villagersEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            label={t("settings.villagers")}
+            value={villagersEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
               haptics.selection();
               setVillagersEnabled(!villagersEnabled).catch((error) => {
@@ -489,22 +532,20 @@ export default function SettingsScreen() {
           <SettingRow
             testID="settings-replay-guides"
             icon={<RotateCcw size={22} color="$text" />}
-            label={t("settings.replay_guides", "Review the guides")}
+            label={t("settings.replay_guides")}
             onPress={() => {
               haptics.selection();
               preferences
                 .setGuidesSeen([])
-                .then(() =>
-                  showSuccess(t("settings.replay_guides_done", "The guides will show again")),
-                )
+                .then(() => showSuccess(t("settings.replay_guides_done")))
                 .catch((error) => reportError("settings.replayGuides", error));
             }}
           />
 
           <SettingRow
             icon={<Flame size={22} color="$text" />}
-            label={t("settings.warmup", "Warm-up")}
-            value={warmupEnabled ? t("common.on", "On") : t("common.off", "Off")}
+            label={t("settings.warmup")}
+            value={warmupEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
               haptics.selection();
               const next = !warmupEnabled;
@@ -518,16 +559,18 @@ export default function SettingsScreen() {
 
           <PrepModeRow />
 
+          <TrainingLevelRow />
+
           {/* Draws distances, stores nothing new: every metre stays a metre in the database and
               in every GPX, and constants/distanceFormat.ts is the only place that converts. */}
           <SettingRow
             testID="settings-distance-unit"
             icon={<Ruler size={22} color="$text" />}
-            label={t("settings.distance_unit", "Distance unit")}
+            label={t("settings.distance_unit")}
             value={
               distanceUnit === "metric"
-                ? t("settings.distance_metric", "Kilometres")
-                : t("settings.distance_imperial", "Miles")
+                ? t("settings.distance_metric")
+                : t("settings.distance_imperial")
             }
             onPress={() => {
               haptics.selection();
@@ -543,7 +586,7 @@ export default function SettingsScreen() {
           <SettingRow
             testID="settings-map-tiles"
             icon={<MapIcon size={22} color="$text" />}
-            label={t("settings.map_tiles", "Map")}
+            label={t("settings.map_tiles")}
             value={onOffLabel(mapTilesEnabled, t)}
             onPress={() => {
               haptics.selection();
@@ -559,7 +602,7 @@ export default function SettingsScreen() {
 
           <SettingRow
             icon={<Dumbbell size={22} color="$text" />}
-            label={t("settings.equipment", "Equipment")}
+            label={t("settings.equipment")}
             value={equipmentLabel}
             onPress={() => {
               haptics.selection();
@@ -571,7 +614,7 @@ export default function SettingsScreen() {
 
           <SettingRow
             icon={<Swords size={22} color="$text" />}
-            label={t("oath.screen_title", "Swear an Oath")}
+            label={t("oath.screen_title")}
             onPress={openOath}
           />
 
@@ -628,24 +671,24 @@ export default function SettingsScreen() {
               and none of that is a crash. The count still shows when there is one to send. */}
           <SettingRow
             icon={<Bug size={22} color="$text" />}
-            label={t("settings.feedback", "Feedback, an idea, a bug")}
+            label={t("settings.feedback")}
             value={
               crashCount > 0
                 ? t("settings.report_bug_count", { count: crashCount })
-                : t("settings.feedback_hint", "Write to me")
+                : t("settings.feedback_hint")
             }
             onPress={openBugReport}
           />
 
           <SettingRow
             icon={<Zap size={22} color="$text" />}
-            label={t("xp.title", "How XP is counted")}
+            label={t("xp.title")}
             onPress={() => router.push("/xp" as never)}
           />
 
           <SettingRow
             icon={<HeartPulse size={22} color="$text" />}
-            label={t("safety.title", "Train safely")}
+            label={t("safety.title")}
             // `as never`: the typed-route union is generated by the dev server and does not know
             // this screen until it restarts — same idiom as the oath push above.
             onPress={() => router.push("/safety" as never)}
@@ -653,14 +696,14 @@ export default function SettingsScreen() {
 
           <SettingRow
             icon={<ShieldCheck size={22} color="$text" />}
-            label={t("settings.privacy", "Privacy")}
+            label={t("settings.privacy")}
             onPress={() => router.push("/privacy" as never)}
           />
 
           <SettingRow
             icon={<ScrollText size={22} color="$text" />}
-            label={t("credits.title", "Credits")}
-            value={t("credits.open", "Open")}
+            label={t("credits.title")}
+            value={t("credits.open")}
             onPress={() => router.push("/credits")}
           />
 
@@ -673,7 +716,7 @@ export default function SettingsScreen() {
               <SettingRow
                 testID="settings-update-check"
                 icon={<Download size={22} color="$text" />}
-                label={t("settings.update_check", "Check for updates")}
+                label={t("settings.update_check")}
                 value={onOffLabel(updateCheckEnabled, t)}
                 onPress={() => {
                   haptics.selection();
@@ -706,7 +749,7 @@ export default function SettingsScreen() {
               justify="center"
               onPress={() => router.push("/whats-new" as never)}
               accessibilityRole="button"
-              accessibilityLabel={t("whats_new.version_label", "Version {{version}}, what's new", {
+              accessibilityLabel={t("whats_new.version_label", {
                 version: versionLabel,
               })}
             >

@@ -1,3 +1,4 @@
+import { proposedRunSeconds, WALK_RUN_SECONDS } from "@/db/outingRule";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 /**
@@ -39,13 +40,67 @@ describe("getOutingHabit", () => {
     outing("ride", 7000, 2000, 2); // another kind
     outing("run", 9000, 300, 0); // five minutes: a test, not a habit
 
-    expect(await habit()).toEqual({ usual: { metres: 6000, seconds: 1800 }, longestM: 21_000 });
+    // The five-minute test is not "the longest of the month" either, in distance or in time.
+    expect(await habit()).toEqual({
+      usual: { metres: 6000, seconds: 1800 },
+      longestM: 21_000,
+      longestSeconds: 9000,
+    });
   });
 
   test("two runs are not a habit, and an empty month has no ceiling", async () => {
     outing("run", 5000, 1500, 40);
     outing("run", 5000, 1500, 45);
 
-    expect(await habit()).toEqual({ usual: null, longestM: null });
+    expect(await habit()).toEqual({ usual: null, longestM: null, longestSeconds: null });
+  });
+
+  // A run given up after three minutes was read as the longest of the month, and capped the
+  // next proposal at 3 min 18.
+  test("an outing given up early is not the longest of the month", async () => {
+    outing("run", 600, 180, 2);
+
+    expect(await habit()).toEqual({ usual: null, longestM: null, longestSeconds: null });
+  });
+});
+
+/** The rule a run is proposed by, case by case, in the order `proposedRunSeconds` reads it. */
+describe("proposedRunSeconds", () => {
+  const min = (m: number) => m * 60;
+
+  test("no run this month: twenty minutes of walk and run", () => {
+    expect(proposedRunSeconds({ usual: null, longestM: null, longestSeconds: null })).toEqual({
+      seconds: WALK_RUN_SECONDS,
+      walkRun: true,
+    });
+  });
+
+  test("a habit is proposed as it is, under the ceiling", () => {
+    const habit = {
+      usual: { metres: 5000, seconds: min(30) },
+      longestM: 6000,
+      longestSeconds: min(35),
+    };
+    expect(proposedRunSeconds(habit)).toEqual({ seconds: min(30), walkRun: false });
+  });
+
+  test("never more than 110 % of the longest of the month", () => {
+    // The usual is 45 because of two long runs outside the window; the month's longest is 30.
+    const habit = {
+      usual: { metres: 9000, seconds: min(45) },
+      longestM: 6000,
+      longestSeconds: min(30),
+    };
+    expect(proposedRunSeconds(habit)).toEqual({ seconds: min(33), walkRun: false });
+  });
+
+  test("one or two runs: the longest as it is, with no increase", () => {
+    const habit = { usual: null, longestM: 4500, longestSeconds: min(25) };
+    expect(proposedRunSeconds(habit)).toEqual({ seconds: min(25), walkRun: false });
+  });
+
+  test("a longest run of twelve minutes is answered by the walk-run, not by twenty of running", () => {
+    const habit = { usual: null, longestM: 2000, longestSeconds: min(12) };
+    expect(proposedRunSeconds(habit)).toEqual({ seconds: WALK_RUN_SECONDS, walkRun: true });
   });
 });

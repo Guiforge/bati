@@ -1,7 +1,8 @@
 import type { TFunction } from "i18next";
 import { formatShare } from "@/components/journal/journalFormat";
+import { MUSCLE_LABELS } from "@/db/labels";
 import { behindMuscles, MIN_BALANCE_SESSIONS, type MuscleBalance } from "@/db/muscleBalance";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { formatList } from "@/src/i18n/list";
 import { inSentence } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -32,9 +33,6 @@ export function workVerdict(
       }),
     );
   if (behind.length === 0) return { text: t("journal.work_balanced"), behind: false };
-  const muscles =
-    behind.length === 1
-      ? (behind[0] ?? "")
-      : t("journal.list_and", { a: behind.slice(0, -1).join(", "), b: behind.at(-1) });
+  const muscles = formatList(behind, language);
   return { text: t("journal.work_behind", { count: behind.length, muscles }), behind: true };
 }

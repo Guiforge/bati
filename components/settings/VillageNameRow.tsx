@@ -23,7 +23,7 @@ export function VillageNameRow() {
     if (next.length < VILLAGE_NAME_MIN_LENGTH || next === villageName) return;
     setVillageName(next).catch((error) => {
       reportError("settings.villageName", error);
-      showError(t("onboarding.save_error", "Could not save. Try again"));
+      showError(t("onboarding.save_error"));
     });
   };
 
@@ -42,11 +42,11 @@ export function VillageNameRow() {
       <Castle size={22} color="$text" />
       <YStack flex={1}>
         <Text fontSize="$4" fontWeight="bold" color="$text">
-          {t("settings.village_name", "Village name")}
+          {t("settings.village_name")}
         </Text>
         {draft === null ? (
           <Text fontSize="$3" color="$textSecondary">
-            {villageName || t("settings.tap_change", "Tap to change")}
+            {villageName || t("settings.tap_change")}
           </Text>
         ) : (
           <TextInput

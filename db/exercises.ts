@@ -1,8 +1,9 @@
 import { and, count, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { db, schema, type TransactionTx } from "./client";
+import { workoutsBeforeToday } from "./completed";
 import { canDo, isEquipmentCode } from "./equipment";
 import { isMuscleCode } from "./muscles";
-import { getAllPreferences, preferences } from "./preferences";
+import { getAllPreferences, preferences, startsGently } from "./preferences";
 import {
   ADMIN_CREATOR,
   type DifficultyCode,
@@ -63,6 +64,11 @@ export type Exercise = {
   measure: QuestTargetType | null;
   /** Done on one side, then the other (`0068`): its target is per side. */
   perSide: boolean;
+  /**
+   * Both feet leave the ground (`0070`). Optional: a quest saved inside a session from before
+   * the column still loads, and reads as the `false` every movement then was.
+   */
+  impact?: boolean;
   /**
    * How this movement covers ground (`0049`). Null on everything that is not an `expedition`,
    * `walk` on every hero-authored one — the price of a minute outside is read from here, and the
@@ -146,6 +152,7 @@ const exerciseColumns = () => ({
   pattern: exercises.pattern,
   measure: exercises.measure,
   perSide: exercises.perSide,
+  impact: exercises.impact,
   locomotion: exercises.locomotion,
   prerequisiteExerciseId: exercises.prerequisiteExerciseId,
   retiredAt: exercises.retiredAt,
@@ -172,6 +179,7 @@ type ExerciseRow = {
   pattern: MovementPattern | null;
   measure: QuestTargetType | null;
   perSide: boolean;
+  impact: boolean;
   locomotion: Locomotion | null;
   prerequisiteExerciseId: number | null;
   retiredAt: Date | null;
@@ -199,6 +207,7 @@ function exerciseFromRow(r: ExerciseRow): Exercise {
     pattern: r.pattern ?? null,
     measure: isQuestTargetType(r.measure) ? r.measure : null,
     perSide: r.perSide,
+    impact: r.impact,
     locomotion: isLocomotion(r.locomotion) ? r.locomotion : null,
     prerequisiteExerciseId: r.prerequisiteExerciseId,
     retiredAt: r.retiredAt,
@@ -258,12 +267,29 @@ export function listExercises(): Promise<Exercise[]> {
  * the ladder is telling the hero to work up to.
  */
 export async function unavailableMovements(): Promise<Set<string>> {
-  const [catalogue, unavailable] = await Promise.all([listExercises(), unavailableExerciseIds()]);
+  // The same count the suggestions read (`getEligibleQuestIds`): sessions before today. Fed
+  // the count up to now, the warm-up gave a hero their jumps back the evening of a third
+  // session while Home kept every jump quest hidden until midnight. And its own read, not a
+  // number handed in: a caller's fallback of zero would make a 200-session hero a beginner.
+  const [catalogue, unavailable, level, totalSessions] = await Promise.all([
+    listExercises(),
+    unavailableExerciseIds(),
+    preferences.getTrainingLevel(),
+    workoutsBeforeToday(),
+  ]);
+  // A hero starting out is not warmed up with jumps (`startsGently`). Every raise movement but
+  // one was a jump, so day one opened on Jumping Jacks for someone back from a knee operation,
+  // clock running. Here and not in a second list, so the preview and the session cannot differ.
+  const gentle = startsGently(level, totalSessions);
   // Seed rows only: the warm-up names seed movements, and a hero's own "Squat" set aside must not
   // take the seed Squat out of every warm-up with it (the population rule, see AGENTS.md).
   return new Set(
     catalogue
-      .filter((ex) => ex.creator === ADMIN_CREATOR && unavailable.has(ex.id))
+      .filter(
+        (ex) =>
+          ex.creator === ADMIN_CREATOR &&
+          (unavailable.has(ex.id) || (gentle && ex.impact === true)),
+      )
       .map((ex) => ex.enName),
   );
 }
@@ -399,15 +425,26 @@ const PROGRESSION_WINDOW_DAYS = 56;
  * handful of ids at a time. If a caller ever needs the whole ladder at once, replace it with a
  * single ROW_NUMBER() window query.
  */
+/**
+ * "Did this session meet its target on the movement": every set judged, against what the app
+ * prescribed (`0070`). `prescribedValue` is null on rows from before the column, where the handed
+ * target is the only bar there ever was. Sets flagged `ladderNeutral` are filtered out by each
+ * reader's WHERE, so a session made only of those is absent rather than missed.
+ *
+ * `readEverEarnedMovements` says the same thing in raw SQL: change both.
+ */
+// A function, not a constant: built at import, it reads `schema` before a test that mocks the
+// client with half a schema has any use for this module, and takes the whole suite down.
+const sessionMetSql = () => sql<number>`min(case when
+    coalesce(${schema.completedExercises.prescribedValue}, ${schema.completedExercises.targetValue}) is not null
+    and ${schema.completedExercises.resultValue} >=
+      coalesce(${schema.completedExercises.prescribedValue}, ${schema.completedExercises.targetValue})
+  then 1 else 0 end)`;
+
 async function recentMetFlags(exerciseId: number, limit: number): Promise<boolean[]> {
   const since = new Date(Date.now() - PROGRESSION_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
-  // ponytail: the bar is the target the hero was handed, and `QuestConfig` lets them lower it to
-  // 1 — so a self-lowered target earns rungs faster. Reading the quest template's own value
-  // instead means joining `quest_exercises` into every ladder read; do it if anyone reports it.
-  const met = sql<number>`min(case when ${schema.completedExercises.targetValue} is not null
-      and ${schema.completedExercises.resultValue} >= ${schema.completedExercises.targetValue}
-    then 1 else 0 end)`;
+  const met = sessionMetSql();
   const at = sql<number>`max(${schema.completedExercises.performedAt})`;
 
   const rows = await db
@@ -417,6 +454,7 @@ async function recentMetFlags(exerciseId: number, limit: number): Promise<boolea
       and(
         eq(schema.completedExercises.exerciseId, exerciseId),
         gte(schema.completedExercises.performedAt, since),
+        eq(schema.completedExercises.ladderNeutral, false),
       ),
     )
     .groupBy(schema.completedExercises.sessionId)
@@ -557,9 +595,9 @@ export type Chain = {
  * The one reader of "where does the hero stand", shared by `getChainTo` and `currentRungFor` so
  * the path card and the quest slot can never disagree.
  *
- * ponytail: one clean session on a rung puts everything below it behind the hero, and a target the
- * hero lowered to 1 counts as clean (see `recentMetFlags`). Read the template's own target if
- * heroes start skipping rungs that way.
+ * ponytail: one clean session on a rung puts everything below it behind the hero. "Clean" is
+ * measured against what the app prescribed since `0070` (`sessionMetSql`), so a lowered target no
+ * longer buys it. A hero's own quest still sets its own bar: tighten that if rungs get skipped.
  */
 function rungsBehind(
   chain: readonly number[],
@@ -669,9 +707,11 @@ async function readEverEarnedMovements(): Promise<Set<number>> {
              ) AS misses
       FROM (
         SELECT exerciseId, sessionId, MIN(performedAt) AS at,
-               MIN(CASE WHEN targetValue IS NOT NULL AND resultValue >= targetValue
+               MIN(CASE WHEN COALESCE(prescribedValue, targetValue) IS NOT NULL
+                         AND resultValue >= COALESCE(prescribedValue, targetValue)
                    THEN 1 ELSE 0 END) AS met
         FROM completed_exercises
+        WHERE ladderNeutral = 0
         GROUP BY exerciseId, sessionId
       )
     )
@@ -695,9 +735,7 @@ export async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<nu
   if (exerciseIds.length === 0) return new Map();
 
   const since = new Date(Date.now() - PROGRESSION_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-  const met = sql<number>`min(case when ${schema.completedExercises.targetValue} is not null
-      and ${schema.completedExercises.resultValue} >= ${schema.completedExercises.targetValue}
-    then 1 else 0 end)`;
+  const met = sessionMetSql();
   const at = sql<number>`max(${schema.completedExercises.performedAt})`;
 
   const rows = await db
@@ -707,6 +745,7 @@ export async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<nu
       and(
         inArray(schema.completedExercises.exerciseId, exerciseIds),
         gte(schema.completedExercises.performedAt, since),
+        eq(schema.completedExercises.ladderNeutral, false),
       ),
     )
     .groupBy(schema.completedExercises.exerciseId, schema.completedExercises.sessionId)

@@ -21,9 +21,8 @@ import {
   NO_EXERCISE_FILTERS,
 } from "@/constants/exerciseFilters";
 import { toggleInSet } from "@/constants/questFilters";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { ADMIN_CREATOR, type Exercise, heroFirst, listExercises } from "@/db/exercises";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "@/db/labels";
 import type { EquipmentCode, MovementPattern, MuscleCode } from "@/db/schema";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -32,22 +31,9 @@ import { useSettingsStore } from "@/stores/settings";
 type LoadState =
   | { status: "loading"; exercises: Exercise[] }
   | { status: "ready"; exercises: Exercise[] }
-  | { status: "error"; exercises: Exercise[]; message: string };
+  | { status: "error"; exercises: Exercise[] };
 
 const ANDROID_MIN_BOTTOM_INSET = 24;
-
-/** English fallbacks for the movement patterns, so a missing key still reads as a word. */
-const PATTERN_FALLBACKS: Record<MovementPattern, string> = {
-  push_horizontal: "Push (horizontal)",
-  push_vertical: "Push (vertical)",
-  pull_horizontal: "Pull (horizontal)",
-  pull_vertical: "Pull (vertical)",
-  squat: "Squat",
-  hinge: "Hinge",
-  core: "Core",
-  locomotion: "Locomotion",
-  mobility: "Mobility",
-};
 
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
 const exerciseKey = (e: Exercise) => String(e.id);
@@ -66,7 +52,7 @@ function LeadsToCaption({ name }: { name: string }) {
     <XStack items="center" gap="$1">
       <Link2 size={11} color="$muted" strokeWidth={2.5} />
       <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
-        {t("exercises.leads_to", { name, defaultValue: `leads to ${name}` })}
+        {t("exercises.leads_to", { name })}
       </Text>
     </XStack>
   );
@@ -92,13 +78,13 @@ function StatusMessage({
           <YStack gap="$3" items="center" py="$2">
             <Text fontSize={32}>😵</Text>
             <Text fontWeight="700" fontSize={16} color="$text">
-              {t("exercises.load_error", "Failed to load exercise")}
+              {t("exercises.load_error")}
             </Text>
             <Paragraph color="$textSecondary" size="$3">
-              {state.message}
+              {t("errors.generic")}
             </Paragraph>
             <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
-              {t("exercises.retry", "Retry")} ↻
+              {t("exercises.retry")} ↻
             </AppButton>
           </YStack>
         </Card>
@@ -130,13 +116,13 @@ function StatusMessage({
           <YStack gap="$3" items="center" py="$2">
             <Text fontSize={32}>🔍</Text>
             <Text fontWeight="700" fontSize={16} color="$text">
-              {t("exercises.empty_filters_title", "No matches")}
+              {t("exercises.empty_filters_title")}
             </Text>
             <Paragraph color="$textSecondary" size="$3">
-              {t("exercises.empty_filters_subtitle", "Try removing filters.")}
+              {t("exercises.empty_filters_subtitle")}
             </Paragraph>
             <AppButton fullWidth={false} variant="outline" onPress={onClearFilters}>
-              {t("quests.filters_clear", "Clear filters")}
+              {t("quests.filters_clear")}
             </AppButton>
           </YStack>
         </Card>
@@ -170,8 +156,7 @@ export default function ExerciseCatalogue() {
       setState({ status: "ready", exercises });
     } catch (e) {
       reportError("exercises.catalogue", e);
-      const message = e instanceof Error ? e.message : "Unknown error";
-      setState((s) => ({ status: "error", exercises: s.exercises, message }));
+      setState((s) => ({ status: "error", exercises: s.exercises }));
     }
   }, []);
 
@@ -255,17 +240,17 @@ export default function ExerciseCatalogue() {
   const railGroups: RailGroup[] = [
     {
       key: "pattern",
-      label: t("exercises.filter_group_pattern", "Movement"),
+      label: t("exercises.filter_group_pattern"),
       chips: availablePatterns.map((p) => ({
         key: `p-${p}`,
-        label: t(`exercises.pattern_${p}`, PATTERN_FALLBACKS[p]),
+        label: t(`patterns.${p}`),
         active: filters.patterns.has(p),
         onPress: () => togglePattern(p),
       })),
     },
     {
       key: "muscle",
-      label: t("quests.filter_group_muscle", "Muscles"),
+      label: t("quests.filter_group_muscle"),
       chips: availableMuscles.map((m) => ({
         key: `m-${m}`,
         label: MUSCLE_LABELS[m]?.[language] ?? m,
@@ -275,7 +260,7 @@ export default function ExerciseCatalogue() {
     },
     {
       key: "equipment",
-      label: t("quests.filter_group_equipment", "Equipment"),
+      label: t("quests.filter_group_equipment"),
       chips: availableEquipment.map((e) => ({
         key: `e-${e}`,
         label: EQUIPMENT_LABELS[e]?.[language] ?? e,
@@ -285,7 +270,7 @@ export default function ExerciseCatalogue() {
     },
     {
       key: "mine",
-      label: t("exercises.filter_group_mine", "Yours"),
+      label: t("exercises.filter_group_mine"),
       // Only once there is hero content to filter — the trailing filter drops an empty group.
       chips: exercises.some((e) => e.creator !== ADMIN_CREATOR)
         ? [
@@ -306,12 +291,12 @@ export default function ExerciseCatalogue() {
     },
     {
       key: "ladder",
-      label: t("exercises.filter_group_ladder", "Ladder"),
+      label: t("exercises.filter_group_ladder"),
       chips: leadsTo.size
         ? [
             {
               key: "ladder-only",
-              label: t("exercises.filter_ladder", "Ladder"),
+              label: t("exercises.filter_ladder"),
               icon: <Link2 size={14} color={filters.ladderOnly ? "$bgDark" : "$primaryText"} />,
               active: filters.ladderOnly,
               onPress: toggleLadder,
@@ -343,9 +328,7 @@ export default function ExerciseCatalogue() {
           }
           trailing={<ChevronRight size={20} color="$textSecondary" strokeWidth={2.5} />}
           accessibilityLabel={
-            nextName
-              ? `${name}, ${t("exercises.leads_to", { name: nextName, defaultValue: `leads to ${nextName}` })}`
-              : name
+            nextName ? `${name}, ${t("exercises.leads_to", { name: nextName })}` : name
           }
           onPress={() => router.push(`/exercises/${item.id}` as never)}
         />
@@ -365,7 +348,7 @@ export default function ExerciseCatalogue() {
             <AppIconButton
               onPress={() => router.back()}
               accessibilityRole="button"
-              accessibilityLabel={t("exercises.go_back", "Go back")}
+              accessibilityLabel={t("exercises.go_back")}
             >
               <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
             </AppIconButton>
@@ -382,7 +365,7 @@ export default function ExerciseCatalogue() {
               color="$text"
               numberOfLines={1}
             >
-              {t("exercises.catalogue_title", "Exercises")}
+              {t("exercises.catalogue_title")}
             </Text>
           </XStack>
           <AppIconButton
@@ -396,7 +379,6 @@ export default function ExerciseCatalogue() {
           <Chip
             label={t("exercises.count", {
               count: visible.length,
-              defaultValue: "{{count}} movements",
             })}
           />
         </XStack>
@@ -406,7 +388,7 @@ export default function ExerciseCatalogue() {
             flex={1}
             value={filters.search}
             onChangeText={setSearch}
-            placeholder={t("exercises.search", "Search an exercise")}
+            placeholder={t("exercises.search")}
             bg="$background"
             borderColor="$borderStrong"
             color="$text"

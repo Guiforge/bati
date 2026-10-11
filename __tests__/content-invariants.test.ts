@@ -397,9 +397,12 @@ describe("content invariants", () => {
   test("a way out suggests a walk, not an errand", async () => {
     const byTitle = new Map((await loadQuests()).map((q) => [q.enTitle, q]));
 
+    // The run is the exception: its band still seeds thirty minutes, but what a hero is proposed
+    // comes from their own month (`proposedRunSeconds`), and this hero has never run, so it is
+    // the twenty-minute walk-run. `__tests__/outing-habit.test.ts` holds the rule case by case.
     for (const [title, minutes] of [
       ["The Warden's Round", 45],
-      ["Word Must Travel", 30],
+      ["Word Must Travel", 20],
       ["The Long Reach", 45],
     ] as const) {
       const quest = byTitle.get(title);

@@ -285,6 +285,15 @@ export function RestView() {
               />
             )}
 
+            {/* The pain rule, where a hero stalls: it lived on a page behind Settings, and "I
+                couldn't" is the tap that says something may be wrong. In the review card's place,
+                which a skip hides. Said once, with no link out of a running session. */}
+            {lastSetSkipped ? (
+              <Text testID="rest-pain-rule" fontSize={14} color="$textSecondary">
+                {t("session.pain_rule")}
+              </Text>
+            ) : null}
+
             {/* Up Next Card. Tappable: the rest is the one moment reading is free, and the movement
               the hero is about to do is the one worth reading about. Same modal the running
               screen opens from its artwork. */}
@@ -432,7 +441,7 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
             hitSlop={8}
             circular
             icon={<Minus size={16} />}
-            accessibilityLabel={t("session.decrease_result_accessibility", "Decrease result")}
+            accessibilityLabel={t("session.decrease_result_accessibility")}
             onPress={() => step(Math.max(1, result.result.value - 1))}
           />
           <XStack minW={42} items="baseline" justify="center">
@@ -455,7 +464,7 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
             hitSlop={8}
             circular
             icon={<Plus size={16} />}
-            accessibilityLabel={t("session.increase_result_accessibility", "Increase result")}
+            accessibilityLabel={t("session.increase_result_accessibility")}
             onPress={() => step(result.result.value + 1)}
           />
         </XStack>

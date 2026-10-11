@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
 import { NBlock, NKickerQuiet, NMuted, NRule, NText } from "@/components/journal/nocturne";
+import { MUSCLE_LABELS } from "@/db/labels";
 import { getSuggestedQuestsForWeakAreas, type SuggestedQuest } from "@/db/muscleBalance";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { formatList } from "@/src/i18n/list";
 import { inSentence, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -49,13 +50,14 @@ export function SuggestedQuestsCard() {
                   {localizedTitle(quest, language)}
                 </NText>
                 <NMuted numberOfLines={1}>
-                  {quest.matchingMuscles
-                    .map((muscle, i) =>
+                  {formatList(
+                    quest.matchingMuscles.map((muscle, i) =>
                       i === 0
                         ? MUSCLE_LABELS[muscle][language]
                         : inSentence(MUSCLE_LABELS[muscle][language], language),
-                    )
-                    .join(", ")}
+                    ),
+                    language,
+                  )}
                 </NMuted>
               </YStack>
               <NText color="$resourceGold">→</NText>

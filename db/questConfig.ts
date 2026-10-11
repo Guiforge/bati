@@ -1,6 +1,6 @@
 import { type Exercise, listExercises } from "./exercises";
 import { deletePreference, getAllPreferences, getPreference, setPreference } from "./preferences";
-import { getQuestById, type Quest, type QuestExercise } from "./quests";
+import { getQuestById, movementRef, type Quest, type QuestExercise } from "./quests";
 import {
   clampToRange,
   DISTANCE_GOAL_RANGE,
@@ -150,6 +150,30 @@ export async function saveQuestConfig(questId: number, config: QuestConfig): Pro
   await setPreference(configKey(questId), JSON.stringify(config));
 }
 
+/**
+ * Give up a saved swap on one slot, from a session: the hero pinned a movement above their rung
+ * ("I can already do this"), then skipped it or swapped away from it mid-set. Left in place, the
+ * quest would serve the same movement next time, and the only way back is a button on a screen
+ * they are not on. The target tuned for that movement goes with it, as in `applySwap`.
+ */
+export async function dropSlotSwap(questId: number, questExerciseId: number): Promise<void> {
+  const config = await getQuestConfig(questId);
+  if (!config || config.swaps?.[String(questExerciseId)] === undefined) return;
+  await saveQuestConfig(questId, withoutSlotSwap(config, questExerciseId));
+}
+
+/**
+ * A config with one slot's swap gone, and the target tuned for that movement with it: the pair
+ * `applySwap` keeps together. The one place that says what "this slot's swap" is made of, for
+ * the session above and for the quest screen's "Back to X".
+ */
+export function withoutSlotSwap(config: QuestConfig, questExerciseId: number): QuestConfig {
+  const key = String(questExerciseId);
+  const without = (entries: Record<string, number> | undefined) =>
+    Object.fromEntries(Object.entries(entries ?? {}).filter(([id]) => id !== key));
+  return { ...config, swaps: without(config.swaps), targets: without(config.targets) };
+}
+
 export async function clearQuestConfig(questId: number): Promise<void> {
   await deletePreference(configKey(questId));
 }
@@ -224,6 +248,32 @@ export function applyQuestConfig(
 }
 
 /**
+ * A slot's target once the hero's own number is on it, and what the app had prescribed there
+ * (`0070`): rung credit, crit odds and the damage cap keep reading the app's value.
+ */
+function ownTarget(
+  base: QuestExercise["target"],
+  value: number | undefined,
+): Pick<QuestExercise, "target" | "prescribed"> {
+  if (value === undefined || value === base.value) return { target: base };
+  return { target: { ...base, value }, prescribed: base.value };
+}
+
+/**
+ * "I can already do this": the hero swapped in the very movement the ladder stepped down from.
+ * Not a swap to something else, and not a set-aside slot, where the written movement is the one
+ * thing they asked never to be handed. Names the rung it overrides, which is the way back.
+ */
+function pinOver(
+  qex: QuestExercise,
+  substitute: Exercise | undefined,
+): Pick<QuestExercise, "pinnedOver"> {
+  const written = qex.substitutedFor;
+  const pinned = substitute && written && !written.setAside && written.id === substitute.id;
+  return pinned ? { pinnedOver: movementRef(qex.exercise) } : {};
+}
+
+/**
  * The hero's per-slot overrides, applied to slots that are already resolved for their level.
  *
  * Split out of `applyQuestConfig` so the gallery's synchronous preview reads the saved config
@@ -256,10 +306,13 @@ export function applyConfigToSlots(
     // movement showed the level's default reps and every step of the field was thrown away on
     // the next render, which read as a frozen control. The clamp follows the resolved unit too;
     // on the old order it measured reps against the range for seconds.
+    // A pin has a better answer than a retarget: the target the quest wrote for that movement.
+    const pin = pinOver(qex, substitute);
     const base =
       substitute === undefined
         ? qex.target
-        : retargetForMovement(qex.target, qex.exercise, substitute, config.level);
+        : (pin.pinnedOver && qex.substitutedFor?.target) ||
+          retargetForMovement(qex.target, qex.exercise, substitute, config.level);
     const raw = targets[key];
     // The style follows the resolved unit, for the same reason the unit follows the swap: an
     // hour is a hold's ceiling and a walk is not a hold, so a slot standing on an expedition
@@ -272,7 +325,8 @@ export function applyConfigToSlots(
 
     return {
       ...qex,
-      target: value === undefined ? base : { ...base, value },
+      ...ownTarget(base, value),
+      ...pin,
       ...(substitute === undefined
         ? {}
         : {

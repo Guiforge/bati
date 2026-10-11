@@ -42,7 +42,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
 
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   const mode: ChartMode = questId ? "quest" : "all";
 
@@ -53,14 +53,17 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
     //           source; split the transform out if a second chart mode appears.
     // A promise chain rather than `try ... finally`, which the React Compiler cannot lower.
     setLoading(true);
-    setError(null);
+    setFailed(false);
     (questId ? getQuestSessionHistory(questId, limit) : getRecentSessionHistory(limit))
       .then(
         (data) => {
           if (mounted) setSessions(data);
         },
         (e: unknown) => {
-          if (mounted) setError(e instanceof Error ? e.message : "Failed to load data");
+          // The screen says it failed in the hero's language; the reason goes where a bug report
+          // can carry it.
+          reportError("session.progressionChart", e);
+          if (mounted) setFailed(true);
         },
       )
       .then(() => {
@@ -91,7 +94,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
     );
   }
 
-  if (error) {
+  if (failed) {
     return (
       <Card>
         <YStack gap="$2" items="center" py="$2">
@@ -100,7 +103,7 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
             {t("chart.error")}
           </Text>
           <Paragraph color="$text" opacity={0.6} size="$2">
-            {error}
+            {t("errors.generic")}
           </Paragraph>
         </YStack>
       </Card>

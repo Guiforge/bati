@@ -90,8 +90,18 @@ export type BossDamageEntry = {
  */
 export const CAMPAIGN_HP_FRACTION = 0.9;
 
-/** The ceiling on crit odds, so a heroic set is an edge and never the whole fight. */
-export const MAX_CRIT_CHANCE = 0.5;
+/**
+ * Crit odds for one rep past the prescribed target, and for two. Also the ceiling: nothing past
+ * the second rep adds to it.
+ */
+export const CRIT_CHANCE_ONE_REP = 0.15;
+export const MAX_CRIT_CHANCE = 0.3;
+
+/** Under this many prescribed reps, a second extra rep is a big jump: only the first counts. */
+const SECOND_REP_COUNTS_FROM = 8;
+
+/** Reps past the prescribed target that still land on the boss. A hold lands none. */
+export const DAMAGE_REPS_PAST_TARGET = 2;
 
 /** One boss in twenty gleams. Purely cosmetic, rolled per encounter — see BossFight.shiny. */
 export const SHINY_CHANCE = 0.05;
@@ -145,10 +155,39 @@ export function threatRank(totalHp: number): 1 | 2 | 3 | 4 {
  * the one decision a fight offers, and it was a data-entry widget until the rule was said out
  * loud. Two copies of this formula would drift the moment either side was tuned.
  */
-export function critChance(resultValue: number, targetValue: number): number {
-  const overshoot = (resultValue - targetValue) / Math.max(1, targetValue);
-  if (overshoot <= 0) return 0;
-  return Math.min(MAX_CRIT_CHANCE, overshoot * 1.5);
+export function critChance(
+  resultValue: number,
+  prescribedValue: number,
+  targetType: QuestTargetType = "reps",
+): number {
+  // A hold never crits. It used to, per second past the target, which paid the hero for holding
+  // on after the position had gone: the one thing a hold must not reward.
+  if (targetType === "time") return 0;
+
+  // Fixed steps, not a share of the target. Relative odds made "+2" worth 50 % on a target of 6
+  // and 20 % on a target of 15, so the easy level was the one that critted; and they kept
+  // growing, so the fight paid for the grinding reps the safety page says to leave in reserve.
+  const extra = Math.floor(resultValue - prescribedValue);
+  if (extra <= 0) return 0;
+  return extra === 1 || prescribedValue < SECOND_REP_COUNTS_FROM
+    ? CRIT_CHANCE_ONE_REP
+    : MAX_CRIT_CHANCE;
+}
+
+/**
+ * What of a result lands on the boss: all of it up to the prescribed target, then two reps, then
+ * nothing. A hold stops at its target. An outing is left alone: ground never damages a boss
+ * (`NON_REP_STYLE`), so there is nothing to cap.
+ */
+export function damagingValue(
+  resultValue: number,
+  prescribedValue: number,
+  targetType: QuestTargetType | undefined,
+  style: ExerciseStyle,
+): number {
+  if (style === NON_REP_STYLE) return resultValue;
+  const past = targetType === "time" ? 0 : DAMAGE_REPS_PAST_TARGET;
+  return Math.min(resultValue, prescribedValue + past);
 }
 
 export type DamageResult = {
@@ -187,6 +226,12 @@ type DamageableFight = Pick<
 export type DamageParams = {
   resultValue: number;
   targetValue: number;
+  /**
+   * What the app prescribed before the hero touched the stepper (`0070`). Crit odds and the
+   * damage cap read it, so neither a lowered nor a raised target moves them. Omitted means the
+   * target was never changed.
+   */
+  prescribedValue?: number;
   muscle?: MuscleCode;
   /** Omitted means reps. Time results are normalised before they become damage. */
   targetType?: QuestTargetType;
@@ -225,9 +270,11 @@ export function computeDamage(fight: DamageableFight, params: DamageParams): Dam
     };
   }
 
+  const prescribed = params.prescribedValue ?? params.targetValue;
+
   // Base damage = the result value, with seconds converted to rep-equivalents
   let damage = toRepEquivalent(
-    params.resultValue,
+    damagingValue(params.resultValue, prescribed, params.targetType, params.style),
     params.targetType,
     params.style,
     params.perSide ? 2 : 1,
@@ -252,10 +299,10 @@ export function computeDamage(fight: DamageableFight, params: DamageParams): Dam
   // The old rule asked that the target be met — but `adjustedReps` initialises to the target and a
   // time result is the elapsed timer, which reaches it. The condition held on essentially every
   // set, so crit was a flat 30 % coin flip that rewarded nothing and that nothing on screen
-  // explained. Now it has to be *exceeded*, and the odds scale with how far: one extra rep on a
-  // set of twelve is a real edge, capped so pushing hard never dominates the fight.
+  // explained. Now it has to be *exceeded*, by a rep or two and no further (`critChance`).
   const isCritical =
-    params.forcedCritical ?? Math.random() < critChance(params.resultValue, params.targetValue);
+    params.forcedCritical ??
+    Math.random() < critChance(params.resultValue, prescribed, params.targetType);
   if (isCritical) {
     damage = damage * 2;
   }

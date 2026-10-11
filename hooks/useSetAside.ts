@@ -40,7 +40,7 @@ export function useSetAside() {
       return setExerciseAside(exercise.id).then(
         () => {
           showSuccess(
-            t("setAside.done", { name, defaultValue: `${name} won't be suggested again.` }),
+            t("setAside.done", { name }),
             onUndone
               ? {
                   action: {

@@ -131,6 +131,38 @@ quest was bounded by its own prescription; an outing is not, so the multiplier c
 duration nobody set and an hour's run on the daily quest paid 1200. Reading the target instead
 makes the bonus what it says it is: you did the thing the day asked for.
 
+"Once a day" is read off the journal, not off the quest's id (issue #177). The day's quest is
+drawn by the date from the quests the app may suggest, and a hero can reshape that pool before
+lunch: the level and the equipment in Settings, a quest of their own. The same date then pointed
+at a second quest, "this quest was not logged today" was true of it, and it paid again.
+
+The bonus is written on the session that earned it (`completed_sessions.dailyBonusXp`, `0071`),
+and a save is paid only if no session of that day holds one (`dailyBonusPaidOn`). Nothing else
+records it, so nothing else has to be kept true:
+
+- deleting the session gives the day back, whoever deleted it, a device sync included;
+- a session merged in from another device brings its bonus with it;
+- a retried save reports what its own row holds and asks nothing again, so the summary never
+  shows a bonus the journal does not have.
+
+Every question is asked of the instant the session *started*, the day its row is dated: which
+quest was that day's, whether that quest was already logged that day, whether that day was paid.
+Read at save time, a session begun at 23:50 was judged against the next day.
+
+The pool counts only sessions logged before today (`workoutsBeforeToday`), so the session count
+does not move the pick mid-day. A rung earned this morning still can, for a hero kept off jumps,
+and so can a trip to Settings, which is why the bonus rests on the journal and not on the pick
+holding still. What that leaves is the other direction, and it is rare: a hero who starts the
+quest the day showed before the pick moved finds at the summary that it is no longer the day's,
+and is not paid. Never twice, sometimes not at all. Holding the pick for the whole day would
+close it, and would also keep offering a quest the hero has just said they cannot do.
+
+A bonus that is earned is never zero, because the row's bonus is also how the day knows it was
+paid.
+
+Two phones that have not synced can each pay the day's bonus before they meet: offline, neither
+can know. The merged journal then holds both, as it holds both sessions.
+
 #### Why it changed
 
 It used to be `durationSeconds / 5` — wall-clock and nothing else. Rest counted, waiting counted,

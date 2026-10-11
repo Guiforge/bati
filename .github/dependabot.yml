@@ -38,14 +38,25 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@expo/*"
         update-types: ["version-update:semver-major"]
+      # Versioned with the SDK but not matched by `expo-*`: Dependabot tried
+      # babel-preset-expo 58 on SDK 57 and failed the whole npm run on its peer dependencies.
+      - dependency-name: "babel-preset-expo"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "jest-expo"
+        update-types: ["version-update:semver-major"]
       # The SDK pins these to an exact version, so even a patch fails expo-doctor (#147).
       # Dependabot alone is muted: `expo install --fix` still moves them with the SDK.
       - dependency-name: "react-native"
       - dependency-name: "react-native-reanimated"
       - dependency-name: "react-native-svg"
+      - dependency-name: "react-native-view-shot"
       - dependency-name: "react-native-worklets"
       - dependency-name: "react-native-*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # Babel 8 is ESM-only and jest cannot `require` it from __tests__/fill-labels.test.ts
+      # (#172). It moves with babel-preset-expo, when the SDK's own Babel goes to 8.
+      - dependency-name: "@babel/parser"
+        update-types: ["version-update:semver-major"]
       - dependency-name: "react"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "react-dom"

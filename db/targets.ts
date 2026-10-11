@@ -20,6 +20,14 @@ export type Target = {
   value: number;
 };
 
+/**
+ * What the app prescribed on a slot: its target, unless the hero set their own number over it
+ * (`QuestExercise.prescribed`, `0070`). Rung credit, crit odds and the damage cap read this.
+ */
+export function prescribedValue(slot: { target: Target; prescribed?: number }): number {
+  return slot.prescribed ?? slot.target.value;
+}
+
 /** What a slot starts at when nothing better is known — the quest editor's defaults too. */
 export const DEFAULT_TARGET_VALUE: Record<QuestTargetType, number> = { reps: 10, time: 30 };
 

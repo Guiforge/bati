@@ -10,6 +10,7 @@ import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
 import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import { fade, rawColors } from "@/constants/rawColors";
+import { getQuestConfig, saveQuestConfig } from "@/db/questConfig";
 import { Difficulty, getQuestById, listQuestTemplates, type Quest } from "@/db/quests";
 import { useHaptics } from "@/hooks/useHaptics";
 import { reportError } from "@/src/reportError";
@@ -52,7 +53,17 @@ export default function FirstSessionStep() {
             new Error(`seed quest "${FIRST_QUEST_TITLE}" not found`),
           );
         }
-        return match ? getQuestById(match.id, Difficulty.Easy) : null;
+        if (!match) return null;
+        // Remembered as this quest's level, the way the quest screen remembers one, so Home
+        // offers the same session back: it reads the saved config, and with none it re-offered
+        // the on-ramp at Medium, a quarter harder than the screen the hero had just agreed to.
+        // Only when nothing is saved: a config restored from a backup is the hero's own.
+        getQuestConfig(match.id)
+          .then((saved) =>
+            saved ? undefined : saveQuestConfig(match.id, { level: Difficulty.Easy }),
+          )
+          .catch((error) => reportError("onboarding.firstQuestLevel", error));
+        return getQuestById(match.id, Difficulty.Easy);
       })
       .then((loaded) => {
         if (cancelled) return;
@@ -82,7 +93,7 @@ export default function FirstSessionStep() {
     } catch (error) {
       // The single highest-value tap of the funnel must not fail into silence.
       reportError("onboarding.firstSession", error);
-      showError(t("onboarding.save_error", "Could not save. Try again"));
+      showError(t("onboarding.save_error"));
       return;
     }
     router.replace("/session" as never);
@@ -115,7 +126,7 @@ export default function FirstSessionStep() {
             textShadowColor={fade(rawColors.bgDark, 0.8)}
             textShadowRadius={6}
           >
-            {t("onboarding.first_session_title", "Your first march")}
+            {t("onboarding.first_session_title")}
           </H1>
           <Paragraph
             text="center"
@@ -125,10 +136,7 @@ export default function FirstSessionStep() {
             textShadowColor={fade(rawColors.bgDark, 0.8)}
             textShadowRadius={6}
           >
-            {t(
-              "onboarding.first_session_subtitle",
-              "Eight minutes, four movements, no equipment. A squire has to start somewhere.",
-            )}
+            {t("onboarding.first_session_subtitle")}
           </Paragraph>
         </YStack>
 
@@ -147,9 +155,7 @@ export default function FirstSessionStep() {
             disabled={!quest && !offerDead}
             borderWidth={0}
           >
-            {offerDead
-              ? t("onboarding.finish", "Start my training adventure")
-              : t("onboarding.first_session_start", "Start now")}
+            {offerDead ? t("onboarding.finish") : t("onboarding.first_session_start")}
           </AppButton>
 
           {!offerDead && (
@@ -161,7 +167,7 @@ export default function FirstSessionStep() {
               hitSlop={8}
             >
               <Text color="$textSecondary" fontSize={15}>
-                {t("onboarding.first_session_later", "Later")}
+                {t("onboarding.first_session_later")}
               </Text>
             </Button>
           )}

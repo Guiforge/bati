@@ -224,9 +224,9 @@ describe("RestView", () => {
     });
     const view = await mountRest();
 
-    await fireEvent.press(view.getByLabelText("Decrease result"));
+    await fireEvent.press(view.getByLabelText("session.decrease_result_accessibility"));
     expect(useSessionStore.getState().results[0]?.result.value).toBe(31);
-    await fireEvent.press(view.getByLabelText("Increase result"));
+    await fireEvent.press(view.getByLabelText("session.increase_result_accessibility"));
     expect(useSessionStore.getState().results[0]?.result.value).toBe(32);
   });
 
@@ -448,5 +448,18 @@ describe("RestView", () => {
     const controls = StyleSheet.flatten(view.getByTestId("rest-adjust-controls").props.style);
     expect(label.flexShrink).toBe(1);
     expect(controls.flexShrink).toBe(0);
+  });
+
+  // The pain rule lived on a page behind Settings. "I couldn't" is the tap that says something
+  // may be wrong, so the rest that follows it is where the rule is said.
+  it("says the pain rule after a skipped set, and at no other rest", async () => {
+    const rested = await mountRest();
+    expect(rested.queryByTestId("rest-pain-rule")).toBeNull();
+    rested.unmount();
+
+    useSessionStore.setState({ lastSetSkipped: true });
+    const skipped = await mountRest();
+    // Translations are keys in this suite (see the `@/i18n` mock above).
+    expect(skipped.getByText("session.pain_rule")).toBeTruthy();
   });
 });

@@ -167,7 +167,7 @@ export function Stepper({
           icon={<Minus size={16} />}
           disabled={value <= min}
           opacity={value <= min ? 0.4 : 1}
-          accessibilityLabel={t("common.decrease", { label, defaultValue: `Decrease ${label}` })}
+          accessibilityLabel={t("common.decrease", { label })}
           onPressIn={() => hold.start(-1)}
           onPressOut={hold.stop}
           onPress={() => {
@@ -189,7 +189,7 @@ export function Stepper({
           icon={<Plus size={16} />}
           disabled={value >= max}
           opacity={value >= max ? 0.4 : 1}
-          accessibilityLabel={t("common.increase", { label, defaultValue: `Increase ${label}` })}
+          accessibilityLabel={t("common.increase", { label })}
           onPressIn={() => hold.start(1)}
           onPressOut={hold.stop}
           onPress={() => {

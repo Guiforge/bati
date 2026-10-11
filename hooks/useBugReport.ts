@@ -85,14 +85,14 @@ export function useBugReport() {
       );
       if (!(await Linking.canOpenURL(url))) {
         // Tapping the row and having nothing ever happen reads as broken, not as "no mail app".
-        showError(t("settings.no_mail_client", "No email app found on this device"));
+        showError(t("settings.no_mail_client"));
         return;
       }
       await Linking.openURL(url);
     } catch (error) {
       // Nothing was sent, which is the safe direction to fail in — but say so.
       reportError("settings.bugReport", error);
-      showError(t("settings.no_mail_client", "No email app found on this device"));
+      showError(t("settings.no_mail_client"));
     }
   }, [t, showError]);
 

@@ -17,10 +17,16 @@ import {
   targetRangeFor,
 } from "@/db";
 import { formatDuration } from "@/db/estimate";
-import { isOutingSession, outingGoal, outingLocomotion, withOutingGoal } from "@/db/expeditions";
+import {
+  isOutingSession,
+  outingGoal,
+  outingLocomotion,
+  proposesWalkRun,
+  withOutingGoal,
+} from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
-import { formatTarget } from "@/db/targets";
+import { formatTarget, SECONDS_SUFFIX } from "@/db/targets";
 import type { OutingGoal } from "@/src/gps/track";
 import { localizedName } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -99,9 +105,7 @@ function OutingGoalRow({
     <YStack gap="$2">
       <XStack items="center" justify="space-between" gap="$3">
         <Text fontWeight="700" fontSize={15} color="$text">
-          {byDistance
-            ? t("quests.config_distance", "Distance")
-            : t("quests.config_duration", "Duration")}
+          {byDistance ? t("quests.config_distance") : t("quests.config_duration")}
         </Text>
         <Text fontWeight="700" fontSize={17} color="$text">
           {byDistance
@@ -110,7 +114,7 @@ function OutingGoalRow({
         </Text>
       </XStack>
       <AppButton variant="outline" fontSize={16} onPress={onOpen}>
-        {t("quests.goal_sheet_open", "Set up the outing")}
+        {t("quests.goal_sheet_open")}
       </AppButton>
     </YStack>
   );
@@ -127,11 +131,13 @@ function ShapeSteppers({
   quest,
   config,
   outing,
+  language,
   onChange,
 }: {
   quest: Quest;
   config: QuestConfig;
   outing: boolean;
+  language: AppLanguage;
   onChange: (config: QuestConfig) => void;
 }) {
   const { t } = useTranslation();
@@ -145,7 +151,7 @@ function ShapeSteppers({
           definition (`isOutingQuest`), so there was never a second value to pick. */}
       {outing ? null : (
         <Stepper
-          label={t("quests.config_rounds", "Rounds")}
+          label={t("quests.config_rounds")}
           value={quest.rounds}
           min={ROUNDS_RANGE.min}
           max={ROUNDS_RANGE.max}
@@ -159,13 +165,13 @@ function ShapeSteppers({
           every quest that still has one. */}
       {restsBetweenExercises(quest) ? (
         <Stepper
-          label={t("quests.config_rest", "Rest")}
-          hint={t("quests.config_rest_hint", "Between exercises")}
+          label={t("quests.config_rest")}
+          hint={t("quests.config_rest_hint")}
           value={quest.restSeconds}
           min={REST_RANGE.min}
           max={REST_RANGE.max}
           step={REST_STEP}
-          suffix="s"
+          suffix={SECONDS_SUFFIX[language]}
           onChange={(restSeconds) => onChange({ ...config, restSeconds })}
         />
       ) : null}
@@ -173,13 +179,13 @@ function ShapeSteppers({
       {/* Null means the quest has no separate round rest, so the short one is what runs. */}
       {restsBetweenRounds(quest) ? (
         <Stepper
-          label={t("quests.config_round_rest", "Round rest")}
-          hint={t("quests.config_round_rest_hint", "Between rounds")}
+          label={t("quests.config_round_rest")}
+          hint={t("quests.config_round_rest_hint")}
           value={quest.roundRestSeconds ?? quest.restSeconds}
           min={REST_RANGE.min}
           max={REST_RANGE.max}
           step={REST_STEP}
-          suffix="s"
+          suffix={SECONDS_SUFFIX[language]}
           onChange={(roundRestSeconds) => onChange({ ...config, roundRestSeconds })}
         />
       ) : null}
@@ -200,6 +206,8 @@ type Props = {
 
 export function QuestConfigCard({ quest, config, language, onChange, onReset, onSwap }: Props) {
   const { t } = useTranslation();
+  // The run on this card is still the app's walk-run proposal, not a goal the hero set.
+  const walkRun = proposesWalkRun(quest.exercises, config.distanceM);
   // Open on a quest that is one movement in one round, closed on everything else. On such a
   // quest this panel holds a single control, the target, and on an outing that target is the
   // whole decision the hero came here to make: how long they are going out for. Collapsed, it
@@ -222,7 +230,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
   const setGoal = (next: OutingGoal) => onChange(withOutingGoal(quest, config, next));
 
   const unitWord = (type: "time" | "reps") =>
-    type === "time" ? t("quests.config_duration", "Duration") : t("quests.config_reps", "Reps");
+    type === "time" ? t("quests.config_duration") : t("quests.config_reps");
 
   const slotLabel = (qex: Quest["exercises"][number]) =>
     singleControl ? unitWord(qex.target.type) : localizedName(qex.exercise, language);
@@ -239,14 +247,14 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
           gap="$2"
           onPress={() => setOpen((v) => !v)}
           accessibilityRole="button"
-          accessibilityLabel={t("quests.config_title", "Adjust this quest")}
+          accessibilityLabel={t("quests.config_title")}
           accessibilityState={{ expanded: open }}
         >
           <SlidersHorizontal size={18} color="$text" />
           <Text flex={1} fontWeight="700" fontSize={16} color="$text">
-            {t("quests.config_title", "Adjust this quest")}
+            {t("quests.config_title")}
           </Text>
-          {modified ? <Tag label={t("quests.config_modified", "Custom")} /> : null}
+          {modified ? <Tag label={t("quests.config_modified")} /> : null}
           {open ? (
             <ChevronUp size={20} color="$text" opacity={0.6} />
           ) : (
@@ -257,10 +265,16 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
         {open ? (
           <YStack gap="$3">
             <Text fontSize={12} color="$textSecondary">
-              {t("quests.config_hint", "Saved for this quest. It comes back next time.")}
+              {t("quests.config_hint")}
             </Text>
 
-            <ShapeSteppers quest={quest} config={config} outing={outing} onChange={onChange} />
+            <ShapeSteppers
+              quest={quest}
+              config={config}
+              outing={outing}
+              language={language}
+              onChange={onChange}
+            />
 
             <Separator borderColor="$borderStrong" />
 
@@ -272,6 +286,14 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                   language={language}
                   onOpen={() => setGoalOpen(true)}
                 />
+                {/* The run is proposed as a walk-run because the hero has not run lately: say how
+                    one is done, here where the twenty minutes are read. Gone as soon as the goal
+                    is theirs, a duration they set or a distance. */}
+                {walkRun ? (
+                  <Text testID="goal-walk-run" fontSize={13} color="$textSecondary">
+                    {t("quests.goal_walk_run")}
+                  </Text>
+                ) : null}
                 {/* Mounted only while it is open, unlike the picker sheet beside it: a closed
                     Sheet still renders its frame into the tree, so its chips and its input stay
                     reachable by a screen reader and by anything else that walks the page. The
@@ -283,6 +305,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                     goal={goal}
                     unit={unit}
                     locomotion={outingLocomotion(quest)}
+                    walkRun={walkRun}
                     onPick={setGoal}
                   />
                 ) : null}
@@ -313,7 +336,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                   )}
                 </YStack>
                 <AppIconButton
-                  accessibilityLabel={t("quests.swap_exercise", "Replace this exercise")}
+                  accessibilityLabel={t("quests.swap_exercise")}
                   onPress={() => onSwap(qex.id)}
                 >
                   <Repeat size={18} color="$text" strokeWidth={2.5} />
@@ -332,7 +355,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                 icon={<RotateCcw size={14} />}
                 onPress={onReset}
               >
-                {t("quests.config_reset", "Back to defaults")}
+                {t("quests.config_reset")}
               </AppButton>
             ) : null}
           </YStack>

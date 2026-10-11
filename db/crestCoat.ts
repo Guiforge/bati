@@ -1,3 +1,4 @@
+import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import type { Animal, CrestStage } from "./crestRules";
 
 /** The coat the hero picked for their animals: `auto` shows the rare one once won, `usual` never. */
@@ -10,12 +11,13 @@ const RARE_COAT_FLAME = 5;
 export const hasRareCoat = (longestFlame: number): boolean => longestFlame >= RARE_COAT_FLAME;
 
 /**
- * Every rare and winter portrait that ships, by slug (`bear-adult-rare`, `stag-venerable-winter`).
- * The one source: the portrait choice and the rare coat's announcement both read it, so neither
- * names a coat nobody can see. Bases are not listed, they are the fallback.
- * ponytail: empty until T3 delivers the images; add a slug in the commit that adds its file.
+ * Every rare and winter portrait that ships, by slug (`bear-adult-rare`, `stag-venerable-winter`),
+ * read off the portrait table. The portrait choice and the rare coat's announcement both read it,
+ * so neither names a coat nobody can see. Bases are not listed, they are the fallback.
  */
-export const DELIVERED_COATS: ReadonlySet<string> = new Set<string>();
+export const DELIVERED_COATS: ReadonlySet<string> = new Set(
+  Object.keys(ANIMAL_PORTRAITS).filter((slug) => /-(rare|winter)$/.test(slug)),
+);
 
 /**
  * Where winter falls in June, July and August instead of December to February: the countries whose

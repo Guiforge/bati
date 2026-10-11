@@ -30,7 +30,7 @@ Un animal qui sort de tes séances, un écu qui grandit avec toi, des fêtes rar
 | Lot | Contenu | Images | Estimation |
 |---|---|---|---|
 | **V-01** (avant la Chronique) | L'animal et sa révélation, l'écu, le choix dans les Réglages, les 3 tailles de fête et « Ce soir », la barre « faits / plus que », le prochain jalon en séances | aucune | 7 à 9 jours |
-| **V-02** | Les portraits peints des animaux (6 animaux × 3 stades = 18), test de l'Ours d'abord | 18 (FLUX) | 2 à 3 jours |
+| **V-02** (étendu) | Les portraits héroïques des animaux : 4 stades dont le légendaire, pelages rares (flamme Brasier) et d'hiver, test de l'Ours d'abord. Voir « V-02 étendu » plus bas | 60 (FLUX), environ 18 € à 0,30 € le portrait réussi, 30 € de budget, arrêt à 25 € (2,20 € déjà dépensés) | 4 à 6 jours |
 | **V-03** (après la prod Play) | Rangs 6 à 10, pierres gravées sur les Remparts, saisons, anniversaire, Âges, devise | 0 à 4 (FLUX, si besoin) | 7 à 10 jours |
 | Après | Le quartier de la route (après K-00), les menhirs (après E-04), le réveil animé (après mesure de la perf) | | |
 | Parking | La pièce honorable, le village isométrique | | |
@@ -120,6 +120,63 @@ La taille de l'APK n'est pas un critère pour ce chantier (choix de Guillaume) :
 - Maestro : un flux qui lit la clé « déjà montrée » (l'état, pas la navigation).
 - À 130 % sur 360×640 : rien ne se coupe ni ne chevauche (captures sur émulateur, skill `device-check`).
 - Les tests de la victoire réécrits (environ 38 : `victory-view`, `victory-expedition`).
+
+## V-02 étendu : des animaux dont on est fier
+
+Demande de Guillaume : « fais en sorte d'avoir l'impression que c'est cool d'avoir les animaux, il faut l'effet waou et qu'on puisse être content fier de ses animaux ; prends aussi en compte plusieurs niveaux et/ou variants ». L'effet « waou » passe par des portraits HÉROÏQUES. Hors lot : révélation animée, bestiaire, partage.
+
+### Les règles
+
+- **Légendaire** : un 4e stade, à 500 séances de la pratique de l'animal (`LEGENDARY_AT = 500`, à côté de `ADULT_AT` et `VENERABLE_AT` dans `db/crestRules.ts`). Même compte que l'adulte (40) et le vénérable (200) : séances de la pratique, ou toutes les séances qui comptent pour un sanglier ou un animal choisi à la main. `CrestStage` gagne `"legendary"` et `stageOf` un seuil. Il déclenche une grande fête, comme un passage de stade. Une seule grande fête par soir tient toujours (classement de V-01).
+- **Pelage rare** : il se débloque quand la plus longue flamme du héros, calculée avec `DEFAULT_WEEKLY_QUOTA` comme pour l'écu (`longestFlame`, `db/crest.ts`), atteint Brasier (niveau 3, 14 jours, `getFlameLevel`). Les paliers : Étincelle 3 j, Braise 7 j, Brasier 14 j, Fournaise 30 j, Éternelle 100 j. Il ne se perd jamais : il est dérivé du journal, et la plus longue flamme ne baisse pas, sauf si on supprime des séances. Une fois gagné, il est montré par défaut à partir de l'adulte (le jeune n'a pas de pelage rare).
+- **Choix du pelage** : la fiche propose « pelage habituel » ou « pelage rare » (seulement une fois le rare gagné). Le choix est enregistré dans une préférence fusionnée `crestCoat`, valeurs `auto` ou `usual`. Même discipline que `crestAnimal` : jamais de valeur par défaut écrite, revenir au rare écrit `auto`, valeur inconnue = `auto`, règle R7 de `docs/testing/data-rules.md` mise à jour.
+- **Annonce du pelage rare** : une carte dans « Ce soir », pas une grande fête. Le fait dit : la flamme qui l'a gagné. Rien de plus.
+- **Pelage d'hiver** : décembre, janvier et février, selon le calendrier de l'appareil, à partir de l'adulte. `ponytail:` hémisphère nord seulement, à revoir avec les saisons de V-03. Il ne se gagne pas, il passe : aucun manque, rien ne se perd (règle 4 du test « esprit Bati »).
+- **Priorité des pelages** : le rare l'emporte sur l'hiver. Avec `crestCoat = usual`, l'hiver s'applique en saison, sinon le pelage de base. Les 3 combinaisons (base, hiver, rare) sont une fonction pure de (animal, stade, mois, flamme, `crestCoat`), testée.
+- **Hermine** : son portrait de base devient le pelage d'été, brun avec le bout de la queue noir ; son hiver est blanc (le bout de la queue reste noir). **Saumon** : son « hiver » est la phase océan, argent brillant.
+- **Où ils se voient** : les portraits remplacent la silhouette dans la grande fête et dans la fiche. **L'écu ne change pas** (glyphe à l'encre, mêmes paliers de détail). Le jeune n'a que son portrait de base.
+- **Direction héroïque** : pose fière, vue en légère contre-plongée de trois quarts, carrure, détails d'encre hachurée façon peintures existantes. Le vénérable et le légendaire sont épiques : cicatrices, majesté, et pour le légendaire une taille et une présence hors norme. Rien de mignon, des yeux d'animal (rien ne brille), un fond uni pour le détourage, l'animal entier avec une marge. Le jeune tient l'échelle de son âge par ses proportions.
+- **Pelages plausibles** : nobles, visibles en 96 dp, jamais magiques. Rien ne brille, aucune aura, aucune couleur qui n'existe pas dans la nature.
+- **Budget** : 30 € pour tout le chantier, arrêt à 25 €. 2,20 € déjà dépensés. Environ 0,30 € par portrait réussi : 60 portraits, environ 18 €, avec les reprises sous la ligne des 25 €. À 25 € dépensés, on s'arrête et on livre ce qui est détouré, en commençant par l'adulte et le légendaire de base de chaque animal (voir la question ouverte en bas).
+
+### Les 60 portraits
+
+Slug : `<animal>-<stade>[-rare|-winter]`. Stades : `young`, `adult`, `venerable`, `legendary`. 10 par animal : 4 de base, 3 rares (adulte, vénérable, légendaire), 3 d'hiver (adulte, vénérable, légendaire).
+
+| Animal | Base (4) | Rare (3) | Hiver (3) |
+|---|---|---|---|
+| Ours | `bear-young`, `bear-adult`, `bear-venerable`, `bear-legendary` | `bear-adult-rare`, `bear-venerable-rare`, `bear-legendary-rare` | `bear-adult-winter`, `bear-venerable-winter`, `bear-legendary-winter` |
+| Cerf | `stag-young`, `stag-adult`, `stag-venerable`, `stag-legendary` | `stag-adult-rare`, `stag-venerable-rare`, `stag-legendary-rare` | `stag-adult-winter`, `stag-venerable-winter`, `stag-legendary-winter` |
+| Cheval | `horse-young`, `horse-adult`, `horse-venerable`, `horse-legendary` | `horse-adult-rare`, `horse-venerable-rare`, `horse-legendary-rare` | `horse-adult-winter`, `horse-venerable-winter`, `horse-legendary-winter` |
+| Saumon | `salmon-young`, `salmon-adult`, `salmon-venerable`, `salmon-legendary` | `salmon-adult-rare`, `salmon-venerable-rare`, `salmon-legendary-rare` | `salmon-adult-winter`, `salmon-venerable-winter`, `salmon-legendary-winter` |
+| Hermine | `ermine-young`, `ermine-adult`, `ermine-venerable`, `ermine-legendary` | `ermine-adult-rare`, `ermine-venerable-rare`, `ermine-legendary-rare` | `ermine-adult-winter`, `ermine-venerable-winter`, `ermine-legendary-winter` |
+| Sanglier | `boar-young`, `boar-adult`, `boar-venerable`, `boar-legendary` | `boar-adult-rare`, `boar-venerable-rare`, `boar-legendary-rare` | `boar-adult-winter`, `boar-venerable-winter`, `boar-legendary-winter` |
+
+Total : 6 × (4 + 3 + 3) = 60.
+
+### Hiver et rare, par animal
+
+| Animal | Hiver (décembre à février) | Rare (flamme Brasier) |
+|---|---|---|
+| Ours | Pelage épais et ébouriffé, brun plus sombre, givre dans les poils des épaules. | Argenté, façon ours esprit : pelage gris argent pâle, museau et pattes plus sombres. |
+| Cerf | Robe grise et dense, cou épaissi, bois nus et lavés de froid. | Cerf blanc : robe d'un blanc crème, yeux et sabots foncés, bois pâles. |
+| Cheval | Poil long et rude, robe plus terne, crinière emmêlée de neige. | Noir profond, crinière et queue argent. |
+| Saumon | La phase océan : flancs argent brillant, dos bleu acier, sans marques de frai. | Saumon doré : flancs d'un jaune d'or mat, nageoires ambrées. |
+| Hermine | Blanc pur, le bout de la queue reste noir. | Mélanique : un pelage presque noir d'un bout à l'autre, le ventre à peine plus clair. |
+| Sanglier | Soies longues et grises, sous-poil épais, givre sur le dos. | Sanglier fantôme : gris très pâle, presque cendre, défenses ivoire, yeux sombres. |
+
+Pour la génération, ces phrases sont la matière du prompt de pelage. Chaque prompt répète la liste de contrôle ci-dessous et la phrase « rien ne brille ».
+
+### Copie
+
+- Chaîne de la carte « pelage rare gagné », du libellé de la fiche (« pelage habituel », « pelage rare »), du stade légendaire et de la grande fête de passage, dans les 4 langues (fr, en, de, es), apostrophe droite, aucun tiret long.
+- Aucun mot interdit de la section Copie ci-dessus, ni « magique », « brille », « aura », et aucune corvée : jamais « il te manque », « encore X jours », ni rien qui pousse à faire plus que la séance prévue.
+- Le stade s'écrit « légendaire » / « legendary » / « legendär » / « legendario ». Le fait de la carte nomme la flamme, jamais le pelage comme un gain de jeu.
+
+### Fini quand (V-02)
+
+- Liste de contrôle des images, pour chacun des 60 portraits : « c'est le même animal sur les 3 stades (pelage, marques, silhouette) » ; « fond nuit uni, aucun bord blanc, aucune vignette » ; « la silhouette se lit en 96 dp » ; « le style des peintures existantes, rien de mignon, aucune mascotte » ; « les yeux sont des yeux d'animal, rien ne brille » ; « l'animal entier, une marge sur les 4 côtés » ; « le détourage est propre ».
+- Le légendaire, le rare et l'hiver sont testés, golden compris (`golden-hero`, mis à jour avec la raison des chiffres qui bougent), et la copie existe dans les 4 langues sans mot interdit ni corvée.
 
 ## Reste ouvert
 - Le texte de la révélation pour un héros qui a déjà plus de 8 séances à la mise à jour, retenu, une seule forme (un point après « Depuis ta 8e séance », jamais deux deux-points dans une phrase) : « Depuis ta 8e séance. 5 de tes 8 premières étaient de la force. » (le soir de la 8e : « 5 de tes 8 séances étaient de la force. »). Le sanglier : le fait en `$text`, « Tes 8 séances se partagent : force 3, endurance 3, yoga 2. » (tardif : « Depuis ta 8e séance. Tes 8 premières se partagent : … »), puis l'explication des couleurs sur sa propre ligne en `$textSecondary`, « Les couleurs de l'écu : force et endurance, tes deux pratiques en tête. » (clé `feast_reveal_boar_colors`, `revealColors`), sans « Aucune pratique ne passe 40 % ».

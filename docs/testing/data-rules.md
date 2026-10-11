@@ -61,12 +61,15 @@ Invariant: with skewed clocks, the side with the later `updatedAt` wins hero con
 edit was really last.
 
 **R7. `MERGED_PREFERENCES` = villageName, avatarId, customAvatar, trainingLevel, ownedEquipment, oath,
-reminderDays, crestAnimal.** `db/backup.ts:251-265`.
+reminderDays, crestAnimal, crestCoat.** `db/backup.ts:251-265`.
 `crestAnimal` is `auto` or an animal slug; a missing or unknown value reads as `auto`. Nothing
 writes a default (a device that never chose has no row, or two such devices would diverge in
 `db-peer-compare`), and going back to the animal the sessions chose writes `auto`, never a delete:
 a preference has no tombstone, so a deletion could not beat an older pick on the other device.
 `db/preferences.ts` (`getCrestAnimal`, `setCrestAnimal`).
+`crestCoat` (planned, V-02 extended) is `auto` or `usual` under the same discipline: one choice for the whole
+hero, no default written, back to `auto` writes `auto`, an unknown value reads as `auto`. A `db-peer-merge`
+test checks that an `auto` written later beats an older `usual`, in both merge directions.
 Invariant: only these keys ever change in `user_preferences` through a merge (plus R12); `auto`
 written later wins over an older animal on the other device, in both merge directions.
 

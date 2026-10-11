@@ -182,6 +182,55 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from the_golem.jpg"
   },
+  "assets/images/animals/bear-adult.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "c202e42ab8e6a258.png",
+      "sha256": "c202e42ab8e6a258a75cb71b4a02234f553c46ce887ff92c8fa4b9a7b4c4f204"
+    },
+    "prompt": "The background is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. A brown bear with a deep chestnut coat, a paler tan muzzle, a heavy rounded shoulder hump, small round ears, broad flat paws with pale claws and a short stubby tail. It is a bear in its prime: huge and powerful, with a thick neck, heavy shoulder muscle and a full glossy coat. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing. A single animal, alone in the picture, shown whole from nose to tail in a calm three-quarter side view, with a clear margin of empty background on all four sides. A thin cool rim light traces the outer edge of the silhouette all the way round, lighting the contour only, and separates it cleanly from the background. The animal wears nothing: no harness, no saddle, no collar, no armour, no jewellery. The eyes are plain animal eyes, nothing glows. There are no runes and no magical energy, and no light is cast off the animal into the air around it. Square composition, high contrast, clean and graphic, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-11",
+    "reencoded": "cwebp -q 85, from bear-adult.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/animals/bear-venerable.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "b7380d47b47d1268.png",
+      "sha256": "b7380d47b47d1268f23de275d6db710cd16306fdb03f40c4bea9fb82159ebb9b"
+    },
+    "prompt": "The background is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. A brown bear with a deep chestnut coat, a paler tan muzzle, a heavy rounded shoulder hump, small round ears, broad flat paws with pale claws and a short stubby tail. It is a very old bear: massive and heavy-bellied, with grey-tipped fur along the muzzle and shoulders, a shaggy worn coat, blunted claws and a notched ear. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing. A single animal, alone in the picture, shown whole from nose to tail in a calm three-quarter side view, with a clear margin of empty background on all four sides. A thin cool rim light traces the outer edge of the silhouette all the way round, lighting the contour only, and separates it cleanly from the background. The animal wears nothing: no harness, no saddle, no collar, no armour, no jewellery. The eyes are plain animal eyes, nothing glows. There are no runes and no magical energy, and no light is cast off the animal into the air around it. Square composition, high contrast, clean and graphic, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-11",
+    "edited": "2026-10-11: mirrored horizontally (the accepted candidate faced left, the other bears face right); the signed original is unchanged",
+    "reencoded": "cwebp -q 85, from bear-venerable.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/animals/bear-young.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "924d7f342cafe456.png",
+      "sha256": "924d7f342cafe45635ccca23868814d6e20937e1d824e6bdbe4f3e63aca1cf8c"
+    },
+    "prompt": "The background is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. A brown bear with a deep chestnut coat, a paler tan muzzle, a heavy rounded shoulder hump, small round ears, broad flat paws with pale claws and a short stubby tail. It is a small half-grown bear drawn at about half the size of a grown bear, standing in the lower middle of the picture with wide empty night background all around it, facing right in the same calm three-quarter view. Its eyes are flat dark-brown discs with no white catchlight, no reflection and no highlight of any kind. It has a young bear's build: a head big for its body, a short muzzle, ears large for its head, short sturdy legs, a narrow body and no shoulder hump yet. Its coat is one even deep chestnut from chin to belly, with no pale patch on the chest or belly, and the same tawny muzzle and pale claws as a grown bear. Its mouth is closed with no smile. Nothing beneath it casts a shadow on the ground. Its outline is a thin dark slate-blue ink line, never a pale or glowing rim. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing. A single animal, alone in the picture, shown whole from nose to tail in a calm three-quarter side view, with a clear margin of empty background on all four sides. A thin cool rim light traces the outer edge of the silhouette all the way round, lighting the contour only, and separates it cleanly from the background. The animal wears nothing: no harness, no saddle, no collar, no armour, no jewellery. The eyes are plain animal eyes, nothing glows. There are no runes and no magical energy, and no light is cast off the animal into the air around it. Square composition, high contrast, clean and graphic, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-11",
+    "reencoded": "cwebp -q 85, from bear-young.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/bosses/fire_dragon.webp": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",

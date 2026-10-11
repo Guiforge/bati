@@ -18,11 +18,13 @@ import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { headingFont } from "@/components/common/headingFont";
 import { ChevronRight } from "@/components/icons";
+import { AnimalPortrait } from "@/components/village/AnimalPortrait";
 import { Crest, type CrestShape } from "@/components/village/Crest";
 import { CREST_ICON } from "@/components/village/crestText";
 import { getVillageTierAsset } from "@/constants/assetMap";
 import { fade, rawColors } from "@/constants/rawColors";
-import type { Animal } from "@/db/crestRules";
+import type { Animal, CrestStage } from "@/db/crestRules";
+import type { FlameLevel } from "@/db/streaks";
 import type { VillageTier } from "@/db/village";
 import { useGameIcon } from "@/hooks/useGameIcon";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -115,6 +117,8 @@ type Ctx = {
   villageName: string;
   /** Sessions that count, for a tier's "after 118 sessions"; null says no such figure. */
   sessions: number | null;
+  /** What the animal's portrait needs besides the feast's animal; null draws none. */
+  portrait?: { stage: CrestStage; longestFlame: FlameLevel } | null;
   /** The reveal's "Why the Bear?" link: the Village's shield opens the same sheet. */
   onWhy?: () => void;
 };
@@ -155,11 +159,31 @@ function WhyLink({
 const plainTitle = (t: TFunction, feast: Extract<BigFeast, { kind: "age" | "anniversary" }>) =>
   feast.kind === "age" ? feast.name : t("session.tonight_anniversary", { count: feast.years });
 
+/**
+ * The animal's portrait, 192 dp: the largest square that leaves the title and the body above the
+ * fold on a 640 dp phone at 130 % text, and one the 24 dp margins of a 360 dp screen still hold.
+ */
+const PORTRAIT = 192;
+
+function FeastPortrait({
+  animal,
+  portrait,
+  fallback,
+}: {
+  animal: Animal;
+  portrait: Ctx["portrait"];
+  fallback?: ReactNode;
+}) {
+  if (!portrait) return fallback ?? null;
+  return <AnimalPortrait animal={animal} size={PORTRAIT} fallback={fallback} {...portrait} />;
+}
+
 /** The text of the last image, which is the whole feast under reduced motion. */
 function FeastText({
   feast,
   villageName,
   sessions,
+  portrait,
   onWhy,
   whyInert,
 }: Omit<Ctx, "crest"> & { whyInert?: boolean }) {
@@ -217,6 +241,7 @@ function FeastText({
   if (feast.kind === "legendary") {
     return (
       <>
+        <FeastPortrait animal={feast.animal} portrait={portrait} />
         <Kicker>{t("village.crest_stage_legendary")}</Kicker>
         <Title>{legendaryTitle(t, feast)}</Title>
         <Line testID="big-feast-body" fact>
@@ -306,7 +331,16 @@ const LAYER = { position: "absolute", alignItems: "center", gap: 16 } as const;
 type Props = Ctx & { tier: VillageTier; onSeeVillage: () => void };
 
 /** The last image of the reveal, and the whole of it under reduced motion: nothing moves. */
-function RevealFinal({ feast, crest, tier, villageName, sessions, onSeeVillage, onWhy }: Props) {
+function RevealFinal({
+  feast,
+  crest,
+  tier,
+  villageName,
+  sessions,
+  portrait,
+  onSeeVillage,
+  onWhy,
+}: Props) {
   if (feast.kind !== "reveal") return null;
   return (
     <Frame
@@ -316,8 +350,15 @@ function RevealFinal({ feast, crest, tier, villageName, sessions, onSeeVillage, 
       onSeeVillage={onSeeVillage}
     >
       <YStack style={SECTION}>
+        <FeastPortrait animal={feast.animal} portrait={portrait} />
         <Shield crest={crest} />
-        <FeastText feast={feast} villageName={villageName} sessions={sessions} onWhy={onWhy} />
+        <FeastText
+          feast={feast}
+          villageName={villageName}
+          sessions={sessions}
+          portrait={portrait}
+          onWhy={onWhy}
+        />
       </YStack>
     </Frame>
   );
@@ -330,6 +371,7 @@ function RevealStoryboard({
   tier,
   villageName,
   sessions,
+  portrait,
   onSeeVillage,
   onWhy,
 }: Props) {
@@ -384,12 +426,18 @@ function RevealStoryboard({
           <Title>{t("session.feast_reveal_t1")}</Title>
         </Animated.View>
         <Animated.View style={[LAYER, second]}>
-          <Image
-            source={icon}
-            tintColor={rawColors.text}
-            contentFit="contain"
-            style={{ width: 120, height: 120 }}
-            accessible={false}
+          <FeastPortrait
+            animal={feast.animal}
+            portrait={portrait}
+            fallback={
+              <Image
+                source={icon}
+                tintColor={rawColors.text}
+                contentFit="contain"
+                style={{ width: 120, height: 120 }}
+                accessible={false}
+              />
+            }
           />
           <Title>{t(`session.feast_reveal_t2_${feast.animal}`)}</Title>
         </Animated.View>
@@ -400,6 +448,7 @@ function RevealStoryboard({
               feast={feast}
               villageName={villageName}
               sessions={sessions}
+              portrait={null}
               onWhy={onWhy}
               whyInert={!textShown}
             />
@@ -411,7 +460,7 @@ function RevealStoryboard({
 }
 
 /** A tier's feast, and any other: the text comes up once, a little, over the painting. */
-function TextStoryboard({ feast, tier, villageName, sessions, onSeeVillage }: Props) {
+function TextStoryboard({ feast, tier, villageName, sessions, portrait, onSeeVillage }: Props) {
   const lift = useSharedValue(0);
   const text = useSharedValue(0);
   useEffect(() => {
@@ -431,13 +480,18 @@ function TextStoryboard({ feast, tier, villageName, sessions, onSeeVillage }: Pr
       low
     >
       <Animated.View style={[SECTION, words]}>
-        <FeastText feast={feast} villageName={villageName} sessions={sessions} />
+        <FeastText
+          feast={feast}
+          villageName={villageName}
+          sessions={sessions}
+          portrait={portrait}
+        />
       </Animated.View>
     </Frame>
   );
 }
 
-function TextFinal({ feast, tier, villageName, sessions, onSeeVillage }: Props) {
+function TextFinal({ feast, tier, villageName, sessions, portrait, onSeeVillage }: Props) {
   return (
     <Frame
       tier={tier}
@@ -447,7 +501,12 @@ function TextFinal({ feast, tier, villageName, sessions, onSeeVillage }: Props) 
       low
     >
       <YStack style={SECTION}>
-        <FeastText feast={feast} villageName={villageName} sessions={sessions} />
+        <FeastText
+          feast={feast}
+          villageName={villageName}
+          sessions={sessions}
+          portrait={portrait}
+        />
       </YStack>
     </Frame>
   );

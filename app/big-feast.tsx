@@ -40,6 +40,18 @@ function readCrest(set: (crest: Crest | null) => void) {
 const whyOf = (crest: Crest | null | undefined, open: () => void) =>
   crest != null && !crest.manual ? open : undefined;
 
+const readsCrest = (feast: BigFeast | null) =>
+  feast?.kind === "reveal" || feast?.kind === "legendary";
+
+/** The stage the portrait wears: the crest's, or legendary for the feast that announces it. */
+const portraitFor = (feast: BigFeast, crest: Crest | null | undefined) =>
+  crest
+    ? {
+        stage: feast.kind === "legendary" ? ("legendary" as const) : crest.stage,
+        longestFlame: crest.longestFlame,
+      }
+    : null;
+
 function useBackPress(active: boolean, onPress: () => void) {
   useEffect(() => {
     if (!active) return;
@@ -96,10 +108,11 @@ export default function BigFeastScreen() {
       });
   }, [isTier]);
 
-  const isReveal = feast?.kind === "reveal";
+  // The legendary feast reads the crest too: the rare coat is the hero's flame, not the feast's.
+  const needsCrest = readsCrest(feast);
   useEffect(() => {
-    if (isReveal) readCrest(setCrest);
-  }, [isReveal]);
+    if (needsCrest) readCrest(setCrest);
+  }, [needsCrest]);
 
   // Pop this screen, then do what the victory screen would. The two actions queue on one stack,
   // so the session screen under this one is replaced, exactly as "Continue" without a feast did.
@@ -133,7 +146,7 @@ export default function BigFeastScreen() {
     seeVillage(router, result);
   };
 
-  const waiting = (isTier && sessions === undefined) || (isReveal && crest === undefined);
+  const waiting = (isTier && sessions === undefined) || (needsCrest && crest === undefined);
   return (
     <>
       {/* No slide: the first beat is two eyes on the painting, and a fade would eat it. Before any
@@ -156,6 +169,7 @@ export default function BigFeastScreen() {
           crest={feast.kind === "reveal" ? revealShield(feast, crest ?? null) : null}
           tier={getVillageTier(calculateLevelFromXp(result.heroXp.after))}
           villageName={villageName}
+          portrait={portraitFor(feast, crest)}
           sessions={sessions ?? null}
           onWhy={whyOf(crest, () => setCrestView("why"))}
           onSeeVillage={toVillage}

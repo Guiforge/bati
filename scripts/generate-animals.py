@@ -212,19 +212,19 @@ STAGE = {
     "bear": {
         "young": "It is a half-grown bear drawn at about half the size of a grown bear, standing in the lower middle of the picture with wide empty night background all around it, facing right in the same proud three-quarter view. It is a gangly two-year-old bear, all legs: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long muzzle, ears that look large for its head, no shoulder hump yet, oversized paws, a short scruffy coat; a wary, awkward stance, drawn small in the picture with wide empty night around it. Its coat is one even colour from chin to belly, with no pale patch on the chest or belly. Its mouth is closed.",
         "adult": f"It is a bear in its prime, facing right, {SEEN_BELOW}: huge and powerful, with a thick neck, heavy shoulder muscle and a full coat.",
-        "venerable": f"It is a very old bear, epic and unbowed, facing right, {SEEN_BELOW}: the coat is heavily frosted silver-grey over the whole head, muzzle, neck, shoulders and back, the dark chestnut showing only on the legs and belly, the muzzle pale grey, the coat thin over bony hips, a sagging belly, a torn ear and worn blunt claws.",
+        "venerable": f"It is a very old bear, epic and unbowed, facing right, {SEEN_BELOW}: the coat stays BROWN, a dull faded chestnut duller than the adult's, with a pale grey muzzle and silver-grey frost only on the top of the head, the nape and the upper shoulders, never on the rest of the body; old scars across the shoulder and muzzle, a torn ear with a notch bitten out of it, bony hips under thin fur, a sagging belly and worn blunt claws; the chest stays one plain colour.",
         "legendary": legendary("bear", "paws", "thick mane"),
     },
     "stag": {
         "young": "It is a young stag drawn at about half the size of a grown stag, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent stag: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long muzzle, ears that look large for its head, its first small antlers, short with only two or three tines each, a short scruffy coat; a wary, awkward stance.",
         "adult": f"It is a stag in its prime, facing right, {SEEN_BELOW}: broad-chested and muscular, with full antlers of many tines and a proud raised head.",
-        "venerable": f"It is a very old stag, epic and unbowed, facing right, {SEEN_BELOW}: the coat is heavily frosted silver-grey over the whole head, muzzle, neck, shoulders and back, the russet showing only on the legs and belly, the coat thin over bony hips, a sagging belly, a torn ear, worn blunt hooves and massive wide antlers thick with tines.",
+        "venerable": f"It is a very old stag, epic and unbowed, facing right, {SEEN_BELOW}: the coat stays RUSSET, duller than the adult's, with a pale grey muzzle and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear, worn blunt hooves and massive wide antlers thick with tines.",
         "legendary": legendary("stag", "hooves", "thick neck mane beneath a vast crown of antlers of many tines"),
     },
     "horse": {
         "young": "It is a young horse drawn at about half the size of a grown horse, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky yearling: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow long head, ears that look large for its head, a fine short scruffy mane and a short tail, oversized hooves; a wary, awkward stance; bare-backed, nothing on its back or head.",
         "adult": f"It is a horse in its prime, facing right, {SEEN_BELOW}: fully grown, deep-chested and muscular, the coat in good condition and the head carried high; bare-backed, nothing on its back or head.",
-        "venerable": f"It is a very old horse, epic and unbowed, facing right, {SEEN_BELOW}: the coat is heavily frosted silver-grey over the whole head, muzzle, neck, shoulders and back, the base colour showing only on the legs and belly, the coat thin over bony hips, a hollowed back and a sagging belly, a torn ear and worn blunt hooves, standing slow and dignified; bare-backed, nothing on its back or head.",
+        "venerable": f"It is a very old horse, epic and unbowed, facing right, {SEEN_BELOW}: the coat keeps its base colour, duller than the adult's, with a pale grey muzzle and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a hollowed back and a sagging belly, a torn ear and worn blunt hooves, standing slow and dignified; bare-backed, nothing on its back or head.",
         "legendary": legendary("horse", "hooves", "long flowing mane") + " Bare-backed, nothing on its back or head.",
     },
     "salmon": {
@@ -242,9 +242,39 @@ STAGE = {
     "boar": {
         "young": "It is a young boar drawn at about half the size of a grown boar, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent boar: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long snout, ears that look large for its head, tusks just showing as small nubs, a short low scruffy ridge of bristles; a wary, awkward stance.",
         "adult": f"It is a boar in its prime, facing right, {SEEN_BELOW}: full-sized, deep-chested and thick-necked, with a tall bristle ridge and fully grown tusks.",
-        "venerable": f"It is a very old boar, epic and unbowed, facing right, {SEEN_BELOW}: the coat is heavily frosted silver-grey over the whole head, snout, neck, shoulders and back, the dark showing only on the legs and belly, the coat thin over bony hips, a sagging belly, a torn ear and thick worn tusks.",
+        "venerable": f"It is a very old boar, epic and unbowed, facing right, {SEEN_BELOW}: the coat keeps its dark grey, duller than the adult's, with a pale grey snout and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear and thick worn tusks.",
         "legendary": legendary("boar", "trotters", "long bristle mane") + " Heavy curved tusks.",
     },
+}
+
+
+# Legendary bear concept variants (`--concept`): each replaces the legendary stage sentence, and
+# optionally the pose rule, and files into bear-legendary/legendary-<name>/. The 57 slugs and their
+# catalogue are untouched. FLUX ignores camera-angle wording, so the drama is in pose and composition.
+CONCEPT_TAIL = " It is still a natural bear, no armor, no glow and no magic, with old pale scars across its shoulder and muzzle."
+CONCEPTS = {
+    "roar": (
+        "It is a legendary bear at its legendary peak, visibly larger and broader than the adult, very large in the picture "
+        "and never cropped, facing right. It stands on all four paws, its head thrown up toward the upper right and its jaws "
+        "wide open in a full roar, long fangs visible, a fierce and serious roar, never comical, its mane of fur bristling "
+        "on its neck and shoulders. The only light comes from behind it, a cold moonlight that outlines the whole crest of "
+        "its back, neck and head in a thin pale line, while its face and flank are in deep black ink shadow with hard edges."
+        + CONCEPT_TAIL, None),
+    "charge": (
+        "It is a legendary bear at its legendary peak, visibly larger and broader than the adult, facing the viewer in a "
+        "front three-quarter view and advancing straight toward us, never cropped. Its massive head is held low in front, "
+        "close to us, its enormous shoulders and hump rising behind it, one forepaw raised mid-stride, its gaze fixed on us from "
+        "deep in the shadow under its heavy brow. It fills the picture right up to the margin. The only light comes from "
+        "behind it, a cold moonlight that outlines its shoulders in a thin pale line, while its face and body are in deep "
+        "black ink shadow with hard edges." + CONCEPT_TAIL,
+        "A single animal, alone in the picture, facing the viewer in a front three-quarter view, advancing toward us."),
+    "upright": (
+        "It is a legendary bear, a great real brown bear standing upright on its hind legs, in a three-quarter view toward "
+        "the right, visibly larger and broader than the adult, its forelegs hanging along its body, the long claws of its "
+        "forepaws visible, its head held high and dominating the picture. It looks natural, neither human nor monstrous, "
+        "and is whole in the picture with a clear margin around it, never cropped. The only light comes from behind it, a "
+        "cold moonlight that outlines its back and head in a thin pale line, while its face and body are in deep black ink "
+        "shadow with hard edges." + CONCEPT_TAIL, None),
 }
 
 
@@ -272,9 +302,14 @@ def parts_of(slug: str) -> tuple[str, str, str]:
     return animal, stage, coat[0] if coat else "base"
 
 
-def prompt_for(slug: str) -> str:
+def prompt_for(slug: str, concept: str | None = None) -> str:
     animal, stage, coat = parts_of(slug)
-    return " ".join((BACKGROUND, SILHOUETTE[animal], COAT[animal][coat], SALMON_EYE if animal == "salmon" else EYES, STAGE[animal][stage], " ".join(style_rules(animal))))
+    rules = style_rules(animal)
+    text = STAGE[animal][stage]
+    if concept:
+        text, pose = CONCEPTS[concept]
+        rules = tuple(pose if pose and r == POSE[animal] else r for r in rules)
+    return " ".join((BACKGROUND, SILHOUETTE[animal], COAT[animal][coat], SALMON_EYE if animal == "salmon" else EYES, text, " ".join(rules)))
 
 
 def self_test() -> None:
@@ -320,6 +355,12 @@ def self_test() -> None:
         assert len(mine) == (7 if animal == "ermine" else 10), (animal, len(mine))
         assert all(prompt_for(s).count(SILHOUETTE[animal]) == 1 for s in mine), animal
     assert not {"bear-young-rare", "ermine-adult-winter"} & set(slugs)
+    for name, (text, pose) in CONCEPTS.items():
+        p = prompt_for("bear-legendary", name)
+        assert BACKGROUND in p and SILHOUETTE["bear"] in p and EYES in p and "plain chest with no white blaze" in p, name
+        assert "no armor, no glow and no magic" in p and "never cropped" in p and text in p, name
+        assert (pose or THREE_QUARTER) in p and (pose is None or THREE_QUARTER not in p), name
+        assert "ground" not in p.lower().replace("background", ""), name
     print(f"self-test ok: {len(slugs)} slugs, style rules x{len(STYLE_RULES)}, poses per animal, no ground word, silhouette identical per animal, eyes verbatim")
 
 
@@ -406,16 +447,21 @@ def _counted_json(url, key, payload=None, attempts=6):
 # --- commands --------------------------------------------------------------------------------
 
 
-def candidates(slug: str, attempt: int, dry_run: bool) -> None:
+def folder(slug: str, concept: str | None) -> pathlib.Path:
+    return OUT / slug / f"legendary-{concept}" if concept else OUT / slug
+
+
+def candidates(slug: str, attempt: int, dry_run: bool, concept: str | None = None) -> None:
     global _current_slug
-    prompt = prompt_for(slug)
-    outs = [OUT / slug / f"a{attempt}_c{i}.jpg" for i in range(CANDIDATES)]
+    prompt = prompt_for(slug, concept)
+    seed_slug = f"{slug}-{concept}" if concept else slug  # a different draw per concept
+    outs = [folder(slug, concept) / f"a{attempt}_c{i}.jpg" for i in range(CANDIDATES)]
     if dry_run:
         print(f"[dry-run] nothing submitted. {CANDIDATES} x {SIZE}x{SIZE}, "
               f"~{CANDIDATES * cost_per_image():.2f} EUR, spent so far {total_spent():.2f} of {BUDGET_EUR:.2f}")
         print(f"\nPROMPT (same for the 4):\n{prompt}\n")
         for i, out in enumerate(outs):
-            print(f"c{i}: seed {seed_of(slug, attempt, i)} -> {out}")
+            print(f"c{i}: seed {seed_of(seed_slug, attempt, i)} -> {out}")
         return
 
     spent = total_spent()
@@ -426,7 +472,7 @@ def candidates(slug: str, attempt: int, dry_run: bool) -> None:
     with concurrent.futures.ThreadPoolExecutor(max_workers=CANDIDATES) as pool:
         futures = [
             pool.submit(generate, slug=slug, prompt=prompt, out=out, width=SIZE, height=SIZE,
-                        seed=seed_of(slug, attempt, i))
+                        seed=seed_of(seed_slug, attempt, i))
             for i, out in enumerate(outs)
         ]
         for future in futures:
@@ -434,11 +480,11 @@ def candidates(slug: str, attempt: int, dry_run: bool) -> None:
     print(f"spent so far: {total_spent():.2f} of {BUDGET_EUR:.2f} EUR")
 
 
-def sheet(slug: str, attempt: int, dry_run: bool) -> None:
-    made = [str(o) for o in (OUT / slug / f"a{attempt}_c{i}.jpg" for i in range(CANDIDATES)) if o.exists()]
+def sheet(slug: str, attempt: int, dry_run: bool, concept: str | None = None) -> None:
+    made = [str(o) for o in (folder(slug, concept) / f"a{attempt}_c{i}.jpg" for i in range(CANDIDATES)) if o.exists()]
     if not made:
         sys.exit(f"no candidates for {slug} attempt {attempt}")
-    out = OUT / slug / f"a{attempt}_sheet.jpg"
+    out = folder(slug, concept) / f"a{attempt}_sheet.jpg"
     if dry_run:
         print(f"[dry-run] would write {out} from {len(made)} candidate(s); nothing written")
         return
@@ -482,6 +528,8 @@ def main() -> None:
         p = sub.add_parser(name)
         p.add_argument("slug")
         p.add_argument("attempt", type=positive)
+        if name != "accept":
+            p.add_argument("--concept", choices=sorted(CONCEPTS), help="bear-legendary only: a concept variant, filed in legendary-<concept>/")
         if name == "accept":
             p.add_argument("index", type=int, choices=range(CANDIDATES))
     args = parser.parse_args()
@@ -490,10 +538,13 @@ def main() -> None:
     if not args.command:
         parser.error("a command is required")
     slug = parse_slug(args.slug)
+    concept = getattr(args, "concept", None)
+    if concept and slug != "bear-legendary":
+        sys.exit("--concept only applies to bear-legendary")
     if args.command == "candidates":
-        candidates(slug, args.attempt, args.dry_run)
+        candidates(slug, args.attempt, args.dry_run, concept)
     elif args.command == "sheet":
-        sheet(slug, args.attempt, args.dry_run)
+        sheet(slug, args.attempt, args.dry_run, concept)
     else:
         accept(slug, args.attempt, args.index, args.dry_run)
 

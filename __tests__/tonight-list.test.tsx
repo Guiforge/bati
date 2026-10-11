@@ -159,10 +159,8 @@ describe("TonightList", () => {
     expect(getByText("après")).toBeTruthy();
     expect(getByText("Pompes 14, était 12")).toBeTruthy();
     expect(getByText("record")).toBeTruthy();
-    expect(getByLabelText("Pompes 14, était 12, record")).toBeTruthy();
-    expect(
-      getByLabelText("Un ours sort de la forêt et s'installe à Brumeval., après"),
-    ).toBeTruthy();
+    expect(getByLabelText("Pompes 14, était 12. record")).toBeTruthy();
+    expect(getByLabelText("Un ours sort de la forêt et s'installe à Brumeval. après")).toBeTruthy();
     expect(queryByText(/dans ton village/)).toBeNull();
   });
 
@@ -283,6 +281,17 @@ describe("TonightList", () => {
       "Brumeval devient un Village. Niveau 5",
     );
     expect(spoken({ title: "Nouveau palier : Village" })).toBe("Nouveau palier : Village");
+  });
+
+  test("the spoken label joins with a space after a final mark, and keeps inner stops", () => {
+    expect(spoken({ title: "Boss vaincu !", body: ["Golem"] })).toBe("Boss vaincu ! Golem");
+    expect(spoken({ title: "Vraiment ?", body: ["Oui"] })).toBe("Vraiment ? Oui");
+    expect(spoken({ title: "Attends…", body: ["Suite"] })).toBe("Attends… Suite");
+    expect(spoken({ title: "Niv. 5", body: ["Niveau 5. Le village change."] })).toBe(
+      "Niv. 5. Niveau 5. Le village change",
+    );
+    expect(spoken({ title: "Boss", body: [""] })).toBe("Boss");
+    expect(spoken({ title: "Boss", body: [] })).toBe("Boss");
   });
 
   test("a boss, an oath and a building rank are said once each", async () => {
@@ -595,7 +604,7 @@ describe("TonightList style", () => {
     const { getByLabelText, getByText, getAllByRole } = await show(
       rank({ crestReveal: { animal: "bear", quarters: null, firstEight: [], late: false } }),
     );
-    expect(getByLabelText(/^Un ours sort de la forêt.*, après$/)).toBeTruthy();
+    expect(getByLabelText(/^Un ours sort de la forêt.*Brumeval\. après$/)).toBeTruthy();
     expect(getAllByRole("image", { hidden: true })).toHaveLength(1);
     expect(StyleSheet.flatten(getByText("après").props.style).color).toBe(dark.textSecondary?.val);
     expect(StyleSheet.flatten(getByText("après").props.style).color).not.toBe(

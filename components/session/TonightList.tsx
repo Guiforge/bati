@@ -302,7 +302,7 @@ function LineRow({ line }: { line: Line }) {
       items="center"
       gap="$3"
       accessible
-      accessibilityLabel={badge ? `${plain}, ${badge}` : plain}
+      accessibilityLabel={spoken({ title: plain, body: badge ? [badge] : [] })}
     >
       {line.art ?? <YStack width={8} height={8} rounded={4} bg="$resourceGold" />}
       <Text flex={1} fontSize={15} color="$text">

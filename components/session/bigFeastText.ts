@@ -8,7 +8,7 @@ import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import type { Feast } from "./feasts";
 
 /**
- * "Brumeval becomes a Village.", or "New tier: Flourishing City." before it has a name. An unnamed
+ * "Brumeval becomes a Village.", or "New tier: Flourishing City" before it has a name. An unnamed
  * village has no subject to put a verb on: "Your village becomes a Hamlet" read as a demotion at
  * tiers 1 and 2 and "it is now a Village" as a tautology at 3, so every tier takes the label form,
  * which also needs no article. The full screen already carries a "New tier" kicker above its
@@ -96,6 +96,14 @@ export const BEAT = 550;
 /** The words fade in over this long: the "Why" link waits the same, so it is never touchable while faint. */
 export const TEXT_FADE = 500;
 
-/** Title and body as one sentence run. A part that already ends on a full stop does not get a second. */
-export const spoken = (card: { title: string; body?: string[] }) =>
-  [card.title, ...(card.body ?? [])].map((p) => p.replace(/\.$/, "")).join(". ");
+/**
+ * Title and body as one sentence run. Parts are joined with a full stop, except after one that
+ * already ends on a final mark (. ! ? …), which gets a space. Only the very last full stop goes.
+ */
+export const spoken = (card: { title: string; body?: string[] }) => {
+  const parts = [card.title, ...(card.body ?? [])].filter(Boolean);
+  const last = parts.length - 1;
+  return parts
+    .map((p, i) => (i === last ? p.replace(/\.$/, "") : p))
+    .reduce((run, p) => `${run}${/[.!?…]$/.test(run) ? " " : ". "}${p}`);
+};

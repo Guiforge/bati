@@ -66,10 +66,22 @@ COSTS = WORK / "couts.csv"
 CANDIDATES = 4
 SIZE = 1024
 
-# bfl.ai/pricing (2026-10-11): FLUX.2 [pro] "from $0.03 per megapixel", first megapixel; the page's
-# own calculator shows $0.048 per image. A 1024x1024 is 1 MP. Rounded up to the calculator figure
-# and read as euros, so the estimate errs high. Edit this constant when the tariff moves.
-COST_PER_IMAGE_EUR = 0.05
+# Euros per 1 MP image, by endpoint; unknown endpoints are refused, never counted as 0. Sources, read
+# 2026-10-11 (USD, read as EUR and rounded up so the estimate errs high): bfl.ai/pricing calculator
+# $0.048 per image for FLUX.2 [pro]; docs.bfl.ai/quick_start/pricing "flux-3-image ... `1k`: $0.048".
+COST_BY_ENDPOINT_EUR = {
+    "https://api.bfl.ai/v1/flux-2-pro-preview": 0.05,
+    "https://api.bfl.ai/v1/flux-3-image": 0.05,  # no seed: flux.py sends none and files "seed": null
+}
+
+
+def cost_per_image() -> float:
+    try:
+        return COST_BY_ENDPOINT_EUR[flux.ENDPOINT]
+    except KeyError:
+        sys.exit(f"unknown endpoint {flux.ENDPOINT!r}: no price known, refusing to submit. Add it to COST_BY_ENDPOINT_EUR.")
+
+
 BUDGET_EUR = 25.0  # of 30 for the whole chantier; the last 5 are the margin.
 
 ANIMALS = ("bear", "stag", "horse", "salmon", "ermine", "boar")
@@ -208,7 +220,7 @@ def total_spent() -> float:
 def reserve(slug: str, submissions: int = 1) -> None:
     """Refuse past the budget, else write the line. Check and write share one lock, so six
     workers cannot each see room for one more."""
-    cost = submissions * COST_PER_IMAGE_EUR
+    cost = submissions * cost_per_image()
     with _cost_lock:
         # ponytail: re-reads the whole couts.csv on every submission. Fine while it stays under a
         # few hundred lines; keep a running total in memory if it ever grows past that.
@@ -267,14 +279,14 @@ def candidates(slug: str, attempt: int, dry_run: bool) -> None:
     outs = [OUT / slug / f"a{attempt}_c{i}.jpg" for i in range(CANDIDATES)]
     if dry_run:
         print(f"[dry-run] nothing submitted. {CANDIDATES} x {SIZE}x{SIZE}, "
-              f"~{CANDIDATES * COST_PER_IMAGE_EUR:.2f} EUR, spent so far {total_spent():.2f} of {BUDGET_EUR:.2f}")
+              f"~{CANDIDATES * cost_per_image():.2f} EUR, spent so far {total_spent():.2f} of {BUDGET_EUR:.2f}")
         print(f"\nPROMPT (same for the 4):\n{prompt}\n")
         for i, out in enumerate(outs):
             print(f"c{i}: seed {seed_of(slug, attempt, i)} -> {out}")
         return
 
     spent = total_spent()
-    if spent + CANDIDATES * COST_PER_IMAGE_EUR > BUDGET_EUR:
+    if spent + CANDIDATES * cost_per_image() > BUDGET_EUR:
         sys.exit(f"budget guard: {spent:.2f} EUR spent, a batch of {CANDIDATES} would pass {BUDGET_EUR:.2f}.")
     _current_slug = slug
     flux._json = _counted_json

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 import { BackHandler, StyleSheet } from "react-native";
 import { withRepeat, withSpring, withTiming } from "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -666,12 +666,44 @@ describe("the big-feast route", () => {
       expect(await v.findByTestId("big-feast-silhouette")).toBeTruthy();
     });
 
+    // The layer that fades out at the shield's landing holds the second beat's title. What stays
+    // after it, the portrait and the shield among it, is the last image.
+    const fadingLayer = (title: ReturnType<typeof screen.getByText>) => {
+      let node: ReturnType<typeof screen.getByText> | null = title;
+      while (node && StyleSheet.flatten(node.props.style)?.position !== "absolute") {
+        node = node.parent;
+      }
+      assert(node);
+      return node;
+    };
+
+    test("the animated reveal ends on the portrait and the shield together", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("bear", "adult"));
+      mockReduced = false;
+      const v = await mount();
+      const portrait = await v.findByTestId("animal-portrait");
+      const layer = fadingLayer(v.getByText("Un ours sort de la forêt."));
+      expect(within(layer).queryByTestId("animal-portrait")).toBeNull();
+      expect(StyleSheet.flatten(portrait.props.style)).toMatchObject({ width: 160, height: 160 });
+      expect(mockCrestDrawn).toHaveBeenCalled();
+    });
+
+    test("an animal without a shipped portrait keeps its silhouette to the last image", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("horse", "adult"));
+      finish({ crestReveal: { ...revealFacts, animal: "horse" } });
+      mockReduced = false;
+      const v = await mount();
+      const layer = fadingLayer(await v.findByText("Un cheval arrive au galop."));
+      expect(within(layer).queryByTestId("big-feast-silhouette")).toBeNull();
+      expect(v.getByTestId("big-feast-silhouette")).toBeTruthy();
+    });
+
     test("the portrait's square is there before the coat is known", async () => {
       mockGetCrest.mockResolvedValue(crestOf("bear", "adult"));
       mockPortraitOf.mockReturnValue(new Promise(() => {}));
       const v = await mount();
       const box = await v.findByTestId("animal-portrait");
-      expect(StyleSheet.flatten(box.props.style)).toMatchObject({ width: 192, height: 192 });
+      expect(StyleSheet.flatten(box.props.style)).toMatchObject({ width: 160, height: 160 });
     });
 
     test("a legendary feast whose portrait ships reads the crest and asks for the legendary stage", async () => {

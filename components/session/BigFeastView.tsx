@@ -169,13 +169,44 @@ function FeastPortrait({
   animal,
   portrait,
   fallback,
+  size = PORTRAIT,
 }: {
   animal: Animal;
   portrait: Ctx["portrait"];
   fallback?: ReactNode;
+  size?: number;
 }) {
   if (!portrait) return fallback ?? null;
-  return <AnimalPortrait animal={animal} size={PORTRAIT} fallback={fallback} {...portrait} />;
+  return <AnimalPortrait animal={animal} size={size} fallback={fallback} {...portrait} />;
+}
+
+/**
+ * The reveal's portrait, 160 dp: with the 96 dp shield, kicker, title, body, colours and the
+ * "Why" link under it, 192 does not leave the title above the fold at 130 % on 360x640. The same
+ * size in the storyboard and in the last image, so the portrait never moves when the shield lands.
+ */
+const REVEAL_PORTRAIT = 160;
+
+/** The portrait of the reveal, or the animal's silhouette while its portrait has not shipped. */
+function RevealPortrait({ animal, portrait }: { animal: Animal; portrait: Ctx["portrait"] }) {
+  const icon = useGameIcon(CREST_ICON[animal]);
+  return (
+    <FeastPortrait
+      animal={animal}
+      portrait={portrait}
+      size={REVEAL_PORTRAIT}
+      fallback={
+        <Image
+          testID="big-feast-silhouette"
+          source={icon}
+          tintColor={rawColors.text}
+          contentFit="contain"
+          style={{ width: 120, height: 120 }}
+          accessible={false}
+        />
+      }
+    />
+  );
 }
 
 /** The text of the last image, which is the whole feast under reduced motion. */
@@ -350,13 +381,13 @@ function RevealFinal({
       onSeeVillage={onSeeVillage}
     >
       <YStack style={SECTION}>
-        <FeastPortrait animal={feast.animal} portrait={portrait} />
+        <RevealPortrait animal={feast.animal} portrait={portrait} />
         <Shield crest={crest} />
         <FeastText
           feast={feast}
           villageName={villageName}
           sessions={sessions}
-          portrait={portrait}
+          portrait={null}
           onWhy={onWhy}
         />
       </YStack>
@@ -376,8 +407,6 @@ function RevealStoryboard({
   onWhy,
 }: Props) {
   const { t } = useTranslation();
-  const animal = feast.kind === "reveal" ? feast.animal : "bear";
-  const icon = useGameIcon(CREST_ICON[animal]);
   // `beat` runs 0 to 2 in a straight line (the veil and the crossfades); the springs are for the
   // silhouette's rise, the shield's landing and the text, each started once.
   const beat = useSharedValue(0);
@@ -404,6 +433,12 @@ function RevealStoryboard({
   const first = useAnimatedStyle(() => ({
     opacity: interpolate(beat.value, [0.8, 1], [1, 0], "clamp"),
   }));
+  // The portrait is the last image's own: its slot is in the layout from the first beat, so it
+  // rises at the second beat and then stays where it is.
+  const portraitIn = useAnimatedStyle(() => ({
+    opacity: interpolate(beat.value, [0.8, 1], [0, 1], "clamp"),
+    transform: [{ translateY: (1 - rise.value) * RISE }],
+  }));
   const second = useAnimatedStyle(() => ({
     opacity: interpolate(beat.value, [0.8, 1, 1.8, 2], [0, 1, 1, 0], "clamp"),
     transform: [{ translateY: (1 - rise.value) * RISE }],
@@ -425,35 +460,27 @@ function RevealStoryboard({
           </Animated.View>
           <Title>{t("session.feast_reveal_t1")}</Title>
         </Animated.View>
-        <Animated.View style={[LAYER, second]}>
-          <FeastPortrait
-            animal={feast.animal}
-            portrait={portrait}
-            fallback={
-              <Image
-                testID="big-feast-silhouette"
-                source={icon}
-                tintColor={rawColors.text}
-                contentFit="contain"
-                style={{ width: 120, height: 120 }}
-                accessible={false}
-              />
-            }
-          />
-          <Title>{t(`session.feast_reveal_t2_${feast.animal}`)}</Title>
-        </Animated.View>
         <YStack style={SECTION}>
-          <Shield crest={crest} style={shield} />
-          <Animated.View style={[SECTION, words]}>
-            <FeastText
-              feast={feast}
-              villageName={villageName}
-              sessions={sessions}
-              portrait={null}
-              onWhy={onWhy}
-              whyInert={!textShown}
-            />
+          <Animated.View style={portraitIn}>
+            <RevealPortrait animal={feast.animal} portrait={portrait} />
           </Animated.View>
+          <YStack style={SECTION}>
+            {/* Over the shield's place: it fades out as the shield lands there. */}
+            <Animated.View style={[LAYER, { top: 0, left: 0, right: 0 }, second]}>
+              <Title>{t(`session.feast_reveal_t2_${feast.animal}`)}</Title>
+            </Animated.View>
+            <Shield crest={crest} style={shield} />
+            <Animated.View style={[SECTION, words]}>
+              <FeastText
+                feast={feast}
+                villageName={villageName}
+                sessions={sessions}
+                portrait={null}
+                onWhy={onWhy}
+                whyInert={!textShown}
+              />
+            </Animated.View>
+          </YStack>
         </YStack>
       </YStack>
     </Frame>

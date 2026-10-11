@@ -28,6 +28,7 @@ const WORDS = {
       "Ton hermine entre dans la légende.",
       "Ton sanglier entre dans la légende.",
     ],
+    nowLate: "L'ours est légendaire",
     kicker: "Légendaire",
     // The practice's sentence, then the boar's: five practices and "every session".
     bodies: [
@@ -39,12 +40,12 @@ const WORDS = {
       "Ta 500e séance, ce soir.",
     ],
     late: [
-      "Au moins 500 séances de force.",
-      "Au moins 500 séances d'endurance.",
-      "Au moins 500 sorties à vélo.",
-      "Au moins 500 séances de yoga.",
-      "Au moins 500 séances de callisthénie.",
-      "Au moins 500 séances.",
+      "500 séances de force, et tu continues.",
+      "500 séances d'endurance, et tu continues.",
+      "500 sorties à vélo, et tu continues.",
+      "500 séances de yoga, et tu continues.",
+      "500 séances de callisthénie, et tu continues.",
+      "500 séances, et tu continues.",
     ],
     coats: [
       "pointes d'argent",
@@ -68,29 +69,30 @@ const WORDS = {
     stage: "legendary",
     now: ["The bear is now legendary", "The ermine is now legendary"],
     titles: [
-      "Your bear passes into legend.",
-      "Your stag passes into legend.",
-      "Your horse passes into legend.",
-      "Your salmon passes into legend.",
-      "Your ermine passes into legend.",
-      "Your boar passes into legend.",
+      "Your bear becomes a legend.",
+      "Your stag becomes a legend.",
+      "Your horse becomes a legend.",
+      "Your salmon becomes a legend.",
+      "Your ermine becomes a legend.",
+      "Your boar becomes a legend.",
     ],
+    nowLate: "The bear is legendary",
     kicker: "Legendary",
     bodies: [
-      "Tonight was your 500th strength session.",
-      "Tonight was your 500th endurance session.",
-      "Tonight was your 500th bike ride.",
-      "Tonight was your 500th yoga session.",
-      "Tonight was your 500th calisthenics session.",
-      "Tonight was your 500th session.",
+      "Tonight: your 500th strength session.",
+      "Tonight: your 500th endurance session.",
+      "Tonight: your 500th bike ride.",
+      "Tonight: your 500th yoga session.",
+      "Tonight: your 500th calisthenics session.",
+      "Tonight: your 500th session.",
     ],
     late: [
-      "At least 500 strength sessions.",
-      "At least 500 endurance sessions.",
-      "At least 500 bike rides.",
-      "At least 500 yoga sessions.",
-      "At least 500 calisthenics sessions.",
-      "At least 500 sessions.",
+      "500 strength sessions and counting.",
+      "500 endurance sessions and counting.",
+      "500 bike rides and counting.",
+      "500 yoga sessions and counting.",
+      "500 calisthenics sessions and counting.",
+      "500 sessions and counting.",
     ],
     coats: [
       "silvertip",
@@ -108,7 +110,7 @@ const WORDS = {
       "The ermine takes on new colors",
       "The boar takes on new colors",
     ],
-    coatBody: "Silvertip. Your flame held for 100 days.",
+    coatBody: "Silvertip. Your flame burned for 100 days.",
   },
   de: {
     stage: "legendär",
@@ -121,6 +123,7 @@ const WORDS = {
       "Dein Hermelin wird zur Legende.",
       "Dein Wildschwein wird zur Legende.",
     ],
+    nowLate: "Der Bär ist legendär",
     kicker: "Legendär",
     bodies: [
       "Heute Abend: deine 500. Krafteinheit.",
@@ -131,12 +134,12 @@ const WORDS = {
       "Heute Abend: deine 500. Einheit.",
     ],
     late: [
-      "Mindestens 500 Krafteinheiten.",
-      "Mindestens 500 Ausdauereinheiten.",
-      "Mindestens 500 Radtouren.",
-      "Mindestens 500 Yoga-Einheiten.",
-      "Mindestens 500 Calisthenics-Einheiten.",
-      "Mindestens 500 Einheiten.",
+      "500 Krafteinheiten, und du machst weiter.",
+      "500 Ausdauereinheiten, und du machst weiter.",
+      "500 Radtouren, und du machst weiter.",
+      "500 Yoga-Einheiten, und du machst weiter.",
+      "500 Calisthenics-Einheiten, und du machst weiter.",
+      "500 Einheiten, und du machst weiter.",
     ],
     coats: [
       "Silberspitzen",
@@ -167,6 +170,7 @@ const WORDS = {
       "Tu armiño se convierte en leyenda.",
       "Tu jabalí se convierte en leyenda.",
     ],
+    nowLate: "El oso es legendario",
     kicker: "Legendario",
     bodies: [
       "Esta noche, tu sesión de fuerza número 500.",
@@ -177,12 +181,12 @@ const WORDS = {
       "Esta noche, tu sesión número 500.",
     ],
     late: [
-      "Al menos 500 sesiones de fuerza.",
-      "Al menos 500 sesiones de resistencia.",
-      "Al menos 500 salidas en bici.",
-      "Al menos 500 sesiones de yoga.",
-      "Al menos 500 sesiones de calistenia.",
-      "Al menos 500 sesiones.",
+      "500 sesiones de fuerza, y sigues sumando.",
+      "500 sesiones de resistencia, y sigues sumando.",
+      "500 salidas en bici, y sigues sumando.",
+      "500 sesiones de yoga, y sigues sumando.",
+      "500 sesiones de calistenia, y sigues sumando.",
+      "500 sesiones, y sigues sumando.",
     ],
     coats: [
       "puntas de plata",
@@ -246,6 +250,11 @@ describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (la
       t("session.tonight_stage_legendary", { animal: the("bear") }),
       t("session.tonight_stage_legendary", { animal: the("ermine") }),
     ]).toEqual(w.now);
+  });
+
+  test("a late card says the state, not the event", () => {
+    const the = sentence(t("village.crest_the_bear"));
+    expect(t("session.tonight_stage_legendary_late", { animal: the })).toBe(w.nowLate);
   });
 
   test("the big feast title says the event, with the hero's own animal and no village", () => {

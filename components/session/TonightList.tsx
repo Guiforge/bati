@@ -60,7 +60,9 @@ function largeLine(t: TFunction, f: Feast, villageName: string, language: AppLan
     case "tier":
       return tierSentence(t, f.tier, villageName, language);
     case "legendary":
-      return t("session.tonight_stage_legendary", { animal: the(t, f.animal) });
+      return t(`session.tonight_stage_legendary${lateSuffix(f)}`, {
+        animal: the(t, f.animal),
+      });
     default:
       return "";
   }
@@ -157,6 +159,9 @@ function lineOf(
   }
 }
 
+/** A legendary found past 500 is not an event of tonight: its keys have a `_late` twin. */
+const lateSuffix = (f: Feast) => (f.kind === "legendary" && f.late ? "_late" : "");
+
 function cardOf(
   t: TFunction,
   i18n: I18n,
@@ -208,7 +213,8 @@ function cardOf(
     case "stageUp":
       return {
         id: f.id,
-        title: t(`session.tonight_stage_${f.stage}`, { animal: the(t, f.animal) }),
+        // Late, the event is not tonight: "is legendary", not "becomes".
+        title: t(`session.tonight_stage_${f.stage}${lateSuffix(f)}`, { animal: the(t, f.animal) }),
         // The legendary body knows a late night ("at least 500"): the stage body would say "500".
         body: [f.kind === "legendary" ? legendaryBody(t, f) : stageBody(t, f)],
         art: shield(f.animal),

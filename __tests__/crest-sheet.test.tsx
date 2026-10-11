@@ -369,28 +369,28 @@ describe("Ton animal", () => {
 describe("the stage line under the options", () => {
   const SAID = {
     fr: [
-      "Ton animal reste jeune.",
-      "Ton animal reste adulte.",
-      "Ton animal reste vénérable.",
-      "Ton animal reste légendaire.",
+      "Quel que soit ton choix, ton animal est jeune.",
+      "Quel que soit ton choix, ton animal est adulte.",
+      "Quel que soit ton choix, ton animal est vénérable.",
+      "Quel que soit ton choix, ton animal est légendaire.",
     ],
     en: [
-      "Your animal stays young.",
-      "Your animal stays adult.",
-      "Your animal stays venerable.",
-      "Your animal stays legendary.",
+      "Your animal's stage: young.",
+      "Your animal's stage: adult.",
+      "Your animal's stage: venerable.",
+      "Your animal's stage: legendary.",
     ],
     de: [
-      "Dein Tier bleibt jung.",
-      "Dein Tier bleibt erwachsen.",
-      "Dein Tier bleibt ehrwürdig.",
-      "Dein Tier bleibt legendär.",
+      "Welches du auch wählst, dein Tier ist jung.",
+      "Welches du auch wählst, dein Tier ist erwachsen.",
+      "Welches du auch wählst, dein Tier ist ehrwürdig.",
+      "Welches du auch wählst, dein Tier ist legendär.",
     ],
     es: [
-      "Tu animal sigue joven.",
-      "Tu animal sigue adulto.",
-      "Tu animal sigue venerable.",
-      "Tu animal sigue legendario.",
+      "Elijas el que elijas, tu animal es joven.",
+      "Elijas el que elijas, tu animal es adulto.",
+      "Elijas el que elijas, tu animal es venerable.",
+      "Elijas el que elijas, tu animal es legendario.",
     ],
   } as const;
   // 8 sessions (young), then the thresholds of the sessions' animal: 40, 200, 500.
@@ -418,7 +418,7 @@ describe("the stage line under the options", () => {
   it("a hand-picked animal keeps the sessions' stage, and the line says it", async () => {
     await sheet(crestOf(seq(["strength", 200]), "salmon"), "pick");
     expect(screen.getByTestId("crest-pick-stage").props.children).toBe(
-      "Ton animal reste vénérable.",
+      "Quel que soit ton choix, ton animal est vénérable.",
     );
   });
 });

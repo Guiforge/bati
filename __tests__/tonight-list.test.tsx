@@ -229,7 +229,9 @@ describe("TonightList", () => {
       { shown: [], epilogue: true },
     );
     const { getByText } = await show(feasts);
-    expect(getByText("Au moins 500 séances de force.")).toBeTruthy();
+    expect(getByText("500 séances de force, et tu continues.")).toBeTruthy();
+    // The event is not tonight: "est", not "devient".
+    expect(getByText("L'ours est légendaire")).toBeTruthy();
   });
 
   test("a legendary animal demoted to a card, and the rare coat's card, in French", async () => {
@@ -576,6 +578,7 @@ describe("the Tonight copy, in every language", () => {
     "tonight_stage_adult",
     "tonight_stage_venerable",
     "tonight_stage_legendary",
+    "tonight_stage_legendary_late",
     "tonight_coat_rare",
     "tonight_coat_rare_body",
     "tonight_boar_body",

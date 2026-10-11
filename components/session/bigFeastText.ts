@@ -86,8 +86,8 @@ export function legendaryTitle(t: TFunction, f: Legendary): string {
 }
 
 /**
- * "Tonight was your 500th strength session." The fact is the hero's: the session that crossed
- * 500. A hero who was already past it at the update gets "At least 500 strength sessions", the
+ * "Tonight: your 500th strength session." The fact is the hero's: the session that crossed
+ * 500. A hero who was already past it at the update gets "500 strength sessions and counting", the
  * only thing that is true of them. ponytail: `n` is always `LEGENDARY_AT` (`STAGE_AT.legendary`),
  * the copy never says another number.
  */

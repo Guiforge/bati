@@ -577,7 +577,7 @@ describe("the big-feast route", () => {
     await mount();
     expect(mockMark).toHaveBeenCalledWith("legendary:strength");
     expect(await screen.findByText("Ton ours entre dans la légende.")).toBeTruthy();
-    expect(screen.getByText("Au moins 500 séances de force.")).toBeTruthy();
+    expect(screen.getByText("500 séances de force, et tu continues.")).toBeTruthy();
     expect(screen.queryByText(/ce soir/)).toBeNull();
   });
 

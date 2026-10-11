@@ -305,6 +305,13 @@ CONCEPTS = {
 
 # Per-slug coat reinforcement, appended after the coat sentence.
 COAT_EXTRA = {
+    "ermine-legendary": "Its face is lit from the front as evenly as its back, a plain white ermine face with no shading around the eyes, "
+    "each eye a small black bead set straight into white fur, like a stoat in winter coat, never a ferret or a polecat; "
+    "its white face lit from the front, as bright as its chest.",
+    "horse-venerable-rare": "All four legs are solid black from the knee down to the hoof, with no white, grey or pale hair at the fetlocks, "
+    "pasterns or coronets; the face is solid black from the forelock to the nostrils with no stripe, star or pale streak, only the lips "
+    "faintly greyed by age; the highlights on the black coat are warm dark grey, never blue; "
+    "the pasterns and hooves as black as the legs; the face solid black from forehead to nostrils, no pale stripe, no highlight down the nose.",
     "bear-legendary-rare": "Even against the backlight, the long guard hairs over its hump, nape and shoulders are tipped in pale silver-grey, a frosted grizzled mantle clearly paler than its deep brown body.",
 }
 
@@ -342,6 +349,8 @@ def parts_of(slug: str) -> tuple[str, str, str]:
 def prompt_for(slug: str, concept: str | None = None) -> str:
     animal, stage, coat = parts_of(slug)
     text = STAGE[animal][stage]
+    if slug == "ermine-legendary":  # the shadow on the face paints a polecat's mask on white fur
+        text = text.replace(" from deep in the shadow under its heavy brow", "").replace("while its face and flank in shadow", "while its flank is in shadow")
     pose = None
     if concept:
         text, pose = CONCEPTS[concept]
@@ -414,8 +423,15 @@ def self_test() -> None:
             assert "black down to the hooves" in p, slug
         if slug == "ermine-adult-rare":
             assert "as black as its back, no white bib, no white paws" in p and "never the bulk of a wolverine" in p, slug
+        if slug == "ermine-legendary":
+            assert "shadow under its heavy brow" not in p and "face and flank in shadow" not in p and "its flank is in shadow" in p, slug
+            assert "its white face lit from the front, as bright as its chest" in p and "never a ferret or a polecat" in p, slug
+        elif animal == "ermine" and stage == "legendary":
+            assert "face and flank in shadow" in p, slug
+        if slug == "horse-venerable-rare":
+            assert "the pasterns and hooves as black as the legs; the face solid black from forehead to nostrils, no pale stripe, no highlight down the nose" in p and "never blue" in p, slug
         assert "cub" not in p.lower().split() and "cute" not in p.lower(), slug
-        assert p.index("nothing glows") < p.index(STAGE[animal][parts_of(slug)[1]]), slug
+        assert p.index("nothing glows") < p.index(STAGE[animal][parts_of(slug)[1]][:60]), slug
     # the silhouette sentence is the same on every portrait of an animal (10, the ermine 7)
     for animal in ANIMALS:
         mine = [s for s in slugs if s.startswith(animal + "-")]

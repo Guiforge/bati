@@ -311,3 +311,28 @@ describe("the preferences", () => {
     expect(touching).toHaveLength(1);
   });
 });
+
+describe("the portrait follows the crestCoat choice", () => {
+  const ships = new Set(["bear-adult-rare", "bear-adult-winter"]);
+  const July = new Date(2026, 6, 15);
+  const won = { longestFlame: 5 } as const;
+
+  test("auto wears the rare coat once won, usual does not, and an unset choice is auto", async () => {
+    expect(await crest().portraitOf(won, "bear", "adult", July, ships)).toBe("bear-adult-rare");
+    await prefs().setCrestCoat("usual");
+    expect(await crest().portraitOf(won, "bear", "adult", July, ships)).toBe("bear-adult");
+    await prefs().setCrestCoat("auto");
+    expect(await crest().portraitOf(won, "bear", "adult", July, ships)).toBe("bear-adult-rare");
+  });
+
+  test("usual cuts the rare and not winter; a flame short of Eternal has no rare", async () => {
+    const January = new Date(2026, 0, 15);
+    await prefs().setCrestCoat("usual");
+    expect(await crest().portraitOf(won, "bear", "adult", January, ships)).toBe(
+      "bear-adult-winter",
+    );
+    expect(await crest().portraitOf({ longestFlame: 4 }, "bear", "adult", July, ships)).toBe(
+      "bear-adult",
+    );
+  });
+});

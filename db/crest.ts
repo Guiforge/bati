@@ -76,12 +76,16 @@ export async function getCrest(now: Date = new Date()): Promise<Crest | null> {
  * The portrait an animal on the crest wears tonight: the hero's rare coat (`crest.longestFlame`),
  * their `crestCoat` choice, the calendar and the device's region, read once and handed to the pure
  * rule. The one reader of `crestCoat`, so the choice has a consumer.
+ *
+ * @public ponytail: no screen draws the portraits yet (V-02 extended, T3), so knip sees no caller;
+ * drop the tag when the grand feast and the crest sheet call it. Tested in `db-crest.test.ts`.
  */
 export async function portraitOf(
   crest: Pick<Crest, "longestFlame">,
   animal: Animal,
   stage: CrestStage,
   now: Date = new Date(),
+  delivered?: ReadonlySet<string>,
 ): Promise<string> {
   return portraitSlug(
     animal,
@@ -90,5 +94,6 @@ export async function portraitOf(
     await preferences.getCrestCoat(),
     now,
     getLocales()[0]?.regionCode,
+    delivered,
   );
 }

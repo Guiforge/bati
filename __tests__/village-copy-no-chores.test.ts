@@ -37,24 +37,39 @@ const MOVES =
   "push-?ups?|pull-?ups?|sit-?ups?|squats?|lunges?|burpees?|planks?|crunch(?:es)?|dips|jumping jacks?|mountain climbers?|glute bridges?|wall sits?|deadlifts?|calf raises?|leg raises?|step-?ups?|pompes?|tractions?|fentes?|gainages?|Liegestütz\\w*|Klimmzüg\\w*|Kniebeug\\w*|flexion\\w*|sentadilla\\w*|dominada\\w*|zancada\\w*|abdominal\\w*|plancha\\w*";
 const OUTINGS =
   "deeds|deed(?! driver)|bosses|boss|routes?|rematch(?:es)?|hauts? faits?|exploits?|revanches?|taten|hazañas?|rutas?|sessions?|workouts?|trainings?|outings?|sets?|séances?|sorties?|séries?|entraînements?|einheit\\w*|sitzung\\w*|ausflug|ausflüg\\w*|touren?|sätze|sesion\\w*|sesión|salidas?|series|entrenamientos?";
+// The exercise placeholder is a movement ("{{count}} × {{exercise}}"), so it is a unit of effort.
+const MOVER = "\\{\\{\\s*exercise\\s*\\}\\}";
 const ART = "one|une?|ein|eine|einen|una|uno";
 const rx = (c: string, u: string) =>
-  new RegExp(`${B}${c}\\s+(?:[\\p{L}'’-]+\\s+){0,2}(?:${u})${E}`, "iu");
+  new RegExp(`${B}${c}\\s+(?:[\\p{L}'’×-]+\\s+){0,2}(?:${u})${E}`, "iu");
 const EFFORT = new RegExp(
-  `${rx(COUNT, `${REPS}|${MOVES}|${OUTINGS}`).source}|${rx(`(?:${ART})`, `${REPS}|${MOVES}`).source}`,
+  `${rx(COUNT, `${REPS}|${MOVES}|${OUTINGS}|${MOVER}`).source}|${rx(`(?:${ART})`, `${REPS}|${MOVES}`).source}`,
   "iu",
 );
 const HAS_REPS = new RegExp(`${B}(?:${REPS}|${MOVES})${E}`, "iu");
 
-// Why a count is allowed. Four reasons, no other:
+// Why a count is allowed. Six reasons, no other, and the four reserved ones belong to their keys:
 //  - "fait": it says what the hero HAS ALREADY done (records, totals, "5 de tes 8 séances", the
 //    history behind a building);
 //  - "estimation": the spec's milestone, "rank 2 in about 3 sessions", never a quantity of reps;
-//  - "échelle": the figure at the end of a rep bar, validated on the mockup in slice 7. A scale
-//    mark, not a sentence. Only village.bar_end_reps_*;
+//  - "serment": the goal the hero SET HIMSELF, "30 × Pull-ups in a row" (useOathText.ts and the
+//    swear screen pass `count: target`). Shown on the home strip while the oath is held, on the
+//    oath screen, and in "Ce soir" only once it is fulfilled. Only oath.metric_*;
+//  - "succès": an achievement's one-off goal ("Complete 10 workouts") on its trophy, a total over
+//    the hero's whole history. Only the literals of db/achievements.ts;
+//  - "échelle": the figure at the end of a bar (rows.ts, barScale.ts), a scale mark, not a
+//    sentence. Only village.bar_end_reps_* and village.unit_*;
 //  - "règle": how a hold converts to reps, an explanation. Only village.rep_unit.
-type Why = "fait" | "estimation" | "échelle" | "règle";
-const REASONS: readonly Why[] = ["fait", "estimation", "échelle", "règle"];
+type Why = "fait" | "estimation" | "serment" | "succès" | "échelle" | "règle";
+const REASONS: readonly Why[] = ["fait", "estimation", "serment", "succès", "échelle", "règle"];
+// The keys a reserved reason is for, both ways: an entry with the reason must match, and a key
+// that matches must carry the reason (so "fait" cannot be used to dodge the scoping).
+const RESERVED: Partial<Record<Why, RegExp>> = {
+  serment: /^oath\.metric_/,
+  succès: /^db\/achievements\.ts:/,
+  échelle: /^village\.(bar_end_reps_|unit_)/,
+  règle: /^village\.rep_unit$/,
+};
 // A locale key is allowed with the EXACT text of each language it is read in (plural variants are
 // keys of their own), so editing an allowed copy fails until someone re-reads it and updates the
 // entry. A "file:literal" entry is its own text.
@@ -173,17 +188,31 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     fr: "{{building}}, rang {{level}} dans environ {{count}} sorties.",
     es: "{{building}}, grado {{level}} en unas {{count}} salidas.",
   },
-  // What the hero HAS DONE: totals, records, "5 of your 8 sessions", the oath's metric, and the
+  // What the hero HAS DONE: totals, records, "5 of your 8 sessions", and the
   // reps, bosses, routes and sessions behind a building (detail sheet, bar caption).
+  "oath.metric_exercise_pr": {
+    why: "serment",
+    fr: "{{count, number}} × {{exercise}} d'affilée",
+    en: "{{count, number}} × {{exercise}} in a row",
+    de: "{{count, number}} × {{exercise}} am Stück",
+    es: "{{count, number}} × {{exercise}} seguidas",
+  },
+  "oath.metric_exercise_volume": {
+    why: "serment",
+    fr: "{{count, number}} × {{exercise}} au total",
+    en: "{{count, number}} × {{exercise}} in total",
+    de: "{{count, number}} × {{exercise}} insgesamt",
+    es: "{{count, number}} × {{exercise}} en total",
+  },
   "oath.metric_sessions": {
-    why: "fait",
+    why: "serment",
     fr: "{{count, number}} séances accomplies",
     en: "{{count, number}} sessions logged",
     de: "{{count, number}} absolvierte Einheiten",
     es: "{{count, number}} sesiones completadas",
   },
   "oath.metric_weekly_sessions": {
-    why: "fait",
+    why: "serment",
     fr: "{{weekly, number}} séances par semaine, pendant {{count, number}} semaines",
     en: "{{weekly, number}} sessions a week, for {{count, number}} weeks",
     de: "{{weekly, number}} Einheiten pro Woche, {{count, number}} Wochen lang",
@@ -413,50 +442,50 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     es: "{{count}} rutas terminadas",
   },
   "village.unit_bosses_one": {
-    why: "fait",
+    why: "échelle",
     fr: "{{count}} boss",
     en: "{{count}} boss",
     de: "{{count}} Boss",
   },
   "village.unit_bosses_other": {
-    why: "fait",
+    why: "échelle",
     fr: "{{count}} boss",
     en: "{{count}} bosses",
   },
   "village.unit_bosses_many": {
-    why: "fait",
+    why: "échelle",
     fr: "{{count}} boss",
   },
   "village.unit_rematches_one": {
-    why: "fait",
+    why: "échelle",
     fr: "{{count}} revanche",
     en: "{{count}} rematch",
     de: "{{count}} Revanche",
   },
   "village.unit_rematches_other": {
-    why: "fait",
+    why: "échelle",
     fr: "{{count}} revanches",
     en: "{{count}} rematches",
   },
   "village.unit_rematches_many": {
-    why: "fait",
+    why: "échelle",
     fr: "{{count}} revanches",
   },
   "village.unit_routes_one": {
-    why: "fait",
+    why: "échelle",
     fr: "{{count}} route",
     en: "{{count}} route",
     de: "{{count}} Route",
     es: "{{count}} ruta",
   },
   "village.unit_routes_other": {
-    why: "fait",
+    why: "échelle",
     fr: "{{count}} routes",
     en: "{{count}} routes",
     es: "{{count}} rutas",
   },
   "village.unit_routes_many": {
-    why: "fait",
+    why: "échelle",
     fr: "{{count}} routes",
     es: "{{count}} rutas",
   },
@@ -480,30 +509,30 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     es: "{{n}} reps hechas",
   },
   // Achievements: a one-off goal shown on the trophy, a total over the hero's whole history.
-  "db/achievements.ts:Completa 10 entrenamientos": { why: "fait" },
-  "db/achievements.ts:Completa 100 entrenamientos": { why: "fait" },
-  "db/achievements.ts:Completa 25 entrenamientos": { why: "fait" },
-  "db/achievements.ts:Completa 250 entrenamientos": { why: "fait" },
-  "db/achievements.ts:Completa 50 entrenamientos": { why: "fait" },
-  "db/achievements.ts:Completa 500 entrenamientos": { why: "fait" },
-  "db/achievements.ts:Complete 10 workouts": { why: "fait" },
-  "db/achievements.ts:Complete 100 workouts": { why: "fait" },
-  "db/achievements.ts:Complete 25 workouts": { why: "fait" },
-  "db/achievements.ts:Complete 250 workouts": { why: "fait" },
-  "db/achievements.ts:Complete 50 workouts": { why: "fait" },
-  "db/achievements.ts:Complete 500 workouts": { why: "fait" },
-  "db/achievements.ts:Schließ 10 Trainings ab": { why: "fait" },
-  "db/achievements.ts:Schließ 100 Trainings ab": { why: "fait" },
-  "db/achievements.ts:Schließ 25 Trainings ab": { why: "fait" },
-  "db/achievements.ts:Schließ 250 Trainings ab": { why: "fait" },
-  "db/achievements.ts:Schließ 50 Trainings ab": { why: "fait" },
-  "db/achievements.ts:Schließ 500 Trainings ab": { why: "fait" },
-  "db/achievements.ts:Termine 10 entraînements": { why: "fait" },
-  "db/achievements.ts:Termine 100 entraînements": { why: "fait" },
-  "db/achievements.ts:Termine 25 entraînements": { why: "fait" },
-  "db/achievements.ts:Termine 250 entraînements": { why: "fait" },
-  "db/achievements.ts:Termine 50 entraînements": { why: "fait" },
-  "db/achievements.ts:Termine 500 entraînements": { why: "fait" },
+  "db/achievements.ts:Completa 10 entrenamientos": { why: "succès" },
+  "db/achievements.ts:Completa 100 entrenamientos": { why: "succès" },
+  "db/achievements.ts:Completa 25 entrenamientos": { why: "succès" },
+  "db/achievements.ts:Completa 250 entrenamientos": { why: "succès" },
+  "db/achievements.ts:Completa 50 entrenamientos": { why: "succès" },
+  "db/achievements.ts:Completa 500 entrenamientos": { why: "succès" },
+  "db/achievements.ts:Complete 10 workouts": { why: "succès" },
+  "db/achievements.ts:Complete 100 workouts": { why: "succès" },
+  "db/achievements.ts:Complete 25 workouts": { why: "succès" },
+  "db/achievements.ts:Complete 250 workouts": { why: "succès" },
+  "db/achievements.ts:Complete 50 workouts": { why: "succès" },
+  "db/achievements.ts:Complete 500 workouts": { why: "succès" },
+  "db/achievements.ts:Schließ 10 Trainings ab": { why: "succès" },
+  "db/achievements.ts:Schließ 100 Trainings ab": { why: "succès" },
+  "db/achievements.ts:Schließ 25 Trainings ab": { why: "succès" },
+  "db/achievements.ts:Schließ 250 Trainings ab": { why: "succès" },
+  "db/achievements.ts:Schließ 50 Trainings ab": { why: "succès" },
+  "db/achievements.ts:Schließ 500 Trainings ab": { why: "succès" },
+  "db/achievements.ts:Termine 10 entraînements": { why: "succès" },
+  "db/achievements.ts:Termine 100 entraînements": { why: "succès" },
+  "db/achievements.ts:Termine 25 entraînements": { why: "succès" },
+  "db/achievements.ts:Termine 250 entraînements": { why: "succès" },
+  "db/achievements.ts:Termine 50 entraînements": { why: "succès" },
+  "db/achievements.ts:Termine 500 entraînements": { why: "succès" },
   // The figure at the end of a rep bar: a scale mark, no sentence.
   "village.bar_end_reps_one": {
     why: "échelle",
@@ -776,11 +805,11 @@ describe("the copy written in the feature's source files", () => {
 });
 
 describe("the allow-list", () => {
-  it("gives every entry a valid reason, échelle and règle only to their own key", () => {
+  it("gives every entry a valid reason, the reserved ones only to their own keys", () => {
     for (const [id, { why }] of Object.entries(ALLOWED_COUNTS)) {
       expect([id, REASONS.includes(why)]).toEqual([id, true]);
-      if (why === "échelle") expect(id).toMatch(/^village\.bar_end_reps_/);
-      if (why === "règle") expect(id).toBe("village.rep_unit");
+      for (const [reserved, keys] of Object.entries(RESERVED))
+        expect([id, reserved, why === reserved]).toEqual([id, reserved, keys?.test(id)]);
     }
   });
 

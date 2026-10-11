@@ -233,6 +233,23 @@
     "reencoded": "cwebp -q 85, from bear-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/animals/bear-legendary-rare.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "9d7e5b6cd7a8779f.png",
+      "sha256": "9d7e5b6cd7a8779f73f1c8320e34a95ba1547d2aa2a1e1b1cce285f8581f648d"
+    },
+    "prompt": "The background of this picture is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. A bear with a heavy rounded shoulder hump, a broad skull, small round ears, broad flat paws with long claws and a short stubby tail. Its coat is a deep brown, the hairs of the nape and shoulders tipped in pale silver-grey, a grizzled mantle, with a paler tan muzzle and a plain chest with no white blaze. Even against the backlight, the long guard hairs over its hump, nape and shoulders are tipped in pale silver-grey, a frosted grizzled mantle clearly paler than its deep brown body. The eyes are plain animal eyes, nothing glows. The eyes are small and set deep under a heavy brow, each painted as one flat dark-brown fill in shadow, the same value as the shadow around them. It is a legendary bear at its legendary peak, visibly larger and broader than the adult, facing the viewer in a front three-quarter view and advancing straight toward us, never cropped. Its massive head is held low in front, close to us, its enormous shoulders rising behind it, one forepaw raised mid-stride, its gaze fixed on us from deep in the shadow under its heavy brow. It is whole, from its head to its rump, and fills the picture right up to the margin. The only light comes from behind it, a cold moonlight that outlines its shoulders in a thin pale line, while its face and flank in shadow, the coat colour still clearly readable, with hard edges. It is still a natural bear, no armor, no glow and no magic, with old pale scars across its shoulder and muzzle. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing, high contrast. A single animal, alone in the picture, facing the viewer in a front three-quarter view, advancing toward us. Heavy black ink contours of varying weight, the underside of the body, the far legs and the shadowed flank filled with solid black shadow shapes with hard edges, cross-hatching in the half-tones, three flat values per colour; only the top edge of the back and head carries a thin cold rim of light, the rest of the outline is black ink. The whole animal is in view from nose to tail, with a clear margin of empty background on all four sides of the picture. The animal is bare, a wild creature in the plain open dark, with the same empty night below it as all around it. The mood is serious and noble, a creature to be proud of. Square composition, high contrast, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-12",
+    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "reencoded": "cwebp -q 85, from bear-legendary-rare.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/animals/bear-legendary-winter.webp": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
@@ -539,6 +556,40 @@
     "reencoded": "cwebp -q 85, from ermine-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/animals/ermine-legendary-rare.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "324f8fe85dcf69e1.png",
+      "sha256": "324f8fe85dcf69e1345bf51cd39a21ef1bb496656282c0876bfcbbdd3f4759cf"
+    },
+    "prompt": "The background of this picture is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. An ermine with a long slim body, short legs, a small pointed face, small round ears and a long tail. Its fur is black all over, chest, belly, legs and paws as black as its back, no white bib, no white paws; the long slender body and short legs of a stoat, never the bulk of a wolverine or a badger; the ears dark. Its outline is black ink all the way round. The eyes are plain animal eyes, nothing glows. The face is as black as the body: the fur around each eye as black as the face, no pale mask, no pale ring, and each eye a small black bead edged only by the thin black ink line. It is a legendary ermine at its legendary peak, visibly larger and broader than the adult, facing the viewer in a front three-quarter view and advancing straight toward us, never cropped. Its massive head is held low in front, close to us, its enormous shoulders rising behind it, one forepaw raised mid-stride, its gaze fixed on us from deep in the shadow under its heavy brow. It is whole, from its head to its rump, and fills the picture right up to the margin. The only light comes from behind it, a faint cold moonlight with no pale or blue band along its back, its whole outline black ink, while its face and flank in shadow, the coat colour still clearly readable, with hard edges. It is still a natural ermine, no armor, no glow and no magic, with old pale scars across its shoulder and muzzle. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing, high contrast. A single animal, alone in the picture, facing the viewer in a front three-quarter view, advancing toward us. Heavy black ink contours of varying weight all around the body, the underside of the body, the far legs and the shadowed flank filled with solid black shadow shapes with hard edges, cross-hatching in the half-tones, three flat values per colour; the whole outline is black ink, with no pale or blue band along the back. The whole animal is in view from nose to tail, with a clear margin of empty background on all four sides of the picture. The animal is bare, a wild creature in the plain open dark, with the same empty night below it as all around it. The mood is serious and noble, a creature to be proud of. Square composition, high contrast, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-12",
+    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "reencoded": "cwebp -q 85, from ermine-legendary-rare.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/animals/ermine-venerable-rare.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "65f4b64227a93b98.png",
+      "sha256": "65f4b64227a93b98e9f9f1988c12232bb3a6157c2e19af73f38c79af374481c4"
+    },
+    "prompt": "The background of this picture is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. An ermine with a long slim body, short legs, a small pointed face, small round ears and a long tail. Its fur is black all over, chest, belly, legs and paws as black as its back, no white bib, no white paws; the long slender body and short legs of a stoat, never the bulk of a wolverine or a badger; the ears dark. Its outline is black ink all the way round. The eyes are plain animal eyes, nothing glows. The face is as black as the body: the fur around each eye as black as the face, no pale mask, no pale ring, and each eye a small black bead edged only by the thin black ink line. It is a very old ermine, epic and unbowed, facing right, seen from slightly below, with broad powerful shoulders: the fur is thin over bony hips, a sagging belly, fine creases around the muzzle, a muzzle frosted grey with long pale whiskers, a torn ear, worn blunt claws and a slow low-slung stance. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing, high contrast. A single animal, alone in the picture, in a proud three-quarter pose, its head and chest turned toward the right edge of the picture, with a steady stance. Heavy black ink contours of varying weight all around the body, the underside of the body, the far legs and the shadowed flank filled with solid black shadow shapes with hard edges, cross-hatching in the half-tones, three flat values per colour; the whole outline is black ink, with no pale or blue band along the back. The whole animal is in view from nose to tail, with a clear margin of empty background on all four sides of the picture. The animal is bare, a wild creature in the plain open dark, with the same empty night below it as all around it. The mood is serious and noble, a creature to be proud of. Square composition, high contrast, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-12",
+    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "reencoded": "cwebp -q 85, from ermine-venerable-rare.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/animals/ermine-venerable.webp": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
@@ -590,6 +641,23 @@
     "reencoded": "cwebp -q 85, from horse-adult-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/animals/horse-adult-winter.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "99368d8102a8cc92.png",
+      "sha256": "99368d8102a8cc9257b74e1f86c9f882405100f8582cf14e67c5df132719955f"
+    },
+    "prompt": "The background of this picture is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. A horse with a long arched neck, a deep chest, a fine head and a full flowing mane and tail. Its coat is a lean bay riding horse, not a draft horse; mane, tail and lower legs solid black; no white socks, no feathered fetlocks, no flaxen hair; the only white is the blaze down the face. The hair is long, coarse and a little darker than in summer, with snow caught in the black mane. No snowflakes in the air. The eyes are plain animal eyes, nothing glows. The eyes are small and set deep under a heavy brow, each painted as one flat dark-brown fill in shadow, the same value as the shadow around them. It is a horse in its prime, facing right, seen from slightly below, with broad powerful shoulders: fully grown, deep-chested and muscular, the coat in good condition and the head carried high; bare-backed, nothing on its back or head. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing, high contrast. A single animal, alone in the picture, in a proud three-quarter pose, its head and chest turned toward the right edge of the picture, with a steady stance. Heavy black ink contours of varying weight, the underside of the body, the far legs and the shadowed flank filled with solid black shadow shapes with hard edges, cross-hatching in the half-tones, three flat values per colour; only the top edge of the back and head carries a thin cold rim of light, the rest of the outline is black ink. The whole animal is in view from nose to tail, with a clear margin of empty background on all four sides of the picture. The animal is bare, a wild creature in the plain open dark, with the same empty night below it as all around it. The mood is serious and noble, a creature to be proud of. Square composition, high contrast, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-12",
+    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "reencoded": "cwebp -q 85, from horse-adult-winter.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/animals/horse-adult.webp": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
@@ -623,6 +691,23 @@
     "reencoded": "cwebp -q 85, from horse-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/animals/horse-legendary-winter.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "2812ef9c84a2ce07.png",
+      "sha256": "2812ef9c84a2ce07438d4f06198e531d6b7d4a3b0af81422dc1f74ffa21ee262"
+    },
+    "prompt": "The background of this picture is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. A horse with a long arched neck, a deep chest, a fine head and a full flowing mane and tail. Its coat is a lean bay riding horse, not a draft horse; mane, tail and lower legs solid black; no white socks, no feathered fetlocks, no flaxen hair; the only white is the blaze down the face. The hair is long, coarse and a little darker than in summer, with snow caught in the black mane. No snowflakes in the air. The eyes are plain animal eyes, nothing glows. The eyes are small and set deep under a heavy brow, each painted as one flat dark-brown fill in shadow, the same value as the shadow around them. It is a legendary horse at its legendary peak, visibly larger and broader than the adult, facing the viewer in a front three-quarter view and advancing straight toward us, never cropped. Its massive head is held low in front, close to us, its enormous shoulders rising behind it, one front leg raised mid-stride, its gaze fixed on us from deep in the shadow under its heavy brow. It is whole, from its head to its rump, and fills the picture right up to the margin. The only light comes from behind it, a cold moonlight that outlines its shoulders in a thin pale line, while its face and flank in shadow, the coat colour still clearly readable, with hard edges. It is still a natural horse, no armor, no glow and no magic, with old pale scars across its shoulder and muzzle. Bare-backed, nothing on its back or head, no saddle. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing, high contrast. A single animal, alone in the picture, facing the viewer in a front three-quarter view, advancing toward us. Heavy black ink contours of varying weight, the underside of the body, the far legs and the shadowed flank filled with solid black shadow shapes with hard edges, cross-hatching in the half-tones, three flat values per colour; only the top edge of the back and head carries a thin cold rim of light, the rest of the outline is black ink. The whole animal is in view from nose to tail, with a clear margin of empty background on all four sides of the picture. The animal is bare, a wild creature in the plain open dark, with the same empty night below it as all around it. The mood is serious and noble, a creature to be proud of. Square composition, high contrast, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-12",
+    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "reencoded": "cwebp -q 85, from horse-legendary-winter.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/animals/horse-legendary.webp": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
@@ -638,6 +723,23 @@
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -q 85, from horse-legendary.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/animals/horse-venerable-winter.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "43309ea6bb3aa57d.png",
+      "sha256": "43309ea6bb3aa57d6520376f383ddfe844cc32e3898da85cbeb236c162af791a"
+    },
+    "prompt": "The background of this picture is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. A horse with a long arched neck, a deep chest, a fine head and a full flowing mane and tail. Its coat is a lean bay riding horse, not a draft horse; mane, tail and lower legs solid black; no white socks, no feathered fetlocks, no flaxen hair; the only white is the blaze down the face. The hair is long, coarse and a little darker than in summer, with snow caught in the black mane. No snowflakes in the air. The eyes are plain animal eyes, nothing glows. The eyes are small and set deep under a heavy brow, each painted as one flat dark-brown fill in shadow, the same value as the shadow around them. It is a very old horse, epic and unbowed, facing right, seen from slightly below, with broad powerful shoulders: the coat duller than the adult's, with a muzzle frosted grey and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a hollowed back and a sagging belly, a torn ear and worn blunt hooves, standing slow and dignified; bare-backed, nothing on its back or head. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing, high contrast. A single animal, alone in the picture, in a proud three-quarter pose, its head and chest turned toward the right edge of the picture, with a steady stance. Heavy black ink contours of varying weight, the underside of the body, the far legs and the shadowed flank filled with solid black shadow shapes with hard edges, cross-hatching in the half-tones, three flat values per colour; only the top edge of the back and head carries a thin cold rim of light, the rest of the outline is black ink. The whole animal is in view from nose to tail, with a clear margin of empty background on all four sides of the picture. The animal is bare, a wild creature in the plain open dark, with the same empty night below it as all around it. The mood is serious and noble, a creature to be proud of. Square composition, high contrast, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-12",
+    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "reencoded": "cwebp -q 85, from horse-venerable-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/horse-venerable.webp": {
@@ -840,6 +942,23 @@
     "reencoded": "cwebp -q 85, from stag-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
+  "assets/images/animals/stag-legendary-rare.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "4b6dbdadaa2999fc.png",
+      "sha256": "4b6dbdadaa2999fcfb8d02e15dec2cd78ff286880fb14db0fd2a5edd5d9a7829"
+    },
+    "prompt": "The background of this picture is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. A red deer stag with a thick mane at the neck, a long narrow face, large upright ears and branching antlers. Its coat is a creamy white from nose to rump, with dark eyes, dark hooves and antlers of pale bone; its face, neck and legs the same creamy white as its body, never russet, brown or tan. The eyes are plain animal eyes, nothing glows. The eyes are small and set deep under a heavy brow, each painted as one flat dark-brown fill in shadow, the same value as the shadow around them. It is a legendary stag at its legendary peak, visibly larger and broader than the adult, facing the viewer in a front three-quarter view and advancing straight toward us, never cropped. Its massive head, crowned with immense antlers of many tines, is held low in front, close to us, its enormous shoulders rising behind it, one front leg raised mid-stride, its gaze fixed on us from deep in the shadow under its heavy brow. It is whole, from its head to its rump, and fills the picture right up to the margin. The only light comes from behind it, a cold moonlight that outlines its shoulders in a thin pale line, while its face and flank in shadow, the coat colour still clearly readable, with hard edges. It is still a natural stag, no armor, no glow and no magic, with old pale scars across its shoulder and muzzle. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing, high contrast. A single animal, alone in the picture, facing the viewer in a front three-quarter view, advancing toward us. Heavy black ink contours of varying weight, the underside of the body, the far legs and the shadowed flank filled with solid black shadow shapes with hard edges, cross-hatching in the half-tones, three flat values per colour; only the top edge of the back and head carries a thin cold rim of light, the rest of the outline is black ink. The whole animal is in view from nose to tail, with a clear margin of empty background on all four sides of the picture. The animal is bare, a wild creature in the plain open dark, with the same empty night below it as all around it. The mood is serious and noble, a creature to be proud of. Square composition, high contrast, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-12",
+    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "reencoded": "cwebp -q 85, from stag-legendary-rare.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
   "assets/images/animals/stag-legendary-winter.webp": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
@@ -871,6 +990,39 @@
     "height": 1024,
     "generated": "2026-10-11",
     "reencoded": "cwebp -q 85, from stag-legendary.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/animals/stag-venerable-rare.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "44a4bcfeca453d73.png",
+      "sha256": "44a4bcfeca453d73e1ba65c0318836fc2ac9b1f03a0a085af38e361b5126bdc2"
+    },
+    "prompt": "The background of this picture is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. A red deer stag with a thick mane at the neck, a long narrow face, large upright ears and branching antlers. Its coat is a creamy white from nose to rump, with dark eyes, dark hooves and antlers of pale bone; its face, neck and legs the same creamy white as its body, never russet, brown or tan. The eyes are plain animal eyes, nothing glows. The eyes are small and set deep under a heavy brow, each painted as one flat dark-brown fill in shadow, the same value as the shadow around them. It is a very old stag, epic and unbowed, facing right, seen from slightly below, with broad powerful shoulders: the coat duller than the adult's, with a muzzle frosted grey and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear, worn blunt hooves and massive wide antlers thick with tines. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing, high contrast. A single animal, alone in the picture, in a proud three-quarter pose, its head and chest turned toward the right edge of the picture, with a steady stance. Heavy black ink contours of varying weight, the underside of the body, the far legs and the shadowed flank filled with solid black shadow shapes with hard edges, cross-hatching in the half-tones, three flat values per colour; only the top edge of the back and head carries a thin cold rim of light, the rest of the outline is black ink. The whole animal is in view from nose to tail, with a clear margin of empty background on all four sides of the picture. The animal is bare, a wild creature in the plain open dark, with the same empty night below it as all around it. The mood is serious and noble, a creature to be proud of. Square composition, high contrast, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-12",
+    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "reencoded": "cwebp -q 85, from stag-venerable-rare.jpg",
+    "cutout": "background flood-filled to alpha, threshold 30"
+  },
+  "assets/images/animals/stag-venerable-winter.webp": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "cfad910711330cc7.png",
+      "sha256": "cfad910711330cc76a59d21102a993e63195072bd817a9d846acf5dd86aaf049"
+    },
+    "prompt": "The background of this picture is one unbroken flat field of very dark navy-black, as dark as a night sky, the same value from edge to edge, with no gradient, no vignette and no texture. A red deer stag with a thick mane at the neck, a long narrow face, large upright ears and branching antlers. Its coat is a dense shaggy uniform ash-grey pelt over the whole body, no red, chestnut or brown, the neck thickened, the antlers bare and washed pale by the cold. No snowflakes in the air. The eyes are plain animal eyes, nothing glows. The eyes are small and set deep under a heavy brow, each painted as one flat dark-brown fill in shadow, the same value as the shadow around them. It is a very old stag, epic and unbowed, facing right, seen from slightly below, with broad powerful shoulders: the coat duller than the adult's, with a muzzle frosted grey and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear, worn blunt hooves and massive wide antlers thick with tines. Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft airbrushing, high contrast. A single animal, alone in the picture, in a proud three-quarter pose, its head and chest turned toward the right edge of the picture, with a steady stance. Heavy black ink contours of varying weight, the underside of the body, the far legs and the shadowed flank filled with solid black shadow shapes with hard edges, cross-hatching in the half-tones, three flat values per colour; only the top edge of the back and head carries a thin cold rim of light, the rest of the outline is black ink. The whole animal is in view from nose to tail, with a clear margin of empty background on all four sides of the picture. The animal is bare, a wild creature in the plain open dark, with the same empty night below it as all around it. The mood is serious and noble, a creature to be proud of. Square composition, high contrast, an illustration with no lettering, no signature and no watermark; all four corners of the picture are empty background.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-10-12",
+    "reencoded": "cwebp -q 85, from stag-venerable-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-venerable.webp": {

@@ -51,4 +51,13 @@ export const ANIMAL_PORTRAITS: Readonly<Record<string, ImageSource>> = {
   "boar-adult-winter": require("@/assets/images/animals/boar-adult-winter.webp"),
   "boar-venerable-winter": require("@/assets/images/animals/boar-venerable-winter.webp"),
   "boar-legendary-winter": require("@/assets/images/animals/boar-legendary-winter.webp"),
+  "stag-venerable-winter": require("@/assets/images/animals/stag-venerable-winter.webp"),
+  "horse-adult-winter": require("@/assets/images/animals/horse-adult-winter.webp"),
+  "horse-venerable-winter": require("@/assets/images/animals/horse-venerable-winter.webp"),
+  "horse-legendary-winter": require("@/assets/images/animals/horse-legendary-winter.webp"),
+  "bear-legendary-rare": require("@/assets/images/animals/bear-legendary-rare.webp"),
+  "stag-venerable-rare": require("@/assets/images/animals/stag-venerable-rare.webp"),
+  "stag-legendary-rare": require("@/assets/images/animals/stag-legendary-rare.webp"),
+  "ermine-venerable-rare": require("@/assets/images/animals/ermine-venerable-rare.webp"),
+  "ermine-legendary-rare": require("@/assets/images/animals/ermine-legendary-rare.webp"),
 };

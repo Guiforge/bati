@@ -9,7 +9,117 @@
     "show_less": "Afficher moins",
     "new_unlock": "Succès débloqué !",
     "new_unlocks": "{{count}} succès débloqués !",
-    "progress": "{{unlocked}} / {{total}} débloqués"
+    "progress": "{{unlocked}} / {{total}} débloqués",
+    "badges": {
+      "first_workout": {
+        "title": "Premiers Pas",
+        "description": "Termine ton premier entraînement"
+      },
+      "sessions_10": {
+        "title": "Bien Parti",
+        "description": "Termine 10 entraînements"
+      },
+      "sessions_25": {
+        "title": "Dévoué",
+        "description": "Termine 25 entraînements"
+      },
+      "sessions_50": {
+        "title": "En Feu",
+        "description": "Termine 50 entraînements"
+      },
+      "sessions_100": {
+        "title": "Guerrier des Cent",
+        "description": "Termine 100 entraînements"
+      },
+      "sessions_250": {
+        "title": "Champion",
+        "description": "Termine 250 entraînements"
+      },
+      "sessions_500": {
+        "title": "Légende",
+        "description": "Termine 500 entraînements"
+      },
+      "streak_3": {
+        "title": "Bourgeonnement",
+        "description": "Garde ta flamme allumée 3 jours"
+      },
+      "streak_7": {
+        "title": "Guerrier Hebdo",
+        "description": "Garde ta flamme allumée 7 jours"
+      },
+      "streak_14": {
+        "title": "Quinze Jours de Feu",
+        "description": "Garde ta flamme allumée 14 jours"
+      },
+      "streak_30": {
+        "title": "Maître Mensuel",
+        "description": "Garde ta flamme allumée 30 jours"
+      },
+      "streak_60": {
+        "title": "Inarrêtable",
+        "description": "Garde ta flamme allumée 60 jours"
+      },
+      "streak_100": {
+        "title": "Centurion",
+        "description": "Garde ta flamme allumée 100 jours"
+      },
+      "xp_100": {
+        "title": "Chasseur d'XP",
+        "description": "Gagne 100 XP au total"
+      },
+      "xp_500": {
+        "title": "Collectionneur d'XP",
+        "description": "Gagne 500 XP au total"
+      },
+      "xp_1000": {
+        "title": "Maître de l'XP",
+        "description": "Gagne 1 000 XP au total"
+      },
+      "xp_5000": {
+        "title": "Élite de l'XP",
+        "description": "Gagne 5 000 XP au total"
+      },
+      "xp_10000": {
+        "title": "Légende de l'XP",
+        "description": "Gagne 10 000 XP au total"
+      },
+      "long_session_30min": {
+        "title": "Endurance",
+        "description": "Termine un entraînement de 30+ minutes"
+      },
+      "long_session_60min": {
+        "title": "Volonté de Fer",
+        "description": "Termine un entraînement de 60+ minutes"
+      },
+      "early_bird": {
+        "title": "Lève-Tôt",
+        "description": "Termine un entraînement avant 7h"
+      },
+      "night_owl": {
+        "title": "Oiseau de Nuit",
+        "description": "Termine un entraînement après 22h"
+      },
+      "path_climbed": {
+        "title": "Voie gravie",
+        "description": "Maîtrise chaque étape d'une voie"
+      },
+      "first_outing": {
+        "title": "Hors les murs",
+        "description": "Termine une sortie"
+      },
+      "hour_outside": {
+        "title": "Une heure sur la route",
+        "description": "Passe une heure en mouvement sur une seule sortie"
+      },
+      "variety_3_quests": {
+        "title": "Touche-à-Tout",
+        "description": "Termine 3 quêtes différentes"
+      },
+      "variety_5_quests": {
+        "title": "Maître des Quêtes",
+        "description": "Termine 5 quêtes différentes"
+      }
+    }
   },
   "adventures": {
     "completed_times_one": "Terminée une fois",
@@ -616,7 +726,7 @@
     "back": "Dos",
     "chest": "Pectoraux",
     "legs": "Jambes",
-    "shoulders": "Épaules"
+    "shoulder": "Épaules"
   },
   "onboarding": {
     "chars_min": "car. min",
@@ -957,7 +1067,21 @@
     "expedition_made_quest": "Rangée dans tes quêtes. Elle t'attend telle quelle.",
     "expedition_permission_why": "Bati lit ta position pendant la sortie, et elle ne quitte ce téléphone que dans tes propres sauvegardes et ta synchro. Android va te le demander.",
     "level_up": "Niveau supérieur",
-    "level_label": "Niveau"
+    "level_label": "Niveau",
+    "empty_variants": [
+      {
+        "title": "Beau boulot !",
+        "subtitle": "Séance enregistrée. Garde ta flamme allumée."
+      },
+      {
+        "title": "Séance solide.",
+        "subtitle": "Chaque répétition compte pour la suivante."
+      },
+      {
+        "title": "C'est noté !",
+        "subtitle": "Pas de feu d'artifice aujourd'hui. La flamme s'en fiche, elle grandit quand même."
+      }
+    ]
   },
   "settings": {
     "avatar": "AVATAR",
@@ -1157,7 +1281,64 @@
     "family_unbuilt": "À bâtir · {{count}}",
     "family_unbuilt_feeds": "une séance suffit à en bâtir un",
     "family_rest": "Tout le reste",
-    "family_rest_feeds": "{{count}} au plafond"
+    "family_rest_feeds": "{{count}} au plafond",
+    "tiers": {
+      "1": "Hameau",
+      "2": "Clairière",
+      "3": "Village",
+      "4": "Carrefour",
+      "5": "Bourg",
+      "6": "Ville franche",
+      "7": "Cité",
+      "8": "Cité marchande",
+      "9": "Cité florissante",
+      "10": "Citadelle",
+      "11": "Métropole",
+      "12": "Capitale éternelle"
+    },
+    "buildings": {
+      "campfire": "Feu de camp",
+      "tent": "Tente",
+      "training_dummy": "Mannequin de bois",
+      "archery_range": "Champ de tir",
+      "quarry": "Carrière",
+      "forge": "Forge",
+      "well": "Puits",
+      "windmill": "Moulin",
+      "farm": "Ferme",
+      "wizard_tower": "Tour du mage",
+      "druid_grove": "Bosquet druidique",
+      "watchtower": "Tour de guet",
+      "castle_wall": "Remparts",
+      "armory": "Armurerie",
+      "fountain": "Fontaine",
+      "observatory": "Observatoire",
+      "barn": "Grange",
+      "dragon_lair": "Antre du dragon",
+      "heroes_hall": "Salle des héros",
+      "champion_arena": "Arène des champions",
+      "high_road": "Grand Chemin"
+    },
+    "flavour": [
+      "La fumée s'enroule au-dessus des cheminées. Quelqu'un a entretenu les feux.",
+      "Un voyageur est passé avant l'aube sans laisser son nom.",
+      "Les forges sont silencieuses ce matin. Elles ne le resteront pas.",
+      "Du givre sur les toits. La garde a changé sans un mot.",
+      "Les lanternes faiblissent le long de la route. Le village attend.",
+      "La pluie est venue dans la nuit. Les chemins s'en souviennent.",
+      "Un chien a aboyé dans le vide, deux fois, puis s'est ravisé.",
+      "La cloche a sonné tôt. Personne n'a dit pourquoi.",
+      "Quelqu'un a balayé les marches avant le jour.",
+      "Vent froid descendu des collines. Les volets ont tenu.",
+      "Deux corbeaux sur le faîtage, l'œil sur la route de l'est.",
+      "Le puits a rendu une eau claire aujourd'hui. Ce n'est pas rien.",
+      "Du bois a été empilé cette nuit, plus haut qu'il ne l'était.",
+      "Brume jusqu'aux genoux à l'aube, dissipée avant qu'on la regarde.",
+      "Un volet s'est décroché. Il était réparé avant midi.",
+      "La vieille route est calme. Elle l'est souvent, en cette saison.",
+      "Lampes allumées tôt. La nuit est tombée plus vite que prévu.",
+      "Il ne s'est rien passé ici aujourd'hui, et c'est une nouvelle en soi."
+    ]
   },
   "recap": {
     "title": "La distance parcourue",
@@ -2039,5 +2220,219 @@
     "doorPhoneOn": "Une copie par jour dans {{folder}}. Touche pour changer ou arrêter. Si tu perds ce téléphone, cette copie part avec lui.",
     "alsoPhone": "Copie en plus sur ce téléphone : {{folder}}",
     "alsoPhoneAdd": "Ajouter une copie sur ce téléphone"
+  },
+  "equipment": {
+    "none": "Sans matériel",
+    "pullup_bar": "Barre de traction",
+    "dip_bar": "Barre à dips",
+    "dumbbell": "Haltères",
+    "barbell": "Barre",
+    "kettlebell": "Kettlebell",
+    "band": "Élastique",
+    "bench": "Banc"
+  },
+  "patterns": {
+    "push_horizontal": "Poussée horizontale",
+    "push_vertical": "Poussée verticale",
+    "pull_horizontal": "Tirage horizontal",
+    "pull_vertical": "Tirage vertical",
+    "squat": "Squat",
+    "hinge": "Charnière",
+    "core": "Gainage",
+    "locomotion": "Locomotion",
+    "mobility": "Mobilité"
+  },
+  "level_titles": {
+    "1": "Apprenti",
+    "2": "Novice",
+    "3": "Recrue",
+    "4": "Écuyer",
+    "5": "Guerrier",
+    "6": "Combattant",
+    "7": "Vétéran",
+    "8": "Champion",
+    "9": "Élite",
+    "10": "Maître",
+    "11": "Grand Maître",
+    "12": "Légende",
+    "13": "Mythique",
+    "14": "Titan",
+    "15": "Demi-dieu",
+    "16": "Héros",
+    "17": "Parangon",
+    "18": "Ascendant",
+    "19": "Immortel",
+    "20": "Divin"
+  },
+  "paths": {
+    "Muscle-Up": "Voie de la Traction",
+    "Toes to Bar": "Voie de la Suspension",
+    "Handstand Push-Up": "Voie de l'Équilibre",
+    "Dip": "Voie de l'Appui",
+    "Archer Push-Up": "Voie de l'Archer",
+    "Tuck Planche": "Voie de la Planche",
+    "Jump Squat": "Voie de l'Élan",
+    "Pistol Squat": "Voie du Pistolet",
+    "Single-Leg Deadlift": "Voie de la Charnière",
+    "Dragon Flag": "Voie du Dragon",
+    "Side Plank": "Voie du Flanc",
+    "Windshield Wipers": "Voie de la Rotation",
+    "Flutter Kicks": "Voie du Battement"
+  },
+  "bosses": {
+    "fire_dragon": {
+      "name": "Gueule-de-Cendre",
+      "legendaryName": "Gueule-de-Cendre couronnée",
+      "idle": [
+        "La forge a mis plus de temps à me briser.",
+        "Tu brûles lentement, héros.",
+        "Cendres. Tout n'est que cendres.",
+        "Ton petit village ferait d'excellentes brindilles.",
+        "J'ai dévoré des chevaliers mieux entraînés."
+      ],
+      "crit": [
+        "Celui-là chauffait.",
+        "Ainsi la braise mord en retour.",
+        "Prudence, héros. Tu commences à m'impressionner."
+      ],
+      "resist": ["L'écaille se moque de ta force.", "Tu astiques mon armure."],
+      "enrage": [
+        "Alors nous brûlerons tous les deux !",
+        "J'emporterai le ciel avec moi !",
+        "Viens donc ! Le feu se souvient de toi !"
+      ]
+    },
+    "stone_golem": {
+      "name": "Le Roi des Carrières",
+      "legendaryName": "Le Dieu des Carrières",
+      "idle": [
+        "J'étais là avant ton village.",
+        "Les montagnes ne se pressent pas.",
+        "Use-moi, si tu peux.",
+        "Tes ancêtres me taillaient déjà.",
+        "Compte tes séries. Moi, je compte les siècles."
+      ],
+      "crit": [
+        "Une fissure. Une seule.",
+        "Tu as trouvé la faille.",
+        "Encore. Frappe là encore, si tu l'oses."
+      ],
+      "resist": ["Pierre contre pierre.", "Tu frappes là où je suis le plus épais."],
+      "enrage": [
+        "Je m'écroulerai sur toi !",
+        "Même les ruines ont du poids !",
+        "La carrière sera ta tombe !"
+      ]
+    },
+    "shadow_serpent": {
+      "name": "Ombre-Lovée",
+      "legendaryName": "Ombre-Lovée l'Éternelle",
+      "idle": [
+        "Je suis déjà derrière toi.",
+        "Respire. Je peux attendre.",
+        "Ton ombre n'est qu'un prêt.",
+        "Repose-toi. C'est là que je travaille le mieux.",
+        "À chaque répétition, je me love un peu plus près."
+      ],
+      "crit": [
+        "Tu m'as vu. C'est rare.",
+        "Rapide. Plus que le précédent.",
+        "Celui-là m'a transpercée. Comment ?"
+      ],
+      "resist": ["Tu as frappé là où je n'étais pas.", "Les anneaux ne se brisent pas, héros."],
+      "enrage": [
+        "Alors les ténèbres viendront avec des crocs !",
+        "Fini d'attendre !",
+        "Je porterai ton ombre comme une couronne !"
+      ]
+    },
+    "forest_titan": {
+      "name": "Le Père des Racines",
+      "legendaryName": "L'Aïeul des Racines",
+      "idle": [
+        "J'ai survécu à de meilleurs que toi.",
+        "Des saisons, héros. Je compte en saisons.",
+        "Grandis, ou deviens terreau.",
+        "La forêt garde ceux qui abandonnent.",
+        "Ta sueur arrose mes racines. Continue."
+      ],
+      "crit": [
+        "Le duramen l'a senti.",
+        "Tu coupes profond. Bien.",
+        "Une tempête m'a pris moins que ça, jadis."
+      ],
+      "resist": ["De l'écorce, héros. Rien que de l'écorce.", "Le bois boit tes coups."],
+      "enrage": [
+        "Tout le bosquet s'éveille !",
+        "Des racines jusqu'à l'os !",
+        "J'ai enterré des héros plus forts que toi !"
+      ]
+    },
+    "wind_wraith": {
+      "name": "Le Spectre des Bourrasques",
+      "legendaryName": "Le Souverain des Tempêtes",
+      "idle": [
+        "Tu frappes dans le vide.",
+        "Attrape-moi, alors.",
+        "Je suis l'air que tu respires.",
+        "Tes poumons sont à moi.",
+        "Souffle plus fort, petit soufflet."
+      ],
+      "crit": [
+        "Tu as frappé le vent !",
+        "Même moi j'ai senti le courant d'air.",
+        "Tu apprends à frapper ce qui n'existe pas."
+      ],
+      "resist": ["À travers moi. Toujours à travers moi.", "On ne meurtrit pas une rafale."],
+      "enrage": [
+        "Alors, que la tempête s'abatte !",
+        "Je disperserai ton village !",
+        "Respire tant que tu le peux encore !"
+      ]
+    },
+    "iron_golem": {
+      "name": "Le Seigneur de Rouille",
+      "legendaryName": "Le Seigneur de Rouille reforgé",
+      "idle": [
+        "La fonderie ne dort jamais. Moi non plus.",
+        "On m'a construit pour travailler plus que toi.",
+        "La rouille est patiente, héros.",
+        "Des quotas, héros. Le mien, c'est ta défaite.",
+        "J'ai pressé plus lourd que tout ce que tu soulèveras."
+      ],
+      "crit": [
+        "Un rivet arraché. Je l'ai senti partir.",
+        "Tu frappes comme un marteau qui sait où il va.",
+        "Garantie annulée. Bien frappé."
+      ],
+      "resist": ["Le fer ne se meurtrit pas.", "Tu fais sonner mes plaques, rien de plus."],
+      "enrage": [
+        "La fournaise prend le dessus !",
+        "Je fondrai avant de plier !",
+        "Toute la fonderie meurt avec moi !"
+      ]
+    }
+  },
+  "rest_messages": {
+    "overtraining": [
+      "Grosse semaine : {{count}} entraînements. Pense à une journée de récupération.",
+      "Déjà {{count}} entraînements cette semaine. Le corps gagne son repos comme il gagne ses forces.",
+      "{{count}} entraînements au compteur cette semaine. Une journée de récup, et la prochaine sera meilleure."
+    ],
+    "consecutive_days": [
+      "Pas un jour de repos depuis {{count}} jours ! Prends-en un pour éviter le surentraînement.",
+      "{{count}} jours d'affilée sans pause. Même les héros en ont besoin.",
+      "{{count}} jours de suite à t'entraîner. Le repos fait partie du plan, il ne l'interrompt pas."
+    ],
+    "high_volume": [
+      "Tu as fait {{count}} entraînements cette semaine ! Ton corps a besoin de temps pour récupérer et devenir plus fort.",
+      "{{count}} entraînements cette semaine, un sacré volume. C'est pendant la récup que la force se construit.",
+      "{{count}} entraînements en sept jours. Accorde une journée à ton corps pour qu'il rattrape ton ambition."
+    ],
+    "deload": [
+      "Quatre semaines chargées d'affilée. Prends-en une plus légère : moins de volume, la même régularité. Ton prochain mois commence là.",
+      "Un mois de semaines chargées derrière toi. Lève le pied quelques jours : les progrès se font pendant que tu récupères.",
+      "Quatre semaines chargées d'affilée. Cette semaine, on allège, on ne s'arrête pas."
+    ]
   }
 }

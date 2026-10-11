@@ -195,7 +195,8 @@ damage numeral is struck over the middle of the art.
 
 There is no name column. `BossFight.enName` is the *campaign's* title, so the arena announced a fire
 dragon as "The Iron Lord's Conquest". `getBossKey()` reads the monster out of `bossImagePath` and
-[`constants/bosses.ts`](../../constants/bosses.ts) keys its name and its four taunt pools by that.
+[`constants/bosses.ts`](../../constants/bosses.ts) keys its name and its four taunt pools by that,
+reading the words out of the `bosses` block of `locales/*.json`.
 A typed `Record<BossAssetKey, BossVoice>` makes shipping a painting without its copy a compile
 error. The campaign title survives as the fallback for content with no painting.
 

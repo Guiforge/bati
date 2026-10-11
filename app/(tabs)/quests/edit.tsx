@@ -37,7 +37,7 @@ import {
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
 import type { QuestTargetType } from "@/db/schema";
-import { DEFAULT_TARGET_VALUE } from "@/db/targets";
+import { DEFAULT_TARGET_VALUE, SECONDS_SUFFIX } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -73,13 +73,13 @@ type PickedExercise = {
 function missingPiece(
   trimmedTitle: string,
   exerciseCount: number,
-  t: (key: string, fallback: string) => string,
+  t: (key: string) => string,
 ): string | null {
   if (trimmedTitle.length === 0) {
-    return t("quests.editor_incomplete_name", "Your quest needs a name.");
+    return t("quests.editor_incomplete_name");
   }
   if (exerciseCount === 0) {
-    return t("quests.editor_incomplete_exercises", "Add at least one exercise.");
+    return t("quests.editor_incomplete_exercises");
   }
   return null;
 }
@@ -125,7 +125,7 @@ export default function QuestEditor() {
   // Set by a save that found the name empty: the field goes red until the hero types.
   const [nameMissing, setNameMissing] = useState(false);
   const showMessage = (title: string, body: string) =>
-    setDialog({ title, body, confirmLabel: t("common.close", "Close") });
+    setDialog({ title, body, confirmLabel: t("common.close") });
   const nextUid = useRef(0);
   // The absolute save bar overlapped the "add an exercise" button by ~75px, so taps meant for
   // it fired the save instead. Measured, not guessed: the bar's height moves with the inset.
@@ -159,10 +159,10 @@ export default function QuestEditor() {
       if (skipGuardRef.current || !isDirty) return;
       e.preventDefault();
       setDialog({
-        title: t("quests.editor_discard_title", "Discard changes?"),
-        body: t("quests.editor_discard_body", "Your edits will be lost."),
-        confirmLabel: t("quests.editor_discard", "Discard"),
-        cancelLabel: t("common.cancel", "Cancel"),
+        title: t("quests.editor_discard_title"),
+        body: t("quests.editor_discard_body"),
+        confirmLabel: t("quests.editor_discard"),
+        cancelLabel: t("common.cancel"),
         destructive: true,
         onConfirm: () => navigation.dispatch(e.data.action),
       });
@@ -224,9 +224,9 @@ export default function QuestEditor() {
     load().catch((error) => {
       reportError("quest.editorLoad", error);
       setDialog({
-        title: t("common.error", "Oops!"),
-        body: t("quests.load_error", "Failed to load quest"),
-        confirmLabel: t("common.close", "Close"),
+        title: t("common.error"),
+        body: t("quests.load_error"),
+        confirmLabel: t("common.close"),
       });
     });
 
@@ -281,7 +281,7 @@ export default function QuestEditor() {
     const missing = missingPiece(trimmed, picked.length, t);
     if (missing) {
       setNameMissing(trimmed.length === 0);
-      showMessage(t("quests.editor_incomplete_title", "Almost there"), missing);
+      showMessage(t("quests.editor_incomplete_title"), missing);
       return;
     }
 
@@ -318,7 +318,7 @@ export default function QuestEditor() {
         });
         // The edit used to vanish with no confirmation it persisted.
         success();
-        showSuccess(t("quests.editor_saved", "Quest saved"));
+        showSuccess(t("quests.editor_saved"));
         router.replace(`/quests/${id}` as never);
         return;
       }
@@ -347,7 +347,7 @@ export default function QuestEditor() {
       if (saved) await saveQuestConfig(questId, { level: saved.level });
 
       success();
-      showSuccess(t("quests.editor_saved", "Quest saved"));
+      showSuccess(t("quests.editor_saved"));
       router.back();
     };
 
@@ -356,8 +356,8 @@ export default function QuestEditor() {
     await persist().catch((e: unknown) => {
       skipGuardRef.current = false;
       reportError("quest.editorSave", e);
-      const message = e instanceof Error ? e.message : "Unknown error";
-      showMessage(t("common.error", "Oops!"), message);
+      const message = t("errors.generic");
+      showMessage(t("common.error"), message);
     });
     setBusy(false);
   };
@@ -366,10 +366,10 @@ export default function QuestEditor() {
     if (questId == null) return;
 
     setDialog({
-      title: t("quests.editor_delete_title", "Delete this quest?"),
-      body: t("quests.editor_delete_body", "This cannot be undone."),
-      confirmLabel: t("quests.editor_delete", "Delete"),
-      cancelLabel: t("common.cancel", "Cancel"),
+      title: t("quests.editor_delete_title"),
+      body: t("quests.editor_delete_body"),
+      confirmLabel: t("quests.editor_delete"),
+      cancelLabel: t("common.cancel"),
       destructive: true,
       onConfirm: () => {
         setBusy(true);
@@ -382,10 +382,7 @@ export default function QuestEditor() {
             setBusy(false);
             skipGuardRef.current = false;
             reportError("quest.editorDelete", e);
-            showMessage(
-              t("common.error", "Oops!"),
-              e instanceof Error ? e.message : "Unknown error",
-            );
+            showMessage(t("common.error"), t("errors.generic"));
           });
       },
     });
@@ -408,14 +405,12 @@ export default function QuestEditor() {
               <AppIconButton
                 onPress={() => router.back()}
                 accessibilityRole="button"
-                accessibilityLabel={t("quests.go_back", "Go back")}
+                accessibilityLabel={t("quests.go_back")}
               >
                 <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
               </AppIconButton>
               <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
-                {questId == null
-                  ? t("quests.editor_new_title", "New quest")
-                  : t("quests.editor_edit_title", "Edit quest")}
+                {questId == null ? t("quests.editor_new_title") : t("quests.editor_edit_title")}
               </Text>
             </XStack>
 
@@ -424,7 +419,7 @@ export default function QuestEditor() {
                 onPress={confirmDelete}
                 disabled={busy}
                 accessibilityRole="button"
-                accessibilityLabel={t("quests.editor_delete", "Delete")}
+                accessibilityLabel={t("quests.editor_delete")}
               >
                 <Trash2 size={20} color="$danger" strokeWidth={2.5} />
               </AppIconButton>
@@ -451,7 +446,7 @@ export default function QuestEditor() {
             <YStack gap="$3">
               <YStack gap="$2">
                 <Text fontWeight="700" fontSize={14} color="$textSecondary">
-                  {t("quests.editor_name", "Name")}
+                  {t("quests.editor_name")}
                 </Text>
                 <Input
                   value={title}
@@ -460,7 +455,7 @@ export default function QuestEditor() {
                     setNameMissing(false);
                   }}
                   testID="quest-name"
-                  placeholder={t("quests.editor_name_placeholder", "Morning forge")}
+                  placeholder={t("quests.editor_name_placeholder")}
                   bg="$background"
                   borderColor={nameMissing ? "$error" : "$borderStrong"}
                   color="$text"
@@ -469,12 +464,12 @@ export default function QuestEditor() {
 
               <YStack gap="$2">
                 <Text fontWeight="700" fontSize={14} color="$textSecondary">
-                  {t("quests.editor_description", "Description")}
+                  {t("quests.editor_description")}
                 </Text>
                 <Input
                   value={description}
                   onChangeText={setDescription}
-                  placeholder={t("quests.editor_description_placeholder", "What is this for?")}
+                  placeholder={t("quests.editor_description_placeholder")}
                   bg="$background"
                   borderColor="$borderStrong"
                   color="$text"
@@ -484,7 +479,7 @@ export default function QuestEditor() {
               <Separator borderColor="$borderStrong" />
 
               <Stepper
-                label={t("quests.config_rounds", "Rounds")}
+                label={t("quests.config_rounds")}
                 value={rounds}
                 min={ROUNDS_RANGE.min}
                 max={ROUNDS_RANGE.max}
@@ -492,30 +487,30 @@ export default function QuestEditor() {
               />
               {/* The label renders on one line, so which rest is which goes in the hint. */}
               <Stepper
-                label={t("quests.config_rest", "Rest")}
-                hint={t("quests.config_rest_hint", "Between exercises")}
+                label={t("quests.config_rest")}
+                hint={t("quests.config_rest_hint")}
                 value={rest}
                 min={REST_RANGE.min}
                 max={REST_RANGE.max}
                 step={REST_STEP}
-                suffix="s"
+                suffix={SECONDS_SUFFIX[language]}
                 onChange={setRest}
               />
               <Stepper
-                label={t("quests.config_round_rest", "Round rest")}
-                hint={t("quests.config_round_rest_hint", "Between rounds")}
+                label={t("quests.config_round_rest")}
+                hint={t("quests.config_round_rest_hint")}
                 value={roundRest}
                 min={REST_RANGE.min}
                 max={REST_RANGE.max}
                 step={REST_STEP}
-                suffix="s"
+                suffix={SECONDS_SUFFIX[language]}
                 onChange={setRoundRest}
               />
             </YStack>
           </Card>
 
           <Text fontWeight="700" fontSize={18} color="$text">
-            {t("quests.exercises_list", "Exercises")}
+            {t("quests.exercises_list")}
           </Text>
 
           {picked.map((p, i) => {
@@ -543,21 +538,21 @@ export default function QuestEditor() {
                       hitSlop={12}
                       icon={<X size={14} />}
                       accessibilityRole="button"
-                      accessibilityLabel={t("quests.editor_remove", "Remove")}
+                      accessibilityLabel={t("quests.editor_remove")}
                       onPress={() => removeExercise(p.uid)}
                     />
                   </XStack>
 
                   <XStack gap="$2">
                     <Chip
-                      label={t("quests.config_reps", "Reps")}
+                      label={t("quests.config_reps")}
                       tone={p.type === "reps" ? "primary" : "default"}
                       onPress={() =>
                         patchExercise(p.uid, { type: "reps", value: DEFAULT_TARGET_VALUE.reps })
                       }
                     />
                     <Chip
-                      label={t("quests.config_seconds", "Seconds")}
+                      label={t("quests.config_seconds")}
                       tone={p.type === "time" ? "primary" : "default"}
                       onPress={() =>
                         patchExercise(p.uid, { type: "time", value: DEFAULT_TARGET_VALUE.time })
@@ -566,12 +561,12 @@ export default function QuestEditor() {
                   </XStack>
 
                   <Stepper
-                    label={t("quests.editor_target", "Target")}
+                    label={t("quests.editor_target")}
                     value={p.value}
                     min={targetRangeFor(p.type, exercise?.style).min}
                     max={targetRangeFor(p.type, exercise?.style).max}
                     step={p.type === "time" ? REST_STEP : 1}
-                    suffix={p.type === "time" ? "s" : ""}
+                    suffix={p.type === "time" ? SECONDS_SUFFIX[language] : ""}
                     onChange={(value) => patchExercise(p.uid, { value })}
                   />
                 </YStack>
@@ -585,9 +580,9 @@ export default function QuestEditor() {
             variant="outline"
             icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
             onPress={() => setPickerOpen(true)}
-            accessibilityLabel={t("quests.editor_add_exercise", "Add an exercise")}
+            accessibilityLabel={t("quests.editor_add_exercise")}
           >
-            {t("quests.editor_add_exercise", "Add an exercise")}
+            {t("quests.editor_add_exercise")}
           </AppButton>
 
           <ExercisePickerSheet
@@ -596,7 +591,7 @@ export default function QuestEditor() {
             language={language}
             open={pickerOpen}
             onOpenChange={setPickerOpen}
-            title={t("quests.editor_add_exercise", "Add an exercise")}
+            title={t("quests.editor_add_exercise")}
             onPick={addExercise}
             pickAction={<Plus size={20} color="$primaryText" strokeWidth={2.5} />}
             bottomInset={insets.bottom}
@@ -619,7 +614,7 @@ export default function QuestEditor() {
         onLayout={(e) => setSaveBarHeight(e.nativeEvent.layout.height)}
       >
         <AppButton testID="quest-save" height={56} disabled={busy} onPress={save}>
-          {t("quests.editor_save", "Save quest")}
+          {t("quests.editor_save")}
         </AppButton>
       </YStack>
       <ConfirmDialog

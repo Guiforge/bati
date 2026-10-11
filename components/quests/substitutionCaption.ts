@@ -29,6 +29,6 @@ export function slotCaption(
   if (!qex.substitutedFor) return null;
   const name = localizedName(qex.substitutedFor, language);
   return qex.substitutedFor.setAside
-    ? t("setAside.instead_of", { name, defaultValue: `Instead of ${name}, set aside` })
-    : t("quests.served_easier_rung", { name, defaultValue: `Working up to ${name}` });
+    ? t("setAside.instead_of", { name })
+    : t("quests.served_easier_rung", { name });
 }

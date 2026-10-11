@@ -1,6 +1,6 @@
 import { workVerdict } from "@/components/journal/stats/workVerdict";
+import { MUSCLE_LABELS } from "@/db/labels";
 import type { MuscleBalance } from "@/db/muscleBalance";
-import { MUSCLE_LABELS } from "@/db/muscles";
 import type { MuscleCode } from "@/db/schema";
 import { i18n } from "@/i18n";
 

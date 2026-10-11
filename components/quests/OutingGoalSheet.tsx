@@ -212,12 +212,12 @@ export function OutingGoalSheet({
         <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$4">
           <XStack items="center" justify="space-between" gap="$3">
             <Text flex={1} fontWeight="700" fontSize={18} color="$text">
-              {t("quests.goal_sheet_title", "How long, or how far")}
+              {t("quests.goal_sheet_title")}
             </Text>
             <Pressable
               hitSlop={12}
               accessibilityRole="button"
-              accessibilityLabel={t("common.close", "Close")}
+              accessibilityLabel={t("common.close")}
               onPress={close}
             >
               <X size={20} color="$textSecondary" />
@@ -226,13 +226,13 @@ export function OutingGoalSheet({
 
           <XStack gap="$2">
             <Chip
-              label={t("quests.config_duration", "Duration")}
+              label={t("quests.config_duration")}
               tone={durationTab ? "primary" : "default"}
               accessibilityState={{ selected: durationTab }}
               onPress={() => setTab("time")}
             />
             <Chip
-              label={t("quests.config_distance", "Distance")}
+              label={t("quests.config_distance")}
               tone={durationTab ? "default" : "primary"}
               accessibilityState={{ selected: !durationTab }}
               onPress={() => setTab("distance")}
@@ -263,7 +263,7 @@ export function OutingGoalSheet({
 
           <YStack gap="$2">
             <Text fontWeight="700" fontSize={15} color="$text">
-              {t("quests.goal_sheet_custom", "Other")}
+              {t("quests.goal_sheet_custom")}
             </Text>
             <XStack items="center" gap="$2">
               <Input
@@ -274,7 +274,7 @@ export function OutingGoalSheet({
                 keyboardType="decimal-pad"
                 returnKeyType="done"
                 onSubmitEditing={applyCustom}
-                placeholder={t("quests.goal_sheet_custom_hint", "Enter your own value")}
+                placeholder={t("quests.goal_sheet_custom_hint")}
                 bg="$background"
                 borderColor="$borderStrong"
                 color="$text"
@@ -288,7 +288,7 @@ export function OutingGoalSheet({
           </YStack>
 
           <AppButton variant="outline" onPress={applyCustom}>
-            {t("common.done", "Done")}
+            {t("common.done")}
           </AppButton>
         </YStack>
       </Sheet.Frame>

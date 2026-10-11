@@ -42,7 +42,5 @@ export function adventureWeeksLabel(
 ): string | null {
   if (pace === undefined) return null;
   const count = adventureWeeks(steps, pace ?? undefined);
-  return pace === null
-    ? t("adventures.weeks", { count, defaultValue: `≈ ${count} weeks` })
-    : t("adventures.weeks_pace", { count });
+  return pace === null ? t("adventures.weeks", { count }) : t("adventures.weeks_pace", { count });
 }

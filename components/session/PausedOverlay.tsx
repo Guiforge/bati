@@ -198,18 +198,16 @@ export function PausedOverlay() {
         destructive
         title={
           confirming === "quit"
-            ? t("session.quit_confirm_title", "Abandon this session?")
-            : t("session.restart_confirm_title", "Restart this round?")
+            ? t("session.quit_confirm_title")
+            : t("session.restart_confirm_title")
         }
         body={
-          confirming === "quit"
-            ? t("session.quit_confirm_body", "This session's progress will be lost.")
-            : t("session.restart_confirm_body", "Every set you logged in this round is erased.")
+          confirming === "quit" ? t("session.quit_confirm_body") : t("session.restart_confirm_body")
         }
         confirmLabel={t(
           confirming === "quit" ? "session.quit_button" : "session.restart_round_button",
         )}
-        cancelLabel={t("common.cancel", "Cancel")}
+        cancelLabel={t("common.cancel")}
         onCancel={() => setConfirming(null)}
         onConfirm={() => {
           const action = confirming;

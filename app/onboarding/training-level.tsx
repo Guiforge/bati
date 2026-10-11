@@ -53,7 +53,7 @@ export default function TrainingLevelStep() {
         .then(() => router.replace("/onboarding/first-session" as never))
         .catch((error) => {
           reportError("onboarding.finish", error);
-          showError(t("onboarding.save_error", "Could not save. Try again"));
+          showError(t("onboarding.save_error"));
         });
     },
     [success, setHasFinishedOnboarding, router, showError, t],
@@ -87,7 +87,7 @@ export default function TrainingLevelStep() {
             textShadowColor={fade(rawColors.black, 0.5)}
             textShadowRadius={4}
           >
-            {t("onboarding.level_title", "What's your level?")}
+            {t("onboarding.level_title")}
           </H1>
           <Paragraph
             text="center"
@@ -96,10 +96,7 @@ export default function TrainingLevelStep() {
             textShadowColor={fade(rawColors.black, 0.5)}
             textShadowRadius={4}
           >
-            {t(
-              "onboarding.level_subtitle",
-              "So we can suggest the right workouts. You can change this later.",
-            )}
+            {t("onboarding.level_subtitle")}
           </Paragraph>
         </YStack>
 
@@ -152,7 +149,7 @@ export default function TrainingLevelStep() {
           </Paragraph>
 
           <AppButton onPress={() => complete(selected)} disabled={!selected}>
-            {t("onboarding.finish", "Start my training adventure")}
+            {t("onboarding.finish")}
           </AppButton>
 
           <Text
@@ -167,7 +164,7 @@ export default function TrainingLevelStep() {
             accessibilityRole="button"
             hitSlop={8}
           >
-            {t("onboarding.skip", "Skip")}
+            {t("onboarding.skip")}
           </Text>
         </YStack>
       </YStack>

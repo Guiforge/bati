@@ -12,7 +12,6 @@ import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
 import { Check, ChevronDown, ChevronLeft, ChevronUp } from "@/components/icons";
 import { EXERCISE_THUMB_ASSETS, getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
 import {
   createUserExercise,
   DEFAULT_USER_EXERCISE_DRAFT,
@@ -22,7 +21,7 @@ import {
   type UserExerciseDraft,
   updateUserExercise,
 } from "@/db/exercises";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "@/db/labels";
 import {
   difficultyCodes,
   equipmentCodes,
@@ -156,7 +155,7 @@ export default function ExerciseEditor() {
           <AppIconButton
             onPress={() => router.back()}
             accessibilityRole="button"
-            accessibilityLabel={t("quests.go_back", "Go back")}
+            accessibilityLabel={t("quests.go_back")}
           >
             <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
           </AppIconButton>

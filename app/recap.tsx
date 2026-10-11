@@ -408,7 +408,7 @@ export default function ExpeditionRecapScreen() {
       <AppIconButton
         onPress={() => router.back()}
         accessibilityRole="button"
-        accessibilityLabel={t("common.go_back", "Go back")}
+        accessibilityLabel={t("common.go_back")}
       >
         <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
       </AppIconButton>

@@ -3,9 +3,8 @@ import type { ReactNode } from "react";
 import { Text, XStack, type XStackProps, YStack } from "tamagui";
 
 import type { getExerciseThumb } from "@/constants/assetMap";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "@/db/labels";
 import { localizedName } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
 

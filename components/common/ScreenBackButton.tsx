@@ -30,7 +30,7 @@ export function ScreenBackButton() {
       onPress={() => router.back()}
       icon={<ChevronLeft size={24} color="$text" />}
       accessibilityRole="button"
-      accessibilityLabel={t("quests.go_back", "Go back")}
+      accessibilityLabel={t("quests.go_back")}
     />
   );
 }

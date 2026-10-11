@@ -303,7 +303,7 @@ export function QuickActions() {
 
   const goalLabel = (goal: OutingGoal | null) =>
     goal === null
-      ? t("home.goal_free", "Free")
+      ? t("home.goal_free")
       : goal.type === "distance"
         ? formatDistance(goal.metres, unit, language)
         : formatDurationEstimate(goal.seconds, language);
@@ -311,9 +311,9 @@ export function QuickActions() {
   return (
     <YStack pt="$2.5" pb="$2" gap="$2">
       <XStack px="$4" items="baseline" justify="space-between" gap="$3">
-        <SectionLabel>{t("home.quick_actions", "Quick actions")}</SectionLabel>
+        <SectionLabel>{t("home.quick_actions")}</SectionLabel>
         <Text flex={1} text="right" fontSize={10} color="$textSecondary" numberOfLines={1}>
-          {t("home.quick_hint", "Long-press to set")}
+          {t("home.quick_hint")}
         </Text>
       </XStack>
 
@@ -369,7 +369,7 @@ export function QuickActions() {
               onLongPress={() => setGoalFor(quest.id)}
               pressStyle={{ opacity: 0.85, scale: 0.98 }}
               accessibilityRole="button"
-              accessibilityLabel={t("home.outside_start_a11y", { quest: name, defaultValue: name })}
+              accessibilityLabel={t("home.outside_start_a11y", { quest: name })}
             >
               {/* The quest's cover, dimmed to texture: at this size no art distinguishes anything,
                   the name carries the meaning. */}
@@ -445,7 +445,7 @@ export function QuickActions() {
           >
             <RotateCcw size={16} color="$primaryText" />
             <Text fontSize={10} fontWeight="700" color="$textSecondary">
-              {t("home.replay", "Replay")}
+              {t("home.replay")}
             </Text>
             <Text fontSize={11} fontWeight="700" color="$text" numberOfLines={1}>
               {replay.title}

@@ -172,12 +172,11 @@ export function FilterRail({
               accessibilityRole="button"
               accessibilityLabel={t("quests.filter_remove", {
                 label: c.label,
-                defaultValue: `Remove ${c.label}`,
               })}
             />
           ))}
           <Chip
-            label={t("quests.filter_clear_all", "Clear")}
+            label={t("quests.filter_clear_all")}
             icon={<X size={14} color="$text" />}
             onPress={onClearAll}
             borderWidth={1}

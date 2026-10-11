@@ -42,11 +42,11 @@ import {
   type QuestPreview,
   trainingFocus,
 } from "@/db";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
 import type { Exercise } from "@/db/exercises";
 import { hasOutdoorMovement, isOutingQuest } from "@/db/expeditions";
 import { getFavouriteQuestIds, toggleFavouriteQuest } from "@/db/favourites";
-import { isMuscleCode, MUSCLE_LABELS } from "@/db/muscles";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "@/db/labels";
+import { isMuscleCode } from "@/db/muscles";
 import { getAllQuestConfigs } from "@/db/questConfig";
 import { type QuestTemplate, questTrainingLevel } from "@/db/quests";
 import type { EquipmentCode, MuscleCode, QuestArchetype } from "@/db/schema";
@@ -74,7 +74,7 @@ const EMPTY_PREVIEW: QuestPreview = { seconds: 0, xp: 0 };
 type LoadState =
   | ({ status: "loading" } & GalleryData)
   | ({ status: "ready" } & GalleryData)
-  | ({ status: "error"; message: string } & GalleryData);
+  | ({ status: "error" } & GalleryData);
 
 function questGlyph(rounds: number, exerciseCount: number): GameIconName {
   if (rounds >= 4) return "flame";
@@ -211,7 +211,7 @@ function buildQuestMeta(
           ]
             .filter(Boolean)
             .join(" · "),
-    durationLabel: t("quests.estimate", { duration: estimate, defaultValue: `≈ ${estimate}` }),
+    durationLabel: t("quests.estimate", { duration: estimate }),
     levelLabel: t(`quests.written_for_${writtenFor}`),
     // Empty on a one-movement quest, the same silence the detail screen keeps: "1 exercice"
     // under a card whose focus line has just named that one movement is a count doing no work.
@@ -220,7 +220,6 @@ function buildQuestMeta(
       q.exercises.length > 1
         ? t("quests.exercises", {
             count: q.exercises.length,
-            defaultValue: `${q.exercises.length} exercises`,
           })
         : "",
     // "Up to" is a claim about a maximum, and an outing has none: its XP follows the ground
@@ -231,13 +230,11 @@ function buildQuestMeta(
     heroLabel: isUserQuest(q) ? t("common.hero_badge") : null,
     // The archetype line above reads "Metabolic" on all three outings, which is true of their
     // shape and says nothing about where they happen. This is the word that does.
-    outsideLabel: outside ? t("quests.filter_outside", "Outside") : null,
+    outsideLabel: outside ? t("quests.filter_outside") : null,
     favourite,
     // The action, not the state: a screen reader announcing "pinned" on a button leaves the hero
     // guessing what pressing it does. `accessibilityState.selected` carries the state.
-    favouriteLabel: favourite
-      ? t("quests.favourite_remove", "Unpin")
-      : t("quests.favourite_add", "Pin to the top"),
+    favouriteLabel: favourite ? t("quests.favourite_remove") : t("quests.favourite_add"),
   };
 }
 
@@ -394,13 +391,13 @@ function StatusMessage({
           <YStack gap="$3" items="center" py="$2">
             <Text fontSize={32}>😵</Text>
             <Text fontWeight="700" fontSize={16} color="$text">
-              {t("quests.load_error", "Oops!")}
+              {t("quests.load_error")}
             </Text>
             <Paragraph color="$textSecondary" size="$3">
-              {state.message}
+              {t("errors.generic")}
             </Paragraph>
             <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
-              {t("quests.retry", "Retry")} ↻
+              {t("quests.retry")} ↻
             </AppButton>
           </YStack>
         </Card>
@@ -428,14 +425,14 @@ function StatusMessage({
         <Card>
           <YStack gap="$3" items="center" py="$2">
             <Text fontWeight="700" fontSize={16} color="$text">
-              {t("quests.empty_title", "No quests yet")}
+              {t("quests.empty_title")}
             </Text>
             <Paragraph color="$textSecondary" size="$3">
-              {t("quests.empty_subtitle", "Come back soon!")}
+              {t("quests.empty_subtitle")}
             </Paragraph>
             {/* The header's 36dp "+" was the only way in; an empty gallery should offer it. */}
             <AppButton fullWidth={false} onPress={onCreate}>
-              {t("quests.editor_new_title", "New quest")}
+              {t("quests.editor_new_title")}
             </AppButton>
           </YStack>
         </Card>
@@ -450,13 +447,13 @@ function StatusMessage({
           <YStack gap="$3" items="center" py="$2">
             <Text fontSize={32}>🔍</Text>
             <Text fontWeight="700" fontSize={16} color="$text">
-              {t("quests.empty_filters_title", "No matches")}
+              {t("quests.empty_filters_title")}
             </Text>
             <Paragraph color="$textSecondary" size="$3">
-              {t("quests.empty_filters_subtitle", "Try removing filters.")}
+              {t("quests.empty_filters_subtitle")}
             </Paragraph>
             <AppButton fullWidth={false} variant="outline" onPress={onClearFilters}>
-              {t("quests.filters_clear", "Clear filters")}
+              {t("quests.filters_clear")}
             </AppButton>
           </YStack>
         </Card>
@@ -556,8 +553,7 @@ export default function QuestsGallery() {
       });
     } catch (e) {
       reportError("quests.gallery", e);
-      const message = e instanceof Error ? e.message : "Unknown error";
-      setState((s) => ({ ...s, status: "error", message }));
+      setState((s) => ({ ...s, status: "error" }));
     }
   }, []);
 
@@ -622,7 +618,7 @@ export default function QuestsGallery() {
   const railGroups: RailGroup[] = [
     {
       key: "duration",
-      label: t("quests.filter_group_duration", "Duration"),
+      label: t("quests.filter_group_duration"),
       single: true,
       chips: DURATION_BUCKETS.map((b) => ({
         key: `d-${b}`,
@@ -633,7 +629,7 @@ export default function QuestsGallery() {
     },
     {
       key: "type",
-      label: t("quests.filter_group_type", "Type"),
+      label: t("quests.filter_group_type"),
       chips: [
         ...availableArchetypes.map((a) => ({
           key: `a-${a}`,
@@ -647,7 +643,7 @@ export default function QuestsGallery() {
           ? [
               {
                 key: "outside",
-                label: t("quests.filter_outside", "Outside"),
+                label: t("quests.filter_outside"),
                 active: filters.outside,
                 onPress: toggleOutside,
               },
@@ -657,7 +653,7 @@ export default function QuestsGallery() {
     },
     {
       key: "muscle",
-      label: t("quests.filter_group_muscle", "Muscles"),
+      label: t("quests.filter_group_muscle"),
       chips: availableMuscles.map((m) => ({
         key: `m-${m}`,
         label: MUSCLE_LABELS[m]?.[language] ?? m,
@@ -667,7 +663,7 @@ export default function QuestsGallery() {
     },
     {
       key: "equipment",
-      label: t("quests.filter_group_equipment", "Equipment"),
+      label: t("quests.filter_group_equipment"),
       chips: availableEquipment.map((e) => ({
         key: `e-${e}`,
         label: EQUIPMENT_LABELS[e]?.[language] ?? e,
@@ -685,7 +681,7 @@ export default function QuestsGallery() {
     setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
   };
 
-  const title = t("quests.gallery_title", "Quests");
+  const title = t("quests.gallery_title");
 
   const onPressQuest = (id: number) => router.push(`/quests/${id}` as never);
 
@@ -737,7 +733,6 @@ export default function QuestsGallery() {
             <Chip
               label={t("quests.count", {
                 count: filtered.length,
-                defaultValue: "{{count}} quests",
               })}
             />
             {/* The catalogue: the only way to ask "what does Bati know about rows?" without
@@ -749,7 +744,7 @@ export default function QuestsGallery() {
               testID="quests-catalogue"
               onPress={() => router.push("/exercises" as never)}
               accessibilityRole="button"
-              accessibilityLabel={t("exercises.catalogue_title", "Exercises")}
+              accessibilityLabel={t("exercises.catalogue_title")}
             >
               <Dumbbell size={18} color="$text" strokeWidth={2.5} />
             </AppIconButton>
@@ -760,14 +755,14 @@ export default function QuestsGallery() {
               testID="quests-new"
               onPress={() => router.push("/quests/edit" as never)}
               accessibilityRole="button"
-              accessibilityLabel={t("quests.editor_new_title", "New quest")}
+              accessibilityLabel={t("quests.editor_new_title")}
             >
               <Plus size={18} color="$text" strokeWidth={2.5} />
             </AppIconButton>
           </XStack>
         </XStack>
         <Text color="$textSecondary" fontSize={13}>
-          {t("quests.gallery_subtitle", "Single workouts. Pick one and go")}
+          {t("quests.gallery_subtitle")}
         </Text>
       </YStack>
 

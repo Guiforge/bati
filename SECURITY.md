@@ -2,7 +2,7 @@
 
 ## Reporting
 
-Email **feedback.bati@proton.me**. Please do not open a public issue for a security problem.
+Email **contact@getbati.app**. Please do not open a public issue for a security problem.
 
 There is no bounty and no formal SLA (this is a personal project), but a report will be read and
 answered.

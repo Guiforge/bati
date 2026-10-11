@@ -238,7 +238,7 @@ All of these run in CI; the first four also run on commit or push.
 
 [`CONTRIBUTING.md`](CONTRIBUTING.md) for code, [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for
 the wiki, [`SECURITY.md`](SECURITY.md) to report something that should not be a public issue.
-Or just write to **<feedback.bati@proton.me>**. An idea is welcome in whatever form it arrives.
+Or just write to **<contact@getbati.app>**. An idea is welcome in whatever form it arrives.
 
 ## Licence
 

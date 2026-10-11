@@ -16,7 +16,7 @@ related: [../planning/roadmap.md]
 **Diese Datenschutzerklärung gibt es nur auf Englisch und Französisch.** Unten steht die englische
 Fassung, sie ist maßgeblich. Die App selbst ist auf Deutsch verfügbar, von einer KI übersetzt und
 noch nicht von Muttersprachlern geprüft. Fragen beantworte ich gern auf Englisch oder Französisch:
-**feedback.bati@proton.me**
+**contact@getbati.app**
 
 </div>
 
@@ -25,7 +25,7 @@ noch nicht von Muttersprachlern geprüft. Fragen beantworte ich gern auf Englisc
 **Esta política de privacidad solo existe en inglés y en francés.** Debajo figura la versión en
 inglés, que es la que hace fe. La app está disponible en español, traducida por una IA y todavía
 sin revisar por hablantes nativos. Puede escribirme con cualquier pregunta, en inglés o en
-francés: **feedback.bati@proton.me**
+francés: **contact@getbati.app**
 
 </div>
 
@@ -297,7 +297,7 @@ than folded into a list, which is how any other would arrive too.
 ## Contact
 
 Questions about this policy, and anything else (a bug, an idea, a feature you wish existed):
-**feedback.bati@proton.me**
+**contact@getbati.app**
 
 </div>
 
@@ -599,6 +599,6 @@ en toutes lettres plutôt que glissée dans une liste, et toute autre arriverait
 ## Contact
 
 Questions sur cette politique, et tout le reste (un bug, une idée, une fonctionnalité qui
-vous manque) : **feedback.bati@proton.me**
+vous manque) : **contact@getbati.app**
 
 </div>

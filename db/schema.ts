@@ -161,6 +161,9 @@ export const exercises = sqliteTable(
     // the target with a switch at halfway, and its result is logged per side.
     perSide: int({ mode: "boolean" }).notNull().default(false),
 
+    // Both feet leave the ground (0070). Kept out of a beginner's warm-up and suggestions.
+    impact: int({ mode: "boolean" }).notNull().default(false),
+
     // For rep-based targets: rough average seconds per repetition.
     // Used to estimate quest duration. (Time-based exercises ignore it.)
     secondsPerRep: int().notNull().default(3),
@@ -584,6 +587,14 @@ export const completedExercises = sqliteTable(
     // Optional: what was asked (target) at the time.
     targetType: text().$type<QuestTargetType>(),
     targetValue: int(),
+    // What the app prescribed before the hero touched the stepper (`0070`). Rung credit reads
+    // this, the Journal shows `targetValue`, on purpose. Null on rows from before the column and
+    // on outings; every read falls back to `targetValue`.
+    prescribedValue: int(),
+    // A set the ladder must not judge, neither clean nor missed (`0070`): a lowered target not
+    // reached at the prescribed value, or a movement left mid-session. `createCompletedSession`
+    // is its one writer.
+    ladderNeutral: int({ mode: "boolean" }).notNull().default(false),
 
     notes: text().notNull().default(""),
     performedAt: int({ mode: "timestamp" })

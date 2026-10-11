@@ -24,12 +24,48 @@ const LONGEST_WINDOW_DAYS = 30;
 export type OutingHabit = {
   usual: { metres: number; seconds: number } | null;
   longestM: number | null;
+  /**
+   * The longest of the same thirty days in moving time, for the duration a run is proposed at.
+   * Optional so a caller that only reads distances need not name it; absent reads as "no run".
+   */
+  longestSeconds?: number | null;
 };
 
-export const NO_HABIT: OutingHabit = { usual: null, longestM: null };
+export const NO_HABIT: OutingHabit = { usual: null, longestM: null, longestSeconds: null };
 
 /** The single-run ceiling, as a factor of the longest of the month. */
 export const LONGEST_RUN_CEILING = 1.1;
+
+/** What a hero with no recent run is offered: walk and run mixed, walking whenever talking stops. */
+export const WALK_RUN_SECONDS = 20 * 60;
+
+/**
+ * How long a run is proposed at, from the hero's own month. A written rule, in the order it is
+ * read:
+ * - no run in the last thirty days: the walk-run. The seeded band proposed thirty minutes of
+ *   running to someone who had never run, which is week eight of a couch-to-5K on day one;
+ * - a habit (three runs): the usual one, capped at 110 % of the longest of the month;
+ * - one or two runs: the longest of the month as it is, with no increase;
+ * - and whatever comes out under twenty minutes is the walk-run instead, never a short run
+ *   stretched to twenty.
+ *
+ * The ceiling is a bound on the usual, never the proposal itself (see `OutingHabit`). It bounds
+ * what the app proposes and nothing else: the stepper stays free and a saved goal wins.
+ */
+export function proposedRunSeconds(habit: OutingHabit): { seconds: number; walkRun: boolean } {
+  const longest = habit.longestSeconds ?? null;
+  const running =
+    longest === null
+      ? 0
+      : habit.usual === null
+        ? longest
+        : Math.min(habit.usual.seconds, longest * LONGEST_RUN_CEILING);
+  // Whole minutes, rounded down: a duration is read as "27 min", and up would cross the ceiling.
+  const seconds = Math.floor(running / 60) * 60;
+  return seconds < WALK_RUN_SECONDS
+    ? { seconds: WALK_RUN_SECONDS, walkRun: true }
+    : { seconds, walkRun: false };
+}
 
 const median = (values: number[]): number => {
   const sorted = [...values].sort((a, b) => a - b);
@@ -39,6 +75,7 @@ const median = (values: number[]): number => {
 export function habitOf(
   lastThree: { metres: number; seconds: number }[],
   longestM: number | null,
+  longestSeconds: number | null = null,
 ): OutingHabit {
   return {
     usual:
@@ -49,6 +86,7 @@ export function habitOf(
             seconds: median(lastThree.map((o) => o.seconds)),
           },
     longestM: longestM !== null && longestM > 0 ? longestM : null,
+    longestSeconds: longestSeconds !== null && longestSeconds > 0 ? longestSeconds : null,
   };
 }
 
@@ -71,12 +109,24 @@ export async function getOutingHabit(
       .orderBy(desc(completedQuest.performedAt))
       .limit(3),
     db
-      .select({ metres: max(completedQuest.leaguesM) })
+      .select({
+        metres: max(completedQuest.leaguesM),
+        seconds: max(completedQuest.movingSeconds),
+      })
       .from(completedQuest)
-      .where(and(ofKind, gte(completedQuest.performedAt, since))),
+      // The same ten-minute floor as the habit: an outing given up after three minutes is not
+      // "the longest of the month", and read as one it capped the next proposal at 3 min 18.
+      .where(
+        and(
+          ofKind,
+          gte(completedQuest.performedAt, since),
+          gte(completedQuest.movingSeconds, OUTING_COUNTS_AFTER_SECONDS),
+        ),
+      ),
   ]);
   return habitOf(
     recent.map((r) => ({ metres: r.metres ?? 0, seconds: r.seconds ?? 0 })),
     longest?.metres ?? null,
+    longest?.seconds ?? null,
   );
 }

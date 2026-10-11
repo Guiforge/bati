@@ -449,4 +449,17 @@ describe("RestView", () => {
     expect(label.flexShrink).toBe(1);
     expect(controls.flexShrink).toBe(0);
   });
+
+  // The pain rule lived on a page behind Settings. "I couldn't" is the tap that says something
+  // may be wrong, so the rest that follows it is where the rule is said.
+  it("says the pain rule after a skipped set, and at no other rest", async () => {
+    const rested = await mountRest();
+    expect(rested.queryByTestId("rest-pain-rule")).toBeNull();
+    rested.unmount();
+
+    useSessionStore.setState({ lastSetSkipped: true });
+    const skipped = await mountRest();
+    // Translations are keys in this suite (see the `@/i18n` mock above).
+    expect(skipped.getByText("session.pain_rule")).toBeTruthy();
+  });
 });

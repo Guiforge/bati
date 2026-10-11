@@ -53,12 +53,14 @@ function ExerciseDetail({
   onOpenExercise,
   onPutBack,
   onReplace,
+  onPin,
 }: {
   qex: QuestExercise;
   language: AppLanguage;
   onOpenExercise: () => void;
   onPutBack: (exerciseId: number) => void;
   onReplace: (questExerciseId: number) => void;
+  onPin: (questExerciseId: number, exerciseId: number | null) => void;
 }) {
   const { t } = useTranslation();
 
@@ -150,6 +152,40 @@ function ExerciseDetail({
         </AppButton>
       ) : null}
 
+      {/* "I can already do this." The ladder stepped this slot down to the hero's rung and the
+          caption says so; this is the one tap that asks for the written movement instead. It was
+          reachable only through the icon-only Replace inside a folded card, then a search through
+          the whole catalogue. Nothing is declared or stored about what the hero can do: it is a
+          swap, and one clean session on the movement moves the ladder for every quest. */}
+      {qex.substitutedFor && !qex.substitutedFor.setAside ? (
+        <AppButton
+          testID="quest-pin-written"
+          fullWidth={false}
+          variant="outline"
+          size="$3"
+          fontSize={14}
+          onPress={() => {
+            if (qex.substitutedFor) onPin(qex.id, qex.substitutedFor.id);
+          }}
+        >
+          {t("quests.pin_written", { name: localizedName(qex.substitutedFor, language) })}
+        </AppButton>
+      ) : null}
+
+      {/* And the way back, on the same spot. */}
+      {qex.pinnedOver ? (
+        <AppButton
+          testID="quest-unpin-written"
+          fullWidth={false}
+          variant="outline"
+          size="$3"
+          fontSize={14}
+          onPress={() => onPin(qex.id, null)}
+        >
+          {t("quests.unpin_written", { name: localizedName(qex.pinnedOver, language) })}
+        </AppButton>
+      ) : null}
+
       {/* Set aside and served anyway: the caption admits it, and the way out is the Replace the
           config card already offers, brought to where the hero is reading. */}
       {qex.setAsideServed ? (
@@ -187,6 +223,7 @@ export function QuestExerciseRow({
   onOpenExercise,
   onPutBack,
   onReplace,
+  onPin,
 }: {
   qex: QuestExercise;
   index: number;
@@ -202,6 +239,11 @@ export function QuestExerciseRow({
   onPutBack: (exerciseId: number) => void;
   /** Opens the Replace sheet on this slot. */
   onReplace: (questExerciseId: number) => void;
+  /**
+   * Puts the written movement in a slot the ladder stepped down, or `null` to go back to the
+   * hero's own rung.
+   */
+  onPin: (questExerciseId: number, exerciseId: number | null) => void;
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
@@ -312,6 +354,7 @@ export function QuestExerciseRow({
           onOpenExercise={onOpenExercise}
           onPutBack={onPutBack}
           onReplace={onReplace}
+          onPin={onPin}
         />
       ) : null}
     </Card>

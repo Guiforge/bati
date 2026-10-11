@@ -1,7 +1,9 @@
+import { listExercises } from "./exercises";
 import { preferences } from "./preferences";
 import { clearCached } from "./queryCache";
 import { getAllQuestConfigs, saveQuestConfig } from "./questConfig";
 import { listQuestTemplates } from "./quests";
+import { ADMIN_CREATOR } from "./schema";
 
 /**
  * Set an exercise aside: quests stop serving it and the warm-up stops prescribing it.
@@ -52,6 +54,26 @@ export async function setExerciseAside(exerciseId: number, now = Date.now()): Pr
 
   // A quest detail painted from cache would show the exercise for one frame, then swap.
   clearCached("quest:");
+}
+
+/**
+ * Every jump at once (`exercises.impact`, `0070`), for a hero who cannot or will not jump: a bad
+ * knee, a downstairs neighbour. One movement at a time it took six sessions of meeting each one
+ * mid-warm-up, clock running. Seed movements only, and through `setExerciseAside` so each one
+ * gets the whole treatment; put back one by one from the same list. Returns how many it added.
+ */
+export async function setImpactAside(now = Date.now()): Promise<number> {
+  const [catalogue, list] = await Promise.all([
+    listExercises(),
+    preferences.getSetAsideExercises(),
+  ]);
+  const aside = new Set(list.map((e) => e.id));
+  const jumps = catalogue.filter(
+    (e) => e.impact === true && e.creator === ADMIN_CREATOR && !aside.has(e.id),
+  );
+  // One after the other: each call reads the list it then appends to.
+  for (const jump of jumps) await setExerciseAside(jump.id, now);
+  return jumps.length;
 }
 
 /**

@@ -72,6 +72,11 @@ type Props = {
   onPick: (goal: OutingGoal) => void;
 };
 
+/** The longest outing of the month in the tab's own unit: moving seconds, or metres. */
+function longestOf(habit: OutingHabit, durationTab: boolean): number | null {
+  return durationTab ? (habit.longestSeconds ?? null) : habit.longestM;
+}
+
 /**
  * The outing's whole decision, on the model of `ExercisePickerSheet` — including its `disableDrag`,
  * which is not a preference: with the drag on, the pane drifts off its snap point and a close
@@ -155,8 +160,12 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, on
   // The ceiling, shown before the choice rather than after it: picking a chip closes the sheet,
   // so a warning on the chosen goal would never be read. Runs only, because that is what the
   // study measured; nothing equivalent exists for walking or riding.
-  const longestRun =
-    kind === "run" && !durationTab && habit.longestM !== null ? habit.longestM : null;
+  // On both tabs, each in its own unit: the line was on the distance tab alone, and a hero who
+  // sets a run by its duration is the one the proposal below it speaks to.
+  const longestRun = kind === "run" ? longestOf(habit, durationTab) : null;
+  const longestLabel = durationTab
+    ? (seconds: number) => formatDuration(seconds, language)
+    : (metres: number) => formatDistance(metres, unit, language);
 
   return (
     <Sheet
@@ -223,8 +232,8 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, on
           {longestRun === null ? null : (
             <Text testID="goal-longest-run" fontSize={13} color="$textSecondary">
               {t("quests.goal_longest_run", {
-                longest: formatDistance(longestRun, unit, language),
-                ceiling: formatDistance(longestRun * LONGEST_RUN_CEILING, unit, language),
+                longest: longestLabel(longestRun),
+                ceiling: longestLabel(longestRun * LONGEST_RUN_CEILING),
               })}
             </Text>
           )}

@@ -2,7 +2,7 @@
 title: Boss Fights
 type: system
 status: active
-updated: 2026-08-03
+updated: 2026-10-11
 related: [adventures.md, session-flow.md, progression.md, ../screens/session.md]
 sources:
   [
@@ -33,7 +33,8 @@ fight it by doing the campaign, and the session screen turns into its arena whil
 Damage is the work you did. One completed set is one hit.
 
 ```text
-base        = toRepEquivalent(resultValue, targetType)   // seconds -> reps at 3s/rep
+landing     = min(resultValue, prescribed + 2)           // reps; a hold stops at `prescribed`
+base        = toRepEquivalent(landing, targetType)        // seconds -> reps at 3s/rep
 × 1.5       if the exercise's first muscle is the boss's weakness
 × 0.5       if it is the boss's resistance
 × 2         on a critical hit
@@ -44,23 +45,37 @@ floor of 1  a resisted chip still has to mean something
 five times harder than a 12-rep squat. Weakness and resistance read the exercise's **first** muscle
 only.
 
-### Crit has to be earned
+`prescribed` is what the app asked for before the hero touched the stepper (`0070`,
+`prescribedValue()` in [`db/targets.ts`](../../db/targets.ts)). A target raised to 100 lands 14
+reps on a prescribed 12; a hold left running lands its target and nothing more. Boss pools are
+tuned at 0.9 of nominal damage with no bonus in it, so capping only removes extra damage and no
+pool was re-tuned.
+
+### Crit has to be earned, by a rep or two
 
 ```ts
-overshoot = (resultValue − targetValue) / targetValue
-chance    = overshoot > 0 ? min(MAX_CRIT_CHANCE, overshoot × 1.5) : 0
+extra  = resultValue − prescribed          // reps only: a hold never crits
+chance = extra <= 0 ? 0
+       : extra === 1 || prescribed < 8 ? 0.15   // CRIT_CHANCE_ONE_REP
+       : 0.30                                    // MAX_CRIT_CHANCE
 ```
 
-One rep past a target of twelve is ~12 % odds; ten seconds past a 40 s hold is ~37 %; the ceiling
-is `MAX_CRIT_CHANCE` (0.5) however heroic the set.
+One rep past the prescribed target is 15 %, two or more is 30 %, and nothing past the second rep
+adds to it. Under eight prescribed reps only the first counts: two extra on a target of five is
+40 % more work, on the hardest movements.
 
 This is **the fight's only decision**, and it is deliberately the ± control the screen already had.
-The old rule asked only that the target be *met* — but the rep counter initialises to the target
-and a time result is the elapsed timer, which reaches it. The condition held on essentially every
-set, so crit was a flat 30 % coin flip that rewarded nothing, explained nothing, and was worth
-~1.3× on every campaign whether the hero pushed or not. `session.crit_hint` under the counter now
-prints the live number, from [`critChance()`](../../db/bossFights.ts) — the same function
-`computeDamage` rolls against, because two copies would drift the first time either was tuned.
+The rule it replaced (2026-10) scaled with the overshoot, `min(0.5, overshoot × 1.5)`, on reps and
+holds alike. Three things were wrong with it. It kept growing, so the fight paid for exactly the
+grinding reps the safety page says to leave in reserve, and for holding on after the position had
+gone. It was relative, so "+2" was worth 50 % on a target of 6 and 20 % on 15, and the easy level
+was the one that critted. And it read the target the hero was *handed*: lowered to 1, two reps
+were a maximal crit.
+
+The line under the counter states the whole rule (`session.crit_rule`), from the same constants
+`computeDamage` rolls against. When the hero changed the target it says where the boss stops
+counting instead (`session.fight_target_changed`); the crit itself is unchanged. A hold in a fight
+says "hold to the beep: the blow lands whole".
 
 ### Banking
 

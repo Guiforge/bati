@@ -15,6 +15,7 @@ describe("quest eligibility", () => {
 
   afterEach(() => {
     t.sqlite.exec("DELETE FROM user_preferences");
+    t.sqlite.exec("DELETE FROM completed_sessions");
   });
 
   afterAll(() => {
@@ -51,6 +52,10 @@ describe("quest eligibility", () => {
     expect(questTrainingLevel(["medium", "medium", "medium"])).toBe("regular");
     expect(questTrainingLevel(["hard", "hard", "hard"])).toBe("advanced");
 
+    // The *upper* median on an even count: half hard is advanced, half easy is not beginner.
+    expect(questTrainingLevel(["hard", "hard", "medium", "easy"])).toBe("advanced");
+    expect(questTrainingLevel(["easy", "easy", "medium", "medium"])).toBe("regular");
+
     // One hard movement in a mostly moderate session does not make it advanced...
     expect(questTrainingLevel(["hard", "medium", "medium", "easy"])).toBe("regular");
     // ...and one easy finisher does not soften a hard one.
@@ -59,7 +64,22 @@ describe("quest eligibility", () => {
     expect(questTrainingLevel([])).toBe("regular");
   });
 
-  test("with no preferences set, nothing is filtered out", async () => {
+  const questId = (enTitle: string): number =>
+    (t.sqlite.prepare("SELECT id FROM quests WHERE enTitle = ?").get(enTitle) as { id: number }).id;
+
+  /** Three sessions: past the start, where nothing is known of a hero yet (`startsGently`). */
+  function logThreeSessions() {
+    for (let i = 0; i < 3; i++) {
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, strftime('%s', 'now'))",
+        )
+        .run();
+    }
+  }
+
+  test("with no preferences set, a hero who has trained is filtered out of nothing", async () => {
+    logThreeSessions();
     const { getEligibleQuestIds } = quests();
 
     const eligible = await getEligibleQuestIds();
@@ -70,6 +90,36 @@ describe("quest eligibility", () => {
     ).n;
 
     expect(eligible.size).toBe(total);
+  });
+
+  // Nothing walks a Burpee or a Skater Hop down a ladder, so a quest built on jumps reached a
+  // hero on day one exactly as written. It is still in the gallery; the app just does not pick it.
+  test("a quest with a jump in it is not what the app picks for a hero's first sessions", async () => {
+    const storm = questId("Storm of Blades");
+    const squire = questId("The Squire's Awakening");
+
+    const dayOne = await quests().getEligibleQuestIds();
+    expect(dayOne.has(storm)).toBe(false);
+    expect(dayOne.has(squire)).toBe(true);
+
+    logThreeSessions();
+    expect((await quests().getEligibleQuestIds()).has(storm)).toBe(true);
+
+    // A beginner stays off them for as long as they say they are one.
+    setPreference("trainingLevel", "beginner");
+    expect((await quests().getEligibleQuestIds()).has(storm)).toBe(false);
+  });
+
+  // Two hard movements out of four rated "regular" under the lower median, and reached beginners.
+  test("a beginner is not offered a quest half made of hard movements", async () => {
+    logThreeSessions();
+    const blade = questId("Forge the Dragon Blade");
+
+    setPreference("trainingLevel", "beginner");
+    expect((await quests().getEligibleQuestIds()).has(blade)).toBe(false);
+
+    setPreference("trainingLevel", "regular");
+    expect((await quests().getEligibleQuestIds()).has(blade)).toBe(true);
   });
 
   test("a bodyweight-only hero is never offered a quest that needs a bar", async () => {

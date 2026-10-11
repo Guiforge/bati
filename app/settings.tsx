@@ -32,6 +32,7 @@ import {
   ShieldCheck,
   Swords,
   Timer,
+  TrendingUp,
   Vibrate,
   Volume2,
   Wrench,
@@ -45,6 +46,7 @@ import { SettingRow } from "@/components/settings/SettingRow";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
+import type { TrainingLevel } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
 import { useBackup } from "@/hooks/useBackup";
 import { useBugReport, versionLabel } from "@/hooks/useBugReport";
@@ -194,6 +196,51 @@ function PrepModeRow() {
         haptics.selection();
         setPrepMode(prepMode === "timer" ? "tap" : "timer").catch((error) => {
           reportError("settings.prepModeWrite", error);
+        });
+      }}
+    />
+  );
+}
+
+const TRAINING_LEVELS: TrainingLevel[] = ["beginner", "regular", "advanced"];
+
+/**
+ * The level answered in onboarding, changeable here. The onboarding step says "you can change
+ * this later" and nothing could: it was written once and read forever. Cycled in one row, like
+ * the equipment above it. It moves no rung and no target, only what the app picks for the hero:
+ * the quests it suggests, and whether a warm-up may open on a jump (`startsGently`).
+ */
+function TrainingLevelRow() {
+  const { t } = useTranslation();
+  const haptics = useHaptics();
+  const [level, setLevel] = useState<TrainingLevel | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    preferences
+      .getTrainingLevel()
+      .then((value) => {
+        if (!cancelled) setLevel(value);
+      })
+      .catch((error) => reportError("settings.trainingLevelRead", error));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <SettingRow
+      testID="settings-training-level"
+      icon={<TrendingUp size={22} color="$text" />}
+      label={t("settings.training_level")}
+      value={level ? t(`onboarding.level_${level}`) : t("settings.training_level_unset")}
+      onPress={() => {
+        haptics.selection();
+        const next =
+          TRAINING_LEVELS[(TRAINING_LEVELS.indexOf(level ?? "advanced") + 1) % 3] ?? "beginner";
+        setLevel(next);
+        preferences.setTrainingLevel(next).catch((error) => {
+          reportError("settings.trainingLevelWrite", error);
         });
       }}
     />
@@ -517,6 +564,8 @@ export default function SettingsScreen() {
           />
 
           <PrepModeRow />
+
+          <TrainingLevelRow />
 
           {/* Draws distances, stores nothing new: every metre stays a metre in the database and
               in every GPX, and constants/distanceFormat.ts is the only place that converts. */}

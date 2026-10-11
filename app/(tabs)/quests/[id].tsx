@@ -477,6 +477,24 @@ export default function QuestDetails() {
     [config, updateConfig],
   );
 
+  // "I can already do this", and its way back. Pinning is the swap above with the movement the
+  // quest wrote, so there is one writer of `swaps`; unpinning drops the entry and the target
+  // tuned for that movement with it, the same pair `applySwap` keeps together.
+  const pinWritten = useCallback(
+    (questExerciseId: number, exerciseId: number | null) => {
+      if (exerciseId !== null) {
+        const written = catalogue.find((exercise) => exercise.id === exerciseId);
+        if (written) applySwap(questExerciseId, written);
+        return;
+      }
+      const key = String(questExerciseId);
+      const without = (entries: Record<string, number> | undefined) =>
+        Object.fromEntries(Object.entries(entries ?? {}).filter(([id]) => id !== key));
+      updateConfig({ ...config, swaps: without(config.swaps), targets: without(config.targets) });
+    },
+    [applySwap, catalogue, config, updateConfig],
+  );
+
   // Everything below — the estimate, the XP preview, the session that gets started — reads the
   // configured quest, so the numbers on screen are the numbers that will run. Memoized: this
   // used to run in the render body, so any unrelated re-render rebuilt the whole quest object
@@ -868,6 +886,7 @@ export default function QuestDetails() {
                   showTarget={!(isOuting && config.distanceM !== undefined)}
                   onOpenExercise={() => router.push(`/exercises/${qex.exercise.id}` as never)}
                   onReplace={setSwapFor}
+                  onPin={pinWritten}
                   onPutBack={(exerciseId) => {
                     if (!questId) return;
                     putBack({ id: exerciseId })

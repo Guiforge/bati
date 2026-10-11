@@ -35,6 +35,20 @@ describe("set-aside exercises", () => {
     return require("../db/setAside") as typeof import("../db/setAside");
   }
 
+  /**
+   * Past the first three sessions, where every jump is held back whatever was set aside
+   * (`startsGently`): these two tests are about the set-aside list, so the hero has trained.
+   */
+  function pastTheStart() {
+    for (let i = 0; i < 3; i++) {
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, strftime('%s', 'now'))",
+        )
+        .run();
+    }
+  }
+
   function idOf(enName: string): number {
     return (
       t.sqlite
@@ -209,6 +223,7 @@ describe("set-aside exercises", () => {
       .run();
     const exercises = require("../db/exercises") as typeof import("../db/exercises");
     exercises.invalidateExercisesCache();
+    pastTheStart();
     try {
       await setAsideApi().setExerciseAside(Number(info.lastInsertRowid));
 
@@ -275,6 +290,7 @@ describe("set-aside exercises", () => {
 
   /** The warm-up reads names: a set-aside exercise is unavailable there by the same rule. */
   test("a set-aside exercise is one the warm-up cannot prescribe", async () => {
+    pastTheStart();
     await setAsideApi().setExerciseAside(idOf("Star Jump"));
 
     const exercises = require("../db/exercises") as typeof import("../db/exercises");
@@ -282,6 +298,27 @@ describe("set-aside exercises", () => {
 
     expect(unavailable.has("Star Jump")).toBe(true);
     expect(unavailable.has("High Knees")).toBe(false);
+  });
+
+  // For a hero who cannot jump: one tap, instead of meeting each of the six mid-warm-up.
+  test("every jump can be set aside at once, and each is put back like any other", async () => {
+    pastTheStart();
+    await setAsideApi().setExerciseAside(idOf("Star Jump"));
+
+    // Five, not six: the one already aside is not written twice.
+    expect(await setAsideApi().setImpactAside()).toBe(5);
+
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const unavailable = await exercises.unavailableMovements();
+    for (const jump of ["Jumping Jack", "Star Jump", "Skater Hop", "High Knees", "Burpee"]) {
+      expect(unavailable.has(jump)).toBe(true);
+    }
+    // Mountain Climber keeps a foot down, and is the raise movement that is left.
+    expect(unavailable.has("Mountain Climber")).toBe(false);
+
+    await setAsideApi().putExerciseBack(idOf("High Knees"));
+    expect((await exercises.unavailableMovements()).has("High Knees")).toBe(false);
+    expect(await setAsideApi().setImpactAside()).toBe(1);
   });
 });
 

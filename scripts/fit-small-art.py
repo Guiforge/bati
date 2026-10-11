@@ -36,7 +36,8 @@ from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
-# (glob, longest edge).
+# (glob, longest edge, WebP quality, alpha quality, method). The last three are what every set
+# but the animals has always used: q90, lossless alpha, PIL's default method 4.
 #
 # Emblems are 512, not the 256 their grid slot would justify: tapping a building now opens a
 # detail sheet showing the same icon at ~180dp, which wants ~540px on a 3x screen. 256 was
@@ -44,25 +45,44 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 #
 # Avatars stay at 256: their largest slot is the 72px header portrait.
 SETS = [
-    ("assets/images/village/buildings/*.webp", 512),
-    ("assets/images/village/sport_*.webp", 512),
-    ("assets/avatar/*.webp", 256),
+    ("assets/images/village/buildings/*.webp", 512, 90, 100, 4),
+    ("assets/images/village/sport_*.webp", 512, 90, 100, 4),
+    ("assets/avatar/*.webp", 256, 90, 100, 4),
     # Cameos: 640 clears cameoMaxHeight's 200dp ceiling on a 3x screen with a little to spare.
     # Keep this in step with HEIGHT_CAP in components/chorus/cameoAnchor.ts.
-    ("assets/images/villagers/*.webp", 640),
-    # Crest animal portraits: 512, generated at 1024 (generate-animals.py).
-    ("assets/images/animals/*.webp", 512),
+    ("assets/images/villagers/*.webp", 640, 90, 100, 4),
+    # Crest animal portraits: 448 (generated at 1024 by generate-animals.py), drawn up to 192dp.
+    # q70 and an alpha at quality 0 take the 53 of them from 2.3 MiB to under 0.9.
+    # ponytail: the encode starts from the 512 that to-webp.py and the first fit already wrote
+    # once, so each portrait is lossy twice; re-fitting from the 1024 JPEG is the fix if an
+    # artefact ever shows, at the price of keeping the originals in the repo.
+    ("assets/images/animals/*.webp", 448, 70, 0, 6),
 ]
 
+# Keep q90 (448, alpha 0) for the bears with amber eyes: at q70 chroma subsampling turns an iris grey-blue (seen at 4x on a before/after board).
+KEEP_Q90 = {
+    "bear-adult",
+    "bear-adult-rare",
+    "bear-adult-winter",
+    "bear-legendary",
+    "bear-legendary-rare",
+    "bear-legendary-winter",
+    "bear-venerable",
+    "bear-venerable-rare",
+    "bear-young",
+}
 
-def targets() -> list[tuple[pathlib.Path, int]]:
-    found: list[tuple[pathlib.Path, int]] = []
-    for pattern, size in SETS:
-        found.extend((p, size) for p in sorted(ROOT.glob(pattern)))
+
+def targets() -> list[tuple[pathlib.Path, int, int, int, int]]:
+    found = []
+    for pattern, size, quality, alpha_quality, method in SETS:
+        for p in sorted(ROOT.glob(pattern)):
+            keep = p.parent.name == "animals" and p.stem in KEEP_Q90
+            found.append((p, size, 90 if keep else quality, alpha_quality, method))
     return found
 
 
-def fit(path: pathlib.Path, size: int) -> tuple[int, int] | None:
+def fit(path: pathlib.Path, size: int, quality: int, alpha_quality: int, method: int) -> tuple[int, int] | None:
     """Downscale in place. Returns (before, after) bytes, or None if already small enough."""
     image = Image.open(path)
     if max(image.size) <= size:
@@ -71,8 +91,7 @@ def fit(path: pathlib.Path, size: int) -> tuple[int, int] | None:
     before = path.stat().st_size
     # LANCZOS: these are ink-outlined emblems, and a cheaper filter frays the outline.
     image.thumbnail((size, size), Image.Resampling.LANCZOS)
-    # `quality` is ignored for lossless, and alpha from the cutout has to survive either way.
-    image.save(path, "WEBP", quality=90)
+    image.save(path, "WEBP", quality=quality, alpha_quality=alpha_quality, method=method)
     return before, path.stat().st_size
 
 
@@ -87,14 +106,14 @@ def main() -> int:
         return 1
 
     if args.dry_run:
-        oversized = [(p, s) for p, s in found if max(Image.open(p).size) > s]
+        oversized = [t for t in found if max(Image.open(t[0]).size) > t[1]]
         print(f"{len(found)} files, {len(oversized)} larger than their slot needs.")
         return 0
 
     before_total = after_total = 0
     done = 0
-    for path, size in found:
-        result = fit(path, size)
+    for path, *settings in found:
+        result = fit(path, *settings)
         if result is None:
             continue
         before, after = result

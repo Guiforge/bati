@@ -1,3 +1,4 @@
+import { type FeastFacts, rankFeasts } from "../components/session/feasts";
 import {
   COAT_RARE_KEY,
   crestEvents,
@@ -341,6 +342,20 @@ describe("rareCoatNews", () => {
   });
 });
 
+const NO_RESULT: FeastFacts["result"] = {
+  levelUp: null,
+  tierUp: null,
+  villageGrowth: [],
+  newRecords: [],
+  standing: null,
+  newRungs: [],
+  newAchievements: [],
+  fulfilledOath: null,
+  oathBonusXp: 0,
+  crestEvents: NO_CREST_EVENTS,
+  crestReveal: null,
+};
+
 describe("legendaryNews", () => {
   const at = (h: CrestSession[], choice: Animal | "auto" = "auto") => crestAnimals(h, choice);
   const bear = { animal: "bear", stage: "legendary", n: 500, practice: "strength" } as const;
@@ -377,6 +392,23 @@ describe("legendaryNews", () => {
     expect(legendaryNews(at(h, "stag"), [])).toEqual([{ ...bear, animal: "stag" }]);
     // The hero feasted on that count, then goes back to auto: the stag's own 500th is still owed.
     expect(legendaryNews(at(h, "auto"), ["legendary:strength"])).toEqual([stag]);
+  });
+
+  test("a picked animal stays silent on its own 500th, and the late feast arrives back on auto", () => {
+    // A bear hero (strength 500) with the stag picked and 500 runs: the stag's own count is not news.
+    const h = seq(["strength", 500], ["run", 500]);
+    expect(legendaryNews(at(h, "stag"), ["legendary:strength"])).toEqual([]);
+    expect(legendaryNews(at(h, "auto"), ["legendary:strength"])).toEqual([stag]);
+    const feasts = rankFeasts({
+      result: {
+        ...NO_RESULT,
+        crestLegendary: legendaryNews(at(h, "auto"), ["legendary:strength"]),
+      },
+    });
+    expect(feasts.find((f) => f.kind === "legendary")).toMatchObject({
+      animal: "stag",
+      late: true,
+    });
   });
 
   test("the boar is `all`, whatever animal the hero put on show", () => {

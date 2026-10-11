@@ -27,6 +27,12 @@ const RULES: Localized<Rule> = {
   de: oneOther,
   fr: (count) => (count === 0 || count === 1 ? "one" : roundMillion(count) ? "many" : "other"),
   es: (count) => (count === 1 ? "one" : roundMillion(count) ? "many" : "other"),
+  ru: (count) => {
+    const tens = count % 100;
+    const units = count % 10;
+    if (units === 1 && tens !== 11) return "one";
+    return units >= 2 && units <= 4 && (tens < 12 || tens > 14) ? "few" : "many";
+  },
 };
 
 function ruleFor(lang: string): Rule {

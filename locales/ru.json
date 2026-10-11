@@ -28,6 +28,7 @@
     "last_done_one": "Последний раз вчера",
     "last_done_few": "Последний раз {{count}} дня назад",
     "last_done_many": "Последний раз {{count}} дней назад",
+    "last_done_other": "Последний раз {{count}} дня назад",
     "play": "Играть",
     "level_line": "Уровень {{level}} • {{title}}",
     "step_progress": "Шаг {{current}} из {{total}}",
@@ -114,8 +115,7 @@
     "metric_label_leagues": "Лиги",
     "metric_weekly_sessions": "{{weekly, number}} тренировок в неделю, {{count, number}} недель",
     "metric_leagues_one": "{{count, number}} лига за стенами",
-    "metric_leagues_few": "{{count, number}} лиги за стенами",
-    "metric_leagues_many": "{{count, number}} лиг за стенами",
+    "metric_leagues": "Лиг за стенами: {{count, number}}",
     "pick_weekly": "ТРЕНИРОВОК В НЕДЕЛЮ",
     "weekly_chip": "{{count}}× / нед",
     "sworn_toast": "Клятва принесена",
@@ -132,6 +132,8 @@
     "tap_change": "Нажми, чтобы изменить",
     "haptics": "Вибрация",
     "warmup": "Разминка",
+    "training_level": "Твой уровень",
+    "training_level_unset": "Не указан",
     "prep_mode": "Перед каждым упражнением",
     "prep_timer": "10 с",
     "prep_tap": "Ждать «GO»",
@@ -146,6 +148,7 @@
     "report_bug_count_one": "{{count}} сбой",
     "report_bug_count_few": "{{count}} сбоя",
     "report_bug_count_many": "{{count}} сбоев",
+    "report_bug_count_other": "{{count}} сбоя",
     "no_mail_client": "На этом устройстве не найдено почтового приложения",
     "photos_denied": "Доступ к фото выключен. Разреши его в системных настройках.",
     "sound": "Звуковые отсчёты",
@@ -190,7 +193,10 @@
   },
   "progression": {
     "new_rung": "Открыта новая ступень",
-    "new_rungs": "Открыто новых ступеней: {{count}}",
+    "new_rungs_one": "Открыто новых ступеней: {{count}}",
+    "new_rungs_few": "Открыто новых ступеней: {{count}}",
+    "new_rungs_many": "Открыто новых ступеней: {{count}}",
+    "new_rungs_other": "Открыто новых ступеней: {{count}}",
     "new_rung_from": "Ты освоил {{name}}",
     "rung_also_leads_to": "Эта же ступень также ведёт к {{names}}."
   },
@@ -201,7 +207,10 @@
     "gallery_title": "Задания",
     "gallery_subtitle": "Отдельные тренировки. Выбери одну и вперёд",
     "details_title": "Задание",
-    "count": "{{count}} заданий",
+    "count_one": "{{count}} задание",
+    "count_few": "{{count}} задания",
+    "count_many": "{{count}} заданий",
+    "count_other": "{{count}} задания",
     "load_error": "Не удалось загрузить",
     "retry": "Повторить",
     "start_error": "Не удалось начать задание",
@@ -215,6 +224,7 @@
     "warmup_section_one": "Разминка · {{count}} упражнение · {{duration}}",
     "warmup_section_few": "Разминка · {{count}} упражнения · {{duration}}",
     "warmup_section_many": "Разминка · {{count}} упражнений · {{duration}}",
+    "warmup_section_other": "Разминка · {{count}} упражнения · {{duration}}",
     "filters_clear": "Сбросить фильтры",
     "filter_clear_all": "Сбросить",
     "filter_group_duration": "Длительность",
@@ -233,6 +243,9 @@
     "seconds_per_rep": "темп {{count}}с/повтор",
     "ghost_last": "Прошлый раз: {{value}}",
     "served_easier_rung": "Идёшь к {{name}}",
+    "pin_written": "Заменить на {{name}}",
+    "unpin_written": "Вернуть {{name}}",
+    "pinned_over": "Твой выбор, вместо {{name}}",
     "swap_exercise": "Заменить это упражнение",
     "swap_reason_easier": "Более простая ступень",
     "swap_reason_harder": "Более сложная ступень",
@@ -298,15 +311,18 @@
     "rounds_one": "{{count}} круг",
     "rounds_few": "{{count}} круга",
     "rounds_many": "{{count}} кругов",
+    "rounds_other": "{{count}} круга",
     "exercises_one": "{{count}} упражнение",
     "exercises_few": "{{count}} упражнения",
     "exercises_many": "{{count}} упражнений",
+    "exercises_other": "{{count}} упражнения",
     "filter_outside": "Улица",
     "favourite_add": "Закрепить сверху",
     "favourite_remove": "Открепить",
     "goal_sheet_title": "Как долго или как далеко",
     "goal_sheet_custom": "Другое",
     "goal_usual": "Как обычно · {{value}}",
+    "goal_walk_run": "Чередуй ходьбу и бег. Переходи на шаг, как только не можешь говорить.",
     "goal_longest_run": "Твой самый долгий забег в этом месяце: {{longest}}. Твоё тело легче справляется с пробежкой короче {{ceiling}}.",
     "goal_sheet_custom_hint": "Введи своё значение",
     "goal_sheet_open": "Настроить вылазку",
@@ -326,6 +342,7 @@
     "import_rounds_one": "{{count}} круг",
     "import_rounds_few": "{{count}} круга",
     "import_rounds_many": "{{count}} кругов",
+    "import_rounds_other": "{{count}} круга",
     "import_existing": "У тебя уже есть это задание: {{title}}",
     "import_choice_update": "Обновить моё",
     "import_choice_copy": "Оставить оба",
@@ -347,13 +364,18 @@
     "load_error": "Не удалось загрузить приключение",
     "start_error": "Не удалось начать приключение",
     "reward_xp_per_step": "до +{{count}} XP за шаг",
-    "steps": "{{count}} шагов",
+    "steps_one": "{{count}} шаг",
+    "steps_few": "{{count}} шага",
+    "steps_many": "{{count}} шагов",
+    "steps_other": "{{count}} шага",
     "weeks_one": "≈ {{count}} неделя",
     "weeks_few": "≈ {{count}} недели",
     "weeks_many": "≈ {{count}} недель",
+    "weeks_other": "≈ {{count}} недели",
     "weeks_pace_one": "≈ {{count}} неделя по твоим дням",
     "weeks_pace_few": "≈ {{count}} недели по твоим дням",
     "weeks_pace_many": "≈ {{count}} недель по твоим дням",
+    "weeks_pace_other": "≈ {{count}} недели по твоим дням",
     "steps_title": "Шаги кампании",
     "step_label": "Шаг {{count}}",
     "step_progress": "Шаг {{current}}/{{total}}",
@@ -363,6 +385,7 @@
     "completed_times_one": "Пройдено один раз",
     "completed_times_few": "Пройдено {{count}} раза",
     "completed_times_many": "Пройдено {{count}} раз",
+    "completed_times_other": "Пройдено {{count}} раза",
     "continue": "Продолжить",
     "start": "Начать приключение",
     "cta_replay": "Пройти приключение снова",
@@ -450,11 +473,13 @@
     "next_step_progress_one": "Попади в цель ещё {{count}} тренировку подряд, чтобы её получить.",
     "next_step_progress_few": "Попади в цель ещё {{count}} тренировки подряд, чтобы её получить.",
     "next_step_progress_many": "Попади в цель ещё {{count}} тренировок подряд, чтобы её получить.",
+    "next_step_progress_other": "Попади в цель ещё {{count}} тренировки подряд, чтобы её получить.",
     "record_label": "Рекорд",
     "catalogue_title": "Упражнения",
     "count_one": "{{count}} упражнение",
     "count_few": "{{count}} упражнения",
     "count_many": "{{count}} упражнений",
+    "count_other": "{{count}} упражнения",
     "search": "Найти упражнение",
     "filter_group_ladder": "Лесенка",
     "filter_ladder": "Лесенка",
@@ -462,15 +487,6 @@
     "leads_to": "ведёт к {{name}}",
     "empty_filters_title": "Ничего не найдено",
     "empty_filters_subtitle": "Попробуй убрать фильтр или очистить поиск.",
-    "pattern_push_horizontal": "Жим (горизонтальный)",
-    "pattern_push_vertical": "Жим (вертикальный)",
-    "pattern_pull_horizontal": "Тяга (горизонтальная)",
-    "pattern_pull_vertical": "Тяга (вертикальная)",
-    "pattern_squat": "Присед",
-    "pattern_hinge": "Наклон",
-    "pattern_core": "Кор",
-    "pattern_locomotion": "Передвижение",
-    "pattern_mobility": "Мобильность",
     "path_rung": "{{path}} · Ступень {{position}}/{{total}}",
     "path_working_up": "Идёшь к {{name}} · ступень {{position}} из {{total}}",
     "path_climbed": "{{path}} · Пройдено",
@@ -508,7 +524,17 @@
     "how_to_do_it": "Как выполнять",
     "increase_reps_accessibility": "Увеличить повторы на один",
     "increase_result_accessibility": "Увеличить результат",
-    "keep_going_hint": "Продолжай! Таймер идёт и после цели.",
+    "hold_release_hint": "Отпускай по сигналу. Это и есть цель.",
+    "hold_fight_hint": "Держи до сигнала: удар выйдет в полную силу.",
+    "fight_target_changed_one": "Цель изменена: босс считает до {{count}} повтора.",
+    "fight_target_changed_few": "Цель изменена: босс считает до {{count}} повторов.",
+    "fight_target_changed_many": "Цель изменена: босс считает до {{count}} повторов.",
+    "fight_target_changed_other": "Цель изменена: босс считает до {{count}} повтора.",
+    "fight_target_changed_time": "Цель изменена: босс считает до {{seconds}} с.",
+    "crit_rule": "Критический удар: {{one}}% за один лишний повтор, {{two}}% за два, дальше не растёт.",
+    "crit_rule_one": "Критический удар: {{one}}% за один лишний повтор, дальше не растёт.",
+    "pain_rule": "Острая боль? Остановись. Пропуск ничего не стоит.",
+    "pain_rule_last": "Острая боль? Остановись.",
     "new_records": "Новые рекорды!",
     "overtime": "БОНУСНОЕ ВРЕМЯ",
     "pause_accessibility": "Пауза",
@@ -517,13 +543,25 @@
     "paused_title": "Тренировка на паузе",
     "pr_exercise": "Рекорд: {{exercise}}",
     "pr_longest_session": "Самая долгая тренировка",
-    "pr_more": "ещё +{{count}} рекордов",
+    "pr_more_one": "ещё +{{count}} рекорд",
+    "pr_more_few": "ещё +{{count}} рекорда",
+    "pr_more_many": "ещё +{{count}} рекордов",
+    "pr_more_other": "ещё +{{count}} рекорда",
     "pr_most_xp": "Больше всего XP за тренировку",
     "pr_new_record": "Новый рекорд",
     "standing_title": "Лучший результат",
-    "standing_lifetime_2": "2-й результат за {{count}} тренировок",
-    "standing_lifetime_3": "3-й результат за {{count}} тренировок",
-    "standing_recent_1": "Твой лучший результат за {{count}} тренировок",
+    "standing_lifetime_2_one": "2-й результат за {{count}} тренировку",
+    "standing_lifetime_2_few": "2-й результат за {{count}} тренировки",
+    "standing_lifetime_2_many": "2-й результат за {{count}} тренировок",
+    "standing_lifetime_2_other": "2-й результат за {{count}} тренировки",
+    "standing_lifetime_3_one": "3-й результат за {{count}} тренировку",
+    "standing_lifetime_3_few": "3-й результат за {{count}} тренировки",
+    "standing_lifetime_3_many": "3-й результат за {{count}} тренировок",
+    "standing_lifetime_3_other": "3-й результат за {{count}} тренировки",
+    "standing_recent_1_one": "Твой лучший результат за {{count}} тренировку",
+    "standing_recent_1_few": "Твой лучший результат за {{count}} тренировки",
+    "standing_recent_1_many": "Твой лучший результат за {{count}} тренировок",
+    "standing_recent_1_other": "Твой лучший результат за {{count}} тренировки",
     "standing_recent_2": "2-й результат из последних {{count}}",
     "standing_recent_3": "3-й результат из последних {{count}}",
     "quit_button": "Выйти из задания",
@@ -563,7 +601,10 @@
     "up_next": "Далее",
     "victory_title": "Задание выполнено!",
     "village_growth_cta": "Посмотреть деревню",
-    "village_growth_more": "ещё +{{count}}",
+    "village_growth_more_one": "ещё +{{count}}",
+    "village_growth_more_few": "ещё +{{count}}",
+    "village_growth_more_many": "ещё +{{count}}",
+    "village_growth_more_other": "ещё +{{count}}",
     "village_growth_title": "Твоя деревня растёт",
     "village_tier_up_title": "Твоя деревня выросла!",
     "xp_overshoot": "в т. ч. +{{count}} за превышение целей",
@@ -589,8 +630,6 @@
     "reserve_hint": "Останавливайся, когда в запасе остаётся 1–2 повтора, а не на отказе.",
     "boss_weak_point": "{{muscle}} — слабое место. Урон в полтора раза выше.",
     "boss_resisted": "{{muscle}} — бронировано. Урон вдвое ниже.",
-    "crit_hint": "Каждый повтор сверх цели — шанс на критический удар. Сейчас {{percent}}%.",
-    "crit_hint_time": "Каждая секунда сверх цели — шанс на критический удар. Сейчас {{percent}}%.",
     "boss_down": "{{boss}} повержен. Остаток тренировки — твой.",
     "hold_check_question": "Продержал {{time}}?",
     "hold_check_keep": "Оставить",
@@ -622,14 +661,28 @@
     "expedition_made_quest": "Отложено к твоим заданиям. Ждёт ровно в том виде, в каком ты оставил.",
     "expedition_permission_why": "Bati читает твоё местоположение во время вылазки, и оно покидает этот телефон только в твоих собственных резервных копиях и синхронизации. Android сейчас спросит разрешение.",
     "level_up": "Новый уровень",
-    "level_label": "Уровень"
+    "level_label": "Уровень",
+    "empty_variants": [
+      {
+        "title": "Хорошая работа!",
+        "subtitle": "Тренировка записана. Не дай пламени погаснуть."
+      },
+      {
+        "title": "Крепкая тренировка.",
+        "subtitle": "Каждый повтор работает на следующий."
+      },
+      {
+        "title": "Записано!",
+        "subtitle": "Сегодня без фейерверков. Пламени всё равно, оно растёт."
+      }
+    ]
   },
   "muscles": {
     "arms": "Руки",
     "back": "Спина",
     "chest": "Грудь",
     "abs": "Пресс",
-    "shoulders": "Плечи",
+    "shoulder": "Плечи",
     "legs": "Ноги"
   },
   "tabs": {
@@ -682,9 +735,11 @@
     "unclassified_volume_one": "{{count}} результат — из упражнения без указанных мышц, поэтому здесь он не учитывается.",
     "unclassified_volume_few": "{{count}} результата — из упражнений без указанных мышц, поэтому здесь они не учитываются.",
     "unclassified_volume_many": "{{count}} результатов — из упражнений без указанных мышц, поэтому здесь они не учитываются.",
+    "unclassified_volume_other": "{{count}} результата — из упражнений без указанных мышц, поэтому здесь они не учитываются.",
     "rounds_completed_one": "{{count}} круг",
     "rounds_completed_few": "{{count}} круга",
     "rounds_completed_many": "{{count}} кругов",
+    "rounds_completed_other": "{{count}} круга",
     "bosses_title": "Поверженные боссы",
     "bosses_empty": "Здесь появятся боссы, которых ты победил.",
     "bosses_standing": "Ещё держатся",
@@ -694,18 +749,22 @@
     "lead_month_one": "{{count}} день тренировок в {{month}}.",
     "lead_month_few": "{{count}} дня тренировок в {{month}}.",
     "lead_month_many": "{{count}} дней тренировок в {{month}}.",
+    "lead_month_other": "{{count}} дня тренировок в {{month}}.",
     "lead_month_outings_one": "{{count}} день тренировок в {{month}}, и {{outings}}.",
     "lead_month_outings_few": "{{count}} дня тренировок в {{month}}, и {{outings}}.",
     "lead_month_outings_many": "{{count}} дней тренировок в {{month}}, и {{outings}}.",
+    "lead_month_outings_other": "{{count}} дня тренировок в {{month}}, и {{outings}}.",
     "lead_outings_one": "одна вылазка",
     "lead_outings_few": "{{count}} вылазки",
     "lead_outings_many": "{{count}} вылазок",
+    "lead_outings_other": "{{count}} вылазки",
     "lead_nothing_month": "В {{month}} пока ничего не тренировано.",
     "lead_record": "Новый рекорд: {{movement}} {{when}}.",
     "lead_rest_lit": "Сегодня ничего, и ничего не потеряно: пламя держится до {{day}}.",
     "lead_rest_out_one": "Сегодня ничего. {{count}} тренировка за семь дней снова зажжёт пламя.",
     "lead_rest_out_few": "Сегодня ничего. {{count}} тренировки за семь дней снова зажгут пламя.",
     "lead_rest_out_many": "Сегодня ничего. {{count}} тренировок за семь дней снова зажгут пламя.",
+    "lead_rest_out_other": "Сегодня ничего. {{count}} тренировки за семь дней снова зажгут пламя.",
     "lead_veteran_since": "Ничего не падало с {{month}}.",
     "when_today": "сегодня",
     "when_yesterday": "вчера",
@@ -716,6 +775,7 @@
     "months_ago_one": "{{count}} месяц назад",
     "months_ago_few": "{{count}} месяца назад",
     "months_ago_many": "{{count}} месяцев назад",
+    "months_ago_other": "{{count}} месяца назад",
     "wall_tonight": "Побить в следующий раз",
     "wall_standing": "Ещё держится",
     "wall_empty": "Твои первые рекорды",
@@ -731,27 +791,33 @@
     "flame_lit_one": "день горит",
     "flame_lit_few": "дня горит",
     "flame_lit_many": "дней горит",
+    "flame_lit_other": "дня горит",
     "flame_best_now": "Это твоё лучшее пламя.",
     "flame_best_ended_one": "Лучшее пламя: {{days}} день, закончилось {{date}}.",
     "flame_best_ended_few": "Лучшее пламя: {{days}} дня, закончилось {{date}}.",
     "flame_best_ended_many": "Лучшее пламя: {{days}} дней, закончилось {{date}}.",
+    "flame_best_ended_other": "Лучшее пламя: {{days}} дня, закончилось {{date}}.",
     "month_so_far": "{{month}} на данный момент",
     "month_vs_one": "против {{month}}, те же {{count}} день",
     "month_vs_few": "против {{month}}, те же {{count}} дня",
     "month_vs_many": "против {{month}}, те же {{count}} дней",
+    "month_vs_other": "против {{month}}, те же {{count}} дня",
     "fig_quests_one": "задание",
     "fig_quests_few": "задания",
     "fig_quests_many": "заданий",
+    "fig_quests_other": "задания",
     "fig_reps": "повторов",
     "fig_xp": "XP",
     "fig_records_one": "рекорд",
     "fig_records_few": "рекорда",
     "fig_records_many": "рекордов",
+    "fig_records_other": "рекорда",
     "fig_time": "в заданиях",
     "fig_time_each": "в заданиях · по {{avg}} каждое",
     "fig_outings_one": "{{count}} вылазка",
     "fig_outings_few": "{{count}} вылазки",
     "fig_outings_many": "{{count}} вылазок",
+    "fig_outings_other": "{{count}} вылазки",
     "fig_no_outings": "вылазок пока нет",
     "fig_record_latest": "{{name}}, {{date}}",
     "fig_no_record": "пока ничего",
@@ -770,13 +836,16 @@
     "level_to_next_pace_one": "{{xp}} XP до уровня {{level}}, примерно {{count}} задание в текущем темпе.",
     "level_to_next_pace_few": "{{xp}} XP до уровня {{level}}, примерно {{count}} задания в текущем темпе.",
     "level_to_next_pace_many": "{{xp}} XP до уровня {{level}}, примерно {{count}} заданий в текущем темпе.",
+    "level_to_next_pace_other": "{{xp}} XP до уровня {{level}}, примерно {{count}} задания в текущем темпе.",
     "shelf_count": "{{unlocked}} из {{total}} на полке",
     "shelf_next_days_one": "{{title}} — через {{count}} день",
     "shelf_next_days_few": "{{title}} — через {{count}} дня",
     "shelf_next_days_many": "{{title}} — через {{count}} дней",
+    "shelf_next_days_other": "{{title}} — через {{count}} дня",
     "shelf_next_quests_one": "{{title}} — через {{count}} задание",
     "shelf_next_quests_few": "{{title}} — через {{count}} задания",
     "shelf_next_quests_many": "{{title}} — через {{count}} заданий",
+    "shelf_next_quests_other": "{{title}} — через {{count}} задания",
     "shelf_next_xp": "{{title}} — через {{xp}} XP",
     "shelf_next_special": "Следующее к получению: {{title}}",
     "shelf_full": "Полка полна.",
@@ -802,11 +871,13 @@
     "row_records_new_one": "{{count}} новый",
     "row_records_new_few": "{{count}} новых",
     "row_records_new_many": "{{count}} новых",
+    "row_records_new_other": "{{count}} новых",
     "row_bosses": "Поверженных боссов",
     "row_days_lit": "Дней с огнём",
     "row_days_lit_note_one": "лучшее пламя {{days}} день",
     "row_days_lit_note_few": "лучшее пламя {{days}} дня",
     "row_days_lit_note_many": "лучшее пламя {{days}} дней",
+    "row_days_lit_note_other": "лучшее пламя {{days}} дня",
     "session_records": "Рекорды тренировок",
     "sr_longest": "Самая долгая тренировка",
     "sr_most_xp": "Больше всего XP за тренировку",
@@ -829,9 +900,11 @@
     "sits_of_runs_one": "из {{count}} прохождения этого задания",
     "sits_of_runs_few": "из {{count}} прохождений этого задания, по повторам",
     "sits_of_runs_many": "из {{count}} прохождений этого задания, по повторам",
+    "sits_of_runs_other": "из {{count}} прохождений этого задания, по повторам",
     "sits_of_outings_one": "из {{count}} вылазки",
     "sits_of_outings_few": "из {{count}} вылазок, по дистанции",
     "sits_of_outings_many": "из {{count}} вылазок, по дистанции",
+    "sits_of_outings_other": "из {{count}} вылазок, по дистанции",
     "sits_best_on": "твой лучший: {{value}}, {{date}}",
     "sits_this_run": "этот раз: {{value}}",
     "sits_this_run_gap": "этот раз: {{value}}, на {{gap}} ниже твоего лучшего",
@@ -841,16 +914,19 @@
     "moved_reps_one": "{{formatted}} повтор в деревню",
     "moved_reps_few": "{{formatted}} повтора в деревню",
     "moved_reps_many": "{{formatted}} повторов в деревню",
+    "moved_reps_other": "{{formatted}} повтора в деревню",
     "moved_ground": "{{distance}} для дороги из деревни",
     "moved_outing_note": "Дорогу поднимает вылазка. Боссы и здания оплачиваются повторами.",
     "moved_muscle": "{{muscle}} {{before}} → {{after}} за последние 30 дней",
     "moved_rung_left_one": "{{movement}}: {{met}} тренировка в цель подряд, ещё {{count}} до следующей ступени",
     "moved_rung_left_few": "{{movement}}: ещё {{count}} тренировки в цель подряд до следующей ступени",
     "moved_rung_left_many": "{{movement}}: ещё {{count}} тренировок в цель подряд до следующей ступени",
+    "moved_rung_left_other": "{{movement}}: ещё {{count}} тренировки в цель подряд до следующей ступени",
     "moved_rung_earned": "{{movement}} освоено: {{next}} — твой, попробуй",
     "rounds_title_one": "Круг",
     "rounds_title_few": "{{count}} круга",
     "rounds_title_many": "{{count}} кругов",
+    "rounds_title_other": "{{count}} круга",
     "rounds_meta": "каждый подход, затем цель",
     "set_edit_note": "Нажми на подход, чтобы исправить. Уже заработанные XP и урон по боссу остаются как есть.",
     "set_edit_save": "Сохранить",
@@ -868,17 +944,21 @@
     "kill_adventure_one": "Приключение из {{count}} задания, {{days}}",
     "kill_adventure_few": "Приключение из {{count}} заданий, {{days}}",
     "kill_adventure_many": "Приключение из {{count}} заданий, {{days}}",
+    "kill_adventure_other": "Приключение из {{count}} заданий, {{days}}",
     "kill_days_one": "за {{count}} день",
     "kill_days_few": "за {{count}} дня",
     "kill_days_many": "за {{count}} дней",
+    "kill_days_other": "за {{count}} дня",
     "health_title": "Его здоровье",
     "health_emptied_one": "истощено за {{count}} задание",
     "health_emptied_few": "истощено за {{count}} задания",
     "health_emptied_many": "истощено за {{count}} заданий",
+    "health_emptied_other": "истощено за {{count}} задания",
     "last_blow": "Последний удар",
     "last_blow_reps_one": "{{movement}}, {{count}} повтор",
     "last_blow_reps_few": "{{movement}}, {{count}} повтора",
     "last_blow_reps_many": "{{movement}}, {{count}} повторов",
+    "last_blow_reps_other": "{{movement}}, {{count}} повтора",
     "last_blow_hold": "{{movement}}, {{value}}",
     "last_blow_round": "Круг {{round}}, осталось {{health}} здоровья",
     "last_blow_health": "Осталось {{health}} здоровья",
@@ -893,6 +973,7 @@
     "left_victories_one": "Побеждён один раз.",
     "left_victories_few": "Побеждён {{count}} раза.",
     "left_victories_many": "Побеждён {{count}} раз.",
+    "left_victories_other": "Побеждён {{count}} раза.",
     "left_next": "{{boss}} ещё держится.",
     "left_all": "Ни один босс больше не держится.",
     "cta_boss": "Сразиться снова",
@@ -903,14 +984,16 @@
     "flame_window_one": "{{count}} тренировка или вылазка за последние семь дней.",
     "flame_window_few": "{{count}} тренировки или вылазки за последние семь дней.",
     "flame_window_many": "{{count}} тренировок или вылазок за последние семь дней.",
+    "flame_window_other": "{{count}} тренировки или вылазки за последние семь дней.",
     "flame_quota_one": "{{count}} — и оно горит.",
     "flame_quota_few": "{{count}} — и оно горит.",
     "flame_quota_many": "{{count}} — и оно горит.",
+    "flame_quota_other": "{{count}} — и оно горит.",
     "lead_rest_lit_date": "Сегодня ничего, и ничего не потеряно: пламя держится до {{date}}.",
     "work_behind_one": "{{muscles}} отстаёт.",
     "work_behind_few": "{{muscles}} отстают.",
     "work_behind_many": "{{muscles}} отстают.",
-    "list_and": "{{a}} и {{b}}",
+    "work_behind_other": "{{muscles}} отстают.",
     "muscle_share": "{{muscle}} ({{share}})",
     "duration_hm": "{{h}} ч {{m}} мин",
     "duration_m": "{{m}} мин",
@@ -923,12 +1006,15 @@
     "flame_more_one": "ещё {{count}} зажжёт его.",
     "flame_more_few": "ещё {{count}} зажгут его.",
     "flame_more_many": "ещё {{count}} зажгут его.",
+    "flame_more_other": "ещё {{count}} зажгут его.",
     "record_more_one": "и ещё {{count}} рекорд за эту тренировку.",
     "record_more_few": "и ещё {{count}} рекорда за эту тренировку.",
     "record_more_many": "и ещё {{count}} рекордов за эту тренировку.",
+    "record_more_other": "и ещё {{count}} рекорда за эту тренировку.",
     "work_early_one": "Рано судить: {{count}} тренировка за тридцать дней даст баланс.",
     "work_early_few": "Рано судить: {{count}} тренировки за тридцать дней дадут баланс.",
-    "work_early_many": "Рано судить: {{count}} тренировок за тридцать дней дадут баланс."
+    "work_early_many": "Рано судить: {{count}} тренировок за тридцать дней дадут баланс.",
+    "work_early_other": "Рано судить: {{count}} тренировки за тридцать дней дадут баланс."
   },
   "achievements": {
     "progress": "{{unlocked}} / {{total}} открыто",
@@ -937,10 +1023,126 @@
     "filter_streaks": "Пламя",
     "filter_xp": "XP",
     "filter_special": "Особые",
-    "more_count": "ещё +{{count}} достижений",
+    "more_count_one": "ещё +{{count}} достижение",
+    "more_count_few": "ещё +{{count}} достижения",
+    "more_count_many": "ещё +{{count}} достижений",
+    "more_count_other": "ещё +{{count}} достижения",
     "show_less": "Свернуть",
     "new_unlock": "Достижение открыто!",
-    "new_unlocks": "Открыто достижений: {{count}}!"
+    "new_unlocks_one": "Открыто достижений: {{count}}!",
+    "new_unlocks_few": "Открыто достижений: {{count}}!",
+    "new_unlocks_many": "Открыто достижений: {{count}}!",
+    "new_unlocks_other": "Открыто достижений: {{count}}!",
+    "badges": {
+      "first_workout": {
+        "title": "Первые шаги",
+        "description": "Заверши первую тренировку"
+      },
+      "sessions_10": {
+        "title": "Начало положено",
+        "description": "Заверши 10 тренировок"
+      },
+      "sessions_25": {
+        "title": "Преданность",
+        "description": "Заверши 25 тренировок"
+      },
+      "sessions_50": {
+        "title": "В огне",
+        "description": "Заверши 50 тренировок"
+      },
+      "sessions_100": {
+        "title": "Воин сотни",
+        "description": "Заверши 100 тренировок"
+      },
+      "sessions_250": {
+        "title": "Чемпион",
+        "description": "Заверши 250 тренировок"
+      },
+      "sessions_500": {
+        "title": "Легенда",
+        "description": "Заверши 500 тренировок"
+      },
+      "streak_3": {
+        "title": "Росток",
+        "description": "Не дай пламени погаснуть 3 дня"
+      },
+      "streak_7": {
+        "title": "Воин недели",
+        "description": "Не дай пламени погаснуть 7 дней"
+      },
+      "streak_14": {
+        "title": "Две недели подряд",
+        "description": "Не дай пламени погаснуть 14 дней"
+      },
+      "streak_30": {
+        "title": "Мастер месяца",
+        "description": "Не дай пламени погаснуть 30 дней"
+      },
+      "streak_60": {
+        "title": "Не остановить",
+        "description": "Не дай пламени погаснуть 60 дней"
+      },
+      "streak_100": {
+        "title": "Центурион",
+        "description": "Не дай пламени погаснуть 100 дней"
+      },
+      "xp_100": {
+        "title": "Охотник за XP",
+        "description": "Набери 100 XP за всё время"
+      },
+      "xp_500": {
+        "title": "Собиратель XP",
+        "description": "Набери 500 XP за всё время"
+      },
+      "xp_1000": {
+        "title": "Мастер XP",
+        "description": "Набери 1000 XP за всё время"
+      },
+      "xp_5000": {
+        "title": "Элита XP",
+        "description": "Набери 5000 XP за всё время"
+      },
+      "xp_10000": {
+        "title": "Легенда XP",
+        "description": "Набери 10 000 XP за всё время"
+      },
+      "long_session_30min": {
+        "title": "Выносливость",
+        "description": "Заверши тренировку дольше 30 минут"
+      },
+      "long_session_60min": {
+        "title": "Железная воля",
+        "description": "Заверши тренировку дольше 60 минут"
+      },
+      "early_bird": {
+        "title": "Жаворонок",
+        "description": "Заверши тренировку до 7 утра"
+      },
+      "night_owl": {
+        "title": "Сова",
+        "description": "Заверши тренировку после 10 вечера"
+      },
+      "path_climbed": {
+        "title": "Путь пройден",
+        "description": "Освой каждую ступень одного пути"
+      },
+      "first_outing": {
+        "title": "За ворота",
+        "description": "Заверши одну вылазку"
+      },
+      "hour_outside": {
+        "title": "Час в дороге",
+        "description": "Проведи час в движении за одну вылазку"
+      },
+      "variety_3_quests": {
+        "title": "Искатель разнообразия",
+        "description": "Заверши 3 разных задания"
+      },
+      "variety_5_quests": {
+        "title": "Мастер заданий",
+        "description": "Заверши 5 разных заданий"
+      }
+    }
   },
   "chart": {
     "error": "Не удалось загрузить график",
@@ -951,9 +1153,11 @@
     "quest_history_one": "Твой последний заход, в минутах",
     "quest_history_few": "Твои последние {{count}} захода, в минутах",
     "quest_history_many": "Твои последние {{count}} заходов, в минутах",
+    "quest_history_other": "Твои последние {{count}} захода, в минутах",
     "all_history_one": "Твоя последняя тренировка, в минутах",
     "all_history_few": "Твои последние {{count}} тренировки, в минутах",
     "all_history_many": "Твои последние {{count}} тренировок, в минутах",
+    "all_history_other": "Твои последние {{count}} тренировки, в минутах",
     "workouts": "Тренировки",
     "total_mins": "Минуты",
     "avg_mins": "Средние минуты"
@@ -975,7 +1179,8 @@
     "crit": "КРИТ!",
     "daily_xp_bonus": "в т. ч. +{{count}} за задание дня",
     "on": "Вкл",
-    "off": "Выкл"
+    "off": "Выкл",
+    "list_and": "{{a}} и {{b}}"
   },
   "splash": {
     "loading": "Строим твою деревню…"
@@ -1001,15 +1206,19 @@
     "detail_bosses_driver_one": "{{count}} босс побеждён",
     "detail_bosses_driver_few": "{{count}} босса побеждено",
     "detail_bosses_driver_many": "{{count}} боссов побеждено",
+    "detail_bosses_driver_other": "{{count}} босса побеждено",
     "detail_rematches_driver_one": "{{count}} реванш выигран",
     "detail_rematches_driver_few": "{{count}} реванша выиграно",
     "detail_rematches_driver_many": "{{count}} реваншей выиграно",
+    "detail_rematches_driver_other": "{{count}} реванша выиграно",
     "detail_routes_driver_one": "{{count}} маршрут пройден",
     "detail_routes_driver_few": "{{count}} маршрута пройдено",
     "detail_routes_driver_many": "{{count}} маршрутов пройдено",
+    "detail_routes_driver_other": "{{count}} маршрута пройдено",
     "detail_leagues_driver_one": "{{count}} лига пройдена за стенами",
     "detail_leagues_driver_few": "{{count}} лиги пройдено за стенами",
     "detail_leagues_driver_many": "{{count}} лиг пройдено за стенами",
+    "detail_leagues_driver_other": "{{count}} лиги пройдено за стенами",
     "league_unit": "Одна лига Bati — это один километр.",
     "rep_unit": "Удержание считается за один повтор каждые {{seconds}} секунд.",
     "detail_unlock_muscle": "Тренируй {{muscle}}, чтобы поднять это здание",
@@ -1019,7 +1228,10 @@
     "kept_level": "Этот уровень перенесён из того, что ты сделал до того, как деревня изменила способ подсчёта.",
     "hall_times": "×{{count}}",
     "trophy_defeated": "Побеждён {{date}}",
-    "trophy_victories": "{{count}} побед",
+    "trophy_victories_one": "{{count}} победа",
+    "trophy_victories_few": "{{count}} победы",
+    "trophy_victories_many": "{{count}} побед",
+    "trophy_victories_other": "{{count}} победы",
     "style_strength": "сила",
     "style_calisthenics": "калистеника",
     "style_yoga": "йога",
@@ -1048,17 +1260,20 @@
     "done_deeds_one": "Ещё {{count}} дело открыто, чуть ниже.",
     "done_deeds_few": "Ещё {{count}} дела открыто, чуть ниже.",
     "done_deeds_many": "Ещё {{count}} дел открыто, чуть ниже.",
+    "done_deeds_other": "Ещё {{count}} дела открыто, чуть ниже.",
     "tier_next_kicker": "Следующий уровень деревни",
     "tier_final_kicker": "Уровень деревни",
     "tier_badge": "уровень {{tier}} из {{max}}",
     "tier_next_line_one": "Деревня изменит вид на уровне героя {{level}}, через {{count}} уровень.",
     "tier_next_line_few": "Деревня изменит вид на уровне героя {{level}}, через {{count}} уровня.",
     "tier_next_line_many": "Деревня изменит вид на уровне героя {{level}}, через {{count}} уровней.",
+    "tier_next_line_other": "Деревня изменит вид на уровне героя {{level}}, через {{count}} уровня.",
     "tier_bar_end": "уровень {{level}} · {{xp}} XP",
     "tier_short": "осталось {{xp}} XP. Каждая тренировка приносит XP, и только уровень героя меняет деревню.",
     "tier_short_pace_one": "осталось {{xp}} XP, примерно {{count}} тренировка в темпе этой недели.",
     "tier_short_pace_few": "осталось {{xp}} XP, примерно {{count}} тренировки в темпе этой недели.",
     "tier_short_pace_many": "осталось {{xp}} XP, примерно {{count}} тренировок в темпе этой недели.",
+    "tier_short_pace_other": "осталось {{xp}} XP, примерно {{count}} тренировки в темпе этой недели.",
     "tier_final_line": "Последний уровень достигнут на уровне {{level}}. Деревня больше не изменит вид.",
     "tier_final_rest": "Здания внутри всё ещё растут.",
     "reward_kicker": "Твоё задание построило это",
@@ -1078,18 +1293,23 @@
     "next_reps_one": "{{what}}: {{count}} повтор до уровня {{level}}",
     "next_reps_few": "{{what}}: {{count}} повтора до уровня {{level}}",
     "next_reps_many": "{{what}}: {{count}} повторов до уровня {{level}}",
+    "next_reps_other": "{{what}}: {{count}} повтора до уровня {{level}}",
     "next_leagues_one": "{{count}} лига на улице до уровня {{level}}",
     "next_leagues_few": "{{count}} лиги на улице до уровня {{level}}",
     "next_leagues_many": "{{count}} лиг на улице до уровня {{level}}",
+    "next_leagues_other": "{{count}} лиги на улице до уровня {{level}}",
     "next_bosses_one": "ещё {{count}} новый босс до уровня {{level}}",
     "next_bosses_few": "ещё {{count}} новых босса до уровня {{level}}",
     "next_bosses_many": "ещё {{count}} новых боссов до уровня {{level}}",
+    "next_bosses_other": "ещё {{count}} новых босса до уровня {{level}}",
     "next_rematches_one": "ещё {{count}} реванш до уровня {{level}}",
     "next_rematches_few": "ещё {{count}} реванша до уровня {{level}}",
     "next_rematches_many": "ещё {{count}} реваншей до уровня {{level}}",
+    "next_rematches_other": "ещё {{count}} реванша до уровня {{level}}",
     "next_routes_one": "ещё {{count}} маршрут до уровня {{level}}",
     "next_routes_few": "ещё {{count}} маршрута до уровня {{level}}",
     "next_routes_many": "ещё {{count}} маршрутов до уровня {{level}}",
+    "next_routes_other": "ещё {{count}} маршрута до уровня {{level}}",
     "feeds_muscle": "Растёт с каждым повтором {{what}}",
     "feeds_style": "Растёт с каждым повтором {{what}}",
     "feeds_prereq": "Следует за {{building}}",
@@ -1101,18 +1321,23 @@
     "unit_reps_one": "{{count}} повтор",
     "unit_reps_few": "{{count}} повтора",
     "unit_reps_many": "{{count}} повторов",
+    "unit_reps_other": "{{count}} повтора",
     "unit_leagues_one": "{{count}} лига",
     "unit_leagues_few": "{{count}} лиги",
     "unit_leagues_many": "{{count}} лиг",
+    "unit_leagues_other": "{{count}} лиги",
     "unit_bosses_one": "{{count}} босс",
     "unit_bosses_few": "{{count}} босса",
     "unit_bosses_many": "{{count}} боссов",
+    "unit_bosses_other": "{{count}} босса",
     "unit_rematches_one": "{{count}} реванш",
     "unit_rematches_few": "{{count}} реванша",
     "unit_rematches_many": "{{count}} реваншей",
+    "unit_rematches_other": "{{count}} реванша",
     "unit_routes_one": "{{count}} маршрут",
     "unit_routes_few": "{{count}} маршрута",
     "unit_routes_many": "{{count}} маршрутов",
+    "unit_routes_other": "{{count}} маршрута",
     "bar_target": "{{target}} до уровня {{level}}",
     "family_muscle": "Мышцы",
     "family_muscle_feeds": "повторы за всё время по мышцам",
@@ -1127,7 +1352,64 @@
     "family_unbuilt": "Ещё не построено · {{count}}",
     "family_unbuilt_feeds": "одна тренировка строит одно",
     "family_rest": "Всё остальное",
-    "family_rest_feeds": "{{count}} на потолке"
+    "family_rest_feeds": "{{count}} на потолке",
+    "tiers": {
+      "1": "Хутор",
+      "2": "Поляна",
+      "3": "Деревня",
+      "4": "Перекрёсток",
+      "5": "Городок",
+      "6": "Вольный город",
+      "7": "Город",
+      "8": "Торговый город",
+      "9": "Цветущий город",
+      "10": "Цитадель",
+      "11": "Великий город",
+      "12": "Вечная столица"
+    },
+    "buildings": {
+      "campfire": "Костёр",
+      "tent": "Шатёр",
+      "training_dummy": "Манекен",
+      "archery_range": "Стрельбище",
+      "quarry": "Каменоломня",
+      "forge": "Кузница",
+      "well": "Колодец",
+      "windmill": "Мельница",
+      "farm": "Ферма",
+      "wizard_tower": "Башня мага",
+      "druid_grove": "Роща друидов",
+      "watchtower": "Дозорная башня",
+      "castle_wall": "Крепостная стена",
+      "armory": "Оружейная",
+      "fountain": "Фонтан",
+      "observatory": "Обсерватория",
+      "barn": "Амбар",
+      "dragon_lair": "Логово дракона",
+      "heroes_hall": "Зал героев",
+      "champion_arena": "Арена чемпионов",
+      "high_road": "Большой тракт"
+    },
+    "flavour": [
+      "Над трубами вьётся дым. Кто-то поддерживал огонь.",
+      "До рассвета прошёл путник и не назвал имени.",
+      "Кузницы этим утром молчат. Это ненадолго.",
+      "Иней на крышах. Стража сменилась без единого слова.",
+      "Фонари вдоль дороги едва горят. Деревня ждёт.",
+      "Ночью прошёл дождь. Тропы его помнят.",
+      "Собака дважды гавкнула в пустоту и передумала.",
+      "В колокол ударили рано. Никто не сказал почему.",
+      "Кто-то подмёл ступени ещё до света.",
+      "Холодный ветер с холмов. Ставни выдержали.",
+      "Две вороны на коньке крыши смотрят на восточную дорогу.",
+      "Вода в колодце сегодня чистая. Это чего-то стоит.",
+      "За ночь поленница выросла выше прежнего.",
+      "На рассвете туман по колено, исчез раньше, чем кто-то взглянул.",
+      "Сорвало ставню, к полудню её починили.",
+      "Старая дорога тиха. В это время года так обычно и бывает.",
+      "Лампы зажгли рано. Стемнело быстрее, чем ждали.",
+      "Сегодня здесь ничего не случилось, и это тоже новость."
+    ]
   },
   "errors": {
     "save_session_failed": "Не удалось сохранить тренировку. Попробуй ещё раз.",
@@ -1215,6 +1497,7 @@
     "lastBackupDays_one": "Последняя копия {{count}} день назад",
     "lastBackupDays_few": "Последняя копия {{count}} дня назад",
     "lastBackupDays_many": "Последняя копия {{count}} дней назад",
+    "lastBackupDays_other": "Последняя копия {{count}} дня назад",
     "autoMessage": "Bati раз в день и перед каждым обновлением сохраняет копию в {{folder}}. Можно указать другое место или остановить.",
     "autoChangeCta": "Сменить папку",
     "autoOffCta": "Выключить",
@@ -1290,9 +1573,11 @@
       "delta_reps_one": "{{count}} повтор",
       "delta_reps_few": "{{count}} повтора",
       "delta_reps_many": "{{count}} повторов",
+      "delta_reps_other": "{{count}} повтора",
       "delta_seconds_one": "{{count}} секунда",
       "delta_seconds_few": "{{count}} секунды",
-      "delta_seconds_many": "{{count}} секунд"
+      "delta_seconds_many": "{{count}} секунд",
+      "delta_seconds_other": "{{count}} секунды"
     },
     "smith": {
       "rest": [
@@ -1329,9 +1614,7 @@
         "На {{delta}} выше твоей отметки, и твоё тело запомнит это раньше тебя.",
         "Ты дожал на {{delta}} дальше, чем раньше."
       ],
-      "guide_quests": [
-        "Задания — это твои тренировки. Выбери одно, об остальном позабочусь я."
-      ],
+      "guide_quests": ["Задания — это твои тренировки. Выбери одно, об остальном позабочусь я."],
       "menu_visit": [
         "Ты смотришь. Это тоже форма работы, если быть великодушным.",
         "Выберешь плохо — начнёшь заново. Я начинаю заново постоянно.",
@@ -1630,6 +1913,7 @@
     "aheadBody_one": "У него есть {{count}} изменение, которого нет у этого. Взять его версию — заменит то, что хранит только это устройство: прогресс кампании, бои с боссами, настройки заданий, избранное и список отложенных. Копия текущего сначала уйдёт в твою папку Bati на сервере.",
     "aheadBody_few": "У него есть {{count}} изменения, которых нет у этого. Взять его версию — заменит то, что хранит только это устройство: прогресс кампании, бои с боссами, настройки заданий, избранное и список отложенных. Копия текущего сначала уйдёт в твою папку Bati на сервере.",
     "aheadBody_many": "У него есть {{count}} изменений, которых нет у этого. Взять его версию — заменит то, что хранит только это устройство: прогресс кампании, бои с боссами, настройки заданий, избранное и список отложенных. Копия текущего сначала уйдёт в твою папку Bati на сервере.",
+    "aheadBody_other": "У него есть {{count}} изменения, которых нет у этого. Взять его версию — заменит то, что хранит только это устройство: прогресс кампании, бои с боссами, настройки заданий, избранное и список отложенных. Копия текущего сначала уйдёт в твою папку Bati на сервере.",
     "unreadableTitle": "Устройство, которое Bati не может прочитать",
     "forgetCta": "Забыть это устройство",
     "forgetBody": "Устройство {{id}} перестанет показываться здесь. Его файл останется на твоём сервере и появится снова сам, если то устройство снова что-то запишет.",
@@ -1640,6 +1924,7 @@
     "merged_one": "{{count}} тренировка с твоего другого устройства теперь здесь.",
     "merged_few": "{{count}} тренировки с твоего другого устройства теперь здесь.",
     "merged_many": "{{count}} тренировок с твоего другого устройства теперь здесь.",
+    "merged_other": "{{count}} тренировки с твоего другого устройства теперь здесь.",
     "mergedOther": "Изменения с твоего другого устройства теперь здесь.",
     "failure": {
       "offline": "Нет связи с твоим сервером. Синхронизация попробует снова при следующем открытии Bati.",
@@ -1696,6 +1981,7 @@
       "mergedTitle_one": "{{count}} тренировка пришла с твоего другого устройства",
       "mergedTitle_few": "{{count}} тренировки пришли с твоего другого устройства",
       "mergedTitle_many": "{{count}} тренировок пришло с твоего другого устройства",
+      "mergedTitle_other": "{{count}} тренировки пришли с твоего другого устройства",
       "mergedBody": "Теперь оба устройства содержат одну и ту же историю.",
       "mergedKept": "Теперь оба устройства содержат одну и ту же историю. Копия этого устройства до слияния сохранена вместе с твоими синхронизированными файлами."
     },
@@ -1709,11 +1995,13 @@
       "keptSessions_one": "{{count}} тренировка была удалена на другом устройстве, но её кампания продолжилась: она остаётся здесь.",
       "keptSessions_few": "{{count}} тренировки были удалены на другом устройстве, но их кампании продолжились: они остаются здесь.",
       "keptSessions_many": "{{count}} тренировок были удалены на другом устройстве, но их кампании продолжились: они остаются здесь.",
+      "keptSessions_other": "{{count}} тренировки были удалены на другом устройстве, но их кампании продолжились: они остаются здесь.",
       "device": "Устройство {{id}}: {{state}}, записано {{when}}.",
       "unknownWhen": "в неизвестное время",
       "lastMerge_one": "Последнее слияние {{when}}: {{count}} тренировка с устройства {{id}}.",
       "lastMerge_few": "Последнее слияние {{when}}: {{count}} тренировки с устройства {{id}}.",
       "lastMerge_many": "Последнее слияние {{when}}: {{count}} тренировок с устройства {{id}}.",
+      "lastMerge_other": "Последнее слияние {{when}}: {{count}} тренировки с устройства {{id}}.",
       "kept": "История этого устройства до слияния сохранена вместе с твоими синхронизированными файлами как {{file}}.",
       "whereFolder": "В этой папке, синхронизируемой через Syncthing:"
     },
@@ -1740,12 +2028,15 @@
       "minutes_one": "{{count}} мин назад",
       "minutes_few": "{{count}} мин назад",
       "minutes_many": "{{count}} мин назад",
+      "minutes_other": "{{count}} мин назад",
       "hours_one": "{{count}} ч назад",
       "hours_few": "{{count}} ч назад",
       "hours_many": "{{count}} ч назад",
+      "hours_other": "{{count}} ч назад",
       "days_one": "{{count}} день назад",
       "days_few": "{{count}} дня назад",
-      "days_many": "{{count}} дней назад"
+      "days_many": "{{count}} дней назад",
+      "days_other": "{{count}} дня назад"
     },
     "secretForgot": "Забыл? На другом устройстве: Настройки, «Пароль резервных копий». Если там настроен отпечаток, 12 слов можно показать снова.",
     "useThisPassword": "Использовать этот пароль",
@@ -1777,6 +2068,7 @@
       "body_one": "{{village}}: {{count}} тренировка, последняя {{when}}. Перенести её на это устройство?",
       "body_few": "{{village}}: {{count}} тренировки, последняя {{when}}. Перенести их на это устройство?",
       "body_many": "{{village}}: {{count}} тренировок, последняя {{when}}. Перенести их на это устройство?",
+      "body_other": "{{village}}: {{count}} тренировки, последняя {{when}}. Перенести их на это устройство?",
       "unnamed": "Герой",
       "mine": "Это мой герой",
       "notMine": "Не мой"
@@ -1837,6 +2129,7 @@
     "oath_more_one": "Ещё одна — и клятва держится на этой неделе.",
     "oath_more_few": "Ещё {{count}} — и клятва держится на этой неделе.",
     "oath_more_many": "Ещё {{count}} — и клятва держится на этой неделе.",
+    "oath_more_other": "Ещё {{count}} — и клятва держится на этой неделе.",
     "oath_won": "Неделя клятвы выиграна. Ещё разок, просто ради удовольствия?",
     "channel": "Напоминания о тренировках",
     "snooze": "Через 1 час",
@@ -1850,6 +2143,7 @@
     "pause_weeks_one": "1 нед",
     "pause_weeks_few": "{{count}} нед",
     "pause_weeks_many": "{{count}} нед",
+    "pause_weeks_other": "{{count}} нед",
     "paused": "На паузе · вернётся {{date}}",
     "resume": "Возобновить",
     "next": "Следующее напоминание: {{day}} в {{time}}",
@@ -1870,12 +2164,15 @@
     "oath_gap_one": "Твоя клятва требует {{count}} в неделю, а ты выбрал {{days}}.",
     "oath_gap_few": "Твоя клятва требует {{count}} в неделю, а ты выбрал {{days}}.",
     "oath_gap_many": "Твоя клятва требует {{count}} в неделю, а ты выбрал {{days}}.",
+    "oath_gap_other": "Твоя клятва требует {{count}} в неделю, а ты выбрал {{days}}.",
     "days_count_one": "{{count}} день",
     "days_count_few": "{{count}} дня",
     "days_count_many": "{{count}} дней",
+    "days_count_other": "{{count}} дня",
     "flame_gap_one": "Пламя питается {{count}} тренировкой в неделю.",
     "flame_gap_few": "Пламя питается {{count}} тренировками в неделю.",
     "flame_gap_many": "Пламя питается {{count}} тренировками в неделю.",
+    "flame_gap_other": "Пламя питается {{count}} тренировками в неделю.",
     "offer": "Хочешь, Bati будет напоминать тебе в твои дни?",
     "check": "Напоминания приходят удачно?",
     "check_change": "Сменить мои дни",
@@ -1898,6 +2195,7 @@
     "browse": "Смотреть упражнения",
     "since": "С {{date}}",
     "limits": "Твои собственные задания остаются такими, как ты их сделал. Если отложить ступень, её путь перестаёт туда подниматься.",
+    "all_jumps": "Отложить все прыжки",
     "not_for_me": "Больше не предлагать это",
     "back": "{{name}} вернулось.",
     "served_no_substitute": "Отложено, близкой замены нет",
@@ -1955,10 +2253,14 @@
     "pwTitle": "Пароль для Bati",
     "pwTitleChange": "Новый пароль",
     "pwNotCloud": "Не пароль от твоего облака.",
-    "pwHint": "Не меньше {{count}} символов. Короткая фраза подойдёт отлично.",
+    "pwHint_one": "Не меньше {{count}} символа. Короткая фраза подойдёт отлично.",
+    "pwHint_few": "Не меньше {{count}} символов. Короткая фраза подойдёт отлично.",
+    "pwHint_many": "Не меньше {{count}} символов. Короткая фраза подойдёт отлично.",
+    "pwHint_other": "Не меньше {{count}} символа. Короткая фраза подойдёт отлично.",
     "pwMore_one": "Ещё {{count}} символ. Короткая фраза подойдёт отлично.",
     "pwMore_few": "Ещё {{count}} символа. Короткая фраза подойдёт отлично.",
     "pwMore_many": "Ещё {{count}} символов. Короткая фраза подойдёт отлично.",
+    "pwMore_other": "Ещё {{count}} символа. Короткая фраза подойдёт отлично.",
     "pwReread": "Перечитай его, прежде чем продолжить.",
     "pwShow": "Показать пароль",
     "pwHide": "Скрыть пароль",
@@ -2042,5 +2344,250 @@
     "doorPhoneOn": "Одна копия в день в {{folder}}. Нажми, чтобы изменить или остановить. Потеряешь этот телефон — копия уйдёт вместе с ним.",
     "alsoPhone": "Дополнительная копия на этом телефоне: {{folder}}",
     "alsoPhoneAdd": "Добавить копию на этом телефоне"
+  },
+  "equipment": {
+    "none": "Без инвентаря",
+    "pullup_bar": "Турник",
+    "dip_bar": "Брусья",
+    "dumbbell": "Гантели",
+    "barbell": "Штанга",
+    "kettlebell": "Гиря",
+    "band": "Резиновая лента",
+    "bench": "Скамья"
+  },
+  "patterns": {
+    "push_horizontal": "Горизонтальный жим",
+    "push_vertical": "Вертикальный жим",
+    "pull_horizontal": "Горизонтальная тяга",
+    "pull_vertical": "Вертикальная тяга",
+    "squat": "Присед",
+    "hinge": "Наклон",
+    "core": "Кор",
+    "locomotion": "Передвижение",
+    "mobility": "Мобильность"
+  },
+  "level_titles": {
+    "1": "Ученик",
+    "2": "Новичок",
+    "3": "Рекрут",
+    "4": "Оруженосец",
+    "5": "Воин",
+    "6": "Боец",
+    "7": "Ветеран",
+    "8": "Чемпион",
+    "9": "Элита",
+    "10": "Мастер",
+    "11": "Великий мастер",
+    "12": "Легенда",
+    "13": "Миф",
+    "14": "Титан",
+    "15": "Полубог",
+    "16": "Герой",
+    "17": "Эталон",
+    "18": "Вознесённый",
+    "19": "Бессмертный",
+    "20": "Божество"
+  },
+  "paths": {
+    "Muscle-Up": "Путь тяги",
+    "Toes to Bar": "Путь виса",
+    "Handstand Push-Up": "Путь равновесия",
+    "Dip": "Путь опоры",
+    "Archer Push-Up": "Путь лучника",
+    "Tuck Planche": "Путь планша",
+    "Jump Squat": "Путь прыжка",
+    "Pistol Squat": "Путь пистолета",
+    "Single-Leg Deadlift": "Путь наклона",
+    "Dragon Flag": "Путь дракона",
+    "Side Plank": "Путь фланга",
+    "Windshield Wipers": "Путь вращения",
+    "Flutter Kicks": "Путь взмаха"
+  },
+  "bosses": {
+    "fire_dragon": {
+      "name": "Пеплозев",
+      "legendaryName": "Пеплозев Коронованный",
+      "idle": [
+        "Кузница ломала меня дольше.",
+        "Медленно горишь, герой.",
+        "Пепел. Всё это пепел.",
+        "Твоя деревенька отлично пойдёт на растопку.",
+        "Я ел рыцарей с техникой получше."
+      ],
+      "crit": [
+        "В этом был жар.",
+        "Значит, уголёк кусается.",
+        "Осторожнее, герой. Ты начинаешь меня впечатлять."
+      ],
+      "resist": ["Чешуе всё равно, как сильно ты бьёшь.", "Ты полируешь мою броню."],
+      "enrage": ["Тогда сгорим вместе!", "Я заберу небо с собой!", "Ну давай! Огонь тебя помнит!"]
+    },
+    "stone_golem": {
+      "name": "Король Каменоломни",
+      "legendaryName": "Бог Каменоломни",
+      "idle": [
+        "Я стоял здесь раньше твоей деревни.",
+        "Горы не спешат.",
+        "Что ж, стачивай меня.",
+        "Твои предки тоже меня долбили.",
+        "Считай подходы. Я считаю века."
+      ],
+      "crit": ["Трещина. Одна трещина.", "Шов найден.", "Ещё. Бей туда ещё, если посмеешь."],
+      "resist": ["Камень о камень.", "Ты бьёшь туда, где я толще всего."],
+      "enrage": ["Я рухну на тебя!", "Даже у руин есть вес!", "Каменоломня станет твоей могилой!"]
+    },
+    "shadow_serpent": {
+      "name": "Ночная Петля",
+      "legendaryName": "Вечная Ночная Петля",
+      "idle": [
+        "Я уже у тебя за спиной.",
+        "Дыши. Я умею ждать.",
+        "Твоя тень у тебя взаймы, она моя.",
+        "Отдыхай. Лучше всего я работаю, пока ты отдыхаешь.",
+        "С каждым повтором мои кольца ближе."
+      ],
+      "crit": [
+        "Ты меня видишь. Редкость.",
+        "Быстро. Быстрее, чем в прошлый раз.",
+        "Этот удар прошёл сквозь меня. Как?"
+      ],
+      "resist": ["Твой удар пришёлся туда, где меня нет.", "Кольца не ломаются, герой."],
+      "enrage": ["Тогда тьма придёт с зубами!", "Хватит ждать!", "Я надену твою тень как корону!"]
+    },
+    "forest_titan": {
+      "name": "Корнеотец",
+      "legendaryName": "Старший Корень",
+      "idle": [
+        "Я переживал и не таких.",
+        "Сезоны, герой. Я считаю сезонами.",
+        "Расти или стань землёй.",
+        "Лес забирает тех, кто сдаётся.",
+        "Твой пот поит мои корни. Продолжай."
+      ],
+      "crit": [
+        "Сердцевина это почувствовала.",
+        "Глубокий удар. Хорошо.",
+        "Однажды буря отняла у меня меньше."
+      ],
+      "resist": ["Кора, герой. Всего лишь кора.", "Дерево пьёт твои удары."],
+      "enrage": [
+        "Вся роща просыпается!",
+        "Корни до самой кости!",
+        "Я хоронил героев посильнее тебя!"
+      ]
+    },
+    "wind_wraith": {
+      "name": "Призрак Шквала",
+      "legendaryName": "Владыка Бури",
+      "idle": [
+        "Ты машешь по погоде.",
+        "Что ж, поймай меня.",
+        "Я воздух, которым ты дышишь.",
+        "Твои лёгкие опустошаю я.",
+        "Дуй сильнее, маленькие мехи."
+      ],
+      "crit": [
+        "Удар по ветру, и в цель!",
+        "Даже я чувствую сквозняк.",
+        "Ты учишься бить то, чего нет."
+      ],
+      "resist": ["Сквозь меня. Всегда сквозь меня.", "Порыву синяк не поставишь."],
+      "enrage": ["Тогда пусть грянет буря!", "Я развею твою деревню!", "Дыши, пока можешь!"]
+    },
+    "iron_golem": {
+      "name": "Владыка Ржавчины",
+      "legendaryName": "Владыка Ржавчины Перекованный",
+      "idle": [
+        "Литейная не спит. Я тоже.",
+        "Меня построили, чтобы работать больше тебя.",
+        "Ржавчина терпелива, герой.",
+        "Нормы, герой. Моя норма: твоё поражение.",
+        "Я выжал больше, чем ты когда-либо поднимешь."
+      ],
+      "crit": [
+        "Заклёпка вылетела. Я это почувствовал.",
+        "Ты бьёшь как молот, который знает своё дело.",
+        "Гарантия аннулирована. Хороший удар."
+      ],
+      "resist": ["На железе синяков не бывает.", "Ты звенишь по моим плитам, не больше."],
+      "enrage": [
+        "Теперь правит печь!",
+        "Я расплавлюсь, но не встану на колени!",
+        "Вся литейная умрёт со мной!"
+      ]
+    }
+  },
+  "rest_messages": {
+    "overtraining": [
+      {
+        "line_one": "Ты усердно тренируешься: {{count}} тренировка на этой неделе. Подумай о дне восстановления.",
+        "line_few": "Ты усердно тренируешься: {{count}} тренировки на этой неделе. Подумай о дне восстановления.",
+        "line_many": "Ты усердно тренируешься: {{count}} тренировок на этой неделе. Подумай о дне восстановления.",
+        "line_other": "Ты усердно тренируешься: {{count}} тренировки на этой неделе. Подумай о дне восстановления."
+      },
+      {
+        "line_one": "Уже {{count}} тренировка на этой неделе. Отдых тело зарабатывает так же, как и силу.",
+        "line_few": "Уже {{count}} тренировки на этой неделе. Отдых тело зарабатывает так же, как и силу.",
+        "line_many": "Уже {{count}} тренировок на этой неделе. Отдых тело зарабатывает так же, как и силу.",
+        "line_other": "Уже {{count}} тренировки на этой неделе. Отдых тело зарабатывает так же, как и силу."
+      },
+      {
+        "line_one": "{{count}} тренировка за неделю позади. День восстановления сделает следующую лучше.",
+        "line_few": "{{count}} тренировки за неделю позади. День восстановления сделает следующую лучше.",
+        "line_many": "{{count}} тренировок за неделю позади. День восстановления сделает следующую лучше.",
+        "line_other": "{{count}} тренировки за неделю позади. День восстановления сделает следующую лучше."
+      }
+    ],
+    "consecutive_days": [
+      {
+        "line_one": "Ты тренируешься {{count}} день подряд! Возьми день отдыха, чтобы не перетренироваться.",
+        "line_few": "Ты тренируешься {{count}} дня подряд! Возьми день отдыха, чтобы не перетренироваться.",
+        "line_many": "Ты тренируешься {{count}} дней подряд! Возьми день отдыха, чтобы не перетренироваться.",
+        "line_other": "Ты тренируешься {{count}} дня подряд! Возьми день отдыха, чтобы не перетренироваться."
+      },
+      {
+        "line_one": "{{count}} день подряд без перерыва. Отдых нужен даже героям.",
+        "line_few": "{{count}} дня подряд без перерыва. Отдых нужен даже героям.",
+        "line_many": "{{count}} дней подряд без перерыва. Отдых нужен даже героям.",
+        "line_other": "{{count}} дня подряд без перерыва. Отдых нужен даже героям."
+      },
+      {
+        "line_one": "Уже {{count}} день тренировок подряд. Отдых входит в план, а не прерывает его.",
+        "line_few": "Уже {{count}} дня тренировок подряд. Отдых входит в план, а не прерывает его.",
+        "line_many": "Уже {{count}} дней тренировок подряд. Отдых входит в план, а не прерывает его.",
+        "line_other": "Уже {{count}} дня тренировок подряд. Отдых входит в план, а не прерывает его."
+      }
+    ],
+    "high_volume": [
+      {
+        "line_one": "На этой неделе у тебя {{count}} тренировка! Телу нужно время, чтобы восстановиться и стать сильнее.",
+        "line_few": "На этой неделе у тебя {{count}} тренировки! Телу нужно время, чтобы восстановиться и стать сильнее.",
+        "line_many": "На этой неделе у тебя {{count}} тренировок! Телу нужно время, чтобы восстановиться и стать сильнее.",
+        "line_other": "На этой неделе у тебя {{count}} тренировки! Телу нужно время, чтобы восстановиться и стать сильнее."
+      },
+      {
+        "line_one": "{{count}} тренировка за неделю, это серьёзный объём. Сила растёт именно во время восстановления.",
+        "line_few": "{{count}} тренировки за неделю, это серьёзный объём. Сила растёт именно во время восстановления.",
+        "line_many": "{{count}} тренировок за неделю, это серьёзный объём. Сила растёт именно во время восстановления.",
+        "line_other": "{{count}} тренировки за неделю, это серьёзный объём. Сила растёт именно во время восстановления."
+      },
+      {
+        "line_one": "{{count}} тренировка за семь дней. Дай телу день, чтобы догнать твои амбиции.",
+        "line_few": "{{count}} тренировки за семь дней. Дай телу день, чтобы догнать твои амбиции.",
+        "line_many": "{{count}} тренировок за семь дней. Дай телу день, чтобы догнать твои амбиции.",
+        "line_other": "{{count}} тренировки за семь дней. Дай телу день, чтобы догнать твои амбиции."
+      }
+    ],
+    "deload": [
+      {
+        "line": "Четыре тяжёлые недели подряд. Сделай одну полегче: меньше объёма, та же привычка. Твой следующий месяц начинается здесь."
+      },
+      {
+        "line": "Позади месяц тяжёлых недель. Сбавь на несколько дней: прогресс догоняет, пока ты отдыхаешь."
+      },
+      {
+        "line": "Четыре тяжёлые недели подряд. На этой неделе сбавляем нагрузку, а не останавливаемся."
+      }
+    ]
   }
 }

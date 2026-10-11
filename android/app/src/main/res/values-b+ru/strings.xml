@@ -1,0 +1,6 @@
+<resources>
+  <string name="widget_flame_label">"Bati: Пламя"</string>
+  <string name="widget_flame_description">"Пламя твоих тренировок."</string>
+  <string name="widget_weekly_label">"Bati: Неделя"</string>
+  <string name="widget_weekly_description">"Тренировки этой недели и твоя клятва."</string>
+</resources>

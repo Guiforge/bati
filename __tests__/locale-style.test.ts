@@ -128,7 +128,7 @@ function offenders(file: string, predicate: (value: string) => boolean): string[
 }
 
 describe("locale typography", () => {
-  it.each(["fr.json", "en.json", "de.json", "es.json"])(
+  it.each(["fr.json", "en.json", "de.json", "es.json", "ru.json"])(
     "%s never uses the curly apostrophe",
     (file) => {
       expect(offenders(file, (v) => v.includes(BANNED_APOSTROPHE))).toEqual([]);
@@ -142,13 +142,17 @@ describe("locale typography", () => {
     expect(fs.readFileSync(path.join(LOCALES, file), "utf8")).toContain(APOSTROPHE);
   });
 
-  it.each(["fr.json", "en.json", "de.json", "es.json"])(
+  it.each(["fr.json", "en.json", "de.json", "es.json", "ru.json"])(
     "%s spells an ellipsis with one character",
     (file) => {
       expect(offenders(file, (v) => v.includes("..."))).toEqual([]);
     },
   );
 
+  // `ru.json` is off this list on purpose. In Russian the dash is the verb: «Bati — не тренер» has
+  // no "is" to carry the sentence, and the 1956 punctuation rules (§ 164) require the dash between
+  // a noun subject and a noun predicate. Banning it there would ban the grammar, not a habit. The
+  // ban still covers the Russian of the store listing and of `locales/native/`: none of it needs one.
   it.each(["fr.json", "en.json", "de.json", "es.json"])("%s uses no em dash at all", (file) => {
     expect(offenders(file, (v) => v.includes(EM_DASH))).toEqual([]);
   });

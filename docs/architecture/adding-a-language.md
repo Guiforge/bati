@@ -71,6 +71,12 @@ The columns are `NOT NULL DEFAULT ''`, and `localizedText` reads an empty column
 language can ship with its interface translated and its catalogue still in English. Then add the
 columns to `db/schema.ts` and to each query `tsc` points at.
 
+A language can also ship before its migration, which is what Russian did. `SEEDED_LANGUAGES` in
+[`src/i18n/localized.ts`](../../src/i18n/localized.ts) lists the languages that have columns, and
+`seededLanguage()` sends any other to the English side of a row and of a quest file. `tsc` is then
+left with the nine places in `db/` that build a `{ en, fr, … }` from a row: give each the English
+column. The migration later adds the code to that list and replaces those nine.
+
 ## 5. The surfaces no compiler sees
 
 [`__tests__/language-surfaces.test.ts`](../../__tests__/language-surfaces.test.ts) fails on each of

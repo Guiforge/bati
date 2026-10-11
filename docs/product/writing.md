@@ -54,6 +54,12 @@ It is that eleven of them in a thousand words of README prose read as machine-wr
 individual dash is doing, and a reader who has learned to notice the tic does not stop noticing it
 at the language boundary.
 
+Russian is the one exception, and only in `locales/ru.json`. There the dash is the verb: Russian
+drops "is" in the present tense, and the punctuation rules (1956, § 164) require a dash between a
+noun subject and a noun predicate, as in *«Bati — не тренер»*. Removing it removes the grammar, so
+`locale-style.test.ts` leaves that file out of the scan. The Russian of the store listing and of
+`locales/native/ru.json` stays under the ban: none of those lines needs one.
+
 **A comma, a colon, a full stop or a pair of brackets says the same thing and never has to be
 defended.** Where a dash separated a term from its gloss in a list, a colon does the same job:
 `- **Jest**: ~1200 tests`.
@@ -252,7 +258,7 @@ Five things stay out of those files, each for a reason:
 | The widget's four words | `src/widget.tsx` | It runs in a headless task, and reading a locale file there loads all of them. `__tests__/widget.test.ts` fails if it ever does |
 | The unit words: reps, s, min, per side | `db/targets.ts` | "s" against " s" is spacing, and a value that is a leading space is what a translation tool trims. They were in the locale files once and drifted |
 | Per-language settings | `LANGUAGE_NAMES`, `MACHINE_TRANSLATED`, `WEEK_START`, `CAPITALISED_NOUNS` | Facts about a language, not prose |
-| Quests, adventures, movements | the database, one column per language | Seeded content, written by migrations |
+| Quests, adventures, movements | the database, one column per seeded language (`SEEDED_LANGUAGES` in `src/i18n/localized.ts`) | Seeded content, written by migrations. Russian has no column yet and reads the English one |
 
 A JSON file has no comments, so a note a translator needs (why a word was refused, what must stay
 short) goes in [`glossary.md`](glossary.md), on the row of the term.

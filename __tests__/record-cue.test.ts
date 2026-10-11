@@ -15,7 +15,7 @@ function record(over: Partial<NewRecordResult> = {}): NewRecordResult {
     newValue: 20,
     previousValue: 10,
     perSide: false,
-    exerciseName: { en: "Squat", fr: "Squat", de: "Squat", es: "Squat" },
+    exerciseName: { en: "Squat", fr: "Squat", de: "Squat", es: "Squat", ru: "Squat" },
     ...over,
   };
 }
@@ -62,7 +62,9 @@ describe("recordCue", () => {
   });
 
   test("names the exercise in the hero's own language", () => {
-    const fr = record({ exerciseName: { en: "Push-up", fr: "Pompe", de: "Pompe", es: "Pompe" } });
+    const fr = record({
+      exerciseName: { en: "Push-up", fr: "Pompe", de: "Pompe", es: "Pompe", ru: "Push-up" },
+    });
     expect(recordCue([fr], "fr")).toMatchObject({ exercise: "Pompe" });
     expect(recordCue([fr], "en")).toMatchObject({ exercise: "Push-up" });
   });

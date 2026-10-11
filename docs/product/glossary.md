@@ -28,6 +28,13 @@ shows a note under the language row in Settings, and the `de-DE` and `es-ES` des
 the same warning. Set the flag to `false` and delete that paragraph once a fluent speaker has read
 the language. Two naming questions are still open, listed at the end.
 
+Russian ships too and has no column on this page yet. Most of `ru.json` came from a contributor
+(PR #174); a model wrote the blocks that were tables in the code at the time (bosses, badges,
+labels, rest messages), the keys added since, and the `ru-RU` listing, which is why its flag is up
+and its listing ends on the same warning. Its catalogue (quests, movements, adventures) is in
+English: it has no column in the database, see
+[`adding-a-language.md`](../architecture/adding-a-language.md) step 4.
+
 ## Register
 
 | | en | fr | de | es |

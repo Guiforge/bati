@@ -29,6 +29,17 @@ it("French: 0 and 1 are singular, 2 plural, a round million is _many", async () 
   expect(i18n.t(KEY, { count: 1_000_000 })).toBe("1000000 exercices");
 });
 
+// Through i18next, on the engine Hermes is: the rule has to reach the `_few` and `_many` keys.
+it("Russian: 1 and 21 are one, 2 to 4 few, the rest and the teens many", async () => {
+  const i18n = await boot();
+  await i18n.changeLanguage("ru");
+  expect(i18n.t(KEY, { count: 1 })).toBe("1 упражнение");
+  expect(i18n.t(KEY, { count: 21 })).toBe("21 упражнение");
+  expect(i18n.t(KEY, { count: 3 })).toBe("3 упражнения");
+  expect(i18n.t(KEY, { count: 0 })).toBe("0 упражнений");
+  expect(i18n.t(KEY, { count: 12 })).toBe("12 упражнений");
+});
+
 it("English: 0 is plural, 1 singular", async () => {
   const i18n = await boot();
   expect(i18n.t(KEY, { count: 0 })).toMatch(/exercises$/);

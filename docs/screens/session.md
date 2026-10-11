@@ -12,6 +12,10 @@ sources:
     components/session/ExerciseHero.tsx,
     components/session/BossArena.tsx,
     components/session/sessionArt.ts,
+    components/session/TonightList.tsx,
+    components/session/feasts.ts,
+    components/session/BigFeastView.tsx,
+    components/session/bigFeastText.ts,
   ]
 ---
 

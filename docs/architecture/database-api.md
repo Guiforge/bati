@@ -4,7 +4,7 @@ type: technical
 status: active
 updated: 2026-10-11
 related: [technical-architecture.md, ../gameplay/progression.md]
-sources: [db/index.ts, db/schema.ts, db/preferences.ts, db/resources.ts]
+sources: [db/index.ts, db/schema.ts, db/preferences.ts, db/resources.ts, db/crest.ts, db/crestRules.ts, db/milestone.ts]
 ---
 
 # Database API Reference
@@ -219,7 +219,7 @@ Derived from the session journal like the rest of the village, all reads
 | `pickSessionMilestone(buildings, feeds, fed)` | The building this session fed that rises soonest (the victory line) |
 | `deedBarStart(building)` / `deedProgress(building)` | A deed bar's left end (the rung, never above the tally) and its 0-100 fill |
 
-The preferences `crestAnimal` and `crestMotto` merge between devices (`MERGED_PREFERENCES`);
+The preference `crestAnimal` merges between devices (`MERGED_PREFERENCES`);
 `bigFeastsShown` stays local.
 
 ---

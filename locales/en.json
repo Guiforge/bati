@@ -361,6 +361,7 @@
     "weeks_pace_other": "≈ {{count}} weeks on your days",
     "steps_title": "Campaign steps",
     "step_label": "Step {{count}}",
+    "step_title": "{{step}}: {{title}}",
     "step_progress": "Step {{current}}/{{total}}",
     "step_completed": "Completed",
     "step_active": "Active",

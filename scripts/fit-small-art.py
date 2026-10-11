@@ -30,7 +30,9 @@ and a resized emblem has soft edges the fill would stop at.
 
 import argparse
 import pathlib
+import subprocess
 import sys
+import tempfile
 
 from PIL import Image
 
@@ -51,15 +53,17 @@ SETS = [
     # Cameos: 640 clears cameoMaxHeight's 200dp ceiling on a 3x screen with a little to spare.
     # Keep this in step with HEIGHT_CAP in components/chorus/cameoAnchor.ts.
     ("assets/images/villagers/*.webp", 640, 90, 100, 4),
-    # Crest animal portraits: 448 (generated at 1024 by generate-animals.py), drawn up to 192dp.
-    # q70 and an alpha at quality 0 take the 53 of them from 2.3 MiB to under 0.9.
+    # Crest animal portraits: drawn up to 192dp, sized and encoded by animal_args() below (cwebp,
+    # because PIL cannot do -sharp_yuv). 53 of them, 2.28 MiB at 512 and q90, about 0.67 here.
     # ponytail: the encode starts from the 512 that to-webp.py and the first fit already wrote
     # once, so each portrait is lossy twice; re-fitting from the 1024 JPEG is the fix if an
     # artefact ever shows, at the price of keeping the originals in the repo.
-    ("assets/images/animals/*.webp", 448, 70, 0, 6),
+    ("assets/images/animals/*.webp", 448, 0, 0, 6),
 ]
 
-# Keep q90 (448, alpha 0) for the bears with amber eyes: at q70 chroma subsampling turns an iris grey-blue (seen at 4x on a before/after board).
+# The nine amber-eyed bears. At q70 chroma subsampling turns the iris grey-blue, so they get
+# q85 with -sharp_yuv (chroma computed from full-res RGB): eye colour error 8.8 against 15.8 at
+# q70 and 6.9 at the old q90, for 0.23 MiB less than q90. Everything else is q60 with -sns 100.
 KEEP_Q90 = {
     "bear-adult",
     "bear-adult-rare",
@@ -73,25 +77,46 @@ KEEP_Q90 = {
 }
 
 
+def animal_args(stem: str) -> tuple[int, list[str]]:
+    """(longest edge, cwebp flags) for a crest portrait."""
+    # Young and venerable draw at most 192dp in a stadium festival, so 400 clears 576 px; the
+    # legendary and adult portraits keep 448.
+    size = 400 if "-young" in stem or "-venerable" in stem else 448
+    if stem in KEEP_Q90:
+        return size, ["-q", "85", "-sharp_yuv"]
+    return size, ["-q", "60", "-sns", "100"]
+
+
 def targets() -> list[tuple[pathlib.Path, int, int, int, int]]:
     found = []
     for pattern, size, quality, alpha_quality, method in SETS:
         for p in sorted(ROOT.glob(pattern)):
-            keep = p.parent.name == "animals" and p.stem in KEEP_Q90
-            found.append((p, size, 90 if keep else quality, alpha_quality, method))
+            found.append((p, size, quality, alpha_quality, method))
     return found
 
 
 def fit(path: pathlib.Path, size: int, quality: int, alpha_quality: int, method: int) -> tuple[int, int] | None:
     """Downscale in place. Returns (before, after) bytes, or None if already small enough."""
     image = Image.open(path)
+    animal = path.parent.name == "animals"
+    if animal:
+        size, flags = animal_args(path.stem)
     if max(image.size) <= size:
         return None
 
     before = path.stat().st_size
     # LANCZOS: these are ink-outlined emblems, and a cheaper filter frays the outline.
     image.thumbnail((size, size), Image.Resampling.LANCZOS)
-    image.save(path, "WEBP", quality=quality, alpha_quality=alpha_quality, method=method)
+    if animal:
+        with tempfile.TemporaryDirectory() as tmp:
+            png = pathlib.Path(tmp) / "in.png"
+            image.save(png)
+            subprocess.run(
+                ["cwebp", "-quiet", "-m", str(method), "-alpha_q", str(alpha_quality), *flags, str(png), "-o", str(path)],
+                check=True,
+            )
+    else:
+        image.save(path, "WEBP", quality=quality, alpha_quality=alpha_quality, method=method)
     return before, path.stat().st_size
 
 

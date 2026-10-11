@@ -53,8 +53,8 @@ export function HomeStage() {
   }
 
   const effectiveConfig: SmartActionConfig = config ?? {
-    label: t("home.start_adventure", "Start Adventure"),
-    subtext: t("home.no_active_adventure", "Choose your path"),
+    label: t("home.start_adventure"),
+    subtext: t("home.no_active_adventure"),
     onPress: () => router.push("/adventures"),
     variant: "gallery",
     scene: null,
@@ -62,9 +62,9 @@ export function HomeStage() {
   };
 
   const { scene, startQuestId } = effectiveConfig;
-  const title = scene?.title ?? t("home.start_journey", "Start your journey");
-  const subtitle = effectiveConfig.subtext || t("home.start_journey", "Start your journey");
-  const label = effectiveConfig.label || t("home.play", "Play");
+  const title = scene?.title ?? t("home.start_journey");
+  const subtitle = effectiveConfig.subtext || t("home.start_journey");
+  const label = effectiveConfig.label || t("home.play");
   const handlePress =
     startQuestId === null
       ? effectiveConfig.onPress
@@ -182,11 +182,11 @@ export function HomeStage() {
               onPress={effectiveConfig.onPress}
               pressStyle={{ opacity: 0.8 }}
               accessibilityRole="button"
-              accessibilityLabel={t("home.see_quest", "See the quest")}
+              accessibilityLabel={t("home.see_quest")}
             >
               <Info size={18} color="$primaryText" />
               <Text fontSize={10} fontWeight="700" color="$primaryText">
-                {t("home.details", "Details")}
+                {t("home.details")}
               </Text>
             </YStack>
           )}

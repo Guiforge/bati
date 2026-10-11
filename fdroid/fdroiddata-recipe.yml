@@ -44,6 +44,7 @@ Builds:
         -e 's/jvmToolchain(17)/jvmToolchain(21)/g' -e 's/JvmTarget.fromTarget("17")/JvmTarget.fromTarget("21")/g'
         {} +
       - npx expo prebuild -p android --clean
+      - echo EXPO_PUBLIC_DISTRIBUTION=fdroid > .env
       - sed -i -e '/signingConfig /d' android/app/build.gradle
     scanignore:
       - node_modules/hermes-compiler/hermesc/linux64-bin/hermesc
@@ -80,7 +81,9 @@ MaintainerNotes: |-
   user switches the map on in Settings; with it off the recap draws the GPS
   trace on a plain background. The other two are JS requests, each behind its own
   switch: a daily version check to api.github.com (src/updateCheck.ts, no
-  identifier, downloads nothing), and device sync to a WebDAV or Nextcloud server
+  identifier, downloads nothing; absent from this build, since the .env written
+  in prebuild: tells the app it is signed by F-Droid and the GitHub APK cannot
+  install over it), and device sync to a WebDAV or Nextcloud server
   the user names (src/cloudSync.ts), which only ever sends files encrypted on the
   phone (AES-256-GCM). A Biome GritQL plugin (.biome/plugins/noJsNetwork.grit)
   rejects fetch, XMLHttpRequest, WebSocket, EventSource, sendBeacon and

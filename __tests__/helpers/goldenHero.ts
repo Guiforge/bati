@@ -126,6 +126,20 @@ export function measureRules() {
         ]),
       ),
     ),
+    // A stretch is priced below a hold of the same length (`STYLE_WEIGHT`), one case per difficulty.
+    yogaSessionXp: Object.fromEntries(
+      difficulties.map((exercise) => [
+        `medium/${exercise}/2x45s`,
+        computeSessionXp({
+          sets: [1, 2].map(() => ({
+            ...set(exercise, "time", 45),
+            exercise: { secondsPerRep: 3, difficulty: exercise, style: "yoga" as const },
+          })),
+          effortCeilingSeconds: 600,
+          userLevel: "medium",
+        }),
+      ]),
+    ),
     // The bounds, one case each: the clock capping the claim, a result past its target, the
     // floor, and the ceiling of what one session can pay.
     sessionXpBounds: {
@@ -209,6 +223,16 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
     if (!fight) throw new Error(`no boss fight for adventure ${campaign.id}`);
     bosses.push({ adventureId: campaign.id, totalHp: fight.totalHp });
   }
+  // Where the hero stands on every chain: the rung a quest slot naming each laddered movement is
+  // served. Nothing here froze a rung until `0070` changed what "a clean session" reads, and a
+  // hero sent back down a ladder they climbed is exactly the regression this file exists for.
+  const { currentRungFor, listExercises } =
+    require("../../db/exercises") as typeof import("../../db/exercises");
+  const laddered = (await listExercises())
+    .filter((exercise) => exercise.prerequisiteExerciseId !== null)
+    .map((exercise) => exercise.id);
+  const rungs = [...(await currentRungFor(laddered))].sort(([a], [b]) => a - b);
+
   const flame = await getFlameDetail(now);
   const scene = await getVillageScene();
   const aggregates = await getSessionAggregates();
@@ -254,6 +278,8 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
     },
     bosses,
     crest,
+    // [written movement id, served movement id], one per laddered movement.
+    rungs,
     achievements: achievements.map((a) => ({
       code: a.definition.code,
       isUnlocked: a.isUnlocked,

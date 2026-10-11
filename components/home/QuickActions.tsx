@@ -16,8 +16,9 @@ import { getRecentSessionHistory } from "@/db/completed";
 import { formatDurationEstimate } from "@/db/estimate";
 import { listExercises } from "@/db/exercises";
 import { cheapestLocomotion, hasOutdoorSlot, outingGoal, withOutingGoal } from "@/db/expeditions";
+import { getOutingHabit } from "@/db/outingHabit";
 import { listOutings, type Outing } from "@/db/outings";
-import { previewOutingGoal } from "@/db/preview";
+import { previewOuting } from "@/db/preview";
 import {
   getAllQuestConfigs,
   getQuestConfig,
@@ -143,6 +144,8 @@ export function QuickActions() {
   const [outings, setOutings] = useState<Outing[] | null>(null);
   /** Each way out's goal as it would leave right now, keyed by quest id. */
   const [goals, setGoals] = useState<Record<number, OutingGoal | null>>({});
+  // Which tiles still stand on the app's walk-run proposal, for the goal sheet's ceiling line.
+  const [walkRuns, setWalkRuns] = useState<Record<number, boolean>>({});
   /** The last workout, when there is one and it can start from here. */
   const [replay, setReplay] = useState<{ questId: number; title: string } | null>(null);
   /** Double-tap guard, the same one the quest screen keeps for the same reason. */
@@ -161,21 +164,27 @@ export function QuickActions() {
   const load = useCallback(async () => {
     // Both reads underneath are cached and invalidated on write, so coming back from the editor
     // picks up a hero-authored outing without costing a query on every focus.
-    const [list, configs, exercises] = await Promise.all([
+    const [list, configs, exercises, runHabit] = await Promise.all([
       listOutings(),
       getAllQuestConfigs(),
       listExercises(),
+      // What a run's duration is proposed from: the chip must say what the tap will run.
+      getOutingHabit("run"),
     ]);
     const exercisesById = indexExercises(exercises);
 
     // At `medium`, the level every tile leaves at, so the chip says what the tap will run. Off the
-    // template rather than the loaded quest: see `previewOutingGoal`.
-    const entries = list.map(
+    // template rather than the loaded quest: see `previewOuting`.
+    const previews = list.map(
       ({ quest }) =>
-        [quest.id, previewOutingGoal(quest, exercisesById, configs.get(quest.id) ?? null)] as const,
+        [
+          quest.id,
+          previewOuting(quest, exercisesById, configs.get(quest.id) ?? null, runHabit),
+        ] as const,
     );
     // Together: tiles drawn before their goals said "Free" on every chip, a goal nobody set.
-    setGoals(Object.fromEntries(entries));
+    setGoals(Object.fromEntries(previews.map(([id, preview]) => [id, preview.goal])));
+    setWalkRuns(Object.fromEntries(previews.map(([id, preview]) => [id, preview.walkRun])));
     setOutings(list);
 
     const last = (await getRecentSessionHistory(1))[0];
@@ -294,7 +303,7 @@ export function QuickActions() {
 
   const goalLabel = (goal: OutingGoal | null) =>
     goal === null
-      ? t("home.goal_free", "Free")
+      ? t("home.goal_free")
       : goal.type === "distance"
         ? formatDistance(goal.metres, unit, language)
         : formatDurationEstimate(goal.seconds, language);
@@ -302,9 +311,9 @@ export function QuickActions() {
   return (
     <YStack pt="$2.5" pb="$2" gap="$2">
       <XStack px="$4" items="baseline" justify="space-between" gap="$3">
-        <SectionLabel>{t("home.quick_actions", "Quick actions")}</SectionLabel>
+        <SectionLabel>{t("home.quick_actions")}</SectionLabel>
         <Text flex={1} text="right" fontSize={10} color="$textSecondary" numberOfLines={1}>
-          {t("home.quick_hint", "Long-press to set")}
+          {t("home.quick_hint")}
         </Text>
       </XStack>
 
@@ -360,7 +369,7 @@ export function QuickActions() {
               onLongPress={() => setGoalFor(quest.id)}
               pressStyle={{ opacity: 0.85, scale: 0.98 }}
               accessibilityRole="button"
-              accessibilityLabel={t("home.outside_start_a11y", { quest: name, defaultValue: name })}
+              accessibilityLabel={t("home.outside_start_a11y", { quest: name })}
             >
               {/* The quest's cover, dimmed to texture: at this size no art distinguishes anything,
                   the name carries the meaning. */}
@@ -436,7 +445,7 @@ export function QuickActions() {
           >
             <RotateCcw size={16} color="$primaryText" />
             <Text fontSize={10} fontWeight="700" color="$textSecondary">
-              {t("home.replay", "Replay")}
+              {t("home.replay")}
             </Text>
             <Text fontSize={11} fontWeight="700" color="$text" numberOfLines={1}>
               {replay.title}
@@ -459,6 +468,7 @@ export function QuickActions() {
           locomotion={cheapestLocomotion(
             outings.filter((o) => o.quest.id === goalFor).map((o) => o.exercise),
           )}
+          walkRun={walkRuns[goalFor] ?? false}
           onPick={(goal) => {
             saveGoal(goalFor, goal).catch((error) => reportError("home.saveGoal", error));
           }}

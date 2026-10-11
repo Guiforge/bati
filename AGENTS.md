@@ -212,6 +212,13 @@ outlived it.
   [`docs/architecture/exercise-ownership.md`](docs/architecture/exercise-ownership.md).
 - **Mark a deliberate shortcut with a `ponytail:` comment** naming its ceiling and what would
   trigger the real fix. "Refactor planned" tells the next reader nothing.
+- **Copy lives in `locales/*.json`, all of it.** A label, a name or a pool of lines written as a
+  `{ en, fr, … }` table in the code is prose a translator never sees: the first contributed
+  language arrived complete and still needed 300 strings written by hand before `tsc` passed.
+  Code that needs a `Localized` reads the block through
+  [`src/i18n/copy.ts`](src/i18n/copy.ts), typed on the code so a missing entry does not compile.
+  The four exceptions and their reasons are in
+  [`docs/product/writing.md`](docs/product/writing.md) § *Where copy lives*.
 - **Copy has rules, and most of them are measured.** No em dash reaches a reader, in either
   language and on any surface: a comma, a colon, a full stop or brackets say the same thing. The
   app says `tu` and only the policy says `vous`. A screen whose strings all have the same shape is

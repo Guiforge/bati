@@ -102,7 +102,7 @@ export function FormSheet({ open, title, onClose, children }: Props) {
               <Pressable
                 hitSlop={12}
                 accessibilityRole="button"
-                accessibilityLabel={t("common.close", "Close")}
+                accessibilityLabel={t("common.close")}
                 onPress={close}
               >
                 <X size={20} color="$textSecondary" />

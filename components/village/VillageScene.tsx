@@ -54,9 +54,9 @@ import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
 import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
 import { type Crest as CrestData, getCrest } from "@/db/crest";
 import { dayKey } from "@/db/dates";
+import { MUSCLE_LABELS } from "@/db/labels";
 import type { RecentFeeds } from "@/db/milestone";
 import { getRecentFeeds } from "@/db/milestoneFeed";
-import { MUSCLE_LABELS } from "@/db/muscles";
 import { formatCount } from "@/db/targets";
 import {
   getTierProgress,
@@ -362,10 +362,10 @@ export function VillageScene() {
           p="$4"
         >
           <Text fontSize={16} fontWeight="700" color="$text" style={{ textAlign: "center" }}>
-            {t("village.load_error", "The village is out of reach")}
+            {t("village.load_error")}
           </Text>
           <AppButton fullWidth={false} onPress={loadScene}>
-            {t("common.retry", "Retry")}
+            {t("common.retry")}
           </AppButton>
         </YStack>
       );
@@ -462,7 +462,7 @@ export function VillageScene() {
             setViewerOpen(true);
           }}
           accessibilityRole="button"
-          accessibilityLabel={t("village.open_scene", "See the whole scene")}
+          accessibilityLabel={t("village.open_scene")}
         >
           {/* Only the painting moves: it parallaxes, and leans in on the building that just rose.
               The scrims and the title stay anchored. */}

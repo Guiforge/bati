@@ -280,17 +280,75 @@ describe("db/bossFights", () => {
     expect(roll(9, 10).isCritical).toBe(false);
     expect(roll(10, 10).isCritical).toBe(false);
 
-    // One rep over twelve is 8 % overshoot -> 12 % odds, which 0.1 clears. Double damage.
+    // One rep over twelve is 15 % odds, which 0.1 clears. Double damage.
     expect(roll(13, 12)).toMatchObject({ isCritical: true, damage: 26 });
 
-    // The odds scale with the overshoot: at 0.4 the same set does not crit, a bigger one does.
-    jest.spyOn(Math, "random").mockReturnValue(0.4);
+    // Two reps is 30 %: at 0.2 one rep does not crit, two do.
+    jest.spyOn(Math, "random").mockReturnValue(0.2);
     expect(roll(13, 12).isCritical).toBe(false);
-    expect(roll(24, 12).isCritical).toBe(true);
+    expect(roll(14, 12).isCritical).toBe(true);
 
     // ...and never beyond the ceiling, however heroic the set.
     jest.spyOn(Math, "random").mockReturnValue(b.MAX_CRIT_CHANCE);
     expect(roll(500, 12).isCritical).toBe(false);
+  });
+
+  // The rule the fight states under the counter, figure for figure. It used to scale with the
+  // overshoot, which paid for the grinding reps the safety page says to leave in reserve, made
+  // the easy level the one that critted, and on a target lowered to 1 made two reps a sure thing.
+  test("crit odds are one rep or two, the same at every target, and never on a hold", () => {
+    const b = boss();
+
+    expect(b.critChance(12, 12)).toBe(0);
+    expect(b.critChance(13, 12)).toBe(0.15);
+    expect(b.critChance(14, 12)).toBe(0.3);
+    expect(b.critChance(17, 12)).toBe(b.critChance(14, 12));
+    expect(b.critChance(22, 20)).toBe(b.critChance(14, 12));
+
+    // Under eight prescribed reps a second extra one is a big jump: only the first counts.
+    expect(b.critChance(7, 5)).toBe(0.15);
+
+    expect(b.critChance(90, 30, "time")).toBe(0);
+  });
+
+  test("the boss counts two reps past the prescribed target and stops, a hold stops at it", async () => {
+    jest.spyOn(Math, "random").mockReturnValue(0.99);
+    const b = boss();
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
+    if (!fight) throw new Error("Expected a boss fight");
+
+    const reps = (resultValue: number, targetValue: number, prescribedValue?: number) =>
+      b.computeDamage(fight, { resultValue, targetValue, prescribedValue, style: "strength" })
+        .damage;
+
+    expect(reps(30, 12)).toBe(14);
+    // A stepper raised to 100 does not lift the cap, and one lowered to 1 does not open it.
+    expect(reps(30, 100, 12)).toBe(14);
+    expect(reps(2, 1, 12)).toBe(2);
+
+    const hold = (seconds: number) =>
+      b.computeDamage(fight, {
+        resultValue: seconds,
+        targetValue: 30,
+        targetType: "time",
+        style: "strength",
+      }).damage;
+    expect(hold(362)).toBe(hold(30));
+  });
+
+  test("a target lowered to 1 buys no crit: two reps of a prescribed twelve", async () => {
+    jest.spyOn(Math, "random").mockReturnValue(0);
+    const b = boss();
+    const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
+    if (!fight) throw new Error("Expected a boss fight");
+
+    const hit = b.computeDamage(fight, {
+      resultValue: 2,
+      targetValue: 1,
+      prescribedValue: 12,
+      style: "strength",
+    });
+    expect(hit.isCritical).toBe(false);
   });
 
   test("a crit is written to the log as one", async () => {
@@ -317,11 +375,13 @@ describe("db/bossFights", () => {
     const fight = await b.getOrCreateBossFight(BOSS_WITH_HP, "medium");
     if (!fight) throw new Error("Expected a boss fight");
 
+    // A set whose own target is past the pool: a hit is capped two reps over its target now, so
+    // "500 on a target of 25" no longer overkills anything.
     const killing = await b.dealDamage(fight.id, {
       exerciseId: 1,
       style: "strength",
       resultValue: 500,
-      targetValue: 25,
+      targetValue: 500,
     });
     expect(killing).toMatchObject({ newHp: 0, defeated: true });
     expect((await b.getBossFightByAdventure(BOSS_WITH_HP))?.defeatedAt).toBeInstanceOf(Date);

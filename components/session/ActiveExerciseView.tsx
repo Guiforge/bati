@@ -15,11 +15,16 @@ import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import { fade, rawColors } from "@/constants/rawColors";
-import { critChance } from "@/db/bossFights";
+import {
+  CRIT_CHANCE_ONE_REP,
+  critChance,
+  DAMAGE_REPS_PAST_TARGET,
+  MAX_CRIT_CHANCE,
+} from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
-import { formatSlotTarget, TARGET_RANGE } from "@/db/targets";
+import { formatSlotTarget, prescribedValue, TARGET_RANGE } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -154,6 +159,9 @@ export function ActiveExerciseView() {
   // clock reads: swapping a hold for a counted movement mid-set made that 0 sound like the hold's.
   useCountdownCues(isOuting || currentEx?.target.type !== "time" ? null : remainingSeconds);
   const targetValue = currentEx?.target.value ?? 0;
+  // What the app asked for, when the hero set their own number over it: the fight reads this one.
+  const prescribed = currentEx ? prescribedValue(currentEx) : 0;
+  const targetChanged = prescribed !== targetValue;
   // One side, a short switch, then the other (`0068`, `src/perSide.ts`): the store runs the
   // clock for all three, and the numeral counts down the phase in progress.
   const perSideHold = !isOuting && currentEx?.target.type === "time" && currentEx.exercise.perSide;
@@ -175,6 +183,10 @@ export function ActiveExerciseView() {
     side?.phase === "second" && secondSideSeconds - side.seconds < SECOND_SIDE_GRACE_SECONDS;
   useSideSwitch(remainingSeconds, secondSideSeconds, SIDE_SWITCH_SECONDS, perSideHold);
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
+  // The last set of a session with nothing logged cannot be skipped (`skipExercise`), and the
+  // tap used to do nothing at all, at the one moment a hero says they could not do any of it.
+  // The answer takes the hint line's place, so nothing on the screen moves.
+  const [skipRefused, setSkipRefused] = useState(false);
   // Counts ± taps, and keys the numeral's bounce. Keyed on the count itself, a typed "150"
   // remounted the field on its first digit and put the keyboard away.
   const [stepCount, setStepCount] = useState(0);
@@ -269,7 +281,9 @@ export function ActiveExerciseView() {
 
   const handleSkip = () => {
     selection();
+    const before = useSessionStore.getState();
     skipExercise();
+    if (useSessionStore.getState() === before) setSkipRefused(true);
   };
 
   // Ladder rungs first, then the same pattern, then the family — `rankSwapCandidates` already
@@ -285,10 +299,10 @@ export function ActiveExerciseView() {
   const swapReasons = new Map(swapCandidates.map((c) => [c.exercise.id, c.reason] as const));
 
   const swapReasonLabel = (reason: SwapReason | null | undefined): string | null => {
-    if (reason === "easier") return t("quests.swap_reason_easier", "An easier rung");
-    if (reason === "harder") return t("quests.swap_reason_harder", "A harder rung");
-    if (reason === "same_pattern") return t("quests.swap_reason_pattern", "Same movement");
-    if (reason === "same_family") return t("quests.swap_reason_family", "Same family");
+    if (reason === "easier") return t("quests.swap_reason_easier");
+    if (reason === "harder") return t("quests.swap_reason_harder");
+    if (reason === "same_pattern") return t("quests.swap_reason_pattern");
+    if (reason === "same_family") return t("quests.swap_reason_family");
     return null;
   };
 
@@ -636,7 +650,7 @@ export function ActiveExerciseView() {
                           color="$textSecondary"
                           numberOfLines={1}
                         >
-                          {t("session.swap_short", "Replace")}
+                          {t("session.swap_short")}
                         </Text>
                       </Pressable>
                     </XStack>
@@ -901,54 +915,60 @@ export function ActiveExerciseView() {
                         {t("session.adjust_reps_hint")}
                       </Text>
                     )}
-                    {/* In a fight the ± control *is* the decision, so say what it buys. Crit odds
-                  scale with how far past the target you go, and nothing on screen has ever
-                  admitted the rule exists. Outside a fight, intensity as reps-in-reserve rather
-                  than "go to failure" — the safer and more teachable framing, and one the app can
-                  give as a cue instead of collecting as data. */}
+                    {/* In a fight the ± control *is* the decision, so say what it buys: the whole
+                  rule, one rep or two and no further, rather than a percentage that climbed with
+                  every tap and paid for the reps the line below says to keep. Outside a fight,
+                  intensity as reps-in-reserve rather than "go to failure" — the safer and more
+                  teachable framing, and one the app can give as a cue instead of collecting as
+                  data. A target the hero changed still fights on the prescribed one, so the line
+                  says where the boss stops counting instead of promising odds on their number. */}
                     <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                      {fightLive
-                        ? t("session.crit_hint", {
-                            percent: Math.round(critChance(adjustedReps, targetValue) * 100),
-                          })
-                        : t("session.reserve_hint")}
+                      {skipRefused
+                        ? t("session.pain_rule_last")
+                        : !fightLive
+                          ? t("session.reserve_hint")
+                          : targetChanged
+                            ? t("session.fight_target_changed", {
+                                count: prescribed + DAMAGE_REPS_PAST_TARGET,
+                              })
+                            : critChance(prescribed + 2, prescribed) === MAX_CRIT_CHANCE
+                              ? t("session.crit_rule", {
+                                  one: Math.round(CRIT_CHANCE_ONE_REP * 100),
+                                  two: Math.round(MAX_CRIT_CHANCE * 100),
+                                })
+                              : t("session.crit_rule_one", {
+                                  one: Math.round(CRIT_CHANCE_ONE_REP * 100),
+                                })}
                     </Text>
                   </YStack>
                 )}
               </YStack>
             )}
 
-            {/* Hint for time-based exercises. In a fight the same overshoot rule applies to a
-                hold as to a rep, and the seconds past the target are exactly the moment the hero
-                is deciding about: the crit line replaces the generic one there. */}
-            {/* Not during the switch: "the clock keeps running past the target" and the crit odds
-                both say a side is being timed, and none is. On the first side the plain hint is
-                wrong too (the clock does not run on past it), so it says what comes next. */}
+            {/* Hint for time-based exercises: let go at the beep. It used to say the clock keeps
+                running past the target, and in a fight that every second past it could crit,
+                which paid for holding on after the position had gone. A hold lands whole at its
+                target now and nothing more after it. */}
+            {/* Not during the switch: the line speaks of a side being timed, and none is. On the
+                first side it is wrong too (there is no beep to let go at, the switch comes), so
+                it says what comes next. */}
             {isTimeBased && !isOuting && (
               <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
                 {/* Kept, blank, during the switch and the second side up to its target: a line
                     that leaves lets the art above grow, and "keep going past the target" wraps to
                     two lines at a large font, so either one jumps the screen under a hero who is
                     getting into the second side. It comes back once the target is reached. */}
-                {inSwitch || (side?.phase === "second" && !isOvertime && !fightLive)
-                  ? " "
-                  : side?.phase === "first" && !fightLive
-                    ? t("session.side_switch_ahead", { seconds: SIDE_SWITCH_SECONDS })
-                    : fightLive
-                      ? t("session.crit_hint_time", {
-                          percent: Math.round(
-                            critChance(
-                              heldSeconds(
-                                elapsedSeconds,
-                                perSideHold,
-                                currentEx.target.value,
-                                firstSideSeconds,
-                              ),
-                              currentEx.target.value,
-                            ) * 100,
-                          ),
-                        })
-                      : t("session.keep_going_hint")}
+                {skipRefused
+                  ? t("session.pain_rule_last")
+                  : inSwitch || (side?.phase === "second" && !isOvertime && !fightLive)
+                    ? " "
+                    : side?.phase === "first" && !fightLive
+                      ? t("session.side_switch_ahead", { seconds: SIDE_SWITCH_SECONDS })
+                      : !fightLive
+                        ? t("session.hold_release_hint")
+                        : targetChanged
+                          ? t("session.fight_target_changed_time", { seconds: prescribed })
+                          : t("session.hold_fight_hint")}
               </Text>
             )}
 
@@ -1033,7 +1053,7 @@ export function ActiveExerciseView() {
           setSwapOpen(next);
           if (!next) setLeaveOut(false);
         }}
-        title={t("quests.swap_exercise", "Replace this exercise")}
+        title={t("quests.swap_exercise")}
         header={
           <SetAsideToggle exercise={currentEx.exercise} checked={leaveOut} onToggle={setLeaveOut} />
         }
@@ -1110,6 +1130,14 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
   const fillStyle = useAnimatedStyle(() => ({ width: `${fill.value * 100}%` }));
 
   const label = t("session.expedition_finish");
+  const [width, setWidth] = useState(0);
+  // 20 and not 24: "Maintiens pour terminer" is the long form, and it has to hold one line on a
+  // 320dp screen.
+  const holdLabel = (color: "$onPrimary" | "$bgDark") => (
+    <Text color={color} fontFamily="$heading" fontSize={20} fontWeight="700" numberOfLines={1}>
+      {t("session.expedition_hold_to_finish")}
+    </Text>
+  );
 
   return (
     <Pressable
@@ -1149,28 +1177,27 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
         overflow="hidden"
         items="center"
         justify="center"
+        onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
       >
+        {holdLabel("$onPrimary")}
+        {/* The sweep carries its own copy of the label, in ink: no single label colour reads on
+            both the braise and the green (cream on green is 2.3:1), and the plate that used to
+            solve it put a black box in the middle of the button. The copy is laid out at the
+            button's full width, so the two labels coincide and the sweep's edge recolours the
+            letters as it crosses them. */}
         <Animated.View
-          style={[{ position: "absolute", left: 0, top: 0, bottom: 0 }, fillStyle]}
+          style={[
+            { position: "absolute", left: 0, top: 0, bottom: 0, overflow: "hidden" },
+            fillStyle,
+          ]}
           pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
         >
-          <YStack flex={1} bg="$success" />
+          <YStack width={width} flex={1} bg="$success" items="center" justify="center">
+            {holdLabel("$bgDark")}
+          </YStack>
         </Animated.View>
-        {/* 20 and not 24: "Maintiens pour terminer" is the long form, and it has to hold one
-            line on a 320dp screen. */}
-        {/* On an ink plate: the sweep crosses the label, braise then green, and no single label
-            colour clears AA on both (bone on green is 1.95:1). Ink under bone reads on either. */}
-        <YStack bg="$bgDark" rounded="$4" px="$3" py="$1">
-          <Text
-            color="$text"
-            fontFamily="$heading"
-            fontSize={20}
-            fontWeight="700"
-            numberOfLines={1}
-          >
-            {t("session.expedition_hold_to_finish")}
-          </Text>
-        </YStack>
       </YStack>
     </Pressable>
   );

@@ -17,6 +17,8 @@ import {
   addBonusXpToSession,
   type CompletedExerciseInput,
   createCompletedSession,
+  dailyBonusOf,
+  dailyBonusPaidOn,
   deleteSession,
   getSessionAggregates,
   hasSessionForQuestToday,
@@ -56,7 +58,13 @@ import {
 import type { DistanceUnit } from "@/db/preferences";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
-import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
+import { dropSlotSwap } from "@/db/questConfig";
+import {
+  invalidateQuestTemplates,
+  isDailyQuest,
+  type Quest,
+  type QuestExercise,
+} from "@/db/quests";
 import type {
   DifficultyCode,
   ExerciseStyle,
@@ -67,7 +75,13 @@ import type {
 } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import type { Target } from "@/db/targets";
-import { isSuspiciousHold, REST_RANGE, retargetForMovement, targetRangeFor } from "@/db/targets";
+import {
+  isSuspiciousHold,
+  prescribedValue,
+  REST_RANGE,
+  retargetForMovement,
+  targetRangeFor,
+} from "@/db/targets";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import { uuidv7 } from "@/db/uuid";
 import {
@@ -799,10 +813,13 @@ function pricedSets(
     const slot = quest.exercises[r.sortOrder];
     if (!slot) return [];
 
+    // Priced against what the app prescribed (`0070`): a stepper raised to 100 does not lift the
+    // overshoot allowance, and one lowered to 5 does not shrink the pay for twelve honest reps.
+    const target = r.target ?? slot.target;
     return [
       {
         exercise: r.pricing ?? slot.exercise,
-        target: r.target ?? slot.target,
+        target: r.prescribed === undefined ? target : { ...target, value: r.prescribed },
         result: r.result,
       },
     ];
@@ -847,13 +864,34 @@ function outingLegSeconds(
 }
 
 /**
- * Whether this save earns the day's bonus: it is the quest the day suggested, and it is the
- * first time today. Two questions rather than one because `isDailyQuest` only answers the first,
- * which is how the same quest run three times came to pay three bonuses.
+ * What this save is paid on top for doing the day's quest: half of what the quest proposed, or
+ * nothing. Three conditions, all read at the instant the session *started*, which is the day its
+ * row is dated: a session begun at 23:50 is the quest of that day whenever its summary is reached.
+ * - it is the quest that day suggested (`isDailyQuest`);
+ * - that quest was not already logged that day, or running it three times paid three bonuses;
+ * - no session of that day holds the bonus yet (issue #177). The day's quest is drawn from a
+ *   pool the hero can reshape before lunch, so "this quest was not logged" was true of a second
+ *   quest. The bonus is on the session's own row, so this is a question to the journal.
+ *
+ * A retry reports what its row holds and asks nothing again: the row was written with or without
+ * the bonus the first time, and a bonus the screen shows must be one the journal has.
  */
-async function earnsDailyBonus(questId: number, savedSessionId: number | null): Promise<boolean> {
-  if (!(await isDailyQuest(questId))) return false;
-  return !(await hasSessionForQuestToday(questId, savedSessionId));
+async function dailyBonusFor(
+  questId: number,
+  savedSessionId: number | null,
+  startedAt: Date,
+  xpAtTarget: number,
+): Promise<number> {
+  if (savedSessionId !== null) return dailyBonusOf(savedSessionId);
+  // The two counts first: they are one indexed read each, and the day's pick walks the whole
+  // catalogue. After the day's bonus is paid, every later save stops at the first line.
+  const earned =
+    !(await dailyBonusPaidOn(startedAt)) &&
+    !(await hasSessionForQuestToday(questId, startedAt)) &&
+    (await isDailyQuest(questId, startedAt));
+  // At least one: the row's bonus is also how the day knows it was paid, and a quest worth a
+  // single XP must not leave the day open for a second quest to be paid in full.
+  return earned ? Math.max(1, Math.round(0.5 * xpAtTarget)) : 0;
 }
 
 /**
@@ -1103,7 +1141,9 @@ export async function loadWarmupContext(): Promise<{
   const enabled = await preferences.getWarmupEnabled().catch(() => true);
   if (!enabled) return { enabled, totalSessions: 0, unavailable: new Set() };
   // Rotates which movement fills each phase, so the warm-up is not the same four every
-  // session. A failed read costs variety, never the warm-up itself.
+  // session. A failed read costs variety, never the warm-up itself. Not the count the jump
+  // filter below reads, on purpose: a rotation should move with tonight's session, and "is this
+  // hero starting out" must not change its answer in the middle of a day.
   const { totalSessions } = await getSessionAggregates().catch(() => ({ totalSessions: 0 }));
   // What the hero said they do not own. A failed read costs the filter, never the warm-up: an
   // unfiltered warm-up is the old behaviour, and no warm-up is a worse answer than a scapular
@@ -1157,9 +1197,9 @@ function isTheWholeWalk(quest: Quest): boolean {
 function recordOf(
   quest: Quest,
   goal: OutingGoal | null,
-  slot: { target: Target; exercise: Exercise },
+  slot: Pick<QuestExercise, "target" | "exercise" | "prescribed">,
   resultValue: number,
-): Pick<CompletedExerciseInput, "result" | "target"> {
+): Pick<CompletedExerciseInput, "result" | "target" | "prescribed"> {
   // Not "is this an outing" but "is this walk the whole session".
   //
   // `recordedDurationSeconds()` times the session, which is the walk itself only when the walk is
@@ -1184,7 +1224,34 @@ function recordOf(
     },
     target:
       goal === null && outing ? undefined : { type: slot.target.type, value: slot.target.value },
+    // Nothing prescribes ground: an outing's number is a goal the hero set, or none at all.
+    prescribed: isOutdoors(slot.exercise.style) ? undefined : prescribedValue(slot),
   };
+}
+
+/**
+ * The round a slot's movement first came in, when the hero swapped it in mid-session, for
+ * `ladderNeutralSets`: due from that round, not from round one and not from its first row, since
+ * swapped in and skipped it was still due then. Undefined for the movement the quest handed
+ * over, swapped away from and back to or not: that one was due from the start.
+ */
+function arrivalOf(slot: QuestExercise): number | undefined {
+  if (!slot.swaps || slot.exercise.id === slot.swaps.handedOver) return undefined;
+  return slot.swaps.arrivals[slot.exercise.id];
+}
+
+/**
+ * The hero asked for a movement above their rung, then skipped it or swapped away from it: the
+ * pin goes, so the quest serves their own rung again next time instead of the same wall. Their
+ * rows for it tonight are judged by nobody (`ladderNeutralSets`), so one clean round before the
+ * skip does not bring the movement back through the ladder either.
+ *
+ * Not awaited: a pin that failed to drop costs one tap on the quest screen, and a set in
+ * progress must not wait on a preference write.
+ */
+function giveUpPin(quest: Quest, slot: QuestExercise): void {
+  if (!slot.pinnedOver) return;
+  dropSlotSwap(quest.id, slot.id).catch((e) => reportError("session.giveUpPin", e));
 }
 
 /**
@@ -1558,7 +1625,7 @@ export const useSessionStore = create<SessionState>()(
 
       const bothSides = paysBothSides(currentEx.exercise, sidesWorked);
 
-      const { result, target } = recordOf(quest, goal, currentEx, resultValue);
+      const { result, target, prescribed } = recordOf(quest, goal, currentEx, resultValue);
       const safeResultValue = result.value;
 
       // Land the hit on the fight we hold, and bank it. Nothing reaches the database until
@@ -1570,6 +1637,7 @@ export const useSessionStore = create<SessionState>()(
         const damageResult = computeDamage(bossFight, {
           resultValue: safeResultValue,
           targetValue: currentEx.target.value,
+          prescribedValue: prescribed,
           muscle: primaryMuscle,
           targetType: currentEx.target.type,
           style: currentEx.exercise.style,
@@ -1604,6 +1672,8 @@ export const useSessionStore = create<SessionState>()(
         sortOrder: currentExerciseIndex,
         result,
         target,
+        prescribed,
+        swappedIn: arrivalOf(currentEx),
         pricing: {
           secondsPerRep: currentEx.exercise.secondsPerRep,
           difficulty: currentEx.exercise.difficulty,
@@ -1669,16 +1739,39 @@ export const useSessionStore = create<SessionState>()(
      * accepts.
      */
     swapCurrentExercise: (exercise) => {
-      const { quest, currentExerciseIndex, status } = get();
+      const { quest, currentExerciseIndex, currentRoundIndex, status } = get();
       if (!quest || (status !== "running" && status !== "resting")) return;
 
       const slot = quest.exercises[currentExerciseIndex];
       if (!slot || slot.exercise.id === exercise.id) return;
+      // What the session remembers of this slot (`QuestExercise.swaps`): which movement the
+      // quest handed over, the round each other one first came in, and what each was asked.
+      const handedOver = slot.swaps?.handedOver ?? slot.exercise.id;
+      const arrivals = {
+        ...slot.swaps?.arrivals,
+        [exercise.id]: slot.swaps?.arrivals[exercise.id] ?? currentRoundIndex,
+      };
+      const written = slot.substitutedFor;
+      const targets: NonNullable<QuestExercise["swaps"]>["targets"] = {
+        // The movement the quest wrote, when the ladder served a rung in its place: what the
+        // quest wrote for it. Remembered at the first swap, which is where the slot stops
+        // saying it. Through the retarget it was the unit's default, nothing prescribed beside.
+        ...(written?.target && !written.setAside
+          ? { [written.id]: { target: written.target } }
+          : {}),
+        ...slot.swaps?.targets,
+        // And the movement being left: its target and what the app prescribed under it.
+        [slot.exercise.id]: { target: slot.target, prescribed: slot.prescribed },
+      };
+      // Coming back to a movement gives it back its own target, the same answer "Do X instead"
+      // gives on the quest screen for the written one, however many swaps came between.
+      const known = targets[exercise.id];
 
       // The slot's target, unless the movement is measured the other way — same call
       // `applyQuestConfig` makes. Results already logged keep their own `exerciseId` and
       // `pricing`: they are true.
-      const target = retargetForMovement(slot.target, slot.exercise, exercise, get().userLevel);
+      const target =
+        known?.target ?? retargetForMovement(slot.target, slot.exercise, exercise, get().userLevel);
       const exercises = quest.exercises.map((qex, i) =>
         i === currentExerciseIndex
           ? {
@@ -1691,9 +1784,26 @@ export const useSessionStore = create<SessionState>()(
               ghost: undefined,
               substitutedFor: undefined,
               setAsideServed: undefined,
+              // The hero's own number travels with the target when the swap kept it (same unit),
+              // and so must what the app had prescribed under it: dropped, a target lowered to 1
+              // became "what was asked" on the new movement, and one rep earned its rung. A swap
+              // that changed the unit generated a fresh target, which is the app's own again.
+              // Carried onto a movement it was not written for, on purpose: nothing says what
+              // the app would have asked of the new one in this slot. A lowered number then
+              // makes the new movement's sets neutral for its ladder unless they reach the old
+              // prescription, which is the cautious side of the two this could err on.
+              prescribed: known
+                ? known.prescribed
+                : target.type === slot.target.type
+                  ? slot.prescribed
+                  : undefined,
+              // The pin was on the old movement.
+              pinnedOver: undefined,
+              swaps: { handedOver, arrivals, targets },
             }
           : qex,
       );
+      giveUpPin(quest, slot);
 
       // Every other entry into a movement sets this pair, and the two units are not
       // interchangeable: a hold timer left running on a rep movement counts nothing down, and reps
@@ -1732,6 +1842,9 @@ export const useSessionStore = create<SessionState>()(
         currentExerciseIndex === quest.exercises.length - 1 &&
         currentRoundIndex === quest.rounds - 1;
       if (isLastSet && results.length === 0) return;
+
+      const skipped = quest.exercises[currentExerciseIndex];
+      if (skipped) giveUpPin(quest, skipped);
 
       set({
         ...advanceAfterSet(quest, currentRoundIndex, currentExerciseIndex, results),
@@ -1847,6 +1960,7 @@ export const useSessionStore = create<SessionState>()(
         const damageResult = computeDamage(rewound, {
           resultValue: safeResultValue,
           targetValue: last.target.value,
+          prescribedValue: last.prescribed,
           muscle: lastHit.muscle ?? undefined,
           targetType: last.target.type,
           style: lastHit.style,
@@ -1968,11 +2082,13 @@ export const useSessionStore = create<SessionState>()(
       // the daily quest paid 1200 where the quest suggested thirty minutes. Reading the target
       // instead makes the bonus what it says it is: you did the thing the day asked for.
       //
-      // Once a day. `isDailyQuest` only asks whether this is the id the day picked, so the same
-      // quest run three times paid three bonuses.
-      const dailyBonusXp = (await earnsDailyBonus(quest.id, get().savedSessionId))
-        ? Math.round(0.5 * xpAtTarget)
-        : 0;
+      // Once a day (`dailyBonusFor`).
+      const dailyBonusXp = await dailyBonusFor(
+        quest.id,
+        get().savedSessionId,
+        new Date(startTime),
+        xpAtTarget,
+      );
       xpEarned += dailyBonusXp;
 
       // Calculate level before saving (current state)
@@ -2001,8 +2117,11 @@ export const useSessionStore = create<SessionState>()(
         outing: outingLocomotion(quest),
         durationSeconds,
         xpEarned,
+        // On the row, beside the total it is part of: it is how the day knows it was paid.
+        dailyBonusXp,
         feedback,
         exercises: results,
+        rounds: quest.rounds,
         performedAt: new Date(startTime),
       });
 

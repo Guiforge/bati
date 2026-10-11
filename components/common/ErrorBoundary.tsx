@@ -73,10 +73,10 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
       <Text fontSize={64}>😵</Text>
       <YStack items="center" gap="$2">
         <H1 color="$text" fontWeight="700" fontSize={24} style={{ textAlign: "center" }}>
-          {t("errors.something_went_wrong", "Something went wrong")}
+          {t("errors.something_went_wrong")}
         </H1>
         <Paragraph color="$text" opacity={0.6} style={{ textAlign: "center" }}>
-          {t("errors.try_again_message", "Don't worry, you can try again.")}
+          {t("errors.try_again_message")}
         </Paragraph>
       </YStack>
 
@@ -105,7 +105,7 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
           pressStyle={{ opacity: 0.9, scale: 0.98 }}
         >
           <Text fontWeight="700" color="white">
-            {t("errors.try_again", "Try Again")}
+            {t("errors.try_again")}
           </Text>
         </Button>
       )}

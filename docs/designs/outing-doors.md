@@ -457,7 +457,24 @@ quête mixte, qui garde les presets course) :
 - **Jamais « +10 % » comme cible.** Proposé à chaque sortie, il double une distance en sept sorties.
   Le 10 % est un **plafond affiché** : pour une course seulement, une ligne donne la plus longue
   course des 30 derniers jours et le seuil à 110 %. Elle s'affiche avant le choix, parce qu'un
-  chip ferme la feuille. Rien n'est bloqué ni grisé, aucun XP n'en dépend.
+  chip ferme la feuille. Rien n'est bloqué ni grisé, aucun XP n'en dépend. Depuis le 11/10/2026
+  elle s'affiche sur les deux onglets, en distance et en temps en mouvement, et « la plus
+  longue » ne compte que les sorties d'au moins 10 min : une course abandonnée au bout de trois
+  minutes plafonnait la suivante à 3 min 18. Elle ne s'affiche sur aucun des deux onglets quand
+  l'app propose la marche et course à ce héros : « sous 13 min », ou sous 1,3 km, au-dessus
+  d'une proposition de vingt minutes se contredisait. La règle vit dans `db/outingRule.ts`,
+  sans base de données, pour que la feuille et les tests appellent la règle elle-même.
+- **La durée proposée pour une course** (`proposedRunSeconds`, `db/outingRule.ts`), décidée à un
+  seul endroit (`resolveSlot`) et donc la même sur la carte, la tuile de Home et l'écran de quête.
+  La bande seedée proposait 30 min de course à tout le monde, y compris à qui n'a jamais couru.
+  Dans l'ordre :
+  - aucune course de 10 min dans les 30 jours : 20 min de marche et course mêlées, avec la ligne
+    « Marche dès que tu ne peux plus parler » ;
+  - trois courses ou plus : l'habituelle, plafonnée à 110 % de la plus longue du mois ;
+  - une ou deux : la plus longue, telle quelle, sans hausse ;
+  - tout résultat sous 20 min devient la marche et course, jamais une course étirée à 20 min.
+  Elle borne la proposition et rien d'autre : le réglage reste libre, un objectif sauvegardé
+  gagne, la marche et le vélo gardent leur bande, et la quête d'un héros garde sa durée écrite.
 - **Source.** Frandsen, Nielsen et al., *How much running is too much?*, BJSM 2025 (5 205 coureurs
   Garmin, 18 mois) : le risque de blessure de surcharge monte (HR 1,64 entre +10 et +30 %) quand une
   seule sortie dépasse la plus longue des 30 derniers jours, pas avec la hausse hebdomadaire. Étude

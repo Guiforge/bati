@@ -5,7 +5,7 @@ import { Pressable, useWindowDimensions } from "react-native";
 import { Paragraph, Text, View, XStack, YStack } from "tamagui";
 
 import { getVillagerAsset } from "@/constants/assetMap";
-import { CAMEO_LINGER_MS, MOMENT_CAST } from "@/constants/villagers";
+import { cameoLingerMs, MOMENT_CAST } from "@/constants/villagers";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useChorusStore } from "@/stores/chorus";
 import type { CameoBand } from "./cameoAnchor";
@@ -61,7 +61,7 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
     if (!(mine && done)) return;
     const leaving = setTimeout(
       () => dismiss(mine.id),
-      CAMEO_LINGER_MS[MOMENT_CAST[mine.moment].priority],
+      cameoLingerMs(mine.line, MOMENT_CAST[mine.moment].priority),
     );
     return () => clearTimeout(leaving);
   }, [mine, done, dismiss]);

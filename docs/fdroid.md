@@ -269,6 +269,17 @@ The cost is real and worth stating plainly: someone who moves from one to the ot
 starts a new hero. There is no migration path, and adding one later means adopting reproducible
 builds after all.
 
+**Accepting the break means the app must never walk a hero into it.** The version check
+([`src/updateCheck.ts`](../src/updateCheck.ts)) sends a hero to the GitHub release page, and a
+tester on the f-droid.org build followed it, hit the signature refusal, and had to uninstall: only
+a backup saved the hero. So the f-droid.org build has no update check at all: the recipe's
+`prebuild:` writes `EXPO_PUBLIC_DISTRIBUTION=fdroid` to `.env`, `expo export:embed` (the bundling
+step Gradle runs) loads it, Babel inlines it, and `UPDATE_CHECK_OFFERED` is false, which hides the
+Settings row and makes `checkForUpdate()` answer null even for a hero who had switched it on.
+Every other build (GitHub, our own repository, Play, whose App Signing uses our exported key) is
+signed with the GitHub key and keeps it. The variable has to be in the recipe that `fdroiddata`
+master holds, not only in our copy: a recipe without it ships a build that offers the update.
+
 ### The recipe
 
 [`fdroid/fdroiddata-recipe.yml`](../fdroid/fdroiddata-recipe.yml) is our copy of the file that has

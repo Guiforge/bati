@@ -1,4 +1,5 @@
 import type { TFunction } from "i18next";
+import { MUSCLE_LABELS } from "@/db/labels";
 import {
   type Milestone,
   nextMilestone,
@@ -6,7 +7,6 @@ import {
   type RecentFeeds,
   type SessionFed,
 } from "@/db/milestone";
-import { MUSCLE_LABELS } from "@/db/muscles";
 import type { BuildingCode } from "@/db/schema";
 import type { VillageBuilding } from "@/db/village";
 import { inSentence } from "@/src/i18n/localized";

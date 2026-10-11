@@ -30,6 +30,7 @@ function osChangesReduceMotionTo(value: boolean) {
 
 const requestWidgetsUpdate = jest.fn<Promise<void>, []>();
 const reportError = jest.fn();
+const portLegacyAvatar = jest.fn<Promise<string | null>, [string]>();
 
 const prefs = {
   getLanguage: jest.fn<Promise<string | null>, []>(),
@@ -46,6 +47,7 @@ const prefs = {
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
+  dropSupersededLegacyAvatar: jest.fn().mockResolvedValue(undefined),
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
   setVillagersEnabled: jest.fn().mockResolvedValue(undefined),
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
@@ -62,6 +64,7 @@ beforeAll(() => {
     i18n: { changeLanguage: jest.fn().mockResolvedValue(undefined) },
   }));
   jest.doMock("@/src/widget", () => ({ requestWidgetsUpdate }));
+  jest.doMock("@/src/customAvatar", () => ({ portLegacyAvatar }));
   jest.doMock("@/src/reportError", () => ({ reportError }));
   // The *device* is mocked, not the module that reads it: the store and the home screen
   // widget must both resolve the language through the real `resolveAppLanguage`, and a test
@@ -94,6 +97,7 @@ function storedSettings() {
   prefs.getLanguage.mockResolvedValue("fr");
   prefs.getAvatarId.mockResolvedValue("archmage");
   prefs.getCustomAvatarUri.mockResolvedValue("file:///stored-avatar.jpg");
+  portLegacyAvatar.mockResolvedValue("data:image/jpeg;base64,AAAA");
   prefs.getHapticsEnabled.mockResolvedValue(false);
   prefs.getVillagersEnabled.mockResolvedValue(false);
   prefs.getSoundEnabled.mockResolvedValue(false);
@@ -146,6 +150,31 @@ describe("useSettingsStore", () => {
       prepMode: "tap",
       isLoaded: true,
     });
+  });
+
+  // An install from before `customAvatar` kept the image picker's cache path, which no backup
+  // carried and Android could purge: it becomes a data URI on the first launch that can read it.
+  test("an avatar stored as a cache path is ported to a data URI at launch", async () => {
+    storedSettings();
+    portLegacyAvatar.mockResolvedValue("data:image/jpeg;base64,AAAA");
+
+    await settingsStore().getState().loadFromDatabase();
+    await new Promise(process.nextTick);
+
+    expect(portLegacyAvatar).toHaveBeenCalledWith("file:///stored-avatar.jpg");
+    expect(settingsStore().getState().customAvatarUri).toBe("data:image/jpeg;base64,AAAA");
+  });
+
+  test("an avatar already portable is left alone", async () => {
+    storedSettings();
+    prefs.getCustomAvatarUri.mockResolvedValue("data:image/jpeg;base64,BBBB");
+
+    await settingsStore().getState().loadFromDatabase();
+
+    expect(portLegacyAvatar).not.toHaveBeenCalled();
+    // A restore or merge may have brought it in over an unported path: that path goes.
+    expect(prefs.dropSupersededLegacyAvatar).toHaveBeenCalled();
+    expect(settingsStore().getState().customAvatarUri).toBe("data:image/jpeg;base64,BBBB");
   });
 
   test("a language that was never chosen falls back to the device, not to en", async () => {

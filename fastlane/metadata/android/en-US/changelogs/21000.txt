@@ -1,0 +1,6 @@
+- One-sided movements: the target counts per side, with a clear switch between the two.
+- Outings: ride speed in km/h, a goal for each kind of outing, a live screen you read at a glance.
+- A stretch earns less XP than a hold of the same length.
+- Your photo avatar travels with your backups and sync.
+- Villagers stay long enough to be read. A logged hold is corrected to the second.
+- F-Droid: the app no longer offers an update that cannot install.

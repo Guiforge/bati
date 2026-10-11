@@ -60,7 +60,7 @@ resolution. The "no device clock" claim holds for sessions only. `db/backup.ts:2
 Invariant: with skewed clocks, the side with the later `updatedAt` wins hero content, whichever
 edit was really last.
 
-**R7. `MERGED_PREFERENCES` = villageName, avatarId, trainingLevel, ownedEquipment, oath,
+**R7. `MERGED_PREFERENCES` = villageName, avatarId, customAvatar, trainingLevel, ownedEquipment, oath,
 reminderDays, crestAnimal.** `db/backup.ts:251-262`.
 `crestAnimal` is `auto` or an animal slug; a missing or unknown value reads as `auto`. Nothing
 writes a default (a device that never chose has no row, or two such devices would diverge in
@@ -154,7 +154,9 @@ Invariant: merged hero row equals one of the two inputs, never a mixture.
 **R21. Preferences in R7 merge by `updatedAt`, whole value.** Peer value taken iff local key is
 absent, or peer `updatedAt` is strictly greater; and only if value or timestamp differs. Timestamps
 copied verbatim. `ownedEquipment` is a JSON list taken whole: concurrent equipment changes lose
-one side, no union. `db/merge.ts:181-188`.
+one side, no union. `db/merge.ts:181-188`. A deleted key never travels (an absent row loses to any
+row), which is why choosing a preset avatar writes `customAvatar = ""` instead of deleting the
+photo (`db/preferences.ts`).
 Invariant: for each merged key, post-merge value = value of the input with the greater
 updatedAt, local on a tie.
 
@@ -259,7 +261,7 @@ session being absent.
 **R34. These are never synchronised and are kept from the current device on restore
 (`DEVICE_LOCAL_PREFERENCES`):** deviceId, backupFolderUri, lastAutoBackupDay,
 protectDismissedDay, protectDismissals, backupWordsPending, passwordRemindersOn,
-passwordCheckStep/Due/Ignored, customAvatarUri, crashLog, errorLog, eventLog, updateCheck,
+passwordCheckStep/Due/Ignored, customAvatarUri (the pre-`customAvatar` cache path), crashLog, errorLog, eventLog, updateCheck,
 updateCheckedAt, updateDismissed, updateLatest, notesSeenVersion, languageChosenOn, guidesSeen,
 recentCameoLines, comebackGreetedAfter, backupEncryption, syncServer, syncWifiOnly,
 reminderAskedAt, reminderStreakFrom, reminderOfferDismissed. `db/backup.ts:420-461`.

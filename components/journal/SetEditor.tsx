@@ -8,7 +8,7 @@ import type { ExerciseStyle, QuestTargetType } from "@/db/schema";
 import { targetRangeFor } from "@/db/targets";
 
 /**
- * One logged set, corrected in place. The rest screen's Adjust row (same stepper, same 5 s step
+ * One logged set, corrected in place. The rest screen's Adjust row (same stepper, same 1 s step
  * on a hold) opened on a set that is already in the journal; saving is the caller's business.
  */
 export function SetEditor({
@@ -28,7 +28,6 @@ export function SetEditor({
   const [value, setValue] = useState(initial);
   const time = type === "time";
   const { min, max } = targetRangeFor(type, style);
-  const step = time ? 5 : 1;
   const clamp = (v: number) => Math.min(max, Math.max(min, v));
 
   return (
@@ -44,7 +43,7 @@ export function SetEditor({
             hitSlop={8}
             icon={<Minus size={16} />}
             accessibilityLabel={t("session.decrease_result_accessibility")}
-            onPress={() => setValue(clamp(value - step))}
+            onPress={() => setValue(clamp(value - 1))}
           />
           <XStack minW={42} items="baseline" justify="center">
             <CountInput
@@ -63,7 +62,7 @@ export function SetEditor({
             hitSlop={8}
             icon={<Plus size={16} />}
             accessibilityLabel={t("session.increase_result_accessibility")}
-            onPress={() => setValue(clamp(value + step))}
+            onPress={() => setValue(clamp(value + 1))}
           />
         </XStack>
       </XStack>

@@ -166,6 +166,8 @@ describe("locale typography", () => {
       .filter((e) => !e.key.startsWith("privacy.") && !e.key.startsWith("safety."))
       // The watcher reports on a road, which may well be quiet.
       .filter((e) => !e.key.startsWith("villagers.watcher.boss_defeated"))
+      // So does the village's line of weather, which by its own rule never speaks of the hero.
+      .filter((e) => !e.key.startsWith("village.flavour"))
       .filter((e) => GENDERED.test(e.value))
       .map((e) => `${e.key}: ${e.value}`);
 

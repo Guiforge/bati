@@ -1,0 +1,6 @@
+- Einseitige Übungen: Das Ziel gilt pro Seite, mit klarem Seitenwechsel.
+- Touren: Tempo auf dem Rad in km/h, ein Ziel je Tourenart, ein besser lesbarer Live-Bildschirm.
+- Dehnen bringt weniger XP als ein gleich langes Halten.
+- Dein Avatar-Foto bleibt in Sicherungen und Sync erhalten.
+- Dorfbewohner bleiben, bis du gelesen hast. Ein Halten korrigierst du auf die Sekunde.
+- F-Droid: Die App bietet kein Update mehr an, das sich nicht installieren lässt.

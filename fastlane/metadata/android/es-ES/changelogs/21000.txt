@@ -1,0 +1,6 @@
+- Movimientos de un solo lado: el objetivo cuenta por lado, con un cambio de lado claro.
+- Salidas: velocidad en bici en km/h, un objetivo por tipo de salida, una pantalla en directo más legible.
+- Un estiramiento da menos XP que un aguante de la misma duración.
+- Tu foto de avatar viaja con tus copias y la sincronización.
+- Los aldeanos se quedan el tiempo de leerlos. Un aguante se corrige al segundo.
+- F-Droid: la app ya no ofrece una actualización que no se puede instalar.

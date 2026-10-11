@@ -29,9 +29,8 @@ import {
   retireUserExercise,
   unretireUserExercise,
 } from "@/db";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { type Chain, getChainTo, getNextProgression, type NextProgression } from "@/db/exercises";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "@/db/labels";
 import { getOath } from "@/db/oaths";
 import { readPath } from "@/db/paths";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "@/db/personalRecords";
@@ -70,7 +69,7 @@ function Header({ onBack, title }: { onBack: () => void; title: string }) {
       <AppIconButton
         onPress={onBack}
         accessibilityRole="button"
-        accessibilityLabel={t("quests.go_back", "Go back")}
+        accessibilityLabel={t("quests.go_back")}
       >
         <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
       </AppIconButton>
@@ -90,13 +89,13 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
     <Card>
       <YStack gap="$3" items="center" py="$2">
         <Text fontWeight="700" fontSize={16} color="$text">
-          {t("exercises.load_error", "Failed to load")}
+          {t("exercises.load_error")}
         </Text>
         <Paragraph color="$text" opacity={0.6} size="$3">
           {message}
         </Paragraph>
         <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
-          {t("exercises.retry", "Retry")} ↻
+          {t("exercises.retry")} ↻
         </AppButton>
       </YStack>
     </Card>
@@ -203,10 +202,9 @@ function PathCard({ chain }: { chain: Chain }) {
         {isClimbed ? null : (
           <Paragraph color="$text" opacity={0.7} size="$3">
             {target === null
-              ? t("exercises.path_you_are_here", "You are here.")
+              ? t("exercises.path_you_are_here")
               : t("exercises.path_you_are_on", {
                   name: hereName,
-                  defaultValue: `You are on ${hereName}.`,
                 })}
           </Paragraph>
         )}
@@ -231,7 +229,7 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
   return (
     <Card
       onPress={() => router.push(`/exercises/${progression.next.id}` as never)}
-      accessibilityLabel={`${t("exercises.next_step", "Next rung")} · ${name}`}
+      accessibilityLabel={`${t("exercises.next_step")} · ${name}`}
     >
       {/* The pose was always in the payload and never rendered — a named step you cannot see is
           a to-do list item, an illustrated one is a movement you want to try. */}
@@ -254,16 +252,15 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
         </YStack>
 
         <YStack gap="$2" flex={1}>
-          <SectionLabel>{t("exercises.next_step", "NEXT STEP")}</SectionLabel>
+          <SectionLabel>{t("exercises.next_step")}</SectionLabel>
           <Text color="$text" fontWeight="700" fontSize={18}>
             {name}
           </Text>
           <Paragraph color="$text" opacity={0.7} size="$3">
             {progression.isEarned
-              ? t("exercises.next_step_earned", "You have earned it. Give it a try.")
+              ? t("exercises.next_step_earned")
               : t("exercises.next_step_progress", {
                   count: remaining,
-                  defaultValue: `Hit your target ${remaining} more sessions in a row to earn it.`,
                 })}
           </Paragraph>
 
@@ -413,7 +410,7 @@ function HeroActions({ exercise, onGone }: { exercise: Exercise; onGone: () => v
         title={dialog.title}
         body={dialog.body}
         confirmLabel={dialog.label}
-        cancelLabel={t("common.cancel", "Cancel")}
+        cancelLabel={t("common.cancel")}
         destructive={confirming === "delete"}
         onConfirm={() => {
           setConfirming(null);
@@ -507,7 +504,6 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                 icon={<Timer size={12} color="$text" opacity={0.7} />}
                 label={t("exercises.seconds_per_rep", {
                   count: exercise.secondsPerRep,
-                  defaultValue: `${exercise.secondsPerRep}s`,
                 })}
                 tone="primary"
               />
@@ -519,14 +515,14 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
               they meet it. */}
           {loggedHere.length > 0 && (
             <YStack gap="$2">
-              <SectionLabel>{t("exercises.your_numbers", "Your numbers")}</SectionLabel>
+              <SectionLabel>{t("exercises.your_numbers")}</SectionLabel>
               {loggedHere.map(({ type, ghost }) => (
                 // Two halves that wrap as wholes. One flat wrapping row broke wherever the width
                 // ran out, and "Record 1,000 reps" left its "Aug 15" alone on the next line.
                 <XStack key={type} items="baseline" gap="$2" flexWrap="wrap">
                   <XStack items="baseline" gap="$2">
                     <Text fontSize={12} color="$textSecondary">
-                      {t("session.ghost_last_label", "Last time")}
+                      {t("session.ghost_last_label")}
                     </Text>
                     <Text fontSize={15} fontWeight="700" color="$text">
                       {formatSlotTarget(
@@ -547,7 +543,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                           with no date while the wall two taps away said "Record 1:00 · 10 months
                           ago" about the same hold, and an undated number reads as tonight's. */}
                       <Text fontSize={12} color="$textSecondary">
-                        {t("exercises.record_label", "Record")}
+                        {t("exercises.record_label")}
                       </Text>
                       <Text fontSize={15} fontWeight="700" color="$resourceGold">
                         {formatSlotTarget(
@@ -568,7 +564,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
           {/* Muscles */}
           {exercise.muscles.length > 0 && (
             <YStack gap="$2">
-              <SectionLabel>{t("exercises.muscles", "Muscles")}</SectionLabel>
+              <SectionLabel>{t("exercises.muscles")}</SectionLabel>
               <XStack gap="$2" flexWrap="wrap">
                 {exercise.muscles.map((m) => (
                   <Tag key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} tone="success" />
@@ -690,10 +686,10 @@ function InvalidIdView({ onBack }: { onBack: () => void }) {
     <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$4">
       <Text fontSize={48}>🤷</Text>
       <Text fontWeight="700" fontSize={18} color="$text">
-        {t("exercises.invalid_id", "Exercise not found")}
+        {t("exercises.invalid_id")}
       </Text>
       <AppButton fullWidth={false} variant="outline" onPress={onBack}>
-        {t("exercises.go_back", "Go back")}
+        {t("exercises.go_back")}
       </AppButton>
     </YStack>
   );
@@ -722,7 +718,7 @@ export default function ExerciseDetails() {
       try {
         const data = await getExerciseById(id);
         if (!data) {
-          setError(t("exercises.not_found", "Exercise not found"));
+          setError(t("exercises.not_found"));
           setStatus("error");
           return;
         }
@@ -732,7 +728,7 @@ export default function ExerciseDetails() {
         // The raw message goes to the report; the hero gets a translated sentence, not
         // SQLite prose.
         reportError("exercise.load", e);
-        setError(t("exercises.load_error", "Failed to load exercise"));
+        setError(t("exercises.load_error"));
         setStatus("error");
       }
     },
@@ -757,7 +753,7 @@ export default function ExerciseDetails() {
         showsVerticalScrollIndicator={false}
       >
         <YStack p="$5" pt={insets.top + 12} gap="$5">
-          <Header onBack={goBack} title={t("exercises.details_title", "Exercise")} />
+          <Header onBack={goBack} title={t("exercises.details_title")} />
 
           {status === "loading" && <LoadingCard />}
           {status === "error" && <ErrorCard message={error} onRetry={() => load(exerciseId)} />}

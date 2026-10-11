@@ -9,10 +9,9 @@ import { Tag } from "@/components/common/Tag";
 import { ChevronDown, ChevronUp, Dumbbell, Footprints } from "@/components/icons";
 import { slotCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseThumb } from "@/constants/assetMap";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { formatDuration } from "@/db/estimate";
 import type { Exercise } from "@/db/exercises";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "@/db/labels";
 import type { QuestExercise } from "@/db/quests";
 import { formatSlotTarget, type Target } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
@@ -53,12 +52,14 @@ function ExerciseDetail({
   onOpenExercise,
   onPutBack,
   onReplace,
+  onPin,
 }: {
   qex: QuestExercise;
   language: AppLanguage;
   onOpenExercise: () => void;
   onPutBack: (exerciseId: number) => void;
   onReplace: (questExerciseId: number) => void;
+  onPin: (questExerciseId: number, exerciseId: number | null) => void;
 }) {
   const { t } = useTranslation();
 
@@ -109,7 +110,6 @@ function ExerciseDetail({
           <Tag
             label={t("quests.seconds_per_rep", {
               count: qex.exercise.secondsPerRep,
-              defaultValue: `${qex.exercise.secondsPerRep}s/rep`,
             })}
           />
         ) : null}
@@ -128,7 +128,7 @@ function ExerciseDetail({
         fontSize={14}
         onPress={onOpenExercise}
       >
-        {t("quests.open_exercise", "See the exercise")}
+        {t("quests.open_exercise")}
       </AppButton>
 
       {/* The way back from a set-aside, where the hero sees what it cost: in the panel and not on
@@ -145,8 +145,41 @@ function ExerciseDetail({
         >
           {t("setAside.put_back_named", {
             name: localizedName(qex.substitutedFor, language),
-            defaultValue: `Put ${localizedName(qex.substitutedFor, language)} back`,
           })}
+        </AppButton>
+      ) : null}
+
+      {/* "I can already do this." The ladder stepped this slot down to the hero's rung and the
+          caption says so; this is the one tap that asks for the written movement instead. It was
+          reachable only through the icon-only Replace inside a folded card, then a search through
+          the whole catalogue. Nothing is declared or stored about what the hero can do: it is a
+          swap, and one clean session on the movement moves the ladder for every quest. */}
+      {qex.substitutedFor && !qex.substitutedFor.setAside ? (
+        <AppButton
+          testID="quest-pin-written"
+          fullWidth={false}
+          variant="outline"
+          size="$3"
+          fontSize={14}
+          onPress={() => {
+            if (qex.substitutedFor) onPin(qex.id, qex.substitutedFor.id);
+          }}
+        >
+          {t("quests.pin_written", { name: localizedName(qex.substitutedFor, language) })}
+        </AppButton>
+      ) : null}
+
+      {/* And the way back, on the same spot. */}
+      {qex.pinnedOver ? (
+        <AppButton
+          testID="quest-unpin-written"
+          fullWidth={false}
+          variant="outline"
+          size="$3"
+          fontSize={14}
+          onPress={() => onPin(qex.id, null)}
+        >
+          {t("quests.unpin_written", { name: localizedName(qex.pinnedOver, language) })}
         </AppButton>
       ) : null}
 
@@ -160,7 +193,7 @@ function ExerciseDetail({
           fontSize={14}
           onPress={() => onReplace(qex.id)}
         >
-          {t("quests.swap_exercise", "Replace this exercise")}
+          {t("quests.swap_exercise")}
         </AppButton>
       ) : null}
     </YStack>
@@ -187,6 +220,7 @@ export function QuestExerciseRow({
   onOpenExercise,
   onPutBack,
   onReplace,
+  onPin,
 }: {
   qex: QuestExercise;
   index: number;
@@ -202,6 +236,11 @@ export function QuestExerciseRow({
   onPutBack: (exerciseId: number) => void;
   /** Opens the Replace sheet on this slot. */
   onReplace: (questExerciseId: number) => void;
+  /**
+   * Puts the written movement in a slot the ladder stepped down, or `null` to go back to the
+   * hero's own rung.
+   */
+  onPin: (questExerciseId: number, exerciseId: number | null) => void;
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
@@ -295,7 +334,6 @@ export function QuestExerciseRow({
                     },
                     language,
                   ),
-                  defaultValue: `Last: ${qex.ghost.last}`,
                 })}
               />
             ) : null}
@@ -312,6 +350,7 @@ export function QuestExerciseRow({
           onOpenExercise={onOpenExercise}
           onPutBack={onPutBack}
           onReplace={onReplace}
+          onPin={onPin}
         />
       ) : null}
     </Card>

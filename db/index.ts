@@ -54,6 +54,7 @@ export {
   hasQuestOverrides,
   indexExercises,
   saveQuestConfig,
+  withoutSlotSwap,
 } from "./questConfig";
 export type { TrainingFocus } from "./quests";
 export {

@@ -163,7 +163,7 @@ export function ExercisePickerSheet({
             <Pressable
               hitSlop={12}
               accessibilityRole="button"
-              accessibilityLabel={t("common.close", "Close")}
+              accessibilityLabel={t("common.close")}
               onPress={close}
             >
               <X size={20} color="$textSecondary" />
@@ -178,7 +178,7 @@ export function ExercisePickerSheet({
                 setSearch(next);
                 toTop();
               }}
-              placeholder={t("quests.editor_search", "Search")}
+              placeholder={t("quests.editor_search")}
               bg="$background"
               borderColor="$borderStrong"
               color="$text"
@@ -258,14 +258,14 @@ export function ExercisePickerSheet({
 
             {results.length === 0 ? (
               <Text fontSize={14} color="$textSecondary" p="$3">
-                {t("quests.editor_no_results", "No exercise matches that.")}
+                {t("quests.editor_no_results")}
               </Text>
             ) : null}
           </YStack>
         </TamaguiScrollView>
 
         <XStack p="$4" pb={bottomPad} borderTopWidth={1} borderColor="$borderStrong">
-          <AppButton onPress={close}>{t("common.done", "Done")}</AppButton>
+          <AppButton onPress={close}>{t("common.done")}</AppButton>
         </XStack>
       </Sheet.Frame>
     </Sheet>

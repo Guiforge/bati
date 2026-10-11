@@ -59,12 +59,37 @@ const KEY_ONLY_FILES = ["components/session/VictoryView.tsx", "components/home/H
 
 /** String, comment-free literals of the shared files, as {file, text} (quotes removed). */
 export function sourceLiterals(files: readonly string[] = COPY_FILES) {
-  return files.flatMap((f) =>
-    [...fs.readFileSync(path.join(ROOT, f), "utf8").matchAll(TOKEN)]
+  return files.flatMap((f) => [
+    ...[...fs.readFileSync(path.join(ROOT, f), "utf8").matchAll(TOKEN)]
       .map((m) => m[0])
       .filter((tok) => !tok.startsWith("/"))
       .map((tok) => ({ file: f, text: tok.slice(1, -1) })),
-  );
+    ...movedLiterals(f),
+  ]);
+}
+
+/**
+ * Tables of copy that used to be literals in a scanned file and now live in `locales/*.json`
+ * (see docs/architecture on translated copy): the file that reads them stays the owner of their
+ * text, so the scans (and the allow-list ids, `file:text`) see the same strings as before.
+ */
+const MOVED_TABLES: Record<string, (locale: Record<string, unknown>) => unknown> = {
+  "db/achievements.ts": (l) =>
+    l["achievements"] && (l["achievements"] as Record<string, unknown>)["badges"],
+  "db/userLevel.ts": (l) => l["level_titles"],
+  "db/muscles.ts": (l) => l["muscles"],
+};
+function movedLiterals(file: string): { file: string; text: string }[] {
+  const pick = MOVED_TABLES[file];
+  if (!pick) return [];
+  const out: { file: string; text: string }[] = [];
+  const walk = (node: unknown) => {
+    if (typeof node === "string") out.push({ file, text: node });
+    else if (node && typeof node === "object") Object.values(node).forEach(walk);
+  };
+  for (const lang of LANGS)
+    walk(pick(JSON.parse(fs.readFileSync(path.join(LOCALES, `${lang}.json`), "utf8"))));
+  return out;
 }
 
 /** A literal that reads as a sentence: it has a space or a capital, unlike a key, a code or a style token. */

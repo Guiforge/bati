@@ -68,7 +68,7 @@ export function ProtectCard() {
           onPress={close}
           icon={<X size={18} color="$textSecondary" />}
           accessibilityRole="button"
-          accessibilityLabel={t("common.close", "Close")}
+          accessibilityLabel={t("common.close")}
         />
       </XStack>
     </Card>

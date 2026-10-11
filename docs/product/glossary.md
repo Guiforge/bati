@@ -14,6 +14,9 @@ was one English word with two senses, translated once in the wrong one and copie
 (*step* became a stair, *round* a round of a match, *gauntlet* a winter glove, *streak* a set of
 reps). A translation, by a person or a model, starts from this page and not from the English.
 
+**Where the words are.** All of them are in `locales/<language>.json`; [writing.md](writing.md) § *Where copy lives* lists the few that are not, and why. That file
+has no room for a comment, so what a translator needs to know about a term is written here.
+
 **How to read a row.** *Means* is the thing in the game, independent of any language. *Never* lists
 the tempting word that already means something else in that language. An empty cell in `de` or
 `es` is a term not chosen yet, not a term that does not need choosing.
@@ -93,7 +96,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | boss | The monster at the end of an adventure | boss | boss |  | Boss | jefe |
 | HP | The boss's health pool for the campaign | HP | PV |  | LP | PV |
 | weakness / resistance | A muscle that deals half again, or half, the damage | weakness / resistance | faiblesse / résistance |  | Schwäche / Resistenz | debilidad / resistencia |
-| critical hit | A rep past the target that strikes harder | critical hit | coup critique |  | kritischer Treffer | golpe crítico |
+| critical hit | One or two reps past the prescribed target, striking harder. Never a hold | critical hit | coup critique |  | kritischer Treffer | golpe crítico |
 | enraged | The boss's last phase | enraged | enragé |  | rasend | enfurecido |
 | threat | How dangerous a boss is, 1 to 4 | threat level | niveau de menace |  | Bedrohungsstufe | nivel de amenaza |
 | loot | The victory screen's rewards | loot | butin |  | Beute | botín |
@@ -121,6 +124,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | building rank | How far a building has risen, 1 to 5 (3 for an upgrade), shown as "rank 3" | rank | rang | niveau (the hero's) | Rang | grado (not rango, the village's tier) |
 | tier | One of the village's twelve stages, one painting each, raised by the hero's level | tier | palier | niveau (the hero's and a building's) | Ausbaustufe (not Stufe, a rung) | rango (not etapa, a rung) |
 | village tiers | The village's size names | Hamlet … Eternal Capital | Hameau … Capitale éternelle |  | Weiler … Ewige Hauptstadt | Caserío … Capital eterna |
+| training dummy | A starter building. Its name sits on a building card, so it must wrap at a space | Training Dummy | Mannequin de bois | Mannequin d'entraînement (wider than the card: it breaks mid-word at large font sizes) | Übungspuppe | Muñeco de madera |
 
 ## Outside the walls
 

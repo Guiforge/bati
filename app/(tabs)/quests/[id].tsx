@@ -37,6 +37,7 @@ import {
   isUserQuest,
   type QuestConfig,
   saveQuestConfig,
+  withoutSlotSwap,
 } from "@/db";
 import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
@@ -110,17 +111,17 @@ const EMPTY_CANDIDATES: ReturnType<typeof rankSwapCandidates> = [];
  * labels would be no kinder here.
  */
 function swapReasonLabel(reason: SwapReason | null | undefined, t: TFunction): string | null {
-  if (reason === "easier") return t("quests.swap_reason_easier", "An easier rung");
-  if (reason === "harder") return t("quests.swap_reason_harder", "A harder rung");
-  if (reason === "same_pattern") return t("quests.swap_reason_pattern", "Same movement");
-  if (reason === "same_family") return t("quests.swap_reason_family", "Same family");
+  if (reason === "easier") return t("quests.swap_reason_easier");
+  if (reason === "harder") return t("quests.swap_reason_harder");
+  if (reason === "same_pattern") return t("quests.swap_reason_pattern");
+  if (reason === "same_family") return t("quests.swap_reason_family");
   return null;
 }
 
 function levelLabel(level: Difficulty, t: TFunction) {
-  if (level === Difficulty.Easy) return t("quests.level_easy", "Easy");
-  if (level === Difficulty.Hard) return t("quests.level_hard", "Hard");
-  return t("quests.level_medium", "Medium");
+  if (level === Difficulty.Easy) return t("quests.level_easy");
+  if (level === Difficulty.Hard) return t("quests.level_hard");
+  return t("quests.level_medium");
 }
 
 // The Journal's difficulty breakdown (components/journal/JournalStats.tsx) reads as "this colour
@@ -297,7 +298,7 @@ export default function QuestDetails() {
               status: "error",
               quest: null,
               questLevel: nextLevel,
-              message: t("quests.not_found", "Quest not found"),
+              message: t("quests.not_found"),
             });
             return;
           }
@@ -309,7 +310,7 @@ export default function QuestDetails() {
         })
         .catch((e: unknown) => {
           reportError("quest.load", e);
-          const message = e instanceof Error ? e.message : "Unknown error";
+          const message = t("errors.generic");
           setState((s) => ({ ...s, status: "error", message }));
         });
     },
@@ -477,6 +478,21 @@ export default function QuestDetails() {
     [config, updateConfig],
   );
 
+  // "I can already do this", and its way back. Pinning is the swap above with the movement the
+  // quest wrote, so there is one writer of `swaps`; unpinning drops the entry and the target
+  // tuned for that movement with it, the same pair `applySwap` keeps together.
+  const pinWritten = useCallback(
+    (questExerciseId: number, exerciseId: number | null) => {
+      if (exerciseId !== null) {
+        const written = catalogue.find((exercise) => exercise.id === exerciseId);
+        if (written) applySwap(questExerciseId, written);
+        return;
+      }
+      updateConfig(withoutSlotSwap(config, questExerciseId));
+    },
+    [applySwap, catalogue, config, updateConfig],
+  );
+
   // Everything below — the estimate, the XP preview, the session that gets started — reads the
   // configured quest, so the numbers on screen are the numbers that will run. Memoized: this
   // used to run in the render body, so any unrelated re-render rebuilt the whole quest object
@@ -531,10 +547,10 @@ export default function QuestDetails() {
     return (
       <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
         <Text fontWeight="700" fontSize={18} color="$text">
-          {t("quests.invalid_id", "Invalid quest")}
+          {t("quests.invalid_id")}
         </Text>
         <AppButton fullWidth={false} variant="outline" onPress={goToGallery}>
-          {t("quests.go_back", "Go back")}
+          {t("quests.go_back")}
         </AppButton>
       </YStack>
     );
@@ -585,7 +601,7 @@ export default function QuestDetails() {
     await begin().catch((error: unknown) => {
       setIsStarting(false);
       reportError("quest.startSession", error);
-      showError(t("quests.start_error", "Could not start the quest"));
+      showError(t("quests.start_error"));
     });
   };
 
@@ -622,7 +638,7 @@ export default function QuestDetails() {
               <AppIconButton
                 onPress={goToGallery}
                 accessibilityRole="button"
-                accessibilityLabel={t("quests.go_back", "Go back")}
+                accessibilityLabel={t("quests.go_back")}
               >
                 <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
               </AppIconButton>
@@ -630,7 +646,7 @@ export default function QuestDetails() {
               <XStack items="center" gap="$2">
                 <Sparkles size={18} color="$text" />
                 <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
-                  {t("quests.details_title", "Quest")}
+                  {t("quests.details_title")}
                 </Text>
               </XStack>
             </XStack>
@@ -655,7 +671,7 @@ export default function QuestDetails() {
                 <AppIconButton
                   onPress={() => router.push(`/quests/edit?id=${quest.id}` as never)}
                   accessibilityRole="button"
-                  accessibilityLabel={t("quests.edit_quest", "Edit quest")}
+                  accessibilityLabel={t("quests.edit_quest")}
                 >
                   <Pencil size={18} color="$text" strokeWidth={2.5} />
                 </AppIconButton>
@@ -689,7 +705,7 @@ export default function QuestDetails() {
             <Card bg="$surface">
               <YStack gap="$2">
                 <Text fontWeight="700" fontSize={16} color="$text">
-                  {t("quests.load_error", "Failed to load quest")}
+                  {t("quests.load_error")}
                 </Text>
                 <Paragraph color="$textSecondary" size="$3">
                   {state.message}
@@ -703,7 +719,7 @@ export default function QuestDetails() {
                     });
                   }}
                 >
-                  {t("quests.retry", "Retry")} ↻
+                  {t("quests.retry")} ↻
                 </AppButton>
               </YStack>
             </Card>
@@ -746,7 +762,6 @@ export default function QuestDetails() {
                     <Tag
                       label={t("quests.rounds", {
                         count: quest.rounds,
-                        defaultValue: `${quest.rounds} rounds`,
                       })}
                     />
                   ) : null}
@@ -754,7 +769,6 @@ export default function QuestDetails() {
                     <Tag
                       label={t("quests.exercises", {
                         count: quest.exercises.length,
-                        defaultValue: `${quest.exercises.length} exercises`,
                       })}
                     />
                   ) : null}
@@ -770,7 +784,6 @@ export default function QuestDetails() {
                           { type: "time", value: quest.restSeconds },
                           language,
                         ),
-                        defaultValue: `Rest ${quest.restSeconds}s`,
                       })}
                     />
                   ) : null}
@@ -778,7 +791,6 @@ export default function QuestDetails() {
                     <Tag
                       label={t("quests.estimate", {
                         duration: estimate,
-                        defaultValue: `≈ ${estimate}`,
                       })}
                     />
                   ) : null}
@@ -807,7 +819,7 @@ export default function QuestDetails() {
                   <>
                     <XStack gap="$2" flexWrap="wrap" pt="$2">
                       <Text fontWeight="700" color="$textSecondary">
-                        {t("quests.level", "Level")}
+                        {t("quests.level")}
                       </Text>
                       <LevelChip value={Difficulty.Easy} level={level} onSelect={selectLevel} />
                       <LevelChip value={Difficulty.Medium} level={level} onSelect={selectLevel} />
@@ -818,10 +830,10 @@ export default function QuestDetails() {
                         are USER_LEVEL_MULTIPLIER (targets) and computeSessionXp (payout). */}
                     <Text fontSize={13} color="$textSecondary" pt="$1">
                       {level === Difficulty.Easy
-                        ? t("quests.level_effect_easy", "Targets −25% · XP ×0.9")
+                        ? t("quests.level_effect_easy")
                         : level === Difficulty.Hard
-                          ? t("quests.level_effect_hard", "Targets +25% · XP ×1.2")
-                          : t("quests.level_effect_medium", "Baseline targets · XP ×1")}
+                          ? t("quests.level_effect_hard")
+                          : t("quests.level_effect_medium")}
                     </Text>
                   </>
                 )}
@@ -856,7 +868,7 @@ export default function QuestDetails() {
           {quest ? (
             <YStack gap="$3">
               <Text fontWeight="700" fontSize={18} color="$text">
-                {t("quests.exercises_list", "Exercises")}
+                {t("quests.exercises_list")}
               </Text>
 
               {quest.exercises.map((qex, i) => (
@@ -868,6 +880,7 @@ export default function QuestDetails() {
                   showTarget={!(isOuting && config.distanceM !== undefined)}
                   onOpenExercise={() => router.push(`/exercises/${qex.exercise.id}` as never)}
                   onReplace={setSwapFor}
+                  onPin={pinWritten}
                   onPutBack={(exerciseId) => {
                     if (!questId) return;
                     putBack({ id: exerciseId })
@@ -926,9 +939,7 @@ export default function QuestDetails() {
             disabled={isStarting}
             opacity={isStarting ? 0.6 : 1}
           >
-            {isStarting
-              ? t("quests.starting", "Starting…")
-              : t("quests.start_button", "Start Quest")}
+            {isStarting ? t("quests.starting") : t("quests.start_button")}
           </AppButton>
         </YStack>
       ) : null}
@@ -947,7 +958,7 @@ export default function QuestDetails() {
               setLeaveOut(false);
             }
           }}
-          title={t("quests.swap_exercise", "Replace this exercise")}
+          title={t("quests.swap_exercise")}
           header={
             <SetAsideToggle
               exercise={swapSlot.exercise}

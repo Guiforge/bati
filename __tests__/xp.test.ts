@@ -355,6 +355,33 @@ describe("db/xp", () => {
    * twenty times the exploit it was written to close. `MAX_SESSION_XP` is the only bound no
    * input can raise.
    */
+  // The session prices a set against what the app prescribed, so the tag has to as well: read
+  // off the hero's own number, a stepper raised from 12 to 100 advertised eight times the pay.
+  test("the estimate prices a changed target the way the session will", () => {
+    const quest = (target: number, prescribed?: number) => ({
+      rounds: 1,
+      exercises: [
+        { exercise: MEDIUM, target: { type: "reps" as const, value: target }, prescribed },
+      ],
+    });
+    const asWritten = estimateQuestXp(quest(12), "medium");
+
+    // Raised to 100, a quarter over: 15 paid in full, the 110 past the allowance at the
+    // decaying rate. Exactly what the session pays for those reps on a prescribed twelve.
+    expect(estimateQuestXp(quest(100, 12), "medium")).toBe(
+      computeSessionXp({
+        sets: [reps(12, 125)],
+        effortCeilingSeconds: Number.POSITIVE_INFINITY,
+        userLevel: "medium",
+      }),
+    );
+    expect(estimateQuestXp(quest(100, 12), "medium")).toBeLessThan(
+      estimateQuestXp(quest(100), "medium"),
+    );
+    // Lowered to 5, the tag still follows what the hero means to do.
+    expect(estimateQuestXp(quest(5, 12), "medium")).toBeLessThan(asWritten);
+  });
+
   test("a hero-authored monster quest is bounded by the one cap no input can raise", () => {
     const monster = {
       rounds: 10,
@@ -378,17 +405,49 @@ describe("db/xp", () => {
   });
 
   /**
-   * `docs/gameplay/progression.md` designs the 10-15 minute mobility session as a retention
-   * mechanic: low-fatigue by design, done on a day the hero should not train hard, and it still
-   * lights the flame. A formula that pays for effort could have quietly killed it. Holds convert
-   * second for second, so it gains instead — 204 against the 180 the old clock paid.
+   * Holds convert second for second, so a session of easy holds gained by the move to effort:
+   * 204 against the 180 the old clock paid. A `yoga` hold is priced lower on top of that
+   * (`STYLE_WEIGHT`, next test), and the mobility session still lights the flame, because the
+   * flame counts sessions, not XP (`db/streaks.ts`).
    */
-  test("a mobility session does not lose by the change", () => {
+  test("a session of easy holds does not lose by the change", () => {
     const sets = Array.from({ length: 16 }, () => hold(45, 45, movement("easy")));
 
     expect(
       computeSessionXp({ sets, effortCeilingSeconds: 15 * 60, userLevel: "medium" }),
     ).toBeGreaterThan(180);
+  });
+
+  /**
+   * A tester holds a plank for ninety seconds and flows through cat-cow for five minutes, so a
+   * second of stretching was never worth 80% of a second of plank. The style weight brings those
+   * two efforts, the ones the hero called equal, within a third of each other.
+   */
+  test("a stretch pays less per second than a hold of the same difficulty", () => {
+    const at = (style: ExerciseStyle, difficulty: DifficultyCode, seconds: number) =>
+      computeSessionXp({
+        sets: [hold(seconds, seconds, movement(difficulty, 3, style))],
+        effortCeilingSeconds: 60 * 60,
+        userLevel: "medium",
+      });
+
+    expect(at("strength", "medium", 90)).toBe(30);
+    expect(at("yoga", "medium", 90)).toBe(15);
+    // Five minutes of easy cat-cow against ninety seconds of plank.
+    expect(at("yoga", "easy", 300)).toBe(40);
+
+    // The quest screen's preview reads the same price.
+    const preview = (style: ExerciseStyle) =>
+      estimateQuestXp(
+        {
+          rounds: 1,
+          exercises: [
+            { exercise: movement("medium", 3, style), target: { type: "time", value: 120 } },
+          ],
+        },
+        "medium",
+      );
+    expect(preview("yoga")).toBeLessThan(preview("strength"));
   });
 
   test("estimateQuestXp advertises the allowance, and reads no rest column", () => {

@@ -1068,7 +1068,10 @@ describe.each(LANG_LIST)("%s copy of the feature", (lang) => {
   // featureCopy takes every village.* key, so the scan above covers the whole Village section.
   it("scans every key of the Village section", () => {
     const scanned = new Set(featureCopy(lang).map(([k]) => k));
-    expect(Object.keys(village).filter((k) => !scanned.has(`village.${k}`))).toEqual([]);
+    // a nested table (tiers, buildings, flavour) is scanned through its leaves
+    const isScanned = (k: string) =>
+      scanned.has(`village.${k}`) || [...scanned].some((s) => s.startsWith(`village.${k}.`));
+    expect(Object.keys(village).filter((k) => !isScanned(k))).toEqual([]);
   });
 
   it("keeps the milestone in sessions or outings", () => {

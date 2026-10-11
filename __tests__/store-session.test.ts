@@ -1105,6 +1105,40 @@ describe("useSessionStore", () => {
       (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
     });
 
+    test("the rare coat is read on the crest AFTER the session and returned (the path the app calls)", async () => {
+      const { DELIVERED_COATS } = require("@/db/crestCoat") as { DELIVERED_COATS: Set<string> };
+      const crest = (longestFlame: number) => ({
+        animal: "bear",
+        stage: "adult",
+        manual: false,
+        quarters: null,
+        second: null,
+        longestFlame,
+        evidence: {
+          firstEight: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          firstEightOrder: ["strength"],
+          totals: { strength: 60, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          first: "bear",
+          secondFromSessions: null,
+          boarQuarters: null,
+        },
+      });
+      // No portrait ships yet, so the card is silent in the app: lend one for this test only.
+      DELIVERED_COATS.add("bear-adult-rare");
+      try {
+        // The session is the one that lifts the longest flame to Eternal (5): before, it is 4.
+        (getCrest as jest.Mock)
+          .mockReset()
+          .mockResolvedValueOnce(crest(4))
+          .mockResolvedValue(crest(5));
+        const result = await store.getState().saveSession(null);
+        expect(result.rareCoat).toEqual({ animal: "bear", stage: "adult" });
+      } finally {
+        DELIVERED_COATS.delete("bear-adult-rare");
+        (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
+      }
+    });
+
     test("the reveal needs the crest and a key without it; an unreadable key says nothing", async () => {
       const { reportError } = require("@/src/reportError") as { reportError: jest.Mock };
       const crest = {

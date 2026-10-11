@@ -5,10 +5,12 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "home-settings"
     waitToSettleTimeoutMs: 500
+# The row can already sit on screen at the very bottom, under the nav bar: 100% is never met.
 - scrollUntilVisible:
     element:
       id: "settings-dev"
     direction: DOWN
+    visibilityPercentage: 50
 - tapOn:
     id: "settings-dev"
 - extendedWaitUntil:

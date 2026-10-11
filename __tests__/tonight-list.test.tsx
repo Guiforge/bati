@@ -221,6 +221,18 @@ describe("TonightList", () => {
     expect(queryByText(/yoga/)).toBeNull();
   });
 
+  test("the full-screen legendary feast line says `is` when it is late and `becomes` the night it is crossed", async () => {
+    const up = { animal: "bear", stage: "legendary", n: 500, practice: "strength" } as const;
+    const late = await show(rank({ crestLegendary: [up] }), "en");
+    expect(late.getByText("The bear is legendary")).toBeTruthy();
+    await late.unmount();
+    const crossed = await show(
+      rank({ crestLegendary: [up], crestEvents: { ...NO_CREST_EVENTS, stageUp: [up] } }),
+      "en",
+    );
+    expect(crossed.getByText("The bear is now legendary")).toBeTruthy();
+  });
+
   test("a late legendary card says what is true of the hero: at least 500, not tonight", async () => {
     const feasts = rank(
       {

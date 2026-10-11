@@ -7,6 +7,7 @@ import {
   deletePreference,
   getAllPreferences,
   getPreference,
+  isStartingOut,
   preferences,
   setPreference,
   type TrainingLevel,
@@ -66,26 +67,6 @@ export type QuestConfig = {
 /** The private alias the readers below use; the clamp itself lives with the ranges. */
 function clamp(value: number, range: { min: number; max: number }): number {
   return clampToRange(value, range);
-}
-
-/**
- * A hero who never answered stops being read as one who is starting after this many sessions:
- * the count `startsGently` holds the jumps back for, so the dose and the warm-up let go together.
- */
-const SETTLED_AFTER_SESSIONS = 3;
-
-/**
- * Whether the hero is to be treated as starting, or starting again: they said so, or they never
- * said and the journal is still short. The second half is what keeps an update from touching a
- * hero who was here before the question existed, or who skipped it two hundred sessions ago:
- * read as a beginner, they saw their quests open at Easy.
- *
- * The dose's rule, not the warm-up's: `startsGently` (`db/preferences.ts`) holds the jumps back
- * for anyone's first sessions, whatever they answered, and a hero who said "I already train" is
- * still handed the dose they asked for.
- */
-export function isStartingOut(answer: TrainingLevel | null, sessions: number): boolean {
-  return answer === "beginner" || (answer === null && sessions < SETTLED_AFTER_SESSIONS);
 }
 
 /**

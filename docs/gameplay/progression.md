@@ -205,7 +205,11 @@ the level picked on the quest screen for this start
   read every hero who was here before it as a beginner. Three is the count `startsGently`
   (`db/preferences.ts`) holds the jumps back for, so the dose and the warm-up let go together;
   the two rules differ on purpose for a hero who said "I already train", who is kept off jumps
-  for those first sessions and still handed the dose they asked for.
+  for those first sessions and still handed the dose they asked for. The same reading decides
+  that an advanced quest is not suggested.
+- **A gentle start is warmed up gently**: no jump (`exercises.impact`), and no cardio movement
+  above `easy` either (`tooBriskToOpen`, `db/exercises.ts`), so day one opens on the glute
+  bridge. A warm-up is not harder than the work behind it.
 - **A quest the hero wrote or was sent starts as written**, at Medium: Easy is three quarters of
   its numbers, and they are the hero's.
 - The starting point is asked once in onboarding ("Tu en es où ?", two answers, skippable) and

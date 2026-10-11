@@ -123,8 +123,6 @@ jest.mock("@/db/preferences", () => ({
     // Off by default here so the existing cases start on the countdown; the warm-up has its
     // own cases below.
     getWarmupEnabled: jest.fn().mockResolvedValue(false),
-    // Past the gentle opening by default; the hero who is starting has their own case below.
-    getTrainingLevel: jest.fn().mockResolvedValue("regular"),
     // Read by beginTrackingIfOuting, only exercised by the outing cases below.
     getDistanceUnit: jest.fn().mockResolvedValue("metric"),
     getHapticsEnabled: jest.fn().mockResolvedValue(true),
@@ -695,7 +693,6 @@ describe("useSessionStore", () => {
 
     afterEach(() => {
       prefs.getWarmupEnabled.mockResolvedValue(false);
-      prefs.getTrainingLevel.mockResolvedValue("regular");
       useSettingsStore.setState({ prepMode: "timer" });
     });
 

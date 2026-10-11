@@ -17,9 +17,10 @@ const t = createTestDb();
 jest.resetModules();
 jest.doMock("../db/client", () => clientMock(t));
 
-const { isStartingOut, loadConfiguredQuest, loadDefaultLevels, startingDifficulty } =
+const { loadConfiguredQuest, loadDefaultLevels, startingDifficulty } =
   require("../db/questConfig") as typeof import("../db/questConfig");
-const { preferences } = require("../db/preferences") as typeof import("../db/preferences");
+const { isStartingOut, preferences } =
+  require("../db/preferences") as typeof import("../db/preferences");
 const quests = require("../db/quests") as typeof import("../db/quests");
 const outings = require("../db/outings") as typeof import("../db/outings");
 
@@ -125,4 +126,18 @@ test("an outing has no level: a beginner's walk is still Medium", async () => {
   assert(door);
 
   expect((await loadConfiguredQuest(door.quest.id))?.level).toBe(Difficulty.Medium);
+});
+
+// The same reading for what the app suggests: with the answer only, a hero who skipped the
+// question was offered advanced quests, which this rule would then have opened at Easy.
+test("no answer and new here: an advanced quest is not suggested, as for a beginner", async () => {
+  const unanswered = await quests.getEligibleQuestIds();
+
+  await preferences.setTrainingLevel("beginner");
+  const beginner = await quests.getEligibleQuestIds();
+  await preferences.setTrainingLevel("regular");
+  const regular = await quests.getEligibleQuestIds();
+
+  expect([...unanswered].sort()).toEqual([...beginner].sort());
+  expect(regular.size).toBeGreaterThan(beginner.size);
 });

@@ -547,6 +547,16 @@ list of warm-up names and its bear-crawl exception are gone, and a hero on day o
 branch's rule on every door, which replaces #175's saved Easy config on the first quest (that
 save would have pinned Easy on a hero who said "I already train").
 
+**The audit of the merged tree** (same six personas, and a file-by-file check that nothing of
+#175, #176, the daily-bonus fix, #181 or #182 was lost): five accept, Sophie required one
+change. With the jumps out, the raise pool was down to the Mountain Climber, a fast plank on
+loaded wrists, so a hero on day one opened on it before a session of wall push-ups. A gentle
+start is now also kept off cardio movements above `easy` (`tooBriskToOpen` in
+`db/exercises.ts`: Mountain Climber, Bear Crawl), the fallback opens on the glute bridge, and two
+slow stretches end the fallback list so a long warm-up keeps its length, which `main`'s own test
+requires. The two "first sessions" rules share one number, and a hero with no answer who is new
+is no longer suggested an advanced quest that the dose rule would then have opened at Easy.
+
 **Found by the review before the pull request**, and fixed: a hero with no answer is read as
 starting only while their journal holds fewer than three sessions (`isStartingOut`), so the
 update does not change the dose of a hero who was here before the question; a quest the

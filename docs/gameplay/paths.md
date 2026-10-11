@@ -157,7 +157,9 @@ movement or swapping away from it mid-session drops the pin (`dropSlotSwap`), an
 for it are neutral (above), so the quest serves the hero's own rung again next time.
 
 The training level asked in onboarding moves no rung. It is editable in Settings since the same
-change, and what it decides is what the app *picks* for the hero (`startsGently`,
+change ("Point de départ"), and it also sets the difficulty a quest never played starts at
+([progression.md](progression.md#where-a-quest-starts)). Beyond that, what it decides is what
+the app *picks* for the hero (`startsGently`,
 [`db/preferences.ts`](../../db/preferences.ts)): no jump in the warm-up, and no quest that would
 *serve* them a jump in the suggestions, the daily quest included. The suggestions ask what the
 slot would run, in the slot's own order (`servedJumps`): what the hero set aside is replaced

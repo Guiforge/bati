@@ -1,5 +1,5 @@
 import type { Crest } from "./crest";
-import { DELIVERED_COATS, hasRareCoat } from "./crestCoat";
+import { DELIVERED_COATS, rareCoatShips } from "./crestCoat";
 import {
   ADULT_AT,
   type Animal,
@@ -175,6 +175,7 @@ export function rareCoatNews(
 ): RareCoatNews | null {
   if (!after || !shown || shown.includes(COAT_RARE_KEY)) return null;
   const { animal, stage } = after;
-  if (stage === "young" || !hasRareCoat(after.longestFlame)) return null;
-  return delivered.has(`${animal}-${stage}-rare`) ? { animal, stage } : null;
+  if (stage === "young" || !rareCoatShips(animal, stage, after.longestFlame, delivered))
+    return null;
+  return { animal, stage };
 }

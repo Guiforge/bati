@@ -441,8 +441,7 @@ export const preferences = {
     return (await getPreference("crestCoat")) === "usual" ? "usual" : "auto";
   },
 
-  // ponytail: no caller until the crest sheet's coat choice (V-02 extended, T3). Its reader is
-  // `portraitOf` (db/crest.ts) already, so the choice has a consumer the day the control exists.
+  // Written by the crest sheet's coat choice, read by `portraitOf` (db/crest.ts).
   async setCrestCoat(choice: CrestCoat): Promise<void> {
     await setPreference("crestCoat", choice);
   },

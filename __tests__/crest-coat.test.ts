@@ -1,4 +1,10 @@
-import { DELIVERED_COATS, hasRareCoat, isWinter, portraitSlug } from "../db/crestCoat";
+import {
+  DELIVERED_COATS,
+  hasRareCoat,
+  isWinter,
+  portraitSlug,
+  rareCoatShips,
+} from "../db/crestCoat";
 import { ANIMALS, type CrestStage } from "../db/crestRules";
 
 const SOUTH = ["AR", "AU", "BO", "BR", "CL", "LS", "NZ", "PE", "UY", "ZA", "FK", "AO", "FJ", "ZW"];
@@ -144,5 +150,16 @@ describe("the rare coat is Eternal", () => {
     [5, true],
   ])("flame level %i: %s", (level, won) => {
     expect(hasRareCoat(level)).toBe(won);
+  });
+});
+
+describe("the rare coat on offer", () => {
+  const ships = new Set(["bear-adult-rare"]);
+  test("needs the coat won, an adult or more and its portrait", () => {
+    expect(rareCoatShips("bear", "adult", 5, ships)).toBe(true);
+    expect(rareCoatShips("bear", "adult", 4, ships)).toBe(false);
+    expect(rareCoatShips("bear", "young", 5, ships)).toBe(false);
+    expect(rareCoatShips("bear", "venerable", 5, ships)).toBe(false);
+    expect(rareCoatShips("stag", "adult", 5, ships)).toBe(false);
   });
 });

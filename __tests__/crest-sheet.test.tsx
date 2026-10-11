@@ -6,6 +6,7 @@ import { TamaguiProvider } from "tamagui";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
 import { CrestSheet, type CrestView } from "@/components/village/CrestSheet";
 import * as crestDb from "@/db/crest";
+import { DELIVERED_COATS } from "@/db/crestCoat";
 import {
   ANIMALS,
   type Animal,
@@ -99,8 +100,12 @@ beforeAll(() => i18n.changeLanguage("fr"));
 afterAll(() => i18n.changeLanguage("en"));
 beforeEach(() => {
   write = jest.spyOn(preferences, "setCrestAnimal").mockResolvedValue();
+  jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-young");
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  jest.restoreAllMocks();
+  (DELIVERED_COATS as Set<string>).delete("bear-adult-rare");
+});
 
 describe("Pourquoi l'Ours ?", () => {
   it("the animal of the sessions: title, bars and the shield's sentence", async () => {
@@ -469,5 +474,80 @@ describe("the words", () => {
         es: "¿Por qué el ciervo?",
       }[lng as "fr"],
     );
+  });
+});
+
+describe("the coat choice", () => {
+  const ADULT = seq(["strength", 40]);
+  const won = { longestFlame: 5, rings: 0 } as const;
+  const ships = () => (DELIVERED_COATS as Set<string>).add("bear-adult-rare");
+  const coat = (value: "auto" | "usual") =>
+    jest.spyOn(preferences, "getCrestCoat").mockResolvedValue(value);
+
+  it("is absent while the rare coat's portrait has not shipped, won or not", async () => {
+    coat("auto");
+    await sheet(crestOf(ADULT, "auto", won), "why");
+    expect(screen.queryByTestId("crest-coat")).toBeNull();
+  });
+
+  it("is absent when the coat ships and is not won, and for a young animal", async () => {
+    ships();
+    coat("auto");
+    await sheet(crestOf(ADULT, "auto", { longestFlame: 4, rings: 0 }), "why");
+    expect(screen.queryByTestId("crest-coat")).toBeNull();
+    await screen.unmount();
+    await sheet(crestOf(FIVE_OF_EIGHT, "auto", won), "why");
+    expect(screen.queryByTestId("crest-coat")).toBeNull();
+  });
+
+  it("offers the usual coat and the rare one by name, the stored choice checked", async () => {
+    ships();
+    coat("usual");
+    await sheet(crestOf(ADULT, "auto", won), "why");
+    const usual = await screen.findByTestId("crest-coat-usual");
+    expect(within(usual).getByText("Pelage habituel")).toBeTruthy();
+    expect(
+      within(screen.getByTestId("crest-coat-rare")).getByText("Pointes d'argent"),
+    ).toBeTruthy();
+    expect(usual.props.accessibilityState).toEqual({ checked: true });
+    expect(screen.getByTestId("crest-coat-rare").props.accessibilityState).toEqual({
+      checked: false,
+    });
+  });
+
+  it("writes the choice, reads the portrait again and keeps the sheet open", async () => {
+    ships();
+    coat("auto");
+    const set = jest.spyOn(preferences, "setCrestCoat").mockResolvedValue();
+    const onClose = jest.fn();
+    const onChanged = jest.fn();
+    await sheet(crestOf(ADULT, "auto", won), "why", onClose, onChanged);
+    const reads = () => (crestDb.portraitOf as jest.Mock).mock.calls.length;
+    await fireEvent.press(await screen.findByTestId("crest-coat-usual"));
+    await waitFor(() => expect(set).toHaveBeenCalledWith("usual"));
+    await waitFor(() =>
+      expect(screen.getByTestId("crest-coat-usual").props.accessibilityState).toEqual({
+        checked: true,
+      }),
+    );
+    expect(reads()).toBe(2);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onChanged).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId("crest-coat-usual"));
+    expect(set).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("the portrait in the sheet", () => {
+  it("draws the animal's portrait beside the shield when it has shipped", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    expect(await screen.findByTestId("animal-portrait")).toBeTruthy();
+    expect(crestDb.portraitOf).toHaveBeenCalledWith({ longestFlame: 0 }, "bear", "young");
+  });
+
+  it("draws none, and no empty frame, for an animal that has not", async () => {
+    await sheet(crestOf(seq(["yoga", 8])), "why");
+    expect(screen.getByTestId("crest-why-shield")).toBeTruthy();
+    expect(screen.queryByTestId("animal-portrait")).toBeNull();
   });
 });

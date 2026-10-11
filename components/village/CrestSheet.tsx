@@ -4,10 +4,12 @@ import { BackHandler, Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { FormSheet } from "@/components/common/FormSheet";
 import { Check, ChevronRight } from "@/components/icons";
+import { AnimalPortrait } from "@/components/village/AnimalPortrait";
 import { Crest, type CrestShape } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
 import { ANIMAL_TOKEN } from "@/constants/animalColors";
 import type { Crest as CrestData } from "@/db/crest";
+import { type CrestCoat, rareCoatShips } from "@/db/crestCoat";
 import {
   ANIMAL_OF,
   type Animal,
@@ -211,7 +213,7 @@ function Option({
   testID: string;
   shape: CrestShape;
   label: string;
-  sub: string;
+  sub?: string;
   selected: boolean;
   onPress: () => void;
 }) {
@@ -236,9 +238,11 @@ function Option({
           <Text fontSize={15} fontWeight="600" color={selected ? "$primaryText" : "$text"}>
             {label}
           </Text>
-          <Text fontSize={13} color="$textSecondary">
-            {sub}
-          </Text>
+          {sub ? (
+            <Text fontSize={13} color="$textSecondary">
+              {sub}
+            </Text>
+          ) : null}
         </YStack>
         {selected ? <Check size={18} color="$primaryText" /> : null}
       </XStack>
@@ -296,12 +300,71 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
 }
 
 /**
+ * The rare coat or the usual one, offered once the rare is won and its portrait for this animal at
+ * this stage ships. Same radios as the animal pick; it writes and stays open, the portrait above
+ * changes in place (`onCoat`).
+ */
+function CoatChoice({ crest, onCoat }: { crest: CrestData; onCoat: () => void }) {
+  const { t } = useTranslation();
+  const [coat, setCoat] = useState<CrestCoat | null>(null);
+  useEffect(() => {
+    preferences
+      .getCrestCoat()
+      .then(setCoat)
+      .catch((error) => reportError("village.crestCoatRead", error));
+  }, []);
+  // Until the choice is read the radios would claim one: say nothing.
+  if (coat === null) return null;
+  const shape: CrestShape = {
+    animal: crest.animal,
+    manual: false,
+    second: null,
+    quarters: null,
+    longestFlame: 0,
+    rings: 0,
+  };
+  const choose = (value: CrestCoat) => {
+    if (value === coat) return;
+    preferences
+      .setCrestCoat(value)
+      .then(() => {
+        setCoat(value);
+        onCoat();
+      })
+      .catch((error) => reportError("village.crestCoat", error));
+  };
+  return (
+    <YStack testID="crest-coat" gap="$2" role="radiogroup">
+      <Text fontSize={13} color="$textSecondary">
+        {t("village.coat_title")}
+      </Text>
+      <Option
+        testID="crest-coat-usual"
+        shape={shape}
+        label={t("village.coat_usual")}
+        selected={coat === "usual"}
+        onPress={() => choose("usual")}
+      />
+      <Option
+        testID="crest-coat-rare"
+        shape={shape}
+        label={sentence(t(`village.coat_rare_${crest.animal}`))}
+        selected={coat === "auto"}
+        onPress={() => choose("auto")}
+      />
+    </YStack>
+  );
+}
+
+/**
  * "Why the Bear?" and "Your animal": the one sheet behind every door to the crest (the big
  * feast's link, the Village's shield, the Settings row), so they cannot drift apart.
  */
 export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
   const { t } = useTranslation();
   const choose = useChoose(crest, onChanged, onClose);
+  // Bumped when the coat is switched, so the portrait reads it again.
+  const [coatKey, setCoatKey] = useState(0);
   // Mounted on the first opening only: a sheet behind every Village visit is dead weight.
   const [mounted, setMounted] = useState(false);
   if (view !== null && !mounted) setMounted(true);
@@ -332,10 +395,22 @@ export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
         <Pick crest={crest} choose={choose} />
       ) : (
         <>
-          <XStack justify="center">
+          {/* 144 dp: beside the 96 dp shield it fits a 320 dp sheet, and the box is reserved
+              so the title and the text stay put while the image loads. */}
+          <XStack justify="center" items="center" gap="$3">
+            <AnimalPortrait
+              animal={crest.animal}
+              stage={crest.stage}
+              longestFlame={crest.longestFlame}
+              size={144}
+              coatKey={String(coatKey)}
+            />
             <Crest crest={crest} size={96} />
           </XStack>
           <Why crest={crest} onView={onView} choose={choose} />
+          {rareCoatShips(crest.animal, crest.stage, crest.longestFlame) ? (
+            <CoatChoice crest={crest} onCoat={() => setCoatKey((k) => k + 1)} />
+          ) : null}
         </>
       )}
     </FormSheet>

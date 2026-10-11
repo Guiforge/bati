@@ -20,6 +20,19 @@ export const DELIVERED_COATS: ReadonlySet<string> = new Set(
 );
 
 /**
+ * Whether the hero can be offered the rare coat of this animal at this stage: they won it, the
+ * animal is past its young stage and the rare portrait ships. The card that announces the coat and
+ * the sheet's choice both ask this, so neither names a coat nobody can see.
+ */
+export const rareCoatShips = (
+  animal: Animal,
+  stage: CrestStage,
+  longestFlame: number,
+  delivered: ReadonlySet<string> = DELIVERED_COATS,
+): boolean =>
+  stage !== "young" && hasRareCoat(longestFlame) && delivered.has(`${animal}-${stage}-rare`);
+
+/**
  * Where winter falls in June, July and August instead of December to February: the countries whose
  * majority lives south of the equator (Indonesia and Tanzania are split or near it, so they stay
  * on the northern calendar, like any region not listed).

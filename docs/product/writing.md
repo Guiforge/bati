@@ -73,6 +73,16 @@ beside *"Lancement…"*.
 Straight `'` and the real `…` are what both files use. The choice matters less than the fact that
 there is one; flipping the project to curly apostrophes later is one `sed` plus one constant.
 
+French takes a non-breaking space, U+00A0, before `: ; ! ?`, inside `« »`, and between a number
+and its unit, so a narrow screen never wraps a lone `!` onto its own line. Not the narrow U+202F:
+nobody has checked that the app's fonts carry it on Android, and a missing glyph is a box. No test
+holds this yet, and `locales/native/fr.json` keeps plain spaces because it feeds generated Android
+resources.
+
+A string never puts a full stop right after a short date. `shortDate()` ends on one in French,
+German and Russian for most months (*"3 févr."*), and *"éteinte le 3 févr.."* shipped. Put the date
+in brackets or mid-sentence.
+
 ### 3. The contrastive negation, capped
 
 *"This is not X, it is Y."* It has overtaken the em dash as the most-cited tell of machine

@@ -40,7 +40,10 @@ The last kind is the long list (about 110 errors for one cause). It disappears w
   English, plus `x_many` in French and Spanish, plus `x_few` and `x_many` in Russian. The test asks
   `Intl.PluralRules` which forms the language has and wants exactly those on every counted key, no
   more and no fewer. A missing form is not a cosmetic bug: i18next prints the key's name.
-- **Every `{{placeholder}}` survives**, in every plural form.
+- **Every `{{placeholder}}` survives**, in every plural form. A form may carry `{{count}}` where
+  English's own form spells the number out: `_one` is 1 in English and also 21 and 31 in Russian,
+  so "Last done yesterday" has to become a string with the number in it. It never loses a
+  placeholder its own English form has.
 - **Read [`writing.md`](../product/writing.md) and [`glossary.md`](../product/glossary.md) first.**
   The rules that a machine holds (`locale-style.test.ts`) are written for the languages that exist.
   A new one gets the universal ones (no em dash, one apostrophe, one ellipsis) and none of the

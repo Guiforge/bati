@@ -342,7 +342,30 @@
         "muscle": "shoulder",
         "percentage": 24.8
       },
-      "buildings": 21
+      "buildings": 21,
+      "levels": {
+        "campfire": 5,
+        "tent": 5,
+        "training_dummy": 5,
+        "archery_range": 5,
+        "quarry": 5,
+        "forge": 5,
+        "well": 5,
+        "windmill": 5,
+        "farm": 5,
+        "wizard_tower": 5,
+        "druid_grove": 5,
+        "watchtower": 3,
+        "castle_wall": 3,
+        "armory": 3,
+        "fountain": 3,
+        "observatory": 3,
+        "barn": 3,
+        "dragon_lair": 0,
+        "heroes_hall": 0,
+        "champion_arena": 0,
+        "high_road": 0
+      }
     },
     "bosses": [
       {

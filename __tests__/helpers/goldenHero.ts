@@ -276,6 +276,8 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
         percentage: Math.round(scene.dominantSport.percentage * 100) / 100,
       },
       buildings: scene.buildings.length,
+      // The rank of each building: what the V-03 ceilings and thresholds move.
+      levels: Object.fromEntries(scene.buildings.map((b) => [b.code, b.level])),
     },
     bosses,
     crest,

@@ -20,6 +20,7 @@ import {
 import { getOrCreateBossFight } from "@/db/bossFights";
 import { clearSeededExpeditions, seedExpedition } from "@/db/devSeedExpedition";
 import { clearSeededHistory, countSeededSessions, seedHistory } from "@/db/devSeedHistory";
+import { preferences } from "@/db/preferences";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 
@@ -137,6 +138,7 @@ export default function DevScreen() {
   const [xp, setXp] = useState(0);
   const [seeded, setSeeded] = useState(0);
   const [status, setStatus] = useState("");
+  const [feastsShown, setFeastsShown] = useState("…");
 
   const refresh = useCallback(() => {
     getTotalXp()
@@ -145,6 +147,10 @@ export default function DevScreen() {
     countSeededSessions()
       .then(setSeeded)
       .catch(() => setStatus("Seed count read failed"));
+    preferences
+      .getBigFeastsShown()
+      .then((ids) => setFeastsShown(JSON.stringify(ids)))
+      .catch(() => setStatus("Feasts read failed"));
   }, []);
 
   useEffect(refresh, [refresh]);
@@ -279,6 +285,11 @@ export default function DevScreen() {
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+        {/* The local "already shown" key of the big feasts, for .maestro/big-feast-shown-once.yaml. */}
+        <Text testID="dev-big-feasts-shown" fontSize="$2" color="$textSecondary">
+          bigFeastsShown={feastsShown}
+        </Text>
+
         <Card p="$4" gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
             Hero level {level} — {xp} XP

@@ -150,6 +150,7 @@
     "step_active": "En cours",
     "step_completed": "Terminée",
     "step_label": "Étape {{count}}",
+    "step_title": "{{step}} : {{title}}",
     "step_locked": "Verrouillée",
     "step_progress": "Étape {{current}}/{{total}}",
     "steps_one": "{{count}} étape",

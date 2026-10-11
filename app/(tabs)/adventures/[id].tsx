@@ -210,9 +210,10 @@ const AdventureStepRow = memo(function AdventureStepRow({
         <YStack flex={1} gap="$1">
           <XStack items="flex-start" justify="space-between" gap="$2">
             <Text flex={1} fontWeight="700" color="$text">
-              {t("adventures.step_label", { count: step.stepIndex + 1 })}
-              {": "}
-              {stepTitle}
+              {t("adventures.step_title", {
+                step: t("adventures.step_label", { count: step.stepIndex + 1 }),
+                title: stepTitle,
+              })}
             </Text>
             <StepStatusTag status={status} />
           </XStack>

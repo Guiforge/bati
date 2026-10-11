@@ -18,24 +18,14 @@ const WORDS = {
   fr: {
     stage: "légendaire",
     now: ["L'ours devient légendaire", "L'hermine devient légendaire"],
-    // Every animal, with its article, in a named village and in an unnamed one.
-    named: [
-      "L'ours de Brumeval devient légendaire.",
-      "Le cerf de Brumeval devient légendaire.",
-      "Le cheval de Brumeval devient légendaire.",
-      "Le saumon de Brumeval devient légendaire.",
-      "L'hermine de Brumeval devient légendaire.",
-      "Le sanglier de Brumeval devient légendaire.",
+    titles: [
+      "Ton ours entre dans la légende.",
+      "Ton cerf entre dans la légende.",
+      "Ton cheval entre dans la légende.",
+      "Ton saumon entre dans la légende.",
+      "Ton hermine entre dans la légende.",
+      "Ton sanglier entre dans la légende.",
     ],
-    unnamed: [
-      "L'ours de ton village devient légendaire.",
-      "Le cerf de ton village devient légendaire.",
-      "Le cheval de ton village devient légendaire.",
-      "Le saumon de ton village devient légendaire.",
-      "L'hermine de ton village devient légendaire.",
-      "Le sanglier de ton village devient légendaire.",
-    ],
-    vowel: "L'ours d'Aubeval devient légendaire.",
     kicker: "Légendaire",
     // The practice's sentence, then the boar's: five practices and "every session".
     bodies: [
@@ -67,31 +57,22 @@ const WORDS = {
   en: {
     stage: "legendary",
     now: ["The bear is now legendary", "The ermine is now legendary"],
-    named: [
-      "The bear of Brumeval becomes legendary.",
-      "The stag of Brumeval becomes legendary.",
-      "The horse of Brumeval becomes legendary.",
-      "The salmon of Brumeval becomes legendary.",
-      "The ermine of Brumeval becomes legendary.",
-      "The boar of Brumeval becomes legendary.",
+    titles: [
+      "Your bear passes into legend.",
+      "Your stag passes into legend.",
+      "Your horse passes into legend.",
+      "Your salmon passes into legend.",
+      "Your ermine passes into legend.",
+      "Your boar passes into legend.",
     ],
-    unnamed: [
-      "The bear of your village becomes legendary.",
-      "The stag of your village becomes legendary.",
-      "The horse of your village becomes legendary.",
-      "The salmon of your village becomes legendary.",
-      "The ermine of your village becomes legendary.",
-      "The boar of your village becomes legendary.",
-    ],
-    vowel: "The bear of Aubeval becomes legendary.",
     kicker: "Legendary",
     bodies: [
-      "Your 500th strength session, tonight.",
-      "Your 500th endurance session, tonight.",
-      "Your 500th bike ride, tonight.",
-      "Your 500th yoga session, tonight.",
-      "Your 500th calisthenics session, tonight.",
-      "Your 500th session, tonight.",
+      "Tonight was your 500th strength session.",
+      "Tonight was your 500th endurance session.",
+      "Tonight was your 500th bike ride.",
+      "Tonight was your 500th yoga session.",
+      "Tonight was your 500th calisthenics session.",
+      "Tonight was your 500th session.",
     ],
     coats: [
       "silvertip",
@@ -114,31 +95,22 @@ const WORDS = {
   de: {
     stage: "legendär",
     now: ["Der Bär ist jetzt legendär", "Das Hermelin ist jetzt legendär"],
-    named: [
-      "Der Bär von Brumeval wird legendär.",
-      "Der Hirsch von Brumeval wird legendär.",
-      "Das Pferd von Brumeval wird legendär.",
-      "Der Lachs von Brumeval wird legendär.",
-      "Das Hermelin von Brumeval wird legendär.",
-      "Das Wildschwein von Brumeval wird legendär.",
+    titles: [
+      "Dein Bär wird zur Legende.",
+      "Dein Hirsch wird zur Legende.",
+      "Dein Pferd wird zur Legende.",
+      "Dein Lachs wird zur Legende.",
+      "Dein Hermelin wird zur Legende.",
+      "Dein Wildschwein wird zur Legende.",
     ],
-    unnamed: [
-      "Der Bär deines Dorfes wird legendär.",
-      "Der Hirsch deines Dorfes wird legendär.",
-      "Das Pferd deines Dorfes wird legendär.",
-      "Der Lachs deines Dorfes wird legendär.",
-      "Das Hermelin deines Dorfes wird legendär.",
-      "Das Wildschwein deines Dorfes wird legendär.",
-    ],
-    vowel: "Der Bär von Aubeval wird legendär.",
     kicker: "Legendär",
     bodies: [
-      "Deine 500. Krafteinheit, heute Abend.",
-      "Deine 500. Ausdauereinheit, heute Abend.",
-      "Deine 500. Radtour, heute Abend.",
-      "Deine 500. Yoga-Einheit, heute Abend.",
-      "Deine 500. Calisthenics-Einheit, heute Abend.",
-      "Deine 500. Einheit, heute Abend.",
+      "Heute Abend: deine 500. Krafteinheit.",
+      "Heute Abend: deine 500. Ausdauereinheit.",
+      "Heute Abend: deine 500. Radtour.",
+      "Heute Abend: deine 500. Yoga-Einheit.",
+      "Heute Abend: deine 500. Calisthenics-Einheit.",
+      "Heute Abend: deine 500. Einheit.",
     ],
     coats: [
       "Silberspitzen",
@@ -161,31 +133,22 @@ const WORDS = {
   es: {
     stage: "legendario",
     now: ["El oso ya es legendario", "El armiño ya es legendario"],
-    named: [
-      "El oso de Brumeval se vuelve legendario.",
-      "El ciervo de Brumeval se vuelve legendario.",
-      "El caballo de Brumeval se vuelve legendario.",
-      "El salmón de Brumeval se vuelve legendario.",
-      "El armiño de Brumeval se vuelve legendario.",
-      "El jabalí de Brumeval se vuelve legendario.",
+    titles: [
+      "Tu oso se convierte en leyenda.",
+      "Tu ciervo se convierte en leyenda.",
+      "Tu caballo se convierte en leyenda.",
+      "Tu salmón se convierte en leyenda.",
+      "Tu armiño se convierte en leyenda.",
+      "Tu jabalí se convierte en leyenda.",
     ],
-    unnamed: [
-      "El oso de tu aldea se vuelve legendario.",
-      "El ciervo de tu aldea se vuelve legendario.",
-      "El caballo de tu aldea se vuelve legendario.",
-      "El salmón de tu aldea se vuelve legendario.",
-      "El armiño de tu aldea se vuelve legendario.",
-      "El jabalí de tu aldea se vuelve legendario.",
-    ],
-    vowel: "El oso de Aubeval se vuelve legendario.",
     kicker: "Legendario",
     bodies: [
-      "Tu sesión número 500 de fuerza, esta noche.",
-      "Tu sesión número 500 de resistencia, esta noche.",
-      "Tu salida número 500 en bici, esta noche.",
-      "Tu sesión número 500 de yoga, esta noche.",
-      "Tu sesión número 500 de calistenia, esta noche.",
-      "Tu sesión número 500, esta noche.",
+      "Esta noche, tu sesión de fuerza número 500.",
+      "Esta noche, tu sesión de resistencia número 500.",
+      "Esta noche, tu salida en bici número 500.",
+      "Esta noche, tu sesión de yoga número 500.",
+      "Esta noche, tu sesión de calistenia número 500.",
+      "Esta noche, tu sesión número 500.",
     ],
     coats: [
       "puntas de plata",
@@ -249,14 +212,9 @@ describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (la
     ]).toEqual(w.now);
   });
 
-  test("the big feast title says the event, for each animal, named or not", () => {
-    expect(ANIMALS.map((a) => legendaryTitle(t, of(a, null), "Brumeval"))).toEqual(w.named);
-    expect(ANIMALS.map((a) => legendaryTitle(t, of(a, null), ""))).toEqual(w.unnamed);
+  test("the big feast title says the event, with the hero's own animal and no village", () => {
+    expect(ANIMALS.map((a) => legendaryTitle(t, of(a, null)))).toEqual(w.titles);
     expect(sentence(t("village.crest_stage_legendary"))).toBe(w.kicker);
-  });
-
-  test("a village name that starts with a vowel is elided where the language elides", () => {
-    expect(legendaryTitle(t, of("bear", null), "Aubeval")).toBe(w.vowel);
   });
 
   test("the big feast body is the hero's own 500th, by practice, and the boar's by session", () => {
@@ -279,8 +237,7 @@ describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (la
 
   test("nothing glows, nothing is owed", () => {
     const all = [
-      ...w.named,
-      ...w.unnamed,
+      ...w.titles,
       ...w.bodies,
       ...ANIMALS.map((a) => t(`village.coat_rare_${a}`)),
       ...w.coatTitles,

@@ -80,19 +80,15 @@ export function stageBody(t: TFunction, f: Extract<Feast, { kind: "stageUp" | "l
 
 type Legendary = Extract<Feast, { kind: "legendary" }>;
 
-/**
- * "The bear of Brumeval becomes legendary." The event, not the state. The place is the village's
- * name, or "your village" in each language's own case. French elides "de" before a vowel
- * ("d'Aubeval"), which the `vowel` context carries.
- */
-export function legendaryTitle(t: TFunction, f: Legendary, villageName: string): string {
-  const animal = sentence(t(`village.crest_the_${f.animal}`));
-  if (!villageName) return t("session.feast_legendary_unnamed", { animal });
-  const context = /^[aeiouyàâäéèêëîïôöùûü]/i.test(villageName) ? "vowel" : undefined;
-  return t("session.feast_legendary_named", { animal, place: villageName, context });
+/** "Your bear passes into legend." The animal is the hero's, so no village name stands in the title. */
+export function legendaryTitle(t: TFunction, f: Legendary): string {
+  return t(`session.feast_legendary_title_${f.animal}`);
 }
 
-/** "Your 500th strength session, tonight." The fact is the hero's: the session that crossed 500. */
+/**
+ * "Tonight was your 500th strength session." The fact is the hero's: the session that crossed
+ * 500. ponytail: `n` is always `LEGENDARY_AT` (`STAGE_AT.legendary`), the copy never says another number.
+ */
 export function legendaryBody(t: TFunction, f: Legendary): string {
   const kind = f.practice ? ANIMAL_OF[f.practice] : "any";
   return t(`session.feast_legendary_body_${kind}`, { n: f.n });

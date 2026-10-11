@@ -218,7 +218,7 @@ function FeastText({
     return (
       <>
         <Kicker>{t("village.crest_stage_legendary")}</Kicker>
-        <Title>{legendaryTitle(t, feast, villageName)}</Title>
+        <Title>{legendaryTitle(t, feast)}</Title>
         <Line testID="big-feast-body" fact>
           {legendaryBody(t, feast)}
         </Line>

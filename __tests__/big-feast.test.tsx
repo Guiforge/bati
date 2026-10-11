@@ -565,7 +565,7 @@ describe("the big-feast route", () => {
     });
     await mount();
     expect(mockMark).toHaveBeenCalledWith("legendary:horse");
-    expect(await screen.findByText("Le cheval de Brumeval devient légendaire.")).toBeTruthy();
+    expect(await screen.findByText("Ton cheval entre dans la légende.")).toBeTruthy();
     expect(screen.getByText("Ta 500e sortie à vélo, ce soir.")).toBeTruthy();
     expect(screen.getByTestId("big-feast-kicker").props.children).toBe("LÉGENDAIRE");
   });

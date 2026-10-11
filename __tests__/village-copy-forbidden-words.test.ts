@@ -1,7 +1,5 @@
-import * as fs from "node:fs";
-import * as path from "node:path";
 import { TIER_NAMES } from "@/db/village";
-import { featureCopy, LANGS, type Lang, TOKEN } from "./helpers/villageCopy";
+import { featureCopy, isReadable, LANGS, type Lang, sourceLiterals } from "./helpers/villageCopy";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 
@@ -105,42 +103,21 @@ describe.each(LANGS)("%s copy of the Village, the crest, the feasts and tonight"
   });
 });
 
-// Copy written in a .ts file bypasses the locales. These are the files of the feature that
+// Copy written in a .ts or .tsx file bypasses the locales. These are the files of the feature that
 // build or hold a sentence; their string literals (comments stripped) get the same scan, in
 // every language, with no key to excuse "jefe", "old" or "alt".
-describe("the feature's .ts files", () => {
-  const ROOT = path.resolve(__dirname, "..");
-  const FILES = [
-    "components/village/crestText.ts",
-    "components/village/crestLine.ts",
-    "components/village/milestoneLine.ts",
-    "components/village/barScale.ts",
-    "components/village/rows.ts",
-    "components/session/bigFeastText.ts",
-    "components/session/recordText.ts",
-    "components/session/feasts.ts",
-    "db/village.ts",
-    "db/crestRules.ts",
-    "db/milestone.ts",
-    "db/userLevel.ts",
-    "db/achievements.ts",
-  ];
+describe("the feature's .ts and .tsx files", () => {
   // Identifiers that are strings, not sentences: a key path or a code needs a space or a capital
   // to be read as copy.
-  const literals = FILES.flatMap((f) =>
-    [...fs.readFileSync(path.join(ROOT, f), "utf8").matchAll(TOKEN)]
-      .map((m) => m[0])
-      .filter((tok) => !tok.startsWith("/"))
-      .map((tok) => ({ file: f, text: tok.slice(1, -1) })),
-  );
+  const literals = sourceLiterals();
 
   it("reads some literals", () => {
-    expect(literals.length).toBeGreaterThan(50);
+    expect(literals.length).toBeGreaterThan(100);
   });
 
   it("holds no forbidden word", () => {
     const bad = literals.filter(
-      ({ text }) => /\s|^[A-Z]/.test(text) && LANGS.some((lang) => hits(lang, "", text)),
+      ({ text }) => isReadable(text) && LANGS.some((lang) => hits(lang, "", text)),
     );
     expect(bad.map((b) => `${b.file}: ${b.text}`)).toEqual([]);
   });

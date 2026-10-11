@@ -2,7 +2,7 @@ import { estimateExerciseSeconds, exerciseWorkSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
 import { cheapestLocomotion } from "./expeditions";
 import type { DifficultyCode, ExerciseStyle, Locomotion } from "./schema";
-import type { Target } from "./targets";
+import { prescribedValue, type Target } from "./targets";
 import { NON_REP_STYLE, SECONDS_PER_REP_EQUIVALENT } from "./workUnits";
 
 /**
@@ -340,6 +340,8 @@ export type EstimateQuestXpInput = {
   exercises: Array<{
     exercise: XpSet["exercise"] & Pick<Exercise, "locomotion">;
     target: Target;
+    /** What the app prescribed, when `target` is the hero's own number (`0070`). */
+    prescribed?: number;
   }>;
 };
 
@@ -369,9 +371,13 @@ export function estimateQuestXp(quest: EstimateQuestXpInput, userLevel: Difficul
       sum +
       setWeightedSeconds({
         exercise: qex.exercise,
-        target: qex.target,
+        // Priced the way the session prices it (`pricedSets`): against what the app prescribed,
+        // not the hero's own number. Read off the target alone, a stepper raised to 100 quoted
+        // "up to" eight times what the set would pay.
+        target: { ...qex.target, value: prescribedValue(qex) },
         // The allowance is what "up to" means: a hero who beats the target by a quarter is paid
-        // in full, and that is the ceiling this number quotes.
+        // in full, and that is the ceiling this number quotes. It is still the hero's own target
+        // that says how much they mean to do, so a lowered one lowers the tag.
         result: { type: qex.target.type, value: qex.target.value * OVERSHOOT_ALLOWANCE },
       }),
     0,

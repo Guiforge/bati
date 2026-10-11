@@ -165,11 +165,31 @@ describe("ladderNeutralSets", () => {
   });
 
   test("a replacement skipped later is neutral too", () => {
-    expect(ladderNeutralSets([set(1, 0), set(2, 1), set(3, 2, 10, 1)])).toEqual([
-      true,
-      true,
-      false,
-    ]);
+    // Slot 0: Push-ups, then a replacement for round two only. Slot 1 did all three rounds.
+    expect(
+      ladderNeutralSets([
+        set(1, 0),
+        set(2, 1),
+        set(3, 0, 10, 1),
+        set(3, 1, 10, 1),
+        set(3, 2, 10, 1),
+      ]),
+    ).toEqual([true, true, false, false, false]);
+  });
+
+  // A skip leaves no row, so the rounds a movement is missing *before* its first row are skips
+  // too. Counted from its first row only, "I couldn't" in round one followed by two clean rounds
+  // was a clean session, on a pin the same skip had just given up.
+  test("skipped in round one and done after, a movement is still one the hero left", () => {
+    expect(
+      ladderNeutralSets([
+        set(1, 1),
+        set(1, 2),
+        set(3, 0, 10, 1),
+        set(3, 1, 10, 1),
+        set(3, 2, 10, 1),
+      ]),
+    ).toEqual([true, true, false, false, false]);
   });
 
   test("a single-round quest judges what was done", () => {

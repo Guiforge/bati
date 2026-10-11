@@ -287,6 +287,13 @@ describe("db/questConfig", () => {
     expect(pinned?.pinnedOver?.enName).toBe("Squat");
     expect(pinned?.substitutedFor).toBeUndefined();
 
+    // And it is prescribed what the quest wrote for that movement, which the slot carries
+    // (`resolveSlot`), not the served rung's number moved across.
+    expect(stepped({ ...written, target: { type: "reps", value: 6 } })?.target).toEqual({
+      type: "reps",
+      value: 6,
+    });
+
     // A slot that runs as written and is swapped to something else is a swap, not a pin.
     expect(stepped(undefined)?.pinnedOver).toBeUndefined();
     // And a set-aside slot never pins the one movement the hero asked not to be handed.

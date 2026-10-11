@@ -1,7 +1,7 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
-import { getSessionAggregates } from "./completed";
+import { workoutsBeforeToday } from "./completed";
 import { dayKey } from "./dates";
 import { canDo } from "./equipment";
 import {
@@ -79,6 +79,11 @@ export interface QuestExercise {
      * hero asked never to be handed. Optional so a session saved before it existed still loads.
      */
     setAside?: true;
+    /**
+     * What this slot asks of the written movement itself, for the hero who takes it back
+     * ("Do X instead"). Only on a rung substitution. Optional so a saved session still loads.
+     */
+    target?: Target;
   };
 
   /**
@@ -738,6 +743,8 @@ export function resolveSlot(input: {
   stillSetAside: boolean;
   /** The run is proposed as walk and run mixed (`proposedRunSeconds`). */
   walkRun: boolean;
+  /** The written movement's own target, when another movement is served in its place. */
+  asWritten: Target | undefined;
 } {
   const { base, written, userLevel, journal, catalogue, substitute } = input;
 
@@ -781,6 +788,15 @@ export function resolveSlot(input: {
   return {
     exercise,
     target,
+    // What the slot would ask of the movement the quest wrote, when something else is served:
+    // the band the template gives it, and its own record for a hold. It is what "Do X instead"
+    // prescribes. Derived from the served rung's target it was the unit's default (10 reps, 30 s)
+    // whenever the two are measured differently, and that default became the bar a rung is
+    // earned on.
+    asWritten:
+      exercise.id === written.id
+        ? undefined
+        : generateTarget(base, level, journal.history.get(ghostKey(written.id, "time"))?.best),
     walkRun: proposal?.walkRun === true,
     // In the target's own unit: a movement trained both ways has two records, and showing the
     // hold next to a rep target would be a number the hero cannot act on.
@@ -832,7 +848,7 @@ function buildSlot(
     muscles: [],
   };
 
-  const { exercise, target, ghost, setAsideFrom, stillSetAside, walkRun } = resolveSlot({
+  const { exercise, target, ghost, setAsideFrom, stillSetAside, walkRun, asWritten } = resolveSlot({
     base: { type: r.targetType, min: r.targetMin, max: r.targetMax },
     written,
     userLevel: ctx.userLevel,
@@ -870,6 +886,7 @@ function buildSlot(
             deName: r.exDeName,
             esName: r.exEsName,
             imagePath: r.exImagePath,
+            ...(asWritten ? { target: asWritten } : {}),
           }
         : undefined,
   };
@@ -1118,19 +1135,27 @@ export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLeve
  * when someone reports the quest staying hidden after they fixed it.
  */
 export async function getEligibleQuestIds(): Promise<Set<number>> {
-  const [ownedEquipment, trainingLevel, { totalSessions }, rows] = await Promise.all([
+  // Sessions before today, not up to now: the daily quest is drawn from this set, and it must
+  // name the same quest all day (`workoutsBeforeToday`).
+  const [ownedEquipment, trainingLevel, sessions, rows] = await Promise.all([
     preferences.getOwnedEquipment(),
     preferences.getTrainingLevel(),
-    getSessionAggregates(),
+    workoutsBeforeToday(),
     db
       .select({
         questId: questExercises.questId,
         difficulty: exercises.difficulty,
         equipment: exercises.equipment,
-        impact: exercises.impact,
+        // A jump nothing walks down, in a quest the app wrote. Jump Squat sits on a ladder, so a
+        // hero who has not earned it is served Squat and the quest is fine for them; and a
+        // hero's own quest is theirs to be suggested, jumps included.
+        impact: sql<number>`${exercises.impact} = 1
+          and ${exercises.prerequisiteExerciseId} is null
+          and ${quests.author} = ${ADMIN_CREATOR}`,
       })
       .from(questExercises)
-      .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId)),
+      .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId))
+      .innerJoin(quests, eq(quests.id, questExercises.questId)),
   ]);
 
   const byQuest = new Map<
@@ -1145,12 +1170,12 @@ export async function getEligibleQuestIds(): Promise<Set<number>> {
     };
     entry.difficulties.push(row.difficulty);
     entry.equipment.add(row.equipment);
-    entry.impact ||= row.impact;
+    entry.impact ||= row.impact === 1;
     byQuest.set(row.questId, entry);
   }
 
   const owned = ownedEquipment === null ? null : new Set<EquipmentCode>(ownedEquipment);
-  const gentle = startsGently(trainingLevel, totalSessions);
+  const gentle = startsGently(trainingLevel, sessions);
   const eligible = new Set<number>();
 
   for (const [questId, entry] of byQuest) {
@@ -1158,7 +1183,8 @@ export async function getEligibleQuestIds(): Promise<Set<number>> {
     const tooHard =
       trainingLevel === "beginner" && questTrainingLevel(entry.difficulties) === "advanced";
     // A quest built on jumps is not what the app picks for someone starting out: the ladder
-    // walks a hard movement down to the hero's rung, and nothing walks a Burpee down.
+    // walks a hard movement down to the hero's rung, and nothing walks a Burpee down (which is
+    // what `impact` means here, see the query above).
     const tooJumpy = gentle && entry.impact;
 
     if (hasKit && !tooHard && !tooJumpy) eligible.add(questId);

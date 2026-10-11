@@ -1,5 +1,5 @@
 import { type Feast, type FeastFacts, feastKey, rankFeasts } from "@/components/session/feasts";
-import { type CrestReveal, NO_CREST_EVENTS } from "@/db/crestEvents";
+import { type CrestReveal, legendaryNews, NO_CREST_EVENTS } from "@/db/crestEvents";
 
 const empty: FeastFacts["result"] = {
   levelUp: null,
@@ -196,6 +196,31 @@ describe("rankFeasts", () => {
       const list = rankFeasts(facts(past(legendary("bear")), { shown: [] }));
       expect(list[0]).toMatchObject({ kind: "legendary", size: "large", late: true });
       expect(feastKey(list[0] as Feast)).toBe("legendary:strength");
+    });
+
+    test("the two nights: a legendary demoted by the reveal is a card once, then silent", () => {
+      const state = { stage: "legendary", animal: "bear", evidence: { first: "bear" } } as never;
+      const night1 = rankFeasts(
+        facts({ crestReveal: reveal, crestLegendary: legendaryNews(state, []) }, { shown: [] }),
+      );
+      expect(night1.map((x) => `${x.kind}:${x.size}`)).toEqual([
+        "reveal:large",
+        "legendary:medium",
+      ]);
+      // Tonight's card marks `legendary:strength` and the reveal's screen marks `reveal`.
+      const shown = ["reveal", "legendary:strength"];
+      const night2 = rankFeasts(facts({ crestLegendary: legendaryNews(state, shown) }, { shown }));
+      expect(night2).toEqual([]);
+    });
+
+    test("a border already past 500 is late the night the centre crosses its own 500", () => {
+      const list = rankFeasts(
+        facts({
+          crestEvents: { ...NO_CREST_EVENTS, stageUp: [legendary("bear")] },
+          crestLegendary: [legendary("bear"), legendary("stag")],
+        }),
+      );
+      expect(list.map((x) => (x.kind === "legendary" ? x.late : null))).toEqual([false, true]);
     });
 
     test("the night that crosses is not late", () => {

@@ -882,6 +882,25 @@ describe("VictoryView tonight", () => {
     expect(mockMarkBigFeastShown).not.toHaveBeenCalled();
   });
 
+  it("marks a legendary feast as seen when it is relegated to a card, and not when it opens full screen", async () => {
+    const bear = { animal: "bear", stage: "legendary", n: 500, practice: "strength" };
+    // The reveal outranks it: the legendary is a card tonight, so tomorrow it must not reopen.
+    const card = await mountWithPendingSave(null, 12 * 60, {
+      crestReveal: BEAR,
+      crestLegendary: [bear],
+    });
+    await card.release();
+    expect(mockMarkBigFeastShown).toHaveBeenCalledWith("legendary:strength");
+    expect(mockMarkBigFeastShown).not.toHaveBeenCalledWith("reveal");
+    await card.view.unmount();
+
+    // Alone it is the large feast, which its full screen marks.
+    mockMarkBigFeastShown.mockClear();
+    const large = await mountWithPendingSave(null, 12 * 60, { crestLegendary: [bear] });
+    await large.release();
+    expect(mockMarkBigFeastShown).not.toHaveBeenCalled();
+  });
+
   it("leaves the reveal unmarked when it is the large feast, which the full screen marks", async () => {
     const { view, release } = await mountWithPendingSave(null, 12 * 60, {
       crestReveal: BEAR,

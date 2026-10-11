@@ -82,7 +82,7 @@ jobs:
       # input points this at android/: `build-root-directory` was dropped by the action and had
       # been warning "Unexpected input" on every release since at least v1.9.0 while the cache
       # worked anyway.
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
           # zizmor: ignore[cache-poisoning] no other workflow uses setup-gradle, so the only runs
           # that ever write this cache are this one's, a tag or a dispatch, both needing push.

@@ -2,6 +2,8 @@ import {
   COAT_RARE_KEY,
   crestEvents,
   crestReveal,
+  legendaryKey,
+  legendaryNews,
   NO_CREST_EVENTS,
   rareCoatNews,
 } from "../db/crestEvents";
@@ -234,6 +236,41 @@ describe("crestEvents", () => {
     ]);
   });
 
+  describe("the swap puts the sessions' animal on the border (Guillaume, 11/10)", () => {
+    // 160 runs make the stag the second animal; picking it sends the bear to the border, so the
+    // centre and the border read the same strength count.
+    const strong = (k: number) => seq(["strength", k], ["run", 160]);
+
+    test("a stage rises once per count: the probe of the audit, 240 strength, 160 run, stag picked", () => {
+      const h = strong(199);
+      const picked = step(h, "strength", "stag");
+      expect(picked.stageUp).toEqual([
+        { animal: "stag", stage: "venerable", n: 200, practice: "strength" },
+      ]);
+      // The same history without the pick says the same thing once, on the bear.
+      expect(step(h, "strength").stageUp).toEqual([
+        { animal: "bear", stage: "venerable", n: 200, practice: "strength" },
+      ]);
+      // And the audit's own counts: nothing crosses at 240, 259 or on a run.
+      expect(step(strong(240), "strength", "stag").stageUp).toEqual([]);
+      expect(step(strong(259), "strength", "stag").stageUp).toEqual([]);
+    });
+
+    test("the legendary 500th is announced once too", () => {
+      expect(step(strong(499), "strength", "stag").stageUp).toEqual([
+        { animal: "stag", stage: "legendary", n: 500, practice: "strength" },
+      ]);
+    });
+
+    test("a border that is not the sessions' animal still rises on its own practice", () => {
+      // Auto: the bear is the centre, the stag the border, and the stag's 200th run is its own.
+      const h = seq(["strength", 240], ["run", 199]);
+      expect(step(h, "run").stageUp).toEqual([
+        { animal: "stag", stage: "venerable", n: 200, practice: "run" },
+      ]);
+    });
+  });
+
   test("the second animal rises on its own practice", () => {
     const h = [...seq(["strength", 60], ["run", 39])];
     const e = step(h, "run");
@@ -301,5 +338,55 @@ describe("rareCoatNews", () => {
   test("it is the hero's: a picked boar wears it as much as the sessions' animal", () => {
     const boar = adult(5, "boar");
     expect(rareCoatNews(boar, [], ships)).toEqual({ animal: "boar", stage: "adult" });
+  });
+});
+
+describe("legendaryNews", () => {
+  const at = (h: CrestSession[], choice: Animal | "auto" = "auto") => crestAnimals(h, choice);
+  const bear = { animal: "bear", stage: "legendary", n: 500, practice: "strength" } as const;
+  const stag = { animal: "stag", stage: "legendary", n: 500, practice: "run" } as const;
+
+  test("is keyed by the practice whose count reached 500, and `all` for the boar", () => {
+    expect(legendaryKey("strength")).toBe("legendary:strength");
+    expect(legendaryKey("run")).toBe("legendary:run");
+    expect(legendaryKey(null)).toBe("legendary:all");
+  });
+
+  test("a hero already past 500 at the update gets it, once: the key silences it", () => {
+    const after = at(seq(["strength", 650]));
+    expect(legendaryNews(after, ["age-50"])).toEqual([bear]);
+    expect(legendaryNews(after, ["legendary:strength"])).toEqual([]);
+  });
+
+  test("below 500, a key that could not be read, or no crest says nothing", () => {
+    expect(legendaryNews(at(seq(["strength", 499])), [])).toEqual([]);
+    expect(legendaryNews(at(seq(["strength", 650])), undefined)).toEqual([]);
+    expect(legendaryNews(null, [])).toEqual([]);
+  });
+
+  test("the centre and the border each say their own count, and a shown one is skipped", () => {
+    const after = at(seq(["strength", 500], ["run", 500]));
+    expect(legendaryNews(after, [])).toEqual([bear, stag]);
+    expect(legendaryNews(after, ["legendary:strength"])).toEqual([stag]);
+    expect(legendaryNews(after, ["legendary:run"])).toEqual([bear]);
+  });
+
+  test("a stag picked over a bear hero says the bear's count once, and the stag's own run later", () => {
+    const h = seq(["strength", 500], ["run", 500]);
+    // Picked: the centre is the stag wearing the bear's stage; the border is the bear again.
+    expect(legendaryNews(at(h, "stag"), [])).toEqual([{ ...bear, animal: "stag" }]);
+    // The hero feasted on that count, then goes back to auto: the stag's own 500th is still owed.
+    expect(legendaryNews(at(h, "auto"), ["legendary:strength"])).toEqual([stag]);
+  });
+
+  test("the boar is `all`, whatever animal the hero put on show", () => {
+    const h = [
+      ...seq(["strength", 2], ["run", 2], ["yoga", 2], ["ride", 1], ["calisthenics", 1]),
+      ...seq(["strength", 170], ["run", 170], ["yoga", 170]),
+    ];
+    expect(legendaryNews(at(h), [])).toEqual([
+      { animal: "boar", stage: "legendary", n: 500, practice: null },
+    ]);
+    expect(legendaryNews(at(h, "bear"), ["legendary:all"])).toEqual([]);
   });
 });

@@ -1139,6 +1139,41 @@ describe("useSessionStore", () => {
       }
     });
 
+    test("the legendary feast is read on the crest AFTER the session: a hero already past 500 gets it once", async () => {
+      const shown = preferences.getBigFeastsShown as jest.Mock;
+      const crest = {
+        animal: "bear",
+        stage: "legendary",
+        manual: false,
+        quarters: null,
+        second: null,
+        longestFlame: 0,
+        evidence: {
+          firstEight: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          firstEightOrder: ["strength"],
+          totals: { strength: 650, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          first: "bear",
+          secondFromSessions: null,
+          boarQuarters: null,
+        },
+      };
+      try {
+        // Legendary before and after: no stage crossed tonight, only the state says it.
+        (getCrest as jest.Mock).mockReset().mockResolvedValue(crest);
+        const result = await store.getState().saveSession(null);
+        expect(result.crestEvents.stageUp).toEqual([]);
+        expect(result.crestLegendary).toEqual([
+          { animal: "bear", stage: "legendary", n: 500, practice: "strength" },
+        ]);
+
+        store.setState({ savedSessionId: null, crestSeenBefore: null });
+        shown.mockResolvedValueOnce(["legendary:strength"]);
+        expect((await store.getState().saveSession(null)).crestLegendary).toEqual([]);
+      } finally {
+        (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
+      }
+    });
+
     test("the reveal needs the crest and a key without it; an unreadable key says nothing", async () => {
       const { reportError } = require("@/src/reportError") as { reportError: jest.Mock };
       const crest = {

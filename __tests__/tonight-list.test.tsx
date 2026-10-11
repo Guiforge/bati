@@ -187,7 +187,7 @@ describe("TonightList", () => {
     expect(queryByText("après")).toBeNull();
   });
 
-  test("venerable; a boar or a hand-picked animal counts every session", async () => {
+  test("venerable; a boar, or an animal picked over a boar, counts every session", async () => {
     const feasts = rank({
       crestEvents: {
         ...NO_CREST_EVENTS,
@@ -208,6 +208,30 @@ describe("TonightList", () => {
     expect(queryByText(/null|ancien/i)).toBeNull();
   });
 
+  test("a hand-picked animal says the sessions' practice, not its own (the salmon over a bear hero)", async () => {
+    const feasts = rank({
+      crestEvents: {
+        ...NO_CREST_EVENTS,
+        stageUp: [{ animal: "salmon", stage: "adult", n: 40, practice: "strength" }],
+      },
+    });
+    const { getByText, queryByText } = await show(feasts);
+    expect(getByText("Le saumon devient adulte")).toBeTruthy();
+    expect(getByText("40 séances de force.")).toBeTruthy();
+    expect(queryByText(/yoga/)).toBeNull();
+  });
+
+  test("a late legendary card says what is true of the hero: at least 500, not tonight", async () => {
+    const feasts = rank(
+      {
+        crestLegendary: [{ animal: "bear", stage: "legendary", n: 500, practice: "strength" }],
+      },
+      { shown: [], epilogue: true },
+    );
+    const { getByText } = await show(feasts);
+    expect(getByText("Au moins 500 séances de force.")).toBeTruthy();
+  });
+
   test("a legendary animal demoted to a card, and the rare coat's card, in French", async () => {
     const feasts = rank(
       {
@@ -215,13 +239,16 @@ describe("TonightList", () => {
           ...NO_CREST_EVENTS,
           stageUp: [{ animal: "ermine", stage: "legendary", n: 500, practice: "calisthenics" }],
         },
+        crestLegendary: [
+          { animal: "ermine", stage: "legendary", n: 500, practice: "calisthenics" },
+        ],
         rareCoat: { animal: "bear", stage: "adult" },
       },
-      { shown: ["legendary:ermine"] },
+      { shown: ["legendary:calisthenics"] },
     );
     const { getByText } = await show(feasts);
     expect(getByText("L'hermine devient légendaire")).toBeTruthy();
-    expect(getByText("500 séances de callisthénie.")).toBeTruthy();
+    expect(getByText("Ta 500e séance de callisthénie, ce soir.")).toBeTruthy();
     expect(getByText("L'ours se pare de nouvelles couleurs")).toBeTruthy();
     expect(getByText("Pointes d'argent. Ta flamme a tenu 100 jours.")).toBeTruthy();
   });

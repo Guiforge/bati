@@ -31,6 +31,7 @@ import {
   type CrestReveal,
   crestEvents,
   crestReveal,
+  legendaryNews,
   NO_CREST_EVENTS,
   type RareCoatNews,
   rareCoatNews,
@@ -278,6 +279,8 @@ export type SaveResult = {
   crestEvents: CrestEvents;
   /** The crest's reveal when it exists now and this phone has not shown it; null when either read failed. */
   crestReveal: CrestReveal | null;
+  /** The legendary animals on the crest this phone has not shown yet; empty when either read failed. */
+  crestLegendary: CrestEvents["stageUp"];
   /** The rare coat's card, when the hero has won the coat and this phone has not shown it. */
   rareCoat: RareCoatNews | null;
   /** The big feasts this phone has shown; undefined when the key could not be read. */
@@ -2266,6 +2269,7 @@ export const useSessionStore = create<SessionState>()(
         villageGrowth,
         crestEvents: diffCrest(crestBefore, crestAfter),
         crestReveal: crestReveal(crestAfter, shown),
+        crestLegendary: legendaryNews(crestAfter, shown),
         rareCoat: rareCoatNews(crestAfter, shown),
         bigFeastsShown: shown,
       };

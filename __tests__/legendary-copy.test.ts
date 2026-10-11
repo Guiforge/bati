@@ -38,6 +38,14 @@ const WORDS = {
       "Ta 500e séance de callisthénie, ce soir.",
       "Ta 500e séance, ce soir.",
     ],
+    late: [
+      "Au moins 500 séances de force.",
+      "Au moins 500 séances d'endurance.",
+      "Au moins 500 sorties à vélo.",
+      "Au moins 500 séances de yoga.",
+      "Au moins 500 séances de callisthénie.",
+      "Au moins 500 séances.",
+    ],
     coats: [
       "pointes d'argent",
       "robe blanche",
@@ -75,6 +83,14 @@ const WORDS = {
       "Tonight was your 500th yoga session.",
       "Tonight was your 500th calisthenics session.",
       "Tonight was your 500th session.",
+    ],
+    late: [
+      "At least 500 strength sessions.",
+      "At least 500 endurance sessions.",
+      "At least 500 bike rides.",
+      "At least 500 yoga sessions.",
+      "At least 500 calisthenics sessions.",
+      "At least 500 sessions.",
     ],
     coats: [
       "silvertip",
@@ -114,6 +130,14 @@ const WORDS = {
       "Heute Abend: deine 500. Calisthenics-Einheit.",
       "Heute Abend: deine 500. Einheit.",
     ],
+    late: [
+      "Mindestens 500 Krafteinheiten.",
+      "Mindestens 500 Ausdauereinheiten.",
+      "Mindestens 500 Radtouren.",
+      "Mindestens 500 Yoga-Einheiten.",
+      "Mindestens 500 Calisthenics-Einheiten.",
+      "Mindestens 500 Einheiten.",
+    ],
     coats: [
       "Silberspitzen",
       "weißes Fell",
@@ -152,6 +176,14 @@ const WORDS = {
       "Esta noche, tu sesión de calistenia número 500.",
       "Esta noche, tu sesión número 500.",
     ],
+    late: [
+      "Al menos 500 sesiones de fuerza.",
+      "Al menos 500 sesiones de resistencia.",
+      "Al menos 500 salidas en bici.",
+      "Al menos 500 sesiones de yoga.",
+      "Al menos 500 sesiones de calistenia.",
+      "Al menos 500 sesiones.",
+    ],
     coats: [
       "puntas de plata",
       "pelaje blanco",
@@ -180,6 +212,7 @@ const legendary: Extract<Feast, { kind: "legendary" }> = {
   stage: "legendary",
   n: 500,
   practice: "strength",
+  late: false,
 };
 
 describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (lang) => {
@@ -187,6 +220,7 @@ describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (la
   const t = i18n.t.bind(i18n);
   beforeAll(() => i18n.changeLanguage(lang));
 
+  const lateOf = (practice: Practice | null) => ({ ...legendary, practice, late: true });
   const of = (animal: (typeof ANIMALS)[number], practice: Practice | null) => ({
     ...legendary,
     animal,
@@ -223,6 +257,10 @@ describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (la
     expect(PRACTICES_IN_ORDER.map((p) => legendaryBody(t, of("bear", p)))).toEqual(w.bodies);
   });
 
+  test("a hero past 500 at the update reads a body that is true of them: at least 500", () => {
+    expect(PRACTICES_IN_ORDER.map((p) => legendaryBody(t, lateOf(p)))).toEqual(w.late);
+  });
+
   test("the six coat names are the spec's", () => {
     expect(ANIMALS.map((a) => t(`village.coat_rare_${a}`))).toEqual(w.coats);
   });
@@ -250,6 +288,7 @@ describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (la
     const all = [
       ...w.titles,
       ...w.bodies,
+      ...w.late,
       ...ANIMALS.map((a) => t(`village.coat_rare_${a}`)),
       ...w.coatTitles,
       w.coatBody,

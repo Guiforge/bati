@@ -316,6 +316,45 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     de: "Heute Abend: deine {{n}}. Einheit.",
     es: "Esta noche, tu sesión número {{n}}.",
   },
+  // A hero past 500 at the update gets "at least 500": what has been done, never what is left.
+  "session.feast_legendary_late_bear": {
+    why: "fait",
+    fr: "Au moins {{n}} séances de force.",
+    en: "At least {{n}} strength sessions.",
+    de: "Mindestens {{n}} Krafteinheiten.",
+    es: "Al menos {{n}} sesiones de fuerza.",
+  },
+  "session.feast_legendary_late_ermine": {
+    why: "fait",
+    fr: "Au moins {{n}} séances de callisthénie.",
+    en: "At least {{n}} calisthenics sessions.",
+    es: "Al menos {{n}} sesiones de calistenia.",
+  },
+  "session.feast_legendary_late_salmon": {
+    why: "fait",
+    fr: "Au moins {{n}} séances de yoga.",
+    en: "At least {{n}} yoga sessions.",
+    es: "Al menos {{n}} sesiones de yoga.",
+  },
+  "session.feast_legendary_late_stag": {
+    why: "fait",
+    fr: "Au moins {{n}} séances d'endurance.",
+    en: "At least {{n}} endurance sessions.",
+    de: "Mindestens {{n}} Ausdauereinheiten.",
+    es: "Al menos {{n}} sesiones de resistencia.",
+  },
+  "session.feast_legendary_late_horse": {
+    why: "fait",
+    fr: "Au moins {{n}} sorties à vélo.",
+    es: "Al menos {{n}} salidas en bici.",
+  },
+  "session.feast_legendary_late_any": {
+    why: "fait",
+    fr: "Au moins {{n}} séances.",
+    en: "At least {{n}} sessions.",
+    de: "Mindestens {{n}} Einheiten.",
+    es: "Al menos {{n}} sesiones.",
+  },
   "session.tonight_stage_body_bear": {
     why: "fait",
     fr: "{{n}} séances de force.",

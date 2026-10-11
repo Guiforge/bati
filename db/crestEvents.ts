@@ -100,7 +100,14 @@ function stageUpOf(before: Seen | null, after: Seen): CrestEvents["stageUp"] {
   if (before === null) return up;
   if (before.animal === after.animal)
     rose(after.animal, before.stage, after.stage, practiceOfAnimal(after.evidence.first) ?? null);
-  if (before.second && after.second && before.second.animal === after.second.animal)
+  // A stage rises once per count that crosses its threshold. When the hero picked the border's
+  // animal, the border is the sessions' own and reads the very count the centre just announced.
+  if (
+    before.second &&
+    after.second &&
+    before.second.animal === after.second.animal &&
+    after.second.animal !== after.evidence.first
+  )
     rose(
       after.second.animal,
       before.second.stage,
@@ -108,6 +115,32 @@ function stageUpOf(before: Seen | null, after: Seen): CrestEvents["stageUp"] {
       practiceOfAnimal(after.second.animal) ?? null,
     );
   return up;
+}
+
+/** The id the legendary feast is marked under: the practice whose count reached 500, `all` for the boar. */
+export const legendaryKey = (practice: Practice | null) => `legendary:${practice ?? "all"}`;
+
+/**
+ * The legendary feast, a fact about the phone like the reveal: an animal on the crest wears the
+ * legendary stage after this session and the phone has not shown that count's feast yet
+ * (`legendaryKey` in `bigFeastsShown`). So a hero who already had 500 sessions at the update sees
+ * it once, on their first victory, and the night of the crossing is the same read. The centre and
+ * the border never say the same count twice. `shown` undefined means the key could not be read:
+ * say nothing. Pure.
+ */
+export function legendaryNews(
+  after: Seen | null | undefined,
+  shown: string[] | undefined,
+): CrestEvents["stageUp"] {
+  if (!after || !shown) return [];
+  const news: CrestEvents["stageUp"] = [];
+  const add = (animal: Animal, practice: Practice | null) =>
+    news.push({ animal, stage: "legendary", n: LEGENDARY_AT, practice });
+  if (after.stage === "legendary")
+    add(after.animal, practiceOfAnimal(after.evidence.first) ?? null);
+  if (after.second?.stage === "legendary" && after.second.animal !== after.evidence.first)
+    add(after.second.animal, practiceOfAnimal(after.second.animal) ?? null);
+  return news.filter((e) => !shown.includes(legendaryKey(e.practice)));
 }
 
 /**

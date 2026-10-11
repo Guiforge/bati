@@ -114,55 +114,62 @@ describe("rankFeasts", () => {
         n: 500,
         practice: animal === "bear" ? "strength" : "run",
       }) as const;
-    const events = (...stageUp: ReturnType<typeof legendary>[]) => ({
-      ...NO_CREST_EVENTS,
-      stageUp,
+    // The night of the crossing: the event and the state after it say the same thing.
+    const crossing = (...up: ReturnType<typeof legendary>[]) => ({
+      crestEvents: { ...NO_CREST_EVENTS, stageUp: up },
+      crestLegendary: up,
     });
+    // A hero past 500 at the update: the state says it, no event crossed tonight.
+    const past = (...up: ReturnType<typeof legendary>[]) => ({ crestLegendary: up });
 
-    test("is a big feast, after the anniversary and before the tier, keyed by its animal", () => {
+    test("is a big feast, after the anniversary and before the tier, keyed by its practice", () => {
       const list = rankFeasts(
-        facts({ tierUp, crestEvents: events(legendary("bear")) }, { anniversary: { years: 1 } }),
+        facts({ tierUp, ...crossing(legendary("bear")) }, { anniversary: { years: 1 } }),
       );
       expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual([
         "anniversary:large",
         "legendary:medium",
         "tier:medium",
       ]);
-      expect(feastKey({ kind: "legendary", ...legendary("stag") })).toBe("legendary:stag");
+      expect(feastKey({ kind: "legendary", late: false, ...legendary("stag") })).toBe(
+        "legendary:run",
+      );
+      expect(
+        feastKey({ kind: "legendary", late: false, ...legendary("bear"), practice: null }),
+      ).toBe("legendary:all");
     });
 
     test("leads when nothing outranks it, and is listed once: no stage-up card for it", () => {
-      const list = rankFeasts(facts({ tierUp, crestEvents: events(legendary("bear")) }));
+      const list = rankFeasts(facts({ tierUp, ...crossing(legendary("bear")) }));
       expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual(["legendary:large", "tier:medium"]);
       expect(list[0]).toMatchObject({
         animal: "bear",
         stage: "legendary",
         n: 500,
         practice: "strength",
+        late: false,
       });
     });
 
     test("the reveal and an Age outrank it", () => {
-      const e = events(legendary("bear"));
-      expect(sizes(facts({ crestReveal: reveal, crestEvents: e }))[0]).toBe("reveal:large");
-      expect(sizes(facts({ crestEvents: e }, { age: { name: "A" } }))[0]).toBe("age:large");
+      const e = crossing(legendary("bear"));
+      expect(sizes(facts({ crestReveal: reveal, ...e }))[0]).toBe("reveal:large");
+      expect(sizes(facts(e, { age: { name: "A" } }))[0]).toBe("age:large");
     });
 
-    test("the second animal's own night is not silenced by the first's: keys differ", () => {
-      const first = rankFeasts(facts({ crestEvents: events(legendary("bear")) }, { shown: [] }));
+    test("the second animal's own night is not silenced by the first's: the practices differ", () => {
+      const first = rankFeasts(facts(crossing(legendary("bear")), { shown: [] }));
       expect(first[0]?.kind).toBe("legendary");
-      const second = rankFeasts(
-        facts({ crestEvents: events(legendary("stag")) }, { shown: ["legendary:bear"] }),
-      );
+      const second = rankFeasts(facts(past(legendary("stag")), { shown: ["legendary:strength"] }));
       expect(second[0]).toMatchObject({ kind: "legendary", size: "large", animal: "stag" });
       const again = rankFeasts(
-        facts({ crestEvents: events(legendary("bear")) }, { shown: ["legendary:bear"] }),
+        facts(crossing(legendary("bear")), { shown: ["legendary:strength"] }),
       );
       expect(again[0]).toMatchObject({ kind: "legendary", size: "medium" });
     });
 
     test("both animals on one night: one large, the other a card", () => {
-      const list = rankFeasts(facts({ crestEvents: events(legendary("bear"), legendary("stag")) }));
+      const list = rankFeasts(facts(crossing(legendary("bear"), legendary("stag"))));
       expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual([
         "legendary:large",
         "legendary:medium",
@@ -172,6 +179,7 @@ describe("rankFeasts", () => {
     test("an adult card beside it is still a card", () => {
       const list = rankFeasts(
         facts({
+          crestLegendary: [legendary("bear")],
           crestEvents: {
             ...NO_CREST_EVENTS,
             stageUp: [
@@ -182,6 +190,22 @@ describe("rankFeasts", () => {
         }),
       );
       expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual(["legendary:large", "stageUp:medium"]);
+    });
+
+    test("a hero already past 500 at the update gets it once, as a late feast", () => {
+      const list = rankFeasts(facts(past(legendary("bear")), { shown: [] }));
+      expect(list[0]).toMatchObject({ kind: "legendary", size: "large", late: true });
+      expect(feastKey(list[0] as Feast)).toBe("legendary:strength");
+    });
+
+    test("the night that crosses is not late", () => {
+      expect(rankFeasts(facts(crossing(legendary("bear"))))[0]).toMatchObject({ late: false });
+    });
+
+    test("nothing in the state, nothing said: a feast already shown is not a nightly card", () => {
+      expect(rankFeasts(facts({ crestLegendary: [] }, { shown: ["legendary:strength"] }))).toEqual(
+        [],
+      );
     });
   });
 

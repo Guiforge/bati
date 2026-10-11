@@ -24,7 +24,7 @@ import { getLevelTitle } from "@/db/userLevel";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
-import { revealShield, spoken, stageBody, tierSentence } from "./bigFeastText";
+import { legendaryBody, revealShield, spoken, stageBody, tierSentence } from "./bigFeastText";
 import type { Feast } from "./feasts";
 import { formatRecordValue, recordTitle } from "./recordText";
 
@@ -209,7 +209,8 @@ function cardOf(
       return {
         id: f.id,
         title: t(`session.tonight_stage_${f.stage}`, { animal: the(t, f.animal) }),
-        body: [stageBody(t, f)],
+        // The legendary body knows a late night ("at least 500"): the stage body would say "500".
+        body: [f.kind === "legendary" ? legendaryBody(t, f) : stageBody(t, f)],
         art: shield(f.animal),
       };
     case "tier":

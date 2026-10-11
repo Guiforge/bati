@@ -87,11 +87,13 @@ export function legendaryTitle(t: TFunction, f: Legendary): string {
 
 /**
  * "Tonight was your 500th strength session." The fact is the hero's: the session that crossed
- * 500. ponytail: `n` is always `LEGENDARY_AT` (`STAGE_AT.legendary`), the copy never says another number.
+ * 500. A hero who was already past it at the update gets "At least 500 strength sessions", the
+ * only thing that is true of them. ponytail: `n` is always `LEGENDARY_AT` (`STAGE_AT.legendary`),
+ * the copy never says another number.
  */
 export function legendaryBody(t: TFunction, f: Legendary): string {
   const kind = f.practice ? ANIMAL_OF[f.practice] : "any";
-  return t(`session.feast_legendary_body_${kind}`, { n: f.n });
+  return t(`session.feast_legendary_${f.late ? "late" : "body"}_${kind}`, { n: f.n });
 }
 
 /** The level a tier is followed by, or null at the last one. */

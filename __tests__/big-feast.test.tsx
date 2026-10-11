@@ -555,19 +555,30 @@ describe("the big-feast route", () => {
     expect(mockMark).toHaveBeenCalledWith("reveal");
   });
 
-  test("a legendary animal opens under its own key, in its words", async () => {
+  test("a legendary animal opens under its practice's key, in its words", async () => {
+    const horse = { animal: "horse", stage: "legendary", n: 500, practice: "ride" } as const;
     finish({
       crestReveal: null,
-      crestEvents: {
-        ...NO_CREST_EVENTS,
-        stageUp: [{ animal: "horse", stage: "legendary", n: 500, practice: "ride" }],
-      },
+      crestEvents: { ...NO_CREST_EVENTS, stageUp: [horse] },
+      crestLegendary: [horse],
     });
     await mount();
-    expect(mockMark).toHaveBeenCalledWith("legendary:horse");
+    expect(mockMark).toHaveBeenCalledWith("legendary:ride");
     expect(await screen.findByText("Ton cheval entre dans la légende.")).toBeTruthy();
     expect(screen.getByText("Ta 500e sortie à vélo, ce soir.")).toBeTruthy();
     expect(screen.getByTestId("big-feast-kicker").props.children).toBe("LÉGENDAIRE");
+  });
+
+  test("a hero past 500 at the update gets the feast once, with a body that is true of them", async () => {
+    finish({
+      crestReveal: null,
+      crestLegendary: [{ animal: "bear", stage: "legendary", n: 500, practice: "strength" }],
+    });
+    await mount();
+    expect(mockMark).toHaveBeenCalledWith("legendary:strength");
+    expect(await screen.findByText("Ton ours entre dans la légende.")).toBeTruthy();
+    expect(screen.getByText("Au moins 500 séances de force.")).toBeTruthy();
+    expect(screen.queryByText(/ce soir/)).toBeNull();
   });
 
   test("marks a tier under its own key, so the next tier can still open", async () => {

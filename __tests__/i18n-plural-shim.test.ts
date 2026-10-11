@@ -41,3 +41,26 @@ it("leaves a real Intl.PluralRules alone", () => {
   });
   expect(Intl.PluralRules).toBe(real);
 });
+
+/**
+ * The rules written out for Hermes, held against the real thing. Node carries the full CLDR, so a
+ * language added with the wrong rule, or with the fallback because nobody wrote one, fails here
+ * instead of printing "5 день" on a phone. This is the gate a language with `few` goes through.
+ */
+describe("the written rules agree with Intl.PluralRules", () => {
+  const { APP_LANGUAGES } =
+    require("@/src/i18n/deviceLanguage") as typeof import("@/src/i18n/deviceLanguage");
+  const { pluralCategory, pluralCategories } =
+    require("@/src/i18n/pluralRules") as typeof import("@/src/i18n/pluralRules");
+
+  const counts = [...Array.from({ length: 1200 }, (_, n) => n), 1e6, 1e6 + 1, 2e6, 5e6];
+
+  it.each(APP_LANGUAGES)("%s", (language) => {
+    const intl = new Intl.PluralRules(language);
+    const wrong = counts.filter((n) => pluralCategory(language, n) !== intl.select(n));
+    expect(wrong).toEqual([]);
+    expect(pluralCategories(language).sort()).toEqual(
+      [...intl.resolvedOptions().pluralCategories].sort(),
+    );
+  });
+});

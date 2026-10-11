@@ -189,7 +189,8 @@
   },
   "progression": {
     "new_rung": "Neue Stufe freigeschaltet",
-    "new_rungs": "{{count}} neue Stufen freigeschaltet",
+    "new_rungs_one": "{{count}} neue Stufe freigeschaltet",
+    "new_rungs_other": "{{count}} neue Stufen freigeschaltet",
     "new_rung_from": "Du beherrschst {{name}}",
     "rung_also_leads_to": "Dieselbe Stufe führt auch zu {{names}}."
   },
@@ -200,7 +201,8 @@
     "gallery_title": "Quests",
     "gallery_subtitle": "Einzelne Einheiten. Such dir eine aus und los.",
     "details_title": "Quest",
-    "count": "{{count}} Quests",
+    "count_one": "{{count}} Quest",
+    "count_other": "{{count}} Quests",
     "load_error": "Laden fehlgeschlagen",
     "retry": "Erneut versuchen",
     "start_error": "Die Quest konnte nicht gestartet werden",
@@ -346,7 +348,8 @@
     "load_error": "Abenteuer konnte nicht geladen werden",
     "start_error": "Das Abenteuer konnte nicht gestartet werden",
     "reward_xp_per_step": "bis zu +{{count}} XP pro Etappe",
-    "steps": "{{count}} Etappen",
+    "steps_one": "{{count}} Etappe",
+    "steps_other": "{{count}} Etappen",
     "weeks_one": "≈ {{count}} Woche",
     "weeks_other": "≈ {{count}} Wochen",
     "weeks_pace_one": "≈ {{count}} Woche an deinen Tagen",
@@ -456,15 +459,6 @@
     "leads_to": "führt zu {{name}}",
     "empty_filters_title": "Keine Treffer",
     "empty_filters_subtitle": "Entferne einen Filter oder leere die Suche.",
-    "pattern_push_horizontal": "Drücken (horizontal)",
-    "pattern_push_vertical": "Drücken (vertikal)",
-    "pattern_pull_horizontal": "Ziehen (horizontal)",
-    "pattern_pull_vertical": "Ziehen (vertikal)",
-    "pattern_squat": "Kniebeuge",
-    "pattern_hinge": "Hüftbeuge",
-    "pattern_core": "Rumpf",
-    "pattern_locomotion": "Fortbewegung",
-    "pattern_mobility": "Mobilität",
     "path_rung": "{{path}} · Stufe {{position}}/{{total}}",
     "path_working_up": "Auf dem Weg zu {{name}} · Stufe {{position}} von {{total}}",
     "path_climbed": "{{path}} · Erklommen",
@@ -504,7 +498,8 @@
     "increase_result_accessibility": "Ergebnis erhöhen",
     "hold_release_hint": "Lass beim Signalton los. Das ist das Ziel.",
     "hold_fight_hint": "Halte bis zum Signalton: Der Schlag sitzt ganz.",
-    "fight_target_changed": "Ziel geändert: Der Boss zählt bis {{count}} Wiederholungen.",
+    "fight_target_changed_one": "Ziel geändert: Der Boss zählt bis {{count}} Wiederholung.",
+    "fight_target_changed_other": "Ziel geändert: Der Boss zählt bis {{count}} Wiederholungen.",
     "fight_target_changed_time": "Ziel geändert: Der Boss zählt bis {{seconds}} s.",
     "crit_rule": "Kritischer Treffer: {{one}} % bei einer Wiederholung mehr, {{two}} % bei zwei, nicht darüber.",
     "crit_rule_one": "Kritischer Treffer: {{one}} % bei einer Wiederholung mehr, nicht darüber.",
@@ -518,13 +513,17 @@
     "paused_title": "Einheit pausiert",
     "pr_exercise": "Rekord bei {{exercise}}",
     "pr_longest_session": "Längste Einheit",
-    "pr_more": "+{{count}} weitere Bestwerte",
+    "pr_more_one": "+{{count}} weiterer Bestwert",
+    "pr_more_other": "+{{count}} weitere Bestwerte",
     "pr_most_xp": "Meiste XP in einer Einheit",
     "pr_new_record": "Neuer Bestwert",
     "standing_title": "Beste Leistung",
-    "standing_lifetime_2": "Zweitbeste von {{count}} Einheiten",
-    "standing_lifetime_3": "Drittbeste von {{count}} Einheiten",
-    "standing_recent_1": "Deine beste von {{count}} Einheiten",
+    "standing_lifetime_2_one": "Zweitbeste von {{count}} Einheit",
+    "standing_lifetime_2_other": "Zweitbeste von {{count}} Einheiten",
+    "standing_lifetime_3_one": "Drittbeste von {{count}} Einheit",
+    "standing_lifetime_3_other": "Drittbeste von {{count}} Einheiten",
+    "standing_recent_1_one": "Deine beste von {{count}} Einheit",
+    "standing_recent_1_other": "Deine beste von {{count}} Einheiten",
     "standing_recent_2": "Zweitbeste deiner letzten {{count}}",
     "standing_recent_3": "Drittbeste deiner letzten {{count}}",
     "quit_button": "Quest abbrechen",
@@ -564,7 +563,8 @@
     "up_next": "Als Nächstes",
     "victory_title": "Quest geschafft!",
     "village_growth_cta": "Dein Dorf ansehen",
-    "village_growth_more": "+{{count}} weitere",
+    "village_growth_more_one": "+{{count}} weiteres",
+    "village_growth_more_other": "+{{count}} weitere",
     "village_growth_title": "Dein Dorf wächst",
     "village_tier_up_title": "Dein Dorf ist gewachsen!",
     "xp_overshoot": "davon +{{count}} fürs Übertreffen deiner Ziele",
@@ -892,7 +892,6 @@
     "lead_rest_lit_date": "Heute nichts, und nichts verloren: Die Flamme hält bis zum {{date}}.",
     "work_behind_one": "{{muscles}} hinkt hinterher.",
     "work_behind_other": "{{muscles}} hinken hinterher.",
-    "list_and": "{{a}} und {{b}}",
     "muscle_share": "{{muscle}} ({{share}})",
     "duration_hm": "{{h}} Std. {{m}} Min.",
     "duration_m": "{{m}} Min.",
@@ -916,10 +915,12 @@
     "filter_streaks": "Flamme",
     "filter_xp": "XP",
     "filter_special": "Besondere",
-    "more_count": "+{{count}} weitere Erfolge",
+    "more_count_one": "+{{count}} weiterer Erfolg",
+    "more_count_other": "+{{count}} weitere Erfolge",
     "show_less": "Weniger anzeigen",
     "new_unlock": "Erfolg freigeschaltet!",
-    "new_unlocks": "{{count}} Erfolge freigeschaltet!",
+    "new_unlocks_one": "{{count}} Erfolg freigeschaltet!",
+    "new_unlocks_other": "{{count}} Erfolge freigeschaltet!",
     "badges": {
       "first_workout": {
         "title": "Erste Schritte",
@@ -1062,7 +1063,8 @@
     "crit": "KRIT!",
     "daily_xp_bonus": "davon +{{count}} für die Quest des Tages",
     "on": "An",
-    "off": "Aus"
+    "off": "Aus",
+    "list_and": "{{a}} und {{b}}"
   },
   "splash": {
     "loading": "Dein Dorf wird gebaut…"
@@ -1102,7 +1104,8 @@
     "kept_level": "Dieses Level stammt aus dem, was du geschafft hattest, bevor das Dorf anders zu zählen begann.",
     "hall_times": "×{{count}}",
     "trophy_defeated": "Besiegt am {{date}}",
-    "trophy_victories": "{{count}} Siege",
+    "trophy_victories_one": "{{count}} Sieg",
+    "trophy_victories_other": "{{count}} Siege",
     "style_strength": "Kraft",
     "style_calisthenics": "Calisthenics",
     "style_yoga": "Yoga",
@@ -2060,7 +2063,8 @@
     "pwTitle": "Ein Passwort für Bati",
     "pwTitleChange": "Ein neues Passwort",
     "pwNotCloud": "Nicht das deiner Cloud.",
-    "pwHint": "Mindestens {{count}} Zeichen. Ein kurzer Satz funktioniert sehr gut.",
+    "pwHint_one": "Mindestens {{count}} Zeichen. Ein kurzer Satz funktioniert sehr gut.",
+    "pwHint_other": "Mindestens {{count}} Zeichen. Ein kurzer Satz funktioniert sehr gut.",
     "pwMore_one": "Noch {{count}} Zeichen. Ein kurzer Satz funktioniert sehr gut.",
     "pwMore_other": "Noch {{count}} Zeichen. Ein kurzer Satz funktioniert sehr gut.",
     "pwReread": "Lies es dir vor dem Weitermachen noch einmal durch.",
@@ -2344,24 +2348,57 @@
   },
   "rest_messages": {
     "overtraining": [
-      "Du hast diese Woche hart trainiert: {{count}} Trainings. Denk an einen Erholungstag.",
-      "Schon {{count}} Trainings diese Woche. Ruhe verdient man sich genauso wie Fortschritt.",
-      "{{count}} Trainings diese Woche geschafft. Ein Erholungstag schärft das nächste."
+      {
+        "line_one": "Du hast diese Woche hart trainiert: {{count}} Training. Denk an einen Erholungstag.",
+        "line_other": "Du hast diese Woche hart trainiert: {{count}} Trainings. Denk an einen Erholungstag."
+      },
+      {
+        "line_one": "Schon {{count}} Training diese Woche. Ruhe verdient man sich genauso wie Fortschritt.",
+        "line_other": "Schon {{count}} Trainings diese Woche. Ruhe verdient man sich genauso wie Fortschritt."
+      },
+      {
+        "line_one": "{{count}} Training diese Woche geschafft. Ein Erholungstag schärft das nächste.",
+        "line_other": "{{count}} Trainings diese Woche geschafft. Ein Erholungstag schärft das nächste."
+      }
     ],
     "consecutive_days": [
-      "Du hast {{count}} Tage am Stück trainiert! Gönn dir einen Ruhetag, bevor du dich übertrainierst.",
-      "{{count}} Tage am Stück ohne Pause. Auch Helden brauchen eine.",
-      "{{count}} Tage Training in Folge. Ruhe gehört zum Plan, sie unterbricht ihn nicht."
+      {
+        "line_one": "Du hast {{count}} Tag am Stück trainiert! Gönn dir einen Ruhetag, bevor du dich übertrainierst.",
+        "line_other": "Du hast {{count}} Tage am Stück trainiert! Gönn dir einen Ruhetag, bevor du dich übertrainierst."
+      },
+      {
+        "line_one": "{{count}} Tag am Stück ohne Pause. Auch Helden brauchen eine.",
+        "line_other": "{{count}} Tage am Stück ohne Pause. Auch Helden brauchen eine."
+      },
+      {
+        "line_one": "{{count}} Tag Training in Folge. Ruhe gehört zum Plan, sie unterbricht ihn nicht.",
+        "line_other": "{{count}} Tage Training in Folge. Ruhe gehört zum Plan, sie unterbricht ihn nicht."
+      }
     ],
     "high_volume": [
-      "{{count}} Trainings diese Woche! Dein Körper braucht Zeit, um sich zu erholen und stärker zu werden.",
-      "{{count}} Trainings diese Woche, das ist ordentlich Volumen. Kraft entsteht in der Erholung.",
-      "{{count}} Trainings in sieben Tagen. Gib deinem Körper einen Tag, um deinen Ehrgeiz einzuholen."
+      {
+        "line_one": "{{count}} Training diese Woche! Dein Körper braucht Zeit, um sich zu erholen und stärker zu werden.",
+        "line_other": "{{count}} Trainings diese Woche! Dein Körper braucht Zeit, um sich zu erholen und stärker zu werden."
+      },
+      {
+        "line_one": "{{count}} Training diese Woche, das ist ordentlich Volumen. Kraft entsteht in der Erholung.",
+        "line_other": "{{count}} Trainings diese Woche, das ist ordentlich Volumen. Kraft entsteht in der Erholung."
+      },
+      {
+        "line_one": "{{count}} Training in sieben Tagen. Gib deinem Körper einen Tag, um deinen Ehrgeiz einzuholen.",
+        "line_other": "{{count}} Trainings in sieben Tagen. Gib deinem Körper einen Tag, um deinen Ehrgeiz einzuholen."
+      }
     ],
     "deload": [
-      "Vier harte Wochen am Stück. Nimm dir eine leichtere: weniger Volumen, dieselbe Gewohnheit. Dein nächster Monat beginnt hier.",
-      "Ein Monat voller harter Wochen liegt hinter dir. Schalt ein paar Tage zurück, der Fortschritt kommt, während du dich erholst.",
-      "Vier harte Wochen in Folge. Diese Woche heißt es: leichter trainieren, nicht aufhören."
+      {
+        "line": "Vier harte Wochen am Stück. Nimm dir eine leichtere: weniger Volumen, dieselbe Gewohnheit. Dein nächster Monat beginnt hier."
+      },
+      {
+        "line": "Ein Monat voller harter Wochen liegt hinter dir. Schalt ein paar Tage zurück, der Fortschritt kommt, während du dich erholst."
+      },
+      {
+        "line": "Vier harte Wochen in Folge. Diese Woche heißt es: leichter trainieren, nicht aufhören."
+      }
     ]
   }
 }

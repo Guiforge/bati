@@ -8,6 +8,7 @@ import { Button, H1, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Crosshair, Minus, Pause, Plus } from "@/components/icons";
+import { formatShare } from "@/components/journal/journalFormat";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { slotCaption } from "@/components/quests/substitutionCaption";
@@ -503,7 +504,7 @@ export function ActiveExerciseView() {
                 textShadowOffset={{ width: 0, height: 1 }}
                 textShadowRadius={6}
               >
-                {Math.round(progressPercent)}%
+                {formatShare(language, progressPercent)}
               </Text>
             )}
             <Button

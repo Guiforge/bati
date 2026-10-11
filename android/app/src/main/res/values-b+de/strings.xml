@@ -1,0 +1,6 @@
+<resources>
+  <string name="widget_flame_label">"Bati: Flamme"</string>
+  <string name="widget_flame_description">"Deine Trainingsflamme."</string>
+  <string name="widget_weekly_label">"Bati: Woche"</string>
+  <string name="widget_weekly_description">"Die Einheiten dieser Woche, gemessen an deinem Schwur."</string>
+</resources>

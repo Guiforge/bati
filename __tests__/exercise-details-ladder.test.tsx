@@ -223,7 +223,7 @@ describe("a rung that forks", () => {
     // The rung is the subject, not the card's headline: "Dip also leads to…" would be a different,
     // and false, sentence. The same words close the quest log and the victory card.
     expect(
-      screen.getByText("The same rung also leads to Pike Push-Up, Diamond Push-Up."),
+      screen.getByText("The same rung also leads to Pike Push-Up and Diamond Push-Up."),
     ).toBeTruthy();
   });
 

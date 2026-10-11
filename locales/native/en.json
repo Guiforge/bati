@@ -1,0 +1,11 @@
+{
+  "ios": {
+    "NSPhotoLibraryUsageDescription": "Used to pick a photo for your hero's avatar, or for an exercise or quest you made. It stays on your device, and leaves it only inside a backup or an encrypted sync you turn on."
+  },
+  "android": {
+    "widget_flame_label": "Bati: Flame",
+    "widget_flame_description": "Your training flame.",
+    "widget_weekly_label": "Bati: Week",
+    "widget_weekly_description": "Sessions this week against your oath."
+  }
+}

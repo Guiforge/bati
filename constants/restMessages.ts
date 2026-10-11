@@ -1,22 +1,24 @@
 import type { RestSuggestion } from "@/db/restSuggestions";
-import { localizedTable } from "@/src/i18n/copy";
-import type { Localized } from "@/src/i18n/deviceLanguage";
+import { LOCALES } from "@/src/i18n/copy";
 
-type MessagePool = Localized<string[]>;
-
-// ponytail: the pools are arrays in `locales/*.json` (`rest_messages`), and `RestNote` fills
-// `{{count}}` itself. An array has no plural suffix to hang a form on, and none of the four
-// languages needs one: every count here is 5 or more. Ceiling: a language whose noun changes
-// above 4 (Russian: 21 дней, 22 дня). Then these become keyed lines read with `t(…, { count })`.
+type RestReason = Exclude<RestSuggestion["reason"], "none">;
 
 /**
  * Typed on `Exclude<..., "none">` so a fifth rest-suggestion reason added to
- * `getRestSuggestion()` without a matching pool here is a compile error, not a silent blank line.
+ * `getRestSuggestion()` without a matching pool in `locales/*.json` is a compile error, not a
+ * silent blank line.
+ *
+ * A pool is an array of lines (`rest_messages`), and a line that counts carries the plural forms
+ * of its language: `line_one`, `line_other`, and `line_few` where the noun changes above 4, as in
+ * Russian (21 день, 22 дня, 25 дней). English is only read here for the size of each pool, which
+ * `__tests__/i18n-keys.test.ts` holds equal in every language.
  */
-export const REST_SUGGESTION_MESSAGES: Record<
-  Exclude<RestSuggestion["reason"], "none">,
-  MessagePool
-> = localizedTable((l) => l.rest_messages);
+const POOLS: Record<RestReason, readonly unknown[]> = LOCALES.en.rest_messages;
+
+/** The key of the day's line for a reason, to read with `t(key, { count })`. */
+export function restMessageKey(reason: RestReason, seed: string): string {
+  return `rest_messages.${reason}.${pickDailyVariant(Object.keys(POOLS[reason]), seed)}.line`;
+}
 
 /**
  * Deterministic pick so the same seed (a day + a reason) always lands on the same variant —

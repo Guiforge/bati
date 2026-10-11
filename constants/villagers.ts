@@ -150,7 +150,7 @@ export type CueMoment = (typeof CUE_MOMENTS)[number];
 /**
  * Who may carry a moment, how loud it is, and how they stand.
  *
- * Typed on `Record<CueMoment, …>` for the same reason `REST_SUGGESTION_MESSAGES` is typed on
+ * Typed on `Record<CueMoment, …>` for the same reason the pools of `constants/restMessages.ts` are typed on
  * `Exclude<RestSuggestion["reason"], "none">`: a moment added to `CUE_MOMENTS` without an entry
  * here is a compile error, not a cameo that silently never fires.
  */

@@ -30,7 +30,7 @@ const LISTS: Record<WordLanguage, string[]> = { en: english, fr: french, es: spa
  * in their language.
  */
 export function wordLanguageFor(appLanguage: string): WordLanguage {
-  return appLanguage === "fr" || appLanguage === "es" ? appLanguage : "en";
+  return Object.hasOwn(LISTS, appLanguage) ? (appLanguage as WordLanguage) : "en";
 }
 
 export const RECOVERY_WORDS = 12;

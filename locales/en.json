@@ -189,7 +189,8 @@
   },
   "progression": {
     "new_rung": "New rung unlocked",
-    "new_rungs": "{{count}} new rungs unlocked",
+    "new_rungs_one": "{{count}} new rung unlocked",
+    "new_rungs_other": "{{count}} new rungs unlocked",
     "new_rung_from": "You have mastered {{name}}",
     "rung_also_leads_to": "The same rung also leads to {{names}}."
   },
@@ -200,7 +201,8 @@
     "gallery_title": "Quests",
     "gallery_subtitle": "Single sessions. Pick one and go",
     "details_title": "Quest",
-    "count": "{{count}} quests",
+    "count_one": "{{count}} quest",
+    "count_other": "{{count}} quests",
     "load_error": "Failed to load",
     "retry": "Retry",
     "start_error": "Could not start the quest",
@@ -346,7 +348,8 @@
     "load_error": "Failed to load adventure",
     "start_error": "Could not start the adventure",
     "reward_xp_per_step": "up to +{{count}} XP per step",
-    "steps": "{{count}} steps",
+    "steps_one": "{{count}} step",
+    "steps_other": "{{count}} steps",
     "weeks_one": "≈ {{count}} week",
     "weeks_other": "≈ {{count}} weeks",
     "weeks_pace_one": "≈ {{count}} week on your days",
@@ -456,15 +459,6 @@
     "leads_to": "leads to {{name}}",
     "empty_filters_title": "No matches",
     "empty_filters_subtitle": "Try removing a filter or clearing the search.",
-    "pattern_push_horizontal": "Push (horizontal)",
-    "pattern_push_vertical": "Push (vertical)",
-    "pattern_pull_horizontal": "Pull (horizontal)",
-    "pattern_pull_vertical": "Pull (vertical)",
-    "pattern_squat": "Squat",
-    "pattern_hinge": "Hinge",
-    "pattern_core": "Core",
-    "pattern_locomotion": "Locomotion",
-    "pattern_mobility": "Mobility",
     "path_rung": "{{path}} · Rung {{position}}/{{total}}",
     "path_working_up": "Working up to {{name}} · rung {{position}} of {{total}}",
     "path_climbed": "{{path}} · Climbed",
@@ -504,7 +498,8 @@
     "increase_result_accessibility": "Increase result",
     "hold_release_hint": "Let go at the beep. That is the target.",
     "hold_fight_hint": "Hold to the beep: the blow lands whole.",
-    "fight_target_changed": "Target changed: the boss counts up to {{count}} reps.",
+    "fight_target_changed_one": "Target changed: the boss counts up to {{count}} rep.",
+    "fight_target_changed_other": "Target changed: the boss counts up to {{count}} reps.",
     "fight_target_changed_time": "Target changed: the boss counts up to {{seconds}} s.",
     "crit_rule": "Critical hit: {{one}}% at one rep more, {{two}}% at two, no further.",
     "crit_rule_one": "Critical hit: {{one}}% at one rep more, no further.",
@@ -518,13 +513,17 @@
     "paused_title": "Session paused",
     "pr_exercise": "{{exercise}} record",
     "pr_longest_session": "Longest session",
-    "pr_more": "+{{count}} more bests",
+    "pr_more_one": "+{{count}} more best",
+    "pr_more_other": "+{{count}} more bests",
     "pr_most_xp": "Most XP in one session",
     "pr_new_record": "New best",
     "standing_title": "Best effort",
-    "standing_lifetime_2": "2nd best in {{count}} sessions",
-    "standing_lifetime_3": "3rd best in {{count}} sessions",
-    "standing_recent_1": "Your best in {{count}} sessions",
+    "standing_lifetime_2_one": "2nd best in {{count}} session",
+    "standing_lifetime_2_other": "2nd best in {{count}} sessions",
+    "standing_lifetime_3_one": "3rd best in {{count}} session",
+    "standing_lifetime_3_other": "3rd best in {{count}} sessions",
+    "standing_recent_1_one": "Your best in {{count}} session",
+    "standing_recent_1_other": "Your best in {{count}} sessions",
     "standing_recent_2": "2nd best of your last {{count}}",
     "standing_recent_3": "3rd best of your last {{count}}",
     "quit_button": "Quit quest",
@@ -564,7 +563,8 @@
     "up_next": "Up Next",
     "victory_title": "Quest Complete!",
     "village_growth_cta": "View your village",
-    "village_growth_more": "+{{count}} more",
+    "village_growth_more_one": "+{{count}} more",
+    "village_growth_more_other": "+{{count}} more",
     "village_growth_title": "Your village grows",
     "village_tier_up_title": "Your village grew!",
     "xp_overshoot": "incl. +{{count}} for beating your targets",
@@ -892,7 +892,6 @@
     "lead_rest_lit_date": "Nothing today, and nothing lost: the flame holds until {{date}}.",
     "work_behind_one": "{{muscles}} is behind.",
     "work_behind_other": "{{muscles}} are behind.",
-    "list_and": "{{a}} and {{b}}",
     "muscle_share": "{{muscle}} ({{share}})",
     "duration_hm": "{{h}}h {{m}}m",
     "duration_m": "{{m}} min",
@@ -916,10 +915,12 @@
     "filter_streaks": "Flame",
     "filter_xp": "XP",
     "filter_special": "Special",
-    "more_count": "+{{count}} more achievements",
+    "more_count_one": "+{{count}} more achievement",
+    "more_count_other": "+{{count}} more achievements",
     "show_less": "Show less",
     "new_unlock": "Achievement Unlocked!",
-    "new_unlocks": "{{count}} Achievements Unlocked!",
+    "new_unlocks_one": "{{count}} Achievement Unlocked!",
+    "new_unlocks_other": "{{count}} Achievements Unlocked!",
     "badges": {
       "first_workout": {
         "title": "First Steps",
@@ -1062,7 +1063,8 @@
     "crit": "CRIT!",
     "daily_xp_bonus": "incl. +{{count}} for the day's quest",
     "on": "On",
-    "off": "Off"
+    "off": "Off",
+    "list_and": "{{a}} and {{b}}"
   },
   "splash": {
     "loading": "Building your village…"
@@ -1102,7 +1104,8 @@
     "kept_level": "This level carries over from what you had done before the village changed how it counts.",
     "hall_times": "×{{count}}",
     "trophy_defeated": "Defeated {{date}}",
-    "trophy_victories": "{{count}} victories",
+    "trophy_victories_one": "{{count}} victory",
+    "trophy_victories_other": "{{count}} victories",
     "style_strength": "strength",
     "style_calisthenics": "calisthenics",
     "style_yoga": "yoga",
@@ -2049,7 +2052,8 @@
     "pwTitle": "A password for Bati",
     "pwTitleChange": "A new password",
     "pwNotCloud": "Not the one of your cloud.",
-    "pwHint": "At least {{count}} characters. A short sentence works very well.",
+    "pwHint_one": "At least {{count}} character. A short sentence works very well.",
+    "pwHint_other": "At least {{count}} characters. A short sentence works very well.",
     "pwMore_one": "{{count}} more character. A short sentence works very well.",
     "pwMore_other": "{{count}} more characters. A short sentence works very well.",
     "pwReread": "Read it over before you continue.",
@@ -2326,24 +2330,57 @@
   },
   "rest_messages": {
     "overtraining": [
-      "You've been training hard with {{count}} workouts this week. Consider a recovery day.",
-      "That's {{count}} workouts this week. Your body earns its rest the same as its gains.",
-      "{{count}} workouts down this week. A recovery day sharpens the next one."
+      {
+        "line_one": "You've been training hard with {{count}} workout this week. Consider a recovery day.",
+        "line_other": "You've been training hard with {{count}} workouts this week. Consider a recovery day."
+      },
+      {
+        "line_one": "That's {{count}} workout this week. Your body earns its rest the same as its gains.",
+        "line_other": "That's {{count}} workouts this week. Your body earns its rest the same as its gains."
+      },
+      {
+        "line_one": "{{count}} workout down this week. A recovery day sharpens the next one.",
+        "line_other": "{{count}} workouts down this week. A recovery day sharpens the next one."
+      }
     ],
     "consecutive_days": [
-      "You've trained {{count}} days in a row! Take a rest day to prevent overtraining.",
-      "{{count}} days in a row without a break. Even heroes need one.",
-      "That's {{count}} straight days of training. Rest is part of the plan, not a pause from it."
+      {
+        "line_one": "You've trained {{count}} day in a row! Take a rest day to prevent overtraining.",
+        "line_other": "You've trained {{count}} days in a row! Take a rest day to prevent overtraining."
+      },
+      {
+        "line_one": "{{count}} day in a row without a break. Even heroes need one.",
+        "line_other": "{{count}} days in a row without a break. Even heroes need one."
+      },
+      {
+        "line_one": "That's {{count}} straight day of training. Rest is part of the plan, not a pause from it.",
+        "line_other": "That's {{count}} straight days of training. Rest is part of the plan, not a pause from it."
+      }
     ],
     "high_volume": [
-      "You've completed {{count}} workouts this week! Your body needs time to recover and grow stronger.",
-      "{{count}} workouts this week, which is serious volume. Recovery is where the strength actually builds.",
-      "{{count}} workouts in seven days. Give your body a day to catch up to your ambition."
+      {
+        "line_one": "You've completed {{count}} workout this week! Your body needs time to recover and grow stronger.",
+        "line_other": "You've completed {{count}} workouts this week! Your body needs time to recover and grow stronger."
+      },
+      {
+        "line_one": "{{count}} workout this week, which is serious volume. Recovery is where the strength actually builds.",
+        "line_other": "{{count}} workouts this week, which is serious volume. Recovery is where the strength actually builds."
+      },
+      {
+        "line_one": "{{count}} workout in seven days. Give your body a day to catch up to your ambition.",
+        "line_other": "{{count}} workouts in seven days. Give your body a day to catch up to your ambition."
+      }
     ],
     "deload": [
-      "Four hard weeks in a row. Take an easier one: less volume, the same habit. Your next month starts here.",
-      "A month of heavy weeks behind you. Ease off for a few days, the gains catch up while you rest.",
-      "Four straight heavy weeks. This is the week to go lighter, not the week to stop."
+      {
+        "line": "Four hard weeks in a row. Take an easier one: less volume, the same habit. Your next month starts here."
+      },
+      {
+        "line": "A month of heavy weeks behind you. Ease off for a few days, the gains catch up while you rest."
+      },
+      {
+        "line": "Four straight heavy weeks. This is the week to go lighter, not the week to stop."
+      }
     ]
   }
 }

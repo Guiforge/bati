@@ -35,19 +35,6 @@ type LoadState =
 
 const ANDROID_MIN_BOTTOM_INSET = 24;
 
-/** English fallbacks for the movement patterns, so a missing key still reads as a word. */
-const PATTERN_FALLBACKS: Record<MovementPattern, string> = {
-  push_horizontal: "Push (horizontal)",
-  push_vertical: "Push (vertical)",
-  pull_horizontal: "Pull (horizontal)",
-  pull_vertical: "Pull (vertical)",
-  squat: "Squat",
-  hinge: "Hinge",
-  core: "Core",
-  locomotion: "Locomotion",
-  mobility: "Mobility",
-};
-
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
 const exerciseKey = (e: Exercise) => String(e.id);
 const ListGap = () => <YStack height={8} />;
@@ -256,7 +243,7 @@ export default function ExerciseCatalogue() {
       label: t("exercises.filter_group_pattern"),
       chips: availablePatterns.map((p) => ({
         key: `p-${p}`,
-        label: t(`exercises.pattern_${p}`, PATTERN_FALLBACKS[p]),
+        label: t(`patterns.${p}`),
         active: filters.patterns.has(p),
         onPress: () => togglePattern(p),
       })),

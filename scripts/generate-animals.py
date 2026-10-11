@@ -108,6 +108,15 @@ EYES = (
     "The eyes are plain animal eyes, nothing glows. The eyes are small and set deep under a heavy "
     "brow, each painted as one flat dark-brown fill in shadow, the same value as the shadow around them."
 )
+# The ermine is white (or black): the common eye sentence paints a dark mask on it, so its face is said instead.
+_EYES_HEAD = "The eyes are plain animal eyes, nothing glows. "
+ERMINE_EYES = {
+    "white": _EYES_HEAD + "The face is as white as the body: white forehead, white cheeks and a white muzzle from the nose to the ears, "
+    "the fur around each eye the same clean white as the brow, and each eye a small black bead edged only by the thin black ink line. "
+    "Shadows on the white fur are a warm pale grey, never blue.",
+    "black": _EYES_HEAD + "The face is as black as the body: the fur around each eye as black as the face, no pale mask, no pale ring, "
+    "and each eye a small black bead edged only by the thin black ink line.",
+}
 SALMON_EYE = "The eye is plain, nothing glows: a small dark eye painted as one flat fill."
 
 # One rule per entry, joined into STYLE; the self-test checks each one is in every prompt.
@@ -182,31 +191,31 @@ COAT = {
     "bear": {
         "base": "Its coat is deep chestnut with a paler tan muzzle and a plain chest with no white blaze.",
         "rare": "Its coat is a deep brown, the hairs of the nape and shoulders tipped in pale silver-grey, a grizzled mantle, with a paler tan muzzle and a plain chest with no white blaze.",
-        "winter": "Its coat is thick and shaggy, a darker brown, with frost caught in the hairs of the shoulders and a paler tan muzzle and a plain chest with no white blaze.",
+        "winter": "Its coat is thick and shaggy, a darker brown, with frost caught in the hairs of the shoulders and a paler tan muzzle and a plain chest with no white blaze. No snowflakes in the air.",
     },
     "stag": {
         "base": "Its coat is russet with a cream rump patch and a darker mane.",
-        "rare": "Its coat is a creamy white from nose to rump, with dark eyes, dark hooves and antlers of pale bone.",
-        "winter": "Its coat is dense and grey, the neck thickened, the antlers bare and washed pale by the cold.",
+        "rare": "Its coat is a creamy white from nose to rump, with dark eyes, dark hooves and antlers of pale bone; its face, neck and legs the same creamy white as its body, never russet, brown or tan.",
+        "winter": "Its coat is a dense shaggy uniform ash-grey pelt over the whole body, no red, chestnut or brown, the neck thickened, the antlers bare and washed pale by the cold. No snowflakes in the air.",
     },
     "horse": {
-        "base": "Its coat is a glossy mahogany bay with a black mane, black tail, black lower legs and a single white blaze down the face. All four lower legs stay solid black from the knee down to the hooves, with no white socks, no white pasterns and no pale feathering; the only white marking anywhere is the blaze on the face.",
-        "rare": "Its coat is a deep true black with a pale silver-grey mane and tail and no white marking. A thin cold rim of light runs along the whole back and head so the silhouette reads against the night.",
-        "winter": "Its coat is long, rough and dull, a faded bay, the mane tangled and caught with snow, the lower legs dark and a single white blaze down the face.",
+        "base": "Its coat is a glossy mahogany bay, a lean bay riding horse, not a draft horse; mane, tail and lower legs solid black; no white socks, no feathered fetlocks, no flaxen hair; the only white is the blaze down the face.",
+        "rare": "Its coat is a deep true black with a pale silver-grey mane and tail and no white marking, the legs black down to the hooves. A thin cold rim of light runs along the whole back and head so the silhouette reads against the night.",
+        "winter": "Its coat is a lean bay riding horse, not a draft horse; mane, tail and lower legs solid black; no white socks, no feathered fetlocks, no flaxen hair; the only white is the blaze down the face. The hair is long, coarse and a little darker than in summer, with snow caught in the black mane. No snowflakes in the air.",
     },
     "salmon": {
         "base": "Its back is steel blue, its flank silver scattered with small dark cross-shaped spots and its belly white.",
         "rare": "Its flank is a matte golden yellow, its back a deeper gold-brown, its fins amber and its belly pale cream, with the same small dark cross-shaped spots.",
-        "winter": "It wears the matte silver of its sea phase: dull silver flanks, a steel-blue back, a white belly, a few small dark spots and no spawning colours.",
+        "winter": "It wears the matte silver of its sea phase: dull silver flanks, a steel-blue back, a white belly, a few small dark spots and no spawning colours. No snowflakes in the air.",
     },
     "ermine": {
         "base": "Its fur is the white of a winter coat, with small round white ears and a tail tipped in solid black: pure white fur on the whole head with no dark mask and no dark patches around the eyes; only the tail tip is black. The eyes are tiny black beads, the paws are white, and the only dark marks are the eyes, the nose and the black tail tip.",
-        "rare": "Its fur is almost black from nose to tail, the belly barely paler, the ears dark. Its outline is black ink all the way round.",
+        "rare": "Its fur is black all over, chest, belly, legs and paws as black as its back, no white bib, no white paws; the long slender body and short legs of a stoat, never the bulk of a wolverine or a badger; the ears dark. Its outline is black ink all the way round.",
     },
     "boar": {
         "base": "Its coat is coarse, bristled and dark grey, with ivory tusks.",
         "rare": "Its coat is a very pale ash grey, the colour of cold ashes, with ivory tusks and dark eyes.",
-        "winter": "Its coat is a warm russet brown with long bristles and a thick undercoat, frost lying on its back, clearly brown and not grey; the tusks are ivory.",
+        "winter": "Its coat is a warm russet brown with long bristles and a thick undercoat, frost lying on its back, clearly brown and not grey; the tusks are ivory. No snowflakes in the air.",
     },
 }
 
@@ -226,7 +235,7 @@ def legendary(kind: str, front: str, head: str = "", tail: str = "") -> str:
             f"one {front} raised mid-stride, its gaze fixed on us from deep in the shadow under its heavy brow. "
             f"It is whole, from its head to its rump, and fills the picture right up to the margin. "
             f"The only light comes from behind it, a cold moonlight that outlines its shoulders in a thin pale "
-            f"line, while its face and body are in deep black ink shadow with hard edges. "
+            f"line, while its face and flank in shadow, the coat colour still clearly readable, with hard edges. "
             f"It is still a natural {kind}, no armor, no glow and no magic, with old pale scars across its "
             f"shoulder and muzzle.{tail}")
 
@@ -235,19 +244,19 @@ STAGE = {
     "bear": {
         "young": "It is a half-grown bear drawn at about half the size of a grown bear, standing in the lower middle of the picture with wide empty night background all around it, facing right in the same proud three-quarter view. It is a gangly two-year-old bear, all legs: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long muzzle, ears that look large for its head, no shoulder hump yet, oversized paws, a short scruffy coat; a wary, awkward stance, drawn small in the picture with wide empty night around it. Its coat is one even colour from chin to belly, with no pale patch on the chest or belly. Its mouth is closed.",
         "adult": f"It is a bear in its prime, facing right, {SEEN_BELOW}: huge and powerful, with a thick neck, heavy shoulder muscle and a full coat.",
-        "venerable": f"It is a very old bear, epic and unbowed, facing right, {SEEN_BELOW}: the coat stays BROWN, a dull faded chestnut duller than the adult's, with a pale grey muzzle and silver-grey frost only on the top of the head, the nape and the upper shoulders, never on the rest of the body; old scars across the shoulder and muzzle, a torn ear with a notch bitten out of it, bony hips under thin fur, a sagging belly and worn blunt claws; the chest stays one plain colour.",
+        "venerable": f"It is a very old bear, epic and unbowed, facing right, {SEEN_BELOW}: the coat duller than the adult's, with a muzzle frosted grey and silver-grey frost only on the top of the head, the nape and the upper shoulders, never on the rest of the body; old scars across the shoulder and muzzle, a torn ear with a notch bitten out of it, bony hips under thin fur, a sagging belly and worn blunt claws; the chest stays one plain colour.",
         "legendary": legendary("bear", "forepaw"),
     },
     "stag": {
         "young": "It is a young stag drawn at about half the size of a grown stag, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent stag: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long muzzle, ears that look large for its head, a short scruffy coat; a wary, awkward stance. Its first antlers are two short straight spikes no longer than its ears, with no branches and no tines at all, far smaller than a grown stag's antlers.",
         "adult": f"It is a stag in its prime, facing right, {SEEN_BELOW}: broad-chested and muscular, with full antlers of many tines and a proud raised head.",
-        "venerable": f"It is a very old stag, epic and unbowed, facing right, {SEEN_BELOW}: the coat stays RUSSET, duller than the adult's, with a pale grey muzzle and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear, worn blunt hooves and massive wide antlers thick with tines.",
+        "venerable": f"It is a very old stag, epic and unbowed, facing right, {SEEN_BELOW}: the coat duller than the adult's, with a muzzle frosted grey and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear, worn blunt hooves and massive wide antlers thick with tines.",
         "legendary": legendary("stag", "front leg", ", crowned with immense antlers of many tines,"),
     },
     "horse": {
         "young": "It is a young horse, a gangly foal, drawn at about half the size of a grown horse, standing low in the lower middle of the picture with wide empty night background all around it, facing right. It is an awkward leggy colt, not a small adult: very long thin legs for a short, narrow body, a thin neck, a small head, a short upright brush of a mane, a short tail, oversized hooves; a wary, awkward stance; bare-backed, nothing on its back or head.",
         "adult": f"It is a horse in its prime, facing right, {SEEN_BELOW}: fully grown, deep-chested and muscular, the coat in good condition and the head carried high; bare-backed, nothing on its back or head.",
-        "venerable": f"It is a very old horse, epic and unbowed, facing right, {SEEN_BELOW}: the coat keeps its base colour, duller than the adult's, with a pale grey muzzle and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a hollowed back and a sagging belly, a torn ear and worn blunt hooves, standing slow and dignified; bare-backed, nothing on its back or head.",
+        "venerable": f"It is a very old horse, epic and unbowed, facing right, {SEEN_BELOW}: the coat duller than the adult's, with a muzzle frosted grey and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a hollowed back and a sagging belly, a torn ear and worn blunt hooves, standing slow and dignified; bare-backed, nothing on its back or head.",
         "legendary": legendary("horse", "front leg", tail=" Bare-backed, nothing on its back or head, no saddle."),
     },
     "salmon": {
@@ -259,13 +268,13 @@ STAGE = {
     "ermine": {
         "young": "It is a young ermine drawn at about half the size of a grown ermine, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a gangly young ermine: thin legs that look slightly too long for its body, a slim waist, a narrow head, ears that look large for its head, oversized paws, a short scruffy coat and a short bold tail tip; a wary, awkward stance.",
         "adult": f"It is an ermine in its prime, facing right, {SEEN_BELOW}: sleek, lithe and muscular, alert, head raised, the coat clean and smooth and the tail tip sharp.",
-        "venerable": f"It is a very old ermine, epic and unbowed, facing right, {SEEN_BELOW}: the fur is thin over bony hips, a sagging belly, fine creases around the muzzle, a pale grey muzzle with long pale whiskers, a torn ear, worn blunt claws and a slow low-slung stance; the legs and paws stay snow white, never brown, and the muzzle is pale grey-white, not brown.",
+        "venerable": f"It is a very old ermine, epic and unbowed, facing right, {SEEN_BELOW}: the fur is thin over bony hips, a sagging belly, fine creases around the muzzle, a muzzle frosted grey with long pale whiskers, a torn ear, worn blunt claws and a slow low-slung stance.",
         "legendary": legendary("ermine", "forepaw").replace("a cold moonlight that outlines its shoulders in a thin pale line,", "a faint cold moonlight with no pale or blue band along its back, its whole outline black ink,"),
     },
     "boar": {
         "young": "It is a young boar drawn at about half the size of a grown boar, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent boar: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long snout, ears that look large for its head, tusks just showing as small nubs, a short low scruffy ridge of bristles; a wary, awkward stance.",
         "adult": f"It is a boar in its prime, facing right, {SEEN_BELOW}: full-sized, deep-chested and thick-necked, with a tall bristle ridge and fully grown tusks.",
-        "venerable": f"It is a very old boar, epic and unbowed, facing right, {SEEN_BELOW}: the coat keeps its dark grey, duller than the adult's, with a pale grey snout and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear and thick worn tusks.",
+        "venerable": f"It is a very old boar, epic and unbowed, facing right, {SEEN_BELOW}: the coat duller than the adult's, with a snout frosted grey and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear and thick worn tusks.",
         "legendary": legendary("boar", "front leg", tail=" Heavy curved tusks."),
     },
 }
@@ -281,7 +290,7 @@ CONCEPTS = {
         "and never cropped, facing right. It stands on all four paws, its head thrown up toward the upper right and its jaws "
         "wide open in a full roar, long fangs visible, a fierce and serious roar, never comical, its mane of fur bristling "
         "on its neck and shoulders. The only light comes from behind it, a cold moonlight that outlines the whole crest of "
-        "its back, neck and head in a thin pale line, while its face and flank are in deep black ink shadow with hard edges."
+        "its back, neck and head in a thin pale line, while its face and flank in shadow, the coat colour still clearly readable, with hard edges."
         + CONCEPT_TAIL, None),
     "charge": (STAGE["bear"]["legendary"], CHARGE_POSE),  # the default now; kept so --concept charge still files in legendary-charge/
     "upright": (
@@ -289,9 +298,21 @@ CONCEPTS = {
         "the right, visibly larger and broader than the adult, its forelegs hanging along its body, the long claws of its "
         "forepaws visible, its head held high and dominating the picture. It looks natural, neither human nor monstrous, "
         "and is whole in the picture with a clear margin around it, never cropped. The only light comes from behind it, a "
-        "cold moonlight that outlines its back and head in a thin pale line, while its face and body are in deep black ink "
-        "shadow with hard edges." + CONCEPT_TAIL, None),
+        "cold moonlight that outlines its back and head in a thin pale line, while its face and flank in shadow, the coat colour still clearly readable, "
+        "with hard edges." + CONCEPT_TAIL, None),
 }
+
+
+# Per-slug coat reinforcement, appended after the coat sentence.
+COAT_EXTRA = {
+    "bear-legendary-rare": "Even against the backlight, the long guard hairs over its hump, nape and shoulders are tipped in pale silver-grey, a frosted grizzled mantle clearly paler than its deep brown body.",
+}
+
+
+def eyes_of(animal: str, coat: str) -> str:
+    if animal == "salmon":
+        return SALMON_EYE
+    return ERMINE_EYES["black" if coat == "rare" else "white"] if animal == "ermine" else EYES
 
 
 def all_slugs() -> list[str]:
@@ -326,7 +347,7 @@ def prompt_for(slug: str, concept: str | None = None) -> str:
         text, pose = CONCEPTS[concept]
         pose = pose or THREE_QUARTER
     rules = style_rules(animal, stage, pose)
-    return " ".join((BACKGROUND, SILHOUETTE[animal], COAT[animal][coat], SALMON_EYE if animal == "salmon" else EYES, text, " ".join(rules)))
+    return " ".join(x for x in (BACKGROUND, SILHOUETTE[animal], COAT[animal][coat], COAT_EXTRA.get(slug, ""), eyes_of(animal, coat), text, " ".join(rules)) if x)
 
 
 def self_test() -> None:
@@ -372,8 +393,27 @@ def self_test() -> None:
         if animal == "salmon":
             assert SALMON_EYE in p and "painted as one flat fill" in p, slug
         else:
-            assert EYES in p and "The eyes are plain animal eyes, nothing glows." in p, slug
-            assert "flat dark-brown fill in shadow" in p and "disc" not in low, slug
+            assert eyes_of(animal, coat) in p and "The eyes are plain animal eyes, nothing glows." in p and "disc" not in low, slug
+            assert ("flat dark-brown fill in shadow" in p) == (animal != "ermine"), slug
+            if animal == "ermine":
+                assert ("no pale mask, no pale ring" in p) == (coat == "rare") and ("clean white as the brow" in p) == (coat != "rare"), slug
+        assert "deep black ink shadow" not in low and "ink shadow" not in low, slug
+        if charging:
+            assert "coat colour still clearly readable" in p, slug
+        if stage == "venerable":
+            assert not [w for w in ("stays brown", "stays russet", "snow white", "dark grey") if w in STAGE[animal][stage].lower()], slug
+        if coat == "winter":
+            assert "No snowflakes in the air." in p, slug
+        if slug.startswith("stag-") and coat == "rare":
+            assert "never russet, brown or tan" in p, slug
+        if slug.startswith("stag-") and coat == "winter":
+            assert "uniform ash-grey pelt" in p, slug
+        if slug.startswith("horse-") and coat in ("base", "winter"):
+            assert "a lean bay riding horse, not a draft horse; mane, tail and lower legs solid black; no white socks, no feathered fetlocks, no flaxen hair; the only white is the blaze" in p, slug
+        if slug.startswith("horse-") and coat == "rare":
+            assert "black down to the hooves" in p, slug
+        if slug == "ermine-adult-rare":
+            assert "as black as its back, no white bib, no white paws" in p and "never the bulk of a wolverine" in p, slug
         assert "cub" not in p.lower().split() and "cute" not in p.lower(), slug
         assert p.index("nothing glows") < p.index(STAGE[animal][parts_of(slug)[1]]), slug
     # the silhouette sentence is the same on every portrait of an animal (10, the ermine 7)
@@ -384,7 +424,7 @@ def self_test() -> None:
     assert not {"bear-young-rare", "ermine-adult-winter"} & set(slugs)
     for name, (text, pose) in CONCEPTS.items():
         p = prompt_for("bear-legendary", name)
-        assert BACKGROUND in p and SILHOUETTE["bear"] in p and EYES in p and "plain chest with no white blaze" in p, name
+        assert BACKGROUND in p and SILHOUETTE["bear"] in p and EYES in p and "coat colour still clearly readable" in p and "plain chest with no white blaze" in p, name
         assert "no armor, no glow and no magic" in p and "never cropped" in p and text in p, name
         assert (pose or THREE_QUARTER) in p and ((CHARGE_POSE in p) == (pose == CHARGE_POSE)), name
         assert (pose is None) == (THREE_QUARTER in p), name

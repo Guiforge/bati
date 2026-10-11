@@ -272,6 +272,8 @@ function BuildingDetail({
   // above "Built by your first rematch" said the same zero three times.
   const unbuiltDeed = building.tier === 4 && progress === null && !built;
 
+  const unbuiltMuscle = building.driver === "muscle" && building.level === 0;
+
   // One sentence naming the deed that raises this building, in its own unit.
   const driverLine = (() => {
     if (unbuiltDeed) return nextLine(building, t, language);
@@ -341,9 +343,13 @@ function BuildingDetail({
           <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
             {nameOf(building, language)}
           </Text>
-          <Text fontSize={12.5} color="$textSecondary">
-            {feedsLine(building, t, language)}
-          </Text>
+          {/* An unbuilt muscle building already says "Built by training your arms" below, and
+              "Rises with your arms" right above it was the same sentence twice. */}
+          {unbuiltMuscle ? null : (
+            <Text fontSize={12.5} color="$textSecondary">
+              {feedsLine(building, t, language)}
+            </Text>
+          )}
         </YStack>
         <YStack items="flex-end" gap={5}>
           <Text fontSize={13} fontWeight="600" color={built ? "$resourceGold" : "$textSecondary"}>

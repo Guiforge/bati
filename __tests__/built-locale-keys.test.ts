@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { muscleCodes } from "@/db/schema";
 
 /**
  * Keys the code builds from a value instead of naming them, so no grep for the literal finds a
@@ -12,7 +13,7 @@ const BUILT: Record<string, readonly string[]> = {
   // components/village/VillageScene.tsx, from getFlameLevel (db/streaks.ts): 1 to 5.
   "village.flame_": ["1", "2", "3", "4", "5"],
   // components/village/VillageDetailSheet.tsx, from the MuscleCode of an unbuilt muscle building.
-  "village.detail_unlock_muscle_": ["arms", "back", "shoulder", "chest", "abs", "legs"],
+  "village.detail_unlock_muscle_": muscleCodes,
 };
 
 const LOCALES = ["en", "fr", "de", "es"] as const;

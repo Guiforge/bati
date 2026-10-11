@@ -2,6 +2,7 @@ import { render } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
 import { VillageDetailSheet } from "@/components/village/VillageDetailSheet";
+import { muscleCodes } from "@/db/schema";
 import type { VillageBuilding } from "@/db/village";
 import { i18n } from "@/i18n";
 import config from "@/tamagui.config";
@@ -50,7 +51,7 @@ async function lineOf(building: VillageBuilding, language: Lang, match: RegExp) 
   return text;
 }
 
-const MUSCLES = ["arms", "back", "shoulder", "chest", "abs", "legs"];
+const MUSCLES = muscleCodes;
 const EXPECTED_MUSCLE: Record<Lang, string[]> = {
   fr: [
     "Se bâtit avec tes bras",
@@ -125,5 +126,36 @@ describe("an unbuilt building says what raises it, in one voice", () => {
       );
     }
     expect(got).toEqual(EXPECTED_STYLE[lang]);
+  });
+});
+
+describe("the sheet header does not say the same thing twice", () => {
+  const renderSheet = async (building: VillageBuilding) => {
+    await i18n.changeLanguage("fr");
+    return render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <VillageDetailSheet
+          selected={{ kind: "building", building }}
+          onClose={jest.fn()}
+          language="fr"
+          feeds={null}
+          bottomInset={0}
+        />
+      </TamaguiProvider>,
+    );
+  };
+
+  it("keeps only the unlock line on an unbuilt muscle building", async () => {
+    const sheet = await renderSheet(unbuilt({ relatedMuscle: "arms" }));
+    expect(sheet.queryAllByText("Se bâtit avec tes bras")).toHaveLength(1);
+    expect(sheet.queryAllByText("Monte avec tes bras")).toHaveLength(0);
+    await sheet.unmount();
+  });
+
+  it("keeps the feeds line once the building stands", async () => {
+    const sheet = await renderSheet(unbuilt({ relatedMuscle: "arms", level: 1, metricValue: 40 }));
+    expect(sheet.queryAllByText("Monte avec tes bras")).toHaveLength(1);
+    expect(sheet.queryAllByText("Se bâtit avec tes bras")).toHaveLength(0);
+    await sheet.unmount();
   });
 });

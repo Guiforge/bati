@@ -874,6 +874,30 @@ describe("the crest follows the journal, not the device", () => {
     }
   });
 
+  test("a pick merged from the other device never moves the stage, either way (Guillaume, 11/10)", async () => {
+    // 8 strength then 32 yoga: a young bear, 40 sessions in all (a picked boar was adult).
+    const journal: Entry[] = Array.from({ length: 40 }, (_, i) => ({
+      uuid: uuidOf(i),
+      at: BASE + i * DAY,
+      style: i < 8 ? "strength" : "yoga",
+    }));
+    for (const [boarAt, autoAt] of [
+      [3_000, 2_000],
+      [2_000, 3_000],
+    ] as const) {
+      const [a, b] = await bothWays(
+        journal.filter((_, i) => i % 2 === 0),
+        journal.filter((_, i) => i % 2 === 1),
+        [
+          ["boar", boarAt],
+          ["auto", autoAt],
+        ],
+      );
+      expect(a).toEqual(b);
+      expect(a).toMatchObject({ stage: "young" });
+    }
+  });
+
   test("the feasts this phone showed are never carried, and never news", async () => {
     addSession(t.sqlite, 1_000);
     setPref(t.sqlite, "bigFeastsShown", '["reveal"]', 100);

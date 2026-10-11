@@ -274,6 +274,23 @@ describe("the preferences", () => {
     expect(await crest().getCrest(NOW)).toMatchObject({ animal: "bear", manual: false });
   });
 
+  test("a pick never moves the stage, and going back to auto changes nothing (Guillaume, 11/10)", async () => {
+    // 8 strength sessions then 32 yoga ones: a young bear, and 40 sessions in all. The old rule
+    // gave a picked boar all 40 (adult).
+    for (let i = 0; i < 8; i++) strength(100 - i);
+    for (let i = 0; i < 32; i++) add(atDay(80 - i), { sets: [{ style: "yoga" }] });
+    const stage = async () => (await crest().getCrest(NOW))?.stage;
+    expect(await stage()).toBe("young");
+    await prefs().setCrestAnimal("boar");
+    expect(await crest().getCrest(NOW)).toMatchObject({
+      animal: "boar",
+      manual: true,
+      stage: "young",
+    });
+    await prefs().setCrestAnimal("auto");
+    expect(await stage()).toBe("young");
+  });
+
   test("big feasts shown: a list, marked once, and a corrupt value reads as empty", async () => {
     expect(await prefs().getBigFeastsShown()).toEqual([]);
     await prefs().markBigFeastShown("reveal");

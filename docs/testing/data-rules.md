@@ -192,8 +192,10 @@ calisthenics, yoga, run, ride. Second animal from the 9th session on (`n*100 >= 
 `n >= 20`, kept once in). A boar, from the sessions or picked by hand, never has a second animal
 and so no border. The boar's two quarters are the practices in the lead among those actually done;
 a hero with a single practice gets that one in both. A pick equal to the animal the sessions give
-is no pick: it reads as `auto` (not manual, no diamond, the practice's own stage), however it
-arrived (a merge of two devices' choices included).
+is no pick: it reads as `auto` (not manual, no diamond), however it arrived (a merge of two devices'
+choices included). A pick never moves the stage (Guillaume, 11/10): the centre always wears the
+stage of the sessions' animal (its practice's count, every session for a boar), picked or back on
+`auto`.
 `revealedAt` is the `performedAt` of the 8th session with a practice, so it follows the replay like
 everything else.
 Rings are whole years from the first session that counts to now (a year without a session
@@ -202,8 +204,9 @@ included). The longest flame is the flame level of the longest streak, always me
 already earned.
 Choosing the second animal by hand swaps it with the first, which keeps in the border the stage of
 its own practice.
-Stages: the boar's and a hand-picked animal's count every session that counts, workouts with no
-practice included; the stages of the sessions' first and second animal count their own practice.
+Stages: the boar's counts every session that counts, workouts with no practice included; the
+stages of the sessions' first and second animal count their own practice, and a hand-picked animal
+wears the first one's.
 Invariant: after a merge in both directions both devices read the same crest, ties included;
 deleting or adding a session anywhere in the journal replays the whole of it.
 

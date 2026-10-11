@@ -323,12 +323,12 @@ describe("Ton animal", () => {
     await waitFor(() => expect(onClose).toHaveBeenCalled());
   });
 
-  it("the stage follows the rule: own count for the sessions' animal, all sessions for a pick", async () => {
+  it("no option carries a stage: a pick never moves it, so it would read the same six times", async () => {
     await sheet(LONG, "pick");
-    expect(screen.getByText("Celui de tes séances (l'ours) · jeune")).toBeTruthy();
+    expect(screen.getByText("Celui de tes séances (l'ours)")).toBeTruthy();
     expect(screen.getByText("Force, 5 séances sur 8".replace("5", "8"))).toBeTruthy();
-    expect(screen.getByText("Le cerf · adulte")).toBeTruthy();
-    expect(screen.getByText("Le sanglier · adulte")).toBeTruthy();
+    expect(screen.getByText("Le cerf")).toBeTruthy();
+    expect(screen.getByText("Le sanglier")).toBeTruthy();
   });
 
   it("every option's subtitle starts with a capital, like the sessions' option", async () => {
@@ -340,7 +340,7 @@ describe("Ton animal", () => {
 
   it("a boar hero's sessions option says the boar and a capitalised 'a bit of everything'", async () => {
     await sheet(crestOf(seq(["strength", 3], ["run", 3], ["yoga", 2])), "pick");
-    expect(screen.getByText("Celui de tes séances (le sanglier) · jeune")).toBeTruthy();
+    expect(screen.getByText("Celui de tes séances (le sanglier)")).toBeTruthy();
     // Once: the boar is not offered again among the others.
     expect(screen.getAllByText("Un peu de tout")).toHaveLength(1);
   });

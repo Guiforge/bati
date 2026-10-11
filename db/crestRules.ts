@@ -39,11 +39,6 @@ export type CrestAnimals = {
   second: { animal: PracticeAnimal; stage: CrestStage } | null;
   /** The boar's two quarters, the practices in the lead over every session; null for the others. */
   quarters: [Practice, Practice] | null;
-  /**
-   * The stage the picker shows beside each animal: the one the sessions' own animal has (its
-   * practice's count), and the one any animal the hero chose has (every session that counts).
-   */
-  optionStages: { sessions: CrestStage; chosen: CrestStage };
   /** Where in `sessions` the 8th session that has a practice sits: the one that revealed it. */
   revealedIndex: number;
   /** What "Why the Bear?" reads: counts per practice, over the first 8 and over all. */
@@ -204,22 +199,24 @@ export function crestAnimals(
   }
   const manual = choice !== "auto";
 
-  const stageFor = (a: Animal, own: boolean) => {
+  const stageFor = (a: Animal) => {
     const p = practiceOfAnimal(a);
-    return stageOf(own && p !== undefined ? totals[p] : sessions.length);
+    return stageOf(p !== undefined ? totals[p] : sessions.length);
   };
+  // Guillaume, 11/10: a pick never moves the stage. The centre wears the stage of the sessions'
+  // own animal, so picking and going back to `auto` change nothing but the animal.
+  const stage = stageFor(first);
 
   const quarters = center === "boar" ? quartersOf(totals, last) : null;
 
   return {
     animal: center,
-    stage: stageFor(center, !manual),
+    stage,
     manual,
     picked,
-    second: border === null ? null : { animal: border, stage: stageFor(border, true) },
+    second: border === null ? null : { animal: border, stage: stageFor(border) },
     quarters,
     revealedIndex,
-    optionStages: { sessions: stageFor(first, true), chosen: stageFor(first, false) },
     evidence: {
       firstEight,
       firstEightOrder: ranked(firstEight, eightLast),

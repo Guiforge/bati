@@ -257,7 +257,6 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
     longestFlame: 0,
     rings: 0,
   });
-  const stage = (s: "sessions" | "chosen") => t(`village.crest_stage_${crest.optionStages[s]}`);
   const firstPractice = practiceOfAnimal(first);
   const autoSelected = !crest.manual;
   return (
@@ -265,7 +264,7 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
       <Option
         testID="crest-pick-auto"
         shape={shape(first)}
-        label={`${t("village.crest_pick_auto", { animal: t(`village.crest_the_${first}`) })} · ${stage("sessions")}`}
+        label={`${t("village.crest_pick_auto", { animal: t(`village.crest_the_${first}`) })}`}
         sub={
           firstPractice === undefined
             ? sentence(t("village.crest_pick_desc_boar"))
@@ -282,7 +281,7 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
           key={a}
           testID={`crest-pick-${a}`}
           shape={shape(a)}
-          label={`${sentence(t(`village.crest_the_${a}`))} · ${stage("chosen")}`}
+          label={`${sentence(t(`village.crest_the_${a}`))}`}
           sub={sentence(t(`village.crest_pick_desc_${a}`))}
           selected={!autoSelected && crest.animal === a}
           onPress={() => choose(a)}

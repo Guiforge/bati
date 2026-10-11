@@ -1,0 +1,69 @@
+# Maestro E2E Test - The big feast is shown once, and the phone remembers it.
+#
+# Asserts the STATE, not the navigation: the local key `bigFeastsShown` (db/preferences.ts), read
+# back on the dev screen (`dev-big-feasts-shown`). A feast screen that opens without writing the
+# key looks identical on screen and would open again on the next session; only the key says so.
+#
+# Needs a seeded dev database, not a cleared one: `scripts/village-states-push.sh a-avant` puts a
+# hero one session short of the animal's reveal (the 8th) with nothing shown yet. The app is
+# relaunched, not cleared (`clearState` would wipe the seed). Dev build + Metro only: the dev
+# screen does not exist in a release.
+#
+# testID only, so an emulator in fr_FR passes too.
+
+appId: com.guiforge.bati.dev
+---
+- launchApp
+# A cold dev start fetches the bundle over HTTP: wait for Home rather than race it.
+- extendedWaitUntil:
+    visible:
+      id: "home-settings"
+    timeout: 90000
+
+# --- Before: nothing shown --------------------------------------------------
+- runFlow: subflows/read-feasts-shown.yaml
+- assertVisible:
+    id: "dev-big-feasts-shown"
+    text: 'bigFeastsShown=\[\]'
+- back
+- back
+
+# --- The 8th session --------------------------------------------------------
+# Through the Quests tab: Home's CTA leads this hero to the adventure's boss step, a different run.
+- runFlow: subflows/start-a-quest-session.yaml
+
+# "Continue" opened the big feast.
+- extendedWaitUntil:
+    visible:
+      id: "big-feast"
+    timeout: 20000
+- takeScreenshot: big-feast-open
+- back
+- extendedWaitUntil:
+    visible:
+      id: "tab-home"
+    timeout: 20000
+    optional: true
+- takeScreenshot: big-feast-closed
+
+# --- After: the key holds the reveal ----------------------------------------
+- runFlow: subflows/read-feasts-shown.yaml
+- assertVisible:
+    id: "dev-big-feasts-shown"
+    text: 'bigFeastsShown=\["reveal"\]'
+- back
+- back
+
+# --- A 9th session: no feast, and the key does not move ---------------------
+# Through the Quests tab: Home's CTA leads this hero to the adventure's boss step, a different run.
+- runFlow: subflows/start-a-quest-session.yaml
+# A feast would have opened by now: "Continue" pushes it at once, and the key is read next.
+- waitForAnimationToEnd:
+    timeout: 4000
+- assertNotVisible:
+    id: "big-feast"
+
+- runFlow: subflows/read-feasts-shown.yaml
+- assertVisible:
+    id: "dev-big-feasts-shown"
+    text: 'bigFeastsShown=\["reveal"\]'

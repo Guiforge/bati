@@ -176,6 +176,7 @@ locale drift can't fail a flow.
 | `adventure-journey.yaml` | The campaign route into a workout: adventure → step → session |
 | `oath-flow.yaml` | Swear a preset oath from Home, then find it sworn |
 | `session-interruptions.yaml` | Pause, resume, restart the round, and abandon mid-session |
+| `big-feast-shown-once.yaml` | The animal's big feast opens on the 8th session and is written to `bigFeastsShown` (read on the dev screen); a 9th session opens none and the key does not move. Dev build, seeded with `scripts/village-states-push.sh a-avant` |
 | `subflows/complete-onboarding.yaml` | Reusable onboarding walk, pulled in via `runFlow:` |
 | `subflows/complete-a-session.yaml` | Reusable: quest details → whole session → dismiss victory |
 

@@ -1,0 +1,18 @@
+# Reusable: open the dev screen, where `dev-big-feasts-shown` prints the big feasts this phone has
+# shown. Dev build only. Leaves the dev screen open: the caller asserts, then goes back.
+appId: com.guiforge.bati.dev
+---
+- tapOn:
+    id: "home-settings"
+    waitToSettleTimeoutMs: 500
+- scrollUntilVisible:
+    element:
+      id: "settings-dev"
+    direction: DOWN
+- tapOn:
+    id: "settings-dev"
+- extendedWaitUntil:
+    visible:
+      id: "dev-big-feasts-shown"
+      text: 'bigFeastsShown=\[.*'
+    timeout: 15000

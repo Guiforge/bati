@@ -17,8 +17,15 @@ export const hasRareCoat = (longestFlame: number): boolean => longestFlame >= RA
  */
 export const DELIVERED_COATS: ReadonlySet<string> = new Set<string>();
 
-/** Where winter falls in June, July and August instead of December to February. */
-const SOUTHERN = new Set(["AR", "AU", "CL", "LS", "NZ", "UY", "ZA", "FK"]);
+/**
+ * Where winter falls in June, July and August instead of December to February: the countries whose
+ * majority lives south of the equator (Indonesia and Tanzania are split or near it, so they stay
+ * on the northern calendar, like any region not listed).
+ */
+const SOUTHERN = new Set([
+  ...["AO", "AR", "AU", "BO", "BR", "BW", "CL", "FJ", "FK", "LS", "MG", "MW", "MZ", "NA"],
+  ...["NZ", "PE", "PY", "SZ", "UY", "ZA", "ZM", "ZW"],
+]);
 
 /** Whether `now` is winter where the device is. No region means the northern calendar. */
 export function isWinter(now: Date, regionCode: string | null | undefined): boolean {

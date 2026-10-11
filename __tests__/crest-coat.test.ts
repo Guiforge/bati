@@ -1,8 +1,8 @@
 import { DELIVERED_COATS, hasRareCoat, isWinter, portraitSlug } from "../db/crestCoat";
 import { ANIMALS, type CrestStage } from "../db/crestRules";
 
-const SOUTH = ["AR", "AU", "CL", "LS", "NZ", "UY", "ZA", "FK"];
-const NORTH = ["FR", "US", "DE", "ES", "BR", "JP", "GB"];
+const SOUTH = ["AR", "AU", "BO", "BR", "CL", "LS", "NZ", "PE", "UY", "ZA", "FK", "AO", "FJ", "ZW"];
+const NORTH = ["FR", "US", "DE", "ES", "JP", "GB", "ID"];
 const at = (month: number) => new Date(2026, month - 1, 15, 12);
 const STAGES: Exclude<CrestStage, "young">[] = ["adult", "venerable", "legendary"];
 
@@ -37,6 +37,11 @@ describe("winter by hemisphere", () => {
     for (const region of side === "south" ? SOUTH : NORTH) {
       expect(isWinter(at(month as number), region)).toBe(winter);
     }
+  });
+
+  test("Brazil is in winter in July and not in January", () => {
+    expect(isWinter(at(7), "BR")).toBe(true);
+    expect(isWinter(at(1), "BR")).toBe(false);
   });
 
   test("no region is the northern calendar, in December and in July", () => {

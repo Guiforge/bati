@@ -131,20 +131,30 @@ quest was bounded by its own prescription; an outing is not, so the multiplier c
 duration nobody set and an hour's run on the daily quest paid 1200. Reading the target instead
 makes the bonus what it says it is: you did the thing the day asked for.
 
-"Once a day" is held by a record of the day, not by the quest's id (issue #177). The day's quest
-is drawn by the date from the quests the app may suggest, and a hero can reshape that pool before
+"Once a day" is read off the journal, not off the quest's id (issue #177). The day's quest is
+drawn by the date from the quests the app may suggest, and a hero can reshape that pool before
 lunch: the level and the equipment in Settings, a quest of their own. The same date then pointed
-at a second quest, "this quest was not logged today" was true of it, and it paid again. The
-preference `dailyBonus` holds the day and the session the bonus went to, written right after that
-session's row. The day is the one the session *started* on, the day its row is dated: keyed on
-the save, a session begun at 23:50 spent the next day's bonus. A retried save recognises its own
-bonus and is not asked again, because its rows have landed since and a rung they earned can move
-the pool. Deleting that session gives the day back, from `deleteSession` itself, so a session
-removed by a device sync frees the day too.
+at a second quest, "this quest was not logged today" was true of it, and it paid again.
+
+The bonus is written on the session that earned it (`completed_sessions.dailyBonusXp`, `0071`),
+and a save is paid only if no session of that day holds one (`dailyBonusPaidOn`). Nothing else
+records it, so nothing else has to be kept true:
+
+- deleting the session gives the day back, whoever deleted it, a device sync included;
+- a session merged in from another device brings its bonus with it;
+- a retried save reports what its own row holds and asks nothing again, so the summary never
+  shows a bonus the journal does not have.
+
+Every question is asked of the instant the session *started*, the day its row is dated: which
+quest was that day's, whether that quest was already logged that day, whether that day was paid.
+Read at save time, a session begun at 23:50 was judged against the next day.
 
 The pool counts only sessions logged before today (`workoutsBeforeToday`), so the session count
 does not move the pick mid-day. A rung earned tonight still can, for a hero kept off jumps, which
-is why the bonus rests on the record above and not on the pick holding still.
+is why the bonus rests on the journal and not on the pick holding still.
+
+Two phones that have not synced can each pay the day's bonus before they meet: offline, neither
+can know. The merged journal then holds both, as it holds both sessions.
 
 #### Why it changed
 

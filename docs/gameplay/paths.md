@@ -102,10 +102,10 @@ Some sets the ladder does not judge at all, neither clean nor missed
   movement the quest handed over is due from round one, so rounds missing *before* its first row
   are skips too. A movement the hero swapped in mid-session is due from the round it arrived in,
   and counts as it always did, including one swapped in after a skipped round. The rows alone
-  cannot tell those apart, so each set says the round its movement came in (`swappedIn`, set by
-  the session; the round itself, since a movement swapped in and skipped in the same round was
-  still due in that round). The movement the quest handed over is never marked, swapped away
-  from and back to or not.
+  cannot tell those apart, so each set says the round its movement *first* came in
+  (`swappedIn`). The slot remembers it for the whole session (`QuestExercise.swaps`), because a
+  movement swapped in and skipped was still due in that round, however many swaps follow. The
+  movement the quest handed over is never marked, swapped away from and back to or not.
 
 A swap made mid-session keeps what the app had prescribed when it keeps the hero's number (same
 unit). Otherwise the lowered number would become "what was asked" on the new movement.
@@ -146,7 +146,8 @@ The expanded row of a stepped-down slot now carries one button, **"Do Plank inst
 per quest, and nothing is declared or stored about what a hero can do. The pinned movement is
 prescribed what the quest wrote for it, its band and its own record for a hold, which the slot
 carries (`substitutedFor.target`, set by `resolveSlot` for the screen and the gallery card
-alike), not the easier rung's number moved across. The journal settles the rest:
+alike), not the easier rung's number moved across. Taking the written movement back from the
+swap sheet in the middle of a session gives the same number. The journal settles the rest:
 one clean session on the Plank puts Dead Bug behind the hero in *every* quest (`rungsBehind`), and
 the pin becomes moot.
 

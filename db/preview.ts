@@ -2,7 +2,7 @@ import type { OutingGoal } from "@/src/gps/track";
 import { estimateQuestSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
 import { outingGoal } from "./expeditions";
-import type { OutingHabit } from "./outingHabit";
+import type { OutingHabit } from "./outingRule";
 import { applyConfigToSlots, type QuestConfig, resolveTemplateOverrides } from "./questConfig";
 import {
   isUserQuest,

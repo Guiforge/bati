@@ -215,8 +215,6 @@ jest.mock("@/db/exercises", () => ({ listExercises: jest.fn().mockResolvedValue(
 // The habit is read from the journal; `__tests__/outing-habit.test.ts` covers the arithmetic.
 const mockGetOutingHabit = jest.fn();
 jest.mock("@/db/outingHabit", () => ({
-  NO_HABIT: { usual: null, longestM: null },
-  LONGEST_RUN_CEILING: 1.1,
   getOutingHabit: (...args: unknown[]) => mockGetOutingHabit(...args),
 }));
 
@@ -255,7 +253,9 @@ beforeEach(() => {
   mockParams.id = "5";
   delete mockParams.level;
   mockSettings.distanceUnit = "metric";
-  mockGetOutingHabit.mockReset().mockResolvedValue({ usual: null, longestM: null });
+  mockGetOutingHabit
+    .mockReset()
+    .mockResolvedValue({ usual: null, longestM: null, longestSeconds: null });
   mockStartSession.mockClear();
   const db = require("@/db");
   db.getQuestById.mockClear();
@@ -416,6 +416,7 @@ describe("an expedition on the quest screen", () => {
     mockGetOutingHabit.mockResolvedValue({
       usual: { metres: 5234, seconds: 1700 },
       longestM: 8200,
+      longestSeconds: 2700,
     });
     const quest = expeditionQuest();
     const [slot] = quest.exercises;
@@ -452,22 +453,24 @@ describe("an expedition on the quest screen", () => {
   });
 
   test("the duration ceiling yields to the walk-run when it sits under it", async () => {
-    // What `getOutingHabit` hands over for a hero whose longest run is twelve minutes: the
-    // rule's own verdict rides on the habit, and the sheet reads it rather than working it out.
-    mockGetOutingHabit.mockResolvedValue({
-      usual: null,
-      longestM: 2000,
-      longestSeconds: 720,
-      proposal: { seconds: 1200, walkRun: true },
-    });
+    // A hero whose longest run this month is twelve minutes: the real rule proposes them the
+    // walk-run, and the sheet asks the rule.
+    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 2000, longestSeconds: 720 });
     const view = await mountQuest(runQuest());
 
     await fireEvent.press(view.getByText("Set up the outing"));
     expect(view.queryByTestId("goal-longest-run")).toBeNull();
+    // In the other unit too: "stay under 2.2 km" over the same twenty-minute proposal.
+    await fireEvent.press(view.getByText("Distance"));
+    expect(view.queryByTestId("goal-longest-run")).toBeNull();
   });
 
   test("a ride is offered a ride's distances, and no running ceiling", async () => {
-    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 40_000 });
+    mockGetOutingHabit.mockResolvedValue({
+      usual: null,
+      longestM: 40_000,
+      longestSeconds: 7200,
+    });
     const quest = expeditionQuest();
     const [slot] = quest.exercises;
     assert(slot);

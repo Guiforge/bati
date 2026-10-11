@@ -1,3 +1,4 @@
+import { proposedRunSeconds, WALK_RUN_SECONDS } from "@/db/outingRule";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 /**
@@ -40,12 +41,10 @@ describe("getOutingHabit", () => {
     outing("run", 9000, 300, 0); // five minutes: a test, not a habit
 
     // The five-minute test is not "the longest of the month" either, in distance or in time.
-    // And the proposal travels with it: the usual thirty minutes, well under the ceiling.
     expect(await habit()).toEqual({
       usual: { metres: 6000, seconds: 1800 },
       longestM: 21_000,
       longestSeconds: 9000,
-      proposal: { seconds: 1800, walkRun: false },
     });
   });
 
@@ -53,12 +52,7 @@ describe("getOutingHabit", () => {
     outing("run", 5000, 1500, 40);
     outing("run", 5000, 1500, 45);
 
-    expect(await habit()).toEqual({
-      usual: null,
-      longestM: null,
-      longestSeconds: null,
-      proposal: { seconds: 1200, walkRun: true },
-    });
+    expect(await habit()).toEqual({ usual: null, longestM: null, longestSeconds: null });
   });
 
   // A run given up after three minutes was read as the longest of the month, and capped the
@@ -66,30 +60,13 @@ describe("getOutingHabit", () => {
   test("an outing given up early is not the longest of the month", async () => {
     outing("run", 600, 180, 2);
 
-    expect(await habit()).toEqual({
-      usual: null,
-      longestM: null,
-      longestSeconds: null,
-      proposal: { seconds: 1200, walkRun: true },
-    });
+    expect(await habit()).toEqual({ usual: null, longestM: null, longestSeconds: null });
   });
 });
 
 /** The rule a run is proposed by, case by case, in the order `proposedRunSeconds` reads it. */
 describe("proposedRunSeconds", () => {
-  const t = createTestDb();
-  const WALK_RUN_SECONDS = 20 * 60;
   const min = (m: number) => m * 60;
-
-  beforeAll(() => {
-    jest.resetModules();
-    jest.doMock("../db/client", () => clientMock(t));
-  });
-  afterAll(() => t.close());
-
-  // Required late: the module imports the database client, which only the mock above can stand in for.
-  const proposedRunSeconds = (habit: import("../db/outingHabit").OutingHabit) =>
-    (require("../db/outingHabit") as typeof import("../db/outingHabit")).proposedRunSeconds(habit);
 
   test("no run this month: twenty minutes of walk and run", () => {
     expect(proposedRunSeconds({ usual: null, longestM: null, longestSeconds: null })).toEqual({

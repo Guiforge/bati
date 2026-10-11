@@ -12,7 +12,8 @@ import {
   unavailableExerciseIds,
 } from "./exercises";
 import { isMuscleCode } from "./muscles";
-import { getOutingHabit, type OutingHabit, proposedRunSeconds } from "./outingHabit";
+import { getOutingHabit } from "./outingHabit";
+import { type OutingHabit, proposedRunSeconds } from "./outingRule";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
 import { preferences, startsGently, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
@@ -110,14 +111,19 @@ export interface QuestExercise {
   prescribed?: number;
 
   /**
-   * The round (0-based) in which the hero swapped this movement into the slot during the
+   * The round (0-based) in which the hero first swapped this movement into the slot during the
    * session. Set by the session store and by nothing else: its sets are due from that round
    * (`ladderNeutralSets`). Absent on the movement the quest handed over, swapped back to or not.
    */
   swappedIn?: number;
 
-  /** The movement the quest handed over in this slot, kept from the first in-session swap on. */
-  handedOver?: number;
+  /**
+   * What the session remembers of this slot's swaps: the movement the quest handed over, and
+   * the round each other movement first arrived in. Kept on the slot because a movement can be
+   * swapped in, skipped, swapped out and swapped back in: read off its rows, its first arrival
+   * was forgotten and the skip with it.
+   */
+  swaps?: { handedOver: number; arrivals: Record<number, number> };
 
   /**
    * This run is proposed as twenty minutes of walk and run mixed, because the hero has not run
@@ -1302,7 +1308,7 @@ export async function findQuestWithExercise(exerciseId: number): Promise<number 
  * Get the daily quest based on the current date.
  * Deterministically picks a quest from all available quests the user can actually train.
  */
-async function pickDailyTemplate(): Promise<QuestTemplate | null> {
+async function pickDailyTemplate(at = new Date()): Promise<QuestTemplate | null> {
   const templates = await listQuestTemplates();
   if (templates.length === 0) return null;
 
@@ -1312,7 +1318,9 @@ async function pickDailyTemplate(): Promise<QuestTemplate | null> {
   const pool = templates.filter((tpl) => eligible.has(tpl.id));
   const candidates = pool.length > 0 ? pool : templates;
 
-  const today = dayKey(new Date());
+  // `at` for a save: a session is the quest of the day it started on, which is the day its row
+  // is dated, not of whatever day the clock shows when the summary is reached.
+  const today = dayKey(at);
   let hash = 0;
   for (let i = 0; i < today.length; i++) {
     hash = (hash << 5) - hash + today.charCodeAt(i);
@@ -1323,7 +1331,7 @@ async function pickDailyTemplate(): Promise<QuestTemplate | null> {
   return candidates[Math.abs(hash) % candidates.length] ?? null;
 }
 
-export async function isDailyQuest(questId: number): Promise<boolean> {
-  const template = await pickDailyTemplate();
+export async function isDailyQuest(questId: number, at = new Date()): Promise<boolean> {
+  const template = await pickDailyTemplate(at);
   return template?.id === questId;
 }

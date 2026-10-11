@@ -460,8 +460,11 @@ quête mixte, qui garde les presets course) :
   chip ferme la feuille. Rien n'est bloqué ni grisé, aucun XP n'en dépend. Depuis le 11/10/2026
   elle s'affiche sur les deux onglets, en distance et en temps en mouvement, et « la plus
   longue » ne compte que les sorties d'au moins 10 min : une course abandonnée au bout de trois
-  minutes plafonnait la suivante à 3 min 18.
-- **La durée proposée pour une course** (`proposedRunSeconds`, `db/outingHabit.ts`), décidée à un
+  minutes plafonnait la suivante à 3 min 18. Elle ne s'affiche sur aucun des deux onglets quand
+  l'app propose la marche et course à ce héros : « sous 13 min », ou sous 1,3 km, au-dessus
+  d'une proposition de vingt minutes se contredisait. La règle vit dans `db/outingRule.ts`,
+  sans base de données, pour que la feuille et les tests appellent la règle elle-même.
+- **La durée proposée pour une course** (`proposedRunSeconds`, `db/outingRule.ts`), décidée à un
   seul endroit (`resolveSlot`) et donc la même sur la carte, la tuile de Home et l'écran de quête.
   La bande seedée proposait 30 min de course à tout le monde, y compris à qui n'a jamais couru.
   Dans l'ordre :

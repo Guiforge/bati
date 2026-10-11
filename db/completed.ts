@@ -4,7 +4,7 @@ import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
-import { getDeviceId, preferences } from "./preferences";
+import { getDeviceId } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
 import type {
   DifficultyCode,
@@ -98,6 +98,8 @@ export type CompletedSessionInput = {
   userLevel?: DifficultyCode;
   durationSeconds?: number | null;
   xpEarned?: number;
+  /** The part of `xpEarned` that is the day's quest bonus (`0071`). Zero for every other session. */
+  dailyBonusXp?: number;
   notes?: string;
   feedback?: FeedbackCode | null;
   performedAt?: Date;
@@ -236,6 +238,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
   // starts before it is saved (stores/session.ts passes `startTime`), so those are different
   // clocks and different days, and 0038 backfilled the older half from `performedAt`.
   const performedAt = input.performedAt ?? new Date();
+  const dailyBonusXp = Math.max(0, Math.round(input.dailyBonusXp ?? 0));
 
   return transactionOrFallback(async (tx) => {
     const inserted = await tx
@@ -245,6 +248,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         userLevel: input.userLevel ?? "medium",
         durationSeconds: input.durationSeconds ?? null,
         xpEarned: Math.max(0, Math.round(input.xpEarned ?? 0)),
+        dailyBonusXp,
         notes: input.notes ?? "",
         feedback: input.feedback ?? null,
         performedAt,
@@ -450,26 +454,8 @@ export async function deleteSession(sessionId: number): Promise<"deleted" | "loc
     return "deleted" as const;
   });
 
-  if (outcome === "deleted") {
-    clearCached("quest:");
-    await giveDailyBonusBack(sessionId);
-  }
+  if (outcome === "deleted") clearCached("quest:");
   return outcome;
-}
-
-/**
- * The day's bonus went with the session it was paid to (`preferences.getDailyBonus`): give the
- * day back. Here, in the one function every delete goes through, a hero's own and a device
- * sync's tombstone alike, and after the transaction, never inside it. Never a reason to fail a
- * delete that already happened: left behind, the record only costs that day's bonus.
- */
-async function giveDailyBonusBack(sessionId: number): Promise<void> {
-  try {
-    const paid = await preferences.getDailyBonus();
-    if (paid?.sessionId === sessionId) await preferences.clearDailyBonus();
-  } catch (error) {
-    reportError("session.dailyBonusBack", error);
-  }
 }
 
 /**
@@ -780,6 +766,8 @@ export async function outingSecondsToday(excludeSessionId: number | null): Promi
 export async function hasSessionForQuestToday(
   questId: number,
   excludeSessionId: number | null,
+  /** The instant "today" is read from. A session's own start, when it is asked for a save. */
+  at = new Date(),
 ): Promise<boolean> {
   const [row] = await db
     .select({ n: count() })
@@ -787,12 +775,55 @@ export async function hasSessionForQuestToday(
     .where(
       and(
         eq(completedQuest.questId, questId),
-        gte(completedQuest.performedAt, startOfLocalDay()),
+        onLocalDayOf(at),
         excludeSessionId === null ? undefined : ne(completedQuest.id, excludeSessionId),
       ),
     );
 
   return Number(row?.n ?? 0) > 0;
+}
+
+/** Sessions dated on the local day `at` falls on, from its midnight to the next. */
+function onLocalDayOf(at: Date) {
+  const start = startOfLocalDay(at);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  return and(gte(completedQuest.performedAt, start), lt(completedQuest.performedAt, end));
+}
+
+/**
+ * Whether the day's quest bonus has already gone to a session of that day (issue #177).
+ *
+ * Read off the journal (`completed_sessions.dailyBonusXp`, `0071`), so there is no second record
+ * to keep true: a deleted session gives the day back by not being there, and a session merged in
+ * from another device brings its bonus with it. `at` is the instant the day is read from, the
+ * session's own start, because that is the day its row is dated.
+ */
+export async function dailyBonusPaidOn(
+  at: Date,
+  excludeSessionId: number | null,
+): Promise<boolean> {
+  const [row] = await db
+    .select({ n: count() })
+    .from(completedQuest)
+    .where(
+      and(
+        gt(completedQuest.dailyBonusXp, 0),
+        onLocalDayOf(at),
+        excludeSessionId === null ? undefined : ne(completedQuest.id, excludeSessionId),
+      ),
+    );
+  return Number(row?.n ?? 0) > 0;
+}
+
+/** The daily bonus a saved session holds: what a retried save must report, no more and no less. */
+export async function dailyBonusOf(sessionId: number): Promise<number> {
+  const [row] = await db
+    .select({ xp: completedQuest.dailyBonusXp })
+    .from(completedQuest)
+    .where(eq(completedQuest.id, sessionId))
+    .limit(1);
+  return Number(row?.xp ?? 0);
 }
 
 /**

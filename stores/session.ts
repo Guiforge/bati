@@ -828,7 +828,9 @@ async function dailyBonusFor(
     !(await dailyBonusPaidOn(startedAt)) &&
     !(await hasSessionForQuestToday(questId, startedAt)) &&
     (await isDailyQuest(questId, startedAt));
-  return earned ? Math.round(0.5 * xpAtTarget) : 0;
+  // At least one: the row's bonus is also how the day knows it was paid, and a quest worth a
+  // single XP must not leave the day open for a second quest to be paid in full.
+  return earned ? Math.max(1, Math.round(0.5 * xpAtTarget)) : 0;
 }
 
 /**
@@ -1719,6 +1721,10 @@ export const useSessionStore = create<SessionState>()(
               // and so must what the app had prescribed under it: dropped, a target lowered to 1
               // became "what was asked" on the new movement, and one rep earned its rung. A swap
               // that changed the unit generated a fresh target, which is the app's own again.
+              // Carried onto a movement it was not written for, on purpose: nothing says what
+              // the app would have asked of the new one in this slot. A lowered number then
+              // makes the new movement's sets neutral for its ladder unless they reach the old
+              // prescription, which is the cautious side of the two this could err on.
               prescribed: known
                 ? known.prescribed
                 : target.type === slot.target.type

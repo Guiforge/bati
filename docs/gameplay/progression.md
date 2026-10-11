@@ -150,8 +150,15 @@ quest was that day's, whether that quest was already logged that day, whether th
 Read at save time, a session begun at 23:50 was judged against the next day.
 
 The pool counts only sessions logged before today (`workoutsBeforeToday`), so the session count
-does not move the pick mid-day. A rung earned tonight still can, for a hero kept off jumps, which
-is why the bonus rests on the journal and not on the pick holding still.
+does not move the pick mid-day. A rung earned this morning still can, for a hero kept off jumps,
+and so can a trip to Settings, which is why the bonus rests on the journal and not on the pick
+holding still. What that leaves is the other direction, and it is rare: a hero who starts the
+quest the day showed before the pick moved finds at the summary that it is no longer the day's,
+and is not paid. Never twice, sometimes not at all. Holding the pick for the whole day would
+close it, and would also keep offering a quest the hero has just said they cannot do.
+
+A bonus that is earned is never zero, because the row's bonus is also how the day knows it was
+paid.
 
 Two phones that have not synced can each pay the day's bonus before they meet: offline, neither
 can know. The merged journal then holds both, as it holds both sessions.

@@ -179,15 +179,18 @@ export function estimateQuestTemplateXp(input: PreviewInput): number {
 }
 
 /**
- * The goal a way out leaves with from Home's tile, which always starts it at medium: what its chip
- * says.
+ * What a way out leaves with from Home's tile, which always starts it at medium: the goal its
+ * chip says, and whether that goal is still the app's walk-run proposal (`proposesWalkRun`, the
+ * predicate the quest screen uses).
  *
  * Off the cached template and the saved config rather than `loadConfiguredQuest`, which reads the
  * hero's whole history of the movement to serve a slot, three times on every Home focus for a
- * number the history cannot move: an outing's duration is authored, or set by hand.
- * `__tests__/db-change-version.test.ts` holds it to the goal the tap actually runs.
+ * number the history cannot move: an outing's duration is authored, set by hand, or proposed
+ * from the month of running the caller hands in. One resolution for both answers, so they
+ * cannot be read off two different sets of slots.
+ * `__tests__/db-change-version.test.ts` holds the goal to the one the tap actually runs.
  */
-export function previewOutingGoal(
+export function previewOuting(
   template: Pick<
     QuestTemplate,
     "author" | "rounds" | "restSeconds" | "roundRestSeconds" | "exercises"
@@ -195,8 +198,8 @@ export function previewOutingGoal(
   exercisesById: Record<number, Exercise>,
   saved: QuestConfig | null,
   /** The hero's month of running, which a run's duration is proposed from. Loaded by the caller. */
-  runHabit?: OutingHabit,
-): OutingGoal | null {
+  runHabit: OutingHabit,
+): { goal: OutingGoal | null; walkRun: boolean } {
   const config = saved === null ? null : { ...saved, level: Difficulty.Medium };
   const exercises = resolveTemplateExercises({
     template,
@@ -207,28 +210,10 @@ export function previewOutingGoal(
     // expedition, nothing on the ladder stands below a walk, and `resolveSlot` gives an outing
     // no hold from the journal either. The one thing the journal changes is how long a run is
     // proposed at, and that the caller reads and hands in, so this stays synchronous.
-    journal: runHabit ? { ...QUEST_AS_WRITTEN, runHabit } : QUEST_AS_WRITTEN,
-  });
-  return outingGoal({ exercises }, config?.distanceM ?? null);
-}
-
-/**
- * Whether that same tile's run is still the app's walk-run proposal, by the same resolution as
- * the goal above and the same predicate as the quest screen (`proposesWalkRun`).
- */
-export function previewWalkRun(
-  template: Parameters<typeof previewOutingGoal>[0],
-  exercisesById: Record<number, Exercise>,
-  saved: QuestConfig | null,
-  runHabit: OutingHabit,
-): boolean {
-  const config = saved === null ? null : { ...saved, level: Difficulty.Medium };
-  const exercises = resolveTemplateExercises({
-    template,
-    exercisesById,
-    userLevel: Difficulty.Medium,
-    config,
     journal: { ...QUEST_AS_WRITTEN, runHabit },
   });
-  return proposesWalkRun(exercises, config?.distanceM);
+  return {
+    goal: outingGoal({ exercises }, config?.distanceM ?? null),
+    walkRun: proposesWalkRun(exercises, config?.distanceM),
+  };
 }

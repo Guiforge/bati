@@ -94,9 +94,8 @@ jest.mock("@/db/exercises", () => ({ listExercises: () => Promise.resolve([]) })
 // The chip's goal comes off the template. That it is the goal the tap runs is held against the
 // real schema in `__tests__/db-change-version.test.ts`; here it is what the row does with it.
 jest.mock("@/db/preview", () => ({
-  previewOutingGoal: (quest: { id: number }) => mockPreviewGoal(quest.id),
   // No tile here stands on the walk-run proposal: these cases are about the goal a hero set.
-  previewWalkRun: () => false,
+  previewOuting: (quest: { id: number }) => ({ goal: mockPreviewGoal(quest.id), walkRun: false }),
 }));
 
 const mockListOutings = jest.fn();

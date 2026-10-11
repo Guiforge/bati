@@ -18,7 +18,7 @@ import { listExercises } from "@/db/exercises";
 import { cheapestLocomotion, hasOutdoorSlot, outingGoal, withOutingGoal } from "@/db/expeditions";
 import { getOutingHabit } from "@/db/outingHabit";
 import { listOutings, type Outing } from "@/db/outings";
-import { previewOutingGoal, previewWalkRun } from "@/db/preview";
+import { previewOuting } from "@/db/preview";
 import {
   getAllQuestConfigs,
   getQuestConfig,
@@ -174,24 +174,17 @@ export function QuickActions() {
     const exercisesById = indexExercises(exercises);
 
     // At `medium`, the level every tile leaves at, so the chip says what the tap will run. Off the
-    // template rather than the loaded quest: see `previewOutingGoal`.
-    const entries = list.map(
+    // template rather than the loaded quest: see `previewOuting`.
+    const previews = list.map(
       ({ quest }) =>
         [
           quest.id,
-          previewOutingGoal(quest, exercisesById, configs.get(quest.id) ?? null, runHabit),
+          previewOuting(quest, exercisesById, configs.get(quest.id) ?? null, runHabit),
         ] as const,
     );
     // Together: tiles drawn before their goals said "Free" on every chip, a goal nobody set.
-    setGoals(Object.fromEntries(entries));
-    setWalkRuns(
-      Object.fromEntries(
-        list.map(({ quest }) => [
-          quest.id,
-          previewWalkRun(quest, exercisesById, configs.get(quest.id) ?? null, runHabit),
-        ]),
-      ),
-    );
+    setGoals(Object.fromEntries(previews.map(([id, preview]) => [id, preview.goal])));
+    setWalkRuns(Object.fromEntries(previews.map(([id, preview]) => [id, preview.walkRun])));
     setOutings(list);
 
     const last = (await getRecentSessionHistory(1))[0];

@@ -4,6 +4,7 @@
     python3 scripts/generate-animals.py candidates bear-young 1   # 4 candidates, 4 paid submissions
     python3 scripts/generate-animals.py sheet bear-young 1        # one contact sheet of the 4, free
     python3 scripts/generate-animals.py accept bear-young 1 2     # ship candidate 2, file its provenance
+    python3 scripts/generate-animals.py accept bear-legendary 14 1 --concept charge   # from legendary-charge/
     python3 scripts/generate-animals.py --dry-run candidates bear-young 1   # prompts and seeds, no network
 
 Slugs are the 57 of db/crestCoat.ts: `<animal>-<stage>[-rare|-winter]`, animal in bear, stag,
@@ -84,7 +85,7 @@ def cost_per_image() -> float:
         sys.exit(f"unknown endpoint {flux.ENDPOINT!r}: no price known, refusing to submit. Add it to COST_BY_ENDPOINT_EUR.")
 
 
-BUDGET_EUR = 25.0  # of 30 for the whole chantier; the last 5 are the margin.
+BUDGET_EUR = 40.0  # Guillaume, 11/10: "40 $ max de plus" (was 25 of 30; the last 5 were the margin).
 
 ANIMALS = ("bear", "stag", "horse", "salmon", "ermine", "boar")
 STAGES = ("young", "adult", "venerable", "legendary")
@@ -138,11 +139,20 @@ SALMON_POSE = (
     "A single fish, alone in the picture, in a clean side profile, head toward the right edge of "
     "the picture, its body in a strong arched swimming curve."
 )
+# The legendary mammal charges at us instead: the "face right" pose rule does not apply to it.
+CHARGE_POSE = (
+    "A single animal, alone in the picture, facing the viewer in a front three-quarter view, "
+    "advancing toward us."
+)
 POSE = {a: THREE_QUARTER for a in ("bear", "stag", "horse", "ermine", "boar")} | {"salmon": SALMON_POSE}
 
 
-def style_rules(animal: str) -> tuple[str, ...]:
-    return tuple(POSE[animal] if rule is None else rule for rule in STYLE_RULES)
+def pose_of(animal: str, stage: str) -> str:
+    return CHARGE_POSE if stage == "legendary" and animal != "salmon" else POSE[animal]
+
+
+def style_rules(animal: str, stage: str = "adult", pose: str | None = None) -> tuple[str, ...]:
+    return tuple((pose or pose_of(animal, stage)) if rule is None else rule for rule in STYLE_RULES)
 
 
 # The silhouette, one sentence per animal and no colour, copied word for word into all of its
@@ -194,18 +204,20 @@ COAT = {
 SEEN_BELOW = "seen from slightly below, with broad powerful shoulders"  # grown mammals, not legendary
 
 
-def legendary(kind: str, limbs: str, mane: str) -> str:
-    """The bosses' `_legendary` ask: the same animal, "visibly more massive", nothing magical."""
-    front = "forepaw" if limbs == "paws" else "front leg"
+def legendary(kind: str, front: str, head: str = "", tail: str = "") -> str:
+    """The legendary mammal, charging: the bosses' "visibly more massive", nothing magical.
+
+    `head` adds to the lowered head (the stag's antlers), `tail` to the sentence (tusks, no saddle).
+    """
     return (f"It is a legendary {kind} at its legendary peak, visibly larger and broader than the adult, "
-            f"filling the picture up to its margin, never cropped, facing right. Seen from a very low viewpoint "
-            f"at the height of its front {limbs}, looking up at it: the horizon line sits below its chest, the "
-            f"underside of its jaw and its chest face the viewer, its back is hidden behind its shoulders and its "
-            f"head is the highest point of the picture. All four {limbs} are on the ground, one {front} "
-            f"stepping forward. The only light comes from behind it, a cold moonlight that outlines the {mane} on "
-            f"its shoulders in a thin pale line, while its face and flank are in deep black ink shadow with hard "
-            f"edges; old pale scars cross its shoulder and muzzle. It is still a natural {kind}, no armor, no glow "
-            f"and no magic.")
+            f"facing the viewer in a front three-quarter view and advancing straight toward us, never cropped. "
+            f"Its massive head{head} is held low in front, close to us, its enormous shoulders rising behind it, "
+            f"one {front} raised mid-stride, its gaze fixed on us from deep in the shadow under its heavy brow. "
+            f"It is whole, from its head to its rump, and fills the picture right up to the margin. "
+            f"The only light comes from behind it, a cold moonlight that outlines its shoulders in a thin pale "
+            f"line, while its face and body are in deep black ink shadow with hard edges. "
+            f"It is still a natural {kind}, no armor, no glow and no magic, with old pale scars across its "
+            f"shoulder and muzzle.{tail}")
 
 
 STAGE = {
@@ -213,19 +225,19 @@ STAGE = {
         "young": "It is a half-grown bear drawn at about half the size of a grown bear, standing in the lower middle of the picture with wide empty night background all around it, facing right in the same proud three-quarter view. It is a gangly two-year-old bear, all legs: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long muzzle, ears that look large for its head, no shoulder hump yet, oversized paws, a short scruffy coat; a wary, awkward stance, drawn small in the picture with wide empty night around it. Its coat is one even colour from chin to belly, with no pale patch on the chest or belly. Its mouth is closed.",
         "adult": f"It is a bear in its prime, facing right, {SEEN_BELOW}: huge and powerful, with a thick neck, heavy shoulder muscle and a full coat.",
         "venerable": f"It is a very old bear, epic and unbowed, facing right, {SEEN_BELOW}: the coat stays BROWN, a dull faded chestnut duller than the adult's, with a pale grey muzzle and silver-grey frost only on the top of the head, the nape and the upper shoulders, never on the rest of the body; old scars across the shoulder and muzzle, a torn ear with a notch bitten out of it, bony hips under thin fur, a sagging belly and worn blunt claws; the chest stays one plain colour.",
-        "legendary": legendary("bear", "paws", "thick mane"),
+        "legendary": legendary("bear", "forepaw"),
     },
     "stag": {
         "young": "It is a young stag drawn at about half the size of a grown stag, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent stag: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long muzzle, ears that look large for its head, its first small antlers, short with only two or three tines each, a short scruffy coat; a wary, awkward stance.",
         "adult": f"It is a stag in its prime, facing right, {SEEN_BELOW}: broad-chested and muscular, with full antlers of many tines and a proud raised head.",
         "venerable": f"It is a very old stag, epic and unbowed, facing right, {SEEN_BELOW}: the coat stays RUSSET, duller than the adult's, with a pale grey muzzle and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear, worn blunt hooves and massive wide antlers thick with tines.",
-        "legendary": legendary("stag", "hooves", "thick neck mane beneath a vast crown of antlers of many tines"),
+        "legendary": legendary("stag", "front leg", ", crowned with immense antlers of many tines,"),
     },
     "horse": {
         "young": "It is a young horse drawn at about half the size of a grown horse, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky yearling: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow long head, ears that look large for its head, a fine short scruffy mane and a short tail, oversized hooves; a wary, awkward stance; bare-backed, nothing on its back or head.",
         "adult": f"It is a horse in its prime, facing right, {SEEN_BELOW}: fully grown, deep-chested and muscular, the coat in good condition and the head carried high; bare-backed, nothing on its back or head.",
         "venerable": f"It is a very old horse, epic and unbowed, facing right, {SEEN_BELOW}: the coat keeps its base colour, duller than the adult's, with a pale grey muzzle and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a hollowed back and a sagging belly, a torn ear and worn blunt hooves, standing slow and dignified; bare-backed, nothing on its back or head.",
-        "legendary": legendary("horse", "hooves", "long flowing mane") + " Bare-backed, nothing on its back or head.",
+        "legendary": legendary("horse", "front leg", tail=" Bare-backed, nothing on its back or head, no saddle."),
     },
     "salmon": {
         "young": "It is a young salmon drawn at about half the length of a grown salmon, swimming in the lower middle of the picture with wide empty night background all around it, facing right. It is a small slender fish: svelte and narrow-bodied, with small neat fins, bright fresh scales and few crisp dark spots. ",
@@ -237,19 +249,19 @@ STAGE = {
         "young": "It is a young ermine drawn at about half the size of a grown ermine, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a gangly young ermine: thin legs that look slightly too long for its body, a slim waist, a narrow head, ears that look large for its head, oversized paws, a short scruffy coat and a short bold tail tip; a wary, awkward stance.",
         "adult": f"It is an ermine in its prime, facing right, {SEEN_BELOW}: sleek, lithe and muscular, alert, head raised, the coat clean and smooth and the tail tip sharp.",
         "venerable": f"It is a very old ermine, epic and unbowed, facing right, {SEEN_BELOW}: the fur is thin over bony hips, a sagging belly, fine creases around the muzzle, a pale grey muzzle with long pale whiskers, a torn ear, worn blunt claws and a slow low-slung stance.",
-        "legendary": legendary("ermine", "paws", "dense ruff"),
+        "legendary": legendary("ermine", "forepaw"),
     },
     "boar": {
         "young": "It is a young boar drawn at about half the size of a grown boar, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent boar: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long snout, ears that look large for its head, tusks just showing as small nubs, a short low scruffy ridge of bristles; a wary, awkward stance.",
         "adult": f"It is a boar in its prime, facing right, {SEEN_BELOW}: full-sized, deep-chested and thick-necked, with a tall bristle ridge and fully grown tusks.",
         "venerable": f"It is a very old boar, epic and unbowed, facing right, {SEEN_BELOW}: the coat keeps its dark grey, duller than the adult's, with a pale grey snout and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear and thick worn tusks.",
-        "legendary": legendary("boar", "trotters", "long bristle mane") + " Heavy curved tusks.",
+        "legendary": legendary("boar", "front leg", tail=" Heavy curved tusks."),
     },
 }
 
 
-# Legendary bear concept variants (`--concept`): each replaces the legendary stage sentence, and
-# optionally the pose rule, and files into bear-legendary/legendary-<name>/. The 57 slugs and their
+# Legendary bear concept variants (`--concept`): each replaces the legendary stage sentence and
+# the pose rule (a None pose is the neutral three-quarter one), and files into bear-legendary/legendary-<name>/. The 57 slugs and their
 # catalogue are untouched. FLUX ignores camera-angle wording, so the drama is in pose and composition.
 CONCEPT_TAIL = " It is still a natural bear, no armor, no glow and no magic, with old pale scars across its shoulder and muzzle."
 CONCEPTS = {
@@ -260,14 +272,7 @@ CONCEPTS = {
         "on its neck and shoulders. The only light comes from behind it, a cold moonlight that outlines the whole crest of "
         "its back, neck and head in a thin pale line, while its face and flank are in deep black ink shadow with hard edges."
         + CONCEPT_TAIL, None),
-    "charge": (
-        "It is a legendary bear at its legendary peak, visibly larger and broader than the adult, facing the viewer in a "
-        "front three-quarter view and advancing straight toward us, never cropped. Its massive head is held low in front, "
-        "close to us, its enormous shoulders and hump rising behind it, one forepaw raised mid-stride, its gaze fixed on us from "
-        "deep in the shadow under its heavy brow. It fills the picture right up to the margin. The only light comes from "
-        "behind it, a cold moonlight that outlines its shoulders in a thin pale line, while its face and body are in deep "
-        "black ink shadow with hard edges." + CONCEPT_TAIL,
-        "A single animal, alone in the picture, facing the viewer in a front three-quarter view, advancing toward us."),
+    "charge": (STAGE["bear"]["legendary"], CHARGE_POSE),  # the default now; kept so --concept charge still files in legendary-charge/
     "upright": (
         "It is a legendary bear, a great real brown bear standing upright on its hind legs, in a three-quarter view toward "
         "the right, visibly larger and broader than the adult, its forelegs hanging along its body, the long claws of its "
@@ -304,11 +309,12 @@ def parts_of(slug: str) -> tuple[str, str, str]:
 
 def prompt_for(slug: str, concept: str | None = None) -> str:
     animal, stage, coat = parts_of(slug)
-    rules = style_rules(animal)
     text = STAGE[animal][stage]
+    pose = None
     if concept:
         text, pose = CONCEPTS[concept]
-        rules = tuple(pose if pose and r == POSE[animal] else r for r in rules)
+        pose = pose or THREE_QUARTER
+    rules = style_rules(animal, stage, pose)
     return " ".join((BACKGROUND, SILHOUETTE[animal], COAT[animal][coat], SALMON_EYE if animal == "salmon" else EYES, text, " ".join(rules)))
 
 
@@ -319,17 +325,23 @@ def self_test() -> None:
         animal, _, _ = parts_of(slug)
         p = prompt_for(slug)
         assert p.startswith(BACKGROUND) and "picture" in BACKGROUND, slug
-        for rule in style_rules(animal):
-            assert rule in p, (slug, rule[:40])
         stage = parts_of(slug)[1]
+        for rule in style_rules(animal, stage):
+            assert rule in p, (slug, rule[:40])
+        charging = stage == "legendary" and animal != "salmon"
         low = p.lower()
         assert "ground" not in low.replace("background", "").replace("are on the ground", ""), slug
         assert "cross-hatching" in low and "cel-shaded" in low and "slate" not in low, slug
         if animal == "salmon":
             assert SALMON_POSE in p and THREE_QUARTER not in p, slug
             assert not [w for w in ("on all fours", "shoulders", "feet") if w in low], slug
+        elif charging:
+            assert CHARGE_POSE in p and THREE_QUARTER not in p and SALMON_POSE not in p, slug
+            assert "facing right" not in low and "right edge" not in low, slug
+            assert "front three-quarter view" in low and "raised mid-stride" in low, slug
+            assert "whole, from its head to its rump" in p and "right up to the margin" in p, slug
         else:
-            assert THREE_QUARTER in p and SALMON_POSE not in p, slug
+            assert THREE_QUARTER in p and SALMON_POSE not in p and CHARGE_POSE not in p, slug
         if animal == "bear":
             assert "plain chest with no white blaze" in p, slug
         if stage == "legendary":
@@ -338,7 +350,7 @@ def self_test() -> None:
             assert "never cropped" in p or animal == "salmon", slug
         if stage == "young":
             assert "broad powerful shoulders" not in p, slug
-        if stage in ("venerable", "legendary"):
+        if stage == "venerable" or (stage == "legendary" and not charging):
             assert "facing right" in STAGE[animal][stage], slug
         assert SILHOUETTE[animal] in p, slug
         assert "picture" in p and "frame" not in p.lower(), slug
@@ -359,8 +371,13 @@ def self_test() -> None:
         p = prompt_for("bear-legendary", name)
         assert BACKGROUND in p and SILHOUETTE["bear"] in p and EYES in p and "plain chest with no white blaze" in p, name
         assert "no armor, no glow and no magic" in p and "never cropped" in p and text in p, name
-        assert (pose or THREE_QUARTER) in p and (pose is None or THREE_QUARTER not in p), name
+        assert (pose or THREE_QUARTER) in p and ((CHARGE_POSE in p) == (pose == CHARGE_POSE)), name
+        assert (pose is None) == (THREE_QUARTER in p), name
         assert "ground" not in p.lower().replace("background", ""), name
+    stag = prompt_for("stag-legendary")
+    assert "immense antlers" in stag and "front leg raised mid-stride" in stag
+    assert "no saddle" in prompt_for("horse-legendary") and "tusks" in prompt_for("boar-legendary")
+    assert prompt_for("bear-legendary") == prompt_for("bear-legendary", "charge")
     print(f"self-test ok: {len(slugs)} slugs, style rules x{len(STYLE_RULES)}, poses per animal, no ground word, silhouette identical per animal, eyes verbatim")
 
 
@@ -493,8 +510,8 @@ def sheet(slug: str, attempt: int, dry_run: bool, concept: str | None = None) ->
     print(out)
 
 
-def accept(slug: str, attempt: int, i: int, dry_run: bool) -> None:
-    src = OUT / slug / f"a{attempt}_c{i}.jpg"
+def accept(slug: str, attempt: int, i: int, dry_run: bool, concept: str | None = None) -> None:
+    src = folder(slug, concept) / f"a{attempt}_c{i}.jpg"
     rel = f"assets/images/animals/{slug}.jpg"
     if dry_run:
         print(f"[dry-run] would delete {slug}.* in {(ROOT / rel).parent}, copy {src} -> {rel} "
@@ -528,8 +545,7 @@ def main() -> None:
         p = sub.add_parser(name)
         p.add_argument("slug")
         p.add_argument("attempt", type=positive)
-        if name != "accept":
-            p.add_argument("--concept", choices=sorted(CONCEPTS), help="bear-legendary only: a concept variant, filed in legendary-<concept>/")
+        p.add_argument("--concept", choices=sorted(CONCEPTS), help="bear-legendary only: a concept variant, filed in legendary-<concept>/")
         if name == "accept":
             p.add_argument("index", type=int, choices=range(CANDIDATES))
     args = parser.parse_args()
@@ -546,7 +562,7 @@ def main() -> None:
     elif args.command == "sheet":
         sheet(slug, args.attempt, args.dry_run, concept)
     else:
-        accept(slug, args.attempt, args.index, args.dry_run)
+        accept(slug, args.attempt, args.index, args.dry_run, concept)
 
 
 if __name__ == "__main__":

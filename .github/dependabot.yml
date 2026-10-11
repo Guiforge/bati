@@ -43,9 +43,14 @@ updates:
       - dependency-name: "react-native"
       - dependency-name: "react-native-reanimated"
       - dependency-name: "react-native-svg"
+      - dependency-name: "react-native-view-shot"
       - dependency-name: "react-native-worklets"
       - dependency-name: "react-native-*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # Babel 8 is ESM-only and jest cannot `require` it from __tests__/fill-labels.test.ts
+      # (#172). It moves with babel-preset-expo, when the SDK's own Babel goes to 8.
+      - dependency-name: "@babel/parser"
+        update-types: ["version-update:semver-major"]
       - dependency-name: "react"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "react-dom"

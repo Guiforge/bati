@@ -375,10 +375,10 @@ describe("the stage line under the options", () => {
       "Quel que soit ton choix, ton animal est légendaire.",
     ],
     en: [
-      "Your animal's stage: young.",
-      "Your animal's stage: adult.",
-      "Your animal's stage: venerable.",
-      "Your animal's stage: legendary.",
+      "Whichever you choose, your animal keeps its stage: young.",
+      "Whichever you choose, your animal keeps its stage: adult.",
+      "Whichever you choose, your animal keeps its stage: venerable.",
+      "Whichever you choose, your animal keeps its stage: legendary.",
     ],
     de: [
       "Welches du auch wählst, dein Tier ist jung.",

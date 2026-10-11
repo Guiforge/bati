@@ -97,6 +97,12 @@ const STRINGS: Localized<WidgetStrings> = {
     week: "SEMANA",
     sessions: { one: "sesión", other: "sesiones" },
   },
+  ru: {
+    flame: "ПЛАМЯ",
+    days: { one: "день", few: "дня", many: "дней", other: "дней" },
+    week: "НЕДЕЛЯ",
+    sessions: { one: "тренировка", few: "тренировки", many: "тренировок", other: "тренировок" },
+  },
 };
 type Lang = AppLanguage;
 

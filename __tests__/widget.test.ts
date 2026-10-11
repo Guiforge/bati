@@ -166,6 +166,12 @@ describe("src/widget", () => {
     expect(widgetUnit("en", "days", 1)).toBe("day");
     expect(widgetUnit("de", "days", 1)).toBe("Tag");
     expect(widgetUnit("es", "days", 1)).toBe("día");
+    // Russian has three: 1 and 21 день, 2 to 4 дня, the rest and the teens дней.
+    expect(widgetUnit("ru", "days", 1)).toBe("день");
+    expect(widgetUnit("ru", "days", 3)).toBe("дня");
+    expect(widgetUnit("ru", "days", 11)).toBe("дней");
+    expect(widgetUnit("ru", "days", 21)).toBe("день");
+    expect(widgetUnit("ru", "days", null)).toBe("дней");
     expect(widgetUnit("fr", "sessions", 1)).toBe("séance");
     expect(widgetUnit("en", "sessions", 1)).toBe("session");
     expect(widgetUnit("de", "sessions", 1)).toBe("Einheit");

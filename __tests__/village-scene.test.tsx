@@ -77,7 +77,7 @@ function mockScene(buildings: village.VillageBuilding[], over: Partial<village.V
   jest.spyOn(village, "getVillageScene").mockResolvedValue({
     tier: 4,
     level: 8,
-    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
+    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion", ru: "Чемпион" },
     totalXp: 3180,
     xpPerSession: 370,
     flame: 0,

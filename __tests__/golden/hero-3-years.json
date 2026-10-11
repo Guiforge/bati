@@ -380,7 +380,7 @@
       "revealedIndex": 7,
       "optionStages": {
         "sessions": "venerable",
-        "chosen": "venerable"
+        "chosen": "legendary"
       },
       "evidence": {
         "firstEight": {
@@ -406,6 +406,8 @@
       "rings": 2,
       "revealedAt": "2023-04-01T07:58:04.000Z"
     },
+    "legendary": false,
+    "rareCoat": true,
     "rungs": [
       [1, 1],
       [2, 2],

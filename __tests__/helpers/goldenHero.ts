@@ -238,6 +238,7 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
   const aggregates = await getSessionAggregates();
   const achievements = await getAllAchievementsWithProgress();
   const crest = await getCrest(now);
+  const { hasRareCoat } = require("../../db/crestCoat") as typeof import("../../db/crestCoat");
 
   return {
     sessions: aggregates,
@@ -278,6 +279,9 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
     },
     bosses,
     crest,
+    // V-02 extended: the two figures the new rules read. Not the month's portrait: it would depend on the date.
+    legendary: crest ? [crest.stage, crest.second?.stage].includes("legendary") : false,
+    rareCoat: crest ? hasRareCoat(crest.longestFlame) : false,
     // [written movement id, served movement id], one per laddered movement.
     rungs,
     achievements: achievements.map((a) => ({

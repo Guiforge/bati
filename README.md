@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://guiforge.github.io/bati/"><img src="docs/legal/assets/img/og.jpg" alt="Build your body. Build your village." width="100%" /></a>
+<a href="https://getbati.app/"><img src="docs/legal/assets/img/og.jpg" alt="Build your body. Build your village." width="100%" /></a>
 
 # Bati
 
@@ -14,7 +14,7 @@ and the village you build is made of what you actually lifted.
 
 <br />
 
-**[guiforge.github.io/bati](https://guiforge.github.io/bati/)**, the site, in English, French, German and Spanish
+**[getbati.app](https://getbati.app/)**, the site, in English, French, German and Spanish
 
 [![CI](https://github.com/Guiforge/bati/actions/workflows/ci.yml/badge.svg)](https://github.com/Guiforge/bati/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Guiforge/bati?label=release&color=C2410C)](https://github.com/Guiforge/bati/releases/latest)
@@ -116,11 +116,11 @@ out for three things and only if you ask it to: the map behind an expedition, fr
 `tiles.openfreemap.org`, which tells that host roughly where the outing happened; a daily question
 to `api.github.com` about a newer version, which tells it an IP address and a time; and device
 sync, to your own WebDAV or Nextcloud server, which receives your history encrypted on the phone.
-Nothing else leaves the phone. [Privacy policy](https://guiforge.github.io/bati/privacy/).
+Nothing else leaves the phone. [Privacy policy](https://getbati.app/privacy/).
 
 ## Install it
 
-All of this is also on [the site](https://guiforge.github.io/bati/#install), in English, French, German and Spanish.
+All of this is also on [the site](https://getbati.app/#install), in English, French, German and Spanish.
 
 ### F-Droid, the one that updates itself
 
@@ -131,13 +131,13 @@ update that copy (Android refuses a different signature, and uninstalling takes 
 Keep the self-hosted repository instead (same APKs, same key, updates arriving like any other
 app's), described in [`docs/fdroid.md`](docs/fdroid.md).
 
-[**Add the repository to F-Droid**](https://fdroid.link/#https://guiforge.github.io/bati/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97)
+[**Add the repository to F-Droid**](https://fdroid.link/#https://getbati.app/fdroid/repo?fingerprint=089db12838d660caf285be855d8e6d023407a50d98051b3843095ea09bba2d97)
 
 By hand instead, under *Settings → Repositories → +*: paste the address, and check that F-Droid shows
 this fingerprint before you accept it:
 
 ```text
-https://guiforge.github.io/bati/fdroid/repo
+https://getbati.app/fdroid/repo
 089D B128 38D6 60CA F285 BE85 5D8E 6D02 3407 A50D 9805 1B38 4309 5EA0 9BBA 2D97
 ```
 

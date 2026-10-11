@@ -20,6 +20,16 @@ import config from "@/tamagui.config";
 
 /** The sheet is verified on a device; here the rule runs for real and only the frame is a stand-in. */
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
+// The bears only: the yoga animal stands for "a portrait that has not shipped" whatever the real
+// table holds.
+jest.mock("@/constants/animalPortraits", () => {
+  const real = jest.requireActual("@/constants/animalPortraits");
+  return {
+    ANIMAL_PORTRAITS: Object.fromEntries(
+      Object.entries(real.ANIMAL_PORTRAITS).filter(([slug]) => slug.startsWith("bear-")),
+    ),
+  };
+});
 jest.mock("expo-router", () => ({
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));

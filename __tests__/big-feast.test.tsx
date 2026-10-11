@@ -111,13 +111,16 @@ jest.mock("@/components/village/Crest", () => ({
   },
 }));
 
-// The table as it ships, plus one legendary portrait, so the feast can be tried on both sides of
-// "does this animal's legendary portrait ship" whatever the real table holds.
+// The bears as they ship, plus one legendary stag portrait, so the feast can be tried on both sides
+// of "does this animal's portrait ship" (the horse stands for the animal without one) whatever the
+// real table holds.
 jest.mock("@/constants/animalPortraits", () => {
   const real = jest.requireActual("@/constants/animalPortraits");
   return {
     ANIMAL_PORTRAITS: {
-      ...real.ANIMAL_PORTRAITS,
+      ...Object.fromEntries(
+        Object.entries(real.ANIMAL_PORTRAITS).filter(([slug]) => slug.startsWith("bear-")),
+      ),
       "stag-legendary": real.ANIMAL_PORTRAITS["bear-adult"],
     },
   };

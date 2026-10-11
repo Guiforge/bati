@@ -68,6 +68,23 @@ export function revealColors(t: TFunction, f: Reveal): string {
   });
 }
 
+/** A stage rises exactly at its threshold, so the body is that many sessions of its own practice. */
+export function stageBody(t: TFunction, f: Extract<Feast, { kind: "stageUp" | "legendary" }>) {
+  return t(f.own ? `session.tonight_stage_body_${f.animal}` : "session.tonight_stage_body_any", {
+    n: f.n,
+  });
+}
+
+type Legendary = Extract<Feast, { kind: "legendary" }>;
+
+/** "A legendary bear watches over Brumeval." The reveal's sentence, for the animal that reached 500. */
+export function legendaryTitle(t: TFunction, f: Legendary, villageName: string): string {
+  return t("village.crest_line_one", {
+    animal: sentence(t(`village.crest_${f.animal}_legendary`)),
+    place: villageName || t("village.crest_place"),
+  });
+}
+
 /** The level a tier is followed by, or null at the last one. */
 export const nextTierLevel = (tier: VillageTier): number | null =>
   tier === MAX_TIER ? null : TIER_LEVEL_FLOORS[(tier + 1) as VillageTier];

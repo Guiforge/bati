@@ -1,5 +1,6 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import type { TFunction } from "i18next";
 import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
@@ -28,17 +29,22 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
 import {
   BEAT,
+  legendaryTitle,
   nextTierLevel,
   revealBody,
   revealColors,
   revealTitle,
+  stageBody,
   TEXT_FADE,
   tierSentence,
 } from "./bigFeastText";
 import type { Feast } from "./feasts";
 
 /** The feasts that fill the screen. Age and anniversary have no producer yet (V-03). */
-export type BigFeast = Extract<Feast, { kind: "reveal" | "tier" | "age" | "anniversary" }>;
+export type BigFeast = Extract<
+  Feast,
+  { kind: "reveal" | "tier" | "age" | "anniversary" | "legendary" }
+>;
 
 /** Tamagui's "bouncy" (tamagui.config.ts), which is not exported: a spring, once. */
 const BOUNCY = { damping: 14, mass: 0.8, stiffness: 150 } as const;
@@ -146,6 +152,9 @@ function WhyLink({
   );
 }
 
+const plainTitle = (t: TFunction, feast: Extract<BigFeast, { kind: "age" | "anniversary" }>) =>
+  feast.kind === "age" ? feast.name : t("session.tonight_anniversary", { count: feast.years });
+
 /** The text of the last image, which is the whole feast under reduced motion. */
 function FeastText({
   feast,
@@ -205,11 +214,18 @@ function FeastText({
       </>
     );
   }
-  return (
-    <Title>
-      {feast.kind === "age" ? feast.name : t("session.tonight_anniversary", { count: feast.years })}
-    </Title>
-  );
+  if (feast.kind === "legendary") {
+    return (
+      <>
+        <Kicker>{t("village.crest_stage_legendary")}</Kicker>
+        <Title>{legendaryTitle(t, feast, villageName)}</Title>
+        <Line testID="big-feast-body" fact>
+          {stageBody(t, feast)}
+        </Line>
+      </>
+    );
+  }
+  return <Title>{plainTitle(t, feast)}</Title>;
 }
 
 function Shield({ crest, style }: { crest: CrestShape | null; style?: object }) {

@@ -1,4 +1,10 @@
-import { type Animal, type CrestSession, crestAnimals, type Practice } from "../db/crestRules";
+import {
+  type Animal,
+  type CrestSession,
+  crestAnimals,
+  LEGENDARY_AT,
+  type Practice,
+} from "../db/crestRules";
 
 /** `seq(["strength", 5], ["run", 2])`: sessions in journal order, one practice each. */
 let n = 0;
@@ -202,6 +208,14 @@ describe("the stages", () => {
     expect(auto(seq(["strength", 40]))?.stage).toBe("adult");
     expect(auto(seq(["strength", 199]))?.stage).toBe("adult");
     expect(auto(seq(["strength", 200]))?.stage).toBe("venerable");
+  });
+
+  test("legendary from 500, a boar or a picked animal counting every session", () => {
+    expect(LEGENDARY_AT).toBe(500);
+    expect(auto(seq(["strength", 499]))?.stage).toBe("venerable");
+    expect(auto(seq(["strength", 500]))?.stage).toBe("legendary");
+    const picked = crestAnimals(seq(["strength", 450], ["run", 50]), "stag");
+    expect(picked?.stage).toBe("legendary");
   });
 });
 

@@ -1,4 +1,4 @@
-import { type Feast, type FeastFacts, rankFeasts } from "@/components/session/feasts";
+import { type Feast, type FeastFacts, feastKey, rankFeasts } from "@/components/session/feasts";
 import { type CrestReveal, NO_CREST_EVENTS } from "@/db/crestEvents";
 
 const empty: FeastFacts["result"] = {
@@ -104,6 +104,108 @@ describe("rankFeasts", () => {
     const list = rankFeasts(facts({ tierUp, levelUp: { oldLevel: 4, newLevel: 5 } }));
     expect(list).toHaveLength(1);
     expect(list[0]).toMatchObject({ kind: "tier", size: "large", level: 5 });
+  });
+
+  describe("the legendary animal", () => {
+    const legendary = (animal: "bear" | "stag") =>
+      ({ animal, stage: "legendary", n: 500, own: true }) as const;
+    const events = (...stageUp: ReturnType<typeof legendary>[]) => ({
+      ...NO_CREST_EVENTS,
+      stageUp,
+    });
+
+    test("is a big feast, after the anniversary and before the tier, keyed by its animal", () => {
+      const list = rankFeasts(
+        facts({ tierUp, crestEvents: events(legendary("bear")) }, { anniversary: { years: 1 } }),
+      );
+      expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual([
+        "anniversary:large",
+        "legendary:medium",
+        "tier:medium",
+      ]);
+      expect(feastKey({ kind: "legendary", ...legendary("stag") })).toBe("legendary:stag");
+    });
+
+    test("leads when nothing outranks it, and is listed once: no stage-up card for it", () => {
+      const list = rankFeasts(facts({ tierUp, crestEvents: events(legendary("bear")) }));
+      expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual(["legendary:large", "tier:medium"]);
+      expect(list[0]).toMatchObject({ animal: "bear", stage: "legendary", n: 500, own: true });
+    });
+
+    test("the reveal and an Age outrank it", () => {
+      const e = events(legendary("bear"));
+      expect(sizes(facts({ crestReveal: reveal, crestEvents: e }))[0]).toBe("reveal:large");
+      expect(sizes(facts({ crestEvents: e }, { age: { name: "A" } }))[0]).toBe("age:large");
+    });
+
+    test("the second animal's own night is not silenced by the first's: keys differ", () => {
+      const first = rankFeasts(facts({ crestEvents: events(legendary("bear")) }, { shown: [] }));
+      expect(first[0]?.kind).toBe("legendary");
+      const second = rankFeasts(
+        facts({ crestEvents: events(legendary("stag")) }, { shown: ["legendary:bear"] }),
+      );
+      expect(second[0]).toMatchObject({ kind: "legendary", size: "large", animal: "stag" });
+      const again = rankFeasts(
+        facts({ crestEvents: events(legendary("bear")) }, { shown: ["legendary:bear"] }),
+      );
+      expect(again[0]).toMatchObject({ kind: "legendary", size: "medium" });
+    });
+
+    test("both animals on one night: one large, the other a card", () => {
+      const list = rankFeasts(facts({ crestEvents: events(legendary("bear"), legendary("stag")) }));
+      expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual([
+        "legendary:large",
+        "legendary:medium",
+      ]);
+    });
+
+    test("an adult card beside it is still a card", () => {
+      const list = rankFeasts(
+        facts({
+          crestEvents: {
+            ...NO_CREST_EVENTS,
+            stageUp: [legendary("bear"), { animal: "stag", stage: "adult", n: 40, own: true }],
+          },
+        }),
+      );
+      expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual(["legendary:large", "stageUp:medium"]);
+    });
+  });
+
+  describe("the rare coat's card", () => {
+    const coat = { animal: "bear", stage: "adult" } as const;
+    const adultUp = { animal: "bear", stage: "adult", n: 40, own: true } as const;
+    const venerableUp = { animal: "bear", stage: "venerable", n: 200, own: true } as const;
+
+    test("is a card, never a big feast", () => {
+      expect(sizes(facts({ rareCoat: coat }))).toEqual(["coat:medium"]);
+    });
+
+    test("absorbs the adult card of its animal when both fall on one session", () => {
+      const list = rankFeasts(
+        facts({ rareCoat: coat, crestEvents: { ...NO_CREST_EVENTS, stageUp: [adultUp] } }),
+      );
+      expect(list.map((x) => x.kind)).toEqual(["coat"]);
+    });
+
+    test("keeps the card of another stage or another animal", () => {
+      const list = rankFeasts(
+        facts({
+          rareCoat: { animal: "bear", stage: "venerable" },
+          crestEvents: {
+            ...NO_CREST_EVENTS,
+            stageUp: [venerableUp, { animal: "stag", stage: "adult", n: 40, own: true }],
+          },
+        }),
+      );
+      expect(list.map((x) => x.kind)).toEqual(["coat", "stageUp", "stageUp"]);
+    });
+
+    test("without the coat the adult card stays", () => {
+      expect(sizes(facts({ crestEvents: { ...NO_CREST_EVENTS, stageUp: [adultUp] } }))).toEqual([
+        "stageUp:medium",
+      ]);
+    });
   });
 
   test("every fact is said once, with its own id", () => {

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { Crest } from "@/db/crest";
-import type { Animal } from "@/db/crestRules";
+import type { Animal, CrestStage } from "@/db/crestRules";
 import { dayKey } from "@/db/dates";
 import { PRACTICE_KEY, sentence } from "./crestText";
 
@@ -12,7 +12,7 @@ export const revealedToday = (revealedAt: Date, now: Date): boolean =>
 
 /**
  * The line under the title: whole sentences, one per shape, so no language agrees a part with a
- * whole. A stage is said only when it is "venerable" (the mockups' state C), and "from now on"
+ * whole. A stage is said only when it is "venerable" or "legendary" (the mockups' state C), and "from now on"
  * only on the day the 8th session revealed the crest. No crest yet: the glow's sentence.
  */
 export function useCrestLine(
@@ -24,9 +24,13 @@ export function useCrestLine(
   const place = villageName || t("village.crest_place");
   if (crest === null) return t("village.crest_line_glow", { place });
 
-  const name = (a: Animal, venerable: boolean) =>
-    t(venerable ? `village.crest_${a}_venerable` : `village.crest_${a}`);
-  const first = sentence(name(crest.animal, crest.stage === "venerable"));
+  const name = (a: Animal, stage: CrestStage) =>
+    t(
+      stage === "venerable" || stage === "legendary"
+        ? `village.crest_${a}_${stage}`
+        : `village.crest_${a}`,
+    );
+  const first = sentence(name(crest.animal, crest.stage));
   // A hand-picked animal is not what the 8th session revealed: "from now on" would date the wrong thing.
   const suffix = revealedToday && !crest.manual ? "_t" : "";
   if (crest.animal === "boar" && crest.quarters) {
@@ -43,7 +47,7 @@ export function useCrestLine(
   if (crest.second) {
     return t(`village.crest_line_pair${suffix}`, {
       first,
-      second: name(crest.second.animal, crest.second.stage === "venerable"),
+      second: name(crest.second.animal, crest.second.stage),
       place,
     });
   }

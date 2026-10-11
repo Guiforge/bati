@@ -1,8 +1,10 @@
 import type { Crest } from "./crest";
+import { DELIVERED_COATS, hasRareCoat } from "./crestCoat";
 import {
   ADULT_AT,
   type Animal,
   type CrestStage,
+  LEGENDARY_AT,
   PRACTICES,
   type Practice,
   type PracticeAnimal,
@@ -11,7 +13,10 @@ import {
   VENERABLE_AT,
 } from "./crestRules";
 
-type Seen = Pick<Crest, "animal" | "stage" | "second" | "manual" | "quarters" | "evidence">;
+type Seen = Pick<
+  Crest,
+  "animal" | "stage" | "second" | "manual" | "quarters" | "evidence" | "longestFlame"
+>;
 
 /** The animal the sessions chose and, for the boar, its quarters. */
 export type CrestReveal = {
@@ -31,7 +36,7 @@ export type CrestEvents = {
   secondJoins: { animal: PracticeAnimal; first: Animal; n: number; total: number } | null;
   /**
    * An animal on the crest went up a stage. A stage rises exactly at its threshold, so `n` is
-   * that threshold (40, 200). `own` is whether it counts its own practice's sessions (false for
+   * that threshold (40, 200, 500). `own` is whether it counts its own practice's sessions (false for
    * the boar and a hand-picked animal, which count every session).
    */
   stageUp: { animal: Animal; stage: Exclude<CrestStage, "young">; n: number; own: boolean }[];
@@ -39,7 +44,9 @@ export type CrestEvents = {
 
 export const NO_CREST_EVENTS: CrestEvents = { secondJoins: null, stageUp: [] };
 
-const RANK: Record<CrestStage, number> = { young: 0, adult: 1, venerable: 2 };
+const RANK: Record<CrestStage, number> = { young: 0, adult: 1, venerable: 2, legendary: 3 };
+
+const STAGE_AT = { adult: ADULT_AT, venerable: VENERABLE_AT, legendary: LEGENDARY_AT } as const;
 
 const sessionsWithPractice = (a: Seen) =>
   PRACTICES.reduce((sum, p) => sum + a.evidence.totals[p], 0);
@@ -82,7 +89,7 @@ function stageUpOf(before: Seen | null, after: Seen): CrestEvents["stageUp"] {
   const up: CrestEvents["stageUp"] = [];
   const rose = (animal: Animal, was: CrestStage, now: CrestStage, own: boolean) => {
     if (now === "young" || RANK[now] <= RANK[was]) return;
-    up.push({ animal, stage: now, n: now === "adult" ? ADULT_AT : VENERABLE_AT, own });
+    up.push({ animal, stage: now, n: STAGE_AT[now], own });
   };
   if (before === null) return up;
   if (before.animal === after.animal)
@@ -103,4 +110,27 @@ export function crestEvents(before: Seen | null, after: Seen | null): CrestEvent
     secondJoins: secondJoinsOf(before, after),
     stageUp: stageUpOf(before, after),
   };
+}
+
+/** The key `bigFeastsShown` holds once the rare coat's card has been shown: local to the phone. */
+export const COAT_RARE_KEY = "coat:rare";
+
+/** The animal at the centre that wears the rare coat the card announces. */
+export type RareCoatNews = { animal: Animal; stage: Exclude<CrestStage, "young"> };
+
+/**
+ * The rare coat's card, a fact about the phone like the reveal: the hero has won it (the longest
+ * flame reached Eternal), the animal at the centre is an adult or more, its rare portrait ships,
+ * and this phone has not shown the card yet. A hero who had won it before the update sees it once,
+ * on their first session. `shown` undefined means the key could not be read: say nothing. Pure.
+ */
+export function rareCoatNews(
+  after: Seen | null | undefined,
+  shown: string[] | undefined,
+  delivered: ReadonlySet<string> = DELIVERED_COATS,
+): RareCoatNews | null {
+  if (!after || !shown || shown.includes(COAT_RARE_KEY)) return null;
+  const { animal, stage } = after;
+  if (stage === "young" || !hasRareCoat(after.longestFlame)) return null;
+  return delivered.has(`${animal}-${stage}-rare`) ? { animal, stage } : null;
 }

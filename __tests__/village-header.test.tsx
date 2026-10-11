@@ -149,6 +149,13 @@ describe("the village header", () => {
     ).toBeTruthy();
   });
 
+  it("a legendary centre and border are said, not only the venerable", async () => {
+    await mount(crestOf({ stage: "legendary", second: { animal: "stag", stage: "legendary" } }));
+    expect(
+      await screen.findByText("A legendary bear and a legendary stag watch over Brumeval."),
+    ).toBeTruthy();
+  });
+
   it("the boar names its two practices", async () => {
     await mount(crestOf({ animal: "boar", quarters: ["strength", "run"] }));
     expect(await line()).toBe("A boar watches over Brumeval: you mix strength and endurance.");
@@ -387,7 +394,10 @@ describe("the sentences, in every language", () => {
   const KEYS = [
     "crest_place",
     ...["glow", "one", "one_t", "pair", "pair_t", "boar", "boar_t"].map((k) => `crest_line_${k}`),
-    ...["bear", "stag", "horse", "salmon", "ermine", "boar"].map((a) => `crest_${a}_venerable`),
+    ...["bear", "stag", "horse", "salmon", "ermine", "boar"].flatMap((a) => [
+      `crest_${a}_venerable`,
+      `crest_${a}_legendary`,
+    ]),
   ];
   it.each(["fr", "en", "de", "es"])("%s has them all, clean", (lng) => {
     const t = i18n.getFixedT(lng);

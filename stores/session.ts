@@ -32,6 +32,8 @@ import {
   crestEvents,
   crestReveal,
   NO_CREST_EVENTS,
+  type RareCoatNews,
+  rareCoatNews,
 } from "@/db/crestEvents";
 import { estimateQuestSeconds } from "@/db/estimate";
 import {
@@ -276,6 +278,8 @@ export type SaveResult = {
   crestEvents: CrestEvents;
   /** The crest's reveal when it exists now and this phone has not shown it; null when either read failed. */
   crestReveal: CrestReveal | null;
+  /** The rare coat's card, when the hero has won the coat and this phone has not shown it. */
+  rareCoat: RareCoatNews | null;
   /** The big feasts this phone has shown; undefined when the key could not be read. */
   bigFeastsShown: string[] | undefined;
 };
@@ -2262,6 +2266,7 @@ export const useSessionStore = create<SessionState>()(
         villageGrowth,
         crestEvents: diffCrest(crestBefore, crestAfter),
         crestReveal: crestReveal(crestAfter, shown),
+        rareCoat: rareCoatNews(crestAfter, shown),
         bigFeastsShown: shown,
       };
       set({ savedResult: saved });

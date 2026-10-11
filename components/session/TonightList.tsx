@@ -23,7 +23,7 @@ import { getLevelTitle } from "@/db/userLevel";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
-import { revealShield, spoken, tierSentence } from "./bigFeastText";
+import { revealShield, spoken, stageBody, tierSentence } from "./bigFeastText";
 import type { Feast } from "./feasts";
 import { formatRecordValue, recordTitle } from "./recordText";
 
@@ -58,6 +58,8 @@ function largeLine(t: TFunction, f: Feast, villageName: string, language: AppLan
       return t("session.tonight_anniversary", { count: f.years });
     case "tier":
       return tierSentence(t, f.tier, villageName, language);
+    case "legendary":
+      return t("session.tonight_stage_legendary", { animal: the(t, f.animal) });
     default:
       return "";
   }
@@ -154,13 +156,6 @@ function lineOf(
   }
 }
 
-/** A stage rises exactly at its threshold, so the body is that many sessions of its own practice. */
-function stageBody(t: TFunction, f: Extract<Feast, { kind: "stageUp" }>) {
-  return t(f.own ? `session.tonight_stage_body_${f.animal}` : "session.tonight_stage_body_any", {
-    n: f.n,
-  });
-}
-
 function cardOf(
   t: TFunction,
   i18n: I18n,
@@ -196,6 +191,18 @@ function cardOf(
         body: [t(`session.tonight_join_body_${f.animal}`, { n: f.n, total: f.total })],
         art: shield(f.animal),
       };
+    case "coat":
+      return {
+        id: f.id,
+        title: t("session.tonight_coat_rare", { animal: the(t, f.animal) }),
+        body: [
+          t("session.tonight_coat_rare_body", {
+            coat: sentence(t(`village.coat_rare_${f.animal}`)),
+          }),
+        ],
+        art: shield(f.animal),
+      };
+    case "legendary":
     case "stageUp":
       return {
         id: f.id,

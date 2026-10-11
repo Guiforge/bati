@@ -15,7 +15,7 @@ import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useUserStore } from "@/stores/user";
 
-const KINDS = ["reveal", "tier", "age", "anniversary"];
+const KINDS = ["reveal", "tier", "age", "anniversary", "legendary"];
 
 /**
  * The one big feast of a night, full screen, opened by "Continue" on the victory screen.

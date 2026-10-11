@@ -208,6 +208,24 @@ describe("TonightList", () => {
     expect(queryByText(/null|ancien/i)).toBeNull();
   });
 
+  test("a legendary animal demoted to a card, and the rare coat's card, in French", async () => {
+    const feasts = rank(
+      {
+        crestEvents: {
+          ...NO_CREST_EVENTS,
+          stageUp: [{ animal: "ermine", stage: "legendary", n: 500, own: true }],
+        },
+        rareCoat: { animal: "bear", stage: "adult" },
+      },
+      { shown: ["legendary:ermine"] },
+    );
+    const { getByText } = await show(feasts);
+    expect(getByText("L'hermine devient légendaire")).toBeTruthy();
+    expect(getByText("500 séances de callisthénie.")).toBeTruthy();
+    expect(getByText("L'ours porte un nouveau pelage")).toBeTruthy();
+    expect(getByText("Pointes d'argent, grâce à ta flamme Éternelle.")).toBeTruthy();
+  });
+
   test("a boar demoted to a card by an epilogue says what it mixes, and a single practice says nothing", async () => {
     const led = (quarters: [string, string]) =>
       show(
@@ -530,6 +548,9 @@ describe("the Tonight copy, in every language", () => {
     "tonight_join",
     "tonight_stage_adult",
     "tonight_stage_venerable",
+    "tonight_stage_legendary",
+    "tonight_coat_rare",
+    "tonight_coat_rare_body",
     "tonight_boar_body",
     ...Array.from({ length: 12 }, (_, i) => `tonight_tier_${i + 1}`),
     "tonight_tier_unnamed",

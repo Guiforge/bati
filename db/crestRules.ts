@@ -17,7 +17,7 @@ export type Animal = (typeof ANIMAL_OF)[Practice] | "boar";
 export type PracticeAnimal = (typeof ANIMAL_OF)[Practice];
 export const ANIMALS: readonly Animal[] = [...Object.values(ANIMAL_OF), "boar"];
 
-export type CrestStage = "young" | "adult" | "venerable";
+export type CrestStage = "young" | "adult" | "venerable" | "legendary";
 
 /** One session that counts, with the exercises it got done, by style (see `db/crest.ts`). */
 export type CrestSession = {
@@ -65,6 +65,7 @@ const SECOND_SHARE = 30;
 const SECOND_MIN = 20;
 export const ADULT_AT = 40;
 export const VENERABLE_AT = 200;
+export const LEGENDARY_AT = 500;
 
 /** The practice an animal belongs to; the boar has none. */
 export const practiceOfAnimal = (a: Animal): Practice | undefined =>
@@ -105,7 +106,13 @@ function practised(sessions: CrestSession[]) {
 }
 
 const stageOf = (n: number): CrestStage =>
-  n >= VENERABLE_AT ? "venerable" : n >= ADULT_AT ? "adult" : "young";
+  n >= LEGENDARY_AT
+    ? "legendary"
+    : n >= VENERABLE_AT
+      ? "venerable"
+      : n >= ADULT_AT
+        ? "adult"
+        : "young";
 
 /** The most recently trained of `among`, then the fixed order. */
 function mostRecent(among: Practice[], last: Tally): Practice | undefined {

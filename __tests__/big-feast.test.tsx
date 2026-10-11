@@ -555,6 +555,21 @@ describe("the big-feast route", () => {
     expect(mockMark).toHaveBeenCalledWith("reveal");
   });
 
+  test("a legendary animal opens under its own key, in its words", async () => {
+    finish({
+      crestReveal: null,
+      crestEvents: {
+        ...NO_CREST_EVENTS,
+        stageUp: [{ animal: "horse", stage: "legendary", n: 500, own: true }],
+      },
+    });
+    await mount();
+    expect(mockMark).toHaveBeenCalledWith("legendary:horse");
+    expect(await screen.findByText("Un cheval légendaire veille sur Brumeval.")).toBeTruthy();
+    expect(screen.getByText("500 sorties à vélo.")).toBeTruthy();
+    expect(screen.getByTestId("big-feast-kicker").props.children).toBe("LÉGENDAIRE");
+  });
+
   test("marks a tier under its own key, so the next tier can still open", async () => {
     finish({ tierUp: { oldTier: 8, newTier: 9 }, levelUp: { oldLevel: 19, newLevel: 20 } });
     await mount();

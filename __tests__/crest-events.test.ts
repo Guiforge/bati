@@ -1,5 +1,27 @@
-import { crestEvents, crestReveal, NO_CREST_EVENTS } from "../db/crestEvents";
-import { type Animal, type CrestSession, crestAnimals, type Practice } from "../db/crestRules";
+import {
+  COAT_RARE_KEY,
+  crestEvents,
+  crestReveal,
+  NO_CREST_EVENTS,
+  rareCoatNews,
+} from "../db/crestEvents";
+import {
+  type Animal,
+  type CrestSession,
+  type Practice,
+  crestAnimals as rules,
+} from "../db/crestRules";
+import type { FlameLevel } from "../db/streaks";
+
+/** The crest as the store reads it: the rules' answer plus the hero's longest flame (none by default). */
+const crestAnimals = (
+  sessions: CrestSession[],
+  choice: Animal | "auto",
+  longestFlame: FlameLevel = 0,
+) => {
+  const animals = rules(sessions, choice);
+  return animals && { ...animals, longestFlame };
+};
 
 let n = 0;
 const session = (practice: Practice): CrestSession => {
@@ -183,6 +205,26 @@ describe("crestEvents", () => {
     ]);
   });
 
+  test("the 500th session of a practice makes the animal legendary, and says 500", () => {
+    expect(step(seq(["strength", 498]), "strength").stageUp).toEqual([]);
+    expect(step(seq(["strength", 499]), "strength").stageUp).toEqual([
+      { animal: "bear", stage: "legendary", n: 500, own: true },
+    ]);
+    expect(step(seq(["strength", 500]), "strength").stageUp).toEqual([]);
+  });
+
+  test("the border animal reaches 500 of its own practice on another night than the centre", () => {
+    const h = seq(["strength", 8], ["run", 499]);
+    expect(step(h, "run").stageUp).toEqual([
+      { animal: "stag", stage: "legendary", n: 500, own: true },
+    ]);
+  });
+
+  test("a picked animal and the boar count every session toward 500", () => {
+    const e = step(seq(["strength", 400], ["run", 99]), "run", "stag");
+    expect(e.stageUp).toEqual([{ animal: "stag", stage: "legendary", n: 500, own: false }]);
+  });
+
   test("the second animal rises on its own practice", () => {
     const h = [...seq(["strength", 60], ["run", 39])];
     const e = step(h, "run");
@@ -207,5 +249,43 @@ describe("crestEvents", () => {
   test("an unreadable crest after says nothing", () => {
     expect(crestEvents(null, null)).toEqual(NO_CREST_EVENTS);
     expect(crestEvents(crestAnimals(seq(["strength", 8]), "auto"), null)).toEqual(NO_CREST_EVENTS);
+  });
+});
+
+describe("rareCoatNews", () => {
+  const adult = (longestFlame: 4 | 5, picked: Animal | "auto" = "auto", sessions = 40) =>
+    crestAnimals(seq(["strength", sessions]), picked, longestFlame);
+  const ships = new Set(["bear-adult-rare", "bear-venerable-rare", "boar-adult-rare"]);
+
+  test("an adult with an Eternal flame, a shipped portrait and an unshown card: the card", () => {
+    expect(rareCoatNews(adult(5), [], ships)).toEqual({ animal: "bear", stage: "adult" });
+  });
+
+  test("a hero who won it before the update sees it once, on their first session", () => {
+    const veteran = crestAnimals(seq(["strength", 250]), "auto", 5);
+    expect(rareCoatNews(veteran, ["reveal"], ships)).toEqual({
+      animal: "bear",
+      stage: "venerable",
+    });
+    expect(rareCoatNews(veteran, ["reveal", COAT_RARE_KEY], ships)).toBeNull();
+  });
+
+  test.each([
+    ["a flame short of Eternal", adult(4), []],
+    ["a young animal", adult(5, "auto", 39), []],
+    ["the key not readable", adult(5), undefined],
+    ["no crest yet", null, []],
+  ] as const)("no card for %s", (_n, after, shown) => {
+    expect(rareCoatNews(after, shown as string[] | undefined, ships)).toBeNull();
+  });
+
+  test("no card while the portrait of this stage does not ship, and none by default today", () => {
+    expect(rareCoatNews(adult(5), [], new Set(["bear-venerable-rare"]))).toBeNull();
+    expect(rareCoatNews(adult(5), [])).toBeNull();
+  });
+
+  test("it is the hero's: a picked boar wears it as much as the sessions' animal", () => {
+    const boar = adult(5, "boar");
+    expect(rareCoatNews(boar, [], ships)).toEqual({ animal: "boar", stage: "adult" });
   });
 });

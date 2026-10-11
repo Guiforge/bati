@@ -869,6 +869,19 @@ describe("VictoryView tonight", () => {
     expect(mockMarkBigFeastShown).toHaveBeenCalledWith("reveal");
   });
 
+  it("marks the rare coat's card as seen once it is shown, and a night without it marks nothing", async () => {
+    const { release } = await mountWithPendingSave(null, 12 * 60, {
+      rareCoat: { animal: "bear", stage: "adult" },
+    });
+    await release();
+    expect(mockMarkBigFeastShown).toHaveBeenCalledWith("coat:rare");
+
+    mockMarkBigFeastShown.mockClear();
+    const quiet = await mountWithPendingSave();
+    await quiet.release();
+    expect(mockMarkBigFeastShown).not.toHaveBeenCalled();
+  });
+
   it("leaves the reveal unmarked when it is the large feast, which the full screen marks", async () => {
     const { view, release } = await mountWithPendingSave(null, 12 * 60, {
       crestReveal: BEAR,

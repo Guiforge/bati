@@ -25,6 +25,7 @@ import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { updateSessionFeedback } from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
+import { COAT_RARE_KEY } from "@/db/crestEvents";
 import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession, outingLocomotion } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
@@ -311,6 +312,15 @@ export function VictoryView() {
       return;
     }
   }, [result, isBossDefeat, cue]);
+
+  // The rare coat's card has no screen of its own: showing it here is what marks it.
+  const coatShown = feasts.some((f) => f.kind === "coat");
+  useEffect(() => {
+    if (!coatShown) return;
+    preferences
+      .markBigFeastShown(COAT_RARE_KEY)
+      .catch((e) => reportError("session.markCoatShown", e));
+  }, [coatShown]);
 
   useEffect(() => {
     if (!revealShownAsCard) return;

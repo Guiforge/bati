@@ -352,4 +352,24 @@ describe("the portrait follows the crestCoat choice", () => {
       "bear-adult",
     );
   });
+
+  test("it reads the device's region: July is winter in Australia and not in France", async () => {
+    const localization = require("expo-localization") as typeof import("expo-localization");
+    const device = (regionCode: string) =>
+      jest
+        .spyOn(localization, "getLocales")
+        .mockReturnValue([{ regionCode }] as unknown as ReturnType<typeof localization.getLocales>);
+    try {
+      device("AU");
+      expect(await crest().portraitOf({ longestFlame: 0 }, "bear", "adult", July, ships)).toBe(
+        "bear-adult-winter",
+      );
+      device("FR");
+      expect(await crest().portraitOf({ longestFlame: 0 }, "bear", "adult", July, ships)).toBe(
+        "bear-adult",
+      );
+    } finally {
+      jest.restoreAllMocks();
+    }
+  });
 });

@@ -273,6 +273,9 @@ function BuildingDetail({
   const unbuiltDeed = building.tier === 4 && progress === null && !built;
 
   const unbuiltMuscle = building.driver === "muscle" && building.level === 0;
+  // The driver line already says "Appears when the Forge reaches rank 3, it is at rank 1": the
+  // next line under the bar would repeat the first half.
+  const unbuiltPrereq = building.driver === "prereq" && building.level === 0;
 
   // One sentence naming the deed that raises this building, in its own unit.
   const driverLine = (() => {
@@ -379,7 +382,7 @@ function BuildingDetail({
           />
         ) : building.nextTarget === null ||
           building.driver === "tier" ||
-          building.driver === "prereq" ? (
+          (building.driver === "prereq" && !unbuiltPrereq) ? (
           <Text fontSize={12} color="$textSecondary">
             {nextLine(building, t, language)}
           </Text>

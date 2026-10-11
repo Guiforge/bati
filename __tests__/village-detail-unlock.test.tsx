@@ -159,3 +159,46 @@ describe("the sheet header does not say the same thing twice", () => {
     await sheet.unmount();
   });
 });
+
+describe("an upgrade building says when it appears once", () => {
+  const armory = (over: Record<string, unknown>) =>
+    unbuilt({ code: "armory", tier: 3, relatedMuscle: null, driver: "prereq", ...over });
+  const renderSheet = async (building: VillageBuilding, language: Lang = "fr") => {
+    await i18n.changeLanguage(language);
+    return render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <VillageDetailSheet
+          selected={{ kind: "building", building }}
+          onClose={jest.fn()}
+          language={language}
+          feeds={null}
+          bottomInset={0}
+        />
+      </TamaguiProvider>,
+    );
+  };
+
+  it("keeps the full line and drops the repeat on an unbuilt upgrade", async () => {
+    const sheet = await renderSheet(armory({ metricValue: 1, nextTarget: 3 }));
+    expect(sheet.queryAllByText(/^Apparaît quand/)).toHaveLength(1);
+    expect(
+      sheet.queryAllByText("Apparaît quand le bâtiment Forge atteint le rang 3. Il est au rang 1"),
+    ).toHaveLength(1);
+    await sheet.unmount();
+  });
+
+  it("keeps the feeds line on an unbuilt style building", async () => {
+    const sheet = await renderSheet(
+      unbuilt({ code: "wizard_tower", tier: 2, relatedMuscle: null, driver: "style" }),
+    );
+    expect(sheet.queryAllByText(/^Monte avec tes reps/)).toHaveLength(1);
+    await sheet.unmount();
+  });
+
+  it("leaves a built upgrade as it was: the driver line and the next-rank line", async () => {
+    const sheet = await renderSheet(armory({ level: 1, metricValue: 1, nextTarget: 3 }));
+    expect(sheet.queryAllByText("Monte avec le bâtiment Forge, rang 1")).toHaveLength(1);
+    expect(sheet.queryAllByText("Monte quand le bâtiment Forge atteint le rang 3")).toHaveLength(1);
+    await sheet.unmount();
+  });
+});

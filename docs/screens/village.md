@@ -200,7 +200,9 @@ unbuilt row draws the same emblem as a silhouette through `tintColor`, which nee
   stag for running and walking, horse for cycling, boar when no practice reaches 40 % of the first
   eight (its four quarters show the two leading practices). A second animal joins at 30 % of the
   sessions and at least 20; the stage is young, adult at 40 sessions of its practice, venerable at
-  200. The shield adds the longest flame and one ring per village year. The hero can pick another
+  200, legendary at 500 (a big feast of its own, `legendary:<animal>`). A hero whose longest flame
+  reached Eternal has won the rare coat (`rareCoat`, a fact of the hero, announced once by a card in
+  Tonight, `coat:rare`); the portraits themselves arrive with T3, until then no coat is named. The shield adds the longest flame and one ring per village year. The hero can pick another
   animal in Settings or from the crest sheet (`crestAnimal`, `auto` goes back to the sessions'
   animal, a hand-picked one carries a small ink diamond). The header line says "A bear watches
   over Brumeval", "now" in the line (en; "depuis aujourd'hui", "seit heute", "desde hoy" in fr, de, es) on the day of the reveal and never for a hand-picked animal.

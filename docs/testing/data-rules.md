@@ -67,7 +67,7 @@ writes a default (a device that never chose has no row, or two such devices woul
 `db-peer-compare`), and going back to the animal the sessions chose writes `auto`, never a delete:
 a preference has no tombstone, so a deletion could not beat an older pick on the other device.
 `db/preferences.ts` (`getCrestAnimal`, `setCrestAnimal`).
-`crestCoat` (planned, V-02 extended) is `auto` or `usual` under the same discipline: one choice for the whole
+`crestCoat` (`getCrestCoat`, `setCrestCoat`; `db-peer-merge` holds the test) is `auto` or `usual` under the same discipline: one choice for the whole
 hero, no default written, back to `auto` writes `auto`, an unknown value reads as `auto`. A `db-peer-merge`
 test checks that an `auto` written later beats an older `usual`, in both merge directions.
 Invariant: only these keys ever change in `user_preferences` through a merge (plus R12); `auto`

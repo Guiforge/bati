@@ -215,12 +215,17 @@ Derived from the session journal like the rest of the village, all reads
 |----------|-------------|
 | `getCrest(now?)` | The hero's crest: first and second animal, stage, longest flame, rings, the evidence of the first eight sessions; null before the 8th session that counts |
 | `crestAnimals(sessions, ...)` | The pure replay behind it (chronological, integer thresholds); the same result on both sides of a merge |
+| `portraitOf(crest, animal, stage, now?)` | The portrait slug an animal on the crest wears: the rare coat (`longestFlame` Eternal), the `crestCoat` choice, the calendar and the device region, read once and handed to `portraitSlug`. The one reader of `crestCoat` |
+| `portraitSlug(animal, stage, rareCoat, crestCoat, now, regionCode, delivered?)` | The pure rule of [db/crestCoat.ts](../../db/crestCoat.ts): young keeps its base, the rare beats winter under `auto`, `usual` cuts the rare and not winter, the ermine has no winter, a coat not in `DELIVERED_COATS` falls back on the base of the same stage |
+| `rareCoatNews(after, shown, delivered?)` | The rare coat's card for "Tonight" (`coat:rare` in `bigFeastsShown`): won, adult or more at the centre, its portrait ships, not shown yet. Pure |
+| `preferences.getCrestCoat()` / `setCrestCoat(choice)` | `auto` or `usual`; nothing written by default, an unknown value reads as `auto` |
 | `nextMilestone(building, feeds)` | Sessions or outings until the building's next rank, from the mean of the last `MILESTONE_WINDOW` (5) that fed it |
 | `pickSessionMilestone(buildings, feeds, fed)` | The building this session fed that rises soonest (the victory line) |
 | `deedBarStart(building)` / `deedProgress(building)` | A deed bar's left end (the rung, never above the tally) and its 0-100 fill |
 
-The preference `crestAnimal` merges between devices (`MERGED_PREFERENCES`);
-`bigFeastsShown` stays local.
+The stages are young, adult (`ADULT_AT` 40), venerable (`VENERABLE_AT` 200) and legendary
+(`LEGENDARY_AT` 500). The preferences `crestAnimal` and `crestCoat` merge between devices
+(`MERGED_PREFERENCES`); `bigFeastsShown` stays local.
 
 ---
 

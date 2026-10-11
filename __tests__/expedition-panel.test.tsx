@@ -286,7 +286,7 @@ describe("ExpeditionPanel", () => {
     expect(screen.getByText("Finding the sky")).toBeTruthy();
     expect(
       screen.getByText(
-        "The first fix can take a few minutes to arrive. Set off anyway, the trace will catch up.",
+        "The first fix can take a few minutes to arrive. Set off anyway and the trace will catch up.",
       ),
     ).toBeTruthy();
   });
@@ -298,7 +298,7 @@ describe("ExpeditionPanel", () => {
 
     expect(
       screen.queryByText(
-        "The first fix can take a few minutes to arrive. Set off anyway, the trace will catch up.",
+        "The first fix can take a few minutes to arrive. Set off anyway and the trace will catch up.",
       ),
     ).toBeNull();
   });
@@ -458,7 +458,7 @@ describe("ExpeditionPanel", () => {
   test("every figure on the second row says what it is", async () => {
     setTrack(walked(600, 600, 2500));
     await mount();
-    expect(screen.getByText("Ground")).toBeTruthy();
+    expect(screen.getByText("Distance")).toBeTruthy();
     expect(screen.getByText("Pace")).toBeTruthy();
   });
 });

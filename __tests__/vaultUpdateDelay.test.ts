@@ -1,5 +1,5 @@
 /**
- * "Update the protection" is hidden for 14 days after this version first runs. A hero with two
+ * "Upgrade your protection" is hidden for 14 days after this version first runs. A hero with two
  * phones updates one; if its vault became format 3 at once, the other (still on 2.9, F-Droid
  * sometimes arrives days later) could no longer read it. For those days a format 2 vault keeps
  * writing format 2, and nothing is ever migrated without the hero's own gesture.

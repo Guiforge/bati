@@ -105,19 +105,35 @@ describe("i18n locale parity", () => {
    * Every `{{placeholder}}` a string is given has to be in its translation. A translation that
    * drops `{{count}}` still renders, and reads "Complete workouts" where English says "Complete 10".
    * A form English has no key for (`_few`, `_many`) is held to English's `_other`.
+   *
+   * A plural form may also match `_other` instead of its own English form, as long as it keeps
+   * every placeholder its own form has. English spells its `_one` out ("Last done yesterday",
+   * "Completed once") because `_one` is 1 and nothing else; in Russian it is also 21 and 31, so
+   * the form needs the number English left out. The other way round stays closed:
+   * `journal.moved_rung_left_one` has a `{{met}}` its `_other` lacks, and may not lose it.
    */
   test.each(APP_LANGUAGES.filter((l) => l !== "en"))(
     "%s.json keeps every placeholder",
     (language) => {
+      // `(?:,[^}]*)?` reads past a format, and only a format: `{{count, number}}` is the
+      // placeholder `count`, while `{{count number}}` is not a placeholder at all.
       const placeholders = (text: string) =>
-        [...text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)].map((m) => m[1]).sort();
+        [...text.matchAll(/\{\{\s*(\w+)\s*(?:,[^}]*)?\}\}/g)].map((m) => m[1] ?? "").sort();
       const enKeys = collectLeafKeys(en as unknown as JsonObject);
       const keys = collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject);
 
       const drifted = [...keys.entries()]
         .filter(([k, v]) => {
-          const english = enKeys.get(k) ?? enKeys.get(`${pluralBase(k, keys)}_other`);
-          return english !== undefined && placeholders(english).join() !== placeholders(v).join();
+          const own = enKeys.get(k);
+          const other = enKeys.get(`${pluralBase(k, keys)}_other`);
+          const mine = placeholders(v);
+          const same = (text: string | undefined) =>
+            text !== undefined && placeholders(text).join() === mine.join();
+          const keepsOwn =
+            own === undefined || placeholders(own).every((name) => mine.includes(name));
+          return (
+            (own !== undefined || other !== undefined) && !same(own) && !(same(other) && keepsOwn)
+          );
         })
         .map(([k]) => k);
 

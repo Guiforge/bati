@@ -913,7 +913,7 @@
     "moved_rung_left_one": "{{movement}}: {{met}} sesiones seguidas en el objetivo, falta {{count}} para la siguiente etapa",
     "moved_rung_left_many": "{{movement}}: faltan {{count}} sesiones seguidas en el objetivo para la siguiente etapa",
     "moved_rung_left_other": "{{movement}}: faltan {{count}} sesiones seguidas en el objetivo para la siguiente etapa",
-    "moved_rung_earned": "Ejercicio superado: {{movement}}. Lo siguiente: {{next}}",
+    "moved_rung_earned": "Ejercicio superado: {{movement}}. A continuación: {{next}}",
     "rounds_title_one": "La ronda",
     "rounds_title_many": "Las {{count}} rondas",
     "rounds_title_other": "Las {{count}} rondas",
@@ -1123,7 +1123,7 @@
     "detail_style_driver": "{{volume}} reps de {{style}}",
     "detail_recent_title": "Sesiones que lo hicieron subir",
     "detail_recent_units": "{{volume}} reps",
-    "detail_prereq_driver": "Crece con el edificio {{building}}, ahora en grado {{level}}",
+    "detail_prereq_driver": "Sube con el edificio {{building}}, ahora en grado {{level}}",
     "detail_prereq_locked": "Aparece cuando el edificio {{building}} llegue al grado {{target}}; ahora está en el grado {{level}}",
     "detail_bosses_driver_one": "{{count}} jefe derrotado",
     "detail_bosses_driver_other": "{{count}} jefes derrotados",
@@ -1983,8 +1983,8 @@
     "pause_row": "Pausar"
   },
   "setAside": {
-    "leave_out": "No proponerme más {{name}}",
-    "done": "Ya no te propondremos {{name}}.",
+    "leave_out": "No proponerme más: {{name}}",
+    "done": "Ejercicio apartado: {{name}}.",
     "instead_of": "En lugar de {{name}} (ejercicio apartado)",
     "put_back_named": "Recuperar {{name}}",
     "set_aside": "No proponérmelo más",

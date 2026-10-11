@@ -1910,7 +1910,7 @@
   },
   "setAside": {
     "leave_out": "{{name}} nicht mehr vorschlagen",
-    "done": "Du bekommst {{name}} nicht mehr vorgeschlagen.",
+    "done": "Beiseitegelegt: {{name}}.",
     "instead_of": "Statt {{name}} (beiseitegelegt)",
     "put_back_named": "{{name}} zurückholen",
     "set_aside": "Nicht mehr vorschlagen",

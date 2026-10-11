@@ -1143,8 +1143,8 @@
     "detail_style_driver": "{{volume}} reps de {{style}}",
     "detail_recent_title": "Séances qui l'ont fait monter",
     "detail_recent_units": "{{volume}} reps",
-    "detail_prereq_driver": "Grandit avec {{building}}, actuellement rang {{level}}",
-    "detail_prereq_locked": "Apparaît au rang {{target}} de {{building}}, qui est au rang {{level}}",
+    "detail_prereq_driver": "Monte avec le bâtiment {{building}}, rang {{level}}",
+    "detail_prereq_locked": "Apparaît quand le bâtiment {{building}} atteint le rang {{target}}. Il est au rang {{level}}",
     "detail_bosses_driver_one": "{{count}} boss vaincu",
     "detail_bosses_driver_other": "{{count}} boss vaincus",
     "detail_bosses_driver_many": "{{count}} boss vaincus",
@@ -1983,8 +1983,8 @@
     "pause_row": "Mettre en pause"
   },
   "setAside": {
-    "leave_out": "Ne plus me proposer {{name}}",
-    "done": "On ne te proposera plus {{name}}.",
+    "leave_out": "Ne plus me proposer : {{name}}",
+    "done": "Exercice écarté : {{name}}.",
     "instead_of": "À la place de {{name}} (exercice écarté)",
     "put_back_named": "Remettre {{name}}",
     "set_aside": "Ne plus me proposer",

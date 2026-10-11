@@ -110,10 +110,14 @@ export interface QuestExercise {
   prescribed?: number;
 
   /**
-   * The hero swapped this movement into the slot during the session. Set by the session store
-   * and by nothing else: its sets are due from the round it arrived in (`ladderNeutralSets`).
+   * The round (0-based) in which the hero swapped this movement into the slot during the
+   * session. Set by the session store and by nothing else: its sets are due from that round
+   * (`ladderNeutralSets`). Absent on the movement the quest handed over, swapped back to or not.
    */
-  swappedIn?: true;
+  swappedIn?: number;
+
+  /** The movement the quest handed over in this slot, kept from the first in-session swap on. */
+  handedOver?: number;
 
   /**
    * This run is proposed as twenty minutes of walk and run mixed, because the hero has not run
@@ -631,6 +635,7 @@ type SlotRow = {
   exPattern: MovementPattern | null;
   exMeasure: QuestTargetType | null;
   exPerSide: boolean;
+  exImpact: boolean;
   exLocomotion: Locomotion | null;
   exPrerequisiteId: number | null;
   exRetiredAt: Date | null;
@@ -851,6 +856,9 @@ function buildSlot(
     pattern: r.exPattern ?? null,
     measure: r.exMeasure,
     perSide: r.exPerSide,
+    // A slot's movement says whether it jumps like any other (`0070`). Left off this mapping,
+    // a written Burpee read as "does not jump" on the one object a session runs.
+    impact: r.exImpact,
     locomotion: r.exLocomotion,
     prerequisiteExerciseId: r.exPrerequisiteId,
     retiredAt: r.exRetiredAt,
@@ -944,6 +952,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exPattern: exercises.pattern,
       exMeasure: exercises.measure,
       exPerSide: exercises.perSide,
+      exImpact: exercises.impact,
       exLocomotion: exercises.locomotion,
       exPrerequisiteId: exercises.prerequisiteExerciseId,
       exRetiredAt: exercises.retiredAt,
@@ -1164,6 +1173,7 @@ export async function getEligibleQuestIds(
         exerciseId: questExercises.exerciseId,
         difficulty: exercises.difficulty,
         equipment: exercises.equipment,
+        impact: exercises.impact,
         author: quests.author,
       })
       .from(questExercises)
@@ -1171,13 +1181,17 @@ export async function getEligibleQuestIds(
       .innerJoin(quests, eq(quests.id, questExercises.questId)),
   ]);
 
-  // Which slots would put a jump in front of this hero. Asked of the movement they are *served*
-  // (`currentRungFor`), which is the question the warm-up asks too: Jump Squat sits on a ladder,
-  // so a hero who has not earned it gets Squat and the quest is fine, and one who has earned it
-  // gets the jump. Only in a quest the app wrote: a hero's own is theirs to be suggested. Read
-  // only for a hero who is kept off jumps, which is the first three sessions and beginners.
+  // Which slots would put a jump in front of this hero. Asked of the movement the slot would
+  // *run* (`servedJumps`), which is the question the warm-up asks too: Jump Squat sits on a
+  // ladder, so a hero who has not earned it gets Squat and the quest is fine, and one who has
+  // earned it gets the jump. Only in a quest the app wrote: a hero's own is theirs to be
+  // suggested. Read only for a hero who is kept off jumps (the first three sessions, and
+  // beginners), and only for the slots that name a jump, which is a handful: Home asks this on
+  // every mount.
   const gentle = !options.allowJumps && startsGently(trainingLevel, sessions);
-  const jumps = gentle ? await servedJumps(rows.map((row) => row.exerciseId)) : new Set<number>();
+  const jumps = gentle
+    ? await servedJumps(rows.filter((row) => row.impact).map((row) => row.exerciseId))
+    : new Set<number>();
 
   const byQuest = new Map<
     number,
@@ -1211,11 +1225,28 @@ export async function getEligibleQuestIds(
   return eligible;
 }
 
-/** The written movements, among `exerciseIds`, that this hero would be served as a jump. */
+/**
+ * The written jumps, among `exerciseIds`, whose slot would still run a jump for this hero.
+ *
+ * The slot's own answer, in the slot's own order (`resolveSlot`): what the hero set aside is
+ * replaced first, then the rung they stand on. So a hero who set every jump aside is not kept
+ * off the quests those jumps were written in, since nothing in them jumps any more; and a jump
+ * set aside with nothing to stand in runs as written, and still counts.
+ *
+ * ponytail: only written jumps are asked about. A slot that names no jump could in principle be
+ * handed one as a set-aside replacement of the same family; none of the seeded ladders does
+ * that. Ask about every slot if a ladder ever puts a jump below a movement that is not one.
+ */
 async function servedJumps(exerciseIds: number[]): Promise<Set<number>> {
-  const [served, catalogue] = await Promise.all([currentRungFor(exerciseIds), listExercises()]);
+  if (exerciseIds.length === 0) return new Set();
+  const [served, setAside, catalogue] = await Promise.all([
+    currentRungFor(exerciseIds),
+    loadSetAsideIds(),
+    listExercises(),
+  ]);
+  const replaced = await loadReplacements(exerciseIds, served, setAside);
   const impact = new Set(catalogue.filter((e) => e.impact === true).map((e) => e.id));
-  return new Set(exerciseIds.filter((id) => impact.has(served.get(id) ?? id)));
+  return new Set(exerciseIds.filter((id) => impact.has(replaced.get(id) ?? served.get(id) ?? id)));
 }
 
 /**

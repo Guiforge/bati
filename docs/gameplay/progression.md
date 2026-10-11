@@ -136,9 +136,15 @@ is drawn by the date from the quests the app may suggest, and a hero can reshape
 lunch: the level and the equipment in Settings, a quest of their own. The same date then pointed
 at a second quest, "this quest was not logged today" was true of it, and it paid again. The
 preference `dailyBonus` holds the day and the session the bonus went to, written right after that
-session's row. A retried save recognises its own bonus, and deleting that session gives the day
-back. The pool also counts only sessions logged before today (`workoutsBeforeToday`), so saving
-a session never moves the pick by itself.
+session's row. The day is the one the session *started* on, the day its row is dated: keyed on
+the save, a session begun at 23:50 spent the next day's bonus. A retried save recognises its own
+bonus and is not asked again, because its rows have landed since and a rung they earned can move
+the pool. Deleting that session gives the day back, from `deleteSession` itself, so a session
+removed by a device sync frees the day too.
+
+The pool counts only sessions logged before today (`workoutsBeforeToday`), so the session count
+does not move the pick mid-day. A rung earned tonight still can, for a hero kept off jumps, which
+is why the bonus rests on the record above and not on the pick holding still.
 
 #### Why it changed
 

@@ -102,7 +102,10 @@ Some sets the ladder does not judge at all, neither clean nor missed
   movement the quest handed over is due from round one, so rounds missing *before* its first row
   are skips too. A movement the hero swapped in mid-session is due from the round it arrived in,
   and counts as it always did, including one swapped in after a skipped round. The rows alone
-  cannot tell those two apart, so each set says which it is (`swappedIn`, set by the session).
+  cannot tell those apart, so each set says the round its movement came in (`swappedIn`, set by
+  the session; the round itself, since a movement swapped in and skipped in the same round was
+  still due in that round). The movement the quest handed over is never marked, swapped away
+  from and back to or not.
 
 A swap made mid-session keeps what the app had prescribed when it keeps the hero's number (same
 unit). Otherwise the lowered number would become "what was asked" on the new movement.
@@ -155,9 +158,11 @@ for it are neutral (above), so the quest serves the hero's own rung again next t
 The training level asked in onboarding moves no rung. It is editable in Settings since the same
 change, and what it decides is what the app *picks* for the hero (`startsGently`,
 [`db/preferences.ts`](../../db/preferences.ts)): no jump in the warm-up, and no quest that would
-*serve* them a jump in the suggestions, the daily quest included. Both ask the same question of
-the same rung (`currentRungFor`): a quest naming Jump Squat is fine for a hero still on Squat, and
-held back once they are served the jump itself. Three things bound it. It counts the sessions
+*serve* them a jump in the suggestions, the daily quest included. The suggestions ask what the
+slot would run, in the slot's own order (`servedJumps`): what the hero set aside is replaced
+first, then the rung they stand on. So a quest naming Jump Squat is fine for a hero still on
+Squat and held back once they are served the jump itself, and a hero who set every jump aside is
+not kept off the quests those jumps were written in. Three things bound it. It counts the sessions
 logged *before today* (`workoutsBeforeToday`), so the daily quest, drawn from that set by the
 date, cannot change in the middle of a day. It applies to quests the app wrote, never to a hero's
 own. And an oath sworn on a jump still finds its quest: that is the hero's choice, not the app's.

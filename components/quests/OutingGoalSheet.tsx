@@ -8,13 +8,7 @@ import { Chip } from "@/components/common/Chip";
 import { X } from "@/components/icons";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db/estimate";
-import {
-  getOutingHabit,
-  LONGEST_RUN_CEILING,
-  NO_HABIT,
-  type OutingHabit,
-  WALK_RUN_SECONDS,
-} from "@/db/outingHabit";
+import { getOutingHabit, LONGEST_RUN_CEILING, NO_HABIT, type OutingHabit } from "@/db/outingHabit";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -80,15 +74,14 @@ type Props = {
 
 /**
  * The longest run of the month in the tab's own unit, moving seconds or metres, for the line
- * that names the ceiling above it. No line on the duration tab while that ceiling sits under the
- * twenty-minute walk-run: the app proposes the walk-run to that hero (`proposedRunSeconds`), and
- * "your body copes better under 13 min" printed over a proposal of twenty contradicted it. The
- * walk-run is mostly walking, which is why it may be longer than their longest run.
+ * that names the ceiling above it. No line on the duration tab for a hero the app proposes the
+ * walk-run to (`habit.proposal`, the rule's own answer): "your body copes better under 13 min"
+ * printed over a proposal of twenty contradicted it. The walk-run is mostly walking, which is
+ * why it may be longer than their longest run.
  */
 function longestOf(habit: OutingHabit, durationTab: boolean): number | null {
   if (!durationTab) return habit.longestM;
-  const seconds = habit.longestSeconds ?? null;
-  return seconds !== null && seconds * LONGEST_RUN_CEILING < WALK_RUN_SECONDS ? null : seconds;
+  return habit.proposal?.walkRun ? null : (habit.longestSeconds ?? null);
 }
 
 /**

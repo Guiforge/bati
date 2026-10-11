@@ -183,6 +183,43 @@ describe("quest eligibility", () => {
     }
   });
 
+  /**
+   * The filter and the quest must give one answer to "would this serve a jump". Asked of every
+   * seeded quest, against the slots `getQuestById` actually builds, before and after the hero
+   * sets every jump aside. Reading the ladder alone, a beginner who set the jumps aside (so no
+   * slot jumps any more) was still kept off every quest that named one, for good.
+   */
+  test("a quest is held back exactly when one of its slots would run a jump", async () => {
+    setPreference("trainingLevel", "beginner");
+    const { getEligibleQuestIds, getQuestById, listQuestTemplates, Difficulty } = quests();
+
+    const disagreements = async (): Promise<string[]> => {
+      // What the jump filter alone holds back: the difference it makes to the set.
+      const [eligible, ignoringJumps] = await Promise.all([
+        getEligibleQuestIds(),
+        getEligibleQuestIds({ allowJumps: true }),
+      ]);
+      const out: string[] = [];
+      for (const template of await listQuestTemplates()) {
+        if (!ignoringJumps.has(template.id)) continue; // held back for kit or level
+        const quest = await getQuestById(template.id, Difficulty.Medium);
+        const jumps = (quest?.exercises ?? []).some((slot) => slot.exercise.impact === true);
+        const heldBack = !eligible.has(template.id);
+        if (heldBack !== jumps)
+          out.push(`${template.enTitle}: runs a jump ${jumps}, held ${heldBack}`);
+      }
+      return out;
+    };
+
+    expect(await disagreements()).toEqual([]);
+
+    const setAside = require("../db/setAside") as typeof import("../db/setAside");
+    expect(await setAside.setImpactAside()).toBe(6);
+    quests().invalidateQuestTemplates();
+
+    expect(await disagreements()).toEqual([]);
+  });
+
   // An oath sworn on a jump is the hero's own choice of a jump. The filter that keeps the app
   // from picking one for them left that oath with no quest to offer, and Home dropped it.
   test("an oath on a jump still finds its quest for a beginner", async () => {

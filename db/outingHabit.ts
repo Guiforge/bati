@@ -29,9 +29,20 @@ export type OutingHabit = {
    * Optional so a caller that only reads distances need not name it; absent reads as "no run".
    */
   longestSeconds?: number | null;
+  /**
+   * What a run is proposed at from this habit (`proposedRunSeconds`), computed with it so every
+   * reader of the habit reads the rule's own answer instead of deriving it again. Optional for
+   * the same reason as `longestSeconds`.
+   */
+  proposal?: { seconds: number; walkRun: boolean };
 };
 
-export const NO_HABIT: OutingHabit = { usual: null, longestM: null, longestSeconds: null };
+export const NO_HABIT: OutingHabit = {
+  usual: null,
+  longestM: null,
+  longestSeconds: null,
+  proposal: { seconds: 20 * 60, walkRun: true },
+};
 
 /** The single-run ceiling, as a factor of the longest of the month. */
 export const LONGEST_RUN_CEILING = 1.1;
@@ -77,7 +88,7 @@ export function habitOf(
   longestM: number | null,
   longestSeconds: number | null = null,
 ): OutingHabit {
-  return {
+  const habit = {
     usual:
       lastThree.length < 3
         ? null
@@ -88,6 +99,7 @@ export function habitOf(
     longestM: longestM !== null && longestM > 0 ? longestM : null,
     longestSeconds: longestSeconds !== null && longestSeconds > 0 ? longestSeconds : null,
   };
+  return { ...habit, proposal: proposedRunSeconds(habit) };
 }
 
 export async function getOutingHabit(

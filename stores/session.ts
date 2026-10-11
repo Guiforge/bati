@@ -806,13 +806,21 @@ function outingLegSeconds(
  * first time today. Two questions rather than one because `isDailyQuest` only answers the first,
  * which is how the same quest run three times came to pay three bonuses.
  */
-async function earnsDailyBonus(questId: number, savedSessionId: number | null): Promise<boolean> {
-  if (!(await isDailyQuest(questId))) return false;
+async function earnsDailyBonus(
+  questId: number,
+  savedSessionId: number | null,
+  day: string,
+): Promise<boolean> {
   // Once a day, whatever the day's quest has become since (issue #177): the pick is drawn from a
   // pool the hero can reshape in Settings, so "this quest was not logged today" was true of a
-  // second quest. A retry of the session that was paid still earns its own bonus.
+  // second quest.
   const paid = await preferences.getDailyBonus();
-  if (paid?.day === dayKey(new Date()) && paid.sessionId !== savedSessionId) return false;
+  // A retry of the session that was paid keeps its bonus, and is not asked again: its own rows
+  // have landed since, a rung it earned can move the pool, and the day would point elsewhere
+  // while the stored row already holds the bonus.
+  if (savedSessionId !== null && paid?.sessionId === savedSessionId) return true;
+  if (paid?.day === day) return false;
+  if (!(await isDailyQuest(questId))) return false;
   return !(await hasSessionForQuestToday(questId, savedSessionId));
 }
 
@@ -821,10 +829,14 @@ async function earnsDailyBonus(questId: number, savedSessionId: number | null): 
  * not before: a bonus recorded for a session that failed to save would cost the hero the day.
  * Never a reason to fail the save: unrecorded, the worst case is the old per-quest guard.
  */
-async function recordDailyBonus(dailyBonusXp: number, sessionId: number): Promise<void> {
+async function recordDailyBonus(
+  dailyBonusXp: number,
+  sessionId: number,
+  day: string,
+): Promise<void> {
   if (dailyBonusXp <= 0) return;
   await preferences
-    .setDailyBonus({ day: dayKey(new Date()), sessionId })
+    .setDailyBonus({ day, sessionId })
     .catch((e) => reportError("session.dailyBonus", e));
 }
 
@@ -1075,7 +1087,9 @@ export async function loadWarmupContext(): Promise<{
   const enabled = await preferences.getWarmupEnabled().catch(() => true);
   if (!enabled) return { enabled, totalSessions: 0, unavailable: new Set() };
   // Rotates which movement fills each phase, so the warm-up is not the same four every
-  // session. A failed read costs variety, never the warm-up itself.
+  // session. A failed read costs variety, never the warm-up itself. Not the count the jump
+  // filter below reads, on purpose: a rotation should move with tonight's session, and "is this
+  // hero starting out" must not change its answer in the middle of a day.
   const { totalSessions } = await getSessionAggregates().catch(() => ({ totalSessions: 0 }));
   // What the hero said they do not own. A failed read costs the filter, never the warm-up: an
   // unfiltered warm-up is the old behaviour, and no warm-up is a worse answer than a scapular
@@ -1654,11 +1668,12 @@ export const useSessionStore = create<SessionState>()(
      * accepts.
      */
     swapCurrentExercise: (exercise) => {
-      const { quest, currentExerciseIndex, status } = get();
+      const { quest, currentExerciseIndex, currentRoundIndex, status } = get();
       if (!quest || (status !== "running" && status !== "resting")) return;
 
       const slot = quest.exercises[currentExerciseIndex];
       if (!slot || slot.exercise.id === exercise.id) return;
+      const handedOver = slot.handedOver ?? slot.exercise.id;
 
       // The slot's target, unless the movement is measured the other way — same call
       // `applyQuestConfig` makes. Results already logged keep their own `exerciseId` and
@@ -1684,7 +1699,11 @@ export const useSessionStore = create<SessionState>()(
               // The pin was on the old movement.
               pinnedOver: undefined,
               // Due from the round it arrives in, not from round one (`ladderNeutralSets`).
-              swappedIn: true as const,
+              // The round itself, not a flag: swapped in during round one and skipped there, it
+              // was still due in round one. And never on the movement the quest handed over,
+              // swapped away from and back to: that one was due from the start.
+              handedOver,
+              swappedIn: exercise.id === handedOver ? undefined : currentRoundIndex,
             }
           : qex,
       );
@@ -1963,7 +1982,11 @@ export const useSessionStore = create<SessionState>()(
       //
       // Once a day. `isDailyQuest` only asks whether this is the id the day picked, so the same
       // quest run three times paid three bonuses.
-      const dailyBonusXp = (await earnsDailyBonus(quest.id, get().savedSessionId))
+      // The day the session *started*, which is the day its row is dated (`performedAt`). Keyed
+      // on the save, a session begun at 23:50 and saved after midnight spent the new day's bonus
+      // on a row dated yesterday.
+      const bonusDay = dayKey(new Date(startTime));
+      const dailyBonusXp = (await earnsDailyBonus(quest.id, get().savedSessionId, bonusDay))
         ? Math.round(0.5 * xpAtTarget)
         : 0;
       xpEarned += dailyBonusXp;
@@ -2000,7 +2023,7 @@ export const useSessionStore = create<SessionState>()(
         performedAt: new Date(startTime),
       });
 
-      await recordDailyBonus(dailyBonusXp, sessionId);
+      await recordDailyBonus(dailyBonusXp, sessionId, bonusDay);
 
       // The session exists now, so the hits it earned can be written and attributed to it. This
       // runs before the campaign step below, which reads the fight to decide whether the run is
@@ -2158,9 +2181,6 @@ bindSession({
 export async function forgetSession(sessionId: number): Promise<"deleted" | "locked"> {
   const outcome = await deleteSession(sessionId);
   if (outcome === "locked") return outcome;
-  // The day's bonus went with the session it was paid to: give the day back.
-  const paid = await preferences.getDailyBonus();
-  if (paid?.sessionId === sessionId) await preferences.clearDailyBonus();
   clearShortLivedQueries();
   invalidateQuestTemplates();
   await updateStreakAfterSession();

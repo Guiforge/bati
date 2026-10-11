@@ -40,10 +40,12 @@ describe("getOutingHabit", () => {
     outing("run", 9000, 300, 0); // five minutes: a test, not a habit
 
     // The five-minute test is not "the longest of the month" either, in distance or in time.
+    // And the proposal travels with it: the usual thirty minutes, well under the ceiling.
     expect(await habit()).toEqual({
       usual: { metres: 6000, seconds: 1800 },
       longestM: 21_000,
       longestSeconds: 9000,
+      proposal: { seconds: 1800, walkRun: false },
     });
   });
 
@@ -51,7 +53,12 @@ describe("getOutingHabit", () => {
     outing("run", 5000, 1500, 40);
     outing("run", 5000, 1500, 45);
 
-    expect(await habit()).toEqual({ usual: null, longestM: null, longestSeconds: null });
+    expect(await habit()).toEqual({
+      usual: null,
+      longestM: null,
+      longestSeconds: null,
+      proposal: { seconds: 1200, walkRun: true },
+    });
   });
 
   // A run given up after three minutes was read as the longest of the month, and capped the
@@ -59,7 +66,12 @@ describe("getOutingHabit", () => {
   test("an outing given up early is not the longest of the month", async () => {
     outing("run", 600, 180, 2);
 
-    expect(await habit()).toEqual({ usual: null, longestM: null, longestSeconds: null });
+    expect(await habit()).toEqual({
+      usual: null,
+      longestM: null,
+      longestSeconds: null,
+      proposal: { seconds: 1200, walkRun: true },
+    });
   });
 });
 

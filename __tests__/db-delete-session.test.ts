@@ -34,6 +34,23 @@ describe("deleteSession", () => {
     return (t.sqlite.prepare(sql).get(...args) as { n: number }).n;
   }
 
+  // Issue #177: the day's bonus is held by a record of the day and the session it went to. It
+  // is given back here, in the one function every delete goes through, so a session removed by
+  // a device sync frees the day exactly as one the hero removed does.
+  test("gives the day's bonus back when the session it was paid to goes", async () => {
+    const { preferences } = require("../db/preferences") as typeof import("../db/preferences");
+    const other = await saveOne();
+    const paid = await saveOne();
+    await preferences.setDailyBonus({ day: "2026-10-11", sessionId: paid });
+
+    // Another session going leaves the day spent.
+    await completed().deleteSession(other);
+    expect(await preferences.getDailyBonus()).toEqual({ day: "2026-10-11", sessionId: paid });
+
+    await completed().deleteSession(paid);
+    expect(await preferences.getDailyBonus()).toBeNull();
+  });
+
   test("removes the row, its sets and its trace, and the XP goes with it", async () => {
     const keep = await saveOne(null, 25);
     const id = await saveOne(null, 40);

@@ -217,7 +217,6 @@ const mockGetOutingHabit = jest.fn();
 jest.mock("@/db/outingHabit", () => ({
   NO_HABIT: { usual: null, longestM: null },
   LONGEST_RUN_CEILING: 1.1,
-  WALK_RUN_SECONDS: 1200,
   getOutingHabit: (...args: unknown[]) => mockGetOutingHabit(...args),
 }));
 
@@ -453,7 +452,14 @@ describe("an expedition on the quest screen", () => {
   });
 
   test("the duration ceiling yields to the walk-run when it sits under it", async () => {
-    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 2000, longestSeconds: 720 });
+    // What `getOutingHabit` hands over for a hero whose longest run is twelve minutes: the
+    // rule's own verdict rides on the habit, and the sheet reads it rather than working it out.
+    mockGetOutingHabit.mockResolvedValue({
+      usual: null,
+      longestM: 2000,
+      longestSeconds: 720,
+      proposal: { seconds: 1200, walkRun: true },
+    });
     const view = await mountQuest(runQuest());
 
     await fireEvent.press(view.getByText("Set up the outing"));

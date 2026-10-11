@@ -162,15 +162,34 @@ describe("ladderNeutralSets", () => {
     expect(ladderNeutralSets([set(1, 0), set(1, 1), set(1, 2)])).toEqual([false, false, false]);
   });
 
-  /** A set of a movement the hero swapped into the slot mid-session. */
-  const swapped = (exerciseId: number, roundIndex: number): CompletedExerciseInput => ({
+  /** A set of a movement the hero swapped into the slot mid-session, in round `arrived`. */
+  const swapped = (
+    exerciseId: number,
+    roundIndex: number,
+    arrived = roundIndex,
+  ): CompletedExerciseInput => ({
     ...set(exerciseId, roundIndex),
-    swappedIn: true,
+    swappedIn: arrived,
+  });
+
+  // The marker is the round the movement came in, not a flag. Swapped in during round one and
+  // skipped there, then done for two rounds: read off its first row it was "due from round
+  // two", and the skip this whole rule exists to see was forgiven again.
+  test("a replacement swapped in and skipped in the same round is one the hero left", () => {
+    expect(
+      ladderNeutralSets([
+        swapped(2, 1, 0),
+        swapped(2, 2, 0),
+        set(3, 0, 10, 1),
+        set(3, 1, 10, 1),
+        set(3, 2, 10, 1),
+      ]),
+    ).toEqual([true, true, false, false, false]);
   });
 
   test("a movement swapped away from is neutral, its replacement counts", () => {
     // Push-ups (1) on round one, then Knee Push-Ups (2) for the two that remained.
-    expect(ladderNeutralSets([set(1, 0), swapped(2, 1), swapped(2, 2)])).toEqual([
+    expect(ladderNeutralSets([set(1, 0), swapped(2, 1), swapped(2, 2, 1)])).toEqual([
       true,
       false,
       false,
@@ -197,7 +216,7 @@ describe("ladderNeutralSets", () => {
     expect(
       ladderNeutralSets([
         swapped(2, 1),
-        swapped(2, 2),
+        swapped(2, 2, 1),
         set(3, 0, 10, 1),
         set(3, 1, 10, 1),
         set(3, 2, 10, 1),

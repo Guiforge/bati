@@ -4,7 +4,7 @@ import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { Exercise } from "./exercises";
 import { isMuscleCode } from "./muscles";
-import { getDeviceId } from "./preferences";
+import { getDeviceId, preferences } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
 import type {
   DifficultyCode,
@@ -33,10 +33,11 @@ export type CompletedExerciseInput = {
    */
   prescribed?: number;
   /**
-   * The hero swapped this movement into the slot mid-session. In memory only, for
-   * `ladderNeutralSets`: such a movement is due from the round it arrived in, not from round one.
+   * The round (0-based) in which the hero swapped this movement into the slot. In memory only,
+   * for `ladderNeutralSets`: such a movement is due from that round, not from round one. Absent
+   * on a movement the quest handed over.
    */
-  swappedIn?: boolean;
+  swappedIn?: number;
 
   notes?: string;
   performedAt?: Date;
@@ -166,10 +167,12 @@ export type CompletedSession = {
  *
  * "Due" is the whole question. A movement the quest handed over was due from round one, so the
  * rounds it is missing before its first row are skips too: "I couldn't" in round one followed by
- * two clean rounds is not a clean session. A movement the hero swapped in mid-session
- * (`swappedIn`) is due from the round it arrived in, so a replacement done on every round that
- * remained counts as it always did, including one swapped in after a skipped round. The rows
- * alone cannot tell those two apart, which is why the set says which it is.
+ * two clean rounds is not a clean session. A movement the hero swapped in mid-session is due
+ * from the round it arrived in (`swappedIn`, the round itself and not the round of its first
+ * row: swapped in during round one and skipped there, it was still due in round one). So a
+ * replacement done on every round that remained counts as it always did, including one swapped
+ * in after a skipped round. The rows alone cannot tell those cases apart, which is why the set
+ * says when it came in.
  *
  * `rounds` is the quest's own count. Without it the last round is the last one that left a row,
  * and a hero who skipped every slot of the final round kept the credit of the rounds before.
@@ -182,21 +185,21 @@ export function ladderNeutralSets(
   const lastRound = Math.max(0, ...sets.map(round), Math.floor(rounds ?? 0) - 1);
   const key = (set: CompletedExerciseInput) => `${set.sortOrder}:${set.exerciseId}`;
 
-  const spans = new Map<string, { first: number; rows: number; swappedIn: boolean }>();
+  // Rows of a movement in a slot, and the round it was due from: the earliest any of its rows
+  // names, and round one for a row that names none.
+  const spans = new Map<string, { due: number; rows: number }>();
   for (const set of sets) {
-    const span = spans.get(key(set)) ?? { first: round(set), rows: 0, swappedIn: true };
+    const span = spans.get(key(set));
+    const due = Math.max(0, Math.floor(set.swappedIn ?? 0));
     spans.set(key(set), {
-      first: Math.min(span.first, round(set)),
-      rows: span.rows + 1,
-      // Swapped in only if every row of it says so: done before the swap too, it was handed over.
-      swappedIn: span.swappedIn && set.swappedIn === true,
+      due: span === undefined ? due : Math.min(span.due, due),
+      rows: (span?.rows ?? 0) + 1,
     });
   }
 
   return sets.map((set) => {
     const span = spans.get(key(set));
-    const due = span?.swappedIn ? span.first : 0;
-    const left = span !== undefined && span.rows < lastRound - due + 1;
+    const left = span !== undefined && span.rows < lastRound - span.due + 1;
     const lowered =
       set.prescribed !== undefined &&
       set.target !== undefined &&
@@ -447,8 +450,26 @@ export async function deleteSession(sessionId: number): Promise<"deleted" | "loc
     return "deleted" as const;
   });
 
-  if (outcome === "deleted") clearCached("quest:");
+  if (outcome === "deleted") {
+    clearCached("quest:");
+    await giveDailyBonusBack(sessionId);
+  }
   return outcome;
+}
+
+/**
+ * The day's bonus went with the session it was paid to (`preferences.getDailyBonus`): give the
+ * day back. Here, in the one function every delete goes through, a hero's own and a device
+ * sync's tombstone alike, and after the transaction, never inside it. Never a reason to fail a
+ * delete that already happened: left behind, the record only costs that day's bonus.
+ */
+async function giveDailyBonusBack(sessionId: number): Promise<void> {
+  try {
+    const paid = await preferences.getDailyBonus();
+    if (paid?.sessionId === sessionId) await preferences.clearDailyBonus();
+  } catch (error) {
+    reportError("session.dailyBonusBack", error);
+  }
 }
 
 /**

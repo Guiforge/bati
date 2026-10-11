@@ -2009,7 +2009,8 @@ describe("useSessionStore", () => {
  * 1200 where the quest suggested thirty minutes.
  */
 describe("the day's quest", () => {
-  const bonusOf = async (): Promise<number> => {
+  /** `savedSessionId` set: the save is a retry of a session whose row already landed. */
+  const bonusOf = async (savedSessionId: number | null = null): Promise<number> => {
     const walk = {
       id: 41,
       rounds: 1,
@@ -2038,7 +2039,12 @@ describe("the day's quest", () => {
       track: { ...EMPTY, startedAt, lastAt: Date.now(), distanceM: 10_000, movingMs: 7_200_000 },
     });
     await useSessionStore.getState().startSession(walk, "medium", {});
-    useSessionStore.setState({ startTime: startedAt, totalPausedTime: 0, restTakenSeconds: 0 });
+    useSessionStore.setState({
+      startTime: startedAt,
+      totalPausedTime: 0,
+      restTakenSeconds: 0,
+      savedSessionId,
+    });
 
     const result = await useSessionStore.getState().saveSession(null);
     return result.dailyBonusXp;
@@ -2083,10 +2089,23 @@ describe("the day's quest", () => {
    * quest was not logged today" was true of that one, and it paid again.
    */
   describe("once a day, whatever the day's quest has become", () => {
+    // The day the session started, which is the day its row is dated: `bonusOf` starts its
+    // walk two hours ago.
     const today = () => {
       const { dayKey } = jest.requireActual<typeof import("@/db/dates")>("@/db/dates");
-      return dayKey(new Date());
+      return dayKey(new Date(Date.now() - 7_200_000));
     };
+
+    // A retried save finds its own rows landed, and a rung they earned can have moved the pool:
+    // asked again, the day pointed elsewhere while the stored row already held the bonus.
+    test("a retry of the session that was paid keeps its bonus without being asked again", async () => {
+      // The day no longer names this quest, and the quest is logged today (by this very row).
+      (isDailyQuest as jest.Mock).mockResolvedValue(false);
+      (hasSessionForQuestToday as jest.Mock).mockResolvedValue(true);
+      (preferences.getDailyBonus as jest.Mock).mockResolvedValue({ day: today(), sessionId: 77 });
+
+      expect(await bonusOf(77)).toBe(50);
+    });
 
     afterEach(() => {
       (preferences.getDailyBonus as jest.Mock).mockResolvedValue(null);

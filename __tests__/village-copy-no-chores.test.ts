@@ -29,11 +29,13 @@ const WORDS = [
   .join(" ")
   .split(" ");
 // A digit run, a {{x}} / {{x, number}} placeholder, a ${...} or a number spelled 1 to 20.
-const COUNT = String.raw`(?:\d+|\{\{[^}]*\}\}|\$\{[^}]*\}|(?:${WORDS.join("|")}))`;
+// "3x10" (sets by reps) is one count.
+const COUNT = String.raw`(?:\d+(?:\s?[x×]\s?\d+)?|\{\{[^}]*\}\}|\$\{[^}]*\}|(?:${WORDS.join("|")}))`;
 const B = String.raw`(?<![\p{L}\p{N}-])`;
 const E = String.raw`(?![\p{L}])`;
 // Reps and the like: what a milestone must never count (see "estimation").
-const REPS = "reps?|wdh\\.?|repetitions?|répétitions?|wiederholung\\w*|repeticion\\w*|repetición";
+const REPS =
+  "reps?|wdh\\.?|repetitions?|répétitions?|wiederholung\\w*|repeticion\\w*|repetición|rép\\.?";
 const MOVES =
   "push-?ups?|pull-?ups?|sit-?ups?|squats?|lunges?|burpees?|planks?|crunch(?:es)?|dips?|jumping jacks?|mountain climbers?|glute bridges?|wall sits?|deadlifts?|calf raises?|leg raises?|step-?ups?|pompes?|tractions?|fentes?|gainages?|Liegestütz\\w*|Klimmzüg\\w*|Kniebeug\\w*|flexion\\w*|sentadilla\\w*|dominada\\w*|zancada\\w*|abdominal\\w*|plancha\\w*|\\p{L}*ausfallschritt\\p{L}*|hampelm\\p{L}*|bergsteiger|kniehebelauf|[\\p{L}-]*kniebeug\\p{L}*|[\\p{L}-]*liegestütz\\p{L}*|[\\p{L}-]*klimmzug\\p{L}*|fondos|high knees|chin-?ups?|flutter kicks?|russian twists?|dead bugs?|bear crawls?|muscle-?ups?|toes to bar|dragon flags?|windshield wipers|saltos? de tijera|montées de genoux|rodillas arriba|relevés? de jambes|sauts?|[\\p{L}-]*crunch\\p{L}*|[\\p{L}-]*rudern|[\\p{L}-]*heben|seitstütz|sternsprung|scheibenwischer|bärengang|eisschnellläufer|wandsitzen|flexi[óo]n(?:es)?|escaladores|giros? rusos?|elevaci[óo]n(?:es)?|patadas|remos?|rowings?|ponts? fessiers?|puentes?|battements|essuie-glaces|limpiaparabrisas|star jumps?|skater hops?|supermans?|soulevés? de terre|pesos? muertos?|extensions? des mollets|saltos?|inverted rows?|table rows?";
 const OUTINGS =
@@ -47,7 +49,14 @@ const ROUNDS = "rounds?|tours? de piste|runden?|rondas?|laps?";
 const ART = "one|une?|ein|eine|einen|una|uno";
 const rx = (c: string, u: string) =>
   new RegExp(`${B}${c}\\s+(?:[\\p{L}'’×-]+\\s+){0,2}(?:${u})${E}`, "iu");
-const COUNTED = rx(COUNT, `${REPS}|${MOVES}|${OUTINGS}|${MOVER}`);
+const UNITS = `${REPS}|${MOVES}|${OUTINGS}|${MOVER}`;
+// The unit first, then up to 4 words (a full stop is not one), an optional colon, the count:
+// "Séances restantes : {{count}}", "Objectif : {{exercise}} × {{count}}".
+const INVERSE = new RegExp(
+  `${B}(?:${UNITS})${E}\\s*(?:[\\p{L}'’×-]+(?:\\s+|(?=:))){0,4}:?\\s*${COUNT}(?![\\p{L}])`,
+  "iu",
+);
+const COUNTED = new RegExp(`${rx(COUNT, UNITS).source}|${INVERSE.source}`, "iu");
 const ARTICLED = rx(`(?:${ART})`, `${REPS}|${MOVES}|${SESSIONS}|${ROUNDS}`);
 const EFFORT = new RegExp(`${COUNTED.source}|${ARTICLED.source}`, "iu");
 const HAS_REPS = new RegExp(`${B}(?:${REPS}|${MOVES})${E}`, "iu");
@@ -83,7 +92,7 @@ const RESERVED: Partial<Record<Why, RegExp>> = {
   serment: /^oath\.metric_/,
   succès: /^db\/achievements\.ts:/,
   échelle: /^village\.(bar_end_reps_|unit_)/,
-  règle: /^village\.(rep_unit|foot)$/,
+  règle: /^village\.(rep_unit|foot|feeds_style)$/,
   déblocage: /^village\.detail_unlock_/,
 };
 // A locale key is allowed with the EXACT text of each language it is read in (plural variants are
@@ -377,7 +386,23 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
   },
   "village.detail_unlock_style": {
     why: "déblocage",
+    fr: "Se bâtit à ton premier exercice de {{style}}",
     en: "Built by your first {{style}} exercise",
+    es: "Se construye con tu primer ejercicio de {{style}}",
+  },
+  // How a building rises: an explanation, the placeholder is a style name, no quantity.
+  "village.feeds_style": {
+    why: "règle",
+    fr: "Monte avec tes reps de {{what}}",
+    en: "Rises with every rep of {{what}}",
+    es: "Sube con cada repetición de {{what}}",
+  },
+  // A fact about the outing just ended; {{duration}} is how long it lasted.
+  "session.summary_too_short_body_outing": {
+    why: "fait",
+    fr: "Ta sortie a duré {{duration}}. Garde-la et elle compte pour ta flamme et ton serment, ou jette-la, et il ne s'est rien passé.",
+    en: "Your outing lasted {{duration}}. Keep it and it counts toward your flame and your oath, or discard it and nothing happened.",
+    es: "Tu salida ha durado {{duration}}. Guárdala y cuenta para tu llama y tu juramento, o descártala y aquí no ha pasado nada.",
   },
   "village.foot": {
     why: "règle",
@@ -394,6 +419,17 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
   "village.crest_why_chosen": {
     why: "fait",
     fr: "Choisi par toi. Tes séances, elles, donnent {{animal}} : {{n}} séances {{part}} sur 8.",
+    en: "Your choice. Your sessions would give {{animal}}: {{n}} of the first 8 were {{part}}.",
+    de: "Von dir gewählt. Deine Einheiten sehen anders aus: {{n}} von 8 waren {{part}}, das wäre {{animal}}.",
+  },
+  "village.crest_why_chosen_mixed": {
+    why: "fait",
+    de: "Von dir gewählt. Deine Einheiten dagegen verteilen sich: {{list}}.",
+  },
+  // A rung the hero has passed: the name of the movement, a fact.
+  "progression.new_rung_from": {
+    why: "fait",
+    es: "Ejercicio superado: {{name}}",
   },
   "village.crest_why_boar": {
     why: "fait",
@@ -584,6 +620,18 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
   "db/achievements.ts:Termine 3 quêtes différentes": { why: "succès" },
   "db/achievements.ts:Termine 5 quêtes différentes": { why: "succès" },
   "db/achievements.ts:Termine une sortie": { why: "succès" },
+  "db/achievements.ts:Termine un entraînement de 30+ minutes": { why: "succès" },
+  "db/achievements.ts:Schließ ein Training von mindestens 30 Minuten ab": { why: "succès" },
+  "db/achievements.ts:Completa un entrenamiento de 30 minutos o más": { why: "succès" },
+  "db/achievements.ts:Termine un entraînement de 60+ minutes": { why: "succès" },
+  "db/achievements.ts:Schließ ein Training von mindestens 60 Minuten ab": { why: "succès" },
+  "db/achievements.ts:Completa un entrenamiento de 60 minutos o más": { why: "succès" },
+  "db/achievements.ts:Schließ ein Training vor 7 Uhr ab": { why: "succès" },
+  "db/achievements.ts:Completa un entrenamiento antes de las 7:00": { why: "succès" },
+  "db/achievements.ts:Complete a workout after 10pm": { why: "succès" },
+  "db/achievements.ts:Termine un entraînement après 22h": { why: "succès" },
+  "db/achievements.ts:Schließ ein Training nach 22 Uhr ab": { why: "succès" },
+  "db/achievements.ts:Completa un entrenamiento después de las 22:00": { why: "succès" },
   // The figure at the end of a rep bar: a scale mark, no sentence.
   "village.bar_end_reps_one": {
     why: "échelle",
@@ -649,10 +697,24 @@ const CHORE_MARKER =
 // Copy that holds a marker and is no chore, by key, with the reason.
 const MARKER_EXEMPT: Record<string, string> = {};
 const markerUsed = new Set<string>();
+// The old detector's EXEMPT_KEYS spare the bar's XP gauge from all of it, but only with this exact
+// text per language: any other sentence on that key (92e77c0a caught "il manque des séances") is
+// read by the old detector like the rest. No plural variants exist. A dead entry fails.
+const XP_GAUGE: Record<Lang, string> = {
+  fr: "plus que {{xp}} XP",
+  en: "{{xp}} XP to go",
+  de: "nur noch {{xp}} XP",
+  es: "solo faltan {{xp}} XP",
+};
+const xpGaugeUsed = new Set<Lang>();
 // The old phrasing detector (helpers/oldChoreDetector.ts) runs on the same copy: a string fails if
 // it or the count rule catches it. Its exemptions are its own, bounded as they were.
 function checkOld(id: string, text: string, verdicts: string[], lang?: Lang) {
-  if (lang ? EXEMPT_KEYS.has(id) : ACHIEVEMENT_GOAL.test(id.replace(":", ": "))) return;
+  if (lang && EXEMPT_KEYS.has(id) && XP_GAUGE[lang] === text) {
+    xpGaugeUsed.add(lang);
+    return;
+  }
+  if (!lang && ACHIEVEMENT_GOAL.test(id.replace(":", ": "))) return;
   if (Object.keys(CHORES).some((l) => (!lang || l === lang) && oldIsChore(l, text)))
     verdicts.push(`old|${id}|${text}`);
 }
@@ -720,6 +782,9 @@ it("catches a count of effort, whatever the sentence", () => {
     "3 deeds still open",
     "2 sessions to go",
     "une rep suffit",
+    "Séances restantes : {{count}}",
+    "Objectif : {{exercise}} × {{count}}",
+    "3x10 pompes demain",
   ];
   // The old table, word for word: what the phrasing detector was written for.
   for (const [lang, lines] of Object.entries(OLD_LINES))
@@ -858,10 +923,27 @@ const PROBES: Probe[] = [
   { lang: "fr", text: "120 reps pour le rang 2", by: "count" },
   { lang: "de", text: "120 Wiederholungen für Rang 2", by: "count" },
   { lang: "en", text: "Rank 2 needs 120 reps", by: "count" },
+  { lang: "fr", text: "Reps pour le rang {{level}} : {{count}}", by: "count" },
+  { lang: "fr", text: "Séances restantes : {{count}}", by: "count" },
+  { lang: "fr", text: "Prochain rang : {{count}} rép.", by: "count" },
+  { lang: "en", text: "Reps needed: {{count}}", by: "count" },
+  { lang: "en", text: "Sessions to rank {{level}}: {{count}}", by: "count" },
+  { lang: "de", text: "Wiederholungen bis Rang {{level}}: {{count}}", by: "count" },
+  { lang: "de", text: "Verbleibende Einheiten: {{count}}", by: "count" },
+  { lang: "es", text: "Repeticiones para el grado {{level}}: {{count}}", by: "count" },
+  { lang: "es", text: "Sesiones restantes: {{count}}", by: "count" },
+  { lang: "fr", text: "Objectif : {{exercise}} × {{count}}", by: "count" },
+  { lang: "en", text: "Goal: {{exercise}} × {{count}}", by: "count" },
+  { lang: "de", text: "Ziel: {{exercise}} × {{count}}", by: "count" },
+  { lang: "es", text: "Objetivo: {{exercise}} × {{count}}", by: "count" },
+  { lang: "fr", text: "3x10 pompes demain", by: "count" },
+  { lang: "en", text: "3x10 push-ups", by: "count" },
+  { lang: "de", text: "3x10 Liegestütze", by: "count" },
+  { lang: "es", text: "3x10 flexiones", by: "count" },
 ];
 
 // The sizes at the time of writing: a floor, raised when a probe is added, never lowered.
-const PROBE_COUNT = 133;
+const PROBE_COUNT = 150;
 const OLD_LINE_COUNT = 21;
 const probeVerdicts = (lang: Lang, text: string) => {
   const verdicts: string[] = [];
@@ -1034,6 +1116,10 @@ describe("the allow-list", () => {
       return [...(wanted.length ? [] : [id]), ...wanted.filter((w) => !articleUsed.has(w))];
     });
     expect(dead).toEqual([]);
+  });
+
+  it("has no dead XP gauge exemption", () => {
+    expect(LANG_LIST.filter((l) => !xpGaugeUsed.has(l))).toEqual([]);
   });
 
   it("has no dead marker exemption", () => {

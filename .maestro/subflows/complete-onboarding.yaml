@@ -13,6 +13,8 @@ appId: com.guiforge.bati.dev
     id: "onboarding-village-name"
 - tapOn:
     id: "onboarding-village-name"
+# The field arrives with a drawn name.
+- eraseText: 20
 - inputText: "${typeof VILLAGE_NAME === 'undefined' ? 'Testville' : VILLAGE_NAME}"
 - hideKeyboard
 - tapOn:

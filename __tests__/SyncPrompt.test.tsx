@@ -103,6 +103,22 @@ jest.mock("@/src/deviceSync", () => ({
   },
 }));
 
+/** A restore's word for after its reload; `mockRestoreAsked` is whether one was left. */
+let mockRestored: { village: string; sessions: number } | null = null;
+let mockRestoreAsked = false;
+jest.mock("@/src/restoreNotice", () => ({
+  rememberRestoreNotice: () =>
+    Promise.resolve().then(() => {
+      mockRestoreAsked = true;
+    }),
+  takeRestoreNotice: () =>
+    Promise.resolve().then(() => {
+      const r = mockRestored;
+      mockRestored = null;
+      return r;
+    }),
+}));
+
 // The secret sheet stands in as a probe: its props are what the prompt asked of it.
 let mockSheet: { open: boolean; wrong: boolean; submit: (secret: string) => void } | null = null;
 jest.mock("@/components/settings/BackupSecretSheet", () => ({
@@ -166,6 +182,9 @@ beforeEach(() => {
   mockReload.mockClear();
   mockMerge = { result: "cannot" };
   mockNotice = null;
+  mockRestored = null;
+  mockRestoreAsked = false;
+  mockPush.mockClear();
   run.mockClear();
   mockJoinOpens = false;
   mockSheet = null;
@@ -265,6 +284,8 @@ test("a device that can be merged is merged, not asked, and the app reloads to r
   expect(mockAdopted).toEqual([]);
   // Said after the reload, which then takes the hero back to where they were.
   expect(mockNotice).toEqual({ sessions: 3, returnTo: "/settings" });
+  // Two devices exchanging sessions is not a hero coming back.
+  expect(mockRestoreAsked).toBe(false);
 });
 
 test("a new device is shown whose hero it found before taking it", async () => {
@@ -282,6 +303,34 @@ test("a new device is shown whose hero it found before taking it", async () => {
   expect(mockReload).not.toHaveBeenCalled();
   await act(async () => press("sync.found.mine"));
   await waitFor(() => expect(mockReload).toHaveBeenCalledWith("merge"));
+  expect(mockRestoreAsked).toBe(true);
+});
+
+test("a found hero the merge refuses (another build) is not announced as back", async () => {
+  mockMerge = { result: "cannot" };
+  await render(<SyncPrompt />);
+  await syncFound({
+    name: "bati-phone.batb",
+    etag: "e",
+    state: "ahead",
+    comparison: comparison(16, 0, "f1", 0),
+  });
+  await waitFor(() => expect(mockAlerts).toHaveLength(1));
+  await act(async () => press("sync.found.mine"));
+
+  // The old question takes the found one's place.
+  await waitFor(() => expect(mockDialog?.title).toBe("sync.aheadTitle"));
+  expect(mockRestoreAsked).toBe(false);
+  expect(mockReload).not.toHaveBeenCalled();
+});
+
+test("after a restore's reload, the hero is told who came back, in place of what arrived", async () => {
+  mockRestored = { village: "Kerbati", sessions: 16 };
+  mockNotice = { sessions: 16, returnTo: "/" };
+  await render(<SyncPrompt />);
+  await waitFor(() => expect(mockToasts).toEqual(["backup.restored"]));
+  expect(mockRestored).toBeNull();
+  expect(mockPush).not.toHaveBeenCalled();
 });
 
 test("'not mine' on a new device takes nothing and asks no more about that state", async () => {

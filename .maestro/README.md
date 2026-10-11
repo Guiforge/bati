@@ -138,7 +138,8 @@ breaks the day someone runs the emulator in French — a `testID` never does.
 | Example | Where |
 |---------|-------|
 | `onboarding-hero-continue` | onboarding hero-setup screen |
-| `home-start-session` | home screen CTA, opens the offered session directly |
+| `home-start-session` | home screen CTA, opens the offered session directly. Absent the evening of a session |
+| `home-pick-quest` | home screen link to the gallery, in place of the CTA once a session was done today |
 | `session-complete-exercise` | active exercise footer |
 | `session-victory-continue` | victory screen |
 | `tab-adventures` | bottom tab bar |

@@ -37,6 +37,7 @@ describe("a quest card and its screen quote the same numbers", () => {
       exercises: require("../db/exercises") as typeof import("../db/exercises"),
       estimate: require("../db/estimate") as typeof import("../db/estimate"),
       xp: require("../db/xp") as typeof import("../db/xp"),
+      expeditions: require("../db/expeditions") as typeof import("../db/expeditions"),
     };
   }
 
@@ -71,17 +72,23 @@ describe("a quest card and its screen quote the same numbers", () => {
   async function disagreements(
     configs: Map<number, import("../db/questConfig").QuestConfig>,
   ): Promise<string[]> {
-    const { quests, preview, config, exercises, estimate, xp } = api();
+    const { quests, preview, config, exercises, estimate, xp, expeditions } = api();
     const templates = await quests.listQuestTemplates();
     const catalogue = config.indexExercises(await exercises.listExercises());
 
     // The card: one batched read for the whole gallery.
     const cards = await preview.previewQuests(templates, catalogue, configs);
 
+    // With nothing saved, the level the screen opens at: the starting rule, and none for an outing.
+    const defaults = await config.loadDefaultLevels();
     const out: string[] = [];
     for (const template of templates) {
       const saved = configs.get(template.id) ?? null;
-      const level = saved?.level ?? quests.Difficulty.Medium;
+      const level =
+        saved?.level ??
+        (expeditions.isOutingQuest(template, catalogue)
+          ? quests.Difficulty.Medium
+          : defaults(template.id));
       const raw = await quests.getQuestById(template.id, level);
       if (!raw) throw new Error(`quest ${template.id} vanished`);
       const screen = config.applyQuestConfig(raw, saved, catalogue);

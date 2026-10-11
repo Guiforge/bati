@@ -4,7 +4,7 @@ import { formatList } from "@/src/i18n/list";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { getAdventureDetails, getAnyActiveAdventureRun } from "./adventures";
 import { getBossFightByAdventure } from "./bossFights";
-import { getSessionAggregates, getStalestQuest } from "./completed";
+import { getSessionAggregates, getStalestQuest, hasSessionToday } from "./completed";
 import { estimateQuestSeconds } from "./estimate";
 import { getChainTo } from "./exercises";
 import { hasOutdoorSlot } from "./expeditions";
@@ -57,6 +57,8 @@ export type HomeOffer =
   | ({ kind: "oath_leagues"; target: number; done: number } & QuestOffer)
   | ({ kind: "weak_muscles"; muscles: string } & QuestOffer)
   | ({ kind: "stale_quest"; days: number } & QuestOffer)
+  /** A session that counts was done today. `next`: what the stage will offer tomorrow, if a quest. */
+  | { kind: "done_today"; next: QuestOffer | null }
   | ({ kind: "first_day" } & QuestOffer)
   /** `trained`: the hero has sessions, so the stage must not greet them as a beginner. */
   | { kind: "gallery"; trained: boolean };
@@ -72,8 +74,8 @@ async function questOffer(questId: number): Promise<QuestOffer | null> {
  * Tonight's offer, or null when the read was abandoned (`isCancelled`).
  *
  * The order *is* the feature: an adventure under way, then the oath (an exercise, then leagues),
- * then what the last 30 days say is lagging, then the quest left longest, then day one's
- * on-ramp, then the gallery.
+ * then what the last 30 days say is lagging, then the quest left longest, then a day already
+ * done, then day one's on-ramp, then the gallery.
  */
 // ponytail: priority waterfall — the order *is* the feature, so it reads better flat than
 //           split. Ceiling: a table of {predicate, action} once a seventh case lands.
@@ -167,13 +169,18 @@ export async function decideHomeOffer(
   //    from the rules above going quiet. A quest done today is not left, so it is not offered.
   const { totalSessions } = await getSessionAggregates();
   const trained = totalSessions > 0;
-  if (trained && !isCancelled()) {
-    const stale = await getStalestQuest();
-    const offer = stale && stale.daysAgo >= 1 ? await questOffer(stale.questId) : null;
-    if (offer && stale && !isCancelled()) {
-      return { kind: "stale_quest", days: stale.daysAgo, ...offer };
-    }
+  const stale = trained && !isCancelled() ? await getStalestQuest() : null;
+  const left = stale ? await questOffer(stale.questId) : null;
+  if (left && stale && stale.daysAgo >= 1 && !isCancelled()) {
+    return { kind: "stale_quest", days: stale.daysAgo, ...left };
   }
+
+  // 4b. The evening of a session, with nothing above to say: the day is done, and the stage says
+  //     so rather than sending the hero shopping on their best moment (audit 2026-10-11, F5).
+  //     The quest it names is rule 4's own answer with the "not done today" guard lifted, so it
+  //     is the one rule 4 offers tomorrow. An outing reads no quest there: the sentence stands
+  //     alone. Before rule 5, or a hero whose first session was a walk is greeted as day one.
+  if (!isCancelled() && (await hasSessionToday())) return { kind: "done_today", next: left };
 
   // 5. A day-one hero: offer back the session onboarding just offered.
   const onRamp = trained

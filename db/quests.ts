@@ -15,7 +15,7 @@ import { isMuscleCode } from "./muscles";
 import { getOutingHabit } from "./outingHabit";
 import { type OutingHabit, proposedRunSeconds } from "./outingRule";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
-import { preferences, startsGently, type TrainingLevel } from "./preferences";
+import { isStartingOut, preferences, startsGently, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
 import {
   ADMIN_CREATOR,
@@ -1223,8 +1223,11 @@ export async function getEligibleQuestIds(
 
   for (const [questId, entry] of byQuest) {
     const hasKit = [...entry.equipment].every((code) => canDo(code, owned));
+    // A hero who never answered and is new here is read like one who said they are starting:
+    // their quests open at Easy (`startingDifficulty`), and an advanced one is no suggestion.
     const tooHard =
-      trainingLevel === "beginner" && questTrainingLevel(entry.difficulties) === "advanced";
+      isStartingOut(trainingLevel, sessions) &&
+      questTrainingLevel(entry.difficulties) === "advanced";
     // A quest that would serve a jump is not what the app picks for someone starting out.
     const tooJumpy = entry.impact;
 

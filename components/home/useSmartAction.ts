@@ -27,7 +27,8 @@ export type SmartActionConfig = {
   subtext: string;
   /** Where the scene leads: the adventure, the gallery, or the quest screen (Details). */
   onPress: () => void;
-  variant: "adventure" | "quest" | "gallery";
+  /** `done`: the day's session is behind the hero, so the stage has no filled button. */
+  variant: "adventure" | "quest" | "gallery" | "done";
   scene: SmartScene | null;
   /**
    * The quest the stage's Start runs itself, or null when its button only navigates. Null for a
@@ -39,7 +40,10 @@ export type SmartActionConfig = {
 
 type Router = ReturnType<typeof useRouter>;
 
-type QuestHomeOffer = Exclude<HomeOffer, { kind: "adventure" } | { kind: "gallery" }>;
+type QuestHomeOffer = Exclude<
+  HomeOffer,
+  { kind: "adventure" } | { kind: "gallery" } | { kind: "done_today" }
+>;
 
 /** Why this quest, in one line under the stage. */
 function questSubtext(offer: QuestHomeOffer, t: TFunction): string {
@@ -116,6 +120,24 @@ function stageFor(
       // A hero with sessions is not at the start of a journey, which is what the stage's own
       // fallback title says; a scene with no picture takes the stage's stand-in art.
       scene: offer.trained ? { title: t("home.pick_next"), imagePath: null } : null,
+      startQuestId: null,
+      onPress: () => router.push("/(tabs)/quests" as never),
+    };
+  }
+
+  if (offer.kind === "done_today") {
+    return {
+      // A text link on this stage, not its button: the hero who wants more can still pick.
+      label: t("home.pick_quest_label"),
+      // No quest to name (a hero who only goes out): the first sentence stands alone.
+      subtext: offer.next
+        ? t("home.next_session", {
+            quest: localizedTitle(offer.next.quest, language),
+            duration: formatDurationEstimate(offer.next.seconds, language),
+          })
+        : "",
+      variant: "done",
+      scene: { title: t("home.done_today"), imagePath: null },
       startQuestId: null,
       onPress: () => router.push("/(tabs)/quests" as never),
     };

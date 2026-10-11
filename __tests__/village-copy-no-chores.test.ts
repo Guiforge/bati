@@ -530,6 +530,19 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
 
 const countHit = (text: string) => EFFORT.test(text);
 
+// The second check: a chore said WITHOUT a count ("Deeds still to do"). Only the markers the old
+// CHORES patterns used, so the count rule can stay the one rule; not a wider list.
+const CHORE_MARKER =
+  /à faire|à accomplir|il te reste|encore des|\bto do\b|\bstill to\b|\bleft to\b|zu erledigen|noch zu\b|por hacer|te quedan/i;
+// Copy that holds a marker and is no chore, by key, with the reason.
+const MARKER_EXEMPT: Record<string, string> = {};
+const markerUsed = new Set<string>();
+function checkMarker(id: string, text: string, verdicts: string[]) {
+  if (!CHORE_MARKER.test(text)) return;
+  if (id in MARKER_EXEMPT) markerUsed.add(id);
+  else verdicts.push(`marker|${id}|${text}`);
+}
+
 it("catches a count of effort, whatever the sentence", () => {
   const LINES = [
     "120 reps to rank 2",
@@ -556,6 +569,8 @@ it("catches a count of effort, whatever the sentence", () => {
     "2 sessions to go",
     "une rep suffit",
   ];
+  for (const line of ["Deeds still to do", "encore des séances à faire", "Noch zu erledigen"])
+    expect([line, CHORE_MARKER.test(line)]).toEqual([line, true]);
   for (const line of LINES) expect([line, countHit(line)]).toEqual([line, true]);
   for (const ok of ["Plus que {{xp}} XP", "Rang 2", "12 km", "3 jours", "2 semaines", "niveau 4"])
     expect([ok, countHit(ok)]).toEqual([ok, false]);
@@ -563,6 +578,7 @@ it("catches a count of effort, whatever the sentence", () => {
 
 const used = new Set<string>();
 function check(id: string, text: string, verdicts: string[], lang?: Lang) {
+  checkMarker(id, text, verdicts);
   if (!countHit(text)) return;
   const entry = ALLOWED_COUNTS[id];
   if (!entry) {
@@ -669,6 +685,10 @@ describe("the allow-list", () => {
       if (why === "échelle") expect(id).toMatch(/^village\.bar_end_reps_/);
       if (why === "règle") expect(id).toBe("village.rep_unit");
     }
+  });
+
+  it("has no dead marker exemption", () => {
+    expect(Object.keys(MARKER_EXEMPT).filter((id) => !markerUsed.has(id))).toEqual([]);
   });
 
   // Runs last in the file: the scans above have filled `used`.

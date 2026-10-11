@@ -217,6 +217,7 @@ const mockGetOutingHabit = jest.fn();
 jest.mock("@/db/outingHabit", () => ({
   NO_HABIT: { usual: null, longestM: null },
   LONGEST_RUN_CEILING: 1.1,
+  WALK_RUN_SECONDS: 1200,
   getOutingHabit: (...args: unknown[]) => mockGetOutingHabit(...args),
 }));
 
@@ -430,6 +431,33 @@ describe("an expedition on the quest screen", () => {
     await fireEvent.press(view.getByText("As usual · 5.20 km"));
 
     expect(lastSavedConfig()).toMatchObject({ distanceM: 5200 });
+  });
+
+  // The ceiling is said in the tab's own unit. And not at all on the duration tab while it sits
+  // under the twenty-minute walk-run the app proposes to that hero: "copes better under 13 min"
+  // over a proposal of twenty was the screen contradicting itself.
+  const runQuest = () => {
+    const quest = expeditionQuest();
+    const [slot] = quest.exercises;
+    assert(slot);
+    slot.exercise = movement({ style: "expedition", locomotion: "run" });
+    return quest;
+  };
+
+  test("the ceiling is said in the duration tab's own unit", async () => {
+    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 6000, longestSeconds: 1800 });
+    const view = await mountQuest(runQuest());
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    expect(view.getByTestId("goal-longest-run").props.children).toContain("33 min");
+  });
+
+  test("the duration ceiling yields to the walk-run when it sits under it", async () => {
+    mockGetOutingHabit.mockResolvedValue({ usual: null, longestM: 2000, longestSeconds: 720 });
+    const view = await mountQuest(runQuest());
+
+    await fireEvent.press(view.getByText("Set up the outing"));
+    expect(view.queryByTestId("goal-longest-run")).toBeNull();
   });
 
   test("a ride is offered a ride's distances, and no running ceiling", async () => {

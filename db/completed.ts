@@ -32,6 +32,11 @@ export type CompletedExerciseInput = {
    * it; rung credit, crit odds and the damage cap then fall back to `target`.
    */
   prescribed?: number;
+  /**
+   * The hero swapped this movement into the slot mid-session. In memory only, for
+   * `ladderNeutralSets`: such a movement is due from the round it arrived in, not from round one.
+   */
+  swappedIn?: boolean;
 
   notes?: string;
   performedAt?: Date;
@@ -95,6 +100,8 @@ export type CompletedSessionInput = {
   notes?: string;
   feedback?: FeedbackCode | null;
   performedAt?: Date;
+  /** The quest's round count, so a final round skipped whole is seen as one (`ladderNeutralSets`). */
+  rounds?: number;
 
   exercises: CompletedExerciseInput[];
 };
@@ -155,39 +162,40 @@ export type CompletedSession = {
  * clean round followed by "I couldn't" used to read as a clean session. Deduced from the rows
  * themselves, so it survives the OS killing the app between the skip and the save: a movement
  * in a slot is neutral when it lacks a row for any round it was due in, up to the session's
- * last. A replacement done on every remaining round counts as it always did.
+ * last.
  *
- * ponytail: the rows cannot tell a movement skipped in round one from a replacement swapped in
- * after a skipped round one, because both are "the first row of the slot, late". Both are read
- * as the first, so that replacement earns no credit that evening. Neutral, never a miss, and
- * the alternative was a pinned movement skipped first and done after counting as clean. Carry a
- * marker on the result if heroes report a swap that did not count.
+ * "Due" is the whole question. A movement the quest handed over was due from round one, so the
+ * rounds it is missing before its first row are skips too: "I couldn't" in round one followed by
+ * two clean rounds is not a clean session. A movement the hero swapped in mid-session
+ * (`swappedIn`) is due from the round it arrived in, so a replacement done on every round that
+ * remained counts as it always did, including one swapped in after a skipped round. The rows
+ * alone cannot tell those two apart, which is why the set says which it is.
  *
- * ponytail: "the session's last round" is the last round that left a row. A hero who skips
- * every slot of the final round keeps the credit of the rounds before. Pass the quest's round
- * count in if that is ever reported.
+ * `rounds` is the quest's own count. Without it the last round is the last one that left a row,
+ * and a hero who skipped every slot of the final round kept the credit of the rounds before.
  */
-export function ladderNeutralSets(sets: readonly CompletedExerciseInput[]): boolean[] {
+export function ladderNeutralSets(
+  sets: readonly CompletedExerciseInput[],
+  rounds?: number,
+): boolean[] {
   const round = (set: CompletedExerciseInput) => Math.max(0, Math.floor(set.roundIndex ?? 0));
-  const lastRound = Math.max(0, ...sets.map(round));
+  const lastRound = Math.max(0, ...sets.map(round), Math.floor(rounds ?? 0) - 1);
   const key = (set: CompletedExerciseInput) => `${set.sortOrder}:${set.exerciseId}`;
 
-  const spans = new Map<string, { first: number; rows: number }>();
-  // The first round each slot left a row in, whatever the movement.
-  const slotStart = new Map<number, number>();
+  const spans = new Map<string, { first: number; rows: number; swappedIn: boolean }>();
   for (const set of sets) {
-    const span = spans.get(key(set)) ?? { first: round(set), rows: 0 };
-    spans.set(key(set), { first: Math.min(span.first, round(set)), rows: span.rows + 1 });
-    slotStart.set(set.sortOrder, Math.min(slotStart.get(set.sortOrder) ?? round(set), round(set)));
+    const span = spans.get(key(set)) ?? { first: round(set), rows: 0, swappedIn: true };
+    spans.set(key(set), {
+      first: Math.min(span.first, round(set)),
+      rows: span.rows + 1,
+      // Swapped in only if every row of it says so: done before the swap too, it was handed over.
+      swappedIn: span.swappedIn && set.swappedIn === true,
+    });
   }
 
   return sets.map((set) => {
     const span = spans.get(key(set));
-    // The movement that opens a slot was due from round one: rounds it is missing before its
-    // first row are skips too. Only a replacement, which arrives after another movement's rows,
-    // is counted from where it came in.
-    const due =
-      span !== undefined && span.first === slotStart.get(set.sortOrder) ? 0 : (span?.first ?? 0);
+    const due = span?.swappedIn ? span.first : 0;
     const left = span !== undefined && span.rows < lastRound - due + 1;
     const lowered =
       set.prescribed !== undefined &&
@@ -261,7 +269,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
 
     if (sessionId == null) throw new Error("Failed to create completed session");
 
-    const neutral = ladderNeutralSets(input.exercises);
+    const neutral = ladderNeutralSets(input.exercises, input.rounds);
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Exercise data validation and transformation with multiple null checks
     const rowsToInsert = input.exercises.map((ex, index) => {
       const roundIndexRaw = ex.roundIndex;

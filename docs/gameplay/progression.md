@@ -131,6 +131,15 @@ quest was bounded by its own prescription; an outing is not, so the multiplier c
 duration nobody set and an hour's run on the daily quest paid 1200. Reading the target instead
 makes the bonus what it says it is: you did the thing the day asked for.
 
+"Once a day" is held by a record of the day, not by the quest's id (issue #177). The day's quest
+is drawn by the date from the quests the app may suggest, and a hero can reshape that pool before
+lunch: the level and the equipment in Settings, a quest of their own. The same date then pointed
+at a second quest, "this quest was not logged today" was true of it, and it paid again. The
+preference `dailyBonus` holds the day and the session the bonus went to, written right after that
+session's row. A retried save recognises its own bonus, and deleting that session gives the day
+back. The pool also counts only sessions logged before today (`workoutsBeforeToday`), so saving
+a session never moves the pick by itself.
+
 #### Why it changed
 
 It used to be `durationSeconds / 5` — wall-clock and nothing else. Rest counted, waiting counted,

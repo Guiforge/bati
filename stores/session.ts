@@ -23,6 +23,7 @@ import {
   markSessionWithNewRecords,
   outingSecondsToday,
 } from "@/db/completed";
+import { dayKey } from "@/db/dates";
 import { estimateQuestSeconds } from "@/db/estimate";
 import {
   checkForNewRungs,
@@ -807,7 +808,24 @@ function outingLegSeconds(
  */
 async function earnsDailyBonus(questId: number, savedSessionId: number | null): Promise<boolean> {
   if (!(await isDailyQuest(questId))) return false;
+  // Once a day, whatever the day's quest has become since (issue #177): the pick is drawn from a
+  // pool the hero can reshape in Settings, so "this quest was not logged today" was true of a
+  // second quest. A retry of the session that was paid still earns its own bonus.
+  const paid = await preferences.getDailyBonus();
+  if (paid?.day === dayKey(new Date()) && paid.sessionId !== savedSessionId) return false;
   return !(await hasSessionForQuestToday(questId, savedSessionId));
+}
+
+/**
+ * The day's bonus is spent, on this session (`earnsDailyBonus`). Called after the row it paid,
+ * not before: a bonus recorded for a session that failed to save would cost the hero the day.
+ * Never a reason to fail the save: unrecorded, the worst case is the old per-quest guard.
+ */
+async function recordDailyBonus(dailyBonusXp: number, sessionId: number): Promise<void> {
+  if (dailyBonusXp <= 0) return;
+  await preferences
+    .setDailyBonus({ day: dayKey(new Date()), sessionId })
+    .catch((e) => reportError("session.dailyBonus", e));
 }
 
 /**
@@ -1570,6 +1588,7 @@ export const useSessionStore = create<SessionState>()(
         result,
         target,
         prescribed,
+        swappedIn: currentEx.swappedIn,
         pricing: {
           secondsPerRep: currentEx.exercise.secondsPerRep,
           difficulty: currentEx.exercise.difficulty,
@@ -1664,6 +1683,8 @@ export const useSessionStore = create<SessionState>()(
               prescribed: target.type === slot.target.type ? slot.prescribed : undefined,
               // The pin was on the old movement.
               pinnedOver: undefined,
+              // Due from the round it arrives in, not from round one (`ladderNeutralSets`).
+              swappedIn: true as const,
             }
           : qex,
       );
@@ -1975,8 +1996,11 @@ export const useSessionStore = create<SessionState>()(
         xpEarned,
         feedback,
         exercises: results,
+        rounds: quest.rounds,
         performedAt: new Date(startTime),
       });
+
+      await recordDailyBonus(dailyBonusXp, sessionId);
 
       // The session exists now, so the hits it earned can be written and attributed to it. This
       // runs before the campaign step below, which reads the fight to decide whether the run is
@@ -2134,6 +2158,9 @@ bindSession({
 export async function forgetSession(sessionId: number): Promise<"deleted" | "locked"> {
   const outcome = await deleteSession(sessionId);
   if (outcome === "locked") return outcome;
+  // The day's bonus went with the session it was paid to: give the day back.
+  const paid = await preferences.getDailyBonus();
+  if (paid?.sessionId === sessionId) await preferences.clearDailyBonus();
   clearShortLivedQueries();
   invalidateQuestTemplates();
   await updateStreakAfterSession();

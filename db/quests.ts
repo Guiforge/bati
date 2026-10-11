@@ -110,6 +110,12 @@ export interface QuestExercise {
   prescribed?: number;
 
   /**
+   * The hero swapped this movement into the slot during the session. Set by the session store
+   * and by nothing else: its sets are due from the round it arrived in (`ladderNeutralSets`).
+   */
+  swappedIn?: true;
+
+  /**
    * This run is proposed as twenty minutes of walk and run mixed, because the hero has not run
    * lately (`proposedRunSeconds`). The quest screen says how to do one. Meaningless once the
    * hero set their own duration, which `prescribed` being there says.
@@ -793,10 +799,13 @@ export function resolveSlot(input: {
     // prescribes. Derived from the served rung's target it was the unit's default (10 reps, 30 s)
     // whenever the two are measured differently, and that default became the bar a rung is
     // earned on.
+    // Only for a rung served in the written movement's place. A set-aside slot never offers the
+    // written movement back that way, and an outing is neither stepped down nor prescribed off a
+    // record, so both get nothing rather than a number computed under the wrong rules.
     asWritten:
-      exercise.id === written.id
+      exercise.id === written.id || replacement !== undefined || outing
         ? undefined
-        : generateTarget(base, level, journal.history.get(ghostKey(written.id, "time"))?.best),
+        : generateTarget(base, userLevel, journal.history.get(ghostKey(written.id, "time"))?.best),
     walkRun: proposal?.walkRun === true,
     // In the target's own unit: a movement trained both ways has two records, and showing the
     // hold next to a rep target would be a number the hero cannot act on.

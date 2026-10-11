@@ -289,6 +289,37 @@ export const preferences = {
     await setPreference("trainingLevel", level);
   },
 
+  /**
+   * The day whose quest bonus has been paid, and the session it was paid to (issue #177).
+   *
+   * The bonus was guarded per quest: "this is the day's quest, and it was not logged today". But
+   * the day's quest is drawn from a pool the hero can reshape before lunch (level, equipment, a
+   * quest of their own), so the same date could point at a second quest and pay again. Once a
+   * day needs a record of the day. The session id is there so a retried save recognises its own
+   * bonus, and so deleting that session gives the day back.
+   */
+  async getDailyBonus(): Promise<{ day: string; sessionId: number } | null> {
+    const raw = await getPreference("dailyBonus");
+    if (!raw) return null;
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (typeof parsed !== "object" || parsed === null) return null;
+      const { day, sessionId } = parsed as { day?: unknown; sessionId?: unknown };
+      return typeof day === "string" && typeof sessionId === "number" ? { day, sessionId } : null;
+    } catch {
+      // A value nobody can read is a day nobody was paid for: the worst case is one bonus.
+      return null;
+    }
+  },
+
+  async setDailyBonus(paid: { day: string; sessionId: number }): Promise<void> {
+    await setPreference("dailyBonus", JSON.stringify(paid));
+  },
+
+  async clearDailyBonus(): Promise<void> {
+    await deletePreference("dailyBonus");
+  },
+
   // Equipment the hero actually owns. `null` means "never answered" and is treated as
   // "show me everything" — the default must not silently hide content from existing users.
   // An empty array is a real answer: bodyweight only.

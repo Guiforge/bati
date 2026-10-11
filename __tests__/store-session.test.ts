@@ -116,6 +116,10 @@ jest.mock("@/db/preferences", () => ({
     // Read by beginTrackingIfOuting, only exercised by the outing cases below.
     getDistanceUnit: jest.fn().mockResolvedValue("metric"),
     getHapticsEnabled: jest.fn().mockResolvedValue(true),
+    // The day whose quest bonus was paid: nobody yet, unless a case says otherwise.
+    getDailyBonus: jest.fn().mockResolvedValue(null),
+    setDailyBonus: jest.fn().mockResolvedValue(undefined),
+    clearDailyBonus: jest.fn().mockResolvedValue(undefined),
   },
 }));
 // `computeDamage` stays real — it is pure maths and the store's damage behaviour is only
@@ -2071,6 +2075,56 @@ describe("the day's quest", () => {
   test("pays once, however many times the same quest is run", async () => {
     (hasSessionForQuestToday as jest.Mock).mockResolvedValue(true);
     expect(await bonusOf()).toBe(0);
+  });
+
+  /**
+   * Issue #177. The day's quest is drawn from a pool the hero can reshape before lunch (level,
+   * equipment, a quest of their own), so the same date could point at a second quest. "This
+   * quest was not logged today" was true of that one, and it paid again.
+   */
+  describe("once a day, whatever the day's quest has become", () => {
+    const today = () => {
+      const { dayKey } = jest.requireActual<typeof import("@/db/dates")>("@/db/dates");
+      return dayKey(new Date());
+    };
+
+    afterEach(() => {
+      (preferences.getDailyBonus as jest.Mock).mockResolvedValue(null);
+    });
+
+    test("a bonus that is paid is recorded against the day and the session", async () => {
+      (preferences.setDailyBonus as jest.Mock).mockClear();
+
+      expect(await bonusOf()).toBe(50);
+
+      expect(preferences.setDailyBonus).toHaveBeenCalledWith({
+        day: today(),
+        sessionId: useSessionStore.getState().savedSessionId,
+      });
+    });
+
+    test("a second quest that became the day's pays nothing", async () => {
+      (preferences.getDailyBonus as jest.Mock).mockResolvedValue({ day: today(), sessionId: 4242 });
+
+      expect(await bonusOf()).toBe(0);
+    });
+
+    test("yesterday's bonus does not spend today's", async () => {
+      (preferences.getDailyBonus as jest.Mock).mockResolvedValue({
+        day: "2000-01-01",
+        sessionId: 4242,
+      });
+
+      expect(await bonusOf()).toBe(50);
+    });
+
+    test("a session that earned nothing records nothing", async () => {
+      (isDailyQuest as jest.Mock).mockResolvedValue(false);
+      (preferences.setDailyBonus as jest.Mock).mockClear();
+
+      expect(await bonusOf()).toBe(0);
+      expect(preferences.setDailyBonus).not.toHaveBeenCalled();
+    });
   });
 });
 

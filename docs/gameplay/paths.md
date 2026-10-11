@@ -98,18 +98,18 @@ Some sets the ladder does not judge at all, neither clean nor missed
 - **A movement left mid-session**, skipped or swapped away from. A skip writes no row, so one
   clean round followed by "I couldn't" used to read as a clean session. It is deduced from the
   rows (`ladderNeutralSets`), so it survives the app being killed before the save: a movement is
-  neutral when it lacks a row for any round it was due in. The movement that opens a slot is due
-  from round one, so rounds missing *before* its first row are skips too. A movement swapped in
-  after another one's rows is due from where it came in, and counts as it always did.
+  neutral when it lacks a row for any round it was due in, up to the quest's last round. A
+  movement the quest handed over is due from round one, so rounds missing *before* its first row
+  are skips too. A movement the hero swapped in mid-session is due from the round it arrived in,
+  and counts as it always did, including one swapped in after a skipped round. The rows alone
+  cannot tell those two apart, so each set says which it is (`swappedIn`, set by the session).
 
 A swap made mid-session keeps what the app had prescribed when it keeps the hero's number (same
 unit). Otherwise the lowered number would become "what was asked" on the new movement.
 
 Known ceilings, marked in the code: a hero's own quest sets its own bar, so a quest written with a
-target of 1 still earns rungs; lowering every target by one makes misses neutral, so a streak of
-three never breaks; and the rows cannot tell a movement skipped in round one from a replacement
-swapped in after a skipped round one, so that replacement earns no credit that evening (neutral,
-never a miss). Tighten any of them if someone reports it.
+target of 1 still earns rungs; and lowering every target by one makes misses neutral, so a streak
+of three never breaks. Tighten either if someone reports rungs earned that way.
 
 ## A hint, never a gate
 

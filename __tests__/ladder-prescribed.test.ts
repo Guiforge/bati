@@ -138,8 +138,11 @@ describe("ladderNeutralSets", () => {
   afterAll(() => t.close());
 
   // Required late: the module imports the database client, which only the mock above can stand in for.
-  const ladderNeutralSets = (sets: CompletedExerciseInput[]) =>
-    (require("../db/completed") as typeof import("../db/completed")).ladderNeutralSets(sets);
+  const ladderNeutralSets = (sets: CompletedExerciseInput[], rounds?: number) =>
+    (require("../db/completed") as typeof import("../db/completed")).ladderNeutralSets(
+      sets,
+      rounds,
+    );
 
   const set = (
     exerciseId: number,
@@ -159,9 +162,19 @@ describe("ladderNeutralSets", () => {
     expect(ladderNeutralSets([set(1, 0), set(1, 1), set(1, 2)])).toEqual([false, false, false]);
   });
 
+  /** A set of a movement the hero swapped into the slot mid-session. */
+  const swapped = (exerciseId: number, roundIndex: number): CompletedExerciseInput => ({
+    ...set(exerciseId, roundIndex),
+    swappedIn: true,
+  });
+
   test("a movement swapped away from is neutral, its replacement counts", () => {
     // Push-ups (1) on round one, then Knee Push-Ups (2) for the two that remained.
-    expect(ladderNeutralSets([set(1, 0), set(2, 1), set(2, 2)])).toEqual([true, false, false]);
+    expect(ladderNeutralSets([set(1, 0), swapped(2, 1), swapped(2, 2)])).toEqual([
+      true,
+      false,
+      false,
+    ]);
   });
 
   test("a replacement skipped later is neutral too", () => {
@@ -169,12 +182,34 @@ describe("ladderNeutralSets", () => {
     expect(
       ladderNeutralSets([
         set(1, 0),
-        set(2, 1),
+        swapped(2, 1),
         set(3, 0, 10, 1),
         set(3, 1, 10, 1),
         set(3, 2, 10, 1),
       ]),
     ).toEqual([true, true, false, false, false]);
+  });
+
+  // The case the rows alone cannot settle: "I couldn't" on Pull-ups in round one, then Negative
+  // Pull-ups swapped in and done clean for the two rounds that remained. That is two clean
+  // rounds of a movement the hero chose, and it earns its rung.
+  test("a replacement swapped in after a skipped round counts from where it came in", () => {
+    expect(
+      ladderNeutralSets([
+        swapped(2, 1),
+        swapped(2, 2),
+        set(3, 0, 10, 1),
+        set(3, 1, 10, 1),
+        set(3, 2, 10, 1),
+      ]),
+    ).toEqual([false, false, false, false, false]);
+  });
+
+  // The last round, skipped whole, leaves no row at all: only the quest's round count says it
+  // was there.
+  test("a final round skipped whole is seen once the quest says how many rounds it has", () => {
+    expect(ladderNeutralSets([set(1, 0), set(1, 1)])).toEqual([false, false]);
+    expect(ladderNeutralSets([set(1, 0), set(1, 1)], 3)).toEqual([true, true]);
   });
 
   // A skip leaves no row, so the rounds a movement is missing *before* its first row are skips

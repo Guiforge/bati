@@ -198,17 +198,17 @@ describe("crestEvents", () => {
 
   test("the 40th session of a practice makes the animal adult, the 200th venerable", () => {
     expect(step(seq(["strength", 39]), "strength").stageUp).toEqual([
-      { animal: "bear", stage: "adult", n: 40, own: true },
+      { animal: "bear", stage: "adult", n: 40, practice: "strength" },
     ]);
     expect(step(seq(["strength", 199]), "strength").stageUp).toEqual([
-      { animal: "bear", stage: "venerable", n: 200, own: true },
+      { animal: "bear", stage: "venerable", n: 200, practice: "strength" },
     ]);
   });
 
   test("the 500th session of a practice makes the animal legendary, and says 500", () => {
     expect(step(seq(["strength", 498]), "strength").stageUp).toEqual([]);
     expect(step(seq(["strength", 499]), "strength").stageUp).toEqual([
-      { animal: "bear", stage: "legendary", n: 500, own: true },
+      { animal: "bear", stage: "legendary", n: 500, practice: "strength" },
     ]);
     expect(step(seq(["strength", 500]), "strength").stageUp).toEqual([]);
   });
@@ -216,29 +216,43 @@ describe("crestEvents", () => {
   test("the border animal reaches 500 of its own practice on another night than the centre", () => {
     const h = seq(["strength", 8], ["run", 499]);
     expect(step(h, "run").stageUp).toEqual([
-      { animal: "stag", stage: "legendary", n: 500, own: true },
+      { animal: "stag", stage: "legendary", n: 500, practice: "run" },
     ]);
   });
 
-  test("a picked animal and the boar count every session toward 500", () => {
-    const e = step(seq(["strength", 400], ["run", 99]), "run", "stag");
-    expect(e.stageUp).toEqual([{ animal: "stag", stage: "legendary", n: 500, own: false }]);
+  test("a picked animal rises with the sessions' animal, on its practice (Guillaume, 11/10)", () => {
+    // 499 strength + 99 run, the stag picked over the bear: the 500th strength session is the
+    // legendary night, whatever animal is on show. A run session does not move it.
+    const h = seq(["strength", 499], ["run", 99]);
+    expect(step(h, "strength", "stag").stageUp).toEqual([
+      { animal: "stag", stage: "legendary", n: 500, practice: "strength" },
+    ]);
+    expect(step(h, "run", "stag").stageUp).toEqual([]);
+    // Picking never made it rise: the same history reads the same stage with or without the pick.
+    expect(step(h, "strength").stageUp).toEqual([
+      { animal: "bear", stage: "legendary", n: 500, practice: "strength" },
+    ]);
   });
 
   test("the second animal rises on its own practice", () => {
     const h = [...seq(["strength", 60], ["run", 39])];
     const e = step(h, "run");
-    expect(e.stageUp).toEqual([{ animal: "stag", stage: "adult", n: 40, own: true }]);
+    expect(e.stageUp).toEqual([{ animal: "stag", stage: "adult", n: 40, practice: "run" }]);
   });
 
-  test("the boar and a hand-picked animal rise on every session, and say the threshold, not a practice count", () => {
+  test("the boar rises on every session, and says the threshold, not a practice count", () => {
     const boar = step(
       seq(["strength", 3], ["run", 3], ["yoga", 2], ["strength", 11], ["run", 10], ["yoga", 10]),
       "yoga",
     );
-    expect(boar.stageUp).toEqual([{ animal: "boar", stage: "adult", n: 40, own: false }]);
-    const picked = step(seq(["strength", 30], ["run", 9]), "run", "stag");
-    expect(picked.stageUp).toEqual([{ animal: "stag", stage: "adult", n: 40, own: false }]);
+    expect(boar.stageUp).toEqual([{ animal: "boar", stage: "adult", n: 40, practice: null }]);
+    // A hero of the boar who picks an animal keeps counting every session.
+    const picked = step(
+      seq(["strength", 3], ["run", 3], ["yoga", 2], ["strength", 11], ["run", 10], ["yoga", 10]),
+      "yoga",
+      "stag",
+    );
+    expect(picked.stageUp).toEqual([{ animal: "stag", stage: "adult", n: 40, practice: null }]);
   });
 
   test("nothing changes, nothing is said", () => {

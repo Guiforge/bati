@@ -202,18 +202,18 @@ Chaque pelage rare porte un nom, pas « pelage rare » (O). Apostrophe droite, a
 | Animal | fr | en | de | es |
 |---|---|---|---|---|
 | Ours | pointes d'argent | silvertip | Silberspitzen | puntas de plata |
-| Cerf | robe blanche | white coat | weißes Fell | capa blanca |
-| Cheval | robe noire | black coat | schwarzes Fell | capa negra |
-| Saumon | robe dorée | golden scales | goldene Schuppen | escamas doradas |
+| Cerf | robe blanche | white coat | weißes Fell | pelaje blanco |
+| Cheval | robe noire | black coat | schwarzes Fell | pelaje negro |
+| Saumon | écailles dorées | golden scales | goldene Schuppen | escamas doradas |
 | Hermine | pelage noir | black fur | schwarzes Fell | pelaje negro |
 | Sanglier | soies cendrées | ashen bristles | aschgraue Borsten | cerdas cenicientas |
 
 Clés de copie à créer, dans les 4 langues (fr, en, de, es) :
 
-- `village.crest_<animal>_legendary` × 6 animaux × 4 langues = 24 chaînes, sur le modèle de `crest_<animal>_venerable`, avec l'accord allemand : ein legendärer Bär, ein legendärer Hirsch, ein legendäres Pferd, ein legendärer Lachs, ein legendäres Hermelin, ein legendäres Wildschwein. fr : un ours légendaire, un cerf légendaire, un cheval légendaire, un saumon légendaire, une hermine légendaire, un sanglier légendaire. es : un oso legendario, un ciervo legendario, un caballo legendario, un salmón legendario, un armiño legendario, un jabalí legendario. en : a legendary bear, stag, horse, salmon, ermine, boar.
+- La grande fête légendaire (audit design, 11/10) : le titre dit l'événement, pas l'état, avec l'article et le genre de l'animal (`session.feast_legendary_named` et `_unnamed`, fr aussi `_named_vowel` pour « d'Aubeval »). fr « L'ours de Brumeval devient légendaire. » / « L'ours de ton village devient légendaire. » ; en « The bear of Brumeval becomes legendary. » ; de « Der Bär von Brumeval wird legendär. » / « Der Bär deines Dorfes wird legendär. » ; es « El oso de Brumeval se vuelve legendario. ». Le corps dit le fait du héros, `session.feast_legendary_body_<animal de la pratique>` : fr « Ta 500e séance de force, ce soir. », et pour le sanglier « Ta 500e séance, ce soir. » C'est exact : le stade monte à la séance qui porte le compte de la pratique (ou, pour le sanglier, de toutes les séances qui comptent) à 500. Les anciennes clés `crest_<animal>_legendary` sont retirées.
 - `tonight_stage_legendary` : la ligne de « Ce soir » quand le légendaire n'est pas la grande fête du soir.
 - `crest_stage_legendary` : le stade dans la fiche et la grande fête.
-- La carte du rare : une chaîne par langue, le fait dit la flamme qui l'a gagné, et le nom du pelage vient de `village.coat_rare_<animal>`.
+- La carte du rare (audit design, 11/10) : titre « {{animal}} se pare de nouvelles couleurs » (en « shows new colors », de « zeigt neue Farben », es « luce nuevos colores »), corps « {{coat}}. Ta flamme a tenu 100 jours. » Vrai pour toujours : la plus longue flamme a dépassé 100 jours (niveau Éternelle).
 - Le choix du pelage dans la fiche : « pelage habituel » et les 6 noms ci-dessus.
 
 Signalé : `components/village/crestLine.ts` ne connaît qu'un booléen `venerable` (`name(animal, venerable)`, `crest.stage === "venerable"`). Il devra apprendre le légendaire (un stade, pas un booléen) pour que la ligne sous le titre le dise, pour l'animal du centre et pour celui de la bordure.

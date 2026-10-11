@@ -174,7 +174,7 @@ describe("TonightList", () => {
       crestEvents: {
         ...NO_CREST_EVENTS,
         secondJoins: { animal: "stag", first: "bear", n: 39, total: 130 },
-        stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
+        stageUp: [{ animal: "bear", stage: "adult", n: 40, practice: "strength" }],
       },
     });
     const { getByText, queryByText } = await show(feasts);
@@ -192,9 +192,9 @@ describe("TonightList", () => {
       crestEvents: {
         ...NO_CREST_EVENTS,
         stageUp: [
-          { animal: "stag", stage: "venerable", n: 200, own: true },
-          { animal: "boar", stage: "adult", n: 40, own: false },
-          { animal: "ermine", stage: "venerable", n: 200, own: false },
+          { animal: "stag", stage: "venerable", n: 200, practice: "run" },
+          { animal: "boar", stage: "adult", n: 40, practice: null },
+          { animal: "ermine", stage: "venerable", n: 200, practice: null },
         ],
       },
     });
@@ -213,7 +213,7 @@ describe("TonightList", () => {
       {
         crestEvents: {
           ...NO_CREST_EVENTS,
-          stageUp: [{ animal: "ermine", stage: "legendary", n: 500, own: true }],
+          stageUp: [{ animal: "ermine", stage: "legendary", n: 500, practice: "calisthenics" }],
         },
         rareCoat: { animal: "bear", stage: "adult" },
       },
@@ -222,8 +222,8 @@ describe("TonightList", () => {
     const { getByText } = await show(feasts);
     expect(getByText("L'hermine devient légendaire")).toBeTruthy();
     expect(getByText("500 séances de callisthénie.")).toBeTruthy();
-    expect(getByText("L'ours porte un nouveau pelage")).toBeTruthy();
-    expect(getByText("Pointes d'argent, grâce à ta flamme Éternelle.")).toBeTruthy();
+    expect(getByText("L'ours se pare de nouvelles couleurs")).toBeTruthy();
+    expect(getByText("Pointes d'argent. Ta flamme a tenu 100 jours.")).toBeTruthy();
   });
 
   test("a boar demoted to a card by an epilogue says what it mixes, and a single practice says nothing", async () => {
@@ -526,7 +526,7 @@ describe("TonightList", () => {
     const feasts = rank({
       crestEvents: {
         ...NO_CREST_EVENTS,
-        stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
+        stageUp: [{ animal: "bear", stage: "adult", n: 40, practice: "strength" }],
       },
     });
     const { getByText } = await show(feasts, lang as Lang);

@@ -70,19 +70,32 @@ export function revealColors(t: TFunction, f: Reveal): string {
 
 /** A stage rises exactly at its threshold, so the body is that many sessions of its own practice. */
 export function stageBody(t: TFunction, f: Extract<Feast, { kind: "stageUp" | "legendary" }>) {
-  return t(f.own ? `session.tonight_stage_body_${f.animal}` : "session.tonight_stage_body_any", {
-    n: f.n,
-  });
+  return t(
+    f.practice
+      ? `session.tonight_stage_body_${ANIMAL_OF[f.practice]}`
+      : "session.tonight_stage_body_any",
+    { n: f.n },
+  );
 }
 
 type Legendary = Extract<Feast, { kind: "legendary" }>;
 
-/** "A legendary bear watches over Brumeval." The reveal's sentence, for the animal that reached 500. */
+/**
+ * "The bear of Brumeval becomes legendary." The event, not the state. The place is the village's
+ * name, or "your village" in each language's own case. French elides "de" before a vowel
+ * ("d'Aubeval"), which the `vowel` context carries.
+ */
 export function legendaryTitle(t: TFunction, f: Legendary, villageName: string): string {
-  return t("village.crest_line_one", {
-    animal: sentence(t(`village.crest_${f.animal}_legendary`)),
-    place: villageName || t("village.crest_place"),
-  });
+  const animal = sentence(t(`village.crest_the_${f.animal}`));
+  if (!villageName) return t("session.feast_legendary_unnamed", { animal });
+  const context = /^[aeiouyàâäéèêëîïôöùûü]/i.test(villageName) ? "vowel" : undefined;
+  return t("session.feast_legendary_named", { animal, place: villageName, context });
+}
+
+/** "Your 500th strength session, tonight." The fact is the hero's: the session that crossed 500. */
+export function legendaryBody(t: TFunction, f: Legendary): string {
+  const kind = f.practice ? ANIMAL_OF[f.practice] : "any";
+  return t(`session.feast_legendary_body_${kind}`, { n: f.n });
 }
 
 /** The level a tier is followed by, or null at the last one. */

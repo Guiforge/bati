@@ -17,7 +17,8 @@ export type FeastFacts = {
     | "crestEvents"
     | "crestReveal"
   > &
-    // Optional: a result saved before the coat existed, and the fixtures that predate it, have none.
+    // Optional only for the fixtures that predate the coat: `saveSession` always sets it (null when
+    // there is nothing to announce). `savedResult` is never persisted.
     Partial<Pick<SaveResult, "rareCoat">>;
   /**
    * The campaign ended with this session: its epilogue is already full screen, so it holds the

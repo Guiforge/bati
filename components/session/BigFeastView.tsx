@@ -29,12 +29,12 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
 import {
   BEAT,
+  legendaryBody,
   legendaryTitle,
   nextTierLevel,
   revealBody,
   revealColors,
   revealTitle,
-  stageBody,
   TEXT_FADE,
   tierSentence,
 } from "./bigFeastText";
@@ -220,7 +220,7 @@ function FeastText({
         <Kicker>{t("village.crest_stage_legendary")}</Kicker>
         <Title>{legendaryTitle(t, feast, villageName)}</Title>
         <Line testID="big-feast-body" fact>
-          {stageBody(t, feast)}
+          {legendaryBody(t, feast)}
         </Line>
       </>
     );

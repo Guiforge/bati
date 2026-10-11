@@ -1100,7 +1100,7 @@ describe("useSessionStore", () => {
       const result = await store.getState().saveSession(null);
 
       expect(result.crestEvents.stageUp).toEqual([
-        { animal: "bear", stage: "adult", n: 40, own: true },
+        { animal: "bear", stage: "adult", n: 40, practice: "strength" },
       ]);
       (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
     });

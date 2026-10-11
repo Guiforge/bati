@@ -1,6 +1,7 @@
-import { legendaryTitle, stageBody } from "@/components/session/bigFeastText";
+import { legendaryBody, legendaryTitle } from "@/components/session/bigFeastText";
 import type { Feast } from "@/components/session/feasts";
 import { sentence } from "@/components/village/crestText";
+import type { Practice } from "@/db/crestRules";
 import { i18n } from "@/i18n";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
@@ -15,44 +16,83 @@ const BANNED = /magi|brill|aura|shin|glänz|leucht|brilla|—|’|il te manque|e
 
 const WORDS = {
   fr: {
-    legendary: [
-      "un ours légendaire",
-      "un cerf légendaire",
-      "un cheval légendaire",
-      "un saumon légendaire",
-      "une hermine légendaire",
-      "un sanglier légendaire",
-    ],
     stage: "légendaire",
     now: ["L'ours devient légendaire", "L'hermine devient légendaire"],
-    title: "Un ours légendaire veille sur Brumeval.",
+    // Every animal, with its article, in a named village and in an unnamed one.
+    named: [
+      "L'ours de Brumeval devient légendaire.",
+      "Le cerf de Brumeval devient légendaire.",
+      "Le cheval de Brumeval devient légendaire.",
+      "Le saumon de Brumeval devient légendaire.",
+      "L'hermine de Brumeval devient légendaire.",
+      "Le sanglier de Brumeval devient légendaire.",
+    ],
+    unnamed: [
+      "L'ours de ton village devient légendaire.",
+      "Le cerf de ton village devient légendaire.",
+      "Le cheval de ton village devient légendaire.",
+      "Le saumon de ton village devient légendaire.",
+      "L'hermine de ton village devient légendaire.",
+      "Le sanglier de ton village devient légendaire.",
+    ],
+    vowel: "L'ours d'Aubeval devient légendaire.",
     kicker: "Légendaire",
-    body: "500 séances de force.",
+    // The practice's sentence, then the boar's: five practices and "every session".
+    bodies: [
+      "Ta 500e séance de force, ce soir.",
+      "Ta 500e séance d'endurance, ce soir.",
+      "Ta 500e sortie à vélo, ce soir.",
+      "Ta 500e séance de yoga, ce soir.",
+      "Ta 500e séance de callisthénie, ce soir.",
+      "Ta 500e séance, ce soir.",
+    ],
     coats: [
       "pointes d'argent",
       "robe blanche",
       "robe noire",
-      "robe dorée",
+      "écailles dorées",
       "pelage noir",
       "soies cendrées",
     ],
-    coatTitle: "L'ours porte un nouveau pelage",
-    coatBody: "Pointes d'argent, grâce à ta flamme Éternelle.",
+    coatTitles: [
+      "L'ours se pare de nouvelles couleurs",
+      "Le cerf se pare de nouvelles couleurs",
+      "Le cheval se pare de nouvelles couleurs",
+      "Le saumon se pare de nouvelles couleurs",
+      "L'hermine se pare de nouvelles couleurs",
+      "Le sanglier se pare de nouvelles couleurs",
+    ],
+    coatBody: "Pointes d'argent. Ta flamme a tenu 100 jours.",
   },
   en: {
-    legendary: [
-      "a legendary bear",
-      "a legendary stag",
-      "a legendary horse",
-      "a legendary salmon",
-      "a legendary ermine",
-      "a legendary boar",
-    ],
     stage: "legendary",
     now: ["The bear is now legendary", "The ermine is now legendary"],
-    title: "A legendary bear watches over Brumeval.",
+    named: [
+      "The bear of Brumeval becomes legendary.",
+      "The stag of Brumeval becomes legendary.",
+      "The horse of Brumeval becomes legendary.",
+      "The salmon of Brumeval becomes legendary.",
+      "The ermine of Brumeval becomes legendary.",
+      "The boar of Brumeval becomes legendary.",
+    ],
+    unnamed: [
+      "The bear of your village becomes legendary.",
+      "The stag of your village becomes legendary.",
+      "The horse of your village becomes legendary.",
+      "The salmon of your village becomes legendary.",
+      "The ermine of your village becomes legendary.",
+      "The boar of your village becomes legendary.",
+    ],
+    vowel: "The bear of Aubeval becomes legendary.",
     kicker: "Legendary",
-    body: "500 strength sessions.",
+    bodies: [
+      "Your 500th strength session, tonight.",
+      "Your 500th endurance session, tonight.",
+      "Your 500th bike ride, tonight.",
+      "Your 500th yoga session, tonight.",
+      "Your 500th calisthenics session, tonight.",
+      "Your 500th session, tonight.",
+    ],
     coats: [
       "silvertip",
       "white coat",
@@ -61,23 +101,45 @@ const WORDS = {
       "black fur",
       "ashen bristles",
     ],
-    coatTitle: "The bear wears a new coat",
-    coatBody: "Silvertip, from your Eternal flame.",
+    coatTitles: [
+      "The bear shows new colors",
+      "The stag shows new colors",
+      "The horse shows new colors",
+      "The salmon shows new colors",
+      "The ermine shows new colors",
+      "The boar shows new colors",
+    ],
+    coatBody: "Silvertip. Your flame held for 100 days.",
   },
   de: {
-    legendary: [
-      "ein legendärer Bär",
-      "ein legendärer Hirsch",
-      "ein legendäres Pferd",
-      "ein legendärer Lachs",
-      "ein legendäres Hermelin",
-      "ein legendäres Wildschwein",
-    ],
     stage: "legendär",
     now: ["Der Bär ist jetzt legendär", "Das Hermelin ist jetzt legendär"],
-    title: "Ein legendärer Bär wacht über Brumeval.",
+    named: [
+      "Der Bär von Brumeval wird legendär.",
+      "Der Hirsch von Brumeval wird legendär.",
+      "Das Pferd von Brumeval wird legendär.",
+      "Der Lachs von Brumeval wird legendär.",
+      "Das Hermelin von Brumeval wird legendär.",
+      "Das Wildschwein von Brumeval wird legendär.",
+    ],
+    unnamed: [
+      "Der Bär deines Dorfes wird legendär.",
+      "Der Hirsch deines Dorfes wird legendär.",
+      "Das Pferd deines Dorfes wird legendär.",
+      "Der Lachs deines Dorfes wird legendär.",
+      "Das Hermelin deines Dorfes wird legendär.",
+      "Das Wildschwein deines Dorfes wird legendär.",
+    ],
+    vowel: "Der Bär von Aubeval wird legendär.",
     kicker: "Legendär",
-    body: "500 Einheiten Krafttraining.",
+    bodies: [
+      "Deine 500. Krafteinheit, heute Abend.",
+      "Deine 500. Ausdauereinheit, heute Abend.",
+      "Deine 500. Radtour, heute Abend.",
+      "Deine 500. Yoga-Einheit, heute Abend.",
+      "Deine 500. Calisthenics-Einheit, heute Abend.",
+      "Deine 500. Einheit, heute Abend.",
+    ],
     coats: [
       "Silberspitzen",
       "weißes Fell",
@@ -86,33 +148,62 @@ const WORDS = {
       "schwarzes Fell",
       "aschgraue Borsten",
     ],
-    coatTitle: "Der Bär trägt ein neues Fell",
-    coatBody: "Silberspitzen, von deiner ewigen Flamme.",
+    coatTitles: [
+      "Der Bär zeigt neue Farben",
+      "Der Hirsch zeigt neue Farben",
+      "Das Pferd zeigt neue Farben",
+      "Der Lachs zeigt neue Farben",
+      "Das Hermelin zeigt neue Farben",
+      "Das Wildschwein zeigt neue Farben",
+    ],
+    coatBody: "Silberspitzen. Deine Flamme hat 100 Tage gehalten.",
   },
   es: {
-    legendary: [
-      "un oso legendario",
-      "un ciervo legendario",
-      "un caballo legendario",
-      "un salmón legendario",
-      "un armiño legendario",
-      "un jabalí legendario",
-    ],
     stage: "legendario",
     now: ["El oso ya es legendario", "El armiño ya es legendario"],
-    title: "Un oso legendario vela por Brumeval.",
+    named: [
+      "El oso de Brumeval se vuelve legendario.",
+      "El ciervo de Brumeval se vuelve legendario.",
+      "El caballo de Brumeval se vuelve legendario.",
+      "El salmón de Brumeval se vuelve legendario.",
+      "El armiño de Brumeval se vuelve legendario.",
+      "El jabalí de Brumeval se vuelve legendario.",
+    ],
+    unnamed: [
+      "El oso de tu aldea se vuelve legendario.",
+      "El ciervo de tu aldea se vuelve legendario.",
+      "El caballo de tu aldea se vuelve legendario.",
+      "El salmón de tu aldea se vuelve legendario.",
+      "El armiño de tu aldea se vuelve legendario.",
+      "El jabalí de tu aldea se vuelve legendario.",
+    ],
+    vowel: "El oso de Aubeval se vuelve legendario.",
     kicker: "Legendario",
-    body: "500 sesiones de fuerza.",
+    bodies: [
+      "Tu sesión número 500 de fuerza, esta noche.",
+      "Tu sesión número 500 de resistencia, esta noche.",
+      "Tu salida número 500 en bici, esta noche.",
+      "Tu sesión número 500 de yoga, esta noche.",
+      "Tu sesión número 500 de calistenia, esta noche.",
+      "Tu sesión número 500, esta noche.",
+    ],
     coats: [
       "puntas de plata",
-      "capa blanca",
-      "capa negra",
+      "pelaje blanco",
+      "pelaje negro",
       "escamas doradas",
       "pelaje negro",
       "cerdas cenicientas",
     ],
-    coatTitle: "El oso luce una capa nueva",
-    coatBody: "Puntas de plata, por tu llama Eterna.",
+    coatTitles: [
+      "El oso luce nuevos colores",
+      "El ciervo luce nuevos colores",
+      "El caballo luce nuevos colores",
+      "El salmón luce nuevos colores",
+      "El armiño luce nuevos colores",
+      "El jabalí luce nuevos colores",
+    ],
+    coatBody: "Puntas de plata. Tu llama aguantó 100 días.",
   },
 } as const;
 
@@ -123,7 +214,7 @@ const legendary: Extract<Feast, { kind: "legendary" }> = {
   animal: "bear",
   stage: "legendary",
   n: 500,
-  own: true,
+  practice: "strength",
 };
 
 describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (lang) => {
@@ -131,8 +222,22 @@ describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (la
   const t = i18n.t.bind(i18n);
   beforeAll(() => i18n.changeLanguage(lang));
 
-  test("each animal, with its own gender", () => {
-    expect(ANIMALS.map((a) => t(`village.crest_${a}_legendary`))).toEqual(w.legendary);
+  const of = (animal: (typeof ANIMALS)[number], practice: Practice | null) => ({
+    ...legendary,
+    animal,
+    practice,
+  });
+  // Stag is the endurance practice's animal ("run"), horse the bike's ("ride").
+  const PRACTICES_IN_ORDER: (Practice | null)[] = [
+    "strength",
+    "run",
+    "ride",
+    "yoga",
+    "calisthenics",
+    null,
+  ];
+
+  test("the stage word", () => {
     expect(t("village.crest_stage_legendary")).toBe(w.stage);
   });
 
@@ -144,19 +249,29 @@ describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (la
     ]).toEqual(w.now);
   });
 
-  test("the big feast: title, kicker, and 500 of its own practice", () => {
-    expect(legendaryTitle(t, legendary, "Brumeval")).toBe(w.title);
+  test("the big feast title says the event, for each animal, named or not", () => {
+    expect(ANIMALS.map((a) => legendaryTitle(t, of(a, null), "Brumeval"))).toEqual(w.named);
+    expect(ANIMALS.map((a) => legendaryTitle(t, of(a, null), ""))).toEqual(w.unnamed);
     expect(sentence(t("village.crest_stage_legendary"))).toBe(w.kicker);
-    expect(stageBody(t, legendary)).toBe(w.body);
+  });
+
+  test("a village name that starts with a vowel is elided where the language elides", () => {
+    expect(legendaryTitle(t, of("bear", null), "Aubeval")).toBe(w.vowel);
+  });
+
+  test("the big feast body is the hero's own 500th, by practice, and the boar's by session", () => {
+    expect(PRACTICES_IN_ORDER.map((p) => legendaryBody(t, of("bear", p)))).toEqual(w.bodies);
   });
 
   test("the six coat names are the spec's", () => {
     expect(ANIMALS.map((a) => t(`village.coat_rare_${a}`))).toEqual(w.coats);
   });
 
-  test("the coat card names the flame, and the coat only as a label", () => {
-    const the = sentence(t("village.crest_the_bear"));
-    expect(t("session.tonight_coat_rare", { animal: the })).toBe(w.coatTitle);
+  test("the coat card: the new colors for every animal, then the coat and the 100 days", () => {
+    const the = (a: string) => sentence(t(`village.crest_the_${a}`));
+    expect(ANIMALS.map((a) => t("session.tonight_coat_rare", { animal: the(a) }))).toEqual(
+      w.coatTitles,
+    );
     expect(
       t("session.tonight_coat_rare_body", { coat: sentence(t("village.coat_rare_bear")) }),
     ).toBe(w.coatBody);
@@ -164,11 +279,12 @@ describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (la
 
   test("nothing glows, nothing is owed", () => {
     const all = [
-      ...ANIMALS.map((a) => t(`village.crest_${a}_legendary`)),
+      ...w.named,
+      ...w.unnamed,
+      ...w.bodies,
       ...ANIMALS.map((a) => t(`village.coat_rare_${a}`)),
-      t("session.tonight_stage_legendary", { animal: "x" }),
-      t("session.tonight_coat_rare", { animal: "x" }),
-      t("session.tonight_coat_rare_body", { coat: "x" }),
+      ...w.coatTitles,
+      w.coatBody,
     ].join("\n");
     expect(all).not.toMatch(BANNED);
   });

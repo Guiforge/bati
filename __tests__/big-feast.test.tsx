@@ -560,13 +560,13 @@ describe("the big-feast route", () => {
       crestReveal: null,
       crestEvents: {
         ...NO_CREST_EVENTS,
-        stageUp: [{ animal: "horse", stage: "legendary", n: 500, own: true }],
+        stageUp: [{ animal: "horse", stage: "legendary", n: 500, practice: "ride" }],
       },
     });
     await mount();
     expect(mockMark).toHaveBeenCalledWith("legendary:horse");
-    expect(await screen.findByText("Un cheval légendaire veille sur Brumeval.")).toBeTruthy();
-    expect(screen.getByText("500 sorties à vélo.")).toBeTruthy();
+    expect(await screen.findByText("Le cheval de Brumeval devient légendaire.")).toBeTruthy();
+    expect(screen.getByText("Ta 500e sortie à vélo, ce soir.")).toBeTruthy();
     expect(screen.getByTestId("big-feast-kicker").props.children).toBe("LÉGENDAIRE");
   });
 

@@ -36,10 +36,16 @@ export type CrestEvents = {
   secondJoins: { animal: PracticeAnimal; first: Animal; n: number; total: number } | null;
   /**
    * An animal on the crest went up a stage. A stage rises exactly at its threshold, so `n` is
-   * that threshold (40, 200, 500). `own` is whether it counts its own practice's sessions (false for
-   * the boar and a hand-picked animal, which count every session).
+   * that threshold (40, 200, 500). `practice` is the one whose sessions the stage counts: the
+   * sessions' animal's, so a hand-picked animal names the practice of the animal it replaced
+   * (Guillaume, 11/10), and null when every session counts (the boar).
    */
-  stageUp: { animal: Animal; stage: Exclude<CrestStage, "young">; n: number; own: boolean }[];
+  stageUp: {
+    animal: Animal;
+    stage: Exclude<CrestStage, "young">;
+    n: number;
+    practice: Practice | null;
+  }[];
 };
 
 export const NO_CREST_EVENTS: CrestEvents = { secondJoins: null, stageUp: [] };
@@ -87,15 +93,20 @@ function secondJoinsOf(before: Seen | null, after: Seen): CrestEvents["secondJoi
 
 function stageUpOf(before: Seen | null, after: Seen): CrestEvents["stageUp"] {
   const up: CrestEvents["stageUp"] = [];
-  const rose = (animal: Animal, was: CrestStage, now: CrestStage, own: boolean) => {
+  const rose = (animal: Animal, was: CrestStage, now: CrestStage, practice: Practice | null) => {
     if (now === "young" || RANK[now] <= RANK[was]) return;
-    up.push({ animal, stage: now, n: STAGE_AT[now], own });
+    up.push({ animal, stage: now, n: STAGE_AT[now], practice });
   };
   if (before === null) return up;
   if (before.animal === after.animal)
-    rose(after.animal, before.stage, after.stage, !after.manual && after.animal !== "boar");
+    rose(after.animal, before.stage, after.stage, practiceOfAnimal(after.evidence.first) ?? null);
   if (before.second && after.second && before.second.animal === after.second.animal)
-    rose(after.second.animal, before.second.stage, after.second.stage, true);
+    rose(
+      after.second.animal,
+      before.second.stage,
+      after.second.stage,
+      practiceOfAnimal(after.second.animal) ?? null,
+    );
   return up;
 }
 

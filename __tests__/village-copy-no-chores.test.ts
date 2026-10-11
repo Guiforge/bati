@@ -271,6 +271,31 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     de: "{{n}} deiner {{total}} Einheiten sind Krafttraining: Der Bär wacht mit.",
     es: "{{n}} de tus {{total}} sesiones son de fuerza: el oso también vela.",
   },
+  // The legendary feast says the session that crossed 500, done tonight. Only Spanish's "número 500" reads as a count.
+  "session.feast_legendary_body_bear": {
+    why: "fait",
+    es: "Tu sesión número {{n}} de fuerza, esta noche.",
+  },
+  "session.feast_legendary_body_ermine": {
+    why: "fait",
+    es: "Tu sesión número {{n}} de calistenia, esta noche.",
+  },
+  "session.feast_legendary_body_salmon": {
+    why: "fait",
+    es: "Tu sesión número {{n}} de yoga, esta noche.",
+  },
+  "session.feast_legendary_body_stag": {
+    why: "fait",
+    es: "Tu sesión número {{n}} de resistencia, esta noche.",
+  },
+  "session.feast_legendary_body_horse": {
+    why: "fait",
+    es: "Tu salida número {{n}} en bici, esta noche.",
+  },
+  "session.feast_legendary_body_any": {
+    why: "fait",
+    es: "Tu sesión número {{n}}, esta noche.",
+  },
   "session.tonight_stage_body_bear": {
     why: "fait",
     fr: "{{n}} séances de force.",

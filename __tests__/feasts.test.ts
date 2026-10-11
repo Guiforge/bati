@@ -78,7 +78,7 @@ describe("rankFeasts", () => {
         newAchievements: [{ code: "x" } as never],
         crestEvents: {
           ...NO_CREST_EVENTS,
-          stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
+          stageUp: [{ animal: "bear", stage: "adult", n: 40, practice: "strength" }],
         },
       },
       { epilogue: true },
@@ -108,7 +108,12 @@ describe("rankFeasts", () => {
 
   describe("the legendary animal", () => {
     const legendary = (animal: "bear" | "stag") =>
-      ({ animal, stage: "legendary", n: 500, own: true }) as const;
+      ({
+        animal,
+        stage: "legendary",
+        n: 500,
+        practice: animal === "bear" ? "strength" : "run",
+      }) as const;
     const events = (...stageUp: ReturnType<typeof legendary>[]) => ({
       ...NO_CREST_EVENTS,
       stageUp,
@@ -129,7 +134,12 @@ describe("rankFeasts", () => {
     test("leads when nothing outranks it, and is listed once: no stage-up card for it", () => {
       const list = rankFeasts(facts({ tierUp, crestEvents: events(legendary("bear")) }));
       expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual(["legendary:large", "tier:medium"]);
-      expect(list[0]).toMatchObject({ animal: "bear", stage: "legendary", n: 500, own: true });
+      expect(list[0]).toMatchObject({
+        animal: "bear",
+        stage: "legendary",
+        n: 500,
+        practice: "strength",
+      });
     });
 
     test("the reveal and an Age outrank it", () => {
@@ -164,7 +174,10 @@ describe("rankFeasts", () => {
         facts({
           crestEvents: {
             ...NO_CREST_EVENTS,
-            stageUp: [legendary("bear"), { animal: "stag", stage: "adult", n: 40, own: true }],
+            stageUp: [
+              legendary("bear"),
+              { animal: "stag", stage: "adult", n: 40, practice: "run" },
+            ],
           },
         }),
       );
@@ -174,8 +187,13 @@ describe("rankFeasts", () => {
 
   describe("the rare coat's card", () => {
     const coat = { animal: "bear", stage: "adult" } as const;
-    const adultUp = { animal: "bear", stage: "adult", n: 40, own: true } as const;
-    const venerableUp = { animal: "bear", stage: "venerable", n: 200, own: true } as const;
+    const adultUp = { animal: "bear", stage: "adult", n: 40, practice: "strength" } as const;
+    const venerableUp = {
+      animal: "bear",
+      stage: "venerable",
+      n: 200,
+      practice: "strength",
+    } as const;
 
     test("is a card, never a big feast", () => {
       expect(sizes(facts({ rareCoat: coat }))).toEqual(["coat:medium"]);
@@ -194,7 +212,7 @@ describe("rankFeasts", () => {
           rareCoat: { animal: "bear", stage: "venerable" },
           crestEvents: {
             ...NO_CREST_EVENTS,
-            stageUp: [venerableUp, { animal: "stag", stage: "adult", n: 40, own: true }],
+            stageUp: [venerableUp, { animal: "stag", stage: "adult", n: 40, practice: "run" }],
           },
         }),
       );
@@ -216,7 +234,7 @@ describe("rankFeasts", () => {
         crestReveal: reveal,
         crestEvents: {
           secondJoins: { animal: "stag", first: "bear", n: 20, total: 60 },
-          stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
+          stageUp: [{ animal: "bear", stage: "adult", n: 40, practice: "strength" }],
         },
       }),
     );

@@ -6,10 +6,12 @@
     python3 scripts/generate-animals.py accept bear-young 1 2     # ship candidate 2, file its provenance
     python3 scripts/generate-animals.py --dry-run candidates bear-young 1   # prompts and seeds, no network
 
-Slugs are `<animal>-<stage>` with the app's own codes (db/crestRules.ts): animal in bear, stag,
-horse, salmon, ermine, boar; stage in young, adult, venerable. The French names (ours, cerf,
-cheval, saumon, hermine, sanglier / jeune, adulte, venerable) are accepted and mapped, and the
-canonical slug is what seeds and files are keyed on.
+Slugs are the 57 of db/crestCoat.ts: `<animal>-<stage>[-rare|-winter]`, animal in bear, stag,
+horse, salmon, ermine, boar; stage in young, adult, venerable, legendary (rare and winter from
+adult; the ermine has no winter). Any other slug is refused. The French names (ours, cerf,
+cheval, saumon, hermine, sanglier / jeune, adulte, venerable, legendaire) are accepted and mapped,
+and the canonical slug is what seeds and files are keyed on. `--self-test` checks all 57 prompts
+offline.
 
 Not `run()` from lib/flux.py: its seed is fixed per slug, so it would redraw the same image. This
 calls `generate()` with `seed_for(slug) + 1000 * attempt + i`, like art-loop. No image is ever
@@ -85,109 +87,192 @@ def cost_per_image() -> float:
 BUDGET_EUR = 25.0  # of 30 for the whole chantier; the last 5 are the margin.
 
 ANIMALS = ("bear", "stag", "horse", "salmon", "ermine", "boar")
-STAGES = ("young", "adult", "venerable")
+STAGES = ("young", "adult", "venerable", "legendary")
 FRENCH = {
     "ours": "bear", "cerf": "stag", "cheval": "horse", "saumon": "salmon",
     "hermine": "ermine", "sanglier": "boar",
-    "jeune": "young", "adulte": "adult", "venerable": "venerable",
+    "jeune": "young", "adulte": "adult", "venerable": "venerable", "legendaire": "legendary",
+    "rare": "rare", "winter": "winter", "hiver": "winter",
 }
 
 # First sentence, and a description rather than a prohibition (docs/content/image-style-prompt.md).
 BACKGROUND = (
-    "The background is one unbroken flat field of very dark navy-black, as dark as a night sky, "
-    "the same value from edge to edge, with no gradient, no vignette and no texture."
+    "The background of this picture is one unbroken flat field of very dark navy-black, as dark as "
+    "a night sky, the same value from edge to edge, with no gradient, no vignette and no texture."
 )
 
-STYLE = (
-    "Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration: thick, confident black "
-    "ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft "
-    "airbrushing. A single animal, alone in the picture, shown whole from nose to tail in a calm "
-    "three-quarter side view, with a clear margin of empty background on all four sides. A thin "
-    "cool rim light traces the outer edge of the silhouette all the way round, lighting the "
-    "contour only, and separates it cleanly from the background. The animal wears nothing: no "
-    "harness, no saddle, no collar, no armour, no jewellery. The eyes are plain animal eyes, "
-    "nothing glows. There are no runes and no magical energy, and no light is cast off the "
-    "animal into the air around it. Square composition, high contrast, clean and "
-    "graphic, an illustration with no lettering, no signature and no watermark; all four corners "
-    "of the picture are empty background."
+# The eyes, word for word: self-test and prompt both read this constant. FLUX paints a white
+# catchlight in the eye unless told otherwise, so the second sentence says what the eye is.
+EYES = (
+    "The eyes are plain animal eyes, nothing glows. Each eye is a flat matte dark disc with no "
+    "white catchlight."
 )
 
-# One identity sentence per animal, copied word for word into its three stage prompts: the same
-# animal has to read as the same animal at 3 ages. Coat, marks, silhouette; nothing about age.
-IDENTITY = {
-    "bear": (
-        "A brown bear with a deep chestnut coat, a paler tan muzzle, a heavy rounded shoulder hump, "
-        "small round ears, broad flat paws with pale claws and a short stubby tail."
-    ),
-    "stag": (
-        "A red deer stag with a russet coat, a cream rump patch, a thick darker mane at the neck, "
-        "a long narrow face, large upright ears and branching antlers of pale bone."
-    ),
-    "horse": (
-        "A bay horse with a glossy mahogany coat, a black mane, black tail and black lower legs, "
-        "a single white blaze down the face and a long arched neck."
-    ),
-    "salmon": (
-        "An Atlantic salmon with a steel-blue back, a silver flank scattered with small dark "
-        "cross-shaped spots, a white belly, a forked tail and a pointed head with a wide jaw."
-    ),
-    "ermine": (
-        "An ermine in white winter coat with a long slim body, short legs, a small pointed face, "
-        "round pale-pink ears and a tail tipped in solid black."
-    ),
-    "boar": (
-        "A wild boar with a coarse bristled dark-grey coat, a high ridge of long bristles down the "
-        "spine, a wedge-shaped head, a flat snout and two short curved ivory tusks."
-    ),
+# One rule per entry, joined into STYLE; the self-test checks each one is in every prompt.
+STYLE_RULES = (
+    "Painted in the heroic dark-fantasy manner of a Franco-Belgian graphic novel: thick confident "
+    "black ink linework with dense hatching and cross-hatching and a fine printed grain, the "
+    "shading built from ink strokes and colour washes like a painted album page, never flat "
+    "vector logo fills.",
+    "A single animal, alone in the picture, in a proud three-quarter pose seen from slightly "
+    "below, its head and chest turned toward the right edge of the picture, with broad powerful "
+    "shoulders and a strong stance.",
+    "A soft cool contour light sculpts the shoulders, back and head with a gentle edge, no "
+    "brighter than the coat it falls on, so the animal sits in the picture like a painting and "
+    "not like a sticker.",
+    "Where the coat is dark, the ink outline is a deep slate blue, which keeps the silhouette "
+    "readable against the night.",
+    "The whole animal is in view from nose to tail, with a clear margin of empty background on "
+    "all four sides of the picture.",
+    "The animal is bare, a wild creature in the plain open dark, with nothing under its feet and "
+    "an even, shadowless ground.",
+    "The mood is serious and noble, a creature to be proud of. Square composition, high contrast, "
+    "an illustration with no lettering, no signature and no watermark; all four corners of the "
+    "picture are empty background.",
+)
+STYLE = " ".join(STYLE_RULES)
+
+# The silhouette, one sentence per animal and no colour, copied word for word into all of its
+# portraits (base, rare, winter, every stage): the same animal has to read as the same animal.
+SILHOUETTE = {
+    "bear": "A bear with a heavy rounded shoulder hump, a broad skull, small round ears, broad flat paws with long claws and a short stubby tail.",
+    "stag": "A red deer stag with a thick mane at the neck, a long narrow face, large upright ears and branching antlers.",
+    "horse": "A horse with a long arched neck, a deep chest, a fine head and a full flowing mane and tail.",
+    "salmon": "An Atlantic salmon with a streamlined torpedo body, a pointed head with a wide jaw, a forked tail and neat fins, shown in profile as if swimming through open night.",
+    "ermine": "An ermine with a long slim body, short legs, a small pointed face, small round ears and a long tail.",
+    "boar": "A wild boar with a high ridge of long bristles down the spine, a heavy front and tapering hindquarters, a wedge-shaped head, a flat snout and two short curved tusks.",
+}
+
+# The colour sentence, per animal and coat: it replaces the colour, never the silhouette.
+COAT = {
+    "bear": {
+        "base": "Its coat is deep chestnut with a paler tan muzzle.",
+        "rare": "Its coat is a deep brown, the hairs of the nape and shoulders tipped in silver-grey like frost, with a paler tan muzzle.",
+        "winter": "Its coat is thick and shaggy, a darker brown, with frost caught in the hairs of the shoulders and a paler tan muzzle.",
+    },
+    "stag": {
+        "base": "Its coat is russet with a cream rump patch and a darker mane.",
+        "rare": "Its coat is a creamy white from nose to rump, with dark eyes, dark hooves and antlers of pale bone.",
+        "winter": "Its coat is dense and grey, the neck thickened, the antlers bare and washed pale by the cold.",
+    },
+    "horse": {
+        "base": "Its coat is a glossy mahogany bay with a black mane, black tail, black lower legs and a single white blaze down the face.",
+        "rare": "Its coat is a deep true black with a silver mane and tail and no white marking; its ink outline is a deep slate blue, so the black body reads against the night.",
+        "winter": "Its coat is long, rough and dull, a faded bay, the mane tangled and caught with snow, the lower legs dark and a single white blaze down the face.",
+    },
+    "salmon": {
+        "base": "Its back is steel blue, its flank silver scattered with small dark cross-shaped spots and its belly white.",
+        "rare": "Its flank is a matte golden yellow, its back a deeper gold-brown, its fins amber and its belly pale cream, with the same small dark cross-shaped spots.",
+        "winter": "It wears the matte silver of its sea phase: dull silver flanks, a steel-blue back, a white belly, a few small dark spots and no spawning marks.",
+    },
+    "ermine": {
+        "base": "Its fur is the white of a winter coat, with round pale-pink ears and a tail tipped in solid black.",
+        "rare": "Its fur is almost black from nose to tail, the belly barely paler, the ears dark; its ink outline is a deep slate blue, so the dark body reads against the night.",
+    },
+    "boar": {
+        "base": "Its coat is coarse, bristled and dark grey, with ivory tusks.",
+        "rare": "Its coat is a very pale ash grey, the colour of cold ashes, with ivory tusks and dark eyes.",
+        "winter": "Its coat is a warm russet brown with long bristles and a thick undercoat, frost lying on its back, clearly brown and not grey; the tusks are ivory.",
+    },
 }
 
 # Per animal, because age shows differently on each: a salmon has no leg, a white ermine no grey
-# to frost. Each sentence adds age and leaves the identity sentence's coat, marks and parts alone.
+# to frost. Each sentence adds age and leaves the silhouette and coat sentences alone.
+LEGENDARY_TAIL = (
+    "the old scars of a long life healed across its hide, a calm majesty and a vigorous age, "
+    "nothing magical about it and no light of its own."
+)
 STAGE = {
     "bear": {
-        "young": "It is a small half-grown bear drawn at about half the size of a grown bear, standing in the lower middle of the picture with wide empty night background all around it, facing right in the same calm three-quarter view. Its eyes are flat dark-brown discs with no white catchlight, no reflection and no highlight of any kind. It has a young bear's build: a head big for its body, a short muzzle, ears large for its head, short sturdy legs, a narrow body and no shoulder hump yet. Its coat is one even deep chestnut from chin to belly, with no pale patch on the chest or belly, and the same tawny muzzle and pale claws as a grown bear. Its mouth is closed with no smile. Nothing beneath it casts a shadow on the ground. Its outline is a thin dark slate-blue ink line, never a pale or glowing rim.",
+        "young": "It is a small half-grown bear drawn at about half the size of a grown bear, standing in the lower middle of the picture with wide empty night background all around it, facing right in the same proud three-quarter view. Its eyes are flat matte dark-brown discs with no white catchlight, no reflection and no highlight of any kind. It has a young bear's build: a head big for its body, a short muzzle, ears large for their head, short sturdy legs, a narrow body and only a faint shoulder hump. Its coat is one even colour from chin to belly, with no pale patch on the chest or belly. Its mouth is closed. Its outline is a thin dark slate-blue ink line.",
         "adult": "It is a bear in its prime: huge and powerful, with a thick neck, heavy shoulder muscle and a full glossy coat.",
-        "venerable": "It is a very old bear: massive and heavy-bellied, with grey-tipped fur along the muzzle and shoulders, a shaggy worn coat, blunted claws and a notched ear.",
+        "venerable": "It is a very old bear, epic and unbowed: massive and heavy-bellied, with grey-tipped fur along the muzzle and shoulders, a shaggy worn coat, blunted claws, a notched ear and old scars across the shoulder.",
+        "legendary": f"It is a legendary bear at the largest size and fullest presence a bear can have: colossal, thick-necked and towering, with {LEGENDARY_TAIL}",
     },
     "stag": {
-        "young": "It is a young stag: slim and lightly built, with its first small antlers, short with only two or three tines each.",
+        "young": "It is a young stag drawn at about half the size of a grown stag, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is slim and lightly built, with long thin legs, a narrow chest, large ears for its head and its first small antlers, short with only two or three tines each. Its eyes are flat matte dark discs.",
         "adult": "It is a stag in its prime: broad-chested and muscular, with full antlers of many tines and a proud raised head.",
-        "venerable": "It is a very old stag: heavy-necked and deep-chested, with massive wide antlers thick with tines and a grizzled grey muzzle.",
+        "venerable": "It is a very old stag, epic and unbowed: heavy-necked and deep-chested, with massive wide antlers thick with tines, a grizzled grey muzzle and old scars on the flank.",
+        "legendary": f"It is a legendary stag at the largest size and fullest presence a stag can have: towering, with a vast crown of antlers of many tines and a neck thick as a trunk, with {LEGENDARY_TAIL}",
     },
     "horse": {
-        "young": "It is a young horse: slender and long-legged with a small light body, a fine short mane and a bright curious look; bare-backed, nothing on its back or head.",
+        "young": "It is a young horse drawn at about half the size of a grown horse, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a foal's build: long thin legs, a small light body, a fine short mane and a short tail, a head big for its body; bare-backed, nothing on its back or head. Its eyes are flat matte dark discs.",
         "adult": "It is a horse in its prime: fully grown, deep-chested and muscular, the coat gleaming and the head carried high; bare-backed, nothing on its back or head.",
-        "venerable": "It is a very old horse: a slightly hollowed back, prominent hip bones, a grey muzzle and heavy calm eyelids, standing slow and dignified; bare-backed, nothing on its back or head.",
+        "venerable": "It is a very old horse, epic and unbowed: a slightly hollowed back, prominent hip bones, a grey muzzle, heavy calm eyelids and old scars on the shoulder, standing slow and dignified; bare-backed, nothing on its back or head.",
+        "legendary": f"It is a legendary horse at the largest size and fullest presence a horse can have: a towering warhorse build, with a thick arched neck, a deep barrel chest and a mane in full flow, with {LEGENDARY_TAIL} Bare-backed, nothing on its back or head.",
     },
     "salmon": {
-        "young": "It is a young salmon: small and slim, the scales bright and fresh, the dark spots few and crisp and the fins small and neat.",
+        "young": "It is a young salmon drawn at about half the length of a grown salmon, swimming in the lower middle of the picture with wide empty night background all around it, facing right. It is a small slender fish: svelte and narrow-bodied, with small neat fins, bright fresh scales and few crisp dark spots. Its eye is a flat matte dark disc.",
         "adult": "It is a salmon in its prime: thick-bodied and muscular, every scale gleaming with a bright metallic sheen and the fins strong and clean.",
-        "venerable": "It is a very old male salmon: the largest and heaviest of its kind, with the lower jaw curving up into a hooked kype, the silver turned dull and coppery, and old pale scars and nicks across its flank and fins.",
+        "venerable": "It is a very old male salmon, epic and unbowed: the largest and heaviest of its kind, with the lower jaw curving up into a hooked kype, the colour turned dull, and old pale scars and nicks across its flank and fins.",
+        "legendary": f"It is a legendary male salmon at the largest size and fullest presence a salmon can have: huge, thick-shouldered, with a great hooked kype and a broad powerful tail, with {LEGENDARY_TAIL}",
     },
     "ermine": {
-        "young": "It is a young ermine: a small thin body, a soft fluffy coat, a slightly rounder head and a short bold black tail tip.",
-        "adult": "It is an ermine in its prime: sleek, lithe and muscular, alert and upright, the coat clean and smooth and the black tail tip sharp.",
-        "venerable": "It is a very old ermine: a heavier, weathered build, fine creases around the muzzle, long pale whiskers and a slow low-slung stance.",
+        "young": "It is a young ermine drawn at about half the size of a grown ermine, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a small thin body with a soft fluffy coat, a slightly rounder head and a short bold tail tip. Its eyes are flat matte dark discs.",
+        "adult": "It is an ermine in its prime: sleek, lithe and muscular, alert and upright, the coat clean and smooth and the tail tip sharp.",
+        "venerable": "It is a very old ermine, epic and unbowed: a heavier, weathered build, fine creases around the muzzle, long pale whiskers, a nick in one ear and a slow low-slung stance.",
+        "legendary": f"It is a legendary ermine at the largest size and fullest presence an ermine can have: long, powerful and rearing tall, with {LEGENDARY_TAIL}",
     },
     "boar": {
-        "young": "It is a young boar: small and stocky, with a shorter snout, tusks just showing as small nubs and a short low ridge of bristles.",
+        "young": "It is a young boar drawn at about half the size of a grown boar, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is small and stocky, with a shorter snout, tusks just showing as small nubs and a short low ridge of bristles. Its eyes are flat matte dark discs.",
         "adult": "It is a boar in its prime: full-sized, deep-chested and thick-necked, with a tall bristle ridge and fully grown tusks.",
-        "venerable": "It is a very old boar: the heaviest build, grizzled grey bristles frosting the ridge and snout, thick worn ivory tusks, sagging jowls and a scarred hide.",
+        "venerable": "It is a very old boar, epic and unbowed: the heaviest build, grizzled grey bristles frosting the ridge and snout, thick worn tusks, sagging jowls and a scarred hide.",
+        "legendary": f"It is a legendary boar at the largest size and fullest presence a boar can have: gigantic, with a massive shoulder, a towering bristle ridge and heavy curved tusks, with {LEGENDARY_TAIL}",
     },
 }
 
 
+def all_slugs() -> list[str]:
+    """The 57 portraits of db/crestCoat.ts: 4 stages per animal, 3 rare, 3 winter (not the ermine)."""
+    slugs = []
+    for animal in ANIMALS:
+        slugs += [f"{animal}-{stage}" for stage in STAGES]
+        slugs += [f"{animal}-{stage}-rare" for stage in STAGES[1:]]
+        if animal != "ermine":
+            slugs += [f"{animal}-{stage}-winter" for stage in STAGES[1:]]
+    return slugs
+
+
 def parse_slug(raw: str) -> str:
-    animal, _, stage = raw.partition("-")
-    animal, stage = FRENCH.get(animal, animal), FRENCH.get(stage, stage)
-    if animal not in ANIMALS or stage not in STAGES:
-        sys.exit(f"unknown slug {raw!r}: <{'|'.join(ANIMALS)}>-<{'|'.join(STAGES)}> (French names accepted)")
-    return f"{animal}-{stage}"
+    parts = raw.split("-")
+    slug = "-".join(FRENCH.get(p, p) for p in parts)
+    if slug not in all_slugs():
+        sys.exit(f"unknown slug {raw!r}: <animal>-<stage>[-rare|-winter], the 57 of db/crestCoat.ts (French names accepted)")
+    return slug
+
+
+def parts_of(slug: str) -> tuple[str, str, str]:
+    animal, stage, *coat = slug.split("-")
+    return animal, stage, coat[0] if coat else "base"
 
 
 def prompt_for(slug: str) -> str:
-    animal, stage = slug.split("-")
-    return " ".join((BACKGROUND, IDENTITY[animal], STAGE[animal][stage], STYLE))
+    animal, stage, coat = parts_of(slug)
+    return " ".join((BACKGROUND, SILHOUETTE[animal], COAT[animal][coat], EYES, STAGE[animal][stage], STYLE))
+
+
+def self_test() -> None:
+    slugs = all_slugs()
+    assert len(slugs) == 57 and len(set(slugs)) == 57, len(slugs)
+    for slug in slugs:
+        animal, _, _ = parts_of(slug)
+        p = prompt_for(slug)
+        assert p.startswith(BACKGROUND) and "picture" in BACKGROUND, slug
+        for rule in STYLE_RULES:
+            assert rule in p, (slug, rule[:40])
+        assert SILHOUETTE[animal] in p, slug
+        assert "picture" in p and "frame" not in p.lower(), slug
+        assert "The eyes are plain animal eyes, nothing glows." in p, slug
+        assert "no white catchlight" in p, slug
+        assert "cub" not in p.lower().split() and "cute" not in p.lower(), slug
+        assert p.index("The eyes") < p.index(STAGE[animal][parts_of(slug)[1]]), slug
+    # the silhouette sentence is the same on every portrait of an animal (10, the ermine 7)
+    for animal in ANIMALS:
+        mine = [s for s in slugs if s.startswith(animal + "-")]
+        assert len(mine) == (7 if animal == "ermine" else 10), (animal, len(mine))
+        assert all(prompt_for(s).count(SILHOUETTE[animal]) == 1 for s in mine), animal
+    assert not {"bear-young-rare", "ermine-adult-winter"} & set(slugs)
+    print(f"self-test ok: {len(slugs)} slugs, style rules x{len(STYLE_RULES)}, silhouette identical per animal, eyes verbatim")
 
 
 def seed_of(slug: str, attempt: int, i: int) -> int:
@@ -343,7 +428,8 @@ def main() -> None:
         sys.exit(f"ART_LOOP_DIR {WORK} is inside the repo: generate() would file every candidate into provenance.json.")
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--dry-run", action="store_true", help="print prompts and seeds, submit nothing")
-    sub = parser.add_subparsers(dest="command", required=True)
+    parser.add_argument("--self-test", action="store_true", help="check the 57 prompts offline and exit")
+    sub = parser.add_subparsers(dest="command")
     for name in ("candidates", "sheet", "accept"):
         p = sub.add_parser(name)
         p.add_argument("slug")
@@ -351,6 +437,10 @@ def main() -> None:
         if name == "accept":
             p.add_argument("index", type=int, choices=range(CANDIDATES))
     args = parser.parse_args()
+    if args.self_test:
+        return self_test()
+    if not args.command:
+        parser.error("a command is required")
     slug = parse_slug(args.slug)
     if args.command == "candidates":
         candidates(slug, args.attempt, args.dry_run)

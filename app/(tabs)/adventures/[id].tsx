@@ -39,6 +39,8 @@ import {
 import { type BossFight, getBossFightByAdventure } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
 import { MUSCLE_LABELS } from "@/db/muscles";
+import { preferences } from "@/db/preferences";
+import { startingDifficulty } from "@/db/questConfig";
 import { loadSlotJournal, QUEST_AS_WRITTEN, type SlotJournal } from "@/db/quests";
 import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -273,8 +275,9 @@ export default function AdventureDetailsScreen() {
         // Read-only: the fight is created by the session that first swings at it, so a
         // campaign never browsed and never started has nothing here and shows no panel.
         getBossFightByAdventure(id),
+        preferences.getTrainingLevel(),
       ])
-        .then(([details, activeRun, exercises, history, finishedCounts, bossFight]) => {
+        .then(([details, activeRun, exercises, history, finishedCounts, bossFight, answer]) => {
           if (isStale()) return;
           setFinishedCount(finishedCounts.get(id) ?? 0);
 
@@ -296,7 +299,8 @@ export default function AdventureDetailsScreen() {
           const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
           const suggestion = suggestDifficultyFromSessions(history, {
             maxSessions: 10,
-            defaultDifficulty: "medium",
+            // A hero with no session yet starts a campaign where every other door starts them.
+            defaultDifficulty: startingDifficulty(answer, history.length),
           });
 
           // One read for every movement of every step, so the head card can price the step at the

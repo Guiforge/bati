@@ -1,6 +1,17 @@
+import { eq, isNotNull, sql } from "drizzle-orm";
+import { db, schema } from "./client";
+import { getSessionAggregates } from "./completed";
 import { type Exercise, listExercises } from "./exercises";
-import { deletePreference, getAllPreferences, getPreference, setPreference } from "./preferences";
-import { getQuestById, type Quest, type QuestExercise } from "./quests";
+import { isOutingSession } from "./expeditions";
+import {
+  deletePreference,
+  getAllPreferences,
+  getPreference,
+  preferences,
+  setPreference,
+  type TrainingLevel,
+} from "./preferences";
+import { getQuestById, type Quest, type QuestExercise, USER_QUEST_AUTHOR } from "./quests";
 import {
   clampToRange,
   DISTANCE_GOAL_RANGE,
@@ -49,6 +60,65 @@ export type QuestConfig = {
 /** The private alias the readers below use; the clamp itself lives with the ranges. */
 function clamp(value: number, range: { min: number; max: number }): number {
   return clampToRange(value, range);
+}
+
+/** A hero who never answered stops being read as one who is starting after this many sessions. */
+const SETTLED_AFTER_SESSIONS = 5;
+
+/**
+ * Whether the hero is to be treated as starting, or starting again: they said so, or they never
+ * said and the journal is still short. The second half is what keeps an update from touching a
+ * hero who was here before the question existed, or who skipped it two hundred sessions ago:
+ * read as a beginner, they lost every jump of their warm-up and saw their quests open at Easy.
+ * One answer for the dose and for the warm-up (`loadWarmupContext`).
+ */
+export function isStartingOut(answer: TrainingLevel | null, sessions: number): boolean {
+  return answer === "beginner" || (answer === null && sessions < SETTLED_AFTER_SESSIONS);
+}
+
+/**
+ * Where a quest the hero never touched starts, from their answer to "Tu en es où ?". The written
+ * rule is in docs/gameplay/progression.md. Hard is never a first default: it is the hero's own
+ * choice, or what they last lived on that quest.
+ */
+export function startingDifficulty(answer: TrainingLevel | null, sessions: number): UserLevel {
+  return isStartingOut(answer, sessions) ? Difficulty.Easy : Difficulty.Medium;
+}
+
+/**
+ * The level a quest with no saved config starts at: the one the hero last played it at, else
+ * `startingDifficulty`. Every door reads this (Home, onboarding, the quest screen, the galleries,
+ * the adventures' base), because two doors with two defaults started the same first quest at 8
+ * reps and at 10. The journal comes first so that a level change in Settings, or an update,
+ * never moves a quest the hero already knows; sessions sync between devices, configs do not.
+ *
+ * A quest the hero wrote, or was sent, starts as written: its numbers are theirs, and Easy would
+ * hand back three quarters of them.
+ *
+ * A handful of reads for a whole gallery, hence a resolver rather than one call per quest.
+ */
+export async function loadDefaultLevels(): Promise<(questId: number) => UserLevel> {
+  const { completedQuest, quests } = schema;
+  const [answer, { totalSessions }, written, rows] = await Promise.all([
+    preferences.getTrainingLevel(),
+    getSessionAggregates(),
+    db.select({ id: quests.id }).from(quests).where(eq(quests.author, USER_QUEST_AUTHOR)),
+    // SQLite hands back the bare columns of the row that holds the max().
+    db
+      .select({
+        questId: completedQuest.questId,
+        level: completedQuest.userLevel,
+        lastAt: sql<number>`max(${completedQuest.performedAt})`,
+      })
+      .from(completedQuest)
+      .where(isNotNull(completedQuest.questId))
+      .groupBy(completedQuest.questId),
+  ]);
+  const played = new Map(rows.map((r) => [r.questId, r.level] as const));
+  const asWritten = new Set(written.map((q) => q.id));
+  const fallback = startingDifficulty(answer, totalSessions);
+  return (questId) =>
+    played.get(questId) ?? (asWritten.has(questId) ? Difficulty.Medium : fallback);
 }
 
 const configKey = (questId: number) => `quest:${questId}:config`;
@@ -316,10 +386,13 @@ export async function loadConfiguredQuest(
   // `listExercises()` is promise-cached, so the catalogue is free after the first read anywhere
   // in the app — and it is what lets a swap resolve without this function knowing about screens.
   const [saved, exercises] = await Promise.all([getQuestConfig(questId), listExercises()]);
-  const effective = level ?? saved?.level ?? Difficulty.Medium;
-  const config = saved === null ? null : { ...saved, level: effective };
-  const quest = await getQuestById(questId, effective);
+  const chosen = level ?? saved?.level;
+  const wanted = chosen ?? (await loadDefaultLevels())(questId);
+  const quest = await getQuestById(questId, wanted);
   if (!quest) return null;
+  // An outing has no level (`resolveSlot`): the default must not hand it one.
+  const effective = chosen === undefined && isOutingSession(quest) ? Difficulty.Medium : wanted;
+  const config = saved === null ? null : { ...saved, level: effective };
 
   return {
     quest: applyQuestConfig(quest, config, indexExercises(exercises)),

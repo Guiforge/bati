@@ -10,6 +10,7 @@ import { backupIfStaleToday } from "@/src/autoBackup";
 import { clearPeerScratch, commitRestore, discardStagedImport } from "@/src/backupFiles";
 import { prepareSyncAtLaunch } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
+import { rememberRestoreNotice } from "@/src/restoreNotice";
 import { useRestoreStore } from "@/stores/restore";
 import { useSyncStore } from "@/stores/sync";
 
@@ -149,8 +150,10 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
     if (restorePhase !== "restoring" || !claimCommit()) return;
 
     commitRestore()
-      .then(() => {
+      .then(async () => {
         finishRestore("restartRequired");
+        // Said after the reload, by SyncPrompt. Never worth holding the reload for.
+        await rememberRestoreNotice().catch((e) => reportError("backup.restoreNotice", e));
         // A fresh JS runtime is a cold start without leaving the app: every module cache, every
         // store and the database singleton go with the old one, and `db/client.ts` opens the
         // swapped file. A remount would have to reset each of those by hand, and forget the next

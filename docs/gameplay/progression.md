@@ -146,6 +146,47 @@ alone — nobody is demoted by an update — except for sessions whose XP has no
 they recorded, because `most_xp` is a per-session record read live off the journal and the
 exploiting session would otherwise stand as an unbeatable trophy.
 
+## Where a quest starts
+
+A workout runs at one of three difficulties, and the first one a hero meets on a quest is decided
+by one rule, coded once (`loadDefaultLevels` and `startingDifficulty` in `db/questConfig.ts`):
+
+```
+the level picked on the quest screen for this start
+  ?? the saved config of this quest
+  ?? the difficulty of the hero's last session of this quest (the journal)
+  ?? the starting point: "I'm starting or coming back" -> Easy
+                         no answer, under 5 sessions  -> Easy
+                         no answer, 5 sessions or more -> Medium
+                         "I already train"            -> Medium
+```
+
+- **Hard is never a first default.** It is reached by the hero's own choice on the quest screen.
+  Inside an adventure it can also come from the feedback suggestion
+  (`suggestDifficultyFromSessions`, three "too easy" out of five sessions), which only adventures
+  read; a quest lived at Hard then reopens at Hard through the journal line.
+- **Inside an adventure**, the level the adventure proposes travels in the route and goes in front
+  of this cascade. The starting point is only its base for a hero with no session.
+- **An outing has no difficulty.** It is Medium everywhere and the rule does not touch it.
+- **No answer is only read as "starting" while the journal is short** (`isStartingOut`, under five
+  sessions). The question is recent and skippable: without this, an update read every hero who
+  was here before it as a beginner. The warm-up asks the same function before it takes the jumps
+  out (`loadWarmupContext`).
+- **A quest the hero wrote or was sent starts as written**, at Medium: Easy is three quarters of
+  its numbers, and they are the hero's.
+- The starting point is asked once in onboarding ("Tu en es où ?", two answers, skippable) and
+  edited in Settings ("Point de départ"). Changing it moves the quests never played and which
+  quests are offered, never a saved config, the journal or a record. An `advanced` answer stored
+  before the question had two choices reads as `regular`.
+
+Why the journal comes before the answer: sessions sync between devices and quest configs do not,
+and an update or a change of answer must not move a quest the hero already knows.
+
+Why it exists: up to 2.10.0 onboarding started the first quest at Easy and Home started the same
+quest at Medium, whatever had been answered
+([audit of 11 October 2026](../design/audits/2026-10-11-onboarding.md), B3).
+`__tests__/starting-difficulty.test.ts` holds the table.
+
 ## Village
 
 The village is **one illustrated scene**, not a list of buildings to manage.

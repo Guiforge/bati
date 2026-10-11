@@ -18,23 +18,47 @@ import type { SessionInstruction } from "@/hooks/useSessionInstructions";
  */
 const DESCRIPTION_STYLE = { flexGrow: 0, flexShrink: 0 } as const;
 
-/** A movement's description, whole, scrolling rather than growing. */
-export function MovementDescription({ text }: { text: string }) {
+/**
+ * A movement's description, whole, scrolling rather than growing.
+ *
+ * `uncapped` is for a parent that scrolls already: a second scroll in the same direction never
+ * gets the drag on Android, so the lines past the sixth could not be reached there.
+ */
+export function MovementDescription({
+  text,
+  uncapped = false,
+}: {
+  text: string;
+  uncapped?: boolean;
+}) {
   // 120 dp is six lines at font scale 1; the cap follows the scale so a large-text hero gets six
   // lines too, not four and a half cut through the middle.
   const maxHeight = useFontScaled(120);
+  const body = (
+    <Text fontSize={14} color="$textSecondary" lineHeight={20} style={{ textAlign: "center" }}>
+      {text}
+    </Text>
+  );
+  if (uncapped) return body;
   return (
     <ScrollView
       testID="movement-description"
       style={[DESCRIPTION_STYLE, { maxHeight }]}
       showsVerticalScrollIndicator={false}
     >
-      <Text fontSize={14} color="$textSecondary" lineHeight={20} style={{ textAlign: "center" }}>
-        {text}
-      </Text>
+      {body}
     </ScrollView>
   );
 }
+
+// `flexGrow` keeps the movement centred while it fits.
+const PINNED_SCROLL_STYLE = { flex: 1, alignSelf: "stretch" } as const;
+const PINNED_CONTENT_STYLE = {
+  flexGrow: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+} as const;
 
 /** The picture, the name and what the movement asks for: stacked, or a thumbnail beside them. */
 function MovementIdentity({
@@ -153,6 +177,12 @@ type PrepViewProps = {
    * a painting at its top, and a second full picture under it pushed GO off a 640dp screen.
    */
   compact?: boolean;
+  /**
+   * Takes the height it is given: what the movement is scrolls, the clock and GO stay under it.
+   * The warm-up's wait on a 360x640 screen had both below the fold, inside the block that
+   * scrolled, and read as a movement already running (audit 2026-10-11, F3).
+   */
+  pinned?: boolean;
 };
 
 /**
@@ -176,11 +206,12 @@ export function PrepView({
   onGo,
   goTestID,
   compact = false,
+  pinned = false,
 }: PrepViewProps) {
   const { t } = useTranslation();
 
-  return (
-    <YStack items="center" gap="$3" width="100%">
+  const movement = (
+    <>
       <Text
         fontSize={13}
         fontWeight="700"
@@ -195,10 +226,31 @@ export function PrepView({
         instruction={instruction}
         name={instruction?.name ?? fallbackName}
         target={target}
-        compact={compact}
+        // Pinned, the full picture left the name, the dose and the instruction under the fold of
+        // a 640dp screen: the thumbnail keeps all three in view, and the movement's own screen
+        // shows the picture whole ten seconds later.
+        compact={compact || pinned}
       />
 
-      {instruction?.description ? <MovementDescription text={instruction.description} /> : null}
+      {instruction?.description ? (
+        <MovementDescription text={instruction.description} uncapped={pinned} />
+      ) : null}
+    </>
+  );
+
+  return (
+    <YStack items="center" gap="$3" width="100%" flex={pinned ? 1 : undefined}>
+      {pinned ? (
+        <ScrollView
+          testID="prep-movement"
+          style={PINNED_SCROLL_STYLE}
+          contentContainerStyle={PINNED_CONTENT_STYLE}
+        >
+          {movement}
+        </ScrollView>
+      ) : (
+        movement
+      )}
 
       <PrepClock remainingSeconds={remainingSeconds} />
 

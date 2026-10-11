@@ -1,16 +1,16 @@
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTokens, H2, Text, useTheme, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { useToast } from "@/components/common/Toast";
+import { FirstFire } from "@/components/onboarding/FirstFire";
 import { ProgressDots } from "@/components/ProgressDots";
-import { getVillageTierAsset } from "@/constants/assetMap";
-import { fade, rawColors } from "@/constants/rawColors";
+import { VILLAGE_NAMES } from "@/constants/onboarding";
+import { useHaptics } from "@/hooks/useHaptics";
 import { reportError } from "@/src/reportError";
 import {
   VILLAGE_NAME_MAX_LENGTH as MAX_NAME_LENGTH,
@@ -23,16 +23,35 @@ const CURRENT_STEP = 2;
 
 // Name-your-village step. The avatar picker used to live here too, but the avatar has no
 // gameplay and is editable in Settings — the only onboarding choice left is the name.
+//
+// Laid out as a plate, like a story panel: the title on ink, the painting whole in a band of its
+// own, the field under it. Full-bleed, the hamlet's one lit window sat under the gradient and the
+// copy, and the smoke ran behind the title.
 export default function VillageSetup() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
+  const { success } = useHaptics();
   const setVillageName = useUserStore((s) => s.setVillageName);
   const { showError } = useToast();
 
-  const [name, setName] = useState("");
+  // Arrives named, so the button is live and the keyboard is a choice, not a toll.
+  const [name, setName] = useState<string>(
+    () => VILLAGE_NAMES[Math.floor(Math.random() * VILLAGE_NAMES.length)] ?? "",
+  );
   const [isFocused, setIsFocused] = useState(false);
+  // Under the keyboard a 640dp screen has room for the field and its button, not for the two
+  // sentences above them: with those in, "Continuer" sat below the keys.
+  const [typing, setTyping] = useState(false);
+  useEffect(() => {
+    const shown = Keyboard.addListener("keyboardDidShow", () => setTyping(true));
+    const hidden = Keyboard.addListener("keyboardDidHide", () => setTyping(false));
+    return () => {
+      shown.remove();
+      hidden.remove();
+    };
+  }, []);
 
   const trimmedName = name.trim();
   const isValidName = trimmedName.length >= MIN_NAME_LENGTH;
@@ -43,6 +62,7 @@ export default function VillageSetup() {
 
   const handleContinue = async () => {
     if (!isValidName) return;
+    success();
     try {
       await setVillageName(trimmedName);
     } catch (error) {
@@ -54,79 +74,43 @@ export default function VillageSetup() {
     router.push("/onboarding/training-level");
   };
 
-  const inputBorderColor = isFocused
-    ? theme.primary?.val
-    : isValidName
-      ? theme.success?.val
-      : theme.borderStrong?.val;
+  const inputBorderColor = isFocused ? theme.primary?.val : theme.borderStrong?.val;
 
   return (
-    <YStack flex={1} bg="$background">
-      {/* Immersive background: the tier-1 hamlet the player is about to name */}
-      <Image
-        source={getVillageTierAsset(1)}
-        style={{ position: "absolute", width: "100%", height: "100%" }}
-        contentFit="cover"
-        contentPosition="top"
-        transition={200}
-      />
-      <LinearGradient
-        colors={[fade(rawColors.bgDark, 0.85), "transparent"]}
-        style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%" }}
-      />
-      <LinearGradient
-        colors={["transparent", fade(rawColors.bgDark, 0.92), rawColors.bgDark]}
-        style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%" }}
-      />
-
+    <YStack flex={1} bg="$bgDark">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <YStack
-          flex={1}
-          justify="space-between"
-          pt={insets.top + 20}
-          pb={insets.bottom + 20}
-          px="$5"
-        >
+        <YStack flex={1} pt={insets.top + 8} pb={insets.bottom + 20} gap="$3">
           {/* Header */}
-          <YStack gap="$3" items="center">
+          <YStack gap="$2" items="center" px="$5">
+            <YStack position="absolute" t={0} l="$2" z={1}>
+              <ScreenBackButton />
+            </YStack>
             <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
-            <H2
-              text="center"
-              color="$text"
-              fontWeight="700"
-              fontSize={28}
-              textShadowColor={fade(rawColors.black, 0.5)}
-              textShadowOffset={{ width: 1, height: 1 }}
-              textShadowRadius={4}
-            >
+            <H2 text="center" color="$text" fontWeight="700" fontSize={28}>
               {t("onboarding.village_name_title", "Name your village")}
             </H2>
           </YStack>
 
+          <FirstFire name={trimmedName} lit={isValidName} />
+
           {/* Bottom section: subtitle + name */}
-          <YStack gap="$4">
-            <Text
-              text="center"
-              color="$text"
-              fontSize={16}
-              fontWeight="700"
-              textShadowColor={fade(rawColors.black, 0.5)}
-              textShadowRadius={4}
-            >
-              {t("onboarding.village_name_subtitle")}
-            </Text>
-            <Text
-              text="center"
-              color="$textSecondary"
-              fontSize={13}
-              textShadowColor={fade(rawColors.black, 0.5)}
-              textShadowRadius={4}
-            >
-              {t("onboarding.village_name_hint", "Every muscle you train raises a building here.")}
-            </Text>
+          <YStack gap="$3" px="$5">
+            {typing ? null : (
+              <>
+                <Text text="center" color="$text" fontSize={16} fontWeight="700">
+                  {t("onboarding.village_name_subtitle")}
+                </Text>
+                <Text text="center" color="$textSecondary" fontSize={13}>
+                  {t(
+                    "onboarding.village_name_hint",
+                    "Every muscle you train raises a building here.",
+                  )}
+                </Text>
+              </>
+            )}
 
             {/* Name input */}
             <YStack gap="$2">
@@ -134,6 +118,8 @@ export default function VillageSetup() {
                 testID="onboarding-village-name"
                 value={name}
                 onChangeText={handleChangeText}
+                // Typing replaces the drawn name instead of adding to it.
+                selectTextOnFocus
                 placeholder={t("onboarding.village_name_placeholder") ?? "Your village name"}
                 placeholderTextColor={theme.textSecondary?.val as string}
                 onFocus={() => setIsFocused(true)}
@@ -148,12 +134,10 @@ export default function VillageSetup() {
                   },
                 ]}
               />
+              {/* No green here: the plate above has the one warm light, and it is the answer to
+                  "is this name good". */}
               <XStack justify="space-between" px="$2">
-                <Text
-                  fontSize={12}
-                  color={isValidName ? "$success" : "$textSecondary"}
-                  fontWeight="700"
-                >
+                <Text fontSize={12} color="$textSecondary" fontWeight="700">
                   {isValidName
                     ? t("onboarding.valid")
                     : `${MIN_NAME_LENGTH} ${t("onboarding.chars_min")}`}

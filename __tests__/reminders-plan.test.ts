@@ -352,6 +352,16 @@ describe("planReminders: every case the Home has", () => {
     expect(titleFor(offer)).toBe('reminders.stale_quest.0 {"quest":"Chest Day"}');
   });
 
+  // The plan is made the evening of a session and rings on a later day: by then the stage offers
+  // the quest it named, so the reminder names that one too.
+  test("a day already done: the quest the stage names for next time, or the gallery", () => {
+    const next = { quest, startable: true, seconds: 480 };
+    expect(titleFor({ kind: "done_today", next } as unknown as HomeOffer)).toBe(
+      'reminders.stale_quest.0 {"quest":"Chest Day"}',
+    );
+    expect(titleFor({ kind: "done_today", next: null })).toBe("reminders.gallery.0 {}");
+  });
+
   test("the gallery, when nothing else would load", () => {
     expect(titleFor({ kind: "gallery", trained: false })).toBe("reminders.gallery.0 {}");
   });

@@ -1,8 +1,13 @@
 import type { OutingGoal } from "@/src/gps/track";
 import { estimateQuestSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
-import { outingGoal } from "./expeditions";
-import { applyConfigToSlots, type QuestConfig, resolveTemplateOverrides } from "./questConfig";
+import { isOutingQuest, outingGoal } from "./expeditions";
+import {
+  applyConfigToSlots,
+  loadDefaultLevels,
+  type QuestConfig,
+  resolveTemplateOverrides,
+} from "./questConfig";
 import {
   isUserQuest,
   loadSlotJournal,
@@ -120,15 +125,21 @@ export async function previewQuests(
   configs: ReadonlyMap<number, QuestConfig>,
   level?: DifficultyCode,
 ): Promise<Map<number, QuestPreview>> {
-  const journal = await loadSlotJournal(
-    templates.flatMap((q) => q.exercises.map((qex) => qex.exerciseId)),
-  );
+  const [journal, defaults] = await Promise.all([
+    loadSlotJournal(templates.flatMap((q) => q.exercises.map((qex) => qex.exerciseId))),
+    loadDefaultLevels(),
+  ]);
 
   return new Map(
-    templates.map(
-      (q) =>
-        [q.id, previewQuest(q, exercisesById, configs.get(q.id) ?? null, journal, level)] as const,
-    ),
+    templates.map((q) => {
+      const config = configs.get(q.id) ?? null;
+      // The level the quest will start at, by the rule `loadConfiguredQuest` applies.
+      const starts =
+        level ??
+        config?.level ??
+        (isOutingQuest(q, exercisesById) ? Difficulty.Medium : defaults(q.id));
+      return [q.id, previewQuest(q, exercisesById, config, journal, starts)] as const;
+    }),
   );
 }
 

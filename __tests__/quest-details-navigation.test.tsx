@@ -18,6 +18,7 @@ const backHandlerSpy = jest.spyOn(
 let mockParams: { id?: string; adventureId?: string; from?: string } = { id: "5" };
 
 // Setting aside is not what this file is about.
+jest.mock("@/db/questConfig", () => ({ loadDefaultLevels: async () => () => "medium" }));
 jest.mock("@/hooks/useSetAside");
 
 jest.mock("expo-router", () => ({

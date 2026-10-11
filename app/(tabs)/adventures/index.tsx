@@ -34,7 +34,8 @@ import {
 } from "@/db";
 import { threatRank } from "@/db/bossFights";
 import { MUSCLE_LABELS } from "@/db/muscles";
-import { getAllQuestConfigs } from "@/db/questConfig";
+import { preferences } from "@/db/preferences";
+import { getAllQuestConfigs, startingDifficulty } from "@/db/questConfig";
 import { formatCount } from "@/db/targets";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
@@ -410,8 +411,9 @@ export default function AdventuresGallery() {
       getFinishedRunCountsByAdventure(),
       getAllQuestConfigs(),
       getRecentSessionHistory(10),
+      preferences.getTrainingLevel(),
     ])
-      .then(([adventures, exercises, activeRun, finished, questConfigs, history]) => {
+      .then(([adventures, exercises, activeRun, finished, questConfigs, history, answer]) => {
         const progress: AdventureProgress | null = activeRun
           ? {
               adventureId: activeRun.adventureId,
@@ -430,7 +432,7 @@ export default function AdventuresGallery() {
         // per step" over a detail screen quoting +90 for the same step.
         const suggestion = suggestDifficultyFromSessions(history, {
           maxSessions: 10,
-          defaultDifficulty: "medium",
+          defaultDifficulty: startingDifficulty(answer, history.length),
         });
         return previewQuests(
           adventures.map((a) => a.coverQuest),

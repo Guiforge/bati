@@ -62,6 +62,21 @@ describe("onboarding restore", () => {
     expect(view.queryByTestId("onboarding-restore-cloud")).toBeNull();
   });
 
+  // F13: the node was `clickable="false"` with no role, on a 20 dp line.
+  it("is a button to a screen reader, on a 48 dp target", async () => {
+    const view = await mount();
+    const link = view.getByRole("button", { name: "onboarding.restore_cta" });
+    expect(link.props.testID).toBe("onboarding-restore");
+    expect(link).toHaveStyle({ minHeight: 48 });
+  });
+
+  it("answers where the hero is: in a file, or on the cloud", async () => {
+    const view = await mount();
+    await fireEvent.press(view.getByTestId("onboarding-restore"));
+    expect(view.getByTestId("confirm-dialog-confirm")).toHaveTextContent("backup.onboardingCta");
+    expect(view.getByTestId("confirm-dialog-extra")).toHaveTextContent("sync.onboardingCta");
+  });
+
   it("mounts the backup's own dialog", async () => {
     const view = await mount();
     expect(view.getByTestId("backup-dialog")).toBeTruthy();

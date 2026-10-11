@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
-import { PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
+import { BEGINNER_UNAVAILABLE, NO_IMPACT, PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
 import { hasSessionForQuestToday, outingSecondsToday } from "@/db/completed";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
@@ -17,6 +17,8 @@ import {
   FINAL_REST_SECONDS,
   holdNeedingAnswer,
   loadWarmup,
+  loadWarmupContext,
+  recordedDurationSeconds,
   useSessionStore,
 } from "../stores/session";
 
@@ -112,6 +114,8 @@ jest.mock("@/db/preferences", () => ({
     // Off by default here so the existing cases start on the countdown; the warm-up has its
     // own cases below.
     getWarmupEnabled: jest.fn().mockResolvedValue(false),
+    // Past the gentle opening by default; the hero who is starting has their own case below.
+    getTrainingLevel: jest.fn().mockResolvedValue("regular"),
     // Read by beginTrackingIfOuting, only exercised by the outing cases below.
     getDistanceUnit: jest.fn().mockResolvedValue("metric"),
     getHapticsEnabled: jest.fn().mockResolvedValue(true),
@@ -179,6 +183,7 @@ describe("useSessionStore", () => {
       currentExerciseIndex: 0,
       results: [],
       startTime: null,
+      endTime: null,
       totalPausedTime: 0,
       lastPauseTimestamp: null,
       timerStartTimestamp: null,
@@ -337,6 +342,81 @@ describe("useSessionStore", () => {
     expect(state.status).toBe("finished");
     expect(state.results.at(-1)?.result.value).toBe(55);
     expect(state.totalPausedTime).toBeGreaterThanOrEqual(10_000);
+  });
+
+  /**
+   * F11: "Temps total 1:59" above "Séance la plus longue 2 min 21 s", one session, one screen. The
+   * victory screen read the clock when it opened and `saveSession` read it again when it ran, and
+   * under two minutes the save waits behind "that was short": the journal got the reading time.
+   * Both doors to "finished" stamp the end, and both readers stop there.
+   */
+  describe("a short session kept after a delay", () => {
+    const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
+    const T0 = 1_760_000_000_000;
+    let now: jest.SpyInstance<number, []>;
+
+    // With a pace per rep, so the journal's own ceiling (twice the estimate) is a real number.
+    const paced = {
+      ...mockQuest,
+      exercises: mockQuest.exercises.map((qex) => ({
+        ...qex,
+        exercise: { ...qex.exercise, secondsPerRep: 3 },
+      })),
+    } as unknown as Quest;
+
+    beforeEach(async () => {
+      now = jest.spyOn(Date, "now").mockReturnValue(T0);
+      await store.getState().startSession(paced, "medium");
+      store.getState().finishCountdown();
+      store.getState().completeExercise(10);
+      // On the last set, with one behind it: a session with nothing in it cannot be skipped out of.
+      store.setState({ status: "running", currentRoundIndex: 1, currentExerciseIndex: 1 });
+      completed.createCompletedSession.mockClear();
+    });
+    afterEach(() => now.mockRestore());
+
+    /** The hero reads the question for 31 s, taps "Keep it", and the journal row is written. */
+    const keptAfterReading = async () => {
+      const onVictoryScreen = recordedDurationSeconds();
+      now.mockReturnValue(Date.now() + 31_000);
+      await store.getState().saveSession(null);
+      const row = completed.createCompletedSession.mock.calls[0]?.[0];
+      return { onVictoryScreen, inJournal: row.durationSeconds as number };
+    };
+
+    test("ended from the rest behind the last set: one duration, on the screen and in the journal", async () => {
+      now.mockReturnValue(T0 + 90_000);
+      store.getState().completeExercise(40);
+      // Ten seconds correcting the count, which the clock already leaves out.
+      now.mockReturnValue(T0 + 100_000);
+      store.getState().skipRest();
+      expect(store.getState().status).toBe("finished");
+
+      const { onVictoryScreen, inJournal } = await keptAfterReading();
+      expect(onVictoryScreen).toBe(90);
+      expect(inJournal).toBe(90);
+      // And a second look at the screen's figure, after the save, has not moved either.
+      expect(recordedDurationSeconds()).toBe(90);
+    });
+
+    test("ended on the last tap, with no rest behind it: the same", async () => {
+      now.mockReturnValue(T0 + 75_000);
+      store.getState().skipExercise();
+      expect(store.getState().status).toBe("finished");
+
+      const { onVictoryScreen, inJournal } = await keptAfterReading();
+      expect(onVictoryScreen).toBe(75);
+      expect(inJournal).toBe(75);
+    });
+
+    test("the next session starts its own clock", async () => {
+      now.mockReturnValue(T0 + 75_000);
+      store.getState().skipExercise();
+      expect(store.getState().endTime).toBe(T0 + 75_000);
+      await store.getState().startSession(paced, "medium");
+
+      expect(store.getState().endTime).toBeNull();
+    });
   });
 
   test("a skipped last set has nothing to correct and ends at once", async () => {
@@ -598,10 +678,12 @@ describe("useSessionStore", () => {
   describe("warm-up", () => {
     const prefs = require("@/db/preferences").preferences as {
       getWarmupEnabled: jest.Mock;
+      getTrainingLevel: jest.Mock;
     };
 
     afterEach(() => {
       prefs.getWarmupEnabled.mockResolvedValue(false);
+      prefs.getTrainingLevel.mockResolvedValue("regular");
       useSettingsStore.setState({ prepMode: "timer" });
     });
 
@@ -820,6 +902,25 @@ describe("useSessionStore", () => {
       await store.getState().startSession(mockQuest, "medium");
 
       expect(store.getState().status).toBe("countdown");
+    });
+
+    // Audit 2026-10-11, F3. The preview and the session both read `loadWarmupContext`, so the
+    // answer is asserted there and on the sequence a session really starts with.
+    test.each(["beginner", null])("a hero whose level is %s opens on the floor", async (level) => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      prefs.getTrainingLevel.mockResolvedValue(level);
+
+      const { unavailable } = await loadWarmupContext();
+      expect([...unavailable]).toEqual(expect.arrayContaining([...BEGINNER_UNAVAILABLE]));
+
+      await store.getState().startSession(mockQuest, "medium");
+      expect(NO_IMPACT).toContain(store.getState().warmupSequence[0]?.exerciseName);
+    });
+
+    test("a hero past the beginning keeps the pulse raisers", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+
+      expect((await loadWarmupContext()).unavailable.size).toBe(0);
     });
   });
 

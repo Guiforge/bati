@@ -41,7 +41,9 @@ export function ReminderCard() {
   if (kind === null) return null;
 
   const today = dayKey(new Date());
-  const openSettings = () => router.push("/settings" as never);
+  // On the section, not at the top of Settings: RAPPEL is two screens down, and the offer is
+  // spent by the tap (audit 2026-10-11, F6).
+  const openSettings = () => router.push("/settings?section=reminder" as never);
   const answered = () => {
     setKind(null);
     reminderPrefs

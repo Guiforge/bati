@@ -1,8 +1,8 @@
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -42,6 +42,7 @@ import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
 import { ReminderSection } from "@/components/settings/ReminderSection";
 import { SetAsideRow } from "@/components/settings/SetAsideRow";
 import { SettingRow } from "@/components/settings/SettingRow";
+import { StartingPointRow } from "@/components/settings/StartingPointRow";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
@@ -213,6 +214,18 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+
+  // Home's reminder line opens `/settings?section=reminder` and lands on the section, not on the
+  // avatar two screens above it (audit 2026-10-11, F6). The section mounts after its own read and
+  // sits inside the preferences group, so the offset is the two added, taken again at each layout
+  // until the hero scrolls by hand.
+  const { section } = useLocalSearchParams<{ section?: string }>();
+  const scrollRef = useRef<RNScrollView>(null);
+  const anchor = useRef({ wanted: section === "reminder", group: 0, row: -1 });
+  const scrollToAnchor = () => {
+    const { wanted, group, row } = anchor.current;
+    if (wanted && row >= 0) scrollRef.current?.scrollTo({ y: group + row, animated: false });
+  };
 
   const {
     language,
@@ -405,6 +418,10 @@ export default function SettingsScreen() {
       </XStack>
 
       <RNScrollView
+        ref={scrollRef}
+        onScrollBeginDrag={() => {
+          anchor.current.wanted = false;
+        }}
         // VillageNameRow holds a TextInput, so the keyboard opens over this list — and the
         // default ("never") would spend the first tap on every row below it closing the keyboard
         // instead. react-native#4087; see __tests__/keyboard-taps-guard.test.ts.
@@ -422,7 +439,13 @@ export default function SettingsScreen() {
         />
 
         {/* Preferences */}
-        <YStack gap="$3">
+        <YStack
+          gap="$3"
+          onLayout={(event) => {
+            anchor.current.group = event.nativeEvent.layout.y;
+            scrollToAnchor();
+          }}
+        >
           <SectionLabel px="$1">{t("settings.preferences", "PREFERENCES")}</SectionLabel>
 
           <VillageNameRow />
@@ -567,6 +590,8 @@ export default function SettingsScreen() {
             }}
           />
 
+          <StartingPointRow />
+
           <SetAsideRow />
 
           <SettingRow
@@ -577,7 +602,12 @@ export default function SettingsScreen() {
 
           {/* Above the backup, below the oath it can serve (docs/designs/rappels.md). Renders
               nothing on a build without the reminders' native half. */}
-          <ReminderSection />
+          <ReminderSection
+            onLayout={(event) => {
+              anchor.current.row = event.nativeEvent.layout.y;
+              scrollToAnchor();
+            }}
+          />
 
           <SectionLabel px="$1" mt="$2">
             {t("backup.section")}

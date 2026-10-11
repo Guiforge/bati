@@ -14,6 +14,7 @@ import config from "@/tamagui.config";
 // nothing was hidden from it.
 
 // Setting aside is not what this file is about.
+jest.mock("@/db/questConfig", () => ({ loadDefaultLevels: async () => () => "medium" }));
 jest.mock("@/hooks/useSetAside");
 
 jest.mock("expo-router", () => ({

@@ -43,11 +43,12 @@ const MOVER = "\\{\\{\\s*exercise\\s*\\}\\}";
 // Sessions and outings, the units a bare article ("one more session") counts beside as well.
 const SESSIONS =
   "sessions?|workouts?|outings?|séances?|sorties?|\\p{L}*einheit\\p{L}*|sesion\\w*|sesión|salidas?";
+const ROUNDS = "rounds?|tours? de piste|runden?|rondas?|laps?";
 const ART = "one|une?|ein|eine|einen|una|uno";
 const rx = (c: string, u: string) =>
   new RegExp(`${B}${c}\\s+(?:[\\p{L}'’×-]+\\s+){0,2}(?:${u})${E}`, "iu");
 const COUNTED = rx(COUNT, `${REPS}|${MOVES}|${OUTINGS}|${MOVER}`);
-const ARTICLED = rx(`(?:${ART})`, `${REPS}|${MOVES}|${SESSIONS}`);
+const ARTICLED = rx(`(?:${ART})`, `${REPS}|${MOVES}|${SESSIONS}|${ROUNDS}`);
 const EFFORT = new RegExp(`${COUNTED.source}|${ARTICLED.source}`, "iu");
 const HAS_REPS = new RegExp(`${B}(?:${REPS}|${MOVES})${E}`, "iu");
 
@@ -849,6 +850,10 @@ const PROBES: Probe[] = [
   { lang: "es", text: "10 flexiones en pica", by: "count" },
   { lang: "en", text: "One more session", by: "count" },
   { lang: "de", text: "Noch eine Einheit", by: "count" },
+  { lang: "en", text: "One more round", by: "count" },
+  { lang: "fr", text: "Encore un tour de piste", by: "count" },
+  { lang: "de", text: "Noch eine Runde mehr", by: "count" },
+  { lang: "es", text: "Una ronda más", by: "count" },
   { lang: "en", text: "120 reps to rank 2", by: "count" },
   { lang: "fr", text: "120 reps pour le rang 2", by: "count" },
   { lang: "de", text: "120 Wiederholungen für Rang 2", by: "count" },
@@ -856,7 +861,7 @@ const PROBES: Probe[] = [
 ];
 
 // The sizes at the time of writing: a floor, raised when a probe is added, never lowered.
-const PROBE_COUNT = 129;
+const PROBE_COUNT = 133;
 const OLD_LINE_COUNT = 21;
 const probeVerdicts = (lang: Lang, text: string) => {
   const verdicts: string[] = [];
@@ -867,7 +872,8 @@ const probeVerdicts = (lang: Lang, text: string) => {
 it("never lets the check get weaker than the detector it replaced", () => {
   const verdicts = PROBES.flatMap(({ lang, text, by }) => {
     const got = probeVerdicts(lang, text);
-    const caught = by === "old" ? got.some((v) => v.startsWith("old|")) : got.length > 0;
+    // "count" must come from the count rule itself (`${lang}|probe|…`), not from old| or marker|.
+    const caught = got.some((v) => v.startsWith(by === "old" ? "old|" : `${lang}|probe|`));
     return caught ? [] : [`${by}|${lang}|${text}`];
   });
   expect(verdicts).toEqual([]);

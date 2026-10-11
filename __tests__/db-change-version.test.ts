@@ -19,7 +19,7 @@ const oaths = require("../db/oaths") as typeof import("../db/oaths");
 const { getOutingHabit } = require("../db/outingHabit") as typeof import("../db/outingHabit");
 const { listOutings } = require("../db/outings") as typeof import("../db/outings");
 const { preferences } = require("../db/preferences") as typeof import("../db/preferences");
-const { previewOutingGoal } = require("../db/preview") as typeof import("../db/preview");
+const { previewOuting } = require("../db/preview") as typeof import("../db/preview");
 const questConfig = require("../db/questConfig") as typeof import("../db/questConfig");
 const { findQuestWithExercise, listQuestTemplates } =
   require("../db/quests") as typeof import("../db/quests");
@@ -113,7 +113,7 @@ test("a way out's tile says the goal its tap runs, with and without a saved one"
 
       const loaded = await questConfig.loadConfiguredQuest(quest.id, "medium");
       assert(loaded);
-      expect(previewOutingGoal(quest, exercisesById, saved, runHabit)).toEqual(
+      expect(previewOuting(quest, exercisesById, saved, runHabit).goal).toEqual(
         outingGoal(loaded.quest, loaded.config?.distanceM ?? null),
       );
     }

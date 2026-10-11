@@ -127,6 +127,32 @@ describe("a quest card and its screen quote the same numbers", () => {
     }
   });
 
+  // "Do X instead" on every slot the ladder stepped down, for a hero with no history: each pin
+  // is prescribed what the quest wrote for the movement. The card built its slots without the
+  // slot's account of the substitution, so it priced a pin at the unit's default while the
+  // screen priced the quest's own number.
+  test("a hero who took the written movement back on every stepped-down slot", async () => {
+    const { quests } = api();
+    const pins = new Map<number, import("../db/questConfig").QuestConfig>();
+    for (const template of await quests.listQuestTemplates()) {
+      const quest = await quests.getQuestById(template.id, quests.Difficulty.Medium);
+      const swaps = Object.fromEntries(
+        (quest?.exercises ?? []).flatMap((slot) =>
+          slot.substitutedFor && !slot.substitutedFor.setAside
+            ? [[String(slot.id), slot.substitutedFor.id] as const]
+            : [],
+        ),
+      );
+      if (Object.keys(swaps).length > 0) {
+        pins.set(template.id, { level: quests.Difficulty.Medium, swaps });
+      }
+    }
+
+    // The seeded catalogue has stepped-down slots for a new hero, or this proves nothing.
+    expect(pins.size).toBeGreaterThan(5);
+    expect(await disagreements(pins)).toEqual([]);
+  });
+
   test("a hero whose records move the holds and whose rungs move the movements", async () => {
     // A long plank pulls every plank slot up off `HOLD_FRACTION_OF_MAX`, and three clean wall
     // push-up sessions move the push-up slots one rung up the chain.

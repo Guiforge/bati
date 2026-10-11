@@ -1,6 +1,6 @@
 import { and, count, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { db, schema, type TransactionTx } from "./client";
-import { getSessionAggregates } from "./completed";
+import { workoutsBeforeToday } from "./completed";
 import { canDo, isEquipmentCode } from "./equipment";
 import { isMuscleCode } from "./muscles";
 import { getAllPreferences, preferences, startsGently } from "./preferences";
@@ -267,11 +267,15 @@ export function listExercises(): Promise<Exercise[]> {
  * the ladder is telling the hero to work up to.
  */
 export async function unavailableMovements(): Promise<Set<string>> {
-  const [catalogue, unavailable, level, { totalSessions }] = await Promise.all([
+  // The same count the suggestions read (`getEligibleQuestIds`): sessions before today. Fed
+  // the count up to now, the warm-up gave a hero their jumps back the evening of a third
+  // session while Home kept every jump quest hidden until midnight. And its own read, not a
+  // number handed in: a caller's fallback of zero would make a 200-session hero a beginner.
+  const [catalogue, unavailable, level, totalSessions] = await Promise.all([
     listExercises(),
     unavailableExerciseIds(),
     preferences.getTrainingLevel(),
-    getSessionAggregates(),
+    workoutsBeforeToday(),
   ]);
   // A hero starting out is not warmed up with jumps (`startsGently`). Every raise movement but
   // one was a jump, so day one opened on Jumping Jacks for someone back from a knee operation,

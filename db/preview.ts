@@ -1,12 +1,13 @@
 import type { OutingGoal } from "@/src/gps/track";
 import { estimateQuestSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
-import { outingGoal } from "./expeditions";
-import type { OutingHabit } from "./outingHabit";
+import { outingGoal, proposesWalkRun } from "./expeditions";
+import type { OutingHabit } from "./outingRule";
 import { applyConfigToSlots, type QuestConfig, resolveTemplateOverrides } from "./questConfig";
 import {
   isUserQuest,
   loadSlotJournal,
+  movementRef,
   QUEST_AS_WRITTEN,
   type QuestExercise,
   type QuestTemplate,
@@ -63,7 +64,7 @@ function resolveTemplateExercises(input: PreviewInput): QuestExercise[] {
     const written = input.exercisesById[qex.exerciseId];
     if (!written) return [];
 
-    const { exercise, target, ghost } = resolveSlot({
+    const { exercise, target, ghost, asWritten, setAsideFrom, walkRun } = resolveSlot({
       base: qex.baseTarget,
       written,
       userLevel: userLevelEnum,
@@ -72,9 +73,25 @@ function resolveTemplateExercises(input: PreviewInput): QuestExercise[] {
       substitute,
     });
 
-    // Same rule as `buildSlot`: the quest's own art is of the movement the template wrote.
     return [
-      { id: qex.id, exercise, images: exercise.id === written.id ? qex.images : [], target, ghost },
+      {
+        id: qex.id,
+        exercise,
+        // Same rule as `buildSlot`: the quest's own art is of the movement the template wrote.
+        images: exercise.id === written.id ? qex.images : [],
+        target,
+        ghost,
+        ...(walkRun ? { walkRun: true as const } : {}),
+        // And the same account of a stepped-down slot as `buildSlot` gives, because the saved
+        // config reads it: a hero who took the written movement back ("Do X instead") is
+        // prescribed what the quest wrote for it. Without this the card priced that slot at the
+        // unit's default while the screen behind it priced the quest's own number.
+        ...(setAsideFrom
+          ? { substitutedFor: { ...movementRef(setAsideFrom), setAside: true as const } }
+          : asWritten
+            ? { substitutedFor: { ...movementRef(written), target: asWritten } }
+            : {}),
+      },
     ];
   });
 
@@ -162,15 +179,18 @@ export function estimateQuestTemplateXp(input: PreviewInput): number {
 }
 
 /**
- * The goal a way out leaves with from Home's tile, which always starts it at medium: what its chip
- * says.
+ * What a way out leaves with from Home's tile, which always starts it at medium: the goal its
+ * chip says, and whether that goal is still the app's walk-run proposal (`proposesWalkRun`, the
+ * predicate the quest screen uses).
  *
  * Off the cached template and the saved config rather than `loadConfiguredQuest`, which reads the
  * hero's whole history of the movement to serve a slot, three times on every Home focus for a
- * number the history cannot move: an outing's duration is authored, or set by hand.
- * `__tests__/db-change-version.test.ts` holds it to the goal the tap actually runs.
+ * number the history cannot move: an outing's duration is authored, set by hand, or proposed
+ * from the month of running the caller hands in. One resolution for both answers, so they
+ * cannot be read off two different sets of slots.
+ * `__tests__/db-change-version.test.ts` holds the goal to the one the tap actually runs.
  */
-export function previewOutingGoal(
+export function previewOuting(
   template: Pick<
     QuestTemplate,
     "author" | "rounds" | "restSeconds" | "roundRestSeconds" | "exercises"
@@ -178,8 +198,8 @@ export function previewOutingGoal(
   exercisesById: Record<number, Exercise>,
   saved: QuestConfig | null,
   /** The hero's month of running, which a run's duration is proposed from. Loaded by the caller. */
-  runHabit?: OutingHabit,
-): OutingGoal | null {
+  runHabit: OutingHabit,
+): { goal: OutingGoal | null; walkRun: boolean } {
   const config = saved === null ? null : { ...saved, level: Difficulty.Medium };
   const exercises = resolveTemplateExercises({
     template,
@@ -190,7 +210,10 @@ export function previewOutingGoal(
     // expedition, nothing on the ladder stands below a walk, and `resolveSlot` gives an outing
     // no hold from the journal either. The one thing the journal changes is how long a run is
     // proposed at, and that the caller reads and hands in, so this stays synchronous.
-    journal: runHabit ? { ...QUEST_AS_WRITTEN, runHabit } : QUEST_AS_WRITTEN,
+    journal: { ...QUEST_AS_WRITTEN, runHabit },
   });
-  return outingGoal({ exercises }, config?.distanceM ?? null);
+  return {
+    goal: outingGoal({ exercises }, config?.distanceM ?? null),
+    walkRun: proposesWalkRun(exercises, config?.distanceM),
+  };
 }

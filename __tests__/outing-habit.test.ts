@@ -1,3 +1,4 @@
+import { proposedRunSeconds, WALK_RUN_SECONDS } from "@/db/outingRule";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 /**
@@ -65,19 +66,7 @@ describe("getOutingHabit", () => {
 
 /** The rule a run is proposed by, case by case, in the order `proposedRunSeconds` reads it. */
 describe("proposedRunSeconds", () => {
-  const t = createTestDb();
-  const WALK_RUN_SECONDS = 20 * 60;
   const min = (m: number) => m * 60;
-
-  beforeAll(() => {
-    jest.resetModules();
-    jest.doMock("../db/client", () => clientMock(t));
-  });
-  afterAll(() => t.close());
-
-  // Required late: the module imports the database client, which only the mock above can stand in for.
-  const proposedRunSeconds = (habit: import("../db/outingHabit").OutingHabit) =>
-    (require("../db/outingHabit") as typeof import("../db/outingHabit")).proposedRunSeconds(habit);
 
   test("no run this month: twenty minutes of walk and run", () => {
     expect(proposedRunSeconds({ usual: null, longestM: null, longestSeconds: null })).toEqual({

@@ -37,6 +37,7 @@ import {
   isUserQuest,
   type QuestConfig,
   saveQuestConfig,
+  withoutSlotSwap,
 } from "@/db";
 import { getAdventureStepNarrative } from "@/db/adventures-narrative";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
@@ -487,10 +488,7 @@ export default function QuestDetails() {
         if (written) applySwap(questExerciseId, written);
         return;
       }
-      const key = String(questExerciseId);
-      const without = (entries: Record<string, number> | undefined) =>
-        Object.fromEntries(Object.entries(entries ?? {}).filter(([id]) => id !== key));
-      updateConfig({ ...config, swaps: without(config.swaps), targets: without(config.targets) });
+      updateConfig(withoutSlotSwap(config, questExerciseId));
     },
     [applySwap, catalogue, config, updateConfig],
   );

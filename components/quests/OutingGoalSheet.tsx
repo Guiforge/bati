@@ -8,7 +8,8 @@ import { Chip } from "@/components/common/Chip";
 import { X } from "@/components/icons";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db/estimate";
-import { getOutingHabit, LONGEST_RUN_CEILING, NO_HABIT, type OutingHabit } from "@/db/outingHabit";
+import { getOutingHabit } from "@/db/outingHabit";
+import { LONGEST_RUN_CEILING, NO_HABIT, type OutingHabit } from "@/db/outingRule";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -68,13 +69,24 @@ type Props = {
    * mixed quest (`outingLocomotion`): it gets the run presets it always had, and no habit.
    */
   locomotion: Locomotion | null;
+  /**
+   * The goal on this sheet is still the app's walk-run proposal (`proposesWalkRun`). The caller
+   * knows, because it holds the slots the proposal was made on; from the habit alone the sheet
+   * could not tell a hero's own run quest, which is never proposed one.
+   */
+  walkRun: boolean;
   /** One goal at a time: the caller writes a duration or a distance, never both. */
   onPick: (goal: OutingGoal) => void;
 };
 
-/** The longest outing of the month in the tab's own unit: moving seconds, or metres. */
-function longestOf(habit: OutingHabit, durationTab: boolean): number | null {
-  return durationTab ? (habit.longestSeconds ?? null) : habit.longestM;
+/**
+ * The longest run of the month in the tab's own unit, moving seconds or metres, for the line
+ * that names the ceiling above it. `shown` false when the line has no business there: another
+ * kind of outing, or a goal that is still the walk-run proposal.
+ */
+function longestOf(habit: OutingHabit, durationTab: boolean, shown: boolean): number | null {
+  if (!shown) return null;
+  return durationTab ? habit.longestSeconds : habit.longestM;
 }
 
 /**
@@ -82,7 +94,15 @@ function longestOf(habit: OutingHabit, durationTab: boolean): number | null {
  * which is not a preference: with the drag on, the pane drifts off its snap point and a close
  * leaves the frame painted where it drifted, taps falling through to the screen behind.
  */
-export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, onPick }: Props) {
+export function OutingGoalSheet({
+  open,
+  onOpenChange,
+  goal,
+  unit,
+  locomotion,
+  walkRun,
+  onPick,
+}: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const language = useSettingsStore((s) => s.language);
@@ -162,7 +182,10 @@ export function OutingGoalSheet({ open, onOpenChange, goal, unit, locomotion, on
   // study measured; nothing equivalent exists for walking or riding.
   // On both tabs, each in its own unit: the line was on the distance tab alone, and a hero who
   // sets a run by its duration is the one the proposal below it speaks to.
-  const longestRun = kind === "run" ? longestOf(habit, durationTab) : null;
+  // And not at all, on either tab, while the goal is the walk-run proposal: "your body copes
+  // better under 13 min", or under 1.3 km, over a proposal of twenty minutes contradicted it.
+  // The walk-run is mostly walking, which is why it may be longer than their longest run.
+  const longestRun = longestOf(habit, durationTab, kind === "run" && !walkRun);
   const longestLabel = durationTab
     ? (seconds: number) => formatDuration(seconds, language)
     : (metres: number) => formatDistance(metres, unit, language);

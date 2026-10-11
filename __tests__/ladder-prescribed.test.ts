@@ -138,8 +138,11 @@ describe("ladderNeutralSets", () => {
   afterAll(() => t.close());
 
   // Required late: the module imports the database client, which only the mock above can stand in for.
-  const ladderNeutralSets = (sets: CompletedExerciseInput[]) =>
-    (require("../db/completed") as typeof import("../db/completed")).ladderNeutralSets(sets);
+  const ladderNeutralSets = (sets: CompletedExerciseInput[], rounds?: number) =>
+    (require("../db/completed") as typeof import("../db/completed")).ladderNeutralSets(
+      sets,
+      rounds,
+    );
 
   const set = (
     exerciseId: number,
@@ -159,17 +162,88 @@ describe("ladderNeutralSets", () => {
     expect(ladderNeutralSets([set(1, 0), set(1, 1), set(1, 2)])).toEqual([false, false, false]);
   });
 
+  /** A set of a movement the hero swapped into the slot mid-session, in round `arrived`. */
+  const swapped = (
+    exerciseId: number,
+    roundIndex: number,
+    arrived = roundIndex,
+  ): CompletedExerciseInput => ({
+    ...set(exerciseId, roundIndex),
+    swappedIn: arrived,
+  });
+
+  // The marker is the round the movement came in, not a flag. Swapped in during round one and
+  // skipped there, then done for two rounds: read off its first row it was "due from round
+  // two", and the skip this whole rule exists to see was forgiven again.
+  test("a replacement swapped in and skipped in the same round is one the hero left", () => {
+    expect(
+      ladderNeutralSets([
+        swapped(2, 1, 0),
+        swapped(2, 2, 0),
+        set(3, 0, 10, 1),
+        set(3, 1, 10, 1),
+        set(3, 2, 10, 1),
+      ]),
+    ).toEqual([true, true, false, false, false]);
+  });
+
   test("a movement swapped away from is neutral, its replacement counts", () => {
     // Push-ups (1) on round one, then Knee Push-Ups (2) for the two that remained.
-    expect(ladderNeutralSets([set(1, 0), set(2, 1), set(2, 2)])).toEqual([true, false, false]);
+    expect(ladderNeutralSets([set(1, 0), swapped(2, 1), swapped(2, 2, 1)])).toEqual([
+      true,
+      false,
+      false,
+    ]);
   });
 
   test("a replacement skipped later is neutral too", () => {
-    expect(ladderNeutralSets([set(1, 0), set(2, 1), set(3, 2, 10, 1)])).toEqual([
-      true,
-      true,
-      false,
-    ]);
+    // Slot 0: Push-ups, then a replacement for round two only. Slot 1 did all three rounds.
+    expect(
+      ladderNeutralSets([
+        set(1, 0),
+        swapped(2, 1),
+        set(3, 0, 10, 1),
+        set(3, 1, 10, 1),
+        set(3, 2, 10, 1),
+      ]),
+    ).toEqual([true, true, false, false, false]);
+  });
+
+  // The case the rows alone cannot settle: "I couldn't" on Pull-ups in round one, then Negative
+  // Pull-ups swapped in and done clean for the two rounds that remained. That is two clean
+  // rounds of a movement the hero chose, and it earns its rung.
+  test("a replacement swapped in after a skipped round counts from where it came in", () => {
+    expect(
+      ladderNeutralSets([
+        swapped(2, 1),
+        swapped(2, 2, 1),
+        set(3, 0, 10, 1),
+        set(3, 1, 10, 1),
+        set(3, 2, 10, 1),
+      ]),
+    ).toEqual([false, false, false, false, false]);
+  });
+
+  // The last round, skipped whole, leaves no row at all: only the quest's round count says it
+  // was there.
+  test("a final round skipped whole is seen once the quest says how many rounds it has", () => {
+    expect(ladderNeutralSets([set(1, 0), set(1, 1)])).toEqual([false, false]);
+    expect(ladderNeutralSets([set(1, 0), set(1, 1)], 3)).toEqual([true, true]);
+  });
+
+  // A skip leaves no row, so the rounds a movement is missing *before* its first row are skips
+  // too. Counted from its first row only, "I couldn't" in round one followed by two clean rounds
+  // was a clean session, on a pin the same skip had just given up.
+  test("skipped in round one and done after, a movement is still one the hero left", () => {
+    expect(
+      ladderNeutralSets([
+        set(1, 1),
+        set(1, 2),
+        set(3, 0, 10, 1),
+        set(3, 1, 10, 1),
+        set(3, 2, 10, 1),
+      ]),
+    ).toEqual([true, true, false, false, false]);
   });
 
   test("a single-round quest judges what was done", () => {

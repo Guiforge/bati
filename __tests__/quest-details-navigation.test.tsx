@@ -95,9 +95,7 @@ jest.mock("@/db", () => ({
 }));
 
 jest.mock("@/db/outingHabit", () => ({
-  NO_HABIT: { usual: null, longestM: null },
-  LONGEST_RUN_CEILING: 1.1,
-  getOutingHabit: () => Promise.resolve({ usual: null, longestM: null }),
+  getOutingHabit: () => Promise.resolve({ usual: null, longestM: null, longestSeconds: null }),
 }));
 
 jest.mock("@/db/exercises", () => ({

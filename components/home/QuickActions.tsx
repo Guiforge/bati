@@ -18,7 +18,7 @@ import { listExercises } from "@/db/exercises";
 import { cheapestLocomotion, hasOutdoorSlot, outingGoal, withOutingGoal } from "@/db/expeditions";
 import { getOutingHabit } from "@/db/outingHabit";
 import { listOutings, type Outing } from "@/db/outings";
-import { previewOutingGoal } from "@/db/preview";
+import { previewOuting } from "@/db/preview";
 import {
   getAllQuestConfigs,
   getQuestConfig,
@@ -144,6 +144,8 @@ export function QuickActions() {
   const [outings, setOutings] = useState<Outing[] | null>(null);
   /** Each way out's goal as it would leave right now, keyed by quest id. */
   const [goals, setGoals] = useState<Record<number, OutingGoal | null>>({});
+  // Which tiles still stand on the app's walk-run proposal, for the goal sheet's ceiling line.
+  const [walkRuns, setWalkRuns] = useState<Record<number, boolean>>({});
   /** The last workout, when there is one and it can start from here. */
   const [replay, setReplay] = useState<{ questId: number; title: string } | null>(null);
   /** Double-tap guard, the same one the quest screen keeps for the same reason. */
@@ -172,16 +174,17 @@ export function QuickActions() {
     const exercisesById = indexExercises(exercises);
 
     // At `medium`, the level every tile leaves at, so the chip says what the tap will run. Off the
-    // template rather than the loaded quest: see `previewOutingGoal`.
-    const entries = list.map(
+    // template rather than the loaded quest: see `previewOuting`.
+    const previews = list.map(
       ({ quest }) =>
         [
           quest.id,
-          previewOutingGoal(quest, exercisesById, configs.get(quest.id) ?? null, runHabit),
+          previewOuting(quest, exercisesById, configs.get(quest.id) ?? null, runHabit),
         ] as const,
     );
     // Together: tiles drawn before their goals said "Free" on every chip, a goal nobody set.
-    setGoals(Object.fromEntries(entries));
+    setGoals(Object.fromEntries(previews.map(([id, preview]) => [id, preview.goal])));
+    setWalkRuns(Object.fromEntries(previews.map(([id, preview]) => [id, preview.walkRun])));
     setOutings(list);
 
     const last = (await getRecentSessionHistory(1))[0];
@@ -465,6 +468,7 @@ export function QuickActions() {
           locomotion={cheapestLocomotion(
             outings.filter((o) => o.quest.id === goalFor).map((o) => o.exercise),
           )}
+          walkRun={walkRuns[goalFor] ?? false}
           onPick={(goal) => {
             saveGoal(goalFor, goal).catch((error) => reportError("home.saveGoal", error));
           }}

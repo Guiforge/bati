@@ -34,6 +34,41 @@ describe("deleteSession", () => {
     return (t.sqlite.prepare(sql).get(...args) as { n: number }).n;
   }
 
+  // Issue #177: the day's bonus is written on the session it went to, and "was today paid" is
+  // asked of the journal. So the day comes back with the row, whoever removed it: nothing else
+  // has to be told.
+  test("gives the day's bonus back when the session that held it goes", async () => {
+    const at = new Date();
+    const other = await saveOne();
+    const paid = await completed().createCompletedSession({
+      xpEarned: 150,
+      dailyBonusXp: 50,
+      exercises: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 10 } }],
+    });
+    expect(await completed().dailyBonusOf(paid)).toBe(50);
+    expect(await completed().dailyBonusOf(other)).toBe(0);
+    expect(await completed().dailyBonusPaidOn(at)).toBe(true);
+
+    await completed().deleteSession(other);
+    expect(await completed().dailyBonusPaidOn(at)).toBe(true);
+
+    await completed().deleteSession(paid);
+    expect(await completed().dailyBonusPaidOn(at)).toBe(false);
+  });
+
+  test("a bonus paid yesterday does not spend today", async () => {
+    const yesterday = new Date(Date.now() - 86_400_000);
+    await completed().createCompletedSession({
+      xpEarned: 150,
+      dailyBonusXp: 50,
+      performedAt: yesterday,
+      exercises: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 10 } }],
+    });
+
+    expect(await completed().dailyBonusPaidOn(yesterday)).toBe(true);
+    expect(await completed().dailyBonusPaidOn(new Date())).toBe(false);
+  });
+
   test("removes the row, its sets and its trace, and the XP goes with it", async () => {
     const keep = await saveOne(null, 25);
     const id = await saveOne(null, 40);

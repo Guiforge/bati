@@ -203,7 +203,7 @@ unbuilt row draws the same emblem as a silhouette through `tintColor`, which nee
   200. The shield adds the longest flame and one ring per village year. The hero can pick another
   animal in Settings or from the crest sheet (`crestAnimal`, `auto` goes back to the sessions'
   animal, a hand-picked one carries a small ink diamond). The header line says "A bear watches
-  over Brumeval", "now" in the line (en; "from now on" in the other languages) on the day of the reveal and never for a hand-picked animal.
+  over Brumeval", "now" in the line (en; "depuis aujourd'hui", "seit heute", "desde hoy" in fr, de, es) on the day of the reveal and never for a hand-picked animal.
 - **Milestone line** (`milestoneLine`): under a rising building's bar, "Rank 4 in about 3 chest
   sessions." or "in about 3 outings", the mean of the five latest sessions that fed it, rounded
   up. Never a number of reps to do (`village-copy-no-chores`). Absent at the top rank and where

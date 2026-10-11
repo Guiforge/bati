@@ -129,12 +129,12 @@ describe("the village header", () => {
     expect(screen.getByLabelText("A bear.")).toBeTruthy();
   });
 
-  it("says from now on on the day of the reveal", async () => {
+  it("says now, or its equivalent, on the day of the reveal", async () => {
     await mount(crestOf({ revealedAt: new Date() }));
     expect(await line()).toBe("A bear now watches over Brumeval.");
   });
 
-  it("never says from now on for a hand-picked animal, whatever day it is", async () => {
+  it("never says now, or its equivalent, for a hand-picked animal, whatever day it is", async () => {
     await mount(crestOf({ revealedAt: new Date(), manual: true }));
     expect(await line()).toBe("A bear watches over Brumeval.");
   });

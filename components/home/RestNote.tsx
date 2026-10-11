@@ -1,11 +1,11 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { Moon } from "@/components/icons";
-import { pickDailyVariant, REST_SUGGESTION_MESSAGES } from "@/constants/restMessages";
+import { restMessageKey } from "@/constants/restMessages";
 import { dayKey } from "@/db/dates";
 import { getRestSuggestion, type RestSuggestion } from "@/db/restSuggestions";
 import { useReloadOnChange } from "@/hooks/useReloadOnChange";
-import { useSettingsStore } from "@/stores/settings";
 
 /**
  * The one thing Home says that is not an invitation to train.
@@ -15,7 +15,7 @@ import { useSettingsStore } from "@/stores/settings";
  * line under the stage, not a gate in front of it.
  */
 export function RestNote() {
-  const language = useSettingsStore((s) => s.language);
+  const { t } = useTranslation();
   const [suggestion, setSuggestion] = useState<RestSuggestion | null>(null);
 
   // A failed read leaves the line out; nothing else on Home depends on it.
@@ -41,9 +41,7 @@ export function RestNote() {
   const count =
     reason === "consecutive_days" ? suggestion.daysInARow : suggestion.recentSessionCount;
 
-  const pool = REST_SUGGESTION_MESSAGES[reason];
-  const variant = pickDailyVariant(pool[language], `${dayKey(new Date())}:${reason}`);
-  const text = variant.replace("{{count}}", String(count));
+  const text = t(restMessageKey(reason, `${dayKey(new Date())}:${reason}`), { count });
 
   return (
     <XStack gap="$2" items="flex-start" px="$4" pt="$2.5">

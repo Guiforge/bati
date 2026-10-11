@@ -1,5 +1,6 @@
 import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
+import { formatList } from "@/src/i18n/list";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { getAdventureDetails, getAnyActiveAdventureRun } from "./adventures";
 import { getBossFightByAdventure } from "./bossFights";
@@ -153,9 +154,10 @@ export async function decideHomeOffer(
   // 3. No oath to serve: fall back to what the last 30 days say is lagging.
   const suggestion = (await getSuggestedQuestsForWeakAreas(1))[0];
   if (suggestion && !isCancelled()) {
-    const muscles = suggestion.matchingMuscles
-      .map((m) => MUSCLE_LABELS[m]?.[language] ?? m)
-      .join(", ");
+    const muscles = formatList(
+      suggestion.matchingMuscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
+      language,
+    );
     const offer = await questOffer(suggestion.id);
     if (offer && !isCancelled()) return { kind: "weak_muscles", muscles, ...offer };
   }

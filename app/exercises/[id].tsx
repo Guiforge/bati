@@ -38,6 +38,7 @@ import type { QuestTargetType } from "@/db/schema";
 import { formatSlotTarget } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import { useSetAside } from "@/hooks/useSetAside";
+import { formatList } from "@/src/i18n/list";
 import { localizedName, localizedText } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -272,7 +273,10 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
           {progression.alsoNext.length === 0 ? null : (
             <Paragraph color="$textSecondary" size="$2">
               {t("progression.rung_also_leads_to", {
-                names: progression.alsoNext.map((m) => localizedName(m, language)).join(", "),
+                names: formatList(
+                  progression.alsoNext.map((m) => localizedName(m, language)),
+                  language,
+                ),
               })}
             </Paragraph>
           )}

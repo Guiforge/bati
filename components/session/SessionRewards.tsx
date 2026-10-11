@@ -18,6 +18,7 @@ import { getLevelTitle } from "@/db/userLevel";
 import { buildingCeiling, TIER_NAMES } from "@/db/village";
 import { useAnimationProps } from "@/hooks/useReducedMotion";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
+import { formatList } from "@/src/i18n/list";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import type { useSessionStore } from "@/stores/session";
 import { NewRecordsBadge } from "./NewRecordsBadge";
@@ -324,7 +325,10 @@ export function SessionRewards({
                   {step.alsoNext.length > 0 ? (
                     <Text fontSize={12} color="$text" opacity={0.55} mt="$1">
                       {t("progression.rung_also_leads_to", {
-                        names: step.alsoNext.map((m) => localizedName(m, language)).join(", "),
+                        names: formatList(
+                          step.alsoNext.map((m) => localizedName(m, language)),
+                          language,
+                        ),
                       })}
                     </Text>
                   ) : null}

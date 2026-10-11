@@ -431,6 +431,7 @@ function RevealStoryboard({
             portrait={portrait}
             fallback={
               <Image
+                testID="big-feast-silhouette"
                 source={icon}
                 tintColor={rawColors.text}
                 contentFit="contain"

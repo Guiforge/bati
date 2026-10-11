@@ -154,7 +154,8 @@ describe("the rare coat is Eternal", () => {
 });
 
 describe("the rare coat on offer", () => {
-  const ships = new Set(["bear-adult-rare"]);
+  // bear-young-rare is delivered here on purpose: only the stage rule keeps a young animal out.
+  const ships = new Set(["bear-young-rare", "bear-adult-rare"]);
   test("needs the coat won, an adult or more and its portrait", () => {
     expect(rareCoatShips("bear", "adult", 5, ships)).toBe(true);
     expect(rareCoatShips("bear", "adult", 4, ships)).toBe(false);

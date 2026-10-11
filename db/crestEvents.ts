@@ -175,6 +175,7 @@ export function rareCoatNews(
 ): RareCoatNews | null {
   if (!after || !shown || shown.includes(COAT_RARE_KEY)) return null;
   const { animal, stage } = after;
+  // `young` is tested here for the type only (RareCoatNews has no young stage); rareCoatShips is the rule.
   if (stage === "young" || !rareCoatShips(animal, stage, after.longestFlame, delivered))
     return null;
   return { animal, stage };

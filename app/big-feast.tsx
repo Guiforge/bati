@@ -6,6 +6,7 @@ import { revealShield } from "@/components/session/bigFeastText";
 import { goOn, seeVillage } from "@/components/session/destinations";
 import { bigFeastOf, feastKey } from "@/components/session/feasts";
 import { CrestSheet, type CrestView } from "@/components/village/CrestSheet";
+import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import { countSessions } from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
 import { preferences } from "@/db/preferences";
@@ -40,8 +41,11 @@ function readCrest(set: (crest: Crest | null) => void) {
 const whyOf = (crest: Crest | null | undefined, open: () => void) =>
   crest != null && !crest.manual ? open : undefined;
 
+// The legendary feast reads the crest only for the flame its portrait needs: with no
+// legendary portrait shipped for the animal there is nothing to wait for.
 const readsCrest = (feast: BigFeast | null) =>
-  feast?.kind === "reveal" || feast?.kind === "legendary";
+  feast?.kind === "reveal" ||
+  (feast?.kind === "legendary" && `${feast.animal}-legendary` in ANIMAL_PORTRAITS);
 
 /** The stage the portrait wears: the crest's, or legendary for the feast that announces it. */
 const portraitFor = (feast: BigFeast, crest: Crest | null | undefined) =>

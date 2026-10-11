@@ -307,7 +307,12 @@ describe("crestEvents", () => {
 describe("rareCoatNews", () => {
   const adult = (longestFlame: 4 | 5, picked: Animal | "auto" = "auto", sessions = 40) =>
     crestAnimals(seq(["strength", sessions]), picked, longestFlame);
-  const ships = new Set(["bear-adult-rare", "bear-venerable-rare", "boar-adult-rare"]);
+  const ships = new Set([
+    "bear-young-rare",
+    "bear-adult-rare",
+    "bear-venerable-rare",
+    "boar-adult-rare",
+  ]);
 
   test("an adult with an Eternal flame, a shipped portrait and an unshown card: the card", () => {
     expect(rareCoatNews(adult(5), [], ships)).toEqual({ animal: "bear", stage: "adult" });

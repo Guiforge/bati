@@ -246,7 +246,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-11",
-    "edited": "2026-10-11: four eye highlights painted out (each pixel brighter than the median of the ring around the eye takes that median) and the cast shadow under the paws erased to the background colour; the signed original is unchanged",
+    "edited": "2026-10-11: eye highlights painted out (each pixel brighter than the median of the ring around the eye takes that median), the pale lower-lid crescent under the left eye flattened, and the cast shadow under the paws erased to the background colour, box by box so the ink of the paws stays; the signed original is unchanged",
     "reencoded": "cwebp -q 85, from bear-young.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -263,6 +263,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-11",
+    "edited": "2026-10-11: the blue rim of light along the back and ears pulled back to the grey of the coat; the signed original is unchanged",
     "reencoded": "cwebp -q 85, from boar-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -296,7 +297,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-11",
-    "edited": "2026-10-11: eye highlight painted out; the signed original is unchanged",
+    "edited": "2026-10-11: eye highlight painted out, the blue rim of light along the back pulled back to the grey of the coat; the signed original is unchanged",
     "reencoded": "cwebp -q 85, from boar-venerable.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -397,7 +398,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-11",
-    "edited": "2026-10-11: ground shadow erased, eye highlight painted out; the signed original is unchanged",
+    "edited": "2026-10-11: ground shadow erased, eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -q 85, from horse-venerable.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -495,7 +496,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-11",
-    "edited": "2026-10-11: eye highlight painted out; the signed original is unchanged",
+    "edited": "2026-10-11: eye highlight painted out, the streaks of ground shadow under the hooves erased to the background colour (the ink of the hooves is spared); the signed original is unchanged",
     "reencoded": "cwebp -q 85, from stag-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },

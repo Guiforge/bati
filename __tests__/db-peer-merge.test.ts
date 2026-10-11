@@ -833,6 +833,26 @@ describe("the crest follows the journal, not the device", () => {
     await converged(laterAuto);
   });
 
+  test("crestCoat: an auto written later beats an older usual, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "crestCoat", "auto", 3_000);
+    const olderUsual = await peer("older-usual.db", (sqlite) =>
+      setPref(sqlite, "crestCoat", "usual", 2_000),
+    );
+    await merge().mergePeer(olderUsual);
+    expect(prefValue("crestCoat")).toBe("auto");
+    await converged(olderUsual);
+
+    // The other way: this device kept the older usual, the other went back to auto afterwards.
+    setPref(t.sqlite, "crestCoat", "usual", 2_000);
+    const laterAuto = await peer("later-coat-auto.db", (sqlite) =>
+      setPref(sqlite, "crestCoat", "auto", 3_000),
+    );
+    await merge().mergePeer(laterAuto);
+    expect(prefValue("crestCoat")).toBe("auto");
+    await converged(laterAuto);
+  });
+
   test("a pick equal to the sessions' animal, from before the rule, leaves the same crest as auto, either way", async () => {
     // Eight strength sessions: the bear. One device kept an old explicit "bear", the other is on
     // auto; whichever value the merge keeps, neither side draws the diamond.

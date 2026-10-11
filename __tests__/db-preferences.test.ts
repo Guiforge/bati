@@ -57,6 +57,22 @@ describe("db/preferences", () => {
     }
   });
 
+  test("crestCoat: no default written, unknown reads as auto, usual and auto round-trip", async () => {
+    const { preferences, setPreference } =
+      require("../db/preferences") as typeof import("../db/preferences");
+    const row = () =>
+      t.sqlite.prepare("SELECT value FROM user_preferences WHERE key = 'crestCoat'").get();
+    expect(await preferences.getCrestCoat()).toBe("auto");
+    expect(row()).toBeUndefined();
+    await preferences.setCrestCoat("usual");
+    expect(await preferences.getCrestCoat()).toBe("usual");
+    // Going back writes `auto`: a preference has no tombstone for the merge to carry.
+    await preferences.setCrestCoat("auto");
+    expect(row()).toEqual({ value: "auto" });
+    await setPreference("crestCoat", "gold");
+    expect(await preferences.getCrestCoat()).toBe("auto");
+  });
+
   test("a corrupt set-aside list reads as empty and is reported, not silently dropped", async () => {
     const { preferences, setPreference } =
       require("../db/preferences") as typeof import("../db/preferences");

@@ -2,6 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { getLocales } from "expo-localization";
 import { reportError } from "../src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
+import type { CrestCoat } from "./crestCoat";
 import { ANIMALS, type Animal } from "./crestRules";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
@@ -429,6 +430,21 @@ export const preferences = {
 
   async setCrestAnimal(choice: Animal | "auto"): Promise<void> {
     await setPreference("crestAnimal", choice);
+  },
+
+  /**
+   * Whether the hero wants the rare coat once won (`auto`) or the usual one (`usual`), for every
+   * animal on their crest. Same discipline as `getCrestAnimal`: nothing writes a default, an
+   * unknown or missing value is `auto`, and going back to `auto` writes `auto`.
+   */
+  async getCrestCoat(): Promise<CrestCoat> {
+    return (await getPreference("crestCoat")) === "usual" ? "usual" : "auto";
+  },
+
+  // ponytail: no caller until the crest sheet's coat choice (V-02 extended, T3). Its reader is
+  // `portraitOf` (db/crest.ts) already, so the choice has a consumer the day the control exists.
+  async setCrestCoat(choice: CrestCoat): Promise<void> {
+    await setPreference("crestCoat", choice);
   },
 
   /**

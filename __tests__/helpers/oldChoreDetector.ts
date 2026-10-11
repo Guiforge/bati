@@ -1,7 +1,7 @@
 // The chore detector of the no-chores test as it stood at 0125bfde, kept word for word. The
 // count + allow-list rule that replaced it was weaker (14 real chores passed it), so both now run
 // on the same copy and a string fails if EITHER catches it. Do not edit a pattern here: write the
-// copy differently. A pattern removed here is caught by village-copy-guard.test.ts.
+// copy differently. A pattern removed here is caught by the PROBES guard of village-copy-no-chores.test.ts.
 
 export const CHORES: Record<string, RegExp> = {
   en: /(reps?|sessions?|bosses|boss|routes?|rematch(es)?|leagues?) (to level|to go|left)|(more|another) (reps?|sessions?|bosses|boss|routes?|rematch(es)?)|before level|to level|for level|one rep builds|(left|remain(s|ing)?|still) to\b|to do\b|still open|deeds still/i,

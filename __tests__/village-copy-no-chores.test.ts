@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
@@ -731,10 +732,13 @@ it("catches a count of effort, whatever the sentence", () => {
 });
 
 // The guard against a weaker detector. Every probe below is a chore the phrasing detector (or the
-// count rule) is known to catch, and `by` names who must keep catching it: removing a pattern from
-// either fails here, and the combined check must reject every probe whoever catches it.
-const rejects = (lang: Lang, text: string) =>
-  countHit(text) || CHORE_MARKER.test(text) || oldIsChore(lang, text);
+// count rule) is known to catch, and `by` names who must keep catching it. Each probe goes through
+// check() itself, the whole check, and must come back with a verdict; a probe marked "old" must
+// get it from the old detector (an `old|` verdict), so removing a pattern from the old detector
+// fails here even while the count rule would have caught the line. The last block of probes has one
+// line per top-level alternative of CHORES and of the old detector's MARKER words, each caught by
+// that alternative alone: removing any one reddens this test (a handful are subsumed by a
+// neighbour and cannot be probed, see the source pin below for CHORES).
 type Probe = { lang: Lang; text: string; by: "old" | "count" };
 const PROBES: Probe[] = [
   ...Object.entries(OLD_LINES).flatMap(([lang, lines]) =>
@@ -762,6 +766,63 @@ const PROBES: Probe[] = [
   { lang: "es", text: "Todavía {{count}} para el grado 2", by: "old" },
   { lang: "es", text: "hasta el nivel 2", by: "old" },
   { lang: "es", text: "para el nivel 2", by: "old" },
+  // One probe per alternative of the old detector (CHORES, then MARKER words with a count).
+  { lang: "en", text: "Another route", by: "old" },
+  { lang: "en", text: "One rep builds it", by: "old" },
+  { lang: "en", text: "Still to build", by: "old" },
+  { lang: "en", text: "Things to do", by: "old" },
+  { lang: "en", text: "Doors still open", by: "old" },
+  { lang: "en", text: "Deeds still waiting", by: "old" },
+  { lang: "en", text: "Only 5 reps", by: "old" },
+  { lang: "en", text: "Just 5 reps", by: "old" },
+  { lang: "en", text: "5 reps more", by: "old" },
+  { lang: "en", text: "Another 5 reps", by: "old" },
+  { lang: "en", text: "Until 5 reps", by: "old" },
+  { lang: "en", text: "Left 5 reps", by: "old" },
+  { lang: "en", text: "To go: 5 reps", by: "old" },
+  { lang: "en", text: "Remaining 5 reps", by: "old" },
+  { lang: "en", text: "Still 5 reps", by: "old" },
+  { lang: "en", text: "Missing 5 reps", by: "old" },
+  { lang: "en", text: "Do 5 reps", by: "old" },
+  { lang: "en", text: "Complete 5 reps", by: "old" },
+  { lang: "en", text: "Finish 5 reps", by: "old" },
+  { lang: "fr", text: "Avant le rang 2", by: "old" },
+  { lang: "fr", text: "Pour le niveau 2", by: "old" },
+  { lang: "fr", text: "Une rep suffit", by: "old" },
+  { lang: "fr", text: "Il te reste du chemin", by: "old" },
+  { lang: "fr", text: "Des choses à faire", by: "old" },
+  { lang: "fr", text: "Encore {{n}}", by: "old" },
+  { lang: "fr", text: "Plus que 5 reps", by: "old" },
+  { lang: "fr", text: "5 reps encore", by: "old" },
+  { lang: "fr", text: "Reste 5 reps", by: "old" },
+  { lang: "fr", text: "Manque 5 reps", by: "old" },
+  { lang: "fr", text: "Avant 5 reps", by: "old" },
+  { lang: "fr", text: "Jusqu'au 5 reps", by: "old" },
+  { lang: "fr", text: "Pour atteindre 5 reps", by: "old" },
+  { lang: "fr", text: "Fais 5 reps", by: "old" },
+  { lang: "fr", text: "Refais 5 reps", by: "old" },
+  { lang: "de", text: "Bis zu Stufe 2", by: "old" },
+  { lang: "de", text: "Eine Wiederholung reicht", by: "old" },
+  { lang: "de", text: "Noch zu bauen", by: "old" },
+  { lang: "de", text: "Alles zu erledigen", by: "old" },
+  { lang: "de", text: "Noch {{n}} Wochen", by: "old" },
+  { lang: "de", text: "5 Wdh. noch", by: "old" },
+  { lang: "de", text: "Nur 5 Wdh.", by: "old" },
+  { lang: "de", text: "Bis 5 Wdh.", by: "old" },
+  { lang: "de", text: "Fehlt 5 Wdh.", by: "old" },
+  { lang: "de", text: "Mehr 5 Wdh.", by: "old" },
+  { lang: "de", text: "Übrig 5 Wdh.", by: "old" },
+  { lang: "de", text: "Mach 5 Wdh.", by: "old" },
+  { lang: "de", text: "Schaffe 5 Wdh.", by: "old" },
+  { lang: "es", text: "Cosas por hacer", by: "old" },
+  { lang: "es", text: "Más 5 reps", by: "old" },
+  { lang: "es", text: "Falta 5 reps", by: "old" },
+  { lang: "es", text: "5 reps para el", by: "old" },
+  { lang: "es", text: "Hasta 5 reps", by: "old" },
+  { lang: "es", text: "Solo 5 reps", by: "old" },
+  { lang: "es", text: "Sólo 5 reps", by: "old" },
+  { lang: "es", text: "Haz 5 reps", by: "old" },
+  { lang: "es", text: "Hazlo 5 reps", by: "old" },
   { lang: "fr", text: "Encore une séance pour le rang 2", by: "count" },
   { lang: "fr", text: "3 exercices", by: "count" },
   { lang: "fr", text: "2 quêtes", by: "count" },
@@ -794,12 +855,53 @@ const PROBES: Probe[] = [
   { lang: "en", text: "Rank 2 needs 120 reps", by: "count" },
 ];
 
+// The sizes at the time of writing: a floor, raised when a probe is added, never lowered.
+const PROBE_COUNT = 129;
+const OLD_LINE_COUNT = 21;
+const probeVerdicts = (lang: Lang, text: string) => {
+  const verdicts: string[] = [];
+  check("probe", text, verdicts, lang);
+  return verdicts;
+};
+
 it("never lets the check get weaker than the detector it replaced", () => {
   const verdicts = PROBES.flatMap(({ lang, text, by }) => {
-    const caught = by === "old" ? oldIsChore(lang, text) : countHit(text);
-    return caught && rejects(lang, text) ? [] : [`${by}|${lang}|${text}`];
+    const got = probeVerdicts(lang, text);
+    const caught = by === "old" ? got.some((v) => v.startsWith("old|")) : got.length > 0;
+    return caught ? [] : [`${by}|${lang}|${text}`];
   });
   expect(verdicts).toEqual([]);
+});
+
+// The guard cannot be emptied or short-circuited: sizes only go up, and a line that ONLY the old
+// detector catches must come out of check() rejected, with the old detector named.
+it("keeps its probes, and check() really runs the old detector", () => {
+  expect(PROBES.length).toBeGreaterThanOrEqual(PROBE_COUNT);
+  expect(Object.values(OLD_LINES).flat().length).toBeGreaterThanOrEqual(OLD_LINE_COUNT);
+  const onlyOld = PROBES.filter(
+    (p) => p.by === "old" && !countHit(p.text) && !CHORE_MARKER.test(p.text),
+  );
+  expect(onlyOld.length).toBeGreaterThan(0);
+  for (const { lang, text } of onlyOld)
+    expect([text, probeVerdicts(lang, text).map((v) => v.split("|")[0])]).toEqual([text, ["old"]]);
+});
+
+// Some alternatives of CHORES are subsumed by a neighbour ("encore {{count}}" by "encore {{n}}",
+// "noch N <unit>" by "noch N <anything>", "te quedan" by "quedan"), so no line can tell their
+// removal. The patterns are copied word for word and never edited: pin them.
+it("keeps the CHORES patterns of 0125bfde word for word", () => {
+  const pin = Object.fromEntries(
+    Object.entries(CHORES).map(([l, r]) => [
+      l,
+      createHash("sha256").update(`${r.source}/${r.flags}`).digest("hex").slice(0, 16),
+    ]),
+  );
+  expect(pin).toEqual({
+    en: "9080eb60636fe472",
+    fr: "2f7753e70b6dab20",
+    de: "35cd92848f737c46",
+    es: "c21193b957b09e39",
+  });
 });
 
 const used = new Set<string>();

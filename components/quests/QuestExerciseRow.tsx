@@ -9,10 +9,9 @@ import { Tag } from "@/components/common/Tag";
 import { ChevronDown, ChevronUp, Dumbbell, Footprints } from "@/components/icons";
 import { slotCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseThumb } from "@/constants/assetMap";
-import { EQUIPMENT_LABELS } from "@/db/equipment";
 import { formatDuration } from "@/db/estimate";
 import type { Exercise } from "@/db/exercises";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "@/db/labels";
 import type { QuestExercise } from "@/db/quests";
 import { formatSlotTarget, type Target } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
@@ -111,7 +110,6 @@ function ExerciseDetail({
           <Tag
             label={t("quests.seconds_per_rep", {
               count: qex.exercise.secondsPerRep,
-              defaultValue: `${qex.exercise.secondsPerRep}s/rep`,
             })}
           />
         ) : null}
@@ -130,7 +128,7 @@ function ExerciseDetail({
         fontSize={14}
         onPress={onOpenExercise}
       >
-        {t("quests.open_exercise", "See the exercise")}
+        {t("quests.open_exercise")}
       </AppButton>
 
       {/* The way back from a set-aside, where the hero sees what it cost: in the panel and not on
@@ -147,7 +145,6 @@ function ExerciseDetail({
         >
           {t("setAside.put_back_named", {
             name: localizedName(qex.substitutedFor, language),
-            defaultValue: `Put ${localizedName(qex.substitutedFor, language)} back`,
           })}
         </AppButton>
       ) : null}
@@ -196,7 +193,7 @@ function ExerciseDetail({
           fontSize={14}
           onPress={() => onReplace(qex.id)}
         >
-          {t("quests.swap_exercise", "Replace this exercise")}
+          {t("quests.swap_exercise")}
         </AppButton>
       ) : null}
     </YStack>
@@ -337,7 +334,6 @@ export function QuestExerciseRow({
                     },
                     language,
                   ),
-                  defaultValue: `Last: ${qex.ghost.last}`,
                 })}
               />
             ) : null}

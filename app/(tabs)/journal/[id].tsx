@@ -42,7 +42,7 @@ export default function SessionDetailScreen() {
           reportError("journal.detail", error);
           return {
             status: "error" as const,
-            message: error instanceof Error ? error.message : t("common.error"),
+            message: t("common.error"),
           };
         }),
       );

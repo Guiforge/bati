@@ -224,9 +224,9 @@ describe("RestView", () => {
     });
     const view = await mountRest();
 
-    await fireEvent.press(view.getByLabelText("Decrease result"));
+    await fireEvent.press(view.getByLabelText("session.decrease_result_accessibility"));
     expect(useSessionStore.getState().results[0]?.result.value).toBe(31);
-    await fireEvent.press(view.getByLabelText("Increase result"));
+    await fireEvent.press(view.getByLabelText("session.increase_result_accessibility"));
     expect(useSessionStore.getState().results[0]?.result.value).toBe(32);
   });
 

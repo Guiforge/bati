@@ -65,7 +65,7 @@ function BestEffortCard({
       <XStack items="center" gap="$2" justify="center">
         <GameIcon name="trophy" size={20} color="$resourceGold" />
         <Text fontWeight="700" fontSize={16} color="$resourceGold">
-          {t("session.standing_title", "Best effort")}
+          {t("session.standing_title")}
         </Text>
         <GameIcon name="trophy" size={20} color="$resourceGold" />
       </XStack>
@@ -159,10 +159,10 @@ export function SessionRewards({
             </YStack>
             <YStack flex={1}>
               <Text fontWeight="700" fontSize={13} color="$resourceGold" textTransform="uppercase">
-                {t("session.level_up", "Level Up!")}
+                {t("session.level_up")}
               </Text>
               <Text fontWeight="700" fontSize={20} color="$text">
-                {t("session.level_label", "Level")} {result.levelUp.newLevel} ·{" "}
+                {t("session.level_label")} {result.levelUp.newLevel} ·{" "}
                 {getLevelTitle(result.levelUp.newLevel)[language]}
               </Text>
             </YStack>
@@ -192,7 +192,7 @@ export function SessionRewards({
           </YStack>
           <YStack p="$4" gap="$1" items="center">
             <Text fontWeight="700" fontSize={13} color="$resourceGold" textTransform="uppercase">
-              {t("session.village_tier_up_title", "Your village grew!")}
+              {t("session.village_tier_up_title")}
             </Text>
             <Text fontWeight="700" fontSize={20} color="$text" style={{ textAlign: "center" }}>
               {TIER_NAMES[result.tierUp.newTier][language]}
@@ -212,7 +212,7 @@ export function SessionRewards({
               color="$resourceGold"
               style={{ textAlign: "center" }}
             >
-              {t("session.village_growth_title", "Your village grows")}
+              {t("session.village_growth_title")}
             </Text>
             <GameIcon name="castle" size={22} color="$resourceGold" />
           </XStack>
@@ -253,13 +253,12 @@ export function SessionRewards({
             <Text fontSize={12} color="$text" opacity={0.7} style={{ textAlign: "center" }}>
               {t("session.village_growth_more", {
                 count: result.villageGrowth.length - VILLAGE_GROWTH_SHOWN,
-                defaultValue: `+${result.villageGrowth.length - VILLAGE_GROWTH_SHOWN} more`,
               })}
             </Text>
           )}
           <AppButton backgroundColor="$surface" onPress={onViewVillage}>
             <Text color="$text" fontSize={14} fontWeight="700">
-              {t("session.village_growth_cta", "View your village")}
+              {t("session.village_growth_cta")}
             </Text>
           </AppButton>
         </Card>
@@ -283,10 +282,9 @@ export function SessionRewards({
               style={{ textAlign: "center" }}
             >
               {result.newRungs.length === 1
-                ? t("progression.new_rung", "New step unlocked")
+                ? t("progression.new_rung")
                 : t("progression.new_rungs", {
                     count: result.newRungs.length,
-                    defaultValue: `${result.newRungs.length} new steps unlocked`,
                   })}
             </Text>
             <GameIcon name="muscle" size={20} color="$resourceGold" />
@@ -317,7 +315,6 @@ export function SessionRewards({
                   <Text fontSize={12} color="$text" opacity={0.7}>
                     {t("progression.new_rung_from", {
                       name: localizedName(step.from, language),
-                      defaultValue: `You have mastered ${localizedName(step.from, language)}`,
                     })}
                   </Text>
                   {/* One rung, several doors: what the row illustrates is the one to try, and it

@@ -299,10 +299,10 @@ export function ActiveExerciseView() {
   const swapReasons = new Map(swapCandidates.map((c) => [c.exercise.id, c.reason] as const));
 
   const swapReasonLabel = (reason: SwapReason | null | undefined): string | null => {
-    if (reason === "easier") return t("quests.swap_reason_easier", "An easier rung");
-    if (reason === "harder") return t("quests.swap_reason_harder", "A harder rung");
-    if (reason === "same_pattern") return t("quests.swap_reason_pattern", "Same movement");
-    if (reason === "same_family") return t("quests.swap_reason_family", "Same family");
+    if (reason === "easier") return t("quests.swap_reason_easier");
+    if (reason === "harder") return t("quests.swap_reason_harder");
+    if (reason === "same_pattern") return t("quests.swap_reason_pattern");
+    if (reason === "same_family") return t("quests.swap_reason_family");
     return null;
   };
 
@@ -650,7 +650,7 @@ export function ActiveExerciseView() {
                           color="$textSecondary"
                           numberOfLines={1}
                         >
-                          {t("session.swap_short", "Replace")}
+                          {t("session.swap_short")}
                         </Text>
                       </Pressable>
                     </XStack>
@@ -1053,7 +1053,7 @@ export function ActiveExerciseView() {
           setSwapOpen(next);
           if (!next) setLeaveOut(false);
         }}
-        title={t("quests.swap_exercise", "Replace this exercise")}
+        title={t("quests.swap_exercise")}
         header={
           <SetAsideToggle exercise={currentEx.exercise} checked={leaveOut} onToggle={setLeaveOut} />
         }

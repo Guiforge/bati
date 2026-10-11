@@ -441,7 +441,7 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
             hitSlop={8}
             circular
             icon={<Minus size={16} />}
-            accessibilityLabel={t("session.decrease_result_accessibility", "Decrease result")}
+            accessibilityLabel={t("session.decrease_result_accessibility")}
             onPress={() => step(Math.max(1, result.result.value - 1))}
           />
           <XStack minW={42} items="baseline" justify="center">
@@ -464,7 +464,7 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
             hitSlop={8}
             circular
             icon={<Plus size={16} />}
-            accessibilityLabel={t("session.increase_result_accessibility", "Increase result")}
+            accessibilityLabel={t("session.increase_result_accessibility")}
             onPress={() => step(result.result.value + 1)}
           />
         </XStack>

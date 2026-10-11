@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next";
 
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { MUSCLE_LABELS } from "@/db/labels";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import {
   BUILDING_LABELS,

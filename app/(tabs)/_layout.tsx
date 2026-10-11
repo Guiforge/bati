@@ -33,7 +33,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           tabBarButtonTestID: "tab-home",
-          title: t("tabs.home", "Home"),
+          title: t("tabs.home"),
           tabBarIcon: ({ focused, size }) => (
             <Home
               color={focused ? "$primaryText" : "$text"}
@@ -49,7 +49,7 @@ export default function TabsLayout() {
         name="adventures"
         options={{
           tabBarButtonTestID: "tab-adventures",
-          title: t("tabs.adventures", "Adventures"),
+          title: t("tabs.adventures"),
           tabBarIcon: ({ focused, size }) => (
             <Sparkles
               color={focused ? "$primaryText" : "$text"}
@@ -66,7 +66,7 @@ export default function TabsLayout() {
         name="quests"
         options={{
           tabBarButtonTestID: "tab-quests",
-          title: t("tabs.quests", "Quests"),
+          title: t("tabs.quests"),
           // The only tab entered from outside itself: the home CTA and every adventure step
           // push /quests/{id}. Without this the detail stays on the stack, so tapping the
           // Quests tab later dropped the hero straight back into a quest instead of the
@@ -88,7 +88,7 @@ export default function TabsLayout() {
         name="village"
         options={{
           tabBarButtonTestID: "tab-village",
-          title: t("tabs.village", "Village"),
+          title: t("tabs.village"),
           tabBarIcon: ({ focused, size }) => (
             <Castle
               color={focused ? "$primaryText" : "$text"}
@@ -105,7 +105,7 @@ export default function TabsLayout() {
         name="journal"
         options={{
           tabBarButtonTestID: "tab-journal",
-          title: t("tabs.journal", "Journal"),
+          title: t("tabs.journal"),
           tabBarIcon: ({ focused, size }) => (
             <Scroll
               color={focused ? "$primaryText" : "$text"}

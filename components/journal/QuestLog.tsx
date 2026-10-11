@@ -41,7 +41,7 @@ import { formatDuration } from "@/db";
 import { type CompletedSession, OUTING_COUNTS_AFTER_SECONDS } from "@/db/completed";
 import type { VariationStep } from "@/db/exercises";
 import { type FallenRecord, type MuscleShift, type QuestStanding, sessionReps } from "@/db/journal";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { MUSCLE_LABELS } from "@/db/labels";
 import { correctLoggedSet } from "@/db/personalRecords";
 import { formatCount, formatTargetValue, PER_SIDE, perSideLabel } from "@/db/targets";
 import type { UserLevelInfo } from "@/db/userLevel";

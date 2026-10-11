@@ -56,7 +56,7 @@ export function VillageSceneViewer({
       justify="center"
       onPress={onClose}
       accessibilityRole="button"
-      accessibilityLabel={t("village.close_scene", "Close")}
+      accessibilityLabel={t("village.close_scene")}
       {...anim}
     >
       <Image
@@ -85,7 +85,7 @@ export function VillageSceneViewer({
           {title}
         </Text>
         <Text fontSize={13} color="$muted">
-          {t("village.tap_to_close", "Tap anywhere to close")}
+          {t("village.tap_to_close")}
         </Text>
       </YStack>
     </YStack>

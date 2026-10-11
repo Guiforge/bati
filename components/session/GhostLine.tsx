@@ -102,7 +102,7 @@ export function GhostLine({
               other half of it, because a hold past its best has already done the thing while a
               rep count past it has not. */}
           <Text fontSize={12} fontWeight="700" color="$resourceGold">
-            {t("session.ghost_record_label", "Past your best")}
+            {t("session.ghost_record_label")}
           </Text>
           <Text fontSize={15} fontWeight="700" color="$text">
             {perSideLabel(formatTarget({ type, value: live }, language), perSide, language)}
@@ -122,7 +122,7 @@ export function GhostLine({
               "last time 12 · best 12" reads like a bug, so the best half simply does not
               render, instead of a second sentence existing to say the same thing. */}
           <Text fontSize={12} color="$textSecondary">
-            {t("session.ghost_last_label", "Last time")}
+            {t("session.ghost_last_label")}
           </Text>
           <Text fontSize={15} fontWeight="700" color="$text">
             {perSideLabel(
@@ -137,7 +137,7 @@ export function GhostLine({
                 ·
               </Text>
               <Text fontSize={12} color="$textSecondary">
-                {t("session.ghost_best_label", "best")}
+                {t("session.ghost_best_label")}
               </Text>
               <Text fontSize={15} fontWeight="700" color="$resourceGold">
                 {perSideLabel(

@@ -2,7 +2,7 @@ import { and, count, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
 import { isWorkout } from "./completed";
-import { MUSCLE_LABELS } from "./muscles";
+import { MUSCLE_LABELS } from "./labels";
 import { isMovementPattern, PATTERN_LABELS, PULL_PATTERNS, PUSH_PATTERNS } from "./patterns";
 import { shortLivedQuery } from "./queryCache";
 import { getEligibleQuestIds } from "./quests";

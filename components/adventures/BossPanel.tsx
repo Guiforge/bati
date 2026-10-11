@@ -146,10 +146,7 @@ function Traits({ fight, isEnraged }: { fight: BossFight; isEnraged: boolean }) 
           on the pre-fight panel, where the hero still has time to pick accordingly. */}
       {fight.weaknessMuscle || fight.resistanceMuscle ? (
         <Text fontSize={11} color="$textSecondary" opacity={0.8}>
-          {t(
-            "boss.matchup_hint",
-            "Strike its weakness for 1.5× damage; its resistance halves yours.",
-          )}
+          {t("boss.matchup_hint")}
         </Text>
       ) : null}
     </YStack>

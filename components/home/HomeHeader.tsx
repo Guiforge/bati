@@ -74,7 +74,7 @@ export function HomeHeader() {
           pressStyle={{ scale: 0.95 }}
           onPress={() => router.push("/settings")}
           accessibilityRole="button"
-          accessibilityLabel={t("home.open_settings_a11y", "Open settings")}
+          accessibilityLabel={t("home.open_settings_a11y")}
         >
           <Avatar.Image source={avatarSource} />
           <Avatar.Fallback background="$primary" />
@@ -105,7 +105,6 @@ export function HomeHeader() {
             {t("home.level_line", {
               level: levelInfo.level,
               title: levelTitle,
-              defaultValue: `Level ${levelInfo.level} • ${levelTitle}`,
             })}
           </Text>
         ) : (

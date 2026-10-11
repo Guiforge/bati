@@ -38,7 +38,7 @@ import {
 } from "@/db";
 import { type BossFight, getBossFightByAdventure } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
-import { MUSCLE_LABELS } from "@/db/muscles";
+import { MUSCLE_LABELS } from "@/db/labels";
 import { loadSlotJournal, QUEST_AS_WRITTEN, type SlotJournal } from "@/db/quests";
 import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -320,7 +320,7 @@ export default function AdventureDetailsScreen() {
         .catch((e: unknown) => {
           if (isStale()) return;
           reportError("adventure.load", e);
-          const message = e instanceof Error ? e.message : "Unknown error";
+          const message = t("errors.generic");
           setState((s) => ({ ...s, status: "error", message }));
         });
     },
@@ -432,7 +432,7 @@ export default function AdventureDetailsScreen() {
       .catch((e: unknown) => {
         setIsStarting(false);
         reportError("adventure.start", e);
-        showError(t("adventures.start_error", "Could not start the adventure"));
+        showError(t("adventures.start_error"));
       });
   }, [adventureId, details, isStarting, router, run, showError, suggestedDifficulty, t]);
 
@@ -679,7 +679,7 @@ export default function AdventureDetailsScreen() {
             borderWidth={0}
           >
             {isStarting
-              ? t("quests.starting", "Starting…")
+              ? t("quests.starting")
               : isNextStepBossFight
                 ? t("adventures.fight_boss")
                 : run?.activeStep

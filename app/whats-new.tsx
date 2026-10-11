@@ -32,7 +32,7 @@ export default function WhatsNewScreen() {
         <XStack flex={1} items="center" gap="$2">
           <ScrollText size={20} color="$primaryText" />
           <Text fontSize={22} fontWeight="700" color="$text">
-            {t("whats_new.title", "What's new in {{version}}", { version: appVersion })}
+            {t("whats_new.title", { version: appVersion })}
           </Text>
         </XStack>
       </XStack>
@@ -51,9 +51,7 @@ export default function WhatsNewScreen() {
               </XStack>
             ))
           ) : (
-            <Paragraph color="$textSecondary">
-              {t("whats_new.empty", "No notes for this build.")}
-            </Paragraph>
+            <Paragraph color="$textSecondary">{t("whats_new.empty")}</Paragraph>
           )}
         </Card>
 
@@ -69,7 +67,7 @@ export default function WhatsNewScreen() {
             });
           }}
         >
-          {t("whats_new.all_releases", "Every version's notes")}
+          {t("whats_new.all_releases")}
         </AppButton>
       </RNScrollView>
     </YStack>

@@ -48,7 +48,7 @@ export default function VillageSetup() {
     } catch (error) {
       // Without this, a failed write left the hero stuck on step 2 with a mute button.
       reportError("onboarding.villageName", error);
-      showError(t("onboarding.save_error", "Could not save. Try again"));
+      showError(t("onboarding.save_error"));
       return;
     }
     router.push("/onboarding/training-level");
@@ -102,7 +102,7 @@ export default function VillageSetup() {
               textShadowOffset={{ width: 1, height: 1 }}
               textShadowRadius={4}
             >
-              {t("onboarding.village_name_title", "Name your village")}
+              {t("onboarding.village_name_title")}
             </H2>
           </YStack>
 
@@ -125,7 +125,7 @@ export default function VillageSetup() {
               textShadowColor={fade(rawColors.black, 0.5)}
               textShadowRadius={4}
             >
-              {t("onboarding.village_name_hint", "Every muscle you train raises a building here.")}
+              {t("onboarding.village_name_hint")}
             </Text>
 
             {/* Name input */}
@@ -173,7 +173,7 @@ export default function VillageSetup() {
               }}
               disabled={!isValidName}
             >
-              {t("onboarding.next", "Continue")}
+              {t("onboarding.next")}
             </AppButton>
           </YStack>
         </YStack>

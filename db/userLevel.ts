@@ -1,4 +1,5 @@
 import { sum } from "drizzle-orm";
+import { localizedTable } from "@/src/i18n/copy";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
 import { shortLivedQuery } from "./queryCache";
@@ -32,28 +33,7 @@ const LEVEL_THRESHOLDS = [
 ];
 
 // Level titles (RPG themed)
-const LEVEL_TITLES: Record<number, Localized> = {
-  1: { en: "Apprentice", fr: "Apprenti", de: "Lehrling", es: "Aprendiz" },
-  2: { en: "Novice", fr: "Novice", de: "Novize", es: "Novato" },
-  3: { en: "Trainee", fr: "Recrue", de: "Rekrut", es: "Recluta" },
-  4: { en: "Squire", fr: "Écuyer", de: "Knappe", es: "Escudero" },
-  5: { en: "Warrior", fr: "Guerrier", de: "Krieger", es: "Guerrero" },
-  6: { en: "Fighter", fr: "Combattant", de: "Kämpfer", es: "Luchador" },
-  7: { en: "Veteran", fr: "Vétéran", de: "Veteran", es: "Veterano" },
-  8: { en: "Champion", fr: "Champion", de: "Champion", es: "Campeón" },
-  9: { en: "Elite", fr: "Élite", de: "Elite", es: "Élite" },
-  10: { en: "Master", fr: "Maître", de: "Meister", es: "Maestro" },
-  11: { en: "Grandmaster", fr: "Grand Maître", de: "Großmeister", es: "Gran maestro" },
-  12: { en: "Legend", fr: "Légende", de: "Legende", es: "Leyenda" },
-  13: { en: "Mythic", fr: "Mythique", de: "Mythisch", es: "Mítico" },
-  14: { en: "Titan", fr: "Titan", de: "Titan", es: "Titán" },
-  15: { en: "Demigod", fr: "Demi-dieu", de: "Halbgott", es: "Semidiós" },
-  16: { en: "Hero", fr: "Héros", de: "Held", es: "Héroe" },
-  17: { en: "Paragon", fr: "Parangon", de: "Vollendeter", es: "Parangón" },
-  18: { en: "Ascended", fr: "Ascendant", de: "Aufgestiegener", es: "Ascendido" },
-  19: { en: "Immortal", fr: "Immortel", de: "Unsterblicher", es: "Inmortal" },
-  20: { en: "Divine", fr: "Divin", de: "Göttlich", es: "Divino" },
-};
+const LEVEL_TITLES = localizedTable((l) => l.level_titles);
 
 export type UserLevelInfo = {
   level: number;
@@ -110,11 +90,11 @@ export function getXpForLevel(level: number): number {
  * the level-up card all read "Level 44 · Divine 44".
  */
 export function getLevelTitle(level: number): Localized {
-  // LEVEL_TITLES is keyed 1..20 and the clamp stays inside it; the index signature does not know
+  // The table is keyed 1..20 and the clamp stays inside it; an index by number does not know
   // that, so a miss falls back to the level-1 title.
-  const first = LEVEL_TITLES[1] ?? { en: "Novice", fr: "Novice", de: "Novize", es: "Novato" };
+  const first = LEVEL_TITLES[1];
   if (level <= 0) return first;
-  return LEVEL_TITLES[Math.min(level, 20)] ?? first;
+  return (LEVEL_TITLES as Record<number, Localized>)[Math.min(level, 20)] ?? first;
 }
 
 /**

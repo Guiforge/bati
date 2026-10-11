@@ -632,14 +632,28 @@
     "expedition_made_quest": "Guardada con tus misiones. Te espera tal como la dejaste.",
     "expedition_permission_why": "Bati lee tu ubicación durante una salida, y solo sale de este móvil en tus propias copias de seguridad y tu sincronización. Android te lo va a pedir.",
     "level_up": "Subes de nivel",
-    "level_label": "Nivel"
+    "level_label": "Nivel",
+    "empty_variants": [
+      {
+        "title": "¡Buen trabajo!",
+        "subtitle": "Sesión guardada. Mantén la llama encendida."
+      },
+      {
+        "title": "Sesión sólida.",
+        "subtitle": "Cada repetición cuenta para la siguiente."
+      },
+      {
+        "title": "¡Apuntado!",
+        "subtitle": "Hoy no hay fuegos artificiales. A la llama le da igual, crece igualmente."
+      }
+    ]
   },
   "muscles": {
     "arms": "Brazos",
     "back": "Espalda",
     "chest": "Pecho",
     "abs": "Abdominales",
-    "shoulders": "Hombros",
+    "shoulder": "Hombros",
     "legs": "Piernas"
   },
   "tabs": {
@@ -950,7 +964,117 @@
     "more_count": "+{{count}} logros más",
     "show_less": "Mostrar menos",
     "new_unlock": "¡Logro desbloqueado!",
-    "new_unlocks": "¡{{count}} logros desbloqueados!"
+    "new_unlocks": "¡{{count}} logros desbloqueados!",
+    "badges": {
+      "first_workout": {
+        "title": "Primeros pasos",
+        "description": "Completa tu primer entrenamiento"
+      },
+      "sessions_10": {
+        "title": "Buen comienzo",
+        "description": "Completa 10 entrenamientos"
+      },
+      "sessions_25": {
+        "title": "Constante",
+        "description": "Completa 25 entrenamientos"
+      },
+      "sessions_50": {
+        "title": "Al rojo vivo",
+        "description": "Completa 50 entrenamientos"
+      },
+      "sessions_100": {
+        "title": "Guerrero de los cien",
+        "description": "Completa 100 entrenamientos"
+      },
+      "sessions_250": {
+        "title": "Campeón",
+        "description": "Completa 250 entrenamientos"
+      },
+      "sessions_500": {
+        "title": "Leyenda",
+        "description": "Completa 500 entrenamientos"
+      },
+      "streak_3": {
+        "title": "Brote",
+        "description": "Mantén tu llama encendida 3 días"
+      },
+      "streak_7": {
+        "title": "Guerrero semanal",
+        "description": "Mantén tu llama encendida 7 días"
+      },
+      "streak_14": {
+        "title": "Quince días de fuego",
+        "description": "Mantén tu llama encendida 14 días"
+      },
+      "streak_30": {
+        "title": "Maestro del mes",
+        "description": "Mantén tu llama encendida 30 días"
+      },
+      "streak_60": {
+        "title": "Imparable",
+        "description": "Mantén tu llama encendida 60 días"
+      },
+      "streak_100": {
+        "title": "Centurión",
+        "description": "Mantén tu llama encendida 100 días"
+      },
+      "xp_100": {
+        "title": "Cazador de XP",
+        "description": "Gana 100 XP en total"
+      },
+      "xp_500": {
+        "title": "Coleccionista de XP",
+        "description": "Gana 500 XP en total"
+      },
+      "xp_1000": {
+        "title": "Maestro de la XP",
+        "description": "Gana 1000 XP en total"
+      },
+      "xp_5000": {
+        "title": "Élite de la XP",
+        "description": "Gana 5000 XP en total"
+      },
+      "xp_10000": {
+        "title": "Leyenda de la XP",
+        "description": "Gana 10 000 XP en total"
+      },
+      "long_session_30min": {
+        "title": "Resistencia",
+        "description": "Completa un entrenamiento de 30 minutos o más"
+      },
+      "long_session_60min": {
+        "title": "Voluntad de hierro",
+        "description": "Completa un entrenamiento de 60 minutos o más"
+      },
+      "early_bird": {
+        "title": "Madrugador",
+        "description": "Completa un entrenamiento antes de las 7:00"
+      },
+      "night_owl": {
+        "title": "Noctámbulo",
+        "description": "Completa un entrenamiento después de las 22:00"
+      },
+      "path_climbed": {
+        "title": "Senda coronada",
+        "description": "Domina cada etapa de una senda"
+      },
+      "first_outing": {
+        "title": "Fuera de las murallas",
+        "description": "Termina una salida"
+      },
+      "hour_outside": {
+        "title": "Una hora en el camino",
+        "description": "Pasa una hora en movimiento en una sola salida"
+      },
+      "variety_3_quests": {
+        "title": "Todoterreno",
+        "description": "Completa 3 misiones distintas"
+      },
+      "variety_5_quests": {
+        "title": "Maestro de misiones",
+        "description": "Completa 5 misiones distintas"
+      }
+    }
   },
   "chart": {
     "error": "Error al cargar el gráfico",
@@ -1137,7 +1261,64 @@
     "family_unbuilt": "Aún sin construir · {{count}}",
     "family_unbuilt_feeds": "una sesión construye uno",
     "family_rest": "Todo lo demás",
-    "family_rest_feeds": "{{count}} en el tope"
+    "family_rest_feeds": "{{count}} en el tope",
+    "tiers": {
+      "1": "Caserío",
+      "2": "Claro",
+      "3": "Aldea",
+      "4": "Encrucijada",
+      "5": "Villa",
+      "6": "Villa libre",
+      "7": "Ciudad",
+      "8": "Ciudad mercante",
+      "9": "Ciudad próspera",
+      "10": "Ciudadela",
+      "11": "Metrópolis",
+      "12": "Capital eterna"
+    },
+    "buildings": {
+      "campfire": "Fogata",
+      "tent": "Tienda",
+      "training_dummy": "Muñeco de madera",
+      "archery_range": "Campo de tiro",
+      "quarry": "Cantera",
+      "forge": "Forja",
+      "well": "Pozo",
+      "windmill": "Molino",
+      "farm": "Granja",
+      "wizard_tower": "Torre del mago",
+      "druid_grove": "Arboleda druídica",
+      "watchtower": "Atalaya",
+      "castle_wall": "Murallas",
+      "armory": "Armería",
+      "fountain": "Fuente",
+      "observatory": "Observatorio",
+      "barn": "Granero",
+      "dragon_lair": "Guarida del dragón",
+      "heroes_hall": "Salón de los héroes",
+      "champion_arena": "Arena de campeones",
+      "high_road": "Camino Real"
+    },
+    "flavour": [
+      "El humo se enrosca sobre las chimeneas. Alguien mantuvo los fuegos.",
+      "Un viajero pasó antes del alba sin dejar su nombre.",
+      "Las forjas están en silencio esta mañana. No seguirán así.",
+      "Escarcha en los tejados. Hubo cambio de guardia sin una palabra.",
+      "Las linternas del camino se apagan poco a poco. La aldea espera.",
+      "Llovió por la noche. Los senderos lo recuerdan.",
+      "Un perro ladró a la nada, dos veces, y luego se lo pensó mejor.",
+      "La campana sonó temprano. Nadie ha dicho por qué.",
+      "Alguien barrió los escalones antes del alba.",
+      "Viento frío de las colinas. Las contraventanas aguantaron.",
+      "Dos cuervos en el caballete, vigilando el camino del este.",
+      "El pozo dio agua clara hoy. Eso vale algo.",
+      "Anoche la pila de leña creció más que nunca.",
+      "Niebla hasta las rodillas al alba, disipada antes de que nadie mirara.",
+      "Una contraventana se soltó y estaba arreglada antes del mediodía.",
+      "El viejo camino está tranquilo. Suele estarlo en esta época.",
+      "Lámparas encendidas temprano. La oscuridad llegó antes de lo previsto.",
+      "Hoy no ha pasado nada aquí, y eso ya es una noticia."
+    ]
   },
   "errors": {
     "save_session_failed": "No se ha podido guardar la sesión. Inténtalo de nuevo.",
@@ -2039,5 +2220,218 @@
     "doorPhoneOn": "Una copia al día en {{folder}}. Toca para cambiarla o pararla. Si pierdes este teléfono, esta copia se va con él.",
     "alsoPhone": "Copia extra en este teléfono: {{folder}}",
     "alsoPhoneAdd": "Añadir una copia en este teléfono"
+  },
+  "equipment": {
+    "none": "Sin material",
+    "pullup_bar": "Barra de dominadas",
+    "dip_bar": "Paralelas",
+    "dumbbell": "Mancuernas",
+    "barbell": "Barra",
+    "kettlebell": "Pesa rusa",
+    "band": "Banda elástica",
+    "bench": "Banco"
+  },
+  "patterns": {
+    "push_horizontal": "Empuje horizontal",
+    "push_vertical": "Empuje vertical",
+    "pull_horizontal": "Tirón horizontal",
+    "pull_vertical": "Tirón vertical",
+    "squat": "Sentadilla",
+    "hinge": "Bisagra de cadera",
+    "core": "Core",
+    "locomotion": "Desplazamiento",
+    "mobility": "Movilidad"
+  },
+  "level_titles": {
+    "1": "Aprendiz",
+    "2": "Novato",
+    "3": "Recluta",
+    "4": "Escudero",
+    "5": "Guerrero",
+    "6": "Luchador",
+    "7": "Veterano",
+    "8": "Campeón",
+    "9": "Élite",
+    "10": "Maestro",
+    "11": "Gran maestro",
+    "12": "Leyenda",
+    "13": "Mítico",
+    "14": "Titán",
+    "15": "Semidiós",
+    "16": "Héroe",
+    "17": "Parangón",
+    "18": "Ascendido",
+    "19": "Inmortal",
+    "20": "Divino"
+  },
+  "paths": {
+    "Muscle-Up": "Senda del tirón",
+    "Toes to Bar": "Senda de la suspensión",
+    "Handstand Push-Up": "Senda del equilibrio",
+    "Dip": "Senda del apoyo",
+    "Archer Push-Up": "Senda del arquero",
+    "Tuck Planche": "Senda de la planche",
+    "Jump Squat": "Senda del salto",
+    "Pistol Squat": "Senda de la pistola",
+    "Single-Leg Deadlift": "Senda de la bisagra",
+    "Dragon Flag": "Senda del dragón",
+    "Side Plank": "Senda del flanco",
+    "Windshield Wipers": "Senda de la rotación",
+    "Flutter Kicks": "Senda del aleteo"
+  },
+  "bosses": {
+    "fire_dragon": {
+      "name": "Fauce de Ceniza",
+      "legendaryName": "Fauce de Ceniza la Coronada",
+      "idle": [
+        "La forja tardó más en quebrarme.",
+        "Ardes despacio, héroe.",
+        "Ceniza. Todo es ceniza.",
+        "Tu aldea sería buena yesca.",
+        "He devorado caballeros con mejor técnica."
+      ],
+      "crit": [
+        "Ese quemaba.",
+        "Así que la brasa muerde.",
+        "Cuidado, héroe. Empiezas a impresionarme."
+      ],
+      "resist": ["A las escamas no les importa tu fuerza.", "Me estás puliendo la armadura."],
+      "enrage": [
+        "¡Entonces ardemos los dos!",
+        "¡Me llevaré el cielo conmigo!",
+        "¡Ven, pues! ¡El fuego te recuerda!"
+      ]
+    },
+    "stone_golem": {
+      "name": "El Rey de la Cantera",
+      "legendaryName": "El Dios de la Cantera",
+      "idle": [
+        "Yo estaba aquí antes que tu aldea.",
+        "Las montañas no tienen prisa.",
+        "Desgástame, pues.",
+        "Tus antepasados ya me picaban.",
+        "Cuenta tus series. Yo cuento siglos."
+      ],
+      "crit": [
+        "Una grieta. Una sola.",
+        "Has encontrado la veta.",
+        "Otra vez. Golpea ahí otra vez, si te atreves."
+      ],
+      "resist": ["Piedra contra piedra.", "Golpeas donde soy más grueso."],
+      "enrage": ["¡Caeré sobre ti!", "¡Hasta las ruinas pesan!", "¡La cantera será tu tumba!"]
+    },
+    "shadow_serpent": {
+      "name": "Sombra Enroscada",
+      "legendaryName": "Sombra Enroscada la Eterna",
+      "idle": [
+        "Ya estoy detrás de ti.",
+        "Respira. Puedo esperar.",
+        "Tu sombra es prestada.",
+        "Descansa. Es cuando mejor trabajo.",
+        "Con cada repetición, me enrosco un poco más cerca."
+      ],
+      "crit": [
+        "Me has visto. Qué raro.",
+        "Rápido. Más que el anterior.",
+        "Ese me atravesó. ¿Cómo?"
+      ],
+      "resist": ["Has golpeado donde no estaba.", "Los anillos no se rompen, héroe."],
+      "enrage": [
+        "¡Entonces la oscuridad vendrá con colmillos!",
+        "¡Se acabó esperar!",
+        "¡Llevaré tu sombra como una corona!"
+      ]
+    },
+    "forest_titan": {
+      "name": "Padre Raíz",
+      "legendaryName": "La Raíz Ancestral",
+      "idle": [
+        "He sobrevivido a mejores que tú.",
+        "Estaciones, héroe. Yo cuento en estaciones.",
+        "Crece, o sé tierra.",
+        "El bosque se queda con quien abandona.",
+        "Tu sudor riega mis raíces. Sigue."
+      ],
+      "crit": [
+        "Eso lo ha notado el duramen.",
+        "Cortas hondo. Bien.",
+        "Una tormenta me quitó menos, una vez."
+      ],
+      "resist": ["Corteza, héroe. Solo corteza.", "La madera se bebe tus golpes."],
+      "enrage": [
+        "¡Despierta toda la arboleda!",
+        "¡Raíces hasta el hueso!",
+        "¡He enterrado a héroes más fuertes que tú!"
+      ]
+    },
+    "wind_wraith": {
+      "name": "El Espectro de las Ráfagas",
+      "legendaryName": "El Soberano de las Tormentas",
+      "idle": [
+        "Golpeas al aire.",
+        "Atrápame, pues.",
+        "Soy el aire que respiras.",
+        "Tus pulmones me pertenecen. Los vaciaré.",
+        "Sopla más fuerte, pequeño fuelle."
+      ],
+      "crit": [
+        "¡Has golpeado al viento!",
+        "Hasta yo he notado la corriente.",
+        "Aprendes a golpear lo que no está."
+      ],
+      "resist": [
+        "A través de mí. Siempre a través de mí.",
+        "A una ráfaga no se le hacen moratones."
+      ],
+      "enrage": [
+        "¡Que se desate la tormenta!",
+        "¡Dispersaré tu aldea!",
+        "¡Respira mientras puedas!"
+      ]
+    },
+    "iron_golem": {
+      "name": "El Señor del Óxido",
+      "legendaryName": "El Señor del Óxido Reforjado",
+      "idle": [
+        "La fundición nunca duerme. Yo tampoco.",
+        "Me construyeron para trabajar más que tú.",
+        "El óxido es paciente, héroe.",
+        "Cuotas, héroe. La mía es tu derrota.",
+        "He prensado más de lo que tú levantarás jamás."
+      ],
+      "crit": [
+        "Un remache menos. Lo he notado saltar.",
+        "Golpeas como un martillo que va en serio.",
+        "Garantía anulada. Buen golpe."
+      ],
+      "resist": ["El hierro no se amorata.", "Solo haces sonar mis placas."],
+      "enrage": [
+        "¡El horno toma el mando!",
+        "¡Me fundiré antes de arrodillarme!",
+        "¡Toda la fundición muere conmigo!"
+      ]
+    }
+  },
+  "rest_messages": {
+    "overtraining": [
+      "Has entrenado duro esta semana: {{count}} entrenamientos. Piensa en un día de recuperación.",
+      "Ya van {{count}} entrenamientos esta semana. El descanso se gana igual que el progreso.",
+      "{{count}} entrenamientos esta semana. Un día de recuperación afina el siguiente."
+    ],
+    "consecutive_days": [
+      "¡Has entrenado {{count}} días seguidos! Tómate un día de descanso para no sobreentrenarte.",
+      "{{count}} días seguidos sin parar. Hasta los héroes necesitan un respiro.",
+      "{{count}} días seguidos entrenando. El descanso forma parte del plan, no lo interrumpe."
+    ],
+    "high_volume": [
+      "¡{{count}} entrenamientos esta semana! Tu cuerpo necesita tiempo para recuperarse y hacerse más fuerte.",
+      "{{count}} entrenamientos esta semana, es mucho volumen. La fuerza se construye durante la recuperación.",
+      "{{count}} entrenamientos en siete días. Dale un día a tu cuerpo para que alcance a tu ambición."
+    ],
+    "deload": [
+      "Cuatro semanas duras seguidas. Toma una más ligera: menos volumen, el mismo hábito. Tu próximo mes empieza aquí.",
+      "Un mes de semanas intensas a tus espaldas. Afloja unos días: el progreso llega mientras descansas.",
+      "Cuatro semanas intensas seguidas. Esta semana toca aligerar, no parar."
+    ]
   }
 }

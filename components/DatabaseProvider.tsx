@@ -212,7 +212,7 @@ export function DatabaseProvider({ children, onReady }: DatabaseProviderProps) {
       >
         <Text style={{ color: rawColors.text, fontSize: 18, fontWeight: "700" }}>🏰 Bati</Text>
         <Text style={{ color: rawColors.textSecondary, opacity: 0.6, marginTop: 8 }}>
-          {t("splash.loading", "Building your village...")}
+          {t("splash.loading")}
         </Text>
       </View>
     );

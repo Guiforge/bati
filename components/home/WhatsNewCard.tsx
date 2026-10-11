@@ -60,10 +60,10 @@ export function WhatsNewCard() {
     >
       <XStack items="center" gap="$2">
         <Text flex={1} fontSize="$4" fontWeight="700" color="$text">
-          {t("whats_new.card_title", "Bati is now {{version}}", { version: appVersion })}
+          {t("whats_new.card_title", { version: appVersion })}
         </Text>
         <Text fontSize="$3" color="$primaryText">
-          {t("whats_new.card_open", "See what's new")}
+          {t("whats_new.card_open")}
         </Text>
         <ChevronRight size={16} color="$primaryText" />
         <Button
@@ -78,7 +78,7 @@ export function WhatsNewCard() {
           }}
           icon={<X size={18} color="$textSecondary" />}
           accessibilityRole="button"
-          accessibilityLabel={t("common.close", "Close")}
+          accessibilityLabel={t("common.close")}
         />
       </XStack>
     </Card>

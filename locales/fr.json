@@ -1094,7 +1094,7 @@
     "tonight_stage_venerable": "{{animal}} devient vénérable",
     "tonight_stage_legendary": "{{animal}} devient légendaire",
     "tonight_coat_rare": "{{animal}} se pare de nouvelles couleurs",
-    "tonight_coat_rare_body": "{{coat}}. Ta flamme a tenu 100 jours.",
+    "tonight_coat_rare_body": "{{coat}}. Ta flamme a tenu {{days}} jours.",
     "tonight_boar_body": "Tu mêles {{first}} et {{second}}.",
     "tonight_tier_1": "{{subject}} devient un {{tier}}.",
     "tonight_tier_2": "{{subject}} devient une {{tier}}.",

@@ -1,7 +1,9 @@
 import { legendaryBody, legendaryTitle } from "@/components/session/bigFeastText";
 import type { Feast } from "@/components/session/feasts";
 import { sentence } from "@/components/village/crestText";
+import { ETERNAL_FLAME_DAYS } from "@/constants/flame";
 import type { Practice } from "@/db/crestRules";
+import { getFlameLevel } from "@/db/streaks";
 import { i18n } from "@/i18n";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
@@ -83,12 +85,12 @@ const WORDS = {
       "ashen bristles",
     ],
     coatTitles: [
-      "The bear shows new colors",
-      "The stag shows new colors",
-      "The horse shows new colors",
-      "The salmon shows new colors",
-      "The ermine shows new colors",
-      "The boar shows new colors",
+      "The bear takes on new colors",
+      "The stag takes on new colors",
+      "The horse takes on new colors",
+      "The salmon takes on new colors",
+      "The ermine takes on new colors",
+      "The boar takes on new colors",
     ],
     coatBody: "Silvertip. Your flame held for 100 days.",
   },
@@ -121,14 +123,14 @@ const WORDS = {
       "aschgraue Borsten",
     ],
     coatTitles: [
-      "Der Bär zeigt neue Farben",
-      "Der Hirsch zeigt neue Farben",
-      "Das Pferd zeigt neue Farben",
-      "Der Lachs zeigt neue Farben",
-      "Das Hermelin zeigt neue Farben",
-      "Das Wildschwein zeigt neue Farben",
+      "Der Bär trägt neue Farben",
+      "Der Hirsch trägt neue Farben",
+      "Das Pferd trägt neue Farben",
+      "Der Lachs trägt neue Farben",
+      "Das Hermelin trägt neue Farben",
+      "Das Wildschwein trägt neue Farben",
     ],
-    coatBody: "Silberspitzen. Deine Flamme hat 100 Tage gehalten.",
+    coatBody: "Silberspitzen. Deine Flamme brannte 100 Tage lang.",
   },
   es: {
     stage: "legendario",
@@ -166,7 +168,7 @@ const WORDS = {
       "El armiño luce nuevos colores",
       "El jabalí luce nuevos colores",
     ],
-    coatBody: "Puntas de plata. Tu llama aguantó 100 días.",
+    coatBody: "Puntas de plata. Tu llama ardió 100 días.",
   },
 } as const;
 
@@ -231,8 +233,17 @@ describe.each(["fr", "en", "de", "es"] as const)("the legendary copy in %s", (la
       w.coatTitles,
     );
     expect(
-      t("session.tonight_coat_rare_body", { coat: sentence(t("village.coat_rare_bear")) }),
+      t("session.tonight_coat_rare_body", {
+        coat: sentence(t("village.coat_rare_bear")),
+        days: ETERNAL_FLAME_DAYS,
+      }),
     ).toBe(w.coatBody);
+  });
+
+  test("the days on the coat card are the Eternal flame's own threshold", () => {
+    expect(ETERNAL_FLAME_DAYS).toBe(100);
+    expect(getFlameLevel(ETERNAL_FLAME_DAYS)).toBe(5);
+    expect(getFlameLevel(ETERNAL_FLAME_DAYS - 1)).toBe(4);
   });
 
   test("nothing glows, nothing is owed", () => {

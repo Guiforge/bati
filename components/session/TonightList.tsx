@@ -14,6 +14,7 @@ import { Crest } from "@/components/village/Crest";
 import { crestFootprint } from "@/components/village/crestGeometry";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
 import { getExerciseThumb, getVillageTierAsset } from "@/constants/assetMap";
+import { ETERNAL_FLAME_DAYS } from "@/constants/flame";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import type { Crest as CrestRead } from "@/db/crest";
 import type { Animal } from "@/db/crestRules";
@@ -198,6 +199,7 @@ function cardOf(
         body: [
           t("session.tonight_coat_rare_body", {
             coat: sentence(t(`village.coat_rare_${f.animal}`)),
+            days: ETERNAL_FLAME_DAYS,
           }),
         ],
         art: shield(f.animal),

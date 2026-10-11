@@ -104,9 +104,10 @@ BACKGROUND = (
 # The eyes, word for word: self-test and prompt both read this constant. FLUX paints a white
 # catchlight in the eye unless told otherwise, so the second sentence says what the eye is.
 EYES = (
-    "The eyes are plain animal eyes, nothing glows. Each eye is a flat matte dark disc with no "
-    "white catchlight."
+    "The eyes are plain animal eyes, nothing glows. The eyes are small and set deep under a heavy "
+    "brow, each painted as one flat dark-brown fill in shadow, the same value as the shadow around them."
 )
+SALMON_EYE = "The eye is plain, nothing glows: a small dark eye painted as one flat fill."
 
 # One rule per entry, joined into STYLE; the self-test checks each one is in every prompt.
 STYLE_RULES = (
@@ -114,11 +115,10 @@ STYLE_RULES = (
     "ink outlines and flat cel-shaded colour fills with hard-edged shadows and no soft "
     "airbrushing, high contrast.",
     None,  # the pose, per animal: POSE
-    "A crisp cool rim light sculpts the top of the body and the head, no brighter than the "
-    "animal's lightest fur, so the animal sits in the picture like a painting and not like a "
-    "sticker.",
-    "Where the coat is dark, the ink outline is a clear mid slate blue, clearly lighter than the "
-    "background, which keeps the silhouette readable against the night.",
+    "Heavy black ink contours of varying weight, the underside of the body, the far legs and the "
+    "shadowed flank filled with solid black shadow shapes with hard edges, cross-hatching in the "
+    "half-tones, three flat values per colour; only the top edge of the back and head carries a "
+    "thin cold rim of light, the rest of the outline is black ink.",
     "The whole animal is in view from nose to tail, with a clear margin of empty background on "
     "all four sides of the picture.",
     "The animal is bare, a wild creature in the plain open dark, with the same empty night below "
@@ -170,7 +170,7 @@ COAT = {
     },
     "horse": {
         "base": "Its coat is a glossy mahogany bay with a black mane, black tail, black lower legs and a single white blaze down the face.",
-        "rare": "Its coat is a deep true black with a pale silver-grey mane and tail and no white marking; it has a clear mid slate-blue ink outline, clearly lighter than the background, so the black body reads against the night.",
+        "rare": "Its coat is a deep true black with a pale silver-grey mane and tail and no white marking. A thin cold rim of light runs along the whole back and head so the silhouette reads against the night.",
         "winter": "Its coat is long, rough and dull, a faded bay, the mane tangled and caught with snow, the lower legs dark and a single white blaze down the face.",
     },
     "salmon": {
@@ -180,7 +180,7 @@ COAT = {
     },
     "ermine": {
         "base": "Its fur is the white of a winter coat, with small round white ears and a tail tipped in solid black.",
-        "rare": "Its fur is almost black from nose to tail, the belly barely paler, the ears dark; it has a clear mid slate-blue ink outline, clearly lighter than the background, so the dark body reads against the night.",
+        "rare": "Its fur is almost black from nose to tail, the belly barely paler, the ears dark. A thin cold rim of light runs along the whole back and head so the silhouette reads against the night.",
     },
     "boar": {
         "base": "Its coat is coarse, bristled and dark grey, with ivory tusks.",
@@ -196,49 +196,54 @@ SEEN_BELOW = "seen from slightly below, with broad powerful shoulders"  # grown 
 
 def legendary(kind: str, limbs: str, mane: str) -> str:
     """The bosses' `_legendary` ask: the same animal, "visibly more massive", nothing magical."""
+    front = "forepaw" if limbs == "paws" else "front leg"
     return (f"It is a legendary {kind} at its legendary peak, visibly larger and broader than the adult, "
-            f"filling the picture up to its margin, never cropped, standing firmly on all four {limbs} in a "
-            f"low three-quarter view seen slightly from below, facing right, a heavy mane of {mane} along the "
-            f"shoulders catching cold moonlight from behind, old battle scars, a calm unyielding gaze with dark "
-            f"non-reflective eyes, in full vigour, still a natural {kind} with no armor, no glow and no magic.")
+            f"filling the picture up to its margin, never cropped, facing right. Seen from a very low viewpoint "
+            f"at the height of its front {limbs}, looking up at it: the horizon line sits below its chest, the "
+            f"underside of its jaw and its chest face the viewer, its back is hidden behind its shoulders and its "
+            f"head is the highest point of the picture. All four {limbs} are on the ground, one {front} "
+            f"stepping forward. The only light comes from behind it, a cold moonlight that outlines the {mane} on "
+            f"its shoulders in a thin pale line, while its face and flank are in deep black ink shadow with hard "
+            f"edges; old pale scars cross its shoulder and muzzle. It is still a natural {kind}, no armor, no glow "
+            f"and no magic.")
 
 
 STAGE = {
     "bear": {
-        "young": "It is a half-grown bear drawn at about half the size of a grown bear, standing in the lower middle of the picture with wide empty night background all around it, facing right in the same proud three-quarter view. Its eyes are flat matte dark-brown discs with no white catchlight, no reflection and no highlight of any kind. It is a lanky adolescent bear: long legs, a lean body, a muzzle already long, only a faint shoulder hump. Its coat is one even colour from chin to belly, with no pale patch on the chest or belly. Its mouth is closed.",
+        "young": "It is a half-grown bear drawn at about half the size of a grown bear, standing in the lower middle of the picture with wide empty night background all around it, facing right in the same proud three-quarter view. It is a gangly two-year-old bear, all legs: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long muzzle, ears that look large for its head, no shoulder hump yet, oversized paws, a short scruffy coat; a wary, awkward stance, drawn small in the picture with wide empty night around it. Its coat is one even colour from chin to belly, with no pale patch on the chest or belly. Its mouth is closed.",
         "adult": f"It is a bear in its prime, facing right, {SEEN_BELOW}: huge and powerful, with a thick neck, heavy shoulder muscle and a full coat.",
-        "venerable": f"It is a very old bear, epic and unbowed, facing right, {SEEN_BELOW}: massive and heavy-bellied, with grey-tipped fur along the muzzle and shoulders, a shaggy worn coat, blunted claws, a notched ear and old scars across the shoulder.",
-        "legendary": legendary("bear", "paws", "thick dark fur"),
+        "venerable": f"It is a very old bear, epic and unbowed, facing right, {SEEN_BELOW}: the coat is heavily frosted silver-grey over the whole head, muzzle, neck, shoulders and back, the dark chestnut showing only on the legs and belly, the muzzle pale grey, the coat thin over bony hips, a sagging belly, a torn ear and worn blunt claws.",
+        "legendary": legendary("bear", "paws", "thick mane"),
     },
     "stag": {
-        "young": "It is a young stag drawn at about half the size of a grown stag, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent stag: long thin legs, a narrow chest, a lean neck and its first small antlers, short with only two or three tines each. Its eyes are flat matte dark discs.",
+        "young": "It is a young stag drawn at about half the size of a grown stag, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent stag: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long muzzle, ears that look large for its head, its first small antlers, short with only two or three tines each, a short scruffy coat; a wary, awkward stance.",
         "adult": f"It is a stag in its prime, facing right, {SEEN_BELOW}: broad-chested and muscular, with full antlers of many tines and a proud raised head.",
-        "venerable": f"It is a very old stag, epic and unbowed, facing right, {SEEN_BELOW}: heavy-necked and deep-chested, with massive wide antlers thick with tines, a grizzled grey muzzle and old scars on the flank.",
-        "legendary": legendary("stag", "hooves", "thick neck hair beneath a vast crown of antlers of many tines"),
+        "venerable": f"It is a very old stag, epic and unbowed, facing right, {SEEN_BELOW}: the coat is heavily frosted silver-grey over the whole head, muzzle, neck, shoulders and back, the russet showing only on the legs and belly, the coat thin over bony hips, a sagging belly, a torn ear, worn blunt hooves and massive wide antlers thick with tines.",
+        "legendary": legendary("stag", "hooves", "thick neck mane beneath a vast crown of antlers of many tines"),
     },
     "horse": {
-        "young": "It is a young horse drawn at about half the size of a grown horse, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky yearling: long thin legs, a lean body, a fine short mane and a short tail, a long fine head; bare-backed, nothing on its back or head. Its eyes are flat matte dark discs.",
+        "young": "It is a young horse drawn at about half the size of a grown horse, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky yearling: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow long head, ears that look large for its head, a fine short scruffy mane and a short tail, oversized hooves; a wary, awkward stance; bare-backed, nothing on its back or head.",
         "adult": f"It is a horse in its prime, facing right, {SEEN_BELOW}: fully grown, deep-chested and muscular, the coat in good condition and the head carried high; bare-backed, nothing on its back or head.",
-        "venerable": f"It is a very old horse, epic and unbowed, facing right, {SEEN_BELOW}: a slightly hollowed back, prominent hip bones, a grey muzzle, heavy calm eyelids and old scars on the shoulder, standing slow and dignified; bare-backed, nothing on its back or head.",
-        "legendary": legendary("horse", "hooves", "long flowing hair") + " Bare-backed, nothing on its back or head.",
+        "venerable": f"It is a very old horse, epic and unbowed, facing right, {SEEN_BELOW}: the coat is heavily frosted silver-grey over the whole head, muzzle, neck, shoulders and back, the base colour showing only on the legs and belly, the coat thin over bony hips, a hollowed back and a sagging belly, a torn ear and worn blunt hooves, standing slow and dignified; bare-backed, nothing on its back or head.",
+        "legendary": legendary("horse", "hooves", "long flowing mane") + " Bare-backed, nothing on its back or head.",
     },
     "salmon": {
-        "young": "It is a young salmon drawn at about half the length of a grown salmon, swimming in the lower middle of the picture with wide empty night background all around it, facing right. It is a small slender fish: svelte and narrow-bodied, with small neat fins, bright fresh scales and few crisp dark spots. Its eye is a flat matte dark disc.",
+        "young": "It is a young salmon drawn at about half the length of a grown salmon, swimming in the lower middle of the picture with wide empty night background all around it, facing right. It is a small slender fish: svelte and narrow-bodied, with small neat fins, bright fresh scales and few crisp dark spots. ",
         "adult": "It is a salmon in its prime: thick-bodied and muscular, the scales clean and crisp, the fins strong.",
         "venerable": "It is a very old male salmon, epic and unbowed, facing right: the largest and heaviest of its kind, with the lower jaw curving up into a hooked kype, the colour turned dull, and old pale scars and nicks across its flank and fins.",
-        "legendary": "It is a legendary male salmon at its legendary peak, visibly larger and broader than the adult, in the same swimming profile, facing right, with a great hooked kype and a broad powerful tail, its back catching cold moonlight from behind, old pale scars, a calm unyielding gaze with a dark non-reflective eye, in full vigour, still a natural salmon with no armor, no glow and no magic.",
+        "legendary": "It is a legendary male salmon at its legendary peak, visibly larger and broader than the adult, in the same swimming profile, facing right, with a great hooked kype and a broad powerful tail, only the top edge of its back catching a thin cold moonlight from behind, old pale scars, a calm unyielding gaze with a dark non-reflective eye, in full vigour, still a natural salmon with no armor, no glow and no magic.",
     },
     "ermine": {
-        "young": "It is a young ermine drawn at about half the size of a grown ermine, standing in the lower middle of the picture with wide empty night background all around it, facing right. It has a lean small body, a short coat, a short bold tail tip. Its eyes are flat matte dark discs.",
+        "young": "It is a young ermine drawn at about half the size of a grown ermine, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a gangly young ermine: thin legs that look slightly too long for its body, a slim waist, a narrow head, ears that look large for its head, oversized paws, a short scruffy coat and a short bold tail tip; a wary, awkward stance.",
         "adult": f"It is an ermine in its prime, facing right, {SEEN_BELOW}: sleek, lithe and muscular, alert, head raised, the coat clean and smooth and the tail tip sharp.",
-        "venerable": f"It is a very old ermine, epic and unbowed, facing right, {SEEN_BELOW}: a heavier, weathered build, fine creases around the muzzle, long pale whiskers, a nick in one ear and a slow low-slung stance.",
-        "legendary": legendary("ermine", "paws", "dense fur"),
+        "venerable": f"It is a very old ermine, epic and unbowed, facing right, {SEEN_BELOW}: the fur is thin over bony hips, a sagging belly, fine creases around the muzzle, a pale grey muzzle with long pale whiskers, a torn ear, worn blunt claws and a slow low-slung stance.",
+        "legendary": legendary("ermine", "paws", "dense ruff"),
     },
     "boar": {
-        "young": "It is a young boar drawn at about half the size of a grown boar, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent boar: long legs, a lean body, a snout already long, tusks just showing as small nubs and a short low ridge of bristles. Its eyes are flat matte dark discs.",
+        "young": "It is a young boar drawn at about half the size of a grown boar, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent boar: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long snout, ears that look large for its head, tusks just showing as small nubs, a short low scruffy ridge of bristles; a wary, awkward stance.",
         "adult": f"It is a boar in its prime, facing right, {SEEN_BELOW}: full-sized, deep-chested and thick-necked, with a tall bristle ridge and fully grown tusks.",
-        "venerable": f"It is a very old boar, epic and unbowed, facing right, {SEEN_BELOW}: the heaviest build, grizzled grey bristles frosting the ridge and snout, thick worn tusks, sagging jowls and a scarred hide.",
-        "legendary": legendary("boar", "trotters", "long bristles") + " Heavy curved tusks.",
+        "venerable": f"It is a very old boar, epic and unbowed, facing right, {SEEN_BELOW}: the coat is heavily frosted silver-grey over the whole head, snout, neck, shoulders and back, the dark showing only on the legs and belly, the coat thin over bony hips, a sagging belly, a torn ear and thick worn tusks.",
+        "legendary": legendary("boar", "trotters", "long bristle mane") + " Heavy curved tusks.",
     },
 }
 
@@ -269,7 +274,7 @@ def parts_of(slug: str) -> tuple[str, str, str]:
 
 def prompt_for(slug: str) -> str:
     animal, stage, coat = parts_of(slug)
-    return " ".join((BACKGROUND, SILHOUETTE[animal], COAT[animal][coat], EYES, STAGE[animal][stage], " ".join(style_rules(animal))))
+    return " ".join((BACKGROUND, SILHOUETTE[animal], COAT[animal][coat], SALMON_EYE if animal == "salmon" else EYES, STAGE[animal][stage], " ".join(style_rules(animal))))
 
 
 def self_test() -> None:
@@ -283,8 +288,8 @@ def self_test() -> None:
             assert rule in p, (slug, rule[:40])
         stage = parts_of(slug)[1]
         low = p.lower()
-        assert "ground" not in low.replace("background", ""), slug
-        assert "hatching" not in low and "cel-shaded" in low, slug
+        assert "ground" not in low.replace("background", "").replace("are on the ground", ""), slug
+        assert "cross-hatching" in low and "cel-shaded" in low and "slate" not in low, slug
         if animal == "salmon":
             assert SALMON_POSE in p and THREE_QUARTER not in p, slug
             assert not [w for w in ("on all fours", "shoulders", "feet") if w in low], slug
@@ -302,10 +307,13 @@ def self_test() -> None:
             assert "facing right" in STAGE[animal][stage], slug
         assert SILHOUETTE[animal] in p, slug
         assert "picture" in p and "frame" not in p.lower(), slug
-        assert "The eyes are plain animal eyes, nothing glows." in p, slug
-        assert "no white catchlight" in p, slug
+        if animal == "salmon":
+            assert SALMON_EYE in p and "painted as one flat fill" in p, slug
+        else:
+            assert EYES in p and "The eyes are plain animal eyes, nothing glows." in p, slug
+            assert "flat dark-brown fill in shadow" in p and "disc" not in low, slug
         assert "cub" not in p.lower().split() and "cute" not in p.lower(), slug
-        assert p.index("The eyes") < p.index(STAGE[animal][parts_of(slug)[1]]), slug
+        assert p.index("nothing glows") < p.index(STAGE[animal][parts_of(slug)[1]]), slug
     # the silhouette sentence is the same on every portrait of an animal (10, the ermine 7)
     for animal in ANIMALS:
         mine = [s for s in slugs if s.startswith(animal + "-")]

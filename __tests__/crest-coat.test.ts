@@ -120,8 +120,12 @@ describe("portraitSlug, every row of the spec's table", () => {
 describe("a portrait that does not ship falls back on the base of the same stage", () => {
   const some = (...slugs: string[]) => new Set(slugs);
   test("nothing delivered: the base, whatever the coat", () => {
-    expect(portraitSlug("stag", "venerable", true, "auto", at(1), "FR")).toBe("stag-venerable");
-    expect(portraitSlug("stag", "legendary", false, "auto", at(1), "FR")).toBe("stag-legendary");
+    expect(portraitSlug("stag", "venerable", true, "auto", at(1), "FR", new Set())).toBe(
+      "stag-venerable",
+    );
+    expect(portraitSlug("stag", "legendary", false, "auto", at(1), "FR", new Set())).toBe(
+      "stag-legendary",
+    );
   });
   test("the rare is missing: the base, never the winter coat", () => {
     const d = some("stag-adult-winter");

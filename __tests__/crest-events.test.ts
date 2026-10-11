@@ -338,7 +338,7 @@ describe("rareCoatNews", () => {
 
   test("no card while the portrait of this stage does not ship, and none by default today", () => {
     expect(rareCoatNews(adult(5), [], new Set(["bear-venerable-rare"]))).toBeNull();
-    expect(rareCoatNews(adult(5), [])).toBeNull();
+    expect(rareCoatNews(adult(5), [], new Set())).toBeNull();
   });
 
   test("it is the hero's: a picked boar wears it as much as the sessions' animal", () => {

@@ -70,6 +70,8 @@ FAMILIES: dict[str, Family] = {
     # The villager cameos. No overrides, and adding one here should be read as a bug report
     # against the style block rather than a fix: it means a render came back with a vignette.
     "villagers": Family(globs=("assets/images/villagers/*.webp",)),
+    # The crest animal portraits (generate-animals.py): same flat void and rim light, same rule.
+    "animals": Family(globs=("assets/images/animals/*.webp",)),
 }
 
 

@@ -50,6 +50,8 @@ SETS = [
     # Cameos: 640 clears cameoMaxHeight's 200dp ceiling on a 3x screen with a little to spare.
     # Keep this in step with HEIGHT_CAP in components/chorus/cameoAnchor.ts.
     ("assets/images/villagers/*.webp", 640),
+    # Crest animal portraits: 512, generated at 1024 (generate-animals.py).
+    ("assets/images/animals/*.webp", 512),
 ]
 
 

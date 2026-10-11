@@ -30,6 +30,7 @@ export const ANIMAL_PORTRAITS: Readonly<Record<string, ImageSource>> = {
   "boar-legendary": require("@/assets/images/animals/boar-legendary.webp"),
   "ermine-young": require("@/assets/images/animals/ermine-young.webp"),
   "ermine-venerable": require("@/assets/images/animals/ermine-venerable.webp"),
+  "ermine-legendary": require("@/assets/images/animals/ermine-legendary.webp"),
   "ermine-adult": require("@/assets/images/animals/ermine-adult.webp"),
   "bear-adult-rare": require("@/assets/images/animals/bear-adult-rare.webp"),
   "bear-venerable-rare": require("@/assets/images/animals/bear-venerable-rare.webp"),

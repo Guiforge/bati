@@ -605,10 +605,26 @@ const countHit = (text: string) => EFFORT.test(text);
 // A bare article is no count when it is a pronoun or the line only names a place ("Trouver une
 // sortie" is a button, "The one from your sessions" is the crest). Exempt by key, with the reason;
 // a real number next to a unit in the same string is never covered.
-const ARTICLE_EXEMPT: Record<string, string> = {
-  "village.cta_outing": "the button that opens the outings list, it asks for nothing",
-  "village.family_unbuilt_feeds": "says what a family is fed by when nothing is built, no quantity",
-  "village.crest_pick_auto": "'one' is a pronoun for the crest the sessions give, no quantity",
+// Like ALLOWED_COUNTS, the text of every language where the article rule fires is frozen, so a
+// copy edited by one character, or a new sentence on the same key, fails until it is re-read.
+type ArticleExempt = { why: string } & Partial<Record<Lang, string>>;
+const ARTICLE_EXEMPT: Record<string, ArticleExempt> = {
+  "village.cta_outing": {
+    why: "the button that opens the outings list, it asks for nothing",
+    fr: "Trouver une sortie",
+    es: "Buscar una salida",
+  },
+  "village.family_unbuilt_feeds": {
+    why: "says what a family is fed by when nothing is built, no quantity",
+    fr: "une séance suffit à en bâtir un",
+    en: "one session builds one",
+    de: "eine Einheit baut eines",
+    es: "una sesión construye uno",
+  },
+  "village.crest_pick_auto": {
+    why: "'one' is a pronoun for the crest the sessions give, no quantity",
+    en: "The one from your sessions ({{animal}})",
+  },
 };
 const articleUsed = new Set<string>();
 
@@ -779,8 +795,10 @@ function check(id: string, text: string, verdicts: string[], lang?: Lang) {
   checkMarker(id, text, verdicts);
   checkOld(id, text, verdicts, lang);
   if (!countHit(text)) return;
-  if (id in ARTICLE_EXEMPT && !COUNTED.test(text)) {
-    articleUsed.add(id);
+  const exempt = ARTICLE_EXEMPT[id];
+  if (exempt && !COUNTED.test(text)) {
+    articleUsed.add(`${id}|${lang}`);
+    if (exempt[lang as Lang] !== text) verdicts.push(`article text changed ${lang}|${id}: ${text}`);
     return;
   }
   const entry = ALLOWED_COUNTS[id];
@@ -891,7 +909,11 @@ describe("the allow-list", () => {
   });
 
   it("has no dead article exemption", () => {
-    expect(Object.keys(ARTICLE_EXEMPT).filter((id) => !articleUsed.has(id))).toEqual([]);
+    const dead = Object.entries(ARTICLE_EXEMPT).flatMap(([id, e]) => {
+      const wanted = LANG_LIST.filter((l) => e[l] !== undefined).map((l) => `${id}|${l}`);
+      return [...(wanted.length ? [] : [id]), ...wanted.filter((w) => !articleUsed.has(w))];
+    });
+    expect(dead).toEqual([]);
   });
 
   it("has no dead marker exemption", () => {

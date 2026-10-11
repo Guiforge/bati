@@ -2,6 +2,7 @@ import type { OutingGoal } from "@/src/gps/track";
 import { estimateQuestSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
 import { outingGoal } from "./expeditions";
+import type { OutingHabit } from "./outingHabit";
 import { applyConfigToSlots, type QuestConfig, resolveTemplateOverrides } from "./questConfig";
 import {
   isUserQuest,
@@ -176,6 +177,8 @@ export function previewOutingGoal(
   >,
   exercisesById: Record<number, Exercise>,
   saved: QuestConfig | null,
+  /** The hero's month of running, which a run's duration is proposed from. Loaded by the caller. */
+  runHabit?: OutingHabit,
 ): OutingGoal | null {
   const config = saved === null ? null : { ...saved, level: Difficulty.Medium };
   const exercises = resolveTemplateExercises({
@@ -185,8 +188,9 @@ export function previewOutingGoal(
     config,
     // The one preview that stays synchronous, and the one that can: every slot here is an
     // expedition, nothing on the ladder stands below a walk, and `resolveSlot` gives an outing
-    // no hold from the journal either. There is nothing for a journal read to change.
-    journal: QUEST_AS_WRITTEN,
+    // no hold from the journal either. The one thing the journal changes is how long a run is
+    // proposed at, and that the caller reads and hands in, so this stays synchronous.
+    journal: runHabit ? { ...QUEST_AS_WRITTEN, runHabit } : QUEST_AS_WRITTEN,
   });
   return outingGoal({ exercises }, config?.distanceM ?? null);
 }

@@ -26,6 +26,12 @@ export type CompletedExerciseInput = {
 
   result: { type: QuestTargetType; value: number };
   target?: { type: QuestTargetType; value: number };
+  /**
+   * What the app prescribed for this set before the hero touched the stepper (`0070`), in the
+   * target's unit. Absent when nothing was prescribed (an outing) or on a caller that predates
+   * it; rung credit, crit odds and the damage cap then fall back to `target`.
+   */
+  prescribed?: number;
 
   notes?: string;
   performedAt?: Date;
@@ -140,6 +146,44 @@ export type CompletedSession = {
   exercises: CompletedExercise[];
 };
 
+/**
+ * Which sets the ladder must not judge, neither clean nor missed (`0070`), by index.
+ *
+ * Two cases. A target the hero lowered and did not reach at the prescribed value: a careful
+ * evening is not a failure, and counting it as one made lowering a target cost a rung streak.
+ * And a movement left mid-session, skipped or swapped away from: a skip writes no row, so one
+ * clean round followed by "I couldn't" used to read as a clean session. Deduced from the rows
+ * themselves, so it survives the OS killing the app between the skip and the save: a movement
+ * in a slot is neutral when it lacks a row for any round between its first and the session's
+ * last. A replacement done on every remaining round counts as it always did.
+ *
+ * ponytail: "the session's last round" is the last round that left a row. A hero who skips
+ * every slot of the final round keeps the credit of the rounds before. Pass the quest's round
+ * count in if that is ever reported.
+ */
+export function ladderNeutralSets(sets: readonly CompletedExerciseInput[]): boolean[] {
+  const round = (set: CompletedExerciseInput) => Math.max(0, Math.floor(set.roundIndex ?? 0));
+  const lastRound = Math.max(0, ...sets.map(round));
+  const key = (set: CompletedExerciseInput) => `${set.sortOrder}:${set.exerciseId}`;
+
+  const spans = new Map<string, { first: number; rows: number }>();
+  for (const set of sets) {
+    const span = spans.get(key(set)) ?? { first: round(set), rows: 0 };
+    spans.set(key(set), { first: Math.min(span.first, round(set)), rows: span.rows + 1 });
+  }
+
+  return sets.map((set) => {
+    const span = spans.get(key(set));
+    const left = span !== undefined && span.rows < lastRound - span.first + 1;
+    const lowered =
+      set.prescribed !== undefined &&
+      set.target !== undefined &&
+      set.target.value < set.prescribed &&
+      set.result.value < set.prescribed;
+    return left || lowered;
+  });
+}
+
 function parseExerciseStyle(value: unknown): ExerciseStyle {
   return value === "strength" || value === "calisthenics" || value === "yoga" || value === "cardio"
     ? value
@@ -203,8 +247,9 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
 
     if (sessionId == null) throw new Error("Failed to create completed session");
 
+    const neutral = ladderNeutralSets(input.exercises);
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Exercise data validation and transformation with multiple null checks
-    const rowsToInsert = input.exercises.map((ex) => {
+    const rowsToInsert = input.exercises.map((ex, index) => {
       const roundIndexRaw = ex.roundIndex;
       const sortOrderRaw = ex.sortOrder;
       const resultValueRaw = ex.result.value;
@@ -242,6 +287,11 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         sides: ex.pricing?.perSide ? 2 : 1,
         targetType: ex.target?.type,
         targetValue,
+        prescribedValue:
+          typeof ex.prescribed === "number" && Number.isFinite(ex.prescribed)
+            ? Math.max(1, Math.floor(ex.prescribed))
+            : null,
+        ladderNeutral: neutral[index] ?? false,
         notes: ex.notes ?? "",
         performedAt: ex.performedAt ?? input.performedAt ?? new Date(),
       };

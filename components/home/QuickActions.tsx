@@ -16,6 +16,7 @@ import { getRecentSessionHistory } from "@/db/completed";
 import { formatDurationEstimate } from "@/db/estimate";
 import { listExercises } from "@/db/exercises";
 import { cheapestLocomotion, hasOutdoorSlot, outingGoal, withOutingGoal } from "@/db/expeditions";
+import { getOutingHabit } from "@/db/outingHabit";
 import { listOutings, type Outing } from "@/db/outings";
 import { previewOutingGoal } from "@/db/preview";
 import {
@@ -161,10 +162,12 @@ export function QuickActions() {
   const load = useCallback(async () => {
     // Both reads underneath are cached and invalidated on write, so coming back from the editor
     // picks up a hero-authored outing without costing a query on every focus.
-    const [list, configs, exercises] = await Promise.all([
+    const [list, configs, exercises, runHabit] = await Promise.all([
       listOutings(),
       getAllQuestConfigs(),
       listExercises(),
+      // What a run's duration is proposed from: the chip must say what the tap will run.
+      getOutingHabit("run"),
     ]);
     const exercisesById = indexExercises(exercises);
 
@@ -172,7 +175,10 @@ export function QuickActions() {
     // template rather than the loaded quest: see `previewOutingGoal`.
     const entries = list.map(
       ({ quest }) =>
-        [quest.id, previewOutingGoal(quest, exercisesById, configs.get(quest.id) ?? null)] as const,
+        [
+          quest.id,
+          previewOutingGoal(quest, exercisesById, configs.get(quest.id) ?? null, runHabit),
+        ] as const,
     );
     // Together: tiles drawn before their goals said "Free" on every chip, a goal nobody set.
     setGoals(Object.fromEntries(entries));

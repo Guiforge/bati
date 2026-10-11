@@ -10,6 +10,7 @@ import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
 import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import { fade, rawColors } from "@/constants/rawColors";
+import { getQuestConfig, saveQuestConfig } from "@/db/questConfig";
 import { Difficulty, getQuestById, listQuestTemplates, type Quest } from "@/db/quests";
 import { useHaptics } from "@/hooks/useHaptics";
 import { reportError } from "@/src/reportError";
@@ -52,7 +53,17 @@ export default function FirstSessionStep() {
             new Error(`seed quest "${FIRST_QUEST_TITLE}" not found`),
           );
         }
-        return match ? getQuestById(match.id, Difficulty.Easy) : null;
+        if (!match) return null;
+        // Remembered as this quest's level, the way the quest screen remembers one, so Home
+        // offers the same session back: it reads the saved config, and with none it re-offered
+        // the on-ramp at Medium, a quarter harder than the screen the hero had just agreed to.
+        // Only when nothing is saved: a config restored from a backup is the hero's own.
+        getQuestConfig(match.id)
+          .then((saved) =>
+            saved ? undefined : saveQuestConfig(match.id, { level: Difficulty.Easy }),
+          )
+          .catch((error) => reportError("onboarding.firstQuestLevel", error));
+        return getQuestById(match.id, Difficulty.Easy);
       })
       .then((loaded) => {
         if (cancelled) return;

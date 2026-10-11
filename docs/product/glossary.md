@@ -93,7 +93,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | boss | The monster at the end of an adventure | boss | boss |  | Boss | jefe |
 | HP | The boss's health pool for the campaign | HP | PV |  | LP | PV |
 | weakness / resistance | A muscle that deals half again, or half, the damage | weakness / resistance | faiblesse / résistance |  | Schwäche / Resistenz | debilidad / resistencia |
-| critical hit | A rep past the target that strikes harder | critical hit | coup critique |  | kritischer Treffer | golpe crítico |
+| critical hit | One or two reps past the prescribed target, striking harder. Never a hold | critical hit | coup critique |  | kritischer Treffer | golpe crítico |
 | enraged | The boss's last phase | enraged | enragé |  | rasend | enfurecido |
 | threat | How dangerous a boss is, 1 to 4 | threat level | niveau de menace |  | Bedrohungsstufe | nivel de amenaza |
 | loot | The victory screen's rewards | loot | butin |  | Beute | botín |

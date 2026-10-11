@@ -48,7 +48,13 @@ import {
 import type { DistanceUnit } from "@/db/preferences";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
-import { invalidateQuestTemplates, isDailyQuest, type Quest } from "@/db/quests";
+import { dropSlotSwap } from "@/db/questConfig";
+import {
+  invalidateQuestTemplates,
+  isDailyQuest,
+  type Quest,
+  type QuestExercise,
+} from "@/db/quests";
 import type {
   DifficultyCode,
   ExerciseStyle,
@@ -59,7 +65,13 @@ import type {
 } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import type { Target } from "@/db/targets";
-import { isSuspiciousHold, REST_RANGE, retargetForMovement, targetRangeFor } from "@/db/targets";
+import {
+  isSuspiciousHold,
+  prescribedValue,
+  REST_RANGE,
+  retargetForMovement,
+  targetRangeFor,
+} from "@/db/targets";
 import { calculateLevelFromXp, getTotalXp } from "@/db/userLevel";
 import { uuidv7 } from "@/db/uuid";
 import {
@@ -738,10 +750,13 @@ function pricedSets(
     const slot = quest.exercises[r.sortOrder];
     if (!slot) return [];
 
+    // Priced against what the app prescribed (`0070`): a stepper raised to 100 does not lift the
+    // overshoot allowance, and one lowered to 5 does not shrink the pay for twelve honest reps.
+    const target = r.target ?? slot.target;
     return [
       {
         exercise: r.pricing ?? slot.exercise,
-        target: r.target ?? slot.target,
+        target: r.prescribed === undefined ? target : { ...target, value: r.prescribed },
         result: r.result,
       },
     ];
@@ -1096,9 +1111,9 @@ function isTheWholeWalk(quest: Quest): boolean {
 function recordOf(
   quest: Quest,
   goal: OutingGoal | null,
-  slot: { target: Target; exercise: Exercise },
+  slot: Pick<QuestExercise, "target" | "exercise" | "prescribed">,
   resultValue: number,
-): Pick<CompletedExerciseInput, "result" | "target"> {
+): Pick<CompletedExerciseInput, "result" | "target" | "prescribed"> {
   // Not "is this an outing" but "is this walk the whole session".
   //
   // `recordedDurationSeconds()` times the session, which is the walk itself only when the walk is
@@ -1123,7 +1138,23 @@ function recordOf(
     },
     target:
       goal === null && outing ? undefined : { type: slot.target.type, value: slot.target.value },
+    // Nothing prescribes ground: an outing's number is a goal the hero set, or none at all.
+    prescribed: isOutdoors(slot.exercise.style) ? undefined : prescribedValue(slot),
   };
+}
+
+/**
+ * The hero asked for a movement above their rung, then skipped it or swapped away from it: the
+ * pin goes, so the quest serves their own rung again next time instead of the same wall. Their
+ * rows for it tonight are judged by nobody (`ladderNeutralSets`), so one clean round before the
+ * skip does not bring the movement back through the ladder either.
+ *
+ * Not awaited: a pin that failed to drop costs one tap on the quest screen, and a set in
+ * progress must not wait on a preference write.
+ */
+function giveUpPin(quest: Quest, slot: QuestExercise): void {
+  if (!slot.pinnedOver) return;
+  dropSlotSwap(quest.id, slot.id).catch((e) => reportError("session.giveUpPin", e));
 }
 
 /**
@@ -1491,7 +1522,7 @@ export const useSessionStore = create<SessionState>()(
 
       const bothSides = paysBothSides(currentEx.exercise, sidesWorked);
 
-      const { result, target } = recordOf(quest, goal, currentEx, resultValue);
+      const { result, target, prescribed } = recordOf(quest, goal, currentEx, resultValue);
       const safeResultValue = result.value;
 
       // Land the hit on the fight we hold, and bank it. Nothing reaches the database until
@@ -1503,6 +1534,7 @@ export const useSessionStore = create<SessionState>()(
         const damageResult = computeDamage(bossFight, {
           resultValue: safeResultValue,
           targetValue: currentEx.target.value,
+          prescribedValue: prescribed,
           muscle: primaryMuscle,
           targetType: currentEx.target.type,
           style: currentEx.exercise.style,
@@ -1537,6 +1569,7 @@ export const useSessionStore = create<SessionState>()(
         sortOrder: currentExerciseIndex,
         result,
         target,
+        prescribed,
         pricing: {
           secondsPerRep: currentEx.exercise.secondsPerRep,
           difficulty: currentEx.exercise.difficulty,
@@ -1624,9 +1657,13 @@ export const useSessionStore = create<SessionState>()(
               ghost: undefined,
               substitutedFor: undefined,
               setAsideServed: undefined,
+              // The retargeted value is the app's own again, and the pin was on the old movement.
+              prescribed: undefined,
+              pinnedOver: undefined,
             }
           : qex,
       );
+      giveUpPin(quest, slot);
 
       // Every other entry into a movement sets this pair, and the two units are not
       // interchangeable: a hold timer left running on a rep movement counts nothing down, and reps
@@ -1665,6 +1702,9 @@ export const useSessionStore = create<SessionState>()(
         currentExerciseIndex === quest.exercises.length - 1 &&
         currentRoundIndex === quest.rounds - 1;
       if (isLastSet && results.length === 0) return;
+
+      const skipped = quest.exercises[currentExerciseIndex];
+      if (skipped) giveUpPin(quest, skipped);
 
       set({
         ...advanceAfterSet(quest, currentRoundIndex, currentExerciseIndex, results),
@@ -1780,6 +1820,7 @@ export const useSessionStore = create<SessionState>()(
         const damageResult = computeDamage(rewound, {
           resultValue: safeResultValue,
           targetValue: last.target.value,
+          prescribedValue: last.prescribed,
           muscle: lastHit.muscle ?? undefined,
           targetType: last.target.type,
           style: lastHit.style,

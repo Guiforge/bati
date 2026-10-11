@@ -98,8 +98,19 @@ const WRISTS = step("Wrist Circles");
  * raise and potentiation pools are down to two movements between them, which `used` spends in
  * the first phase. A fallback rather than a pool tail, so a hero who sets nothing aside keeps
  * exactly the rotation they had.
+ *
+ * The last two are the bottom rungs of their ladders, for a hero on day one: Squat and Lunge are
+ * rungs they have not reached, so with the jumps held back too (`startsGently`) the list above
+ * them ran dry and the last phase came out empty. At the end, so nobody's rotation changes.
  */
-const NO_IMPACT = ["Squat", "Lunge", "Bear Crawl", "Glute Bridge"] as const;
+const NO_IMPACT = [
+  "Squat",
+  "Lunge",
+  "Bear Crawl",
+  "Glute Bridge",
+  "Wall Sit",
+  "Wall Push-Up",
+] as const;
 
 /** What a quest gets when nothing is known about it — and what every quest got before `0024`. */
 export const WARMUP_SEQUENCE: [WarmupStep, ...WarmupStep[]] = [

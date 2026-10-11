@@ -16,6 +16,7 @@ const { toggleFavouriteQuest } = require("../db/favourites") as typeof import(".
 const { getSuggestedQuestsForWeakAreas } =
   require("../db/muscleBalance") as typeof import("../db/muscleBalance");
 const oaths = require("../db/oaths") as typeof import("../db/oaths");
+const { getOutingHabit } = require("../db/outingHabit") as typeof import("../db/outingHabit");
 const { listOutings } = require("../db/outings") as typeof import("../db/outings");
 const { preferences } = require("../db/preferences") as typeof import("../db/preferences");
 const { previewOutingGoal } = require("../db/preview") as typeof import("../db/preview");
@@ -98,6 +99,10 @@ test("a way out's tile says the goal its tap runs, with and without a saved one"
   const outings = await listOutings();
   expect(outings.length).toBeGreaterThan(0);
   const exercisesById = questConfig.indexExercises(await listExercises());
+  // What the tile's own load reads beside the catalogue (`QuickActions`): a run's duration is
+  // proposed from the hero's month, and a preview without it showed the seeded thirty minutes
+  // over a tap that runs the twenty-minute walk-run.
+  const runHabit = await getOutingHabit("run");
 
   for (const { quest } of outings) {
     const slot = quest.exercises[0];
@@ -108,7 +113,7 @@ test("a way out's tile says the goal its tap runs, with and without a saved one"
 
       const loaded = await questConfig.loadConfiguredQuest(quest.id, "medium");
       assert(loaded);
-      expect(previewOutingGoal(quest, exercisesById, saved)).toEqual(
+      expect(previewOutingGoal(quest, exercisesById, saved, runHabit)).toEqual(
         outingGoal(loaded.quest, loaded.config?.distanceM ?? null),
       );
     }

@@ -198,6 +198,14 @@ type Props = {
   onSwap: (questExerciseId: number) => void;
 };
 
+/** The run on this card is still the app's walk-run proposal, not a goal the hero set. */
+function proposesWalkRun(quest: Quest, config: QuestConfig): boolean {
+  return (
+    config.distanceM === undefined &&
+    quest.exercises.some((qex) => qex.walkRun && qex.prescribed === undefined)
+  );
+}
+
 export function QuestConfigCard({ quest, config, language, onChange, onReset, onSwap }: Props) {
   const { t } = useTranslation();
   // Open on a quest that is one movement in one round, closed on everything else. On such a
@@ -272,6 +280,14 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                   language={language}
                   onOpen={() => setGoalOpen(true)}
                 />
+                {/* The run is proposed as a walk-run because the hero has not run lately: say how
+                    one is done, here where the twenty minutes are read. Gone as soon as the goal
+                    is theirs, a duration they set or a distance. */}
+                {proposesWalkRun(quest, config) ? (
+                  <Text testID="goal-walk-run" fontSize={13} color="$textSecondary">
+                    {t("quests.goal_walk_run")}
+                  </Text>
+                ) : null}
                 {/* Mounted only while it is open, unlike the picker sheet beside it: a closed
                     Sheet still renders its frame into the tree, so its chips and its input stay
                     reachable by a screen reader and by anything else that walks the page. The

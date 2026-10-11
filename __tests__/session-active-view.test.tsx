@@ -215,7 +215,7 @@ describe("a boss that is already down", () => {
   test("drops the crit promise and the weak point, and says the rest is the hero's", async () => {
     await mount(fight(0));
 
-    expect(screen.queryByText(/strike critical/)).toBeNull();
+    expect(screen.queryByText(/Critical hit/)).toBeNull();
     expect(screen.queryByText(/weak point/)).toBeNull();
     expect(screen.getByText(/is down\. The rest of this session is yours\./)).toBeTruthy();
     expect(screen.getByText(/1-2 reps left in the tank/)).toBeTruthy();
@@ -224,9 +224,23 @@ describe("a boss that is already down", () => {
   test("a live fight is unchanged", async () => {
     await mount(fight(60));
 
-    expect(screen.getByText(/strike critical/)).toBeTruthy();
+    expect(screen.getByText(/Critical hit/)).toBeTruthy();
     expect(screen.getByText(/weak point/)).toBeTruthy();
     expect(screen.queryByText(/is down\./)).toBeNull();
+  });
+
+  // The fight reads what the app prescribed, whatever the stepper says. Promising crit odds on
+  // the hero's own number would be a line the roll does not keep, so it says the cap instead.
+  test("a target the hero changed says where the boss stops counting", async () => {
+    const [first, ...rest] = quest.exercises;
+    assert(first);
+    const prescribed = first.target.value - 2;
+    await mount(fight(60), { ...quest, exercises: [{ ...first, prescribed }, ...rest] } as Quest);
+
+    expect(
+      screen.getByText(`Target changed: the boss counts up to ${prescribed + 2} reps.`),
+    ).toBeTruthy();
+    expect(screen.queryByText(/Critical hit/)).toBeNull();
   });
 });
 
@@ -316,7 +330,7 @@ describe("a per-side hold", () => {
     // The bar drains the switch's own eight seconds.
     expect(screen.getByTestId("timer-bar").props.accessibilityValue.now).toBe(100);
     expect(screen.queryByText("left of 30s per side")).toBeNull();
-    expect(screen.queryByText("Keep going! Timer continues after target.")).toBeNull();
+    expect(screen.queryByText("Let go at the beep. That is the target.")).toBeNull();
     // The figure turns at the switch, so the hero sees the second side while getting into it.
     expect(scaleX()).toBe(-1);
     expect(playCue.mock.calls.map(([cue]) => cue)).toEqual(["tick", "tick", "tick", "switch"]);
@@ -331,7 +345,7 @@ describe("a per-side hold", () => {
     // The second side fills from empty, not from where the whole clock stood.
     expect(screen.getByTestId("timer-bar").props.accessibilityValue.now).toBe(0);
     // And nothing below the figure grows while the hero gets into it.
-    expect(screen.queryByText("Keep going! Timer continues after target.")).toBeNull();
+    expect(screen.queryByText("Let go at the beep. That is the target.")).toBeNull();
     expect(playCue.mock.calls.map(([cue]) => cue).slice(4)).toEqual(["tick", "tick", "tick", "go"]);
 
     await tick(3);

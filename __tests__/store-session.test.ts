@@ -4,7 +4,7 @@ import { PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
 import { hasSessionForQuestToday, outingSecondsToday } from "@/db/completed";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
-import { saveQuestConfig } from "@/db/questConfig";
+import { dropSlotSwap, saveQuestConfig } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
 import { isDailyQuest } from "@/db/quests";
 import { computeSessionXp } from "@/db/xp";
@@ -79,6 +79,7 @@ jest.mock("@/db/oaths", () => ({
 jest.mock("@/db/questConfig", () => ({
   ...jest.requireActual("@/db/questConfig"),
   saveQuestConfig: jest.fn().mockResolvedValue(undefined),
+  dropSlotSwap: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock("@/db/queryCache", () => ({
   ...jest.requireActual("@/db/queryCache"),
@@ -482,7 +483,8 @@ describe("useSessionStore", () => {
       expect(store.getState().bossStartHp).toBeNull();
     });
 
-    // The journal records the corrected reps; the boss must take damage for the same number.
+    // The journal records the corrected reps; the boss takes damage for them up to two past the
+    // prescribed ten, and no further (`damagingValue`): the fight does not pay for grinding reps.
     test("correcting the last result re-lands the banked hit", async () => {
       const rand = jest.spyOn(Math, "random").mockReturnValue(0.99); // never a crit
       await store.getState().startSession(mockQuest, "medium", { adventureId: 42 });
@@ -496,8 +498,8 @@ describe("useSessionStore", () => {
       const state = store.getState();
       expect(state.results.at(-1)?.result.value).toBe(15);
       expect(state.pendingDamage).toHaveLength(1);
-      expect(state.pendingDamage[0]?.damage).toBe(15);
-      expect(state.bossFight?.currentHp).toBe(85);
+      expect(state.pendingDamage[0]?.damage).toBe(12);
+      expect(state.bossFight?.currentHp).toBe(88);
 
       rand.mockRestore();
     });
@@ -520,8 +522,10 @@ describe("useSessionStore", () => {
 
         await holdThenRest(362);
         expect(store.getState().status).toBe("resting");
+        // The hit is already the target's, before the rest is answered: a hold lands its
+        // prescribed seconds and nothing past them. It used to land all 362 and be rewound here.
         const raw = store.getState().pendingDamage.at(-1)?.damage;
-        expect(raw).toBeGreaterThan(control ?? Infinity);
+        expect(raw).toBe(control);
 
         store.getState().skipRest();
 
@@ -1154,6 +1158,30 @@ describe("useSessionStore", () => {
 
       expect(store.getState().pendingDamage).toHaveLength(0);
       expect(store.getState().bossFight?.currentHp).toBe(100);
+    });
+
+    // "I can already do this", then "I couldn't": the pin must not outlive the evening, or the
+    // quest serves the same wall next time and the way back is on a screen the hero is not on.
+    test("skipping a movement the hero pinned over their rung gives the pin up", () => {
+      const quest = store.getState().quest;
+      assert(quest);
+      const [first, ...rest] = quest.exercises;
+      assert(first);
+      const pinnedOver = { ...first.exercise, id: 99, enName: "Dead Bug" };
+      store.setState({ quest: { ...quest, exercises: [{ ...first, pinnedOver }, ...rest] } });
+      (dropSlotSwap as jest.Mock).mockClear();
+
+      store.getState().skipExercise();
+
+      expect(dropSlotSwap).toHaveBeenCalledWith(quest.id, first.id);
+    });
+
+    test("skipping a movement that was never pinned touches no saved config", () => {
+      (dropSlotSwap as jest.Mock).mockClear();
+
+      store.getState().skipExercise();
+
+      expect(dropSlotSwap).not.toHaveBeenCalled();
     });
 
     test("completing a set afterwards clears the flag the rest screen reads", () => {

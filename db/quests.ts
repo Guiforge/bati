@@ -1,6 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
+import { getSessionAggregates } from "./completed";
 import { dayKey } from "./dates";
 import { canDo } from "./equipment";
 import {
@@ -11,8 +12,9 @@ import {
   unavailableExerciseIds,
 } from "./exercises";
 import { isMuscleCode } from "./muscles";
+import { getOutingHabit, type OutingHabit, proposedRunSeconds } from "./outingHabit";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
-import { preferences, type TrainingLevel } from "./preferences";
+import { preferences, startsGently, type TrainingLevel } from "./preferences";
 import { clearCached, setCached } from "./queryCache";
 import {
   ADMIN_CREATOR,
@@ -84,6 +86,30 @@ export interface QuestExercise {
    * a session saved before it existed still loads; cleared by any swap, which runs something else.
    */
   setAsideServed?: "no_substitute" | "own_quest";
+
+  /**
+   * The easier rung this slot would be served, when the hero asked for the written movement
+   * instead ("I can already do this"). Set by `applyConfigToSlots` and by nothing else: a pin is
+   * a saved swap equal to the movement the ladder substituted for, so no state says what a hero
+   * "can do". It names the way back on the quest screen, and it is how a session knows that a
+   * skip or a swap on this slot gives the pin up. Gone once the hero owns the rung: the ladder
+   * then serves the written movement by itself.
+   */
+  pinnedOver?: MovementRef;
+
+  /**
+   * What the app prescribed here before the hero set their own number (`0070`). Absent when the
+   * target is still the app's, which is nearly always; read it through `prescribedValue`.
+   * Optional so a session saved before it existed still loads.
+   */
+  prescribed?: number;
+
+  /**
+   * This run is proposed as twenty minutes of walk and run mixed, because the hero has not run
+   * lately (`proposedRunSeconds`). The quest screen says how to do one. Meaningless once the
+   * hero set their own duration, which `prescribed` being there says.
+   */
+  walkRun?: true;
 
   /**
    * What the hero has already done on this movement, in *this slot's* unit — the best set of
@@ -624,6 +650,12 @@ export type SlotJournal = {
   setAside: ReadonlySet<number>;
   /** `ghostKey` -> what they did last time, which is also where a hold is prescribed from. */
   history: ReadonlyMap<string, ExerciseGhost>;
+  /**
+   * The hero's month of running, which is what a run slot is proposed from (`proposedRunSeconds`).
+   * Absent means nobody asked: the slot runs at its seeded duration, which is right for a hero's
+   * own quest and for a caller with no run to resolve.
+   */
+  runHabit?: OutingHabit;
 };
 
 /** No ladder and no records: what a slot resolves to before anything is known about the hero. */
@@ -642,7 +674,11 @@ export async function loadSlotJournal(exerciseIds: number[]): Promise<SlotJourna
   const history = await getExerciseHistory([
     ...new Set([...exerciseIds, ...served.values(), ...replaced.values()]),
   ]);
-  return { served, replaced, setAside, history };
+  // Read only when a run is among them. `listExercises` is promise-cached, so asking is free.
+  const ids = new Set(exerciseIds);
+  const hasRun = (await listExercises()).some((e) => ids.has(e.id) && e.locomotion === "run");
+  const runHabit = hasRun ? await getOutingHabit("run") : undefined;
+  return { served, replaced, setAside, history, ...(runHabit ? { runHabit } : {}) };
 }
 
 async function loadSetAsideIds(): Promise<Set<number>> {
@@ -700,6 +736,8 @@ export function resolveSlot(input: {
   setAsideFrom: Exercise | undefined;
   /** `exercise` itself is set aside and runs anyway: nothing close enough, or the hero's quest. */
   stillSetAside: boolean;
+  /** The run is proposed as walk and run mixed (`proposedRunSeconds`). */
+  walkRun: boolean;
 } {
   const { base, written, userLevel, journal, catalogue, substitute } = input;
 
@@ -723,16 +761,27 @@ export function resolveSlot(input: {
   // does not touch either (`LOCOMOTION_RATE`, `db/xp.ts`). Scaling it made the same walk read as
   // 34, 45 or 56 minutes for three heroes, and paid all three the same for the same hour.
   const level = outing ? Difficulty.Medium : userLevel;
-  const target = retargetForMovement(
+  const generated = retargetForMovement(
     generateTarget(base, level, bestHold),
     written,
     exercise,
     level,
   );
+  // A run is the one outing whose length is proposed from the hero's own month rather than from
+  // the seeded band: the band said thirty minutes to everyone, including someone who has never
+  // run. Runs only. A walk or a ride keeps its band, and so does a hero's own quest, which has no
+  // `runHabit` to read. The one place this is decided, so the gallery card, the Home tile and the
+  // quest screen cannot show three durations for one run.
+  const proposal =
+    substitute && exercise.locomotion === "run" && generated.type === "time" && journal.runHabit
+      ? proposedRunSeconds(journal.runHabit)
+      : null;
+  const target = proposal ? { ...generated, value: proposal.seconds } : generated;
 
   return {
     exercise,
     target,
+    walkRun: proposal?.walkRun === true,
     // In the target's own unit: a movement trained both ways has two records, and showing the
     // hold next to a rep target would be a number the hero cannot act on.
     ghost: journal.history.get(ghostKey(exercise.id, target.type)),
@@ -783,7 +832,7 @@ function buildSlot(
     muscles: [],
   };
 
-  const { exercise, target, ghost, setAsideFrom, stillSetAside } = resolveSlot({
+  const { exercise, target, ghost, setAsideFrom, stillSetAside, walkRun } = resolveSlot({
     base: { type: r.targetType, min: r.targetMin, max: r.targetMax },
     written,
     userLevel: ctx.userLevel,
@@ -807,6 +856,7 @@ function buildSlot(
     images: isSubstituted ? [] : safeParseImages(r.imagesJson),
     target,
     ghost,
+    ...(walkRun ? { walkRun: true as const } : {}),
     // What the template asked for, when that is not what runs — the screens owe the hero an
     // explanation and a way back, and nothing else in the object can tell them. A set-aside slot
     // names what was set aside rather than what was written: that is the one the hero can put back.
@@ -825,7 +875,7 @@ function buildSlot(
   };
 }
 
-function movementRef(e: Exercise): MovementRef {
+export function movementRef(e: Exercise): MovementRef {
   return {
     id: e.id,
     enName: e.enName,
@@ -1044,7 +1094,9 @@ export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLeve
   if (difficulties.length === 0) return "regular";
 
   const ranks = difficulties.map((d) => DIFFICULTY_RANK[d]).sort((a, b) => a - b);
-  const median = ranks[Math.ceil(ranks.length / 2) - 1];
+  // The upper median, as the sentence above always said. `ceil(n / 2) - 1` is the lower one on an
+  // even count, so two hard movements out of four rated "regular" and were offered to a beginner.
+  const median = ranks[Math.floor(ranks.length / 2)];
   // In range by construction — the index comes from the array's own length — but the type
   // cannot see it. Falls back to the same value the empty case returns.
   return median === undefined ? "regular" : (LEVEL_BY_RANK[median] ?? "regular");
@@ -1053,10 +1105,11 @@ export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLeve
 /**
  * Quest ids the app may suggest, given what the hero owns and where they are starting from.
  *
- * Only two things are excluded, both because they leave the user stuck rather than challenged:
- * equipment they do not have, and advanced quests for someone who said they are a beginner.
+ * Three things are excluded, because they leave the user stuck or hurt rather than challenged:
+ * equipment they do not have, advanced quests for someone who said they are a beginner, and
+ * quests with a jump in them for a hero who is starting out (`startsGently`).
  * A "regular" hero still gets offered advanced work — that is a stretch, not a wall — and a
- * hero who skipped the onboarding question (`null`) is not filtered at all.
+ * hero who skipped the onboarding question (`null`) is only kept off jumps for three sessions.
  */
 /**
  * ponytail: eligibility reads the template, so a quest the hero has swapped the barbell movement
@@ -1065,14 +1118,16 @@ export function questTrainingLevel(difficulties: DifficultyCode[]): TrainingLeve
  * when someone reports the quest staying hidden after they fixed it.
  */
 export async function getEligibleQuestIds(): Promise<Set<number>> {
-  const [ownedEquipment, trainingLevel, rows] = await Promise.all([
+  const [ownedEquipment, trainingLevel, { totalSessions }, rows] = await Promise.all([
     preferences.getOwnedEquipment(),
     preferences.getTrainingLevel(),
+    getSessionAggregates(),
     db
       .select({
         questId: questExercises.questId,
         difficulty: exercises.difficulty,
         equipment: exercises.equipment,
+        impact: exercises.impact,
       })
       .from(questExercises)
       .innerJoin(exercises, eq(exercises.id, questExercises.exerciseId)),
@@ -1080,27 +1135,33 @@ export async function getEligibleQuestIds(): Promise<Set<number>> {
 
   const byQuest = new Map<
     number,
-    { difficulties: DifficultyCode[]; equipment: Set<EquipmentCode> }
+    { difficulties: DifficultyCode[]; equipment: Set<EquipmentCode>; impact: boolean }
   >();
   for (const row of rows) {
     const entry = byQuest.get(row.questId) ?? {
       difficulties: [],
       equipment: new Set<EquipmentCode>(),
+      impact: false,
     };
     entry.difficulties.push(row.difficulty);
     entry.equipment.add(row.equipment);
+    entry.impact ||= row.impact;
     byQuest.set(row.questId, entry);
   }
 
   const owned = ownedEquipment === null ? null : new Set<EquipmentCode>(ownedEquipment);
+  const gentle = startsGently(trainingLevel, totalSessions);
   const eligible = new Set<number>();
 
   for (const [questId, entry] of byQuest) {
     const hasKit = [...entry.equipment].every((code) => canDo(code, owned));
     const tooHard =
       trainingLevel === "beginner" && questTrainingLevel(entry.difficulties) === "advanced";
+    // A quest built on jumps is not what the app picks for someone starting out: the ladder
+    // walks a hard movement down to the hero's rung, and nothing walks a Burpee down.
+    const tooJumpy = gentle && entry.impact;
 
-    if (hasKit && !tooHard) eligible.add(questId);
+    if (hasKit && !tooHard && !tooJumpy) eligible.add(questId);
   }
 
   return eligible;

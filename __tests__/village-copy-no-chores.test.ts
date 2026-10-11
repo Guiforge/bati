@@ -34,18 +34,20 @@ const E = String.raw`(?![\p{L}])`;
 // Reps and the like: what a milestone must never count (see "estimation").
 const REPS = "reps?|wdh\\.?|repetitions?|répétitions?|wiederholung\\w*|repeticion\\w*|repetición";
 const MOVES =
-  "push-?ups?|pull-?ups?|sit-?ups?|squats?|lunges?|burpees?|planks?|crunch(?:es)?|dips|jumping jacks?|mountain climbers?|glute bridges?|wall sits?|deadlifts?|calf raises?|leg raises?|step-?ups?|pompes?|tractions?|fentes?|gainages?|Liegestütz\\w*|Klimmzüg\\w*|Kniebeug\\w*|flexion\\w*|sentadilla\\w*|dominada\\w*|zancada\\w*|abdominal\\w*|plancha\\w*";
+  "push-?ups?|pull-?ups?|sit-?ups?|squats?|lunges?|burpees?|planks?|crunch(?:es)?|dips?|jumping jacks?|mountain climbers?|glute bridges?|wall sits?|deadlifts?|calf raises?|leg raises?|step-?ups?|pompes?|tractions?|fentes?|gainages?|Liegestütz\\w*|Klimmzüg\\w*|Kniebeug\\w*|flexion\\w*|sentadilla\\w*|dominada\\w*|zancada\\w*|abdominal\\w*|plancha\\w*|\\p{L}*ausfallschritt\\p{L}*|hampelm\\p{L}*|bergsteiger|kniehebelauf|[\\p{L}-]*kniebeug\\p{L}*|[\\p{L}-]*liegestütz\\p{L}*|[\\p{L}-]*klimmzug\\p{L}*|fondos|high knees|chin-?ups?|flutter kicks?|russian twists?|dead bugs?|bear crawls?|muscle-?ups?|toes to bar|dragon flags?|windshield wipers|saltos? de tijera|montées de genoux|rodillas arriba|relevés? de jambes|sauts?|[\\p{L}-]*crunch\\p{L}*|[\\p{L}-]*rudern|[\\p{L}-]*heben|seitstütz|sternsprung|scheibenwischer|bärengang|eisschnellläufer|wandsitzen|flexi[óo]n(?:es)?|escaladores|giros? rusos?|elevaci[óo]n(?:es)?|patadas|remos?|rowings?|ponts? fessiers?|puentes?|battements|essuie-glaces|limpiaparabrisas|star jumps?|skater hops?|supermans?|soulevés? de terre|pesos? muertos?|extensions? des mollets|saltos?|inverted rows?|table rows?";
 const OUTINGS =
-  "deeds|deed(?! driver)|bosses|boss|routes?|rematch(?:es)?|hauts? faits?|exploits?|revanches?|taten|hazañas?|rutas?|sessions?|workouts?|trainings?|outings?|sets?|séances?|sorties?|séries?|entraînements?|einheit\\w*|sitzung\\w*|ausflug|ausflüg\\w*|touren?|sätze|sesion\\w*|sesión|salidas?|series|entrenamientos?";
+  "deeds|deed(?! driver)|bosses|boss|routes?|rematch(?:es)?|hauts? faits?|exploits?|revanches?|taten|hazañas?|rutas?|sessions?|workouts?|trainings?|outings?|sets?|séances?|sorties?|séries?|entraînements?|\\p{L}*einheit\\p{L}*|sitzung\\w*|ausflug|ausflüg\\w*|touren?|sätze|sesion\\w*|sesión|salidas?|series|entrenamientos?|exercices?|exercises?|übung\\p{L}*|ejercicios?|quêtes?|quests?|misi[óo]n(?:es)?|séries?|serien?|series?|rounds?|runden?|rondas?|tours? de piste|laps?";
 // The exercise placeholder is a movement ("{{count}} × {{exercise}}"), so it is a unit of effort.
 const MOVER = "\\{\\{\\s*exercise\\s*\\}\\}";
+// Sessions and outings, the units a bare article ("one more session") counts beside as well.
+const SESSIONS =
+  "sessions?|workouts?|outings?|séances?|sorties?|\\p{L}*einheit\\p{L}*|sesion\\w*|sesión|salidas?";
 const ART = "one|une?|ein|eine|einen|una|uno";
 const rx = (c: string, u: string) =>
   new RegExp(`${B}${c}\\s+(?:[\\p{L}'’×-]+\\s+){0,2}(?:${u})${E}`, "iu");
-const EFFORT = new RegExp(
-  `${rx(COUNT, `${REPS}|${MOVES}|${OUTINGS}|${MOVER}`).source}|${rx(`(?:${ART})`, `${REPS}|${MOVES}`).source}`,
-  "iu",
-);
+const COUNTED = rx(COUNT, `${REPS}|${MOVES}|${OUTINGS}|${MOVER}`);
+const ARTICLED = rx(`(?:${ART})`, `${REPS}|${MOVES}|${SESSIONS}`);
+const EFFORT = new RegExp(`${COUNTED.source}|${ARTICLED.source}`, "iu");
 const HAS_REPS = new RegExp(`${B}(?:${REPS}|${MOVES})${E}`, "iu");
 
 // Why a count is allowed. Six reasons, no other, and the four reserved ones belong to their keys:
@@ -347,6 +349,27 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     fr: "Niveau {{level}}, après {{count}} séances.",
     es: "Nivel {{level}}, tras {{count}} sesiones.",
   },
+  "common.daily_xp_bonus": {
+    why: "fait",
+    fr: "dont +{{count}} pour la quête du jour",
+    de: "davon +{{count}} für die Quest des Tages",
+    es: "incluye +{{count}} por la misión del día",
+  },
+  "session.pr_most_xp": {
+    why: "fait",
+    fr: "Le plus d'XP en une séance",
+    en: "Most XP in one session",
+    es: "Más XP en una sesión",
+  },
+  "village.detail_unlock_style": {
+    why: "fait",
+    en: "Built by your first {{style}} exercise",
+  },
+  "village.foot": {
+    why: "fait",
+    fr: "Rien ne se gère ici. Chaque niveau vient d'une séance enregistrée.",
+    es: "Aquí no se gestiona nada. Cada nivel sale de una sesión registrada.",
+  },
   "village.crest_why_bars": {
     why: "fait",
     fr: "Tes 8 premières séances",
@@ -533,6 +556,20 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
   "db/achievements.ts:Termine 250 entraînements": { why: "succès" },
   "db/achievements.ts:Termine 50 entraînements": { why: "succès" },
   "db/achievements.ts:Termine 500 entraînements": { why: "succès" },
+  "db/achievements.ts:Completa 3 misiones distintas": { why: "succès" },
+  "db/achievements.ts:Completa 5 misiones distintas": { why: "succès" },
+  "db/achievements.ts:Complete 3 different quests": { why: "succès" },
+  "db/achievements.ts:Complete 5 different quests": { why: "succès" },
+  "db/achievements.ts:Finish one outing": { why: "succès" },
+  "db/achievements.ts:Pasa una hora en movimiento en una sola salida": { why: "succès" },
+  "db/achievements.ts:Passe une heure en mouvement sur une seule sortie": { why: "succès" },
+  "db/achievements.ts:Schließ 3 verschiedene Quests ab": { why: "succès" },
+  "db/achievements.ts:Schließ 5 verschiedene Quests ab": { why: "succès" },
+  "db/achievements.ts:Spend an hour moving in one outing": { why: "succès" },
+  "db/achievements.ts:Termina una salida": { why: "succès" },
+  "db/achievements.ts:Termine 3 quêtes différentes": { why: "succès" },
+  "db/achievements.ts:Termine 5 quêtes différentes": { why: "succès" },
+  "db/achievements.ts:Termine une sortie": { why: "succès" },
   // The figure at the end of a rep bar: a scale mark, no sentence.
   "village.bar_end_reps_one": {
     why: "échelle",
@@ -564,6 +601,16 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
 };
 
 const countHit = (text: string) => EFFORT.test(text);
+
+// A bare article is no count when it is a pronoun or the line only names a place ("Trouver une
+// sortie" is a button, "The one from your sessions" is the crest). Exempt by key, with the reason;
+// a real number next to a unit in the same string is never covered.
+const ARTICLE_EXEMPT: Record<string, string> = {
+  "village.cta_outing": "the button that opens the outings list, it asks for nothing",
+  "village.family_unbuilt_feeds": "says what a family is fed by when nothing is built, no quantity",
+  "village.crest_pick_auto": "'one' is a pronoun for the crest the sessions give, no quantity",
+};
+const articleUsed = new Set<string>();
 
 // The second check: a chore said WITHOUT a count ("Deeds still to do"). Only the markers the old
 // CHORES patterns used, so the count rule can stay the one rule; not a wider list.
@@ -687,6 +734,32 @@ const PROBES: Probe[] = [
   { lang: "es", text: "Todavía {{count}} para el grado 2", by: "old" },
   { lang: "es", text: "hasta el nivel 2", by: "old" },
   { lang: "es", text: "para el nivel 2", by: "old" },
+  { lang: "fr", text: "Encore une séance pour le rang 2", by: "count" },
+  { lang: "fr", text: "3 exercices", by: "count" },
+  { lang: "fr", text: "2 quêtes", by: "count" },
+  { lang: "fr", text: "3 séries", by: "count" },
+  { lang: "fr", text: "2 tours de piste", by: "count" },
+  { lang: "en", text: "3 exercises", by: "count" },
+  { lang: "en", text: "2 quests", by: "count" },
+  { lang: "en", text: "3 sets", by: "count" },
+  { lang: "en", text: "2 rounds", by: "count" },
+  { lang: "en", text: "4 laps", by: "count" },
+  { lang: "de", text: "5 Trainingseinheiten", by: "count" },
+  { lang: "de", text: "3 Übungen", by: "count" },
+  { lang: "de", text: "2 Quests", by: "count" },
+  { lang: "de", text: "3 Serien", by: "count" },
+  { lang: "de", text: "2 Runden", by: "count" },
+  { lang: "de", text: "10 Ausfallschritte", by: "count" },
+  { lang: "de", text: "20 Hampelmänner", by: "count" },
+  { lang: "de", text: "5 Pike-Liegestütze", by: "count" },
+  { lang: "de", text: "15 Fahrrad-Crunches", by: "count" },
+  { lang: "es", text: "3 ejercicios", by: "count" },
+  { lang: "es", text: "2 misiones", by: "count" },
+  { lang: "es", text: "3 series", by: "count" },
+  { lang: "es", text: "2 rondas", by: "count" },
+  { lang: "es", text: "10 flexiones en pica", by: "count" },
+  { lang: "en", text: "One more session", by: "count" },
+  { lang: "de", text: "Noch eine Einheit", by: "count" },
   { lang: "en", text: "120 reps to rank 2", by: "count" },
   { lang: "fr", text: "120 reps pour le rang 2", by: "count" },
   { lang: "de", text: "120 Wiederholungen für Rang 2", by: "count" },
@@ -706,6 +779,10 @@ function check(id: string, text: string, verdicts: string[], lang?: Lang) {
   checkMarker(id, text, verdicts);
   checkOld(id, text, verdicts, lang);
   if (!countHit(text)) return;
+  if (id in ARTICLE_EXEMPT && !COUNTED.test(text)) {
+    articleUsed.add(id);
+    return;
+  }
   const entry = ALLOWED_COUNTS[id];
   if (!entry) {
     verdicts.push(`${lang ?? "src"}|${id}|${text}`);
@@ -811,6 +888,10 @@ describe("the allow-list", () => {
       for (const [reserved, keys] of Object.entries(RESERVED))
         expect([id, reserved, why === reserved]).toEqual([id, reserved, keys?.test(id)]);
     }
+  });
+
+  it("has no dead article exemption", () => {
+    expect(Object.keys(ARTICLE_EXEMPT).filter((id) => !articleUsed.has(id))).toEqual([]);
   });
 
   it("has no dead marker exemption", () => {

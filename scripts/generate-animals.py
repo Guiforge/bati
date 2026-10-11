@@ -179,7 +179,7 @@ COAT = {
         "winter": "Its coat is dense and grey, the neck thickened, the antlers bare and washed pale by the cold.",
     },
     "horse": {
-        "base": "Its coat is a glossy mahogany bay with a black mane, black tail, black lower legs and a single white blaze down the face.",
+        "base": "Its coat is a glossy mahogany bay with a black mane, black tail, black lower legs and a single white blaze down the face. All four lower legs stay solid black from the knee down to the hooves, with no white socks, no white pasterns and no pale feathering; the only white marking anywhere is the blaze on the face.",
         "rare": "Its coat is a deep true black with a pale silver-grey mane and tail and no white marking. A thin cold rim of light runs along the whole back and head so the silhouette reads against the night.",
         "winter": "Its coat is long, rough and dull, a faded bay, the mane tangled and caught with snow, the lower legs dark and a single white blaze down the face.",
     },
@@ -189,7 +189,7 @@ COAT = {
         "winter": "It wears the matte silver of its sea phase: dull silver flanks, a steel-blue back, a white belly, a few small dark spots and no spawning colours.",
     },
     "ermine": {
-        "base": "Its fur is the white of a winter coat, with small round white ears and a tail tipped in solid black.",
+        "base": "Its fur is the white of a winter coat, with small round white ears and a tail tipped in solid black. The face is pure snow white like the rest of the body, with no mask, no dark patch and no brown around the eyes; the eyes are tiny black beads, the paws are white, and the only dark marks are the eyes, the nose and the black tail tip.",
         "rare": "Its fur is almost black from nose to tail, the belly barely paler, the ears dark. A thin cold rim of light runs along the whole back and head so the silhouette reads against the night.",
     },
     "boar": {
@@ -228,13 +228,13 @@ STAGE = {
         "legendary": legendary("bear", "forepaw"),
     },
     "stag": {
-        "young": "It is a young stag drawn at about half the size of a grown stag, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent stag: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long muzzle, ears that look large for its head, its first small antlers, short with only two or three tines each, a short scruffy coat; a wary, awkward stance.",
+        "young": "It is a young stag drawn at about half the size of a grown stag, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent stag: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long muzzle, ears that look large for its head, a short scruffy coat; a wary, awkward stance. Its first antlers are two short straight spikes no longer than its ears, with no branches and no tines at all, far smaller than a grown stag's antlers.",
         "adult": f"It is a stag in its prime, facing right, {SEEN_BELOW}: broad-chested and muscular, with full antlers of many tines and a proud raised head.",
         "venerable": f"It is a very old stag, epic and unbowed, facing right, {SEEN_BELOW}: the coat stays RUSSET, duller than the adult's, with a pale grey muzzle and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a sagging belly, a torn ear, worn blunt hooves and massive wide antlers thick with tines.",
         "legendary": legendary("stag", "front leg", ", crowned with immense antlers of many tines,"),
     },
     "horse": {
-        "young": "It is a young horse drawn at about half the size of a grown horse, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky yearling: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow long head, ears that look large for its head, a fine short scruffy mane and a short tail, oversized hooves; a wary, awkward stance; bare-backed, nothing on its back or head.",
+        "young": "It is a young horse, a gangly foal, drawn at about half the size of a grown horse, standing low in the lower middle of the picture with wide empty night background all around it, facing right. It is an awkward leggy colt, not a small adult: very long thin legs for a short, narrow body, a thin neck, a small head, a short upright brush of a mane, a short tail, oversized hooves; a wary, awkward stance; bare-backed, nothing on its back or head.",
         "adult": f"It is a horse in its prime, facing right, {SEEN_BELOW}: fully grown, deep-chested and muscular, the coat in good condition and the head carried high; bare-backed, nothing on its back or head.",
         "venerable": f"It is a very old horse, epic and unbowed, facing right, {SEEN_BELOW}: the coat keeps its base colour, duller than the adult's, with a pale grey muzzle and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body, the coat thin over bony hips, a hollowed back and a sagging belly, a torn ear and worn blunt hooves, standing slow and dignified; bare-backed, nothing on its back or head.",
         "legendary": legendary("horse", "front leg", tail=" Bare-backed, nothing on its back or head, no saddle."),
@@ -248,7 +248,7 @@ STAGE = {
     "ermine": {
         "young": "It is a young ermine drawn at about half the size of a grown ermine, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a gangly young ermine: thin legs that look slightly too long for its body, a slim waist, a narrow head, ears that look large for its head, oversized paws, a short scruffy coat and a short bold tail tip; a wary, awkward stance.",
         "adult": f"It is an ermine in its prime, facing right, {SEEN_BELOW}: sleek, lithe and muscular, alert, head raised, the coat clean and smooth and the tail tip sharp.",
-        "venerable": f"It is a very old ermine, epic and unbowed, facing right, {SEEN_BELOW}: the fur is thin over bony hips, a sagging belly, fine creases around the muzzle, a pale grey muzzle with long pale whiskers, a torn ear, worn blunt claws and a slow low-slung stance.",
+        "venerable": f"It is a very old ermine, epic and unbowed, facing right, {SEEN_BELOW}: the fur is thin over bony hips, a sagging belly, fine creases around the muzzle, a pale grey muzzle with long pale whiskers, a torn ear, worn blunt claws and a slow low-slung stance; the legs and paws stay snow white, never brown, and the muzzle is pale grey-white, not brown.",
         "legendary": legendary("ermine", "forepaw"),
     },
     "boar": {

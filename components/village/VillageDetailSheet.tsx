@@ -283,7 +283,7 @@ function BuildingDetail({
       // leagues line names its kilometre.
       case "muscle":
         return building.level === 0
-          ? t("village.detail_unlock_muscle", { muscle: muscleLabel })
+          ? t(`village.detail_unlock_muscle_${building.relatedMuscle}`)
           : `${t("village.detail_muscle_driver", {
               volume: formatCount(language, building.metricValue),
               muscle: muscleLabel,

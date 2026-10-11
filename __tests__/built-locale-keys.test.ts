@@ -11,6 +11,8 @@ import * as path from "node:path";
 const BUILT: Record<string, readonly string[]> = {
   // components/village/VillageScene.tsx, from getFlameLevel (db/streaks.ts): 1 to 5.
   "village.flame_": ["1", "2", "3", "4", "5"],
+  // components/village/VillageDetailSheet.tsx, from the MuscleCode of an unbuilt muscle building.
+  "village.detail_unlock_muscle_": ["arms", "back", "shoulder", "chest", "abs", "legs"],
 };
 
 const LOCALES = ["en", "fr", "de", "es"] as const;

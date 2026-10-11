@@ -462,7 +462,7 @@ describe("VillageScene", () => {
     const muscles = within(await findByTestId("village-family-muscle"));
     await fireEvent.press(muscles.getByLabelText("Quarry"));
 
-    expect(await findByText("Train your back to raise this building")).toBeTruthy();
+    expect(await findByText("Built by training your back")).toBeTruthy();
   });
 
   it("plays the return from a session once, then gets out of the way", async () => {

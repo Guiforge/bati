@@ -151,8 +151,19 @@ def pose_of(animal: str, stage: str) -> str:
     return CHARGE_POSE if stage == "legendary" and animal != "salmon" else POSE[animal]
 
 
+# The ermine's contour: models draw a pale-blue band along its white back, so its rim-light
+# sentence is replaced by a plain black ink outline.
+ERMINE_OUTLINE = (
+    "Heavy black ink contours of varying weight all around the body, the underside of the body, "
+    "the far legs and the shadowed flank filled with solid black shadow shapes with hard edges, "
+    "cross-hatching in the half-tones, three flat values per colour; the whole outline is black "
+    "ink, with no pale or blue band along the back."
+)
+
+
 def style_rules(animal: str, stage: str = "adult", pose: str | None = None) -> tuple[str, ...]:
-    return tuple((pose or pose_of(animal, stage)) if rule is None else rule for rule in STYLE_RULES)
+    rules = tuple((pose or pose_of(animal, stage)) if rule is None else rule for rule in STYLE_RULES)
+    return tuple(ERMINE_OUTLINE if animal == "ermine" and "thin cold rim" in r else r for r in rules)
 
 
 # The silhouette, one sentence per animal and no colour, copied word for word into all of its
@@ -189,8 +200,8 @@ COAT = {
         "winter": "It wears the matte silver of its sea phase: dull silver flanks, a steel-blue back, a white belly, a few small dark spots and no spawning colours.",
     },
     "ermine": {
-        "base": "Its fur is the white of a winter coat, with small round white ears and a tail tipped in solid black. The face is pure snow white like the rest of the body, with no mask, no dark patch and no brown around the eyes; the eyes are tiny black beads, the paws are white, and the only dark marks are the eyes, the nose and the black tail tip.",
-        "rare": "Its fur is almost black from nose to tail, the belly barely paler, the ears dark. A thin cold rim of light runs along the whole back and head so the silhouette reads against the night.",
+        "base": "Its fur is the white of a winter coat, with small round white ears and a tail tipped in solid black: pure white fur on the whole head with no dark mask and no dark patches around the eyes; only the tail tip is black. The eyes are tiny black beads, the paws are white, and the only dark marks are the eyes, the nose and the black tail tip.",
+        "rare": "Its fur is almost black from nose to tail, the belly barely paler, the ears dark. Its outline is black ink all the way round.",
     },
     "boar": {
         "base": "Its coat is coarse, bristled and dark grey, with ivory tusks.",
@@ -249,7 +260,7 @@ STAGE = {
         "young": "It is a young ermine drawn at about half the size of a grown ermine, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a gangly young ermine: thin legs that look slightly too long for its body, a slim waist, a narrow head, ears that look large for its head, oversized paws, a short scruffy coat and a short bold tail tip; a wary, awkward stance.",
         "adult": f"It is an ermine in its prime, facing right, {SEEN_BELOW}: sleek, lithe and muscular, alert, head raised, the coat clean and smooth and the tail tip sharp.",
         "venerable": f"It is a very old ermine, epic and unbowed, facing right, {SEEN_BELOW}: the fur is thin over bony hips, a sagging belly, fine creases around the muzzle, a pale grey muzzle with long pale whiskers, a torn ear, worn blunt claws and a slow low-slung stance; the legs and paws stay snow white, never brown, and the muzzle is pale grey-white, not brown.",
-        "legendary": legendary("ermine", "forepaw"),
+        "legendary": legendary("ermine", "forepaw").replace("a cold moonlight that outlines its shoulders in a thin pale line,", "a faint cold moonlight with no pale or blue band along its back, its whole outline black ink,"),
     },
     "boar": {
         "young": "It is a young boar drawn at about half the size of a grown boar, standing in the lower middle of the picture with wide empty night background all around it, facing right. It is a lanky adolescent boar: thin legs that look slightly too long for its body, narrow hips, a slim waist, a narrow head with a long snout, ears that look large for its head, tusks just showing as small nubs, a short low scruffy ridge of bristles; a wary, awkward stance.",
@@ -322,7 +333,7 @@ def self_test() -> None:
     slugs = all_slugs()
     assert len(slugs) == 57 and len(set(slugs)) == 57, len(slugs)
     for slug in slugs:
-        animal, _, _ = parts_of(slug)
+        animal, _, coat = parts_of(slug)
         p = prompt_for(slug)
         assert p.startswith(BACKGROUND) and "picture" in BACKGROUND, slug
         stage = parts_of(slug)[1]
@@ -342,6 +353,10 @@ def self_test() -> None:
             assert "whole, from its head to its rump" in p and "right up to the margin" in p, slug
         else:
             assert THREE_QUARTER in p and SALMON_POSE not in p and CHARGE_POSE not in p, slug
+        if animal == "ermine":
+            assert ERMINE_OUTLINE in p and "thin cold rim" not in p and "thin pale line" not in p, slug
+            if coat == "base":
+                assert "pure white fur on the whole head with no dark mask and no dark patches around the eyes; only the tail tip is black" in p, slug
         if animal == "bear":
             assert "plain chest with no white blaze" in p, slug
         if stage == "legendary":

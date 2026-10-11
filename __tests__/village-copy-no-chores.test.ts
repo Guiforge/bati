@@ -1,5 +1,11 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import {
+  ACHIEVEMENT_GOAL,
+  CHORES,
+  EXEMPT_KEYS,
+  isChore as oldIsChore,
+} from "./helpers/oldChoreDetector";
 import { featureCopy, isReadable, type Lang, sourceLiterals } from "./helpers/villageCopy";
 
 // The Village and the victory say what is DONE and, at most, WHEN a building next rises. A
@@ -537,6 +543,13 @@ const CHORE_MARKER =
 // Copy that holds a marker and is no chore, by key, with the reason.
 const MARKER_EXEMPT: Record<string, string> = {};
 const markerUsed = new Set<string>();
+// The old phrasing detector (helpers/oldChoreDetector.ts) runs on the same copy: a string fails if
+// it or the count rule catches it. Its exemptions are its own, bounded as they were.
+function checkOld(id: string, text: string, verdicts: string[], lang?: Lang) {
+  if (lang ? EXEMPT_KEYS.has(id) : ACHIEVEMENT_GOAL.test(id.replace(":", ": "))) return;
+  if (Object.keys(CHORES).some((l) => (!lang || l === lang) && oldIsChore(l, text)))
+    verdicts.push(`old|${id}|${text}`);
+}
 function checkMarker(id: string, text: string, verdicts: string[]) {
   if (!CHORE_MARKER.test(text)) return;
   if (id in MARKER_EXEMPT) markerUsed.add(id);
@@ -569,6 +582,41 @@ it("catches a count of effort, whatever the sentence", () => {
     "2 sessions to go",
     "une rep suffit",
   ];
+  // The old table, word for word: what the phrasing detector was written for.
+  const OLD_LINES: Record<string, string[]> = {
+    en: [
+      "Only {{count}} sessions until rank 2",
+      "Do 20 more push-ups tomorrow.",
+      "3 deeds still open",
+      "Deeds still to do",
+      "2 sessions to go",
+      "5 reps to do",
+      "5 reps left to do",
+    ],
+    fr: [
+      "Plus que {{count}} séances pour le rang 2",
+      "Fais encore 20 pompes",
+      "5 reps à faire",
+      "Il te reste 5 reps",
+      "Encore 5 reps",
+      "encore {{n}} reps",
+    ],
+    de: [
+      "Nur noch {{n}} Einheiten bis Rang 2",
+      "Mach noch 20 Liegestütze",
+      "5 Wdh. noch zu machen",
+      "5 Wiederholungen zu erledigen",
+    ],
+    es: [
+      "Solo {{count}} sesiones más para el grado 2",
+      "Haz 20 flexiones más",
+      "5 reps por hacer",
+      "Te quedan 5 reps",
+    ],
+  };
+  for (const [lang, lines] of Object.entries(OLD_LINES))
+    for (const line of lines)
+      expect([lang, line, oldIsChore(lang, line)]).toEqual([lang, line, true]);
   for (const line of ["Deeds still to do", "encore des séances à faire", "Noch zu erledigen"])
     expect([line, CHORE_MARKER.test(line)]).toEqual([line, true]);
   for (const line of LINES) expect([line, countHit(line)]).toEqual([line, true]);
@@ -579,6 +627,7 @@ it("catches a count of effort, whatever the sentence", () => {
 const used = new Set<string>();
 function check(id: string, text: string, verdicts: string[], lang?: Lang) {
   checkMarker(id, text, verdicts);
+  checkOld(id, text, verdicts, lang);
   if (!countHit(text)) return;
   const entry = ALLOWED_COUNTS[id];
   if (!entry) {

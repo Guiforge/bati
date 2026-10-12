@@ -9,6 +9,7 @@ import { Crest, type CrestShape } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
 import { usePortraitSlug } from "@/components/village/usePortraitSlug";
 import { ANIMAL_TOKEN } from "@/constants/animalColors";
+import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import type { Crest as CrestData } from "@/db/crest";
 import { type CrestCoat, rareCoatShips } from "@/db/crestCoat";
 import {
@@ -365,18 +366,12 @@ function Picture({ crest, coatKey }: { crest: CrestData; coatKey: string }) {
   const { t } = useTranslation();
   const { animal, stage } = crest;
   const slug = usePortraitSlug(animal, stage, crest.longestFlame, coatKey);
-  const said = t(
-    stage === "venerable" || stage === "legendary"
-      ? `village.crest_${animal}_${stage}`
-      : `village.crest_${animal}`,
-  );
-  const what =
-    stage === "young" || stage === "adult"
-      ? t("village.crest_legend_stage", {
-          animal: sentence(said),
-          stage: t(`village.crest_stage_${stage}`),
-        })
-      : sentence(said);
+  // Young and adult have their own keys per animal: German agrees the article with the noun.
+  const what = sentence(t(`village.crest_${animal}_${stage}`));
+  // The slug is read from the database: until then the line holds its place and says nothing,
+  // so "A legendary bear." never turns into "A legendary bear, cinnamon coat.". An animal whose
+  // base has not shipped never gets a slug, and its line has nothing to wait for.
+  const reading = slug === null && `${animal}-${stage}` in ANIMAL_PORTRAITS;
   const coat = slug?.endsWith("-rare")
     ? t(`village.coat_rare_${animal}`)
     : slug?.endsWith("-winter")
@@ -396,9 +391,11 @@ function Picture({ crest, coatKey }: { crest: CrestData; coatKey: string }) {
         color="$textSecondary"
         style={{ textAlign: "center" }}
       >
-        {coat === null
-          ? t("village.crest_legend", { what })
-          : t("village.crest_legend_coat", { what, coat })}
+        {reading
+          ? " "
+          : coat === null
+            ? t("village.crest_legend", { what })
+            : t("village.crest_legend_coat", { what, coat })}
       </Text>
     </>
   );

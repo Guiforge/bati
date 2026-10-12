@@ -48,7 +48,7 @@ const WORDS = {
       "500 séances, et tu continues.",
     ],
     coats: [
-      "robe cannelle",
+      "pelage cannelle",
       "robe blanche",
       "robe noire",
       "écailles dorées",
@@ -63,7 +63,7 @@ const WORDS = {
       "L'hermine se pare de nouvelles couleurs",
       "Le sanglier se pare de nouvelles couleurs",
     ],
-    coatBody: "Robe cannelle. 100 jours de flamme sur ton écu.",
+    coatBody: "Pelage cannelle. 100 jours de flamme sur ton écu.",
   },
   en: {
     stage: "legendary",

@@ -521,7 +521,7 @@ describe("the coat choice", () => {
     await sheet(crestOf(ADULT, "auto", won), "why");
     const usual = await screen.findByTestId("crest-coat-usual");
     expect(within(usual).getByText("Pelage habituel")).toBeTruthy();
-    expect(within(screen.getByTestId("crest-coat-rare")).getByText("Robe cannelle")).toBeTruthy();
+    expect(within(screen.getByTestId("crest-coat-rare")).getByText("Pelage cannelle")).toBeTruthy();
     expect(usual.props.accessibilityState).toEqual({ checked: true });
     expect(screen.getByTestId("crest-coat-rare").props.accessibilityState).toEqual({
       checked: false,
@@ -569,17 +569,43 @@ describe("the legend under the portrait", () => {
   it("names the stage and the rare coat the portrait wears", async () => {
     jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-legendary-rare");
     await sheet(crestOf(seq(["strength", 500]), "auto", { longestFlame: 5, rings: 0 }), "why");
-    expect(await screen.findByText("Un ours légendaire, robe cannelle.")).toBeTruthy();
+    expect(await screen.findByText("Un ours légendaire, pelage cannelle.")).toBeTruthy();
   });
 
   it("names the winter coat when winter is what it wears", async () => {
     jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-adult-winter");
     await sheet(crestOf(seq(["strength", 40])), "why");
-    expect(await screen.findByText("Un ours, adulte, pelage d'hiver.")).toBeTruthy();
+    expect(await screen.findByText("Un ours adulte, pelage d'hiver.")).toBeTruthy();
   });
 
   it("names the stage alone for a young animal in its base coat", async () => {
     await sheet(crestOf(FIVE_OF_EIGHT), "why");
-    expect(await screen.findByText("Un ours, jeune.")).toBeTruthy();
+    expect(await screen.findByText("Un jeune ours.")).toBeTruthy();
+  });
+
+  it("holds its line and says nothing while the coat is being read", async () => {
+    jest.spyOn(crestDb, "portraitOf").mockReturnValue(new Promise(() => {}));
+    await sheet(crestOf(seq(["strength", 500])), "why");
+    expect(screen.getByTestId("crest-legend").props.children).toBe(" ");
+    expect(screen.queryByText(/ours légendaire/)).toBeNull();
+  });
+
+  it("reads the bare stage when the portrait has not shipped, with nothing to wait for", async () => {
+    await sheet(crestOf(seq(["yoga", 8])), "why");
+    expect(screen.getByText("Un jeune saumon.")).toBeTruthy();
+  });
+});
+
+describe("the legend's copy", () => {
+  it("has a key for every animal at every stage, in the four languages", () => {
+    for (const lng of ["fr", "en", "de", "es"]) {
+      const t = i18n.getFixedT(lng);
+      for (const animal of ANIMALS) {
+        for (const stage of ["young", "adult", "venerable", "legendary"]) {
+          expect(i18n.exists(`village.crest_${animal}_${stage}`, { lng })).toBe(true);
+          expect(t(`village.crest_${animal}_${stage}`)).not.toMatch(/^village\./);
+        }
+      }
+    }
   });
 });

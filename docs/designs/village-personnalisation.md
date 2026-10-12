@@ -90,10 +90,10 @@ La taille de l'APK n'est pas un critère pour ce chantier (choix de Guillaume) :
 ### V-03
 - Rangs 6 à 10, écrits « rang 7 » (LevelPips pleins puis le chiffre en or). Calés pour « tenir cinq ans » : un héros régulier (182 séances par an) atteint le rang 10 vers 5 ans. Bâtiments de volume : 2 400 / 4 800 / 10 000 / 20 000 / 40 000 unités (les rangs 6 et 7 gardent l'échelle qui met la Forge de l'état B au rang 6). Départs : niveaux du héros 18 / 26 / 34 / 42 / 50 (rangs 1 à 5 inchangés, ils suivent les paliers 1 à 5). Grand Chemin : 500 / 1 000 / 2 000 / 3 500 / 5 500 lieues. Aucun de ces rangs n'avait été publié.
 - Jalon : l'écran de victoire et « Prochain à monter » se taisent au-delà de 30 séances (`MILESTONE_QUIET_AFTER`), parce qu'une victoire qui annonce « dans 180 séances » sonne comme une corvée. La fiche du bâtiment garde « dans environ N séances ».
-- Une pierre gravée par niveau après 20, sur les Remparts : ton plus beau record battu à ce niveau, sinon le nombre de séances. Pierres 44×44 en forme de pierre, 6 par ligne, un seul Svg ; au-delà de 60, rangées par dizaines de niveaux.
+- Une pierre gravée par niveau après 20, sur les Remparts, le niveau en gravure. Moellons en assises décalées d'une demi-pierre, 6 par ligne, un seul Svg par ligne, mis à l'échelle sur un écran étroit. Un liseré or pour un record, un double liseré pour un Âge (la forme, pas la couleur). Le texte se limite aux records, aux Âges et à un résumé par décennie (« Niveaux 70 à 79 : 94 séances »), par décennie quelle que soit la longueur du mur ; au-delà de 60 pierres, le dessin est aussi coupé par décennie. La ligne des Remparts dit « N pierres ».
 - Saisons : une bannière par saison entraînée, à la couleur du 1er animal (sanglier : pratique en tête), avec son record. Rangées par année. Aucun emplacement réservé, aucun trou.
 - Anniversaire : date = jour de la 1re séance qui compte ; une grande fête à la 1re victoire après la date ; ne dit rien de l'absence ; plusieurs années d'absence = une fête, tous les anneaux d'un coup ; une année sous 10 séances = l'âge du village et le meilleur record, pas le compte.
-- Âges : tous les 10 niveaux dès 50, nommés d'après le plus haut échelon de voie atteint depuis l'Âge d'avant (le 1er : depuis le niveau 40). « L'Âge de la pompe diamant ».
+- Âges : tous les 10 niveaux dès 50, nommés d'après le plus haut échelon de voie atteint depuis l'Âge d'avant (le 1er : depuis le niveau 40). Le nom est celui du mouvement (« Pompe diamant »), la fête dit « Nouvel âge » puis ce titre.
 - Devise (D18, amendée) : facultative, « aucune » par défaut. Visible sur l'écu en 96 et en italique sous le titre de l'en-tête du Village (« Capitale éternelle · Niveau 52 »), seulement si elle n'est pas « aucune ». Raison : une devise choisie et jamais revue est une fierté perdue. La ligne est lue avec la scène, dans la même image, et n'existe pas sans devise : le nom ne bouge pas. Les lignes du sélecteur de devise n'ont plus la vignette d'écu, répétée huit fois sans rien dire.
 
 ## Copie
@@ -105,7 +105,7 @@ La taille de l'APK n'est pas un critère pour ce chantier (choix de Guillaume) :
 - Jour 1 : Hameau, niveau 1, aucune séance. La lueur, « Quelque chose observe Brumeval. »
 - A : Village, niveau 5 « Guerrier », Étincelle 4 j. 8e séance : 5 force, 2 course, 1 yoga. Ours. « Pompes 14, était 12 », +118 XP (1 000 XP avant).
 - B : niveau 21 « Divin », Cité florissante, Braise 9 j. 130 séances : 78 force, 39 course, 13 yoga. Ours adulte, le Cerf rejoint (39/130 = 30 %). Forge rang 6 en V-03 (rang 5 au plus en V-01).
-- C : niveau 52, Capitale éternelle. 416 séances : 320 force, 70 course, 26 yoga. Ours vénérable, Cerf adulte. 3 anneaux, 32 pierres, 12 bannières. « L'Âge de la pompe diamant » (atteint au niveau 50 ; 1re pompe diamant au niveau 47).
+- C : niveau 52, Capitale éternelle. 416 séances : 320 force, 70 course, 26 yoga. Ours vénérable, Cerf adulte. 3 anneaux, 32 pierres, 12 bannières. « Nouvel âge » et « Pompe diamant » (atteint au niveau 50 ; 1re pompe diamant au niveau 47).
 - E (coureur) : niveau 14 « Titan », Ville franche. 60 sorties (40 courses, 20 vélos). Cerf bordé de Cheval.
 - Sanglier : niveau 9 « Élite », Carrefour. 40 séances (14 force, 13 course, 13 yoga), quartiers force et course (course et yoga à égalité : la course est la plus récente).
 

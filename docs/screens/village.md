@@ -43,8 +43,10 @@ row can be read without a tap.
      count.
    - **Next to rise** (`pickNextToRise`): the building with the fewest sessions or outings to go
      by the hero's own recent pace (`pickSessionMilestone` with no `fed` filter, the same function
-     as the victory's PROCHAIN line; past 30 sessions, `MILESTONE_QUIET_AFTER`, it says nothing and the older rule applies). A runner sees the Grand Chemin, a strength hero the nearest
-     muscle. Only when no building has an estimate does the older rule apply: the rep building
+     as the victory's PROCHAIN line). An estimate past 30 sessions (`MILESTONE_QUIET_AFTER`, read
+     through `quietNextMilestone`) is not a goal: it is the milestone *line* that goes quiet, and the
+     choice of building falls back to the reps rule below. A runner sees the Grand Chemin, a strength hero the nearest
+     muscle. Only when no building has an estimate within that reach does the older rule apply: the rep building
      fewest reps from its next rung, level 0 waiting while any is still rising, then the deed with
      the most of its bar filled. The name is set in the heading font. Rep buildings carry a bar
      of what is done, between the figures of the rung they stand on ("3,000 reps" to "4,000
@@ -94,6 +96,31 @@ around year 5. No release carried ranks above 5 before, so they could be fixed f
 
 The painting is not affected: `buildingStage` stops at `BUILDING_STAGE_LEVEL` (5) and ranks 6 to 10
 keep the grand art. Nothing is migrated: levels are derived, so a hero's rank can only rise.
+
+## Stones, seasons, motto
+
+Three things the journal and one preference give a village that is years old. None of them is
+stored (R111) except the motto; all of them are absent, not empty, when there is nothing to show.
+
+- **Stones** (`Stones`, in the Ramparts' sheet; `db/villageYears.ts`). One per hero level from 21,
+  the level engraved. Drawn as rubble stones laid in courses, each row shifted by half a stone, six
+  to a row, one `<Svg>` per row. A record has a single gold edge, an Age a second, inner one (told
+  apart by shape, not colour); a stone that is both is an Age. The words are limited to the records,
+  the Ages and a summary per decade ("Levels 70 to 79: 94 sessions"), and they are by decade
+  whatever the length of the wall, so a screen reader hears one label per decade. Beyond 60 stones
+  the drawing itself is cut by decade too. A row measures the room it has (`onLayout`) and scales
+  down through its `viewBox`: the shifted row is 308 dp and a 320 dp screen gives less. The
+  Ramparts row says "N stones".
+- **Seasons** (`Banners`). A banner per finished season that held a session, in the colour of the
+  hero's animal at the time (neutral without a crest), rows of at most four per village year. The
+  section is not mounted before the first banner, and not at all while the years are unread.
+- **Motto** (`preferences.getCrestMotto`). Optional, "none" by default. When set, it is written in
+  italic under the level line of the header, and under the shield in the crest sheet. The Village
+  reads it with the scene, in the same frame, and hands it to the sheet, so there is one reader;
+  after a choice the sheet's `onChanged` reloads the scene and the header follows. The loading
+  skeleton holds the line when the last motto read was not "none", so the panel does not drop
+  about 23 dp on arrival.
+- The building sheet scrolls back to the top on each opening.
 
 ## Deeds
 

@@ -790,9 +790,9 @@ Invariant: the slug is always one of the 57 of the catalogue, and a hero who won
 sees a plainer coat than a hero who did not.
 
 **R110. None of the crest is stored.** Animal, second animal, stage, rare coat and portrait are
-read from the journal on each call (`getCrest`, `portraitOf`); the one stored datum is the hero's
-picked animal and `crestCoat`. The cards already shown (`coat:rare`, `legendary:<practice>`) are
-local to the phone, in `bigFeastsShown`, and are not synced.
+read from the journal on each call (`getCrest`, `portraitOf`); what is stored is the hero's chosen
+animal, `crestCoat` and `crestMotto`. The cards already shown (`coat:rare`, `legendary:<practice>`,
+`age:<n>`, `anniversary:<n>`) are local keys of `bigFeastsShown`, on the phone, and are not synced.
 Invariant: restoring a backup or merging a peer's sessions changes the crest by changing the
 journal, and by nothing else.
 
@@ -807,6 +807,7 @@ nothing. A GPS outing (`NON_REP_STYLE`) is never read: its seconds are no record
 jump over it) takes the stone of the session that crossed it, with that session's fact.
 Invariant: the same journal gives the same stones, banners and Ages on any device, whatever order
 the sessions were merged in (`db-peer-merge`), and deleting a session takes back what it earned.
+A banner stays neutral while there is no crest (fewer than eight practised sessions), whatever its sessions did.
 
 **R112. A season is a fixed local window, and the village year counts four seasons from the first session's.**
 December to February, March to May, June to August, September to November, cut at local midnight

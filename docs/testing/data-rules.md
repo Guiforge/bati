@@ -61,8 +61,8 @@ Invariant: with skewed clocks, the side with the later `updatedAt` wins hero con
 edit was really last.
 
 **R7. `MERGED_PREFERENCES` = villageName, avatarId, customAvatar, trainingLevel, ownedEquipment, oath,
-reminderDays, crestAnimal, crestCoat, crestMotto.** `db/backup.ts:251-265`.
-`crestAnimal` is `auto` or an animal slug; a missing or unknown value reads as `auto`. Nothing `crestMotto` is a motto id of the closed list in `db/crestMotto.ts` or `none`, with the same discipline.
+reminderDays, crestAnimal, crestCoat, crestMotto.** `db/backup.ts:251-265`. `crestMotto` is a motto id of the closed list in `db/crestMotto.ts` or `none`, same discipline.
+`crestAnimal` is `auto` or an animal slug; a missing or unknown value reads as `auto`. Nothing
 writes a default (a device that never chose has no row, or two such devices would diverge in
 `db-peer-compare`), and going back to the animal the sessions chose writes `auto`, never a delete:
 a preference has no tombstone, so a deletion could not beat an older pick on the other device.

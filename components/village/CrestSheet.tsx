@@ -388,6 +388,9 @@ function Picture({ crest, coatKey }: { crest: CrestData; coatKey: string }) {
       <Text
         testID="crest-legend"
         fontSize={14}
+        lineHeight={19}
+        // Two lines reserved: German and Spanish legends wrap at 130 %, and the body must not move.
+        minH={38}
         color="$textSecondary"
         style={{ textAlign: "center" }}
       >

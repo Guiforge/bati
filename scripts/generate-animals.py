@@ -354,8 +354,14 @@ def prompt_for(slug: str, concept: str | None = None) -> str:
         text = text.replace(" from deep in the shadow under its heavy brow", "").replace("while its face and flank in shadow", "while its flank is in shadow")
     if slug == "horse-venerable-rare":  # FLUX paints the age as grey on the pasterns and a pale blaze on the nose
         text = text.replace("with a muzzle frosted grey and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body,", "with silver threads in the mane and tail only,")
-    if slug == "salmon-legendary":  # the base alone leaps; its rare and winter keep the swimming profile
-        text = "It is a legendary male salmon at its legendary peak, a huge old male salmon leaping clear of the water in a powerful upstream jump, body arched, far more massive than the adult, a pronounced hooked kype jaw and a humped back, facing right, a broad powerful tail, only the top edge of its back catching a thin cold moonlight from behind, old pale scars, a calm unyielding gaze with a dark non-reflective eye. The water is only a few splashes of ink beneath it, the night background stays plain and uniform, and the whole fish is in view with a clear margin. Still a natural salmon with no armor, no glow and no magic."
+    if slug in ("salmon-legendary", "salmon-legendary-rare"):  # these two leap; the winter keeps the swimming profile
+        water = (
+            "The water is only a few splashes of ink beneath it"
+            if coat == "base"
+            else "There is no water, no splash, no spray and no droplets anywhere in the picture, the salmon alone in the air"
+        )
+        margin = "the whole fish is in view with a clear margin" if coat == "base" else "the whole fish is in view with a comfortable margin of at least 8% of the picture on all four sides"
+        text = f"It is a legendary male salmon at its legendary peak, a huge old male salmon leaping clear of the water in a powerful upstream jump, body arched, far more massive than the adult, a pronounced hooked kype jaw and a humped back, facing right, a broad powerful tail, only the top edge of its back catching a thin cold moonlight from behind, old pale scars, a calm unyielding gaze with a dark non-reflective eye. {water}, the night background stays plain and uniform, and {margin}. Still a natural salmon with no armor, no glow and no magic."
     if slug == "bear-venerable-rare":  # the pale gold coat takes no frost: age shows in the scars and the build
         text = text.replace("a muzzle frosted grey and silver-grey frost only on the top of the head, the nape and the upper shoulders, never on the rest of the body;", "a muzzle slightly paler with age;")
     pose = None
@@ -400,9 +406,12 @@ def self_test() -> None:
                 assert "pale cinnamon-gold" in p and "silver-grey" not in low and "frost" not in low.replace("no frost", ""), slug
         if slug == "salmon-legendary":
             assert "leaping clear of the water" in p and "hooked kype" in p and "few splashes of ink" in p, slug
+        if slug == "salmon-legendary-rare":
+            assert "leaping clear of the water" in p and "hooked kype" in p and "splashes of ink" not in p, slug
+            assert "no water, no splash, no spray and no droplets anywhere in the picture" in p and "at least 8% of the picture on all four sides" in p, slug
         if stage == "legendary":
             assert not [w for w in ("towering", "colossal", "gigantic", "rearing") if w in low], slug
-            assert ("far more massive than the adult" if slug == "salmon-legendary" else "visibly larger and broader than the adult") in p and "no armor, no glow and no magic" in p, slug
+            assert ("far more massive than the adult" if slug in ("salmon-legendary", "salmon-legendary-rare") else "visibly larger and broader than the adult") in p and "no armor, no glow and no magic" in p, slug
             assert "never cropped" in p or animal == "salmon", slug
         if stage == "young":
             assert "broad powerful shoulders" not in p, slug

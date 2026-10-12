@@ -391,7 +391,7 @@ function CardRow({ card }: { card: CardData }) {
   return (
     <Card bg="$background" p="$3" accessible accessibilityLabel={spoken(card)}>
       <XStack items="center" gap="$3">
-        <YStack minW={48} items="center" importantForAccessibility="no-hide-descendants">
+        <YStack minW={64} items="center" importantForAccessibility="no-hide-descendants">
           {card.art}
         </YStack>
         <YStack flex={1} gap="$1">

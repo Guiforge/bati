@@ -433,7 +433,7 @@ function RevealStoryboard({
     opacity: interpolate(beat.value, [0, 0.4], [0, 1], "clamp"),
   }));
   const first = useAnimatedStyle(() => ({
-    opacity: interpolate(beat.value, [0.8, 1], [1, 0], "clamp"),
+    opacity: interpolate(beat.value, [0.6, 0.8], [1, 0], "clamp"),
   }));
   // The portrait is the last image's own: its slot is in the layout from the first beat, so it
   // rises at the second beat and then stays where it is.

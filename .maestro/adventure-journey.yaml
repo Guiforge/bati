@@ -41,6 +41,11 @@ appId: com.guiforge.bati.dev
 # CTA's own handler, so this walks both. On a cleared state step 1 is current, with no run yet.
 - assertVisible:
     id: "adventure-start"
+# On a 640dp screen the step rows start under the fold.
+- scrollUntilVisible:
+    element:
+      id: "adventure-step-0-active"
+    direction: DOWN
 - tapOn:
     id: "adventure-step-0-active"
 
@@ -61,9 +66,13 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "adventures-adventure-card"
     index: 0
-- extendedWaitUntil:
-    visible:
+# Scrolled to: on a 640dp screen the step rows start under the fold.
+- scrollUntilVisible:
+    element:
       id: "adventure-step-0-completed"
-    timeout: 10000
-- assertVisible:
-    id: "adventure-step-1-active"
+    direction: DOWN
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "adventure-step-1-active"
+    direction: DOWN

@@ -2,7 +2,7 @@
 
 Bati is a personal project built largely with AI assistance, so the bar for a change is less
 "does it work" and more "will the next reader understand why it is like that". Issues and pull
-requests are welcome; so is a plain message to **feedback.bati@proton.me** if opening an issue is
+requests are welcome; so is a plain message to **contact@getbati.app** if opening an issue is
 more ceremony than your idea deserves.
 
 For documentation specifically, see [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). This page is

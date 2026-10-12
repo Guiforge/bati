@@ -1055,7 +1055,20 @@ export function rememberMergeNotice(returnTo: string): Promise<void> {
 }
 
 /** Once, after that reload: what arrived and where the hero was. */
-export async function takeMergeNotice(): Promise<{ sessions: number; returnTo: string } | null> {
+export function takeMergeNotice(): Promise<MergeNotice | null> {
+  // One reader at a time, like `takeRestoreNotice`: the screen that asks mounts its effect twice,
+  // and two reads before the first write both told the hero, and both sent them back.
+  if (takingMergeNotice) return Promise.resolve(null);
+  takingMergeNotice = readMergeNotice().finally(() => {
+    takingMergeNotice = null;
+  });
+  return takingMergeNotice;
+}
+
+type MergeNotice = { sessions: number; returnTo: string };
+let takingMergeNotice: Promise<MergeNotice | null> | null = null;
+
+async function readMergeNotice(): Promise<MergeNotice | null> {
   const merge = await lastMerge();
   if (merge === null || merge.told) return null;
   await updateLastMerge({ told: true });

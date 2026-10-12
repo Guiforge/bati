@@ -10,10 +10,16 @@ export function Recitatif({
   children,
   testID,
   numberOfLines,
+  maxFontSizeMultiplier,
+  adjustsFontSizeToFit,
 }: {
   children: ReactNode;
   testID?: string;
   numberOfLines?: number;
+  /** For a caption that repeats text shown larger elsewhere, on a plate too small to scale it. */
+  maxFontSizeMultiplier?: number;
+  /** With `numberOfLines`, a long title shrinks to its line instead of being cut. */
+  adjustsFontSizeToFit?: boolean;
 }) {
   return (
     <YStack
@@ -29,6 +35,8 @@ export function Recitatif({
       <Text
         accessibilityRole="header"
         numberOfLines={numberOfLines}
+        maxFontSizeMultiplier={maxFontSizeMultiplier}
+        adjustsFontSizeToFit={adjustsFontSizeToFit}
         fontFamily="$heading"
         fontWeight="700"
         fontSize="$3"

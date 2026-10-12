@@ -21,6 +21,7 @@ related: [../README.md]
 - [audits/2026-09-10-outings.md](audits/2026-09-10-outings.md) — The live outing, its speed, and where the trace stops being drawn
 - [audits/2026-09-10-stats.md](audits/2026-09-10-stats.md) — Which stats cards earn their place
 - [audits/2026-09-20-quest-setup.md](audits/2026-09-20-quest-setup.md) — The controls that change a quest before it starts, measured on an emulator
+- [audits/2026-10-11-onboarding.md](audits/2026-10-11-onboarding.md) — Install to first rep: 5 screens, 6 taps, 3 blockers, six personas, with captures
 
 ## Consistency contract
 

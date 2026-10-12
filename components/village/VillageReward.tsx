@@ -6,6 +6,7 @@ import { feedsLine, nameOf } from "@/components/village/rows";
 import { getBuildingIconAsset } from "@/constants/assetMap";
 import type { GrownBuilding, VillageBuilding } from "@/db/village";
 import { useAnimationProps } from "@/hooks/useReducedMotion";
+import { formatList } from "@/src/i18n/list";
 import type { AppLanguage } from "@/stores/settings";
 
 type Props = {
@@ -38,7 +39,7 @@ export function VillageReward({ growth, buildings, language, top, onDismiss }: P
   });
   const body =
     also.length > 0
-      ? `${feedsLine(building, t, language)}. ${t("village.reward_also", { names: also.join(", ") })}`
+      ? `${feedsLine(building, t, language)}. ${t("village.reward_also", { names: formatList(also, language) })}`
       : feedsLine(building, t, language);
 
   return (

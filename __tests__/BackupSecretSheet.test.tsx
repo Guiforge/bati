@@ -73,3 +73,30 @@ test("shows what is typed from the start, because twelve words are not typed bli
 
   expect(screen.getByTestId("backup-secret-input").props.secureTextEntry).toBe(false);
 });
+
+test("the twelve words wrap while they are shown, the field is one masked line once hidden, and the keyboard's key still submits", async () => {
+  const onSubmit = jest.fn();
+  await render(
+    <SafeAreaProvider initialMetrics={METRICS}>
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <BackupSecretSheet
+          request={{ open: true, wrong: false }}
+          onSubmit={onSubmit}
+          onCancel={() => {}}
+        />
+      </TamaguiProvider>
+    </SafeAreaProvider>,
+  );
+  const input = () => screen.getByTestId("backup-secret-input");
+  expect(input().props.multiline).toBe(true);
+  expect(input().props.submitBehavior).toBe("blurAndSubmit");
+  expect(input().props.autoCorrect).toBe(false);
+
+  await fireEvent.press(screen.getByLabelText("backup.hideSecret"));
+  expect(input().props.secureTextEntry).toBe(true);
+  expect(input().props.multiline).toBe(false);
+
+  await fireEvent.changeText(input(), "douze mots");
+  await fireEvent(input(), "submitEditing");
+  expect(onSubmit).toHaveBeenCalledWith("douze mots");
+});

@@ -6,8 +6,8 @@
     <title>{{ page.head_title | default: page.title }}</title>
     <meta name="description" content="{{ page.description | default: site.description }}" />
     <meta name="theme-color" content="#0C0D11" />
-    <link rel="icon" href="/bati/assets/img/favicon.png" />
-    <link rel="stylesheet" href="/bati/assets/style.css" />
+    <link rel="icon" href="/assets/img/favicon.png" />
+    <link rel="stylesheet" href="/assets/style.css" />
     <link rel="canonical" href="{{ site.url }}{{ page.url }}" />
 
     <meta property="og:type" content="website" />
@@ -43,15 +43,15 @@
   <body>
     <header class="site-head">
       <div class="wrap site-head__in">
-        <a class="brand" href="/bati/">
-          <img src="/bati/assets/img/icon.webp" alt="" width="28" height="28" />
+        <a class="brand" href="/">
+          <img src="/assets/img/icon.webp" alt="" width="28" height="28" />
           Bati
         </a>
         <nav class="site-nav">
-          <a href="/bati/#screens"><span lang="en">Screens</span><span lang="fr">Écrans</span><span lang="de">Bildschirme</span><span lang="es">Pantallas</span></a>
-          <a href="/bati/#systems"><span lang="en">Systems</span><span lang="fr">Systèmes</span><span lang="de">Systeme</span><span lang="es">Sistemas</span></a>
-          <a href="/bati/#privacy"><span lang="en">Privacy</span><span lang="fr">Vie privée</span><span lang="de">Datenschutz</span><span lang="es">Privacidad</span></a>
-          <a href="/bati/#install"><span lang="en">Install</span><span lang="fr">Installer</span><span lang="de">Installieren</span><span lang="es">Instalar</span></a>
+          <a href="/#screens"><span lang="en">Screens</span><span lang="fr">Écrans</span><span lang="de">Bildschirme</span><span lang="es">Pantallas</span></a>
+          <a href="/#systems"><span lang="en">Systems</span><span lang="fr">Systèmes</span><span lang="de">Systeme</span><span lang="es">Sistemas</span></a>
+          <a href="/#privacy"><span lang="en">Privacy</span><span lang="fr">Vie privée</span><span lang="de">Datenschutz</span><span lang="es">Privacidad</span></a>
+          <a href="/#install"><span lang="en">Install</span><span lang="fr">Installer</span><span lang="de">Installieren</span><span lang="es">Instalar</span></a>
         </nav>
         <a class="head-link" href="https://github.com/Guiforge/bati">GitHub</a>
         <div class="langs" role="group" aria-label="Language">
@@ -72,7 +72,7 @@
     <footer class="site-foot">
       <div class="wrap">
         <nav>
-          <a href="/bati/privacy/"
+          <a href="/privacy/"
             ><span lang="en">Privacy policy</span
             ><span lang="fr">Politique de confidentialité</span><span lang="de">Datenschutzerklärung</span><span lang="es">Política de privacidad</span></a
           >
@@ -82,7 +82,7 @@
           <a href="https://github.com/Guiforge/bati/releases"
             ><span lang="en">Releases</span><span lang="fr">Versions</span><span lang="de">Versionen</span><span lang="es">Versiones</span></a
           >
-          <a href="mailto:feedback.bati@proton.me">feedback.bati@proton.me</a>
+          <a href="mailto:contact@getbati.app">contact@getbati.app</a>
         </nav>
         <p class="colophon">
           <span lang="en"
@@ -110,7 +110,7 @@
             b.setAttribute("aria-pressed", String(b.dataset.setLang === lang));
           });
           document.querySelectorAll("img[data-shot]").forEach(function (img) {
-            img.src = "/bati/assets/shots/" + lang + "/" + img.dataset.shot + ".webp";
+            img.src = "/assets/shots/" + lang + "/" + img.dataset.shot + ".webp";
           });
         }
         buttons.forEach(function (b) {

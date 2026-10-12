@@ -6,5 +6,5 @@
       Device locale rather than the app's chosen language, because nothing that knows the app's
       language is alive at that point.
     -->
-    <string name="bati_location_interrupted">Expedition interrupted</string>
+    <string name="bati_location_interrupted">Outing interrupted</string>
 </resources>

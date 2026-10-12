@@ -14,6 +14,10 @@ const mockPush = jest.fn();
 
 // The hero's reminder days set the weeks chip's pace (adventure-weeks-label.test.ts); none here.
 jest.mock("@/db/reminders", () => ({ getReminderDays: async () => ({}) }));
+jest.mock("@/db/preferences", () => ({
+  preferences: { getTrainingLevel: async () => "regular" },
+}));
+jest.mock("@/db/questConfig", () => ({ startingDifficulty: () => "medium" }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useLocalSearchParams: () => ({ id: "1" }),

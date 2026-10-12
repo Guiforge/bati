@@ -114,4 +114,28 @@ describe("the warm-up on day one", () => {
     expect(unavailable.has("Jumping Jack")).toBe(false);
     expect(unavailable.has("Star Jump")).toBe(false);
   });
+
+  // With the jumps out, the one raise movement left was the Mountain Climber: a fast plank on
+  // loaded wrists in front of a session that only asks for wall push-ups. The same for the Bear
+  // Crawl behind it in the fallback (audit 2026-10-11, the merged tree).
+  test("a hero with no session opens on the glute bridge, never on a brisk plank", async () => {
+    const built = await warmups();
+
+    for (const steps of built) expect(steps[0]).toBe("Glute Bridge");
+    expect(built.flat()).not.toContain("Mountain Climber");
+    expect(built.flat()).not.toContain("Bear Crawl");
+  });
+
+  test("the brisk movements come back with the jumps, after three sessions", async () => {
+    for (let i = 0; i < 3; i++) {
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 10, strftime('%s', 'now', '-2 days'))",
+        )
+        .run();
+    }
+    const { unavailableMovements } = require("../db/exercises") as typeof import("../db/exercises");
+
+    expect((await unavailableMovements()).has("Mountain Climber")).toBe(false);
+  });
 });

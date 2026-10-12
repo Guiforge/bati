@@ -318,6 +318,15 @@ outline. The Journal's XP caption is gold Inter, never ash, and a history row's 
 - **The narrative** ([`NarrativeModal`](../../components/adventures/NarrativeModal.tsx)) is a page
   of its own: opaque `$bgDark`, art full-bleed at the top (4:3, foot melted into the ground), the
   title in a Récitatif on its bottom-left edge, the story below, the confirm the seal.
+- **The naming screen** ([`FirstFire`](../../components/onboarding/FirstFire.tsx)) is the first
+  panel of the album: the title on ink, the hamlet whole in a band of its own, the field under it.
+  While the name is valid an ink veil lifts off the painting (it darkens the art, it never
+  repaints it; the painted window is the one warm light), a few embers leave the chimney once,
+  and the name is set in a Récitatif astride the foot of the plate, on one line that shrinks to
+  fit (`numberOfLines` + `adjustsFontSizeToFit`, font scaling capped by `maxFontSizeMultiplier`
+  because the field shows the same name at full scale). A welcome, not a reward: no gold on text,
+  no figure, and it never gates the button. A short band follows the window and lets the chimney
+  go.
 - **Session details** open on a plate: the quest's art at 4:3 of `min(width, 520)` (150 dp tall
   without art), a gold date kicker in `$body`, the title in a Récitatif.
 - **A loading reward asserts nothing.** Victory's XP card reserves its height with an empty value,

@@ -131,6 +131,23 @@ describe("WarmupView", () => {
     expect(getByTestId("warmup-left")).toHaveTextContent(new RegExp(clock));
   });
 
+  // Audit 2026-10-11, F3: the wait was counted in, so the line ran down before anything had
+  // started. What is left is the warm-up, whole, until the first movement's clock starts.
+  it("holds what is left still during the wait", async () => {
+    useSessionStore.setState({
+      warmupPrep: true,
+      timerStartTimestamp: Date.now(),
+      timerDuration: PREP_SECONDS,
+    });
+    const { getByTestId } = await mountWarmup();
+
+    const total = WARMUP_SEQUENCE.reduce((sum, step) => sum + step.seconds, 0);
+    const clock = `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+    expect(getByTestId("warmup-left")).toHaveTextContent(new RegExp(clock));
+    await tickSeconds(3);
+    expect(getByTestId("warmup-left")).toHaveTextContent(new RegExp(clock));
+  });
+
   /**
    * The trap in the auto-advance: on the render where a movement becomes a wait, the timer still
    * reads the movement's zero. An effect that re-ran on that render took the zero for the end of

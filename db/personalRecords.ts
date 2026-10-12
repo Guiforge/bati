@@ -412,7 +412,13 @@ export async function getSessionStanding(
     return [
       {
         exerciseId: row.exerciseId,
-        exerciseName: { en: row.enName, fr: row.frName, de: row.deName, es: row.esName },
+        exerciseName: {
+          en: row.enName,
+          fr: row.frName,
+          de: row.deName,
+          es: row.esName,
+          ru: row.enName,
+        },
         type: row.type,
         perSide: row.perSide,
         value,
@@ -594,6 +600,7 @@ export async function checkForNewRecords(
           fr: result.frName,
           de: result.deName,
           es: result.esName,
+          ru: result.enName,
         },
         perSide: result.perSide,
       });

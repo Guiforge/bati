@@ -14,6 +14,7 @@ import config from "@/tamagui.config";
 // nothing was hidden from it.
 
 // Setting aside is not what this file is about.
+jest.mock("@/db/questConfig", () => ({ loadDefaultLevels: async () => () => "medium" }));
 jest.mock("@/hooks/useSetAside");
 
 jest.mock("expo-router", () => ({
@@ -574,7 +575,7 @@ describe("an expedition on the quest screen", () => {
   test("offers no level, because a walk has none to offer", async () => {
     const view = await mountQuest(expeditionQuest());
 
-    expect(view.queryByText("Level")).toBeNull();
+    expect(view.queryByText("Difficulty")).toBeNull();
     expect(view.queryByText("Easy")).toBeNull();
     expect(view.queryByText("Medium")).toBeNull();
     expect(view.queryByText("Hard")).toBeNull();
@@ -723,7 +724,7 @@ describe("an ordinary workout keeps every control", () => {
     const view = await mountQuest(workoutQuest());
     const db = require("@/db");
 
-    expect(view.getByText("Level")).toBeTruthy();
+    expect(view.getByText("Difficulty")).toBeTruthy();
     expect(view.getByText("Targets +25% · XP ×1.2")).toBeTruthy();
 
     await waitFor(() => expect(db.getQuestById.mock.calls.at(-1)).toEqual([5, "hard"]));

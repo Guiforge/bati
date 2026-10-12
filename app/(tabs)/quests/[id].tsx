@@ -51,6 +51,7 @@ import {
 } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
+import { loadDefaultLevels } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
 import { formatCount, formatTargetValue } from "@/db/targets";
@@ -344,10 +345,11 @@ export default function QuestDetails() {
       if (!questId) return;
       let cancelled = false;
 
-      getQuestConfig(questId)
-        .then((saved) => {
+      // With nothing saved and no level in the route, the quest opens where Home would start it.
+      Promise.all([getQuestConfig(questId), params.level ? null : loadDefaultLevels()])
+        .then(([saved, defaults]) => {
           if (cancelled) return;
-          const next = saved ?? { level: initialLevel };
+          const next = saved ?? { level: defaults?.(questId) ?? initialLevel };
           const applyRouteLevel = Boolean(params.level) && !routeLevelConsumed.current;
           if (params.level) routeLevelConsumed.current = true;
           // Same content, same identity: a refocus with nothing saved handed a fresh

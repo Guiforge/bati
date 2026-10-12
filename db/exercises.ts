@@ -254,6 +254,16 @@ export function listExercises(): Promise<Exercise[]> {
 }
 
 /**
+ * A cardio movement classed above `easy`: Mountain Climber, Bear Crawl. Not what opens the warm-up
+ * of a hero who is starting, whose session behind it is the gentlest the app has: a warm-up is
+ * not harder than the work. Cardio only, so the mobility phase keeps its `medium` stretches
+ * (Downward Dog, World's Greatest Stretch), which are slow and unloaded.
+ */
+function tooBriskToOpen(exercise: Pick<Exercise, "style" | "difficulty">): boolean {
+  return exercise.style === "cardio" && exercise.difficulty !== "easy";
+}
+
+/**
  * The names of the movements this hero cannot do, because they need kit that was not declared in
  * Settings. Names rather than ids: the warm-up names its movements as strings and resolves them
  * against the catalogue at render time, so this is the shape its caller needs.
@@ -280,6 +290,11 @@ export async function unavailableMovements(): Promise<Set<string>> {
   // A hero starting out is not warmed up with jumps (`startsGently`). Every raise movement but
   // one was a jump, so day one opened on Jumping Jacks for someone back from a knee operation,
   // clock running. Here and not in a second list, so the preview and the session cannot differ.
+  //
+  // Nor with a brisk movement harder than `easy` (`tooBriskToOpen`): with the jumps out, the one
+  // raise movement left was the Mountain Climber, a fast plank on loaded wrists, opening the
+  // warm-up of a session that only asked for wall push-ups (audit 2026-10-11, the merged tree).
+  // The no-impact fallback fills the phase with the glute bridge instead.
   const gentle = startsGently(level, totalSessions);
   // Seed rows only: the warm-up names seed movements, and a hero's own "Squat" set aside must not
   // take the seed Squat out of every warm-up with it (the population rule, see AGENTS.md).
@@ -288,7 +303,7 @@ export async function unavailableMovements(): Promise<Set<string>> {
       .filter(
         (ex) =>
           ex.creator === ADMIN_CREATOR &&
-          (unavailable.has(ex.id) || (gentle && ex.impact === true)),
+          (unavailable.has(ex.id) || (gentle && (ex.impact === true || tooBriskToOpen(ex)))),
       )
       .map((ex) => ex.enName),
   );

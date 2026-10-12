@@ -44,14 +44,14 @@
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
     </activity>
-    <receiver android:name=".widget.Flame" android:exported="false" android:label="Bati: Flame">
+    <receiver android:name=".widget.Flame" android:exported="false" android:label="@string/widget_flame_label">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
         <action android:name="com.guiforge.bati.WIDGET_CLICK"/>
       </intent-filter>
       <meta-data android:name="android.appwidget.provider" android:resource="@xml/widgetprovider_flame"/>
     </receiver>
-    <receiver android:name=".widget.Weekly" android:exported="false" android:label="Bati: Week">
+    <receiver android:name=".widget.Weekly" android:exported="false" android:label="@string/widget_weekly_label">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
         <action android:name="com.guiforge.bati.WIDGET_CLICK"/>

@@ -120,10 +120,11 @@ export function WarmupView() {
   const eachSide = perSide ? t("session.each_side", { seconds: half }) : null;
   const switched = sided && remainingSeconds <= half;
 
-  // The whole warm-up still ahead, so "2 of 6" says how long it is rather than how many. Only
-  // the first movement has a wait, so none is added for the ones after it.
+  // The whole warm-up still ahead, so "2 of 6" says how long it is rather than how many. The wait
+  // is not warm-up: counted in, the line ticked down before anything had started and the screen
+  // read as a movement already running (audit 2026-10-11, F3).
   const later = warmupSequence.slice(warmupIndex + 1).reduce((sum, next) => sum + next.seconds, 0);
-  const left = Math.max(0, remainingSeconds) + (warmupPrep ? step.seconds : 0) + later;
+  const left = (warmupPrep ? step.seconds : Math.max(0, remainingSeconds)) + later;
 
   const isFirst = warmupIndex === 0;
 
@@ -147,29 +148,28 @@ export function WarmupView() {
         />
       </XStack>
 
-      {/* Scrolls rather than overlaps: at a 130% font on a 360x640 screen the movement, its
-          description and the countdown are taller than the space between the header and the step
-          controls, and a centred box spilled over both. `flexGrow` keeps it centred while it fits. */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-        {warmupPrep ? (
-          <YStack style={{ flexGrow: 1 }} justify="center">
-            <PrepView
-              kicker={t("session.prep_title", {
-                current: warmupIndex + 1,
-                total: warmupSequence.length,
-              })}
-              instruction={instruction}
-              fallbackName={label}
-              target={eachSide ?? `${step.seconds}${SECONDS_SUFFIX[language]}`}
-              remainingSeconds={timerStartTimestamp === null ? null : remainingSeconds}
-              onGo={() => {
-                selection();
-                startWarmupMove();
-              }}
-              goTestID="session-prep-go"
-            />
-          </YStack>
-        ) : (
+      {warmupPrep ? (
+        <PrepView
+          pinned
+          kicker={t("session.prep_title", {
+            current: warmupIndex + 1,
+            total: warmupSequence.length,
+          })}
+          instruction={instruction}
+          fallbackName={label}
+          target={eachSide ?? `${step.seconds}${SECONDS_SUFFIX[language]}`}
+          remainingSeconds={timerStartTimestamp === null ? null : remainingSeconds}
+          onGo={() => {
+            selection();
+            startWarmupMove();
+          }}
+          goTestID="session-prep-go"
+        />
+      ) : (
+        // Scrolls rather than overlaps: at a 130% font on a 360x640 screen the movement, its
+        // description and the countdown are taller than the space between the header and the step
+        // controls, and a centred box spilled over both. `flexGrow` keeps it centred while it fits.
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           <YStack style={{ flexGrow: 1 }} items="center" justify="center" gap="$4">
             {exercise ? (
               <Image
@@ -226,8 +226,8 @@ export function WarmupView() {
 
             <TimerBar value={progress} fill="$primary" bg="$surface" />
           </YStack>
-        )}
-      </ScrollView>
+        </ScrollView>
+      )}
 
       <XStack items="center" justify="center" gap="$5">
         <Button

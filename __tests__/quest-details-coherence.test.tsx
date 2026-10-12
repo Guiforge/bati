@@ -10,6 +10,7 @@ import config from "@/tamagui.config";
 // The second audit: "up to +N XP" is gold on the list card and was neutral here, and the
 // difficulty tag ignored the palette every other difficulty marker uses.
 
+jest.mock("@/db/questConfig", () => ({ loadDefaultLevels: async () => () => "medium" }));
 jest.mock("@/hooks/useSetAside");
 
 jest.mock("expo-router", () => ({

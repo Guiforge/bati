@@ -39,6 +39,8 @@ jest.mock("@/src/deviceSync", () => ({
 jest.mock("@/src/reportError", () => ({
   reportError: (...args: unknown[]) => mockReportError(...args),
 }));
+const mockRememberRestore = jest.fn(() => Promise.resolve());
+jest.mock("@/src/restoreNotice", () => ({ rememberRestoreNotice: () => mockRememberRestore() }));
 jest.mock("expo-splash-screen", () => ({ hideAsync: () => mockHideAsync() }));
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (k: string) => k }) }));
 
@@ -158,6 +160,18 @@ describe("DatabaseProvider", () => {
     await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restartRequired"));
     // Opened in a fresh runtime, with no "close and reopen" for the hero to do.
     await waitFor(() => expect(mockReload).toHaveBeenCalledWith("restore"));
+    // And a word left for after it: who came back.
+    expect(mockRememberRestore).toHaveBeenCalledTimes(1);
+  });
+
+  it("a restore that rolled back leaves no 'is back' to say at the next launch", async () => {
+    mockCommitRestore.mockRejectedValue(new Error("no space left on device"));
+    useRestoreStore.setState({ phase: "restoring" });
+
+    await mount();
+
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("failed"));
+    expect(mockRememberRestore).not.toHaveBeenCalled();
   });
 
   it("commits a restore once, never twice", async () => {

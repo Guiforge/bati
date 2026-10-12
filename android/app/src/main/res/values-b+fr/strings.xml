@@ -1,3 +1,6 @@
 <resources>
-  <string name="NSPhotoLibraryUsageDescription">"Utilisée pour choisir une photo comme avatar de ton héros, ou pour un exercice ou une quête que tu as créés. Elle reste sur ton appareil, et n'en sort que dans une sauvegarde ou une synchronisation chiffrée que tu actives."</string>
+  <string name="widget_flame_label">"Bati : Flamme"</string>
+  <string name="widget_flame_description">"Ta flamme d'entraînement."</string>
+  <string name="widget_weekly_label">"Bati : Semaine"</string>
+  <string name="widget_weekly_description">"Tes séances de la semaine, face à ton serment."</string>
 </resources>

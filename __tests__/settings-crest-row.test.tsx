@@ -13,6 +13,7 @@ jest.mock("expo-router", () => ({
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() }),
   usePathname: () => "/settings",
+  useLocalSearchParams: () => ({}),
   Stack: { Screen: () => null },
 }));
 

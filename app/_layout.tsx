@@ -145,7 +145,10 @@ export default function RootLayout() {
     // onboarding, and onboarding follows the import (the quest screen is not in its group).
     const inQuestImport = segments[0] === "quest-import";
 
-    if (!hasFinishedOnboarding && !inOnboardingGroup && !inQuestImport) {
+    // The question step links to the safety page, one screen before onboarding is finished.
+    const inSafety = segments[0] === "safety";
+
+    if (!hasFinishedOnboarding && !inOnboardingGroup && !inQuestImport && !inSafety) {
       router.replace("/onboarding");
     } else if (hasFinishedOnboarding && inOnboardingGroup && !isPostOnboardingOffer) {
       router.replace("/");

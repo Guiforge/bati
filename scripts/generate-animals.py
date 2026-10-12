@@ -190,7 +190,7 @@ SILHOUETTE = {
 COAT = {
     "bear": {
         "base": "Its coat is deep chestnut with a paler tan muzzle and a plain chest with no white blaze.",
-        "rare": "Its coat is a deep brown, the hairs of the nape and shoulders tipped in pale silver-grey, a grizzled mantle, with a paler tan muzzle and a plain chest with no white blaze.",
+        "rare": "Its coat is a pale cinnamon-gold coat, light honey blond over the whole body, clearly much paler and warmer than a brown bear, darker only on the lower legs; no silver, no frost, no grey tips. It has a paler tan muzzle and a plain chest with no white blaze.",
         "winter": "Its coat is thick and shaggy, a darker brown, with frost caught in the hairs of the shoulders and a paler tan muzzle and a plain chest with no white blaze. No snowflakes in the air.",
     },
     "stag": {
@@ -314,7 +314,6 @@ COAT_EXTRA = {
     "the pasterns and hooves as black as the legs; the face solid black from forehead to nostrils, no pale stripe, no highlight down the nose; "
     "the hair just above each hoof is black like the rest of the leg; no pale coronet, no pale fetlock, no sock; "
     "the face lit softly from the side, no highlight running down the nose; no ground shadow.",
-    "bear-legendary-rare": "Even against the backlight, the long guard hairs over its hump, nape and shoulders are tipped in pale silver-grey, a frosted grizzled mantle clearly paler than its deep brown body.",
 }
 
 
@@ -355,6 +354,10 @@ def prompt_for(slug: str, concept: str | None = None) -> str:
         text = text.replace(" from deep in the shadow under its heavy brow", "").replace("while its face and flank in shadow", "while its flank is in shadow")
     if slug == "horse-venerable-rare":  # FLUX paints the age as grey on the pasterns and a pale blaze on the nose
         text = text.replace("with a muzzle frosted grey and silver-grey frost only on the head, the neck and the upper shoulders, never on the rest of the body,", "with silver threads in the mane and tail only,")
+    if slug == "salmon-legendary":  # the base alone leaps; its rare and winter keep the swimming profile
+        text = "It is a legendary male salmon at its legendary peak, a huge old male salmon leaping clear of the water in a powerful upstream jump, body arched, far more massive than the adult, a pronounced hooked kype jaw and a humped back, facing right, a broad powerful tail, only the top edge of its back catching a thin cold moonlight from behind, old pale scars, a calm unyielding gaze with a dark non-reflective eye. The water is only a few splashes of ink beneath it, the night background stays plain and uniform, and the whole fish is in view with a clear margin. Still a natural salmon with no armor, no glow and no magic."
+    if slug == "bear-venerable-rare":  # the pale gold coat takes no frost: age shows in the scars and the build
+        text = text.replace("a muzzle frosted grey and silver-grey frost only on the top of the head, the nape and the upper shoulders, never on the rest of the body;", "a muzzle slightly paler with age;")
     pose = None
     if concept:
         text, pose = CONCEPTS[concept]
@@ -393,9 +396,13 @@ def self_test() -> None:
                 assert "pure white fur on the whole head with no dark mask and no dark patches around the eyes; only the tail tip is black" in p, slug
         if animal == "bear":
             assert "plain chest with no white blaze" in p, slug
+            if coat == "rare":
+                assert "pale cinnamon-gold" in p and "silver-grey" not in low and "frost" not in low.replace("no frost", ""), slug
+        if slug == "salmon-legendary":
+            assert "leaping clear of the water" in p and "hooked kype" in p and "few splashes of ink" in p, slug
         if stage == "legendary":
             assert not [w for w in ("towering", "colossal", "gigantic", "rearing") if w in low], slug
-            assert "visibly larger and broader than the adult" in p and "no armor, no glow and no magic" in p, slug
+            assert ("far more massive than the adult" if slug == "salmon-legendary" else "visibly larger and broader than the adult") in p and "no armor, no glow and no magic" in p, slug
             assert "never cropped" in p or animal == "salmon", slug
         if stage == "young":
             assert "broad powerful shoulders" not in p, slug
@@ -437,7 +444,7 @@ def self_test() -> None:
             assert "silver threads in the mane and tail only" in p and "frosted" not in low and "no ground shadow" in p, slug
             assert "no pale coronet, no pale fetlock, no sock" in p and "the face lit softly from the side, no highlight running down the nose" in p, slug
         assert "cub" not in p.lower().split() and "cute" not in p.lower(), slug
-        assert p.index("nothing glows") < p.index(STAGE[animal][parts_of(slug)[1]][:60]), slug
+        assert p.index("nothing glows") < p.index(STAGE[animal][parts_of(slug)[1]][:40]), slug
     # the silhouette sentence is the same on every portrait of an animal (10, the ermine 7)
     for animal in ANIMALS:
         mine = [s for s in slugs if s.startswith(animal + "-")]

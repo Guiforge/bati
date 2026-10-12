@@ -127,7 +127,7 @@ describe("the stones in the Ramparts' sheet", () => {
     mockYears({ stones: [stone(21, sessionsFact(1))] });
     const screen = await openRamparts();
     expect(await screen.findAllByTestId(/^village-stone-\d+$/)).toHaveLength(1);
-    expect(screen.getByLabelText("Level 21: 3 sessions")).toBeTruthy();
+    expect(screen.getByLabelText("Level\u00a021: 3 sessions")).toBeTruthy();
   });
 
   it("shows the stones whatever the wall's rank", async () => {
@@ -153,10 +153,10 @@ describe("the stones in the Ramparts' sheet", () => {
     expect(await screen.findAllByTestId(/^village-stone-(record-)?\d+$/)).toHaveLength(14);
     expect(screen.getAllByTestId(/^village-stones-\d+$/)).toHaveLength(1);
     expect(screen.getByTestId("village-stone-record-34")).toBeTruthy();
-    expect(screen.getByText("Level 34, record: Push-ups, from 10 to 14")).toBeTruthy();
+    expect(screen.getByText("Level\u00a034, record: Push-ups, from 10 to 14")).toBeTruthy();
     // Thirteen stones of 3 sessions and the record's: one line, the sum under it.
-    expect(screen.getByText("Levels 21 to 34: 42 sessions")).toBeTruthy();
-    expect(screen.queryByText("Level 21: 3 sessions")).toBeNull();
+    expect(screen.getByText("Levels\u00a021 to 34: 42 sessions")).toBeTruthy();
+    expect(screen.queryByText("Level\u00a021: 3 sessions")).toBeNull();
   });
 
   it("says the level's session count when the record's movement is gone", async () => {
@@ -170,7 +170,7 @@ describe("the stones in the Ramparts' sheet", () => {
     };
     mockYears({ stones: [{ ...stone(21, record), sessions: 5 }] });
     const screen = await openRamparts();
-    expect(await screen.findByLabelText("Level 21: 5 sessions")).toBeTruthy();
+    expect(await screen.findByLabelText("Level\u00a021: 5 sessions")).toBeTruthy();
     expect(screen.queryByTestId("village-stone-record-21")).toBeNull();
   });
 
@@ -179,10 +179,10 @@ describe("the stones in the Ramparts' sheet", () => {
     const screen = await openRamparts();
     expect(await screen.findAllByTestId(/^village-stone-\d+$/)).toHaveLength(65);
     expect(screen.getAllByTestId(/^village-stones-\d+$/)).toHaveLength(7);
-    expect(screen.getByText("Levels 21 to 29: 27 sessions")).toBeTruthy();
-    expect(screen.getByText("Levels 80 to 85: 18 sessions")).toBeTruthy();
+    expect(screen.getByText("Levels\u00a021 to 29: 27 sessions")).toBeTruthy();
+    expect(screen.getByText("Levels\u00a080 to 85: 18 sessions")).toBeTruthy();
     // One label per decade, none per stone.
-    expect(screen.getByLabelText("Levels 70 to 79: 30 sessions")).toBeTruthy();
+    expect(screen.getByLabelText("Levels\u00a070 to 79: 30 sessions")).toBeTruthy();
   });
 
   it("lays the stones six to a row", async () => {
@@ -231,11 +231,13 @@ describe("the marks on the stones", () => {
     const screen = await openRamparts();
     expect(await screen.findByTestId("village-stone-record-33")).toBeTruthy();
     expect(screen.getByTestId("village-stone-age-50")).toBeTruthy();
-    expect(screen.getByText("Level 50: New era, Push-ups")).toBeTruthy();
-    expect(screen.getByText("Level 33, record: Push-ups, from 10 to 14")).toBeTruthy();
-    expect(screen.queryByText("Level 22: 3 sessions")).toBeNull();
+    expect(screen.getByText("Level\u00a050: New era, Push-ups")).toBeTruthy();
+    expect(screen.getByText("Level\u00a033, record: Push-ups, from 10 to 14")).toBeTruthy();
+    expect(screen.queryByText("Level\u00a022: 3 sessions")).toBeNull();
     const group = screen.getByTestId("village-stones-2");
-    expect(group.props.accessibilityLabel).toContain("Level 33, record: Push-ups, from 10 to 14");
+    expect(group.props.accessibilityLabel).toContain(
+      "Level\u00a033, record: Push-ups, from 10 to 14",
+    );
   });
 
   it("says how many stones the wall holds, on its row and in its sheet", async () => {

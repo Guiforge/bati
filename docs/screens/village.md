@@ -203,7 +203,13 @@ unbuilt row draws the same emblem as a silhouette through `tintColor`, which nee
   200, legendary at 500 (a big feast of its own, `legendary:<practice>`). A hero whose longest flame
   reached Eternal has won the rare coat (`rareCoat`, a fact of the hero, announced once by a card in
   Tonight, `coat:rare`, only when the portrait of that animal's rare coat ships). The crest sheet
-  shows the animal's portrait at 144 dp beside the 96 dp shield. When the hero has won the rare
+  shows the animal's portrait at 144 dp beside the 96 dp shield. Under them a legend says the stage and the coat the portrait wears
+  tonight ("A young bear.", "An adult bear, winter coat.", "A legendary bear, cinnamon coat."; keys
+  `crest_<animal>_<stage>`, one per animal because German agrees the article, then `coat_rare_<animal>`
+  or `coat_winter`). It is written once the slug is read: while it loads the line holds its place and
+  says nothing. In Tonight, the rare coat's card and the demoted legendary's card draw their
+  portrait at 64 dp (the legendary's through the same `usePortraitSlug` as the sheet and the big
+  feast, so both show the same coat that night), the shield when the base has not shipped. When the hero has won the rare
   coat and its portrait ships for the animal at the centre, the sheet also offers the coat choice
   (`crest-coat`): the rare coat (`auto`, the default) or the usual one (`usual`, which cuts the rare
   and keeps winter); the row is absent otherwise. The legendary stage has a big feast of its own, the

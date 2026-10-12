@@ -83,7 +83,8 @@ achievement) and, when the village grew, a "View your village" link (`handleView
 tall). The card body is `$textSecondary` throughout, XP lines included. One large feast per
 session is only named there with an "after" badge: "Continue" opens it full screen
 (`app/big-feast.tsx`, a reveal, an Age, the anniversary or a tier) and closing it replays the
-victory's "Continue". The milestone line of the building this session fed (`victoryMilestoneLine`)
+victory's "Continue". The reveal shows the animal's portrait at 160 dp beside the 96 dp shield, a row of 268 dp that fits a
+360 dp screen at 130 % text. The milestone line of the building this session fed (`victoryMilestoneLine`)
 sits under the village block. A legendary animal (500 sessions) is a large feast of its own, in the
 same slot as the others ("after" badge, then full screen); one found past 500 (an update, a restore)
 is not an event of tonight and is marked "late": the Tonight line says "is legendary" instead of

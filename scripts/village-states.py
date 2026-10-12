@@ -13,8 +13,8 @@ plain SQL and fails the script if the state is wrong.
 States: jour1 a-avant a b-avant b palier-avant palier c e sanglier nom-long age-avant age anniv-avant anniv
 pierres-65 sans-ecu. `x-avant` is `x` minus its last session, the one the hero is meant to play on the
 emulator to reach `x`. `age` crosses level 49 to 50 (the Age of 50), `anniv` has a village a year old whose
-anniversary feast is unshown, `pierres-65` has 66 stones, `sans-ecu` has no crest and a season with no
-practice (the neutral band of a banner).
+anniversary feast is unshown, `pierres-65` has 66 stones, `sans-ecu` has no crest, so every banner is
+neutral.
 
 Not touched: the streak_* caches are deleted, not forged. Their day stamp is stale, so the app
 recomputes the flame from the journal on the first read. Stdlib only.
@@ -149,10 +149,10 @@ STATES["anniv"] = {**STATES["b"], "span": 372, "shown": ["reveal", "coat:rare"],
 STATES["pierres-65"] = dict(counts={"force": 460, "course": 190, "yoga": 70}, xp=152000, last_xp=250, flame=40,
                             span=1600, first8=FIRST8_FORCE_LED, last="force", level=86, tier="Capitale éternelle",
                             name="Brumeval", shown=["reveal"])
-# No crest (fewer than 8 practised sessions) and a season whose sessions have no exercise: a neutral banner.
+# No crest (fewer than 8 practised sessions): every banner is neutral, whatever its sessions did.
 STATES["sans-ecu"] = dict(counts={"none": 2, "force": 3}, seq=["none", "none", "force", "force", "force"],
                           days=SANS_ECU_DAYS, xp=800, flame=flame_run([-d for d in SANS_ECU_DAYS]), first8=[],
-                          last="force", level=4, tier="Clairière", name="Brumeval", banners=2, neutral=1, rings=0)
+                          last="force", level=4, tier="Clairière", name="Brumeval", banners=2, neutral=2, rings=0)
 AVANT = {"a-avant": "a", "b-avant": "b", "palier-avant": "palier", "age-avant": "age", "anniv-avant": "anniv"}
 
 
@@ -387,8 +387,10 @@ def practices(db):
     return out
 
 
-def village_years(db, rows, now):
-    """Rings, banners, stones and Ages, from the journal alone (db/villageYearsRules.ts, ported)."""
+def village_years(db, rows, now, crest):
+    """Rings, banners, stones and Ages, from the journal alone (db/villageYearsRules.ts, ported).
+
+    Without a crest every banner is neutral, whatever its sessions did."""
     parent = dict(db.execute("SELECT id, prerequisiteExerciseId FROM exercises"))
 
     def depth(i):
@@ -441,7 +443,7 @@ def village_years(db, rows, now):
         return (lv, "rung" if window else "held", pick[1], entries[pick[0]][1]) if pick else (lv, "practice", None, None)
 
     return dict(rings=rings, banners=len(finished), per_year=max(years.values(), default=0),
-                neutral=sum(all(e[2] is None for e in g) for g in finished.values()),
+                neutral=sum(not crest or all(e[2] is None for e in g) for g in finished.values()),
                 stones=max(0, top - 20), ages=[a for lv in range(50, top + 1, 10) if (a := age(lv))])
 
 
@@ -491,7 +493,7 @@ def verify(db, state, spec, drop_last):
         rank = sum(road >= f for f in (1, 15, 40, 90, 200))
         assert rank == 3, f"{state}: Grand Chemin rank {rank} ({road} leagues) != 3"
     road_note = f" grandChemin=rang{rank}({road}l)" if "road_m" in spec else ""
-    facts = village_years(db, rows, datetime.now())
+    facts = village_years(db, rows, datetime.now(), sum(counts.values()) >= 8)
     if drop_last and "ages" in spec:
         spec = {**spec, "ages": []}
     for key in ("rings", "banners", "neutral", "ages"):

@@ -22,7 +22,11 @@ draws, a cold blue rim of light that survives the cutout as a blue outline. Each
                     (b - r > 15, luminance > 70) are desaturated, then tinted to the median of
                     the warm pixels next to them, keeping their own lightness, up to 1.2 times the fur. The distance is
                     square (Chebyshev), which is close enough for a rim.
-  --note TEXT       Writes `edited` in provenance.json (dated today's chantier day, 2026-10-11),
+  --fill X0,Y0,X1,Y1
+                    The box takes the background colour outright: for stray droplets or specks
+                    that --shadow spares (it only touches darker pixels) and that the cutout
+                    would keep as floating islands. Check the box clears the animal at x3.
+  --note TEXT       Writes `edited` in provenance.json (dated today),
                     the way the other retouched entries read.
 
 The file is rewritten in place at JPEG q95: the candidate it came from is still in
@@ -35,12 +39,13 @@ import json
 import pathlib
 import statistics
 import sys
+from datetime import date
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PROVENANCE = ROOT / "scripts" / "provenance.json"
-DAY = "2026-10-11"
+DAY = date.today().isoformat()
 
 
 def lum(p) -> float:
@@ -120,6 +125,12 @@ def shadow(im: Image.Image, box: tuple[int, int, int, int]) -> int:
     return n
 
 
+def fill(im: Image.Image, box: tuple[int, int, int, int]) -> int:
+    x0, y0, x1, y1 = box
+    ImageDraw.Draw(im).rectangle(box, fill=background(im))
+    return (x1 - x0 + 1) * (y1 - y0 + 1)
+
+
 def fringe(im: Image.Image, box: tuple[int, int, int, int], reach: int = 16) -> int:
     inside = subject_mask(im)
     core = inside.filter(ImageFilter.MinFilter(2 * reach + 1))  # `reach` px in from the contour
@@ -173,6 +184,7 @@ def main() -> None:
     ap.add_argument("image", type=pathlib.Path)
     ap.add_argument("--eye", action="append", default=[], type=lambda s: ints(s, 3))
     ap.add_argument("--shadow", type=lambda s: ints(s, 4))
+    ap.add_argument("--fill", action="append", default=[], type=lambda s: ints(s, 4))
     ap.add_argument("--fringe", type=lambda s: ints(s, 4))
     ap.add_argument("--reach", type=int, default=16, help="--fringe: how far from the contour, in px")
     ap.add_argument("--note")
@@ -183,6 +195,10 @@ def main() -> None:
         print(f"eye ({cx},{cy}) r={r}: {eye(im, src, cx, cy, r)} px")
     if args.shadow:
         print(f"shadow: {shadow(im, args.shadow)} px")
+    for box in args.fill:
+        if not (0 <= box[0] <= box[2] < im.width and 0 <= box[1] <= box[3] < im.height):
+            sys.exit(f"--fill {box}: outside the {im.width}x{im.height} image")
+        print(f"fill {box}: {fill(im, box)} px")
     if args.fringe:
         print(f"fringe: {fringe(im, args.fringe, args.reach)} px")
     im.save(args.image, quality=95, subsampling=0)

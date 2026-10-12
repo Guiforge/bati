@@ -1,11 +1,10 @@
 import { Image } from "expo-image";
-import { type ReactNode, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { YStack } from "tamagui";
 import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
-import { portraitOf } from "@/db/crest";
 import type { Animal, CrestStage } from "@/db/crestRules";
 import type { FlameLevel } from "@/db/streaks";
-import { reportError } from "@/src/reportError";
+import { usePortraitSlug } from "./usePortraitSlug";
 
 type Props = {
   animal: Animal;
@@ -32,25 +31,21 @@ export function AnimalPortrait({
   coatKey,
   fallback = null,
 }: Props) {
-  const base = `${animal}-${stage}`;
-  const shipped = base in ANIMAL_PORTRAITS;
-  const [slug, setSlug] = useState<string | null>(null);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: coatKey is the re-read trigger
-  useEffect(() => {
-    if (!shipped) return;
-    let live = true;
-    portraitOf({ longestFlame }, animal, stage)
-      .then((s) => live && setSlug(s))
-      .catch((error) => {
-        reportError("crest.portrait", error);
-        if (live) setSlug(base);
-      });
-    return () => {
-      live = false;
-    };
-  }, [animal, stage, longestFlame, shipped, base, coatKey]);
+  const slug = usePortraitSlug(animal, stage, longestFlame, coatKey);
+  return (
+    <PortraitImage animal={animal} stage={stage} slug={slug} size={size} fallback={fallback} />
+  );
+}
 
-  if (!shipped) return fallback;
+/** The square for a slug already read: a screen that needs the slug too reads it once and draws here. */
+export function PortraitImage({
+  animal,
+  stage,
+  slug,
+  size,
+  fallback = null,
+}: Pick<Props, "animal" | "stage" | "size" | "fallback"> & { slug: string | null }) {
+  if (!(`${animal}-${stage}` in ANIMAL_PORTRAITS)) return fallback;
   const source = slug === null ? undefined : ANIMAL_PORTRAITS[slug];
   return (
     <YStack testID="animal-portrait" width={size} height={size}>

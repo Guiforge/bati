@@ -181,9 +181,9 @@ function FeastPortrait({
 }
 
 /**
- * The reveal's portrait, 160 dp: with the 96 dp shield, kicker, title, body, colours and the
- * "Why" link under it, 192 does not leave the title above the fold at 130 % on 360x640. The same
- * size in the storyboard and in the last image, so the portrait never moves when the shield lands.
+ * The reveal's portrait, 160 dp, beside the 96 dp shield (a row of 268 dp in the 312 dp a 360 dp
+ * screen leaves) so the shield costs no height: kicker, title, body, colours and the "Why" link
+ * stay above the button at 130 %. The same size in the storyboard and in the last image.
  */
 const REVEAL_PORTRAIT = 160;
 
@@ -381,8 +381,10 @@ function RevealFinal({
       onSeeVillage={onSeeVillage}
     >
       <YStack style={SECTION}>
-        <RevealPortrait animal={feast.animal} portrait={portrait} />
-        <Shield crest={crest} />
+        <XStack testID="big-feast-reveal-row" items="center" justify="center" gap="$3">
+          <RevealPortrait animal={feast.animal} portrait={portrait} />
+          <Shield crest={crest} />
+        </XStack>
         <FeastText
           feast={feast}
           villageName={villageName}
@@ -431,7 +433,7 @@ function RevealStoryboard({
     opacity: interpolate(beat.value, [0, 0.4], [0, 1], "clamp"),
   }));
   const first = useAnimatedStyle(() => ({
-    opacity: interpolate(beat.value, [0.8, 1], [1, 0], "clamp"),
+    opacity: interpolate(beat.value, [0.6, 0.8], [1, 0], "clamp"),
   }));
   // The portrait is the last image's own: its slot is in the layout from the first beat, so it
   // rises at the second beat and then stays where it is.
@@ -461,15 +463,17 @@ function RevealStoryboard({
           <Title>{t("session.feast_reveal_t1")}</Title>
         </Animated.View>
         <YStack style={SECTION}>
-          <Animated.View style={portraitIn}>
-            <RevealPortrait animal={feast.animal} portrait={portrait} />
-          </Animated.View>
+          <XStack testID="big-feast-reveal-row" items="center" justify="center" gap="$3">
+            <Animated.View style={portraitIn}>
+              <RevealPortrait animal={feast.animal} portrait={portrait} />
+            </Animated.View>
+            <Shield crest={crest} style={shield} />
+          </XStack>
           <YStack style={SECTION}>
-            {/* Over the shield's place: it fades out as the shield lands there. */}
+            {/* Over the title's place: it fades out as the shield lands beside the portrait. */}
             <Animated.View style={[LAYER, { top: 0, left: 0, right: 0 }, second]}>
               <Title>{t(`session.feast_reveal_t2_${feast.animal}`)}</Title>
             </Animated.View>
-            <Shield crest={crest} style={shield} />
             <Animated.View style={[SECTION, words]}>
               <FeastText
                 feast={feast}

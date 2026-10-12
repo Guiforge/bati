@@ -41,7 +41,10 @@ jest.mock("@/db/adventures-narrative", () => ({
 // The reveal line draws the shield from the crest VictoryView reads; the test reads what it was given.
 let mockCrestRead: () => Promise<unknown> = () => Promise.resolve(null);
 const mockCrestDrawn = jest.fn();
-jest.mock("@/db/crest", () => ({ getCrest: () => mockCrestRead() }));
+jest.mock("@/db/crest", () => ({
+  getCrest: () => mockCrestRead(),
+  portraitOf: async (_c: unknown, animal: string, stage: string) => `${animal}-${stage}`,
+}));
 jest.mock("@/components/village/Crest", () => ({
   Crest: ({ crest }: { crest: unknown }) => {
     mockCrestDrawn(crest);

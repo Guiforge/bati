@@ -1106,7 +1106,6 @@ describe("useSessionStore", () => {
     });
 
     test("the rare coat is read on the crest AFTER the session and returned (the path the app calls)", async () => {
-      const { DELIVERED_COATS } = require("@/db/crestCoat") as { DELIVERED_COATS: Set<string> };
       const crest = (longestFlame: number) => ({
         animal: "bear",
         stage: "adult",
@@ -1123,8 +1122,7 @@ describe("useSessionStore", () => {
           boarQuarters: null,
         },
       });
-      // No portrait ships yet, so the card is silent in the app: lend one for this test only.
-      DELIVERED_COATS.add("bear-adult-rare");
+      // bear-adult-rare ships, so the card is not silent.
       try {
         // The session is the one that lifts the longest flame to Eternal (5): before, it is 4.
         (getCrest as jest.Mock)
@@ -1134,7 +1132,6 @@ describe("useSessionStore", () => {
         const result = await store.getState().saveSession(null);
         expect(result.rareCoat).toEqual({ animal: "bear", stage: "adult" });
       } finally {
-        DELIVERED_COATS.delete("bear-adult-rare");
         (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
       }
     });

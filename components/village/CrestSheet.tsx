@@ -4,10 +4,12 @@ import { BackHandler, Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { FormSheet } from "@/components/common/FormSheet";
 import { Check, ChevronRight } from "@/components/icons";
-import { AnimalPortrait } from "@/components/village/AnimalPortrait";
+import { PortraitImage } from "@/components/village/AnimalPortrait";
 import { Crest, type CrestShape } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
+import { usePortraitSlug } from "@/components/village/usePortraitSlug";
 import { ANIMAL_TOKEN } from "@/constants/animalColors";
+import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import type { Crest as CrestData } from "@/db/crest";
 import { type CrestCoat, rareCoatShips } from "@/db/crestCoat";
 import {
@@ -18,6 +20,7 @@ import {
   practiceOfAnimal,
 } from "@/db/crestRules";
 import { preferences } from "@/db/preferences";
+import { useFontScaled } from "@/hooks/useFontScaled";
 import { reportError } from "@/src/reportError";
 
 /** One sheet, two views: the stack of two modals this would be is where the ghost panes come from. */
@@ -357,6 +360,54 @@ function CoatChoice({ crest, onCoat }: { crest: CrestData; onCoat: () => void })
 }
 
 /**
+ * What the picture shows: the stage ("a legendary bear", the keys the line under the village's
+ * title already reads) and the coat it wears tonight, rare or winter, read off the portrait's slug.
+ */
+function Picture({ crest, coatKey }: { crest: CrestData; coatKey: string }) {
+  const { t } = useTranslation();
+  const { animal, stage } = crest;
+  const legendReserve = useFontScaled(38);
+  const slug = usePortraitSlug(animal, stage, crest.longestFlame, coatKey);
+  // Young and adult have their own keys per animal: German agrees the article with the noun.
+  const what = sentence(t(`village.crest_${animal}_${stage}`));
+  // The slug is read from the database: until then the line holds its place and says nothing,
+  // so "A legendary bear." never turns into "A legendary bear, cinnamon coat.". An animal whose
+  // base has not shipped never gets a slug, and its line has nothing to wait for.
+  const reading = slug === null && `${animal}-${stage}` in ANIMAL_PORTRAITS;
+  const coat = slug?.endsWith("-rare")
+    ? t(`village.coat_rare_${animal}`)
+    : slug?.endsWith("-winter")
+      ? t("village.coat_winter")
+      : null;
+  return (
+    <>
+      {/* 144 dp: beside the 96 dp shield it fits a 320 dp sheet, and the box is reserved
+          so the title and the text stay put while the image loads. */}
+      <XStack justify="center" items="center" gap="$3">
+        <PortraitImage animal={animal} stage={stage} slug={slug} size={144} />
+        <Crest crest={crest} size={96} />
+      </XStack>
+      <Text
+        testID="crest-legend"
+        fontSize={14}
+        lineHeight={19}
+        // Two lines reserved: German and Spanish legends wrap at 130 %, and the body must not move.
+        // The text's lineHeight grows with the system font scale, so the reserve does too.
+        minH={legendReserve}
+        color="$textSecondary"
+        style={{ textAlign: "center" }}
+      >
+        {reading
+          ? " "
+          : coat === null
+            ? t("village.crest_legend", { what })
+            : t("village.crest_legend_coat", { what, coat })}
+      </Text>
+    </>
+  );
+}
+
+/**
  * "Why the Bear?" and "Your animal": the one sheet behind every door to the crest (the big
  * feast's link, the Village's shield, the Settings row), so they cannot drift apart.
  */
@@ -395,18 +446,7 @@ export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
         <Pick crest={crest} choose={choose} />
       ) : (
         <>
-          {/* 144 dp: beside the 96 dp shield it fits a 320 dp sheet, and the box is reserved
-              so the title and the text stay put while the image loads. */}
-          <XStack justify="center" items="center" gap="$3">
-            <AnimalPortrait
-              animal={crest.animal}
-              stage={crest.stage}
-              longestFlame={crest.longestFlame}
-              size={144}
-              coatKey={String(coatKey)}
-            />
-            <Crest crest={crest} size={96} />
-          </XStack>
+          <Picture crest={crest} coatKey={String(coatKey)} />
           <Why crest={crest} onView={onView} choose={choose} />
           {rareCoatShips(crest.animal, crest.stage, crest.longestFlame) ? (
             <CoatChoice crest={crest} onCoat={() => setCoatKey((k) => k + 1)} />

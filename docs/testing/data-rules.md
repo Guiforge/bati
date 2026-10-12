@@ -752,3 +752,46 @@ localhost. `src/deviceSync.ts:246-316`, `src/cloudSync.ts:75-77`.
 
 **R105. Lost sync detection:** the `syncServer` preference without a SecureStore account means
 sync was lost (not stopped). `src/deviceSync.ts:191-195, 329`.
+
+---
+
+## 9. The crest
+
+**R106. The legendary stage is 500 sessions of the practice.** `stageOf` reads the count of
+sessions of one practice that `countsAsSession()` accepts: legendary at `LEGENDARY_AT` = 500
+(venerable 200, adult 40). The centre and the border each carry their own count. `db/crestRules.ts:63, 99-106`.
+Invariant: 499 sessions of a practice is venerable, 500 is legendary, and a deleted session that
+takes the count under 500 takes the stage back.
+
+**R107. The rare coat is derived from the longest flame, never stored.** `hasRareCoat` is true when
+`getCrest().longestFlame` is level 5 (Eternal, `ETERNAL_FLAME_DAYS` = 100 days of lit flame, pardon
+included), the best streak of the whole journal. Deleting sessions can lower the best streak, and
+the coat then goes with it: it is taken back, and returns if sessions that restore the flame
+return (restore, sync merge). Only `crestCoat` (`auto` or `usual`) is a preference, and it cuts
+the rare, not winter. `db/crest.ts:39-65`, `db/crestCoat.ts`, `constants/flame.ts:1-2`.
+Invariant: the coat is a function of the journal alone; the same journal on two devices gives
+the same coat.
+
+**R108. Winter is a function of the calendar and `regionCode`.** December to February in the north;
+June to August when the device region is in the southern list (AO, AR, AU, BO, BR, BW, CL, FJ, FK,
+LS, MG, MW, MZ, NA, NZ, PE, PY, SZ, UY, ZA, ZM, ZW). No region, or a region not listed (Indonesia
+and Tanzania included), follows the northern calendar. Local time, whole calendar months. The
+ermine has no winter portrait. `db/crestCoat.ts:40-56`.
+Invariant: for every region and month, `isWinter` is true in exactly three months, those of its
+hemisphere's list.
+
+**R109. The portrait is a chain: rare, then winter, then base.** For an adult or more: the
+`<animal>-<stage>-rare` slug if the coat is won, `crestCoat` is `auto` and the portrait ships;
+else `<animal>-<stage>-winter` if it is winter, the animal is not the ermine and the portrait ships;
+else `<animal>-<stage>`. A young animal always wears its base. The rare is never replaced by another
+animal or another stage, so the venerable horse (no rare portrait yet) wears winter in winter.
+`portraitSlug`, `db/crestCoat.ts:62-80`.
+Invariant: the slug is always one of the 57 of the catalogue, and a hero who won the rare never
+sees a plainer coat than a hero who did not.
+
+**R110. None of the crest is stored.** Animal, second animal, stage, rare coat and portrait are
+read from the journal on each call (`getCrest`, `portraitOf`); the one stored datum is the hero's
+picked animal and `crestCoat`. The cards already shown (`coat:rare`, `legendary:<practice>`) are
+local to the phone, in `bigFeastsShown`, and are not synced.
+Invariant: restoring a backup or merging a peer's sessions changes the crest by changing the
+journal, and by nothing else.

@@ -13,12 +13,15 @@ import { oathText } from "@/components/oath/useOathText";
 import { Crest } from "@/components/village/Crest";
 import { crestFootprint } from "@/components/village/crestGeometry";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
+import { usePortraitSlug } from "@/components/village/usePortraitSlug";
+import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import { getExerciseThumb, getVillageTierAsset } from "@/constants/assetMap";
 import { ETERNAL_FLAME_DAYS } from "@/constants/flame";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import type { Crest as CrestRead } from "@/db/crest";
 import type { Animal } from "@/db/crestRules";
 import type { DistanceUnit } from "@/db/preferences";
+import type { FlameLevel } from "@/db/streaks";
 import { formatCount, formatTarget, perSideLabel } from "@/db/targets";
 import { getLevelTitle } from "@/db/userLevel";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
@@ -39,6 +42,45 @@ const shield = (animal: Animal, size: 24 | 48 = 48) => (
     crest={{ animal, manual: false, second: null, quarters: null, longestFlame: 0, rings: 0 }}
   />
 );
+
+/** A card's art: the portrait the card talks about, the animal's shield when it has not shipped. */
+const portraitArt = (slug: string, animal: Animal) => {
+  const source = ANIMAL_PORTRAITS[slug];
+  return source ? (
+    <Image
+      testID="tonight-portrait"
+      source={source}
+      contentFit="contain"
+      style={{ width: 64, height: 64 }}
+      accessible={false}
+    />
+  ) : (
+    shield(animal)
+  );
+};
+
+/**
+ * The legendary's portrait on its card: the slug the crest sheet and the big feast read for the
+ * same night (rare, then winter, then base), the shield when the base has not shipped. The box is
+ * reserved while the coat is read, so nothing on the card moves.
+ */
+function LegendaryArt({ animal, longestFlame }: { animal: Animal; longestFlame: FlameLevel }) {
+  const slug = usePortraitSlug(animal, "legendary", longestFlame);
+  if (!(`${animal}-legendary` in ANIMAL_PORTRAITS)) return shield(animal);
+  if (slug === null) return <YStack width={64} height={64} />;
+  return portraitArt(slug, animal);
+}
+
+/** The legendary wears its portrait on the card; the other stages keep the shield. */
+const stageArt = (
+  f: Extract<Feast, { kind: "legendary" | "stageUp" }>,
+  longestFlame: FlameLevel,
+) =>
+  f.kind === "legendary" ? (
+    <LegendaryArt animal={f.animal} longestFlame={longestFlame} />
+  ) : (
+    shield(f.animal)
+  );
 
 function placeOf(t: TFunction, villageName: string) {
   return villageName
@@ -168,6 +210,7 @@ function cardOf(
   f: Feast,
   villageName: string,
   language: AppLanguage,
+  longestFlame: FlameLevel,
 ): CardData | null {
   switch (f.kind) {
     case "reveal": {
@@ -207,7 +250,7 @@ function cardOf(
             days: ETERNAL_FLAME_DAYS,
           }),
         ],
-        art: shield(f.animal),
+        art: portraitArt(`${f.animal}-${f.stage}-rare`, f.animal),
       };
     case "legendary":
     case "stageUp":
@@ -217,7 +260,7 @@ function cardOf(
         title: t(`session.tonight_stage_${f.stage}${lateSuffix(f)}`, { animal: the(t, f.animal) }),
         // The legendary body knows a late night ("at least 500"): the stage body would say "500".
         body: [f.kind === "legendary" ? legendaryBody(t, f) : stageBody(t, f)],
-        art: shield(f.animal),
+        art: stageArt(f, longestFlame),
       };
     case "tier":
       return {
@@ -348,7 +391,7 @@ function CardRow({ card }: { card: CardData }) {
   return (
     <Card bg="$background" p="$3" accessible accessibilityLabel={spoken(card)}>
       <XStack items="center" gap="$3">
-        <YStack width={48} items="center" importantForAccessibility="no-hide-descendants">
+        <YStack minW={64} items="center" importantForAccessibility="no-hide-descendants">
           {card.art}
         </YStack>
         <YStack flex={1} gap="$1">
@@ -400,7 +443,9 @@ export function TonightList({
     ...feasts.flatMap((f) => lineOf(t, f, villageName, language, unit, crest) ?? []),
   ];
   const cards = feasts.flatMap((f) =>
-    f.size === "medium" ? (cardOf(t, i18n, f, villageName, language) ?? []) : [],
+    f.size === "medium"
+      ? (cardOf(t, i18n, f, villageName, language, crest?.longestFlame ?? 0) ?? [])
+      : [],
   );
 
   return (

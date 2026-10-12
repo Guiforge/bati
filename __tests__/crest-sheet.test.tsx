@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 import type { ReactNode } from "react";
-import { BackHandler } from "react-native";
+import { BackHandler, Dimensions, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
@@ -106,15 +106,19 @@ function sheet(
 }
 
 let write: jest.SpyInstance;
+let shipped: string[];
 beforeAll(() => i18n.changeLanguage("fr"));
 afterAll(() => i18n.changeLanguage("en"));
 beforeEach(() => {
+  shipped = [...DELIVERED_COATS];
   write = jest.spyOn(preferences, "setCrestAnimal").mockResolvedValue();
   jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-young");
 });
 afterEach(() => {
   jest.restoreAllMocks();
-  (DELIVERED_COATS as Set<string>).delete("bear-adult-rare");
+  const set = DELIVERED_COATS as Set<string>;
+  set.clear();
+  for (const slug of shipped) set.add(slug);
 });
 
 describe("Pourquoi l'Ours ?", () => {
@@ -495,6 +499,7 @@ describe("the coat choice", () => {
     jest.spyOn(preferences, "getCrestCoat").mockResolvedValue(value);
 
   it("is absent while the rare coat's portrait has not shipped, won or not", async () => {
+    (DELIVERED_COATS as Set<string>).delete("bear-adult-rare");
     coat("auto");
     await sheet(crestOf(ADULT, "auto", won), "why");
     expect(screen.queryByTestId("crest-coat")).toBeNull();
@@ -516,9 +521,7 @@ describe("the coat choice", () => {
     await sheet(crestOf(ADULT, "auto", won), "why");
     const usual = await screen.findByTestId("crest-coat-usual");
     expect(within(usual).getByText("Pelage habituel")).toBeTruthy();
-    expect(
-      within(screen.getByTestId("crest-coat-rare")).getByText("Pointes d'argent"),
-    ).toBeTruthy();
+    expect(within(screen.getByTestId("crest-coat-rare")).getByText("Pelage cannelle")).toBeTruthy();
     expect(usual.props.accessibilityState).toEqual({ checked: true });
     expect(screen.getByTestId("crest-coat-rare").props.accessibilityState).toEqual({
       checked: false,
@@ -559,5 +562,62 @@ describe("the portrait in the sheet", () => {
     await sheet(crestOf(seq(["yoga", 8])), "why");
     expect(screen.getByTestId("crest-why-shield")).toBeTruthy();
     expect(screen.queryByTestId("animal-portrait")).toBeNull();
+  });
+});
+
+describe("the legend under the portrait", () => {
+  it("names the stage and the rare coat the portrait wears", async () => {
+    jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-legendary-rare");
+    await sheet(crestOf(seq(["strength", 500]), "auto", { longestFlame: 5, rings: 0 }), "why");
+    expect(await screen.findByText("Un ours légendaire, pelage cannelle.")).toBeTruthy();
+  });
+
+  it("names the winter coat when winter is what it wears", async () => {
+    jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-adult-winter");
+    await sheet(crestOf(seq(["strength", 40])), "why");
+    expect(await screen.findByText("Un ours adulte, pelage d'hiver.")).toBeTruthy();
+  });
+
+  it("names the stage alone for a young animal in its base coat", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    expect(await screen.findByText("Un jeune ours.")).toBeTruthy();
+  });
+
+  it("holds its line and says nothing while the coat is being read", async () => {
+    jest.spyOn(crestDb, "portraitOf").mockReturnValue(new Promise(() => {}));
+    await sheet(crestOf(seq(["strength", 500])), "why");
+    expect(screen.getByTestId("crest-legend").props.children).toBe(" ");
+    expect(screen.queryByText(/ours légendaire/)).toBeNull();
+  });
+
+  it("reads the bare stage when the portrait has not shipped, with nothing to wait for", async () => {
+    await sheet(crestOf(seq(["yoga", 8])), "why");
+    expect(screen.getByText("Un jeune saumon.")).toBeTruthy();
+  });
+});
+
+describe("the legend's reserve", () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it("holds two lines at 130 % font, not 38 dp", async () => {
+    const real = Dimensions.get("window");
+    jest.spyOn(Dimensions, "get").mockImplementation(() => ({ ...real, fontScale: 1.3 }) as never);
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    const box = StyleSheet.flatten(screen.getByTestId("crest-legend").props.style);
+    expect(box.minHeight).toBeGreaterThanOrEqual(Math.ceil(38 * 1.3));
+  });
+});
+
+describe("the legend's copy", () => {
+  it("has a key for every animal at every stage, in the four languages", () => {
+    for (const lng of ["fr", "en", "de", "es"]) {
+      const t = i18n.getFixedT(lng);
+      for (const animal of ANIMALS) {
+        for (const stage of ["young", "adult", "venerable", "legendary"]) {
+          expect(i18n.exists(`village.crest_${animal}_${stage}`, { lng })).toBe(true);
+          expect(t(`village.crest_${animal}_${stage}`)).not.toMatch(/^village\./);
+        }
+      }
+    }
   });
 });

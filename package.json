@@ -15,7 +15,7 @@
     "@tamagui/lucide-icons": "^1.144.4",
     "date-fns": "^4.4.0",
     "drizzle-orm": "^0.45.3",
-    "expo": "~57.0.27",
+    "expo": "~57.0.28",
     "expo-asset": "~57.0.15",
     "expo-audio": "~57.0.5",
     "expo-clipboard": "~57.0.2",
@@ -31,10 +31,10 @@
     "expo-linking": "~57.0.12",
     "expo-localization": "~57.0.2",
     "expo-network": "~57.0.2",
-    "expo-router": "~57.0.25",
+    "expo-router": "~57.0.26",
     "expo-secure-store": "~57.0.4",
-    "expo-sharing": "~57.0.22",
-    "expo-splash-screen": "~57.0.9",
+    "expo-sharing": "~57.0.23",
+    "expo-splash-screen": "~57.0.10",
     "expo-sqlite": "~57.0.4",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
@@ -70,9 +70,9 @@
     "babel-preset-expo": "~57.0.6",
     "better-sqlite3": "^13.0.3",
     "drizzle-kit": "^0.31.11",
-    "expo-dev-client": "~57.0.19",
+    "expo-dev-client": "~57.0.20",
     "jest": "30.5.2",
-    "jest-expo": "~57.0.5",
+    "jest-expo": "~57.0.6",
     "knip": "^6.38.0",
     "typescript": "~7.0.2"
   },
@@ -198,6 +198,9 @@
     "brace-expansion@^5.0.8": "5.0.12",
     "xcode": {
       "uuid": "^11.1.1"
+    },
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "^4.3.2"
     },
     "@esbuild-kit/core-utils": {
       "esbuild": "^0.25.0"

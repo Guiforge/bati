@@ -1,0 +1,5 @@
+- Ton village reçoit un écu et un animal, tirés de ton entraînement. Chaque animal a un portrait qui vieillit avec toi.
+- Les bâtiments montent au rang 10, les Remparts gardent une pierre par niveau au-delà de 20.
+- Chaque saison entraînée laisse une bannière. Une fête marque chaque nouvel âge et chaque anniversaire.
+- Choisis une devise pour ton écu.
+- XP : un serment paie ses 250 XP une fois par semaine. Le bonus caché de la quête du jour disparaît, toutes les règles sont sur la page XP.

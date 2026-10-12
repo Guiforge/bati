@@ -1,0 +1,5 @@
+- Dein Dorf bekommt aus deinem Training ein Wappen und ein Tier. Jedes Tier hat ein Porträt, das mit dir altert.
+- Gebäude steigen bis Rang 10, die Burgmauer behält einen Stein pro Level über 20.
+- Jede trainierte Jahreszeit hinterlässt ein Banner. Ein Fest feiert jedes neue Zeitalter und jeden Jahrestag.
+- Wähle einen Wahlspruch für dein Wappen.
+- XP: Ein Schwur zahlt seine 250 XP einmal pro Woche. Der versteckte Bonus der Tagesquest entfällt, alle Regeln stehen auf der XP-Seite.

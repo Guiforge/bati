@@ -74,7 +74,7 @@ describe("ProgressionChart", () => {
   // above a session that was the quest's 10th of 15.
   it("says the figures cover the last runs it drew", async () => {
     const view = await mount();
-    await view.findByText("Your last 2 runs, in minutes");
+    await view.findByText("Your last 2 sessions, in minutes");
     expect(view.queryByText("Total mins")).toBeNull();
   });
 

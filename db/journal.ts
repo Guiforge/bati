@@ -62,6 +62,7 @@ const nameOf = (r: { enName: string; frName: string; deName: string; esName: str
   fr: r.frName,
   de: r.deName,
   es: r.esName,
+  ru: r.enName,
 });
 
 /** A left-joined exercise: all four names, or none. */
@@ -73,7 +74,7 @@ const joinedName = (r: {
 }): Localized | null =>
   r.enName == null
     ? null
-    : { en: r.enName, fr: r.frName ?? "", de: r.deName ?? "", es: r.esName ?? "" };
+    : { en: r.enName, fr: r.frName ?? "", de: r.deName ?? "", es: r.esName ?? "", ru: r.enName };
 
 const titleOf = (r: {
   enTitle: string | null;
@@ -83,7 +84,13 @@ const titleOf = (r: {
 }): Localized | null =>
   r.enTitle == null
     ? null
-    : { en: r.enTitle, fr: r.frTitle ?? "", de: r.deTitle ?? "", es: r.esTitle ?? "" };
+    : {
+        en: r.enTitle,
+        fr: r.frTitle ?? "",
+        de: r.deTitle ?? "",
+        es: r.esTitle ?? "",
+        ru: r.enTitle,
+      };
 
 // ------------------------------------------------------------
 // The wall: what to beat tonight
@@ -599,7 +606,7 @@ export async function getBossKills(): Promise<BossKill[]> {
         title: bossLocalizedName(
           run.bossImagePath ?? run.imagePath,
           runs.filter((r) => r.adventureId === run.adventureId && r.runId < run.runId).length,
-          { en: run.enTitle, fr: run.frTitle, de: run.deTitle, es: run.esTitle },
+          { en: run.enTitle, fr: run.frTitle, de: run.deTitle, es: run.esTitle, ru: run.enTitle },
         ),
         imagePath: run.bossImagePath ?? run.imagePath,
         felledAt: run.finishedAt,
@@ -1053,6 +1060,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
         fr: a.frTitle,
         de: a.deTitle,
         es: a.esTitle,
+        ru: a.enTitle,
       }),
       imagePath: a.bossImagePath ?? a.imagePath,
     }));
@@ -1172,6 +1180,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       fr: step.frTitle,
       de: step.deTitle,
       es: step.esTitle,
+      ru: step.enTitle,
     }),
     bossImagePath: step.bossImagePath ?? step.imagePath,
     felledAt,

@@ -12,7 +12,7 @@ keystore: keystore.p12
 repo_keyalias: bati-repo
 keydname: CN=bati-repo, OU=F-Droid
 
-repo_url: https://guiforge.github.io/bati/fdroid/repo
+repo_url: https://getbati.app/fdroid/repo
 repo_name: Bati
 repo_description: >-
   Dark-fantasy fitness RPG. Offline-first: no account, no servers of ours, no tracking.

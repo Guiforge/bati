@@ -1,0 +1,11 @@
+{
+  "ios": {
+    "NSPhotoLibraryUsageDescription": "Utilisée pour choisir une photo comme avatar de ton héros, ou pour un exercice ou une quête que tu as créés. Elle reste sur ton appareil, et n'en sort que dans une sauvegarde ou une synchronisation chiffrée que tu actives."
+  },
+  "android": {
+    "widget_flame_label": "Bati : Flamme",
+    "widget_flame_description": "Ta flamme d'entraînement.",
+    "widget_weekly_label": "Bati : Semaine",
+    "widget_weekly_description": "Tes séances de la semaine, face à ton serment."
+  }
+}

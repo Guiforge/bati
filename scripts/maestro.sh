@@ -3,7 +3,7 @@
 #
 #   npm run maestro                         # all flows in .maestro/
 #   npm run maestro -- .maestro/main-journey.yaml   # a single flow
-#   ANDROID_SERIAL=emulator-5554 npm run maestro    # pick the device when several are attached
+#   ANDROID_SERIAL=<serial> npm run maestro         # another device than this worktree's emulator
 #
 # Assumes: an Android device/emulator is connected (`adb devices`) and, for a dev build, Metro
 # is running (`npm start`). See .maestro/README.md for the dev-build vs release-build caveat
@@ -22,15 +22,11 @@ fi
 # Maestro ignores ANDROID_SERIAL and runs on whichever device it picks, a phone on USB included,
 # and nearly every flow starts with `clearState`. On 2026-09-13 that wiped the dev app on a phone
 # plugged in halfway through an emulator run. So the device is always named: the one in
-# ANDROID_SERIAL, or the only one attached, and never a guess between several.
+# ANDROID_SERIAL, or the emulator this worktree holds (scripts/emu.sh), which is never a phone.
+# "The only device attached" used to be the fallback, and with no emulator up that is the phone.
 if [ -z "${ANDROID_SERIAL:-}" ]; then
-  mapfile -t devices < <(adb devices | awk 'NR > 1 && $2 == "device" { print $1 }')
-  if [ "${#devices[@]}" -ne 1 ]; then
-    echo "Expected exactly one device, found ${#devices[@]}: ${devices[*]:-none}." >&2
-    echo "Pick one: ANDROID_SERIAL=<serial> npm run maestro" >&2
-    exit 1
-  fi
-  export ANDROID_SERIAL="${devices[0]}"
+  ANDROID_SERIAL="$("$(dirname "$0")/emu.sh" claim)"
+  export ANDROID_SERIAL
 fi
 
 # Keep the screen awake for the whole run. A dozing device screenshots as pure black and every

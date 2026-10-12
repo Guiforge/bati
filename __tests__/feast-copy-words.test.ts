@@ -119,7 +119,7 @@ const WORDS = {
     tierLevelOne: "Nivel 20, tras 1 sesión.",
     tierNext: "El próximo rango llega en el nivel 25.",
     tierSentence: "Brumeval se convierte en una Ciudad próspera.",
-    tierUnnamed: ["Nuevo rango: Claro", "Nuevo rango: Aldea", "Nuevo rango: Villa"],
+    tierUnnamed: ["Nuevo rango: Claro del bosque", "Nuevo rango: Aldea", "Nuevo rango: Villa"],
     join: "Un ciervo se une al oso",
     joinBody: "39 de tus 130 sesiones son de resistencia: el ciervo también vela.",
     adult: "El oso ya es adulto",

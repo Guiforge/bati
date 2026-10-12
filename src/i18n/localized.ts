@@ -1,8 +1,25 @@
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import type { AppLanguage } from "@/stores/settings";
 
+/**
+ * The languages seeded content is written in: quests, movements, adventures and achievements carry
+ * one column each, and a quest file one entry each. A language of the app that is not here has its
+ * interface translated and its catalogue in English, until a migration gives it columns
+ * (`docs/architecture/adding-a-language.md`, step 4) and its code is added to this list.
+ */
+const SEEDED_LANGUAGES = ["en", "fr", "de", "es"] as const satisfies readonly AppLanguage[];
+
+export type SeededLanguage = (typeof SEEDED_LANGUAGES)[number];
+
 /** Any seeded row that carries every locale side by side: `enTitle`, `frTitle`, … */
-type Multilingual<K extends string> = Record<`${AppLanguage}${Capitalize<K>}`, string>;
+type Multilingual<K extends string> = Record<`${SeededLanguage}${Capitalize<K>}`, string>;
+
+/** The side of a seeded row or of a quest file a language reads: its own, or English. */
+export function seededLanguage(language: AppLanguage): SeededLanguage {
+  return (SEEDED_LANGUAGES as readonly AppLanguage[]).includes(language)
+    ? (language as SeededLanguage)
+    : "en";
+}
 
 /**
  * Pick the locale's side of a multilingual row.
@@ -21,7 +38,7 @@ export function localizedText<K extends string>(
   language: AppLanguage,
 ): string {
   const suffix = `${field.charAt(0).toUpperCase()}${field.slice(1)}` as Capitalize<K>;
-  return row[`${language}${suffix}`] || row[`en${suffix}`];
+  return row[`${seededLanguage(language)}${suffix}`] || row[`en${suffix}`];
 }
 
 export function localizedTitle(row: Multilingual<"title">, language: AppLanguage): string {
@@ -42,7 +59,13 @@ export function localizedName(row: Multilingual<"name">, language: AppLanguage):
  * middle of a sentence keeps its capital there ("für Brust"); lower-casing it, which English, French
  * and Spanish want, is a spelling mistake in German.
  */
-const CAPITALISED_NOUNS: Localized<boolean> = { en: false, fr: false, de: true, es: false };
+const CAPITALISED_NOUNS: Localized<boolean> = {
+  en: false,
+  fr: false,
+  de: true,
+  es: false,
+  ru: false,
+};
 
 /** A label written into the middle of a sentence, cased the way that language writes nouns. */
 export function inSentence(label: string, language: AppLanguage): string {

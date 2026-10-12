@@ -2,6 +2,7 @@ import de from "@/locales/de.json";
 import en from "@/locales/en.json";
 import es from "@/locales/es.json";
 import fr from "@/locales/fr.json";
+import ru from "@/locales/ru.json";
 import type { AppLanguage, Localized } from "./deviceLanguage";
 
 type Locale = typeof en;
@@ -13,7 +14,7 @@ type Locale = typeof en;
  * Importing this module loads all of them. The home screen widget's headless task must never
  * reach it (`src/widget.tsx`), which `__tests__/widget.test.ts` holds.
  */
-export const LOCALES: Localized<Locale> = { en, fr, de, es };
+export const LOCALES: Localized<Locale> = { en, fr, de, es, ru };
 
 /**
  * One value read out of every locale file at once.

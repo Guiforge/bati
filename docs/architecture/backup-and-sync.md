@@ -30,8 +30,9 @@ database singleton go with the old runtime, as on a cold start, and the hero nev
 the app. The old "close and reopen" notice stays as the way out if the host cannot reload.
 
 **Two devices can share a backup folder.** Dated copies are named
-`bati-export-<first 8 hex of the install id>-v<N>-<day>.<ext>`, and each device keeps its own five
-and never prunes another's. Before the tag both wrote `bati-export-v<N>-<day>`: the second overwrote
+`bati-<day>-<first 8 hex of the install id>-v<N>.<ext>` (day first, so the system picker does not
+cut three files to the same "bati-export-c…"; the older `bati-export-<id>-v<N>-<day>` is still read
+wherever a name is), and each device keeps its own five and never prunes another's. Before the tag both wrote `bati-export-v<N>-<day>`: the second overwrote
 the first's copy of the day and the prune kept five files across both. Copies from before the tag
 are left alone once the device writes tagged names, because whose they are cannot be told, and the
 copies of an install id that no longer exists (a restore onto a new phone gives a new one) stay too:

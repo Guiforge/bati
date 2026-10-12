@@ -80,6 +80,10 @@ export function BackupSecretSheet({
           value={secret}
           onChangeText={setSecret}
           secureTextEntry={!shown}
+          // Twelve words on one line showed the last four. Only while they are shown: Android
+          // does not mask a multiline field. The key stays "done" and submits, it adds no line.
+          multiline={shown}
+          submitBehavior="blurAndSubmit"
           autoCapitalize="none"
           autoCorrect={false}
           autoFocus

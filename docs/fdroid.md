@@ -72,7 +72,7 @@ fdroid init                          # creates config.yml and the repo keystore
 Then edit `fdroid/config.yml` — the name and description are what users see in the client:
 
 ```yaml
-repo_url: https://guiforge.github.io/bati/fdroid/repo
+repo_url: https://getbati.app/fdroid/repo
 repo_name: Bati
 repo_description: >-
   Dark-fantasy fitness RPG. Offline-first: no account, no servers of ours, no tracking.
@@ -99,7 +99,7 @@ of the certificate the index is signed with, which pins the key every future upd
 Read it back off the published index rather than trusting a note in a file:
 
 ```bash
-curl -sO https://guiforge.github.io/bati/fdroid/repo/index-v1.jar
+curl -sO https://getbati.app/fdroid/repo/index-v1.jar
 unzip -o -q index-v1.jar 'META-INF/*'
 keytool -J-Duser.language=en -printcert -file META-INF/*.RSA | grep SHA256
 ```
@@ -159,7 +159,7 @@ yourself rather than trusting a number typed here, because the index is the only
 subscribers actually see:
 
 ```bash
-curl -sO https://guiforge.github.io/bati/fdroid/repo/index-v1.jar
+curl -sO https://getbati.app/fdroid/repo/index-v1.jar
 unzip -p index-v1.jar index-v1.json | python3 -m json.tool | grep -A3 versionName
 ```
 
@@ -173,7 +173,7 @@ never once been able to fire. `10002` is the first code that could.
 2. Make the repository public, enable Pages. *(Unblocks the privacy policy too.)*
 3. `fdroid init` locally, commit `fdroid/config.yml`, add the repo secrets.
 4. Cut a release and see whether the index lands.
-5. Give people the URL: `https://guiforge.github.io/bati/fdroid/repo`
+5. Give people the URL: `https://getbati.app/fdroid/repo`
 
 Steps 1 and 2 are on the release path anyway. F-Droid is mostly a way of getting something back
 for work that has to happen regardless.

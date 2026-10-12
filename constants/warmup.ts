@@ -102,6 +102,11 @@ const WRISTS = step("Wrist Circles");
  * The last two are the bottom rungs of their ladders, for a hero on day one: Squat and Lunge are
  * rungs they have not reached, so with the jumps held back too (`startsGently`) the list above
  * them ran dry and the last phase came out empty. At the end, so nobody's rotation changes.
+ *
+ * The two after them are for the same hero on a long quest: a gentle start is not handed the
+ * Bear Crawl either (`tooBriskToOpen`, `db/exercises.ts`), and an eight-step warm-up came out
+ * one short. Both are slow stretches that stay on the floor, what a last step can be for a hero
+ * who is not yet handed anything brisk.
  */
 const NO_IMPACT = [
   "Squat",
@@ -110,6 +115,8 @@ const NO_IMPACT = [
   "Glute Bridge",
   "Wall Sit",
   "Wall Push-Up",
+  "World's Greatest Stretch",
+  "Downward Dog",
 ] as const;
 
 /** What a quest gets when nothing is known about it — and what every quest got before `0024`. */

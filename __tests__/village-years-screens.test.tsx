@@ -86,7 +86,7 @@ function renderScene(wall = building("castle_wall", 1)) {
   jest.spyOn(village, "getVillageScene").mockResolvedValue({
     tier: 4,
     level: 8,
-    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
+    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion", ru: "Champion" },
     totalXp: 3180,
     flame: 0,
     streakDays: 0,

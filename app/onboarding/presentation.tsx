@@ -114,7 +114,7 @@ export default function Presentation() {
           >
             <XStack items="center" gap="$2">
               <Text color="$onPrimary" fontFamily="$heading" fontWeight="700" fontSize={18}>
-                {t("onboarding.next")}
+                {t("onboarding.finish")}
               </Text>
 
               <ArrowRight size={20} color="$onPrimary" strokeWidth={3} />
@@ -130,6 +130,11 @@ export default function Presentation() {
             fontSize={15}
             textDecorationLine="underline"
             style={{ textAlign: "center" }}
+            // A Text with `onPress` is not a button to a screen reader until it says so, and its
+            // own line is a 20 dp target. Same shape as the skip on the level screen.
+            accessibilityRole="button"
+            minH={48}
+            verticalAlign="middle"
             opacity={busy ? 0.5 : 1}
             // `disabled` on a Text is an accessibility flag and does not stop `onPress` — the
             // handler has to be the thing that goes away. useBackup guards re-entry too.

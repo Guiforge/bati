@@ -3,6 +3,7 @@ import { Alert } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
 import { useBackup } from "@/hooks/useBackup";
+import { entropyToWords } from "@/src/backupWords";
 import { useRestoreStore } from "@/stores/restore";
 import config from "@/tamagui.config";
 
@@ -315,7 +316,7 @@ describe("an encrypted backup opened with its password", () => {
     latest = useBackup();
     return latest.dialog;
   }
-  async function importWithPassword() {
+  async function importWithPassword(secret = "correct horse") {
     mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
     await render(
       <TamaguiProvider config={config} defaultTheme="dark">
@@ -324,8 +325,21 @@ describe("an encrypted backup opened with its password", () => {
     );
     await act(() => latest.runImport());
     await waitFor(() => expect(latest.secretRequest.open).toBe(true));
-    await act(async () => latest.submitSecret("correct horse"));
+    await act(async () => latest.submitSecret(secret));
   }
+
+  test("the question says what opened the backup: its password", async () => {
+    await importWithPassword();
+    await waitFor(() => expect(screen.getByText("backup.joinBody")).toBeTruthy());
+    expect(screen.queryByText("backup.joinBodyWords")).toBeNull();
+  });
+
+  test("opened with the twelve words, it says its 12 words and no longer its password", async () => {
+    // Real words, read by the real rule: the one the cipher tries before the password.
+    await importWithPassword(entropyToWords(new Uint8Array(16).fill(7), "fr").join(" "));
+    await waitFor(() => expect(screen.getByText("backup.joinBodyWords")).toBeTruthy());
+    expect(screen.queryByText("backup.joinBody")).toBeNull();
+  });
 
   test("its dialog also carries the failure alert, so a caller mounting one shows both", async () => {
     await render(

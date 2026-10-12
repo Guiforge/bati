@@ -78,7 +78,6 @@ export { Target } from "@tamagui/lucide-icons/icons/Target";
 export { Timer } from "@tamagui/lucide-icons/icons/Timer";
 export { Trash2 } from "@tamagui/lucide-icons/icons/Trash2";
 export { TreePine } from "@tamagui/lucide-icons/icons/TreePine";
-export { TrendingUp } from "@tamagui/lucide-icons/icons/TrendingUp";
 export { Trophy } from "@tamagui/lucide-icons/icons/Trophy";
 export { Vibrate } from "@tamagui/lucide-icons/icons/Vibrate";
 export { Volume2 } from "@tamagui/lucide-icons/icons/Volume2";

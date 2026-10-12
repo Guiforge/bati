@@ -47,7 +47,7 @@ describe("NarrativeModal is a panel", () => {
     // The Recitatif is the one component that tags its title a header.
     expect(screen.getByText("The Gate").props.accessibilityRole).toBe("header");
     expect(isSealed("narrative-confirm")).toBe(true);
-    expect(colourOf("Begin Adventure")).not.toBe("white");
+    expect(colourOf("Start Adventure")).not.toBe("white");
     await fireEvent.press(screen.getByTestId("narrative-confirm"));
     expect(onClose).toHaveBeenCalledTimes(1);
     await fireEvent.press(screen.getByTestId("narrative-dismiss"));

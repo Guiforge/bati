@@ -25,6 +25,7 @@ import type { FlameLevel } from "@/db/streaks";
 import { formatCount, formatTarget, perSideLabel } from "@/db/targets";
 import { getLevelTitle } from "@/db/userLevel";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
+import { formatList } from "@/src/i18n/list";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
 import {
@@ -336,7 +337,10 @@ function cardOf(
           ...(f.step.alsoNext.length > 0
             ? [
                 t("progression.rung_also_leads_to", {
-                  names: f.step.alsoNext.map((m) => localizedName(m, language)).join(", "),
+                  names: formatList(
+                    f.step.alsoNext.map((m) => localizedName(m, language)),
+                    language,
+                  ),
                 }),
               ]
             : []),

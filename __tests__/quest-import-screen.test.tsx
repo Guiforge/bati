@@ -341,7 +341,7 @@ test("an import that updated says so", async () => {
   await mountReady();
   await fireEvent.press(confirm());
 
-  expect(mockShowSuccess).toHaveBeenCalledWith("Quest updated, it replaces the earlier version");
+  expect(mockShowSuccess).toHaveBeenCalledWith("Quest updated. It replaces the earlier version.");
   expect(mockRouter.push).toHaveBeenCalledWith("/quests/9");
 });
 

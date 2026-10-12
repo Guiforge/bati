@@ -8,7 +8,7 @@
       },
       "predictiveBackGestureEnabled": true,
       "package": "com.guiforge.bati",
-      "versionCode": 21000,
+      "versionCode": 21100,
       "blockedPermissions": ["android.permission.ACCESS_WIFI_STATE"],
       "intentFilters": [
         {
@@ -28,12 +28,15 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.guiforge.bati",
       "infoPlist": {
-        "CFBundleLocalizations": ["en", "fr"]
+        "CFBundleLocalizations": ["en", "fr", "de", "es", "ru"]
       }
     },
     "locales": {
-      "en": "./locales/ios/en.json",
-      "fr": "./locales/ios/fr.json"
+      "en": "./locales/native/en.json",
+      "fr": "./locales/native/fr.json",
+      "de": "./locales/native/de.json",
+      "es": "./locales/native/es.json",
+      "ru": "./locales/native/ru.json"
     },
     "name": "Bati",
     "orientation": "portrait",
@@ -51,8 +54,8 @@
         "expo-localization",
         {
           "supportedLocales": {
-            "ios": ["en", "fr"],
-            "android": ["en", "fr", "de", "es"]
+            "ios": ["en", "fr", "de", "es", "ru"],
+            "android": ["en", "fr", "de", "es", "ru"]
           }
         }
       ],
@@ -74,6 +77,7 @@
           "photosPermission": "Used to pick a photo for your hero's avatar, or for an exercise or quest you made. It stays on your device, and leaves it only inside a backup or an encrypted sync you turn on."
         }
       ],
+      "./plugins/withAndroidWidgetCopy",
       [
         "react-native-android-widget",
         {
@@ -136,7 +140,7 @@
     "scheme": "bati",
     "slug": "bati",
     "userInterfaceStyle": "dark",
-    "version": "2.10.0",
+    "version": "2.11.0",
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"

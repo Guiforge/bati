@@ -308,7 +308,8 @@ export function NPageHeader({
   return (
     <XStack items="center" gap={11} py={11}>
       <NBackButton onPress={onBack} label={backLabel} />
-      <NTitle>{title}</NTitle>
+      {/* flex: without it "The shelf" was measured short and its second word wrapped out of sight. */}
+      <NTitle flex={1}>{title}</NTitle>
     </XStack>
   );
 }

@@ -230,8 +230,9 @@ describe("db/muscleBalance", () => {
     // weak-muscle rule learned to stay quiet: a balanced veteran was offered "Your first march".
     const { decideHomeOffer } = require("../db/homeOffer") as typeof import("../db/homeOffer");
     // Nothing here names a quest (the fixture's sessions are free-form), so nothing qualifies
-    // for "the one you left longest": the gallery, for a hero who has trained.
-    expect(await decideHomeOffer("en")).toEqual({ kind: "gallery", trained: true });
+    // for "the one you left longest". The fixture trained today, so Home says the day is done,
+    // with no next quest to name.
+    expect(await decideHomeOffer("en")).toEqual({ kind: "done_today", next: null });
 
     // Give the history two quests, one done long ago: that one is the concrete offer, with the
     // days it has waited. Before this a balanced veteran got the beginner's gallery.
@@ -239,9 +240,11 @@ describe("db/muscleBalance", () => {
       id: number;
     }[];
     assert(older && newer);
-    // A quest done today has not been left: still the gallery.
+    // A quest done today has not been left: the day is done, and it is named as the next one.
     t.sqlite.exec(`UPDATE completed_sessions SET questId = ${older.id}`);
-    expect((await decideHomeOffer("en"))?.kind).toBe("gallery");
+    const tonight = await decideHomeOffer("en");
+    assert(tonight?.kind === "done_today");
+    expect(tonight.next?.quest.id).toBe(older.id);
     const day = 86400;
     t.sqlite.exec(`
       UPDATE completed_sessions SET questId = ${newer.id}, performedAt = ${now - 2 * day} WHERE id IN (1, 2);

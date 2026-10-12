@@ -782,6 +782,16 @@ export async function hasSessionForQuestToday(
   return Number(row?.n ?? 0) > 0;
 }
 
+/** Whether the hero showed up today: a workout, or a walk long enough to count. */
+export async function hasSessionToday(): Promise<boolean> {
+  const [row] = await db
+    .select({ n: count() })
+    .from(completedQuest)
+    .where(and(gte(completedQuest.performedAt, startOfLocalDay()), countsAsSession()));
+
+  return Number(row?.n ?? 0) > 0;
+}
+
 /** Sessions dated on the local day `at` falls on, from its midnight to the next. */
 function onLocalDayOf(at: Date) {
   const start = startOfLocalDay(at);

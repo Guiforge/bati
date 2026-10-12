@@ -1,12 +1,12 @@
 import { BOSS_ASSETS } from "@/constants/assetMap";
 import { buildingCodes, equipmentCodes, movementPatterns, muscleCodes } from "@/db/schema";
-import de from "@/locales/de.json";
 import en from "@/locales/en.json";
-import es from "@/locales/es.json";
-import fr from "@/locales/fr.json";
+import { LOCALES } from "@/src/i18n/copy";
 import { APP_LANGUAGES } from "@/src/i18n/deviceLanguage";
 
-const LOCALE_FILES = { en, fr, de, es };
+// The app's own list of files, which `tsc` holds to one per language: a language added to
+// `APP_LANGUAGES` is in every test below with no edit here.
+const LOCALE_FILES = LOCALES;
 
 type JsonValue = string | number | boolean | null | JsonObject | JsonValue[];
 interface JsonObject {
@@ -69,58 +69,121 @@ function collectArrays(value: JsonValue, keyPath = ""): [string, JsonValue[]][] 
 }
 
 describe("i18n locale parity", () => {
-  test("every shipped language has a locale file, and no file ships without its language", () => {
-    expect(Object.keys(LOCALE_FILES).sort()).toEqual([...APP_LANGUAGES].sort());
-  });
-
   /**
-   * `_many` is the one key a locale may have that English does not. Spanish and French ask
-   * `Intl.PluralRules` for a "many" form on round millions, English never does, and i18next prints
-   * the raw key when the form it asked for is missing (see the plural test below).
+   * A counted key is a family: `x_one`, `x_other`, and whatever else the language's plural rules
+   * have (`_many` in French and Spanish, `_few` and `_many` in Russian). The files agree on the
+   * families, not on the forms, so parity compares `x_*`; which forms a file must hold is the
+   * next test's.
+   *
+   * A key is a plural form only beside its own `_other`: `home.kicker_day_one` is a kicker.
    */
-  const withoutMany = (keys: Iterable<string>) => [...keys].filter((k) => !k.endsWith("_many"));
+  const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/;
+  const pluralBase = (key: string, keys: Map<string, string>): string | null => {
+    const base = key.replace(PLURAL_SUFFIX, "");
+    return base !== key && keys.has(`${base}_other`) ? base : null;
+  };
+  const families = (keys: Map<string, string>) =>
+    new Set(
+      [...keys.keys()].map((key) => {
+        const base = pluralBase(key, keys);
+        return base === null ? key : `${base}_*`;
+      }),
+    );
 
   test.each(APP_LANGUAGES.filter((l) => l !== "en"))(
     "%s.json has the same keys as en.json",
     (language) => {
-      const enKeys = collectLeafKeys(en as unknown as JsonObject);
-      const keys = collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject);
+      const enKeys = families(collectLeafKeys(en as unknown as JsonObject));
+      const keys = families(collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject));
 
-      expect(
-        withoutMany(enKeys.keys())
-          .filter((k) => !keys.has(k))
-          .sort(),
-      ).toEqual([]);
-      expect(
-        withoutMany(keys.keys())
-          .filter((k) => !enKeys.has(k))
-          .sort(),
-      ).toEqual([]);
+      expect([...enKeys].filter((k) => !keys.has(k)).sort()).toEqual([]);
+      expect([...keys].filter((k) => !enKeys.has(k)).sort()).toEqual([]);
     },
   );
 
   /**
    * Every `{{placeholder}}` a string is given has to be in its translation. A translation that
    * drops `{{count}}` still renders, and reads "Complete workouts" where English says "Complete 10".
+   * A form English has no key for (`_few`, `_many`) is held to English's `_other`.
+   *
+   * A plural form may also match `_other` instead of its own English form, as long as it keeps
+   * every placeholder its own form has. English spells its `_one` out ("Last done yesterday",
+   * "Completed once") because `_one` is 1 and nothing else; in Russian it is also 21 and 31, so
+   * the form needs the number English left out. The other way round stays closed:
+   * `journal.moved_rung_left_one` has a `{{met}}` its `_other` lacks, and may not lose it.
    */
   test.each(APP_LANGUAGES.filter((l) => l !== "en"))(
     "%s.json keeps every placeholder",
     (language) => {
+      // `(?:,[^}]*)?` reads past a format, and only a format: `{{count, number}}` is the
+      // placeholder `count`, while `{{count number}}` is not a placeholder at all.
       const placeholders = (text: string) =>
-        [...text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)].map((m) => m[1]).sort();
+        [...text.matchAll(/\{\{\s*(\w+)\s*(?:,[^}]*)?\}\}/g)].map((m) => m[1] ?? "").sort();
       const enKeys = collectLeafKeys(en as unknown as JsonObject);
       const keys = collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject);
 
-      const drifted = [...enKeys.entries()]
-        .filter(
-          ([k, v]) =>
-            keys.has(k) && placeholders(v).join() !== placeholders(keys.get(k) ?? "").join(),
-        )
+      const drifted = [...keys.entries()]
+        .filter(([k, v]) => {
+          const own = enKeys.get(k);
+          const other = enKeys.get(`${pluralBase(k, keys)}_other`);
+          const mine = placeholders(v);
+          const same = (text: string | undefined) =>
+            text !== undefined && placeholders(text).join() === mine.join();
+          const keepsOwn =
+            own === undefined || placeholders(own).every((name) => mine.includes(name));
+          return (
+            (own !== undefined || other !== undefined) && !same(own) && !(same(other) && keepsOwn)
+          );
+        })
         .map(([k]) => k);
 
       expect(drifted).toEqual([]);
     },
   );
+
+  /**
+   * A string that puts a number beside a noun needs the forms to agree with it, in English too:
+   * "1 quests" shipped, and a language whose noun changes with the number (Russian: 2 победы,
+   * 5 побед) has nowhere to write it while the English key is a single string. So `{{count}}`
+   * lives in a plural family, or in this list: the strings where the number stands alone, or
+   * beside a unit that never agrees. Shrink the list, and add to it only a string of that kind.
+   *
+   * Blind to a number under any other name: i18next only pluralises on `count`, so "{{reps}} reps"
+   * or "every {{seconds}} seconds" passes here and still cannot be inflected. Those are listed in
+   * `docs/architecture/adding-a-language.md`, and each needs its number renamed to `count` first.
+   */
+  test("a string that counts a noun has plural forms", () => {
+    const STANDS_ALONE = new Set([
+      "adventures.reward_xp_per_step",
+      "adventures.step_label",
+      "common.daily_xp_bonus",
+      "exercises.seconds_per_rep",
+      "journal.chip_bosses",
+      "oath.fulfilled_xp_bonus",
+      "oath.weekly_chip",
+      "quests.editor_added_count",
+      "quests.reward_xp",
+      "quests.reward_xp_estimate",
+      "quests.reward_xp_open",
+      "quests.reward_xp_per_minute",
+      "quests.seconds_per_rep",
+      "session.exercise_label",
+      "session.round_label",
+      "session.standing_recent_2",
+      "session.standing_recent_3",
+      "session.xp_overshoot",
+      "village.family_rest_feeds",
+      "village.family_unbuilt",
+      "village.hall_times",
+    ]);
+    const enKeys = collectLeafKeys(en as unknown as JsonObject);
+    const single = [...enKeys.entries()]
+      .filter(([k, v]) => v.includes("{{count}}") && pluralBase(k, enKeys) === null)
+      .map(([k]) => k);
+
+    expect(single.filter((k) => !STANDS_ALONE.has(k)).sort()).toEqual([]);
+    expect([...STANDS_ALONE].filter((k) => !single.includes(k))).toEqual([]);
+  });
 
   test("no key uses the i18next v3 plural suffix", () => {
     // `_plural` is JSON v3; this repo runs i18next v4 semantics, which wants `_one`/`_other`.
@@ -135,26 +198,30 @@ describe("i18n locale parity", () => {
   });
 
   /**
-   * A language whose plural rules have a "many" form needs a `_many` beside every `_other`.
+   * Every counted key holds exactly the forms its language's plural rules can ask for.
    * Found adding Spanish: `Intl.PluralRules("es").select(1000000)` is "many", i18next looks for
    * `key_many`, and without it the screen prints the key's name. French had the same hole, never
-   * reached because nothing counts to a million yet.
+   * reached because nothing counts to a million yet. Russian asks for `_few` at 2, which is
+   * reached on the first day.
    */
-  test.each(APP_LANGUAGES)(
-    "%s.json has a many form wherever its plural rules ask for one",
-    (language) => {
-      const categories = new Intl.PluralRules(language).resolvedOptions().pluralCategories;
-      const keys = collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject);
-      const missing = categories.includes("many")
-        ? [...keys.keys()]
-            .filter((k) => k.endsWith("_other"))
-            .map((k) => k.replace(/_other$/, "_many"))
-            .filter((k) => !keys.has(k))
-        : [];
+  test.each(APP_LANGUAGES)("%s.json has every plural form its rules ask for", (language) => {
+    const categories = new Intl.PluralRules(language).resolvedOptions().pluralCategories;
+    const keys = collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject);
+    const wanted = [...categories].sort().join();
 
-      expect(missing).toEqual([]);
-    },
-  );
+    const wrong = [...keys.keys()]
+      .filter((k) => k.endsWith("_other"))
+      .map((k) => k.replace(/_other$/, ""))
+      .map((base) => {
+        const held = [...keys.keys()]
+          .filter((k) => pluralBase(k, keys) === base)
+          .map((k) => k.slice(base.length + 1));
+        return `${base}: ${held.sort().join()}`;
+      })
+      .filter((line) => !line.endsWith(`: ${wanted}`));
+
+    expect(wrong).toEqual([]);
+  });
 
   test.each(APP_LANGUAGES)("%s.json has no empty strings", (language) => {
     const empty = [...collectLeafKeys(LOCALE_FILES[language] as unknown as JsonObject).entries()]

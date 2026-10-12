@@ -54,6 +54,12 @@ It is that eleven of them in a thousand words of README prose read as machine-wr
 individual dash is doing, and a reader who has learned to notice the tic does not stop noticing it
 at the language boundary.
 
+Russian is the one exception, and only in `locales/ru.json`. There the dash is the verb: Russian
+drops "is" in the present tense, and the punctuation rules (1956, § 164) require a dash between a
+noun subject and a noun predicate, as in *«Bati — не тренер»*. Removing it removes the grammar, so
+`locale-style.test.ts` leaves that file out of the scan. The Russian of the store listing and of
+`locales/native/ru.json` stays under the ban: none of those lines needs one.
+
 **A comma, a colon, a full stop or a pair of brackets says the same thing and never has to be
 defended.** Where a dash separated a term from its gloss in a list, a colon does the same job:
 `- **Jest**: ~1200 tests`.
@@ -66,6 +72,16 @@ beside *"Lancement…"*.
 
 Straight `'` and the real `…` are what both files use. The choice matters less than the fact that
 there is one; flipping the project to curly apostrophes later is one `sed` plus one constant.
+
+French takes a non-breaking space, U+00A0, before `: ; ! ?`, inside `« »`, and between a number
+and its unit, so a narrow screen never wraps a lone `!` onto its own line. Not the narrow U+202F:
+nobody has checked that the app's fonts carry it on Android, and a missing glyph is a box. No test
+holds this yet, and `locales/native/fr.json` keeps plain spaces because it feeds generated Android
+resources.
+
+A string never puts a full stop right after a short date. `shortDate()` ends on one in French,
+German and Russian for most months (*"3 févr."*), and *"éteinte le 3 févr.."* shipped. Put the date
+in brackets or mid-sentence.
 
 ### 3. The contrastive negation, capped
 
@@ -226,24 +242,33 @@ read by a person.
 ## Where copy lives
 
 Every sentence, label and name the app writes is in `locales/<language>.json`. A translator who
-has translated that file has translated the app, and adding a language is that file, an entry in
-`APP_LANGUAGES`, a line in `LOCALES` ([`src/i18n/copy.ts`](../../src/i18n/copy.ts)) and the
-per-language settings below.
+has translated that file has translated the app. Adding a language starts with an entry in
+`APP_LANGUAGES`, after which `tsc` and the tests name everything else it needs:
+[`adding-a-language.md`](../architecture/adding-a-language.md) is the walk through them.
+
+A sentence that names several things reads them through `formatList()`
+([`src/i18n/list.ts`](../../src/i18n/list.ts)), never a `join(", ")`: "A, B and C" is one string
+per language (`common.list_and`). A string that counts a noun is a plural family (`x_one`,
+`x_other`, and the forms the language adds), in English too.
 
 Screens read it with `t()`. Code outside a screen reads it through `src/i18n/copy.ts`, which hands
 back the same block in every language at once: the muscle, equipment and pattern labels, the
 village's tiers and buildings, the level titles, the path names, the bosses' names and taunts, the
-badges, and the two pools drawn by the day (`rest_messages`, `village.flavour`). Those blocks
-are keyed by a code the game owns, and a code with no
+badges, and the two pools drawn by the day (`village.flavour`,
+`session.empty_variants`). Those blocks are keyed by a code the game owns, and a code with no
+entry in `en.json` does not compile. The rest note is the exception among the pools: its lines
+count days and sessions, so they are plural families read with `t()`, and the code only takes
+the size of each pool from `en.json`.
 
-Four things stay in the code, each for a reason:
+Five things stay out of those files, each for a reason:
 
 | What | Where | Why |
 | :--- | :--- | :--- |
+| The widget picker's labels, the iOS permission prompt | `locales/native/<language>.json` | The OS reads them with no JS alive. Expo writes them into string resources at prebuild, and [`plugins/withAndroidWidgetCopy.js`](../../plugins/withAndroidWidgetCopy.js) points the widgets at them |
 | The widget's four words | `src/widget.tsx` | It runs in a headless task, and reading a locale file there loads all of them. `__tests__/widget.test.ts` fails if it ever does |
 | The unit words: reps, s, min, per side | `db/targets.ts` | "s" against " s" is spacing, and a value that is a leading space is what a translation tool trims. They were in the locale files once and drifted |
 | Per-language settings | `LANGUAGE_NAMES`, `MACHINE_TRANSLATED`, `WEEK_START`, `CAPITALISED_NOUNS` | Facts about a language, not prose |
-| Quests, adventures, movements | the database, one column per language | Seeded content, written by migrations |
+| Quests, adventures, movements | the database, one column per seeded language (`SEEDED_LANGUAGES` in `src/i18n/localized.ts`) | Seeded content, written by migrations. Russian has no column yet and reads the English one |
 
 A JSON file has no comments, so a note a translator needs (why a word was refused, what must stay
 short) goes in [`glossary.md`](glossary.md), on the row of the term.
@@ -256,7 +281,7 @@ the permissions test: the fix is always to write the string correctly, never to 
 
 | Rule | Held by | Blind to |
 | :--- | :--- | :--- |
-| No em dash, either language | `locale-style.test.ts` | `locales/*.json`, the README, both legal pages, the whole store listing and its changelogs, and `app.json`, whose two widget entries are the labels the Android widget picker shows. Not `docs/`, and not code comments |
+| No em dash, any language | `locale-style.test.ts` | `locales/*.json`, the README, both legal pages, the whole store listing and its changelogs, `app.json` and `locales/native/`, which hold what the Android widget picker shows. Not `docs/`, and not code comments |
 | One apostrophe, one ellipsis | `locale-style.test.ts` | anything outside `locales/*.json` |
 | `tu` outside the legal pages | `locale-style.test.ts` | English, which has no such distinction |
 | No sentence shape over three quarters of a pool | [`__tests__/villagers.test.ts`](../../__tests__/villagers.test.ts) for the villagers, [`__tests__/seed-copy-shape.test.ts`](../../__tests__/seed-copy-shape.test.ts) for quest descriptions, adventure descriptions and step narratives, both languages | any pool of reader-facing prose that is neither of those: the boss taunts, the rest messages and the village's weather are in `locales/*.json` and under none of the villagers' rules. A new one is a blind spot until it is added to `seed-copy-shape.test.ts` |
@@ -274,9 +299,8 @@ the permissions test: the fix is always to write the string correctly, never to 
 ### The blind spots are the point
 
 The dash rule reaches every reader-facing file, the store listing and its published release notes
-included, plus `app.json`: a widget `label` is inlined into `AndroidManifest.xml` and a widget
-`description` becomes an untranslatable string resource, so the widget picker is a reader surface
-that no locale file can see. The others stop at `locales/*.json`, so **the apostrophe, the
+included, plus `app.json` and `locales/native/`: the widget picker and the iOS permission prompt
+are reader surfaces that `locales/*.json` cannot see. The others stop at `locales/*.json`, so **the apostrophe, the
 ellipsis and the register are unchecked everywhere else**, and a new page that starts carrying
 prose is a blind spot until someone adds it to `readerFacingFiles()` in the test.
 

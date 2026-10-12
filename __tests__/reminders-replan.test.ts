@@ -93,7 +93,7 @@ describe("replanReminders", () => {
     await replan()(false);
     const plan = mockSetPlan.mock.calls[0]?.[0];
     expect(plan.channelName).toBe("Rappels d'entraînement");
-    expect(plan.actionLabels.snooze).toBe("Dans 1 h");
+    expect(plan.actionLabels.snooze).toBe("Dans 1 h");
     t.db.delete(userPreferences).run();
   });
 

@@ -405,8 +405,10 @@ every launch after migrations, only if different. A DB the widget created first 
 the app opens. `db/backup.ts:78-87`, `components/DatabaseProvider.tsx:101`.
 Invariant: a snapshot taken after app start validates `ok` against the same build.
 
-**R55. Dated copy name:** `bati-export-<first 8 hex of install id>-v<SCHEMA>-<local day>.<db|batb>`;
-untagged form when the keystore is down. The day is the hero's local day (`dayKey`).
+**R55. Dated copy name:** `bati-<local day>-<first 8 hex of install id>-v<SCHEMA>.<db|batb>`;
+untagged form when the keystore is down. The day is the hero's local day (`dayKey`). Through 2.10
+the name was `bati-export-<id>-v<SCHEMA>-<local day>`, which the system picker cut to
+"bati-export-c…"; pruning and the search for a sealed copy read both forms.
 `src/backupFiles.ts:140-142`, `src/installId.ts:75-82`.
 Invariant: two devices writing the same folder on the same day produce different names.
 
@@ -422,7 +424,8 @@ survive, and every other file in the folder is untouched.
 deletes them (not even on disconnect). It does not say how many accumulate. `src/deviceSync.ts
 :841-856`.
 
-**R58. Local plaintext/sealed snapshots in the DB directory** (`bati-export-*`) are swept before
+**R58. Local plaintext/sealed snapshots in the DB directory** (`bati-export-*` and
+`bati-<day>-*`, never `bati-*`, which is also how the sync file starts) are swept before
 every new snapshot, so at most one stale snapshot exists. `src/backupFiles.ts:185-190`.
 
 **R59. Encryption gates every write:** status `locked` (wish on, no key) refuses to write any

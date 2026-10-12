@@ -85,7 +85,7 @@ function setup(crest: crestDb.Crest | null, name = "Brumeval", pending = false) 
   const scene = {
     tier: 4 as const,
     level: 8,
-    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
+    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion", ru: "Champion" },
     totalXp: 3180,
     flame: 1 as const,
     streakDays: 4,
@@ -218,7 +218,7 @@ describe("the header's rules", () => {
     jest.spyOn(village, "getVillageScene").mockResolvedValue({
       tier: 4,
       level: 8,
-      title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
+      title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion", ru: "Champion" },
       totalXp: 3180,
       flame: 1,
       streakDays: 4,
@@ -262,7 +262,7 @@ describe("the header's rules", () => {
     jest.spyOn(village, "getVillageScene").mockResolvedValue({
       tier: 4,
       level: 8,
-      title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
+      title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion", ru: "Champion" },
       totalXp: 3180,
       flame: 1,
       streakDays: 4,

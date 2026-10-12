@@ -58,13 +58,27 @@ function emberPeak(tier: number): number {
   return Math.min(0.75, 0.42 + tier * 0.03);
 }
 
-type EmberProps = (typeof EMBERS)[number] & {
+type EmberProps = {
+  left: number;
+  start: number;
+  size: number;
+  duration: number;
+  delay: number;
   heroHeight: number;
   heroWidth: number;
   peak: number;
 };
 
-function Ember({ left, start, size, duration, delay, heroHeight, heroWidth, peak }: EmberProps) {
+export function Ember({
+  left,
+  start,
+  size,
+  duration,
+  delay,
+  heroHeight,
+  heroWidth,
+  peak,
+}: EmberProps) {
   const t = useSharedValue(0);
 
   useEffect(() => {

@@ -13,7 +13,7 @@ import { Check, ChevronLeft, Download, Info } from "@/components/icons";
 import { getExerciseThumb, getQuestThumb } from "@/constants/assetMap";
 import type { QuestTemplate } from "@/db/quests";
 import { formatTarget } from "@/db/targets";
-import { localizedName, localizedTitle } from "@/src/i18n/localized";
+import { localizedName, localizedTitle, seededLanguage } from "@/src/i18n/localized";
 import { incomingFile, releaseIncomingFile } from "@/src/incomingFile";
 import {
   editQuestFile,
@@ -57,7 +57,7 @@ export default function QuestImportScreen() {
   const [loaded, setLoaded] = useState<Loaded>({ status: "loading" });
   const [title, setTitle] = useState("");
   // The language the field was filled in: comparing against another would read as a rename.
-  const [titleLanguage, setTitleLanguage] = useState<AppLanguage>(language);
+  const [titleLanguage, setTitleLanguage] = useState(seededLanguage(language));
   const [keep, setKeep] = useState<boolean[]>([]);
   const [asCopy, setAsCopy] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -75,7 +75,7 @@ export default function QuestImportScreen() {
         if (!alive) return;
         if (result.status === "ready") {
           // The language at the moment of reading: the field is the hero's from here on.
-          const lang = useSettingsStore.getState().language;
+          const lang = seededLanguage(useSettingsStore.getState().language);
           setTitleLanguage(lang);
           setTitle(result.file.quest.title[lang]);
           setKeep(result.preview.slots.map((s) => s.available));
@@ -250,7 +250,7 @@ function QuestHead({
   onTitle: (title: string) => void;
 }) {
   const { t } = useTranslation();
-  const description = quest.description[language];
+  const description = quest.description[seededLanguage(language)];
   // A file from 2.7.0 names the placeholder, which has no thumbnail: no empty frame for it.
   const cover = getQuestThumb(quest.image);
   return (

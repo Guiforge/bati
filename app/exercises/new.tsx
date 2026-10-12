@@ -338,7 +338,7 @@ export default function ExerciseEditor() {
                     <Chip
                       key={pattern}
                       testID={`exercise-pattern-${pattern}`}
-                      label={t(`exercises.pattern_${pattern}`)}
+                      label={t(`patterns.${pattern}`)}
                       tone={details.pattern === pattern ? "primary" : "default"}
                       onPress={() => setDetails((d) => ({ ...d, pattern }))}
                     />

@@ -361,6 +361,13 @@ interface SessionState {
 
   // Timing
   startTime: number | null; // Date.now() when session started
+  /**
+   * `Date.now()` when the session became "finished", null until then. The clock stops there: the
+   * victory screen and the journal both read this instant, where each used to read its own
+   * `Date.now()`, and under two minutes the save waits for the answer to "that was short", so the
+   * journal counted the seconds spent reading a question.
+   */
+  endTime: number | null;
   totalPausedTime: number; // Accumulator for pause duration
   lastPauseTimestamp: number | null; // Date.now() when pause started
   /**
@@ -568,6 +575,7 @@ export type SavedSessionState = Pick<
   | "currentRoundIndex"
   | "currentExerciseIndex"
   | "startTime"
+  | "endTime"
   | "totalPausedTime"
   | "restTakenSeconds"
   | "timerStartTimestamp"
@@ -625,6 +633,7 @@ function advanceAfterSet(
     }
     return {
       status: "finished",
+      endTime: Date.now(),
       results,
       timerStartTimestamp: null,
       timerDuration: 0,
@@ -805,6 +814,11 @@ function sessionClock({
   };
 }
 
+/** The seconds on the session's clock, pauses out: up to now, or to the end once it has one. */
+function clockSeconds(startTime: number, endTime: number | null, totalPausedTime: number): number {
+  return Math.floor(((endTime ?? Date.now()) - startTime - totalPausedTime) / 1000);
+}
+
 /**
  * What the journal is about to record for the session in progress.
  *
@@ -813,13 +827,14 @@ function sessionClock({
  * 32 min in the journal, for the same session, on two consecutive screens. One rule, two readers.
  */
 export function recordedDurationSeconds(): number {
-  const { quest, startTime, totalPausedTime, restTakenSeconds } = useSessionStore.getState();
+  const { quest, startTime, endTime, totalPausedTime, restTakenSeconds } =
+    useSessionStore.getState();
   if (!quest || !startTime) return 0;
 
   return sessionClock({
     quest,
     ground: measureGround(quest),
-    measuredSeconds: Math.floor((Date.now() - startTime - totalPausedTime) / 1000),
+    measuredSeconds: clockSeconds(startTime, endTime, totalPausedTime),
     restTakenSeconds,
   }).durationSeconds;
 }
@@ -1355,6 +1370,7 @@ export const useSessionStore = create<SessionState>()(
     currentRoundIndex: 0,
     currentExerciseIndex: 0,
     startTime: null,
+    endTime: null,
     totalPausedTime: 0,
     restTakenSeconds: 0,
     lastPauseTimestamp: null,
@@ -1422,6 +1438,7 @@ export const useSessionStore = create<SessionState>()(
         currentRoundIndex: 0,
         currentExerciseIndex: 0,
         startTime: Date.now(),
+        endTime: null,
         // Minted here, not at save time: an expedition files a GPS point every second and needs
         // a name for them long before there is a row to point at.
         sessionUuid: uuidv7(),
@@ -1620,6 +1637,7 @@ export const useSessionStore = create<SessionState>()(
         currentRoundIndex: 0,
         currentExerciseIndex: 0,
         startTime: null,
+        endTime: null,
         totalPausedTime: 0,
         restTakenSeconds: 0,
         lastPauseTimestamp: null,
@@ -1928,6 +1946,7 @@ export const useSessionStore = create<SessionState>()(
       if (!nextExDef) {
         set({
           status: "finished",
+          endTime: Date.now(),
           totalPausedTime: get().totalPausedTime + restTaken * 1000,
           timerStartTimestamp: null,
           timerDuration: 0,
@@ -2037,6 +2056,7 @@ export const useSessionStore = create<SessionState>()(
         userLevel,
         sessionUuid,
         startTime,
+        endTime,
         totalPausedTime,
         restTakenSeconds,
         results,
@@ -2046,7 +2066,7 @@ export const useSessionStore = create<SessionState>()(
       } = get();
       if (!quest || !startTime) throw new Error("No active session");
 
-      const measuredSeconds = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
+      const measuredSeconds = clockSeconds(startTime, endTime, totalPausedTime);
       const { durationSeconds, effortCeilingSeconds } = sessionClock({
         quest,
         ground,
@@ -2435,6 +2455,7 @@ useSessionStore.subscribe(
           currentRoundIndex: state.currentRoundIndex,
           currentExerciseIndex: state.currentExerciseIndex,
           startTime: state.startTime,
+          endTime: state.endTime,
           totalPausedTime: state.totalPausedTime,
           restTakenSeconds: state.restTakenSeconds,
           timerStartTimestamp: state.timerStartTimestamp,

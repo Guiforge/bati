@@ -89,9 +89,9 @@ describe("db/estimate", () => {
   // "12 min 17s" was written the English way in every language; the seconds now wear the same
   // suffix as a hold (`formatTarget`), and the minutes/seconds split is unchanged.
   it("spaces the seconds the way the language spaces a hold", () => {
-    expect(formatDuration(737, "fr")).toBe("12 min 17 s");
-    expect(formatDuration(737, "de")).toBe("12 Min. 17 s");
-    expect(formatDuration(45, "es")).toBe("45 s");
+    expect(formatDuration(737, "fr")).toBe("12 min 17 s");
+    expect(formatDuration(737, "de")).toBe("12 Min. 17 s");
+    expect(formatDuration(45, "es")).toBe("45 s");
     expect(formatDuration(720, "fr")).toBe("12 min");
   });
 

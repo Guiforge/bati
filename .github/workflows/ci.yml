@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -71,10 +71,10 @@ jobs:
       # An invalid workflow file does not fail loudly — it produces a run with no jobs and no
       # error, which is exactly how v1.0.1 shipped (see the comment on release.yml's keystore
       # step). actionlint validates the expression syntax and the contexts each field allows.
-      # Pinned by tag; ubuntu-latest already ships shellcheck for the scripts.
+      # Pinned by tag; the runner image already ships shellcheck for the scripts.
       - name: Lint the workflows and the shell scripts
         run: |
-          docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.7 -color
+          docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
           shellcheck scripts/*.sh
       # actionlint checks that a workflow is valid, zizmor that it is safe: every action pinned by
       # SHA (a moved tag would run in the job that holds the signing key), no token wider than the

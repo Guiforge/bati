@@ -12,6 +12,7 @@ import { ANIMAL_TOKEN } from "@/constants/animalColors";
 import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import type { Crest as CrestData } from "@/db/crest";
 import { type CrestCoat, rareCoatShips } from "@/db/crestCoat";
+import { CREST_MOTTOS, type CrestMotto } from "@/db/crestMotto";
 import {
   ANIMAL_OF,
   type Animal,
@@ -24,7 +25,7 @@ import { useFontScaled } from "@/hooks/useFontScaled";
 import { reportError } from "@/src/reportError";
 
 /** One sheet, two views: the stack of two modals this would be is where the ghost panes come from. */
-export type CrestView = "why" | "pick";
+export type CrestView = "why" | "pick" | "motto";
 
 const ORDER: readonly Animal[] = ["bear", "stag", "horse", "salmon", "ermine", "boar"];
 
@@ -302,6 +303,58 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
   );
 }
 
+/** The closed list of mottos and "none": it writes, then goes back to the shield, where the motto now reads. */
+function MottoPick({
+  crest,
+  motto,
+  onPicked,
+}: {
+  crest: CrestData;
+  motto: CrestMotto;
+  onPicked: (value: CrestMotto) => void;
+}) {
+  const { t } = useTranslation();
+  const shape: CrestShape = {
+    animal: crest.animal,
+    manual: false,
+    second: null,
+    quarters: null,
+    longestFlame: 0,
+    rings: 0,
+  };
+  const choose = (value: CrestMotto) => {
+    if (value === motto) {
+      onPicked(value);
+      return;
+    }
+    preferences
+      .setCrestMotto(value)
+      .then(() => onPicked(value))
+      .catch((error) => reportError("village.crestMotto", error));
+  };
+  return (
+    <YStack gap="$2" role="radiogroup">
+      <Option
+        testID="crest-motto-none"
+        shape={shape}
+        label={t("village.motto_none")}
+        selected={motto === "none"}
+        onPress={() => choose("none")}
+      />
+      {CREST_MOTTOS.map((id) => (
+        <Option
+          key={id}
+          testID={`crest-motto-${id}`}
+          shape={shape}
+          label={t(`village.motto_${id}`)}
+          selected={motto === id}
+          onPress={() => choose(id)}
+        />
+      ))}
+    </YStack>
+  );
+}
+
 /**
  * The rare coat or the usual one, offered once the rare is won and its portrait for this animal at
  * this stage ships. Same radios as the animal pick; it writes and stays open, the portrait above
@@ -363,7 +416,15 @@ function CoatChoice({ crest, onCoat }: { crest: CrestData; onCoat: () => void })
  * What the picture shows: the stage ("a legendary bear", the keys the line under the village's
  * title already reads) and the coat it wears tonight, rare or winter, read off the portrait's slug.
  */
-function Picture({ crest, coatKey }: { crest: CrestData; coatKey: string }) {
+function Picture({
+  crest,
+  coatKey,
+  motto,
+}: {
+  crest: CrestData;
+  coatKey: string;
+  motto: CrestMotto;
+}) {
   const { t } = useTranslation();
   const { animal, stage } = crest;
   const legendReserve = useFontScaled(38);
@@ -403,6 +464,17 @@ function Picture({ crest, coatKey }: { crest: CrestData; coatKey: string }) {
             ? t("village.crest_legend", { what })
             : t("village.crest_legend_coat", { what, coat })}
       </Text>
+      {motto === "none" ? null : (
+        <Text
+          testID="crest-motto"
+          fontSize={15}
+          fontStyle="italic"
+          color="$text"
+          style={{ textAlign: "center" }}
+        >
+          {t(`village.motto_${motto}`)}
+        </Text>
+      )}
     </>
   );
 }
@@ -416,6 +488,15 @@ export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
   const choose = useChoose(crest, onChanged, onClose);
   // Bumped when the coat is switched, so the portrait reads it again.
   const [coatKey, setCoatKey] = useState(0);
+  // Read each time a view opens, so a choice made in the motto view shows when the shield returns.
+  const [motto, setMotto] = useState<CrestMotto>("none");
+  useEffect(() => {
+    if (view === null) return;
+    preferences
+      .getCrestMotto()
+      .then(setMotto)
+      .catch((error) => reportError("village.crestMottoRead", error));
+  }, [view]);
   // Mounted on the first opening only: a sheet behind every Village visit is dead weight.
   const [mounted, setMounted] = useState(false);
   if (view !== null && !mounted) setMounted(true);
@@ -438,16 +519,32 @@ export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
       title={
         view === "pick"
           ? t("village.crest_pick_title")
-          : t(`village.crest_why_title_${crest.animal}`)
+          : view === "motto"
+            ? t("village.motto_title")
+            : t(`village.crest_why_title_${crest.animal}`)
       }
       onClose={onClose}
     >
       {view === "pick" ? (
         <Pick crest={crest} choose={choose} />
+      ) : view === "motto" ? (
+        <MottoPick
+          crest={crest}
+          motto={motto}
+          onPicked={(value) => {
+            setMotto(value);
+            onView("why");
+          }}
+        />
       ) : (
         <>
-          <Picture crest={crest} coatKey={String(coatKey)} />
+          <Picture crest={crest} coatKey={String(coatKey)} motto={motto} />
           <Why crest={crest} onView={onView} choose={choose} />
+          <Link
+            testID="crest-motto-link"
+            label={t("village.motto_link")}
+            onPress={() => onView("motto")}
+          />
           {rareCoatShips(crest.animal, crest.stage, crest.longestFlame) ? (
             <CoatChoice crest={crest} onCoat={() => setCoatKey((k) => k + 1)} />
           ) : null}

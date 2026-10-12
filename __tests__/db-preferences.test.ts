@@ -73,6 +73,21 @@ describe("db/preferences", () => {
     expect(await preferences.getCrestCoat()).toBe("auto");
   });
 
+  test("crestMotto: no default written, unknown reads as none, a motto and none round-trip", async () => {
+    const { preferences, setPreference } =
+      require("../db/preferences") as typeof import("../db/preferences");
+    const row = () =>
+      t.sqlite.prepare("SELECT value FROM user_preferences WHERE key = 'crestMotto'").get();
+    expect(await preferences.getCrestMotto()).toBe("none");
+    expect(row()).toBeUndefined();
+    await preferences.setCrestMotto("stone");
+    expect(await preferences.getCrestMotto()).toBe("stone");
+    await preferences.setCrestMotto("none");
+    expect(row()).toEqual({ value: "none" });
+    await setPreference("crestMotto", "free text");
+    expect(await preferences.getCrestMotto()).toBe("none");
+  });
+
   test("a corrupt set-aside list reads as empty and is reported, not silently dropped", async () => {
     const { preferences, setPreference } =
       require("../db/preferences") as typeof import("../db/preferences");

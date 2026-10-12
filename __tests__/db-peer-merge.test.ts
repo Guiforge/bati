@@ -853,6 +853,25 @@ describe("the crest follows the journal, not the device", () => {
     await converged(laterAuto);
   });
 
+  test("crestMotto: a none written later beats an older motto, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "crestMotto", "none", 3_000);
+    const olderMotto = await peer("older-motto.db", (sqlite) =>
+      setPref(sqlite, "crestMotto", "stone", 2_000),
+    );
+    await merge().mergePeer(olderMotto);
+    expect(prefValue("crestMotto")).toBe("none");
+    await converged(olderMotto);
+
+    setPref(t.sqlite, "crestMotto", "stone", 2_000);
+    const laterNone = await peer("later-motto-none.db", (sqlite) =>
+      setPref(sqlite, "crestMotto", "none", 3_000),
+    );
+    await merge().mergePeer(laterNone);
+    expect(prefValue("crestMotto")).toBe("none");
+    await converged(laterNone);
+  });
+
   test("a pick equal to the sessions' animal, from before the rule, leaves the same crest as auto, either way", async () => {
     // Eight strength sessions: the bear. One device kept an old explicit "bear", the other is on
     // auto; whichever value the merge keeps, neither side draws the diamond.

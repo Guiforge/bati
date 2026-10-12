@@ -136,13 +136,15 @@ def flame_run(day_offsets, quota=2):  # quota 2 = DEFAULT_WEEKLY_QUOTA in consta
     return run
 
 
-# The hero reaches level 50 on the played session (79 000 XP): the Age of 50 is told then. The anniversary of the
-# village is marked shown (it is two years old), so the Age is the one big feast.
-STATES["age"] = dict(counts={"force": 250, "course": 56, "yoga": 20}, xp=79100, last_xp=400, flame=20, span=1000,
+# The hero reaches level 50 on the played session (79 000 XP): the Age of 50 is told then. The last session is a
+# real "Couper du bois" (13 to 21 XP), so `age-avant` sits 10 XP under level 50 and that session crosses it. The
+# anniversary of the village is marked shown (it is two years old), so the Age is the one big feast; the rare coat's
+# card is shown too, as a veteran has seen it.
+STATES["age"] = dict(counts={"force": 250, "course": 56, "yoga": 20}, xp=79005, last_xp=15, flame=20, span=1000,
                      first8=FIRST8_FORCE_LED, last="force", level=50, tier="Capitale éternelle",
-                     name="Brumeval", diamond=47, ages=[(50, "rung", 20, 47)], shown=["reveal", "anniversary:2"])
+                     name="Brumeval", diamond=47, ages=[(50, "rung", 20, 47)], shown=["reveal", "anniversary:2", "coat:rare"])
 # B with a village a year old: the anniversary feast (anniversary:1) is due and unshown.
-STATES["anniv"] = {**STATES["b"], "span": 372, "shown": ["reveal"], "rings": 1}
+STATES["anniv"] = {**STATES["b"], "span": 372, "shown": ["reveal", "coat:rare"], "rings": 1}
 # 66 stones (levels 21 to 86), four Ages; the legendary count (500) is out of reach of every practice.
 STATES["pierres-65"] = dict(counts={"force": 460, "course": 190, "yoga": 70}, xp=152000, last_xp=250, flame=40,
                             span=1600, first8=FIRST8_FORCE_LED, last="force", level=86, tier="Capitale éternelle",

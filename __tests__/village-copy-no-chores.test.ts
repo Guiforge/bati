@@ -602,12 +602,6 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     de: "Level {{level}}. Deine Übung dieser zehn Level, zum ersten Mal bei Level {{at}}.",
     es: "Nivel {{level}}. Tu ejercicio de estos diez niveles, hecho por primera vez en el nivel {{at}}.",
   },
-  "common.daily_xp_bonus": {
-    why: "fait",
-    fr: "dont +{{count}} pour la quête du jour",
-    de: "davon +{{count}} für die Quest des Tages",
-    es: "incluye +{{count}} por la misión del día",
-  },
   "session.pr_most_xp": {
     why: "fait",
     fr: "Le plus d'XP en une séance",

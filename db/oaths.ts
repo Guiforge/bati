@@ -1,4 +1,4 @@
-import { differenceInCalendarWeeks, startOfWeek } from "date-fns";
+import { differenceInCalendarWeeks, isSameWeek, startOfWeek } from "date-fns";
 import { and, eq, gte, sql } from "drizzle-orm";
 import { getWeekStart } from "@/constants/dateFormatters";
 import { DEFAULT_WEEKLY_TARGET } from "@/constants/weeklyTargets";
@@ -406,16 +406,37 @@ export async function getOathProgress(): Promise<OathProgress | null> {
 }
 
 /**
+ * When the last oath bonus was paid. Its own preference, not a field of the oath: breaking or
+ * replacing an oath would erase it and reopen the week. Synced like the oath (`MERGED_PREFERENCES`).
+ */
+const OATH_BONUS_AT_KEY = "oathBonusAt";
+
+/**
+ * One oath bonus per calendar week. Nothing stops a hero from swearing an oath one session away
+ * and another the session after: at 547 sessions "548" paid 250 XP, then "549" did. A minimum
+ * gap does not close it (a movement never done accepts "1 rep", then 2, then 3); a ceiling in
+ * time closes it for every metric at once. Calendar and not rolling, so a weekly oath kept on a
+ * Friday and again the next Thursday is paid both times.
+ */
+async function oathBonusPaidThisWeek(oath: Oath, now: Date): Promise<boolean> {
+  const paidAt = await getPreference(OATH_BONUS_AT_KEY);
+  if (!paidAt) return false;
+  const weekStartsOn = oathWeekStart(oath, resolveAppLanguage(await preferences.getLanguage()));
+  return isSameWeek(new Date(paidAt), now, { weekStartsOn });
+}
+
+/**
  * Call after a session is journaled. Returns the oath only on the transition to
  * fulfilled, so the victory screen celebrates it exactly once.
  *
- * `onFulfilled` (e.g. crediting the oath's XP bonus to the session) runs in the same
- * transaction as the fulfilledAt write: a crash between the two used to mark the oath
- * fulfilled forever while the bonus was never credited, since a fulfilled oath is a
- * no-op on every later call. Committing both together removes that window.
+ * `payBonus` (crediting the oath's XP bonus to the session) runs in the same transaction as the
+ * fulfilledAt write: a crash between the two used to mark the oath fulfilled forever while the
+ * bonus was never credited, since a fulfilled oath is a no-op on every later call. It is not
+ * called when this week's bonus is already paid (`oathBonusPaidThisWeek`): the oath is fulfilled
+ * and celebrated all the same, without the XP.
  */
 export async function checkOathFulfilled(
-  onFulfilled?: (tx: TransactionTx) => Promise<void>,
+  payBonus?: (tx: TransactionTx) => Promise<void>,
 ): Promise<OathProgress | null> {
   const oath = await getOath();
   if (!oath || oath.fulfilledAt !== null) {
@@ -426,9 +447,14 @@ export async function checkOathFulfilled(
     return null;
   }
 
-  const fulfilled: Oath = { ...oath, fulfilledAt: new Date().toISOString() };
+  const now = new Date();
+  const pay = payBonus && !(await oathBonusPaidThisWeek(oath, now)) ? payBonus : null;
+  const fulfilled: Oath = { ...oath, fulfilledAt: now.toISOString() };
   await transactionOrFallback(async (tx) => {
-    if (onFulfilled) await onFulfilled(tx);
+    if (pay) {
+      await pay(tx);
+      await setPreference(OATH_BONUS_AT_KEY, now.toISOString(), tx);
+    }
     await setPreference(OATH_KEY, JSON.stringify(fulfilled), tx);
   });
   return await toProgress(fulfilled);

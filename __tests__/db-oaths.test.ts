@@ -151,7 +151,7 @@ describe("db/oaths", () => {
 
   // Regression: crediting the oath's XP bonus used to happen after fulfilledAt was already
   // persisted, and a fulfilled oath is a no-op on every later call — a crash between the two
-  // writes lost the bonus forever. onFulfilled now runs in the same transaction, so a failed
+  // writes lost the bonus forever. payBonus now runs in the same transaction, so a failed
   // credit must leave the oath un-fulfilled and retryable.
   test("a failed bonus credit must not mark the oath fulfilled", async () => {
     const o = oaths();
@@ -159,7 +159,7 @@ describe("db/oaths", () => {
     logExercise(1, 10);
 
     await expect(
-      // biome-ignore lint/suspicious/useAwait: matches checkOathFulfilled's onFulfilled: () => Promise<void>
+      // biome-ignore lint/suspicious/useAwait: matches checkOathFulfilled's payBonus: () => Promise<void>
       o.checkOathFulfilled(async () => {
         throw new Error("simulated crash while crediting the bonus");
       }),
@@ -168,12 +168,81 @@ describe("db/oaths", () => {
     expect(await o.getOath()).toMatchObject({ fulfilledAt: null });
 
     let credited = false;
-    // biome-ignore lint/suspicious/useAwait: matches checkOathFulfilled's onFulfilled: () => Promise<void>
+    // biome-ignore lint/suspicious/useAwait: matches checkOathFulfilled's payBonus: () => Promise<void>
     const fulfilled = await o.checkOathFulfilled(async () => {
       credited = true;
     });
     expect(credited).toBe(true);
     expect(fulfilled?.isFulfilled).toBe(true);
+  });
+
+  /**
+   * One oath bonus a calendar week. Nothing stops a hero from swearing an oath one session away,
+   * then another: at 547 sessions "548" paid 250 XP and "549" paid it again the session after.
+   */
+  describe("the bonus is paid once a week", () => {
+    /** Swear "one more session", log it, and say whether the bonus was paid. */
+    async function keepOneMore(): Promise<{ fulfilled: boolean; paid: boolean }> {
+      const o = oaths();
+      const done = (
+        t.sqlite.prepare("SELECT count(*) AS n FROM completed_sessions").get() as { n: number }
+      ).n;
+      await o.swearOath({ metric: "sessions", target: done + 1 });
+      logSessionAt(0);
+      let paid = false;
+      // biome-ignore lint/suspicious/useAwait: matches checkOathFulfilled's payBonus: () => Promise<void>
+      const progress = await o.checkOathFulfilled(async () => {
+        paid = true;
+      });
+      return { fulfilled: progress?.isFulfilled === true, paid };
+    }
+
+    function setBonusAt(daysFromNow: number): void {
+      const at = new Date(Date.now() + daysFromNow * 24 * 60 * 60 * 1000).toISOString();
+      t.sqlite
+        .prepare("INSERT OR REPLACE INTO user_preferences (key, value) VALUES ('oathBonusAt', ?)")
+        .run(at);
+    }
+
+    test("a second oath kept the same week is fulfilled, and pays nothing", async () => {
+      expect(await keepOneMore()).toEqual({ fulfilled: true, paid: true });
+      expect(await keepOneMore()).toEqual({ fulfilled: true, paid: false });
+    });
+
+    test("breaking an oath in between does not reopen the week", async () => {
+      expect(await keepOneMore()).toEqual({ fulfilled: true, paid: true });
+      await oaths().swearOath({ metric: "sessions", target: 999 });
+      await oaths().breakOath();
+      expect(await keepOneMore()).toEqual({ fulfilled: true, paid: false });
+    });
+
+    test("a bonus paid another week does not spend this one", async () => {
+      setBonusAt(-8);
+      expect(await keepOneMore()).toEqual({ fulfilled: true, paid: true });
+    });
+
+    test("a date in the future (a clock since set back) blocks nothing", async () => {
+      setBonusAt(30);
+      expect(await keepOneMore()).toEqual({ fulfilled: true, paid: true });
+    });
+
+    test("a credit that failed leaves the week open", async () => {
+      const o = oaths();
+      await o.swearOath({ metric: "sessions", target: 1 });
+      logSessionAt(0);
+      await expect(
+        // biome-ignore lint/suspicious/useAwait: matches checkOathFulfilled's payBonus: () => Promise<void>
+        o.checkOathFulfilled(async () => {
+          throw new Error("crash");
+        }),
+      ).rejects.toThrow("crash");
+      let paid = false;
+      // biome-ignore lint/suspicious/useAwait: matches checkOathFulfilled's payBonus: () => Promise<void>
+      await o.checkOathFulfilled(async () => {
+        paid = true;
+      });
+      expect(paid).toBe(true);
+    });
   });
 
   test("progress is clamped once the target is passed", async () => {

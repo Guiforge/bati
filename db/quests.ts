@@ -2,7 +2,6 @@ import { desc, eq } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { workoutsBeforeToday } from "./completed";
-import { dayKey } from "./dates";
 import { canDo } from "./equipment";
 import {
   currentRungFor,
@@ -1166,16 +1165,14 @@ export async function getEligibleQuestIds(
      * an oath sworn on a jump is not the app picking jumps for them.
      */
     allowJumps?: boolean;
-    /** The instant "today" is read from, for a save asking about the day it started on. */
-    at?: Date;
   } = {},
 ): Promise<Set<number>> {
-  // Sessions before today, not up to now: the daily quest is drawn from this set, and it must
-  // name the same quest all day (`workoutsBeforeToday`).
+  // Sessions before today, not up to now: what the app may suggest must not change during the
+  // day (`workoutsBeforeToday`).
   const [ownedEquipment, trainingLevel, sessions, rows] = await Promise.all([
     preferences.getOwnedEquipment(),
     preferences.getTrainingLevel(),
-    workoutsBeforeToday(options.at),
+    workoutsBeforeToday(),
     db
       .select({
         questId: questExercises.questId,
@@ -1308,36 +1305,4 @@ export async function findQuestWithExercise(exerciseId: number): Promise<number 
 
   // `pool` is non-empty (guarded above), but the type does not say so.
   return pool[0]?.[0] ?? null;
-}
-
-/**
- * Get the daily quest based on the current date.
- * Deterministically picks a quest from all available quests the user can actually train.
- */
-async function pickDailyTemplate(at = new Date()): Promise<QuestTemplate | null> {
-  const templates = await listQuestTemplates();
-  if (templates.length === 0) return null;
-
-  // Falling back to the whole catalogue keeps the daily bonus reachable even if the hero's
-  // filters leave nothing — an empty pool would silently remove the bonus altogether.
-  const eligible = await getEligibleQuestIds({ at });
-  const pool = templates.filter((tpl) => eligible.has(tpl.id));
-  const candidates = pool.length > 0 ? pool : templates;
-
-  // `at` for a save: a session is the quest of the day it started on, which is the day its row
-  // is dated, not of whatever day the clock shows when the summary is reached.
-  const today = dayKey(at);
-  let hash = 0;
-  for (let i = 0; i < today.length; i++) {
-    hash = (hash << 5) - hash + today.charCodeAt(i);
-    hash |= 0; // Convert to 32bit integer
-  }
-
-  // Modulo the array's own length, so always in range; the type does not know that.
-  return candidates[Math.abs(hash) % candidates.length] ?? null;
-}
-
-export async function isDailyQuest(questId: number, at = new Date()): Promise<boolean> {
-  const template = await pickDailyTemplate(at);
-  return template?.id === questId;
 }

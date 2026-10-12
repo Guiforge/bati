@@ -273,7 +273,6 @@ describe("every sentence renders whole", () => {
       ),
       "reminders.quiet",
       "reminders.oath_more",
-      "reminders.oath_won",
     ];
     for (const key of keys) {
       const text = i18n.t(key, params);

@@ -1,19 +1,12 @@
 import assert from "node:assert/strict";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
-import {
-  createCompletedSession,
-  dailyBonusOf,
-  dailyBonusPaidOn,
-  hasSessionForQuestToday,
-  outingSecondsToday,
-} from "@/db/completed";
+import { outingSecondsToday } from "@/db/completed";
 import { getCrest } from "@/db/crest";
 import type { Exercise } from "@/db/exercises";
 import { preferences } from "@/db/preferences";
 import { dropSlotSwap, saveQuestConfig } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
-import { isDailyQuest } from "@/db/quests";
 import { computeSessionXp } from "@/db/xp";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { i18n } from "@/i18n";
@@ -44,12 +37,6 @@ jest.mock("@/db/client", () => ({
   runMigrations: jest.fn().mockResolvedValue(undefined),
 }));
 
-// Mock quests module
-jest.mock("@/db/quests", () => ({
-  ...jest.requireActual("@/db/quests"),
-  isDailyQuest: jest.fn().mockReturnValue(false),
-}));
-
 // Mock DB calls
 jest.mock("@/db", () => ({
   completeAdventureRunStep: jest.fn(),
@@ -69,10 +56,6 @@ jest.mock("@/db/completed", () => ({
   // starts calling has to be added by hand. Forget one and fifteen cases die on
   // "is not a function", which is exactly how this line came to exist.
   outingSecondsToday: jest.fn().mockResolvedValue(0),
-  hasSessionForQuestToday: jest.fn().mockResolvedValue(false),
-  // The day's bonus, read off the journal: nobody paid yet, and no row holding one.
-  dailyBonusPaidOn: jest.fn().mockResolvedValue(false),
-  dailyBonusOf: jest.fn().mockResolvedValue(0),
 }));
 // The rest of what saveSession touches on its way through. Stubbed so the store's own
 // behaviour — what it banks, commits and clears — is what these cases actually measure.
@@ -2455,147 +2438,6 @@ describe("useSessionStore", () => {
  * How many seconds of ground a session may claim. The rule lives here rather than in `db/xp.ts`
  * because here is the only place that holds both the recorded results and the GPS trace.
  */
-/**
- * The day's quest pays half of what it *proposed*, once.
- *
- * `xpEarned × 1.5` held while every quest was bounded by its own prescription. An outing is not:
- * the multiplier compounded with a duration nobody set, so an hour's run on the daily quest paid
- * 1200 where the quest suggested thirty minutes.
- */
-describe("the day's quest", () => {
-  /** `savedSessionId` set: the save is a retry of a session whose row already landed. */
-  const bonusOf = async (savedSessionId: number | null = null): Promise<number> => {
-    const walk = {
-      id: 41,
-      rounds: 1,
-      restSeconds: 0,
-      roundRestSeconds: null,
-      enTitle: "The round",
-      frTitle: "La ronde",
-      exercises: [
-        {
-          exercise: {
-            id: 30,
-            enName: "Warden's Walk",
-            muscles: [],
-            style: "expedition",
-            secondsPerRep: 1,
-            locomotion: "walk",
-          },
-          // Suggested 45 minutes; the hero walks two hours.
-          target: { type: "time", value: 2700 },
-        },
-      ],
-    } as unknown as Quest;
-
-    const startedAt = Date.now() - 7_200_000;
-    useExpeditionStore.setState({
-      track: { ...EMPTY, startedAt, lastAt: Date.now(), distanceM: 10_000, movingMs: 7_200_000 },
-    });
-    await useSessionStore.getState().startSession(walk, "medium", {});
-    useSessionStore.setState({
-      startTime: startedAt,
-      totalPausedTime: 0,
-      restTakenSeconds: 0,
-      savedSessionId,
-    });
-
-    const result = await useSessionStore.getState().saveSession(null);
-    return result.dailyBonusXp;
-  };
-
-  beforeEach(() => {
-    jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
-    (isDailyQuest as jest.Mock).mockResolvedValue(true);
-    (hasSessionForQuestToday as jest.Mock).mockResolvedValue(false);
-    (computeSessionXp as jest.Mock).mockClear();
-    // Outside `useSessionStore`'s own reset, so the status is whatever the last test left, and
-    // the store now refuses to start a session over a live one.
-    useSessionStore.setState({ status: "idle" });
-  });
-
-  afterEach(() => {
-    (isDailyQuest as jest.Mock).mockReturnValue(false);
-    jest.restoreAllMocks();
-  });
-
-  test("is priced on the suggested duration, not on the two hours actually walked", async () => {
-    // `computeSessionXp` is mocked in this file, so what is measured here is what the store
-    // *asks* it: the at-target reading quotes the quest's 45 minutes and no part of the day.
-    // What 45 minutes is worth is `__tests__/xp.test.ts`'s job, and the bonus is half of it.
-    const bonus = await bonusOf();
-
-    const atTarget = (computeSessionXp as jest.Mock).mock.calls[1];
-    assert(atTarget);
-    expect(atTarget[0].outing).toEqual({ seconds: 2700, locomotion: "walk" });
-    expect(atTarget[0].priorOutingSecondsToday).toBe(0);
-    expect(bonus).toBe(50); // half of the mocked at-target reading
-  });
-
-  test("pays once, however many times the same quest is run", async () => {
-    (hasSessionForQuestToday as jest.Mock).mockResolvedValue(true);
-    expect(await bonusOf()).toBe(0);
-  });
-
-  /**
-   * Issue #177. The day's quest is drawn from a pool the hero can reshape before lunch (level,
-   * equipment, a quest of their own), so the same date could point at a second quest. "This
-   * quest was not logged today" was true of that one, and it paid again. The bonus is written
-   * on the session's own row, and "was today paid" is asked of the journal.
-   */
-  describe("once a day, whatever the day's quest has become", () => {
-    afterEach(() => {
-      (dailyBonusPaidOn as jest.Mock).mockResolvedValue(false);
-      (dailyBonusOf as jest.Mock).mockResolvedValue(0);
-    });
-
-    test("a bonus that is paid is written on the session's own row", async () => {
-      (createCompletedSession as jest.Mock).mockClear();
-
-      expect(await bonusOf()).toBe(50);
-
-      expect((createCompletedSession as jest.Mock).mock.calls[0]?.[0]).toMatchObject({
-        dailyBonusXp: 50,
-      });
-    });
-
-    test("a second quest that became the day's pays nothing", async () => {
-      (dailyBonusPaidOn as jest.Mock).mockResolvedValue(true);
-      (createCompletedSession as jest.Mock).mockClear();
-
-      expect(await bonusOf()).toBe(0);
-      expect((createCompletedSession as jest.Mock).mock.calls[0]?.[0]).toMatchObject({
-        dailyBonusXp: 0,
-      });
-    });
-
-    // A session is the quest of the day it started on, the day its row is dated. Read at save
-    // time, one begun at 23:50 was judged against the next day's pick and the next day's journal.
-    test("every question is asked of the day the session started", async () => {
-      await bonusOf();
-
-      const startedAt = new Date(useSessionStore.getState().startTime ?? 0);
-      expect((isDailyQuest as jest.Mock).mock.calls.at(-1)?.[1]).toEqual(startedAt);
-      expect((dailyBonusPaidOn as jest.Mock).mock.calls.at(-1)?.[0]).toEqual(startedAt);
-      expect((hasSessionForQuestToday as jest.Mock).mock.calls.at(-1)?.[1]).toEqual(startedAt);
-    });
-
-    // A retried save reports what its row holds and asks nothing again. Asked again, a pick that
-    // moved since (a rung the landed rows earned, midnight) showed a bonus the journal did not
-    // have, or dropped one it did.
-    test("a retry reports the bonus its row holds, whatever the day says now", async () => {
-      (isDailyQuest as jest.Mock).mockResolvedValue(false);
-      (dailyBonusOf as jest.Mock).mockResolvedValue(50);
-      expect(await bonusOf(77)).toBe(50);
-      expect(dailyBonusOf).toHaveBeenCalledWith(77);
-
-      (isDailyQuest as jest.Mock).mockResolvedValue(true);
-      (dailyBonusOf as jest.Mock).mockResolvedValue(0);
-      expect(await bonusOf(78)).toBe(0);
-    });
-  });
-});
-
 describe("what a session may claim it walked", () => {
   const legOf = (): { seconds: number; locomotion: string } | null =>
     (computeSessionXp as jest.Mock).mock.calls[0]?.[0]?.outing ?? null;

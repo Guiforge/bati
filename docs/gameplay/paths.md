@@ -161,13 +161,13 @@ change ("Point de départ"), and it also sets the difficulty a quest never playe
 ([progression.md](progression.md#where-a-quest-starts)). Beyond that, what it decides is what
 the app *picks* for the hero (`startsGently`,
 [`db/preferences.ts`](../../db/preferences.ts)): no jump in the warm-up, and no quest that would
-*serve* them a jump in the suggestions, the daily quest included. The suggestions ask what the
+*serve* them a jump in the suggestions. The suggestions ask what the
 slot would run, in the slot's own order (`servedJumps`): what the hero set aside is replaced
 first, then the rung they stand on. So a quest naming Jump Squat is fine for a hero still on
 Squat and held back once they are served the jump itself, and a hero who set every jump aside is
 not kept off the quests those jumps were written in. Three things bound it. It counts the sessions
-logged *before today* (`workoutsBeforeToday`), so the daily quest, drawn from that set by the
-date, cannot change in the middle of a day. It applies to quests the app wrote, never to a hero's
+logged *before today* (`workoutsBeforeToday`), so the suggestions cannot change in the middle
+of a day. It applies to quests the app wrote, never to a hero's
 own. And an oath sworn on a jump still finds its quest: that is the hero's choice, not the app's.
 
 ## Where a path speaks

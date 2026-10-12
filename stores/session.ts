@@ -17,11 +17,8 @@ import {
   addBonusXpToSession,
   type CompletedExerciseInput,
   createCompletedSession,
-  dailyBonusOf,
-  dailyBonusPaidOn,
   deleteSession,
   getSessionAggregates,
-  hasSessionForQuestToday,
   markSessionWithNewRecords,
   outingSecondsToday,
 } from "@/db/completed";
@@ -63,12 +60,7 @@ import type { DistanceUnit } from "@/db/preferences";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
 import { dropSlotSwap } from "@/db/questConfig";
-import {
-  invalidateQuestTemplates,
-  isDailyQuest,
-  type Quest,
-  type QuestExercise,
-} from "@/db/quests";
+import { invalidateQuestTemplates, type Quest, type QuestExercise } from "@/db/quests";
 import type {
   DifficultyCode,
   ExerciseStyle,
@@ -242,11 +234,6 @@ export function holdNeedingAnswer(
 export type SaveResult = {
   sessionId: number;
   xpEarned: number;
-  /**
-   * What the day's quest paid on top, or zero. One field rather than a flag beside a number:
-   * two of those can disagree, and only the number has a reader.
-   */
-  dailyBonusXp: number;
   newRecords: NewRecordResult[];
   /**
    * What this session was best at, when it broke nothing. Null whenever `newRecords` is not
@@ -902,37 +889,6 @@ function outingLegSeconds(
     .reduce((sum, set) => sum + Math.max(0, set.result.value), 0);
 
   return Math.min(declared, Math.max(0, effortCeilingSeconds));
-}
-
-/**
- * What this save is paid on top for doing the day's quest: half of what the quest proposed, or
- * nothing. Three conditions, all read at the instant the session *started*, which is the day its
- * row is dated: a session begun at 23:50 is the quest of that day whenever its summary is reached.
- * - it is the quest that day suggested (`isDailyQuest`);
- * - that quest was not already logged that day, or running it three times paid three bonuses;
- * - no session of that day holds the bonus yet (issue #177). The day's quest is drawn from a
- *   pool the hero can reshape before lunch, so "this quest was not logged" was true of a second
- *   quest. The bonus is on the session's own row, so this is a question to the journal.
- *
- * A retry reports what its row holds and asks nothing again: the row was written with or without
- * the bonus the first time, and a bonus the screen shows must be one the journal has.
- */
-async function dailyBonusFor(
-  questId: number,
-  savedSessionId: number | null,
-  startedAt: Date,
-  xpAtTarget: number,
-): Promise<number> {
-  if (savedSessionId !== null) return dailyBonusOf(savedSessionId);
-  // The two counts first: they are one indexed read each, and the day's pick walks the whole
-  // catalogue. After the day's bonus is paid, every later save stops at the first line.
-  const earned =
-    !(await dailyBonusPaidOn(startedAt)) &&
-    !(await hasSessionForQuestToday(questId, startedAt)) &&
-    (await isDailyQuest(questId, startedAt));
-  // At least one: the row's bonus is also how the day knows it was paid, and a quest worth a
-  // single XP must not leave the day open for a second quest to be paid in full.
-  return earned ? Math.max(1, Math.round(0.5 * xpAtTarget)) : 0;
 }
 
 /**
@@ -2100,9 +2056,8 @@ export const useSessionStore = create<SessionState>()(
         sets: sets.map((set) => ({ ...set, result: set.target })),
         effortCeilingSeconds,
         outing: atTarget,
-        // Undecayed on purpose. This is what the quest asked for, and the daily bonus below is
-        // half of it: a hero who already walked this morning is still owed the bonus the day's
-        // quest advertises. The one thing it costs is the "beat your targets" line on a second
+        // Undecayed on purpose: this is what the quest asked for, whatever the hero walked this
+        // morning. The one thing it costs is the "beat your targets" line on a second
         // outing of the same day, which then reads zero rather than a number measured against a
         // baseline the hero never saw.
         priorOutingSecondsToday: 0,
@@ -2119,23 +2074,6 @@ export const useSessionStore = create<SessionState>()(
       // the row is written, so the diff and the XP "before" lose what pass one wrote); fix them
       // the way crestSeenBefore is, if a retried save is ever seen with a wrong growth card.
       const crestBefore = await crestSeenOnFirstPass();
-
-      // Half of what the quest *proposed*, not half of what the hero did.
-      //
-      // `xpEarned × 1.5` was fine while every quest was bounded by its own prescription: target
-      // and result hold each other within a quarter, so the two readings agree. An outing has no
-      // such bound, so the multiplier compounded with a duration nobody set — an hour's run on
-      // the daily quest paid 1200 where the quest suggested thirty minutes. Reading the target
-      // instead makes the bonus what it says it is: you did the thing the day asked for.
-      //
-      // Once a day (`dailyBonusFor`).
-      const dailyBonusXp = await dailyBonusFor(
-        quest.id,
-        get().savedSessionId,
-        new Date(startTime),
-        xpAtTarget,
-      );
-      xpEarned += dailyBonusXp;
 
       // Calculate level before saving (current state)
       const oldTotalXp = await getTotalXp();
@@ -2163,8 +2101,6 @@ export const useSessionStore = create<SessionState>()(
         outing: outingLocomotion(quest),
         durationSeconds,
         xpEarned,
-        // On the row, beside the total it is part of: it is how the day knows it was paid.
-        dailyBonusXp,
         feedback,
         exercises: results,
         rounds: quest.rounds,
@@ -2237,6 +2173,7 @@ export const useSessionStore = create<SessionState>()(
       // credit runs inside checkOathFulfilled's own transaction, atomically with marking
       // the oath fulfilled — a crash between the two would otherwise lose the bonus for
       // good, since a fulfilled oath is a no-op on every later call.
+      // Once a week: a second oath kept the same week is fulfilled and this is never called.
       let oathBonusXp = 0;
       const fulfilledOath = await checkOathFulfilled(async (tx) => {
         oathBonusXp = OATH_XP_BONUS;
@@ -2253,8 +2190,8 @@ export const useSessionStore = create<SessionState>()(
       // and the level pick it up with no extra state.
       xpEarned += await payTriumphBonus(bossFight, finalBlow, sessionId);
 
-      // The ceiling belongs here, not inside `computeSessionXp`: the daily ×1.5 and the two flat
-      // bonuses land after it, and a cap applied before them capped nothing — the old `min(5000)`
+      // The ceiling belongs here, not inside `computeSessionXp`: the two flat bonuses land
+      // after it, and a cap applied before them capped nothing — the old `min(5000)`
       // let a session reach 7850. Everything that can add XP has now been added.
       xpEarned = Math.min(MAX_SESSION_XP, xpEarned);
       overshootXp = Math.min(overshootXp, xpEarned);
@@ -2292,7 +2229,6 @@ export const useSessionStore = create<SessionState>()(
       const saved: SaveResult = {
         sessionId,
         xpEarned,
-        dailyBonusXp,
         outing: priced,
         newRecords,
         standing,

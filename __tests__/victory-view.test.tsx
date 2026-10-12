@@ -51,7 +51,7 @@ jest.mock("@/components/village/Crest", () => ({
     return null;
   },
 }));
-jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
+jest.mock("@/db/quests", () => ({}));
 const mockBuildings = jest.fn<Promise<VillageBuilding[]>, []>();
 const mockFeeds = jest.fn<Promise<RecentFeeds>, []>();
 jest.mock("@/db/village", () => ({
@@ -91,7 +91,6 @@ const saveResult = {
   sessionId: SESSION_ID,
   xpEarned: 100,
   levelUp: null,
-  dailyBonusXp: 0,
   heroXp: { before: 50, after: 150 },
   villageGrowth: [],
   campaign: null as Campaign,
@@ -353,6 +352,20 @@ describe("VictoryView village navigation", () => {
     expect(mockQuitSession).not.toHaveBeenCalled();
     // The levels travel with the codes: the village plays the rise from one rung to the next.
     expect(mockPush).toHaveBeenCalledWith("/(tabs)/village?grown=forge:1:2");
+  });
+
+  it("the XP figure opens its rules, and the session is still there on the way back", async () => {
+    const { view, release } = await mountWithPendingSave();
+
+    // Nothing is banked yet: a tap during the save goes nowhere.
+    await fireEvent.press(view.getByTestId("victory-xp-rules"));
+    expect(mockPush).not.toHaveBeenCalled();
+
+    await release();
+    await fireEvent.press(view.getByTestId("victory-xp-rules"));
+
+    expect(mockPush).toHaveBeenCalledWith("/xp");
+    expect(mockQuitSession).not.toHaveBeenCalled();
   });
 
   it("offers the village on a night it grew, and only then", async () => {

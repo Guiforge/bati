@@ -124,59 +124,16 @@ Nothing was recalculated. `0049` gave a session a column saying which kind it wa
 a walk had taken stopped looking at walks, which settles the trophy without moving a journalled
 number. See [statistics-progress.md](statistics-progress.md#outings-are-counted-apart).
 
-### What the day's quest pays
+### The day's quest pays nothing extra
 
-Half of what the quest **proposed**, added flat, once a day. `xpEarned × 1.5` held while every
-quest was bounded by its own prescription; an outing is not, so the multiplier compounded with a
-duration nobody set and an hour's run on the daily quest paid 1200. Reading the target instead
-makes the bonus what it says it is: you did the thing the day asked for.
+It used to: half of what the quest proposed, once a day, on a quest the app drew by the date and
+never showed as the day's. A bonus nobody could see coming is a rule the hero cannot play, and
+the XP page could not state it without also saying which quest it was. It was removed rather than
+surfaced. `completed_sessions.dailyBonusXp` (`0071`) stays, unwritten, so the XP already paid
+stays on its rows.
 
-"Once a day" is read off the journal, not off the quest's id (issue #177). The day's quest is
-drawn by the date from the quests the app may suggest, and a hero can reshape that pool before
-lunch: the level and the equipment in Settings, a quest of their own. The same date then pointed
-at a second quest, "this quest was not logged today" was true of it, and it paid again.
-
-The bonus is written on the session that earned it (`completed_sessions.dailyBonusXp`, `0071`),
-and a save is paid only if no session of that day holds one (`dailyBonusPaidOn`). Nothing else
-records it, so nothing else has to be kept true:
-
-- deleting the session gives the day back, whoever deleted it, a device sync included;
-- a session merged in from another device brings its bonus with it;
-- a retried save reports what its own row holds and asks nothing again, so the summary never
-  shows a bonus the journal does not have.
-
-Every question is asked of the instant the session *started*, the day its row is dated: which
-quest was that day's, whether that quest was already logged that day, whether that day was paid.
-Read at save time, a session begun at 23:50 was judged against the next day.
-
-The pool counts only sessions logged before today (`workoutsBeforeToday`), so the session count
-does not move the pick mid-day. A rung earned this morning still can, for a hero kept off jumps,
-and so can a trip to Settings, which is why the bonus rests on the journal and not on the pick
-holding still. What that leaves is the other direction, and it is rare: a hero who starts the
-quest the day showed before the pick moved finds at the summary that it is no longer the day's,
-and is not paid. Never twice, sometimes not at all. Holding the pick for the whole day would
-close it, and would also keep offering a quest the hero has just said they cannot do.
-
-A bonus that is earned is never zero, because the row's bonus is also how the day knows it was
-paid.
-
-Two phones that have not synced can each pay the day's bonus before they meet: offline, neither
-can know. The merged journal then holds both, as it holds both sessions.
-
-#### Why it changed
-
-It used to be `durationSeconds / 5` — wall-clock and nothing else. Rest counted, waiting counted,
-a backgrounded app counted. A hero who dragged the rest slider to its 300s maximum out-earned one
-who trained, for no effort, and the gallery's "up to +N XP" chip advertised it: the tag moved with
-the slider, so the exploit was discoverable without reading a line of code.
-
-The fix is not a new design. This page already said XP measures *how much* — only the code
-disagreed. What the rewrite cost was the assumption that a clock is a proxy for work.
-
-`0037_xp_measures_effort.sql` is the one place the change reaches backwards. Journalled XP is left
-alone — nobody is demoted by an update — except for sessions whose XP has no relation to the work
-they recorded, because `most_xp` is a per-session record read live off the journal and the
-exploiting session would otherwise stand as an unbeatable trophy.
+The suggestions still count only sessions logged before today (`workoutsBeforeToday`), so what
+the app may suggest does not change in the middle of a day.
 
 ## Where a quest starts
 

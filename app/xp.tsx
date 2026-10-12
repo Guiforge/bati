@@ -9,7 +9,8 @@ import { Zap } from "@/components/icons";
 /**
  * How XP is counted, written where the hero can read it.
  *
- * Seven rules, and the reason they are on a screen rather than only in `db/xp.ts` is that a
+ * Every rule that moves the number, the two flat bonuses included: a page that leaves one out
+ * teaches the hero that the list is not the truth. The reason they are on a screen rather than only in `db/xp.ts` is that a
  * progression nobody can follow is a progression nobody trusts: a six-hour hike paid the game's
  * per-session ceiling and the hero who reported it could not tell whether that was the design or
  * a bug. It was a bug, and there was nowhere to look it up.
@@ -22,7 +23,7 @@ import { Zap } from "@/components/icons";
  * the same shape `app/privacy.tsx` uses. Unlike that page and `app/safety.tsx`, this one speaks to
  * the hero, so it says `tu` (`__tests__/locale-style.test.ts` holds it to that).
  */
-const RULES = ["unit", "rest", "movement", "outside", "decay", "ceiling", "kept"] as const;
+const RULES = ["unit", "rest", "movement", "outside", "decay", "bonus", "ceiling", "kept"] as const;
 
 export default function XpScreen() {
   const { t } = useTranslation();

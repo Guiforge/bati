@@ -57,8 +57,9 @@ export const SPEED_ALLOWANCE = 1.2;
  * Rounds, targets, tempo, difficulty, declared results and elapsed time are all typed in by the
  * hero, so any cap derived from them caps nothing — a quest of 10 rounds × 5 exercises × 999 reps
  * has a "nominal" of fifty thousand. Sized at the honest ceiling instead: a hard 60-minute session
- * with ~45 minutes of effort pays ~900, ×1.2 difficulty ×1.5 daily plus the two flat bonuses lands
- * just under 2000. Unreachable by training, and the roof on everything else.
+ * with ~45 minutes of effort pays ~900, ×1.2 difficulty plus the two flat bonuses lands near 1450.
+ * (The figure was sized when a ×1.5 daily bonus existed; it is kept, a ceiling that moves is a
+ * rule that changed.) Unreachable by training, and the roof on everything else.
  */
 export const MAX_SESSION_XP = 2000;
 

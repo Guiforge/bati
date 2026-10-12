@@ -15,6 +15,7 @@ import { ImageViewer } from "@/components/common/ImageViewer";
 import { InkGauge } from "@/components/common/InkGauge";
 import { Recitatif } from "@/components/common/Recitatif";
 import { useToast } from "@/components/common/Toast";
+import { ChevronRight } from "@/components/icons";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
@@ -406,6 +407,12 @@ export function VictoryView() {
     seeVillage(router, result);
   };
 
+  // Like the village: a look at the rules, and the hero comes back to the same screen.
+  const handleViewXpRules = () => {
+    if (!result) return;
+    router.push("/xp");
+  };
+
   const handleForget = () => {
     if (!result) return;
     confirmForget(result.sessionId, () => {
@@ -585,10 +592,23 @@ export function VictoryView() {
                 {result ? formatTime(durationSeconds) : "\u00A0"}
               </Text>
             </Card>
-            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$2">
-              <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
-                {t("session.xp_earned")}
-              </Text>
+            <Card
+              testID="victory-xp-rules"
+              flex={1}
+              bg="$surface"
+              borderColor="$glassBorder"
+              items="center"
+              gap="$1"
+              py="$2"
+              onPress={handleViewXpRules}
+              accessibilityRole="link"
+            >
+              <XStack items="center" gap={2}>
+                <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+                  {t("session.xp_earned")}
+                </Text>
+                <ChevronRight size={16} color="$textSecondary" />
+              </XStack>
               {/* The testID only exists once the session is banked: Continue is on screen, and
                 disabled, for the whole save, so it cannot tell an E2E flow when to tap it. */}
               <Text
@@ -606,13 +626,6 @@ export function VictoryView() {
                   : // Same line height, no glyph: a loading reward asserts nothing.
                     "\u00A0"}
               </Text>
-              {!!result?.dailyBonusXp && (
-                <Text fontWeight="700" fontSize={11} color="$success">
-                  {t("common.daily_xp_bonus", {
-                    count: formatCount(language, result.dailyBonusXp),
-                  })}
-                </Text>
-              )}
               {/* The rate, said out loud. A hero who walks an hour and reads "+300" has no way to
                 know why, and a number with no rule behind it is the thing the research calls
                 controlling rather than informative. This is the rule, in the hero's own numbers. */}

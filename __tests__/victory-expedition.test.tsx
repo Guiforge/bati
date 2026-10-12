@@ -40,7 +40,6 @@ jest.mock("@/db/adventures-narrative", () => ({
 }));
 const mockCreateQuestFromOuting = jest.fn<Promise<number>, [unknown, number]>();
 jest.mock("@/db/quests", () => ({
-  isDailyQuest: () => false,
   createQuestFromOuting: (...args: [unknown, number]) => mockCreateQuestFromOuting(...args),
 }));
 jest.mock("@/db/preferences", () => ({
@@ -72,7 +71,6 @@ const saveResult = {
   sessionId: 42,
   xpEarned: 100,
   levelUp: null,
-  dailyBonusXp: 0,
   heroXp: { before: 50, after: 150 },
   villageGrowth: [],
   campaign: null,

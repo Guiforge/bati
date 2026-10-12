@@ -22,7 +22,7 @@ jest.mock("@/modules/bati-location", () => ({
 // half is not: these are the same seams `session-outing-view` opens for the same reason.
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db", () => ({ preferences: {} }));
-jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
+jest.mock("@/db/quests", () => ({}));
 jest.mock("@/db/preferences", () => ({
   preferences: {
     getSavedSession: jest.fn().mockResolvedValue(null),

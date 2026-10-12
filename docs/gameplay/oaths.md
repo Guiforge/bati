@@ -107,6 +107,10 @@ A "custom oath" toggle reveals the original metric/target/exercise form for exac
    the fulfilment card leads, above level-up and achievements: it is the user's own promise.
    Fulfilling an oath pays a flat `OATH_XP_BONUS` (added to the tip-over session's row, so the
    XP `SUM` and level pick it up with no extra state) and fires the big-win confetti burst.
+   The bonus is paid **once a calendar week** (`oathBonusPaidThisWeek`, date kept in the synced
+   `oathBonusAt` preference): nothing stops a hero from swearing an oath one session away, then
+   another, so without it every session could pay 250 XP. A second oath kept the same week is
+   fulfilled and celebrated, and its card shows no XP line. The XP page states the rule.
 3. **Swear screen** ([app/oath.tsx](../../app/oath.tsx)) — presets deck first, custom form behind
    a toggle. Reached from Settings, or by tapping the home card.
 

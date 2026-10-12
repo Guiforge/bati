@@ -29,7 +29,7 @@ concurrency:
 
 jobs:
   apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     # write: action-gh-release creates the GitHub Release and attaches the APK.
     permissions:
       contents: write
@@ -69,7 +69,9 @@ jobs:
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
-          java-version: "17"
+          # 21, like android-lint.yml and kotlin.yml: what the Expo SDK builds against, and the
+          # newest AGP accepts.
+          java-version: "21"
       # `packages` without its default `tools`, which cmdline-tools 20.0 no longer has (see
       # pages.yml).
       - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
@@ -311,7 +313,7 @@ jobs:
   play:
     needs: apk
     if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     environment: play-internal
     permissions:
       contents: read

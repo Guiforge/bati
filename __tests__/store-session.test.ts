@@ -4,10 +4,11 @@ import { PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
 import { outingSecondsToday } from "@/db/completed";
 import { getCrest } from "@/db/crest";
 import type { Exercise } from "@/db/exercises";
+import { checkOathFulfilled } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
 import { dropSlotSwap, saveQuestConfig } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
-import { computeSessionXp } from "@/db/xp";
+import { computeSessionXp, MAX_SESSION_XP } from "@/db/xp";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { i18n } from "@/i18n";
 import { EMPTY } from "@/src/gps/track";
@@ -2490,6 +2491,52 @@ describe("the at-target reading of an outing", () => {
     assert(atTarget);
     expect(atTarget[0].outing).toEqual({ seconds: 2700, locomotion: "walk" });
     expect(atTarget[0].priorOutingSecondsToday).toBe(0);
+  });
+});
+
+/**
+ * The oath's card says what the row received. A flat bonus is clamped at the session ceiling, so
+ * on a session worth 1900 XP the oath adds 100, and "+250 XP" would be a figure nobody was paid.
+ */
+describe("an oath kept on a session near the ceiling", () => {
+  afterEach(() => {
+    (computeSessionXp as jest.Mock).mockReturnValue(100);
+    // The suites below read `mock.calls[0]`: leave them no call of this one's.
+    (computeSessionXp as jest.Mock).mockClear();
+    (checkOathFulfilled as jest.Mock).mockResolvedValue(null);
+    useSessionStore.setState({ status: "idle" });
+  });
+
+  test("reports the XP the ceiling left room for", async () => {
+    useSessionStore.setState({ status: "idle" });
+    (computeSessionXp as jest.Mock).mockReturnValue(MAX_SESSION_XP - 20);
+    (checkOathFulfilled as jest.Mock).mockImplementation(
+      async (pay: (tx: unknown) => Promise<unknown>) => {
+        await pay({});
+        return { oath: {}, isFulfilled: true };
+      },
+    );
+    const quest = {
+      id: 7,
+      rounds: 1,
+      restSeconds: 0,
+      roundRestSeconds: null,
+      enTitle: "Q",
+      frTitle: "Q",
+      exercises: [
+        {
+          exercise: { id: 1, enName: "Push-up", muscles: [], style: "strength", secondsPerRep: 3 },
+          target: { type: "reps", value: 10 },
+        },
+      ],
+    } as unknown as Quest;
+    await useSessionStore.getState().startSession(quest, "medium", {});
+
+    const result = await useSessionStore.getState().saveSession(null);
+
+    // OATH_XP_BONUS is mocked at 50 in this file: 20 of it fits.
+    expect(result.oathBonusXp).toBe(20);
+    expect(result.xpEarned).toBe(MAX_SESSION_XP);
   });
 });
 

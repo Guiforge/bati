@@ -419,6 +419,12 @@ const OATH_BONUS_AT_KEY = "oathBonusAt";
  * time closes it for every metric at once. Calendar and not rolling, so a weekly oath kept on a
  * Friday and again the next Thursday is paid both times.
  *
+ * Two known limits, both left open on purpose:
+ * - two devices that each keep an oath offline are each paid before they merge. The merge copies
+ *   sessions with their XP, and `oathBonusAt` keeps the newer stamp only;
+ * - for an oath that is not weekly, the week starts on the day the *current* language says
+ *   (`oathWeekStart`), so changing language between Sunday and Monday moves the boundary.
+ *
  * The session that carried the bonus has to still be in the journal: its 250 XP left with it, so
  * a session the hero discards gives the week back, on this device and on the ones it syncs to.
  */

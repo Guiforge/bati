@@ -2176,7 +2176,11 @@ export const useSessionStore = create<SessionState>()(
       // Once a week: a second oath kept the same week is fulfilled and this is never called.
       let oathBonusXp = 0;
       const fulfilledOath = await checkOathFulfilled((tx) => {
-        oathBonusXp = OATH_XP_BONUS;
+        // What the ceiling leaves room for: the row is clamped (`addBonusXpToSession`), and the
+        // oath's card must say what the row received, not what the rule promised.
+        // ponytail: a session already at the ceiling credits 0 and the card then reads "already
+        // earned this week". No training reaches 2000; give it its own line if one ever does.
+        oathBonusXp = Math.min(OATH_XP_BONUS, MAX_SESSION_XP - xpEarned);
         return addBonusXpToSession(sessionId, OATH_XP_BONUS, tx);
       });
 

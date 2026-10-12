@@ -752,7 +752,7 @@
     "decay_title": "Outside, the hour pays less than the one before",
     "decay_body": "The first hour of the day pays in full, the second at half, the rest at a quarter. Never nothing. Three walks of forty minutes in one day pay the same as one walk of two hours, and cutting one walk in two changes nothing: it is your day that is counted, not your sessions.",
     "bonus_title": "Two things are added on top",
-    "bonus_body": "An oath fulfilled: +250 XP, once a week. A Triumph over a boss, when your own blows empty its HP: +100 XP. Both stay under the ceiling.",
+    "bonus_body": "An oath fulfilled: +250 XP, once a week. A Triumph over a boss, when your own blows empty its HP: +100 XP. Both stay under 2000 XP.",
     "ceiling_title": "One session, 2000 XP at most",
     "ceiling_body": "A ceiling no number you type can raise. It exists for the impossible cases, and no session of training comes near it. At the other end, a workout is never worth less than 10 XP.",
     "kept_title": "What you have earned stays earned",

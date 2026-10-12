@@ -189,6 +189,14 @@ describe("db/oaths", () => {
     // Never reused: a discarded session's uuid must not come back as the next one's.
     let minted = 0;
 
+    function totalXp(): number {
+      return (
+        t.sqlite.prepare("SELECT sum(xpEarned) AS xp FROM completed_sessions").get() as {
+          xp: number;
+        }
+      ).xp;
+    }
+
     function xpOf(sessionId: number): number {
       return (
         t.sqlite
@@ -239,6 +247,8 @@ describe("db/oaths", () => {
       expect(first.paid).toBe(true);
       await completed().deleteSession(first.id);
       expect(await keepOneMore()).toMatchObject({ fulfilled: true, paid: true });
+      // Sworn, kept, discarded, sworn again, kept: one bonus in the journal, not two.
+      expect(totalXp()).toBe(10 + oaths().OATH_XP_BONUS);
     });
 
     test("the bonus never lifts a row above the session ceiling", async () => {
@@ -249,6 +259,54 @@ describe("db/oaths", () => {
         .run(MAX_SESSION_XP - 100, id);
       await completed().addBonusXpToSession(id, 250);
       expect(xpOf(id)).toBe(MAX_SESSION_XP);
+    });
+
+    // The bug as it was reported: at 547 sessions, "548" paid 250 XP and "549" paid it again.
+    test("at 547 sessions, swearing 548 then 549 pays once", async () => {
+      const insert = t.sqlite.prepare(
+        "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt) VALUES ('medium', 0, ?)",
+      );
+      for (let i = 0; i < 547; i++) insert.run(1_700_000_000 + i);
+
+      const first = await keepOneMore();
+      const second = await keepOneMore();
+      expect([first.paid, second.paid]).toEqual([true, false]);
+      expect(totalXp()).toBe(10 + 10 + oaths().OATH_XP_BONUS);
+    });
+
+    // French weeks start on Monday: Sunday's oath and Monday's are two weeks, both paid.
+    test("a Sunday then the Monday after: both pay", async () => {
+      t.sqlite
+        .prepare("INSERT OR REPLACE INTO user_preferences (key, value) VALUES ('language', 'fr')")
+        .run();
+      // Only the clock: the database and its promises keep their real timers.
+      const onlyDate = {
+        doNotFake: [
+          "nextTick",
+          "queueMicrotask",
+          "setImmediate",
+          "clearImmediate",
+          "setTimeout",
+          "clearTimeout",
+          "setInterval",
+          "clearInterval",
+          "performance",
+          "hrtime",
+        ] as const,
+      };
+      try {
+        jest.useFakeTimers({
+          ...onlyDate,
+          doNotFake: [...onlyDate.doNotFake],
+          now: new Date(2026, 9, 11, 18),
+        });
+        expect((await keepOneMore()).paid).toBe(true);
+        expect((await keepOneMore()).paid).toBe(false); // same Sunday
+        jest.setSystemTime(new Date(2026, 9, 12, 7));
+        expect((await keepOneMore()).paid).toBe(true);
+      } finally {
+        jest.useRealTimers();
+      }
     });
 
     test("breaking an oath in between does not reopen the week", async () => {

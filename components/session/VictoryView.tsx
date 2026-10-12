@@ -601,18 +601,14 @@ export function VictoryView() {
               onPress={result ? handleViewXpRules : undefined}
               accessibilityRole="link"
             >
-              <XStack items="center" gap={2}>
-                <Text
-                  shrink={1}
-                  fontFamily="$body"
-                  fontWeight="700"
-                  fontSize={13}
-                  color="$textSecondary"
-                >
-                  {t("session.xp_earned")}
-                </Text>
+              <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+                {t("session.xp_earned")}
+              </Text>
+              {/* In the corner, out of the label's row: beside it, the chevron took the width a
+                long label needs, and at 130 % Russian broke "Заработано" in the middle. */}
+              <YStack position="absolute" t={6} r={4}>
                 <ChevronRight size={16} color="$textSecondary" />
-              </XStack>
+              </YStack>
               {/* The testID only exists once the session is banked: Continue is on screen, and
                 disabled, for the whole save, so it cannot tell an E2E flow when to tap it. */}
               <Text

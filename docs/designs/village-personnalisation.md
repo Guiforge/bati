@@ -229,8 +229,8 @@ Règles de copie : aucun mot interdit de la section Copie ci-dessus, ni « magiq
 
 53 portraits sur 57 sont dans l'app. Quatre manquent :
 
-- `horse-venerable-rare` : FLUX peint l'âge en gris sur les paturons et en liston pâle sur le nez, et ce pelage noir de la tête aux sabots n'a pas tenu en cinq tours de prompts. Le rare du cheval vénérable n'est donc pas livré.
-- `salmon-adult-winter`, `salmon-venerable-winter`, `salmon-legendary-winter` : les trois saumons d'hiver (la phase de mer) sont restés au bout de la liste de priorité, l'hiver passant en dernier, et le budget de 40 € a été arrêté avant eux.
+- `horse-venerable-rare` : FLUX peint l'âge en couronnes et en fanons pâles sur les jambes d'un cheval noir, et ce pelage noir de la tête aux sabots n'a pas tenu en cinq tours de prompts. Le rare du cheval vénérable n'est donc pas livré.
+- `salmon-adult-winter`, `salmon-venerable-winter`, `salmon-legendary-winter` : les trois saumons d'hiver (la phase de mer) ont été générés (tentative a1) puis écartés, parce que la phase de mer argentée ne se distinguait pas assez de la base à l'écran ; le budget de 40 € n'était pas en cause.
 
 Le repli est la chaîne de `portraitSlug` : le rare s'il est livré, sinon l'hiver s'il est livré et que c'est l'hiver, sinon la base du même stade. Un héros au rare gagné garde donc l'hiver sur le cheval vénérable, et le saumon porte sa base (ou son rare) toute l'année. Aucune carte, aucun libellé ni aucun choix `crestCoat` ne nomme un pelage non livré.
 

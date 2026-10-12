@@ -42,12 +42,14 @@ const SOUTHERN = new Set([
   ...["NZ", "PE", "PY", "SZ", "UY", "ZA", "ZM", "ZW"],
 ]);
 
+/** Whether the region is on the southern calendar. No region means the northern one. */
+export const isSouthern = (regionCode: string | null | undefined): boolean =>
+  !!regionCode && SOUTHERN.has(regionCode);
+
 /** Whether `now` is winter where the device is. No region means the northern calendar. */
 export function isWinter(now: Date, regionCode: string | null | undefined): boolean {
   const month = now.getMonth(); // 0 = January, local time like every calendar day here
-  return regionCode && SOUTHERN.has(regionCode)
-    ? month >= 5 && month <= 7
-    : month >= 11 || month <= 1;
+  return isSouthern(regionCode) ? month >= 5 && month <= 7 : month >= 11 || month <= 1;
 }
 
 /**

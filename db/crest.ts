@@ -28,7 +28,7 @@ export type Crest = CrestAnimals & {
 };
 
 /** Distinct movements done in a session, for one style. */
-const doneIn = (style: ExerciseStyle) =>
+export const doneIn = (style: ExerciseStyle) =>
   sql<number>`COUNT(DISTINCT CASE WHEN ${exercises.style} = ${style} THEN ${completedExercises.exerciseId} END)`;
 
 /**

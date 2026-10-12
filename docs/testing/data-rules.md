@@ -795,3 +795,21 @@ picked animal and `crestCoat`. The cards already shown (`coat:rare`, `legendary:
 local to the phone, in `bigFeastsShown`, and are not synced.
 Invariant: restoring a backup or merging a peer's sessions changes the crest by changing the
 journal, and by nothing else.
+
+**R111. None of the village's years is stored.** The stones on the ramparts, the season banners
+and the Ages are replayed from the journal on each call (`getVillageYears`, rules in
+`db/villageYearsRules.ts`); there is no column, no preference and no migration behind them. A
+session belongs to the level reached after it, counting the XP of every session before it, the
+ones `countsAsSession()` refuses included; only the sessions it accepts are stones, banners or
+rungs.
+Invariant: the same journal gives the same stones, banners and Ages on any device, whatever order
+the sessions were merged in (`db-peer-merge`), and deleting a session takes back what it earned.
+
+**R112. A season is a fixed local window, and the village year is the first session's day.**
+December to February, March to May, June to August, September to November, cut at local midnight
+(`new Date(y, m, 1)`, never UTC); the hemisphere changes the name and nothing else. A season has a
+banner once it is over and a session that counts fell in it; the one in progress has none.
+Ties never depend on read order: the best record is the biggest relative gain (integer cross
+product, no float), then the most recent, then the lower movement id.
+Invariant: moving the device across a timezone or a hemisphere never moves a banner to another
+season, only renames it.

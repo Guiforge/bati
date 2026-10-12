@@ -427,6 +427,343 @@
     },
     "legendary": false,
     "rareCoat": true,
+    "stones": [
+      {
+        "level": 21,
+        "decade": 2,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 1884,
+          "value": 1938,
+          "at": 1722631092000
+        }
+      },
+      {
+        "level": 22,
+        "decade": 2,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 57,
+          "unit": "time",
+          "prior": 29,
+          "value": 30,
+          "at": 1723493902000
+        }
+      },
+      {
+        "level": 23,
+        "decade": 2,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 58,
+          "unit": "time",
+          "prior": 29,
+          "value": 30,
+          "at": 1729908936000
+        }
+      },
+      {
+        "level": 24,
+        "decade": 2,
+        "fact": {
+          "kind": "sessions",
+          "count": 23
+        }
+      },
+      {
+        "level": 25,
+        "decade": 2,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 1992,
+          "value": 2046,
+          "at": 1735439560000
+        }
+      },
+      {
+        "level": 26,
+        "decade": 2,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 2046,
+          "value": 2100,
+          "at": 1741854594000
+        }
+      },
+      {
+        "level": 27,
+        "decade": 2,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 49,
+          "unit": "time",
+          "prior": 49,
+          "value": 50,
+          "at": 1742894286000
+        }
+      },
+      {
+        "level": 28,
+        "decade": 2,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 2100,
+          "value": 2154,
+          "at": 1748269628000
+        }
+      },
+      {
+        "level": 29,
+        "decade": 2,
+        "fact": {
+          "kind": "sessions",
+          "count": 23
+        }
+      },
+      {
+        "level": 30,
+        "decade": 3,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 2154,
+          "value": 2208,
+          "at": 1754684662000
+        }
+      },
+      {
+        "level": 31,
+        "decade": 3,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 2208,
+          "value": 2262,
+          "at": 1761099696000
+        }
+      },
+      {
+        "level": 32,
+        "decade": 3,
+        "fact": {
+          "kind": "sessions",
+          "count": 21
+        }
+      },
+      {
+        "level": 33,
+        "decade": 3,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 2262,
+          "value": 2316,
+          "at": 1767493130000
+        }
+      },
+      {
+        "level": 34,
+        "decade": 3,
+        "fact": {
+          "kind": "sessions",
+          "count": 22
+        }
+      }
+    ],
+    "banners": [
+      {
+        "start": 1677625200000,
+        "kind": "spring",
+        "villageYear": 1,
+        "sessions": 38,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 1,
+          "unit": "reps",
+          "prior": 18,
+          "value": 25,
+          "at": 1682592150000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1685570400000,
+        "kind": "summer",
+        "villageYear": 1,
+        "sessions": 45,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 34,
+          "unit": "reps",
+          "prior": 3,
+          "value": 5,
+          "at": 1686064990000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1693519200000,
+        "kind": "autumn",
+        "villageYear": 1,
+        "sessions": 46,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 63,
+          "unit": "reps",
+          "prior": 2,
+          "value": 3,
+          "at": 1697501602000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1701385200000,
+        "kind": "winter",
+        "villageYear": 1,
+        "sessions": 45,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 29,
+          "unit": "time",
+          "prior": 38,
+          "value": 40,
+          "at": 1705996020000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1709247600000,
+        "kind": "spring",
+        "villageYear": 1,
+        "sessions": 46,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 22,
+          "unit": "time",
+          "prior": 48,
+          "value": 50,
+          "at": 1711194480000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1717192800000,
+        "kind": "summer",
+        "villageYear": 2,
+        "sessions": 46,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 57,
+          "unit": "time",
+          "prior": 29,
+          "value": 30,
+          "at": 1723493902000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1725141600000,
+        "kind": "autumn",
+        "villageYear": 2,
+        "sessions": 45,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 58,
+          "unit": "time",
+          "prior": 29,
+          "value": 30,
+          "at": 1729908936000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1733007600000,
+        "kind": "winter",
+        "villageYear": 2,
+        "sessions": 45,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 1992,
+          "value": 2046,
+          "at": 1735439560000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1740783600000,
+        "kind": "spring",
+        "villageYear": 2,
+        "sessions": 46,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 2046,
+          "value": 2100,
+          "at": 1741854594000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1748728800000,
+        "kind": "summer",
+        "villageYear": 3,
+        "sessions": 46,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 2154,
+          "value": 2208,
+          "at": 1754684662000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1756677600000,
+        "kind": "autumn",
+        "villageYear": 3,
+        "sessions": 45,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 2208,
+          "value": 2262,
+          "at": 1761099696000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1764543600000,
+        "kind": "winter",
+        "villageYear": 3,
+        "sessions": 45,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 70,
+          "unit": "time",
+          "prior": 2262,
+          "value": 2316,
+          "at": 1767493130000
+        },
+        "animal": "bear"
+      }
+    ],
+    "ages": [],
     "rungs": [
       [1, 1],
       [2, 2],

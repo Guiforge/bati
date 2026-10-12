@@ -239,6 +239,10 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
   const achievements = await getAllAchievementsWithProgress();
   const crest = await getCrest(now);
   const { hasRareCoat } = require("../../db/crestCoat") as typeof import("../../db/crestCoat");
+  const { getVillageYears } =
+    require("../../db/villageYears") as typeof import("../../db/villageYears");
+  // The region is pinned: the device's own would move the season names, not the windows.
+  const years = await getVillageYears(now, "FR");
 
   return {
     sessions: aggregates,
@@ -284,6 +288,10 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
     // V-02 extended: the two figures the new rules read. Not the month's portrait: it would depend on the date.
     legendary: crest ? [crest.stage, crest.second?.stage].includes("legendary") : false,
     rareCoat: crest ? hasRareCoat(crest.longestFlame) : false,
+    // V-03 T2: what the village keeps for years, replayed from the journal.
+    stones: years.stones,
+    banners: years.banners,
+    ages: years.ages,
     // [written movement id, served movement id], one per laddered movement.
     rungs,
     achievements: achievements.map((a) => ({

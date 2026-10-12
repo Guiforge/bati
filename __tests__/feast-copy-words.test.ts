@@ -258,7 +258,7 @@ const AGE_WORDS = {
     annKicker: "Jahrestag",
     annTitle: "Dein Dorf ist 2 Jahre alt.",
     annBody: "187 Einheiten in den letzten zwölf Monaten.",
-    annRecord: "Schönster Rekord des Jahres, Diamant-Liegestütz, von 10 auf 14.",
+    annRecord: "Bester Rekord des Jahres, Diamant-Liegestütz, von 10 auf 14.",
   },
   es: {
     kicker: "Nueva era",
@@ -286,7 +286,7 @@ describe.each(["fr", "en", "de", "es"] as const)("the Age and the anniversary in
     expect(ageTitle(t, age, lang)).toBe(w.title);
     expect(ageBody(t, age)).toBe(w.rung);
     expect(ageBody(t, { ...age, source: "held" })).toBe(w.held);
-    expect(ageLine(t, age, lang)).toBe(`${w.kicker}: ${w.title}`);
+    expect(ageLine(t, age, lang)).toBe(`${w.kicker}${lang === "fr" ? " " : ""}: ${w.title}`);
   });
 
   test("with no movement the practice leads, and with none the level does", () => {

@@ -28,7 +28,9 @@ import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
 import {
+  ageBody,
   ageLine,
+  anniversaryBody,
   legendaryBody,
   revealShield,
   spoken,
@@ -290,12 +292,14 @@ function cardOf(
       return {
         id: f.id,
         title: ageLine(t, f, language),
+        body: [ageBody(t, f)],
         art: <GameIcon name="crown" size={32} color="$resourceGold" />,
       };
     case "anniversary":
       return {
         id: f.id,
         title: t("session.tonight_anniversary", { count: f.years }),
+        body: [anniversaryBody(t, f, language)].filter(Boolean),
         art: <GameIcon name="crown" size={32} color="$resourceGold" />,
       };
     case "boss":

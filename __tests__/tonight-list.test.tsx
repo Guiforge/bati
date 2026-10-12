@@ -516,6 +516,30 @@ describe("TonightList", () => {
     }
   });
 
+  test("an Age and an anniversary pushed down to cards keep their body", async () => {
+    const age = {
+      level: 50,
+      source: "rung" as const,
+      reachedAtLevel: 47,
+      practice: null,
+      movement: {
+        id: 1,
+        enName: "Pompe diamant",
+        frName: "Pompe diamant",
+        deName: "Pompe diamant",
+        esName: "Pompe diamant",
+      },
+    };
+    const feasts = rank(
+      { crestReveal: { animal: "bear", quarters: null, firstEight: [], late: false } },
+      { age: age as never, anniversary: { years: 2, sessions: 120, best: null } },
+    );
+    const { getByText } = await show(feasts);
+    expect(getByText("Nouvel âge : Pompe diamant")).toBeTruthy();
+    expect(getByText("Niveau 50. Première fois au niveau 47.")).toBeTruthy();
+    expect(getByText("120 séances sur les douze derniers mois.")).toBeTruthy();
+  });
+
   test("a level, a standing, a rung, an achievement, an Age and an anniversary all have a place", async () => {
     const definition = achievementDefinitions[0];
     assert(definition);
@@ -556,9 +580,10 @@ describe("TonightList", () => {
       },
     });
     const { getByText } = await show(feasts);
-    expect(getByText("Nouvel âge: Pompe diamant")).toBeTruthy();
+    expect(getByText("Nouvel âge : Pompe diamant")).toBeTruthy();
     expect(getByText("après")).toBeTruthy();
     expect(getByText("Ton village a 2 ans.")).toBeTruthy();
+    expect(getByText("120 séances sur les douze derniers mois.")).toBeTruthy();
     expect(getByText(/^Niveau 6/)).toBeTruthy();
     expect(getByText(/^Pompes 14.* : 2e meilleure de tes 10 dernières$/)).toBeTruthy();
     expect(getByText("Jump Squat")).toBeTruthy();
@@ -669,6 +694,7 @@ describe("the Tonight copy, in every language", () => {
     "tonight_boar_body",
     ...Array.from({ length: 12 }, (_, i) => `tonight_tier_${i + 1}`),
     "tonight_tier_unnamed",
+    "tonight_age",
     "tonight_stage_body_any",
     "tonight_tier_body",
     "tonight_tier_plain",

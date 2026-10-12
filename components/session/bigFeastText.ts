@@ -154,7 +154,7 @@ export function ageTitle(t: TFunction, f: Age, language: AppLanguage): string {
 
 /** "New age: Diamond push-up", the label form a tier takes in "Tonight" too. */
 export const ageLine = (t: TFunction, f: Age, language: AppLanguage) =>
-  `${t("session.feast_age_kicker")}: ${ageTitle(t, f, language)}`;
+  t("session.tonight_age", { title: ageTitle(t, f, language) });
 
 /** What the Age says of its name: first done at level 47, the highest held, the practice, or just ten levels. */
 export function ageBody(t: TFunction, f: Age): string {

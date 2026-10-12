@@ -26,7 +26,7 @@ draws, a cold blue rim of light that survives the cutout as a blue outline. Each
                     The box takes the background colour outright: for stray droplets or specks
                     that --shadow spares (it only touches darker pixels) and that the cutout
                     would keep as floating islands. Check the box clears the animal at x3.
-  --note TEXT       Writes `edited` in provenance.json (dated today's chantier day, 2026-10-11),
+  --note TEXT       Writes `edited` in provenance.json (dated today),
                     the way the other retouched entries read.
 
 The file is rewritten in place at JPEG q95: the candidate it came from is still in
@@ -39,12 +39,13 @@ import json
 import pathlib
 import statistics
 import sys
+from datetime import date
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PROVENANCE = ROOT / "scripts" / "provenance.json"
-DAY = "2026-10-11"
+DAY = date.today().isoformat()
 
 
 def lum(p) -> float:
@@ -195,6 +196,8 @@ def main() -> None:
     if args.shadow:
         print(f"shadow: {shadow(im, args.shadow)} px")
     for box in args.fill:
+        if not (0 <= box[0] <= box[2] < im.width and 0 <= box[1] <= box[3] < im.height):
+            sys.exit(f"--fill {box}: outside the {im.width}x{im.height} image")
         print(f"fill {box}: {fill(im, box)} px")
     if args.fringe:
         print(f"fringe: {fringe(im, args.fringe, args.reach)} px")

@@ -195,7 +195,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out, the blue rim on the back repaired; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out, the blue rim on the back repaired; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 448x448, from bear-adult-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -212,7 +212,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 448x448, from bear-adult-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -246,7 +246,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 448x448, from bear-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -263,7 +263,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 448x448, from bear-legendary-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -297,7 +297,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 400x400, from bear-venerable-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -314,7 +314,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from bear-venerable-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -365,7 +365,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from boar-adult-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -382,7 +382,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from boar-adult-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -416,7 +416,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from boar-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -433,7 +433,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from boar-legendary-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -467,7 +467,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from boar-venerable-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -484,7 +484,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from boar-venerable-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -535,7 +535,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from ermine-adult-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -569,7 +569,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from ermine-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -586,7 +586,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from ermine-legendary.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -603,7 +603,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from ermine-venerable-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -671,7 +671,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from horse-adult-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -721,7 +721,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from horse-legendary-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -755,7 +755,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from horse-venerable-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -839,7 +839,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from salmon-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -856,7 +856,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out, stray water droplets near the tail filled with the background; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out, stray water droplets near the tail filled with the background; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from salmon-legendary.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -939,7 +939,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from stag-adult-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -973,7 +973,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from stag-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -990,7 +990,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from stag-legendary-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
@@ -1024,7 +1024,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
+    "edited": "2026-10-12: eye highlights painted out; the signed original is unchanged",
     "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from stag-venerable-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },

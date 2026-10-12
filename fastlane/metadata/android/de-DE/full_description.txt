@@ -19,7 +19,7 @@ WAS DICH ERWARTET
 • Ein Tagebuch: Verlauf, Rekorde, deine Flamme, Muskelgleichgewicht
 
 DEIN TRAINING BLEIBT AUF DEINEM HANDY
-Kein Konto. Keine Registrierung. Kein Server von uns. Keine Analyse, keine Werbung, kein Tracking jeglicher Art. Deine Einheiten, deine Rekorde und die GPS-Spur einer Tour liegen in einer Datenbank auf deinem Gerät. Die Systemsicherung deines Handys kann sie mitnehmen, und du kannst das abschalten. Wer die App deinstalliert, löscht sie vom Handy, nicht die Kopien, die du anderswo angelegt hast.
+Kein Konto. Keine Registrierung. Kein Server von uns. Keine Analyse, keine Werbung, kein Tracking. Deine Einheiten, deine Rekorde und die GPS-Spur einer Tour liegen in einer Datenbank auf deinem Gerät. Die Systemsicherung deines Handys kann sie mitnehmen, und du kannst das abschalten. Wer die App deinstalliert, löscht sie vom Handy, nicht die Kopien, die du anderswo angelegt hast.
 
 Drei Funktionen nutzen das Netz, jede hinter einem eigenen Schalter in den Einstellungen, und alle drei sind anfangs aus:
 • Die Karte hinter der Route einer Tour. Das Handy fragt OpenFreeMap (OpenStreetMap-Daten, von tiles.openfreemap.org) nach Kacheln rund um deinen Weg. Das verrät dem Dienst ungefähr, wo du warst, mit deiner IP-Adresse und der Uhrzeit. Ausgeschaltet wird die Route auf einem schlichten Hintergrund gezeichnet.

@@ -77,10 +77,9 @@ export function sourceLiterals(files: readonly string[] = COPY_FILES) {
  * text, so the scans (and the allow-list ids, `file:text`) see the same strings as before.
  */
 const MOVED_TABLES: Record<string, (locale: Record<string, unknown>) => unknown> = {
-  "db/achievements.ts": (l) =>
-    l["achievements"] && (l["achievements"] as Record<string, unknown>)["badges"],
-  "db/userLevel.ts": (l) => l["level_titles"],
-  "db/muscles.ts": (l) => l["muscles"],
+  "db/achievements.ts": (l) => l.achievements && (l.achievements as Record<string, unknown>).badges,
+  "db/userLevel.ts": (l) => l.level_titles,
+  "db/muscles.ts": (l) => l.muscles,
 };
 function movedLiterals(file: string): { file: string; text: string }[] {
   const pick = MOVED_TABLES[file];

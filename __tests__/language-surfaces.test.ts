@@ -46,7 +46,7 @@ const native = (language: string) =>
 
 describe("app.json declares every app language", () => {
   test("to the system language pickers", () => {
-    const supported = pluginOptions("expo-localization")["supportedLocales"] as {
+    const supported = pluginOptions("expo-localization").supportedLocales as {
       ios: string[];
       android: string[];
     };
@@ -80,7 +80,7 @@ describe("locales/native", () => {
    * so the English is written twice. This is what keeps the two from drifting.
    */
   test("the widgets in app.json say what en.json says", () => {
-    const widgets = pluginOptions("react-native-android-widget")["widgets"] as Widget[];
+    const widgets = pluginOptions("react-native-android-widget").widgets as Widget[];
     const declared = Object.fromEntries(
       widgets.flatMap((widget) => {
         const key = `widget_${widget.name.toLowerCase()}`;
@@ -156,8 +156,12 @@ describe("the store listing", () => {
   test.each(APP_LANGUAGES)("is written in %s", (language) => {
     const folder = listings.find((name) => name.split("-")[0] === language);
     expect(folder).toBeDefined();
-    for (const file of ["title.txt", "short_description.txt", "full_description.txt"]) {
-      expect(read("fastlane", "metadata", "android", folder ?? "", file).trim()).not.toBe("");
+    // Play's limits. Over one, the whole upload is refused after the binary is already sent.
+    const limits = { "title.txt": 30, "short_description.txt": 80, "full_description.txt": 4000 };
+    for (const [file, limit] of Object.entries(limits)) {
+      const text = read("fastlane", "metadata", "android", folder ?? "", file);
+      expect(text.trim()).not.toBe("");
+      expect(text.length).toBeLessThanOrEqual(limit);
     }
   });
 });

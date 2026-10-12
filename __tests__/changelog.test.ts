@@ -18,10 +18,14 @@ const METADATA = path.join(ROOT, "fastlane", "metadata", "android");
 const PLAY_CHANGELOG_LIMIT = 500;
 
 function localeDirs(): string[] {
-  return fs
-    .readdirSync(METADATA, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && fs.existsSync(path.join(METADATA, e.name, "changelogs")))
-    .map((e) => e.name);
+  return (
+    fs
+      .readdirSync(METADATA, { withFileTypes: true })
+      // Every listing, not only those that already have a `changelogs/`: ru-RU shipped 2.12.0
+      // without notes because the folder it lacked was also what put a locale on this list.
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+  );
 }
 
 describe("release changelogs", () => {
@@ -30,7 +34,7 @@ describe("release changelogs", () => {
 
   test("the metadata tree still has the locales this asserts against", () => {
     // Without this, a renamed or emptied metadata tree would make every test below pass vacuously.
-    expect(locales.sort()).toEqual(["de-DE", "en-US", "es-ES", "fr-FR"]);
+    expect(locales.sort()).toEqual(["de-DE", "en-US", "es-ES", "fr-FR", "ru-RU"]);
   });
 
   test.each(localeDirs())("%s has release notes for the versionCode being shipped", (locale) => {

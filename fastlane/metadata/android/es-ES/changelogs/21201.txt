@@ -1,0 +1,5 @@
+- Tu aldea recibe un escudo y un animal, sacados de tu forma de entrenar. Cada animal tiene un retrato que envejece contigo.
+- Los edificios suben al grado 10, las Murallas guardan una piedra por nivel por encima de 20.
+- Cada estación entrenada deja un estandarte. Una fiesta marca cada nueva era y cada aniversario.
+- Elige un lema para tu escudo.
+- XP: un juramento paga sus 250 XP una vez por semana. El bonus oculto de la misión del día desaparece, todas las reglas están en la página de XP.

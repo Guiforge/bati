@@ -264,7 +264,10 @@ Managed by [prek](https://github.com/j178/prek) via [`.pre-commit-config.yaml`](
 
 - **pre-commit**: file hygiene, `gitleaks` secret scan, `zizmor` on the workflows (a finding
   that is deliberate gets a `# zizmor: ignore[…]` with its reason, never a looser config),
-  `biome check --write` on staged files, `tsc --noEmit` when a `.ts`/`.tsx` is staged.
+  `biome check --write` on staged files, `tsc --noEmit` when a `.ts`/`.tsx` is staged, and the
+  store listing suites (`language-surfaces`, `changelog`) when `fastlane/metadata/` or `app.json`
+  is: Play's length limits and the release notes of every listed language, which 2.12.0 found out
+  about in the `play` job, after the tag.
 - **pre-push**: `npm test`.
 
 - Run everything by hand: `npx prek run --all-files`

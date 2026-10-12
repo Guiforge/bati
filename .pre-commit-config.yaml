@@ -59,6 +59,15 @@ repos:
         pass_filenames: false
         files: \.kt$
 
+      # Play refuses the whole upload over one description a few characters too long, and it says
+      # so after the tag. These two suites take two seconds, so they run at commit, not at push.
+      - id: store-listing
+        name: store listing (lengths, release notes)
+        entry: npx jest language-surfaces changelog
+        language: system
+        pass_filenames: false
+        files: ^(fastlane/metadata/|app\.json$)
+
       - id: jest
         name: npm test
         entry: npm test

@@ -42,12 +42,12 @@ describe("ProgressionChart layout", () => {
     const props = mockBarChart.mock.lastCall?.[0] as Record<string, number> | undefined;
     assert(props);
     // `width` is the plot alone: y labels plus plot must fit the 320 dp card interior.
-    expect(props["yAxisLabelWidth"]).toBe(35);
-    expect(props["width"]).toBe(320 - 35);
-    const slot = (props["barWidth"] ?? 0) + (props["spacing"] ?? 0);
-    expect((props["initialSpacing"] ?? 0) + slot * 2).toBeLessThanOrEqual(props["width"] ?? 0);
+    expect(props.yAxisLabelWidth).toBe(35);
+    expect(props.width).toBe(320 - 35);
+    const slot = (props.barWidth ?? 0) + (props.spacing ?? 0);
+    expect((props.initialSpacing ?? 0) + slot * 2).toBeLessThanOrEqual(props.width ?? 0);
     // A label box is centred on its bar only when labelWidth equals barWidth.
-    expect(props["labelWidth"]).toBe(props["barWidth"]);
+    expect(props.labelWidth).toBe(props.barWidth);
   });
 });
 

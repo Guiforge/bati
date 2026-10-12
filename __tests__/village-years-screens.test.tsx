@@ -123,17 +123,16 @@ describe("the stones in the Ramparts' sheet", () => {
     expect(screen.queryByTestId("village-stones")).toBeNull();
   });
 
-  it("shows a single stone, labelled with its level and its fact", async () => {
+  it("shows a single stone, summed in its decade", async () => {
     mockYears({ stones: [stone(21, sessionsFact(1))] });
     const screen = await openRamparts();
-    const label = "Level 21: 1 session";
-    expect(await screen.findByLabelText(label)).toBeTruthy();
-    expect(screen.getAllByTestId(/^village-stone-\d+$/)).toHaveLength(1);
+    expect(await screen.findAllByTestId(/^village-stone-\d+$/)).toHaveLength(1);
+    expect(screen.getByLabelText("Level 21: 3 sessions")).toBeTruthy();
   });
 
   it("shows the stones whatever the wall's rank", async () => {
     mockYears({ stones: stonesFrom(3) });
-    const screen = await openRamparts(building("castle_wall", 0));
+    const screen = await openRamparts();
     expect(await screen.findAllByTestId(/^village-stone-\d+$/)).toHaveLength(3);
   });
 
@@ -151,9 +150,13 @@ describe("the stones in the Ramparts' sheet", () => {
       names: new Map([[7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "" }]]),
     });
     const screen = await openRamparts();
-    expect(await screen.findAllByTestId(/^village-stone-\d+$/)).toHaveLength(14);
+    expect(await screen.findAllByTestId(/^village-stone-(record-)?\d+$/)).toHaveLength(14);
     expect(screen.getAllByTestId(/^village-stones-\d+$/)).toHaveLength(1);
-    expect(screen.getByLabelText("Level 34: Push-ups, from 10 to 14")).toBeTruthy();
+    expect(screen.getByTestId("village-stone-record-34")).toBeTruthy();
+    expect(screen.getByText("Level 34, record: Push-ups, from 10 to 14")).toBeTruthy();
+    // Thirteen stones of 3 sessions and the record's: one line, the sum under it.
+    expect(screen.getByText("Levels 21 to 34: 42 sessions")).toBeTruthy();
+    expect(screen.queryByText("Level 21: 3 sessions")).toBeNull();
   });
 
   it("says the level's session count when the record's movement is gone", async () => {
@@ -168,6 +171,7 @@ describe("the stones in the Ramparts' sheet", () => {
     mockYears({ stones: [{ ...stone(21, record), sessions: 5 }] });
     const screen = await openRamparts();
     expect(await screen.findByLabelText("Level 21: 5 sessions")).toBeTruthy();
+    expect(screen.queryByTestId("village-stone-record-21")).toBeNull();
   });
 
   it("groups sixty-five stones by decade", async () => {
@@ -175,8 +179,10 @@ describe("the stones in the Ramparts' sheet", () => {
     const screen = await openRamparts();
     expect(await screen.findAllByTestId(/^village-stone-\d+$/)).toHaveLength(65);
     expect(screen.getAllByTestId(/^village-stones-\d+$/)).toHaveLength(7);
-    expect(screen.getByText("Levels 21 to 29")).toBeTruthy();
-    expect(screen.getByText("Levels 80 to 85")).toBeTruthy();
+    expect(screen.getByText("Levels 21 to 29: 27 sessions")).toBeTruthy();
+    expect(screen.getByText("Levels 80 to 85: 18 sessions")).toBeTruthy();
+    // One label per decade, none per stone.
+    expect(screen.getByLabelText("Levels 70 to 79: 30 sessions")).toBeTruthy();
   });
 
   it("lays the stones six to a row", async () => {
@@ -184,6 +190,58 @@ describe("the stones in the Ramparts' sheet", () => {
     const screen = await openRamparts();
     const group = within(await screen.findByTestId("village-stones-2"));
     expect(group.getAllByTestId(/^village-stone-\d+$/)).toHaveLength(8);
+  });
+});
+
+describe("the marks on the stones", () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage("en");
+    jest.spyOn(crestDb, "getCrest").mockResolvedValue(null);
+    jest.spyOn(feedDb, "getRecentFeeds").mockResolvedValue({ muscle: {}, style: {}, outing: [] });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it("marks a record and an Age, writes only those, and labels the decade once", async () => {
+    const record: Fact = {
+      kind: "record",
+      exerciseId: 7,
+      unit: "reps",
+      prior: 10,
+      value: 14,
+      at: 0,
+    };
+    const names = new Map([[7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "" }]]);
+    jest.spyOn(years, "loadVillageYears").mockResolvedValue({
+      years: {
+        stones: [...stonesFrom(12), stone(33, record), stone(50)],
+        banners: [],
+        ages: [
+          {
+            level: 50,
+            source: "rung",
+            exerciseId: 7,
+            depth: 2,
+            reachedAtLevel: 47,
+            practice: null,
+          },
+        ],
+      },
+      names,
+    });
+    const screen = await openRamparts();
+    expect(await screen.findByTestId("village-stone-record-33")).toBeTruthy();
+    expect(screen.getByTestId("village-stone-age-50")).toBeTruthy();
+    expect(screen.getByText("Level 50: New era, Push-ups")).toBeTruthy();
+    expect(screen.getByText("Level 33, record: Push-ups, from 10 to 14")).toBeTruthy();
+    expect(screen.queryByText("Level 22: 3 sessions")).toBeNull();
+    const group = screen.getByTestId("village-stones-2");
+    expect(group.props.accessibilityLabel).toContain("Level 33, record: Push-ups, from 10 to 14");
+  });
+
+  it("says how many stones the wall holds, on its row and in its sheet", async () => {
+    mockYears({ stones: stonesFrom(32) });
+    const screen = await openRamparts();
+    expect(await screen.findAllByText(/32 stones/)).toHaveLength(2);
   });
 });
 

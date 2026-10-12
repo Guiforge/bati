@@ -22,6 +22,7 @@ import {
 } from "@/components/village/rows";
 import { Stones } from "@/components/village/Stones";
 import { QuestLink } from "@/components/village/VillageLists";
+import { withStones } from "@/components/village/yearsText";
 import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
@@ -400,7 +401,9 @@ function BuildingDetail({
           building.driver === "tier" ||
           (building.driver === "prereq" && !unbuiltPrereq) ? (
           <Text fontSize={12} color="$textSecondary">
-            {nextLine(building, t, language)}
+            {building.code === "castle_wall"
+              ? withStones(nextLine(building, t, language), years?.years.stones.length ?? 0, t)
+              : nextLine(building, t, language)}
           </Text>
         ) : null}
         {milestone ? (
@@ -482,7 +485,12 @@ function BuildingDetail({
 
       {/* Whatever the wall's rank: the stones are the years, not a reward for a level. */}
       {building.code === "castle_wall" && years ? (
-        <Stones stones={years.years.stones} names={years.names} language={language} />
+        <Stones
+          stones={years.years.stones}
+          ages={years.years.ages}
+          names={years.names}
+          language={language}
+        />
       ) : null}
 
       {link ? (

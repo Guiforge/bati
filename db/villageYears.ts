@@ -141,6 +141,7 @@ export function loadVillageYears(totalXp: number, firstAnimal: Animal | null) {
       for (const { fact } of [...years.stones, ...years.banners]) {
         if (fact.kind === "record") ids.push(fact.exerciseId);
       }
+      for (const a of years.ages) if (a.exerciseId !== null) ids.push(a.exerciseId);
       return { years, names: await movementNames(ids) };
     },
     Number.POSITIVE_INFINITY,

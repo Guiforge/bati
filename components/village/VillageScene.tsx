@@ -654,6 +654,7 @@ export function VillageScene() {
             risen={risen}
             next={next?.code ?? null}
             language={language}
+            stones={yearsView?.years.stones.length ?? 0}
             onOpen={openBuilding}
           />
           {yearsView ? (

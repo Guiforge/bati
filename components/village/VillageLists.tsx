@@ -20,6 +20,7 @@ import {
   nextTitle,
   questLink,
 } from "@/components/village/rows";
+import { withStones } from "@/components/village/yearsText";
 import { getBuildingIconAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import type { RecentFeeds } from "@/db/milestone";
@@ -230,10 +231,11 @@ type FamiliesProps = {
   /** The building "Next to rise" already names, marked in its family instead of read twice. */
   next: BuildingCode | null;
   language: AppLanguage;
+  stones: number;
   onOpen: (building: VillageBuilding) => void;
 };
 
-export function Families({ families, risen, next, language, onOpen }: FamiliesProps) {
+export function Families({ families, risen, next, language, stones, onOpen }: FamiliesProps) {
   const { t } = useTranslation();
   return (
     <YStack testID="village-families" gap={18}>
@@ -254,6 +256,7 @@ export function Families({ families, risen, next, language, onOpen }: FamiliesPr
               risen={risen.has(building.code)}
               isNext={building.code === next}
               language={language}
+              stones={stones}
               onPress={() => onOpen(building)}
             />
           ))}
@@ -268,11 +271,13 @@ type RowProps = {
   risen: boolean;
   isNext: boolean;
   language: AppLanguage;
+  /** How many stones the wall holds: said on the Ramparts' row only. */
+  stones: number;
   onPress: () => void;
 };
 
 /** Readable without a tap: the name, the next rung in words, and the level on its real ceiling. */
-function BuildingRow({ building, risen, isNext, language, onPress }: RowProps) {
+function BuildingRow({ building, risen, isNext, language, stones, onPress }: RowProps) {
   const { t } = useTranslation();
   const name = nameOf(building, language);
   const built = building.level > 0;
@@ -318,7 +323,11 @@ function BuildingRow({ building, risen, isNext, language, onPress }: RowProps) {
         </XStack>
         <Text fontSize={11.5} lineHeight={16} color="$textSecondary">
           {/* "Next to rise" already reads the next rung aloud; its row says what feeds it. */}
-          {isNext ? feedsLine(building, t, language) : nextLine(building, t, language)}
+          {withStones(
+            isNext ? feedsLine(building, t, language) : nextLine(building, t, language),
+            building.code === "castle_wall" ? stones : 0,
+            t,
+          )}
         </Text>
       </YStack>
       <YStack items="flex-end" gap={5}>

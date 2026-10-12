@@ -23,3 +23,8 @@ export function factText(
     to: formatTargetValue({ type: fact.unit, value: fact.value }, language),
   });
 }
+
+/** The Ramparts' line with how many stones the wall holds, when it holds any. */
+export function withStones(line: string, count: number, t: TFunction) {
+  return count > 0 ? `${line} · ${t("village.stones_count", { count })}` : line;
+}

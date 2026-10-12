@@ -146,7 +146,11 @@ type Age = Extract<Feast, { kind: "age" }>;
  * languages): the kicker says it, the title is the movement it is named after, else the practice
  * in the lead, else the level.
  */
-export function ageTitle(t: TFunction, f: Age, language: AppLanguage): string {
+export function ageTitle(
+  t: TFunction,
+  f: Pick<Age, "level" | "movement" | "practice">,
+  language: AppLanguage,
+): string {
   if (f.movement) return localizedName(f.movement, language);
   if (f.practice) return sentence(t(PRACTICE_KEY[f.practice]));
   return t("session.feast_age_level", { level: f.level });

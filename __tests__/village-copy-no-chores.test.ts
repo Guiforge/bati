@@ -234,6 +234,42 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     de: "{{count}} Einheiten",
     es: "{{count}} sesiones",
   },
+  "village.stones_summary_one": {
+    why: "fait",
+    fr: "Niveaux {{from}} à {{to}} : {{count}} séance",
+    en: "Levels {{from}} to {{to}}: {{count}} session",
+    de: "Level {{from}}-{{to}}: {{count}} Einheit",
+    es: "Niveles {{from}} a {{to}}: {{count}} sesión",
+  },
+  "village.stones_summary_other": {
+    why: "fait",
+    fr: "Niveaux {{from}} à {{to}} : {{count}} séances",
+    en: "Levels {{from}} to {{to}}: {{count}} sessions",
+    de: "Level {{from}}-{{to}}: {{count}} Einheiten",
+    es: "Niveles {{from}} a {{to}}: {{count}} sesiones",
+  },
+  "village.stones_summary_many": {
+    why: "fait",
+    es: "Niveles {{from}} a {{to}}: {{count}} sesiones",
+  },
+  "village.stones_summary_single_one": {
+    why: "fait",
+    fr: "Niveau {{level}} : {{count}} séance",
+    en: "Level {{level}}: {{count}} session",
+    de: "Level {{level}}: {{count}} Einheit",
+    es: "Nivel {{level}}: {{count}} sesión",
+  },
+  "village.stones_summary_single_other": {
+    why: "fait",
+    fr: "Niveau {{level}} : {{count}} séances",
+    en: "Level {{level}}: {{count}} sessions",
+    de: "Level {{level}}: {{count}} Einheiten",
+    es: "Nivel {{level}}: {{count}} sesiones",
+  },
+  "village.stones_summary_single_many": {
+    why: "fait",
+    es: "Nivel {{level}}: {{count}} sesiones",
+  },
   "village.fact_sessions_many": {
     why: "fait",
     fr: "{{count}} séances",

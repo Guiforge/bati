@@ -265,6 +265,8 @@ export const MERGED_PREFERENCES = [
   // `auto` or `usual`: whether the rare coat shows once the hero has won it. Same discipline as
   // `crestAnimal`: no default written, back to `auto` writes `auto`.
   "crestCoat",
+  // One of the closed list of mottos (db/crestMotto.ts) or `none`: the hero's words, not this phone's.
+  "crestMotto",
 ] as const;
 
 /**

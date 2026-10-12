@@ -46,10 +46,13 @@ import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import { goOn, seeVillage } from "./destinations";
 import { ExpeditionSummary } from "./ExpeditionSummary";
-import { feastKey, tonight } from "./feasts";
+import { type Feast, feastKey, tonight } from "./feasts";
 import { NextMilestone } from "./NextMilestone";
 import { ProgressionChart } from "./ProgressionChart";
 import { TonightList } from "./TonightList";
+
+/** The big feasts that are a card when another one holds the screen, and are marked seen as such. */
+const RELEGATED_KINDS: Feast["kind"][] = ["legendary", "age", "anniversary"];
 
 /**
  * Under this, the session is asked about rather than saved.
@@ -322,16 +325,17 @@ export function VictoryView() {
       .catch((e) => reportError("session.markCoatShown", e));
   }, [coatShown]);
 
-  // A legendary feast relegated to a card is shown here, so it is marked like the reveal and the
-  // coat: it must not reopen full screen tomorrow. Keys joined, so the effect depends on a string.
-  const legendaryCards = feasts
-    .filter((f) => f.kind === "legendary" && f.size !== "large")
+  // A legendary feast, an Age or an anniversary relegated to a card is shown here, so it is marked
+  // like the reveal and the coat: it must not reopen full screen tomorrow. Keys joined, so the
+  // effect depends on a string.
+  const relegatedCards = feasts
+    .filter((f) => RELEGATED_KINDS.includes(f.kind) && f.size !== "large")
     .map(feastKey)
     .join(",");
   useEffect(() => {
-    for (const key of legendaryCards.split(",").filter(Boolean))
-      preferences.markBigFeastShown(key).catch((e) => reportError("session.markLegendaryShown", e));
-  }, [legendaryCards]);
+    for (const key of relegatedCards.split(",").filter(Boolean))
+      preferences.markBigFeastShown(key).catch((e) => reportError("session.markFeastShown", e));
+  }, [relegatedCards]);
 
   useEffect(() => {
     if (!revealShownAsCard) return;

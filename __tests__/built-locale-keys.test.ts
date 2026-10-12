@@ -14,6 +14,8 @@ const BUILT: Record<string, readonly string[]> = {
   "village.flame_": ["1", "2", "3", "4", "5"],
   // components/village/VillageDetailSheet.tsx, from the MuscleCode of an unbuilt muscle building.
   "village.detail_unlock_muscle_": muscleCodes,
+  // components/village/Banners.tsx, from the `kind` of a banner (db/villageYearsRules.ts).
+  "village.season_": ["winter", "spring", "summer", "autumn"],
 };
 
 const LOCALES = ["en", "fr", "de", "es"] as const;

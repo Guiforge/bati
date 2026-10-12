@@ -1,8 +1,8 @@
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BackHandler } from "react-native";
+import { BackHandler, type ScrollView, useWindowDimensions } from "react-native";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
@@ -20,7 +20,9 @@ import {
   nextLine,
   questLink,
 } from "@/components/village/rows";
+import { Stones } from "@/components/village/Stones";
 import { QuestLink } from "@/components/village/VillageLists";
+import { withStones } from "@/components/village/yearsText";
 import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
@@ -37,6 +39,7 @@ import {
   getBuildingProgress,
   type VillageBuilding,
 } from "@/db/village";
+import type { VillageYearsView } from "@/db/villageYears";
 import { SECONDS_PER_REP_EQUIVALENT } from "@/db/workUnits";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { inSentence, localizedTitle } from "@/src/i18n/localized";
@@ -57,6 +60,8 @@ type Props = {
   language: AppLanguage;
   /** What the latest sessions brought, for the milestone sentence; null until read. */
   feeds: RecentFeeds | null;
+  /** The stones for the ramparts' sheet; null until read, then the sheet shows none. */
+  years?: VillageYearsView | null;
   bottomInset: number;
 };
 
@@ -118,8 +123,16 @@ async function loadExtra(selected: VillageSelection): Promise<Extra> {
   return null;
 }
 
-export function VillageDetailSheet({ selected, onClose, language, feeds, bottomInset }: Props) {
+export function VillageDetailSheet({
+  selected,
+  onClose,
+  language,
+  feeds,
+  years = null,
+  bottomInset,
+}: Props) {
   const { t } = useTranslation();
+  const { height } = useWindowDimensions();
   const reducedMotion = useReducedMotion();
   const [extra, setExtra] = useState<Extra>(null);
   // Held past the close so the content does not blank out mid slide-down.
@@ -161,14 +174,21 @@ export function VillageDetailSheet({ selected, onClose, language, feeds, bottomI
     return () => sub.remove();
   }, [selected, onClose]);
 
+  // The scroll position survives a close, so the next building opened below the fold.
+  const scroll = useRef<ScrollView>(null);
+  useEffect(() => {
+    if (selected) scroll.current?.scrollTo({ y: 0, animated: false });
+  }, [selected]);
+
   const formatDate = (date: Date) => getDateTimeFormat(language, DATE_OPTIONS).format(date);
 
   return (
     <Sheet
       modal
       open={selected !== null}
-      onOpenChange={(open: boolean) => {
-        if (!open) onClose();
+      onOpenChange={(next: boolean) => {
+        // Tamagui also reports a change of the `open` prop through here.
+        if (!next && selected !== null) onClose();
       }}
       snapPointsMode="fit"
       dismissOnSnapToBottom
@@ -181,7 +201,13 @@ export function VillageDetailSheet({ selected, onClose, language, feeds, bottomI
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
-      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
+      {/* What does not fit scrolls: eighty stones are taller than a phone. */}
+      <Sheet.Frame
+        bg="$surface"
+        style={{ maxHeight: Math.round(height * 0.9) }}
+        borderTopLeftRadius="$6"
+        borderTopRightRadius="$6"
+      >
         {/* Inside the frame: Sheet.Handle floats above its top edge, over the dimmed list. A bar
             only: with one `fit` snap point the handle's tap has nothing to cycle, and the drag
             still lives on the frame. */}
@@ -194,30 +220,35 @@ export function VillageDetailSheet({ selected, onClose, language, feeds, bottomI
           mt="$2"
           bg="$borderStrong"
         />
-        <YStack testID="village-detail" px="$4" pt="$3" pb={bottomInset + 16} gap="$4">
-          {shown?.kind === "building" ? (
-            <BuildingDetail
-              building={shown.building}
-              extra={extra}
-              language={language}
-              feeds={feeds}
-              formatDate={formatDate}
-              onClose={onClose}
-            />
-          ) : null}
-          {shown?.kind === "boss" ? (
-            <BossDetail
-              boss={shown.boss}
-              extra={extra}
-              language={language}
-              formatDate={formatDate}
-            />
-          ) : null}
+        {/* ponytail: `onMoveShouldSetResponder` as in FormSheet, Tamagui 2.7.7 cancels the first
+            tap of a button in a Sheet.ScrollView (see .biome/plugins/noBareSheetScrollView.grit). */}
+        <Sheet.ScrollView ref={scroll} onMoveShouldSetResponder={() => false}>
+          <YStack testID="village-detail" px="$4" pt="$3" pb={bottomInset + 16} gap="$4">
+            {shown?.kind === "building" ? (
+              <BuildingDetail
+                building={shown.building}
+                extra={extra}
+                language={language}
+                feeds={feeds}
+                years={years}
+                formatDate={formatDate}
+                onClose={onClose}
+              />
+            ) : null}
+            {shown?.kind === "boss" ? (
+              <BossDetail
+                boss={shown.boss}
+                extra={extra}
+                language={language}
+                formatDate={formatDate}
+              />
+            ) : null}
 
-          <AppButton testID="village-detail-close" variant="outline" onPress={onClose}>
-            {t("village.close")}
-          </AppButton>
-        </YStack>
+            <AppButton testID="village-detail-close" variant="outline" onPress={onClose}>
+              {t("village.close")}
+            </AppButton>
+          </YStack>
+        </Sheet.ScrollView>
       </Sheet.Frame>
     </Sheet>
   );
@@ -236,10 +267,12 @@ function BuildingDetail({
   language,
   formatDate,
   feeds,
+  years,
   onClose,
 }: DetailProps & {
   building: VillageBuilding;
   feeds: RecentFeeds | null;
+  years: VillageYearsView | null;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -384,7 +417,9 @@ function BuildingDetail({
           building.driver === "tier" ||
           (building.driver === "prereq" && !unbuiltPrereq) ? (
           <Text fontSize={12} color="$textSecondary">
-            {nextLine(building, t, language)}
+            {building.code === "castle_wall"
+              ? withStones(nextLine(building, t, language), years?.years.stones.length ?? 0, t)
+              : nextLine(building, t, language)}
           </Text>
         ) : null}
         {milestone ? (
@@ -463,6 +498,16 @@ function BuildingDetail({
           ))}
         </YStack>
       )}
+
+      {/* Whatever the wall's rank: the stones are the years, not a reward for a level. */}
+      {building.code === "castle_wall" && years ? (
+        <Stones
+          stones={years.years.stones}
+          ages={years.years.ages}
+          names={years.names}
+          language={language}
+        />
+      ) : null}
 
       {link ? (
         <QuestLink

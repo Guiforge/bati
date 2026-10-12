@@ -1,9 +1,20 @@
-import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
-import { buildingDefinitions, type ExerciseStyle, type MuscleCode } from "./schema";
+import { buildingCeiling } from "@/constants/buildingLevels";
+import {
+  type BuildingCode,
+  buildingDefinitions,
+  type ExerciseStyle,
+  type MuscleCode,
+} from "./schema";
 import type { VillageBuilding } from "./village";
 
 /** How many of the latest sessions that fed a building the average reads. */
 export const MILESTONE_WINDOW = 5;
+
+/**
+ * Past this many sessions the victory screen and "Next to rise" say nothing: a win that announces
+ * "in 180 sessions" reads as a chore. The building's own sheet keeps the honest "in about N".
+ */
+export const MILESTONE_QUIET_AFTER = 30;
 
 /**
  * What each of the latest sessions brought, per thing that raises a building, oldest first: work
@@ -27,7 +38,7 @@ export type Milestone = {
 
 type Rising = Pick<
   VillageBuilding,
-  "code" | "level" | "driver" | "metricValue" | "nextTarget" | "exactValue"
+  "code" | "tier" | "level" | "driver" | "metricValue" | "nextTarget" | "exactValue"
 >;
 
 /** What lacks over what a typical recent session brings, rounded up; null with no average to go by. */
@@ -52,13 +63,19 @@ export function sessionsToGo(missing: number, recent: readonly number[]): number
  * already covers the starters.
  */
 export function nextMilestone(b: Rising, feeds: RecentFeeds): Milestone | null {
-  if (b.nextTarget === null || b.level >= MAX_BUILDING_LEVEL) return null;
+  if (b.nextTarget === null || b.level >= buildingCeiling(b)) return null;
   const feed = feedOf(b, feeds);
   if (feed === null) return null;
   const count = sessionsToGo(b.nextTarget - (b.exactValue ?? b.metricValue), feed.recent);
   return count === null
     ? null
     : { rank: b.level + 1, count, unit: feed.unit, subject: feed.subject };
+}
+
+/** `nextMilestone`, but null past `MILESTONE_QUIET_AFTER`: a chore is not a goal. */
+export function quietNextMilestone(b: Rising, feeds: RecentFeeds): Milestone | null {
+  const m = nextMilestone(b, feeds);
+  return m === null || m.count > MILESTONE_QUIET_AFTER ? null : m;
 }
 
 /** What raises this building and what the latest sessions of it brought; null when sessions do not. */
@@ -82,6 +99,15 @@ function feedOf(
 /** What one session brought: the muscles and styles it did work for, and whether it left the walls. */
 export type SessionFed = { muscles: MuscleCode[]; styles: ExerciseStyle[]; outing: boolean };
 
+/** Whether this session fed what the milestone counts. */
+function sessionFeeds(code: BuildingCode, m: Milestone, fed: SessionFed): boolean {
+  if (m.unit === "outings") return fed.outing;
+  if (m.subject === null) return false;
+  return "muscle" in m.subject
+    ? fed.muscles.some((x) => x === buildingDefinitions[code].relatedMuscle)
+    : fed.styles.includes(m.subject.style);
+}
+
 /**
  * The building that rises soonest, the one function behind the victory's PROCHAIN line and the
  * Village's "Next to rise". With `fed` (the victory), only among those THIS session fed (the Forge
@@ -96,16 +122,9 @@ export function pickSessionMilestone<B extends Rising>(
 ): { building: B; milestone: Milestone } | null {
   let best: { building: B; milestone: Milestone } | null = null;
   for (const building of buildings) {
-    const m = nextMilestone(building, feeds);
+    const m = quietNextMilestone(building, feeds);
     if (m === null) continue;
-    const def = buildingDefinitions[building.code];
-    const nourished =
-      fed === null ||
-      (m.unit === "outings"
-        ? fed.outing
-        : m.subject !== null && "muscle" in m.subject
-          ? fed.muscles.some((x) => x === def.relatedMuscle)
-          : m.subject !== null && fed.styles.includes(m.subject.style));
+    const nourished = fed === null || sessionFeeds(building.code, m, fed);
     if (nourished && (best === null || m.count < best.milestone.count)) {
       best = { building, milestone: m };
     }

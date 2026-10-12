@@ -4,6 +4,7 @@ import {
   type Milestone,
   nextMilestone,
   pickSessionMilestone,
+  quietNextMilestone,
   type RecentFeeds,
   type SessionFed,
 } from "@/db/milestone";
@@ -70,6 +71,18 @@ export function buildingMilestoneLine(
   return m === null ? null : milestoneLine(m, b.code, t, language, named);
 }
 
+/** `buildingMilestoneLine`, but silent past `MILESTONE_QUIET_AFTER`: a chore is not a goal. */
+export function quietMilestoneLine(
+  b: VillageBuilding,
+  feeds: RecentFeeds | null,
+  t: TFunction,
+  language: AppLanguage,
+  named = false,
+): string | null {
+  const m = feeds === null ? null : quietNextMilestone(b, feeds);
+  return m === null ? null : milestoneLine(m, b.code, t, language, named);
+}
+
 /**
  * The victory screen's line: the building this session fed that rises soonest; when it fed none
  * with an estimate, `fallback` (the Village's own "Next to rise", `pickNextToRise`, which is the soonest of all). Null where
@@ -85,5 +98,5 @@ export function victoryMilestoneLine(
 ): string | null {
   const picked = pickSessionMilestone(buildings, feeds, fed);
   if (picked) return milestoneLine(picked.milestone, picked.building.code, t, language, true);
-  return fallback ? buildingMilestoneLine(fallback, feeds, t, language, true) : null;
+  return fallback ? quietMilestoneLine(fallback, feeds, t, language, true) : null;
 }

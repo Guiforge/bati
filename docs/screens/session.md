@@ -85,7 +85,7 @@ session is only named there with an "after" badge: "Continue" opens it full scre
 (`app/big-feast.tsx`, a reveal, an Age, the anniversary or a tier) and closing it replays the
 victory's "Continue". The reveal shows the animal's portrait at 160 dp beside the 96 dp shield, a row of 268 dp that fits a
 360 dp screen at 130 % text. The milestone line of the building this session fed (`victoryMilestoneLine`)
-sits under the village block. A legendary animal (500 sessions) is a large feast of its own, in the
+sits under the village block, and says nothing for a building more than 30 sessions away (`MILESTONE_QUIET_AFTER`). A legendary animal (500 sessions) is a large feast of its own, in the
 same slot as the others ("after" badge, then full screen); one found past 500 (an update, a restore)
 is not an event of tonight and is marked "late": the Tonight line says "is legendary" instead of
 "is now legendary", and the body says "and counting" instead of naming 500. Every sentence is whole in four languages and held by

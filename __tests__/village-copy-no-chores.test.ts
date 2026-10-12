@@ -219,6 +219,64 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
   },
   // What the hero HAS DONE: totals, records, "5 of your 8 sessions", and the
   // reps, bosses, routes and sessions behind a building (detail sheet, bar caption).
+  // The seasons and the stones say what a banner or a level held: sessions already done.
+  "village.fact_sessions_one": {
+    why: "fait",
+    fr: "{{count}} séance",
+    en: "{{count}} session",
+    de: "{{count}} Einheit",
+    es: "{{count}} sesión",
+  },
+  "village.fact_sessions_other": {
+    why: "fait",
+    fr: "{{count}} séances",
+    en: "{{count}} sessions",
+    de: "{{count}} Einheiten",
+    es: "{{count}} sesiones",
+  },
+  "village.stones_summary_one": {
+    why: "fait",
+    fr: "Niveaux\u00a0{{from}} à {{to}} : {{count}} séance",
+    en: "Levels\u00a0{{from}} to {{to}}: {{count}} session",
+    de: "Level\u00a0{{from}}-{{to}}: {{count}} Einheit",
+    es: "Niveles\u00a0{{from}} a {{to}}: {{count}} sesión",
+  },
+  "village.stones_summary_other": {
+    why: "fait",
+    fr: "Niveaux\u00a0{{from}} à {{to}} : {{count}} séances",
+    en: "Levels\u00a0{{from}} to {{to}}: {{count}} sessions",
+    de: "Level\u00a0{{from}}-{{to}}: {{count}} Einheiten",
+    es: "Niveles\u00a0{{from}} a {{to}}: {{count}} sesiones",
+  },
+  "village.stones_summary_many": {
+    why: "fait",
+    fr: "Niveaux\u00a0{{from}} à {{to}} : {{count}} séances",
+    es: "Niveles\u00a0{{from}} a {{to}}: {{count}} sesiones",
+  },
+  "village.stones_summary_single_one": {
+    why: "fait",
+    fr: "Niveau\u00a0{{level}} : {{count}} séance",
+    en: "Level\u00a0{{level}}: {{count}} session",
+    de: "Level\u00a0{{level}}: {{count}} Einheit",
+    es: "Nivel\u00a0{{level}}: {{count}} sesión",
+  },
+  "village.stones_summary_single_other": {
+    why: "fait",
+    fr: "Niveau\u00a0{{level}} : {{count}} séances",
+    en: "Level\u00a0{{level}}: {{count}} sessions",
+    de: "Level\u00a0{{level}}: {{count}} Einheiten",
+    es: "Nivel\u00a0{{level}}: {{count}} sesiones",
+  },
+  "village.stones_summary_single_many": {
+    why: "fait",
+    fr: "Niveau\u00a0{{level}} : {{count}} séances",
+    es: "Nivel\u00a0{{level}}: {{count}} sesiones",
+  },
+  "village.fact_sessions_many": {
+    why: "fait",
+    fr: "{{count}} séances",
+    es: "{{count}} sesiones",
+  },
   "oath.metric_exercise_pr": {
     why: "serment",
     fr: "{{count, number}} × {{exercise}} d'affilée",
@@ -512,24 +570,37 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     de: "Seit deiner 8. Einheit. Deine ersten 8 verteilen sich: {{list}}.",
     es: "Desde tu 8.ª sesión. Tus 8 primeras se reparten: {{list}}.",
   },
+  "session.feast_anniversary_body": {
+    why: "fait",
+    fr: "{{n}} séances sur les douze derniers mois.",
+    en: "{{n}} sessions in the past twelve months.",
+    de: "{{n}} Einheiten in den letzten zwölf Monaten.",
+    es: "{{n}} sesiones en los últimos doce meses.",
+  },
   "session.feast_tier_level_one": {
     why: "fait",
-    fr: "Niveau {{level}}, après {{count}} séance.",
-    en: "Level {{level}}, after {{count}} session.",
-    de: "Level {{level}}, nach {{count}} Einheit.",
-    es: "Nivel {{level}}, tras {{count}} sesión.",
+    fr: "Niveau {{level}}, après {{count}} séance.",
+    en: "Level {{level}}, after {{count}} session.",
+    de: "Level {{level}}, nach {{count}} Einheit.",
+    es: "Nivel {{level}}, tras {{count}} sesión.",
   },
   "session.feast_tier_level_other": {
     why: "fait",
-    fr: "Niveau {{level}}, après {{count}} séances.",
-    en: "Level {{level}}, after {{count}} sessions.",
-    de: "Level {{level}}, nach {{count}} Einheiten.",
-    es: "Nivel {{level}}, tras {{count}} sesiones.",
+    fr: "Niveau {{level}}, après {{count}} séances.",
+    en: "Level {{level}}, after {{count}} sessions.",
+    de: "Level {{level}}, nach {{count}} Einheiten.",
+    es: "Nivel {{level}}, tras {{count}} sesiones.",
   },
   "session.feast_tier_level_many": {
     why: "fait",
-    fr: "Niveau {{level}}, après {{count}} séances.",
-    es: "Nivel {{level}}, tras {{count}} sesiones.",
+    fr: "Niveau {{level}}, après {{count}} séances.",
+    es: "Nivel {{level}}, tras {{count}} sesiones.",
+  },
+  // "Übung" and "ejercicio" are units of effort, here followed by "ten levels": a span of levels.
+  "session.feast_age_body_rung": {
+    why: "fait",
+    de: "Level {{level}}. Deine Übung dieser zehn Level, zum ersten Mal bei Level {{at}}.",
+    es: "Nivel {{level}}. Tu ejercicio de estos diez niveles, hecho por primera vez en el nivel {{at}}.",
   },
   "common.daily_xp_bonus": {
     why: "fait",

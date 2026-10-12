@@ -3,6 +3,7 @@ import { getLocales } from "expo-localization";
 import { reportError } from "../src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { CrestCoat } from "./crestCoat";
+import { type CrestMotto, isCrestMotto } from "./crestMotto";
 import { ANIMALS, type Animal } from "./crestRules";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
@@ -466,6 +467,20 @@ export const preferences = {
   // Written by the crest sheet's coat choice, read by `portraitOf` (db/crest.ts).
   async setCrestCoat(choice: CrestCoat): Promise<void> {
     await setPreference("crestCoat", choice);
+  },
+
+  /**
+   * The motto shown under the shield in the crest sheet and under the Village's level line, from the closed list in `db/crestMotto.ts`.
+   * Nothing writes a default; a missing or unknown value reads as `none`.
+   */
+  async getCrestMotto(): Promise<CrestMotto> {
+    const value = await getPreference("crestMotto");
+    return isCrestMotto(value) ? value : "none";
+  },
+
+  // Written by the crest sheet's motto view, read by the Village's header and by that sheet.
+  async setCrestMotto(choice: CrestMotto): Promise<void> {
+    await setPreference("crestMotto", choice);
   },
 
   /**

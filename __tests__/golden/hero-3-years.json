@@ -342,7 +342,30 @@
         "muscle": "shoulder",
         "percentage": 24.8
       },
-      "buildings": 21
+      "buildings": 21,
+      "levels": {
+        "campfire": 8,
+        "tent": 8,
+        "training_dummy": 8,
+        "archery_range": 8,
+        "quarry": 9,
+        "forge": 7,
+        "well": 9,
+        "windmill": 8,
+        "farm": 9,
+        "wizard_tower": 8,
+        "druid_grove": 7,
+        "watchtower": 3,
+        "castle_wall": 3,
+        "armory": 3,
+        "fountain": 3,
+        "observatory": 3,
+        "barn": 3,
+        "dragon_lair": 0,
+        "heroes_hall": 0,
+        "champion_arena": 0,
+        "high_road": 0
+      }
     },
     "bosses": [
       {
@@ -404,6 +427,360 @@
     },
     "legendary": false,
     "rareCoat": true,
+    "stones": [
+      {
+        "level": 21,
+        "decade": 2,
+        "sessions": 22,
+        "fact": {
+          "kind": "sessions",
+          "count": 22
+        }
+      },
+      {
+        "level": 22,
+        "decade": 2,
+        "sessions": 22,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 57,
+          "unit": "time",
+          "prior": 29,
+          "value": 30,
+          "at": 1723493902000
+        }
+      },
+      {
+        "level": 23,
+        "decade": 2,
+        "sessions": 22,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 58,
+          "unit": "time",
+          "prior": 29,
+          "value": 30,
+          "at": 1729908936000
+        }
+      },
+      {
+        "level": 24,
+        "decade": 2,
+        "sessions": 23,
+        "fact": {
+          "kind": "sessions",
+          "count": 23
+        }
+      },
+      {
+        "level": 25,
+        "decade": 2,
+        "sessions": 22,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 53,
+          "unit": "time",
+          "prior": 49,
+          "value": 50,
+          "at": 1736479252000
+        }
+      },
+      {
+        "level": 26,
+        "decade": 2,
+        "sessions": 23,
+        "fact": {
+          "kind": "sessions",
+          "count": 23
+        }
+      },
+      {
+        "level": 27,
+        "decade": 2,
+        "sessions": 21,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 49,
+          "unit": "time",
+          "prior": 49,
+          "value": 50,
+          "at": 1742894286000
+        }
+      },
+      {
+        "level": 28,
+        "decade": 2,
+        "sessions": 23,
+        "fact": {
+          "kind": "sessions",
+          "count": 23
+        }
+      },
+      {
+        "level": 29,
+        "decade": 2,
+        "sessions": 23,
+        "fact": {
+          "kind": "sessions",
+          "count": 23
+        }
+      },
+      {
+        "level": 30,
+        "decade": 3,
+        "sessions": 22,
+        "fact": {
+          "kind": "sessions",
+          "count": 22
+        }
+      },
+      {
+        "level": 31,
+        "decade": 3,
+        "sessions": 23,
+        "fact": {
+          "kind": "sessions",
+          "count": 23
+        }
+      },
+      {
+        "level": 32,
+        "decade": 3,
+        "sessions": 21,
+        "fact": {
+          "kind": "sessions",
+          "count": 21
+        }
+      },
+      {
+        "level": 33,
+        "decade": 3,
+        "sessions": 23,
+        "fact": {
+          "kind": "sessions",
+          "count": 23
+        }
+      },
+      {
+        "level": 34,
+        "decade": 3,
+        "sessions": 22,
+        "fact": {
+          "kind": "sessions",
+          "count": 22
+        }
+      }
+    ],
+    "banners": [
+      {
+        "start": 1677625200000,
+        "kind": "spring",
+        "villageYear": 1,
+        "sessions": 38,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 1,
+          "unit": "reps",
+          "prior": 18,
+          "value": 25,
+          "at": 1682592150000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1685570400000,
+        "kind": "summer",
+        "villageYear": 1,
+        "sessions": 45,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 34,
+          "unit": "reps",
+          "prior": 3,
+          "value": 5,
+          "at": 1686064990000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1693519200000,
+        "kind": "autumn",
+        "villageYear": 1,
+        "sessions": 46,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 63,
+          "unit": "reps",
+          "prior": 2,
+          "value": 3,
+          "at": 1697501602000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1701385200000,
+        "kind": "winter",
+        "villageYear": 1,
+        "sessions": 45,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 29,
+          "unit": "time",
+          "prior": 38,
+          "value": 40,
+          "at": 1705996020000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1709247600000,
+        "kind": "spring",
+        "villageYear": 2,
+        "sessions": 46,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 22,
+          "unit": "time",
+          "prior": 48,
+          "value": 50,
+          "at": 1711194480000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1717192800000,
+        "kind": "summer",
+        "villageYear": 2,
+        "sessions": 46,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 57,
+          "unit": "time",
+          "prior": 29,
+          "value": 30,
+          "at": 1723493902000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1725141600000,
+        "kind": "autumn",
+        "villageYear": 2,
+        "sessions": 45,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 58,
+          "unit": "time",
+          "prior": 29,
+          "value": 30,
+          "at": 1729908936000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1733007600000,
+        "kind": "winter",
+        "villageYear": 2,
+        "sessions": 45,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 53,
+          "unit": "time",
+          "prior": 49,
+          "value": 50,
+          "at": 1736479252000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1740783600000,
+        "kind": "spring",
+        "villageYear": 3,
+        "sessions": 46,
+        "fact": {
+          "kind": "record",
+          "exerciseId": 49,
+          "unit": "time",
+          "prior": 49,
+          "value": 50,
+          "at": 1742894286000
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1748728800000,
+        "kind": "summer",
+        "villageYear": 3,
+        "sessions": 46,
+        "fact": {
+          "kind": "sessions",
+          "count": 46
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1756677600000,
+        "kind": "autumn",
+        "villageYear": 3,
+        "sessions": 45,
+        "fact": {
+          "kind": "sessions",
+          "count": 45
+        },
+        "animal": "bear"
+      },
+      {
+        "start": 1764543600000,
+        "kind": "winter",
+        "villageYear": 3,
+        "sessions": 45,
+        "fact": {
+          "kind": "sessions",
+          "count": 45
+        },
+        "animal": "bear"
+      }
+    ],
+    "ages": [],
+    "rungDepths": [
+      [1, 1],
+      [2, 2],
+      [3, 7],
+      [5, 1],
+      [11, 2],
+      [14, 3],
+      [15, 3],
+      [20, 3],
+      [21, 2],
+      [26, 1],
+      [27, 6],
+      [30, 1],
+      [31, 2],
+      [34, 5],
+      [36, 1],
+      [37, 2],
+      [39, 2],
+      [40, 2],
+      [41, 1],
+      [42, 4],
+      [43, 4],
+      [44, 3],
+      [46, 2],
+      [47, 1],
+      [56, 1],
+      [57, 4],
+      [58, 3],
+      [59, 5],
+      [60, 2],
+      [61, 1],
+      [62, 3],
+      [63, 8],
+      [64, 3],
+      [65, 4],
+      [66, 5],
+      [67, 2],
+      [68, 4]
+    ],
     "rungs": [
       [1, 1],
       [2, 2],

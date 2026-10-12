@@ -621,3 +621,62 @@ describe("the legend's copy", () => {
     }
   });
 });
+
+describe("the motto", () => {
+  const mottoIs = (value: "none" | "stone") =>
+    jest.spyOn(preferences, "getCrestMotto").mockResolvedValue(value);
+
+  it("shows the stored motto under the shield, read from the preference", async () => {
+    mottoIs("stone");
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    expect((await screen.findByTestId("crest-motto")).props.children).toBe(
+      "Une pierre, puis la suivante.",
+    );
+  });
+
+  it("shows nothing for none", async () => {
+    const read = mottoIs("none");
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    await waitFor(() => expect(read).toHaveBeenCalled());
+    expect(screen.queryByTestId("crest-motto")).toBeNull();
+  });
+
+  it("the view offers the eight and none, the stored one checked, and a press writes it and goes back", async () => {
+    mottoIs("stone");
+    const set = jest.spyOn(preferences, "setCrestMotto").mockResolvedValue();
+    const onView = jest.fn();
+    await wrap(
+      <CrestSheet
+        view="motto"
+        crest={crestOf(FIVE_OF_EIGHT)}
+        onView={onView}
+        onClose={jest.fn()}
+        onChanged={jest.fn()}
+      />,
+    );
+    expect(screen.getByTestId("sheet-title").props.children).toBe("Devise");
+    expect(screen.getAllByRole("radio")).toHaveLength(9);
+    await waitFor(() =>
+      expect(screen.getByTestId("crest-motto-stone").props.accessibilityState.checked).toBe(true),
+    );
+    await fireEvent.press(screen.getByTestId("crest-motto-ember"));
+    await waitFor(() => expect(onView).toHaveBeenCalledWith("why"));
+    expect(set).toHaveBeenCalledWith("ember");
+  });
+
+  it("the shield's view links to the motto view", async () => {
+    mottoIs("none");
+    const onView = jest.fn();
+    await wrap(
+      <CrestSheet
+        view="why"
+        crest={crestOf(FIVE_OF_EIGHT)}
+        onView={onView}
+        onClose={jest.fn()}
+        onChanged={jest.fn()}
+      />,
+    );
+    await fireEvent.press(screen.getByTestId("crest-motto-link"));
+    expect(onView).toHaveBeenCalledWith("motto");
+  });
+});

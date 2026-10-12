@@ -1025,6 +1025,14 @@ export const buildingLevelThresholds: Record<number, number> = {
   3: 300, // Level 3 at 300 XP
   4: 600, // Level 4 at 600 XP
   5: 1000, // Level 5 at 1000 XP
+  // Ranks 6 to 10 (V-03, "hold for five years"): 2 400 / 4 800 / 10 000 / 20 000 / 40 000. Ranks 6
+  // and 7 keep the 0.8-scaled curve so the Forge of the design state B (2 433 chest units) stands
+  // at rank 6; 8 to 10 stretch so a regular hero reaches the top of a volume building late.
+  6: 2400,
+  7: 4800,
+  8: 10000,
+  9: 20000,
+  10: 40000,
 };
 
 // Village buildings table (player's building state)

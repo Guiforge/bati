@@ -239,6 +239,13 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
   const achievements = await getAllAchievementsWithProgress();
   const crest = await getCrest(now);
   const { hasRareCoat } = require("../../db/crestCoat") as typeof import("../../db/crestCoat");
+  const { getVillageYears } =
+    require("../../db/villageYears") as typeof import("../../db/villageYears");
+  // The region is pinned: the device's own would move the season names, not the windows.
+  const { fetchLadderRows } = require("../../db/exercises") as typeof import("../../db/exercises");
+  const { rungDepths } =
+    require("../../db/villageYearsRules") as typeof import("../../db/villageYearsRules");
+  const years = await getVillageYears(now, "FR", crest?.animal ?? null);
 
   return {
     sessions: aggregates,
@@ -276,12 +283,26 @@ export async function measureHero(now: Date = new Date(GOLDEN_NOW)) {
         percentage: Math.round(scene.dominantSport.percentage * 100) / 100,
       },
       buildings: scene.buildings.length,
+      // The rank of each building: what the V-03 ceilings and thresholds move.
+      levels: Object.fromEntries(scene.buildings.map((b) => [b.code, b.level])),
     },
     bosses,
     crest,
     // V-02 extended: the two figures the new rules read. Not the month's portrait: it would depend on the date.
     legendary: crest ? [crest.stage, crest.second?.stage].includes("legendary") : false,
     rareCoat: crest ? hasRareCoat(crest.longestFlame) : false,
+    // V-03 T2: what the village keeps for years, replayed from the journal.
+    stones: years.stones,
+    banners: years.banners,
+    ages: years.ages,
+    // Depth of every movement above the first rung, [id, depth]: a migration that moves a prerequisite moves this.
+    rungDepths: [
+      ...rungDepths(
+        new Map((await fetchLadderRows()).map((r) => [r.id, r.prerequisiteExerciseId])),
+      ),
+    ]
+      .filter(([, d]) => d > 0)
+      .sort(([a], [b]) => a - b),
     // [written movement id, served movement id], one per laddered movement.
     rungs,
     achievements: achievements.map((a) => ({

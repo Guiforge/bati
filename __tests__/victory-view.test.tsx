@@ -904,6 +904,29 @@ describe("VictoryView tonight", () => {
     expect(mockMarkBigFeastShown).not.toHaveBeenCalled();
   });
 
+  it("marks an Age and an anniversary as seen when they are cards, and only those", async () => {
+    const age = { level: 50, source: "none", reachedAtLevel: null, practice: null, movement: null };
+    const anniversary = { years: 2, sessions: 120, best: null };
+    // The reveal holds the screen: both are cards tonight, so neither may come back tomorrow.
+    const cards = await mountWithPendingSave(null, 12 * 60, {
+      crestReveal: BEAR,
+      age,
+      anniversary,
+    });
+    await cards.release();
+    expect(mockMarkBigFeastShown).toHaveBeenCalledWith("age:50");
+    expect(mockMarkBigFeastShown).toHaveBeenCalledWith("anniversary:2");
+    expect(mockMarkBigFeastShown).not.toHaveBeenCalledWith("reveal");
+    await cards.view.unmount();
+
+    // The Age is the large one: the full screen marks it. The anniversary yields and is marked here.
+    mockMarkBigFeastShown.mockClear();
+    const both = await mountWithPendingSave(null, 12 * 60, { age, anniversary });
+    await both.release();
+    expect(mockMarkBigFeastShown).toHaveBeenCalledWith("anniversary:2");
+    expect(mockMarkBigFeastShown).not.toHaveBeenCalledWith("age:50");
+  });
+
   it("leaves the reveal unmarked when it is the large feast, which the full screen marks", async () => {
     const { view, release } = await mountWithPendingSave(null, 12 * 60, {
       crestReveal: BEAR,

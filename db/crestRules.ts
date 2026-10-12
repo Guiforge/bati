@@ -26,7 +26,7 @@ export type CrestSession = {
   // `expedition` is left out on purpose: it counts for no practice.
 } & Record<Exclude<ExerciseStyle, "expedition">, number>;
 
-type Tally = Record<Practice, number>;
+export type Tally = Record<Practice, number>;
 
 export type CrestAnimals = {
   animal: Animal;
@@ -66,13 +66,13 @@ export const LEGENDARY_AT = 500;
 export const practiceOfAnimal = (a: Animal): Practice | undefined =>
   PRACTICES.find((p) => ANIMAL_OF[p] === a);
 
-const tally = (): Tally => ({ strength: 0, calisthenics: 0, yoga: 0, run: 0, ride: 0 });
+export const tally = (): Tally => ({ strength: 0, calisthenics: 0, yoga: 0, run: 0, ride: 0 });
 
 /**
  * The practice of one session, or null. A workout with no exercise done that counts has none and
  * is ignored by everything below (and still holds the flame and starts the rings).
  */
-function practiceOf(s: CrestSession): Practice | null {
+export function practiceOf(s: CrestSession): Practice | null {
   if (s.outing !== null) return s.outing === "ride" ? "ride" : "run";
   const counts: Tally = {
     strength: s.strength,
@@ -131,7 +131,7 @@ function secondOf(list: Practice[], first: Practice, firstEight: Tally) {
 }
 
 /** The practices done, the most often first, a tie going to the most recent: one order for every line that lists them. */
-function ranked(counts: Tally, last: Tally): Practice[] {
+export function ranked(counts: Tally, last: Tally): Practice[] {
   return PRACTICES.filter((p) => counts[p] > 0).sort(
     (a, b) =>
       counts[b] - counts[a] || last[b] - last[a] || PRACTICES.indexOf(a) - PRACTICES.indexOf(b),

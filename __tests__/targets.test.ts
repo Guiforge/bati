@@ -55,7 +55,7 @@ describe("generateTarget", () => {
     });
 
     it("clamps against the level-scaled window, not the raw one", () => {
-      // Easy scales 30-60 down to 23-45, so the same 600 s record stops at 45, not 60.
+      // Easy scales 30-60 down to 23-45, so the same 600 s record stops at 45, not 60.
       expect(generateTarget(hold, Difficulty.Easy, 600).value).toBe(45);
       expect(generateTarget(hold, Difficulty.Hard, 600).value).toBe(75);
     });
@@ -75,18 +75,18 @@ describe("formatTarget", () => {
     expect(formatTarget({ type: "reps", value: 12 }, "en")).toBe("12 reps");
     expect(formatTarget({ type: "reps", value: 12 }, "de")).toBe("12 Wdh.");
     expect(formatTarget({ type: "time", value: 30 }, "en")).toBe("30s");
-    expect(formatTarget({ type: "time", value: 30 }, "fr")).toBe("30 s");
+    expect(formatTarget({ type: "time", value: 30 }, "fr")).toBe("30 s");
   });
 
-  // One rule for every screen. A 60 s hold read "60s" in the session, "1:00" in the Journal and
+  // One rule for every screen. A 60 s hold read "60s" in the session, "1:00" in the Journal and
   // "1 min" on the quest row, and 1000 reps read "1000 reps" beside the Journal's "1,000".
-  test("a hold is seconds under a minute and a clock from 60 s", () => {
+  test("a hold is seconds under a minute and a clock from 60 s", () => {
     const hold = (value: number, language: "en" | "fr" | "de" | "es") =>
       formatTarget({ type: "time", value }, language);
     expect(hold(59, "en")).toBe("59s");
-    expect(hold(59, "fr")).toBe("59 s");
-    expect(hold(59, "de")).toBe("59 s");
-    expect(hold(59, "es")).toBe("59 s");
+    expect(hold(59, "fr")).toBe("59 s");
+    expect(hold(59, "de")).toBe("59 s");
+    expect(hold(59, "es")).toBe("59 s");
     for (const language of ["en", "fr", "de", "es"] as const) {
       expect(hold(60, language)).toBe("1:00");
       expect(hold(61, language)).toBe("1:01");
@@ -109,7 +109,7 @@ describe("formatTarget", () => {
   test("a column of sets drops the rep word and keeps the hold's shape", () => {
     expect(formatTargetValue({ type: "reps", value: 1000 }, "en")).toBe("1,000");
     expect(formatTargetValue({ type: null, value: 12 }, "en")).toBe("12");
-    expect(formatTargetValue({ type: "time", value: 45 }, "fr")).toBe("45 s");
+    expect(formatTargetValue({ type: "time", value: 45 }, "fr")).toBe("45 s");
     expect(formatTargetValue({ type: "time", value: 64 }, "fr")).toBe("1:04");
   });
 });
@@ -153,11 +153,11 @@ describe("retargetForMovement", () => {
 
 describe("isSuspiciousHold", () => {
   it("flags a hold past three targets and past the target plus two minutes", () => {
-    // 35 s target: the +120 s floor (155) is the larger bound, a forgotten 362 s is far past it.
+    // 35 s target: the +120 s floor (155) is the larger bound, a forgotten 362 s is far past it.
     expect(isSuspiciousHold(362, 35)).toBe(true);
     expect(isSuspiciousHold(156, 35)).toBe(true);
     expect(isSuspiciousHold(155, 35)).toBe(false);
-    // 300 s target: three targets (900) is the larger bound.
+    // 300 s target: three targets (900) is the larger bound.
     expect(isSuspiciousHold(900, 300)).toBe(false);
     expect(isSuspiciousHold(901, 300)).toBe(true);
   });

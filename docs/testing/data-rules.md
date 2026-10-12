@@ -61,7 +61,7 @@ Invariant: with skewed clocks, the side with the later `updatedAt` wins hero con
 edit was really last.
 
 **R7. `MERGED_PREFERENCES` = villageName, avatarId, customAvatar, trainingLevel, ownedEquipment, oath,
-reminderDays, crestAnimal, crestCoat.** `db/backup.ts:251-265`.
+reminderDays, crestAnimal, crestCoat, crestMotto.** `db/backup.ts:251-265`. `crestMotto` is a motto id of the closed list in `db/crestMotto.ts` or `none`, same discipline.
 `crestAnimal` is `auto` or an animal slug; a missing or unknown value reads as `auto`. Nothing
 writes a default (a device that never chose has no row, or two such devices would diverge in
 `db-peer-compare`), and going back to the animal the sessions chose writes `auto`, never a delete:
@@ -793,8 +793,32 @@ Invariant: the slug is always one of the 57 of the catalogue, and a hero who won
 sees a plainer coat than a hero who did not.
 
 **R110. None of the crest is stored.** Animal, second animal, stage, rare coat and portrait are
-read from the journal on each call (`getCrest`, `portraitOf`); the one stored datum is the hero's
-picked animal and `crestCoat`. The cards already shown (`coat:rare`, `legendary:<practice>`) are
-local to the phone, in `bigFeastsShown`, and are not synced.
+read from the journal on each call (`getCrest`, `portraitOf`); what is stored is the hero's chosen
+animal, `crestCoat` and `crestMotto`. The cards already shown (`coat:rare`, `legendary:<practice>`,
+`age:<n>`, `anniversary:<n>`) are local keys of `bigFeastsShown`, on the phone, and are not synced.
 Invariant: restoring a backup or merging a peer's sessions changes the crest by changing the
 journal, and by nothing else.
+
+**R111. None of the village's years is stored.** The stones on the ramparts, the season banners
+and the Ages are replayed from the journal on each call (`getVillageYears`, rules in
+`db/villageYearsRules.ts`); there is no column, no preference and no migration behind them. A
+session belongs to the level reached after it, counting the XP of every session before it, the
+ones `countsAsSession()` refuses included; only the sessions it accepts are stones, banners or
+rungs. The sets of every session are read, a short outing's included, so that a short outing's
+value is a standing best (as `movementRecordFell` reads it), but it breaks nothing and first-sees
+nothing. A GPS outing (`NON_REP_STYLE`) is never read: its seconds are no record. Every level from 21 up to the highest reached has a stone; a level no session ended on (a
+jump over it) takes the stone of the session that crossed it, with that session's fact.
+Invariant: the same journal gives the same stones, banners and Ages on any device, whatever order
+the sessions were merged in (`db-peer-merge`), and deleting a session takes back what it earned.
+A banner stays neutral while there is no crest (fewer than eight practised sessions), whatever its sessions did.
+
+**R112. A season is a fixed local window, and the village year counts four seasons from the first session's.**
+December to February, March to May, June to August, September to November, cut at local midnight
+(`new Date(y, m, 1)`, never UTC); the hemisphere changes the name and nothing else. A season has a
+banner once it is over and a session that counts fell in it; the one in progress has none.
+Ties never depend on read order: the best record is the biggest relative gain (integer cross
+product, no float), then the most recent, then the lower movement id.
+The village year is `floor(seasons since the first session's season / 4) + 1`, so a row holds at
+most four banners. Invariant: the hemisphere never moves a banner, it only renames it. A timezone
+change can move one session to the next or previous season only if it sits near midnight on a
+season border; daylight saving is harmless, since the season is read with `getMonth`.

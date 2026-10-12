@@ -1,5 +1,7 @@
 import { legendaryKey } from "@/db/crestEvents";
 import type { VillageGrowth, VillageTier } from "@/db/village";
+import type { AgeNews, AnniversaryNews } from "@/db/villageNewsRules";
+import { ageKey, anniversaryKey } from "@/db/villageNewsRules";
 import type { SaveResult } from "@/stores/session";
 
 /** What tonight can say, as the victory screen knows it. Nothing here is written anywhere. */
@@ -30,9 +32,10 @@ export type FeastFacts = {
   shown?: string[];
   /** The boss this session felled, by name. */
   boss?: { name: string; finalBlow?: boolean } | null;
-  // V-03 has no producer yet: the types are here so the order below is the spec's, whole.
-  age?: { name: string } | null;
-  anniversary?: { years: number } | null;
+  /** The newest Age not shown yet (`result.age`): `tonight` fills it in. */
+  age?: AgeNews | null;
+  /** The village's anniversary not shown yet (`result.anniversary`). */
+  anniversary?: AnniversaryNews | null;
 };
 
 export type FeastSize = "small" | "medium" | "large";
@@ -43,8 +46,8 @@ type Result = FeastFacts["result"];
 /** One thing tonight says, said once. `large` is shown full screen after "Continue". */
 export type Feast =
   | Of<"reveal", NonNullable<Result["crestReveal"]>>
-  | Of<"age", { name: string }>
-  | Of<"anniversary", { years: number }>
+  | Of<"age", AgeNews>
+  | Of<"anniversary", AnniversaryNews>
   | Of<"tier", { tier: VillageTier; level: number | null }>
   | Of<
       "legendary",
@@ -94,8 +97,8 @@ export function rankFeasts(facts: FeastFacts): Feast[] {
 function bigOnes({ result: r, age, anniversary }: FeastFacts): Built<Feast>[] {
   const big: Built<Feast>[] = [];
   if (r.crestReveal) big.push({ kind: "reveal", ...r.crestReveal });
-  if (age) big.push({ kind: "age", name: age.name });
-  if (anniversary) big.push({ kind: "anniversary", years: anniversary.years });
+  if (age) big.push({ kind: "age", ...age });
+  if (anniversary) big.push({ kind: "anniversary", ...anniversary });
   // One per count: the border's can turn legendary on another night than the centre's. Read off
   // the crest after the session (like the reveal), so a hero past 500 at the update sees it once.
   for (const up of r.crestLegendary ?? []) {
@@ -110,8 +113,20 @@ function bigOnes({ result: r, age, anniversary }: FeastFacts): Built<Feast>[] {
 }
 
 /** The id a big feast is marked under in `bigFeastsShown`: once per phone. */
-export const feastKey = (f: Built<Feast>) =>
-  f.kind === "tier" ? `tier:${f.tier}` : f.kind === "legendary" ? legendaryKey(f.practice) : f.kind;
+export function feastKey(f: Built<Feast>): string {
+  switch (f.kind) {
+    case "tier":
+      return `tier:${f.tier}`;
+    case "legendary":
+      return legendaryKey(f.practice);
+    case "age":
+      return ageKey(f.level);
+    case "anniversary":
+      return anniversaryKey(f.years);
+    default:
+      return f.kind;
+  }
+}
 
 const isShown = (f: Built<Feast>, shown: string[] | undefined) =>
   shown?.includes(feastKey(f)) === true;
@@ -149,6 +164,8 @@ export const tonight = (result: SaveResult, boss: FeastFacts["boss"] = null) =>
     result,
     epilogue: result.campaign?.isFinished === true,
     shown: result.bigFeastsShown,
+    age: result.age,
+    anniversary: result.anniversary,
     boss,
   });
 

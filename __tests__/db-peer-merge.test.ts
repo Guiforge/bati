@@ -853,6 +853,25 @@ describe("the crest follows the journal, not the device", () => {
     await converged(laterAuto);
   });
 
+  test("crestMotto: a none written later beats an older motto, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "crestMotto", "none", 3_000);
+    const olderMotto = await peer("older-motto.db", (sqlite) =>
+      setPref(sqlite, "crestMotto", "stone", 2_000),
+    );
+    await merge().mergePeer(olderMotto);
+    expect(prefValue("crestMotto")).toBe("none");
+    await converged(olderMotto);
+
+    setPref(t.sqlite, "crestMotto", "stone", 2_000);
+    const laterNone = await peer("later-motto-none.db", (sqlite) =>
+      setPref(sqlite, "crestMotto", "none", 3_000),
+    );
+    await merge().mergePeer(laterNone);
+    expect(prefValue("crestMotto")).toBe("none");
+    await converged(laterNone);
+  });
+
   test("a pick equal to the sessions' animal, from before the rule, leaves the same crest as auto, either way", async () => {
     // Eight strength sessions: the bear. One device kept an old explicit "bear", the other is on
     // auto; whichever value the merge keeps, neither side draws the diamond.
@@ -918,4 +937,78 @@ describe("the crest follows the journal, not the device", () => {
         | undefined
     )?.value;
   }
+});
+
+describe("the years of the village follow the journal, not the device", () => {
+  const NOW = new Date(2027, 5, 20, 12, 0, 0);
+  const uuidOf = (i: number) => `0190e000-0000-7000-8000-${String(i).padStart(12, "0")}`;
+
+  /** A laddered movement of the seed (one with a prerequisite) and the first rung under it. */
+  const rungs = () =>
+    t.sqlite
+      .prepare(
+        `SELECT id, prerequisiteExerciseId AS under FROM exercises
+         WHERE creator = 'Admin' AND prerequisiteExerciseId IS NOT NULL ORDER BY id LIMIT 1`,
+      )
+      .get() as { id: number; under: number };
+
+  type Day = { uuid: string; at: number; xp: number; sets: [exerciseId: number, reps: number][] };
+
+  function addDay(sqlite: Database.Database, d: Day) {
+    const { lastInsertRowid } = sqlite
+      .prepare(
+        "INSERT INTO completed_sessions (uuid, userLevel, xpEarned, performedAt) VALUES (?, 'medium', ?, ?)",
+      )
+      .run(d.uuid, d.xp, d.at);
+    for (const [i, [exerciseId, reps]] of d.sets.entries()) {
+      sqlite
+        .prepare(
+          `INSERT INTO completed_exercises (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, performedAt)
+           VALUES (?, ?, 0, ?, 'reps', ?, ?)`,
+        )
+        .run(lastInsertRowid, exerciseId, i, reps, d.at);
+    }
+  }
+
+  async function bothWays(mine: Day[], theirs: Day[]) {
+    const out = [];
+    for (const [local, remote] of [
+      [mine, theirs],
+      [theirs, mine],
+    ] as const) {
+      jest.resetModules();
+      t.close();
+      t = createTestDb();
+      jest.doMock("../db/client", () => clientMock(t));
+      const file = await peer(`years-${n++}.db`, (sqlite) => {
+        for (const d of remote) addDay(sqlite, d);
+      });
+      for (const d of local) addDay(t.sqlite, d);
+      await merge().mergePeer(file);
+      const years = require("../db/villageYears") as typeof import("../db/villageYears");
+      out.push(await years.getVillageYears(NOW, "FR"));
+      await converged(file);
+    }
+    return out;
+  }
+
+  test("the same journal split over two devices gives the same stones, banners and Ages, either way", async () => {
+    const { id, under } = rungs();
+    // 16 sessions a month apart from January 2026, 6 000 XP each: level 40 at the 10th, 50 at the 14th, the rung done once at the 12th.
+    const journal: Day[] = Array.from({ length: 16 }, (_, i) => ({
+      uuid: uuidOf(i),
+      at: Math.floor(new Date(2026, i, 10, 18).getTime() / 1000),
+      xp: 6000,
+      sets: [[under, 10 + i], ...(i === 11 ? ([[id, 5 + i]] as [number, number][]) : [])],
+    }));
+    const [a, b] = await bothWays(
+      journal.filter((_, i) => i % 2 === 0),
+      journal.filter((_, i) => i % 2 === 1),
+    );
+
+    expect(a).toEqual(b);
+    expect(a?.stones.length).toBeGreaterThan(0);
+    expect(a?.banners.length).toBeGreaterThan(0);
+    expect(a?.ages).toMatchObject([{ level: 50, source: "rung", exerciseId: id }]);
+  });
 });

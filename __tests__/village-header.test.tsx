@@ -78,31 +78,43 @@ function crestOf(over: Partial<crestDb.Crest> = {}): crestDb.Crest {
   };
 }
 
-function mount(crest: crestDb.Crest | null, name = "Brumeval", pending = false) {
+let release: () => void = () => {};
+
+function setup(crest: crestDb.Crest | null, name = "Brumeval", pending = false) {
   useUserStore.setState({ villageName: name });
-  jest.spyOn(village, "getVillageScene").mockImplementation(() =>
-    pending
-      ? new Promise(() => {})
-      : Promise.resolve({
-          tier: 4,
-          level: 8,
-          title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion", ru: "Champion" },
-          totalXp: 3180,
-          flame: 1,
-          streakDays: 4,
-          dominantSport: null,
-          buildings: [],
-        }),
+  const scene = {
+    tier: 4 as const,
+    level: 8,
+    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion", ru: "Champion" },
+    totalXp: 3180,
+    flame: 1 as const,
+    streakDays: 4,
+    dominantSport: null,
+    buildings: [],
+  };
+  jest.spyOn(village, "getVillageScene").mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        if (pending) release = () => resolve(scene);
+        else resolve(scene);
+      }),
   );
   jest.spyOn(crestDb, "getCrest").mockResolvedValue(crest);
-  return render(
-    <SafeAreaProvider initialMetrics={METRICS}>
-      <TamaguiProvider config={config} defaultTheme="dark">
-        <VillageScene />
-      </TamaguiProvider>
-    </SafeAreaProvider>,
-  );
 }
+
+const mount = (crest: crestDb.Crest | null, name = "Brumeval", pending = false) => {
+  setup(crest, name, pending);
+  return render(host());
+};
+
+/** `key` remounts the screen inside the same root: a revisit that finds no scene yet. */
+const host = (key = 0) => (
+  <SafeAreaProvider initialMetrics={METRICS}>
+    <TamaguiProvider config={config} defaultTheme="dark">
+      <VillageScene key={key} />
+    </TamaguiProvider>
+  </SafeAreaProvider>
+);
 
 const line = async () => (await screen.findByTestId("village-crest-line")).props.children;
 
@@ -430,4 +442,17 @@ describe("the reveal day and the boar's line, in every language", () => {
       }
     },
   );
+});
+
+describe("the motto", () => {
+  it("reads in the crest sheet, under the shield, and nowhere in the header", async () => {
+    jest.spyOn(preferences, "getCrestMotto").mockResolvedValue("ember");
+    await mount(crestOf());
+    await line();
+    expect(screen.queryByText(i18n.t("village.motto_ember"))).toBeNull();
+    await fireEvent.press(screen.getByTestId("village-crest"));
+    expect((await screen.findByTestId("crest-motto")).props.children).toBe(
+      i18n.t("village.motto_ember"),
+    );
+  });
 });

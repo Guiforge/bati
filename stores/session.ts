@@ -36,6 +36,7 @@ import {
   type RareCoatNews,
   rareCoatNews,
 } from "@/db/crestEvents";
+import type { Animal } from "@/db/crestRules";
 import { estimateQuestSeconds } from "@/db/estimate";
 import {
   checkForNewRungs,
@@ -94,6 +95,8 @@ import {
   type VillageGrowth,
   type VillageTierUp,
 } from "@/db/village";
+import { readVillageNews } from "@/db/villageNews";
+import type { AgeNews, AnniversaryNews } from "@/db/villageNewsRules";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import {
   computeSessionXp,
@@ -283,6 +286,10 @@ export type SaveResult = {
   crestLegendary: CrestEvents["stageUp"];
   /** The rare coat's card, when the hero has won the coat and this phone has not shown it. */
   rareCoat: RareCoatNews | null;
+  /** The newest Age the hero has reached, when this phone has not shown it; null when unreadable too. */
+  age: AgeNews | null;
+  /** The village's anniversary, when this phone has not shown that year's; null when unreadable too. */
+  anniversary: AnniversaryNews | null;
   /** The big feasts this phone has shown; undefined when the key could not be read. */
   bigFeastsShown: string[] | undefined;
 };
@@ -523,6 +530,18 @@ async function readBigFeastsShown() {
   } catch (error) {
     reportError("session.bigFeastsShown", error);
     return undefined;
+  }
+}
+
+/** The Age and the anniversary, read once the session is saved; unreadable, the village stays quiet. */
+async function villageNewsOrNone(shown: string[] | undefined, firstAnimal: Animal | null) {
+  // Unread, what is already shown is unknown: a replay would announce a feast a second time.
+  if (shown === undefined) return { age: null, anniversary: null };
+  try {
+    return await readVillageNews(shown, new Date(), firstAnimal);
+  } catch (error) {
+    reportError("session.villageNews", error);
+    return { age: null, anniversary: null };
   }
 }
 
@@ -2291,6 +2310,7 @@ export const useSessionStore = create<SessionState>()(
         crestReveal: crestReveal(crestAfter, shown),
         crestLegendary: legendaryNews(crestAfter, shown),
         rareCoat: rareCoatNews(crestAfter, shown),
+        ...(await villageNewsOrNone(shown, crestAfter?.animal ?? null)),
         bigFeastsShown: shown,
       };
       set({ savedResult: saved });

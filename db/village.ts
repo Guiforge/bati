@@ -1,5 +1,5 @@
 import { and, count, eq, gte, isNotNull, lt, sql, sum } from "drizzle-orm";
-import { buildingCeiling, MAX_BUILDING_LEVEL, T3_MAX_LEVEL } from "@/constants/buildingLevels";
+import { buildingCeiling, T3_MAX_LEVEL } from "@/constants/buildingLevels";
 
 export { buildingCeiling };
 
@@ -217,7 +217,7 @@ export type VillageBuilding = {
   code: BuildingCode;
   emoji: string;
   tier: BuildingTier;
-  level: number; // 0 = locked, otherwise 1..5
+  level: number; // 0 = locked, otherwise 1..10 (see buildingCeiling)
   enName: string;
   frName: string;
   deName: string;
@@ -249,6 +249,15 @@ export type VillageBuilding = {
    */
   kept?: boolean;
 };
+
+/**
+ * The hero level at which each starter rank (campfire and the other tier-1 buildings) is reached.
+ * Ranks 1 to 5 are the village tiers' floors (TIER_LEVEL_FLOORS 1..5), published and frozen. Ranks
+ * 6 to 10 are spaced for "hold for five years": a regular hero (the golden one: 182 sessions a
+ * year, levels 18 / 26 / 34 / 43 / 51 at the end of years 1 to 5) reaches rank 6 about year 1 and
+ * rank 10 about year 5. They used to follow the tiers and ended at level 25, about 18 months.
+ */
+const STARTER_RANK_LEVELS: readonly number[] = [1, 3, 5, 8, 10, 18, 26, 34, 42, 50];
 
 // The shared ladder from schema.ts, with level 1 at "any work at all" — a building appears
 // the first time its muscle is trained, which is what the old `xp > 0` guard meant.
@@ -344,9 +353,13 @@ async function getLegacyDeedLevels(banners: readonly BossBanner[]): Promise<Lega
  * correction is cheap today (the High Road is not in any release tag), so a future re-tune is a
  * different decision from this one.
  *
+ * Ranks 6 to 10 (V-03, "hold for five years") were set before any release carried them: 500 /
+ * 1 000 / 2 000 / 3 500 / 5 500 leagues, so a regular walker reaches rank 10 about year 5 rather
+ * than year 3.
+ *
  * Re-tune here and nowhere else; nothing but this table and METRES_PER_LEAGUE knows the scale.
  */
-const ROAD_FLOORS: readonly number[] = [1, 15, 40, 90, 200, 400, 700, 1100, 1700, 2500];
+const ROAD_FLOORS: readonly number[] = [1, 15, 40, 90, 200, 500, 1000, 2000, 3500, 5500];
 
 /**
  * Where each tier-4 driver reads its tally. A map rather than the ternary chain this replaces:
@@ -391,7 +404,7 @@ const TIER_4_DRIVERS: Partial<
   high_road: { driver: "leagues", floors: ROAD_FLOORS },
 };
 
-/** Level 1..5 from a floor table indexed by level - 1; below the first floor, 0 = not earned. */
+/** Level 1..10 from a floor table indexed by level - 1; below the first floor, 0 = not earned. */
 function levelFromFloors(value: number, floors: readonly number[]): number {
   let level = 0;
   for (const [index, floor] of floors.entries()) {
@@ -441,7 +454,6 @@ async function getStyleVolumes(): Promise<Partial<Record<ExerciseStyle, number>>
 }
 
 type LevelInputs = {
-  villageTier: VillageTier;
   heroLevel: number;
   bossesDefeated: number;
   rematches: number;
@@ -484,22 +496,22 @@ function deriveDeedLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel 
 function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
   const def = buildingDefinitions[code];
 
-  // Starter buildings always stand; they grow with the village itself.
+  // Starter buildings always stand; they grow with the hero's level, not with their own work.
   //
-  // Clamped at the ceiling since the scene gained tiers 11-12: a building level is 1..10 by
-  // contract, so an unclamped tier 12 handed the tile a level it had no way to show. Past tier 10
-  // the campfire is simply finished; the hero's tier name in the scene above is what keeps
-  // moving, and the tile does not need to say it twice.
+  // Clamped at the ceiling: a building level is 1..10 by contract, so the scene's tiers 11-12 must
+  // not hand the tile a rank it cannot show. Past rank 10 the building is simply finished; the
+  // hero's tier name in the scene above is what keeps moving.
   if (def.tier === 1) {
-    const level = Math.min(inputs.villageTier, MAX_BUILDING_LEVEL);
+    const ceiling = buildingCeiling({ tier: def.tier, code });
+    const level = Math.min(
+      Math.max(1, levelFromFloors(inputs.heroLevel, STARTER_RANK_LEVELS)),
+      ceiling,
+    );
     return {
       level,
       driver: "tier",
       metricValue: inputs.heroLevel,
-      nextTarget:
-        level < MAX_BUILDING_LEVEL
-          ? (TIER_LEVEL_FLOORS[(inputs.villageTier + 1) as VillageTier] ?? null)
-          : null,
+      nextTarget: level < ceiling ? nextFloor(level, STARTER_RANK_LEVELS) : null,
     };
   }
 
@@ -543,15 +555,12 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
   const legacy = await getLegacyDeedLevels(banners);
   const tally = tallyFinishedRuns(summaries);
 
-  const villageTier = getVillageTier(levelInfo.level);
-
   const derivedOf = new Map<BuildingCode, DerivedLevel>();
 
   for (const code of buildingCodes) {
     derivedOf.set(
       code,
       deriveLevel(code, {
-        villageTier,
         heroLevel: levelInfo.level,
         bossesDefeated: banners.length,
         rematches: tally.rematches,

@@ -179,10 +179,12 @@ describe("db/village buildings", () => {
       [2399, 5],
       [2400, 6],
       [4800, 7],
-      [8000, 8],
-      [12000, 9],
-      [16799, 9],
-      [16800, 10],
+      [9999, 7],
+      [10000, 8],
+      [19999, 8],
+      [20000, 9],
+      [39999, 9],
+      [40000, 10],
     ])("a volume building at %i units stands at rank %i", async (reps, expected) => {
       liftReps(reps);
       expect((await rank("forge")).level).toBe(expected);
@@ -212,14 +214,25 @@ describe("db/village buildings", () => {
       expect((await road()).level).toBe(expected);
     });
 
-    test("the tier-1 starters follow the village up to rank 10 and no further", async () => {
-      // 60 000 XP is hero level 40 or so: village tier 12 (TIER_LEVEL_FLOORS).
+    test("the tier-1 starters follow the hero up to rank 10 and no further", async () => {
+      // 100 000 XP is hero level 60 or so, past the level-50 floor of rank 10.
       t.sqlite.exec(
-        `INSERT INTO completed_sessions (id, performedAt, xpEarned) VALUES (1, ${Math.floor(Date.now() / 1000)}, 60000)`,
+        `INSERT INTO completed_sessions (id, performedAt, xpEarned) VALUES (1, ${Math.floor(Date.now() / 1000)}, 100000)`,
       );
       const campfire = await rank("campfire");
       expect(campfire.level).toBe(10);
       expect(campfire.nextTarget).toBeNull();
+    });
+
+    test("each deed's floor table is as long as its ceiling", () => {
+      const { buildingCeiling, deedRungStart } =
+        require("../db/village") as typeof import("../db/village");
+      for (const code of ["dragon_lair", "heroes_hall", "champion_arena", "high_road"] as const) {
+        const top = buildingCeiling({ tier: 4, code });
+        // A floor at the ceiling, and none past it (a missing floor reads as 0).
+        expect(deedRungStart(code, top)).toBeGreaterThan(deedRungStart(code, top - 1));
+        expect(deedRungStart(code, top + 1)).toBe(0);
+      }
     });
 
     test("the lair, the hall and the arena keep their five ranks", async () => {

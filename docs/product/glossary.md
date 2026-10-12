@@ -121,7 +121,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | tonight | The list of what a session changed | Tonight | Ce soir |  | Heute Abend | Esta noche |
 | milestone | Sessions or outings until a building rises | milestone | jalon |  | not shown (the line says "Rang 2 in etwa 3 Einheiten") | not shown |
 | achievement | An unlockable trophy | achievement | succès |  | Erfolg | logro |
-| building rank | How far a building has risen, 1 to 5 (3 for an upgrade), shown as "rank 3" | rank | rang | niveau (the hero's) | Rang | grado (not rango, the village's tier) |
+| building rank | How far a building has risen, 1 to 10 (3 for an upgrade, 5 for the Lair, the Hall and the Arena), shown as "rank 3" | rank | rang | niveau (the hero's) | Rang | grado (not rango, the village's tier) |
 | tier | One of the village's twelve stages, one painting each, raised by the hero's level | tier | palier | niveau (the hero's and a building's) | Ausbaustufe (not Stufe, a rung) | rango (not etapa, a rung) |
 | village tiers | The village's size names | Hamlet … Eternal Capital | Hameau … Capitale éternelle |  | Weiler … Ewige Hauptstadt | Caserío … Capital eterna |
 | training dummy | A starter building. Its name sits on a building card, so it must wrap at a space | Training Dummy | Mannequin de bois | Mannequin d'entraînement (wider than the card: it breaks mid-word at large font sizes) | Übungspuppe | Muñeco de madera |

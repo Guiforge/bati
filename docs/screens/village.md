@@ -79,14 +79,21 @@ so the tier block stays above the fold.
 
 ## Ranks 6 to 10 (V-03)
 
-Ranks 6 to 10 exist for the starters (`min(village tier, 10)`), the volume buildings and the High
-Road. The upgrades stay at 3, the Lair, the Hall and the Arena at 5 (their content is finite).
-Volume floors (`buildingLevelThresholds`): 1, 100, 300, 600, 1 000, then **2 400, 4 800, 8 000,
-12 000, 16 800** work units. The design asked for 3 000 / 6 000 / 10 000 / 15 000 / 21 000; the
-state B hero (2 433 chest units) would have stayed at rank 5 on the Forge, so the five were scaled
-by 0.8 to put the Forge at rank 6, the figure the mock-ups show. The painting is not affected:
-`buildingStage` stops at `BUILDING_STAGE_LEVEL` (5) and ranks 6 to 10 keep the grand art. Nothing
-is migrated: levels are derived, so a hero's rank can only rise.
+Ranks 6 to 10 exist for the starters, the volume buildings and the High Road. The upgrades stay
+at 3, the Lair, the Hall and the Arena at 5 (their content is finite). All three scales are set
+for "hold for five years": a regular hero (the golden one, 182 sessions a year) reaches rank 10
+around year 5. No release carried ranks above 5 before, so they could be fixed freely.
+
+- Volume floors (`buildingLevelThresholds`): 1, 100, 300, 600, 1 000, then **2 400, 4 800, 10 000,
+  20 000, 40 000** work units. Ranks 6 and 7 keep the 0.8 scale that puts the state B Forge
+  (2 433 chest units) at rank 6, the figure the mock-ups show.
+- Starters (`STARTER_RANK_LEVELS` in `db/village.ts`): hero level 18 / 26 / 34 / 42 / 50 for ranks
+  6 to 10. Ranks 1 to 5 are still the village tiers 1 to 5 (levels 1, 3, 5, 8, 10). They used to
+  follow the tier and ended at level 25, about 18 months.
+- High Road: 500 / 1 000 / 2 000 / 3 500 / 5 500 leagues (were 400 / 700 / 1 100 / 1 700 / 2 500).
+
+The painting is not affected: `buildingStage` stops at `BUILDING_STAGE_LEVEL` (5) and ranks 6 to 10
+keep the grand art. Nothing is migrated: levels are derived, so a hero's rank can only rise.
 
 ## Deeds
 
@@ -97,7 +104,7 @@ The four tier-4 buildings answer to deeds, and **no finished campaign feeds two 
 | Dragon Lair | bosses beaten at least once (`getBossBanners`) | 1, 2, 3, 4, 6 |
 | Champion Arena | rematches: boss campaigns finished again after the first victory | 1, 3, 6, 10, 15 |
 | Hall of Heroes | finished campaigns that are not a boss (routes), replays included | 1, 2, 4, 7, 10 |
-| High Road | leagues covered outside | 1, 15, 40, 90, 200, 400, 700, 1 100, 1 700, 2 500 |
+| High Road | leagues covered outside | 1, 15, 40, 90, 200, 500, 1 000, 2 000, 3 500, 5 500 |
 
 Until 2026-09 one boss run raised the lair, the arena (every boss victory) and the hall (every
 finished campaign) at once, and the detail sheets said nearly the same sentence three times. The

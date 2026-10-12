@@ -8,7 +8,7 @@
  * else. `db/` importing `constants/` is the direction that stays acyclic.
  */
 
-/** The highest rank any building reaches. Who reaches it is `buildingCeiling()` in db/village.ts. */
+/** The highest rank any building reaches. Who reaches it is `buildingCeiling()`, below. */
 export const MAX_BUILDING_LEVEL = 10;
 
 /** The rank the paintings top out at: ranks past it keep the "grand" art and count in the pips. */

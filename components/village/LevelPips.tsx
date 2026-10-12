@@ -27,7 +27,13 @@ export function LevelPips({ level, max = MAX_BUILDING_LEVEL }: { level: number; 
         />
       ))}
       {level > BUILDING_STAGE_LEVEL ? (
-        <Text fontSize={11} fontWeight="700" color="$resourceGold">
+        <Text
+          fontSize={11}
+          fontWeight="700"
+          color="$resourceGold"
+          accessible={false}
+          importantForAccessibility="no"
+        >
           {level}
         </Text>
       ) : null}

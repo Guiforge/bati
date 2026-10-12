@@ -432,12 +432,8 @@
         "level": 21,
         "decade": 2,
         "fact": {
-          "kind": "record",
-          "exerciseId": 70,
-          "unit": "time",
-          "prior": 1884,
-          "value": 1938,
-          "at": 1722631092000
+          "kind": "sessions",
+          "count": 22
         }
       },
       {
@@ -477,23 +473,19 @@
         "decade": 2,
         "fact": {
           "kind": "record",
-          "exerciseId": 70,
+          "exerciseId": 53,
           "unit": "time",
-          "prior": 1992,
-          "value": 2046,
-          "at": 1735439560000
+          "prior": 49,
+          "value": 50,
+          "at": 1736479252000
         }
       },
       {
         "level": 26,
         "decade": 2,
         "fact": {
-          "kind": "record",
-          "exerciseId": 70,
-          "unit": "time",
-          "prior": 2046,
-          "value": 2100,
-          "at": 1741854594000
+          "kind": "sessions",
+          "count": 23
         }
       },
       {
@@ -512,12 +504,8 @@
         "level": 28,
         "decade": 2,
         "fact": {
-          "kind": "record",
-          "exerciseId": 70,
-          "unit": "time",
-          "prior": 2100,
-          "value": 2154,
-          "at": 1748269628000
+          "kind": "sessions",
+          "count": 23
         }
       },
       {
@@ -532,24 +520,16 @@
         "level": 30,
         "decade": 3,
         "fact": {
-          "kind": "record",
-          "exerciseId": 70,
-          "unit": "time",
-          "prior": 2154,
-          "value": 2208,
-          "at": 1754684662000
+          "kind": "sessions",
+          "count": 22
         }
       },
       {
         "level": 31,
         "decade": 3,
         "fact": {
-          "kind": "record",
-          "exerciseId": 70,
-          "unit": "time",
-          "prior": 2208,
-          "value": 2262,
-          "at": 1761099696000
+          "kind": "sessions",
+          "count": 23
         }
       },
       {
@@ -564,12 +544,8 @@
         "level": 33,
         "decade": 3,
         "fact": {
-          "kind": "record",
-          "exerciseId": 70,
-          "unit": "time",
-          "prior": 2262,
-          "value": 2316,
-          "at": 1767493130000
+          "kind": "sessions",
+          "count": 23
         }
       },
       {
@@ -645,7 +621,7 @@
       {
         "start": 1709247600000,
         "kind": "spring",
-        "villageYear": 1,
+        "villageYear": 2,
         "sessions": 46,
         "fact": {
           "kind": "record",
@@ -694,26 +670,26 @@
         "sessions": 45,
         "fact": {
           "kind": "record",
-          "exerciseId": 70,
+          "exerciseId": 53,
           "unit": "time",
-          "prior": 1992,
-          "value": 2046,
-          "at": 1735439560000
+          "prior": 49,
+          "value": 50,
+          "at": 1736479252000
         },
         "animal": "bear"
       },
       {
         "start": 1740783600000,
         "kind": "spring",
-        "villageYear": 2,
+        "villageYear": 3,
         "sessions": 46,
         "fact": {
           "kind": "record",
-          "exerciseId": 70,
+          "exerciseId": 49,
           "unit": "time",
-          "prior": 2046,
-          "value": 2100,
-          "at": 1741854594000
+          "prior": 49,
+          "value": 50,
+          "at": 1742894286000
         },
         "animal": "bear"
       },
@@ -723,12 +699,8 @@
         "villageYear": 3,
         "sessions": 46,
         "fact": {
-          "kind": "record",
-          "exerciseId": 70,
-          "unit": "time",
-          "prior": 2154,
-          "value": 2208,
-          "at": 1754684662000
+          "kind": "sessions",
+          "count": 46
         },
         "animal": "bear"
       },
@@ -738,12 +710,8 @@
         "villageYear": 3,
         "sessions": 45,
         "fact": {
-          "kind": "record",
-          "exerciseId": 70,
-          "unit": "time",
-          "prior": 2208,
-          "value": 2262,
-          "at": 1761099696000
+          "kind": "sessions",
+          "count": 45
         },
         "animal": "bear"
       },
@@ -753,17 +721,52 @@
         "villageYear": 3,
         "sessions": 45,
         "fact": {
-          "kind": "record",
-          "exerciseId": 70,
-          "unit": "time",
-          "prior": 2262,
-          "value": 2316,
-          "at": 1767493130000
+          "kind": "sessions",
+          "count": 45
         },
         "animal": "bear"
       }
     ],
     "ages": [],
+    "rungDepths": [
+      [1, 1],
+      [2, 2],
+      [3, 7],
+      [5, 1],
+      [11, 2],
+      [14, 3],
+      [15, 3],
+      [20, 3],
+      [21, 2],
+      [26, 1],
+      [27, 6],
+      [30, 1],
+      [31, 2],
+      [34, 5],
+      [36, 1],
+      [37, 2],
+      [39, 2],
+      [40, 2],
+      [41, 1],
+      [42, 4],
+      [43, 4],
+      [44, 3],
+      [46, 2],
+      [47, 1],
+      [56, 1],
+      [57, 4],
+      [58, 3],
+      [59, 5],
+      [60, 2],
+      [61, 1],
+      [62, 3],
+      [63, 8],
+      [64, 3],
+      [65, 4],
+      [66, 5],
+      [67, 2],
+      [68, 4]
+    ],
     "rungs": [
       [1, 1],
       [2, 2],

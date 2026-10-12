@@ -1,10 +1,11 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, ne, sql } from "drizzle-orm";
 import { getLocales } from "expo-localization";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
-import { doneIn, getCrest } from "./crest";
+import { doneIn } from "./crest";
 import { isSouthern } from "./crestCoat";
-import { practiceOf } from "./crestRules";
+import { type Animal, practiceOf } from "./crestRules";
+import { fetchLadderRows } from "./exercises";
 import { calculateLevelFromXp } from "./userLevel";
 import {
   type Age,
@@ -12,11 +13,13 @@ import {
   type Banner,
   type JournalRow,
   rungDepths,
+  type SetBest,
   type Stone,
   seasons,
   stones,
   timeline,
 } from "./villageYearsRules";
+import { NON_REP_STYLE } from "./workUnits";
 
 const { completedExercises, completedQuest, exercises } = schema;
 
@@ -30,6 +33,8 @@ export type VillageYears = { stones: Stone[]; banners: Banner[]; ages: Age[] };
 export async function getVillageYears(
   now: Date = new Date(),
   regionCode: string | null | undefined = getLocales()[0]?.regionCode,
+  /** The crest's first animal (`getCrest(now)?.animal`): the caller has it already, a second read of the journal is not worth the colour. */
+  firstAnimal: Animal | null = null,
 ): Promise<VillageYears> {
   const sessions = await db
     .select({
@@ -57,35 +62,39 @@ export async function getVillageYears(
       value: sql<number>`MAX(${completedExercises.resultValue})`,
     })
     .from(completedExercises)
-    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
-    .where(countsAsSession())
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+    // Every session, short outings included: they stand as a reference like in `movementRecordFell`.
+    // Never an outing: a walk's seconds are no record (same rule as db/personalRecords.ts).
+    .where(ne(exercises.style, NON_REP_STYLE))
     .groupBy(
       completedExercises.sessionId,
       completedExercises.exerciseId,
       completedExercises.resultType,
     );
-  const bySession = Map.groupBy(sets, (s) => s.sessionId);
+  // Not `Map.groupBy`: Hermes does not ship it.
+  const bySession = new Map<number, SetBest[]>();
+  for (const { sessionId, exerciseId, unit, value } of sets) {
+    const list = bySession.get(sessionId);
+    if (list) list.push({ exerciseId, unit, value });
+    else bySession.set(sessionId, [{ exerciseId, unit, value }]);
+  }
 
   const rows: JournalRow[] = sessions.map((s) => ({
     at: s.performedAt,
     xp: s.xp,
     counts: s.counts === 1,
     practice: practiceOf({ ...s, uuid: "" }),
-    bests: (bySession.get(s.id) ?? []).map(({ exerciseId, unit, value }) => ({
-      exerciseId,
-      unit,
-      value,
-    })),
+    bests: bySession.get(s.id) ?? [],
   }));
 
-  const ladder = await db
-    .select({ id: exercises.id, prerequisite: exercises.prerequisiteExerciseId })
-    .from(exercises);
+  const ladder = await fetchLadderRows();
   const entries = timeline(rows, calculateLevelFromXp);
-  const crest = await getCrest(now);
   return {
     stones: stones(entries),
-    banners: seasons(entries, now, isSouthern(regionCode), crest?.animal ?? null),
-    ages: agesReached(entries, rungDepths(new Map(ladder.map((r) => [r.id, r.prerequisite])))),
+    banners: seasons(entries, now, isSouthern(regionCode), firstAnimal),
+    ages: agesReached(
+      entries,
+      rungDepths(new Map(ladder.map((r) => [r.id, r.prerequisiteExerciseId]))),
+    ),
   };
 }

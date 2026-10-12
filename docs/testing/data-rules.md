@@ -801,16 +801,20 @@ and the Ages are replayed from the journal on each call (`getVillageYears`, rule
 `db/villageYearsRules.ts`); there is no column, no preference and no migration behind them. A
 session belongs to the level reached after it, counting the XP of every session before it, the
 ones `countsAsSession()` refuses included; only the sessions it accepts are stones, banners or
-rungs. Every level from 21 up to the highest reached has a stone; a level no session ended on (a
+rungs. The sets of every session are read, a short outing's included, so that a short outing's
+value is a standing best (as `movementRecordFell` reads it), but it breaks nothing and first-sees
+nothing. A GPS outing (`NON_REP_STYLE`) is never read: its seconds are no record. Every level from 21 up to the highest reached has a stone; a level no session ended on (a
 jump over it) takes the stone of the session that crossed it, with that session's fact.
 Invariant: the same journal gives the same stones, banners and Ages on any device, whatever order
 the sessions were merged in (`db-peer-merge`), and deleting a session takes back what it earned.
 
-**R112. A season is a fixed local window, and the village year is the first session's day.**
+**R112. A season is a fixed local window, and the village year counts four seasons from the first session's.**
 December to February, March to May, June to August, September to November, cut at local midnight
 (`new Date(y, m, 1)`, never UTC); the hemisphere changes the name and nothing else. A season has a
 banner once it is over and a session that counts fell in it; the one in progress has none.
 Ties never depend on read order: the best record is the biggest relative gain (integer cross
 product, no float), then the most recent, then the lower movement id.
-Invariant: moving the device across a timezone or a hemisphere never moves a banner to another
-season, only renames it.
+The village year is `floor(seasons since the first session's season / 4) + 1`, so a row holds at
+most four banners. Invariant: the hemisphere never moves a banner, it only renames it. A timezone
+change can move one session to the next or previous season only if it sits near midnight on a
+season border; daylight saving is harmless, since the season is read with `getMonth`.

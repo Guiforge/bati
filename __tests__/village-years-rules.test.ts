@@ -1,3 +1,7 @@
+/**
+ * @jest-environment ./__tests__/helpers/timezoneEnvironment.js
+ * @jest-environment-options {"timezone": "Pacific/Auckland"}
+ */
 import assert from "node:assert/strict";
 
 import { ANIMALS } from "../db/crestRules";
@@ -91,8 +95,18 @@ describe("timeline", () => {
     );
     expect(e).toHaveLength(1);
     expect(e[0]?.level).toBe(3);
-    expect(e[0]?.breaks).toEqual([]); // the 99 of the short outing is not a standing value
+    // The 99 of the short outing is a standing value (like `movementRecordFell`): 5 breaks nothing,
+    // and the short outing itself earns no break nor first sighting.
+    expect(e[0]?.breaks).toEqual([]);
     expect(e[0]?.firstSeen).toEqual([1]);
+  });
+
+  test("a short outing is a reference: a later session that beats it breaks it", () => {
+    const e = timeline(
+      [day(1, { counts: false, sets: [[1, 10]] }), day(2, { sets: [[1, 12]] })],
+      flat,
+    );
+    expect(e[0]?.breaks).toEqual([expect.objectContaining({ prior: 10, value: 12 })]);
   });
 });
 
@@ -212,6 +226,29 @@ describe("seasons", () => {
     expect([a?.animal, b?.animal]).toEqual(["salmon", "stag"]);
     expect(seasons([entry(5, { practice: null })], NOW, false, "boar")[0]?.animal).toBeNull();
     expect(ANIMALS).toContain("boar");
+  });
+
+  test("a first session in mid-season: a row holds at most four banners", () => {
+    // Spring 2025 (from March) is season 0; the summer after is 1, autumn 2, winter 3, then spring 2026 starts year 2.
+    const list = seasons(
+      [
+        entry(5, { at: new Date(2025, 4, 20) }),
+        at(2025, 6, 1),
+        at(2025, 9, 1),
+        at(2026, 0, 10),
+        at(2026, 3, 1),
+      ],
+      NOW,
+      false,
+      "bear",
+    );
+    expect(list.map((b) => [b.kind, b.villageYear])).toEqual([
+      ["spring", 1],
+      ["summer", 1],
+      ["autumn", 1],
+      ["winter", 1],
+      ["spring", 2],
+    ]);
   });
 
   test("the village year counts from the first session's day", () => {

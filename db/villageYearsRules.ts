@@ -1,4 +1,3 @@
-import { differenceInYears, startOfDay } from "date-fns";
 import { ANIMAL_OF, type Animal, type Practice, ranked, tally } from "./crestRules";
 import type { QuestTargetType } from "./schema";
 
@@ -19,7 +18,7 @@ export type JournalRow = {
   /** `countsAsSession()`: a short outing earns XP and is not a session. */
   counts: boolean;
   practice: Practice | null;
-  /** Only read when `counts`. */
+  /** Read from every session: a short outing's value stands as a reference (`movementRecordFell` does the same), but breaks nothing. */
   bests: SetBest[];
 };
 
@@ -69,21 +68,23 @@ function bestPerMovement(bests: readonly SetBest[]): SetBest[] {
   );
 }
 
-/** The sessions that count, each with its level, its records broken and its new movements. */
+/**
+ * The sessions that count, each with its level, its records broken and its new movements. Every
+ * session moves the standing best of a movement, only those that count break one or first-see one.
+ */
 export function timeline(rows: readonly JournalRow[], levelOf: (xp: number) => number): Entry[] {
   const levels = levelAfterEachSession(rows, levelOf);
   const standing = new Map<string, number>();
   const seen = new Set<number>();
   const out: Entry[] = [];
   for (const [i, row] of rows.entries()) {
-    if (!row.counts) continue;
     const sets = bestPerMovement(row.bests);
     const breaks: Break[] = [];
     const firstSeen: number[] = [];
     for (const s of sets) {
       const key = `${s.exerciseId}:${s.unit}`;
       const prior = standing.get(key);
-      if (prior !== undefined && s.value > prior) {
+      if (row.counts && prior !== undefined && s.value > prior) {
         breaks.push({
           exerciseId: s.exerciseId,
           unit: s.unit,
@@ -93,12 +94,13 @@ export function timeline(rows: readonly JournalRow[], levelOf: (xp: number) => n
         });
       }
       standing.set(key, Math.max(prior ?? 0, s.value));
-      if (!seen.has(s.exerciseId)) {
+      if (row.counts && !seen.has(s.exerciseId)) {
         seen.add(s.exerciseId);
         firstSeen.push(s.exerciseId);
       }
     }
-    out.push({ at: row.at, level: levels[i] ?? 1, practice: row.practice, breaks, firstSeen });
+    if (row.counts)
+      out.push({ at: row.at, level: levels[i] ?? 1, practice: row.practice, breaks, firstSeen });
   }
   return out;
 }
@@ -140,7 +142,11 @@ export type Stone = { level: number; decade: number; fact: Fact };
  */
 export function stones(entries: readonly Entry[]): Stone[] {
   const byLevel = new Map<number, Entry[]>();
-  for (const e of entries) byLevel.set(e.level, [...(byLevel.get(e.level) ?? []), e]);
+  for (const e of entries) {
+    const list = byLevel.get(e.level);
+    if (list) list.push(e);
+    else byLevel.set(e.level, [e]);
+  }
   const top = Math.max(0, ...byLevel.keys());
   const out: Stone[] = [];
   for (let level = FIRST_STONE_LEVEL; level <= top; level++) {
@@ -164,6 +170,9 @@ export function seasonStart(d: Date): Date {
   return new Date(m <= 1 ? d.getFullYear() - 1 : d.getFullYear(), start, 1);
 }
 
+/** Seasons counted from year 0 (Dec, Mar, Jun, Sep starts are consecutive integers). A banner key, if one is ever needed, must be "YYYY-MM", never `start`: a ms timestamp moves with the timezone. */
+const seasonNumber = (start: Date): number => (start.getFullYear() * 12 + start.getMonth() + 1) / 3;
+
 export const seasonEnd = (start: Date): Date =>
   new Date(start.getFullYear(), start.getMonth() + 3, 1);
 
@@ -171,7 +180,7 @@ export type Banner = {
   /** Local midnight of the season's first day, ms: the identity of the banner. */
   start: number;
   kind: SeasonKind;
-  /** 1 in the first year of the village, counted from the first session's day. */
+  /** 1 in the first year of the village: four seasons from the one of the first session, so a row holds at most four banners. */
   villageYear: number;
   sessions: number;
   fact: Fact;
@@ -191,11 +200,13 @@ export function seasons(
 ): Banner[] {
   const first = entries[0];
   if (first === undefined) return [];
-  const origin = startOfDay(first.at);
+  const origin = seasonNumber(seasonStart(first.at));
   const groups = new Map<number, Entry[]>();
   for (const e of entries) {
     const key = seasonStart(e.at).getTime();
-    groups.set(key, [...(groups.get(key) ?? []), e]);
+    const list = groups.get(key);
+    if (list) list.push(e);
+    else groups.set(key, [e]);
   }
   const names = southern ? SOUTH : NORTH;
   return [...groups.entries()]
@@ -214,7 +225,7 @@ export function seasons(
       return {
         start,
         kind: names[date.getMonth()] ?? "winter",
-        villageYear: differenceInYears(date < origin ? origin : date, origin) + 1,
+        villageYear: Math.floor((seasonNumber(date) - origin) / 4) + 1,
         sessions: list.length,
         fact: factOf(list),
         animal:

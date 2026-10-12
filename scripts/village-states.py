@@ -10,8 +10,11 @@ counts per practice, total XP (hence level, title, village tier), a flame of the
 and villageName. Every state ends with a check that reads the finished database back through
 plain SQL and fails the script if the state is wrong.
 
-States: jour1 a-avant a b-avant b palier-avant palier c e sanglier nom-long. `x-avant` is `x` minus its last
-session, the one the hero is meant to play on the emulator to reach `x`.
+States: jour1 a-avant a b-avant b palier-avant palier c e sanglier nom-long age-avant age anniv-avant anniv
+pierres-65 sans-ecu. `x-avant` is `x` minus its last session, the one the hero is meant to play on the
+emulator to reach `x`. `age` crosses level 49 to 50 (the Age of 50), `anniv` has a village a year old whose
+anniversary feast is unshown, `pierres-65` has 66 stones, `sans-ecu` has no crest and a season with no
+practice (the neutral band of a banner).
 
 Not touched: the streak_* caches are deleted, not forged. Their day stamp is stale, so the app
 recomputes the flame from the journal on the first read. Stdlib only.
@@ -41,6 +44,30 @@ TIER_FLOORS = [1, 3, 5, 8, 10, 13, 15, 18, 20, 25, 32, 40]
 TIER_NAMES = ["Hameau", "Clairière", "Village", "Carrefour", "Bourg", "Ville franche", "Cité",
               "Cité marchande", "Cité florissante", "Citadelle", "Métropole", "Capitale éternelle"]
 
+def add_months(d, n):
+    m = d.month - 1 + n
+    return d.replace(year=d.year + m // 12, month=m % 12 + 1, day=1)
+
+
+def season_start_date(d):
+    """First day of the season of `d`: Dec, Mar, Jun or Sep (January and February belong to December)."""
+    m = d.month
+    start = 12 if m == 12 or m <= 2 else 9 if m >= 9 else 6 if m >= 6 else 3
+    return date(d.year - 1 if m <= 2 else d.year, start, 1)
+
+
+_TODAY = date.today()
+_SEASON = season_start_date(_TODAY)
+# D20: the first session of C falls on the first day of the current season, three years ago: 12 seasons, all finished.
+C_SPAN = (_TODAY - _SEASON.replace(year=_SEASON.year - 3)).days
+# sans-ecu: two empty sessions in a spring-like season, then three real ones; offsets in days before today.
+_empty_season = add_months(_SEASON, -6)
+SANS_ECU_DAYS = sorted(
+    (d - _TODAY).days for d in (_empty_season + timedelta(days=20), _empty_season + timedelta(days=40),
+                                add_months(_SEASON, -3) + timedelta(days=15),
+                                add_months(_SEASON, -3) + timedelta(days=50), _TODAY - timedelta(days=3)))
+
+
 FIRST8_FORCE_LED = ["force", "force", "course", "force", "yoga", "force", "course", "force"]
 
 # counts: practice -> sessions. first8: the opening eight, in order. last: practice of the final
@@ -60,9 +87,11 @@ STATES = {
     "palier": dict(counts={"force": 12, "course": 6, "yoga": 3}, xp=2925, last_xp=130, flame=9, span=90,
                    first8=FIRST8_FORCE_LED, last="force", level=8, tier="Carrefour", name="Brumeval",
                    shown=["reveal"]),
-    "c": dict(counts={"force": 320, "course": 70, "yoga": 26}, head=B_COUNTS, xp=83400, flame=40, span=1130,
+    # D20: 12 stable seasons, 32 stones (levels 21 to 52), 3 rings, and the Age of 50 named after the Diamond
+    # Push-Up first done at level 47 (`diamond`), the only new rung of its window.
+    "c": dict(counts={"force": 320, "course": 70, "yoga": 26}, head=B_COUNTS, xp=83400, flame=40, span=C_SPAN,
               first8=FIRST8_FORCE_LED, last="force", level=52, tier="Capitale éternelle",
-              name="Brumeval"),
+              name="Brumeval", diamond=47, rings=3, banners=12, ages=[(50, "rung", 20, 47)]),
     "e": dict(counts={"run": 40, "ride": 20}, xp=9800, flame=9, span=220, first8=["run"] * 8,
               last="run", level=14, tier="Ville franche", name="Brumeval",
               # Grand Chemin: rank 3 is 40-89 leagues; the last 5 outings (metres) leave ~3 outings to rank 4.
@@ -74,9 +103,6 @@ STATES = {
                      span=1100, first8=FIRST8_FORCE_LED, last="force", level=52,
                      tier="Capitale éternelle", name="Rochebrune-sur-Lande"),
 }
-AVANT = {"a-avant": "a", "b-avant": "b", "palier-avant": "palier"}
-
-
 # ---- the app's rules, ported (db/streaks.ts, db/userLevel.ts, db/village.ts) -------------------
 
 def level_of(xp):
@@ -108,6 +134,24 @@ def flame_run(day_offsets, quota=2):  # quota 2 = DEFAULT_WEEKLY_QUOTA in consta
         lit = win(d) >= quota or win(d - 7) >= quota
         run = run + 1 if lit else 0
     return run
+
+
+# The hero reaches level 50 on the played session (79 000 XP): the Age of 50 is told then. The anniversary of the
+# village is marked shown (it is two years old), so the Age is the one big feast.
+STATES["age"] = dict(counts={"force": 250, "course": 56, "yoga": 20}, xp=79100, last_xp=400, flame=20, span=1000,
+                     first8=FIRST8_FORCE_LED, last="force", level=50, tier="Capitale éternelle",
+                     name="Brumeval", diamond=47, ages=[(50, "rung", 20, 47)], shown=["reveal", "anniversary:2"])
+# B with a village a year old: the anniversary feast (anniversary:1) is due and unshown.
+STATES["anniv"] = {**STATES["b"], "span": 372, "shown": ["reveal"], "rings": 1}
+# 66 stones (levels 21 to 86), four Ages; the legendary count (500) is out of reach of every practice.
+STATES["pierres-65"] = dict(counts={"force": 460, "course": 190, "yoga": 70}, xp=152000, last_xp=250, flame=40,
+                            span=1600, first8=FIRST8_FORCE_LED, last="force", level=86, tier="Capitale éternelle",
+                            name="Brumeval", shown=["reveal"])
+# No crest (fewer than 8 practised sessions) and a season whose sessions have no exercise: a neutral banner.
+STATES["sans-ecu"] = dict(counts={"none": 2, "force": 3}, seq=["none", "none", "force", "force", "force"],
+                          days=SANS_ECU_DAYS, xp=800, flame=flame_run([-d for d in SANS_ECU_DAYS]), first8=[],
+                          last="force", level=4, tier="Clairière", name="Brumeval", banners=2, neutral=1, rings=0)
+AVANT = {"a-avant": "a", "b-avant": "b", "palier-avant": "palier", "age-avant": "age", "anniv-avant": "anniv"}
 
 
 # ---- the schedule ------------------------------------------------------------------------------
@@ -194,6 +238,23 @@ def uuid7(ms, rng):
     return f"{h[:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:]}"
 
 
+def diamond_plan(spec, seq, xps):
+    """Quests that make the Diamond Push-Up (exercise 20) a first at `spec["diamond"]`, the only new rung of
+    its Age window. Every force quest, plus quest 13 (Dip and Pike, the diamond's two equals at depth 3 that
+    would win the tie by id), is done in the first force sessions; quest 10 (the only one holding the diamond)
+    is then done by the first force session that ends on that level."""
+    level = spec.get("diamond")
+    if not level:
+        return None
+    total, hit = 0, None
+    for i, (p, xp) in enumerate(zip(seq, xps)):
+        total += xp
+        if hit is None and p == "force" and level_of(total) == level:
+            hit = i
+    assert hit is not None, "no force session ends on the diamond's level"
+    return {"cover": [*FORCE_QUESTS, 13], hit: 10}
+
+
 # ---- build -------------------------------------------------------------------------------------
 
 def build(base, state, out):
@@ -220,9 +281,11 @@ def build(base, state, out):
     counts = spec["counts"]
     n = sum(counts.values())
     if n:
-        days = make_days(n, spec["flame"], spec["span"], rng)
+        days = spec.get("days") or make_days(n, spec["flame"], spec["span"], rng)
         first8 = spec["first8"]
-        if "head" in spec:  # B's year (cerf enters on its last session), then the rest of the history
+        if "seq" in spec:
+            seq = spec["seq"]
+        elif "head" in spec:  # B's year (cerf enters on its last session), then the rest of the history
             seq = head_sequence(spec["head"], first8, rng) + tail_sequence(
                 Counter(counts) - Counter(spec["head"]), spec["last"], rng)
         else:
@@ -231,7 +294,7 @@ def build(base, state, out):
             rng.shuffle(rest)
             seq = first8 + rest + ([spec["last"]] if n > 8 else [])
         assert Counter(seq) == Counter(counts) and seq[-1] == spec["last"], "practice sequence drifted"
-        factor = {"force": 1.0, "course": 1.1, "yoga": 0.8, "run": 1.0, "ride": 1.2}
+        factor = {"none": 1.0, "force": 1.0, "course": 1.1, "yoga": 0.8, "run": 1.0, "ride": 1.2}
         weights = [factor[p] * rng.uniform(0.75, 1.25) for p in seq]
         xps = split_weights(spec["xp"], weights, spec.get("last_xp"))
         qx = {}
@@ -241,6 +304,8 @@ def build(base, state, out):
         rounds = dict(db.execute("SELECT id, rounds FROM quests"))
         device = (db.execute("SELECT value FROM user_preferences WHERE key='deviceId'").fetchone() or [None])[0]
         today, now = date.today(), time.time()
+        plan = diamond_plan(spec, seq, xps)
+        forces = 0
         for i, (d, practice, xp) in enumerate(zip(days, seq, xps)):
             if d == 0:
                 ts = int(now) - 300
@@ -257,8 +322,12 @@ def build(base, state, out):
                 ascent = rng.randrange(10, 150)
             else:
                 moving = leagues = ascent = None
-                pool = {"force": FORCE_QUESTS, "course": COURSE_QUESTS, "yoga": YOGA_QUESTS}[practice]
-                quest = pool[rng.randrange(len(pool))]
+                pool = {"force": FORCE_QUESTS, "course": COURSE_QUESTS, "yoga": YOGA_QUESTS,
+                        "none": FORCE_QUESTS}[practice]
+                quest = pool[rng.randrange(len(pool))]  # drawn even when overridden: the other states keep their stream
+                if practice == "force" and plan:
+                    quest = plan.get(i, plan["cover"][forces] if forces < len(plan["cover"]) else quest)
+                    forces += 1
                 dur = rng.randrange(1200, 2700)
             cur = db.execute(
                 "INSERT INTO completed_sessions(questId,userLevel,durationSeconds,xpEarned,notes,feedback,"
@@ -267,7 +336,7 @@ def build(base, state, out):
                 (quest, level, dur, xp, rng.choice(["easy", "good", "good", "hard"]), ts,
                  uuid7(ts * 1000, rng), leagues, moving, ascent, outing, device, tz))
             sid = cur.lastrowid
-            for e, o, tt, lo, hi in qx[quest]:
+            for e, o, tt, lo, hi in [] if practice == "none" else qx[quest]:
                 for r in range(1 if outing else rounds[quest]):
                     value = moving if outing else rng.randint(lo, hi)
                     db.execute(
@@ -311,17 +380,75 @@ def practices(db):
         if outing:
             p = None if (secs or 0) < 600 else "vélo" if outing == "ride" else "course"
         else:
-            p = STYLE_PRACTICE[style]
+            p = STYLE_PRACTICE.get(style)  # None: a session with no exercise done
         out.append((p, at, xp))
     return out
+
+
+def village_years(db, rows, now):
+    """Rings, banners, stones and Ages, from the journal alone (db/villageYearsRules.ts, ported)."""
+    parent = dict(db.execute("SELECT id, prerequisiteExerciseId FROM exercises"))
+
+    def depth(i):
+        n, seen, cur = 0, {i}, parent.get(i)
+        while cur is not None and cur not in seen:
+            seen.add(cur)
+            n, cur = n + 1, parent.get(cur)
+        return n
+
+    movements = {}  # session -> distinct movements, by id (an expedition is no movement)
+    for sid, ex in db.execute("SELECT ce.sessionId, ce.exerciseId FROM completed_exercises ce JOIN exercises e "
+                              "ON e.id = ce.exerciseId WHERE e.style <> 'expedition' ORDER BY 1, 2"):
+        if ex not in movements.setdefault(sid, []):
+            movements[sid].append(ex)
+    sessions = db.execute("SELECT id, performedAt, xpEarned, outing, COALESCE(movingSeconds, durationSeconds) "
+                          "FROM completed_sessions ORDER BY performedAt, uuid").fetchall()
+    total, seen, entries = 0, set(), []  # (at, level after the session, practice, first-done movements)
+    for (sid, at, xp, outing, secs), (p, _, _) in zip(sessions, rows):
+        total += xp
+        if outing is not None and (secs or 0) < 600:
+            continue  # a short outing pays XP and is no session
+        fresh = [m for m in movements.get(sid, []) if m not in seen]
+        seen.update(fresh)
+        entries.append((datetime.fromtimestamp(at), level_of(total), p, fresh))
+    if not entries:
+        return dict(rings=0, banners=0, neutral=0, per_year=0, stones=0, ages=[])
+    first = entries[0][0]
+    rings = now.year - first.year - ((now.month, now.day, now.time()) < (first.month, first.day, first.time()))
+    top = max(e[1] for e in entries)
+    groups = {}
+    for e in entries:
+        groups.setdefault(season_start_date(e[0].date()), []).append(e)
+    num = lambda d: (d.year * 12 + d.month) // 3
+    finished = {d: g for d, g in groups.items() if add_months(d, 3) <= now.date()}
+    years = Counter((num(d) - num(season_start_date(first.date()))) // 4 + 1 for d in finished)
+    firsts = [(i, m) for i, e in enumerate(entries) for m in e[3]]
+
+    def age(lv):
+        end = next((i for i, e in enumerate(entries) if e[1] >= lv), None)
+        if end is None:
+            return None
+        start = next(i for i, e in enumerate(entries) if e[1] >= lv - 10)
+
+        def deepest(frm):
+            c = [(i, m) for i, m in firsts if frm <= i <= end and depth(m) > 0]
+            return min(c, key=lambda t: (-depth(t[1]), -t[0], t[1]), default=None)
+
+        window = deepest(start + 1)
+        pick = window or deepest(0)
+        return (lv, "rung" if window else "held", pick[1], entries[pick[0]][1]) if pick else (lv, "practice", None, None)
+
+    return dict(rings=rings, banners=len(finished), per_year=max(years.values(), default=0),
+                neutral=sum(all(e[2] is None for e in g) for g in finished.values()),
+                stones=max(0, top - 20), ages=[a for lv in range(50, top + 1, 10) if (a := age(lv))])
 
 
 def verify(db, state, spec, drop_last):
     rows = practices(db)
     uuids = [u for (u,) in db.execute("SELECT uuid FROM completed_sessions ORDER BY performedAt, id")]
-    counts = Counter(p for p, _, _ in rows)
+    counts = Counter(p for p, _, _ in rows if p)
     want = Counter({("vélo" if k == "ride" else "course" if k == "run" else k): v
-                    for k, v in spec["counts"].items()})
+                    for k, v in spec["counts"].items() if k != "none"})
     xp = sum(x for _, _, x in rows)
     if drop_last:
         want[spec["last"]] -= 1
@@ -342,13 +469,13 @@ def verify(db, state, spec, drop_last):
     assert max(at for _, at, _ in rows) <= time.time() if rows else True, f"{state}: session in the future"
     late = db.execute("SELECT COUNT(*) FROM completed_exercises WHERE performedAt > ?", (int(time.time()),)).fetchone()[0]
     assert late == 0, f"{state}: {late} exercises in the future"
-    first8 = Counter(p for p, _, _ in rows[:8])
+    first8 = Counter(p for p, _, _ in rows[:8] if p)
     animal = first8.most_common(1)[0][0] if first8 else None
     if state.startswith("sanglier"):
         assert max(first8.values()) < 4, f"{state}: a practice has 4 of the first 8: {dict(first8)}"
         last = {p: max(at for q, at, _ in rows if q == p) for p in ("course", "yoga")}
         assert last["course"] > last["yoga"], f"{state}: course must be more recent than yoga"
-    elif rows:
+    elif rows and "days" not in spec:
         expect = "course" if state == "e" else "force"
         assert animal == expect and first8[expect] > len(rows[:8]) / 2, f"{state}: first 8 {dict(first8)}, wanted {expect}"
     if "head" in spec:  # the cerf must enter during B's year and stay, though C ends at 17 %
@@ -362,6 +489,16 @@ def verify(db, state, spec, drop_last):
         rank = sum(road >= f for f in (1, 15, 40, 90, 200))
         assert rank == 3, f"{state}: Grand Chemin rank {rank} ({road} leagues) != 3"
     road_note = f" grandChemin=rang{rank}({road}l)" if "road_m" in spec else ""
+    facts = village_years(db, rows, datetime.now())
+    if drop_last and "ages" in spec:
+        spec = {**spec, "ages": []}
+    for key in ("rings", "banners", "neutral", "ages"):
+        if key in spec:
+            assert facts[key] == spec[key], f"{state}: {key} {facts[key]} != {spec[key]}"
+    assert facts["stones"] == max(0, level - 20), f"{state}: {facts['stones']} stones at level {level}"
+    assert facts["per_year"] <= 4, f"{state}: {facts['per_year']} banners in one village year"
+    road_note += (f" rings={facts['rings']} banners={facts['banners']}(neutral {facts['neutral']}, max {facts['per_year']}/year)"
+                  f" stones={facts['stones']} ages={facts['ages']}")
     name = db.execute("SELECT value FROM user_preferences WHERE key='villageName'").fetchone()[0]
     assert name == spec["name"], f"{state}: villageName {name}"
     shown = db.execute("SELECT value FROM user_preferences WHERE key='bigFeastsShown'").fetchone()

@@ -72,6 +72,12 @@ export function nextMilestone(b: Rising, feeds: RecentFeeds): Milestone | null {
     : { rank: b.level + 1, count, unit: feed.unit, subject: feed.subject };
 }
 
+/** `nextMilestone`, but null past `MILESTONE_QUIET_AFTER`: a chore is not a goal. */
+export function quietNextMilestone(b: Rising, feeds: RecentFeeds): Milestone | null {
+  const m = nextMilestone(b, feeds);
+  return m === null || m.count > MILESTONE_QUIET_AFTER ? null : m;
+}
+
 /** What raises this building and what the latest sessions of it brought; null when sessions do not. */
 function feedOf(
   b: Rising,
@@ -116,8 +122,8 @@ export function pickSessionMilestone<B extends Rising>(
 ): { building: B; milestone: Milestone } | null {
   let best: { building: B; milestone: Milestone } | null = null;
   for (const building of buildings) {
-    const m = nextMilestone(building, feeds);
-    if (m === null || m.count > MILESTONE_QUIET_AFTER) continue;
+    const m = quietNextMilestone(building, feeds);
+    if (m === null) continue;
     const nourished = fed === null || sessionFeeds(building.code, m, fed);
     if (nourished && (best === null || m.count < best.milestone.count)) {
       best = { building, milestone: m };

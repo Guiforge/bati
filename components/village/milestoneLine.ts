@@ -1,10 +1,10 @@
 import type { TFunction } from "i18next";
 import { MUSCLE_LABELS } from "@/db/labels";
 import {
-  MILESTONE_QUIET_AFTER,
   type Milestone,
   nextMilestone,
   pickSessionMilestone,
+  quietNextMilestone,
   type RecentFeeds,
   type SessionFed,
 } from "@/db/milestone";
@@ -79,9 +79,8 @@ export function quietMilestoneLine(
   language: AppLanguage,
   named = false,
 ): string | null {
-  const m = feeds === null ? null : nextMilestone(b, feeds);
-  if (m === null || m.count > MILESTONE_QUIET_AFTER) return null;
-  return milestoneLine(m, b.code, t, language, named);
+  const m = feeds === null ? null : quietNextMilestone(b, feeds);
+  return m === null ? null : milestoneLine(m, b.code, t, language, named);
 }
 
 /**

@@ -1334,7 +1334,6 @@
     "fact_sessions_many": "{{count}} séances",
     "banner_label": "{{year}}, {{season}} : {{fact}}",
     "stones_title": "Les pierres des Remparts",
-    "stone_line": "Niveau {{level}} : {{fact}}",
     "stone_record_line": "Niveau {{level}}, record : {{fact}}",
     "stone_age_line": "Niveau {{level}} : Nouvel âge, {{title}}",
     "stones_summary_one": "Niveaux {{from}} à {{to}} : {{count}} séance",

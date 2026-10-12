@@ -1264,7 +1264,6 @@
     "fact_sessions_other": "{{count}} Einheiten",
     "banner_label": "{{year}}, {{season}}: {{fact}}",
     "stones_title": "Steine der Burgmauer",
-    "stone_line": "Level {{level}}: {{fact}}",
     "stone_record_line": "Level {{level}}, Rekord: {{fact}}",
     "stone_age_line": "Level {{level}}: Neues Zeitalter, {{title}}",
     "stones_summary_one": "Level {{from}}-{{to}}: {{count}} Einheit",

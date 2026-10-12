@@ -1,5 +1,7 @@
 import type { TFunction } from "i18next";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { LayoutChangeEvent } from "react-native";
 import Svg, { G, Path, Text as SvgText } from "react-native-svg";
 import { Text, YStack } from "tamagui";
 import { SectionLabel } from "@/components/common/SectionLabel";
@@ -12,7 +14,7 @@ import type { AppLanguage } from "@/stores/settings";
 
 const SIZE = 44;
 const HEIGHT = 32;
-/** Beyond this many stones the wall is grouped by decade. */
+/** Beyond this many stones the wall is cut by decade. The text always is: it is what a screen reader hears. */
 const GROUP_FROM = 60;
 const PER_ROW = 6;
 const GAP = 4;
@@ -32,14 +34,23 @@ function StoneRow({
   row,
   shifted,
   marks,
+  available,
 }: {
   row: readonly Stone[];
   shifted: boolean;
   marks: ReadonlyMap<number, Mark>;
+  /** The room the screen gives the wall, 0 until measured: a row wider than it scales down. */
+  available: number;
 }) {
   const width = row.length * SIZE + (row.length - 1) * GAP + (shifted ? HALF : 0);
+  const shown = available > 0 ? Math.min(width, available) : width;
   return (
-    <Svg width={width} height={HEIGHT} viewBox={`0 0 ${width} ${HEIGHT}`}>
+    <Svg
+      testID="village-stone-row"
+      width={shown}
+      height={(HEIGHT * shown) / width}
+      viewBox={`0 0 ${width} ${HEIGHT}`}
+    >
       {row.map((s, i) => {
         const mark = marks.get(s.level);
         return (
@@ -137,52 +148,71 @@ export function Stones({
   language: AppLanguage;
 }) {
   const { t } = useTranslation();
+  const [available, setAvailable] = useState(0);
   if (stones.length === 0) return null;
   const ageAt = new Map(ages.map((a) => [a.level, a]));
-  const grouped = stones.length > GROUP_FROM;
   // Not `Map.groupBy`: Hermes does not ship it. The stones come in level order, so a decade is a run.
-  const groups: Stone[][] = [];
+  const decades: Stone[][] = [];
   for (const s of stones) {
-    const open = groups[groups.length - 1];
-    if (open && (!grouped || open[0]?.decade === s.decade)) open.push(s);
-    else groups.push([s]);
+    const open = decades[decades.length - 1];
+    if (open && open[0]?.decade === s.decade) open.push(s);
+    else decades.push([s]);
   }
+  // The wall is cut by decade only when it is long; the words below are always by decade.
+  const blocks = stones.length > GROUP_FROM ? decades.map((d) => [d]) : [decades];
   return (
-    <YStack testID="village-stones" gap="$3">
+    <YStack
+      testID="village-stones"
+      gap="$3"
+      onLayout={(e: LayoutChangeEvent) => setAvailable(Math.floor(e.nativeEvent.layout.width))}
+    >
       <SectionLabel>{t("village.stones_title")}</SectionLabel>
-      {groups.map((group) => {
-        const first = group[0];
-        const last = group[group.length - 1];
-        if (first === undefined || last === undefined) return null;
-        const { marks, lines } = decade(group, ageAt, names, t, language);
-        const count = group.reduce((n, s) => n + s.sessions, 0);
-        const summary = t(
-          first.level === last.level ? "village.stones_summary_single" : "village.stones_summary",
-          { from: first.level, to: last.level, level: first.level, count },
-        );
+      {blocks.map((block) => {
+        const first = block[0]?.[0];
+        if (first === undefined) return null;
+        const written = block.map((group) => {
+          const from = group[0]?.level ?? 0;
+          const to = group[group.length - 1]?.level ?? 0;
+          const { marks, lines } = decade(group, ageAt, names, t, language);
+          const count = group.reduce((n, s) => n + s.sessions, 0);
+          const summary = t(
+            from === to ? "village.stones_summary_single" : "village.stones_summary",
+            { from, to, level: from, count },
+          );
+          return { marks, lines, summary };
+        });
+        const marks = new Map(written.flatMap((w) => [...w.marks]));
         return (
           <YStack
             key={first.decade}
             testID={`village-stones-${first.decade}`}
             accessible
-            accessibilityLabel={[summary, ...lines].join(". ")}
+            accessibilityLabel={written.flatMap((w) => [w.summary, ...w.lines]).join(". ")}
             gap="$2"
           >
             {/* Rows of six, cut here: a wrapping row would fit five on a narrow phone. */}
             <YStack gap={ROW_GAP}>
-              {rowsOf(group).map((row, i) => (
-                <StoneRow key={row[0]?.level} row={row} shifted={i % 2 === 1} marks={marks} />
+              {rowsOf(block.flat()).map((row, i) => (
+                <StoneRow
+                  key={row[0]?.level}
+                  row={row}
+                  shifted={i % 2 === 1}
+                  marks={marks}
+                  available={available}
+                />
               ))}
             </YStack>
             <YStack gap={2}>
-              {lines.map((line) => (
-                <Text key={line} fontSize={12} lineHeight={17} color="$textSecondary">
-                  {line}
-                </Text>
-              ))}
-              <Text fontSize={12} lineHeight={17} color="$textSecondary">
-                {summary}
-              </Text>
+              {written.flatMap((w) => [
+                ...w.lines.map((line) => (
+                  <Text key={line} fontSize={12} lineHeight={17} color="$textSecondary">
+                    {line}
+                  </Text>
+                )),
+                <Text key={w.summary} fontSize={12} lineHeight={17} color="$textSecondary">
+                  {w.summary}
+                </Text>,
+              ])}
             </YStack>
           </YStack>
         );

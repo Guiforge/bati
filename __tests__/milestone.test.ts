@@ -1,4 +1,5 @@
 import {
+  MILESTONE_QUIET_AFTER,
   nextMilestone,
   pickSessionMilestone,
   type RecentFeeds,
@@ -202,6 +203,16 @@ describe("pickSessionMilestone", () => {
     const fed = { ...none, muscles: ["chest" as const, "back" as const] };
     expect(pickSessionMilestone([a, b], feeds, fed)?.building.code).toBe("forge");
     expect(pickSessionMilestone([b, a], feeds, fed)?.building.code).toBe("quarry");
+  });
+
+  test("the victory is silent past 30 sessions, and speaks at exactly 30", () => {
+    const at = (n: number) => bld("forge", { metricValue: 0, nextTarget: 100 * n });
+    const fed = { ...none, muscles: ["chest" as const] };
+    expect(MILESTONE_QUIET_AFTER).toBe(30);
+    expect(pickSessionMilestone([at(30)], feeds, fed)?.milestone.count).toBe(30);
+    expect(pickSessionMilestone([at(31)], feeds, fed)).toBeNull();
+    // The building's own sheet keeps the honest estimate.
+    expect(nextMilestone(at(31), feeds)?.count).toBe(31);
   });
 
   test("a session that fed nothing estimable gets null, for the caller's fallback", () => {

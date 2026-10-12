@@ -89,6 +89,7 @@ La taille de l'APK n'est pas un critère pour ce chantier (choix de Guillaume) :
 
 ### V-03
 - Rangs 6 à 10, écrits « rang 7 » (LevelPips pleins puis le chiffre en or). Calés pour « tenir cinq ans » : un héros régulier (182 séances par an) atteint le rang 10 vers 5 ans. Bâtiments de volume : 2 400 / 4 800 / 10 000 / 20 000 / 40 000 unités (les rangs 6 et 7 gardent l'échelle qui met la Forge de l'état B au rang 6). Départs : niveaux du héros 18 / 26 / 34 / 42 / 50 (rangs 1 à 5 inchangés, ils suivent les paliers 1 à 5). Grand Chemin : 500 / 1 000 / 2 000 / 3 500 / 5 500 lieues. Aucun de ces rangs n'avait été publié.
+- Jalon : l'écran de victoire et « Prochain à monter » se taisent au-delà de 30 séances (`MILESTONE_QUIET_AFTER`), parce qu'une victoire qui annonce « dans 180 séances » sonne comme une corvée. La fiche du bâtiment garde « dans environ N séances ».
 - Une pierre gravée par niveau après 20, sur les Remparts : ton plus beau record battu à ce niveau, sinon le nombre de séances. Pierres 44×44 en forme de pierre, 6 par ligne, un seul Svg ; au-delà de 60, rangées par dizaines de niveaux.
 - Saisons : une bannière par saison entraînée, à la couleur du 1er animal (sanglier : pratique en tête), avec son record. Rangées par année. Aucun emplacement réservé, aucun trou.
 - Anniversaire : date = jour de la 1re séance qui compte ; une grande fête à la 1re victoire après la date ; ne dit rien de l'absence ; plusieurs années d'absence = une fête, tous les anneaux d'un coup ; une année sous 10 séances = l'âge du village et le meilleur record, pas le compte.

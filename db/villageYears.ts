@@ -1,4 +1,4 @@
-import { eq, ne, sql } from "drizzle-orm";
+import { eq, inArray, ne, sql } from "drizzle-orm";
 import { getLocales } from "expo-localization";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
@@ -6,6 +6,7 @@ import { doneIn } from "./crest";
 import { isSouthern } from "./crestCoat";
 import { type Animal, practiceOf } from "./crestRules";
 import { fetchLadderRows } from "./exercises";
+import { shortLivedQuery } from "./queryCache";
 import { calculateLevelFromXp } from "./userLevel";
 import {
   type Age,
@@ -97,4 +98,40 @@ export async function getVillageYears(
       rungDepths(new Map(ladder.map((r) => [r.id, r.prerequisiteExerciseId]))),
     ),
   };
+}
+
+/** The names of the movements behind the record facts, in every language: the facts say "Push-ups, 10 to 14". */
+export type RecordNames = Map<
+  number,
+  { enName: string; frName: string; deName: string; esName: string }
+>;
+
+export type VillageYearsView = { years: VillageYears; names: RecordNames };
+
+/**
+ * What the Village screen reads: the years and the names their records need, behind a short memo
+ * keyed on the total XP (a finished session moves it, so the key is a new one) and the animal.
+ */
+export function loadVillageYears(totalXp: number, firstAnimal: Animal | null) {
+  return shortLivedQuery<VillageYearsView>(`village.years:${totalXp}:${firstAnimal}`, async () => {
+    const years = await getVillageYears(new Date(), undefined, firstAnimal);
+    const ids = new Set<number>();
+    for (const { fact } of [...years.stones, ...years.banners]) {
+      if (fact.kind === "record") ids.add(fact.exerciseId);
+    }
+    const rows =
+      ids.size === 0
+        ? []
+        : await db
+            .select({
+              id: exercises.id,
+              enName: exercises.enName,
+              frName: exercises.frName,
+              deName: exercises.deName,
+              esName: exercises.esName,
+            })
+            .from(exercises)
+            .where(inArray(exercises.id, [...ids]));
+    return { years, names: new Map(rows.map(({ id, ...n }) => [id, n])) };
+  });
 }

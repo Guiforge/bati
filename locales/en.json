@@ -1338,7 +1338,7 @@
     "feeds_muscle_legs": "Rises with your legs",
     "feeds_style": "Rises with every rep of {{what}}",
     "feeds_prereq": "Follows the {{building}}",
-    "feeds_tier": "Grows with the village",
+    "feeds_tier": "Grows with your hero",
     "feeds_bosses": "Rises with new bosses beaten",
     "feeds_rematches": "Rises with your rematches",
     "feeds_routes": "Rises with finished routes",

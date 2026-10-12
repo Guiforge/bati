@@ -204,9 +204,13 @@ describe("db/village buildings", () => {
       [200, 5],
       [499, 5],
       [500, 6],
+      [999, 6],
       [1000, 7],
+      [1999, 7],
       [2000, 8],
+      [3499, 8],
       [3500, 9],
+      [5499, 9],
       [5500, 10],
       [9000, 10],
     ])("the road at %i leagues stands at rank %i", async (leagues, expected) => {
@@ -222,6 +226,39 @@ describe("db/village buildings", () => {
       const campfire = await rank("campfire");
       expect(campfire.level).toBe(10);
       expect(campfire.nextTarget).toBeNull();
+    });
+
+    // Ranks 1 to 5 were published as the village tiers; they now follow the hero's level alone.
+    test.each([
+      [1, 1],
+      [2, 1],
+      [3, 2],
+      [5, 3],
+      [7, 3],
+      [8, 4],
+      [10, 5],
+      [17, 5],
+      [18, 6],
+      [49, 9],
+      [50, 10],
+    ])("a level-%i hero has the starters at rank %i", async (level, expected) => {
+      const { getXpForLevel } = require("../db/userLevel") as typeof import("../db/userLevel");
+      t.sqlite.exec(
+        `INSERT INTO completed_sessions (id, performedAt, xpEarned) VALUES (1, ${Math.floor(Date.now() / 1000)}, ${getXpForLevel(level)})`,
+      );
+      const { STARTER_RANK_LEVELS } = require("../db/village") as typeof import("../db/village");
+      const campfire = await rank("campfire");
+      expect(campfire.metricValue).toBe(level);
+      expect(campfire.level).toBe(expected);
+      expect(campfire.nextTarget).toBe(STARTER_RANK_LEVELS[expected] ?? null);
+    });
+
+    test("the first five starter thresholds are the published tier floors", () => {
+      const { STARTER_RANK_LEVELS, TIER_LEVEL_FLOORS } =
+        require("../db/village") as typeof import("../db/village");
+      expect(STARTER_RANK_LEVELS.slice(0, 5)).toEqual(
+        [1, 2, 3, 4, 5].map((i) => TIER_LEVEL_FLOORS[i as 1 | 2 | 3 | 4 | 5]),
+      );
     });
 
     test("each deed's floor table is as long as its ceiling", () => {

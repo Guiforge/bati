@@ -22,7 +22,7 @@ export const T3_MAX_LEVEL = 3;
  * milestone line and the tier-1 clamp all read this. The six upgrades stop at 3 (they used to
  * draw five pips: "3 of 5" for life). The Lair, the Hall and the Arena have finite content and
  * stop at 5; the road, the starters and the volume buildings go to 10. The deeds' ceilings must
- * equal the length of their floor tables in db/village.ts (db-village-buildings pins the road's).
+ * equal the length of their floor tables in db/village.ts (db-village-buildings pins all four).
  */
 export function buildingCeiling(building: { tier: number; code: string }): number {
   if (building.tier === 3) return T3_MAX_LEVEL;

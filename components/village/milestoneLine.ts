@@ -1,6 +1,7 @@
 import type { TFunction } from "i18next";
 import { MUSCLE_LABELS } from "@/db/labels";
 import {
+  MILESTONE_QUIET_AFTER,
   type Milestone,
   nextMilestone,
   pickSessionMilestone,
@@ -85,5 +86,7 @@ export function victoryMilestoneLine(
 ): string | null {
   const picked = pickSessionMilestone(buildings, feeds, fed);
   if (picked) return milestoneLine(picked.milestone, picked.building.code, t, language, true);
+  const far = fallback ? nextMilestone(fallback, feeds) : null;
+  if (far !== null && far.count > MILESTONE_QUIET_AFTER) return null;
   return fallback ? buildingMilestoneLine(fallback, feeds, t, language, true) : null;
 }

@@ -57,6 +57,15 @@ describe("pickNextToRise", () => {
     expect(pickNextToRise([...starters, farm, forge], null)?.code).toBe("forge");
   });
 
+  it("lets the hero's pace pick only up to 30 sessions, then the reps rule decides", () => {
+    const feeds = { muscle: { chest: [100] }, style: {}, outing: [] };
+    const farm = b("farm", 4, { metricValue: 900, nextTarget: 1000 }); // 100 reps, no pace
+    const forge = (sessions: number) =>
+      b("forge", 1, { metricValue: 0, nextTarget: 100 * sessions, driver: "muscle" });
+    expect(pickNextToRise([...starters, farm, forge(30)], feeds)?.code).toBe("forge");
+    expect(pickNextToRise([...starters, farm, forge(31)], feeds)?.code).toBe("farm");
+  });
+
   it("never picks an unbuilt one, which one rep would always win", () => {
     const quarry = b("quarry", 0, { metricValue: 0, nextTarget: 1 });
     const farm = b("farm", 2, { metricValue: 300, nextTarget: 600 });
@@ -177,6 +186,20 @@ describe("the victory line and the Village card", () => {
     expect(victoryMilestoneLine(buildings, feeds, nothing, card, i18n.t, "en")).toMatch(
       /^The High Road, rank 4 in about 3 outings/,
     );
+  });
+});
+
+describe("the victory line past 30 sessions", () => {
+  it("stays silent, fallback included, and speaks at 30", async () => {
+    await i18n.changeLanguage("en");
+    const feeds = { muscle: { chest: [100] }, style: {}, outing: [] };
+    const nothing = { muscles: [], styles: [], outing: false };
+    const forge = (sessions: number) =>
+      b("forge", 2, { metricValue: 0, nextTarget: 100 * sessions, driver: "muscle" });
+    const line = (f: VillageBuilding) =>
+      victoryMilestoneLine([...starters, f], feeds, nothing, f, i18n.t, "en");
+    expect(line(forge(30))).toMatch(/in about 30 chest sessions/);
+    expect(line(forge(31))).toBeNull();
   });
 });
 

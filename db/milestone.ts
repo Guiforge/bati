@@ -1,9 +1,20 @@
 import { buildingCeiling } from "@/constants/buildingLevels";
-import { buildingDefinitions, type ExerciseStyle, type MuscleCode } from "./schema";
+import {
+  type BuildingCode,
+  buildingDefinitions,
+  type ExerciseStyle,
+  type MuscleCode,
+} from "./schema";
 import type { VillageBuilding } from "./village";
 
 /** How many of the latest sessions that fed a building the average reads. */
 export const MILESTONE_WINDOW = 5;
+
+/**
+ * Past this many sessions the victory screen and "Next to rise" say nothing: a win that announces
+ * "in 180 sessions" reads as a chore. The building's own sheet keeps the honest "in about N".
+ */
+export const MILESTONE_QUIET_AFTER = 30;
 
 /**
  * What each of the latest sessions brought, per thing that raises a building, oldest first: work
@@ -82,6 +93,15 @@ function feedOf(
 /** What one session brought: the muscles and styles it did work for, and whether it left the walls. */
 export type SessionFed = { muscles: MuscleCode[]; styles: ExerciseStyle[]; outing: boolean };
 
+/** Whether this session fed what the milestone counts. */
+function sessionFeeds(code: BuildingCode, m: Milestone, fed: SessionFed): boolean {
+  if (m.unit === "outings") return fed.outing;
+  if (m.subject === null) return false;
+  return "muscle" in m.subject
+    ? fed.muscles.some((x) => x === buildingDefinitions[code].relatedMuscle)
+    : fed.styles.includes(m.subject.style);
+}
+
 /**
  * The building that rises soonest, the one function behind the victory's PROCHAIN line and the
  * Village's "Next to rise". With `fed` (the victory), only among those THIS session fed (the Forge
@@ -97,15 +117,8 @@ export function pickSessionMilestone<B extends Rising>(
   let best: { building: B; milestone: Milestone } | null = null;
   for (const building of buildings) {
     const m = nextMilestone(building, feeds);
-    if (m === null) continue;
-    const def = buildingDefinitions[building.code];
-    const nourished =
-      fed === null ||
-      (m.unit === "outings"
-        ? fed.outing
-        : m.subject !== null && "muscle" in m.subject
-          ? fed.muscles.some((x) => x === def.relatedMuscle)
-          : m.subject !== null && fed.styles.includes(m.subject.style));
+    if (m === null || m.count > MILESTONE_QUIET_AFTER) continue;
+    const nourished = fed === null || sessionFeeds(building.code, m, fed);
     if (nourished && (best === null || m.count < best.milestone.count)) {
       best = { building, milestone: m };
     }

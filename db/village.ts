@@ -257,7 +257,7 @@ export type VillageBuilding = {
  * year, levels 18 / 26 / 34 / 43 / 51 at the end of years 1 to 5) reaches rank 6 about year 1 and
  * rank 10 about year 5. They used to follow the tiers and ended at level 25, about 18 months.
  */
-const STARTER_RANK_LEVELS: readonly number[] = [1, 3, 5, 8, 10, 18, 26, 34, 42, 50];
+export const STARTER_RANK_LEVELS: readonly number[] = [1, 3, 5, 8, 10, 18, 26, 34, 42, 50];
 
 // The shared ladder from schema.ts, with level 1 at "any work at all" — a building appears
 // the first time its muscle is trained, which is what the old `xp > 0` guard meant.

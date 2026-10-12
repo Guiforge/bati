@@ -43,7 +43,7 @@ row can be read without a tap.
      count.
    - **Next to rise** (`pickNextToRise`): the building with the fewest sessions or outings to go
      by the hero's own recent pace (`pickSessionMilestone` with no `fed` filter, the same function
-     as the victory's PROCHAIN line). A runner sees the Grand Chemin, a strength hero the nearest
+     as the victory's PROCHAIN line; past 30 sessions, `MILESTONE_QUIET_AFTER`, it says nothing and the older rule applies). A runner sees the Grand Chemin, a strength hero the nearest
      muscle. Only when no building has an estimate does the older rule apply: the rep building
      fewest reps from its next rung, level 0 waiting while any is still rising, then the deed with
      the most of its bar filled. The name is set in the heading font. Rep buildings carry a bar
@@ -169,7 +169,7 @@ figure is drawn (see [villagers](../gameplay/villagers.md)).
 ## Implementation notes
 
 Buildings are **derived, never stored**: `getVillageBuildings()` computes every level from existing
-signals (lifetime muscle volume, exercise-style volume, deeds, village tier). The
+signals (lifetime muscle volume, exercise-style volume, deeds, hero level). The
 `village_buildings` and `village_stats` tables are seeded but unused.
 
 Every sentence about a building (next rung, what feeds it, level text, bar ends, family, quest link)

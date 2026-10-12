@@ -386,10 +386,12 @@ describe("planReminders: the weekly oath", () => {
     expect(plan.entries[0]?.body).toBe('reminders.oath_more {"count":2}');
   });
 
-  test("this week, quota already met: the week is won", () => {
+  test("this week, quota already met: nothing asks for one more", () => {
     const sessions = [12, 13, 14].map((d) => workout(new Date(2026, 0, d, 18)));
     const plan = planReminders(input({ oath: oath(3), sessions }));
-    expect(plan.entries[0]?.body).toBe("reminders.oath_won");
+    // The chosen day still rings; only the oath's line is gone.
+    expect(plan.entries.length).toBeGreaterThan(0);
+    expect(plan.entries[0]?.body).not.toContain("oath");
   });
 
   test("this week, out of reach: no number", () => {

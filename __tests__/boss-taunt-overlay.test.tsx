@@ -16,7 +16,7 @@ import config from "@/tamagui.config";
  */
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
-jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
+jest.mock("@/db/quests", () => ({}));
 jest.mock("@/db/preferences", () => ({
   preferences: {
     getSavedSession: jest.fn().mockResolvedValue(null),

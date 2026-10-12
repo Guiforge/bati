@@ -16,10 +16,9 @@ const LISTS: { keys: readonly string[]; source: string }[] = [
   {
     // `RULES` in app/xp.tsx, rendered as `xp.<rule>_title` / `_body`.
     source: "app/xp.tsx",
-    keys: ["unit", "rest", "movement", "outside", "decay", "ceiling", "kept"].flatMap((rule) => [
-      `xp.${rule}_title`,
-      `xp.${rule}_body`,
-    ]),
+    keys: ["unit", "rest", "movement", "outside", "decay", "bonus", "ceiling", "kept"].flatMap(
+      (rule) => [`xp.${rule}_title`, `xp.${rule}_body`],
+    ),
   },
   {
     // `SECTIONS` in app/privacy.tsx.

@@ -16,6 +16,7 @@ import type {
 } from "./schema";
 import { uuidv7 } from "./uuid";
 import { repEquivalentSql } from "./workUnits";
+import { MAX_SESSION_XP } from "./xp";
 
 const { completedExercises, completedQuest, exerciseMuscles, exercises, quests } = schema;
 
@@ -98,8 +99,6 @@ export type CompletedSessionInput = {
   userLevel?: DifficultyCode;
   durationSeconds?: number | null;
   xpEarned?: number;
-  /** The part of `xpEarned` that is the day's quest bonus (`0071`). Zero for every other session. */
-  dailyBonusXp?: number;
   notes?: string;
   feedback?: FeedbackCode | null;
   performedAt?: Date;
@@ -242,7 +241,6 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
   // starts before it is saved (stores/session.ts passes `startTime`), so those are different
   // clocks and different days, and 0038 backfilled the older half from `performedAt`.
   const performedAt = input.performedAt ?? new Date();
-  const dailyBonusXp = Math.max(0, Math.round(input.dailyBonusXp ?? 0));
 
   return transactionOrFallback(async (tx) => {
     const inserted = await tx
@@ -252,7 +250,6 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         userLevel: input.userLevel ?? "medium",
         durationSeconds: input.durationSeconds ?? null,
         xpEarned: Math.max(0, Math.round(input.xpEarned ?? 0)),
-        dailyBonusXp,
         notes: input.notes ?? "",
         feedback: input.feedback ?? null,
         performedAt,
@@ -391,18 +388,22 @@ export async function markSessionWithNewRecords(
 }
 
 /**
- * Add XP to a session already in the journal. Total XP is SUM(xpEarned) over sessions, so
- * bumping the tip-over session's row is how an oath bonus reaches the level with no extra state.
+ * Add a flat bonus to a session's row. Total XP is SUM(xpEarned) over sessions, so bumping the
+ * row is how an oath or Triumph bonus reaches the level with no extra state. Under the ceiling: the XP page says no session is
+ * worth more than `MAX_SESSION_XP`, and the row is what the total and the journal read. Returns
+ * the row's uuid, which is how the oath's weekly bonus remembers the session that carried it.
  */
 export async function addBonusXpToSession(
   sessionId: number,
   bonusXp: number,
   tx: TransactionTx | typeof db = db,
-): Promise<void> {
-  await tx
+): Promise<string | null> {
+  const [row] = await tx
     .update(completedQuest)
-    .set({ xpEarned: sql`${completedQuest.xpEarned} + ${bonusXp}` })
-    .where(eq(completedQuest.id, sessionId));
+    .set({ xpEarned: sql`min(${MAX_SESSION_XP}, ${completedQuest.xpEarned} + ${bonusXp})` })
+    .where(eq(completedQuest.id, sessionId))
+    .returning({ uuid: completedQuest.uuid });
+  return row?.uuid ?? null;
 }
 
 export async function updateSessionFeedback(
@@ -633,17 +634,14 @@ export async function getSessionAggregates(): Promise<{
 
 /**
  * Workouts logged before today began. For a rule that must not change its answer in the middle
- * of a day: the daily quest is drawn from the quests a hero may be suggested, and a pool that
- * grew when tonight's session was saved pointed the same day at a second quest, and paid the
- * daily bonus twice.
+ * of a day: what the app may suggest is drawn from this count, and a pool that grew when
+ * tonight's session was saved changed the suggestions mid-day.
  */
-export async function workoutsBeforeToday(at = new Date()): Promise<number> {
+export async function workoutsBeforeToday(): Promise<number> {
   const [row] = await db
     .select({ n: count() })
     .from(completedQuest)
-    // `at` for a save: "today" is the day the session started on, like every other question
-    // its bonus asks. Read off the clock, a session begun at 23:50 counted its own evening.
-    .where(and(isWorkout(), lt(completedQuest.performedAt, startOfLocalDay(at))));
+    .where(and(isWorkout(), lt(completedQuest.performedAt, startOfLocalDay())));
   return Number(row?.n ?? 0);
 }
 
@@ -759,29 +757,6 @@ export async function outingSecondsToday(excludeSessionId: number | null): Promi
   return Number(row?.seconds ?? 0);
 }
 
-/**
- * Whether today's suggested quest has already been logged today.
- *
- * `isDailyQuest` only asks whether an id is the one the day picked, so without this the same
- * quest run three times paid the bonus three times. Once a day is what the bonus is for: it
- * rewards having done what the game proposed, not having done it repeatedly.
- *
- * `excludeSessionId` for the same reason as `outingSecondsToday`: a retry finds the row the
- * first attempt wrote and would otherwise decide the bonus had already been paid.
- */
-export async function hasSessionForQuestToday(
-  questId: number,
-  /** The instant "today" is read from. A session's own start, when it is asked for a save. */
-  at = new Date(),
-): Promise<boolean> {
-  const [row] = await db
-    .select({ n: count() })
-    .from(completedQuest)
-    .where(and(eq(completedQuest.questId, questId), onLocalDayOf(at)));
-
-  return Number(row?.n ?? 0) > 0;
-}
-
 /** Whether the hero showed up today: a workout, or a walk long enough to count. */
 export async function hasSessionToday(): Promise<boolean> {
   const [row] = await db
@@ -790,40 +765,6 @@ export async function hasSessionToday(): Promise<boolean> {
     .where(and(gte(completedQuest.performedAt, startOfLocalDay()), countsAsSession()));
 
   return Number(row?.n ?? 0) > 0;
-}
-
-/** Sessions dated on the local day `at` falls on, from its midnight to the next. */
-function onLocalDayOf(at: Date) {
-  const start = startOfLocalDay(at);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-  return and(gte(completedQuest.performedAt, start), lt(completedQuest.performedAt, end));
-}
-
-/**
- * Whether the day's quest bonus has already gone to a session of that day (issue #177).
- *
- * Read off the journal (`completed_sessions.dailyBonusXp`, `0071`), so there is no second record
- * to keep true: a deleted session gives the day back by not being there, and a session merged in
- * from another device brings its bonus with it. `at` is the instant the day is read from, the
- * session's own start, because that is the day its row is dated.
- */
-export async function dailyBonusPaidOn(at: Date): Promise<boolean> {
-  const [row] = await db
-    .select({ n: count() })
-    .from(completedQuest)
-    .where(and(gt(completedQuest.dailyBonusXp, 0), onLocalDayOf(at)));
-  return Number(row?.n ?? 0) > 0;
-}
-
-/** The daily bonus a saved session holds: what a retried save must report, no more and no less. */
-export async function dailyBonusOf(sessionId: number): Promise<number> {
-  const [row] = await db
-    .select({ xp: completedQuest.dailyBonusXp })
-    .from(completedQuest)
-    .where(eq(completedQuest.id, sessionId))
-    .limit(1);
-  return Number(row?.xp ?? 0);
 }
 
 /**

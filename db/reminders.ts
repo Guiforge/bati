@@ -284,7 +284,7 @@ function oathLine(input: PlanInput, date: string, done: number | null): string {
   if (!isSameWeek(day, now, { weekStartsOn })) return "";
 
   const left = Math.max(1, oath.weeklyTarget ?? DEFAULT_WEEKLY_TARGET) - done;
-  if (left <= 0) return t("reminders.oath_won");
+  if (left <= 0) return "";
   const daysLeft = 7 - differenceInCalendarDays(day, startOfWeek(day, { weekStartsOn }));
   return left <= daysLeft ? t("reminders.oath_more", { count: left }) : "";
 }

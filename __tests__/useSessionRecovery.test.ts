@@ -19,7 +19,7 @@ import { useSessionStore } from "@/stores/session";
  */
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
-jest.mock("@/db/quests", () => ({ isDailyQuest: () => false }));
+jest.mock("@/db/quests", () => ({}));
 
 // The points an interrupted outing had already filed. The card counts them; the sweep and the
 // discard read the same module, so stubbing it is also what keeps a database out of this suite.

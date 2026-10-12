@@ -452,8 +452,8 @@ export const completedQuest = sqliteTable(
 
     // XP earned for this session (resources/items are intentionally out of scope for now).
     xpEarned: int().notNull().default(0),
-    // The part of `xpEarned` that was the day's quest bonus (`0071`), 0 for every other session.
-    // It is what "today's bonus was paid" is read from, so it lives and dies with the session.
+    // The part of `xpEarned` that was the day's quest bonus (`0071`). The bonus is gone and nothing
+    // writes this any more; the column stays so the XP already paid stays on its rows.
     dailyBonusXp: int().notNull().default(0),
 
     // Optional: free text notes.

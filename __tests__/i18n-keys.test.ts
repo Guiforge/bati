@@ -156,9 +156,9 @@ describe("i18n locale parity", () => {
     const STANDS_ALONE = new Set([
       "adventures.reward_xp_per_step",
       "adventures.step_label",
-      "common.daily_xp_bonus",
       "exercises.seconds_per_rep",
       "journal.chip_bosses",
+      "oath.fulfilled_bonus_taken",
       "oath.fulfilled_xp_bonus",
       "oath.weekly_chip",
       "quests.editor_added_count",

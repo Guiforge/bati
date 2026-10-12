@@ -321,7 +321,7 @@ a second place. Decide what target an untargeted expedition hands the XP formula
 zero, and it is not the elapsed time either without saying why.
 
 Saying it "writes a normal `completed_sessions` row and touches nothing else" was too glib:
-`saveSession` reads `quest.id`, `isDailyQuest(quest.id)`, `buildWarmup(quest, …)` and
+`saveSession` reads `quest.id`, `buildWarmup(quest, …)` and
 `estimateQuestSeconds(quest)`, and `startSession` demands a full `Quest`. The design owes an
 answer to whether the ad-hoc quest is a real `quests` row (simplest, pollutes the quest table)
 or a synthetic object with a null-quest path through the store (cleaner, touches four call

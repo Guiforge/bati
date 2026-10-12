@@ -81,8 +81,7 @@ describe("quest eligibility", () => {
     }
   }
 
-  // The daily quest is drawn from this set by the date. A pool that grew when tonight's third
-  // session was saved pointed the same day at another quest, and paid the daily bonus twice.
+  // A pool that grew when tonight's third session was saved changed the suggestions mid-day.
   test("what was logged today does not change what the app may suggest today", async () => {
     const before = await quests().getEligibleQuestIds();
 
@@ -323,21 +322,5 @@ describe("quest eligibility", () => {
     test("returns null for a movement no quest uses", async () => {
       expect(await quests().findQuestWithExercise(-1)).toBeNull();
     });
-  });
-
-  test("the daily quest comes from the eligible pool", async () => {
-    setPreference("ownedEquipment", "[]");
-    setPreference("trainingLevel", "beginner");
-    const q = quests();
-
-    // `isDailyQuest` is the only door the app has to the daily pick, so the test goes through it.
-    const templates = await q.listQuestTemplates();
-    const flags = await Promise.all(templates.map((tpl) => q.isDailyQuest(tpl.id)));
-    const picked = templates.filter((_, i) => flags[i]);
-    expect(picked).toHaveLength(1);
-
-    const daily = await q.getQuestById(picked[0]?.id ?? -1, q.Difficulty.Medium);
-    expect(daily).toBeTruthy();
-    expect(daily?.exercises.every((qex) => qex.exercise.equipment === "none")).toBe(true);
   });
 });

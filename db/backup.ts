@@ -257,6 +257,8 @@ export const MERGED_PREFERENCES = [
   "trainingLevel",
   "ownedEquipment",
   "oath",
+  // When the last oath bonus was paid: one a week (db/oaths.ts), on whichever device earned it.
+  "oathBonusAt",
   // The days the reminders ring and their hour: the hero's rhythm, not this phone's. Whether a
   // phone rings at all lives in the native module and never travels (docs/designs/rappels.md).
   "reminderDays",

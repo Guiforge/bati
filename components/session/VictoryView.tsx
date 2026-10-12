@@ -15,6 +15,7 @@ import { ImageViewer } from "@/components/common/ImageViewer";
 import { InkGauge } from "@/components/common/InkGauge";
 import { Recitatif } from "@/components/common/Recitatif";
 import { useToast } from "@/components/common/Toast";
+import { ChevronRight } from "@/components/icons";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
@@ -406,6 +407,9 @@ export function VictoryView() {
     seeVillage(router, result);
   };
 
+  // Like the village: a look at the rules, and the hero comes back to the same screen.
+  const handleViewXpRules = () => router.push("/xp");
+
   const handleForget = () => {
     if (!result) return;
     confirmForget(result.sessionId, () => {
@@ -574,7 +578,7 @@ export function VictoryView() {
           </YStack>
         )}
 
-        {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
+        {/* Stat row: Time · XP */}
         {!tooShort && (
           <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
             <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$2">
@@ -585,10 +589,26 @@ export function VictoryView() {
                 {result ? formatTime(durationSeconds) : "\u00A0"}
               </Text>
             </Card>
-            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$2">
+            <Card
+              testID="victory-xp-rules"
+              flex={1}
+              bg="$surface"
+              borderColor="$glassBorder"
+              items="center"
+              gap="$1"
+              py="$2"
+              // Not while saving: a card that answers a press and goes nowhere reads as broken.
+              onPress={result ? handleViewXpRules : undefined}
+              accessibilityRole="link"
+            >
               <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
                 {t("session.xp_earned")}
               </Text>
+              {/* In the corner, out of the label's row: beside it, the chevron took the width a
+                long label needs, and at 130 % Russian broke "Заработано" in the middle. */}
+              <YStack position="absolute" t={6} r={4}>
+                <ChevronRight size={16} color="$textSecondary" />
+              </YStack>
               {/* The testID only exists once the session is banked: Continue is on screen, and
                 disabled, for the whole save, so it cannot tell an E2E flow when to tap it. */}
               <Text
@@ -606,13 +626,6 @@ export function VictoryView() {
                   : // Same line height, no glyph: a loading reward asserts nothing.
                     "\u00A0"}
               </Text>
-              {!!result?.dailyBonusXp && (
-                <Text fontWeight="700" fontSize={11} color="$success">
-                  {t("common.daily_xp_bonus", {
-                    count: formatCount(language, result.dailyBonusXp),
-                  })}
-                </Text>
-              )}
               {/* The rate, said out loud. A hero who walks an hour and reads "+300" has no way to
                 know why, and a number with no rule behind it is the thing the research calls
                 controlling rather than informative. This is the rule, in the hero's own numbers. */}

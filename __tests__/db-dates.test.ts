@@ -5,7 +5,7 @@ import { dayKey } from "@/db/dates";
  * the UTC day, and then compared it against something built locally — a calendar grid of
  * `new Date(year, month, date)`, a `setHours(0,0,0,0)` midnight, a `startOfDay`. Outside UTC
  * the two never lined up: workout dots landed on the wrong square, the 7-day chart dropped
- * today's session, and the daily quest (with its 1.5x XP) rotated at 02:00 or 19:00 local.
+ * today's session, and the daily quest rotated at 02:00 or 19:00 local.
  *
  * These assert the property rather than a fixed string, so they hold in whatever timezone the
  * suite happens to run in — including a machine that sits on UTC and would never see the bug.

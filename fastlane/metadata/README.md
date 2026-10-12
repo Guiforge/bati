@@ -1,5 +1,8 @@
 # Store listings
 
+Files that only Google Play should read go in `fastlane/play/android`, same layout, laid over this
+directory at upload time (`release.yml`, `play` job). It is empty today. Changelogs never go there.
+
 One directory, two stores. Google Play and F-Droid both read the
 [fastlane supply](https://docs.fastlane.tools/actions/supply/) layout, so the copy is written
 once and neither store gets a stale copy of the other's.

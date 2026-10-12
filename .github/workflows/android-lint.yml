@@ -69,8 +69,8 @@ jobs:
       # architecture-specific, and release.yml ships arm64-v8a anyway.
       #
       # A failure here is either a real new warning or a baseline that has drifted. Neither is
-      # fixed by widening `android-lint-baseline.xml`: regenerate it with
-      # `./gradlew :app:updateLintBaseline` only after the warning itself is understood.
+      # fixed by widening `android-lint-baseline.xml`: regenerate it the way AGENTS.md § Checks
+      # says (not `updateLintBaseline`, which lints debug) only after the warning is understood.
       - name: Lint
         working-directory: android
         run: ./gradlew :app:lintRelease --console=plain -PreactNativeArchitectures=arm64-v8a

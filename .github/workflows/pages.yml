@@ -61,8 +61,10 @@ jobs:
       # long before F-Droid is ready. See docs/fdroid.md.
       - name: Is F-Droid configured?
         id: fdroid
+        env:
+          KEYSTORE_B64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}
         run: |
-          if [ -f fdroid/config.yml ] && [ -n "${{ secrets.FDROID_KEYSTORE_BASE64 }}" ]; then
+          if [ -f fdroid/config.yml ] && [ -n "$KEYSTORE_B64" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
@@ -87,6 +89,9 @@ jobs:
         if: steps.fdroid.outputs.ready == 'true'
         run: pip install "setuptools<81" fdroidserver
 
+      # The Release only ever carries the foss APK (release.yml's `github` job), which is what
+      # makes `*.apk` safe: the Play build is never attached to it.
+      #
       # From the published Release, not the build artefact. Artefacts belong to one run — a manual
       # re-deploy has none to find, which is exactly how this failed the first time — and they
       # expire after 90 days, while the index has to keep describing an APK that still exists.

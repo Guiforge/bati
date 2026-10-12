@@ -194,9 +194,10 @@ test("the card sends a hero to a page, never to a file", () => {
   expect(RELEASES_URL.endsWith(".apk")).toBe(false);
 });
 
-// F-Droid signs with its own key, so the release APK cannot install over its build: following
-// the card meant uninstalling, and the hero with it (docs/fdroid.md § The signing key).
-describe("the f-droid.org build", () => {
+// One build out of three offers the check (src/distribution.ts). F-Droid signs with its own key,
+// so the release APK cannot install over its build: following the card meant uninstalling, and the
+// hero with it (docs/fdroid.md § The signing key). Play updates the app itself.
+describe("the distribution decides who is offered the update", () => {
   const originalFetch = global.fetch;
 
   afterEach(() => {
@@ -204,28 +205,71 @@ describe("the f-droid.org build", () => {
     delete process.env.EXPO_PUBLIC_DISTRIBUTION;
   });
 
-  test("never offers the update, even switched on with one already known", async () => {
-    process.env.EXPO_PUBLIC_DISTRIBUTION = "fdroid";
-    const fetchMock = replyWith("v9.9.9");
-    global.fetch = fetchMock as unknown as typeof fetch;
+  /** The real modules, loaded fresh under a given `EXPO_PUBLIC_DISTRIBUTION`. */
+  function build(distribution: string | undefined) {
+    if (distribution === undefined) delete process.env.EXPO_PUBLIC_DISTRIBUTION;
+    else process.env.EXPO_PUBLIC_DISTRIBUTION = distribution;
 
-    let fdroid: typeof import("@/src/updateCheck") | undefined;
+    let loaded:
+      | (typeof import("@/src/updateCheck") & typeof import("@/src/distribution"))
+      | undefined;
     jest.isolateModules(() => {
-      fdroid = require("@/src/updateCheck");
+      loaded = { ...require("@/src/distribution"), ...require("@/src/updateCheck") };
       // The isolated registry builds its own copy of the mocked preferences.
       const { store } = jest.requireMock("@/db/preferences").preferences as typeof preferences;
+      // A stamp left by an earlier test would mean "already asked today" and hide the request.
+      for (const key of Object.keys(store)) delete store[key];
       store.updateCheck = "true";
       store.updateLatest = "9.0.0";
     });
-    assert(fdroid);
+    assert(loaded);
+    return loaded;
+  }
 
-    expect(fdroid.UPDATE_CHECK_OFFERED).toBe(false);
-    await expect(fdroid.checkForUpdate()).resolves.toBeNull();
-    expect(fetchMock).not.toHaveBeenCalled();
+  test.each(["fdroid", "play"])(
+    "the %s build never offers it, even switched on with one already known",
+    async (distribution) => {
+      const fetchMock = replyWith("v9.9.9");
+      global.fetch = fetchMock as unknown as typeof fetch;
+      const app = build(distribution);
+
+      expect(app.DISTRIBUTION).toBe(distribution);
+      expect(app.UPDATE_CHECK_OFFERED).toBe(false);
+      await expect(app.checkForUpdate()).resolves.toBeNull();
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
+
+  // Unset is every dev build and every local one: they behave like the GitHub APK.
+  test.each(["github", undefined])(
+    "the github build offers it (EXPO_PUBLIC_DISTRIBUTION=%s)",
+    async (distribution) => {
+      const fetchMock = replyWith("v9.9.9");
+      global.fetch = fetchMock as unknown as typeof fetch;
+      const app = build(distribution);
+
+      expect(app.DISTRIBUTION).toBe("github");
+      expect(app.UPDATE_CHECK_OFFERED).toBe(true);
+      await expect(app.checkForUpdate()).resolves.toBe("9.9.9");
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  test.each(["", "Play", "f-droid"])("an unknown value (%p) is an error, never a fallback", (v) => {
+    expect(() => build(v)).toThrow("EXPO_PUBLIC_DISTRIBUTION");
   });
 
   test("our copy of the recipe sets the variable before the JS is bundled", () => {
     const recipe = readFileSync(join(__dirname, "../fdroid/fdroiddata-recipe.yml"), "utf8");
     expect(recipe).toContain("echo EXPO_PUBLIC_DISTRIBUTION=fdroid > .env");
+  });
+
+  // Same reason, the other two channels: a build that forgets the variable is a `github` build,
+  // which on Play is exactly the card this file exists to keep out of it.
+  test("release.yml names the distribution of each of its two builds", () => {
+    const workflow = readFileSync(join(__dirname, "../.github/workflows/release.yml"), "utf8");
+    expect(workflow).toContain("distribution: github");
+    expect(workflow).toContain("distribution: play");
+    expect(workflow).toContain('echo "EXPO_PUBLIC_DISTRIBUTION=$DISTRIBUTION" > .env');
   });
 });

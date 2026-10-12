@@ -23,6 +23,40 @@ once in the F-Droid client and get update notifications from then on. That is th
 option, and it is strictly better than handing out APK links — the whole point is that an update
 arrives without anyone re-downloading anything by hand.
 
+## Three distributions
+
+One source tree, three builds that differ by one variable. `EXPO_PUBLIC_DISTRIBUTION` is read in
+one place, [`src/distribution.ts`](../src/distribution.ts), and an unknown value throws at import
+rather than falling back.
+
+| | f-droid.org | GitHub Releases and our repository | Google Play |
+|---|---|---|---|
+| `EXPO_PUBLIC_DISTRIBUTION` | `fdroid` | `github` (also the default: dev and local builds) | `play` |
+| Built by | F-Droid, from the tag | `release.yml`, `foss` build | `release.yml`, `play` build |
+| Signed with | F-Droid's key | our key | our key (Play App Signing) |
+| Artefact | APK | APK | AAB |
+| Version check offered | no | yes | no |
+| Google code | none | none, and a CI step proves it | none yet |
+
+**A tag produces two builds.** [`release.yml`](../.github/workflows/release.yml) runs the gates
+once, then a matrix of two from the same commit with the same versionCode. Two, because Babel
+inlines the variable into the JS bundle and one binary cannot be both. Only the `foss` APK reaches
+the GitHub Release, so it is the only one `pages.yml` can put in our repository; only the `play`
+AAB reaches Play. The `play` build also assembles an APK, which exists for the permission and
+16 KB guards and is uploaded nowhere.
+
+The `play` build drops the version check because Play updates the app itself and a card leading
+to an APK outside the store is a risk against its policies. Nothing else differs today. The split
+is in place ahead of an optional Play subscription: when it comes, the billing code lives in one
+directory, `modules/bati-play-billing`, which the `foss` build deletes before prebuild and the
+f-droid.org recipe will delete with `rm:`. The `foss` build already fails if a
+`com/android/billingclient` class or the `BILLING` permission turns up in its APK.
+
+**The Play listing is the shared one plus an overlay.** `fastlane/metadata/android` stays the
+base, read by F-Droid and by `app.config.js`. The `play` job copies it, lays
+`fastlane/play/android` on top, and hands the result to `fastlane supply`. The overlay is empty
+for now and never holds a changelog: release notes are shown inside the app on every distribution.
+
 ## What it needed, and how each piece was found
 
 **All three of these exist now**: the release keystore since 2026-07-31, the public repository and
@@ -274,11 +308,14 @@ builds after all.
 tester on the f-droid.org build followed it, hit the signature refusal, and had to uninstall: only
 a backup saved the hero. So the f-droid.org build has no update check at all: the recipe's
 `prebuild:` writes `EXPO_PUBLIC_DISTRIBUTION=fdroid` to `.env`, `expo export:embed` (the bundling
-step Gradle runs) loads it, Babel inlines it, and `UPDATE_CHECK_OFFERED` is false, which hides the
-Settings row and makes `checkForUpdate()` answer null even for a hero who had switched it on.
-Every other build (GitHub, our own repository, Play, whose App Signing uses our exported key) is
-signed with the GitHub key and keeps it. The variable has to be in the recipe that `fdroiddata`
-master holds, not only in our copy: a recipe without it ships a build that offers the update.
+step Gradle runs) loads it, Babel inlines it, and `UPDATE_CHECK_OFFERED`
+([`src/distribution.ts`](../src/distribution.ts)) is false, which hides the Settings row and makes
+`checkForUpdate()` answer null even for a hero who had switched it on. The GitHub APK and our own
+repository are signed with the GitHub key and keep the check. Play is signed with it too and
+could install the APK, but has no check either, for its own reason: see
+[Three distributions](#three-distributions). The variable has to be in the recipe that
+`fdroiddata` master holds, not only in our copy: a recipe without it is a `github` build, and
+offers the update.
 
 ### The recipe
 

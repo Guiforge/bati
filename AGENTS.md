@@ -257,6 +257,16 @@ workflow and F-Droid. The release keystore
 ([`plugins/withAndroidReleaseSigning.js`](plugins/withAndroidReleaseSigning.js)) is the one
 irreversible asset here: lose it and the published app can never be updated again.
 
+There are three distributions, and [`src/distribution.ts`](src/distribution.ts) is the only place
+that knows which one is running: `fdroid` (built by f-droid.org), `github` (the APK on GitHub
+Releases and in our own F-Droid repository, and what any dev or local build is) and `play`. Only
+`github` offers the version check. One tag makes two builds in
+[`release.yml`](.github/workflows/release.yml), `foss` and `play`, from the same commit: the foss
+APK is the only thing attached to the GitHub Release, the play AAB the only thing sent to Play.
+Code that differs by channel imports a flag from that module and never reads
+`EXPO_PUBLIC_DISTRIBUTION` itself. The table is in
+[`docs/fdroid.md`](docs/fdroid.md) § Three distributions.
+
 ## Git hooks
 
 Managed by [prek](https://github.com/j178/prek) via [`.pre-commit-config.yaml`](.pre-commit-config.yaml).

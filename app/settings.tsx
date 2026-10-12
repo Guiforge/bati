@@ -52,9 +52,9 @@ import { useBackup } from "@/hooks/useBackup";
 import { useBugReport, versionLabel } from "@/hooks/useBugReport";
 import { useHaptics } from "@/hooks/useHaptics";
 import { encodeAvatar } from "@/src/customAvatar";
+import { UPDATE_CHECK_OFFERED } from "@/src/distribution";
 import { LANGUAGE_NAMES, MACHINE_TRANSLATED, nextAppLanguage } from "@/src/i18n/deviceLanguage";
 import { reportError } from "@/src/reportError";
-import { UPDATE_CHECK_OFFERED } from "@/src/updateCheck";
 import { releaseNotes } from "@/src/whatsNew";
 import { useSettingsStore } from "@/stores/settings";
 

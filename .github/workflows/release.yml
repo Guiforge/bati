@@ -1,9 +1,19 @@
-# Build a signed APK and AAB on a version tag, and publish them.
+# Two signed builds from one version tag, each published to its own channel.
 #
-# `npm run release` bumps the version, tags it and pushes; this picks the tag up, runs every
-# gate, builds, attaches the APK to a GitHub Release that the F-Droid job downstream also
-# serves, and uploads the AAB to Play's internal testing track behind a manual approval gate
-# (the `play-internal` environment — see the `play` job below).
+# `npm run release` bumps the version, tags it and pushes; this picks the tag up and runs:
+#
+#   checks   every gate, once
+#   build    a matrix of two, same commit, same versionCode, same key:
+#              foss  EXPO_PUBLIC_DISTRIBUTION=github, an APK with no Google code in it
+#              play  EXPO_PUBLIC_DISTRIBUTION=play, an AAB (and an APK only the guards read)
+#   github   the foss APK to a GitHub Release, which pages.yml then folds into our own F-Droid
+#            repository. Never the AAB, never the play APK.
+#   play     the AAB and the store listing to Play's internal testing track, behind a manual
+#            approval gate (the `play-internal` environment)
+#
+# Two builds because the distribution is inlined into the JS bundle (src/distribution.ts), so one
+# binary cannot be both. f-droid.org is the third distribution and builds the tag itself, from
+# fdroid/fdroiddata-recipe.yml. docs/fdroid.md § Three distributions has the table.
 #
 # Signing: SIGNING_KEYSTORE_BASE64 + SIGNING_* secrets, when they exist. Without them the build
 # falls back to Expo's debug keystore, which is fine for passing an APK to friends but produces
@@ -28,11 +38,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  apk:
+  # Once, not once per build: nothing here depends on the distribution.
+  checks:
     runs-on: ubuntu-26.04
-    # write: action-gh-release creates the GitHub Release and attaches the APK.
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -66,6 +76,47 @@ jobs:
       - run: npm test -- --coverage
       - run: npm run deadcode
 
+      # The same drift check ci.yml runs, and it belongs here too: scripts/release.sh regenerates
+      # android/ before tagging, but a tag pushed by hand bypasses that script entirely and
+      # nothing downstream re-checked it. It runs with the full node_modules, because that is
+      # what release.sh prebuilds with — dev-client's config plugin adds an `exp+bati` scheme to
+      # the manifest, so a prebuild after the build job's drop differs by exactly that line and
+      # the check would fail on every release (v1.9.0 did).
+      - name: The committed android/ matches app.json and plugins
+        run: |
+          npx expo prebuild --clean --platform android
+          git add -A android
+          git diff --cached --exit-code --stat -- android
+
+  build:
+    needs: checks
+    runs-on: ubuntu-26.04
+    # Read only: this job holds the signing key, and nothing in it publishes.
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        include:
+          - variant: foss
+            distribution: github
+          - variant: play
+            distribution: play
+    env:
+      VARIANT: ${{ matrix.variant }}
+      DISTRIBUTION: ${{ matrix.distribution }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: lts/*
+          # zizmor: ignore[cache-poisoning] the npm cache holds tarballs, and `npm ci` checks each
+          # one against the integrity hash in package-lock.json before installing it.
+          cache: npm
+      - run: npm ci
+
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
@@ -91,19 +142,20 @@ jobs:
           # Dropping it would put a release back near the 29 minutes it used to take.
           cache-read-only: false
 
-      # The same drift check ci.yml runs, and it belongs here too: scripts/release.sh regenerates
-      # android/ before tagging, but a tag pushed by hand bypasses that script entirely and
-      # nothing downstream re-checked it. It runs with the full node_modules, because that is
-      # what release.sh prebuilds with — dev-client's config plugin adds an `exp+bati` scheme to
-      # the manifest, so a prebuild after the drop below differs by exactly that line and the
-      # check would fail on every release (v1.9.0 did). Runs before the keystore step, which
-      # writes into android/ itself.
-      - name: The committed android/ matches app.json and plugins
-        run: |
-          npx expo prebuild --clean --platform android
-          git add -A android
-          git diff --cached --exit-code --stat -- android
-          git reset
+      # Before Gradle, which is what bundles the JS: `expo export:embed` loads .env and Babel
+      # inlines the value, so src/distribution.ts knows which build it is in. A build that skips
+      # this is a `github` build, update card included, which is the one thing the Play build
+      # must not be; __tests__/update-check.test.ts holds this line in place.
+      - name: Name the distribution
+        run: echo "EXPO_PUBLIC_DISTRIBUTION=$DISTRIBUTION" > .env
+
+      # The module does not exist yet, so this deletes nothing today. It is here for the day
+      # Play Billing arrives: that code will live in this one directory, and the foss build drops
+      # it before prebuild autolinks it, the same way the F-Droid recipe will with `rm:`. The
+      # "No Google Play Billing" step below is what proves it worked.
+      - name: Drop the Play-only module from the foss build
+        if: matrix.variant == 'foss'
+        run: rm -rf modules/bati-play-billing
 
       # expo-dev-client is a devDependency, but `npm ci` installs devDependencies and autolinking
       # then compiles it into the release APK — 26 dev-launcher classes, a `exp+bati` deep-link
@@ -117,8 +169,8 @@ jobs:
           rm -rf node_modules/expo-dev-client node_modules/expo-dev-launcher \
                  node_modules/expo-dev-menu node_modules/expo-dev-menu-interface
 
-      # Regenerated a second time, now without dev-client, so the manifest and the autolinked
-      # classes both come from the same tree F-Droid builds.
+      # Without dev-client, so the manifest and the autolinked classes both come from the same
+      # tree F-Droid builds.
       - name: Generate the native project
         run: npx expo prebuild --clean --platform android
 
@@ -169,15 +221,18 @@ jobs:
       # local `expo run:android` keeps building fat and fast, and android/ stays drift-free;
       # only the published artefact narrows. fdroid/fdroiddata-recipe.yml runs the same command —
       # keep the two in sync.
-      # bundleRelease alongside assembleRelease: GitHub Releases and F-Droid want the APK,
-      # Play refuses anything else and only takes the AAB. Same signing config, same flags,
-      # one Gradle invocation — the two artefacts are guaranteed to match the same commit.
+      # GitHub Releases and our F-Droid repository want the APK, Play only takes the AAB. The
+      # play build still assembles an APK beside its AAB: it is never published, it is what the
+      # permission and page-size guards below read, in one Gradle invocation with the bundle so
+      # the two cannot come from different inputs.
       - name: Build
-        run: >-
-          ./gradlew assembleRelease bundleRelease --no-daemon
-          -PreactNativeArchitectures=arm64-v8a
-          -Pandroid.enableMinifyInReleaseBuilds=true
-          -Pandroid.enableShrinkResourcesInReleaseBuilds=true
+        run: |
+          tasks=(assembleRelease)
+          if [ "$VARIANT" = play ]; then tasks+=(bundleRelease); fi
+          ./gradlew "${tasks[@]}" --no-daemon \
+            -PreactNativeArchitectures=arm64-v8a \
+            -Pandroid.enableMinifyInReleaseBuilds=true \
+            -Pandroid.enableShrinkResourcesInReleaseBuilds=true
         working-directory: android
 
       - name: Name the artefacts after the tag
@@ -193,14 +248,18 @@ jobs:
             version="dev"
           fi
           apk_src=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
-          apk_dest="bati-${version}.apk"
+          if [ "$VARIANT" = play ]; then
+            # Named so it can never be mistaken for the published one. No step uploads it.
+            apk_dest="bati-${version}-play.apk"
+            aab_src=$(find android/app/build/outputs/bundle/release -name "*.aab" | head -1)
+            aab_dest="bati-${version}.aab"
+            cp "$aab_src" "$aab_dest"
+            echo "aab_path=$aab_dest" >> "$GITHUB_OUTPUT"
+          else
+            apk_dest="bati-${version}.apk"
+          fi
           cp "$apk_src" "$apk_dest"
           echo "apk_path=$apk_dest" >> "$GITHUB_OUTPUT"
-
-          aab_src=$(find android/app/build/outputs/bundle/release -name "*.aab" | head -1)
-          aab_dest="bati-${version}.aab"
-          cp "$aab_src" "$aab_dest"
-          echo "aab_path=$aab_dest" >> "$GITHUB_OUTPUT"
 
       # A size budget is the only thing that keeps the APK from drifting back up — a one-off
       # optimisation pass does not. It is a ratchet: lower MAX_MB after any release that measures
@@ -212,7 +271,10 @@ jobs:
       # for an estimate that proves optimistic. Lower it to just above whatever that build
       # actually reports. `workflow_dispatch` on a branch builds the APK without publishing, so a
       # change can be weighed before it is tagged.
+      #
+      # On the foss APK, the one people download. Play serves splits cut from the AAB.
       - name: Size budget
+        if: matrix.variant == 'foss'
         env:
           APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
           MAX_MB: 55
@@ -230,6 +292,9 @@ jobs:
       # to it — WAKE_LOCK and FOREGROUND_SERVICE shipped in every APK for months without appearing
       # in any list. This step reads the built artefact instead, so nothing arrives unannounced.
       # It runs on workflow_dispatch too, which is how a change gets weighed before it is tagged.
+      #
+      # Both builds, one list: until Play Billing exists they must ask for exactly the same
+      # things. The day it does, the play build gets its own file with one line more.
       - name: Permission list
         env:
           APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
@@ -250,6 +315,41 @@ jobs:
           fi
           echo "Permissions: $(wc -l < got.txt), all declared" >> "$GITHUB_STEP_SUMMARY"
 
+      # The foss build is the promise F-Droid and GitHub users are made: no Google code, nothing
+      # to pay for. It holds trivially today, since Play Billing is nowhere in the tree; this is
+      # what keeps it true once `modules/bati-play-billing` exists and one forgotten `rm` or one
+      # stray Gradle dependency would otherwise ship it to everyone.
+      #
+      # Three places, because R8 may rename the classes: the dex strings, the manifest (the
+      # library declares an activity and a version meta-data R8 cannot touch), and the
+      # permission it merges in.
+      - name: No Google Play Billing
+        if: matrix.variant == 'foss'
+        env:
+          APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
+        run: |
+          aapt2=$(find "$ANDROID_HOME/build-tools" -name aapt2 | sort | tail -1)
+          unzip -p "$APK_PATH" 'classes*.dex' > all.dex
+          "$aapt2" dump xmltree --file AndroidManifest.xml "$APK_PATH" > manifest.txt
+          # Both reads must be able to find something, or finding nothing proves nothing.
+          grep -qa "com/guiforge/bati" all.dex || {
+            echo "::error::could not read the app's own classes out of the dex in $APK_PATH"
+            exit 1
+          }
+          grep -q "com.guiforge.bati" manifest.txt || {
+            echo "::error::could not read the manifest out of $APK_PATH"
+            exit 1
+          }
+          if grep -qa "com/android/billingclient" all.dex; then
+            echo "::error::the foss APK contains Play Billing classes (com/android/billingclient)"
+            exit 1
+          fi
+          if grep -qi -e "billingclient" -e "com.android.vending.BILLING" manifest.txt; then
+            echo "::error::the foss APK declares Play Billing in its manifest"
+            exit 1
+          fi
+          echo "Play Billing: absent from the dex and the manifest" >> "$GITHUB_STEP_SUMMARY"
+
       # Play refuses updates whose native code cannot run on 16 KB memory pages from 2027-02-01.
       # Every .so in v2.6.0 already complies; a single native dependency built with the old 4 KB
       # linker default would break that silently, and the first report would be a rejected upload.
@@ -261,10 +361,13 @@ jobs:
           APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
           AAB_PATH: ${{ steps.artefacts.outputs.aab_path }}
         run: |
-          mkdir -p so
+          mkdir -p so/apk so/aab
           unzip -q "$APK_PATH" 'lib/*' -d so/apk
-          unzip -q "$AAB_PATH" 'base/lib/*' -d so/aab
+          # Only the play build has an AAB.
+          if [ -n "$AAB_PATH" ]; then unzip -q "$AAB_PATH" 'base/lib/*' -d so/aab; fi
           count=0
+          # nullglob: the foss build has no so/aab to match.
+          shopt -s nullglob
           for f in so/apk/lib/*/*.so so/aab/base/lib/*/*.so; do
             # Outside a command substitution, so a readelf failure fails the step under `bash -e`.
             aligns=$(readelf -lW "$f" | awk '/LOAD/ { print $NF }')
@@ -277,14 +380,49 @@ jobs:
             done
             count=$((count + 1))
           done
-          echo "16 KB pages: $count libraries aligned (APK + AAB)" >> "$GITHUB_STEP_SUMMARY"
+          # Zero libraries would also be zero misaligned ones.
+          (( count > 0 )) || { echo "::error::no .so found in $APK_PATH"; exit 1; }
+          echo "16 KB pages: $count libraries aligned ($VARIANT)" >> "$GITHUB_STEP_SUMMARY"
+
+      # The foss APK on every run, a dispatch included: that is how a branch gets an APK to try
+      # without publishing anything. The play APK is not uploaded anywhere, on purpose.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: matrix.variant == 'foss'
+        with:
+          name: apk
+          path: ${{ steps.artefacts.outputs.apk_path }}
+
+      # Only the play job needs this one, and only on a tagged build — no point keeping it
+      # around otherwise.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: matrix.variant == 'play' && startsWith(github.ref, 'refs/tags/')
+        with:
+          name: aab
+          path: ${{ steps.artefacts.outputs.aab_path }}
+
+  # `needs: build` waits for both builds: a tag whose play build failed publishes no foss APK
+  # either, so the two artefacts of one versionCode always exist together or not at all.
+  github:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-26.04
+    # write: action-gh-release creates the GitHub Release and attaches the APK. Its own job so
+    # that the token sits here, away from the signing key.
+    permissions:
+      contents: write
+    steps:
+      # The `apk` artefact holds one file, the foss APK. pages.yml takes every `*.apk` on the
+      # Release into the F-Droid index, so nothing else may ever be attached to it.
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: apk
 
       - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-        if: startsWith(github.ref, 'refs/tags/')
         with:
-          # zizmor: ignore[superfluous-actions] `gh release create` would do it, but this step only
+          # zizmor: ignore[superfluous-actions] `gh release create` would do it, but this job only
           # runs on a tag, so a rewrite would first be tested on a real release. Pinned by SHA.
-          files: ${{ steps.artefacts.outputs.apk_path }}
+          files: bati-*.apk
+          fail_on_unmatched_files: true
           generate_release_notes: true
           body: |
             Install directly, or add the F-Droid repository for automatic updates:
@@ -293,33 +431,20 @@ jobs:
             This APK is not from an app store. Android will ask you to allow installs from an
             unknown source the first time.
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: apk
-          path: ${{ steps.artefacts.outputs.apk_path }}
-
-      # Only the play job needs this one, and only on a tagged build — no point keeping it
-      # around otherwise.
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          name: aab
-          path: ${{ steps.artefacts.outputs.aab_path }}
-
   # Gated behind the `play-internal` environment: set it up once in Settings → Environments
   # with yourself as a required reviewer, so a bad tag can't reach real testers unattended.
   # Needs PLAY_SERVICE_ACCOUNT_JSON on that environment — a Play Console service account with
   # "release to testing tracks" permission. See docs/planning/roadmap.md §1.
   play:
-    needs: apk
+    needs: build
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-26.04
     environment: play-internal
     permissions:
       contents: read
     steps:
-      # Only for the store listing (fastlane/metadata/android below) — the AAB itself comes
-      # from the apk job's artifact, not this checkout.
+      # Only for the store listing (fastlane/ below) — the AAB itself comes from the play
+      # build's artifact, not this checkout.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -333,14 +458,24 @@ jobs:
       # the whole listing — descriptions, changelogs, icon, featureGraphic, screenshots — rides
       # along with the binary. SUPPLY_JSON_KEY_DATA is supply's own env var for the key, which
       # keeps the JSON out of argv and off the filesystem.
+      #
+      # The listing is the shared one with fastlane/play/android laid over it: the files that
+      # only Play should read (copy that mentions a purchase, say) replace their namesakes, and
+      # everything else, changelogs included, stays the one F-Droid reads too. The overlay is
+      # empty today, so this uploads exactly what it did before.
       - name: Upload the AAB and store listing to Play
         env:
           SUPPLY_JSON_KEY_DATA: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
           # sudo: the runner's system Ruby owns /var/lib/gems.
           sudo gem install fastlane --no-document
+          listing="$RUNNER_TEMP/listing"
+          cp -r fastlane/metadata/android "$listing"
+          cp -r fastlane/play/android/. "$listing/"
+          # The overlay's own note. supply reads every entry here as a language.
+          rm -f "$listing/README.md"
           fastlane supply \
             --package_name com.guiforge.bati \
             --track internal \
             --aab bati-*.aab \
-            --metadata_path fastlane/metadata/android
+            --metadata_path "$listing"

@@ -191,9 +191,7 @@ export function VillageDetailSheet({
         if (!next && selected !== null) onClose();
       }}
       snapPointsMode="fit"
-      // As FormSheet: with the drag on, a scrolling list feeds the pan and the pane drifts off its
-      // snap point, leaving a painted ghost that swallows taps. Closed by the button, back, or the scrim.
-      disableDrag
+      dismissOnSnapToBottom
       transition={reducedMotion ? undefined : "quick"}
       zIndex={100_000}
     >
@@ -210,6 +208,18 @@ export function VillageDetailSheet({
         borderTopLeftRadius="$6"
         borderTopRightRadius="$6"
       >
+        {/* Inside the frame: Sheet.Handle floats above its top edge, over the dimmed list. A bar
+            only: with one `fit` snap point the handle's tap has nothing to cycle, and the drag
+            still lives on the frame. */}
+        <YStack
+          testID="village-detail-handle"
+          self="center"
+          width={40}
+          height={4}
+          rounded={2}
+          mt="$2"
+          bg="$borderStrong"
+        />
         {/* ponytail: `onMoveShouldSetResponder` as in FormSheet, Tamagui 2.7.7 cancels the first
             tap of a button in a Sheet.ScrollView (see .biome/plugins/noBareSheetScrollView.grit). */}
         <Sheet.ScrollView ref={scroll} onMoveShouldSetResponder={() => false}>

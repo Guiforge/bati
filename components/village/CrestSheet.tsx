@@ -215,7 +215,7 @@ function Option({
   onPress,
 }: {
   testID: string;
-  shape: CrestShape;
+  shape?: CrestShape;
   label: string;
   sub?: string;
   selected: boolean;
@@ -237,7 +237,7 @@ function Option({
         borderWidth={1}
         borderColor={selected ? "$primary" : "$borderStrong"}
       >
-        <Crest crest={shape} size={24} />
+        {shape ? <Crest crest={shape} size={24} /> : null}
         <YStack flex={1}>
           <Text fontSize={15} fontWeight="600" color={selected ? "$primaryText" : "$text"}>
             {label}
@@ -305,23 +305,13 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
 
 /** The closed list of mottos and "none": it writes, then goes back to the shield, where the motto now reads. */
 function MottoPick({
-  crest,
   motto,
   onPicked,
 }: {
-  crest: CrestData;
   motto: CrestMotto;
   onPicked: (value: CrestMotto) => void;
 }) {
   const { t } = useTranslation();
-  const shape: CrestShape = {
-    animal: crest.animal,
-    manual: false,
-    second: null,
-    quarters: null,
-    longestFlame: 0,
-    rings: 0,
-  };
   const choose = (value: CrestMotto) => {
     if (value === motto) {
       onPicked(value);
@@ -336,7 +326,6 @@ function MottoPick({
     <YStack gap="$2" role="radiogroup">
       <Option
         testID="crest-motto-none"
-        shape={shape}
         label={t("village.motto_none")}
         selected={motto === "none"}
         onPress={() => choose("none")}
@@ -345,7 +334,6 @@ function MottoPick({
         <Option
           key={id}
           testID={`crest-motto-${id}`}
-          shape={shape}
           label={t(`village.motto_${id}`)}
           selected={motto === id}
           onPress={() => choose(id)}
@@ -529,10 +517,11 @@ export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
         <Pick crest={crest} choose={choose} />
       ) : view === "motto" ? (
         <MottoPick
-          crest={crest}
           motto={motto}
           onPicked={(value) => {
             setMotto(value);
+            // The village's header reads the motto too.
+            onChanged();
             onView("why");
           }}
         />

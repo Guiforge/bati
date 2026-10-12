@@ -54,10 +54,12 @@ import { pickDailyVariant } from "@/constants/restMessages";
 import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
 import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
 import { type Crest as CrestData, getCrest } from "@/db/crest";
+import type { CrestMotto } from "@/db/crestMotto";
 import { dayKey } from "@/db/dates";
 import { MUSCLE_LABELS } from "@/db/labels";
 import type { RecentFeeds } from "@/db/milestone";
 import { getRecentFeeds } from "@/db/milestoneFeed";
+import { preferences } from "@/db/preferences";
 import { formatCount } from "@/db/targets";
 import {
   getTierProgress,
@@ -228,6 +230,7 @@ export function VillageScene() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [rewardOpen, setRewardOpen] = useState(false);
   const [crestView, setCrestView] = useState<CrestView | null>(null);
+  const [motto, setMotto] = useState<CrestMotto>("none");
   // Stones and banners, replayed from the journal: read after the scene (its XP keys the memo)
   // and never failing it, like the crest. Unread, the Seasons and the stones are simply absent.
   const [yearsView, setYearsView] = useState<VillageYearsView | null>(null);
@@ -259,10 +262,16 @@ export function VillageScene() {
       reportError("village.feeds", error);
       return null;
     });
-    Promise.all([getVillageScene(), readCrest, readFeeds])
-      .then(([data, crestData, feedsData]) => {
+    // Read with the scene so the header's line arrives in the same frame as the rest.
+    const readMotto = preferences.getCrestMotto().catch((error) => {
+      reportError("village.crestMotto", error);
+      return "none" as const;
+    });
+    Promise.all([getVillageScene(), readCrest, readFeeds, readMotto])
+      .then(([data, crestData, feedsData, mottoData]) => {
         if (mine !== loadId.current) return;
         setScene(data);
+        setMotto(mottoData);
         if (feedsData !== null) setFeeds(feedsData);
         // An unreadable crest after a drawn one keeps the drawn one, like the scene keeps yesterday's.
         if (crestData !== undefined) crestRead.current = true;
@@ -592,6 +601,17 @@ export function VillageScene() {
               <Text fontWeight="700">{scene.level}</Text>
               {`${afterLevel} · ${scene.title[lang]}`}
             </Text>
+            {motto === "none" ? null : (
+              <Text
+                testID="village-motto"
+                fontSize={13}
+                lineHeight={TEXT_LINE}
+                fontStyle="italic"
+                color="$textSecondary"
+              >
+                {t(`village.motto_${motto}`)}
+              </Text>
+            )}
             {crest === undefined ? null : (
               <Text testID="village-crest-line" fontSize={13} lineHeight={TEXT_LINE} color="$text">
                 {crestLine}

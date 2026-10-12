@@ -158,6 +158,7 @@ describe("i18n locale parity", () => {
       "adventures.step_label",
       "exercises.seconds_per_rep",
       "journal.chip_bosses",
+      "oath.fulfilled_bonus_taken",
       "oath.fulfilled_xp_bonus",
       "oath.weekly_chip",
       "quests.editor_added_count",

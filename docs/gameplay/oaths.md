@@ -110,7 +110,13 @@ A "custom oath" toggle reveals the original metric/target/exercise form for exac
    The bonus is paid **once a calendar week** (`oathBonusPaidThisWeek`, date kept in the synced
    `oathBonusAt` preference): nothing stops a hero from swearing an oath one session away, then
    another, so without it every session could pay 250 XP. A second oath kept the same week is
-   fulfilled and celebrated, and its card shows no XP line. The XP page states the rule.
+   fulfilled and celebrated, and its card says the week's XP is already earned. The XP page
+   states the rule. `oathBonusAt` also names the session that carried the bonus, and the week
+   only counts as paid while that session is in the journal: a session the hero discards takes
+   its 250 XP with it and gives the week back. Two things are not closed: two devices that each
+   keep an oath offline before merging are each paid, and for an oath that is not weekly the week
+   starts on the day the current language says, so changing language can move the boundary.
+   A flat bonus never lifts a row above `MAX_SESSION_XP` (`addBonusXpToSession`).
 3. **Swear screen** ([app/oath.tsx](../../app/oath.tsx)) — presets deck first, custom form behind
    a toggle. Reached from Settings, or by tapping the home card.
 
@@ -131,7 +137,8 @@ advice says so. The oath's part is small and optional:
 - the current-oath card of a **weekly** oath offers it in one line ("Want Bati to remind you on
   your days?"), gone once the reminders are on;
 - a reminder on a day of the oath's current week can add one line, "Two more and the oath holds
-  this week", only while the week can still be kept, and "the oath's week is won" once it is;
+  this week", only while the week can still be kept. Once the week is won it says nothing: it
+  used to ask for "one more, for the fun of it", which is a reminder pushing past a kept promise;
 - Settings says, in grey, when fewer days are chosen than the oath asks for. It blocks nothing.
 
 The quota never silences a chosen day: the oath counts, the days ring.

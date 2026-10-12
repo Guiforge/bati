@@ -408,10 +408,7 @@ export function VictoryView() {
   };
 
   // Like the village: a look at the rules, and the hero comes back to the same screen.
-  const handleViewXpRules = () => {
-    if (!result) return;
-    router.push("/xp");
-  };
+  const handleViewXpRules = () => router.push("/xp");
 
   const handleForget = () => {
     if (!result) return;
@@ -581,7 +578,7 @@ export function VictoryView() {
           </YStack>
         )}
 
-        {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
+        {/* Stat row: Time · XP */}
         {!tooShort && (
           <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
             <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$2">
@@ -600,11 +597,18 @@ export function VictoryView() {
               items="center"
               gap="$1"
               py="$2"
-              onPress={handleViewXpRules}
+              // Not while saving: a card that answers a press and goes nowhere reads as broken.
+              onPress={result ? handleViewXpRules : undefined}
               accessibilityRole="link"
             >
               <XStack items="center" gap={2}>
-                <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+                <Text
+                  shrink={1}
+                  fontFamily="$body"
+                  fontWeight="700"
+                  fontSize={13}
+                  color="$textSecondary"
+                >
                   {t("session.xp_earned")}
                 </Text>
                 <ChevronRight size={16} color="$textSecondary" />

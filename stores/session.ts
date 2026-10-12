@@ -2175,9 +2175,9 @@ export const useSessionStore = create<SessionState>()(
       // good, since a fulfilled oath is a no-op on every later call.
       // Once a week: a second oath kept the same week is fulfilled and this is never called.
       let oathBonusXp = 0;
-      const fulfilledOath = await checkOathFulfilled(async (tx) => {
+      const fulfilledOath = await checkOathFulfilled((tx) => {
         oathBonusXp = OATH_XP_BONUS;
-        await addBonusXpToSession(sessionId, OATH_XP_BONUS, tx);
+        return addBonusXpToSession(sessionId, OATH_XP_BONUS, tx);
       });
 
       // A fulfilled oath pays a mini-boss-sized bonus. Added to the tip-over session row so

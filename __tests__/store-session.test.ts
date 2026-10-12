@@ -45,7 +45,7 @@ jest.mock("@/db", () => ({
 jest.mock("@/db/completed", () => ({
   createCompletedSession: jest.fn().mockResolvedValue(1),
   markSessionWithNewRecords: jest.fn().mockResolvedValue(undefined),
-  addBonusXpToSession: jest.fn().mockResolvedValue(undefined),
+  addBonusXpToSession: jest.fn().mockResolvedValue(null),
   // Only the warm-up reads this, to rotate which movement fills each phase. Pinned to 0 so the
   // sequence these cases walk is stable.
   getSessionAggregates: jest.fn().mockResolvedValue({ totalSessions: 0 }),
@@ -2438,6 +2438,61 @@ describe("useSessionStore", () => {
  * How many seconds of ground a session may claim. The rule lives here rather than in `db/xp.ts`
  * because here is the only place that holds both the recorded results and the GPS trace.
  */
+/**
+ * "Beat your targets" is measured against what the quest proposed. For an outing that is the
+ * suggested duration, and no part of what the hero already walked that day.
+ */
+describe("the at-target reading of an outing", () => {
+  beforeEach(() => {
+    jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+    (computeSessionXp as jest.Mock).mockClear();
+    useSessionStore.setState({ status: "idle" });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("quotes the suggested duration, not the two hours actually walked", async () => {
+    const walk = {
+      id: 41,
+      rounds: 1,
+      restSeconds: 0,
+      roundRestSeconds: null,
+      enTitle: "The round",
+      frTitle: "La ronde",
+      exercises: [
+        {
+          exercise: {
+            id: 30,
+            enName: "Warden's Walk",
+            muscles: [],
+            style: "expedition",
+            secondsPerRep: 1,
+            locomotion: "walk",
+          },
+          // Suggested 45 minutes; the hero walks two hours.
+          target: { type: "time", value: 2700 },
+        },
+      ],
+    } as unknown as Quest;
+
+    const startedAt = Date.now() - 7_200_000;
+    useExpeditionStore.setState({
+      track: { ...EMPTY, startedAt, lastAt: Date.now(), distanceM: 10_000, movingMs: 7_200_000 },
+    });
+    await useSessionStore.getState().startSession(walk, "medium", {});
+    useSessionStore.setState({ startTime: startedAt, totalPausedTime: 0, restTakenSeconds: 0 });
+    await useSessionStore.getState().saveSession(null);
+
+    // `computeSessionXp` is mocked in this file, so what is measured is what the store asks it.
+    const atTarget = (computeSessionXp as jest.Mock).mock.calls[1];
+    assert(atTarget);
+    expect(atTarget[0].outing).toEqual({ seconds: 2700, locomotion: "walk" });
+    expect(atTarget[0].priorOutingSecondsToday).toBe(0);
+  });
+});
+
 describe("what a session may claim it walked", () => {
   const legOf = (): { seconds: number; locomotion: string } | null =>
     (computeSessionXp as jest.Mock).mock.calls[0]?.[0]?.outing ?? null;

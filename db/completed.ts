@@ -16,6 +16,7 @@ import type {
 } from "./schema";
 import { uuidv7 } from "./uuid";
 import { repEquivalentSql } from "./workUnits";
+import { MAX_SESSION_XP } from "./xp";
 
 const { completedExercises, completedQuest, exerciseMuscles, exercises, quests } = schema;
 
@@ -387,18 +388,22 @@ export async function markSessionWithNewRecords(
 }
 
 /**
- * Add XP to a session already in the journal. Total XP is SUM(xpEarned) over sessions, so
- * bumping the tip-over session's row is how an oath bonus reaches the level with no extra state.
+ * Add a flat bonus to a session's row. Total XP is SUM(xpEarned) over sessions, so bumping the
+ * row is how an oath or Triumph bonus reaches the level with no extra state. Under the ceiling: the XP page says no session is
+ * worth more than `MAX_SESSION_XP`, and the row is what the total and the journal read. Returns
+ * the row's uuid, which is how the oath's weekly bonus remembers the session that carried it.
  */
 export async function addBonusXpToSession(
   sessionId: number,
   bonusXp: number,
   tx: TransactionTx | typeof db = db,
-): Promise<void> {
-  await tx
+): Promise<string | null> {
+  const [row] = await tx
     .update(completedQuest)
-    .set({ xpEarned: sql`${completedQuest.xpEarned} + ${bonusXp}` })
-    .where(eq(completedQuest.id, sessionId));
+    .set({ xpEarned: sql`min(${MAX_SESSION_XP}, ${completedQuest.xpEarned} + ${bonusXp})` })
+    .where(eq(completedQuest.id, sessionId))
+    .returning({ uuid: completedQuest.uuid });
+  return row?.uuid ?? null;
 }
 
 export async function updateSessionFeedback(
@@ -629,17 +634,14 @@ export async function getSessionAggregates(): Promise<{
 
 /**
  * Workouts logged before today began. For a rule that must not change its answer in the middle
- * of a day: the daily quest is drawn from the quests a hero may be suggested, and a pool that
- * grew when tonight's session was saved pointed the same day at a second quest, and paid the
- * daily bonus twice.
+ * of a day: what the app may suggest is drawn from this count, and a pool that grew when
+ * tonight's session was saved changed the suggestions mid-day.
  */
-export async function workoutsBeforeToday(at = new Date()): Promise<number> {
+export async function workoutsBeforeToday(): Promise<number> {
   const [row] = await db
     .select({ n: count() })
     .from(completedQuest)
-    // `at` for a save: "today" is the day the session started on, like every other question
-    // its bonus asks. Read off the clock, a session begun at 23:50 counted its own evening.
-    .where(and(isWorkout(), lt(completedQuest.performedAt, startOfLocalDay(at))));
+    .where(and(isWorkout(), lt(completedQuest.performedAt, startOfLocalDay())));
   return Number(row?.n ?? 0);
 }
 

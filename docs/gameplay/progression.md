@@ -53,7 +53,7 @@ A session has two legs and they are priced in different units. The above is the 
 other is [ground](#ground-is-priced-by-the-way-out-not-by-the-movement), and a session that has
 both — a walk and then push-ups in the yard — gets both.
 
-The seven rules the hero can read are on the in-app page (`app/xp.tsx`, `xp.*` in the locales).
+The rules the hero can read are on the in-app page (`app/xp.tsx`, `xp.*` in the locales).
 They are the same rules, in the same order the code applies them: when one changes, it changes in
 three places or it is wrong in one.
 
@@ -134,6 +134,21 @@ stays on its rows.
 
 The suggestions still count only sessions logged before today (`workoutsBeforeToday`), so what
 the app may suggest does not change in the middle of a day.
+
+#### Why it changed
+
+It used to be `durationSeconds / 5` — wall-clock and nothing else. Rest counted, waiting counted,
+a backgrounded app counted. A hero who dragged the rest slider to its 300s maximum out-earned one
+who trained, for no effort, and the gallery's "up to +N XP" chip advertised it: the tag moved with
+the slider, so the exploit was discoverable without reading a line of code.
+
+The fix is not a new design. This page already said XP measures *how much* — only the code
+disagreed. What the rewrite cost was the assumption that a clock is a proxy for work.
+
+`0037_xp_measures_effort.sql` is the one place the change reaches backwards. Journalled XP is left
+alone — nobody is demoted by an update — except for sessions whose XP has no relation to the work
+they recorded, because `most_xp` is a per-session record read live off the journal and the
+exploiting session would otherwise stand as an unbeatable trophy.
 
 ## Where a quest starts
 

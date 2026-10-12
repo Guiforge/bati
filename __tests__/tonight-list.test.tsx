@@ -461,6 +461,14 @@ describe("TonightList", () => {
     expect(getByText("+120 XP")).toBeTruthy();
   });
 
+  // The week's bonus already went to an earlier oath: said, or the missing +250 reads as a bug.
+  test("an oath kept after the week's bonus was paid says why no XP came", async () => {
+    const { getByText, queryByText } = await show(rank({ fulfilledOath: OATH, oathBonusXp: 0 }));
+    expect(getByText("SERMENT ACCOMPLI")).toBeTruthy();
+    expect(getByText("Les 250\u00A0XP du serment sont déjà gagnés cette semaine.")).toBeTruthy();
+    expect(queryByText(/^\+/)).toBeNull();
+  });
+
   test("a boss felled by the final blow says so and pays no triumph XP", async () => {
     const { getByText, queryByText } = await show(
       rankFeasts({ boss: { name: "Golem", finalBlow: true }, result: base }),

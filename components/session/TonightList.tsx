@@ -20,6 +20,7 @@ import { ETERNAL_FLAME_DAYS } from "@/constants/flame";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import type { Crest as CrestRead } from "@/db/crest";
 import type { Animal } from "@/db/crestRules";
+import { OATH_XP_BONUS } from "@/db/oaths";
 import type { DistanceUnit } from "@/db/preferences";
 import type { FlameLevel } from "@/db/streaks";
 import { formatCount, formatTarget, perSideLabel } from "@/db/targets";
@@ -322,9 +323,11 @@ function cardOf(
         body: [
           oathText(f.progress, i18n),
           t("oath.fulfilled_subtitle"),
-          ...(f.bonusXp > 0
-            ? [t("oath.fulfilled_xp_bonus", { count: formatCount(language, f.bonusXp) })]
-            : []),
+          // No XP is the weekly cap and nothing else (`checkOathFulfilled`): said, or the missing
+          // +250 reads as a bug to a hero who saw it last time.
+          f.bonusXp > 0
+            ? t("oath.fulfilled_xp_bonus", { count: formatCount(language, f.bonusXp) })
+            : t("oath.fulfilled_bonus_taken", { count: formatCount(language, OATH_XP_BONUS) }),
         ],
         art: <GameIcon name="scroll" size={32} color="$resourceGold" />,
       };

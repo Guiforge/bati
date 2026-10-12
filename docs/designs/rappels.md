@@ -174,7 +174,7 @@ Les traductions EN / DE / ES des variantes se font dans la PR 3, avec la même r
 
 **Ligne en plus pour un serment hebdo**, seulement pour **la semaine en cours** du serment et seulement si c'est encore atteignable :
 - « Encore 2 séances et le serment tient cette semaine. » / « Two more and the oath holds this week. »
-- Quota déjà atteint : « Semaine du serment gagnée. Une de plus, pour le plaisir ? »
+- Quota déjà atteint : pas de ligne. « Une de plus, pour le plaisir ? » a été retiré : un rappel ne pousse pas au-delà d'une promesse tenue.
 - Plus atteignable, ou semaine suivante : pas de chiffre.
 
 À ne jamais écrire : « ta flamme va s'éteindre », « tu vas perdre », « X jours sans toi ».

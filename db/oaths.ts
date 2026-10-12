@@ -406,8 +406,9 @@ export async function getOathProgress(): Promise<OathProgress | null> {
 }
 
 /**
- * When the last oath bonus was paid. Its own preference, not a field of the oath: breaking or
- * replacing an oath would erase it and reopen the week. Synced like the oath (`MERGED_PREFERENCES`).
+ * When the last oath bonus was paid, and on which session: `<ISO date> <session uuid>`. Its own
+ * preference, not a field of the oath: breaking or replacing an oath would erase it and reopen
+ * the week. Synced like the oath (`MERGED_PREFERENCES`).
  */
 const OATH_BONUS_AT_KEY = "oathBonusAt";
 
@@ -417,12 +418,43 @@ const OATH_BONUS_AT_KEY = "oathBonusAt";
  * gap does not close it (a movement never done accepts "1 rep", then 2, then 3); a ceiling in
  * time closes it for every metric at once. Calendar and not rolling, so a weekly oath kept on a
  * Friday and again the next Thursday is paid both times.
+ *
+ * The session that carried the bonus has to still be in the journal: its 250 XP left with it, so
+ * a session the hero discards gives the week back, on this device and on the ones it syncs to.
  */
 async function oathBonusPaidThisWeek(oath: Oath, now: Date): Promise<boolean> {
-  const paidAt = await getPreference(OATH_BONUS_AT_KEY);
-  if (!paidAt) return false;
+  const stamp = await getPreference(OATH_BONUS_AT_KEY);
+  if (!stamp) return false;
   const weekStartsOn = oathWeekStart(oath, resolveAppLanguage(await preferences.getLanguage()));
-  return isSameWeek(new Date(paidAt), now, { weekStartsOn });
+  // An ISO date is 24 characters; the uuid follows a space, and is absent on a row without one.
+  if (!isSameWeek(new Date(stamp.slice(0, 24)), now, { weekStartsOn })) return false;
+  const sessionUuid = stamp.slice(25);
+  return sessionUuid === "" || (await sessionInJournal(sessionUuid));
+}
+
+async function sessionInJournal(uuid: string): Promise<boolean> {
+  const rows = await db
+    .select({ id: completedQuest.id })
+    .from(completedQuest)
+    .where(eq(completedQuest.uuid, uuid))
+    .limit(1);
+  return rows.length > 0;
+}
+
+/**
+ * What the fulfilment's transaction does about the bonus: pay it and stamp the week, or nothing.
+ * `payBonus` returns the uuid of the session row it credited.
+ */
+async function oathBonusStep(
+  oath: Oath,
+  now: Date,
+  payBonus?: (tx: TransactionTx) => Promise<string | null>,
+): Promise<(tx: TransactionTx) => Promise<void>> {
+  if (!payBonus || (await oathBonusPaidThisWeek(oath, now))) return () => Promise.resolve();
+  return async (tx) => {
+    const sessionUuid = await payBonus(tx);
+    await setPreference(OATH_BONUS_AT_KEY, `${now.toISOString()} ${sessionUuid ?? ""}`.trim(), tx);
+  };
 }
 
 /**
@@ -436,7 +468,7 @@ async function oathBonusPaidThisWeek(oath: Oath, now: Date): Promise<boolean> {
  * and celebrated all the same, without the XP.
  */
 export async function checkOathFulfilled(
-  payBonus?: (tx: TransactionTx) => Promise<void>,
+  payBonus?: (tx: TransactionTx) => Promise<string | null>,
 ): Promise<OathProgress | null> {
   const oath = await getOath();
   if (!oath || oath.fulfilledAt !== null) {
@@ -448,13 +480,10 @@ export async function checkOathFulfilled(
   }
 
   const now = new Date();
-  const pay = payBonus && !(await oathBonusPaidThisWeek(oath, now)) ? payBonus : null;
+  const bonusStep = await oathBonusStep(oath, now, payBonus);
   const fulfilled: Oath = { ...oath, fulfilledAt: now.toISOString() };
   await transactionOrFallback(async (tx) => {
-    if (pay) {
-      await pay(tx);
-      await setPreference(OATH_BONUS_AT_KEY, now.toISOString(), tx);
-    }
+    await bonusStep(tx);
     await setPreference(OATH_KEY, JSON.stringify(fulfilled), tx);
   });
   return await toProgress(fulfilled);

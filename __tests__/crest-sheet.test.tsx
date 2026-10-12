@@ -521,9 +521,7 @@ describe("the coat choice", () => {
     await sheet(crestOf(ADULT, "auto", won), "why");
     const usual = await screen.findByTestId("crest-coat-usual");
     expect(within(usual).getByText("Pelage habituel")).toBeTruthy();
-    expect(
-      within(screen.getByTestId("crest-coat-rare")).getByText("Pointes d'argent"),
-    ).toBeTruthy();
+    expect(within(screen.getByTestId("crest-coat-rare")).getByText("Robe cannelle")).toBeTruthy();
     expect(usual.props.accessibilityState).toEqual({ checked: true });
     expect(screen.getByTestId("crest-coat-rare").props.accessibilityState).toEqual({
       checked: false,
@@ -564,5 +562,24 @@ describe("the portrait in the sheet", () => {
     await sheet(crestOf(seq(["yoga", 8])), "why");
     expect(screen.getByTestId("crest-why-shield")).toBeTruthy();
     expect(screen.queryByTestId("animal-portrait")).toBeNull();
+  });
+});
+
+describe("the legend under the portrait", () => {
+  it("names the stage and the rare coat the portrait wears", async () => {
+    jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-legendary-rare");
+    await sheet(crestOf(seq(["strength", 500]), "auto", { longestFlame: 5, rings: 0 }), "why");
+    expect(await screen.findByText("Un ours légendaire, robe cannelle.")).toBeTruthy();
+  });
+
+  it("names the winter coat when winter is what it wears", async () => {
+    jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-adult-winter");
+    await sheet(crestOf(seq(["strength", 40])), "why");
+    expect(await screen.findByText("Un ours, adulte, pelage d'hiver.")).toBeTruthy();
+  });
+
+  it("names the stage alone for a young animal in its base coat", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    expect(await screen.findByText("Un ours, jeune.")).toBeTruthy();
   });
 });

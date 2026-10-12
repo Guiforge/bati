@@ -188,7 +188,7 @@ Total : 6 × 4 + 6 × 3 + 5 × 3 = 24 + 18 + 15 = 57.
 
 | Animal | Hiver | Rare (flamme Éternelle) |
 |---|---|---|
-| Ours | Pelage épais et ébouriffé, brun plus sombre, givre dans les poils des épaules. | Grizzly aux pointes argentées (« silvertip ») : brun profond, poils de la nuque et des épaules à pointe gris argent. |
+| Ours | Pelage épais et ébouriffé, brun plus sombre, givre dans les poils des épaules. | Grizzly blond (cannelle pâle, blond doré) : pelage clair d'un bout à l'autre, bien distinct de l'hiver et du vénérable. Changé de « pointes d'argent » (12/10, audit design) : des poils gris argent sur du brun se confondaient avec le givre de l'hiver et avec le gris du vénérable. |
 | Cerf | Robe grise et dense, cou épaissi, bois nus et lavés de froid. | Cerf blanc : robe d'un blanc crème, yeux et sabots foncés, bois pâles. |
 | Cheval | Poil long et rude, robe plus terne, crinière emmêlée de neige. | Noir profond, crinière et queue argent ; exige le contour d'encre bleu ardoise pour se lire en 96 dp. |
 | Saumon | Argent mat de la phase de mer : flancs argent terne, dos bleu acier, sans marques de frai. | Saumon doré : flancs d'un jaune d'or mat, nageoires ambrées. |
@@ -203,7 +203,7 @@ Chaque pelage rare porte un nom, pas « pelage rare » (O). Apostrophe droite, a
 
 | Animal | fr | en | de | es |
 |---|---|---|---|---|
-| Ours | pointes d'argent | silvertip | Silberspitzen | puntas de plata |
+| Ours | robe cannelle | cinnamon coat | Zimtfell | pelaje canela |
 | Cerf | robe blanche | white coat | weißes Fell | pelaje blanco |
 | Cheval | robe noire | black coat | schwarzes Fell | pelaje negro |
 | Saumon | écailles dorées | golden scales | goldene Schuppen | escamas doradas |
@@ -218,7 +218,7 @@ Clés de copie à créer, dans les 4 langues (fr, en, de, es) :
 - (O, tour 4) Le 500e de la pratique propre d'un animal choisi à la main n'est fêté qu'au retour en `auto`, en version tardive. Un choix ne fait pas bouger le stade : l'animal choisi porte le stade de l'animal des séances, donc le cerf choisi par un héros de 500 séances de force est légendaire sans que sa propre pratique (l'endurance) ait atteint 500. Quand l'endurance passe 500 plus tard, le cerf ne franchit aucun seuil, `stageUpOf` ne voit rien. Au retour en `auto`, `legendaryNews` lit l'état et la clé `legendary:run` absente de `bigFeastsShown` : la fête s'ouvre alors, en variante tardive.
 - `crest_stage_legendary` : le stade dans la fiche et la grande fête.
 - La ligne du stade, sous les options de la fiche « Ton animal » (audit tour 2, `village.crest_pick_stage`) : fr « Quel que soit ton choix, ton animal est {{stage}}. », en « Whichever you choose, your animal keeps its stage: {{stage}}. », de « Welches du auch wählst, dein Tier ist {{stage}}. », es « Elijas el que elijas, tu animal es {{stage}}. », avec `{{stage}}` pris dans `crest_stage_*` (jeune, adulte, vénérable, légendaire ; jung, erwachsen, ehrwürdig, legendär ; joven, adulto, venerable, legendario). « Animal », « Tier » sont masculin et neutre, les attributs ne s'accordent donc jamais autrement. La fiche est le seul endroit où le héros lit le stade, puisque le sélecteur n'en affiche plus.
-- La carte du rare (audit design, 11/10, révisée au tour 3) : titre fr « {{animal}} se pare de nouvelles couleurs », en « {{animal}} takes on new colors », de « {{animal}} trägt neue Farben », es « {{animal}} luce nuevos colores » ; corps fr « {{coat}}. Ta flamme a tenu {{days}} jours. », en « {{coat}}. Your flame burned for {{days}} days. », de « {{coat}}. Deine Flamme brannte {{days}} Tage lang. », es « {{coat}}. Tu llama ardió {{days}} días. ». `{{days}}` vient de `ETERNAL_FLAME_DAYS` (`constants/flame.ts`), la constante que lit aussi `getFlameLevel` : le chiffre de la carte et le seuil du rare ne peuvent plus diverger. Vrai pour toujours : la plus longue flamme a dépassé 100 jours (niveau Éternelle).
+- La carte du rare (audit design, 11/10, révisée au tour 3) : titre fr « {{animal}} se pare de nouvelles couleurs », en « {{animal}} takes on new colors », de « {{animal}} trägt neue Farben », es « {{animal}} luce nuevos colores » ; corps fr « {{coat}}. {{days}} jours de flamme sur ton écu. », en « {{coat}}. {{days}} days of flame on your crest. », de « {{coat}}. {{days}} Tage Flamme auf deinem Wappen. », es « {{coat}}. {{days}} días de llama en tu escudo. ». L'art de la carte est le portrait rare (64 dp), l'écu en repli ; celui de la grande fête légendaire reléguée en carte est le portrait légendaire. La fiche de l'écu porte une légende sous le portrait : le stade (clés `crest_<animal>[_<stade>]`) et le pelage porté, rare (`coat_rare_<animal>`) ou d'hiver (`coat_winter`), par exemple « Un ours légendaire, robe cannelle. ». `{{days}}` vient de `ETERNAL_FLAME_DAYS` (`constants/flame.ts`), la constante que lit aussi `getFlameLevel` : le chiffre de la carte et le seuil du rare ne peuvent plus diverger. Vrai pour toujours : la plus longue flamme a dépassé 100 jours (niveau Éternelle).
 - Le choix du pelage dans la fiche : « pelage habituel » et les 6 noms ci-dessus.
 
 Signalé : `components/village/crestLine.ts` ne connaît qu'un booléen `venerable` (`name(animal, venerable)`, `crest.stage === "venerable"`). Il devra apprendre le légendaire (un stade, pas un booléen) pour que la ligne sous le titre le dise, pour l'animal du centre et pour celui de la bordure.

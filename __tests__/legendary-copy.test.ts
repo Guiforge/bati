@@ -48,7 +48,7 @@ const WORDS = {
       "500 séances, et tu continues.",
     ],
     coats: [
-      "pointes d'argent",
+      "robe cannelle",
       "robe blanche",
       "robe noire",
       "écailles dorées",
@@ -63,7 +63,7 @@ const WORDS = {
       "L'hermine se pare de nouvelles couleurs",
       "Le sanglier se pare de nouvelles couleurs",
     ],
-    coatBody: "Pointes d'argent. 100 jours de flamme sur ton écu.",
+    coatBody: "Robe cannelle. 100 jours de flamme sur ton écu.",
   },
   en: {
     stage: "legendary",
@@ -95,7 +95,7 @@ const WORDS = {
       "500 sessions and counting.",
     ],
     coats: [
-      "silvertip",
+      "cinnamon coat",
       "white coat",
       "black coat",
       "golden scales",
@@ -110,7 +110,7 @@ const WORDS = {
       "The ermine takes on new colors",
       "The boar takes on new colors",
     ],
-    coatBody: "Silvertip. 100 days of flame on your crest.",
+    coatBody: "Cinnamon coat. 100 days of flame on your crest.",
   },
   de: {
     stage: "legendär",
@@ -142,7 +142,7 @@ const WORDS = {
       "500 Einheiten, und du machst weiter.",
     ],
     coats: [
-      "Silberspitzen",
+      "Zimtfell",
       "weißes Fell",
       "schwarzes Fell",
       "goldene Schuppen",
@@ -157,7 +157,7 @@ const WORDS = {
       "Das Hermelin trägt neue Farben",
       "Das Wildschwein trägt neue Farben",
     ],
-    coatBody: "Silberspitzen. 100 Tage Flamme auf deinem Wappen.",
+    coatBody: "Zimtfell. 100 Tage Flamme auf deinem Wappen.",
   },
   es: {
     stage: "legendario",
@@ -189,7 +189,7 @@ const WORDS = {
       "500 sesiones, y sigues sumando.",
     ],
     coats: [
-      "puntas de plata",
+      "pelaje canela",
       "pelaje blanco",
       "pelaje negro",
       "escamas doradas",
@@ -204,7 +204,7 @@ const WORDS = {
       "El armiño luce nuevos colores",
       "El jabalí luce nuevos colores",
     ],
-    coatBody: "Puntas de plata. 100 días de llama en tu escudo.",
+    coatBody: "Pelaje canela. 100 días de llama en tu escudo.",
   },
 } as const;
 

@@ -7,6 +7,7 @@ import { spoken } from "@/components/session/bigFeastText";
 import { type Feast, type FeastFacts, rankFeasts } from "@/components/session/feasts";
 import { TonightList } from "@/components/session/TonightList";
 import { crestFootprint } from "@/components/village/crestGeometry";
+import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import { achievementDefinitions } from "@/db/achievements";
 import type { Crest as CrestRead } from "@/db/crest";
 import { NO_CREST_EVENTS } from "@/db/crestEvents";
@@ -264,7 +265,39 @@ describe("TonightList", () => {
     expect(getByText("L'hermine devient légendaire")).toBeTruthy();
     expect(getByText("Ta 500e séance de callisthénie, ce soir.")).toBeTruthy();
     expect(getByText("L'ours se pare de nouvelles couleurs")).toBeTruthy();
-    expect(getByText("Pointes d'argent. 100 jours de flamme sur ton écu.")).toBeTruthy();
+    expect(getByText("Robe cannelle. 100 jours de flamme sur ton écu.")).toBeTruthy();
+  });
+
+  test("the rare coat's card and the demoted legendary draw their portrait, the shield when it has not shipped", async () => {
+    const up = { animal: "ermine", stage: "legendary", n: 500, practice: "calisthenics" } as const;
+    const withCoat = (animal: "bear" | "stag", stage: "adult" | "legendary") =>
+      show(
+        rank(
+          {
+            crestEvents: { ...NO_CREST_EVENTS, stageUp: [up] },
+            crestLegendary: [up],
+            rareCoat: { animal, stage },
+          },
+          { shown: ["legendary:calisthenics"] },
+        ),
+      );
+    const shipped = await withCoat("bear", "adult");
+    expect(
+      shipped.getAllByTestId("tonight-portrait", { includeHiddenElements: true }),
+    ).toHaveLength(2);
+    await shipped.unmount();
+    // A rare portrait that has not shipped: that card keeps the shield, the other its portrait.
+    const table = ANIMAL_PORTRAITS as Record<string, unknown>;
+    const gone = table["stag-legendary-rare"];
+    delete table["stag-legendary-rare"];
+    try {
+      const missing = await withCoat("stag", "legendary");
+      expect(
+        missing.getAllByTestId("tonight-portrait", { includeHiddenElements: true }),
+      ).toHaveLength(1);
+    } finally {
+      table["stag-legendary-rare"] = gone;
+    }
   });
 
   test("a boar demoted to a card by an epilogue says what it mixes, and a single practice says nothing", async () => {

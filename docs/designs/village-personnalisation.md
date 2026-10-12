@@ -94,7 +94,7 @@ La taille de l'APK n'est pas un critère pour ce chantier (choix de Guillaume) :
 - Saisons : une bannière par saison entraînée, à la couleur du 1er animal (sanglier : pratique en tête), avec son record. Rangées par année. Aucun emplacement réservé, aucun trou.
 - Anniversaire : date = jour de la 1re séance qui compte ; une grande fête à la 1re victoire après la date ; ne dit rien de l'absence ; plusieurs années d'absence = une fête, tous les anneaux d'un coup ; une année sous 10 séances = l'âge du village et le meilleur record, pas le compte.
 - Âges : tous les 10 niveaux dès 50, nommés d'après le plus haut échelon de voie atteint depuis l'Âge d'avant (le 1er : depuis le niveau 40). Le nom est celui du mouvement (« Pompe diamant »), la fête dit « Nouvel âge » puis ce titre.
-- Devise (D18, amendée) : facultative, « aucune » par défaut. Affichée en italique sous l'écu (sous la légende) dans la fiche, pas dans le Svg de l'écu, et sous le titre de l'en-tête du Village (« Capitale éternelle · Niveau 52 »), seulement si elle n'est pas « aucune ». Raison : une devise choisie et jamais revue est une fierté perdue. La ligne est lue avec la scène, dans la même image, et n'existe pas sans devise : le nom ne bouge pas. Les lignes du sélecteur de devise n'ont plus la vignette d'écu, répétée huit fois sans rien dire.
+- Devise (D18) : facultative, « aucune » par défaut. Affichée en italique sous l'écu (sous la légende) dans la fiche, pas dans le Svg de l'écu, et nulle part ailleurs : pas dans l'en-tête du Village. Les lignes du sélecteur de devise n'ont plus la vignette d'écu, répétée huit fois sans rien dire.
 
 ## Copie
 - Tu, apostrophe droite, aucun tiret long (tests `__tests__/locale-style.test.ts`).

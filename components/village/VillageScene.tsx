@@ -54,12 +54,10 @@ import { pickDailyVariant } from "@/constants/restMessages";
 import { VILLAGE_ANCHORS } from "@/constants/villageAnchors";
 import { VILLAGE_FLAVOUR } from "@/constants/villageFlavour";
 import { type Crest as CrestData, getCrest } from "@/db/crest";
-import type { CrestMotto } from "@/db/crestMotto";
 import { dayKey } from "@/db/dates";
 import { MUSCLE_LABELS } from "@/db/labels";
 import type { RecentFeeds } from "@/db/milestone";
 import { getRecentFeeds } from "@/db/milestoneFeed";
-import { preferences } from "@/db/preferences";
 import { formatCount } from "@/db/targets";
 import {
   getTierProgress,
@@ -145,8 +143,6 @@ function Glow() {
 const TITLE_BLOCK_STYLE = { px: "$4", pb: 28, gap: 6 } as const;
 /** A line of the header's small text: its height at the current font scale, for the skeleton. */
 const TEXT_LINE = 17;
-/** The last motto read: the next first paint holds its line, so the panel does not drop on arrival. */
-let lastMotto: CrestMotto = "none";
 /** Stands where the level's number goes while the line is translated. */
 const LEVEL_MARK = "\u0001";
 /**
@@ -232,7 +228,6 @@ export function VillageScene() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [rewardOpen, setRewardOpen] = useState(false);
   const [crestView, setCrestView] = useState<CrestView | null>(null);
-  const [motto, setMotto] = useState<CrestMotto>(lastMotto);
   // Stones and banners, replayed from the journal: read after the scene (its XP keys the memo)
   // and never failing it, like the crest. Unread, the Seasons and the stones are simply absent.
   const [yearsView, setYearsView] = useState<VillageYearsView | null>(null);
@@ -264,17 +259,10 @@ export function VillageScene() {
       reportError("village.feeds", error);
       return null;
     });
-    // Read with the scene so the header's line arrives in the same frame as the rest.
-    const readMotto = preferences.getCrestMotto().catch((error) => {
-      reportError("village.crestMotto", error);
-      return "none" as const;
-    });
-    Promise.all([getVillageScene(), readCrest, readFeeds, readMotto])
-      .then(([data, crestData, feedsData, mottoData]) => {
+    Promise.all([getVillageScene(), readCrest, readFeeds])
+      .then(([data, crestData, feedsData]) => {
         if (mine !== loadId.current) return;
         setScene(data);
-        lastMotto = mottoData;
-        setMotto(mottoData);
         if (feedsData !== null) setFeeds(feedsData);
         // An unreadable crest after a drawn one keeps the drawn one, like the scene keeps yesterday's.
         if (crestData !== undefined) crestRead.current = true;
@@ -431,10 +419,6 @@ export function VillageScene() {
             </XStack>
             <Skeleton height={lineHeight} width="55%" />
             <Skeleton height={lineHeight} width="85%" />
-            {/* The motto's line, held for a hero who had one last time: no drop on arrival. */}
-            {motto === "none" ? null : (
-              <Skeleton testID="village-motto-skeleton" height={lineHeight} width="45%" />
-            )}
             <Skeleton height={20} width="40%" />
           </YStack>
         </YStack>
@@ -608,17 +592,6 @@ export function VillageScene() {
               <Text fontWeight="700">{scene.level}</Text>
               {`${afterLevel} · ${scene.title[lang]}`}
             </Text>
-            {motto === "none" ? null : (
-              <Text
-                testID="village-motto"
-                fontSize={13}
-                lineHeight={TEXT_LINE}
-                fontStyle="italic"
-                color="$textSecondary"
-              >
-                {t(`village.motto_${motto}`)}
-              </Text>
-            )}
             {crest === undefined ? null : (
               <Text testID="village-crest-line" fontSize={13} lineHeight={TEXT_LINE} color="$text">
                 {crestLine}
@@ -737,7 +710,6 @@ export function VillageScene() {
       <CrestSheet
         view={crestView}
         crest={crest ?? null}
-        motto={motto}
         onView={setCrestView}
         onClose={() => setCrestView(null)}
         onChanged={loadScene}

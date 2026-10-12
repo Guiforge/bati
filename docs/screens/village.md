@@ -115,11 +115,8 @@ stored (R111) except the motto; all of them are absent, not empty, when there is
   hero's animal at the time (neutral without a crest), rows of at most four per village year. The
   section is not mounted before the first banner, and not at all while the years are unread.
 - **Motto** (`preferences.getCrestMotto`). Optional, "none" by default. When set, it is written in
-  italic under the level line of the header, and under the shield in the crest sheet. The Village
-  reads it with the scene, in the same frame, and hands it to the sheet, so there is one reader;
-  after a choice the sheet's `onChanged` reloads the scene and the header follows. The loading
-  skeleton holds the line when the last motto read was not "none", so the panel does not drop
-  about 23 dp on arrival.
+  italic under the shield in the crest sheet, which reads it itself (one reader), and nowhere else:
+  not in the header.
 - The building sheet scrolls back to the top on each opening.
 
 ## Deeds
@@ -212,8 +209,10 @@ no lean, only the card. The weakest placements: tier 8 (`tent` on a sail, `farm`
 boat), tier 10 (`dragon_lair` on the rock face), tier 12 (the starters on unnamed spires).
 
 The painting parallaxes and leans in inside one `Animated.View`; the scrims and the title do not
-move. The detail sheet has no handle and no drag (`disableDrag`, as `FormSheet`): it closes by its button,
-Android back, or a tap on the scrim. Its section headers
+move. The detail sheet keeps its handle and the drag (`dismissOnSnapToBottom`): it also closes by its
+button, Android back, or a tap on the scrim. Its scroll view carries `onMoveShouldSetResponder`
+so the first tap of a button is not cancelled.
+Its section headers
 ("next to build", recent, and the rest) are the shared `SectionLabel` (12/700, 1.5 tracking, ash).
 The status-bar scrim pinned outside the scroll (`village-status-scrim`) is invisible at rest,
 so the painting runs full-bleed under the clock, and fades in over the first `insets.top + 48` dp

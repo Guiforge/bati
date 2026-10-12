@@ -444,59 +444,15 @@ describe("the reveal day and the boar's line, in every language", () => {
   );
 });
 
-describe("the motto under the level line", () => {
-  const mottoIs = (value: "none" | "ember") =>
-    jest.spyOn(preferences, "getCrestMotto").mockResolvedValue(value);
-
-  it("writes the chosen motto under the level line", async () => {
-    mottoIs("ember");
-    await mount(crestOf());
-    const motto = await screen.findByTestId("village-motto");
-    expect(motto.props.children).toBe(i18n.t("village.motto_ember"));
-    const tree = JSON.stringify(screen.toJSON());
-    expect(tree.indexOf("Champion")).toBeLessThan(tree.indexOf(i18n.t("village.motto_ember")));
-  });
-
-  it("writes nothing for none", async () => {
-    const read = mottoIs("none");
-    await mount(crestOf());
-    await waitFor(() => expect(read).toHaveBeenCalled());
-    await line();
-    expect(screen.queryByTestId("village-motto")).toBeNull();
-  });
-
-  it("reads the header again after a choice in the sheet", async () => {
-    let stored: "none" | "ember" = "none";
-    jest.spyOn(preferences, "getCrestMotto").mockImplementation(async () => stored);
-    jest.spyOn(preferences, "setCrestMotto").mockImplementation((v) => {
-      stored = v as "none" | "ember";
-      return Promise.resolve();
-    });
+describe("the motto", () => {
+  it("reads in the crest sheet, under the shield, and nowhere in the header", async () => {
+    jest.spyOn(preferences, "getCrestMotto").mockResolvedValue("ember");
     await mount(crestOf());
     await line();
-    expect(screen.queryByTestId("village-motto")).toBeNull();
+    expect(screen.queryByText(i18n.t("village.motto_ember"))).toBeNull();
     await fireEvent.press(screen.getByTestId("village-crest"));
-    await fireEvent.press(await screen.findByTestId("crest-motto-link"));
-    await fireEvent.press(await screen.findByTestId("crest-motto-ember"));
-    await waitFor(() => expect(screen.getByTestId("village-motto")).toBeTruthy());
-  });
-
-  it("holds the line in the skeleton only when the last motto read was not none", async () => {
-    mottoIs("ember");
-    const root = await mount(crestOf());
-    await root.findByTestId("village-motto");
-    setup(crestOf(), "Brumeval", true);
-    await root.rerender(host(1));
-    expect(await root.findByTestId("village-motto-skeleton")).toBeTruthy();
-    await act(() => release());
-    mottoIs("none");
-    setup(crestOf());
-    await root.rerender(host(2));
-    await root.findByTestId("village-crest-line");
-    expect(root.queryByTestId("village-motto")).toBeNull();
-    setup(crestOf(), "Brumeval", true);
-    await root.rerender(host(3));
-    expect(await root.findByTestId("village-hero-loading")).toBeTruthy();
-    expect(root.queryByTestId("village-motto-skeleton")).toBeNull();
+    expect((await screen.findByTestId("crest-motto")).props.children).toBe(
+      i18n.t("village.motto_ember"),
+    );
   });
 });

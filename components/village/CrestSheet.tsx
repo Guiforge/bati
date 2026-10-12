@@ -35,8 +35,6 @@ type Props = {
   crest: CrestData | null;
   onView: (view: CrestView) => void;
   onClose: () => void;
-  /** The motto already read by the caller; without it the sheet reads it itself. */
-  motto?: CrestMotto;
   /** A choice was written: the caller reads the crest again. */
   onChanged: () => void;
 };
@@ -473,23 +471,20 @@ function Picture({
  * "Why the Bear?" and "Your animal": the one sheet behind every door to the crest (the big
  * feast's link, the Village's shield, the Settings row), so they cannot drift apart.
  */
-export function CrestSheet({ view, crest, motto: given, onView, onClose, onChanged }: Props) {
+export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
   const { t } = useTranslation();
   const choose = useChoose(crest, onChanged, onClose);
   // Bumped when the coat is switched, so the portrait reads it again.
   const [coatKey, setCoatKey] = useState(0);
   // Read each time a view opens, so a choice made in the motto view shows when the shield returns.
-  const [motto, setMotto] = useState<CrestMotto>(given ?? "none");
+  const [motto, setMotto] = useState<CrestMotto>("none");
   useEffect(() => {
-    if (given !== undefined) setMotto(given);
-  }, [given]);
-  useEffect(() => {
-    if (view === null || given !== undefined) return;
+    if (view === null) return;
     preferences
       .getCrestMotto()
       .then(setMotto)
       .catch((error) => reportError("village.crestMottoRead", error));
-  }, [view, given]);
+  }, [view]);
   // Mounted on the first opening only: a sheet behind every Village visit is dead weight.
   const [mounted, setMounted] = useState(false);
   if (view !== null && !mounted) setMounted(true);
@@ -525,8 +520,6 @@ export function CrestSheet({ view, crest, motto: given, onView, onClose, onChang
           motto={motto}
           onPicked={(value) => {
             setMotto(value);
-            // The village's header reads the motto too.
-            onChanged();
             onView("why");
           }}
         />

@@ -283,7 +283,7 @@ describe("BigFeastView", () => {
     expect(first.getByTestId("big-feast-kicker").props.children).toBe("NOUVEL ÂGE");
     expect(first.getByTestId("big-feast-title").props.children).toBe("Pompe diamant");
     expect(first.getByTestId("big-feast-body").props.children).toBe(
-      "Niveau 50. Première fois au niveau 47.",
+      "Niveau 50. Ton mouvement de ces dix niveaux, fait pour la première fois au niveau 47.",
     );
     await first.unmount();
 

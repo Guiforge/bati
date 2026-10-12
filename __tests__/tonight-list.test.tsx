@@ -536,7 +536,11 @@ describe("TonightList", () => {
     );
     const { getByText } = await show(feasts);
     expect(getByText("Nouvel âge : Pompe diamant")).toBeTruthy();
-    expect(getByText("Niveau 50. Première fois au niveau 47.")).toBeTruthy();
+    expect(
+      getByText(
+        "Niveau 50. Ton mouvement de ces dix niveaux, fait pour la première fois au niveau 47.",
+      ),
+    ).toBeTruthy();
     expect(getByText("120 séances sur les douze derniers mois.")).toBeTruthy();
   });
 

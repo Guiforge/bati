@@ -517,22 +517,28 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
   },
   "session.feast_tier_level_one": {
     why: "fait",
-    fr: "Niveau {{level}}, après {{count}} séance.",
-    en: "Level {{level}}, after {{count}} session.",
-    de: "Level {{level}}, nach {{count}} Einheit.",
-    es: "Nivel {{level}}, tras {{count}} sesión.",
+    fr: "Niveau {{level}}, après {{count}} séance.",
+    en: "Level {{level}}, after {{count}} session.",
+    de: "Level {{level}}, nach {{count}} Einheit.",
+    es: "Nivel {{level}}, tras {{count}} sesión.",
   },
   "session.feast_tier_level_other": {
     why: "fait",
-    fr: "Niveau {{level}}, après {{count}} séances.",
-    en: "Level {{level}}, after {{count}} sessions.",
-    de: "Level {{level}}, nach {{count}} Einheiten.",
-    es: "Nivel {{level}}, tras {{count}} sesiones.",
+    fr: "Niveau {{level}}, après {{count}} séances.",
+    en: "Level {{level}}, after {{count}} sessions.",
+    de: "Level {{level}}, nach {{count}} Einheiten.",
+    es: "Nivel {{level}}, tras {{count}} sesiones.",
   },
   "session.feast_tier_level_many": {
     why: "fait",
-    fr: "Niveau {{level}}, après {{count}} séances.",
-    es: "Nivel {{level}}, tras {{count}} sesiones.",
+    fr: "Niveau {{level}}, après {{count}} séances.",
+    es: "Nivel {{level}}, tras {{count}} sesiones.",
+  },
+  // "Übung" and "ejercicio" are units of effort, here followed by "ten levels": a span of levels.
+  "session.feast_age_body_rung": {
+    why: "fait",
+    de: "Level {{level}}. Deine Übung dieser zehn Level, zum ersten Mal bei Level {{at}}.",
+    es: "Nivel {{level}}. Tu ejercicio de estos diez niveles, hecho por primera vez en el nivel {{at}}.",
   },
   "common.daily_xp_bonus": {
     why: "fait",

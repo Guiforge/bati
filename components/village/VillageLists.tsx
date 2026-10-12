@@ -8,7 +8,7 @@ import { SectionLabel } from "@/components/common/SectionLabel";
 import { ChevronRight } from "@/components/icons";
 import { xpScale } from "@/components/village/barScale";
 import { LevelPips } from "@/components/village/LevelPips";
-import { buildingMilestoneLine } from "@/components/village/milestoneLine";
+import { quietMilestoneLine } from "@/components/village/milestoneLine";
 import {
   buildingScale,
   ctaLabel,
@@ -110,7 +110,7 @@ export function NextToRise({ building, dayOne, language, feeds, onOpen }: NextPr
     ? null
     : building.level === 0
       ? nextLine(building, t, language)
-      : buildingMilestoneLine(building, feeds, t, language);
+      : quietMilestoneLine(building, feeds, t, language);
 
   return (
     <YStack

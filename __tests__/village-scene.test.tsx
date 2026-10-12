@@ -182,6 +182,29 @@ describe("VillageScene", () => {
     expect(queryByText(/Rank 6/)).toBeNull();
   });
 
+  it.each([
+    [70, 30, true],
+    [69, 31, false],
+  ])(
+    "Next to rise at %i reps done is %i sessions away: the line is said: %s",
+    async (done, count, said) => {
+      mockScene([
+        campfire,
+        building("forge", 1, { driver: "muscle", metricValue: done, nextTarget: 100 }),
+      ]);
+      mockFeeds({ muscle: { chest: [1] } });
+
+      const { findByTestId } = await renderScene();
+      const next = within(await findByTestId("village-next"));
+
+      // The card stays: only the sentence goes quiet past MILESTONE_QUIET_AFTER.
+      expect(next.getByText("Forge")).toBeTruthy();
+      const line = next.queryByText(`Rank 2 in about ${count} chest sessions.`);
+      expect(line !== null).toBe(said);
+      expect(next.queryByText(/chest sessions/) !== null).toBe(said);
+    },
+  );
+
   it("counts a road in outings, and its bar is what was walked", async () => {
     const road = building("high_road", 3, { driver: "leagues", metricValue: 18, nextTarget: 30 });
     mockScene([campfire, building("farm", 5, { driver: "muscle", nextTarget: null }), road]);

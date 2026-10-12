@@ -202,12 +202,12 @@ describe("db/village buildings", () => {
     test.each([
       [199, 4],
       [200, 5],
-      [399, 5],
-      [400, 6],
-      [700, 7],
-      [1100, 8],
-      [1700, 9],
-      [2500, 10],
+      [499, 5],
+      [500, 6],
+      [1000, 7],
+      [2000, 8],
+      [3500, 9],
+      [5500, 10],
       [9000, 10],
     ])("the road at %i leagues stands at rank %i", async (leagues, expected) => {
       walkLeagues(leagues);

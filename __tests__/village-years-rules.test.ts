@@ -106,7 +106,7 @@ const entry = (level: number, over: Partial<Entry> = {}): Entry => ({
 });
 
 describe("stones", () => {
-  test("one per level after 20, the record if any, else the count; none for a level never ended on", () => {
+  test("one per level after 20, the record if any, else the count", () => {
     const list = stones([
       entry(20),
       entry(21),
@@ -114,9 +114,25 @@ describe("stones", () => {
       entry(22, { breaks: [brk({ prior: 10, value: 12 })] }),
       entry(24),
     ]);
-    expect(list.map((s) => s.level)).toEqual([21, 22, 24]);
+    expect(list.map((s) => s.level)).toEqual([21, 22, 23, 24]);
     expect(list[0]).toMatchObject({ decade: 2, fact: { kind: "sessions", count: 2 } });
     expect(list[1]?.fact).toMatchObject({ kind: "record", value: 12 });
+  });
+
+  test("a level jumped over takes the stone of the session that crossed it, with its fact", () => {
+    const list = stones([
+      entry(21),
+      entry(24, { breaks: [brk({ prior: 10, value: 12 })] }),
+      entry(24),
+    ]);
+    expect(list.map((s) => s.level)).toEqual([21, 22, 23, 24]);
+    expect(list[1]?.fact).toMatchObject({ kind: "record", value: 12 });
+    expect(list[2]?.fact).toMatchObject({ kind: "record", value: 12 });
+    expect(list[3]?.fact).toMatchObject({ kind: "record", value: 12 });
+  });
+
+  test("a first session already past 21 gives stones to the levels below it", () => {
+    expect(stones([entry(23)]).map((s) => s.level)).toEqual([21, 22, 23]);
   });
 });
 

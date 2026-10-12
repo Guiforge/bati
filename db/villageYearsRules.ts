@@ -133,19 +133,22 @@ export const FIRST_STONE_LEVEL = 21;
 export type Stone = { level: number; decade: number; fact: Fact };
 
 /**
- * D6: one stone per level reached after 20 in which a session was done. The stone engraves the
- * level; the fact (the level's best record, else its session count) is text beside it. `decade`
- * is how a long wall is grouped. A level no session ended on (a jump over it) has no stone.
+ * D6: one stone per level from 21 up to the highest reached. The stone engraves the level; the fact
+ * (the level's best record, else its session count) is text beside it. `decade` is how a long wall
+ * is grouped. A level no session ended on (a jump over it) takes the stone of the session that
+ * crossed it, with that session's fact.
  */
 export function stones(entries: readonly Entry[]): Stone[] {
   const byLevel = new Map<number, Entry[]>();
-  for (const e of entries) {
-    if (e.level < FIRST_STONE_LEVEL) continue;
-    byLevel.set(e.level, [...(byLevel.get(e.level) ?? []), e]);
+  for (const e of entries) byLevel.set(e.level, [...(byLevel.get(e.level) ?? []), e]);
+  const top = Math.max(0, ...byLevel.keys());
+  const out: Stone[] = [];
+  for (let level = FIRST_STONE_LEVEL; level <= top; level++) {
+    // The session that crossed a skipped level is the first to end above it (the journal is in order).
+    const list = byLevel.get(level) ?? entries.filter((e) => e.level > level).slice(0, 1);
+    out.push({ level, decade: Math.floor(level / 10), fact: factOf(list) });
   }
-  return [...byLevel.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([level, list]) => ({ level, decade: Math.floor(level / 10), fact: factOf(list) }));
+  return out;
 }
 
 export type SeasonKind = "winter" | "spring" | "summer" | "autumn";

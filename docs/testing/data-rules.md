@@ -801,7 +801,8 @@ and the Ages are replayed from the journal on each call (`getVillageYears`, rule
 `db/villageYearsRules.ts`); there is no column, no preference and no migration behind them. A
 session belongs to the level reached after it, counting the XP of every session before it, the
 ones `countsAsSession()` refuses included; only the sessions it accepts are stones, banners or
-rungs.
+rungs. Every level from 21 up to the highest reached has a stone; a level no session ended on (a
+jump over it) takes the stone of the session that crossed it, with that session's fact.
 Invariant: the same journal gives the same stones, banners and Ages on any device, whatever order
 the sessions were merged in (`db-peer-merge`), and deleting a session takes back what it earned.
 

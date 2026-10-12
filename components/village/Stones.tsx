@@ -71,7 +71,10 @@ export function Stones({
         const last = group[group.length - 1];
         if (first === undefined || last === undefined) return null;
         const line = (s: Stone) =>
-          t("village.stone_line", { level: s.level, fact: factText(s.fact, names, t, language) });
+          t("village.stone_line", {
+            level: s.level,
+            fact: factText(s.fact, s.sessions, names, t, language),
+          });
         return (
           <YStack key={first.decade} testID={`village-stones-${first.decade}`} gap="$2">
             {grouped ? (

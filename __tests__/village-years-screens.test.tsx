@@ -61,6 +61,7 @@ const sessionsFact = (count: number): Fact => ({ kind: "sessions", count });
 const stone = (level: number, fact: Fact = sessionsFact(level)): Stone => ({
   level,
   decade: Math.floor(level / 10),
+  sessions: 3,
   fact,
 });
 const stonesFrom = (count: number) => Array.from({ length: count }, (_, i) => stone(21 + i));
@@ -154,6 +155,20 @@ describe("the stones in the Ramparts' sheet", () => {
     expect(screen.getByLabelText("Level 34: Push-ups, from 10 to 14")).toBeTruthy();
   });
 
+  it("says the level's session count when the record's movement is gone", async () => {
+    const record: Fact = {
+      kind: "record",
+      exerciseId: 99,
+      unit: "reps",
+      prior: 10,
+      value: 14,
+      at: 0,
+    };
+    mockYears({ stones: [{ ...stone(21, record), sessions: 5 }] });
+    const screen = await openRamparts();
+    expect(await screen.findByLabelText("Level 21: 5 sessions")).toBeTruthy();
+  });
+
   it("groups sixty-five stones by decade", async () => {
     mockYears({ stones: stonesFrom(65) }); // levels 21 to 85
     const screen = await openRamparts();
@@ -218,6 +233,20 @@ describe("the Seasons section", () => {
     // The animal's colour decorates; the season and the fact are written.
     expect(screen.getByLabelText("Year 1, Autumn: 3 sessions")).toBeTruthy();
     expect(screen.getByLabelText("Year 2, Winter: 1 session")).toBeTruthy();
+  });
+
+  it("says the season's session count when the record's movement is gone", async () => {
+    const fact: Fact = {
+      kind: "record",
+      exerciseId: 99,
+      unit: "reps",
+      prior: 10,
+      value: 14,
+      at: 0,
+    };
+    mockYears({ banners: [banner(1, 1, { fact, sessions: 4 })] });
+    const screen = await renderScene();
+    expect(await screen.findByLabelText("Year 1, Winter: 4 sessions")).toBeTruthy();
   });
 
   it("speaks French and names the fact of a record", async () => {

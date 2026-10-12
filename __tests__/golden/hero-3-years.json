@@ -431,6 +431,7 @@
       {
         "level": 21,
         "decade": 2,
+        "sessions": 22,
         "fact": {
           "kind": "sessions",
           "count": 22
@@ -439,6 +440,7 @@
       {
         "level": 22,
         "decade": 2,
+        "sessions": 22,
         "fact": {
           "kind": "record",
           "exerciseId": 57,
@@ -451,6 +453,7 @@
       {
         "level": 23,
         "decade": 2,
+        "sessions": 22,
         "fact": {
           "kind": "record",
           "exerciseId": 58,
@@ -463,6 +466,7 @@
       {
         "level": 24,
         "decade": 2,
+        "sessions": 23,
         "fact": {
           "kind": "sessions",
           "count": 23
@@ -471,6 +475,7 @@
       {
         "level": 25,
         "decade": 2,
+        "sessions": 22,
         "fact": {
           "kind": "record",
           "exerciseId": 53,
@@ -483,6 +488,7 @@
       {
         "level": 26,
         "decade": 2,
+        "sessions": 23,
         "fact": {
           "kind": "sessions",
           "count": 23
@@ -491,6 +497,7 @@
       {
         "level": 27,
         "decade": 2,
+        "sessions": 21,
         "fact": {
           "kind": "record",
           "exerciseId": 49,
@@ -503,6 +510,7 @@
       {
         "level": 28,
         "decade": 2,
+        "sessions": 23,
         "fact": {
           "kind": "sessions",
           "count": 23
@@ -511,6 +519,7 @@
       {
         "level": 29,
         "decade": 2,
+        "sessions": 23,
         "fact": {
           "kind": "sessions",
           "count": 23
@@ -519,6 +528,7 @@
       {
         "level": 30,
         "decade": 3,
+        "sessions": 22,
         "fact": {
           "kind": "sessions",
           "count": 22
@@ -527,6 +537,7 @@
       {
         "level": 31,
         "decade": 3,
+        "sessions": 23,
         "fact": {
           "kind": "sessions",
           "count": 23
@@ -535,6 +546,7 @@
       {
         "level": 32,
         "decade": 3,
+        "sessions": 21,
         "fact": {
           "kind": "sessions",
           "count": 21
@@ -543,6 +555,7 @@
       {
         "level": 33,
         "decade": 3,
+        "sessions": 23,
         "fact": {
           "kind": "sessions",
           "count": 23
@@ -551,6 +564,7 @@
       {
         "level": 34,
         "decade": 3,
+        "sessions": 22,
         "fact": {
           "kind": "sessions",
           "count": 22

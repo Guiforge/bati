@@ -44,7 +44,7 @@ export function Banners({
             <XStack gap={8} flexWrap="wrap">
               {row.map((b) => {
                 const season = t(`village.season_${b.kind}`);
-                const fact = factText(b.fact, names, t, language);
+                const fact = factText(b.fact, b.sessions, names, t, language);
                 return (
                   <YStack
                     key={b.start}

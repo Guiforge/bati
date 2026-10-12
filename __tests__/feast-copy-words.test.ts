@@ -306,5 +306,8 @@ describe.each(["fr", "en", "de", "es"] as const)("the Age and the anniversary in
     // The edge: ten sessions is still a count, and a quiet year with no record says nothing.
     expect(anniversaryBody(t, { ...anniversary, sessions: 10 }, lang)).toContain("10");
     expect(anniversaryBody(t, { ...anniversary, sessions: 3, best: null }, lang)).toBe("");
+    // A record whose movement was deleted since has no subject: nothing, not "from 10 to 14".
+    const gone = anniversary.best && { ...anniversary.best, movement: null };
+    expect(anniversaryBody(t, { ...anniversary, sessions: 3, best: gone }, lang)).toBe("");
   });
 });

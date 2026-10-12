@@ -133,7 +133,8 @@ const factOf = (entries: readonly Entry[]): Fact => {
 /** The first level that has a stone: they start after level 20 (the thresholds are a table up to there). */
 export const FIRST_STONE_LEVEL = 21;
 
-export type Stone = { level: number; decade: number; fact: Fact };
+/** `sessions`: how many sessions the level held, what the stone says when its record's movement is gone. */
+export type Stone = { level: number; decade: number; sessions: number; fact: Fact };
 
 /**
  * D6: one stone per level from 21 up to the highest reached. The stone engraves the level; the fact
@@ -153,7 +154,12 @@ export function stones(entries: readonly Entry[]): Stone[] {
   for (let level = FIRST_STONE_LEVEL; level <= top; level++) {
     // The session that crossed a skipped level is the first to end above it (the journal is in order).
     const list = byLevel.get(level) ?? entries.filter((e) => e.level > level).slice(0, 1);
-    out.push({ level, decade: Math.floor(level / 10), fact: factOf(list) });
+    out.push({
+      level,
+      decade: Math.floor(level / 10),
+      sessions: list.length,
+      fact: factOf(list),
+    });
   }
   return out;
 }

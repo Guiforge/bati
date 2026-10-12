@@ -39,7 +39,7 @@ figures() {
                  SELECT 'xp=' || COALESCE(SUM(xpEarned), 0) FROM completed_sessions;"
   # What is on screen, not what is in the table: a level is computed, and a computation is what
   # an update can change without touching a row.
-  # Since 2.11.1 the number is bound to its word with a no-break space, and builds before it use a
+  # Since 2.12.0 the number is bound to its word with a no-break space, and builds before it use a
   # plain one: read both as the same figure, or every update across that line reports a lost level.
   echo "level=$(sed 's/\xc2\xa0/ /g' "$dump" | grep -oE '(Level|Niveau|Stufe|Nivel) [0-9]+' | head -1 || true)"
   # The village by its spoken label: a release build drops `testID` from the accessibility tree,

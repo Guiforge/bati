@@ -228,6 +228,16 @@ describe("seasons", () => {
     expect(ANIMALS).toContain("boar");
   });
 
+  test("before the first crest the banner band is neutral, whatever the practice", () => {
+    const list = seasons(
+      [entry(5, { at: new Date(2026, 0, 5), practice: "strength" })],
+      NOW,
+      false,
+      null,
+    );
+    expect(list[0]?.animal).toBeNull();
+  });
+
   test("a first session in mid-season: a row holds at most four banners", () => {
     // Spring 2025 (from March) is season 0; the summer after is 1, autumn 2, winter 3, then spring 2026 starts year 2.
     const list = seasons(

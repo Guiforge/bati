@@ -236,11 +236,13 @@ export function seasons(
         sessions: list.length,
         fact: factOf(list),
         animal:
-          firstAnimal !== null && firstAnimal !== "boar"
-            ? firstAnimal
-            : leading
-              ? ANIMAL_OF[leading]
-              : null,
+          firstAnimal === null
+            ? null
+            : firstAnimal !== "boar"
+              ? firstAnimal
+              : leading
+                ? ANIMAL_OF[leading]
+                : null,
       };
     });
 }

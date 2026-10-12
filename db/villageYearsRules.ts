@@ -1,3 +1,4 @@
+import { differenceInYears } from "date-fns";
 import { ANIMAL_OF, type Animal, type Practice, ranked, tally } from "./crestRules";
 import type { QuestTargetType } from "./schema";
 
@@ -334,4 +335,28 @@ export function agesReached(entries: readonly Entry[], depth: ReadonlyMap<number
     if (age) ages.push(age);
   }
   return ages;
+}
+
+/** How old the village is and what its last twelve months held: what the anniversary feast says. */
+export type YearSummary = {
+  /** Whole years since the first session that counts: the same count as the crest's rings. */
+  years: number;
+  /** Sessions that count in the 365 days up to `now`. */
+  sessions: number;
+  /** The best record broken in those days (D5), null when none was. */
+  best: Break | null;
+};
+
+const DAY_MS = 86_400_000;
+
+/** `years` by calendar anniversary, so the exact day counts (`differenceInYears`, like the rings). */
+export function lastYear(entries: readonly Entry[], now: Date): YearSummary {
+  const first = entries[0];
+  const since = now.getTime() - 365 * DAY_MS;
+  const inYear = entries.filter((e) => e.at.getTime() > since && e.at.getTime() <= now.getTime());
+  return {
+    years: first ? differenceInYears(now, first.at) : 0,
+    sessions: inYear.length,
+    best: bestBreak(inYear.flatMap((e) => e.breaks)),
+  };
 }

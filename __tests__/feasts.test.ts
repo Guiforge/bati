@@ -1,5 +1,6 @@
 import { type Feast, type FeastFacts, feastKey, rankFeasts } from "@/components/session/feasts";
 import { type CrestReveal, legendaryNews, NO_CREST_EVENTS } from "@/db/crestEvents";
+import type { AgeNews, AnniversaryNews } from "@/db/villageNewsRules";
 
 const empty: FeastFacts["result"] = {
   levelUp: null,
@@ -15,6 +16,14 @@ const empty: FeastFacts["result"] = {
   crestReveal: null,
 };
 const reveal: CrestReveal = { animal: "bear", quarters: null, firstEight: [], late: false };
+const age = (level = 50): AgeNews => ({
+  level,
+  source: "rung",
+  reachedAtLevel: 47,
+  practice: null,
+  movement: { enName: "Diamond push-up", frName: "Pompe diamant", deName: "D", esName: "E" },
+});
+const anniversary = (years = 1): AnniversaryNews => ({ years, sessions: 120, best: null });
 const tierUp = { oldTier: 2, newTier: 3 } as const;
 const facts = (over: Partial<FeastFacts["result"]>, rest: Omit<FeastFacts, "result"> = {}) => ({
   result: { ...empty, ...over },
@@ -34,15 +43,15 @@ describe("rankFeasts", () => {
         levelUp: { oldLevel: 4, newLevel: 5 },
         crestReveal: reveal,
       },
-      { epilogue: true, age: { name: "Age" }, anniversary: { years: 2 } },
+      { epilogue: true, age: age(), anniversary: anniversary(2) },
     );
     expect(sizes(f)).toEqual(["reveal:medium", "age:medium", "anniversary:medium", "tier:medium"]);
   });
 
   test.each([
-    ["the reveal", { reveal, tierUp, age: { name: "A" }, anniversary: { years: 1 } }, "reveal"],
-    ["an Age", { tierUp, age: { name: "A" }, anniversary: { years: 1 } }, "age"],
-    ["the anniversary", { tierUp, anniversary: { years: 1 } }, "anniversary"],
+    ["the reveal", { reveal, tierUp, age: age(), anniversary: anniversary() }, "reveal"],
+    ["an Age", { tierUp, age: age(), anniversary: anniversary() }, "age"],
+    ["the anniversary", { tierUp, anniversary: anniversary() }, "anniversary"],
     ["a village tier", { tierUp }, "tier"],
   ] as const)("without an epilogue, %s leads", (_n, set, lead) => {
     const f = facts(
@@ -59,6 +68,23 @@ describe("rankFeasts", () => {
     expect(list.filter((x) => x.size === "large")).toHaveLength(1);
     expect(list[0]?.kind).toBe(lead);
     expect(list.slice(1).every((x) => x.size === "medium")).toBe(true);
+  });
+
+  test("an Age and an anniversary are keyed by their level and their years, once each", () => {
+    expect(feastKey({ kind: "age", ...age(60) })).toBe("age:60");
+    expect(feastKey({ kind: "anniversary", ...anniversary(3) })).toBe("anniversary:3");
+    // Shown: a card now, and the other leads (the Age yields to the anniversary the next night).
+    const both = { age: age(), anniversary: anniversary() };
+    expect(sizes(facts({}, { ...both, shown: ["age:50"] }))).toEqual([
+      "anniversary:large",
+      "age:medium",
+    ]);
+    expect(sizes(facts({}, { ...both, shown: ["age:50", "anniversary:1"] }))).toEqual([
+      "age:medium",
+      "anniversary:medium",
+    ]);
+    // The next Age is a new key: not silenced by the one before it.
+    expect(sizes(facts({}, { age: age(60), shown: ["age:50"] }))).toEqual(["age:large"]);
   });
 
   test("a boss and an oath stay cards, even alone", () => {
@@ -124,7 +150,7 @@ describe("rankFeasts", () => {
 
     test("is a big feast, after the anniversary and before the tier, keyed by its practice", () => {
       const list = rankFeasts(
-        facts({ tierUp, ...crossing(legendary("bear")) }, { anniversary: { years: 1 } }),
+        facts({ tierUp, ...crossing(legendary("bear")) }, { anniversary: anniversary() }),
       );
       expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual([
         "anniversary:large",
@@ -151,10 +177,25 @@ describe("rankFeasts", () => {
       });
     });
 
+    test("the order is the reveal, an Age, the anniversary, a legendary, a tier", () => {
+      const e = crossing(legendary("bear"));
+      const all = facts(
+        { tierUp, crestReveal: reveal, ...e },
+        { age: age(), anniversary: anniversary() },
+      );
+      expect(sizes(all)).toEqual([
+        "reveal:large",
+        "age:medium",
+        "anniversary:medium",
+        "legendary:medium",
+        "tier:medium",
+      ]);
+    });
+
     test("the reveal and an Age outrank it", () => {
       const e = crossing(legendary("bear"));
       expect(sizes(facts({ crestReveal: reveal, ...e }))[0]).toBe("reveal:large");
-      expect(sizes(facts(e, { age: { name: "A" } }))[0]).toBe("age:large");
+      expect(sizes(facts(e, { age: age() }))[0]).toBe("age:large");
     });
 
     test("the second animal's own night is not silenced by the first's: the practices differ", () => {

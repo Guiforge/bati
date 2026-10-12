@@ -452,6 +452,13 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     de: "Seit deiner 8. Einheit. Deine ersten 8 verteilen sich: {{list}}.",
     es: "Desde tu 8.ª sesión. Tus 8 primeras se reparten: {{list}}.",
   },
+  "session.feast_anniversary_body": {
+    why: "fait",
+    fr: "{{n}} séances sur les douze derniers mois.",
+    en: "{{n}} sessions in the past twelve months.",
+    de: "{{n}} Einheiten in den letzten zwölf Monaten.",
+    es: "{{n}} sesiones en los últimos doce meses.",
+  },
   "session.feast_tier_level_one": {
     why: "fait",
     fr: "Niveau {{level}}, après {{count}} séance.",

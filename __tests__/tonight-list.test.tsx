@@ -528,8 +528,14 @@ describe("TonightList", () => {
       imagePath: "squat.webp",
     });
     const feasts = rankFeasts({
-      age: { name: "L'Âge de la pompe diamant" },
-      anniversary: { years: 2 },
+      age: {
+        level: 50,
+        source: "rung",
+        reachedAtLevel: 47,
+        practice: null,
+        movement: move("Pompe diamant"),
+      },
+      anniversary: { years: 2, sessions: 120, best: null },
       result: {
         ...base,
         levelUp: { oldLevel: 5, newLevel: 6 },
@@ -550,7 +556,7 @@ describe("TonightList", () => {
       },
     });
     const { getByText } = await show(feasts);
-    expect(getByText("L'Âge de la pompe diamant")).toBeTruthy();
+    expect(getByText("Nouvel âge: Pompe diamant")).toBeTruthy();
     expect(getByText("après")).toBeTruthy();
     expect(getByText("Ton village a 2 ans.")).toBeTruthy();
     expect(getByText(/^Niveau 6/)).toBeTruthy();

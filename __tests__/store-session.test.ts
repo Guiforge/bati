@@ -160,6 +160,9 @@ jest.mock("@/db/streaks", () => ({
   }),
 }));
 jest.mock("@/db/crest", () => ({ getCrest: jest.fn().mockResolvedValue(null) }));
+jest.mock("@/db/villageNews", () => ({
+  readVillageNews: jest.fn().mockResolvedValue({ age: null, anniversary: null }),
+}));
 jest.mock("@/db/achievements", () => ({
   checkForNewAchievements: jest.fn().mockResolvedValue([]),
 }));
@@ -1232,6 +1235,38 @@ describe("useSessionStore", () => {
       expect(result.crestReveal).toBeNull();
       expect(reportError).toHaveBeenCalledWith("session.crest", expect.any(Error));
       (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
+    });
+
+    test("the Age and the anniversary are read once, after the save, with the key the phone holds", async () => {
+      const { readVillageNews } = require("@/db/villageNews") as { readVillageNews: jest.Mock };
+      const shown = preferences.getBigFeastsShown as jest.Mock;
+      const news = {
+        age: { level: 50, source: "none", reachedAtLevel: null, practice: null, movement: null },
+        anniversary: { years: 3, sessions: 120, best: null },
+      };
+      readVillageNews.mockClear().mockResolvedValueOnce(news);
+      shown.mockResolvedValueOnce(["age:40"]);
+
+      const result = await store.getState().saveSession(null);
+
+      expect(result.age).toEqual(news.age);
+      expect(result.anniversary).toEqual(news.anniversary);
+      expect(readVillageNews).toHaveBeenCalledTimes(1);
+      expect(readVillageNews).toHaveBeenCalledWith(["age:40"], expect.any(Date), null);
+    });
+
+    test("years that cannot be read say nothing and never block the save", async () => {
+      const { reportError } = require("@/src/reportError") as { reportError: jest.Mock };
+      const { readVillageNews } = require("@/db/villageNews") as { readVillageNews: jest.Mock };
+      reportError.mockClear();
+      readVillageNews.mockRejectedValueOnce(new Error("no journal"));
+
+      const result = await store.getState().saveSession(null);
+
+      expect(result.sessionId).toBe(1);
+      expect(result.age).toBeNull();
+      expect(result.anniversary).toBeNull();
+      expect(reportError).toHaveBeenCalledWith("session.villageNews", expect.any(Error));
     });
 
     test("a boss already dead when the session opened takes no further hits", async () => {

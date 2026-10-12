@@ -27,7 +27,14 @@ import { getLevelTitle } from "@/db/userLevel";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
-import { legendaryBody, revealShield, spoken, stageBody, tierSentence } from "./bigFeastText";
+import {
+  ageLine,
+  legendaryBody,
+  revealShield,
+  spoken,
+  stageBody,
+  tierSentence,
+} from "./bigFeastText";
 import type { Feast } from "./feasts";
 import { formatRecordValue, recordTitle } from "./recordText";
 
@@ -96,7 +103,7 @@ function largeLine(t: TFunction, f: Feast, villageName: string, language: AppLan
     case "reveal":
       return t(`session.tonight_reveal_${f.animal}`, { place: placeOf(t, villageName) });
     case "age":
-      return f.name;
+      return ageLine(t, f, language);
     case "anniversary":
       return t("session.tonight_anniversary", { count: f.years });
     case "tier":
@@ -282,7 +289,7 @@ function cardOf(
     case "age":
       return {
         id: f.id,
-        title: f.name,
+        title: ageLine(t, f, language),
         art: <GameIcon name="crown" size={32} color="$resourceGold" />,
       };
     case "anniversary":

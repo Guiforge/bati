@@ -3,8 +3,11 @@ import type { CrestShape } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
 import type { Crest } from "@/db/crest";
 import { ANIMAL_OF } from "@/db/crestRules";
+import { formatTargetValue } from "@/db/targets";
 import { MAX_TIER, TIER_LEVEL_FLOORS, TIER_NAMES, type VillageTier } from "@/db/village";
+import { FEW_SESSIONS } from "@/db/villageNewsRules";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
+import { localizedName } from "@/src/i18n/localized";
 import type { Feast } from "./feasts";
 
 /**
@@ -135,3 +138,48 @@ export const spoken = (card: { title: string; body?: string[] }) => {
     .map((p, i) => (i === last ? p.replace(/\.$/, "") : p))
     .reduce((run, p) => (run ? `${run}${/[.!?…:]$/.test(run) ? " " : ". "}${p}` : p), "");
 };
+
+type Age = Extract<Feast, { kind: "age" }>;
+
+/**
+ * An Age has no sentence of its own ("The Age of the ...": an article and a gender in four
+ * languages): the kicker says it, the title is the movement it is named after, else the practice
+ * in the lead, else the level.
+ */
+export function ageTitle(t: TFunction, f: Age, language: AppLanguage): string {
+  if (f.movement) return localizedName(f.movement, language);
+  if (f.practice) return sentence(t(PRACTICE_KEY[f.practice]));
+  return t("session.feast_age_level", { level: f.level });
+}
+
+/** "New age: Diamond push-up", the label form a tier takes in "Tonight" too. */
+export const ageLine = (t: TFunction, f: Age, language: AppLanguage) =>
+  `${t("session.feast_age_kicker")}: ${ageTitle(t, f, language)}`;
+
+/** What the Age says of its name: first done at level 47, the highest held, the practice, or just ten levels. */
+export function ageBody(t: TFunction, f: Age): string {
+  const level = f.level;
+  if (f.movement && f.reachedAtLevel !== null && f.source !== "practice" && f.source !== "none")
+    return t(`session.feast_age_body_${f.source}`, { level, at: f.reachedAtLevel });
+  return f.practice
+    ? t("session.feast_age_body_practice", { level })
+    : t("session.feast_age_body_none");
+}
+
+/**
+ * The year the village has had: how many sessions, or, under `FEW_SESSIONS`, the best record
+ * instead of a small count. Empty when a quiet year broke none.
+ */
+export function anniversaryBody(
+  t: TFunction,
+  f: Extract<Feast, { kind: "anniversary" }>,
+  language: AppLanguage,
+): string {
+  if (f.sessions >= FEW_SESSIONS) return t("session.feast_anniversary_body", { n: f.sessions });
+  if (!f.best?.movement) return "";
+  return t("session.feast_anniversary_record", {
+    movement: localizedName(f.best.movement, language),
+    from: formatTargetValue({ type: f.best.unit, value: f.best.prior }, language),
+    to: formatTargetValue({ type: f.best.unit, value: f.best.value }, language),
+  });
+}

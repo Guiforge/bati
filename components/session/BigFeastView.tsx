@@ -1,6 +1,5 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import type { TFunction } from "i18next";
 import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
@@ -28,8 +27,12 @@ import type { FlameLevel } from "@/db/streaks";
 import type { VillageTier } from "@/db/village";
 import { useGameIcon } from "@/hooks/useGameIcon";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { useSettingsStore } from "@/stores/settings";
 import {
+  ageBody,
+  ageTitle,
+  anniversaryBody,
   BEAT,
   legendaryBody,
   legendaryTitle,
@@ -42,7 +45,7 @@ import {
 } from "./bigFeastText";
 import type { Feast } from "./feasts";
 
-/** The feasts that fill the screen. Age and anniversary have no producer yet (V-03). */
+/** The feasts that fill the screen. */
 export type BigFeast = Extract<
   Feast,
   { kind: "reveal" | "tier" | "age" | "anniversary" | "legendary" }
@@ -156,9 +159,6 @@ function WhyLink({
   );
 }
 
-const plainTitle = (t: TFunction, feast: Extract<BigFeast, { kind: "age" | "anniversary" }>) =>
-  feast.kind === "age" ? feast.name : t("session.tonight_anniversary", { count: feast.years });
-
 /**
  * The animal's portrait, 192 dp: the largest square that leaves the title and the body above the
  * fold on a 640 dp phone at 130 % text, and one the 24 dp margins of a 360 dp screen still hold.
@@ -206,6 +206,41 @@ function RevealPortrait({ animal, portrait }: { animal: Animal; portrait: Ctx["p
         />
       }
     />
+  );
+}
+
+/** An Age or an anniversary: a kicker, a title and the one line of the year (none when it has nothing true to add). */
+function YearsText({
+  feast,
+  language,
+}: {
+  feast: Extract<BigFeast, { kind: "age" | "anniversary" }>;
+  language: AppLanguage;
+}) {
+  const { t } = useTranslation();
+  if (feast.kind === "age") {
+    const body = ageBody(t, feast);
+    return (
+      <>
+        <Kicker>{t("session.feast_age_kicker")}</Kicker>
+        <Title>{ageTitle(t, feast, language)}</Title>
+        <Line testID="big-feast-body" fact>
+          {body}
+        </Line>
+      </>
+    );
+  }
+  const body = anniversaryBody(t, feast, language);
+  return (
+    <>
+      <Kicker>{t("session.feast_anniversary_kicker")}</Kicker>
+      <Title>{t("session.tonight_anniversary", { count: feast.years })}</Title>
+      {body ? (
+        <Line testID="big-feast-body" fact>
+          {body}
+        </Line>
+      ) : null}
+    </>
   );
 }
 
@@ -281,7 +316,7 @@ function FeastText({
       </>
     );
   }
-  return <Title>{plainTitle(t, feast)}</Title>;
+  return <YearsText feast={feast} language={language} />;
 }
 
 function Shield({ crest, style }: { crest: CrestShape | null; style?: object }) {

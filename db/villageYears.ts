@@ -13,12 +13,14 @@ import {
   agesReached,
   type Banner,
   type JournalRow,
+  lastYear,
   rungDepths,
   type SetBest,
   type Stone,
   seasons,
   stones,
   timeline,
+  type YearSummary,
 } from "./villageYearsRules";
 import { NON_REP_STYLE } from "./workUnits";
 
@@ -36,7 +38,7 @@ export async function getVillageYears(
   regionCode: string | null | undefined = getLocales()[0]?.regionCode,
   /** The crest's first animal (`getCrest(now)?.animal`): the caller has it already, a second read of the journal is not worth the colour. */
   firstAnimal: Animal | null = null,
-): Promise<VillageYears> {
+): Promise<VillageYears & { year: YearSummary }> {
   const sessions = await db
     .select({
       id: completedQuest.id,
@@ -97,6 +99,7 @@ export async function getVillageYears(
       entries,
       rungDepths(new Map(ladder.map((r) => [r.id, r.prerequisiteExerciseId]))),
     ),
+    year: lastYear(entries, now),
   };
 }
 

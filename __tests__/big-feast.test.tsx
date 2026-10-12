@@ -68,6 +68,7 @@ jest.mock("@/db/preferences", () => ({
   preferences: {
     markBigFeastShown: (...a: unknown[]) => mockMark(...a),
     getBigFeastsShown: () => mockShown(),
+    getCrestMotto: () => Promise.resolve("none"),
     setCrestAnimal: (...a: unknown[]) => mockSetCrestAnimal(...a),
     // The session store clears its saved copy when a run ends.
     clearSavedSession: jest.fn().mockResolvedValue(undefined),
@@ -251,6 +252,59 @@ describe("BigFeastView", () => {
     mockReduced = false;
     jest.clearAllMocks();
     await lang("fr");
+  });
+
+  test("an Age reads as a kicker, the movement and a body; an anniversary as a kicker, its age and the year", async () => {
+    mockReduced = true;
+    const age: Extract<Feast, { kind: "age" }> = {
+      kind: "age",
+      size: "large",
+      id: "age-0",
+      level: 50,
+      source: "rung",
+      reachedAtLevel: 47,
+      practice: null,
+      movement: { enName: "Diamond push-up", frName: "Pompe diamant", deName: "", esName: "" },
+    };
+    const show = (feast: Feast) =>
+      render(
+        wrap(
+          <BigFeastView
+            feast={feast as never}
+            crest={null}
+            tier={9}
+            villageName=""
+            sessions={null}
+            onSeeVillage={mockSee}
+          />,
+        ),
+      );
+    const first = await show(age);
+    expect(first.getByTestId("big-feast-kicker").props.children).toBe("NOUVEL ÂGE");
+    expect(first.getByTestId("big-feast-title").props.children).toBe("Pompe diamant");
+    expect(first.getByTestId("big-feast-body").props.children).toBe(
+      "Niveau 50. Première fois au niveau 47.",
+    );
+    await first.unmount();
+
+    const anniversary: Extract<Feast, { kind: "anniversary" }> = {
+      kind: "anniversary",
+      size: "large",
+      id: "anniversary-0",
+      years: 2,
+      sessions: 187,
+      best: null,
+    };
+    const second = await show(anniversary);
+    expect(second.getByTestId("big-feast-kicker").props.children).toBe("ANNIVERSAIRE");
+    expect(second.getByTestId("big-feast-title").props.children).toBe("Ton village a 2 ans.");
+    expect(second.getByTestId("big-feast-body").props.children).toBe(
+      "187 séances sur les douze derniers mois.",
+    );
+    await second.unmount();
+    // A quiet year that broke no record has nothing true to add: no body at all.
+    const quiet = await show({ ...anniversary, sessions: 4 });
+    expect(quiet.queryByTestId("big-feast-body")).toBeNull();
   });
 
   test("the reveal's last image links to the sheet 'Why the Bear?', and only the reveal", async () => {

@@ -75,6 +75,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | [technical-architecture.md](architecture/technical-architecture.md) | Tech stack, project structure |
 | [database-api.md](architecture/database-api.md) | Database API reference (Drizzle) |
 | [performance.md](architecture/performance.md) | RN performance best practices & antipatterns |
+| [adding-a-language.md](architecture/adding-a-language.md) | Every surface a new language touches, in order, and the tests that hold each |
 | [data-safety.md](architecture/data-safety.md) | The gates that protect a hero's data at an update, and how to write a migration under them |
 | [exercise-ownership.md](architecture/exercise-ownership.md) | Seed content vs hero content in one table: name partition, retirement, migration rule |
 | [wiki-protocol.md](meta/wiki-protocol.md) | How this docs folder is maintained as an LLM wiki |

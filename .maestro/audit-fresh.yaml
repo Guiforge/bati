@@ -24,6 +24,8 @@ tags:
 - takeScreenshot: 41-onboarding-village-empty
 - tapOn:
     id: "onboarding-village-name"
+# The field arrives with a drawn name.
+- eraseText: 20
 - inputText: "Testville"
 - hideKeyboard
 - takeScreenshot: 42-onboarding-village-filled

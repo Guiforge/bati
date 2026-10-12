@@ -1,3 +1,6 @@
 <resources>
-  <string name="NSPhotoLibraryUsageDescription">"Used to pick a photo for your hero's avatar, or for an exercise or quest you made. It stays on your device, and leaves it only inside a backup or an encrypted sync you turn on."</string>
+  <string name="widget_flame_label">"Bati: Flame"</string>
+  <string name="widget_flame_description">"Your training flame."</string>
+  <string name="widget_weekly_label">"Bati: Week"</string>
+  <string name="widget_weekly_description">"Sessions this week against your oath."</string>
 </resources>

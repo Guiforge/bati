@@ -17,6 +17,13 @@ function isTrainingLevel(value: string | null): value is TrainingLevel {
 }
 
 /**
+ * How many sessions a hero is still new for: the jumps are held back that long
+ * (`startsGently`), and a hero who never answered is read as starting that long
+ * (`isStartingOut`). One number, so the warm-up and the dose let go together.
+ */
+const SETTLED_AFTER_SESSIONS = 3;
+
+/**
  * Whether this hero is kept off impact movements (`exercises.impact`, `0070`) in what the app
  * chooses for them: the warm-up, and the quests it suggests. A beginner for as long as they say
  * they are one, and anyone at all for their first three sessions, since nothing is known of them
@@ -26,7 +33,22 @@ function isTrainingLevel(value: string | null): value is TrainingLevel {
  * before the onboarding question, and two hundred sessions in they are not starting.
  */
 export function startsGently(level: TrainingLevel | null, trainingSessions: number): boolean {
-  return level === "beginner" || trainingSessions < 3;
+  return level === "beginner" || trainingSessions < SETTLED_AFTER_SESSIONS;
+}
+
+/**
+ * Whether the hero is to be treated as starting, or starting again: they said so, or they never
+ * said and the journal is still short. The second half is what keeps an update from touching a
+ * hero who was here before the question existed, or who skipped it two hundred sessions ago:
+ * read as a beginner, they saw their quests open at Easy.
+ *
+ * The rule of the dose (`startingDifficulty`) and of which quests are too hard to suggest
+ * (`getEligibleQuestIds`). Not `startsGently` above, on purpose: that one holds the jumps back for
+ * anyone's first sessions, whatever they answered, and a hero who said "I already train" is still
+ * handed the dose and the quests they asked for.
+ */
+export function isStartingOut(answer: TrainingLevel | null, sessions: number): boolean {
+  return answer === "beginner" || (answer === null && sessions < SETTLED_AFTER_SESSIONS);
 }
 
 /** Which units a distance is *read* in. Never which units it is stored in — see below. */

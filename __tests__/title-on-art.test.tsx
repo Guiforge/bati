@@ -64,7 +64,13 @@ jest.mock("@/db", () => ({
   getFinishedRunCountsByAdventure: () => Promise.resolve(new Map()),
   getRecentSessionHistory: () => Promise.resolve([]),
 }));
-jest.mock("@/db/questConfig", () => ({ getAllQuestConfigs: () => Promise.resolve(new Map()) }));
+jest.mock("@/db/questConfig", () => ({
+  getAllQuestConfigs: () => Promise.resolve(new Map()),
+  startingDifficulty: () => "medium",
+}));
+jest.mock("@/db/preferences", () => ({
+  preferences: { getTrainingLevel: async () => "regular" },
+}));
 jest.mock("@/db/favourites", () => ({
   getFavouriteQuestIds: () => Promise.resolve(new Set()),
   toggleFavouriteQuest: jest.fn(),

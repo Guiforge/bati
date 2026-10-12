@@ -28,6 +28,13 @@ shows a note under the language row in Settings, and the `de-DE` and `es-ES` des
 the same warning. Set the flag to `false` and delete that paragraph once a fluent speaker has read
 the language. Two naming questions are still open, listed at the end.
 
+Russian ships too and has no column on this page yet. Most of `ru.json` came from a contributor
+(PR #174); a model wrote the blocks that were tables in the code at the time (bosses, badges,
+labels, rest messages), the keys added since, and the `ru-RU` listing, which is why its flag is up
+and its listing ends on the same warning. Its catalogue (quests, movements, adventures) is in
+English: it has no column in the database, see
+[`adding-a-language.md`](../architecture/adding-a-language.md) step 4.
+
 ## Register
 
 | | en | fr | de | es |
@@ -59,7 +66,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | hold | A movement measured in seconds, not reps | hold | tenue |  | Halten | mantener |
 | target | The number to reach: a set's, an outing's, an oath's | target (goal for an outing) | objectif | cible | Ziel | objetivo |
 | difficulty | Easy, Medium, Hard, chosen per quest | Easy / Medium / Hard | Facile / Moyen / Difficile |  | Leicht / Mittel / Schwer | Fácil / Media / Difícil |
-| training level | What the hero said at onboarding | Beginner / Regular / Advanced | Débutant / Régulier / Confirmé |  | Einsteiger / Regelmäßig / Fortgeschritten | Principiante / Habitual / Avanzado |
+| written for | Who a quest was written for, the tag on its card | Beginner / Regular / Advanced | Débutant / Régulier / Confirmé |  | Einsteiger / Regelmäßig / Fortgeschritten | Principiante / Habitual / Avanzado |
 
 ## Progression
 
@@ -74,6 +81,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | ghost | What the hero did on this movement last time, shown during the set | last time / best | la dernière fois / record |  | letztes Mal / Rekord | la última vez / récord |
 | XP | Experience, one rep is one | XP | XP |  | XP | XP |
 | level | The hero's level, from XP | level | niveau |  | Level | nivel |
+| starting point | The hero's answer to "where are you at", which sets where a quest never played starts | starting point | point de départ | niveau (the hero's, from XP) | Ausgangspunkt | punto de partida |
 | rank | The title a level carries | Apprentice … Divine | Apprenti … Divin | Entraîné (says "trained") | Lehrling … Göttlich | Aprendiz … Divino |
 
 ## Flame and oath
@@ -95,7 +103,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | step | One quest inside an adventure | step | étape | marche | Etappe | etapa |
 | boss | The monster at the end of an adventure | boss | boss |  | Boss | jefe |
 | HP | The boss's health pool for the campaign | HP | PV |  | LP | PV |
-| weakness / resistance | A muscle that deals half again, or half, the damage | weakness / resistance | faiblesse / résistance |  | Schwäche / Resistenz | debilidad / resistencia |
+| weakness / resistance | A muscle that deals 50% more, or half, the damage | weakness / resistance | faiblesse / résistance |  | Schwäche / Resistenz | debilidad / resistencia |
 | critical hit | One or two reps past the prescribed target, striking harder. Never a hold | critical hit | coup critique |  | kritischer Treffer | golpe crítico |
 | enraged | The boss's last phase | enraged | enragé |  | rasend | enfurecido |
 | threat | How dangerous a boss is, 1 to 4 | threat level | niveau de menace |  | Bedrohungsstufe | nivel de amenaza |

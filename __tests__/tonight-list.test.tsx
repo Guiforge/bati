@@ -487,7 +487,7 @@ describe("TonightList", () => {
       ],
     });
     const { getByText } = await show(feasts);
-    expect(getByText("La même étape mène aussi à Lunge, Step-up.")).toBeTruthy();
+    expect(getByText("La même étape mène aussi à Lunge et Step-up.")).toBeTruthy();
   });
 
   test.each([
@@ -535,7 +535,13 @@ describe("TonightList", () => {
         levelUp: { oldLevel: 5, newLevel: 6 },
         standing: {
           exerciseId: 1,
-          exerciseName: { en: "Push-ups", fr: "Pompes", de: "Pompes", es: "Pompes" },
+          exerciseName: {
+            en: "Push-ups",
+            fr: "Pompes",
+            de: "Pompes",
+            es: "Pompes",
+            ru: "Push-ups",
+          },
           type: "reps",
           perSide: false,
           value: 14,

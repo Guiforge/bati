@@ -203,7 +203,7 @@ export async function readErrorLog(kind: LogKind = "error"): Promise<CrashReport
  * The one place the contact address is written in code. The same address appears in the
  * privacy text in `locales/*.json` and in `docs/legal/privacy.md`; change all three together.
  */
-export const CONTACT_EMAIL = "feedback.bati@proton.me";
+export const CONTACT_EMAIL = "contact@getbati.app";
 
 /**
  * A `mailto:` the hero's own mail app opens, pre-filled and fully editable.

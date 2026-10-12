@@ -1,0 +1,11 @@
+{
+  "ios": {
+    "NSPhotoLibraryUsageDescription": "Se usa para elegir una foto para el avatar de tu héroe, o para un ejercicio o una misión que hayas creado. Se queda en tu dispositivo, y solo sale de él dentro de una copia de seguridad o de una sincronización cifrada que actives."
+  },
+  "android": {
+    "widget_flame_label": "Bati: Llama",
+    "widget_flame_description": "Tu llama de entrenamiento.",
+    "widget_weekly_label": "Bati: Semana",
+    "widget_weekly_description": "Las sesiones de esta semana, frente a tu juramento."
+  }
+}

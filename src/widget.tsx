@@ -18,7 +18,7 @@ import {
   type Localized,
   resolveAppLanguage,
 } from "@/src/i18n/deviceLanguage";
-import { pluralCategory } from "@/src/i18n/pluralRules";
+import { type PluralCategory, pluralCategory } from "@/src/i18n/pluralRules";
 import { reportError } from "./reportError";
 
 // These used to be literals, because importing tamagui.config into a headless task drags in
@@ -69,7 +69,8 @@ const numberStyle = (k: number) =>
 // through i18next (whose init drags the whole app's locale files into the headless task).
 // Typed on every app language, so a new one is a compile error here rather than a blank widget.
 // Ceiling: these strings appearing anywhere else — then move them to locales/.
-type Unit = { one: string; other: string };
+// `few` and `many` for a language that has them: the rule picks, and `other` stands in.
+type Unit = { one: string; other: string } & Partial<Record<PluralCategory, string>>;
 type WidgetStrings = { flame: string; days: Unit; week: string; sessions: Unit };
 const STRINGS: Localized<WidgetStrings> = {
   fr: {
@@ -96,6 +97,12 @@ const STRINGS: Localized<WidgetStrings> = {
     week: "SEMANA",
     sessions: { one: "sesión", other: "sesiones" },
   },
+  ru: {
+    flame: "ПЛАМЯ",
+    days: { one: "день", few: "дня", many: "дней", other: "дней" },
+    week: "НЕДЕЛЯ",
+    sessions: { one: "тренировка", few: "тренировки", many: "тренировок", other: "тренировок" },
+  },
 };
 type Lang = AppLanguage;
 
@@ -103,11 +110,11 @@ type Lang = AppLanguage;
  * The unit under a number, agreed with it by the language's own plural rule (French counts 0 as
  * singular, English does not). No reading, the error fallback, keeps the plural. Written out
  * rather than `Intl.PluralRules`: Hermes has no PluralRules, and the call threw in the headless
- * task. The counts here are whole and never negative, which is all these two rules need.
+ * task. The counts here are whole and never negative, which is all these rules need.
  */
 export function widgetUnit(lang: Lang, unit: "days" | "sessions", count: number | null): string {
   const forms = STRINGS[lang][unit];
-  return pluralCategory(lang, count) === "one" ? forms.one : forms.other;
+  return forms[pluralCategory(lang, count)] ?? forms.other;
 }
 
 /** The app's own stored language, resolved by the same rule the app itself uses. */

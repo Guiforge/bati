@@ -1,4 +1,6 @@
-import { pickDailyVariant, REST_SUGGESTION_MESSAGES } from "@/constants/restMessages";
+import { pickDailyVariant, restMessageKey } from "@/constants/restMessages";
+import { i18n } from "@/i18n";
+import { APP_LANGUAGES } from "@/src/i18n/deviceLanguage";
 
 describe("pickDailyVariant", () => {
   const pool = ["a", "b", "c", "d", "e"];
@@ -24,13 +26,29 @@ describe("pickDailyVariant", () => {
     );
     expect(picks.size).toBeGreaterThan(1);
   });
+});
 
-  test("every rest-suggestion reason has an en and fr pool", () => {
-    for (const reason of Object.keys(
-      REST_SUGGESTION_MESSAGES,
-    ) as (keyof typeof REST_SUGGESTION_MESSAGES)[]) {
-      expect(REST_SUGGESTION_MESSAGES[reason].en.length).toBeGreaterThan(0);
-      expect(REST_SUGGESTION_MESSAGES[reason].fr.length).toBeGreaterThan(0);
+/**
+ * Every line of every pool, read the way the Home reads it, in every language and at counts that
+ * land on different plural forms where a language has them (5, 21, 22). A line missing a form
+ * prints its key, and one that lost `{{count}}` prints no number.
+ */
+describe("the rest note", () => {
+  const days = Array.from({ length: 28 }, (_, i) => `2026-07-${String(i + 1).padStart(2, "0")}`);
+
+  test.each(APP_LANGUAGES)("%s: every line reads with its count", async (language) => {
+    await i18n.changeLanguage(language);
+    for (const reason of ["overtraining", "consecutive_days", "high_volume", "deload"] as const) {
+      const keys = new Set(days.map((day) => restMessageKey(reason, `${day}:${reason}`)));
+      expect(keys.size).toBeGreaterThan(1);
+      for (const key of keys) {
+        for (const count of [5, 21, 22]) {
+          const line = i18n.t(key, { count });
+          expect(line).not.toContain("rest_messages");
+          expect(line).not.toContain("{{");
+          if (reason !== "deload") expect(line).toContain(String(count));
+        }
+      }
     }
   });
 });

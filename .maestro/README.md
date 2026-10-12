@@ -114,8 +114,8 @@ cd android && ./gradlew assembleRelease -PbatiLocalId=.dev -PreactNativeArchitec
 emulator -avd <avd> -gpu host -no-snapshot -no-boot-anim &
 adb install -r android/app/build/outputs/apk/release/app-release.apk
 
-# 3. Run it, naming the device.
-ANDROID_SERIAL=emulator-5554 npm run maestro
+# 3. Run it.
+npm run maestro   # on the emulator this worktree holds, see scripts/emu.sh
 ```
 
 Keep the device's animations **on**: with the system animation scales at 0,
@@ -125,7 +125,8 @@ time in six, see the comment in that flow) is not established.
 
 **Two emulators halve it.** Start a second AVD on another port (`-port 5556`) and split the
 suite: `maestro test .maestro/ --shard-split 2 --device emulator-5554,emulator-5556`. Measured
-at 432 s against 801 s on one, with the CPU at 20%.
+at 432 s against 801 s on one, with the CPU at 20%. That takes both from every other session:
+run it only when `scripts/emu.sh list` is empty.
 
 ## `testID` convention
 
@@ -137,7 +138,8 @@ breaks the day someone runs the emulator in French — a `testID` never does.
 | Example | Where |
 |---------|-------|
 | `onboarding-hero-continue` | onboarding hero-setup screen |
-| `home-start-session` | home screen CTA, opens the offered session directly |
+| `home-start-session` | home screen CTA, opens the offered session directly. Absent the evening of a session |
+| `home-pick-quest` | home screen link to the gallery, in place of the CTA once a session was done today |
 | `session-complete-exercise` | active exercise footer |
 | `session-victory-continue` | victory screen |
 | `tab-adventures` | bottom tab bar |

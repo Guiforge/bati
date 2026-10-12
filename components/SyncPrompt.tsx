@@ -23,6 +23,7 @@ import {
 } from "@/src/deviceSync";
 import { bestVaultFirst } from "@/src/joinOrder";
 import { reportError } from "@/src/reportError";
+import { rememberRestoreNotice, takeRestoreNotice } from "@/src/restoreNotice";
 import { failureMessage, syncAgo } from "@/src/syncWords";
 import { useSessionStore } from "@/stores/session";
 import { useSyncStore } from "@/stores/sync";
@@ -50,6 +51,19 @@ const NEEDS_NOTHING = new Set<Peer["state"]>(["level", "behind", "waiting", "old
 
 /** News that is only ever said: a newer version on the other device, an unreadable file, an older copy set aside. */
 const SAID_ONCE = new Set<Peer["state"]>(["unreadable", "newerVersion", "replayed"]);
+
+type Words = ReturnType<typeof useTranslation>["t"];
+
+/** Who came back, for a restore: the village and the journal's own count. */
+function restoredWords(t: Words, restored: { village: string; sessions: number }): string {
+  const village = restored.village || t("sync.found.unnamed");
+  return t("backup.restored", { village, count: restored.sessions });
+}
+
+/** What arrived, for a merge that was not a restore. */
+function mergedWords(t: Words, notice: { sessions: number }): string {
+  return notice.sessions > 0 ? t("sync.merged", { count: notice.sessions }) : t("sync.mergedOther");
+}
 
 export function SyncPrompt() {
   const { t } = useTranslation();
@@ -80,13 +94,16 @@ export function SyncPrompt() {
   // Said after the reload a merge ends with: the app vanished for a second, and this is why. And
   // the hero goes back where they were: a reload lands on Home, and from Settings that read as
   // being thrown out.
+  //
+  // A restore reloads too, from a file or from the hero found on the cloud, and says who came back
+  // in place of what arrived: on a device that had nothing, "3 sessions arrived" is the lesser
+  // news.
   useEffect(() => {
-    takeMergeNotice()
-      .then((notice) => {
-        if (notice === null) return;
-        const { sessions, returnTo } = notice;
-        showSuccess(sessions > 0 ? t("sync.merged", { count: sessions }) : t("sync.mergedOther"));
-        if (returnTo !== "/") router.push(returnTo as Href);
+    Promise.all([takeRestoreNotice(), takeMergeNotice()])
+      .then(([restored, notice]) => {
+        const said = restored ? restoredWords(t, restored) : notice ? mergedWords(t, notice) : null;
+        if (said !== null) showSuccess(said);
+        if (notice !== null && notice.returnTo !== "/") router.push(notice.returnTo as Href);
       })
       .catch((e) => reportError("sync.mergeNotice", e));
   }, [showSuccess, t]);
@@ -181,7 +198,7 @@ export function SyncPrompt() {
    * Merged, not asked: what either device recorded ends up on both. The question above is only
    * for a device whose build differs, which the merge refuses.
    */
-  const merge = (peer: ComparedPeer) => {
+  const merge = (peer: ComparedPeer, found = false) => {
     setShowing(true);
     mergeWithPeer(peer)
       .then(async (outcome) => {
@@ -196,6 +213,8 @@ export function SyncPrompt() {
         }
         // Every cache and store read the database before the merge: a fresh runtime reads it again.
         await rememberMergeNotice(pathname);
+        // A hero found on a device that had none is a restore, and is said as one.
+        if (found) await rememberRestoreNotice();
         await reloadAppAsync("merge");
       })
       .catch((e) => {
@@ -228,7 +247,7 @@ export function SyncPrompt() {
             rememberAnswer(peer).catch((e) => reportError("sync.remember", e));
           },
         },
-        { text: t("sync.found.mine"), onPress: () => merge(peer) },
+        { text: t("sync.found.mine"), onPress: () => merge(peer, true) },
       ],
     );
   };

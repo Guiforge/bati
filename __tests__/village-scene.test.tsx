@@ -83,7 +83,7 @@ function mockScene(buildings: village.VillageBuilding[], over: Partial<village.V
   jest.spyOn(village, "getVillageScene").mockResolvedValue({
     tier: 4,
     level: 8,
-    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion" },
+    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion", ru: "Чемпион" },
     totalXp: 3180,
     flame: 0,
     streakDays: 0,
@@ -352,7 +352,7 @@ describe("VillageScene", () => {
     const scene = (name: string): village.VillageScene => ({
       tier: 4,
       level: 8,
-      title: { en: name, fr: name, de: name, es: name },
+      title: { en: name, fr: name, de: name, es: name, ru: name },
       totalXp: 3180,
       flame: 0,
       streakDays: 0,
@@ -400,7 +400,7 @@ describe("VillageScene", () => {
       answers[1]?.ok({
         tier: 4,
         level: 8,
-        title: { en: "Newer", fr: "Newer", de: "Newer", es: "Newer" },
+        title: { en: "Newer", fr: "Newer", de: "Newer", es: "Newer", ru: "Newer" },
         totalXp: 3180,
         flame: 0,
         streakDays: 0,

@@ -63,7 +63,7 @@ function straightRung(): VariationStep {
   };
 }
 
-const FORK_LINE = "The same rung also leads to Pike Push-Up, Diamond Push-Up.";
+const FORK_LINE = "The same rung also leads to Pike Push-Up and Diamond Push-Up.";
 
 async function mount(ui: React.ReactElement) {
   await act(async () => {

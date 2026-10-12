@@ -162,7 +162,7 @@ describe("ReminderCard", () => {
     await act(async () => {
       await fireEvent.press(screen.getByTestId("home-reminder-offer"));
     });
-    expect(mockPush).toHaveBeenCalledWith("/settings");
+    expect(mockPush).toHaveBeenCalledWith("/settings?section=reminder");
     expect(reminderPrefs.dismissOffer).toHaveBeenCalled();
     expect(screen.queryByTestId("home-reminder-offer")).toBeNull();
   });
@@ -246,6 +246,6 @@ describe("ReminderCard", () => {
     await act(async () => {
       await fireEvent.press(screen.getByTestId("confirm-dialog-confirm"));
     });
-    expect(mockPush).toHaveBeenCalledWith("/settings");
+    expect(mockPush).toHaveBeenCalledWith("/settings?section=reminder");
   });
 });

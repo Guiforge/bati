@@ -1,0 +1,11 @@
+{
+  "ios": {
+    "NSPhotoLibraryUsageDescription": "Wird verwendet, um ein Foto für den Avatar deines Helden auszuwählen, oder für eine Übung oder Quest, die du erstellt hast. Es bleibt auf deinem Gerät und verlässt es nur in einer Sicherung oder einer verschlüsselten Synchronisierung, die du einschaltest."
+  },
+  "android": {
+    "widget_flame_label": "Bati: Flamme",
+    "widget_flame_description": "Deine Trainingsflamme.",
+    "widget_weekly_label": "Bati: Woche",
+    "widget_weekly_description": "Die Einheiten dieser Woche, gemessen an deinem Schwur."
+  }
+}

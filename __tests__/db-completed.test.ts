@@ -336,5 +336,29 @@ describe("db/completed", () => {
         .run(at(new Date(2025, 0, 1, 12, 0)), b);
       expect((await getStalestQuest())?.questId).toBe(a);
     });
+
+    // What Home's "done for today" asks: the flame's definition of showing up, since midnight here.
+    test("hasSessionToday: a workout or a ten-minute outing today, never yesterday's", async () => {
+      const { hasSessionToday } = require("../db/completed") as typeof import("../db/completed");
+      const [a] = questIds();
+      assert(a !== undefined);
+      const outing = (when: Date, movingSeconds: number) =>
+        t.sqlite
+          .prepare(
+            "INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, questId, outing, movingSeconds) VALUES ('medium', 10, ?, ?, 'walk', ?)",
+          )
+          .run(at(when), a, movingSeconds);
+
+      log(a, new Date(2026, 9, 3, 23, 30));
+      outing(new Date(2026, 9, 4, 7, 0), 5 * 60);
+      expect(await hasSessionToday()).toBe(false);
+
+      outing(new Date(2026, 9, 4, 7, 30), 10 * 60);
+      expect(await hasSessionToday()).toBe(true);
+
+      t.sqlite.exec("DELETE FROM completed_sessions");
+      log(a, new Date(2026, 9, 4, 0, 5));
+      expect(await hasSessionToday()).toBe(true);
+    });
   });
 });

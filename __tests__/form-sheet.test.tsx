@@ -6,7 +6,7 @@ import { FormSheet } from "@/components/common/FormSheet";
 import de from "@/locales/de.json";
 import en from "@/locales/en.json";
 import es from "@/locales/es.json";
-import fr from "@/locales/fr.json";
+import ru from "@/locales/ru.json";
 import config from "@/tamagui.config";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
@@ -38,8 +38,9 @@ describe("FormSheet", () => {
   });
 
   // Alegreya's figures are old-style: a title with a digit stays in the body face.
+  // French writes "douze mots" in words, so it has no digit to test.
   it.each([
-    ["fr", fr.vault.wordsTitle],
+    ["ru", ru.vault.wordsTitle],
     ["en", en.vault.wordsTitle],
     ["de", de.vault.wordsTitle],
     ["es", es.vault.wordsTitle],

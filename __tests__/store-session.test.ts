@@ -24,6 +24,7 @@ import {
   FINAL_REST_SECONDS,
   holdNeedingAnswer,
   loadWarmup,
+  recordedDurationSeconds,
   useSessionStore,
 } from "../stores/session";
 
@@ -192,6 +193,7 @@ describe("useSessionStore", () => {
       currentExerciseIndex: 0,
       results: [],
       startTime: null,
+      endTime: null,
       totalPausedTime: 0,
       lastPauseTimestamp: null,
       timerStartTimestamp: null,
@@ -370,6 +372,81 @@ describe("useSessionStore", () => {
     expect(state.status).toBe("finished");
     expect(state.results.at(-1)?.result.value).toBe(55);
     expect(state.totalPausedTime).toBeGreaterThanOrEqual(10_000);
+  });
+
+  /**
+   * F11: "Temps total 1:59" above "Séance la plus longue 2 min 21 s", one session, one screen. The
+   * victory screen read the clock when it opened and `saveSession` read it again when it ran, and
+   * under two minutes the save waits behind "that was short": the journal got the reading time.
+   * Both doors to "finished" stamp the end, and both readers stop there.
+   */
+  describe("a short session kept after a delay", () => {
+    const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
+    const T0 = 1_760_000_000_000;
+    let now: jest.SpyInstance<number, []>;
+
+    // With a pace per rep, so the journal's own ceiling (twice the estimate) is a real number.
+    const paced = {
+      ...mockQuest,
+      exercises: mockQuest.exercises.map((qex) => ({
+        ...qex,
+        exercise: { ...qex.exercise, secondsPerRep: 3 },
+      })),
+    } as unknown as Quest;
+
+    beforeEach(async () => {
+      now = jest.spyOn(Date, "now").mockReturnValue(T0);
+      await store.getState().startSession(paced, "medium");
+      store.getState().finishCountdown();
+      store.getState().completeExercise(10);
+      // On the last set, with one behind it: a session with nothing in it cannot be skipped out of.
+      store.setState({ status: "running", currentRoundIndex: 1, currentExerciseIndex: 1 });
+      completed.createCompletedSession.mockClear();
+    });
+    afterEach(() => now.mockRestore());
+
+    /** The hero reads the question for 31 s, taps "Keep it", and the journal row is written. */
+    const keptAfterReading = async () => {
+      const onVictoryScreen = recordedDurationSeconds();
+      now.mockReturnValue(Date.now() + 31_000);
+      await store.getState().saveSession(null);
+      const row = completed.createCompletedSession.mock.calls[0]?.[0];
+      return { onVictoryScreen, inJournal: row.durationSeconds as number };
+    };
+
+    test("ended from the rest behind the last set: one duration, on the screen and in the journal", async () => {
+      now.mockReturnValue(T0 + 90_000);
+      store.getState().completeExercise(40);
+      // Ten seconds correcting the count, which the clock already leaves out.
+      now.mockReturnValue(T0 + 100_000);
+      store.getState().skipRest();
+      expect(store.getState().status).toBe("finished");
+
+      const { onVictoryScreen, inJournal } = await keptAfterReading();
+      expect(onVictoryScreen).toBe(90);
+      expect(inJournal).toBe(90);
+      // And a second look at the screen's figure, after the save, has not moved either.
+      expect(recordedDurationSeconds()).toBe(90);
+    });
+
+    test("ended on the last tap, with no rest behind it: the same", async () => {
+      now.mockReturnValue(T0 + 75_000);
+      store.getState().skipExercise();
+      expect(store.getState().status).toBe("finished");
+
+      const { onVictoryScreen, inJournal } = await keptAfterReading();
+      expect(onVictoryScreen).toBe(75);
+      expect(inJournal).toBe(75);
+    });
+
+    test("the next session starts its own clock", async () => {
+      now.mockReturnValue(T0 + 75_000);
+      store.getState().skipExercise();
+      expect(store.getState().endTime).toBe(T0 + 75_000);
+      await store.getState().startSession(paced, "medium");
+
+      expect(store.getState().endTime).toBeNull();
+    });
   });
 
   test("a skipped last set has nothing to correct and ends at once", async () => {
@@ -634,6 +711,7 @@ describe("useSessionStore", () => {
   describe("warm-up", () => {
     const prefs = require("@/db/preferences").preferences as {
       getWarmupEnabled: jest.Mock;
+      getTrainingLevel: jest.Mock;
     };
 
     afterEach(() => {

@@ -1,9 +1,17 @@
 import { differenceInYears } from "date-fns";
 import { eq, sql } from "drizzle-orm";
+import { getLocales } from "expo-localization";
 import { DEFAULT_WEEKLY_QUOTA } from "@/constants/weeklyTargets";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
-import { type CrestAnimals, type CrestSession, crestAnimals } from "./crestRules";
+import { hasRareCoat, portraitSlug } from "./crestCoat";
+import {
+  type Animal,
+  type CrestAnimals,
+  type CrestSession,
+  type CrestStage,
+  crestAnimals,
+} from "./crestRules";
 import { preferences } from "./preferences";
 import type { ExerciseStyle } from "./schema";
 import { calculateStreakFromSessions, type FlameLevel, getFlameLevel } from "./streaks";
@@ -62,4 +70,27 @@ export async function getCrest(now: Date = new Date()): Promise<Crest | null> {
     rings: differenceInYears(now, first.performedAt),
     revealedAt: revealed.performedAt,
   };
+}
+
+/**
+ * The portrait an animal on the crest wears tonight: the hero's rare coat (`crest.longestFlame`),
+ * their `crestCoat` choice, the calendar and the device's region, read once and handed to the pure
+ * rule. The one reader of `crestCoat`, so the choice has a consumer.
+ */
+export async function portraitOf(
+  crest: Pick<Crest, "longestFlame">,
+  animal: Animal,
+  stage: CrestStage,
+  now: Date = new Date(),
+  delivered?: ReadonlySet<string>,
+): Promise<string> {
+  return portraitSlug(
+    animal,
+    stage,
+    hasRareCoat(crest.longestFlame),
+    await preferences.getCrestCoat(),
+    now,
+    getLocales()[0]?.regionCode,
+    delivered,
+  );
 }

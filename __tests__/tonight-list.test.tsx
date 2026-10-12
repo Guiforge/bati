@@ -7,8 +7,10 @@ import { spoken } from "@/components/session/bigFeastText";
 import { type Feast, type FeastFacts, rankFeasts } from "@/components/session/feasts";
 import { TonightList } from "@/components/session/TonightList";
 import { crestFootprint } from "@/components/village/crestGeometry";
+import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import { achievementDefinitions } from "@/db/achievements";
 import type { Crest as CrestRead } from "@/db/crest";
+import * as crestDb from "@/db/crest";
 import { NO_CREST_EVENTS } from "@/db/crestEvents";
 import { i18n } from "@/i18n";
 import { useSettingsStore } from "@/stores/settings";
@@ -56,6 +58,13 @@ const rank = (over: Partial<FeastFacts["result"]>, rest: Omit<FeastFacts, "resul
 
 const reveal = (animal: "bear" | "ermine" | "salmon" | "stag" | "horse" | "boar") =>
   rank({ crestReveal: { animal, quarters: null, firstEight: [], late: false } });
+
+beforeEach(() => {
+  jest
+    .spyOn(crestDb, "portraitOf")
+    .mockImplementation(async (_crest, animal, stage) => `${animal}-${stage}`);
+});
+afterEach(() => jest.restoreAllMocks());
 
 describe("TonightList reveal shield", () => {
   const crest = (second: string | null) =>
@@ -174,7 +183,7 @@ describe("TonightList", () => {
       crestEvents: {
         ...NO_CREST_EVENTS,
         secondJoins: { animal: "stag", first: "bear", n: 39, total: 130 },
-        stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
+        stageUp: [{ animal: "bear", stage: "adult", n: 40, practice: "strength" }],
       },
     });
     const { getByText, queryByText } = await show(feasts);
@@ -187,14 +196,14 @@ describe("TonightList", () => {
     expect(queryByText("après")).toBeNull();
   });
 
-  test("venerable; a boar or a hand-picked animal counts every session", async () => {
+  test("venerable; a boar, or an animal picked over a boar, counts every session", async () => {
     const feasts = rank({
       crestEvents: {
         ...NO_CREST_EVENTS,
         stageUp: [
-          { animal: "stag", stage: "venerable", n: 200, own: true },
-          { animal: "boar", stage: "adult", n: 40, own: false },
-          { animal: "ermine", stage: "venerable", n: 200, own: false },
+          { animal: "stag", stage: "venerable", n: 200, practice: "run" },
+          { animal: "boar", stage: "adult", n: 40, practice: null },
+          { animal: "ermine", stage: "venerable", n: 200, practice: null },
         ],
       },
     });
@@ -206,6 +215,123 @@ describe("TonightList", () => {
     expect(getByText("40 séances.")).toBeTruthy();
     expect(getByText("200 séances.")).toBeTruthy();
     expect(queryByText(/null|ancien/i)).toBeNull();
+  });
+
+  test("a hand-picked animal says the sessions' practice, not its own (the salmon over a bear hero)", async () => {
+    const feasts = rank({
+      crestEvents: {
+        ...NO_CREST_EVENTS,
+        stageUp: [{ animal: "salmon", stage: "adult", n: 40, practice: "strength" }],
+      },
+    });
+    const { getByText, queryByText } = await show(feasts);
+    expect(getByText("Le saumon devient adulte")).toBeTruthy();
+    expect(getByText("40 séances de force.")).toBeTruthy();
+    expect(queryByText(/yoga/)).toBeNull();
+  });
+
+  test("the full-screen legendary feast line says `is` when it is late and `becomes` the night it is crossed", async () => {
+    const up = { animal: "bear", stage: "legendary", n: 500, practice: "strength" } as const;
+    const late = await show(rank({ crestLegendary: [up] }), "en");
+    expect(late.getByText("The bear is legendary")).toBeTruthy();
+    await late.unmount();
+    const crossed = await show(
+      rank({ crestLegendary: [up], crestEvents: { ...NO_CREST_EVENTS, stageUp: [up] } }),
+      "en",
+    );
+    expect(crossed.getByText("The bear is now legendary")).toBeTruthy();
+  });
+
+  test("a late legendary card says what is true of the hero: at least 500, not tonight", async () => {
+    const feasts = rank(
+      {
+        crestLegendary: [{ animal: "bear", stage: "legendary", n: 500, practice: "strength" }],
+      },
+      { shown: [], epilogue: true },
+    );
+    const { getByText } = await show(feasts);
+    expect(getByText("500 séances de force, et tu continues.")).toBeTruthy();
+    // The event is not tonight: "est", not "devient".
+    expect(getByText("L'ours est légendaire")).toBeTruthy();
+  });
+
+  test("a legendary animal demoted to a card, and the rare coat's card, in French", async () => {
+    const feasts = rank(
+      {
+        crestEvents: {
+          ...NO_CREST_EVENTS,
+          stageUp: [{ animal: "ermine", stage: "legendary", n: 500, practice: "calisthenics" }],
+        },
+        crestLegendary: [
+          { animal: "ermine", stage: "legendary", n: 500, practice: "calisthenics" },
+        ],
+        rareCoat: { animal: "bear", stage: "adult" },
+      },
+      { shown: ["legendary:calisthenics"] },
+    );
+    const { getByText } = await show(feasts);
+    expect(getByText("L'hermine devient légendaire")).toBeTruthy();
+    expect(getByText("Ta 500e séance de callisthénie, ce soir.")).toBeTruthy();
+    expect(getByText("L'ours se pare de nouvelles couleurs")).toBeTruthy();
+    expect(getByText("Pelage cannelle. 100 jours de flamme sur ton écu.")).toBeTruthy();
+  });
+
+  test("the rare coat's card and the demoted legendary draw their portrait, the shield when it has not shipped", async () => {
+    const up = { animal: "ermine", stage: "legendary", n: 500, practice: "calisthenics" } as const;
+    const withCoat = (animal: "bear" | "stag", stage: "adult" | "legendary") =>
+      show(
+        rank(
+          {
+            crestEvents: { ...NO_CREST_EVENTS, stageUp: [up] },
+            crestLegendary: [up],
+            rareCoat: { animal, stage },
+          },
+          { shown: ["legendary:calisthenics"] },
+        ),
+      );
+    const shipped = await withCoat("bear", "adult");
+    expect(
+      shipped.getAllByTestId("tonight-portrait", { includeHiddenElements: true }),
+    ).toHaveLength(2);
+    await shipped.unmount();
+    // A rare portrait that has not shipped: that card keeps the shield, the other its portrait.
+    const table = ANIMAL_PORTRAITS as Record<string, unknown>;
+    const gone = table["stag-legendary-rare"];
+    delete table["stag-legendary-rare"];
+    try {
+      const missing = await withCoat("stag", "legendary");
+      expect(
+        missing.getAllByTestId("tonight-portrait", { includeHiddenElements: true }),
+      ).toHaveLength(1);
+    } finally {
+      table["stag-legendary-rare"] = gone;
+    }
+  });
+
+  test("the demoted legendary draws the portrait the crest sheet reads that night: base, rare, winter", async () => {
+    const up = { animal: "bear", stage: "legendary", n: 500, practice: "strength" } as const;
+    const portrait = async (slug: string) => {
+      const read = jest.spyOn(crestDb, "portraitOf").mockResolvedValue(slug);
+      const view = await show(
+        rank(
+          { crestEvents: { ...NO_CREST_EVENTS, stageUp: [up] }, crestLegendary: [up] },
+          { shown: ["legendary:strength"] },
+        ),
+        "fr",
+        "Brumeval",
+        { longestFlame: 5, rings: 0 } as unknown as CrestRead,
+      );
+      const [art] = view.getAllByTestId("tonight-portrait", { includeHiddenElements: true });
+      expect(read).toHaveBeenCalledWith({ longestFlame: 5 }, "bear", "legendary");
+      await view.unmount();
+      return art?.props.source;
+    };
+    const table = ANIMAL_PORTRAITS as Record<string, unknown>;
+    for (const slug of ["bear-legendary", "bear-legendary-rare", "bear-legendary-winter"]) {
+      expect(await portrait(slug)).toEqual([table[slug]]);
+    }
+    expect(table["bear-legendary-rare"]).not.toBe(table["bear-legendary"]);
+    expect(table["bear-legendary-winter"]).not.toBe(table["bear-legendary"]);
   });
 
   test("a boar demoted to a card by an epilogue says what it mixes, and a single practice says nothing", async () => {
@@ -514,7 +640,7 @@ describe("TonightList", () => {
     const feasts = rank({
       crestEvents: {
         ...NO_CREST_EVENTS,
-        stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
+        stageUp: [{ animal: "bear", stage: "adult", n: 40, practice: "strength" }],
       },
     });
     const { getByText } = await show(feasts, lang as Lang);
@@ -536,6 +662,10 @@ describe("the Tonight copy, in every language", () => {
     "tonight_join",
     "tonight_stage_adult",
     "tonight_stage_venerable",
+    "tonight_stage_legendary",
+    "tonight_stage_legendary_late",
+    "tonight_coat_rare",
+    "tonight_coat_rare_body",
     "tonight_boar_body",
     ...Array.from({ length: 12 }, (_, i) => `tonight_tier_${i + 1}`),
     "tonight_tier_unnamed",

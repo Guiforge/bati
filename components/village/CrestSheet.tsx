@@ -4,10 +4,14 @@ import { BackHandler, Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { FormSheet } from "@/components/common/FormSheet";
 import { Check, ChevronRight } from "@/components/icons";
+import { PortraitImage } from "@/components/village/AnimalPortrait";
 import { Crest, type CrestShape } from "@/components/village/Crest";
 import { PRACTICE_KEY, sentence } from "@/components/village/crestText";
+import { usePortraitSlug } from "@/components/village/usePortraitSlug";
 import { ANIMAL_TOKEN } from "@/constants/animalColors";
+import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import type { Crest as CrestData } from "@/db/crest";
+import { type CrestCoat, rareCoatShips } from "@/db/crestCoat";
 import {
   ANIMAL_OF,
   type Animal,
@@ -16,6 +20,7 @@ import {
   practiceOfAnimal,
 } from "@/db/crestRules";
 import { preferences } from "@/db/preferences";
+import { useFontScaled } from "@/hooks/useFontScaled";
 import { reportError } from "@/src/reportError";
 
 /** One sheet, two views: the stack of two modals this would be is where the ghost panes come from. */
@@ -211,7 +216,7 @@ function Option({
   testID: string;
   shape: CrestShape;
   label: string;
-  sub: string;
+  sub?: string;
   selected: boolean;
   onPress: () => void;
 }) {
@@ -236,9 +241,11 @@ function Option({
           <Text fontSize={15} fontWeight="600" color={selected ? "$primaryText" : "$text"}>
             {label}
           </Text>
-          <Text fontSize={13} color="$textSecondary">
-            {sub}
-          </Text>
+          {sub ? (
+            <Text fontSize={13} color="$textSecondary">
+              {sub}
+            </Text>
+          ) : null}
         </YStack>
         {selected ? <Check size={18} color="$primaryText" /> : null}
       </XStack>
@@ -257,7 +264,6 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
     longestFlame: 0,
     rings: 0,
   });
-  const stage = (s: "sessions" | "chosen") => t(`village.crest_stage_${crest.optionStages[s]}`);
   const firstPractice = practiceOfAnimal(first);
   const autoSelected = !crest.manual;
   return (
@@ -265,7 +271,7 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
       <Option
         testID="crest-pick-auto"
         shape={shape(first)}
-        label={`${t("village.crest_pick_auto", { animal: t(`village.crest_the_${first}`) })} · ${stage("sessions")}`}
+        label={`${t("village.crest_pick_auto", { animal: t(`village.crest_the_${first}`) })}`}
         sub={
           firstPractice === undefined
             ? sentence(t("village.crest_pick_desc_boar"))
@@ -282,13 +288,122 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
           key={a}
           testID={`crest-pick-${a}`}
           shape={shape(a)}
-          label={`${sentence(t(`village.crest_the_${a}`))} · ${stage("chosen")}`}
+          label={`${sentence(t(`village.crest_the_${a}`))}`}
           sub={sentence(t(`village.crest_pick_desc_${a}`))}
           selected={!autoSelected && crest.animal === a}
           onPress={() => choose(a)}
         />
       ))}
+      {/* A pick never moves the stage: the sheet is where the hero reads which one it is. */}
+      <Text testID="crest-pick-stage" fontSize={13} color="$textSecondary">
+        {t("village.crest_pick_stage", { stage: t(`village.crest_stage_${crest.stage}`) })}
+      </Text>
     </YStack>
+  );
+}
+
+/**
+ * The rare coat or the usual one, offered once the rare is won and its portrait for this animal at
+ * this stage ships. Same radios as the animal pick; it writes and stays open, the portrait above
+ * changes in place (`onCoat`).
+ */
+function CoatChoice({ crest, onCoat }: { crest: CrestData; onCoat: () => void }) {
+  const { t } = useTranslation();
+  const [coat, setCoat] = useState<CrestCoat | null>(null);
+  useEffect(() => {
+    preferences
+      .getCrestCoat()
+      .then(setCoat)
+      .catch((error) => reportError("village.crestCoatRead", error));
+  }, []);
+  // Until the choice is read the radios would claim one: say nothing.
+  if (coat === null) return null;
+  const shape: CrestShape = {
+    animal: crest.animal,
+    manual: false,
+    second: null,
+    quarters: null,
+    longestFlame: 0,
+    rings: 0,
+  };
+  const choose = (value: CrestCoat) => {
+    if (value === coat) return;
+    preferences
+      .setCrestCoat(value)
+      .then(() => {
+        setCoat(value);
+        onCoat();
+      })
+      .catch((error) => reportError("village.crestCoat", error));
+  };
+  return (
+    <YStack testID="crest-coat" gap="$2" role="radiogroup">
+      <Text fontSize={13} color="$textSecondary">
+        {t("village.coat_title")}
+      </Text>
+      <Option
+        testID="crest-coat-usual"
+        shape={shape}
+        label={t("village.coat_usual")}
+        selected={coat === "usual"}
+        onPress={() => choose("usual")}
+      />
+      <Option
+        testID="crest-coat-rare"
+        shape={shape}
+        label={sentence(t(`village.coat_rare_${crest.animal}`))}
+        selected={coat === "auto"}
+        onPress={() => choose("auto")}
+      />
+    </YStack>
+  );
+}
+
+/**
+ * What the picture shows: the stage ("a legendary bear", the keys the line under the village's
+ * title already reads) and the coat it wears tonight, rare or winter, read off the portrait's slug.
+ */
+function Picture({ crest, coatKey }: { crest: CrestData; coatKey: string }) {
+  const { t } = useTranslation();
+  const { animal, stage } = crest;
+  const legendReserve = useFontScaled(38);
+  const slug = usePortraitSlug(animal, stage, crest.longestFlame, coatKey);
+  // Young and adult have their own keys per animal: German agrees the article with the noun.
+  const what = sentence(t(`village.crest_${animal}_${stage}`));
+  // The slug is read from the database: until then the line holds its place and says nothing,
+  // so "A legendary bear." never turns into "A legendary bear, cinnamon coat.". An animal whose
+  // base has not shipped never gets a slug, and its line has nothing to wait for.
+  const reading = slug === null && `${animal}-${stage}` in ANIMAL_PORTRAITS;
+  const coat = slug?.endsWith("-rare")
+    ? t(`village.coat_rare_${animal}`)
+    : slug?.endsWith("-winter")
+      ? t("village.coat_winter")
+      : null;
+  return (
+    <>
+      {/* 144 dp: beside the 96 dp shield it fits a 320 dp sheet, and the box is reserved
+          so the title and the text stay put while the image loads. */}
+      <XStack justify="center" items="center" gap="$3">
+        <PortraitImage animal={animal} stage={stage} slug={slug} size={144} />
+        <Crest crest={crest} size={96} />
+      </XStack>
+      <Text
+        testID="crest-legend"
+        fontSize={14}
+        lineHeight={19}
+        // Two lines reserved: German and Spanish legends wrap at 130 %, and the body must not move.
+        // The text's lineHeight grows with the system font scale, so the reserve does too.
+        minH={legendReserve}
+        color="$textSecondary"
+        style={{ textAlign: "center" }}
+      >
+        {reading
+          ? " "
+          : coat === null
+            ? t("village.crest_legend", { what })
+            : t("village.crest_legend_coat", { what, coat })}
+      </Text>
+    </>
   );
 }
 
@@ -299,6 +414,8 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
 export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
   const { t } = useTranslation();
   const choose = useChoose(crest, onChanged, onClose);
+  // Bumped when the coat is switched, so the portrait reads it again.
+  const [coatKey, setCoatKey] = useState(0);
   // Mounted on the first opening only: a sheet behind every Village visit is dead weight.
   const [mounted, setMounted] = useState(false);
   if (view !== null && !mounted) setMounted(true);
@@ -329,10 +446,11 @@ export function CrestSheet({ view, crest, onView, onClose, onChanged }: Props) {
         <Pick crest={crest} choose={choose} />
       ) : (
         <>
-          <XStack justify="center">
-            <Crest crest={crest} size={96} />
-          </XStack>
+          <Picture crest={crest} coatKey={String(coatKey)} />
           <Why crest={crest} onView={onView} choose={choose} />
+          {rareCoatShips(crest.animal, crest.stage, crest.longestFlame) ? (
+            <CoatChoice crest={crest} onCoat={() => setCoatKey((k) => k + 1)} />
+          ) : null}
         </>
       )}
     </FormSheet>

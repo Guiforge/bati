@@ -1,5 +1,5 @@
-import { type Feast, type FeastFacts, rankFeasts } from "@/components/session/feasts";
-import { type CrestReveal, NO_CREST_EVENTS } from "@/db/crestEvents";
+import { type Feast, type FeastFacts, feastKey, rankFeasts } from "@/components/session/feasts";
+import { type CrestReveal, legendaryNews, NO_CREST_EVENTS } from "@/db/crestEvents";
 
 const empty: FeastFacts["result"] = {
   levelUp: null,
@@ -78,7 +78,7 @@ describe("rankFeasts", () => {
         newAchievements: [{ code: "x" } as never],
         crestEvents: {
           ...NO_CREST_EVENTS,
-          stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
+          stageUp: [{ animal: "bear", stage: "adult", n: 40, practice: "strength" }],
         },
       },
       { epilogue: true },
@@ -106,6 +106,175 @@ describe("rankFeasts", () => {
     expect(list[0]).toMatchObject({ kind: "tier", size: "large", level: 5 });
   });
 
+  describe("the legendary animal", () => {
+    const legendary = (animal: "bear" | "stag") =>
+      ({
+        animal,
+        stage: "legendary",
+        n: 500,
+        practice: animal === "bear" ? "strength" : "run",
+      }) as const;
+    // The night of the crossing: the event and the state after it say the same thing.
+    const crossing = (...up: ReturnType<typeof legendary>[]) => ({
+      crestEvents: { ...NO_CREST_EVENTS, stageUp: up },
+      crestLegendary: up,
+    });
+    // A hero past 500 at the update: the state says it, no event crossed tonight.
+    const past = (...up: ReturnType<typeof legendary>[]) => ({ crestLegendary: up });
+
+    test("is a big feast, after the anniversary and before the tier, keyed by its practice", () => {
+      const list = rankFeasts(
+        facts({ tierUp, ...crossing(legendary("bear")) }, { anniversary: { years: 1 } }),
+      );
+      expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual([
+        "anniversary:large",
+        "legendary:medium",
+        "tier:medium",
+      ]);
+      expect(feastKey({ kind: "legendary", late: false, ...legendary("stag") })).toBe(
+        "legendary:run",
+      );
+      expect(
+        feastKey({ kind: "legendary", late: false, ...legendary("bear"), practice: null }),
+      ).toBe("legendary:all");
+    });
+
+    test("leads when nothing outranks it, and is listed once: no stage-up card for it", () => {
+      const list = rankFeasts(facts({ tierUp, ...crossing(legendary("bear")) }));
+      expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual(["legendary:large", "tier:medium"]);
+      expect(list[0]).toMatchObject({
+        animal: "bear",
+        stage: "legendary",
+        n: 500,
+        practice: "strength",
+        late: false,
+      });
+    });
+
+    test("the reveal and an Age outrank it", () => {
+      const e = crossing(legendary("bear"));
+      expect(sizes(facts({ crestReveal: reveal, ...e }))[0]).toBe("reveal:large");
+      expect(sizes(facts(e, { age: { name: "A" } }))[0]).toBe("age:large");
+    });
+
+    test("the second animal's own night is not silenced by the first's: the practices differ", () => {
+      const first = rankFeasts(facts(crossing(legendary("bear")), { shown: [] }));
+      expect(first[0]?.kind).toBe("legendary");
+      const second = rankFeasts(facts(past(legendary("stag")), { shown: ["legendary:strength"] }));
+      expect(second[0]).toMatchObject({ kind: "legendary", size: "large", animal: "stag" });
+      const again = rankFeasts(
+        facts(crossing(legendary("bear")), { shown: ["legendary:strength"] }),
+      );
+      expect(again[0]).toMatchObject({ kind: "legendary", size: "medium" });
+    });
+
+    test("both animals on one night: one large, the other a card", () => {
+      const list = rankFeasts(facts(crossing(legendary("bear"), legendary("stag"))));
+      expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual([
+        "legendary:large",
+        "legendary:medium",
+      ]);
+    });
+
+    test("an adult card beside it is still a card", () => {
+      const list = rankFeasts(
+        facts({
+          crestLegendary: [legendary("bear")],
+          crestEvents: {
+            ...NO_CREST_EVENTS,
+            stageUp: [
+              legendary("bear"),
+              { animal: "stag", stage: "adult", n: 40, practice: "run" },
+            ],
+          },
+        }),
+      );
+      expect(list.map((x) => `${x.kind}:${x.size}`)).toEqual(["legendary:large", "stageUp:medium"]);
+    });
+
+    test("a hero already past 500 at the update gets it once, as a late feast", () => {
+      const list = rankFeasts(facts(past(legendary("bear")), { shown: [] }));
+      expect(list[0]).toMatchObject({ kind: "legendary", size: "large", late: true });
+      expect(feastKey(list[0] as Feast)).toBe("legendary:strength");
+    });
+
+    test("the two nights: a legendary demoted by the reveal is a card once, then silent", () => {
+      const state = { stage: "legendary", animal: "bear", evidence: { first: "bear" } } as never;
+      const night1 = rankFeasts(
+        facts({ crestReveal: reveal, crestLegendary: legendaryNews(state, []) }, { shown: [] }),
+      );
+      expect(night1.map((x) => `${x.kind}:${x.size}`)).toEqual([
+        "reveal:large",
+        "legendary:medium",
+      ]);
+      // Tonight's card marks `legendary:strength` and the reveal's screen marks `reveal`.
+      const shown = ["reveal", "legendary:strength"];
+      const night2 = rankFeasts(facts({ crestLegendary: legendaryNews(state, shown) }, { shown }));
+      expect(night2).toEqual([]);
+    });
+
+    test("a border already past 500 is late the night the centre crosses its own 500", () => {
+      const list = rankFeasts(
+        facts({
+          crestEvents: { ...NO_CREST_EVENTS, stageUp: [legendary("bear")] },
+          crestLegendary: [legendary("bear"), legendary("stag")],
+        }),
+      );
+      expect(list.map((x) => (x.kind === "legendary" ? x.late : null))).toEqual([false, true]);
+    });
+
+    test("the night that crosses is not late", () => {
+      expect(rankFeasts(facts(crossing(legendary("bear"))))[0]).toMatchObject({ late: false });
+    });
+
+    test("nothing in the state, nothing said: a feast already shown is not a nightly card", () => {
+      expect(rankFeasts(facts({ crestLegendary: [] }, { shown: ["legendary:strength"] }))).toEqual(
+        [],
+      );
+    });
+  });
+
+  describe("the rare coat's card", () => {
+    const coat = { animal: "bear", stage: "adult" } as const;
+    const adultUp = { animal: "bear", stage: "adult", n: 40, practice: "strength" } as const;
+    const venerableUp = {
+      animal: "bear",
+      stage: "venerable",
+      n: 200,
+      practice: "strength",
+    } as const;
+
+    test("is a card, never a big feast", () => {
+      expect(sizes(facts({ rareCoat: coat }))).toEqual(["coat:medium"]);
+    });
+
+    test("absorbs the adult card of its animal when both fall on one session", () => {
+      const list = rankFeasts(
+        facts({ rareCoat: coat, crestEvents: { ...NO_CREST_EVENTS, stageUp: [adultUp] } }),
+      );
+      expect(list.map((x) => x.kind)).toEqual(["coat"]);
+    });
+
+    test("keeps the card of another stage or another animal", () => {
+      const list = rankFeasts(
+        facts({
+          rareCoat: { animal: "bear", stage: "venerable" },
+          crestEvents: {
+            ...NO_CREST_EVENTS,
+            stageUp: [venerableUp, { animal: "stag", stage: "adult", n: 40, practice: "run" }],
+          },
+        }),
+      );
+      expect(list.map((x) => x.kind)).toEqual(["coat", "stageUp", "stageUp"]);
+    });
+
+    test("without the coat the adult card stays", () => {
+      expect(sizes(facts({ crestEvents: { ...NO_CREST_EVENTS, stageUp: [adultUp] } }))).toEqual([
+        "stageUp:medium",
+      ]);
+    });
+  });
+
   test("every fact is said once, with its own id", () => {
     const list: Feast[] = rankFeasts(
       facts({
@@ -114,7 +283,7 @@ describe("rankFeasts", () => {
         crestReveal: reveal,
         crestEvents: {
           secondJoins: { animal: "stag", first: "bear", n: 20, total: 60 },
-          stageUp: [{ animal: "bear", stage: "adult", n: 40, own: true }],
+          stageUp: [{ animal: "bear", stage: "adult", n: 40, practice: "strength" }],
         },
       }),
     );

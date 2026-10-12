@@ -30,7 +30,11 @@ const WORDS = [
   .split(" ");
 // A digit run, a {{x}} / {{x, number}} placeholder, a ${...} or a number spelled 1 to 20.
 // "3x10" (sets by reps) is one count.
-const COUNT = String.raw`(?:\d+(?:\s?[x×]\s?\d+)?|\{\{[^}]*\}\}|\$\{[^}]*\}|(?:${WORDS.join("|")}))`;
+// An ordinal ("10th", "10e", "10.", "10ª") is a count too: "Your 10th session awaits tomorrow" is a
+// chore. A full stop counts only after a digit or {{n}} / {{count}} ("10. Einheit"): after another
+// placeholder it ends the sentence ("Tu as tenu {{duration}}. Garde cette séance").
+const ORDINAL = String.raw`(?:e|ème|er|re|th|st|nd|rd|\.?[ªº])?`;
+const COUNT = String.raw`(?:(?:\d+(?:\s?[x×]\s?\d+)?|\{\{\s*(?:n|count)\s*\}\})(?:\.(?=\s))?|\{\{[^}]*\}\}|\$\{[^}]*\}|(?:${WORDS.join("|")}))${ORDINAL}`;
 const B = String.raw`(?<![\p{L}\p{N}-])`;
 const E = String.raw`(?![\p{L}])`;
 // Reps and the like: what a milestone must never count (see "estimation").
@@ -331,6 +335,86 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     de: "{{n}} deiner {{total}} Einheiten sind Krafttraining: Der Bär wacht mit.",
     es: "{{n}} de tus {{total}} sesiones son de fuerza: el oso también vela.",
   },
+  // The legendary feast says the session that crossed 500, done tonight. `500` is always
+  // `LEGENDARY_AT`. Spanish's "número 500" reads as a count, and so do English's "500th" and
+  // German's "500." once the count rule knows ordinals.
+  "session.feast_legendary_body_bear": {
+    why: "fait",
+    fr: "Ta {{n}}e séance de force, ce soir.",
+    en: "Tonight: your {{n}}th strength session.",
+    de: "Heute Abend: deine {{n}}. Krafteinheit.",
+    es: "Esta noche, tu sesión de fuerza número {{n}}.",
+  },
+  "session.feast_legendary_body_ermine": {
+    why: "fait",
+    fr: "Ta {{n}}e séance de callisthénie, ce soir.",
+    en: "Tonight: your {{n}}th calisthenics session.",
+    es: "Esta noche, tu sesión de calistenia número {{n}}.",
+  },
+  "session.feast_legendary_body_salmon": {
+    why: "fait",
+    fr: "Ta {{n}}e séance de yoga, ce soir.",
+    en: "Tonight: your {{n}}th yoga session.",
+    es: "Esta noche, tu sesión de yoga número {{n}}.",
+  },
+  "session.feast_legendary_body_stag": {
+    why: "fait",
+    fr: "Ta {{n}}e séance d'endurance, ce soir.",
+    en: "Tonight: your {{n}}th endurance session.",
+    de: "Heute Abend: deine {{n}}. Ausdauereinheit.",
+    es: "Esta noche, tu sesión de resistencia número {{n}}.",
+  },
+  "session.feast_legendary_body_horse": {
+    why: "fait",
+    fr: "Ta {{n}}e sortie à vélo, ce soir.",
+    es: "Esta noche, tu salida en bici número {{n}}.",
+  },
+  "session.feast_legendary_body_any": {
+    why: "fait",
+    fr: "Ta {{n}}e séance, ce soir.",
+    en: "Tonight: your {{n}}th session.",
+    de: "Heute Abend: deine {{n}}. Einheit.",
+    es: "Esta noche, tu sesión número {{n}}.",
+  },
+  // A hero past 500 at the update gets "500 and counting": what has been done, never what is left.
+  "session.feast_legendary_late_bear": {
+    why: "fait",
+    fr: "{{n}} séances de force, et tu continues.",
+    en: "{{n}} strength sessions and counting.",
+    de: "{{n}} Krafteinheiten, und du machst weiter.",
+    es: "{{n}} sesiones de fuerza, y sigues sumando.",
+  },
+  "session.feast_legendary_late_ermine": {
+    why: "fait",
+    fr: "{{n}} séances de callisthénie, et tu continues.",
+    en: "{{n}} calisthenics sessions and counting.",
+    es: "{{n}} sesiones de calistenia, y sigues sumando.",
+  },
+  "session.feast_legendary_late_salmon": {
+    why: "fait",
+    fr: "{{n}} séances de yoga, et tu continues.",
+    en: "{{n}} yoga sessions and counting.",
+    es: "{{n}} sesiones de yoga, y sigues sumando.",
+  },
+  "session.feast_legendary_late_stag": {
+    why: "fait",
+    fr: "{{n}} séances d'endurance, et tu continues.",
+    en: "{{n}} endurance sessions and counting.",
+    de: "{{n}} Ausdauereinheiten, und du machst weiter.",
+    es: "{{n}} sesiones de resistencia, y sigues sumando.",
+  },
+  "session.feast_legendary_late_horse": {
+    why: "fait",
+    fr: "{{n}} sorties à vélo, et tu continues.",
+    es: "{{n}} salidas en bici, y sigues sumando.",
+  },
+  "session.feast_legendary_late_any": {
+    why: "fait",
+    fr: "{{n}} séances, et tu continues.",
+    en: "{{n}} sessions and counting.",
+    de: "{{n}} Einheiten, und du machst weiter.",
+    es: "{{n}} sesiones, y sigues sumando.",
+  },
   "session.tonight_stage_body_bear": {
     why: "fait",
     fr: "{{n}} séances de force.",
@@ -412,6 +496,21 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     en: "Your 8 sessions split: {{list}}.",
     de: "Deine 8 Einheiten verteilen sich: {{list}}.",
     es: "Tus 8 sesiones se reparten: {{list}}.",
+  },
+  // The late reveal looks back: "since your 8th session" is where the animal began, not a goal.
+  "session.feast_reveal_body_late": {
+    why: "fait",
+    fr: "Depuis ta 8e séance. {{n}} de tes 8 premières étaient {{part}}.",
+    en: "Since your 8th session. {{n}} of your first 8 were {{part}}.",
+    de: "Seit deiner 8. Einheit. {{n}} deiner ersten 8 waren {{part}}.",
+    es: "Desde tu 8.ª sesión. {{n}} de tus 8 primeras fueron {{part}}.",
+  },
+  "session.feast_reveal_boar_late": {
+    why: "fait",
+    fr: "Depuis ta 8e séance. Tes 8 premières se partagent : {{list}}.",
+    en: "Since your 8th session. Your first 8 split: {{list}}.",
+    de: "Seit deiner 8. Einheit. Deine ersten 8 verteilen sich: {{list}}.",
+    es: "Desde tu 8.ª sesión. Tus 8 primeras se reparten: {{list}}.",
   },
   "session.feast_tier_level_one": {
     why: "fait",
@@ -1001,10 +1100,15 @@ const PROBES: Probe[] = [
   { lang: "en", text: "3x10 push-ups", by: "count" },
   { lang: "de", text: "3x10 Liegestütze", by: "count" },
   { lang: "es", text: "3x10 flexiones", by: "count" },
+  // An ordinal is a count: the rule used to stop at the digits.
+  { lang: "fr", text: "Ta 10e séance t'attend demain.", by: "count" },
+  { lang: "en", text: "Your 10th session awaits tomorrow.", by: "count" },
+  { lang: "de", text: "Deine 10. Einheit wartet morgen.", by: "count" },
+  { lang: "es", text: "Tu 10ª sesión te espera mañana.", by: "count" },
 ];
 
 // The sizes at the time of writing: a floor, raised when a probe is added, never lowered.
-const PROBE_COUNT = 150;
+const PROBE_COUNT = 154;
 const OLD_LINE_COUNT = 21;
 const probeVerdicts = (lang: Lang, text: string) => {
   const verdicts: string[] = [];

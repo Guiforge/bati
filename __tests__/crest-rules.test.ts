@@ -1,4 +1,10 @@
-import { type Animal, type CrestSession, crestAnimals, type Practice } from "../db/crestRules";
+import {
+  type Animal,
+  type CrestSession,
+  crestAnimals,
+  LEGENDARY_AT,
+  type Practice,
+} from "../db/crestRules";
 
 /** `seq(["strength", 5], ["run", 2])`: sessions in journal order, one practice each. */
 let n = 0;
@@ -203,6 +209,17 @@ describe("the stages", () => {
     expect(auto(seq(["strength", 199]))?.stage).toBe("adult");
     expect(auto(seq(["strength", 200]))?.stage).toBe("venerable");
   });
+
+  test("legendary from 500 sessions of the sessions' animal's practice, every session for a boar", () => {
+    expect(LEGENDARY_AT).toBe(500);
+    expect(auto(seq(["strength", 499]))?.stage).toBe("venerable");
+    expect(auto(seq(["strength", 500]))?.stage).toBe("legendary");
+    // 500 sessions in all, only 450 of them strength: the bear is venerable, and so is the stag
+    // picked over it (Guillaume, 11/10: a pick never moves the stage).
+    const mixed = seq(["strength", 450], ["run", 50]);
+    expect(crestAnimals(mixed, "stag")?.stage).toBe("venerable");
+    expect(crestAnimals(seq(["strength", 500], ["run", 50]), "stag")?.stage).toBe("legendary");
+  });
 });
 
 describe("the second animal", () => {
@@ -257,20 +274,32 @@ describe("the hero's choice", () => {
     expect(auto(boar, "boar")).toMatchObject({ manual: false });
   });
 
+  test("a pick never moves the stage: the sessions' animal's stage, picked or back on auto (Guillaume, 11/10)", () => {
+    // 38 strength sessions of 58: a young bear. Picking the boar (58 sessions, adult by the old
+    // rule) or the stag (20 run) must not change that.
+    const sessions = bearAndStag();
+    const own = auto(sessions)?.stage;
+    expect(own).toBe("young");
+    for (const a of ["boar", "stag", "salmon", "ermine", "horse"] as const) {
+      expect(auto(sessions, a)?.stage).toBe(own);
+    }
+    expect(auto(sessions, "auto")?.stage).toBe(own);
+  });
+
   test("choosing the second animal swaps it with the first", () => {
     expect(auto(bearAndStag(), "stag")).toMatchObject({
       animal: "stag",
-      stage: "adult",
+      stage: "young",
       manual: true,
       // The bear steps out to the border with the stage of its own 38 strength sessions, not all 58.
       second: { animal: "bear", stage: "young" },
     });
   });
 
-  test("any other animal takes the centre; the sessions' second stays on the border, the stage reads every session", () => {
+  test("any other animal takes the centre; the sessions' second stays on the border, the stage stays the bear's", () => {
     expect(auto(bearAndStag(), "salmon")).toMatchObject({
       animal: "salmon",
-      stage: "adult",
+      stage: "young",
       second: { animal: "stag" },
     });
   });
@@ -306,6 +335,11 @@ describe("the hero's choice", () => {
       stage: "adult",
     });
     expect(auto([...thirtyNine, session("none")], "boar")).toMatchObject({ stage: "adult" });
+    // A hero whose sessions' animal is the boar and who picks another animal keeps the boar's stage.
+    expect(auto([...thirtyNine, session("none")], "bear")).toMatchObject({
+      animal: "bear",
+      stage: "adult",
+    });
   });
 
   test("a chosen boar over a single practice shows only that practice, in both quarters", () => {

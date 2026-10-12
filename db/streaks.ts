@@ -1,5 +1,6 @@
 import { startOfDay } from "date-fns";
 import { desc, sql } from "drizzle-orm";
+import { ETERNAL_FLAME_DAYS } from "@/constants/flame";
 import { DEFAULT_WEEKLY_QUOTA } from "@/constants/weeklyTargets";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
@@ -41,7 +42,7 @@ export type FlameLevel = 0 | 1 | 2 | 3 | 4 | 5;
 // than in db/village.ts so the headless widget task doesn't drag that 600-line module in for a
 // six-line pure function.
 export function getFlameLevel(streakDays: number): FlameLevel {
-  if (streakDays >= 100) return 5;
+  if (streakDays >= ETERNAL_FLAME_DAYS) return 5;
   if (streakDays >= 30) return 4;
   if (streakDays >= 14) return 3;
   if (streakDays >= 7) return 2;

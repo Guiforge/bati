@@ -833,6 +833,26 @@ describe("the crest follows the journal, not the device", () => {
     await converged(laterAuto);
   });
 
+  test("crestCoat: an auto written later beats an older usual, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "crestCoat", "auto", 3_000);
+    const olderUsual = await peer("older-usual.db", (sqlite) =>
+      setPref(sqlite, "crestCoat", "usual", 2_000),
+    );
+    await merge().mergePeer(olderUsual);
+    expect(prefValue("crestCoat")).toBe("auto");
+    await converged(olderUsual);
+
+    // The other way: this device kept the older usual, the other went back to auto afterwards.
+    setPref(t.sqlite, "crestCoat", "usual", 2_000);
+    const laterAuto = await peer("later-coat-auto.db", (sqlite) =>
+      setPref(sqlite, "crestCoat", "auto", 3_000),
+    );
+    await merge().mergePeer(laterAuto);
+    expect(prefValue("crestCoat")).toBe("auto");
+    await converged(laterAuto);
+  });
+
   test("a pick equal to the sessions' animal, from before the rule, leaves the same crest as auto, either way", async () => {
     // Eight strength sessions: the bear. One device kept an old explicit "bear", the other is on
     // auto; whichever value the merge keeps, neither side draws the diamond.
@@ -851,6 +871,30 @@ describe("the crest follows the journal, not the device", () => {
       ]);
       expect(a).toEqual(b);
       expect(a).toMatchObject({ animal: "bear", manual: false });
+    }
+  });
+
+  test("a pick merged from the other device never moves the stage, either way (Guillaume, 11/10)", async () => {
+    // 8 strength then 32 yoga: a young bear, 40 sessions in all (a picked boar was adult).
+    const journal: Entry[] = Array.from({ length: 40 }, (_, i) => ({
+      uuid: uuidOf(i),
+      at: BASE + i * DAY,
+      style: i < 8 ? "strength" : "yoga",
+    }));
+    for (const [boarAt, autoAt] of [
+      [3_000, 2_000],
+      [2_000, 3_000],
+    ] as const) {
+      const [a, b] = await bothWays(
+        journal.filter((_, i) => i % 2 === 0),
+        journal.filter((_, i) => i % 2 === 1),
+        [
+          ["boar", boarAt],
+          ["auto", autoAt],
+        ],
+      );
+      expect(a).toEqual(b);
+      expect(a).toMatchObject({ stage: "young" });
     }
   });
 

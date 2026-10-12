@@ -1,11 +1,12 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 import type { ReactNode } from "react";
-import { BackHandler } from "react-native";
+import { BackHandler, Dimensions, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
 import { CrestSheet, type CrestView } from "@/components/village/CrestSheet";
 import * as crestDb from "@/db/crest";
+import { DELIVERED_COATS } from "@/db/crestCoat";
 import {
   ANIMALS,
   type Animal,
@@ -19,6 +20,16 @@ import config from "@/tamagui.config";
 
 /** The sheet is verified on a device; here the rule runs for real and only the frame is a stand-in. */
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
+// The bears only: the yoga animal stands for "a portrait that has not shipped" whatever the real
+// table holds.
+jest.mock("@/constants/animalPortraits", () => {
+  const real = jest.requireActual("@/constants/animalPortraits");
+  return {
+    ANIMAL_PORTRAITS: Object.fromEntries(
+      Object.entries(real.ANIMAL_PORTRAITS).filter(([slug]) => slug.startsWith("bear-")),
+    ),
+  };
+});
 jest.mock("expo-router", () => ({
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));
@@ -95,12 +106,20 @@ function sheet(
 }
 
 let write: jest.SpyInstance;
+let shipped: string[];
 beforeAll(() => i18n.changeLanguage("fr"));
 afterAll(() => i18n.changeLanguage("en"));
 beforeEach(() => {
+  shipped = [...DELIVERED_COATS];
   write = jest.spyOn(preferences, "setCrestAnimal").mockResolvedValue();
+  jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-young");
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  jest.restoreAllMocks();
+  const set = DELIVERED_COATS as Set<string>;
+  set.clear();
+  for (const slug of shipped) set.add(slug);
+});
 
 describe("Pourquoi l'Ours ?", () => {
   it("the animal of the sessions: title, bars and the shield's sentence", async () => {
@@ -323,12 +342,12 @@ describe("Ton animal", () => {
     await waitFor(() => expect(onClose).toHaveBeenCalled());
   });
 
-  it("the stage follows the rule: own count for the sessions' animal, all sessions for a pick", async () => {
+  it("no option carries a stage: a pick never moves it, so it would read the same six times", async () => {
     await sheet(LONG, "pick");
-    expect(screen.getByText("Celui de tes séances (l'ours) · jeune")).toBeTruthy();
+    expect(screen.getByText("Celui de tes séances (l'ours)")).toBeTruthy();
     expect(screen.getByText("Force, 5 séances sur 8".replace("5", "8"))).toBeTruthy();
-    expect(screen.getByText("Le cerf · adulte")).toBeTruthy();
-    expect(screen.getByText("Le sanglier · adulte")).toBeTruthy();
+    expect(screen.getByText("Le cerf")).toBeTruthy();
+    expect(screen.getByText("Le sanglier")).toBeTruthy();
   });
 
   it("every option's subtitle starts with a capital, like the sessions' option", async () => {
@@ -340,7 +359,7 @@ describe("Ton animal", () => {
 
   it("a boar hero's sessions option says the boar and a capitalised 'a bit of everything'", async () => {
     await sheet(crestOf(seq(["strength", 3], ["run", 3], ["yoga", 2])), "pick");
-    expect(screen.getByText("Celui de tes séances (le sanglier) · jeune")).toBeTruthy();
+    expect(screen.getByText("Celui de tes séances (le sanglier)")).toBeTruthy();
     // Once: the boar is not offered again among the others.
     expect(screen.getAllByText("Un peu de tout")).toHaveLength(1);
   });
@@ -363,6 +382,63 @@ describe("Ton animal", () => {
     await sheet(crestOf(FIVE_OF_EIGHT, "stag"), "pick");
     expect(screen.getByTestId("crest-pick-stag").props.accessibilityState.checked).toBe(true);
     expect(screen.getByTestId("crest-pick-auto").props.accessibilityState.checked).toBe(false);
+  });
+});
+
+describe("the stage line under the options", () => {
+  const SAID = {
+    fr: [
+      "Quel que soit ton choix, ton animal est jeune.",
+      "Quel que soit ton choix, ton animal est adulte.",
+      "Quel que soit ton choix, ton animal est vénérable.",
+      "Quel que soit ton choix, ton animal est légendaire.",
+    ],
+    en: [
+      "Whichever you choose, your animal keeps its stage: young.",
+      "Whichever you choose, your animal keeps its stage: adult.",
+      "Whichever you choose, your animal keeps its stage: venerable.",
+      "Whichever you choose, your animal keeps its stage: legendary.",
+    ],
+    de: [
+      "Welches du auch wählst, dein Tier ist jung.",
+      "Welches du auch wählst, dein Tier ist erwachsen.",
+      "Welches du auch wählst, dein Tier ist ehrwürdig.",
+      "Welches du auch wählst, dein Tier ist legendär.",
+    ],
+    es: [
+      "Elijas el que elijas, tu animal es joven.",
+      "Elijas el que elijas, tu animal es adulto.",
+      "Elijas el que elijas, tu animal es venerable.",
+      "Elijas el que elijas, tu animal es legendario.",
+    ],
+  } as const;
+  // 8 sessions (young), then the thresholds of the sessions' animal: 40, 200, 500.
+  const LEVELS = [
+    FIVE_OF_EIGHT,
+    seq(["strength", 40]),
+    seq(["strength", 200]),
+    seq(["strength", 500]),
+  ];
+
+  it.each(
+    (["fr", "en", "de", "es"] as const).flatMap((lang) =>
+      [0, 1, 2, 3].map((i) => [lang, i] as const),
+    ),
+  )("says the stage in %s, level %d", async (lang, i) => {
+    await i18n.changeLanguage(lang);
+    try {
+      await sheet(crestOf(LEVELS[i] ?? []), "pick");
+      expect(screen.getByTestId("crest-pick-stage").props.children).toBe(SAID[lang][i]);
+    } finally {
+      await i18n.changeLanguage("fr");
+    }
+  });
+
+  it("a hand-picked animal keeps the sessions' stage, and the line says it", async () => {
+    await sheet(crestOf(seq(["strength", 200]), "salmon"), "pick");
+    expect(screen.getByTestId("crest-pick-stage").props.children).toBe(
+      "Quel que soit ton choix, ton animal est vénérable.",
+    );
   });
 });
 
@@ -412,5 +488,136 @@ describe("the words", () => {
         es: "¿Por qué el ciervo?",
       }[lng as "fr"],
     );
+  });
+});
+
+describe("the coat choice", () => {
+  const ADULT = seq(["strength", 40]);
+  const won = { longestFlame: 5, rings: 0 } as const;
+  const ships = () => (DELIVERED_COATS as Set<string>).add("bear-adult-rare");
+  const coat = (value: "auto" | "usual") =>
+    jest.spyOn(preferences, "getCrestCoat").mockResolvedValue(value);
+
+  it("is absent while the rare coat's portrait has not shipped, won or not", async () => {
+    (DELIVERED_COATS as Set<string>).delete("bear-adult-rare");
+    coat("auto");
+    await sheet(crestOf(ADULT, "auto", won), "why");
+    expect(screen.queryByTestId("crest-coat")).toBeNull();
+  });
+
+  it("is absent when the coat ships and is not won, and for a young animal", async () => {
+    ships();
+    coat("auto");
+    await sheet(crestOf(ADULT, "auto", { longestFlame: 4, rings: 0 }), "why");
+    expect(screen.queryByTestId("crest-coat")).toBeNull();
+    await screen.unmount();
+    await sheet(crestOf(FIVE_OF_EIGHT, "auto", won), "why");
+    expect(screen.queryByTestId("crest-coat")).toBeNull();
+  });
+
+  it("offers the usual coat and the rare one by name, the stored choice checked", async () => {
+    ships();
+    coat("usual");
+    await sheet(crestOf(ADULT, "auto", won), "why");
+    const usual = await screen.findByTestId("crest-coat-usual");
+    expect(within(usual).getByText("Pelage habituel")).toBeTruthy();
+    expect(within(screen.getByTestId("crest-coat-rare")).getByText("Pelage cannelle")).toBeTruthy();
+    expect(usual.props.accessibilityState).toEqual({ checked: true });
+    expect(screen.getByTestId("crest-coat-rare").props.accessibilityState).toEqual({
+      checked: false,
+    });
+  });
+
+  it("writes the choice, reads the portrait again and keeps the sheet open", async () => {
+    ships();
+    coat("auto");
+    const set = jest.spyOn(preferences, "setCrestCoat").mockResolvedValue();
+    const onClose = jest.fn();
+    const onChanged = jest.fn();
+    await sheet(crestOf(ADULT, "auto", won), "why", onClose, onChanged);
+    const reads = () => (crestDb.portraitOf as jest.Mock).mock.calls.length;
+    await fireEvent.press(await screen.findByTestId("crest-coat-usual"));
+    await waitFor(() => expect(set).toHaveBeenCalledWith("usual"));
+    await waitFor(() =>
+      expect(screen.getByTestId("crest-coat-usual").props.accessibilityState).toEqual({
+        checked: true,
+      }),
+    );
+    expect(reads()).toBe(2);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onChanged).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId("crest-coat-usual"));
+    expect(set).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("the portrait in the sheet", () => {
+  it("draws the animal's portrait beside the shield when it has shipped", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    expect(await screen.findByTestId("animal-portrait")).toBeTruthy();
+    expect(crestDb.portraitOf).toHaveBeenCalledWith({ longestFlame: 0 }, "bear", "young");
+  });
+
+  it("draws none, and no empty frame, for an animal that has not", async () => {
+    await sheet(crestOf(seq(["yoga", 8])), "why");
+    expect(screen.getByTestId("crest-why-shield")).toBeTruthy();
+    expect(screen.queryByTestId("animal-portrait")).toBeNull();
+  });
+});
+
+describe("the legend under the portrait", () => {
+  it("names the stage and the rare coat the portrait wears", async () => {
+    jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-legendary-rare");
+    await sheet(crestOf(seq(["strength", 500]), "auto", { longestFlame: 5, rings: 0 }), "why");
+    expect(await screen.findByText("Un ours légendaire, pelage cannelle.")).toBeTruthy();
+  });
+
+  it("names the winter coat when winter is what it wears", async () => {
+    jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-adult-winter");
+    await sheet(crestOf(seq(["strength", 40])), "why");
+    expect(await screen.findByText("Un ours adulte, pelage d'hiver.")).toBeTruthy();
+  });
+
+  it("names the stage alone for a young animal in its base coat", async () => {
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    expect(await screen.findByText("Un jeune ours.")).toBeTruthy();
+  });
+
+  it("holds its line and says nothing while the coat is being read", async () => {
+    jest.spyOn(crestDb, "portraitOf").mockReturnValue(new Promise(() => {}));
+    await sheet(crestOf(seq(["strength", 500])), "why");
+    expect(screen.getByTestId("crest-legend").props.children).toBe(" ");
+    expect(screen.queryByText(/ours légendaire/)).toBeNull();
+  });
+
+  it("reads the bare stage when the portrait has not shipped, with nothing to wait for", async () => {
+    await sheet(crestOf(seq(["yoga", 8])), "why");
+    expect(screen.getByText("Un jeune saumon.")).toBeTruthy();
+  });
+});
+
+describe("the legend's reserve", () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it("holds two lines at 130 % font, not 38 dp", async () => {
+    const real = Dimensions.get("window");
+    jest.spyOn(Dimensions, "get").mockImplementation(() => ({ ...real, fontScale: 1.3 }) as never);
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    const box = StyleSheet.flatten(screen.getByTestId("crest-legend").props.style);
+    expect(box.minHeight).toBeGreaterThanOrEqual(Math.ceil(38 * 1.3));
+  });
+});
+
+describe("the legend's copy", () => {
+  it("has a key for every animal at every stage, in the four languages", () => {
+    for (const lng of ["fr", "en", "de", "es"]) {
+      const t = i18n.getFixedT(lng);
+      for (const animal of ANIMALS) {
+        for (const stage of ["young", "adult", "venerable", "legendary"]) {
+          expect(i18n.exists(`village.crest_${animal}_${stage}`, { lng })).toBe(true);
+          expect(t(`village.crest_${animal}_${stage}`)).not.toMatch(/^village\./);
+        }
+      }
+    }
   });
 });

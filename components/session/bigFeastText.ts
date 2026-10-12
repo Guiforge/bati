@@ -68,6 +68,34 @@ export function revealColors(t: TFunction, f: Reveal): string {
   });
 }
 
+/** A stage rises exactly at its threshold, so the body is that many sessions of its own practice. */
+export function stageBody(t: TFunction, f: Extract<Feast, { kind: "stageUp" | "legendary" }>) {
+  return t(
+    f.practice
+      ? `session.tonight_stage_body_${ANIMAL_OF[f.practice]}`
+      : "session.tonight_stage_body_any",
+    { n: f.n },
+  );
+}
+
+type Legendary = Extract<Feast, { kind: "legendary" }>;
+
+/** "Your bear passes into legend." The animal is the hero's, so no village name stands in the title. */
+export function legendaryTitle(t: TFunction, f: Legendary): string {
+  return t(`session.feast_legendary_title_${f.animal}`);
+}
+
+/**
+ * "Tonight: your 500th strength session." The fact is the hero's: the session that crossed
+ * 500. A hero who was already past it at the update gets "500 strength sessions and counting", the
+ * only thing that is true of them. ponytail: `n` is always `LEGENDARY_AT` (`STAGE_AT.legendary`),
+ * the copy never says another number.
+ */
+export function legendaryBody(t: TFunction, f: Legendary): string {
+  const kind = f.practice ? ANIMAL_OF[f.practice] : "any";
+  return t(`session.feast_legendary_${f.late ? "late" : "body"}_${kind}`, { n: f.n });
+}
+
 /** The level a tier is followed by, or null at the last one. */
 export const nextTierLevel = (tier: VillageTier): number | null =>
   tier === MAX_TIER ? null : TIER_LEVEL_FLOORS[(tier + 1) as VillageTier];

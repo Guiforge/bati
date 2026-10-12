@@ -6,6 +6,7 @@ import { revealShield } from "@/components/session/bigFeastText";
 import { goOn, seeVillage } from "@/components/session/destinations";
 import { bigFeastOf, feastKey } from "@/components/session/feasts";
 import { CrestSheet, type CrestView } from "@/components/village/CrestSheet";
+import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import { countSessions } from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
 import { preferences } from "@/db/preferences";
@@ -15,7 +16,7 @@ import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useUserStore } from "@/stores/user";
 
-const KINDS = ["reveal", "tier", "age", "anniversary"];
+const KINDS = ["reveal", "tier", "age", "anniversary", "legendary"];
 
 /**
  * The one big feast of a night, full screen, opened by "Continue" on the victory screen.
@@ -39,6 +40,21 @@ function readCrest(set: (crest: Crest | null) => void) {
 /** A chosen animal is not the one revealed: the link would open a sheet titled for another. */
 const whyOf = (crest: Crest | null | undefined, open: () => void) =>
   crest != null && !crest.manual ? open : undefined;
+
+// The legendary feast reads the crest only for the flame its portrait needs: with no
+// legendary portrait shipped for the animal there is nothing to wait for.
+const readsCrest = (feast: BigFeast | null) =>
+  feast?.kind === "reveal" ||
+  (feast?.kind === "legendary" && `${feast.animal}-legendary` in ANIMAL_PORTRAITS);
+
+/** The stage the portrait wears: the crest's, or legendary for the feast that announces it. */
+const portraitFor = (feast: BigFeast, crest: Crest | null | undefined) =>
+  crest
+    ? {
+        stage: feast.kind === "legendary" ? ("legendary" as const) : crest.stage,
+        longestFlame: crest.longestFlame,
+      }
+    : null;
 
 function useBackPress(active: boolean, onPress: () => void) {
   useEffect(() => {
@@ -96,10 +112,11 @@ export default function BigFeastScreen() {
       });
   }, [isTier]);
 
-  const isReveal = feast?.kind === "reveal";
+  // The legendary feast reads the crest too: the rare coat is the hero's flame, not the feast's.
+  const needsCrest = readsCrest(feast);
   useEffect(() => {
-    if (isReveal) readCrest(setCrest);
-  }, [isReveal]);
+    if (needsCrest) readCrest(setCrest);
+  }, [needsCrest]);
 
   // Pop this screen, then do what the victory screen would. The two actions queue on one stack,
   // so the session screen under this one is replaced, exactly as "Continue" without a feast did.
@@ -133,7 +150,7 @@ export default function BigFeastScreen() {
     seeVillage(router, result);
   };
 
-  const waiting = (isTier && sessions === undefined) || (isReveal && crest === undefined);
+  const waiting = (isTier && sessions === undefined) || (needsCrest && crest === undefined);
   return (
     <>
       {/* No slide: the first beat is two eyes on the painting, and a fade would eat it. Before any
@@ -156,6 +173,7 @@ export default function BigFeastScreen() {
           crest={feast.kind === "reveal" ? revealShield(feast, crest ?? null) : null}
           tier={getVillageTier(calculateLevelFromXp(result.heroXp.after))}
           villageName={villageName}
+          portrait={portraitFor(feast, crest)}
           sessions={sessions ?? null}
           onWhy={whyOf(crest, () => setCrestView("why"))}
           onSeeVillage={toVillage}

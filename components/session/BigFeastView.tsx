@@ -1,5 +1,6 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import type { TFunction } from "i18next";
 import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
@@ -17,17 +18,21 @@ import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { headingFont } from "@/components/common/headingFont";
 import { ChevronRight } from "@/components/icons";
+import { AnimalPortrait } from "@/components/village/AnimalPortrait";
 import { Crest, type CrestShape } from "@/components/village/Crest";
 import { CREST_ICON } from "@/components/village/crestText";
 import { getVillageTierAsset } from "@/constants/assetMap";
 import { fade, rawColors } from "@/constants/rawColors";
-import type { Animal } from "@/db/crestRules";
+import type { Animal, CrestStage } from "@/db/crestRules";
+import type { FlameLevel } from "@/db/streaks";
 import type { VillageTier } from "@/db/village";
 import { useGameIcon } from "@/hooks/useGameIcon";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSettingsStore } from "@/stores/settings";
 import {
   BEAT,
+  legendaryBody,
+  legendaryTitle,
   nextTierLevel,
   revealBody,
   revealColors,
@@ -38,7 +43,10 @@ import {
 import type { Feast } from "./feasts";
 
 /** The feasts that fill the screen. Age and anniversary have no producer yet (V-03). */
-export type BigFeast = Extract<Feast, { kind: "reveal" | "tier" | "age" | "anniversary" }>;
+export type BigFeast = Extract<
+  Feast,
+  { kind: "reveal" | "tier" | "age" | "anniversary" | "legendary" }
+>;
 
 /** Tamagui's "bouncy" (tamagui.config.ts), which is not exported: a spring, once. */
 const BOUNCY = { damping: 14, mass: 0.8, stiffness: 150 } as const;
@@ -109,6 +117,8 @@ type Ctx = {
   villageName: string;
   /** Sessions that count, for a tier's "after 118 sessions"; null says no such figure. */
   sessions: number | null;
+  /** What the animal's portrait needs besides the feast's animal; null draws none. */
+  portrait?: { stage: CrestStage; longestFlame: FlameLevel } | null;
   /** The reveal's "Why the Bear?" link: the Village's shield opens the same sheet. */
   onWhy?: () => void;
 };
@@ -146,11 +156,65 @@ function WhyLink({
   );
 }
 
+const plainTitle = (t: TFunction, feast: Extract<BigFeast, { kind: "age" | "anniversary" }>) =>
+  feast.kind === "age" ? feast.name : t("session.tonight_anniversary", { count: feast.years });
+
+/**
+ * The animal's portrait, 192 dp: the largest square that leaves the title and the body above the
+ * fold on a 640 dp phone at 130 % text, and one the 24 dp margins of a 360 dp screen still hold.
+ */
+const PORTRAIT = 192;
+
+function FeastPortrait({
+  animal,
+  portrait,
+  fallback,
+  size = PORTRAIT,
+}: {
+  animal: Animal;
+  portrait: Ctx["portrait"];
+  fallback?: ReactNode;
+  size?: number;
+}) {
+  if (!portrait) return fallback ?? null;
+  return <AnimalPortrait animal={animal} size={size} fallback={fallback} {...portrait} />;
+}
+
+/**
+ * The reveal's portrait, 160 dp, beside the 96 dp shield (a row of 268 dp in the 312 dp a 360 dp
+ * screen leaves) so the shield costs no height: kicker, title, body, colours and the "Why" link
+ * stay above the button at 130 %. The same size in the storyboard and in the last image.
+ */
+const REVEAL_PORTRAIT = 160;
+
+/** The portrait of the reveal, or the animal's silhouette while its portrait has not shipped. */
+function RevealPortrait({ animal, portrait }: { animal: Animal; portrait: Ctx["portrait"] }) {
+  const icon = useGameIcon(CREST_ICON[animal]);
+  return (
+    <FeastPortrait
+      animal={animal}
+      portrait={portrait}
+      size={REVEAL_PORTRAIT}
+      fallback={
+        <Image
+          testID="big-feast-silhouette"
+          source={icon}
+          tintColor={rawColors.text}
+          contentFit="contain"
+          style={{ width: 120, height: 120 }}
+          accessible={false}
+        />
+      }
+    />
+  );
+}
+
 /** The text of the last image, which is the whole feast under reduced motion. */
 function FeastText({
   feast,
   villageName,
   sessions,
+  portrait,
   onWhy,
   whyInert,
 }: Omit<Ctx, "crest"> & { whyInert?: boolean }) {
@@ -205,11 +269,19 @@ function FeastText({
       </>
     );
   }
-  return (
-    <Title>
-      {feast.kind === "age" ? feast.name : t("session.tonight_anniversary", { count: feast.years })}
-    </Title>
-  );
+  if (feast.kind === "legendary") {
+    return (
+      <>
+        <FeastPortrait animal={feast.animal} portrait={portrait} />
+        <Kicker>{t("village.crest_stage_legendary")}</Kicker>
+        <Title>{legendaryTitle(t, feast)}</Title>
+        <Line testID="big-feast-body" fact>
+          {legendaryBody(t, feast)}
+        </Line>
+      </>
+    );
+  }
+  return <Title>{plainTitle(t, feast)}</Title>;
 }
 
 function Shield({ crest, style }: { crest: CrestShape | null; style?: object }) {
@@ -290,7 +362,16 @@ const LAYER = { position: "absolute", alignItems: "center", gap: 16 } as const;
 type Props = Ctx & { tier: VillageTier; onSeeVillage: () => void };
 
 /** The last image of the reveal, and the whole of it under reduced motion: nothing moves. */
-function RevealFinal({ feast, crest, tier, villageName, sessions, onSeeVillage, onWhy }: Props) {
+function RevealFinal({
+  feast,
+  crest,
+  tier,
+  villageName,
+  sessions,
+  portrait,
+  onSeeVillage,
+  onWhy,
+}: Props) {
   if (feast.kind !== "reveal") return null;
   return (
     <Frame
@@ -300,8 +381,17 @@ function RevealFinal({ feast, crest, tier, villageName, sessions, onSeeVillage, 
       onSeeVillage={onSeeVillage}
     >
       <YStack style={SECTION}>
-        <Shield crest={crest} />
-        <FeastText feast={feast} villageName={villageName} sessions={sessions} onWhy={onWhy} />
+        <XStack testID="big-feast-reveal-row" items="center" justify="center" gap="$3">
+          <RevealPortrait animal={feast.animal} portrait={portrait} />
+          <Shield crest={crest} />
+        </XStack>
+        <FeastText
+          feast={feast}
+          villageName={villageName}
+          sessions={sessions}
+          portrait={null}
+          onWhy={onWhy}
+        />
       </YStack>
     </Frame>
   );
@@ -314,12 +404,11 @@ function RevealStoryboard({
   tier,
   villageName,
   sessions,
+  portrait,
   onSeeVillage,
   onWhy,
 }: Props) {
   const { t } = useTranslation();
-  const animal = feast.kind === "reveal" ? feast.animal : "bear";
-  const icon = useGameIcon(CREST_ICON[animal]);
   // `beat` runs 0 to 2 in a straight line (the veil and the crossfades); the springs are for the
   // silhouette's rise, the shield's landing and the text, each started once.
   const beat = useSharedValue(0);
@@ -344,7 +433,13 @@ function RevealStoryboard({
     opacity: interpolate(beat.value, [0, 0.4], [0, 1], "clamp"),
   }));
   const first = useAnimatedStyle(() => ({
-    opacity: interpolate(beat.value, [0.8, 1], [1, 0], "clamp"),
+    opacity: interpolate(beat.value, [0.6, 0.8], [1, 0], "clamp"),
+  }));
+  // The portrait is the last image's own: its slot is in the layout from the first beat, so it
+  // rises at the second beat and then stays where it is.
+  const portraitIn = useAnimatedStyle(() => ({
+    opacity: interpolate(beat.value, [0.8, 1], [0, 1], "clamp"),
+    transform: [{ translateY: (1 - rise.value) * RISE }],
   }));
   const second = useAnimatedStyle(() => ({
     opacity: interpolate(beat.value, [0.8, 1, 1.8, 2], [0, 1, 1, 0], "clamp"),
@@ -367,27 +462,29 @@ function RevealStoryboard({
           </Animated.View>
           <Title>{t("session.feast_reveal_t1")}</Title>
         </Animated.View>
-        <Animated.View style={[LAYER, second]}>
-          <Image
-            source={icon}
-            tintColor={rawColors.text}
-            contentFit="contain"
-            style={{ width: 120, height: 120 }}
-            accessible={false}
-          />
-          <Title>{t(`session.feast_reveal_t2_${feast.animal}`)}</Title>
-        </Animated.View>
         <YStack style={SECTION}>
-          <Shield crest={crest} style={shield} />
-          <Animated.View style={[SECTION, words]}>
-            <FeastText
-              feast={feast}
-              villageName={villageName}
-              sessions={sessions}
-              onWhy={onWhy}
-              whyInert={!textShown}
-            />
-          </Animated.View>
+          <XStack testID="big-feast-reveal-row" items="center" justify="center" gap="$3">
+            <Animated.View style={portraitIn}>
+              <RevealPortrait animal={feast.animal} portrait={portrait} />
+            </Animated.View>
+            <Shield crest={crest} style={shield} />
+          </XStack>
+          <YStack style={SECTION}>
+            {/* Over the title's place: it fades out as the shield lands beside the portrait. */}
+            <Animated.View style={[LAYER, { top: 0, left: 0, right: 0 }, second]}>
+              <Title>{t(`session.feast_reveal_t2_${feast.animal}`)}</Title>
+            </Animated.View>
+            <Animated.View style={[SECTION, words]}>
+              <FeastText
+                feast={feast}
+                villageName={villageName}
+                sessions={sessions}
+                portrait={null}
+                onWhy={onWhy}
+                whyInert={!textShown}
+              />
+            </Animated.View>
+          </YStack>
         </YStack>
       </YStack>
     </Frame>
@@ -395,7 +492,7 @@ function RevealStoryboard({
 }
 
 /** A tier's feast, and any other: the text comes up once, a little, over the painting. */
-function TextStoryboard({ feast, tier, villageName, sessions, onSeeVillage }: Props) {
+function TextStoryboard({ feast, tier, villageName, sessions, portrait, onSeeVillage }: Props) {
   const lift = useSharedValue(0);
   const text = useSharedValue(0);
   useEffect(() => {
@@ -415,13 +512,18 @@ function TextStoryboard({ feast, tier, villageName, sessions, onSeeVillage }: Pr
       low
     >
       <Animated.View style={[SECTION, words]}>
-        <FeastText feast={feast} villageName={villageName} sessions={sessions} />
+        <FeastText
+          feast={feast}
+          villageName={villageName}
+          sessions={sessions}
+          portrait={portrait}
+        />
       </Animated.View>
     </Frame>
   );
 }
 
-function TextFinal({ feast, tier, villageName, sessions, onSeeVillage }: Props) {
+function TextFinal({ feast, tier, villageName, sessions, portrait, onSeeVillage }: Props) {
   return (
     <Frame
       tier={tier}
@@ -431,7 +533,12 @@ function TextFinal({ feast, tier, villageName, sessions, onSeeVillage }: Props) 
       low
     >
       <YStack style={SECTION}>
-        <FeastText feast={feast} villageName={villageName} sessions={sessions} />
+        <FeastText
+          feast={feast}
+          villageName={villageName}
+          sessions={sessions}
+          portrait={portrait}
+        />
       </YStack>
     </Frame>
   );

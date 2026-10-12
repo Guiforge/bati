@@ -25,6 +25,7 @@ import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { updateSessionFeedback } from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
+import { COAT_RARE_KEY } from "@/db/crestEvents";
 import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession, outingLocomotion } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
@@ -45,7 +46,7 @@ import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import { goOn, seeVillage } from "./destinations";
 import { ExpeditionSummary } from "./ExpeditionSummary";
-import { tonight } from "./feasts";
+import { feastKey, tonight } from "./feasts";
 import { NextMilestone } from "./NextMilestone";
 import { ProgressionChart } from "./ProgressionChart";
 import { TonightList } from "./TonightList";
@@ -311,6 +312,26 @@ export function VictoryView() {
       return;
     }
   }, [result, isBossDefeat, cue]);
+
+  // The rare coat's card has no screen of its own: showing it here is what marks it.
+  const coatShown = feasts.some((f) => f.kind === "coat");
+  useEffect(() => {
+    if (!coatShown) return;
+    preferences
+      .markBigFeastShown(COAT_RARE_KEY)
+      .catch((e) => reportError("session.markCoatShown", e));
+  }, [coatShown]);
+
+  // A legendary feast relegated to a card is shown here, so it is marked like the reveal and the
+  // coat: it must not reopen full screen tomorrow. Keys joined, so the effect depends on a string.
+  const legendaryCards = feasts
+    .filter((f) => f.kind === "legendary" && f.size !== "large")
+    .map(feastKey)
+    .join(",");
+  useEffect(() => {
+    for (const key of legendaryCards.split(",").filter(Boolean))
+      preferences.markBigFeastShown(key).catch((e) => reportError("session.markLegendaryShown", e));
+  }, [legendaryCards]);
 
   useEffect(() => {
     if (!revealShownAsCard) return;

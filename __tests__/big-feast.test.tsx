@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 import { BackHandler, StyleSheet } from "react-native";
 import { withRepeat, withSpring, withTiming } from "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -107,12 +107,32 @@ const mockCrestDrawn = jest.fn();
 jest.mock("@/components/village/Crest", () => ({
   Crest: (p: { crest: unknown }) => {
     mockCrestDrawn(p.crest);
-    return null;
+    const { View } = require("react-native");
+    return <View testID="crest-shield" />;
   },
 }));
 
+// The bears as they ship, plus one legendary stag portrait, so the feast can be tried on both sides
+// of "does this animal's portrait ship" (the horse stands for the animal without one) whatever the
+// real table holds.
+jest.mock("@/constants/animalPortraits", () => {
+  const real = jest.requireActual("@/constants/animalPortraits");
+  return {
+    ANIMAL_PORTRAITS: {
+      ...Object.fromEntries(
+        Object.entries(real.ANIMAL_PORTRAITS).filter(([slug]) => slug.startsWith("bear-")),
+      ),
+      "stag-legendary": real.ANIMAL_PORTRAITS["bear-adult"],
+    },
+  };
+});
+
 const mockGetCrest = jest.fn();
-jest.mock("@/db/crest", () => ({ getCrest: (...a: unknown[]) => mockGetCrest(...a) }));
+const mockPortraitOf = jest.fn();
+jest.mock("@/db/crest", () => ({
+  getCrest: (...a: unknown[]) => mockGetCrest(...a),
+  portraitOf: (...a: unknown[]) => mockPortraitOf(...a),
+}));
 
 const bear: Extract<Feast, { kind: "reveal" }> = {
   kind: "reveal",
@@ -543,6 +563,7 @@ describe("the big-feast route", () => {
     mockReduced = true;
     mockCanGoBack = true;
     mockGetCrest.mockResolvedValue(null);
+    mockPortraitOf.mockImplementation(async (_c, animal, stage) => `${animal}-${stage}`);
     mockShown.mockResolvedValue([]);
     await lang("fr");
     useUserStore.setState({ villageName: "Brumeval" } as never);
@@ -553,6 +574,32 @@ describe("the big-feast route", () => {
   test("marks the reveal as shown the moment it opens", async () => {
     await mount();
     expect(mockMark).toHaveBeenCalledWith("reveal");
+  });
+
+  test("a legendary animal opens under its practice's key, in its words", async () => {
+    const horse = { animal: "horse", stage: "legendary", n: 500, practice: "ride" } as const;
+    finish({
+      crestReveal: null,
+      crestEvents: { ...NO_CREST_EVENTS, stageUp: [horse] },
+      crestLegendary: [horse],
+    });
+    await mount();
+    expect(mockMark).toHaveBeenCalledWith("legendary:ride");
+    expect(await screen.findByText("Ton cheval entre dans la légende.")).toBeTruthy();
+    expect(screen.getByText("Ta 500e sortie à vélo, ce soir.")).toBeTruthy();
+    expect(screen.getByTestId("big-feast-kicker").props.children).toBe("LÉGENDAIRE");
+  });
+
+  test("a hero past 500 at the update gets the feast once, with a body that is true of them", async () => {
+    finish({
+      crestReveal: null,
+      crestLegendary: [{ animal: "bear", stage: "legendary", n: 500, practice: "strength" }],
+    });
+    await mount();
+    expect(mockMark).toHaveBeenCalledWith("legendary:strength");
+    expect(await screen.findByText("Ton ours entre dans la légende.")).toBeTruthy();
+    expect(screen.getByText("500 séances de force, et tu continues.")).toBeTruthy();
+    expect(screen.queryByText(/ce soir/)).toBeNull();
   });
 
   test("marks a tier under its own key, so the next tier can still open", async () => {
@@ -582,6 +629,114 @@ describe("the big-feast route", () => {
     expect(mockCrestDrawn).toHaveBeenCalledWith(
       expect.objectContaining({ animal: "bear", longestFlame: 3, rings: 1 }),
     );
+  });
+
+  describe("the portrait", () => {
+    const crestOf = (animal: string, stage: string) => ({
+      animal,
+      stage,
+      manual: false,
+      second: null,
+      quarters: null,
+      longestFlame: 5,
+      rings: 0,
+      evidence: { secondFromSessions: null },
+    });
+
+    test("the reveal shows the portrait of the animal at the crest's stage, with the hero's flame", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("bear", "adult"));
+      const v = await mount();
+      expect(await v.findByTestId("animal-portrait")).toBeTruthy();
+      expect(mockPortraitOf).toHaveBeenCalledWith({ longestFlame: 5 }, "bear", "adult");
+    });
+
+    test("the portrait and the shield share one row, so the shield costs the reveal no height", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("bear", "adult"));
+      const v = await mount();
+      const row = within(await v.findByTestId("big-feast-reveal-row"));
+      expect(await row.findByTestId("animal-portrait")).toBeTruthy();
+      expect(row.getByTestId("crest-shield")).toBeTruthy();
+    });
+
+    test("an animal whose portrait has not shipped draws none and asks for none", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("horse", "adult"));
+      finish({ crestReveal: { ...revealFacts, animal: "horse" } });
+      const v = await mount();
+      expect(await v.findByTestId("big-feast-title")).toBeTruthy();
+      expect(v.queryByTestId("animal-portrait")).toBeNull();
+      expect(mockPortraitOf).not.toHaveBeenCalled();
+    });
+
+    test("an animal whose portrait has not shipped keeps its silhouette in the reveal", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("horse", "adult"));
+      finish({ crestReveal: { ...revealFacts, animal: "horse" } });
+      mockReduced = false; // the silhouette is a beat of the storyboard
+      const v = await mount();
+      expect(await v.findByTestId("big-feast-silhouette")).toBeTruthy();
+    });
+
+    // The layer that fades out at the shield's landing holds the second beat's title. What stays
+    // after it, the portrait and the shield among it, is the last image.
+    const fadingLayer = (title: ReturnType<typeof screen.getByText>) => {
+      let node: ReturnType<typeof screen.getByText> | null = title;
+      while (node && StyleSheet.flatten(node.props.style)?.position !== "absolute") {
+        node = node.parent;
+      }
+      assert(node);
+      return node;
+    };
+
+    test("the animated reveal ends on the portrait and the shield together", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("bear", "adult"));
+      mockReduced = false;
+      const v = await mount();
+      const portrait = await v.findByTestId("animal-portrait");
+      const layer = fadingLayer(v.getByText("Un ours sort de la forêt."));
+      expect(within(layer).queryByTestId("animal-portrait")).toBeNull();
+      expect(StyleSheet.flatten(portrait.props.style)).toMatchObject({ width: 160, height: 160 });
+      expect(mockCrestDrawn).toHaveBeenCalled();
+    });
+
+    test("an animal without a shipped portrait keeps its silhouette to the last image", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("horse", "adult"));
+      finish({ crestReveal: { ...revealFacts, animal: "horse" } });
+      mockReduced = false;
+      const v = await mount();
+      const layer = fadingLayer(await v.findByText("Un cheval arrive au galop."));
+      expect(within(layer).queryByTestId("big-feast-silhouette")).toBeNull();
+      expect(v.getByTestId("big-feast-silhouette")).toBeTruthy();
+    });
+
+    test("the portrait's square is there before the coat is known", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("bear", "adult"));
+      mockPortraitOf.mockReturnValue(new Promise(() => {}));
+      const v = await mount();
+      const box = await v.findByTestId("animal-portrait");
+      expect(StyleSheet.flatten(box.props.style)).toMatchObject({ width: 160, height: 160 });
+    });
+
+    test("a legendary feast whose portrait ships reads the crest and asks for the legendary stage", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("stag", "adult"));
+      finish({
+        crestReveal: null,
+        crestLegendary: [{ animal: "stag", stage: "legendary", n: 500, practice: "run" }],
+      });
+      await mount();
+      expect(await screen.findByTestId("animal-portrait")).toBeTruthy();
+      expect(mockPortraitOf).toHaveBeenCalledWith({ longestFlame: 5 }, "stag", "legendary");
+    });
+
+    test("a legendary feast whose portrait does not ship opens without reading the crest", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("horse", "adult"));
+      finish({
+        crestReveal: null,
+        crestLegendary: [{ animal: "horse", stage: "legendary", n: 500, practice: "ride" }],
+      });
+      await mount();
+      expect(await screen.findByText("Ton cheval entre dans la légende.")).toBeTruthy();
+      expect(screen.queryByTestId("animal-portrait")).toBeNull();
+      expect(mockGetCrest).not.toHaveBeenCalled();
+    });
   });
 
   test("the button pops the feast and pushes the village by the victory screen's road", async () => {

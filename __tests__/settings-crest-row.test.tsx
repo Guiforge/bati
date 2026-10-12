@@ -31,7 +31,6 @@ const crest: crestDb.Crest = {
   second: null,
   quarters: null,
   revealedIndex: 7,
-  optionStages: { sessions: "young", chosen: "young" },
   evidence: {
     firstEight: tally,
     firstEightOrder: [],

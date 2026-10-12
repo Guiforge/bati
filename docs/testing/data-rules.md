@@ -61,12 +61,15 @@ Invariant: with skewed clocks, the side with the later `updatedAt` wins hero con
 edit was really last.
 
 **R7. `MERGED_PREFERENCES` = villageName, avatarId, customAvatar, trainingLevel, ownedEquipment, oath,
-reminderDays, crestAnimal.** `db/backup.ts:251-265`.
+reminderDays, crestAnimal, crestCoat.** `db/backup.ts:251-265`.
 `crestAnimal` is `auto` or an animal slug; a missing or unknown value reads as `auto`. Nothing
 writes a default (a device that never chose has no row, or two such devices would diverge in
 `db-peer-compare`), and going back to the animal the sessions chose writes `auto`, never a delete:
 a preference has no tombstone, so a deletion could not beat an older pick on the other device.
 `db/preferences.ts` (`getCrestAnimal`, `setCrestAnimal`).
+`crestCoat` (`getCrestCoat`, `setCrestCoat`; `db-peer-merge` holds the test) is `auto` or `usual` under the same discipline: one choice for the whole
+hero, no default written, back to `auto` writes `auto`, an unknown value reads as `auto`. A `db-peer-merge`
+test checks that an `auto` written later beats an older `usual`, in both merge directions.
 Invariant: only these keys ever change in `user_preferences` through a merge (plus R12); `auto`
 written later wins over an older animal on the other device, in both merge directions.
 
@@ -189,8 +192,10 @@ calisthenics, yoga, run, ride. Second animal from the 9th session on (`n*100 >= 
 `n >= 20`, kept once in). A boar, from the sessions or picked by hand, never has a second animal
 and so no border. The boar's two quarters are the practices in the lead among those actually done;
 a hero with a single practice gets that one in both. A pick equal to the animal the sessions give
-is no pick: it reads as `auto` (not manual, no diamond, the practice's own stage), however it
-arrived (a merge of two devices' choices included).
+is no pick: it reads as `auto` (not manual, no diamond), however it arrived (a merge of two devices'
+choices included). A pick never moves the stage (Guillaume, 11/10): the centre always wears the
+stage of the sessions' animal (its practice's count, every session for a boar), picked or back on
+`auto`.
 `revealedAt` is the `performedAt` of the 8th session with a practice, so it follows the replay like
 everything else.
 Rings are whole years from the first session that counts to now (a year without a session
@@ -199,8 +204,9 @@ included). The longest flame is the flame level of the longest streak, always me
 already earned.
 Choosing the second animal by hand swaps it with the first, which keeps in the border the stage of
 its own practice.
-Stages: the boar's and a hand-picked animal's count every session that counts, workouts with no
-practice included; the stages of the sessions' first and second animal count their own practice.
+Stages: the boar's counts every session that counts, workouts with no practice included; the
+stages of the sessions' first and second animal count their own practice, and a hand-picked animal
+wears the first one's.
 Invariant: after a merge in both directions both devices read the same crest, ties included;
 deleting or adding a session anywhere in the journal replays the whole of it.
 
@@ -749,3 +755,46 @@ localhost. `src/deviceSync.ts:246-316`, `src/cloudSync.ts:75-77`.
 
 **R105. Lost sync detection:** the `syncServer` preference without a SecureStore account means
 sync was lost (not stopped). `src/deviceSync.ts:191-195, 329`.
+
+---
+
+## 9. The crest
+
+**R106. The legendary stage is 500 sessions of the practice.** `stageOf` reads the count of
+sessions of one practice that `countsAsSession()` accepts: legendary at `LEGENDARY_AT` = 500
+(venerable 200, adult 40). The centre and the border each carry their own count. `db/crestRules.ts:63, 99-106`.
+Invariant: 499 sessions of a practice is venerable, 500 is legendary, and a deleted session that
+takes the count under 500 takes the stage back.
+
+**R107. The rare coat is derived from the longest flame, never stored.** `hasRareCoat` is true when
+`getCrest().longestFlame` is level 5 (Eternal, `ETERNAL_FLAME_DAYS` = 100 days of lit flame, pardon
+included), the best streak of the whole journal. Deleting sessions can lower the best streak, and
+the coat then goes with it: it is taken back, and returns if sessions that restore the flame
+return (restore, sync merge). Only `crestCoat` (`auto` or `usual`) is a preference, and it cuts
+the rare, not winter. `db/crest.ts:39-65`, `db/crestCoat.ts`, `constants/flame.ts:1-2`.
+Invariant: the coat is a function of the journal alone; the same journal on two devices gives
+the same coat.
+
+**R108. Winter is a function of the calendar and `regionCode`.** December to February in the north;
+June to August when the device region is in the southern list (AO, AR, AU, BO, BR, BW, CL, FJ, FK,
+LS, MG, MW, MZ, NA, NZ, PE, PY, SZ, UY, ZA, ZM, ZW). No region, or a region not listed (Indonesia
+and Tanzania included), follows the northern calendar. Local time, whole calendar months. The
+ermine has no winter portrait. `db/crestCoat.ts:40-56`.
+Invariant: for every region and month, `isWinter` is true in exactly three months, those of its
+hemisphere's list.
+
+**R109. The portrait is a chain: rare, then winter, then base.** For an adult or more: the
+`<animal>-<stage>-rare` slug if the coat is won, `crestCoat` is `auto` and the portrait ships;
+else `<animal>-<stage>-winter` if it is winter, the animal is not the ermine and the portrait ships;
+else `<animal>-<stage>`. A young animal always wears its base. The rare is never replaced by another
+animal or another stage, so the venerable horse (no rare portrait yet) wears winter in winter.
+`portraitSlug`, `db/crestCoat.ts:62-80`.
+Invariant: the slug is always one of the 57 of the catalogue, and a hero who won the rare never
+sees a plainer coat than a hero who did not.
+
+**R110. None of the crest is stored.** Animal, second animal, stage, rare coat and portrait are
+read from the journal on each call (`getCrest`, `portraitOf`); the one stored datum is the hero's
+picked animal and `crestCoat`. The cards already shown (`coat:rare`, `legendary:<practice>`) are
+local to the phone, in `bigFeastsShown`, and are not synced.
+Invariant: restoring a backup or merging a peer's sessions changes the crest by changing the
+journal, and by nothing else.

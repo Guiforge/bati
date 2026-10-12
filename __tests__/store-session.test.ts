@@ -1178,9 +1178,75 @@ describe("useSessionStore", () => {
       const result = await store.getState().saveSession(null);
 
       expect(result.crestEvents.stageUp).toEqual([
-        { animal: "bear", stage: "adult", n: 40, own: true },
+        { animal: "bear", stage: "adult", n: 40, practice: "strength" },
       ]);
       (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
+    });
+
+    test("the rare coat is read on the crest AFTER the session and returned (the path the app calls)", async () => {
+      const crest = (longestFlame: number) => ({
+        animal: "bear",
+        stage: "adult",
+        manual: false,
+        quarters: null,
+        second: null,
+        longestFlame,
+        evidence: {
+          firstEight: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          firstEightOrder: ["strength"],
+          totals: { strength: 60, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          first: "bear",
+          secondFromSessions: null,
+          boarQuarters: null,
+        },
+      });
+      // bear-adult-rare ships, so the card is not silent.
+      try {
+        // The session is the one that lifts the longest flame to Eternal (5): before, it is 4.
+        (getCrest as jest.Mock)
+          .mockReset()
+          .mockResolvedValueOnce(crest(4))
+          .mockResolvedValue(crest(5));
+        const result = await store.getState().saveSession(null);
+        expect(result.rareCoat).toEqual({ animal: "bear", stage: "adult" });
+      } finally {
+        (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
+      }
+    });
+
+    test("the legendary feast is read on the crest AFTER the session: a hero already past 500 gets it once", async () => {
+      const shown = preferences.getBigFeastsShown as jest.Mock;
+      const crest = {
+        animal: "bear",
+        stage: "legendary",
+        manual: false,
+        quarters: null,
+        second: null,
+        longestFlame: 0,
+        evidence: {
+          firstEight: { strength: 8, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          firstEightOrder: ["strength"],
+          totals: { strength: 650, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+          first: "bear",
+          secondFromSessions: null,
+          boarQuarters: null,
+        },
+      };
+      try {
+        // Legendary before and after: no stage crossed tonight, only the state says it.
+        (getCrest as jest.Mock).mockReset().mockResolvedValue(crest);
+        const result = await store.getState().saveSession(null);
+        expect(result.crestEvents.stageUp).toEqual([]);
+        expect(result.crestLegendary).toEqual([
+          { animal: "bear", stage: "legendary", n: 500, practice: "strength" },
+        ]);
+
+        store.setState({ savedSessionId: null, crestSeenBefore: null });
+        shown.mockResolvedValueOnce(["legendary:strength"]);
+        expect((await store.getState().saveSession(null)).crestLegendary).toEqual([]);
+      } finally {
+        (getCrest as jest.Mock).mockReset().mockResolvedValue(null);
+      }
     });
 
     test("the reveal needs the crest and a key without it; an unreadable key says nothing", async () => {

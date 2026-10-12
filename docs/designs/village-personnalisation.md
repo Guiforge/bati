@@ -30,7 +30,7 @@ Un animal qui sort de tes séances, un écu qui grandit avec toi, des fêtes rar
 | Lot | Contenu | Images | Estimation |
 |---|---|---|---|
 | **V-01** (avant la Chronique) | L'animal et sa révélation, l'écu, le choix dans les Réglages, les 3 tailles de fête et « Ce soir », la barre « faits / plus que », le prochain jalon en séances | aucune | 7 à 9 jours |
-| **V-02** | Les portraits peints des animaux (6 animaux × 3 stades = 18), test de l'Ours d'abord | 18 (FLUX) | 2 à 3 jours |
+| **V-02** (étendu) | Les portraits héroïques des animaux : 4 stades dont le légendaire, pelages rares (flamme Éternelle) et d'hiver, test de l'Ours d'abord. Voir « V-02 étendu » plus bas | 57 (FLUX), livrés par priorité (24 de base, 18 rares, 15 d'hiver), 0,73 € le portrait réussi mesuré sur l'Ours, 40 € de budget, décision du 11/10 (2,20 € déjà dépensés au premier essai) | 4 à 6 jours |
 | **V-03** (après la prod Play) | Rangs 6 à 10, pierres gravées sur les Remparts, saisons, anniversaire, Âges, devise | 0 à 4 (FLUX, si besoin) | 7 à 10 jours |
 | Après | Le quartier de la route (après K-00), les menhirs (après E-04), le réveil animé (après mesure de la perf) | | |
 | Parking | La pièce honorable, le village isométrique | | |
@@ -58,7 +58,7 @@ La taille de l'APK n'est pas un critère pour ce chantier (choix de Guillaume) :
 - Le 1er animal se calcule sur les 8 premières séances qui comptent : la pratique qui en fait au moins 40 % (4 sur 8 au moins), sinon le Sanglier. Égalité : la plus récente, puis l'ordre fixe. Ensuite il est figé.
 - Un 2e animal rejoint quand une autre pratique atteint 30 % des séances et au moins 20 séances. Une fois entré, il reste, même si sa pratique retombe (exemple C : le Cerf est à 17 %). Deux au plus. Un Sanglier n'a jamais de 2e animal (ses quartiers montrent déjà ses 2 pratiques).
 - Rejeu chronologique (`performedAt`, puis `uuid`) : le 1er animal est figé à la 8e séance, le 2e au passage du seuil. Seuils en entiers (`n*100 >= 40*total`). Si une fusion, une suppression ou un style d'exercice modifié change l'histoire, l'écu suit le nouveau rejeu.
-- Stades : jeune, adulte à 40 séances de sa pratique, vénérable à 200 (« ancien » est déjà un avatar). Sanglier ou animal choisi à la main : stade sur toutes les séances qui comptent.
+- Stades : jeune, adulte à 40 séances de sa pratique, vénérable à 200 (« ancien » est déjà un avatar). Sanglier : stade sur toutes les séances qui comptent. Un animal choisi à la main prend toujours le stade de l'animal des séances (Guillaume, 11/10) : choisir ne fait ni monter ni descendre le stade, et revenir à `auto` ne fait pas reculer. Le sélecteur n'affiche donc plus de stade par option ; le stade se dit dans la fiche.
 - Il n'a jamais faim, n'est jamais triste, ne part jamais, ne donne aucun bonus.
 - Choix manuel optionnel (Réglages et fiche). Clés proposées : `crestAnimal` et `crestMotto` dans `MERGED_PREFERENCES` (`db/backup.ts`), `bigFeastsShown` en clé locale non fusionnée. Ne jamais écrire une valeur par défaut (sinon deux appareils divergent dans `db-peer-compare`) ; mettre à jour la règle R7 de `docs/testing/data-rules.md`. `countsAsSession` est un fragment SQL : le réutiliser, ne pas le réécrire en JS. Revenir à l'animal des séances écrit `auto`, jamais une suppression (une préférence n'a pas de tombstone). Valeur inconnue : `auto`. Choisir son 2e animal : il passe au centre, l'autre en bordure. Un animal choisi à la main porte un losange d'encre sur l'écu.
 
@@ -120,6 +120,128 @@ La taille de l'APK n'est pas un critère pour ce chantier (choix de Guillaume) :
 - Maestro : un flux qui lit la clé « déjà montrée » (l'état, pas la navigation).
 - À 130 % sur 360×640 : rien ne se coupe ni ne chevauche (captures sur émulateur, skill `device-check`).
 - Les tests de la victoire réécrits (environ 38 : `victory-view`, `victory-expedition`).
+
+## V-02 étendu : des animaux dont on est fier
+
+Demande de Guillaume : « fais en sorte d'avoir l'impression que c'est cool d'avoir les animaux, il faut l'effet waou et qu'on puisse être content fier de ses animaux ; prends aussi en compte plusieurs niveaux et/ou variants ». L'effet « waou » passe par des portraits HÉROÏQUES. Hors lot : révélation animée, bestiaire, partage.
+
+Qui a décidé : (G) = Guillaume, (O) = l'orchestrateur. Chaque décision ci-dessous porte sa marque.
+
+### Les règles
+
+- **Légendaire** (O) : un 4e stade, à 500 séances de la pratique de l'animal (`LEGENDARY_AT = 500`, à côté de `ADULT_AT` et `VENERABLE_AT` dans `db/crestRules.ts`). Même compte que l'adulte (40) et le vénérable (200) : séances de la pratique de l'animal des séances, ou toutes les séances qui comptent pour un sanglier. Un animal choisi à la main prend ce même stade (Guillaume, 11/10) : le légendaire se mérite par 500 séances de la pratique de l'animal des séances, quel que soit l'animal affiché. `CrestStage` gagne `"legendary"` et `stageOf` un seuil.
+  - C'est une GRANDE fête : `bigOnes` (`components/session/feasts.ts`) l'ajoute après l'anniversaire et avant le palier. Une seule grande fête par soir tient toujours (classement de V-01), les autres deviennent des cartes.
+  - Sa `feastKey` vaut `legendary:<pratique>` (`legendary:all` pour le sanglier), la pratique dont le compte atteint 500 (O, tour 3), et non `legendary:<animal>`. Un animal choisi à la main porte le stade de l'animal des séances : avec la clé par animal, le cerf choisi aurait consommé le `legendary:stag` et fait taire le vrai 500e d'endurance du cerf, plus tard. Par pratique, ce 500e-là garde sa grande fête.
+  - (O) Un passage de stade n'est annoncé qu'une fois par compte qui franchit le seuil. Si le héros choisit l'animal qui était son 2e (le cerf), l'ours des séances passe en bordure et le centre et la bordure lisent le même compte de force : seul le centre l'annonce (`stageUpOf` ignore une bordure qui est l'animal des séances). Sonde de l'audit : 240 force, 160 course, choix cerf, une séance de plus qui franchit un seuil, un seul événement.
+  - (O) Après la mise à jour : un héros qui avait déjà 500 séances avant ne verrait jamais la grande fête si elle ne se lisait que sur le franchissement. Comme la révélation, elle se lit sur l'état APRÈS la séance (`legendaryNews`, `SaveResult.crestLegendary`) : un animal de l'écu au stade légendaire dont la clé `legendary:<pratique>` est absente de `bigFeastsShown`. Elle s'ouvre donc une fois, le premier soir, sans franchissement. Le texte est alors une variante tardive vraie, `session.feast_legendary_late_<animal de la pratique>` : fr « 500 séances de force, et tu continues. », en « 500 strength sessions and counting. », de « 500 Krafteinheiten, und du machst weiter. », es « 500 sesiones de fuerza, y sigues sumando. » (le sanglier : « 500 séances, et tu continues. », le vélo : « 500 sorties à vélo, et tu continues. ». Le « 500 » vaut toujours `LEGENDARY_AT` et reste vrai à exactement 500, ce qui arrive quand la séance du soir est d'une autre pratique : « Plus de 500 » aurait été faux). « Ta 500e séance de force, ce soir » reste le corps de la nuit du franchissement. La même variante sert la carte quand la fête est reléguée par une plus grande.
+  - `db/crestEvents.ts` : `RANK.legendary = 3`, et `stageUpOf` donne `n = LEGENDARY_AT` pour ce stade. La carte de passage de stade (`stageUp`) ne liste pas le légendaire, la grande fête le dit.
+- **Pelage rare** (G) : il se gagne quand la plus longue flamme du héros atteint Éternelle. Le calcul se fait au quota `DEFAULT_WEEKLY_QUOTA`, comme la bande de l'écu (`longestFlame`, `db/crest.ts`).
+  - Le niveau exact : `getFlameLevel(streakDays)` (`db/streaks.ts`) rend 5 (`FlameLevel` 5, Éternelle) à partir de `streakDays >= 100`. C'est 100 jours de flamme allumée, le pardon d'une semaine compris, pas 100 jours d'entraînement. Les paliers : Étincelle 3 j (niveau 1), Braise 7 j (2), Brasier 14 j (3), Fournaise 30 j (4), Éternelle 100 j (5).
+  - Ordre de grandeur : environ 15 semaines d'affilée à 2 séances par semaine (100 jours font un peu plus de 14 semaines).
+  - (O) Il suit le journal : supprimer les séances de la flamme le retire, sur tous les appareils, sans carte ni mot.
+  - (O) Le rare est un fait du héros, pas de l'animal : il s'applique au sanglier et à un animal choisi à la main, comme à un animal né des séances. Une fois gagné, il est montré par défaut à partir de l'adulte (le jeune n'a pas de pelage rare).
+- **Choix du pelage** (O) : la fiche propose « pelage habituel » ou le nom du pelage rare de l'animal (seulement une fois le rare gagné, et seulement si son portrait existe). Le choix est enregistré dans une préférence fusionnée `crestCoat`, valeurs `auto` ou `usual`. Même discipline que `crestAnimal` : jamais de valeur par défaut écrite, revenir au rare écrit `auto`, valeur inconnue = `auto`. Règle R7 de `docs/testing/data-rules.md` mise à jour (`crestCoat` rejoint `MERGED_PREFERENCES`) ; un test `db-peer-merge` vérifie qu'un `auto` écrit plus tard l'emporte sur un `usual` plus ancien, dans les deux sens de la fusion.
+  - Portée : un seul choix pour tout le héros. Il vaut pour l'animal du centre et pour celui de la bordure.
+- **Annonce du pelage rare** (O) : une carte dans « Ce soir » (`cardOnes`), pas une grande fête. Elle apparaît à la première séance où le héros a à la fois un stade adulte ou plus (pour l'animal au centre) et le rare gagné. Elle se marque dans `bigFeastsShown` sous la clé `coat:rare`, une clé locale à l'appareil, comme la révélation : un héros qui avait déjà gagné le rare avant la mise à jour la voit donc une fois, à sa première séance. Si le passage à l'adulte et le rare tombent la même séance, il n'y a qu'une seule carte : celle du rare absorbe la carte de passage de stade de cet animal. Le fait dit : la flamme qui l'a gagné. Rien de plus. `Seen` (`db/crestEvents.ts`) gagne `longestFlame`, pour que la carte se lise sur l'état après la séance. Le rare est annoncé seulement si le portrait existe (voir le budget).
+- **Pelage d'hiver** (O) : à partir de l'adulte, selon le calendrier et la région de l'appareil. Si `getLocales()[0].regionCode` (`expo-localization`) est dans la liste australe (`SOUTHERN` de `db/crestCoat.ts`, 22 pays : AO, AR, AU, BO, BR, BW, CL, FJ, FK, LS, MG, MW, MZ, NA, NZ, PE, PY, SZ, UY, ZA, ZM, ZW ; règle R108 de `docs/testing/data-rules.md`), l'hiver tombe en juin, juillet et août. Toute autre région, ou aucune région, donne l'hiver en décembre, janvier et février. La fonction de sélection prend `now` et `regionCode` en paramètres : elle ne lit ni l'horloge ni l'appareil. Il ne se gagne pas, il passe : aucun manque, rien ne se perd (règle 4 du test « esprit Bati »). L'hermine n'a pas de pelage d'hiver (voir plus bas).
+- **Priorité des pelages** (O) : le rare gagné, avec `crestCoat = auto`, l'emporte sur l'hiver. `crestCoat = usual` coupe le rare, mais pas l'hiver. Une fonction pure de (animal, stade, rare gagné, `crestCoat`, mois et hémisphère), testée. La table complète :
+
+| Stade | Rare gagné | `crestCoat` | Saison (selon la région) | Slug |
+|---|---|---|---|---|
+| jeune | peu importe | peu importe | peu importe | `<animal>-young` |
+| adulte et plus | oui | `auto` | hiver | `<animal>-<stade>-rare` |
+| adulte et plus | oui | `auto` | hors hiver | `<animal>-<stade>-rare` |
+| adulte et plus | oui | `usual` | hiver | `<animal>-<stade>-winter` (hermine : `<animal>-<stade>`) |
+| adulte et plus | oui | `usual` | hors hiver | `<animal>-<stade>` |
+| adulte et plus | non | `auto` ou `usual` | hiver | `<animal>-<stade>-winter` (hermine : `<animal>-<stade>`) |
+| adulte et plus | non | `auto` ou `usual` | hors hiver | `<animal>-<stade>` |
+
+  `<stade>` vaut `adult`, `venerable` ou `legendary`. Le choix est une chaîne : le rare s'il est gagné, voulu (`auto`) et livré, sinon l'hiver s'il est livré et que c'est l'hiver, sinon la base du même stade (`<animal>-<stade>`). Le rare n'est jamais remplacé par un autre animal ni par un autre stade. Quand il n'est pas livré (le cheval vénérable rare), le héros garde l'hiver au lieu de tomber sur la base : sinon il verrait la base en hiver quand un héros sans le rare voit l'hiver, et gagner le pelage lui ferait perdre un portrait.
+- **Hermine** (O) : sa base reste BLANCHE, comme dans V-01. Elle n'a pas de pelage d'hiver : 3 portraits de moins, soit 57 au lieu de 60. Son rare est mélanique, avec un contour d'encre bleu ardoise pour se lire en 96 dp. **Saumon** : son « hiver » est la phase de mer, argent mat.
+- **Où ils se voient** : les portraits remplacent la silhouette dans la grande fête et dans la fiche. **L'écu ne change pas** (glyphe à l'encre, mêmes paliers de détail). Le jeune n'a que son portrait de base.
+- **Direction héroïque** : pose fière, vue en légère contre-plongée de trois quarts, carrure, détails d'encre hachurée façon peintures existantes. Le vénérable et le légendaire sont épiques : cicatrices, majesté, et pour le légendaire une taille et une présence hors norme. Rien de mignon, des yeux d'animal (rien ne brille), un fond uni pour le détourage, l'animal entier avec une marge. Le jeune tient l'échelle de son âge par ses proportions.
+- **Pelages plausibles** : nobles, visibles en 96 dp, jamais magiques. Rien ne brille, aucune aura, aucune couleur qui n'existe pas dans la nature.
+- **L'Ours est refait** (O) : en style héroïque sur ses 4 stades, et `assets/images/animals/bear-*.webp` (f4701329) est remplacé. Les trois portraits du trio FLUX 3 y passent, le légendaire s'y ajoute.
+- **Budget** (G) : 40 € pour tout le chantier (décision du 11/10, relevé des 30 € et de l'arrêt à 25 € d'origine) et on livre par priorité :
+  1. d'abord les 4 stades de base des 6 animaux (24 portraits) ;
+  2. puis les pelages rares (18) ;
+  3. puis l'hiver (15).
+
+  Un pelage sans portrait est absent de l'app, sans emplacement vide : l'app retombe sur le portrait de base, et le texte ne nomme pas un pelage qu'on ne voit pas (ni carte, ni libellé de la fiche, ni choix `crestCoat` pour un animal dont le rare n'est pas livré). Mesure réelle : 0,73 € par portrait réussi pour l'Ours (2,20 € pour 3 portraits). À ce prix, 25 € payaient environ 34 portraits : les 24 de base tiennent (environ 17,6 €), les rares ne tiennent qu'en partie, l'hiver n'est pas assuré. FLUX 3 réussit mieux que les essais précédents, sans rien promettre.
+
+### Les 57 portraits
+
+Slug : `<animal>-<stade>[-rare|-winter]`. Stades : `young`, `adult`, `venerable`, `legendary`. 4 de base par animal, 3 rares (adulte, vénérable, légendaire), 3 d'hiver (adulte, vénérable, légendaire) sauf l'hermine.
+
+| Animal | Base (4) | Rare (3) | Hiver (3) |
+|---|---|---|---|
+| Ours | `bear-young`, `bear-adult`, `bear-venerable`, `bear-legendary` | `bear-adult-rare`, `bear-venerable-rare`, `bear-legendary-rare` | `bear-adult-winter`, `bear-venerable-winter`, `bear-legendary-winter` |
+| Cerf | `stag-young`, `stag-adult`, `stag-venerable`, `stag-legendary` | `stag-adult-rare`, `stag-venerable-rare`, `stag-legendary-rare` | `stag-adult-winter`, `stag-venerable-winter`, `stag-legendary-winter` |
+| Cheval | `horse-young`, `horse-adult`, `horse-venerable`, `horse-legendary` | `horse-adult-rare`, `horse-venerable-rare`, `horse-legendary-rare` | `horse-adult-winter`, `horse-venerable-winter`, `horse-legendary-winter` |
+| Saumon | `salmon-young`, `salmon-adult`, `salmon-venerable`, `salmon-legendary` | `salmon-adult-rare`, `salmon-venerable-rare`, `salmon-legendary-rare` | `salmon-adult-winter`, `salmon-venerable-winter`, `salmon-legendary-winter` |
+| Hermine | `ermine-young`, `ermine-adult`, `ermine-venerable`, `ermine-legendary` | `ermine-adult-rare`, `ermine-venerable-rare`, `ermine-legendary-rare` | aucun |
+| Sanglier | `boar-young`, `boar-adult`, `boar-venerable`, `boar-legendary` | `boar-adult-rare`, `boar-venerable-rare`, `boar-legendary-rare` | `boar-adult-winter`, `boar-venerable-winter`, `boar-legendary-winter` |
+
+Total : 6 × 4 + 6 × 3 + 5 × 3 = 24 + 18 + 15 = 57.
+
+### Hiver et rare, par animal (O)
+
+| Animal | Hiver | Rare (flamme Éternelle) |
+|---|---|---|
+| Ours | Pelage épais et ébouriffé, brun plus sombre, givre dans les poils des épaules. | Grizzly blond (cannelle pâle, blond doré) : pelage clair d'un bout à l'autre, bien distinct de l'hiver et du vénérable. Changé de « pointes d'argent » (12/10, audit design) : des poils gris argent sur du brun se confondaient avec le givre de l'hiver et avec le gris du vénérable. |
+| Cerf | Robe grise et dense, cou épaissi, bois nus et lavés de froid. | Cerf blanc : robe d'un blanc crème, yeux et sabots foncés, bois pâles. |
+| Cheval | Poil long et rude, robe plus terne, crinière emmêlée de neige. | Noir profond, crinière et queue argent ; exige le contour d'encre bleu ardoise pour se lire en 96 dp. |
+| Saumon | Argent mat de la phase de mer : flancs argent terne, dos bleu acier, sans marques de frai. | Saumon doré : flancs d'un jaune d'or mat, nageoires ambrées. |
+| Hermine | aucun (sa base est déjà blanche) | Mélanique : un pelage presque noir d'un bout à l'autre, le ventre à peine plus clair ; exige le contour d'encre bleu ardoise pour se lire en 96 dp. |
+| Sanglier | Brun roux givré, soies longues et sous-poil épais, givre sur le dos, bien distinct du rare. | Sanglier cendré : gris très pâle, couleur de cendre, défenses ivoire, yeux sombres. |
+
+Pour la génération, ces phrases sont la matière du prompt de pelage. Chaque prompt répète la liste de contrôle ci-dessous et la phrase « rien ne brille ». Rien de magique, rien qui brille.
+
+### Copie
+
+Chaque pelage rare porte un nom, pas « pelage rare » (O). Apostrophe droite, aucun tiret long, clé `village.coat_rare_<animal>` :
+
+| Animal | fr | en | de | es |
+|---|---|---|---|---|
+| Ours | pelage cannelle | cinnamon coat | Zimtfell | pelaje canela |
+| Cerf | robe blanche | white coat | weißes Fell | pelaje blanco |
+| Cheval | robe noire | black coat | schwarzes Fell | pelaje negro |
+| Saumon | écailles dorées | golden scales | goldene Schuppen | escamas doradas |
+| Hermine | pelage noir | black fur | schwarzes Fell | pelaje negro |
+| Sanglier | soies cendrées | ashen bristles | aschgraue Borsten | cerdas cenicientas |
+
+Clés de copie à créer, dans les 4 langues (fr, en, de, es) :
+
+- La grande fête légendaire (O, 11/10, tour 3) : l'animal appartient au héros, pas au village, donc le titre dit l'événement sans nom de village, avec le possessif et le genre de l'animal (`session.feast_legendary_title_<animal>`, 6 clés ; les clés `_named`, `_named_vowel` et `_unnamed` et leur regex d'élision sont supprimées). fr « Ton ours entre dans la légende. » (ton cerf, cheval, saumon, hermine, sanglier) ; en « Your bear becomes a legend. » (les 6 animaux) ; de « Dein Bär wird zur Legende. » (Dein Hirsch, Pferd, Lachs, Hermelin, Wildschwein : aucun n'est féminin en allemand) ; es « Tu oso se convierte en leyenda. ». Le kicker « LÉGENDAIRE » au-dessus ne fait plus doublon. Le corps dit le fait du héros, `session.feast_legendary_body_<animal de la pratique>` : fr « Ta 500e séance de force, ce soir. », en « Tonight: your 500th strength session. », de « Heute Abend: deine 500. Krafteinheit. », es « Esta noche, tu sesión de fuerza número 500. » (« …ta 500e séance, ce soir. » pour le sanglier, et « 500th bike ride », « salida en bici número 500 »). C'est exact : le stade monte à la séance qui porte le compte de la pratique (ou, pour le sanglier, de toutes les séances qui comptent) à 500, et ce « 500 » vaut toujours `LEGENDARY_AT`. Les clés `crest_<animal>_legendary` restent, pour la ligne sous le titre de la fiche (`crestLine.ts`).
+- `tonight_stage_legendary` : la ligne de « Ce soir » quand le légendaire n'est pas la grande fête du soir. (O, tour 4) Sa variante tardive, `tonight_stage_legendary_late`, ne dit pas « devient » puisque l'événement n'a pas lieu ce soir : fr « {{animal}} est légendaire », en « {{animal}} is legendary », de « {{animal}} ist legendär », es « {{animal}} es legendario ». Le soir où le seuil est franchi, la carte garde « devient ».
+- (O, tour 4) Une grande fête légendaire reléguée en carte dans « Ce soir » (par la révélation, un Âge ou l'anniversaire) est marquée vue par `VictoryView`, sous `legendary:<pratique>`, comme la révélation et `coat:rare` : elle ne rouvre pas en plein écran le lendemain. Sonde : le soir 1 donne `[reveal large], [legendary medium]`, le soir 2 aucun légendaire.
+- (O, tour 4) Le 500e de la pratique propre d'un animal choisi à la main n'est fêté qu'au retour en `auto`, en version tardive. Un choix ne fait pas bouger le stade : l'animal choisi porte le stade de l'animal des séances, donc le cerf choisi par un héros de 500 séances de force est légendaire sans que sa propre pratique (l'endurance) ait atteint 500. Quand l'endurance passe 500 plus tard, le cerf ne franchit aucun seuil, `stageUpOf` ne voit rien. Au retour en `auto`, `legendaryNews` lit l'état et la clé `legendary:run` absente de `bigFeastsShown` : la fête s'ouvre alors, en variante tardive.
+- `crest_stage_legendary` : le stade dans la fiche et la grande fête.
+- La ligne du stade, sous les options de la fiche « Ton animal » (audit tour 2, `village.crest_pick_stage`) : fr « Quel que soit ton choix, ton animal est {{stage}}. », en « Whichever you choose, your animal keeps its stage: {{stage}}. », de « Welches du auch wählst, dein Tier ist {{stage}}. », es « Elijas el que elijas, tu animal es {{stage}}. », avec `{{stage}}` pris dans `crest_stage_*` (jeune, adulte, vénérable, légendaire ; jung, erwachsen, ehrwürdig, legendär ; joven, adulto, venerable, legendario). « Animal », « Tier » sont masculin et neutre, les attributs ne s'accordent donc jamais autrement. La fiche est le seul endroit où le héros lit le stade, puisque le sélecteur n'en affiche plus.
+- La carte du rare (audit design, 11/10, révisée au tour 3) : titre fr « {{animal}} se pare de nouvelles couleurs », en « {{animal}} takes on new colors », de « {{animal}} trägt neue Farben », es « {{animal}} luce nuevos colores » ; corps fr « {{coat}}. {{days}} jours de flamme sur ton écu. », en « {{coat}}. {{days}} days of flame on your crest. », de « {{coat}}. {{days}} Tage Flamme auf deinem Wappen. », es « {{coat}}. {{days}} días de llama en tu escudo. ». L'art de la carte est le portrait rare (64 dp), l'écu en repli ; celui de la grande fête légendaire reléguée en carte est le portrait légendaire. La fiche de l'écu porte une légende sous le portrait : le stade (clés `crest_<animal>_<stade>`, une par animal et par stade) et le pelage porté, rare (`coat_rare_<animal>`) ou d'hiver (`coat_winter`), par exemple « Un ours légendaire, pelage cannelle. ». `{{days}}` vient de `ETERNAL_FLAME_DAYS` (`constants/flame.ts`), la constante que lit aussi `getFlameLevel` : le chiffre de la carte et le seuil du rare ne peuvent plus diverger. Vrai pour toujours : la plus longue flamme a dépassé 100 jours (niveau Éternelle).
+- Le choix du pelage dans la fiche : « pelage habituel » et les 6 noms ci-dessus.
+
+Signalé : `components/village/crestLine.ts` ne connaît qu'un booléen `venerable` (`name(animal, venerable)`, `crest.stage === "venerable"`). Il devra apprendre le légendaire (un stade, pas un booléen) pour que la ligne sous le titre le dise, pour l'animal du centre et pour celui de la bordure.
+
+Règles de copie : aucun mot interdit de la section Copie ci-dessus, ni « magique », « brille », « aura », et aucune corvée : jamais « il te manque », « encore X jours », ni rien qui pousse à faire plus que la séance prévue. Le fait de la carte nomme la flamme, jamais le pelage comme un gain de jeu.
+
+### Livré (V-02)
+
+53 portraits sur 57 sont dans l'app. Quatre manquent :
+
+- `horse-venerable-rare` : FLUX peint l'âge en couronnes et en fanons pâles sur les jambes d'un cheval noir, et ce pelage noir de la tête aux sabots n'a pas tenu en cinq tours de prompts. Le rare du cheval vénérable n'est donc pas livré.
+- `salmon-adult-winter`, `salmon-venerable-winter`, `salmon-legendary-winter` : les trois saumons d'hiver (la phase de mer) ont été générés (tentative a1) puis écartés, parce que la phase de mer argentée ne se distinguait pas assez de la base à l'écran ; le budget de 40 € n'était pas en cause.
+
+Le repli est la chaîne de `portraitSlug` : le rare s'il est livré, sinon l'hiver s'il est livré et que c'est l'hiver, sinon la base du même stade. Un héros au rare gagné garde donc l'hiver sur le cheval vénérable, et le saumon porte sa base (ou son rare) toute l'année. Aucune carte, aucun libellé ni aucun choix `crestCoat` ne nomme un pelage non livré.
+
+### Fini quand (V-02)
+
+- Liste de contrôle des images, pour chacun des 57 portraits : « c'est le même animal sur les 3 stades (pelage, marques, silhouette) » ; « fond nuit uni, aucun bord blanc, aucune vignette » ; « la silhouette se lit en 96 dp » ; « le style des peintures existantes, rien de mignon, aucune mascotte » ; « les yeux sont des yeux d'animal, rien ne brille » ; « l'animal entier, une marge sur les 4 côtés » ; « le détourage est propre ».
+  Ligne de lecture, pour V-02 étendu : les 4 stades et leurs pelages.
+- Livré par priorité : les 24 de base d'abord, les rares ensuite, l'hiver en dernier, et on s'arrête au budget (40 €). Un lot non livré n'est ni dans l'app ni dans la copie.
+- Tests (O) : l'hémisphère (`regionCode` de chaque côté de la liste, région absente, décembre et juillet), l'annonce du rare après une mise à jour (un héros qui l'avait déjà gagné la voit une fois, une seule carte si l'adulte tombe la même séance), la priorité des pelages (chaque ligne de la table), la grande fête du légendaire (rang dans `bigOnes`, `feastKey` `legendary:<pratique>`, second animal, héros déjà au-delà de 500 à la mise à jour, échange du cerf sans doublon), et la fusion de `crestCoat` (`db-peer-merge`, `auto` plus récent l'emporte sur `usual`).
+- Le golden (`golden-hero`) ajoute `legendary` et `rareCoat` (gagné ou non), mais pas le slug du mois : il dépendrait de la date. Mis à jour avec la raison des chiffres qui bougent.
+- La copie existe dans les 4 langues sans mot interdit ni corvée.
 
 ## Reste ouvert
 - Le texte de la révélation pour un héros qui a déjà plus de 8 séances à la mise à jour, retenu, une seule forme (un point après « Depuis ta 8e séance », jamais deux deux-points dans une phrase) : « Depuis ta 8e séance. 5 de tes 8 premières étaient de la force. » (le soir de la 8e : « 5 de tes 8 séances étaient de la force. »). Le sanglier : le fait en `$text`, « Tes 8 séances se partagent : force 3, endurance 3, yoga 2. » (tardif : « Depuis ta 8e séance. Tes 8 premières se partagent : … »), puis l'explication des couleurs sur sa propre ligne en `$textSecondary`, « Les couleurs de l'écu : force et endurance, tes deux pratiques en tête. » (clé `feast_reveal_boar_colors`, `revealColors`), sans « Aucune pratique ne passe 40 % ».

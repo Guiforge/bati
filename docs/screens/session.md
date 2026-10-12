@@ -78,13 +78,17 @@ button with a red edge. A session under two minutes is held: the "That was a sho
 card are hidden until you keep it. The chart of past sessions fits its card, centres each date under
 its bar and carries an easy / medium / hard legend. The pause dialog's title is "Session paused" in
 the title font and its actions are sentence case, "Quit quest" an outline with the red edge. Under the stats the victory lists **Tonight** (`TonightList`, "Ce soir"): what this session
-changed, as lines (small feasts), cards (medium: second animal, stage, tier, boss, oath, new rung,
+changed, as lines (small feasts), cards (medium: second animal, stage, the rare coat (`coat`), tier, boss, oath, new rung,
 achievement) and, when the village grew, a "View your village" link (`handleViewVillage`, 44 dp
 tall). The card body is `$textSecondary` throughout, XP lines included. One large feast per
 session is only named there with an "after" badge: "Continue" opens it full screen
 (`app/big-feast.tsx`, a reveal, an Age, the anniversary or a tier) and closing it replays the
-victory's "Continue". The milestone line of the building this session fed (`victoryMilestoneLine`)
-sits under the village block. Every sentence is whole in four languages and held by
+victory's "Continue". The reveal shows the animal's portrait at 160 dp beside the 96 dp shield, a row of 268 dp that fits a
+360 dp screen at 130 % text. The milestone line of the building this session fed (`victoryMilestoneLine`)
+sits under the village block. A legendary animal (500 sessions) is a large feast of its own, in the
+same slot as the others ("after" badge, then full screen); one found past 500 (an update, a restore)
+is not an event of tonight and is marked "late": the Tonight line says "is legendary" instead of
+"is now legendary", and the body says "and counting" instead of naming 500. Every sentence is whole in four languages and held by
 `village-copy-forbidden-words`, `village-copy-no-chores` and `feast-copy-words`.
 
 Your progress becomes visible in:

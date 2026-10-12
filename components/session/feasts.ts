@@ -1,3 +1,4 @@
+import { legendaryKey } from "@/db/crestEvents";
 import type { VillageGrowth, VillageTier } from "@/db/village";
 import type { SaveResult } from "@/stores/session";
 
@@ -16,7 +17,10 @@ export type FeastFacts = {
     | "oathBonusXp"
     | "crestEvents"
     | "crestReveal"
-  >;
+  > &
+    // Optional only for the fixtures that predate them: `saveSession` always sets these (null or
+    // empty when there is nothing to announce). `savedResult` is never persisted.
+    Partial<Pick<SaveResult, "rareCoat" | "crestLegendary">>;
   /**
    * The campaign ended with this session: its epilogue is already full screen, so it holds the
    * place of the one big feast and says nothing in "Tonight" (its own screen says it).
@@ -42,6 +46,14 @@ export type Feast =
   | Of<"age", { name: string }>
   | Of<"anniversary", { years: number }>
   | Of<"tier", { tier: VillageTier; level: number | null }>
+  | Of<
+      "legendary",
+      Result["crestEvents"]["stageUp"][number] & {
+        /** The hero crossed 500 on an earlier night (the update found them past it): "at least 500", not "tonight". */
+        late: boolean;
+      }
+    >
+  | Of<"coat", NonNullable<Result["rareCoat"]>>
   | Of<"secondJoins", NonNullable<Result["crestEvents"]["secondJoins"]>>
   | Of<"stageUp", Result["crestEvents"]["stageUp"][number]>
   | Of<"boss", { name: string; finalBlow?: boolean }>
@@ -59,7 +71,7 @@ type Built<T> = T extends Feast ? Omit<T, "size" | "id"> : never;
  * Sorts tonight's facts into a line, a card or the one full-screen feast. Pure.
  *
  * One `large` at most, the first of: the campaign's epilogue (listed nowhere: its own screen is
- * the feast), the reveal, an Age, the anniversary, a village tier not shown yet. The others
+ * the feast), the reveal, an Age, the anniversary, a legendary animal not shown yet, a village tier not shown yet. The others
  * become cards. A boss and an oath
  * are cards, always. A level reached on the same night as a tier is the tier card's own line, so
  * it is not said twice. Order of the list: the large one, the lines, then the cards (a demoted feast first).
@@ -84,13 +96,22 @@ function bigOnes({ result: r, age, anniversary }: FeastFacts): Built<Feast>[] {
   if (r.crestReveal) big.push({ kind: "reveal", ...r.crestReveal });
   if (age) big.push({ kind: "age", name: age.name });
   if (anniversary) big.push({ kind: "anniversary", years: anniversary.years });
+  // One per count: the border's can turn legendary on another night than the centre's. Read off
+  // the crest after the session (like the reveal), so a hero past 500 at the update sees it once.
+  for (const up of r.crestLegendary ?? []) {
+    const crossed = r.crestEvents.stageUp.some(
+      (s) => s.stage === "legendary" && s.practice === up.practice,
+    );
+    big.push({ kind: "legendary", ...up, late: !crossed });
+  }
   if (r.tierUp)
     big.push({ kind: "tier", tier: r.tierUp.newTier, level: r.levelUp?.newLevel ?? null });
   return big;
 }
 
 /** The id a big feast is marked under in `bigFeastsShown`: once per phone. */
-export const feastKey = (f: Built<Feast>) => (f.kind === "tier" ? `tier:${f.tier}` : f.kind);
+export const feastKey = (f: Built<Feast>) =>
+  f.kind === "tier" ? `tier:${f.tier}` : f.kind === "legendary" ? legendaryKey(f.practice) : f.kind;
 
 const isShown = (f: Built<Feast>, shown: string[] | undefined) =>
   shown?.includes(feastKey(f)) === true;
@@ -110,7 +131,13 @@ function cardOnes({ result: r, boss }: FeastFacts): Built<Feast>[] {
   if (r.fulfilledOath)
     cards.push({ kind: "oath", progress: r.fulfilledOath, bonusXp: r.oathBonusXp });
   if (r.crestEvents.secondJoins) cards.push({ kind: "secondJoins", ...r.crestEvents.secondJoins });
-  for (const up of r.crestEvents.stageUp) cards.push({ kind: "stageUp", ...up });
+  if (r.rareCoat) cards.push({ kind: "coat", ...r.rareCoat });
+  for (const up of r.crestEvents.stageUp) {
+    // The legendary is a big feast. The rare coat's card absorbs the adult card of its animal.
+    if (up.stage === "legendary") continue;
+    if (r.rareCoat?.animal === up.animal && up.stage === "adult") continue;
+    cards.push({ kind: "stageUp", ...up });
+  }
   for (const step of r.newRungs) cards.push({ kind: "rung", step });
   for (const achievement of r.newAchievements) cards.push({ kind: "achievement", achievement });
   return cards;

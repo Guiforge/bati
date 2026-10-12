@@ -41,7 +41,10 @@ jest.mock("@/db/adventures-narrative", () => ({
 // The reveal line draws the shield from the crest VictoryView reads; the test reads what it was given.
 let mockCrestRead: () => Promise<unknown> = () => Promise.resolve(null);
 const mockCrestDrawn = jest.fn();
-jest.mock("@/db/crest", () => ({ getCrest: () => mockCrestRead() }));
+jest.mock("@/db/crest", () => ({
+  getCrest: () => mockCrestRead(),
+  portraitOf: async (_c: unknown, animal: string, stage: string) => `${animal}-${stage}`,
+}));
 jest.mock("@/components/village/Crest", () => ({
   Crest: ({ crest }: { crest: unknown }) => {
     mockCrestDrawn(crest);
@@ -867,6 +870,38 @@ describe("VictoryView tonight", () => {
     await release();
 
     expect(mockMarkBigFeastShown).toHaveBeenCalledWith("reveal");
+  });
+
+  it("marks the rare coat's card as seen once it is shown, and a night without it marks nothing", async () => {
+    const { release } = await mountWithPendingSave(null, 12 * 60, {
+      rareCoat: { animal: "bear", stage: "adult" },
+    });
+    await release();
+    expect(mockMarkBigFeastShown).toHaveBeenCalledWith("coat:rare");
+
+    mockMarkBigFeastShown.mockClear();
+    const quiet = await mountWithPendingSave();
+    await quiet.release();
+    expect(mockMarkBigFeastShown).not.toHaveBeenCalled();
+  });
+
+  it("marks a legendary feast as seen when it is relegated to a card, and not when it opens full screen", async () => {
+    const bear = { animal: "bear", stage: "legendary", n: 500, practice: "strength" };
+    // The reveal outranks it: the legendary is a card tonight, so tomorrow it must not reopen.
+    const card = await mountWithPendingSave(null, 12 * 60, {
+      crestReveal: BEAR,
+      crestLegendary: [bear],
+    });
+    await card.release();
+    expect(mockMarkBigFeastShown).toHaveBeenCalledWith("legendary:strength");
+    expect(mockMarkBigFeastShown).not.toHaveBeenCalledWith("reveal");
+    await card.view.unmount();
+
+    // Alone it is the large feast, which its full screen marks.
+    mockMarkBigFeastShown.mockClear();
+    const large = await mountWithPendingSave(null, 12 * 60, { crestLegendary: [bear] });
+    await large.release();
+    expect(mockMarkBigFeastShown).not.toHaveBeenCalled();
   });
 
   it("leaves the reveal unmarked when it is the large feast, which the full screen marks", async () => {

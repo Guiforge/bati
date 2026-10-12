@@ -5,6 +5,7 @@ import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
+import { pickSessionMilestone, type RecentFeeds } from "./milestone";
 import { getMuscleBalance } from "./muscleBalance";
 import { getPreference } from "./preferences";
 import {
@@ -17,6 +18,7 @@ import {
   type MuscleCode,
 } from "./schema";
 import { type FlameLevel, getFlameLevel, getStreakInfo } from "./streaks";
+import { percent } from "./targets";
 import { getLevelTitle, getUserLevelInfo, getXpForLevel } from "./userLevel";
 import { repEquivalentSql } from "./workUnits";
 
@@ -50,7 +52,7 @@ export type VillageTier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 // their first two months, and four levels between scenes is a long time to watch nothing change.
 // The top half deliberately did not get the same treatment: the art there is already at the edge
 // of what can escalate convincingly, and an intermediate step would read as a duplicate.
-const TIER_LEVEL_FLOORS: Record<VillageTier, number> = {
+export const TIER_LEVEL_FLOORS: Record<VillageTier, number> = {
   1: 1,
   2: 3,
   3: 5,
@@ -251,6 +253,11 @@ const VOLUME_FLOORS: readonly number[] = [1, 2, 3, 4, 5].map((lvl) =>
   lvl === 1 ? 1 : (buildingLevelThresholds[lvl] ?? 0),
 );
 
+/** Where the rung a rep building stands on begins: the figure its bar starts from. Rank 1 starts at 0. */
+export function repsRungStart(level: number): number {
+  return level <= 1 ? 0 : (VOLUME_FLOORS[level - 1] ?? 0);
+}
+
 // The legendary three answer to deeds, and no finished campaign feeds two of them
 // (tallyFinishedRuns). Six bosses exist in the content since the Golem (drizzle/0027), so the
 // lair tops out on the full set; the floors used to stop at five, and the sixth boss raised
@@ -352,6 +359,25 @@ const TIER_4_VALUES = {
 
 /** A tier-4 building answers to a deed tally, never to volume. */
 type DeedDriver = keyof typeof TIER_4_VALUES;
+
+/** `repsRungStart` for the deeds: where the rung a tier-4 building stands on begins. Rank 1 starts at 0. */
+export function deedRungStart(code: BuildingCode, level: number): number {
+  return level <= 1 ? 0 : (TIER_4_DRIVERS[code]?.floors[level - 1] ?? 0);
+}
+
+/**
+ * Where a deed building's bar starts: its rung, but never above the tally. A kept rank (the old
+ * count, before drizzle/0060) can stand above what the new count gives, and a bar that starts at
+ * 4 routes over "2 routes done" says the done figure is smaller than its own left end.
+ */
+export function deedBarStart(b: VillageBuilding): number {
+  return Math.min(deedRungStart(b.code, b.level), b.metricValue);
+}
+
+/** A deed building's bar, 0-100, from the rung it stands on: the one figure the bar and the pick share. */
+export function deedProgress(b: VillageBuilding): number {
+  return percent(b.exactValue ?? b.metricValue, deedBarStart(b), b.nextTarget ?? 0);
+}
 
 const TIER_4_DRIVERS: Partial<
   Record<BuildingCode, { driver: DeedDriver; floors: readonly number[] }>
@@ -591,9 +617,12 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
 }
 
 /**
- * Progress toward the next level, 0-100, or null when there is nothing honest to count: a maxed
- * building, or one not built yet. A building has three states, not two. Unbuilt is a condition in
- * words; treating it as "in progress at 0 %" drew "0 bosses, level 1 at 1" over an empty bar,
+ * Whether a building has a bar at all: null when there is nothing honest to count, a maxed
+ * building or one not built yet, otherwise the tally as a share of the next target counted from
+ * zero. That number is not the bar, which starts at the rung the building stands on (`repsRungStart`,
+ * `deedBarStart`, `deedProgress`); read it for null-ness, never to rank or to draw.
+ *
+ * A building has three states, not two. Unbuilt is a condition in words; treating it as "in progress at 0 %" drew "0 bosses, level 1 at 1" over an empty bar,
  * three ways of writing the same zero.
  *
  * One exception, the road inside its first league: its tally is whole leagues, so a first walk of
@@ -645,6 +674,9 @@ function repsLeft(building: VillageBuilding): number {
 /**
  * The one building the screen puts first: the thing a single session is most likely to raise.
  *
+ * The one with the fewest sessions to go by the hero's own recent pace, when any has an estimate.
+ * Otherwise:
+ *
  * Reps first, and the fewest of them wins: "40 reps of chest" is closer than "350 reps of legs"
  * whatever the percentages say, because the hero trains in reps, not in fractions. Level 0 waits
  * while any rep building is still rising, since one rep builds any of those and they would win
@@ -654,8 +686,15 @@ function repsLeft(building: VillageBuilding): number {
  * along, the fewest units left. Null when nothing has a rung left, and on day one: the screen says
  * the rule instead.
  */
-export function pickNextToRise(buildings: VillageBuilding[]): VillageBuilding | null {
+export function pickNextToRise(
+  buildings: VillageBuilding[],
+  feeds: RecentFeeds | null,
+): VillageBuilding | null {
   if (isDayOne(buildings)) return null;
+  // The building the hero's own pace raises soonest, in sessions or outings, wins outright: the
+  // same pick as the victory's PROCHAIN line. The rules below are for when no pace says anything.
+  const soonest = feeds === null ? null : pickSessionMilestone(buildings, feeds, null);
+  if (soonest) return soonest.building;
   const reps = buildings.filter(
     (b) => (b.driver === "muscle" || b.driver === "style") && b.nextTarget !== null,
   );
@@ -667,12 +706,11 @@ export function pickNextToRise(buildings: VillageBuilding[]): VillageBuilding | 
   if (unbuilt) return unbuilt;
 
   // A kept hall at 0 of 7 routes and an unbuilt road one walk away are both at 0 %: the walk wins.
-  const progress = (b: VillageBuilding) => getBuildingProgress(b) ?? 0;
   const left = (b: VillageBuilding) =>
     (b.nextTarget ?? Number.POSITIVE_INFINITY) - (b.exactValue ?? b.metricValue);
   const deeds = buildings
     .filter((b) => b.tier === 4 && b.nextTarget !== null)
-    .sort((a, b) => progress(b) - progress(a) || left(a) - left(b));
+    .sort((a, b) => deedProgress(b) - deedProgress(a) || left(a) - left(b));
   return deeds[0] ?? null;
 }
 
@@ -761,16 +799,10 @@ export type TierProgress =
       xpShort: number;
       /** 0-100, from where this tier began to where the next one does. */
       progress: number;
-      /** Sessions like this week's that would cover the gap, or null with nothing to go by. */
-      sessionsAtPace: number | null;
     }
   | { final: true; tier: VillageTier; reachedAt: number };
 
-export function getTierProgress(
-  level: number,
-  totalXp: number,
-  xpPerSession: number | null,
-): TierProgress {
+export function getTierProgress(level: number, totalXp: number): TierProgress {
   const tier = getVillageTier(level);
   if (tier === MAX_TIER) return { final: true, tier, reachedAt: TIER_LEVEL_FLOORS[MAX_TIER] };
 
@@ -790,7 +822,6 @@ export function getTierProgress(
     targetXp,
     xpShort,
     progress: Math.max(0, Math.min(100, ((totalXp - fromXp) / (targetXp - fromXp)) * 100)),
-    sessionsAtPace: xpPerSession && xpPerSession > 0 ? Math.ceil(xpShort / xpPerSession) : null,
   };
 }
 
@@ -806,8 +837,6 @@ export type VillageScene = {
   /** The hero's rank, shown beside the level on the scene, without the level repeated in it. */
   title: Localized;
   totalXp: number;
-  /** Average XP of a session over the last seven days, or null when there was none. */
-  xpPerSession: number | null;
   flame: FlameLevel;
   /** Days the flame has stayed lit, which the flame's name alone does not say. */
   streakDays: number;
@@ -821,12 +850,11 @@ export type VillageScene = {
  * no village-specific table.
  */
 export async function getVillageScene(): Promise<VillageScene> {
-  const [levelInfo, streak, dominantSport, buildings, xpPerSession] = await Promise.all([
+  const [levelInfo, streak, dominantSport, buildings] = await Promise.all([
     getUserLevelInfo(),
     getStreakInfo(),
     getDominantSportOverlay(),
     getVillageBuildings(),
-    getWeekXpPerSession(),
   ]);
 
   return {
@@ -834,7 +862,6 @@ export async function getVillageScene(): Promise<VillageScene> {
     level: levelInfo.level,
     title: getLevelTitle(levelInfo.level),
     totalXp: levelInfo.totalXp,
-    xpPerSession,
     flame: getFlameLevel(streak.current),
     streakDays: streak.current,
     dominantSport,

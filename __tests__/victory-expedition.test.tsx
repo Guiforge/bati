@@ -55,6 +55,8 @@ jest.mock("@/db/village", () => ({
   ...jest.requireActual("@/db/village"),
   getVillageBuildings: () => mockGetVillageBuildings(),
 }));
+// The next-milestone line reads the village too; this suite is about what the walk reads.
+jest.mock("@/components/session/NextMilestone", () => ({ NextMilestone: () => null }));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
 jest.mock("@/hooks/useHaptics", () => ({
   useHaptics: () => ({ success: jest.fn(), selection: jest.fn() }),
@@ -62,9 +64,7 @@ jest.mock("@/hooks/useHaptics", () => ({
 jest.mock("@/components/common/Toast", () => ({
   useToast: () => ({ showError: jest.fn(), showSuccess: jest.fn() }),
 }));
-jest.mock("react-native-confetti-cannon", () => "ConfettiCannon");
 jest.mock("@/components/session/ProgressionChart", () => ({ ProgressionChart: () => null }));
-jest.mock("@/components/session/SessionRewards", () => ({ SessionRewards: () => null }));
 
 type StoreState = ReturnType<typeof useSessionStore.getState>;
 
@@ -79,6 +79,13 @@ const saveResult = {
   fulfilledOath: null,
   tierUp: null,
   newRecords: [],
+  // What "Tonight" ranks: `saveSession` always returns these.
+  standing: null,
+  newRungs: [],
+  newAchievements: [],
+  oathBonusXp: 0,
+  crestEvents: { secondJoins: null, stageUp: [] },
+  crestReveal: null,
 };
 
 /** The High Road, at whatever floor a test needs it at. */
@@ -138,6 +145,7 @@ async function mountVictory({
   sessionSeconds = 25 * 60,
   goal = null,
   outing = null,
+  newRecords = [],
 }: {
   quest?: Quest;
   sessionSeconds?: number;
@@ -145,6 +153,8 @@ async function mountVictory({
   goal?: OutingGoal | null;
   /** The ground the save priced, as `saveSession` reports it back. */
   outing?: { seconds: number; effortSeconds: number; locomotion: "walk" | "run" | "ride" } | null;
+  /** The records the save found, as `saveSession` reports them. */
+  newRecords?: unknown[];
 } = {}) {
   useSessionStore.setState({
     quest,
@@ -156,7 +166,11 @@ async function mountVictory({
     bossFight: null,
     results: [],
     sessionUuid: "0192-walk",
-    saveSession: (async () => ({ ...saveResult, outing })) as unknown as StoreState["saveSession"],
+    saveSession: (async () => ({
+      ...saveResult,
+      outing,
+      newRecords,
+    })) as unknown as StoreState["saveSession"],
     quitSession: jest.fn() as unknown as StoreState["quitSession"],
   } as unknown as Partial<StoreState>);
 
@@ -229,6 +243,32 @@ describe("VictoryView, the walk it just celebrated", () => {
 
   // The map has to be handed the session its points were filed under: `gps_points.sessionId` is
   // the uuid, not the row id, and a recap opened on the wrong one draws someone else's walk.
+  test("a longest outing is a line in Tonight, in the unit the hero reads", async () => {
+    const record = {
+      isNewRecord: true,
+      recordType: "longest_outing",
+      newValue: 3218.688,
+      previousValue: 1200,
+      perSide: false,
+    };
+    useSettingsStore.setState({ distanceUnit: "imperial" });
+    await mountVictory({ newRecords: [record] });
+    expect(screen.getByText("Longest outing: 2.00 mi")).toBeTruthy();
+    expect(screen.queryByText(/3[.,]22 km|3219/)).toBeNull();
+  });
+
+  test("the same record reads in kilometres for a metric hero", async () => {
+    const record = {
+      isNewRecord: true,
+      recordType: "longest_outing",
+      newValue: 3218.688,
+      previousValue: null,
+      perSide: false,
+    };
+    await mountVictory({ newRecords: [record] });
+    expect(screen.getByText("Longest outing: 3.22 km")).toBeTruthy();
+  });
+
   test("the door to the map carries the session the points were filed under", async () => {
     await mountVictory();
 

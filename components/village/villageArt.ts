@@ -1,4 +1,4 @@
-import { cameoBand } from "@/components/chorus/cameoAnchor";
+import { cameoBand, TITLE_BLOCK } from "@/components/chorus/cameoAnchor";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 
 /**
@@ -57,4 +57,9 @@ export function villageCameoBand(windowWidth: number, windowHeight: number, safe
   const columnWidth = Math.min(windowWidth, CONTENT_MAX_WIDTH);
   const { heroHeight } = villageHeroSlot(columnWidth, windowHeight);
   return cameoBand(heroHeight, safeTop, columnWidth);
+}
+
+/** Where the name starts in the hero: pinned `TITLE_BLOCK` above the band's bottom, under the status bar. */
+export function villageTitleTop(bandHeight: number, safeTop: number) {
+  return Math.max(safeTop + 8, bandHeight - TITLE_BLOCK);
 }

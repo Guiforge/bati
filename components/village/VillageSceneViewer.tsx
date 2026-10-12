@@ -37,7 +37,7 @@ export function VillageSceneViewer({
   // (constants/layout.ts). The full height is still the column's, only the width is clamped.
   const width = Math.min(windowWidth, CONTENT_MAX_WIDTH);
   // Scales up as it fades in, so the picture reads as *opening* out of the tapped scene rather
-  // than a new screen appearing over it. "bouncy" is the app's reveal spring (SessionRewards,
+  // than a new screen appearing over it. "bouncy" is the app's reveal spring (the big feast,
   // the village sections); a plain fade made the tap feel like it had missed.
   const anim = useAnimationProps("bouncy", { opacity: 0, scale: 0.92 });
 

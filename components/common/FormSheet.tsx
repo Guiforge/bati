@@ -1,9 +1,10 @@
 import { usePathname } from "expo-router";
 import { type ReactNode, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, Pressable } from "react-native";
+import { Keyboard, Pressable, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Sheet, Text, XStack, YStack } from "tamagui";
+import { headingFont } from "@/components/common/headingFont";
 import { X } from "@/components/icons";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
@@ -33,6 +34,7 @@ export function FormSheet({ open, title, onClose, children }: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
   const pathname = usePathname();
   const shownOn = useRef(pathname);
 
@@ -69,7 +71,13 @@ export function FormSheet({ open, title, onClose, children }: Props) {
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
-      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
+      <Sheet.Frame
+        bg="$surface"
+        // A full sheet would rise under the status bar; what does not fit scrolls.
+        style={{ maxHeight: height - insets.top - 16 }}
+        borderTopLeftRadius="$6"
+        borderTopRightRadius="$6"
+      >
         {/* ponytail: `onMoveShouldSetResponder` overrides Tamagui 2.7.7's, which compares each
             touch to a `lastPageY` it never resets: the first move of any new touch reads as a
             >10px drag, the scroll view seizes the responder and the button's press is cancelled.
@@ -82,7 +90,13 @@ export function FormSheet({ open, title, onClose, children }: Props) {
         >
           <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$3">
             <XStack items="center" justify="space-between" gap="$3">
-              <Text flex={1} fontWeight="700" fontSize={18} color="$text">
+              <Text
+                flex={1}
+                fontFamily={headingFont(title)}
+                fontWeight="700"
+                fontSize={20}
+                color="$text"
+              >
                 {title}
               </Text>
               <Pressable

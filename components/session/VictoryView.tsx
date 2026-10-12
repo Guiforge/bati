@@ -3,12 +3,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, ScrollView, useWindowDimensions } from "react-native";
-import ConfettiCannon from "react-native-confetti-cannon";
+import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
-import { recordCue } from "@/components/chorus/recordCue";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
@@ -25,31 +23,32 @@ import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
-import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
 import { updateSessionFeedback } from "@/db/completed";
+import { type Crest, getCrest } from "@/db/crest";
 import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession, outingLocomotion } from "@/db/expeditions";
+import { preferences } from "@/db/preferences";
 import { createQuestFromOuting } from "@/db/quests";
 import type { FeedbackCode } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
-import { formatGrown } from "@/db/village";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useHaptics } from "@/hooks/useHaptics";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { formatTime } from "@/hooks/useSessionTimer";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useChorusStore } from "@/stores/chorus";
 import { isExpedition } from "@/stores/expedition";
-import { recordedDurationSeconds, useSessionStore } from "@/stores/session";
+import { recordedDurationSeconds, type SaveResult, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { useUserStore } from "@/stores/user";
+import { goOn, seeVillage } from "./destinations";
 import { ExpeditionSummary } from "./ExpeditionSummary";
+import { tonight } from "./feasts";
+import { NextMilestone } from "./NextMilestone";
 import { ProgressionChart } from "./ProgressionChart";
-import { SessionRewards } from "./SessionRewards";
-
-type SaveResult = Awaited<ReturnType<ReturnType<typeof useSessionStore.getState>["saveSession"]>>;
+import { TonightList } from "./TonightList";
 
 /**
  * Under this, the session is asked about rather than saved.
@@ -136,7 +135,7 @@ function FilledLevelBar({
       bg="$surface"
       borderColor="$glassBorder"
       gap="$2"
-      py="$3"
+      py="$2"
     >
       <XStack items="center" justify="space-between">
         <Text fontFamily="$body" fontWeight="700" fontSize={14} color="$text">
@@ -168,11 +167,10 @@ export function VictoryView() {
   const { t } = useTranslation();
   const router = useRouter();
   const { confirmForget, dialog: forgetDialog } = useConfirmForget();
-  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const villagerSlot = useFontScaled(VILLAGER_SLOT_HEIGHT);
   const language = useSettingsStore((s) => s.language);
-  const reducedMotion = useReducedMotion();
+  const villageName = useUserStore((s) => s.villageName);
   const { success, selection } = useHaptics();
   const { showError } = useToast();
   // Field by field: the whole store re-rendered this screen on every write, and `saveSession`
@@ -197,6 +195,8 @@ export function VictoryView() {
   const [feedback, setFeedback] = useState<FeedbackCode | null>(null);
   const [outroNarrative, setOutroNarrative] = useState<string | null>(null);
   const [showOutroNarrative, setShowOutroNarrative] = useState(false);
+  /** The outro lookup came back (with text or without): until then, "no outro" is not known. */
+  const [outroSettled, setOutroSettled] = useState(false);
   const savedRef = useRef(false);
   const feedbackTouched = useRef(false);
   /** The bridge, once crossed: the button goes, the sentence stays. */
@@ -214,6 +214,37 @@ export function VictoryView() {
   );
   /** The monster this session felled, when it did — what the hero card shows instead of the quest. */
   const felledBoss = isBossDefeat ? bossFight : null;
+
+  // What tonight says, sorted once the save has landed. Nothing before it: a loading screen
+  // asserts nothing, and a retried save reaches here with the same facts.
+  const feasts = result
+    ? tonight(
+        result,
+        felledBoss
+          ? { name: bossDisplayName(felledBoss, language), finalBlow: felledByFinalBlow }
+          : null,
+      )
+    : [];
+  // The reveal is marked as seen only when it was shown here, as a card (the night of an
+  // epilogue). As the large feast it is marked when its full screen opens, which comes later.
+  // The one that opens full screen after "Continue". Once it has opened, "Tonight" stops
+  // announcing it (the phone has shown it).
+  const bigFeast = feasts.find((f) => f.size === "large");
+  const [feastOpened, setFeastOpened] = useState(false);
+  // Read only for the reveal line of Tonight, which draws the same shield as the big feast.
+  // Undefined until read: Tonight keeps the place and draws no shield before it knows the border.
+  const [crest, setCrest] = useState<Crest | null | undefined>(undefined);
+  const revealing = result?.crestReveal != null;
+  useEffect(() => {
+    if (!revealing) return;
+    getCrest()
+      .then(setCrest)
+      .catch((e) => {
+        setCrest(null); // read failed: the shield of the sessions, without a border
+        reportError("victory.crest", e);
+      });
+  }, [revealing]);
+  const revealShownAsCard = feasts.some((f) => f.kind === "reveal" && f.size !== "large");
 
   // What the journal is about to record, not the raw clock. They are different numbers for an
   // outing — `sessionClock` clamps a walk to its moving time plus twenty minutes of red lights —
@@ -244,14 +275,13 @@ export function VictoryView() {
     runSave().catch((e) => reportError("session.save", e));
   }, [runSave, tooShort]);
 
-  // The feeling can be tapped while the save is still in flight, but persisting it needs a
-  // session id that only exists once `result` lands. Writing it from the tap handler meant the
-  // early taps were dropped on the floor — the button lit up, the row kept `feedback: null`.
-  // Keyed on both, so a tap before the save and a tap after take the same path.
+  // The feeling buttons are inactive until the save lands (they are `disabled` below), because
+  // persisting a feeling needs a session id that only exists once `result` does. The effect is
+  // still keyed on both, so a feeling set at any time takes the one path.
   // One villager per victory, chosen here rather than by competing effects: these are all `event`
   // priority, so firing two would just mean the second silently overwrote the first and which one
-  // you saw depended on effect ordering. A felled boss outranks a record — it is the rarer thing,
-  // and the hero already has the badge for the other.
+  // you saw depended on effect ordering. A record is not cued at all: "Tonight" lists it, and a
+  // fact is said once on this screen.
   useEffect(() => {
     if (!result) return;
     if (isBossDefeat) {
@@ -280,23 +310,12 @@ export function VictoryView() {
       cue("longest_outing");
       return;
     }
+  }, [result, isBossDefeat, cue]);
 
-    const earned = recordCue(result.newRecords, language);
-    if (!earned) return;
-    if (earned.moment === "personal_record") {
-      cue("personal_record");
-      return;
-    }
-
-    // The one place a villager quotes a number, and the reason the layer bothers: "ten more than
-    // last time" is the shape the evidence says keeps working, where "well done!" stops working
-    // inside two months. Pluralised through i18next rather than glued together, so the English
-    // says "1 rep" and not "1 reps".
-    cue("personal_record_beat", {
-      delta: t(`villagers.units.delta_${earned.unit}`, { count: earned.delta }),
-      exercise: earned.exercise,
-    });
-  }, [result, isBossDefeat, cue, language, t]);
+  useEffect(() => {
+    if (!revealShownAsCard) return;
+    preferences.markBigFeastShown("reveal").catch((e) => reportError("session.markRevealShown", e));
+  }, [revealShownAsCard]);
 
   useEffect(() => {
     if (!result || !feedbackTouched.current) return;
@@ -306,19 +325,23 @@ export function VictoryView() {
   }, [result, feedback]);
 
   useEffect(() => {
-    if (adventureRunStepId) {
-      getAdventureStepOutroNarrative(adventureRunStepId, language)
-        .then((text) => {
-          if (text) {
-            setOutroNarrative(text);
-            setShowOutroNarrative(true);
-          }
-        })
-        .catch((error) => {
-          // No outro is a fine victory; an unhandled rejection mid-save is not.
-          reportError("session.outroNarrative", error);
-        });
+    if (!adventureRunStepId) {
+      setOutroSettled(true);
+      return;
     }
+    setOutroSettled(false);
+    getAdventureStepOutroNarrative(adventureRunStepId, language)
+      .then((text) => {
+        if (text) {
+          setOutroNarrative(text);
+          setShowOutroNarrative(true);
+        }
+      })
+      .catch((error) => {
+        // No outro is a fine victory; an unhandled rejection mid-save is not.
+        reportError("session.outroNarrative", error);
+      })
+      .finally(() => setOutroSettled(true));
   }, [adventureRunStepId, language]);
 
   if (!quest || !startTime) return null;
@@ -355,8 +378,7 @@ export function VictoryView() {
 
   const handleViewVillage = () => {
     if (!result) return;
-    // Levels travel with the codes: the village plays the rise from one rung to the next.
-    router.push(`/(tabs)/village?grown=${formatGrown(result.villageGrowth)}` as never);
+    seeVillage(router, result);
   };
 
   const handleForget = () => {
@@ -369,25 +391,18 @@ export function VictoryView() {
 
   const handleContinue = () => {
     if (!result) return;
-    quitSession();
-
-    const campaign = result.campaign;
-    if (campaign?.nextQuestId && campaign.nextRunStepId) {
-      router.replace(
-        `/quests/${campaign.nextQuestId}?runStepId=${campaign.nextRunStepId}&adventureId=${campaign.adventureId}` as never,
-        { withAnchor: true },
-      );
+    // One big feast a night. It opens over this screen and ends on `goOn`'s road itself (its
+    // button, or the back gesture), so nothing is quit before it closes.
+    if (bigFeast && !feastOpened) {
+      setFeastOpened(true);
+      router.push("/big-feast" as never);
       return;
     }
-    if (campaign?.isFinished) {
-      router.replace(`/adventures/${campaign.adventureId}` as never, { withAnchor: true });
-      return;
-    }
-    router.replace("/");
+    goOn(router, result);
   };
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top + 16}>
+    <YStack flex={1} bg="$background" pt={insets.top + 12}>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
@@ -395,7 +410,7 @@ export function VictoryView() {
           // line inside the hero banner (VillagerLine), so there is nothing else to clear.
           paddingBottom: insets.bottom + 96,
           alignItems: "center",
-          gap: 20,
+          gap: 12,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -406,7 +421,6 @@ export function VictoryView() {
           bg={questBg}
           width="100%"
           maxW={520}
-          mt="$4"
           p={0}
           overflow="hidden"
           borderWidth={1.5}
@@ -444,40 +458,24 @@ export function VictoryView() {
               <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="$resourceGold" />
             </YStack>
             <YStack position="absolute" b={0} l={0} r={0} p="$4" gap="$1">
-              {/* The kicker and the title are one unit: the kicker announces a reward, so it is gold
-                  on a boss kill and on a plain quest alike, directly over the cartouche. */}
+              {/* The kicker and the title are one unit: the kicker announces a reward, gold, directly
+                  over the cartouche. A felled boss has none: "Tonight" carries that fact as a card,
+                  and a fact is said once. */}
               <YStack gap={2} self="flex-start">
-                <Text
-                  testID="victory-kicker"
-                  fontFamily="$body"
-                  fontWeight="700"
-                  color="$resourceGold"
-                  fontSize={13}
-                  letterSpacing={2}
-                >
-                  {(isBossDefeat
-                    ? t("boss.victory_title")
-                    : t("session.victory_title")
-                  ).toUpperCase()}
-                </Text>
+                {!isBossDefeat && (
+                  <Text
+                    testID="victory-kicker"
+                    fontFamily="$body"
+                    fontWeight="700"
+                    color="$resourceGold"
+                    fontSize={13}
+                    letterSpacing={2}
+                  >
+                    {t("session.victory_title").toUpperCase()}
+                  </Text>
+                )}
                 <Recitatif>{heroTitle}</Recitatif>
               </YStack>
-              {isBossDefeat && (
-                <Text
-                  fontFamily="$body"
-                  fontSize={14}
-                  fontWeight={felledByFinalBlow ? "400" : "700"}
-                  color={felledByFinalBlow ? "$textSecondary" : "$resourceGold"}
-                >
-                  {/* The Triumph is the pool emptied by your own damage — what HP are for; the
-                      final blow is the guarantee that finishing the campaign always kills. */}
-                  {felledByFinalBlow
-                    ? t("boss.final_blow")
-                    : t("boss.triumph_subtitle", {
-                        xp: formatCount(language, TRIUMPH_XP_BONUS),
-                      })}
-                </Text>
-              )}
             </YStack>
             {/* What opens the felled boss: the banner below the villager's slot, never the slot.
                 The whole card used to be the button, so a tap on the line opened the boss and
@@ -554,15 +552,15 @@ export function VictoryView() {
         {/* Stat row: Time · XP (accurate, incl. daily bonus) */}
         {!tooShort && (
           <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
-            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
+            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$2">
               <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
                 {t("session.total_time")}
               </Text>
-              <Text fontWeight="700" fontSize={26} color="$text" fontFamily="$body">
-                {formatTime(durationSeconds)}
+              <Text fontWeight="700" fontSize={26} lineHeight={32} color="$text" fontFamily="$body">
+                {result ? formatTime(durationSeconds) : "\u00A0"}
               </Text>
             </Card>
-            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$3">
+            <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$2">
               <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
                 {t("session.xp_earned")}
               </Text>
@@ -574,6 +572,7 @@ export function VictoryView() {
                 importantForAccessibility={result ? "auto" : "no"}
                 fontWeight="700"
                 fontSize={26}
+                lineHeight={32}
                 color="$resourceGold"
                 fontFamily="$body"
               >
@@ -653,7 +652,21 @@ export function VictoryView() {
           <HeroLevelBar heroXp={result ? result.heroXp : null} language={language} />
         )}
 
-        {/* Feedback — above the fold and above the rewards: this answer is what steers the next
+        {/* "Tonight": what the save changed. It arrives with the save and says nothing before it,
+            nothing at all on a night where nothing rose. "See your village" only when it grew. */}
+        {!!result && (
+          <TonightList
+            feasts={feastOpened ? feasts.filter((f) => f !== bigFeast) : feasts}
+            villageName={villageName}
+            crest={crest}
+            epilogue={result.campaign?.isFinished === true && outroSettled && !outroNarrative}
+            onViewVillage={
+              result.tierUp || result.villageGrowth.length > 0 ? handleViewVillage : undefined
+            }
+          />
+        )}
+
+        {/* Feedback — above the fold: this answer is what steers the next
             session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}
         <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">
           <Text
@@ -677,12 +690,18 @@ export function VictoryView() {
                 key={value}
                 flex={1}
                 size="$4"
-                bg={feedback === value ? "$surface2" : "$surface"}
+                // Fixed height clipped the glyph onto the top edge once a label wrapped at 130 %.
+                height="auto"
+                py="$2"
+                bg={feedback === value || !result ? "$surface2" : "$surface"}
                 borderWidth={1}
                 borderColor={feedback === value ? accent : "$glassBorder"}
                 opacity={feedback === value ? 1 : 0.85}
                 pressStyle={{ opacity: 0.8, scale: 0.98 }}
                 onPress={() => handleFeedbackSelect(value)}
+                // Like Continue: "Tonight" lands with the save and has no reserved height, so a
+                // tap during the save could land on whatever it pushes into this slot.
+                disabled={!result}
                 rounded="$4"
                 accessibilityLabel={t(`session.feedback_${value}`)}
                 accessibilityRole="button"
@@ -692,10 +711,10 @@ export function VictoryView() {
                     testID={`feedback-glyph-${value}`}
                     name={glyph}
                     size={22}
-                    color={feedback === value ? accent : "$text"}
+                    color={feedback === value ? accent : result ? "$text" : "$textSecondary"}
                   />
                   <Text
-                    color="$text"
+                    color={result ? "$text" : "$textSecondary"}
                     fontSize={12}
                     fontWeight="700"
                     style={{ textAlign: "center" }}
@@ -708,16 +727,9 @@ export function VictoryView() {
           </XStack>
         </Card>
 
-        {/* Saving / error / rewards */}
-        {!result && !saveError && !tooShort && (
-          <YStack items="center" gap="$3" py="$6">
-            <ActivityIndicator />
-            <Text color="$textSecondary" fontSize={14}>
-              {t("session.summary_saving")}
-            </Text>
-          </YStack>
-        )}
+        <NextMilestone sessionId={result?.sessionId ?? null} language={language} />
 
+        {/* A failed save: the only thing that replaces "Tonight". */}
         {!!saveError && (
           <YStack width="100%" maxW={520} items="center" gap="$3">
             <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
@@ -729,10 +741,6 @@ export function VictoryView() {
               </Text>
             </AppButton>
           </YStack>
-        )}
-
-        {!!result && (
-          <SessionRewards result={result} language={language} onViewVillage={handleViewVillage} />
         )}
 
         {/* Progression chart (lower priority; also available in the journal) */}
@@ -760,8 +768,9 @@ export function VictoryView() {
 
       {/* Sticky actions: Share + Continue */}
       <XStack
-        p="$4"
-        pb={insets.bottom + 16}
+        px="$4"
+        pt="$3"
+        pb={insets.bottom + 8}
         gap="$3"
         bg="$bgDark"
         borderTopWidth={1}
@@ -771,7 +780,7 @@ export function VictoryView() {
         {/* Only once the row exists, and never on a short session the hero has not kept yet:
             the share screen reads the saved session, and a discard would delete what it shows. */}
         {result && !tooShort ? (
-          <ShareButton testID="session-victory-share" sessionId={result.sessionId} height={60} />
+          <ShareButton testID="session-victory-share" sessionId={result.sessionId} height={48} />
         ) : null}
         {/* While the hero has not said whether a short session counts, the bar's big button is the
             keep, not a disabled "Saving…": nothing is being saved, and a phone trace on 2026-09-13
@@ -781,7 +790,7 @@ export function VictoryView() {
           <AppButton
             testID="session-victory-keep-short"
             onPress={() => setKeepShort(true)}
-            height={60}
+            height={48}
             fullWidth={false}
             flex={1}
           >
@@ -792,28 +801,14 @@ export function VictoryView() {
             testID="session-victory-continue"
             onPress={handleContinue}
             disabled={!result}
-            height={60}
+            height={48}
             fullWidth={false}
             flex={1}
           >
-            {result ? t("session.continue") : t("common.saving")}
+            {t("session.continue")}
           </AppButton>
         )}
       </XStack>
-
-      {/* Confetti: fewer pieces (JS-thread animated), and held until the save finishes so the
-          burst doesn't fight the DB write + sound decode on the mount frame. */}
-      {!reducedMotion && result && (
-        <ConfettiCannon
-          // A boss defeat, a fulfilled oath, or a village tier crossed is a big win — bigger, faster burst.
-          count={isBossDefeat || result.fulfilledOath || result.tierUp ? 120 : 80}
-          origin={{ x: width / 2, y: -20 }}
-          autoStart={true}
-          fadeOut={true}
-          explosionSpeed={isBossDefeat || result.fulfilledOath || result.tierUp ? 450 : 350}
-          fallSpeed={3000}
-        />
-      )}
 
       <NarrativeModal
         visible={showOutroNarrative}

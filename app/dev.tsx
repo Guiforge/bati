@@ -7,6 +7,7 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
+import { Crest, type CrestShape } from "@/components/village/Crest";
 import {
   calculateUserLevelFromXp,
   db,
@@ -19,6 +20,7 @@ import {
 import { getOrCreateBossFight } from "@/db/bossFights";
 import { clearSeededExpeditions, seedExpedition } from "@/db/devSeedExpedition";
 import { clearSeededHistory, countSeededSessions, seedHistory } from "@/db/devSeedHistory";
+import { preferences } from "@/db/preferences";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 
@@ -48,6 +50,84 @@ async function setDevLevel(level: number): Promise<void> {
   }
 }
 
+const crestOf = (c: Partial<CrestShape> & Pick<CrestShape, "animal">): CrestShape => ({
+  manual: false,
+  second: null,
+  quarters: null,
+  longestFlame: 3,
+  rings: 3,
+  ...c,
+});
+const second = (animal: "bear" | "stag" | "horse" | "ermine") => ({
+  animal,
+  stage: "young" as const,
+});
+
+/** Hard-coded crests for the screenshots of the village header: no database. */
+const CREST_ROWS: [string, CrestShape][] = [
+  ...(["bear", "stag", "horse", "salmon", "ermine"] as const).map((a): [string, CrestShape] => [
+    a,
+    crestOf({ animal: a }),
+  ]),
+  ["boar", crestOf({ animal: "boar", quarters: ["strength", "run"] })],
+  ["bear + stag", crestOf({ animal: "bear", second: second("stag") })],
+  ["stag + horse", crestOf({ animal: "stag", second: second("horse") })],
+  ["salmon + ermine", crestOf({ animal: "salmon", second: second("ermine") })],
+  ["chosen", crestOf({ animal: "stag", manual: true })],
+  ["flame 1 / 0 rings", crestOf({ animal: "bear", longestFlame: 1, rings: 0 })],
+  ["flame 3 / 1 ring", crestOf({ animal: "bear", longestFlame: 3, rings: 1 })],
+  ["flame 5 / 3 rings", crestOf({ animal: "bear", longestFlame: 5, rings: 3 })],
+  [
+    "worst: bear + stag, 9 rings, chosen",
+    crestOf({ animal: "bear", second: second("stag"), longestFlame: 5, rings: 9, manual: true }),
+  ],
+  [
+    "worst: boar chosen, flame 5, 9 rings",
+    crestOf({
+      animal: "boar",
+      quarters: ["strength", "run"],
+      longestFlame: 5,
+      rings: 9,
+      manual: true,
+    }),
+  ],
+  ["bear + stag, 5 rings", crestOf({ animal: "bear", second: second("stag"), rings: 5 })],
+  ["bear + stag, 6 rings", crestOf({ animal: "bear", second: second("stag"), rings: 6 })],
+  ["bear + stag, 10 rings", crestOf({ animal: "bear", second: second("stag"), rings: 10 })],
+  ["bear + stag, 12 rings", crestOf({ animal: "bear", second: second("stag"), rings: 12 })],
+  ["bear + stag, 14 rings", crestOf({ animal: "bear", second: second("stag"), rings: 14 })],
+];
+const CREST_SIZES = [24, 48, 56, 96] as const;
+const CREST_GROUNDS = [
+  ["bgDark", "$bgDark", false],
+  ["surface2", "$surface2", false],
+  ["painting", "$surface", true],
+] as const;
+
+function CrestBoard() {
+  return (
+    <Card p="$4" gap="$3">
+      <Text fontSize="$4" fontWeight="700" color="$text">
+        Crests
+      </Text>
+      {CREST_ROWS.map(([name, crest]) => (
+        <YStack key={name} gap="$2">
+          <Text fontSize="$2" color="$textSecondary">
+            {name}
+          </Text>
+          {CREST_GROUNDS.map(([ground, bg, onPainting]) => (
+            <XStack key={ground} bg={bg} p="$2" gap="$3" items="center">
+              {CREST_SIZES.map((size) => (
+                <Crest key={size} crest={crest} size={size} onPainting={onPainting} />
+              ))}
+            </XStack>
+          ))}
+        </YStack>
+      ))}
+    </Card>
+  );
+}
+
 export default function DevScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -58,6 +138,7 @@ export default function DevScreen() {
   const [xp, setXp] = useState(0);
   const [seeded, setSeeded] = useState(0);
   const [status, setStatus] = useState("");
+  const [feastsShown, setFeastsShown] = useState("…");
 
   const refresh = useCallback(() => {
     getTotalXp()
@@ -66,6 +147,10 @@ export default function DevScreen() {
     countSeededSessions()
       .then(setSeeded)
       .catch(() => setStatus("Seed count read failed"));
+    preferences
+      .getBigFeastsShown()
+      .then((ids) => setFeastsShown(JSON.stringify(ids)))
+      .catch(() => setStatus("Feasts read failed"));
   }, []);
 
   useEffect(refresh, [refresh]);
@@ -200,6 +285,11 @@ export default function DevScreen() {
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+        {/* The local "already shown" key of the big feasts, for .maestro/big-feast-shown-once.yaml. */}
+        <Text testID="dev-big-feasts-shown" fontSize="$2" color="$textSecondary">
+          bigFeastsShown={feastsShown}
+        </Text>
+
         <Card p="$4" gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
             Hero level {level} — {xp} XP
@@ -258,6 +348,8 @@ export default function DevScreen() {
             session journal, so seeding history above is what actually grows the village.
           </Paragraph>
         </Card>
+
+        <CrestBoard />
 
         <Card p="$4" gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">

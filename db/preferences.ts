@@ -2,6 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { getLocales } from "expo-localization";
 import { reportError } from "../src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
+import { ANIMALS, type Animal } from "./crestRules";
 import { isEquipmentCode } from "./equipment";
 import type { EquipmentCode } from "./schema";
 import { uuidv7 } from "./uuid";
@@ -436,6 +437,53 @@ export const preferences = {
 
   async setSetAsideExercises(list: SetAsideExercise[]): Promise<void> {
     await setPreference("setAsideExercises", JSON.stringify(list));
+  },
+
+  /**
+   * The animal the hero picked for the crest, or `auto` for the one their sessions chose. A
+   * missing or unknown value is `auto`; nothing writes it by default, so two devices that never
+   * chose cannot diverge. Going back to `auto` writes `auto`: a preference has no tombstone.
+   */
+  async getCrestAnimal(): Promise<Animal | "auto"> {
+    const value = await getPreference("crestAnimal");
+    return ANIMALS.find((a) => a === value) ?? "auto";
+  },
+
+  async setCrestAnimal(choice: Animal | "auto"): Promise<void> {
+    await setPreference("crestAnimal", choice);
+  },
+
+  /**
+   * The big feasts this phone has already shown, as a JSON list of ids (`reveal`, ...). Local: not
+   * merged, not compared, like the `streak_*` caches. It decides display and nothing else.
+   */
+  async getBigFeastsShown(): Promise<string[]> {
+    const raw = await getPreference("bigFeastsShown");
+    if (raw === null) return [];
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string") : [];
+    } catch (error) {
+      reportError("preferences.bigFeastsShown.parse", error);
+      return [];
+    }
+  },
+
+  async markBigFeastShown(id: string): Promise<void> {
+    // One statement, so two marks that cross cannot lose an id (read-then-write did). A value that
+    // is not a JSON array starts over from [id]; an id already in the list leaves it untouched.
+    await db.run(sql`
+      INSERT INTO user_preferences (key, value, updatedAt)
+      VALUES ('bigFeastsShown', json_array(${id}), unixepoch())
+      ON CONFLICT(key) DO UPDATE SET
+        value = CASE
+          WHEN NOT json_valid(user_preferences.value) OR json_type(user_preferences.value) != 'array'
+            THEN json_array(${id})
+          WHEN EXISTS (SELECT 1 FROM json_each(user_preferences.value) WHERE json_each.value = ${id})
+            THEN user_preferences.value
+          ELSE json_insert(user_preferences.value, '$[#]', ${id})
+        END,
+        updatedAt = unixepoch()`);
   },
 
   async setOwnedEquipment(equipment: EquipmentCode[] | null): Promise<void> {

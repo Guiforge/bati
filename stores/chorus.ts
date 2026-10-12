@@ -89,8 +89,6 @@ const MOMENT_OWNER: Record<Exclude<CueMoment, "menu_visit">, CueOwner> = {
   guide_quests: "quests",
   guide_adventures: "adventures",
   guide_journal: "journal",
-  personal_record: "victory",
-  personal_record_beat: "victory",
   boss_defeated: "victory",
   first_outing: "victory",
   high_road: "victory",
@@ -106,16 +104,6 @@ export type Cameo = {
   line: string;
 };
 
-/**
- * Values an event line may name.
- *
- * Only events get one. "Ambient never cites data" is not a style rule — an ambient villager has
- * no data, because nothing just happened for them to have data *about*. An event does, and saying
- * it is what the research says makes a line land: generic encouragement fades inside two months,
- * a sentence tied to something real does not.
- */
-export type CueParams = { delta?: string; exercise?: string };
-
 interface ChorusState {
   current: Cameo | null;
   /** `moment:index` keys, most recent last. */
@@ -130,7 +118,7 @@ interface ChorusState {
    * marked seen when drawn, `useGuideSeen`, since an accepted cue can still go undrawn); the
    * admission tests read it.
    */
-  cue: (moment: CueMoment, params?: CueParams, owner?: CueOwner) => boolean;
+  cue: (moment: CueMoment, owner?: CueOwner) => boolean;
   /** Takes the id so a timer belonging to a cameo that was already replaced cannot clear its successor. */
   dismiss: (id: number) => void;
   /** Sends away the current cue if `owner` raised it, and never anyone else's. */
@@ -216,7 +204,6 @@ function selectLine(
   villager: VillagerId,
   moment: CueMoment,
   recent: Set<string>,
-  params: CueParams | undefined,
 ): { line: string; key: string } | null {
   // Keyed on the villager as well as the moment, so the smith not repeating himself does not also
   // stop the champion from saying her first line.
@@ -226,7 +213,7 @@ function selectLine(
     const index = pickIndex(Array.isArray(pool) ? pool.length : 0, recent, poolKey);
     if (index < 0) return null;
 
-    const line = i18n.t(`${poolKey}.${index}`, params ?? {});
+    const line = i18n.t(`${poolKey}.${index}`);
     // i18next echoes the key back when it cannot resolve it, which would put "villagers.smith.rest.3"
     // in a speech bubble.
     if (!line || line === `${poolKey}.${index}`) return null;
@@ -268,7 +255,7 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
     }));
   },
 
-  cue: (moment, params, explicitOwner) => {
+  cue: (moment, explicitOwner) => {
     if (!useSettingsStore.getState().villagersEnabled) return false;
 
     const owner = explicitOwner ?? (moment === "menu_visit" ? null : MOMENT_OWNER[moment]);
@@ -290,7 +277,7 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
     const villager = pickSpeaker(rule.speakers, state.lastVillager);
     if (!villager) return false;
 
-    const selected = selectLine(villager, moment, new Set(state.recentKeys), params);
+    const selected = selectLine(villager, moment, new Set(state.recentKeys));
     // Nothing to say beats saying a raw translation key. The budget is spent below, only once a
     // villager actually has a line — a slot burned on a failed lookup would silence the next one.
     if (!selected) return false;

@@ -370,6 +370,42 @@
         "totalHp": 1026
       }
     ],
+    "crest": {
+      "animal": "bear",
+      "stage": "venerable",
+      "manual": false,
+      "picked": "auto",
+      "second": null,
+      "quarters": null,
+      "revealedIndex": 7,
+      "optionStages": {
+        "sessions": "venerable",
+        "chosen": "venerable"
+      },
+      "evidence": {
+        "firstEight": {
+          "strength": 4,
+          "calisthenics": 2,
+          "yoga": 1,
+          "run": 1,
+          "ride": 0
+        },
+        "firstEightOrder": ["strength", "calisthenics", "run", "yoga"],
+        "totals": {
+          "strength": 314,
+          "calisthenics": 87,
+          "yoga": 58,
+          "run": 45,
+          "ride": 0
+        },
+        "first": "bear",
+        "secondFromSessions": null,
+        "boarQuarters": ["strength", "calisthenics"]
+      },
+      "longestFlame": 5,
+      "rings": 2,
+      "revealedAt": "2023-04-01T07:58:04.000Z"
+    },
     "rungs": [
       [1, 1],
       [2, 2],

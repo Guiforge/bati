@@ -3,9 +3,9 @@ title: Village
 type: screen
 route: /village
 status: active
-updated: 2026-09-14
+updated: 2026-10-11
 related: [../gameplay/progression.md, ../gameplay/boss-fights.md, ../gameplay/villagers.md]
-sources: [app/(tabs)/village.tsx, components/village/, constants/villageAnchors.ts, db/village.ts]
+sources: [app/(tabs)/village.tsx, components/village/, constants/villageAnchors.ts, db/village.ts, db/crest.ts, db/crestRules.ts, db/milestone.ts]
 ---
 
 # Village (`/village`)
@@ -34,16 +34,26 @@ row can be read without a tap.
 3. **The panel**, riding up over the painting's last 14 dp:
    - **The village tier** (`VillageTier`, `getTierProgress`), first in every state. The village
      follows the hero's level alone, so it answers "when does the painting change" in those terms:
-     the hero level of the next tier and how many levels away, a gold bar from the current
-     tier's floor to that level with XP at both ends, and the XP still missing, with "about N
-     sessions at this week's pace" when the last seven days had any (`getWeekXpPerSession`). On
-     tier 12 the bar goes and the sentence is final. A finished village (`isVillageComplete`: tier
-     12 and every building that can top out has) says so inside the same block, then how many
-     deeds are still open.
-   - **Next to rise** (`pickNextToRise`): the rep building fewest reps from its next rung, level 0
-     waiting while any is still rising (one rep builds those). Past the rep buildings, the
-     deed with the most of its bar filled. It carries its bar with its unit at both ends ("60
-     reps", "100 reps for level 2"), and a link named after what raises it: quests filtered on that
+     the hero level of the next tier and how many levels away, and a gold bar from the current
+     tier's floor to that level (`xpScale`). The bar says what is done ("320 XP done") before its
+     middle and what is left ("only 410 XP to go") from it, with level and XP at both ends; with
+     nothing done it has no caption and keeps the two ends. On tier 12 the bar goes and the
+     sentence is final. A finished village (`isVillageComplete`: tier 12 and every building that
+     can top out has) says so inside the same block, then that the deeds are just below, with no
+     count.
+   - **Next to rise** (`pickNextToRise`): the building with the fewest sessions or outings to go
+     by the hero's own recent pace (`pickSessionMilestone` with no `fed` filter, the same function
+     as the victory's PROCHAIN line). A runner sees the Grand Chemin, a strength hero the nearest
+     muscle. Only when no building has an estimate does the older rule apply: the rep building
+     fewest reps from its next rung, level 0 waiting while any is still rising, then the deed with
+     the most of its bar filled. The name is set in the heading font. Rep buildings carry a bar
+     of what is done, between the figures of the rung they stand on ("3,000 reps" to "4,000
+     reps", `repsRungStart`), and so does every deed bar (leagues, bosses, rematches, routes) from
+     the threshold of the rank it stands on, capped at the tally (`deedBarStart`: the lesser of the
+     threshold and the count, so a kept rank standing above the new count starts its bar at the
+     count and never shows a left end larger than "done"; `deedProgress`), the same figure the
+     deed fallback of "Next to rise" ranks by; and a sentence under it, "Rank 4 in about 3 outings." (`milestoneLine`).
+     Never a number of reps still to do. A link named after what raises it: quests filtered on that
      muscle, the outings for the High Road, the adventures for the other deeds. When that building
      is unbuilt the title reads **Next to build** and there is no bar. On **day one** (`isDayOne`:
      nothing earned beyond the three starters; a walk counts) it states the rule instead, and links
@@ -52,7 +62,7 @@ row can be read without a tap.
      "3 → 4".
    - **Families** (`groupFamilies` in `components/village/rows.ts`): Muscles, Styles, Upgrades,
      Deeds, Starter, each labelled with what feeds it. Unbuilt buildings sit in their family, not
-     in a locked drawer. A row is the name, the next rung in words, and "level 2 of 3" with pips
+     in a locked drawer. A row is the name, the next rung in words, and "rank 2" with pips
      on the building's **real ceiling** (`buildingCeiling`: 3 for the six upgrades, 5 elsewhere).
      The building "Next to rise" already names keeps its row, marked by a gold edge, so it is found
      where it belongs without being read twice. Day one shows the starters and one "Not built yet"
@@ -61,7 +71,7 @@ row can be read without a tap.
 
 A building has **three states**: unbuilt (the condition in words, no bar, no "level 1 at 1"),
 rising (a bar with its unit), at its ceiling (no bar). `getBuildingProgress` returns null for the
-first and the last. The one exception is the High Road inside its first league, whose whole-league
+first and the last; it is not the bar's percentage, which counts from the rung's threshold. The one exception is the High Road inside its first league, whose whole-league
 tally cannot show a first walk and whose bar can.
 
 Below 700 dp of window height the painting is cut to a band 62% of the width tall (starting 20% in),
@@ -180,3 +190,26 @@ The reasoning, and why a rest between climbs could not buy the same thing here, 
 
 The emblems carry an alpha channel, cut by [`scripts/cutout.py`](../../scripts/cutout.py); an
 unbuilt row draws the same emblem as a silhouette through `tintColor`, which needs that alpha.
+
+## The crest, the milestone line and the feasts
+
+"A village that looks like you" (design: [village-personnalisation](../designs/village-personnalisation.md)).
+
+- **Crest** (`Crest`, read by `getCrest`): the animal of the hero's practice, revealed at the 8th
+  session that counts (`REVEAL_AT`). Bear for strength, ermine for calisthenics, salmon for yoga,
+  stag for running and walking, horse for cycling, boar when no practice reaches 40 % of the first
+  eight (its four quarters show the two leading practices). A second animal joins at 30 % of the
+  sessions and at least 20; the stage is young, adult at 40 sessions of its practice, venerable at
+  200. The shield adds the longest flame and one ring per village year. The hero can pick another
+  animal in Settings or from the crest sheet (`crestAnimal`, `auto` goes back to the sessions'
+  animal, a hand-picked one carries a small ink diamond). The header line says "A bear watches
+  over Brumeval", "now" in the line (en; "depuis aujourd'hui", "seit heute", "desde hoy" in fr, de, es) on the day of the reveal and never for a hand-picked animal.
+- **Milestone line** (`milestoneLine`): under a rising building's bar, "Rank 4 in about 3 chest
+  sessions." or "in about 3 outings", the mean of the five latest sessions that fed it, rounded
+  up. Never a number of reps to do (`village-copy-no-chores`). Absent at the top rank and where
+  nothing has fed the building.
+- **Feasts** (`rankFeasts`): small is a line in "Tonight", medium a card, large the full-screen
+  `/big-feast` route (one per session: epilogue, reveal, an Age, anniversary, tier). A tier
+  sentence names the village ("Brumeval becomes a Flourishing City."); an unnamed village has no
+  subject, so every tier is a label ("New tier: Village."), and the full screen, whose kicker
+  already says "New tier", shows the bare tier name. See [session](session.md) for the victory.

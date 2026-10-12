@@ -10,8 +10,9 @@ import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { LevelPips } from "@/components/village/LevelPips";
+import { buildingMilestoneLine } from "@/components/village/milestoneLine";
 import {
-  barEnds,
+  buildingScale,
   ctaLabel,
   feedsLine,
   levelText,
@@ -19,13 +20,14 @@ import {
   nextLine,
   questLink,
 } from "@/components/village/rows";
-import { BarEnds, QuestLink } from "@/components/village/VillageLists";
+import { QuestLink } from "@/components/village/VillageLists";
 import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { rawColors } from "@/constants/rawColors";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "@/db/adventures";
 import { type ContributingSession, getRecentContributingSessions } from "@/db/completed";
 import { MUSCLE_LABELS } from "@/db/labels";
+import type { RecentFeeds } from "@/db/milestone";
 import { buildingDefinitions } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import {
@@ -53,6 +55,8 @@ type Props = {
   selected: VillageSelection | null;
   onClose: () => void;
   language: AppLanguage;
+  /** What the latest sessions brought, for the milestone sentence; null until read. */
+  feeds: RecentFeeds | null;
   bottomInset: number;
 };
 
@@ -114,7 +118,7 @@ async function loadExtra(selected: VillageSelection): Promise<Extra> {
   return null;
 }
 
-export function VillageDetailSheet({ selected, onClose, language, bottomInset }: Props) {
+export function VillageDetailSheet({ selected, onClose, language, feeds, bottomInset }: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const [extra, setExtra] = useState<Extra>(null);
@@ -196,6 +200,7 @@ export function VillageDetailSheet({ selected, onClose, language, bottomInset }:
               building={shown.building}
               extra={extra}
               language={language}
+              feeds={feeds}
               formatDate={formatDate}
               onClose={onClose}
             />
@@ -230,8 +235,13 @@ function BuildingDetail({
   extra,
   language,
   formatDate,
+  feeds,
   onClose,
-}: DetailProps & { building: VillageBuilding; onClose: () => void }) {
+}: DetailProps & {
+  building: VillageBuilding;
+  feeds: RecentFeeds | null;
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
   const built = building.level > 0;
@@ -250,14 +260,22 @@ function BuildingDetail({
   // middot, where a period would be wrong.
   const repUnitNote = t("village.rep_unit", { seconds: SECONDS_PER_REP_EQUIVALENT });
 
-  // The row shows no bar; this is the one place a building's bar is allowed, because it is the
-  // one place it arrives with its unit at both ends. Same call as "Next to rise", so the two
+  // The bar lives here because here it arrives with its unit at both ends. It starts at the rung
+  // the building stands on (`buildingScale`), the same start "Next to rise" ranks by, so the two
   // cannot disagree about what "almost there" means.
   const progress = getBuildingProgress(building);
-  const ends = barEnds(building, t);
+  const scale = buildingScale(building, t, language);
+  const milestone = buildingMilestoneLine(building, feeds, t, language);
+  // The driver line above always says what is done ("101 reps of chest", "3 routes"): the bar
+  // keeps its two ends and does not say it a second time.
   // An unbuilt deed is its condition and nothing else: "0 rematches won" above "Not built yet"
   // above "Built by your first rematch" said the same zero three times.
   const unbuiltDeed = building.tier === 4 && progress === null && !built;
+
+  const unbuiltMuscle = building.driver === "muscle" && building.level === 0;
+  // The driver line already says "Appears when the Forge reaches rank 3, it is at rank 1": the
+  // next line under the bar would repeat the first half.
+  const unbuiltPrereq = building.driver === "prereq" && building.level === 0;
 
   // One sentence naming the deed that raises this building, in its own unit.
   const driverLine = (() => {
@@ -270,7 +288,7 @@ function BuildingDetail({
       // leagues line names its kilometre.
       case "muscle":
         return building.level === 0
-          ? t("village.detail_unlock_muscle", { muscle: muscleLabel })
+          ? t(`village.detail_unlock_muscle_${building.relatedMuscle}`)
           : `${t("village.detail_muscle_driver", {
               volume: formatCount(language, building.metricValue),
               muscle: muscleLabel,
@@ -328,9 +346,13 @@ function BuildingDetail({
           <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
             {nameOf(building, language)}
           </Text>
-          <Text fontSize={12.5} color="$textSecondary">
-            {feedsLine(building, t, language)}
-          </Text>
+          {/* An unbuilt muscle building already says "Built by training your arms" below, and
+              "Rises with your arms" right above it was the same sentence twice. */}
+          {unbuiltMuscle ? null : (
+            <Text fontSize={12.5} color="$textSecondary">
+              {feedsLine(building, t, language)}
+            </Text>
+          )}
         </YStack>
         <YStack items="flex-end" gap={5}>
           <Text fontSize={13} fontWeight="600" color={built ? "$resourceGold" : "$textSecondary"}>
@@ -351,16 +373,25 @@ function BuildingDetail({
         ) : null}
         {/* Only with both ends: starters and upgrades count a level, and a bar from zero to it
             without a unit said nothing about the rung. */}
-        {ends && progress !== null ? (
-          <>
-            <ProgressBar progress={progress} height={6} color="$resourceGold" />
-            <BarEnds left={ends.left} right={ends.right} />
-          </>
-        ) : unbuiltDeed ? null : (
+        {scale ? (
+          <ProgressBar
+            progress={scale.progress}
+            height={6}
+            color="$resourceGold"
+            ends={scale.ends}
+          />
+        ) : building.nextTarget === null ||
+          building.driver === "tier" ||
+          (building.driver === "prereq" && !unbuiltPrereq) ? (
           <Text fontSize={12} color="$textSecondary">
             {nextLine(building, t, language)}
           </Text>
-        )}
+        ) : null}
+        {milestone ? (
+          <Text fontSize={12.5} lineHeight={18} color="$text">
+            {milestone}
+          </Text>
+        ) : null}
       </YStack>
 
       {extra?.kind === "sessions" && extra.sessions.length > 0 && (
@@ -383,7 +414,7 @@ function BuildingDetail({
             );
             return (
               <XStack key={session.sessionId} justify="space-between" gap="$2">
-                <Text fontSize={12} color="$textSecondary" flex={1} numberOfLines={1}>
+                <Text fontSize={12} color="$textSecondary" flex={1}>
                   {`${title ? `${title} · ` : ""}${when}`}
                 </Text>
                 <Text fontSize={12} color="$textSecondary">
@@ -415,7 +446,7 @@ function BuildingDetail({
                   />
                 </YStack>
               )}
-              <Text fontSize={12} color="$textSecondary" flex={1} numberOfLines={1}>
+              <Text fontSize={12} color="$textSecondary" flex={1}>
                 {localizedTitle(adventure, language)}
               </Text>
               {adventure.times > 1 && (

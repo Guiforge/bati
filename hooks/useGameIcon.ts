@@ -27,6 +27,14 @@ const ICONS = {
   grain: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/wheat.svg"),
   chest: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/locked-chest.svg"),
   gold: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/crown-coin.svg"),
+  // The crest's animals and the ermine spot. Authors: Delapouite (bear-head, horse-head, ermine),
+  // Caro Asercion (deer-head), various-artists (salmon), Lorc (boar-tusks).
+  crestBear: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/delapouite/bear-head.svg"),
+  crestStag: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/caro-asercion/deer-head.svg"),
+  crestHorse: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/delapouite/horse-head.svg"),
+  crestSalmon: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/various-artists/salmon.svg"),
+  crestBoar: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/lorc/boar-tusks.svg"),
+  crestErmine: require("@/assets/game-icons.net.svg-foreground-white/icons/ffffff/transparent/1x1/delapouite/ermine.svg"),
 } as const;
 
 export type GameIconName = keyof typeof ICONS;

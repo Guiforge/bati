@@ -106,7 +106,7 @@ only when the replacement is picked), and a text action on a step of the running
 state is "Set aside" ("Écarté"). The list lives in Settings > Set-aside exercises, where each one
 can be put back; a slot standing in for one offers "Put X back" in its open panel.
 
-After setting aside, a toast says "X won't be suggested again" with a **Put back** button, except
+After setting aside, a toast says "Set aside: X" with a **Put back** button, except
 on the exercise page, whose own button turns into "Put back". Put back returns it to the list and
 nothing else: swaps and target numbers dropped when it was set aside stay dropped, and a running
 warm-up carries on without the step (the next one includes it). The toast sits at the top, takes

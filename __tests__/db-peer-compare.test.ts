@@ -207,3 +207,32 @@ test("a device on a build from before 0066 names its hero rows by name, and the 
   // The exercise matches by name on both sides; the quest is only here.
   expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 1 });
 });
+
+test("two devices that never picked an animal do not diverge, however often the crest is read", async () => {
+  const exercise = (
+    t.sqlite
+      .prepare("SELECT id FROM exercises WHERE creator = 'Admin' AND style = 'strength' LIMIT 1")
+      .get() as { id: number }
+  ).id;
+  for (let i = 0; i < 8; i++) {
+    const uuid = addSession(t.sqlite, 1_000 + i);
+    t.sqlite
+      .prepare(
+        `INSERT INTO completed_exercises (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, performedAt)
+         SELECT id, ?, 0, 0, 'reps', 12, 1000 FROM completed_sessions WHERE uuid = ?`,
+      )
+      .run(exercise, uuid);
+  }
+  const file = await peer("twin.db");
+  const { getCrest } = require("../db/crest") as typeof import("../db/crest");
+
+  expect(await getCrest()).toMatchObject({ animal: "bear", manual: false });
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
+  expect(
+    t.sqlite.prepare("SELECT key FROM user_preferences WHERE key = 'crestAnimal'").all(),
+  ).toEqual([]);
+
+  // A pick, on the other hand, is the hero's work and is news.
+  const picked = await peer("picked.db", (sqlite) => setPref(sqlite, "crestAnimal", "stag", 5_000));
+  expect(await backup().compareWithPeer(picked)).toMatchObject({ peerChanges: 1, localChanges: 0 });
+});

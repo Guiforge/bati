@@ -5,7 +5,7 @@ import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import VillagePage from "@/app/(tabs)/village";
-import { cameoBand } from "@/components/chorus/cameoAnchor";
+import { cameoBand, TITLE_BLOCK } from "@/components/chorus/cameoAnchor";
 import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { rawColors } from "@/constants/rawColors";
 import { cameoLingerMs, TYPE_MS_PER_CHAR } from "@/constants/villagers";
@@ -411,8 +411,8 @@ describe("cameo band", () => {
       const band = cameoBand(hero, 47, hero);
       assert(band);
       expect(band.top).toBeGreaterThanOrEqual(47);
-      // 150 is the title block: nothing the zone covers is a card or the village name.
-      expect(band.top + band.height).toBeLessThanOrEqual(hero - 150);
+      // The title block: nothing the zone covers is a card or the village name.
+      expect(band.top + band.height).toBeLessThanOrEqual(hero - TITLE_BLOCK);
       expect(band.figureHeight).toBeLessThanOrEqual(band.height);
     }
   });

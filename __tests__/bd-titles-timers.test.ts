@@ -75,8 +75,7 @@ describe("no violet", () => {
     expect(read("constants/rawColors.ts")).not.toContain("pastelPurple");
     for (const f of [
       "app/oath.tsx",
-      "components/oath/OathFulfilledCard.tsx",
-      "components/session/SessionRewards.tsx",
+      "components/session/TonightList.tsx",
       "constants/exerciseColors.ts",
     ]) {
       expect(read(f)).not.toContain("pastelPurple");

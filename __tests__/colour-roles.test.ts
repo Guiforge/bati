@@ -58,21 +58,21 @@ describe("colour roles", () => {
     expect(read("components/exercises/MineCaption.tsx")).not.toContain("$primaryText");
   });
 
-  it("reward cards write every figure and glyph in gold", () => {
-    expect(read("components/session/SessionRewards.tsx")).not.toContain("$primaryText");
-    expect(read("components/oath/OathFulfilledCard.tsx")).not.toContain("$primaryText");
-    expect(near("components/session/NewRecordsBadge.tsx", "<Card bg=", 1)).toContain(
-      'borderColor="$gold700"',
-    );
-    expect(near("components/session/NewRecordsBadge.tsx", "fontSize={18}", 1)).toContain(
-      'color="$resourceGold"',
-    );
+  it("tonight writes its beads in gold, its badges in ash (not won yet), and only its village link in braise", () => {
+    const tonight = read("components/session/TonightList.tsx");
+    // The link is an action (braise); everything else is something earned (gold).
+    expect(tonight.match(/\$primaryText/g)).toHaveLength(1);
+    expect(tonight).toMatch(/color="\$primaryText"[^>]*>\s*\{t\("session.village_growth_cta"\)\}/);
+    expect(tonight).toContain('bg="$resourceGold"');
+    expect(
+      near("components/session/TonightList.tsx", 'borderColor="$glassBorder" rounded', 4),
+    ).toContain('color="$textSecondary"');
   });
 
   it("the village tier bar is gold", () => {
-    expect(
-      near("components/village/VillageLists.tsx", "progress={progress.progress}", 1),
-    ).toContain('color="$resourceGold"');
+    expect(near("components/village/VillageLists.tsx", "progress={scale.progress}", 3)).toContain(
+      'color="$resourceGold"',
+    );
   });
 
   it("the boss panel's weakness trait is braise", () => {

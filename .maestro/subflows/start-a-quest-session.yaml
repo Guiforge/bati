@@ -1,0 +1,16 @@
+# Reusable: from anywhere with the tab bar, open the first quest of the gallery and play it to the
+# victory screen's "Continue" (`complete-a-session.yaml` taps it). Used where the flow must not
+# depend on what Home offers, which for a hero mid-adventure is the next step.
+appId: com.guiforge.bati.dev
+---
+- tapOn:
+    id: "tab-quests"
+    waitToSettleTimeoutMs: 500
+- extendedWaitUntil:
+    visible:
+      id: "quests-quest-card"
+    timeout: 30000
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+- runFlow: complete-a-session.yaml

@@ -22,4 +22,4 @@ export const CONTENT_MAX_WIDTH = 520;
  * to arrive with the save and push the feel buttons down from under the finger about to press one.
  * ponytail: a font scale past ~1.3 grows the card beyond this and nudges once; measure if it matters.
  */
-export const LEVEL_CARD_HEIGHT = 78;
+export const LEVEL_CARD_HEIGHT = 62;

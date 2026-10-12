@@ -169,7 +169,7 @@ describe("cue owners", () => {
   it("makes the screen name itself for the shared menu moment, and refuses without one", () => {
     jest.spyOn(Math, "random").mockReturnValue(0.01);
     expect(useChorusStore.getState().cue("menu_visit")).toBe(false);
-    expect(useChorusStore.getState().cue("menu_visit", undefined, "quests")).toBe(true);
+    expect(useChorusStore.getState().cue("menu_visit", "quests")).toBe(true);
     expect(useChorusStore.getState().current?.owner).toBe("quests");
   });
 

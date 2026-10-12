@@ -86,14 +86,6 @@ describe("villager pools", () => {
     }
   });
 
-  /** The inverse: a `_beat` line that forgot its delta is a comparison to nothing. */
-  const BEAT = PAIRS.filter(([, m]) => m === "personal_record_beat");
-  test.each(BEAT)("%s names the number at %s", (villager, moment) => {
-    for (const line of ALL.flatMap(([, pools]) => pools[villager]?.[moment] ?? [])) {
-      expect(line).toContain("{{delta}}");
-    }
-  });
-
   /**
    * The hero's avatar has no fixed gender, so a French line may never agree a participle with
    * them. `tu t'es …` is the trap: it forces "arrêté" or "arrêtée" and there is no third option.

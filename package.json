@@ -44,7 +44,6 @@
     "react-i18next": "^17.0.15",
     "react-native": "0.86.3",
     "react-native-android-widget": "^0.22.1",
-    "react-native-confetti-cannon": "^1.5.2",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-gifted-charts": "^1.4.78",
     "react-native-reanimated": "4.5.1",

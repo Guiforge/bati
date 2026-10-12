@@ -310,3 +310,7 @@ export function generateTarget(
   const value = Math.max(1, Math.round((scaledMin + scaledMax) / 2));
   return { type: base.type, value: grid(value) };
 }
+
+/** Where `value` stands between two ends, 0-100. The one reading every bar shares. */
+export const percent = (value: number, from: number, to: number) =>
+  to > from ? Math.max(0, Math.min(100, ((value - from) / (to - from)) * 100)) : 0;

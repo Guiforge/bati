@@ -1,12 +1,15 @@
 import type { TFunction } from "i18next";
 
+import { repsScale, type Scale } from "@/components/village/barScale";
 import { MUSCLE_LABELS } from "@/db/labels";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import {
   BUILDING_LABELS,
-  buildingCeiling,
+  deedBarStart,
+  deedProgress,
   getBuildingProgress,
   isDayOne,
+  repsRungStart,
   type VillageBuilding,
 } from "@/db/village";
 import { inSentence } from "@/src/i18n/localized";
@@ -33,41 +36,34 @@ function prereqName(b: VillageBuilding, lang: AppLanguage): string {
   return code ? BUILDING_LABELS[code][lang] : "";
 }
 
-/** The cost of the next rung, in the unit the building counts. "At its ceiling" once there is none. */
+/**
+ * What a row says under a building: what raises it, never a number of reps or sessions to do (the
+ * sentence for when it next rises is `milestoneLine`). The ones that wait on a level, another
+ * building or a first deed say what builds them, and "At its ceiling" is once there is no rung.
+ */
 export function nextLine(b: VillageBuilding, t: TFunction, language: AppLanguage): string {
-  const lang = language;
   if (b.nextTarget === null) return t("village.at_ceiling");
-  const count = Math.max(0, b.nextTarget - b.metricValue);
-  const level = b.level + 1;
   switch (b.driver) {
     case "tier":
       return t("village.next_tier", { target: b.nextTarget });
     case "prereq":
       return t(b.level === 0 ? "village.build_prereq" : "village.next_prereq", {
-        building: prereqName(b, lang),
+        building: prereqName(b, language),
         target: b.nextTarget,
       });
-    case "muscle":
-    case "style": {
-      const what = repSubject(b, t, lang);
-      return b.level === 0
-        ? t("village.build_reps", { what })
-        : t("village.next_reps", { what, count, level });
-    }
     case "leagues":
     case "bosses":
     case "rematches":
     case "routes":
       // Unbuilt says what builds it: "1 more boss to level 1" was the count pretending to be a rung.
-      return b.level === 0
-        ? t(`village.build_${b.driver}`)
-        : t(`village.next_${b.driver}`, { count, level });
+      if (b.level === 0) return t(`village.build_${b.driver}`);
   }
+  return feedsLine(b, t, language);
 }
 
 /** "Next to rise" cannot head a building nothing has built yet. */
 export function nextTitle(b: VillageBuilding | null, t: TFunction): string {
-  return b?.level === 0 ? t("village.build_title") : t("village.next_title");
+  return !b || b.level === 0 ? t("village.build_title") : t("village.next_title");
 }
 
 /** The link under a building, named after what actually raises it. */
@@ -95,7 +91,7 @@ export function feedsLine(b: VillageBuilding, t: TFunction, language: AppLanguag
   const lang = language;
   switch (b.driver) {
     case "muscle":
-      return t("village.feeds_muscle", { what: inSentence(repSubject(b, t, lang), lang) });
+      return t(`village.feeds_muscle_${b.relatedMuscle}`);
     case "style":
       return t("village.feeds_style", { what: inSentence(repSubject(b, t, lang), lang) });
     case "prereq":
@@ -105,31 +101,47 @@ export function feedsLine(b: VillageBuilding, t: TFunction, language: AppLanguag
   }
 }
 
-/** "level 2 of 3", on the building's real ceiling. */
+/** "rank 2": the pips beside it carry the ceiling. */
 export function levelText(b: VillageBuilding, t: TFunction): string {
-  return b.level > 0
-    ? t("village.level_of", { level: b.level, max: buildingCeiling(b) })
-    : t("village.not_built");
+  return b.level > 0 ? t("village.building_rank", { level: b.level }) : t("village.not_built");
 }
 
 /**
- * The two ends of a bar, each with its unit: "60 reps" and "100 reps for level 2". The right end
- * used to be "level 2 at 100", which French read as a range ("niveau 4 à 7": levels four to seven).
- * Null for the buildings whose driver is a level rather than a tally (starters, upgrades): their
- * next line already names the rung, and "8" at one end of a bar says nothing.
+ * A building's bar: what is done and the two ends, each with its unit. Null for the buildings whose
+ * driver is a level rather than a tally (starters, upgrades), and for one nothing has started.
+ * Every bar starts from the rung the building stands on, reps and deeds alike.
  */
-export function barEnds(b: VillageBuilding, t: TFunction): { left: string; right: string } | null {
-  if (b.nextTarget === null || b.driver === "tier" || b.driver === "prereq") return null;
-  // "0 reps, level 1 at 1" under a building nobody has started says nothing either.
-  if (getBuildingProgress(b) === null) return null;
-  const unit = b.driver === "muscle" || b.driver === "style" ? "reps" : b.driver;
-  return {
-    left: t(`village.unit_${unit}`, { count: b.metricValue }),
-    right: t("village.bar_target", {
-      level: b.level + 1,
-      target: t(`village.unit_${unit}`, { count: b.nextTarget }),
-    }),
-  };
+export function buildingScale(
+  b: VillageBuilding,
+  t: TFunction,
+  language: AppLanguage,
+): Scale | null {
+  const progress = getBuildingProgress(b);
+  if (b.nextTarget === null || progress === null) return null;
+  switch (b.driver) {
+    case "tier":
+    case "prereq":
+      return null;
+    case "muscle":
+    case "style":
+      return repsScale(t, language, {
+        value: b.metricValue,
+        from: repsRungStart(b.level),
+        to: b.nextTarget,
+      });
+    default: {
+      const unit = (n: number) => t(`village.unit_${b.driver}`, { count: n });
+      const from = deedBarStart(b);
+      return {
+        progress: deedProgress(b),
+        caption:
+          b.metricValue <= 0
+            ? ""
+            : t(`village.detail_${b.driver}_driver`, { count: b.metricValue }),
+        ends: { left: { value: unit(from) }, right: { value: unit(b.nextTarget) } },
+      };
+    }
+  }
 }
 
 export type FamilyKey = "muscle" | "style" | "upgrade" | "deed" | "starter" | "unbuilt" | "rest";

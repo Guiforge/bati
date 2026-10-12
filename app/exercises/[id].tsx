@@ -49,7 +49,7 @@ type Status = "loading" | "ready" | "error";
 /**
  * The 1280 px art belongs to the hero frame and nowhere else — an image costs its *source*
  * resolution in memory, not its slot (docs/architecture/performance.md). Every small slot reads
- * the 128 px thumbnail, which is what `ProgressionCard` and `SessionRewards` already do.
+ * the 128 px thumbnail, which is what `ProgressionCard` and the "Tonight" cards already do.
  */
 const resolveThumb = (path?: string | null): ImageSourcePropType => getExerciseThumb(path ?? "");
 
@@ -127,7 +127,7 @@ function ExerciseImage({ source, name }: { source?: ImageSourcePropType; name?: 
       // Square, because the art is: all 64 movement illustrations are 1280×1280, and so is the
       // placeholder every unknown path falls back to. A 16:9 frame around them spent 44 % of its
       // width on empty background, which `contentFit="contain"` had to letterbox (exercise sheet
-      // audit, 2026-09-15). `SessionRewards` already frames the same art square.
+      // audit, 2026-09-15). The "Tonight" cards already frame the same art square.
       aspectRatio={1}
       bg="$bgLight"
       borderWidth={1}

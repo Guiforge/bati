@@ -61,7 +61,7 @@ appId: com.guiforge.bati.dev
 
 # `times` is a guard against an infinite loop if a screen ever gets stuck.
 - repeat:
-    times: 40
+    times: 80
     # Either footer button: a session under two minutes shows Keep instead of Continue, and the
     # loop used to wait for a Continue that never came.
     while:

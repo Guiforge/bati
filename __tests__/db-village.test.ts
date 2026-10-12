@@ -314,7 +314,7 @@ describe("db/village", () => {
     const { getTierProgress } = village();
 
     // Level 8 (2800 XP) is tier 4; tier 5 arrives at level 10, 4500 XP.
-    const next = getTierProgress(8, 3180, 370);
+    const next = getTierProgress(8, 3180);
     expect(next).toMatchObject({
       final: false,
       tier: 4,
@@ -322,23 +322,19 @@ describe("db/village", () => {
       levelsAway: 2,
       targetXp: 4500,
       xpShort: 1320,
-      sessionsAtPace: 4,
     });
     assert(!next.final);
     // From the tier's own floor, not from zero: (3180 - 2800) / (4500 - 2800).
     expect(next.progress).toBeCloseTo(22.35, 1);
 
-    // No session this week, nothing to estimate from.
-    expect(getTierProgress(8, 3180, null)).toMatchObject({ sessionsAtPace: null });
-
     // The bar's left end is where the tier began, not where the hero stands inside it.
-    expect(getTierProgress(9, 3700, 370)).toMatchObject({ fromLevel: 8, fromXp: 2800 });
+    expect(getTierProgress(9, 3700)).toMatchObject({ fromLevel: 8, fromXp: 2800 });
     // Standing exactly on a floor is an empty bar, and the last level before 12 is one away.
-    expect(getTierProgress(8, 2800, 370)).toMatchObject({ progress: 0 });
-    expect(getTierProgress(39, 57000, 400)).toMatchObject({ nextLevel: 40, levelsAway: 1 });
+    expect(getTierProgress(8, 2800)).toMatchObject({ progress: 0 });
+    expect(getTierProgress(39, 57000)).toMatchObject({ nextLevel: 40, levelsAway: 1 });
 
     // The last tier has no next level to name.
-    expect(getTierProgress(44, 67000, 400)).toEqual({ final: true, tier: 12, reachedAt: 40 });
+    expect(getTierProgress(44, 67000)).toEqual({ final: true, tier: 12, reachedAt: 40 });
   });
 
   test("this week's pace averages the last seven days only", async () => {

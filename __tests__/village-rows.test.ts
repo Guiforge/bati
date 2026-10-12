@@ -1,14 +1,20 @@
-import { groupFamilies, questLink } from "@/components/village/rows";
-import { type BuildingCode, buildingDefinitions } from "@/db/schema";
+import assert from "node:assert/strict";
+import { victoryMilestoneLine } from "@/components/village/milestoneLine";
+import { buildingScale, feedsLine, groupFamilies, questLink } from "@/components/village/rows";
+import { type BuildingCode, buildingDefinitions, muscleCodes } from "@/db/schema";
 import {
   buildingCeiling,
+  deedProgress,
+  deedRungStart,
   formatGrown,
   isDayOne,
   isVillageComplete,
   parseGrown,
   pickNextToRise,
+  repsRungStart,
   type VillageBuilding,
 } from "@/db/village";
+import { i18n } from "@/i18n";
 
 /**
  * The rules the village screen is laid out by. Each one is a sentence the screen says out loud
@@ -47,20 +53,20 @@ describe("pickNextToRise", () => {
   it("picks the fewest reps away, not the fullest bar", () => {
     const forge = b("forge", 1, { metricValue: 60, nextTarget: 100 }); // 60 %, 40 reps
     const farm = b("farm", 4, { metricValue: 650, nextTarget: 1000 }); // 65 %, 350 reps
-    expect(pickNextToRise([...starters, farm, forge])?.code).toBe("forge");
+    expect(pickNextToRise([...starters, farm, forge], null)?.code).toBe("forge");
   });
 
   it("never picks an unbuilt one, which one rep would always win", () => {
     const quarry = b("quarry", 0, { metricValue: 0, nextTarget: 1 });
     const farm = b("farm", 2, { metricValue: 300, nextTarget: 600 });
-    expect(pickNextToRise([...starters, quarry, farm])?.code).toBe("farm");
+    expect(pickNextToRise([...starters, quarry, farm], null)?.code).toBe("farm");
   });
 
   it("falls back to the deed with the most of its bar filled once the reps are all spent", () => {
     const farm = b("farm", 5);
     const road = b("high_road", 2, { driver: "leagues", metricValue: 30, nextTarget: 40 });
     const lair = b("dragon_lair", 1, { driver: "bosses", metricValue: 1, nextTarget: 2 });
-    expect(pickNextToRise([...starters, farm, lair, road])?.code).toBe("high_road");
+    expect(pickNextToRise([...starters, farm, lair, road], null)?.code).toBe("high_road");
   });
 
   it("breaks a tie between deeds at 0 % on what is left, not on list order", () => {
@@ -69,24 +75,181 @@ describe("pickNextToRise", () => {
     const hall = b("heroes_hall", 3, { driver: "routes", metricValue: 0, nextTarget: 7 });
     const arena = b("champion_arena", 2, { driver: "rematches", metricValue: 0, nextTarget: 6 });
     const road = b("high_road", 0, { driver: "leagues", metricValue: 0, nextTarget: 1 });
-    expect(pickNextToRise([...starters, farm, hall, arena, road])?.code).toBe("high_road");
+    expect(pickNextToRise([...starters, farm, hall, arena, road], null)?.code).toBe("high_road");
   });
 
   it("offers a style never trained once every started building is at its ceiling", () => {
     const farm = b("farm", 5);
     const grove = b("druid_grove", 0, { driver: "style", metricValue: 0, nextTarget: 1 });
     const road = b("high_road", 2, { driver: "leagues", metricValue: 30, nextTarget: 40 });
-    expect(pickNextToRise([...starters, farm, grove, road])?.code).toBe("druid_grove");
+    expect(pickNextToRise([...starters, farm, grove, road], null)?.code).toBe("druid_grove");
+  });
+
+  it("ranks the deed fallback by the bar the hero sees, from the rung and not from zero", () => {
+    const farm = b("farm", 5);
+    // 50 of 90 is 55 % from zero but 20 % from the rung it stands on (40).
+    const road = b("high_road", 3, { driver: "leagues", metricValue: 50, nextTarget: 90 });
+    // 6 of 10 is 60 % from zero but 0 % from its rung (6).
+    const arena = b("champion_arena", 3, { driver: "rematches", metricValue: 6, nextTarget: 10 });
+    expect(pickNextToRise([...starters, farm, arena, road], null)?.code).toBe("high_road");
+  });
+
+  describe("with the hero's own pace", () => {
+    const forge = () => b("forge", 2, { metricValue: 50, nextTarget: 100 });
+    const road = () => b("high_road", 3, { driver: "leagues", metricValue: 20, nextTarget: 30 });
+    const muscle = buildingDefinitions.forge.relatedMuscle;
+
+    it("names the road for a runner: three outings beat five chest sessions", () => {
+      assert(muscle);
+      const feeds = { muscle: { [muscle]: [10] }, style: {}, outing: [4, 4] };
+      expect(pickNextToRise([...starters, forge(), road()], feeds)?.code).toBe("high_road");
+    });
+
+    it("names the nearest building for a strength hero, whatever the reps left say", () => {
+      assert(muscle);
+      const farm = b("farm", 4, { metricValue: 990, nextTarget: 1000 }); // 10 reps, but 10 sessions
+      const feeds = { muscle: { [muscle]: [50] }, style: {}, outing: [] };
+      expect(pickNextToRise([...starters, farm, forge()], feeds)?.code).toBe("forge");
+    });
+
+    it("falls back to the old rule when nothing has an estimate", () => {
+      const feeds = { muscle: {}, style: {}, outing: [] };
+      expect(pickNextToRise([...starters, forge()], feeds)?.code).toBe("forge");
+      // A kept building at 0 % with a pace elsewhere is not hidden by a missing estimate.
+      expect(pickNextToRise([...starters, road()], feeds)?.code).toBe("high_road");
+    });
   });
 
   it("has nothing to say on day one, and a walk is enough to leave it", () => {
     const quarry = b("quarry", 0, { nextTarget: 1 });
     expect(isDayOne([...starters, quarry])).toBe(true);
-    expect(pickNextToRise([...starters, quarry])).toBeNull();
+    expect(pickNextToRise([...starters, quarry], null)).toBeNull();
 
     const road = b("high_road", 1, { driver: "leagues", metricValue: 3, nextTarget: 15 });
     expect(isDayOne([...starters, road])).toBe(false);
-    expect(pickNextToRise([...starters, road])?.code).toBe("high_road");
+    expect(pickNextToRise([...starters, road], null)?.code).toBe("high_road");
+  });
+});
+
+describe("buildingScale", () => {
+  it("starts a rank 2+ bar at the rung it stands on, not at zero", () => {
+    const forge = b("forge", 3, { driver: "muscle", metricValue: 700, nextTarget: 1000 });
+    const scale = buildingScale(forge, i18n.t, "en");
+    const start = repsRungStart(3);
+    expect(start).toBeGreaterThan(0);
+    expect(scale?.ends.left.value).toBe(`${new Intl.NumberFormat("en").format(start)} reps`);
+    expect(scale?.progress).toBeCloseTo(((700 - start) / (1000 - start)) * 100);
+  });
+});
+
+describe("deedRungStart", () => {
+  it.each([
+    ["high_road", 1, 0],
+    ["high_road", 3, 40],
+    ["high_road", 5, 200],
+    ["dragon_lair", 1, 0],
+    ["dragon_lair", 3, 3],
+    ["dragon_lair", 5, 6],
+    ["champion_arena", 1, 0],
+    ["champion_arena", 3, 6],
+    ["champion_arena", 5, 15],
+    ["heroes_hall", 1, 0],
+    ["heroes_hall", 3, 4],
+    ["heroes_hall", 5, 10],
+  ] as const)("%s at rank %i starts at %i", (code, level, start) => {
+    expect(deedRungStart(code, level)).toBe(start);
+  });
+});
+
+describe("the victory line and the Village card", () => {
+  it("name the same building when the session fed nothing estimable", async () => {
+    await i18n.changeLanguage("en");
+    const forge = b("forge", 2, { metricValue: 50, nextTarget: 100 });
+    const road = b("high_road", 3, { driver: "leagues", metricValue: 20, nextTarget: 30 });
+    const buildings = [...starters, forge, road];
+    const muscle = buildingDefinitions.forge.relatedMuscle;
+    assert(muscle);
+    const feeds = { muscle: { [muscle]: [10] }, style: {}, outing: [4, 4] };
+    const nothing = { muscles: [], styles: [], outing: false };
+    const card = pickNextToRise(buildings, feeds);
+    expect(card?.code).toBe("high_road");
+    expect(victoryMilestoneLine(buildings, feeds, nothing, card, i18n.t, "en")).toMatch(
+      /^The High Road, rank 4 in about 3 outings/,
+    );
+  });
+});
+
+describe("the muscles' sentence", () => {
+  it("agrees with every muscle in French", async () => {
+    await i18n.changeLanguage("fr");
+    const said = muscleCodes.map((m) =>
+      feedsLine(b("forge", 1, { driver: "muscle", relatedMuscle: m }), i18n.t, "fr"),
+    );
+    expect(said).toEqual([
+      "Monte avec tes bras",
+      "Monte avec ton dos",
+      "Monte avec tes épaules",
+      "Monte avec tes pectoraux",
+      "Monte avec tes abdos",
+      "Monte avec tes jambes",
+    ]);
+    await i18n.changeLanguage("en");
+  });
+});
+
+describe("buildingScale, the deeds", () => {
+  it("has no caption for a deed building nothing has fed", () => {
+    const lair = b("dragon_lair", 1, { driver: "bosses", metricValue: 0, nextTarget: 2 });
+    expect(buildingScale(lair, i18n.t, "en")?.caption).toBe("");
+  });
+
+  it("starts a rank 3 road at the rung it stands on, not at zero leagues", () => {
+    const road = b("high_road", 3, {
+      driver: "leagues",
+      metricValue: 80,
+      exactValue: 80.5,
+      nextTarget: 90,
+    });
+    const scale = buildingScale(road, i18n.t, "en");
+    const start = deedRungStart("high_road", 3);
+    expect(start).toBeGreaterThan(0);
+    expect(scale?.ends.left.value).toBe(i18n.t("village.unit_leagues", { count: start }));
+    expect(scale?.ends.left.value).not.toBe(i18n.t("village.unit_leagues", { count: 0 }));
+    expect(scale?.progress).toBeCloseTo(((80.5 - start) / (90 - start)) * 100);
+  });
+});
+
+describe("buildingScale, a kept rank", () => {
+  // The old count gave a rank the new tally has not reached: the done figure sits under the rung.
+  it.each([
+    ["heroes_hall", "routes", 3, 2, 7],
+    ["champion_arena", "rematches", 3, 4, 10],
+  ] as const)("never puts %s's done figure left of its bar", (code, driver, level, done, next) => {
+    const kept = b(code, level, { driver, metricValue: done, nextTarget: next, kept: true });
+    expect(deedRungStart(code, level)).toBeGreaterThan(done);
+    const scale = buildingScale(kept, i18n.t, "en");
+    assert(scale);
+    const left = Number.parseInt(scale.ends.left.value, 10);
+    expect(left).toBe(done);
+    expect(scale.progress).toBe(0);
+    expect(scale.caption).toBe(i18n.t(`village.detail_${driver}_driver`, { count: done }));
+    expect(scale.progress).toBeLessThanOrEqual(100);
+    expect(scale.progress).toBeCloseTo(((done - left) / (next - left)) * 100);
+    expect(deedProgress(kept)).toBe(scale.progress);
+  });
+});
+
+describe("buildingScale, a kept rank swept along the tally", () => {
+  it("never lets the bar recede as routes grow at the same rank", () => {
+    const bars = [2, 3, 4, 5, 6, 7, 8].map((done) =>
+      deedProgress(
+        b("heroes_hall", 3, { driver: "routes", metricValue: done, nextTarget: 7, kept: true }),
+      ),
+    );
+    bars.forEach((bar, i) => {
+      expect(bar).toBeGreaterThanOrEqual(bars[i - 1] ?? 0);
+    });
+    expect(bars[0]).toBe(0);
   });
 });
 

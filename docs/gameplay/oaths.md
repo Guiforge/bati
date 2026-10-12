@@ -103,7 +103,7 @@ A "custom oath" toggle reveals the original metric/target/exercise form for exac
    point to the feature from Home. The [coach](coach-planning.md)
    ([useSmartAction.ts](../../components/home/useSmartAction.ts)) is purely reactive — it picks
    the next *action*, never a target — so the two do not compete for the objective slot.
-2. **Victory screen** ([SessionRewards.tsx](../../components/session/SessionRewards.tsx)) —
+2. **Victory screen** ([TonightList.tsx](../../components/session/TonightList.tsx)) —
    the fulfilment card leads, above level-up and achievements: it is the user's own promise.
    Fulfilling an oath pays a flat `OATH_XP_BONUS` (added to the tip-over session's row, so the
    XP `SUM` and level pick it up with no extra state) and fires the big-win confetti burst.

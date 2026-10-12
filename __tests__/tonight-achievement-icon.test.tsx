@@ -1,8 +1,11 @@
 import { render } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
-import { SessionRewards } from "@/components/session/SessionRewards";
+import { rankFeasts } from "@/components/session/feasts";
+import { TonightList } from "@/components/session/TonightList";
 import { achievementDefinitions } from "@/db/achievements";
+import { NO_CREST_EVENTS } from "@/db/crestEvents";
+import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
 
 /**
@@ -26,40 +29,31 @@ const definitions = codes.map((code) => {
 });
 
 const result = {
-  sessionId: 1,
-  xpEarned: 10,
-  dailyBonusXp: 0,
+  levelUp: null,
+  tierUp: null,
+  villageGrowth: [],
   newRecords: [],
+  standing: null,
   newRungs: [],
   newAchievements: definitions.map((definition) => ({ code: definition.code, definition })),
   fulfilledOath: null,
   oathBonusXp: 0,
-  overshootXp: 0,
-  outing: null,
-  campaign: null,
-  levelUp: null,
-  tierUp: false,
-  villageGrowth: [],
-  heroXp: { before: 0, after: 10 },
+  crestEvents: NO_CREST_EVENTS,
+  crestReveal: null,
 };
 
-type RewardsResult = React.ComponentProps<typeof SessionRewards>["result"];
-
-function renderRewards(language: "en" | "fr") {
+function renderTonight(language: "en" | "fr") {
+  useSettingsStore.setState({ language });
   return render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <SessionRewards
-        result={result as unknown as RewardsResult}
-        language={language}
-        onViewVillage={jest.fn()}
-      />
+      <TonightList feasts={rankFeasts({ result: result as never })} villageName="" />
     </TamaguiProvider>,
   );
 }
 
-describe("SessionRewards achievement icons", () => {
+describe("TonightList achievement icons", () => {
   it.each(["en", "fr"] as const)("draws the glyph, never the icon code (%s)", async (language) => {
-    const { queryByText, getByText } = await renderRewards(language);
+    const { queryByText, getByText } = await renderTonight(language);
 
     // The card really mounted, otherwise the absence below proves nothing.
     for (const def of definitions) {

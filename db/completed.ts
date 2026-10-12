@@ -1114,3 +1114,9 @@ export async function getRecentContributingSessions(
     esTitle: r.esTitle,
   }));
 }
+
+/** How many sessions count, the figure a village tier's feast says ("after 118 sessions"). */
+export async function countSessions(): Promise<number> {
+  const [row] = await db.select({ n: count() }).from(completedQuest).where(countsAsSession());
+  return row?.n ?? 0;
+}

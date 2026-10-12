@@ -29,7 +29,7 @@
  * first half for the weather line — "nothing may name a number, a muscle or a streak — the moment
  * one does, it is a stat in disguise, and it will contradict the tiles beside it". Here it
  * generalises: the villager encouraging you mid-rest does not know how many reps are left. And
- * the smith celebrating a record does not repeat the number — `NewRecordsBadge` is already
+ * the smith celebrating a record does not repeat the number — the Tonight list is already
  * showing it, and two sources for one value is how they drift apart.
  *
  * `__tests__/villagers.test.ts` enforces what a machine can: no digits in an ambient pool, the
@@ -122,8 +122,6 @@ export const CUE_MOMENTS = [
   "rest",
   "village_visit",
   "menu_visit",
-  "personal_record",
-  "personal_record_beat",
   "boss_defeated",
   "comeback",
   "first_outing",
@@ -166,13 +164,6 @@ export const MOMENT_CAST: Record<
     priority: "ambient",
     pose: "talk",
   },
-  // The smith keeps the marks; the champion has stood where you are. Both react to a record,
-  // neither ever names the number when there is nothing to compare it to.
-  personal_record: { speakers: ["smith", "champion"], priority: "event", pose: "cheer" },
-  // The same two, when there *is* something to compare it to. Separate from `personal_record`
-  // rather than a branch inside it, because a line written around "{{delta}} more than last time"
-  // cannot degrade gracefully into a first-ever record — it would read as a comparison to nothing.
-  personal_record_beat: { speakers: ["smith", "champion"], priority: "event", pose: "cheer" },
   boss_defeated: { speakers: ["watcher", "champion"], priority: "event", pose: "salute" },
   // The village was silent in the village, which was the layer's biggest thematic hole: you opened
   // the screen that *is* their home and nobody lived there. Only the three who work it day to day
@@ -198,7 +189,7 @@ export const MOMENT_CAST: Record<
   // rarity: the first measured outing ever (`longest_outing` with nothing to compare it to,
   // db/personalRecords.ts), the High Road rising a floor (`high_road` in `diffVillageGrowth`),
   // and a longest-outing record with a previous mark. None of the lines quotes the distance:
-  // `NewRecordsBadge` and the village already show it, and the smith's rule holds here too.
+  // the Tonight list and the village already show it, and the smith's rule holds here too.
   first_outing: { speakers: ["watcher"], priority: "event", pose: "talk" },
   high_road: { speakers: ["watcher"], priority: "event", pose: "cheer" },
   longest_outing: { speakers: ["watcher"], priority: "event", pose: "cheer" },

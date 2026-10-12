@@ -1,6 +1,7 @@
 import { differenceInCalendarWeeks, startOfWeek } from "date-fns";
 import { and, eq, gte, sql } from "drizzle-orm";
 import { getWeekStart } from "@/constants/dateFormatters";
+import { DEFAULT_WEEKLY_TARGET } from "@/constants/weeklyTargets";
 import { type AppLanguage, type Localized, resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { countsAsSession } from "./completed";
@@ -29,8 +30,9 @@ export const oathMetrics = [
 
 export type OathMetric = (typeof oathMetrics)[number];
 
-/** How many sessions make a week count, when the metric is `weekly_sessions`. */
-export const DEFAULT_WEEKLY_TARGET = 3;
+// Defined in `constants/weeklyTargets.ts` beside the chips it must be one of, where a test can
+// read it without SQLite.
+export { DEFAULT_WEEKLY_TARGET };
 
 export type Oath = {
   metric: OathMetric;

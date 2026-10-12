@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { TOKEN } from "./helpers/villageCopy";
 
 // Four rules the locale files drifted on, kept from drifting again.
 //
@@ -257,14 +258,33 @@ describe("locale typography", () => {
    * `//` inside a URL string is not mistaken for one, and all three literal forms are read.
    */
   it("no string literal in db/ or src/ uses an em dash", () => {
-    const TOKEN =
-      /\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\[\s\S])*`/g;
     const offending = sourceFiles(path.join(ROOT, "db"), path.join(ROOT, "src")).flatMap((file) =>
       [...fs.readFileSync(file, "utf8").matchAll(TOKEN)]
         .map((m) => m[0])
         .filter((tok) => !tok.startsWith("/") && tok.includes(EM_DASH))
         .map((tok) => `${path.relative(ROOT, file)}: ${tok.slice(0, 70)}`),
     );
+
+    expect(offending).toEqual([]);
+  });
+
+  /**
+   * The same scan over the rest of the app's source: the village's tier names, the feast and
+   * record texts, the stores' toasts. `app/dev.tsx` is the one name on the list, a developer
+   * tool no hero opens whose strings are English notes to the person holding the phone. Blind
+   * spot: JSX text between tags is not a literal, so it needs `t()` or a reviewer.
+   */
+  it("no string literal in app/, components/, hooks/ or stores/ uses an em dash", () => {
+    const offending = sourceFiles(
+      ...["app", "components", "hooks", "stores"].map((d) => path.join(ROOT, d)),
+    )
+      .filter((file) => path.relative(ROOT, file) !== path.join("app", "dev.tsx"))
+      .flatMap((file) =>
+        [...fs.readFileSync(file, "utf8").matchAll(TOKEN)]
+          .map((m) => m[0])
+          .filter((tok) => !tok.startsWith("/") && tok.includes(EM_DASH))
+          .map((tok) => `${path.relative(ROOT, file)}: ${tok.slice(0, 70)}`),
+      );
 
     expect(offending).toEqual([]);
   });

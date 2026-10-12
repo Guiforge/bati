@@ -99,8 +99,6 @@ twenty-rest session that must still produce exactly one.
 | `rest` | `RestView` mounting | the five ordinary villagers | ambient |
 | `village_visit` | the Village screen | farmer, minstrel, herbalist | ambient |
 | `menu_visit` | Quests, Adventures, Journal | smith, sage, watcher | ambient |
-| `personal_record` | a record with nothing to compare it to | smith, champion | event |
-| `personal_record_beat` | a record that beat a previous mark | smith, champion | event |
 | `boss_defeated` | `isBossDefeat` on the victory screen | watcher, champion | event |
 | `comeback` | Home, after 7+ days away | sage, minstrel | event |
 | `guide_*` | first visit to each of the five tabs | one owner each | guide |
@@ -254,9 +252,9 @@ The herbalist's "Drink. You'll regret it in an hour otherwise." is the pattern: 
 belongs to the hero's body, never to the speaker's authority.
 
 **Specific beats generic.** Externally-sourced motivation drops off sharply after six to eight
-weeks when it is decoration; what keeps working is tied to something real. This is the whole
-reason `personal_record_beat` exists as its own moment: *"{{delta}} more than last time"* is the
-shape the evidence supports, and *"well done!"* is the shape it does not.
+weeks when it is decoration; what keeps working is tied to something real. *"{{delta}} more than last time"* is the shape the evidence supports, and *"well done!"* is
+the shape it does not. Records are no longer cued ("Tonight" lists them), so no shipped line
+quotes a number today; the store still fills `{{delta}}` and `{{exercise}}` for the next one.
 
 **Never guilt.** A study of 58,881 posts about the five most profitable fitness apps found one
 through-line in the distress: nagging notifications, broken streaks, small slips framed as

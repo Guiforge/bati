@@ -1,3 +1,4 @@
+import { DEFAULT_WEEKLY_QUOTA, WEEKLY_TARGETS } from "../constants/weeklyTargets";
 import * as schema from "../db/schema";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
@@ -180,5 +181,10 @@ describe("db/streaks", () => {
     swearWeekly(4);
 
     expect(await streaks().getWeeklyProgress()).toEqual({ done: 3, quota: 4 });
+  });
+
+  test("no weekly target the oath offers sits under the quota the crest measures its flame at", () => {
+    // db/crest.ts reads the longest flame at DEFAULT_WEEKLY_QUOTA; a lower oath would say "flame 0".
+    expect(Math.min(...WEEKLY_TARGETS)).toBeGreaterThanOrEqual(DEFAULT_WEEKLY_QUOTA);
   });
 });

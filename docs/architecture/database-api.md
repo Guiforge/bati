@@ -2,9 +2,9 @@
 title: Database API Reference
 type: technical
 status: active
-updated: 2026-07-18
+updated: 2026-10-11
 related: [technical-architecture.md, ../gameplay/progression.md]
-sources: [db/index.ts, db/schema.ts, db/preferences.ts, db/resources.ts]
+sources: [db/index.ts, db/schema.ts, db/preferences.ts, db/resources.ts, db/crest.ts, db/crestRules.ts, db/milestone.ts, db/backup.ts]
 ---
 
 # Database API Reference
@@ -204,6 +204,23 @@ The village is derived, so it is all reads. See [db/village.ts](../../db/village
 | `getBuildingProgress(building)` | 0-100 toward the next level, or null when nothing counts |
 | `getVillageTier(level)` | Which of the 12 illustrated tiers the hero's level lands in |
 | `getTrophies(banners)` | Achievements and defeated bosses on one rack |
+
+### Crest and milestone
+
+Derived from the session journal like the rest of the village, all reads
+([db/crest.ts](../../db/crest.ts), [db/crestRules.ts](../../db/crestRules.ts),
+[db/milestone.ts](../../db/milestone.ts)):
+
+| Function | Description |
+|----------|-------------|
+| `getCrest(now?)` | The hero's crest: first and second animal, stage, longest flame, rings, the evidence of the first eight sessions; null before the 8th session that counts |
+| `crestAnimals(sessions, ...)` | The pure replay behind it (chronological, integer thresholds); the same result on both sides of a merge |
+| `nextMilestone(building, feeds)` | Sessions or outings until the building's next rank, from the mean of the last `MILESTONE_WINDOW` (5) that fed it |
+| `pickSessionMilestone(buildings, feeds, fed)` | The building this session fed that rises soonest (the victory line) |
+| `deedBarStart(building)` / `deedProgress(building)` | A deed bar's left end (the rung, never above the tally) and its 0-100 fill |
+
+The preference `crestAnimal` merges between devices (`MERGED_PREFERENCES`);
+`bigFeastsShown` stays local.
 
 ---
 
@@ -530,6 +547,7 @@ interface StreakInfo {
 }
 
 const DEFAULT_WEEKLY_QUOTA = 2; // WHO baseline; a weekly_sessions oath overrides it
+// Lives in constants/weeklyTargets.ts, next to WEEKLY_TARGETS, so screens can read it without SQLite.
 ```
 
 ### Functions

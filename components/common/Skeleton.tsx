@@ -6,6 +6,7 @@ interface SkeletonProps {
   height?: number;
   radius?: number;
   bg?: ColorTokens;
+  testID?: string;
 }
 
 /**
@@ -17,11 +18,13 @@ export function Skeleton({
   height = 20,
   radius = 8,
   bg = "$bgLight",
+  testID,
 }: SkeletonProps) {
   const reducedMotion = useReducedMotion();
 
   return (
     <YStack
+      testID={testID}
       width={width}
       height={height}
       bg={bg}

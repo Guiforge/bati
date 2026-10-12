@@ -2,7 +2,9 @@ import { act, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { QuestLog, type QuestLogData } from "@/components/journal/QuestLog";
-import { SessionRewards } from "@/components/session/SessionRewards";
+import { rankFeasts } from "@/components/session/feasts";
+import { TonightList } from "@/components/session/TonightList";
+import { NO_CREST_EVENTS } from "@/db/crestEvents";
 import type { VariationStep } from "@/db/exercises";
 import "@/i18n";
 import config from "@/tamagui.config";
@@ -117,32 +119,30 @@ function questLogData(rung: VariationStep | null): QuestLogData {
   } as unknown as QuestLogData;
 }
 
-function rewardsResult(newRungs: VariationStep[]) {
-  return {
-    sessionId: 1,
-    xpEarned: 10,
-    dailyBonusXp: 0,
-    newRecords: [],
-    standing: null,
-    newRungs,
-    newAchievements: [],
-    fulfilledOath: null,
-    oathBonusXp: 0,
-    overshootXp: 0,
-    outing: null,
-    campaign: null,
-    levelUp: null,
-    tierUp: false,
-    villageGrowth: [],
-    heroXp: { before: 0, after: 10 },
-  } as unknown as React.ComponentProps<typeof SessionRewards>["result"];
+function tonight(newRungs: VariationStep[]) {
+  const feasts = rankFeasts({
+    result: {
+      levelUp: null,
+      tierUp: null,
+      villageGrowth: [],
+      newRecords: [],
+      standing: null,
+      newRungs,
+      newAchievements: [],
+      fulfilledOath: null,
+      oathBonusXp: 0,
+      crestEvents: NO_CREST_EVENTS,
+      crestReveal: null,
+    },
+  });
+  return <TonightList feasts={feasts} villageName="" />;
 }
 
 describe("the quest log on a rung that forks", () => {
   it("names the branches it does not illustrate", async () => {
     await mount(<QuestLog data={questLogData(forkedRung(true))} onChanged={() => {}} />);
 
-    expect(screen.getByText("Push-ups is mastered: Dip is yours to try")).toBeTruthy();
+    expect(screen.getByText("Mastered: Push-ups. Next to try: Dip")).toBeTruthy();
     expect(screen.getByText(FORK_LINE)).toBeTruthy();
   });
 
@@ -161,29 +161,17 @@ describe("the quest log on a rung that forks", () => {
 
 describe("the victory screen on a rung that forks", () => {
   it("announces one rung and names every movement it opens", async () => {
-    await mount(
-      <SessionRewards
-        result={rewardsResult([forkedRung(true)])}
-        language="en"
-        onViewVillage={jest.fn()}
-      />,
-    );
+    await mount(tonight([forkedRung(true)]));
 
     // One rung crossed, not three: the fork is what it opens, not three separate unlocks.
-    expect(screen.getByText("New rung unlocked")).toBeTruthy();
-    expect(screen.getByText("Dip")).toBeTruthy();
-    expect(screen.getByText("You have mastered Push-ups")).toBeTruthy();
+    expect(screen.getAllByText("Dip")).toHaveLength(1);
+    expect(screen.queryByText("Pike Push-Up")).toBeNull();
+    expect(screen.getByText("Mastered: Push-ups")).toBeTruthy();
     expect(screen.getByText(FORK_LINE)).toBeTruthy();
   });
 
   it("says nothing extra on a rung that leads to one movement", async () => {
-    await mount(
-      <SessionRewards
-        result={rewardsResult([straightRung()])}
-        language="en"
-        onViewVillage={jest.fn()}
-      />,
-    );
+    await mount(tonight([straightRung()]));
 
     expect(screen.getByText("Knee Push-Up")).toBeTruthy();
     expect(screen.queryByText(/also leads to/i)).toBeNull();

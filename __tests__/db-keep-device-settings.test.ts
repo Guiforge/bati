@@ -60,12 +60,14 @@ test("the backup brings the hero, and this phone keeps its own folder, id and cr
   setPref(old, "updateLatest", "9.9.9");
   setPref(old, "backupEncryption", "on");
   setPref(old, "savedSession", '{"questId":3}');
+  setPref(old, "bigFeastsShown", '["reveal"]');
   old.close();
 
   // This phone: a folder of its own, and no custom avatar at all.
   setPref(t.sqlite, "deviceId", "this-phone");
   setPref(t.sqlite, "backupFolderUri", "content://this/tree/primary%3ABati");
   setPref(t.sqlite, "crashLog", "[]");
+  setPref(t.sqlite, "bigFeastsShown", '["age"]');
 
   await backup().keepDeviceSettings(staged);
 
@@ -74,6 +76,8 @@ test("the backup brings the hero, and this phone keeps its own folder, id and cr
   expect(after.deviceId).toBe("this-phone");
   expect(after.backupFolderUri).toBe("content://this/tree/primary%3ABati");
   expect(after.crashLog).toBe("[]");
+  // Feasts follow the hero (R38), like the streak: the backup's list wins over this phone's.
+  expect(after.bigFeastsShown).toBe('["reveal"]');
   expect(after).not.toHaveProperty("customAvatarUri");
   expect(after.customAvatar).toBe(`data:image/jpeg;base64,${"A".repeat(40_000)}`);
   // The other phone's update check says nothing about this copy of the app.
@@ -107,4 +111,17 @@ test("a session interrupted on either device does not survive the swap", async (
 
   // Resumed here while the other device finishes it too, it would count, and hit the boss, twice.
   expect(prefs(staged)).not.toHaveProperty("savedSession");
+});
+
+test("the hero's animal follows the backup, like the village name", async () => {
+  const staged = path.join(dir, "animal.db");
+  await backup().snapshotDatabaseTo(staged);
+  const old = new Database(staged);
+  setPref(old, "crestAnimal", "stag");
+  old.close();
+  setPref(t.sqlite, "crestAnimal", "boar");
+
+  await backup().keepDeviceSettings(staged);
+
+  expect(prefs(staged).crestAnimal).toBe("stag");
 });

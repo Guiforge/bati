@@ -15,6 +15,7 @@ import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { ChevronRight, PenLine } from "@/components/icons";
 import { useOathText } from "@/components/oath/useOathText";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { WEEKLY_TARGETS } from "@/constants/weeklyTargets";
 import { canDo } from "@/db/equipment";
 import { type Exercise, listExercises, officialByName, pickableExercises } from "@/db/exercises";
 import {
@@ -50,9 +51,6 @@ const METRICS: OathMetric[] = [
   "streak",
   "leagues",
 ];
-
-/** Sessions per week offered in the custom form. Two is a real answer, not a lesser one. */
-const WEEKLY_TARGETS = [2, 3, 4];
 
 function MetricChip({
   metric,

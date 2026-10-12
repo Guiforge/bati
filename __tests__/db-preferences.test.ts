@@ -30,6 +30,33 @@ describe("db/preferences", () => {
     expect(await prefs.getPreference("foo")).toBeNull();
   });
 
+  test("M15: writing a preference again moves updatedAt forward, even with the same value", async () => {
+    const { preferences } = require("../db/preferences") as typeof import("../db/preferences");
+    const stamp = () =>
+      (
+        t.sqlite
+          .prepare("SELECT updatedAt FROM user_preferences WHERE key = 'crestAnimal'")
+          .get() as { updatedAt: number }
+      ).updatedAt;
+    jest.useFakeTimers({
+      now: new Date("2026-01-01T10:00:00Z"),
+      doNotFake: ["nextTick", "setImmediate"],
+    });
+    try {
+      await preferences.setCrestAnimal("stag");
+      const first = stamp();
+      jest.setSystemTime(new Date("2026-01-02T10:00:00Z"));
+      await preferences.setCrestAnimal("stag");
+      expect(stamp()).toBeGreaterThan(first);
+      // The merge (R21) compares these stamps: a choice written back to auto must outrank the stag.
+      jest.setSystemTime(new Date("2026-01-03T10:00:00Z"));
+      await preferences.setCrestAnimal("auto");
+      expect(stamp()).toBeGreaterThan(first + 86400);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   test("a corrupt set-aside list reads as empty and is reported, not silently dropped", async () => {
     const { preferences, setPreference } =
       require("../db/preferences") as typeof import("../db/preferences");

@@ -3,7 +3,7 @@ title: Session (Active Workout)
 type: screen
 route: /session
 status: active
-updated: 2026-08-02
+updated: 2026-10-11
 related: [quest-details.md, session-details.md, journal.md, ../SESSION.md]
 sources:
   [
@@ -12,6 +12,10 @@ sources:
     components/session/ExerciseHero.tsx,
     components/session/BossArena.tsx,
     components/session/sessionArt.ts,
+    components/session/TonightList.tsx,
+    components/session/feasts.ts,
+    components/session/BigFeastView.tsx,
+    components/session/bigFeastText.ts,
   ]
 ---
 
@@ -73,7 +77,17 @@ button with a red edge. A session under two minutes is held: the "That was a sho
 (Keep it, Discard) takes the level card's slot above the fold and the whole stat row and the level
 card are hidden until you keep it. The chart of past sessions fits its card, centres each date under
 its bar and carries an easy / medium / hard legend. The pause dialog's title is "Session paused" in
-the title font and its actions are sentence case, "Quit quest" an outline with the red edge. Your progress becomes visible in:
+the title font and its actions are sentence case, "Quit quest" an outline with the red edge. Under the stats the victory lists **Tonight** (`TonightList`, "Ce soir"): what this session
+changed, as lines (small feasts), cards (medium: second animal, stage, tier, boss, oath, new rung,
+achievement) and, when the village grew, a "View your village" link (`handleViewVillage`, 44 dp
+tall). The card body is `$textSecondary` throughout, XP lines included. One large feast per
+session is only named there with an "after" badge: "Continue" opens it full screen
+(`app/big-feast.tsx`, a reveal, an Age, the anniversary or a tier) and closing it replays the
+victory's "Continue". The milestone line of the building this session fed (`victoryMilestoneLine`)
+sits under the village block. Every sentence is whole in four languages and held by
+`village-copy-forbidden-words`, `village-copy-no-chores` and `feast-copy-words`.
+
+Your progress becomes visible in:
 
 - **[Journal](journal.md)** (history + stats)
 - **[Village](village.md)** (growth)

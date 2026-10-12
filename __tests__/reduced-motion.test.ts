@@ -4,10 +4,10 @@ import * as path from "node:path";
 /**
  * Anything that moves asks first.
  *
- * `SessionRewards` declared its reveal as a module constant — `transition: "bouncy"` and an
- * `enterStyle` that scaled and slid — and spread it across eight cards. A constant cannot read a
- * preference, so those cards bounced whatever Android had been told, on the screen that opens
- * straight after the effort, for someone who may be lightheaded and has explicitly asked their
+ * The old reward cards (now "Tonight") declared their reveal as a module constant —
+ * `transition: "bouncy"` and an `enterStyle` that scaled and slid — and spread it across eight
+ * cards. A constant cannot read a preference, so those cards bounced whatever Android had been
+ * told, on the screen that opens straight after the effort, for someone who may be lightheaded and has explicitly asked their
  * phone to stop doing that. Every other animated component in the app honoured the setting, which
  * is exactly why nobody looked at this one.
  *

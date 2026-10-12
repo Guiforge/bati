@@ -106,15 +106,19 @@ function sheet(
 }
 
 let write: jest.SpyInstance;
+let shipped: string[];
 beforeAll(() => i18n.changeLanguage("fr"));
 afterAll(() => i18n.changeLanguage("en"));
 beforeEach(() => {
+  shipped = [...DELIVERED_COATS];
   write = jest.spyOn(preferences, "setCrestAnimal").mockResolvedValue();
   jest.spyOn(crestDb, "portraitOf").mockResolvedValue("bear-young");
 });
 afterEach(() => {
   jest.restoreAllMocks();
-  (DELIVERED_COATS as Set<string>).delete("bear-adult-rare");
+  const set = DELIVERED_COATS as Set<string>;
+  set.clear();
+  for (const slug of shipped) set.add(slug);
 });
 
 describe("Pourquoi l'Ours ?", () => {
@@ -495,6 +499,7 @@ describe("the coat choice", () => {
     jest.spyOn(preferences, "getCrestCoat").mockResolvedValue(value);
 
   it("is absent while the rare coat's portrait has not shipped, won or not", async () => {
+    (DELIVERED_COATS as Set<string>).delete("bear-adult-rare");
     coat("auto");
     await sheet(crestOf(ADULT, "auto", won), "why");
     expect(screen.queryByTestId("crest-coat")).toBeNull();

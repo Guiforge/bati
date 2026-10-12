@@ -127,9 +127,24 @@ describe("a portrait that does not ship falls back on the base of the same stage
       "stag-legendary",
     );
   });
-  test("the rare is missing: the base, never the winter coat", () => {
-    const d = some("stag-adult-winter");
-    expect(portraitSlug("stag", "adult", true, "auto", at(1), "FR", d)).toBe("stag-adult");
+  test("the rare is missing: winter in winter, else the base (the venerable horse, won)", () => {
+    const d = some("horse-venerable-winter");
+    expect(portraitSlug("horse", "venerable", true, "auto", at(1), "FR", d)).toBe(
+      "horse-venerable-winter",
+    );
+    expect(portraitSlug("horse", "venerable", true, "auto", at(7), "FR", d)).toBe(
+      "horse-venerable",
+    );
+    expect(portraitSlug("horse", "venerable", false, "auto", at(1), "FR", d)).toBe(
+      "horse-venerable-winter",
+    );
+  });
+  test("the rare ships: it wins over winter, and another stage's rare does not stand in", () => {
+    const d = some("horse-adult-rare", "horse-venerable-winter");
+    expect(portraitSlug("horse", "venerable", true, "auto", at(7), "FR", d)).toBe(
+      "horse-venerable",
+    );
+    expect(portraitSlug("horse", "adult", true, "auto", at(1), "FR", d)).toBe("horse-adult-rare");
   });
   test("the winter is missing: the base, never the rare", () => {
     const d = some("stag-adult-rare");

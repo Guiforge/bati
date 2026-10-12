@@ -196,7 +196,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from bear-adult-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 448x448, from bear-adult-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/bear-adult-winter.webp": {
@@ -213,7 +213,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from bear-adult-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 448x448, from bear-adult-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/bear-adult.webp": {
@@ -230,7 +230,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: two eye highlights painted out (each pixel brighter than the median of the ring around the eye takes that median) and the blue rim of light along the contour tinted back to the brown of the coat (desaturated, then toned to the median of the neighbouring fur); the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from bear-adult.jpg",
+    "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 448x448, from bear-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/bear-legendary-rare.webp": {
@@ -247,7 +247,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from bear-legendary-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 448x448, from bear-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/bear-legendary-winter.webp": {
@@ -264,7 +264,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from bear-legendary-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 448x448, from bear-legendary-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/bear-legendary.webp": {
@@ -281,7 +281,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: two eye highlights painted out (each pixel brighter than the median of the ring around the eye takes that median); the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from bear-legendary.jpg",
+    "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 448x448, from bear-legendary.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/bear-venerable-rare.webp": {
@@ -298,7 +298,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out, the ground shadow erased; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from bear-venerable-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 400x400, from bear-venerable-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/bear-venerable-winter.webp": {
@@ -315,7 +315,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from bear-venerable-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from bear-venerable-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/bear-venerable.webp": {
@@ -332,7 +332,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: two eye highlights painted out (each pixel brighter than the median of the ring around the eye takes that median); the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from bear-venerable.jpg",
+    "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 400x400, from bear-venerable.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/bear-young.webp": {
@@ -349,7 +349,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out (each pixel brighter than the median of the ring around the eye takes that median), the pale lower-lid crescent under the left eye flattened, and the cast shadow under the paws erased to the background colour, box by box so the ink of the paws stays; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from bear-young.jpg",
+    "reencoded": "cwebp -m 6 -q 85 -sharp_yuv -alpha_q 0, 400x400, from bear-young.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/boar-adult-rare.webp": {
@@ -366,7 +366,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from boar-adult-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from boar-adult-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/boar-adult-winter.webp": {
@@ -383,7 +383,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from boar-adult-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from boar-adult-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/boar-adult.webp": {
@@ -400,7 +400,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: the blue rim of light along the back and ears pulled back to the grey of the coat; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from boar-adult.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from boar-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/boar-legendary-rare.webp": {
@@ -417,7 +417,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from boar-legendary-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from boar-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/boar-legendary-winter.webp": {
@@ -434,7 +434,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from boar-legendary-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from boar-legendary-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/boar-legendary.webp": {
@@ -451,7 +451,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlight painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from boar-legendary.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from boar-legendary.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/boar-venerable-rare.webp": {
@@ -468,7 +468,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from boar-venerable-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from boar-venerable-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/boar-venerable-winter.webp": {
@@ -485,7 +485,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from boar-venerable-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from boar-venerable-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/boar-venerable.webp": {
@@ -502,7 +502,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlight painted out, the blue rim of light along the back pulled back to the grey of the coat; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from boar-venerable.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from boar-venerable.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/boar-young.webp": {
@@ -519,7 +519,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlight painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from boar-young.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from boar-young.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/ermine-adult-rare.webp": {
@@ -536,7 +536,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from ermine-adult-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from ermine-adult-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/ermine-adult.webp": {
@@ -553,7 +553,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from ermine-adult.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from ermine-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/ermine-legendary-rare.webp": {
@@ -570,7 +570,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from ermine-legendary-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from ermine-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/ermine-legendary.webp": {
@@ -587,7 +587,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from ermine-legendary.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from ermine-legendary.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/ermine-venerable-rare.webp": {
@@ -604,7 +604,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from ermine-venerable-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from ermine-venerable-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/ermine-venerable.webp": {
@@ -621,7 +621,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from ermine-venerable.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from ermine-venerable.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/ermine-young.webp": {
@@ -638,7 +638,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from ermine-young.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from ermine-young.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/horse-adult-rare.webp": {
@@ -655,7 +655,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from horse-adult-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from horse-adult-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/horse-adult-winter.webp": {
@@ -672,7 +672,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from horse-adult-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from horse-adult-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/horse-adult.webp": {
@@ -688,7 +688,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-11",
-    "reencoded": "cwebp -q 85, from horse-adult.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from horse-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/horse-legendary-rare.webp": {
@@ -705,7 +705,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from horse-legendary-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from horse-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/horse-legendary-winter.webp": {
@@ -722,7 +722,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from horse-legendary-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from horse-legendary-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/horse-legendary.webp": {
@@ -739,7 +739,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from horse-legendary.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from horse-legendary.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/horse-venerable-winter.webp": {
@@ -756,7 +756,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from horse-venerable-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from horse-venerable-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/horse-venerable.webp": {
@@ -773,7 +773,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: ground shadow erased, eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from horse-venerable.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from horse-venerable.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/horse-young.webp": {
@@ -790,7 +790,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlight painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from horse-young.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from horse-young.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/salmon-adult-rare.webp": {
@@ -807,7 +807,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from salmon-adult-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from salmon-adult-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/salmon-adult.webp": {
@@ -823,7 +823,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-11",
-    "reencoded": "cwebp -q 85, from salmon-adult.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from salmon-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/salmon-legendary-rare.webp": {
@@ -840,7 +840,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from salmon-legendary-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from salmon-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/salmon-legendary.webp": {
@@ -856,7 +856,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-11",
-    "reencoded": "cwebp -q 85, from salmon-legendary.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from salmon-legendary.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/salmon-venerable-rare.webp": {
@@ -873,7 +873,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from salmon-venerable-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from salmon-venerable-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/salmon-venerable.webp": {
@@ -889,7 +889,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-11",
-    "reencoded": "cwebp -q 85, from salmon-venerable.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from salmon-venerable.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/salmon-young.webp": {
@@ -905,7 +905,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-11",
-    "reencoded": "cwebp -q 85, from salmon-young.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from salmon-young.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-adult-rare.webp": {
@@ -922,7 +922,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from stag-adult-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from stag-adult-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-adult-winter.webp": {
@@ -939,7 +939,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from stag-adult-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from stag-adult-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-adult.webp": {
@@ -956,7 +956,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlight painted out, the streaks of ground shadow under the hooves erased to the background colour (the ink of the hooves is spared); the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from stag-adult.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from stag-adult.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-legendary-rare.webp": {
@@ -973,7 +973,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from stag-legendary-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from stag-legendary-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-legendary-winter.webp": {
@@ -990,7 +990,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from stag-legendary-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from stag-legendary-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-legendary.webp": {
@@ -1007,7 +1007,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from stag-legendary.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 448x448, from stag-legendary.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-venerable-rare.webp": {
@@ -1024,7 +1024,7 @@
     "height": 1024,
     "generated": "2026-10-12",
     "edited": "2026-10-11: eye highlights painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from stag-venerable-rare.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from stag-venerable-rare.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-venerable-winter.webp": {
@@ -1040,7 +1040,7 @@
     "width": 1024,
     "height": 1024,
     "generated": "2026-10-12",
-    "reencoded": "cwebp -q 85, from stag-venerable-winter.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from stag-venerable-winter.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-venerable.webp": {
@@ -1057,7 +1057,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlight painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from stag-venerable.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from stag-venerable.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/animals/stag-young.webp": {
@@ -1074,7 +1074,7 @@
     "height": 1024,
     "generated": "2026-10-11",
     "edited": "2026-10-11: eye highlight painted out; the signed original is unchanged",
-    "reencoded": "cwebp -q 85, from stag-young.jpg",
+    "reencoded": "cwebp -m 6 -q 60 -sns 100 -alpha_q 0, 400x400, from stag-young.jpg",
     "cutout": "background flood-filled to alpha, threshold 30"
   },
   "assets/images/bosses/fire_dragon.webp": {

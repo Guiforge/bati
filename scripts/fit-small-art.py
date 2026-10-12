@@ -24,12 +24,15 @@ exclusion outlived the number it was reasoning about, which is exactly how a 3.1
 up decoded over the running session screen — the one place in this app where a dropped frame is
 a tap the hero has to make twice.
 
+Needs `cwebp` (libwebp-tools) on the PATH for the animal portraits.
+
 Run after cutout.py, never before: the flood fill wants full resolution to work with,
 and a resized emblem has soft edges the fill would stop at.
 """
 
 import argparse
 import pathlib
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -61,10 +64,11 @@ SETS = [
     ("assets/images/animals/*.webp", 448, 0, 0, 6),
 ]
 
-# The nine amber-eyed bears. At q70 chroma subsampling turns the iris grey-blue, so they get
+# The nine amber-eyed bears (bear-venerable-winter is not one: its eyes are dull from the source).
+# At q70 chroma subsampling turns the iris grey-blue, so they get
 # q85 with -sharp_yuv (chroma computed from full-res RGB): eye colour error 8.8 against 15.8 at
 # q70 and 6.9 at the old q90, for 0.23 MiB less than q90. Everything else is q60 with -sns 100.
-KEEP_Q90 = {
+AMBER_EYES = {
     "bear-adult",
     "bear-adult-rare",
     "bear-adult-winter",
@@ -82,7 +86,7 @@ def animal_args(stem: str) -> tuple[int, list[str]]:
     # Young and venerable draw at most 192dp in a stadium festival, so 400 clears 576 px; the
     # legendary and adult portraits keep 448.
     size = 400 if "-young" in stem or "-venerable" in stem else 448
-    if stem in KEEP_Q90:
+    if stem in AMBER_EYES:
         return size, ["-q", "85", "-sharp_yuv"]
     return size, ["-q", "60", "-sns", "100"]
 
@@ -125,13 +129,22 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="report only, change nothing")
     args = parser.parse_args()
 
+    if shutil.which("cwebp") is None:
+        print("cwebp not found, install libwebp-tools", file=sys.stderr)
+        return 1
+
     found = targets()
     if not found:
         print("No small-slot art found.", file=sys.stderr)
         return 1
 
     if args.dry_run:
-        oversized = [t for t in found if max(Image.open(t[0]).size) > t[1]]
+        oversized = [
+            t
+            for t in found
+            if max(Image.open(t[0]).size)
+            > (animal_args(t[0].stem)[0] if t[0].parent.name == "animals" else t[1])
+        ]
         print(f"{len(found)} files, {len(oversized)} larger than their slot needs.")
         return 0
 

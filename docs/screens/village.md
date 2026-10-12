@@ -202,7 +202,14 @@ unbuilt row draws the same emblem as a silhouette through `tintColor`, which nee
   sessions and at least 20; the stage is young, adult at 40 sessions of its practice, venerable at
   200, legendary at 500 (a big feast of its own, `legendary:<practice>`). A hero whose longest flame
   reached Eternal has won the rare coat (`rareCoat`, a fact of the hero, announced once by a card in
-  Tonight, `coat:rare`); the portraits themselves arrive with T3, until then no coat is named. The shield adds the longest flame and one ring per village year. The hero can pick another
+  Tonight, `coat:rare`, only when the portrait of that animal's rare coat ships). The crest sheet
+  shows the animal's portrait at 144 dp beside the 96 dp shield. When the hero has won the rare
+  coat and its portrait ships for the animal at the centre, the sheet also offers the coat choice
+  (`crest-coat`): the rare coat (`auto`, the default) or the usual one (`usual`, which cuts the rare
+  and keeps winter); the row is absent otherwise. The legendary stage has a big feast of its own, the
+  animal's portrait at 192 dp. Winter is read per region (`regionCode`, northern calendar
+  December to February, southern June to August, the ermine has none), and the portrait is a
+  chain: rare, then winter, then base ([data rules](../testing/data-rules.md) § 9). The shield adds the longest flame and one ring per village year. The hero can pick another
   animal in Settings or from the crest sheet (`crestAnimal`, `auto` goes back to the sessions'
   animal, a hand-picked one carries a small ink diamond). The header line says "A bear watches
   over Brumeval", "now" in the line (en; "depuis aujourd'hui", "seit heute", "desde hoy" in fr, de, es) on the day of the reveal and never for a hand-picked animal.

@@ -54,7 +54,9 @@ export function isWinter(now: Date, regionCode: string | null | undefined): bool
  * The portrait slug an animal wears: `<animal>-<stage>[-rare|-winter]`. Pure: no clock, no device.
  * A young animal always wears its base. The rare coat, won and not switched off by `usual`, beats
  * winter; `usual` cuts the rare, not winter; the ermine has no winter (its base is already white).
- * A coat that is not in `delivered` falls back on the base of the same stage, never on another coat.
+ * A chain: the rare coat if it ships, else winter if it ships and it is winter, else the base of
+ * the same stage. The rare is never stood in for by another animal or another stage; when it does
+ * not ship (the venerable horse) the hero still gets winter, like a hero who never won it.
  */
 export function portraitSlug(
   animal: Animal,
@@ -67,12 +69,8 @@ export function portraitSlug(
 ): string {
   const base = `${animal}-${stage}`;
   if (stage === "young") return base;
-  const coat =
-    rareCoat && crestCoat === "auto"
-      ? "rare"
-      : animal !== "ermine" && isWinter(now, regionCode)
-        ? "winter"
-        : null;
-  const slug = coat && `${base}-${coat}`;
-  return slug && delivered.has(slug) ? slug : base;
+  const rare = `${base}-rare`;
+  if (rareCoat && crestCoat === "auto" && delivered.has(rare)) return rare;
+  const winter = `${base}-winter`;
+  return animal !== "ermine" && isWinter(now, regionCode) && delivered.has(winter) ? winter : base;
 }

@@ -107,7 +107,8 @@ const mockCrestDrawn = jest.fn();
 jest.mock("@/components/village/Crest", () => ({
   Crest: (p: { crest: unknown }) => {
     mockCrestDrawn(p.crest);
-    return null;
+    const { View } = require("react-native");
+    return <View testID="crest-shield" />;
   },
 }));
 
@@ -647,6 +648,14 @@ describe("the big-feast route", () => {
       const v = await mount();
       expect(await v.findByTestId("animal-portrait")).toBeTruthy();
       expect(mockPortraitOf).toHaveBeenCalledWith({ longestFlame: 5 }, "bear", "adult");
+    });
+
+    test("the portrait and the shield share one row, so the shield costs the reveal no height", async () => {
+      mockGetCrest.mockResolvedValue(crestOf("bear", "adult"));
+      const v = await mount();
+      const row = within(await v.findByTestId("big-feast-reveal-row"));
+      expect(await row.findByTestId("animal-portrait")).toBeTruthy();
+      expect(row.getByTestId("crest-shield")).toBeTruthy();
     });
 
     test("an animal whose portrait has not shipped draws none and asks for none", async () => {

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 import type { ReactNode } from "react";
-import { BackHandler } from "react-native";
+import { BackHandler, Dimensions, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
@@ -593,6 +593,18 @@ describe("the legend under the portrait", () => {
   it("reads the bare stage when the portrait has not shipped, with nothing to wait for", async () => {
     await sheet(crestOf(seq(["yoga", 8])), "why");
     expect(screen.getByText("Un jeune saumon.")).toBeTruthy();
+  });
+});
+
+describe("the legend's reserve", () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it("holds two lines at 130 % font, not 38 dp", async () => {
+    const real = Dimensions.get("window");
+    jest.spyOn(Dimensions, "get").mockImplementation(() => ({ ...real, fontScale: 1.3 }) as never);
+    await sheet(crestOf(FIVE_OF_EIGHT), "why");
+    const box = StyleSheet.flatten(screen.getByTestId("crest-legend").props.style);
+    expect(box.minHeight).toBeGreaterThanOrEqual(Math.ceil(38 * 1.3));
   });
 });
 

@@ -20,6 +20,7 @@ import {
   practiceOfAnimal,
 } from "@/db/crestRules";
 import { preferences } from "@/db/preferences";
+import { useFontScaled } from "@/hooks/useFontScaled";
 import { reportError } from "@/src/reportError";
 
 /** One sheet, two views: the stack of two modals this would be is where the ghost panes come from. */
@@ -365,6 +366,7 @@ function CoatChoice({ crest, onCoat }: { crest: CrestData; onCoat: () => void })
 function Picture({ crest, coatKey }: { crest: CrestData; coatKey: string }) {
   const { t } = useTranslation();
   const { animal, stage } = crest;
+  const legendReserve = useFontScaled(38);
   const slug = usePortraitSlug(animal, stage, crest.longestFlame, coatKey);
   // Young and adult have their own keys per animal: German agrees the article with the noun.
   const what = sentence(t(`village.crest_${animal}_${stage}`));
@@ -390,7 +392,8 @@ function Picture({ crest, coatKey }: { crest: CrestData; coatKey: string }) {
         fontSize={14}
         lineHeight={19}
         // Two lines reserved: German and Spanish legends wrap at 130 %, and the body must not move.
-        minH={38}
+        // The text's lineHeight grows with the system font scale, so the reserve does too.
+        minH={legendReserve}
         color="$textSecondary"
         style={{ textAlign: "center" }}
       >

@@ -528,6 +528,8 @@ async function readBigFeastsShown() {
 
 /** The Age and the anniversary, read once the session is saved; unreadable, the village stays quiet. */
 async function villageNewsOrNone(shown: string[] | undefined, firstAnimal: Animal | null) {
+  // Unread, what is already shown is unknown: a replay would announce a feast a second time.
+  if (shown === undefined) return { age: null, anniversary: null };
   try {
     return await readVillageNews(shown, new Date(), firstAnimal);
   } catch (error) {

@@ -3,7 +3,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { factText } from "@/components/village/yearsText";
 import { ANIMAL_TOKEN } from "@/constants/animalColors";
-import type { RecordNames } from "@/db/villageYears";
+import type { MovementNamesById } from "@/db/villageYears";
 import type { Banner } from "@/db/villageYearsRules";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -18,7 +18,7 @@ export function Banners({
   language,
 }: {
   banners: readonly Banner[];
-  names: RecordNames;
+  names: MovementNamesById;
   language: AppLanguage;
 }) {
   const { t } = useTranslation();

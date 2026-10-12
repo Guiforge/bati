@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next";
 import { formatTargetValue } from "@/db/targets";
-import type { RecordNames } from "@/db/villageYears";
+import type { MovementNamesById } from "@/db/villageYears";
 import type { Fact } from "@/db/villageYearsRules";
 import { localizedName } from "@/src/i18n/localized";
 import type { AppLanguage } from "@/stores/settings";
@@ -9,7 +9,7 @@ import type { AppLanguage } from "@/stores/settings";
 export function factText(
   fact: Fact,
   sessions: number,
-  names: RecordNames,
+  names: MovementNamesById,
   t: TFunction,
   language: AppLanguage,
 ) {

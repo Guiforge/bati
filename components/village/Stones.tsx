@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
-import Svg, { Path, Text as SvgText } from "react-native-svg";
-import { Text, XStack, YStack } from "tamagui";
+import Svg, { G, Path, Text as SvgText } from "react-native-svg";
+import { Text, YStack } from "tamagui";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { factText } from "@/components/village/yearsText";
 import { rawColors } from "@/constants/rawColors";
-import type { RecordNames } from "@/db/villageYears";
+import type { MovementNamesById } from "@/db/villageYears";
 import type { Stone } from "@/db/villageYearsRules";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -21,20 +21,31 @@ const rowsOf = (group: readonly Stone[]): Stone[][] =>
     group.slice(i * PER_ROW, (i + 1) * PER_ROW),
   );
 
-function StoneArt({ level }: { level: number }) {
+/** A whole row of stones in one `<Svg>`: eighty stones were eighty native views. */
+function StoneRow({ row }: { row: readonly Stone[] }) {
+  const width = row.length * SIZE + (row.length - 1) * GAP;
   return (
-    <Svg width={SIZE} height={SIZE} viewBox="0 0 44 44">
-      <Path d={ARCH} fill={rawColors.surface2} stroke={rawColors.borderStrong} strokeWidth={2} />
-      <SvgText
-        x={22}
-        y={29}
-        fontSize={level > 99 ? 12 : 15}
-        fontWeight="700"
-        fill={rawColors.resourceGold}
-        textAnchor="middle"
-      >
-        {String(level)}
-      </SvgText>
+    <Svg width={width} height={SIZE} viewBox={`0 0 ${width} ${SIZE}`}>
+      {row.map((s, i) => (
+        <G key={s.level} x={i * (SIZE + GAP)}>
+          <Path
+            d={ARCH}
+            fill={rawColors.surface2}
+            stroke={rawColors.borderStrong}
+            strokeWidth={2}
+          />
+          <SvgText
+            x={22}
+            y={29}
+            fontSize={s.level > 99 ? 12 : 15}
+            fontWeight="700"
+            fill={rawColors.resourceGold}
+            textAnchor="middle"
+          >
+            {String(s.level)}
+          </SvgText>
+        </G>
+      ))}
     </Svg>
   );
 }
@@ -50,7 +61,7 @@ export function Stones({
   language,
 }: {
   stones: readonly Stone[];
-  names: RecordNames;
+  names: MovementNamesById;
   language: AppLanguage;
 }) {
   const { t } = useTranslation();
@@ -84,18 +95,22 @@ export function Stones({
             ) : null}
             {/* Rows of six, cut here: a wrapping row would fit five on a narrow phone. */}
             {rowsOf(group).map((row) => (
-              <XStack key={row[0]?.level} gap={GAP}>
-                {row.map((s) => (
+              <YStack key={row[0]?.level}>
+                <StoneRow row={row} />
+                {/* The drawing is one element, so each stone's label rides a transparent view on it. */}
+                {row.map((s, i) => (
                   <YStack
                     key={s.level}
                     testID={`village-stone-${s.level}`}
                     accessible
                     accessibilityLabel={line(s)}
-                  >
-                    <StoneArt level={s.level} />
-                  </YStack>
+                    position="absolute"
+                    l={i * (SIZE + GAP)}
+                    width={SIZE}
+                    height={SIZE}
+                  />
                 ))}
-              </XStack>
+              </YStack>
             ))}
             {/* Read once, on the stones: the text is for the eye. */}
             <YStack gap={2} importantForAccessibility="no-hide-descendants">

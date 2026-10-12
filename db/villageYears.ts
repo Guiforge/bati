@@ -5,9 +5,11 @@ import { countsAsSession } from "./completed";
 import { doneIn } from "./crest";
 import { isSouthern } from "./crestCoat";
 import { type Animal, practiceOf } from "./crestRules";
+import { dayKey } from "./dates";
 import { fetchLadderRows } from "./exercises";
 import { shortLivedQuery } from "./queryCache";
 import { calculateLevelFromXp } from "./userLevel";
+import type { MovementNames } from "./villageNewsRules";
 import {
   type Age,
   agesReached,
@@ -103,38 +105,44 @@ export async function getVillageYears(
   };
 }
 
-/** The names of the movements behind the record facts, in every language: the facts say "Push-ups, 10 to 14". */
-export type RecordNames = Map<
-  number,
-  { enName: string; frName: string; deName: string; esName: string }
->;
+export type MovementNamesById = Map<number, MovementNames>;
 
-export type VillageYearsView = { years: VillageYears; names: RecordNames };
+export type VillageYearsView = { years: VillageYears; names: MovementNamesById };
+
+/** The names of these movements in every language: the facts say "Push-ups, 10 to 14". */
+export async function movementNames(ids: Iterable<number>): Promise<MovementNamesById> {
+  const wanted = [...new Set(ids)];
+  if (wanted.length === 0) return new Map();
+  const rows = await db
+    .select({
+      id: exercises.id,
+      enName: exercises.enName,
+      frName: exercises.frName,
+      deName: exercises.deName,
+      esName: exercises.esName,
+    })
+    .from(exercises)
+    .where(inArray(exercises.id, wanted));
+  return new Map(rows.map(({ id, ...n }) => [id, n]));
+}
 
 /**
- * What the Village screen reads: the years and the names their records need, behind a short memo
- * keyed on the total XP (a finished session moves it, so the key is a new one) and the animal.
+ * What the Village screen reads: the years and the names their records need. Memoized with no TTL,
+ * keyed on the total XP (a finished session moves it), the animal and the day (the seasons turn
+ * at midnight); saving or forgetting a session clears every short-lived memo.
  */
 export function loadVillageYears(totalXp: number, firstAnimal: Animal | null) {
-  return shortLivedQuery<VillageYearsView>(`village.years:${totalXp}:${firstAnimal}`, async () => {
-    const years = await getVillageYears(new Date(), undefined, firstAnimal);
-    const ids = new Set<number>();
-    for (const { fact } of [...years.stones, ...years.banners]) {
-      if (fact.kind === "record") ids.add(fact.exerciseId);
-    }
-    const rows =
-      ids.size === 0
-        ? []
-        : await db
-            .select({
-              id: exercises.id,
-              enName: exercises.enName,
-              frName: exercises.frName,
-              deName: exercises.deName,
-              esName: exercises.esName,
-            })
-            .from(exercises)
-            .where(inArray(exercises.id, [...ids]));
-    return { years, names: new Map(rows.map(({ id, ...n }) => [id, n])) };
-  });
+  const now = new Date();
+  return shortLivedQuery<VillageYearsView>(
+    `village.years:${totalXp}:${firstAnimal}:${dayKey(now)}`,
+    async () => {
+      const years = await getVillageYears(now, undefined, firstAnimal);
+      const ids: number[] = [];
+      for (const { fact } of [...years.stones, ...years.banners]) {
+        if (fact.kind === "record") ids.push(fact.exerciseId);
+      }
+      return { years, names: await movementNames(ids) };
+    },
+    Number.POSITIVE_INFINITY,
+  );
 }

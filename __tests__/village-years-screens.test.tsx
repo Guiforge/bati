@@ -10,6 +10,7 @@ import * as village from "@/db/village";
 import * as years from "@/db/villageYears";
 import type { Banner, Fact, Stone } from "@/db/villageYearsRules";
 import { i18n } from "@/i18n";
+import * as errors from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
 
@@ -207,10 +208,13 @@ describe("the Seasons section", () => {
   });
 
   it("is not mounted while the years are unread", async () => {
-    jest.spyOn(years, "loadVillageYears").mockRejectedValue(new Error("nope"));
+    const failure = new Error("nope");
+    jest.spyOn(years, "loadVillageYears").mockRejectedValue(failure);
+    const report = jest.spyOn(errors, "reportError").mockImplementation(() => {});
     const screen = await renderScene();
     await screen.findByTestId("village-scroll");
     await act(async () => {});
+    expect(report).toHaveBeenCalledWith("village.years", failure);
     expect(screen.queryByTestId("village-seasons")).toBeNull();
   });
 

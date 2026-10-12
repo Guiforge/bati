@@ -1,16 +1,6 @@
-import { inArray } from "drizzle-orm";
-import { db, schema } from "./client";
 import type { Animal } from "./crestRules";
-import {
-  type AgeNews,
-  type AnniversaryNews,
-  anniversaryDue,
-  type MovementNames,
-  newestAge,
-} from "./villageNewsRules";
-import { getVillageYears } from "./villageYears";
-
-const { exercises } = schema;
+import { type AgeNews, type AnniversaryNews, anniversaryDue, newestAge } from "./villageNewsRules";
+import { getVillageYears, movementNames } from "./villageYears";
 
 /**
  * What the years have to announce tonight: an Age and the anniversary, each null when this phone
@@ -26,19 +16,7 @@ export async function readVillageNews(
   const age = newestAge(years.ages, shown);
   const year = anniversaryDue(years.year, shown);
   const ids = [age?.exerciseId, year?.best?.exerciseId].filter((id) => id != null);
-  const rows = ids.length
-    ? await db
-        .select({
-          id: exercises.id,
-          enName: exercises.enName,
-          frName: exercises.frName,
-          deName: exercises.deName,
-          esName: exercises.esName,
-        })
-        .from(exercises)
-        .where(inArray(exercises.id, ids))
-    : [];
-  const names = new Map<number, MovementNames>(rows.map(({ id, ...n }) => [id, n]));
+  const names = await movementNames(ids);
   return {
     age: age && {
       level: age.level,

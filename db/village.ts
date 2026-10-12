@@ -1,5 +1,8 @@
 import { and, count, eq, gte, isNotNull, lt, sql, sum } from "drizzle-orm";
-import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
+import { buildingCeiling, MAX_BUILDING_LEVEL, T3_MAX_LEVEL } from "@/constants/buildingLevels";
+
+export { buildingCeiling };
+
 import { localizedTable } from "@/src/i18n/copy";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "./adventures";
@@ -249,7 +252,7 @@ export type VillageBuilding = {
 
 // The shared ladder from schema.ts, with level 1 at "any work at all" — a building appears
 // the first time its muscle is trained, which is what the old `xp > 0` guard meant.
-const VOLUME_FLOORS: readonly number[] = [1, 2, 3, 4, 5].map((lvl) =>
+const VOLUME_FLOORS: readonly number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((lvl) =>
   lvl === 1 ? 1 : (buildingLevelThresholds[lvl] ?? 0),
 );
 
@@ -343,7 +346,7 @@ async function getLegacyDeedLevels(banners: readonly BossBanner[]): Promise<Lega
  *
  * Re-tune here and nowhere else; nothing but this table and METRES_PER_LEAGUE knows the scale.
  */
-const ROAD_FLOORS: readonly number[] = [1, 15, 40, 90, 200];
+const ROAD_FLOORS: readonly number[] = [1, 15, 40, 90, 200, 400, 700, 1100, 1700, 2500];
 
 /**
  * Where each tier-4 driver reads its tally. A map rather than the ternary chain this replaces:
@@ -387,17 +390,6 @@ const TIER_4_DRIVERS: Partial<
   champion_arena: { driver: "rematches", floors: REMATCH_FLOORS },
   high_road: { driver: "leagues", floors: ROAD_FLOORS },
 };
-
-// A tier-3 upgrade trails two rungs behind the building it extends, which tops out at 5.
-const T3_MAX_LEVEL = 3;
-
-/**
- * The level a building can actually reach. The six upgrades stop at 3, and the village used to
- * draw five pips under them anyway: "3 of 5" for life, a road the screen promised and never had.
- */
-export function buildingCeiling(building: Pick<VillageBuilding, "tier">): number {
-  return building.tier === 3 ? T3_MAX_LEVEL : MAX_BUILDING_LEVEL;
-}
 
 /** Level 1..5 from a floor table indexed by level - 1; below the first floor, 0 = not earned. */
 function levelFromFloors(value: number, floors: readonly number[]): number {
@@ -494,9 +486,8 @@ function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
 
   // Starter buildings always stand; they grow with the village itself.
   //
-  // Clamped at 5 since the scene gained tiers 6-8: a building level is 1..5 by contract and
-  // LevelPips draws exactly five dots, so an unclamped tier 8 handed the tile a level it had no
-  // way to show — five filled pips *and* a bar, reading as "maxed, still climbing". Past tier 5
+  // Clamped at the ceiling since the scene gained tiers 11-12: a building level is 1..10 by
+  // contract, so an unclamped tier 12 handed the tile a level it had no way to show. Past tier 10
   // the campfire is simply finished; the hero's tier name in the scene above is what keeps
   // moving, and the tile does not need to say it twice.
   if (def.tier === 1) {
@@ -584,7 +575,7 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
     const prereq = def.prerequisiteBuilding
       ? (derivedOf.get(def.prerequisiteBuilding)?.level ?? 0)
       : 0;
-    const level = prereq >= required ? prereq - 2 : 0;
+    const level = prereq >= required ? Math.min(prereq - 2, T3_MAX_LEVEL) : 0;
     derivedOf.set(code, {
       level,
       driver: "prereq",

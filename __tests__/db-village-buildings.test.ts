@@ -150,7 +150,7 @@ describe("db/village buildings", () => {
     walkLeagues(35);
 
     const built = await road();
-    // Floors are [1, 15, 40, 90, 200] leagues: 35 clears the second and not the third.
+    // Floors start [1, 15, 40, 90, 200] leagues: 35 clears the second and not the third.
     expect(built.level).toBe(2);
     expect(built.metricValue).toBe(35);
     expect(built.nextTarget).toBe(40);
@@ -162,6 +162,72 @@ describe("db/village buildings", () => {
     const built = await road();
     expect(built.metricValue).toBe(9);
     expect(built.level).toBe(1);
+  });
+
+  // Ranks 6 to 10: the thresholds, and the ceiling of every kind of building.
+  describe("ranks 6 to 10", () => {
+    const rank = async (code: string) => {
+      const { getVillageBuildings } = require("../db/village") as typeof import("../db/village");
+      const found = (await getVillageBuildings()).find((b) => b.code === code);
+      assert(found);
+      return found;
+    };
+
+    test.each([
+      [999, 4],
+      [1000, 5],
+      [2399, 5],
+      [2400, 6],
+      [4800, 7],
+      [8000, 8],
+      [12000, 9],
+      [16799, 9],
+      [16800, 10],
+    ])("a volume building at %i units stands at rank %i", async (reps, expected) => {
+      liftReps(reps);
+      expect((await rank("forge")).level).toBe(expected);
+    });
+
+    test("a volume building tops out at 10: more work raises nothing and the bar has no target", async () => {
+      liftReps(90000);
+      const forge = await rank("forge");
+      expect(forge.level).toBe(10);
+      expect(forge.nextTarget).toBeNull();
+      // The upgrade that trails it stays at its own ceiling of 3.
+      expect((await rank("armory")).level).toBe(3);
+    });
+
+    test.each([
+      [199, 4],
+      [200, 5],
+      [399, 5],
+      [400, 6],
+      [700, 7],
+      [1100, 8],
+      [1700, 9],
+      [2500, 10],
+      [9000, 10],
+    ])("the road at %i leagues stands at rank %i", async (leagues, expected) => {
+      walkLeagues(leagues);
+      expect((await road()).level).toBe(expected);
+    });
+
+    test("the tier-1 starters follow the village up to rank 10 and no further", async () => {
+      // 60 000 XP is hero level 40 or so: village tier 12 (TIER_LEVEL_FLOORS).
+      t.sqlite.exec(
+        `INSERT INTO completed_sessions (id, performedAt, xpEarned) VALUES (1, ${Math.floor(Date.now() / 1000)}, 60000)`,
+      );
+      const campfire = await rank("campfire");
+      expect(campfire.level).toBe(10);
+      expect(campfire.nextTarget).toBeNull();
+    });
+
+    test("the lair, the hall and the arena keep their five ranks", async () => {
+      const { buildingCeiling } = require("../db/village") as typeof import("../db/village");
+      for (const code of ["dragon_lair", "heroes_hall", "champion_arena"]) {
+        expect(buildingCeiling(await rank(code))).toBe(5);
+      }
+    });
   });
 
   // The two currencies, made checkable. Nothing converts between them in either direction: an

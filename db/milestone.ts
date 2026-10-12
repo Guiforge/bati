@@ -1,4 +1,4 @@
-import { MAX_BUILDING_LEVEL } from "@/constants/buildingLevels";
+import { buildingCeiling } from "@/constants/buildingLevels";
 import { buildingDefinitions, type ExerciseStyle, type MuscleCode } from "./schema";
 import type { VillageBuilding } from "./village";
 
@@ -27,7 +27,7 @@ export type Milestone = {
 
 type Rising = Pick<
   VillageBuilding,
-  "code" | "level" | "driver" | "metricValue" | "nextTarget" | "exactValue"
+  "code" | "tier" | "level" | "driver" | "metricValue" | "nextTarget" | "exactValue"
 >;
 
 /** What lacks over what a typical recent session brings, rounded up; null with no average to go by. */
@@ -52,7 +52,7 @@ export function sessionsToGo(missing: number, recent: readonly number[]): number
  * already covers the starters.
  */
 export function nextMilestone(b: Rising, feeds: RecentFeeds): Milestone | null {
-  if (b.nextTarget === null || b.level >= MAX_BUILDING_LEVEL) return null;
+  if (b.nextTarget === null || b.level >= buildingCeiling(b)) return null;
   const feed = feedOf(b, feeds);
   if (feed === null) return null;
   const count = sessionsToGo(b.nextTarget - (b.exactValue ?? b.metricValue), feed.recent);

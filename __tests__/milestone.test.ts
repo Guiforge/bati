@@ -10,6 +10,7 @@ const none: RecentFeeds = { muscle: {}, style: {}, outing: [] };
 
 const forge = (over: Partial<Parameters<typeof nextMilestone>[0]> = {}) => ({
   code: "forge" as BuildingCode,
+  tier: 2 as const,
   level: 3,
   driver: "muscle" as const,
   metricValue: 400,
@@ -116,11 +117,47 @@ describe("nextMilestone", () => {
     }
   });
 
-  test("the top rank has no line, whatever fed it", () => {
+  test("a volume building has no line at rank 10, whatever feeds it", () => {
     const feeds = { ...none, muscle: { chest: [100] } };
-    expect(nextMilestone(forge({ level: 5, nextTarget: null }), feeds)).toBeNull();
-    // Even a stale next target cannot make a rank 6.
-    expect(nextMilestone(forge({ level: 5, nextTarget: 2000 }), feeds)).toBeNull();
+    expect(nextMilestone(forge({ level: 10, nextTarget: null }), feeds)).toBeNull();
+    // Even a stale next target cannot make a rank 11.
+    expect(nextMilestone(forge({ level: 10, nextTarget: 30000 }), feeds)).toBeNull();
+  });
+
+  test("rank 5 is no longer the top: the Forge still points at rank 6", () => {
+    const feeds = { ...none, muscle: { chest: [100] } };
+    expect(nextMilestone(forge({ level: 5, nextTarget: 2400, metricValue: 1000 }), feeds)).toEqual({
+      rank: 6,
+      count: 14,
+      unit: "sessions",
+      subject: { muscle: "chest" },
+    });
+  });
+
+  test("the road reads buildingCeiling: a line at rank 5, none at rank 10", () => {
+    const road = {
+      code: "high_road" as BuildingCode,
+      tier: 4 as const,
+      driver: "leagues" as const,
+      metricValue: 200,
+    };
+    const feeds = { ...none, outing: [10] };
+    expect(nextMilestone(forge({ ...road, level: 5, nextTarget: 400 }), feeds)).toMatchObject({
+      rank: 6,
+    });
+    expect(nextMilestone(forge({ ...road, level: 10, nextTarget: 3000 }), feeds)).toBeNull();
+  });
+
+  test("a building whose ceiling is 5 has no line at 5, even with a stale target", () => {
+    const arena = {
+      code: "champion_arena" as BuildingCode,
+      tier: 4 as const,
+      driver: "leagues" as const,
+      level: 5,
+      nextTarget: 600,
+    };
+    // The outings did feed it (a road would answer); only the ceiling of 5 says no.
+    expect(nextMilestone(forge(arena), { ...none, outing: [10] })).toBeNull();
   });
 
   test("a building nothing has fed yet has no line", () => {

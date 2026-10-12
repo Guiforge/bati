@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { victoryMilestoneLine } from "@/components/village/milestoneLine";
 import { buildingScale, feedsLine, groupFamilies, questLink } from "@/components/village/rows";
+import { buildingStage } from "@/constants/buildingLevels";
 import { type BuildingCode, buildingDefinitions, muscleCodes } from "@/db/schema";
 import {
   buildingCeiling,
@@ -307,8 +308,27 @@ it("sends a deed a campaign raises to the adventures, and the road to the outing
   expect(questLink(b("forge", 1)).params).toEqual({ muscle: "chest" });
 });
 
-it("an upgrade tops out at 3, everything else at 5", () => {
+it("an upgrade tops out at 3", () => {
   expect(buildingCeiling(b("armory", 1))).toBe(3);
-  expect(buildingCeiling(b("forge", 1))).toBe(5);
+  expect(buildingCeiling(b("barn", 1))).toBe(3);
+});
+
+it("a volume building tops out at 10, and so do the starters", () => {
+  expect(buildingCeiling(b("forge", 1))).toBe(10);
+  expect(buildingCeiling(b("druid_grove", 1))).toBe(10);
+  expect(buildingCeiling(b("campfire", 1))).toBe(10);
+});
+
+it("the road tops out at 10, the lair, the hall and the arena at 5", () => {
+  expect(buildingCeiling(b("high_road", 1))).toBe(10);
   expect(buildingCeiling(b("dragon_lair", 1))).toBe(5);
+  expect(buildingCeiling(b("heroes_hall", 1))).toBe(5);
+  expect(buildingCeiling(b("champion_arena", 1))).toBe(5);
+});
+
+it("the painting stops at rank 5: ranks 6 to 10 keep the grand art", () => {
+  expect(buildingStage(2)).toBe("rough");
+  expect(buildingStage(4)).toBe("solid");
+  expect(buildingStage(5)).toBe("grand");
+  expect(buildingStage(10)).toBe("grand");
 });

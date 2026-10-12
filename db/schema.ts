@@ -1025,6 +1025,13 @@ export const buildingLevelThresholds: Record<number, number> = {
   3: 300, // Level 3 at 300 XP
   4: 600, // Level 4 at 600 XP
   5: 1000, // Level 5 at 1000 XP
+  // Ranks 6 to 10 (V-03). The XP curve at ten times its scale, then scaled by 0.8 so the Forge of
+  // the design's state B (2 433 chest units) stands at rank 6: 3 000 would have left it at 5.
+  6: 2400,
+  7: 4800,
+  8: 8000,
+  9: 12000,
+  10: 16800,
 };
 
 // Village buildings table (player's building state)

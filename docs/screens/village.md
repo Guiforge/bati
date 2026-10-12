@@ -63,7 +63,7 @@ row can be read without a tap.
    - **Families** (`groupFamilies` in `components/village/rows.ts`): Muscles, Styles, Upgrades,
      Deeds, Starter, each labelled with what feeds it. Unbuilt buildings sit in their family, not
      in a locked drawer. A row is the name, the next rung in words, and "rank 2" with pips
-     on the building's **real ceiling** (`buildingCeiling`: 3 for the six upgrades, 5 elsewhere).
+     on the building's **real ceiling** (`buildingCeiling`, the only source: 3 for the six upgrades, 5 for the Lair, the Hall and the Arena, 10 for the starters, the volume buildings and the High Road). The pips never exceed five: a building above rank 5 shows five full pips and its rank as a gold number after them.
      The building "Next to rise" already names keeps its row, marked by a gold edge, so it is found
      where it belongs without being read twice. Day one shows the starters and one "Not built yet"
      list; a finished village leads with the deeds and folds the rest into one family.
@@ -77,6 +77,17 @@ tally cannot show a first walk and whose bar can.
 Below 700 dp of window height the painting is cut to a band 62% of the width tall (starting 20% in),
 so the tier block stays above the fold.
 
+## Ranks 6 to 10 (V-03)
+
+Ranks 6 to 10 exist for the starters (`min(village tier, 10)`), the volume buildings and the High
+Road. The upgrades stay at 3, the Lair, the Hall and the Arena at 5 (their content is finite).
+Volume floors (`buildingLevelThresholds`): 1, 100, 300, 600, 1 000, then **2 400, 4 800, 8 000,
+12 000, 16 800** work units. The design asked for 3 000 / 6 000 / 10 000 / 15 000 / 21 000; the
+state B hero (2 433 chest units) would have stayed at rank 5 on the Forge, so the five were scaled
+by 0.8 to put the Forge at rank 6, the figure the mock-ups show. The painting is not affected:
+`buildingStage` stops at `BUILDING_STAGE_LEVEL` (5) and ranks 6 to 10 keep the grand art. Nothing
+is migrated: levels are derived, so a hero's rank can only rise.
+
 ## Deeds
 
 The four tier-4 buildings answer to deeds, and **no finished campaign feeds two of them**:
@@ -86,7 +97,7 @@ The four tier-4 buildings answer to deeds, and **no finished campaign feeds two 
 | Dragon Lair | bosses beaten at least once (`getBossBanners`) | 1, 2, 3, 4, 6 |
 | Champion Arena | rematches: boss campaigns finished again after the first victory | 1, 3, 6, 10, 15 |
 | Hall of Heroes | finished campaigns that are not a boss (routes), replays included | 1, 2, 4, 7, 10 |
-| High Road | leagues covered outside | 1, 15, 40, 90, 200 |
+| High Road | leagues covered outside | 1, 15, 40, 90, 200, 400, 700, 1 100, 1 700, 2 500 |
 
 Until 2026-09 one boss run raised the lair, the arena (every boss victory) and the hall (every
 finished campaign) at once, and the detail sheets said nearly the same sentence three times. The
@@ -221,7 +232,7 @@ unbuilt row draws the same emblem as a silhouette through `tintColor`, which nee
   over Brumeval", "now" in the line (en; "depuis aujourd'hui", "seit heute", "desde hoy" in fr, de, es) on the day of the reveal and never for a hand-picked animal.
 - **Milestone line** (`milestoneLine`): under a rising building's bar, "Rank 4 in about 3 chest
   sessions." or "in about 3 outings", the mean of the five latest sessions that fed it, rounded
-  up. Never a number of reps to do (`village-copy-no-chores`). Absent at the top rank and where
+  up. Never a number of reps to do (`village-copy-no-chores`). Absent at the building's ceiling and where
   nothing has fed the building.
 - **Feasts** (`rankFeasts`): small is a line in "Tonight", medium a card, large the full-screen
   `/big-feast` route (one per session: epilogue, reveal, an Age, anniversary, tier). A tier

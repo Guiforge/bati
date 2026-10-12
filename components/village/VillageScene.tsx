@@ -26,6 +26,7 @@ import { VillagerCameo } from "@/components/chorus/VillagerCameo";
 import { AppButton } from "@/components/common/AppButton";
 import { FlameFlicker } from "@/components/common/FlameFlicker";
 import { Skeleton } from "@/components/common/Skeleton";
+import { Banners } from "@/components/village/Banners";
 import { Crest } from "@/components/village/Crest";
 import { CrestSheet, type CrestView } from "@/components/village/CrestSheet";
 import { crestFootprint } from "@/components/village/crestGeometry";
@@ -69,6 +70,7 @@ import {
   type VillageBuilding,
   type VillageScene as VillageSceneData,
 } from "@/db/village";
+import { loadVillageYears, type VillageYearsView } from "@/db/villageYears";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useAnimationProps, useReducedMotion } from "@/hooks/useReducedMotion";
 import { reportError } from "@/src/reportError";
@@ -226,6 +228,9 @@ export function VillageScene() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [rewardOpen, setRewardOpen] = useState(false);
   const [crestView, setCrestView] = useState<CrestView | null>(null);
+  // Stones and banners, replayed from the journal: read after the scene (its XP keys the memo)
+  // and never failing it, like the crest. Unread, the Seasons and the stones are simply absent.
+  const [yearsView, setYearsView] = useState<VillageYearsView | null>(null);
 
   // Stable: the sheet subscribes to hardware back on it, and a fresh identity every render
   // would resubscribe every render.
@@ -263,6 +268,11 @@ export function VillageScene() {
         if (crestData !== undefined) crestRead.current = true;
         if (crestData !== undefined || !crestRead.current) setCrest(crestData);
         setLoadFailed(false);
+        loadVillageYears(data.totalXp, crestData?.animal ?? null)
+          .then((view) => {
+            if (mine === loadId.current) setYearsView(view);
+          })
+          .catch((error) => reportError("village.years", error));
       })
       .catch((error) => {
         if (mine !== loadId.current) return;
@@ -646,6 +656,9 @@ export function VillageScene() {
             language={language}
             onOpen={openBuilding}
           />
+          {yearsView ? (
+            <Banners banners={yearsView.years.banners} names={yearsView.names} language={lang} />
+          ) : null}
           <YStack gap={6}>
             <Text fontSize={12} lineHeight={17} color="$textSecondary" fontStyle="italic">
               {weather}
@@ -707,6 +720,7 @@ export function VillageScene() {
           onClose={closeDetail}
           language={language}
           feeds={feeds}
+          years={yearsView}
           bottomInset={insets.bottom}
         />
       ) : null}

@@ -219,6 +219,26 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
   },
   // What the hero HAS DONE: totals, records, "5 of your 8 sessions", and the
   // reps, bosses, routes and sessions behind a building (detail sheet, bar caption).
+  // The seasons and the stones say what a banner or a level held: sessions already done.
+  "village.fact_sessions_one": {
+    why: "fait",
+    fr: "{{count}} séance",
+    en: "{{count}} session",
+    de: "{{count}} Einheit",
+    es: "{{count}} sesión",
+  },
+  "village.fact_sessions_other": {
+    why: "fait",
+    fr: "{{count}} séances",
+    en: "{{count}} sessions",
+    de: "{{count}} Einheiten",
+    es: "{{count}} sesiones",
+  },
+  "village.fact_sessions_many": {
+    why: "fait",
+    fr: "{{count}} séances",
+    es: "{{count}} sesiones",
+  },
   "oath.metric_exercise_pr": {
     why: "serment",
     fr: "{{count, number}} × {{exercise}} d'affilée",

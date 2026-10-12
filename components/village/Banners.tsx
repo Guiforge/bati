@@ -52,7 +52,6 @@ export function Banners({
                     accessible
                     accessibilityLabel={t("village.banner_label", { year, season, fact })}
                     flexBasis="48%"
-                    grow={1}
                     rounded={10}
                     overflow="hidden"
                     bg="$surface2"

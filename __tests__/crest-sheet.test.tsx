@@ -641,7 +641,7 @@ describe("the motto", () => {
     expect(screen.queryByTestId("crest-motto")).toBeNull();
   });
 
-  it("the view offers the eight and none, the stored one checked, and a press writes it and goes back", async () => {
+  it("the view offers the nine and none, the stored one checked, and a press writes it and goes back", async () => {
     mottoIs("stone");
     const set = jest.spyOn(preferences, "setCrestMotto").mockResolvedValue();
     const onView = jest.fn();
@@ -655,7 +655,7 @@ describe("the motto", () => {
       />,
     );
     expect(screen.getByTestId("sheet-title").props.children).toBe("Devise");
-    expect(screen.getAllByRole("radio")).toHaveLength(9);
+    expect(screen.getAllByRole("radio")).toHaveLength(10);
     await waitFor(() =>
       expect(screen.getByTestId("crest-motto-stone").props.accessibilityState.checked).toBe(true),
     );

@@ -470,7 +470,7 @@ export const preferences = {
   },
 
   /**
-   * The motto shown under the shield in the crest sheet and under the Village's level line, from the closed list in `db/crestMotto.ts`.
+   * The motto shown under the shield in the crest sheet and nowhere else, from the closed list in `db/crestMotto.ts`.
    * Nothing writes a default; a missing or unknown value reads as `none`.
    */
   async getCrestMotto(): Promise<CrestMotto> {
@@ -478,7 +478,7 @@ export const preferences = {
     return isCrestMotto(value) ? value : "none";
   },
 
-  // Written by the crest sheet's motto view, read by the Village's header and by that sheet.
+  // Written by the crest sheet's motto view, read by that sheet alone.
   async setCrestMotto(choice: CrestMotto): Promise<void> {
     await setPreference("crestMotto", choice);
   },

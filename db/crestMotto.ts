@@ -1,4 +1,5 @@
-/** The closed list of mottos a hero can put under their shield. No free text: the copy is ours. */
+/** The closed list of mottos a hero can put under their shield. No free text: the copy is ours.
+ * An id is what a hero's device stores: the words under it can be polished, never turned into another motto. */
 export const CREST_MOTTOS = [
   "hearth",
   "stone",
@@ -8,6 +9,7 @@ export const CREST_MOTTOS = [
   "built",
   "rise",
   "seasons",
+  "come",
 ] as const;
 
 export type CrestMottoId = (typeof CREST_MOTTOS)[number];

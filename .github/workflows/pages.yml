@@ -20,12 +20,8 @@ on:
     # the app as it was two versions ago.
     paths:
       ["docs/legal/**", "fastlane/metadata/**", ".github/workflows/pages.yml"]
-  # A new release means a new APK to fold into the F-Droid index. zizmor flags workflow_run because
-  # it runs with secrets after an untrusted run; Release is not one: it runs on a tag or a manual
-  # dispatch, both of which need push access, and this job never checks out its head.
-  workflow_run: # zizmor: ignore[dangerous-triggers]
-    workflows: [Release]
-    types: [completed]
+  # A new release means a new APK to fold into the F-Droid index: release.yml's `github` job
+  # dispatches this once the APK is on the Release. Also how to redeploy by hand.
   workflow_dispatch:
 
 permissions:
@@ -40,7 +36,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    timeout-minutes: 20
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -74,7 +70,8 @@ jobs:
       # From pip, not apt. Ubuntu ships fdroidserver 2.2.1, whose bundled androguard cannot parse
       # a manifest built by current Android build-tools and dies with "res1 must be zero!".
       # setuptools is pinned below 81 because fdroidserver still imports pkg_resources, which 81
-      # dropped.
+      # dropped. fdroidserver is pinned: it runs beside the repository signing key. Bump it by
+      # hand; Dependabot does not read a version out of a shell line.
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         if: steps.fdroid.outputs.ready == 'true'
         with:
@@ -87,7 +84,7 @@ jobs:
           packages: platform-tools
       - name: Install fdroidserver
         if: steps.fdroid.outputs.ready == 'true'
-        run: pip install "setuptools<81" fdroidserver
+        run: pip install "setuptools<81" fdroidserver==2.4.5
 
       # The Release only ever carries the foss APK (release.yml's `github` job), which is what
       # makes `*.apk` safe: the Play build is never attached to it.

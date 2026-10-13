@@ -24,12 +24,14 @@ once, then builds twice from that commit (arm64-only, R8-minified — the R8 swi
 | Build | `EXPO_PUBLIC_DISTRIBUTION` | Produces | Goes to |
 |---|---|---|---|
 | `foss` | `github` | APK | the GitHub Release, then our F-Droid repository through `pages.yml` |
-| `play` | `play` | AAB (plus an APK only the guards read) | Play's internal track, after you approve `play-internal` |
+| `play` | `play` | AAB (plus an APK only the guards read) | Play's internal track, unattended |
 
 f-droid.org is the third distribution (`fdroid`): its bot builds the tag itself from
 `fdroid/fdroiddata-recipe.yml`, nothing to do per release. Never attach the AAB or the play APK to
 the GitHub Release: `pages.yml` indexes every `*.apk` it finds there. The `github` job waits for
-both builds, so a red play build publishes no APK either.
+both builds, so a red play build publishes no APK either; it does not wait for the Play *upload*,
+which has no approval gate while the track is `internal`. Promotion beyond it is by hand in the
+Play Console.
 
 The Play listing is `fastlane/metadata/android` with `fastlane/play/android` laid over it (empty
 for now). Changelogs are shared and never go in the overlay, so keep them free of anything that

@@ -6,10 +6,12 @@
 #   build    a matrix of two, same commit, same versionCode, same key:
 #              foss  EXPO_PUBLIC_DISTRIBUTION=github, an APK with no Google code in it
 #              play  EXPO_PUBLIC_DISTRIBUTION=play, an AAB (and an APK only the guards read)
-#   github   the foss APK to a GitHub Release, which pages.yml then folds into our own F-Droid
-#            repository. Never the AAB, never the play APK.
-#   play     the AAB and the store listing to Play's internal testing track, behind a manual
-#            approval gate (the `play-internal` environment)
+#   github   the foss APK to a GitHub Release, then starts pages.yml, which folds it into our
+#            own F-Droid repository. Never the AAB, never the play APK.
+#   play     the AAB and the store listing to Play's internal testing track, unattended
+#
+# `github` and `play` do not wait for each other: a Play upload that fails or hangs leaves the
+# APK and the F-Droid repository published all the same.
 #
 # Two builds because the distribution is inlined into the JS bundle (src/distribution.ts), so one
 # binary cannot be both. f-droid.org is the third distribution and builds the tag itself, from
@@ -41,6 +43,10 @@ jobs:
   # Once, not once per build: nothing here depends on the distribution.
   checks:
     runs-on: ubuntu-26.04
+    # Every job in this repo has one. The default is six hours, which is what a hung Gradle or
+    # a jest worker that never exits would otherwise bill. Each is several times the slowest
+    # green run on record, so it only ever stops something already broken.
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -91,6 +97,8 @@ jobs:
   build:
     needs: checks
     runs-on: ubuntu-26.04
+    # 19 minutes on a warm Gradle cache, about 30 on a cold one.
+    timeout-minutes: 90
     # Read only: this job holds the signing key, and nothing in it publishes.
     permissions:
       contents: read
@@ -406,10 +414,13 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-26.04
-    # write: action-gh-release creates the GitHub Release and attaches the APK. Its own job so
-    # that the token sits here, away from the signing key.
+    timeout-minutes: 10
+    # contents: action-gh-release creates the GitHub Release and attaches the APK. actions: the
+    # last step starts pages.yml. Its own job so that the token sits here, away from the
+    # signing key.
     permissions:
       contents: write
+      actions: write
     steps:
       # The `apk` artefact holds one file, the foss APK. pages.yml takes every `*.apk` on the
       # Release into the F-Droid index, so nothing else may ever be attached to it.
@@ -431,14 +442,28 @@ jobs:
             This APK is not from an app store. Android will ask you to allow installs from an
             unknown source the first time.
 
-  # Gated behind the `play-internal` environment: set it up once in Settings → Environments
-  # with yourself as a required reviewer, so a bad tag can't reach real testers unattended.
-  # Needs PLAY_SERVICE_ACCOUNT_JSON on that environment — a Play Console service account with
-  # "release to testing tracks" permission. See docs/planning/roadmap.md §1.
+      # Started from here rather than by `workflow_run` on this workflow: that only fires once
+      # the whole run is over and only helps if it is green, so a Play upload that failed
+      # (v2.11.0, v2.12.0) left our F-Droid repository on the previous version. A dispatch is
+      # one of the two events GITHUB_TOKEN is allowed to start a workflow with. On main, because
+      # the listing Pages publishes is main's and the `github-pages` environment expects it.
+      - name: Fold the new APK into the F-Droid repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main
+
+  # No approval gate, on purpose: the track is `internal`, whose only audience is the testers
+  # list, and promotion beyond it is done by hand in the Play Console. The gate it used to have
+  # held the whole run open until someone clicked (27 hours on v2.11.0), and the `release`
+  # concurrency group queued the next tag behind it. The `play-internal` environment stays
+  # because it is where PLAY_SERVICE_ACCOUNT_JSON lives — a Play Console service account with
+  # "release to testing tracks" permission. Put a required reviewer back on it the day this
+  # job targets a track real users are on. See docs/planning/roadmap.md §1.
   play:
     needs: build
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-26.04
+    timeout-minutes: 30
     environment: play-internal
     permissions:
       contents: read
@@ -467,8 +492,10 @@ jobs:
         env:
           SUPPLY_JSON_KEY_DATA: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
-          # sudo: the runner's system Ruby owns /var/lib/gems.
-          sudo gem install fastlane --no-document
+          # sudo: the runner's system Ruby owns /var/lib/gems. Pinned: this is the job that holds
+          # the Play credentials, and a floating install runs whatever was published last night.
+          # Bump it by hand; Dependabot does not read a version out of a shell line.
+          sudo gem install fastlane --version 2.241.0 --no-document
           listing="$RUNNER_TEMP/listing"
           cp -r fastlane/metadata/android "$listing"
           cp -r fastlane/play/android/. "$listing/"

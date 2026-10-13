@@ -179,7 +179,8 @@ choked on a value it could not parse. The workflow writes a newline first.
 ## Automating it
 
 [`.github/workflows/pages.yml`](../.github/workflows/pages.yml) does the recurring half: it takes
-the APK the release workflow built, folds it into the repository index and publishes. It needs
+the APK the release workflow built, folds it into the repository index and publishes. The release
+workflow starts it as soon as the APK is on the GitHub Release, whatever happens to the Play upload. It needs
 `FDROID_KEYSTORE_BASE64` and `FDROID_KEYSTORE_PASSWORD` on top of the signing secrets above, and
 skips itself cleanly when they are missing.
 

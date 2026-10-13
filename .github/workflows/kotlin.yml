@@ -12,7 +12,10 @@
 name: Kotlin
 
 on:
+  # main only, like ci.yml: a branch is checked by its pull request, and both triggers together
+  # ran every PR commit twice.
   push:
+    branches: [main]
     paths:
       - "modules/*/android/**"
       # The frozen backup files the JVM tests open (modules/bati-crypto/android/src/test).
@@ -35,6 +38,7 @@ permissions:
 jobs:
   kotlin:
     runs-on: ubuntu-26.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

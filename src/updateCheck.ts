@@ -3,6 +3,7 @@ import Constants from "expo-constants";
 // The module, not the `@/db` barrel: that one re-exports quests, adventures and boss fights, and
 // this is reached from Home. Same reason `src/autoBackup.ts` imports it this way.
 import { preferences } from "@/db/preferences";
+import { UPDATE_CHECK_OFFERED } from "@/src/distribution";
 
 /**
  * The second host this app has ever talked to, and the second one that stays quiet until a hero
@@ -13,24 +14,20 @@ import { preferences } from "@/db/preferences";
  * downloaded from a release page has nobody to tell it anything, so it sits on 2.1.0 for a year
  * while the fixes pile up somewhere it will never look.
  *
+ * So it is in one build out of three: `UPDATE_CHECK_OFFERED` (src/distribution.ts) is true for
+ * the `github` distribution only. The f-droid.org build cannot install the APK the card leads to,
+ * and the Play build has no business pointing outside the store; in both, the Settings row is
+ * gone and `checkForUpdate()` answers null without asking anyone, even for a hero who had
+ * switched it on in another build.
+ *
  * What it does *not* do is as deliberate as what it does: no download, no install, no APK ever
- * fetched here. The card this feeds opens the release page in the hero's own browser, which is
- * also what keeps the feature inside Play's rules for a build that ships there.
+ * fetched here. The card this feeds opens the release page in the hero's own browser.
  *
  * The request carries no identifier of any kind. GitHub learns an IP address, a time, and that
  * something asked about this repository, which is what it learns from anyone opening the page in
  * a browser. That sentence is in the privacy policy and in the note under the Settings row, not
  * only here.
  */
-
-/**
- * False in the f-droid.org build, whose recipe writes `EXPO_PUBLIC_DISTRIBUTION=fdroid` to `.env`
- * before Gradle bundles the JS. F-Droid signs with its own key, so the GitHub APK this would
- * point to cannot install over it, and uninstalling first deletes the hero (docs/fdroid.md § The
- * signing key). Play and our own F-Droid repository ship the GitHub key, so they keep the offer.
- * A literal read: Babel inlines it at build time, a dynamic one would be `undefined`.
- */
-export const UPDATE_CHECK_OFFERED = process.env.EXPO_PUBLIC_DISTRIBUTION !== "fdroid";
 
 /** Where the card sends a hero. The page, never a file. */
 export const RELEASES_URL = "https://github.com/Guiforge/bati/releases/latest";
@@ -122,7 +119,7 @@ export function checkForUpdate(): Promise<string | null> {
 let inflight: Promise<string | null> | null = null;
 
 async function askForUpdate(): Promise<string | null> {
-  // Also covers a hero who switched it on before the F-Droid build hid the row.
+  // Also covers a hero who switched it on before their build hid the row.
   if (!UPDATE_CHECK_OFFERED || !(await preferences.getUpdateCheckEnabled())) return null;
 
   const checkedAt = await preferences.getUpdateCheckedAt();

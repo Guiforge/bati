@@ -12,7 +12,10 @@
 name: Android lint
 
 on:
+  # main only, like ci.yml: a branch is checked by its pull request, and both triggers together
+  # ran every PR commit twice.
   push:
+    branches: [main]
     paths:
       - "app.json"
       - "plugins/**"
@@ -37,6 +40,7 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-26.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -69,8 +73,8 @@ jobs:
       # architecture-specific, and release.yml ships arm64-v8a anyway.
       #
       # A failure here is either a real new warning or a baseline that has drifted. Neither is
-      # fixed by widening `android-lint-baseline.xml`: regenerate it with
-      # `./gradlew :app:updateLintBaseline` only after the warning itself is understood.
+      # fixed by widening `android-lint-baseline.xml`: regenerate it the way AGENTS.md § Checks
+      # says (not `updateLintBaseline`, which lints debug) only after the warning is understood.
       - name: Lint
         working-directory: android
         run: ./gradlew :app:lintRelease --console=plain -PreactNativeArchitectures=arm64-v8a

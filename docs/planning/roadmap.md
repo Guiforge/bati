@@ -79,8 +79,8 @@ first cost is not the code.
 
 **Play is live on the internal track** (v2.5.3, versionCode 20503, `grep '"version"'
 package.json` and `grep versionCode app.json`; this line sat at 1.12.0/11200 while the app
-reached 2.5), uploaded by the `play` job of `release.yml` behind the `play-internal` GitHub
-Environment. The v2.5.3 run passed both jobs, `apk` and `play` (`gh run view` on the tag's
+reached 2.5), uploaded by the `play` job of `release.yml`, unattended since 2026-10-13 (the `play-internal`
+GitHub Environment holds the credentials and no longer asks for an approval). The v2.5.3 run passed both jobs, `apk` and `play` (`gh run view` on the tag's
 `release.yml` run). The listing in four locales (`ls fastlane/metadata/android`: de-DE, en-US,
 es-ES, fr-FR), the feature graphic, the privacy policy and the signing story are all done. What is
 left is a person in the Play Console, not a keyboard.

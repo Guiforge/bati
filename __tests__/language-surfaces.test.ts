@@ -164,4 +164,28 @@ describe("the store listing", () => {
       expect(text.length).toBeLessThanOrEqual(limit);
     }
   });
+
+  // `fastlane/play/android` is laid over the shared listing for Play alone (release.yml, `play`
+  // job), so a file there is uploaded without ever passing the test above.
+  test("the Play overlay keeps Play's limits, and holds no changelog", () => {
+    const overlay = path.join(ROOT, "fastlane", "play", "android");
+    const limits: Record<string, number> = {
+      "title.txt": 30,
+      "short_description.txt": 80,
+      "full_description.txt": 4000,
+    };
+    const files = fs.readdirSync(overlay, { recursive: true, encoding: "utf8" });
+    // Release notes are shared: the app shows them after an update, on every distribution.
+    expect(files.filter((file) => file.includes("changelogs"))).toEqual([]);
+    for (const file of files) {
+      const limit = limits[path.basename(file)];
+      if (limit === undefined) continue;
+      const text = fs.readFileSync(path.join(overlay, file), "utf8");
+      expect(text.trim()).not.toBe("");
+      expect(text.length).toBeLessThanOrEqual(limit);
+    }
+    // A locale Play has no base listing for would be a new language published by accident.
+    const locales = fs.readdirSync(overlay).filter((name) => name !== "README.md");
+    expect(listings).toEqual(expect.arrayContaining(locales));
+  });
 });

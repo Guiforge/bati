@@ -72,12 +72,17 @@ export async function mergePeer(path: string): Promise<MergeOutcome> {
   // After the commit, on the app's own connection: the records of what came after an edited
   // session were judged against the figure it replaced, here, and only this device has them all.
   // Their failure is reported, not thrown: the merge is in, and a rejection would tell the hero
-  // it was not.
+  // it was not. Each pass on its own, so one failing still lets the other run.
   // The edited sessions kept this device's records: every movement in them is judged again on
   // the sets that came in, and the later sessions only where a figure moved.
-  await redecideSessions(merged.edited)
-    .then(() => redecideAfterChange(merged.moved))
-    .catch((error: unknown) => reportError("sync.merge.records", error));
+  //
+  // ponytail: a session that arrives fresh never makes this device judge its own later sessions
+  //           again (older than this PR), so an edited session judged here against a journal the
+  //           other device lacks can keep a different verdict there. Records converge when both
+  //           journals were whole at the time; sweeping later sessions for fresh ones is the fix.
+  const report = (error: unknown) => reportError("sync.merge.records", error);
+  await redecideSessions(merged.edited).catch(report);
+  await redecideAfterChange(merged.moved).catch(report);
   return { merged: true, sessions: merged.sessions, changes: merged.changes };
 }
 

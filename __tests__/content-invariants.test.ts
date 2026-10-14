@@ -243,7 +243,12 @@ describe("content invariants", () => {
         (q) => questTrainingLevel(q.exercises.map((qex) => qex.exercise.difficulty)) === "beginner",
       )
       .filter((q) => q.exercises.some((qex) => qex.exercise.pattern?.startsWith("push_")))
-      .filter((q) => !q.exercises.some((qex) => qex.exercise.pattern?.startsWith("pull_")))
+      .filter(
+        (q) =>
+          !q.exercises.some(
+            (qex) => qex.exercise.pattern?.startsWith("pull_") && qex.exercise.equipment === "none",
+          ),
+      )
       .map((q) => q.enTitle);
 
     expect(offenders).toEqual([]);

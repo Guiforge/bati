@@ -2294,7 +2294,8 @@
     "references": [
       {
         "path": "superman_w.3d.png",
-        "sha256": "6653965bbc36426e973c40d90786c2d150d0ca1d52b2fb86b3ae21ecf8d35863"
+        "sha256": "f5897814c2d91749f27018180f9130e1da8cacd18ac790839e63274f003430c2",
+        "note": "re-rendered 2026-10-15 from the same POSES3D.superman_w, pixel-identical to the one sent (ImageMagick AE 0); the first render's PNG carried a time chunk, so its hash (6653965b…) could not be reproduced"
       }
     ],
     "reencoded": "cwebp -q 85, from superman_w.jpg"

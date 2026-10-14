@@ -394,7 +394,6 @@ def _joints(head, neck, pelvis, *pairs):
 
 _SIDE_CAM = {"at": (0.0, -3.4, 0.7), "look": (0.0, 0.0, 0.3), "lens": 50}
 
-# Facing +x unless said otherwise, so the body's right side is -y, toward a side camera.
 # The superman_w back, pelvis to neck: a quadratic Bezier whose control point sits low over the
 # lumbar spine, so the curve stays near the floor there and rises through the chest. Seven inner
 # points, eight segments: fewer read as a jointed plank.
@@ -408,6 +407,7 @@ _SPINE_W = [
     for t in (i / 8 for i in range(1, 8))
 ]
 
+# Facing +x unless said otherwise, so the body's right side is -y, toward a side camera.
 POSES3D.update({
     "knee_pushup": {
         # Knees on the floor and the thighs rising from them: with a 15-degree knee bend the
@@ -618,6 +618,9 @@ def render3d(slug: str) -> pathlib.Path:
          "--python", str(ROOT / "scripts" / "pose3d.py"), "--", str(spec_file), str(out)],
         check=True, capture_output=True,
     )
+    # Blender stamps the PNG with the time it was written, so the same pose rendered again had
+    # another hash and the ledger could no longer pin the reference a picture was drawn from.
+    subprocess.run(["magick", str(out), *REPRODUCIBLE, str(out)], check=True)
     return out
 
 

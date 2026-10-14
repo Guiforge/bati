@@ -33,12 +33,16 @@ import { clientMock } from "./helpers/testDb";
  *  - Quests and their slots changed over the journal, so a hero seeded early trained on other
  *    movements: their records are not today's golden records. Their *counts* and the figures that
  *    do not depend on content (sessions, exercise rows, flame, level) are.
- *  - From `FULL_EQUALITY_FROM` on, nothing legitimate differs: the whole hero is the golden hero.
+ *  - From `FULL_EQUALITY_FROM` on, nothing legitimate differs: the whole hero is the golden hero,
+ *    except the content figures of a point before `CONTENT_EQUAL_FROM`, the last slot change.
  *    Move it down when content stops changing; never up to make a failure go away.
  */
-// 72: 0072 appended the Superman W to two beginner quests, so a hero trained before it lifted
-// other movements. Earlier: 54, the last slot change before it.
-const FULL_EQUALITY_FROM = 72;
+const FULL_EQUALITY_FROM = 54; // sampled points only: 54 is not one, 56 is the first
+// 0072 appended the Superman W to two beginner quests, so a hero who trained before it lifted
+// other movements: their records and the village levels those feed are not today's. Everything
+// else about them (sessions, XP, flame, level, achievements) still has to be the golden hero.
+const CONTENT_EQUAL_FROM = 72;
+const CONTENT_FIGURE = /^(records\.|village\.levels\.)/;
 
 const golden = JSON.parse(
   fs.readFileSync(path.join(__dirname, "golden", "hero-3-years.json"), "utf8"),
@@ -116,7 +120,10 @@ describe("a three-year hero updated from any earlier build", () => {
           expect(hero.village.tier).toBe(golden.village.tier);
 
           if (idx >= FULL_EQUALITY_FROM) {
-            expect(figuresThatMoved(golden, hero)).toEqual([]);
+            const moved = figuresThatMoved(golden, hero);
+            expect(
+              idx >= CONTENT_EQUAL_FROM ? moved : moved.filter((m) => !CONTENT_FIGURE.test(m)),
+            ).toEqual([]);
           }
         } finally {
           jest.useRealTimers();

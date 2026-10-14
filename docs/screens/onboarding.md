@@ -47,7 +47,7 @@ lives in Settings.
 ## The first session
 
 Step 4 offers the on-ramp quest, named once in `constants/onboarding.ts`
-(`FIRST_QUEST_TITLE`, "The Squire's Awakening": two rounds of four movements, no equipment).
+(`FIRST_QUEST_TITLE`, "The Squire's Awakening": two rounds of five movements, no equipment).
 The step names its movements, rounds and minutes on a plate, all read from the quest as loaded.
 "Commencer" starts it through `loadConfiguredQuest`, the loader Home uses, and goes straight to
 `/session`, which opens on the warm-up's 10 s wait. "Plus tard" goes to Home, whose day-one card

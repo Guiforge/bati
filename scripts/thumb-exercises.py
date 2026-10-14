@@ -113,6 +113,13 @@ def main() -> int:
         total_after += sum(thumbnail(p, out_dir) for p in found)
         total_count += len(found)
 
+    # A typo would otherwise end in "Wrote 0 thumbnails" and exit 0.
+    if args.stems:
+        known = {p.stem for glob, out_name in FAMILIES for p in sources(glob, ROOT / out_name)}
+        if unknown := sorted(set(args.stems) - known):
+            print(f"No art named {', '.join(unknown)}.", file=sys.stderr)
+            return 1
+
     if args.dry_run:
         return 0
 

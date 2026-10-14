@@ -663,53 +663,41 @@ export async function correctLoggedSet(
       .where(eq(completedExercises.id, setId));
   });
   forgetEverEarned();
-
-  // A later session was judged against this set too. Its verdict on the movement can only have
-  // moved if its own best lies between the old value and the new one, so only those are asked
-  // again: a correction from 362 s to 35 s gives a later 100 s its record back, and the reverse
-  // takes it away.
-  const later = await sessionsWithMovement(
-    row.exerciseId,
-    eq(completedExercises.resultType, row.type),
-    ne(completedExercises.sessionId, row.sessionId),
-    gt(completedQuest.performedAt, row.performedAt),
-    between(
-      completedExercises.resultValue,
-      Math.min(row.oldValue, clamped),
-      Math.max(row.oldValue, clamped),
-    ),
-  );
-  for (const session of [{ id: row.sessionId, recordsJson: row.recordsJson }, ...later]) {
-    await redecideMovementRecord(session.id, session.recordsJson, row.exerciseId);
-  }
-
-  clearCached("quest:");
+  await redecideAfterChange([
+    {
+      sessionId: row.sessionId,
+      exerciseId: row.exerciseId,
+      low: Math.min(row.oldValue, clamped),
+      high: Math.max(row.oldValue, clamped),
+    },
+  ]);
   return "updated";
 }
 
+/** A movement of one saved session whose figures moved, somewhere between `low` and `high`. */
+export type MovedMovement = { sessionId: number; exerciseId: number; low: number; high: number };
+
 /**
- * The records of `sessionIds` and of every later session sharing a movement with one of them,
- * decided again: what a merge does after taking another device's sets for sessions this one had.
- * Unlike `correctLoggedSet` it does not know the old figure, so it asks every later session.
+ * The records a change of figures can have moved, decided again: the session's own entry for the
+ * movement, and every later session judged against it. A later verdict can only have moved if
+ * that session has a figure between the old one and the new one, so only those are asked again: a
+ * correction from 362 s to 35 s gives a later 100 s its record back, and the reverse takes it
+ * away. `correctLoggedSet` calls it for one set, `mergePeer` for the sets another device corrected.
  */
-export async function redecideRecordsAfter(sessionIds: readonly number[]): Promise<void> {
-  if (sessionIds.length === 0) return;
-  // One pass per movement, from the earliest edited session that has it.
-  const moved = await db
-    .select({
-      exerciseId: completedExercises.exerciseId,
-      from: sql<number>`min(${completedQuest.performedAt})`,
-    })
-    .from(completedExercises)
-    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
-    .where(inArray(completedExercises.sessionId, [...sessionIds]))
-    .groupBy(completedExercises.exerciseId);
-  for (const { exerciseId, from } of moved) {
-    const sessions = await sessionsWithMovement(
+export async function redecideAfterChange(changes: readonly MovedMovement[]): Promise<void> {
+  for (const { sessionId, exerciseId, low, high } of changes) {
+    const [own] = await db
+      .select({ performedAt: completedQuest.performedAt, recordsJson: completedQuest.recordsJson })
+      .from(completedQuest)
+      .where(eq(completedQuest.id, sessionId));
+    if (!own) continue;
+    const later = await sessionsWithMovement(
       exerciseId,
-      sql`${completedQuest.performedAt} >= ${from}`,
+      ne(completedExercises.sessionId, sessionId),
+      gt(completedQuest.performedAt, own.performedAt),
+      between(completedExercises.resultValue, low, high),
     );
-    for (const session of sessions) {
+    for (const session of [{ id: sessionId, recordsJson: own.recordsJson }, ...later]) {
       await redecideMovementRecord(session.id, session.recordsJson, exerciseId);
     }
   }

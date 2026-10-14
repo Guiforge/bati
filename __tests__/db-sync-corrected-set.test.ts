@@ -247,7 +247,7 @@ describe("edit stamps", () => {
     const actual = jest.requireActual("../db/personalRecords");
     jest.doMock("../db/personalRecords", () => ({
       ...actual,
-      redecideRecordsAfter: () => Promise.reject(new Error("records")),
+      redecideAfterChange: () => Promise.reject(new Error("records")),
     }));
     const reported: string[] = [];
     jest.doMock("@/src/reportError", () => ({
@@ -263,5 +263,49 @@ describe("edit stamps", () => {
     const id = await log(5, 362);
 
     expect((await fingerprint()).split("|")[0]).toBe(`1:${uuidOf(id)}`);
+  });
+
+  test("a merge asks again only about the movement whose set changed, and only between its two figures", async () => {
+    const other = (
+      t.sqlite
+        .prepare("SELECT id FROM exercises WHERE style != 'expedition' AND id != ? LIMIT 1")
+        .get(holdId()) as { id: number }
+    ).id;
+    const id = await completed().createCompletedSession({
+      questId: null,
+      performedAt: day(5),
+      durationSeconds: 600,
+      xpEarned: 40,
+      exercises: [
+        { exerciseId: holdId(), sortOrder: 0, result: { type: "time", value: 362 } },
+        { exerciseId: other, sortOrder: 1, result: { type: "reps", value: 12 } },
+      ],
+    });
+    const tablet = await peer("tablet.db", (sqlite) => {
+      sqlite
+        .prepare(
+          `UPDATE completed_exercises SET resultValue = 35
+           WHERE sessionId = (SELECT id FROM completed_sessions WHERE uuid = ?) AND sortOrder = 0`,
+        )
+        .run(uuidOf(id));
+      sqlite
+        .prepare("UPDATE completed_sessions SET setsEditedAt = unixepoch() WHERE uuid = ?")
+        .run(uuidOf(id));
+    });
+    const actual = jest.requireActual("../db/personalRecords");
+    const asked: unknown[] = [];
+    jest.doMock("../db/personalRecords", () => ({
+      ...actual,
+      redecideAfterChange: (changes: unknown[]) => {
+        asked.push(...changes);
+        return actual.redecideAfterChange(changes);
+      },
+    }));
+
+    await merge().mergePeer(tablet);
+
+    // Every movement of the session, against every later session, is thousands of record checks
+    // on a five-year journal for one corrected hold.
+    expect(asked).toEqual([{ sessionId: id, exerciseId: holdId(), low: 35, high: 362 }]);
   });
 });

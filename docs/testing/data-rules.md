@@ -130,12 +130,15 @@ copied iff its uuid is neither local nor in local tombstones, with all columns e
 verbatim. For a session both hold, each stamp is read on its own (NULL as 0, a tie stays local):
 a later `setsEditedAt` takes the peer's whole set of `completed_exercises` (R16), `hasNewRecords`
 and `records_json`; a later `feedbackEditedAt` takes its `feedback`. Every other column, XP
-included, stays. After the commit, `redecideRecordsAfter` decides again the records of the
-sessions whose sets came in and of every later local session on the same movements; its failure
+included, stays. After the commit, `redecideAfterChange` decides again the records of the
+movements whose figures differ between the two copies, in the session and in every later local
+session holding a figure between the old and the new one, as `correctLoggedSet` does; its failure
 is reported (`sync.merge.records`) and does not fail the merge that committed.
 `db/merge.ts` (`takeEditedSets`, `takeEditedFeedback`, `mergePeer`).
 Invariant: a set corrected on A reaches B at B's next merge with A, and B's records follow; a
 feedback changed later on B does not carry B's older sets over A's correction.
+Invariant (current behaviour): two different corrections of one session stamped in the same second
+never converge, and compare reports `level` (as R9 for hero rows).
 
 **R15. Only the edits that stamp the session propagate.** `correctLoggedSet` (`setsEditedAt`,
 written before the value, in one transaction) and `updateSessionFeedback` (`feedbackEditedAt`) do. `addBonusXpToSession` and `markSessionWithNewRecords` run inside the

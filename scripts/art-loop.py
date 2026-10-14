@@ -775,7 +775,7 @@ def accept(slug: str, candidate: str) -> None:
                 "redistributed under CC BY-SA 4.0"
             )
     record(rel, entry)
-    print(f"accepted {src.name} -> {rel}; now run to-webp.py and thumb-exercises.py")
+    print(f"accepted {src.name} -> {rel}; now run to-webp.py and thumb-exercises.py {slug}")
 
 
 if __name__ == "__main__":

@@ -62,8 +62,9 @@ through `checkForNewRecords(id, { earlierOnly: true })`, and does the same for e
 session whose best on that movement lies between the old value and the new one (the only ones
 whose verdict can have moved). Records, the wall, "to beat", work units and balance are derived,
 so they follow. XP and boss damage were earned at the time and are not re-priced. An outing's sets
-are not editable: their value comes from the trace. Device sync does not carry a correction yet:
-it matches sessions by uuid and never compares their sets.
+are not editable: their value comes from the trace. The correction stamps the session's
+`editedAt` (0072), which device sync compares: the other device takes the corrected sets and
+decides its own records again (`docs/testing/data-rules.md` R14).
 
 ### 3. Sessions per week
 

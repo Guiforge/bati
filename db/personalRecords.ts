@@ -1,7 +1,8 @@
-import { and, between, desc, eq, gt, inArray, lt, max, ne, sql } from "drizzle-orm";
+import { and, between, desc, eq, gt, gte, inArray, lt, max, ne, type SQL, sql } from "drizzle-orm";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
 import { isWorkout, markSessionWithNewRecords, parseRecords, type StoredRecord } from "./completed";
+import { forgetEverEarned } from "./exercises";
 import { hasGround } from "./expeditions";
 import { clearCached } from "./queryCache";
 import type { QuestTargetType } from "./schema";
@@ -647,37 +648,70 @@ export async function correctLoggedSet(
     .update(completedExercises)
     .set({ resultValue: clamped })
     .where(eq(completedExercises.id, setId));
+  // What device sync reads to carry the correction to the other device (`0072`).
+  await db
+    .update(completedQuest)
+    .set({ editedAt: new Date() })
+    .where(eq(completedQuest.id, row.sessionId));
+  forgetEverEarned();
 
   // A later session was judged against this set too. Its verdict on the movement can only have
   // moved if its own best lies between the old value and the new one, so only those are asked
   // again: a correction from 362 s to 35 s gives a later 100 s its record back, and the reverse
   // takes it away.
-  const later = await db
-    .selectDistinct({ id: completedQuest.id, recordsJson: completedQuest.recordsJson })
-    .from(completedExercises)
-    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
-    .where(
-      and(
-        eq(completedExercises.exerciseId, row.exerciseId),
-        eq(completedExercises.resultType, row.type),
-        ne(completedExercises.sessionId, row.sessionId),
-        gt(completedQuest.performedAt, row.performedAt),
-        between(
-          completedExercises.resultValue,
-          Math.min(row.oldValue, clamped),
-          Math.max(row.oldValue, clamped),
-        ),
-      ),
-    );
+  const later = await sessionsWithMovement(
+    row.exerciseId,
+    eq(completedExercises.resultType, row.type),
+    ne(completedExercises.sessionId, row.sessionId),
+    gt(completedQuest.performedAt, row.performedAt),
+    between(
+      completedExercises.resultValue,
+      Math.min(row.oldValue, clamped),
+      Math.max(row.oldValue, clamped),
+    ),
+  );
   for (const session of [{ id: row.sessionId, recordsJson: row.recordsJson }, ...later]) {
     await redecideMovementRecord(session.id, session.recordsJson, row.exerciseId);
   }
 
-  // ponytail: device sync matches sessions by uuid and does not see a changed set, so the
-  // correction stays on this device (and a hand-off from a device that never had it undoes it).
-  // Give `completed_exercises` an `updatedAt` the merge reads if heroes correct sets often.
   clearCached("quest:");
   return "updated";
+}
+
+/**
+ * The records of `sessionIds` and of every later session sharing a movement with one of them,
+ * decided again: what a merge does after taking another device's sets for sessions this one had.
+ * Unlike `correctLoggedSet` it does not know the old figure, so it asks every later session.
+ */
+export async function redecideRecordsAfter(sessionIds: readonly number[]): Promise<void> {
+  if (sessionIds.length === 0) return;
+  const moved = await db
+    .selectDistinct({
+      exerciseId: completedExercises.exerciseId,
+      performedAt: completedQuest.performedAt,
+    })
+    .from(completedExercises)
+    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
+    .where(inArray(completedExercises.sessionId, [...sessionIds]));
+  for (const { exerciseId, performedAt } of moved) {
+    const sessions = await sessionsWithMovement(
+      exerciseId,
+      gte(completedQuest.performedAt, performedAt),
+    );
+    for (const session of sessions) {
+      await redecideMovementRecord(session.id, session.recordsJson, exerciseId);
+    }
+  }
+  clearCached("quest:");
+}
+
+/** The sessions with a set of `exerciseId` that also match `where`, with their stored records. */
+function sessionsWithMovement(exerciseId: number, ...where: SQL[]) {
+  return db
+    .selectDistinct({ id: completedQuest.id, recordsJson: completedQuest.recordsJson })
+    .from(completedExercises)
+    .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
+    .where(and(eq(completedExercises.exerciseId, exerciseId), ...where));
 }
 
 /** One session's stored records for one movement, decided again against what came before it. */

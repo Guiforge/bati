@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { MERGED_PREFERENCES } from "./backup";
 import { db, type IsolatedConnection, withWritableConnection } from "./client";
 import { deleteSession, parseRecords } from "./completed";
+import { redecideRecordsAfter } from "./personalRecords";
 import { sqlString } from "./sql";
 
 /**
@@ -23,7 +24,9 @@ const PEER = "merge_peer";
  *
  * **Sources are copied, never recomputed.** A session carries its XP as earned there, bonuses
  * included; its sets, its GPS points and its records come with it. XP, level, the village and the
- * streak are read from sessions, so they follow on their own.
+ * streak are read from sessions, so they follow on their own. A session both hold that the other
+ * edited later (`editedAt`, 0072) takes its sets and feedback; only records are then decided again,
+ * because the later sessions they were judged against are this device's.
  *
  * **This device's rows keep their ids; only the other device's get new ones**, through temporary
  * maps: the id of a saved session, a cached screen or an open quest never changes under anyone.
@@ -45,25 +48,30 @@ const PEER = "merge_peer";
  * One transaction on a connection of its own (an `ATTACH` cannot run behind Drizzle's statements),
  * rolled back whole on anything it cannot map. `path` must have passed `validateBackup`.
  */
-export function mergePeer(path: string): Promise<MergeOutcome> {
-  return withWritableConnection(async (conn) => {
+export async function mergePeer(path: string): Promise<MergeOutcome> {
+  const merged = await withWritableConnection(async (conn) => {
     await conn.execAsync(`ATTACH DATABASE ${sqlString(path)} AS ${PEER}`);
     const newest = (schema: string) =>
       conn.getFirstAsync<{ at: number | null }>(
         `SELECT max(created_at) AS at FROM ${schema}.__drizzle_migrations`,
       );
-    if ((await newest("main"))?.at !== (await newest(PEER))?.at) return { merged: false };
+    if ((await newest("main"))?.at !== (await newest(PEER))?.at) return { merged: false as const };
 
     await conn.execAsync("BEGIN IMMEDIATE");
     try {
       const outcome = await mergeInto(conn);
       await conn.execAsync("COMMIT");
-      return { merged: true, ...outcome };
+      return outcome;
     } catch (error) {
       await conn.execAsync("ROLLBACK");
       throw error;
     }
   });
+  if (!("edited" in merged)) return merged;
+  // After the commit, on the app's own connection: the records of what came after an edited
+  // session were judged against the figure it replaced, here, and only this device has them all.
+  await redecideRecordsAfter(merged.edited);
+  return { merged: true, sessions: merged.sessions, changes: merged.changes };
 }
 
 async function columnsOf(conn: IsolatedConnection, table: string, without: string[]) {
@@ -88,13 +96,16 @@ async function count(conn: IsolatedConnection, query: string): Promise<number> {
   );
 }
 
-async function mergeInto(conn: IsolatedConnection): Promise<{ sessions: number; changes: number }> {
+async function mergeInto(
+  conn: IsolatedConnection,
+): Promise<{ sessions: number; changes: number; edited: number[] }> {
   let changes = 0;
   await conn.execAsync(`
     DROP TABLE IF EXISTS temp.ex_map; DROP TABLE IF EXISTS temp.quest_map;
     DROP TABLE IF EXISTS temp.fresh; DROP TABLE IF EXISTS temp.sess_map;
-    DROP TABLE IF EXISTS temp.written;
+    DROP TABLE IF EXISTS temp.written; DROP TABLE IF EXISTS temp.edited;
     CREATE TEMP TABLE written (tbl TEXT, local INTEGER);
+    CREATE TEMP TABLE edited (peer INTEGER PRIMARY KEY, local INTEGER);
     CREATE TEMP TABLE ex_map (peer INTEGER PRIMARY KEY, local INTEGER);
     CREATE TEMP TABLE quest_map (peer INTEGER PRIMARY KEY, local INTEGER);
     CREATE TEMP TABLE fresh (uuid TEXT PRIMARY KEY);
@@ -146,7 +157,10 @@ async function mergeInto(conn: IsolatedConnection): Promise<{ sessions: number; 
       FROM ${PEER}.completed_sessions p WHERE p.uuid IN (SELECT uuid FROM temp.fresh)`);
     await conn.execAsync(`INSERT INTO temp.sess_map SELECT p.id, l.id FROM ${PEER}.completed_sessions p
       JOIN main.completed_sessions l ON l.uuid = p.uuid WHERE p.uuid IN (SELECT uuid FROM temp.fresh)`);
+  }
 
+  const edited = await takeEditedSessions(conn);
+  if (sessions > 0 || edited.length > 0) {
     const unmapped = await count(
       conn,
       `SELECT 1 FROM ${PEER}.completed_exercises WHERE sessionId IN (SELECT peer FROM temp.sess_map)
@@ -166,7 +180,7 @@ async function mergeInto(conn: IsolatedConnection): Promise<{ sessions: number; 
       SELECT ${selectList(gpsCols, "p")} FROM ${PEER}.gps_points p
       WHERE p.sessionId IN (SELECT uuid FROM temp.fresh)`);
     await remapRecords(conn);
-    changes += sessions;
+    changes += sessions + edited.length;
   }
 
   // Deletions travel both ways; `honourTombstones` applies the other device's to this one's rows.
@@ -199,7 +213,33 @@ async function mergeInto(conn: IsolatedConnection): Promise<{ sessions: number; 
       SELECT key, value, updatedAt FROM ${PEER}.user_preferences WHERE key = 'hasFinishedOnboarding'`);
   }
 
-  return { sessions, changes };
+  return { sessions, changes, edited };
+}
+
+/**
+ * Sessions both hold that the other device edited later (`0072`): its feedback and its records
+ * replace this one's, the date copied as is so the next comparison finds nothing, and its sets are
+ * queued in `sess_map` to be copied with the new sessions' (this one's are deleted). XP and the rest
+ * of the row stay: the first copy of a session wins, as the frozen tests say. A tie stays here.
+ * Returns the local ids, whose records `mergePeer` decides again after the commit.
+ */
+async function takeEditedSessions(conn: IsolatedConnection): Promise<number[]> {
+  await conn.execAsync(`INSERT INTO temp.edited SELECT p.id, l.id FROM ${PEER}.completed_sessions p
+    JOIN main.completed_sessions l ON l.uuid = p.uuid
+    WHERE ifnull(p.editedAt, 0) > ifnull(l.editedAt, 0)`);
+  const edited = (await conn.getAllAsync<{ local: number }>("SELECT local FROM temp.edited")).map(
+    (r) => r.local,
+  );
+  if (edited.length === 0) return edited;
+  await conn.execAsync(`UPDATE main.completed_sessions SET (feedback, editedAt, hasNewRecords, records_json) =
+    (SELECT p.feedback, p.editedAt, p.hasNewRecords, p.records_json FROM ${PEER}.completed_sessions p
+      WHERE p.uuid = main.completed_sessions.uuid)
+    WHERE id IN (SELECT local FROM temp.edited)`);
+  await conn.execAsync(
+    "DELETE FROM main.completed_exercises WHERE sessionId IN (SELECT local FROM temp.edited)",
+  );
+  await conn.execAsync("INSERT INTO temp.sess_map SELECT peer, local FROM temp.edited");
+  return edited;
 }
 
 /**

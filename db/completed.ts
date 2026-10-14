@@ -410,7 +410,11 @@ export async function updateSessionFeedback(
   sessionId: number,
   feedback: FeedbackCode | null,
 ): Promise<void> {
-  await db.update(completedQuest).set({ feedback }).where(eq(completedQuest.id, sessionId));
+  // Tapped after the save: `editedAt` is what lets sync carry it to a device that has the session.
+  await db
+    .update(completedQuest)
+    .set({ feedback, editedAt: new Date() })
+    .where(eq(completedQuest.id, sessionId));
 }
 
 /**

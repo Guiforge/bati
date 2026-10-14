@@ -475,6 +475,10 @@ export const completedQuest = sqliteTable(
      */
     recordsJson: text("records_json"),
 
+    // When the hero last changed this session after saving it (`0072`): a corrected set, a
+    // feedback chip. Null on a session nobody edited. Device sync takes the newer one's.
+    editedAt: int({ mode: "timestamp" }),
+
     // When the session was performed.
     performedAt: int({ mode: "timestamp" })
       .notNull()

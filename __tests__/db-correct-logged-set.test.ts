@@ -192,4 +192,47 @@ describe("correctLoggedSet", () => {
     expect(await records().correctLoggedSet(setOf(walk), 10)).toBe("refused");
     expect(storedValue(setOf(walk))).toBe(600);
   });
+
+  test("a correction that breaks the run of on-target sessions takes the climbed path back", async () => {
+    const exercisesDb = () => require("../db/exercises") as typeof import("../db/exercises");
+    // A summit: a movement with a rung under it that nothing builds on.
+    const summit = (
+      t.sqlite
+        .prepare(
+          `SELECT id FROM exercises e WHERE creator = 'Admin' AND style != 'expedition'
+             AND prerequisiteExerciseId IS NOT NULL
+             AND NOT EXISTS (SELECT 1 FROM exercises x WHERE x.prerequisiteExerciseId = e.id)
+           LIMIT 1`,
+        )
+        .get() as { id: number }
+    ).id;
+    const ids: number[] = [];
+    for (const daysAgo of [80, 79, 78]) {
+      ids.push(
+        await completed().createCompletedSession({
+          questId: null,
+          performedAt: day(daysAgo),
+          durationSeconds: 600,
+          xpEarned: 1,
+          exercises: [
+            {
+              exerciseId: summit,
+              sortOrder: 0,
+              result: { type: "reps", value: 12 },
+              target: { type: "reps", value: 10 },
+              performedAt: day(daysAgo),
+            },
+          ],
+        }),
+      );
+    }
+    const before = await exercisesDb().countClimbedPaths();
+    assert(ids[1] !== undefined);
+
+    // The middle session missed after all: no three on-target sessions in a row any more.
+    await records().correctLoggedSet(setOf(ids[1]), 3);
+
+    // Today the answer is cached on (row count, last id), which an in-place UPDATE leaves alone.
+    expect(await exercisesDb().countClimbedPaths()).toBe(before - 1);
+  });
 });

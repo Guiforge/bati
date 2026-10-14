@@ -322,13 +322,15 @@ and opens the sheet's `unlock` mode, not `enable`.
   server's own dates (a device re-uploads right after its key changes): the other device sees it
   as `locked`, asks, and sends nothing until it has joined; the winner sees the loser as
   `waiting` and says nothing.
-- **What each side lacks** (`compareWithPeer`, on real SQLite): sessions by uuid, deletions by the
-  `deleted_sessions` tombstones (0064), and the hero's own content (hero exercises and quests,
+- **What each side lacks** (`compareWithPeer`, on real SQLite): sessions by uuid, sessions both
+  hold that one side edited later (`editedAt`, 0072: a corrected set, a late feedback), deletions
+  by the `deleted_sessions` tombstones (0064), and the hero's own content (hero exercises and quests,
   village name, avatar, level, equipment, oath, reminder days). Derived caches are ignored, and so are favourites
   and quest configs, which name quest ids and are not merged: what the merge leaves out, the
   comparison must not count, or two merged devices would read as diverged forever.
 - **Merged, not asked** (`db/merge.ts`). An `ahead` or `diverged` device is merged into this one:
-  its sessions with their sets and GPS points, its deletions, its hero exercises and quests (the
+  its sessions with their sets and GPS points, the sets and feedback of a session it edited
+  later, its deletions, its hero exercises and quests (the
   newer edit wins), its preferences (the newer wins; a device with nothing of its own yet takes
   them all). This device's rows keep their ids, the other's get new ones through temporary maps,
   Admin content is matched by seed name, timestamps are copied verbatim so a second comparison

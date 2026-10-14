@@ -319,7 +319,7 @@ export const preferences = {
   // An empty array is a real answer: bodyweight only.
   async getOwnedEquipment(): Promise<EquipmentCode[] | null> {
     const raw = await getPreference("ownedEquipment");
-    if (raw === null) return null;
+    if (!raw) return null;
 
     try {
       const parsed: unknown = JSON.parse(raw);
@@ -517,8 +517,10 @@ export const preferences = {
   },
 
   async setOwnedEquipment(equipment: EquipmentCode[] | null): Promise<void> {
+    // "Everything" is written empty, not deleted: a deleted row lost to the other device's older
+    // list at the next merge (no tombstone for a preference), and the filter came back.
     if (equipment === null) {
-      await deletePreference("ownedEquipment");
+      await setPreference("ownedEquipment", "");
       return;
     }
     await setPreference("ownedEquipment", JSON.stringify(equipment));

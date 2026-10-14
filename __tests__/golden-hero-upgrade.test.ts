@@ -36,7 +36,9 @@ import { clientMock } from "./helpers/testDb";
  *  - From `FULL_EQUALITY_FROM` on, nothing legitimate differs: the whole hero is the golden hero.
  *    Move it down when content stops changing; never up to make a failure go away.
  */
-const FULL_EQUALITY_FROM = 54; // sampled points only: 54 is not one, 56 is the first
+// 72: 0072 appended the Superman W to two beginner quests, so a hero trained before it lifted
+// other movements. Earlier: 54, the last slot change before it.
+const FULL_EQUALITY_FROM = 72;
 
 const golden = JSON.parse(
   fs.readFileSync(path.join(__dirname, "golden", "hero-3-years.json"), "utf8"),

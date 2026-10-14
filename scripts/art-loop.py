@@ -394,9 +394,9 @@ def _joints(head, neck, pelvis, *pairs):
 
 _SIDE_CAM = {"at": (0.0, -3.4, 0.7), "look": (0.0, 0.0, 0.3), "lens": 50}
 
-# The superman_w back, pelvis to neck: a quadratic Bezier whose control point sits low over the
-# lumbar spine, so the curve stays near the floor there and rises through the chest. Seven inner
-# points, eight segments: fewer read as a jointed plank.
+# The superman_w back, pelvis to neck: a quadratic Bezier whose ends are those two joints and whose
+# control point sits low over the lumbar spine, so the curve stays near the floor there and rises
+# through the chest. Seven inner points, eight segments: fewer read as a jointed plank.
 _SPINE_W_ENDS = ((0.0, 0.11), (0.33, 0.12), (0.58, 0.37))
 _SPINE_W = [
     (
@@ -541,7 +541,8 @@ POSES3D.update({
     # foreshortened to nothing. The trunk follows a curve (`_SPINE_W`, eight segments), or the
     # arch is a straight plank tilted up. Elbows further back (a7) gave a sphinx on the elbows.
     "superman_w": {
-        "joints": {**_joints((0.8, 0, 0.47), (0.58, 0, 0.37), (0, 0, 0.11),
+        "joints": {**_joints((0.8, 0, 0.47), (_SPINE_W_ENDS[2][0], 0, _SPINE_W_ENDS[2][1]),
+                             (_SPINE_W_ENDS[0][0], 0, _SPINE_W_ENDS[0][1]),
                              _pair("shoulder", (0.56, 0.2, 0.36), (0.56, -0.2, 0.36)),
                              _pair("elbow", (0.44, 0.38, 0.41), (0.44, -0.38, 0.41)),
                              _pair("wrist", (0.71, 0.37, 0.5), (0.71, -0.37, 0.5)),

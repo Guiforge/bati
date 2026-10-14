@@ -2,7 +2,7 @@
 title: Data safety, the guardrails around an update
 type: technical
 status: active
-updated: 2026-10-04
+updated: 2026-10-15
 related: [backup-and-sync.md, exercise-ownership.md, ../../AGENTS.md]
 ---
 
@@ -40,7 +40,10 @@ migration: the price of a risky one is a line of explanation, never a refusal.
 - `__tests__/golden-hero-upgrade.test.ts` lists what may differ when a hero arrives from an older
   build (the XP clamp of 0037, the outing re-filing of 0049, content that changed). From
   `FULL_EQUALITY_FROM` on nothing may differ. Move that number down when it is true, never up to
-  make a failure go away.
+  make a failure go away. `CONTENT_EQUAL_FROM` is the one exception: it is the last migration that
+  changed a seeded quest's slots, it rises only with such a migration, and below it only
+  `records.*` and `village.levels.*` may differ, because a hero who trained before it lifted other
+  movements. Sessions, XP, flame, level and achievements stay held from `FULL_EQUALITY_FROM` on.
 
 ## The copy before an update
 

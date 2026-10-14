@@ -3,7 +3,7 @@ title: Onboarding
 type: screen
 route: /onboarding
 status: active
-updated: 2026-10-11
+updated: 2026-10-15
 related: [home.md, ../design/audits/2026-10-11-onboarding.md]
 sources: [components/onboarding/FirstFire.tsx, app/onboarding/index.tsx, app/onboarding/presentation.tsx, app/onboarding/village-setup.tsx, app/onboarding/training-level.tsx, app/onboarding/first-session.tsx, components/settings/CloudRestoreLink.tsx, constants/onboarding.ts]
 ---

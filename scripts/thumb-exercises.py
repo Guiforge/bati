@@ -89,6 +89,13 @@ def main() -> int:
     parser.add_argument("stems", nargs="*", help="only these pictures (file stems); default all")
     args = parser.parse_args()
 
+    # Checked before anything is written: a typo would otherwise end in "Wrote 0 thumbnails", exit 0.
+    if args.stems:
+        known = {p.stem for glob, out_name in FAMILIES for p in sources(glob, ROOT / out_name)}
+        if unknown := sorted(set(args.stems) - known):
+            print(f"No art named {', '.join(unknown)}.", file=sys.stderr)
+            return 1
+
     total_before = 0
     total_after = 0
     total_count = 0
@@ -112,13 +119,6 @@ def main() -> int:
         total_before += sum(p.stat().st_size for p in found)
         total_after += sum(thumbnail(p, out_dir) for p in found)
         total_count += len(found)
-
-    # A typo would otherwise end in "Wrote 0 thumbnails" and exit 0.
-    if args.stems:
-        known = {p.stem for glob, out_name in FAMILIES for p in sources(glob, ROOT / out_name)}
-        if unknown := sorted(set(args.stems) - known):
-            print(f"No art named {', '.join(unknown)}.", file=sys.stderr)
-            return 1
 
     if args.dry_run:
         return 0

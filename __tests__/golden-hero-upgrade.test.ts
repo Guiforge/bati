@@ -35,7 +35,10 @@ import { clientMock } from "./helpers/testDb";
  *    do not depend on content (sessions, exercise rows, flame, level) are.
  *  - From `FULL_EQUALITY_FROM` on, nothing legitimate differs: the whole hero is the golden hero,
  *    except the content figures of a point before `CONTENT_EQUAL_FROM`, the last slot change.
- *    Move it down when content stops changing; never up to make a failure go away.
+ *    Move `FULL_EQUALITY_FROM` down when content stops changing; never up to make a failure go
+ *    away. `CONTENT_EQUAL_FROM` rises with each migration that changes a seeded quest's slots,
+ *    and only then: the price is that a later migration damaging records on older databases
+ *    shows only from that point on (docs/architecture/data-safety.md).
  */
 const FULL_EQUALITY_FROM = 54; // sampled points only: 54 is not one, 56 is the first
 // 0072 appended the Superman W to two beginner quests, so a hero who trained before it lifted

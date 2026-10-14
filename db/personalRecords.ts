@@ -704,6 +704,27 @@ export async function redecideAfterChange(changes: readonly MovedMovement[]): Pr
   clearCached("quest:");
 }
 
+/** Every movement of `sessionIds`, its stored records decided again against what came before. */
+export async function redecideSessions(sessionIds: readonly number[]): Promise<void> {
+  if (sessionIds.length === 0) return;
+  const movements = await db
+    .selectDistinct({
+      sessionId: completedExercises.sessionId,
+      exerciseId: completedExercises.exerciseId,
+    })
+    .from(completedExercises)
+    .where(inArray(completedExercises.sessionId, [...sessionIds]));
+  for (const { sessionId, exerciseId } of movements) {
+    // Read again each time: the previous movement just rewrote it.
+    const [own] = await db
+      .select({ recordsJson: completedQuest.recordsJson })
+      .from(completedQuest)
+      .where(eq(completedQuest.id, sessionId));
+    await redecideMovementRecord(sessionId, own?.recordsJson ?? null, exerciseId);
+  }
+  clearCached("quest:");
+}
+
 /** The sessions with a set of `exerciseId` that also match `where`, with their stored records. */
 function sessionsWithMovement(exerciseId: number, ...where: SQL[]) {
   return db

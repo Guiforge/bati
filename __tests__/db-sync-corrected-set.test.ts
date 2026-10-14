@@ -26,6 +26,9 @@ beforeEach(() => {
 afterEach(() => {
   t.close();
   fs.rmSync(dir, { recursive: true, force: true });
+  // `resetModules` keeps what `doMock` registered: a stub left here answers the next test's merge.
+  jest.dontMock("../db/personalRecords");
+  jest.dontMock("@/src/reportError");
 });
 
 const backup = () => require("../db/backup") as typeof import("../db/backup");
@@ -307,5 +310,51 @@ describe("edit stamps", () => {
     // Every movement of the session, against every later session, is thousands of record checks
     // on a five-year journal for one corrected hold.
     expect(asked).toEqual([{ sessionId: id, exerciseId: holdId(), low: 35, high: 362 }]);
+  });
+
+  test("corrections that cross keep the record this device decided on another movement of the session", async () => {
+    const other = (
+      t.sqlite
+        .prepare("SELECT id FROM exercises WHERE style != 'expedition' AND id != ? LIMIT 1")
+        .get(holdId()) as { id: number }
+    ).id;
+    const early = await log(10, 50);
+    const later = await completed().createCompletedSession({
+      questId: null,
+      performedAt: day(5),
+      durationSeconds: 600,
+      xpEarned: 40,
+      exercises: [
+        { exerciseId: holdId(), sortOrder: 0, result: { type: "time", value: 40 } },
+        { exerciseId: other, sortOrder: 1, result: { type: "reps", value: 10 } },
+      ],
+    });
+    const holdRecord = () =>
+      JSON.parse(
+        (
+          t.sqlite
+            .prepare("SELECT records_json j FROM completed_sessions WHERE id = ?")
+            .get(later) as { j: string | null }
+        ).j ?? "[]",
+      ).some((r: { e?: number }) => r.e === holdId());
+    // The tablet corrects the other movement of the later session, before it ever hears of this.
+    const tablet = await peer("tablet.db", (sqlite) => {
+      sqlite
+        .prepare(
+          `UPDATE completed_exercises SET resultValue = 12
+           WHERE sessionId = (SELECT id FROM completed_sessions WHERE uuid = ?) AND sortOrder = 1`,
+        )
+        .run(uuidOf(later));
+      sqlite
+        .prepare("UPDATE completed_sessions SET setsEditedAt = unixepoch() + 100 WHERE uuid = ?")
+        .run(uuidOf(later));
+    });
+    // Here the earlier hold goes from 50 s to 30 s: the later 40 s is a record now.
+    await records().correctLoggedSet(setOf(early), 30);
+    expect(holdRecord()).toBe(true);
+
+    await merge().mergePeer(tablet);
+
+    expect(holdRecord()).toBe(true);
   });
 });

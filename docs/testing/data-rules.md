@@ -128,8 +128,9 @@ Invariant: when `mergePeer` throws, the database (every table) is byte-identical
 copied iff its uuid is neither local nor in local tombstones, with all columns except `id`; XP,
 `records_json`, `performedAt`, `tzOffsetMin`, `originDevice` and both edit stamps are copied
 verbatim. For a session both hold, each stamp is read on its own (NULL as 0, a tie stays local):
-a later `setsEditedAt` takes the peer's whole set of `completed_exercises` (R16), `hasNewRecords`
-and `records_json`; a later `feedbackEditedAt` takes its `feedback`. Every other column, XP
+a later `setsEditedAt` takes the peer's whole set of `completed_exercises` (R16) and keeps this
+device's `hasNewRecords` and `records_json`, decided again on the new sets for every movement of
+the session (`redecideSessions`); a later `feedbackEditedAt` takes its `feedback`. Every other column, XP
 included, stays. After the commit, `redecideAfterChange` decides again the records of the
 movements whose figures differ between the two copies, in the session and in every later local
 session holding a figure between the old and the new one, as `correctLoggedSet` does; its failure

@@ -1,7 +1,13 @@
-import { and, between, desc, eq, gt, gte, inArray, lt, max, ne, type SQL, sql } from "drizzle-orm";
+import { and, between, desc, eq, gt, inArray, lt, max, ne, type SQL, sql } from "drizzle-orm";
 import type { Localized } from "@/src/i18n/deviceLanguage";
-import { db, schema } from "./client";
-import { isWorkout, markSessionWithNewRecords, parseRecords, type StoredRecord } from "./completed";
+import { db, schema, transactionOrFallback } from "./client";
+import {
+  isWorkout,
+  markSessionWithNewRecords,
+  nextEditStamp,
+  parseRecords,
+  type StoredRecord,
+} from "./completed";
 import { forgetEverEarned } from "./exercises";
 import { hasGround } from "./expeditions";
 import { clearCached } from "./queryCache";
@@ -644,15 +650,18 @@ export async function correctLoggedSet(
 
   const { min, max: ceiling } = targetRangeFor(row.type, row.style);
   const clamped = Math.min(ceiling, Math.max(min, Math.round(value)));
-  await db
-    .update(completedExercises)
-    .set({ resultValue: clamped })
-    .where(eq(completedExercises.id, setId));
-  // What device sync reads to carry the correction to the other device (`0072`).
-  await db
-    .update(completedQuest)
-    .set({ editedAt: new Date() })
-    .where(eq(completedQuest.id, row.sessionId));
+  // The stamp is what device sync reads to carry the correction (`0072`), so it goes first: a
+  // value written without it would stay on this device for good.
+  await transactionOrFallback(async (tx) => {
+    await tx
+      .update(completedQuest)
+      .set({ setsEditedAt: nextEditStamp(completedQuest.setsEditedAt) })
+      .where(eq(completedQuest.id, row.sessionId));
+    await tx
+      .update(completedExercises)
+      .set({ resultValue: clamped })
+      .where(eq(completedExercises.id, setId));
+  });
   forgetEverEarned();
 
   // A later session was judged against this set too. Its verdict on the movement can only have
@@ -685,18 +694,20 @@ export async function correctLoggedSet(
  */
 export async function redecideRecordsAfter(sessionIds: readonly number[]): Promise<void> {
   if (sessionIds.length === 0) return;
+  // One pass per movement, from the earliest edited session that has it.
   const moved = await db
-    .selectDistinct({
+    .select({
       exerciseId: completedExercises.exerciseId,
-      performedAt: completedQuest.performedAt,
+      from: sql<number>`min(${completedQuest.performedAt})`,
     })
     .from(completedExercises)
     .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
-    .where(inArray(completedExercises.sessionId, [...sessionIds]));
-  for (const { exerciseId, performedAt } of moved) {
+    .where(inArray(completedExercises.sessionId, [...sessionIds]))
+    .groupBy(completedExercises.exerciseId);
+  for (const { exerciseId, from } of moved) {
     const sessions = await sessionsWithMovement(
       exerciseId,
-      gte(completedQuest.performedAt, performedAt),
+      sql`${completedQuest.performedAt} >= ${from}`,
     );
     for (const session of sessions) {
       await redecideMovementRecord(session.id, session.recordsJson, exerciseId);

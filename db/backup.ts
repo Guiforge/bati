@@ -289,7 +289,7 @@ function heroContent(schema: string, named: boolean): string {
 
 /**
  * Whether a schema's table has a column: hero content carries a uuid from 0066, a session its
- * `editedAt` from 0072, and the other device may be on an older build.
+ * edit stamps from 0072, and the other device may be on an older build.
  */
 async function hasColumn(
   conn: IsolatedConnection,
@@ -304,18 +304,30 @@ async function hasColumn(
 }
 
 /**
- * Sessions both devices hold that `a` edited later than `b` (`0072`): a corrected set, a feedback
- * given after the copy. An unedited session reads as date 0, as `mergePeer` reads it.
+ * Sessions both devices hold that `a` edited later than `b` (`0072`): a corrected set or a feedback
+ * given after the copy, each stamp read on its own, as `mergePeer` takes them. An unedited session
+ * reads as 0. `b` on a build before 0072 has no stamps, so every edit `a` made is news it lacks;
+ * `a` on such a build has none to offer.
  */
-function editedLaterIn(a: string, b: string, edits: boolean): string {
-  if (!edits) return "0";
+function editedLaterIn(a: string, b: string, aStamps: boolean, bStamps: boolean): string {
+  if (!aStamps) return "0";
+  const later = (column: string) =>
+    `ifnull(x.${column}, 0) > ${bStamps ? `ifnull(y.${column}, 0)` : "0"}`;
   return `SELECT count(*) FROM ${a}.completed_sessions x JOIN ${b}.completed_sessions y ON y.uuid = x.uuid
-    WHERE ifnull(x.editedAt, 0) > ifnull(y.editedAt, 0)`;
+    WHERE ${later("setsEditedAt")} OR ${later("feedbackEditedAt")}`;
 }
 
-/** A schema's sessions as the fingerprint names them: how many, the newest, the last edit. */
-function sessionsStamp(schema: string, edits: boolean): string {
-  const edited = edits ? ` || ':' || ifnull(max(editedAt), 0)` : "";
+/**
+ * A schema's sessions as the fingerprint names them: how many, the newest, and the sum of the edit
+ * stamps, which grows with every edit (`nextEditStamp`) where a max could stand still. Left out
+ * while it is 0, so a device nobody edited on keeps the name it had before 0072, and an answer the
+ * hero gave about it is not asked again.
+ */
+function sessionsStamp(schema: string, stamps: boolean): string {
+  const total = "total(setsEditedAt) + total(feedbackEditedAt)";
+  const edited = stamps
+    ? ` || CASE WHEN ${total} > 0 THEN ':' || cast(${total} AS INTEGER) ELSE '' END`
+    : "";
   return `SELECT count(*) || ':' || ifnull(max(uuid), '')${edited} FROM ${schema}.completed_sessions`;
 }
 
@@ -344,14 +356,17 @@ async function tombstones(conn: IsolatedConnection, schema: string): Promise<str
 
 /**
  * How another device's snapshot stands against this database: what each side has that the other
- * does not, with no device clock in it (Joplin #5738: one skewed clock, 3,000 conflicts).
+ * does not. No device clock decides what exists (Joplin #5738: one skewed clock, 3,000 conflicts);
+ * clocks only order two versions of one row, hero content by `updatedAt` and an edited session by
+ * its stamps, which `nextEditStamp` keeps growing past a stamp from a phone that runs ahead.
  *
  * - **A session the other device deleted that this one still holds with the same tombstone** is the
  *   merge's refusal (its campaign moved past it, `deleteSession` says "locked"), not the other's news: it
  *   is kept here, nothing is deleted, and it must never keep this device from sending the rest.
  * - **Sessions**, by `uuid` (0038), the one name a session keeps across devices. A session the
  *   other device has and this one *deleted* (0064) is not the other's news, it is this one's. A
- *   session both hold is news for the side that edited it later (`editedAt`, 0072).
+ *   session both hold is news for the side that edited it later (`setsEditedAt`,
+ *   `feedbackEditedAt`, 0072).
  * - **Hero content**: exercises and quests the hero made, the preferences that are theirs.
  *   Taking another device's version replaces all of it, so a device that changed any of it has
  *   something to lose, and is never offered a silent hand-off.
@@ -392,8 +407,8 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
       `SELECT uuid FROM ${schema}.completed_sessions WHERE uuid IS NOT NULL`;
     const peerNamed = await hasColumn(conn, CANDIDATE, "quests", "uuid");
     const named = peerNamed && (await hasColumn(conn, "main", "quests", "uuid"));
-    const peerEdits = await hasColumn(conn, CANDIDATE, "completed_sessions", "editedAt");
-    const edits = peerEdits && (await hasColumn(conn, "main", "completed_sessions", "editedAt"));
+    const peerStamps = await hasColumn(conn, CANDIDATE, "completed_sessions", "setsEditedAt");
+    const localStamps = await hasColumn(conn, "main", "completed_sessions", "setsEditedAt");
     const row = await conn.getFirstAsync<Record<string, number | string | null>>(
       `SELECT
          (SELECT count(*) FROM (${sessions(CANDIDATE)}) p
@@ -405,12 +420,12 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
             WHERE l.uuid IN (${peerGone}) AND l.uuid NOT IN (${localGone})) AS peerDeleted,
          (${newerIn(CANDIDATE, "main", named)}) AS peerContent,
          (${newerIn("main", CANDIDATE, named)}) AS localContent,
-         (${editedLaterIn(CANDIDATE, "main", edits)}) AS peerEdited,
-         (${editedLaterIn("main", CANDIDATE, edits)}) AS localEdited,
+         (${editedLaterIn(CANDIDATE, "main", peerStamps, localStamps)}) AS peerEdited,
+         (${editedLaterIn("main", CANDIDATE, localStamps, peerStamps)}) AS localEdited,
          (SELECT max(performedAt) FROM ${CANDIDATE}.completed_sessions) AS peerLatest,
          (SELECT value FROM ${CANDIDATE}.user_preferences WHERE key = 'villageName') AS peerVillage,
          (SELECT count(*) FROM main.completed_sessions) AS localSessions,
-         (${sessionsStamp(CANDIDATE, peerEdits)}) AS s,
+         (${sessionsStamp(CANDIDATE, peerStamps)}) AS s,
          (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed)})) AS c,
          (SELECT count(*) FROM (${peerGone})) AS g`,
     );

@@ -323,7 +323,8 @@ and opens the sheet's `unlock` mode, not `enable`.
   as `locked`, asks, and sends nothing until it has joined; the winner sees the loser as
   `waiting` and says nothing.
 - **What each side lacks** (`compareWithPeer`, on real SQLite): sessions by uuid, sessions both
-  hold that one side edited later (`editedAt`, 0072: a corrected set, a late feedback), deletions
+  hold that one side edited later (`setsEditedAt`, `feedbackEditedAt`, 0072: a corrected set, a
+  late feedback), deletions
   by the `deleted_sessions` tombstones (0064), and the hero's own content (hero exercises and quests,
   village name, avatar, level, equipment, oath, reminder days). Derived caches are ignored, and so are favourites
   and quest configs, which name quest ids and are not merged: what the merge leaves out, the

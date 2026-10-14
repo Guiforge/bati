@@ -38,8 +38,10 @@ Invariant: a session deleted (tombstoned) on side X is never counted as news fro
 **R3. `peerChanges = peerOnly + peerDeleted + peerContent + peerEdited`; `localChanges = localOnly +
 localDeleted + localContent + localEdited`.** `peerDeleted` = local sessions the peer tombstoned;
 `localDeleted` = peer sessions the local side tombstoned. `peerEdited` = sessions both hold whose
-`editedAt` (0072) is later on the peer, `localEdited` the reverse, NULL reading as 0; both are 0
-when either side predates 0072. `db/backup.ts` (`compareWithPeer`, `editedLaterIn`).
+`setsEditedAt` or `feedbackEditedAt` (0072) is later on the peer, `localEdited` the reverse, NULL
+reading as 0. A side before 0072 has no stamps: it offers no edit, and every edit the other made
+is news it lacks, so a correction keeps a device `diverged` or `behind` rather than `ahead`, and
+is never replaced silently by a take. `db/backup.ts` (`compareWithPeer`, `editedLaterIn`).
 Invariant: state is `ahead` iff peerChanges>0 and localChanges=0, `diverged` iff both>0,
 `behind` iff only local>0, `level` iff both 0 (see R4).
 
@@ -91,12 +93,14 @@ no news both ways (`>=`, `db/backup.ts:298`); merge keeps local (strict `>`, `db
 Invariant: two devices that edit the same hero row in the same second hold different values after
 any number of syncs, and compare reports `level`.
 
-**R10. `stateFingerprint` / peer `fingerprint` = `count(sessions) ':' max(uuid) ':' max(editedAt)`
-| `max(updatedAt) ':' count` over hero content | tombstone count.** `db/backup.ts`
-(`sessionsStamp`). A peer before 0072 has no `editedAt` and keeps the first two terms.
-Invariant: correcting a set or giving feedback after the save changes the fingerprint (both stamp
-`editedAt`); editing `notes` or `xpEarned` does not; adding one session changes it; adding a
-tombstone changes it.
+**R10. `stateFingerprint` / peer `fingerprint` = `count(sessions) ':' max(uuid)`, then `':'` and the
+sum of both edit stamps when it is not 0 | `max(updatedAt) ':' count` over hero content |
+tombstone count.** `db/backup.ts` (`sessionsStamp`). With no edit the first term is what it was
+before 0072, so an answer the hero already gave is not asked again.
+Invariant: correcting a set or giving feedback after the save changes the fingerprint, every time:
+`nextEditStamp` writes `max(now, stamp + 1)`, so the sum grows even within one second or past a
+stamp merged from a phone whose clock runs ahead. Editing `notes` or `xpEarned` does not; adding
+one session changes it; adding a tombstone changes it.
 
 **R11. Never compared and never merged:** derived caches (`streak_*`, achievements), favourites
 (`favourite_quests`), quest configs (`quest:<id>:config`), campaigns, boss fights and boss damage
@@ -122,16 +126,19 @@ Invariant: when `mergePeer` throws, the database (every table) is byte-identical
 
 **R14. A peer session is inserted when new, and its edits taken when later.** A peer session is
 copied iff its uuid is neither local nor in local tombstones, with all columns except `id`; XP,
-`records_json`, `performedAt`, `tzOffsetMin`, `originDevice`, `editedAt` are copied verbatim. A
-session both hold whose peer `editedAt` is later (NULL as 0, a tie stays local) takes the peer's
-`feedback`, `editedAt`, `hasNewRecords`, `records_json` and its whole set of `completed_exercises`
-(R16); every other column, XP included, stays. After the commit, `redecideRecordsAfter` decides
-again the records of those sessions and of every later local session on the same movements.
-`db/merge.ts` (`mergeInto`, `mergePeer`).
-Invariant: a set corrected on A reaches B at B's next merge with A, and B's records follow.
+`records_json`, `performedAt`, `tzOffsetMin`, `originDevice` and both edit stamps are copied
+verbatim. For a session both hold, each stamp is read on its own (NULL as 0, a tie stays local):
+a later `setsEditedAt` takes the peer's whole set of `completed_exercises` (R16), `hasNewRecords`
+and `records_json`; a later `feedbackEditedAt` takes its `feedback`. Every other column, XP
+included, stays. After the commit, `redecideRecordsAfter` decides again the records of the
+sessions whose sets came in and of every later local session on the same movements; its failure
+is reported (`sync.merge.records`) and does not fail the merge that committed.
+`db/merge.ts` (`takeEditedSets`, `takeEditedFeedback`, `mergePeer`).
+Invariant: a set corrected on A reaches B at B's next merge with A, and B's records follow; a
+feedback changed later on B does not carry B's older sets over A's correction.
 
-**R15. Only the edits that stamp `editedAt` propagate.** `correctLoggedSet` and
-`updateSessionFeedback` do. `addBonusXpToSession` and `markSessionWithNewRecords` run inside the
+**R15. Only the edits that stamp the session propagate.** `correctLoggedSet` (`setsEditedAt`,
+written before the value, in one transaction) and `updateSessionFeedback` (`feedbackEditedAt`) do. `addBonusXpToSession` and `markSessionWithNewRecords` run inside the
 save, before any snapshot can carry the session, and do not; neither merge nor fingerprint see a
 later change to them (R10, R14), and the frozen tests in `db-peer-merge` hold that the first copy
 of a session wins for XP.

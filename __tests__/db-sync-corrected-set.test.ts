@@ -98,7 +98,9 @@ const correctThere = (uuid: string, value: number) => (sqlite: Database.Database
        WHERE sessionId = (SELECT id FROM completed_sessions WHERE uuid = ?)`,
     )
     .run(value, uuid);
-  sqlite.prepare("UPDATE completed_sessions SET editedAt = unixepoch() WHERE uuid = ?").run(uuid);
+  sqlite
+    .prepare("UPDATE completed_sessions SET setsEditedAt = unixepoch() WHERE uuid = ?")
+    .run(uuid);
 };
 
 test("a correction here changes this device's state, so sync uploads it", async () => {
@@ -152,5 +154,114 @@ test("a correction that arrives re-decides the records of what came after it her
   // Against 35 s, 100 s is the record; the tablet cannot say so, it never had this session.
   expect(recordsOf()).toEqual({
     j: JSON.stringify([{ t: "exercise_max_time", e: holdId() }]),
+  });
+});
+
+/** What the PR audit found in the first answer. */
+describe("edit stamps", () => {
+  const fingerprint = () => backup().stateFingerprint();
+  const stamp = (sessionId: number, offsetSeconds: number) =>
+    t.sqlite
+      .prepare("UPDATE completed_sessions SET setsEditedAt = unixepoch() + ? WHERE id = ?")
+      .run(offsetSeconds, sessionId);
+
+  test("a correction after an edit merged from a phone whose clock runs ahead still uploads", async () => {
+    const merged = await log(10, 50);
+    const mine = await log(9, 60);
+    stamp(merged, 600);
+    const before = await fingerprint();
+
+    await records().correctLoggedSet(setOf(mine), 40);
+
+    expect(await fingerprint()).not.toBe(before);
+  });
+
+  test("two corrections within one second both upload", async () => {
+    const id = await log(5, 362);
+    await records().correctLoggedSet(setOf(id), 35);
+    const first = await fingerprint();
+
+    await records().correctLoggedSet(setOf(id), 36);
+
+    expect(await fingerprint()).not.toBe(first);
+  });
+
+  test("a correction made over a later stamp from the other device is still the later one", async () => {
+    const id = await log(5, 362);
+    stamp(id, 600);
+    const tablet = await peer("tablet.db");
+
+    await records().correctLoggedSet(setOf(id), 35);
+
+    expect(await backup().compareWithPeer(tablet)).toMatchObject({ localChanges: 1 });
+  });
+
+  test("a device on a build before 0072 still counts a correction made here as news from here", async () => {
+    const id = await log(5, 362);
+    const tablet = await peer("old-build.db", (sqlite) => {
+      sqlite.exec(
+        "ALTER TABLE completed_sessions DROP COLUMN setsEditedAt; ALTER TABLE completed_sessions DROP COLUMN feedbackEditedAt",
+      );
+    });
+
+    await records().correctLoggedSet(setOf(id), 35);
+
+    // Without it the tablet reads as `ahead`, the merge refuses another build, and taking its
+    // version replaces this database without a word about the correction.
+    expect(await backup().compareWithPeer(tablet)).toMatchObject({ localChanges: 1 });
+  });
+
+  test("a feedback given later on the other device leaves a correction made here alone", async () => {
+    const id = await log(5, 362);
+    const tablet = await peer("tablet.db", (sqlite) => {
+      sqlite
+        .prepare(
+          "UPDATE completed_sessions SET feedback = 'hard', feedbackEditedAt = unixepoch() + 100 WHERE uuid = ?",
+        )
+        .run(uuidOf(id));
+    });
+    await records().correctLoggedSet(setOf(id), 35);
+
+    await merge().mergePeer(tablet);
+
+    expect(valueHere(id)).toBe(35);
+    expect(
+      t.sqlite.prepare("SELECT feedback f FROM completed_sessions WHERE id = ?").get(id),
+    ).toEqual({ f: "hard" });
+  });
+
+  test("a correction whose session cannot be stamped leaves the set as it was", async () => {
+    const id = await log(5, 362);
+    t.sqlite.exec(`CREATE TRIGGER no_stamp BEFORE UPDATE OF setsEditedAt ON completed_sessions
+      BEGIN SELECT RAISE(ABORT, 'disk full'); END`);
+
+    await expect(records().correctLoggedSet(setOf(id), 35)).rejects.toThrow("disk full");
+
+    // A value without its stamp is a correction sync never sees: this device alone would hold it.
+    expect(valueHere(id)).toBe(362);
+  });
+
+  test("records that cannot be decided again do not undo a merge that committed", async () => {
+    const id = await log(5, 362);
+    const tablet = await peer("tablet.db", correctThere(uuidOf(id), 35));
+    const actual = jest.requireActual("../db/personalRecords");
+    jest.doMock("../db/personalRecords", () => ({
+      ...actual,
+      redecideRecordsAfter: () => Promise.reject(new Error("records")),
+    }));
+    const reported: string[] = [];
+    jest.doMock("@/src/reportError", () => ({
+      reportError: (context: string) => reported.push(context),
+    }));
+
+    expect(await merge().mergePeer(tablet)).toMatchObject({ merged: true });
+    expect(valueHere(id)).toBe(35);
+    expect(reported).toEqual(["sync.merge.records"]);
+  });
+
+  test("a device nobody edited on keeps the fingerprint it had, so no answer is asked again", async () => {
+    const id = await log(5, 362);
+
+    expect((await fingerprint()).split("|")[0]).toBe(`1:${uuidOf(id)}`);
   });
 });

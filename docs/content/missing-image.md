@@ -31,11 +31,10 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 
 ## TL;DR
 
-- **OPEN (2026-10-14)**: `superman_w` (`0072`, roadmap P-02) ships on the placeholder. Pose:
-  lying face down, forehead on the floor, legs flat, arms lifted just off the floor with the
-  elbows pulled down to the ribs and the shoulder blades squeezed, the arms drawing a W. Seen
-  from above and a little to the side: floor poses seen straight down read as standing (see the
-  art-loop notes). The seed row keeps the default `imagePath`; the art commit sets it.
+- **RESOLVED (2026-10-14)**: `superman_w` (`0072`, roadmap P-02). Drawn from a 3D mannequin
+  (`POSES3D` in `scripts/art-loop.py`) seen from the head end, a little above: from above (a1)
+  the lifted hands read as planted, a push-up. a2_c3 shipped, with the white frame the model
+  painted cropped off; it clenches its fists where the description says palms down.
 - **§10 OPEN (2026-09-13)**: `table_row` still shows a straight-legged row flat under the table.
   Since `0053` (issue #94) Table Row is the *bent-knee* row, the easy rung below Inverted Row, so
   the pose now draws the harder version of the movement it names. Repaint it: knees bent, feet

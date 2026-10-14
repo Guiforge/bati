@@ -2278,6 +2278,28 @@
       "licence": "restyle of the render above — same licence, no new source introduced"
     }
   },
+  "assets/images/exercises/superman_w.webp": {
+    "model": "flux-2-pro-preview",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "d0f992fbe74293cf.jpg",
+      "sha256": "d0f992fbe74293cfb32810182b2ecc2c18a33a2d779b5c685eb5176a97ef342e"
+    },
+    "prompt": "Image 1 is a rough 3D mannequin render that fixes the exact pose and camera angle. Orange limbs are the body's left side, blue limbs its right side, grey is the trunk and head, and the dark plane is the floor. Draw the hero in precisely this pose: the same joint angles, the same parts of the body touching the floor or the equipment, the same viewpoint. Draw a real person in the style described below; nothing of the mannequin, its colours or its rounded tube shapes appears in the picture, and the floor stays the same dark navy as the background, unlit. A fantasy athlete hero lying face down on the floor doing a prone W raise, seen from in front and slightly to one side at floor level, filling the frame. The hips, both straight legs and the tops of both bare feet lie flat on the floor. The chest and head are lifted just a little off the floor, eyes looking down. Neither hand touches the floor: both arms are lifted clearly into the air, palms facing down, the elbows bent at a right angle and pulled back beside the ribs, the forearms pointing forward, so the two arms and the shoulders together draw the letter W. The shoulder blades are squeezed together. Clear dark empty space separates both hands and both elbows from the floor. Knee-length dark shorts. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+    "seed": 617084590,
+    "width": 1280,
+    "height": 1280,
+    "generated": "2026-10-14",
+    "references": [
+      {
+        "path": "superman_w.3d.png",
+        "sha256": "71aa5ad03a18f8d7c5958bc851fd75a36fb18b83ffad8269ff298df2636124e5"
+      }
+    ],
+    "edited": "2026-10-14: a white frame the model painted around the scene cropped off (34 px a side, resized back to 1280); the signed original is unchanged",
+    "reencoded": "cwebp -q 85, from superman_w.jpg"
+  },
   "assets/images/exercises/table_row.webp": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",

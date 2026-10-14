@@ -16,7 +16,6 @@
 --
 -- Not on the row ladder (prerequisiteExerciseId stays null): it is not an easier row, and a rung
 -- below Towel Door Row would let `currentRungFor` hand it out in place of The Cellar Hauler's rows.
--- No art yet: imagePath keeps its default and the app shows the placeholder until it is drawn.
 INSERT INTO `exercises` (
         `enName`,
         `frName`,
@@ -26,6 +25,7 @@ INSERT INTO `exercises` (
         `frDescription`,
         `deDescription`,
         `esDescription`,
+        `imagePath`,
         `creator`,
         `difficulty`,
         `equipment`,
@@ -45,6 +45,7 @@ VALUES (
         'Allonge-toi sur le ventre, front au sol, bras tendus devant toi. Jambes posées, décolle les bras du sol et ramène les coudes vers les côtes, comme vers tes poches arrière, en serrant les omoplates deux secondes. Retends les bras devant et recommence.',
         'Leg dich auf den Bauch, Stirn am Boden, Arme nach vorn gestreckt. Die Beine bleiben liegen. Heb die Arme leicht vom Boden und zieh die Ellbogen zu den Rippen, als wolltest du sie in die Gesäßtaschen stecken, und drück die Schulterblätter zwei Sekunden zusammen. Streck die Arme wieder nach vorn und wiederhole.',
         'Túmbate boca abajo, con la frente en el suelo y los brazos estirados al frente. Con las piernas apoyadas, despega los brazos del suelo y lleva los codos hacia las costillas, como hacia los bolsillos traseros, juntando los omóplatos dos segundos. Vuelve a estirar los brazos y repite.',
+        'assets/images/exercises/superman_w.webp',
         'Admin',
         'easy',
         'none',

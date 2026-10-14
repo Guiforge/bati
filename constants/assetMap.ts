@@ -43,6 +43,7 @@ export const EXERCISE_ASSETS = {
   // Bodyweight exercises (0010, art assigned in 0011) — see docs/content/missing-image.md §4
   chin_up: require("@/assets/images/exercises/chin_up.webp"),
   superman: require("@/assets/images/exercises/superman.webp"),
+  superman_w: require("@/assets/images/exercises/superman_w.webp"),
   bear_crawl: require("@/assets/images/exercises/bear_crawl.webp"),
   russian_twist: require("@/assets/images/exercises/russian_twist.webp"),
   side_plank: require("@/assets/images/exercises/side_plank.webp"),
@@ -512,6 +513,7 @@ export const EXERCISE_THUMB_ASSETS = {
   crunch: require("@/assets/images/exercises/thumbs/crunch.webp"),
   chin_up: require("@/assets/images/exercises/thumbs/chin_up.webp"),
   superman: require("@/assets/images/exercises/thumbs/superman.webp"),
+  superman_w: require("@/assets/images/exercises/thumbs/superman_w.webp"),
   bear_crawl: require("@/assets/images/exercises/thumbs/bear_crawl.webp"),
   russian_twist: require("@/assets/images/exercises/thumbs/russian_twist.webp"),
   side_plank: require("@/assets/images/exercises/thumbs/side_plank.webp"),

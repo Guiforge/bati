@@ -129,6 +129,18 @@ EXERCISES = [
      "the ground, so the arched back makes the body a shallow bowl rocking on the stomach. Dark "
      "empty space is clearly visible under the hands and under the feet. The back glows with "
      "metallic silver-blue energy."),
+    # Superman W (0072): the legs stay flat, which is the whole difference from the superman
+    # above. No glow line: "silver" became a breastplate again (a1). "Neither hand touches the
+    # floor" because from above the lifted hands were drawn planted, a push-up.
+    ("superman_w",
+     "A fantasy athlete hero lying face down on the floor doing a prone W raise, seen from in front"
+     " and slightly to one side at floor level, filling the frame. The hips, both straight legs and"
+     " the tops of both bare feet lie flat on the floor. The chest and head are lifted just a "
+     "little off the floor, eyes looking down. Neither hand touches the floor: both arms are lifted"
+     " clearly into the air, palms facing down, the elbows bent at a right angle and pulled back "
+     "beside the ribs, the forearms pointing forward, so the two arms and the shoulders together "
+     "draw the letter W. The shoulder blades are squeezed together. Clear dark empty space "
+     "separates both hands and both elbows from the floor. Knee-length dark shorts."),
     # "Knees hovering just above the ground" put them straight down on it — the same lift refused
     # everywhere else. Contact points counted, and the gap given a size.
     ("bear_crawl",

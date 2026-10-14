@@ -522,6 +522,20 @@ POSES3D.update({
                           _pair("toe", (0.27, -0.3, 0.03), (-0.97, -0.13, 0.02))),
         "camera": {"at": (1.8, 1.9, 1.3), "look": (0, 0, 0.3), "lens": 45},
     },
+    # Prone, legs flat, arms off the floor in a W: elbows back beside the ribs, forearms
+    # forward. From in front and above, where the W is the shape; from the side it is one arm.
+    "superman_w": {
+        "joints": _joints((0.86, 0, 0.2), (0.64, 0, 0.18), (0, 0, 0.1),
+                          _pair("shoulder", (0.62, 0.2, 0.2), (0.62, -0.2, 0.2)),
+                          _pair("elbow", (0.42, 0.38, 0.3), (0.42, -0.38, 0.3)),
+                          _pair("wrist", (0.7, 0.48, 0.32), (0.7, -0.48, 0.32)),
+                          _pair("hip", (0, 0.1, 0.1), (0, -0.1, 0.1)),
+                          _pair("knee", (-0.44, 0.1, 0.06), (-0.44, -0.1, 0.06)),
+                          _pair("ankle", (-0.87, 0.1, 0.06), (-0.87, -0.1, 0.06)),
+                          _pair("toe", (-0.95, 0.1, 0.03), (-0.95, -0.1, 0.03))),
+        # Low and in front: from above (a1) the lifted hands read as planted, a push-up.
+        "camera": {"at": (2.3, -0.45, 1.0), "look": (0.25, 0, 0.2), "lens": 45},
+    },
     "cobra_stretch": {
         "joints": _joints((0.6, 0, 0.56), (0.42, 0, 0.4), (0, 0, 0.1),
                           _pair("shoulder", (0.4, 0.2, 0.38), (0.4, -0.2, 0.38)),

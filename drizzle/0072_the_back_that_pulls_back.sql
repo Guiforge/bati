@@ -4,7 +4,8 @@
 -- and neither had anything for the muscles that pull the shoulder blades back. The two rows the
 -- catalogue already has (Table Row, Towel Door Row) need a sturdy table or a door and a towel,
 -- which a beginner at home skips mid-session. The Superman W needs only the floor: lying face
--- down, legs down, the elbows drive to the ribs as in a row, unloaded. It trains the middle and
+-- down, chest and legs just lifted, the elbows drive to the ribs as in a row, unloaded. The arms
+-- are what set it apart from the Superman, which holds them straight out. It trains the middle and
 -- lower trapezius and the rear shoulder, not the lats, so it is the antagonist to push-ups that a
 -- beginner will actually do, not a replacement for a row.
 --
@@ -41,10 +42,10 @@ VALUES (
         'Superman en W',
         'Superman W',
         'Superman en W',
-        'Lie face down, forehead on the floor, arms stretched out in front. Keeping your legs down, lift your arms just off the floor and pull your elbows down to your ribs, as if into your back pockets, squeezing your shoulder blades together for two seconds. Reach forward again and repeat.',
-        'Allonge-toi sur le ventre, front au sol, bras tendus devant toi. Jambes posées, décolle les bras du sol et ramène les coudes vers les côtes, comme vers tes poches arrière, en serrant les omoplates deux secondes. Retends les bras devant et recommence.',
-        'Leg dich auf den Bauch, Stirn am Boden, Arme nach vorn gestreckt. Die Beine bleiben liegen. Heb die Arme leicht vom Boden und zieh die Ellbogen zu den Rippen, als wolltest du sie in die Gesäßtaschen stecken, und drück die Schulterblätter zwei Sekunden zusammen. Streck die Arme wieder nach vorn und wiederhole.',
-        'Túmbate boca abajo, con la frente en el suelo y los brazos estirados al frente. Con las piernas apoyadas, despega los brazos del suelo y lleva los codos hacia las costillas, como hacia los bolsillos traseros, juntando los omóplatos dos segundos. Vuelve a estirar los brazos y repite.',
+        'Lie face down, arms stretched out in front. Lift your chest, arms and legs a little off the floor, eyes on the floor. Pull your elbows back to your ribs, as if into your back pockets, and squeeze your shoulder blades together for two seconds. Reach forward again without touching the floor and repeat.',
+        'Allonge-toi sur le ventre, bras tendus devant toi. Décolle un peu du sol la poitrine, les bras et les jambes, le regard vers le sol. Ramène les coudes vers les côtes, comme vers tes poches arrière, et serre les omoplates deux secondes. Retends les bras devant sans toucher le sol et recommence.',
+        'Leg dich auf den Bauch, die Arme nach vorn gestreckt. Heb Brust, Arme und Beine leicht vom Boden, den Blick zum Boden. Zieh die Ellbogen zu den Rippen, als wolltest du sie in die Gesäßtaschen stecken, und drück die Schulterblätter zwei Sekunden zusammen. Streck die Arme wieder nach vorn, ohne den Boden zu berühren, und wiederhole.',
+        'Túmbate boca abajo con los brazos estirados al frente. Despega un poco del suelo el pecho, los brazos y las piernas, con la mirada al suelo. Lleva los codos hacia las costillas, como hacia los bolsillos traseros, y junta los omóplatos dos segundos. Vuelve a estirar los brazos sin tocar el suelo y repite.',
         'assets/images/exercises/superman_w.webp',
         'Admin',
         'easy',

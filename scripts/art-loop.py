@@ -395,6 +395,19 @@ def _joints(head, neck, pelvis, *pairs):
 _SIDE_CAM = {"at": (0.0, -3.4, 0.7), "look": (0.0, 0.0, 0.3), "lens": 50}
 
 # Facing +x unless said otherwise, so the body's right side is -y, toward a side camera.
+# The superman_w back, pelvis to neck: a quadratic Bezier whose control point sits low over the
+# lumbar spine, so the curve stays near the floor there and rises through the chest. Seven inner
+# points, eight segments: fewer read as a jointed plank.
+_SPINE_W_ENDS = ((0.0, 0.11), (0.33, 0.12), (0.58, 0.37))
+_SPINE_W = [
+    (
+        (1 - t) ** 2 * _SPINE_W_ENDS[0][0] + 2 * (1 - t) * t * _SPINE_W_ENDS[1][0] + t * t * _SPINE_W_ENDS[2][0],
+        0,
+        (1 - t) ** 2 * _SPINE_W_ENDS[0][1] + 2 * (1 - t) * t * _SPINE_W_ENDS[1][1] + t * t * _SPINE_W_ENDS[2][1],
+    )
+    for t in (i / 8 for i in range(1, 8))
+]
+
 POSES3D.update({
     "knee_pushup": {
         # Knees on the floor and the thighs rising from them: with a 15-degree knee bend the
@@ -522,19 +535,26 @@ POSES3D.update({
                           _pair("toe", (0.27, -0.3, 0.03), (-0.97, -0.13, 0.02))),
         "camera": {"at": (1.8, 1.9, 1.3), "look": (0, 0, 0.3), "lens": 45},
     },
-    # Prone, legs flat, arms off the floor in a W: elbows back beside the ribs, forearms
-    # forward. From in front and above, where the W is the shape; from the side it is one arm.
+    # Prone, legs lifted a little, upper back arched off the floor, arms in a W: elbows back beside
+    # the ribs, hands at head height. Seen from the side, where the arch shows; from above (a1)
+    # the lifted hands read as planted, a push-up, and from three quarters in front the near arm
+    # foreshortened to nothing. The trunk follows a curve (`_SPINE_W`, eight segments), or the
+    # arch is a straight plank tilted up. Elbows further back (a7) gave a sphinx on the elbows.
     "superman_w": {
-        "joints": _joints((0.86, 0, 0.2), (0.64, 0, 0.18), (0, 0, 0.1),
-                          _pair("shoulder", (0.62, 0.2, 0.2), (0.62, -0.2, 0.2)),
-                          _pair("elbow", (0.42, 0.38, 0.3), (0.42, -0.38, 0.3)),
-                          _pair("wrist", (0.7, 0.48, 0.32), (0.7, -0.48, 0.32)),
-                          _pair("hip", (0, 0.1, 0.1), (0, -0.1, 0.1)),
-                          _pair("knee", (-0.44, 0.1, 0.06), (-0.44, -0.1, 0.06)),
-                          _pair("ankle", (-0.87, 0.1, 0.06), (-0.87, -0.1, 0.06)),
-                          _pair("toe", (-0.95, 0.1, 0.03), (-0.95, -0.1, 0.03))),
-        # Low and in front: from above (a1) the lifted hands read as planted, a push-up.
-        "camera": {"at": (2.3, -0.45, 1.0), "look": (0.25, 0, 0.2), "lens": 45},
+        "joints": {**_joints((0.8, 0, 0.47), (0.58, 0, 0.37), (0, 0, 0.11),
+                             _pair("shoulder", (0.56, 0.2, 0.36), (0.56, -0.2, 0.36)),
+                             _pair("elbow", (0.44, 0.38, 0.41), (0.44, -0.38, 0.41)),
+                             _pair("wrist", (0.71, 0.37, 0.5), (0.71, -0.37, 0.5)),
+                             _pair("hip", (0, 0.1, 0.11), (0, -0.1, 0.11)),
+                             _pair("knee", (-0.44, 0.1, 0.15), (-0.44, -0.1, 0.15)),
+                             _pair("ankle", (-0.86, 0.1, 0.26), (-0.86, -0.1, 0.26)),
+                             _pair("toe", (-0.95, 0.1, 0.25), (-0.95, -0.1, 0.25))),
+                   **{f"spine{i}": point for i, point in enumerate(_SPINE_W, 1)}},
+        "limbs": [limb for limb in LIMBS3D if limb[:2] != ("neck", "pelvis")]
+        + [(a, b, 0.13, "trunk") for a, b in zip(
+            ["pelvis", *(f"spine{i}" for i in range(1, len(_SPINE_W) + 1))],
+            [*(f"spine{i}" for i in range(1, len(_SPINE_W) + 1)), "neck"])],
+        "camera": {"at": (-0.25, 2.6, 1.0), "look": (0.0, 0, 0.28), "lens": 40},
     },
     "cobra_stretch": {
         "joints": _joints((0.6, 0, 0.56), (0.42, 0, 0.4), (0, 0, 0.1),
@@ -582,7 +602,7 @@ def render3d(slug: str) -> pathlib.Path:
     pose = POSES3D[slug]
     spec = {
         "joints": pose["joints"],
-        "limbs": LIMBS3D,
+        "limbs": pose.get("limbs", LIMBS3D),
         "boxes": pose.get("boxes", []),
         "bars": pose.get("bars", []),
         "camera": pose["camera"],

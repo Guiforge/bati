@@ -129,18 +129,24 @@ EXERCISES = [
      "the ground, so the arched back makes the body a shallow bowl rocking on the stomach. Dark "
      "empty space is clearly visible under the hands and under the feet. The back glows with "
      "metallic silver-blue energy."),
-    # Superman W (0072): the legs stay flat, which is the whole difference from the superman
-    # above. No glow line: "silver" became a breastplate again (a1). "Neither hand touches the
-    # floor" because from above the lifted hands were drawn planted, a push-up.
+    # Superman W (0072), drawn on FLUX 3 (FLUX_ENDPOINT=…/flux-3-image): FLUX.2 put the hands on
+    # the head. The arms are the whole difference from the superman above; "neither arm is
+    # straight" is spelt out because the near arm kept reaching forward (a5, a6).
     ("superman_w",
-     "A fantasy athlete hero lying face down on the floor doing a prone W raise, seen from in front"
-     " and slightly to one side at floor level, filling the frame. The hips, both straight legs and"
-     " the tops of both bare feet lie flat on the floor. The chest and head are lifted just a "
-     "little off the floor, eyes looking down. Neither hand touches the floor: both arms are lifted"
-     " clearly into the air, palms facing down, the elbows bent at a right angle and pulled back "
-     "beside the ribs, the forearms pointing forward, so the two arms and the shoulders together "
-     "draw the letter W. The shoulder blades are squeezed together. Clear dark empty space "
-     "separates both hands and both elbows from the floor. Knee-length dark shorts."),
+     "A fit fantasy athlete hero of about 45, with short salt-and-pepper hair greying at the "
+     "temples and a short salt-and-pepper beard, a strong lean build with a few lines on the face, "
+     "lying face down doing a prone W raise, seen from the side, filling the frame. Only the belly "
+     "and the front of the hips rest on the floor. Both straight legs are lifted together a little "
+     "behind, the bare feet a hand's width off the floor. The upper back arches up in a smooth "
+     "curve, lifting the chest and the head, the eyes looking at the floor a little ahead. Neither "
+     "arm is straight and neither arm reaches forward: both arms are bent exactly the same way, "
+     "mirror images of each other. On each side the upper arm is pulled back along the ribs with "
+     "the elbow beside the waist, lifted off the floor, and the elbow is bent to a right angle so "
+     "the forearm points forward with the open hand, palm down, beside the shoulder. The near arm, "
+     "closest to the viewer, is clearly bent in this L shape too. The hands do not touch the head, "
+     "the face, the neck or the floor. The shoulder blades are squeezed together. Clear empty space"
+     " under the chest, both elbows, both hands and both feet. Knee-length dark shorts, bare feet, "
+     "no shoes. The background is near-black navy, darker than the figure's shorts."),
     # "Knees hovering just above the ground" put them straight down on it — the same lift refused
     # everywhere else. Contact points counted, and the gap given a size.
     ("bear_crawl",

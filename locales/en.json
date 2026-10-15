@@ -2215,6 +2215,23 @@
     "stops_path": "Your path stops climbing at this rung.",
     "oath_stalls": "Your oath is on this exercise: it won't move while it is set aside."
   },
+  "chronicle": {
+    "title": "Chronicle",
+    "open": "Your {{year}} in one picture",
+    "heading": "Your {{year}}",
+    "span": "{{from}} to {{to}}",
+    "empty": "No session in {{year}}.",
+    "closed": "The chronicle opens in December.",
+    "village": "your settlement",
+    "sessions_one": "session",
+    "sessions_other": "sessions",
+    "records_one": "record",
+    "records_other": "records",
+    "bosses_one": "boss felled",
+    "bosses_other": "bosses felled",
+    "flame_days_one": "day, longest flame",
+    "flame_days_other": "days, longest flame"
+  },
   "share": {
     "open": "Share",
     "title": "Share this session",

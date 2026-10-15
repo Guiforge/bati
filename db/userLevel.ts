@@ -1,4 +1,4 @@
-import { sum } from "drizzle-orm";
+import { lte, sum } from "drizzle-orm";
 import { localizedTable } from "@/src/i18n/copy";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
@@ -98,10 +98,14 @@ export function getLevelTitle(level: number): Localized {
 }
 
 /**
- * Get the user's total XP from all completed sessions
+ * Get the user's total XP from all completed sessions, or from those up to `to`: the year's
+ * chronicle paints the village the year ended on, from this same sum.
  */
-export async function getTotalXp(): Promise<number> {
-  const result = await db.select({ total: sum(completedQuest.xpEarned) }).from(completedQuest);
+export async function getTotalXp(to?: Date): Promise<number> {
+  const result = await db
+    .select({ total: sum(completedQuest.xpEarned) })
+    .from(completedQuest)
+    .where(to ? lte(completedQuest.performedAt, to) : undefined);
 
   return Number(result[0]?.total ?? 0);
 }

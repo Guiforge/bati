@@ -351,7 +351,8 @@ export async function getPeriodFigures(from: Date | null, to: Date): Promise<Per
   };
 }
 
-const periodWindow = (from: Date | null, to: Date) =>
+/** `[from, to]`, both ends in: the one window every period figure, and the chronicle, reads. */
+export const periodWindow = (from: Date | null, to: Date) =>
   and(
     from ? gte(completedQuest.performedAt, from) : undefined,
     lte(completedQuest.performedAt, to),

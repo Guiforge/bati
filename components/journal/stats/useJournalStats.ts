@@ -1,6 +1,7 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
+import { type ChronicleWindow, chronicleToOpen } from "@/db/chronicle";
 import { dayKey } from "@/db/dates";
 import {
   type DayActivity,
@@ -55,6 +56,8 @@ export type JournalStats = {
   xpPerSession: number | null;
   shelf: { unlocked: number; total: number; next: AchievementProgress | null };
   bosses: number;
+  /** The year the Journal's door offers, in December and January, when it holds a session. */
+  chronicle: ChronicleWindow | null;
 };
 
 async function loadJournalStats(): Promise<JournalStats> {
@@ -79,6 +82,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     xpPerSession,
     achievements,
     kills,
+    chronicle,
   ] = await Promise.all([
     getRecordWall(4),
     getFlameDetail(now),
@@ -94,6 +98,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     getWeekXpPerSession(now),
     getAllAchievementsWithProgress(),
     getBossKills(),
+    chronicleToOpen(now),
   ]);
 
   const isFirstDay = firstSessionAt == null;
@@ -141,6 +146,7 @@ async function loadJournalStats(): Promise<JournalStats> {
       next: nextOnShelf(achievements),
     },
     bosses: kills.length,
+    chronicle,
   };
 }
 

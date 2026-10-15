@@ -10,13 +10,14 @@ import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues"
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Scroll } from "@/components/icons";
-import { NMuted, NSeg, NText, NTitle } from "@/components/journal/nocturne";
+import { NButton, NMuted, NSeg, NText, NTitle } from "@/components/journal/nocturne";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { StatsView } from "@/components/journal/stats/StatsView";
 import { useJournalStats } from "@/components/journal/stats/useJournalStats";
 import { getQuestThumb } from "@/constants/assetMap";
 import { MAP_ATTRIBUTION } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
+import type { ChronicleWindow } from "@/db/chronicle";
 import type { StoredRecord } from "@/db/completed";
 import { listCompletedSessions } from "@/db/completed";
 import { listExercises } from "@/db/exercises";
@@ -67,6 +68,26 @@ function recordLabel(
   if (!first) return null;
   if (first.e != null) return names.get(first.e) ?? null;
   return t(`journal.record_${first.t}`, { defaultValue: "" }) || null;
+}
+
+/** The year's chronicle, when the stats say there is one to open (`chronicleToOpen`). */
+function ChronicleDoor({ window }: { window: ChronicleWindow | null }) {
+  const { t } = useTranslation();
+  const router = useRouter();
+  if (!window) return null;
+  return (
+    <YStack px="$5" mb={11}>
+      <NButton
+        testID="journal-chronicle"
+        variant="primary"
+        block
+        minH={48}
+        onPress={() => router.push("/chronicle" as never)}
+      >
+        {t("chronicle.open", { year: window.year })}
+      </NButton>
+    </YStack>
+  );
 }
 
 /**
@@ -300,6 +321,7 @@ export default function JournalScreen() {
               screen while the cards slid under it, and its line is about the numbers, so above
               the History list it spoke about something that was not there. */}
           <VillagerLine owner="journal" />
+          <ChronicleDoor window={stats?.chronicle ?? null} />
           {stats ? <StatsView stats={stats} /> : <StatsSkeleton />}
         </ScrollView>
       )}

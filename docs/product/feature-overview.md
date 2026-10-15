@@ -2,7 +2,7 @@
 title: Features Overview
 type: product
 status: active
-updated: 2026-08-14
+updated: 2026-10-15
 related: [vision.md, user-guide.md, ../planning/roadmap.md, ../gameplay/progression.md]
 sources: [app, db, components]
 ---
@@ -69,6 +69,12 @@ A finished session as a picture, an outing as a GPX, a quest the hero wrote as a
   line) and captures exactly that view (`react-native-view-shot`). With the map turned on, the hero
   chooses whether the picture carries the map, and the first and last 200 m of the line are left
   off every shared picture, since a run from the front door says where the door is. The same screen exports the GPX (`exportTrack` in `src/gps/trackFile.ts`).
+- **The year's chronicle**: `app/chronicle.tsx`, opened from the Journal's Stats segment in
+  December (the year so far) and January (the year just finished), and only when that year holds a
+  session. One picture, the village painting it ended on and the year's figures, sent through the
+  same capture as a session (`components/share/sendCard.ts`). Read on the phone, sent from it,
+  nothing over the network. The rules behind each figure:
+  [statistics-progress.md](../gameplay/statistics-progress.md#the-years-chronicle).
 - **Journal thumbnails**: with the map turned on, a run's thumbnail is its line over a still map,
   drawn once by MapLibre's snapshotter and cached (`src/gps/mapThumb.ts`). Both are framed by
   `traceBounds`, so the line lands on its roads.

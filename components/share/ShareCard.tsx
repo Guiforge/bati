@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
 import { Swords, Trophy } from "@/components/icons";
@@ -7,11 +8,11 @@ import type { QuestLogData } from "@/components/journal/QuestLog";
 import { recordName, recordValue } from "@/components/journal/recordLabel";
 import { type MapState, TraceThumb } from "@/components/journal/TraceThumb";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
-import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { formatDay } from "@/constants/dateFormatters";
 import { MAP_ATTRIBUTION } from "@/constants/mapStyle";
 import type { KillReport } from "@/db/journal";
 import { useSettingsStore } from "@/stores/settings";
-import { sharedLine, shareKicker, shareStats } from "./shareStats";
+import { type ShareStat, sharedLine, shareKicker, shareStats } from "./shareStats";
 
 /**
  * The picture a hero sends: what they did, when, and the one thing worth bragging about.
@@ -46,18 +47,10 @@ export function ShareCard({
   const { session } = log;
   const stats = shareStats(session, t, language, unit);
 
-  const date = getDateTimeFormat(language, { dateStyle: "long" }).format(session.performedAt);
+  const date = formatDay(language, session.performedAt, { dateStyle: "long" });
 
   return (
-    <YStack
-      testID="share-card"
-      width={width}
-      bg="$bgDark"
-      rounded={16}
-      borderWidth={1}
-      borderColor="$glassBorder"
-      overflow="hidden"
-    >
+    <CardFrame testID="share-card" width={width}>
       <CardVisual log={log} kill={kill} width={width} showMap={showMap} onMapState={onMapState} />
 
       <YStack p={17} gap={6}>
@@ -71,18 +64,7 @@ export function ShareCard({
 
         <Brag log={log} kill={kill} />
 
-        {stats.length > 0 ? (
-          <XStack gap={17} mt={11} flexWrap="wrap">
-            {stats.map((stat) => (
-              <YStack key={stat.label}>
-                <NNum fontSize={20} lineHeight={26}>
-                  {stat.value}
-                </NNum>
-                <NMuted fontSize={11}>{stat.label}</NMuted>
-              </YStack>
-            ))}
-          </XStack>
-        ) : null}
+        <CardStats stats={stats} />
 
         <XStack mt={11} items="flex-end" justify="space-between" gap={11}>
           <NKickerQuiet>Bati</NKickerQuiet>
@@ -95,7 +77,49 @@ export function ShareCard({
           ) : null}
         </XStack>
       </YStack>
+    </CardFrame>
+  );
+}
+
+/** The frame every shared picture is drawn in, so the session's and the year's are one family. */
+export function CardFrame({
+  testID,
+  width,
+  children,
+}: {
+  testID: string;
+  width: number;
+  children: ReactNode;
+}) {
+  return (
+    <YStack
+      testID={testID}
+      width={width}
+      bg="$bgDark"
+      rounded={16}
+      borderWidth={1}
+      borderColor="$glassBorder"
+      overflow="hidden"
+    >
+      {children}
     </YStack>
+  );
+}
+
+/** The figures under a shared picture, number over label; nothing at all when there are none. */
+export function CardStats({ stats }: { stats: readonly ShareStat[] }) {
+  if (stats.length === 0) return null;
+  return (
+    <XStack gap={17} mt={11} flexWrap="wrap">
+      {stats.map((stat) => (
+        <YStack key={stat.label}>
+          <NNum fontSize={20} lineHeight={26}>
+            {stat.value}
+          </NNum>
+          <NMuted fontSize={11}>{stat.label}</NMuted>
+        </YStack>
+      ))}
+    </XStack>
   );
 }
 

@@ -2217,6 +2217,23 @@
     "stops_path": "Dein Pfad bleibt auf dieser Stufe stehen.",
     "oath_stalls": "Dein Schwur gilt dieser Übung: Er kommt nicht voran, solange sie beiseitegelegt ist."
   },
+  "chronicle": {
+    "title": "Chronik",
+    "open": "Dein Jahr {{year}} in einem Bild",
+    "heading": "Dein Jahr {{year}}",
+    "span": "{{from}} bis {{to}}",
+    "empty": "Keine Einheit im Jahr {{year}}.",
+    "closed": "Die Chronik öffnet im Dezember.",
+    "village": "deine Siedlung",
+    "sessions_one": "Einheit",
+    "sessions_other": "Einheiten",
+    "records_one": "Rekord",
+    "records_other": "Rekorde",
+    "bosses_one": "Boss besiegt",
+    "bosses_other": "Bosse besiegt",
+    "flame_days_one": "Tag, längste Flamme",
+    "flame_days_other": "Tage, längste Flamme"
+  },
   "share": {
     "open": "Teilen",
     "title": "Einheit teilen",

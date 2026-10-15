@@ -35,9 +35,13 @@ sessions with NULL uuid are never copied between devices.
 `db/backup.ts:345-348`.
 Invariant: a session deleted (tombstoned) on side X is never counted as news from the other side.
 
-**R3. `peerChanges = peerOnly + peerDeleted + peerContent`; `localChanges = localOnly +
-localDeleted + localContent`.** `peerDeleted` = local sessions the peer tombstoned;
-`localDeleted` = peer sessions the local side tombstoned. `db/backup.ts:349-350, 364-365`.
+**R3. `peerChanges = peerOnly + peerDeleted + peerContent + peerEdited`; `localChanges = localOnly +
+localDeleted + localContent + localEdited`.** `peerDeleted` = local sessions the peer tombstoned;
+`localDeleted` = peer sessions the local side tombstoned. `peerEdited` = sessions both hold whose
+`setsEditedAt` or `feedbackEditedAt` (0072) is later on the peer, `localEdited` the reverse, NULL
+reading as 0. A side before 0072 has no stamps: it offers no edit, and every edit the other made
+is news it lacks, so a correction keeps a device `diverged` or `behind` rather than `ahead`, and
+is never replaced silently by a take. `db/backup.ts` (`compareWithPeer`, `editedLaterIn`).
 Invariant: state is `ahead` iff peerChanges>0 and localChanges=0, `diverged` iff both>0,
 `behind` iff only local>0, `level` iff both 0 (see R4).
 
@@ -66,7 +70,10 @@ oathBonusAt, reminderDays, crestAnimal, crestCoat, crestMotto.** `db/backup.ts` 
 writes a default (a device that never chose has no row, or two such devices would diverge in
 `db-peer-compare`), and going back to the animal the sessions chose writes `auto`, never a delete:
 a preference has no tombstone, so a deletion could not beat an older pick on the other device.
-`db/preferences.ts` (`getCrestAnimal`, `setCrestAnimal`).
+`db/preferences.ts` (`getCrestAnimal`, `setCrestAnimal`). The same holds for `oath` and
+`ownedEquipment`: breaking the oath (`breakOath`) and setting the equipment back to everything
+(`setOwnedEquipment(null)`) write an empty string, which both readers take as absent, and never
+delete the row; a delete was undone by the next merge with a device that still held the old one.
 `crestCoat` (`getCrestCoat`, `setCrestCoat`; `db-peer-merge` holds the test) is `auto` or `usual` under the same discipline: one choice for the whole
 hero, no default written, back to `auto` writes `auto`, an unknown value reads as `auto`. A `db-peer-merge`
 test checks that an `auto` written later beats an older `usual`, in both merge directions.
@@ -86,11 +93,14 @@ no news both ways (`>=`, `db/backup.ts:298`); merge keeps local (strict `>`, `db
 Invariant: two devices that edit the same hero row in the same second hold different values after
 any number of syncs, and compare reports `level`.
 
-**R10. `stateFingerprint` / peer `fingerprint` = `count(sessions) ':' max(uuid)` | `max(updatedAt)
-':' count` over hero content | tombstone count.** `db/backup.ts:355-358, 370, 383-389`. It does
-not read session columns other than uuid.
-Invariant: editing any field of an existing session (notes, feedback, xpEarned) leaves the
-fingerprint unchanged; adding one session changes it; adding a tombstone changes it.
+**R10. `stateFingerprint` / peer `fingerprint` = `count(sessions) ':' max(uuid)`, then `':'` and the
+sum of both edit stamps when it is not 0 | `max(updatedAt) ':' count` over hero content |
+tombstone count.** `db/backup.ts` (`sessionsStamp`). With no edit the first term is what it was
+before 0072, so an answer the hero already gave is not asked again.
+Invariant: correcting a set or giving feedback after the save changes the fingerprint, every time:
+`nextEditStamp` writes `max(now, stamp + 1)`, so the sum grows even within one second or past a
+stamp merged from a phone whose clock runs ahead. Editing `notes` or `xpEarned` does not; adding
+one session changes it; adding a tombstone changes it.
 
 **R11. Never compared and never merged:** derived caches (`streak_*`, achievements), favourites
 (`favourite_quests`), quest configs (`quest:<id>:config`), campaigns, boss fights and boss damage
@@ -114,16 +124,28 @@ error.** Unmapped exercise or quest, a set naming an unknown exercise, an Admin 
 all throw. `db/merge.ts:57-66, 150-155, 229-231, 323-327`.
 Invariant: when `mergePeer` throws, the database (every table) is byte-identical to before.
 
-**R14. Sessions are only ever inserted, never updated.** A peer session is copied iff its uuid is
-neither local nor in local tombstones, with all columns except `id`; XP, `records_json`,
-`performedAt`, `tzOffsetMin`, `originDevice` are copied verbatim. `db/merge.ts:137-148`.
-Invariant: for every uuid present on both devices before a merge, the local row is unchanged
-after it (so a later edit on one device does not reach the other: R15).
+**R14. A peer session is inserted when new, and its edits taken when later.** A peer session is
+copied iff its uuid is neither local nor in local tombstones, with all columns except `id`; XP,
+`records_json`, `performedAt`, `tzOffsetMin`, `originDevice` and both edit stamps are copied
+verbatim. For a session both hold, each stamp is read on its own (NULL as 0, a tie stays local):
+a later `setsEditedAt` takes the peer's whole set of `completed_exercises` (R16) and keeps this
+device's `hasNewRecords` and `records_json`, decided again on the new sets for every movement of
+the session (`redecideSessions`); a later `feedbackEditedAt` takes its `feedback`. Every other column, XP
+included, stays. After the commit, `redecideAfterChange` decides again the records of the
+movements whose figures differ between the two copies, in the session and in every later local
+session holding a figure between the old and the new one, as `correctLoggedSet` does; its failure
+is reported (`sync.merge.records`) and does not fail the merge that committed.
+`db/merge.ts` (`takeEditedSets`, `takeEditedFeedback`, `mergePeer`).
+Invariant: a set corrected on A reaches B at B's next merge with A, and B's records follow; a
+feedback changed later on B does not carry B's older sets over A's correction.
+Invariant (current behaviour): two different corrections of one session stamped in the same second
+never converge, and compare reports `level` (as R9 for hero rows).
 
-**R15. Edits to an existing session are never propagated.** `addBonusXpToSession`,
-`updateSessionFeedback`, `markSessionWithNewRecords` mutate rows after the save
-(`db/completed.ts:282-317`); neither merge nor fingerprint see it (R10, R14). The code does not
-say this is intended.
+**R15. Only the edits that stamp the session propagate.** `correctLoggedSet` (`setsEditedAt`,
+written before the value, in one transaction) and `updateSessionFeedback` (`feedbackEditedAt`) do. `addBonusXpToSession` and `markSessionWithNewRecords` run inside the
+save, before any snapshot can carry the session, and do not; neither merge nor fingerprint see a
+later change to them (R10, R14), and the frozen tests in `db-peer-merge` hold that the first copy
+of a session wins for XP.
 Invariant (current behaviour): after convergence two devices may hold different `xpEarned` for the
 same uuid.
 

@@ -1,7 +1,14 @@
-import { and, between, desc, eq, gt, inArray, lt, max, ne, sql } from "drizzle-orm";
+import { and, between, desc, eq, gt, inArray, lt, max, ne, type SQL, sql } from "drizzle-orm";
 import type { Localized } from "@/src/i18n/deviceLanguage";
-import { db, schema } from "./client";
-import { isWorkout, markSessionWithNewRecords, parseRecords, type StoredRecord } from "./completed";
+import { db, schema, transactionOrFallback } from "./client";
+import {
+  isWorkout,
+  markSessionWithNewRecords,
+  nextEditStamp,
+  parseRecords,
+  type StoredRecord,
+} from "./completed";
+import { forgetEverEarned } from "./exercises";
 import { hasGround } from "./expeditions";
 import { clearCached } from "./queryCache";
 import type { QuestTargetType } from "./schema";
@@ -643,41 +650,88 @@ export async function correctLoggedSet(
 
   const { min, max: ceiling } = targetRangeFor(row.type, row.style);
   const clamped = Math.min(ceiling, Math.max(min, Math.round(value)));
-  await db
-    .update(completedExercises)
-    .set({ resultValue: clamped })
-    .where(eq(completedExercises.id, setId));
+  // The stamp is what device sync reads to carry the correction (`0072`), so it goes first: a
+  // value written without it would stay on this device for good.
+  await transactionOrFallback(async (tx) => {
+    await tx
+      .update(completedQuest)
+      .set({ setsEditedAt: nextEditStamp(completedQuest.setsEditedAt) })
+      .where(eq(completedQuest.id, row.sessionId));
+    await tx
+      .update(completedExercises)
+      .set({ resultValue: clamped })
+      .where(eq(completedExercises.id, setId));
+  });
+  forgetEverEarned();
+  await redecideAfterChange([
+    {
+      sessionId: row.sessionId,
+      exerciseId: row.exerciseId,
+      low: Math.min(row.oldValue, clamped),
+      high: Math.max(row.oldValue, clamped),
+    },
+  ]);
+  return "updated";
+}
 
-  // A later session was judged against this set too. Its verdict on the movement can only have
-  // moved if its own best lies between the old value and the new one, so only those are asked
-  // again: a correction from 362 s to 35 s gives a later 100 s its record back, and the reverse
-  // takes it away.
-  const later = await db
+/** A movement of one saved session whose figures moved, somewhere between `low` and `high`. */
+export type MovedMovement = { sessionId: number; exerciseId: number; low: number; high: number };
+
+/**
+ * The records a change of figures can have moved, decided again: the session's own entry for the
+ * movement, and every later session judged against it. A later verdict can only have moved if
+ * that session has a figure between the old one and the new one, so only those are asked again: a
+ * correction from 362 s to 35 s gives a later 100 s its record back, and the reverse takes it
+ * away. `correctLoggedSet` calls it for one set, `mergePeer` for the sets another device corrected.
+ */
+export async function redecideAfterChange(changes: readonly MovedMovement[]): Promise<void> {
+  for (const { sessionId, exerciseId, low, high } of changes) {
+    const [own] = await db
+      .select({ performedAt: completedQuest.performedAt, recordsJson: completedQuest.recordsJson })
+      .from(completedQuest)
+      .where(eq(completedQuest.id, sessionId));
+    if (!own) continue;
+    const later = await sessionsWithMovement(
+      exerciseId,
+      ne(completedExercises.sessionId, sessionId),
+      gt(completedQuest.performedAt, own.performedAt),
+      between(completedExercises.resultValue, low, high),
+    );
+    for (const session of [{ id: sessionId, recordsJson: own.recordsJson }, ...later]) {
+      await redecideMovementRecord(session.id, session.recordsJson, exerciseId);
+    }
+  }
+  clearCached("quest:");
+}
+
+/** Every movement of `sessionIds`, its stored records decided again against what came before. */
+export async function redecideSessions(sessionIds: readonly number[]): Promise<void> {
+  if (sessionIds.length === 0) return;
+  const movements = await db
+    .selectDistinct({
+      sessionId: completedExercises.sessionId,
+      exerciseId: completedExercises.exerciseId,
+    })
+    .from(completedExercises)
+    .where(inArray(completedExercises.sessionId, [...sessionIds]));
+  for (const { sessionId, exerciseId } of movements) {
+    // Read again each time: the previous movement just rewrote it.
+    const [own] = await db
+      .select({ recordsJson: completedQuest.recordsJson })
+      .from(completedQuest)
+      .where(eq(completedQuest.id, sessionId));
+    await redecideMovementRecord(sessionId, own?.recordsJson ?? null, exerciseId);
+  }
+  clearCached("quest:");
+}
+
+/** The sessions with a set of `exerciseId` that also match `where`, with their stored records. */
+function sessionsWithMovement(exerciseId: number, ...where: SQL[]) {
+  return db
     .selectDistinct({ id: completedQuest.id, recordsJson: completedQuest.recordsJson })
     .from(completedExercises)
     .innerJoin(completedQuest, eq(completedQuest.id, completedExercises.sessionId))
-    .where(
-      and(
-        eq(completedExercises.exerciseId, row.exerciseId),
-        eq(completedExercises.resultType, row.type),
-        ne(completedExercises.sessionId, row.sessionId),
-        gt(completedQuest.performedAt, row.performedAt),
-        between(
-          completedExercises.resultValue,
-          Math.min(row.oldValue, clamped),
-          Math.max(row.oldValue, clamped),
-        ),
-      ),
-    );
-  for (const session of [{ id: row.sessionId, recordsJson: row.recordsJson }, ...later]) {
-    await redecideMovementRecord(session.id, session.recordsJson, row.exerciseId);
-  }
-
-  // ponytail: device sync matches sessions by uuid and does not see a changed set, so the
-  // correction stays on this device (and a hand-off from a device that never had it undoes it).
-  // Give `completed_exercises` an `updatedAt` the merge reads if heroes correct sets often.
-  clearCached("quest:");
-  return "updated";
+    .where(and(eq(completedExercises.exerciseId, exerciseId), ...where));
 }
 
 /** One session's stored records for one movement, decided again against what came before it. */

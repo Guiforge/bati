@@ -6,7 +6,7 @@ import { type AppLanguage, type Localized, resolveAppLanguage } from "@/src/i18n
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { countsAsSession } from "./completed";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
-import { deletePreference, getPreference, preferences, setPreference } from "./preferences";
+import { getPreference, preferences, setPreference } from "./preferences";
 import { getStreakInfo, invalidateStreakInfo } from "./streaks";
 import { repEquivalentSql } from "./workUnits";
 
@@ -238,9 +238,12 @@ export async function swearOath(input: {
   return oath;
 }
 
-/** Abandon the current oath. */
+/**
+ * Abandon the current oath. Written empty, not deleted: a preference has no tombstone, so a deleted
+ * row lost to the other device's older oath at the next merge, and the broken oath came back.
+ */
 export async function breakOath(): Promise<void> {
-  await deletePreference(OATH_KEY);
+  await setPreference(OATH_KEY, "");
   invalidateStreakInfo();
 }
 

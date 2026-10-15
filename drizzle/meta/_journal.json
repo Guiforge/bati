@@ -505,6 +505,13 @@
       "when": 1791590400000,
       "tag": "0071_the_day_that_was_paid",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "6",
+      "when": 1792022400000,
+      "tag": "0072_a_session_edited_after",
+      "breakpoints": true
     }
   ]
 }

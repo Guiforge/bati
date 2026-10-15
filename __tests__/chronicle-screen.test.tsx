@@ -134,6 +134,30 @@ test("sends the card as drawn, as a picture", async () => {
   expect(mockShare).toHaveBeenCalledWith("file:///card.png", expect.anything());
 });
 
+test("a capture that fails tells the hero, and the button can be pressed again", async () => {
+  mockCapture.mockRejectedValueOnce(new Error("no surface"));
+  mockGet.mockResolvedValue(year);
+  await mount();
+  await screen.findByTestId("chronicle-card");
+  await act(async () => {
+    await fireEvent(screen.getByTestId("chronicle-painting"), "load", {
+      nativeEvent: {
+        cacheType: "none",
+        source: { url: "", width: 1024, height: 1024, mediaType: null },
+      },
+    });
+  });
+  await act(async () => {
+    await fireEvent.press(screen.getByTestId("chronicle-send"));
+  });
+  expect(mockShowError).toHaveBeenCalledWith("The picture could not be made. Try again.");
+  expect(mockShare).not.toHaveBeenCalled();
+  await act(async () => {
+    await fireEvent.press(screen.getByTestId("chronicle-send"));
+  });
+  expect(mockCapture).toHaveBeenCalledTimes(2);
+});
+
 test("a painting that fails to load is reported and does not lock the send", async () => {
   const { reportError } = require("@/src/reportError") as { reportError: jest.Mock };
   mockGet.mockResolvedValue(year);

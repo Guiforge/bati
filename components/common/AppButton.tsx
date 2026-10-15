@@ -85,6 +85,10 @@ export function AppButton({
             pressStyle: { y: 2, borderBottomColor: "$primary", opacity: 0.95 },
           }
         : { pressStyle: { opacity: 0.9, scale: 0.98 } })}
+      // Always said, `false` included: Tamagui sends it only while disabled, and Android keeps a
+      // view disabled when the next state is empty, so a button enabled again was announced as
+      // disabled while it answered every tap.
+      aria-disabled={buttonProps.disabled === true}
       {...buttonProps}
     >
       {typeof children === "string" ? (

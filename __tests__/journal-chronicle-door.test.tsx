@@ -58,6 +58,14 @@ test("a year to open names itself and opens the chronicle", async () => {
   expect(mockPush).toHaveBeenCalledWith("/chronicle");
 });
 
+test("a label that wraps stays centred in its button", async () => {
+  // Russian at 130 % text: "Твой 2026 год в одной картинке" wrapped to two lines, flush left
+  // and touching the border, where every other language sat centred on one.
+  await mountWith({ year: 2026, from: new Date(2026, 0, 1), to: new Date(2026, 11, 3) });
+  const label = screen.getByText("Your 2026 in one picture");
+  expect(Object.assign({}, ...[label.props.style].flat()).textAlign).toBe("center");
+});
+
 test("no year to open, no door", async () => {
   await mountWith(null);
   expect(screen.queryByTestId("journal-chronicle")).toBeNull();

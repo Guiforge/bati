@@ -113,10 +113,13 @@ export function CardStats({ stats }: { stats: readonly ShareStat[] }) {
     <XStack gap={17} mt={11} flexWrap="wrap">
       {stats.map((stat) => (
         <YStack key={stat.label}>
+          {/* A trailing space each: a cell is exactly as wide as its text, and Android drew
+              "jours, plus longue flamme" a pixel narrower than it measured it, so "flamme" went to
+              a second line the cell had no height for. The space is measured and never wrapped on. */}
           <NNum fontSize={20} lineHeight={26}>
-            {stat.value}
+            {`${stat.value} `}
           </NNum>
-          <NMuted fontSize={11}>{stat.label}</NMuted>
+          <NMuted fontSize={11}>{`${stat.label} `}</NMuted>
         </YStack>
       ))}
     </XStack>

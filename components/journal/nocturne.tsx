@@ -210,6 +210,8 @@ export function NButton({
       // from `minH` so a caller passing a shorter one still lands on 44.
       hitSlop={Math.max(0, (44 - minH) / 2)}
       px={10}
+      // A label that wraps (Russian at 130 % text) keeps air above and below, and its centre.
+      py={6}
       rounded={8}
       borderWidth={1}
       borderColor={tone ?? "$glassBorder"}
@@ -218,7 +220,12 @@ export function NButton({
       width={block ? "100%" : undefined}
       pressStyle={{ bg: primary ? "$gold900" : "$ink900" }}
     >
-      <NText fontWeight="500" fontSize={primary ? 15 : 14} color={tone ?? "$text"}>
+      <NText
+        fontWeight="500"
+        fontSize={primary ? 15 : 14}
+        color={tone ?? "$text"}
+        style={{ textAlign: "center" }}
+      >
         {children}
       </NText>
     </YStack>

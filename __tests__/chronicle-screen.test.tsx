@@ -105,6 +105,17 @@ test("draws the year, from the hero's first session, with its figures", async ()
   );
 });
 
+test("every figure and label carries a trailing space, the room Android needs to keep it on one line", async () => {
+  // Emulator, French: "jours, plus longue flamme" in a cell exactly as wide as the text was
+  // drawn a pixel narrower than measured, and "flamme" went to a line the cell had no room for.
+  mockGet.mockResolvedValue(year);
+  await mount();
+  await screen.findByTestId("chronicle-card");
+  for (const text of ["sessions", "9", "days, longest flame", "12"]) {
+    expect(screen.getByText(text).props.children).toBe(`${text} `);
+  }
+});
+
 test("holds the send until the village is painted, so the picture never has a hole", async () => {
   mockGet.mockResolvedValue(year);
   await mount();

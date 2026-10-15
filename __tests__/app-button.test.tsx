@@ -64,3 +64,23 @@ test("the label spans a full-width button but never stretches one sized to its t
   expect(grow("Hug") ?? 0).toBe(0);
   expect(grow("Half")).toBe(1);
 });
+
+test("a button enabled again tells Android so, not only the eye", async () => {
+  // React Native's Android view keeps `setEnabled(false)` when the next accessibility state is
+  // null, and Tamagui sends one only while disabled: the chronicle's send button, disabled until
+  // its painting loads, was announced as disabled for good while it worked to a tap.
+  const ui = (disabled: boolean) => (
+    <SafeAreaProvider initialMetrics={METRICS}>
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AppButton testID="send" disabled={disabled}>
+          Send
+        </AppButton>
+      </TamaguiProvider>
+    </SafeAreaProvider>
+  );
+  await render(ui(true));
+  expect(screen.getByTestId("send").props["aria-disabled"]).toBe(true);
+  await screen.rerender(ui(false));
+  // `false`, not absent: React Native's View turns it into the state Android re-reads.
+  expect(screen.getByTestId("send").props["aria-disabled"]).toBe(false);
+});

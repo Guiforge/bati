@@ -105,7 +105,7 @@ export default function FirstSessionStep() {
 
   return (
     <YStack flex={1} bg="$bgDark">
-      {/* The quest's own cover: the victory screen shows it again eight minutes later, and closes
+      {/* The quest's own cover: the victory screen shows it again a session later, and closes
           the panel this one opens. Ink while it loads, the old sky if the quest never does. */}
       {quest?.imagePath || offerDead ? (
         <Image

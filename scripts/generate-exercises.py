@@ -129,6 +129,24 @@ EXERCISES = [
      "the ground, so the arched back makes the body a shallow bowl rocking on the stomach. Dark "
      "empty space is clearly visible under the hands and under the feet. The back glows with "
      "metallic silver-blue energy."),
+    # Superman W (0073), drawn on FLUX 3 (FLUX_ENDPOINT=…/flux-3-image): FLUX.2 put the hands on
+    # the head. The arms are the whole difference from the superman above; "neither arm is
+    # straight" is spelt out because the near arm kept reaching forward (a5, a6).
+    ("superman_w",
+     "A fit fantasy athlete hero of about 45, with short salt-and-pepper hair greying at the "
+     "temples and a short salt-and-pepper beard, a strong lean build with a few lines on the face, "
+     "lying face down doing a prone W raise, seen from the side, filling the frame. Only the belly "
+     "and the front of the hips rest on the floor. Both straight legs are lifted together a little "
+     "behind, the bare feet a hand's width off the floor. The upper back arches up in a smooth "
+     "curve, lifting the chest and the head, the eyes looking at the floor a little ahead. Neither "
+     "arm is straight and neither arm reaches forward: both arms are bent exactly the same way, "
+     "mirror images of each other. On each side the upper arm is pulled back along the ribs with "
+     "the elbow beside the waist, lifted off the floor, and the elbow is bent to a right angle so "
+     "the forearm points forward with the open hand, palm down, beside the shoulder. The near arm, "
+     "closest to the viewer, is clearly bent in this L shape too. The hands do not touch the head, "
+     "the face, the neck or the floor. The shoulder blades are squeezed together. Clear empty space"
+     " under the chest, both elbows, both hands and both feet. Knee-length dark shorts, bare feet, "
+     "no shoes. The background is near-black navy, darker than the figure's shorts."),
     # "Knees hovering just above the ground" put them straight down on it — the same lift refused
     # everywhere else. Contact points counted, and the gap given a size.
     ("bear_crawl",

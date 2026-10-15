@@ -2,7 +2,7 @@
 title: Missing Images — inventory
 type: content
 status: active
-updated: 2026-09-13
+updated: 2026-10-15
 related: [missing-covers.md, ../planning/roadmap.md]
 sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schema.ts, db/village.ts, components/village/VillageScene.tsx, components/session/BossPhaseImage.tsx, components/session/BossHpBar.tsx]
 ---
@@ -31,6 +31,12 @@ sources: [constants/assetMap.ts, drizzle, assets/images, db/muscles.ts, db/schem
 
 ## TL;DR
 
+- **RESOLVED (2026-10-15)**: `superman_w` (`0073`, roadmap P-02). Eight attempts. A 3D mannequin
+  with the back split into eight segments along a curve (`POSES3D` in `scripts/art-loop.py`),
+  seen from the side. FLUX.2 put the hands on the head (a3, a4); FLUX 3 (`flux-3-image`) got the
+  arch and the lifted legs, and kept the near arm straight until a8. a8_c2 shipped untouched: a
+  hero of about 45, salt-and-pepper, which varies the cast. Its background, (21, 25, 37), sits in
+  the darker half of the catalogue, which itself runs from near black to (57, 61, 69).
 - **§10 OPEN (2026-09-13)**: `table_row` still shows a straight-legged row flat under the table.
   Since `0053` (issue #94) Table Row is the *bent-knee* row, the easy rung below Inverted Row, so
   the pose now draws the harder version of the movement it names. Repaint it: knees bent, feet

@@ -100,8 +100,12 @@ def move_ledger_entries(pairs: list[tuple[pathlib.Path, pathlib.Path]]) -> int:
     # The ledger answers "where did the art *in this repo* come from", so an entry has to name a
     # file inside it. An absolute path is out of scope even when the temp file happens to survive
     # on the machine that made it, which is why testing `is_file()` alone missed all 27 of them.
+    # A key with a `*` describes a family of files (the thumbnails), and stays while any exists.
     stale = [
-        k for k in ledger if pathlib.PurePosixPath(k).is_absolute() or not (ROOT / k).is_file()
+        k
+        for k in ledger
+        if pathlib.PurePosixPath(k).is_absolute()
+        or not (any(ROOT.glob(k)) if "*" in k else (ROOT / k).is_file())
     ]
     for k in stale:
         del ledger[k]

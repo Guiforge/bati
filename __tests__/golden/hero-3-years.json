@@ -250,12 +250,12 @@
           "seasonBest": 19
         },
         {
-          "exerciseId": 38,
+          "exerciseId": 72,
           "type": "reps",
           "best": 12,
-          "last": 12,
+          "last": 10,
           "recordSessionId": 538,
-          "seasonBest": 12
+          "seasonBest": 11
         }
       ],
       "movements": [
@@ -302,6 +302,12 @@
           "last": 15
         },
         {
+          "exerciseId": 72,
+          "type": "reps",
+          "best": 12,
+          "last": 10
+        },
+        {
           "exerciseId": 38,
           "type": "reps",
           "best": 12,
@@ -324,12 +330,6 @@
           "type": "reps",
           "best": 30,
           "last": 30
-        },
-        {
-          "exerciseId": 15,
-          "type": "reps",
-          "best": 12,
-          "last": 8
         }
       ]
     },
@@ -351,7 +351,7 @@
         "quarry": 9,
         "forge": 7,
         "well": 9,
-        "windmill": 8,
+        "windmill": 9,
         "farm": 9,
         "wizard_tower": 8,
         "druid_grove": 7,

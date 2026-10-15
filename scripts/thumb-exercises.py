@@ -3,6 +3,7 @@
 
     python3 scripts/thumb-exercises.py
     python3 scripts/thumb-exercises.py --dry-run
+    python3 scripts/thumb-exercises.py superman_w   # only these pictures, by file stem
 
 fit-small-art.py resizes in place, and it deliberately skips the exercise art because the session
 hero renders it full-bleed — `sessionArtHeight` gives it ~1100px of width on a modern phone, so
@@ -83,7 +84,17 @@ def thumbnail(path: pathlib.Path, out_dir: pathlib.Path) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true", help="report only, change nothing")
+    # Re-encoding every thumbnail rewrites dozens of unrelated files whenever Pillow's encoder
+    # differs from the one that made them: name the new picture instead.
+    parser.add_argument("stems", nargs="*", help="only these pictures (file stems); default all")
     args = parser.parse_args()
+
+    # Checked before anything is written: a typo would otherwise end in "Wrote 0 thumbnails", exit 0.
+    if args.stems:
+        known = {p.stem for glob, out_name in FAMILIES for p in sources(glob, ROOT / out_name)}
+        if unknown := sorted(set(args.stems) - known):
+            print(f"No art named {', '.join(unknown)}.", file=sys.stderr)
+            return 1
 
     total_before = 0
     total_after = 0
@@ -92,7 +103,11 @@ def main() -> int:
     for glob, out_name in FAMILIES:
         out_dir = ROOT / out_name
         found = sources(glob, out_dir)
-        if not found:
+        if args.stems:
+            found = [p for p in found if p.stem in args.stems]
+            if not found:
+                continue
+        elif not found:
             print(f"No art at {glob}.", file=sys.stderr)
             return 1
 

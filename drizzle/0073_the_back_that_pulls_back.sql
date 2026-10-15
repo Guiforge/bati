@@ -22,6 +22,9 @@
 --
 -- Not on the row ladder (prerequisiteExerciseId stays null): it is not an easier row, and a rung
 -- below Towel Door Row would let `currentRungFor` hand it out in place of The Cellar Hauler's rows.
+--
+-- multi-migration-ok: 0072 and 0073 ship together; they touch unrelated tables (session edit stamps,
+-- seed content), and neither reads what the other writes.
 INSERT INTO `exercises` (
         `enName`,
         `frName`,

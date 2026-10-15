@@ -1,5 +1,6 @@
 import { differenceInCalendarDays } from "date-fns";
 import { and, count, countDistinct, desc, eq, gt, gte, lt, ne, sql, sum } from "drizzle-orm";
+import type { SQLiteColumn } from "drizzle-orm/sqlite-core";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { Exercise } from "./exercises";
@@ -410,7 +411,21 @@ export async function updateSessionFeedback(
   sessionId: number,
   feedback: FeedbackCode | null,
 ): Promise<void> {
-  await db.update(completedQuest).set({ feedback }).where(eq(completedQuest.id, sessionId));
+  // Tapped after the save: the stamp is what lets sync carry it to a device that has the session.
+  await db
+    .update(completedQuest)
+    .set({ feedback, feedbackEditedAt: nextEditStamp(completedQuest.feedbackEditedAt) })
+    .where(eq(completedQuest.id, sessionId));
+}
+
+/**
+ * The stamp of an edit to a saved session (`0072`): now, or one second past the stamp already
+ * there when that is later. Sync keeps the later stamp and fingerprints their sum, so a stamp must
+ * grow on every edit: one merged from a phone whose clock runs ahead, or two edits in one second,
+ * would otherwise make a correction lose, or never be uploaded.
+ */
+export function nextEditStamp(column: SQLiteColumn) {
+  return sql<Date>`max(unixepoch(), ifnull(${column}, 0) + 1)`;
 }
 
 /**

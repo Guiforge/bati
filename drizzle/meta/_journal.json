@@ -510,7 +510,14 @@
       "idx": 72,
       "version": "6",
       "when": 1792022400000,
-      "tag": "0072_the_back_that_pulls_back",
+      "tag": "0072_a_session_edited_after",
+      "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "6",
+      "when": 1792108800000,
+      "tag": "0073_the_back_that_pulls_back",
       "breakpoints": true
     }
   ]

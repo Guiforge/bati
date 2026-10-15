@@ -129,7 +129,7 @@ EXERCISES = [
      "the ground, so the arched back makes the body a shallow bowl rocking on the stomach. Dark "
      "empty space is clearly visible under the hands and under the feet. The back glows with "
      "metallic silver-blue energy."),
-    # Superman W (0072), drawn on FLUX 3 (FLUX_ENDPOINT=…/flux-3-image): FLUX.2 put the hands on
+    # Superman W (0073), drawn on FLUX 3 (FLUX_ENDPOINT=…/flux-3-image): FLUX.2 put the hands on
     # the head. The arms are the whole difference from the superman above; "neither arm is
     # straight" is spelt out because the near arm kept reaching forward (a5, a6).
     ("superman_w",

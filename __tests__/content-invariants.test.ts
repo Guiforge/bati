@@ -232,7 +232,7 @@ describe("content invariants", () => {
   /**
    * A beginner who only pushes builds the front of the shoulder and nothing behind it (P-02).
    * The two that pushed got the Superman W rather than a row: Table Row and Towel Door Row are
-   * tagged equipment-free but need a table or a door, the slot a beginner skips (`0072`).
+   * tagged equipment-free but need a table or a door, the slot a beginner skips (`0073`).
    */
   test("a beginner quest that pushes also pulls", async () => {
     const { questTrainingLevel } = require("../db/quests") as typeof import("../db/quests");

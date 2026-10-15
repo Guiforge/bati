@@ -475,6 +475,13 @@ export const completedQuest = sqliteTable(
      */
     recordsJson: text("records_json"),
 
+    // When the hero last corrected a set of this session, and last changed its feedback, after
+    // saving it (`0072`). Null when nobody did. Device sync takes each from the side that wrote it
+    // later, apart: a feedback tapped on one phone must not carry that phone's older sets over a
+    // correction made on the other.
+    setsEditedAt: int({ mode: "timestamp" }),
+    feedbackEditedAt: int({ mode: "timestamp" }),
+
     // When the session was performed.
     performedAt: int({ mode: "timestamp" })
       .notNull()

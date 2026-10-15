@@ -690,12 +690,14 @@ export async function getChainTo(exerciseId: number): Promise<Chain | null> {
  * The answer is kept for as long as the journal is the same journal: the row count and the last
  * row id change on every session saved or deleted (`completed_exercises.id` is AUTOINCREMENT, so an
  * id is never handed out twice), and reading both is an index walk instead of a window over the
- * whole table. No writer has to remember to invalidate it.
- *
- * ponytail: an in-place UPDATE of a result would go unseen. Nothing writes one today; the day a
- * set becomes editable, clear `everEarnedCache` in that writer.
+ * whole table. One writer has to invalidate it: `correctLoggedSet`, the only in-place UPDATE of a
+ * result, which moves neither, calls `forgetEverEarned`.
  */
 let everEarnedCache: { stamp: string; earned: Promise<Set<number>> } | null = null;
+
+export function forgetEverEarned(): void {
+  everEarnedCache = null;
+}
 
 async function everEarnedMovements(): Promise<Set<number>> {
   const [journal] = await db.all<{ rows: number; lastId: number | null }>(
@@ -1195,7 +1197,11 @@ export async function getExerciseUsage(id: number): Promise<ExerciseUsage> {
 
 export async function retireUserExercise(id: number): Promise<void> {
   await assertHeroAuthored(id);
-  await db.update(exercises).set({ retiredAt: new Date() }).where(eq(exercises.id, id));
+  // `updatedAt` too: it is what device sync compares, and a retirement it cannot see stays on one phone.
+  await db
+    .update(exercises)
+    .set({ retiredAt: new Date(), updatedAt: new Date() })
+    .where(eq(exercises.id, id));
   invalidateExercisesCache();
 }
 
@@ -1211,7 +1217,10 @@ export async function unretireUserExercise(
   exec: typeof db | TransactionTx = db,
 ): Promise<void> {
   await assertHeroAuthored(id);
-  await exec.update(exercises).set({ retiredAt: null }).where(eq(exercises.id, id));
+  await exec
+    .update(exercises)
+    .set({ retiredAt: null, updatedAt: new Date() })
+    .where(eq(exercises.id, id));
   invalidateExercisesCache();
 }
 

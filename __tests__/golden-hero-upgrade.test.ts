@@ -41,10 +41,10 @@ import { clientMock } from "./helpers/testDb";
  *    shows only from that point on (docs/architecture/data-safety.md).
  */
 const FULL_EQUALITY_FROM = 54; // sampled points only: 54 is not one, 56 is the first
-// 0072 appended the Superman W to two beginner quests, so a hero who trained before it lifted
+// 0073 appended the Superman W to two beginner quests, so a hero who trained before it lifted
 // other movements: their records and the village levels those feed are not today's. Everything
 // else about them (sessions, XP, flame, level, achievements) still has to be the golden hero.
-const CONTENT_EQUAL_FROM = 72;
+const CONTENT_EQUAL_FROM = 73;
 const CONTENT_FIGURE = /^(records\.|village\.levels\.)/;
 
 const golden = JSON.parse(

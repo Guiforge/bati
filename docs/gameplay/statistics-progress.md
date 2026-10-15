@@ -131,7 +131,9 @@ figures are `db/chronicle.ts`, their list `chronicleStats` in `components/share/
 - **Sessions, time, ground and records** are `getPeriodFigures` over the window, the Journal's own
   read, so the card and the month view cannot count differently. Time is written in hours as the
   Journal writes it. Sessions count every logged row, walks included, as the Journal does.
-- **Bosses** are boss runs finished inside the window, rematches included.
+- **Bosses** are boss runs won inside the window, rematches included, each dated by the session
+  that finished it (a session is dated by its start), so a fight begun at 23:40 on the 31st is the
+  old year's, boss and all. A run with no finishing session falls back to when it was saved.
 - **The longest flame** is the flame the hero saw, cut at the first of January: it is walked from
   the sessions of the two weeks before the year onwards (`longestFlameSince`), so a flame lit in
   late December is lit on the 1st, and only days from the 1st are counted. Like every flame, it

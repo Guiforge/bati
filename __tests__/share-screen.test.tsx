@@ -184,6 +184,13 @@ test("a workout has no line, no map and no GPX, and sends at once", async () => 
   expect(mockCapture).toHaveBeenCalledTimes(1);
 });
 
+test("a French card writes the first of the month as French does", async () => {
+  mockSettings.language = "fr";
+  await mount(log({ outing: null, uuid: "w1", performedAt: new Date(2026, 2, 1, 9) }, []));
+  expect(screen.getByText("1er mars 2026")).toBeTruthy();
+  mockSettings.language = "en";
+});
+
 test("a phone with no share sheet is told, not left with a button that does nothing", async () => {
   mockAvailable.mockResolvedValue(false);
   await mount(log({ outing: null, uuid: "w1" }, []));

@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
 import {
@@ -91,12 +91,28 @@ export async function getChronicle({ year, from, to }: ChronicleWindow): Promise
     getOldestSessionAt(),
   ]);
 
+  // A kill is dated by the session that finished it, as every other figure is: a run is stamped
+  // when it was saved, and a session begun at 23:40 on the 31st is the old year's, boss and all.
+  const killing = kills.flatMap((k) => (k.sessionId == null ? [] : [k.sessionId]));
+  const startedAt = new Map(
+    (killing.length === 0
+      ? []
+      : await db
+          .select({ id: completedQuest.id, at: completedQuest.performedAt })
+          .from(completedQuest)
+          .where(inArray(completedQuest.id, killing))
+    ).map((r) => [r.id, r.at]),
+  );
+
   return {
     year,
     since: oldest && oldest < from ? from : first,
     to,
     figures,
-    bosses: kills.filter((k) => k.felledAt >= from && k.felledAt <= to).length,
+    bosses: kills.filter((k) => {
+      const at = (k.sessionId != null && startedAt.get(k.sessionId)) || k.felledAt;
+      return at >= from && at <= to;
+    }).length,
     longestFlame: longestFlameSince(dates, quota, from, to),
     villageTier: getVillageTier(calculateLevelFromXp(xp)),
   };

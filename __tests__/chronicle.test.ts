@@ -230,6 +230,28 @@ describe("getChronicle", () => {
     expect(await chronicle().getChronicle(window2026())).toBeNull();
   });
 
+  test("December's last sessions, read for the flame, do not make a year of their own", async () => {
+    // Inside the two weeks the flame looks back over, and outside the year: no chronicle.
+    session(1, new Date(2025, 11, 25, 12));
+    expect(await chronicle().getChronicle(window2026())).toBeNull();
+  });
+
+  test("a boss felled after midnight on New Year's Eve belongs to the year its session began in", async () => {
+    // A session is dated by its start, a run by when it was saved: the 31st at 23:40, saved on
+    // the 1st at 00:15. The session, its minutes and its XP are 2026's, so its boss is too.
+    const started = new Date(2026, 11, 31, 23, 40);
+    session(1, started);
+    bossKill(1, new Date(2027, 0, 1, 0, 15));
+    const quest = t.sqlite.prepare("SELECT id FROM quests LIMIT 1").get() as { id: number };
+    t.sqlite.exec(
+      `INSERT INTO adventure_run_steps (runId, stepIndex, questId, status, completedSessionId)
+       VALUES (1, 0, ${quest.id}, 'completed', 1)`,
+    );
+    const year = await chronicle().getChronicle(window2026());
+    expect(year?.figures.quests).toBe(1);
+    expect(year?.bosses).toBe(1);
+  });
+
   /** The Journal's door: open only on a year that holds a session, so it never opens on nothing. */
   describe("chronicleToOpen", () => {
     test("January opens last year's when it holds a session", async () => {

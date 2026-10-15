@@ -12,6 +12,19 @@ export function getWeekStart(language: AppLanguage): 0 | 1 {
   return WEEK_START[language];
 }
 
+/**
+ * A date a reader sees. French writes the first of a month as an ordinal ("1er mars"), which Intl
+ * does not; every other language, and every other day, is what Intl writes.
+ */
+export function formatDay(
+  language: string,
+  date: Date,
+  options: Intl.DateTimeFormatOptions,
+): string {
+  const text = getDateTimeFormat(language, options).format(date);
+  return language === "fr" && date.getDate() === 1 ? text.replace(/^1(?!\d)/, "1er") : text;
+}
+
 export function getDateTimeFormat(
   language: string,
   options: Intl.DateTimeFormatOptions,

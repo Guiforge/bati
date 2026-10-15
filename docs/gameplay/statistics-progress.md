@@ -2,7 +2,7 @@
 title: Statistics & Progress
 type: system
 status: active
-updated: 2026-09-11
+updated: 2026-10-15
 related: [progression.md, coach-planning.md, expeditions.md, ../planning/roadmap.md]
 sources: [db/xp.ts, db/streaks.ts, db/completed.ts, db/journal.ts]
 ---
@@ -119,6 +119,31 @@ See [progression.md](progression.md#flame-consistency-streak) — the flame is t
 top of the same count shown here. It measures days of consistency, so a rest day never reduces
 it; the calendar grid above is the "did I show up" view, the flame is the "am I holding my
 rhythm" one.
+
+## The year's chronicle
+
+Roadmap C-01, shipped for December 2026: the year as one picture to send, free and offline. The
+figures are `db/chronicle.ts`, their list `chronicleStats` in `components/share/shareStats.ts`.
+
+- **The window** is the calendar year. December shows the year so far and prints the day it stops
+  at; January shows the year just finished, whole. Any other month has none (`chronicleWindow`).
+  The Journal's door opens only on a year that holds a session (`chronicleToOpen`).
+- **Sessions, time, ground and records** are `getPeriodFigures` over the window, the Journal's own
+  read, so the card and the month view cannot count differently. Time is written in hours as the
+  Journal writes it. Sessions count every logged row, walks included, as the Journal does.
+- **Bosses** are boss runs finished inside the window, rematches included.
+- **The longest flame** is the flame the hero saw, cut at the first of January: it is walked from
+  the sessions of the two weeks before the year onwards (`longestFlameSince`), so a flame lit in
+  late December is lit on the 1st, and only days from the 1st are counted. Like every flame, it
+  reads only what `countsAsSession` keeps and the hero's own weekly quota.
+- **The village** is the tier reached by all the XP earned up to the end of the window, not today's:
+  January's sessions belong to next year's chronicle.
+- **One layout for everyone.** Sessions, time and the village always stand; ground, records,
+  bosses and the flame are left out at zero, as on a session card. A hero who arrived during the
+  year sees "from" their first session instead of the first of January.
+
+Deliberately not built: a monthly chronicle. The month already has its own view on the stats page,
+and a recap offered every month stops being an event.
 
 ## What was removed, and why
 

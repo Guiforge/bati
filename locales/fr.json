@@ -2313,6 +2313,27 @@
     "stops_path": "Ta voie s'arrêtera à cette étape.",
     "oath_stalls": "Ton serment porte sur cet exercice : il n'avancera plus tant qu'il est écarté."
   },
+  "chronicle": {
+    "title": "Chronique",
+    "open": "Ton année {{year}} en une image",
+    "heading": "Ton année {{year}}",
+    "span": "Du {{from}} au {{to}}",
+    "empty": "Aucune séance en {{year}}.",
+    "closed": "La chronique ouvre en décembre.",
+    "village": "ton domaine",
+    "sessions_one": "séance",
+    "sessions_many": "séances",
+    "sessions_other": "séances",
+    "records_one": "record",
+    "records_many": "records",
+    "records_other": "records",
+    "bosses_one": "boss vaincu",
+    "bosses_many": "boss vaincus",
+    "bosses_other": "boss vaincus",
+    "flame_days_one": "jour, plus longue flamme",
+    "flame_days_many": "jours, plus longue flamme",
+    "flame_days_other": "jours, plus longue flamme"
+  },
   "share": {
     "open": "Partager",
     "title": "Partager la séance",

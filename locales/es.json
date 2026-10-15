@@ -2313,6 +2313,27 @@
     "stops_path": "Tu senda se detendrá en esta etapa.",
     "oath_stalls": "Tu juramento es sobre este ejercicio: no avanzará mientras esté apartado."
   },
+  "chronicle": {
+    "title": "Crónica",
+    "open": "Tu {{year}} en una imagen",
+    "heading": "Tu año {{year}}",
+    "span": "Del {{from}} al {{to}}",
+    "empty": "Ninguna sesión en {{year}}.",
+    "closed": "La crónica se abre en diciembre.",
+    "village": "tu asentamiento",
+    "sessions_one": "sesión",
+    "sessions_many": "sesiones",
+    "sessions_other": "sesiones",
+    "records_one": "récord",
+    "records_many": "récords",
+    "records_other": "récords",
+    "bosses_one": "jefe derrotado",
+    "bosses_many": "jefes derrotados",
+    "bosses_other": "jefes derrotados",
+    "flame_days_one": "día, llama más larga",
+    "flame_days_many": "días, llama más larga",
+    "flame_days_other": "días, llama más larga"
+  },
   "share": {
     "open": "Compartir",
     "title": "Compartir la sesión",

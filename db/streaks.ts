@@ -147,6 +147,7 @@ function flameTimeline(performedAt: Date[], quota: number, now: Date) {
 
   return {
     today,
+    indexOf,
     inWindow,
     /** Is the flame lit on this day? Either this week is over quota, or the week before it was. */
     isLit: (day: number) => inWindow(day) >= quota || inWindow(day - WINDOW_DAYS) >= quota,
@@ -156,14 +157,18 @@ function flameTimeline(performedAt: Date[], quota: number, now: Date) {
 
 type FlameTimeline = ReturnType<typeof flameTimeline>;
 
-/** One pass from the first session to today: the runs, and where the best one ended. */
-function walkFlame(flame: FlameTimeline) {
+/**
+ * One pass from the first session to today: the runs, and where the best one ended. `start` skips
+ * the days before it without changing whether a day is lit: a run that crosses it is cut, not
+ * recomputed.
+ */
+function walkFlame(flame: FlameTimeline, start = 0) {
   let run = 0;
   let best = 0;
   let bestEnd = -1;
   let litDays = 0;
   let litDaysLast30 = 0;
-  for (let day = 0; day <= flame.today; day++) {
+  for (let day = Math.max(start, 0); day <= flame.today; day++) {
     if (!flame.isLit(day)) {
       run = 0;
       continue;
@@ -197,6 +202,22 @@ export function calculateStreakFromSessions(
   // What today's flame is standing on, and what tomorrow's will be judged by. `isLit` reads the
   // same window, so this is the count behind the answer rather than a second opinion about it.
   return { current, best, isActive: current > 0, inWindow: flame.inWindow(flame.today) };
+}
+
+/**
+ * The longest lit run between `since` and `now`, of the flame the hero saw: the days before
+ * `since` light it as they always did and are not counted. Pass the sessions from two weeks
+ * before `since` at least, the furthest back a day's flame looks.
+ */
+export function longestFlameSince(
+  performedAt: Date[],
+  quota: number,
+  since: Date,
+  now: Date,
+): number {
+  if (performedAt.length === 0) return 0;
+  const flame = flameTimeline(performedAt, quota, now);
+  return walkFlame(flame, flame.indexOf(since)).best;
 }
 
 /**

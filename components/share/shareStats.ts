@@ -1,10 +1,13 @@
 import type { TFunction } from "i18next";
+import { formatHoursMinutes } from "@/components/journal/journalFormat";
 import { HIDDEN_ENDS_M, trimEnds } from "@/components/journal/tracePreview";
 import { formatDistance, formatElevation, formatRate, rateKind } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
+import type { Chronicle } from "@/db/chronicle";
 import type { CompletedSession } from "@/db/completed";
 import type { DistanceUnit } from "@/db/preferences";
 import { formatCount } from "@/db/targets";
+import { TIER_NAMES } from "@/db/village";
 import type { LngLat } from "@/src/gps/trace";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 
@@ -74,6 +77,38 @@ export function shareStats(
     session.outing != null
       ? outingStats(session, t, language, unit)
       : workoutStats(session, t, language);
+  return stats.filter((s): s is ShareStat => s !== null);
+}
+
+/**
+ * The figures under the year's chronicle. The sessions, the time and the village always stand, so
+ * a week-old hero's card keeps a veteran's shape; the rest is left out at zero, as above.
+ */
+export function chronicleStats(
+  chronicle: Chronicle,
+  t: TFunction,
+  language: AppLanguage,
+  unit: DistanceUnit,
+): ShareStat[] {
+  const { figures, bosses, longestFlame } = chronicle;
+  const sessions = figures.quests + figures.outings;
+  const count = (n: number, key: string): ShareStat | null =>
+    n > 0 ? { value: formatCount(language, n), label: t(key, { count: n }) } : null;
+  const stats: Stats = [
+    { value: formatCount(language, sessions), label: t("chronicle.sessions", { count: sessions }) },
+    {
+      // In hours, as the Journal writes the same total: a year in minutes read "4537 min 42s".
+      value: formatHoursMinutes(t, figures.questSeconds + figures.outingSeconds),
+      label: t("share.duration"),
+    },
+    figures.leaguesM > 0
+      ? { value: formatDistance(figures.leaguesM, unit, language), label: t("share.distance") }
+      : null,
+    count(figures.records, "chronicle.records"),
+    count(bosses, "chronicle.bosses"),
+    count(longestFlame, "chronicle.flame_days"),
+    { value: TIER_NAMES[chronicle.villageTier][language], label: t("chronicle.village") },
+  ];
   return stats.filter((s): s is ShareStat => s !== null);
 }
 

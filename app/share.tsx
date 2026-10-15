@@ -1,9 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
-import * as Sharing from "expo-sharing";
-import { type RefObject, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions, View } from "react-native";
-import { captureRef } from "react-native-view-shot";
 import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Skeleton } from "@/components/common/Skeleton";
@@ -13,21 +11,12 @@ import { NButton, NMuted, NPage, NSeg } from "@/components/journal/nocturne";
 import { type LoadedSession, readSession } from "@/components/journal/sessionLog";
 import type { MapState } from "@/components/journal/TraceThumb";
 import { ShareCard } from "@/components/share/ShareCard";
+import { MAX_CARD, sendCard } from "@/components/share/sendCard";
 import { sharedLine } from "@/components/share/shareStats";
 import { pointsOf } from "@/db/gps";
 import { exportTrack } from "@/src/gps/trackFile";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
-
-/** The card never grows past a phone's width: it is a picture for a chat, not a poster. */
-const MAX_CARD = 380;
-
-/** The card exactly as drawn, as a PNG in the share sheet. */
-async function sendCard(card: RefObject<View | null>): Promise<void> {
-  if (!(await Sharing.isAvailableAsync())) throw new Error("No share sheet available");
-  const uri = await captureRef(card, { format: "png", quality: 1, result: "tmpfile" });
-  await Sharing.shareAsync(uri, { mimeType: "image/png", UTI: "public.png" });
-}
 
 async function sendGpx(uuid: string): Promise<void> {
   await exportTrack(await pointsOf(uuid));

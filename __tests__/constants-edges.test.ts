@@ -1,6 +1,6 @@
 import { getAvatarSource } from "@/constants/avatars";
 import { buildingStage } from "@/constants/buildingLevels";
-import { getWeekStart } from "@/constants/dateFormatters";
+import { formatDay, getWeekStart } from "@/constants/dateFormatters";
 import { getExerciseColorKey } from "@/constants/exerciseColors";
 
 // Four small pure functions that decide something visible — a colour, a calendar's first column,
@@ -21,6 +21,26 @@ describe("getExerciseColorKey", () => {
   it("falls back to default when it knows nothing at all", () => {
     expect(getExerciseColorKey({})).toBe("default");
     expect(getExerciseColorKey({ muscles: [] })).toBe("default");
+  });
+});
+
+/** A date a reader sees, the first of a month as French writes it and Intl does not. */
+describe("formatDay", () => {
+  test("French writes the first of a month as an ordinal, every other day as a number", () => {
+    expect(formatDay("fr", new Date(2026, 2, 1), { dateStyle: "long" })).toBe("1er mars 2026");
+    expect(formatDay("fr", new Date(2026, 0, 1), { month: "long", day: "numeric" })).toBe(
+      "1er janvier",
+    );
+    expect(formatDay("fr", new Date(2026, 2, 11), { dateStyle: "long" })).toBe("11 mars 2026");
+  });
+
+  test("other languages keep what Intl writes", () => {
+    expect(formatDay("en", new Date(2026, 2, 1), { month: "long", day: "numeric" })).toBe(
+      "March 1",
+    );
+    expect(formatDay("de", new Date(2026, 2, 1), { month: "long", day: "numeric" })).toBe(
+      "1. März",
+    );
   });
 });
 

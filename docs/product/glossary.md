@@ -2,7 +2,7 @@
 title: Glossary
 type: reference
 status: draft
-updated: 2026-10-11
+updated: 2026-10-15
 related: [writing.md, ../design/audits/2026-09-10-french-copy.md]
 ---
 
@@ -67,6 +67,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | target | The number to reach: a set's, an outing's, an oath's | target (goal for an outing) | objectif | cible | Ziel | objetivo |
 | difficulty | Easy, Medium, Hard, chosen per quest | Easy / Medium / Hard | Facile / Moyen / Difficile |  | Leicht / Mittel / Schwer | Fácil / Media / Difícil |
 | written for | Who a quest was written for, the tag on its card | Beginner / Regular / Advanced | Débutant / Régulier / Confirmé |  | Einsteiger / Regelmäßig / Fortgeschritten | Principiante / Habitual / Avanzado |
+| chronicle | The year's recap, a picture to share, offered in December and January | chronicle | chronique | bilan (a bilan is a report, the chronicle is the year told) | Chronik | crónica |
 
 ## Progression
 

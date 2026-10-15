@@ -1,0 +1,2 @@
+- Sincronización: una serie corregida en el Historial, o una valoración cambiada después de guardar, ahora llega a tus otros dispositivos.
+- Dos misiones de principiante que empujan ahora también tiran: se suma el Superman W, un movimiento en el suelo para la parte alta de la espalda.

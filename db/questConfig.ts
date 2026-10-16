@@ -266,12 +266,15 @@ export async function getAllQuestConfigs(options?: {
 /**
  * Saves what the reader saw. During a zone that is a view with entries hidden, so the hidden ones
  * are put back under what is saved (`raw` writes exactly what it is given, for the set-aside
- * writer, which reads raw too).
+ * writer, which reads raw too). A hidden target comes back only while its slot is not swapped
+ * elsewhere in what is saved, or it would land on the new movement. `replace` is for the writers
+ * that start over on purpose: "targets" lets the hidden targets go too (a level change), "all"
+ * the hidden swaps as well (a reset, the editor).
  */
 export async function saveQuestConfig(
   questId: number,
   config: QuestConfig,
-  options?: { raw?: boolean },
+  options?: { raw?: boolean; replace?: "targets" | "all" },
 ): Promise<void> {
   const hide = options?.raw ? null : await zoneHiding();
   const stored = hide ? await getQuestConfig(questId, { raw: true }) : null;
@@ -279,8 +282,17 @@ export async function saveQuestConfig(
   const next = hidden
     ? {
         ...config,
-        swaps: { ...hidden.swaps, ...config.swaps },
-        targets: { ...hidden.targets, ...config.targets },
+        swaps: options?.replace === "all" ? config.swaps : { ...hidden.swaps, ...config.swaps },
+        targets: options?.replace
+          ? config.targets
+          : {
+              ...Object.fromEntries(
+                Object.entries(hidden.targets).filter(
+                  ([slot]) => config.swaps?.[slot] === undefined,
+                ),
+              ),
+              ...config.targets,
+            },
       }
     : config;
   await setPreference(configKey(questId), JSON.stringify(next));

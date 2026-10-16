@@ -156,6 +156,60 @@ describe("pause and zone", () => {
       expect((await cfg().getQuestConfig(questId))?.targets).toEqual({ [String(slot)]: 20 });
     });
 
+    describe("saving a config during a zone", () => {
+      const cfg = () => require("../db/questConfig") as typeof import("../db/questConfig");
+      const pushSlot = () => {
+        const questId = questIdOf("Knight Push");
+        const row = t.sqlite
+          .prepare(
+            "SELECT qe.id FROM quest_exercises qe JOIN exercises e ON e.id = qe.exerciseId WHERE qe.questId = ? AND e.enName = 'Push-ups'",
+          )
+          .get(questId) as { id: number } | undefined;
+        if (!row) throw new Error("no push-up slot in Knight Push");
+        return { questId, slot: String(row.id) };
+      };
+      const afterZone = () => {
+        nowMs = startOfDay(addWeeks(new Date(nowMs), 2)).getTime();
+      };
+
+      test("swapping the spared slot to another movement leaves the push-up target behind", async () => {
+        const { questId, slot } = pushSlot();
+        await cfg().saveQuestConfig(questId, { level: "medium", targets: { [slot]: 20 } });
+        await startZoneAt(["shoulder"], 1);
+        await cfg().saveQuestConfig(questId, {
+          level: "medium",
+          swaps: { [slot]: idOf("Squat") },
+        });
+        expect((await cfg().getQuestConfig(questId, { raw: true }))?.targets).toBeUndefined();
+        afterZone();
+        expect((await cfg().getQuestConfig(questId))?.targets).toBeUndefined();
+      });
+
+      test("a reset during a zone is not undone when it ends", async () => {
+        const { questId, slot } = pushSlot();
+        await cfg().saveQuestConfig(questId, { level: "medium", targets: { [slot]: 20 } });
+        await startZoneAt(["shoulder"], 1);
+        await cfg().saveQuestConfig(questId, { level: "medium" }, { replace: "all" });
+        afterZone();
+        expect((await cfg().getQuestConfig(questId))?.targets).toBeUndefined();
+      });
+
+      test("a level change during a zone drops the old target for good, and keeps the swap", async () => {
+        const { questId, slot } = pushSlot();
+        await cfg().saveQuestConfig(questId, {
+          level: "medium",
+          targets: { [slot]: 20 },
+          swaps: { [slot]: idOf("Dip") },
+        });
+        await startZoneAt(["shoulder"], 1);
+        await cfg().saveQuestConfig(questId, { level: "hard" }, { replace: "targets" });
+        afterZone();
+        const back = await cfg().getQuestConfig(questId);
+        expect(back).toMatchObject({ level: "hard", swaps: { [slot]: idOf("Dip") } });
+        expect(back?.targets).toBeUndefined();
+      });
+    });
+
     test("ending the zone early gives back what it took, and only that", async () => {
       await setAside().setExerciseAside(idOf("Push-ups"));
       await startZoneAt(["shoulder"], 4);

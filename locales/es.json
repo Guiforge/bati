@@ -198,7 +198,9 @@
     "workout_guide": "workout-guide",
     "workout_guide_subtitle": "Dibujos de poses de Bryl Lim",
     "cc_by_sa_40": "Creative Commons BY-SA 4.0",
-    "cc_by_sa_40_subtitle": "Condiciones de la licencia: compartir igual"
+    "cc_by_sa_40_subtitle": "Condiciones de la licencia: compartir igual",
+    "licenses_title": "Licencias de código abierto",
+    "licenses_body": "Cada biblioteca que incluye Bati y la licencia con la que se publica."
   },
   "progression": {
     "new_rung_from": "Ejercicio superado: {{name}}",

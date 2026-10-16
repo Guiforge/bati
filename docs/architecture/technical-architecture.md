@@ -19,12 +19,12 @@ source from which progression systems are derived.
 
 | Layer | Current package/config | Purpose |
 | --- | --- | --- |
-| Framework | `expo` `~54.0.30`, React `19.1.0`, React Native `0.81.5` | Mobile app runtime |
-| Navigation | `expo-router` `~6.0.21` | File-based routes in `app/` |
-| UI | `tamagui` / `@tamagui/*` `^1.142.0` | Tokenized dark UI primitives |
-| State | `zustand` `^5.0.9` | Session, settings, and user state |
-| Database | `expo-sqlite` `~16.0.10`, `drizzle-orm` `^0.45.1` | Offline-first local persistence |
-| Localization | `i18next`, `react-i18next`, `expo-localization` | English/French UI and content |
+| Framework | `expo` `~57.0.30` (SDK 57), React `19.2.3`, React Native `0.86.3` | Mobile app runtime |
+| Navigation | `expo-router` `~57.0.28` | File-based routes in `app/` |
+| UI | `tamagui` / `@tamagui/*` `^2.7.7` | Tokenized dark UI primitives |
+| State | `zustand` `^5.0.15` | Session, settings, and user state |
+| Database | `expo-sqlite` `~57.0.4`, `drizzle-orm` `^0.45.3` | Offline-first local persistence |
+| Localization | `i18next`, `react-i18next`, `expo-localization` | English, French, German, Spanish and Russian UI and content (`locales/*.json`) |
 | Testing | `jest` + `jest-expo` | Unit/integration tests in `__tests__/` |
 | Formatting/checks | Biome + TypeScript | `npm run check` |
 

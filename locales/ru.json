@@ -203,7 +203,9 @@
     "workout_guide": "workout-guide",
     "workout_guide_subtitle": "Рисунки поз Bryl Lim",
     "cc_by_sa_40": "Creative Commons BY-SA 4.0",
-    "cc_by_sa_40_subtitle": "Условия лицензии: share-alike"
+    "cc_by_sa_40_subtitle": "Условия лицензии: share-alike",
+    "licenses_title": "Лицензии открытого ПО",
+    "licenses_body": "Каждая библиотека, входящая в Bati, и лицензия, под которой она выпущена."
   },
   "progression": {
     "new_rung_from": "Освоено: {{name}}",

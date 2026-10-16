@@ -137,7 +137,7 @@ manual building management and the Treasury surface are **closed**, not deferred
 ## Testing
 
 Tests live in `__tests__/` and use `jest-expo`. Most current coverage is domain/database logic:
-quests, adventures, completed sessions, resources, scheduling, goals, achievements, XP, and related
+quests, adventures, completed sessions, sync merge, achievements, XP, and related
 helpers.
 
 ## Privacy and data boundaries

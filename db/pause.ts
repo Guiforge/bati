@@ -6,15 +6,17 @@ import {
   ZONE_MAX_GROUPS,
   ZONE_MAX_WEEKS,
 } from "@/constants/pause";
-import { reportError } from "@/src/reportError";
 import { dayKey } from "./dates";
-import { type Exercise, listExercises } from "./exercises";
+import { listExercises } from "./exercises";
 import { isMuscleCode } from "./muscles";
-import { getPreference, preferences, setPreference } from "./preferences";
+import { preferences, setPreference } from "./preferences";
 import { clearCached } from "./queryCache";
 import type { MuscleCode } from "./schema";
 import { putExerciseBack, setExerciseAside } from "./setAside";
 import { getPausePeriods, invalidateStreakInfo } from "./streaks";
+import { getZone, touchesZone, ZONE_KEY, type Zone } from "./zone";
+
+export { getZone, type Zone };
 
 /**
  * M-04: the two things a hero can say when their body, or their life, asks for room. Nothing here
@@ -25,37 +27,6 @@ import { getPausePeriods, invalidateStreakInfo } from "./streaks";
  * `MERGED_PREFERENCES`. Two devices keep two pauses. Merge the list by period the day someone
  * syncs a phone and a tablet and notices the flame differs.
  */
-const ZONE_KEY = "zone_goal";
-
-/** A zone being spared: which groups, from when, until the day the exercises come back. */
-export type Zone = { groups: MuscleCode[]; from: string; until: string };
-
-function isZone(value: unknown): value is Zone {
-  if (typeof value !== "object" || value === null) return false;
-  const { groups, from, until } = value as Record<string, unknown>;
-  return (
-    Array.isArray(groups) &&
-    groups.every(isMuscleCode) &&
-    typeof from === "string" &&
-    typeof until === "string"
-  );
-}
-
-/**
- * Whether an exercise loads a spared zone. The muscle tags decide, with one addition: a press
- * loads the shoulder whatever its tags say (a Dip is tagged arms and chest, a Knee Push-Up the
- * same), and a hero sparing a shoulder who is served a dip has not been spared.
- *
- * ponytail: shoulders only, by movement pattern. Ceiling: the joints (wrist, elbow, knee, lower
- * back) are the second phase of M-04 and need the 65 exercises labelled; do it there, not here.
- */
-function touchesZone(exercise: Exercise, groups: readonly MuscleCode[]): boolean {
-  return (
-    exercise.muscles.some((m) => groups.includes(m)) ||
-    (groups.includes("shoulder") && (exercise.pattern?.startsWith("push_") ?? false))
-  );
-}
-
 /** The pause the hero is in today, or null. */
 export async function getActivePause(now = new Date()): Promise<PausePeriod | null> {
   const today = dayKey(now);
@@ -96,19 +67,6 @@ async function write(periods: PausePeriod[]): Promise<void> {
   await setPreference(PAUSE_KEY, JSON.stringify(periods));
   // The flame is memoised for the day: a pause begun now must show now.
   invalidateStreakInfo();
-}
-
-/** The zone being spared today, or null. */
-export async function getZone(now = new Date()): Promise<Zone | null> {
-  const raw = await getPreference(ZONE_KEY);
-  if (!raw) return null;
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    return isZone(parsed) && parsed.until > dayKey(now) ? parsed : null;
-  } catch (error) {
-    reportError("pause.zoneParse", error);
-    return null;
-  }
 }
 
 /**

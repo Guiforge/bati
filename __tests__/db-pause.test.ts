@@ -126,6 +126,36 @@ describe("pause and zone", () => {
       expect(left.map((e) => e.id)).toEqual([idOf("Push-ups")]);
     });
 
+    test("a hand set-aside from before the zone is still spared: no push-up served", async () => {
+      await setAside().setExerciseAside(idOf("Wall Push-Up"), nowMs - 1000);
+      await startZoneAt(["shoulder"], 2);
+      for (const title of ["Knight Push", "Forge the Dragon Blade"]) {
+        expect((await servedNames(title)).filter((n) => PRESSES.test(n))).toEqual([]);
+      }
+    });
+
+    test("a swap and a target saved on a spared slot are back when the zone ends", async () => {
+      const cfg = () => require("../db/questConfig") as typeof import("../db/questConfig");
+      const questId = questIdOf("Knight Push");
+      const slot = (
+        t.sqlite
+          .prepare(
+            "SELECT qe.id FROM quest_exercises qe JOIN exercises e ON e.id = qe.exerciseId WHERE qe.questId = ? AND e.enName = 'Push-ups'",
+          )
+          .get(questId) as { id: number } | undefined
+      )?.id;
+      if (slot === undefined) throw new Error("no push-up slot in Knight Push");
+      await cfg().saveQuestConfig(questId, {
+        level: "medium",
+        targets: { [String(slot)]: 20 },
+      });
+      await startZoneAt(["shoulder"], 1);
+      expect((await cfg().getQuestConfig(questId))?.targets).toBeUndefined();
+
+      nowMs = startOfDay(addWeeks(new Date(nowMs), 2)).getTime();
+      expect((await cfg().getQuestConfig(questId))?.targets).toEqual({ [String(slot)]: 20 });
+    });
+
     test("ending the zone early gives back what it took, and only that", async () => {
       await setAside().setExerciseAside(idOf("Push-ups"));
       await startZoneAt(["shoulder"], 4);

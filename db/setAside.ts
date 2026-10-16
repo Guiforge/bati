@@ -1,7 +1,7 @@
 import { listExercises } from "./exercises";
 import { preferences, type SetAsideExercise } from "./preferences";
 import { clearCached } from "./queryCache";
-import { getAllQuestConfigs, saveQuestConfig } from "./questConfig";
+import { getAllQuestConfigs, type QuestConfig, saveQuestConfig } from "./questConfig";
 import { listQuestTemplates } from "./quests";
 import { ADMIN_CREATOR } from "./schema";
 
@@ -27,7 +27,12 @@ export async function setExerciseAside(
   /** A zone's end date (epoch ms): set aside until then, as `reason: "zone"` (M-04). */
   until?: number,
 ): Promise<void> {
-  const [configs, templates] = await Promise.all([getAllQuestConfigs(), listQuestTemplates()]);
+  // A zone is a loan: the swaps and targets it would drop are only hidden from the readers while
+  // it lasts (`db/questConfig.ts`), so they are still there when the exercise comes back.
+  const [configs, templates] =
+    until === undefined
+      ? await Promise.all([getAllQuestConfigs({ raw: true }), listQuestTemplates()])
+      : [new Map<number, QuestConfig>(), []];
   const writtenBy = new Map(
     templates.flatMap((q) => q.exercises.map((s) => [String(s.id), s.exerciseId] as const)),
   );
@@ -45,11 +50,15 @@ export async function setExerciseAside(
     ) {
       continue;
     }
-    await saveQuestConfig(questId, {
-      ...config,
-      swaps: Object.keys(keptSwaps).length > 0 ? keptSwaps : undefined,
-      targets: Object.keys(keptTargets).length > 0 ? keptTargets : undefined,
-    });
+    await saveQuestConfig(
+      questId,
+      {
+        ...config,
+        swaps: Object.keys(keptSwaps).length > 0 ? keptSwaps : undefined,
+        targets: Object.keys(keptTargets).length > 0 ? keptTargets : undefined,
+      },
+      { raw: true },
+    );
   }
 
   const list = await preferences.getSetAsideExercises(now);

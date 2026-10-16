@@ -14,6 +14,7 @@ import {
 } from "./preferences";
 import {
   getQuestById,
+  listQuestTemplates,
   movementRef,
   type Quest,
   type QuestExercise,
@@ -31,6 +32,7 @@ import {
   targetRangeFor,
   type UserLevel,
 } from "./targets";
+import { sparedExerciseIds } from "./zone";
 
 /**
  * What the hero changed on a quest and wants back next time: the level they train it at, plus
@@ -193,12 +195,61 @@ export function parseQuestConfig(raw: string | null): QuestConfig | null {
   return config;
 }
 
-export async function getQuestConfig(questId: number): Promise<QuestConfig | null> {
-  return parseQuestConfig(await getPreference(configKey(questId)));
+export async function getQuestConfig(
+  questId: number,
+  options?: { raw?: boolean },
+): Promise<QuestConfig | null> {
+  const config = parseQuestConfig(await getPreference(configKey(questId)));
+  if (!config || options?.raw) return config;
+  const hide = await zoneHiding();
+  return hide ? partition(config, hide).shown : config;
+}
+
+/**
+ * M-04: what a zone is sparing, and which slot names what. While it lasts, a saved swap onto a
+ * spared exercise and a target set for a spared exercise are hidden from every reader, instead of
+ * being dropped the way a hand set-aside drops them: a zone ends by itself, and the hero's
+ * configuration has to be there when it does. Null when nothing is spared, which is nearly always.
+ */
+async function zoneHiding() {
+  const spared = await sparedExerciseIds();
+  if (spared.size === 0) return null;
+  const writtenBy = new Map(
+    (await listQuestTemplates()).flatMap((q) =>
+      q.exercises.map((s) => [String(s.id), s.exerciseId] as const),
+    ),
+  );
+  return { spared, writtenBy };
+}
+
+type Hiding = NonNullable<Awaited<ReturnType<typeof zoneHiding>>>;
+
+function partition(config: QuestConfig, { spared, writtenBy }: Hiding) {
+  const swaps = config.swaps ?? {};
+  const hiddenSlot = (slot: string) => {
+    const swapped = swaps[slot];
+    return swapped === undefined ? spared.has(writtenBy.get(slot) ?? -1) : spared.has(swapped);
+  };
+  const pick = (entries: Record<string, number> | undefined, hide: (key: string) => boolean) => {
+    const shown: Record<string, number> = {};
+    const hidden: Record<string, number> = {};
+    for (const [key, value] of Object.entries(entries ?? {}))
+      (hide(key) ? hidden : shown)[key] = value;
+    return { shown, hidden };
+  };
+  const s = pick(config.swaps, (slot) => spared.has(swaps[slot] ?? -1));
+  const t = pick(config.targets, hiddenSlot);
+  const orUndefined = (r: Record<string, number>) => (Object.keys(r).length > 0 ? r : undefined);
+  return {
+    shown: { ...config, swaps: orUndefined(s.shown), targets: orUndefined(t.shown) },
+    hidden: { swaps: s.hidden, targets: t.hidden },
+  };
 }
 
 /** Every saved per-quest config in one read — the gallery prices 34 cards per render. */
-export async function getAllQuestConfigs(): Promise<Map<number, QuestConfig>> {
+export async function getAllQuestConfigs(options?: {
+  raw?: boolean;
+}): Promise<Map<number, QuestConfig>> {
   const prefs = await getAllPreferences();
   const configs = new Map<number, QuestConfig>();
   for (const [key, value] of Object.entries(prefs)) {
@@ -207,11 +258,32 @@ export async function getAllQuestConfigs(): Promise<Map<number, QuestConfig>> {
     const parsed = parseQuestConfig(value);
     if (parsed) configs.set(Number(match[1]), parsed);
   }
+  const hide = options?.raw ? null : await zoneHiding();
+  if (hide) for (const [id, config] of configs) configs.set(id, partition(config, hide).shown);
   return configs;
 }
 
-export async function saveQuestConfig(questId: number, config: QuestConfig): Promise<void> {
-  await setPreference(configKey(questId), JSON.stringify(config));
+/**
+ * Saves what the reader saw. During a zone that is a view with entries hidden, so the hidden ones
+ * are put back under what is saved (`raw` writes exactly what it is given, for the set-aside
+ * writer, which reads raw too).
+ */
+export async function saveQuestConfig(
+  questId: number,
+  config: QuestConfig,
+  options?: { raw?: boolean },
+): Promise<void> {
+  const hide = options?.raw ? null : await zoneHiding();
+  const stored = hide ? await getQuestConfig(questId, { raw: true }) : null;
+  const { hidden } = stored && hide ? partition(stored, hide) : { hidden: null };
+  const next = hidden
+    ? {
+        ...config,
+        swaps: { ...hidden.swaps, ...config.swaps },
+        targets: { ...hidden.targets, ...config.targets },
+      }
+    : config;
+  await setPreference(configKey(questId), JSON.stringify(next));
 }
 
 /**

@@ -1,6 +1,7 @@
 import { and, count, desc, eq, gte, inArray, sql } from "drizzle-orm";
-import { db, schema, type TransactionTx } from "./client";
+import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { workoutsBeforeToday } from "./completed";
+import { writeContentTombstone } from "./contentTombstone";
 import { canDo, isEquipmentCode } from "./equipment";
 import { isMuscleCode } from "./muscles";
 import { getAllPreferences, preferences, startsGently } from "./preferences";
@@ -1241,11 +1242,26 @@ export async function deleteUserExercise(id: number): Promise<void> {
     );
   }
 
-  await db.delete(exerciseMuscles).where(eq(exerciseMuscles.exerciseId, id));
+  // One transaction, so a crash never leaves a tombstone without its removal or the reverse.
+  await transactionOrFallback(async (tx) => {
+    await writeContentTombstone(tx, "exercises", id);
+    await removeExercise(id, tx);
+  });
+  invalidateExercisesCache();
+}
+
+/**
+ * Muscles, orphan slots and the row, no usage check and no tombstone: what `deleteUserExercise`
+ * and the merge's `honourTombstones` (which checks usage itself) share.
+ */
+export async function removeExercise(
+  id: number,
+  exec: typeof db | TransactionTx = db,
+): Promise<void> {
+  await exec.delete(exerciseMuscles).where(eq(exerciseMuscles.exerciseId, id));
   // Slots whose quest is already gone are the only ones that can be here — `getExerciseUsage`
   // refuses the delete otherwise. Sweeping them keeps this path from leaving litter of its own,
   // since `ON DELETE CASCADE` does nothing on a device.
-  await db.delete(schema.questExercises).where(eq(schema.questExercises.exerciseId, id));
-  await db.delete(exercises).where(eq(exercises.id, id));
-  invalidateExercisesCache();
+  await exec.delete(schema.questExercises).where(eq(schema.questExercises.exerciseId, id));
+  await exec.delete(exercises).where(eq(exercises.id, id));
 }

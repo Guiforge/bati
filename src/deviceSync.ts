@@ -706,10 +706,16 @@ async function judge(target: Remote, file: RemoteFile, context: JudgeContext): P
   }
   if (peer.state === "locked") peer = settleLocked(peer, file, context);
   // An answer the hero already gave for this exact state is not asked again. Only news from that
-  // device (new sessions, new content) changes the fingerprint; sealing the same history anew
-  // does not.
-  if ("comparison" in peer && context.answered[file.name] === peer.comparison.fingerprint) {
-    peer = { name: file.name, etag: file.etag, modified: peer.modified, state: "level" };
+  // device (new sessions, new content, a larger XP, a content deletion) changes the fingerprint;
+  // sealing the same history anew does not. An answer from before merge v2 has three segments and
+  // is matched on the first three of the fingerprint's four, so it expires on real news only.
+  if ("comparison" in peer) {
+    const said = context.answered[file.name];
+    const { fingerprint } = peer.comparison;
+    const legacy = fingerprint.split("|").slice(0, 3).join("|");
+    if (said === fingerprint || said === legacy) {
+      peer = { name: file.name, etag: file.etag, modified: peer.modified, state: "level" };
+    }
   }
   // Said once for this file, not once per launch: the same unreadable file is no news.
   if (peer.state === "unreadable" && context.answered[file.name] === unreadableKey(file)) {

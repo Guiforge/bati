@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { workoutsBeforeToday } from "./completed";
+import { writeContentTombstone } from "./contentTombstone";
 import { canDo } from "./equipment";
 import {
   currentRungFor,
@@ -1032,8 +1033,16 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   return quest;
 }
 
+/** The row, no tombstone: the half `honourTombstones` shares with `deleteQuest`. */
+export async function removeQuest(id: number, exec: typeof db | TransactionTx = db): Promise<void> {
+  await exec.delete(quests).where(eq(quests.id, id));
+}
+
 export async function deleteQuest(id: number): Promise<void> {
-  await db.delete(quests).where(eq(quests.id, id));
+  await transactionOrFallback(async (tx) => {
+    await writeContentTombstone(tx, "quests", id);
+    await removeQuest(id, tx);
+  });
   invalidateQuestTemplates(id);
 }
 

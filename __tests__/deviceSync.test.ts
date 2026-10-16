@@ -637,6 +637,29 @@ test("an answer holds until that device has news, whatever its file's etag does"
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("diverged");
 });
 
+test("an answer given before merge v2 still holds, and is asked again only when the first three segments move", async () => {
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = { open: "opened", peerChanges: 1, localChanges: 1, fingerprint: "s|c|g|x" };
+  await rememberAnswer({ name: TABLET, comparison: { fingerprint: "s|c|g" } });
+  expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("level");
+
+  // A larger XP or a content deletion only moves the fourth segment: still the answer given.
+  mockServer.set(TABLET, "t2");
+  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s|c|g|y" };
+  expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("level");
+
+  mockServer.set(TABLET, "t3");
+  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s2|c|g|y" };
+  expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("diverged");
+});
+
+test("an unreadable device with a remembered answer is judged without throwing", async () => {
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = { open: "opened", valid: false };
+  await rememberAnswer({ name: TABLET, comparison: { fingerprint: "s|c|g" } });
+  expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("unreadable");
+});
+
 test("plain http is refused unless it is this phone; an account is kept only once it answered", async () => {
   mockSecure.clear();
   await expect(connectWebDav("http://nas.local/dav", "hero", "p")).rejects.toBeInstanceOf(

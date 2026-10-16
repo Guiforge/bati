@@ -262,7 +262,7 @@ describe("edit stamps", () => {
     expect(reported).toEqual(["sync.merge.records"]);
   });
 
-  test("a device nobody edited on keeps the fingerprint it had, so no answer is asked again", async () => {
+  test("a device nobody edited on keeps the sessions segment it had, so no answer is asked again", async () => {
     const id = await log(5, 362);
 
     expect((await fingerprint()).split("|")[0]).toBe(`1:${uuidOf(id)}`);

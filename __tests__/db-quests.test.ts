@@ -262,6 +262,43 @@ describe("db/quests", () => {
     expect(await quests.getQuestTemplateById(id)).toBeNull();
   });
 
+  test("deleting a hero quest leaves a tombstone later than its row, an Admin quest none", async () => {
+    const quests = require("../db/quests") as typeof import("../db/quests");
+    const make = (author?: "hero") =>
+      quests.createQuestTemplate({
+        enTitle: "Mine",
+        frTitle: "Mienne",
+        deTitle: "Mine",
+        esTitle: "Mine",
+        enDescription: "",
+        frDescription: "",
+        deDescription: "",
+        esDescription: "",
+        rounds: 1,
+        restSeconds: 20,
+        roundRestSeconds: 60,
+        exercises: [],
+        ...(author ? { author } : {}),
+      });
+    t.sqlite.exec("DELETE FROM deleted_content");
+    const admin = await make();
+    await quests.deleteQuest(admin);
+    expect(t.sqlite.prepare("SELECT count(*) AS n FROM deleted_content").get()).toEqual({ n: 0 });
+
+    const hero = await make("hero");
+    const row = t.sqlite.prepare("SELECT uuid, updatedAt FROM quests WHERE id = ?").get(hero) as {
+      uuid: string;
+      updatedAt: number;
+    };
+    await quests.deleteQuest(hero);
+    const tombstone = t.sqlite.prepare("SELECT uuid, deletedAt FROM deleted_content").get() as {
+      uuid: string;
+      deletedAt: number;
+    };
+    expect(tombstone.uuid).toBe(row.uuid);
+    expect(tombstone.deletedAt).toBeGreaterThan(row.updatedAt);
+  });
+
   /**
    * The bridge (docs/designs/outing-doors.md, T17): what the hero just walked, filed as a quest.
    * A distance never becomes a target here — `questTargetTypes` is reps and time, and a walk's

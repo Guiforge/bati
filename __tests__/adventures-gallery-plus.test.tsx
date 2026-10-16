@@ -132,8 +132,8 @@ test("locked adventures sit under the Bati+ header, after the free ones", async 
   expect(at("Free One")).toBeLessThan(at("adventures-plus-header"));
   expect(at("adventures-plus-header")).toBeLessThan(at("Plus One"));
   expect(at("Plus One")).toBeLessThan(at("Plus Two"));
-  // No padlock: the Lucide Lock icon renders an svg with testID-less paths, so assert by name.
-  expect(dump).not.toMatch(/lock/i);
+  // No padlock: the Lucide Lock icon has no name or testID in the tree, only its svg path.
+  expect(dump).not.toContain("M7 11V7a5 5 0 0 1 10 0v4");
 });
 
 test("with nothing locked there is no header", async () => {

@@ -18,7 +18,7 @@ const BUILT: Record<string, readonly string[]> = {
   "village.season_": ["winter", "spring", "summer", "autumn"],
 };
 
-const LOCALES = ["en", "fr", "de", "es"] as const;
+const LOCALES = ["en", "fr", "de", "es", "zh"] as const;
 
 function lookup(tree: unknown, key: string): unknown {
   return key.split(".").reduce<unknown>((node, part) => {

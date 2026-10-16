@@ -63,6 +63,7 @@ const nameOf = (r: { enName: string; frName: string; deName: string; esName: str
   de: r.deName,
   es: r.esName,
   ru: r.enName,
+  zh: r.enName,
 });
 
 /** A left-joined exercise: all four names, or none. */
@@ -74,7 +75,14 @@ const joinedName = (r: {
 }): Localized | null =>
   r.enName == null
     ? null
-    : { en: r.enName, fr: r.frName ?? "", de: r.deName ?? "", es: r.esName ?? "", ru: r.enName };
+    : {
+        en: r.enName,
+        fr: r.frName ?? "",
+        de: r.deName ?? "",
+        es: r.esName ?? "",
+        ru: r.enName,
+        zh: r.enName,
+      };
 
 const titleOf = (r: {
   enTitle: string | null;
@@ -90,6 +98,7 @@ const titleOf = (r: {
         de: r.deTitle ?? "",
         es: r.esTitle ?? "",
         ru: r.enTitle,
+        zh: r.enTitle,
       };
 
 // ------------------------------------------------------------
@@ -607,7 +616,14 @@ export async function getBossKills(): Promise<BossKill[]> {
         title: bossLocalizedName(
           run.bossImagePath ?? run.imagePath,
           runs.filter((r) => r.adventureId === run.adventureId && r.runId < run.runId).length,
-          { en: run.enTitle, fr: run.frTitle, de: run.deTitle, es: run.esTitle, ru: run.enTitle },
+          {
+            en: run.enTitle,
+            fr: run.frTitle,
+            de: run.deTitle,
+            es: run.esTitle,
+            ru: run.enTitle,
+            zh: run.enTitle,
+          },
         ),
         imagePath: run.bossImagePath ?? run.imagePath,
         felledAt: run.finishedAt,
@@ -1062,6 +1078,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
         de: a.deTitle,
         es: a.esTitle,
         ru: a.enTitle,
+        zh: a.enTitle,
       }),
       imagePath: a.bossImagePath ?? a.imagePath,
     }));
@@ -1182,6 +1199,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       de: step.deTitle,
       es: step.esTitle,
       ru: step.enTitle,
+      zh: step.enTitle,
     }),
     bossImagePath: step.bossImagePath ?? step.imagePath,
     felledAt,

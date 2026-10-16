@@ -583,6 +583,7 @@ describe("TonightList", () => {
             de: "Pompes",
             es: "Pompes",
             ru: "Push-ups",
+            zh: "Push-ups",
           },
           type: "reps",
           perSide: false,

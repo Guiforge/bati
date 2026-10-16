@@ -26,6 +26,12 @@ describe("src/widget", () => {
     // real migrations, so the handler's call is what matters, not the runner.
     jest.doMock("../db/migrate", () => ({ ensureMigrations }));
     jest.doMock("../src/reportError", () => ({ reportError }));
+    // The pivot is explicit, long before any session below: a sleeping flame reads the same
+    // whatever the real clock says.
+    jest.doMock("../constants/flame", () => ({
+      ...jest.requireActual("../constants/flame"),
+      FLAME_PIVOT: new Date(2000, 0, 1),
+    }));
     jest.doMock("react-native-android-widget", () => ({
       FlexWidget: () => null,
       TextWidget: () => null,
@@ -156,6 +162,54 @@ describe("src/widget", () => {
 
     expect(renderedLang(renderWidget)).toBe("fr");
   });
+  /** Every text the element draws, by running its component the way the OS bridge would. */
+  function textsOf(renderWidget: jest.Mock): string[] {
+    const element = renderWidget.mock.calls[0][0] as {
+      type: (p: object) => unknown;
+      props: object;
+    };
+    const texts: string[] = [];
+    const walk = (node: unknown) => {
+      if (Array.isArray(node)) node.forEach(walk);
+      else if (node && typeof node === "object" && "props" in node) {
+        const p = (node as { props: { text?: string; children?: unknown } }).props;
+        if (p.text) texts.push(p.text);
+        walk(p.children);
+      }
+    };
+    walk(element.type(element.props));
+    return texts;
+  }
+
+  async function addSession(daysAgo: number) {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    date.setHours(12, 0, 0, 0);
+    await t.db.insert(completedQuest).values({
+      questId: 1,
+      performedAt: date,
+      durationSeconds: 1800,
+      userLevel: "medium",
+      xpEarned: 100,
+    });
+  }
+
+  test("a sleeping flame shows its count with 'dormant' under it, not 'days'", async () => {
+    // The quota met 40 and 39 days ago, nothing since: out, with 12 lit days asleep.
+    await addSession(40);
+    await addSession(39);
+    // The day's memo still holds the empty database the earlier tests read.
+    (require("../db/streaks") as typeof import("../db/streaks")).invalidateStreakInfo();
+    const { props, renderWidget } = taskProps("Flame");
+
+    await widget().widgetTaskHandler(props);
+
+    const texts = textsOf(renderWidget);
+    expect(texts).toContain("🔥 12");
+    expect(texts).toContain("dormant");
+    expect(texts).not.toContain("days");
+  });
+
   test("the unit under the number agrees with it, in each language's own plural rule", () => {
     const { widgetUnit } = widget();
     // French counts 0 and 1 as singular, English only 1.

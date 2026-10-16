@@ -42,6 +42,7 @@ import {
 } from "./targets";
 import { uuidv7 } from "./uuid";
 import { NON_REP_STYLE } from "./workUnits";
+import { sparedExerciseIds } from "./zone";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
 
@@ -717,12 +718,21 @@ async function loadReplacements(
   const replaced = new Map<number, number>();
   if (setAside.size === 0) return replaced;
 
-  const [catalogue, unavailable] = await Promise.all([listExercises(), unavailableExerciseIds()]);
+  const [catalogue, unavailable, spared] = await Promise.all([
+    listExercises(),
+    unavailableExerciseIds(),
+    sparedExerciseIds(),
+  ]);
   const byId = new Map(catalogue.map((e) => [e.id, e] as const));
   for (const id of new Set(exerciseIds)) {
     const current = byId.get(served.get(id) ?? id);
     if (!current || !setAside.has(current.id)) continue;
-    const replacement = setAsideReplacement(catalogue, current, unavailable);
+    const replacement = setAsideReplacement(
+      catalogue,
+      current,
+      unavailable,
+      spared.has(current.id),
+    );
     if (replacement) replaced.set(id, replacement.id);
   }
   return replaced;

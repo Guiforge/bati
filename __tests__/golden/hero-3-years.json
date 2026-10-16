@@ -182,6 +182,7 @@
     },
     "flame": {
       "current": 1092,
+      "dormant": 0,
       "best": 1092,
       "inWindow": 4,
       "quota": 2,

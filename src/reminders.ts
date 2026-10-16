@@ -3,7 +3,8 @@ import { getChangeVersion } from "@/db/changeVersion";
 import { getSessionAggregates } from "@/db/completed";
 import { dayKey } from "@/db/dates";
 import { decideHomeOffer } from "@/db/homeOffer";
-import { getOath } from "@/db/oaths";
+import { getOath, isOathFrozen } from "@/db/oaths";
+import { getActivePause } from "@/db/pause";
 import { preferences } from "@/db/preferences";
 import {
   getReminderDays,
@@ -48,11 +49,12 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
   const language = resolveAppLanguage(await preferences.getLanguage());
   const t = (key: string, options?: Record<string, unknown>) =>
     i18n.t(key, { ...options, lng: language });
-  const [days, sessions, offer, oath] = await Promise.all([
+  const [days, sessions, offer, oath, pause] = await Promise.all([
     getReminderDays(),
     getReminderSessions(now),
     decideHomeOffer(language),
     getOath(),
+    getActivePause(now),
   ]);
   if (!offer || mine !== replans) return;
 
@@ -62,8 +64,10 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
     sessions,
     sessionActive: sessionHeld,
     state,
+    pausedUntil: pause?.until ?? null,
     offer,
-    oath,
+    // A frozen oath is not counted down in a notification (db/oaths.ts `isOathFrozen`).
+    oath: oath && (await isOathFrozen(oath, now)) ? null : oath,
     language,
     t,
   });

@@ -344,7 +344,7 @@ export default function QuestEditor() {
       // quest_exercises row id and this write rebuilds those rows. The remembered level stays —
       // that is a personal setting, not a property of the template.
       const saved = await getQuestConfig(questId);
-      if (saved) await saveQuestConfig(questId, { level: saved.level });
+      if (saved) await saveQuestConfig(questId, { level: saved.level }, { replace: "all" });
 
       success();
       showSuccess(t("quests.editor_saved"));

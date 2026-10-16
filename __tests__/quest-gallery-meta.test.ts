@@ -10,6 +10,8 @@
  * own db seams instead of mocking the module under test.
  */
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
+// No zone: this suite reads the config keys alone.
+jest.mock("@/db/zone", () => ({ sparedExerciseIds: async () => new Set() }));
 
 const mockGetAllPreferences = jest.fn();
 jest.mock("@/db/preferences", () => ({

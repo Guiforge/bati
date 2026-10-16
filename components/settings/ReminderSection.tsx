@@ -12,6 +12,7 @@ import { SettingRow } from "@/components/settings/SettingRow";
 import { getDateTimeFormat, getWeekStart } from "@/constants/dateFormatters";
 import { dayKey } from "@/db/dates";
 import { DEFAULT_WEEKLY_TARGET, getOath } from "@/db/oaths";
+import { getActivePause } from "@/db/pause";
 import {
   dayOf,
   describeDay,
@@ -45,6 +46,8 @@ type ReminderView = {
   enabled: boolean;
   days: ReminderDays;
   resumeDate: string | null;
+  /** The return date of a pause declared in `/pause` (M-04), read by the plan like `resumeDate`. */
+  pausedUntil: string | null;
   log: ReminderLogEntry[];
   sessions: ReminderSession[];
   streakFrom: string | null;
@@ -66,12 +69,13 @@ async function readView(): Promise<{ view: ReminderView; withdrawn: boolean }> {
   // to none. The switch follows Android, and Settings says why.
   const withdrawn = state.enabled && !Reminders.areEnabled();
   if (withdrawn) Reminders.setEnabled(false);
-  const [days, sessions, streakFrom, oath, flameQuota, account] = await Promise.all([
+  const [days, sessions, streakFrom, oath, flameQuota, pause, account] = await Promise.all([
     getReminderDays(),
     getReminderSessions(new Date()),
     reminderPrefs.streakFrom(),
     getOath(),
     getWeeklyQuota(),
+    getActivePause(),
     syncAccount().catch((e: unknown) => {
       reportError("reminders.syncAccount", e);
       return null;
@@ -83,6 +87,7 @@ async function readView(): Promise<{ view: ReminderView; withdrawn: boolean }> {
       enabled: state.enabled && !withdrawn,
       days,
       resumeDate: state.resumeDate,
+      pausedUntil: pause?.until ?? null,
       log: state.log,
       sessions,
       streakFrom,
@@ -507,6 +512,7 @@ function Preview({
     // Settings is never open during a session.
     sessionActive: false,
     state: { resumeDate: view.resumeDate, log: view.log },
+    pausedUntil: view.pausedUntil,
     // The words do not matter here, only the days.
     offer: { kind: "gallery", trained: false },
     oath: null,
@@ -516,15 +522,19 @@ function Preview({
   const next = planReminders(input).entries[0];
   const day = describeDay(input);
   const last = [...view.log].reverse().find((e) => e.postedAt);
-  const missed = missedReminder(
-    view.days,
-    view.log,
-    view.sessions,
-    now,
-    view.streakFrom,
-    view.resumeDate,
-    view.plannedOn,
-  );
+  // During a pause nothing was meant to ring: `missedReminder` only knows the two-week snooze.
+  const missed =
+    view.pausedUntil !== null
+      ? null
+      : missedReminder(
+          view.days,
+          view.log,
+          view.sessions,
+          now,
+          view.streakFrom,
+          view.resumeDate,
+          view.plannedOn,
+        );
 
   return (
     <YStack px="$3" gap="$1" testID="settings-reminder-preview">

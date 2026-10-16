@@ -1,4 +1,5 @@
 import { inArray, sql } from "drizzle-orm";
+import { FLAME_PIVOT } from "@/constants/flame";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
 import {
@@ -8,7 +9,7 @@ import {
   type PeriodFigures,
   periodWindow,
 } from "./journal";
-import { getWeeklyQuota, longestFlameSince } from "./streaks";
+import { getPausePeriods, getWeeklyQuota, longestFlameSince } from "./streaks";
 import { calculateLevelFromXp, getTotalXp } from "./userLevel";
 import { getVillageTier, type VillageTier } from "./village";
 
@@ -83,10 +84,11 @@ export async function getChronicle({ year, from, to }: ChronicleWindow): Promise
   // letterbox is in the year's sessions and not in its flame.
   const dates = rows.filter((r) => Number(r.counts) === 1).map((r) => r.at);
 
-  const [figures, kills, quota, xp, oldest] = await Promise.all([
+  const [figures, kills, quota, pauses, xp, oldest] = await Promise.all([
     getPeriodFigures(from, to),
     getBossKills(),
     getWeeklyQuota(),
+    getPausePeriods(),
     getTotalXp(to),
     getOldestSessionAt(),
   ]);
@@ -113,7 +115,7 @@ export async function getChronicle({ year, from, to }: ChronicleWindow): Promise
       const at = (k.sessionId != null && startedAt.get(k.sessionId)) || k.felledAt;
       return at >= from && at <= to;
     }).length,
-    longestFlame: longestFlameSince(dates, quota, from, to),
+    longestFlame: longestFlameSince(dates, quota, from, to, FLAME_PIVOT, pauses),
     villageTier: getVillageTier(calculateLevelFromXp(xp)),
   };
 }

@@ -40,6 +40,7 @@ import {
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
+import { PauseRow } from "@/components/settings/PauseRow";
 import { ReminderSection } from "@/components/settings/ReminderSection";
 import { SetAsideRow } from "@/components/settings/SetAsideRow";
 import { SettingRow } from "@/components/settings/SettingRow";
@@ -592,6 +593,8 @@ export default function SettingsScreen() {
           <StartingPointRow />
 
           <SetAsideRow />
+
+          <PauseRow />
 
           <SettingRow
             icon={<Swords size={22} color="$text" />}

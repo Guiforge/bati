@@ -1099,6 +1099,10 @@
         "title": "Pfad erklommen",
         "description": "Meistere jede Stufe eines Pfads"
       },
+      "three_paths_climbed": {
+        "title": "Drei Wege erklommen",
+        "description": "Erklimme drei Wege"
+      },
       "first_outing": {
         "title": "Vor den Toren",
         "description": "Schließ eine Tour ab"

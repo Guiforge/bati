@@ -960,6 +960,12 @@
         "targetValue": 1
       },
       {
+        "code": "three_paths_climbed",
+        "isUnlocked": true,
+        "currentValue": 3,
+        "targetValue": 3
+      },
+      {
         "code": "first_outing",
         "isUnlocked": false,
         "currentValue": 0,

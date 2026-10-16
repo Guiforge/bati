@@ -1213,6 +1213,10 @@
         "title": "Путь пройден",
         "description": "Освой каждую ступень одного пути"
       },
+      "three_paths_climbed": {
+        "title": "Три пути пройдены",
+        "description": "Пройди три пути"
+      },
       "first_outing": {
         "title": "За ворота",
         "description": "Заверши одну вылазку"

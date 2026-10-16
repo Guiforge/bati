@@ -103,6 +103,10 @@
         "title": "Voie gravie",
         "description": "Maîtrise chaque étape d'une voie"
       },
+      "three_paths_climbed": {
+        "title": "Trois voies gravies",
+        "description": "Gravis trois voies"
+      },
       "first_outing": {
         "title": "Hors les murs",
         "description": "Termine une sortie"

@@ -191,6 +191,8 @@ export function VictoryView() {
   const sessionUuid = useSessionStore((s) => s.sessionUuid);
   const goal = useSessionStore((s) => s.goal);
   const [bossExpanded, setBossExpanded] = useState(false);
+  // "Voir tout": the milestone, the chart and the forget link, mounted only once asked for.
+  const [expanded, setExpanded] = useState(false);
   const cue = useChorusStore((s) => s.cue);
 
   const [result, setResult] = useState<SaveResult | null>(null);
@@ -765,8 +767,6 @@ export function VictoryView() {
           </XStack>
         </Card>
 
-        <NextMilestone sessionId={result?.sessionId ?? null} language={language} />
-
         {/* A failed save: the only thing that replaces "Tonight". */}
         {!!saveError && (
           <YStack width="100%" maxW={520} items="center" gap="$3">
@@ -781,25 +781,47 @@ export function VictoryView() {
           </YStack>
         )}
 
-        {/* Progression chart (lower priority; also available in the journal) */}
-        <YStack width="100%" maxW={520}>
-          <ProgressionChart questId={quest.id} limit={10} title={t("chart.your_progress")} />
-        </YStack>
+        {/* Everything below the feeling is one tap away and costs nothing until asked for: the
+            milestone and the chart read the journal, so they are not even mounted before. */}
+        {expanded ? (
+          <>
+            <NextMilestone sessionId={result?.sessionId ?? null} language={language} />
 
-        {/* Last thing on the page and far from the sticky Continue, so it is found by looking for
-            it and never by reaching for the next button. */}
-        {!!result && (
+            {/* Progression chart (lower priority; also available in the journal) */}
+            <YStack width="100%" maxW={520}>
+              <ProgressionChart questId={quest.id} limit={10} title={t("chart.your_progress")} />
+            </YStack>
+
+            {/* Last thing on the page and far from the sticky Continue, so it is found by looking for
+                it and never by reaching for the next button. */}
+            {!!result && (
+              <Text
+                testID="session-victory-forget"
+                accessibilityRole="button"
+                onPress={handleForget}
+                color="$textSecondary"
+                fontSize={14}
+                py="$3"
+                px="$4"
+                textDecorationLine="underline"
+              >
+                {t("session.summary_forget")}
+              </Text>
+            )}
+          </>
+        ) : (
           <Text
-            testID="session-victory-forget"
+            testID="victory-see-all"
             accessibilityRole="button"
-            onPress={handleForget}
+            onPress={() => setExpanded(true)}
             color="$textSecondary"
             fontSize={14}
+            minH={44}
             py="$3"
             px="$4"
             textDecorationLine="underline"
           >
-            {t("session.summary_forget")}
+            {t("session.victory_see_all")}
           </Text>
         )}
       </ScrollView>

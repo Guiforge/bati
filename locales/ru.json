@@ -894,7 +894,7 @@
     "flame_lit_other": "дня горит",
     "flame_best_now": "Это твоё лучшее пламя.",
     "flame_dormant": "в покое",
-    "flame_dormant_note": "Каждая тренировка или вылазка сохраняет её в покое.",
+    "flame_dormant_note": "Каждая тренировка или вылазка сохраняет его в покое.",
     "flame_best_ended_one": "Лучшее пламя: {{days}} день (закончилось {{date}}).",
     "flame_best_ended_few": "Лучшее пламя: {{days}} дня (закончилось {{date}}).",
     "flame_best_ended_many": "Лучшее пламя: {{days}} дней (закончилось {{date}}).",
@@ -1161,7 +1161,7 @@
       },
       "streak_3": {
         "title": "Росток",
-        "description": "Накопи 3 дней пламени"
+        "description": "Накопи 3 дня пламени"
       },
       "streak_7": {
         "title": "Воин недели",

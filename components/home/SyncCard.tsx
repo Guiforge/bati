@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button, Paragraph, Text, XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { syncNoticeKind } from "@/components/home/syncNoticeKind";
 import { X } from "@/components/icons";
 import {
   dismissMergeCard,
@@ -17,9 +18,6 @@ import {
 import { reportError } from "@/src/reportError";
 import { failureMessage } from "@/src/syncWords";
 import { useSyncStore } from "@/stores/sync";
-
-/** Failing for this long, sync stops being a detail of Settings and says so on Home. */
-const FAILING_FOR_MS = 3 * 24 * 60 * 60 * 1000;
 
 /** Said once per process: a lost sync is a bug until proven otherwise, and the trail needs it. */
 let lostReported = false;
@@ -62,7 +60,15 @@ export function SyncCard() {
       .catch((error: unknown) => reportError("sync.card", error));
   }, [failure, lastSyncAt]);
 
-  if (lost !== null) {
+  const kind = syncNoticeKind({
+    lost,
+    waitingPassword,
+    failure,
+    failingSince: health?.failingSince ?? null,
+    merge,
+    now: Date.now(),
+  });
+  if (kind === "lost") {
     return (
       <SyncNotice
         testID="home-sync-lost"
@@ -78,7 +84,7 @@ export function SyncCard() {
       />
     );
   }
-  if (waitingPassword) {
+  if (kind === "waiting") {
     return (
       <SyncNotice
         testID="home-sync-waiting"
@@ -94,8 +100,7 @@ export function SyncCard() {
       />
     );
   }
-  const failingSince = health?.failingSince ?? null;
-  if (failure && failingSince !== null && Date.now() - failingSince > FAILING_FOR_MS) {
+  if (kind === "failing" && failure) {
     return (
       <SyncNotice
         testID="home-sync-failing"
@@ -106,7 +111,7 @@ export function SyncCard() {
       />
     );
   }
-  if (merge !== null && !merge.seen) {
+  if (kind === "merged" && merge) {
     return (
       <SyncNotice
         testID="home-sync-merged"

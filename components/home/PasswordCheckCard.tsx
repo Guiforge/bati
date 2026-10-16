@@ -7,8 +7,6 @@ import { ChevronRight, KeyRound } from "@/components/icons";
 import { PasswordCheckFlow } from "@/components/settings/PasswordCheckFlow";
 import { useHaptics } from "@/hooks/useHaptics";
 import { answerPasswordCheck, passwordCheckDue } from "@/src/passwordReminders";
-import { protectCardVisible } from "@/src/protectHero";
-import { reminderCardKind } from "@/src/reminders";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -26,11 +24,7 @@ export function PasswordCheckCard() {
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      const decide = async () =>
-        (await passwordCheckDue()) &&
-        !(await protectCardVisible()) &&
-        (await reminderCardKind()) === null;
-      decide()
+      passwordCheckDue()
         .then((next) => {
           if (!cancelled) setDue(next);
         })

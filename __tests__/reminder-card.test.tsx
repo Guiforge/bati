@@ -30,10 +30,6 @@ jest.mock("@/modules/bati-reminders", () => ({
   getState: () => mockState,
   setEnabled: jest.fn(),
 }));
-let mockNotes = false;
-let mockUpdate: string | null = null;
-jest.mock("@/src/whatsNew", () => ({ hasUnseenNotes: async () => mockNotes }));
-jest.mock("@/src/updateCheck", () => ({ checkForUpdate: async () => mockUpdate }));
 let mockSessions = 0;
 jest.mock("@/db/completed", () => ({
   ...jest.requireActual("@/db/completed"),
@@ -56,8 +52,6 @@ jest.mock("@/db/reminders", () => ({
   },
 }));
 jest.mock("@/db/homeOffer", () => ({ decideHomeOffer: jest.fn() }));
-let mockProtect = false;
-jest.mock("@/src/protectHero", () => ({ protectCardVisible: async () => mockProtect }));
 jest.mock("@/stores/session", () => ({ useSessionStore: { getState: () => ({}) } }));
 
 import { format, subDays } from "date-fns";
@@ -82,13 +76,10 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockState.enabled = false;
   mockState.log = [];
-  mockNotes = false;
-  mockUpdate = null;
   mockSessions = 1;
   mockDays = {};
   mockAskedAt = null;
   mockDismissed = false;
-  mockProtect = false;
 });
 
 describe("reminderCardKind", () => {
@@ -118,24 +109,6 @@ describe("reminderCardKind", () => {
   test("two ignored is not three", async () => {
     mockState.enabled = true;
     mockState.log = ignoredDays.slice(1);
-    expect(await reminderCardKind()).toBeNull();
-  });
-
-  test("yields to the protect card: one line under the scene, the one about losing a hero first", async () => {
-    mockProtect = true;
-    expect(await reminderCardKind()).toBeNull();
-    mockState.enabled = true;
-    mockState.log = ignoredDays;
-    expect(await reminderCardKind()).toBeNull();
-    mockProtect = false;
-    expect(await reminderCardKind()).toBe("check");
-  });
-
-  test("silent while an update or the release notes are up", async () => {
-    mockNotes = true;
-    expect(await reminderCardKind()).toBeNull();
-    mockNotes = false;
-    mockUpdate = "3.0.0";
     expect(await reminderCardKind()).toBeNull();
   });
 });

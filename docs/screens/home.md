@@ -35,12 +35,12 @@ The rule that keeps it honest: **Home carries the action, the Journal carries th
 One strip of status, one scene, one row of doors, and the tab bar. On a 360x800 phone the fixed
 chrome is the 52 dp strip and the tab bar, where it used to be about 260 dp with the village band;
 the scene takes everything else. Everything is visible without scrolling down to 360x640. The
-column only scrolls when a recovery card pushes it.
+column only scrolls when a notice pushes it.
 
 | Block | Component | Answers |
 | --- | --- | --- |
 | Status strip | `HomeHeader` | who I am, what my training built: avatar → settings, level + title, XP as `340 / 500`, village crest + tier → village |
-| Recovery banner | `SessionRecoveryBanner` | *conditional*: an interrupted session, before anything else is offered |
+| Notice | `NoticeSlot` | *conditional*: one notice at a time, the first of `NOTICE_ORDER` (interrupted session, sync, release notes, update, backup, reminder, password check) |
 | Stage | `HomeStage` | what I do right now: one full-bleed scene, **Start**, **Details** |
 | Rest note | `RestNote` | *conditional*: one quiet line under the button, never a gate |
 | Oath strip | `OathStrip` | where I am going: the objective along the foot of the scene, its rungs as ticks; the way to swear one when there is none |

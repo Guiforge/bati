@@ -7,7 +7,7 @@ import { AlertTriangle, Check, Play, X } from "@/components/icons";
 import { formatDistance } from "@/constants/distanceFormat";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { type RecoverableSession, useSessionRecovery } from "@/hooks/useSessionRecovery";
+import type { RecoverableSession } from "@/hooks/useSessionRecovery";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -171,26 +171,5 @@ export function SessionRecoveryCard({
         </XStack>
       </YStack>
     </Card>
-  );
-}
-
-/**
- * Wrapper that handles the recovery logic internally
- */
-export function SessionRecoveryBanner() {
-  const { recoverableSession, isChecking, recoverSession, finishSession, discardSession } =
-    useSessionRecovery();
-
-  if (isChecking || !recoverableSession) {
-    return null;
-  }
-
-  return (
-    <SessionRecoveryCard
-      session={recoverableSession}
-      onRecover={recoverSession}
-      onFinish={finishSession}
-      onDiscard={discardSession}
-    />
   );
 }

@@ -4,14 +4,8 @@ import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
-import { PasswordCheckCard } from "@/components/home/PasswordCheckCard";
-import { ProtectCard } from "@/components/home/ProtectCard";
+import { NoticeSlot } from "@/components/home/NoticeSlot";
 import { QuickActions } from "@/components/home/QuickActions";
-import { ReminderCard } from "@/components/home/ReminderCard";
-import { SyncCard } from "@/components/home/SyncCard";
-import { UpdateCard } from "@/components/home/UpdateCard";
-import { WhatsNewCard } from "@/components/home/WhatsNewCard";
-import { SessionRecoveryBanner } from "@/components/session/SessionRecoveryCard";
 
 /**
  * THESIS: Home is the hero's HUD. One strip of status, one scene to walk into, one row of doors.
@@ -68,37 +62,12 @@ export default function HomeScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* An interrupted session outranks any suggestion. It renders nothing when there is none
-            to resume. Without it, quitting mid-quest left no trace anywhere. */}
-        <SessionRecoveryBanner />
-
-        {/* A new release, at most once per release, and only for a hero who switched the check
-            on in Settings. It pushes the column like the recovery card above it, and it is the
-            only thing on this screen that a hero can make go away for good. */}
-        <UpdateCard />
-
-        {/* Device sync, only when the hero must know: stopped, waiting on them, failing for
-            days, or another device's sessions just arrived. Nothing while it works. */}
-        <SyncCard />
-
-        {/* After a few sessions with no backup that works: one line to Settings, closable for a
-            month. Never shown to a hero who is already protected. */}
-        <ProtectCard />
-
-        {/* The notes of the version just installed, once, and never on a fresh install. */}
-        <WhatsNewCard />
+        {/* One notice at a time, the first in noticeOrder.ts: an interrupted session outranks
+            sync, the notes, an update, the backup and the reminders. */}
+        <NoticeSlot />
 
         {/* Tonight's scene, one action that starts it, the rest advice and the oath under it */}
         <HomeStage />
-
-        {/* A line under the scene about the reminders, never a second filled button: the offer
-            after the first session, or the question after three ignored. Silent while an update
-            or release notes are up. */}
-        <ReminderCard />
-
-        {/* The quietest line on Home: the backup password check, only for a hero who asked for it,
-            only when due, and never beside the cards above. */}
-        <PasswordCheckCard />
 
         {/* The doors out, and the last quest again, in the thumb's reach */}
         <QuickActions />

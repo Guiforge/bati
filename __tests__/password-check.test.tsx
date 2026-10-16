@@ -42,8 +42,6 @@ const mockEncryption = {
 jest.mock("@/hooks/useBackupEncryption", () => ({ useBackupEncryption: () => mockEncryption }));
 
 let mockDue = true;
-let mockProtect = false;
-let mockReminderKind: string | null = null;
 const mockAnswers: string[] = [];
 jest.mock("@/src/passwordReminders", () => ({
   passwordCheckDue: () => Promise.resolve(mockDue),
@@ -52,8 +50,6 @@ jest.mock("@/src/passwordReminders", () => ({
     return Promise.resolve();
   },
 }));
-jest.mock("@/src/protectHero", () => ({ protectCardVisible: () => Promise.resolve(mockProtect) }));
-jest.mock("@/src/reminders", () => ({ reminderCardKind: () => Promise.resolve(mockReminderKind) }));
 
 import { PasswordCheckCard } from "@/components/home/PasswordCheckCard";
 import { PasswordCheckFlow } from "@/components/settings/PasswordCheckFlow";
@@ -72,8 +68,6 @@ const wrap = (node: React.ReactNode) => (
 
 beforeEach(() => {
   mockDue = true;
-  mockProtect = false;
-  mockReminderKind = null;
   mockAnswers.length = 0;
   mockEncryption.checkPassword.mockReset().mockResolvedValue(true);
   mockEncryption.forgot.mockReset().mockResolvedValue(true);
@@ -169,7 +163,7 @@ describe("PasswordCheckFlow", () => {
 });
 
 describe("PasswordCheckCard", () => {
-  test("is a quiet line when the check is due and nothing else asks for the spot", async () => {
+  test("is a quiet line when the check is due", async () => {
     await render(wrap(<PasswordCheckCard />));
     await waitFor(() => expect(screen.getByTestId("home-password-check")).toBeTruthy());
   });
@@ -179,18 +173,6 @@ describe("PasswordCheckCard", () => {
       "not due",
       () => {
         mockDue = false;
-      },
-    ],
-    [
-      "the protect card is showing",
-      () => {
-        mockProtect = true;
-      },
-    ],
-    [
-      "the reminders line is showing",
-      () => {
-        mockReminderKind = "offer";
       },
     ],
   ])("is silent when %s", async (_why, setUp) => {

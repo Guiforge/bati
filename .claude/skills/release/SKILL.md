@@ -43,8 +43,13 @@ The release keystore exists since 2026-07-31 and is wired through
 verified with `apksigner`. It is the one irreversible asset here — lose it and the published app
 can never be updated again.
 
-Two things to know before tagging:
+Three things to know before tagging:
 
+- **Set the flame pivot to the tag's date.** `FLAME_PIVOT` in `constants/flame.ts` must equal the
+  date of the real release tag: a gap in the flame is only bridged when the day that relights it
+  falls after it, and the golden hero (whose clock is frozen in March) only stays still because it
+  is later than every fixture. Moved earlier than the tag it rewrites the past of heroes who update
+  that day; later, their sleeping flame reads 0 until then.
 - **Write the changelog first.** `fastlane/metadata/android/*/changelogs/<versionCode>.txt` is
   named after the integer, not the version string, and a missing file fails silently — the entry
   just has no notes. `npx expo config --type public | grep versionCode` tells you the number.

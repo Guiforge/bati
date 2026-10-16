@@ -116,6 +116,10 @@
     "metric_streak_other": "Пламя на {{count, number}} дней",
     "preset_lsit_30": "Удержание L-Sit {{count, number}} с",
     "preset_standing": "Сейчас {{current, number}} / {{target, number}}",
+    "flame_recount_one": "Твоё пламя пересчитают по {{count}} тренировке в неделю.",
+    "flame_recount_few": "Твоё пламя пересчитают по {{count}} тренировкам в неделю.",
+    "flame_recount_many": "Твоё пламя пересчитают по {{count}} тренировкам в неделю.",
+    "flame_recount_other": "Твоё пламя пересчитают по {{count}} тренировкам в неделю.",
     "presets_title": "ГОТОВЫЕ КЛЯТВЫ",
     "custom_toggle": "Своя клятва",
     "empty_cta": "Произнести клятву",
@@ -853,6 +857,10 @@
     "lead_nothing_month": "За {{month}} пока ни одной тренировки.",
     "lead_record": "Новый рекорд ({{when}}): {{movement}}.",
     "lead_rest_lit": "Сегодня ничего, и ничего не потеряно: пламя не погаснет, пока не наступит {{day}}.",
+    "lead_rest_dormant_one": "Сегодня ничего. Твоё пламя из {{days}} дня в покое.",
+    "lead_rest_dormant_few": "Сегодня ничего. Твоё пламя из {{days}} дней в покое.",
+    "lead_rest_dormant_many": "Сегодня ничего. Твоё пламя из {{days}} дней в покое.",
+    "lead_rest_dormant_other": "Сегодня ничего. Твоё пламя из {{days}} дня в покое.",
     "lead_rest_out_one": "Сегодня ничего. {{count}} тренировка за семь дней снова зажжёт пламя.",
     "lead_rest_out_few": "Сегодня ничего. {{count}} тренировки за семь дней снова зажгут пламя.",
     "lead_rest_out_many": "Сегодня ничего. {{count}} тренировок за семь дней снова зажгут пламя.",
@@ -885,6 +893,8 @@
     "flame_lit_many": "дней горит",
     "flame_lit_other": "дня горит",
     "flame_best_now": "Это твоё лучшее пламя.",
+    "flame_dormant": "в покое",
+    "flame_dormant_note": "Каждая тренировка или вылазка сохраняет её в покое.",
     "flame_best_ended_one": "Лучшее пламя: {{days}} день (закончилось {{date}}).",
     "flame_best_ended_few": "Лучшее пламя: {{days}} дня (закончилось {{date}}).",
     "flame_best_ended_many": "Лучшее пламя: {{days}} дней (закончилось {{date}}).",
@@ -1151,27 +1161,27 @@
       },
       "streak_3": {
         "title": "Росток",
-        "description": "Не дай пламени погаснуть 3 дня"
+        "description": "Накопи 3 дней пламени"
       },
       "streak_7": {
         "title": "Воин недели",
-        "description": "Не дай пламени погаснуть 7 дней"
+        "description": "Накопи 7 дней пламени"
       },
       "streak_14": {
         "title": "Две недели подряд",
-        "description": "Не дай пламени погаснуть 14 дней"
+        "description": "Накопи 14 дней пламени"
       },
       "streak_30": {
         "title": "Мастер месяца",
-        "description": "Не дай пламени погаснуть 30 дней"
+        "description": "Накопи 30 дней пламени"
       },
       "streak_60": {
         "title": "Не остановить",
-        "description": "Не дай пламени погаснуть 60 дней"
+        "description": "Накопи 60 дней пламени"
       },
       "streak_100": {
         "title": "Центурион",
-        "description": "Не дай пламени погаснуть 100 дней"
+        "description": "Накопи 100 дней пламени"
       },
       "xp_100": {
         "title": "Охотник за XP",

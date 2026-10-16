@@ -15,7 +15,12 @@
  *
  * A day is lit when the trailing 7-day window holds at least `quota` sessions, **or** when the
  * week before it did. That second clause is the forgiveness: one blank week never breaks a
- * flame, two consecutive blank weeks do.
+ * flame, two consecutive blank weeks put it out.
+ *
+ * Out is not gone. An unlit day no longer resets the count: it sleeps ("en veille", `dormant` in
+ * `db/streaks.ts`) while the hero comes back at all, and only `FLAME_DORMANT_DAYS` out in a row
+ * with no session wipe it. Any session that counts restarts that clock, lit or not, and the days
+ * of the gap are never counted, so 100 days of flame stay 100 lit days.
  *
  * The quota is the hero's own promise. Swearing a `weekly_sessions` oath raises the bar the
  * flame is measured against; without one it sits at the WHO baseline of two sessions a week, so

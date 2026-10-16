@@ -41,27 +41,27 @@
       },
       "streak_3": {
         "title": "Bourgeonnement",
-        "description": "Garde ta flamme allumée 3 jours"
+        "description": "Cumule 3 jours de flamme"
       },
       "streak_7": {
         "title": "Guerrier Hebdo",
-        "description": "Garde ta flamme allumée 7 jours"
+        "description": "Cumule 7 jours de flamme"
       },
       "streak_14": {
         "title": "Quinze Jours de Feu",
-        "description": "Garde ta flamme allumée 14 jours"
+        "description": "Cumule 14 jours de flamme"
       },
       "streak_30": {
         "title": "Maître Mensuel",
-        "description": "Garde ta flamme allumée 30 jours"
+        "description": "Cumule 30 jours de flamme"
       },
       "streak_60": {
         "title": "Inarrêtable",
-        "description": "Garde ta flamme allumée 60 jours"
+        "description": "Cumule 60 jours de flamme"
       },
       "streak_100": {
         "title": "Centurion",
-        "description": "Garde ta flamme allumée 100 jours"
+        "description": "Cumule 100 jours de flamme"
       },
       "xp_100": {
         "title": "Chasseur d'XP",
@@ -236,6 +236,9 @@
     "metric_streak_other": "Une flamme de {{count, number}} jours",
     "preset_lsit_30": "L-Sit de {{count, number}} s",
     "preset_standing": "Tu en es à {{current, number}} / {{target, number}}",
+    "flame_recount_one": "Ta flamme sera recomptée à {{count}} séance par semaine.",
+    "flame_recount_many": "Ta flamme sera recomptée à {{count}} séances par semaine.",
+    "flame_recount_other": "Ta flamme sera recomptée à {{count}} séances par semaine.",
     "presets_title": "SERMENTS TOUT PRÊTS",
     "custom_toggle": "Serment personnalisé",
     "empty_cta": "Prête un serment",
@@ -496,6 +499,9 @@
     "lead_nothing_month": "Aucun entraînement en {{month}} pour l'instant.",
     "lead_record": "Nouveau record {{when}} en {{movement}}.",
     "lead_rest_lit": "Rien aujourd'hui, et rien de perdu : la flamme tient jusqu'à {{day}}.",
+    "lead_rest_dormant_one": "Rien aujourd'hui. Ta flamme de {{days}} jour est en veille.",
+    "lead_rest_dormant_many": "Rien aujourd'hui. Ta flamme de {{days}} jours est en veille.",
+    "lead_rest_dormant_other": "Rien aujourd'hui. Ta flamme de {{days}} jours est en veille.",
     "lead_rest_out_one": "Rien aujourd'hui. {{count}} séance en sept jours rallume la flamme.",
     "lead_rest_out_many": "Rien aujourd'hui. {{count}} séances en sept jours rallument la flamme.",
     "lead_rest_out_other": "Rien aujourd'hui. {{count}} séances en sept jours rallument la flamme.",
@@ -526,6 +532,8 @@
     "flame_lit_many": "jours allumés",
     "flame_lit_other": "jours allumés",
     "flame_best_now": "C'est ta meilleure flamme.",
+    "flame_dormant": "en veille",
+    "flame_dormant_note": "Chaque séance ou sortie la garde en veille.",
     "flame_best_ended_one": "Meilleure flamme : {{days}} jour (éteinte le {{date}}).",
     "flame_best_ended_many": "Meilleure flamme : {{days}} jours (éteinte le {{date}}).",
     "flame_best_ended_other": "Meilleure flamme : {{days}} jours (éteinte le {{date}}).",

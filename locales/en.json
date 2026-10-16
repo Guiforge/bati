@@ -110,6 +110,8 @@
     "metric_streak_other": "{{count, number}}-day flame",
     "preset_lsit_30": "{{count, number}} s L-Sit hold",
     "preset_standing": "Now at {{current, number}} / {{target, number}}",
+    "flame_recount_one": "Your flame will be recounted at {{count}} session a week.",
+    "flame_recount_other": "Your flame will be recounted at {{count}} sessions a week.",
     "presets_title": "READY-MADE OATHS",
     "custom_toggle": "Custom oath",
     "empty_cta": "Swear an oath",
@@ -799,6 +801,8 @@
     "lead_nothing_month": "Nothing trained in {{month}} yet.",
     "lead_record": "A new {{movement}} record {{when}}.",
     "lead_rest_lit": "Nothing today, and nothing lost: the flame holds until {{day}}.",
+    "lead_rest_dormant_one": "Nothing today. Your {{days}}-day flame is dormant.",
+    "lead_rest_dormant_other": "Nothing today. Your {{days}}-day flame is dormant.",
     "lead_rest_out_one": "Nothing today. {{count}} session in seven days lights the flame again.",
     "lead_rest_out_other": "Nothing today. {{count}} sessions in seven days light the flame again.",
     "lead_veteran_since": "Nothing has fallen since {{month}}.",
@@ -825,6 +829,8 @@
     "flame_lit_one": "day lit",
     "flame_lit_other": "days lit",
     "flame_best_now": "This is your best flame.",
+    "flame_dormant": "dormant",
+    "flame_dormant_note": "Every session or outing keeps it dormant.",
     "flame_best_ended_one": "Best flame: {{days}} day, ended {{date}}.",
     "flame_best_ended_other": "Best flame: {{days}} days, ended {{date}}.",
     "month_so_far": "{{month}} so far",
@@ -1037,27 +1043,27 @@
       },
       "streak_3": {
         "title": "Sprouting",
-        "description": "Keep your flame lit for 3 days"
+        "description": "Collect 3 days of flame"
       },
       "streak_7": {
         "title": "Weekly Warrior",
-        "description": "Keep your flame lit for 7 days"
+        "description": "Collect 7 days of flame"
       },
       "streak_14": {
         "title": "Two Week Wonder",
-        "description": "Keep your flame lit for 14 days"
+        "description": "Collect 14 days of flame"
       },
       "streak_30": {
         "title": "Monthly Master",
-        "description": "Keep your flame lit for 30 days"
+        "description": "Collect 30 days of flame"
       },
       "streak_60": {
         "title": "Unstoppable",
-        "description": "Keep your flame lit for 60 days"
+        "description": "Collect 60 days of flame"
       },
       "streak_100": {
         "title": "Centurion",
-        "description": "Keep your flame lit for 100 days"
+        "description": "Collect 100 days of flame"
       },
       "xp_100": {
         "title": "XP Hunter",

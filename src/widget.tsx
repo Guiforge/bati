@@ -71,35 +71,48 @@ const numberStyle = (k: number) =>
 // Ceiling: these strings appearing anywhere else — then move them to locales/.
 // `few` and `many` for a language that has them: the rule picks, and `other` stands in.
 type Unit = { one: string; other: string } & Partial<Record<PluralCategory, string>>;
-type WidgetStrings = { flame: string; days: Unit; week: string; sessions: Unit };
+// `dormant` is one plain label, not a plural: it sits under the count of a sleeping flame, and
+// each word is short enough for a 110 dp cell.
+type WidgetStrings = {
+  flame: string;
+  days: Unit;
+  dormant: string;
+  week: string;
+  sessions: Unit;
+};
 const STRINGS: Localized<WidgetStrings> = {
   fr: {
     flame: "FLAMME",
     days: { one: "jour", other: "jours" },
+    dormant: "en veille",
     week: "SEMAINE",
     sessions: { one: "séance", other: "séances" },
   },
   en: {
     flame: "FLAME",
     days: { one: "day", other: "days" },
+    dormant: "dormant",
     week: "WEEK",
     sessions: { one: "session", other: "sessions" },
   },
   de: {
     flame: "FLAMME",
     days: { one: "Tag", other: "Tage" },
+    dormant: "in Ruhe",
     week: "WOCHE",
     sessions: { one: "Einheit", other: "Einheiten" },
   },
   es: {
     flame: "LLAMA",
     days: { one: "día", other: "días" },
+    dormant: "en reposo",
     week: "SEMANA",
     sessions: { one: "sesión", other: "sesiones" },
   },
   ru: {
     flame: "ПЛАМЯ",
     days: { one: "день", few: "дня", many: "дней", other: "дней" },
+    dormant: "в покое",
     week: "НЕДЕЛЯ",
     sessions: { one: "тренировка", few: "тренировки", many: "тренировок", other: "тренировок" },
   },
@@ -112,7 +125,12 @@ type Lang = AppLanguage;
  * rather than `Intl.PluralRules`: Hermes has no PluralRules, and the call threw in the headless
  * task. The counts here are whole and never negative, which is all these rules need.
  */
-export function widgetUnit(lang: Lang, unit: "days" | "sessions", count: number | null): string {
+export function widgetUnit(
+  lang: Lang,
+  unit: "days" | "sessions" | "dormant",
+  count: number | null,
+): string {
+  if (unit === "dormant") return STRINGS[lang].dormant;
   const forms = STRINGS[lang][unit];
   return forms[pluralCategory(lang, count)] ?? forms.other;
 }
@@ -130,17 +148,33 @@ async function getLang(): Promise<Lang> {
 // rn_widget placeholder the OS shows when the task handler's promise rejects, and the next
 // update tick self-heals.
 
+/**
+ * What the flame cell shows: a sleeping count wins over the lit one (which is 0 then), under its
+ * own label. One function for both render sites, so the headless task and the update poke cannot
+ * disagree about which number is on the widget.
+ */
+function flameCell({ current, dormant }: { current: number; dormant: number }) {
+  // The level dots stay on `current`, which is 0 while the flame sleeps: they are lit or they are not.
+  return {
+    streak: dormant > 0 ? dormant : current,
+    flameLevel: getFlameLevel(current),
+    asleep: dormant > 0,
+  };
+}
+
 // Drawn by a headless Android task, never mounted in the React tree, so Fast Refresh has
 // nothing to refresh here — the render sites below are the only consumers.
 // biome-ignore lint/style/useComponentExportOnlyModules: headless widget task, not a screen
 function FlameWidget({
   streak,
   flameLevel,
+  asleep = false,
   lang,
   size,
 }: {
   streak: number | null;
   flameLevel: FlameLevel;
+  asleep?: boolean;
   lang: Lang;
   size: CellSize;
 }) {
@@ -156,7 +190,10 @@ function FlameWidget({
         text={`🔥 ${streak === null ? "–" : formatCount(lang, streak)}`}
         style={numberStyle(k)}
       />
-      <TextWidget text={widgetUnit(lang, "days", streak)} style={unitStyle(k)} />
+      <TextWidget
+        text={widgetUnit(lang, asleep ? "dormant" : "days", streak)}
+        style={unitStyle(k)}
+      />
       <FlexWidget style={{ flexDirection: "row", flexGap: 4 * k, marginTop: 8 * k }}>
         {([0, 1, 2, 3, 4] as const).map((i) => (
           <FlexWidget
@@ -238,10 +275,8 @@ function WeeklyWidget({
 }
 
 async function renderFlame(renderWidget: WidgetTaskHandlerProps["renderWidget"], size: CellSize) {
-  const [{ current }, lang] = await Promise.all([getStreakInfo(), getLang()]);
-  renderWidget(
-    <FlameWidget streak={current} flameLevel={getFlameLevel(current)} lang={lang} size={size} />,
-  );
+  const [info, lang] = await Promise.all([getStreakInfo(), getLang()]);
+  renderWidget(<FlameWidget {...flameCell(info)} lang={lang} size={size} />);
 }
 
 async function renderWeekly(renderWidget: WidgetTaskHandlerProps["renderWidget"], size: CellSize) {
@@ -296,7 +331,7 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<
  */
 export async function requestWidgetsUpdate(): Promise<void> {
   if (Platform.OS !== "android") return;
-  const [{ current }, weekly, lang] = await Promise.all([
+  const [streak, weekly, lang] = await Promise.all([
     getStreakInfo(),
     getWeeklyProgress(),
     getLang(),
@@ -304,9 +339,7 @@ export async function requestWidgetsUpdate(): Promise<void> {
   await Promise.all([
     requestWidgetUpdate({
       widgetName: "Flame",
-      renderWidget: (info) => (
-        <FlameWidget streak={current} flameLevel={getFlameLevel(current)} lang={lang} size={info} />
-      ),
+      renderWidget: (info) => <FlameWidget {...flameCell(streak)} lang={lang} size={info} />,
     }),
     requestWidgetUpdate({
       widgetName: "Weekly",

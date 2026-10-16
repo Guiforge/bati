@@ -238,6 +238,29 @@ blank weeks put it out.
 | 30+ | 🔥🔥🔥🔥 Inferno |
 | 100+ | ✨🔥✨ Eternal |
 
+### The flame sleeps, it does not fall to zero
+
+An unlit day no longer resets the count. `walkFlame` (`db/streaks.ts`) keeps an `idle` counter: the
+unlit days **with no session** in a row. The count only goes at `FLAME_DORMANT_DAYS` (56), which is
+eight weeks for a hero coming back under their quota and about ten from the last session for one who
+stops dead (the flame stays lit fourteen days after a week at quota). **Any session that counts
+resets `idle`**, even one that does not relight the flame, so a hero who comes back once a week keeps
+their count as long as they come. The days of the gap are never counted: 100 days of flame are
+100 lit days, which is also why the Eternal flame can stretch over more than 100 calendar days.
+
+While it sleeps `current` stays 0 (so `isActive`, the village fire and `litUntil` do not move) and
+`dormant` carries the count. The Journal shows it as "45 dormant", the widget as "🔥 45" over
+"en veille". The relighting is measured at the hero's own quota, oath included; raising the quota
+by an oath recounts the whole journal at it, and the oath screen says so before the tap. `best`
+bridges the same gaps, and there are still two of them: at the hero's quota (Journal,
+achievements, the `streak` oath) and at the baseline of 2 (the crest, which never loses a band).
+No delay or countdown is shown anywhere, and no lower comeback rule exists yet (the grid's line 5
+stays at 1).
+
+`FLAME_PIVOT` (`constants/flame.ts`) is the date of the release that shipped this: a gap is only
+bridged if the day that relights it is after it, and a hero out at the update reads `dormant` from
+the first launch. Gaps already closed before it stay breaks, so no past `current` or `best` moves.
+
 ### The quota is the hero's own promise
 
 Without an oath the bar sits at the WHO baseline, **2 sessions a week**, so someone who has sworn

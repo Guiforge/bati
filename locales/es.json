@@ -113,6 +113,9 @@
     "metric_streak_other": "Una llama de {{count, number}} días",
     "preset_lsit_30": "L-Sit de {{count, number}} s",
     "preset_standing": "Vas por {{current, number}} / {{target, number}}",
+    "flame_recount_one": "Tu llama se recontará con {{count}} sesión por semana.",
+    "flame_recount_many": "Tu llama se recontará con {{count}} sesiones por semana.",
+    "flame_recount_other": "Tu llama se recontará con {{count}} sesiones por semana.",
     "presets_title": "JURAMENTOS PREDEFINIDOS",
     "custom_toggle": "Juramento personalizado",
     "empty_cta": "Hacer un juramento",
@@ -826,6 +829,9 @@
     "lead_nothing_month": "Todavía no has entrenado en {{month}}.",
     "lead_record": "Nuevo récord {{when}} en {{movement}}.",
     "lead_rest_lit": "Nada hoy, y nada perdido: la llama aguanta hasta {{day}}.",
+    "lead_rest_dormant_one": "Nada hoy. Tu llama de {{days}} día está en reposo.",
+    "lead_rest_dormant_many": "Nada hoy. Tu llama de {{days}} días está en reposo.",
+    "lead_rest_dormant_other": "Nada hoy. Tu llama de {{days}} días está en reposo.",
     "lead_rest_out_one": "Nada hoy. {{count}} sesión en siete días vuelve a encender la llama.",
     "lead_rest_out_many": "Nada hoy. {{count}} sesiones en siete días vuelven a encender la llama.",
     "lead_rest_out_other": "Nada hoy. {{count}} sesiones en siete días vuelven a encender la llama.",
@@ -856,6 +862,8 @@
     "flame_lit_many": "días de llama",
     "flame_lit_other": "días de llama",
     "flame_best_now": "Es tu mejor llama.",
+    "flame_dormant": "en reposo",
+    "flame_dormant_note": "Cada sesión o salida la mantiene en reposo.",
     "flame_best_ended_one": "Mejor llama: {{days}} día (terminó el {{date}}).",
     "flame_best_ended_many": "Mejor llama: {{days}} días (terminó el {{date}}).",
     "flame_best_ended_other": "Mejor llama: {{days}} días (terminó el {{date}}).",
@@ -1094,27 +1102,27 @@
       },
       "streak_3": {
         "title": "Brote",
-        "description": "Mantén tu llama encendida 3 días"
+        "description": "Acumula 3 días de llama"
       },
       "streak_7": {
         "title": "Guerrero semanal",
-        "description": "Mantén tu llama encendida 7 días"
+        "description": "Acumula 7 días de llama"
       },
       "streak_14": {
         "title": "Dos semanas de fuego",
-        "description": "Mantén tu llama encendida 14 días"
+        "description": "Acumula 14 días de llama"
       },
       "streak_30": {
         "title": "Maestro del mes",
-        "description": "Mantén tu llama encendida 30 días"
+        "description": "Acumula 30 días de llama"
       },
       "streak_60": {
         "title": "Imparable",
-        "description": "Mantén tu llama encendida 60 días"
+        "description": "Acumula 60 días de llama"
       },
       "streak_100": {
         "title": "Centurión",
-        "description": "Mantén tu llama encendida 100 días"
+        "description": "Acumula 100 días de llama"
       },
       "xp_100": {
         "title": "Cazador de XP",

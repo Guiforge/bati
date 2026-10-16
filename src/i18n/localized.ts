@@ -65,6 +65,7 @@ const CAPITALISED_NOUNS: Localized<boolean> = {
   de: true,
   es: false,
   ru: false,
+  zh: false,
 };
 
 /** A label written into the middle of a sentence, cased the way that language writes nouns. */

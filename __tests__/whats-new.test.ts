@@ -59,7 +59,7 @@ describe("hasUnseenNotes", () => {
 
 describe("releaseNotes", () => {
   test("every shipped language has this version's notes, one line per entry", () => {
-    for (const language of ["en", "fr", "de", "es"] as const) {
+    for (const language of ["en", "fr", "de", "es", "zh"] as const) {
       const notes = releaseNotes(language);
       expect(notes.length).toBeGreaterThan(0);
       // The store files are hard-wrapped; a line starting lower-case is a wrap left unjoined.

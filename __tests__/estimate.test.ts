@@ -99,7 +99,7 @@ describe("db/estimate", () => {
   // `journal.duration_m` while both functions here wrote "min" on every other surface, so a
   // German reader met two spellings of the same unit on one screen.
   it.each(APP_LANGUAGES)("writes the minute in %s", (language) => {
-    const word = { en: "min", fr: "min", de: "Min.", es: "min", ru: "мин" }[language];
+    const word = { en: "min", fr: "min", de: "Min.", es: "min", ru: "мин", zh: "分钟" }[language];
     expect(formatDurationEstimate(690, language)).toBe(`12 ${word}`);
     expect(formatDuration(720, language)).toBe(`12 ${word}`);
     expect(formatDuration(737, language)).toContain(`12 ${word} `);

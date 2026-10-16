@@ -11,7 +11,14 @@ jest.mock("expo-localization", () => ({
 const now = new Date(2026, 8, 15, 12);
 const entry = (over: Partial<WallEntry>): WallEntry => ({
   exerciseId: 1,
-  name: { en: "Push-ups", fr: "Pompes", de: "Liegestütze", es: "Flexiones", ru: "Push-ups" },
+  name: {
+    en: "Push-ups",
+    fr: "Pompes",
+    de: "Liegestütze",
+    es: "Flexiones",
+    ru: "Push-ups",
+    zh: "Push-ups",
+  },
   imagePath: "",
   type: "reps",
   perSide: false,

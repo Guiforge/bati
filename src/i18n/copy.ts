@@ -3,9 +3,43 @@ import en from "@/locales/en.json";
 import es from "@/locales/es.json";
 import fr from "@/locales/fr.json";
 import ru from "@/locales/ru.json";
+import zh from "@/locales/zh.json";
 import type { AppLanguage, Localized } from "./deviceLanguage";
 
 type Locale = typeof en;
+
+/**
+ * `Locale` as a file is allowed to hold it: every key of English, minus one relaxation. A plural
+ * family's `_one` form is optional, because which forms a language carries is the language's own:
+ * `Intl.PluralRules("zh")` answers `other` alone, so `zh.json` writes one string per counted key
+ * where English writes two, and holding the file to English's forms would fail every build. Every
+ * other key stays required, so a key missing from a translation is still a compile error, and
+ * `__tests__/i18n-keys.test.ts` holds the families themselves: a family whose `_other` has no
+ * translation fails there.
+ */
+type PluralFormsOptional<T> = T extends string
+  ? T
+  : T extends readonly (infer Item)[]
+    ? PluralFormsOptional<Item>[]
+    : PluralFormsOptionalObject<T>;
+
+type PluralFormsOptionalObject<T> = {
+  // A `_one` whose `_other` sibling exists is a plural form: it moves to the optional half below.
+  [K in keyof T as K extends `${infer Base}_one`
+    ? `${Base}_other` extends keyof T
+      ? never
+      : K
+    : K]: PluralFormsOptional<T[K]>;
+} & {
+  [K in keyof T as K extends `${infer Base}_one`
+    ? `${Base}_other` extends keyof T
+      ? K
+      : never
+    : never]?: T[K];
+};
+
+/** A locale file: English's keys, with its plural forms left to each language. */
+export type LocaleFile = PluralFormsOptional<Locale>;
 
 /**
  * Every locale file, by language. Typed on `en.json`, so a key missing from another file is a
@@ -14,7 +48,7 @@ type Locale = typeof en;
  * Importing this module loads all of them. The home screen widget's headless task must never
  * reach it (`src/widget.tsx`), which `__tests__/widget.test.ts` holds.
  */
-export const LOCALES: Localized<Locale> = { en, fr, de, es, ru };
+export const LOCALES: Localized<LocaleFile> = { en, fr, de, es, ru, zh };
 
 /**
  * One value read out of every locale file at once.
@@ -24,7 +58,7 @@ export const LOCALES: Localized<Locale> = { en, fr, de, es, ru };
  * line from. They take the language as an argument because `i18n.language` is still the device's
  * at a cold start (`src/reminders.ts`), and reading the files directly is what keeps that true.
  */
-export function localized<T>(read: (locale: Locale) => T): Localized<T> {
+export function localized<T>(read: (locale: LocaleFile) => T): Localized<T> {
   // Over the files themselves, not `APP_LANGUAGES`: this runs as modules load, and a suite that
   // mocks `deviceLanguage` to pin the device's language hands back no list.
   return Object.fromEntries(
@@ -39,7 +73,7 @@ export function localized<T>(read: (locale: Locale) => T): Localized<T> {
  * entry in `en.json` then fails to compile, as it did when these tables were written in the code.
  */
 export function localizedTable<K extends string, T>(
-  read: (locale: Locale) => Record<K, T>,
+  read: (locale: LocaleFile) => Record<K, T>,
 ): Record<K, Localized<T>> {
   const codes = Object.keys(read(en)) as K[];
   return Object.fromEntries(

@@ -78,6 +78,7 @@ const nameOf = (r: {
   de: r.deName,
   es: r.esName,
   ru: r.ruName,
+  zh: r.zhName,
 });
 
 /** A left-joined exercise: all four names, or none. */
@@ -90,7 +91,14 @@ const joinedName = (r: {
 }): Localized | null =>
   r.enName == null
     ? null
-    : { en: r.enName, fr: r.frName ?? "", de: r.deName ?? "", es: r.esName ?? "", ru: r.enName };
+    : {
+        en: r.enName,
+        fr: r.frName ?? "",
+        de: r.deName ?? "",
+        es: r.esName ?? "",
+        ru: r.enName,
+        zh: r.enName,
+      };
 
 const titleOf = (r: {
   enTitle: string | null;
@@ -107,6 +115,7 @@ const titleOf = (r: {
         de: r.deTitle ?? "",
         es: r.esTitle ?? "",
         ru: r.ruTitle ?? "",
+        zh: r.zhTitle ?? "",
       };
 
 // ------------------------------------------------------------
@@ -621,7 +630,14 @@ export async function getBossKills(): Promise<BossKill[]> {
         title: bossLocalizedName(
           run.bossImagePath ?? run.imagePath,
           runs.filter((r) => r.adventureId === run.adventureId && r.runId < run.runId).length,
-          { en: run.enTitle, fr: run.frTitle, de: run.deTitle, es: run.esTitle, ru: run.enTitle },
+          {
+            en: run.enTitle,
+            fr: run.frTitle,
+            de: run.deTitle,
+            es: run.esTitle,
+            ru: run.enTitle,
+            zh: run.enTitle,
+          },
         ),
         imagePath: run.bossImagePath ?? run.imagePath,
         felledAt: run.finishedAt,
@@ -1077,6 +1093,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
         de: a.deTitle,
         es: a.esTitle,
         ru: a.ruTitle,
+        zh: a.zhTitle,
       }),
       imagePath: a.bossImagePath ?? a.imagePath,
     }));
@@ -1206,13 +1223,14 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
   return {
     adventureId: step.adventureId,
     title: bossName
-      ? { en: bossName, fr: bossName, de: bossName, es: bossName, ru: bossName }
+      ? { en: bossName, fr: bossName, de: bossName, es: bossName, ru: bossName, zh: bossName }
       : bossLocalizedName(bossImagePath, foughtAtTier, {
           en: step.enTitle,
           fr: step.frTitle,
           de: step.deTitle,
           es: step.esTitle,
           ru: step.ruTitle,
+          zh: step.zhTitle,
         }),
     bossImagePath,
     bossArt: parseBossArt(hero?.artJson),

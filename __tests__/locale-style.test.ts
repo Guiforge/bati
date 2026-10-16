@@ -129,7 +129,7 @@ function offenders(file: string, predicate: (value: string) => boolean): string[
 }
 
 describe("locale typography", () => {
-  it.each(["fr.json", "en.json", "de.json", "es.json", "ru.json"])(
+  it.each(["fr.json", "en.json", "de.json", "es.json", "ru.json", "zh.json"])(
     "%s never uses the curly apostrophe",
     (file) => {
       expect(offenders(file, (v) => v.includes(BANNED_APOSTROPHE))).toEqual([]);
@@ -143,7 +143,7 @@ describe("locale typography", () => {
     expect(fs.readFileSync(path.join(LOCALES, file), "utf8")).toContain(APOSTROPHE);
   });
 
-  it.each(["fr.json", "en.json", "de.json", "es.json", "ru.json"])(
+  it.each(["fr.json", "en.json", "de.json", "es.json", "ru.json", "zh.json"])(
     "%s spells an ellipsis with one character",
     (file) => {
       expect(offenders(file, (v) => v.includes("..."))).toEqual([]);
@@ -154,9 +154,14 @@ describe("locale typography", () => {
   // no "is" to carry the sentence, and the 1956 punctuation rules (§ 164) require the dash between
   // a noun subject and a noun predicate. Banning it there would ban the grammar, not a habit. The
   // ban still covers the Russian of the store listing and of `locales/native/`: none of it needs one.
-  it.each(["fr.json", "en.json", "de.json", "es.json"])("%s uses no em dash at all", (file) => {
-    expect(offenders(file, (v) => v.includes(EM_DASH))).toEqual([]);
-  });
+  // Chinese is on the list: the em dash pair (——) is as much a tic there as anywhere else, and a
+  // comma, a colon or a full stop does the same work.
+  it.each(["fr.json", "en.json", "de.json", "es.json", "zh.json"])(
+    "%s uses no em dash at all",
+    (file) => {
+      expect(offenders(file, (v) => v.includes(EM_DASH))).toEqual([]);
+    },
+  );
 
   /**
    * The hero has no fixed gender, and Spanish agrees its adjectives. "¡Bienvenido!", "Estoy listo",

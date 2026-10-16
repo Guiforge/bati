@@ -15,13 +15,13 @@ WAS DICH ERWARTET
 • Erinnerungen: an den Tagen, die du wählst, auf dem Handy geplant, ohne Server
 • Sicherungen: als Datei oder automatisch in einen Ordner deiner Wahl, auf Wunsch verschlüsselt
 • Synchronisierung: ein Held auf mehreren Handys
-• Fünf Sprachen: Deutsch, Englisch, Französisch, Spanisch, Russisch
+• Sechs Sprachen: Deutsch, Englisch, Französisch, Spanisch, Russisch, Chinesisch
 • Ein Tagebuch: Verlauf, Rekorde, deine Flamme, Muskelgleichgewicht
 
 DEIN TRAINING BLEIBT AUF DEINEM HANDY
-Kein Konto. Keine Registrierung. Kein Server von uns. Keine Analyse, keine Werbung, kein Tracking. Deine Einheiten, deine Rekorde und die GPS-Spur einer Tour liegen in einer Datenbank auf deinem Gerät. Die Systemsicherung deines Handys kann sie mitnehmen, und du kannst das abschalten. Wer die App deinstalliert, löscht sie vom Handy, nicht die Kopien, die du anderswo angelegt hast.
+Kein Konto. Keine Registrierung. Kein Server von uns. Keine Analyse, keine Werbung, kein Tracking. Deine Einheiten, deine Rekorde und die GPS-Spur einer Tour liegen in einer Datenbank auf deinem Gerät. Die Systemsicherung deines Handys kann sie mitnehmen, und du kannst das abschalten. Deinstallieren löscht sie vom Handy, nicht die Kopien, die du anderswo angelegt hast.
 
-Drei Funktionen nutzen das Netz, jede hinter einem eigenen Schalter in den Einstellungen, und alle drei sind anfangs aus:
+Drei Funktionen nutzen das Netz, jede hinter einem eigenen Schalter in den Einstellungen, alle drei anfangs aus:
 • Die Karte hinter der Route einer Tour. Das Handy fragt OpenFreeMap (OpenStreetMap-Daten, von tiles.openfreemap.org) nach Kacheln rund um deinen Weg. Das verrät dem Dienst ungefähr, wo du warst, mit deiner IP-Adresse und der Uhrzeit. Ausgeschaltet wird die Route auf einem schlichten Hintergrund gezeichnet.
 • Nach Updates suchen. Einmal am Tag fragt die App api.github.com, ob es eine neuere Version gibt. Keine Kennung wird gesendet, nichts wird heruntergeladen.
 • Geräte-Synchronisierung. Dein Verlauf, auf dem Handy verschlüsselt (AES-256-GCM), geht an einen WebDAV- oder Nextcloud-Server deiner Wahl, der ihn nicht lesen kann. Oder in einen Ordner, den Syncthing abgleicht, und Bati stellt dann gar keine Anfrage.

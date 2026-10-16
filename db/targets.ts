@@ -180,20 +180,35 @@ export function retargetForMovement(
  * A session's or an outing's length is not a hold and keeps `formatDuration` ("15 min", in
  * `db/estimate.ts`), which borrows `SECONDS_SUFFIX` so the two agree on the space.
  */
-const REPS_WORD: Localized = { en: "reps", fr: "reps", de: "Wdh.", es: "reps", ru: "повт." };
+const REPS_WORD: Localized = {
+  en: "reps",
+  fr: "reps",
+  de: "Wdh.",
+  es: "reps",
+  ru: "повт.",
+  zh: "次",
+};
 export const SECONDS_SUFFIX: Localized = {
   en: "s",
   fr: "\u00a0s",
   de: "\u00a0s",
   es: "\u00a0s",
   ru: "\u00a0с",
+  zh: "秒",
 };
 /**
  * The minute word, for the two functions in `db/estimate.ts` that write one. German abbreviates
  * with a full stop, which `journal.duration_m` has said since the locales were written while the
  * code beside it wrote "min" on every surface outside the Journal.
  */
-export const MINUTES_WORD: Localized = { en: "min", fr: "min", de: "Min.", es: "min", ru: "мин" };
+export const MINUTES_WORD: Localized = {
+  en: "min",
+  fr: "min",
+  de: "Min.",
+  es: "min",
+  ru: "мин",
+  zh: "分钟",
+};
 
 // Built once per language: Intl constructors are among the costliest calls on Hermes (see
 // constants/dateFormatters.ts), and a ghost line formats on every render.
@@ -234,6 +249,7 @@ export const PER_SIDE: Localized = {
   de: "pro Seite",
   es: "por lado",
   ru: "на сторону",
+  zh: "每侧",
 };
 
 /**

@@ -33,6 +33,9 @@ const RULES: Localized<Rule> = {
     if (units === 1 && tens !== 11) return "one";
     return units >= 2 && units <= 4 && (tens < 12 || tens > 14) ? "few" : "many";
   },
+  // Chinese inflects nothing: CLDR gives it "other" alone, so a counted key is one string for
+  // every number, and `zh.json` carries only the `_other` form of each family.
+  zh: () => "other",
 };
 
 function ruleFor(lang: string): Rule {

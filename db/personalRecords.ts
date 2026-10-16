@@ -531,6 +531,7 @@ export async function getSessionStanding(
           de: row.deName,
           es: row.esName,
           ru: row.ruName,
+          zh: row.zhName,
         },
         type: row.type,
         perSide: row.perSide,
@@ -708,6 +709,7 @@ export async function checkForNewRecords(
           de: result.deName,
           es: result.esName,
           ru: result.ruName,
+          zh: result.zhName,
         },
         perSide: result.perSide,
       });

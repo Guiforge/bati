@@ -508,7 +508,6 @@
     "fight_target_changed_one": "Target changed: the boss counts up to {{count}} rep.",
     "fight_target_changed_other": "Target changed: the boss counts up to {{count}} reps.",
     "fight_target_changed_time": "Target changed: the boss counts up to {{seconds}} s.",
-    "crit_rule": "Critical hit: {{one}}% at one rep more, {{two}}% at two, no further.",
     "crit_rule_one": "Critical hit: {{one}}% at one rep more, no further.",
     "pain_rule": "Sharp pain? Stop there. Skipping costs nothing.",
     "pain_rule_last": "Sharp pain? Stop there.",

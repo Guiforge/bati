@@ -959,7 +959,6 @@
     "fight_target_changed_other": "Objectif modifié : le boss compte jusqu'à {{count}} répétitions.",
     "fight_target_changed_many": "Objectif modifié : le boss compte jusqu'à {{count}} répétitions.",
     "fight_target_changed_time": "Objectif modifié : le boss compte jusqu'à {{seconds}} s.",
-    "crit_rule": "Coup critique : {{one}} % à une répétition de plus, {{two}} % à deux, pas au-delà.",
     "crit_rule_one": "Coup critique : {{one}} % à une répétition de plus, pas au-delà.",
     "pain_rule": "Douleur vive ? Arrête-toi là. Passer ne coûte rien.",
     "pain_rule_last": "Douleur vive ? Arrête-toi là.",

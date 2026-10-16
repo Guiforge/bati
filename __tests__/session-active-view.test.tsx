@@ -229,6 +229,28 @@ describe("a boss that is already down", () => {
     expect(screen.queryByText(/is down\./)).toBeNull();
   });
 
+  test("in a fight the reserve line comes first and the crit rule under it", async () => {
+    await mount(fight(60));
+
+    const lines = screen.getAllByText(/left in the tank|Critical hit/);
+    expect(lines.map((l) => String(l.props.children))).toEqual([
+      "Stop with 1-2 reps left in the tank, not at failure.",
+      "Critical hit: 15% at one rep more, no further.",
+    ]);
+  });
+
+  test("a refused skip shows the pain rule alone, no reserve and no crit", async () => {
+    const [first] = quest.exercises;
+    assert(first);
+    await mount(fight(60), { ...quest, rounds: 1, exercises: [first] } as Quest);
+
+    await fireEvent.press(screen.getByTestId("session-skip-exercise"));
+
+    expect(screen.getByText("Sharp pain? Stop there.")).toBeTruthy();
+    expect(screen.queryByText(/left in the tank/)).toBeNull();
+    expect(screen.queryByText(/Critical hit/)).toBeNull();
+  });
+
   // The fight reads what the app prescribed, whatever the stepper says. Promising crit odds on
   // the hero's own number would be a line the roll does not keep, so it says the cap instead.
   test("a target the hero changed says where the boss stops counting", async () => {
@@ -241,6 +263,7 @@ describe("a boss that is already down", () => {
       screen.getByText(`Target changed: the boss counts up to ${prescribed + 2} reps.`),
     ).toBeTruthy();
     expect(screen.queryByText(/Critical hit/)).toBeNull();
+    expect(screen.getByText(/1-2 reps left in the tank/)).toBeTruthy();
   });
 });
 

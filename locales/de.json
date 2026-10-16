@@ -508,7 +508,6 @@
     "fight_target_changed_one": "Ziel geändert: Der Boss zählt bis {{count}} Wiederholung.",
     "fight_target_changed_other": "Ziel geändert: Der Boss zählt bis {{count}} Wiederholungen.",
     "fight_target_changed_time": "Ziel geändert: Der Boss zählt bis {{seconds}} s.",
-    "crit_rule": "Kritischer Treffer: {{one}} % bei einer Wiederholung mehr, {{two}} % bei zwei, nicht darüber.",
     "crit_rule_one": "Kritischer Treffer: {{one}} % bei einer Wiederholung mehr, nicht darüber.",
     "pain_rule": "Stechender Schmerz? Hör hier auf. Überspringen kostet nichts.",
     "pain_rule_last": "Stechender Schmerz? Hör hier auf.",

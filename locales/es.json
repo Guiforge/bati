@@ -525,7 +525,6 @@
     "fight_target_changed_other": "Objetivo cambiado: el jefe cuenta hasta {{count}} repeticiones.",
     "fight_target_changed_many": "Objetivo cambiado: el jefe cuenta hasta {{count}} repeticiones.",
     "fight_target_changed_time": "Objetivo cambiado: el jefe cuenta hasta {{seconds}} s.",
-    "crit_rule": "Golpe crítico: {{one}} % con una repetición más, {{two}} % con dos, no más allá.",
     "crit_rule_one": "Golpe crítico: {{one}} % con una repetición más, no más allá.",
     "pain_rule": "¿Dolor agudo? Para ahí. Saltar no cuesta nada.",
     "pain_rule_last": "¿Dolor agudo? Para ahí.",

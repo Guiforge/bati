@@ -214,6 +214,20 @@ describe("pause and zone", () => {
         expect(back?.targets).toEqual({ [slot]: 20 });
       });
 
+      test("a target set during a zone on a spared written slot never reaches the hidden movement", async () => {
+        const { questId, slot } = pushSlot();
+        await cfg().saveQuestConfig(questId, { level: "medium", targets: { [slot]: 20 } });
+        await startZoneAt(["shoulder"], 1);
+        const shown = await cfg().getQuestConfig(questId);
+        await cfg().saveQuestConfig(questId, {
+          ...shown,
+          level: "medium",
+          targets: { [slot]: 15 },
+        });
+        afterZone();
+        expect((await cfg().getQuestConfig(questId))?.targets).toEqual({ [slot]: 20 });
+      });
+
       test("a reset during a zone is not undone when it ends", async () => {
         const { questId, slot } = pushSlot();
         await cfg().saveQuestConfig(questId, { level: "medium", targets: { [slot]: 20 } });

@@ -224,12 +224,20 @@ async function zoneHiding() {
 
 type Hiding = NonNullable<Awaited<ReturnType<typeof zoneHiding>>>;
 
-function partition(config: QuestConfig, { spared, writtenBy }: Hiding) {
+/** Whether a zone hides this slot: its swap is spared, or it has none and what it writes is. */
+function slotHidden(
+  swaps: Record<string, number> | undefined,
+  { spared, writtenBy }: Hiding,
+  slot: string,
+) {
+  const swapped = swaps?.[slot];
+  return swapped === undefined ? spared.has(writtenBy.get(slot) ?? -1) : spared.has(swapped);
+}
+
+function partition(config: QuestConfig, hiding: Hiding) {
+  const { spared } = hiding;
   const swaps = config.swaps ?? {};
-  const hiddenSlot = (slot: string) => {
-    const swapped = swaps[slot];
-    return swapped === undefined ? spared.has(writtenBy.get(slot) ?? -1) : spared.has(swapped);
-  };
+  const hiddenSlot = (slot: string) => slotHidden(swaps, hiding, slot);
   const pick = (entries: Record<string, number> | undefined, hide: (key: string) => boolean) => {
     const shown: Record<string, number> = {};
     const hidden: Record<string, number> = {};
@@ -279,28 +287,24 @@ export async function saveQuestConfig(
   const hide = options?.raw ? null : await zoneHiding();
   const stored = hide ? await getQuestConfig(questId, { raw: true }) : null;
   const { hidden } = stored && hide ? partition(stored, hide) : { hidden: null };
-  // One rule: a slot whose swap stays hidden keeps its hidden target and takes none from what was
-  // saved, since the target on screen was set for the movement shown, not the one swapped away.
-  // A hidden target elsewhere comes back unless the saved config swaps that slot itself.
-  // ponytail: a target tuned during a zone on the shown movement of such a slot does not survive
-  // the reload (it never did, the reader hides it); keeping it would need a second store.
-  const next = hidden
-    ? (() => {
-        const keptSwap = (slot: string) =>
-          options?.replace !== "all" &&
-          hidden.swaps[slot] !== undefined &&
-          config.swaps?.[slot] === undefined;
-        const own = Object.entries(config.targets ?? {}).filter(([slot]) => !keptSwap(slot));
-        const back = options?.replace
-          ? []
-          : Object.entries(hidden.targets).filter(([slot]) => config.swaps?.[slot] === undefined);
-        return {
-          ...config,
-          swaps: options?.replace === "all" ? config.swaps : { ...hidden.swaps, ...config.swaps },
-          targets: Object.fromEntries([...back, ...own]),
-        };
-      })()
-    : config;
+  // One rule: once the swaps are merged, a slot the zone hides takes its hidden target and none
+  // from what was saved, since the target on screen was set for the movement served, not the one
+  // hidden. Every other slot takes what was saved. `replace` lets the hidden targets go.
+  // ponytail: a target tuned during a zone on the served movement of a hidden slot does not
+  // survive the reload (the reader hides it); keeping it would need a second store.
+  const next =
+    hidden && hide
+      ? (() => {
+          const swaps =
+            options?.replace === "all" ? config.swaps : { ...hidden.swaps, ...config.swaps };
+          const kept = (slot: string) => slotHidden(swaps, hide, slot);
+          const own = Object.entries(config.targets ?? {}).filter(([slot]) => !kept(slot));
+          const back = options?.replace
+            ? []
+            : Object.entries(hidden.targets).filter(([slot]) => kept(slot));
+          return { ...config, swaps, targets: Object.fromEntries([...back, ...own]) };
+        })()
+      : config;
   await setPreference(configKey(questId), JSON.stringify(next));
 }
 

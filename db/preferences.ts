@@ -351,6 +351,22 @@ export const preferences = {
   },
 
   /**
+   * The rest between exercises the hero wants on every quest that has not been tuned on its own,
+   * or `null` for what each quest was written with. Raw: `db/quests.ts` clamps on write and is
+   * the only caller that reads it into a quest.
+   */
+  async getRestDefault(): Promise<number | null> {
+    const value = await getPreference("restDefault");
+    const n = value === null ? Number.NaN : Number(value);
+    return Number.isFinite(n) ? n : null;
+  },
+
+  async setRestDefault(seconds: number | null): Promise<void> {
+    if (seconds === null) await deletePreference("restDefault");
+    else await setPreference("restDefault", String(seconds));
+  },
+
+  /**
    * The Storage Access Framework tree the hero chose for automatic backups, or `null` when the
    * feature is off. Off is the only default: writing files into someone's storage is not
    * something an app gets to assume.

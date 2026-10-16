@@ -523,7 +523,11 @@ function templateSlot(r: {
 }
 
 /** A quest without its slots, from any row a `questColumns` read returned. */
-function questHead(r: QuestHeadRow): QuestHead {
+function questHead(r: QuestHeadRow, restDefault: number | null): QuestHead {
+  // The hero's global rest stands in for the template's, never for a quest they wrote, nor for one
+  // that has no rest (an outing). The round rest is pinned to what it was: with a null one, the
+  // session would fall back to `restSeconds` and the setting would move a rest it does not name.
+  const rest = restDefault !== null && !isUserQuest(r) && r.restSeconds > 0 ? restDefault : null;
   return {
     id: r.questId,
     uuid: r.uuid,
@@ -537,11 +541,20 @@ function questHead(r: QuestHeadRow): QuestHead {
     esDescription: r.esDescription,
     author: r.author,
     rounds: r.rounds,
-    restSeconds: r.restSeconds,
-    roundRestSeconds: r.roundRestSeconds,
+    restSeconds: rest ?? r.restSeconds,
+    roundRestSeconds: rest === null ? r.roundRestSeconds : (r.roundRestSeconds ?? r.restSeconds),
     archetype: r.archetype ?? null,
     imagePath: r.imagePath ?? "assets/placeholder.jpg",
   };
+}
+
+/**
+ * The hero's rest between exercises (Settings), or null to leave every quest as written. The one
+ * writer: it also drops the cached quests, which carry the number.
+ */
+export async function setRestDefault(seconds: number | null): Promise<void> {
+  await preferences.setRestDefault(seconds === null ? null : clampToRange(seconds, REST_RANGE));
+  invalidateQuestTemplates();
 }
 
 // The gallery is read far more often than it is written, so every screen that mounts it shares one
@@ -565,11 +578,12 @@ async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
     .leftJoin(questExercises, eq(questExercises.questId, quests.id))
     .orderBy(quests.id, questExercises.sortOrder);
 
+  const restDefault = await preferences.getRestDefault();
   const byId = new Map<number, QuestTemplate>();
 
   for (const r of rows) {
     if (!byId.has(r.questId)) {
-      byId.set(r.questId, { ...questHead(r), exercises: [] });
+      byId.set(r.questId, { ...questHead(r, restDefault), exercises: [] });
     }
 
     const slot = templateSlot(r);
@@ -604,7 +618,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
   if (!first) return null;
 
   const quest: QuestTemplate = {
-    ...questHead(first),
+    ...questHead(first, await preferences.getRestDefault()),
     exercises: [],
   };
 
@@ -1003,7 +1017,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     : {};
 
   const quest: Quest = {
-    ...questHead(first),
+    ...questHead(first, await preferences.getRestDefault()),
     exercises: [],
   };
 

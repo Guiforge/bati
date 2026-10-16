@@ -16,12 +16,7 @@ import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import { fade, rawColors } from "@/constants/rawColors";
-import {
-  CRIT_CHANCE_ONE_REP,
-  critChance,
-  DAMAGE_REPS_PAST_TARGET,
-  MAX_CRIT_CHANCE,
-} from "@/db/bossFights";
+import { CRIT_CHANCE_ONE_REP, DAMAGE_REPS_PAST_TARGET } from "@/db/bossFights";
 import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
@@ -916,31 +911,39 @@ export function ActiveExerciseView() {
                         {t("session.adjust_reps_hint")}
                       </Text>
                     )}
-                    {/* In a fight the ± control *is* the decision, so say what it buys: the whole
-                  rule, one rep or two and no further, rather than a percentage that climbed with
-                  every tap and paid for the reps the line below says to keep. Outside a fight,
-                  intensity as reps-in-reserve rather than "go to failure" — the safer and more
-                  teachable framing, and one the app can give as a cue instead of collecting as
-                  data. A target the hero changed still fights on the prescribed one, so the line
-                  says where the boss stops counting instead of promising odds on their number. */}
-                    <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                      {skipRefused
-                        ? t("session.pain_rule_last")
-                        : !fightLive
-                          ? t("session.reserve_hint")
-                          : targetChanged
-                            ? t("session.fight_target_changed", {
-                                count: prescribed + DAMAGE_REPS_PAST_TARGET,
-                              })
-                            : critChance(prescribed + 2, prescribed) === MAX_CRIT_CHANCE
-                              ? t("session.crit_rule", {
-                                  one: Math.round(CRIT_CHANCE_ONE_REP * 100),
-                                  two: Math.round(MAX_CRIT_CHANCE * 100),
+                    {/* In a fight the ± control *is* the decision, so say what it buys: the rule,
+                  one rep more and no further, rather than a percentage that climbed with every
+                  tap. The reserve line stays above it: the target is the middle of the quest's
+                  range, not a record, so "one more" only counts if it leaves margin, and the
+                  two read that way stacked. A refused skip keeps the pain rule alone. A target
+                  the hero changed still fights on the prescribed one, so the line says where the
+                  boss stops counting instead of promising odds on their number. */}
+                    {skipRefused ? (
+                      <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                        {t("session.pain_rule_last")}
+                      </Text>
+                    ) : (
+                      <>
+                        <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                          {t("session.reserve_hint")}
+                        </Text>
+                        {fightLive ? (
+                          <Text
+                            fontSize={12}
+                            color="$textSecondary"
+                            style={{ textAlign: "center" }}
+                          >
+                            {targetChanged
+                              ? t("session.fight_target_changed", {
+                                  count: prescribed + DAMAGE_REPS_PAST_TARGET,
                                 })
                               : t("session.crit_rule_one", {
                                   one: Math.round(CRIT_CHANCE_ONE_REP * 100),
                                 })}
-                    </Text>
+                          </Text>
+                        ) : null}
+                      </>
+                    )}
                   </YStack>
                 )}
               </YStack>

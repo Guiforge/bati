@@ -56,13 +56,13 @@ pool was re-tuned.
 ```ts
 extra  = resultValue − prescribed          // reps only: a hold never crits
 chance = extra <= 0 ? 0
-       : extra === 1 || prescribed < 8 ? 0.15   // CRIT_CHANCE_ONE_REP
-       : 0.30                                    // MAX_CRIT_CHANCE
+       : 0.15                                   // CRIT_CHANCE_ONE_REP
 ```
 
-One rep past the prescribed target is 15 %, two or more is 30 %, and nothing past the second rep
-adds to it. Under eight prescribed reps only the first counts: two extra on a target of five is
-40 % more work, on the hardest movements.
+One rep past the prescribed target is 15 %, for every target, and nothing past it adds to it.
+Before 2026-10 a second rep paid 30 % from a target of 8; it was dropped so the fight no longer
+pays for the second grinding rep (expected damage per set at +2 on 8 or more: 1.56 to 1.38 times
+the base). The two reps past the target still land on the boss (`DAMAGE_REPS_PAST_TARGET`).
 
 This is **the fight's only decision**, and it is deliberately the ± control the screen already had.
 The rule it replaced (2026-10) scaled with the overshoot, `min(0.5, overshoot × 1.5)`, on reps and
@@ -72,8 +72,10 @@ gone. It was relative, so "+2" was worth 50 % on a target of 6 and 20 % on 15, a
 was the one that critted. And it read the target the hero was *handed*: lowered to 1, two reps
 were a maximal crit.
 
-The line under the counter states the whole rule (`session.crit_rule`), from the same constants
-`computeDamage` rolls against. When the hero changed the target it says where the boss stops
+Under the counter, a live fight stacks two lines: `session.reserve_hint` first (the target reads no
+record, so "one more" only counts if it leaves margin), then the rule (`session.crit_rule_one`),
+from the same constant `computeDamage` rolls against. A refused skip shows `session.pain_rule_last`
+alone. When the hero changed the target it says where the boss stops
 counting instead (`session.fight_target_changed`); the crit itself is unchanged. A hold in a fight
 says "hold to the beep: the blow lands whole".
 

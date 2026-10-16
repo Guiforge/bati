@@ -91,14 +91,10 @@ export type BossDamageEntry = {
 export const CAMPAIGN_HP_FRACTION = 0.9;
 
 /**
- * Crit odds for one rep past the prescribed target, and for two. Also the ceiling: nothing past
- * the second rep adds to it.
+ * Crit odds as soon as a set beats its prescribed target by a rep. Also the ceiling: nothing past
+ * that rep adds to it, at any target.
  */
 export const CRIT_CHANCE_ONE_REP = 0.15;
-export const MAX_CRIT_CHANCE = 0.3;
-
-/** Under this many prescribed reps, a second extra rep is a big jump: only the first counts. */
-const SECOND_REP_COUNTS_FROM = 8;
 
 /** Reps past the prescribed target that still land on the boss. A hold lands none. */
 export const DAMAGE_REPS_PAST_TARGET = 2;
@@ -169,9 +165,7 @@ export function critChance(
   // growing, so the fight paid for the grinding reps the safety page says to leave in reserve.
   const extra = Math.floor(resultValue - prescribedValue);
   if (extra <= 0) return 0;
-  return extra === 1 || prescribedValue < SECOND_REP_COUNTS_FROM
-    ? CRIT_CHANCE_ONE_REP
-    : MAX_CRIT_CHANCE;
+  return CRIT_CHANCE_ONE_REP;
 }
 
 /**
@@ -299,7 +293,7 @@ export function computeDamage(fight: DamageableFight, params: DamageParams): Dam
   // The old rule asked that the target be met — but `adjustedReps` initialises to the target and a
   // time result is the elapsed timer, which reaches it. The condition held on essentially every
   // set, so crit was a flat 30 % coin flip that rewarded nothing and that nothing on screen
-  // explained. Now it has to be *exceeded*, by a rep or two and no further (`critChance`).
+  // explained. Now it has to be *exceeded*, by a rep and no further (`critChance`).
   const isCritical =
     params.forcedCritical ??
     Math.random() < critChance(params.resultValue, prescribed, params.targetType);

@@ -1113,6 +1113,9 @@ export async function writeQuestSlots(
   questId: number,
   next: readonly QuestSlotDraft[],
 ): Promise<void> {
+  // The slots belong to the quest row for sync: without a newer date here the other device
+  // keeps its copy of the old ones.
+  await exec.update(quests).set({ updatedAt: new Date() }).where(eq(quests.id, questId));
   await exec.delete(questExercises).where(eq(questExercises.questId, questId));
   if (next.length === 0) return;
   await exec.insert(questExercises).values(

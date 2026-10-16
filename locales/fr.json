@@ -304,7 +304,9 @@
     "title": "Crédits",
     "view_authors": "Voir les auteurs",
     "workout_guide": "workout-guide",
-    "workout_guide_subtitle": "Dessins de poses par Bryl Lim"
+    "workout_guide_subtitle": "Dessins de poses par Bryl Lim",
+    "licenses_title": "Licences open source",
+    "licenses_body": "Chaque bibliothèque livrée avec Bati, et la licence sous laquelle elle est publiée."
   },
   "dark": "Sombre",
   "errors": {

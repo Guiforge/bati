@@ -2,7 +2,7 @@
 title: Technical Architecture
 type: technical
 status: active
-updated: 2026-07-18
+updated: 2026-10-16
 related: [README.md, database-api.md, ../meta/wiki-protocol.md]
 sources: [package.json, app, components, db, stores, hooks, src, __tests__]
 ---
@@ -19,12 +19,12 @@ source from which progression systems are derived.
 
 | Layer | Current package/config | Purpose |
 | --- | --- | --- |
-| Framework | `expo` `~54.0.30`, React `19.1.0`, React Native `0.81.5` | Mobile app runtime |
-| Navigation | `expo-router` `~6.0.21` | File-based routes in `app/` |
-| UI | `tamagui` / `@tamagui/*` `^1.142.0` | Tokenized dark UI primitives |
-| State | `zustand` `^5.0.9` | Session, settings, and user state |
-| Database | `expo-sqlite` `~16.0.10`, `drizzle-orm` `^0.45.1` | Offline-first local persistence |
-| Localization | `i18next`, `react-i18next`, `expo-localization` | English/French UI and content |
+| Framework | `expo` `~57.0.30` (SDK 57), React `19.2.3`, React Native `0.86.3` | Mobile app runtime |
+| Navigation | `expo-router` `~57.0.28` | File-based routes in `app/` |
+| UI | `tamagui` / `@tamagui/*` `^2.7.7` | Tokenized dark UI primitives |
+| State | `zustand` `^5.0.15` | Session, settings, and user state |
+| Database | `expo-sqlite` `~57.0.4`, `drizzle-orm` `^0.45.3` | Offline-first local persistence |
+| Localization | `i18next`, `react-i18next`, `expo-localization` | English, French, German, Spanish and Russian UI and content (`locales/*.json`) |
 | Testing | `jest` + `jest-expo` | Unit/integration tests in `__tests__/` |
 | Formatting/checks | Biome + TypeScript | `npm run check` |
 
@@ -45,19 +45,15 @@ bati/
 │   ├── exercises/[id].tsx       # Exercise details
 │   ├── onboarding/              # First-run flow
 │   ├── session.tsx              # Active workout
-│   ├── goals.tsx                # Goal setup
-│   ├── schedule.tsx             # Weekly schedule/rest guidance
-│   ├── treasury.tsx             # Passive resource receipt
 │   ├── settings.tsx             # Preferences
-│   └── credits.tsx              # Attributions
+│   ├── credits.tsx              # Attributions
+│   └── licenses.tsx             # Open source licences (generated list)
 │
 ├── components/                  # Reusable and screen-specific UI
 │   ├── common/
 │   ├── home/
 │   ├── session/
 │   ├── journal/
-│   ├── goals/
-│   ├── scheduling/
 │   └── village/
 │
 ├── db/                          # Drizzle schema + domain APIs
@@ -68,8 +64,7 @@ bati/
 │   ├── bossFights.ts
 │   ├── completed.ts
 │   ├── exercises.ts
-│   ├── resources.ts
-│   ├── buildings.ts
+│   ├── village.ts
 │   ├── preferences.ts
 │   └── index.ts                 # Public DB barrel exports
 │
@@ -81,7 +76,7 @@ bati/
 ├── hooks/                       # Shared hooks
 ├── src/                         # Shared UI/i18n helpers
 ├── constants/                   # Static game/design data
-├── locales/                     # en/fr translations
+├── locales/                     # en, fr, de, es, ru translations
 ├── drizzle/                     # SQL migrations/seeds
 ├── docs/                        # LLM wiki / source-of-truth docs
 └── __tests__/                   # Jest tests
@@ -123,9 +118,10 @@ manual building management and the Treasury surface are **closed**, not deferred
 | `adventures`, `adventure_steps`, `adventure_runs`, `adventure_run_steps` | Campaign content and run progress |
 | `completed_sessions`, `completed_exercises` | Workout history and per-exercise results |
 | `boss_fights`, `boss_damage_log` | Boss HP and damage history |
+| `deleted_sessions` | Tombstones so sync does not resurrect a deleted session |
+| `gps_points` | Track points of an outing, keyed by session uuid |
 | `resource_inventory`, `resource_transactions` | Passive reward totals/logs |
 | `village_buildings`, `village_stats` | Village reward state/cache |
-| `goals`, `goal_progress`, `scheduled_sessions` | Planning and scheduling |
 
 ## Development commands
 
@@ -141,7 +137,7 @@ manual building management and the Treasury surface are **closed**, not deferred
 ## Testing
 
 Tests live in `__tests__/` and use `jest-expo`. Most current coverage is domain/database logic:
-quests, adventures, completed sessions, resources, scheduling, goals, achievements, XP, and related
+quests, adventures, completed sessions, sync merge, achievements, XP, and related
 helpers.
 
 ## Privacy and data boundaries

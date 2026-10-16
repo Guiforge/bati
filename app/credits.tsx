@@ -1,4 +1,5 @@
 import * as Linking from "expo-linking";
+import { useRouter } from "expo-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
@@ -7,7 +8,7 @@ import { Paragraph, Separator, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
-import { ExternalLink, ScrollText } from "@/components/icons";
+import { ChevronRight, ExternalLink, ScrollText } from "@/components/icons";
 
 type CreditLinkProps = {
   title: string;
@@ -39,6 +40,7 @@ function CreditLink({ title, subtitle, url, onPress }: CreditLinkProps) {
 export default function CreditsScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const openUrl = useCallback(async (url: string) => {
     try {
@@ -184,6 +186,19 @@ export default function CreditsScreen() {
             url="https://orm.drizzle.team"
             onPress={openUrl}
           />
+
+          <Separator />
+
+          <Card onPress={() => router.push("/licenses")} p="$3">
+            <XStack items="center" gap="$3">
+              <YStack flex={1}>
+                <Text fontSize="$4" fontWeight="700" color="$text">
+                  {t("credits.licenses_title")}
+                </Text>
+              </YStack>
+              <ChevronRight size={20} color="$textSecondary" />
+            </XStack>
+          </Card>
         </Card>
       </RNScrollView>
     </YStack>

@@ -117,7 +117,23 @@ describe("can()", () => {
     heroQuest("A", squat());
     heroQuest("B", squat());
     expect(await access().can({ kind: "createQuest" })).toBe(true);
-    for (let i = 0; i < 4; i++) heroQuest(`Out${i}`, walk());
+    for (let i = 0; i < 4; i++) {
+      await quests().createQuestFromOuting(
+        {
+          enTitle: `Out${i}`,
+          frTitle: `Out${i}`,
+          deTitle: `Out${i}`,
+          esTitle: `Out${i}`,
+          enDescription: "",
+          frDescription: "",
+          deDescription: "",
+          esDescription: "",
+          imagePath: null,
+          exercises: [{ exercise: { id: walk() } }],
+        },
+        1800,
+      );
+    }
     quests().invalidateQuestTemplates();
     expect(await access().countedHeroQuests()).toBe(2);
     expect(await access().can({ kind: "createQuest" })).toBe(true);

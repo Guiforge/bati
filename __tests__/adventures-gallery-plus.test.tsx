@@ -118,13 +118,22 @@ beforeEach(() => {
 
 test("locked adventures sit under the Bati+ header, after the free ones", async () => {
   mockLocked.mockResolvedValue(new Set([2, 3]));
-  const { findByText, getByText, queryByTestId } = await renderGallery();
+  const { findByText, getByText, queryByTestId, toJSON } = await renderGallery();
 
   expect(await findByText("With Bati+")).toBeTruthy();
   expect(getByText("2 more adventures with Bati+")).toBeTruthy();
   expect(getByText("Plus One")).toBeTruthy();
   expect(getByText("Free One")).toBeTruthy();
   expect(queryByTestId("adventures-plus-header")).toBeTruthy();
+  // Rendered order: the free card, then the header, then the Bati+ cards.
+  const dump = JSON.stringify(toJSON());
+  const at = (needle: string) => dump.indexOf(needle);
+  expect(at("Free One")).toBeGreaterThan(-1);
+  expect(at("Free One")).toBeLessThan(at("adventures-plus-header"));
+  expect(at("adventures-plus-header")).toBeLessThan(at("Plus One"));
+  expect(at("Plus One")).toBeLessThan(at("Plus Two"));
+  // No padlock: the Lucide Lock icon renders an svg with testID-less paths, so assert by name.
+  expect(dump).not.toMatch(/lock/i);
 });
 
 test("with nothing locked there is no header", async () => {

@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react";
 import { PanResponder, ScrollView } from "react-native";
 import { YStack } from "tamagui";
 import { useComebackCue, useScreenGuide } from "@/components/chorus/screenCues";
@@ -6,6 +7,8 @@ import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
 import { NoticeSlot } from "@/components/home/NoticeSlot";
 import { QuickActions } from "@/components/home/QuickActions";
+import { type Disclosure, disclosure } from "@/db/disclosure";
+import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 
 /**
  * THESIS: Home is the hero's HUD. One strip of status, one scene to walk into, one row of doors.
@@ -47,11 +50,17 @@ export default function HomeScreen() {
   useScreenGuide("guide_home");
   // Only fires after a real absence, and never mentions it. See components/chorus/screenCues.ts.
   useComebackCue();
+  // What the journal says Home may show yet, read once and handed down; null while it loads.
+  const [disclosed, setDisclosed] = useState<Disclosure | null>(null);
+  useReloadOnChange(
+    "home.disclosure",
+    useCallback(() => disclosure().then(setDisclosed), []),
+  );
 
   return (
     <YStack testID="home-screen" flex={1} bg="$background" {...dragCancelsPress}>
       {/* The whole top chrome: identity, level, XP, streak, village. Owns the top inset. */}
-      <HomeHeader />
+      <HomeHeader showLevel={disclosed?.level ?? null} />
       <VillagerLine owner="home" />
 
       {/* Grows to the viewport and scrolls only past it: the scene takes what the strip and the
@@ -67,10 +76,10 @@ export default function HomeScreen() {
         <NoticeSlot />
 
         {/* Tonight's scene, one action that starts it, the rest advice and the oath under it */}
-        <HomeStage />
+        <HomeStage oathStrip={disclosed?.oathStrip ?? null} />
 
         {/* The doors out, and the last quest again, in the thumb's reach */}
-        <QuickActions />
+        <QuickActions showGoals={disclosed?.outingGoals ?? null} />
       </ScrollView>
     </YStack>
   );

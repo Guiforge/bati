@@ -930,6 +930,31 @@ describe("the crest follows the journal, not the device", () => {
     expect(prefValue("bigFeastsShown")).toBe('["reveal"]');
   });
 
+  test("the release notes this phone showed are never carried, and never news", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "notesSeenVersion", "1.0.0", 100);
+    const file = await peer("notes.db", (sqlite) =>
+      setPref(sqlite, "notesSeenVersion", "2.0.0", 9_000),
+    );
+
+    expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
+    await merge().mergePeer(file);
+
+    expect(prefValue("notesSeenVersion")).toBe("1.0.0");
+  });
+
+  test("sessions that arrive from the other device open the Home as if logged here", async () => {
+    const file = await peer("three.db", (sqlite) => {
+      for (const at of [1_000, 2_000, 3_000]) addSession(sqlite, at);
+    });
+    const { disclosure } = require("../db/disclosure") as typeof import("../db/disclosure");
+    expect(await disclosure()).toMatchObject({ level: false, oathStrip: false });
+
+    await merge().mergePeer(file);
+
+    expect(await disclosure()).toEqual({ level: true, outingGoals: true, oathStrip: true });
+  });
+
   function prefValue(key: string) {
     return (
       t.sqlite.prepare("SELECT value FROM user_preferences WHERE key = ?").get(key) as

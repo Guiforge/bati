@@ -125,8 +125,11 @@ function BandNotice({
  * to run before running it. The goal chip, or a long press on the tile, opens the same sheet the
  * quest screen uses and saves the answer there: the "Set up" toggle this replaced switched every
  * tile into an invisible mode, and it took five taps to leave with a number.
+ *
+ * `showGoals` is the journal's answer (`db/disclosure.ts`): the chips wait for the first victory,
+ * and a long press on the tile opens the goal sheet whatever it says. Null while it is read.
  */
-export function QuickActions() {
+export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
   const { t } = useTranslation();
   // The row runs to the physical screen edge: the tile that does not fit is cut by the screen,
   // which reads as "there is more", instead of in mid-air inside a margin. The inset comes back as
@@ -399,26 +402,28 @@ export function QuickActions() {
                   {name}
                 </Text>
                 {/* The goal, and the way to change it: 20 dp tall, 44 with its slop. */}
-                <XStack
-                  self="flex-start"
-                  height={20}
-                  px={7}
-                  gap={4}
-                  items="center"
-                  rounded={10}
-                  borderWidth={1}
-                  borderColor="$borderStrong"
-                  hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
-                  onPress={() => setGoalFor(quest.id)}
-                  pressStyle={{ opacity: 0.7 }}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("home.goal_a11y", { quest: name, goal: label })}
-                >
-                  <SlidersHorizontal size={10} color="$textSecondary" />
-                  <Text fontSize={10} fontWeight="700" color="$textSecondary">
-                    {label}
-                  </Text>
-                </XStack>
+                {showGoals ? (
+                  <XStack
+                    self="flex-start"
+                    height={20}
+                    px={7}
+                    gap={4}
+                    items="center"
+                    rounded={10}
+                    borderWidth={1}
+                    borderColor="$borderStrong"
+                    hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+                    onPress={() => setGoalFor(quest.id)}
+                    pressStyle={{ opacity: 0.7 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("home.goal_a11y", { quest: name, goal: label })}
+                  >
+                    <SlidersHorizontal size={10} color="$textSecondary" />
+                    <Text fontSize={10} fontWeight="700" color="$textSecondary">
+                      {label}
+                    </Text>
+                  </XStack>
+                ) : null}
               </YStack>
             </YStack>
           );

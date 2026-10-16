@@ -87,7 +87,16 @@ function StageAction({
   );
 }
 
-export function HomeStage() {
+function StageOath({ oathStrip }: { oathStrip: boolean | null }) {
+  return oathStrip === null ? <YStack minH={44} /> : <OathStrip swornOnly={!oathStrip} />;
+}
+
+/**
+ * `oathStrip` is the journal's answer (`db/disclosure.ts`): from the third session the strip also
+ * invites to swear, before that it shows only an oath already sworn. Null while it is read: the
+ * strip's height is held, nothing is asserted.
+ */
+export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
   const router = useRouter();
   const { t } = useTranslation();
   const { config, isLoading } = useSmartAction();
@@ -235,7 +244,7 @@ export function HomeStage() {
         <RestNote />
 
         <YStack mt="$3">
-          <OathStrip />
+          <StageOath oathStrip={oathStrip} />
         </YStack>
       </YStack>
 

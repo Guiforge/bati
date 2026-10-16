@@ -37,7 +37,7 @@ jest.mock("@/hooks/useReloadOnChange", () => ({
   },
 }));
 
-function mount() {
+function mount(showLevel: boolean | null = true) {
   return render(
     <SafeAreaProvider
       initialMetrics={{
@@ -46,7 +46,7 @@ function mount() {
       }}
     >
       <TamaguiProvider config={config} defaultTheme="dark">
-        <HomeHeader />
+        <HomeHeader showLevel={showLevel} />
       </TamaguiProvider>
     </SafeAreaProvider>,
   );
@@ -74,5 +74,13 @@ describe("HomeHeader", () => {
     const view = await mount();
     const xp = await view.findByText(/10.*100/);
     expect(StyleSheet.flatten(xp.props.style).color).toBe(rawColors.resourceGold);
+  });
+
+  it("keeps the avatar and the crest but no level line or XP before the first victory", async () => {
+    const view = await mount(false);
+    await view.findByTestId("home-village-tier");
+    expect(view.queryByText(/45/)).toBeNull();
+    expect(view.queryByText(/10.*100/)).toBeNull();
+    expect(view.getByTestId("home-settings")).toBeTruthy();
   });
 });

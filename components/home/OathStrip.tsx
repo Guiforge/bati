@@ -135,8 +135,12 @@ function SwornStrip({ oath }: { oath: OathProgress }) {
  * When none is sworn it becomes the way to swear one, in the same place and at the same height:
  * this is the only entry to the feature from Home, so it must not hide, and an empty card the size
  * of the scene was too much for something half the heroes use once.
+ *
+ * `swornOnly` is Home before the third session (`db/disclosure.ts`): the invitation to swear waits,
+ * and a hero who already swore one (Settings has a door) keeps their strip. The Journal's own copy
+ * is never `swornOnly`, so the swear door stays one tab away.
  */
-export function OathStrip() {
+export function OathStrip({ swornOnly = false }: { swornOnly?: boolean }) {
   const { t } = useTranslation();
   const router = useRouter();
   const [oath, setOath] = useState<OathProgress | null>(null);
@@ -159,6 +163,7 @@ export function OathStrip() {
   );
 
   if (isLoading) return <YStack minH={STRIP_MIN_HEIGHT} />;
+  if (swornOnly && oath === null) return null;
 
   return (
     <XStack

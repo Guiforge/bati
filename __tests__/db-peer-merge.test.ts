@@ -1216,6 +1216,26 @@ test("two edits of one quest in the same second end on the larger content, which
   expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
 });
 
+test("same-second titles that differ by an emoji against a U+E000+ character converge, in SQLite's order", async () => {
+  heroQuest(t.sqlite, "Porch forge", 100, U1);
+  const file = await peer("tablet.db", (sqlite) => {
+    sqlite
+      .prepare("UPDATE quests SET enTitle = ?, updatedAt = 200 WHERE uuid = ?")
+      .run("Pompes \u{1F4AA}", U1);
+  });
+  t.sqlite
+    .prepare("UPDATE quests SET enTitle = ?, updatedAt = 200 WHERE uuid = ?")
+    .run("Pompes \uFF01", U1);
+
+  // UTF-8 bytes put the emoji above U+FF01; UTF-16 code units would say the opposite.
+  const lone = await backup().compareWithPeer(file);
+  expect([lone.peerChanges, lone.localChanges]).toEqual([1, 0]);
+  await merge().mergePeer(file);
+
+  expect(heroQuests()).toEqual([{ enTitle: "Pompes \u{1F4AA}", uuid: U1 }]);
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
+});
+
 test("two edits of a movement differing only in muscles converge on the larger muscles text", async () => {
   const id = heroMovement(t.sqlite, "Ring row", 100, U1);
   t.sqlite.prepare("INSERT INTO exercise_muscles (exerciseId, muscle) VALUES (?, 'arms')").run(id);

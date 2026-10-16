@@ -470,10 +470,14 @@ async function takesPeer(
 ): Promise<boolean> {
   const [theirs, ours] = [row.at ?? 0, local?.at ?? 0];
   if (theirs !== ours) return theirs > ours;
-  return (
-    (await canonicalOf(conn, PEER, spec, canon, row.id)) >
-    (await canonicalOf(conn, "main", spec, canon, localId))
+  // Compared by SQLite, as the comparison in backup.ts does: its BINARY order (UTF-8 bytes) is not
+  // the order of JS strings (UTF-16 units), and two devices must read one order.
+  const table = spec.table as "exercises" | "quests";
+  const r = await conn.getFirstAsync<{ r: number | null }>(
+    `SELECT ${canonical(PEER, table, "p", canon[table])} > ${canonical("main", table, "l", canon[table])} AS r
+      FROM ${PEER}.${table} p, main.${table} l WHERE p.id = ${row.id} AND l.id = ${localId}`,
   );
+  return r?.r === 1;
 }
 
 async function authoredColumns(conn: IsolatedConnection, spec: AuthoredSpec) {
@@ -497,21 +501,6 @@ async function insertPeerRow(
   await conn.execAsync(`INSERT INTO main.${spec.table} (${columnList(cols)})
     SELECT ${values} FROM ${PEER}.${spec.table} p WHERE p.id = ${peerId}`);
   return Number((await conn.getFirstAsync<{ id: number }>("SELECT last_insert_rowid() AS id"))?.id);
-}
-
-/** A row and its children as the text two same-second copies are ordered by (`canonical`). */
-async function canonicalOf(
-  conn: IsolatedConnection,
-  schema: string,
-  spec: AuthoredSpec,
-  canon: CanonicalColumns,
-  id: number,
-): Promise<string> {
-  const table = spec.table as "exercises" | "quests";
-  const row = await conn.getFirstAsync<{ text: string }>(
-    `SELECT ${canonical(schema, table, "r", canon[table])} AS text FROM ${schema}.${table} r WHERE r.id = ${id}`,
-  );
-  return row?.text ?? "";
 }
 
 /**

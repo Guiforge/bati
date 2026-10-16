@@ -261,6 +261,27 @@ stays at 1).
 bridged if the day that relights it is after it, and a hero out at the update reads `dormant` from
 the first launch. Gaps already closed before it stay breaks, so no past `current` or `best` moves.
 
+### A pause is a day the flame does not live
+
+Settings, "Pause and zone" (`app/pause.tsx`, `db/pause.ts`, M-04). The hero says the day they come
+back, up to 56 days. The list of pauses is the preference `pause_goal` (`constants/pause.ts`, never
+trimmed: the flame needs the past) and `flameTimeline` leaves a paused day out of the timeline
+altogether: it is neither lit nor idle, a "week" is seven days that are not paused, and the days
+either side of a pause touch. So the flame reads on the way back exactly as it did the day it
+stopped, a sleeping count is not eaten by the pause, and a session logged during one lands on the
+day before it. Reminders start on the return date (`planReminders` `pausedUntil`), the oath is not
+offered by Home or counted down in a notification (`isOathFrozen`), and the adventure has no clock to
+stop. Nothing is paid: a pause earns nothing and takes nothing.
+
+The second door, "I'm sparing a zone", changes nothing about the flame. One or two of the six muscle
+groups for one to eight weeks: every exercise that works them is set aside through
+`setExerciseAside` with `until` and `reason: "zone"`, which `getSetAsideExercises` stops returning
+at the end date, so they come back with no gesture. A hand set-aside made before stays, one made
+during makes the entry the hero's. A press counts as loading the shoulder whatever its muscle tags
+say, and a slot with no close substitute takes the nearest strength movement of another pattern
+(`setAsideReplacement`, `spared`). Joints are a second phase. Never advice: the screen points to
+Safety. On return there is no card of its own until the NoticeSlot (P-05) exists.
+
 ### The quota is the hero's own promise
 
 Without an oath the bar sits at the WHO baseline, **2 sessions a week**, so someone who has sworn

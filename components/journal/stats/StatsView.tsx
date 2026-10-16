@@ -33,11 +33,12 @@ import { dayKey } from "@/db/dates";
 import type { DayActivity, WallEntry } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/labels";
 import { behindMuscles } from "@/db/muscleBalance";
+import { STALE_RECORD_DAYS, toBeat } from "@/db/progress";
 import { formatCount, formatTargetValue, perSideLabel } from "@/db/targets";
 import { inSentence, localizedName, localizedTitle } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 import type { JournalStats } from "./useJournalStats";
-import { STALE_RECORD_DAYS, wallSub, wallTarget } from "./wall";
+import { wallSub } from "./wall";
 import { workVerdict } from "./workVerdict";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -215,7 +216,7 @@ export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
   const age = entry.recordAt ? ageOf(entry.recordAt, now).kind : null;
   // A record that fell today or yesterday is still news: ringed, and tagged.
   const fresh = age === "today" || age === "yesterday";
-  const target = wallTarget(entry, now);
+  const target = toBeat(entry, now);
   const sub = wallSub(t, language, entry, now);
   const recordSession = entry.recordSessionId;
   return (

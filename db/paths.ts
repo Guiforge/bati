@@ -51,7 +51,7 @@ export function readPath(chain: Chain, language: AppLanguage) {
     total,
     here,
     // Behind the hero, not the summit's `isEarned`: that one is windowed, and "climbed" would
-    // blink out eight weeks after the hero stopped repeating a summit they own (`rungsBehind`).
+    // blink out eight weeks after the hero stopped repeating a summit they own (`ladderPosition`).
     isClimbed: chain.climbed,
     /**
      * Whether `name` is a path's own name. When it is not, it is the movement's, and "Plank · Rung

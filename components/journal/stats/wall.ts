@@ -1,36 +1,11 @@
 import type { TFunction } from "i18next";
-import { ageOf, shortDate, targetToBeat } from "@/components/journal/journalFormat";
+import { ageOf, shortDate } from "@/components/journal/journalFormat";
 import type { WallEntry } from "@/db/journal";
+import { isOldRecord } from "@/db/progress";
 import { formatTargetValue } from "@/db/targets";
 import type { AppLanguage } from "@/stores/settings";
 
 /** The wall's arithmetic and its line of text, apart from the page so they can be checked alone. */
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-/** A record older than this is an old debt, and the wall says so. */
-export const STALE_RECORD_DAYS = 60;
-
-/**
- * Whether a record has aged past being tonight's target: set long ago, and not matched this
- * season. A record first reached ten months ago and equalled last week is still within reach.
- */
-function isOldRecord(entry: WallEntry, now: Date): boolean {
-  return (
-    entry.recordAt != null &&
-    now.getTime() - entry.recordAt.getTime() > STALE_RECORD_DAYS * DAY_MS &&
-    (entry.seasonBest == null || entry.best == null || entry.seasonBest < entry.best)
-  );
-}
-
-/**
- * The number that beats the row tonight. A recent record is beaten by one more. An old one is not a
- * target for tonight: its season's best is, or the last result when the season has none.
- */
-export function wallTarget(entry: WallEntry, now: Date): number {
-  if (entry.best == null) return targetToBeat(null);
-  if (!isOldRecord(entry, now)) return targetToBeat(entry.best);
-  return targetToBeat(entry.seasonBest ?? entry.last ?? entry.best);
-}
 
 /**
  * When a record fell, said the way its age calls for: "set yesterday", "7 months ago", or the date.

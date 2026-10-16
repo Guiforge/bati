@@ -71,7 +71,7 @@ Three rules make that measure honest:
 - **What is behind the hero stays there.** Where the hero *stands* is not windowed. A rung is
   behind them once it has been owned ever, or once any rung above it has been owned ever, or has
   one on-target session inside the window. The hero stands on the rung just above the highest one
-  behind them (`rungsBehind` in `db/exercises.ts`, the one function the path card and the quest
+  behind them (`ladderPosition` in `db/progress.ts`, the one function the path card and the quest
   slot both read).
 
 The second rule replaced two older ones, "recent, not historical" and "contiguous from the
@@ -148,7 +148,7 @@ prescribed what the quest wrote for it, its band and its own record for a hold, 
 carries (`substitutedFor.target`, set by `resolveSlot` for the screen and the gallery card
 alike), not the easier rung's number moved across. Taking the written movement back from the
 swap sheet in the middle of a session gives the same number. The journal settles the rest:
-one clean session on the Plank puts Dead Bug behind the hero in *every* quest (`rungsBehind`), and
+one clean session on the Plank puts Dead Bug behind the hero in *every* quest (`ladderPosition`), and
 the pin becomes moot.
 
 The way back is the same spot: a pinned slot reads "Your choice, instead of Dead Bug" and its

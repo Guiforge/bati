@@ -22,13 +22,12 @@ import { type CompletedSession, isWorkout, parseRecords, type StoredRecord } fro
 import { dayKey } from "./dates";
 import {
   fetchLadderRows,
-  PROGRESSION_SESSIONS_REQUIRED,
   recentMetFlagsBatch,
-  streakOf,
   successorsOf,
   type VariationStep,
 } from "./exercises";
-import { getMovementRecords } from "./personalRecords";
+import { getMovementRecords, previousBest } from "./personalRecords";
+import { PROGRESSION_SESSIONS_REQUIRED, streakOf } from "./progress";
 import { ADMIN_CREATOR, type MuscleCode, type QuestTargetType } from "./schema";
 import { NON_REP_STYLE, repEquivalentSql, toRepEquivalent } from "./workUnits";
 
@@ -744,17 +743,7 @@ async function movementRecordFell(
   const mine = session.exercises.filter(
     (ex) => ex.exercise.id === exerciseId && ex.result.type === type,
   );
-  const [before] = await db
-    .select({ best: sql<number | null>`MAX(${completedExercises.resultValue})` })
-    .from(completedExercises)
-    .where(
-      and(
-        eq(completedExercises.exerciseId, exerciseId),
-        eq(completedExercises.resultType, type),
-        ne(completedExercises.sessionId, session.id),
-        lt(completedExercises.performedAt, session.performedAt),
-      ),
-    );
+  const before = await previousBest(exerciseId, type, session.id, session.performedAt);
   const exercise = mine[0]?.exercise;
   return {
     kind,
@@ -764,7 +753,7 @@ async function movementRecordFell(
     type,
     perSide: exercise?.perSide ?? false,
     value: Math.max(0, ...mine.map((ex) => ex.result.value)),
-    previous: before?.best ?? null,
+    previous: before,
   };
 }
 

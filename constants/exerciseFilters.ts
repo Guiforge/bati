@@ -220,6 +220,9 @@ export function rankSwapCandidates(
   );
 }
 
+/** Movement families a spared zone's slot never falls back to: a stretch is not a strength slot. */
+const NOT_A_STAND_IN: readonly MovementPattern[] = ["mobility", "locomotion"];
+
 /**
  * What a quest serves in place of an exercise the hero set aside, or `null` to keep it as written.
  *
@@ -234,13 +237,23 @@ export function setAsideReplacement(
   exercises: Exercise[],
   current: Exercise,
   unavailable: ReadonlySet<number>,
+  /**
+   * Set aside by a zone the hero is sparing (M-04), not by a "don't suggest": the slot must not run
+   * as written, so with nothing close the best of the rest stands in, a strength movement of
+   * another pattern, in the slot's own unit and nearest its difficulty. A zone is a promise the
+   * quest breaks if it still serves the sore shoulder's push-up.
+   */
+  spared = false,
 ): Exercise | null {
   // Ranked on the whole catalogue, filtered after: the ladder is walked through prerequisites, so
   // removing a set-aside rung first cut the walk at the gap. Squat set aside left Jump Squat's
   // slot with no way down to Wall Sit, and it was served a Lunge instead.
   const pick = rankSwapCandidates(exercises, current, null).find(
     (c) =>
-      (c.reason === "easier" || c.reason === "same_pattern" || c.reason === "same_family") &&
+      (c.reason === "easier" ||
+        c.reason === "same_pattern" ||
+        c.reason === "same_family" ||
+        (spared && c.reason === null && !NOT_A_STAND_IN.includes(c.exercise.pattern ?? "core"))) &&
       // Seed content only: a movement the hero wrote is theirs to put in a quest, not ours.
       c.exercise.creator === ADMIN_CREATOR &&
       c.exercise.retiredAt === null &&

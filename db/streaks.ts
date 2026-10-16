@@ -1,6 +1,7 @@
 import { startOfDay } from "date-fns";
 import { desc, sql } from "drizzle-orm";
 import { ETERNAL_FLAME_DAYS, FLAME_DORMANT_DAYS, FLAME_PIVOT } from "@/constants/flame";
+import { isPausedOn, PAUSE_KEY, type PausePeriod, parsePausePeriods } from "@/constants/pause";
 import { DEFAULT_WEEKLY_QUOTA } from "@/constants/weeklyTargets";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
@@ -18,6 +19,8 @@ const STREAK_QUOTA_KEY = "streak_quota";
 const STREAK_WINDOW_KEY = "streak_window";
 /** The sleeping count, cached beside the flame it belongs to (added with the dormant flame). */
 const STREAK_DORMANT_KEY = "streak_dormant";
+/** The pauses the cached flame was walked under: a pause started today changes today's answer. */
+const STREAK_PAUSE_KEY = "streak_pause";
 
 const WINDOW_DAYS = 7;
 
@@ -94,6 +97,16 @@ export async function getWeeklyQuota(): Promise<number> {
   }
 }
 
+/** Every pause the hero declared (M-04), read from the preference the way the quota reads the oath. */
+export async function getPausePeriods(): Promise<PausePeriod[]> {
+  const rows = await db
+    .select({ value: userPreferences.value })
+    .from(userPreferences)
+    .where(sql`${userPreferences.key} = ${PAUSE_KEY}`)
+    .limit(1);
+  return parsePausePeriods(rows[0]?.value);
+}
+
 /** Sessions per day, keyed by local midnight — the unit every window below counts in. */
 function groupByDay(performedAt: Date[]): Map<number, number> {
   const byDay = new Map<number, number>();
@@ -130,15 +143,45 @@ const LIT_FORECAST_DAYS = WINDOW_DAYS * 2;
  * five years of journal that was some fifty thousand `Date`s on the JS thread every time the
  * Journal opened (perf audit, 2026-09-15). Day indices are rounded, not floored, because a day
  * that crosses a clock change is 23 or 25 hours long.
+ *
+ * A paused day (M-04) is not on the timeline at all: the indices below count the days that are
+ * not paused, so a week is seven of them, the days either side of a pause touch, and the idle
+ * counter never sees it. A session logged on a paused day lands on the day before it. `realOf`
+ * and `slotOf` convert between the two; with no pause both are the identity.
  */
-function flameTimeline(performedAt: Date[], quota: number, now: Date) {
+function flameTimeline(
+  performedAt: Date[],
+  quota: number,
+  now: Date,
+  pauses: readonly PausePeriod[] = [],
+) {
   let first = Number.POSITIVE_INFINITY;
   for (const date of performedAt) first = Math.min(first, date.getTime());
   const firstDay = startOfDay(new Date(first)).getTime();
-  const indexOf = (date: Date) => Math.round((startOfDay(date).getTime() - firstDay) / DAY_MS);
+  const rawIndexOf = (date: Date) => Math.round((startOfDay(date).getTime() - firstDay) / DAY_MS);
 
-  const today = indexOf(now);
+  // The first session's own day is never skipped: the timeline needs a day to start on.
+  const paused = (raw: number) =>
+    raw > 0 && pauses.length > 0 && isPausedOn(pauses, dayKey(shiftDays(new Date(firstDay), raw)));
+  const slotOf: number[] = [];
+  const realOf: number[] = [];
+  const addDay = (raw: number) => {
+    if (!paused(raw)) realOf.push(raw);
+    slotOf.push(Math.max(realOf.length - 1, 0));
+  };
+
+  const rawToday = rawIndexOf(now);
+  let raw = 0;
+  for (; raw <= Math.max(rawToday, 0); raw++) addDay(raw);
+  const today = rawToday < 0 ? rawToday : (slotOf[rawToday] ?? 0);
   const length = Math.max(today, 0) + LIT_FORECAST_DAYS + 1;
+  // Ends: a pause is finite, so the forecast reaches `length` days that are not paused.
+  while (realOf.length < length) addDay(raw++);
+
+  const slotFor = (rawDay: number) =>
+    rawDay < 0 ? rawDay : rawDay < slotOf.length ? (slotOf[rawDay] ?? 0) : rawDay - raw + length;
+  const indexOf = (date: Date) => slotFor(rawIndexOf(date));
+
   const totals = new Int32Array(length + 1);
   for (const date of performedAt) {
     const day = indexOf(date);
@@ -162,7 +205,7 @@ function flameTimeline(performedAt: Date[], quota: number, now: Date) {
       day >= 0 && day < length && (totals[day + 1] ?? 0) - (totals[day] ?? 0) > 0,
     /** Is the flame lit on this day? Either this week is over quota, or the week before it was. */
     isLit: (day: number) => inWindow(day) >= quota || inWindow(day - WINDOW_DAYS) >= quota,
-    dateOf: (day: number) => shiftDays(new Date(firstDay), day),
+    dateOf: (day: number) => shiftDays(new Date(firstDay), realOf[day] ?? day),
   };
 }
 
@@ -241,12 +284,13 @@ export function calculateStreakFromSessions(
   quota: number,
   now: Date = new Date(),
   pivot: Date = FLAME_PIVOT,
+  pauses: readonly PausePeriod[] = [],
 ): { current: number; best: number; isActive: boolean; inWindow: number; dormant: number } {
   if (performedAt.length === 0) {
     return { current: 0, best: 0, isActive: false, inWindow: 0, dormant: 0 };
   }
 
-  const flame = flameTimeline(performedAt, quota, now);
+  const flame = flameTimeline(performedAt, quota, now, pauses);
   const { current, best, dormant } = walkFlame(flame, pivot);
 
   // What today's flame is standing on, and what tomorrow's will be judged by. `isLit` reads the
@@ -265,9 +309,10 @@ export function longestFlameSince(
   since: Date,
   now: Date,
   pivot: Date = FLAME_PIVOT,
+  pauses: readonly PausePeriod[] = [],
 ): number {
   if (performedAt.length === 0) return 0;
-  const flame = flameTimeline(performedAt, quota, now);
+  const flame = flameTimeline(performedAt, quota, now, pauses);
   return walkFlame(flame, pivot, flame.indexOf(since)).best;
 }
 
@@ -299,6 +344,10 @@ export async function getCachedStreak(): Promise<StreakInfo | null> {
   }
   if (cache[STREAK_CACHED_ON_KEY] !== dayKey(new Date())) return null;
   if (cache[STREAK_QUOTA_KEY] !== String(await getWeeklyQuota())) return null;
+  // Written under another set of pauses, or before there were any: a pause begun today moves it.
+  if ((cache[STREAK_PAUSE_KEY] ?? "") !== pauseSignature(parsePausePeriods(cache[PAUSE_KEY]))) {
+    return null;
+  }
 
   const current = Number.parseInt(cache[STREAK_CURRENT_KEY], 10) || 0;
 
@@ -314,6 +363,9 @@ export async function getCachedStreak(): Promise<StreakInfo | null> {
   };
 }
 
+const pauseSignature = (periods: readonly PausePeriod[]) =>
+  periods.length === 0 ? "" : JSON.stringify(periods);
+
 async function saveStreakCache(
   current: number,
   best: number,
@@ -321,6 +373,7 @@ async function saveStreakCache(
   quota: number,
   inWindow: number,
   dormant: number,
+  pauses: readonly PausePeriod[],
 ): Promise<void> {
   await db
     .insert(userPreferences)
@@ -332,6 +385,7 @@ async function saveStreakCache(
       { key: STREAK_QUOTA_KEY, value: String(quota) },
       { key: STREAK_WINDOW_KEY, value: String(inWindow) },
       { key: STREAK_DORMANT_KEY, value: String(dormant) },
+      { key: STREAK_PAUSE_KEY, value: pauseSignature(pauses) },
     ])
     .onConflictDoUpdate({
       target: userPreferences.key,
@@ -343,8 +397,9 @@ async function saveStreakCache(
  * Calculate streak from database and update cache
  */
 export async function calculateAndCacheStreak(): Promise<StreakInfo> {
-  const [quota, rows] = await Promise.all([
+  const [quota, pauses, rows] = await Promise.all([
     getWeeklyQuota(),
+    getPausePeriods(),
     db
       .select({ performedAt: completedQuest.performedAt })
       .from(completedQuest)
@@ -367,7 +422,7 @@ export async function calculateAndCacheStreak(): Promise<StreakInfo> {
   }
 
   const performedAt = rows.map((r) => r.performedAt);
-  const result = calculateStreakFromSessions(performedAt, quota);
+  const result = calculateStreakFromSessions(performedAt, quota, new Date(), FLAME_PIVOT, pauses);
   const lastDate = dayKey(new Date(Math.max(...performedAt.map((d) => d.getTime()))));
 
   await saveStreakCache(
@@ -377,6 +432,7 @@ export async function calculateAndCacheStreak(): Promise<StreakInfo> {
     quota,
     result.inWindow,
     result.dormant,
+    pauses,
   );
 
   return { ...result, lastWorkoutDate: lastDate, quota };
@@ -476,6 +532,7 @@ export function describeFlame(
   quota: number,
   now = new Date(),
   pivot: Date = FLAME_PIVOT,
+  pauses: readonly PausePeriod[] = [],
 ): FlameDetail {
   if (performedAt.length === 0) {
     return {
@@ -492,7 +549,7 @@ export function describeFlame(
     };
   }
 
-  const flame = flameTimeline(performedAt, quota, now);
+  const flame = flameTimeline(performedAt, quota, now, pauses);
   const { current, dormant, best, bestEnd, lastLit, litDays, litDaysLast30 } = walkFlame(
     flame,
     pivot,
@@ -525,8 +582,9 @@ export function describeFlame(
  * purpose, and the cache only knows three of the numbers it needs.
  */
 export async function getFlameDetail(now = new Date()): Promise<FlameDetail> {
-  const [quota, rows] = await Promise.all([
+  const [quota, pauses, rows] = await Promise.all([
     getWeeklyQuota(),
+    getPausePeriods(),
     db
       .select({ performedAt: completedQuest.performedAt })
       .from(completedQuest)
@@ -536,5 +594,7 @@ export async function getFlameDetail(now = new Date()): Promise<FlameDetail> {
     rows.map((r) => r.performedAt),
     quota,
     now,
+    FLAME_PIVOT,
+    pauses,
   );
 }

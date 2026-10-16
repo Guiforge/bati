@@ -112,6 +112,7 @@ jest.mock("@/db/completed", () => ({
 
 jest.mock("@/db/oaths", () => ({
   getOathProgress: jest.fn().mockResolvedValue(null),
+  isOathFrozen: jest.fn().mockResolvedValue(false),
   oathNeedsExercise: (metric: string) => metric === "exercise_pr" || metric === "exercise_volume",
 }));
 

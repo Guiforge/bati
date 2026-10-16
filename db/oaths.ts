@@ -6,6 +6,7 @@ import { type AppLanguage, type Localized, resolveAppLanguage } from "@/src/i18n
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { countsAsSession } from "./completed";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
+import { isFrozenFor } from "./pause";
 import { getPreference, preferences, setPreference } from "./preferences";
 import { getStreakInfo, invalidateStreakInfo } from "./streaks";
 import { repEquivalentSql } from "./workUnits";
@@ -203,6 +204,16 @@ export async function getOath(): Promise<Oath | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Whether the oath stands still today (M-04): during a pause, and during a zone if its exercise
+ * works that zone. An oath has no deadline to push back: what freezes is what would nag. Home does
+ * not offer it, the reminders do not count its week down, and the exercise it names is set aside
+ * anyway. Sessions the hero logs meanwhile still count, as ever.
+ */
+export function isOathFrozen(oath: Oath, now = new Date()): Promise<boolean> {
+  return isFrozenFor(oath.exerciseId, now);
 }
 
 /** Swear a new oath, replacing any existing one. */

@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, YStack } from "tamagui";
+import { Paragraph, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { restsBetweenRounds } from "@/components/quests/questShape";
@@ -112,7 +113,7 @@ export function PausedOverlay() {
       >
         <Card width="100%" maxW={360} bg="$surface">
           <YStack gap="$3" items="center">
-            <Text
+            <AppText
               fontFamily="$heading"
               fontWeight="700"
               fontSize={28}
@@ -120,7 +121,7 @@ export function PausedOverlay() {
               style={{ textAlign: "center" }}
             >
               {t("session.paused_title")}
-            </Text>
+            </AppText>
             <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
               {t("session.paused_subtitle")}
             </Paragraph>

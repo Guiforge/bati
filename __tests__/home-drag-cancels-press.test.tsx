@@ -18,6 +18,9 @@ import config from "@/tamagui.config";
 // The notice above the scene reads the database and the native module; it has its own test
 // (notice-slot.test.tsx), and a drag over Home is not about it.
 jest.mock("@/components/home/NoticeSlot", () => ({ NoticeSlot: () => null }));
+// Home reads what it may show from the journal; a drag over it is not about that read.
+jest.mock("@/db/disclosure", () => ({ disclosure: () => Promise.resolve() }));
+jest.mock("@/hooks/useReloadOnChange", () => ({ useReloadOnChange: () => {} }));
 jest.mock("@/components/chorus/screenCues", () => ({
   useScreenGuide: () => {},
   useComebackCue: () => {},

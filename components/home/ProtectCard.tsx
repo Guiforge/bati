@@ -1,7 +1,8 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Button, XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { ChevronRight, Shield, X } from "@/components/icons";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -51,12 +52,12 @@ export function ProtectCard() {
       <XStack items="center" gap="$2">
         <Shield size={16} color="$textSecondary" />
         <YStack flex={1}>
-          <Text fontSize="$3" fontWeight="bold" color="$text">
+          <AppText fontSize="$3" fontWeight="bold" color="$text">
             {t("backup.protectTitle")}
-          </Text>
-          <Text fontSize="$2" color="$textSecondary">
+          </AppText>
+          <AppText fontSize="$2" color="$textSecondary">
             {t("backup.protectBody")}
-          </Text>
+          </AppText>
         </YStack>
         <ChevronRight size={16} color="$primaryText" />
         <Button

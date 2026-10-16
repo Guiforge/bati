@@ -3,8 +3,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Info, Play, Sparkles, Target } from "@/components/icons";
@@ -66,9 +67,9 @@ function StageAction({
         pressStyle={{ opacity: 0.7 }}
         accessibilityRole="button"
       >
-        <Text fontSize={14} fontWeight="700" color="$primaryText">
+        <AppText fontSize={14} fontWeight="700" color="$primaryText">
           {label}
-        </Text>
+        </AppText>
       </XStack>
     );
   }
@@ -183,9 +184,9 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
           <YStack px="$4" gap="$1.5">
             {/* What the session is made of, then why it is the one being offered. */}
             {scene?.meta ? (
-              <Text fontSize={12} color="$textSecondary">
+              <AppText fontSize={12} color="$textSecondary">
                 {scene.meta}
-              </Text>
+              </AppText>
             ) : null}
 
             {progress ? (
@@ -193,9 +194,9 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
               // the bar shows how much of it is behind them. Gold, because a step walked is
               // progression.
               <YStack gap="$2">
-                <Text fontSize={12} fontWeight="700" color="$textSecondary">
+                <AppText fontSize={12} fontWeight="700" color="$textSecondary">
                   {subtitle}
-                </Text>
+                </AppText>
                 <ProgressBar progress={stepProgress} height={4} color="$resourceGold" />
               </YStack>
             ) : subtitle ? (
@@ -205,9 +206,9 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
                 <YStack pt={2}>
                   <Target size={13} color="$primaryText" />
                 </YStack>
-                <Text flex={1} fontSize={12} lineHeight={17} color="$textSecondary">
+                <AppText flex={1} fontSize={12} lineHeight={17} color="$textSecondary">
                   {subtitle}
-                </Text>
+                </AppText>
               </XStack>
             ) : null}
           </YStack>
@@ -233,9 +234,9 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
               accessibilityLabel={t("home.see_quest")}
             >
               <Info size={18} color="$primaryText" />
-              <Text fontSize={10} fontWeight="700" color="$primaryText">
+              <AppText variant="label" fontSize={10} fontWeight="700" color="$primaryText">
                 {t("home.details")}
-              </Text>
+              </AppText>
             </YStack>
           )}
         </XStack>
@@ -265,9 +266,15 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
             borderColor="$glassBorder"
           >
             <Sparkles size={11} color="$primaryText" />
-            <Text fontSize={10} fontWeight="700" letterSpacing={1.2} color="$text">
+            <AppText
+              variant="label"
+              fontSize={10}
+              fontWeight="700"
+              letterSpacing={1.2}
+              color="$text"
+            >
               {scene.kicker.toUpperCase()}
-            </Text>
+            </AppText>
           </XStack>
         ) : null}
         {/* The stage button already carries the title as its label: hide this copy from readers. */}

@@ -2,7 +2,8 @@ import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Avatar, Text, XStack, YStack } from "tamagui";
+import { Avatar, XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Castle, Settings } from "@/components/icons";
@@ -108,12 +109,12 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
       ) : (
         <YStack flex={1} gap={4}>
           {levelInfo && showLevel ? (
-            <Text fontWeight="700" fontSize={13} color="$text" numberOfLines={1}>
+            <AppText variant="label" fontWeight="700" fontSize={13} color="$text" numberOfLines={1}>
               {t("home.level_line", {
                 level: levelInfo.level,
                 title: levelTitle,
               })}
-            </Text>
+            </AppText>
           ) : (
             <Skeleton height={16} width={130} bg="$surface2" />
           )}
@@ -131,12 +132,12 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
             {/* The numbers, not a percentage of something this strip never named. The victory
               screen prints the same fraction with the same key. */}
             {levelInfo && showLevel ? (
-              <Text fontSize={10} fontWeight="700" color="$resourceGold">
+              <AppText variant="label" fontSize={10} fontWeight="700" color="$resourceGold">
                 {t("journal.xp_progress", {
                   current: formatCount(language, levelInfo.currentLevelXp),
                   next: formatCount(language, levelInfo.currentLevelXp + levelInfo.xpToNextLevel),
                 })}
-              </Text>
+              </AppText>
             ) : null}
           </XStack>
         </YStack>
@@ -165,7 +166,8 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
           <Castle size={16} color="$textSecondary" />
           {/* "Tier 12", not a bare 12 next to a castle: the audit's strangers read it as a count.
               Shrinks to fit the 44 dp cell instead of wrapping at large fonts. */}
-          <Text
+          <AppText
+            variant="label"
             testID="home-village-tier"
             fontSize={10}
             fontWeight="700"
@@ -175,7 +177,7 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
             minimumFontScale={0.6}
           >
             {t("village.tier", { tier })}
-          </Text>
+          </AppText>
         </YStack>
       )}
     </XStack>

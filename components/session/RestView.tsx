@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H2, Text, XStack, YStack } from "tamagui";
+import { Button, H1, H2, XStack, YStack } from "tamagui";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
+import { FONT_CAPS } from "@/components/common/fontCaps";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
@@ -187,7 +189,14 @@ export function RestView() {
         enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
       >
         <GameIcon name="flame" size={40} color="$resourceFire" />
-        <H2 color="$text" fontWeight="700" fontSize={32} lineHeight={38} text="center">
+        <H2
+          maxFontSizeMultiplier={FONT_CAPS.label}
+          color="$text"
+          fontWeight="700"
+          fontSize={32}
+          lineHeight={38}
+          text="center"
+        >
           {t(copy.title)}
         </H2>
       </YStack>
@@ -220,6 +229,8 @@ export function RestView() {
           {!isFinal && (
             <YStack items="center" gap="$2">
               <H1
+                testID="rest-timer"
+                maxFontSizeMultiplier={FONT_CAPS.display}
                 fontSize={112}
                 fontWeight="700"
                 fontFamily="$body"
@@ -245,9 +256,9 @@ export function RestView() {
                   borderColor="$borderStrong"
                   onPress={() => handleAddRestTime(10)}
                 >
-                  <Text fontWeight="700" color="$text">
+                  <AppText variant="label" fontWeight="700" color="$text">
                     +10s
-                  </Text>
+                  </AppText>
                 </Button>
                 <Button
                   size="$3"
@@ -257,9 +268,9 @@ export function RestView() {
                   borderColor="$borderStrong"
                   onPress={() => handleAddRestTime(30)}
                 >
-                  <Text fontWeight="700" color="$text">
+                  <AppText variant="label" fontWeight="700" color="$text">
                     +30s
-                  </Text>
+                  </AppText>
                 </Button>
               </XStack>
             </YStack>
@@ -289,9 +300,9 @@ export function RestView() {
                 couldn't" is the tap that says something may be wrong. In the review card's place,
                 which a skip hides. Said once, with no link out of a running session. */}
             {lastSetSkipped ? (
-              <Text testID="rest-pain-rule" fontSize={14} color="$textSecondary">
+              <AppText testID="rest-pain-rule" fontSize={14} color="$textSecondary">
                 {t("session.pain_rule")}
-              </Text>
+              </AppText>
             ) : null}
 
             {/* Up Next Card. Tappable: the rest is the one moment reading is free, and the movement
@@ -313,9 +324,9 @@ export function RestView() {
               transition={reducedMotion ? undefined : "bouncy"}
               enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
             >
-              <Text color="$textSecondary" fontSize={12} fontWeight="700">
+              <AppText color="$textSecondary" fontSize={12} fontWeight="700">
                 {t("session.up_next")}
-              </Text>
+              </AppText>
               <XStack gap="$3" items="center">
                 <YStack
                   width={50}
@@ -336,12 +347,12 @@ export function RestView() {
                   />
                 </YStack>
                 <YStack flex={1}>
-                  <Text fontWeight="700" fontSize={18} numberOfLines={1} color="$text">
+                  <AppText fontWeight="700" fontSize={18} numberOfLines={1} color="$text">
                     {nextExName}
-                  </Text>
-                  <Text color="$textSecondary">
+                  </AppText>
+                  <AppText color="$textSecondary">
                     {nextEx ? formatSlotTarget(nextEx, language) : null}
-                  </Text>
+                  </AppText>
                 </YStack>
               </XStack>
             </YStack>
@@ -427,12 +438,12 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
       <XStack justify="space-between" items="center" gap="$3">
         <YStack testID="rest-adjust-label" flex={1} shrink={1}>
           {/* Names the set: "Up next" sits right below and would otherwise read as its subject. */}
-          <Text color="$textSecondary" fontSize={12} fontWeight="700">
+          <AppText color="$textSecondary" fontSize={12} fontWeight="700">
             {name}
-          </Text>
-          <Text fontSize={12} color="$textSecondary">
+          </AppText>
+          <AppText fontSize={12} color="$textSecondary">
             {isLastTimeBased ? t("session.adjust_seconds_hint") : t("session.adjust_reps_hint")}
-          </Text>
+          </AppText>
         </YStack>
 
         <XStack testID="rest-adjust-controls" items="center" gap="$3" shrink={0}>
@@ -454,9 +465,9 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
               accessibilityLabel={t("session.result_count_accessibility")}
             />
             {isLastTimeBased ? (
-              <Text fontWeight="700" fontSize={20} color="$text">
+              <AppText fontWeight="700" fontSize={20} color="$text">
                 s
-              </Text>
+              </AppText>
             ) : null}
           </XStack>
           <Button
@@ -471,16 +482,16 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
       </XStack>
 
       {weakerSide ? (
-        <Text testID="rest-weaker-side" fontSize={12} color="$textSecondary">
+        <AppText testID="rest-weaker-side" fontSize={12} color="$textSecondary">
           {t("session.per_side_weaker")}
-        </Text>
+        </AppText>
       ) : null}
 
       {askAboutHold && result.target ? (
         <XStack testID="rest-hold-check" items="center" gap="$2" flexWrap="wrap">
-          <Text fontWeight="700" color="$text" shrink={1}>
+          <AppText fontWeight="700" color="$text" shrink={1}>
             {t("session.hold_check_question", { time: formatTime(result.result.value) })}
-          </Text>
+          </AppText>
           <Button
             testID="rest-hold-keep"
             size="$3"
@@ -490,7 +501,7 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
               keepLongHold();
             }}
           >
-            <Text color="$text">{t("session.hold_check_keep")}</Text>
+            <AppText color="$text">{t("session.hold_check_keep")}</AppText>
           </Button>
           <Button
             testID="rest-hold-target"
@@ -498,7 +509,7 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
             hitSlop={8}
             onPress={() => step(result.target?.value ?? 1)}
           >
-            <Text color="$text">{t("session.hold_check_target")}</Text>
+            <AppText color="$text">{t("session.hold_check_target")}</AppText>
           </Button>
         </XStack>
       ) : null}

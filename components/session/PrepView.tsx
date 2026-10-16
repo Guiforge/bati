@@ -1,8 +1,10 @@
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
-import { H1, H3, Text, XStack, YStack } from "tamagui";
+import { H1, H3, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
+import { FONT_CAPS } from "@/components/common/fontCaps";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -35,9 +37,9 @@ export function MovementDescription({
   // lines too, not four and a half cut through the middle.
   const maxHeight = useFontScaled(120);
   const body = (
-    <Text fontSize={14} color="$textSecondary" lineHeight={20} style={{ textAlign: "center" }}>
+    <AppText fontSize={14} color="$textSecondary" lineHeight={20} style={{ textAlign: "center" }}>
       {text}
-    </Text>
+    </AppText>
   );
   if (uncapped) return body;
   return (
@@ -73,9 +75,9 @@ function MovementIdentity({
   compact: boolean;
 }) {
   const targetLine = target ? (
-    <Text color="$textSecondary" fontSize={15} fontWeight="700">
+    <AppText color="$textSecondary" fontSize={15} fontWeight="700">
       {target}
-    </Text>
+    </AppText>
   ) : null;
 
   if (compact) {
@@ -135,15 +137,16 @@ function PrepClock({ remainingSeconds }: { remainingSeconds: number | null }) {
 
   if (remainingSeconds === null) {
     return (
-      <Text color="$textSecondary" fontSize={15} style={{ textAlign: "center" }}>
+      <AppText color="$textSecondary" fontSize={15} style={{ textAlign: "center" }}>
         {t("session.prep_tap_hint")}
-      </Text>
+      </AppText>
     );
   }
 
   const running = remainingSeconds > 0;
   return (
     <H1
+      maxFontSizeMultiplier={FONT_CAPS.display}
       fontWeight="700"
       fontSize={running ? 64 : 40}
       lineHeight={68}
@@ -212,7 +215,7 @@ export function PrepView({
 
   const movement = (
     <>
-      <Text
+      <AppText
         fontSize={13}
         fontWeight="700"
         color="$textSecondary"
@@ -220,7 +223,7 @@ export function PrepView({
         textTransform="uppercase"
       >
         {kicker}
-      </Text>
+      </AppText>
 
       <MovementIdentity
         instruction={instruction}

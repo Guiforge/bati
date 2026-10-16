@@ -1,7 +1,8 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, XStack } from "tamagui";
+import { XStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { ChevronRight, KeyRound } from "@/components/icons";
 import { PasswordCheckFlow } from "@/components/settings/PasswordCheckFlow";
@@ -51,9 +52,9 @@ export function PasswordCheckCard() {
       >
         <XStack items="center" gap="$2">
           <KeyRound size={16} color="$primaryText" />
-          <Text flex={1} fontSize="$3" color="$primaryText">
+          <AppText flex={1} fontSize="$3" color="$primaryText">
             {t("vault.checkTitle")}
-          </Text>
+          </AppText>
           <ChevronRight size={16} color="$primaryText" />
         </XStack>
       </Card>

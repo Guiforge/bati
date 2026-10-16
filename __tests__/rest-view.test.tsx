@@ -110,6 +110,12 @@ describe("RestView", () => {
     jest.useRealTimers();
   });
 
+  // 112 px at 130 % is wider than a 360 dp screen: the one figure known to overflow.
+  it("caps the timer's font scale at 1", async () => {
+    const view = await mountRest();
+    expect(view.getByTestId("rest-timer").props.maxFontSizeMultiplier).toBe(1);
+  });
+
   // A villager moved +10s/+30s up and the set stepper down about 50 dp: the column was centred and
   // the line sat in the middle of it. The controls must not depend on whether anyone came.
   it("keeps everything the hero aims at where it is, villager or not", async () => {

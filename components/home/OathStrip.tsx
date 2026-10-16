@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { ProgressBar } from "@/components/common/ProgressBar";
 // A rosette, not game-icons' star: at this size its prominences read as a cog, the second gear on
 // a screen whose avatar is already the way to settings.
@@ -106,12 +107,12 @@ function SwornStrip({ oath }: { oath: OathProgress }) {
   return (
     <>
       <Award size={16} color="$resourceGold" />
-      <Text flex={1} fontSize={13} lineHeight={18} color="$text" numberOfLines={2}>
+      <AppText flex={1} fontSize={13} lineHeight={18} color="$text" numberOfLines={2}>
         {label}
         {/* The detail travels as one piece with its dot: "5 / 50" split over two lines reads as
             two numbers, and a dot left at the end of a line reads as a stray mark. */}
-        <Text color="$textSecondary">{` ·\u00A0${detail.replaceAll(" ", "\u00A0")}`}</Text>
-      </Text>
+        <AppText color="$textSecondary">{` ·\u00A0${detail.replaceAll(" ", "\u00A0")}`}</AppText>
+      </AppText>
       {climbing && chain && path?.name ? (
         <Rungs chain={chain} climbed={path.isClimbed} />
       ) : (
@@ -185,9 +186,9 @@ export function OathStrip({ swornOnly = false }: { swornOnly?: boolean }) {
       ) : (
         <>
           <Award size={16} color="$textSecondary" />
-          <Text flex={1} fontSize={13} lineHeight={18} color="$textSecondary" numberOfLines={2}>
+          <AppText flex={1} fontSize={13} lineHeight={18} color="$textSecondary" numberOfLines={2}>
             {`${t("oath.empty_cta")} · ${t("oath.empty_hint")}`}
-          </Text>
+          </AppText>
           <ChevronRight size={16} color="$textSecondary" />
         </>
       )}

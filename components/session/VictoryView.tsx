@@ -5,10 +5,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Button, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
@@ -143,18 +144,18 @@ function FilledLevelBar({
       py="$2"
     >
       <XStack items="center" justify="space-between">
-        <Text fontFamily="$body" fontWeight="700" fontSize={14} color="$text">
+        <AppText fontFamily="$body" fontWeight="700" fontSize={14} color="$text">
           {t("home.level_line", {
             level,
             title,
           })}
-        </Text>
-        <Text fontFamily="$body" fontWeight="700" fontSize={12} color="$resourceGold">
+        </AppText>
+        <AppText fontFamily="$body" fontWeight="700" fontSize={12} color="$resourceGold">
           {t("journal.xp_progress", {
             current: formatCount(language, after - base),
             next: formatCount(language, span),
           })}
-        </Text>
+        </AppText>
       </XStack>
       <InkGauge
         testIDPrefix="victory-level"
@@ -494,7 +495,7 @@ export function VictoryView() {
                   and a fact is said once. */}
               <YStack gap={2} self="flex-start">
                 {!isBossDefeat && (
-                  <Text
+                  <AppText
                     testID="victory-kicker"
                     fontFamily="$body"
                     fontWeight="700"
@@ -503,7 +504,7 @@ export function VictoryView() {
                     letterSpacing={2}
                   >
                     {t("session.victory_title").toUpperCase()}
-                  </Text>
+                  </AppText>
                 )}
                 <Recitatif>{heroTitle}</Recitatif>
               </YStack>
@@ -556,7 +557,7 @@ export function VictoryView() {
         {!!result && goal === null && isOutingSession(quest) && (
           <YStack width="100%" maxW={520} items="center">
             {madeQuest ? (
-              <Text
+              <AppText
                 testID="victory-made-quest"
                 fontFamily="$body"
                 color="$textSecondary"
@@ -564,7 +565,7 @@ export function VictoryView() {
                 style={{ textAlign: "center" }}
               >
                 {t("session.expedition_made_quest")}
-              </Text>
+              </AppText>
             ) : (
               <AppButton
                 testID="victory-make-quest"
@@ -572,9 +573,9 @@ export function VictoryView() {
                 height={48}
                 onPress={handleMakeQuest}
               >
-                <Text color="$text" fontSize={16} fontWeight="700">
+                <AppText color="$text" fontSize={16} fontWeight="700">
                   {t("session.expedition_make_quest")}
-                </Text>
+                </AppText>
               </AppButton>
             )}
           </YStack>
@@ -584,12 +585,19 @@ export function VictoryView() {
         {!tooShort && (
           <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
             <Card flex={1} bg="$surface" borderColor="$glassBorder" items="center" gap="$1" py="$2">
-              <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+              <AppText fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
                 {t("session.total_time")}
-              </Text>
-              <Text fontWeight="700" fontSize={26} lineHeight={32} color="$text" fontFamily="$body">
+              </AppText>
+              <AppText
+                variant="display"
+                fontWeight="700"
+                fontSize={26}
+                lineHeight={32}
+                color="$text"
+                fontFamily="$body"
+              >
                 {result ? formatTime(durationSeconds) : "\u00A0"}
-              </Text>
+              </AppText>
             </Card>
             <Card
               testID="victory-xp-rules"
@@ -603,9 +611,9 @@ export function VictoryView() {
               onPress={result ? handleViewXpRules : undefined}
               accessibilityRole="link"
             >
-              <Text fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+              <AppText fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
                 {t("session.xp_earned")}
-              </Text>
+              </AppText>
               {/* In the corner, out of the label's row: beside it, the chevron took the width a
                 long label needs, and at 130 % Russian broke "Заработано" in the middle. */}
               <YStack position="absolute" t={6} r={4}>
@@ -613,7 +621,8 @@ export function VictoryView() {
               </YStack>
               {/* The testID only exists once the session is banked: Continue is on screen, and
                 disabled, for the whole save, so it cannot tell an E2E flow when to tap it. */}
-              <Text
+              <AppText
+                variant="display"
                 testID={result ? "session-victory-xp" : undefined}
                 accessibilityElementsHidden={!result}
                 importantForAccessibility={result ? "auto" : "no"}
@@ -627,20 +636,20 @@ export function VictoryView() {
                   ? t("quests.reward_xp", { count: formatCount(language, result.xpEarned) })
                   : // Same line height, no glyph: a loading reward asserts nothing.
                     "\u00A0"}
-              </Text>
+              </AppText>
               {/* The rate, said out loud. A hero who walks an hour and reads "+300" has no way to
                 know why, and a number with no rule behind it is the thing the research calls
                 controlling rather than informative. This is the rule, in the hero's own numbers. */}
               {result?.outing ? (
-                <Text fontWeight="700" fontSize={11} color="$textSecondary">
+                <AppText fontWeight="700" fontSize={11} color="$textSecondary">
                   {t("session.xp_outing_rate", {
                     moving: formatDurationEstimate(result.outing.seconds, language),
                     effort: formatDurationEstimate(result.outing.effortSeconds, language),
                   })}
-                </Text>
+                </AppText>
               ) : null}
               {!!result?.overshootXp && (
-                <Text
+                <AppText
                   fontWeight="700"
                   fontSize={11}
                   color="$success"
@@ -648,7 +657,7 @@ export function VictoryView() {
                   fontFamily="$body"
                 >
                   {t("session.xp_overshoot", { count: formatCount(language, result.overshootXp) })}
-                </Text>
+                </AppText>
               )}
             </Card>
           </XStack>
@@ -661,10 +670,10 @@ export function VictoryView() {
             and no reward is drawn for a session that may be discarded. */}
         {tooShort ? (
           <YStack width="100%" maxW={520} items="center" gap="$3" py="$4">
-            <Text color="$text" fontSize={18} fontWeight="700">
+            <AppText color="$text" fontSize={18} fontWeight="700">
               {t("session.summary_too_short_title")}
-            </Text>
-            <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
+            </AppText>
+            <AppText color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
               {/* A walk is not held, it is walked. The shared line says "you held out for", the
                   verb of a plank, which reads as faint praise after ninety seconds outdoors. */}
               {t(
@@ -673,7 +682,7 @@ export function VictoryView() {
                   : "session.summary_too_short_body",
                 { duration: formatDuration(durationSeconds, language) },
               )}
-            </Text>
+            </AppText>
             <AppButton
               variant="outline"
               borderColor="$error"
@@ -709,7 +718,7 @@ export function VictoryView() {
         {/* Feedback — above the fold: this answer is what steers the next
             session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}
         <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">
-          <Text
+          <AppText
             fontFamily="$body"
             fontWeight="700"
             fontSize={15}
@@ -717,7 +726,7 @@ export function VictoryView() {
             style={{ textAlign: "center" }}
           >
             {t("session.feedback_title")}
-          </Text>
+          </AppText>
           <XStack gap="$3" justify="center">
             {(
               [
@@ -753,14 +762,14 @@ export function VictoryView() {
                     size={22}
                     color={feedback === value ? accent : result ? "$text" : "$textSecondary"}
                   />
-                  <Text
+                  <AppText
                     color={result ? "$text" : "$textSecondary"}
                     fontSize={12}
                     fontWeight="700"
                     style={{ textAlign: "center" }}
                   >
                     {t(`session.feedback_${value}`)}
-                  </Text>
+                  </AppText>
                 </YStack>
               </Button>
             ))}
@@ -770,13 +779,13 @@ export function VictoryView() {
         {/* A failed save: the only thing that replaces "Tonight". */}
         {!!saveError && (
           <YStack width="100%" maxW={520} items="center" gap="$3">
-            <Text color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
+            <AppText color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
               {t("errors.save_session_failed")}
-            </Text>
+            </AppText>
             <AppButton backgroundColor="$surface2" onPress={runSave}>
-              <Text color="$text" fontSize={16} fontWeight="700">
+              <AppText color="$text" fontSize={16} fontWeight="700">
                 {t("common.retry")}
-              </Text>
+              </AppText>
             </AppButton>
           </YStack>
         )}
@@ -795,7 +804,7 @@ export function VictoryView() {
             {/* Last thing on the page and far from the sticky Continue, so it is found by looking for
                 it and never by reaching for the next button. */}
             {!!result && (
-              <Text
+              <AppText
                 testID="session-victory-forget"
                 accessibilityRole="button"
                 onPress={handleForget}
@@ -806,11 +815,11 @@ export function VictoryView() {
                 textDecorationLine="underline"
               >
                 {t("session.summary_forget")}
-              </Text>
+              </AppText>
             )}
           </>
         ) : (
-          <Text
+          <AppText
             testID="victory-see-all"
             accessibilityRole="button"
             onPress={() => setExpanded(true)}
@@ -822,7 +831,7 @@ export function VictoryView() {
             textDecorationLine="underline"
           >
             {t("session.victory_see_all")}
-          </Text>
+          </AppText>
         )}
       </ScrollView>
 

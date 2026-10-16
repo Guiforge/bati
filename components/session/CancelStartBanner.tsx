@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { X } from "@/components/icons";
 import { isOutingSession } from "@/db/expeditions";
 import { useExpeditionStore } from "@/stores/expedition";
@@ -95,15 +96,15 @@ export function CancelStartBanner() {
       gap="$2"
       accessibilityLiveRegion="polite"
     >
-      <Text flex={1} fontSize={13} color="$textSecondary">
+      <AppText flex={1} fontSize={13} color="$textSecondary">
         {t("session.expedition_cancel_start_hint")}
-      </Text>
+      </AppText>
       {/* The word is "Cancel the start", never plain "Cancel": everywhere else in the app that
           word means "do nothing", and here the gesture throws a session and its ground away. */}
       <YStack height={44} justify="center" px="$2" accessibilityRole="button" onPress={quitSession}>
-        <Text fontSize={13} fontWeight="700" color="$primaryText">
+        <AppText fontSize={13} fontWeight="700" color="$primaryText">
           {t("session.expedition_cancel_start")}
-        </Text>
+        </AppText>
       </YStack>
       <YStack
         width={44}

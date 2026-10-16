@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { Moon } from "@/components/icons";
 import { restMessageKey } from "@/constants/restMessages";
 import { dayKey } from "@/db/dates";
@@ -48,9 +49,9 @@ export function RestNote() {
       <YStack pt={1}>
         <Moon size={13} color="$textSecondary" />
       </YStack>
-      <Text fontSize={11} color="$textSecondary" flex={1} lineHeight={15}>
+      <AppText fontSize={11} color="$textSecondary" flex={1} lineHeight={15}>
         {text}
-      </Text>
+      </AppText>
     </XStack>
   );
 }

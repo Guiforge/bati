@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Text, XStack, YStack } from "tamagui";
+import { Button, H1, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
+import { FONT_CAPS } from "@/components/common/fontCaps";
 import { Pause, SkipBack, SkipForward } from "@/components/icons";
 import { getExerciseAsset } from "@/constants/assetMap";
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
@@ -131,9 +133,9 @@ export function WarmupView() {
   return (
     <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16} px="$5" gap="$4">
       <XStack justify="space-between" items="center">
-        <Text fontSize={13} fontWeight="700" color="$textSecondary" letterSpacing={1}>
+        <AppText fontSize={13} fontWeight="700" color="$textSecondary" letterSpacing={1}>
           {t("session.warmup_title")}
-        </Text>
+        </AppText>
         <Button
           testID="session-pause"
           size="$3"
@@ -186,7 +188,7 @@ export function WarmupView() {
             ) : null}
 
             <YStack items="center" gap="$1">
-              <Text
+              <AppText
                 testID="warmup-name"
                 fontFamily="$heading"
                 fontWeight="700"
@@ -195,16 +197,16 @@ export function WarmupView() {
                 style={{ textAlign: "center" }}
               >
                 {label}
-              </Text>
+              </AppText>
               {eachSide ? (
-                <Text
+                <AppText
                   testID="warmup-sides"
                   fontSize={15}
                   fontWeight="700"
                   color={switched ? "$warning" : "$textSecondary"}
                 >
                   {switched ? t("session.switch_sides") : t("session.each_side", { seconds: half })}
-                </Text>
+                </AppText>
               ) : null}
             </YStack>
 
@@ -215,6 +217,7 @@ export function WarmupView() {
             ) : null}
 
             <H1
+              maxFontSizeMultiplier={FONT_CAPS.display}
               color="$text"
               fontFamily="$body"
               fontSize={64}
@@ -250,15 +253,15 @@ export function WarmupView() {
         />
 
         <YStack items="center" minW={96}>
-          <Text fontSize={13} color="$textSecondary">
+          <AppText fontSize={13} color="$textSecondary">
             {t("session.warmup_step", {
               current: warmupIndex + 1,
               total: warmupSequence.length,
             })}
-          </Text>
-          <Text testID="warmup-left" fontSize={13} color="$textSecondary">
+          </AppText>
+          <AppText testID="warmup-left" fontSize={13} color="$textSecondary">
             {t("session.warmup_left", { time: formatTime(left) })}
-          </Text>
+          </AppText>
         </YStack>
 
         <Button
@@ -308,9 +311,9 @@ export function WarmupView() {
           accessibilityRole="button"
           style={{ alignSelf: "center" }}
         >
-          <Text py="$2" fontSize={14} fontWeight="700" color="$textSecondary">
+          <AppText py="$2" fontSize={14} fontWeight="700" color="$textSecondary">
             {t("setAside.not_for_me")}
-          </Text>
+          </AppText>
         </Pressable>
       ) : null}
 

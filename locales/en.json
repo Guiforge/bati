@@ -1098,6 +1098,10 @@
         "title": "Path Climbed",
         "description": "Own every rung of one path"
       },
+      "three_paths_climbed": {
+        "title": "Three Paths",
+        "description": "Climb three paths"
+      },
       "first_outing": {
         "title": "Out the Gate",
         "description": "Finish one outing"

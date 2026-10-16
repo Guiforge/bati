@@ -1155,6 +1155,10 @@
         "title": "Senda coronada",
         "description": "Domina cada etapa de una senda"
       },
+      "three_paths_climbed": {
+        "title": "Tres vías escaladas",
+        "description": "Escala tres vías"
+      },
       "first_outing": {
         "title": "Fuera de las murallas",
         "description": "Termina una salida"

@@ -45,6 +45,7 @@ export const achievementCodes = [
   // Skill. Thirty-four achievements counted sessions, flames, XP, hours and quest variety — the
   // most worked-on progression system in the app was the only one its reward system ignored.
   "path_climbed", // Own every rung of one path on the variation ladder
+  "three_paths_climbed", // Climb three paths
   // Ground. Every other badge here says "workout", and 0049 stopped a walk from claiming any of
   // them — which leaves a hero who mostly goes outside with a shelf that never fills. These two
   // are the ones a walk can take, and the only ones it can.
@@ -206,6 +207,12 @@ const DEFINITIONS: Pick<AchievementDefinition, "code" | "icon" | "category">[] =
     category: "special",
   },
   {
+    // Same rule as path_climbed: no XP, no points, the trophy is the progress.
+    code: "three_paths_climbed",
+    icon: "crown",
+    category: "special",
+  },
+  {
     code: "first_outing",
     icon: "Footprints",
     category: "special",
@@ -348,9 +355,9 @@ export async function getAllAchievementsWithProgress(): Promise<AchievementProgr
   const streakInfo = await getStreakInfo();
   const bestStreak = streakInfo.best;
 
-  // Mastery never falls back (see `countClimbedPaths`), so an unlocked path needs no second look at
-  // the whole journal.
-  const climbedPaths = unlockedMap.has("path_climbed") ? 1 : await countClimbedPaths();
+  // Mastery never falls back (see `countClimbedPaths`), so once "three paths" is won the count is
+  // settled; until then it is recounted, because path_climbed alone only proves one.
+  const climbedPaths = unlockedMap.has("three_paths_climbed") ? 3 : await countClimbedPaths();
 
   // Calculate progress for each achievement
   return achievementDefinitions.map((def) => {
@@ -446,6 +453,10 @@ export async function getAllAchievementsWithProgress(): Promise<AchievementProgr
       case "path_climbed":
         currentValue = Math.min(1, climbedPaths);
         targetValue = 1;
+        break;
+      case "three_paths_climbed":
+        currentValue = Math.min(3, climbedPaths);
+        targetValue = 3;
         break;
       // Special achievements - binary (either done or not)
       case "first_outing":
@@ -637,10 +648,17 @@ export async function checkForNewAchievements(sessionInfo: {
 
   // A whole route owned, summit included. Measured over the whole journal rather than the ladder's
   // recency window: what the shelf records is that it happened, and that cannot un-happen.
-  if (!unlockedCodes.has("path_climbed") && (await countClimbedPaths()) > 0) {
-    const def = getAchievementDefinition("path_climbed");
-    if (def && (await unlockAchievement("path_climbed"))) {
-      newlyUnlocked.push({ code: "path_climbed", definition: def });
+  if (!unlockedCodes.has("path_climbed") || !unlockedCodes.has("three_paths_climbed")) {
+    const climbed = await countClimbedPaths();
+    const wins: [AchievementCode, number][] = [
+      ["path_climbed", 1],
+      ["three_paths_climbed", 3],
+    ];
+    for (const [code, needed] of wins) {
+      const def = getAchievementDefinition(code);
+      if (!unlockedCodes.has(code) && climbed >= needed && def && (await unlockAchievement(code))) {
+        newlyUnlocked.push({ code, definition: def });
+      }
     }
   }
 

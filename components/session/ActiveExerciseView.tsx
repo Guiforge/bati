@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
@@ -11,12 +11,9 @@ import { FONT_CAPS } from "@/components/common/fontCaps";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Crosshair, Minus, Pause, Plus } from "@/components/icons";
 import { formatShare } from "@/components/journal/journalFormat";
-import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
-import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { slotCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
-import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import { fade, rawColors } from "@/constants/rawColors";
 import {
   CRIT_CHANCE_ONE_REP,
@@ -24,16 +21,13 @@ import {
   DAMAGE_REPS_PAST_TARGET,
   MAX_CRIT_CHANCE,
 } from "@/db/bossFights";
-import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
-import { preferences } from "@/db/preferences";
 import { formatSlotTarget, prescribedValue, TARGET_RANGE } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
-import { useSetAside } from "@/hooks/useSetAside";
 import { useSideSwitch } from "@/hooks/useSideSwitch";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import {
@@ -44,7 +38,6 @@ import {
   sidePhase,
 } from "@/src/perSide";
 
-import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
@@ -55,6 +48,7 @@ import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { ExpeditionPanel } from "./ExpeditionPanel";
 import { GhostLine } from "./GhostLine";
 import { LiveMap } from "./LiveMap";
+import { SessionSwapSheet } from "./SessionSwapSheet";
 import { SwitchGlow } from "./SwitchGlow";
 import { sessionArtHeight } from "./sessionArt";
 import { TimerBar } from "./TimerBar";
@@ -114,34 +108,7 @@ export function ActiveExerciseView() {
   const skipExercise = useSessionStore((s) => s.skipExercise);
   const swapCurrentExercise = useSessionStore((s) => s.swapCurrentExercise);
 
-  // Loaded when the session screen mounts, not when the sheet opens: the moment a hero reaches
-  // for this is the moment they are stuck, and a spinner there is the worst possible time.
-  // `listExercises()` is promise-cached, so this is free after the first read anywhere in the app.
-  const [catalogue, setCatalogue] = useState<Exercise[]>([]);
-  const [owned, setOwned] = useState<ReadonlySet<string> | null>(null);
-  const [setAsideIds, setSetAsideIds] = useState<ReadonlySet<number>>(new Set());
   const [swapOpen, setSwapOpen] = useState(false);
-  const [leaveOut, setLeaveOut] = useState(false);
-  const { setAside } = useSetAside();
-
-  useEffect(() => {
-    let alive = true;
-    Promise.all([
-      listExercises(),
-      preferences.getOwnedEquipment(),
-      preferences.getSetAsideExercises(),
-    ])
-      .then(([all, equipment, aside]) => {
-        if (!alive) return;
-        setCatalogue(all);
-        setOwned(equipment === null ? null : new Set(equipment));
-        setSetAsideIds(new Set(aside.map((e) => e.id)));
-      })
-      .catch((e) => reportError("session.catalogue", e));
-    return () => {
-      alive = false;
-    };
-  }, []);
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const resumeSession = useSessionStore((s) => s.resumeSession);
   const nextSide = useSessionStore((s) => s.nextSide);
@@ -287,26 +254,6 @@ export function ActiveExerciseView() {
     const before = useSessionStore.getState();
     skipExercise();
     if (useSessionStore.getState() === before) setSkipRefused(true);
-  };
-
-  // Ladder rungs first, then the same pattern, then the family — `rankSwapCandidates` already
-  // encodes that order for the quest screen, and a hero stuck mid-set wants the easier rung at
-  // the top of the list.
-  // What the hero set aside is never offered back as a replacement.
-  const swapCandidates = swapOpen
-    ? rankSwapCandidates(pickableExercises(catalogue), currentEx.exercise, owned as never).filter(
-        // After the ranking: a set-aside rung removed first would cut the ladder walk at the gap.
-        (c) => !setAsideIds.has(c.exercise.id),
-      )
-    : [];
-  const swapReasons = new Map(swapCandidates.map((c) => [c.exercise.id, c.reason] as const));
-
-  const swapReasonLabel = (reason: SwapReason | null | undefined): string | null => {
-    if (reason === "easier") return t("quests.swap_reason_easier");
-    if (reason === "harder") return t("quests.swap_reason_harder");
-    if (reason === "same_pattern") return t("quests.swap_reason_pattern");
-    if (reason === "same_family") return t("quests.swap_reason_family");
-    return null;
   };
 
   const handleAdjustReps = (delta: number) => {
@@ -1050,42 +997,12 @@ export function ActiveExerciseView() {
         onClose={handleCloseHowTo}
       />
 
-      <ExercisePickerSheet
-        exercises={swapCandidates.map((c) => c.exercise)}
-        pickedIds={[currentEx.exercise.id]}
-        language={language}
+      <SessionSwapSheet
         open={swapOpen}
-        onOpenChange={(next) => {
-          setSwapOpen(next);
-          if (!next) setLeaveOut(false);
-        }}
-        title={t("quests.swap_exercise")}
-        header={
-          <SetAsideToggle exercise={currentEx.exercise} checked={leaveOut} onToggle={setLeaveOut} />
-        }
-        onPick={(exercise) => {
-          if (leaveOut) {
-            const left = currentEx.exercise;
-            // Offered again in this sheet when it is not set aside after all: the write failed,
-            // or the toast's "Put back" undid it. The swap itself stands, it was a choice of its own.
-            const offerAgain = () =>
-              setSetAsideIds((prev) => new Set([...prev].filter((id) => id !== left.id)));
-            setSetAsideIds((prev) => new Set([...prev, left.id]));
-            setAside(left, offerAgain)
-              .then((ok) => {
-                if (!ok) offerAgain();
-              })
-              .catch(() => {
-                // Reported by `useSetAside`, which never rejects.
-              });
-          }
-          swapCurrentExercise(exercise);
-          setSwapOpen(false);
-          setLeaveOut(false);
-        }}
-        captionFor={(exercise) => swapReasonLabel(swapReasons.get(exercise.id))}
-        bottomInset={insets.bottom}
-        pickAction={null}
+        onOpenChange={setSwapOpen}
+        slot={currentEx}
+        language={language}
+        onPick={swapCurrentExercise}
       />
 
       {/* Last, so it lies over everything, and touches nothing. */}

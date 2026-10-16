@@ -1576,6 +1576,39 @@ describe("useSessionStore", () => {
       expect(slot?.images).toEqual([]);
     });
 
+    // The roadmap's "un remplacement fait au repos change bien l'exo qui suit".
+    test("a replacement made during the rest is the movement that starts after it", async () => {
+      await store.getState().completeExercise(10);
+      expect(store.getState().status).toBe("resting");
+      expect(store.getState().currentExerciseIndex).toBe(1);
+
+      store.getState().swapCurrentExercise(easier);
+      store.getState().skipRest();
+
+      expect(store.getState().status).toBe("running");
+      expect(store.getState().quest?.exercises[1]?.exercise.id).toBe(easier.id);
+      // The movement it replaces was done once and is left alone.
+      expect(store.getState().results[0]?.exerciseId).toBe(1);
+    });
+
+    // What the rest screen really does: it pauses the clock while the sheet is open, and a
+    // paused session refuses a swap, so the pick has to resume first.
+    test("a paused rest refuses the swap, and resuming first makes it count", async () => {
+      await store.getState().completeExercise(10);
+      store.getState().pauseSession();
+      expect(store.getState().status).toBe("paused");
+
+      store.getState().swapCurrentExercise(easier);
+      expect(store.getState().quest?.exercises[1]?.exercise.id).toBe(2);
+
+      store.getState().resumeSession();
+      expect(store.getState().status).toBe("resting");
+      store.getState().swapCurrentExercise(easier);
+      store.getState().skipRest();
+
+      expect(store.getState().quest?.exercises[1]?.exercise.id).toBe(easier.id);
+    });
+
     // A target lowered to 1 on the quest screen keeps its "the app asked for ten" through a
     // swap. Dropped, the 1 became what was prescribed on the new movement, and one rep was a
     // clean session on its rung.

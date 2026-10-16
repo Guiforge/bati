@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet } from "react-native";
+import { BackHandler, Pressable, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, XStack, YStack } from "tamagui";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
@@ -13,6 +13,8 @@ import { Minus, Pause, Plus } from "@/components/icons";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { getExerciseThumb } from "@/constants/assetMap";
 import type { CompletedExerciseInput } from "@/db/completed";
+import type { Exercise } from "@/db/exercises";
+import { isOutdoors } from "@/db/expeditions";
 import { formatSlotTarget, PER_SIDE, targetRangeFor } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -25,6 +27,7 @@ import { holdNeedingAnswer, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { CountInput } from "./CountInput";
 import { ExerciseInstructionsModal } from "./ExerciseInstructions";
+import { SessionSwapSheet } from "./SessionSwapSheet";
 import { TimerBar } from "./TimerBar";
 
 // One campfire per avatar archetype (scripts/generate-rest.py); a rest draws one at random.
@@ -54,6 +57,7 @@ export function RestView() {
   const status = useSessionStore((s) => s.status);
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const resumeSession = useSessionStore((s) => s.resumeSession);
+  const swapCurrentExercise = useSessionStore((s) => s.swapCurrentExercise);
   const { remainingSeconds, progress } = useSessionTimer();
   // The rest behind the last set: the index points past the last movement, and nothing starts
   // when the clock runs out, only the summary. Also what a snapshot restored against a quest
@@ -68,6 +72,7 @@ export function RestView() {
   // before handing over — which is exactly the one the "up next" card names.
   const instruction = useSessionInstructions();
   const [showHowTo, setShowHowTo] = useState(false);
+  const [swapOpen, setSwapOpen] = useState(false);
   // Drawn once per rest: this view is mounted and unmounted by `displayStatus`, so the mount is
   // the rest, and the pick must not re-roll on every timer tick's render.
   const [restArt] = useState(() => REST_ART[Math.floor(Math.random() * REST_ART.length)]);
@@ -91,6 +96,19 @@ export function RestView() {
     if (status !== "resting" || remainingSeconds > 0) return;
     skipRest();
   }, [status, remainingSeconds, skipRest]);
+
+  // The swap sheet is a Tamagui Sheet, which listens to no hardware back, and a paused session lets
+  // `app/session.tsx` navigate away on back. So while it is open, back closes it and resumes, and
+  // says it handled the press (the last subscriber is asked first, before the session screen's).
+  useEffect(() => {
+    if (!swapOpen) return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      setSwapOpen(false);
+      resumeSession();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [swapOpen, resumeSession]);
 
   if (!quest) return null;
 
@@ -123,6 +141,27 @@ export function RestView() {
   const handleCloseHowTo = () => {
     resumeSession();
     setShowHowTo(false);
+  };
+
+  // The clock must not run out under an open sheet and start the movement being replaced, so the
+  // rest is paused like it is for the how-to. A paused session refuses a swap
+  // (`swapCurrentExercise` takes running or resting), so a pick resumes first, then swaps; the
+  // sheet closes itself after, and its `onOpenChange(false)` resumes again, which is a no-op.
+  // Closing without a pick (drag, backdrop) resumes through that same call.
+  const handleOpenSwap = () => {
+    selection();
+    pauseSession();
+    setSwapOpen(true);
+  };
+
+  const handleSwapOpenChange = (open: boolean) => {
+    setSwapOpen(open);
+    if (!open) resumeSession();
+  };
+
+  const handlePickSwap = (exercise: Exercise) => {
+    resumeSession();
+    swapCurrentExercise(exercise);
   };
 
   const handleSkipRest = () => {
@@ -305,6 +344,27 @@ export function RestView() {
               </AppText>
             ) : null}
 
+            {/* Where the hero is: the movement about to start, in the running screen's own words. At
+                a round rest the index is already the next round's first movement. */}
+            {isFinal ? null : (
+              <AppText
+                testID="rest-position"
+                variant="label"
+                color="$textSecondary"
+                fontSize={12}
+                fontWeight="700"
+                letterSpacing={1}
+              >
+                {`${t("session.round_label", {
+                  count: currentRoundIndex + 1,
+                  total: quest.rounds,
+                })} · ${t("session.exercise_label", {
+                  count: currentExerciseIndex + 1,
+                  total: quest.exercises.length,
+                })}`}
+              </AppText>
+            )}
+
             {/* Up Next Card. Tappable: the rest is the one moment reading is free, and the movement
               the hero is about to do is the one worth reading about. Same modal the running
               screen opens from its artwork. */}
@@ -356,6 +416,30 @@ export function RestView() {
                 </YStack>
               </XStack>
             </YStack>
+
+            {/* Beside the card, not inside it: the card opens the how-to on a press, and a link in
+                its press area would answer both. Not on an outing's slot: a walk has no movement
+                to swap, same predicate as the running screen. */}
+            {nextEx && !isOutdoors(nextEx.exercise.style) ? (
+              <Pressable
+                testID="rest-swap"
+                hitSlop={12}
+                onPress={handleOpenSwap}
+                accessibilityRole="button"
+                accessibilityLabel={t("quests.swap_exercise")}
+                style={{ alignSelf: "flex-start" }}
+              >
+                <AppText
+                  py="$2"
+                  fontSize={12}
+                  fontWeight="700"
+                  color="$textSecondary"
+                  numberOfLines={1}
+                >
+                  {t("session.swap_short")}
+                </AppText>
+              </Pressable>
+            ) : null}
           </YStack>
 
           {/* A villager, if one came: last, so nothing the hero aims at depends on whether anyone
@@ -381,6 +465,16 @@ export function RestView() {
         visible={showHowTo}
         onClose={handleCloseHowTo}
       />
+
+      {nextEx ? (
+        <SessionSwapSheet
+          open={swapOpen}
+          onOpenChange={handleSwapOpenChange}
+          slot={nextEx}
+          language={language}
+          onPick={handlePickSwap}
+        />
+      ) : null}
     </YStack>
   );
 }

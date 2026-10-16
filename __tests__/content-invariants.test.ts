@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { WARMUP_MOVEMENTS } from "../constants/warmup";
 import { type DifficultyCode, movementPatterns, type QuestArchetype } from "../db/schema";
@@ -459,6 +459,30 @@ describe("content invariants", () => {
     const missing = MOVEMENT_PATTERNS.filter((p) => !covered.has(p) && !uncoverable.has(p));
 
     expect(missing).toEqual([]);
+  });
+
+  // `src/plus/access.ts` names the Bati+ adventures by seed title. A rename, or a new seeded
+  // adventure, fails here instead of silently locking or unlocking a poster, and forces the
+  // product call on which side it goes.
+  test("the Bati+ adventures and the free ones are exactly the eight the roadmap names", async () => {
+    const { PLUS_ADVENTURE_TITLES } =
+      require("../src/plus/access") as typeof import("../src/plus/access");
+    const schema = require("../db/schema") as typeof import("../db/schema");
+    const rows = await t.db
+      .select({ enTitle: schema.adventures.enTitle })
+      .from(schema.adventures)
+      .where(and(eq(schema.adventures.isActive, 1), eq(schema.adventures.author, "Admin")));
+    const titles = rows.map((r) => r.enTitle);
+
+    for (const plus of PLUS_ADVENTURE_TITLES)
+      expect(titles.filter((x) => x === plus)).toHaveLength(1);
+    const free = titles.filter((x) => !(PLUS_ADVENTURE_TITLES as readonly string[]).includes(x));
+    expect(free.sort()).toEqual([
+      "The Lumber Route",
+      "The Monk's Enlightenment",
+      "The Scout's Trial",
+      "The Squire's Path",
+    ]);
   });
 
   test("boss adventures declare hp, weakness and resistance", async () => {

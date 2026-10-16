@@ -390,7 +390,12 @@
     "kind_event": "EVENTO",
     "kind_boss": "JEFE",
     "empty_title": "Aún no hay aventuras",
-    "empty_subtitle": "Vuelve pronto. La aldea está preparando aventuras."
+    "empty_subtitle": "Vuelve pronto. La aldea está preparando aventuras.",
+    "plus_section": "Con Bati+",
+    "plus_more_one": "Una aventura más con Bati+",
+    "plus_more_other": "{{count}} aventuras más con Bati+",
+    "plus_more_many": "{{count}} aventuras más con Bati+",
+    "plus_locked": "Esta aventura viene con Bati+. Cada una de sus misiones se juega sola, desde Misiones."
   },
   "boss": {
     "hp": "PV",
@@ -2728,5 +2733,13 @@
         "line": "Cuatro semanas intensas seguidas. Esta semana toca aligerar, no parar."
       }
     ]
+  },
+  "plus": {
+    "exercise_quota_one": "Ya tienes {{count}} ejercicio propio. Para crear más, necesitas Bati+.",
+    "exercise_quota_other": "Ya tienes {{count}} ejercicios propios. Para crear más, necesitas Bati+.",
+    "exercise_quota_many": "Ya tienes {{count}} ejercicios propios. Para crear más, necesitas Bati+.",
+    "quest_quota_one": "Ya tienes {{count}} misión propia. Para crear más, necesitas Bati+. Las misiones nacidas de una salida no cuentan.",
+    "quest_quota_other": "Ya tienes {{count}} misiones propias. Para crear más, necesitas Bati+. Las misiones nacidas de una salida no cuentan.",
+    "quest_quota_many": "Ya tienes {{count}} misiones propias. Para crear más, necesitas Bati+. Las misiones nacidas de una salida no cuentan."
   }
 }

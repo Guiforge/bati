@@ -1012,3 +1012,54 @@ describe("the years of the village follow the journal, not the device", () => {
     expect(a?.ages).toMatchObject([{ level: 50, source: "rung", exerciseId: id }]);
   });
 });
+
+// Entitlement is store state, not data (P-04.2): a free account on a store source is refused
+// creating past its quota, and never refused what another device made.
+describe("Bati+ quotas never stop a merge", () => {
+  beforeEach(() => {
+    jest.doMock("@/src/plus/source", () => ({
+      readEntitlements: () => ({ source: "play", plus: false }),
+    }));
+  });
+  afterEach(() => {
+    jest.dontMock("@/src/plus/source");
+  });
+  const access = () => require("@/src/plus/access") as typeof import("@/src/plus/access");
+
+  test("twelve hero exercises from the other device all arrive on a free account", async () => {
+    const file = await peer("tablet.db", (sqlite) => {
+      for (let i = 0; i < 12; i++) heroExercise(sqlite, `Theirs ${i}`, 100 + i);
+    });
+
+    expect(await merge().mergePeer(file)).toMatchObject({ merged: true });
+
+    const heroes = t.sqlite.prepare("SELECT id FROM exercises WHERE creator = 'hero'").all();
+    expect(heroes).toHaveLength(12);
+    await converged(file);
+    expect(await access().can({ kind: "createExercise" })).toBe(false);
+    const exercises = require("../db/exercises") as typeof import("../db/exercises");
+    const mine = (await exercises.listExercises()).find((e) => e.creator === "hero");
+    assert(mine);
+    await exercises.updateUserExercise(mine.id, {
+      ...exercises.DEFAULT_USER_EXERCISE_DRAFT,
+      name: "Renamed",
+      description: "",
+    });
+  });
+
+  test("a free account already at its quests takes the other device's new quests", async () => {
+    heroQuest(t.sqlite, "A", 100, U1);
+    heroQuest(t.sqlite, "B", 100, U2);
+    heroQuest(t.sqlite, "C", 100, "0192b000-0000-7000-8000-000000000003");
+    const file = await peer("tablet.db", (sqlite) => {
+      heroQuest(sqlite, "D", 200, "0192b000-0000-7000-8000-000000000004");
+      heroQuest(sqlite, "E", 200, "0192b000-0000-7000-8000-000000000005");
+    });
+
+    expect(await merge().mergePeer(file)).toMatchObject({ merged: true });
+
+    expect(heroQuests()).toHaveLength(5);
+    expect(await access().can({ kind: "createQuest" })).toBe(false);
+    await converged(file);
+  });
+});

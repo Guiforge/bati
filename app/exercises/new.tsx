@@ -8,6 +8,7 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
+import { QuotaPanel } from "@/components/common/QuotaPanel";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
 import { Check, ChevronDown, ChevronLeft, ChevronUp } from "@/components/icons";
@@ -31,6 +32,7 @@ import {
   muscleCodes,
   questTargetTypes,
 } from "@/db/schema";
+import { quotaRefusal } from "@/src/plus/access";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -71,6 +73,22 @@ export default function ExerciseEditor() {
   const [details, setDetails] = useState<Details>(DEFAULT_USER_EXERCISE_DRAFT);
   const [showDetails, setShowDetails] = useState(false);
   const [saving, setSaving] = useState(false);
+  // How many the hero holds once creating is refused. The form shows until the answer says
+  // otherwise, so nothing changes a frame where nothing is refused, and edit mode never asks.
+  const [refusedAt, setRefusedAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (editingId !== null) return;
+    let cancelled = false;
+    quotaRefusal("createExercise")
+      .then((held) => {
+        if (!cancelled) setRefusedAt(held);
+      })
+      .catch((error: unknown) => reportError("exercises.editor.quota", error));
+    return () => {
+      cancelled = true;
+    };
+  }, [editingId]);
 
   useEffect(() => {
     if (editingId === null) return;
@@ -134,6 +152,17 @@ export default function ExerciseEditor() {
       });
     setSaving(false);
   }, [details, description, editingId, name, router, showError, t]);
+
+  if (refusedAt !== null) {
+    return (
+      <YStack flex={1} bg="$background" p={20} pt={insets.top + 12} gap="$4">
+        <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+          {t("exercise_editor.title_new")}
+        </Text>
+        <QuotaPanel text={t("plus.exercise_quota", { count: refusedAt })} />
+      </YStack>
+    );
+  }
 
   return (
     <YStack flex={1} bg="$background">

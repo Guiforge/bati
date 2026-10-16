@@ -17,6 +17,12 @@ jest.mock("@/db/reminders", () => ({ getReminderDays: async () => ({}) }));
 jest.mock("@/db/preferences", () => ({
   preferences: { getTrainingLevel: async () => "regular" },
 }));
+// The rule itself is proven on a real database in plus-access.test.ts; here only the wiring.
+jest.mock("@/src/plus/access", () => ({
+  can: jest.fn(async () => true),
+  lockedAdventures: jest.fn(async () => new Set()),
+  quotaRefusal: jest.fn(async () => null),
+}));
 jest.mock("@/db/questConfig", () => ({ startingDifficulty: () => "medium" }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
@@ -233,5 +239,43 @@ describe("the caption under the tag", () => {
 
     await findByText("Hard");
     expect(queryByText("From your feedback")).toBeNull();
+  });
+});
+
+// Bati+ adventures the hero never started (P-04.2): no Start, and the first step opens its quest
+// alone, the way a completed step does. Nothing on this page may start a run.
+describe("a locked adventure page", () => {
+  const access = () => require("@/src/plus/access") as { can: jest.Mock };
+  const renderScreen = () =>
+    render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+
+  beforeEach(() => {
+    mockPush.mockClear();
+    access().can.mockResolvedValue(false);
+  });
+  afterEach(() => {
+    access().can.mockResolvedValue(true);
+  });
+
+  test("shows the line instead of Start, and the first row opens its quest alone", async () => {
+    const db = require("@/db") as { startAdventureRun: jest.Mock };
+    db.startAdventureRun.mockClear();
+    const { getByText, queryByTestId, findByTestId } = await renderScreen();
+
+    expect(await findByTestId("adventure-plus-locked")).toBeTruthy();
+    expect(queryByTestId("adventure-start")).toBeNull();
+
+    await fireEvent.press(await waitFor(() => getByText("Step 1: Step 0")));
+    expect(mockPush).toHaveBeenCalledWith("/quests/100?adventureId=1", { withAnchor: true });
+    expect(db.startAdventureRun).not.toHaveBeenCalled();
+
+    // The second row stays inert: pressing it pushes nothing.
+    mockPush.mockClear();
+    await fireEvent.press(getByText("Step 2: Step 1"));
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

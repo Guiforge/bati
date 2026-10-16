@@ -17,6 +17,12 @@ jest.mock("@/db/reminders", () => ({ getReminderDays: async () => ({}) }));
 jest.mock("@/db/preferences", () => ({
   preferences: { getTrainingLevel: async () => "regular" },
 }));
+// The rule itself is proven on a real database in plus-access.test.ts; here only the wiring.
+jest.mock("@/src/plus/access", () => ({
+  can: jest.fn(async () => true),
+  lockedAdventures: jest.fn(async () => new Set()),
+  quotaRefusal: jest.fn(async () => null),
+}));
 jest.mock("@/db/questConfig", () => ({ startingDifficulty: () => "medium" }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),

@@ -39,6 +39,7 @@ import { getAllQuestConfigs, startingDifficulty } from "@/db/questConfig";
 import { formatCount } from "@/db/targets";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
+import { lockedAdventures } from "@/src/plus/access";
 import { reportError } from "@/src/reportError";
 import { keepIfSame } from "@/src/sameContent";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -52,6 +53,8 @@ function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
 type GalleryData = {
   adventures: Adventure[];
   previews: ReadonlyMap<number, QuestPreview>;
+  /** Bati+ adventures this hero never started (P-04.2): grouped after the others, still tappable. */
+  locked: ReadonlySet<number>;
 };
 
 type LoadState =
@@ -308,7 +311,27 @@ function AdventureCard({
 }
 
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
-const adventureKey = (a: AdventureRow) => String(a.adventure.id);
+/** "With Bati+" and how many are still behind it, once, above the locked posters. */
+type PlusHeaderRow = { plusHeader: true; count: number };
+type GalleryItem = AdventureRow | PlusHeaderRow;
+
+const adventureKey = (item: GalleryItem) =>
+  "plusHeader" in item ? "plus-header" : String(item.adventure.id);
+const itemType = (item: GalleryItem) => ("plusHeader" in item ? "header" : "poster");
+
+function PlusHeader({ count }: { count: number }) {
+  const { t } = useTranslation();
+  return (
+    <YStack testID="adventures-plus-header" px="$5" pt="$3" gap="$1">
+      <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$text">
+        {t("adventures.plus_section")}
+      </Text>
+      <Text color="$textSecondary" fontSize={13}>
+        {t("adventures.plus_more", { count })}
+      </Text>
+    </YStack>
+  );
+}
 const ListGap = () => <YStack height={12} />;
 
 function StatusMessage({
@@ -392,6 +415,7 @@ export default function AdventuresGallery() {
     status: "loading",
     adventures: [],
     previews: new Map(),
+    locked: new Set(),
   });
   const [activeProgress, setActiveProgress] = useState<AdventureProgress | null>(null);
   const [finishedCounts, setFinishedCounts] = useState<Map<number, number>>(new Map());
@@ -410,41 +434,45 @@ export default function AdventuresGallery() {
       getAllQuestConfigs(),
       getRecentSessionHistory(10),
       preferences.getTrainingLevel(),
+      lockedAdventures(),
     ])
-      .then(([adventures, exercises, activeRun, finished, questConfigs, history, answer]) => {
-        const progress: AdventureProgress | null = activeRun
-          ? {
-              adventureId: activeRun.adventureId,
-              completedCount: activeRun.activeRun.steps.filter((s) => s.status === "completed")
-                .length,
-              currentIndex: activeRun.activeRun.activeStep?.stepIndex ?? 0,
-            }
-          : null;
-        // Same content, same identity: a focus with nothing new re-renders no poster.
-        setActiveProgress((previous) => keepIfSame(previous, progress));
-        setFinishedCounts((previous) => keepIfSame(previous, finished));
-        const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
-        // The cover quests, priced the way each one's own detail screen will price it, in one
-        // read for the whole gallery: see `previewQuests`. At the level a campaign would run at,
-        // which is the suggestion and not the hero's saved config: the poster said "up to +60 XP
-        // per step" over a detail screen quoting +90 for the same step.
-        const suggestion = suggestDifficultyFromSessions(history, {
-          maxSessions: 10,
-          defaultDifficulty: startingDifficulty(answer, history.length),
-        });
-        return previewQuests(
-          adventures.map((a) => a.coverQuest),
-          exercisesById,
-          questConfigs,
-          suggestion.level,
-        ).then((previews) => {
-          setState((s) => ({
-            status: "ready",
-            adventures,
-            previews: keepIfSame(s.previews, previews),
-          }));
-        });
-      })
+      .then(
+        ([adventures, exercises, activeRun, finished, questConfigs, history, answer, locked]) => {
+          const progress: AdventureProgress | null = activeRun
+            ? {
+                adventureId: activeRun.adventureId,
+                completedCount: activeRun.activeRun.steps.filter((s) => s.status === "completed")
+                  .length,
+                currentIndex: activeRun.activeRun.activeStep?.stepIndex ?? 0,
+              }
+            : null;
+          // Same content, same identity: a focus with nothing new re-renders no poster.
+          setActiveProgress((previous) => keepIfSame(previous, progress));
+          setFinishedCounts((previous) => keepIfSame(previous, finished));
+          const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
+          // The cover quests, priced the way each one's own detail screen will price it, in one
+          // read for the whole gallery: see `previewQuests`. At the level a campaign would run at,
+          // which is the suggestion and not the hero's saved config: the poster said "up to +60 XP
+          // per step" over a detail screen quoting +90 for the same step.
+          const suggestion = suggestDifficultyFromSessions(history, {
+            maxSessions: 10,
+            defaultDifficulty: startingDifficulty(answer, history.length),
+          });
+          return previewQuests(
+            adventures.map((a) => a.coverQuest),
+            exercisesById,
+            questConfigs,
+            suggestion.level,
+          ).then((previews) => {
+            setState((s) => ({
+              status: "ready",
+              adventures,
+              previews: keepIfSame(s.previews, previews),
+              locked: keepIfSame(s.locked, locked),
+            }));
+          });
+        },
+      )
       .catch((e: unknown) => {
         reportError("adventures.gallery", e);
         setState((s) => ({ ...s, status: "error" }));
@@ -464,36 +492,45 @@ export default function AdventuresGallery() {
   const adventures = state.adventures;
   const previews = state.previews;
 
-  const rows = useMemo(
-    () =>
-      // Ordered before the rows are built, so the sort reads the adventures themselves rather
-      // than the display strings derived from them.
-      adventureOrder(adventures, activeProgress?.adventureId ?? null, finishedCounts).map((a) =>
-        buildAdventureRow(
-          a,
-          finishedCounts.get(a.id) ?? 0,
-          language,
-          t,
-          previews.get(a.coverQuestId) ?? EMPTY_PREVIEW,
-          pace,
-        ),
-      ),
-    [adventures, finishedCounts, language, t, previews, activeProgress, pace],
-  );
+  const locked = state.locked;
+  const rows = useMemo(() => {
+    const build = (a: Adventure) =>
+      buildAdventureRow(
+        a,
+        finishedCounts.get(a.id) ?? 0,
+        language,
+        t,
+        previews.get(a.coverQuestId) ?? EMPTY_PREVIEW,
+        pace,
+      );
+    // Ordered before the rows are built, so the sort reads the adventures themselves rather
+    // than the display strings derived from them. Locked ones keep seed order, under a header.
+    const open = adventureOrder(
+      adventures.filter((a) => !locked.has(a.id)),
+      activeProgress?.adventureId ?? null,
+      finishedCounts,
+    ).map(build);
+    if (locked.size === 0) return open;
+    const header: PlusHeaderRow = { plusHeader: true, count: locked.size };
+    return [...open, header, ...adventures.filter((a) => locked.has(a.id)).map(build)];
+  }, [adventures, locked, finishedCounts, language, t, previews, activeProgress, pace]);
 
   const title = t("adventures.gallery_title");
 
   const onPressAdventure = (id: number) => router.push(`/adventures/${id}` as never);
 
-  const renderItem = ({ item }: { item: AdventureRow }) => (
-    <AdventureCard
-      row={item}
-      progress={
-        activeProgress && activeProgress.adventureId === item.adventure.id ? activeProgress : null
-      }
-      onPressAdventure={onPressAdventure}
-    />
-  );
+  const renderItem = ({ item }: { item: GalleryItem }) =>
+    "plusHeader" in item ? (
+      <PlusHeader count={item.count} />
+    ) : (
+      <AdventureCard
+        row={item}
+        progress={
+          activeProgress && activeProgress.adventureId === item.adventure.id ? activeProgress : null
+        }
+        onPressAdventure={onPressAdventure}
+      />
+    );
 
   return (
     <YStack testID="adventures-screen" flex={1} bg="$background">
@@ -526,6 +563,7 @@ export default function AdventuresGallery() {
           data={rows}
           renderItem={renderItem}
           keyExtractor={adventureKey}
+          getItemType={itemType}
           ItemSeparatorComponent={ListGap}
           recycleItems
           estimatedItemSize={300}

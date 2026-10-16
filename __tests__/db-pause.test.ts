@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { addDays, addWeeks, startOfDay } from "date-fns";
 import { dayKey } from "../db/dates";
 import { clientMock, createTestDb } from "./helpers/testDb";
@@ -183,6 +184,34 @@ describe("pause and zone", () => {
         expect((await cfg().getQuestConfig(questId, { raw: true }))?.targets).toBeUndefined();
         afterZone();
         expect((await cfg().getQuestConfig(questId))?.targets).toBeUndefined();
+      });
+
+      test("a target set during a zone for the movement shown never reaches the hidden swap", async () => {
+        const questId = questIdOf("Knight Push");
+        const row = t.sqlite
+          .prepare(
+            "SELECT qe.id FROM quest_exercises qe WHERE qe.questId = ? AND qe.exerciseId NOT IN (SELECT exerciseId FROM exercise_muscles WHERE muscle = 'shoulder')",
+          )
+          .get(questId) as { id: number } | undefined;
+        assert(row);
+        const slot = String(row.id);
+        await cfg().saveQuestConfig(questId, {
+          level: "medium",
+          swaps: { [slot]: idOf("Push-ups") },
+          targets: { [slot]: 20 },
+        });
+        await startZoneAt(["shoulder"], 1);
+        const shown = await cfg().getQuestConfig(questId);
+        expect(shown?.swaps).toBeUndefined();
+        await cfg().saveQuestConfig(questId, {
+          ...shown,
+          level: "medium",
+          targets: { [slot]: 15 },
+        });
+        afterZone();
+        const back = await cfg().getQuestConfig(questId);
+        expect(back?.swaps).toEqual({ [slot]: idOf("Push-ups") });
+        expect(back?.targets).toEqual({ [slot]: 20 });
       });
 
       test("a reset during a zone is not undone when it ends", async () => {

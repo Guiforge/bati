@@ -272,19 +272,107 @@ export const MERGED_PREFERENCES = [
 ] as const;
 
 /**
+ * The columns two schemas' copies of a table share, by name, minus `without`: the same list whichever
+ * device reads the other, and safe against a peer on an older build. `columnsOf` in db/merge.ts reads
+ * `main` alone, so it must not be used for this.
+ */
+export async function sharedColumns(
+  conn: IsolatedConnection,
+  other: string,
+  table: string,
+  without: string[] = ["id"],
+): Promise<string[]> {
+  const rows = await conn.getAllAsync<{ name: string }>(
+    `SELECT name FROM pragma_table_info(${sqlString(table)}, 'main')
+     INTERSECT SELECT name FROM pragma_table_info(${sqlString(table)}, ${sqlString(other)})
+     ORDER BY name`,
+  );
+  return rows.map((r) => r.name).filter((name) => !without.includes(name));
+}
+
+/** A movement as the other device names it: Admin by seed name, hero by uuid (else name). */
+const exerciseIdentity = (schema: string, idExpr: string) =>
+  `(SELECT CASE e.creator WHEN 'Admin' THEN 'A:' || e.enName ELSE 'H:' || ifnull(e.uuid, e.enName) END
+    FROM ${schema}.exercises e WHERE e.id = ${idExpr})`;
+
+/**
+ * A hero row and its children as one text, the same on every device (no local ids): the total order
+ * that settles two edits of one row in the same second (roadmap 4.18b). Plain JSON text compared as
+ * a string, since SQLite core has no hash function and none is needed for a tie-break.
+ */
+export function canonical(
+  schema: string,
+  table: "exercises" | "quests",
+  alias: string,
+  columns: string[],
+): string {
+  const own = columns.map((c) =>
+    c === "prerequisiteExerciseId"
+      ? exerciseIdentity(schema, `${alias}."${c}"`)
+      : `${alias}."${c}"`,
+  );
+  const children =
+    table === "exercises"
+      ? `(SELECT json_group_array(muscle ORDER BY muscle) FROM ${schema}.exercise_muscles
+          WHERE exerciseId = ${alias}.id)`
+      : `(SELECT json_group_array(json_array(${exerciseIdentity(schema, "qe.exerciseId")}, qe.sortOrder,
+            qe.targetType, qe.targetMin, qe.targetMax, qe.imagesJson) ORDER BY qe.sortOrder)
+          FROM ${schema}.quest_exercises qe WHERE qe.questId = ${alias}.id)`;
+  return `json_array(${[...own, children].join(", ")})`;
+}
+
+/** A session's sets as one text, for two corrections stamped in the same second. */
+export function setsCanon(schema: string, alias: string, columns: string[]): string {
+  const cols = columns.filter((c) => c !== "exerciseId").map((c) => `c."${c}"`);
+  return `(SELECT json_group_array(json_array(${exerciseIdentity(schema, "c.exerciseId")}, ${cols.join(", ")})
+      ORDER BY c.roundIndex, c.sortOrder, c.id)
+    FROM ${schema}.completed_exercises c WHERE c.sessionId = ${alias}.id)`;
+}
+
+/** The columns `canonical` reads, for each table, in the comparison and in the merge. */
+export type CanonicalColumns = { exercises: string[]; quests: string[]; sets: string[] };
+
+export async function canonicalColumns(
+  conn: IsolatedConnection,
+  other: string,
+): Promise<CanonicalColumns> {
+  return {
+    exercises: await sharedColumns(conn, other, "exercises"),
+    quests: await sharedColumns(conn, other, "quests"),
+    sets: await sharedColumns(conn, other, "completed_exercises", ["id", "sessionId"]),
+  };
+}
+
+/**
  * A device's hero-authored content as `(identity, updatedAt)` rows, over `schema`. Hero rows have
  * no cross-device id yet (roadmap 4.18 phase 4), so an exercise is named by its English name, a
  * quest by its titles, a preference by its key. Good enough to tell "something was written here".
  */
-function heroContent(schema: string, named: boolean): string {
+function heroContent(schema: string, named: boolean, canon: CanonicalColumns | null): string {
   const keys = MERGED_PREFERENCES.map(sqlString).join(", ");
   // By uuid (0066), as `mergePeer` matches them, so a rename is a change to one row and not a row
   // gone plus a row new. A database from before 0066 has no such column and keeps its names.
   const exercise = named ? "ifnull(uuid, enName)" : "enName";
   const quest = named ? "ifnull(uuid, enTitle || '/' || frTitle)" : "enTitle || '/' || frTitle";
-  return `SELECT 'e:' || ${exercise} AS id, updatedAt AS at FROM ${schema}.exercises WHERE creator = 'hero'
-    UNION ALL SELECT 'q:' || ${quest}, updatedAt FROM ${schema}.quests WHERE author = 'hero'
-    UNION ALL SELECT 'p:' || key, updatedAt FROM ${schema}.user_preferences WHERE key IN (${keys})`;
+  // `uuid` is what a content tombstone names; `canon` settles two copies stamped in the same second,
+  // and is only read when both devices are on one build (`compareWithPeer`).
+  //
+  // ponytail: whoever loses a same-second tie takes the winner's copy, and no segment of its
+  //           fingerprint moves (the date is the same), so its own file on the server is not
+  //           refreshed until something else changes; the winner reads it as `behind` till then.
+  //           Same for a tied set correction or feedback, and for a second edit in the same second as
+  //           the newest `updatedAt` (the `max(at):count` segment). Nothing is lost or asked twice.
+  const uuid = named ? "uuid" : "NULL";
+  const canonOf = (table: "exercises" | "quests", columns: string[] | undefined) =>
+    canon && columns ? canonical(schema, table, "x", columns) : "NULL";
+  return `SELECT 'e:' || ${exercise} AS id, updatedAt AS at, ${uuid} AS uuid,
+        ${canonOf("exercises", canon?.exercises)} AS canon
+      FROM ${schema}.exercises x WHERE creator = 'hero'
+    UNION ALL SELECT 'q:' || ${quest}, updatedAt, ${uuid},
+        ${canonOf("quests", canon?.quests)}
+      FROM ${schema}.quests x WHERE author = 'hero'
+    UNION ALL SELECT 'p:' || key, updatedAt, NULL, ${canon ? "value" : "NULL"}
+      FROM ${schema}.user_preferences WHERE key IN (${keys})`;
 }
 
 /**
@@ -308,13 +396,33 @@ async function hasColumn(
  * given after the copy, each stamp read on its own, as `mergePeer` takes them. An unedited session
  * reads as 0. `b` on a build before 0072 has no stamps, so every edit `a` made is news it lacks;
  * `a` on such a build has none to offer.
+ *
+ * With `tie` (both devices on one build, see `compareWithPeer`), two equal non-null stamps are
+ * settled by the larger content, as `mergePeer` does, and a session with more XP counts too: the
+ * larger XP is taken there, never taken away.
  */
-function editedLaterIn(a: string, b: string, aStamps: boolean, bStamps: boolean): string {
+function editedLaterIn(
+  a: string,
+  b: string,
+  aStamps: boolean,
+  bStamps: boolean,
+  tie: CanonicalColumns | null,
+): string {
   if (!aStamps) return "0";
-  const later = (column: string) =>
-    `ifnull(x.${column}, 0) > ${bStamps ? `ifnull(y.${column}, 0)` : "0"}`;
+  const later = (column: string, content: (schema: string, alias: string) => string) =>
+    bStamps
+      ? `(ifnull(x.${column}, 0) > ifnull(y.${column}, 0)${
+          tie
+            ? ` OR (x.${column} IS NOT NULL AND x.${column} = y.${column} AND ${content(a, "x")} > ${content(b, "y")})`
+            : ""
+        })`
+      : `ifnull(x.${column}, 0) > 0`;
+  const sets = (schema: string, alias: string) => (tie ? setsCanon(schema, alias, tie.sets) : "");
+  const feedback = (_schema: string, alias: string) => `ifnull(${alias}.feedback, '')`;
   return `SELECT count(*) FROM ${a}.completed_sessions x JOIN ${b}.completed_sessions y ON y.uuid = x.uuid
-    WHERE ${later("setsEditedAt")} OR ${later("feedbackEditedAt")}`;
+    WHERE ${later("setsEditedAt", sets)} OR ${later("feedbackEditedAt", feedback)}${
+      tie ? " OR x.xpEarned > y.xpEarned" : ""
+    }`;
 }
 
 /**
@@ -339,9 +447,48 @@ function sessionsStamp(schema: string, stamps: boolean): string {
  * is never "as new", so the same undated row read as news against itself, for good, while the
  * merge refused to write it.
  */
-function newerIn(a: string, b: string, named: boolean): string {
-  return `SELECT count(*) FROM (${heroContent(a, named)}) x
-    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named)}) y WHERE y.id = x.id AND ifnull(y.at, 0) >= ifnull(x.at, 0))`;
+function newerIn(
+  a: string,
+  b: string,
+  named: boolean,
+  tombstonesOfB: string,
+  canon: CanonicalColumns | null,
+): string {
+  // Equal dates are settled by content when both devices are on one build, so that `y` only covers
+  // `x` when it is later, or equal and not smaller: the same order `mergePeer` writes by.
+  const covers = canon
+    ? "(ifnull(y.at, 0) > ifnull(x.at, 0) OR (ifnull(y.at, 0) = ifnull(x.at, 0) AND ifnull(y.canon, '') >= ifnull(x.canon, '')))"
+    : "ifnull(y.at, 0) >= ifnull(x.at, 0)";
+  return `SELECT count(*) FROM (${heroContent(a, named, canon)}) x
+    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named, canon)}) y WHERE y.id = x.id AND ${covers})
+      AND NOT EXISTS (SELECT 1 FROM (${tombstonesOfB}) t WHERE t.uuid = x.uuid AND t.deletedAt >= ifnull(x.at, 0))`;
+}
+
+/** A schema's hero content tombstones (0074), or none on a database written before it. */
+async function contentTombstones(conn: IsolatedConnection, schema: string): Promise<string> {
+  const table = await conn.getFirstAsync<{ n: number }>(
+    `SELECT count(*) AS n FROM ${schema}.sqlite_master WHERE name = 'deleted_content'`,
+  );
+  return Number(table?.n ?? 0) > 0
+    ? `SELECT uuid, deletedAt FROM ${schema}.deleted_content`
+    : "SELECT NULL AS uuid, NULL AS deletedAt WHERE 0";
+}
+
+/**
+ * What this schema's state adds to the fingerprint beyond the first three segments: the XP its
+ * sessions hold (a bonus after the copy is news, the other device takes the larger) and its content
+ * deletions. Kept apart so an answer given before merge v2 still matches on the first three.
+ */
+const extraStamp = (schema: string, tombs: string) =>
+  `(SELECT cast(total(xpEarned) AS INTEGER) FROM ${schema}.completed_sessions) || ':'
+    || (SELECT count(*) || ':' || ifnull(max(deletedAt), 0) FROM (${tombs}))`;
+
+/** The newest migration of a schema: two devices on one value share a build, and only they merge. */
+async function newestMigration(conn: IsolatedConnection, schema: string): Promise<number | null> {
+  const row = await conn.getFirstAsync<{ at: number | null }>(
+    `SELECT max(created_at) AS at FROM ${schema}.__drizzle_migrations`,
+  );
+  return row?.at === null || row?.at === undefined ? null : Number(row.at);
 }
 
 /** A schema's tombstones, or none on a database written before 0064. */
@@ -403,10 +550,26 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
       await tombstones(conn, "main"),
       await tombstones(conn, CANDIDATE),
     ];
+    const [localContentGone, peerContentGone] = [
+      await contentTombstones(conn, "main"),
+      await contentTombstones(conn, CANDIDATE),
+    ];
+    // The terms merge v2 added count only between two devices on one build: `mergePeer` refuses
+    // another, so counting them there only leads to a take-or-keep whose "take" restores an old file
+    // and drops this device's content tombstones, for a gap a previous build never saw.
+    const sameBuild =
+      (await newestMigration(conn, "main")) === (await newestMigration(conn, CANDIDATE));
+    const goneContent = (mine: string, theirs: string) =>
+      sameBuild
+        ? `(SELECT count(*) FROM (${theirs}) p WHERE NOT EXISTS
+            (SELECT 1 FROM (${mine}) l WHERE l.uuid = p.uuid AND l.deletedAt >= p.deletedAt))`
+        : "0";
     const sessions = (schema: string) =>
       `SELECT uuid FROM ${schema}.completed_sessions WHERE uuid IS NOT NULL`;
     const peerNamed = await hasColumn(conn, CANDIDATE, "quests", "uuid");
     const named = peerNamed && (await hasColumn(conn, "main", "quests", "uuid"));
+    // `exerciseIdentity` names a hero movement by uuid, so both sides must have one (0066).
+    const canon = sameBuild && named ? await canonicalColumns(conn, CANDIDATE) : null;
     const peerStamps = await hasColumn(conn, CANDIDATE, "completed_sessions", "setsEditedAt");
     const localStamps = await hasColumn(conn, "main", "completed_sessions", "setsEditedAt");
     const row = await conn.getFirstAsync<Record<string, number | string | null>>(
@@ -418,28 +581,41 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
          (SELECT count(*) FROM (${sessions(CANDIDATE)}) p WHERE p.uuid IN (${localGone})) AS localDeleted,
          (SELECT count(*) FROM (${sessions("main")}) l
             WHERE l.uuid IN (${peerGone}) AND l.uuid NOT IN (${localGone})) AS peerDeleted,
-         (${newerIn(CANDIDATE, "main", named)}) AS peerContent,
-         (${newerIn("main", CANDIDATE, named)}) AS localContent,
-         (${editedLaterIn(CANDIDATE, "main", peerStamps, localStamps)}) AS peerEdited,
-         (${editedLaterIn("main", CANDIDATE, localStamps, peerStamps)}) AS localEdited,
+         (${newerIn(CANDIDATE, "main", named, localContentGone, canon)}) AS peerContent,
+         (${newerIn("main", CANDIDATE, named, peerContentGone, canon)}) AS localContent,
+         (${editedLaterIn(CANDIDATE, "main", peerStamps, localStamps, canon)}) AS peerEdited,
+         (${editedLaterIn("main", CANDIDATE, localStamps, peerStamps, canon)}) AS localEdited,
+         ${goneContent(localContentGone, peerContentGone)} AS peerGoneContent,
+         ${goneContent(peerContentGone, localContentGone)} AS localGoneContent,
          (SELECT max(performedAt) FROM ${CANDIDATE}.completed_sessions) AS peerLatest,
          (SELECT value FROM ${CANDIDATE}.user_preferences WHERE key = 'villageName') AS peerVillage,
          (SELECT count(*) FROM main.completed_sessions) AS localSessions,
          (${sessionsStamp(CANDIDATE, peerStamps)}) AS s,
-         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed)})) AS c,
-         (SELECT count(*) FROM (${peerGone})) AS g`,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed, null)})) AS c,
+         (SELECT count(*) FROM (${peerGone})) AS g,
+         ${extraStamp(CANDIDATE, peerContentGone)} AS x`,
     );
     const n = (key: string) => Number(row?.[key] ?? 0);
     return {
       peerOnly: n("peerOnly"),
       localOnly: n("localOnly"),
-      peerChanges: n("peerOnly") + n("peerDeleted") + n("peerContent") + n("peerEdited"),
-      localChanges: n("localOnly") + n("localDeleted") + n("localContent") + n("localEdited"),
+      peerChanges:
+        n("peerOnly") +
+        n("peerDeleted") +
+        n("peerContent") +
+        n("peerEdited") +
+        n("peerGoneContent"),
+      localChanges:
+        n("localOnly") +
+        n("localDeleted") +
+        n("localContent") +
+        n("localEdited") +
+        n("localGoneContent"),
       peerLatest:
         row?.peerLatest === null || row?.peerLatest === undefined ? null : n("peerLatest"),
       peerVillage: typeof row?.peerVillage === "string" ? row.peerVillage : null,
       localSessions: n("localSessions"),
-      fingerprint: `${row?.s}|${row?.c}|${row?.g}`,
+      fingerprint: `${row?.s}|${row?.c}|${row?.g}|${row?.x}`,
     };
   });
 }
@@ -455,10 +631,11 @@ export function stateFingerprint(): Promise<string> {
     const row = await conn.getFirstAsync<Record<string, string | number | null>>(
       `SELECT
          (${sessionsStamp("main", true)}) AS s,
-         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main", true)})) AS c,
-         (SELECT count(*) FROM (${gone})) AS g`,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main", true, null)})) AS c,
+         (SELECT count(*) FROM (${gone})) AS g,
+         ${extraStamp("main", await contentTombstones(conn, "main"))} AS x`,
     );
-    return `${row?.s}|${row?.c}|${row?.g}`;
+    return `${row?.s}|${row?.c}|${row?.g}|${row?.x}`;
   });
 }
 

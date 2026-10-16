@@ -2,7 +2,7 @@
 title: Data rules, as the code implements them
 type: technical
 status: current
-updated: 2026-10-06
+updated: 2026-10-16
 related: [../architecture/backup-and-sync.md, ../architecture/data-safety.md]
 ---
 
@@ -15,7 +15,7 @@ says so.
 
 Vocabulary. A *device* is an install: SecureStore identity (`bati.sync.identity`), one SQLite file
 `bati.v3.db`, one sealed file `bati-<id>.batb` on the sync remote. A *peer file* is another
-device's sealed file. A *tombstone* is a row of `deleted_sessions`. *News* is what
+device's sealed file. A *tombstone* is a row of `deleted_sessions` or `deleted_content` (hero quests and movements, 0074). *News* is what
 `compareWithPeer` counts.
 
 ---
@@ -35,8 +35,8 @@ sessions with NULL uuid are never copied between devices.
 `db/backup.ts:345-348`.
 Invariant: a session deleted (tombstoned) on side X is never counted as news from the other side.
 
-**R3. `peerChanges = peerOnly + peerDeleted + peerContent + peerEdited`; `localChanges = localOnly +
-localDeleted + localContent + localEdited`.** `peerDeleted` = local sessions the peer tombstoned;
+**R3. `peerChanges = peerOnly + peerDeleted + peerContent + peerEdited + peerGoneContent`; `localChanges = localOnly +
+localDeleted + localContent + localEdited + localGoneContent`.** `peerGoneContent` = the peer's content tombstones this device lacks or holds older, `localGoneContent` the reverse; `peerEdited` also counts a session with more XP on the peer, and a tie of two equal non-null stamps goes to the larger content (R9). These new terms (XP, content tombstones, the same-second tie) count only when both newest migrations are equal: a previous-build peer is judged as that build judged it. `peerDeleted` = local sessions the peer tombstoned;
 `localDeleted` = peer sessions the local side tombstoned. `peerEdited` = sessions both hold whose
 `setsEditedAt` or `feedbackEditedAt` (0072) is later on the peer, `localEdited` the reverse, NULL
 reading as 0. A side before 0072 has no stamps: it offers no edit, and every edit the other made
@@ -54,7 +54,7 @@ Invariant: compare is antisymmetric: `ahead` on A about B implies B sees A as `b
 **R5. Hero content compared** = hero exercises (`creator='hero'`), hero quests (`author='hero'`),
 and preferences in `MERGED_PREFERENCES`, as `(identity, updatedAt)` rows. Identity is `uuid`
 (fallback name) when both databases have the `uuid` column (0066), else names only. A row is
-"news" from side X if the other side has no row with the same identity and `updatedAt >=` it.
+"news" from side X if the other side has no row with the same identity covering it (later, or equal and with content not smaller, R9), unless a tombstone of the other side kills the row (R32): a row deleted there is that side's news, never ours.
 `db/backup.ts:269-300`.
 Invariant: after a merge in both directions, `peerContent=localContent=0` (modulo R9).
 
@@ -80,26 +80,31 @@ test checks that an `auto` written later beats an older `usual`, in both merge d
 Invariant: only these keys ever change in `user_preferences` through a merge (plus R12); `auto`
 written later wins over an older animal on the other device, in both merge directions.
 
-**R8. An undated row (`NULL updatedAt`) reads as date 0 on both sides.** The comparison reads
-`ifnull(y.at, 0) >= ifnull(x.at, 0)` (`db/backup.ts`) and the merge reads `row.at ?? 0` (`db/merge.ts`), so a NULL is
-older than any date and two undated copies are a tie that stays where it is. The column is nullable
+**R8. An undated row (`NULL updatedAt`) reads as date 0 on both sides.** The comparison and the merge read `ifnull(at, 0)` (`db/backup.ts`, `db/merge.ts`), so a NULL is
+older than any date and two undated copies are a tie, settled by their content (R9). The column is nullable
 (`drizzle/0000_schema.sql:10`).
 Invariant: a database compared with a copy of itself shows no news, undated rows included; a dated row is news
 against an undated copy of it.
 
-**R9. Equal `updatedAt` with different content is a permanent silent divergence.** Compare says
-no news both ways (`>=`, `db/backup.ts:298`); merge keeps local (strict `>`, `db/merge.ts:246,
-184`).
-Invariant: two devices that edit the same hero row in the same second hold different values after
-any number of syncs, and compare reports `level`.
+**R9. Equal `updatedAt` with different content is settled by the content, the same on both devices.**
+The row, its muscles or slots (movements and quests), a preference's value, a session's sets or its
+feedback (for equal non-null stamps) are written as one canonical JSON text with no local ids
+(`canonical`, `setsCanon` in `db/backup.ts`), and the larger text, compared as a string, wins in the
+comparison and in the merge alike. Equal texts are the same content.
+Invariant: two devices that edit the same hero row in the same second hold the larger canonical text
+after one merge each way, and compare reports `level` on fresh snapshots. The loser's own fingerprint does not
+move, so its file on the server is refreshed only by the next change (`ponytail:` in `heroContent`).
 
 **R10. `stateFingerprint` / peer `fingerprint` = `count(sessions) ':' max(uuid)`, then `':'` and the
 sum of both edit stamps when it is not 0 | `max(updatedAt) ':' count` over hero content |
-tombstone count.** `db/backup.ts` (`sessionsStamp`). With no edit the first term is what it was
+tombstone count | `sum(xpEarned) ':' count ':' max(deletedAt)` over `deleted_content` (0074).** An answer
+(`answered`) given before merge v2 has three segments and matches the first three of the four (`judge`
+in `src/deviceSync.ts`); new answers store the whole. The update bumps the newest migration, so every
+device re-uploads and re-judges every peer once, on purpose. `db/backup.ts` (`sessionsStamp`). With no edit the first term is what it was
 before 0072, so an answer the hero already gave is not asked again.
 Invariant: correcting a set or giving feedback after the save changes the fingerprint, every time:
 `nextEditStamp` writes `max(now, stamp + 1)`, so the sum grows even within one second or past a
-stamp merged from a phone whose clock runs ahead. Editing `notes` or `xpEarned` does not; adding
+stamp merged from a phone whose clock runs ahead. Editing `notes` does not; a bonus added to a session changes the fourth segment only; adding
 one session changes it; adding a tombstone changes it.
 
 **R11. Never compared and never merged:** derived caches (`streak_*`, achievements), favourites
@@ -124,30 +129,26 @@ error.** Unmapped exercise or quest, a set naming an unknown exercise, an Admin 
 all throw. `db/merge.ts:57-66, 150-155, 229-231, 323-327`.
 Invariant: when `mergePeer` throws, the database (every table) is byte-identical to before.
 
-**R14. A peer session is inserted when new, and its edits taken when later.** A peer session is
+**R14. A peer session is inserted when new, and its edits taken when later, its larger XP kept.** A peer session is
 copied iff its uuid is neither local nor in local tombstones, with all columns except `id`; XP,
 `records_json`, `performedAt`, `tzOffsetMin`, `originDevice` and both edit stamps are copied
-verbatim. For a session both hold, each stamp is read on its own (NULL as 0, a tie stays local):
+verbatim. For a session both hold, each stamp is read on its own (NULL as 0, equal non-null stamps go to the larger content, R9) and the larger `xpEarned` wins (`takeLargerXp`, no stamp: a maximum is commutative and idempotent, and earned XP is never taken away):
 a later `setsEditedAt` takes the peer's whole set of `completed_exercises` (R16) and keeps this
 device's `hasNewRecords` and `records_json`, decided again on the new sets for every movement of
-the session (`redecideSessions`); a later `feedbackEditedAt` takes its `feedback`. Every other column, XP
-included, stays. After the commit, `redecideAfterChange` decides again the records of the
+the session (`redecideSessions`); a later `feedbackEditedAt` takes its `feedback`. Every other column stays. After the commit, `redecideAfterChange` decides again the records of the
 movements whose figures differ between the two copies, in the session and in every later local
 session holding a figure between the old and the new one, as `correctLoggedSet` does; its failure
 is reported (`sync.merge.records`) and does not fail the merge that committed.
 `db/merge.ts` (`takeEditedSets`, `takeEditedFeedback`, `mergePeer`).
 Invariant: a set corrected on A reaches B at B's next merge with A, and B's records follow; a
 feedback changed later on B does not carry B's older sets over A's correction.
-Invariant (current behaviour): two different corrections of one session stamped in the same second
-never converge, and compare reports `level` (as R9 for hero rows).
+Invariant: two different corrections of one session stamped in the same second converge on the larger sets text (R9).
 
 **R15. Only the edits that stamp the session propagate.** `correctLoggedSet` (`setsEditedAt`,
 written before the value, in one transaction) and `updateSessionFeedback` (`feedbackEditedAt`) do. `addBonusXpToSession` and `markSessionWithNewRecords` run inside the
 save, before any snapshot can carry the session, and do not; neither merge nor fingerprint see a
-later change to them (R10, R14), and the frozen tests in `db-peer-merge` hold that the first copy
-of a session wins for XP.
-Invariant (current behaviour): after convergence two devices may hold different `xpEarned` for the
-same uuid.
+later change to them in R14's stamps, but the larger XP wins (R14) and the fourth fingerprint segment moves (R10).
+Invariant: after convergence two devices hold the same `xpEarned` for one uuid, the larger.
 
 **R16. A merged session's children are copied under new local ids.** Sets (`completed_exercises`)
 are remapped through `sess_map` and `ex_map`; `gps_points` (keyed by session uuid and `t`) are
@@ -170,14 +171,14 @@ whole row and replaces its children (muscles, slots); unmatched rows are inserte
 name only when exactly one side has no uuid, and then the named side's uuid is adopted. Two rows
 with distinct uuids are never unified by name. `db/merge.ts:243-270, 290-311, 313-333`.
 Invariant: after convergence, for each hero uuid both devices hold the row with the greater
-`updatedAt` (ties: R9), and the children of that row.
+`updatedAt` (a tie: the larger canonical text, R9), and the children of that row.
 
 **R20. Last writer wins per whole row, never per field.** A concurrent edit of two fields of one
 quest on two devices keeps one device's version in full. `db/merge.ts:253-256`.
 Invariant: merged hero row equals one of the two inputs, never a mixture.
 
 **R21. Preferences in R7 merge by `updatedAt`, whole value.** Peer value taken iff local key is
-absent, or peer `updatedAt` is strictly greater; and only if value or timestamp differs. Timestamps
+absent, or peer `updatedAt` is strictly greater, or the dates are equal (NULL as 0) and its value is the larger text; and only if value or timestamp differs. Timestamps
 copied verbatim. `ownedEquipment` is a JSON list taken whole: concurrent equipment changes lose
 one side, no union. `db/merge.ts:181-188`. A deleted key never travels (an absent row loses to any
 row), which is why choosing a preset avatar writes `customAvatar = ""` instead of deleting the
@@ -234,9 +235,12 @@ deleting or adding a session anywhere in the journal replays the whole of it.
 
 ### 1.3 Deletion
 
-**R26. Only sessions have tombstones.** `deleted_sessions(uuid PK, deletedAt)`, written by
-`deleteSession` inside the delete transaction, only when the row had a uuid. Rows are never
-removed by app code. `drizzle/0064_the_sessions_let_go.sql:11`, `db/completed.ts:354-361`.
+**R26. Sessions and hero content have tombstones.** `deleted_sessions(uuid PK, deletedAt)`, written by
+`deleteSession` inside the delete transaction, only when the row had a uuid. `deleted_content(uuid PK,
+deletedAt)` (0074), written by `deleteQuest` and `deleteUserExercise` (`writeContentTombstone`) in the
+same transaction as the removal, for hero rows with a uuid, with `deletedAt = max(now, updatedAt + 1)`
+(`nextEditStamp`'s rule, so a deletion is never older than the row it removed); a later delete or a
+merge keeps the larger `deletedAt`. Rows are never removed by app code. `drizzle/0064_the_sessions_let_go.sql:11`, `db/completed.ts:354-361`.
 Invariant: the tombstone set of a device is monotonically non-decreasing between restores.
 
 **R27. Deleting a session removes: its sets, boss damage log (refunding the boss HP, capped at
@@ -269,16 +273,22 @@ Nothing is deleted for it. `db/merge.ts`, `db/backup.ts`.
 Invariant: honourTombstones may leave a tombstoned session in place and never errors; such a session never makes a peer
 read as `ahead`, and every other session still reaches every device.
 
-**R32. Deletion of hero exercises and quests does not propagate and is undone by sync.**
-`deleteUserExercise` (only when unused) and `deleteQuest` delete the row with no tombstone; the
-other device still holds the row, sees it as news for itself, and the merge re-inserts it.
-`db/exercises.ts:1154-1170`, `db/quests.ts:936-939`, `db/merge.ts:243-252`. Listed as not done in
-`docs/architecture/backup-and-sync.md:367-368`.
-Invariant (current behaviour): a hero row deleted on A and present on B exists on A again after
-A merges B.
+**R32. A deletion of a hero exercise or quest travels, and is honoured by the other device.**
+A copy is dead iff its uuid has a tombstone with `deletedAt >= updatedAt` (a tie goes to the
+deletion); a copy edited after the deletion is newer and lives, and the tombstone stays and keeps losing to
+it. `mergeAuthored` skips a dead row (a dead quest never enters `quest_map`, so the other device's
+sessions of it arrive with `questId` NULL and do not recreate it), then `honourTombstones` removes the dead
+local quests and movements after the commit (sessions, then quests, then movements). A movement still
+in use here (`getExerciseUsage`) is kept. A dead movement named by sets or quest slots that land here
+is inserted after all (`resurrect`), so the merge never rolls back on "names rows this device lacks".
+`db/merge.ts`, `db/contentTombstone.ts`, `db/quests.ts` (`removeQuest`), `db/exercises.ts` (`removeExercise`).
+Invariant: a hero row deleted on A and present on B is gone on both after both merge, unless B edited it
+after; a movement used on either side by sets or quest slots stays on both, with its tombstone, and a
+second merge changes nothing. Used only by a saved quest choice, it stays on the device that holds the
+choice (both copies read dead, `level`). Two kept copies of a dead movement are never written again.
 
-**R33. A restore of an older backup can resurrect sessions deleted since** (it also loses the
-tombstones that were in the newer file), and another device still holding them offers them back;
+**R33. A restore of an older backup can resurrect sessions, quests and movements deleted since** (it also loses the
+tombstones, session and content, that were in the newer file), and another device still holding them offers them back;
 a peer that kept the tombstone removes them again at the next merge. `src/backupFiles.ts:522-544`,
 `db/merge.ts:139-140, 365-374`.
 Invariant: restore(old) then sync with a device that still has the tombstone converges to the

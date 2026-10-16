@@ -236,3 +236,77 @@ test("two devices that never picked an animal do not diverge, however often the 
   const picked = await peer("picked.db", (sqlite) => setPref(sqlite, "crestAnimal", "stag", 5_000));
   expect(await backup().compareWithPeer(picked)).toMatchObject({ peerChanges: 1, localChanges: 0 });
 });
+
+// Merge v2 (roadmap 4.18b).
+const U1 = "0192b000-0000-7000-8000-000000000001";
+
+function heroQuest(sqlite: Database.Database, at: number, uuid = U1) {
+  sqlite
+    .prepare(
+      `INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author, createdAt, updatedAt, uuid)
+       VALUES ('Porch forge', 'Forge', '', '', 'hero', ?, ?, ?)`,
+    )
+    .run(at, at, uuid);
+}
+
+const deleteContent = (sqlite: Database.Database, at: number) => {
+  sqlite.prepare("DELETE FROM quests WHERE uuid = ?").run(U1);
+  sqlite.prepare("INSERT INTO deleted_content (uuid, deletedAt) VALUES (?, ?)").run(U1, at);
+};
+
+test("a hero quest deleted here is this device's news, not the other's", async () => {
+  heroQuest(t.sqlite, 100);
+  const file = await peer("tablet.db");
+  deleteContent(t.sqlite, 150);
+
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 1 });
+});
+
+test("a deletion of a hero quest on the other device is its news", async () => {
+  heroQuest(t.sqlite, 100);
+  const file = await peer("tablet.db", (sqlite) => deleteContent(sqlite, 150));
+
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 1, localChanges: 0 });
+});
+
+test("a session with more XP on one side is news for the other", async () => {
+  const uuid = addSession(t.sqlite, 1_000);
+  const file = await peer("tablet.db", (sqlite) => {
+    sqlite.prepare("UPDATE completed_sessions SET xpEarned = 90 WHERE uuid = ?").run(uuid);
+  });
+
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 1, localChanges: 0 });
+});
+
+describe("a device on the previous build", () => {
+  // No `deleted_content` and a newest migration this build has already passed.
+  const previous = (sqlite: Database.Database) => {
+    sqlite.exec(
+      "DROP TABLE deleted_content; DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)",
+    );
+  };
+
+  test("has no content tombstones and is still read", async () => {
+    heroQuest(t.sqlite, 100);
+    const file = await peer("old.db", previous);
+
+    expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
+  });
+
+  test("differing only by a session's XP or a same-second edit is level, and still counts a session this device lacks", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    heroQuest(t.sqlite, 100);
+    const file = await peer("old.db", (sqlite) => {
+      previous(sqlite);
+      sqlite.prepare("UPDATE completed_sessions SET xpEarned = 90 WHERE uuid = ?").run(uuid);
+      sqlite.prepare("UPDATE quests SET enTitle = 'Zed' WHERE uuid = ?").run(U1);
+    });
+    expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
+
+    const withNews = await peer("old2.db", (sqlite) => {
+      previous(sqlite);
+      addSession(sqlite, 2_000);
+    });
+    expect(await backup().compareWithPeer(withNews)).toMatchObject({ peerChanges: 1 });
+  });
+});

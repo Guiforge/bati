@@ -131,6 +131,34 @@ describe("hero-authored exercises", () => {
     expect(await getExerciseById(id)).toBeNull();
   });
 
+  test("deleting leaves a tombstone, and a refused delete leaves none", async () => {
+    const { createUserExercise, deleteUserExercise } =
+      require("../db/exercises") as typeof import("../db/exercises");
+    const row = (id: number) =>
+      t.sqlite.prepare("SELECT uuid, updatedAt FROM exercises WHERE id = ?").get(id) as {
+        uuid: string;
+        updatedAt: number;
+      };
+    t.sqlite.exec("DELETE FROM deleted_content");
+    const tombstones = () => t.sqlite.prepare("SELECT uuid, deletedAt FROM deleted_content").all();
+
+    const used = await createUserExercise(draft("Used"));
+    t.sqlite
+      .prepare(
+        "INSERT INTO quest_exercises (questId, exerciseId, sortOrder, targetType, targetMin, targetMax) VALUES (1, ?, 99, 'reps', 1, 2)",
+      )
+      .run(used);
+    await expect(deleteUserExercise(used)).rejects.toThrow(/in use/i);
+    expect(tombstones()).toEqual([]);
+
+    const typo = await createUserExercise(draft("Typo"));
+    const { uuid, updatedAt } = row(typo);
+    await deleteUserExercise(typo);
+    const [tombstone] = tombstones() as { uuid: string; deletedAt: number }[];
+    expect(tombstone?.uuid).toBe(uuid);
+    expect(tombstone?.deletedAt).toBeGreaterThan(updatedAt);
+  });
+
   test("a movement a quest swapped in, or an oath named, is refused for deletion", async () => {
     const { createUserExercise, deleteUserExercise, getExerciseUsage } =
       require("../db/exercises") as typeof import("../db/exercises");

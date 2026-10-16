@@ -9,14 +9,6 @@ import type { QuestTargetType } from "@/db/schema";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/**
- * What beats a record: one more in the movement's own unit. A rep for reps, a second for a hold.
- * A movement never logged is beaten by anything at all, so its target is one.
- */
-export function targetToBeat(best: number | null): number {
-  return best == null ? 1 : best + 1;
-}
-
 export type Age =
   | { kind: "today" }
   | { kind: "yesterday" }

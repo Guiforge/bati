@@ -8,13 +8,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { InkGauge } from "@/components/common/InkGauge";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Trophy } from "@/components/icons";
-import {
-  foldRounds,
-  formatShare,
-  shortDate,
-  targetToBeat,
-  whenLabel,
-} from "@/components/journal/journalFormat";
+import { foldRounds, formatShare, shortDate, whenLabel } from "@/components/journal/journalFormat";
 import {
   NBackButton,
   NBlock,
@@ -43,6 +37,7 @@ import type { VariationStep } from "@/db/exercises";
 import { type FallenRecord, type MuscleShift, type QuestStanding, sessionReps } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/labels";
 import { correctLoggedSet } from "@/db/personalRecords";
+import { targetToBeat } from "@/db/progress";
 import { formatCount, formatTargetValue, PER_SIDE, perSideLabel } from "@/db/targets";
 import type { UserLevelInfo } from "@/db/userLevel";
 import type { LngLat } from "@/src/gps/trace";

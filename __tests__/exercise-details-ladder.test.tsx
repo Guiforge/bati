@@ -161,7 +161,7 @@ describe("the path on the exercise screen", () => {
 
   it("stays climbed after the summit's last clean sessions leave the window", async () => {
     // `isEarned` is windowed; where the hero stands is not. "Climbed" must not blink out after a
-    // quiet summer (rule C, `rungsBehind`).
+    // quiet summer (rule C, `ladderPosition`).
     await mountSummit(3, [false, false, false], true);
 
     expect(screen.getByText(/PATH OF THE DRAGON · CLIMBED/i)).toBeTruthy();

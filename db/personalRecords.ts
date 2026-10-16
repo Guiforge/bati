@@ -10,6 +10,7 @@ import {
 } from "./completed";
 import { forgetEverEarned } from "./exercises";
 import { hasGround } from "./expeditions";
+import { sessionBestsSql } from "./progress";
 import { clearCached } from "./queryCache";
 import type { QuestTargetType } from "./schema";
 import { targetRangeFor } from "./targets";
@@ -118,12 +119,8 @@ export async function getExerciseHistory(
                PARTITION BY exerciseId, resultType ORDER BY at DESC, sessionId DESC
              ) AS rn
       FROM (
-        SELECT exerciseId, resultType, sessionId,
-               MAX(resultValue) AS best, MAX(performedAt) AS at
-        FROM completed_exercises
-        WHERE exerciseId IN (${ids})
-        GROUP BY exerciseId, resultType, sessionId
-        HAVING MAX(resultValue) > 0
+        SELECT * FROM (${sessionBestsSql(sql`exerciseId IN (${ids})`)})
+        WHERE best > 0
       )
     )
     WHERE rn = 1
@@ -311,6 +308,32 @@ function placeAmongSessions(
 }
 
 /**
+ * Best of a movement in a unit before a session, the record bar. Null when none. The one reader
+ * of "the best before this session": it decides `records_json` (`checkForNewRecords`) and the
+ * session page shows the same number (`movementRecordFell`). `before` is row-level: only sets
+ * logged before that instant (the session's start), not whole sessions.
+ */
+export async function previousBest(
+  exerciseId: number,
+  type: QuestTargetType,
+  sessionId: number,
+  before?: Date,
+): Promise<number | null> {
+  const [row] = await db
+    .select({ best: max(completedExercises.resultValue) })
+    .from(completedExercises)
+    .where(
+      and(
+        eq(completedExercises.exerciseId, exerciseId),
+        eq(completedExercises.resultType, type),
+        ne(completedExercises.sessionId, sessionId),
+        before ? lt(completedExercises.performedAt, before) : undefined,
+      ),
+    );
+  return row?.best ?? null;
+}
+
+/**
  * What this session was best at, when it broke nothing.
  *
  * A record is rare by construction: the hero beats a movement's best a handful of times and then
@@ -371,26 +394,15 @@ export async function getSessionStanding(
   // ponytail: this reads one row per (movement, unit, session), so a hero three years in pays a
   // few thousand rows on the victory screen, after the save and off the set. Move the count into
   // SQL if that ever shows up in a frame.
-  const historyRows = await db
-    .select({
-      exerciseId: completedExercises.exerciseId,
-      type: completedExercises.resultType,
-      sessionId: completedExercises.sessionId,
-      best: max(completedExercises.resultValue),
-      at: max(completedExercises.performedAt),
-    })
-    .from(completedExercises)
-    .where(
-      inArray(
-        completedExercises.exerciseId,
-        sessionRows.map((r) => r.exerciseId),
-      ),
-    )
-    .groupBy(
-      completedExercises.exerciseId,
-      completedExercises.resultType,
-      completedExercises.sessionId,
-    );
+  const historyIds = sql.join(
+    sessionRows.map((r) => sql`${r.exerciseId}`),
+    sql`, `,
+  );
+  // `at` comes back in raw seconds: `placeAmongSessions` only compares it.
+  const historyRows = await db.all<SessionBestRow>(sql`
+    SELECT exerciseId, resultType AS type, sessionId, best, at
+    FROM (${sessionBestsSql(sql`exerciseId IN (${historyIds})`)})
+  `);
 
   const standings = sessionRows.flatMap((row) => {
     const value = row.value;
@@ -580,21 +592,13 @@ export async function checkForNewRecords(
 
   for (const result of bestByExercise.values()) {
     // Get previous max for this exercise, in this unit, excluding the current session.
-    const previousMax = await db
-      .select({
-        maxValue: max(completedExercises.resultValue),
-      })
-      .from(completedExercises)
-      .where(
-        and(
-          eq(completedExercises.exerciseId, result.exerciseId),
-          eq(completedExercises.resultType, result.resultType),
-          ne(completedExercises.sessionId, sessionId),
-          earlierOnly ? lt(completedExercises.performedAt, session.performedAt) : undefined,
-        ),
-      );
-
-    const prevMax = previousMax[0]?.maxValue ?? 0;
+    const prevMax =
+      (await previousBest(
+        result.exerciseId,
+        result.resultType,
+        sessionId,
+        earlierOnly ? session.performedAt : undefined,
+      )) ?? 0;
     if (result.resultValue > prevMax) {
       newRecords.push({
         isNewRecord: true,

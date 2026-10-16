@@ -837,12 +837,23 @@ and the Ages are replayed from the journal on each call (`getVillageYears`, rule
 session belongs to the level reached after it, counting the XP of every session before it, the
 ones `countsAsSession()` refuses included; only the sessions it accepts are stones, banners or
 rungs. The sets of every session are read, a short outing's included, so that a short outing's
-value is a standing best (as `movementRecordFell` reads it), but it breaks nothing and first-sees
+value is a standing best (as `previousBest` reads it), but it breaks nothing and first-sees
 nothing. A GPS outing (`NON_REP_STYLE`) is never read: its seconds are no record. Every level from 21 up to the highest reached has a stone; a level no session ended on (a
 jump over it) takes the stone of the session that crossed it, with that session's fact.
 Invariant: the same journal gives the same stones, banners and Ages on any device, whatever order
 the sessions were merged in (`db-peer-merge`), and deleting a session takes back what it earned.
 A banner stays neutral while there is no crest (fewer than eight practised sessions), whatever its sessions did.
+
+**R113. A movement's progress has one source.** The per-session fold is `sessionBestsSql`
+(`db/progress.ts`), and its filters cut sets before the fold, so a reader that cuts on a set's own
+time keeps its meaning. "Target reached" is `setMetSql`, `MIN` over a session, neutral sets filtered
+by the reader. The record bar is `previousBest` (it decides `records_json` and the session page
+shows the same number). `toBeat` is the wall's number, `ladderPosition` is where the hero stands.
+Nothing is stored and there is no SQL view (a backup holding one is refused): device sync carries
+`completed_exercises` and every device derives the same figures. Per-movement aggregates
+(`getMovementRecords`, the oath) stay direct: the session fold is 5-7x slower for them.
+Invariant: the same journal gives the same bests, records and rungs on any device, whatever the
+merge order (`db-peer-merge`).
 
 **R112. A season is a fixed local window, and the village year counts four seasons from the first session's.**
 December to February, March to May, June to August, September to November, cut at local midnight

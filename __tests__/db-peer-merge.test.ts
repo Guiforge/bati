@@ -117,6 +117,34 @@ test("the other device's sessions arrive with their sets, under ids of this devi
   await converged(file);
 });
 
+test("a movement's best and last are read from the merged sets, not carried", async () => {
+  const pushUp = adminExercise();
+  addSession(t.sqlite, 1_000, pushUp); // here: 12 reps
+  const file = await peer("tablet.db", (sqlite) => {
+    const record = addSession(sqlite, 2_000, pushUp);
+    const after = addSession(sqlite, 3_000, pushUp);
+    // `addSession` always writes 12: set the tablet's own values on its sets.
+    const set = sqlite.prepare(
+      `UPDATE completed_exercises SET resultValue = ?
+       WHERE sessionId = (SELECT id FROM completed_sessions WHERE uuid = ?)`,
+    );
+    set.run(15, record);
+    set.run(9, after);
+  });
+
+  await merge().mergePeer(file);
+
+  const { getExerciseHistory, ghostKey } =
+    require("../db/personalRecords") as typeof import("../db/personalRecords");
+  expect((await getExerciseHistory([pushUp])).get(ghostKey(pushUp, "reps"))).toEqual({
+    last: 9,
+    best: 15,
+    at: 3_000_000,
+    bestAt: 2_000_000,
+  });
+  await converged(file);
+});
+
 test("a movement the other build numbered differently still lands on the same movement", async () => {
   const pushUp = adminExercise();
   const file = await peer("renumbered.db", (sqlite) => {

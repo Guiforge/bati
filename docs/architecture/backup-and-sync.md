@@ -287,6 +287,10 @@ and opens the sheet's `unlock` mode, not `enable`.
 
 ## Device sync
 
+- **Progress is derived, never stored**: bests, records and rungs are read from `completed_exercises`
+  (`db/progress.ts`), so sync has nothing of its own to carry for them and a release that only
+  changes how they are read does not change any device's fingerprint. It is a shared SQL fragment,
+  not a view: a backup holding a view is refused (`validateBackup`).
 - **Transport**: WebDAV. Nextcloud signs in through the browser (Login Flow v2, a revocable app
   password; the page and poll endpoint must be on the server or on https, and the account keeps the
   address the hero typed). Any other server, behind presets (kDrive, Koofr, Round Sync for rclone),

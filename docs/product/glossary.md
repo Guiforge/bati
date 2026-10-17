@@ -2,7 +2,7 @@
 title: Glossary
 type: reference
 status: draft
-updated: 2026-10-15
+updated: 2026-10-17
 related: [writing.md, ../design/audits/2026-09-10-french-copy.md]
 ---
 
@@ -102,6 +102,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 |---|---|---|---|---|---|---|
 | adventure | A chain of quests that ends on a boss | adventure (campaign in a heading) | aventure (campagne in a heading) |  | Abenteuer (Kampagne in a heading) | aventura (campaña in a heading) |
 | step | One quest inside an adventure | step | étape | marche | Etappe | etapa |
+| playthrough | One go at an adventure, from its first step to its end, or until the hero leaves it | playthrough (not run: an outing is "a walk, a run or a ride") | partie | course (an outing's word), campagne (the adventure's heading word), abandon | Durchgang (not Lauf, a jog) | partida (not carrera, a race) |
 | boss | The monster at the end of an adventure | boss | boss |  | Boss | jefe |
 | HP | The boss's health pool for the campaign | HP | PV |  | LP | PV |
 | weakness / resistance | A muscle that deals 50% more, or half, the damage | weakness / resistance | faiblesse / résistance |  | Schwäche / Resistenz | debilidad / resistencia |
@@ -181,6 +182,12 @@ Decisions nobody has taken yet.
 - **Mon héros à l'abri** / *My hero, safe* for the single place where the daily copy and device sync
   are chosen. **Enregistrer un fichier** / *Save a file* for Android's Save as, **Envoyer à une autre
   app** / *Send to another app* for the share sheet.
+
+## Settled on 2026-10-17
+
+- **Partie** / *playthrough* / *Durchgang* / *partida* / ru *прохождение*, D-34. The hero *leaves* a
+  playthrough ("Laisser la partie"), never abandons or fails it, and a left playthrough is shown
+  nowhere. The code keeps its word, `adventure_runs`/`run`.
 
 ## Related
 

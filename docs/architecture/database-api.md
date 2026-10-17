@@ -116,6 +116,7 @@ interface AdventureRun {
 | `listAdventures()` | Get all available adventures |
 | `getAdventureDetails(id)` | Get adventure with all steps |
 | `startAdventureRun(adventureId)` | Start a new adventure run |
+| `leaveAdventureRun(adventureId)` | Leave the active run (`left`); the boss keeps its HP |
 | `getActiveAdventureRun(adventureId)` | Get active run for adventure |
 | `getAnyActiveAdventureRun()` | Get any active adventure run |
 | `completeAdventureRunStep(runId, sessionId)` | Mark step complete |

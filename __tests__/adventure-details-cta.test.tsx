@@ -90,6 +90,7 @@ jest.mock("@/db", () => ({
   listExercises: jest.fn().mockResolvedValue([]),
   getRecentSessionHistory: jest.fn().mockResolvedValue([]),
   startAdventureRun: jest.fn(),
+  leaveAdventureRun: jest.fn().mockResolvedValue(undefined),
   suggestDifficultyFromSessions: jest.fn().mockReturnValue({ level: "medium", adjusted: false }),
   previewQuest: jest.fn().mockReturnValue({ seconds: 300, xp: 60 }),
 }));
@@ -326,4 +327,78 @@ test("with the first session offered, the list and the preview show step 2 as th
       { withAnchor: true },
     ),
   );
+});
+
+// "Laisser la partie" (D-34): a secondary button under the CTA, only with a run under way, behind
+// a confirmation. Judged on the db call and the reloaded page, not on a route.
+describe("leaving the playthrough", () => {
+  type Db = { getActiveAdventureRun: jest.Mock; leaveAdventureRun: jest.Mock };
+  const db = () => require("@/db") as Db;
+  const access = () => require("@/src/plus/access") as { can: jest.Mock };
+  const renderScreen = () =>
+    render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+  const activeStep = { id: 42, stepIndex: 0, questId: 100, status: "active" };
+  const underWay = {
+    run: { id: 7, adventureId: 1, status: "active", difficultyOverride: null },
+    steps: [activeStep, { id: 43, stepIndex: 1, questId: 101, status: "locked" }],
+    activeStep,
+  };
+
+  beforeEach(() => {
+    db().leaveAdventureRun.mockClear();
+    (
+      require("@/db") as { getFinishedRunCountsByAdventure: jest.Mock }
+    ).getFinishedRunCountsByAdventure.mockResolvedValue(new Map());
+  });
+  afterEach(() => {
+    db().getActiveAdventureRun.mockReset().mockResolvedValue(null);
+  });
+
+  test("confirming leaves the run, reloads, and the CTA offers a fresh start", async () => {
+    let left = false;
+    db().getActiveAdventureRun.mockImplementation(() => Promise.resolve(left ? null : underWay));
+    db().leaveAdventureRun.mockImplementation(() => {
+      left = true;
+      return Promise.resolve();
+    });
+    const { findByTestId, findByText, getByTestId, queryByTestId } = await renderScreen();
+    expect(await findByText("Continue")).toBeTruthy();
+
+    await fireEvent.press(await findByTestId("adventure-leave"));
+    // Asking changes nothing by itself.
+    expect(db().leaveAdventureRun).not.toHaveBeenCalled();
+    await fireEvent.press(getByTestId("confirm-dialog-confirm"));
+
+    await waitFor(() => expect(db().leaveAdventureRun).toHaveBeenCalledWith(1));
+    expect(await findByText("Start Adventure")).toBeTruthy();
+    await waitFor(() => expect(queryByTestId("adventure-leave")).toBeNull());
+  });
+
+  test("cancelling leaves nothing", async () => {
+    db().getActiveAdventureRun.mockResolvedValue(underWay);
+    const { findByTestId, getByTestId } = await renderScreen();
+
+    await fireEvent.press(await findByTestId("adventure-leave"));
+    await fireEvent.press(getByTestId("confirm-dialog-cancel"));
+
+    expect(db().leaveAdventureRun).not.toHaveBeenCalled();
+  });
+
+  test("is absent without a run, and when the adventure is locked", async () => {
+    const first = await renderScreen();
+    await first.findByTestId("adventure-start");
+    expect(first.queryByTestId("adventure-leave")).toBeNull();
+    await first.unmount();
+
+    db().getActiveAdventureRun.mockResolvedValue(underWay);
+    access().can.mockResolvedValue(false);
+    const locked = await renderScreen();
+    await locked.findByTestId("adventure-plus-locked");
+    expect(locked.queryByTestId("adventure-leave")).toBeNull();
+    access().can.mockResolvedValue(true);
+  });
 });

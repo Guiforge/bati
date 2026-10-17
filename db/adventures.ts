@@ -9,7 +9,7 @@ import {
   type TrainingFocus,
   trainingFocus,
 } from "./quests";
-import { ADMIN_CREATOR, type DifficultyCode } from "./schema";
+import { ADMIN_CREATOR, type AdventureRunStatus, type DifficultyCode } from "./schema";
 
 const {
   adventureRuns,
@@ -49,7 +49,7 @@ export type AdventureStepTemplate = {
 export type AdventureRun = {
   id: number;
   adventureId: number;
-  status: "active" | "finished";
+  status: AdventureRunStatus;
   difficultyOverride: DifficultyCode | null;
   startedAt: Date | null;
   finishedAt: Date | null;
@@ -707,6 +707,13 @@ export async function startAdventureRun(input: {
 
   // Before the run row exists: the first condition is that this adventure never had one.
   const offered = await offeredFirstStep(input.adventureId);
+  // Read before the insert: a rematch only follows a run that was finished, never one that was left.
+  const [previousRun] = await db
+    .select({ status: adventureRuns.status })
+    .from(adventureRuns)
+    .where(eq(adventureRuns.adventureId, input.adventureId))
+    .orderBy(desc(adventureRuns.id))
+    .limit(1);
 
   const runId = await insertWithFallback({
     adventureId: input.adventureId,
@@ -744,7 +751,8 @@ export async function startAdventureRun(input: {
   // is the tier the felled fight was fought at, plus one, so the first rematch is tier 1.
   if (details.adventure.kind === "boss") {
     const fight = await getBossFightByAdventure(input.adventureId);
-    if (fight && (fight.defeatedAt || fight.currentHp <= 0)) {
+    // After a left run the felled boss stays felled (its banner is shown, no finished run carries it).
+    if (previousRun?.status === "finished" && fight && (fight.defeatedAt || fight.currentHp <= 0)) {
       await resetBossFight(fight.id, {
         userLevel: input.difficultyOverride ?? "medium",
         // A defeated fight reports the tier it was fought at; the rematch is the next one.
@@ -756,6 +764,19 @@ export async function startAdventureRun(input: {
   const active = await getActiveAdventureRun(input.adventureId);
   if (!active) throw new Error("Failed to load newly created adventure run");
   return active;
+}
+
+/**
+ * The hero leaves the run under way (D-34, "Laisser la partie"). The run stays, as `left`: nothing
+ * that counts reads it, Home stops offering it, and the next start is a fresh run from step 1. The
+ * boss fight is per adventure and is not touched, so it keeps its HP. Its steps are left as they
+ * were: no reader looks at the steps of a run that is not active or finished.
+ */
+export async function leaveAdventureRun(adventureId: number): Promise<void> {
+  await db
+    .update(adventureRuns)
+    .set({ status: "left" })
+    .where(and(eq(adventureRuns.adventureId, adventureId), eq(adventureRuns.status, "active")));
 }
 
 /**
@@ -799,6 +820,26 @@ export async function completeAdventureRunStep(input: {
   const current = currentRows[0];
   if (!current) throw new Error("Adventure run step not found");
 
+  const runRows = await db
+    .select({ adventureId: adventureRuns.adventureId, status: adventureRuns.status })
+    .from(adventureRuns)
+    .where(eq(adventureRuns.id, current.runId))
+    .limit(1);
+  const run = runRows[0];
+  if (!run) throw new Error("Adventure run not found");
+
+  if (run.status !== "active") {
+    // A session that outlived its run (the hero left it, or a stale step of a finished one) is
+    // ordinary training: no step, no second victory. Its boss hits were committed before and stay.
+    return {
+      adventureId: run.adventureId,
+      runId: current.runId,
+      isFinished: false,
+      nextRunStepId: null,
+      nextQuestId: null,
+    };
+  }
+
   const now = new Date();
   await db
     .update(adventureRunSteps)
@@ -819,14 +860,6 @@ export async function completeAdventureRunStep(input: {
       ),
     )
     .limit(1);
-
-  const runRows = await db
-    .select({ adventureId: adventureRuns.adventureId })
-    .from(adventureRuns)
-    .where(eq(adventureRuns.id, current.runId))
-    .limit(1);
-  const run = runRows[0];
-  if (!run) throw new Error("Adventure run not found");
 
   const next = nextRows[0];
   if (!next) {

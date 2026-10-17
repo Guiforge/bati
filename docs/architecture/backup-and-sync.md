@@ -293,6 +293,16 @@ reads the merged journal, so two synced phones show the same Home but not necess
 notice. The offered first step is local adventure state, decided per device from the merged journal
 at run start; adventure runs are not synced, so a second phone decides for itself.
 
+## What leaving a run adds to sync
+
+Nothing merged, no migration, fingerprint unchanged: `adventure_runs` is local, so a `left` run
+travels only in a whole-file restore or hand-off, like an active or finished one. A previous app
+version reads `left` as neither active nor finished and ignores the run, except in three writers: its
+`reopenCampaignStep` would flip the run back to `active`, its `completeAdventureRunStep` would finish
+it from a stale step id (none can arrive, R34), and its `startAdventureRun` resets a felled boss
+without checking the previous run, so a boss felled in a left run loses its Lair banner at the next
+start there. Narrow, accepted: a migration would make the old build refuse the file outright.
+
 ## Device sync
 
 - **Progress is derived, never stored**: bests, records and rungs are read from `completed_exercises`

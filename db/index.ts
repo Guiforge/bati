@@ -15,6 +15,7 @@ export {
   getAdventureIdForRunStep,
   getAnyActiveAdventureRun,
   getFinishedRunCountsByAdventure,
+  leaveAdventureRun,
   listAdventures,
   offeredFirstStep,
   startAdventureRun,

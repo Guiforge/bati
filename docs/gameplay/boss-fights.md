@@ -223,7 +223,8 @@ see [progression.md](progression.md#village).
 Replaying a beaten boss campaign is a **rematch**. `startAdventureRun` resurrects the defeated
 fight the moment the new run begins — the wiring `getBossBanners` described before it existed
 ("resetBossFight() nulls it the moment a replay starts"); the banner survives because the finished
-run carries the victory.
+run carries the victory. The reset only follows a *finished* run: after a left run the boss keeps
+its HP, and a felled one stays felled until a run is finished.
 
 **Tier** = how many times the boss has fallen, derived from the adventure's finished runs — never
 stored, so it cannot disagree with the village's own count of the same victories. It is on

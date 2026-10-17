@@ -441,6 +441,9 @@ export function nextEditStamp(column: SQLiteColumn) {
  * longer belong to the fight on the page). Reopening a step under either would leave a run with a
  * hole in it. A session the victory screen discards can never be locked: nothing came after it.
  *
+ * A left run is never revived by this: its step only forgets the session, and it is `"locked"`
+ * only once a newer run of that adventure is finished.
+ *
  * Achievements and a fulfilled oath stay: neither is ever taken back, by design.
  * ponytail: another session's XP priced against this one (the day's first-session bonus, the
  * outing decay) is not re-priced; do it if a hero ever notices a bonus that never comes back.
@@ -492,6 +495,7 @@ async function reopenCampaignStep(tx: TransactionTx, sessionId: number): Promise
         runId: adventureRunSteps.runId,
         stepIndex: adventureRunSteps.stepIndex,
         adventureId: adventureRuns.adventureId,
+        runStatus: adventureRuns.status,
       })
       .from(adventureRunSteps)
       .innerJoin(adventureRuns, eq(adventureRuns.id, adventureRunSteps.runId))
@@ -499,6 +503,30 @@ async function reopenCampaignStep(tx: TransactionTx, sessionId: number): Promise
       .limit(1)
   )[0];
   if (!step) return true;
+
+  // A left run is never resumed, so it has no step to put back. Locked only once a newer run of this
+  // adventure has finished: the fight may have been reset since, and the refund would land on the rematch.
+  // ponytail: that "locked" reuses journal.forget_locked, whose copy ("you have already played the next
+  // steps") is inaccurate for a left run; own copy if a hero ever reports it.
+  if (step.runStatus === "left") {
+    const [settled] = await tx
+      .select({ n: count() })
+      .from(adventureRuns)
+      .where(
+        and(
+          eq(adventureRuns.adventureId, step.adventureId),
+          gt(adventureRuns.id, step.runId),
+          eq(adventureRuns.status, "finished"),
+        ),
+      );
+    if ((settled?.n ?? 0) > 0) return false;
+    // Foreign keys are off on devices: unhook the step from the session about to be deleted, status untouched.
+    await tx
+      .update(adventureRunSteps)
+      .set({ completedSessionId: null })
+      .where(eq(adventureRunSteps.id, step.id));
+    return true;
+  }
 
   const [later] = await tx
     .select({ n: count() })

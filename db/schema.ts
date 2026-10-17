@@ -344,7 +344,8 @@ export const adventures = sqliteTable(
 export const adventureStepStatuses = ["locked", "active", "completed"] as const;
 export type AdventureStepStatus = (typeof adventureStepStatuses)[number];
 
-export const adventureRunStatuses = ["active", "finished"] as const;
+// `left`: the hero left the run (phase 0, D-34). Read by nothing that counts, never set back to active.
+export const adventureRunStatuses = ["active", "finished", "left"] as const;
 export type AdventureRunStatus = (typeof adventureRunStatuses)[number];
 
 export const adventureSteps = sqliteTable(

@@ -16,6 +16,7 @@ import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
+import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { ChevronLeft, Sparkles } from "@/components/icons";
 import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
 import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
@@ -31,6 +32,7 @@ import {
   getAdventureDetails,
   getFinishedRunCountsByAdventure,
   getRecentSessionHistory,
+  leaveAdventureRun,
   listExercises,
   offeredFirstStep,
   previewQuest,
@@ -248,6 +250,7 @@ export default function AdventureDetailsScreen() {
   const language = useSettingsStore((s) => s.language);
   const pace = useReminderPace();
   const { showError } = useToast();
+  const { ask, dialog } = useConfirmDialog();
   const reducedMotion = useReducedMotion();
   const [isStarting, setIsStarting] = useState(false);
   const [finishedCount, setFinishedCount] = useState(0);
@@ -491,7 +494,7 @@ export default function AdventureDetailsScreen() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + (run ? 160 : 100) }}>
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between" gap="$2">
             {/* Same rule as the exercises header: only the title gives way. Yoga's flexShrink
@@ -746,8 +749,36 @@ export default function AdventureDetailsScreen() {
                       : t("adventures.start")}
             </AppButton>
           )}
+          {run && adventureId != null && !locked && !isStarting ? (
+            <AppButton
+              testID="adventure-leave"
+              variant="outline"
+              fullWidth
+              height={48}
+              mt="$2"
+              onPress={() =>
+                ask({
+                  title: t("adventures.leave_title"),
+                  body: t(isBoss ? "adventures.leave_body_boss" : "adventures.leave_body"),
+                  cancelLabel: t("common.cancel"),
+                  confirmLabel: t("adventures.leave_confirm"),
+                  onConfirm: () => {
+                    leaveAdventureRun(adventureId)
+                      .then(() => load(adventureId))
+                      .catch((e) => {
+                        reportError("adventure.leave", e);
+                        showError(t("adventures.leave_error"));
+                      });
+                  },
+                })
+              }
+            >
+              {t("adventures.leave")}
+            </AppButton>
+          ) : null}
         </YStack>
       ) : null}
+      {dialog}
     </YStack>
   );
 }

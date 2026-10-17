@@ -109,7 +109,7 @@ one session changes it; adding a tombstone changes it.
 
 **R11. Never compared and never merged:** derived caches (`streak_*`, achievements), favourites
 (`favourite_quests`), quest configs (`quest:<id>:config`), campaigns, boss fights and boss damage
-log, adventure runs, set-aside exercises, `language`, `warmupEnabled`, `prepMode`,
+log, adventure runs (any status, `left` included), set-aside exercises, `language`, `warmupEnabled`, `prepMode`,
 `distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `villagersEnabled`, `bigFeastsShown`
 (a JSON list of the big feasts this phone already showed; it only decides display), `notesSeenVersion`
 (the release notes this phone already showed; per device, it only decides which Home notice is up), and every
@@ -245,7 +245,7 @@ merge keeps the larger `deletedAt`. Rows are never removed by app code. `drizzle
 Invariant: the tombstone set of a device is monotonically non-decreasing between restores.
 
 **R27. Deleting a session removes: its sets, boss damage log (refunding the boss HP, capped at
-total, felled boss revived), gps points, reopens the campaign step.** `db/completed.ts:348-361,
+total, felled boss revived), gps points, reopens the campaign step (unless the run was left, R116).** `db/completed.ts:348-361,
 428-445`.
 Invariant: after delete, no row of `completed_exercises`, `boss_damage_log`, `gps_points`
 references the session; boss `currentHp <= totalHp`.
@@ -876,6 +876,16 @@ before, whatever the source; `lockedAdventures()` never contains an adventure wi
 `adventure_runs`; a locked adventure page starts no run from any of its controls. Source `none` (every
 build without a billing module) answers `true` before reading the database.
 `__tests__/plus-access.test.ts`, `__tests__/db-peer-merge.test.ts`.
+
+**R116. Deleting a session of a left run never revives the run.** It is "locked" only when a newer
+run of that adventure is finished; otherwise "deleted", with the boss refund, and the step's
+`completedSessionId` set to NULL (status kept). Invariant: no write ever sets a `left` run back to
+`active` or `finished`. `__tests__/db-delete-session.test.ts`.
+
+**R117. A left run counts nowhere.** Every counter reads `finished`, the offer reads `active`, and a
+step completed against a run that is not active (left, or a stale step of a finished one) is
+ordinary training: no step, no victory. The boss fight is per adventure and keeps its HP; the rematch
+reset only follows a finished run. `__tests__/db-adventures-campaign.test.ts`.
 
 **R115. Home's disclosure is read from the journal; the offered step is local.** `disclosure()`
 is a pure function of the journal: two devices with the same sessions show the same Home, whatever

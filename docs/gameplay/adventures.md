@@ -97,7 +97,7 @@ When you start an adventure, the app creates an **Adventure Run** to track progr
 CREATE TABLE adventure_runs (
   id INTEGER PRIMARY KEY,
   adventureId INTEGER REFERENCES adventures(id),
-  status TEXT NOT NULL,        -- 'active' | 'finished'
+  status TEXT NOT NULL,        -- 'active' | 'finished' | 'left'
   difficultyOverride TEXT,     -- Pins the campaign. Null in practice since the feedback link
                                -- shipped: each step re-reads the suggestion instead.
   startedAt INTEGER,
@@ -128,6 +128,8 @@ Step 3: [locked]   → Previous done  → [active] → Complete → [completed]
 Step 4: [locked]   → Previous done  → [active] → Complete → [completed]
                                                             ↓
 Adventure: [active] ────────────────────────────────► [finished]
+              │
+              └── "Laisser la partie" ──► [left]   (counted nowhere, offered nowhere)
 ```
 
 ---

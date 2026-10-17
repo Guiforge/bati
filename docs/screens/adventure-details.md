@@ -43,6 +43,10 @@ Adventure Details is the campaign hub. It shows:
 - Start a new adventure.
 - Continue the next step of an existing run.
 - Review what’s coming next in the campaign.
+- Leave the playthrough under way ("Laisser la partie"): a small outline button (`adventure-leave`)
+  under the main one, shown only with an active run, behind a confirmation dialog that is not
+  destructive. Nothing is shown as failed; the page goes back to its no-run state and the hero can
+  start again from step 1.
 
 ## What happens next
 

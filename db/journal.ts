@@ -1214,13 +1214,15 @@ export function nextOnShelf(progress: readonly AchievementProgress[]): Achieveme
  * day moves every window.
  */
 export async function getJournalVersion(): Promise<string> {
-  const [[sessions], preferences] = await Promise.all([
+  const [[sessions], preferences, [photos]] = await Promise.all([
     db
       .select({
         count: count(),
         last: sql<number | null>`MAX(${completedQuest.id})`,
         xp: sql<number | null>`SUM(${completedQuest.xpEarned})`,
         records: sql<number | null>`SUM(${completedQuest.hasNewRecords})`,
+        // A note typed from the detail grows its stamp, so the list refreshes behind it (0075).
+        notes: sql<number | null>`TOTAL(${completedQuest.notesEditedAt})`,
       })
       .from(completedQuest),
     db
@@ -1228,12 +1230,22 @@ export async function getJournalVersion(): Promise<string> {
       .from(schema.userPreferences)
       .where(inArray(schema.userPreferences.key, ["oath", "unlocked_achievements"]))
       .orderBy(schema.userPreferences.key),
+    // A photo added or removed moves the count or the sum of the stamps (a removal grows one).
+    db
+      .select({
+        count: count(),
+        stamps: sql<number | null>`TOTAL(${schema.sessionPhotos.updatedAt})`,
+      })
+      .from(schema.sessionPhotos),
   ]);
   return [
     sessions?.count,
     sessions?.last,
     sessions?.xp,
     sessions?.records,
+    sessions?.notes,
+    photos?.count,
+    photos?.stamps,
     ...preferences.map((row) => row.value),
     dayKey(new Date()),
   ].join("|");

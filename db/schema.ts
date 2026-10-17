@@ -1,5 +1,13 @@
 import { sql } from "drizzle-orm";
-import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import {
+  customType,
+  index,
+  int,
+  primaryKey,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 import { uuidv7 } from "./uuid";
 
 // ------------------------------------------------------------
@@ -481,6 +489,9 @@ export const completedQuest = sqliteTable(
     // correction made on the other.
     setsEditedAt: int({ mode: "timestamp" }),
     feedbackEditedAt: int({ mode: "timestamp" }),
+    // When the hero last wrote or cleared the note after saving (`0075`), on its own stamp for the
+    // same reason. Null when nobody did.
+    notesEditedAt: int({ mode: "timestamp" }),
 
     // When the session was performed.
     performedAt: int({ mode: "timestamp" })
@@ -1105,6 +1116,30 @@ export const deletedContent = sqliteTable("deleted_content", {
   uuid: text().primaryKey(),
   deletedAt: int({ mode: "timestamp" }).notNull(),
 });
+
+/** A BLOB column, as the bytes the driver hands over (`Uint8Array`: expo-sqlite, and a Buffer in tests). */
+const bytes = customType<{ data: Uint8Array; driverData: Uint8Array }>({
+  dataType: () => "blob",
+});
+
+/**
+ * Photos of a session or an outing (0075), by the session's uuid. A removed one keeps its row, with
+ * `image` empty, so the other device learns of it. `updatedAt` and `deletedAt` are epoch seconds,
+ * plain ints: compared in SQL with `unixepoch()` stamps.
+ */
+export const sessionPhotos = sqliteTable(
+  "session_photos",
+  {
+    uuid: text().primaryKey(),
+    sessionUuid: text().notNull(),
+    sortOrder: int().notNull(),
+    /** The JPEG, re-encoded by `encodePhoto` (no EXIF). Empty once removed. */
+    image: bytes().notNull(),
+    updatedAt: int().notNull(),
+    deletedAt: int(),
+  },
+  (table) => ({ sessionIdx: index("session_photos_session_idx").on(table.sessionUuid) }),
+);
 
 export const gpsPoints = sqliteTable(
   "gps_points",

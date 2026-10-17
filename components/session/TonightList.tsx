@@ -76,6 +76,17 @@ const portraitArt = (slug: string, animal: Animal) => {
  * same night (rare, then winter, then base), the shield when the base has not shipped. The box is
  * reserved while the coat is read, so nothing on the card moves.
  */
+/** The boss card's second line: the final blow, or the Triumph with its XP when the game pays one. */
+function bossLine(
+  t: TFunction,
+  f: { finalBlow?: boolean; own?: boolean },
+  language: AppLanguage,
+): string {
+  if (f.finalBlow) return t("boss.final_blow");
+  if (f.own) return t("boss.triumph_own");
+  return t("boss.triumph_subtitle", { xp: formatCount(language, TRIUMPH_XP_BONUS) });
+}
+
 function LegendaryArt({ animal, longestFlame }: { animal: Animal; longestFlame: FlameLevel }) {
   const slug = usePortraitSlug(animal, "legendary", longestFlame);
   if (!(`${animal}-legendary` in ANIMAL_PORTRAITS)) return shield(animal);
@@ -311,10 +322,10 @@ function cardOf(
         title: t("boss.victory_title"),
         body: [
           f.name,
-          f.finalBlow
-            ? t("boss.final_blow")
-            : t("boss.triumph_subtitle", { xp: formatCount(language, TRIUMPH_XP_BONUS) }),
-        ],
+          bossLine(t, f, language),
+          // An adventure the hero wrote pays its sessions and nothing more: said once, here.
+          f.own ? t("boss.own_pays_sessions") : null,
+        ].filter((line) => line !== null),
         art: <GameIcon name="sword" size={32} color="$resourceGold" />,
       };
     case "oath":

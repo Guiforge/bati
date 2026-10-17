@@ -17,7 +17,7 @@ import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
-import { ChevronLeft, Sparkles } from "@/components/icons";
+import { ChevronLeft, Pencil, Sparkles } from "@/components/icons";
 import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
 import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
 import type {
@@ -34,10 +34,13 @@ import {
   getRecentSessionHistory,
   leaveAdventureRun,
   listExercises,
+  missingStepQuests,
   offeredFirstStep,
   previewQuest,
+  sparedExerciseIds,
   startAdventureRun,
   suggestDifficultyFromSessions,
+  worksSparedZone,
 } from "@/db";
 import { type BossFight, getBossFightByAdventure } from "@/db/bossFights";
 import type { Exercise } from "@/db/exercises";
@@ -45,6 +48,7 @@ import { MUSCLE_LABELS } from "@/db/labels";
 import { preferences } from "@/db/preferences";
 import { startingDifficulty } from "@/db/questConfig";
 import { loadSlotJournal, QUEST_AS_WRITTEN, type SlotJournal } from "@/db/quests";
+import { ADMIN_CREATOR } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
@@ -85,6 +89,10 @@ type LoadedData = {
    * quest alone. Read with the rest so it lands in the same commit as `details`.
    */
   locked: boolean;
+  /** Step indexes whose quest is gone: a run cannot start on them, and the page says why. */
+  missing: number[];
+  /** The exercises a zone is sparing now, for the line under a hero step that would work it. */
+  spared: ReadonlySet<number>;
 };
 
 type LoadState =
@@ -146,6 +154,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
   isFirst,
   isLast,
   onContinue,
+  zone,
 }: {
   step: AdventureStepTemplate;
   status: "locked" | "active" | "completed";
@@ -153,6 +162,8 @@ const AdventureStepRow = memo(function AdventureStepRow({
   isFirst: boolean;
   isLast: boolean;
   onContinue: () => void;
+  /** The hero's own quest here would work the zone they are sparing. */
+  zone: boolean;
 }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -233,6 +244,15 @@ const AdventureStepRow = memo(function AdventureStepRow({
               {narrative}
             </Paragraph>
           ) : null}
+          {zone ? (
+            <Text
+              testID={`adventure-step-${step.stepIndex}-zone`}
+              fontSize={12}
+              color="$textSecondary"
+            >
+              {t("adventures.zone_step")}
+            </Text>
+          ) : null}
         </YStack>
       </XStack>
     </XStack>
@@ -273,6 +293,8 @@ export default function AdventureDetailsScreen() {
     bossFight: null,
     journal: QUEST_AS_WRITTEN,
     locked: false,
+    missing: [],
+    spared: new Set(),
   });
 
   const load = useCallback(
@@ -293,6 +315,8 @@ export default function AdventureDetailsScreen() {
         getBossFightByAdventure(id),
         preferences.getTrainingLevel(),
         can({ kind: "startAdventure", adventureId: id }),
+        missingStepQuests(id),
+        sparedExerciseIds(),
       ])
         .then(
           ([
@@ -305,6 +329,8 @@ export default function AdventureDetailsScreen() {
             bossFight,
             answer,
             allowed,
+            missing,
+            spared,
           ]) => {
             if (isStale()) return;
             setFinishedCount(finishedCounts.get(id) ?? 0);
@@ -321,6 +347,8 @@ export default function AdventureDetailsScreen() {
                 bossFight: null,
                 journal: QUEST_AS_WRITTEN,
                 locked: false,
+                missing: [],
+                spared: new Set(),
                 message: t("adventures.not_found"),
               });
               return;
@@ -350,6 +378,8 @@ export default function AdventureDetailsScreen() {
                 bossFight,
                 journal,
                 locked: !allowed,
+                missing,
+                spared,
               });
             });
           },
@@ -385,6 +415,10 @@ export default function AdventureDetailsScreen() {
   const details = state.details;
   const run = state.activeRun;
   const locked = state.locked;
+  // A step whose quest is gone makes a run end at a false victory, so none starts (a run under way
+  // copied its quests and carries on). Hero adventures can be repaired from the editor.
+  const unplayable = state.missing.length > 0 && !run;
+  const isOwn = details != null && details.adventure.author !== ADMIN_CREATOR;
   const suggestedDifficulty = state.suggestedDifficulty;
   const feedbackAdjusted = state.feedbackAdjusted;
   // `difficultyOverride` still pins a campaign when it is set, and runs started before the
@@ -524,6 +558,17 @@ export default function AdventureDetailsScreen() {
                 </Text>
               </XStack>
             </XStack>
+
+            {isOwn ? (
+              <AppIconButton
+                testID="adventure-edit"
+                onPress={() => router.push(`/adventures/edit?id=${adventureId}` as never)}
+                accessibilityRole="button"
+                accessibilityLabel={t("adventures.edit")}
+              >
+                <Pencil size={20} color="$text" />
+              </AppIconButton>
+            ) : null}
 
             <YStack items="flex-end" gap="$1">
               <Tag
@@ -683,6 +728,7 @@ export default function AdventureDetailsScreen() {
                             : "locked")
                       }
                       adventureId={adventureId}
+                      zone={worksSparedZone(s.quest, state.spared)}
                       isFirst={i === 0}
                       isLast={i === effectiveSteps.length - 1}
                       onContinue={() => {
@@ -719,7 +765,11 @@ export default function AdventureDetailsScreen() {
           borderColor="$borderStrong"
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
         >
-          {locked ? (
+          {unplayable ? (
+            <Text testID="adventure-missing-quest" fontSize={13} color="$textSecondary">
+              {t(isOwn ? "adventures.missing_quest_own" : "adventures.missing_quest")}
+            </Text>
+          ) : locked ? (
             <Text testID="adventure-plus-locked" fontSize={13} color="$textSecondary">
               {t("adventures.plus_locked")}
             </Text>

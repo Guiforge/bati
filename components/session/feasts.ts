@@ -31,7 +31,7 @@ export type FeastFacts = {
   /** The big feasts this phone has shown (`bigFeastsShown`); one in it is a card, not a screen. */
   shown?: string[];
   /** The boss this session felled, by name. */
-  boss?: { name: string; finalBlow?: boolean } | null;
+  boss?: { name: string; finalBlow?: boolean; own?: boolean } | null;
   /** The newest Age not shown yet (`result.age`): `tonight` fills it in. */
   age?: AgeNews | null;
   /** The village's anniversary not shown yet (`result.anniversary`). */
@@ -59,7 +59,7 @@ export type Feast =
   | Of<"coat", NonNullable<Result["rareCoat"]>>
   | Of<"secondJoins", NonNullable<Result["crestEvents"]["secondJoins"]>>
   | Of<"stageUp", Result["crestEvents"]["stageUp"][number]>
-  | Of<"boss", { name: string; finalBlow?: boolean }>
+  | Of<"boss", { name: string; finalBlow?: boolean; own?: boolean }>
   | Of<"oath", { progress: NonNullable<Result["fulfilledOath"]>; bonusXp: number }>
   | Of<"level", { level: number }>
   | Of<"growth", { building: VillageGrowth }>

@@ -8,6 +8,7 @@ export type {
   AdventureStepTemplate,
 } from "./adventures";
 export {
+  activeRunAdventureIds,
   adventureOrder,
   completeAdventureRunStep,
   getActiveAdventureRun,
@@ -17,6 +18,7 @@ export {
   getFinishedRunCountsByAdventure,
   leaveAdventureRun,
   listAdventures,
+  missingStepQuests,
   offeredFirstStep,
   startAdventureRun,
 } from "./adventures";
@@ -44,6 +46,7 @@ export {
   retireUserExercise,
   unretireUserExercise,
 } from "./exercises";
+export { worksSparedZone } from "./heroAdventures";
 export { preferences, type TrainingLevel } from "./preferences";
 // One entry point for a gallery, deliberately: it reads the hero's ladder and records once for
 // every card, which is what the per-card estimates behind it cannot do on their own.
@@ -86,3 +89,4 @@ export {
 // `db/xp.ts` is the only place the XP arithmetic and its constants live. Only the screens' entry
 // point is re-exported here; `saveSession` and the tests import the module itself.
 export { estimateQuestXp } from "./xp";
+export { sparedExerciseIds } from "./zone";

@@ -480,6 +480,28 @@ describe("TonightList", () => {
     expect(queryByText(/\+100 XP/)).toBeNull();
   });
 
+  test("a hero's own boss says it pays its sessions and no Triumph XP", async () => {
+    const triumph = await show(rankFeasts({ boss: { name: "Golem", own: true }, result: base }));
+    expect(triumph.getByText("Triomphe ! Il tombe sous tes coups.")).toBeTruthy();
+    expect(triumph.getByText(/^Une aventure écrite par toi ne rapporte que l'XP/)).toBeTruthy();
+    expect(triumph.queryByText(/\+100/)).toBeNull();
+    await triumph.unmount();
+
+    const blow = await show(
+      rankFeasts({ boss: { name: "Golem", finalBlow: true, own: true }, result: base }),
+    );
+    expect(blow.getByText("Abattu par ton coup final !")).toBeTruthy();
+    expect(blow.getByText(/^Une aventure écrite par toi ne rapporte que l'XP/)).toBeTruthy();
+  });
+
+  test("a game boss's Triumph still shows its +100 XP and no such line", async () => {
+    const { getByText, queryByText } = await show(
+      rankFeasts({ boss: { name: "Golem" }, result: base }),
+    );
+    expect(getByText(/\+100/)).toBeTruthy();
+    expect(queryByText(/Une aventure écrite par toi/)).toBeNull();
+  });
+
   test("a rung card keeps the other doors the step leads to", async () => {
     const m = (name: string) => ({
       id: 1,

@@ -9,6 +9,7 @@ import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AdventureFooter } from "@/components/adventures/AdventureFooter";
+import { focusLabel } from "@/components/adventures/focusLabel";
 import { starsFor } from "@/components/adventures/replayStars";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
@@ -22,6 +23,7 @@ import { Skull, Sparkles } from "@/components/icons";
 import { getAdventureAsset } from "@/constants/assetMap";
 import {
   type Adventure,
+  activeRunAdventureIds,
   adventureOrder,
   getAnyActiveAdventureRun,
   getFinishedRunCountsByAdventure,
@@ -33,9 +35,9 @@ import {
   suggestDifficultyFromSessions,
 } from "@/db";
 import { threatRank } from "@/db/bossFights";
-import { MUSCLE_LABELS } from "@/db/labels";
 import { preferences } from "@/db/preferences";
 import { getAllQuestConfigs, startingDifficulty } from "@/db/questConfig";
+import { USER_QUEST_AUTHOR } from "@/db/quests";
 import { formatCount } from "@/db/targets";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
@@ -88,6 +90,8 @@ type AdventureRow = {
   starsLabel: string | null;
   /** 1-4 skulls, null on a route: which of these has a monster worth the trip. */
   threat: 1 | 2 | 3 | 4 | null;
+  /** Written by the hero: the card says so, quietly. */
+  byHero: boolean;
 };
 
 /** How the hero is doing in the one campaign that can be active at a time. */
@@ -124,12 +128,7 @@ function buildAdventureRow(
         : a.kind === "event"
           ? t("adventures.kind_event")
           : t("adventures.kind_route"),
-    focusLabel: [
-      a.focus.archetype ? t(`quests.archetype_${a.focus.archetype}`) : null,
-      ...a.focus.muscles.map((m) => MUSCLE_LABELS[m]?.[language] ?? m),
-    ]
-      .filter(Boolean)
-      .join(" · "),
+    focusLabel: focusLabel(a.focus, language, t),
     weeksLabel: adventureWeeksLabel(a.stepsCount, pace, t),
     stepsLabel: t("adventures.steps", {
       count: a.stepsCount,
@@ -143,6 +142,7 @@ function buildAdventureRow(
     // to each other, and threading a difficulty in would make the same monster read differently
     // on two heroes' screens for a reason neither of them chose.
     threat: a.bossTotalHp == null ? null : threatRank(a.bossTotalHp),
+    byHero: a.author === USER_QUEST_AUTHOR,
   };
 }
 
@@ -293,6 +293,12 @@ function AdventureCard({
             </Text>
           )}
 
+          {row.byHero ? (
+            <Text fontSize={12} color="$textSecondary" testID="adventure-card-by-you">
+              {t("adventures.by_you")}
+            </Text>
+          ) : null}
+
           {row.focusLabel ? (
             <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
               {row.focusLabel}
@@ -303,7 +309,14 @@ function AdventureCard({
             {row.description}
           </Paragraph>
 
-          <AdventureFooter meta={metaLabel} xp={row.xpLabel} />
+          {item.coverMissing ? (
+            // Its preview is of an empty quest: no duration, no XP, and the way to the repair.
+            <Text fontSize={13} color="$textSecondary">
+              {t("adventures.missing_quest_own")}
+            </Text>
+          ) : (
+            <AdventureFooter meta={metaLabel} xp={row.xpLabel} />
+          )}
         </YStack>
       </Card>
     </YStack>
@@ -313,11 +326,48 @@ function AdventureCard({
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
 /** "With Bati+" and how many are still behind it, once, above the locked posters. */
 type PlusHeaderRow = { plusHeader: true; count: number };
-type GalleryItem = AdventureRow | PlusHeaderRow;
+/** "Tes aventures", above the hero's own posters. */
+type YoursHeaderRow = { yoursHeader: true };
+/** The way to write one: after the hero's own, or after the game's when there are none. */
+type WriteRowItem = { writeRow: true };
+type GalleryItem = AdventureRow | PlusHeaderRow | YoursHeaderRow | WriteRowItem;
 
 const adventureKey = (item: GalleryItem) =>
-  "plusHeader" in item ? "plus-header" : String(item.adventure.id);
-const itemType = (item: GalleryItem) => ("plusHeader" in item ? "header" : "poster");
+  "plusHeader" in item
+    ? "plus-header"
+    : "yoursHeader" in item
+      ? "yours-header"
+      : "writeRow" in item
+        ? "write-row"
+        : String(item.adventure.id);
+const itemType = (item: GalleryItem) =>
+  "plusHeader" in item || "yoursHeader" in item
+    ? "header"
+    : "writeRow" in item
+      ? "write"
+      : "poster";
+
+function YoursHeader() {
+  const { t } = useTranslation();
+  return (
+    <YStack testID="adventures-yours-header" px="$5" pt="$3">
+      <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$text">
+        {t("adventures.yours_section")}
+      </Text>
+    </YStack>
+  );
+}
+
+function WriteRow({ onWrite }: { onWrite: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <YStack px="$5">
+      <AppButton testID="adventures-write" variant="outline" onPress={onWrite}>
+        {t("adventures.write")}
+      </AppButton>
+    </YStack>
+  );
+}
 
 function PlusHeader({ count }: { count: number }) {
   const { t } = useTranslation();
@@ -338,10 +388,12 @@ function StatusMessage({
   state,
   onRetry,
   onBrowseQuests,
+  onWrite,
 }: {
   state: LoadState;
   onRetry: () => void;
   onBrowseQuests: () => void;
+  onWrite: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -388,8 +440,11 @@ function StatusMessage({
             <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
               {t("adventures.empty_subtitle")}
             </Paragraph>
-            {/* Campaigns can't be authored; single quests are the way to train meanwhile. */}
-            <AppButton fullWidth={false} onPress={onBrowseQuests}>
+            {/* The hero can write one, and single quests are the way to train meanwhile. */}
+            <AppButton fullWidth={false} onPress={onWrite}>
+              {t("adventures.write")}
+            </AppButton>
+            <AppButton fullWidth={false} variant="outline" onPress={onBrowseQuests}>
               {t("quests.gallery_title")}
             </AppButton>
           </YStack>
@@ -419,6 +474,7 @@ export default function AdventuresGallery() {
   });
   const [activeProgress, setActiveProgress] = useState<AdventureProgress | null>(null);
   const [finishedCounts, setFinishedCounts] = useState<Map<number, number>>(new Map());
+  const [runningIds, setRunningIds] = useState<ReadonlySet<number>>(new Set());
 
   const load = useCallback(async () => {
     // Only show the loading state on first load — on focus refetches we already have data.
@@ -435,9 +491,20 @@ export default function AdventuresGallery() {
       getRecentSessionHistory(10),
       preferences.getTrainingLevel(),
       lockedAdventures(),
+      activeRunAdventureIds(),
     ])
       .then(
-        ([adventures, exercises, activeRun, finished, questConfigs, history, answer, locked]) => {
+        ([
+          adventures,
+          exercises,
+          activeRun,
+          finished,
+          questConfigs,
+          history,
+          answer,
+          locked,
+          running,
+        ]) => {
           const progress: AdventureProgress | null = activeRun
             ? {
                 adventureId: activeRun.adventureId,
@@ -449,6 +516,7 @@ export default function AdventuresGallery() {
           // Same content, same identity: a focus with nothing new re-renders no poster.
           setActiveProgress((previous) => keepIfSame(previous, progress));
           setFinishedCounts((previous) => keepIfSame(previous, finished));
+          setRunningIds((previous) => keepIfSame(previous, running));
           const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
           // The cover quests, priced the way each one's own detail screen will price it, in one
           // read for the whole gallery: see `previewQuests`. At the level a campaign would run at,
@@ -459,7 +527,7 @@ export default function AdventuresGallery() {
             defaultDifficulty: startingDifficulty(answer, history.length),
           });
           return previewQuests(
-            adventures.map((a) => a.coverQuest),
+            adventures.filter((a) => !a.coverMissing).map((a) => a.coverQuest),
             exercisesById,
             questConfigs,
             suggestion.level,
@@ -505,23 +573,39 @@ export default function AdventuresGallery() {
       );
     // Ordered before the rows are built, so the sort reads the adventures themselves rather
     // than the display strings derived from them. Locked ones keep seed order, under a header.
-    const open = adventureOrder(
-      adventures.filter((a) => !locked.has(a.id)),
-      activeProgress?.adventureId ?? null,
-      finishedCounts,
-    ).map(build);
-    if (locked.size === 0) return open;
+    // Under way first (every run, not only the newest), then the rest in `adventureOrder`.
+    // ponytail: the progress chip stays with the newest run only (`getAnyActiveAdventureRun`);
+    // per-run progress on each poster is the fix if two runs at once turns out to be common.
+    const order = (list: Adventure[]) =>
+      adventureOrder(list, activeProgress?.adventureId ?? null, finishedCounts).sort(
+        (a, b) => Number(runningIds.has(b.id)) - Number(runningIds.has(a.id)),
+      );
+    const game = adventures.filter((a) => a.author !== USER_QUEST_AUTHOR);
+    // A hero adventure retired on another device stays while a run of it is active here, so that run
+    // and its "Laisser la partie" are reachable from somewhere; it leaves when the run ends or is left.
+    const own = adventures
+      .filter((a) => a.author === USER_QUEST_AUTHOR && (a.isActive === 1 || runningIds.has(a.id)))
+      .sort((a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0));
+    const rows: GalleryItem[] = order(game.filter((a) => !locked.has(a.id))).map(build);
+    if (own.length > 0) rows.push({ yoursHeader: true }, ...order(own).map(build));
+    rows.push({ writeRow: true });
+    if (locked.size === 0) return rows;
     const header: PlusHeaderRow = { plusHeader: true, count: locked.size };
-    return [...open, header, ...adventures.filter((a) => locked.has(a.id)).map(build)];
-  }, [adventures, locked, finishedCounts, language, t, previews, activeProgress, pace]);
+    return [...rows, header, ...game.filter((a) => locked.has(a.id)).map(build)];
+  }, [adventures, locked, finishedCounts, runningIds, language, t, previews, activeProgress, pace]);
 
   const title = t("adventures.gallery_title");
 
   const onPressAdventure = (id: number) => router.push(`/adventures/${id}` as never);
+  const onWrite = () => router.push("/adventures/edit" as never);
 
   const renderItem = ({ item }: { item: GalleryItem }) =>
     "plusHeader" in item ? (
       <PlusHeader count={item.count} />
+    ) : "yoursHeader" in item ? (
+      <YoursHeader />
+    ) : "writeRow" in item ? (
+      <WriteRow onWrite={onWrite} />
     ) : (
       <AdventureCard
         row={item}
@@ -556,6 +640,7 @@ export default function AdventuresGallery() {
           });
         }}
         onBrowseQuests={() => router.push("/quests" as never)}
+        onWrite={onWrite}
       />
 
       {adventures.length > 0 && (

@@ -92,6 +92,9 @@ jest.mock("@/db", () => ({
   startAdventureRun: jest.fn(),
   suggestDifficultyFromSessions: jest.fn().mockReturnValue({ level: "hard", adjusted: false }),
   previewQuest: jest.fn().mockReturnValue({ seconds: 300, xp: 60 }),
+  missingStepQuests: jest.fn().mockResolvedValue([]),
+  sparedExerciseIds: jest.fn().mockResolvedValue(new Set()),
+  worksSparedZone: jest.fn().mockReturnValue(false),
 }));
 
 // The screen reads the hero's ladder and records once for every step, so the head card prices a

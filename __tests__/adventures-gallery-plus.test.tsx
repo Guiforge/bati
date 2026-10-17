@@ -90,6 +90,7 @@ const adventure = (id: number, title: string) => ({
 });
 
 jest.mock("@/db", () => ({
+  activeRunAdventureIds: jest.fn().mockResolvedValue(new Set()),
   adventureOrder: (rows: unknown[]) => rows,
   getAnyActiveAdventureRun: jest.fn().mockResolvedValue(null),
   getFinishedRunCountsByAdventure: jest.fn().mockResolvedValue(new Map()),

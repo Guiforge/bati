@@ -6,7 +6,7 @@ head_title: "Privacy policy for Bati"
 description: "Bati collects nothing about you. No account, no server of ours, no analytics. Offline first, with three exceptions, all off by default: the map, which tells a tile host roughly where you go, a daily question to GitHub about a newer version, and device sync, which sends your history encrypted to a server you choose."
 type: legal
 status: active
-updated: 2026-10-04
+updated: 2026-10-17
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -281,9 +281,16 @@ Nothing is transmitted automatically. If you want to help fix a crash, Settings 
 it, edit it, or delete it before sending, and if you never send it, it never leaves your phone.
 Reports you do send are used only to fix the bug and are not shared onward.
 
+## Pictures you share
+
+A recap, an outing card or the year in review can be shared as a picture. Bati draws it on your
+phone from your own data (a route map included, with its OpenStreetMap credit) and hands it to
+your phone's share sheet. Bati sends it nowhere itself, and it goes only where you choose to send
+it. Once it has left, whoever receives it keeps it, and what they do with it is up to them.
+
 ## Children
 
-Bati is a general-audience fitness app and is not directed at children under 13. It collects no
+Bati is for people aged 16 and over and is not directed at anyone younger. It collects no
 personal data from anyone, of any age.
 
 ## Your rights
@@ -591,10 +598,18 @@ pré-rempli. Vous pouvez le lire, le modifier ou le supprimer avant envoi, et si
 l'envoyez jamais, il ne quitte jamais votre téléphone. Les rapports envoyés servent uniquement
 à corriger le bug et ne sont transmis à personne.
 
+## Images que vous partagez
+
+Un bilan, une carte de sortie ou le bilan de l'année peuvent se partager sous forme d'image. Bati
+la dessine sur votre téléphone à partir de vos propres données (carte du tracé comprise, avec son
+crédit OpenStreetMap) et la remet au partage de votre téléphone. Bati ne l'envoie nulle part
+lui-même, et elle ne va que là où vous décidez de l'envoyer. Une fois partie, celui ou celle qui la
+reçoit la garde, et ce qu'il en fait le regarde.
+
 ## Enfants
 
-Bati est une application de sport tout public, non destinée aux enfants de moins de 13 ans.
-Elle ne collecte aucune donnée personnelle, quel que soit l'âge.
+Bati s'adresse aux personnes de 16 ans et plus et ne vise personne de plus jeune. Elle ne collecte
+aucune donnée personnelle, quel que soit l'âge.
 
 ## Vos droits
 

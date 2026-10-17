@@ -46,6 +46,13 @@ export default function SafetyScreen() {
 
         <Card gap="$3">
           <Text fontSize="$4" fontWeight="700" color="$text">
+            {t("safety.outdoors_title")}
+          </Text>
+          <Paragraph color="$textSecondary">{t("safety.outdoors_body")}</Paragraph>
+        </Card>
+
+        <Card gap="$3">
+          <Text fontSize="$4" fontWeight="700" color="$text">
             {t("safety.not_a_coach_title")}
           </Text>
           <Paragraph color="$textSecondary">{t("safety.not_a_coach_body")}</Paragraph>

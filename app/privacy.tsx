@@ -5,6 +5,7 @@ import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { ShieldCheck } from "@/components/icons";
+import { MINIMUM_AGE } from "@/src/minimumAge";
 
 /**
  * The privacy policy, readable without a network, which is the whole point: the claim being made
@@ -20,6 +21,7 @@ const SECTIONS = [
   "never",
   "permissions",
   "crashes",
+  "sharing",
   "children",
   "contact",
 ] as const;
@@ -52,7 +54,9 @@ export default function PrivacyScreen() {
             <Text fontSize="$4" fontWeight="700" color="$text">
               {t(`privacy.${section}_title`)}
             </Text>
-            <Paragraph color="$textSecondary">{t(`privacy.${section}_body`)}</Paragraph>
+            <Paragraph color="$textSecondary">
+              {t(`privacy.${section}_body`, { age: MINIMUM_AGE })}
+            </Paragraph>
           </Card>
         ))}
 

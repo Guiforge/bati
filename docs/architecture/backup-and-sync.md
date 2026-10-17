@@ -374,6 +374,27 @@ merge can hand A the friend's version (`ponytail:` in `importAdventure`).
   nothing that travels, no fingerprint segment and no migration: no device sees news because of
   it, and a build with it merges with the build before it both ways. A quest config (hand-set
   targets, swaps, the cap offer's swap) is not in `MERGED_PREFERENCES` and stays on its device.
+- **The map style** (`mapStyle`) is carried by the backup and never merged, like `mapTiles`: the
+  tile consent is per device, and so is its look. It is outside `MERGED_PREFERENCES`, so changing it
+  moves no fingerprint and uploads nothing. A value an older build wrote is read by a newer one as
+  the default (`ember`) if unknown.
+- **The route ghost** is derived from `gps_points` at read time (`routeCandidates` in `db/gps.ts`)
+  and never stored. A merged session's points (R16) make the other phone's routes candidates here.
+  Nothing about routes is sent anywhere, and the setting rides in the `outingDisplay` blob.
+- **The outing display** (`outingDisplay`) is a merged preference: one JSON blob, last writer wins,
+  back to the original writes `{}` and never deletes the row. The blob also holds `bigMap` (layout)
+  and `lap` (metric) since phase 2; a phase 1 build reads them as defaults, and **its edit of any
+  tab drops them from every tab** (`withActivity` rebuilds the whole blob from what it parsed, and
+  last writer wins spreads that). Phase 3 adds `routeGhost` (per activity, a boolean, default off)
+  with the same limit: an older build reads it as off and its edit of any tab drops it everywhere.
+  Phases 2 and 3 added no merged key, no table and no migration, so `localState` and every
+  fingerprint are unchanged on update. It needed no migration, which is what
+  keeps a phone on the previous version merging with one on this version (`validateBackup` and
+  `mergePeer` refuse only a newer migration). `localState` ends with the list of merged keys for the
+  same reason `CIPHER_READS` is in it: an updated phone drops its cached verdicts and re-judges
+  its peers once. Whether the screen stays on during an outing is not synced and not in the
+  database: it is a SecureStore item (`src/outingKeepAwake.ts`), so a new phone starts with the
+  screen going off.
 - **Transport**: WebDAV. Nextcloud signs in through the browser (Login Flow v2, a revocable app
   password; the page and poll endpoint must be on the server or on https, and the account keeps the
   address the hero typed). Any other server, behind presets (kDrive, Koofr, Round Sync for rclone),

@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { TamaguiProvider, Text } from "tamagui";
 import { LiveMap } from "@/components/session/LiveMap";
+import { rawColors } from "@/constants/rawColors";
 import type { LocationFix } from "@/modules/bati-location";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
@@ -25,6 +26,8 @@ let mockStyleLoaded: (() => void) | undefined;
 let mockRegionWillChange:
   | ((event: { nativeEvent: { userInteraction: boolean } }) => void)
   | undefined;
+/** The finger gestures the last map was handed. */
+let mockGestures: Record<string, boolean | undefined> = {};
 /** What the phone answers when asked whether it refuses Bati the network. */
 const mockNetworkBlocked = jest.fn(() => false);
 /** Every initial view handed to the camera, in order. */
@@ -34,7 +37,15 @@ jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }
 jest.mock("@/db", () => ({
   preferences: { setMapTilesEnabled: jest.fn().mockResolvedValue(undefined) },
 }));
-jest.mock("@/db/gps", () => ({ appendPoints: jest.fn(), pointsOf: jest.fn() }));
+const mockRouteCandidates = jest.fn();
+jest.mock("@/db/gps", () => ({
+  appendPoints: jest.fn(),
+  pointsOf: jest.fn(),
+  routeCandidates: (...args: unknown[]) => mockRouteCandidates(...args),
+}));
+/** The `data` each source was last handed, by id, and the paint of each layer. */
+const mockSources: Record<string, unknown> = {};
+const mockLayers: Record<string, unknown> = {};
 jest.mock("@/modules/bati-location", () => ({
   isAvailable: () => false,
   isNetworkBlocked: () => mockNetworkBlocked(),
@@ -61,16 +72,21 @@ jest.mock("expo-localization", () => ({
 }));
 jest.mock("@maplibre/maplibre-react-native", () => {
   const { View } = require("react-native");
-  const passthrough =
-    (testID: string) =>
-    ({ children }: { children?: React.ReactNode }) => <View testID={testID}>{children}</View>;
   return {
     Map: ({
       children,
       mapStyle,
       onDidFinishLoadingStyle,
       onRegionWillChange,
+      dragPan,
+      touchZoom,
+      doubleTapZoom,
+      doubleTapHoldZoom,
     }: {
+      dragPan?: boolean;
+      touchZoom?: boolean;
+      doubleTapZoom?: boolean;
+      doubleTapHoldZoom?: boolean;
       children?: React.ReactNode;
       mapStyle?: unknown;
       onDidFinishLoadingStyle?: () => void;
@@ -79,6 +95,7 @@ jest.mock("@maplibre/maplibre-react-native", () => {
       mockMapStyle(mapStyle);
       mockStyleLoaded = onDidFinishLoadingStyle;
       mockRegionWillChange = onRegionWillChange;
+      mockGestures = { dragPan, touchZoom, doubleTapZoom, doubleTapHoldZoom };
       return <View testID="maplibre">{children}</View>;
     },
     Camera: ({ center, initialViewState }: { center?: unknown; initialViewState?: unknown }) => {
@@ -86,8 +103,22 @@ jest.mock("@maplibre/maplibre-react-native", () => {
       mockInitialView(initialViewState);
       return null;
     },
-    GeoJSONSource: passthrough("maplibre-source"),
-    Layer: passthrough("maplibre-layer"),
+    GeoJSONSource: ({
+      id,
+      data,
+      children,
+    }: {
+      id: string;
+      data: unknown;
+      children?: React.ReactNode;
+    }) => {
+      mockSources[id] = data;
+      return <View testID={`source-${id}`}>{children}</View>;
+    },
+    Layer: ({ id, paint }: { id: string; paint: unknown }) => {
+      mockLayers[id] = paint;
+      return <View testID={`layer-${id}`} />;
+    },
   };
 });
 
@@ -107,13 +138,25 @@ const walking = (i: number): LocationFix => ({
   distFromPrev: i === 0 ? 0 : 1.4,
 });
 
-async function mount(fixes: LocationFix[], tiles: boolean) {
+async function mount(
+  fixes: LocationFix[],
+  tiles: boolean,
+  locked = false,
+  extra: { locomotion?: "walk" | "run" | "ride"; overlay?: boolean } = {},
+) {
   useExpeditionStore.setState({ fixes });
   useSettingsStore.setState({ language: "en", mapTilesEnabled: tiles });
   await act(async () => {
     await render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <LiveMap minHeight={200} topInset={0} placeholder={<Text>the movement's picture</Text>} />
+        <LiveMap
+          minHeight={200}
+          topInset={0}
+          placeholder={<Text>the movement's picture</Text>}
+          locked={locked}
+          locomotion={extra.locomotion ?? "walk"}
+          overlay={extra.overlay ? <Text testID="live-map-big">12.34 km</Text> : undefined}
+        />
       </TamaguiProvider>,
     );
   });
@@ -150,6 +193,35 @@ test("a finger on the map stops the follow, and the button brings it back to the
   });
   expect(mockCenter.mock.calls.at(-1)?.[0]).toEqual([walking(2).lon, walking(2).lat]);
   expect(screen.queryByTestId("live-map-recenter")).toBeNull();
+});
+
+// The pocket guard: the screen is kept on on foot, so a pocket is awake and must not move the view.
+test("locked, no finger gesture reaches the map and the recentre button never shows", async () => {
+  await mount([walking(0), walking(1)], true, true);
+  expect(mockGestures).toEqual({
+    dragPan: false,
+    touchZoom: false,
+    doubleTapZoom: false,
+    doubleTapHoldZoom: false,
+  });
+  expect(screen.queryByTestId("live-map-recenter")).toBeNull();
+});
+
+test("unlocked, every finger gesture is on", async () => {
+  await mount([walking(0), walking(1)], true);
+  expect(mockGestures).toEqual({
+    dragPan: true,
+    touchZoom: true,
+    doubleTapZoom: true,
+    doubleTapHoldZoom: true,
+  });
+});
+
+test("tiles on, the chosen style is the one handed to MapLibre; tiles off, nothing to fetch", async () => {
+  useSettingsStore.setState({ mapStyle: "fiord" });
+  await mount([walking(0), walking(1)], true);
+  expect(lastStyle()).toContain("#45516E");
+  expect(lastStyle()).toContain("tiles.openfreemap.org/sprites");
 });
 
 test("says the phone blocks the network instead of crediting tiles that never arrive", async () => {
@@ -283,4 +355,141 @@ test("follows every fix with the camera, and folds the walk at most every five s
   } finally {
     jest.useRealTimers();
   }
+});
+
+test.each([
+  ["walk", 16],
+  ["run", 16],
+  ["ride", 15],
+] as const)("follows a %s at zoom %i, with no setting", async (locomotion, zoom) => {
+  await mount([walking(0), walking(1)], true, false, { locomotion });
+  expect(mockInitialView.mock.calls.at(-1)?.[0]).toMatchObject({ zoom });
+});
+
+test("the big figure floats over the picture before the first fix", async () => {
+  await mount([], true, false, { overlay: true });
+  expect(screen.getByTestId("live-map-big")).toBeTruthy();
+  expect(screen.queryByTestId("live-map")).toBeNull();
+});
+
+test("and over the map once there is one", async () => {
+  await mount([walking(0), walking(1)], true, false, { overlay: true });
+  expect(screen.getByTestId("live-map")).toBeTruthy();
+  expect(screen.getByTestId("live-map-big")).toBeTruthy();
+});
+
+/**
+ * The route ghost. Each test has its own session uuid: the candidates hook keeps its last read at
+ * module level, so a shared uuid would carry one test's answer into the next.
+ */
+describe("the route ghost", () => {
+  const { DEFAULT_LIVE_VIEW } =
+    require("@/src/gps/liveFigures") as typeof import("@/src/gps/liveFigures");
+  const past = (id: string) => ({
+    id,
+    performedAt: new Date(Date.UTC(2026, 8, 1)),
+    points: Array.from({ length: 200 }, (_, i) => ({ lat: 43.6 + i * 5 * 0.0000126, lon: 1.44 })),
+  });
+  const run = (n: number) => Array.from({ length: n }, (_, i) => walking(i));
+  /** The store of an outing that began: view frozen, uuid set, `metres` credited. */
+  const begun = (uuid: string, metres: number, view: Record<string, unknown> = {}) =>
+    useExpeditionStore.setState({
+      sessionUuid: uuid,
+      view: { ...DEFAULT_LIVE_VIEW, routeGhost: true, ...view },
+      track: { ...useExpeditionStore.getState().track, distanceM: metres },
+    });
+
+  beforeEach(() => {
+    mockRouteCandidates.mockReset();
+    for (const k of Object.keys(mockSources)) delete mockSources[k];
+  });
+  afterEach(() => {
+    useExpeditionStore.setState({ sessionUuid: null, view: DEFAULT_LIVE_VIEW });
+  });
+
+  test("off by default: nothing is read and nothing is drawn", async () => {
+    useExpeditionStore.setState({ sessionUuid: "g-off", view: DEFAULT_LIVE_VIEW });
+    await mount(run(60), true);
+    expect(mockRouteCandidates).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("source-live-route-ghost")).toBeNull();
+  });
+
+  test("on: nothing under 400 m, then the pale line under the gold, in the bone paint", async () => {
+    jest.useFakeTimers();
+    mockRouteCandidates.mockResolvedValue([past("p1")]);
+    begun("g-400", 399);
+    await mount(run(60), true);
+    expect(mockRouteCandidates).toHaveBeenCalledWith(
+      "walk",
+      expect.objectContaining({ lat: 43.6 }),
+      new Date(T0),
+      "g-400",
+    );
+    expect(screen.queryByTestId("source-live-route-ghost")).toBeNull();
+
+    await act(() => {
+      begun("g-400", 400);
+      useExpeditionStore.setState({ fixes: run(61) });
+    });
+    // The fold runs on the five-second cadence.
+    await act(async () => jest.advanceTimersByTime(5000));
+    expect(screen.getByTestId("source-live-route-ghost")).toBeTruthy();
+    const paint = mockLayers["live-route-ghost-line"] as Record<string, unknown>;
+    expect(paint["line-color"]).not.toBe(rawColors.resourceGold);
+    // Drawn first: under today's line.
+    const ids = screen.getAllByTestId(/^source-/).map((n) => n.props.testID);
+    expect(ids.indexOf("source-live-route-ghost")).toBeLessThan(ids.indexOf("source-live-path"));
+    jest.useRealTimers();
+  });
+
+  test("late candidates: the ghost appears with no new fix, and the walk is not folded again", async () => {
+    let resolve: (v: unknown[]) => void = () => undefined;
+    mockRouteCandidates.mockReturnValue(
+      new Promise((r) => {
+        resolve = r;
+      }),
+    );
+    begun("g-late", 600);
+    await mount(run(60), true);
+    expect(screen.queryByTestId("source-live-route-ghost")).toBeNull();
+    const folds = mockToTrace.mock.calls.length;
+
+    await act(async () => resolve([past("p2")]));
+    expect(screen.getByTestId("source-live-route-ghost")).toBeTruthy();
+    expect(mockToTrace.mock.calls.length).toBe(folds);
+  });
+
+  test("a walk-run never reads and never draws", async () => {
+    mockRouteCandidates.mockResolvedValue([past("p3")]);
+    begun("g-wr", 600, { walkRun: true });
+    await mount(run(60), true);
+    expect(mockRouteCandidates).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("source-live-route-ghost")).toBeNull();
+  });
+
+  test("background then back: no second read, the ghost is there again", async () => {
+    const { AppState } = require("react-native");
+    const addListener = jest.spyOn(AppState, "addEventListener");
+    mockRouteCandidates.mockResolvedValue([past("p4")]);
+    begun("g-bg", 600);
+    await mount(run(60), true);
+    const onChange = addListener.mock.calls.at(-1)?.[1] as (state: string) => void;
+    expect(screen.getByTestId("source-live-route-ghost")).toBeTruthy();
+
+    await act(async () => onChange("background"));
+    await act(async () => onChange("active"));
+    expect(screen.getByTestId("source-live-route-ghost")).toBeTruthy();
+    expect(mockRouteCandidates).toHaveBeenCalledTimes(1);
+  });
+
+  test("a fold that finds the same route again hands MapLibre the same data object", async () => {
+    mockRouteCandidates.mockResolvedValue([past("p5")]);
+    begun("g-same", 600);
+    await mount(run(60), true);
+    const data = mockSources["live-route-ghost"];
+    expect(data).toBeDefined();
+
+    await act(async () => useExpeditionStore.setState({ fixes: run(70) }));
+    expect(mockSources["live-route-ghost"]).toBe(data);
+  });
 });

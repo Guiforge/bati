@@ -52,6 +52,13 @@ rewrite that keeps the behaviour:
 | `sharedValue.value = x` in a component body or a plain callback | `sharedValue.set(x)` (a worklet may keep `.value`) |
 | a ref read or written during render | read it in the effect or the handler that needs it |
 
+### Route ghost
+
+Route matching reads at most 20 shapes per outing (`routeCandidates`, two queries seeking the
+`gps_points` primary key; a hero alternating more than 20 routes from one door loses the oldest),
+memoises one grid per shape, and matches a 300-point sample every 5 s, only while the live map is
+visible. Nothing runs for a hero who left the setting off.
+
 ## Quick-win rules (ranked by effort × impact)
 
 Compiled from the general RN performance guides, then filtered to what applies to

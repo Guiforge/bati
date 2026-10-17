@@ -482,6 +482,12 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
           locomotion={cheapestLocomotion(
             outings.filter((o) => o.quest.id === goalFor).map((o) => o.exercise),
           )}
+          // The tab the outing reads: the same rule, with the Walk tab where it finds nothing.
+          displayLocomotion={
+            cheapestLocomotion(
+              outings.filter((o) => o.quest.id === goalFor).map((o) => o.exercise),
+            ) ?? "walk"
+          }
           walkRun={walkRuns[goalFor] ?? false}
           onPick={(goal) => {
             saveGoal(goalFor, goal).catch((error) => reportError("home.saveGoal", error));

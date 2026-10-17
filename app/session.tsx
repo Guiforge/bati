@@ -11,17 +11,20 @@ import { PausedOverlay } from "@/components/session/PausedOverlay";
 import { RestView } from "@/components/session/RestView";
 import { VictoryView } from "@/components/session/VictoryView";
 import { WarmupView } from "@/components/session/WarmupView";
-import { isOutingSession } from "@/db/expeditions";
+import { screenStaysOn } from "@/src/gps/liveFigures";
+import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 
 /**
- * The screen stays lit for a workout, and only for a workout.
+ * The screen stays lit for a workout, and for an outing only when the hero chose it.
  *
  * `useKeepAwake()` is a hook, so it cannot be put behind an `if`; a child that exists only when
- * the session is indoors can. An outing has no screen worth looking at - the numbers are in the
- * notification - and the phone spends the hour in a pocket, where a lit screen is battery and an
- * unlocked handset against a thigh. Letting the OS lock it is the pocket lock (premise 7); the
- * tracking is held up by the foreground service alone, which is what the privacy page now says.
+ * `screenStaysOn` says so can. An outing is off by default: the phone spends the hour in a
+ * pocket, where a lit screen is battery and an unlocked handset against a thigh, and letting the
+ * OS lock it is the pocket lock (premise 7). A hero who clipped the phone to a handlebar can keep
+ * it lit for that activity, on this phone (Settings, "Affichage des sorties"); on foot the pocket
+ * guard then replaces the OS lock (a confirmation to finish, a map that ignores fingers). The
+ * tracking is held up by the foreground service alone, which is what the privacy page says.
  */
 function KeepAwake() {
   useKeepAwake();
@@ -35,6 +38,7 @@ export default function SessionScreen() {
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
   const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
+  const view = useExpeditionStore((s) => s.view);
 
   // Handle Android Hardware Back Button
   useEffect(() => {
@@ -67,7 +71,7 @@ export default function SessionScreen() {
 
   return (
     <YStack flex={1} bg="$background">
-      {quest !== null && !isOutingSession(quest) && <KeepAwake />}
+      {quest !== null && screenStaysOn(quest, view) && <KeepAwake />}
       <BossTauntOverlay />
       {displayStatus === "warmup" && <WarmupView />}
       {displayStatus === "countdown" && <CountdownView />}

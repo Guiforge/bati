@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Pressable } from "react-native";
@@ -70,6 +71,11 @@ type Props = {
    */
   locomotion: Locomotion | null;
   /**
+   * The tab of "Affichage des sorties" this outing reads (`displayLocomotion`): a mixed quest
+   * included, where `locomotion` above is null. The link under the goals opens it.
+   */
+  displayLocomotion: Locomotion;
+  /**
    * The goal on this sheet is still the app's walk-run proposal (`proposesWalkRun`). The caller
    * knows, because it holds the slots the proposal was made on; from the habit alone the sheet
    * could not tell a hero's own run quest, which is never proposed one.
@@ -100,10 +106,12 @@ export function OutingGoalSheet({
   goal,
   unit,
   locomotion,
+  displayLocomotion,
   walkRun,
   onPick,
 }: Props) {
   const { t } = useTranslation();
+  const router = useRouter();
   const reducedMotion = useReducedMotion();
   const language = useSettingsStore((s) => s.language);
   const insets = useSafeAreaInsets();
@@ -290,6 +298,22 @@ export function OutingGoalSheet({
           <AppButton variant="outline" onPress={applyCustom}>
             {t("common.done")}
           </AppButton>
+
+          {/* Quiet, under the goals: what the hero sees while out is a setting of the outing too. */}
+          <Pressable
+            testID="goal-sheet-outing-display"
+            accessibilityRole="link"
+            hitSlop={8}
+            style={{ minHeight: 44, justifyContent: "center", alignItems: "center" }}
+            onPress={() => {
+              close();
+              router.push(`/outing-display?tab=${displayLocomotion}` as never);
+            }}
+          >
+            <Text fontSize={14} color="$textSecondary" textDecorationLine="underline">
+              {t("quests.outing_display_link")}
+            </Text>
+          </Pressable>
         </YStack>
       </Sheet.Frame>
     </Sheet>

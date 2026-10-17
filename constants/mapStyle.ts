@@ -1,8 +1,12 @@
 import type { MapProps } from "@maplibre/maplibre-react-native";
+import ofmDark from "@/constants/mapStyles/ofm-dark.json";
+import ofmFiord from "@/constants/mapStyles/ofm-fiord.json";
 import { rawColors } from "@/constants/rawColors";
 
 /**
- * The basemap under a recap, in the app's own night palette. "Ink and ember", not parchment.
+ * The basemap under a recap, in the app's own night palette. "Ink and ember", not parchment. This
+ * is Braise, the default of three styles (`MAP_STYLES`): the two others are OpenFreeMap's, vendored
+ * as JSON in `constants/mapStyles/`.
  *
  * A TypeScript module rather than a `.json` asset, deliberately: `.biome/plugins/noRawHexColor.grit`
  * declares `language js`, so a JSON style's several dozen hex literals would be invisible to the
@@ -222,6 +226,24 @@ export const mapStyleNoTiles: MapStyle = {
   layers: mapStyle.layers.filter((layer) => !("source" in layer)),
 };
 
+export const MAP_STYLE_IDS = ["ember", "dark", "fiord"] as const;
+export type MapStyleId = (typeof MAP_STYLE_IDS)[number];
+
+// ponytail: a cast trusts the vendored files; __tests__/map-styles.test.ts checks their hosts and
+// ground. Re-vendor with curl from https://tiles.openfreemap.org/styles/<id>, then run that test.
+// The two JSON files are OpenFreeMap's palette, not the app's, which is why they are not TS.
+/** Braise is Bati's own; Night and Fjord are OpenFreeMap's `dark` and `fiord`, vendored. */
+export const MAP_STYLES: Record<MapStyleId, MapStyle> = {
+  ember: mapStyle,
+  dark: ofmDark as unknown as MapStyle,
+  fiord: ofmFiord as unknown as MapStyle,
+};
+
+/** The one answer to "which basemap": no tiles means Braise's ground and nothing to fetch, whatever the style. */
+export function basemapOf(tilesEnabled: boolean, id: MapStyleId): MapStyle {
+  return tilesEnabled ? MAP_STYLES[id] : mapStyleNoTiles;
+}
+
 /**
  * The credit, and it is an obligation rather than a courtesy.
  *
@@ -251,6 +273,13 @@ export const TRACE_GLOW_PAINT: LinePaint = {
   "line-width": 14,
   "line-opacity": 0.18,
   "line-blur": 12,
+};
+
+/** A past outing on this route: bone, faint and wide, under the gold. Never gold, never dashed. */
+export const ROUTE_GHOST_PAINT: LinePaint = {
+  "line-color": rawColors.text,
+  "line-width": 6,
+  "line-opacity": 0.18,
 };
 
 /** One hollow gold ring per completed league, on both maps. */

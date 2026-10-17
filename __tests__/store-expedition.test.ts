@@ -1,4 +1,6 @@
 import type { LocationFix, NoFixEvent } from "@/modules/bati-location";
+import { DEFAULT_LIVE_VIEW } from "@/src/gps/liveFigures";
+import { accept, EMPTY } from "@/src/gps/track";
 
 const mockListeners = new Map<string, (payload: never) => void>();
 const mockAppendPoints = jest.fn().mockResolvedValue(undefined);
@@ -395,6 +397,183 @@ describe("stores/expedition", () => {
     expect(mockSetProgress.mock.calls.at(-1)?.[0]).toMatch(/^32:04 · \d+ m$/);
   });
 
+  describe("the outing display", () => {
+    const view = (over: Record<string, unknown> = {}) => ({
+      big: "auto" as const,
+      small: ["auto", "climb", "rate"] as ["auto", "climb", "rate"],
+      layout: "map" as const,
+      rate: "pace" as const,
+      buzzEvery: 1 as const,
+      routeGhost: false,
+      locomotion: "walk" as const,
+      walkRun: false,
+      keepAwake: false,
+      ...over,
+    });
+    const lastLine = () => mockSetProgress.mock.calls.at(-1)?.[0] as string;
+    /** Thirty fixes: the flush writes the notification line once the buffer is full. */
+    const walkSome = () => {
+      for (let i = 0; i < 30; i += 1) emit(walking(i));
+    };
+
+    beforeEach(() => {
+      mockElapsedSeconds = 1924;
+    });
+
+    test("begin stores the view it is given, before any early return", async () => {
+      mockAvailable = false;
+      const given = view({ big: "rate" });
+      await store.getState().begin("s1", NOTIFICATION, false, "metric", null, true, given);
+      expect(store.getState().view).toEqual(given);
+      expect(store.getState().error).toBe("unavailable");
+    });
+
+    test("the default view keeps `clock · distance` for both goal shapes", async () => {
+      for (const goal of [
+        null,
+        { type: "time" as const, seconds: 900 },
+        { type: "distance" as const, metres: 3000 },
+      ]) {
+        mockSetProgress.mockClear();
+        await store.getState().begin("s1", NOTIFICATION, false, "metric", goal);
+        walkSome();
+        expect(lastLine()).toMatch(/^32:04 · \d+ m$/);
+        await store.getState().end();
+      }
+    });
+
+    test("a big `rate` puts the average in the line", async () => {
+      await store
+        .getState()
+        .begin("s1", NOTIFICATION, false, "metric", null, true, view({ big: "rate" }));
+      walkSome();
+      expect(lastLine()).toMatch(/^32:04 · \d+:\d\d \/km$/);
+    });
+
+    test("a speed reads km/h in the line when the big figure is the rate", async () => {
+      await store
+        .getState()
+        .begin(
+          "s1",
+          NOTIFICATION,
+          true,
+          "metric",
+          null,
+          true,
+          view({ big: "rate", locomotion: "ride", rate: "speed" }),
+        );
+      walkSome();
+      expect(lastLine()).toMatch(/^32:04 · [\d.]+ km\/h$/);
+    });
+
+    test("a remaining choice gives the distance left on a distance goal", async () => {
+      await store
+        .getState()
+        .begin(
+          "s1",
+          NOTIFICATION,
+          false,
+          "metric",
+          { type: "distance", metres: 1000 },
+          true,
+          view({ big: "remaining" }),
+        );
+      walkSome();
+      const left = Number(/^32:04 · (\d+) m$/.exec(lastLine())?.[1]);
+      expect(left).toBeGreaterThan(900);
+      expect(left).toBeLessThan(1000);
+    });
+
+    // The flip pushes its own line: "remaining" has nothing left to say there, so the next figure
+    // takes its place instead of "0 m to go".
+    test("remaining drops out the moment the goal is reached, in the line the flip pushes", async () => {
+      await store
+        .getState()
+        .begin(
+          "s1",
+          NOTIFICATION,
+          false,
+          "metric",
+          { type: "distance", metres: 20 },
+          true,
+          view({ big: "remaining" }),
+        );
+      for (let i = 0; i < 30 && !store.getState().goalReached; i += 1) emit(walking(i));
+      expect(store.getState().goalReached).toBe(true);
+      expect(mockSetReached).toHaveBeenCalledTimes(1);
+      // The ground covered (a distance goal leads with it), not the 0 m still to go.
+      expect(lastLine()).toMatch(/^32:04 · (2\d) m$/);
+    });
+
+    test("a time goal's remaining is the moving time left", async () => {
+      const goal = { type: "time" as const, seconds: 900 };
+      await store
+        .getState()
+        .begin("s1", NOTIFICATION, false, "metric", goal, true, view({ big: "remaining" }));
+      walkSome();
+      expect(lastLine()).toMatch(/^32:04 · \d+:\d\d$/);
+      expect(lastLine()).not.toMatch(/^32:04 · 32:04/);
+    });
+
+    test("a time goal with big `auto` shows the first small that is not the clock", async () => {
+      await store
+        .getState()
+        .begin(
+          "s1",
+          NOTIFICATION,
+          false,
+          "metric",
+          { type: "time", seconds: 900 },
+          true,
+          view({ small: [null, "climb", "rate"] }),
+        );
+      walkSome();
+      // The fixes carry a height, so the climb (0 m so far) is the first small that is not the clock.
+      expect(lastLine()).toBe("32:04 · 0 m");
+    });
+
+    test("a walk-run never gets a rate, whatever the view asks", async () => {
+      await store
+        .getState()
+        .begin(
+          "s1",
+          NOTIFICATION,
+          false,
+          "metric",
+          null,
+          true,
+          view({ big: "rate", walkRun: true }),
+        );
+      walkSome();
+      expect(lastLine()).toMatch(/^32:04 · \d+ m$/);
+    });
+
+    test("the view is frozen: replacing the store's copy changes no later line", async () => {
+      await store
+        .getState()
+        .begin("s1", NOTIFICATION, false, "metric", null, true, view({ big: "rate" }));
+      store.setState({ view: view() });
+      walkSome();
+      expect(lastLine()).toMatch(/^32:04 · \d+:\d\d \/km$/);
+    });
+  });
+
+  // A walk-run is paced by the coach: the notification has never carried a rate, and this pins
+  // it so the outing display cannot add one to a walk-run later.
+  test("a walk-run's notification line is a clock and a distance, never a pace", async () => {
+    mockElapsedSeconds = 1924;
+    await store
+      .getState()
+      .begin("s1", NOTIFICATION, false, "metric", { type: "time", seconds: 900 });
+    for (let i = 0; i < 30; i += 1) emit(walking(i));
+
+    expect(mockSetProgress.mock.calls.length).toBeGreaterThan(0);
+    for (const [line] of mockSetProgress.mock.calls) {
+      expect(line).toMatch(/^\d+:\d\d · /);
+      expect(line).not.toMatch(/\/km|\/mi|km\/h|mph/);
+    }
+  });
+
   /**
    * The line the whole feature is read through, on the walk that needs it most.
    *
@@ -644,14 +823,52 @@ describe("stores/expedition", () => {
     });
 
     // At twenty kilometres an hour a buzz per league is one every three minutes, in a bag.
-    test("a ride buzzes every fifth league, not every one", async () => {
-      await store.getState().begin("s1", NOTIFICATION, true, "metric");
+    test("a view that buzzes every fifth league does not buzz for the first four", async () => {
+      await store.getState().begin("s1", NOTIFICATION, true, "metric", null, true, {
+        ...DEFAULT_LIVE_VIEW,
+        buzzEvery: 5,
+      });
       for (let i = 0; i <= 95; i++) emit(striding(i));
       expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(95));
       expect(mockHaptic).not.toHaveBeenCalled();
 
       for (let i = 96; i <= 110; i++) emit(striding(i));
       expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
+    test("every fifth league on foot when the hero asks for it", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric", null, true, {
+        ...DEFAULT_LIVE_VIEW,
+        buzzEvery: 5,
+      });
+      for (let i = 0; i <= 95; i++) emit(striding(i));
+      expect(mockHaptic).not.toHaveBeenCalled();
+      for (let i = 96; i <= 110; i++) emit(striding(i));
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
+    test("at the goal only: no league buzz, and the goal still buzzes once", async () => {
+      await store
+        .getState()
+        .begin("s1", NOTIFICATION, false, "metric", { type: "distance", metres: 4000 }, true, {
+          ...DEFAULT_LIVE_VIEW,
+          buzzEvery: 0,
+        });
+      for (let i = 0; i <= 70; i++) emit(striding(i));
+      expect(store.getState().track.distanceM).toBeGreaterThan(3000);
+      expect(mockHaptic).not.toHaveBeenCalled();
+      for (let i = 71; i <= 90; i++) emit(striding(i));
+      expect(store.getState().goalReached).toBe(true);
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
+    test("without a goal, at the goal only never buzzes", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric", null, true, {
+        ...DEFAULT_LIVE_VIEW,
+        buzzEvery: 0,
+      });
+      for (let i = 0; i <= 70; i++) emit(striding(i));
+      expect(mockHaptic).not.toHaveBeenCalled();
     });
 
     /**
@@ -714,6 +931,65 @@ describe("stores/expedition", () => {
 
       expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(45));
       expect(mockHaptic).not.toHaveBeenCalled();
+    });
+
+    describe("the current league", () => {
+      test("starts at the moving clock of the fix that crossed a league", async () => {
+        await store.getState().begin("s1", NOTIFICATION, false, "metric");
+        expect(store.getState().lap).toEqual({ league: 0, fromMs: 0 });
+
+        let crossedAt: number | null = null;
+        for (let i = 0; i <= 30; i++) {
+          emit(striding(i));
+          const { track, lap } = store.getState();
+          if (crossedAt === null && lap.league === 1) crossedAt = track.movingMs;
+        }
+        expect(crossedAt).not.toBeNull();
+        expect(store.getState().lap.fromMs).toBe(crossedAt);
+        expect(crossedAt).toBeGreaterThan(0);
+      });
+
+      test("a pause refund back under the league does not move the lap back", async () => {
+        await store.getState().begin("s1", NOTIFICATION, false, "metric");
+        for (let i = 0; i <= 22; i++) emit(striding(i));
+        const crossed = store.getState().lap;
+        expect(crossed.league).toBe(1);
+        // Stand still past the pause window: the advance comes back out of distance and clock.
+        for (let k = 1; k <= 8; k++) emit({ ...striding(22), t: T0 + 220_000 + k * 10_000 });
+        expect(store.getState().lap).toEqual(crossed);
+      });
+
+      test("a resumed outing lands on the lap that started at its last crossing", async () => {
+        const walked = Array.from({ length: 71 }, (_, i) => striding(i));
+        mockPointsOf.mockResolvedValue(walked);
+        await store.getState().begin("s1", NOTIFICATION, false, "metric");
+
+        let track = EMPTY;
+        let crossing = 0;
+        for (const fix of walked) {
+          track = accept(track, fix);
+          if (crossing === 0 && track.distanceM >= 3000) crossing = track.movingMs;
+        }
+        expect(store.getState().lap.league).toBe(3);
+        expect(crossing).toBeGreaterThan(0);
+        expect(store.getState().lap.fromMs).toBe(crossing);
+      });
+
+      test("the notification line never carries two clocks", async () => {
+        await store.getState().begin("s1", NOTIFICATION, false, "metric", null, true, {
+          ...DEFAULT_LIVE_VIEW,
+          big: "lap",
+        });
+        for (let i = 0; i <= 30; i++) emit(striding(i));
+        const lines = mockSetProgress.mock.calls
+          .map(([line]) => String(line))
+          .filter((line) => !line.endsWith(NOTIFICATION.acquiring));
+        expect(lines.length).toBeGreaterThan(0);
+        for (const line of lines) {
+          expect(line).toMatch(/^\d+:\d\d · \d/);
+          expect(line).not.toMatch(/^\d+:\d\d · \d+:\d\d$/);
+        }
+      });
     });
   });
 });

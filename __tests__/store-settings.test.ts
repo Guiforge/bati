@@ -32,6 +32,11 @@ const requestWidgetsUpdate = jest.fn<Promise<void>, []>();
 const reportError = jest.fn();
 const portLegacyAvatar = jest.fn<Promise<string | null>, [string]>();
 
+const keepAwake = {
+  keepAwakeSet: jest.fn<Promise<string[]>, []>(),
+  setKeepAwake: jest.fn<Promise<string[]>, [string, boolean]>(),
+};
+
 const prefs = {
   getLanguage: jest.fn<Promise<string | null>, []>(),
   getAvatarId: jest.fn<Promise<string | null>, []>(),
@@ -41,9 +46,12 @@ const prefs = {
   getSoundEnabled: jest.fn<Promise<boolean>, []>(),
   getDistanceUnit: jest.fn<Promise<"metric" | "imperial">, []>(),
   getMapTilesEnabled: jest.fn<Promise<boolean>, []>(),
+  getMapStyle: jest.fn<Promise<"ember" | "dark" | "fiord">, []>(),
   getUpdateCheckEnabled: jest.fn<Promise<boolean>, []>(),
   getPrepMode: jest.fn<Promise<"timer" | "tap">, []>(),
   getLanguageChosenOn: jest.fn<Promise<string | null>, []>(),
+  getOutingDisplay: jest.fn<Promise<unknown>, []>(),
+  setOutingDisplay: jest.fn().mockResolvedValue(undefined),
   setLanguage: jest.fn().mockResolvedValue(undefined),
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
@@ -53,6 +61,7 @@ const prefs = {
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
   setDistanceUnit: jest.fn().mockResolvedValue(undefined),
   setMapTilesEnabled: jest.fn().mockResolvedValue(undefined),
+  setMapStyle: jest.fn().mockResolvedValue(undefined),
   setUpdateCheckEnabled: jest.fn().mockResolvedValue(undefined),
   setPrepMode: jest.fn().mockResolvedValue(undefined),
 };
@@ -66,6 +75,7 @@ beforeAll(() => {
   jest.doMock("@/src/widget", () => ({ requestWidgetsUpdate }));
   jest.doMock("@/src/customAvatar", () => ({ portLegacyAvatar }));
   jest.doMock("@/src/reportError", () => ({ reportError }));
+  jest.doMock("@/src/outingKeepAwake", () => keepAwake);
   // The *device* is mocked, not the module that reads it: the store and the home screen
   // widget must both resolve the language through the real `resolveAppLanguage`, and a test
   // that stubs that function out is a test that cannot see them disagree. "fr" so the device
@@ -103,8 +113,11 @@ function storedSettings() {
   prefs.getSoundEnabled.mockResolvedValue(false);
   prefs.getDistanceUnit.mockResolvedValue("imperial");
   prefs.getMapTilesEnabled.mockResolvedValue(true);
+  prefs.getMapStyle.mockResolvedValue("fiord");
   prefs.getUpdateCheckEnabled.mockResolvedValue(true);
   prefs.getPrepMode.mockResolvedValue("tap");
+  prefs.getOutingDisplay.mockResolvedValue({ ride: { big: "rate" } });
+  keepAwake.keepAwakeSet.mockResolvedValue(["ride"]);
   // Chosen on this very device answer: the stored language stands.
   prefs.getLanguageChosenOn.mockResolvedValue("fr");
 }
@@ -120,8 +133,11 @@ const DEFAULTS = {
   // The two booleans here whose default is a refusal: between them they decide whether the app
   // makes a network request at all.
   mapTilesEnabled: false,
+  mapStyle: "ember" as const,
   updateCheckEnabled: false,
   prepMode: "timer" as const,
+  outingDisplay: {},
+  outingKeepAwake: [],
   isLoaded: false,
 };
 
@@ -146,10 +162,33 @@ describe("useSettingsStore", () => {
       soundEnabled: false,
       distanceUnit: "imperial",
       mapTilesEnabled: true,
+      mapStyle: "fiord",
       updateCheckEnabled: true,
       prepMode: "tap",
+      outingDisplay: { ride: { big: "rate" } },
+      outingKeepAwake: ["ride"],
       isLoaded: true,
     });
+  });
+
+  test("the outing display is written before the state says it, and a failed write says nothing", async () => {
+    await settingsStore()
+      .getState()
+      .setOutingDisplay({ run: { big: "distance" } });
+    expect(prefs.setOutingDisplay).toHaveBeenCalledWith({ run: { big: "distance" } });
+    expect(settingsStore().getState().outingDisplay).toEqual({ run: { big: "distance" } });
+
+    prefs.setOutingDisplay.mockRejectedValueOnce(new Error("disk"));
+    await settingsStore().getState().setOutingDisplay({});
+    expect(settingsStore().getState().outingDisplay).toEqual({ run: { big: "distance" } });
+    expect(reportError).toHaveBeenCalledWith("settings.outingDisplay", expect.any(Error));
+  });
+
+  test("the keep-awake set follows what the module stored", async () => {
+    keepAwake.setKeepAwake.mockResolvedValueOnce(["walk"]);
+    await settingsStore().getState().setOutingKeepAwake("walk", true);
+    expect(keepAwake.setKeepAwake).toHaveBeenCalledWith("walk", true);
+    expect(settingsStore().getState().outingKeepAwake).toEqual(["walk"]);
   });
 
   // An install from before `customAvatar` kept the image picker's cache path, which no backup
@@ -431,6 +470,7 @@ describe("useSettingsStore", () => {
     await s().setSoundEnabled(false);
     await s().setDistanceUnit("imperial");
     await s().setMapTilesEnabled(true);
+    await s().setMapStyle("dark");
     await s().setUpdateCheckEnabled(true);
     await s().setPrepMode("tap");
 
@@ -443,6 +483,7 @@ describe("useSettingsStore", () => {
       soundEnabled: false,
       distanceUnit: "imperial",
       mapTilesEnabled: true,
+      mapStyle: "dark",
       updateCheckEnabled: true,
       prepMode: "tap",
     });
@@ -455,6 +496,7 @@ describe("useSettingsStore", () => {
     expect(prefs.setSoundEnabled).toHaveBeenCalledWith(false);
     expect(prefs.setDistanceUnit).toHaveBeenCalledWith("imperial");
     expect(prefs.setMapTilesEnabled).toHaveBeenCalledWith(true);
+    expect(prefs.setMapStyle).toHaveBeenCalledWith("dark");
     expect(prefs.setUpdateCheckEnabled).toHaveBeenCalledWith(true);
     expect(prefs.setPrepMode).toHaveBeenCalledWith("tap");
   });

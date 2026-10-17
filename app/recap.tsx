@@ -11,7 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 import { AppIconButton } from "@/components/common/AppButton";
@@ -19,6 +19,7 @@ import { Figure } from "@/components/common/Figure";
 import { Skeleton } from "@/components/common/Skeleton";
 import { ChevronLeft } from "@/components/icons";
 import { SessionNotebook } from "@/components/journal/SessionNotebook";
+import { LeaguesTable } from "@/components/session/LeaguesTable";
 import { MapFootnote } from "@/components/session/MapFootnote";
 import { MapRecenterButton } from "@/components/session/MapRecenterButton";
 import { roadLine } from "@/components/session/roadLine";
@@ -30,21 +31,32 @@ import {
   formatElevation,
   formatRate,
   formatRateAt,
-  rateKind,
 } from "@/constants/distanceFormat";
 import {
+  basemapOf,
   LEAGUE_PIP_PAINT,
-  mapStyle,
-  mapStyleNoTiles,
+  ROUTE_GHOST_PAINT,
   TRACE_GLOW_PAINT,
 } from "@/constants/mapStyle";
+import { viewOf } from "@/constants/outingDisplay";
 import { rawColors } from "@/constants/rawColors";
+import { displayLocomotion } from "@/db/expeditions";
 import { outingSession, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
+import { loadConfiguredQuest } from "@/db/questConfig";
 import { listQuestTemplates } from "@/db/quests";
 import type { Locomotion } from "@/db/schema";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
+import { useRateKind } from "@/hooks/useRateKind";
+import { useRouteCandidates } from "@/hooks/useRouteCandidates";
 import type { LocationFix } from "@/modules/bati-location";
+import {
+  type RouteGhostLine,
+  type RouteShape,
+  routeGhostOf,
+  strided,
+  toGhostLine,
+} from "@/src/gps/route";
 import { toTrace } from "@/src/gps/trace";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
@@ -83,8 +95,8 @@ type Recap = {
   movingSeconds: number | null;
   /** The reducer's metres of climb, `null` before 0052 or when the receiver gave no height. */
   ascentM: number | null;
-  /** Walk and run read a pace, a ride a speed; `null` reads as a pace. */
-  outing: Locomotion | null;
+  /** The tab of "Affichage des sorties" this outing reads; `null` reads as the Walk tab. */
+  display: Locomotion | null;
 };
 
 const NOTHING: Recap = {
@@ -95,7 +107,7 @@ const NOTHING: Recap = {
   leaguesM: null,
   movingSeconds: null,
   ascentM: null,
-  outing: null,
+  display: null,
 };
 
 /** Where the outing began and where it ended, as the map's only two other lit points. */
@@ -180,10 +192,11 @@ function SpeedLegend({
 }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
+  const rate = useRateKind(locomotion);
   if (range === null && best === null) return null;
 
   // A speed, as a pace or as itself depending on who travelled. One conversion, in constants/distanceFormat.
-  const paceAt = (speed: number) => formatRateAt(speed, unit, language, locomotion);
+  const paceAt = (speed: number) => formatRateAt(speed, unit, language, rate);
 
   return (
     <YStack gap="$2" testID="recap-speed-legend">
@@ -205,12 +218,14 @@ function SpeedLegend({
       )}
       {/* Whose best, said out loud. "Best league, 4:35 /km" left the reader to guess between
           this outing, this route and a lifetime, and the three answers are different numbers.
-          It is the quickest thousand metres inside the run just finished, and nothing on this
-          screen compares it to the last time the same ground was covered. */}
+          It is the quickest aligned league of the run just finished, on moving time, the row the table
+          lights in gold and the map draws from pip to pip. Nothing on this
+          screen compares it to the last time the same ground was covered: the route ghost is a
+          line with a date, no time. */}
       {best === null ? null : (
         <Text testID="recap-best-league" fontSize={11} color="$textSecondary">
           {t("recap.best_league", {
-            pace: formatRate(best.metres, best.ms, unit, language, locomotion),
+            pace: formatRate(best.metres, best.ms, unit, language, rate),
           })}
         </Text>
       )}
@@ -240,6 +255,7 @@ function Figures({
   locomotion: Locomotion | null;
 }) {
   const language = useSettingsStore((s) => s.language);
+  const rate = useRateKind(locomotion);
   const { t } = useTranslation();
   return (
     <YStack gap="$3">
@@ -264,8 +280,8 @@ function Figures({
             />
             <Figure
               testID="recap-pace"
-              label={t(`session.expedition_${rateKind(locomotion)}`)}
-              value={formatRate(leaguesM, movingSeconds * 1000, unit, language, locomotion)}
+              label={t(`session.expedition_${rate}`)}
+              value={formatRate(leaguesM, movingSeconds * 1000, unit, language, rate)}
             />
           </>
         )}
@@ -332,23 +348,75 @@ function useHighRoad(): VillageBuilding | null {
   return road;
 }
 
-/** In its own scroller, so three photos never squeeze the map to nothing. */
-function RecapNotebook({ sessionId }: { sessionId: number | null | undefined }) {
-  if (sessionId == null) return null;
+/** Under today's line, drawn first: a past outing on this route, faint. Nothing when there is none. */
+function RouteGhostLayer({ ghost }: { ghost: RouteGhostLine | null }) {
+  if (ghost === null) return null;
   return (
-    <ScrollView
-      testID="recap-notebook"
-      style={{ maxHeight: 300 }}
-      keyboardShouldPersistTaps="handled"
-    >
-      <SessionNotebook sessionId={sessionId} />
-    </ScrollView>
+    // biome-ignore lint/correctness/useUniqueElementIds: MapLibre source and layer ids are its own style namespace, not DOM ids.
+    <GeoJSONSource id="trace-route-ghost" data={ghost.line}>
+      {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
+      <Layer
+        id="trace-route-ghost-line"
+        type="line"
+        layout={{ "line-cap": "round", "line-join": "round" }}
+        paint={ROUTE_GHOST_PAINT}
+      />
+    </GeoJSONSource>
   );
+}
+
+/** One plain line naming the date. No time, no pace, no difference, no gold, no "record". */
+function RouteGhostLegend({
+  shape,
+  language,
+}: {
+  shape: RouteShape | null;
+  language: AppLanguage;
+}) {
+  const { t } = useTranslation();
+  if (shape === null) return null;
+  return (
+    <Text testID="recap-route-ghost-legend" fontSize={11} color="$textSecondary">
+      {t("recap.route_ghost_legend", {
+        date: getDateTimeFormat(language, { dateStyle: "medium" }).format(shape.performedAt),
+      })}
+    </Text>
+  );
+}
+
+/**
+ * The route ghost: the hero's last outing on the same route, if this tab has it switched on.
+ * `before` is this outing's own date, so one opened from the journal shows the outing before it,
+ * never a later one; `exclude` keeps it from matching itself.
+ */
+function useRecapRouteGhost(
+  recap: Recap | null,
+  drawn: readonly LocationFix[],
+  sessionUuid: string | undefined,
+) {
+  const ghostOn = viewOf(
+    useSettingsStore((s) => s.outingDisplay),
+    recap?.display ?? "walk",
+  ).routeGhost;
+  const start = drawn[0] ?? null;
+  const from = recap?.performedAt ?? null;
+  const wanted = ghostOn && start !== null && from !== null && !!sessionUuid;
+  const candidates = useRouteCandidates(
+    wanted ? (recap?.display ?? "walk") : null,
+    wanted ? start : null,
+    wanted ? from.getTime() : null,
+    wanted ? (sessionUuid ?? null) : null,
+  );
+  // ponytail: the recap cannot tell a walk-run (`walkRun` is not stored), so it draws the route
+  // ghost on every outing whose tab has it on. Harmless: a line and a date, no time; the walk-run
+  // recap already prints its pace. A-04 stores the fact for its intervals and can check it here.
+  return candidates ? routeGhostOf(strided(drawn), candidates, "done") : null;
 }
 
 export default function ExpeditionRecapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ session?: string | string[] }>();
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
@@ -356,6 +424,7 @@ export default function ExpeditionRecapScreen() {
   // Off unless the hero has said yes. The whole map branch below reads this, and the style it
   // picks is what decides whether this screen touches a network at all.
   const mapTilesEnabled = useSettingsStore((s) => s.mapTilesEnabled);
+  const styleId = useSettingsStore((s) => s.mapStyle);
 
   const sessionUuid = Array.isArray(params.session) ? params.session[0] : params.session;
 
@@ -373,6 +442,15 @@ export default function ExpeditionRecapScreen() {
         session?.questId == null
           ? undefined
           : (await listQuestTemplates()).find((q) => q.id === session.questId);
+      // The slots with their movements: the template does not carry the locomotion. A quest the
+      // hero deleted since falls back to the stored activity, then to the Walk tab.
+      const configured =
+        session?.questId == null
+          ? null
+          : await loadConfiguredQuest(session.questId).catch((error) => {
+              reportError("recap.quest", error);
+              return null;
+            });
       setRecap({
         sessionId: session?.id ?? null,
         fixes,
@@ -381,7 +459,8 @@ export default function ExpeditionRecapScreen() {
         leaguesM: session?.leaguesM ?? null,
         movingSeconds: session?.movingSeconds ?? null,
         ascentM: session?.ascentM ?? null,
-        outing: session?.outing ?? null,
+        // The tab the panel and the goal sheet read: a mixed quest stores no activity, its quest does.
+        display: configured ? displayLocomotion(configured.quest) : (session?.outing ?? null),
       });
     },
     [language],
@@ -410,10 +489,13 @@ export default function ExpeditionRecapScreen() {
   /** Whether the camera frames the whole trace. A finger on the map lets go, the button reframes. */
   const [framed, setFramed] = useState(true);
 
+  const ghostShape = useRecapRouteGhost(recap, drawn, sessionUuid);
+  const ghost = toGhostLine(ghostShape);
+
   // The refused style has no vector source and no `glyphs`, so MapLibre has nothing to fetch:
   // the trace is drawn on the app's own ground and that is the whole picture. See
   // constants/mapStyle.ts.
-  const basemap = mapTilesEnabled ? mapStyle : mapStyleNoTiles;
+  const basemap = basemapOf(mapTilesEnabled, styleId);
 
   // Neither line belongs under a screen that never drew a map: there is no credit to give and
   // nothing to switch on.
@@ -509,6 +591,10 @@ export default function ExpeditionRecapScreen() {
               }
             >
               <Camera {...frameStop(framed, trace.bounds)} />
+
+              {/* Under today's line, drawn first. The camera keeps framing today's bounds: the
+                  ghost may run off the edge, today is the picture. */}
+              <RouteGhostLayer ghost={ghost} />
 
               {/* The glow reads the unbroken geometry, and the stroke reads the banded one. A
                   wide layer drawn from the bands beads at every join with round caps and notches
@@ -615,7 +701,19 @@ export default function ExpeditionRecapScreen() {
         )}
       </YStack>
 
-      <YStack px="$5" pt="$2" pb={insets.bottom + 20} gap="$4">
+      {/* Scrolls inside its own block, capped by the window height rather than a percentage so
+          nothing measures a conditional parent: a 42-league marathon scrolls here and the map
+          above keeps its room. */}
+      <ScrollView
+        style={{ flexGrow: 0, maxHeight: Math.round(height * 0.45) }}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 8,
+          paddingBottom: insets.bottom + 20,
+          gap: 16,
+        }}
+      >
         {/* Silence rather than three zeros. An outing whose service never started has no
             `leaguesM`, and "0 m · 0:00 · —" reads as a verdict on the walk instead of as an
             absence of measurement. */}
@@ -625,8 +723,10 @@ export default function ExpeditionRecapScreen() {
           range={trace.speedRange}
           best={trace.bestLeague}
           unit={distanceUnit}
-          locomotion={recap?.outing}
+          locomotion={recap?.display}
         />
+
+        <RouteGhostLegend shape={ghostShape} language={language} />
 
         {/* What the ground moved, above what the ground was.
             This screen used to open on distance, moving time and pace, which is what every other
@@ -642,16 +742,18 @@ export default function ExpeditionRecapScreen() {
             movingSeconds={recap.movingSeconds}
             ascentM={recap.ascentM}
             unit={distanceUnit}
-            locomotion={recap.outing}
+            locomotion={recap.display}
           />
         ) : null}
 
-        {/* The note and photos of this outing, the same notebook as the Journal detail. In its
-            own scroller so three photos never squeeze the map to nothing. */}
-        <RecapNotebook sessionId={recap?.sessionId} />
+        {/* The note and photos of this outing, the same notebook as the Journal detail. The whole
+            block already scrolls under a height cap, so three photos cannot squeeze the map. */}
+        {recap?.sessionId != null ? <SessionNotebook sessionId={recap.sessionId} /> : null}
+
+        <LeaguesTable splits={trace.splits} unit={distanceUnit} locomotion={recap?.display} />
 
         {footnote}
-      </YStack>
+      </ScrollView>
     </YStack>
   );
 }

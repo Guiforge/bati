@@ -9,6 +9,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { ChevronRight, ExternalLink, ScrollText } from "@/components/icons";
+import notice from "@/constants/mapStyles/notice.json";
 
 type CreditLinkProps = {
   title: string;
@@ -104,6 +105,36 @@ export default function CreditsScreen() {
             url="https://creativecommons.org/licenses/by-sa/4.0/"
             onPress={openUrl}
           />
+        </Card>
+
+        <Card gap="$3" testID="credits-map-styles">
+          <Text fontSize="$4" fontWeight="700" color="$text">
+            {t("credits.map_styles_title")}
+          </Text>
+          <Paragraph color="$textSecondary">{t("credits.map_styles_note")}</Paragraph>
+
+          <Separator />
+
+          <CreditLink
+            title={t("credits.openfreemap_styles")}
+            subtitle={t("credits.openfreemap_styles_subtitle")}
+            url="https://github.com/hyperknot/openfreemap-styles"
+            onPress={openUrl}
+          />
+          <CreditLink
+            title={t("credits.openmaptiles_styles")}
+            subtitle={t("credits.openmaptiles_styles_subtitle")}
+            url="https://github.com/openmaptiles/dark-matter-gl-style"
+            onPress={openUrl}
+          />
+
+          <Separator />
+
+          {/* Third-party legal text, verbatim and in English like src/licenses.json: it is not app
+              copy, so it is not translated and does not live in locales/. */}
+          <Paragraph testID="credits-map-notice" fontSize={11} color="$textSecondary" selectable>
+            {notice.openmaptiles}
+          </Paragraph>
         </Card>
 
         <Card gap="$3">

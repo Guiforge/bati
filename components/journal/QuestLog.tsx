@@ -29,7 +29,7 @@ import { SetEditor } from "@/components/journal/SetEditor";
 import { TraceThumb } from "@/components/journal/TraceThumb";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
-import { formatDistance, formatElevation, formatRate, rateKind } from "@/constants/distanceFormat";
+import { formatDistance, formatElevation, formatRate } from "@/constants/distanceFormat";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
 import { formatDuration } from "@/db";
@@ -41,6 +41,7 @@ import { correctLoggedSet } from "@/db/personalRecords";
 import { targetToBeat } from "@/db/progress";
 import { formatCount, formatTargetValue, PER_SIDE, perSideLabel } from "@/db/targets";
 import type { UserLevelInfo } from "@/db/userLevel";
+import { useRateKind } from "@/hooks/useRateKind";
 import type { LngLat } from "@/src/gps/trace";
 import { formatList } from "@/src/i18n/list";
 import { localizedName } from "@/src/i18n/localized";
@@ -508,6 +509,8 @@ function Ground({ data }: { data: QuestLogData }) {
   const language = useSettingsStore((s) => s.language);
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
   const { session, trace } = data;
+  // Only an outing row reaches this panel, so its stored activity is the tab; a mixed quest has no ground panel.
+  const rate = useRateKind(session.outing);
   const moving = session.movingSeconds ?? session.durationSeconds ?? 0;
 
   return (
@@ -540,9 +543,9 @@ function Ground({ data }: { data: QuestLogData }) {
         {session.leaguesM != null && session.leaguesM > 0 && moving > 0 && (
           <YStack>
             <NNum fontSize={17}>
-              {formatRate(session.leaguesM, moving * 1000, distanceUnit, language, session.outing)}
+              {formatRate(session.leaguesM, moving * 1000, distanceUnit, language, rate)}
             </NNum>
-            <NMuted fontSize={10.5}>{t(`journal.ground_${rateKind(session.outing)}`)}</NMuted>
+            <NMuted fontSize={10.5}>{t(`journal.ground_${rate}`)}</NMuted>
           </YStack>
         )}
       </XStack>

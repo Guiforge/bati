@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { FONT_CAPS } from "@/components/common/fontCaps";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Crosshair, Minus, Pause, Plus } from "@/components/icons";
@@ -24,6 +25,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
 import { useSideSwitch } from "@/hooks/useSideSwitch";
+import { pocketGuarded } from "@/src/gps/liveFigures";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import {
   perSideSet,
@@ -32,9 +34,10 @@ import {
   type SidePhase,
   sidePhase,
 } from "@/src/perSide";
-
+import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+
 import { BossArena } from "./BossArena";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { CountInput } from "./CountInput";
@@ -43,10 +46,14 @@ import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { ExpeditionPanel } from "./ExpeditionPanel";
 import { GhostLine } from "./GhostLine";
 import { LiveMap } from "./LiveMap";
+import { MapBigFigure } from "./MapBigFigure";
 import { SessionSwapSheet } from "./SessionSwapSheet";
 import { SwitchGlow } from "./SwitchGlow";
 import { sessionArtHeight } from "./sessionArt";
 import { TimerBar } from "./TimerBar";
+
+/** The floating HUD row's height under the status bar, kept clear when no map or picture is there. */
+const HUD_CLEARANCE = 56;
 
 /** How long before the switch the first side says it is coming. */
 const SIDE_SWITCH_WARNING_SECONDS = 5;
@@ -116,6 +123,13 @@ export function ActiveExerciseView() {
   const currentEx = quest?.exercises[currentExerciseIndex];
   /** An expedition measures ground rather than repetitions, and shows it. */
   const isOuting = isOutdoors(currentEx?.exercise.style);
+  const view = useExpeditionStore((state) => state.view);
+  const bigNumbers = isOuting && view.layout === "bigFigures";
+  /** The big figure floats on the map; in a boss fight the arena owns the slot, so not then. */
+  const bigOnMap = !bossFight && isOuting && view.layout === "bigMap";
+  /** Screen on, on foot: ending takes a confirmation and the map ignores fingers. */
+  const pocketLock =
+    quest !== null && currentEx !== undefined && pocketGuarded(quest, currentEx, view);
 
   const { remainingSeconds, elapsedSeconds, isOvertime, progress } = useSessionTimer();
   // An outing has nothing to announce. Left on the real count, this fired three ticks and a "go"
@@ -408,8 +422,21 @@ export function ActiveExerciseView() {
           </XStack>
         </BossArena>
       ) : isOuting ? (
-        // The movement's picture until the sky gives a position, then the map in its place.
-        <LiveMap minHeight={heroMinHeight} topInset={insets.top} placeholder={hero} />
+        bigNumbers ? (
+          // The hero chose big numbers: no map, no picture, no tile request. A spacer keeps the
+          // floating HUD row clear of the panel.
+          <YStack height={insets.top + HUD_CLEARANCE} />
+        ) : (
+          // The movement's picture until the sky gives a position, then the map in its place.
+          <LiveMap
+            minHeight={heroMinHeight}
+            topInset={insets.top}
+            placeholder={hero}
+            locked={pocketLock}
+            locomotion={currentEx?.exercise.locomotion ?? "walk"}
+            overlay={bigOnMap ? <MapBigFigure /> : undefined}
+          />
+        )
       ) : (
         hero
       )}
@@ -514,7 +541,7 @@ export function ActiveExerciseView() {
             how far they have gone, not how much of a prescribed duration is left. The clock is
             still running underneath — `completeExercise` records the elapsed seconds either
             way — but it is not what the screen is about. */}
-        {isOuting ? <ExpeditionPanel /> : null}
+        {isOuting ? <ExpeditionPanel bigOnMap={bigOnMap} /> : null}
 
         {/* Within-exercise timer progress (only for time-based exercises) */}
         {isTimeBased && !isOuting && (
@@ -1005,7 +1032,12 @@ export function ActiveExerciseView() {
 
         {/* Footer Action */}
         {isOuting ? (
-          <OutingFinishButton onFinish={handleComplete} />
+          <OutingFinishButton
+            onFinish={handleComplete}
+            guarded={pocketLock}
+            variant={quest !== null && isOutingSession(quest) ? "outing" : "leg"}
+            legLocomotion={currentEx?.exercise.locomotion === "run" ? "run" : "walk"}
+          />
         ) : (
           <AppButton
             testID="session-complete-exercise"
@@ -1054,6 +1086,9 @@ const HOLD_TO_FINISH_MS = 800;
  */
 const FINISH_ACTION = "finishOuting";
 
+/** How long the finish confirmation waits for an answer before it closes with nothing written. */
+const CONFIRM_FINISH_TIMEOUT_MS = 10_000;
+
 /**
  * How a walk ends: held, not tapped.
  *
@@ -1078,10 +1113,41 @@ const FINISH_ACTION = "finishOuting";
  * says "Hold to finish", and the name TalkBack offers in its actions menu keeps the plain verb,
  * because there the action is chosen rather than held.
  */
-function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
+function OutingFinishButton({
+  onFinish,
+  guarded,
+  variant,
+  legLocomotion,
+}: {
+  onFinish: () => void;
+  /** The pocket guard: the screen stays on on foot, so the hold alone does not end anything. */
+  guarded: boolean;
+  /** `leg` on a mixed quest, where the hold ends the walk or run stretch and not the outing. */
+  variant: "outing" | "leg";
+  legLocomotion: "walk" | "run";
+}) {
   const { t } = useTranslation();
-  const { selection } = useHaptics();
+  const { selection, heavyImpact } = useHaptics();
   const reducedMotion = useReducedMotion();
+
+  // The confirmation. A pocket that held the button for 800 ms has a finger still down, and a
+  // centred modal button needs a new touch; unanswered, it closes by itself and nothing was
+  // written. The outing keeps tracking the whole time.
+  const [asking, setAsking] = useState(false);
+  useEffect(() => {
+    if (!asking) return;
+    const timer = setTimeout(() => setAsking(false), CONFIRM_FINISH_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [asking]);
+  const requestFinish = () => {
+    if (!guarded) {
+      onFinish();
+      return;
+    }
+    // Felt, so a pocket that triggered it is noticed.
+    heavyImpact();
+    setAsking(true);
+  };
 
   const fill = useSharedValue(0);
   const fillStyle = useAnimatedStyle(() => ({ width: `${fill.value * 100}%` }));
@@ -1097,65 +1163,91 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
   );
 
   return (
-    <Pressable
-      testID="session-complete-exercise"
-      // The fill travels even under reduced motion, and takes exactly as long either way.
-      //
-      // It is not decoration: it is the only thing that says the thumb is being counted, and a
-      // button that does nothing for 799 ms is indistinguishable from a broken one. Jumping
-      // straight to full on press was worse than nothing, painting the button in the colour that
-      // means "done" everywhere else on this screen, at the moment nothing had been done.
-      //
-      // Reduced motion asks for no travel that carries no information. This one carries the only
-      // information there is, so what it drops instead is the springy retreat: releasing puts it
-      // back at once rather than gliding.
-      onPressIn={() => {
-        fill.value = withTiming(1, { duration: HOLD_TO_FINISH_MS });
-      }}
-      onPressOut={() => {
-        fill.value = reducedMotion ? 0 : withTiming(0, { duration: 150 });
-      }}
-      // A tap is the wrong gesture, not a failed one: it answers, and the fill it starts is the
-      // lesson. Nothing is written.
-      onPress={() => selection()}
-      onLongPress={onFinish}
-      delayLongPress={HOLD_TO_FINISH_MS}
-      accessibilityRole="button"
-      accessibilityLabel={t("session.expedition_hold_to_finish_a11y")}
-      accessibilityActions={[{ name: FINISH_ACTION, label }]}
-      onAccessibilityAction={(event) => {
-        if (event.nativeEvent.actionName === FINISH_ACTION) onFinish();
-      }}
-    >
-      <YStack
-        height={64}
-        rounded="$3"
-        bg="$primary"
-        overflow="hidden"
-        items="center"
-        justify="center"
-        onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
+    <>
+      <Pressable
+        testID="session-complete-exercise"
+        // The fill travels even under reduced motion, and takes exactly as long either way.
+        //
+        // It is not decoration: it is the only thing that says the thumb is being counted, and a
+        // button that does nothing for 799 ms is indistinguishable from a broken one. Jumping
+        // straight to full on press was worse than nothing, painting the button in the colour that
+        // means "done" everywhere else on this screen, at the moment nothing had been done.
+        //
+        // Reduced motion asks for no travel that carries no information. This one carries the only
+        // information there is, so what it drops instead is the springy retreat: releasing puts it
+        // back at once rather than gliding.
+        onPressIn={() => {
+          fill.value = withTiming(1, { duration: HOLD_TO_FINISH_MS });
+        }}
+        onPressOut={() => {
+          fill.value = reducedMotion ? 0 : withTiming(0, { duration: 150 });
+        }}
+        // A tap is the wrong gesture, not a failed one: it answers, and the fill it starts is the
+        // lesson. Nothing is written.
+        onPress={() => selection()}
+        onLongPress={requestFinish}
+        delayLongPress={HOLD_TO_FINISH_MS}
+        accessibilityRole="button"
+        accessibilityLabel={t("session.expedition_hold_to_finish_a11y")}
+        accessibilityActions={[{ name: FINISH_ACTION, label }]}
+        onAccessibilityAction={(event) => {
+          if (event.nativeEvent.actionName === FINISH_ACTION) requestFinish();
+        }}
       >
-        {holdLabel("$onPrimary")}
-        {/* The sweep carries its own copy of the label, in ink: no single label colour reads on
+        <YStack
+          height={64}
+          rounded="$3"
+          bg="$primary"
+          overflow="hidden"
+          items="center"
+          justify="center"
+          onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
+        >
+          {holdLabel("$onPrimary")}
+          {/* The sweep carries its own copy of the label, in ink: no single label colour reads on
             both the braise and the green (cream on green is 2.3:1), and the plate that used to
             solve it put a black box in the middle of the button. The copy is laid out at the
             button's full width, so the two labels coincide and the sweep's edge recolours the
             letters as it crosses them. */}
-        <Animated.View
-          style={[
-            { position: "absolute", left: 0, top: 0, bottom: 0, overflow: "hidden" },
-            fillStyle,
-          ]}
-          pointerEvents="none"
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        >
-          <YStack width={width} flex={1} bg="$success" items="center" justify="center">
-            {holdLabel("$bgDark")}
-          </YStack>
-        </Animated.View>
-      </YStack>
-    </Pressable>
+          <Animated.View
+            style={[
+              { position: "absolute", left: 0, top: 0, bottom: 0, overflow: "hidden" },
+              fillStyle,
+            ]}
+            pointerEvents="none"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
+            <YStack width={width} flex={1} bg="$success" items="center" justify="center">
+              {holdLabel("$bgDark")}
+            </YStack>
+          </Animated.View>
+        </YStack>
+      </Pressable>
+      <ConfirmDialog
+        open={asking}
+        title={t(
+          variant === "outing"
+            ? "session.expedition_finish_confirm_title"
+            : "session.expedition_leg_confirm_title",
+        )}
+        body={t(
+          variant === "outing"
+            ? "session.expedition_finish_confirm_body"
+            : `session.expedition_leg_confirm_body_${legLocomotion}`,
+        )}
+        confirmLabel={t(
+          variant === "outing"
+            ? "session.expedition_notification_finish"
+            : "session.expedition_leg_confirm_done",
+        )}
+        cancelLabel={t("session.expedition_finish_confirm_keep")}
+        onConfirm={() => {
+          setAsking(false);
+          onFinish();
+        }}
+        onCancel={() => setAsking(false)}
+      />
+    </>
   );
 }

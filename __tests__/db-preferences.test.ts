@@ -73,6 +73,64 @@ describe("db/preferences", () => {
     expect(await preferences.getCrestCoat()).toBe("auto");
   });
 
+  test("outingDisplay: no default written, a change round-trips, back to the original writes {} and keeps the row", async () => {
+    const { preferences, getPreference } =
+      require("../db/preferences") as typeof import("../db/preferences");
+    const { withActivity } =
+      require("../constants/outingDisplay") as typeof import("../constants/outingDisplay");
+    const row = () =>
+      t.sqlite.prepare("SELECT value FROM user_preferences WHERE key = 'outingDisplay'").get();
+    expect(await preferences.getOutingDisplay()).toEqual({});
+    expect(row()).toBeUndefined();
+
+    // A reset on a device that never set anything writes nothing: no row, no news for a peer.
+    await preferences.setOutingDisplay({});
+    expect(row()).toBeUndefined();
+
+    const changed = withActivity({}, "ride", { big: "rate", layout: "bigFigures" });
+    await preferences.setOutingDisplay(changed);
+    expect(await preferences.getOutingDisplay()).toEqual(changed);
+
+    // The reset is {}, never a delete: a missing row would read as the other device being newer.
+    await preferences.setOutingDisplay(withActivity(changed, "ride", null));
+    expect(await getPreference("outingDisplay")).toBe("{}");
+    expect(row()).toEqual({ value: "{}" });
+  });
+
+  test("outingDisplay: writing what is already stored does not restamp the row", async () => {
+    const { preferences } = require("../db/preferences") as typeof import("../db/preferences");
+    const { withActivity } =
+      require("../constants/outingDisplay") as typeof import("../constants/outingDisplay");
+    const stamp = () =>
+      (
+        t.sqlite
+          .prepare("SELECT updatedAt FROM user_preferences WHERE key = 'outingDisplay'")
+          .get() as { updatedAt: number }
+      ).updatedAt;
+    jest.useFakeTimers({
+      now: new Date("2026-02-01T10:00:00Z"),
+      doNotFake: ["nextTick", "setImmediate"],
+    });
+    try {
+      const display = withActivity({}, "run", { big: "distance" });
+      await preferences.setOutingDisplay(display);
+      const first = stamp();
+      jest.setSystemTime(new Date("2026-02-02T10:00:00Z"));
+      await preferences.setOutingDisplay(display);
+      expect(stamp()).toBe(first);
+      const two = withActivity(display, "walk", { big: "time" });
+      await preferences.setOutingDisplay(two);
+      const second = stamp();
+      jest.setSystemTime(new Date("2026-02-03T10:00:00Z"));
+      await preferences.setOutingDisplay(withActivity(two, "walk", { big: "time" }));
+      expect(stamp()).toBe(second);
+      await preferences.setOutingDisplay(withActivity(display, "run", { big: "rate" }));
+      expect(stamp()).toBeGreaterThan(first);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   test("crestMotto: no default written, unknown reads as none, a motto and none round-trip", async () => {
     const { preferences, setPreference } =
       require("../db/preferences") as typeof import("../db/preferences");
@@ -197,6 +255,23 @@ describe("db/preferences", () => {
     // And nothing but a written "true" counts as consent.
     await prefs.setPreference("mapTiles", "1");
     expect(await preferences.getMapTilesEnabled()).toBe(false);
+  });
+
+  test("the map style is a per-device look: ember by default, a round trip, an unknown id reads ember", async () => {
+    const prefs = require("../db/preferences") as typeof import("../db/preferences");
+    const { preferences } = prefs;
+
+    expect(await prefs.getPreference("mapStyle")).toBeNull();
+    expect(await preferences.getMapStyle()).toBe("ember");
+
+    await preferences.setMapStyle("fiord");
+    expect(await preferences.getMapStyle()).toBe("fiord");
+    await preferences.setMapStyle("dark");
+    expect(await preferences.getMapStyle()).toBe("dark");
+
+    // A style a newer build wrote, unknown here.
+    await prefs.setPreference("mapStyle", "midnight");
+    expect(await preferences.getMapStyle()).toBe("ember");
   });
 
   test("the custom avatar: legacy path read, ported with its own date, preset as an empty row", async () => {

@@ -31,7 +31,7 @@ import { type Crest, getCrest } from "@/db/crest";
 import { COAT_RARE_KEY } from "@/db/crestEvents";
 import { countsAsDeed } from "@/db/deed";
 import { formatDuration, formatDurationEstimate } from "@/db/estimate";
-import { isOutingSession, outingLocomotion } from "@/db/expeditions";
+import { isOutingSession } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
 import { createQuestFromOuting } from "@/db/quests";
 import type { FeedbackCode } from "@/db/schema";
@@ -552,11 +552,7 @@ export function VictoryView() {
             before the stat row (rather than at the bottom, with the rewards) so it is in view
             without scrolling past the stat tiles. */}
         {!!result && isExpedition(quest) && (
-          <ExpeditionSummary
-            sessionUuid={sessionUuid}
-            language={language}
-            locomotion={outingLocomotion(quest)}
-          />
+          <ExpeditionSummary sessionUuid={sessionUuid} language={language} />
         )}
 
         {/* The bridge (docs/designs/outing-doors.md, T17). Only after a *free* outing: a walk

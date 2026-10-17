@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import { type BuzzEvery, defaultsOf, type OutingDisplay, viewOf } from "@/constants/outingDisplay";
 import { buildWarmup, PREP_SECONDS, type WarmupQuest, type WarmupStep } from "@/constants/warmup";
 import { completeAdventureRunStep, getAdventureIdForRunStep } from "@/db";
 import { checkForNewAchievements, type NewAchievementResult } from "@/db/achievements";
@@ -44,9 +45,11 @@ import {
   type VariationStep,
 } from "@/db/exercises";
 import {
+  displayLocomotion,
   isMountedOuting,
   isOutdoors,
   isOutingSession,
+  isWalkRunSession,
   outingLocomotion,
   pricedLocomotion,
 } from "@/db/expeditions";
@@ -101,10 +104,12 @@ import {
 } from "@/db/xp";
 import { i18n } from "@/i18n";
 import type { StartOptions } from "@/modules/bati-location";
+import { DEFAULT_LIVE_VIEW, type LiveView } from "@/src/gps/liveFigures";
 import type { OutingGoal } from "@/src/gps/track";
 import { credited } from "@/src/gps/track";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
+import { keepAwakeSet } from "@/src/outingKeepAwake";
 import { perSideClockSeconds, SIDE_SWITCH_SECONDS } from "@/src/perSide";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
@@ -1269,7 +1274,28 @@ export function beginTrackingIfOuting(
   sessionUuid: string | null,
   goal: OutingGoal | null,
 ): void {
-  if (!isExpedition(quest) || sessionUuid === null) return;
+  if (!isExpedition(quest)) return;
+
+  // Before any await: the panel, the screen lock and the pocket guard must never read the last
+  // outing's view. `begin` only writes the real one after two SQLite reads and an `end()`, and
+  // `end()` leaves the old view in place. This one has the screen going off (the safe side, for
+  // the length of two reads) and the right walk-run flag, so no pace shows on a walk-run.
+  const locomotion = displayLocomotion(quest);
+  // A mount buzzes every fifth league unless the hero said otherwise: the original behaviour.
+  // ponytail: a walk-and-ride quest reads the Walk tab but is mounted, so choosing "every league"
+  // there equals the tab default and is not stored; it keeps buzzing every fifth. Store buzz
+  // verbatim if a hero asks.
+  const mountedBuzz: BuzzEvery = isMountedOuting(quest) ? 5 : 1;
+  useExpeditionStore.setState({
+    view: {
+      ...DEFAULT_LIVE_VIEW,
+      ...defaultsOf(locomotion),
+      buzzEvery: mountedBuzz,
+      locomotion,
+      walkRun: isWalkRunSession(quest, goal),
+    },
+  });
+  if (sessionUuid === null) return;
 
   // Fire and forget: the permission dialog and the service start are the expedition store's
   // business, and a session must not wait on a system prompt before its own screen appears.
@@ -1301,12 +1327,22 @@ export function beginTrackingIfOuting(
   Promise.all([
     preferences.getDistanceUnit().catch((): DistanceUnit => "metric"),
     preferences.getHapticsEnabled().catch(() => true),
+    // A hero who cannot be read gets today's panel: the original is always a safe answer.
+    preferences.getOutingDisplay().catch((): OutingDisplay => ({})),
+    keepAwakeSet(),
   ])
-    .then(([unit, haptics]) =>
-      useExpeditionStore
+    .then(([unit, haptics, display, keepAwake]) => {
+      const view: LiveView = {
+        ...viewOf(display, locomotion),
+        buzzEvery: display[locomotion]?.buzzEvery ?? mountedBuzz,
+        locomotion,
+        walkRun: isWalkRunSession(quest, goal),
+        keepAwake: keepAwake.includes(locomotion),
+      };
+      return useExpeditionStore
         .getState()
-        .begin(sessionUuid, notification, isMountedOuting(quest), unit, goal, haptics),
-    )
+        .begin(sessionUuid, notification, isMountedOuting(quest), unit, goal, haptics, view);
+    })
     .catch((error: unknown) => reportError("session.beginTracking", error));
 }
 

@@ -81,7 +81,8 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | record | A result beaten on one movement, in its own unit | record | record | a session's best | Rekord | récord |
 | mark | A session's best: longest, most XP, longest outing | best | marque | record | Bestwert | mejor marca |
 | badge on an old row | A best whose kind the row did not keep | PR | exploit |  | Bestwert | Marca (not Hazaña, the deed family) |
-| ghost | What the hero did on this movement last time, shown during the set | last time / best | la dernière fois / record |  | letztes Mal / Rekord | la última vez / récord |
+| ghost | What the hero did on this movement last time, shown during the set (a set; for a route see route ghost) | last time / best | la dernière fois / record |  | letztes Mal / Rekord | la última vez / récord |
+| route ghost | The pale line of the hero's last outing on the same route, on the outing map and its recap | route ghost | fantôme de parcours | trace fantôme | Streckengeist (not Geist alone) | fantasma de recorrido |
 | XP | Experience, one rep is one | XP | XP |  | XP | XP |
 | level | The hero's level, from XP | level | niveau |  | Level | nivel |
 | starting point | The hero's answer to "where are you at", which sets where a quest never played starts | starting point | point de départ | niveau (the hero's, from XP) | Ausgangspunkt | punto de partida |

@@ -31,14 +31,19 @@ const backup = () => require("../db/backup") as typeof import("../db/backup");
 const merge = () => require("../db/merge") as typeof import("../db/merge");
 
 let n = 0;
-function addSession(sqlite: Database.Database, performedAt: number, exerciseId?: number): string {
+function addSession(
+  sqlite: Database.Database,
+  performedAt: number,
+  exerciseId?: number,
+  outing?: { outing: string; leaguesM: number },
+): string {
   n += 1;
   const uuid = `0190b000-0000-7000-8000-${String(n).padStart(12, "0")}`;
   const { lastInsertRowid } = sqlite
     .prepare(
-      "INSERT INTO completed_sessions (uuid, userLevel, xpEarned, performedAt) VALUES (?, 'medium', 10, ?)",
+      "INSERT INTO completed_sessions (uuid, userLevel, xpEarned, performedAt, outing, leaguesM) VALUES (?, 'medium', 10, ?, ?, ?)",
     )
-    .run(uuid, performedAt);
+    .run(uuid, performedAt, outing?.outing ?? null, outing?.leaguesM ?? null);
   if (exerciseId !== undefined) {
     sqlite
       .prepare(
@@ -297,6 +302,29 @@ test("GPS points come with their session", async () => {
   });
   await merge().mergePeer(file);
   expect(t.sqlite.prepare("SELECT count(*) AS n FROM gps_points").get()).toEqual({ n: 1 });
+});
+
+test("a merged outing is a route ghost candidate here", async () => {
+  const file = await peer("run.db", (sqlite) => {
+    const uuid = addSession(sqlite, 2_000, undefined, { outing: "run", leaguesM: 3000 });
+    const insert = sqlite.prepare(
+      "INSERT INTO gps_points (sessionId, t, latE7, lonE7, accDm, distFromPrevCm) VALUES (?, ?, ?, ?, 50, 0)",
+    );
+    for (let k = 1; k <= 50; k++) insert.run(uuid, k, 488566000 + k * 90, 23522000);
+  });
+  const theirs = `0190b000-0000-7000-8000-${String(n).padStart(12, "0")}`;
+  await merge().mergePeer(file);
+
+  const { routeCandidates } = require("../db/gps") as typeof import("../db/gps");
+  // performedAt is raw seconds in the INSERT, so `before` is 5 000 s in milliseconds.
+  const got = await routeCandidates(
+    "run",
+    { lat: 48.8566, lon: 2.3522 },
+    new Date(5_000 * 1000),
+    "some-other-uuid",
+  );
+  expect(got.map((c) => c.id)).toEqual([theirs]);
+  expect(got[0]?.points).toHaveLength(10);
 });
 
 test("deletions travel both ways, and a merge never brings back what was deleted", async () => {
@@ -950,6 +978,136 @@ describe("the crest follows the journal, not the device", () => {
     await merge().mergePeer(laterAuto);
     expect(prefValue("crestCoat")).toBe("auto");
     await converged(laterAuto);
+  });
+
+  test("outingDisplay: the newer blob wins, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 3_000);
+    const older = await peer("older-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 2_000),
+    );
+    await merge().mergePeer(older);
+    expect(prefValue("outingDisplay")).toBe('{"run":{"big":"distance"}}');
+    await converged(older);
+
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 2_000);
+    const newer = await peer("newer-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 3_000),
+    );
+    await merge().mergePeer(newer);
+    expect(prefValue("outingDisplay")).toBe('{"run":{"big":"rate"}}');
+    await converged(newer);
+  });
+
+  test("outingDisplay: a reset written later beats an older setting, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", "{}", 3_000);
+    const olderSetting = await peer("older-setting.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 2_000),
+    );
+    await merge().mergePeer(olderSetting);
+    expect(prefValue("outingDisplay")).toBe("{}");
+    await converged(olderSetting);
+
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 2_000);
+    const laterReset = await peer("later-reset.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", "{}", 3_000),
+    );
+    await merge().mergePeer(laterReset);
+    expect(prefValue("outingDisplay")).toBe("{}");
+    await converged(laterReset);
+  });
+
+  test("outingDisplay: a route ghost switched on travels as text, and is news once", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 2_000);
+    const theirs = '{"run":{"routeGhost":true}}';
+    const file = await peer("ghost-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", theirs, 3_000),
+    );
+    expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 1 });
+
+    await merge().mergePeer(file);
+    const row = () =>
+      t.sqlite
+        .prepare("SELECT value, updatedAt FROM user_preferences WHERE key = 'outingDisplay'")
+        .get();
+    expect(row()).toEqual({ value: theirs, updatedAt: 3_000 });
+    // Byte for byte what the peer holds, so neither side has anything left to send.
+    expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
+  });
+
+  test("outingDisplay carries values this build may not read, verbatim", async () => {
+    addSession(t.sqlite, 1_000);
+    const theirs = '{"run":{"layout":"bigMap","small":["lap",null,null]}}';
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 2_000);
+    const peerFile = await peer("phase2-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", theirs, 3_000),
+    );
+    await merge().mergePeer(peerFile);
+    // The merge is text-level: a build that cannot parse bigMap or lap still carries them.
+    expect(prefValue("outingDisplay")).toBe(theirs);
+    await converged(peerFile);
+  });
+
+  test("mapStyle is the device's: never news, never merged", async () => {
+    addSession(t.sqlite, 1_000);
+    const dark = await peer("peer-map-style.db", (sqlite) =>
+      setPref(sqlite, "mapStyle", "dark", 3_000),
+    );
+    expect(await backup().compareWithPeer(dark)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+    await merge().mergePeer(dark);
+    expect(prefValue("mapStyle")).toBeUndefined();
+
+    setPref(t.sqlite, "mapStyle", "fiord", 1_000);
+    await merge().mergePeer(dark);
+    expect(prefValue("mapStyle")).toBe("fiord");
+  });
+
+  test("outingDisplay is news once, then level", async () => {
+    addSession(t.sqlite, 1_000);
+    const withRow = await peer("with-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"ride":{"big":"rate"}}', 2_000),
+    );
+    expect(await backup().compareWithPeer(withRow)).toMatchObject({
+      peerChanges: 1,
+      localChanges: 0,
+    });
+    await merge().mergePeer(withRow);
+    expect(await backup().compareWithPeer(withRow)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+    expect(await backup().stateFingerprint()).toBe(
+      (await backup().compareWithPeer(withRow)).fingerprint,
+    );
+  });
+
+  test("a peer on the previous build (no row) leaves this device's display and reads as behind", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", '{"ride":{"big":"rate"}}', 2_000);
+    const old = await peer("old-build.db", (sqlite) =>
+      sqlite.prepare("DELETE FROM user_preferences WHERE key = 'outingDisplay'").run(),
+    );
+    expect(await backup().compareWithPeer(old)).toMatchObject({
+      localChanges: 1,
+      peerChanges: 0,
+    });
+    await merge().mergePeer(old);
+    expect(prefValue("outingDisplay")).toBe('{"ride":{"big":"rate"}}');
+  });
+
+  test("a device that never opened the screen has no row, and two such devices are level", async () => {
+    addSession(t.sqlite, 1_000);
+    const fresh = await peer("fresh-display.db");
+    expect(prefValue("outingDisplay")).toBeUndefined();
+    expect(await backup().compareWithPeer(fresh)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
   });
 
   test("crestMotto: a none written later beats an older motto, either way", async () => {

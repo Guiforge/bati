@@ -1,6 +1,7 @@
 import { act, render, screen } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 import { ExpeditionPanel } from "@/components/session/ExpeditionPanel";
+import { ExpeditionPanelView } from "@/components/session/ExpeditionPanelView";
 import "@/i18n";
 import config from "@/tamagui.config";
 
@@ -47,8 +48,10 @@ jest.mock("@/stores/settings", () => ({
     selector({ distanceUnit: mockUnit, language: "en" }),
 }));
 
+import { defaultsOf } from "@/constants/outingDisplay";
 import { rawColors } from "@/constants/rawColors";
 import type { Quest } from "@/db/quests";
+import { DEFAULT_LIVE_VIEW, type LiveView } from "@/src/gps/liveFigures";
 import { EMPTY, type OutingGoal, type TrackState } from "@/src/gps/track";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
@@ -117,6 +120,11 @@ function setSession(goal: OutingGoal | null, startedMsAgo = 0) {
   });
 }
 
+/** The view `beginTrackingIfOuting` froze for this outing; the default is today's panel. */
+function setView(over: Partial<LiveView>) {
+  useExpeditionStore.setState({ view: { ...DEFAULT_LIVE_VIEW, ...over } });
+}
+
 function setTrack(
   track: Partial<TrackState>,
   extra: { error?: string | null; goalReached?: boolean; accuracyM?: number } = {},
@@ -161,6 +169,7 @@ describe("ExpeditionPanel", () => {
     mockUnit = "metric";
     setSession(null, 600_000);
     setTrack({});
+    setView({});
   });
 
   afterEach(() => {
@@ -175,6 +184,34 @@ describe("ExpeditionPanel", () => {
   test("says it is looking for the sky rather than showing nothing", async () => {
     await mount();
     expect(screen.getByText("Finding the sky")).toBeTruthy();
+  });
+
+  test("hideBig leaves the big figure to the map and keeps everything else", async () => {
+    await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <ExpeditionPanelView
+          view={DEFAULT_LIVE_VIEW}
+          track={{ ...EMPTY, ...walked(600, 600, 2500) }}
+          goal={{ type: "distance", metres: 5000 }}
+          recordedSeconds={600}
+          hideBig
+        />
+      </TamaguiProvider>,
+    );
+    expect(screen.queryByTestId("expedition-big")).toBeNull();
+    expect(screen.getByTestId("expedition-goal")).toBeTruthy();
+    expect(screen.getByTestId("expedition-time")).toBeTruthy();
+  });
+
+  test("the current league reads from where the league began, with its label", async () => {
+    setTrack(walked(600, 250, 2500));
+    useExpeditionStore.setState({ lap: { league: 2, fromMs: 60_000 } });
+    setView({ big: "lap" });
+    await mount();
+
+    expect(screen.getByTestId("expedition-big").props.children).toBe("3:10");
+    expect(screen.getByText("Current league")).toBeTruthy();
+    useExpeditionStore.setState({ lap: { league: 0, fromMs: 0 } });
   });
 
   test("shows the ground covered, through the format helper", async () => {
@@ -460,5 +497,218 @@ describe("ExpeditionPanel", () => {
     await mount();
     expect(screen.getByText("Distance")).toBeTruthy();
     expect(screen.getByText("Pace")).toBeTruthy();
+  });
+
+  describe("a walk-run", () => {
+    const walkRunQuest = (extra: { prescribed?: number } = {}) =>
+      ({
+        ...outing,
+        exercises: [{ ...outing.exercises[0], walkRun: true, ...extra }],
+      }) as unknown as Quest;
+
+    test("shows no pace, the coach paces it", async () => {
+      setSession({ type: "time", seconds: 900 }, 600_000);
+      useSessionStore.setState({ quest: walkRunQuest() });
+      setView({ walkRun: true });
+      setTrack(walked(600, 600, 2500));
+      await mount();
+      expect(screen.queryByTestId("expedition-rate")).toBeNull();
+      expect(screen.queryByText("Pace")).toBeNull();
+      expect(screen.getByText("Distance")).toBeTruthy();
+    });
+
+    // The flag is frozen with the view, so a pace never shows between two outings.
+    test("shows it when the outing is not a walk-run", async () => {
+      setSession({ type: "time", seconds: 900 }, 600_000);
+      setView({ walkRun: false });
+      setTrack(walked(600, 600, 2500));
+      await mount();
+      expect(screen.getByTestId("expedition-rate")).toBeTruthy();
+    });
+
+    test("a rate chosen for the big place falls back to the clock", async () => {
+      setView({ walkRun: true, big: "rate" });
+      setTrack(walked(600, 600, 2500));
+      await mount();
+      expect(screen.getByTestId("expedition-big").props.children).toBe("10:00");
+      expect(screen.queryByText("Pace")).toBeNull();
+    });
+  });
+});
+
+/**
+ * The default readout, pinned before the places became configurable: 3 activities x 3 goal
+ * states, the order of figures and labels exactly as shipped (big without a label; second,
+ * climb, rate). The outing display must leave all nine untouched when the hero changed nothing.
+ */
+function texts(node: unknown): string[] {
+  if (typeof node === "string") return [node];
+  if (Array.isArray(node)) return node.flatMap(texts);
+  if (node && typeof node === "object" && "children" in node) {
+    return texts((node as { children: unknown }).children ?? []);
+  }
+  return [];
+}
+
+describe("ExpeditionPanel default readout", () => {
+  const withLocomotion = (locomotion: "walk" | "run" | "ride") =>
+    ({
+      ...outing,
+      exercises: [{ ...outing.exercises[0], exercise: { ...walk, locomotion } }],
+    }) as unknown as Quest;
+
+  const goals: [string, OutingGoal | null, string[]][] = [
+    ["no goal", null, ["10:00", "2.50 km", "Distance"]],
+    ["a time goal", { type: "time", seconds: 1200 }, ["10:00", "of 20 min", "2.50 km", "Distance"]],
+    [
+      "a distance goal",
+      { type: "distance", metres: 5000 },
+      ["2.50 km", "of 5.00 km", "10:00", "Duration"],
+    ],
+  ];
+  const rates = {
+    walk: ["4:00 /km", "Pace"],
+    run: ["4:00 /km", "Pace"],
+    ride: ["15.0 km/h", "Speed"],
+  };
+
+  beforeEach(() => {
+    jest.spyOn(Date, "now").mockReturnValue(NOW);
+    mockUnit = "metric";
+    setTrack({ ...walked(600, 600, 2500), climbFrom: 100, ascentM: 85 });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  test.each(
+    (["walk", "run", "ride"] as const).flatMap((l) =>
+      goals.map(([name, goal, head]) => [l, name, goal, head] as const),
+    ),
+  )("%s with %s", async (l, _name, goal, head) => {
+    setSession(goal, 600_000);
+    useSessionStore.setState({ quest: withLocomotion(l) });
+    setView({ ...defaultsOf(l), locomotion: l });
+    await mount();
+    const seen = texts(screen.toJSON()).filter((x) => x.trim() !== "");
+    // The figure/label order: big, [goal], second, its label, climb, its label, rate, its label.
+    const expected = [...head, "85 m", "Climb", ...rates[l]];
+    expect(seen.filter((x) => expected.includes(x))).toEqual(expected);
+  });
+});
+
+describe("ExpeditionPanel with the hero's places", () => {
+  beforeEach(() => {
+    jest.spyOn(Date, "now").mockReturnValue(NOW);
+    mockUnit = "metric";
+    setSession(null, 600_000);
+    setTrack({ ...walked(600, 600, 2500), climbFrom: 100, ascentM: 85 });
+    setView({});
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  test("a big number the hero chose carries its word, and the default big does not", async () => {
+    setView({ big: "distance" });
+    const { unmount } = await mount();
+    expect(screen.getByTestId("expedition-big").props.children).toBe("2.50 km");
+    // Two labels: the big's own, and the small one that is not in the big place.
+    expect(screen.getAllByText("Distance")).toHaveLength(1);
+    await unmount();
+
+    setView({});
+    await mount();
+    expect(screen.queryByText("Duration")).toBeNull();
+    expect(screen.getAllByText("Distance")).toHaveLength(1);
+  });
+
+  const ridePlusPushUps = () =>
+    ({
+      ...outing,
+      exercises: [
+        { ...outing.exercises[0], exercise: { ...walk, locomotion: "ride" } },
+        { ...outing.exercises[0], exercise: { ...walk, style: "reps", locomotion: null } },
+      ],
+    }) as unknown as Quest;
+
+  test("a ride on a mixed quest with a chosen speed in big reads Speed and km/h", async () => {
+    useSessionStore.setState({ quest: ridePlusPushUps() });
+    // What beginTrackingIfOuting freezes for it: the Ride tab, with speed in big.
+    setView({ locomotion: "ride", rate: "speed", big: "rate" });
+    await mount();
+    expect(screen.getByTestId("expedition-big").props.children).toBe("15.0 km/h");
+    expect(screen.getByText("Speed")).toBeTruthy();
+    expect(screen.queryByText("Pace")).toBeNull();
+  });
+
+  test("a walk the hero reads in km/h says Speed and km/h, in the big place and the small ones", async () => {
+    setView({ rate: "speed", big: "rate", small: ["rateAvg", null, null] });
+    await mount();
+    expect(screen.getByTestId("expedition-big").props.children).toBe("15.0 km/h");
+    expect(screen.getByText("Speed")).toBeTruthy();
+    expect(screen.getByText("Avg speed")).toBeTruthy();
+    expect(screen.queryByText("Pace")).toBeNull();
+    expect(screen.queryByText(/\/km/)).toBeNull();
+  });
+
+  test("a ride the hero reads as a pace says Pace and min per km", async () => {
+    useSessionStore.setState({ quest: ridePlusPushUps() });
+    setView({ locomotion: "ride", rate: "pace", big: "rate" });
+    await mount();
+    expect(screen.getByTestId("expedition-big").props.children).toBe("4:00 /km");
+    expect(screen.getByText("Pace")).toBeTruthy();
+  });
+
+  test("the average has its own word, and the remaining figure counts down", async () => {
+    setSession({ type: "distance", metres: 5000 }, 600_000);
+    setView({ small: ["rateAvg", "remaining", null] });
+    await mount();
+    expect(screen.getByText("Avg pace")).toBeTruthy();
+    expect(screen.getByText("4:00 /km")).toBeTruthy();
+    expect(screen.getByText("To go")).toBeTruthy();
+    // The big number (ground covered) and the 2.50 km still to go, by coincidence of this track.
+    expect(screen.getAllByText("2.50 km")).toHaveLength(2);
+  });
+
+  test("every figure is one line that shrinks before it wraps", async () => {
+    await mount();
+    for (const id of ["expedition-big", "expedition-distance", "expedition-climb"]) {
+      const node = screen.getByTestId(id);
+      expect(node.props.numberOfLines).toBe(1);
+      expect(node.props.adjustsFontSizeToFit).toBe(true);
+    }
+  });
+
+  test("big numbers: the big figure is 72 and the smalls stack at 32", async () => {
+    setView({ layout: "bigFigures" });
+    await mount();
+    expect(screen.getByTestId("expedition-big").props.style.fontSize).toBe(72);
+    expect(screen.getByTestId("expedition-distance").props.style.fontSize).toBe(32);
+  });
+
+  test("the pocket hint is said when the screen will go off, and not when it stays on", async () => {
+    setTrack({ ...walked(10, 10, 14), climbFrom: 100, ascentM: 0 });
+    useSessionStore.setState({ startTime: NOW - 10_000 });
+    const { unmount } = await mount();
+    expect(screen.getByText(/put the phone away/)).toBeTruthy();
+    await unmount();
+
+    setView({ keepAwake: true });
+    await mount();
+    expect(screen.queryByText(/put the phone away/)).toBeNull();
+  });
+
+  // A mixed quest holds the screen for its push-ups whatever the setting says, so the hint that
+  // the screen will go dark would be false there.
+  test("no pocket hint on a mixed quest, whatever keepAwake says", async () => {
+    const mixed = {
+      ...outing,
+      exercises: [
+        ...outing.exercises,
+        { ...outing.exercises[0], exercise: { ...walk, style: "reps" } },
+      ],
+    } as unknown as Quest;
+    useSessionStore.setState({ quest: mixed, startTime: NOW - 10_000 });
+    setTrack({ ...walked(10, 10, 14) });
+    setView({ keepAwake: false });
+    await mount();
+    expect(screen.queryByText(/put the phone away/)).toBeNull();
   });
 });

@@ -11,19 +11,34 @@ import { MapFootnote } from "@/components/session/MapFootnote";
 import { MapRecenterButton } from "@/components/session/MapRecenterButton";
 import { HUD_HEIGHT } from "@/components/session/sessionArt";
 import {
+  basemapOf,
   LEAGUE_PIP_PAINT,
-  mapStyle,
-  mapStyleNoTiles,
+  ROUTE_GHOST_PAINT,
   TRACE_GLOW_PAINT,
 } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
+import type { Locomotion } from "@/db/schema";
+import { useRouteCandidates } from "@/hooks/useRouteCandidates";
+import type { LocationFix } from "@/modules/bati-location";
+import {
+  ROUTE,
+  type RouteGhostLine,
+  type RouteShape,
+  routeGhostAllowed,
+  routeGhostOf,
+  strided,
+  toGhostLine,
+} from "@/src/gps/route";
 import { toTrace } from "@/src/gps/trace";
 import { reportError } from "@/src/reportError";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
 
-/** Close enough to read the street being walked, far enough to see the next turn. */
-const FOLLOW_ZOOM = 16;
+/**
+ * Close enough to read the street being walked, far enough to see the next turn; a ride covers
+ * three times the ground per glance, so it follows one level further out. No setting.
+ */
+const FOLLOW_ZOOM = { walk: 16, run: 16, ride: 15 } as const satisfies Record<Locomotion, number>;
 
 /** One fix a second, so the camera glides for as long as the next one takes to arrive. */
 const FOLLOW_MS = 1000;
@@ -68,6 +83,33 @@ function Waiting({ label }: { label: string }) {
   );
 }
 
+/** The big map's floating figure: above the credit line, touching nothing. */
+function Overlay({ children }: { children: ReactNode }) {
+  return (
+    <YStack position="absolute" b={40} l="$4" r="$4" pointerEvents="none">
+      {children}
+    </YStack>
+  );
+}
+
+/**
+ * The route ghost for these fixes: none until `ROUTE.liveMinM` metres are credited (from a front
+ * door every past route looks alike), and the same object as last time when the route is the same,
+ * so MapLibre is handed nothing new.
+ */
+function ghostOf(
+  prev: RouteGhostLine | null,
+  fixes: readonly LocationFix[],
+  distanceM: number,
+  candidates: RouteShape[] | null,
+): RouteGhostLine | null {
+  const match =
+    candidates !== null && distanceM >= ROUTE.liveMinM
+      ? routeGhostOf(strided(fixes), candidates, "live")
+      : null;
+  return match?.id === prev?.id ? prev : toGhostLine(match);
+}
+
 /**
  * The walk so far, on the map, while it is happening.
  *
@@ -80,10 +122,12 @@ function Waiting({ label }: { label: string }) {
  * The camera follows the last fix, as a GPS does, until a finger moves or zooms the map; a button
  * then brings it back to the hero, at whatever zoom the fingers chose. Rotation and pitch stay
  * off: north up is the one orientation that needs no compass. A pocket can still pan it, which
- * costs one tap on the way back, and coming back from the background recentres anyway.
+ * costs one tap on the way back, and coming back from the background recentres anyway, unless the
+ * screen is kept on on foot: `locked` (the pocket guard) turns every finger gesture off then.
  *
  * This reverses "numbers only, battery decision" from docs/designs/gps-without-google.md. The
- * screen is still never held awake on an outing, and MapLibre draws nothing while it is off.
+ * screen is off on an outing unless the hero chose otherwise, and MapLibre draws nothing while
+ * it is off.
  *
  * Before the first fix it shows `placeholder`, the movement's picture. A camera centred nowhere is
  * the middle of the Gulf of Guinea, and the empty dark slot that stood in for it read as a map
@@ -93,10 +137,19 @@ export function LiveMap({
   minHeight,
   topInset,
   placeholder,
+  locked = false,
+  locomotion,
+  overlay,
 }: {
   minHeight: number;
   topInset: number;
   placeholder: ReactNode;
+  /** The pocket guard: the map ignores fingers, so a pocket cannot move the view. */
+  locked?: boolean;
+  /** The movement being done right now, which sets how far out the camera follows. */
+  locomotion: Locomotion;
+  /** Floats over the map and its placeholder, above the credit line; takes no touch. */
+  overlay?: ReactNode;
 }) {
   /**
    * Whether anyone can see the map. Starts true: this screen mounts in front of the hero.
@@ -114,8 +167,8 @@ export function LiveMap({
   const [styleLoaded, setStyleLoaded] = useState(false);
   /** Whether the camera tracks the hero. A gesture stops it, the recentre button restarts it. */
   const [following, setFollowing] = useState(true);
-  /** The zoom the camera follows at: `FOLLOW_ZOOM` until a pinch picks another. */
-  const [zoom, setZoom] = useState(FOLLOW_ZOOM);
+  /** The zoom the camera follows at: `FOLLOW_ZOOM` for the activity until a pinch picks another. */
+  const [zoom, setZoom] = useState<number>(FOLLOW_ZOOM[locomotion]);
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (state) => {
       // Not `=== "active"`: iOS reports `inactive` for the app switcher and a call banner, with
@@ -134,36 +187,63 @@ export function LiveMap({
   const last = useExpeditionStore((s) => (visible ? (s.fixes.at(-1) ?? null) : null));
   const hasFix = last !== null;
   const tilesEnabled = useSettingsStore((s) => s.mapTilesEnabled);
+  const styleId = useSettingsStore((s) => s.mapStyle);
   /** Under way: the auto-pause has not caught the hero standing, and the sky has been found. */
   const moving = useExpeditionStore((s) => s.track.startedAt !== null && !s.track.paused);
+
+  // Hooks stay above both early returns: the order never changes. The route ghost is read once per
+  // outing, and only when the hero switched it on (never during a walk-run: `routeGhostAllowed`).
+  const view = useExpeditionStore((s) => s.view);
+  const sessionUuid = useExpeditionStore((s) => s.sessionUuid);
+  /** The first stored fix: where today started, and its time bounds the history read. */
+  const first = useExpeditionStore((s) => s.fixes[0] ?? null);
+  const wanted = routeGhostAllowed(view) && first !== null && sessionUuid !== null;
+  const candidates = useRouteCandidates(
+    wanted ? view.locomotion : null,
+    wanted ? first : null,
+    wanted ? first.t : null,
+    wanted ? sessionUuid : null,
+  );
 
   /**
    * The walk, folded at most every `TRACE_EVERY_MS`. It was folded on every fix, 11 ms at one hour
    * and 34 ms at three on a desktop, a second at a time for as long as the screen is on (perf
    * audit, 2026-09-15). Remembers which array it folded, so a tick with no new fix costs nothing.
+   * It also carries the route ghost: matched here, past `ROUTE.liveMinM` credited metres, and again
+   * when the candidates arrive (the read is async), never on the 1 Hz render.
    *
    * ponytail: the whole walk is still folded each time, so a very long outing pays the three-hour
    * figure every five seconds. Fold incrementally if a measured walk shows that cost.
    */
   const [folded, setFolded] = useState(() => {
     const fixes = useExpeditionStore.getState().fixes;
-    return { fixes, trace: toTrace(fixes) };
+    return {
+      fixes,
+      candidates: null as RouteShape[] | null,
+      trace: toTrace(fixes),
+      ghost: null as RouteGhostLine | null,
+    };
   });
   useEffect(() => {
     if (!visible) return;
     const fold = () => {
-      const fixes = useExpeditionStore.getState().fixes;
-      setFolded((prev) => (prev.fixes === fixes ? prev : { fixes, trace: toTrace(fixes) }));
+      const { fixes, track } = useExpeditionStore.getState();
+      setFolded((prev) => {
+        if (prev.fixes === fixes && prev.candidates === candidates) return prev;
+        const trace = prev.fixes === fixes ? prev.trace : toTrace(fixes);
+        const ghost = ghostOf(prev.ghost, fixes, track.distanceM, candidates);
+        return { fixes, candidates, trace, ghost };
+      });
     };
     // At once on return from the background and on the first fix, then on the cadence.
     if (hasFix) fold();
     const timer = setInterval(fold, TRACE_EVERY_MS);
     return () => clearInterval(timer);
-  }, [visible, hasFix]);
+  }, [visible, hasFix, candidates]);
 
   if (!visible) return placeholder;
 
-  const { trace } = folded;
+  const { trace, ghost } = folded;
   const here: [number, number] | null = last === null ? null : [last.lon, last.lat];
   if (here === null) {
     return (
@@ -171,6 +251,7 @@ export function LiveMap({
       <YStack style={{ flex: 1 }} minH={topInset + HUD_HEIGHT + minHeight} width="100%">
         {placeholder}
         <Waiting label={t("session.live_map_finding")} />
+        {overlay === undefined ? null : <Overlay>{overlay}</Overlay>}
       </YStack>
     );
   }
@@ -186,13 +267,18 @@ export function LiveMap({
     >
       <MapLibreMap
         style={{ flex: 1 }}
-        mapStyle={tilesEnabled ? mapStyle : mapStyleNoTiles}
+        mapStyle={basemapOf(tilesEnabled, styleId)}
         // The credit is `MapFootnote`, in the app's own type, as on the recap.
         attribution={false}
         logo={false}
         compass={false}
         touchRotate={false}
         touchPitch={false}
+        // Locked: no finger moves the map, so `following` never flips and no recentre button shows.
+        dragPan={!locked}
+        touchZoom={!locked}
+        doubleTapZoom={!locked}
+        doubleTapHoldZoom={!locked}
         // Only a finger stops the follow: the camera's own one-second glides report no interaction.
         onRegionWillChange={(event) => {
           if (event.nativeEvent.userInteraction) setFollowing(false);
@@ -214,6 +300,20 @@ export function LiveMap({
           initialViewState={{ center: here, zoom }}
           {...(following ? { center: here, zoom, duration: FOLLOW_MS, easing: "linear" } : {})}
         />
+
+        {/* Under today's line, drawn first. */}
+        {ghost === null ? null : (
+          // biome-ignore lint/correctness/useUniqueElementIds: MapLibre source and layer ids are its own style namespace, not DOM ids.
+          <GeoJSONSource id="live-route-ghost" data={ghost.line}>
+            {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
+            <Layer
+              id="live-route-ghost-line"
+              type="line"
+              layout={{ "line-cap": "round", "line-join": "round" }}
+              paint={ROUTE_GHOST_PAINT}
+            />
+          </GeoJSONSource>
+        )}
 
         {/* biome-ignore lint/correctness/useUniqueElementIds: MapLibre source and layer ids
             are its own style namespace, not DOM ids. */}
@@ -286,6 +386,8 @@ export function LiveMap({
       <YStack position="absolute" b="$3" l="$4" r="$4">
         <MapFootnote quiet={moving} />
       </YStack>
+
+      {overlay === undefined ? null : <Overlay>{overlay}</Overlay>}
 
       {styleLoaded ? null : <Waiting label={t("session.live_map_loading")} />}
     </YStack>

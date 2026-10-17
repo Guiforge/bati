@@ -6,6 +6,7 @@ import { VictoryView } from "@/components/session/VictoryView";
 import type { Quest } from "@/db/quests";
 import type { VillageBuilding } from "@/db/village";
 import "@/i18n";
+import { DEFAULT_LIVE_VIEW } from "@/src/gps/liveFigures";
 import { EMPTY, type OutingGoal } from "@/src/gps/track";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
@@ -193,10 +194,13 @@ describe("VictoryView, the walk it just celebrated", () => {
     mockPush.mockClear();
     mockGetVillageBuildings.mockReset();
     mockGetVillageBuildings.mockResolvedValue([road({})]);
-    useSettingsStore.setState({ language: "en", distanceUnit: "metric" });
+    useSettingsStore.setState({ language: "en", distanceUnit: "metric", outingDisplay: {} });
     // 2.5 km in 25 minutes of moving. Left in the store on purpose: `end()` stops the
     // subscriptions, it never clears the reading `saveSession` was paid from.
-    useExpeditionStore.setState({ track: { ...EMPTY, distanceM: 2500, movingMs: 1_500_000 } });
+    useExpeditionStore.setState({
+      track: { ...EMPTY, distanceM: 2500, movingMs: 1_500_000 },
+      view: DEFAULT_LIVE_VIEW,
+    });
   });
 
   test("reports the ground, the moving time and the pace the save was paid from", async () => {
@@ -205,6 +209,24 @@ describe("VictoryView, the walk it just celebrated", () => {
     expect(screen.getByTestId("victory-expedition-distance")).toHaveTextContent("2.50 km");
     expect(screen.getByTestId("victory-expedition-moving")).toHaveTextContent("25:00");
     expect(screen.getByTestId("victory-expedition-pace")).toHaveTextContent("10:00 /km");
+  });
+
+  // The victory reads the view frozen at the start, the one the panel read, so a ride plus indoor
+  // quest (no stored activity) says km/h here whatever the Walk tab says.
+  test("the victory reads the frozen view's rate, not the settings", async () => {
+    useExpeditionStore.setState({ view: { ...DEFAULT_LIVE_VIEW, rate: "speed" } });
+
+    await mountVictory();
+
+    expect(screen.getByTestId("victory-expedition-pace")).toHaveTextContent("6.0 km/h");
+  });
+
+  test("a walk the hero reads in km/h says so on the victory screen", async () => {
+    useExpeditionStore.setState({ view: { ...DEFAULT_LIVE_VIEW, rate: "speed" } });
+
+    await mountVictory();
+
+    expect(screen.getByTestId("victory-expedition-pace")).toHaveTextContent("6.0 km/h");
   });
 
   test("the same walk reads in miles when the hero asked for miles", async () => {

@@ -22,7 +22,12 @@ const mockThumb: {
   props: { segments: readonly (readonly LngLat[])[]; mapKey?: string } | null;
   onMapState: ((state: "none" | "pending" | "ready") => void) | null;
 } = { props: null, onMapState: null };
-const mockSettings = { language: "en", distanceUnit: "metric", mapTilesEnabled: true };
+const mockSettings = {
+  language: "en",
+  distanceUnit: "metric",
+  mapTilesEnabled: true,
+  outingDisplay: {},
+};
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("expo-router", () => ({

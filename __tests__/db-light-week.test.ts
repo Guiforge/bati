@@ -90,12 +90,11 @@ describe("db/lightWeek", () => {
     session(1, [[7, 10]]);
     await lw().refuseLightWeek(daysAgo(0.5));
     expect(await lw().lightWeekReason(NOW)).toBeNull();
-    // Past the silence, the same two sessions are old news: an answer needs two new ones.
-    const later = new Date(NOW.getTime() + 15 * DAY);
-    expect(await lw().lightWeekReason(later)).toBeNull();
-    session(-16, [[5, 10]]);
-    session(-16.5, [[5, 10]]);
-    expect(await lw().lightWeekReason(later)).toBe("under");
+    // Two fresh misses after the refusal: only the 14-day silence keeps the card quiet.
+    session(-5, [[5, 10]]);
+    session(-5.5, [[5, 10]]);
+    expect(await lw().lightWeekReason(new Date(NOW.getTime() + 6 * DAY))).toBeNull();
+    expect(await lw().lightWeekReason(new Date(NOW.getTime() + 15 * DAY))).toBe("under");
   });
 
   test("an accepted week runs 7 days and takes one round off, unless the rounds are hand-set", async () => {

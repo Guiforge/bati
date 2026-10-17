@@ -57,13 +57,19 @@ const {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const nameOf = (r: { enName: string; frName: string; deName: string; esName: string }) => ({
+const nameOf = (r: {
+  enName: string;
+  frName: string;
+  deName: string;
+  esName: string;
+  zhName: string;
+}) => ({
   en: r.enName,
   fr: r.frName,
   de: r.deName,
   es: r.esName,
   ru: r.enName,
-  zh: r.enName,
+  zh: r.zhName,
 });
 
 /** A left-joined exercise: all four names, or none. */
@@ -72,6 +78,7 @@ const joinedName = (r: {
   frName: string | null;
   deName: string | null;
   esName: string | null;
+  zhName: string | null;
 }): Localized | null =>
   r.enName == null
     ? null
@@ -81,7 +88,7 @@ const joinedName = (r: {
         de: r.deName ?? "",
         es: r.esName ?? "",
         ru: r.enName,
-        zh: r.enName,
+        zh: r.zhName ?? "",
       };
 
 const titleOf = (r: {
@@ -89,6 +96,7 @@ const titleOf = (r: {
   frTitle: string | null;
   deTitle: string | null;
   esTitle: string | null;
+  zhTitle: string | null;
 }): Localized | null =>
   r.enTitle == null
     ? null
@@ -98,7 +106,7 @@ const titleOf = (r: {
         de: r.deTitle ?? "",
         es: r.esTitle ?? "",
         ru: r.enTitle,
-        zh: r.enTitle,
+        zh: r.zhTitle ?? "",
       };
 
 // ------------------------------------------------------------
@@ -219,6 +227,7 @@ export async function getStarterWall(limit = 4): Promise<WallEntry[]> {
       frName: exercises.frName,
       deName: exercises.deName,
       esName: exercises.esName,
+      zhName: exercises.zhName,
       imagePath: exercises.imagePath,
       perSide: exercises.perSide,
       type: questExercises.targetType,
@@ -306,6 +315,7 @@ async function readRecordRows(
               frName: exercises.frName,
               deName: exercises.deName,
               esName: exercises.esName,
+              zhName: exercises.zhName,
             })
             .from(exercises)
             .where(eq(exercises.id, exerciseId));
@@ -495,6 +505,7 @@ async function bestSessionBy(metric: "duration" | "xp" | "ground"): Promise<Sess
       frTitle: quests.frTitle,
       deTitle: quests.deTitle,
       esTitle: quests.esTitle,
+      zhTitle: quests.zhTitle,
     })
     .from(completedQuest)
     .leftJoin(quests, eq(quests.id, completedQuest.questId))
@@ -517,6 +528,7 @@ async function mostRepsSession(): Promise<SessionBest | null> {
       frTitle: quests.frTitle,
       deTitle: quests.deTitle,
       esTitle: quests.esTitle,
+      zhTitle: quests.zhTitle,
     })
     .from(completedQuest)
     .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
@@ -573,6 +585,7 @@ export async function getBossKills(): Promise<BossKill[]> {
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      zhTitle: adventures.zhTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
       finishedAt: adventureRuns.finishedAt,
@@ -622,7 +635,7 @@ export async function getBossKills(): Promise<BossKill[]> {
             de: run.deTitle,
             es: run.esTitle,
             ru: run.enTitle,
-            zh: run.enTitle,
+            zh: run.zhTitle,
           },
         ),
         imagePath: run.bossImagePath ?? run.imagePath,
@@ -983,6 +996,7 @@ type Hit = {
   frName: string | null;
   deName: string | null;
   esName: string | null;
+  zhName: string | null;
   imagePath: string | null;
 };
 
@@ -1062,6 +1076,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      zhTitle: adventures.zhTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
     })
@@ -1078,7 +1093,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
         de: a.deTitle,
         es: a.esTitle,
         ru: a.enTitle,
-        zh: a.enTitle,
+        zh: a.zhTitle,
       }),
       imagePath: a.bossImagePath ?? a.imagePath,
     }));
@@ -1110,6 +1125,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      zhTitle: adventures.zhTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
     })
@@ -1146,6 +1162,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       frName: exercises.frName,
       deName: exercises.deName,
       esName: exercises.esName,
+      zhName: exercises.zhName,
       imagePath: exercises.imagePath,
     })
     .from(bossDamageLog)
@@ -1199,7 +1216,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       de: step.deTitle,
       es: step.esTitle,
       ru: step.enTitle,
-      zh: step.enTitle,
+      zh: step.zhTitle,
     }),
     bossImagePath: step.bossImagePath ?? step.imagePath,
     felledAt,

@@ -440,6 +440,7 @@ function BuildingDetail({
                     frTitle: session.frTitle ?? "",
                     deTitle: session.deTitle ?? "",
                     esTitle: session.esTitle ?? "",
+                    zhTitle: session.zhTitle ?? "",
                   },
                   language,
                 )

@@ -63,7 +63,7 @@ const MAX_IMAGE_SIDE = 1_024;
 const MAX_SLOTS = 40;
 const MAX_FILE_BYTES = 8_000_000;
 
-type Text4 = { en: string; fr: string; de: string; es: string };
+type Text4 = { en: string; fr: string; de: string; es: string; zh: string };
 
 type OwnMovement = {
   uuid: string;
@@ -145,12 +145,19 @@ export function questToFile(quest: QuestTemplate, catalogue: readonly Exercise[]
     version: VERSION,
     quest: {
       uuid: nameOf(quest.uuid, `Quest ${quest.id}`),
-      title: { en: quest.enTitle, fr: quest.frTitle, de: quest.deTitle, es: quest.esTitle },
+      title: {
+        en: quest.enTitle,
+        fr: quest.frTitle,
+        de: quest.deTitle,
+        es: quest.esTitle,
+        zh: quest.zhTitle,
+      },
       description: {
         en: quest.enDescription,
         fr: quest.frDescription,
         de: quest.deDescription,
         es: quest.esDescription,
+        zh: quest.zhDescription,
       },
       rounds: quest.rounds,
       restSeconds: quest.restSeconds,
@@ -280,7 +287,7 @@ function text4(value: unknown, max: number, required: boolean): Text4 {
   const en = required ? name(value.en, max) : read(value.en);
   // A missing translation reads as English, as every untranslated seed row already does.
   const or = (v: unknown) => (v === undefined ? en : read(v) || en);
-  return { en, fr: or(value.fr), de: or(value.de), es: or(value.es) };
+  return { en, fr: or(value.fr), de: or(value.de), es: or(value.es), zh: or(value.zh) };
 }
 
 /**
@@ -506,7 +513,7 @@ export function editQuestFile(file: QuestFile, edits: QuestFileEdits): QuestFile
     quest: {
       ...file.quest,
       uuid: edits.asCopy ? uuidv7() : file.quest.uuid,
-      title: renamed ? { en: title, fr: title, de: title, es: title } : file.quest.title,
+      title: renamed ? { en: title, fr: title, de: title, es: title, zh: title } : file.quest.title,
     },
     slots: file.slots.filter((_, i) => edits.keep[i] === true),
   };
@@ -555,10 +562,12 @@ export async function importQuest(file: QuestFile): Promise<ImportedQuest> {
     frTitle: q.title.fr,
     deTitle: q.title.de,
     esTitle: q.title.es,
+    zhTitle: q.title.zh,
     enDescription: q.description.en,
     frDescription: q.description.fr,
     deDescription: q.description.de,
     esDescription: q.description.es,
+    zhDescription: q.description.zh,
     rounds: q.rounds,
     restSeconds: q.restSeconds,
     roundRestSeconds: q.roundRestSeconds,

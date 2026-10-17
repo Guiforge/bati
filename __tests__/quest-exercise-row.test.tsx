@@ -113,6 +113,7 @@ const squat = {
   frName: "Squat",
   deName: "Kniebeuge",
   esName: "Sentadilla",
+  zhName: "Sentadilla",
   imagePath: "",
 };
 

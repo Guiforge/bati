@@ -313,6 +313,7 @@ export type SuggestedQuest = {
   frTitle: string;
   deTitle: string;
   esTitle: string;
+  zhTitle: string;
   matchingMuscles: MuscleCode[];
   matchScore: number; // Higher = better match for weak areas
 };
@@ -353,6 +354,7 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
       frTitle: quests.frTitle,
       deTitle: quests.deTitle,
       esTitle: quests.esTitle,
+      zhTitle: quests.zhTitle,
       muscle: exerciseMuscles.muscle,
     })
     .from(quests)
@@ -364,7 +366,14 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
   // Group by quest and count matching muscles
   const questMap = new Map<
     number,
-    { enTitle: string; frTitle: string; deTitle: string; esTitle: string; muscles: Set<MuscleCode> }
+    {
+      enTitle: string;
+      frTitle: string;
+      deTitle: string;
+      esTitle: string;
+      zhTitle: string;
+      muscles: Set<MuscleCode>;
+    }
   >();
 
   for (const row of rows) {
@@ -374,6 +383,7 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
         frTitle: row.frTitle,
         deTitle: row.deTitle,
         esTitle: row.esTitle,
+        zhTitle: row.zhTitle,
         muscles: new Set(),
       });
     }
@@ -392,6 +402,7 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
       frTitle: data.frTitle,
       deTitle: data.deTitle,
       esTitle: data.esTitle,
+      zhTitle: data.zhTitle,
       matchingMuscles: [...data.muscles],
       matchScore: data.muscles.size,
     });

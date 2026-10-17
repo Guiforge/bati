@@ -55,6 +55,7 @@ export function bossDisplayName(
     frName: string;
     deName: string;
     esName: string;
+    zhName: string;
     tier?: number;
     shiny?: boolean;
   },

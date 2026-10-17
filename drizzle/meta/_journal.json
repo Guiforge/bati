@@ -519,6 +519,20 @@
       "when": 1792108800000,
       "tag": "0073_the_back_that_pulls_back",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "6",
+      "when": 1792195200000,
+      "tag": "0074_chinese_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "6",
+      "when": 1792224000000,
+      "tag": "0075_the_catalogue_in_chinese",
+      "breakpoints": true
     }
   ]
 }

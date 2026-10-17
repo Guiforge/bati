@@ -63,6 +63,7 @@ function building(
     frName: code,
     deName: code,
     esName: code,
+    zhName: code,
     unlockCondition: "",
     relatedMuscle: def.relatedMuscle,
     driver: "tier",

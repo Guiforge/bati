@@ -264,7 +264,13 @@ describe("BigFeastView", () => {
       source: "rung",
       reachedAtLevel: 47,
       practice: null,
-      movement: { enName: "Diamond push-up", frName: "Pompe diamant", deName: "", esName: "" },
+      movement: {
+        enName: "Diamond push-up",
+        frName: "Pompe diamant",
+        deName: "",
+        esName: "",
+        zhName: "",
+      },
     };
     const show = (feast: Feast) =>
       render(

@@ -102,3 +102,6 @@ ds-bundle/
 .design-sync/.cache/
 .design-sync/learnings/
 .design-sync/node_modules
+
+# WorkBuddy agent state (session memory, not project data)
+.workbuddy/

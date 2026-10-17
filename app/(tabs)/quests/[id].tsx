@@ -434,12 +434,18 @@ export default function QuestDetails() {
   const fromAdventure = Boolean(rawAdventure) && Number.isFinite(Number(rawAdventure));
 
   const goToGallery = useCallback(() => {
+    // Every door that leaves for another tab first unwinds this one to the gallery: left on the
+    // stack, the quest was what the Quests tab reopened on, and its back jumped to that tab.
+    const leaveTo = (href: string) => {
+      router.dismissTo("/quests");
+      router.navigate(href as never);
+    };
     const raw = rawAdventure;
     const adventureId = Number(raw);
     // A malformed deep link (literal "undefined", non-numeric garbage) is truthy but not a real
     // id — Number.isFinite catches it, same guard as questId/adventureId above in this file.
     if (raw && Number.isFinite(adventureId)) {
-      router.navigate(`/adventures/${adventureId}` as never);
+      leaveTo(`/adventures/${adventureId}`);
       return;
     }
     // The band's Set up shortcut: the hero was on Home a tap ago, and it is a detour on the way
@@ -449,13 +455,13 @@ export default function QuestDetails() {
       // `navigate`, not `dismissTo`: Home is not on this tab's stack, so there is nothing here to
       // unwind to and `dismissTo` simply does nothing. Same reason the adventure case above uses
       // it, and the same mistake the comment there was already warning about.
-      router.navigate("/");
+      leaveTo("/");
       return;
     }
     // `navigate` for the same reason: the Journal is another tab's stack, and its detail (or
     // list) is already on it.
     if (journalBack) {
-      router.navigate(journalBack as never);
+      leaveTo(journalBack);
       return;
     }
     router.dismissTo("/quests");

@@ -171,7 +171,8 @@ describe("quests/[id] chevron", () => {
     await fireEvent.press(getByLabelText("Go back"));
 
     expect(mockNavigate).toHaveBeenCalledWith("/adventures/12");
-    expect(mockDismissTo).not.toHaveBeenCalled();
+    // The quest leaves this tab's stack first, or the Quests tab reopens on it.
+    expect(mockDismissTo).toHaveBeenCalledWith("/quests");
   });
 
   test("with no adventureId, the chevron dismisses to the gallery", async () => {
@@ -206,7 +207,7 @@ describe("quests/[id] chevron", () => {
     // called on and does nothing at all when the target is not in it. Verified on a device, where
     // the screen simply did not move.
     expect(mockNavigate).toHaveBeenCalledWith("/");
-    expect(mockDismissTo).not.toHaveBeenCalled();
+    expect(mockDismissTo).toHaveBeenCalledWith("/quests");
   });
 
   test("and so does the hardware back, so the two never disagree", async () => {
@@ -240,7 +241,7 @@ describe("quests/[id] chevron", () => {
     const press = backHandlerSpy.mock.calls.at(-1)?.[1] as () => boolean;
     expect(press()).toBe(true);
     expect(mockNavigate).toHaveBeenCalledWith("/journal/42");
-    expect(mockDismissTo).not.toHaveBeenCalled();
+    expect(mockDismissTo).toHaveBeenCalledWith("/quests");
   });
 
   test("from the Journal without a session (Stats suggestions), back lands on the Journal", async () => {

@@ -299,6 +299,10 @@ at run start; adventure runs are not synced, so a second phone decides for itsel
   (`db/progress.ts`), so sync has nothing of its own to carry for them and a release that only
   changes how they are read does not change any device's fingerprint. It is a shared SQL fragment,
   not a view: a backup holding a view is refused (`validateBackup`).
+- **The map style** (`mapStyle`) is carried by the backup and never merged, like `mapTiles`: the
+  tile consent is per device, and so is its look. It is outside `MERGED_PREFERENCES`, so changing it
+  moves no fingerprint and uploads nothing. A value an older build wrote is read by a newer one as
+  the default (`ember`) if unknown.
 - **The outing display** (`outingDisplay`) is a merged preference: one JSON blob, last writer wins,
   back to the original writes `{}` and never deletes the row. The blob also holds `bigMap` (layout)
   and `lap` (metric) since phase 2; a phase 1 build reads them as defaults, and **its edit of any

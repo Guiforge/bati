@@ -31,12 +31,7 @@ import {
   formatRate,
   formatRateAt,
 } from "@/constants/distanceFormat";
-import {
-  LEAGUE_PIP_PAINT,
-  mapStyle,
-  mapStyleNoTiles,
-  TRACE_GLOW_PAINT,
-} from "@/constants/mapStyle";
+import { basemapOf, LEAGUE_PIP_PAINT, TRACE_GLOW_PAINT } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
 import { displayLocomotion } from "@/db/expeditions";
 import { outingSession, pointsOf } from "@/db/gps";
@@ -348,6 +343,7 @@ export default function ExpeditionRecapScreen() {
   // Off unless the hero has said yes. The whole map branch below reads this, and the style it
   // picks is what decides whether this screen touches a network at all.
   const mapTilesEnabled = useSettingsStore((s) => s.mapTilesEnabled);
+  const styleId = useSettingsStore((s) => s.mapStyle);
 
   const sessionUuid = Array.isArray(params.session) ? params.session[0] : params.session;
 
@@ -415,7 +411,7 @@ export default function ExpeditionRecapScreen() {
   // The refused style has no vector source and no `glyphs`, so MapLibre has nothing to fetch:
   // the trace is drawn on the app's own ground and that is the whole picture. See
   // constants/mapStyle.ts.
-  const basemap = mapTilesEnabled ? mapStyle : mapStyleNoTiles;
+  const basemap = basemapOf(mapTilesEnabled, styleId);
 
   // Neither line belongs under a screen that never drew a map: there is no credit to give and
   // nothing to switch on.

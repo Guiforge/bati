@@ -311,7 +311,13 @@
     "workout_guide": "workout-guide",
     "workout_guide_subtitle": "Dessins de poses par Bryl Lim",
     "licenses_title": "Licences open source",
-    "licenses_body": "Chaque bibliothèque livrée avec Bati, et la licence sous laquelle elle est publiée."
+    "licenses_body": "Chaque bibliothèque livrée avec Bati, et la licence sous laquelle elle est publiée.",
+    "map_styles_title": "Styles de carte",
+    "map_styles_note": "Les styles Nuit et Fjord viennent d'OpenFreeMap, qui reprend les styles OpenMapTiles. Leur notice suit, comme leur licence le demande.",
+    "openfreemap_styles": "Styles OpenFreeMap",
+    "openfreemap_styles_subtitle": "Licence MIT",
+    "openmaptiles_styles": "OpenMapTiles Dark Matter et Fiord Color",
+    "openmaptiles_styles_subtitle": "Code BSD 3-Clause, design CC BY 4.0, d'après CartoDB Basemaps de Stamen et Paul Norman"
   },
   "dark": "Sombre",
   "errors": {
@@ -1256,7 +1262,12 @@
     "outing_display_default": "Comme d'origine",
     "outing_display_custom": "Réglé",
     "update_check": "Chercher les mises à jour",
-    "update_check_note": "Tant que c'est désactivé, Bati ne demande rien. Une fois activé, l'app demande une fois par jour à api.github.com si une version plus récente est parue, ce qui apprend à GitHub ton adresse IP et l'heure, rien d'autre. F-Droid et le Play Store guettent déjà pour toi : cette ligne sert à une copie installée à la main depuis un APK."
+    "update_check_note": "Tant que c'est désactivé, Bati ne demande rien. Une fois activé, l'app demande une fois par jour à api.github.com si une version plus récente est parue, ce qui apprend à GitHub ton adresse IP et l'heure, rien d'autre. F-Droid et le Play Store guettent déjà pour toi : cette ligne sert à une copie installée à la main depuis un APK.",
+    "map_style": "Style de carte",
+    "map_style_ember": "Braise",
+    "map_style_dark": "Nuit",
+    "map_style_fiord": "Fjord",
+    "map_style_note": "Nuit et Fjord sont les styles d'OpenFreeMap. Chacun dessine ses tuiles depuis tiles.openfreemap.org."
   },
   "splash": {
     "loading": "Construction du village…"

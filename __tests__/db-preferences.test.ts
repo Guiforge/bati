@@ -257,6 +257,23 @@ describe("db/preferences", () => {
     expect(await preferences.getMapTilesEnabled()).toBe(false);
   });
 
+  test("the map style is a per-device look: ember by default, a round trip, an unknown id reads ember", async () => {
+    const prefs = require("../db/preferences") as typeof import("../db/preferences");
+    const { preferences } = prefs;
+
+    expect(await prefs.getPreference("mapStyle")).toBeNull();
+    expect(await preferences.getMapStyle()).toBe("ember");
+
+    await preferences.setMapStyle("fiord");
+    expect(await preferences.getMapStyle()).toBe("fiord");
+    await preferences.setMapStyle("dark");
+    expect(await preferences.getMapStyle()).toBe("dark");
+
+    // A style a newer build wrote, unknown here.
+    await prefs.setPreference("mapStyle", "midnight");
+    expect(await preferences.getMapStyle()).toBe("ember");
+  });
+
   test("the custom avatar: legacy path read, ported with its own date, preset as an empty row", async () => {
     const prefs = require("../db/preferences") as typeof import("../db/preferences");
     const { preferences } = prefs;

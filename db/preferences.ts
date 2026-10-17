@@ -1,5 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { getLocales } from "expo-localization";
+import { MAP_STYLE_IDS, type MapStyleId } from "@/constants/mapStyle";
 import { type OutingDisplay, parseOutingDisplay } from "@/constants/outingDisplay";
 import { reportError } from "../src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
@@ -617,6 +618,20 @@ export const preferences = {
 
   async setMapTilesEnabled(enabled: boolean): Promise<void> {
     await setPreference("mapTiles", String(enabled));
+  },
+
+  /**
+   * Which basemap look the hero chose, per device like `mapTiles` (not merged, not in
+   * `DEVICE_LOCAL_PREFERENCES`: the backup carries it). No default is written; a value this build
+   * does not know, from a newer one, reads as the default.
+   */
+  async getMapStyle(): Promise<MapStyleId> {
+    const stored = await getPreference("mapStyle");
+    return MAP_STYLE_IDS.find((id) => id === stored) ?? "ember";
+  },
+
+  async setMapStyle(id: MapStyleId): Promise<void> {
+    await setPreference("mapStyle", id);
   },
 
   /**

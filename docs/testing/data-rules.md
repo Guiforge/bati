@@ -123,7 +123,7 @@ one session changes it; adding a tombstone changes it.
 **R11. Never compared and never merged:** derived caches (`streak_*`, achievements), favourites
 (`favourite_quests`), quest configs (`quest:<id>:config`), campaigns, boss fights and boss damage
 log, adventure runs, set-aside exercises, `language`, `warmupEnabled`, `prepMode`,
-`distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `villagersEnabled`, `bigFeastsShown`
+`distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `mapStyle` (the basemap look; carried by the backup like `mapTiles`, never merged, never news), `villagersEnabled`, `bigFeastsShown`
 (a JSON list of the big feasts this phone already showed; it only decides display), `notesSeenVersion`
 (the release notes this phone already showed; per device, it only decides which Home notice is up), and every
 other preference not in R7. They are excluded by being absent from the whitelist `MERGED_PREFERENCES`

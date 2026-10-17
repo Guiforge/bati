@@ -179,7 +179,12 @@
     "outing_display_default": "De fábrica",
     "outing_display_custom": "Personalizado",
     "update_check": "Buscar actualizaciones",
-    "update_check_note": "Mientras está desactivado, Bati no pregunta nada. Si lo activas, la app pregunta una vez al día a api.github.com si ha salido una versión más reciente, lo que le indica a GitHub tu dirección IP y la hora, nada más. F-Droid y Play Store ya lo vigilan por ti: esta fila es para una copia instalada a mano desde un APK."
+    "update_check_note": "Mientras está desactivado, Bati no pregunta nada. Si lo activas, la app pregunta una vez al día a api.github.com si ha salido una versión más reciente, lo que le indica a GitHub tu dirección IP y la hora, nada más. F-Droid y Play Store ya lo vigilan por ti: esta fila es para una copia instalada a mano desde un APK.",
+    "map_style": "Estilo de mapa",
+    "map_style_ember": "Brasa",
+    "map_style_dark": "Noche",
+    "map_style_fiord": "Fiordo",
+    "map_style_note": "Noche y Fiordo son los estilos de OpenFreeMap. Cada uno dibuja sus teselas desde tiles.openfreemap.org."
   },
   "credits": {
     "title": "Créditos",
@@ -209,7 +214,13 @@
     "cc_by_sa_40": "Creative Commons BY-SA 4.0",
     "cc_by_sa_40_subtitle": "Condiciones de la licencia: compartir igual",
     "licenses_title": "Licencias de código abierto",
-    "licenses_body": "Cada biblioteca que incluye Bati y la licencia con la que se publica."
+    "licenses_body": "Cada biblioteca que incluye Bati y la licencia con la que se publica.",
+    "map_styles_title": "Estilos de mapa",
+    "map_styles_note": "Los estilos Noche y Fiordo vienen de OpenFreeMap, que se basa en los estilos de OpenMapTiles. Su aviso sigue, como pide su licencia.",
+    "openfreemap_styles": "Estilos de OpenFreeMap",
+    "openfreemap_styles_subtitle": "Licencia MIT",
+    "openmaptiles_styles": "OpenMapTiles Dark Matter y Fiord Color",
+    "openmaptiles_styles_subtitle": "Código BSD 3-Clause, diseño CC BY 4.0, a partir de CartoDB Basemaps de Stamen y Paul Norman"
   },
   "progression": {
     "new_rung_from": "Ejercicio superado: {{name}}",

@@ -46,6 +46,7 @@ const prefs = {
   getSoundEnabled: jest.fn<Promise<boolean>, []>(),
   getDistanceUnit: jest.fn<Promise<"metric" | "imperial">, []>(),
   getMapTilesEnabled: jest.fn<Promise<boolean>, []>(),
+  getMapStyle: jest.fn<Promise<"ember" | "dark" | "fiord">, []>(),
   getUpdateCheckEnabled: jest.fn<Promise<boolean>, []>(),
   getPrepMode: jest.fn<Promise<"timer" | "tap">, []>(),
   getLanguageChosenOn: jest.fn<Promise<string | null>, []>(),
@@ -60,6 +61,7 @@ const prefs = {
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
   setDistanceUnit: jest.fn().mockResolvedValue(undefined),
   setMapTilesEnabled: jest.fn().mockResolvedValue(undefined),
+  setMapStyle: jest.fn().mockResolvedValue(undefined),
   setUpdateCheckEnabled: jest.fn().mockResolvedValue(undefined),
   setPrepMode: jest.fn().mockResolvedValue(undefined),
 };
@@ -111,6 +113,7 @@ function storedSettings() {
   prefs.getSoundEnabled.mockResolvedValue(false);
   prefs.getDistanceUnit.mockResolvedValue("imperial");
   prefs.getMapTilesEnabled.mockResolvedValue(true);
+  prefs.getMapStyle.mockResolvedValue("fiord");
   prefs.getUpdateCheckEnabled.mockResolvedValue(true);
   prefs.getPrepMode.mockResolvedValue("tap");
   prefs.getOutingDisplay.mockResolvedValue({ ride: { big: "rate" } });
@@ -130,6 +133,7 @@ const DEFAULTS = {
   // The two booleans here whose default is a refusal: between them they decide whether the app
   // makes a network request at all.
   mapTilesEnabled: false,
+  mapStyle: "ember" as const,
   updateCheckEnabled: false,
   prepMode: "timer" as const,
   outingDisplay: {},
@@ -158,6 +162,7 @@ describe("useSettingsStore", () => {
       soundEnabled: false,
       distanceUnit: "imperial",
       mapTilesEnabled: true,
+      mapStyle: "fiord",
       updateCheckEnabled: true,
       prepMode: "tap",
       outingDisplay: { ride: { big: "rate" } },
@@ -465,6 +470,7 @@ describe("useSettingsStore", () => {
     await s().setSoundEnabled(false);
     await s().setDistanceUnit("imperial");
     await s().setMapTilesEnabled(true);
+    await s().setMapStyle("dark");
     await s().setUpdateCheckEnabled(true);
     await s().setPrepMode("tap");
 
@@ -477,6 +483,7 @@ describe("useSettingsStore", () => {
       soundEnabled: false,
       distanceUnit: "imperial",
       mapTilesEnabled: true,
+      mapStyle: "dark",
       updateCheckEnabled: true,
       prepMode: "tap",
     });
@@ -489,6 +496,7 @@ describe("useSettingsStore", () => {
     expect(prefs.setSoundEnabled).toHaveBeenCalledWith(false);
     expect(prefs.setDistanceUnit).toHaveBeenCalledWith("imperial");
     expect(prefs.setMapTilesEnabled).toHaveBeenCalledWith(true);
+    expect(prefs.setMapStyle).toHaveBeenCalledWith("dark");
     expect(prefs.setUpdateCheckEnabled).toHaveBeenCalledWith(true);
     expect(prefs.setPrepMode).toHaveBeenCalledWith("tap");
   });

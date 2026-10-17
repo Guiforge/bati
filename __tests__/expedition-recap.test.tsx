@@ -220,6 +220,7 @@ beforeEach(() => {
     distanceUnit: "metric",
     language: "en",
     mapTilesEnabled: true,
+    mapStyle: "ember",
     outingDisplay: {},
   });
 });
@@ -642,6 +643,25 @@ describe("a hero who has not allowed the basemap", () => {
     // Not by handing over an empty style either: the ground the trace is drawn on is still there.
     expect(style).toContain('"background"');
     expect(style).toContain('"sources":{}');
+  });
+
+  test("and a chosen style does not change that: no tiles, no fetch, whatever the look", async () => {
+    useSettingsStore.setState({ mapStyle: "dark" });
+    await mount();
+    expect(await screen.findByTestId("recap-map")).toBeTruthy();
+    const style = JSON.stringify(mockMapStyle.mock.calls.at(-1)?.[0]);
+    expect(style).not.toMatch(/https?:\/\//);
+    expect(style).toContain('"sources":{}');
+  });
+
+  test("with the tiles on, the chosen style is the one MapLibre gets", async () => {
+    useSettingsStore.setState({ mapTilesEnabled: true, mapStyle: "dark" });
+    await mount();
+    expect(await screen.findByTestId("recap-map")).toBeTruthy();
+    const style = JSON.stringify(mockMapStyle.mock.calls.at(-1)?.[0]);
+    // OpenFreeMap's own dark ground and its sprite, which Braise does not carry.
+    expect(style).toContain("rgb(12,12,12)");
+    expect(style).toContain("tiles.openfreemap.org/sprites");
   });
 
   test("the whole style comes back once the hero has said yes", async () => {

@@ -10,12 +10,7 @@ import { AppText } from "@/components/common/AppText";
 import { MapFootnote } from "@/components/session/MapFootnote";
 import { MapRecenterButton } from "@/components/session/MapRecenterButton";
 import { HUD_HEIGHT } from "@/components/session/sessionArt";
-import {
-  LEAGUE_PIP_PAINT,
-  mapStyle,
-  mapStyleNoTiles,
-  TRACE_GLOW_PAINT,
-} from "@/constants/mapStyle";
+import { basemapOf, LEAGUE_PIP_PAINT, TRACE_GLOW_PAINT } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
 import type { Locomotion } from "@/db/schema";
 import { toTrace } from "@/src/gps/trace";
@@ -158,6 +153,7 @@ export function LiveMap({
   const last = useExpeditionStore((s) => (visible ? (s.fixes.at(-1) ?? null) : null));
   const hasFix = last !== null;
   const tilesEnabled = useSettingsStore((s) => s.mapTilesEnabled);
+  const styleId = useSettingsStore((s) => s.mapStyle);
   /** Under way: the auto-pause has not caught the hero standing, and the sky has been found. */
   const moving = useExpeditionStore((s) => s.track.startedAt !== null && !s.track.paused);
 
@@ -211,7 +207,7 @@ export function LiveMap({
     >
       <MapLibreMap
         style={{ flex: 1 }}
-        mapStyle={tilesEnabled ? mapStyle : mapStyleNoTiles}
+        mapStyle={basemapOf(tilesEnabled, styleId)}
         // The credit is `MapFootnote`, in the app's own type, as on the recap.
         attribution={false}
         logo={false}

@@ -871,6 +871,23 @@ describe("the crest follows the journal, not the device", () => {
     await converged(peerFile);
   });
 
+  test("mapStyle is the device's: never news, never merged", async () => {
+    addSession(t.sqlite, 1_000);
+    const dark = await peer("peer-map-style.db", (sqlite) =>
+      setPref(sqlite, "mapStyle", "dark", 3_000),
+    );
+    expect(await backup().compareWithPeer(dark)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+    await merge().mergePeer(dark);
+    expect(prefValue("mapStyle")).toBeUndefined();
+
+    setPref(t.sqlite, "mapStyle", "fiord", 1_000);
+    await merge().mergePeer(dark);
+    expect(prefValue("mapStyle")).toBe("fiord");
+  });
+
   test("outingDisplay is news once, then level", async () => {
     addSession(t.sqlite, 1_000);
     const withRow = await peer("with-display.db", (sqlite) =>

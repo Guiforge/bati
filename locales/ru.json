@@ -185,7 +185,12 @@
     "update_check": "Проверить обновления",
     "update_check_note": "Выключено — Bati ничего не спрашивает. Включено — раз в день спрашивает api.github.com, не вышла ли новая версия, что сообщает GitHub твой IP-адрес и время, и ничего больше. F-Droid и Play Store и так следят за обновлениями за тебя: эта строка — для копии, установленной вручную из APK.",
     "crest_animal": "Your animal",
-    "village_section": "Your village"
+    "village_section": "Your village",
+    "map_style": "Стиль карты",
+    "map_style_ember": "Угли",
+    "map_style_dark": "Ночь",
+    "map_style_fiord": "Фьорд",
+    "map_style_note": "Ночь и Фьорд это стили OpenFreeMap. Каждый берёт свои тайлы с tiles.openfreemap.org."
   },
   "credits": {
     "title": "Благодарности",
@@ -215,7 +220,13 @@
     "cc_by_sa_40": "Creative Commons BY-SA 4.0",
     "cc_by_sa_40_subtitle": "Условия лицензии: share-alike",
     "licenses_title": "Лицензии открытого ПО",
-    "licenses_body": "Каждая библиотека, входящая в Bati, и лицензия, под которой она выпущена."
+    "licenses_body": "Каждая библиотека, входящая в Bati, и лицензия, под которой она выпущена.",
+    "map_styles_title": "Стили карты",
+    "map_styles_note": "Стили Ночь и Фьорд взяты из OpenFreeMap, который построен на стилях OpenMapTiles. Их уведомление ниже, как требует их лицензия.",
+    "openfreemap_styles": "Стили OpenFreeMap",
+    "openfreemap_styles_subtitle": "Лицензия MIT",
+    "openmaptiles_styles": "OpenMapTiles Dark Matter и Fiord Color",
+    "openmaptiles_styles_subtitle": "Код BSD 3-Clause, дизайн CC BY 4.0, по мотивам CartoDB Basemaps от Stamen и Paul Norman"
   },
   "progression": {
     "new_rung_from": "Освоено: {{name}}",

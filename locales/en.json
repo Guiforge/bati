@@ -173,7 +173,12 @@
     "outing_display_default": "As shipped",
     "outing_display_custom": "Customised",
     "update_check": "Check for updates",
-    "update_check_note": "Off, Bati asks nothing. On, it asks api.github.com once a day whether a newer version has been published, which tells GitHub your IP address and the time and nothing else. F-Droid and the Play Store already watch for you: this row is for a copy installed by hand from an APK."
+    "update_check_note": "Off, Bati asks nothing. On, it asks api.github.com once a day whether a newer version has been published, which tells GitHub your IP address and the time and nothing else. F-Droid and the Play Store already watch for you: this row is for a copy installed by hand from an APK.",
+    "map_style": "Map style",
+    "map_style_ember": "Ember",
+    "map_style_dark": "Night",
+    "map_style_fiord": "Fjord",
+    "map_style_note": "Night and Fjord are OpenFreeMap's styles. Each one draws its tiles from tiles.openfreemap.org."
   },
   "credits": {
     "title": "Credits",
@@ -203,7 +208,13 @@
     "cc_by_sa_40": "Creative Commons BY-SA 4.0",
     "cc_by_sa_40_subtitle": "Licence terms: share-alike",
     "licenses_title": "Open source licences",
-    "licenses_body": "Every library Bati ships with, and the licence it is released under."
+    "licenses_body": "Every library Bati ships with, and the licence it is released under.",
+    "map_styles_title": "Map styles",
+    "map_styles_note": "The Night and Fjord styles come from OpenFreeMap, which builds on the OpenMapTiles styles. Their notice follows, as their licence asks.",
+    "openfreemap_styles": "OpenFreeMap styles",
+    "openfreemap_styles_subtitle": "MIT licence",
+    "openmaptiles_styles": "OpenMapTiles Dark Matter and Fiord Color",
+    "openmaptiles_styles_subtitle": "Code BSD 3-Clause, design CC BY 4.0, after CartoDB Basemaps by Stamen and Paul Norman"
   },
   "progression": {
     "new_rung_from": "Mastered: {{name}}",

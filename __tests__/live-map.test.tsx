@@ -197,6 +197,13 @@ test("unlocked, every finger gesture is on", async () => {
   });
 });
 
+test("tiles on, the chosen style is the one handed to MapLibre; tiles off, nothing to fetch", async () => {
+  useSettingsStore.setState({ mapStyle: "fiord" });
+  await mount([walking(0), walking(1)], true);
+  expect(lastStyle()).toContain("#45516E");
+  expect(lastStyle()).toContain("tiles.openfreemap.org/sprites");
+});
+
 test("says the phone blocks the network instead of crediting tiles that never arrive", async () => {
   mockNetworkBlocked.mockReturnValue(true);
   await mount([walking(0), walking(1)], true);

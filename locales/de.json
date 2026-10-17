@@ -173,7 +173,12 @@
     "outing_display_default": "Wie ausgeliefert",
     "outing_display_custom": "Angepasst",
     "update_check": "Nach Updates suchen",
-    "update_check_note": "Solange es ausgeschaltet ist, fragt Bati nichts. Eingeschaltet fragt die App einmal am Tag bei api.github.com nach, ob eine neuere Version erschienen ist, was GitHub deine IP-Adresse und die Uhrzeit verrät, sonst nichts. F-Droid und der Play Store achten schon für dich darauf: diese Zeile ist für eine von Hand aus einer APK installierte Kopie."
+    "update_check_note": "Solange es ausgeschaltet ist, fragt Bati nichts. Eingeschaltet fragt die App einmal am Tag bei api.github.com nach, ob eine neuere Version erschienen ist, was GitHub deine IP-Adresse und die Uhrzeit verrät, sonst nichts. F-Droid und der Play Store achten schon für dich darauf: diese Zeile ist für eine von Hand aus einer APK installierte Kopie.",
+    "map_style": "Kartenstil",
+    "map_style_ember": "Glut",
+    "map_style_dark": "Nacht",
+    "map_style_fiord": "Fjord",
+    "map_style_note": "Nacht und Fjord sind die Stile von OpenFreeMap. Jeder zeichnet seine Kacheln von tiles.openfreemap.org."
   },
   "credits": {
     "title": "Credits",
@@ -203,7 +208,13 @@
     "cc_by_sa_40": "Creative Commons BY-SA 4.0",
     "cc_by_sa_40_subtitle": "Lizenzbedingungen: Weitergabe unter gleichen Bedingungen",
     "licenses_title": "Open-Source-Lizenzen",
-    "licenses_body": "Jede Bibliothek, die mit Bati ausgeliefert wird, und die Lizenz, unter der sie veröffentlicht ist."
+    "licenses_body": "Jede Bibliothek, die mit Bati ausgeliefert wird, und die Lizenz, unter der sie veröffentlicht ist.",
+    "map_styles_title": "Kartenstile",
+    "map_styles_note": "Die Stile Nacht und Fjord stammen von OpenFreeMap, das auf den OpenMapTiles-Stilen aufbaut. Ihr Hinweis folgt, wie es ihre Lizenz verlangt.",
+    "openfreemap_styles": "OpenFreeMap-Stile",
+    "openfreemap_styles_subtitle": "MIT-Lizenz",
+    "openmaptiles_styles": "OpenMapTiles Dark Matter und Fiord Color",
+    "openmaptiles_styles_subtitle": "Code BSD 3-Clause, Design CC BY 4.0, nach CartoDB Basemaps von Stamen und Paul Norman"
   },
   "progression": {
     "new_rung_from": "Gemeistert: {{name}}",

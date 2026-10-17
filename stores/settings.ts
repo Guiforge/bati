@@ -1,6 +1,7 @@
 import { AccessibilityInfo } from "react-native";
 import { create } from "zustand";
 import { type AvatarId, avatarIds, isAvatarId } from "@/constants/avatars";
+import type { MapStyleId } from "@/constants/mapStyle";
 import type { OutingDisplay } from "@/constants/outingDisplay";
 import { preferences } from "@/db";
 import type { DistanceUnit, PrepMode } from "@/db/preferences";
@@ -34,6 +35,8 @@ interface SettingsState {
   distanceUnit: DistanceUnit;
   /** Whether the recap may fetch its basemap. One of two network calls, and it starts off. */
   mapTilesEnabled: boolean;
+  /** Which basemap look, under the tiles consent above; per device. */
+  mapStyle: MapStyleId;
   /**
    * Whether the app may ask GitHub, once a day, whether a newer version has been published. The
    * other network call, off until asked for the same reason. See `src/updateCheck.ts`.
@@ -59,6 +62,7 @@ interface SettingsState {
   setVillagersEnabled: (enabled: boolean) => Promise<void>;
   setDistanceUnit: (unit: DistanceUnit) => Promise<void>;
   setMapTilesEnabled: (enabled: boolean) => Promise<void>;
+  setMapStyle: (id: MapStyleId) => Promise<void>;
   setUpdateCheckEnabled: (enabled: boolean) => Promise<void>;
   setPrepMode: (mode: PrepMode) => Promise<void>;
   setOutingDisplay: (display: OutingDisplay) => Promise<void>;
@@ -171,6 +175,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   // Off, and the same default the DB read returns for a key nobody has written: these two are
   // what reaches a third party, so an unanswered question is a no. Both of them.
   mapTilesEnabled: false,
+  mapStyle: "ember",
   updateCheckEnabled: false,
   prepMode: "timer",
   outingDisplay: {},
@@ -227,6 +232,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     await preferences.setMapTilesEnabled(enabled);
   },
 
+  setMapStyle: async (id) => {
+    set({ mapStyle: id });
+    await preferences.setMapStyle(id);
+  },
+
   setUpdateCheckEnabled: async (enabled) => {
     set({ updateCheckEnabled: enabled });
     await preferences.setUpdateCheckEnabled(enabled);
@@ -273,6 +283,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         soundEnabled,
         distanceUnit,
         mapTilesEnabled,
+        mapStyle,
         updateCheckEnabled,
         prepMode,
         outingDisplay,
@@ -287,6 +298,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         preferences.getSoundEnabled(),
         preferences.getDistanceUnit(),
         preferences.getMapTilesEnabled(),
+        preferences.getMapStyle(),
         preferences.getUpdateCheckEnabled(),
         preferences.getPrepMode(),
         preferences.getOutingDisplay(),
@@ -312,6 +324,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         soundEnabled,
         distanceUnit,
         mapTilesEnabled,
+        mapStyle,
         updateCheckEnabled,
         prepMode,
         outingDisplay,

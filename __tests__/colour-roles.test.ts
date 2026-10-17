@@ -24,7 +24,7 @@ describe("colour roles", () => {
     expect(near(victory, 'testID={result ? "session-victory-xp"')).toContain(
       'color="$resourceGold"',
     );
-    expect(near(victory, 'name={isBossDefeat ? "sword" : "trophy"}', 1)).toContain(
+    expect(near(victory, 'name={isBossDefeat ? "sword" : "trophy"}', 4)).toContain(
       'color="$resourceGold"',
     );
   });

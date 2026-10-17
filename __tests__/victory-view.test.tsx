@@ -500,6 +500,20 @@ describe("VictoryView continue navigation", () => {
     expect(mockUpdateSessionNotes).toHaveBeenCalledWith(SESSION_ID, "  a good night ");
   });
 
+  it("a note typed and not saved is written when the screen goes away by the system back", async () => {
+    mockUpdateSessionNotes.mockClear();
+    const { view, release } = await mountWithPendingSave();
+    await release();
+
+    await fireEvent.press(view.getByTestId("victory-note"));
+    await fireEvent.press(view.getByTestId("stub-type-note"));
+    await view.unmount();
+
+    await waitFor(() =>
+      expect(mockUpdateSessionNotes).toHaveBeenCalledWith(SESSION_ID, "  a good night "),
+    );
+  });
+
   it("campaign finished returns to the adventure", async () => {
     const { view, release } = await mountWithPendingSave({
       adventureId: 7,

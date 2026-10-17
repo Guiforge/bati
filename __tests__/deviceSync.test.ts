@@ -639,17 +639,50 @@ test("an answer holds until that device has news, whatever its file's etag does"
 
 test("an answer given before merge v2 still holds, and is asked again only when the first three segments move", async () => {
   mockServer.set(TABLET, "t1");
-  mockPeers[TABLET] = { open: "opened", peerChanges: 1, localChanges: 1, fingerprint: "s|c|g|x" };
+  mockPeers[TABLET] = {
+    open: "opened",
+    peerChanges: 1,
+    localChanges: 1,
+    fingerprint: "s|c|g|x|0:0",
+  };
   await rememberAnswer({ name: TABLET, comparison: { fingerprint: "s|c|g" } });
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("level");
 
   // A larger XP or a content deletion only moves the fourth segment: still the answer given.
   mockServer.set(TABLET, "t2");
-  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s|c|g|y" };
+  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s|c|g|y|0:0" };
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("level");
 
   mockServer.set(TABLET, "t3");
-  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s2|c|g|y" };
+  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s2|c|g|y|0:0" };
+  expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("diverged");
+});
+
+test("an answer given before the notebook holds while that device has no photo, and not after", async () => {
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = {
+    open: "opened",
+    peerChanges: 1,
+    localChanges: 1,
+    fingerprint: "s|c|g|x|0:0",
+  };
+  await rememberAnswer({ name: TABLET, comparison: { fingerprint: "s|c|g|x" } });
+  expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("level");
+
+  mockServer.set(TABLET, "t2");
+  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s|c|g|x|1:600" };
+  expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("diverged");
+});
+
+test("an answer given before merge v2 does not hold once that device has a photo", async () => {
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = {
+    open: "opened",
+    peerChanges: 1,
+    localChanges: 1,
+    fingerprint: "s|c|g|x|1:600",
+  };
+  await rememberAnswer({ name: TABLET, comparison: { fingerprint: "s|c|g" } });
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("diverged");
 });
 

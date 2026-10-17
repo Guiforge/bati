@@ -11,12 +11,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 import { AppIconButton } from "@/components/common/AppButton";
 import { Figure } from "@/components/common/Figure";
 import { Skeleton } from "@/components/common/Skeleton";
 import { ChevronLeft } from "@/components/icons";
+import { SessionNotebook } from "@/components/journal/SessionNotebook";
 import { MapFootnote } from "@/components/session/MapFootnote";
 import { MapRecenterButton } from "@/components/session/MapRecenterButton";
 import { roadLine } from "@/components/session/roadLine";
@@ -330,6 +332,20 @@ function useHighRoad(): VillageBuilding | null {
   return road;
 }
 
+/** In its own scroller, so three photos never squeeze the map to nothing. */
+function RecapNotebook({ sessionId }: { sessionId: number | null | undefined }) {
+  if (sessionId == null) return null;
+  return (
+    <ScrollView
+      testID="recap-notebook"
+      style={{ maxHeight: 300 }}
+      keyboardShouldPersistTaps="handled"
+    >
+      <SessionNotebook sessionId={sessionId} />
+    </ScrollView>
+  );
+}
+
 export default function ExpeditionRecapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -629,6 +645,10 @@ export default function ExpeditionRecapScreen() {
             locomotion={recap.outing}
           />
         ) : null}
+
+        {/* The note and photos of this outing, the same notebook as the Journal detail. In its
+            own scroller so three photos never squeeze the map to nothing. */}
+        <RecapNotebook sessionId={recap?.sessionId} />
 
         {footnote}
       </YStack>

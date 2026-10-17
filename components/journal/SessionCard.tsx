@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { memo, type ReactNode } from "react";
+import { memo, type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { XStack, YStack } from "tamagui";
@@ -11,8 +11,10 @@ import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
 import { hasGround } from "@/db/expeditions";
 import type { DifficultyCode, Locomotion } from "@/db/schema";
+import { firstSessionPhoto } from "@/db/sessionPhotos";
 import { formatCount } from "@/db/targets";
 import type { LngLat } from "@/src/gps/trace";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 import { TraceThumb } from "./TraceThumb";
 
@@ -46,6 +48,15 @@ export interface JournalEntry {
   /** The session's uuid: names the cached map under the line. Null on rows saved before uuids. */
   uuid?: string | null;
   userLevel: DifficultyCode;
+  /** The hero's note on the session, shown on two lines (J-01). Empty when there is none. */
+  notes?: string;
+  /** How many photos the session has: the card reads its first one only when this is above 0. */
+  photoCount?: number;
+  /**
+   * The uuid of the photo the card shows. The card re-reads when it changes, so a photo removed in
+   * the detail does not stay on the card, and a recycled row never keeps another session's image.
+   */
+  firstPhotoUuid?: string | null;
   hasNewRecords?: boolean;
   /**
    * What the badge broke, when the row knows: the movement's name, or the record's own word.
@@ -73,6 +84,35 @@ const SESSION_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
   hour: "2-digit",
   minute: "2-digit",
 };
+
+/** The first photo of a session, read when the card mounts: a page never loads 100 images. */
+function CardPhoto({ uuid, photoUuid }: { uuid: string; photoUuid: string }) {
+  const key = `${uuid}/${photoUuid}`;
+  const [shown, setShown] = useState<{ key: string; uri: string | null } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    firstSessionPhoto(uuid)
+      .then((image) => {
+        if (!cancelled) setShown({ key, uri: image });
+      })
+      .catch((error: unknown) => reportError("journal.cardPhoto", error));
+    return () => {
+      cancelled = true;
+    };
+  }, [uuid, key]);
+  // An image read for another row or another photo is never drawn: the hold stands in until it lands.
+  const uri = shown?.key === key ? shown.uri : null;
+  if (uri === null) return <YStack testID="journal-card-photo-hold" height={120} />;
+  return (
+    <Image
+      testID="journal-card-photo"
+      source={{ uri }}
+      style={{ width: "100%", height: 120, borderRadius: 6 }}
+      contentFit="cover"
+      accessible={false}
+    />
+  );
+}
 
 export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: SessionCardProps) {
   const { t } = useTranslation();
@@ -114,9 +154,10 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
 
   return (
     <Card testID="journal-session-card" onPress={onPress}>
-      <XStack gap="$3" items="center">
-        {/* Icon */}
-        {/* 64, not 50.
+      <YStack gap="$2">
+        <XStack gap="$3" items="center">
+          {/* Icon */}
+          {/* 64, not 50.
             The journal's covers are dark-fantasy paintings, and a dark painting cropped to a 50 px
             square on a dark card is a smudge: four rows of it read as four identical smudges with
             the title as the only thing telling them apart, on the one screen whose job is finding
@@ -126,66 +167,79 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
             A ring in the quest's own colour was tried and dropped: `accent` is the same token for
             every key, and `bg`'s pastels resolve to near-identical plums against `$surface2`, so
             it was an ornament that looked like information. */}
-        <YStack
-          width={64}
-          height={64}
-          bg="$surface2"
-          rounded="$4"
-          borderWidth={1}
-          borderColor="$borderStrong"
-          items="center"
-          justify="center"
-          overflow="hidden"
-        >
-          {/* The run itself, when there is one. The three seeded outings share three pictures, so
+          <YStack
+            width={64}
+            height={64}
+            bg="$surface2"
+            rounded="$4"
+            borderWidth={1}
+            borderColor="$borderStrong"
+            items="center"
+            justify="center"
+            overflow="hidden"
+          >
+            {/* The run itself, when there is one. The three seeded outings share three pictures, so
               a page of walks was a column of identical thumbnails - the same complaint the
               trophy below records, one row further in. A line is never the same twice. */}
-          {/* One segment: `previewPathsFor` downsamples and drops the clock, so a row cannot know
+            {/* One segment: `previewPathsFor` downsamples and drops the clock, so a row cannot know
               where the run broke. The detail screen behind it draws the real stretches. */}
-          {entry.tracePoints.length > 1 ? (
-            <TraceThumb segments={[entry.tracePoints]} size={64} mapKey={entry.uuid ?? undefined} />
-          ) : entry.cover ? (
-            <Image
-              source={entry.cover}
-              recyclingKey={String(entry.id)}
-              style={COVER_STYLE}
-              contentFit="cover"
-              accessible={false}
-            />
-          ) : (
-            // A hero-authored quest has no cover, and the trophy is the honest stand-in: it says
-            // "a session happened" without pretending to be a picture of one.
-            <Trophy size={24} color="$resourceGold" />
-          )}
-        </YStack>
-
-        <YStack flex={1} gap="$1">
-          <XStack gap="$2" items="center">
-            <NText fontWeight="500" fontSize={16} lineHeight={22} numberOfLines={1} flex={1}>
-              {entry.questTitle}
-            </NText>
-            {/* A gold word, the wall's own kicker, where a filled badge was: no plate, no border,
-                nothing more for the GPU to draw per row than the text it already draws. */}
-            {!!entry.hasNewRecords && (
-              <NKicker numberOfLines={1} style={{ flexShrink: 1, maxWidth: "40%" }}>
-                {entry.recordLabel ?? t("journal.pr_badge")}
-              </NKicker>
+            {entry.tracePoints.length > 1 ? (
+              <TraceThumb
+                segments={[entry.tracePoints]}
+                size={64}
+                mapKey={entry.uuid ?? undefined}
+              />
+            ) : entry.cover ? (
+              <Image
+                source={entry.cover}
+                recyclingKey={String(entry.id)}
+                style={COVER_STYLE}
+                contentFit="cover"
+                accessible={false}
+              />
+            ) : (
+              // A hero-authored quest has no cover, and the trophy is the honest stand-in: it says
+              // "a session happened" without pretending to be a picture of one.
+              <Trophy size={24} color="$resourceGold" />
             )}
-          </XStack>
+          </YStack>
 
-          {/* One line of text where there were a calendar icon and three tags: the row cost the
+          <YStack flex={1} gap="$1">
+            <XStack gap="$2" items="center">
+              <NText fontWeight="500" fontSize={16} lineHeight={22} numberOfLines={1} flex={1}>
+                {entry.questTitle}
+              </NText>
+              {/* A gold word, the wall's own kicker, where a filled badge was: no plate, no border,
+                nothing more for the GPU to draw per row than the text it already draws. */}
+              {!!entry.hasNewRecords && (
+                <NKicker numberOfLines={1} style={{ flexShrink: 1, maxWidth: "40%" }}>
+                  {entry.recordLabel ?? t("journal.pr_badge")}
+                </NKicker>
+              )}
+            </XStack>
+
+            {/* One line of text where there were a calendar icon and three tags: the row cost the
               emulator's GPU 18 ms a frame against 10 for every other list, and History scrolled at
               26 ms (perf audit, 2026-09-15). No single element was the cause, each icon, tag and
               translucent text added to it; the line took the list from 0 smooth passes out of 9
               to about half.
               ponytail: measured on the emulator only, whose GPU is the host's through a
               translation layer. A release build on a phone decides whether the row needs more. */}
-          <NMuted numberOfLines={1}>{dateLabel}</NMuted>
-          <NText fontSize={12} lineHeight={17} numberOfLines={1}>
-            {parts.flatMap((part, i) => (i ? [" · ", part] : [part]))}
+            <NMuted numberOfLines={1}>{dateLabel}</NMuted>
+            <NText fontSize={12} lineHeight={17} numberOfLines={1}>
+              {parts.flatMap((part, i) => (i ? [" · ", part] : [part]))}
+            </NText>
+          </YStack>
+        </XStack>
+        {entry.photoCount && entry.uuid && entry.firstPhotoUuid ? (
+          <CardPhoto uuid={entry.uuid} photoUuid={entry.firstPhotoUuid} />
+        ) : null}
+        {!!entry.notes && (
+          <NText testID="journal-card-note" fontSize={12} lineHeight={17} numberOfLines={2}>
+            {entry.notes}
           </NText>
-        </YStack>
-      </XStack>
+        )}
+      </YStack>
     </Card>
   );
 });

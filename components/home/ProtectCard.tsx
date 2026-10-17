@@ -6,7 +6,7 @@ import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { ChevronRight, Shield, X } from "@/components/icons";
 import { useHaptics } from "@/hooks/useHaptics";
-import { dismissProtectCard, protectCardVisible } from "@/src/protectHero";
+import { dismissProtectCard, type ProtectCardKind, protectCardKind } from "@/src/protectHero";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -18,14 +18,14 @@ export function ProtectCard() {
   const { t } = useTranslation();
   const router = useRouter();
   const haptics = useHaptics();
-  const [visible, setVisible] = useState(false);
+  const [kind, setKind] = useState<ProtectCardKind | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      protectCardVisible()
+      protectCardKind()
         .then((next) => {
-          if (!cancelled) setVisible(next);
+          if (!cancelled) setKind(next);
         })
         .catch((error: unknown) => reportError("protect.card", error));
       return () => {
@@ -34,7 +34,7 @@ export function ProtectCard() {
     }, []),
   );
 
-  if (!visible) return null;
+  if (kind === null) return null;
 
   const open = () => {
     haptics.selection();
@@ -43,7 +43,7 @@ export function ProtectCard() {
 
   const close = () => {
     haptics.selection();
-    setVisible(false);
+    setKind(null);
     dismissProtectCard().catch((error: unknown) => reportError("protect.dismiss", error));
   };
 
@@ -53,10 +53,10 @@ export function ProtectCard() {
         <Shield size={16} color="$textSecondary" />
         <YStack flex={1}>
           <AppText fontSize="$3" fontWeight="bold" color="$text">
-            {t("backup.protectTitle")}
+            {t(kind === "heavy" ? "backup.protectHeavyTitle" : "backup.protectTitle")}
           </AppText>
           <AppText fontSize="$2" color="$textSecondary">
-            {t("backup.protectBody")}
+            {t(kind === "heavy" ? "backup.protectHeavyBody" : "backup.protectBody")}
           </AppText>
         </YStack>
         <ChevronRight size={16} color="$primaryText" />

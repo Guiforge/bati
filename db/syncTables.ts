@@ -16,6 +16,7 @@ export const TABLE_SYNC = {
   gps_points: "merged",
   deleted_sessions: "merged",
   deleted_content: "merged",
+  session_photos: "merged",
   exercises: "merged",
   exercise_muscles: "merged",
   quests: "merged",

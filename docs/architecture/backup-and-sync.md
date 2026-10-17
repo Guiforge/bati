@@ -43,7 +43,14 @@ build wrote so no device renames itself on update.
 **Android's backup carries three files and nothing else**: `bati.v<N>.db` and its `-wal` and `-shm` sidecars (the database is in WAL mode, so there is no `-journal`). The
 same directory holds decrypted imports, another device's history opened for comparison, the
 pre-restore `.bak`; naming the three keeps all of those out of Google's copy and under the 25 MB
-quota past which Android backs up nothing at all. The `.gpx` files in `gps-tracks/` stay out too:
+quota past which Android backs up nothing at all. Photos (J-01, BLOBs in `session_photos`) and raw
+GPS points share that file, and a regular hero reaches the quota within a year: Settings says
+"Your hero: X MB, of which photos Y MB", and past 20 MB with no backup of their own the protect
+card returns with its own text. Removing a photo empties its row but does not shrink the file.
+The 256 MiB ceiling on another device's file and the whole-file re-upload per change now weigh on
+photos too. When this build takes a file from a device on the previous build (0074), its photos
+and note stamps are lost as the content tombstones are; the kept copy and the pre-restore `.bak`
+hold them. The `.gpx` files in `gps-tracks/` stay out too:
 they are exports, rebuilt from `gps_points` whenever a recap shares one.
 
 **The folder picker does not reach the classic clouds.** Google Drive, OneDrive and Proton never

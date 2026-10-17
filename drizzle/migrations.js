@@ -75,6 +75,7 @@ import m0071 from "./0071_the_day_that_was_paid.sql";
 import m0072 from "./0072_a_session_edited_after.sql";
 import m0073 from "./0073_the_back_that_pulls_back.sql";
 import m0074 from "./0074_the_content_let_go.sql";
+import m0075 from "./0075_the_notebook.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -155,5 +156,6 @@ export default {
     m0072,
     m0073,
     m0074,
+    m0075,
   },
 };

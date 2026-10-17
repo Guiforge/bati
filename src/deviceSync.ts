@@ -707,13 +707,20 @@ async function judge(target: Remote, file: RemoteFile, context: JudgeContext): P
   if (peer.state === "locked") peer = settleLocked(peer, file, context);
   // An answer the hero already gave for this exact state is not asked again. Only news from that
   // device (new sessions, new content, a larger XP, a content deletion) changes the fingerprint;
-  // sealing the same history anew does not. An answer from before merge v2 has three segments and
-  // is matched on the first three of the fingerprint's four, so it expires on real news only.
+  // sealing the same history anew does not. An answer from before merge v2 has three segments, and
+  // one from before the notebook (0075) has four. Each is matched on its own leading segments, and
+  // only while that device holds no photo (fifth segment `0:0`): a match turns the peer `level`
+  // before any merge, so photos the answer never saw would otherwise never be merged.
   if ("comparison" in peer) {
     const said = context.answered[file.name];
     const { fingerprint } = peer.comparison;
-    const legacy = fingerprint.split("|").slice(0, 3).join("|");
-    if (said === fingerprint || said === legacy) {
+    const segments = fingerprint.split("|");
+    const noPhotos = segments[4] === "0:0";
+    if (
+      said === fingerprint ||
+      (noPhotos &&
+        (said === segments.slice(0, 3).join("|") || said === segments.slice(0, 4).join("|")))
+    ) {
       peer = { name: file.name, etag: file.etag, modified: peer.modified, state: "level" };
     }
   }

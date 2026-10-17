@@ -97,9 +97,12 @@ move, so its file on the server is refreshed only by the next change (`ponytail:
 
 **R10. `stateFingerprint` / peer `fingerprint` = `count(sessions) ':' max(uuid)`, then `':'` and the
 sum of both edit stamps when it is not 0 | `max(updatedAt) ':' count` over hero content |
-tombstone count | `sum(xpEarned) ':' count ':' max(deletedAt)` over `deleted_content` (0074).** An answer
-(`answered`) given before merge v2 has three segments and matches the first three of the four (`judge`
-in `src/deviceSync.ts`); new answers store the whole. The update bumps the newest migration, so every
+tombstone count | `sum(xpEarned) ':' count ':' max(deletedAt)` over `deleted_content` (0074) | `count ':' sum(updatedAt)` over `session_photos` (0075, `0:0` without a photo).** An answer
+(`answered`) given before merge v2 has three segments and one given before the notebook has four;
+each matches its own leading segments, and only while the fifth is `0:0` (`judge` in
+`src/deviceSync.ts`): a match turns the peer level before any merge, so photos the answer never
+saw would otherwise never be merged. New answers store the whole. A note edit moves the first
+segment (`notesEditedAt` joins the stamp sum), a photo added or removed moves the fifth. The update bumps the newest migration, so every
 device re-uploads and re-judges every peer once, on purpose. `db/backup.ts` (`sessionsStamp`). With no edit the first term is what it was
 before 0072, so an answer the hero already gave is not asked again.
 Invariant: correcting a set or giving feedback after the save changes the fingerprint, every time:
@@ -136,20 +139,30 @@ copied iff its uuid is neither local nor in local tombstones, with all columns e
 verbatim. For a session both hold, each stamp is read on its own (NULL as 0, equal non-null stamps go to the larger content, R9) and the larger `xpEarned` wins (`takeLargerXp`, no stamp: a maximum is commutative and idempotent, and earned XP is never taken away):
 a later `setsEditedAt` takes the peer's whole set of `completed_exercises` (R16) and keeps this
 device's `hasNewRecords` and `records_json`, decided again on the new sets for every movement of
-the session (`redecideSessions`); a later `feedbackEditedAt` takes its `feedback`. Every other column stays. After the commit, `redecideAfterChange` decides again the records of the
+the session (`redecideSessions`); a later `feedbackEditedAt` takes its `feedback`; a later `notesEditedAt` takes its `notes` and nothing else (0075). Every other column stays. After the commit, `redecideAfterChange` decides again the records of the
 movements whose figures differ between the two copies, in the session and in every later local
 session holding a figure between the old and the new one, as `correctLoggedSet` does; its failure
 is reported (`sync.merge.records`) and does not fail the merge that committed.
-`db/merge.ts` (`takeEditedSets`, `takeEditedFeedback`, `mergePeer`).
+`db/merge.ts` (`takeEditedSets`, `takeEditedFeedback`, `takeEditedNotes`, `mergePeer`).
 Invariant: a set corrected on A reaches B at B's next merge with A, and B's records follow; a
 feedback changed later on B does not carry B's older sets over A's correction.
 Invariant: two different corrections of one session stamped in the same second converge on the larger sets text (R9).
 
 **R15. Only the edits that stamp the session propagate.** `correctLoggedSet` (`setsEditedAt`,
-written before the value, in one transaction) and `updateSessionFeedback` (`feedbackEditedAt`) do. `addBonusXpToSession` and `markSessionWithNewRecords` run inside the
+written before the value, in one transaction), `updateSessionFeedback` (`feedbackEditedAt`) and `updateSessionNotes` (`notesEditedAt`, 0075) do. `addBonusXpToSession` and `markSessionWithNewRecords` run inside the
 save, before any snapshot can carry the session, and do not; neither merge nor fingerprint see a
 later change to them in R14's stamps, but the larger XP wins (R14) and the fourth fingerprint segment moves (R10).
 Invariant: after convergence two devices hold the same `xpEarned` for one uuid, the larger.
+
+**R16a. Photos (0075) merge by uuid.** `session_photos` rows are copied as they are, never
+re-encoded, when this device lacks them or holds an older `updatedAt`; at the same second a removal
+(`deletedAt` set, `image` empty) wins, both ways. A photo whose session this device deleted is never
+inserted, and one whose session this device lacks arrives with the session. A merge never drops a
+photo to honour the cap of three, so two devices that each add two leave four (every screen shows
+all of them, and the add button is hidden from three). `db/merge.ts` (`mergePhotos`,
+`photosWon` in `db/backup.ts`, which `compareWithPeer` shares so a converged pair reads level).
+Invariant: after convergence both devices hold the same `session_photos` rows. A stored photo has no
+APP1 Exif segment (`addSessionPhoto` refuses one).
 
 **R16. A merged session's children are copied under new local ids.** Sets (`completed_exercises`)
 are remapped through `sess_map` and `ex_map`; `gps_points` (keyed by session uuid and `t`) are
@@ -245,7 +258,7 @@ merge keeps the larger `deletedAt`. Rows are never removed by app code. `drizzle
 Invariant: the tombstone set of a device is monotonically non-decreasing between restores.
 
 **R27. Deleting a session removes: its sets, boss damage log (refunding the boss HP, capped at
-total, felled boss revived), gps points, reopens the campaign step.** `db/completed.ts:348-361,
+total, felled boss revived), gps points, photos (0075), reopens the campaign step.** `db/completed.ts:348-361,
 428-445`.
 Invariant: after delete, no row of `completed_exercises`, `boss_damage_log`, `gps_points`
 references the session; boss `currentHp <= totalHp`.
@@ -330,6 +343,10 @@ Invariant: `vaultUpdateOffered(now)` is monotone: once true, always true.
 **R37. The Android backup carries only `bati.v3.db`, `-wal`, `-shm`** (no SecureStore, no `.bak`,
 no imports, no gpx files). `plugins/withAndroidBackupRules.js:51-53`.
 Invariant: the set of files matched by the include rules is exactly those three.
+Google's quota is 25 MB per app, past which Android copies nothing new: the file is the unit, so
+photos (BLOBs in `session_photos`) and GPS points share it. Past 20 MB (`HEAVY_DATABASE_BYTES`,
+`src/protectHero.ts`) with no backup of the hero's own, the protect card returns with another text
+and is silent at most a month. A backup the hero makes carries the photos with no step of its own.
 
 **R38. Streak caches, `unlocked_achievements` and `bigFeastsShown` travel with a restore** (none
 is in R34) but are not compared or merged by sync. That `bigFeastsShown` follows a restore like

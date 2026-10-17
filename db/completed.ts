@@ -418,6 +418,18 @@ export async function updateSessionFeedback(
     .where(eq(completedQuest.id, sessionId));
 }
 
+export const MAX_NOTE_CHARS = 500;
+
+/** Write or clear the note of a saved session. Clearing is an edit too: it is stamped and travels. */
+export async function updateSessionNotes(sessionId: number, notes: string): Promise<void> {
+  const text = notes.trim();
+  if (text.length > MAX_NOTE_CHARS) throw new Error("Note too long");
+  await db
+    .update(completedQuest)
+    .set({ notes: text, notesEditedAt: nextEditStamp(completedQuest.notesEditedAt) })
+    .where(eq(completedQuest.id, sessionId));
+}
+
 /**
  * The stamp of an edit to a saved session (`0072`): now, or one second past the stamp already
  * there when that is later. Sync keeps the later stamp and fingerprints their sum, so a stamp must
@@ -465,6 +477,7 @@ export async function deleteSession(sessionId: number): Promise<"deleted" | "loc
     await tx.delete(completedQuest).where(eq(completedQuest.id, sessionId));
     if (row.uuid) {
       await tx.delete(gpsPoints).where(eq(gpsPoints.sessionId, row.uuid));
+      await tx.delete(schema.sessionPhotos).where(eq(schema.sessionPhotos.sessionUuid, row.uuid));
       // Remembered, so device sync does not read another device's copy as newer (0064).
       await tx
         .insert(schema.deletedSessions)

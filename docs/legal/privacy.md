@@ -253,7 +253,9 @@ around you, and a network name is a location by another route.
 from your library and keeps a pointer to it on your device; the image itself is never copied or
 sent. If you give a photo to an exercise or a quest you made, the app shrinks it and stores it in
 the database like the rest of your data, so it travels with your backups and an encrypted sync,
-and nowhere else. Decline the permission and the app works normally with the built-in images.
+and nowhere else. Photos you add to a session or an outing in the Journal (three at most) are
+shrunk the same way, and the re-encoding removes the location and camera data the original
+carried; they leave the phone only in a backup you make, an encrypted sync, or a share you choose. Decline the permission and the app works normally with the built-in images.
 
 **Home-screen widget (Android, optional).** The flame widget reads your flame from
 the same on-device database.
@@ -551,7 +553,11 @@ réseaux autour de vous : un nom de réseau est une position par un autre chemin
 image dans votre galerie et garde un lien vers elle sur votre appareil ; l'image elle-même n'est
 jamais copiée ni envoyée. Si vous donnez une photo à un exercice ou une quête que vous avez créés,
 l'application la réduit et la stocke dans la base comme le reste : elle voyage donc avec vos
-sauvegardes et une synchronisation chiffrée, et nulle part ailleurs. Vous pouvez refuser :
+sauvegardes et une synchronisation chiffrée, et nulle part ailleurs. Les photos que vous ajoutez à
+une séance ou à une sortie dans le Journal (trois au plus) sont réduites de la même façon, et le
+réencodage retire la position et les données de l'appareil photo de l'original ; elles ne quittent
+le téléphone que dans une sauvegarde que vous faites, une synchronisation chiffrée, ou un partage
+que vous choisissez. Vous pouvez refuser :
 l'application fonctionne normalement avec les images intégrées.
 
 **Widget d'écran d'accueil (Android, facultatif).** Le widget de flamme lit votre régularité

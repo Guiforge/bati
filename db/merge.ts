@@ -5,6 +5,7 @@ import {
   canonical,
   canonicalColumns,
   MERGED_PREFERENCES,
+  photosWon,
   setsCanon,
 } from "./backup";
 import { db, type IsolatedConnection, withWritableConnection } from "./client";
@@ -34,7 +35,8 @@ const PEER = "merge_peer";
  * included; its sets, its GPS points and its records come with it. XP, level, the village and the
  * streak are read from sessions, so they follow on their own. A session both hold takes the other
  * device's sets if it corrected them later, and its feedback if it changed that later, each on its
- * own stamp (0072); only records are then decided again, because the later sessions they were
+ * own stamp (0072), and its note on a third (`notesEditedAt`, 0075); photos (0075) merge by uuid, the
+ * later `updatedAt` winning and a removal winning a tie; only records are then decided again, because the later sessions they were
  * judged against are this device's.
  *
  * **This device's rows keep their ids; only the other device's get new ones**, through temporary
@@ -208,6 +210,7 @@ async function mergeInto(
   );
   const moved = await takeEditedSets(conn);
   changes += await takeEditedFeedback(conn);
+  changes += await takeEditedNotes(conn);
   changes += await takeLargerXp(conn);
   const edited = await count(conn, "SELECT 1 FROM temp.edited");
   if (sessions > 0 || edited > 0) {
@@ -232,6 +235,9 @@ async function mergeInto(
     await remapRecords(conn);
     changes += sessions + edited;
   }
+
+  // After the fresh sessions are in, so a photo of a session that just arrived lands with it.
+  changes += await mergePhotos(conn);
 
   // Written empty by `mergeAuthored`, since it names the other device's id and that row may not
   // exist here yet: now every row, resurrected ones included, has its local id, the other device's
@@ -352,6 +358,41 @@ async function takeEditedFeedback(conn: IsolatedConnection): Promise<number> {
       (SELECT p.feedback, p.feedbackEditedAt FROM ${PEER}.completed_sessions p
         WHERE p.uuid = main.completed_sessions.uuid)
       WHERE id IN (${later})`);
+  }
+  return taken;
+}
+
+/**
+ * Sessions both hold whose note the other device wrote later (`notesEditedAt`, 0075): the note and
+ * its stamp, nothing else, so a note typed there never carries that device's older sets or
+ * feedback. Same stamp rule as the feedback. Returns how many.
+ */
+async function takeEditedNotes(conn: IsolatedConnection): Promise<number> {
+  const later = `SELECT l.id FROM ${PEER}.completed_sessions p
+    JOIN main.completed_sessions l ON l.uuid = p.uuid
+    WHERE ${editedLater("notesEditedAt", (_schema, alias) => `ifnull(${alias}.notes, '')`)}`;
+  const taken = await count(conn, later);
+  if (taken > 0) {
+    await conn.execAsync(`UPDATE main.completed_sessions SET (notes, notesEditedAt) =
+      (SELECT p.notes, p.notesEditedAt FROM ${PEER}.completed_sessions p
+        WHERE p.uuid = main.completed_sessions.uuid)
+      WHERE id IN (${later})`);
+  }
+  return taken;
+}
+
+/** Photos by uuid, copied as they are (never re-encoded). Returns how many were taken. */
+async function mergePhotos(conn: IsolatedConnection): Promise<number> {
+  const theirs = photosWon(PEER, "main", "SELECT uuid FROM main.deleted_sessions");
+  const taken = await count(conn, theirs);
+  if (taken > 0) {
+    // The outer SELECT carries the WHERE: without one SQLite reads `ON` of the conflict clause as
+    // a join constraint (same trap as `deleted_content` above).
+    await conn.execAsync(`INSERT INTO main.session_photos
+        (uuid, sessionUuid, sortOrder, image, updatedAt, deletedAt)
+      SELECT uuid, sessionUuid, sortOrder, image, updatedAt, deletedAt FROM (${theirs}) WHERE true
+      ON CONFLICT(uuid) DO UPDATE SET sortOrder = excluded.sortOrder, image = excluded.image,
+        updatedAt = excluded.updatedAt, deletedAt = excluded.deletedAt`);
   }
   return taken;
 }

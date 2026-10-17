@@ -1,5 +1,6 @@
-import { and, desc, eq, gt, type SQL, sql } from "drizzle-orm";
+import { and, desc, eq, gt, isNotNull, lt, ne, type SQL, sql } from "drizzle-orm";
 import type { LocationFix } from "@/modules/bati-location";
+import { ROUTE, type RoutePoint, type RouteShape, startsTogether } from "@/src/gps/route";
 import type { LngLat } from "@/src/gps/trace";
 import { db, schema } from "./client";
 import type { Locomotion } from "./schema";
@@ -129,6 +130,75 @@ export async function previewPathsFor(
   }
 
   return paths;
+}
+
+/**
+ * The newest past outings of one activity that started where today did, as route shapes. Two
+ * queries, whatever the history: one row per outing with its first point (a primary-key seek
+ * each, `gps_points` is keyed `(sessionId, t)`), then the points of at most `ROUTE.candidates` of
+ * them, thinned in SQLite. `outing = locomotion` is the strict rule: a past mixed session is
+ * never a candidate. `before` is a `Date`, drizzle stores seconds.
+ */
+export async function routeCandidates(
+  locomotion: Locomotion,
+  start: RoutePoint,
+  before: Date,
+  exclude: string,
+): Promise<RouteShape[]> {
+  const firstOf = (col: "latE7" | "lonE7") =>
+    sql<
+      number | null
+    >`(SELECT g.${sql.raw(col)} FROM gps_points g WHERE g.sessionId = "completed_sessions"."uuid" ORDER BY g.t LIMIT 1)`;
+  const rows = await db
+    .select({
+      id: completedQuest.uuid,
+      performedAt: completedQuest.performedAt,
+      latE7: firstOf("latE7"),
+      lonE7: firstOf("lonE7"),
+    })
+    .from(completedQuest)
+    .where(
+      and(
+        eq(completedQuest.outing, locomotion),
+        gt(completedQuest.leaguesM, 0),
+        isNotNull(completedQuest.uuid),
+        ne(completedQuest.uuid, exclude),
+        lt(completedQuest.performedAt, before),
+      ),
+    )
+    .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id));
+
+  const near: { id: string; performedAt: Date }[] = [];
+  for (const r of rows) {
+    if (near.length === ROUTE.candidates) break;
+    if (r.id === null || r.latE7 === null || r.lonE7 === null) continue;
+    if (startsTogether(start, { lat: r.latE7 / 1e7, lon: r.lonE7 / 1e7 })) {
+      near.push({ id: r.id, performedAt: r.performedAt });
+    }
+  }
+  if (near.length === 0) return [];
+
+  const ids = sql.join(
+    near.map((c) => sql`${c.id}`),
+    sql`, `,
+  );
+  const points = await db.all<{ sessionId: string; latE7: number; lonE7: number }>(sql`
+    SELECT sessionId, latE7, lonE7 FROM (
+      SELECT sessionId, latE7, lonE7,
+             ROW_NUMBER() OVER (PARTITION BY sessionId ORDER BY t) - 1 AS n
+      FROM gps_points
+      WHERE sessionId IN (${ids})
+    )
+    WHERE n % ${sql.raw(String(ROUTE.stride))} = 0
+    ORDER BY sessionId, n
+  `);
+  const byId = new Map<string, RoutePoint[]>();
+  for (const p of points) {
+    const list = byId.get(p.sessionId) ?? [];
+    list.push({ lat: p.latE7 / 1e7, lon: p.lonE7 / 1e7 });
+    byId.set(p.sessionId, list);
+  }
+  return near.map((c) => ({ ...c, points: byId.get(c.id) ?? [] }));
 }
 
 /**

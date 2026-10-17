@@ -350,6 +350,59 @@ describe("db/heroAdventures", () => {
     expect(third?.activeStep?.stepIndex).toBe(3);
   });
 
+  test("deleting the session of a step reopens that step and relocks the next real one, gap or not", async () => {
+    const { hero, adv } = mod();
+    const completed = require("../db/completed") as typeof import("../db/completed");
+    const [a, b, c] = adminQuests();
+    if (!a || !b || !c) throw new Error("seed quests expected");
+    const id = await hero.createHeroAdventure(draft([a, b, c]));
+    t.sqlite
+      .prepare("UPDATE adventure_steps SET stepIndex = 3 WHERE adventureId = ? AND stepIndex = 2")
+      .run(id);
+    const run = await adv.startAdventureRun({ adventureId: id });
+    const firstStep = run.activeStep;
+    if (!firstStep) throw new Error("active step expected");
+    await adv.completeAdventureRunStep({
+      runStepId: firstStep.id,
+      completedSessionId: session(a),
+    });
+    const second = (await adv.getActiveAdventureRun(id))?.activeStep;
+    if (!second) throw new Error("second step expected");
+    const secondSession = session(b);
+    await adv.completeAdventureRunStep({ runStepId: second.id, completedSessionId: secondSession });
+    expect((await adv.getActiveAdventureRun(id))?.activeStep?.stepIndex).toBe(3);
+
+    expect(await completed.deleteSession(secondSession)).toBe("deleted");
+
+    const steps = (await adv.getActiveAdventureRun(id))?.steps.map((s) => [s.stepIndex, s.status]);
+    expect(steps).toEqual([
+      [0, "completed"],
+      [1, "active"],
+      [3, "locked"],
+    ]);
+  });
+
+  test("the narrative follows the step's quest: a step changed under a run shows none", async () => {
+    const { hero, adv } = mod();
+    const narrative =
+      require("../db/adventures-narrative") as typeof import("../db/adventures-narrative");
+    const [a, b, c] = adminQuests();
+    if (!a || !b || !c) throw new Error("seed quests expected");
+    const id = await hero.createHeroAdventure(draft([a, b]));
+    const run = await adv.startAdventureRun({ adventureId: id });
+    const step = run.activeStep;
+    if (!step) throw new Error("active step expected");
+    expect(await narrative.getAdventureStepNarrative(step.id)).toBe("before 0");
+    expect(await narrative.getAdventureStepOutroNarrative(step.id)).toBe("after 0");
+
+    // The same step index, now another quest (a merge replaced the steps).
+    t.sqlite
+      .prepare("UPDATE adventure_steps SET questId = ? WHERE adventureId = ? AND stepIndex = 0")
+      .run(c, id);
+    expect(await narrative.getAdventureStepNarrative(step.id)).toBeNull();
+    expect(await narrative.getAdventureStepOutroNarrative(step.id)).toBeNull();
+  });
+
   test("changing the monster gives the next fight the new monster's weakness", async () => {
     const { hero, boss } = mod();
     const [a, b] = adminQuests();
@@ -428,9 +481,22 @@ describe("db/heroAdventures", () => {
     expect(last[7]).toBe(ids[13 % ids.length]);
   });
 
+  test("worksSparedZone flags the hero's own quest and never the game's, which substitutes", () => {
+    const { hero } = mod();
+    const slot = { exerciseId: 7 } as never;
+    const quest = (author: string) => ({ author, exercises: [slot] }) as never;
+    expect(hero.worksSparedZone(quest("hero"), new Set([7]))).toBe(true);
+    expect(hero.worksSparedZone(quest("hero"), new Set([8]))).toBe(false);
+    expect(hero.worksSparedZone(quest("Admin"), new Set([7]))).toBe(false);
+  });
+
   test("no adventure writer asks the quota", () => {
     const fs = require("node:fs") as typeof import("node:fs");
-    for (const file of ["db/heroAdventures.ts"]) {
+    for (const file of [
+      "db/heroAdventures.ts",
+      "app/(tabs)/adventures/edit.tsx",
+      "components/adventures/QuestPickerSheet.tsx",
+    ]) {
       expect(fs.readFileSync(`${process.cwd()}/${file}`, "utf8")).not.toMatch(
         /\bcan\(|canDo\(|FREE_HERO/,
       );

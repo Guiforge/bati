@@ -26,6 +26,7 @@ jest.mock("@/src/plus/access", () => ({
 const mockCreate = jest.fn();
 const mockParams: { id?: string } = {};
 jest.mock("@/db", () => ({
+  adventuresUsingQuest: jest.fn().mockResolvedValue([]),
   clearQuestConfig: jest.fn(),
   createQuestTemplate: (...args: unknown[]) => mockCreate(...args),
   deleteQuest: jest.fn(),
@@ -156,5 +157,64 @@ describe("quest editor, quota", () => {
     const editor = await mountEditor();
     expect(editor.getByTestId("quest-name")).toBeTruthy();
     expect(mockQuotaRefusal).not.toHaveBeenCalled();
+  });
+});
+
+// A quest an adventure names cannot be deleted: the dialog says so, and nothing is written.
+describe("quest editor, deleting a quest an adventure names", () => {
+  const db = () =>
+    require("@/db") as {
+      adventuresUsingQuest: jest.Mock;
+      deleteQuest: jest.Mock;
+      getQuestTemplateById: jest.Mock;
+    };
+
+  beforeEach(() => {
+    mockParams.id = "7";
+    db().deleteQuest.mockClear();
+    db().getQuestTemplateById.mockResolvedValue({
+      id: 7,
+      enTitle: "Porch forge",
+      frTitle: "Porch forge",
+      enDescription: "",
+      frDescription: "",
+      rounds: 1,
+      restSeconds: 30,
+      roundRestSeconds: null,
+      imagePath: null,
+      exercises: [],
+    });
+  });
+
+  afterEach(() => {
+    delete mockParams.id;
+    db().adventuresUsingQuest.mockResolvedValue([]);
+  });
+
+  it("names the adventure, offers only to close, and deletes nothing", async () => {
+    db().adventuresUsingQuest.mockResolvedValue([
+      { enTitle: "Tale", frTitle: "Tale", deTitle: "Tale", esTitle: "Tale" },
+    ]);
+    const editor = await mountEditor();
+
+    await act(async () => {
+      await fireEvent.press(editor.getByLabelText("quests.editor_delete"));
+    });
+
+    expect(await editor.findByText("quests.editor_delete_in_use")).toBeTruthy();
+    expect(db().adventuresUsingQuest).toHaveBeenCalledWith(7);
+    expect(editor.queryByText("common.cancel")).toBeNull();
+    expect(db().deleteQuest).not.toHaveBeenCalled();
+  });
+
+  it("asks the usual question when no adventure names it", async () => {
+    const editor = await mountEditor();
+
+    await act(async () => {
+      await fireEvent.press(editor.getByLabelText("quests.editor_delete"));
+    });
+
+    expect(await editor.findByText("quests.editor_delete_body")).toBeTruthy();
+    expect(editor.getByText("common.cancel")).toBeTruthy();
   });
 });

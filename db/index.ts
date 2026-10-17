@@ -63,6 +63,7 @@ export {
 } from "./questConfig";
 export type { TrainingFocus } from "./quests";
 export {
+  adventuresUsingQuest,
   createQuestTemplate,
   Difficulty,
   deleteQuest,

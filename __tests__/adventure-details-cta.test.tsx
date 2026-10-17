@@ -405,3 +405,78 @@ describe("leaving the playthrough", () => {
     access().can.mockResolvedValue(true);
   });
 });
+
+// The hero's own adventures (adventure-builder): the pencil, the step that lost its quest, and the
+// line under a step that would work the zone they are sparing.
+describe("an adventure the hero wrote", () => {
+  const db = () =>
+    require("@/db") as {
+      getAdventureDetails: jest.Mock;
+      missingStepQuests: jest.Mock;
+      worksSparedZone: jest.Mock;
+    };
+  const details = (author: string) => ({
+    adventure: {
+      kind: "route",
+      author,
+      enTitle: "Tale",
+      frTitle: "Tale",
+      enDescription: "",
+      frDescription: "",
+      imagePath: null,
+    },
+    steps: [mockStep(0), mockStep(1)],
+  });
+  const renderScreen = () =>
+    render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+
+  afterEach(() => {
+    db().missingStepQuests.mockResolvedValue([]);
+    db().worksSparedZone.mockReturnValue(false);
+  });
+
+  test("the pencil leads to the editor, and the game's adventures have none", async () => {
+    mockPush.mockClear();
+    db().getAdventureDetails.mockResolvedValueOnce(details("hero"));
+    const own = await renderScreen();
+    await own.findByText("Tale");
+    await fireEvent.press(own.getByTestId("adventure-edit"));
+    expect(mockPush).toHaveBeenCalledWith("/adventures/edit?id=1");
+    await own.unmount();
+
+    db().getAdventureDetails.mockResolvedValueOnce(details("Admin"));
+    const game = await renderScreen();
+    await game.findByText("Tale");
+    expect(game.queryByTestId("adventure-edit")).toBeNull();
+  });
+
+  test("a step without its quest hides Start and says why, for the hero's and the game's", async () => {
+    db().missingStepQuests.mockResolvedValue([1]);
+    db().getAdventureDetails.mockResolvedValueOnce(details("hero"));
+    const own = await renderScreen();
+    expect(
+      await own.findByText("A step has lost its quest. Edit the adventure to play it again."),
+    ).toBeTruthy();
+    expect(own.queryByTestId("adventure-start")).toBeNull();
+    await own.unmount();
+
+    db().getAdventureDetails.mockResolvedValueOnce(details("Admin"));
+    const game = await renderScreen();
+    expect(await game.findByText("A step has lost its quest.")).toBeTruthy();
+    expect(game.queryByTestId("adventure-start")).toBeNull();
+  });
+
+  test("a step that works the spared zone wears its line", async () => {
+    db().worksSparedZone.mockImplementation(
+      (quest: { enTitle: string }) => quest.enTitle === "Step 1",
+    );
+    db().getAdventureDetails.mockResolvedValueOnce(details("hero"));
+    const { findByTestId, queryByTestId } = await renderScreen();
+    expect(await findByTestId("adventure-step-1-zone")).toBeTruthy();
+    expect(queryByTestId("adventure-step-0-zone")).toBeNull();
+  });
+});

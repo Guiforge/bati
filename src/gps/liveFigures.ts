@@ -4,6 +4,7 @@ import {
   formatElevation,
   formatRate,
   formatRateAt,
+  rateKind,
 } from "@/constants/distanceFormat";
 import { DEFAULT_VIEW, type OutingMetric, type OutingView } from "@/constants/outingDisplay";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
@@ -199,4 +200,22 @@ export function pocketGuarded(
 ): boolean {
   const onFoot = (slot.exercise.locomotion ?? "walk") !== "ride";
   return isOutdoors(slot.exercise.style) && onFoot && screenStaysOn(quest, view);
+}
+
+/** The word for a metric, as a locale key. The rate follows the activity read (`rateKind`). */
+export function metricLabelKey(metric: OutingMetric, locomotion: Locomotion): string {
+  switch (metric) {
+    case "time":
+      return "quests.config_duration";
+    case "distance":
+      return "session.expedition_ground";
+    case "rate":
+      return `session.expedition_${rateKind(locomotion)}`;
+    case "rateAvg":
+      return `session.expedition_${rateKind(locomotion)}_avg`;
+    case "climb":
+      return "session.expedition_climb";
+    case "remaining":
+      return "session.expedition_remaining";
+  }
 }

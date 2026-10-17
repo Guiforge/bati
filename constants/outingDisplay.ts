@@ -117,3 +117,11 @@ export function withActivity(
   }
   return Object.keys(entry).length === 0 ? rest : { ...rest, [locomotion]: entry };
 }
+
+/** What the Settings row calls "Customised": a stored change for any activity, or a screen kept on. */
+export function isOutingDisplayCustomised(
+  display: OutingDisplay,
+  keepAwake: readonly Locomotion[],
+): boolean {
+  return Object.keys(display).length > 0 || keepAwake.length > 0;
+}

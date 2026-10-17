@@ -40,6 +40,7 @@ import {
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
+import { OutingDisplayRow } from "@/components/settings/OutingDisplayRow";
 import { PauseRow } from "@/components/settings/PauseRow";
 import { ReminderSection } from "@/components/settings/ReminderSection";
 import { SetAsideRow } from "@/components/settings/SetAsideRow";
@@ -628,6 +629,8 @@ export default function SettingsScreen() {
           <Text testID="settings-map-tiles-note" fontSize="$2" color="$textSecondary" px="$3">
             {t("settings.map_tiles_note")}
           </Text>
+
+          <OutingDisplayRow />
 
           <SettingRow
             icon={<Dumbbell size={22} color="$text" />}

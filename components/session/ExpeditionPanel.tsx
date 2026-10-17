@@ -6,7 +6,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { Mountain } from "@/components/icons";
-import { formatDistance, rateKind } from "@/constants/distanceFormat";
+import { formatDistance } from "@/constants/distanceFormat";
 import type { OutingMetric } from "@/constants/outingDisplay";
 import { formatDuration } from "@/db/estimate";
 import type { Locomotion } from "@/db/schema";
@@ -14,6 +14,7 @@ import { useSessionTimer } from "@/hooks/useSessionTimer";
 import {
   type FigureContext,
   figureText,
+  metricLabelKey,
   resolvePlaces,
   screenStaysOn,
 } from "@/src/gps/liveFigures";
@@ -111,24 +112,6 @@ function GoalBar({
   );
 }
 
-/** The word for a metric, as a locale key. The rate follows the activity read (`rateKind`). */
-function labelKey(metric: OutingMetric, locomotion: Locomotion): string {
-  switch (metric) {
-    case "time":
-      return "quests.config_duration";
-    case "distance":
-      return "session.expedition_ground";
-    case "rate":
-      return `session.expedition_${rateKind(locomotion)}`;
-    case "rateAvg":
-      return `session.expedition_${rateKind(locomotion)}_avg`;
-    case "climb":
-      return "session.expedition_climb";
-    case "remaining":
-      return "session.expedition_remaining";
-  }
-}
-
 /**
  * A figure and the word for it underneath, at the size a glance from a handlebar can still read.
  * `bare` is the big number the hero never chose: it has always stood without a word.
@@ -184,7 +167,7 @@ function SmallFigures({
       {metrics.map((metric, index) => (
         <Reading
           key={metric}
-          label={t(labelKey(metric, locomotion))}
+          label={t(metricLabelKey(metric, locomotion))}
           end={!stacked && index === metrics.length - 1 && index > 0}
         >
           <XStack items="center" gap="$1">
@@ -282,7 +265,7 @@ export function ExpeditionPanel() {
 
   return (
     <Card p="$4" gap="$3">
-      <Reading label={t(labelKey(places.big, view.locomotion))} bare={!places.bigLabelled}>
+      <Reading label={t(metricLabelKey(places.big, view.locomotion))} bare={!places.bigLabelled}>
         <AppText
           testID="expedition-big"
           variant="display"

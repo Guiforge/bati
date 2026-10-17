@@ -233,6 +233,13 @@ il serait absurde de débloquer les longues sorties sans les payer.
 
 ### L'écran de séance
 
+- *« Affichage des sorties »* (`app/outing-display.tsx`, entrée sous la carte dans Réglages et lien
+  sous les objectifs) : trois onglets Marche, Course, Vélo (la randonnée partage Marche, et une quête
+  mixte lit l'activité réellement faite, `displayLocomotion`). Un gros chiffre et trois petits tirés
+  d'un catalogue fermé (`constants/outingDisplay.ts`), la carte ou les chiffres en grand, l'écran
+  qui s'éteint ou reste allumé, et sur Vélo un préréglage « Sur un guidon » sans état propre. Tout
+  s'écrit au tap. La vue est figée au départ de la sortie : un réglage changé en route ne l'atteint
+  pas, une reprise après un kill la relit.
 - *Le gros chiffre porte son mot dès que le héros l'a choisi* (« Affichage des sorties », D-35 Q6) :
   pas de mot sous le gros chiffre par défaut, un mot dessous quand sa place n'est pas `auto`.
 

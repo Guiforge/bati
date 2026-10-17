@@ -4,6 +4,7 @@ import * as SecureStore from "expo-secure-store";
 import {
   BUILD_MIGRATIONS,
   compareWithPeer,
+  MERGED_PREFERENCES,
   type PeerComparison,
   stateFingerprint,
   validateBackup,
@@ -371,11 +372,13 @@ async function changedSinceUpload(
 
 /**
  * What every verdict about a peer assumes: this device's history, the key it is sealed with, and
- * the build reading it (a peer refused as too new may open after an app update). It is also the
- * upload marker, so an update sends this device's file once more, for peers that were waiting on it.
+ * the build reading it (a peer refused as too new may open after an app update), and the
+ * preferences it compares: a release that compares one more key, with no migration and no
+ * fingerprint change, would otherwise keep a cached "level" verdict for a peer whose file now has
+ * news in that key. It is also the upload marker, so an update sends this device's file once more, for peers that were waiting on it.
  */
 async function localState(): Promise<string> {
-  return `${await stateFingerprint()}#${await sealingHeader()}#${BUILD_MIGRATIONS}#${CIPHER_READS}`;
+  return `${await stateFingerprint()}#${await sealingHeader()}#${BUILD_MIGRATIONS}#${CIPHER_READS}#${MERGED_PREFERENCES.join(",")}`;
 }
 
 /**

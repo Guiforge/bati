@@ -65,7 +65,7 @@ Invariant: with skewed clocks, the side with the later `updatedAt` wins hero con
 edit was really last.
 
 **R7. `MERGED_PREFERENCES` = villageName, avatarId, customAvatar, trainingLevel, ownedEquipment, oath,
-oathBonusAt, reminderDays, crestAnimal, crestCoat, crestMotto.** `db/backup.ts` (`MERGED_PREFERENCES`). `crestMotto` is a motto id of the closed list in `db/crestMotto.ts` or `none`, same discipline.
+oathBonusAt, reminderDays, crestAnimal, crestCoat, crestMotto, outingDisplay.** `db/backup.ts` (`MERGED_PREFERENCES`). `crestMotto` is a motto id of the closed list in `db/crestMotto.ts` or `none`, same discipline.
 `crestAnimal` is `auto` or an animal slug; a missing or unknown value reads as `auto`. Nothing
 writes a default (a device that never chose has no row, or two such devices would diverge in
 `db-peer-compare`), and going back to the animal the sessions chose writes `auto`, never a delete:
@@ -77,6 +77,13 @@ delete the row; a delete was undone by the next merge with a device that still h
 `crestCoat` (`getCrestCoat`, `setCrestCoat`; `db-peer-merge` holds the test) is `auto` or `usual` under the same discipline: one choice for the whole
 hero, no default written, back to `auto` writes `auto`, an unknown value reads as `auto`. A `db-peer-merge`
 test checks that an `auto` written later beats an older `usual`, in both merge directions.
+`outingDisplay` (`getOutingDisplay`, `setOutingDisplay`; `constants/outingDisplay.ts`) is a JSON blob,
+the hero's choice of what the outing panel shows per activity, one last-writer-wins value for the three
+activities. No default is written (a device that never opened the screen has no row), back to the
+original writes `{}`, never a delete (a missing row reads as the peer being newer), an unknown
+activity, metric or layout reads as the default, and `setOutingDisplay` writes nothing when the stored
+value would not change (a restamp is news for every peer). `db-peer-merge` holds the five tests. The
+screen-on choice is not in this blob: it is the phone's (R35).
 Invariant: only these keys ever change in `user_preferences` through a merge (plus R12); `auto`
 written later wins over an older animal on the other device, in both merge directions.
 
@@ -101,7 +108,11 @@ tombstone count | `sum(xpEarned) ':' count ':' max(deletedAt)` over `deleted_con
 (`answered`) given before merge v2 has three segments and matches the first three of the four (`judge`
 in `src/deviceSync.ts`); new answers store the whole. The update bumps the newest migration, so every
 device re-uploads and re-judges every peer once, on purpose. `db/backup.ts` (`sessionsStamp`). With no edit the first term is what it was
-before 0072, so an answer the hero already gave is not asked again.
+before 0072, so an answer the hero already gave is not asked again. The formula is unchanged by
+`outingDisplay`; what changed is `localState` in `src/deviceSync.ts`, which now ends with the
+`MERGED_PREFERENCES` list: a release that compares one more key, with no migration, would otherwise keep
+a cached `level` verdict for a peer whose file now holds news in it. Such a release re-uploads and
+re-judges every peer once, as a migration release does.
 Invariant: correcting a set or giving feedback after the save changes the fingerprint, every time:
 `nextEditStamp` writes `max(now, stamp + 1)`, so the sum grows even within one second or past a
 stamp merged from a phone whose clock runs ahead. Editing `notes` does not; a bonus added to a session changes the fourth segment only; adding
@@ -312,7 +323,9 @@ if it was absent; `savedSession` is absent.
 Android's backup):** vault key and slots (`bati.backup.vault`), keyring, recovery key, install id
 and sealing counter (`bati.sync.identity`), sync account, answered, uploaded, ownEtag, verdicts,
 counters, forgotten, merged, lastMerge, health, and the vault-update clock
-`bati.vault.firstSeen` / `bati.vault.updateOffered`.
+`bati.vault.firstSeen` / `bati.vault.updateOffered`, and the activities whose screen stays on during an
+outing, `bati.outing.keepAwake` (`src/outingKeepAwake.ts`): a pocket phone must never inherit the handlebar
+phone's lit screen from a restore, a sync or Android's backup.
 `src/backupCipher.ts:98-105`, `src/installId.ts:18-19`, `src/deviceSync.ts:76-97, 219, 859-861`,
 `src/vaultUpdateDelay.ts:21-23`.
 Invariant: restore and merge change none of these keys.

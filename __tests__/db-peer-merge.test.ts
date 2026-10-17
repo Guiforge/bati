@@ -820,6 +820,87 @@ describe("the crest follows the journal, not the device", () => {
     await converged(laterAuto);
   });
 
+  test("outingDisplay: the newer blob wins, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 3_000);
+    const older = await peer("older-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 2_000),
+    );
+    await merge().mergePeer(older);
+    expect(prefValue("outingDisplay")).toBe('{"run":{"big":"distance"}}');
+    await converged(older);
+
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 2_000);
+    const newer = await peer("newer-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 3_000),
+    );
+    await merge().mergePeer(newer);
+    expect(prefValue("outingDisplay")).toBe('{"run":{"big":"rate"}}');
+    await converged(newer);
+  });
+
+  test("outingDisplay: a reset written later beats an older setting, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", "{}", 3_000);
+    const olderSetting = await peer("older-setting.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 2_000),
+    );
+    await merge().mergePeer(olderSetting);
+    expect(prefValue("outingDisplay")).toBe("{}");
+    await converged(olderSetting);
+
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 2_000);
+    const laterReset = await peer("later-reset.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", "{}", 3_000),
+    );
+    await merge().mergePeer(laterReset);
+    expect(prefValue("outingDisplay")).toBe("{}");
+    await converged(laterReset);
+  });
+
+  test("outingDisplay is news once, then level", async () => {
+    addSession(t.sqlite, 1_000);
+    const withRow = await peer("with-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"ride":{"big":"rate"}}', 2_000),
+    );
+    expect(await backup().compareWithPeer(withRow)).toMatchObject({
+      peerChanges: 1,
+      localChanges: 0,
+    });
+    await merge().mergePeer(withRow);
+    expect(await backup().compareWithPeer(withRow)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+    expect(await backup().stateFingerprint()).toBe(
+      (await backup().compareWithPeer(withRow)).fingerprint,
+    );
+  });
+
+  test("a peer on the previous build (no row) leaves this device's display and reads as behind", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", '{"ride":{"big":"rate"}}', 2_000);
+    const old = await peer("old-build.db", (sqlite) =>
+      sqlite.prepare("DELETE FROM user_preferences WHERE key = 'outingDisplay'").run(),
+    );
+    expect(await backup().compareWithPeer(old)).toMatchObject({
+      localChanges: 1,
+      peerChanges: 0,
+    });
+    await merge().mergePeer(old);
+    expect(prefValue("outingDisplay")).toBe('{"ride":{"big":"rate"}}');
+  });
+
+  test("a device that never opened the screen has no row, and two such devices are level", async () => {
+    addSession(t.sqlite, 1_000);
+    const fresh = await peer("fresh-display.db");
+    expect(prefValue("outingDisplay")).toBeUndefined();
+    expect(await backup().compareWithPeer(fresh)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+  });
+
   test("crestMotto: a none written later beats an older motto, either way", async () => {
     addSession(t.sqlite, 1_000);
     setPref(t.sqlite, "crestMotto", "none", 3_000);

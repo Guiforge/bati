@@ -1,5 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { getLocales } from "expo-localization";
+import { type OutingDisplay, parseOutingDisplay } from "@/constants/outingDisplay";
 import { reportError } from "../src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { CrestCoat } from "./crestCoat";
@@ -497,6 +498,29 @@ export const preferences = {
   // Written by the crest sheet's coat choice, read by `portraitOf` (db/crest.ts).
   async setCrestCoat(choice: CrestCoat): Promise<void> {
     await setPreference("crestCoat", choice);
+  },
+
+  /**
+   * What the hero chose to see on the live outing panel, per activity (`constants/outingDisplay`).
+   * A sparse JSON blob: nothing writes a default, so a device that never opened the screen has no
+   * row and two such devices are level in a sync. Back to the original writes `{}`, never a
+   * delete: a missing row reads as the other device being newer (`db/merge.ts`).
+   */
+  async getOutingDisplay(): Promise<OutingDisplay> {
+    return parseOutingDisplay(await getPreference("outingDisplay"));
+  },
+
+  /**
+   * Writes only when something changes: `setPreference` restamps `updatedAt` even for an equal
+   * value, and tapping the choice already made would send the peer a news item it merges (and
+   * reloads the app for) over nothing. An absent row and `{}` are the same answer here, so a reset
+   * on a device that never set anything writes nothing either.
+   */
+  async setOutingDisplay(display: OutingDisplay): Promise<void> {
+    const next = JSON.stringify(display);
+    const current = JSON.stringify(parseOutingDisplay(await getPreference("outingDisplay")));
+    if (next === current) return;
+    await setPreference("outingDisplay", next);
   },
 
   /**

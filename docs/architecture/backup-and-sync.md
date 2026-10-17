@@ -299,6 +299,14 @@ at run start; adventure runs are not synced, so a second phone decides for itsel
   (`db/progress.ts`), so sync has nothing of its own to carry for them and a release that only
   changes how they are read does not change any device's fingerprint. It is a shared SQL fragment,
   not a view: a backup holding a view is refused (`validateBackup`).
+- **The outing display** (`outingDisplay`) is a merged preference: one JSON blob, last writer wins,
+  back to the original writes `{}` and never deletes the row. It needed no migration, which is what
+  keeps a phone on the previous version merging with one on this version (`validateBackup` and
+  `mergePeer` refuse only a newer migration). `localState` ends with the list of merged keys for the
+  same reason `CIPHER_READS` is in it: an updated phone drops its cached verdicts and re-judges
+  its peers once. Whether the screen stays on during an outing is not synced and not in the
+  database: it is a SecureStore item (`src/outingKeepAwake.ts`), so a new phone starts with the
+  screen going off.
 - **Transport**: WebDAV. Nextcloud signs in through the browser (Login Flow v2, a revocable app
   password; the page and poll endpoint must be on the server or on https, and the account keeps the
   address the hero typed). Any other server, behind presets (kDrive, Koofr, Round Sync for rclone),

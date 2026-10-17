@@ -269,6 +269,10 @@ export const MERGED_PREFERENCES = [
   "crestCoat",
   // One of the closed list of mottos (db/crestMotto.ts) or `none`: the hero's words, not this phone's.
   "crestMotto",
+  // The hero's outing display, a JSON blob; back to the original writes `{}`, never a delete, or
+  // the merge would read the missing row as the other device being newer (db/merge.ts). The
+  // keep-awake choice is not here: it is the phone's, in SecureStore (src/outingKeepAwake.ts).
+  "outingDisplay",
 ] as const;
 
 /**

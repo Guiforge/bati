@@ -47,8 +47,9 @@ export function LightWeekNote({
   const end = () => {
     haptics.selection();
     setUntil(null);
-    onEnded?.();
-    endLightWeek(new Date()).catch((error: unknown) => reportError("lightWeek.end", error));
+    endLightWeek(new Date())
+      .then(() => onEnded?.())
+      .catch((error: unknown) => reportError("lightWeek.end", error));
   };
 
   return (

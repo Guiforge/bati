@@ -33,7 +33,7 @@ import { useSyncStore } from "@/stores/sync";
  * shortcut: the next notice waits for the next focus after the winner is closed, re-decide on
  * dismiss if testers find the empty slot odd.
  */
-export function NoticeSlot() {
+export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
   const { recoverableSession, isChecking, recoverSession, finishSession, discardSession } =
     useSessionRecovery();
   const language = useSettingsStore((s) => s.language);
@@ -106,7 +106,9 @@ export function NoticeSlot() {
     case "sync":
       return <SyncCard />;
     case "lightWeek":
-      return <LightWeekCard />;
+      return (
+        <LightWeekCard {...(onLightWeekAnswered ? { onAnswered: onLightWeekAnswered } : {})} />
+      );
     case "whatsNew":
       return <WhatsNewCard />;
     case "update":

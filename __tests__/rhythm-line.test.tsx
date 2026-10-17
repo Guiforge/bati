@@ -85,3 +85,16 @@ test("during a pause only the pause is said", async () => {
   await waitFor(() => expect(screen.getByTestId("home-pause-line")).toBeTruthy());
   expect(screen.queryByTestId("light-week-note")).toBeNull();
 });
+
+test("ending the week tells Home once the write landed, so the tiles read it again", async () => {
+  mockUntil = new Date("2026-10-24T12:00:00");
+  const onEnded = jest.fn();
+  await render(
+    <TamaguiProvider config={config} defaultTheme="dark">
+      <RhythmLine onLightWeekEnded={onEnded} />
+    </TamaguiProvider>,
+  );
+  await waitFor(() => expect(screen.getByTestId("light-week-note")).toBeTruthy());
+  await fireEvent.press(screen.getByTestId("light-week-end"));
+  await waitFor(() => expect(onEnded).toHaveBeenCalledTimes(1));
+});

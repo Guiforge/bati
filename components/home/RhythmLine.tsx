@@ -15,7 +15,7 @@ import { useSettingsStore } from "@/stores/settings";
  * opening the screen that ends it), else a light week that is. A pause outranks the week: the
  * offer is not made inside one (`lightWeekReason`), and a week accepted before it is on hold.
  */
-export function RhythmLine() {
+export function RhythmLine({ onLightWeekEnded }: { onLightWeekEnded?: () => void }) {
   const { t } = useTranslation();
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
@@ -37,7 +37,8 @@ export function RhythmLine() {
   );
 
   if (pauseUntil === undefined) return null;
-  if (pauseUntil === null) return <LightWeekNote />;
+  if (pauseUntil === null)
+    return <LightWeekNote {...(onLightWeekEnded ? { onEnded: onLightWeekEnded } : {})} />;
 
   return (
     <Card

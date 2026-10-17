@@ -58,6 +58,11 @@ export default function HomeScreen() {
     useCallback(() => disclosure().then(setDisclosed), []),
   );
 
+  // Bumped when the light week is accepted or ended: the note and the tiles price their rounds off
+  // it, and are keyed on it so they read it again instead of waiting for the next focus.
+  const [weekRev, setWeekRev] = useState(0);
+  const weekChanged = useCallback(() => setWeekRev((r) => r + 1), []);
+
   return (
     <YStack testID="home-screen" flex={1} bg="$background" {...dragCancelsPress}>
       {/* The whole top chrome: identity, level, XP, streak, village. Owns the top inset. */}
@@ -74,14 +79,14 @@ export default function HomeScreen() {
       >
         {/* One notice at a time, the first in noticeOrder.ts: an interrupted session outranks
             sync, the notes, an update, the backup and the reminders. */}
-        <NoticeSlot />
-        <RhythmLine />
+        <NoticeSlot onLightWeekAnswered={weekChanged} />
+        <RhythmLine key={weekRev} onLightWeekEnded={weekChanged} />
 
         {/* Tonight's scene, one action that starts it, the rest advice and the oath under it */}
-        <HomeStage oathStrip={disclosed?.oathStrip ?? null} />
+        <HomeStage key={weekRev} oathStrip={disclosed?.oathStrip ?? null} />
 
         {/* The doors out, and the last quest again, in the thumb's reach */}
-        <QuickActions showGoals={disclosed?.outingGoals ?? null} />
+        <QuickActions key={weekRev} showGoals={disclosed?.outingGoals ?? null} />
       </ScrollView>
     </YStack>
   );

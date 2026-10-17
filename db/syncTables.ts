@@ -2,7 +2,8 @@
  * What device sync does with every table, so that a table added later is a decision and not an accident
  * (`__tests__/db-sync-classification.test.ts` fails on a table that is classed nowhere):
  *
- * - `merged`: copied to the other device by `mergePeer` and read by `compareWithPeer`.
+ * - `merged`: copied to the other device by `mergePeer` and read by `compareWithPeer`. `adventures` and
+ *   `adventure_steps` are merged for the hero's rows only (0075): the game's are mapped by `enTitle`.
  * - `local`: stays on this device. Campaigns and boss fights cannot be replayed from another device; seed content is
  *   the same on both.
  * - `unused`: in the schema and read by no code (the village economy was removed, roadmap 7).
@@ -21,8 +22,8 @@ export const TABLE_SYNC = {
   quests: "merged",
   quest_exercises: "merged",
   user_preferences: "merged",
-  adventures: "local",
-  adventure_steps: "local",
+  adventures: "merged",
+  adventure_steps: "merged",
   adventure_runs: "local",
   adventure_run_steps: "local",
   boss_fights: "local",

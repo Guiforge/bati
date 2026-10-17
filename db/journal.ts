@@ -20,6 +20,7 @@ import type { AchievementProgress } from "./achievements";
 import { db, schema } from "./client";
 import { type CompletedSession, isWorkout, parseRecords, type StoredRecord } from "./completed";
 import { dayKey } from "./dates";
+import { DEED_ADVENTURE } from "./deed";
 import {
   fetchLadderRows,
   recentMetFlagsBatch,
@@ -573,6 +574,8 @@ export async function getBossKills(): Promise<BossKill[]> {
       and(
         eq(adventureRuns.status, "finished"),
         eq(adventures.kind, "boss"),
+        // Deeds count the game's adventures only (R2).
+        DEED_ADVENTURE,
         isNotNull(adventureRuns.finishedAt),
       ),
     )
@@ -1039,7 +1042,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
       bossImagePath: adventures.bossImagePath,
     })
     .from(adventures)
-    .where(and(eq(adventures.kind, "boss"), eq(adventures.isActive, 1)))
+    .where(and(eq(adventures.kind, "boss"), eq(adventures.isActive, 1), DEED_ADVENTURE))
     .orderBy(adventures.sortOrder, adventures.id);
   return bosses
     .filter((a) => !wonIds.has(a.id))

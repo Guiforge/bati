@@ -43,6 +43,12 @@ export type BossFight = {
   deName: string;
   esName: string;
   /**
+   * Whose adventure this is. Optional on purpose: `SavedSessionState` persists the fight, so one
+   * restored from a session saved by a build before 0075 has none, and that fight is the game's
+   * (`countsAsDeed`). Absent reads as the game's.
+   */
+  author?: string;
+  /**
    * How many times this boss has already been beaten — 0 on the first encounter. Derived from
    * finished runs of the adventure rather than stored: a finished boss campaign IS the victory
    * (getBossBanners counts it exactly this way), so the two cannot disagree. Tier ≥ 1 is the
@@ -347,6 +353,7 @@ export async function getOrCreateBossFight(
       bossTotalHp: adventures.bossTotalHp,
       bossWeaknessMuscle: adventures.bossWeaknessMuscle,
       bossResistanceMuscle: adventures.bossResistanceMuscle,
+      author: adventures.author,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
       enTitle: adventures.enTitle,
@@ -383,8 +390,8 @@ export async function getOrCreateBossFight(
       adventureId: row.adventureId,
       totalHp: row.totalHp,
       currentHp: row.currentHp,
-      weaknessMuscle: row.weaknessMuscle as MuscleCode | null,
-      resistanceMuscle: row.resistanceMuscle as MuscleCode | null,
+      weaknessMuscle: adventure.bossWeaknessMuscle,
+      resistanceMuscle: adventure.bossResistanceMuscle,
       defeatedAt: row.defeatedAt,
       createdAt: row.createdAt ?? new Date(),
       updatedAt: row.updatedAt ?? new Date(),
@@ -393,6 +400,7 @@ export async function getOrCreateBossFight(
       frName: adventure.frTitle,
       deName: adventure.deTitle,
       esName: adventure.esTitle,
+      author: adventure.author,
       tier,
       shiny,
     };
@@ -424,8 +432,8 @@ export async function getOrCreateBossFight(
     adventureId: row.adventureId,
     totalHp: row.totalHp,
     currentHp: row.currentHp,
-    weaknessMuscle: row.weaknessMuscle as MuscleCode | null,
-    resistanceMuscle: row.resistanceMuscle as MuscleCode | null,
+    weaknessMuscle: adventure.bossWeaknessMuscle,
+    resistanceMuscle: adventure.bossResistanceMuscle,
     defeatedAt: row.defeatedAt,
     createdAt: row.createdAt ?? new Date(),
     updatedAt: row.updatedAt ?? new Date(),
@@ -434,6 +442,7 @@ export async function getOrCreateBossFight(
     frName: adventure.frTitle,
     deName: adventure.deTitle,
     esName: adventure.esTitle,
+    author: adventure.author,
     tier,
     shiny,
   };
@@ -453,8 +462,11 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
       adventureId: bossFights.adventureId,
       totalHp: bossFights.totalHp,
       currentHp: bossFights.currentHp,
-      weaknessMuscle: bossFights.weaknessMuscle,
-      resistanceMuscle: bossFights.resistanceMuscle,
+      // The monster's stats are the adventure's, not the fight row's: a hero who changes the
+      // monster between two parties must get the new one's weakness on the next hit (R3).
+      weaknessMuscle: adventures.bossWeaknessMuscle,
+      resistanceMuscle: adventures.bossResistanceMuscle,
+      author: adventures.author,
       defeatedAt: bossFights.defeatedAt,
       createdAt: bossFights.createdAt,
       updatedAt: bossFights.updatedAt,
@@ -487,6 +499,7 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     frName: row.frTitle,
     deName: row.deTitle,
     esName: row.esTitle,
+    author: row.author,
     // A felled fight is named and painted at the tier it was fought at: the run that just ended
     // is already counted, and the legendary name belongs to the rematch once it starts.
     tier: Math.max(
@@ -541,6 +554,22 @@ export async function calculateBossHp(
     .from(adventureSteps)
     .where(eq(adventureSteps.adventureId, adventureId));
 
+  return bossHpForQuests(
+    steps.map((s) => s.questId),
+    userLevel,
+  );
+}
+
+/**
+ * The pool of a boss whose steps are these quests, in order, repeats counted. `calculateBossHp`
+ * loads a stored adventure's and calls this; the adventure editor calls it with a draft, so the
+ * figure it shows is the figure the fight will use.
+ */
+export async function bossHpForQuests(
+  stepQuestIds: readonly number[],
+  userLevel: DifficultyCode,
+): Promise<number> {
+  const steps = stepQuestIds.map((questId) => ({ questId }));
   if (steps.length === 0) return scaleBossHp(100, userLevel); // Default HP
 
   // A quest can appear in more than one step (e.g. repeated within a campaign); its

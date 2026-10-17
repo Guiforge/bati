@@ -1,5 +1,5 @@
 import { differenceInCalendarDays } from "date-fns";
-import { and, count, countDistinct, desc, eq, gt, gte, lt, ne, sql, sum } from "drizzle-orm";
+import { and, asc, count, countDistinct, desc, eq, gt, gte, lt, ne, sql, sum } from "drizzle-orm";
 import type { SQLiteColumn } from "drizzle-orm/sqlite-core";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
@@ -429,6 +429,26 @@ export function nextEditStamp(column: SQLiteColumn) {
 }
 
 /**
+ * The run step after this one: the next real one, never `stepIndex + 1`, so a gap in the indexes
+ * (a step a hero adventure lost) never ends a run early. Here and not in `adventures.ts`, which
+ * reaches this file through `quests.ts` and would close a cycle.
+ */
+export async function nextRunStep(
+  exec: typeof db | TransactionTx,
+  runId: number,
+  stepIndex: number,
+): Promise<{ id: number; questId: number } | null> {
+  const { adventureRunSteps } = schema;
+  const [next] = await exec
+    .select({ id: adventureRunSteps.id, questId: adventureRunSteps.questId })
+    .from(adventureRunSteps)
+    .where(and(eq(adventureRunSteps.runId, runId), gt(adventureRunSteps.stepIndex, stepIndex)))
+    .orderBy(asc(adventureRunSteps.stepIndex))
+    .limit(1);
+  return next ?? null;
+}
+
+/**
  * Take a session out of the journal, as if it had never been logged.
  *
  * XP, level, streak, village, records and leagues are all read back from these rows, so they
@@ -548,15 +568,13 @@ async function reopenCampaignStep(tx: TransactionTx, sessionId: number): Promise
     .update(adventureRunSteps)
     .set({ status: "active", completedSessionId: null, completedAt: null })
     .where(eq(adventureRunSteps.id, step.id));
-  await tx
-    .update(adventureRunSteps)
-    .set({ status: "locked", startedAt: null })
-    .where(
-      and(
-        eq(adventureRunSteps.runId, step.runId),
-        eq(adventureRunSteps.stepIndex, step.stepIndex + 1),
-      ),
-    );
+  const following = await nextRunStep(tx, step.runId, step.stepIndex);
+  if (following) {
+    await tx
+      .update(adventureRunSteps)
+      .set({ status: "locked", startedAt: null })
+      .where(eq(adventureRunSteps.id, following.id));
+  }
   await tx
     .update(adventureRuns)
     .set({ status: "active", finishedAt: null })

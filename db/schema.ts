@@ -652,9 +652,10 @@ export const bossFights = sqliteTable(
     totalHp: int().notNull(),
     // Current HP remaining (persists across sessions)
     currentHp: int().notNull(),
-    // Muscle group that deals bonus damage (1.5x)
+    // Muscle group that deals bonus damage (1.5x). Written at creation and read by nothing: the
+    // fight reads the adventure's (`adventures.bossWeaknessMuscle`), which a hero can change.
     weaknessMuscle: text().$type<MuscleCode>(),
-    // Muscle group that deals reduced damage (0.5x)
+    // Muscle group that deals reduced damage (0.5x). Same as above.
     resistanceMuscle: text().$type<MuscleCode>(),
     // Timestamp when boss was defeated (null if still alive)
     defeatedAt: int({ mode: "timestamp" }),

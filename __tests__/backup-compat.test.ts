@@ -24,6 +24,9 @@ import { clientMock, createTestDb } from "./helpers/testDb";
  * as "that backup could not be restored", months after the release that caused it.
  */
 
+/** The migration that gave adventures their uuid. */
+const HERO_ADVENTURES_IDX = 75;
+
 type Journal = { entries: { idx: number; when: number }[] };
 const journal: Journal = JSON.parse(
   fs.readFileSync(path.join(process.cwd(), "drizzle", "meta", "_journal.json"), "utf8"),
@@ -46,7 +49,7 @@ function schemaOf(sqlite: Database.Database): string[] {
  * session with an exercise in it once the seed has exercises to point at, which is what the
  * migrations that backfill or rebuild those tables have to carry across.
  */
-function play(sqlite: Database.Database) {
+function play(sqlite: Database.Database, idx: number) {
   sqlite.prepare("INSERT INTO user_preferences (key, value) VALUES ('language', 'fr')").run();
   const at = 1_750_000_000;
   const session = Number(
@@ -67,6 +70,28 @@ function play(sqlite: Database.Database) {
          VALUES (?, ?, 0, 0, 'reps', 12, ?)`,
       )
       .run(session, exercise.id, at);
+  }
+  // The hero's own adventure, only where `adventures.uuid` exists (0075): at an earlier point the
+  // column is not there, and no build could have written one.
+  if (idx >= HERO_ADVENTURES_IDX) {
+    const quest = sqlite.prepare("SELECT id FROM quests ORDER BY id LIMIT 1").get() as {
+      id: number;
+    };
+    const adventure = Number(
+      sqlite
+        .prepare(
+          `INSERT INTO adventures (questId, enTitle, frTitle, author, uuid, sortOrder)
+           VALUES (?, 'Tale', 'Tale', 'hero', '0192c000-0000-7000-8000-00000000000a', 1000)`,
+        )
+        .run(quest.id).lastInsertRowid,
+    );
+    for (const stepIndex of [0, 1]) {
+      sqlite
+        .prepare(
+          "INSERT INTO adventure_steps (adventureId, stepIndex, questId, enNarrative) VALUES (?, ?, ?, 'on')",
+        )
+        .run(adventure, stepIndex, quest.id);
+    }
   }
   return { hasExercise: exercise !== undefined };
 }
@@ -95,7 +120,7 @@ describe("a backup from any earlier migration point", () => {
       // What an older build had on disk, written by the runner that build shipped.
       const old = new Database(":memory:");
       await migrate(old, idx);
-      const { hasExercise } = play(old);
+      const { hasExercise } = play(old, idx);
       // The identity `stampDatabaseIdentity` writes at every launch, so its snapshots carry it.
       const { BATI_APPLICATION_ID } = require("../db/backup") as typeof import("../db/backup");
       const { SCHEMA_VERSION } =
@@ -127,6 +152,16 @@ describe("a backup from any earlier migration point", () => {
         expect(restored.prepare("SELECT resultValue FROM completed_exercises").all()).toEqual(
           hasExercise ? [{ resultValue: 12 }] : [],
         );
+        if (idx >= HERO_ADVENTURES_IDX) {
+          expect(
+            restored
+              .prepare(
+                `SELECT a.uuid AS uuid, count(s.id) AS steps FROM adventures a
+                 JOIN adventure_steps s ON s.adventureId = a.id WHERE a.author = 'hero'`,
+              )
+              .get(),
+          ).toEqual({ uuid: "0192c000-0000-7000-8000-00000000000a", steps: 2 });
+        }
       } finally {
         restored.close();
       }

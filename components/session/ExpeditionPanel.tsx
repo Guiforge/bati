@@ -32,6 +32,7 @@ export function ExpeditionPanel() {
    * and the recap read the same choice (`useRateKind`).
    */
   const view = useExpeditionStore((state) => state.view);
+  const lapFromMs = useExpeditionStore((state) => state.lap.fromMs);
   const quest = useSessionStore((state) => state.quest);
 
   /**
@@ -64,6 +65,7 @@ export function ExpeditionPanel() {
       goal={goal}
       goalReached={goalReached}
       recordedSeconds={recorded}
+      lapFromMs={lapFromMs}
       showPocketHint={quest === null || !screenStaysOn(quest, view)}
     />
   );

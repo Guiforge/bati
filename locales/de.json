@@ -745,7 +745,8 @@
     "tonight_badge_record": "Rekord",
     "tonight_epilogue": "Deine Kampagne ist abgeschlossen.",
     "tonight_anniversary_one": "Dein Dorf ist ein Jahr alt.",
-    "tonight_anniversary_other": "Dein Dorf ist {{count}} Jahre alt."
+    "tonight_anniversary_other": "Dein Dorf ist {{count}} Jahre alt.",
+    "expedition_lap": "Aktuelle Wegstunde"
   },
   "muscles": {
     "arms": "Arme",

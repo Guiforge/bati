@@ -2,6 +2,8 @@ import { DEFAULT_VIEW, type OutingView } from "@/constants/outingDisplay";
 import {
   type FigureContext,
   figureText,
+  LAP_START,
+  nextLap,
   resolvePlaces,
   screenStaysOn,
 } from "@/src/gps/liveFigures";
@@ -20,6 +22,7 @@ function ctx(over: Partial<FigureContext> = {}): FigureContext {
     language: "en",
     rate: "pace",
     walkRun: false,
+    lapFromMs: null,
     ...over,
   };
 }
@@ -145,5 +148,29 @@ describe("screenStaysOn", () => {
     expect(screenStaysOn(pure, { keepAwake: false })).toBe(false);
     expect(screenStaysOn(pure, { keepAwake: true })).toBe(true);
     expect(screenStaysOn(mixed, { keepAwake: false })).toBe(true);
+  });
+});
+
+describe("the current league", () => {
+  const at = (distanceM: number, movingMs: number) => ({ ...MOVING, distanceM, movingMs });
+
+  test("nextLap moves at a crossing and only forward", () => {
+    expect(nextLap(LAP_START, at(900, 600_000))).toBe(LAP_START);
+    const crossed = nextLap(LAP_START, at(1004, 700_000));
+    expect(crossed).toEqual({ league: 1, fromMs: 700_000 });
+    // A refund that brings the distance back under the league leaves the mark where it was.
+    expect(nextLap(crossed, at(990, 690_000))).toBe(crossed);
+    expect(nextLap(crossed, at(2100, 900_000))).toEqual({ league: 2, fromMs: 900_000 });
+  });
+
+  test("is kept in its place, with a dash where there is no live lap", () => {
+    const places = resolvePlaces(view({ small: ["lap", null, null] }), ctx({ lapFromMs: null }));
+    expect(places.small).toEqual(["lap"]);
+    expect(figureText("lap", ctx({ lapFromMs: null }), true)).toBe("-");
+    expect(figureText("lap", ctx({ lapFromMs: 250_000 }), true)).toBe("5:50");
+  });
+
+  test("never reads under zero", () => {
+    expect(figureText("lap", ctx({ lapFromMs: 700_000 }), true)).toBe("0:00");
   });
 });

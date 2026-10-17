@@ -1,5 +1,6 @@
 import type { LocationFix, NoFixEvent } from "@/modules/bati-location";
 import { DEFAULT_LIVE_VIEW } from "@/src/gps/liveFigures";
+import { accept, EMPTY } from "@/src/gps/track";
 
 const mockListeners = new Map<string, (payload: never) => void>();
 const mockAppendPoints = jest.fn().mockResolvedValue(undefined);
@@ -929,6 +930,65 @@ describe("stores/expedition", () => {
 
       expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(45));
       expect(mockHaptic).not.toHaveBeenCalled();
+    });
+
+    describe("the current league", () => {
+      test("starts at the moving clock of the fix that crossed a league", async () => {
+        await store.getState().begin("s1", NOTIFICATION, false, "metric");
+        expect(store.getState().lap).toEqual({ league: 0, fromMs: 0 });
+
+        let crossedAt: number | null = null;
+        for (let i = 0; i <= 30; i++) {
+          emit(striding(i));
+          const { track, lap } = store.getState();
+          if (crossedAt === null && lap.league === 1) crossedAt = track.movingMs;
+        }
+        expect(crossedAt).not.toBeNull();
+        expect(store.getState().lap.fromMs).toBe(crossedAt);
+        expect(crossedAt).toBeGreaterThan(0);
+      });
+
+      test("a pause refund back under the league does not move the lap back", async () => {
+        await store.getState().begin("s1", NOTIFICATION, false, "metric");
+        for (let i = 0; i <= 22; i++) emit(striding(i));
+        const crossed = store.getState().lap;
+        expect(crossed.league).toBe(1);
+        // Stand still past the pause window: the advance comes back out of distance and clock.
+        for (let k = 1; k <= 8; k++) emit({ ...striding(22), t: T0 + 220_000 + k * 10_000 });
+        expect(store.getState().lap).toEqual(crossed);
+      });
+
+      test("a resumed outing lands on the lap that started at its last crossing", async () => {
+        const walked = Array.from({ length: 71 }, (_, i) => striding(i));
+        mockPointsOf.mockResolvedValue(walked);
+        await store.getState().begin("s1", NOTIFICATION, false, "metric");
+
+        let track = EMPTY;
+        let crossing = 0;
+        for (const fix of walked) {
+          track = accept(track, fix);
+          if (crossing === 0 && track.distanceM >= 3000) crossing = track.movingMs;
+        }
+        expect(store.getState().lap.league).toBe(3);
+        expect(crossing).toBeGreaterThan(0);
+        expect(store.getState().lap.fromMs).toBe(crossing);
+      });
+
+      test("the notification line never carries two clocks", async () => {
+        await store.getState().begin("s1", NOTIFICATION, false, "metric", null, true, {
+          ...DEFAULT_LIVE_VIEW,
+          big: "lap",
+        });
+        for (let i = 0; i <= 30; i++) emit(striding(i));
+        const lines = mockSetProgress.mock.calls
+          .map(([line]) => String(line))
+          .filter((line) => !line.endsWith(NOTIFICATION.acquiring));
+        expect(lines.length).toBeGreaterThan(0);
+        for (const line of lines) {
+          expect(line).toMatch(/^\d+:\d\d · \d/);
+          expect(line).not.toMatch(/^\d+:\d\d · \d+:\d\d$/);
+        }
+      });
     });
   });
 });

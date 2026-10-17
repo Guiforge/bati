@@ -18,6 +18,7 @@ export const OUTING_METRICS = [
   "rateAvg",
   "climb",
   "remaining",
+  "lap",
 ] as const;
 export type OutingMetric = (typeof OUTING_METRICS)[number];
 /** `auto` in the big place: distance for a distance goal, else time. In a small place: the other one. */

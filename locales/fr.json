@@ -1206,7 +1206,8 @@
     "tonight_epilogue": "Ta campagne est terminée.",
     "tonight_anniversary_one": "Ton village a un an.",
     "tonight_anniversary_other": "Ton village a {{count}} ans.",
-    "tonight_anniversary_many": "Ton village a {{count}} d'ans."
+    "tonight_anniversary_many": "Ton village a {{count}} d'ans.",
+    "expedition_lap": "Lieue en cours"
   },
   "settings": {
     "avatar": "AVATAR",

@@ -745,7 +745,8 @@
     "tonight_badge_record": "record",
     "tonight_epilogue": "Your campaign is complete.",
     "tonight_anniversary_one": "Your village is one year old.",
-    "tonight_anniversary_other": "Your village is {{count}} years old."
+    "tonight_anniversary_other": "Your village is {{count}} years old.",
+    "expedition_lap": "Current league"
   },
   "muscles": {
     "arms": "Arms",

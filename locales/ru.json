@@ -793,7 +793,8 @@
     "feast_age_body_none": "Ten more levels.",
     "feast_anniversary_kicker": "Anniversary",
     "feast_anniversary_body": "{{n}} sessions in the past twelve months.",
-    "feast_anniversary_record": "Best record of the year, {{movement}}, {{from}} to {{to}}."
+    "feast_anniversary_record": "Best record of the year, {{movement}}, {{from}} to {{to}}.",
+    "expedition_lap": "Текущая лига"
   },
   "muscles": {
     "arms": "Руки",

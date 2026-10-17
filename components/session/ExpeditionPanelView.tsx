@@ -281,6 +281,7 @@ export function ExpeditionPanelView({
   showPocketHint = false,
   preview = false,
   empty = false,
+  lapFromMs = null,
 }: {
   view: LiveView;
   track: TrackState;
@@ -293,6 +294,8 @@ export function ExpeditionPanelView({
   showPocketHint?: boolean;
   preview?: boolean;
   empty?: boolean;
+  /** Where the current league started; the settings preview has no live lap and leaves it null. */
+  lapFromMs?: number | null;
 }) {
   const { t } = useTranslation();
   const unit = useSettingsStore((state) => state.distanceUnit);
@@ -318,6 +321,7 @@ export function ExpeditionPanelView({
     language,
     rate: view.rate,
     walkRun: view.walkRun,
+    lapFromMs,
   };
   const text = (metric: OutingMetric) => (empty ? "-" : figureText(metric, ctx, true));
   const places = resolvePlaces(view, ctx);

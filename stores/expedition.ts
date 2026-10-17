@@ -19,7 +19,15 @@ import {
   start as startNative,
   stop as stopNative,
 } from "@/modules/bati-location";
-import { DEFAULT_LIVE_VIEW, figureText, type LiveView, resolvePlaces } from "@/src/gps/liveFigures";
+import {
+  DEFAULT_LIVE_VIEW,
+  figureText,
+  LAP_START,
+  type Lap,
+  type LiveView,
+  nextLap,
+  resolvePlaces,
+} from "@/src/gps/liveFigures";
 import {
   accept,
   EMPTY,
@@ -103,6 +111,8 @@ type ExpeditionState = {
    * `beginTrackingIfOuting` writes a safe one before anything is awaited.
    */
   view: LiveView;
+  /** Where the current league started on the moving clock (the "Lieue en cours" figure). */
+  lap: Lap;
   begin: (
     sessionUuid: string,
     notification: Notification,
@@ -244,11 +254,15 @@ function progressLine(
     language: i18n.language,
     rate: view.rate,
     walkRun: view.walkRun,
+    lapFromMs: null,
   };
   // The clock is already on the line, so the second figure is the first one that is not it: the
-  // hero's big number, else their first small one, else the distance (today's line).
+  // hero's big number, else their first small one, else the distance (today's line). The lap is a
+  // clock too: `32:04 · 3:12` is two unlabelled clocks, the confusion that removed moving time
+  // from the panel. That is why `lapFromMs` is null here and the line skips it.
   const places = resolvePlaces(view, ctx);
-  const second = [places.big, ...places.small].find((m) => m !== "time") ?? "distance";
+  const second =
+    [places.big, ...places.small].find((m) => m !== "time" && m !== "lap") ?? "distance";
   return `${elapsed} · ${figureText(second, ctx, false)}`;
 }
 
@@ -315,6 +329,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   error: null,
   goalReached: false,
   view: DEFAULT_LIVE_VIEW,
+  lap: LAP_START,
 
   begin: async (
     sessionUuid,
@@ -345,6 +360,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       goalReached: false,
       // Before the early returns below, so the "unavailable" and "permission" paths render from it.
       view,
+      lap: LAP_START,
     });
 
     if (!isAvailable()) {
@@ -388,7 +404,14 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       reportError("expedition.resumeTrack", e);
       return [] as LocationFix[];
     });
-    const resumed = priorFixes.reduce(accept, EMPTY);
+    // One loop for the track and the lap: a walk killed at 3.4 km resumes with the lap that
+    // started at its 3 km crossing, not at zero.
+    let resumed = EMPTY;
+    let resumedLap = LAP_START;
+    for (const fix of priorFixes) {
+      resumed = accept(resumed, fix);
+      resumedLap = nextLap(resumedLap, resumed);
+    }
     // The replayed ground is already behind the hero: seeding the mark from it is what keeps a
     // walk the OS killed at eight kilometres from buzzing eight times on the way back in.
     leaguesCrossed = leaguesOf(resumed);
@@ -396,6 +419,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
     set({
       sessionUuid,
       track: resumed,
+      lap: resumedLap,
       lastFix: priorFixes[priorFixes.length - 1] ?? null,
       fixes: priorFixes,
       error: null,
@@ -411,6 +435,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         const reached = wasReached || goalReached(goal, track);
         set({
           track,
+          lap: nextLap(get().lap, track),
           lastFix: fix,
           fixes: [...get().fixes, fix],
           recentSpeedMps: meanSpeed(fix.t),

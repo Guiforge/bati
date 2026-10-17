@@ -14,7 +14,7 @@ import {
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
-import type { OutingGoal, TrackState } from "@/src/gps/track";
+import { METRES_PER_LEAGUE, type OutingGoal, type TrackState } from "@/src/gps/track";
 
 /**
  * The figures of a live outing, as pure functions of the track: which ones the hero's view puts in
@@ -56,7 +56,22 @@ export type FigureContext = {
   rate: RateKind;
   /** A walk-run is paced by the coach: no rate, ever. */
   walkRun: boolean;
+  /** Where the current league started on the moving clock, `null` where there is no live lap. */
+  lapFromMs: number | null;
 };
+
+/** Where the current league started, on the moving clock: a high-water mark, like `leaguesCrossed`. */
+export type Lap = { league: number; fromMs: number };
+export const LAP_START: Lap = { league: 0, fromMs: 0 };
+
+/**
+ * The lap after one more fix. High-water: a pause refund that brings `distanceM` back under the
+ * league does not move it back, and the resume replay lands on the reducer's own figure.
+ */
+export function nextLap(lap: Lap, track: TrackState): Lap {
+  const league = Math.floor(track.distanceM / METRES_PER_LEAGUE);
+  return league > lap.league ? { league, fromMs: track.movingMs } : lap;
+}
 
 /** Under this, a reported speed is a standstill: a slow walk is 1 m/s, a stop wobbles near 0. */
 const STILL_SPEED_MPS = 0.3;
@@ -104,6 +119,8 @@ function absent(metric: OutingMetric, ctx: FigureContext): boolean {
       return track.climbFrom === null;
     case "remaining":
       return ctx.goal === null || ctx.goalReached;
+    case "lap":
+      return false;
   }
 }
 
@@ -178,6 +195,12 @@ export function figureText(metric: OutingMetric, ctx: FigureContext, live: boole
         ? formatDistance(Math.max(0, goal.metres - track.distanceM), unit, language)
         : formatClock(Math.max(0, goal.seconds * 1000 - track.movingMs));
     }
+    case "lap":
+      // Accepted: a stop of 40 s or more makes this climb, then fall back when the reducer takes
+      // its advance back. `rateAvg` does the same, and the table times on the same clock.
+      return ctx.lapFromMs === null
+        ? "-"
+        : formatClock(Math.max(0, track.movingMs - ctx.lapFromMs));
   }
 }
 
@@ -223,5 +246,7 @@ export function metricLabelKey(metric: OutingMetric, rate: RateKind): string {
       return "session.expedition_climb";
     case "remaining":
       return "session.expedition_remaining";
+    case "lap":
+      return "session.expedition_lap";
   }
 }

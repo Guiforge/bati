@@ -44,6 +44,15 @@ describe("parseOutingDisplay", () => {
   });
 });
 
+describe("the current league entry", () => {
+  test("a stored lap is kept in the big place and in a small one", () => {
+    const display = parseOutingDisplay(
+      JSON.stringify({ walk: { big: "lap", small: ["lap", null, "climb"] } }),
+    );
+    expect(display.walk).toEqual({ big: "lap", small: ["lap", null, "climb"] });
+  });
+});
+
 describe("viewOf and withActivity", () => {
   test("viewOf of nothing is the default view, and never aliases it", () => {
     const view = viewOf({}, "walk");

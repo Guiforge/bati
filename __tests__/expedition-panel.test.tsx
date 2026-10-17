@@ -185,6 +185,17 @@ describe("ExpeditionPanel", () => {
     expect(screen.getByText("Finding the sky")).toBeTruthy();
   });
 
+  test("the current league reads from where the league began, with its label", async () => {
+    setTrack(walked(600, 250, 2500));
+    useExpeditionStore.setState({ lap: { league: 2, fromMs: 60_000 } });
+    setView({ big: "lap" });
+    await mount();
+
+    expect(screen.getByTestId("expedition-big").props.children).toBe("3:10");
+    expect(screen.getByText("Current league")).toBeTruthy();
+    useExpeditionStore.setState({ lap: { league: 0, fromMs: 0 } });
+  });
+
   test("shows the ground covered, through the format helper", async () => {
     setTrack(walked(600, 600, 2500));
     await mount();

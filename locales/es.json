@@ -769,7 +769,8 @@
     "tonight_epilogue": "Tu campaña ha terminado.",
     "tonight_anniversary_one": "Tu aldea cumple un año.",
     "tonight_anniversary_other": "Tu aldea cumple {{count}} años.",
-    "tonight_anniversary_many": "Tu aldea cumple {{count}} de años."
+    "tonight_anniversary_many": "Tu aldea cumple {{count}} de años.",
+    "expedition_lap": "Legua en curso"
   },
   "muscles": {
     "arms": "Brazos",

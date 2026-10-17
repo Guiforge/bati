@@ -244,6 +244,28 @@ describe("the preview", () => {
     expect(screen.queryByText("On the road")).toBeNull();
   });
 
+  // A control wired to nothing at the moment it is chosen: the lap has no live value here, so the
+  // place keeps its label and prints the dash its empty mode prints.
+  test("choosing the current league puts its label and a dash in the preview", async () => {
+    mockLastOuting.mockResolvedValue({
+      id: 1,
+      questId: null,
+      performedAt: new Date("2026-10-12T10:00:00Z"),
+      leaguesM: 5000,
+      movingSeconds: 3000,
+      ascentM: 40,
+      outing: "walk",
+    });
+    await mount("walk");
+    await press("outing-display-place-big");
+    expect(screen.getByTestId("outing-place-option-lap")).toBeTruthy();
+    await press("outing-place-option-lap");
+
+    expect(useSettingsStore.getState().outingDisplay).toEqual({ walk: { big: "lap" } });
+    expect(screen.getByTestId("expedition-big").props.children).toBe("-");
+    expect(screen.getAllByText("Current league").length).toBeGreaterThan(0);
+  });
+
   test("with no outing of the kind, dashes and a sentence, nothing invented", async () => {
     await mount("run");
 

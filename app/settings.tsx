@@ -40,6 +40,7 @@ import {
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
+import { HeroSizeLine } from "@/components/settings/HeroSizeLine";
 import { PauseRow } from "@/components/settings/PauseRow";
 import { ReminderSection } from "@/components/settings/ReminderSection";
 import { SetAsideRow } from "@/components/settings/SetAsideRow";
@@ -694,6 +695,8 @@ export default function SettingsScreen() {
               {t("backup.export")}
             </Text>
           </BackupSecurityRows>
+
+          <HeroSizeLine />
 
           <SettingRow
             testID="settings-import-backup"

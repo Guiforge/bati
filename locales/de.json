@@ -416,10 +416,6 @@
     "kind_boss": "BOSS",
     "empty_title": "Noch keine Abenteuer",
     "empty_subtitle": "Schau bald wieder vorbei. Das Dorf bereitet Abenteuer vor.",
-    "plus_section": "Mit Bati+",
-    "plus_more_one": "Noch ein Abenteuer mit Bati+",
-    "plus_more_other": "Noch {{count}} Abenteuer mit Bati+",
-    "plus_locked": "Dieses Abenteuer gehört zu Bati+. Jede seiner Quests spielst du auch einzeln, unter Quests.",
     "yours_section": "Deine Abenteuer",
     "write": "Ein Abenteuer schreiben",
     "by_you": "Von dir geschrieben",
@@ -2871,11 +2867,5 @@
         "line": "Vier harte Wochen in Folge. Diese Woche heißt es: leichter trainieren, nicht aufhören."
       }
     ]
-  },
-  "plus": {
-    "exercise_quota_one": "Du hast schon {{count}} eigene Übung. Für weitere brauchst du Bati+.",
-    "exercise_quota_other": "Du hast schon {{count}} eigene Übungen. Für weitere brauchst du Bati+.",
-    "quest_quota_one": "Du hast schon {{count}} eigene Quest. Für weitere brauchst du Bati+. Quests aus einer Tour zählen nicht.",
-    "quest_quota_other": "Du hast schon {{count}} eigene Quests. Für weitere brauchst du Bati+. Quests aus einer Tour zählen nicht."
   }
 }

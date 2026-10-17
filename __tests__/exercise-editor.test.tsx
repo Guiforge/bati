@@ -43,12 +43,6 @@ jest.mock("@/db/exercises", () => ({
   },
 }));
 
-// The rule is proven on a real database in plus-access.test.ts; here only the wiring.
-const mockQuotaRefusal = jest.fn(async (_kind?: string) => null as number | null);
-jest.mock("@/src/plus/access", () => ({
-  quotaRefusal: (kind: string) => mockQuotaRefusal(kind),
-}));
-
 const mockBack = jest.fn();
 const mockParams: { id?: string } = {};
 jest.mock("expo-router", () => ({
@@ -96,50 +90,7 @@ describe("exercise editor", () => {
     mockUpdate.mockClear();
     mockShowError.mockClear();
     mockGetById.mockResolvedValue(null);
-    mockQuotaRefusal.mockReset().mockResolvedValue(null);
     delete mockParams.id;
-  });
-
-  // Bati+ quota (P-04.2): only creating is refused, and the form is there until the answer says no.
-  it("shows the form while the quota is unanswered, and asks it for a new exercise", async () => {
-    mockQuotaRefusal.mockReturnValue(new Promise(() => undefined));
-    const editor = await mountEditor();
-    expect(editor.getByTestId("exercise-name")).toBeTruthy();
-    expect(mockQuotaRefusal).toHaveBeenCalledWith("createExercise");
-  });
-
-  it("swaps the form for the refusal when the hero is at the quota, and never saves", async () => {
-    mockQuotaRefusal.mockResolvedValue(5);
-    const editor = await mountEditor();
-    await waitFor(() => expect(editor.getByTestId("quota-panel-text")).toBeTruthy());
-    expect(editor.getByText("plus.exercise_quota")).toBeTruthy();
-    expect(editor.queryByTestId("exercise-name")).toBeNull();
-    expect(mockCreate).not.toHaveBeenCalled();
-  });
-
-  it("never asks the quota in edit mode, and saves through the update", async () => {
-    mockQuotaRefusal.mockResolvedValue(9);
-    mockParams.id = "7";
-    mockGetById.mockResolvedValue({
-      creator: "hero",
-      enName: "Mine",
-      enDescription: "",
-      muscles: [],
-      style: "strength",
-      difficulty: "medium",
-      equipment: "none",
-      pattern: null,
-      measure: "reps",
-      perSide: false,
-      secondsPerRep: 3,
-      imagePath: "assets/placeholder.webp",
-    });
-    const editor = await mountEditor();
-    await waitFor(() => expect(editor.getByTestId("exercise-name").props.value).toBe("Mine"));
-    await act(async () => fireEvent.press(editor.getByTestId("exercise-save")));
-    await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith(7, expect.anything()));
-    expect(mockQuotaRefusal).not.toHaveBeenCalled();
-    expect(mockCreate).not.toHaveBeenCalled();
   });
 
   it("saves with nothing but a name and a how-to", async () => {

@@ -10,7 +10,6 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
-import { QuotaPanel } from "@/components/common/QuotaPanel";
 import { StatusBand } from "@/components/common/StatusBand";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
@@ -43,7 +42,6 @@ import { DEFAULT_TARGET_VALUE, SECONDS_SUFFIX } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatList } from "@/src/i18n/list";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
-import { quotaRefusal } from "@/src/plus/access";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
@@ -126,9 +124,6 @@ export default function QuestEditor() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dialog, setDialog] = useState<DialogState | null>(null);
-  // How many the hero holds once creating is refused. The form shows until the answer says
-  // otherwise, and edit mode never asks.
-  const [refusedAt, setRefusedAt] = useState<number | null>(null);
   // Set by a save that found the name empty: the field goes red until the hero types.
   const [nameMissing, setNameMissing] = useState(false);
   // Same for a quest with no exercise: the line under "Add an exercise" stays until one is added.
@@ -189,15 +184,13 @@ export default function QuestEditor() {
     let cancelled = false;
 
     const load = async () => {
-      const [all, template, refused] = await Promise.all([
+      const [all, template] = await Promise.all([
         listExercises(),
         questId == null ? Promise.resolve(null) : getQuestTemplateById(questId),
-        questId == null ? quotaRefusal("createQuest") : Promise.resolve(null),
       ]);
       if (cancelled) return;
 
       setExercises(all);
-      setRefusedAt(refused);
       if (!template) return;
 
       const nextTitle = localizedTitle(template, language);
@@ -428,21 +421,6 @@ export default function QuestEditor() {
       },
     });
   };
-
-  if (refusedAt !== null) {
-    return (
-      <YStack flex={1} bg="$background" p="$5" pt={insets.top + 12} gap="$4">
-        <QuotaPanel text={t("plus.quest_quota", { count: refusedAt })}>
-          <ImportFileButton
-            label="quests.import_quest"
-            hint="quests.import_hint"
-            failed="quests.import_failed"
-            testID="quest-import"
-          />
-        </QuotaPanel>
-      </YStack>
-    );
-  }
 
   return (
     <YStack flex={1} bg="$background">

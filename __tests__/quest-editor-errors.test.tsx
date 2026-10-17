@@ -1,4 +1,4 @@
-import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import { Alert, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -17,14 +17,7 @@ jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }
 jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn(), t: (key: string) => key } }));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
 
-// The rule is proven on a real database in plus-access.test.ts; here only the wiring.
-const mockQuotaRefusal = jest.fn(async (_kind?: string) => null as number | null);
-jest.mock("@/src/plus/access", () => ({
-  quotaRefusal: (kind: string) => mockQuotaRefusal(kind),
-}));
-
 const mockCreate = jest.fn();
-const mockParams: { id?: string } = {};
 jest.mock("@/db", () => ({
   adventuresUsingQuest: jest.fn().mockResolvedValue([]),
   clearQuestConfig: jest.fn(),
@@ -45,6 +38,7 @@ jest.mock("@/db", () => ({
   updateQuestMeta: jest.fn(),
 }));
 
+const mockParams: { id?: string } = {};
 jest.mock("expo-router", () => ({
   useRouter: () => ({ back: jest.fn(), replace: jest.fn(), push: jest.fn() }),
   useLocalSearchParams: () => mockParams,
@@ -125,38 +119,6 @@ describe("quest editor, saving an incomplete quest", () => {
     expect(editor.queryByTestId("quest-name-error")).toBeNull();
     expect(editor.queryByTestId("confirm-dialog")).toBeNull();
     expect(mockCreate).not.toHaveBeenCalled();
-  });
-});
-
-// Bati+ quota (P-04.2): only creating is refused, and the import door stays open on the refusal.
-describe("quest editor, quota", () => {
-  beforeEach(() => {
-    mockQuotaRefusal.mockReset().mockResolvedValue(null);
-    delete mockParams.id;
-  });
-
-  it("shows the refusal with the import button instead of the form, and writes nothing", async () => {
-    mockQuotaRefusal.mockResolvedValue(3);
-    const editor = await mountEditor();
-    await waitFor(() => expect(editor.getByTestId("quota-panel-text")).toBeTruthy());
-    expect(editor.getByText("plus.quest_quota")).toBeTruthy();
-    expect(editor.queryByTestId("quest-name")).toBeNull();
-    expect(editor.getByTestId("quest-import")).toBeTruthy();
-    expect(mockCreate).not.toHaveBeenCalled();
-  });
-
-  it("keeps the form when creating is allowed", async () => {
-    const editor = await mountEditor();
-    expect(editor.getByTestId("quest-name")).toBeTruthy();
-    expect(mockQuotaRefusal).toHaveBeenCalledWith("createQuest");
-  });
-
-  it("never asks the quota in edit mode", async () => {
-    mockParams.id = "7";
-    mockQuotaRefusal.mockResolvedValue(9);
-    const editor = await mountEditor();
-    expect(editor.getByTestId("quest-name")).toBeTruthy();
-    expect(mockQuotaRefusal).not.toHaveBeenCalled();
   });
 });
 

@@ -54,7 +54,6 @@ import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
-import { can } from "@/src/plus/access";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -85,11 +84,6 @@ type LoadedData = {
    * hero moves the difficulty, which no journal read answers.
    */
   journal: SlotJournal;
-  /**
-   * A Bati+ adventure the hero never started (P-04.2): no Start here, and the first step opens its
-   * quest alone. Read with the rest so it lands in the same commit as `details`.
-   */
-  locked: boolean;
   /** Step indexes whose quest is gone: a run cannot start on them, and the page says why. */
   missing: number[];
   /** The exercises a zone is sparing now, for the line under a hero step that would work it. */
@@ -293,7 +287,6 @@ export default function AdventureDetailsScreen() {
     feedbackAdjusted: false,
     bossFight: null,
     journal: QUEST_AS_WRITTEN,
-    locked: false,
     missing: [],
     spared: new Set(),
   });
@@ -315,7 +308,6 @@ export default function AdventureDetailsScreen() {
         // campaign never browsed and never started has nothing here and shows no panel.
         getBossFightByAdventure(id),
         preferences.getTrainingLevel(),
-        can({ kind: "startAdventure", adventureId: id }),
         missingStepQuests(id),
         sparedExerciseIds(),
       ])
@@ -329,7 +321,6 @@ export default function AdventureDetailsScreen() {
             finishedCounts,
             bossFight,
             answer,
-            allowed,
             missing,
             spared,
           ]) => {
@@ -347,7 +338,6 @@ export default function AdventureDetailsScreen() {
                 feedbackAdjusted: false,
                 bossFight: null,
                 journal: QUEST_AS_WRITTEN,
-                locked: false,
                 missing: [],
                 spared: new Set(),
                 message: t("adventures.not_found"),
@@ -378,7 +368,6 @@ export default function AdventureDetailsScreen() {
                 feedbackAdjusted: suggestion.adjusted,
                 bossFight,
                 journal,
-                locked: !allowed,
                 missing,
                 spared,
               });
@@ -415,7 +404,6 @@ export default function AdventureDetailsScreen() {
 
   const details = state.details;
   const run = state.activeRun;
-  const locked = state.locked;
   // A step whose quest is gone makes a run end at a false victory, so none starts (a run under way
   // copied its quests and carries on). Hero adventures can be repaired from the editor.
   const unplayable = state.missing.length > 0 && !run;
@@ -483,8 +471,7 @@ export default function AdventureDetailsScreen() {
   }, [activeTemplateStep, state.exercisesById, state.journal, effectiveDifficulty]);
 
   const handleStartOrContinue = useCallback(async () => {
-    // The page stops offering Start when locked; this is for a render that went stale.
-    if (!details || adventureId == null || isStarting || locked) return;
+    if (!details || adventureId == null || isStarting) return;
 
     setIsStarting(true);
     // `run` or a new one, then its step: a promise chain rather than `try`, see `load`.
@@ -512,7 +499,7 @@ export default function AdventureDetailsScreen() {
         reportError("adventure.start", e);
         showError(t("adventures.start_error"));
       });
-  }, [adventureId, details, isStarting, locked, router, run, showError, suggestedDifficulty, t]);
+  }, [adventureId, details, isStarting, router, run, showError, suggestedDifficulty, t]);
 
   if (!adventureId) {
     return (
@@ -736,14 +723,6 @@ export default function AdventureDetailsScreen() {
                       isFirst={i === 0}
                       isLast={i === effectiveSteps.length - 1}
                       onContinue={() => {
-                        // Locked: no campaign to advance, so the row opens its quest alone, the
-                        // way a completed step does (no runStepId, no level).
-                        if (locked) {
-                          router.push(`/quests/${s.questId}?adventureId=${adventureId}` as never, {
-                            withAnchor: true,
-                          });
-                          return;
-                        }
                         handleStartOrContinue().catch(() => {
                           // Error already handled via showError in handleStartOrContinue
                         });
@@ -773,10 +752,6 @@ export default function AdventureDetailsScreen() {
             <Text testID="adventure-missing-quest" fontSize={13} color="$textSecondary">
               {t(isOwn ? "adventures.missing_quest_own" : "adventures.missing_quest")}
             </Text>
-          ) : locked ? (
-            <Text testID="adventure-plus-locked" fontSize={13} color="$textSecondary">
-              {t("adventures.plus_locked")}
-            </Text>
           ) : (
             <AppButton
               testID="adventure-start"
@@ -803,7 +778,7 @@ export default function AdventureDetailsScreen() {
                       : t("adventures.start")}
             </AppButton>
           )}
-          {run && adventureId != null && !locked && !isStarting ? (
+          {run && adventureId != null && !isStarting ? (
             <AppButton
               testID="adventure-leave"
               variant="outline"

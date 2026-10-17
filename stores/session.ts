@@ -13,6 +13,7 @@ import {
   persistSessionDamage,
   TRIUMPH_XP_BONUS,
 } from "@/db/bossFights";
+import { type CapOffer, checkCapOffers } from "@/db/capOffer";
 import {
   addBonusXpToSession,
   type CompletedExerciseInput,
@@ -242,6 +243,8 @@ export type SaveResult = {
    */
   standing: SessionStanding | null;
   newRungs: VariationStep[];
+  /** Slots that held the cap for three sessions, with the rung above on offer (`db/capOffer`). */
+  capOffers: CapOffer[];
   newAchievements: NewAchievementResult[];
   fulfilledOath: OathProgress | null;
   oathBonusXp: number;
@@ -2151,6 +2154,14 @@ export const useSessionStore = create<SessionState>()(
       // The variations tonight's sets just unlocked. Same question as the records above — what
       // did *this* session change — so it is answered in the same place, from the journal.
       const newRungs = await checkForNewRungs(sessionId);
+      // And the slots that held the cap for three sessions: the rung above, one tap away.
+      // Never fails a logged session: a quest that cannot be read just offers nothing.
+      const capOffers = await checkCapOffers(quest.id, quest.exercises, userLevel).catch(
+        (e: unknown) => {
+          reportError("session.capOffers", e);
+          return [];
+        },
+      );
 
       // Update streak cache
       await updateStreakAfterSession();
@@ -2241,6 +2252,7 @@ export const useSessionStore = create<SessionState>()(
         newRecords,
         standing,
         newRungs,
+        capOffers,
         newAchievements,
         fulfilledOath,
         oathBonusXp,

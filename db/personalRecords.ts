@@ -18,6 +18,9 @@ import { NON_REP_STYLE } from "./workUnits";
 
 /** How many sessions `ExerciseGhost.recent` keeps: the comeback window needs three. */
 const RECENT_SESSIONS = 3;
+// ponytail: the comeback's inner gaps (s0-s1, s1-s2) are measured on seeded-quest sessions only,
+// while the gap before tonight reads any quest. Ceiling: a hero who alternates own and seeded
+// quests sees a false gap. Fix: carry any-quest session times in `recent`.
 
 const { completedQuest, completedExercises, exercises } = schema;
 

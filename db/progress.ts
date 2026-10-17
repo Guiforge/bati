@@ -214,9 +214,12 @@ function anchoredValue(
  * Tonight's quest sets the floor; progression may run past the band's top up to the cap, never
  * past both. A comeback lowers on purpose, so it is never raised to the floor.
  *
- * shortcut: `completed_sessions.questId` is NULL once a quest is deleted, and a deleted hero
+ * ponytail: `completed_sessions.questId` is NULL once a quest is deleted, and a deleted hero
  * quest then reads as a seeded one. Its sessions feed `recent`, bounded by this clamp (and a
  * comeback by the upper half of it). Fix: carry the author on the session if it ever shows.
+ *
+ * ponytail: `progressiveTarget` sees 3 sessions (`RECENT_SESSIONS`), so the comeback window is
+ * 2 gaps. Ceiling: a rule needing longer memory (E-03's 5 weeks). Fix: raise the window.
  */
 function clampToBand(value: number, why: TargetWhy, floor: number, ceiling: number) {
   const raised = why === "comeback" ? value : Math.max(value, floor);

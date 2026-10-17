@@ -1,7 +1,8 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Text, XStack } from "tamagui";
+import { Button, XStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { Bell, ChevronRight, X } from "@/components/icons";
@@ -102,9 +103,9 @@ export function ReminderCard() {
       <Card testID={`home-reminder-${kind}`} mx="$4" mt="$3" py="$2" onPress={open}>
         <XStack items="center" gap="$2">
           <Bell size={16} color="$primaryText" />
-          <Text flex={1} fontSize="$3" color="$primaryText">
+          <AppText flex={1} fontSize="$3" color="$primaryText">
             {t(kind === "check" ? "reminders.check" : "reminders.offer")}
-          </Text>
+          </AppText>
           <ChevronRight size={16} color="$primaryText" />
           <Button
             testID="home-reminder-dismiss"

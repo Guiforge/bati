@@ -4,8 +4,6 @@ import { dayKey } from "@/db/dates";
 import { preferences } from "@/db/preferences";
 import { dayOf } from "@/db/reminders";
 import { syncAccount, syncHealth } from "@/src/deviceSync";
-import { checkForUpdate } from "@/src/updateCheck";
-import { hasUnseenNotes } from "@/src/whatsNew";
 
 /**
  * "Protect your hero": the card that asks for a backup before the phone is lost, not after.
@@ -62,9 +60,6 @@ export async function heroIsProtected(now: Date = new Date()): Promise<boolean> 
 }
 
 export async function protectCardVisible(now: Date = new Date()): Promise<boolean> {
-  // Same silence as the reminder line: a new release or its notes already hold the column.
-  if ((await hasUnseenNotes()) || (await checkForUpdate()) !== null) return false;
-
   const { totalSessions } = await getSessionAggregates();
   if (totalSessions < PROTECT_AFTER_SESSIONS) return false;
 

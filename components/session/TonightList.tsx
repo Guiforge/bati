@@ -3,8 +3,9 @@ import type { i18n as I18n, TFunction } from "i18next";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable } from "react-native";
-import { Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { AchievementIcon } from "@/components/common/AchievementIcon";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { headingFont } from "@/components/common/headingFont";
@@ -382,23 +383,23 @@ function LineRow({ line }: { line: Line }) {
       accessibilityLabel={spoken({ title: plain, body: badge ? [badge] : [] })}
     >
       {line.art ?? <YStack width={8} height={8} rounded={4} bg="$resourceGold" />}
-      <Text flex={1} fontSize={15} color="$text">
+      <AppText flex={1} fontSize={15} color="$text">
         {line.text.split(/<b>|<\/b>/).map((part, i) =>
           i % 2 ? (
             // biome-ignore lint/suspicious/noArrayIndexKey: a static split, never reordered
-            <Text key={i} fontWeight="700">
+            <AppText key={i} fontWeight="700">
               {part}
-            </Text>
+            </AppText>
           ) : (
             part
           ),
         )}
-      </Text>
+      </AppText>
       {badge ? (
         <YStack borderWidth={1} borderColor="$glassBorder" rounded="$2" px="$2" py="$1">
-          <Text fontSize={12} color="$textSecondary">
+          <AppText fontSize={12} color="$textSecondary">
             {badge}
-          </Text>
+          </AppText>
         </YStack>
       ) : null}
     </XStack>
@@ -413,13 +414,18 @@ function CardRow({ card }: { card: CardData }) {
           {card.art}
         </YStack>
         <YStack flex={1} gap="$1">
-          <Text fontFamily={headingFont(card.title)} fontWeight="700" fontSize={17} color="$text">
+          <AppText
+            fontFamily={headingFont(card.title)}
+            fontWeight="700"
+            fontSize={17}
+            color="$text"
+          >
             {card.title}
-          </Text>
+          </AppText>
           {card.body?.map((line) => (
-            <Text key={line} fontSize={13} color="$textSecondary">
+            <AppText key={line} fontSize={13} color="$textSecondary">
               {line}
-            </Text>
+            </AppText>
           ))}
         </YStack>
       </XStack>
@@ -486,9 +492,9 @@ export function TonightList({
           onPress={onViewVillage}
           style={{ minHeight: 44, minWidth: 44, justifyContent: "center" }}
         >
-          <Text fontSize={15} color="$primaryText" textDecorationLine="underline">
+          <AppText fontSize={15} color="$primaryText" textDecorationLine="underline">
             {t("session.village_growth_cta")}
-          </Text>
+          </AppText>
         </Pressable>
       ) : null}
     </YStack>

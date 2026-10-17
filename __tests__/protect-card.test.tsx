@@ -24,11 +24,6 @@ jest.mock("expo-router", () => ({
 }));
 jest.mock("@/hooks/useHaptics", () => ({ useHaptics: () => ({ selection: jest.fn() }) }));
 
-let mockNotes = false;
-let mockUpdate: string | null = null;
-jest.mock("@/src/whatsNew", () => ({ hasUnseenNotes: async () => mockNotes }));
-jest.mock("@/src/updateCheck", () => ({ checkForUpdate: async () => mockUpdate }));
-
 let mockSessions = 0;
 jest.mock("@/db/completed", () => ({
   ...jest.requireActual("@/db/completed"),
@@ -69,8 +64,6 @@ const ago = (days: number) => format(subDays(new Date(), days), "yyyy-MM-dd");
 beforeEach(() => {
   jest.clearAllMocks();
   mockPrefs.clear();
-  mockNotes = false;
-  mockUpdate = null;
   mockSessions = 5;
   mockAccount = null;
   mockLastSyncAt = null;
@@ -152,14 +145,6 @@ describe("protectCardVisible", () => {
     expect(await protectCardVisible()).toBe(false);
     mockPrefs.set("protectDismissedDay", ago(30));
     expect(await protectCardVisible()).toBe(true);
-  });
-
-  test("silent while an update or the release notes are up", async () => {
-    mockNotes = true;
-    expect(await protectCardVisible()).toBe(false);
-    mockNotes = false;
-    mockUpdate = "3.0.0";
-    expect(await protectCardVisible()).toBe(false);
   });
 });
 

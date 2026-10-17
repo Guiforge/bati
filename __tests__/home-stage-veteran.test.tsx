@@ -68,7 +68,7 @@ const quest = {
 function stage() {
   return render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <HomeStage />
+      <HomeStage oathStrip />
     </TamaguiProvider>,
   );
 }

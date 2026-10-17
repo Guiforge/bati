@@ -32,6 +32,7 @@ import {
   getFinishedRunCountsByAdventure,
   getRecentSessionHistory,
   listExercises,
+  offeredFirstStep,
   previewQuest,
   startAdventureRun,
   suggestDifficultyFromSessions,
@@ -61,6 +62,8 @@ function resolveImage(
 /** What every branch of LoadState carries, so a new field cannot be added to only one of three. */
 type LoadedData = {
   activeRun: ActiveAdventureRun | null;
+  /** The first session already counts as step 1 (db `offeredFirstStep`): null when it does not. */
+  offeredFirst: { performedAt: Date } | null;
   exercisesById: Record<number, Exercise>;
   suggestedDifficulty: "easy" | "medium" | "hard";
   /** Whether the hero's post-session feedback moved that suggestion off their own choices. */
@@ -260,6 +263,7 @@ export default function AdventureDetailsScreen() {
     status: "loading",
     details: null,
     activeRun: null,
+    offeredFirst: null,
     exercisesById: {},
     suggestedDifficulty: "medium",
     feedbackAdjusted: false,
@@ -277,6 +281,7 @@ export default function AdventureDetailsScreen() {
       await Promise.all([
         getAdventureDetails(id),
         getActiveAdventureRun(id),
+        offeredFirstStep(id),
         listExercises(),
         getRecentSessionHistory(10),
         getFinishedRunCountsByAdventure(),
@@ -290,6 +295,7 @@ export default function AdventureDetailsScreen() {
           ([
             details,
             activeRun,
+            offeredFirst,
             exercises,
             history,
             finishedCounts,
@@ -305,6 +311,7 @@ export default function AdventureDetailsScreen() {
                 status: "error",
                 details: null,
                 activeRun: null,
+                offeredFirst: null,
                 exercisesById: {},
                 suggestedDifficulty: "medium",
                 feedbackAdjusted: false,
@@ -333,6 +340,7 @@ export default function AdventureDetailsScreen() {
                 status: "ready",
                 details,
                 activeRun,
+                offeredFirst,
                 exercisesById,
                 suggestedDifficulty: suggestion.level,
                 feedbackAdjusted: suggestion.adjusted,
@@ -393,6 +401,10 @@ export default function AdventureDetailsScreen() {
   const effectiveSteps = details?.steps ?? [];
   const weeksLabel = adventureWeeksLabel(effectiveSteps.length, pace, t);
   const activeStep = run?.activeStep ?? null;
+  // With no run yet, the first session may already count as step 1: the list and the preview show
+  // the step "Commencer" will really open, which is the second.
+  const offered = run ? null : state.offeredFirst;
+  const firstOpenIndex = offered ? 1 : 0;
 
   // One Map instead of a run.steps.find() per row (O(n²) over the step list).
   const stepStatusByIndex = useMemo(() => {
@@ -408,8 +420,8 @@ export default function AdventureDetailsScreen() {
   const activeTemplateStep = useMemo(() => {
     if (!details) return null;
     if (activeStep) return effectiveSteps.find((s) => s.stepIndex === activeStep.stepIndex) ?? null;
-    return effectiveSteps[0] ?? null;
-  }, [activeStep, details, effectiveSteps]);
+    return effectiveSteps.find((s) => s.stepIndex === firstOpenIndex) ?? effectiveSteps[0] ?? null;
+  }, [activeStep, details, effectiveSteps, firstOpenIndex]);
 
   // A "boss" adventure is a multi-step campaign that culminates in the boss fight, not a boss
   // fight from step one — the CTA should only read "Fight Boss" once that final step is next.
@@ -661,7 +673,11 @@ export default function AdventureDetailsScreen() {
                       step={s}
                       status={
                         stepStatusByIndex.get(s.stepIndex) ??
-                        (s.stepIndex === 0 ? "active" : "locked")
+                        (offered && s.stepIndex === 0
+                          ? "completed"
+                          : s.stepIndex === firstOpenIndex
+                            ? "active"
+                            : "locked")
                       }
                       adventureId={adventureId}
                       isFirst={i === 0}

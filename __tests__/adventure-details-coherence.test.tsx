@@ -85,6 +85,7 @@ jest.mock("@/db", () => ({
     steps: [mockStep(0), mockStep(1)],
   }),
   getActiveAdventureRun: jest.fn().mockResolvedValue(null),
+  offeredFirstStep: jest.fn().mockResolvedValue(null),
   getFinishedRunCountsByAdventure: jest.fn().mockResolvedValue(new Map()),
   listExercises: jest.fn().mockResolvedValue([]),
   getRecentSessionHistory: jest.fn().mockResolvedValue([]),

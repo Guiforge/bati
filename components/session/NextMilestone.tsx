@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, YStack } from "tamagui";
+import { YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { victoryMilestoneLine } from "@/components/village/milestoneLine";
 import { getRecentFeeds, getSessionFed } from "@/db/milestoneFeed";
@@ -51,9 +52,9 @@ export function NextMilestone({
   return (
     <YStack testID="victory-next" width="100%" maxW={520} gap={6} px="$1">
       <SectionLabel>{t("session.next_title")}</SectionLabel>
-      <Text fontSize={14} lineHeight={20} color="$text">
+      <AppText fontSize={14} lineHeight={20} color="$text">
         {line}
-      </Text>
+      </AppText>
     </YStack>
   );
 }

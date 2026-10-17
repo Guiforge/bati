@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AppState, Linking } from "react-native";
-import { Text, YStack } from "tamagui";
+import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
 import { MAP_ATTRIBUTION } from "@/constants/mapStyle";
 import { isNetworkBlocked } from "@/modules/bati-location";
 import { reportError } from "@/src/reportError";
@@ -56,9 +57,9 @@ export function MapFootnote({ quiet = false }: { quiet?: boolean }) {
   if (enabled && blocked) {
     return (
       <YStack testID="map-blocked" gap="$3">
-        <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+        <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
           {t("recap.map_blocked")}
-        </Text>
+        </AppText>
         <AppButton
           testID="map-open-settings"
           variant="outline"
@@ -75,17 +76,22 @@ export function MapFootnote({ quiet = false }: { quiet?: boolean }) {
 
   if (enabled) {
     return (
-      <Text testID="map-attribution" fontSize={11} color="$muted" style={{ textAlign: "center" }}>
+      <AppText
+        testID="map-attribution"
+        fontSize={11}
+        color="$muted"
+        style={{ textAlign: "center" }}
+      >
         {MAP_ATTRIBUTION} {t("recap.privacy")}
-      </Text>
+      </AppText>
     );
   }
 
   return (
     <YStack testID="map-offer" gap="$3">
-      <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+      <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
         {t("recap.map_offer")}
-      </Text>
+      </AppText>
       <AppButton
         testID="map-enable"
         variant="outline"

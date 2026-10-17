@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Input, Separator, Text, XStack, YStack } from "tamagui";
+import { Button, Input, Separator, type TamaguiElement, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -70,19 +70,12 @@ type PickedExercise = {
 
 /**
  * What still stands between this form and a saved quest, or null when nothing does. Names the one
- * thing that is missing: the old copy listed both, so it read as wrong whenever only one was.
+ * thing that is missing: the old copy listed both, so it read as wrong whenever only one was. The
+ * screen says it, on the field, so this returns which piece and never a sentence.
  */
-function missingPiece(
-  trimmedTitle: string,
-  exerciseCount: number,
-  t: (key: string) => string,
-): string | null {
-  if (trimmedTitle.length === 0) {
-    return t("quests.editor_incomplete_name");
-  }
-  if (exerciseCount === 0) {
-    return t("quests.editor_incomplete_exercises");
-  }
+function missingPiece(trimmedTitle: string, exerciseCount: number): "name" | "exercises" | null {
+  if (trimmedTitle.length === 0) return "name";
+  if (exerciseCount === 0) return "exercises";
   return null;
 }
 
@@ -129,6 +122,10 @@ export default function QuestEditor() {
   const [refusedAt, setRefusedAt] = useState<number | null>(null);
   // Set by a save that found the name empty: the field goes red until the hero types.
   const [nameMissing, setNameMissing] = useState(false);
+  // Same for a quest with no exercise: the line under "Add an exercise" stays until one is added.
+  const [exercisesMissing, setExercisesMissing] = useState(false);
+  const nameRef = useRef<TamaguiElement>(null);
+  const scrollRef = useRef<ScrollView>(null);
   const showMessage = (title: string, body: string) =>
     setDialog({ title, body, confirmLabel: t("common.close") });
   const nextUid = useRef(0);
@@ -261,6 +258,7 @@ export default function QuestEditor() {
   const pickedIds = useMemo(() => picked.map((p) => p.exerciseId), [picked]);
 
   const addExercise = useCallback((exercise: Exercise) => {
+    setExercisesMissing(false);
     nextUid.current += 1;
     const uid = nextUid.current;
     setPicked((prev) => [
@@ -285,10 +283,19 @@ export default function QuestEditor() {
 
   const save = async () => {
     const trimmed = title.trim();
-    const missing = missingPiece(trimmed, picked.length, t);
+    const missing = missingPiece(trimmed, picked.length);
     if (missing) {
-      setNameMissing(trimmed.length === 0);
-      showMessage(t("quests.editor_incomplete_title"), missing);
+      setNameMissing(missing === "name");
+      setExercisesMissing(missing === "exercises");
+      // shortcut: the field is at the top and the exercises line at the bottom of one column, so
+      // the scroll goes to either end rather than measuring; re-measure if a section is added
+      // between them.
+      if (missing === "name") {
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+        nameRef.current?.focus();
+      } else {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }
       return;
     }
 
@@ -408,6 +415,7 @@ export default function QuestEditor() {
   return (
     <YStack flex={1} bg="$background">
       <ScrollView
+        ref={scrollRef}
         // With the keyboard up, the default ("never") spends the first tap on any control in
         // here dismissing it — react-native#4087, and the reason a button on a screen you
         // type into has to be pressed twice. "handled" keeps the dismiss-on-empty-space
@@ -471,12 +479,23 @@ export default function QuestEditor() {
                     setTitle(next);
                     setNameMissing(false);
                   }}
+                  ref={nameRef}
                   testID="quest-name"
                   placeholder={t("quests.editor_name_placeholder")}
                   bg="$background"
                   borderColor={nameMissing ? "$error" : "$borderStrong"}
                   color="$text"
                 />
+                {nameMissing ? (
+                  <Text
+                    testID="quest-name-error"
+                    accessibilityLiveRegion="polite"
+                    fontSize={13}
+                    color="$error"
+                  >
+                    {t("quests.editor_incomplete_name")}
+                  </Text>
+                ) : null}
               </YStack>
 
               <YStack gap="$2">
@@ -601,6 +620,16 @@ export default function QuestEditor() {
           >
             {t("quests.editor_add_exercise")}
           </AppButton>
+          {exercisesMissing ? (
+            <Text
+              testID="quest-exercises-error"
+              accessibilityLiveRegion="polite"
+              fontSize={13}
+              color="$error"
+            >
+              {t("quests.editor_incomplete_exercises")}
+            </Text>
+          ) : null}
 
           <ExercisePickerSheet
             exercises={pickable}

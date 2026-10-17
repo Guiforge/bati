@@ -186,3 +186,183 @@ describe("db/adventures campaign", () => {
     expect((await bosses.getBossFightByAdventure(bossAdv.id))?.currentHp).toBe(10);
   });
 });
+
+/**
+ * "Le progrès offert" (P-05): the first session counts as step 1 of the adventure that starts with
+ * the on-ramp, read from the journal. The step is written done and tied to no session.
+ */
+describe("db/adventures, the first session offered as step 1", () => {
+  const t = createTestDb();
+
+  beforeAll(() => {
+    jest.resetModules();
+    jest.doMock("../db/client", () => clientMock(t));
+  });
+  afterAll(() => t.close());
+
+  beforeEach(() => {
+    t.sqlite.exec("DELETE FROM adventure_run_steps");
+    t.sqlite.exec("DELETE FROM adventure_runs");
+    t.sqlite.exec("DELETE FROM completed_exercises");
+    t.sqlite.exec("DELETE FROM completed_sessions");
+  });
+
+  const adventures = () => require("../db/adventures") as typeof import("../db/adventures");
+  const ON_RAMP = "The Squire's Awakening";
+
+  /** The adventure that starts with the on-ramp, its step-0 quest, and another quest to play. */
+  function seeded() {
+    const squire = t.sqlite
+      .prepare(
+        `SELECT s.adventureId AS adventureId, s.questId AS onRamp
+           FROM adventure_steps s JOIN quests q ON q.id = s.questId
+          WHERE s.stepIndex = 0 AND q.enTitle = ? AND q.author = 'Admin'`,
+      )
+      .get(ON_RAMP) as { adventureId: number; onRamp: number };
+    const other = t.sqlite
+      .prepare(
+        `SELECT s.adventureId AS adventureId FROM adventure_steps s JOIN quests q ON q.id = s.questId
+          WHERE s.stepIndex = 0 AND q.enTitle <> ? LIMIT 1`,
+      )
+      .get(ON_RAMP) as { adventureId: number };
+    const elsewhere = t.sqlite
+      .prepare("SELECT id FROM quests WHERE enTitle <> ? AND author = 'Admin' LIMIT 1")
+      .get(ON_RAMP) as { id: number };
+    return { ...squire, otherAdventure: other.adventureId, elsewhere: elsewhere.id };
+  }
+
+  let n = 0;
+  function log(questId: number | null, at: number): number {
+    n += 1;
+    const { lastInsertRowid } = t.sqlite
+      .prepare(
+        `INSERT INTO completed_sessions (uuid, questId, userLevel, xpEarned, performedAt)
+         VALUES (?, ?, 'medium', 10, ?)`,
+      )
+      .run(`0190c000-0000-7000-8000-${String(n).padStart(12, "0")}`, questId, at);
+    return Number(lastInsertRowid);
+  }
+
+  const stepsOf = (adventureId: number) =>
+    t.sqlite
+      .prepare(
+        `SELECT rs.stepIndex, rs.status, rs.completedSessionId, rs.completedAt
+           FROM adventure_run_steps rs JOIN adventure_runs r ON r.id = rs.runId
+          WHERE r.adventureId = ? ORDER BY rs.stepIndex`,
+      )
+      .all(adventureId) as {
+      stepIndex: number;
+      status: string;
+      completedSessionId: number | null;
+      completedAt: number | null;
+    }[];
+
+  test("the on-ramp done first: step 0 is completed, tied to no session, and step 1 is active", async () => {
+    const { adventureId, onRamp } = seeded();
+    log(onRamp, 1_000);
+
+    const run = await adventures().startAdventureRun({ adventureId });
+
+    const [first, second] = stepsOf(adventureId);
+    expect(first).toMatchObject({ stepIndex: 0, status: "completed", completedSessionId: null });
+    expect(first?.completedAt).toBe(1_000);
+    expect(second?.status).toBe("active");
+    expect(run.activeStep?.stepIndex).toBe(1);
+  });
+
+  test("the screen and the start read the same rule", async () => {
+    const { adventureId, onRamp } = seeded();
+    expect(await adventures().offeredFirstStep(adventureId)).toBeNull();
+    log(onRamp, 1_000);
+
+    expect(await adventures().offeredFirstStep(adventureId)).toEqual({
+      performedAt: new Date(1_000 * 1000),
+    });
+  });
+
+  test("another quest first, the on-ramp second: nothing is offered", async () => {
+    const { adventureId, onRamp, elsewhere } = seeded();
+    log(elsewhere, 1_000);
+    log(onRamp, 2_000);
+
+    const run = await adventures().startAdventureRun({ adventureId });
+
+    expect(stepsOf(adventureId)[0]?.status).toBe("active");
+    expect(run.activeStep?.stepIndex).toBe(0);
+  });
+
+  test("no session at all: step 0 is the one to play", async () => {
+    const { adventureId } = seeded();
+    const run = await adventures().startAdventureRun({ adventureId });
+    expect(run.activeStep?.stepIndex).toBe(0);
+  });
+
+  test("a journal that arrived by sync: the same seeded title under another quest id is offered", async () => {
+    const { adventureId, onRamp } = seeded();
+    const copy = t.sqlite
+      .prepare(
+        `INSERT INTO quests (enTitle, frTitle, deTitle, esTitle, enDescription, frDescription, deDescription, esDescription, author, rounds, restSeconds)
+         SELECT enTitle, frTitle, deTitle, esTitle, enDescription, frDescription, deDescription, esDescription, author, rounds, restSeconds
+           FROM quests WHERE id = ?`,
+      )
+      .run(onRamp);
+    log(Number(copy.lastInsertRowid), 1_000);
+
+    await adventures().startAdventureRun({ adventureId });
+
+    expect(stepsOf(adventureId)[0]?.status).toBe("completed");
+  });
+
+  test("a hero quest that borrowed the title is not the on-ramp", async () => {
+    const { adventureId, onRamp } = seeded();
+    const copy = t.sqlite
+      .prepare(
+        `INSERT INTO quests (enTitle, frTitle, deTitle, esTitle, enDescription, frDescription, deDescription, esDescription, author, rounds, restSeconds)
+         SELECT enTitle, frTitle, deTitle, esTitle, enDescription, frDescription, deDescription, esDescription, 'hero', rounds, restSeconds
+           FROM quests WHERE id = ?`,
+      )
+      .run(onRamp);
+    log(Number(copy.lastInsertRowid), 1_000);
+
+    await adventures().startAdventureRun({ adventureId });
+
+    expect(stepsOf(adventureId)[0]?.status).toBe("active");
+  });
+
+  test("a second run of the adventure starts at step 0 as it always did", async () => {
+    const { adventureId, onRamp } = seeded();
+    log(onRamp, 1_000);
+    await adventures().startAdventureRun({ adventureId });
+    t.sqlite.exec("UPDATE adventure_runs SET status = 'finished', finishedAt = 5");
+
+    expect(await adventures().offeredFirstStep(adventureId)).toBeNull();
+    const run = await adventures().startAdventureRun({ adventureId });
+
+    expect(run.activeStep?.stepIndex).toBe(0);
+  });
+
+  test("the offered session can still be deleted, and step 0 stays completed", async () => {
+    const { adventureId, onRamp } = seeded();
+    const first = log(onRamp, 1_000);
+    const run = await adventures().startAdventureRun({ adventureId });
+    const second = log(onRamp, 2_000);
+    const step1 = run.activeStep;
+    if (!step1) throw new Error("Expected an active step");
+    await adventures().completeAdventureRunStep({
+      runStepId: step1.id,
+      completedSessionId: second,
+    });
+
+    const { deleteSession } = require("../db/completed") as typeof import("../db/completed");
+    expect(await deleteSession(first)).toBe("deleted");
+
+    expect(stepsOf(adventureId)[0]?.status).toBe("completed");
+  });
+
+  test("an adventure whose step 0 is not the on-ramp is never offered", async () => {
+    const { otherAdventure, onRamp } = seeded();
+    log(onRamp, 1_000);
+
+    expect(await adventures().offeredFirstStep(otherAdventure)).toBeNull();
+  });
+});

@@ -1737,6 +1737,10 @@ export const useSessionStore = create<SessionState>()(
      * not when a hero discovers a movement is out of reach (issue #33). Reaching it from here is
      * what lets them log what they actually did instead of typing the lowest number the field
      * accepts.
+     *
+     * Reachable from the rest too (P-05): it refuses a `paused` session, so the rest screen, which
+     * pauses the clock while its sheet is open, resumes before it swaps. `skipRest` reads the quest
+     * when the rest ends, so a swap made at rest is the movement that starts next.
      */
     swapCurrentExercise: (exercise) => {
       const { quest, currentExerciseIndex, currentRoundIndex, status } = get();

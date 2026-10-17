@@ -8,8 +8,9 @@ import { rawColors } from "@/constants/rawColors";
 import config from "@/tamagui.config";
 
 /**
- * Saving without a name used to raise the native grey Alert, the only off-palette surface in a
- * dark-only app. It is the app's own dialog now, and the field says which piece is missing.
+ * Saving without a name used to raise the native grey Alert, then the app's own dialog over the
+ * form. The error is on the field now: a red line under the name, or under "Add an exercise", and
+ * nothing in between to dismiss.
  */
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
@@ -76,8 +77,8 @@ async function mountEditor() {
   return result;
 }
 
-describe("quest editor, saving without a name", () => {
-  it("says so in the app's own dialog, not a native alert, and writes nothing", async () => {
+describe("quest editor, saving an incomplete quest", () => {
+  it("says so under the name, with no dialog and no native alert, and writes nothing", async () => {
     const alert = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
     const editor = await mountEditor();
 
@@ -85,26 +86,44 @@ describe("quest editor, saving without a name", () => {
       await fireEvent.press(editor.getByTestId("quest-save"));
     });
 
-    expect(editor.getByTestId("confirm-dialog")).toBeTruthy();
-    expect(editor.getByText("quests.editor_incomplete_name")).toBeTruthy();
+    expect(editor.queryByTestId("confirm-dialog")).toBeNull();
+    expect(editor.getByTestId("quest-name-error")).toHaveTextContent(
+      "quests.editor_incomplete_name",
+    );
     expect(alert).not.toHaveBeenCalled();
     expect(mockCreate).not.toHaveBeenCalled();
     alert.mockRestore();
   });
 
-  it("closes on the button and marks the name field until they type", async () => {
+  it("marks the name field, and the line goes once they type", async () => {
     const editor = await mountEditor();
     await act(async () => {
       await fireEvent.press(editor.getByTestId("quest-save"));
     });
-    await act(async () => {
-      await fireEvent.press(editor.getByTestId("confirm-dialog-confirm"));
-    });
 
-    expect(editor.queryByTestId("confirm-dialog")).toBeNull();
     expect(StyleSheet.flatten(editor.getByTestId("quest-name").props.style).borderTopColor).toBe(
       rawColors.error,
     );
+
+    await fireEvent.changeText(editor.getByTestId("quest-name"), "Dawn");
+
+    expect(editor.queryByTestId("quest-name-error")).toBeNull();
+  });
+
+  it("a named quest with no exercise says so under the add button, and writes nothing", async () => {
+    const editor = await mountEditor();
+    await fireEvent.changeText(editor.getByTestId("quest-name"), "Dawn");
+
+    await act(async () => {
+      await fireEvent.press(editor.getByTestId("quest-save"));
+    });
+
+    expect(editor.getByTestId("quest-exercises-error")).toHaveTextContent(
+      "quests.editor_incomplete_exercises",
+    );
+    expect(editor.queryByTestId("quest-name-error")).toBeNull();
+    expect(editor.queryByTestId("confirm-dialog")).toBeNull();
+    expect(mockCreate).not.toHaveBeenCalled();
   });
 });
 

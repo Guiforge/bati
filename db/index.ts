@@ -16,6 +16,7 @@ export {
   getAnyActiveAdventureRun,
   getFinishedRunCountsByAdventure,
   listAdventures,
+  offeredFirstStep,
   startAdventureRun,
 } from "./adventures";
 export { db, schema } from "./client";

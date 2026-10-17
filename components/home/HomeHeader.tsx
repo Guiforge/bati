@@ -2,7 +2,8 @@ import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Avatar, Text, XStack, YStack } from "tamagui";
+import { Avatar, XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Skeleton } from "@/components/common/Skeleton";
 import { Castle, Settings } from "@/components/icons";
@@ -25,8 +26,12 @@ const CELL = 44;
  * One strip instead of a header and a village band. The band spent 53 dp saying what the Village
  * tab right under it already said, so the village keeps a crest here, its tier and a tap, and the
  * height went to the scene.
+ *
+ * `showLevel` is the journal's answer (`db/disclosure.ts`): false on day one, when the level and
+ * the XP have nothing behind them yet and the middle of the strip stays empty. Null while it is
+ * read, which keeps the skeleton: a loading strip asserts nothing.
  */
-export function HomeHeader() {
+export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -99,40 +104,44 @@ export function HomeHeader() {
       </YStack>
 
       {/* Identity here is progression, not the village name: the village owns its name */}
-      <YStack flex={1} gap={4}>
-        {levelInfo ? (
-          <Text fontWeight="700" fontSize={13} color="$text" numberOfLines={1}>
-            {t("home.level_line", {
-              level: levelInfo.level,
-              title: levelTitle,
-            })}
-          </Text>
-        ) : (
-          <Skeleton height={16} width={130} bg="$surface2" />
-        )}
-        <XStack items="center" gap="$1.5">
-          {/* ProgressBar is width:100% and doesn't shrink: without this flex wrapper it takes the
-              whole row and pushes the numbers out under the crest. */}
-          <XStack flex={1}>
-            <ProgressBar
-              progress={levelInfo?.xpProgress ?? 0}
-              height={3}
-              color="$resourceGold"
-              trackColor="$gold800"
-            />
-          </XStack>
-          {/* The numbers, not a percentage of something this strip never named. The victory
-              screen prints the same fraction with the same key. */}
-          {levelInfo ? (
-            <Text fontSize={10} fontWeight="700" color="$resourceGold">
-              {t("journal.xp_progress", {
-                current: formatCount(language, levelInfo.currentLevelXp),
-                next: formatCount(language, levelInfo.currentLevelXp + levelInfo.xpToNextLevel),
+      {showLevel === false ? (
+        <YStack flex={1} />
+      ) : (
+        <YStack flex={1} gap={4}>
+          {levelInfo && showLevel ? (
+            <AppText variant="label" fontWeight="700" fontSize={13} color="$text" numberOfLines={1}>
+              {t("home.level_line", {
+                level: levelInfo.level,
+                title: levelTitle,
               })}
-            </Text>
-          ) : null}
-        </XStack>
-      </YStack>
+            </AppText>
+          ) : (
+            <Skeleton height={16} width={130} bg="$surface2" />
+          )}
+          <XStack items="center" gap="$1.5">
+            {/* ProgressBar is width:100% and doesn't shrink: without this flex wrapper it takes the
+              whole row and pushes the numbers out under the crest. */}
+            <XStack flex={1}>
+              <ProgressBar
+                progress={levelInfo?.xpProgress ?? 0}
+                height={3}
+                color="$resourceGold"
+                trackColor="$gold800"
+              />
+            </XStack>
+            {/* The numbers, not a percentage of something this strip never named. The victory
+              screen prints the same fraction with the same key. */}
+            {levelInfo && showLevel ? (
+              <AppText variant="label" fontSize={10} fontWeight="700" color="$resourceGold">
+                {t("journal.xp_progress", {
+                  current: formatCount(language, levelInfo.currentLevelXp),
+                  next: formatCount(language, levelInfo.currentLevelXp + levelInfo.xpToNextLevel),
+                })}
+              </AppText>
+            ) : null}
+          </XStack>
+        </YStack>
+      )}
 
       {/* The village as a crest and its tier. Reads level only, like the band it replaces:
           getVillageScene() is five queries for a number. */}
@@ -157,7 +166,8 @@ export function HomeHeader() {
           <Castle size={16} color="$textSecondary" />
           {/* "Tier 12", not a bare 12 next to a castle: the audit's strangers read it as a count.
               Shrinks to fit the 44 dp cell instead of wrapping at large fonts. */}
-          <Text
+          <AppText
+            variant="label"
             testID="home-village-tier"
             fontSize={10}
             fontWeight="700"
@@ -167,7 +177,7 @@ export function HomeHeader() {
             minimumFontScale={0.6}
           >
             {t("village.tier", { tier })}
-          </Text>
+          </AppText>
         </YStack>
       )}
     </XStack>

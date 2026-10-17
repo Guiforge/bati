@@ -313,6 +313,20 @@ gauge (gold, `$gold800`) with `frame={rawColors.borderStrong}`, an optional prop
 `$borderStrong`) because the Journal theme folds that token into its surface and would hide the
 outline. The Journal's XP caption is gold Inter, never ash, and a history row's "+N XP" is gold.
 
+### Font scaling
+
+On Home and in the session, text is [`AppText`](../../components/common/AppText.tsx): a Tamagui
+`Text` that carries a font-size cap from `FONT_CAPS`
+([`fontCaps.ts`](../../components/common/fontCaps.ts)). `body` (1.5) is running text, so 130 % is
+honoured in full and 200 % stops at 150 %; `label` (1.2) is text in a fixed cell (the status strip,
+the outing tiles and their chips, the rest's +10 s / +30 s); `display` (1.0) is a figure already
+drawn large (the rest timer, the victory stat values). Biome bans importing `Text` from `tamagui`
+or `react-native` in `components/home/**`, `components/session/**`, `app/(tabs)/index.tsx` and
+`app/session.tsx`. `H1`-`H6` and `Paragraph` stay: they carry Tamagui's heading and body
+typography, which a bare `Text` lacks, so a big figure set in an `H1` takes
+`maxFontSizeMultiplier={FONT_CAPS.display}` by hand. The three numbers are a technical choice that
+the P-05 device checks (130 % on 360x640, 200 %) confirm or move.
+
 ### Panels of story
 
 - **The narrative** ([`NarrativeModal`](../../components/adventures/NarrativeModal.tsx)) is a page

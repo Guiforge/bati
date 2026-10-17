@@ -285,6 +285,14 @@ and opens the sheet's `unlock` mode, not `enable`.
 - Guarded by `__tests__/BackupSecurityRows.test.tsx` (a locked row opens `unlock`, never `enable`) and
   `__tests__/EncryptionSheetUnlock.test.tsx`.
 
+## What P-05 (the showcase) adds to sync
+
+Nothing that is merged: no preference, no table, no migration, and the fingerprint and the version
+gate are unchanged. Home's notices are per device (`DEVICE_LOCAL_PREFERENCES`), while `disclosure()`
+reads the merged journal, so two synced phones show the same Home but not necessarily the same
+notice. The offered first step is local adventure state, decided per device from the merged journal
+at run start; adventure runs are not synced, so a second phone decides for itself.
+
 ## Device sync
 
 - **Progress is derived, never stored**: bests, records and rungs are read from `completed_exercises`

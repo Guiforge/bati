@@ -1,13 +1,14 @@
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Button, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { AlertTriangle, Check, Play, X } from "@/components/icons";
 import { formatDistance } from "@/constants/distanceFormat";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { type RecoverableSession, useSessionRecovery } from "@/hooks/useSessionRecovery";
+import type { RecoverableSession } from "@/hooks/useSessionRecovery";
 import { formatTime } from "@/hooks/useSessionTimer";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -84,22 +85,22 @@ export function SessionRecoveryCard({
       <YStack gap="$3">
         <XStack gap="$2" items="center">
           <AlertTriangle size={20} color="$primaryText" />
-          <Text fontSize={18} fontWeight="bold" color="$text">
+          <AppText fontSize={18} fontWeight="bold" color="$text">
             {t(witnessed ? "recovery.finish_outing_title" : "recovery.title")}
-          </Text>
+          </AppText>
         </XStack>
 
         {/* A walk that was killed is not a walk that was abandoned: the trace covers the hours
             the app missed, and the card says so rather than asking the hero to guess what
             "unfinished" means for a hike they already came home from. */}
-        <Text color="$text" opacity={0.8}>
+        <AppText color="$text" opacity={0.8}>
           {t(witnessed ? "recovery.finish_outing_description" : "recovery.description")}
-        </Text>
+        </AppText>
 
         <YStack gap="$1" bg="$background" p="$2" rounded="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+          <AppText fontSize="$4" fontWeight="700" color="$text">
             {session.questTitle}
-          </Text>
+          </AppText>
           {/* A walk is one round of one movement, so "Round 1/1, exercise 1/1" is the whole of
               what the workout line could ever say about it, and the elapsed clock reads the
               seconds since a snapshot an outing writes once, at the start: 0:04 for an hour on
@@ -107,22 +108,22 @@ export function SessionRecoveryCard({
               it is in `gps_points` whether or not the app was there to see the rest. */}
           {session.leaguesM === null ? (
             <>
-              <Text fontSize="$3" color="$text" opacity={0.7}>
+              <AppText fontSize="$3" color="$text" opacity={0.7}>
                 {t("recovery.progress", {
                   round: session.round,
                   roundTotal: session.roundTotal,
                   exercise: session.exercise,
                   exerciseTotal: session.exerciseTotal,
                 })}
-              </Text>
-              <Text fontSize="$3" color="$text" opacity={0.7}>
+              </AppText>
+              <AppText fontSize="$3" color="$text" opacity={0.7}>
                 {t("recovery.elapsed", { time: formatTime(session.elapsedTime) })}
-              </Text>
+              </AppText>
             </>
           ) : (
-            <Text fontSize="$3" color="$text" opacity={0.7}>
+            <AppText fontSize="$3" color="$text" opacity={0.7}>
               {t("recovery.ground", { distance: formatDistance(session.leaguesM, unit, language) })}
-            </Text>
+            </AppText>
           )}
         </YStack>
 
@@ -171,26 +172,5 @@ export function SessionRecoveryCard({
         </XStack>
       </YStack>
     </Card>
-  );
-}
-
-/**
- * Wrapper that handles the recovery logic internally
- */
-export function SessionRecoveryBanner() {
-  const { recoverableSession, isChecking, recoverSession, finishSession, discardSession } =
-    useSessionRecovery();
-
-  if (isChecking || !recoverableSession) {
-    return null;
-  }
-
-  return (
-    <SessionRecoveryCard
-      session={recoverableSession}
-      onRecover={recoverSession}
-      onFinish={finishSession}
-      onDiscard={discardSession}
-    />
   );
 }

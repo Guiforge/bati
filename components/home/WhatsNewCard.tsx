@@ -1,7 +1,8 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Text, XStack } from "tamagui";
+import { Button, XStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { ChevronRight, X } from "@/components/icons";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -59,12 +60,12 @@ export function WhatsNewCard() {
       }}
     >
       <XStack items="center" gap="$2">
-        <Text flex={1} fontSize="$4" fontWeight="700" color="$text">
+        <AppText flex={1} fontSize="$4" fontWeight="700" color="$text">
           {t("whats_new.card_title", { version: appVersion })}
-        </Text>
-        <Text fontSize="$3" color="$primaryText">
+        </AppText>
+        <AppText fontSize="$3" color="$primaryText">
           {t("whats_new.card_open")}
-        </Text>
+        </AppText>
         <ChevronRight size={16} color="$primaryText" />
         <Button
           testID="home-whats-new-dismiss"

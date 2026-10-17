@@ -111,7 +111,8 @@ one session changes it; adding a tombstone changes it.
 (`favourite_quests`), quest configs (`quest:<id>:config`), campaigns, boss fights and boss damage
 log, adventure runs, set-aside exercises, `language`, `warmupEnabled`, `prepMode`,
 `distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `villagersEnabled`, `bigFeastsShown`
-(a JSON list of the big feasts this phone already showed; it only decides display), and every
+(a JSON list of the big feasts this phone already showed; it only decides display), `notesSeenVersion`
+(the release notes this phone already showed; per device, it only decides which Home notice is up), and every
 other preference not in R7. They are excluded by being absent from the whitelist `MERGED_PREFERENCES`
 (`db/backup.ts:251-265`), the only list the comparison and the merge read (`db/backup.ts:270-277`,
 `db/merge.ts:181`).
@@ -875,3 +876,11 @@ before, whatever the source; `lockedAdventures()` never contains an adventure wi
 `adventure_runs`; a locked adventure page starts no run from any of its controls. Source `none` (every
 build without a billing module) answers `true` before reading the database.
 `__tests__/plus-access.test.ts`, `__tests__/db-peer-merge.test.ts`.
+
+**R115. Home's disclosure is read from the journal; the offered step is local.** `disclosure()`
+is a pure function of the journal: two devices with the same sessions show the same Home, whatever
+order they were merged in. The notice a phone shows (`notesSeenVersion`, `bigFeastsShown`) is
+per device and never merged. The first offered session counts as step 1 of the first adventure: that
+step is completed with `completedSessionId` NULL, matched by the seeded `enTitle`, and never blocks a
+session deletion. It changes no XP and no record. Invariant: deleting that session leaves the step done,
+and no migration, table or merged preference sits behind it.

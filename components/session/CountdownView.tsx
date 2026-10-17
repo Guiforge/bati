@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Button, XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { Pause } from "@/components/icons";
 import { getBossAsset, getExerciseAsset, getQuestAsset } from "@/constants/assetMap";
 import { fade, rawColors } from "@/constants/rawColors";
@@ -136,7 +137,7 @@ export function CountdownView() {
         justify="space-between"
         items="center"
       >
-        <Text
+        <AppText
           fontSize={13}
           fontWeight="700"
           color="$text"
@@ -145,7 +146,7 @@ export function CountdownView() {
           {...OVER_ART_SHADOW}
         >
           {bossFight ? t("session.start_boss") : t("session.start_quest")}
-        </Text>
+        </AppText>
         <Button
           testID="session-pause"
           size="$3"

@@ -59,7 +59,8 @@ jobs:
       # Verified against the tree on 2026-08-28: the only non-MIT-family entries are MPL-2.0
       # (lightningcss), CC-BY-4.0 (caniuse-lite), Python-2.0 (argparse) and one BSD/GPL dual
       # (node-forge) — all redistributable. Five @tamagui subpackages report UNKNOWN for a
-      # missing field in their own package.json; Tamagui itself is MIT.
+      # missing field in their own package.json; Tamagui itself is MIT, and the notices asset
+      # (scripts/generate-licenses.mjs, LICENSE_OVERRIDES) records it with the repository's text.
       #
       # This checks the npm tree, which is what Metro bundles. It says nothing about the Gradle
       # side — that one is on the SDK's own licensing.
@@ -68,6 +69,13 @@ jobs:
           npx --yes license-checker-rseidelsohn@4.4.2 --production --excludePrivatePackages
           --summary --failOn
           "GPL-1.0;GPL-2.0;GPL-3.0;AGPL-1.0;AGPL-3.0;LGPL-2.0;LGPL-2.1;LGPL-3.0;SSPL-1.0;BUSL-1.1;UNLICENSED"
+
+      # Known vulnerabilities in what ships (audit G2). High and critical only, production tree
+      # only; each accepted advisory is an entry with its reason in .github/audit-allowlist.json,
+      # so a new one fails here instead of arriving unread. The moderate decode-uri-component
+      # advisory is below the bar and explained in SECURITY.md.
+      - name: Dependency advisories
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/audit-prod.mjs
 
       # An invalid workflow file does not fail loudly — it produces a run with no jobs and no
       # error, which is exactly how v1.0.1 shipped (see the comment on release.yml's keystore

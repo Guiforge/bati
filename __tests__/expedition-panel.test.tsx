@@ -496,3 +496,61 @@ describe("ExpeditionPanel", () => {
     });
   });
 });
+
+/**
+ * The default readout, pinned before the places became configurable: 3 activities x 3 goal
+ * states, the order of figures and labels exactly as shipped (big without a label; second,
+ * climb, rate). The outing display must leave all nine untouched when the hero changed nothing.
+ */
+function texts(node: unknown): string[] {
+  if (typeof node === "string") return [node];
+  if (Array.isArray(node)) return node.flatMap(texts);
+  if (node && typeof node === "object" && "children" in node) {
+    return texts((node as { children: unknown }).children ?? []);
+  }
+  return [];
+}
+
+describe("ExpeditionPanel default readout", () => {
+  const withLocomotion = (locomotion: "walk" | "run" | "ride") =>
+    ({
+      ...outing,
+      exercises: [{ ...outing.exercises[0], exercise: { ...walk, locomotion } }],
+    }) as unknown as Quest;
+
+  const goals: [string, OutingGoal | null, string[]][] = [
+    ["no goal", null, ["10:00", "2.50 km", "Distance"]],
+    ["a time goal", { type: "time", seconds: 1200 }, ["10:00", "of 20 min", "2.50 km", "Distance"]],
+    [
+      "a distance goal",
+      { type: "distance", metres: 5000 },
+      ["2.50 km", "of 5.00 km", "10:00", "Duration"],
+    ],
+  ];
+  const rates = {
+    walk: ["4:00 /km", "Pace"],
+    run: ["4:00 /km", "Pace"],
+    ride: ["15.0 km/h", "Speed"],
+  };
+
+  beforeEach(() => {
+    jest.spyOn(Date, "now").mockReturnValue(NOW);
+    mockUnit = "metric";
+    setTrack({ ...walked(600, 600, 2500), climbFrom: 100, ascentM: 85 });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  test.each(
+    (["walk", "run", "ride"] as const).flatMap((l) =>
+      goals.map(([name, goal, head]) => [l, name, goal, head] as const),
+    ),
+  )("%s with %s", async (l, _name, goal, head) => {
+    setSession(goal, 600_000);
+    useSessionStore.setState({ quest: withLocomotion(l) });
+    await mount();
+    const seen = texts(screen.toJSON()).filter((x) => x.trim() !== "");
+    // The figure/label order: big, [goal], second, its label, climb, its label, rate, its label.
+    const expected = [...head, "85 m", "Climb", ...rates[l]];
+    expect(seen.filter((x) => expected.includes(x))).toEqual(expected);
+  });
+});

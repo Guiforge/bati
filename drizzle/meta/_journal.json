@@ -526,6 +526,13 @@
       "when": 1792540800000,
       "tag": "0074_the_content_let_go",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "6",
+      "when": 1792627200000,
+      "tag": "0075_the_hero_tells_a_tale",
+      "breakpoints": true
     }
   ]
 }

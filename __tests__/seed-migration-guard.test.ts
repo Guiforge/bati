@@ -86,3 +86,41 @@ describe("seed migrations never touch hero rows", () => {
     expect(sql).toContain("exercises_hero_name_unique");
   });
 });
+
+/**
+ * The same rule for `adventures` (0075): a hero writes adventures now, so a seed statement that
+ * rewrites one by `enTitle`, or touches its steps without going through an Admin adventure, can
+ * reach the hero's. `adventure_steps` has no `author`: a seed scopes it through
+ * `adventureId IN (SELECT id FROM adventures WHERE author = 'Admin' AND enTitle = ...)`.
+ * The cutoff never moves; see the last test.
+ */
+const ADVENTURE_PARTITION_IDX = 75;
+const ADV_WRITES =
+  /UPDATE\s+`?(adventures|adventure_steps)\b`?|DELETE\s+FROM\s+`?(adventures|adventure_steps)\b`?/i;
+const ADV_READS = /(?:FROM|JOIN)\s+`?adventures\b`?/i;
+
+describe("seed migrations never touch hero adventures", () => {
+  test("every statement that writes adventures or reads one by name scopes itself to author", () => {
+    const offenders: string[] = [];
+    for (const file of sqlFiles()) {
+      if (indexOf(file) < ADVENTURE_PARTITION_IDX) continue;
+      const sql = fs.readFileSync(path.join(DRIZZLE, file), "utf8");
+      for (const statement of sql.split(";")) {
+        const ambiguous =
+          ADV_WRITES.test(statement) || (ADV_READS.test(statement) && /enTitle/i.test(statement));
+        if (ambiguous && !/author/i.test(statement)) {
+          offenders.push(`${file}: ${statement.trim().slice(0, 90).replace(/\s+/g, " ")}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  test("the cutoff still names the migration that created the partition", () => {
+    const partition = sqlFiles().find((f) => indexOf(f) === ADVENTURE_PARTITION_IDX);
+    expect(partition).toBe("0075_the_hero_tells_a_tale.sql");
+    const sql = fs.readFileSync(path.join(DRIZZLE, "0075_the_hero_tells_a_tale.sql"), "utf8");
+    expect(sql).toContain("adventures_uuid_unique");
+    expect(sql).toContain("adventures_admin_title_unique");
+  });
+});

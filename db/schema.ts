@@ -335,9 +335,18 @@ export const adventures = sqliteTable(
 
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+
+    // The adventure's name off this database (0075), as `quests.uuid` is the quest's. A uuid v7
+    // (db/uuid.ts) set by db/heroAdventures.ts and nothing else. Null on every seeded row.
+    uuid: text(),
   },
   (table) => ({
     activeSortIdx: index("adventures_active_sort_idx").on(table.isActive, table.sortOrder),
+    uuidUnique: uniqueIndex("adventures_uuid_unique").on(table.uuid),
+    // Two populations, two namespaces (0075): the game's titles are unique among themselves only.
+    adminTitleUnique: uniqueIndex("adventures_admin_title_unique")
+      .on(table.enTitle)
+      .where(sql`${table.author} = 'Admin'`),
   }),
 );
 

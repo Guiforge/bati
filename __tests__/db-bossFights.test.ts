@@ -27,16 +27,18 @@ describe("db/bossFights", () => {
     // A boss with a declared HP pool and a weakness/resistance pair.
     t.sqlite
       .prepare(
-        `INSERT INTO adventures (id, questId, kind, bossTotalHp, bossWeaknessMuscle, bossResistanceMuscle, imagePath)
-         VALUES (?, 1, 'boss', 100, 'chest', 'back', 'assets/boss.jpg')`,
+        `INSERT INTO adventures (id, questId, kind, enTitle, bossTotalHp, bossWeaknessMuscle, bossResistanceMuscle, imagePath)
+         VALUES (?, 1, 'boss', 'Boss ' || ?, 100, 'chest', 'back', 'assets/boss.jpg')`,
       )
-      .run(BOSS_WITH_HP);
+      .run(BOSS_WITH_HP, BOSS_WITH_HP);
 
     // No declared HP: the pool is derived from the steps' exercise targets.
     // Quest 1 appears twice on purpose — a repeated step must count twice.
     t.sqlite
-      .prepare(`INSERT INTO adventures (id, questId, kind, imagePath) VALUES (?, 1, 'boss', NULL)`)
-      .run(BOSS_DERIVED_HP);
+      .prepare(
+        `INSERT INTO adventures (id, questId, kind, enTitle, imagePath) VALUES (?, 1, 'boss', 'Boss ' || ?, NULL)`,
+      )
+      .run(BOSS_DERIVED_HP, BOSS_DERIVED_HP);
     t.sqlite
       .prepare(
         `INSERT INTO adventure_steps (adventureId, stepIndex, questId) VALUES (?, 0, 1), (?, 1, 1)`,
@@ -44,12 +46,16 @@ describe("db/bossFights", () => {
       .run(BOSS_DERIVED_HP, BOSS_DERIVED_HP);
 
     t.sqlite
-      .prepare(`INSERT INTO adventures (id, questId, kind) VALUES (?, 1, 'boss')`)
-      .run(BOSS_NO_STEPS);
+      .prepare(
+        `INSERT INTO adventures (id, questId, kind, enTitle) VALUES (?, 1, 'boss', 'Boss ' || ?)`,
+      )
+      .run(BOSS_NO_STEPS, BOSS_NO_STEPS);
 
     t.sqlite
-      .prepare(`INSERT INTO adventures (id, questId, kind) VALUES (?, 1, 'route')`)
-      .run(ROUTE_ADVENTURE);
+      .prepare(
+        `INSERT INTO adventures (id, questId, kind, enTitle) VALUES (?, 1, 'route', 'Route ' || ?)`,
+      )
+      .run(ROUTE_ADVENTURE, ROUTE_ADVENTURE);
   });
 
   afterEach(() => {

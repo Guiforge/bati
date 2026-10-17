@@ -314,7 +314,7 @@ describe("db/journal", () => {
     const squat = exerciseId("Squat");
     const quest = t.sqlite.prepare("SELECT id FROM quests LIMIT 1").get() as { id: number };
     t.sqlite.exec(`
-      INSERT INTO adventures (id, questId, kind, enTitle, frTitle, sortOrder) VALUES (900, ${quest.id}, 'boss', 'The Golem', 'Le Golem', 0);
+      INSERT INTO adventures (id, questId, kind, enTitle, frTitle, sortOrder) VALUES (900, ${quest.id}, 'boss', 'Test Golem', 'Le Golem', 0);
       INSERT INTO adventure_runs (id, adventureId, status, startedAt, finishedAt) VALUES (1, 900, 'finished', ${seconds(daysAgo(9))}, ${seconds(daysAgo(1))});
       INSERT INTO boss_fights (id, adventureId, totalHp, currentHp, defeatedAt) VALUES (1, 900, 100, 0, ${seconds(daysAgo(1))});
     `);

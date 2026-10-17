@@ -105,7 +105,7 @@ describe("rate and buzz", () => {
     expect(withActivity({ walk: { rate: "speed" } }, "walk", { rate: "pace" })).toEqual({});
   });
 
-  test("rateKind is the choice of the tab, and a mixed quest reads Walk", () => {
+  test("rateKind is the choice of the tab, and no activity reads Walk", () => {
     expect(rateKind("walk", { walk: { rate: "speed" } })).toBe("speed");
     expect(rateKind("ride", { walk: { rate: "speed" } })).toBe("speed");
     expect(rateKind("ride", { ride: { rate: "pace" } })).toBe("pace");

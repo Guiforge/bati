@@ -30,6 +30,10 @@ jest.mock("@/db/gps", () => ({
   outingSession: (id: string) => mockOutingSession(id),
 }));
 jest.mock("@/db/quests", () => ({ listQuestTemplates: () => mockQuestTemplates() }));
+const mockLoadConfiguredQuest = jest.fn<Promise<unknown>, [number]>();
+jest.mock("@/db/questConfig", () => ({
+  loadConfiguredQuest: (id: number) => mockLoadConfiguredQuest(id),
+}));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 // The recap names what the leagues moved now, which is one read of the village. These tests are
 // about the map and its numbers, so the road is simply absent and the line draws nothing.
@@ -205,6 +209,7 @@ beforeEach(() => {
     leaguesM: CREDITED_M,
     movingSeconds: MOVING_S,
   });
+  mockLoadConfiguredQuest.mockResolvedValue(null);
   mockQuestTemplates.mockResolvedValue([
     { id: 7, enTitle: "The Warden's Round", frTitle: "La Ronde du Veilleur" },
   ]);
@@ -322,6 +327,29 @@ describe("a session that left the walls", () => {
     await mount();
     expect(await screen.findByTestId("recap-pace")).toHaveTextContent(/km\/h/);
     expect(screen.getByTestId("recap-pace")).not.toHaveTextContent("/km");
+  });
+
+  // A mixed quest stores no activity: the recap reads the tab of the leg it was priced as, the
+  // same one the panel and the goal sheet read, not the Walk tab.
+  test("a ride plus indoor quest reads the Ride tab here, km/h by default", async () => {
+    mockOutingSession.mockResolvedValue({
+      id: 42,
+      questId: 7,
+      performedAt: new Date(T0),
+      leaguesM: CREDITED_M,
+      movingSeconds: MOVING_S,
+      outing: null,
+    });
+    mockLoadConfiguredQuest.mockResolvedValue({
+      quest: {
+        exercises: [
+          { exercise: { style: "expedition", locomotion: "ride" } },
+          { exercise: { style: "strength", locomotion: null } },
+        ],
+      },
+    });
+    await mount();
+    expect(await screen.findByTestId("recap-pace")).toHaveTextContent(/km\/h/);
   });
 
   test("the unit comes from the setting, which is only possible through the format helpers", async () => {

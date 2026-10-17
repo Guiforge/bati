@@ -1277,7 +1277,7 @@ export function beginTrackingIfOuting(
   // the length of two reads) and the right walk-run flag, so no pace shows on a walk-run.
   const locomotion = displayLocomotion(quest);
   // A mount buzzes every fifth league unless the hero said otherwise: the original behaviour.
-  // shortcut: a walk-and-ride quest reads the Walk tab but is mounted, so choosing "every league"
+  // ponytail: a walk-and-ride quest reads the Walk tab but is mounted, so choosing "every league"
   // there equals the tab default and is not stored; it keeps buzzing every fifth. Store buzz
   // verbatim if a hero asks.
   const mountedBuzz: BuzzEvery = isMountedOuting(quest) ? 5 : 1;

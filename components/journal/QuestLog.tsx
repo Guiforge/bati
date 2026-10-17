@@ -508,9 +508,7 @@ function Ground({ data }: { data: QuestLogData }) {
   const language = useSettingsStore((s) => s.language);
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
   const { session, trace } = data;
-  // shortcut: a mixed quest stores no activity, so victory, recap, journal and shared card read
-  // its Walk tab while the panel and the goal sheet read the cheapest leg; store the tab if a
-  // hero with a mixed ride quest ever sees km/h on one and min/km on the other.
+  // Only an outing row reaches this panel, so its stored activity is the tab; a mixed quest has no ground panel.
   const rate = useRateKind(session.outing);
   const moving = session.movingSeconds ?? session.durationSeconds ?? 0;
 

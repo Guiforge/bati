@@ -162,3 +162,25 @@ test.each([
   expect(screen.getByText(value)).toBeTruthy();
   mockSettingsStore.outingDisplay = {};
 });
+
+// A mixed quest stores no activity and gets the rounds, not the ground panel: no rate to disagree
+// with the panel and the recap, which read the quest's own tab.
+test("a mixed quest's journal page prints no pace or speed", async () => {
+  const data = dataWith(362);
+  Object.assign(data.session, { outing: null, leaguesM: 2500, movingSeconds: 1500 });
+  await act(async () => {
+    await render(
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 390, height: 844 },
+          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+        }}
+      >
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <QuestLog data={data} onChanged={() => {}} />
+        </TamaguiProvider>
+      </SafeAreaProvider>,
+    );
+  });
+  expect(screen.queryByTestId("journal-ground")).toBeNull();
+});

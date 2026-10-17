@@ -36,8 +36,10 @@ import {
   TRACE_GLOW_PAINT,
 } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
+import { displayLocomotion } from "@/db/expeditions";
 import { outingSession, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
+import { loadConfiguredQuest } from "@/db/questConfig";
 import { listQuestTemplates } from "@/db/quests";
 import type { Locomotion } from "@/db/schema";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
@@ -81,8 +83,8 @@ type Recap = {
   movingSeconds: number | null;
   /** The reducer's metres of climb, `null` before 0052 or when the receiver gave no height. */
   ascentM: number | null;
-  /** Walk and run read a pace, a ride a speed; `null` reads as a pace. */
-  outing: Locomotion | null;
+  /** The tab of "Affichage des sorties" this outing reads; `null` reads as the Walk tab. */
+  display: Locomotion | null;
 };
 
 const NOTHING: Recap = {
@@ -93,7 +95,7 @@ const NOTHING: Recap = {
   leaguesM: null,
   movingSeconds: null,
   ascentM: null,
-  outing: null,
+  display: null,
 };
 
 /** Where the outing began and where it ended, as the map's only two other lit points. */
@@ -359,6 +361,15 @@ export default function ExpeditionRecapScreen() {
         session?.questId == null
           ? undefined
           : (await listQuestTemplates()).find((q) => q.id === session.questId);
+      // The slots with their movements: the template does not carry the locomotion. A quest the
+      // hero deleted since falls back to the stored activity, then to the Walk tab.
+      const configured =
+        session?.questId == null
+          ? null
+          : await loadConfiguredQuest(session.questId).catch((error) => {
+              reportError("recap.quest", error);
+              return null;
+            });
       setRecap({
         sessionId: session?.id ?? null,
         fixes,
@@ -367,7 +378,8 @@ export default function ExpeditionRecapScreen() {
         leaguesM: session?.leaguesM ?? null,
         movingSeconds: session?.movingSeconds ?? null,
         ascentM: session?.ascentM ?? null,
-        outing: session?.outing ?? null,
+        // The tab the panel and the goal sheet read: a mixed quest stores no activity, its quest does.
+        display: configured ? displayLocomotion(configured.quest) : (session?.outing ?? null),
       });
     },
     [language],
@@ -611,7 +623,7 @@ export default function ExpeditionRecapScreen() {
           range={trace.speedRange}
           best={trace.bestLeague}
           unit={distanceUnit}
-          locomotion={recap?.outing}
+          locomotion={recap?.display}
         />
 
         {/* What the ground moved, above what the ground was.
@@ -628,7 +640,7 @@ export default function ExpeditionRecapScreen() {
             movingSeconds={recap.movingSeconds}
             ascentM={recap.ascentM}
             unit={distanceUnit}
-            locomotion={recap.outing}
+            locomotion={recap.display}
           />
         ) : null}
 

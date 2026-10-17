@@ -243,10 +243,9 @@ il serait absurde de débloquer les longues sorties sans les payer.
 - *Allure ou vitesse, vibrations, aperçu* (phase 1b) : le héros choisit par activité Allure
   (min/km) ou Vitesse (km/h), par défaut l'allure à pied et la vitesse à vélo. `rateKind(locomotion,
   display)` (`constants/outingDisplay.ts`) est la seule réponse, `formatRate` prend le `kind`
-  obligatoire : un appel oublié ne compile pas. Panneau et notification lisent la vue figée,
-  victoire, récap, journal et carte partagée lisent `useRateKind`. Écart nommé : une quête mixte
-  n'a pas d'activité stockée, ces quatre surfaces lisent donc l'onglet Marche (`shortcut:` dans
-  `QuestLog`). La cadence de vibration (`buzzEvery` : chaque lieue, toutes les 5, ou à l'objectif
+  obligatoire : un appel oublié ne compile pas. Panneau, notification et victoire lisent la vue figée ; le récap lit l'onglet de
+  `displayLocomotion` de la quête de la ligne (repli Marche), le journal et la carte partagée celui de
+  l'activité stockée : une quête mixte n'y montre aucun rythme. La cadence de vibration (`buzzEvery` : chaque lieue, toutes les 5, ou à l'objectif
   seulement) est lue par `announceLeague` dans la vue figée ; le défaut garde le comportement
   d'avant (5 sur une monture, 1 à pied). L'aperçu en tête d'onglet est `ExpeditionPanelView`
   (la vue à props du panneau) nourrie par `lastOutingOf` : rien d'inventé, des tirets sans sortie.

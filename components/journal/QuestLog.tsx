@@ -24,6 +24,7 @@ import {
   NText,
 } from "@/components/journal/nocturne";
 import { recordName, recordValue } from "@/components/journal/recordLabel";
+import { SessionNotebook } from "@/components/journal/SessionNotebook";
 import { SetEditor } from "@/components/journal/SetEditor";
 import { TraceThumb } from "@/components/journal/TraceThumb";
 import { ShareButton } from "@/components/share/ShareButton";
@@ -603,14 +604,9 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
         {data.standing ? <WhereItSits standing={data.standing} /> : null}
         <WhatItMoved data={data} />
         {outing ? <Ground data={data} /> : <Rounds session={session} onChanged={onChanged} />}
-        {!!session.notes && (
-          <NBlock mt={6}>
-            <NKickerQuiet>{t("journal.notes")}</NKickerQuiet>
-            <NText mt={6} fontSize={13.5} lineHeight={20}>
-              {session.notes}
-            </NText>
-          </NBlock>
-        )}
+        <YStack mt={6}>
+          <SessionNotebook sessionId={session.id} />
+        </YStack>
         {session.questId != null && (
           <YStack py={17} gap={8}>
             <NButton

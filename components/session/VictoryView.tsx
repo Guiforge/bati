@@ -17,6 +17,7 @@ import { InkGauge } from "@/components/common/InkGauge";
 import { Recitatif } from "@/components/common/Recitatif";
 import { useToast } from "@/components/common/Toast";
 import { ChevronRight } from "@/components/icons";
+import { SessionNotebook } from "@/components/journal/SessionNotebook";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
@@ -194,6 +195,7 @@ export function VictoryView() {
   const [bossExpanded, setBossExpanded] = useState(false);
   // "Voir tout": the milestone, the chart and the forget link, mounted only once asked for.
   const [expanded, setExpanded] = useState(false);
+  const [noting, setNoting] = useState(false);
   const cue = useChorusStore((s) => s.cue);
 
   const [result, setResult] = useState<SaveResult | null>(null);
@@ -445,6 +447,7 @@ export function VictoryView() {
           gap: 12,
         }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Hero: the moment's own image with the title laid over it. A boss kill is the app's
             climax, so its card is the *monster* — named, felled, gold-rimmed — not the poster of
@@ -832,6 +835,35 @@ export function VictoryView() {
           >
             {t("session.victory_see_all")}
           </AppText>
+        )}
+
+        {/* A discreet line, never a second primary button: the roadmap's "un mot sur ce soir ?".
+            It opens the note editor of the same notebook the Journal uses, on the saved row. */}
+        {!!result && !tooShort && (
+          <YStack width="100%" maxW={520} items="center">
+            {noting ? (
+              <SessionNotebook
+                sessionId={result.sessionId}
+                mode="note"
+                startEditing
+                onCancel={() => setNoting(false)}
+              />
+            ) : (
+              <AppText
+                testID="victory-note"
+                accessibilityRole="button"
+                onPress={() => setNoting(true)}
+                color="$textSecondary"
+                fontSize={14}
+                minH={44}
+                py="$3"
+                px="$4"
+                textDecorationLine="underline"
+              >
+                {t("session.victory_note")}
+              </AppText>
+            )}
+          </YStack>
         )}
       </ScrollView>
 

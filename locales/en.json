@@ -383,7 +383,11 @@
     "kind_event": "EVENT",
     "kind_boss": "BOSS",
     "empty_title": "No adventures yet",
-    "empty_subtitle": "Come back soon. The village is preparing adventures."
+    "empty_subtitle": "Come back soon. The village is preparing adventures.",
+    "plus_section": "With Bati+",
+    "plus_more_one": "One more adventure with Bati+",
+    "plus_more_other": "{{count}} more adventures with Bati+",
+    "plus_locked": "This adventure comes with Bati+. Each of its quests plays on its own, from Quests."
   },
   "boss": {
     "hp": "HP",
@@ -2650,5 +2654,11 @@
         "line": "Four straight heavy weeks. This is the week to go lighter, not the week to stop."
       }
     ]
+  },
+  "plus": {
+    "exercise_quota_one": "You already have {{count}} exercise of your own. Creating more takes Bati+.",
+    "exercise_quota_other": "You already have {{count}} exercises of your own. Creating more takes Bati+.",
+    "quest_quota_one": "You already have {{count}} quest of your own. Creating more takes Bati+. Quests saved from an outing don't count.",
+    "quest_quota_other": "You already have {{count}} quests of your own. Creating more takes Bati+. Quests saved from an outing don't count."
   }
 }

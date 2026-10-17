@@ -162,7 +162,12 @@
     "weeks_many": "≈ {{count}} semaines",
     "weeks_pace_one": "≈ {{count}} semaine à ton rythme",
     "weeks_pace_other": "≈ {{count}} semaines à ton rythme",
-    "weeks_pace_many": "≈ {{count}} semaines à ton rythme"
+    "weeks_pace_many": "≈ {{count}} semaines à ton rythme",
+    "plus_section": "Avec Bati+",
+    "plus_more_one": "Encore une aventure avec Bati+",
+    "plus_more_other": "Encore {{count}} aventures avec Bati+",
+    "plus_more_many": "Encore {{count}} aventures avec Bati+",
+    "plus_locked": "Cette aventure vient avec Bati+. Chacune de ses quêtes se joue seule, depuis Quêtes."
   },
   "avatars": {
     "archer": "Archer",
@@ -2769,5 +2774,13 @@
         "line": "Quatre semaines chargées d'affilée. Cette semaine, on allège, on ne s'arrête pas."
       }
     ]
+  },
+  "plus": {
+    "exercise_quota_one": "Tu as déjà {{count}} exercice à toi. Pour en créer d'autres, il faut Bati+.",
+    "exercise_quota_other": "Tu as déjà {{count}} exercices à toi. Pour en créer d'autres, il faut Bati+.",
+    "exercise_quota_many": "Tu as déjà {{count}} exercices à toi. Pour en créer d'autres, il faut Bati+.",
+    "quest_quota_one": "Tu as déjà {{count}} quête à toi. Pour en créer d'autres, il faut Bati+. Les quêtes nées d'une sortie ne comptent pas.",
+    "quest_quota_other": "Tu as déjà {{count}} quêtes à toi. Pour en créer d'autres, il faut Bati+. Les quêtes nées d'une sortie ne comptent pas.",
+    "quest_quota_many": "Tu as déjà {{count}} quêtes à toi. Pour en créer d'autres, il faut Bati+. Les quêtes nées d'une sortie ne comptent pas."
   }
 }

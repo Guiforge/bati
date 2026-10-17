@@ -16,6 +16,7 @@ import {
   BUZZ_STEPS,
   type BuzzEvery,
   OUTING_ACTIVITIES,
+  OUTING_LAYOUTS,
   OUTING_METRICS,
   type OutingLayout,
   type OutingView,
@@ -35,6 +36,24 @@ import { useSettingsStore } from "@/stores/settings";
 
 /** The places a choice can fill, in the order of the list: the big one, then the three small. */
 type PlaceId = "big" | 0 | 1 | 2;
+
+/** Literal keys, so `tsc` refuses a layout without copy and the key tests can see each one. */
+const LAYOUT_LABEL = {
+  map: "outing_display.layout_map",
+  bigFigures: "outing_display.layout_big",
+  bigMap: "outing_display.layout_bigmap",
+} as const satisfies Record<OutingLayout, string>;
+
+/** What the big map does, said under the chips when it is the one picked. */
+function LayoutNote({ layout }: { layout: OutingLayout }) {
+  const { t } = useTranslation();
+  if (layout !== "bigMap") return null;
+  return (
+    <Paragraph fontSize={13} color="$textSecondary">
+      {t("outing_display.layout_bigmap_note")}
+    </Paragraph>
+  );
+}
 
 const RATES: readonly Place[] = ["rate", "rateAvg"];
 
@@ -251,19 +270,18 @@ export default function OutingDisplayScreen() {
           {t("outing_display.layout")}
         </SectionLabel>
         <XStack gap="$2" flexWrap="wrap">
-          {(["map", "bigFigures"] as const satisfies readonly OutingLayout[]).map((layout) => (
+          {OUTING_LAYOUTS.map((layout) => (
             <Chip
               key={layout}
               testID={`outing-display-layout-${layout}`}
-              label={t(
-                layout === "map" ? "outing_display.layout_map" : "outing_display.layout_big",
-              )}
+              label={t(LAYOUT_LABEL[layout])}
               tone={view.layout === layout ? "primary" : "default"}
               accessibilityState={{ selected: view.layout === layout }}
               onPress={() => change({ layout })}
             />
           ))}
         </XStack>
+        <LayoutNote layout={view.layout} />
 
         <SectionLabel px="$1" mt="$2">
           {t("outing_display.rate")}

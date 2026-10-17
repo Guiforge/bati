@@ -578,12 +578,16 @@ MapLibre only draws while the hero is actually looking.
   every sentence naming the host (settings note, offer, credit line, privacy policy) says the tiles
   are fetched while the hero moves as well as afterwards. The host now learns roughly where the
   hero is, in order, as they go; that is the difference the copy had to carry.
-- The camera follows the last fix at zoom 16, as a GPS does, until a finger pans or pinches;
+- The camera follows the last fix at zoom 16 on foot and 15 on a ride (`FOLLOW_ZOOM`, by the
+  movement being done right now, no setting), as a GPS does, until a finger pans or pinches;
   the recentre button then follows again at the zoom the pinch chose. A pocket can pan it too,
   which is why coming back from the background recentres without asking.
   While the screen is kept on on foot (the hero chose it, or a mixed quest holds it), the map is
   `locked`: pan, pinch and double-tap are off, so a pocket cannot move it and the recentre button
   never shows. In the big-numbers layout there is no map at all and no tile is requested.
+- The third layout, `bigMap`, drops the panel's big figure and lets the map take the slack; the
+  figure floats on it in a chip (`MapBigFigure`), above the credit line, taking no touch, so the
+  pocket guard is unchanged. In a boss fight the arena owns the slot and the panel keeps its figure.
 - With the map on, `MapFootnote` asks Android whether it refuses Bati the network
   (`isNetworkBlocked` in `modules/bati-location`, `NetworkInfo.DetailedState.BLOCKED`), again on
   every return to the foreground. A per-app "Network access" switch on LineageOS or /e/OS, or a

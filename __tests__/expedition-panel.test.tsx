@@ -1,6 +1,7 @@
 import { act, render, screen } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 import { ExpeditionPanel } from "@/components/session/ExpeditionPanel";
+import { ExpeditionPanelView } from "@/components/session/ExpeditionPanelView";
 import "@/i18n";
 import config from "@/tamagui.config";
 
@@ -183,6 +184,23 @@ describe("ExpeditionPanel", () => {
   test("says it is looking for the sky rather than showing nothing", async () => {
     await mount();
     expect(screen.getByText("Finding the sky")).toBeTruthy();
+  });
+
+  test("hideBig leaves the big figure to the map and keeps everything else", async () => {
+    await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <ExpeditionPanelView
+          view={DEFAULT_LIVE_VIEW}
+          track={{ ...EMPTY, ...walked(600, 600, 2500) }}
+          goal={{ type: "distance", metres: 5000 }}
+          recordedSeconds={600}
+          hideBig
+        />
+      </TamaguiProvider>,
+    );
+    expect(screen.queryByTestId("expedition-big")).toBeNull();
+    expect(screen.getByTestId("expedition-goal")).toBeTruthy();
+    expect(screen.getByTestId("expedition-time")).toBeTruthy();
   });
 
   test("the current league reads from where the league began, with its label", async () => {

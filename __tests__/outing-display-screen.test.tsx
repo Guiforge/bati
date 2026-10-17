@@ -158,6 +158,22 @@ test("the Settings row says Customised after a change, either kind", async () =>
   expect(screen.getByText("Customised")).toBeTruthy();
 });
 
+test("three layouts, the big map with its note, written on tap and gone when the original returns", async () => {
+  await mount("walk");
+  expect(screen.getByText("Map and figures")).toBeTruthy();
+  expect(screen.getByText("Big figures")).toBeTruthy();
+  expect(screen.getByText("Big map")).toBeTruthy();
+  expect(screen.queryByText("The map fills the screen, your big figure sits on top.")).toBeNull();
+
+  await press("outing-display-layout-bigMap");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({ walk: { layout: "bigMap" } });
+  expect(mockWrites.at(-1)).toEqual({ walk: { layout: "bigMap" } });
+  expect(screen.getByText("The map fills the screen, your big figure sits on top.")).toBeTruthy();
+
+  await press("outing-display-layout-map");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({});
+});
+
 test("the walk-run note sits on the rate rows of a walk, not of a ride", async () => {
   await mount("walk");
   await press("outing-display-place-big");

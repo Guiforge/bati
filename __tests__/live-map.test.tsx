@@ -118,7 +118,12 @@ const walking = (i: number): LocationFix => ({
   distFromPrev: i === 0 ? 0 : 1.4,
 });
 
-async function mount(fixes: LocationFix[], tiles: boolean, locked = false) {
+async function mount(
+  fixes: LocationFix[],
+  tiles: boolean,
+  locked = false,
+  extra: { locomotion?: "walk" | "run" | "ride"; overlay?: boolean } = {},
+) {
   useExpeditionStore.setState({ fixes });
   useSettingsStore.setState({ language: "en", mapTilesEnabled: tiles });
   await act(async () => {
@@ -129,6 +134,8 @@ async function mount(fixes: LocationFix[], tiles: boolean, locked = false) {
           topInset={0}
           placeholder={<Text>the movement's picture</Text>}
           locked={locked}
+          locomotion={extra.locomotion ?? "walk"}
+          overlay={extra.overlay ? <Text testID="live-map-big">12.34 km</Text> : undefined}
         />
       </TamaguiProvider>,
     );
@@ -321,4 +328,25 @@ test("follows every fix with the camera, and folds the walk at most every five s
   } finally {
     jest.useRealTimers();
   }
+});
+
+test.each([
+  ["walk", 16],
+  ["run", 16],
+  ["ride", 15],
+] as const)("follows a %s at zoom %i, with no setting", async (locomotion, zoom) => {
+  await mount([walking(0), walking(1)], true, false, { locomotion });
+  expect(mockInitialView.mock.calls.at(-1)?.[0]).toMatchObject({ zoom });
+});
+
+test("the big figure floats over the picture before the first fix", async () => {
+  await mount([], true, false, { overlay: true });
+  expect(screen.getByTestId("live-map-big")).toBeTruthy();
+  expect(screen.queryByTestId("live-map")).toBeNull();
+});
+
+test("and over the map once there is one", async () => {
+  await mount([walking(0), walking(1)], true, false, { overlay: true });
+  expect(screen.getByTestId("live-map")).toBeTruthy();
+  expect(screen.getByTestId("live-map-big")).toBeTruthy();
 });

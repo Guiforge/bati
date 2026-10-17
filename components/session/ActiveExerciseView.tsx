@@ -46,6 +46,7 @@ import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { ExpeditionPanel } from "./ExpeditionPanel";
 import { GhostLine } from "./GhostLine";
 import { LiveMap } from "./LiveMap";
+import { MapBigFigure } from "./MapBigFigure";
 import { SessionSwapSheet } from "./SessionSwapSheet";
 import { SwitchGlow } from "./SwitchGlow";
 import { sessionArtHeight } from "./sessionArt";
@@ -124,6 +125,8 @@ export function ActiveExerciseView() {
   const isOuting = isOutdoors(currentEx?.exercise.style);
   const view = useExpeditionStore((state) => state.view);
   const bigNumbers = isOuting && view.layout === "bigFigures";
+  /** The big figure floats on the map; in a boss fight the arena owns the slot, so not then. */
+  const bigOnMap = !bossFight && isOuting && view.layout === "bigMap";
   /** Screen on, on foot: ending takes a confirmation and the map ignores fingers. */
   const pocketLock =
     quest !== null && currentEx !== undefined && pocketGuarded(quest, currentEx, view);
@@ -419,6 +422,8 @@ export function ActiveExerciseView() {
             topInset={insets.top}
             placeholder={hero}
             locked={pocketLock}
+            locomotion={currentEx?.exercise.locomotion ?? "walk"}
+            overlay={bigOnMap ? <MapBigFigure /> : undefined}
           />
         )
       ) : (
@@ -525,7 +530,7 @@ export function ActiveExerciseView() {
             how far they have gone, not how much of a prescribed duration is left. The clock is
             still running underneath — `completeExercise` records the elapsed seconds either
             way — but it is not what the screen is about. */}
-        {isOuting ? <ExpeditionPanel /> : null}
+        {isOuting ? <ExpeditionPanel bigOnMap={bigOnMap} /> : null}
 
         {/* Within-exercise timer progress (only for time-based exercises) */}
         {isTimeBased && !isOuting && (

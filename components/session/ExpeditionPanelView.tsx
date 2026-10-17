@@ -11,6 +11,7 @@ import type { OutingMetric, RateKind } from "@/constants/outingDisplay";
 import { formatDuration } from "@/db/estimate";
 import {
   type FigureContext,
+  figureContext,
   figureText,
   type LiveView,
   metricLabelKey,
@@ -118,6 +119,47 @@ function Reading({
         {label}
       </AppText>
     </YStack>
+  );
+}
+
+/** The text size of the big figure: the big-figures layout sets it larger. */
+const BIG_SIZE = { normal: 56, large: 72 } as const;
+
+/**
+ * The big figure and, when the hero chose it, its word. Read by the panel and by the chip floating
+ * on the big map, from one context, so the two cannot show different numbers.
+ */
+export function BigReading({
+  ctx,
+  view,
+  fontSize,
+  empty = false,
+  testID,
+}: {
+  ctx: FigureContext;
+  view: LiveView;
+  fontSize: number;
+  empty?: boolean;
+  testID?: string;
+}) {
+  const { t } = useTranslation();
+  const places = resolvePlaces(view, ctx);
+  return (
+    <Reading label={t(metricLabelKey(places.big, view.rate))} bare={!places.bigLabelled}>
+      <AppText
+        testID={testID}
+        variant="display"
+        fontSize={fontSize}
+        fontWeight="700"
+        color={ctx.track.paused ? "$textSecondary" : "$text"}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.5}
+        style={{ fontVariant: ["tabular-nums"] }}
+      >
+        {empty ? "-" : figureText(places.big, ctx, true)}
+      </AppText>
+    </Reading>
   );
 }
 
@@ -282,6 +324,7 @@ export function ExpeditionPanelView({
   preview = false,
   empty = false,
   lapFromMs = null,
+  hideBig = false,
 }: {
   view: LiveView;
   track: TrackState;
@@ -296,8 +339,9 @@ export function ExpeditionPanelView({
   empty?: boolean;
   /** Where the current league started; the settings preview has no live lap and leaves it null. */
   lapFromMs?: number | null;
+  /** The big figure floats on the map instead (`bigMap`): the panel keeps everything else. */
+  hideBig?: boolean;
 }) {
-  const { t } = useTranslation();
   const unit = useSettingsStore((state) => state.distanceUnit);
   const language = useSettingsStore((state) => state.language);
 
@@ -311,39 +355,26 @@ export function ExpeditionPanelView({
   const figureColor = track.paused ? "$textSecondary" : "$text";
 
   const recorded = recordedSeconds;
-  const ctx: FigureContext = {
-    track,
-    recordedSeconds: recorded,
-    recentSpeedMps,
-    goal,
-    goalReached,
+  const ctx = figureContext(
+    { view, track, recentSpeedMps, goal, goalReached, recordedSeconds: recorded, lapFromMs },
     unit,
     language,
-    rate: view.rate,
-    walkRun: view.walkRun,
-    lapFromMs,
-  };
+  );
   const text = (metric: OutingMetric) => (empty ? "-" : figureText(metric, ctx, true));
   const places = resolvePlaces(view, ctx);
   const bigFigures = view.layout === "bigFigures";
 
   return (
     <Card p="$4" gap="$3">
-      <Reading label={t(metricLabelKey(places.big, view.rate))} bare={!places.bigLabelled}>
-        <AppText
+      {hideBig ? null : (
+        <BigReading
+          ctx={ctx}
+          view={view}
+          fontSize={bigFigures ? BIG_SIZE.large : BIG_SIZE.normal}
+          empty={empty}
           testID="expedition-big"
-          variant="display"
-          fontSize={bigFigures ? 72 : 56}
-          fontWeight="700"
-          color={figureColor}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-          style={{ fontVariant: ["tabular-nums"] }}
-        >
-          {text(places.big)}
-        </AppText>
-      </Reading>
+        />
+      )}
 
       {acquiring ? null : (
         // Moving seconds, the clock `goalReached` reads: the recorded total counts red lights,

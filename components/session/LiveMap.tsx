@@ -17,13 +17,17 @@ import {
   TRACE_GLOW_PAINT,
 } from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
+import type { Locomotion } from "@/db/schema";
 import { toTrace } from "@/src/gps/trace";
 import { reportError } from "@/src/reportError";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
 
-/** Close enough to read the street being walked, far enough to see the next turn. */
-const FOLLOW_ZOOM = 16;
+/**
+ * Close enough to read the street being walked, far enough to see the next turn; a ride covers
+ * three times the ground per glance, so it follows one level further out. No setting.
+ */
+const FOLLOW_ZOOM = { walk: 16, run: 16, ride: 15 } as const satisfies Record<Locomotion, number>;
 
 /** One fix a second, so the camera glides for as long as the next one takes to arrive. */
 const FOLLOW_MS = 1000;
@@ -68,6 +72,15 @@ function Waiting({ label }: { label: string }) {
   );
 }
 
+/** The big map's floating figure: above the credit line, touching nothing. */
+function Overlay({ children }: { children: ReactNode }) {
+  return (
+    <YStack position="absolute" b={40} l="$4" r="$4" pointerEvents="none">
+      {children}
+    </YStack>
+  );
+}
+
 /**
  * The walk so far, on the map, while it is happening.
  *
@@ -96,12 +109,18 @@ export function LiveMap({
   topInset,
   placeholder,
   locked = false,
+  locomotion,
+  overlay,
 }: {
   minHeight: number;
   topInset: number;
   placeholder: ReactNode;
   /** The pocket guard: the map ignores fingers, so a pocket cannot move the view. */
   locked?: boolean;
+  /** The movement being done right now, which sets how far out the camera follows. */
+  locomotion: Locomotion;
+  /** Floats over the map and its placeholder, above the credit line; takes no touch. */
+  overlay?: ReactNode;
 }) {
   /**
    * Whether anyone can see the map. Starts true: this screen mounts in front of the hero.
@@ -119,8 +138,8 @@ export function LiveMap({
   const [styleLoaded, setStyleLoaded] = useState(false);
   /** Whether the camera tracks the hero. A gesture stops it, the recentre button restarts it. */
   const [following, setFollowing] = useState(true);
-  /** The zoom the camera follows at: `FOLLOW_ZOOM` until a pinch picks another. */
-  const [zoom, setZoom] = useState(FOLLOW_ZOOM);
+  /** The zoom the camera follows at: `FOLLOW_ZOOM` for the activity until a pinch picks another. */
+  const [zoom, setZoom] = useState<number>(FOLLOW_ZOOM[locomotion]);
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (state) => {
       // Not `=== "active"`: iOS reports `inactive` for the app switcher and a call banner, with
@@ -176,6 +195,7 @@ export function LiveMap({
       <YStack style={{ flex: 1 }} minH={topInset + HUD_HEIGHT + minHeight} width="100%">
         {placeholder}
         <Waiting label={t("session.live_map_finding")} />
+        {overlay === undefined ? null : <Overlay>{overlay}</Overlay>}
       </YStack>
     );
   }
@@ -296,6 +316,8 @@ export function LiveMap({
       <YStack position="absolute" b="$3" l="$4" r="$4">
         <MapFootnote quiet={moving} />
       </YStack>
+
+      {overlay === undefined ? null : <Overlay>{overlay}</Overlay>}
 
       {styleLoaded ? null : <Waiting label={t("session.live_map_loading")} />}
     </YStack>

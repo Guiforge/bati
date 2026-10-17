@@ -2290,7 +2290,9 @@
     "preview_last_ride": "Your last ride, on {{date}}",
     "preview_none_walk": "No walk yet: the figures will appear here.",
     "preview_none_run": "No run yet: the figures will appear here.",
-    "preview_none_ride": "No ride yet: the figures will appear here."
+    "preview_none_ride": "No ride yet: the figures will appear here.",
+    "layout_bigmap": "Big map",
+    "layout_bigmap_note": "The map fills the screen, your big figure sits on top."
   },
   "pause": {
     "title": "Pause and zone",

@@ -2292,7 +2292,9 @@
     "preview_last_ride": "Deine letzte Radtour, am {{date}}",
     "preview_none_walk": "Noch kein Spaziergang: Hier erscheinen deine Zahlen.",
     "preview_none_run": "Noch kein Lauf: Hier erscheinen deine Zahlen.",
-    "preview_none_ride": "Noch keine Radtour: Hier erscheinen deine Zahlen."
+    "preview_none_ride": "Noch keine Radtour: Hier erscheinen deine Zahlen.",
+    "layout_bigmap": "Große Karte",
+    "layout_bigmap_note": "Die Karte füllt den Bildschirm, deine große Zahl liegt obenauf."
   },
   "pause": {
     "title": "Pause und Schonzone",

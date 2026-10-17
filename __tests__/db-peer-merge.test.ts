@@ -858,6 +858,19 @@ describe("the crest follows the journal, not the device", () => {
     await converged(laterReset);
   });
 
+  test("outingDisplay carries values this build may not read, verbatim", async () => {
+    addSession(t.sqlite, 1_000);
+    const theirs = '{"run":{"layout":"bigMap","small":["lap",null,null]}}';
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 2_000);
+    const peerFile = await peer("phase2-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", theirs, 3_000),
+    );
+    await merge().mergePeer(peerFile);
+    // The merge is text-level: a build that cannot parse bigMap or lap still carries them.
+    expect(prefValue("outingDisplay")).toBe(theirs);
+    await converged(peerFile);
+  });
+
   test("outingDisplay is news once, then level", async () => {
     addSession(t.sqlite, 1_000);
     const withRow = await peer("with-display.db", (sqlite) =>

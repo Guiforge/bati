@@ -82,7 +82,9 @@ the hero's choice of what the outing panel shows per activity, one last-writer-w
 activities. No default is written (a device that never opened the screen has no row), back to the
 original writes `{}`, never a delete (a missing row reads as the peer being newer), an unknown
 activity, metric or layout reads as the default, and `setOutingDisplay` writes nothing when the stored
-value would not change (a restamp is news for every peer). `db-peer-merge` holds the five tests. The
+value would not change (a restamp is news for every peer). Values a build cannot parse (`bigMap`,
+`lap`) travel verbatim, since the merge is text-level; an older build that edits any tab drops them
+from every tab (whole-blob rebuild, last writer wins). `db-peer-merge` holds the six tests. The
 screen-on choice is not in this blob: it is the phone's (R35).
 Invariant: only these keys ever change in `user_preferences` through a merge (plus R12); `auto`
 written later wins over an older animal on the other device, in both merge directions.

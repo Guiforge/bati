@@ -2391,7 +2391,9 @@
     "preview_last_ride": "Tu última salida en bici, el {{date}}",
     "preview_none_walk": "Aún no hay caminatas: las cifras aparecerán aquí.",
     "preview_none_run": "Aún no hay carreras: las cifras aparecerán aquí.",
-    "preview_none_ride": "Aún no hay salidas en bici: las cifras aparecerán aquí."
+    "preview_none_ride": "Aún no hay salidas en bici: las cifras aparecerán aquí.",
+    "layout_bigmap": "Mapa grande",
+    "layout_bigmap_note": "El mapa llena la pantalla y tu cifra grande va encima."
   },
   "pause": {
     "title": "Pausa y zona",

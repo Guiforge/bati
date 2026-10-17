@@ -23,7 +23,7 @@ export const OUTING_METRICS = [
 export type OutingMetric = (typeof OUTING_METRICS)[number];
 /** `auto` in the big place: distance for a distance goal, else time. In a small place: the other one. */
 export type Place = OutingMetric | "auto";
-export const OUTING_LAYOUTS = ["map", "bigFigures"] as const;
+export const OUTING_LAYOUTS = ["map", "bigFigures", "bigMap"] as const;
 export type OutingLayout = (typeof OUTING_LAYOUTS)[number];
 export type SmallPlaces = [Place | null, Place | null, Place | null];
 /** How a rate is read: min/km for feet, km/h for wheels, unless the hero chose the other. */
@@ -140,6 +140,9 @@ export function parseOutingDisplay(raw: string | null): OutingDisplay {
   return out;
 }
 
+// ponytail: rebuilds every activity from the parsed view, so an older build that edits any tab
+// drops, on every tab, the values it cannot parse (bigMap, lap). LWW then spreads that. Fix only
+// if two builds in the field becomes the normal case: keep the raw entries of untouched tabs.
 /**
  * The blob with one activity changed. `null` is the reset: the activity goes. Fields equal to the
  * default are dropped too, and an activity left empty with them, so choosing the original again

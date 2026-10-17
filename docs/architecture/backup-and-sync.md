@@ -300,7 +300,11 @@ at run start; adventure runs are not synced, so a second phone decides for itsel
   changes how they are read does not change any device's fingerprint. It is a shared SQL fragment,
   not a view: a backup holding a view is refused (`validateBackup`).
 - **The outing display** (`outingDisplay`) is a merged preference: one JSON blob, last writer wins,
-  back to the original writes `{}` and never deletes the row. It needed no migration, which is what
+  back to the original writes `{}` and never deletes the row. The blob also holds `bigMap` (layout)
+  and `lap` (metric) since phase 2; a phase 1 build reads them as defaults, and **its edit of any
+  tab drops them from every tab** (`withActivity` rebuilds the whole blob from what it parsed, and
+  last writer wins spreads that). Phase 2 added no merged key and no migration, so `localState` and
+  every fingerprint are unchanged on update. It needed no migration, which is what
   keeps a phone on the previous version merging with one on this version (`validateBackup` and
   `mergePeer` refuse only a newer migration). `localState` ends with the list of merged keys for the
   same reason `CIPHER_READS` is in it: an updated phone drops its cached verdicts and re-judges

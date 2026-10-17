@@ -73,6 +73,36 @@ export function nextLap(lap: Lap, track: TrackState): Lap {
   return league > lap.league ? { league, fromMs: track.movingMs } : lap;
 }
 
+/** What a figure needs from the live outing to be read. The one place the context is built. */
+export type FigureSource = {
+  view: LiveView;
+  track: TrackState;
+  recentSpeedMps: number | null;
+  goal: OutingGoal | null;
+  goalReached: boolean;
+  recordedSeconds: number;
+  lapFromMs: number | null;
+};
+
+export function figureContext(
+  source: FigureSource,
+  unit: DistanceUnit,
+  language: string,
+): FigureContext {
+  return {
+    track: source.track,
+    recordedSeconds: source.recordedSeconds,
+    recentSpeedMps: source.recentSpeedMps,
+    goal: source.goal,
+    goalReached: source.goalReached,
+    unit,
+    language,
+    rate: source.view.rate,
+    walkRun: source.view.walkRun,
+    lapFromMs: source.lapFromMs,
+  };
+}
+
 /** Under this, a reported speed is a standstill: a slow walk is 1 m/s, a stop wobbles near 0. */
 const STILL_SPEED_MPS = 0.3;
 

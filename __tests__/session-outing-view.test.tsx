@@ -277,6 +277,65 @@ describe("a walk in the hero's big-numbers layout", () => {
   });
 });
 
+describe("a walk in the hero's big-map layout", () => {
+  const FIX = {
+    t: NOW,
+    lat: 43.6,
+    lon: 1.44,
+    ele: 100,
+    baro: null,
+    acc: 4,
+    speed: 1.4,
+    distFromPrev: 0,
+  };
+
+  test("the map takes the slack and the big figure floats on it, not in the panel", async () => {
+    useExpeditionStore.setState({ view: { ...DEFAULT_LIVE_VIEW, layout: "bigMap" } });
+    await mountRunning(questWith(mockWalk));
+    // Before the first fix the figure already sits over the picture (the clock then).
+    expect(screen.getByTestId("live-map-big")).toBeTruthy();
+    await act(() => {
+      useExpeditionStore.setState({ fixes: [FIX] });
+    });
+
+    expect(screen.getByTestId("live-map")).toBeTruthy();
+    expect(screen.getByTestId("live-map-big")).toBeTruthy();
+    expect(screen.queryByTestId("expedition-big")).toBeNull();
+    useExpeditionStore.setState({ view: DEFAULT_LIVE_VIEW });
+  });
+
+  test("in a boss fight the arena owns the slot, so the panel keeps its big figure", async () => {
+    useExpeditionStore.setState({ view: { ...DEFAULT_LIVE_VIEW, layout: "bigMap" } });
+    await mountRunning(questWith(mockWalk));
+    await act(() => {
+      useSessionStore.setState({
+        bossFight: {
+          id: 1,
+          adventureId: 1,
+          totalHp: 100,
+          currentHp: 80,
+          weaknessMuscle: null,
+          resistanceMuscle: null,
+          defeatedAt: null,
+          createdAt: new Date(NOW),
+          updatedAt: new Date(NOW),
+          imagePath: "assets/images/exercises/walk.webp",
+          enName: "Boss",
+          frName: "Boss",
+          deName: "Boss",
+          esName: "Boss",
+          tier: 0,
+          shiny: false,
+        } as never,
+      });
+    });
+
+    expect(screen.queryByTestId("live-map-big")).toBeNull();
+    expect(screen.getByTestId("expedition-big")).toBeTruthy();
+    useExpeditionStore.setState({ view: DEFAULT_LIVE_VIEW });
+  });
+});
+
 describe("a plain hold, which still has a duration to count", () => {
   // Same reason as above: one mount, and the three things a workout still owes the hero.
   test("keeps the countdown, its rounds and its beeps", async () => {

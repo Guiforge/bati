@@ -53,6 +53,17 @@ describe("the current league entry", () => {
   });
 });
 
+describe("the big map layout", () => {
+  test("is parsed, stored, and dropped back to {} when the map is chosen again", () => {
+    expect(parseOutingDisplay('{"run":{"layout":"bigMap"}}')).toEqual({
+      run: { layout: "bigMap" },
+    });
+    const stored = withActivity({}, "run", { layout: "bigMap" });
+    expect(stored).toEqual({ run: { layout: "bigMap" } });
+    expect(withActivity(stored, "run", { layout: "map" })).toEqual({});
+  });
+});
+
 describe("viewOf and withActivity", () => {
   test("viewOf of nothing is the default view, and never aliases it", () => {
     const view = viewOf({}, "walk");

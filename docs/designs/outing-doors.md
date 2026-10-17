@@ -249,6 +249,13 @@ il serait absurde de débloquer les longues sorties sans les payer.
   seulement) est lue par `announceLeague` dans la vue figée ; le défaut garde le comportement
   d'avant (5 sur une monture, 1 à pied). L'aperçu en tête d'onglet est `ExpeditionPanelView`
   (la vue à props du panneau) nourrie par `lastOutingOf` : rien d'inventé, des tirets sans sortie.
+- *Phase 2* : une troisième disposition **Carte en grand** (`bigMap`) : le panneau lâche son gros
+  chiffre (`hideBig`), la carte prend la place et le gros chiffre flotte dessus (`MapBigFigure`,
+  même source que le panneau, `useLivePanelProps`) ; pendant un combat de boss l'arène garde la
+  place et le panneau garde son gros chiffre. Le catalogue gagne **Lieue en cours** (`lap`) : le
+  temps en mouvement depuis la dernière borne, une marque O(1) du store rejouée à la reprise ; la
+  notification ne l'affiche jamais (deux horloges sans étiquette). Le zoom de suivi est 16 à pied,
+  15 à vélo, sans réglage.
 - *Le gros chiffre porte son mot dès que le héros l'a choisi* (« Affichage des sorties », D-35 Q6) :
   pas de mot sous le gros chiffre par défaut, un mot dessous quand sa place n'est pas `auto`.
 

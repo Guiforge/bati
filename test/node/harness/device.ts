@@ -26,6 +26,7 @@ export type App = {
   cloud: typeof import("../../../src/cloudSync");
   dbBackup: typeof import("../../../db/backup");
   quest: typeof import("../../../src/questFile");
+  adventure: typeof import("../../../src/adventureFile");
   unlock: typeof import("../../../src/vaultUnlock");
   completed: typeof import("../../../db/completed");
 };
@@ -111,6 +112,7 @@ export async function newDevice(name: string, restoreFrom?: string): Promise<Dev
       cloud: require("../../../src/cloudSync"),
       dbBackup: require("../../../db/backup"),
       quest: require("../../../src/questFile"),
+      adventure: require("../../../src/adventureFile"),
       unlock: require("../../../src/vaultUnlock"),
       completed: require("../../../db/completed"),
     };

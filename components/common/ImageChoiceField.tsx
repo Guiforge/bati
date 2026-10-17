@@ -51,6 +51,8 @@ export type ImageChoiceFieldProps = {
    * never letterboxes and the photo the hero crops comes back the shape it will be shown at.
    */
   aspect: readonly [number, number];
+  /** Offer the photo tile. Off where the picture must be one of `choices` (an adventure's cover). */
+  photos?: boolean;
 };
 
 export function ImageChoiceField({
@@ -60,6 +62,7 @@ export function ImageChoiceField({
   resolve,
   resolveThumb,
   aspect,
+  photos = true,
 }: ImageChoiceFieldProps) {
   const { t } = useTranslation();
   const { showError } = useToast();
@@ -144,31 +147,33 @@ export function ImageChoiceField({
       {open ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <XStack gap="$2">
-            <YStack
-              testID="image-choice-photo"
-              onPress={pickPhoto}
-              disabled={busy}
-              width={TILE}
-              height={TILE}
-              items="center"
-              justify="center"
-              bg="$surface2"
-              borderWidth={2}
-              borderColor={isPhoto ? "$primaryText" : "$borderStrong"}
-              rounded="$4"
-              overflow="hidden"
-              opacity={busy ? 0.6 : 1}
-              pressStyle={{ opacity: 0.8 }}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isPhoto }}
-              accessibilityLabel={t("exercise_editor.image_from_photos")}
-            >
-              {isPhoto ? (
-                <Image source={{ uri: value }} style={{ width: TILE, height: TILE }} />
-              ) : (
-                <ImagePlus size={22} color="$textSecondary" />
-              )}
-            </YStack>
+            {photos ? (
+              <YStack
+                testID="image-choice-photo"
+                onPress={pickPhoto}
+                disabled={busy}
+                width={TILE}
+                height={TILE}
+                items="center"
+                justify="center"
+                bg="$surface2"
+                borderWidth={2}
+                borderColor={isPhoto ? "$primaryText" : "$borderStrong"}
+                rounded="$4"
+                overflow="hidden"
+                opacity={busy ? 0.6 : 1}
+                pressStyle={{ opacity: 0.8 }}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isPhoto }}
+                accessibilityLabel={t("exercise_editor.image_from_photos")}
+              >
+                {isPhoto ? (
+                  <Image source={{ uri: value }} style={{ width: TILE, height: TILE }} />
+                ) : (
+                  <ImagePlus size={22} color="$textSecondary" />
+                )}
+              </YStack>
+            ) : null}
 
             {choices.map((key) => (
               <YStack

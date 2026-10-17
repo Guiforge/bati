@@ -266,6 +266,8 @@ export const ADVENTURE_ASSETS = {
   squire_path: require("@/assets/images/adventures/squire_path.webp"),
 } as const;
 
+export type AdventureAssetKey = keyof typeof ADVENTURE_ASSETS;
+
 // ============================================================
 // VILLAGE TIER ASSETS (5 tiers) — §3 layer 1, see docs/content/missing-image.md
 // ============================================================

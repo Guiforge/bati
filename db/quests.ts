@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { workoutsBeforeToday } from "./completed";
@@ -45,7 +45,16 @@ import { uuidv7 } from "./uuid";
 import { NON_REP_STYLE } from "./workUnits";
 import { sparedExerciseIds } from "./zone";
 
-const { exercises, exerciseMuscles, questExercises, quests } = schema;
+const {
+  adventureRuns,
+  adventureRunSteps,
+  adventures,
+  adventureSteps,
+  exercises,
+  exerciseMuscles,
+  questExercises,
+  quests,
+} = schema;
 
 // ------------------------------------------------------------
 // Types
@@ -1171,13 +1180,64 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   return quest;
 }
 
-/** The row, no tombstone: the half `honourTombstones` shares with `deleteQuest`. */
+/**
+ * Adventures that name this quest: active ones, and any with a run under way (a retired adventure
+ * with an active run still plays its copied steps). A retired adventure with no run never blocks a
+ * quest. Returns the four titles of each, for the refusal sentence. Lives here and not in
+ * `db/adventures.ts` because that file imports this one.
+ */
+export async function adventuresUsingQuest(
+  questId: number,
+  exec: typeof db | TransactionTx = db,
+): Promise<{ enTitle: string; frTitle: string; deTitle: string; esTitle: string }[]> {
+  const named = exec
+    .select({ id: adventureSteps.adventureId })
+    .from(adventureSteps)
+    .where(eq(adventureSteps.questId, questId));
+  const running = exec
+    .select({ id: adventureRuns.adventureId })
+    .from(adventureRuns)
+    .innerJoin(adventureRunSteps, eq(adventureRunSteps.runId, adventureRuns.id))
+    .where(and(eq(adventureRuns.status, "active"), eq(adventureRunSteps.questId, questId)));
+  return await exec
+    .select({
+      enTitle: adventures.enTitle,
+      frTitle: adventures.frTitle,
+      deTitle: adventures.deTitle,
+      esTitle: adventures.esTitle,
+    })
+    .from(adventures)
+    .where(
+      or(
+        and(eq(adventures.isActive, 1), inArray(adventures.id, named)),
+        inArray(adventures.id, running),
+      ),
+    );
+}
+
+/** A quest an adventure still names cannot be deleted (the editor says which one). */
+export class QuestInUseError extends Error {
+  constructor() {
+    super("Quest is a step of an adventure");
+    this.name = "QuestInUseError";
+  }
+}
+
+/**
+ * The row, no tombstone: the half `honourTombstones` shares with `deleteQuest`.
+ *
+ * ponytail: a retired adventure, its steps, runs and fight survive this delete only because the app
+ * runs with foreign_keys OFF (db/client.ts), while the schema says ON DELETE CASCADE on
+ * adventures/adventure_steps/adventure_run_steps.questId. Turning the pragma on would erase them.
+ * Fix by a migration dropping those three cascades before anyone does.
+ */
 export async function removeQuest(id: number, exec: typeof db | TransactionTx = db): Promise<void> {
   await exec.delete(quests).where(eq(quests.id, id));
 }
 
 export async function deleteQuest(id: number): Promise<void> {
   await transactionOrFallback(async (tx) => {
+    if ((await adventuresUsingQuest(id, tx)).length > 0) throw new QuestInUseError();
     await writeContentTombstone(tx, "quests", id);
     await removeQuest(id, tx);
   });

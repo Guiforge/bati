@@ -4,6 +4,7 @@ import { Paragraph, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { HUD_HEIGHT, REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { bossVoice } from "@/constants/bosses";
+import type { DamageResult } from "@/db/bossFights";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -11,6 +12,16 @@ import { getHpPercent, getPhaseFromHp } from "./bossPhase";
 
 /** How long a line stays up before the boss goes quiet again. */
 const TAUNT_MS = 4000;
+
+/** Order is deliberate: a cornered boss answers its own state before it answers your hit. */
+function momentOf(
+  phase: number,
+  hit: Pick<DamageResult, "isCritical" | "resistancePenalty">,
+): "enrage" | "crit" | "resist" | "idle" {
+  if (phase === 4) return "enrage";
+  if (hit.isCritical) return "crit";
+  return hit.resistancePenalty ? "resist" : "idle";
+}
 
 export function BossTauntOverlay() {
   const bossFight = useSessionStore((s) => s.bossFight);
@@ -35,17 +46,11 @@ export function BossTauntOverlay() {
     const voice = bossVoice(bossFight.imagePath);
     const phase = getPhaseFromHp(getHpPercent(lastDamage.newHp, bossFight.totalHp));
 
-    // Order is deliberate: a cornered boss answers its own state before it answers your hit.
-    const pool =
-      phase === 4
-        ? voice.enrage
-        : lastDamage.isCritical
-          ? voice.crit
-          : lastDamage.resistancePenalty
-            ? voice.resist
-            : voice.idle;
-
-    const lines = pool[language];
+    const moment = momentOf(phase, lastDamage);
+    // The hero's lines (0076) join the painted pool, in every language, as their titles do. A
+    // resisted hit keeps the painted lines only.
+    const own = moment === "resist" ? [] : (bossFight.bossLines?.[moment] ?? []);
+    const lines = [...voice[moment][language], ...own];
     // Modulo a non-empty pool, so always in range; the type does not know that.
     setTaunt(lines[Math.floor(Math.random() * lines.length)] ?? null);
 

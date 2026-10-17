@@ -33,7 +33,7 @@ francés: **contact@getbati.app**
 
 # Privacy Policy for Bati
 
-**Last updated: 4 October 2026**
+**Last updated: 17 October 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -62,8 +62,9 @@ achievements, flame, oath, avatar, settings, the photos you give an exercise or 
 and air-pressure readings of an outing) is written to a
 **SQLite database inside the app's private storage on your device**.
 
-- It is never sent to us or shared with anyone. It leaves the phone only in a backup you make or a
-  sync you switch on, both described below, and a sync is always encrypted on the phone first.
+- It is never sent to us or shared with anyone. It leaves the phone only in a backup you make, a
+  sync you switch on, or a quest or adventure file you share, all described below, and a sync is
+  always encrypted on the phone first.
 - We cannot read it. There is no server to read it from.
 - **Your phone's own backup carries it.** Android backs up app data by itself (Google's backup on
   most phones, Seedvault on LineageOS, /e/OS and GrapheneOS, or a cable or wireless transfer to a
@@ -252,10 +253,14 @@ around you, and a network name is a location by another route.
 **Photos (optional).** If you choose a photo as your hero avatar, the app reads that one image
 from your library and keeps a pointer to it on your device; the image itself is never copied or
 sent. If you give a photo to an exercise or a quest you made, the app shrinks it and stores it in
-the database like the rest of your data, so it travels with your backups and an encrypted sync,
-and nowhere else. Photos you add to a session or an outing in the Journal (three at most) are
-shrunk the same way, and the re-encoding removes the location and camera data the original
-carried; they leave the phone only in a backup you make, an encrypted sync, or a share you choose. Decline the permission and the app works normally with the built-in images.
+the database like the rest of your data, so it travels with your backups and an encrypted sync. It
+also travels in a quest or adventure file when you share one: such a file holds that quest or
+adventure, its quests, the exercises you made for them and their photos as they are stored, and
+nothing else (not your name, not your history). Before an adventure file leaves, Bati says how many
+photos it holds. It goes only where you send it from your phone's share sheet, and it is not
+encrypted. Photos you add to a session or an outing in the Journal (three at most) are shrunk the
+same way, and the re-encoding removes the location and camera data the original carried; they leave
+the phone only in a backup you make, an encrypted sync, or a share you choose. Decline the permission and the app works normally with the built-in images.
 
 **Home-screen widget (Android, optional).** The flame widget reads your flame from
 the same on-device database.
@@ -307,7 +312,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 4 octobre 2026**
+**Dernière mise à jour : 17 octobre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -338,8 +343,9 @@ un exercice ou une quête, et les points GPS et relevés de pression d'une sorti
 votre appareil**.
 
 - Rien n'est envoyé chez nous ni partagé avec qui que ce soit. Les données ne quittent le téléphone
-  que dans une sauvegarde que vous faites ou une synchronisation que vous activez, décrites plus
-  bas, et une synchronisation est toujours chiffrée sur le téléphone avant de partir.
+  que dans une sauvegarde que vous faites, une synchronisation que vous activez, ou un fichier de
+  quête ou d'aventure que vous partagez, décrits plus bas, et une synchronisation est toujours
+  chiffrée sur le téléphone avant de partir.
 - Nous ne pouvons pas le lire. Il n'existe aucun serveur pour le lire.
 - **La sauvegarde de votre téléphone l'emporte.** Android sauvegarde de lui-même les données des
   applications (la sauvegarde Google sur la plupart des téléphones, Seedvault sur LineageOS, /e/OS
@@ -553,11 +559,15 @@ réseaux autour de vous : un nom de réseau est une position par un autre chemin
 image dans votre galerie et garde un lien vers elle sur votre appareil ; l'image elle-même n'est
 jamais copiée ni envoyée. Si vous donnez une photo à un exercice ou une quête que vous avez créés,
 l'application la réduit et la stocke dans la base comme le reste : elle voyage donc avec vos
-sauvegardes et une synchronisation chiffrée, et nulle part ailleurs. Les photos que vous ajoutez à
-une séance ou à une sortie dans le Journal (trois au plus) sont réduites de la même façon, et le
-réencodage retire la position et les données de l'appareil photo de l'original ; elles ne quittent
-le téléphone que dans une sauvegarde que vous faites, une synchronisation chiffrée, ou un partage
-que vous choisissez. Vous pouvez refuser :
+sauvegardes et une synchronisation chiffrée. Elle voyage aussi dans un fichier de quête ou
+d'aventure quand vous en partagez un : ce fichier contient cette quête ou cette aventure, ses quêtes,
+les exercices que vous avez créés pour elles et leurs photos telles qu'elles sont enregistrées, et rien
+d'autre (ni votre nom, ni votre historique). Avant qu'un fichier d'aventure parte, Bati dit combien de
+photos il contient. Il ne va que là où vous l'envoyez depuis le partage de votre téléphone, et il n'est
+pas chiffré. Les photos que vous ajoutez à une séance ou à une sortie dans le Journal (trois au plus)
+sont réduites de la même façon, et le réencodage retire la position et les données de l'appareil photo
+de l'original ; elles ne quittent le téléphone que dans une sauvegarde que vous faites, une
+synchronisation chiffrée, ou un partage que vous choisissez. Vous pouvez refuser :
 l'application fonctionne normalement avec les images intégrées.
 
 **Widget d'écran d'accueil (Android, facultatif).** Le widget de flamme lit votre régularité

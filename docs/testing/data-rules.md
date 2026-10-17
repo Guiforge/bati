@@ -2,7 +2,7 @@
 title: Data rules, as the code implements them
 type: technical
 status: current
-updated: 2026-10-16
+updated: 2026-10-17
 related: [../architecture/backup-and-sync.md, ../architecture/data-safety.md]
 ---
 
@@ -97,7 +97,8 @@ move, so its file on the server is refreshed only by the next change (`ponytail:
 
 **R10. `stateFingerprint` / peer `fingerprint` = `count(sessions) ':' max(uuid)`, then `':'` and the
 sum of both edit stamps when it is not 0 | `max(updatedAt) ':' count` over hero content |
-tombstone count | `sum(xpEarned) ':' count ':' max(deletedAt)` over `deleted_content` (0074) | `count ':' sum(updatedAt)` over `session_photos` (0075, `0:0` without a photo).** An answer
+tombstone count | `sum(xpEarned) ':' count ':' max(deletedAt)` over `deleted_content` (0074) | `count ':' sum(updatedAt)` over `session_photos` (0075, `0:0` without a photo).** The content
+segment also covers the hero's adventures (0075); it is unchanged for a device that has none. An answer
 (`answered`) given before merge v2 has three segments and one given before the notebook has four;
 each matches its own leading segments, and only while the fifth is `0:0` (`judge` in
 `src/deviceSync.ts`): a match turns the peer level before any merge, so photos the answer never
@@ -111,8 +112,8 @@ stamp merged from a phone whose clock runs ahead. Editing `notes` does not; a bo
 one session changes it; adding a tombstone changes it.
 
 **R11. Never compared and never merged:** derived caches (`streak_*`, achievements), favourites
-(`favourite_quests`), quest configs (`quest:<id>:config`), campaigns, boss fights and boss damage
-log, adventure runs, set-aside exercises, `language`, `warmupEnabled`, `prepMode`,
+(`favourite_quests`), quest configs (`quest:<id>:config`), adventure runs, boss fights and boss damage
+log (any status, `left` included; the hero's own adventures are no longer in this list, R19), set-aside exercises, `language`, `warmupEnabled`, `prepMode`,
 `distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `villagersEnabled`, `bigFeastsShown`
 (a JSON list of the big feasts this phone already showed; it only decides display), `notesSeenVersion`
 (the release notes this phone already showed; per device, it only decides which Home notice is up), and every
@@ -176,7 +177,7 @@ source, and every `completed_exercises.exerciseId` resolves to a local exercise 
 158-162`.
 Invariant: no pre-existing local primary key changes in a merge.
 
-**R18. Admin exercises are mapped by `enName`, Admin quests by `enTitle`; any peer Admin row with
+**R18. Admin exercises are mapped by `enName`, Admin quests and Admin adventures by `enTitle`; any peer Admin row with
 no local match aborts the merge.** `db/merge.ts:226-231`.
 Invariant: merges between two builds with the same seed content never fail on Admin rows.
 
@@ -186,6 +187,9 @@ name only when exactly one side has no uuid, and then the named side's uuid is a
 with distinct uuids are never unified by name. `db/merge.ts:243-270, 290-311, 313-333`.
 Invariant: after convergence, for each hero uuid both devices hold the row with the greater
 `updatedAt` (a tie: the larger canonical text, R9), and the children of that row.
+Hero adventures (0075) follow the same rule: the newer row replaces all its steps, and the `questId` of
+the row and of every step is translated through `quest_map`, a quest the other device itself lacks
+becoming `0` (R32). Canonical text names a step's quest by identity, not by id.
 
 **R20. Last writer wins per whole row, never per field.** A concurrent edit of two fields of one
 quest on two devices keeps one device's version in full. `db/merge.ts:253-256`.
@@ -200,7 +204,7 @@ photo (`db/preferences.ts`).
 Invariant: for each merged key, post-merge value = value of the input with the greater
 updatedAt, local on a tie.
 
-**R22. A device with no sessions, no hero exercises and no hero quests ("fresh") takes every peer
+**R22. A device with no sessions, no hero exercises, no hero quests and no hero adventures ("fresh") takes every peer
 preference in R7 regardless of dates.** `db/merge.ts:105-108, 184`.
 Invariant: merging a populated peer into an empty device yields the peer's R7 values.
 
@@ -258,7 +262,7 @@ merge keeps the larger `deletedAt`. Rows are never removed by app code. `drizzle
 Invariant: the tombstone set of a device is monotonically non-decreasing between restores.
 
 **R27. Deleting a session removes: its sets, boss damage log (refunding the boss HP, capped at
-total, felled boss revived), gps points, photos (0075), reopens the campaign step.** `db/completed.ts:348-361,
+total, felled boss revived), gps points, photos (0075), reopens the campaign step (unless the run was left, R116).** `db/completed.ts:348-361,
 428-445`.
 Invariant: after delete, no row of `completed_exercises`, `boss_damage_log`, `gps_points`
 references the session; boss `currentHp <= totalHp`.
@@ -300,6 +304,9 @@ Invariant: a hero row deleted on A and present on B is gone on both after both m
 after; a movement used on either side by sets or quest slots stays on both, with its tombstone, and a
 second merge changes nothing. Used only by a saved quest choice, it stays on the device that holds the
 choice (both copies read dead, `level`). Two kept copies of a dead movement are never written again.
+A dead quest named by an incoming adventure step is brought back (`bringNamedQuests`) and kept while an
+active adventure or an active run names it (`adventuresUsingQuest`); a step naming a quest the other
+device lacks too is written `questId = 0`, so the merge never rolls back on it.
 
 **R33. A restore of an older backup can resurrect sessions, quests and movements deleted since** (it also loses the
 tombstones, session and content, that were in the newer file), and another device still holding them offers them back;
@@ -510,7 +517,7 @@ everything; the old file is orphaned. `db/client.ts:16-19`, `db/schemaVersion.ts
 
 **R63. The runner skips by timestamp:** an entry runs iff `lastAppliedAt < entry.when`; so journal
 `when` must be strictly increasing and a lower `when` added later never runs. Today the journal has
-68 entries, idx 0..67 contiguous, `when` strictly increasing (checked 2026-10-05).
+68 entries, idx 0..67 contiguous, `when` strictly increasing (checked 2026-10-05; 77 entries after 0076).
 `db/migrate.ts:50-52`, `drizzle/meta/_journal.json`.
 Invariant: for all i, `when[i] > when[i-1]` and `idx[i] = i`.
 
@@ -527,14 +534,14 @@ every statement touching `exercises` to `creator`. `AGENTS.md`, `__tests__/migra
 
 ---
 
-## 5. Quest import and export
+## 5. Quest and adventure files
 
 **R66. Export file** = `{kind:'bati-quest', version:1, quest{uuid, title x4, description x4,
 rounds, restSeconds, roundRestSeconds, image}, slots[]}`. Official movements travel by English
 name; hero movements travel whole (uuid, name, description, image, muscles, style, difficulty,
 equipment, pattern, measure, secondsPerRep). No sessions, no hero name. A slot whose exercise is
 not in the catalogue is silently dropped; a hero row without uuid throws; the placeholder cover
-travels as null. `src/questFile.ts:54, 139-183`.
+travels as null. `src/questFile.ts` (`questToFile`).
 Invariant: `parse(export(q))` equals the exported structure.
 
 **R67. Limits on read:** file <= 8,000,000 bytes (declared size and text length), `content://`
@@ -553,7 +560,8 @@ Invariant: no accepted image string contains a scheme other than `data:`.
 
 **R69. Identity on import:** quest and hero movements are recognised by uuid, never by name.
 - Same quest uuid as one of the receiver's hero quests: updated in place (id, history kept; head
-  and slots overwritten, `updatedAt` bumped). `asCopy` gives it a new uuidv7.
+  and slots overwritten, `updatedAt` bumped), for a quest file; inside an adventure file the quest is
+  reused as it is (R124). `asCopy` gives it a new uuidv7.
 - Same movement uuid: the receiver's row is used as is (the file does not edit it), unretired if
   retired; the slot style is the receiver's.
 - Same name, different uuid: a second quest or movement (hero names have no unique index).
@@ -568,6 +576,45 @@ the quest count unchanged; a failing import leaves counts unchanged.
 
 **R70b. A borrowed uuid overwrites the receiver's quest** (documented and previewed); an Admin
 quest is never overwritten (only `isUserQuest` rows match). `src/questFile.ts:525-527, 545`.
+
+**R122. Adventure file** = `{kind:'bati-adventure', version:1 | 2, adventure{uuid, title, description,
+cover, end}, steps[]}`; the `end` of a boss may carry `name` and `lines` (R126), and only a file that does is
+version 2, so a build before 0076 still opens every other file. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
+(`{official}`) or a hero one as a quest body (`{own: {quest, slots}}`, R66). The adventure's texts are
+single strings (the row repeats them in four columns). No run, victory, boss HP, weakness, resistance,
+sort order, sender or date. `src/adventureFile.ts`.
+Invariant: `parse(write(a))` equals `write(a)`, for both versions: the reader returns the version it read.
+
+**R123. Limits on read:** the file limits of R67; 2 to 8 steps (fewer is `not_an_adventure`, more is
+`newer`, and the length is read before any element); title 1 to 60, description 280, narrative and outro
+160, cut in UTF-16 units without leaving half a surrogate pair, past 4x refused; `version` > 2 and an
+`end.kind` this build lacks give `newer`; the boss's name 40 and a line 60 (name past 4x refused), 3 lines per
+moment cut before any element is read, empties dropped, a moment this build lacks ignored; `cover` and `end.monster` must be a bare key
+(`[a-z0-9_]{1,64}`), so a URL, a picture or a path is `not_an_adventure`, and a well-formed key this build
+lacks is the default cover or a route; a step has exactly one of `official` and `own`; fields are read
+one by one into a fresh object, so `__proto__` and extra keys change nothing; an embedded quest is held
+to R66 to R68.
+Invariant: no accepted file yields a row outside the editors' limits.
+
+**R124. Identity on import:** hero quests and movements by uuid; a hero quest already here is reused as
+it is, never rewritten on this device (a quest file is what updates a quest); a seed quest by `enTitle`,
+and one this build lacks is left out, with at least 2 steps kept and the indexes contiguous; a quest that
+names a seed movement this build lacks is left out the same way. The adventure by uuid is updated in
+place and brought back if retired, unless a run of it is under way (checked again inside the
+transaction), then it is written as a copy under a fresh uuid; `asCopy` gives a fresh uuid. Everything in
+one transaction; no `can()` and no quota. Invariant: `import(f); import(f)` leaves the same rows as
+`import(f)` (compared by content, the step ids change); a refused or failed import leaves every count
+unchanged.
+
+**R125. Bati never writes a file it would refuse:** each hero quest goes through the reader's own
+`parseQuestBody` and is written as parsed; one it refuses (a text past 4x its limit, which the quest and
+movement editors do not prevent, or 0 slots) stays out and is counted in `stepsLeft`. Pictures, quest
+covers included, go in under a byte budget charged `length x occurrences`, covers then movements in step
+order, and the walk continues past one that does not fit; one `safeImage` would drop is never sent nor
+charged and counts in `leftOut`. The written string is read back by `parseAdventureData` before it
+leaves. The hero is told the photos, the steps and the pictures left out before the share sheet opens.
+Invariant: for every adventure the editors can save, `parseAdventureData(JSON.parse(json))` does not
+throw and `json` is at most `MAX_FILE_BYTES` bytes.
 
 ---
 
@@ -892,7 +939,7 @@ most four banners. Invariant: the hemisphere never moves a banner, it only renam
 change can move one session to the next or previous season only if it sits near midnight on a
 season border; daylight saving is harmless, since the season is read with `getMonth`.
 
-**R115. Tonight's target is derived.** `progressiveTarget` (`db/progress.ts`) is the one birthplace
+**R127. Tonight's target is derived.** `progressiveTarget` (`db/progress.ts`) is the one birthplace
 of the number the app asks for, called by `resolveSlot` (the served movement and the written one)
 and `applyConfigToSlots` (a swapped-in movement, from the bottom of the band when it has no
 history). Inputs, all in `completed_exercises` and `completed_sessions.userLevel` (nothing is
@@ -917,6 +964,56 @@ before, whatever the source; `lockedAdventures()` never contains an adventure wi
 `adventure_runs`; a locked adventure page starts no run from any of its controls. Source `none` (every
 build without a billing module) answers `true` before reading the database.
 `__tests__/plus-access.test.ts`, `__tests__/db-peer-merge.test.ts`.
+
+**R116. Deleting a session of a left run never revives the run.** It is "locked" only when a newer
+run of that adventure is finished; otherwise "deleted", with the boss refund, and the step's
+`completedSessionId` set to NULL (status kept). Invariant: no write ever sets a `left` run back to
+`active` or `finished`. `__tests__/db-delete-session.test.ts`.
+
+**R117. A left run counts nowhere.** Every counter reads `finished`, the offer reads `active`, and a
+step completed against a run that is not active (left, or a stale step of a finished one) is
+ordinary training: no step, no victory. The boss fight is per adventure and keeps its HP; the rematch
+reset only follows a finished run. `__tests__/db-adventures-campaign.test.ts`.
+
+**R118. Deeds count the game's adventures only.** `DEED_ADVENTURE` (SQL) and `countsAsDeed` (JS) are
+`author <> 'hero'`, one rule in two forms, both reading the exception so a fight restored from a build
+before 0075 (no `author`) is the game's. Added to `listFinishedRunSummaries` (the Hall, the Arena, the
+banners), `getBossBanners`, `getLegacyDeedLevels`, `getBossKills` (bosses page, lifetime, stats,
+Chronicle) and `getStandingBosses`; no Triumph XP on a hero adventure (`payTriumphBonus`), and the
+victory says why once. `getFinishedRunCountsByAdventure` (the card's "finie N fois") and
+`getKillReport` stay unfiltered on purpose. Invariant: a hero adventure finished any number of times
+changes no building level, no boss count and no XP beyond its sessions' own.
+`__tests__/db-hero-adventures.test.ts`, `__tests__/store-session.test.ts`.
+
+**R119. A hero adventure is never deleted; retiring is an edit.** `isActive = 0`, nothing removed, no
+tombstone, and editing a retired adventure never sets it back to 1. It survives the deletion of a quest
+it names only because `foreign_keys` is OFF on a device (the schema says `ON DELETE CASCADE`): the tests
+turn the pragma OFF to prove it, and `removeQuest` carries the ceiling. `adventuresUsingQuest` counts
+active adventures and active runs only. With a run under way the steps and the end are frozen
+(`updateHeroAdventure` ignores them and writes the texts by position). Invariant: after any quest
+deletion, every hero adventure, its steps, runs and fight are still there.
+`__tests__/db-hero-adventures.test.ts`, `__tests__/db-peer-merge-adventures.test.ts`.
+
+**R120. A run never starts on a step whose quest is gone, and the next step is the next real index.**
+`startAdventureRun` refuses (`missingStepQuests`) unless a run is already active; `nextRunStep` reads
+`stepIndex > current` in `completeAdventureRunStep` and `reopenCampaignStep`, so a gap never ends a run
+early. Invariant: a run finishes only after its last step. `__tests__/db-hero-adventures.test.ts`.
+
+**R121. The boss's weakness and resistance are read from the adventure.** The three `BossFight`
+constructors read them from `adventures`, so changing the monster between two playthroughs gives the
+next hit the new monster's. The `boss_fights` columns are written at creation and read by nothing.
+Invariant: the fight's stats equal its adventure's at the next hit. `__tests__/db-hero-adventures.test.ts`.
+
+**R126. The boss's voice.** Migration 0076 gives `adventures` two nullable text columns, `bossName` and
+`bossLinesJson` (`{"idle":[],"crit":[],"enrage":[]}`, keys in that order, written by `db/bossVoice.ts`
+only). NULL on seeded rows, on a route and on a boss left unnamed and silent. They are texts, so
+`updateHeroAdventure` writes them under a run too, and the stored end kind decides whether they are kept
+or cleared, never the draft's. The three `BossFight` builders read them from the adventure, like R121, so
+an edit applies on the next session. The hero's name replaces the painted one at every tier
+(`bossDisplayName`, `getKillReport`); the hero's lines join the painted pool for idle, crit and enrage,
+never resist. Merge needs no code: both columns travel with the row. Invariant: an Admin fight's name and
+pool are unchanged. `__tests__/db-hero-adventures.test.ts`, `__tests__/boss-voice.test.ts`,
+`__tests__/db-peer-merge-adventures.test.ts`.
 
 **R115. Home's disclosure is read from the journal; the offered step is local.** `disclosure()`
 is a pure function of the journal: two devices with the same sessions show the same Home, whatever

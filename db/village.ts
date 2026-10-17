@@ -7,6 +7,7 @@ import { localizedTable } from "@/src/i18n/copy";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "./adventures";
 import { db, schema } from "./client";
+import { DEED_ADVENTURE } from "./deed";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
 import { pickSessionMilestone, type RecentFeeds } from "./milestone";
 import { getMuscleBalance } from "./muscleBalance";
@@ -119,7 +120,8 @@ export async function getBossBanners(): Promise<BossBanner[]> {
       })
       .from(bossFights)
       .innerJoin(adventures, eq(bossFights.adventureId, adventures.id))
-      .where(isNotNull(bossFights.defeatedAt)),
+      // Deeds count the game's adventures only (R2).
+      .where(and(isNotNull(bossFights.defeatedAt), DEED_ADVENTURE)),
     listFinishedRunSummaries(),
   ]);
 
@@ -310,7 +312,13 @@ async function getLegacyDeedLevels(banners: readonly BossBanner[]): Promise<Lega
     })
     .from(adventureRuns)
     .innerJoin(adventures, eq(adventures.id, adventureRuns.adventureId))
-    .where(and(eq(adventureRuns.status, "finished"), lt(adventureRuns.finishedAt, recutAt)))
+    .where(
+      and(
+        eq(adventureRuns.status, "finished"),
+        lt(adventureRuns.finishedAt, recutAt),
+        DEED_ADVENTURE,
+      ),
+    )
     .groupBy(adventureRuns.adventureId);
 
   // A standing defeat without a finished campaign counted for the lair too.

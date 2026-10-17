@@ -2,7 +2,7 @@
 title: Boss Fights
 type: system
 status: active
-updated: 2026-10-11
+updated: 2026-10-17
 related: [adventures.md, session-flow.md, progression.md, ../screens/session.md]
 sources:
   [
@@ -132,7 +132,9 @@ If the kill is guaranteed either way, the fair question is what the pool still d
   card narrates the killing stroke (`boss.final_blow`) so "defeated at 300 HP" reads as the design
   it is, not a bug.
 
-Reward for pushing, never punishment for training under target. Detection is in
+Reward for pushing, never punishment for training under target. **Only on the game's adventures**: the
+boss of an adventure the hero wrote pays no Triumph XP (`countsAsDeed`; a fight restored from a build
+without `author` is the game's), and the victory card says why in one line. Detection is in
 `saveSession` (`payTriumphBonus`): the fight was alive at session start (a corpse is dropped at
 load), its pool hit zero, and `dealFinalBlow` had nothing left to do. The payment is guarded by a
 `triumphBonusPaid` flag on the session store, because none of those conditions can tell a first
@@ -223,7 +225,8 @@ see [progression.md](progression.md#village).
 Replaying a beaten boss campaign is a **rematch**. `startAdventureRun` resurrects the defeated
 fight the moment the new run begins — the wiring `getBossBanners` described before it existed
 ("resetBossFight() nulls it the moment a replay starts"); the banner survives because the finished
-run carries the victory.
+run carries the victory. The reset only follows a *finished* run: after a left run the boss keeps
+its HP, and a felled one stays felled until a run is finished.
 
 **Tier** = how many times the boss has fallen, derived from the adventure's finished runs — never
 stored, so it cannot disagree with the village's own count of the same victories. It is on

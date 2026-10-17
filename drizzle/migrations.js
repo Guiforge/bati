@@ -76,6 +76,8 @@ import m0072 from "./0072_a_session_edited_after.sql";
 import m0073 from "./0073_the_back_that_pulls_back.sql";
 import m0074 from "./0074_the_content_let_go.sql";
 import m0075 from "./0075_the_notebook.sql";
+import m0076 from "./0075_the_hero_tells_a_tale.sql";
+import m0077 from "./0076_the_boss_gets_a_name.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -157,5 +159,7 @@ export default {
     m0073,
     m0074,
     m0075,
+    m0076,
+    m0077,
   },
 };

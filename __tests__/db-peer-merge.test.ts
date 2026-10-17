@@ -1029,6 +1029,38 @@ describe("the crest follows the journal, not the device", () => {
     expect(prefValue("bigFeastsShown")).toBe('["reveal"]');
   });
 
+  test("a run left here is never carried, and never news", async () => {
+    addSession(t.sqlite, 1_000);
+    t.sqlite.exec("INSERT INTO adventure_runs (id, adventureId, status) VALUES (900, 1, 'active')");
+    const before = await backup().stateFingerprint();
+    // Left there, active here, and the other way round: neither side learns anything.
+    const leftThere = await peer("left-there.db", (sqlite) =>
+      sqlite.exec("UPDATE adventure_runs SET status = 'left' WHERE id = 900"),
+    );
+    expect(await backup().compareWithPeer(leftThere)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+    await merge().mergePeer(leftThere);
+    const runStatus = () =>
+      (
+        t.sqlite.prepare("SELECT status FROM adventure_runs WHERE id = 900").get() as {
+          status: string;
+        }
+      ).status;
+    expect(runStatus()).toBe("active");
+
+    const activeThere = await peer("active-there.db");
+    t.sqlite.exec("UPDATE adventure_runs SET status = 'left' WHERE id = 900");
+    expect(await backup().stateFingerprint()).toEqual(before);
+    expect(await backup().compareWithPeer(activeThere)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+    await merge().mergePeer(activeThere);
+    expect(runStatus()).toBe("left");
+  });
+
   test("the release notes this phone showed are never carried, and never news", async () => {
     addSession(t.sqlite, 1_000);
     setPref(t.sqlite, "notesSeenVersion", "1.0.0", 100);

@@ -70,11 +70,38 @@ async function questOffer(questId: number): Promise<QuestOffer | null> {
   return { quest, startable: !hasOutdoorSlot(quest), seconds: estimateQuestSeconds(quest) };
 }
 
+/** The offer of an adventure under way: its title, its progress, the boss if already touched. */
+async function adventureOffer(
+  active: NonNullable<Awaited<ReturnType<typeof getAnyActiveAdventureRun>>>,
+  language: AppLanguage,
+  isCancelled: () => boolean,
+): Promise<HomeOffer | null> {
+  const [details, fight] = await Promise.all([
+    getAdventureDetails(active.adventureId),
+    getBossFightByAdventure(active.adventureId),
+  ]);
+  if (isCancelled()) return null;
+
+  const steps = active.activeRun.steps;
+  const done = steps.filter((s) => s.status === "completed").length;
+  const touched = fight && fight.defeatedAt === null && fight.currentHp < fight.totalHp;
+  return {
+    kind: "adventure",
+    adventureId: active.adventureId,
+    title: details ? localizedTitle(details.adventure, language) : null,
+    imagePath: details?.adventure.imagePath ?? null,
+    done,
+    total: steps.length,
+    step: Math.min(done + 1, steps.length),
+    boss: touched ? { name: localizedName(fight, language), hp: fight.currentHp } : null,
+  };
+}
+
 /**
  * Tonight's offer, or null when the read was abandoned (`isCancelled`).
  *
- * The order *is* the feature: an adventure under way, then the oath (an exercise, then leagues),
- * then what the last 30 days say is lagging, then the quest left longest, then a day already
+ * The order *is* the feature: a game adventure under way, then the oath (an exercise, then leagues),
+ * then the hero's own adventure under way, then what the last 30 days say is lagging, then the quest left longest, then a day already
  * done, then day one's on-ramp, then the gallery.
  */
 // ponytail: priority waterfall — the order *is* the feature, so it reads better flat than
@@ -84,29 +111,10 @@ export async function decideHomeOffer(
   language: AppLanguage,
   isCancelled: () => boolean = () => false,
 ): Promise<HomeOffer | null> {
-  // 1. An adventure already under way outranks any suggestion: the hero committed to it.
-  const active = await getAnyActiveAdventureRun();
-  if (active && !isCancelled()) {
-    const [details, fight] = await Promise.all([
-      getAdventureDetails(active.adventureId),
-      getBossFightByAdventure(active.adventureId),
-    ]);
-    if (isCancelled()) return null;
-
-    const steps = active.activeRun.steps;
-    const done = steps.filter((s) => s.status === "completed").length;
-    const touched = fight && fight.defeatedAt === null && fight.currentHp < fight.totalHp;
-    return {
-      kind: "adventure",
-      adventureId: active.adventureId,
-      title: details ? localizedTitle(details.adventure, language) : null,
-      imagePath: details?.adventure.imagePath ?? null,
-      done,
-      total: steps.length,
-      step: Math.min(done + 1, steps.length),
-      boss: touched ? { name: localizedName(fight, language), hp: fight.currentHp } : null,
-    };
-  }
+  // 1. A game adventure under way outranks any suggestion: the hero committed to it. Read by
+  //    population, so a newer run of the hero's own never hides an older game one.
+  const game = await getAnyActiveAdventureRun("game");
+  if (game && !isCancelled()) return adventureOffer(game, language, isCancelled);
 
   // 2. The oath the hero swore, walked one rung at a time. Above the weak-area rule on purpose —
   //    balance is the app's opinion, the oath is theirs.
@@ -163,6 +171,11 @@ export async function decideHomeOffer(
       return { kind: "oath_leagues", target: oath.oath.target, done: oath.current, ...offer };
     }
   }
+
+  // 2c. The hero's own adventure under way, right after the oath: it pays sessions, nothing
+  //     more, so it does not outrank a vow. A frozen or fulfilled oath falls through to it.
+  const own = await getAnyActiveAdventureRun("hero");
+  if (own && !isCancelled()) return adventureOffer(own, language, isCancelled);
 
   // 3. No oath to serve: fall back to what the last 30 days say is lagging.
   const suggestion = (await getSuggestedQuestsForWeakAreas(1))[0];

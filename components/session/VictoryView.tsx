@@ -29,6 +29,7 @@ import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import { updateSessionFeedback } from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
 import { COAT_RARE_KEY } from "@/db/crestEvents";
+import { countsAsDeed } from "@/db/deed";
 import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession, outingLocomotion } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
@@ -231,7 +232,11 @@ export function VictoryView() {
     ? tonight(
         result,
         felledBoss
-          ? { name: bossDisplayName(felledBoss, language), finalBlow: felledByFinalBlow }
+          ? {
+              name: bossDisplayName(felledBoss, language),
+              finalBlow: felledByFinalBlow,
+              own: !countsAsDeed(felledBoss),
+            }
           : null,
       )
     : [];

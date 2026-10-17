@@ -366,3 +366,193 @@ describe("db/adventures, the first session offered as step 1", () => {
     expect(await adventures().offeredFirstStep(otherAdventure)).toBeNull();
   });
 });
+
+/** "Laisser la partie" (D-34): a left run is neither active nor finished, and counts nowhere. */
+describe("db/adventures, leaving a run", () => {
+  const t = createTestDb();
+
+  beforeAll(() => {
+    jest.resetModules();
+    jest.doMock("../db/client", () => clientMock(t));
+  });
+
+  afterAll(() => {
+    t.close();
+  });
+
+  const adv = () => require("../db/adventures") as typeof import("../db/adventures");
+  const bosses = () => require("../db/bossFights") as typeof import("../db/bossFights");
+
+  async function pick(kind: "boss" | "other") {
+    const found = (await adv().listAdventures()).find((a) =>
+      kind === "boss" ? a.kind === "boss" : a.kind !== "boss",
+    );
+    if (!found) throw new Error(`Expected a seeded ${kind} adventure`);
+    return found;
+  }
+
+  const runRows = (adventureId: number) =>
+    t.sqlite
+      .prepare(
+        "SELECT id, status, finishedAt FROM adventure_runs WHERE adventureId = ? ORDER BY id",
+      )
+      .all(adventureId) as { id: number; status: string; finishedAt: number | null }[];
+
+  test("sets the active run to left, once, and nothing offers it any more", async () => {
+    const a = await pick("other");
+    await adv().startAdventureRun({ adventureId: a.id });
+
+    await adv().leaveAdventureRun(a.id);
+    await adv().leaveAdventureRun(a.id);
+
+    expect(runRows(a.id)).toEqual([{ id: expect.any(Number), status: "left", finishedAt: null }]);
+    expect(await adv().getActiveAdventureRun(a.id)).toBeNull();
+    expect(await adv().getAnyActiveAdventureRun()).toBeNull();
+  });
+
+  test("a left run counts nowhere: only the finished one does", async () => {
+    const a = await pick("boss");
+    t.sqlite.prepare("DELETE FROM adventure_runs WHERE adventureId = ?").run(a.id);
+    t.sqlite
+      .prepare(
+        "INSERT INTO adventure_runs (adventureId, status, finishedAt) VALUES (?, 'finished', 1000)",
+      )
+      .run(a.id);
+    t.sqlite
+      .prepare("INSERT INTO adventure_runs (adventureId, status) VALUES (?, 'left')")
+      .run(a.id);
+
+    expect((await adv().getFinishedRunCountsByAdventure()).get(a.id)).toBe(1);
+    const summary = (await adv().listFinishedRunSummaries()).find((s) => s.adventureId === a.id);
+    expect(summary?.timesFinished).toBe(1);
+    const { getBossKills } = require("../db/journal") as typeof import("../db/journal");
+    expect((await getBossKills()).filter((k) => k.adventureId === a.id)).toHaveLength(1);
+    const { getBossBanners } = require("../db/village") as typeof import("../db/village");
+    expect((await getBossBanners()).filter((b) => b.adventureId === a.id)).toHaveLength(1);
+  });
+
+  test("starting again after leaving is a fresh run from step 1, the old one stays left", async () => {
+    const a = await pick("other");
+    t.sqlite.prepare("DELETE FROM adventure_runs WHERE adventureId = ?").run(a.id);
+    const first = await adv().startAdventureRun({ adventureId: a.id });
+    await adv().leaveAdventureRun(a.id);
+    // A left run is a run: the offered first step is a first-run gift only.
+    expect(await adv().offeredFirstStep(a.id)).toBeNull();
+
+    const second = await adv().startAdventureRun({ adventureId: a.id });
+
+    expect(second.run.id).not.toBe(first.run.id);
+    expect(second.steps.map((s) => s.status)).toEqual(
+      second.steps.map((_, i) => (i === 0 ? "active" : "locked")),
+    );
+    expect(runRows(a.id).map((r) => r.status)).toEqual(["left", "active"]);
+  });
+
+  test("the boss keeps its HP across leaving and starting again", async () => {
+    const a = await pick("boss");
+    t.sqlite.prepare("DELETE FROM adventure_runs WHERE adventureId = ?").run(a.id);
+    const fight = await bosses().getOrCreateBossFight(a.id, "medium");
+    if (!fight) throw new Error("Expected a boss fight");
+    await adv().startAdventureRun({ adventureId: a.id });
+    const sessionId = await (
+      require("../db/completed") as typeof import("../db/completed")
+    ).createCompletedSession({
+      durationSeconds: 60,
+      xpEarned: 1,
+      exercises: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 1 } }],
+    });
+    await bosses().persistSessionDamage(
+      fight.id,
+      [
+        {
+          roundIndex: 0,
+          exerciseId: 1,
+          damage: 7,
+          isCritical: false,
+          muscle: null,
+          style: "strength",
+        },
+      ],
+      sessionId,
+    );
+    const hurt = await bosses().getBossFightByAdventure(a.id);
+    expect(hurt?.currentHp).toBe(fight.totalHp - 7);
+
+    await adv().leaveAdventureRun(a.id);
+    await adv().startAdventureRun({ adventureId: a.id });
+
+    const after = await bosses().getBossFightByAdventure(a.id);
+    expect(after).toMatchObject({
+      currentHp: hurt?.currentHp,
+      totalHp: hurt?.totalHp,
+      tier: hurt?.tier,
+    });
+  });
+
+  test("a boss felled in a left run stays felled, and its banner with it", async () => {
+    const a = await pick("boss");
+    t.sqlite.prepare("DELETE FROM adventure_runs WHERE adventureId = ?").run(a.id);
+    t.sqlite.prepare("DELETE FROM boss_damage_log").run();
+    const fight = await bosses().getBossFightByAdventure(a.id);
+    if (!fight) throw new Error("Expected the fight of the previous test");
+    t.sqlite
+      .prepare("UPDATE boss_fights SET currentHp = 0, defeatedAt = 5000 WHERE id = ?")
+      .run(fight.id);
+    await adv().startAdventureRun({ adventureId: a.id });
+    await adv().leaveAdventureRun(a.id);
+
+    await adv().startAdventureRun({ adventureId: a.id });
+
+    const kept = await bosses().getBossFightByAdventure(a.id);
+    expect(kept?.defeatedAt).not.toBeNull();
+    expect(kept?.tier).toBe(fight.tier);
+    const { getBossBanners } = require("../db/village") as typeof import("../db/village");
+    expect((await getBossBanners()).filter((b) => b.adventureId === a.id)).toHaveLength(1);
+
+    // Finishing a run is what carries the kill; the start after it is the rematch.
+    t.sqlite
+      .prepare(
+        "UPDATE adventure_runs SET status = 'finished', finishedAt = 9000 WHERE status = 'active' AND adventureId = ?",
+      )
+      .run(a.id);
+    await adv().startAdventureRun({ adventureId: a.id });
+    const rematch = await bosses().getBossFightByAdventure(a.id);
+    expect(rematch?.defeatedAt).toBeNull();
+    expect(rematch?.tier).toBe(fight.tier + 1);
+  });
+
+  test("a step of a run that is not active finishes nothing", async () => {
+    const a = await pick("other");
+    t.sqlite.prepare("DELETE FROM adventure_runs WHERE adventureId = ?").run(a.id);
+    const run = await adv().startAdventureRun({ adventureId: a.id });
+    const last = run.steps[run.steps.length - 1];
+    if (!last) throw new Error("Expected steps");
+    await adv().leaveAdventureRun(a.id);
+
+    const left = await adv().completeAdventureRunStep({
+      runStepId: last.id,
+      completedSessionId: 1,
+    });
+
+    expect(left).toMatchObject({ isFinished: false, nextRunStepId: null, nextQuestId: null });
+    expect(runRows(a.id)).toEqual([{ id: run.run.id, status: "left", finishedAt: null }]);
+    const stepStatus = (id: number) =>
+      (
+        t.sqlite.prepare("SELECT status FROM adventure_run_steps WHERE id = ?").get(id) as {
+          status: string;
+        }
+      ).status;
+    expect(stepStatus(last.id)).toBe("locked");
+
+    // A stale step of a finished run does not finish it a second time.
+    t.sqlite
+      .prepare("UPDATE adventure_runs SET status = 'finished', finishedAt = 77 WHERE id = ?")
+      .run(run.run.id);
+    const again = await adv().completeAdventureRunStep({
+      runStepId: last.id,
+      completedSessionId: 1,
+    });
+    expect(again.isFinished).toBe(false);
+    expect(runRows(a.id)[0]?.finishedAt).toBe(77);
+  });
+});

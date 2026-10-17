@@ -629,4 +629,89 @@ describe("decideHomeOffer", () => {
   it("answers null once the read is abandoned", async () => {
     expect(await decideHomeOffer("en", () => true)).toBeNull();
   });
+
+  // The hero's own adventures come right after the oath; the game's keep their place before it.
+  describe("a run of the hero's own adventure", () => {
+    const { getOathProgress, isOathFrozen } = require("@/db/oaths");
+    const { getChainTo } = require("@/db/exercises");
+    const { findQuestWithExercise } = require("@/db/quests");
+
+    const run = (adventureId: number) => ({
+      adventureId,
+      activeRun: { steps: [{ status: "completed" }, { status: "active" }] },
+    });
+    /** One run per population, as `getAnyActiveAdventureRun(owner)` answers. */
+    const runs = (byOwner: { game?: number; hero?: number }) =>
+      getAnyActiveAdventureRun.mockImplementation((owner?: "game" | "hero") => {
+        const id = owner ? byOwner[owner] : (byOwner.hero ?? byOwner.game);
+        return Promise.resolve(id === undefined ? null : run(id));
+      });
+    const dueOath = () => {
+      getOathProgress.mockResolvedValue({
+        oath: { metric: "exercise_pr", exerciseId: 99 },
+        isFulfilled: false,
+        exerciseName: { en: "Pull-ups", fr: "Tractions" },
+      });
+      getChainTo.mockResolvedValue({
+        position: 1,
+        rungs: [{ exercise: { id: 99, enName: "Pull-ups", frName: "Tractions" } }],
+      });
+      findQuestWithExercise.mockResolvedValue(7);
+    };
+
+    afterEach(() => {
+      getOathProgress.mockResolvedValue(null);
+      isOathFrozen.mockResolvedValue(false);
+      getChainTo.mockResolvedValue(null);
+      findQuestWithExercise.mockResolvedValue(null);
+    });
+
+    it("comes after a due oath", async () => {
+      runs({ hero: 9 });
+      dueOath();
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "oath_exercise" });
+    });
+
+    it("a game adventure under way still comes before that oath", async () => {
+      runs({ game: 4 });
+      dueOath();
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", adventureId: 4 });
+    });
+
+    it("an older game run and a newer hero run with an oath due: the game adventure", async () => {
+      runs({ game: 4, hero: 9 });
+      dueOath();
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", adventureId: 4 });
+    });
+
+    it("is offered when the oath is frozen, or fulfilled, or there is none", async () => {
+      runs({ hero: 9 });
+      dueOath();
+      isOathFrozen.mockResolvedValue(true);
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", adventureId: 9 });
+
+      isOathFrozen.mockResolvedValue(false);
+      getOathProgress.mockResolvedValue({
+        oath: { metric: "exercise_pr", exerciseId: 99 },
+        isFulfilled: true,
+        exerciseName: null,
+      });
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", adventureId: 9 });
+
+      getOathProgress.mockResolvedValue(null);
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", adventureId: 9 });
+    });
+
+    it("is still offered once retired elsewhere, while its run is under way here", async () => {
+      runs({ hero: 9 });
+      getAdventureDetails.mockResolvedValue({
+        adventure: { enTitle: "Retired", frTitle: "Retirée", imagePath: null, isActive: 0 },
+      });
+      expect(await decideHomeOffer("en")).toMatchObject({
+        kind: "adventure",
+        adventureId: 9,
+        title: "Retired",
+      });
+    });
+  });
 });

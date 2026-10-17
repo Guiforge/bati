@@ -35,6 +35,7 @@ import {
   rareCoatNews,
 } from "@/db/crestEvents";
 import type { Animal } from "@/db/crestRules";
+import { countsAsDeed } from "@/db/deed";
 import { estimateQuestSeconds } from "@/db/estimate";
 import {
   checkForNewRungs,
@@ -1032,7 +1033,8 @@ async function payTriumphBonus(
   finalBlow: boolean,
   sessionId: number,
 ): Promise<number> {
-  if (!bossFight || bossFight.currentHp > 0 || finalBlow) return 0;
+  // The hero's own adventures pay their sessions and nothing more (R1).
+  if (!bossFight || !countsAsDeed(bossFight) || bossFight.currentHp > 0 || finalBlow) return 0;
   // `saveSession` is a dozen awaits long and the victory screen retries it on failure. Every
   // condition above is unchanged between attempts — the pool is empty in the database by then —
   // so without this flag a retry pays the Triumph a second time.

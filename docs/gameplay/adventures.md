@@ -2,9 +2,9 @@
 title: Adventures
 type: system
 status: active
-updated: 2026-07-18
+updated: 2026-10-17
 related: [boss-fights.md, quests.md, session-flow.md, progression.md]
-sources: [db/adventures.ts, db/adventures-narrative.ts, "app/(tabs)/adventures/index.tsx", "app/(tabs)/adventures/[id].tsx"]
+sources: [db/adventures.ts, db/heroAdventures.ts, db/adventures-narrative.ts, "app/(tabs)/adventures/index.tsx", "app/(tabs)/adventures/[id].tsx"]
 ---
 
 # Adventures (Campaigns)
@@ -14,6 +14,43 @@ sources: [db/adventures.ts, db/adventures-narrative.ts, "app/(tabs)/adventures/i
 An **Adventure** is a **multi-step campaign** made of several quest sessions chained together with narrative elements. Adventures are the main progression system in Bati.
 
 > In this app: **Adventure = Campaign** (a story-driven sequence of quests)
+
+---
+
+## ✍️ Adventures the hero writes
+
+The hero writes their own from the gallery ("Écrire une aventure"): a cover among the bundled ones, a
+name, an introduction, **2 to 8 steps** (any quest, the hero's own first in the picker) each with the
+words before it and, optionally, on the way back, and an end: a route, or one of the six painted bosses.
+Everything is free: no quota, no Bati+ lock, no offer (`db/heroAdventures.ts` is the one writer).
+
+- **A victory on a hero adventure pays only its sessions.** No Triumph XP, no Lair, Arena or Hall level,
+  not counted in "bosses vaincus", the Journal or the Chronicle (`DEED_ADVENTURE`), never a standing
+  boss; the card still says "finie N fois", and the victory says why once. The farm is closed: writing
+  a two-step adventure and finishing it ten times earns nothing a session would not.
+- **Editing.** The title, introduction, cover and the words may change at any time. With a playthrough
+  under way the steps and the end are frozen until it is finished or left. The monster can be changed
+  between two playthroughs and the next fight has the new monster's weakness; a fight kept after a left
+  playthrough keeps the pool of the old steps (PARK-1, `ponytail:` in `updateHeroAdventure`).
+- **Retiring** is an edit, never a delete: the adventure leaves the gallery, its sessions stay in the
+  Journal. It stays listed while a run of it is under way here (retired on another device).
+- **A step whose quest is gone** (a content migration removed it, or the hero deleted it) makes the
+  adventure unplayable: the page says so and the editor repairs it. A quest an active adventure names
+  cannot be deleted; the quest editor says which adventure.
+- **Home.** The oath comes before a hero adventure under way; a game adventure under way keeps its
+  place before the oath, even when a newer run of the hero's own is active.
+- **The zone.** A hero quest used as a step that would work the zone being spared wears a line on the
+  detail screen. The game's quests substitute their slots and are never flagged.
+
+### Sharing
+
+A hero adventure is sent as a file from the share icon on its page, through the phone's share sheet, and
+imported from the new-adventure editor or by tapping the file. A dialog first says how many photos leave
+(the file holds the adventure, its quests, the movements the hero made for them and their photos, covers
+included, and nothing else: no name, no history) and what stays behind. The receiver sees the adventure and
+each step, already on the phone, arriving with it, or unknown to their version and left out. Importing
+updates the same adventure if they have it (or keeps both), writes it beside the one in progress if a
+playthrough is under way, and never rewrites a quest they already have. Free: no quota, no network.
 
 ---
 
@@ -97,7 +134,7 @@ When you start an adventure, the app creates an **Adventure Run** to track progr
 CREATE TABLE adventure_runs (
   id INTEGER PRIMARY KEY,
   adventureId INTEGER REFERENCES adventures(id),
-  status TEXT NOT NULL,        -- 'active' | 'finished'
+  status TEXT NOT NULL,        -- 'active' | 'finished' | 'left'
   difficultyOverride TEXT,     -- Pins the campaign. Null in practice since the feedback link
                                -- shipped: each step re-reads the suggestion instead.
   startedAt INTEGER,
@@ -128,6 +165,8 @@ Step 3: [locked]   → Previous done  → [active] → Complete → [completed]
 Step 4: [locked]   → Previous done  → [active] → Complete → [completed]
                                                             ↓
 Adventure: [active] ────────────────────────────────► [finished]
+              │
+              └── "Laisser la partie" ──► [left]   (counted nowhere, offered nowhere)
 ```
 
 ---

@@ -1408,6 +1408,36 @@ describe("useSessionStore", () => {
       expect(store.getState().felledByFinalBlow).toBe(false);
     });
 
+    test.each([
+      ["a fight restored from the previous build (no author)", undefined, true],
+      ["an adventure of the game", "Admin", true],
+      ["an adventure the hero wrote", "hero", false],
+    ])("the Triumph of %s pays its bonus: %s", async (_name, author, pays) => {
+      const completed = require("@/db/completed") as { addBonusXpToSession: jest.Mock };
+      const bossFights = require("@/db/bossFights") as { finishBossFight: jest.Mock };
+      const dbMock = require("@/db") as { completeAdventureRunStep: jest.Mock };
+      completed.addBonusXpToSession.mockClear();
+      store.setState({
+        adventureRunStepId: 5,
+        bossFight: { ...boss, currentHp: 10, ...(author ? { author } : {}) } as never,
+        bossStartHp: 10,
+        triumphBonusPaid: false,
+      });
+      dbMock.completeAdventureRunStep.mockResolvedValueOnce({
+        adventureId: 42,
+        runId: 9,
+        isFinished: true,
+        nextRunStepId: null,
+        nextQuestId: null,
+      });
+      bossFights.finishBossFight.mockResolvedValueOnce(false);
+
+      await store.getState().completeExercise(10);
+      await store.getState().saveSession(null);
+
+      expect(completed.addBonusXpToSession.mock.calls.length > 0).toBe(pays);
+    });
+
     test("a final-blow kill is not a Triumph and pays no bonus", async () => {
       const completed = require("@/db/completed") as { addBonusXpToSession: jest.Mock };
       const dbMock = require("@/db") as { completeAdventureRunStep: jest.Mock };

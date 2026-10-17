@@ -1,15 +1,18 @@
-import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, or, sql } from "drizzle-orm";
 import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import { getBossFightByAdventure, resetBossFight } from "./bossFights";
 import { db, schema } from "./client";
+import { nextRunStep } from "./completed";
+import { countsAsDeed, DEED_ADVENTURE } from "./deed";
 import { listExercises } from "./exercises";
 import {
   listQuestTemplates,
   type QuestTemplate,
   type TrainingFocus,
   trainingFocus,
+  USER_QUEST_AUTHOR,
 } from "./quests";
-import { ADMIN_CREATOR, type DifficultyCode } from "./schema";
+import { ADMIN_CREATOR, type AdventureRunStatus, type DifficultyCode } from "./schema";
 
 const {
   adventureRuns,
@@ -49,7 +52,7 @@ export type AdventureStepTemplate = {
 export type AdventureRun = {
   id: number;
   adventureId: number;
-  status: "active" | "finished";
+  status: AdventureRunStatus;
   difficultyOverride: DifficultyCode | null;
   startedAt: Date | null;
   finishedAt: Date | null;
@@ -85,6 +88,13 @@ export type Adventure = {
   stepsCount: number;
   imagePath: string | null;
   focus: TrainingFocus;
+  /** Last edit of the row, for the gallery's "Tes aventures" order. */
+  updatedAt: Date | null;
+  /**
+   * The step-1 quest the row names no longer exists (a content migration removed it, or the hero
+   * deleted it). The row stays in the gallery so the hero can repair it from the editor.
+   */
+  coverMissing: boolean;
   /**
    * The boss's pool as the content tunes it, at medium, before any rematch tier. Null on a route,
    * which has no fight. Read from the adventure rather than from `boss_fights`, because that row
@@ -130,9 +140,70 @@ function normalizeDate(value: unknown): Date | null {
   return null;
 }
 
-// Same static-seed-content reasoning as listQuestTemplates(): no live authoring flow, so the
-// gallery fetch can be shared across mounts instead of refetched on every navigation.
+// The gallery fetch is shared across mounts instead of refetched on every navigation. It embeds
+// resolved quests, so it follows the quest cache (`dropIfQuestsMoved`), and the hero's own writers
+// drop it through `invalidateAdventures`.
 let adventuresCache: Promise<Adventure[]> | null = null;
+let builtFrom: Promise<QuestTemplate[]> | null = null;
+
+/** Both caches embed resolved quests: a rebuilt quest list (any `invalidateQuestTemplates`) drops them. */
+function dropIfQuestsMoved(): void {
+  const current = listQuestTemplates();
+  if (current === builtFrom) return;
+  adventuresCache = null;
+  adventureDetailsCache.clear();
+  builtFrom = current;
+}
+
+/** The hero wrote, edited or retired an adventure: the next read rebuilds. */
+export function invalidateAdventures(): void {
+  builtFrom = null;
+}
+
+type CoverQuestRow = {
+  coverQuestId: number;
+  enTitle: string | null;
+  frTitle: string | null;
+  deTitle: string | null;
+  esTitle: string | null;
+  enDescription: string | null;
+  frDescription: string | null;
+  deDescription: string | null;
+  esDescription: string | null;
+  questAuthor: QuestTemplate["author"] | null;
+  questUuid: string | null;
+  rounds: number | null;
+  restSeconds: number | null;
+  roundRestSeconds: number | null;
+  questImagePath: string | null;
+};
+
+/**
+ * The gallery only needs the cover quest's identity, not its shape. The quest is left-joined: one
+ * a content migration removed, or the hero deleted, leaves empty titles and the row stays so the
+ * hero can repair the adventure (`coverMissing`).
+ */
+function coverQuestOf(r: CoverQuestRow): QuestTemplate {
+  return {
+    id: r.coverQuestId,
+    enTitle: r.enTitle ?? "",
+    frTitle: r.frTitle ?? "",
+    deTitle: r.deTitle ?? "",
+    esTitle: r.esTitle ?? "",
+    enDescription: r.enDescription ?? "",
+    frDescription: r.frDescription ?? "",
+    deDescription: r.deDescription ?? "",
+    esDescription: r.esDescription ?? "",
+    author: r.questAuthor ?? ADMIN_CREATOR,
+    uuid: r.questUuid,
+    rounds: r.rounds ?? 1,
+    restSeconds: r.restSeconds ?? 0,
+    roundRestSeconds: r.roundRestSeconds,
+    archetype: null,
+    imagePath: r.questImagePath ?? "assets/placeholder.jpg",
+    exercises: [],
+  };
+}
 
 async function fetchAdventures(): Promise<Adventure[]> {
   const rows = await db
@@ -155,6 +226,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
       advDeDescription: adventures.deDescription,
       advEsDescription: adventures.esDescription,
       advImagePath: adventures.imagePath,
+      advUpdatedAt: adventures.updatedAt,
 
       enTitle: quests.enTitle,
       frTitle: quests.frTitle,
@@ -180,16 +252,18 @@ async function fetchAdventures(): Promise<Adventure[]> {
       imagesJson: questExercises.imagesJson,
     })
     .from(adventures)
-    .innerJoin(quests, eq(quests.id, adventures.questId))
+    .leftJoin(quests, eq(quests.id, adventures.questId))
     .leftJoin(questExercises, eq(questExercises.questId, quests.id))
-    .where(eq(adventures.isActive, 1))
+    // Retired hero rows are in the cache with isActive 0: the gallery decides (an adventure
+    // retired elsewhere stays while a run of it is active here).
+    .where(or(eq(adventures.isActive, 1), eq(adventures.author, USER_QUEST_AUTHOR)))
     .orderBy(asc(adventures.sortOrder), asc(questExercises.sortOrder));
 
   const stepRows = await db
     .select({ adventureId: adventureSteps.adventureId, questId: adventureSteps.questId })
     .from(adventureSteps)
     .innerJoin(adventures, eq(adventures.id, adventureSteps.adventureId))
-    .where(eq(adventures.isActive, 1));
+    .where(or(eq(adventures.isActive, 1), eq(adventures.author, USER_QUEST_AUTHOR)));
 
   const stepQuestIdsByAdventureId = new Map<number, number[]>();
   for (const r of stepRows) {
@@ -209,26 +283,7 @@ async function fetchAdventures(): Promise<Adventure[]> {
   for (const r of rows) {
     if (!byAdventureId.has(r.adventureId)) {
       const stepQuestIds = stepQuestIdsByAdventureId.get(r.adventureId) ?? [];
-      const quest: QuestTemplate = {
-        id: r.coverQuestId,
-        enTitle: r.enTitle,
-        frTitle: r.frTitle,
-        deTitle: r.deTitle,
-        esTitle: r.esTitle,
-        enDescription: r.enDescription,
-        frDescription: r.frDescription,
-        deDescription: r.deDescription,
-        esDescription: r.esDescription,
-        author: r.questAuthor,
-        uuid: r.questUuid,
-        rounds: r.rounds,
-        restSeconds: r.restSeconds,
-        roundRestSeconds: r.roundRestSeconds,
-        // The adventure gallery only needs the cover quest's identity, not its shape.
-        archetype: null,
-        imagePath: r.questImagePath ?? "assets/placeholder.jpg",
-        exercises: [],
-      };
+      const quest = coverQuestOf(r);
 
       byAdventureId.set(r.adventureId, {
         id: r.adventureId,
@@ -249,6 +304,8 @@ async function fetchAdventures(): Promise<Adventure[]> {
         stepsCount: stepQuestIds.length,
         imagePath: r.advImagePath,
         bossTotalHp: r.bossTotalHp,
+        updatedAt: normalizeDate(r.advUpdatedAt),
+        coverMissing: r.questAuthor === null,
         focus: trainingFocus(
           stepQuestIds.flatMap((id) => templatesById.get(id) ?? []),
           exercisesById,
@@ -319,6 +376,7 @@ export function adventureOrder<T extends { id: number }>(
 }
 
 export function listAdventures(): Promise<Adventure[]> {
+  dropIfQuestsMoved();
   if (!adventuresCache) {
     adventuresCache = fetchAdventures().catch((e) => {
       adventuresCache = null;
@@ -328,12 +386,12 @@ export function listAdventures(): Promise<Adventure[]> {
   return adventuresCache;
 }
 
-// Static seed content (same reasoning as listAdventures/listQuestTemplates): the details for a
-// given adventure never change at runtime, so share one fetch across mounts instead of re-running
-// the whole query chain on every navigation into the screen.
+// The details of one adventure, shared across mounts instead of re-running the whole query chain
+// on every navigation into the screen. Dropped with the gallery's cache (`dropIfQuestsMoved`).
 const adventureDetailsCache = new Map<number, Promise<AdventureDetails | null>>();
 
 export function getAdventureDetails(adventureId: number): Promise<AdventureDetails | null> {
+  dropIfQuestsMoved();
   let cached = adventureDetailsCache.get(adventureId);
   if (!cached) {
     cached = fetchAdventureDetails(adventureId).catch((e) => {
@@ -513,7 +571,14 @@ export async function getActiveAdventureRun(
   return { run, steps: normalizedSteps, activeStep };
 }
 
-export async function getAnyActiveAdventureRun(): Promise<{
+/**
+ * The newest active run. With `owner`, the newest of that population: Home reads the game's and
+ * the hero's separately, so a newer hero run never hides an older game one (spec R6).
+ *
+ * Does not filter `adventures.isActive`, on purpose: a run of an adventure retired on another
+ * device stays offered here until it ends or is left.
+ */
+export async function getAnyActiveAdventureRun(owner?: "game" | "hero"): Promise<{
   adventureId: number;
   activeRun: ActiveAdventureRun;
 } | null> {
@@ -522,7 +587,17 @@ export async function getAnyActiveAdventureRun(): Promise<{
       adventureId: adventureRuns.adventureId,
     })
     .from(adventureRuns)
-    .where(eq(adventureRuns.status, "active"))
+    .innerJoin(adventures, eq(adventures.id, adventureRuns.adventureId))
+    .where(
+      and(
+        eq(adventureRuns.status, "active"),
+        owner === "game"
+          ? DEED_ADVENTURE
+          : owner === "hero"
+            ? eq(adventures.author, USER_QUEST_AUTHOR)
+            : undefined,
+      ),
+    )
     .orderBy(desc(adventureRuns.id))
     .limit(1);
 
@@ -533,6 +608,29 @@ export async function getAnyActiveAdventureRun(): Promise<{
   if (!activeRun) return null;
 
   return { adventureId: first.adventureId, activeRun };
+}
+
+/** Adventures with a run under way, read by the gallery (an adventure retired elsewhere stays while one is). */
+export async function activeRunAdventureIds(): Promise<Set<number>> {
+  const rows = await db
+    .selectDistinct({ id: adventureRuns.adventureId })
+    .from(adventureRuns)
+    .where(eq(adventureRuns.status, "active"));
+  return new Set(rows.map((r) => r.id));
+}
+
+/**
+ * Step indexes of an adventure whose quest is gone. A run never starts on one (a step without a
+ * quest would end the run at a false victory), and the detail screen says why.
+ */
+export async function missingStepQuests(adventureId: number): Promise<number[]> {
+  const rows = await db
+    .select({ stepIndex: adventureSteps.stepIndex, questId: quests.id })
+    .from(adventureSteps)
+    .leftJoin(quests, eq(quests.id, adventureSteps.questId))
+    .where(eq(adventureSteps.adventureId, adventureId))
+    .orderBy(asc(adventureSteps.stepIndex));
+  return rows.filter((r) => r.questId === null).map((r) => r.stepIndex);
 }
 
 /** Adventures the hero has ever started: a run of one, active or finished, makes it theirs (P-04.2). */
@@ -591,7 +689,8 @@ export async function listFinishedRunSummaries(): Promise<FinishedAdventureSumma
     })
     .from(adventureRuns)
     .innerJoin(adventures, eq(adventures.id, adventureRuns.adventureId))
-    .where(eq(adventureRuns.status, "finished"))
+    // Deeds count the game's adventures only (R2): the hero's own pay their sessions and nothing else.
+    .where(and(eq(adventureRuns.status, "finished"), DEED_ADVENTURE))
     .groupBy(adventureRuns.adventureId);
 
   const toDate = (seconds: number | null) => (seconds == null ? null : new Date(seconds * 1000));
@@ -683,7 +782,8 @@ export async function offeredFirstStep(adventureId: number): Promise<{ performed
 
   const details = await getAdventureDetails(adventureId);
   const first = details?.steps.find((s) => s.stepIndex === 0);
-  if (!details || !first || details.steps.length < 2) return null;
+  if (!details || !countsAsDeed(details.adventure) || !first || details.steps.length < 2)
+    return null;
   if (!(await isOnRampQuest(first.questId))) return null;
 
   const [oldest] = await db
@@ -702,11 +802,23 @@ export async function startAdventureRun(input: {
   const existing = await getActiveAdventureRun(input.adventureId);
   if (existing) return existing;
 
+  // A step whose quest is gone would make the run finish early (no next step), a false victory.
+  if ((await missingStepQuests(input.adventureId)).length > 0) {
+    throw new Error("Adventure step quest missing");
+  }
+
   const details = await getAdventureDetails(input.adventureId);
   if (!details) throw new Error("Adventure not found");
 
   // Before the run row exists: the first condition is that this adventure never had one.
   const offered = await offeredFirstStep(input.adventureId);
+  // Read before the insert: a rematch only follows a run that was finished, never one that was left.
+  const [previousRun] = await db
+    .select({ status: adventureRuns.status })
+    .from(adventureRuns)
+    .where(eq(adventureRuns.adventureId, input.adventureId))
+    .orderBy(desc(adventureRuns.id))
+    .limit(1);
 
   const runId = await insertWithFallback({
     adventureId: input.adventureId,
@@ -744,7 +856,8 @@ export async function startAdventureRun(input: {
   // is the tier the felled fight was fought at, plus one, so the first rematch is tier 1.
   if (details.adventure.kind === "boss") {
     const fight = await getBossFightByAdventure(input.adventureId);
-    if (fight && (fight.defeatedAt || fight.currentHp <= 0)) {
+    // After a left run the felled boss stays felled (its banner is shown, no finished run carries it).
+    if (previousRun?.status === "finished" && fight && (fight.defeatedAt || fight.currentHp <= 0)) {
       await resetBossFight(fight.id, {
         userLevel: input.difficultyOverride ?? "medium",
         // A defeated fight reports the tier it was fought at; the rematch is the next one.
@@ -756,6 +869,19 @@ export async function startAdventureRun(input: {
   const active = await getActiveAdventureRun(input.adventureId);
   if (!active) throw new Error("Failed to load newly created adventure run");
   return active;
+}
+
+/**
+ * The hero leaves the run under way (D-34, "Laisser la partie"). The run stays, as `left`: nothing
+ * that counts reads it, Home stops offering it, and the next start is a fresh run from step 1. The
+ * boss fight is per adventure and is not touched, so it keeps its HP. Its steps are left as they
+ * were: no reader looks at the steps of a run that is not active or finished.
+ */
+export async function leaveAdventureRun(adventureId: number): Promise<void> {
+  await db
+    .update(adventureRuns)
+    .set({ status: "left" })
+    .where(and(eq(adventureRuns.adventureId, adventureId), eq(adventureRuns.status, "active")));
 }
 
 /**
@@ -799,6 +925,26 @@ export async function completeAdventureRunStep(input: {
   const current = currentRows[0];
   if (!current) throw new Error("Adventure run step not found");
 
+  const runRows = await db
+    .select({ adventureId: adventureRuns.adventureId, status: adventureRuns.status })
+    .from(adventureRuns)
+    .where(eq(adventureRuns.id, current.runId))
+    .limit(1);
+  const run = runRows[0];
+  if (!run) throw new Error("Adventure run not found");
+
+  if (run.status !== "active") {
+    // A session that outlived its run (the hero left it, or a stale step of a finished one) is
+    // ordinary training: no step, no second victory. Its boss hits were committed before and stay.
+    return {
+      adventureId: run.adventureId,
+      runId: current.runId,
+      isFinished: false,
+      nextRunStepId: null,
+      nextQuestId: null,
+    };
+  }
+
   const now = new Date();
   await db
     .update(adventureRunSteps)
@@ -809,26 +955,7 @@ export async function completeAdventureRunStep(input: {
     })
     .where(eq(adventureRunSteps.id, input.runStepId));
 
-  const nextRows = await db
-    .select({ id: adventureRunSteps.id, questId: adventureRunSteps.questId })
-    .from(adventureRunSteps)
-    .where(
-      and(
-        eq(adventureRunSteps.runId, current.runId),
-        eq(adventureRunSteps.stepIndex, current.stepIndex + 1),
-      ),
-    )
-    .limit(1);
-
-  const runRows = await db
-    .select({ adventureId: adventureRuns.adventureId })
-    .from(adventureRuns)
-    .where(eq(adventureRuns.id, current.runId))
-    .limit(1);
-  const run = runRows[0];
-  if (!run) throw new Error("Adventure run not found");
-
-  const next = nextRows[0];
+  const next = await nextRunStep(db, current.runId, current.stepIndex);
   if (!next) {
     await db
       .update(adventureRuns)

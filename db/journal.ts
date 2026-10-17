@@ -20,6 +20,7 @@ import type { AchievementProgress } from "./achievements";
 import { db, schema } from "./client";
 import { type CompletedSession, isWorkout, parseRecords, type StoredRecord } from "./completed";
 import { dayKey } from "./dates";
+import { DEED_ADVENTURE } from "./deed";
 import {
   fetchLadderRows,
   recentMetFlagsBatch,
@@ -551,6 +552,8 @@ export async function getBossKills(): Promise<BossKill[]> {
       and(
         eq(adventureRuns.status, "finished"),
         eq(adventures.kind, "boss"),
+        // Deeds count the game's adventures only (R2).
+        DEED_ADVENTURE,
         isNotNull(adventureRuns.finishedAt),
       ),
     )
@@ -1017,7 +1020,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
       bossImagePath: adventures.bossImagePath,
     })
     .from(adventures)
-    .where(and(eq(adventures.kind, "boss"), eq(adventures.isActive, 1)))
+    .where(and(eq(adventures.kind, "boss"), eq(adventures.isActive, 1), DEED_ADVENTURE))
     .orderBy(adventures.sortOrder, adventures.id);
   return bosses
     .filter((a) => !wonIds.has(a.id))
@@ -1062,6 +1065,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       esTitle: adventures.esTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
+      bossName: adventures.bossName,
     })
     .from(adventureRunSteps)
     .innerJoin(adventureRuns, eq(adventureRuns.id, adventureRunSteps.runId))
@@ -1143,13 +1147,21 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
 
   return {
     adventureId: step.adventureId,
-    title: bossLocalizedName(step.bossImagePath ?? step.imagePath, foughtAtTier, {
-      en: step.enTitle,
-      fr: step.frTitle,
-      de: step.deTitle,
-      es: step.esTitle,
-      ru: step.enTitle,
-    }),
+    title: step.bossName
+      ? {
+          en: step.bossName,
+          fr: step.bossName,
+          de: step.bossName,
+          es: step.bossName,
+          ru: step.bossName,
+        }
+      : bossLocalizedName(step.bossImagePath ?? step.imagePath, foughtAtTier, {
+          en: step.enTitle,
+          fr: step.frTitle,
+          de: step.deTitle,
+          es: step.esTitle,
+          ru: step.enTitle,
+        }),
     bossImagePath: step.bossImagePath ?? step.imagePath,
     felledAt,
     steps: runSteps.length,

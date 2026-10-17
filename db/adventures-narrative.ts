@@ -26,6 +26,8 @@ export async function getAdventureStepNarrative(
       and(
         eq(adventureSteps.adventureId, adventureRuns.adventureId),
         eq(adventureSteps.stepIndex, adventureRunSteps.stepIndex),
+        // A step the hero's edit changed under a run shows no narrative, not the wrong one.
+        eq(adventureSteps.questId, adventureRunSteps.questId),
       ),
     )
     .where(eq(adventureRunSteps.id, runStepId))
@@ -59,6 +61,8 @@ export async function getAdventureStepOutroNarrative(
       and(
         eq(adventureSteps.adventureId, adventureRuns.adventureId),
         eq(adventureSteps.stepIndex, adventureRunSteps.stepIndex),
+        // A step the hero's edit changed under a run shows no narrative, not the wrong one.
+        eq(adventureSteps.questId, adventureRunSteps.questId),
       ),
     )
     .where(eq(adventureRunSteps.id, runStepId))

@@ -113,11 +113,17 @@ export async function removeSessionPhoto(uuid: string): Promise<void> {
     .where(and(eq(sessionPhotos.uuid, uuid), isNull(sessionPhotos.deletedAt)));
 }
 
-/** How many live photos each session has, in one query: a Journal page asks for all its cards. */
-export async function photoCounts(uuids: string[]): Promise<Map<string, number>> {
-  if (uuids.length === 0) return new Map();
+/**
+ * How many live photos each session has, and the uuid of the first one, in one query: a Journal
+ * page asks for all its cards. No image is read, only ids.
+ */
+export async function photoSummaries(
+  uuids: string[],
+): Promise<Map<string, { count: number; first: string }>> {
+  const out = new Map<string, { count: number; first: string }>();
+  if (uuids.length === 0) return out;
   const rows = await db
-    .select({ uuid: sessionPhotos.sessionUuid, n: sql<number>`count(*)` })
+    .select({ session: sessionPhotos.sessionUuid, uuid: sessionPhotos.uuid })
     .from(sessionPhotos)
     .where(
       and(
@@ -128,8 +134,13 @@ export async function photoCounts(uuids: string[]): Promise<Map<string, number>>
         isNull(sessionPhotos.deletedAt),
       ),
     )
-    .groupBy(sessionPhotos.sessionUuid);
-  return new Map(rows.map((r) => [r.uuid, Number(r.n)]));
+    .orderBy(asc(sessionPhotos.sortOrder), asc(sessionPhotos.uuid));
+  for (const r of rows) {
+    const seen = out.get(r.session);
+    if (seen) seen.count += 1;
+    else out.set(r.session, { count: 1, first: r.uuid });
+  }
+  return out;
 }
 
 /**

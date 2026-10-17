@@ -99,12 +99,14 @@ describe("session photos and notes", () => {
     expect((await photos().listSessionPhotos(uuid)).length).toBe(3);
   });
 
-  test("photoCounts, firstSessionPhoto and photosBytes read live rows only", async () => {
+  test("photoSummaries, firstSessionPhoto and photosBytes read live rows only", async () => {
     const { uuid } = await session();
     const a = await photos().addSessionPhoto(uuid, dataUri(jpegBytes(false)));
     await photos().addSessionPhoto(uuid, dataUri(jpegBytes(false)));
     await photos().removeSessionPhoto(a);
-    expect((await photos().photoCounts([uuid, "nope"])).get(uuid)).toBe(1);
+    const summary = (await photos().photoSummaries([uuid, "nope"])).get(uuid);
+    expect(summary?.count).toBe(1);
+    expect(summary?.first).not.toBe(a);
     expect(await photos().firstSessionPhoto(uuid)).toBe(dataUri(jpegBytes(false)));
     expect(await photos().photosBytes()).toBeGreaterThanOrEqual(jpegBytes(false).length);
   });

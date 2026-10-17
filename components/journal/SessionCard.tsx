@@ -52,6 +52,11 @@ export interface JournalEntry {
   notes?: string;
   /** How many photos the session has: the card reads its first one only when this is above 0. */
   photoCount?: number;
+  /**
+   * The uuid of the photo the card shows. The card re-reads when it changes, so a photo removed in
+   * the detail does not stay on the card, and a recycled row never keeps another session's image.
+   */
+  firstPhotoUuid?: string | null;
   hasNewRecords?: boolean;
   /**
    * What the badge broke, when the row knows: the movement's name, or the record's own word.
@@ -81,19 +86,22 @@ const SESSION_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
 };
 
 /** The first photo of a session, read when the card mounts: a page never loads 100 images. */
-function CardPhoto({ uuid }: { uuid: string }) {
-  const [uri, setUri] = useState<string | null>(null);
+function CardPhoto({ uuid, photoUuid }: { uuid: string; photoUuid: string }) {
+  const key = `${uuid}/${photoUuid}`;
+  const [shown, setShown] = useState<{ key: string; uri: string | null } | null>(null);
   useEffect(() => {
     let cancelled = false;
     firstSessionPhoto(uuid)
       .then((image) => {
-        if (!cancelled) setUri(image);
+        if (!cancelled) setShown({ key, uri: image });
       })
       .catch((error: unknown) => reportError("journal.cardPhoto", error));
     return () => {
       cancelled = true;
     };
-  }, [uuid]);
+  }, [uuid, key]);
+  // An image read for another row or another photo is never drawn: the hold stands in until it lands.
+  const uri = shown?.key === key ? shown.uri : null;
   if (uri === null) return <YStack testID="journal-card-photo-hold" height={120} />;
   return (
     <Image
@@ -223,7 +231,9 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
             </NText>
           </YStack>
         </XStack>
-        {entry.photoCount && entry.uuid ? <CardPhoto uuid={entry.uuid} /> : null}
+        {entry.photoCount && entry.uuid && entry.firstPhotoUuid ? (
+          <CardPhoto uuid={entry.uuid} photoUuid={entry.firstPhotoUuid} />
+        ) : null}
         {!!entry.notes && (
           <NText testID="journal-card-note" fontSize={12} lineHeight={17} numberOfLines={2}>
             {entry.notes}

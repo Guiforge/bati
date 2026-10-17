@@ -25,7 +25,7 @@ import { listExercises } from "@/db/exercises";
 import { previewPathsFor } from "@/db/gps";
 import { getJournalVersion } from "@/db/journal";
 import { listQuestTemplates } from "@/db/quests";
-import { photoCounts as photoCountsFor } from "@/db/sessionPhotos";
+import { photoSummaries } from "@/db/sessionPhotos";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -138,7 +138,7 @@ export default function JournalScreen() {
       );
 
       // One count per page for the photos too; each card reads its own first image on mount.
-      const photoCounts = await photoCountsFor(sessions.flatMap((s) => (s.uuid ? [s.uuid] : [])));
+      const photos = await photoSummaries(sessions.flatMap((s) => (s.uuid ? [s.uuid] : [])));
       const questMap = new Map(quests.map((q) => [q.id, q]));
 
       return sessions.map((s) => {
@@ -158,7 +158,8 @@ export default function JournalScreen() {
           tracePoints: (s.uuid && traces.get(s.uuid)) || [],
           userLevel: s.userLevel,
           notes: s.notes,
-          photoCount: (s.uuid && photoCounts.get(s.uuid)) || 0,
+          photoCount: (s.uuid && photos.get(s.uuid)?.count) || 0,
+          firstPhotoUuid: (s.uuid && photos.get(s.uuid)?.first) || null,
           hasNewRecords: s.hasNewRecords,
           recordLabel: recordLabel(s.records, exerciseNames, t),
         };

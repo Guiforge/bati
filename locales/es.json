@@ -753,7 +753,7 @@
     "objective_value": "Objetivo {{value}}",
     "ghost_to_beat_label": "a superar",
     "ghost_season_label": "Por encima de tu mejor de la temporada",
-    "below_last_comeback": "Sin {{name}} desde hace más de dos semanas: un nivel más suave durante dos sesiones.",
+    "below_last_comeback": "Vuelta a {{name}}: un nivel más suave durante dos sesiones.",
     "below_last_rung": "Nueva etapa: vuelves a empezar desde abajo del rango.",
     "expedition_status_denied": "Bati no tiene acceso a tu ubicación",
     "expedition_open_settings": "Abrir ajustes",

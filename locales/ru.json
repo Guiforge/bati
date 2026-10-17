@@ -777,7 +777,7 @@
     "objective_value": "Цель {{value}}",
     "ghost_to_beat_label": "побить",
     "ghost_season_label": "Выше твоего лучшего за сезон",
-    "below_last_comeback": "Больше двух недель без упражнения «{{name}}»: две тренировки на уровень легче.",
+    "below_last_comeback": "Возвращение к «{{name}}»: две тренировки на уровень легче.",
     "below_last_rung": "Новая ступень: начинаешь снова с нижней границы.",
     "expedition_status_denied": "У Bati нет доступа к твоему местоположению",
     "expedition_open_settings": "Открыть настройки",

@@ -11,6 +11,7 @@ import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { formatDay } from "@/constants/dateFormatters";
 import { MAP_ATTRIBUTION } from "@/constants/mapStyle";
 import type { KillReport } from "@/db/journal";
+import { useRateKind } from "@/hooks/useRateKind";
 import { useSettingsStore } from "@/stores/settings";
 import { type ShareStat, sharedLine, shareKicker, shareStats } from "./shareStats";
 
@@ -45,7 +46,8 @@ export function ShareCard({
   const language = useSettingsStore((s) => s.language);
   const unit = useSettingsStore((s) => s.distanceUnit);
   const { session } = log;
-  const stats = shareStats(session, t, language, unit);
+  const rate = useRateKind(session.outing);
+  const stats = shareStats(session, t, language, unit, rate);
 
   const date = formatDay(language, session.performedAt, { dateStyle: "long" });
 

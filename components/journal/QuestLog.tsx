@@ -28,7 +28,7 @@ import { SetEditor } from "@/components/journal/SetEditor";
 import { TraceThumb } from "@/components/journal/TraceThumb";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getExerciseThumb, getQuestAsset } from "@/constants/assetMap";
-import { formatDistance, formatElevation, formatRate, rateKind } from "@/constants/distanceFormat";
+import { formatDistance, formatElevation, formatRate } from "@/constants/distanceFormat";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
 import { formatDuration } from "@/db";
@@ -40,6 +40,7 @@ import { correctLoggedSet } from "@/db/personalRecords";
 import { targetToBeat } from "@/db/progress";
 import { formatCount, formatTargetValue, PER_SIDE, perSideLabel } from "@/db/targets";
 import type { UserLevelInfo } from "@/db/userLevel";
+import { useRateKind } from "@/hooks/useRateKind";
 import type { LngLat } from "@/src/gps/trace";
 import { formatList } from "@/src/i18n/list";
 import { localizedName } from "@/src/i18n/localized";
@@ -507,6 +508,10 @@ function Ground({ data }: { data: QuestLogData }) {
   const language = useSettingsStore((s) => s.language);
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
   const { session, trace } = data;
+  // shortcut: a mixed quest stores no activity, so victory, recap, journal and shared card read
+  // its Walk tab while the panel and the goal sheet read the cheapest leg; store the tab if a
+  // hero with a mixed ride quest ever sees km/h on one and min/km on the other.
+  const rate = useRateKind(session.outing);
   const moving = session.movingSeconds ?? session.durationSeconds ?? 0;
 
   return (
@@ -539,9 +544,9 @@ function Ground({ data }: { data: QuestLogData }) {
         {session.leaguesM != null && session.leaguesM > 0 && moving > 0 && (
           <YStack>
             <NNum fontSize={17}>
-              {formatRate(session.leaguesM, moving * 1000, distanceUnit, language, session.outing)}
+              {formatRate(session.leaguesM, moving * 1000, distanceUnit, language, rate)}
             </NNum>
-            <NMuted fontSize={10.5}>{t(`journal.ground_${rateKind(session.outing)}`)}</NMuted>
+            <NMuted fontSize={10.5}>{t(`journal.ground_${rate}`)}</NMuted>
           </YStack>
         )}
       </XStack>

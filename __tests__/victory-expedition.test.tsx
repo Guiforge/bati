@@ -193,7 +193,7 @@ describe("VictoryView, the walk it just celebrated", () => {
     mockPush.mockClear();
     mockGetVillageBuildings.mockReset();
     mockGetVillageBuildings.mockResolvedValue([road({})]);
-    useSettingsStore.setState({ language: "en", distanceUnit: "metric" });
+    useSettingsStore.setState({ language: "en", distanceUnit: "metric", outingDisplay: {} });
     // 2.5 km in 25 minutes of moving. Left in the store on purpose: `end()` stops the
     // subscriptions, it never clears the reading `saveSession` was paid from.
     useExpeditionStore.setState({ track: { ...EMPTY, distanceM: 2500, movingMs: 1_500_000 } });
@@ -205,6 +205,14 @@ describe("VictoryView, the walk it just celebrated", () => {
     expect(screen.getByTestId("victory-expedition-distance")).toHaveTextContent("2.50 km");
     expect(screen.getByTestId("victory-expedition-moving")).toHaveTextContent("25:00");
     expect(screen.getByTestId("victory-expedition-pace")).toHaveTextContent("10:00 /km");
+  });
+
+  test("a walk the hero reads in km/h says so on the victory screen", async () => {
+    useSettingsStore.setState({ outingDisplay: { walk: { rate: "speed" } } });
+
+    await mountVictory();
+
+    expect(screen.getByTestId("victory-expedition-pace")).toHaveTextContent("6.0 km/h");
   });
 
   test("the same walk reads in miles when the hero asked for miles", async () => {

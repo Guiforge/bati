@@ -1,6 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { create } from "zustand";
 import { formatClock } from "@/constants/distanceFormat";
+import type { BuzzEvery } from "@/constants/outingDisplay";
 import { hasOutdoorSlot } from "@/db/expeditions";
 import { appendPoints, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
@@ -241,7 +242,7 @@ function progressLine(
     goalReached: reached,
     unit,
     language: i18n.language,
-    locomotion: view.locomotion,
+    rate: view.rate,
     walkRun: view.walkRun,
   };
   // The clock is already on the line, so the second figure is the first one that is not it: the
@@ -292,13 +293,13 @@ function buzz(context: string): void {
  * window takes back what it advanced (`RULES.pauseAfterMs`), so a hero who stops just past the
  * ninth league would otherwise be buzzed a second time for the same kilometre on the way back up.
  *
- * Every fifth on a mount: at twenty kilometres an hour a buzz per league is one every three
- * minutes, which stops being news and starts being the phone fidgeting in a bag.
+ * How often is the hero's choice, frozen with the view when the outing begins (`LiveView`): by
+ * default every league on foot and every fifth on a mount, because at twenty kilometres an hour a
+ * buzz per league is one every three minutes, which stops being news and starts being the phone
+ * fidgeting in a bag. 0 is "at the goal only": the goal's own buzz is another function.
  */
-const LEAGUES_PER_BUZZ = { onFoot: 1, mounted: 5 } as const;
-
-function announceLeague(track: TrackState, haptics: boolean, mounted: boolean): void {
-  const step = mounted ? LEAGUES_PER_BUZZ.mounted : LEAGUES_PER_BUZZ.onFoot;
+function announceLeague(track: TrackState, haptics: boolean, step: BuzzEvery): void {
+  if (step === 0) return;
   const leagues = Math.floor(leaguesOf(track) / step) * step;
   if (leagues <= leaguesCrossed) return;
   leaguesCrossed = leagues;
@@ -418,7 +419,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         });
 
         if (reached && !wasReached) announceGoalReached(track, unit, haptics, view, goal);
-        announceLeague(track, haptics, mounted);
+        announceLeague(track, haptics, view.buzzEvery);
 
         // Same cadence as the write, so a pocket that is never looked at costs one notification
         // update every thirty seconds rather than one a second.

@@ -1,4 +1,5 @@
 import type { LocationFix, NoFixEvent } from "@/modules/bati-location";
+import { DEFAULT_LIVE_VIEW } from "@/src/gps/liveFigures";
 
 const mockListeners = new Map<string, (payload: never) => void>();
 const mockAppendPoints = jest.fn().mockResolvedValue(undefined);
@@ -400,6 +401,8 @@ describe("stores/expedition", () => {
       big: "auto" as const,
       small: ["auto", "climb", "rate"] as ["auto", "climb", "rate"],
       layout: "map" as const,
+      rate: "pace" as const,
+      buzzEvery: 1 as const,
       locomotion: "walk" as const,
       walkRun: false,
       keepAwake: false,
@@ -445,7 +448,7 @@ describe("stores/expedition", () => {
       expect(lastLine()).toMatch(/^32:04 · \d+:\d\d \/km$/);
     });
 
-    test("a ride reads km/h in the line when its tab says rate", async () => {
+    test("a speed reads km/h in the line when the big figure is the rate", async () => {
       await store
         .getState()
         .begin(
@@ -455,7 +458,7 @@ describe("stores/expedition", () => {
           "metric",
           null,
           true,
-          view({ big: "rate", locomotion: "ride" }),
+          view({ big: "rate", locomotion: "ride", rate: "speed" }),
         );
       walkSome();
       expect(lastLine()).toMatch(/^32:04 · [\d.]+ km\/h$/);
@@ -818,14 +821,52 @@ describe("stores/expedition", () => {
     });
 
     // At twenty kilometres an hour a buzz per league is one every three minutes, in a bag.
-    test("a ride buzzes every fifth league, not every one", async () => {
-      await store.getState().begin("s1", NOTIFICATION, true, "metric");
+    test("a view that buzzes every fifth league does not buzz for the first four", async () => {
+      await store.getState().begin("s1", NOTIFICATION, true, "metric", null, true, {
+        ...DEFAULT_LIVE_VIEW,
+        buzzEvery: 5,
+      });
       for (let i = 0; i <= 95; i++) emit(striding(i));
       expect(store.getState().track.distanceM).toBeCloseTo(groundAfter(95));
       expect(mockHaptic).not.toHaveBeenCalled();
 
       for (let i = 96; i <= 110; i++) emit(striding(i));
       expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
+    test("every fifth league on foot when the hero asks for it", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric", null, true, {
+        ...DEFAULT_LIVE_VIEW,
+        buzzEvery: 5,
+      });
+      for (let i = 0; i <= 95; i++) emit(striding(i));
+      expect(mockHaptic).not.toHaveBeenCalled();
+      for (let i = 96; i <= 110; i++) emit(striding(i));
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
+    test("at the goal only: no league buzz, and the goal still buzzes once", async () => {
+      await store
+        .getState()
+        .begin("s1", NOTIFICATION, false, "metric", { type: "distance", metres: 4000 }, true, {
+          ...DEFAULT_LIVE_VIEW,
+          buzzEvery: 0,
+        });
+      for (let i = 0; i <= 70; i++) emit(striding(i));
+      expect(store.getState().track.distanceM).toBeGreaterThan(3000);
+      expect(mockHaptic).not.toHaveBeenCalled();
+      for (let i = 71; i <= 90; i++) emit(striding(i));
+      expect(store.getState().goalReached).toBe(true);
+      expect(mockHaptic).toHaveBeenCalledTimes(1);
+    });
+
+    test("without a goal, at the goal only never buzzes", async () => {
+      await store.getState().begin("s1", NOTIFICATION, false, "metric", null, true, {
+        ...DEFAULT_LIVE_VIEW,
+        buzzEvery: 0,
+      });
+      for (let i = 0; i <= 70; i++) emit(striding(i));
+      expect(mockHaptic).not.toHaveBeenCalled();
     });
 
     /**

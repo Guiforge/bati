@@ -25,18 +25,42 @@ export type Place = OutingMetric | "auto";
 export const OUTING_LAYOUTS = ["map", "bigFigures"] as const;
 export type OutingLayout = (typeof OUTING_LAYOUTS)[number];
 export type SmallPlaces = [Place | null, Place | null, Place | null];
-export type OutingView = { big: Place; small: SmallPlaces; layout: OutingLayout };
+/** How a rate is read: min/km for feet, km/h for wheels, unless the hero chose the other. */
+export const RATE_KINDS = ["pace", "speed"] as const;
+export type RateKind = (typeof RATE_KINDS)[number];
+/** Leagues between two buzzes; 0 is "at the goal only". A league is 1 km, miles or not. */
+export const BUZZ_STEPS = [1, 5, 0] as const;
+export type BuzzEvery = (typeof BUZZ_STEPS)[number];
+export type OutingView = {
+  big: Place;
+  small: SmallPlaces;
+  layout: OutingLayout;
+  rate: RateKind;
+  buzzEvery: BuzzEvery;
+};
 /** What is stored: only what the hero changed. An absent activity or field is the default. */
 export type OutingDisplay = Partial<Record<Locomotion, Partial<OutingView>>>;
 
 export const OUTING_ACTIVITIES = ["walk", "run", "ride"] as const satisfies readonly Locomotion[];
 
-/** Today's panel exactly: big by goal, then the other of time/distance, climb, rate. */
+/**
+ * Today's panel exactly: big by goal, then the other of time/distance, climb, rate. The rate and
+ * the buzz are the walk's; a ride reads a speed and buzzes every fifth league (`defaultsOf`).
+ */
 export const DEFAULT_VIEW: OutingView = {
   big: "auto",
   small: ["auto", "climb", "rate"],
   layout: "map",
+  rate: "pace",
+  buzzEvery: 1,
 };
+
+/** The default view of one activity: what a hero who touched nothing has always had. */
+export function defaultsOf(locomotion: Locomotion): OutingView {
+  return locomotion === "ride"
+    ? { ...DEFAULT_VIEW, small: [...DEFAULT_VIEW.small], rate: "speed", buzzEvery: 5 }
+    : { ...DEFAULT_VIEW, small: [...DEFAULT_VIEW.small] };
+}
 
 const isMetric = (v: unknown): v is OutingMetric =>
   typeof v === "string" && (OUTING_METRICS as readonly string[]).includes(v);
@@ -44,24 +68,46 @@ const isPlace = (v: unknown): v is Place => v === "auto" || isMetric(v);
 const isLayout = (v: unknown): v is OutingLayout =>
   typeof v === "string" && (OUTING_LAYOUTS as readonly string[]).includes(v);
 
+const isRate = (v: unknown): v is RateKind => v === "pace" || v === "speed";
+const isBuzz = (v: unknown): v is BuzzEvery => v === 1 || v === 5 || v === 0;
+
 const sameSmall = (a: SmallPlaces, b: SmallPlaces) => a.every((p, i) => p === b[i]);
 
 /** The view of one activity with the defaults filled in. */
 export function viewOf(display: OutingDisplay, locomotion: Locomotion): OutingView {
   const own = display[locomotion];
+  const base = defaultsOf(locomotion);
   return {
-    big: own?.big ?? DEFAULT_VIEW.big,
-    small: own?.small ? [...own.small] : [...DEFAULT_VIEW.small],
-    layout: own?.layout ?? DEFAULT_VIEW.layout,
+    big: own?.big ?? base.big,
+    small: own?.small ? [...own.small] : base.small,
+    layout: own?.layout ?? base.layout,
+    rate: own?.rate ?? base.rate,
+    buzzEvery: own?.buzzEvery ?? base.buzzEvery,
   };
+}
+
+/**
+ * Pace or speed for an activity, from the hero's choice. The one answer behind every rate the
+ * hero reads: panel, notification, victory, recap, journal and shared card. `display` has no
+ * default so a caller that forgets to read the setting does not compile. `null` is a quest with
+ * no stored activity (a mixed one); it reads the Walk tab.
+ */
+export function rateKind(locomotion: Locomotion | null, display: OutingDisplay): RateKind {
+  return viewOf(display, locomotion ?? "walk").rate;
 }
 
 /** One stored entry, field by field; whatever is unknown reads as the default and is dropped. */
 function parseEntry(raw: unknown): Partial<OutingView> {
   if (typeof raw !== "object" || raw === null) return {};
-  const entry = raw as { big?: unknown; small?: unknown; layout?: unknown };
+  const entry = raw as {
+    big?: unknown;
+    small?: unknown;
+    layout?: unknown;
+    rate?: unknown;
+    buzzEvery?: unknown;
+  };
   const out: Partial<OutingView> = {};
-  const { big, small, layout } = entry;
+  const { big, small, layout, rate, buzzEvery } = entry;
   if (isPlace(big)) out.big = big;
   if (Array.isArray(small)) {
     out.small = [0, 1, 2].map((i) => {
@@ -70,6 +116,8 @@ function parseEntry(raw: unknown): Partial<OutingView> {
     }) as SmallPlaces;
   }
   if (isLayout(layout)) out.layout = layout;
+  if (isRate(rate)) out.rate = rate;
+  if (isBuzz(buzzEvery)) out.buzzEvery = buzzEvery;
   return out;
 }
 
@@ -105,13 +153,18 @@ export function withActivity(
   const { [locomotion]: _gone, ...rest } = display;
   if (patch === null) return rest;
   const merged = { ...display[locomotion], ...patch };
+  const base = defaultsOf(locomotion);
   const entry: Partial<OutingView> = {};
-  if (merged.big !== undefined && merged.big !== DEFAULT_VIEW.big) entry.big = merged.big;
-  if (merged.small !== undefined && !sameSmall(merged.small, DEFAULT_VIEW.small)) {
+  if (merged.big !== undefined && merged.big !== base.big) entry.big = merged.big;
+  if (merged.small !== undefined && !sameSmall(merged.small, base.small)) {
     entry.small = merged.small;
   }
-  if (merged.layout !== undefined && merged.layout !== DEFAULT_VIEW.layout) {
+  if (merged.layout !== undefined && merged.layout !== base.layout) {
     entry.layout = merged.layout;
+  }
+  if (merged.rate !== undefined && merged.rate !== base.rate) entry.rate = merged.rate;
+  if (merged.buzzEvery !== undefined && merged.buzzEvery !== base.buzzEvery) {
+    entry.buzzEvery = merged.buzzEvery;
   }
   const next: OutingDisplay =
     Object.keys(entry).length === 0 ? rest : { ...rest, [locomotion]: entry };

@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,25 +9,105 @@ import { FormSheet } from "@/components/common/FormSheet";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { Check } from "@/components/icons";
+import { ExpeditionPanelView } from "@/components/session/ExpeditionPanelView";
 import { SettingRow } from "@/components/settings/SettingRow";
+import { formatDay } from "@/constants/dateFormatters";
 import {
+  BUZZ_STEPS,
+  type BuzzEvery,
   OUTING_ACTIVITIES,
   OUTING_METRICS,
   type OutingLayout,
+  type OutingView,
   type Place,
+  RATE_KINDS,
   type SmallPlaces,
   viewOf,
   withActivity,
 } from "@/constants/outingDisplay";
+import { lastOutingOf, type OutingSession } from "@/db/gps";
 import type { Locomotion } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
-import { metricLabelKey } from "@/src/gps/liveFigures";
+import { type LiveView, metricLabelKey } from "@/src/gps/liveFigures";
+import { EMPTY, type TrackState } from "@/src/gps/track";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
 /** The places a choice can fill, in the order of the list: the big one, then the three small. */
 type PlaceId = "big" | 0 | 1 | 2;
 
 const RATES: readonly Place[] = ["rate", "rateAvg"];
+
+const BUZZ_KEY = { 1: "buzz_1", 5: "buzz_5", 0: "buzz_goal" } as const satisfies Record<
+  BuzzEvery,
+  string
+>;
+
+/** The track of a finished outing, as much of one as the panel's figures read. */
+function trackOf(last: OutingSession): TrackState {
+  return {
+    ...EMPTY,
+    startedAt: last.performedAt.getTime(),
+    distanceM: last.leaguesM ?? 0,
+    movingMs: (last.movingSeconds ?? 0) * 1000,
+    ascentM: last.ascentM ?? 0,
+    climbFrom: last.ascentM === null ? null : 0,
+  };
+}
+
+/**
+ * The panel the hero would read, drawn from their last outing of this activity with the very
+ * components a live outing uses (`ExpeditionPanelView`). Nothing invented: with no outing of the
+ * kind, dashes and a sentence that says so.
+ */
+function LastOutingPreview({
+  tab,
+  view,
+  keepAwake,
+}: {
+  tab: Locomotion;
+  view: OutingView;
+  keepAwake: boolean;
+}) {
+  const { t } = useTranslation();
+  const language = useSettingsStore((s) => s.language);
+  const [last, setLast] = useState<{ tab: Locomotion; outing: OutingSession | null } | null>(null);
+  useEffect(() => {
+    let live = true;
+    lastOutingOf(tab)
+      .then((outing) => live && setLast({ tab, outing }))
+      .catch((error: unknown) => {
+        reportError("outingDisplay.lastOuting", error);
+        if (live) setLast({ tab, outing: null });
+      });
+    return () => {
+      live = false;
+    };
+  }, [tab]);
+
+  // Until this tab's read lands, nothing: the previous tab's outing must not stand in for it.
+  if (last?.tab !== tab) return null;
+  const outing = last.outing;
+  const liveView: LiveView = { ...view, locomotion: tab, walkRun: false, keepAwake };
+  return (
+    <YStack gap="$1" testID="outing-display-preview">
+      <ExpeditionPanelView
+        view={liveView}
+        track={outing ? trackOf(outing) : { ...EMPTY, startedAt: 1, climbFrom: 0 }}
+        recordedSeconds={outing?.movingSeconds ?? 0}
+        preview
+        empty={!outing}
+      />
+      <Paragraph fontSize={13} color="$textSecondary" px="$1">
+        {outing
+          ? t(`outing_display.preview_last_${tab}`, {
+              date: formatDay(language, outing.performedAt, { dateStyle: "short" }),
+            })
+          : t(`outing_display.preview_none_${tab}`)}
+      </Paragraph>
+    </YStack>
+  );
+}
 
 const asActivity = (value: string | undefined): Locomotion =>
   OUTING_ACTIVITIES.find((a) => a === value) ?? "walk";
@@ -53,6 +133,7 @@ export default function OutingDisplayScreen() {
   const setDisplay = useSettingsStore((s) => s.setOutingDisplay);
   const setKeepAwake = useSettingsStore((s) => s.setOutingKeepAwake);
 
+  const hapticsOn = useSettingsStore((s) => s.hapticsEnabled);
   const view = viewOf(display, tab);
   const keepAwake = keepAwakeSet.includes(tab);
   const ride = tab === "ride";
@@ -68,7 +149,7 @@ export default function OutingDisplayScreen() {
       ? t("outing_display.none")
       : place === "auto"
         ? t("outing_display.auto")
-        : t(metricLabelKey(place, tab));
+        : t(metricLabelKey(place, view.rate));
 
   const pick = (id: PlaceId, value: Place | null) => {
     if (id === "big") {
@@ -137,6 +218,8 @@ export default function OutingDisplayScreen() {
           </Paragraph>
         ) : null}
 
+        <LastOutingPreview tab={tab} view={view} keepAwake={keepAwake} />
+
         {ride ? (
           <YStack gap="$1">
             <SettingRow
@@ -181,6 +264,48 @@ export default function OutingDisplayScreen() {
             />
           ))}
         </XStack>
+
+        <SectionLabel px="$1" mt="$2">
+          {t("outing_display.rate")}
+        </SectionLabel>
+        <XStack gap="$2" flexWrap="wrap">
+          {RATE_KINDS.map((rate) => (
+            <Chip
+              key={rate}
+              testID={`outing-display-rate-${rate}`}
+              label={t(`outing_display.rate_${rate}`)}
+              tone={view.rate === rate ? "primary" : "default"}
+              accessibilityState={{ selected: view.rate === rate }}
+              onPress={() => change({ rate })}
+            />
+          ))}
+        </XStack>
+        <Paragraph fontSize={13} color="$textSecondary">
+          {t("outing_display.rate_note")}
+        </Paragraph>
+
+        <SectionLabel px="$1" mt="$2">
+          {t("outing_display.buzz")}
+        </SectionLabel>
+        <XStack gap="$2" flexWrap="wrap">
+          {BUZZ_STEPS.map((step) => (
+            <Chip
+              key={step}
+              testID={`outing-display-buzz-${step}`}
+              label={t(`outing_display.${BUZZ_KEY[step]}`)}
+              tone={view.buzzEvery === step ? "primary" : "default"}
+              opacity={hapticsOn ? 1 : 0.4}
+              disabled={!hapticsOn}
+              aria-disabled={!hapticsOn}
+              accessibilityState={{ selected: view.buzzEvery === step, disabled: !hapticsOn }}
+              onPress={() => hapticsOn && change({ buzzEvery: step })}
+            />
+          ))}
+        </XStack>
+        <Paragraph fontSize={13} color="$textSecondary">
+          {t(hapticsOn ? "outing_display.buzz_note" : "outing_display.buzz_off")}
+          {hapticsOn && view.buzzEvery === 0 ? ` ${t("outing_display.buzz_goal_note")}` : ""}
+        </Paragraph>
 
         <SectionLabel px="$1" mt="$2">
           {t("outing_display.screen")}

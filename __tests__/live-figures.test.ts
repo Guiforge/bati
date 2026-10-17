@@ -18,7 +18,7 @@ function ctx(over: Partial<FigureContext> = {}): FigureContext {
     goalReached: false,
     unit: "metric",
     language: "en",
-    locomotion: "walk",
+    rate: "pace",
     walkRun: false,
     ...over,
   };
@@ -119,7 +119,7 @@ describe("figureText", () => {
   });
 
   test("the locomotion of the view decides the word and unit of the rate", () => {
-    expect(figureText("rateAvg", ctx({ locomotion: "ride" }), true)).toBe("15.0 km/h");
+    expect(figureText("rateAvg", ctx({ rate: "speed" }), true)).toBe("15.0 km/h");
   });
 
   test("remaining counts down the distance, or the moving time", () => {

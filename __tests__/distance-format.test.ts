@@ -8,28 +8,28 @@ import {
 } from "@/constants/distanceFormat";
 import { RULES } from "@/src/gps/track";
 
-// A cyclist reads km/h, a runner min/km: the same two numbers, printed in the shape each thinks in.
+// A pace or a speed: the same two numbers, printed in the shape the hero chose.
 describe("formatRate", () => {
-  test("a ride reads a speed, in the hero's decimal separator, in km and in miles", () => {
-    expect(formatRate(18_400, 3_600_000, "metric", "fr", "ride")).toBe("18,4 km/h");
-    expect(formatRate(18_400, 3_600_000, "metric", "en", "ride")).toBe("18.4 km/h");
-    expect(formatRate(18_400, 3_600_000, "imperial", "en", "ride")).toBe("11.4 mph");
+  test("a speed reads km/h, in the hero's decimal separator, in km and in miles", () => {
+    expect(formatRate(18_400, 3_600_000, "metric", "fr", "speed")).toBe("18,4 km/h");
+    expect(formatRate(18_400, 3_600_000, "metric", "en", "speed")).toBe("18.4 km/h");
+    expect(formatRate(18_400, 3_600_000, "imperial", "en", "speed")).toBe("11.4 mph");
   });
 
-  test("a run, a walk and a mixed quest read a pace", () => {
-    expect(formatRate(1000, 312_000, "metric", "fr", "run")).toBe("5:12 /km");
-    expect(formatRate(1000, 312_000, "imperial", "en", "walk")).toBe("8:22 /mi");
-    expect(formatRate(1000, 312_000, "metric", "en", null)).toBe("5:12 /km");
+  test("a pace reads min per unit", () => {
+    expect(formatRate(1000, 312_000, "metric", "fr", "pace")).toBe("5:12 /km");
+    expect(formatRate(1000, 312_000, "imperial", "en", "pace")).toBe("8:22 /mi");
+    expect(formatRate(1000, 312_000, "metric", "en", "pace")).toBe("5:12 /km");
   });
 
   test("a ride under the moving threshold says nothing, like a pace does", () => {
-    expect(formatRate(RULES.movingThresholdM - 0.01, 28_000, "metric", "en", "ride")).toBe("...");
-    expect(formatRate(1000, 0, "metric", "en", "ride")).toBe("...");
+    expect(formatRate(RULES.movingThresholdM - 0.01, 28_000, "metric", "en", "speed")).toBe("...");
+    expect(formatRate(1000, 0, "metric", "en", "speed")).toBe("...");
   });
 
   test("an instant speed goes through the same rule", () => {
-    expect(formatRateAt(18_400 / 3600, "metric", "fr", "ride")).toBe("18,4 km/h");
-    expect(formatRateAt(1000 / 312, "metric", "fr", "run")).toBe("5:12 /km");
+    expect(formatRateAt(18_400 / 3600, "metric", "fr", "speed")).toBe("18,4 km/h");
+    expect(formatRateAt(1000 / 312, "metric", "fr", "pace")).toBe("5:12 /km");
   });
 });
 

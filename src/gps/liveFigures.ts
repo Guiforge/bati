@@ -4,9 +4,13 @@ import {
   formatElevation,
   formatRate,
   formatRateAt,
-  rateKind,
 } from "@/constants/distanceFormat";
-import { DEFAULT_VIEW, type OutingMetric, type OutingView } from "@/constants/outingDisplay";
+import {
+  DEFAULT_VIEW,
+  type OutingMetric,
+  type OutingView,
+  type RateKind,
+} from "@/constants/outingDisplay";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
@@ -24,7 +28,7 @@ import type { OutingGoal, TrackState } from "@/src/gps/track";
  * changed mid-outing does not reach it; a resume after a kill reads it again.
  */
 export type LiveView = OutingView & {
-  /** The tab of "Affichage des sorties" this outing reads, and the word and unit of its rate. */
+  /** The tab of "Affichage des sorties" this outing reads: the activity really done. */
   locomotion: Locomotion;
   /** A walk-run is paced by the coach: no rate, ever. */
   walkRun: boolean;
@@ -48,7 +52,9 @@ export type FigureContext = {
   goalReached: boolean;
   unit: DistanceUnit;
   language: string;
-  locomotion: Locomotion;
+  /** Pace or speed, the hero's choice for this activity, frozen with the rest of the view. */
+  rate: RateKind;
+  /** A walk-run is paced by the coach: no rate, ever. */
   walkRun: boolean;
 };
 
@@ -74,13 +80,13 @@ export function liveRate(
   recentSpeedMps: number | null,
   unit: DistanceUnit,
   language: string,
-  locomotion: Locomotion | null,
+  kind: RateKind,
 ): string {
   const receiverSaysStopped =
     recentSpeedMps !== null && recentSpeedMps < STILL_SPEED_MPS && !track.paused;
   return recentSpeedMps === null || receiverSaysStopped
-    ? formatRate(track.distanceM, track.movingMs, unit, language, locomotion)
-    : formatRateAt(recentSpeedMps, unit, language, locomotion);
+    ? formatRate(track.distanceM, track.movingMs, unit, language, kind)
+    : formatRateAt(recentSpeedMps, unit, language, kind);
 }
 
 /** Whether a metric has nothing true to say yet, and so takes no place. */
@@ -150,7 +156,7 @@ function otherOfTimeAndDistance(big: OutingMetric, autoBig: OutingMetric): Outin
  * notification is not live, it is read minutes apart from a pocket, and says the average.
  */
 export function figureText(metric: OutingMetric, ctx: FigureContext, live: boolean): string {
-  const { track, unit, language, locomotion } = ctx;
+  const { track, unit, language, rate } = ctx;
   switch (metric) {
     case "time":
       return formatClock(ctx.recordedSeconds * 1000);
@@ -158,10 +164,10 @@ export function figureText(metric: OutingMetric, ctx: FigureContext, live: boole
       return formatDistance(track.distanceM, unit, language);
     case "rate":
       return live
-        ? liveRate(track, ctx.recentSpeedMps, unit, language, locomotion)
-        : formatRate(track.distanceM, track.movingMs, unit, language, locomotion);
+        ? liveRate(track, ctx.recentSpeedMps, unit, language, rate)
+        : formatRate(track.distanceM, track.movingMs, unit, language, rate);
     case "rateAvg":
-      return formatRate(track.distanceM, track.movingMs, unit, language, locomotion);
+      return formatRate(track.distanceM, track.movingMs, unit, language, rate);
     case "climb":
       return formatElevation(track.ascentM, unit);
     case "remaining": {
@@ -202,17 +208,17 @@ export function pocketGuarded(
   return isOutdoors(slot.exercise.style) && onFoot && screenStaysOn(quest, view);
 }
 
-/** The word for a metric, as a locale key. The rate follows the activity read (`rateKind`). */
-export function metricLabelKey(metric: OutingMetric, locomotion: Locomotion): string {
+/** The word for a metric, as a locale key. The rate word follows pace or speed. */
+export function metricLabelKey(metric: OutingMetric, rate: RateKind): string {
   switch (metric) {
     case "time":
       return "quests.config_duration";
     case "distance":
       return "session.expedition_ground";
     case "rate":
-      return `session.expedition_${rateKind(locomotion)}`;
+      return `session.expedition_${rate}`;
     case "rateAvg":
-      return `session.expedition_${rateKind(locomotion)}_avg`;
+      return `session.expedition_${rate}_avg`;
     case "climb":
       return "session.expedition_climb";
     case "remaining":

@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, desc, eq, gt, type SQL, sql } from "drizzle-orm";
 import type { LocationFix } from "@/modules/bati-location";
 import type { LngLat } from "@/src/gps/trace";
 import { db, schema } from "./client";
@@ -189,7 +189,25 @@ export type OutingSession = {
  * I go", next to the panel's and the village's. `leaguesM` is the one the road was paid in, and
  * it is what the recap prints.
  */
-export async function outingSession(sessionId: string): Promise<OutingSession | null> {
+export function outingSession(sessionId: string): Promise<OutingSession | null> {
+  return firstOuting(eq(completedQuest.uuid, sessionId));
+}
+
+/**
+ * The newest outing of one activity that measured both ground and time: what the preview on
+ * "Affichage des sorties" draws the panel from. A mixed quest stores no activity and is never it.
+ */
+export function lastOutingOf(locomotion: Locomotion): Promise<OutingSession | null> {
+  return firstOuting(
+    and(
+      eq(completedQuest.outing, locomotion),
+      gt(completedQuest.leaguesM, 0),
+      gt(completedQuest.movingSeconds, 0),
+    ),
+  );
+}
+
+async function firstOuting(where: SQL | undefined): Promise<OutingSession | null> {
   const rows = await db
     .select({
       id: completedQuest.id,
@@ -201,7 +219,8 @@ export async function outingSession(sessionId: string): Promise<OutingSession | 
       outing: completedQuest.outing,
     })
     .from(completedQuest)
-    .where(eq(completedQuest.uuid, sessionId))
+    .where(where)
+    .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
     .limit(1);
 
   const row = rows[0];

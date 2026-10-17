@@ -22,6 +22,9 @@ jest.mock("expo-router", () => ({
 }));
 const mockPush = jest.fn();
 
+const mockLastOuting = jest.fn();
+jest.mock("@/db/gps", () => ({ lastOutingOf: (l: string) => mockLastOuting(l) }));
+
 const mockWrites: OutingDisplay[] = [];
 jest.mock("@/db", () => ({
   preferences: {
@@ -76,9 +79,16 @@ const press = async (testID: string) => {
 
 beforeEach(() => {
   mockWrites.length = 0;
+  mockLastOuting.mockReset();
+  mockLastOuting.mockResolvedValue(null);
   mockKeepAwake = [];
   mockPush.mockClear();
-  useSettingsStore.setState({ outingDisplay: {}, outingKeepAwake: [], language: "en" });
+  useSettingsStore.setState({
+    outingDisplay: {},
+    outingKeepAwake: [],
+    language: "en",
+    hapticsEnabled: true,
+  });
 });
 
 test("opens on the tab it is sent to, Walk by default", async () => {
@@ -165,4 +175,103 @@ test("reset writes {} and takes the tab out of the screen set, and is only offer
   expect(useSettingsStore.getState().outingKeepAwake).toEqual([]);
   expect(screen.queryByTestId("outing-display-reset")).toBeNull();
   expect(screen.getByText("As shipped")).toBeTruthy();
+});
+
+test("pace or speed is a choice per tab, written on tap, and the original leaves no trace", async () => {
+  await mount("walk");
+  await press("outing-display-rate-speed");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({ walk: { rate: "speed" } });
+  // The Ride tab keeps its own: a speed by default, so choosing a speed there stores nothing.
+  await press("outing-display-tab-ride");
+  await press("outing-display-rate-speed");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({ walk: { rate: "speed" } });
+  await press("outing-display-rate-pace");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({
+    walk: { rate: "speed" },
+    ride: { rate: "pace" },
+  });
+});
+
+test("the vibration cadence is a choice per tab, with the league and the no-goal notes", async () => {
+  await mount("run");
+  expect(screen.getByText("A league is 1 km, even in miles.")).toBeTruthy();
+  await press("outing-display-buzz-5");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({ run: { buzzEvery: 5 } });
+  await press("outing-display-buzz-0");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({ run: { buzzEvery: 0 } });
+  expect(screen.getByText(/With no goal, the outing does not buzz\./)).toBeTruthy();
+  await press("outing-display-buzz-1");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({});
+});
+
+test("a ride starts on every fifth league, and the hero's own choice is what is checked", async () => {
+  await mount("ride");
+  expect(screen.getByTestId("outing-display-buzz-5").props.accessibilityState).toMatchObject({
+    selected: true,
+  });
+  await press("outing-display-buzz-1");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({ ride: { buzzEvery: 1 } });
+});
+
+test("with vibrations off in Settings the cadence cannot be changed, and the screen says why", async () => {
+  useSettingsStore.setState({ hapticsEnabled: false });
+  await mount("walk");
+  expect(screen.getByText("Vibrations are off in Settings.")).toBeTruthy();
+  await press("outing-display-buzz-5");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({});
+});
+
+describe("the preview", () => {
+  test("draws the panel from the last outing of the tab, in the hero's own places", async () => {
+    mockLastOuting.mockResolvedValue({
+      id: 1,
+      questId: null,
+      performedAt: new Date("2026-10-12T10:00:00Z"),
+      leaguesM: 5000,
+      movingSeconds: 3000,
+      ascentM: 40,
+      outing: "walk",
+    });
+    useSettingsStore.setState({ outingDisplay: { walk: { rate: "speed", big: "rate" } } });
+    await mount("walk");
+
+    expect(mockLastOuting).toHaveBeenCalledWith("walk");
+    expect(screen.getByTestId("expedition-big").props.children).toBe("6.0 km/h");
+    expect(screen.getByText("5.00 km")).toBeTruthy();
+    expect(screen.getByText("40 m")).toBeTruthy();
+    expect(screen.getByText(/^Your last walk, on /)).toBeTruthy();
+    // A preview measures nothing: no status line, no accuracy, no hint about the pocket.
+    expect(screen.queryByText("On the road")).toBeNull();
+  });
+
+  test("with no outing of the kind, dashes and a sentence, nothing invented", async () => {
+    await mount("run");
+
+    expect(screen.getByText("No run yet: the figures will appear here.")).toBeTruthy();
+    expect(screen.getByTestId("expedition-big").props.children).toBe("-");
+    expect(screen.queryByText("0 m")).toBeNull();
+  });
+
+  test("follows the tab it is on", async () => {
+    mockLastOuting.mockImplementation((l: string) =>
+      Promise.resolve(
+        l === "ride"
+          ? {
+              id: 2,
+              questId: null,
+              performedAt: new Date("2026-10-13T10:00:00Z"),
+              leaguesM: 20_000,
+              movingSeconds: 3600,
+              ascentM: null,
+              outing: "ride",
+            }
+          : null,
+      ),
+    );
+    await mount("walk");
+    expect(screen.getByText("No walk yet: the figures will appear here.")).toBeTruthy();
+    await press("outing-display-tab-ride");
+    expect(await screen.findByText(/^Your last ride, on /)).toBeTruthy();
+    expect(screen.getByText("20.0 km/h")).toBeTruthy();
+  });
 });

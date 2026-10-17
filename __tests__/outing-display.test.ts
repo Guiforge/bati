@@ -1,4 +1,11 @@
-import { DEFAULT_VIEW, parseOutingDisplay, viewOf, withActivity } from "@/constants/outingDisplay";
+import {
+  DEFAULT_VIEW,
+  defaultsOf,
+  parseOutingDisplay,
+  rateKind,
+  viewOf,
+  withActivity,
+} from "@/constants/outingDisplay";
 
 const mockReportError = jest.fn();
 jest.mock("@/src/reportError", () => ({ reportError: (...a: never[]) => mockReportError(...a) }));
@@ -45,7 +52,10 @@ describe("viewOf and withActivity", () => {
   });
 
   test("a stored field overrides, the rest stays default", () => {
-    expect(viewOf({ ride: { big: "rate" } }, "ride")).toEqual({ ...DEFAULT_VIEW, big: "rate" });
+    expect(viewOf({ ride: { big: "rate" } }, "ride")).toEqual({
+      ...defaultsOf("ride"),
+      big: "rate",
+    });
     expect(viewOf({ ride: { big: "rate" } }, "walk")).toEqual(DEFAULT_VIEW);
   });
 
@@ -73,6 +83,42 @@ describe("viewOf and withActivity", () => {
     const first = withActivity({}, "ride", { big: "rate" });
     expect(withActivity(first, "ride", { layout: "bigFigures" })).toEqual({
       ride: { big: "rate", layout: "bigFigures" },
+    });
+  });
+});
+
+// Pace or speed and the buzz cadence: each activity has its own original, and the original is
+// never stored, so "As shipped" stays true after choosing it again.
+describe("rate and buzz", () => {
+  test("a ride reads a speed and buzzes every fifth league, feet a pace and every league", () => {
+    expect(viewOf({}, "ride")).toMatchObject({ rate: "speed", buzzEvery: 5 });
+    expect(viewOf({}, "walk")).toMatchObject({ rate: "pace", buzzEvery: 1 });
+    expect(viewOf({}, "run")).toMatchObject({ rate: "pace", buzzEvery: 1 });
+  });
+
+  test("the original of an activity is not stored, the other one is", () => {
+    expect(withActivity({}, "ride", { rate: "speed", buzzEvery: 5 })).toEqual({});
+    expect(withActivity({}, "ride", { rate: "pace" })).toEqual({ ride: { rate: "pace" } });
+    expect(withActivity({}, "walk", { rate: "speed", buzzEvery: 0 })).toEqual({
+      walk: { rate: "speed", buzzEvery: 0 },
+    });
+    expect(withActivity({ walk: { rate: "speed" } }, "walk", { rate: "pace" })).toEqual({});
+  });
+
+  test("rateKind is the choice of the tab, and a mixed quest reads Walk", () => {
+    expect(rateKind("walk", { walk: { rate: "speed" } })).toBe("speed");
+    expect(rateKind("ride", { walk: { rate: "speed" } })).toBe("speed");
+    expect(rateKind("ride", { ride: { rate: "pace" } })).toBe("pace");
+    expect(rateKind(null, { walk: { rate: "speed" } })).toBe("speed");
+    expect(rateKind(null, {})).toBe("pace");
+  });
+
+  test("an unknown rate or cadence reads as the default, field by field", () => {
+    expect(
+      parseOutingDisplay(JSON.stringify({ run: { rate: "knots", buzzEvery: 3, big: "rate" } })),
+    ).toEqual({ run: { big: "rate" } });
+    expect(parseOutingDisplay('{"run":{"rate":"speed","buzzEvery":0}}')).toEqual({
+      run: { rate: "speed", buzzEvery: 0 },
     });
   });
 });

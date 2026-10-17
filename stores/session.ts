@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { type OutingDisplay, viewOf } from "@/constants/outingDisplay";
+import { type BuzzEvery, defaultsOf, type OutingDisplay, viewOf } from "@/constants/outingDisplay";
 import { buildWarmup, PREP_SECONDS, type WarmupQuest, type WarmupStep } from "@/constants/warmup";
 import { completeAdventureRunStep, getAdventureIdForRunStep } from "@/db";
 import { checkForNewAchievements, type NewAchievementResult } from "@/db/achievements";
@@ -1276,8 +1276,19 @@ export function beginTrackingIfOuting(
   // `end()` leaves the old view in place. This one has the screen going off (the safe side, for
   // the length of two reads) and the right walk-run flag, so no pace shows on a walk-run.
   const locomotion = displayLocomotion(quest);
+  // A mount buzzes every fifth league unless the hero said otherwise: the original behaviour.
+  // shortcut: a walk-and-ride quest reads the Walk tab but is mounted, so choosing "every league"
+  // there equals the tab default and is not stored; it keeps buzzing every fifth. Store buzz
+  // verbatim if a hero asks.
+  const mountedBuzz: BuzzEvery = isMountedOuting(quest) ? 5 : 1;
   useExpeditionStore.setState({
-    view: { ...DEFAULT_LIVE_VIEW, locomotion, walkRun: isWalkRunSession(quest, goal) },
+    view: {
+      ...DEFAULT_LIVE_VIEW,
+      ...defaultsOf(locomotion),
+      buzzEvery: mountedBuzz,
+      locomotion,
+      walkRun: isWalkRunSession(quest, goal),
+    },
   });
   if (sessionUuid === null) return;
 
@@ -1318,6 +1329,7 @@ export function beginTrackingIfOuting(
     .then(([unit, haptics, display, keepAwake]) => {
       const view: LiveView = {
         ...viewOf(display, locomotion),
+        buzzEvery: display[locomotion]?.buzzEvery ?? mountedBuzz,
         locomotion,
         walkRun: isWalkRunSession(quest, goal),
         keepAwake: keepAwake.includes(locomotion),

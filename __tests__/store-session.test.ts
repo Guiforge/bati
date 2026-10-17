@@ -1921,6 +1921,68 @@ describe("useSessionStore", () => {
       });
     });
 
+    /** A ride: the seed movement that makes the outing mounted, and reads the Ride tab. */
+    const rideQuest = {
+      ...outingQuest,
+      exercises: [
+        {
+          exercise: {
+            id: 31,
+            enName: "Outrider's Ride",
+            creator: "Admin",
+            muscles: [],
+            style: "expedition",
+            locomotion: "ride",
+          },
+          target: { type: "time", value: 900 },
+        },
+      ],
+    } as unknown as Quest;
+
+    test("pace or speed and the buzz cadence are frozen into the view, per activity", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      (preferences.getOutingDisplay as jest.Mock).mockResolvedValue({
+        walk: { rate: "speed", buzzEvery: 0 },
+      });
+
+      await store.getState().startSession(outingQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      expect(viewPassed(beginSpy)).toMatchObject({ rate: "speed", buzzEvery: 0 });
+    });
+
+    test("a hero who set nothing keeps the original on foot: a pace and every league", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+
+      await store.getState().startSession(outingQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+      expect(viewPassed(beginSpy)).toMatchObject({ rate: "pace", buzzEvery: 1 });
+    });
+
+    test("and on a ride: a speed and every fifth league", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+
+      await store.getState().startSession(rideQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+      expect(viewPassed(beginSpy)).toMatchObject({
+        locomotion: "ride",
+        rate: "speed",
+        buzzEvery: 5,
+      });
+    });
+
+    test("a ride the hero set to buzz at the goal only, and to read a pace, does", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      (preferences.getOutingDisplay as jest.Mock).mockResolvedValue({
+        ride: { rate: "pace", buzzEvery: 0 },
+      });
+
+      await store.getState().startSession(rideQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      expect(viewPassed(beginSpy)).toMatchObject({ rate: "pace", buzzEvery: 0 });
+    });
+
     test("an activity the screen was not kept on for gets a screen that goes off", async () => {
       const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
       mockKeepAwakeSet.mockResolvedValue(["ride"]);

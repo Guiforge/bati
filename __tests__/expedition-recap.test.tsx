@@ -211,7 +211,12 @@ beforeEach(() => {
   mockMapStyle.mockClear();
   // Accepted, because everything else in this file is about a screen with a basemap on it. The
   // refusal is the default in the app and has its own describe block below.
-  useSettingsStore.setState({ distanceUnit: "metric", language: "en", mapTilesEnabled: true });
+  useSettingsStore.setState({
+    distanceUnit: "metric",
+    language: "en",
+    mapTilesEnabled: true,
+    outingDisplay: {},
+  });
 });
 
 describe("a session that left the walls", () => {
@@ -310,6 +315,13 @@ describe("a session that left the walls", () => {
     // The screen's own name is the fallback, never the title of a walk that has one.
     expect(screen.queryByText("The ground covered")).toBeNull();
     expect(screen.getByTestId("recap-date")).toBeTruthy();
+  });
+
+  test("a walk the hero reads in km/h reads km/h here too", async () => {
+    useSettingsStore.setState({ outingDisplay: { walk: { rate: "speed" } } });
+    await mount();
+    expect(await screen.findByTestId("recap-pace")).toHaveTextContent(/km\/h/);
+    expect(screen.getByTestId("recap-pace")).not.toHaveTextContent("/km");
   });
 
   test("the unit comes from the setting, which is only possible through the format helpers", async () => {

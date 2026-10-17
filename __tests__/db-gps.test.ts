@@ -66,6 +66,50 @@ describe("db/gps", () => {
     });
   });
 
+  /**
+   * The preview on "Affichage des sorties" is fed by the hero's last outing of the activity, and
+   * by nothing invented: a row with no ground or no time would draw zeros as if they were a result.
+   */
+  describe("the last outing of an activity", () => {
+    const insert = (
+      uuid: string,
+      at: number,
+      outing: string | null,
+      m: number | null,
+      s: number | null,
+    ) =>
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (uuid, userLevel, xpEarned, performedAt, leaguesM, movingSeconds, ascentM, outing) VALUES (?, 'medium', 10, ?, ?, ?, 12, ?)",
+        )
+        .run(uuid, at, m, s, outing);
+
+    test("is the newest of that activity, not of the others", async () => {
+      const { lastOutingOf } = gps();
+      insert("w-old", 1_000, "walk", 3000, 1800);
+      insert("w-new", 2_000, "walk", 5000, 3000);
+      insert("r-newest", 3_000, "run", 8000, 2400);
+
+      expect((await lastOutingOf("walk"))?.leaguesM).toBe(5000);
+      expect((await lastOutingOf("run"))?.leaguesM).toBe(8000);
+    });
+
+    test("skips an outing that measured no ground or no time, and a workout", async () => {
+      const { lastOutingOf } = gps();
+      insert("good", 1_000, "ride", 20_000, 3600);
+      insert("no-ground", 2_000, "ride", null, 600);
+      insert("no-time", 3_000, "ride", 900, null);
+      insert("workout", 4_000, null, null, null);
+
+      expect((await lastOutingOf("ride"))?.leaguesM).toBe(20_000);
+    });
+
+    test("says null for an activity never done", async () => {
+      const { lastOutingOf } = gps();
+      expect(await lastOutingOf("run")).toBeNull();
+    });
+  });
+
   // The reason the codec exists at all: four consumers, and one of them dividing by 1e6.
   test("a fix survives the round trip through scaled integers", () => {
     const { encode, decode } = gps();

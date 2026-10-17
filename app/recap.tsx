@@ -28,7 +28,6 @@ import {
   formatElevation,
   formatRate,
   formatRateAt,
-  rateKind,
 } from "@/constants/distanceFormat";
 import {
   LEAGUE_PIP_PAINT,
@@ -42,6 +41,7 @@ import type { DistanceUnit } from "@/db/preferences";
 import { listQuestTemplates } from "@/db/quests";
 import type { Locomotion } from "@/db/schema";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
+import { useRateKind } from "@/hooks/useRateKind";
 import type { LocationFix } from "@/modules/bati-location";
 import { toTrace } from "@/src/gps/trace";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
@@ -178,10 +178,11 @@ function SpeedLegend({
 }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
+  const rate = useRateKind(locomotion);
   if (range === null && best === null) return null;
 
   // A speed, as a pace or as itself depending on who travelled. One conversion, in constants/distanceFormat.
-  const paceAt = (speed: number) => formatRateAt(speed, unit, language, locomotion);
+  const paceAt = (speed: number) => formatRateAt(speed, unit, language, rate);
 
   return (
     <YStack gap="$2" testID="recap-speed-legend">
@@ -208,7 +209,7 @@ function SpeedLegend({
       {best === null ? null : (
         <Text testID="recap-best-league" fontSize={11} color="$textSecondary">
           {t("recap.best_league", {
-            pace: formatRate(best.metres, best.ms, unit, language, locomotion),
+            pace: formatRate(best.metres, best.ms, unit, language, rate),
           })}
         </Text>
       )}
@@ -238,6 +239,7 @@ function Figures({
   locomotion: Locomotion | null;
 }) {
   const language = useSettingsStore((s) => s.language);
+  const rate = useRateKind(locomotion);
   const { t } = useTranslation();
   return (
     <YStack gap="$3">
@@ -262,8 +264,8 @@ function Figures({
             />
             <Figure
               testID="recap-pace"
-              label={t(`session.expedition_${rateKind(locomotion)}`)}
-              value={formatRate(leaguesM, movingSeconds * 1000, unit, language, locomotion)}
+              label={t(`session.expedition_${rate}`)}
+              value={formatRate(leaguesM, movingSeconds * 1000, unit, language, rate)}
             />
           </>
         )}

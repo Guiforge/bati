@@ -47,6 +47,7 @@ jest.mock("@/stores/settings", () => ({
     selector({ distanceUnit: mockUnit, language: "en" }),
 }));
 
+import { defaultsOf } from "@/constants/outingDisplay";
 import { rawColors } from "@/constants/rawColors";
 import type { Quest } from "@/db/quests";
 import { DEFAULT_LIVE_VIEW, type LiveView } from "@/src/gps/liveFigures";
@@ -556,7 +557,7 @@ describe("ExpeditionPanel default readout", () => {
   )("%s with %s", async (l, _name, goal, head) => {
     setSession(goal, 600_000);
     useSessionStore.setState({ quest: withLocomotion(l) });
-    setView({ locomotion: l });
+    setView({ ...defaultsOf(l), locomotion: l });
     await mount();
     const seen = texts(screen.toJSON()).filter((x) => x.trim() !== "");
     // The figure/label order: big, [goal], second, its label, climb, its label, rate, its label.
@@ -589,21 +590,41 @@ describe("ExpeditionPanel with the hero's places", () => {
     expect(screen.getAllByText("Distance")).toHaveLength(1);
   });
 
-  test("a ride on a mixed quest with a chosen speed in big reads Speed and km/h", async () => {
-    const ridePlusPushUps = {
+  const ridePlusPushUps = () =>
+    ({
       ...outing,
       exercises: [
         { ...outing.exercises[0], exercise: { ...walk, locomotion: "ride" } },
         { ...outing.exercises[0], exercise: { ...walk, style: "reps", locomotion: null } },
       ],
-    } as unknown as Quest;
-    useSessionStore.setState({ quest: ridePlusPushUps });
+    }) as unknown as Quest;
+
+  test("a ride on a mixed quest with a chosen speed in big reads Speed and km/h", async () => {
+    useSessionStore.setState({ quest: ridePlusPushUps() });
     // What beginTrackingIfOuting freezes for it: the Ride tab, with speed in big.
-    setView({ locomotion: "ride", big: "rate" });
+    setView({ locomotion: "ride", rate: "speed", big: "rate" });
     await mount();
     expect(screen.getByTestId("expedition-big").props.children).toBe("15.0 km/h");
     expect(screen.getByText("Speed")).toBeTruthy();
     expect(screen.queryByText("Pace")).toBeNull();
+  });
+
+  test("a walk the hero reads in km/h says Speed and km/h, in the big place and the small ones", async () => {
+    setView({ rate: "speed", big: "rate", small: ["rateAvg", null, null] });
+    await mount();
+    expect(screen.getByTestId("expedition-big").props.children).toBe("15.0 km/h");
+    expect(screen.getByText("Speed")).toBeTruthy();
+    expect(screen.getByText("Avg speed")).toBeTruthy();
+    expect(screen.queryByText("Pace")).toBeNull();
+    expect(screen.queryByText(/\/km/)).toBeNull();
+  });
+
+  test("a ride the hero reads as a pace says Pace and min per km", async () => {
+    useSessionStore.setState({ quest: ridePlusPushUps() });
+    setView({ locomotion: "ride", rate: "pace", big: "rate" });
+    await mount();
+    expect(screen.getByTestId("expedition-big").props.children).toBe("4:00 /km");
+    expect(screen.getByText("Pace")).toBeTruthy();
   });
 
   test("the average has its own word, and the remaining figure counts down", async () => {

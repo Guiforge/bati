@@ -27,6 +27,7 @@
     "pick_next": "Elige tu próxima misión",
     "done_today": "Hecho por hoy.",
     "next_session": "Tu próxima sesión: {{quest}}, {{duration}}",
+    "tonight_line": "Esta noche: {{name}}, al menos {{value}}",
     "last_done_one": "Última vez ayer",
     "last_done_many": "Última vez hace {{count}} días",
     "last_done_other": "Última vez hace {{count}} días",
@@ -210,7 +211,10 @@
   },
   "progression": {
     "new_rung_from": "Ejercicio superado: {{name}}",
-    "rung_also_leads_to": "La misma etapa también lleva a {{names}}."
+    "rung_also_leads_to": "La misma etapa también lleva a {{names}}.",
+    "cap_offer_body": "Tres sesiones con {{value}} en {{name}}. La siguiente etapa empieza por abajo de su rango.",
+    "cap_offer_action": "Pasar a {{next}} la próxima vez",
+    "cap_offer_done": "Guardado: {{next}} desde tu próxima sesión."
   },
   "quests": {
     "written_for_beginner": "Principiante",
@@ -625,8 +629,14 @@
     "hold_check_keep": "Conservar",
     "hold_check_target": "Usar el objetivo",
     "ghost_last_label": "La última vez",
-    "ghost_best_label": "récord",
     "ghost_record_label": "Por encima de tu récord",
+    "objective_label": "Objetivo",
+    "objective_value": "Objetivo {{value}}",
+    "ghost_to_beat_label": "a superar",
+    "ghost_season_label": "Por encima de tu mejor de la temporada",
+    "below_last_comeback": "Vuelves tras una pausa: un nivel más suave durante dos sesiones.",
+    "below_last_hold": "Una posición se entrena por debajo de tu récord, a tres cuartos como mucho.",
+    "below_last_rung": "Nueva etapa: vuelves a empezar desde abajo del rango.",
     "expedition_status_denied": "Bati no tiene acceso a tu ubicación",
     "expedition_open_settings": "Abrir ajustes",
     "expedition_acquiring_hint": "La primera posición puede tardar unos minutos. Sal de todos modos, el trazado te alcanzará.",

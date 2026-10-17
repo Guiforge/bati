@@ -287,7 +287,7 @@ describe("db/personalRecords", () => {
     `);
 
     const history = await getExerciseHistory([exerciseId, other]);
-    expect(history.get(ghostKey(exerciseId, "reps"))).toEqual({
+    expect(history.get(ghostKey(exerciseId, "reps"))).toMatchObject({
       last: 11,
       best: 16,
       at: evening * 1000,
@@ -295,6 +295,92 @@ describe("db/personalRecords", () => {
     });
     expect(history.has(ghostKey(other, "reps"))).toBe(false);
     expect(history.size).toBe(1);
+  });
+
+  describe("recent, the marks a target is progressed on", () => {
+    const DAY = 86_400;
+    const base = Math.floor(Date.now() / 1000) - 30 * DAY;
+
+    function session(id: number, at: number, questId: number | null, userLevel = "medium") {
+      t.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (id, performedAt, questId, userLevel) VALUES (?, ?, ?, ?)",
+        )
+        .run(id, at, questId, userLevel);
+    }
+    function sets(sessionId: number, exerciseId: number, at: number, values: number[], rx: number) {
+      values.forEach((value, i) => {
+        t.sqlite
+          .prepare(
+            `INSERT INTO completed_exercises
+               (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder, prescribedValue, targetValue)
+             VALUES (?, ?, 'reps', ?, ?, ?, ?, ?)`,
+          )
+          .run(sessionId, exerciseId, value, at, i, rx, rx);
+      });
+    }
+    function heroQuest(): number {
+      const info = t.sqlite
+        .prepare(
+          "INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author) VALUES ('Mine', 'Mienne', '', '', 'hero')",
+        )
+        .run();
+      return Number(info.lastInsertRowid);
+    }
+    function history(exerciseId: number) {
+      const { getExerciseHistory, ghostKey } =
+        require("../db/personalRecords") as typeof import("../db/personalRecords");
+      return getExerciseHistory([exerciseId]).then((h) => h.get(ghostKey(exerciseId, "reps")));
+    }
+
+    test("a hero-quest session is the newest: last is its value, recent skips it", async () => {
+      const exerciseId = firstExerciseId(t);
+      const quest = heroQuest();
+      session(1, base, null);
+      session(2, base + DAY, quest);
+      sets(1, exerciseId, base, [12, 12, 12], 12);
+      sets(2, exerciseId, base + DAY, [50, 50], 50);
+
+      const ghost = await history(exerciseId);
+      expect(ghost).toMatchObject({ last: 50, best: 50, at: (base + DAY) * 1000 });
+      expect(ghost?.recent).toEqual([
+        { prescribed: 12, met: true, at: base * 1000, level: "medium" },
+      ]);
+    });
+
+    test("a session whose quest was deleted counts as seeded", async () => {
+      const exerciseId = firstExerciseId(t);
+      session(1, base, null);
+      sets(1, exerciseId, base, [12, 11], 12);
+
+      expect((await history(exerciseId))?.recent).toEqual([
+        { prescribed: 12, met: false, at: base * 1000, level: "medium" },
+      ]);
+    });
+
+    test("recent keeps three, newest first, and carries the session's level", async () => {
+      const exerciseId = firstExerciseId(t);
+      [0, 1, 2, 3].forEach((day) => {
+        session(day + 1, base + day * DAY, null, day === 3 ? "easy" : "medium");
+        sets(day + 1, exerciseId, base + day * DAY, [10 + day], 10 + day);
+      });
+
+      const recent = (await history(exerciseId))?.recent ?? [];
+      expect(recent.map((m) => m.prescribed)).toEqual([13, 12, 11]);
+      expect(recent[0]?.level).toBe("easy");
+    });
+
+    test("seasonBest is the best of the sessions inside the season, null outside", async () => {
+      const exerciseId = firstExerciseId(t);
+      const old = Math.floor(Date.now() / 1000) - 200 * DAY;
+      session(1, old, null);
+      sets(1, exerciseId, old, [30], 30);
+      expect((await history(exerciseId))?.seasonBest).toBeNull();
+
+      session(2, base, null);
+      sets(2, exerciseId, base, [12], 12);
+      expect(await history(exerciseId)).toMatchObject({ best: 30, seasonBest: 12 });
+    });
   });
 
   function logOuting(leaguesM: number, secondsAgo: number): number {

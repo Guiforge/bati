@@ -431,6 +431,7 @@
     "pick_next": "Choisis ta prochaine quête",
     "done_today": "Fait pour aujourd'hui.",
     "next_session": "Ta prochaine séance : {{quest}}, {{duration}}",
+    "tonight_line": "Ce soir : {{name}}, au moins {{value}}",
     "last_done_one": "Dernière fois hier",
     "last_done_many": "Dernière fois il y a {{count}} jours",
     "last_done_other": "Dernière fois il y a {{count}} jours",
@@ -778,7 +779,10 @@
   },
   "progression": {
     "new_rung_from": "Maîtrise acquise : {{name}}",
-    "rung_also_leads_to": "La même étape mène aussi à {{names}}."
+    "rung_also_leads_to": "La même étape mène aussi à {{names}}.",
+    "cap_offer_body": "Trois séances à {{value}} sur {{name}}. L'étape suivante repart du bas de la fourchette.",
+    "cap_offer_action": "Passer à {{next}} la prochaine fois",
+    "cap_offer_done": "C'est noté : {{next}} dès ta prochaine séance."
   },
   "quests": {
     "written_for_beginner": "Débutant",
@@ -1065,8 +1069,14 @@
     "hold_check_keep": "Garder",
     "hold_check_target": "Mettre l'objectif",
     "ghost_last_label": "La dernière fois",
-    "ghost_best_label": "record",
     "ghost_record_label": "Au-delà de ton record",
+    "objective_label": "Objectif",
+    "objective_value": "Objectif {{value}}",
+    "ghost_to_beat_label": "à battre",
+    "ghost_season_label": "Au-delà de ton meilleur de la saison",
+    "below_last_comeback": "Tu reprends après une pause : un niveau plus léger pendant deux séances.",
+    "below_last_hold": "Une tenue se travaille sous ton record, aux trois quarts au plus.",
+    "below_last_rung": "Nouvelle étape : tu repars du bas de la fourchette.",
     "expedition_status_denied": "Bati n'a pas accès à ta position",
     "expedition_open_settings": "Ouvrir les réglages",
     "expedition_acquiring_hint": "La première position peut mettre quelques minutes à venir. Pars quand même, le tracé te rattrapera.",

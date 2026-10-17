@@ -69,7 +69,7 @@ function resolveTemplateExercises(input: PreviewInput): QuestExercise[] {
     const written = input.exercisesById[qex.exerciseId];
     if (!written) return [];
 
-    const { exercise, target, ghost, asWritten, setAsideFrom, walkRun } = resolveSlot({
+    const { exercise, target, ghost, asWritten, setAsideFrom, walkRun, targetWhy } = resolveSlot({
       base: qex.baseTarget,
       written,
       userLevel: userLevelEnum,
@@ -86,6 +86,8 @@ function resolveTemplateExercises(input: PreviewInput): QuestExercise[] {
         images: exercise.id === written.id ? qex.images : [],
         target,
         ghost,
+        ...(substitute ? { band: qex.baseTarget } : {}),
+        ...(targetWhy ? { targetWhy } : {}),
         ...(walkRun ? { walkRun: true as const } : {}),
         // And the same account of a stepped-down slot as `buildSlot` gives, because the saved
         // config reads it: a hero who took the written movement back ("Do X instead") is
@@ -100,7 +102,7 @@ function resolveTemplateExercises(input: PreviewInput): QuestExercise[] {
     ];
   });
 
-  return applyConfigToSlots(slots, input.config ?? null, input.exercisesById);
+  return applyConfigToSlots(slots, input.config ?? null, input.exercisesById, input.journal);
 }
 
 /** What a card advertises: the duration chip and the XP chip, for one quest. */
@@ -143,8 +145,13 @@ export async function previewQuests(
   configs: ReadonlyMap<number, QuestConfig>,
   level?: DifficultyCode,
 ): Promise<Map<number, QuestPreview>> {
+  // A saved swap puts another movement in a slot, and it is progressed on its own history.
+  const swapped = [...configs.values()].flatMap((c) => Object.values(c.swaps ?? {}));
   const [journal, defaults] = await Promise.all([
-    loadSlotJournal(templates.flatMap((q) => q.exercises.map((qex) => qex.exerciseId))),
+    loadSlotJournal([
+      ...templates.flatMap((q) => q.exercises.map((qex) => qex.exerciseId)),
+      ...swapped,
+    ]),
     loadDefaultLevels(),
   ]);
 

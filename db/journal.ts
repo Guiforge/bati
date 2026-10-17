@@ -110,14 +110,11 @@ export type WallEntry = {
   /** The session that first reached it, so the wall can open the day the record fell. */
   recordSessionId: number | null;
   /**
-   * The best of the last `SEASON_DAYS`, null when the movement was not trained in them. An old
+   * The best of the last `SEASON_DAYS` (`db/progress.ts`), null when the movement was not trained in them. An old
    * record is beaten from here: a peak from two years ago is not a target for tonight.
    */
   seasonBest: number | null;
 };
-
-/** How far back "this season" reaches, for a movement whose record has aged. */
-export const SEASON_DAYS = 90;
 
 /**
  * The movements trained most recently, each with its record, the day it was set, and what the hero
@@ -133,52 +130,33 @@ export const SEASON_DAYS = 90;
 export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
   const records = await getMovementRecords(limit);
   if (records.length === 0) return [];
-  const ids = records.map((record) => record.exerciseId);
   const key = (exerciseId: number, type: string) => `${exerciseId}:${type}`;
 
-  // Two grouped reads for the whole wall rather than two per movement.
-  const [firsts, seasons] = await Promise.all([
-    db
-      .select({
-        exerciseId: completedExercises.exerciseId,
-        type: completedExercises.resultType,
-        at: sql<Date>`MIN(${completedExercises.performedAt})`.mapWith(
-          completedExercises.performedAt,
-        ),
-        // A bare column beside a lone MIN() is read from the row that holds the minimum: SQLite
-        // documents this, and it is what names the session without a second, per-movement read.
-        sessionId: completedExercises.sessionId,
-      })
-      .from(completedExercises)
-      .where(
-        or(
-          ...records.map((record) =>
-            and(
-              eq(completedExercises.exerciseId, record.exerciseId),
-              eq(completedExercises.resultType, record.type),
-              gte(completedExercises.resultValue, record.best),
-            ),
+  // The record's session comes from one grouped read. Its date and the season's best come from
+  // the ghost (`getMovementRecords`), so the wall, the set and Home cut the season in one place.
+  const firsts = await db
+    .select({
+      exerciseId: completedExercises.exerciseId,
+      type: completedExercises.resultType,
+      // A bare column beside a lone MIN() is read from the row that holds the minimum: SQLite
+      // documents this, and it is what names the session without a second, per-movement read.
+      sessionId: completedExercises.sessionId,
+      at: sql`MIN(${completedExercises.performedAt})`,
+    })
+    .from(completedExercises)
+    .where(
+      or(
+        ...records.map((record) =>
+          and(
+            eq(completedExercises.exerciseId, record.exerciseId),
+            eq(completedExercises.resultType, record.type),
+            gte(completedExercises.resultValue, record.best),
           ),
         ),
-      )
-      .groupBy(completedExercises.exerciseId, completedExercises.resultType),
-    db
-      .select({
-        exerciseId: completedExercises.exerciseId,
-        type: completedExercises.resultType,
-        best: sql<number | null>`MAX(${completedExercises.resultValue})`,
-      })
-      .from(completedExercises)
-      .where(
-        and(
-          inArray(completedExercises.exerciseId, ids),
-          gte(completedExercises.performedAt, new Date(Date.now() - SEASON_DAYS * DAY_MS)),
-        ),
-      )
-      .groupBy(completedExercises.exerciseId, completedExercises.resultType),
-  ]);
+      ),
+    )
+    .groupBy(completedExercises.exerciseId, completedExercises.resultType);
   const first = new Map(firsts.map((row) => [key(row.exerciseId, row.type), row]));
-  const seasonBest = new Map(seasons.map((row) => [key(row.exerciseId, row.type), row.best]));
 
   return records.map((record) => ({
     exerciseId: record.exerciseId,
@@ -188,9 +166,9 @@ export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
     perSide: record.perSide,
     best: record.best,
     last: record.last,
-    recordAt: first.get(key(record.exerciseId, record.type))?.at ?? record.at,
+    recordAt: record.bestAt,
     recordSessionId: first.get(key(record.exerciseId, record.type))?.sessionId ?? null,
-    seasonBest: seasonBest.get(key(record.exerciseId, record.type)) ?? null,
+    seasonBest: record.seasonBest,
   }));
 }
 

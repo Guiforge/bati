@@ -136,11 +136,13 @@ test("a movement's best and last are read from the merged sets, not carried", as
 
   const { getExerciseHistory, ghostKey } =
     require("../db/personalRecords") as typeof import("../db/personalRecords");
-  expect((await getExerciseHistory([pushUp])).get(ghostKey(pushUp, "reps"))).toEqual({
+  expect((await getExerciseHistory([pushUp])).get(ghostKey(pushUp, "reps"))).toMatchObject({
     last: 9,
     best: 15,
     at: 3_000_000,
     bestAt: 2_000_000,
+    // The tablet's two sessions are the two newest marks, here's the oldest.
+    recent: [{ at: 3_000_000 }, { at: 2_000_000 }, { at: 1_000_000 }],
   });
   await converged(file);
 });

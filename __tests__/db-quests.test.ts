@@ -87,7 +87,10 @@ describe("db/quests", () => {
     if (!first) throw new Error("Expected quest exercise #1");
     expect(first.exercise.enName).toBe("Squat");
     expect(first.target.type).toBe("reps");
-    expect(first.target.value).toBe(11);
+    // The helper's journal (10 met at 10, medium) anchors the target now: 11 at medium, 8 at
+    // Easy, raised to the quest's floor at Easy (12-16 x 0.75). The band's middle is
+    // `progressive-target`'s fallback and has its own test below.
+    expect(first.target.value).toBe(9);
 
     const second = quest.exercises[1];
     if (!second) throw new Error("Expected quest exercise #2");

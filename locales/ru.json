@@ -27,6 +27,7 @@
     "pick_next": "Выбери следующее задание",
     "done_today": "На сегодня всё.",
     "next_session": "Твоя следующая тренировка: {{quest}}, {{duration}}",
+    "tonight_line": "Сегодня: {{name}}, не меньше {{value}}",
     "last_done_one": "Последний раз {{count}} день назад",
     "last_done_few": "Последний раз {{count}} дня назад",
     "last_done_many": "Последний раз {{count}} дней назад",
@@ -216,7 +217,10 @@
   },
   "progression": {
     "new_rung_from": "Освоено: {{name}}",
-    "rung_also_leads_to": "Эта же ступень также ведёт к {{names}}."
+    "rung_also_leads_to": "Эта же ступень также ведёт к {{names}}.",
+    "cap_offer_body": "Три тренировки по {{value}} в упражнении {{name}}. Следующая ступень начинается с нижней границы.",
+    "cap_offer_action": "В следующий раз перейти на {{next}}",
+    "cap_offer_done": "Сохранено: {{next}} со следующей тренировки."
   },
   "quests": {
     "written_for_beginner": "Для новичков",
@@ -646,8 +650,14 @@
     "hold_check_keep": "Оставить",
     "hold_check_target": "Записать цель",
     "ghost_last_label": "Прошлый раз",
-    "ghost_best_label": "лучший",
     "ghost_record_label": "Выше твоего лучшего",
+    "objective_label": "Цель",
+    "objective_value": "Цель {{value}}",
+    "ghost_to_beat_label": "побить",
+    "ghost_season_label": "Выше твоего лучшего за сезон",
+    "below_last_comeback": "Возвращаешься после перерыва: две тренировки на уровень легче.",
+    "below_last_hold": "Удержание тренируют ниже рекорда, не больше трёх четвертей от него.",
+    "below_last_rung": "Новая ступень: начинаешь снова с нижней границы.",
     "expedition_status_denied": "У Bati нет доступа к твоему местоположению",
     "expedition_open_settings": "Открыть настройки",
     "expedition_acquiring_hint": "Первое определение может занять пару минут. Выходи всё равно, трек догонит.",

@@ -51,7 +51,7 @@ import {
 } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
-import { loadDefaultLevels } from "@/db/questConfig";
+import { loadDefaultLevels, loadSwapJournal, type SwapJournal } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
 import { formatCount, formatTargetValue } from "@/db/targets";
@@ -250,6 +250,23 @@ export default function QuestDetails() {
   // Loaded with the quest rather than in their own effect, so a swapped slot never paints its
   // original movement for a frame first.
   const [catalogue, setCatalogue] = useState<Exercise[]>([]);
+  // What a swapped-in movement is progressed on (`applyConfigToSlots`). Reloaded when the swaps
+  // change, so it reads the same history `loadConfiguredQuest` reads for Home.
+  // ponytail: a fresh swap renders on the slot's own number for one frame, until this lands. The
+  // ceiling is one frame; the fix is to load the swap's history inside `applySwap`.
+  const [swapJournal, setSwapJournal] = useState<SwapJournal>({ history: new Map() });
+  const swaps = config.swaps;
+  useEffect(() => {
+    let live = true;
+    loadSwapJournal({ swaps })
+      .then((journal) => {
+        if (live) setSwapJournal(journal);
+      })
+      .catch((e: unknown) => reportError("quest.swap_journal", e));
+    return () => {
+      live = false;
+    };
+  }, [swaps]);
   const [owned, setOwned] = useState<ReadonlySet<EquipmentCode> | null>(null);
   const [setAsideIds, setSetAsideIds] = useState<ReadonlySet<number>>(new Set());
   const [leaveOut, setLeaveOut] = useState(false);
@@ -510,6 +527,7 @@ export default function QuestDetails() {
       state.quest,
       { ...config, level: state.questLevel },
       indexExercises(catalogue),
+      swapJournal,
     );
     // A distance goal is estimated from a nominal pace; a duration is its own estimate. Either
     // way it is what the hero is about to run, so the XP tag below prices that same estimate
@@ -529,7 +547,7 @@ export default function QuestDetails() {
         ? estimateOutingXp(quest, state.questLevel, estimatedSeconds)
         : estimateQuestXp(quest, state.questLevel),
     };
-  }, [state.quest, state.questLevel, config, language, isOuting, catalogue]);
+  }, [state.quest, state.questLevel, config, language, isOuting, catalogue, swapJournal]);
 
   // The slot being replaced, and what can go in it. Ranked here rather than inside the sheet:
   // the sheet renders the order it is given, which is what lets the editor and this screen share

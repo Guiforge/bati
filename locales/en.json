@@ -27,6 +27,7 @@
     "pick_next": "Choose your next quest",
     "done_today": "Done for today.",
     "next_session": "Your next session: {{quest}}, {{duration}}",
+    "tonight_line": "Tonight: {{name}}, at least {{value}}",
     "last_done_one": "Last done yesterday",
     "last_done_other": "Last done {{count}} days ago",
     "play": "Play",
@@ -204,7 +205,10 @@
   },
   "progression": {
     "new_rung_from": "Mastered: {{name}}",
-    "rung_also_leads_to": "The same rung also leads to {{names}}."
+    "rung_also_leads_to": "The same rung also leads to {{names}}.",
+    "cap_offer_body": "Three sessions at {{value}} on {{name}}. The next step starts at the bottom of its range.",
+    "cap_offer_action": "Switch to {{next}} next time",
+    "cap_offer_done": "Saved: {{next}} from your next session."
   },
   "quests": {
     "written_for_beginner": "Beginner",
@@ -603,8 +607,14 @@
     "hold_check_keep": "Keep it",
     "hold_check_target": "Log the target",
     "ghost_last_label": "Last time",
-    "ghost_best_label": "best",
     "ghost_record_label": "Past your best",
+    "objective_label": "Target",
+    "objective_value": "Target {{value}}",
+    "ghost_to_beat_label": "to beat",
+    "ghost_season_label": "Past your season best",
+    "below_last_comeback": "Back after a break: one level lighter for two sessions.",
+    "below_last_hold": "A hold is trained under your record, at three quarters of it at most.",
+    "below_last_rung": "New step: you start again from the bottom of the range.",
     "expedition_status_denied": "Bati has no access to your location",
     "expedition_open_settings": "Open settings",
     "expedition_acquiring_hint": "The first fix can take a few minutes to arrive. Set off anyway and the trace will catch up.",

@@ -113,7 +113,7 @@ function questWith(exercise: typeof mockWalk): Quest {
       {
         exercise,
         target: { type: "time", value: 900 },
-        ghost: { last: 900, best: 1200, at: 0 },
+        ghost: { last: 900, best: 1200, at: 0, bestAt: 0, seasonBest: 1200, recent: [] },
       },
     ],
   } as unknown as Quest;

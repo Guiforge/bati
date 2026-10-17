@@ -43,8 +43,6 @@ const isMetric = (v: unknown): v is OutingMetric =>
 const isPlace = (v: unknown): v is Place => v === "auto" || isMetric(v);
 const isLayout = (v: unknown): v is OutingLayout =>
   typeof v === "string" && (OUTING_LAYOUTS as readonly string[]).includes(v);
-const isActivity = (v: string): v is Locomotion =>
-  (OUTING_ACTIVITIES as readonly string[]).includes(v);
 
 const sameSmall = (a: SmallPlaces, b: SmallPlaces) => a.every((p, i) => p === b[i]);
 
@@ -87,8 +85,8 @@ export function parseOutingDisplay(raw: string | null): OutingDisplay {
   }
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return {};
   const out: OutingDisplay = {};
-  for (const [key, value] of Object.entries(parsed)) {
-    if (isActivity(key)) out[key] = parseEntry(value);
+  for (const key of OUTING_ACTIVITIES) {
+    if (key in parsed) out[key] = parseEntry((parsed as Record<string, unknown>)[key]);
   }
   return out;
 }
@@ -115,7 +113,15 @@ export function withActivity(
   if (merged.layout !== undefined && merged.layout !== DEFAULT_VIEW.layout) {
     entry.layout = merged.layout;
   }
-  return Object.keys(entry).length === 0 ? rest : { ...rest, [locomotion]: entry };
+  const next: OutingDisplay =
+    Object.keys(entry).length === 0 ? rest : { ...rest, [locomotion]: entry };
+  // Canonical key order, so the same content always serializes the same (setOutingDisplay compares text).
+  const out: OutingDisplay = {};
+  for (const l of OUTING_ACTIVITIES) {
+    const e = next[l];
+    if (e) out[l] = e;
+  }
+  return out;
 }
 
 /** What the Settings row calls "Customised": a stored change for any activity, or a screen kept on. */

@@ -118,6 +118,12 @@ describe("db/preferences", () => {
       jest.setSystemTime(new Date("2026-02-02T10:00:00Z"));
       await preferences.setOutingDisplay(display);
       expect(stamp()).toBe(first);
+      const two = withActivity(display, "walk", { big: "time" });
+      await preferences.setOutingDisplay(two);
+      const second = stamp();
+      jest.setSystemTime(new Date("2026-02-03T10:00:00Z"));
+      await preferences.setOutingDisplay(withActivity(two, "walk", { big: "time" }));
+      expect(stamp()).toBe(second);
       await preferences.setOutingDisplay(withActivity(display, "run", { big: "rate" }));
       expect(stamp()).toBeGreaterThan(first);
     } finally {

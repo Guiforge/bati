@@ -49,3 +49,8 @@ test("one tap picks a value, and 'per quest' is one tap away from any of them", 
   await fireEvent.press(screen.getByTestId("settings-rest-default-own"));
   expect(mockSet).toHaveBeenLastCalledWith(null);
 });
+
+test("says that the hero's own quests keep their rest (PR2-3)", async () => {
+  await mount();
+  expect(screen.getByText("settings.rest_default_note")).toBeTruthy();
+});

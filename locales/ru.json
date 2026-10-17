@@ -160,6 +160,7 @@
     "prep_timer": "10 с",
     "prep_tap": "Ждать «GO»",
     "rest_default": "Отдых между упражнениями",
+    "rest_default_note": "Задания, которые ты написал сам, сохраняют свой отдых.",
     "rest_default_own": "По заданию",
     "rest_default_value": "{{seconds}} с",
     "equipment": "Снаряжение",

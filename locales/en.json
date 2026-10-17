@@ -152,6 +152,7 @@
     "prep_timer": "10 s",
     "prep_tap": "Wait for GO",
     "rest_default": "Rest between exercises",
+    "rest_default_note": "The quests you wrote keep their own rest.",
     "rest_default_own": "Per quest",
     "rest_default_value": "{{seconds}} s",
     "equipment": "Equipment",

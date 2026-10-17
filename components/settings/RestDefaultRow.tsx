@@ -78,6 +78,10 @@ export function RestDefaultRow() {
           );
         })}
       </XStack>
+      {/* db/quests.ts `questHead` skips a hero's own quest: say so, or the setting looks dead. */}
+      <Text testID="settings-rest-default-note" fontSize="$2" color="$textSecondary">
+        {t("settings.rest_default_note")}
+      </Text>
     </YStack>
   );
 }

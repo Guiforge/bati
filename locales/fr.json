@@ -1376,6 +1376,7 @@
     "prep_timer": "10 s",
     "prep_tap": "Attendre GO",
     "rest_default": "Repos entre exercices",
+    "rest_default_note": "Les quêtes que tu as écrites gardent leur propre repos.",
     "rest_default_own": "Selon la quête",
     "rest_default_value": "{{seconds}} s",
     "sound": "Bips du décompte",

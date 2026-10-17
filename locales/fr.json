@@ -442,7 +442,11 @@
     "update_title": "La version {{version}} est sortie",
     "update_body": "Tu es en {{current}}. La page de la version dit ce qui a changé, et le téléchargement y est aussi.",
     "update_open": "Voir la version",
-    "update_later": "Plus tard"
+    "update_later": "Plus tard",
+    "light_week_under": "Tes deux dernières séances ont demandé beaucoup. Une semaine légère : un tour de moins, mêmes variantes ?",
+    "light_week_busy": "Cinq semaines à quatre séances ou plus. Une semaine légère : un tour de moins, mêmes variantes ?",
+    "light_week_accept": "Semaine légère",
+    "light_week_refuse": "Pas maintenant"
   },
   "xp": {
     "title": "Le calcul de l'XP",
@@ -739,7 +743,11 @@
     "record_more_other": "Et {{count}} autres records dans cette séance.",
     "work_early_one": "Trop tôt pour le dire : il faut {{count}} séance en trente jours.",
     "work_early_many": "Trop tôt pour le dire : il faut {{count}} séances en trente jours.",
-    "work_early_other": "Trop tôt pour le dire : il faut {{count}} séances en trente jours."
+    "work_early_other": "Trop tôt pour le dire : il faut {{count}} séances en trente jours.",
+    "hard_sets_title": "Séries dures",
+    "hard_sets_line_one": "{{pattern}} : {{count}} série dure cette semaine",
+    "hard_sets_line_many": "{{pattern}} : {{count}} séries dures cette semaine",
+    "hard_sets_line_other": "{{pattern}} : {{count}} séries dures cette semaine"
   },
   "language": "Langue",
   "light": "Clair",

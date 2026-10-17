@@ -37,7 +37,11 @@
     "update_title": "Version {{version}} is out",
     "update_body": "You are on {{current}}. The release page says what changed, and the download is there too.",
     "update_open": "See the release",
-    "update_later": "Later"
+    "update_later": "Later",
+    "light_week_under": "Your last two sessions asked a lot. Take a light week: one round fewer, same variations?",
+    "light_week_busy": "Five weeks at four sessions or more. Take a light week: one round fewer, same variations?",
+    "light_week_accept": "Light week",
+    "light_week_refuse": "Not now"
   },
   "language": "Language",
   "light": "Light",
@@ -1008,7 +1012,10 @@
     "record_more_one": "And {{count}} more record this session.",
     "record_more_other": "And {{count}} more records this session.",
     "work_early_one": "Too early to tell: {{count}} session in thirty days gives a balance.",
-    "work_early_other": "Too early to tell: {{count}} sessions in thirty days give a balance."
+    "work_early_other": "Too early to tell: {{count}} sessions in thirty days give a balance.",
+    "hard_sets_title": "Hard sets",
+    "hard_sets_line_one": "{{pattern}}: {{count}} hard set this week",
+    "hard_sets_line_other": "{{pattern}}: {{count}} hard sets this week"
   },
   "achievements": {
     "progress": "{{unlocked}} / {{total}} unlocked",

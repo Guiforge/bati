@@ -3,11 +3,12 @@
  * password check are not in the roadmap's list: they keep today's relative order, protect before
  * the reminder it used to silence, the password check last as the quietest line.
  *
- * A-01 "recul" and E-03 "semaine légère" insert between "sync" and "whatsNew".
+ * A-01 "recul" inserts between "sync" and "lightWeek" ("semaine légère", E-03, is in).
  */
 export const NOTICE_ORDER = [
   "recovery",
   "sync",
+  "lightWeek",
   "whatsNew",
   "update",
   "protect",

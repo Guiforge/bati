@@ -38,7 +38,11 @@
     "update_title": "La versión {{version}} ya está aquí",
     "update_body": "Tienes la {{current}}. La página de la versión dice qué ha cambiado, y la descarga está ahí también.",
     "update_open": "Ver la versión",
-    "update_later": "Más tarde"
+    "update_later": "Más tarde",
+    "light_week_under": "Tus dos últimas sesiones han costado. ¿Una semana ligera: una ronda menos, las mismas variantes?",
+    "light_week_busy": "Cinco semanas con cuatro sesiones o más. ¿Una semana ligera: una ronda menos, las mismas variantes?",
+    "light_week_accept": "Semana ligera",
+    "light_week_refuse": "Ahora no"
   },
   "language": "Idioma",
   "light": "Claro",
@@ -1067,7 +1071,11 @@
     "record_more_other": "Y {{count}} récords más en esta sesión.",
     "work_early_one": "Aún es pronto: hace falta {{count}} sesión en treinta días.",
     "work_early_many": "Aún es pronto: hacen falta {{count}} sesiones en treinta días.",
-    "work_early_other": "Aún es pronto: hacen falta {{count}} sesiones en treinta días."
+    "work_early_other": "Aún es pronto: hacen falta {{count}} sesiones en treinta días.",
+    "hard_sets_title": "Series duras",
+    "hard_sets_line_one": "{{pattern}}: {{count}} serie dura esta semana",
+    "hard_sets_line_many": "{{pattern}}: {{count}} series duras esta semana",
+    "hard_sets_line_other": "{{pattern}}: {{count}} series duras esta semana"
   },
   "achievements": {
     "progress": "{{unlocked}} / {{total}} desbloqueados",

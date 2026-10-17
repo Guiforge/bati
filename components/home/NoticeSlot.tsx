@@ -1,5 +1,6 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
+import { LightWeekCard } from "@/components/home/LightWeekCard";
 import { type NoticeKind, pickNotice } from "@/components/home/noticeOrder";
 import { PasswordCheckCard } from "@/components/home/PasswordCheckCard";
 import { ProtectCard } from "@/components/home/ProtectCard";
@@ -9,6 +10,7 @@ import { syncNoticeKind } from "@/components/home/syncNoticeKind";
 import { UpdateCard } from "@/components/home/UpdateCard";
 import { WhatsNewCard } from "@/components/home/WhatsNewCard";
 import { SessionRecoveryCard } from "@/components/session/SessionRecoveryCard";
+import { lightWeekReason } from "@/db/lightWeek";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { lastMerge, lostSync, syncHealth } from "@/src/deviceSync";
 import { passwordCheckDue } from "@/src/passwordReminders";
@@ -57,8 +59,9 @@ export function NoticeSlot() {
         protectCardVisible(),
         reminderCardKind(),
         passwordCheckDue(),
+        lightWeekReason(new Date()),
       ])
-        .then(([lost, health, merge, notes, update, protect, reminder, password]) => {
+        .then(([lost, health, merge, notes, update, protect, reminder, password, lightWeek]) => {
           if (cancelled) return;
           const sync = syncNoticeKind({
             lost,
@@ -70,6 +73,7 @@ export function NoticeSlot() {
           });
           const due: [NoticeKind, boolean][] = [
             ["sync", sync !== null],
+            ["lightWeek", lightWeek !== null],
             ["whatsNew", notes && releaseNotes(language).length > 0],
             ["update", update !== null],
             ["protect", protect],
@@ -101,6 +105,8 @@ export function NoticeSlot() {
       ) : null;
     case "sync":
       return <SyncCard />;
+    case "lightWeek":
+      return <LightWeekCard />;
     case "whatsNew":
       return <WhatsNewCard />;
     case "update":

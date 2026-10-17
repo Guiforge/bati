@@ -3,6 +3,7 @@ import { db, schema } from "./client";
 import { workoutsBeforeToday } from "./completed";
 import { type Exercise, listExercises } from "./exercises";
 import { isOutingSession } from "./expeditions";
+import { isLightWeekRunning, lightenRounds } from "./lightWeek";
 import {
   deletePreference,
   getAllPreferences,
@@ -527,7 +528,11 @@ export async function loadConfiguredQuest(
 ): Promise<{ quest: Quest; level: UserLevel; config: QuestConfig | null } | null> {
   // `listExercises()` is promise-cached, so the catalogue is free after the first read anywhere
   // in the app — and it is what lets a swap resolve without this function knowing about screens.
-  const [saved, exercises] = await Promise.all([getQuestConfig(questId), listExercises()]);
+  const [saved, exercises, lightWeek] = await Promise.all([
+    getQuestConfig(questId),
+    listExercises(),
+    isLightWeekRunning(new Date()),
+  ]);
   const chosen = level ?? saved?.level;
   const wanted = chosen ?? (await loadDefaultLevels())(questId);
   const quest = await getQuestById(questId, wanted);
@@ -537,7 +542,12 @@ export async function loadConfiguredQuest(
   const config = saved === null ? null : { ...saved, level: effective };
 
   return {
-    quest: applyQuestConfig(quest, config, indexExercises(exercises)),
+    // A light week takes a round off; the quest screen does the same through `lightenRounds`.
+    quest: lightenRounds(
+      applyQuestConfig(quest, config, indexExercises(exercises)),
+      config,
+      lightWeek,
+    ),
     level: effective,
     // The config itself, not only the quest it shaped. `applyQuestConfig` folds the hero's
     // choices into the slots, and a distance goal is the one choice that is *not* a slot: it

@@ -20,6 +20,11 @@ let mockParams: { id?: string; adventureId?: string; from?: string } = { id: "5"
 // Setting aside is not what this file is about.
 jest.mock("@/db/questConfig", () => ({ loadDefaultLevels: async () => () => "medium" }));
 jest.mock("@/hooks/useSetAside");
+// The rule is db-light-week.test.ts's; these suites read the screen with no light week running.
+jest.mock("@/db/lightWeek", () => ({
+  isLightWeekRunning: async () => false,
+  lightenRounds: (quest: unknown) => quest,
+}));
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({

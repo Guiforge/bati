@@ -37,6 +37,7 @@ const mockReads = {
   protect: false,
   reminder: "offer" as string | null,
   password: false,
+  lightWeek: "under" as string | null,
 };
 jest.mock("@/src/deviceSync", () => ({
   lostSync: async () => mockReads.lost,
@@ -50,6 +51,7 @@ jest.mock("@/src/whatsNew", () => ({
 jest.mock("@/src/updateCheck", () => ({ checkForUpdate: async () => mockReads.update }));
 jest.mock("@/src/protectHero", () => ({ protectCardVisible: async () => mockReads.protect }));
 jest.mock("@/src/reminders", () => ({ reminderCardKind: async () => mockReads.reminder }));
+jest.mock("@/db/lightWeek", () => ({ lightWeekReason: async () => mockReads.lightWeek }));
 jest.mock("@/src/passwordReminders", () => ({ passwordCheckDue: async () => mockReads.password }));
 
 // The cards are stubs: what is asked is who gets the slot, each card has its own test.
@@ -60,6 +62,7 @@ jest.mock("@/components/session/SessionRecoveryCard", () => ({
     return <Text testID="home-recovery">{session.questTitle}</Text>;
   },
 }));
+jest.mock("@/components/home/LightWeekCard", () => ({ LightWeekCard: stub("home-light-week") }));
 jest.mock("@/components/home/SyncCard", () => ({ SyncCard: stub("home-sync-lost") }));
 jest.mock("@/components/home/WhatsNewCard", () => ({ WhatsNewCard: stub("home-whats-new-open") }));
 jest.mock("@/components/home/UpdateCard", () => ({ UpdateCard: stub("home-update-dismiss") }));
@@ -75,6 +78,7 @@ import { useSettingsStore } from "@/stores/settings";
 const ALL = [
   "home-recovery",
   "home-sync-lost",
+  "home-light-week",
   "home-whats-new-open",
   "home-update-dismiss",
   "home-protect",
@@ -100,6 +104,7 @@ beforeEach(() => {
     protect: true,
     reminder: "offer",
     password: true,
+    lightWeek: "under",
   });
   useSettingsStore.setState({ updateCheckEnabled: true });
 });
@@ -119,7 +124,8 @@ describe("NoticeSlot", () => {
   test("each notice in turn once the one above it is gone", async () => {
     mockRecovery.recoverableSession = null;
     const order: [Partial<typeof mockReads>, string][] = [
-      [{ lost: null }, "home-whats-new-open"],
+      [{ lost: null }, "home-light-week"],
+      [{ lightWeek: null }, "home-whats-new-open"],
       [{ notes: false }, "home-update-dismiss"],
       [{ update: null }, "home-protect"],
       [{ protect: false }, "home-reminder-offer"],
@@ -135,7 +141,7 @@ describe("NoticeSlot", () => {
 
   test("an update the hero did not ask to hear about is not a notice", async () => {
     mockRecovery.recoverableSession = null;
-    Object.assign(mockReads, { lost: null, notes: false });
+    Object.assign(mockReads, { lost: null, lightWeek: null, notes: false });
     useSettingsStore.setState({ updateCheckEnabled: false });
     await mount();
     await waitFor(() => expect(shown()).toEqual(["home-protect"]));

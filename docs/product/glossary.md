@@ -68,6 +68,8 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | difficulty | Easy, Medium, Hard, chosen per quest | Easy / Medium / Hard | Facile / Moyen / Difficile |  | Leicht / Mittel / Schwer | Fácil / Media / Difícil |
 | written for | Who a quest was written for, the tag on its card | Beginner / Regular / Advanced | Débutant / Régulier / Confirmé |  | Einsteiger / Regelmäßig / Fortgeschritten | Principiante / Habitual / Avanzado |
 | chronicle | The year's recap, a picture to share, offered in December and January | chronicle | chronique | bilan (a bilan is a report, the chronicle is the year told) | Chronik | crónica |
+| light week | A week offered after two sessions in a row under the target, or five weeks at four sessions or more: one round fewer, same variations, a quest with rounds the hero set by hand left alone. Refusable, and a no silences the offer for 14 days. An accepted week lasts 7 days (`db/lightWeek.ts`) | light week | semaine légère | semaine de repos (it is a lighter week, not a rest) | leichte Woche | semana ligera |
+| hard set | Every logged set of a workout movement whose pattern is not mobility, missed sets included; a hero's own movement with no pattern is out. The Stats count them per movement pattern over seven days | hard set | série dure | série (a set that was warm-up or a stretch is not hard) | harter Satz | serie dura |
 
 ## Progression
 

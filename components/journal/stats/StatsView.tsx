@@ -33,6 +33,7 @@ import { dayKey } from "@/db/dates";
 import type { DayActivity, WallEntry } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/labels";
 import { behindMuscles } from "@/db/muscleBalance";
+import { PATTERN_LABELS } from "@/db/patterns";
 import { STALE_RECORD_DAYS, toBeat } from "@/db/progress";
 import { formatCount, formatTargetValue, perSideLabel } from "@/db/targets";
 import { inSentence, localizedName, localizedTitle } from "@/src/i18n/localized";
@@ -704,6 +705,29 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
   );
 }
 
+/** "Horizontal push: 9 hard sets this week", one line per movement pattern (E-03, D-30). */
+function HardSetsBlock({ stats }: { stats: JournalStats }) {
+  const { t } = useTranslation();
+  const language = useSettingsStore((s) => s.language);
+  if (stats.hardSets.length === 0) return null;
+
+  return (
+    <NBlock testID="journal-hard-sets" mx="$5" mt={6}>
+      <NKickerQuiet>{t("journal.hard_sets_title")}</NKickerQuiet>
+      <YStack mt={9} gap={4}>
+        {stats.hardSets.map(({ pattern, sets }) => (
+          <NText key={pattern} fontSize={12.5} lineHeight={18}>
+            {t("journal.hard_sets_line", {
+              pattern: PATTERN_LABELS[pattern][language],
+              count: sets,
+            })}
+          </NText>
+        ))}
+      </YStack>
+    </NBlock>
+  );
+}
+
 export function LevelBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -807,6 +831,7 @@ export function StatsView({ stats }: { stats: JournalStats }) {
       <FlameBlock stats={stats} />
       {stats.isFirstDay ? null : <MonthBlock stats={stats} />}
       <WorkBlock stats={stats} />
+      <HardSetsBlock stats={stats} />
       <LevelBlock stats={stats} />
       <XStack mx="$5" mt={17} flexWrap="wrap" gap={6}>
         <NButton

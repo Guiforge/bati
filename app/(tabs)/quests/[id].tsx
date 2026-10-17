@@ -464,14 +464,18 @@ export default function QuestDetails() {
   // Hardware back, which is structural: the stack is anchored on the gallery
   // (`app/(tabs)/quests/_layout.tsx`), so popping lands there whatever the chevron does. Left
   // alone the two would disagree again, which is the exact bug the anchor was added to fix.
-  useEffect(() => {
-    if (!fromHome && !journalBack && !fromAdventure) return;
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      goToGallery();
-      return true;
-    });
-    return () => sub.remove();
-  }, [fromHome, journalBack, fromAdventure, goToGallery]);
+  // Only while focused: the screen stays mounted in its tab's stack after the hero leaves, and a
+  // listener that outlives the focus captures back everywhere in the app.
+  useFocusEffect(
+    useCallback(() => {
+      if (!fromHome && !journalBack && !fromAdventure) return;
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        goToGallery();
+        return true;
+      });
+      return () => sub.remove();
+    }, [fromHome, journalBack, fromAdventure, goToGallery]),
+  );
 
   const updateConfig = useCallback(
     (next: QuestConfig, replace?: "targets" | "all") => {

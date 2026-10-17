@@ -15,6 +15,7 @@ const backHandlerSpy = jest.spyOn(
   require("react-native").BackHandler,
   "addEventListener",
 ) as jest.SpyInstance;
+let mockFocused = true;
 let mockParams: { id?: string; adventureId?: string; from?: string; session?: string } = {
   id: "5",
 };
@@ -42,7 +43,7 @@ jest.mock("expo-router", () => ({
   // The screen loads on focus; in tests "focused" is simply "mounted".
   useFocusEffect: (effect: () => undefined | (() => void)) => {
     const { useEffect } = require("react");
-    useEffect(effect, [effect]);
+    useEffect(() => (mockFocused ? effect() : undefined), [effect]);
   },
 }));
 
@@ -148,6 +149,19 @@ describe("quests/[id] chevron", () => {
     mockNavigate.mockClear();
     mockDismissTo.mockClear();
     backHandlerSpy.mockClear();
+    mockFocused = true;
+  });
+
+  test("a screen left behind holds no hardware back (R2-D1): from the Journal it must not capture back elsewhere", async () => {
+    mockFocused = false;
+    mockParams = { id: "5", from: "journal", session: "42" };
+    await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <QuestDetails />
+      </TamaguiProvider>,
+    );
+    const backs = backHandlerSpy.mock.calls.filter(([event]) => event === "hardwareBackPress");
+    expect(backs).toHaveLength(0);
   });
 
   test("with an adventureId, the chevron navigates back to that adventure", async () => {

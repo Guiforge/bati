@@ -424,11 +424,13 @@ test("h: a new hero adventure is one change and moves only the content segment o
 
   expect(cmp.peerChanges).toBe(1);
   const after = cmp.fingerprint.split("|");
-  expect(after).toHaveLength(4);
+  // Five segments since the notebook (j01-carnet): the photos one is `0:0` here and stays so.
+  expect(after).toHaveLength(5);
   expect(after[0]).toBe(before[0]);
   expect(after[1]).not.toBe(before[1]);
   expect(after[2]).toBe(before[2]);
   expect(after[3]).toBe(before[3]);
+  expect(after[4]).toBe(before[4]);
 
   // A device with no hero adventure names its content as it did before: max(updatedAt):count over
   // the hero's quests, movements and preferences alone.

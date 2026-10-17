@@ -394,7 +394,7 @@
     "game_icons_site": "Game-icons.net",
     "game_icons_site_subtitle": "Bibliothèque d'icônes et liste des auteurs",
     "icons_title": "Icônes",
-    "illustrations_note": "Les illustrations d'exercices sont générées par IA avec FLUX (Black Forest Labs) et choisies une à une. Beaucoup partent d'une pose dessinée par Bryl Lim pour le projet workout-guide, lui-même construit sur les planches anatomiques d'Everkinetic, d'autres d'une photo de Mr. Yoga ou de photos du développeur de Bati. Toutes sont publiées sous licence CC BY-SA 4.0.",
+    "illustrations_note": "Les illustrations d'exercices sont des œuvres adaptées. FLUX (Black Forest Labs) les a redessinées et modifiées à partir d'une pose de Bryl Lim pour le projet workout-guide (lui-même construit sur les planches anatomiques d'Everkinetic), d'une photo de Mr. Yoga ou de photos du développeur de Bati, et chacune a été choisie à la main. Les originaux ont été modifiés. Le résultat est publié sous licence CC BY-SA 4.0.",
     "illustrations_title": "Illustrations d'exercices",
     "mr_yoga": "Mr. Yoga",
     "mr_yoga_subtitle": "Photo servant de modèle de pose, Wikimedia Commons",
@@ -409,6 +409,9 @@
     "workout_guide_subtitle": "Dessins de poses par Bryl Lim",
     "licenses_title": "Licences open source",
     "licenses_body": "Chaque bibliothèque livrée avec Bati, et la licence sous laquelle elle est publiée.",
+    "licenses_icons_title": "Auteurs des icônes",
+    "licenses_icons_body": "Icônes de game-icons.net, sous licence CC BY 3.0 et créditées à leurs auteurs. Seules les icônes utilisées par Bati sont listées.",
+    "licenses_icons_by": "Icônes de {{author}}",
     "map_styles_title": "Styles de carte",
     "map_styles_note": "Les styles Nuit et Fjord viennent d'OpenFreeMap, qui reprend les styles OpenMapTiles. Leur notice suit, comme leur licence le demande.",
     "openfreemap_styles": "Styles OpenFreeMap",
@@ -1802,7 +1805,9 @@
     "during_title": "Pendant l'effort",
     "during_body": "Une douleur vive n'est pas de l'effort : arrêtez-vous. Vertiges, douleur à la poitrine ou souffle coupé signifient arrêt et avis médical. Chaque objectif ici est une suggestion : mieux vaut finir une série avec une ou deux répétitions en réserve que courir après un chiffre en cassant sa technique.",
     "not_a_coach_title": "Bati n'est pas un coach",
-    "not_a_coach_body": "Cette app compte ce que vous faites et en raconte une histoire. Elle ne voit pas votre technique, et ne donne pas d'avis médical. Pour un diagnostic, une blessure ou un programme adapté à votre corps, consultez un professionnel qualifié."
+    "not_a_coach_body": "Cette app compte ce que vous faites et en raconte une histoire. Elle ne voit pas votre technique, et ne donne pas d'avis médical. Pour un diagnostic, une blessure ou un programme adapté à votre corps, consultez un professionnel qualifié.",
+    "outdoors_title": "Dehors",
+    "outdoors_body": "En sortie, la route passe avant l'écran. Surveille la circulation et traverse là où c'est sûr, garde une oreille libre, et arrête-toi en lieu sûr avant de regarder ton téléphone. Si le trajet est long, dis à quelqu'un où tu vas."
   },
   "privacy": {
     "title": "Confidentialité",
@@ -1817,11 +1822,13 @@
     "permissions_body": "Photos : uniquement si vous en choisissez une pour votre avatar, un exercice, une quête ou une séance ; un avatar reste sur votre appareil, et une photo donnée à un exercice, une quête ou une séance est stockée dans la base, réduite, sans la position ni les données de l'appareil photo, donc suit vos sauvegardes et une synchronisation chiffrée. Le widget Android lit votre flamme dans cette même base locale. Position : uniquement pendant une sortie, et uniquement la position exacte, parce qu'une marche ne se mesure pas à l'approximatif. Votre trajet est écrit sur ce téléphone et n'en sort que dans une sauvegarde que vous faites ou une synchronisation chiffrée. Sur un téléphone équipé d'un baromètre, la pression de l'air mesure votre dénivelé ; Android ne demande aucune permission pour ça, et les relevés restent avec le trajet. Une sortie affiche aussi une notification permanente : c'est elle qui tient le suivi en vie, et c'est pour ça que votre écran peut s'éteindre pendant la marche sans rien interrompre. Internet : pour la carte, la vérification de version et la synchronisation des appareils, chacune seulement tant que son interrupteur est activé dans les réglages ; les trois démarrent désactivées, et ce que chaque demande révèle est écrit plus haut. Biométrie : uniquement pour réafficher votre clé de récupération, derrière votre empreinte ; Android fait la vérification et Bati ne la voit jamais. Notifications et démarrage du téléphone : uniquement si vous activez le rappel d'entraînement. Il est programmé sur ce téléphone par Android, vos jours à votre heure ; un redémarrage efface les alarmes, Bati est donc prévenu quand le téléphone a démarré, pour le reprogrammer. Le téléphone garde les dix derniers jours où un rappel a sonné, pour agir sur ses boutons ; ce journal n'est envoyé nulle part.",
     "crashes_title": "Rapports de crash",
     "crashes_body": "En cas de plantage, l'erreur est écrite uniquement sur votre appareil, et quand une fonction échoue sans plantage (une sauvegarde impossible à écrire, par exemple), son message d'erreur est conservé de la même façon ; ce message peut contenir le nom d'un dossier ou d'un fichier que vous avez choisi, ou l'adresse de votre serveur de synchronisation. Rien n'est envoyé automatiquement. La ligne « Un retour, une idée, un bug » des Réglages ouvre votre propre application e-mail avec le rapport pré-rempli : vous pouvez le lire, le modifier ou le supprimer avant envoi. Si vous ne l'envoyez jamais, il ne quitte jamais votre téléphone.",
+    "sharing_title": "Images que vous partagez",
+    "sharing_body": "Un bilan, une carte de sortie ou le bilan de l'année peuvent se partager sous forme d'image. Bati la dessine sur votre téléphone à partir de vos propres données, carte du tracé comprise avec son crédit OpenStreetMap, puis la remet au partage de votre téléphone. Bati ne l'envoie nulle part lui-même, et elle ne va que là où vous décidez de l'envoyer. Une fois partie, celui ou celle qui la reçoit la garde, et ce qu'il en fait le regarde.",
     "children_title": "Enfants",
-    "children_body": "Bati est une application de sport tout public, non destinée aux enfants de moins de 13 ans. Elle ne collecte aucune donnée personnelle, quel que soit l'âge.",
+    "children_body": "Bati s'adresse aux personnes de {{age}} ans et plus et ne vise personne de plus jeune. Elle ne collecte aucune donnée personnelle, quel que soit l'âge.",
     "contact_title": "Questions",
     "contact_body": "Écrivez à contact@getbati.app pour cette politique, et pour un bug, une idée ou une fonctionnalité qui vous manque. Comme l'application ne détient aucune donnée vous concernant, nous n'avons rien à exporter ni à supprimer pour vous : la désinstallation efface chaque enregistrement de ce téléphone. Les copies que vous avez demandées restent où vous les avez mises : la sauvegarde du téléphone, les fichiers enregistrés et votre dossier de synchronisation.",
-    "updated": "Dernière mise à jour : 27 septembre 2026"
+    "updated": "Dernière mise à jour : 17 octobre 2026"
   },
   "feedback": {
     "errors_header": "Erreurs récentes",

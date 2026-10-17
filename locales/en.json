@@ -205,7 +205,7 @@
     "illustrations_title": "Exercise illustrations",
     "mr_yoga": "Mr. Yoga",
     "mr_yoga_subtitle": "Photograph used as a pose model, Wikimedia Commons",
-    "illustrations_note": "The exercise illustrations are AI-generated with FLUX (Black Forest Labs) and chosen one by one. Many start from a pose drawn by Bryl Lim for the workout-guide project, which builds on Everkinetic's anatomical studies, others from a photograph by Mr. Yoga or from photos by Bati's developer. All of them are released under CC BY-SA 4.0.",
+    "illustrations_note": "The exercise illustrations are adapted works. FLUX (Black Forest Labs) redrew and modified them from a pose by Bryl Lim for the workout-guide project (itself built on Everkinetic's anatomical studies), from a photograph by Mr. Yoga, or from photos by Bati's developer, and each one was chosen by hand. The originals were changed. The result is released under CC BY-SA 4.0.",
     "everkinetic": "Everkinetic",
     "everkinetic_subtitle": "Original anatomical artwork",
     "workout_guide": "workout-guide",
@@ -214,6 +214,9 @@
     "cc_by_sa_40_subtitle": "Licence terms: share-alike",
     "licenses_title": "Open source licences",
     "licenses_body": "Every library Bati ships with, and the licence it is released under.",
+    "licenses_icons_title": "Icon authors",
+    "licenses_icons_body": "Icons from game-icons.net, licensed CC BY 3.0 and credited to their authors. Only the icons Bati uses are listed.",
+    "licenses_icons_by": "Icons made by {{author}}",
     "map_styles_title": "Map styles",
     "map_styles_note": "The Night and Fjord styles come from OpenFreeMap, which builds on the OpenMapTiles styles. Their notice follows, as their licence asks.",
     "openfreemap_styles": "OpenFreeMap styles",
@@ -1712,7 +1715,9 @@
     "during_title": "While you train",
     "during_body": "Sharp pain is not effort. Stop. Dizziness, chest pain or shortness of breath mean stop and seek medical advice. Every target here is a suggestion: end a set with a rep or two left in you rather than chasing a number with broken form.",
     "not_a_coach_title": "Bati is not a coach",
-    "not_a_coach_body": "This app counts what you do and tells a story about it. It cannot see your technique, and it is not medical advice. For a diagnosis, an injury or a plan built around your body, see a qualified professional."
+    "not_a_coach_body": "This app counts what you do and tells a story about it. It cannot see your technique, and it is not medical advice. For a diagnosis, an injury or a plan built around your body, see a qualified professional.",
+    "outdoors_title": "Outdoors",
+    "outdoors_body": "On an outing, the road comes before the screen. Watch for traffic and cross where it is safe, keep one ear free, and stop in a safe place before you look at your phone. If the way is long, tell someone where you are headed."
   },
   "privacy": {
     "title": "Privacy",
@@ -1727,11 +1732,13 @@
     "permissions_body": "Photos: only if you pick one for your avatar, an exercise, a quest or a session; an avatar stays on your device, and a photo you give an exercise, a quest or a session is stored in the database, shrunk and stripped of its location and camera data, so it follows your backups and an encrypted sync. The Android widget reads your flame from the same local database. Location: only while an outing is running, and only precise location, because a walk cannot be measured by an approximate one. Your route is written to this phone and leaves it only inside a backup you make or an encrypted sync. On a phone with a barometer, the air pressure measures your climb; Android asks no permission for it, and the readings stay with the route. An outing also posts an ongoing notification: that is what keeps the tracking alive, and it is why your screen can go dark mid-walk without anything stopping. Internet: for the map, the version check and device sync, each only while its own switch is on in Settings; all three start off, and what each request reveals is written above. Biometrics: only to show your backup recovery key again, behind your fingerprint; Android runs the check and Bati never sees it. Notifications and starting with the phone: only if you turn the training reminder on. It is scheduled on this phone by Android, on your days at your hour; a restart clears alarms, so Bati is told when the phone has started, to schedule it again. The phone keeps the last ten days a reminder rang, to act on its buttons; that journal is never sent anywhere.",
     "crashes_title": "Crash reports",
     "crashes_body": "If the app crashes, the error is written to your device only. When a feature fails without crashing (a backup that could not be written, say), its error message is kept the same way; that message may include the name of a folder or file you chose, or the address of your sync server. Nothing is sent automatically. The \"Feedback, an idea, a bug\" row in Settings opens your own email app with the report filled in, so you can read it, edit it or delete it before sending. If you never send it, it never leaves your phone.",
+    "sharing_title": "Pictures you share",
+    "sharing_body": "A recap, an outing card or the year in review can be shared as a picture. Bati draws it on your phone from your own data, a route map included with its OpenStreetMap credit, and hands it to your phone's share sheet. Bati sends it nowhere itself, and it goes only where you choose to send it. Once it has left, whoever receives it keeps it, and what they do with it is up to them.",
     "children_title": "Children",
-    "children_body": "Bati is a general-audience fitness app and is not directed at children under 13. It collects no personal data from anyone, of any age.",
+    "children_body": "Bati is for people aged {{age}} and over and is not directed at anyone younger. It collects no personal data from anyone, of any age.",
     "contact_title": "Questions",
     "contact_body": "Write to contact@getbati.app about this policy, and about a bug, an idea, or a feature you wish existed. Since the app holds no data about you, there is nothing for us to export or delete on your behalf: uninstalling erases every record on this phone. Copies you asked for stay where you put them: your phone's own backup, files you saved, and your sync folder.",
-    "updated": "Last updated 27 September 2026"
+    "updated": "Last updated 17 October 2026"
   },
   "feedback": {
     "subject": "Bati {{version}}: feedback",

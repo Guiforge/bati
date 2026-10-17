@@ -29,9 +29,25 @@ export type Stretch = {
   speed: number;
   /** The reducer credited no movement here. Its own colour, never the bottom of the ramp. */
   paused: boolean;
-  /** Inside `bestLeague`. */
+  /** Inside the best split. */
   best: boolean;
 };
+
+/** One row of the leagues table. */
+export type Split = {
+  /** 1-based; the partial row carries the next number. */
+  league: number;
+  /** 1000 for a full league, less for the partial last row. */
+  metres: number;
+  /** Moving time, the clock the recap's pace already uses. */
+  movingMs: number;
+  /** Null unless the barometer alone measured this row. */
+  climbM: number | null;
+  best: boolean;
+};
+
+/** A partial last row shorter than this is dropped: 30 m in 12 s prints an absurd pace. */
+const MIN_PARTIAL_M = 100;
 
 export type Trace = {
   /** One `LineString` per stretch of one colour, never crossing a break in the run. */
@@ -60,7 +76,9 @@ export type Trace = {
    * this run has no gradient worth drawing. The screen paints one flat gold line on `null`.
    */
   speedRange: [number, number] | null;
-  /** The quickest continuous league of the run, as `formatPace` wants it. */
+  /** Every aligned league of the run, timed in moving time. Empty under one league. */
+  splits: Split[];
+  /** The quickest full row of `splits`, as `formatPace` wants it. */
   bestLeague: { metres: number; ms: number } | null;
   /** `[west, south, east, north]`, which is what `Camera`'s `bounds` prop takes. */
   bounds: [number, number, number, number] | null;
@@ -123,6 +141,12 @@ type Step = {
   speed: number | null;
   /** Which unbroken run of the trace this fix belongs to. */
   segment: number;
+  /** The reducer's moving clock, then settled by `settle`. */
+  moving: number;
+  /** The reducer's climb so far. */
+  ascent: number;
+  /** Which sensor the climb reference came from, `null` before any height. */
+  height: "baro" | "gps" | null;
 };
 
 /**
@@ -167,10 +191,30 @@ function walk(fixes: readonly LocationFix[]): Step[] {
       raw: rawSpeed(fix, broken, elapsed),
       speed: null,
       segment,
+      moving: state.movingMs,
+      ascent: state.ascentM,
+      height: state.climbFrom === null ? null : state.climbOnBaro ? "baro" : "gps",
     });
     previousAt = fix.t;
   }
+  settle(steps);
   return steps;
+}
+
+/**
+ * The moving clock as it will be once every pending pause refund is taken.
+ *
+ * The reducer advances `movingMs` under an anchor and takes the advance back when the 40 s window
+ * closes on a hero who went nowhere; a marker crossed inside that window would read the advance.
+ * The refund is the clock's only way down, so a backward minimum makes it non-decreasing, and
+ * every row is >= 0. No running maximum: that would keep the advance the reducer refunds.
+ */
+function settle(steps: Step[]): void {
+  for (let i = steps.length - 2; i >= 0; i -= 1) {
+    const here = steps[i];
+    const next = steps[i + 1];
+    if (here !== undefined && next !== undefined) here.moving = Math.min(here.moving, next.moving);
+  }
 }
 
 /** The rolling mean over one unbroken run, in one pass with two pointers. */
@@ -237,43 +281,23 @@ function percentileRange(steps: readonly Step[]): [number, number] | null {
   return hi - lo < MIN_SPREAD_M_S ? null : [lo, hi];
 }
 
-/**
- * The quickest thousand credited metres of the run, and where they are.
- *
- * A window may span a break in the trace without a special case: a break credits no distance and
- * carries its whole silence in `t`, so any window containing one loses on pace to every window
- * that does not. The same is true of a stop, which is the answer this wants.
- */
-function bestLeague(
-  steps: readonly Step[],
-): { metres: number; ms: number; from: number; to: number } | null {
-  let best: { metres: number; ms: number; from: number; to: number } | null = null;
-  let lo = 0;
-
-  for (let hi = 0; hi < steps.length; hi += 1) {
-    const end = steps[hi];
-    if (end === undefined) continue;
-    // Keep the window as short as it can be while still covering a league. `NaN` past the end
-    // makes the comparison false, so the pointer stops without a second condition.
-    while (end.covered - (steps[lo + 1]?.covered ?? Number.NaN) >= METRES_PER_LEAGUE) lo += 1;
-    const start = steps[lo];
-    if (start === undefined) continue;
-    const metres = end.covered - start.covered;
-    const ms = end.t - start.t;
-    if (metres < METRES_PER_LEAGUE || ms <= 0) continue;
-    // Cross-multiplied rather than dividing twice: both sides are positive, and this is the
-    // comparison of two paces without inventing a third number that rounds.
-    if (best === null || ms * best.metres < best.ms * metres)
-      best = { metres, ms, from: lo, to: hi };
-  }
-  return best;
-}
+/** A league marker's place on the trace, on the covered distance and the settled clocks. */
+type Crossing = {
+  league: number;
+  /** The step after the crossing; 0 for the start. */
+  index: number;
+  at: LngLat;
+  moving: number;
+  ascent: number;
+};
 
 /** Where the run crossed each thousandth metre, interpolated between the two fixes around it. */
-function leaguePips(
-  steps: readonly Step[],
-): GeoJSON.FeatureCollection<GeoJSON.Point, { league: number }> {
-  const features: GeoJSON.Feature<GeoJSON.Point, { league: number }>[] = [];
+function crossings(steps: readonly Step[]): Crossing[] {
+  const first = steps[0];
+  if (first === undefined) return [];
+  const found: Crossing[] = [
+    { league: 0, index: 0, at: first.at, moving: first.moving, ascent: 0 },
+  ];
   let league = 1;
 
   for (let i = 1; i < steps.length; i += 1) {
@@ -283,21 +307,86 @@ function leaguePips(
     while (step.covered >= league * METRES_PER_LEAGUE) {
       const span = step.covered - previous.covered;
       const fraction = span <= 0 ? 0 : (league * METRES_PER_LEAGUE - previous.covered) / span;
-      features.push({
-        type: "Feature",
-        properties: { league },
-        geometry: {
-          type: "Point",
-          coordinates: [
-            previous.at[0] + (step.at[0] - previous.at[0]) * fraction,
-            previous.at[1] + (step.at[1] - previous.at[1]) * fraction,
-          ],
-        },
+      found.push({
+        league,
+        index: i,
+        at: [
+          previous.at[0] + (step.at[0] - previous.at[0]) * fraction,
+          previous.at[1] + (step.at[1] - previous.at[1]) * fraction,
+        ],
+        moving: previous.moving + (step.moving - previous.moving) * fraction,
+        ascent: step.ascent,
       });
       league += 1;
     }
   }
-  return { type: "FeatureCollection", features };
+  return found;
+}
+
+function leaguePips(
+  marks: readonly Crossing[],
+): GeoJSON.FeatureCollection<GeoJSON.Point, { league: number }> {
+  return {
+    type: "FeatureCollection",
+    features: marks.slice(1).map((mark) => ({
+      type: "Feature",
+      properties: { league: mark.league },
+      geometry: { type: "Point", coordinates: mark.at },
+    })),
+  };
+}
+
+/**
+ * One row per aligned kilometre, plus a last partial row from 100 m. The climb is the reducer's
+ * own, read only where the barometer alone measured it: GPS height per kilometre is noise.
+ */
+function leagueSplits(steps: readonly Step[], marks: readonly Crossing[]): Split[] {
+  const last = steps.at(-1);
+  const lastMark = marks.at(-1);
+  if (last === undefined || lastMark === undefined || marks.length < 2) return [];
+
+  const row = (from: Crossing, to: Crossing, metres: number): Split => {
+    // The steps whose climb is in `to.ascent - from.ascent`: after the start crossing, up to the
+    // one just past the end crossing.
+    const seen = steps.slice(from.index + 1, to.index + 1).map((s) => s.height);
+    const barometric = !seen.includes("gps") && seen.includes("baro");
+    return {
+      league: from.league + 1,
+      metres,
+      movingMs: to.moving - from.moving,
+      climbM: barometric ? to.ascent - from.ascent : null,
+      best: false,
+    };
+  };
+
+  const rows = marks.slice(1).map((to, i) => row(marks[i] ?? to, to, METRES_PER_LEAGUE));
+  if (last.covered - lastMark.league * METRES_PER_LEAGUE >= MIN_PARTIAL_M) {
+    const end: Crossing = {
+      league: lastMark.league + 1,
+      index: steps.length - 1,
+      at: last.at,
+      moving: last.moving,
+      ascent: last.ascent,
+    };
+    rows.push(row(lastMark, end, last.covered - lastMark.league * METRES_PER_LEAGUE));
+  }
+  return rows;
+}
+
+/** The quickest full row; a tie goes to the first. Never the partial. */
+function bestSplit(
+  splits: readonly Split[],
+  marks: readonly Crossing[],
+): { ms: number; from: Crossing; to: Crossing } | null {
+  let row = -1;
+  splits.forEach((split, i) => {
+    if (split.metres < METRES_PER_LEAGUE || split.movingMs <= 0) return;
+    if (row < 0 || split.movingMs < (splits[row]?.movingMs ?? Number.POSITIVE_INFINITY)) row = i;
+  });
+  const from = marks[row];
+  const to = marks[row + 1];
+  if (row < 0 || from === undefined || to === undefined) return null;
+  return { ms: to.moving - from.moving, from, to };
 }
 
 /** Which of the twelve colours a speed falls in, and the speed that band is painted at. */
@@ -394,12 +483,18 @@ function path(steps: readonly Step[]): GeoJSON.Feature<GeoJSON.MultiLineString> 
   };
 }
 
-/** The best league, as one line rather than as the bands it happens to be painted in. */
+/**
+ * The best league, as one line rather than as the bands it happens to be painted in, from pip
+ * `n-1` to pip `n` exactly: the two interpolated markers are its ends.
+ */
 function bestLine(
   steps: readonly Step[],
-  best: { from: number; to: number } | null,
+  best: { from: Crossing; to: Crossing } | null,
 ): GeoJSON.FeatureCollection<GeoJSON.LineString> {
-  const coordinates = best === null ? [] : steps.slice(best.from, best.to + 1).map((s) => s.at);
+  const coordinates =
+    best === null
+      ? []
+      : [best.from.at, ...steps.slice(best.from.index, best.to.index).map((s) => s.at), best.to.at];
   return {
     type: "FeatureCollection",
     features:
@@ -435,17 +530,28 @@ export function toTrace(fixes: readonly LocationFix[]): Trace {
   const steps = walk(fixes);
   smooth(steps);
   const speedRange = percentileRange(steps);
-  const best = bestLeague(steps);
+  const marks = crossings(steps);
+  const splits = leagueSplits(steps, marks);
+  const best = bestSplit(splits, marks);
+  const bestRow = best === null ? -1 : best.from.league;
   const first = steps[0];
   const last = steps.at(-1);
 
   return {
-    line: { type: "FeatureCollection", features: stretches(steps, speedRange, best) },
+    line: {
+      type: "FeatureCollection",
+      features: stretches(
+        steps,
+        speedRange,
+        best && { from: best.from.index, to: best.to.index - 1 },
+      ),
+    },
     path: path(steps),
     bestLine: bestLine(steps, best),
-    leagues: leaguePips(steps),
+    leagues: leaguePips(marks),
     speedRange,
-    bestLeague: best === null ? null : { metres: best.metres, ms: best.ms },
+    splits: splits.map((split, i) => ({ ...split, best: i === bestRow })),
+    bestLeague: best === null ? null : { metres: METRES_PER_LEAGUE, ms: best.ms },
     bounds: boundingBox(steps),
     start: first ? first.at : null,
     end: last ? last.at : null,

@@ -1566,7 +1566,9 @@
     "best_league": "Schnellste Wegstunde dieser Tour, {{pace}}",
     "map_blocked": "Die Karte kann nicht laden: Dein Handy sperrt Batis Netzwerkzugriff. Erlaube ihn in den App-Einstellungen von Bati, unter Mobile Daten und WLAN.",
     "map_open_settings": "Einstellungen öffnen",
-    "map_recenter": "Karte zentrieren"
+    "map_recenter": "Karte zentrieren",
+    "leagues_title": "Wegstunde für Wegstunde",
+    "league_best": "Die schnellste"
   },
   "safety": {
     "title": "Sicher trainieren",

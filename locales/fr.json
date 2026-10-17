@@ -1651,7 +1651,9 @@
     "best_league": "Lieue la plus rapide de cette sortie, {{pace}}",
     "map_blocked": "La carte ne peut pas se charger : ton téléphone bloque l'accès réseau de Bati. Autorise-le dans les réglages de l'application, rubrique données mobiles et Wi-Fi.",
     "map_open_settings": "Ouvrir les réglages",
-    "map_recenter": "Recentrer la carte"
+    "map_recenter": "Recentrer la carte",
+    "leagues_title": "Lieue par lieue",
+    "league_best": "La plus rapide"
   },
   "safety": {
     "title": "S'entraîner en sécurité",

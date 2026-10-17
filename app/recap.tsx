@@ -11,12 +11,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 import { AppIconButton } from "@/components/common/AppButton";
 import { Figure } from "@/components/common/Figure";
 import { Skeleton } from "@/components/common/Skeleton";
 import { ChevronLeft } from "@/components/icons";
+import { LeaguesTable } from "@/components/session/LeaguesTable";
 import { MapFootnote } from "@/components/session/MapFootnote";
 import { MapRecenterButton } from "@/components/session/MapRecenterButton";
 import { roadLine } from "@/components/session/roadLine";
@@ -206,7 +208,8 @@ function SpeedLegend({
       )}
       {/* Whose best, said out loud. "Best league, 4:35 /km" left the reader to guess between
           this outing, this route and a lifetime, and the three answers are different numbers.
-          It is the quickest thousand metres inside the run just finished, and nothing on this
+          It is the quickest aligned league of the run just finished, on moving time, the row the table
+          lights in gold and the map draws from pip to pip. Nothing on this
           screen compares it to the last time the same ground was covered. */}
       {best === null ? null : (
         <Text testID="recap-best-league" fontSize={11} color="$textSecondary">
@@ -337,6 +340,7 @@ function useHighRoad(): VillageBuilding | null {
 export default function ExpeditionRecapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ session?: string | string[] }>();
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
@@ -613,7 +617,18 @@ export default function ExpeditionRecapScreen() {
         )}
       </YStack>
 
-      <YStack px="$5" pt="$2" pb={insets.bottom + 20} gap="$4">
+      {/* Scrolls inside its own block, capped by the window height rather than a percentage so
+          nothing measures a conditional parent: a 42-league marathon scrolls here and the map
+          above keeps its room. */}
+      <ScrollView
+        style={{ flexGrow: 0, maxHeight: Math.round(height * 0.45) }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 8,
+          paddingBottom: insets.bottom + 20,
+          gap: 16,
+        }}
+      >
         {/* Silence rather than three zeros. An outing whose service never started has no
             `leaguesM`, and "0 m · 0:00 · —" reads as a verdict on the walk instead of as an
             absence of measurement. */}
@@ -644,8 +659,10 @@ export default function ExpeditionRecapScreen() {
           />
         ) : null}
 
+        <LeaguesTable splits={trace.splits} unit={distanceUnit} locomotion={recap?.display} />
+
         {footnote}
-      </YStack>
+      </ScrollView>
     </YStack>
   );
 }

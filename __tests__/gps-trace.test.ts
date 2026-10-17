@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import type { LocationFix } from "@/modules/bati-location";
 import { toTrace } from "@/src/gps/trace";
-import { METRES_PER_LEAGUE, RULES } from "@/src/gps/track";
+import { accept, EMPTY, METRES_PER_LEAGUE, RULES } from "@/src/gps/track";
 
 /**
  * The picture and the reducer must break the run in the same places, and must call the same
@@ -43,6 +43,36 @@ function walkEast(
       ...over(i),
     }),
   );
+}
+
+/**
+ * Legs of different pace, one fix a second, east along lat 43.6. A leg may end with a stop: fixes
+ * on the spot, no distance, speed zero.
+ */
+function walkLegs(legs: { metres: number; mps: number; stopS?: number }[]): LocationFix[] {
+  const lonPerMetre = 1 / (111_320 * Math.cos((43.6 * Math.PI) / 180));
+  const out: LocationFix[] = [];
+  let metres = 0;
+  const push = (distFromPrev: number, speed: number) => {
+    metres += distFromPrev;
+    out.push(
+      fix({
+        t: out.length * 1000,
+        lat: 43.6,
+        lon: 1.44 + metres * lonPerMetre,
+        distFromPrev,
+        speed,
+      }),
+    );
+  };
+  push(0, 0);
+  for (const leg of legs) {
+    // A whole number of fixes, so a leg is exactly `metres` long at (almost exactly) `mps`.
+    const fixes = Math.round(leg.metres / leg.mps);
+    for (let i = 0; i < fixes; i += 1) push(leg.metres / fixes, leg.mps);
+    for (let i = 0; i < (leg.stopS ?? 0); i += 1) push(0, 0);
+  }
+  return out;
 }
 
 describe("toTrace", () => {
@@ -245,41 +275,138 @@ describe("toTrace", () => {
     expect(trace.bestLeague).toBeNull();
   });
 
-  test("the best league is the quickest continuous one, and it is drawn where it happened", () => {
-    // A slow first kilometre at 1 m/s and a quick second at 2 m/s, one fix a second throughout.
-    // The best league is the second one, and the answer must be its pace and not the whole walk's.
-    const slow = walkEast(1000, 1);
-    const anchor = slow.at(-1);
-    assert(anchor);
-    const lonPerMetre = 1 / (111_320 * Math.cos((43.6 * Math.PI) / 180));
-    const quick = Array.from({ length: 500 }, (_, i) =>
-      fix({
-        t: anchor.t + (i + 1) * 1000,
-        lat: 43.6,
-        lon: anchor.lon + (i + 1) * 2 * lonPerMetre,
-        distFromPrev: 2,
-        speed: 2,
-      }),
+  test("the best league is the quickest league of the table, drawn pip to pip", () => {
+    // 1 100 fixes at 1 m/s, then 1 050 at 2 m/s. With the 3 s gate: league 1 is slow (~1 000 s),
+    // league 2 straddles the change (~548 s), league 3 is all quick (500 s), a ~196 m partial.
+    const trace = toTrace(
+      walkLegs([
+        { metres: 1100, mps: 1 },
+        { metres: 2100, mps: 2 },
+      ]),
     );
+    expect(trace.splits).toHaveLength(4);
+    expect(trace.splits[2]?.best).toBe(true);
+    expect(trace.splits[3]?.metres).toBeLessThan(METRES_PER_LEAGUE);
+    expect(trace.splits[3]?.best).toBe(false);
+    expect(trace.bestLeague?.ms).toBe(trace.splits[2]?.movingMs);
+    expect(Math.abs((trace.bestLeague?.ms ?? 0) / 1000 - 500)).toBeLessThanOrEqual(2);
 
-    const trace = toTrace([...slow, ...quick]);
-    const best = trace.bestLeague;
-    assert(best);
-    expect(best.metres).toBeGreaterThanOrEqual(METRES_PER_LEAGUE);
-    // A league at 2 m/s is 500 s. The whole walk averages 1.33 m/s, so anything near 750 s means
-    // the window slid over the fast half without noticing it was faster.
-    expect(best.ms / 1000).toBeLessThan(560);
+    const pip2 = trace.leagues.features[1]?.geometry.coordinates;
+    const pip3 = trace.leagues.features[2]?.geometry.coordinates;
+    const line = trace.bestLine.features[0]?.geometry.coordinates;
+    assert(pip2);
+    assert(pip3);
+    assert(line);
+    expect(line[0]?.[0]).toBeCloseTo(pip2[0] ?? 0, 9);
+    expect(line.at(-1)?.[0]).toBeCloseTo(pip3[0] ?? 0, 9);
 
-    // And it is painted on the second half of the trace, not merely reported. Measured against
-    // the 900th metre rather than the 1000th: a stretch begins on the last vertex of the one
-    // before it, which is the overlap the test above exists to hold, so the lit run starts one
-    // fix short of the transition by design.
+    // The lit stretches start no earlier than one quick step (2 m) before pip 2, and end before pip 3.
     const lit = trace.line.features.filter((f) => f.properties.best);
     expect(lit.length).toBeGreaterThan(0);
-    const first = lit[0]?.geometry.coordinates[0];
-    const ninthHundredth = slow[900];
-    assert(first);
-    assert(ninthHundredth);
-    expect(first[0]).toBeGreaterThan(ninthHundredth.lon);
+    const metreDeg = 1 / (111_320 * Math.cos((43.6 * Math.PI) / 180));
+    const litLons = lit.flatMap((f) => f.geometry.coordinates.map((c) => c[0] ?? 0));
+    expect(Math.min(...litLons)).toBeGreaterThanOrEqual((pip2[0] ?? 0) - 2 * metreDeg - 1e-9);
+    expect(Math.max(...litLons)).toBeLessThan(pip3[0] ?? 0);
+  });
+
+  test("a simulated 12 km walk gives 12 true rows, and the quickest is league 9", () => {
+    const legs = Array.from({ length: 12 }, (_, i) => ({
+      // 10 m on the first leg pays the start gate, 30 on the last keeps the end past pip 12
+      metres: i === 0 ? 1010 : i === 11 ? 1030 : 1000,
+      mps: i === 8 ? 2 : i === 2 ? 1.2 : 1.4,
+    }));
+    const trace = toTrace(walkLegs(legs));
+    expect(trace.splits).toHaveLength(12);
+    trace.splits.forEach((split, i) => {
+      const mps = i === 8 ? 2 : i === 2 ? 1.2 : 1.4;
+      expect(split.metres).toBe(METRES_PER_LEAGUE);
+      expect(Math.abs(split.movingMs - (1000 / mps) * 1000)).toBeLessThanOrEqual(2000);
+    });
+    expect(trace.splits.filter((s) => s.best)).toHaveLength(1);
+    expect(trace.splits[8]?.best).toBe(true);
+    expect(trace.bestLeague?.ms).toBe(trace.splits[8]?.movingMs);
+
+    const pips = trace.leagues.features.map((f) => f.geometry.coordinates);
+    const line = trace.bestLine.features[0]?.geometry.coordinates;
+    assert(line);
+    const lo = (pips[7]?.[0] ?? 0) - 1e-9;
+    const hi = (pips[8]?.[0] ?? 0) + 1e-9;
+    expect(line[0]?.[0]).toBeCloseTo(pips[7]?.[0] ?? 0, 9);
+    expect(line.at(-1)?.[0]).toBeCloseTo(pips[8]?.[0] ?? 0, 9);
+    for (const c of line) {
+      expect(c[0]).toBeGreaterThanOrEqual(lo);
+      expect(c[0]).toBeLessThanOrEqual(hi);
+    }
+  });
+
+  test("a partial row needs 100 m; under one league there is no table", () => {
+    const partial = toTrace(walkLegs([{ metres: 1010 + 11_000 + 400, mps: 1.4 }]));
+    expect(partial.splits).toHaveLength(13);
+    expect(partial.splits[12]?.metres).toBeGreaterThan(300);
+    expect(partial.splits[12]?.best).toBe(false);
+
+    expect(toTrace(walkLegs([{ metres: 1010 + 11_000 + 50, mps: 1.4 }])).splits).toHaveLength(12);
+    const short = toTrace(walkLegs([{ metres: 900, mps: 1.4 }]));
+    expect(short.splits).toEqual([]);
+    expect(short.bestLeague).toBeNull();
+  });
+
+  test("a stop in the middle of a league does not make it slow, moving time is the clock", () => {
+    const base = toTrace(walkLegs([{ metres: 5010, mps: 1.4 }]));
+    const stopped = toTrace(
+      walkLegs([
+        { metres: 4010, mps: 1.4 }, // first 4 km, then 500 m into league 5 is below
+        { metres: 500, mps: 1.4, stopS: 180 },
+        { metres: 500, mps: 1.4 },
+      ]),
+    );
+    const a = base.splits[4]?.movingMs ?? 0;
+    const b = stopped.splits[4]?.movingMs ?? 0;
+    // Not zero: the reducer pays no moving time for the ~10 m it takes to clear the anchor after a
+    // stop. What the 180 s stop must not cost is three minutes.
+    expect(Math.abs(a - b)).toBeLessThanOrEqual(10_000);
+  });
+
+  test("a stop just before a marker does not shorten the next league", () => {
+    // 1.4 m/s throughout, a 60 s stop ~30 m before pip 2, then ~21 s of walking across it.
+    const trace = toTrace(
+      walkLegs([
+        { metres: 1980, mps: 1.4, stopS: 60 },
+        { metres: 1100, mps: 1.4 },
+      ]),
+    );
+    const expected = (1000 / 1.4) * 1000;
+    expect(Math.abs((trace.splits[1]?.movingMs ?? 0) - expected)).toBeLessThanOrEqual(2000);
+    expect(trace.splits).toHaveLength(3);
+    expect(Math.abs((trace.splits[2]?.movingMs ?? 0) - expected)).toBeLessThanOrEqual(2000);
+  });
+
+  test("climb per row only where the barometer measured it", () => {
+    // 3.4 km (+10 m gate leg), baro rising 10 m per league.
+    const fixes = walkLegs([{ metres: 3410, mps: 2 }]).map((f, i, all) => ({
+      ...f,
+      ele: null,
+      baro: (i / all.length) * 34,
+    }));
+    const trace = toTrace(fixes);
+    expect(trace.splits).toHaveLength(4);
+    const climbs = trace.splits.map((s) => s.climbM);
+    [10, 10, 10, 4].forEach((m, i) => {
+      expect(Math.abs((climbs[i] ?? Number.NaN) - m)).toBeLessThanOrEqual(3.5);
+    });
+    let track = EMPTY;
+    for (const f of fixes) track = accept(track, f);
+    const sum = climbs.reduce<number>((acc, c) => acc + (c ?? 0), 0);
+    expect(sum).toBe(track.ascentM);
+
+    // The last 300 m on GPS height only: the partial row loses its climb, the rest keep it.
+    const mixed = toTrace(
+      fixes.map((f, i) => (i > fixes.length - 150 ? { ...f, baro: null, ele: 100 + i } : f)),
+    );
+    expect(mixed.splits[0]?.climbM).not.toBeNull();
+    expect(mixed.splits[3]?.climbM).toBeNull();
+
+    const gpsOnly = toTrace(fixes.map((f, i) => ({ ...f, baro: null, ele: 100 + i * 0.1 })));
+    expect(gpsOnly.splits.every((s) => s.climbM === null)).toBe(true);
   });
 });

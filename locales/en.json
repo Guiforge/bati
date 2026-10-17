@@ -1566,7 +1566,9 @@
     "best_league": "Quickest league of this outing, {{pace}}",
     "map_blocked": "The map can't load: your phone blocks Bati's network access. Allow it in Bati's app settings, under mobile data and Wi-Fi.",
     "map_open_settings": "Open the settings",
-    "map_recenter": "Recenter the map"
+    "map_recenter": "Recenter the map",
+    "leagues_title": "League by league",
+    "league_best": "Quickest"
   },
   "safety": {
     "title": "Train safely",

@@ -1651,7 +1651,9 @@
     "best_league": "Legua más rápida de esta salida, {{pace}}",
     "map_blocked": "El mapa no puede cargar: tu móvil bloquea el acceso a la red de Bati. Permítelo en los ajustes de la app, en datos móviles y wifi.",
     "map_open_settings": "Abrir los ajustes",
-    "map_recenter": "Centrar el mapa"
+    "map_recenter": "Centrar el mapa",
+    "leagues_title": "Legua a legua",
+    "league_best": "La más rápida"
   },
   "safety": {
     "title": "Entrenar con seguridad",

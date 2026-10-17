@@ -478,6 +478,91 @@ describe("an outing long and varied enough to have a story", () => {
   });
 });
 
+/** Legs at their own speed, one fix a second, east; `baro` rises 10 m per kilometre when asked. */
+function legs(spec: { metres: number; mps: number }[], baro: boolean): LocationFix[] {
+  const lonPerMetre = 1 / (111_320 * Math.cos((43.6 * Math.PI) / 180));
+  const out: LocationFix[] = [fix({ t: T0, acc: 5 })];
+  let metres = 0;
+  for (const leg of spec) {
+    const count = Math.round(leg.metres / leg.mps);
+    for (let i = 0; i < count; i++) {
+      metres += leg.metres / count;
+      out.push(
+        fix({
+          t: T0 + out.length * 1000,
+          lon: 1.44 + metres * lonPerMetre,
+          acc: 4,
+          speed: leg.mps,
+          distFromPrev: leg.metres / count,
+          ele: null,
+          baro: baro ? metres / 100 : null,
+        }),
+      );
+    }
+  }
+  return out;
+}
+
+describe("the leagues table", () => {
+  const THREE = [
+    { metres: 1010, mps: 2 },
+    { metres: 1000, mps: 4 },
+    { metres: 1000, mps: 3 },
+    { metres: 400, mps: 3 },
+  ];
+
+  test("one row per league, the quickest in gold with its word, and the legend agrees", async () => {
+    mockPointsOf.mockResolvedValue(legs(THREE, true));
+    await mount();
+    await screen.findByTestId("recap-map");
+
+    for (const n of [1, 2, 3, 4]) expect(screen.getByTestId(`recap-league-${n}`)).toBeTruthy();
+    expect(screen.queryByTestId("recap-league-5")).toBeNull();
+    expect(screen.getByTestId("recap-league-best")).toHaveTextContent("Quickest");
+    expect(screen.getByTestId("recap-league-2")).toContainElement(
+      screen.getByTestId("recap-league-best"),
+    );
+    // League 2 at 4 m/s is about 4:10 /km, and the legend prints the very same figure.
+    expect(screen.getByTestId("recap-league-2")).toHaveTextContent(/4:1\d \/km/);
+    const pace = /\d:\d\d \/km/.exec(
+      String(screen.getByTestId("recap-best-league").props.children),
+    );
+    expect(screen.getByTestId("recap-league-2")).toHaveTextContent(
+      new RegExp(pace?.[0] ?? "no pace"),
+    );
+    // The climb column exists because the barometer measured it.
+    expect(screen.getByTestId("recap-league-1")).toHaveTextContent(/\d m$/);
+  });
+
+  test("no table under one league", async () => {
+    mockPointsOf.mockResolvedValue(legs([{ metres: 900, mps: 2 }], false));
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(screen.queryByTestId("recap-leagues")).toBeNull();
+  });
+
+  test("no climb column when no barometer measured the rows", async () => {
+    mockPointsOf.mockResolvedValue(legs(THREE, false));
+    await mount();
+    await screen.findByTestId("recap-leagues");
+    expect(screen.getByTestId("recap-league-1")).not.toHaveTextContent(/ m$/);
+  });
+
+  test("a GPS-height row prints a dash, and imperial keeps leagues with the note", async () => {
+    mockPointsOf.mockResolvedValue(
+      legs(THREE, true).map((f, i, all) =>
+        i > all.length - 160 ? { ...f, baro: null, ele: 100 } : f,
+      ),
+    );
+    useSettingsStore.setState({ distanceUnit: "imperial" });
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(screen.getByTestId("recap-league-4")).toHaveTextContent(/-$/);
+    expect(screen.getByTestId("recap-league-2")).toHaveTextContent(/\/mi/);
+    expect(screen.getByText("A league is 1 km, even in miles.")).toBeTruthy();
+  });
+});
+
 describe("a session that never left the walls", () => {
   beforeEach(() => {
     mockOutingSession.mockResolvedValue({

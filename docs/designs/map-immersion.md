@@ -120,7 +120,10 @@ Five layers, in this order, and the order is the design:
 1. a wide `resourceGold` line at low opacity behind a large `line-blur`, the glow;
 2. a 9 px `resourceGold` line at 0.35 opacity over the best league, a cuff under the trace rather
    than a colour in it, because the quickest stretch of a run is usually already at the gold end
-   and gold on gold says nothing;
+   and gold on gold says nothing. The best league is the quickest aligned kilometre (pip `n-1` to
+   pip `n`) on the settled moving clock, the same row the recap's leagues table lights in gold; the
+   cuff runs from one pip to the other exactly. Before the table it was the quickest sliding
+   thousand metres on wall time, so an old recap's legend pace may move by a few seconds;
 3. the stroke itself, round caps and joins, coloured by pace;
 4. one hollow gold ring per completed league;
 5. two circle pips, `success` where the hero set out and `resourceFire` where they stopped.

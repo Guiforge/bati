@@ -6,7 +6,7 @@ import {
   getBossKey,
 } from "@/constants/assetMap";
 import { invalidateAdventures } from "./adventures";
-import { db, schema, transactionOrFallback } from "./client";
+import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { nextEditStamp } from "./completed";
 import { type QuestTemplate, USER_QUEST_AUTHOR } from "./quests";
 import { ADMIN_CREATOR, type MuscleCode } from "./schema";
@@ -185,14 +185,22 @@ function stepColumns(step: Clean["steps"][number]) {
   };
 }
 
-async function assertQuestsExist(questIds: readonly number[]): Promise<void> {
+/** The connection a write runs on: `db`, or the transaction of a caller that owns one (the file import). */
+type Exec = typeof db | TransactionTx;
+
+/** On the caller's transaction when it has one, else on a transaction of our own. */
+function inTransaction<T>(exec: Exec | undefined, fn: (tx: Exec) => Promise<T>): Promise<T> {
+  return exec ? fn(exec) : transactionOrFallback(fn);
+}
+
+async function assertQuestsExist(questIds: readonly number[], exec: Exec = db): Promise<void> {
   const unique = [...new Set(questIds)];
-  const found = await db.select({ id: quests.id }).from(quests).where(inArray(quests.id, unique));
+  const found = await exec.select({ id: quests.id }).from(quests).where(inArray(quests.id, unique));
   if (found.length !== unique.length) throw new Error("A step names a quest that does not exist");
 }
 
-async function hasActiveRun(adventureId: number): Promise<boolean> {
-  const rows = await db
+export async function hasActiveRun(adventureId: number, exec: Exec = db): Promise<boolean> {
+  const rows = await exec
     .select({ id: adventureRuns.id })
     .from(adventureRuns)
     .where(and(eq(adventureRuns.adventureId, adventureId), eq(adventureRuns.status, "active")))
@@ -200,8 +208,8 @@ async function hasActiveRun(adventureId: number): Promise<boolean> {
   return rows.length > 0;
 }
 
-async function assertHeroAdventure(id: number): Promise<void> {
-  const [row] = await db
+async function assertHeroAdventure(id: number, exec: Exec = db): Promise<void> {
+  const [row] = await exec
     .select({ author: adventures.author })
     .from(adventures)
     .where(eq(adventures.id, id))
@@ -209,18 +217,26 @@ async function assertHeroAdventure(id: number): Promise<void> {
   if (row?.author !== USER_QUEST_AUTHOR) throw new Error("Not an adventure of the hero");
 }
 
-/** `uuid` is there for the file import of phase 2 only. */
+/**
+ * `uuid` and `exec` are there for the file import only. With `exec` the body runs on the caller's
+ * transaction and opens none (`transactionOrFallback` queues, and an inner call would wait on the
+ * outer one forever); the caller then calls `invalidateAdventures()` after its commit.
+ */
 export async function createHeroAdventure(
   draft: HeroAdventureDraft,
-  { uuid }: { uuid?: string } = {},
+  { uuid, exec }: { uuid?: string; exec?: Exec } = {},
 ): Promise<number> {
   const c = clean(draft);
+  // `endColumns` reads the seeded monsters on `db`: content no import writes.
   const end = await endColumns(draft.end);
-  await assertQuestsExist(c.steps.map((s) => s.questId));
+  await assertQuestsExist(
+    c.steps.map((s) => s.questId),
+    exec,
+  );
   const first = c.steps[0];
   if (!first) throw new Error("Adventure needs steps");
 
-  const id = await transactionOrFallback(async (tx) => {
+  const id = await inTransaction(exec, async (tx) => {
     const [row] = await tx
       .insert(adventures)
       .values({
@@ -246,7 +262,7 @@ export async function createHeroAdventure(
     );
     return row.id;
   });
-  invalidateAdventures();
+  if (!exec) invalidateAdventures();
   return id;
 }
 
@@ -261,16 +277,25 @@ export async function createHeroAdventure(
  * ponytail: a fight kept after a left partie keeps the pool of the old steps (PARK-1). Fix (c)
  * rescales it to the new pool keeping the fraction of HP already taken, if a hero reports it.
  */
-export async function updateHeroAdventure(id: number, draft: HeroAdventureDraft): Promise<void> {
-  await assertHeroAdventure(id);
+export async function updateHeroAdventure(
+  id: number,
+  draft: HeroAdventureDraft,
+  exec?: Exec,
+): Promise<void> {
+  await assertHeroAdventure(id, exec);
   const c = clean(draft);
-  const frozen = await hasActiveRun(id);
+  const frozen = await hasActiveRun(id, exec);
   const end = frozen ? null : await endColumns(draft.end);
-  if (!frozen) await assertQuestsExist(c.steps.map((s) => s.questId));
+  if (!frozen) {
+    await assertQuestsExist(
+      c.steps.map((s) => s.questId),
+      exec,
+    );
+  }
   const first = c.steps[0];
   if (!first) throw new Error("Adventure needs steps");
 
-  await transactionOrFallback(async (tx) => {
+  await inTransaction(exec, async (tx) => {
     await tx
       .update(adventures)
       .set({
@@ -305,7 +330,46 @@ export async function updateHeroAdventure(id: number, draft: HeroAdventureDraft)
       await tx.update(adventureSteps).set(stepColumns(step)).where(eq(adventureSteps.id, row.id));
     }
   });
-  invalidateAdventures();
+  if (!exec) invalidateAdventures();
+}
+
+/**
+ * The hero's adventure with this uuid, retired included. An Admin adventure has no uuid and is
+ * never matched: the filter is on the author too.
+ */
+export async function findHeroAdventureByUuid(
+  uuid: string,
+  exec: Exec = db,
+): Promise<{ id: number; title: string } | null> {
+  const [row] = await exec
+    .select({ id: adventures.id, title: adventures.enTitle })
+    .from(adventures)
+    .where(and(eq(adventures.author, USER_QUEST_AUTHOR), eq(adventures.uuid, uuid)))
+    .limit(1);
+  return row ?? null;
+}
+
+/**
+ * An adventure from a file. Already here by uuid (retired included) and no run of it under way:
+ * updated in place and brought back (`isActive = 1`, a re-import brings it back). A run under way:
+ * written beside it under a fresh uuid, because its steps are frozen. Else created under the
+ * file's uuid. Runs on the caller's transaction; the caller invalidates after the commit.
+ */
+export async function fileHeroAdventure(
+  draft: HeroAdventureDraft,
+  uuid: string,
+  exec: TransactionTx,
+): Promise<{ id: number; updated: boolean }> {
+  const here = await findHeroAdventureByUuid(uuid, exec);
+  if (!here) return { id: await createHeroAdventure(draft, { uuid, exec }), updated: false };
+  // Checked again here, in the transaction: the preview read "copy" earlier, and the unique index
+  // on `adventures.uuid` would otherwise be what says no.
+  if (await hasActiveRun(here.id, exec)) {
+    return { id: await createHeroAdventure(draft, { uuid: uuidv7(), exec }), updated: false };
+  }
+  await updateHeroAdventure(here.id, draft, exec);
+  await exec.update(adventures).set({ isActive: 1 }).where(eq(adventures.id, here.id));
+  return { id: here.id, updated: true };
 }
 
 /** Retire: the row stays with `isActive = 0`, nothing deleted, no tombstone. Refused while a run is under way. */
@@ -327,7 +391,7 @@ export async function retireHeroAdventure(id: number): Promise<void> {
  */
 export async function loadHeroAdventureDraft(
   id: number,
-): Promise<(HeroAdventureDraft & { frozen: boolean }) | null> {
+): Promise<(HeroAdventureDraft & { frozen: boolean; uuid: string | null }) | null> {
   const [row] = await db.select().from(adventures).where(eq(adventures.id, id)).limit(1);
   if (!row || row.author !== USER_QUEST_AUTHOR) return null;
   const steps = await db
@@ -351,5 +415,6 @@ export async function loadHeroAdventureDraft(
       outro: s.enOutroNarrative,
     })),
     frozen: await hasActiveRun(id),
+    uuid: row.uuid,
   };
 }

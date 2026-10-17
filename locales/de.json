@@ -205,7 +205,7 @@
     "illustrations_title": "Übungsillustrationen",
     "mr_yoga": "Mr. Yoga",
     "mr_yoga_subtitle": "Foto als Posenvorlage, Wikimedia Commons",
-    "illustrations_note": "Die Übungsillustrationen sind mit FLUX (Black Forest Labs) KI-generiert und einzeln ausgewählt. Viele gehen von einer Pose aus, die Bryl Lim für das Projekt workout-guide gezeichnet hat, das auf den anatomischen Studien von Everkinetic aufbaut, andere von einem Foto von Mr. Yoga oder von Fotos des Bati-Entwicklers. Alle stehen unter CC BY-SA 4.0.",
+    "illustrations_note": "Die Übungsillustrationen sind bearbeitete Werke. FLUX (Black Forest Labs) hat sie neu gezeichnet und verändert, ausgehend von einer Pose von Bryl Lim für das Projekt workout-guide (selbst auf den anatomischen Studien von Everkinetic aufgebaut), von einem Foto von Mr. Yoga oder von Fotos des Bati-Entwicklers; jede wurde einzeln ausgewählt. Die Vorlagen wurden verändert. Das Ergebnis steht unter CC BY-SA 4.0.",
     "everkinetic": "Everkinetic",
     "everkinetic_subtitle": "Ursprüngliche anatomische Zeichnungen",
     "workout_guide": "workout-guide",
@@ -214,6 +214,9 @@
     "cc_by_sa_40_subtitle": "Lizenzbedingungen: Weitergabe unter gleichen Bedingungen",
     "licenses_title": "Open-Source-Lizenzen",
     "licenses_body": "Jede Bibliothek, die mit Bati ausgeliefert wird, und die Lizenz, unter der sie veröffentlicht ist.",
+    "licenses_icons_title": "Autoren der Icons",
+    "licenses_icons_body": "Icons von game-icons.net unter CC BY 3.0, ihren Autoren zugeschrieben. Aufgeführt sind nur die Icons, die Bati verwendet.",
+    "licenses_icons_by": "Icons von {{author}}",
     "map_styles_title": "Kartenstile",
     "map_styles_note": "Die Stile Nacht und Fjord stammen von OpenFreeMap, das auf den OpenMapTiles-Stilen aufbaut. Ihr Hinweis folgt, wie es ihre Lizenz verlangt.",
     "openfreemap_styles": "OpenFreeMap-Stile",
@@ -1712,7 +1715,9 @@
     "during_title": "Während des Trainings",
     "during_body": "Ein stechender Schmerz ist keine Anstrengung: Hören Sie auf. Schwindel, Brustschmerzen oder Atemnot bedeuten: aufhören und ärztlichen Rat einholen. Jedes Ziel hier ist ein Vorschlag: Beenden Sie einen Satz lieber mit ein oder zwei Wiederholungen Reserve, als mit schlechter Technik einer Zahl hinterherzujagen.",
     "not_a_coach_title": "Bati ist kein Coach",
-    "not_a_coach_body": "Diese App zählt, was Sie tun, und erzählt eine Geschichte darüber. Sie sieht Ihre Technik nicht und ersetzt keinen medizinischen Rat. Für eine Diagnose, eine Verletzung oder einen auf Ihren Körper abgestimmten Plan wenden Sie sich an eine qualifizierte Fachkraft."
+    "not_a_coach_body": "Diese App zählt, was Sie tun, und erzählt eine Geschichte darüber. Sie sieht Ihre Technik nicht und ersetzt keinen medizinischen Rat. Für eine Diagnose, eine Verletzung oder einen auf Ihren Körper abgestimmten Plan wenden Sie sich an eine qualifizierte Fachkraft.",
+    "outdoors_title": "Draußen",
+    "outdoors_body": "Auf einer Tour kommt die Straße vor dem Bildschirm. Achten Sie auf den Verkehr und überqueren Sie Straßen nur, wo es sicher ist, lassen Sie ein Ohr frei und halten Sie an einem sicheren Ort an, bevor Sie aufs Handy schauen. Sagen Sie jemandem, wohin Sie gehen, wenn der Weg weit ist."
   },
   "privacy": {
     "title": "Datenschutz",
@@ -1727,11 +1732,13 @@
     "permissions_body": "Fotos: nur wenn Sie eines für Ihren Avatar, eine Übung, eine Quest oder eine Einheit wählen; ein Avatar bleibt auf Ihrem Gerät, und ein Foto für eine Übung, Quest oder Einheit wird verkleinert und ohne Standort- und Kameradaten in der Datenbank gespeichert und folgt damit Ihren Sicherungen und einer verschlüsselten Synchronisierung. Das Android-Widget liest Ihre Flamme aus derselben lokalen Datenbank. Standort: nur während einer Tour, und nur der genaue Standort, weil sich ein Weg nicht ungefähr messen lässt. Ihre Route wird auf dieses Telefon geschrieben und verlässt es nur in einer Sicherung, die Sie anlegen, oder einer verschlüsselten Synchronisierung. Auf einem Telefon mit Barometer misst der Luftdruck Ihren Anstieg; Android verlangt dafür keine Berechtigung, und die Messwerte bleiben bei der Route. Eine Tour zeigt außerdem eine dauerhafte Benachrichtigung an: Sie hält die Aufzeichnung am Leben, und deshalb kann Ihr Bildschirm unterwegs ausgehen, ohne dass etwas stoppt. Internet: für die Karte, die Versionsprüfung und die Gerätesynchronisierung, jeweils nur, solange ihr Schalter in den Einstellungen an ist; alle drei sind anfangs aus, und was jede Anfrage verrät, steht weiter oben. Biometrie: nur um Ihren Wiederherstellungsschlüssel hinter Ihrem Fingerabdruck erneut anzuzeigen; Android prüft, und Bati sieht ihn nie. Benachrichtigungen und Gerätestart: nur wenn Sie die Trainingserinnerung einschalten. Android plant sie auf diesem Telefon, an Ihren Tagen zu Ihrer Uhrzeit; ein Neustart löscht geplante Alarme, deshalb erfährt Bati, wann das Telefon gestartet ist, um sie neu zu planen. Das Telefon behält die letzten zehn Tage, an denen eine Erinnerung kam, um auf ihre Schaltflächen zu reagieren; dieses Protokoll wird nirgendwohin gesendet.",
     "crashes_title": "Absturzberichte",
     "crashes_body": "Stürzt die App ab, wird der Fehler nur auf Ihr Gerät geschrieben. Schlägt eine Funktion ohne Absturz fehl (etwa eine Sicherung, die nicht geschrieben werden konnte), wird ihre Fehlermeldung genauso aufbewahrt; diese Meldung kann den Namen eines von Ihnen gewählten Ordners oder einer Datei enthalten, oder die Adresse Ihres Synchronisierungsservers. Nichts wird automatisch gesendet. Die Zeile „Feedback, eine Idee, ein Bug“ in den Einstellungen öffnet Ihre eigene E-Mail-App mit dem ausgefüllten Bericht, sodass Sie ihn vor dem Senden lesen, bearbeiten oder löschen können. Senden Sie ihn nie, verlässt er Ihr Telefon nie.",
+    "sharing_title": "Bilder, die Sie teilen",
+    "sharing_body": "Eine Zusammenfassung, eine Tourkarte oder der Jahresrückblick lässt sich als Bild teilen. Bati zeichnet es auf Ihrem Handy aus Ihren eigenen Daten, mit Routenkarte samt OpenStreetMap-Quellenangabe, und übergibt es dem Teilen-Menü Ihres Handys. Bati schickt es selbst nirgendwohin, und es geht nur dorthin, wohin Sie es senden. Wer es erhält, behält es, und was er damit tut, liegt bei ihm.",
     "children_title": "Kinder",
-    "children_body": "Bati ist eine Fitness-App für alle und richtet sich nicht an Kinder unter 13 Jahren. Sie sammelt von niemandem personenbezogene Daten, egal welchen Alters.",
+    "children_body": "Bati richtet sich an Menschen ab {{age}} Jahren und nicht an jüngere. Sie sammelt von niemandem personenbezogene Daten, egal welchen Alters.",
     "contact_title": "Fragen",
     "contact_body": "Schreiben Sie an contact@getbati.app zu dieser Richtlinie, zu einem Fehler, einer Idee oder einer Funktion, die Sie sich wünschen. Da die App keine Daten über Sie speichert, gibt es nichts, was wir für Sie exportieren oder löschen könnten: Die Deinstallation löscht jeden Eintrag auf diesem Telefon. Kopien, die Sie angelegt haben, bleiben, wo Sie sie abgelegt haben: die Sicherung des Telefons, gespeicherte Dateien und Ihr Synchronisierungsordner.",
-    "updated": "Zuletzt aktualisiert am 27. September 2026"
+    "updated": "Zuletzt aktualisiert am 17. Oktober 2026"
   },
   "feedback": {
     "subject": "Bati {{version}}: Feedback",

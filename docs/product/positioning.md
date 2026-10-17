@@ -12,6 +12,8 @@ adaptive
 
 Bati is built for solo lifters at the gym who want their workouts to feel like a game. The primary user opens the app between sets or on the way to the rack: phone in one hand, mid-session, wanting to log the next set quickly and feel a sense of progress without breaking focus. They train alone, motivate themselves, and stick with it because the app turns effort into something worth coming back to.
 
+Bati is for people aged 16 and over (`src/minimumAge.ts`). There is no age gate, because the app collects nothing to check an age against.
+
 ## Product Purpose
 
 Bati turns strength training into an RPG so people stay consistent. Quests are workouts, boss fights turn reps into damage, and training grows a village that reflects your effort. Success is a logged workout streak: the user keeps showing up because each session advances an adventure, not just a spreadsheet.

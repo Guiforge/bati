@@ -211,7 +211,7 @@
     "illustrations_title": "Ilustraciones de ejercicios",
     "mr_yoga": "Mr. Yoga",
     "mr_yoga_subtitle": "Fotografía usada como modelo de pose, Wikimedia Commons",
-    "illustrations_note": "Las ilustraciones de ejercicios están generadas con IA mediante FLUX (Black Forest Labs) y elegidas una a una. Muchas parten de una pose dibujada por Bryl Lim para el proyecto workout-guide, basado en los estudios anatómicos de Everkinetic, y otras de una fotografía de Mr. Yoga o de fotos del desarrollador de Bati. Todas se publican bajo CC BY-SA 4.0.",
+    "illustrations_note": "Las ilustraciones de ejercicios son obras adaptadas. FLUX (Black Forest Labs) las redibujó y las modificó a partir de una pose de Bryl Lim para el proyecto workout-guide (basado a su vez en los estudios anatómicos de Everkinetic), de una fotografía de Mr. Yoga o de fotos del desarrollador de Bati, y cada una se eligió a mano. Los originales fueron modificados. El resultado se publica bajo CC BY-SA 4.0.",
     "everkinetic": "Everkinetic",
     "everkinetic_subtitle": "Dibujos anatómicos originales",
     "workout_guide": "workout-guide",
@@ -220,6 +220,9 @@
     "cc_by_sa_40_subtitle": "Condiciones de la licencia: compartir igual",
     "licenses_title": "Licencias de código abierto",
     "licenses_body": "Cada biblioteca que incluye Bati y la licencia con la que se publica.",
+    "licenses_icons_title": "Autores de los iconos",
+    "licenses_icons_body": "Iconos de game-icons.net con licencia CC BY 3.0, atribuidos a sus autores. Solo se listan los iconos que usa Bati.",
+    "licenses_icons_by": "Iconos de {{author}}",
     "map_styles_title": "Estilos de mapa",
     "map_styles_note": "Los estilos Noche y Fiordo vienen de OpenFreeMap, que se basa en los estilos de OpenMapTiles. Su aviso sigue, como pide su licencia.",
     "openfreemap_styles": "Estilos de OpenFreeMap",
@@ -1802,7 +1805,9 @@
     "during_title": "Durante el esfuerzo",
     "during_body": "Un dolor agudo no es esfuerzo: pare. Mareo, dolor en el pecho o falta de aliento significan parar y consultar a un médico. Cada objetivo aquí es una sugerencia: mejor terminar una serie con una o dos repeticiones en reserva que perseguir una cifra perdiendo la técnica.",
     "not_a_coach_title": "Bati no es un entrenador",
-    "not_a_coach_body": "Esta app cuenta lo que hace y le pone una historia. No ve su técnica y no es consejo médico. Para un diagnóstico, una lesión o un plan adaptado a su cuerpo, acuda a un profesional cualificado."
+    "not_a_coach_body": "Esta app cuenta lo que hace y le pone una historia. No ve su técnica y no es consejo médico. Para un diagnóstico, una lesión o un plan adaptado a su cuerpo, acuda a un profesional cualificado.",
+    "outdoors_title": "Al aire libre",
+    "outdoors_body": "En una salida, la carretera va antes que la pantalla. Atienda al tráfico y cruce solo donde sea seguro, deje un oído libre y deténgase en un lugar seguro antes de mirar el teléfono. Si el trayecto es largo, avise a alguien de adónde va."
   },
   "privacy": {
     "title": "Privacidad",
@@ -1817,11 +1822,13 @@
     "permissions_body": "Fotos: solo si elige una para su avatar, un ejercicio, una misión o una sesión; un avatar se queda en su dispositivo, y una foto dada a un ejercicio, una misión o una sesión se reduce y se guarda sin la ubicación ni los datos de la cámara en la base de datos, así que sigue a sus copias de seguridad y a una sincronización cifrada. El widget de Android lee su llama en la misma base de datos local. Ubicación: solo durante una salida, y solo la ubicación precisa, porque un recorrido no se puede medir con una aproximada. Su ruta se escribe en este teléfono y solo sale de él en una copia de seguridad que usted haga o en una sincronización cifrada. En un teléfono con barómetro, la presión del aire mide su desnivel; Android no pide ningún permiso para ello, y las lecturas se quedan con la ruta. Una salida muestra además una notificación permanente: es lo que mantiene vivo el seguimiento, y por eso la pantalla puede apagarse a mitad de camino sin que nada se detenga. Internet: para el mapa, la comprobación de versión y la sincronización de dispositivos, cada uno solo mientras su interruptor esté activado en Ajustes; los tres empiezan desactivados, y lo que revela cada petición está explicado más arriba. Biometría: solo para volver a mostrar su clave de recuperación, tras su huella; Android hace la comprobación y Bati nunca la ve. Notificaciones e inicio del teléfono: solo si activa el recordatorio de entrenamiento. Android lo programa en este teléfono, sus días a su hora; un reinicio borra las alarmas, así que Bati recibe aviso cuando el teléfono ha arrancado, para volver a programarlo. El teléfono guarda los últimos diez días en que sonó un recordatorio, para actuar sobre sus botones; ese registro no se envía a ningún sitio.",
     "crashes_title": "Informes de cierres inesperados",
     "crashes_body": "Si la app se cierra inesperadamente, el error se escribe solo en su dispositivo. Cuando una función falla sin cerrarse (una copia que no se pudo escribir, por ejemplo), su mensaje de error se guarda igual; ese mensaje puede incluir el nombre de una carpeta o de un archivo que usted eligió, o la dirección de su servidor de sincronización. Nada se envía automáticamente. La fila «Una opinión, una idea, un error» de Ajustes abre su propia app de correo con el informe ya escrito, para que pueda leerlo, editarlo o borrarlo antes de enviarlo. Si nunca lo envía, nunca sale de su teléfono.",
+    "sharing_title": "Imágenes que comparte",
+    "sharing_body": "Un resumen, una tarjeta de salida o el balance del año se pueden compartir como imagen. Bati la dibuja en su teléfono con sus propios datos, mapa de la ruta incluido con su crédito de OpenStreetMap, y la entrega al menú de compartir del teléfono. Bati no la envía a ningún sitio por sí misma, y solo va adonde usted decide enviarla. Una vez enviada, quien la recibe la conserva, y lo que haga con ella es cosa suya.",
     "children_title": "Menores",
-    "children_body": "Bati es una app de deporte para todos los públicos y no está dirigida a menores de 13 años. No recoge datos personales de nadie, de ninguna edad.",
+    "children_body": "Bati está pensada para personas de {{age}} años o más y no se dirige a menores. No recoge datos personales de nadie, de ninguna edad.",
     "contact_title": "Preguntas",
     "contact_body": "Escriba a contact@getbati.app sobre esta política, y sobre un error, una idea o una función que eche en falta. Como la app no guarda ningún dato sobre usted, no tenemos nada que exportar ni borrar en su nombre: desinstalarla borra cada registro de este teléfono. Las copias que usted pidió siguen donde las puso: la copia del teléfono, los archivos guardados y su carpeta de sincronización.",
-    "updated": "Última actualización: 27 de septiembre de 2026"
+    "updated": "Última actualización: 17 de octubre de 2026"
   },
   "feedback": {
     "subject": "Bati {{version}}: comentarios",

@@ -1,0 +1,26 @@
+# Developer Certificate of Origin (CONTRIBUTING.md § Sign your commits): the sign-off says the
+# author wrote the change or has the right to submit it under the repository's licence.
+# The maintainer's own commits and bots are exempt (.github/dco-maintainers.txt).
+name: DCO
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  signoff:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # The shas go through env, never straight into the script text.
+      - name: Every commit is signed off
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: scripts/check-dco.sh "$BASE_SHA" "$HEAD_SHA"

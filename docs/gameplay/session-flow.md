@@ -150,7 +150,7 @@ was there for it.
   of the "to beat" half only; past an aged record (over 60 days, not matched this season) the stamp
   says "Past your season best".
 - **One sentence** under it when the objective is under what the hero did last time: after a
-  comeback, for a hold (trained under the record), or at the start of a new step. A number the hero
+  comeback or at the start of a new step. A number the hero
   set has none.
 - **Done Button**: Large, in thumb zone, satisfying to tap
 

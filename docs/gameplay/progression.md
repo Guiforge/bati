@@ -214,7 +214,7 @@ meaning something after the first session. The hero's own number always wins: it
 app's, which keeps climbing underneath it.
 
 Worked examples (each one a test in `__tests__/progressive-target.test.ts`): 12 met on every set
-asks 13; a set at 11 asks 12 again; 20 met stays 20; a hold of 30 s with a 30 s record asks 20 s;
+asks 13; a set at 11 asks 12 again; 20 met stays 20; a hold of 30 s met asks 35 s;
 12 met then 15 days away asks 9, then 10, then 12.
 
 - **One movement, one progression, inside each quest's band.** The history is the movement's, across

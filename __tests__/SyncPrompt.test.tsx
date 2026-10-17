@@ -63,7 +63,7 @@ let mockNotice: { sessions: number; returnTo: string } | null = null;
 let mockSessions = 0;
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
-  router: { push: (href: string) => mockPush(href) },
+  router: { push: (href: string, opts?: unknown) => mockPush(href, opts) },
   usePathname: () => "/settings",
 }));
 const mockReload = jest.fn((_reason: string) => Promise.resolve());
@@ -366,7 +366,7 @@ test("after a merge's reload, the hero is told what arrived, once", async () => 
   await render(<SyncPrompt />);
   await waitFor(() => expect(mockToasts).toEqual(["sync.merged"]));
   expect(mockNotice).toBeNull();
-  expect(mockPush).toHaveBeenCalledWith("/settings");
+  expect(mockPush).toHaveBeenCalledWith("/settings", { withAnchor: true });
 });
 
 test("never during a session, and once per state", async () => {

@@ -183,6 +183,7 @@ export default function QuestDetails() {
     runStepId?: string;
     adventureId?: string | string[];
     from?: string | string[];
+    session?: string | string[];
   }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
@@ -414,10 +415,25 @@ export default function QuestDetails() {
   // adventure isn't on this tab's stack to begin with, it lives on the adventures tab's own stack.
   // Where the hero came from, when it changes where "back" means. Only the band's Set up
   // shortcut sets it; every other door leaves it absent and keeps the gallery.
-  const fromHome = (Array.isArray(params.from) ? params.from[0] : params.from) === "home";
+  const fromParam = Array.isArray(params.from) ? params.from[0] : params.from;
+  const fromHome = fromParam === "home";
+  // The Journal's "do this again" doors (a session's detail, the Stats suggestions). `session`
+  // names the detail to come back to; without it, the Journal's own landing page.
+  const sessionParam = Array.isArray(params.session) ? params.session[0] : params.session;
+  const journalBack =
+    fromParam === "journal"
+      ? Number.isFinite(Number(sessionParam)) && sessionParam
+        ? `/journal/${Number(sessionParam)}`
+        : "/journal"
+      : null;
+
+  const rawAdventure = Array.isArray(params.adventureId)
+    ? params.adventureId[0]
+    : params.adventureId;
+  const fromAdventure = Boolean(rawAdventure) && Number.isFinite(Number(rawAdventure));
 
   const goToGallery = useCallback(() => {
-    const raw = Array.isArray(params.adventureId) ? params.adventureId[0] : params.adventureId;
+    const raw = rawAdventure;
     const adventureId = Number(raw);
     // A malformed deep link (literal "undefined", non-numeric garbage) is truthy but not a real
     // id — Number.isFinite catches it, same guard as questId/adventureId above in this file.
@@ -435,20 +451,26 @@ export default function QuestDetails() {
       router.navigate("/");
       return;
     }
+    // `navigate` for the same reason: the Journal is another tab's stack, and its detail (or
+    // list) is already on it.
+    if (journalBack) {
+      router.navigate(journalBack as never);
+      return;
+    }
     router.dismissTo("/quests");
-  }, [router, params.adventureId, fromHome]);
+  }, [router, rawAdventure, fromHome, journalBack]);
 
   // Hardware back, which is structural: the stack is anchored on the gallery
   // (`app/(tabs)/quests/_layout.tsx`), so popping lands there whatever the chevron does. Left
   // alone the two would disagree again, which is the exact bug the anchor was added to fix.
   useEffect(() => {
-    if (!fromHome) return;
+    if (!fromHome && !journalBack && !fromAdventure) return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      router.navigate("/");
+      goToGallery();
       return true;
     });
     return () => sub.remove();
-  }, [fromHome, router]);
+  }, [fromHome, journalBack, fromAdventure, goToGallery]);
 
   const updateConfig = useCallback(
     (next: QuestConfig, replace?: "targets" | "all") => {

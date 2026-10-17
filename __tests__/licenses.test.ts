@@ -63,4 +63,8 @@ describe("game-icons authors (A10)", () => {
       expect.arrayContaining(["Lorc", "Delapouite", "Caro Asercion"]),
     );
   });
+
+  test("refuse an icon folder with no author name", () => {
+    expect(() => gameIconAuthors("require('1x1/unknown/x.svg')")).toThrow(/unknown/);
+  });
 });

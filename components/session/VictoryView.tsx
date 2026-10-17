@@ -424,7 +424,7 @@ export function VictoryView() {
     if (!result) return;
     confirmForget(result.sessionId, () => {
       quitSession();
-      router.replace("/");
+      router.dismissTo("/");
     });
   };
 
@@ -695,7 +695,7 @@ export function VictoryView() {
                 // to undo, and the session state has to be cleared either way. Home rather than
                 // back, because back from here is the session that just ended.
                 quitSession();
-                router.replace("/");
+                router.dismissTo("/");
               }}
             >
               {t("session.summary_too_short_discard")}

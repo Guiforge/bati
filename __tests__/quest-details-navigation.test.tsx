@@ -15,7 +15,9 @@ const backHandlerSpy = jest.spyOn(
   require("react-native").BackHandler,
   "addEventListener",
 ) as jest.SpyInstance;
-let mockParams: { id?: string; adventureId?: string; from?: string } = { id: "5" };
+let mockParams: { id?: string; adventureId?: string; from?: string; session?: string } = {
+  id: "5",
+};
 
 // Setting aside is not what this file is about.
 jest.mock("@/db/questConfig", () => ({
@@ -210,6 +212,38 @@ describe("quests/[id] chevron", () => {
 
     await fireEvent.press(getByLabelText("Go back"));
 
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12");
+  });
+
+  test("from a Journal detail, both backs return to that detail", async () => {
+    mockParams = { id: "5", from: "journal", session: "42" };
+    const { getByLabelText } = await renderQuestDetails();
+
+    await fireEvent.press(getByLabelText("Go back"));
+    expect(mockNavigate).toHaveBeenLastCalledWith("/journal/42");
+
+    mockNavigate.mockClear();
+    const press = backHandlerSpy.mock.calls.at(-1)?.[1] as () => boolean;
+    expect(press()).toBe(true);
+    expect(mockNavigate).toHaveBeenCalledWith("/journal/42");
+    expect(mockDismissTo).not.toHaveBeenCalled();
+  });
+
+  test("from the Journal without a session (Stats suggestions), back lands on the Journal", async () => {
+    mockParams = { id: "5", from: "journal" };
+    const { getByLabelText } = await renderQuestDetails();
+
+    await fireEvent.press(getByLabelText("Go back"));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/journal");
+  });
+
+  test("from an adventure step, the hardware back agrees with the chevron", async () => {
+    mockParams = { id: "5", adventureId: "12" };
+    await renderQuestDetails();
+
+    const press = backHandlerSpy.mock.calls.at(-1)?.[1] as () => boolean;
+    expect(press()).toBe(true);
     expect(mockNavigate).toHaveBeenCalledWith("/adventures/12");
   });
 });

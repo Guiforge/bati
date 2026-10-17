@@ -50,6 +50,9 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: "tab-adventures",
           title: t("tabs.adventures"),
+          // Home's "Continue the adventure" opens a sheet on this stack from outside the tab; left
+          // there, the tab reopened on that sheet and its back went to a gallery nobody visited.
+          popToTopOnBlur: true,
           tabBarIcon: ({ focused, size }) => (
             <Sparkles
               color={focused ? "$primaryText" : "$text"}

@@ -6,8 +6,8 @@ type Campaign = SaveResult["campaign"];
 
 /** The two navigation calls the roads below use; `useRouter()` is one. */
 type Navigator = {
-  push: (href: never) => void;
-  replace: (href: never, options?: { withAnchor?: boolean }) => void;
+  push: (href: never, options?: { withAnchor?: boolean }) => void;
+  dismissTo: (href: never) => void;
 };
 
 /**
@@ -29,15 +29,19 @@ export const villageHref = (growth: VillageGrowth[]) =>
   `/(tabs)/village?grown=${formatGrown(growth)}`;
 
 /**
- * "Continue": the session ends and the road `continueTarget` names replaces the victory screen.
- * The victory screen's button and the big feast's close both come here, so the stack is the same
- * whichever door the hero took.
+ * "Continue": the session ends and the road `continueTarget` names follows it. The victory
+ * screen's button and the big feast's close both come here, so the stack is the same whichever
+ * door the hero took.
+ *
+ * `dismissTo("/")`, not `replace`: a replace in the root stack swaps the session for a second
+ * tab navigator, and back then walks through every old screen of the first one. A road past Home
+ * is pushed after the unwind, the way `quest-import` does.
  */
 export function goOn(router: Navigator, result: SaveResult) {
   useSessionStore.getState().quitSession();
   const { href, anchor } = continueTarget(result.campaign);
-  if (anchor) router.replace(href as never, { withAnchor: true });
-  else router.replace(href as never);
+  router.dismissTo("/" as never);
+  if (anchor) router.push(href as never, { withAnchor: true });
 }
 
 /** "See your village": pushed over the victory screen, so back returns to it. */

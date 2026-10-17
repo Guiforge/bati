@@ -202,6 +202,36 @@ describe("db/heroAdventures", () => {
     await expect(hero.retireHeroAdventure(id)).rejects.toThrow();
   });
 
+  test("a step whose quest is gone (questId 0) survives an edit under a run: kept as 0, texts updated", async () => {
+    const { hero, adv } = mod();
+    const [a, b, c] = adminQuests();
+    if (!a || !b || !c) throw new Error("seed quests expected");
+    const id = await hero.createHeroAdventure(draft([a, b, c]));
+    await adv.startAdventureRun({ adventureId: id });
+    t.sqlite.pragma("foreign_keys = OFF");
+    t.sqlite
+      .prepare("UPDATE adventure_steps SET questId = 0 WHERE adventureId = ? AND stepIndex = 1")
+      .run(id);
+
+    const loaded = await hero.loadHeroAdventureDraft(id);
+    if (!loaded) throw new Error("draft expected");
+    const { frozen: _frozen, ...rest } = loaded;
+    await hero.updateHeroAdventure(id, {
+      ...rest,
+      title: "Edited",
+      steps: rest.steps.map((s, i) => (i === 2 ? { ...s, narrative: "new words" } : s)),
+    });
+
+    const rows = t.sqlite
+      .prepare(
+        "SELECT questId, enNarrative AS narrative FROM adventure_steps WHERE adventureId = ? ORDER BY stepIndex",
+      )
+      .all(id) as { questId: number; narrative: string }[];
+    expect(rows.map((r) => r.questId)).toEqual([a, 0, c]);
+    expect(rows[2]?.narrative).toBe("new words");
+    expect((await hero.loadHeroAdventureDraft(id))?.title).toBe("Edited");
+  });
+
   test("reopening an adventure and saving it again keeps the way-back texts and the monster", async () => {
     const { hero } = mod();
     const [a, b] = adminQuests();
@@ -236,7 +266,7 @@ describe("db/heroAdventures", () => {
   });
 
   test("a quest a live adventure names cannot be deleted, a retired one's can, and nothing is erased", async () => {
-    const { hero, adv, quests } = mod();
+    const { hero, adv, quests, boss } = mod();
     const [a] = adminQuests();
     if (!a) throw new Error("seed quest expected");
     const q1 = await quests.createQuestTemplate({
@@ -254,11 +284,14 @@ describe("db/heroAdventures", () => {
       exercises: [],
       author: "hero",
     });
-    const id = await hero.createHeroAdventure(draft([q1, a]));
+    const id = await hero.createHeroAdventure(
+      draft([q1, a], { kind: "boss", monster: "iron_golem" }),
+    );
     expect((await quests.adventuresUsingQuest(q1)).map((r) => r.enTitle)).toHaveLength(1);
     await expect(quests.deleteQuest(q1)).rejects.toBeInstanceOf(quests.QuestInUseError);
 
     // Retired, with a finished run and a fight: the quest may go, the rest stays (the device's setting).
+    await boss.getOrCreateBossFight(id, "medium");
     await playAll(id);
     await hero.retireHeroAdventure(id);
     expect(await quests.adventuresUsingQuest(q1)).toHaveLength(0);
@@ -269,6 +302,13 @@ describe("db/heroAdventures", () => {
       isActive: number;
     };
     expect(row.isActive).toBe(0);
+    expect(
+      (
+        t.sqlite.prepare("SELECT count(*) AS n FROM boss_fights WHERE adventureId = ?").get(id) as {
+          n: number;
+        }
+      ).n,
+    ).toBe(1);
     expect(
       (
         t.sqlite

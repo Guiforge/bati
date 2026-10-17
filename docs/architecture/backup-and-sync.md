@@ -2,7 +2,7 @@
 title: Backups, encryption and device sync
 type: technical
 status: active
-updated: 2026-09-25
+updated: 2026-10-17
 related: [README.md, ../planning/roadmap.md, ../legal/privacy.md]
 ---
 
@@ -303,6 +303,35 @@ it from a stale step id (none can arrive, R34), and its `startAdventureRun` rese
 without checking the previous run, so a boss felled in a left run loses its Lair banner at the next
 start there. Narrow, accepted: a migration would make the old build refuse the file outright.
 
+## What the hero's adventures add to sync
+
+Migration 0075 gives `adventures` a `uuid`, and `adventures` and `adventure_steps` become merged
+tables for the hero's own rows (`author = 'hero'`); the game's are mapped by `enTitle`, as quests
+are. A third `AuthoredSpec` in `db/merge.ts` follows quests and movements: matched by uuid, the newer
+`updatedAt` replacing the row and all its steps, the cover `questId` of the row translated inline
+through `quest_map` (it is NOT NULL). Retiring is an edit (`isActive = 0`), so there is no adventure
+tombstone.
+
+- **The quests a step names.** A hero quest deleted here that an incoming step names is brought back
+  (`bringNamedQuests`, the quest twin of `resurrect`) and mapped, and its tombstone stays: the quest is
+  dead but in use on both devices, as a movement is. `honourTombstones` keeps a dead quest while an
+  active adventure or a run under way names it (`adventuresUsingQuest`), and removes it on the next
+  sync once nothing does.
+- **A quest gone on both devices.** A retired adventure may lose a step quest, so a step naming a
+  quest the other device itself lacks is written with `questId = 0` instead of rolling the merge back
+  (it would roll back on every sync, for good). The run guard makes such an adventure unplayable until
+  the hero repairs it in the editor. `0` names no row, which holds because a device runs with
+  `foreign_keys` OFF (`db/client.ts`).
+- **Runs, fights and damage stay local.** An edit under a run carries on: the run copied its quests,
+  and a step whose quest changed shows no narrative (`getAdventureStepNarrative` joins on the quest).
+- **The fingerprint** keeps its four segments. A device with no hero adventure adds no row to the
+  content segment, so its name is what it was and no answer the hero gave is asked again. Writing,
+  editing or retiring an adventure moves that segment. The update bumps the newest migration, so every
+  device re-uploads and re-judges every peer once (R10), on purpose.
+- **A peer on the previous build** is compared without error (`adventures.uuid` is read only where it
+  exists) and never merged (`mergePeer` refuses on the newest migration); the previous build reads this
+  build's file as unreadable. Nothing is lost on either side.
+
 ## Device sync
 
 - **Progress is derived, never stored**: bests, records and rungs are read from `completed_exercises`
@@ -364,8 +393,9 @@ start there. Narrow, accepted: a migration would make the old build refuse the f
   finds nothing, and one transaction rolls back whole on anything unmapped. The app then reloads
   (every cache read the old database) and says what arrived. The first merge with a device uploads
   this one's history as `bati-<id>-kept-<time>.batb`, which no device reads as a peer. Left local
-  in this version: campaigns and boss fights (random crits cannot be replayed; the other device's
-  campaign sessions count as training), quest configs, favourites, achievements. A device on
+  in this version: campaign runs and boss fights (random crits cannot be replayed; the other device's
+  campaign sessions count as training), quest configs, favourites, achievements. The hero's own
+  adventures do travel (above). A device on
   another build is not merged; the hero chooses as before, and a refusal is remembered by that
   device's content fingerprint. Verified on the emulator: 14 sessions each, one unique on each
   side, became 15 on both, with the newer village name, one reload, and no second merge after.
@@ -427,7 +457,7 @@ start there. Narrow, accepted: a migration would make the old build refuse the f
 - Dropbox, OneDrive and Google Drive by their own APIs. Dropbox needs an app registered to this
   project (PKCE, no secret, app folder); Drive needs brand verification and a second signing
   certificate for the F-Droid build. Round Sync covers them through WebDAV meanwhile.
-- Merging campaigns, boss fights, quest configs and favourites (roadmap 4.18, item 4).
+- Merging campaign runs, boss fights, quest configs and favourites (roadmap 4.18, item 4). The hero's own adventures merge.
 - **What remains of the limits of merge v2** (roadmap 4.18b): `ownedEquipment` is still last writer wins,
   because a union cannot carry a removal and the roadmap does not say what `""` (everything) means in
   one (parked, a product question). A movement deleted on one device comes back there when the other

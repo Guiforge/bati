@@ -176,6 +176,7 @@ locale drift can't fail a flow.
 | `explore-tabs.yaml` | Smoke: each of the 5 main tabs renders its screen |
 | `journal-after-session.yaml` | A finished session reaches the journal, its report, and the Stats tab |
 | `adventure-journey.yaml` | The campaign route into a workout: adventure → step → session |
+| `adventure-builder.yaml` | Write a two-step route from the gallery, play step 1, assert the step statuses |
 | `oath-flow.yaml` | Swear a preset oath from Home, then find it sworn |
 | `session-interruptions.yaml` | Pause, resume, restart the round, and abandon mid-session |
 | `big-feast-shown-once.yaml` | The animal's big feast opens on the 8th session and is written to `bigFeastsShown` (read on the dev screen); a 9th session opens none and the key does not move. Dev build, seeded with `scripts/village-states-push.sh a-avant` |

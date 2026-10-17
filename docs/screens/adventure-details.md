@@ -3,7 +3,7 @@ title: Adventure Details
 type: screen
 route: /adventures/[id]
 status: active
-updated: 2026-07-14
+updated: 2026-10-17
 related: [adventures.md, quest-details.md, ../gameplay/adventures.md, ../gameplay/boss-fights.md]
 sources: ["app/(tabs)/adventures/[id].tsx"]
 ---
@@ -55,6 +55,13 @@ Continuing an adventure sends you to the next **[Quest Details](quest-details.md
 Tapping the current step in the list does exactly what the Continue button does. A session only
 advances the campaign when it carries the run step's id, and the row used to open the quest
 without it: the quest could be finished forever while the step stayed current.
+
+## Adventures the hero wrote
+
+A pencil in the header opens the editor (`/adventures/edit?id=`). When a step has lost its quest and
+no run is under way, **Start** is replaced by one line (`adventures.missing_quest_own`, or
+`adventures.missing_quest` for a game adventure). A hero quest step that would work the zone the hero is
+sparing wears `adventures.zone_step` under its row.
 
 ## Boss adventures
 

@@ -154,6 +154,7 @@ Preferences:
 - **Expedition (session)** → live distance, moving time, pace; buzzes at the goal; recap map after.
 - **[Adventures Gallery](../screens/adventures.md)** → browse campaigns (route/boss/event).
 - **[Adventure Details](../screens/adventure-details.md)** → see steps, progress, start/continue next quest.
+- **[Adventure Editor](../screens/adventure-editor.md)** → write, edit or retire an adventure of your own.
 - **[Session](../screens/session.md)** → do the workout, rest/pause, finish and earn rewards.
 - **[Journal](../screens/journal.md)** → stats + history, open past sessions.
 - **[Session Details](../screens/session-details.md)** → per-session report (your “receipt”).

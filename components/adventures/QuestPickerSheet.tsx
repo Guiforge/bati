@@ -95,6 +95,7 @@ export function QuestPickerSheet({
             </Pressable>
           </XStack>
           <Input
+            testID="quest-picker-search"
             value={search}
             onChangeText={setSearch}
             placeholder={t("quests.editor_search")}

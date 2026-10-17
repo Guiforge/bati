@@ -133,3 +133,46 @@ describe("a backup from any earlier migration point", () => {
     },
   );
 });
+
+describe("the notebook", () => {
+  test("a backup holding a photo and a note restores both", async () => {
+    const source = createTestDb();
+    try {
+      source.sqlite
+        .prepare(
+          "INSERT INTO completed_sessions (uuid, userLevel, xpEarned, performedAt, notes, notesEditedAt) VALUES ('s1', 'medium', 40, 1750000000, 'felt good', 7)",
+        )
+        .run();
+      source.sqlite
+        .prepare(
+          "INSERT INTO session_photos (uuid, sessionUuid, sortOrder, image, updatedAt) VALUES ('p1', 's1', 0, ?, 5)",
+        )
+        .run(Buffer.from([0xff, 0xd8, 0xff, 0xd9]));
+
+      jest.resetModules();
+      jest.doMock("../db/client", () => clientMock(source));
+      const backupModule = require("../db/backup") as typeof import("../db/backup");
+      const { SCHEMA_VERSION } =
+        require("../db/schemaVersion") as typeof import("../db/schemaVersion");
+      source.sqlite.pragma(`application_id = ${backupModule.BATI_APPLICATION_ID}`);
+      source.sqlite.pragma(`user_version = ${SCHEMA_VERSION}`);
+      const file = path.join(dir, "notebook.db");
+      await backupModule.snapshotDatabaseTo(file);
+      expect(await backupModule.validateBackup(file)).toEqual({ ok: true });
+
+      const restored = new Database(file);
+      try {
+        expect(
+          restored.prepare("SELECT image, updatedAt FROM session_photos WHERE uuid = 'p1'").get(),
+        ).toEqual({ image: Buffer.from([0xff, 0xd8, 0xff, 0xd9]), updatedAt: 5 });
+        expect(
+          restored.prepare("SELECT notes, notesEditedAt AS at FROM completed_sessions").get(),
+        ).toEqual({ notes: "felt good", at: 7 });
+      } finally {
+        restored.close();
+      }
+    } finally {
+      source.close();
+    }
+  });
+});

@@ -392,6 +392,54 @@ async function hasColumn(
 }
 
 /**
+ * The rows of `session_photos` as the other device holds them that this one lacks or holds older
+ * (`photosWon`), on sessions this device has and did not delete. The other copy wins when its
+ * `updatedAt` is later, or the same second and it is the removal: a removal is the only edit a
+ * photo ever gets, and it must win on both devices. `compareWithPeer` counts with the same
+ * predicate (db/backup.ts), or two merged devices would read as diverged forever.
+ */
+export const photosWon = (
+  peer: string,
+  local: string,
+  localGone: string,
+) => `SELECT p.* FROM ${peer}.session_photos p
+    LEFT JOIN ${local}.session_photos l ON l.uuid = p.uuid
+    WHERE p.sessionUuid IN (SELECT uuid FROM ${local}.completed_sessions WHERE uuid IS NOT NULL)
+      AND p.sessionUuid NOT IN (${localGone})
+      AND (l.uuid IS NULL OR p.updatedAt > l.updatedAt
+           OR (p.updatedAt = l.updatedAt AND p.deletedAt IS NOT NULL AND l.deletedAt IS NULL))`;
+
+/** The edit stamps of a saved session: sets and feedback from 0072, the note from 0075. */
+const STAMP_COLUMNS = ["setsEditedAt", "feedbackEditedAt", "notesEditedAt"] as const;
+type StampColumn = (typeof STAMP_COLUMNS)[number];
+
+/** The stamp columns a schema has: a device on an older build has fewer, or none. */
+async function stampColumns(conn: IsolatedConnection, schema: string): Promise<StampColumn[]> {
+  const have: StampColumn[] = [];
+  for (const column of STAMP_COLUMNS) {
+    if (await hasColumn(conn, schema, "completed_sessions", column)) have.push(column);
+  }
+  return have;
+}
+
+/**
+ * A schema's photos as the fingerprint's fifth segment names them: how many rows, and the sum of
+ * their stamps. A sum and not a max, as in `sessionsStamp`: a removal grows one row's `updatedAt`.
+ * `0:0` on a build before 0075, which is what a device with no photo reads too.
+ */
+const photosStamp = (schema: string, has: boolean) =>
+  has
+    ? `(SELECT count(*) || ':' || cast(total(updatedAt) AS INTEGER) FROM ${schema}.session_photos)`
+    : "'0:0'";
+
+async function hasPhotos(conn: IsolatedConnection, schema: string): Promise<boolean> {
+  const row = await conn.getFirstAsync<{ n: number }>(
+    `SELECT count(*) AS n FROM ${schema}.sqlite_master WHERE name = 'session_photos'`,
+  );
+  return Number(row?.n ?? 0) > 0;
+}
+
+/**
  * Sessions both devices hold that `a` edited later than `b` (`0072`): a corrected set or a feedback
  * given after the copy, each stamp read on its own, as `mergePeer` takes them. An unedited session
  * reads as 0. `b` on a build before 0072 has no stamps, so every edit `a` made is news it lacks;
@@ -404,25 +452,26 @@ async function hasColumn(
 function editedLaterIn(
   a: string,
   b: string,
-  aStamps: boolean,
-  bStamps: boolean,
+  aStamps: StampColumn[],
+  bStamps: StampColumn[],
   tie: CanonicalColumns | null,
 ): string {
-  if (!aStamps) return "0";
-  const later = (column: string, content: (schema: string, alias: string) => string) =>
-    bStamps
+  if (aStamps.length === 0) return "0";
+  const content: Record<StampColumn, (schema: string, alias: string) => string> = {
+    setsEditedAt: (schema, alias) => (tie ? setsCanon(schema, alias, tie.sets) : ""),
+    feedbackEditedAt: (_schema, alias) => `ifnull(${alias}.feedback, '')`,
+    notesEditedAt: (_schema, alias) => `ifnull(${alias}.notes, '')`,
+  };
+  const later = (column: StampColumn) =>
+    bStamps.includes(column)
       ? `(ifnull(x.${column}, 0) > ifnull(y.${column}, 0)${
           tie
-            ? ` OR (x.${column} IS NOT NULL AND x.${column} = y.${column} AND ${content(a, "x")} > ${content(b, "y")})`
+            ? ` OR (x.${column} IS NOT NULL AND x.${column} = y.${column} AND ${content[column](a, "x")} > ${content[column](b, "y")})`
             : ""
         })`
       : `ifnull(x.${column}, 0) > 0`;
-  const sets = (schema: string, alias: string) => (tie ? setsCanon(schema, alias, tie.sets) : "");
-  const feedback = (_schema: string, alias: string) => `ifnull(${alias}.feedback, '')`;
   return `SELECT count(*) FROM ${a}.completed_sessions x JOIN ${b}.completed_sessions y ON y.uuid = x.uuid
-    WHERE ${later("setsEditedAt", sets)} OR ${later("feedbackEditedAt", feedback)}${
-      tie ? " OR x.xpEarned > y.xpEarned" : ""
-    }`;
+    WHERE ${aStamps.map(later).join(" OR ")}${tie ? " OR x.xpEarned > y.xpEarned" : ""}`;
 }
 
 /**
@@ -431,11 +480,12 @@ function editedLaterIn(
  * while it is 0, so a device nobody edited on keeps the name it had before 0072, and an answer the
  * hero gave about it is not asked again.
  */
-function sessionsStamp(schema: string, stamps: boolean): string {
-  const total = "total(setsEditedAt) + total(feedbackEditedAt)";
-  const edited = stamps
-    ? ` || CASE WHEN ${total} > 0 THEN ':' || cast(${total} AS INTEGER) ELSE '' END`
-    : "";
+function sessionsStamp(schema: string, stamps: StampColumn[]): string {
+  const total = stamps.map((column) => `total(${column})`).join(" + ");
+  const edited =
+    stamps.length > 0
+      ? ` || CASE WHEN ${total} > 0 THEN ':' || cast(${total} AS INTEGER) ELSE '' END`
+      : "";
   return `SELECT count(*) || ':' || ifnull(max(uuid), '')${edited} FROM ${schema}.completed_sessions`;
 }
 
@@ -570,8 +620,12 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
     const named = peerNamed && (await hasColumn(conn, "main", "quests", "uuid"));
     // `exerciseIdentity` names a hero movement by uuid, so both sides must have one (0066).
     const canon = sameBuild && named ? await canonicalColumns(conn, CANDIDATE) : null;
-    const peerStamps = await hasColumn(conn, CANDIDATE, "completed_sessions", "setsEditedAt");
-    const localStamps = await hasColumn(conn, "main", "completed_sessions", "setsEditedAt");
+    const peerStamps = await stampColumns(conn, CANDIDATE);
+    const localStamps = await stampColumns(conn, "main");
+    const peerHasPhotos = await hasPhotos(conn, CANDIDATE);
+    // Photo news counts only between two devices on one build, like the content tombstones.
+    const photoNews = (theirs: string, mine: string, mineGone: string) =>
+      sameBuild ? `(SELECT count(*) FROM (${photosWon(theirs, mine, mineGone)}))` : "0";
     const row = await conn.getFirstAsync<Record<string, number | string | null>>(
       `SELECT
          (SELECT count(*) FROM (${sessions(CANDIDATE)}) p
@@ -587,13 +641,16 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
          (${editedLaterIn("main", CANDIDATE, localStamps, peerStamps, canon)}) AS localEdited,
          ${goneContent(localContentGone, peerContentGone)} AS peerGoneContent,
          ${goneContent(peerContentGone, localContentGone)} AS localGoneContent,
+         ${photoNews(CANDIDATE, "main", localGone)} AS peerPhotos,
+         ${photoNews("main", CANDIDATE, peerGone)} AS localPhotos,
          (SELECT max(performedAt) FROM ${CANDIDATE}.completed_sessions) AS peerLatest,
          (SELECT value FROM ${CANDIDATE}.user_preferences WHERE key = 'villageName') AS peerVillage,
          (SELECT count(*) FROM main.completed_sessions) AS localSessions,
          (${sessionsStamp(CANDIDATE, peerStamps)}) AS s,
          (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed, null)})) AS c,
          (SELECT count(*) FROM (${peerGone})) AS g,
-         ${extraStamp(CANDIDATE, peerContentGone)} AS x`,
+         ${extraStamp(CANDIDATE, peerContentGone)} AS x,
+         ${photosStamp(CANDIDATE, peerHasPhotos)} AS p`,
     );
     const n = (key: string) => Number(row?.[key] ?? 0);
     return {
@@ -604,18 +661,20 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
         n("peerDeleted") +
         n("peerContent") +
         n("peerEdited") +
-        n("peerGoneContent"),
+        n("peerGoneContent") +
+        n("peerPhotos"),
       localChanges:
         n("localOnly") +
         n("localDeleted") +
         n("localContent") +
         n("localEdited") +
-        n("localGoneContent"),
+        n("localGoneContent") +
+        n("localPhotos"),
       peerLatest:
         row?.peerLatest === null || row?.peerLatest === undefined ? null : n("peerLatest"),
       peerVillage: typeof row?.peerVillage === "string" ? row.peerVillage : null,
       localSessions: n("localSessions"),
-      fingerprint: `${row?.s}|${row?.c}|${row?.g}|${row?.x}`,
+      fingerprint: `${row?.s}|${row?.c}|${row?.g}|${row?.x}|${row?.p}`,
     };
   });
 }
@@ -630,12 +689,13 @@ export function stateFingerprint(): Promise<string> {
     const gone = await tombstones(conn, "main");
     const row = await conn.getFirstAsync<Record<string, string | number | null>>(
       `SELECT
-         (${sessionsStamp("main", true)}) AS s,
+         (${sessionsStamp("main", [...STAMP_COLUMNS])}) AS s,
          (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main", true, null)})) AS c,
          (SELECT count(*) FROM (${gone})) AS g,
-         ${extraStamp("main", await contentTombstones(conn, "main"))} AS x`,
+         ${extraStamp("main", await contentTombstones(conn, "main"))} AS x,
+         ${photosStamp("main", true)} AS p`,
     );
-    return `${row?.s}|${row?.c}|${row?.g}|${row?.x}`;
+    return `${row?.s}|${row?.c}|${row?.g}|${row?.x}|${row?.p}`;
   });
 }
 

@@ -16,6 +16,7 @@ import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { StatusBand } from "@/components/common/StatusBand";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Plus } from "@/components/icons";
+import { ImportFileButton } from "@/components/quests/QuestFileButtons";
 import { ADVENTURE_ASSETS, type AdventureAssetKey, getAdventureAsset } from "@/constants/assetMap";
 import {
   getRecentSessionHistory,
@@ -419,6 +420,16 @@ export default function AdventureEditor() {
             >
               {t("adventures.editor_from_recent")}
             </Text>
+          ) : null}
+
+          {/* Before the form, on a new adventure only, as the new-quest editor does. */}
+          {adventureId == null ? (
+            <ImportFileButton
+              label="adventures.import_adventure"
+              hint="adventures.import_hint"
+              failed="adventures.import_failed"
+              testID="adventure-import"
+            />
           ) : null}
 
           <ImageChoiceField

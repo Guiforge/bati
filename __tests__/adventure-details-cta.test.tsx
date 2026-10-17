@@ -46,9 +46,16 @@ jest.mock("@/stores/settings", () => ({
   },
 }));
 
+const mockShowError = jest.fn();
 jest.mock("@/components/common/Toast", () => ({
-  useToast: () => ({ showError: jest.fn(), showSuccess: jest.fn(), showInfo: jest.fn() }),
+  useToast: () => ({ showError: mockShowError, showSuccess: jest.fn(), showInfo: jest.fn() }),
 }));
+// The file itself is proven in adventure-file.test.ts; here only what the share button says.
+jest.mock("@/src/adventureFile", () => ({
+  adventureToFile: jest.fn(),
+  shareAdventure: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
 
 function mockStep(stepIndex: number, questId = 100 + stepIndex) {
   return {
@@ -478,5 +485,127 @@ describe("an adventure the hero wrote", () => {
     const { findByTestId, queryByTestId } = await renderScreen();
     expect(await findByTestId("adventure-step-1-zone")).toBeTruthy();
     expect(queryByTestId("adventure-step-0-zone")).toBeNull();
+  });
+});
+
+// Sharing an adventure: a dialog always says what leaves before the share sheet opens.
+describe("sharing an adventure the hero wrote", () => {
+  const file = () =>
+    require("@/src/adventureFile") as { adventureToFile: jest.Mock; shareAdventure: jest.Mock };
+  const db = () => require("@/db") as { getAdventureDetails: jest.Mock };
+  const written = (over: Record<string, number>) => ({
+    json: '{"kind":"bati-adventure"}',
+    file: { adventure: { title: "Tale" } },
+    photos: 0,
+    leftOut: 0,
+    stepsLeft: 0,
+    ...over,
+  });
+  const open = async () => {
+    db().getAdventureDetails.mockResolvedValueOnce({
+      adventure: {
+        kind: "route",
+        author: "hero",
+        enTitle: "Tale",
+        frTitle: "Tale",
+        enDescription: "",
+        frDescription: "",
+        imagePath: null,
+      },
+      steps: [mockStep(0), mockStep(1)],
+    });
+    const screen = await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+    await screen.findByText("Tale");
+    return screen;
+  };
+
+  beforeEach(() => {
+    file().adventureToFile.mockReset();
+    file().shareAdventure.mockClear();
+    mockShowError.mockClear();
+  });
+
+  test("the dialog holds the three sentences in order, and Share sends the written file", async () => {
+    file().adventureToFile.mockResolvedValue(written({ photos: 2, leftOut: 1, stepsLeft: 1 }));
+    const screen = await open();
+    await fireEvent.press(screen.getByTestId("adventure-share"));
+
+    expect(await screen.findByText("Share this adventure")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "The file holds 2 photos. 1 step stays out of the file: its quest is gone, or one of its texts is too long. 1 photo cannot travel in the file and stays on your phone.",
+      ),
+    ).toBeTruthy();
+    expect(file().shareAdventure).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByText("Share"));
+    expect(file().shareAdventure).toHaveBeenCalledWith('{"kind":"bati-adventure"}', "Tale");
+  });
+
+  test("with nothing left out and no photo, only the no-photo sentence", async () => {
+    file().adventureToFile.mockResolvedValue(written({}));
+    const screen = await open();
+    await fireEvent.press(screen.getByTestId("adventure-share"));
+    expect(
+      await screen.findByText("The file holds your adventure and its quests, with no photo."),
+    ).toBeTruthy();
+  });
+
+  test("cancel does not share", async () => {
+    file().adventureToFile.mockResolvedValue(written({ photos: 1 }));
+    const screen = await open();
+    await fireEvent.press(screen.getByTestId("adventure-share"));
+    await screen.findByText("The file holds 1 photo.");
+    await fireEvent.press(screen.getByText("Cancel"));
+    expect(file().shareAdventure).not.toHaveBeenCalled();
+  });
+
+  test("under two steps that can travel it toasts and opens no dialog", async () => {
+    file().adventureToFile.mockResolvedValue(null);
+    const screen = await open();
+    await fireEvent.press(screen.getByTestId("adventure-share"));
+    await waitFor(() =>
+      expect(mockShowError).toHaveBeenCalledWith(
+        "Fewer than 2 steps can travel in a file. Check their quests first.",
+      ),
+    );
+    expect(screen.queryByText("Share this adventure")).toBeNull();
+  });
+
+  test("a file that cannot be written is reported and said", async () => {
+    const boom = new Error("fails its own reader");
+    file().adventureToFile.mockRejectedValue(boom);
+    const screen = await open();
+    await fireEvent.press(screen.getByTestId("adventure-share"));
+    await waitFor(() =>
+      expect(mockShowError).toHaveBeenCalledWith("The file could not be written. Try again."),
+    );
+    const { reportError } = require("@/src/reportError") as { reportError: jest.Mock };
+    expect(reportError).toHaveBeenCalledWith("adventures.share", boom);
+  });
+
+  test("the game's adventures have no share button", async () => {
+    db().getAdventureDetails.mockResolvedValueOnce({
+      adventure: {
+        kind: "route",
+        author: "Admin",
+        enTitle: "Tale",
+        frTitle: "Tale",
+        enDescription: "",
+        frDescription: "",
+        imagePath: null,
+      },
+      steps: [mockStep(0), mockStep(1)],
+    });
+    const screen = await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+    await screen.findByText("Tale");
+    expect(screen.queryByTestId("adventure-share")).toBeNull();
   });
 });

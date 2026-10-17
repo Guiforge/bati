@@ -69,6 +69,9 @@ afterAll(() => {
   t.close();
 });
 
+/** A file as the screen reads it: parsed JSON, then checked. */
+const parseJson = (raw: string) => load().adv.parseAdventureData(JSON.parse(raw));
+
 const load = () => ({
   adv: require("../src/adventureFile") as AdventureModule,
   quest: require("../src/questFile") as typeof import("../src/questFile"),
@@ -289,12 +292,6 @@ describe("reading an adventure file", () => {
     const read = load().adv.parseAdventureData(valid());
     expect(Object.keys(read).sort()).toEqual(["adventure", "kind", "steps", "version"]);
     expect(read.steps).toHaveLength(2);
-  });
-
-  test("not JSON is unreadable", () => {
-    expect(() => load().adv.parseAdventureFile("{not json")).toThrow(
-      expect.objectContaining({ reason: "unreadable" }),
-    );
   });
 
   test.each([
@@ -519,7 +516,7 @@ describe("writing an adventure file", () => {
       "title",
       "uuid",
     ]);
-    expect(load().adv.parseAdventureFile(out.json)).toEqual(out.file);
+    expect(parseJson(out.json)).toEqual(out.file);
   });
 
   test("a step whose quest is gone is left out and counted; under two left there is no file", async () => {
@@ -571,7 +568,7 @@ describe("writing an adventure file", () => {
     const kept = out.file.steps[0]?.quest;
     assert(kept && "own" in kept);
     expect(kept.own.quest.title.en).toHaveLength(120);
-    expect(load().adv.parseAdventureFile(out.json)).toEqual(out.file);
+    expect(parseJson(out.json)).toEqual(out.file);
 
     const before = counts();
     const done = await load().adv.importAdventure(out.file, { asCopy: false });
@@ -605,7 +602,7 @@ describe("writing an adventure file", () => {
     expect(
       first.own.slots.every((s) => "own" in s.movement && s.movement.own.image.startsWith("data:")),
     ).toBe(true);
-    expect(dataImages(load().adv.parseAdventureFile(out.json)).size).toBe(out.photos);
+    expect(dataImages(parseJson(out.json)).size).toBe(out.photos);
     await expect(load().adv.importAdventure(out.file, { asCopy: false })).resolves.toBeDefined();
   });
 
@@ -640,7 +637,7 @@ describe("writing an adventure file", () => {
     expect(utf8(out.json)).toBeLessThanOrEqual(MAX_FILE_BYTES);
     expect(out.photos + out.leftOut).toBe(2);
     expect(out.leftOut).toBe(1);
-    expect(dataImages(load().adv.parseAdventureFile(out.json)).size).toBe(out.photos);
+    expect(dataImages(parseJson(out.json)).size).toBe(out.photos);
   });
 
   test("a picture the reader would drop is not sent, charged or counted as sent", async () => {
@@ -671,7 +668,7 @@ describe("writing an adventure file", () => {
     const { id } = await heroAdventure([withCover.id, other.id]);
     const out = await written(id);
     expect(out.photos).toBe(1);
-    expect(dataImages(load().adv.parseAdventureFile(out.json)).size).toBe(1);
+    expect(dataImages(parseJson(out.json)).size).toBe(1);
 
     t.sqlite
       .prepare("UPDATE quests SET imagePath = ? WHERE uuid = ?")
@@ -683,7 +680,7 @@ describe("writing an adventure file", () => {
     const own = tall.file.steps[0]?.quest;
     assert(own && "own" in own);
     expect(own.own.quest.image).toBeNull();
-    expect(dataImages(load().adv.parseAdventureFile(tall.json)).size).toBe(0);
+    expect(dataImages(parseJson(tall.json)).size).toBe(0);
   });
 
   test("the file is named for the adventure, in at most 255 bytes", () => {
@@ -778,7 +775,7 @@ describe("previewing an adventure file", () => {
     const known = await preview(
       fileOf(adventureLiteral(nextUuid(), steps, {}, { kind: "boss", monster: monster.key })),
     );
-    expect(known.monster).toBe(monster.key);
+    expect(known.monster?.key).toBe(monster.key);
     expect(known.monsterUnknown).toBe(false);
   });
 });

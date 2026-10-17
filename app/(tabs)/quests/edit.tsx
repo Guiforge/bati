@@ -16,7 +16,7 @@ import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Plus, Trash2, X } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
-import { ImportQuestButton } from "@/components/quests/QuestFileButtons";
+import { ImportFileButton } from "@/components/quests/QuestFileButtons";
 import { getExerciseThumb, getQuestAsset, QUEST_ASSETS } from "@/constants/assetMap";
 import {
   adventuresUsingQuest,
@@ -433,7 +433,12 @@ export default function QuestEditor() {
     return (
       <YStack flex={1} bg="$background" p="$5" pt={insets.top + 12} gap="$4">
         <QuotaPanel text={t("plus.quest_quota", { count: refusedAt })}>
-          <ImportQuestButton />
+          <ImportFileButton
+            label="quests.import_quest"
+            hint="quests.import_hint"
+            failed="quests.import_failed"
+            testID="quest-import"
+          />
         </QuotaPanel>
       </YStack>
     );
@@ -480,7 +485,14 @@ export default function QuestEditor() {
 
           {/* Before the form, on a new quest only: a hero holding a quest someone sent them should
               not have to scroll past an empty form to find where it goes. */}
-          {questId == null ? <ImportQuestButton /> : null}
+          {questId == null ? (
+            <ImportFileButton
+              label="quests.import_quest"
+              hint="quests.import_hint"
+              failed="quests.import_failed"
+              testID="quest-import"
+            />
+          ) : null}
 
           {/* The cover leads, as it does in the movement editor: a quest is a card in a gallery
             long before anyone reads its rounds. Seed quests carry authored art; a hero picks

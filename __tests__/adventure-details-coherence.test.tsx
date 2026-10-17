@@ -24,6 +24,8 @@ jest.mock("@/src/plus/access", () => ({
   quotaRefusal: jest.fn(async () => null),
 }));
 jest.mock("@/db/questConfig", () => ({ startingDifficulty: () => "medium" }));
+// The share button of a hero adventure reads the file module, which opens the database.
+jest.mock("@/src/adventureFile", () => ({ adventureToFile: jest.fn(), shareAdventure: jest.fn() }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useLocalSearchParams: () => ({ id: "1" }),

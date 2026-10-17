@@ -514,14 +514,14 @@ every statement touching `exercises` to `creator`. `AGENTS.md`, `__tests__/migra
 
 ---
 
-## 5. Quest import and export
+## 5. Quest and adventure files
 
 **R66. Export file** = `{kind:'bati-quest', version:1, quest{uuid, title x4, description x4,
 rounds, restSeconds, roundRestSeconds, image}, slots[]}`. Official movements travel by English
 name; hero movements travel whole (uuid, name, description, image, muscles, style, difficulty,
 equipment, pattern, measure, secondsPerRep). No sessions, no hero name. A slot whose exercise is
 not in the catalogue is silently dropped; a hero row without uuid throws; the placeholder cover
-travels as null. `src/questFile.ts:54, 139-183`.
+travels as null. `src/questFile.ts` (`questToFile`).
 Invariant: `parse(export(q))` equals the exported structure.
 
 **R67. Limits on read:** file <= 8,000,000 bytes (declared size and text length), `content://`
@@ -540,7 +540,8 @@ Invariant: no accepted image string contains a scheme other than `data:`.
 
 **R69. Identity on import:** quest and hero movements are recognised by uuid, never by name.
 - Same quest uuid as one of the receiver's hero quests: updated in place (id, history kept; head
-  and slots overwritten, `updatedAt` bumped). `asCopy` gives it a new uuidv7.
+  and slots overwritten, `updatedAt` bumped), for a quest file; inside an adventure file the quest is
+  reused as it is (R124). `asCopy` gives it a new uuidv7.
 - Same movement uuid: the receiver's row is used as is (the file does not edit it), unretired if
   retired; the slot style is the receiver's.
 - Same name, different uuid: a second quest or movement (hero names have no unique index).
@@ -555,6 +556,43 @@ the quest count unchanged; a failing import leaves counts unchanged.
 
 **R70b. A borrowed uuid overwrites the receiver's quest** (documented and previewed); an Admin
 quest is never overwritten (only `isUserQuest` rows match). `src/questFile.ts:525-527, 545`.
+
+**R122. Adventure file** = `{kind:'bati-adventure', version:1, adventure{uuid, title, description,
+cover, end}, steps[]}`. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
+(`{official}`) or a hero one as a quest body (`{own: {quest, slots}}`, R66). The adventure's texts are
+single strings (the row repeats them in four columns). No run, victory, boss HP, weakness, resistance,
+sort order, sender or date. `src/adventureFile.ts`.
+Invariant: `parse(write(a))` equals `write(a)`.
+
+**R123. Limits on read:** the file limits of R67; 2 to 8 steps (fewer is `not_an_adventure`, more is
+`newer`, and the length is read before any element); title 1 to 60, description 280, narrative and outro
+160, cut in UTF-16 units without leaving half a surrogate pair, past 4x refused; `version` > 1 and an
+`end.kind` this build lacks give `newer`; `cover` and `end.monster` must be a bare key
+(`[a-z0-9_]{1,64}`), so a URL, a picture or a path is `not_an_adventure`, and a well-formed key this build
+lacks is the default cover or a route; a step has exactly one of `official` and `own`; fields are read
+one by one into a fresh object, so `__proto__` and extra keys change nothing; an embedded quest is held
+to R66 to R68.
+Invariant: no accepted file yields a row outside the editors' limits.
+
+**R124. Identity on import:** hero quests and movements by uuid; a hero quest already here is reused as
+it is, never rewritten on this device (a quest file is what updates a quest); a seed quest by `enTitle`,
+and one this build lacks is left out, with at least 2 steps kept and the indexes contiguous; a quest that
+names a seed movement this build lacks is left out the same way. The adventure by uuid is updated in
+place and brought back if retired, unless a run of it is under way (checked again inside the
+transaction), then it is written as a copy under a fresh uuid; `asCopy` gives a fresh uuid. Everything in
+one transaction; no `can()` and no quota. Invariant: `import(f); import(f)` leaves the same rows as
+`import(f)` (compared by content, the step ids change); a refused or failed import leaves every count
+unchanged.
+
+**R125. Bati never writes a file it would refuse:** each hero quest goes through the reader's own
+`parseQuestBody` and is written as parsed; one it refuses (a text past 4x its limit, which the quest and
+movement editors do not prevent, or 0 slots) stays out and is counted in `stepsLeft`. Pictures, quest
+covers included, go in under a byte budget charged `length x occurrences`, covers then movements in step
+order, and the walk continues past one that does not fit; one `safeImage` would drop is never sent nor
+charged and counts in `leftOut`. The written string is read back by `parseAdventureData` before it
+leaves. The hero is told the photos, the steps and the pictures left out before the share sheet opens.
+Invariant: for every adventure the editors can save, `parseAdventureData(JSON.parse(json))` does not
+throw and `json` is at most `MAX_FILE_BYTES` bytes.
 
 ---
 

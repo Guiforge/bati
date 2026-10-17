@@ -25,6 +25,8 @@ Write an adventure out of quests the hero already has or has written. One scroll
 - **The end**: a route, or a boss among the six painted ones, each with what it is weak to, what it
   resists, and about how many HP it has at the hero's level for these steps (the figure the fight will
   use). If every step is an outing, a line says outings do not hit the boss; saving stays possible.
+- **Import an adventure** (new adventure only, above the form): opens the file picker, then the same
+  preview screen a file tapped in a chat opens (`/quest-import`), which reads the kind from the file.
 - **Summary**: steps, weeks, the boss, what it trains.
 - **Save** creates or updates, then opens the adventure's page. Missing name or fewer than two steps
   are said on the field.

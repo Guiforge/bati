@@ -1,4 +1,4 @@
-import { ADVENTURE_ASSETS, type AdventureAssetKey, type BossAssetKey } from "@/constants/assetMap";
+import { ADVENTURE_ASSETS, type AdventureAssetKey } from "@/constants/assetMap";
 import { invalidateAdventures } from "@/db/adventures";
 import { type TransactionTx, transactionOrFallback } from "@/db/client";
 import { invalidateExercisesCache, listExercises, officialByName } from "@/db/exercises";
@@ -14,6 +14,7 @@ import {
   MAX_STEPS,
   MAX_TITLE,
   MIN_STEPS,
+  type Monster,
 } from "@/db/heroAdventures";
 import {
   invalidateQuestTemplates,
@@ -186,16 +187,6 @@ export function parseAdventureData(data: unknown): AdventureFile {
       throw new AdventureFileError(FROM_QUEST_REASON[error.reason]);
     throw error;
   }
-}
-
-export function parseAdventureFile(raw: string): AdventureFile {
-  let data: unknown;
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    throw new AdventureFileError("unreadable");
-  }
-  return parseAdventureData(data);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -386,7 +377,7 @@ export type AdventurePreview = {
   /** A run of `existing` is under way: it arrives as a copy, forced. */
   running: boolean;
   /** Null for a route. */
-  monster: BossAssetKey | null;
+  monster: Monster | null;
   /** A boss this version lacks: it arrives as a route. */
   monsterUnknown: boolean;
 };
@@ -428,8 +419,7 @@ export async function previewAdventure(
   const statuses = stepStatuses(file, catalogue, templates);
   const here = await findHeroAdventureByUuid(file.adventure.uuid);
   const e = file.adventure.end;
-  const monster =
-    e.kind === "boss" ? (monsters.find((m) => m.key === e.monster)?.key ?? null) : null;
+  const monster = e.kind === "boss" ? (monsters.find((m) => m.key === e.monster) ?? null) : null;
   return {
     steps: file.steps.map(({ quest }, i) => ({
       status: statuses[i]?.status ?? "missing",

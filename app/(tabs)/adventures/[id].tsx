@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { BossPanel } from "@/components/adventures/BossPanel";
 import { starsFor } from "@/components/adventures/replayStars";
+import { ShareAdventureButton } from "@/components/adventures/ShareAdventureButton";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -559,15 +560,18 @@ export default function AdventureDetailsScreen() {
               </XStack>
             </XStack>
 
-            {isOwn ? (
-              <AppIconButton
-                testID="adventure-edit"
-                onPress={() => router.push(`/adventures/edit?id=${adventureId}` as never)}
-                accessibilityRole="button"
-                accessibilityLabel={t("adventures.edit")}
-              >
-                <Pencil size={20} color="$text" />
-              </AppIconButton>
+            {isOwn && adventureId !== null ? (
+              <>
+                <ShareAdventureButton adventureId={adventureId} ask={ask} />
+                <AppIconButton
+                  testID="adventure-edit"
+                  onPress={() => router.push(`/adventures/edit?id=${adventureId}` as never)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("adventures.edit")}
+                >
+                  <Pencil size={20} color="$text" />
+                </AppIconButton>
+              </>
             ) : null}
 
             <YStack items="flex-end" gap="$1">

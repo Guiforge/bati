@@ -5,7 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import "@/i18n";
 import QuestImportScreen from "@/app/quest-import";
-import { ImportQuestButton } from "@/components/quests/QuestFileButtons";
+import { ImportFileButton } from "@/components/quests/QuestFileButtons";
 import { rawColors } from "@/constants/rawColors";
 import type { QuestTemplate } from "@/db/quests";
 import { formatTarget } from "@/db/targets";
@@ -50,7 +50,7 @@ jest.mock("@/stores/settings", () => {
 });
 jest.mock("@/src/questFile", () => ({
   ...jest.requireActual("@/src/questFile"),
-  readQuestFile: (...a: unknown[]) => mockRead(...a),
+  readBatiFile: (...a: unknown[]) => mockRead(...a),
   previewQuest: (...a: unknown[]) => mockPreview(...a),
   importQuest: (...a: unknown[]) => mockImport(...a),
   pickQuestFile: (...a: unknown[]) => mockPick(...a),
@@ -287,15 +287,47 @@ test("a quest the hero has says it will update, and keeping both imports under a
 
 // A refused file showed a raw key, or nothing, instead of why.
 test.each([
-  [new QuestFileError("newer"), "This quest comes from a newer Bati. Update the app to open it."],
-  [new QuestFileError("not_a_quest"), "This file holds no Bati quest."],
-])("a refused file says why: %s", async (error, sentence) => {
+  [
+    "a newer quest file",
+    { ...file, version: 2 },
+    "This quest comes from a newer Bati. Update the app to open it.",
+    "Quest received",
+  ],
+  [
+    "a quest that is not one",
+    { kind: "bati-quest", version: 1, quest: 7 },
+    "This file holds no Bati quest.",
+    "Quest received",
+  ],
+])("a refused file says why: %s", async (_name, data, sentence, header) => {
+  mockRead.mockResolvedValue(data);
+  await mount();
+
+  expect(await screen.findByText(sentence)).toBeTruthy();
+  expect(screen.getByText(header)).toBeTruthy();
+  expect(screen.queryByTestId("quest-import-confirm")).toBeNull();
+  expect(reportError).not.toHaveBeenCalled();
+});
+
+// The read refuses before the kind is known, so its sentence has to hold for both kinds.
+test.each([
+  [new QuestFileError("not_a_quest"), "This file holds no Bati quest or adventure."],
+  [new QuestFileError("unreadable"), "This file cannot be read. Ask for it to be sent again."],
+])("a read refused before the kind is known: %s", async (error, sentence) => {
   mockRead.mockRejectedValue(error);
   await mount();
 
   expect(await screen.findByText(sentence)).toBeTruthy();
-  expect(screen.queryByTestId("quest-import-confirm")).toBeNull();
+  expect(screen.getByText("File received")).toBeTruthy();
   expect(reportError).not.toHaveBeenCalled();
+});
+
+test("a file of another kind holds no quest or adventure", async () => {
+  mockRead.mockResolvedValue({ kind: "bati-village", version: 1 });
+  await mount();
+
+  expect(await screen.findByText("This file holds no Bati quest or adventure.")).toBeTruthy();
+  expect(screen.getByText("File received")).toBeTruthy();
 });
 
 // Opened with no file, the screen waited forever on a read it never made.
@@ -405,9 +437,18 @@ test("back with a screen underneath goes back to it", async () => {
   expect(mockRouter.replace).not.toHaveBeenCalled();
 });
 
-describe("ImportQuestButton", () => {
+describe("ImportFileButton", () => {
   const press = async () => {
-    await render(wrap(<ImportQuestButton />));
+    await render(
+      wrap(
+        <ImportFileButton
+          label="quests.import_quest"
+          hint="quests.import_hint"
+          failed="quests.import_failed"
+          testID="quest-import"
+        />,
+      ),
+    );
     await fireEvent.press(screen.getByTestId("quest-import"));
   };
 
@@ -457,6 +498,7 @@ test("the file being read shows a spinner, not an empty screen", async () => {
   await mount();
 
   expect(screen.getByTestId("quest-import-loading")).toBeTruthy();
+  expect(screen.getByText("File received")).toBeTruthy();
   expect(screen.queryByTestId("quest-import-confirm")).toBeNull();
 });
 

@@ -42,6 +42,16 @@ Everything is free: no quota, no Bati+ lock, no offer (`db/heroAdventures.ts` is
 - **The zone.** A hero quest used as a step that would work the zone being spared wears a line on the
   detail screen. The game's quests substitute their slots and are never flagged.
 
+### Sharing
+
+A hero adventure is sent as a file from the share icon on its page, through the phone's share sheet, and
+imported from the new-adventure editor or by tapping the file. A dialog first says how many photos leave
+(the file holds the adventure, its quests, the movements the hero made for them and their photos, covers
+included, and nothing else: no name, no history) and what stays behind. The receiver sees the adventure and
+each step, already on the phone, arriving with it, or unknown to their version and left out. Importing
+updates the same adventure if they have it (or keeps both), writes it beside the one in progress if a
+playthrough is under way, and never rewrites a quest they already have. Free: no quota, no network.
+
 ---
 
 ## 🗺️ What is an Adventure?

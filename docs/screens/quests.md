@@ -53,3 +53,13 @@ Selecting a quest takes you to **[Quest Details](quest-details.md)** to review a
 ## Implementation note
 
 The current gallery implementation uses tokenized dark cards and lighter thumbnail borders to reduce the old high-contrast gallery look.
+
+## Receiving a file (`/quest-import`)
+
+One screen for both kinds of file (`app/quest-import.tsx`). It reads the file once and looks at `kind`: a
+quest file shows the quest preview (rename, tick the movements, update or keep both), an adventure file
+shows `AdventureImport` (cover, text, end, each step as already here, arriving with it or unknown to this
+version, update or keep both, and a forced copy while a run of it is under way). The header names what
+was received, never the door that opened it; before the kind is known it reads "File received". The kind
+also decides where a success lands: `/quests/{id}` or `/adventures/{id}`. Both editors offer the same
+picker button.

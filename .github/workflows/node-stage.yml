@@ -68,7 +68,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{"name":"FAULTY","listen":"0.0.0.0:28090","upstream":"host.docker.internal:28190","enabled":true}'
           for _ in $(seq 1 20); do curl -fs http://127.0.0.1:28090/_admin/files && break; sleep 1; done
-      - run: node node_modules/jest/bin/jest.js --config test/node/jest.config.js gpx quests restore sync/lagging sync/random
+      - run: node node_modules/jest/bin/jest.js --config test/node/jest.config.js gpx quests restore sync/lagging sync/random sync/adventure-file
         env:
           SYNC_RUNS: "1"
           SYNC_EVENTS: "8"

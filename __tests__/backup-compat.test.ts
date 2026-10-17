@@ -25,9 +25,9 @@ import { clientMock, createTestDb } from "./helpers/testDb";
  */
 
 /** The migration that gave adventures their uuid. */
-const HERO_ADVENTURES_IDX = 75;
+const HERO_ADVENTURES_IDX = 76;
 /** The one that let the hero name their boss. */
-const BOSS_VOICE_IDX = 76;
+const BOSS_VOICE_IDX = 77;
 
 type Journal = { entries: { idx: number; when: number }[] };
 const journal: Journal = JSON.parse(
@@ -73,7 +73,7 @@ function play(sqlite: Database.Database, idx: number) {
       )
       .run(session, exercise.id, at);
   }
-  // The hero's own adventure, only where `adventures.uuid` exists (0075): at an earlier point the
+  // The hero's own adventure, only where `adventures.uuid` exists (0076): at an earlier point the
   // column is not there, and no build could have written one.
   if (idx >= HERO_ADVENTURES_IDX) {
     const quest = sqlite.prepare("SELECT id FROM quests ORDER BY id LIMIT 1").get() as {
@@ -87,7 +87,7 @@ function play(sqlite: Database.Database, idx: number) {
         )
         .run(quest.id).lastInsertRowid,
     );
-    // The boss's name, only where its column exists (0076).
+    // The boss's name, only where its column exists (0077).
     if (idx >= BOSS_VOICE_IDX) {
       sqlite.prepare("UPDATE adventures SET bossName = 'Nightcoil' WHERE id = ?").run(adventure);
     }
@@ -167,7 +167,7 @@ describe("a backup from any earlier migration point", () => {
               )
               .get(),
           ).toEqual({ uuid: "0192c000-0000-7000-8000-00000000000a", steps: 2 });
-          // Written at 76 and kept; NULL when the point is 75 and the runner caught it up.
+          // Written at 77 and kept; NULL when the point is 76 and the runner caught it up.
           expect(
             restored.prepare("SELECT bossName FROM adventures WHERE author = 'hero'").get(),
           ).toEqual({ bossName: idx >= BOSS_VOICE_IDX ? "Nightcoil" : null });

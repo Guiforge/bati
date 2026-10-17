@@ -63,7 +63,7 @@ export function bossDisplayName(
 ): string {
   const key = getBossKey(fight.imagePath);
   const prefix = fight.shiny ? "✨ " : "";
-  // The hero named it once: the same at every tier (0076).
+  // The hero named it once: the same at every tier (0077).
   if (fight.bossName) return prefix + fight.bossName;
   if (key) {
     const entry = (fight.tier ?? 0) >= 1 ? BOSSES[key].legendaryName : BOSSES[key].name;

@@ -9,7 +9,7 @@ import { USER_EXERCISE_CREATOR } from "./schema";
  * asks the JS form, and several suites mock `db/client` without a schema, so this file must load
  * with nothing behind it.
  *
- * A `BossFight` restored from a session saved by a build before 0075 (`SavedSessionState.bossFight`)
+ * A `BossFight` restored from a session saved by a build before 0076 (`SavedSessionState.bossFight`)
  * has no `author`, and is the game's.
  */
 export const countsAsDeed = (a: { author?: string }) => a.author !== USER_EXERCISE_CREATOR;

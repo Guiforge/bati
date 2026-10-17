@@ -45,13 +45,13 @@ export type BossFight = {
   esName: string;
   /**
    * Whose adventure this is. Optional on purpose: `SavedSessionState` persists the fight, so one
-   * restored from a session saved by a build before 0075 has none, and that fight is the game's
+   * restored from a session saved by a build before 0076 has none, and that fight is the game's
    * (`countsAsDeed`). Absent reads as the game's.
    */
   author?: string;
-  /** The hero's name for their boss (0076), shown instead of the painted one. Absent or null: the painting's. */
+  /** The hero's name for their boss (0077), shown instead of the painted one. Absent or null: the painting's. */
   bossName?: string | null;
-  /** The hero's lines (0076), added to the painted pool for these moments. Absent: none. */
+  /** The hero's lines (0077), added to the painted pool for these moments. Absent: none. */
   bossLines?: HeroBossLines;
   /**
    * How many times this boss has already been beaten — 0 on the first encounter. Derived from

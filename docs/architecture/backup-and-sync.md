@@ -312,7 +312,7 @@ start there. Narrow, accepted: a migration would make the old build refuse the f
 
 ## What the hero's adventures add to sync
 
-Migration 0075 gives `adventures` a `uuid`, and `adventures` and `adventure_steps` become merged
+Migration 0076 gives `adventures` a `uuid`, and `adventures` and `adventure_steps` become merged
 tables for the hero's own rows (`author = 'hero'`); the game's are mapped by `enTitle`, as quests
 are. A third `AuthoredSpec` in `db/merge.ts` follows quests and movements: matched by uuid, the newer
 `updatedAt` replacing the row and all its steps, the cover `questId` of the row translated inline
@@ -339,14 +339,14 @@ tombstone.
   exists) and never merged (`mergePeer` refuses on the newest migration); the previous build reads this
   build's file as unreadable. Nothing is lost on either side.
 
-### The boss's voice (0076)
+### The boss's voice (0077)
 
 Two nullable columns on `adventures`, `bossName` and `bossLinesJson`, merged with the row by the existing
 code (`authoredColumns` reads every column of the build) and part of `canonical` through `sharedColumns`;
 `bossLinesJson` has a fixed key order, so equal lines are equal text on both devices. The migration moves
 no row and no `updatedAt`, so the content segment of the fingerprint is unchanged and no answer is asked
-again; the build bump (77 migrations) re-uploads and re-judges every peer once. A peer on 0075 is compared
-and never merged; a 0075 build reads this build's file as unreadable. The newest row wins whole (R20), so a
+again; the build bump (78 migrations) re-uploads and re-judges every peer once. A peer on 0076 is compared
+and never merged; a 0076 build reads this build's file as unreadable. The newest row wins whole (R20), so a
 later title edit on another device replaces a voice written earlier elsewhere, as it would an earlier
 title: existing doctrine, not a regression.
 
@@ -357,7 +357,7 @@ the hero's rows (`exercises`, `quests`, `adventures`, `adventure_steps`), all me
 uuid, so nothing in the fingerprint or in `mergePeer` was touched. The same file imported on two devices
 is the same adventure, the same quests and the same movements on both, and they converge by `updatedAt`
 (a same-second tie goes to the canonical form); a copy, or an import over a run under way, is a second
-adventure with a fresh uuid on both. The file is version 2 only when it carries a boss's voice and version 1 otherwise, so a build before 0076
+adventure with a fresh uuid on both. The file is version 2 only when it carries a boss's voice and version 1 otherwise, so a build before 0077
 reads every file without one and refuses a voiced file as newer. A build without the feature reads the file
 as "no Bati quest". One limit: "never rewritten" holds on the importing device. A quest the hero edited on
 device A that device B has not received yet is created new on B at `now`, newer than the edit, so the next

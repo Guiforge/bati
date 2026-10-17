@@ -132,10 +132,10 @@ are about the catalogue the app ships, not about what someone writes in it.
 
 ## Adventures are the third population
 
-Since `0075` an adventure the hero writes is a row of `adventures` with `author = 'hero'`, split the
+Since `0076` an adventure the hero writes is a row of `adventures` with `author = 'hero'`, split the
 same way: a partial unique index on `enTitle` for the game's titles only (`adventures_admin_title_unique`)
 and a `uuid` for the hero's (`adventures_uuid_unique`), so a hero may call an adventure "The Golem" and a
-content migration can never take the name away. The price is the same rule: from `0075` on, every
+content migration can never take the name away. The price is the same rule: from `0076` on, every
 migration statement that writes `adventures` or `adventure_steps`, or reads an adventure by `enTitle`,
 scopes itself to `author` (`__tests__/seed-migration-guard.test.ts`). The seed fixtures of the tests
 keep `author = 'Admin'` and give each row its own title.

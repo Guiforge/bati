@@ -49,7 +49,7 @@ const PEER = "merge_peer";
  * **Timestamps are copied verbatim**, so the two devices agree afterwards on what is newer and a
  * second comparison finds nothing: a merge stamped with "now" would bounce between them forever.
  *
- * **The hero's adventures travel** (0075), matched by uuid like quests, the newer `updatedAt`
+ * **The hero's adventures travel** (0076), matched by uuid like quests, the newer `updatedAt`
  * replacing the row and all its steps. Their quest ids are translated through `quest_map`, and a
  * quest the hero deleted that an incoming step still names is brought back (`bringNamedQuests`), the
  * way a movement in use is. A step naming a quest the other device itself lacks is written with

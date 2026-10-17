@@ -13,6 +13,6 @@
 -- Two ALTERs and no data: no seed statement, nothing scoped to author (the guard in
 -- __tests__/seed-migration-guard.test.ts matches UPDATE and DELETE, not ALTER).
 --
--- multi-migration-ok: 0074 (merge v2), 0075 and 0076 are not in any tag yet; 0075 and 0076 are one feature, the hero's adventures, and 0076 only adds two nullable columns no older build reads.
+-- multi-migration-ok: 0074 (merge v2), 0075 (the notebook), 0076 and 0077 are not in any tag yet; 0076 and 0077 are one feature, the hero's adventures, and 0077 only adds two nullable columns no older build reads.
 ALTER TABLE `adventures` ADD `bossName` text;--> statement-breakpoint
 ALTER TABLE `adventures` ADD `bossLinesJson` text;

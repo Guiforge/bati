@@ -98,7 +98,7 @@ move, so its file on the server is refreshed only by the next change (`ponytail:
 **R10. `stateFingerprint` / peer `fingerprint` = `count(sessions) ':' max(uuid)`, then `':'` and the
 sum of both edit stamps when it is not 0 | `max(updatedAt) ':' count` over hero content |
 tombstone count | `sum(xpEarned) ':' count ':' max(deletedAt)` over `deleted_content` (0074) | `count ':' sum(updatedAt)` over `session_photos` (0075, `0:0` without a photo).** The content
-segment also covers the hero's adventures (0075); it is unchanged for a device that has none. An answer
+segment also covers the hero's adventures (0076); it is unchanged for a device that has none. An answer
 (`answered`) given before merge v2 has three segments and one given before the notebook has four;
 each matches its own leading segments, and only while the fifth is `0:0` (`judge` in
 `src/deviceSync.ts`): a match turns the peer level before any merge, so photos the answer never
@@ -187,7 +187,7 @@ name only when exactly one side has no uuid, and then the named side's uuid is a
 with distinct uuids are never unified by name. `db/merge.ts:243-270, 290-311, 313-333`.
 Invariant: after convergence, for each hero uuid both devices hold the row with the greater
 `updatedAt` (a tie: the larger canonical text, R9), and the children of that row.
-Hero adventures (0075) follow the same rule: the newer row replaces all its steps, and the `questId` of
+Hero adventures (0076) follow the same rule: the newer row replaces all its steps, and the `questId` of
 the row and of every step is translated through `quest_map`, a quest the other device itself lacks
 becoming `0` (R32). Canonical text names a step's quest by identity, not by id.
 
@@ -517,7 +517,7 @@ everything; the old file is orphaned. `db/client.ts:16-19`, `db/schemaVersion.ts
 
 **R63. The runner skips by timestamp:** an entry runs iff `lastAppliedAt < entry.when`; so journal
 `when` must be strictly increasing and a lower `when` added later never runs. Today the journal has
-68 entries, idx 0..67 contiguous, `when` strictly increasing (checked 2026-10-05; 77 entries after 0076).
+68 entries, idx 0..67 contiguous, `when` strictly increasing (checked 2026-10-05; 78 entries after 0077).
 `db/migrate.ts:50-52`, `drizzle/meta/_journal.json`.
 Invariant: for all i, `when[i] > when[i-1]` and `idx[i] = i`.
 
@@ -579,7 +579,7 @@ quest is never overwritten (only `isUserQuest` rows match). `src/questFile.ts:52
 
 **R122. Adventure file** = `{kind:'bati-adventure', version:1 | 2, adventure{uuid, title, description,
 cover, end}, steps[]}`; the `end` of a boss may carry `name` and `lines` (R126), and only a file that does is
-version 2, so a build before 0076 still opens every other file. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
+version 2, so a build before 0077 still opens every other file. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
 (`{official}`) or a hero one as a quest body (`{own: {quest, slots}}`, R66). The adventure's texts are
 single strings (the row repeats them in four columns). No run, victory, boss HP, weakness, resistance,
 sort order, sender or date. `src/adventureFile.ts`.
@@ -977,7 +977,7 @@ reset only follows a finished run. `__tests__/db-adventures-campaign.test.ts`.
 
 **R118. Deeds count the game's adventures only.** `DEED_ADVENTURE` (SQL) and `countsAsDeed` (JS) are
 `author <> 'hero'`, one rule in two forms, both reading the exception so a fight restored from a build
-before 0075 (no `author`) is the game's. Added to `listFinishedRunSummaries` (the Hall, the Arena, the
+before 0076 (no `author`) is the game's. Added to `listFinishedRunSummaries` (the Hall, the Arena, the
 banners), `getBossBanners`, `getLegacyDeedLevels`, `getBossKills` (bosses page, lifetime, stats,
 Chronicle) and `getStandingBosses`; no Triumph XP on a hero adventure (`payTriumphBonus`), and the
 victory says why once. `getFinishedRunCountsByAdventure` (the card's "finie N fois") and
@@ -1004,7 +1004,7 @@ constructors read them from `adventures`, so changing the monster between two pl
 next hit the new monster's. The `boss_fights` columns are written at creation and read by nothing.
 Invariant: the fight's stats equal its adventure's at the next hit. `__tests__/db-hero-adventures.test.ts`.
 
-**R126. The boss's voice.** Migration 0076 gives `adventures` two nullable text columns, `bossName` and
+**R126. The boss's voice.** Migration 0077 gives `adventures` two nullable text columns, `bossName` and
 `bossLinesJson` (`{"idle":[],"crit":[],"enrage":[]}`, keys in that order, written by `db/bossVoice.ts`
 only). NULL on seeded rows, on a route and on a boss left unnamed and silent. They are texts, so
 `updateHeroAdventure` writes them under a run too, and the stored end kind decides whether they are kept

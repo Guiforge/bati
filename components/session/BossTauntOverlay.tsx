@@ -47,7 +47,7 @@ export function BossTauntOverlay() {
     const phase = getPhaseFromHp(getHpPercent(lastDamage.newHp, bossFight.totalHp));
 
     const moment = momentOf(phase, lastDamage);
-    // The hero's lines (0076) join the painted pool, in every language, as their titles do. A
+    // The hero's lines (0077) join the painted pool, in every language, as their titles do. A
     // resisted hit keeps the painted lines only.
     const own = moment === "resist" ? [] : (bossFight.bossLines?.[moment] ?? []);
     const lines = [...voice[moment][language], ...own];

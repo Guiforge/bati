@@ -88,13 +88,13 @@ describe("seed migrations never touch hero rows", () => {
 });
 
 /**
- * The same rule for `adventures` (0075): a hero writes adventures now, so a seed statement that
+ * The same rule for `adventures` (0076): a hero writes adventures now, so a seed statement that
  * rewrites one by `enTitle`, or touches its steps without going through an Admin adventure, can
  * reach the hero's. `adventure_steps` has no `author`: a seed scopes it through
  * `adventureId IN (SELECT id FROM adventures WHERE author = 'Admin' AND enTitle = ...)`.
  * The cutoff never moves; see the last test.
  */
-const ADVENTURE_PARTITION_IDX = 75;
+const ADVENTURE_PARTITION_IDX = 76;
 const ADV_WRITES =
   /UPDATE\s+`?(adventures|adventure_steps)\b`?|DELETE\s+FROM\s+`?(adventures|adventure_steps)\b`?/i;
 const ADV_READS = /(?:FROM|JOIN)\s+`?adventures\b`?/i;
@@ -118,8 +118,8 @@ describe("seed migrations never touch hero adventures", () => {
 
   test("the cutoff still names the migration that created the partition", () => {
     const partition = sqlFiles().find((f) => indexOf(f) === ADVENTURE_PARTITION_IDX);
-    expect(partition).toBe("0075_the_hero_tells_a_tale.sql");
-    const sql = fs.readFileSync(path.join(DRIZZLE, "0075_the_hero_tells_a_tale.sql"), "utf8");
+    expect(partition).toBe("0076_the_hero_tells_a_tale.sql");
+    const sql = fs.readFileSync(path.join(DRIZZLE, "0076_the_hero_tells_a_tale.sql"), "utf8");
     expect(sql).toContain("adventures_uuid_unique");
     expect(sql).toContain("adventures_admin_title_unique");
   });

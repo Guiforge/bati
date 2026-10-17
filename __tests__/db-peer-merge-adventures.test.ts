@@ -445,7 +445,7 @@ test("h: a new hero adventure is one change and moves only the content segment o
   expect(here[1]).toBe(`${newest}:${rows.length}`);
 });
 
-test("i: a peer on 0075 is compared without error, never merged, and its content segment is the one it had", async () => {
+test("i: a peer on 0076 is compared without error, never merged, and its content segment is the one it had", async () => {
   const [q1, q2] = adminQuests();
   if (!q1 || !q2) throw new Error("seed quests expected");
   heroAdventure(t.sqlite, { uuid: U_X, title: "Tale", at: 200, steps: [q1, q2] });
@@ -463,7 +463,7 @@ test("i: a peer on 0075 is compared without error, never merged, and its content
   expect(cmp.fingerprint.split("|")[1]).toBe(plainCmp.fingerprint.split("|")[1]);
 });
 
-test("i2: a peer before 0075 is compared without error and never merged", async () => {
+test("i2: a peer before 0076 is compared without error and never merged", async () => {
   const [q1, q2] = adminQuests();
   if (!q1 || !q2) throw new Error("seed quests expected");
   heroAdventure(t.sqlite, { uuid: U_X, title: "Tale", at: 200, steps: [q1, q2] });

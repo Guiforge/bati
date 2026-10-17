@@ -399,7 +399,7 @@ function heroContent(
       FROM ${schema}.quests x WHERE author = 'hero'
     UNION ALL SELECT 'p:' || key, updatedAt, NULL, ${canon ? "value" : "NULL"}
       FROM ${schema}.user_preferences WHERE key IN (${keys})${
-        // The hero's adventures (0075): no row is added for a device without one, so its
+        // The hero's adventures (0076): no row is added for a device without one, so its
         // fingerprint keeps the shape it had. Only where the schema has the uuid column.
         adventures
           ? `

@@ -3,7 +3,7 @@
  * (`__tests__/db-sync-classification.test.ts` fails on a table that is classed nowhere):
  *
  * - `merged`: copied to the other device by `mergePeer` and read by `compareWithPeer`. `adventures` and
- *   `adventure_steps` are merged for the hero's rows only (0075): the game's are mapped by `enTitle`.
+ *   `adventure_steps` are merged for the hero's rows only (0076): the game's are mapped by `enTitle`.
  * - `local`: stays on this device. Campaigns and boss fights cannot be replayed from another device; seed content is
  *   the same on both.
  * - `unused`: in the schema and read by no code (the village economy was removed, roadmap 7).

@@ -1,7 +1,7 @@
 import { reportError } from "@/src/reportError";
 
 /**
- * The hero's words for their boss (column pair `adventures.bossName` / `bossLinesJson`, 0076).
+ * The hero's words for their boss (column pair `adventures.bossName` / `bossLinesJson`, 0077).
  * A leaf: no database import, so the constants, the overlay and the file reader can use it.
  */
 export const MAX_BOSS_NAME = 40;

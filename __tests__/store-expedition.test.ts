@@ -404,6 +404,7 @@ describe("stores/expedition", () => {
       layout: "map" as const,
       rate: "pace" as const,
       buzzEvery: 1 as const,
+      routeGhost: false,
       locomotion: "walk" as const,
       walkRun: false,
       keepAwake: false,

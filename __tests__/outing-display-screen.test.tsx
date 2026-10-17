@@ -313,3 +313,23 @@ describe("the preview", () => {
     expect(screen.getByText("20.0 km/h")).toBeTruthy();
   });
 });
+
+test("the route ghost is off by default, written for the current tab only, and offers the reset", async () => {
+  await mount("run");
+  expect(
+    screen.getByText(
+      "A pale line on the map shows your last outing on the same route. Your phone works it out from your own traces, and it stays hidden during a walk-run.",
+    ),
+  ).toBeTruthy();
+  expect(
+    screen.getByTestId("outing-display-route-ghost-off").props.accessibilityState,
+  ).toMatchObject({ selected: true });
+  expect(screen.queryByTestId("outing-display-reset")).toBeNull();
+
+  await press("outing-display-route-ghost-on");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({ run: { routeGhost: true } });
+  expect(screen.getByTestId("outing-display-reset")).toBeTruthy();
+
+  await press("outing-display-route-ghost-off");
+  expect(useSettingsStore.getState().outingDisplay).toEqual({});
+});

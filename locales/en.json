@@ -1580,7 +1580,8 @@
     "map_open_settings": "Open the settings",
     "map_recenter": "Recenter the map",
     "leagues_title": "League by league",
-    "league_best": "Quickest"
+    "league_best": "Quickest",
+    "route_ghost_legend": "Pale line: your outing of {{date}} on this route."
   },
   "safety": {
     "title": "Train safely",
@@ -2276,6 +2277,10 @@
     "auto_note": "Follows the goal: the distance when you aim for a distance, otherwise the time. In a small place, whichever of the two is not in big.",
     "none": "Nothing",
     "walk_run_note": "Never shown on a walk-run.",
+    "route_ghost": "Your last time on this route",
+    "route_ghost_off": "Hidden",
+    "route_ghost_on": "Shown",
+    "route_ghost_note": "A pale line on the map shows your last outing on the same route. Your phone works it out from your own traces, and it stays hidden during a walk-run.",
     "layout": "During the outing",
     "layout_map": "Map and figures",
     "layout_big": "Big figures",

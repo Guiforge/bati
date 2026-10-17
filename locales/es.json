@@ -1665,7 +1665,8 @@
     "map_open_settings": "Abrir los ajustes",
     "map_recenter": "Centrar el mapa",
     "leagues_title": "Legua a legua",
-    "league_best": "La más rápida"
+    "league_best": "La más rápida",
+    "route_ghost_legend": "En pálido: tu salida del {{date}} por este recorrido."
   },
   "safety": {
     "title": "Entrenar con seguridad",
@@ -2377,6 +2378,10 @@
     "auto_note": "Según el objetivo: la distancia si apuntas a una distancia, si no la duración. En pequeño, la de las dos que no está en grande.",
     "none": "Nada",
     "walk_run_note": "Nunca se muestra al alternar caminar y correr.",
+    "route_ghost": "Tu última vez en este recorrido",
+    "route_ghost_off": "Oculta",
+    "route_ghost_on": "Visible",
+    "route_ghost_note": "Una línea pálida en el mapa muestra tu última salida por el mismo recorrido. Tu teléfono la encuentra en tus propias trazas y no aparece mientras alternas caminar y correr.",
     "layout": "Durante la salida",
     "layout_map": "Mapa y cifras",
     "layout_big": "Cifras en grande",

@@ -1580,7 +1580,8 @@
     "map_open_settings": "Einstellungen öffnen",
     "map_recenter": "Karte zentrieren",
     "leagues_title": "Wegstunde für Wegstunde",
-    "league_best": "Die schnellste"
+    "league_best": "Die schnellste",
+    "route_ghost_legend": "Blass: deine Tour vom {{date}} auf dieser Strecke."
   },
   "safety": {
     "title": "Sicher trainieren",
@@ -2278,6 +2279,10 @@
     "auto_note": "Je nach Ziel: die Strecke, wenn du eine Strecke anpeilst, sonst die Dauer. Klein: die von beiden, die nicht groß steht.",
     "none": "Nichts",
     "walk_run_note": "Wird bei Gehen und Laufen im Wechsel nie angezeigt.",
+    "route_ghost": "Dein letztes Mal auf dieser Strecke",
+    "route_ghost_off": "Aus",
+    "route_ghost_on": "An",
+    "route_ghost_note": "Eine blasse Linie auf der Karte zeigt deine letzte Tour auf derselben Strecke. Dein Handy findet sie in deinen eigenen Spuren, und während Gehen und Laufen im Wechsel bleibt sie aus.",
     "layout": "Während der Tour",
     "layout_map": "Karte und Zahlen",
     "layout_big": "Große Zahlen",

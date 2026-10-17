@@ -38,6 +38,8 @@ export type OutingView = {
   layout: OutingLayout;
   rate: RateKind;
   buzzEvery: BuzzEvery;
+  /** Draw the hero's last outing on the same route as a pale line (`src/gps/route.ts`). */
+  routeGhost: boolean;
 };
 /** What is stored: only what the hero changed. An absent activity or field is the default. */
 export type OutingDisplay = Partial<Record<Locomotion, Partial<OutingView>>>;
@@ -54,6 +56,7 @@ export const DEFAULT_VIEW: OutingView = {
   layout: "map",
   rate: "pace",
   buzzEvery: 1,
+  routeGhost: false,
 };
 
 /** The default view of one activity: what a hero who touched nothing has always had. */
@@ -84,6 +87,7 @@ export function viewOf(display: OutingDisplay, locomotion: Locomotion): OutingVi
     layout: own?.layout ?? base.layout,
     rate: own?.rate ?? base.rate,
     buzzEvery: own?.buzzEvery ?? base.buzzEvery,
+    routeGhost: own?.routeGhost ?? base.routeGhost,
   };
 }
 
@@ -106,9 +110,10 @@ function parseEntry(raw: unknown): Partial<OutingView> {
     layout?: unknown;
     rate?: unknown;
     buzzEvery?: unknown;
+    routeGhost?: unknown;
   };
   const out: Partial<OutingView> = {};
-  const { big, small, layout, rate, buzzEvery } = entry;
+  const { big, small, layout, rate, buzzEvery, routeGhost } = entry;
   if (isPlace(big)) out.big = big;
   if (Array.isArray(small)) {
     out.small = [0, 1, 2].map((i) => {
@@ -119,6 +124,7 @@ function parseEntry(raw: unknown): Partial<OutingView> {
   if (isLayout(layout)) out.layout = layout;
   if (isRate(rate)) out.rate = rate;
   if (isBuzz(buzzEvery)) out.buzzEvery = buzzEvery;
+  if (typeof routeGhost === "boolean") out.routeGhost = routeGhost;
   return out;
 }
 
@@ -141,7 +147,7 @@ export function parseOutingDisplay(raw: string | null): OutingDisplay {
 }
 
 // ponytail: rebuilds every activity from the parsed view, so an older build that edits any tab
-// drops, on every tab, the values it cannot parse (bigMap, lap). LWW then spreads that. Fix only
+// drops, on every tab, the values it cannot parse (bigMap, lap, routeGhost). LWW then spreads that. Fix only
 // if two builds in the field becomes the normal case: keep the raw entries of untouched tabs.
 /**
  * The blob with one activity changed. `null` is the reset: the activity goes. Fields equal to the
@@ -163,12 +169,9 @@ export function withActivity(
   if (merged.small !== undefined && !sameSmall(merged.small, base.small)) {
     entry.small = merged.small;
   }
-  if (merged.layout !== undefined && merged.layout !== base.layout) {
-    entry.layout = merged.layout;
-  }
-  if (merged.rate !== undefined && merged.rate !== base.rate) entry.rate = merged.rate;
-  if (merged.buzzEvery !== undefined && merged.buzzEvery !== base.buzzEvery) {
-    entry.buzzEvery = merged.buzzEvery;
+  // Last is routeGhost, so the text of every blob without one is unchanged (setOutingDisplay compares text).
+  for (const k of ["layout", "rate", "buzzEvery", "routeGhost"] as const) {
+    if (merged[k] !== undefined && merged[k] !== base[k]) Object.assign(entry, { [k]: merged[k] });
   }
   const next: OutingDisplay =
     Object.keys(entry).length === 0 ? rest : { ...rest, [locomotion]: entry };

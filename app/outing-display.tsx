@@ -284,6 +284,25 @@ export default function OutingDisplayScreen() {
         <LayoutNote layout={view.layout} />
 
         <SectionLabel px="$1" mt="$2">
+          {t("outing_display.route_ghost")}
+        </SectionLabel>
+        <XStack gap="$2" flexWrap="wrap">
+          {([false, true] as const).map((on) => (
+            <Chip
+              key={String(on)}
+              testID={`outing-display-route-ghost-${on ? "on" : "off"}`}
+              label={t(on ? "outing_display.route_ghost_on" : "outing_display.route_ghost_off")}
+              tone={view.routeGhost === on ? "primary" : "default"}
+              accessibilityState={{ selected: view.routeGhost === on }}
+              onPress={() => change({ routeGhost: on })}
+            />
+          ))}
+        </XStack>
+        <Paragraph fontSize={13} color="$textSecondary">
+          {t("outing_display.route_ghost_note")}
+        </Paragraph>
+
+        <SectionLabel px="$1" mt="$2">
           {t("outing_display.rate")}
         </SectionLabel>
         <XStack gap="$2" flexWrap="wrap">

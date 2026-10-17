@@ -142,3 +142,26 @@ describe("rate and buzz", () => {
     });
   });
 });
+
+describe("route ghost", () => {
+  test("off by default for the three activities", () => {
+    for (const l of ["walk", "run", "ride"] as const) expect(viewOf({}, l).routeGhost).toBe(false);
+  });
+
+  test("a boolean is kept, anything else reads as the default", () => {
+    expect(parseOutingDisplay('{"run":{"routeGhost":true}}')).toEqual({
+      run: { routeGhost: true },
+    });
+    expect(parseOutingDisplay('{"run":{"routeGhost":"yes"}}')).toEqual({ run: {} });
+    expect(parseOutingDisplay('{"run":{"routeGhost":1}}')).toEqual({ run: {} });
+  });
+
+  test("stored when on, nothing when off again, and last in the text", () => {
+    expect(withActivity({}, "run", { routeGhost: true })).toEqual({ run: { routeGhost: true } });
+    expect(withActivity({ run: { routeGhost: true } }, "run", { routeGhost: false })).toEqual({});
+    const text = JSON.stringify(
+      withActivity({}, "ride", { routeGhost: true, big: "rate", rate: "pace" }),
+    );
+    expect(text).toBe('{"ride":{"big":"rate","rate":"pace","routeGhost":true}}');
+  });
+});

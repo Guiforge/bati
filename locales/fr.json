@@ -1665,7 +1665,8 @@
     "map_open_settings": "Ouvrir les réglages",
     "map_recenter": "Recentrer la carte",
     "leagues_title": "Lieue par lieue",
-    "league_best": "La plus rapide"
+    "league_best": "La plus rapide",
+    "route_ghost_legend": "En pâle : ta sortie du {{date}} sur ce parcours."
   },
   "safety": {
     "title": "S'entraîner en sécurité",
@@ -2377,6 +2378,10 @@
     "auto_note": "Selon l'objectif : la distance si tu vises une distance, sinon la durée. En petit, celle des deux qui n'est pas en grand.",
     "none": "Rien",
     "walk_run_note": "Jamais affichée sur une marche et course.",
+    "route_ghost": "Ta dernière fois sur ce parcours",
+    "route_ghost_off": "Masquée",
+    "route_ghost_on": "Affichée",
+    "route_ghost_note": "Une ligne pâle sur la carte montre ta dernière sortie sur le même parcours. Ton téléphone la trouve dans tes propres traces, et elle reste masquée pendant une marche et course.",
     "layout": "Pendant la sortie",
     "layout_map": "Carte et chiffres",
     "layout_big": "Chiffres en grand",

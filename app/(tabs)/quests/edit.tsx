@@ -13,6 +13,7 @@ import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { StatusBand } from "@/components/common/StatusBand";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
+import { useTabLeaveGuard } from "@/components/common/useTabLeaveGuard";
 import { ChevronLeft, Plus, Trash2, X } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { ImportFileButton } from "@/components/quests/QuestFileButtons";
@@ -27,6 +28,7 @@ import {
   heroFirst,
   listExercises,
   pickableExercises,
+  preferences,
   REST_RANGE,
   ROUNDS_RANGE,
   saveQuestConfig,
@@ -174,6 +176,37 @@ export default function QuestEditor() {
       });
     });
   }, [navigation, t, isDirty]);
+
+  useTabLeaveGuard(isDirty, skipGuardRef, (go) =>
+    setDialog({
+      title: t("quests.editor_discard_title"),
+      body: t("quests.editor_discard_body"),
+      confirmLabel: t("quests.editor_discard"),
+      cancelLabel: t("common.cancel"),
+      destructive: true,
+      onConfirm: go,
+    }),
+  );
+
+  // A new quest opens on the rest the hero chose in Settings, not on a rest they never chose.
+  useEffect(() => {
+    if (questId != null) return;
+    let cancelled = false;
+    preferences
+      .getRestDefault()
+      .then((restDefault) => {
+        if (cancelled || restDefault === null) return;
+        setRest(restDefault);
+        setRoundRest(restDefault);
+        setBaseline((b) =>
+          JSON.stringify({ ...JSON.parse(b), rest: restDefault, roundRest: restDefault }),
+        );
+      })
+      .catch((error: unknown) => reportError("quest.editorRestDefault", error));
+    return () => {
+      cancelled = true;
+    };
+  }, [questId]);
 
   const exerciseName = useCallback(
     (exercise: Exercise) => localizedName(exercise, language),

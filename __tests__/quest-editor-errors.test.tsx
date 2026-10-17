@@ -28,6 +28,7 @@ jest.mock("@/db", () => ({
   heroFirst: (rows: unknown[]) => rows,
   listExercises: jest.fn().mockResolvedValue([]),
   pickableExercises: (rows: unknown[]) => rows,
+  preferences: { getRestDefault: jest.fn().mockResolvedValue(null) },
   REST_RANGE: { min: 5, max: 300 },
   ROUNDS_RANGE: { min: 1, max: 10 },
   saveQuestConfig: jest.fn(),
@@ -119,6 +120,17 @@ describe("quest editor, saving an incomplete quest", () => {
     expect(editor.queryByTestId("quest-name-error")).toBeNull();
     expect(editor.queryByTestId("confirm-dialog")).toBeNull();
     expect(mockCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe("quest editor, a new quest", () => {
+  it("opens on the rest the hero set in Settings, for both rests", async () => {
+    const prefs = (require("@/db") as { preferences: { getRestDefault: jest.Mock } }).preferences;
+    prefs.getRestDefault.mockResolvedValueOnce(45);
+    delete mockParams.id;
+    const editor = await mountEditor();
+
+    expect(editor.getAllByText(/^45/)).toHaveLength(2);
   });
 });
 

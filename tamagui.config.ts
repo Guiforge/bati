@@ -129,7 +129,20 @@ const config = createTamagui({
   tokens,
   // Every Input, so a field never shows the platform's default grey: next to typed text it read as
   // a filled name and the quest editor refused to save it.
-  defaultProps: { Input: { placeholderTextColor: "$textSecondary", rounded: "$3" } },
+  //
+  // `height: "auto"` with a 44 dp floor: the size token fixes a single-line field at 44 dp whatever
+  // the font scale, and at 130% the first line was cut at the top (adventure name, quest name). The
+  // floor is what the token gave, so nothing moves at the default scale. A field that sets its own
+  // height (the multi-line ones) still wins.
+  defaultProps: {
+    Input: {
+      placeholderTextColor: "$textSecondary",
+      rounded: "$3",
+      height: "auto",
+      minH: 44,
+      py: 8,
+    },
+  },
   fonts: {
     heading: headingFont,
     body: bodyFont,

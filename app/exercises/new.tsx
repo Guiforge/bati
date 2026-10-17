@@ -10,6 +10,7 @@ import { Chip } from "@/components/common/Chip";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
+import { useDiscardGuard } from "@/components/common/useDiscardGuard";
 import { Check, ChevronDown, ChevronLeft, ChevronUp } from "@/components/icons";
 import { EXERCISE_THUMB_ASSETS, getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import {
@@ -71,6 +72,13 @@ export default function ExerciseEditor() {
   const [details, setDetails] = useState<Details>(DEFAULT_USER_EXERCISE_DRAFT);
   const [showDetails, setShowDetails] = useState(false);
   const [saving, setSaving] = useState(false);
+  // What the form held when it opened (or finished loading): leaving with anything else asks first.
+  const [baseline, setBaseline] = useState(() =>
+    JSON.stringify(["", "", DEFAULT_USER_EXERCISE_DRAFT]),
+  );
+  const { dialog: discardDialog, allowLeave } = useDiscardGuard(
+    JSON.stringify([name, description, details]) !== baseline,
+  );
 
   useEffect(() => {
     if (editingId === null) return;
@@ -79,9 +87,7 @@ export default function ExerciseEditor() {
     getExerciseById(editingId)
       .then((ex) => {
         if (cancelled || !ex || !isUserExercise(ex)) return;
-        setName(ex.enName);
-        setDescription(ex.enDescription);
-        setDetails({
+        const loaded = {
           muscles: ex.muscles,
           style: ex.style,
           difficulty: ex.difficulty,
@@ -91,7 +97,11 @@ export default function ExerciseEditor() {
           perSide: ex.perSide,
           secondsPerRep: ex.secondsPerRep,
           imagePath: ex.imagePath,
-        });
+        };
+        setName(ex.enName);
+        setDescription(ex.enDescription);
+        setDetails(loaded);
+        setBaseline(JSON.stringify([ex.enName, ex.enDescription, loaded]));
       })
       .catch((error: unknown) => reportError("exercises.editor.load", error));
 
@@ -124,7 +134,10 @@ export default function ExerciseEditor() {
     // catch never rethrows, so `setSaving(false)` runs on both paths.
     setSaving(true);
     await (editingId === null ? createUserExercise(draft) : updateUserExercise(editingId, draft))
-      .then(() => router.back())
+      .then(() => {
+        allowLeave();
+        router.back();
+      })
       .catch((error: unknown) => {
         reportError("exercises.editor.save", error);
         // No name-collision branch: `0036` dropped the hero-side unique index, so there is no
@@ -133,7 +146,7 @@ export default function ExerciseEditor() {
         showError(t("exercise_editor.save_failed"));
       });
     setSaving(false);
-  }, [details, description, editingId, name, router, showError, t]);
+  }, [allowLeave, details, description, editingId, name, router, showError, t]);
 
   return (
     <YStack flex={1} bg="$background">
@@ -373,6 +386,7 @@ export default function ExerciseEditor() {
           {t("exercise_editor.save")}
         </AppButton>
       </ScrollView>
+      {discardDialog}
     </YStack>
   );
 }

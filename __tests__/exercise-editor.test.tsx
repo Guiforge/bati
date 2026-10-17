@@ -45,7 +45,19 @@ jest.mock("@/db/exercises", () => ({
 
 const mockBack = jest.fn();
 const mockParams: { id?: string } = {};
+type Leave = { preventDefault: () => void; data: { action: unknown } };
+let mockLeaveListeners: ((e: Leave) => void)[] = [];
+const mockNavigation = {
+  addListener: (_name: string, fn: (e: Leave) => void) => {
+    mockLeaveListeners.push(fn);
+    return () => {
+      mockLeaveListeners = mockLeaveListeners.filter((l) => l !== fn);
+    };
+  },
+  dispatch: jest.fn(),
+};
 jest.mock("expo-router", () => ({
+  useNavigation: () => mockNavigation,
   useRouter: () => ({
     back: (...args: unknown[]) => mockBack(...args),
     replace: jest.fn(),
@@ -91,6 +103,32 @@ describe("exercise editor", () => {
     mockShowError.mockClear();
     mockGetById.mockResolvedValue(null);
     delete mockParams.id;
+    mockLeaveListeners = [];
+  });
+
+  const leave = async () => {
+    const e = { preventDefault: jest.fn(), data: { action: { type: "GO_BACK" } } };
+    await act(() => {
+      for (const l of mockLeaveListeners) l(e);
+    });
+    return e;
+  };
+
+  it("asks before dropping a typed name, and not before an untouched form", async () => {
+    const editor = await mountEditor();
+    expect((await leave()).preventDefault).not.toHaveBeenCalled();
+
+    await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), "Archer"));
+    expect((await leave()).preventDefault).toHaveBeenCalledTimes(1);
+    expect(editor.getByText("quests.editor_discard_title")).toBeTruthy();
+  });
+
+  it("lets its own save leave without asking", async () => {
+    const editor = await mountEditor();
+    await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), "Archer"));
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-save")));
+    await waitFor(() => expect(mockBack).toHaveBeenCalled());
+    expect((await leave()).preventDefault).not.toHaveBeenCalled();
   });
 
   it("saves with nothing but a name and a how-to", async () => {

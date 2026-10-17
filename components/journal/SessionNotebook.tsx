@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, TextInput, View } from "react-native";
 import { YStack } from "tamagui";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
+import { useDiscardGuard } from "@/components/common/useDiscardGuard";
 import { NBlock, NButton, NKickerQuiet, NMuted, NText } from "@/components/journal/nocturne";
 import { rawColors } from "@/constants/rawColors";
 import { MAX_NOTE_CHARS, updateSessionNotes } from "@/db/completed";
@@ -17,6 +18,16 @@ import { chooseSessionPhotos } from "@/src/journalPhoto";
 import { reportError } from "@/src/reportError";
 
 type Photo = { uuid: string; image: string };
+
+/**
+ * Mounted only while the note holds text that was not saved: back would drop it without a word.
+ * A component of its own because the guard is a hook, and the screens that never edit (no
+ * navigator under them in a test) must not need one.
+ */
+function UnsavedNoteGuard() {
+  const { dialog } = useDiscardGuard(true);
+  return dialog;
+}
 
 /**
  * The note and the photos of one saved session or outing. Every door to them is this component
@@ -163,20 +174,7 @@ export function SessionNotebook({
 
       {editing ? (
         <NBlock>
-          <TextInput
-            testID="notebook-note-input"
-            value={draft}
-            onChangeText={setDraft}
-            maxLength={MAX_NOTE_CHARS}
-            multiline
-            autoFocus={startEditing}
-            placeholder={t("journal.note_placeholder")}
-            placeholderTextColor={rawColors.textSecondary}
-            accessibilityLabel={t("journal.note_placeholder")}
-            style={{ color: rawColors.text, fontSize: 14, minHeight: 88, textAlignVertical: "top" }}
-          />
-          <NMuted mt={4}>{`${draft.length}/${MAX_NOTE_CHARS}`}</NMuted>
-          <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
             <NButton testID="notebook-note-save" variant="primary" onPress={saveNote}>
               {t("journal.note_save")}
             </NButton>
@@ -191,6 +189,19 @@ export function SessionNotebook({
               {t("common.cancel")}
             </NButton>
           </View>
+          <TextInput
+            testID="notebook-note-input"
+            value={draft}
+            onChangeText={setDraft}
+            maxLength={MAX_NOTE_CHARS}
+            multiline
+            autoFocus={startEditing}
+            placeholder={t("journal.note_placeholder")}
+            placeholderTextColor={rawColors.textSecondary}
+            accessibilityLabel={t("journal.note_placeholder")}
+            style={{ color: rawColors.text, fontSize: 14, minHeight: 88, textAlignVertical: "top" }}
+          />
+          <NMuted mt={4}>{`${draft.length}/${MAX_NOTE_CHARS}`}</NMuted>
         </NBlock>
       ) : (
         <>
@@ -210,6 +221,9 @@ export function SessionNotebook({
         </>
       )}
       {message !== null && <NMuted testID="notebook-message">{message}</NMuted>}
+      {/* The victory screen's composer (`note`) is closed by its own buttons, and Continue must
+          not be stopped by it. */}
+      {mode === "full" && editing && draft.trim() !== notes.trim() ? <UnsavedNoteGuard /> : null}
       {dialog}
     </YStack>
   );

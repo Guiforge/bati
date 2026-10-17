@@ -45,13 +45,13 @@ import { MapStyleRow } from "@/components/settings/MapStyleRow";
 import { OutingDisplayRow } from "@/components/settings/OutingDisplayRow";
 import { PauseRow } from "@/components/settings/PauseRow";
 import { ReminderSection } from "@/components/settings/ReminderSection";
+import { RestDefaultRow } from "@/components/settings/RestDefaultRow";
 import { SetAsideRow } from "@/components/settings/SetAsideRow";
 import { SettingRow } from "@/components/settings/SettingRow";
 import { StartingPointRow } from "@/components/settings/StartingPointRow";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
 import { preferences } from "@/db";
-import { setRestDefault } from "@/db/quests";
 import type { EquipmentCode } from "@/db/schema";
 import { useBackup } from "@/hooks/useBackup";
 import { useBugReport, versionLabel } from "@/hooks/useBugReport";
@@ -198,52 +198,6 @@ function PrepModeRow() {
         setPrepMode(prepMode === "timer" ? "tap" : "timer").catch((error) => {
           reportError("settings.prepModeWrite", error);
         });
-      }}
-    />
-  );
-}
-
-/** Per quest first, then the rests worth choosing; all inside `REST_RANGE`. */
-const REST_CHOICES: (number | null)[] = [null, 15, 20, 30, 45, 60, 90, 120];
-
-/**
- * The rest between exercises, for every quest the hero has not tuned itself. A tap steps through
- * `REST_CHOICES`; the quest screen's own stepper still outranks it (`db/quests.ts`).
- */
-function RestDefaultRow() {
-  const { t } = useTranslation();
-  const haptics = useHaptics();
-  const [rest, setRest] = useState<number | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    preferences
-      .getRestDefault()
-      .then((value) => {
-        if (!cancelled) setRest(value);
-      })
-      .catch((error) => reportError("settings.restDefaultRead", error));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return (
-    <SettingRow
-      testID="settings-rest-default"
-      icon={<Timer size={22} color="$text" />}
-      label={t("settings.rest_default")}
-      value={
-        rest === null
-          ? t("settings.rest_default_own")
-          : t("settings.rest_default_value", { seconds: rest })
-      }
-      onPress={() => {
-        haptics.selection();
-        // A stored value off the list (an older build, a restore) starts the walk over at "per quest".
-        const next = REST_CHOICES[(REST_CHOICES.indexOf(rest) + 1) % REST_CHOICES.length] ?? null;
-        setRest(next);
-        setRestDefault(next).catch((error) => reportError("settings.restDefaultWrite", error));
       }}
     />
   );
